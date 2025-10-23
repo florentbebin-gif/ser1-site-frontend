@@ -72,7 +72,7 @@ export default function Home(){
         </div>
         <div>
           <div className="section-title" style={{justifyContent:'center'}}>
-            <h2 style={{color:'#6f7673'}}>Simulateurs divers</h2>
+            <h2 style={{color:'#3b4a45'}}>Simulateurs divers</h2>
           </div>
           <div className="tiles">
             <Tile to="/sim/ir" icon={<IconCalc/>} label="Impôt sur le revenu" />
@@ -82,7 +82,7 @@ export default function Home(){
           </div>
         </div>
       </div>
-      <div className="footer-note">Icônes et couleurs seront harmonisées exactement à votre charte à la prochaine passe.</div>
+      <div className="footer-note">Couleurs appliquées depuis l’onglet Home du classeur : vert #2C3D38, beige #CEC1B6, ocre #E4D0BB, noir #000000.</div>
     </div>
   )
 }

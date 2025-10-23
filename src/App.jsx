@@ -37,7 +37,6 @@ export default function App(){
       <div className="container">
         <div className="reset-wrap">
           <div className="reset-ico">
-            <!-- trash can svg -->
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <path d="M3 6h18M9 6v-2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke-width="1.6" />
               <path d="M10 11v6M14 11v6" stroke-width="1.6"/>

@@ -23,7 +23,7 @@ export default function Sim(){
   const [epargneAnn, setEpargneAnn] = useState(() => JSON.parse(localStorage.getItem(key+':epargneAnn')||'3000'))
   const [res, setRes] = useState(null)
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(False)
 
   useEffect(()=>{ localStorage.setItem(key+':age', JSON.stringify(age)) },[age])
   useEffect(()=>{ localStorage.setItem(key+':revenu', JSON.stringify(revenu)) },[revenu])
