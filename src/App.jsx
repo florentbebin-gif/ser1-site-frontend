@@ -30,17 +30,12 @@ export default function App(){
         <div className="brandword">SER1</div>
         <div className="top-actions">
           <Link className="chip" to="/">HOME</Link>
+          <button className="chip" onClick={handleReset}>Reset</button> {/* ← ICI */}
           <Link className="chip" to="/params">Paramètres</Link>
           <button className="chip" onClick={handleLogout}>Déconnexion</button>
         </div>
       </div>
 
-      <div className="container panel panel-reset" style={{marginBottom:12}}>
-        <button className="chip" onClick={handleReset}>Reset</button>
-        <span className="reset-note">Réinitialise toutes les saisies</span>
-      </div>
-
-      {/* ✅ C'est uniquement ici que les pages changent */}
       <div className="container">
         <Outlet/>
       </div>
