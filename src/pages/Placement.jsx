@@ -267,50 +267,49 @@ export default function Placement(){
             </tr>
 
             {/* Durée en année */}
-            <tr>
-              <td className="cell-strong">Durée en année</td>
-              {products.map((_,i)=>(
-                <td key={i} className="input-cell">
-                  <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end', width:COL_INPUT_W}}>
-                    <input
-                      type="number" min="1"
-                      value={durations[i]}
-                      onChange={e=> setDuration(i, +e.target.value||1)}
-                      style={{width:'100%', textAlign:'right'}}
-                    />
-                    <span>an(s)</span>
-                  </div>
-                </td>
-              ))}
-            </tr>
+<tr>
+  <td /* label normal (pas en gras) */>Durée en année</td>
+  {products.map((_,i)=>(
+    <td key={i} className="input-cell">
+      <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end', width:COL_INPUT_W}}>
+        <input
+          type="number" min="1"
+          value={durations[i]}
+          onChange={e=> setDuration(i, +e.target.value||1)}
+          style={{width:'100%', textAlign:'right'}}
+        />
+        <span>an(s)</span>
+      </div>
+    </td>
+  ))}
+</tr>
 
-            {/* Lignes Année N */}
-            {years.map((y, yi)=>(
-              <tr key={yi}>
-                <td>{`Année ${y}`}</td>
-                {series.map((s, si)=>(
-                  <td key={si} className="cell-strong">
-                    {s.values[yi] !== undefined ? euro(s.values[yi]) : ''}
-                  </td>
-                ))}
-              </tr>
-            ))}
+{/* Lignes Année N (valeurs centrées) */}
+{years.map((y, yi)=>(
+  <tr key={yi}>
+    <td>{`Année ${y}`}</td>
+    {series.map((s, si)=>(
+      <td key={si} style={{textAlign:'center', fontWeight:600}}>
+        {s.values[yi] !== undefined ? euro(s.values[yi]) : ''}
+      </td>
+    ))}
+  </tr>
+))}          
           </tbody>
         </table>
       </div>
 
-      {/* Graphique */}
-      <div className="chart-card" style={{marginTop:20}}>
-        <SmoothChart res={result}/>
-      </div>
+{/* Graphique */}
+<div className="chart-card" style={{marginTop:20, border:'none', boxShadow:'none', outline:'none'}}>
+  <SmoothChart res={result}/>
+</div>
     </div>
   )
 }
 
-/* ===========================================================
-   Graphique responsive avec légende à droite — Axe en K€
-   Ticks Y en pas de 10k€ ou 100k€ selon l’amplitude
-=========================================================== */
+/* ===== Graphique responsive avec légende à droite — Axe en K€, labels anti-chevauchement ===== */
+import { useEffect, useRef, useState } from 'react'
+
 const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
 
 function SmoothChart({res}) {
@@ -328,7 +327,7 @@ function SmoothChart({res}) {
 
   if(!res?.series?.length) return null
 
-  // On n’affiche que les séries avec au moins une valeur > 0
+  // Ne garder que les séries avec au moins une valeur > 0
   const filtered = res.series.map(s=>{
     const vals = (s.values || []).map(v => (v !== undefined && v > 0) ? v : undefined)
     const anyPos = vals.some(v => v !== undefined && v > 0)
@@ -336,10 +335,11 @@ function SmoothChart({res}) {
   }).filter(Boolean)
   if(!filtered.length) return null
 
+  // Mise en page
   const LEG_W = 180
   const PAD   = 40
-  const W     = Math.max(600, wrapW - 24)      // largeur internaute
-  const SVG_W = Math.max(420, W - LEG_W)       // largeur graphe
+  const W     = Math.max(600, wrapW - 24)
+  const SVG_W = Math.max(420, W - LEG_W)
   const SVG_H = 360
 
   const years = res.years || []
@@ -366,16 +366,52 @@ function SmoothChart({res}) {
     ticksY.push({ k, valEur, y: y(valEur) })
   }
 
+  // Prépare les “last points” pour gérer le placement anti-chevauchement des labels
+  const lastPoints = filtered.map((s,si)=>{
+    let lastIdx = -1
+    s.values.forEach((v,i)=> { if(v!==undefined) lastIdx = i })
+    const lastVal = s.values[lastIdx]
+    return {
+      si, name: s.name, color: COLORS[si%COLORS.length],
+      lastIdx, lastVal,
+      lx: x(lastIdx),
+      ly: y(lastVal)
+    }
+  }).filter(p => p.lastIdx >= 0)
+
+  // Place les labels sans chevauchement (tri par Y puis décalage)
+  // écart vertical minimal entre deux labels
+  const MIN_GAP = 16
+  lastPoints.sort((a,b)=> a.ly - b.ly)
+  const placed = []
+  lastPoints.forEach(pt=>{
+    let labelY = pt.ly - 8 // offset de base au-dessus du point
+    // éviter le chevauchement avec le label précédent déjà placé
+    if (placed.length){
+      const prev = placed[placed.length-1]
+      if (labelY < prev.labelY + MIN_GAP) {
+        labelY = prev.labelY + MIN_GAP
+      }
+    }
+    // clamp à l’intérieur du graphe
+    labelY = Math.min(SVG_H - PAD - 6, Math.max(PAD + 12, labelY))
+    // largeur de texte estimée pour ne pas sortir à droite
+    const lbl = (pt.lastVal/1000).toFixed(2) + ' k€'
+    const estW = 7 * lbl.length
+    const labelX = Math.min(SVG_W - PAD - estW - 4, pt.lx + 8)
+    placed.push({...pt, labelY, labelX, label: lbl})
+  })
+
   return (
     <div ref={wrapRef} style={{display:'flex', alignItems:'stretch', gap:12, width:'100%'}}>
-      {/* === GRAPHE === */}
-      <svg width={SVG_W} height={SVG_H} role="img" aria-label="Évolution des placements">
-        <rect x="0" y="0" width={SVG_W} height={SVG_H} fill="#fff"/>
+      {/* === GRAPHE sans cadre === */}
+      <svg width={SVG_W} height={SVG_H} role="img" aria-label="Évolution des placements" style={{display:'block'}}>
+        {/* pas de rect ni de bordure autour */}
         {/* Axes */}
         <line x1={PAD} y1={SVG_H-PAD} x2={SVG_W-PAD} y2={SVG_H-PAD} stroke="#bbb"/>
         <line x1={PAD} y1={PAD}       x2={PAD}       y2={SVG_H-PAD} stroke="#bbb"/>
 
-        {/* Grille Y + labels en K€ (entiers, pas de virgule) */}
+        {/* Grille Y + labels K€ */}
         {ticksY.map((t,i)=>(
           <g key={'gy'+i}>
             <line x1={PAD-4} y1={t.y} x2={SVG_W-PAD} y2={t.y} stroke="#eee"/>
@@ -399,39 +435,39 @@ function SmoothChart({res}) {
         <text x={(SVG_W)/2} y={SVG_H-6} fontSize="12" fill="#444" textAnchor="middle">Années</text>
         <text x={12} y={PAD-10} fontSize="12" fill="#444" textAnchor="start">Valeur (K€)</text>
 
-        {/* Courbes + label dernière valeur (reste dans le cadre) */}
+        {/* Courbes */}
         {filtered.map((s,si)=>{
-          let d = '', lastIdx = -1
+          const color = COLORS[si%COLORS.length]
+          let d = ''
           s.values.forEach((v,i)=>{
             if(v===undefined) return
             d += (d===''?'M':'L') + ' ' + x(i) + ' ' + y(v) + ' '
-            lastIdx = i
           })
           if(!d) return null
-          const color = COLORS[si%COLORS.length]
-          const lastVal = s.values[lastIdx]
-          const lastX   = x(lastIdx)
-          const lastY   = y(lastVal)
-
-          const lbl = (lastVal/1000).toFixed(2) + ' k€'
-          const estW = 7 * lbl.length
-          const lblX = Math.min(SVG_W - PAD - estW - 4, lastX + 8)
-          const lblY = Math.max(PAD + 12, lastY - 8)
-
+          // ligne + petits points pour la lisibilité
           return (
             <g key={'s'+si}>
               <path d={d} fill="none" stroke={color} strokeWidth="2.5"/>
-              <circle cx={lastX} cy={lastY} r="3.5" fill={color}/>
-              <text x={lblX} y={lblY} fontSize="12" fill="#333">{lbl}</text>
+              {s.values.map((v,i)=> v!==undefined ? <circle key={i} cx={x(i)} cy={y(v)} r="2.2" fill={color}/> : null)}
             </g>
           )
         })}
+
+        {/* Labels finaux anti-chevauchement */}
+        {placed.map((p,i)=>(
+          <g key={'lbl'+i}>
+            <circle cx={p.lx} cy={p.ly} r="3.5" fill={p.color}/>
+            {/* fond blanc pour éviter de “toucher” la courbe visuellement */}
+            <rect x={p.labelX-2} y={p.labelY-11} width={(p.label.length*7)+6} height="16" fill="#fff" opacity="0.9" rx="2"/>
+            <text x={p.labelX} y={p.labelY} fontSize="12" fill="#333">{p.label}</text>
+          </g>
+        ))}
       </svg>
 
       {/* === LÉGENDE à droite === */}
       <div
         style={{
-          width:180, minWidth:180, maxWidth:180,
+          width:LEG_W, minWidth:LEG_W, maxWidth:LEG_W,
           display:'flex', flexDirection:'column', gap:8, paddingTop:6
         }}
       >
