@@ -73,8 +73,8 @@ export default function Home(){
           </div>
         </div>
         <div>
-          <div className="section-title" style={{justifyContent:'center'}}>
-            <h2 style={{color:'#3b4a45'}}>Simulateurs divers</h2>
+          <div className="section-title sim-divers" style={{justifyContent:'center'}}>
+            <h2>Simulateurs divers</h2>
           </div>
           <div className="tiles right-column">
             <Tile to="/sim/ir" icon={<IconCalc/>} label="Impôt sur le revenu" weight="normal" />
@@ -89,8 +89,5 @@ export default function Home(){
             />
           </div>        
         </div>
-      </div>
-      <div className="footer-note">Couleurs appliquées depuis l’onglet Home du classeur : vert #2C3D38, beige #CEC1B6, ocre #E4D0BB, noir #000000.</div>
-    </div>
   )
 }
