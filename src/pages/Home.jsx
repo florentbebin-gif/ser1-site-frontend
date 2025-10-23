@@ -15,8 +15,9 @@ export default function Home(){
 
       {/* Colonne droite */}
       <div className="section-card">
-        <div className="section-title" style={{fontWeight:400}}>
-          Simulateurs rapides
+<div className="section-title" style={{fontWeight:400}}>
+  Simulateurs rapides
+</div>
 
         <Tile to="/sim/ir" icon={<IconCalc/>} title="Impôt sur le revenu" />
         <Tile to="/sim/placement" icon={<IconChart/>} title="Placement" />
