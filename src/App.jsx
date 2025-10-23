@@ -7,6 +7,7 @@ import Login from './pages/Login.jsx'      // <-- 1. ajout
 import Credit from './pages/Credit.jsx'
 import { supabase } from './supabaseClient.js'
 import { clearAllUserInputs } from './utils/reset.js'
+import Placement from './pages/Placement.jsx'
 
 export default function App(){
   const [session, setSession] = useState(null)
@@ -52,6 +53,7 @@ export default function App(){
           <Route path="/sim/:id" element={<Sim/>} />
           <Route path="/params" element={<Params/>} />
           <Route path="/sim/credit" element={<Credit />} />
+          <Route path="/sim/placement" element={<Placement/>} />
         </Routes>
       </div>
     </div>
