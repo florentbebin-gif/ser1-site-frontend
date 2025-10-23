@@ -43,11 +43,13 @@ function IconBank(){return (
   </svg>
 )}
 
-function Tile({to, icon, label, italic, weight}) {
+function Tile({ to, icon, label, italic, weight }) {
+  // poids "normal" = 400 (pas de semi-bold)
+  const fontWeight = weight === 'normal' ? 400 : 700
   return (
     <Link className="tile" to={to}>
       <div className="ico">{icon}</div>
-      <div className="label" style={{ fontWeight: weight === "normal" ? 500 : 700 }}>
+      <div className="label" style={{ fontWeight }}>
         <div className="bar"></div>
         <div>
           {label}{italic && <span className="muted"> {italic}</span>}
@@ -61,6 +63,7 @@ export default function Home(){
   return (
     <div className="panel">
       <div className="grid-2">
+        {/* Colonne gauche */}
         <div>
           <div className="section-title">
             <h2>Simulateurs épargne retraite</h2>
@@ -72,22 +75,20 @@ export default function Home(){
             <Tile to="/sim/perin" icon={<IconFolder/>} label="Ouverture PERin" />
           </div>
         </div>
+
+        {/* Colonne droite */}
         <div>
-          <div className="section-title sim-divers" style={{justifyContent:'center'}}>
+          <div className="section-title sim-divers" style={{ justifyContent:'center' }}>
             <h2>Simulateurs divers</h2>
           </div>
           <div className="tiles right-column">
-            <Tile to="/sim/ir" icon={<IconCalc/>} label="Impôt sur le revenu" weight="normal" />
-            <Tile to="/sim/placement" icon={<IconChartUp/>} label="Placement" weight="normal" />
-            <Tile to="/sim/credit" icon={<IconDoc/>} label="Crédit" weight="normal" />
-            <Tile
-              to="/sim/is"
-              icon={<IconBank/>}
-              label="Stratégie trésorerie IS"
-              italic="(préparation retraite)"
-              weight="normal"
-            />
-          </div>        
+            <Tile to="/sim/ir"        icon={<IconCalc/>}    label="Impôt sur le revenu"                 weight="normal" />
+            <Tile to="/sim/placement" icon={<IconChartUp/>} label="Placement"                            weight="normal" />
+            <Tile to="/sim/credit"    icon={<IconDoc/>}     label="Crédit"                               weight="normal" />
+            <Tile to="/sim/is"        icon={<IconBank/>}    label="Stratégie trésorerie IS" italic="(préparation retraite)" weight="normal" />
+          </div>
         </div>
+      </div>
+    </div>
   )
 }
