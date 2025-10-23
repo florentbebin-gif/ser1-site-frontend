@@ -48,7 +48,6 @@ export default function App(){
         </div>
         <Routes>
           <Route path="/" element={<Home/>} />
-          <Route path="/login" element={<Login/>} />   // <-- 2. ajout
           <Route path="/sim/:id" element={<Sim/>} />
           <Route path="/params" element={<Params/>} />
           <Route path="/sim/credit" element={<Credit />} />
