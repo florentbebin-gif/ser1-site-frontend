@@ -308,7 +308,6 @@ export default function Placement(){
 }
 
 /* ===== Graphique responsive avec légende à droite — Axe en K€, labels anti-chevauchement ===== */
-import { useEffect, useRef, useState } from 'react'
 
 const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
 
