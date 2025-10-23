@@ -2,11 +2,11 @@ import React, { useMemo, useState } from 'react'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000'
 const euro = (n)=> (n ?? 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' €'
-const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555'] // Total en premier ton vert
+const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
 
 const DEFAULT_INPUT = {
   duration: 16,
-  custom1Years: 20,
+  custom1Years: 20, // <- “Durée en année”
   products: [
     { name:'Placement 1', rate:0.05,  initial:563750, entryFeePct:0.00 },
     { name:'Placement 2', rate:0.04,  initial:570000, entryFeePct:0.00 },
@@ -40,7 +40,7 @@ export default function Placement(){
     finally{ setLoading(false) }
   }
 
-  // Découpe : produits seuls (sans Total) pour le tableau
+  // Séries pour le tableau (on masque “Total” dans le tableau, mais on l’affiche au graphe)
   const tableYears = res?.years ?? []
   const tableSeries = useMemo(()=> (res?.series ?? []).filter(s=> s.name !== 'Total'), [res])
 
@@ -48,82 +48,108 @@ export default function Placement(){
     <div className="panel">
       <div className="plac-title">Comparer différents placements</div>
 
-      <div className="plac-layout">
-        {/* ---- Tableau ---- */}
-        <div className="plac-table-wrap">
-          <table className="plac-table" role="grid" aria-label="tableau placement">
-            <thead>
-              <tr>
-                <th></th>
-                {inp.products.map((p,i)=> <th key={i}>{p.name}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {/* Rendement */}
-              <tr>
-                <td className="cell-muted">Rendement Net de FG</td>
-                {inp.products.map((p,i)=>(
+      {/* === Tableau === */}
+      <div className="plac-table-wrap">
+        <table className="plac-table" role="grid" aria-label="tableau placement">
+          <thead>
+            <tr>
+              <th></th>
+              {inp.products.map((p,i)=> <th key={i}>{p.name}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {/* Rendement Net de FG — en % */}
+            <tr>
+              <td className="cell-muted">Rendement Net de FG</td>
+              {inp.products.map((p,i)=>{
+                const ratePct = (p.rate ?? 0) * 100
+                return (
                   <td key={i} className="input-cell">
-                    <input type="number" step="0.001" value={p.rate}
-                      onChange={e=>setProd(i,{rate:+e.target.value||0})}/>
+                    <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
+                      <input
+                        type="number" step="0.01" value={Number(ratePct.toFixed(2))}
+                        onChange={e=>setProd(i,{rate:(+e.target.value||0)/100})}
+                        style={{width:100, textAlign:'right'}}
+                      />
+                      <span>%</span>
+                    </div>
                   </td>
-                ))}
-              </tr>
-              {/* Placement initial */}
-              <tr>
-                <td className="cell-strong">Placement Initial</td>
-                {inp.products.map((p,i)=>(
-                  <td key={i} className="input-cell">
-                    <input type="number" value={p.initial}
-                      onChange={e=>setProd(i,{initial:+e.target.value||0})}/>
-                  </td>
-                ))}
-              </tr>
-              {/* Frais d’entrée */}
-              <tr>
-                <td className="cell-muted">Frais d’entrée</td>
-                {inp.products.map((p,i)=>(
-                  <td key={i} className="input-cell">
-                    <input type="number" step="0.001" value={p.entryFeePct}
-                      onChange={e=>setProd(i,{entryFeePct:+e.target.value||0})}/>
-                  </td>
-                ))}
-              </tr>
+                )
+              })}
+            </tr>
 
-              {/* Années (post-calcul) */}
-              {tableYears.map((y,yi)=>(
-                <tr key={yi}>
-                  <td>{`Année ${y}`}</td>
-                  {tableSeries.map((s,si)=>(
-                    <td key={si} className="cell-strong">{euro(s.values[yi])}</td>
-                  ))}
-                </tr>
+            {/* Placement initial */}
+            <tr>
+              <td className="cell-strong">Placement Initial</td>
+              {inp.products.map((p,i)=>(
+                <td key={i} className="input-cell">
+                  <input type="number" value={p.initial}
+                    onChange={e=>setProd(i,{initial:+e.target.value||0})}
+                    style={{width:120, textAlign:'right'}}
+                  />
+                </td>
               ))}
+            </tr>
 
-              {/* Horizon */}
-              {res?.horizon && (
-                <tr>
-                  <td className="cell-strong">Durée “sur mesure” du placement 1</td>
-                  <td className="cell-strong">{res.horizon.year}</td>
-                  {Array.from({length: Math.max(0, (tableSeries.length-2))}).map((_,i)=> <td key={i}></td>)}
-                  <td className="cell-strong">{euro(res.horizon.total)}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+            {/* Frais d’entrée — en % */}
+            <tr>
+              <td className="cell-muted">Frais d’entrée</td>
+              {inp.products.map((p,i)=>{
+                const feePct = (p.entryFeePct ?? 0) * 100
+                return (
+                  <td key={i} className="input-cell">
+                    <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
+                      <input
+                        type="number" step="0.01" value={Number(feePct.toFixed(2))}
+                        onChange={e=>setProd(i,{entryFeePct:(+e.target.value||0)/100})}
+                        style={{width:100, textAlign:'right'}}
+                      />
+                      <span>%</span>
+                    </div>
+                  </td>
+                )
+              })}
+            </tr>
 
-          <div style={{marginTop:10, display:'flex', gap:8}}>
-            <button className="chip" onClick={onCalc} disabled={loading}>
-              {loading ? 'Calcul…' : 'Calculer'}
-            </button>
-            {error && <span className="cell-muted" style={{color:'#b00'}}>Erreur : {error}</span>}
-          </div>
+            {/* Durée en année — une seule cellule qui pilote custom1Years */}
+            <tr>
+              <td className="cell-strong">Durée en année</td>
+              <td className="input-cell" colSpan={inp.products.length}>
+                <input
+                  type="number"
+                  min="1"
+                  value={inp.custom1Years}
+                  onChange={e=> setInp(prev=>({...prev, custom1Years: Math.max(1, +e.target.value||1)}))}
+                  style={{width:120, textAlign:'right'}}
+                />
+              </td>
+            </tr>
+
+            {/* Lignes “Année N” (affichées après calcul) */}
+            {tableYears.map((y,yi)=>(
+              <tr key={yi}>
+                <td>{`Année ${y}`}</td>
+                {tableSeries.map((s,si)=>(
+                  <td key={si} className="cell-strong">{euro(s.values[yi])}</td>
+                ))}
+              </tr>
+            ))}
+
+            {/* ⛔️ On SUPPRIME la ligne “Durée sur mesure...” */}
+          </tbody>
+        </table>
+
+        <div style={{marginTop:10, display:'flex', gap:8}}>
+          <button className="chip" onClick={onCalc} disabled={loading}>
+            {loading ? 'Calcul…' : 'Calculer'}
+          </button>
+          {error && <span className="cell-muted" style={{color:'#b00'}}>Erreur : {error}</span>}
         </div>
+      </div>
 
-        {/* ---- Graphique ---- */}
-        <div className="chart-card">
-          <SmoothChart res={res}/>
-        </div>
+      {/* === Graphique DESSOUS (décalé sous le tableau) === */}
+      <div className="chart-card" style={{marginTop:20}}>
+        <SmoothChart res={res}/>
       </div>
     </div>
   )
@@ -141,11 +167,10 @@ function SmoothChart({res}){
     const y = v => H-P - ((v/max)*(H-2*P))
     const paths = res.series.map(s => s.values.map((v,i)=>`${i===0?'M':'L'} ${x(i)} ${y(v)}`).join(' '))
 
-    // Position des étiquettes à droite, décalées verticalement
     const labels = res.series.map((s,si)=>{
-      const i = s.values.length-1, v=s.values[i]
+      const i = s.values.length-1, v = s.values[i]
       const baseY = y(v)
-      const offset = (si * 14) // empilement doux
+      const offset = (si * 14)
       return { name:s.name, value:v, cx:x(i), cy:Math.max(P+12, Math.min(H-P-12, baseY - offset)) }
     })
     return { W,H,P,x,y,paths,labels }
