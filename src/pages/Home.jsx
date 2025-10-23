@@ -76,7 +76,7 @@ export default function Home(){
           <div className="section-title" style={{justifyContent:'center'}}>
             <h2 style={{color:'#3b4a45'}}>Simulateurs divers</h2>
           </div>
-          <div className="tiles">
+          <div className="tiles right-column">
             <Tile to="/sim/ir" icon={<IconCalc/>} label="Impôt sur le revenu" weight="normal" />
             <Tile to="/sim/placement" icon={<IconChartUp/>} label="Placement" weight="normal" />
             <Tile to="/sim/credit" icon={<IconDoc/>} label="Crédit" weight="normal" />
