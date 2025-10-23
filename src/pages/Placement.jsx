@@ -2,9 +2,7 @@ import React, { useMemo, useState } from 'react'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000'
 const euro = (n)=> (n ?? 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' €'
-
-// Palette stable (mémo pour éviter re-rendu inutile)
-const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
+const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555'] // Total en premier ton vert
 
 const DEFAULT_INPUT = {
   duration: 16,
@@ -27,7 +25,6 @@ export default function Placement(){
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const setField = (k,v)=> setInp(p=>({...p,[k]:v}))
   const setProd  = (i,patch)=> setInp(p=>({...p, products:p.products.map((x,idx)=> idx===i?{...x,...patch}:x)}))
 
   const onCalc = async ()=>{
@@ -42,6 +39,10 @@ export default function Placement(){
     }catch(e){ setError(e.message) }
     finally{ setLoading(false) }
   }
+
+  // Découpe : produits seuls (sans Total) pour le tableau
+  const tableYears = res?.years ?? []
+  const tableSeries = useMemo(()=> (res?.series ?? []).filter(s=> s.name !== 'Total'), [res])
 
   return (
     <div className="panel">
@@ -89,22 +90,22 @@ export default function Placement(){
                 ))}
               </tr>
 
-              {/* Lignes d'années (après calcul) */}
-              {res?.years?.map((y,yi)=>(
+              {/* Années (post-calcul) */}
+              {tableYears.map((y,yi)=>(
                 <tr key={yi}>
                   <td>{`Année ${y}`}</td>
-                  {res.series.filter(s=>s.name!=='Total').map((s,si)=>(
+                  {tableSeries.map((s,si)=>(
                     <td key={si} className="cell-strong">{euro(s.values[yi])}</td>
                   ))}
                 </tr>
               ))}
 
-              {/* Ligne horizon */}
+              {/* Horizon */}
               {res?.horizon && (
                 <tr>
                   <td className="cell-strong">Durée “sur mesure” du placement 1</td>
                   <td className="cell-strong">{res.horizon.year}</td>
-                  {Array.from({length: Math.max(0, (res.series.length-2))}).map((_,i)=> <td key={i}></td>)}
+                  {Array.from({length: Math.max(0, (tableSeries.length-2))}).map((_,i)=> <td key={i}></td>)}
                   <td className="cell-strong">{euro(res.horizon.total)}</td>
                 </tr>
               )}
@@ -113,7 +114,7 @@ export default function Placement(){
 
           <div style={{marginTop:10, display:'flex', gap:8}}>
             <button className="chip" onClick={onCalc} disabled={loading}>
-              {loading?'Calcul…':'Calculer'}
+              {loading ? 'Calcul…' : 'Calculer'}
             </button>
             {error && <span className="cell-muted" style={{color:'#b00'}}>Erreur : {error}</span>}
           </div>
@@ -128,17 +129,26 @@ export default function Placement(){
   )
 }
 
+/** Graphique SVG fluide + labels non chevauchants */
 function SmoothChart({res}){
   if(!res?.series?.length) return <div className="cell-muted">Le graphique s’affichera après calcul.</div>
 
-  const { W, H, P, x, y, paths } = useMemo(()=>{
+  const { W,H,P,x,y,paths,labels } = useMemo(()=>{
     const W=720, H=420, P=40
     let max=0
     res.series.forEach(s=>s.values.forEach(v=>{ if(v>max) max=v }))
     const x = i => P + i*((W-2*P)/(res.years.length-1||1))
     const y = v => H-P - ((v/max)*(H-2*P))
     const paths = res.series.map(s => s.values.map((v,i)=>`${i===0?'M':'L'} ${x(i)} ${y(v)}`).join(' '))
-    return { W,H,P,x,y,paths }
+
+    // Position des étiquettes à droite, décalées verticalement
+    const labels = res.series.map((s,si)=>{
+      const i = s.values.length-1, v=s.values[i]
+      const baseY = y(v)
+      const offset = (si * 14) // empilement doux
+      return { name:s.name, value:v, cx:x(i), cy:Math.max(P+12, Math.min(H-P-12, baseY - offset)) }
+    })
+    return { W,H,P,x,y,paths,labels }
   },[res])
 
   return (
@@ -152,16 +162,13 @@ function SmoothChart({res}){
           <path key={si} d={paths[si]} fill="none" stroke={COLORS[si%COLORS.length]} strokeWidth="2.5"/>
         ))}
 
-        {res.series.map((s,si)=>{
-          const i=s.values.length-1, v=s.values[i]
-          return (
-            <g key={'lbl'+si}>
-              <circle cx={x(i)} cy={y(v)} r="3" fill={COLORS[si%COLORS.length]}/>
-              <text x={x(i)+6} y={y(v)-6} fontSize="12" fill="#333">{s.name}</text>
-              <text x={x(i)+6} y={y(v)+10} fontSize="12" fill="#333">{euro(v)}</text>
-            </g>
-          )
-        })}
+        {labels.map((lb,si)=>(
+          <g key={'lbl'+si}>
+            <circle cx={lb.cx} cy={lb.cy} r="3" fill={COLORS[si%COLORS.length]}/>
+            <text x={lb.cx+6} y={lb.cy-6} fontSize="12" fill="#333">{lb.name}</text>
+            <text x={lb.cx+6} y={lb.cy+10} fontSize="12" fill="#333">{euro(lb.value)}</text>
+          </g>
+        ))}
       </svg>
 
       <div className="chart-legend">
