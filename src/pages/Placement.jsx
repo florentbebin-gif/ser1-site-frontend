@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
+
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000'
-const € = (n)=> (n??0).toLocaleString('fr-FR', { maximumFractionDigits: 0 })+' €'
+const euro = (n)=> (n ?? 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' €'
 
 // Palette stable (mémo pour éviter re-rendu inutile)
 const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
@@ -41,44 +42,6 @@ export default function Placement(){
     }catch(e){ setError(e.message) }
     finally{ setLoading(false) }
   }
-
-  // Prépare les lignes du tableau côté client pour l’affichage
-  const table = useMemo(()=>{
-    if(!res) return null
-    const years = res.years
-    const cols  = res.series.filter(s=> s.name!=='Total') // les produits seuls
-    const rows = []
-
-    // Ligne en-têtes produits
-    const headers = [''].concat(cols.map(c=>c.name))
-    rows.push({ type:'header', cells: headers })
-
-    // Ligne Rendement (affichage)
-    rows.push({ type:'rate', cells: ['Rendement Net de FG'].concat(inp.products.map(p=> (p.rate*100).toFixed(2)+'%')) })
-
-    // Ligne placement initial (après frais d’entrée)
-    const net0 = inp.products.map(p=> p.initial*(1-(p.entryFeePct||0)))
-    rows.push({ type:'strong', cells: ['Placement initial'].concat(net0.map(€)) })
-
-    // Ligne frais d’entrée
-    rows.push({ type:'muted', cells: ['Frais d’entrée'].concat(inp.products.map(p=> ((p.entryFeePct||0)*100).toFixed(2)+'%')) })
-
-    // Années
-    years.forEach((y,yi)=>{
-      const cells = ['Année '+(yi+1)].concat(cols.map(c => €(c.values[yi])))
-      rows.push({ type: yi===0?'row-first':'row', cells })
-    })
-
-    // Horizon personnalisé
-    if(res.horizon){
-      rows.push({
-        type:'strong',
-        cells: [`Durée "sur mesure" du placement 1`, res.horizon.year+'', ...Array(Math.max(0,cols.length-1)).fill(''), €(res.horizon.total)]
-      })
-    }
-
-    return rows
-  },[res, inp])
 
   return (
     <div className="panel">
@@ -126,12 +89,12 @@ export default function Placement(){
                 ))}
               </tr>
 
-              {/* Lignes d'années (affichées après calcul pour refléter le backend) */}
+              {/* Lignes d'années (après calcul) */}
               {res?.years?.map((y,yi)=>(
                 <tr key={yi}>
                   <td>{`Année ${y}`}</td>
                   {res.series.filter(s=>s.name!=='Total').map((s,si)=>(
-                    <td key={si} className="cell-strong">{€(s.values[yi])}</td>
+                    <td key={si} className="cell-strong">{euro(s.values[yi])}</td>
                   ))}
                 </tr>
               ))}
@@ -142,7 +105,7 @@ export default function Placement(){
                   <td className="cell-strong">Durée “sur mesure” du placement 1</td>
                   <td className="cell-strong">{res.horizon.year}</td>
                   {Array.from({length: Math.max(0, (res.series.length-2))}).map((_,i)=> <td key={i}></td>)}
-                  <td className="cell-strong">{€(res.horizon.total)}</td>
+                  <td className="cell-strong">{euro(res.horizon.total)}</td>
                 </tr>
               )}
             </tbody>
@@ -165,18 +128,17 @@ export default function Placement(){
   )
 }
 
-/** Graphique SVG “fluide” (optimisé avec useMemo) */
 function SmoothChart({res}){
   if(!res?.series?.length) return <div className="cell-muted">Le graphique s’affichera après calcul.</div>
 
-  const { W, H, P, max, x, y, paths } = useMemo(()=>{
+  const { W, H, P, x, y, paths } = useMemo(()=>{
     const W=720, H=420, P=40
     let max=0
     res.series.forEach(s=>s.values.forEach(v=>{ if(v>max) max=v }))
     const x = i => P + i*((W-2*P)/(res.years.length-1||1))
     const y = v => H-P - ((v/max)*(H-2*P))
     const paths = res.series.map(s => s.values.map((v,i)=>`${i===0?'M':'L'} ${x(i)} ${y(v)}`).join(' '))
-    return { W,H,P,max,x,y,paths }
+    return { W,H,P,x,y,paths }
   },[res])
 
   return (
@@ -190,20 +152,18 @@ function SmoothChart({res}){
           <path key={si} d={paths[si]} fill="none" stroke={COLORS[si%COLORS.length]} strokeWidth="2.5"/>
         ))}
 
-        {/* Derniers labels */}
         {res.series.map((s,si)=>{
           const i=s.values.length-1, v=s.values[i]
           return (
             <g key={'lbl'+si}>
               <circle cx={x(i)} cy={y(v)} r="3" fill={COLORS[si%COLORS.length]}/>
               <text x={x(i)+6} y={y(v)-6} fontSize="12" fill="#333">{s.name}</text>
-              <text x={x(i)+6} y={y(v)+10} fontSize="12" fill="#333">{€(v)}</text>
+              <text x={x(i)+6} y={y(v)+10} fontSize="12" fill="#333">{euro(v)}</text>
             </g>
           )
         })}
       </svg>
 
-      {/* Légende compacte */}
       <div className="chart-legend">
         {res.series.map((s,si)=>(
           <div key={si}><span className="legend-dot" style={{background:COLORS[si%COLORS.length]}}/> {s.name}</div>
