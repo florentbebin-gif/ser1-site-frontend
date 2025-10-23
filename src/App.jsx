@@ -30,9 +30,9 @@ export default function App(){
   return (
     <div>
       <div className="topbar">
-        <div className="brandword">Laplace</div>
+        <div className="brandword">SER1</div>  {/* <-- SER1 */}
         <div className="top-actions">
-          <Link className="chip" to="/">HOME</Link> {/* <— BOUTON HOME */}
+          <Link className="chip" to="/">HOME</Link>
           <Link className="chip" to="/params">Paramètres</Link>
           <button className="chip" onClick={handleLogout}>Déconnexion</button>
         </div>
