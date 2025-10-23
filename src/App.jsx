@@ -3,9 +3,10 @@ import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import Sim from './pages/Sim.jsx'
 import Params from './pages/Params.jsx'
+import Login from './pages/Login.jsx'      // <-- 1. ajout
+import Credit from './pages/Credit.jsx'
 import { supabase } from './supabaseClient.js'
 import { clearAllUserInputs } from './utils/reset.js'
-import Credit from './pages/Credit.jsx' 
 
 export default function App(){
   const [session, setSession] = useState(null)
@@ -39,17 +40,18 @@ export default function App(){
         <div className="reset-wrap">
           <div className="reset-ico">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M3 6h18M9 6v-2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke-width="1.6" />
-              <path d="M10 11v6M14 11v6" stroke-width="1.6"/>
+              <path d="M3 6h18M9 6v-2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" strokeWidth="1.6" />
+              <path d="M10 11v6M14 11v6" strokeWidth="1.6"/>
             </svg>
           </div>
           <button className="chip" onClick={handleReset}>Reset</button>
         </div>
         <Routes>
           <Route path="/" element={<Home/>} />
+          <Route path="/login" element={<Login/>} />   // <-- 2. ajout
           <Route path="/sim/:id" element={<Sim/>} />
           <Route path="/params" element={<Params/>} />
-          <Route path="/sim/credit" element={<Credit />} />  {/* <-- ajout */}
+          <Route path="/sim/credit" element={<Credit />} />
         </Routes>
       </div>
     </div>
