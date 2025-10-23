@@ -1,94 +1,76 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-function IconBarChart(){return (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <rect x="4" y="10" width="3" height="7" rx="1" strokeWidth="1.6"/>
-    <rect x="10" y="6" width="3" height="11" rx="1" strokeWidth="1.6"/>
-    <rect x="16" y="13" width="3" height="4" rx="1" strokeWidth="1.6"/>
-  </svg>
-)}
-function IconCoin(){return (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="12" r="8" strokeWidth="1.6"/>
-    <path d="M9 10h6M9 14h6" strokeWidth="1.6"/>
-  </svg>
-)}
-function IconFolder(){return (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" strokeWidth="1.6"/>
-  </svg>
-)}
-function IconCalc(){return (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <rect x="5" y="3" width="14" height="18" rx="2" strokeWidth="1.6"/>
-    <path d="M8 7h8M8 11h3M8 15h3M13 11h3M13 15h3" strokeWidth="1.6"/>
-  </svg>
-)}
-function IconChartUp(){return (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <path d="M4 18h16M6 14l4-4 3 3 5-5" strokeWidth="1.6"/>
-  </svg>
-)}
-function IconDoc(){return (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <rect x="5" y="4" width="14" height="16" rx="2" strokeWidth="1.6"/>
-    <path d="M8 8h8M8 12h8M8 16h5" strokeWidth="1.6"/>
-  </svg>
-)}
-function IconBank(){return (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-    <path d="M4 9l8-5 8 5v10H4V9z" strokeWidth="1.6"/>
-    <path d="M7 12v4M12 12v4M17 12v4" strokeWidth="1.6"/>
-  </svg>
-)}
-
-function Tile({ to, icon, label, italic, weight }) {
-  // poids "normal" = 400 (pas de semi-bold)
-  const fontWeight = weight === 'normal' ? 400 : 700
+export default function Home(){
   return (
-    <Link className="tile" to={to}>
-      <div className="ico">{icon}</div>
-      <div className="label" style={{ fontWeight }}>
-        <div className="bar"></div>
-        <div>
-          {label}{italic && <span className="muted"> {italic}</span>}
-        </div>
+    <div className="tiles-wrap">
+      {/* Colonne gauche */}
+      <div className="section-card">
+        <div className="section-title">Simulateurs épargne retraite</div>
+
+        <Tile to="/sim/potentiel" icon={<IconGauge/>} title="Contrôle du potentiel Epargne retraite" />
+        <Tile to="/sim/transfert" icon={<IconTarget/>} title="Transfert vers PER" />
+        <Tile to="/sim/ouverture" icon={<IconFolder/>} title="Ouverture PERin" />
+      </div>
+
+      {/* Colonne droite */}
+      <div className="section-card">
+        <div className="section-title">Simulateurs divers</div>
+
+        <Tile to="/sim/ir" icon={<IconCalc/>} title="Impôt sur le revenu" />
+        <Tile to="/sim/placement" icon={<IconChart/>} title="Placement" />
+        <Tile to="/sim/credit" icon={<IconCalc/>} title="Crédit" />
+        <Tile
+          to="/sim/strategie-is"
+          icon={<IconHome/>}
+          title={<>Stratégie trésorerie IS<span className="tile-note"> (préparation retraite)</span></>}
+        />
+      </div>
+    </div>
+  )
+}
+
+/* Tuile générique : icône • barre ocre • titre */
+function Tile({to, icon, title}){
+  return (
+    <Link to={to} className="tile">
+      <div className="tile-row">
+        <div className="tile-icon">{icon}</div>
+        <div className="tile-sep" />
+        <div className="tile-title">{title}</div>
       </div>
     </Link>
   )
 }
 
-export default function Home(){
-  return (
-    <div className="panel">
-      <div className="grid-2">
-        {/* Colonne gauche */}
-        <div>
-          <div className="section-title">
-            <h2>Simulateurs épargne retraite</h2>
-            <div className="rule"></div>
-          </div>
-          <div className="tiles">
-            <Tile to="/sim/potentiel" icon={<IconBarChart/>} label="Contrôle du potentiel Epargne retraite" />
-            <Tile to="/sim/transfert" icon={<IconCoin/>} label="Transfert vers PER" />
-            <Tile to="/sim/perin" icon={<IconFolder/>} label="Ouverture PERin" />
-          </div>
-        </div>
-
-        {/* Colonne droite */}
-        <div>
-          <div className="section-title sim-divers" style={{ justifyContent:'center' }}>
-            <h2>Simulateurs divers</h2>
-          </div>
-          <div className="tiles right-column">
-            <Tile to="/sim/ir"        icon={<IconCalc/>}    label="Impôt sur le revenu"                 weight="normal" />
-            <Tile to="/sim/placement" icon={<IconChartUp/>} label="Placement"                            weight="normal" />
-            <Tile to="/sim/credit"    icon={<IconDoc/>}     label="Crédit"                               weight="normal" />
-            <Tile to="/sim/is"        icon={<IconBank/>}    label="Stratégie trésorerie IS" italic="(préparation retraite)" weight="normal" />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+/* Petites icônes SVG (légères, neutres) */
+function IconGauge(){ return (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
+    <path d="M12 13l3-3" /><path d="M20 14A8 8 0 1 0 4 14" /><path d="M6 14h.01M10 14h.01M14 14h.01M18 14h.01"/>
+  </svg>
+)}
+function IconTarget(){ return (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
+    <path d="M12 7v10M7 12h10"/><circle cx="12" cy="12" r="8"/>
+  </svg>
+)}
+function IconFolder(){ return (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
+    <path d="M3 7h6l2 2h10v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+  </svg>
+)}
+function IconCalc(){ return (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
+    <rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h8"/>
+  </svg>
+)}
+function IconChart(){ return (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
+    <path d="M3 20h18"/><path d="M7 16l3-3 3 2 5-6"/>
+  </svg>
+)}
+function IconHome(){ return (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
+    <path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>
+  </svg>
+)}
