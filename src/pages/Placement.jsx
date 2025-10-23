@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000'
 const euro = (n)=> (n ?? 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' €'
@@ -18,44 +18,70 @@ const formatIntFr = (n) => (Math.round(n) || 0).toLocaleString('fr-FR')
 const INPUT_W = 120
 
 const DEFAULT_INPUT = {
+  // durée du backend (on la forcera à max des focus pour que le calcul aille assez loin)
   duration: 16,
-  custom1Years: 20, // champ global conservé pour l'API (on l'alimente avec la 1re colonne)
+  // custom1Years gardé pour compat rétro (on l'alimente avec la 1re colonne de durée)
+  custom1Years: 20,
   products: [
     { name:'Placement 1', rate:0.05,  initial:563750, entryFeePct:0.00 },
     { name:'Placement 2', rate:0.04,  initial:570000, entryFeePct:0.00 },
-    { name:'Placement 3', rate:0.035, initial:100000, entryFeePct:0.00 },
+    // { name:'Placement 3', rate:0.035, initial:100000, entryFeePct:0.00 },  // SUPPRIMÉ
     { name:'Assurance vie (SCPI)', rate:0.04, initial:97000, entryFeePct:0.085 },
     { name:'Compte titre', rate:0.05, initial:100000, entryFeePct:0.00 },
   ]
 }
 
 export default function Placement(){
+  // charge l'état en supprimant une éventuelle 3e colonne héritée d’anciens saves
   const [inp, setInp] = useState(()=>{
     const saved = localStorage.getItem('ser1:sim:placement:inp')
-    return saved ? JSON.parse(saved) : DEFAULT_INPUT
+    const base = saved ? JSON.parse(saved) : DEFAULT_INPUT
+    // normalisation: enlève “Placement 3” s'il traîne
+    const products = (base.products || []).filter(p => p.name !== 'Placement 3')
+    return { ...base, products }
   })
-  // focusYears par colonne (par défaut à 20 ans)
+
+  // durées de focus par colonne (par défaut 20 ans)
   const [focusYears, setFocusYears] = useState(
-    () => Array.from({length: inp.products.length}, () => 20)
+    () => Array.from({length: DEFAULT_INPUT.products.length}, () => 20)
   )
+
+  // si le nombre de colonnes change (normalisation), on recadre le tableau des focus
+  useEffect(()=>{
+    setFocusYears(prev=>{
+      const n = inp.products.length
+      const next = Array.from({length:n}, (_,i)=> prev[i] ?? 20)
+      return next
+    })
+  }, [inp.products.length])
 
   const [res, setRes] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const setProd  = (i,patch)=> setInp(p=>({...p, products:p.products.map((x,idx)=> idx===i?{...x,...patch}:x)}))
+  const setProd  = (i,patch)=> setInp(p=>({
+    ...p,
+    products:p.products.map((x,idx)=> idx===i?{...x,...patch}:x)
+  }))
 
   const onCalc = async ()=>{
     setLoading(true); setError(null)
     try{
-      // on pousse la première durée de focus en "custom1Years" pour conserver le comportement backend
-      const payload = { ...inp, custom1Years: focusYears[0] ?? inp.custom1Years }
+      // ⚠️ on force l’horizon du back à couvrir le plus grand “focus”
+      const maxFocus = Math.max(...focusYears, inp.duration || 0, inp.custom1Years || 0)
+      const payload = {
+        ...inp,
+        duration: maxFocus,                 // <- garantit les années jusqu’au focus maxi
+        custom1Years: focusYears[0] || 1    // <- compat (utilisé par le back pour la ligne horizon)
+      }
+
       const r = await fetch(`${API_BASE}/api/placement`,{
         method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
       })
       const txt = await r.text(); const j = txt? JSON.parse(txt):null
       if(!r.ok) throw new Error(j?.error || `HTTP ${r.status}`)
-      setRes(j); localStorage.setItem('ser1:sim:placement:inp', JSON.stringify(inp))
+      setRes(j)
+      localStorage.setItem('ser1:sim:placement:inp', JSON.stringify(inp))
     }catch(e){ setError(e.message) }
     finally{ setLoading(false) }
   }
@@ -64,7 +90,7 @@ export default function Placement(){
   const tableYears = res?.years ?? []
   const tableSeries = useMemo(()=> (res?.series ?? []).filter(s=> s.name !== 'Total'), [res])
 
-  // valeur de focus par colonne, à partir des séries calculées
+  // valeurs de focus par colonne, à partir des séries calculées
   const focusValues = useMemo(()=>{
     if(!res?.years?.length || !res?.series?.length) return null
     const yearsLen = res.years.length
@@ -162,20 +188,23 @@ export default function Placement(){
               <td className="cell-strong">Durée en année</td>
               {inp.products.map((_,i)=>(
                 <td key={i} className="input-cell">
-                  <input
-                    type="number"
-                    min="1"
-                    value={focusYears[i]}
-                    onChange={e=>{
-                      const v = Math.max(1, +e.target.value||1)
-                      setFocusYears(prev=>{
-                        const copy = prev.slice()
-                        copy[i] = v
-                        return copy
-                      })
-                    }}
-                    style={{width:INPUT_W, textAlign:'right'}}
-                  />
+                  <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
+                    <input
+                      type="number"
+                      min="1"
+                      value={focusYears[i]}
+                      onChange={e=>{
+                        const v = Math.max(1, +e.target.value||1)
+                        setFocusYears(prev=>{
+                          const copy = prev.slice()
+                          copy[i] = v
+                          return copy
+                        })
+                      }}
+                      style={{width:INPUT_W, textAlign:'right'}}
+                    />
+                    <span>an(s)</span>
+                  </div>
                 </td>
               ))}
             </tr>
@@ -190,7 +219,7 @@ export default function Placement(){
               </tr>
             ))}
 
-            {/* Focus personnalisé par colonne */}
+            {/* Focus personnalisé par colonne (à l’année de chaque colonne) */}
             {focusValues && (
               <tr>
                 <td className="cell-strong">Focus</td>
