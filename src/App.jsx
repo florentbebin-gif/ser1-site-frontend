@@ -3,7 +3,6 @@ import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import Sim from './pages/Sim.jsx'
 import Params from './pages/Params.jsx'
-import Login from './pages/Login.jsx'      // <-- 1. ajout
 import Credit from './pages/Credit.jsx'
 import { supabase } from './supabaseClient.js'
 import { clearAllUserInputs } from './utils/reset.js'
