@@ -4,6 +4,16 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000'
 const euro = (n)=> (n ?? 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' €'
 const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
 
+// helpers pour l'input € formaté
+const toNumber = (str) => {
+  if (typeof str === 'number') return str
+  if (!str) return 0
+  const cleaned = String(str).replace(/[^\d.-]/g, '')
+  const n = Number(cleaned)
+  return Number.isFinite(n) ? n : 0
+}
+const formatIntFr = (n) => (Math.round(n) || 0).toLocaleString('fr-FR')
+
 const DEFAULT_INPUT = {
   duration: 16,
   custom1Years: 20, // <- “Durée en année”
@@ -78,15 +88,30 @@ export default function Placement(){
               })}
             </tr>
 
-            {/* Placement initial */}
+            {/* Placement initial — € formaté */}
             <tr>
               <td className="cell-strong">Placement Initial</td>
               {inp.products.map((p,i)=>(
                 <td key={i} className="input-cell">
-                  <input type="number" value={p.initial}
-                    onChange={e=>setProd(i,{initial:+e.target.value||0})}
-                    style={{width:120, textAlign:'right'}}
-                  />
+                  <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={formatIntFr(p.initial ?? 0)}
+                      onChange={e=> {
+                        // on laisse l'affichage se faire, la valeur réelle sera fixée au blur
+                        const val = toNumber(e.target.value)
+                        setProd(i,{initial: val})
+                      }}
+                      onBlur={e=>{
+                        const val = toNumber(e.target.value)
+                        setProd(i,{initial: val})
+                        e.target.value = formatIntFr(val)
+                      }}
+                      style={{width:120, textAlign:'right'}}
+                    />
+                    <span>€</span>
+                  </div>
                 </td>
               ))}
             </tr>
@@ -111,21 +136,23 @@ export default function Placement(){
               })}
             </tr>
 
-            {/* Durée en année — une seule cellule qui pilote custom1Years */}
+            {/* Durée en année — une cellule par colonne (toutes pilotent la même valeur) */}
             <tr>
               <td className="cell-strong">Durée en année</td>
-              <td className="input-cell" colSpan={inp.products.length}>
-                <input
-                  type="number"
-                  min="1"
-                  value={inp.custom1Years}
-                  onChange={e=> setInp(prev=>({...prev, custom1Years: Math.max(1, +e.target.value||1)}))}
-                  style={{width:120, textAlign:'right'}}
-                />
-              </td>
+              {inp.products.map((_,i)=>(
+                <td key={i} className="input-cell">
+                  <input
+                    type="number"
+                    min="1"
+                    value={inp.custom1Years}
+                    onChange={e=> setInp(prev=>({...prev, custom1Years: Math.max(1, +e.target.value||1)}))}
+                    style={{width:100, textAlign:'right'}}
+                  />
+                </td>
+              ))}
             </tr>
 
-            {/* Lignes “Année N” (affichées après calcul) */}
+            {/* Lignes “Année N” (après calcul) */}
             {tableYears.map((y,yi)=>(
               <tr key={yi}>
                 <td>{`Année ${y}`}</td>
@@ -135,7 +162,15 @@ export default function Placement(){
               </tr>
             ))}
 
-            {/* ⛔️ On SUPPRIME la ligne “Durée sur mesure...” */}
+            {/* Focus année X (total dans la dernière colonne) */}
+            {res?.horizon && (
+              <tr>
+                <td className="cell-strong">{`Focus année ${res.horizon.year}`}</td>
+                {/* on remplit jusqu'à l'avant-dernière colonne */}
+                {Array.from({length: Math.max(0, (tableSeries.length-1))}).map((_,i)=> <td key={i}></td>)}
+                <td className="cell-strong">{euro(res.horizon.total)}</td>
+              </tr>
+            )}
           </tbody>
         </table>
 
@@ -147,7 +182,7 @@ export default function Placement(){
         </div>
       </div>
 
-      {/* === Graphique DESSOUS (décalé sous le tableau) === */}
+      {/* === Graphique DESSOUS === */}
       <div className="chart-card" style={{marginTop:20}}>
         <SmoothChart res={res}/>
       </div>
