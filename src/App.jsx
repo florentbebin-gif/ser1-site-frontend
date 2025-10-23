@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Routes, Route, Link, useNavigate } from 'react-router-dom'
+import { Routes, Route, Link, useNavigate, Outlet } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import Sim from './pages/Sim.jsx'
 import Params from './pages/Params.jsx'
@@ -20,9 +20,8 @@ export default function App(){
 
   async function handleLogout(){
     await supabase.auth.signOut()
-    nav('/') // on revient à l’accueil (évite une route /login inexistante)
+    nav('/') // retour accueil
   }
-
   function handleReset(){
     clearAllUserInputs()
     alert('Toutes les saisies des 7 simulateurs ont été réinitialisées.')
@@ -31,22 +30,20 @@ export default function App(){
   return (
     <div>
       <div className="topbar">
-        <div className="brandword">SER1</div>
+        <div className="brandword">Laplace</div>
         <div className="top-actions">
+          <Link className="chip" to="/">HOME</Link> {/* <— BOUTON HOME */}
           <Link className="chip" to="/params">Paramètres</Link>
           <button className="chip" onClick={handleLogout}>Déconnexion</button>
         </div>
       </div>
 
       <div className="container">
-        <div className="reset-wrap">
-          <div className="reset-ico">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M3 6h18M9 6v-2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" strokeWidth="1.6" />
-              <path d="M10 11v6M14 11v6" strokeWidth="1.6"/>
-            </svg>
+        <div className="panel" style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12}}>
+          <div style={{display:'flex', alignItems:'center', gap:10}}>
+            <button className="chip" onClick={handleReset}>Reset</button>
+            <span className="cell-muted">Réinitialise toutes les saisies</span>
           </div>
-          <button className="chip" onClick={handleReset}>Reset</button>
         </div>
 
         <Routes>
@@ -56,6 +53,7 @@ export default function App(){
           <Route path="/sim/credit" element={<Credit/>} />
           <Route path="/sim/placement" element={<Placement/>} />
         </Routes>
+        <Outlet/>
       </div>
     </div>
   )
