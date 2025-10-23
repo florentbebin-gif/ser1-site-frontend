@@ -4,7 +4,7 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000'
 const euro = (n)=> (n ?? 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' €'
 const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
 
-// helpers pour l'input € formaté
+// helpers input €
 const toNumber = (str) => {
   if (typeof str === 'number') return str
   if (!str) return 0
@@ -14,9 +14,12 @@ const toNumber = (str) => {
 }
 const formatIntFr = (n) => (Math.round(n) || 0).toLocaleString('fr-FR')
 
+// largeur unique pour tous les inputs du header (alignement parfait)
+const INPUT_W = 120
+
 const DEFAULT_INPUT = {
   duration: 16,
-  custom1Years: 20, // <- “Durée en année”
+  custom1Years: 20, // champ global conservé pour l'API (on l'alimente avec la 1re colonne)
   products: [
     { name:'Placement 1', rate:0.05,  initial:563750, entryFeePct:0.00 },
     { name:'Placement 2', rate:0.04,  initial:570000, entryFeePct:0.00 },
@@ -31,6 +34,11 @@ export default function Placement(){
     const saved = localStorage.getItem('ser1:sim:placement:inp')
     return saved ? JSON.parse(saved) : DEFAULT_INPUT
   })
+  // focusYears par colonne (par défaut à 20 ans)
+  const [focusYears, setFocusYears] = useState(
+    () => Array.from({length: inp.products.length}, () => 20)
+  )
+
   const [res, setRes] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -40,8 +48,10 @@ export default function Placement(){
   const onCalc = async ()=>{
     setLoading(true); setError(null)
     try{
+      // on pousse la première durée de focus en "custom1Years" pour conserver le comportement backend
+      const payload = { ...inp, custom1Years: focusYears[0] ?? inp.custom1Years }
       const r = await fetch(`${API_BASE}/api/placement`,{
-        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(inp)
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
       })
       const txt = await r.text(); const j = txt? JSON.parse(txt):null
       if(!r.ok) throw new Error(j?.error || `HTTP ${r.status}`)
@@ -53,6 +63,18 @@ export default function Placement(){
   // Séries pour le tableau (on masque “Total” dans le tableau, mais on l’affiche au graphe)
   const tableYears = res?.years ?? []
   const tableSeries = useMemo(()=> (res?.series ?? []).filter(s=> s.name !== 'Total'), [res])
+
+  // valeur de focus par colonne, à partir des séries calculées
+  const focusValues = useMemo(()=>{
+    if(!res?.years?.length || !res?.series?.length) return null
+    const yearsLen = res.years.length
+    const prodSeries = res.series.filter(s=> s.name!=='Total')
+    return prodSeries.map((s, i) => {
+      const y = Math.max(1, Math.round(focusYears[i] || 1))
+      const idx = Math.min(yearsLen, y) - 1 // clamp 1..yearsLen
+      return { year: y, value: s.values[idx] }
+    })
+  }, [res, focusYears])
 
   return (
     <div className="panel">
@@ -79,7 +101,7 @@ export default function Placement(){
                       <input
                         type="number" step="0.01" value={Number(ratePct.toFixed(2))}
                         onChange={e=>setProd(i,{rate:(+e.target.value||0)/100})}
-                        style={{width:100, textAlign:'right'}}
+                        style={{width:INPUT_W, textAlign:'right'}}
                       />
                       <span>%</span>
                     </div>
@@ -99,7 +121,6 @@ export default function Placement(){
                       inputMode="numeric"
                       value={formatIntFr(p.initial ?? 0)}
                       onChange={e=> {
-                        // on laisse l'affichage se faire, la valeur réelle sera fixée au blur
                         const val = toNumber(e.target.value)
                         setProd(i,{initial: val})
                       }}
@@ -108,7 +129,7 @@ export default function Placement(){
                         setProd(i,{initial: val})
                         e.target.value = formatIntFr(val)
                       }}
-                      style={{width:120, textAlign:'right'}}
+                      style={{width:INPUT_W, textAlign:'right'}}
                     />
                     <span>€</span>
                   </div>
@@ -127,7 +148,7 @@ export default function Placement(){
                       <input
                         type="number" step="0.01" value={Number(feePct.toFixed(2))}
                         onChange={e=>setProd(i,{entryFeePct:(+e.target.value||0)/100})}
-                        style={{width:100, textAlign:'right'}}
+                        style={{width:INPUT_W, textAlign:'right'}}
                       />
                       <span>%</span>
                     </div>
@@ -136,7 +157,7 @@ export default function Placement(){
               })}
             </tr>
 
-            {/* Durée en année — une cellule par colonne (toutes pilotent la même valeur) */}
+            {/* Durée en année — une cellule par colonne (focus par produit) */}
             <tr>
               <td className="cell-strong">Durée en année</td>
               {inp.products.map((_,i)=>(
@@ -144,9 +165,16 @@ export default function Placement(){
                   <input
                     type="number"
                     min="1"
-                    value={inp.custom1Years}
-                    onChange={e=> setInp(prev=>({...prev, custom1Years: Math.max(1, +e.target.value||1)}))}
-                    style={{width:100, textAlign:'right'}}
+                    value={focusYears[i]}
+                    onChange={e=>{
+                      const v = Math.max(1, +e.target.value||1)
+                      setFocusYears(prev=>{
+                        const copy = prev.slice()
+                        copy[i] = v
+                        return copy
+                      })
+                    }}
+                    style={{width:INPUT_W, textAlign:'right'}}
                   />
                 </td>
               ))}
@@ -162,13 +190,18 @@ export default function Placement(){
               </tr>
             ))}
 
-            {/* Focus année X (total dans la dernière colonne) */}
-            {res?.horizon && (
+            {/* Focus personnalisé par colonne */}
+            {focusValues && (
               <tr>
-                <td className="cell-strong">{`Focus année ${res.horizon.year}`}</td>
-                {/* on remplit jusqu'à l'avant-dernière colonne */}
-                {Array.from({length: Math.max(0, (tableSeries.length-1))}).map((_,i)=> <td key={i}></td>)}
-                <td className="cell-strong">{euro(res.horizon.total)}</td>
+                <td className="cell-strong">Focus</td>
+                {focusValues.map((fv, i)=>(
+                  <td key={i} className="cell-strong">
+                    <div style={{display:'flex', flexDirection:'column', alignItems:'flex-end', lineHeight:1.2}}>
+                      <span>{euro(fv.value)}</span>
+                      <small className="cell-muted">{fv.year} ans</small>
+                    </div>
+                  </td>
+                ))}
               </tr>
             )}
           </tbody>
