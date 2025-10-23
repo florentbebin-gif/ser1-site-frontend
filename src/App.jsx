@@ -4,24 +4,25 @@ import Home from './pages/Home.jsx'
 import Sim from './pages/Sim.jsx'
 import Params from './pages/Params.jsx'
 import Credit from './pages/Credit.jsx'
+import Placement from './pages/Placement.jsx'
 import { supabase } from './supabaseClient.js'
 import { clearAllUserInputs } from './utils/reset.js'
-import Placement from './pages/Placement.jsx'
 
 export default function App(){
   const [session, setSession] = useState(null)
   const nav = useNavigate()
 
-  useEffect(()=>{
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session))
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s)=>setSession(s))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
     return () => subscription.unsubscribe()
-  },[])
+  }, [])
 
   async function handleLogout(){
     await supabase.auth.signOut()
-    nav('/login')
+    nav('/') // on revient à l’accueil (évite une route /login inexistante)
   }
+
   function handleReset(){
     clearAllUserInputs()
     alert('Toutes les saisies des 7 simulateurs ont été réinitialisées.')
@@ -36,6 +37,7 @@ export default function App(){
           <button className="chip" onClick={handleLogout}>Déconnexion</button>
         </div>
       </div>
+
       <div className="container">
         <div className="reset-wrap">
           <div className="reset-ico">
@@ -46,11 +48,12 @@ export default function App(){
           </div>
           <button className="chip" onClick={handleReset}>Reset</button>
         </div>
+
         <Routes>
           <Route path="/" element={<Home/>} />
           <Route path="/sim/:id" element={<Sim/>} />
           <Route path="/params" element={<Params/>} />
-          <Route path="/sim/credit" element={<Credit />} />
+          <Route path="/sim/credit" element={<Credit/>} />
           <Route path="/sim/placement" element={<Placement/>} />
         </Routes>
       </div>
