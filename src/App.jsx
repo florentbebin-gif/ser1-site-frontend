@@ -5,6 +5,7 @@ import Sim from './pages/Sim.jsx'
 import Params from './pages/Params.jsx'
 import { supabase } from './supabaseClient.js'
 import { clearAllUserInputs } from './utils/reset.js'
+import Credit from './pages/Credit.jsx' 
 
 export default function App(){
   const [session, setSession] = useState(null)
@@ -48,6 +49,7 @@ export default function App(){
           <Route path="/" element={<Home/>} />
           <Route path="/sim/:id" element={<Sim/>} />
           <Route path="/params" element={<Params/>} />
+          <Route path="/sim/credit" element={<Credit />} />  {/* <-- ajout */}
         </Routes>
       </div>
     </div>
