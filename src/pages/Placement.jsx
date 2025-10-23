@@ -18,40 +18,37 @@ const formatIntFr = (n) => (Math.round(n) || 0).toLocaleString('fr-FR')
 const INPUT_W = 120
 
 const DEFAULT_INPUT = {
-  // durée du backend (on la forcera à max des focus pour que le calcul aille assez loin)
-  duration: 16,
-  // custom1Years gardé pour compat rétro (on l'alimente avec la 1re colonne de durée)
-  custom1Years: 20,
+  duration: 16,          // durée “technique” backend (on l'écrase par le max des durées demandées)
+  custom1Years: 20,      // compat backend
   products: [
-    { name:'Placement 1', rate:0.05,  initial:563750, entryFeePct:0.00 },
-    { name:'Placement 2', rate:0.04,  initial:570000, entryFeePct:0.00 },
-    // { name:'Placement 3', rate:0.035, initial:100000, entryFeePct:0.00 },  // SUPPRIMÉ
-    { name:'Assurance vie (SCPI)', rate:0.04, initial:97000, entryFeePct:0.085 },
-    { name:'Compte titre', rate:0.05, initial:100000, entryFeePct:0.00 },
+    { name:'Placement 1 Capitalisation', rate:0.05,  initial:563750, entryFeePct:0.00 },
+    { name:'Placement 2 Capitalisation', rate:0.04,  initial:570000, entryFeePct:0.00 },
+    { name:'Placement 3 Distribution',   rate:0.04,  initial:97000,  entryFeePct:0.085 },
+    { name:'Placement 4 Distribution',   rate:0.05,  initial:100000, entryFeePct:0.00 },
   ]
 }
 
 export default function Placement(){
-  // charge l'état en supprimant une éventuelle 3e colonne héritée d’anciens saves
   const [inp, setInp] = useState(()=>{
     const saved = localStorage.getItem('ser1:sim:placement:inp')
     const base = saved ? JSON.parse(saved) : DEFAULT_INPUT
-    // normalisation: enlève “Placement 3” s'il traîne
-    const products = (base.products || []).filter(p => p.name !== 'Placement 3')
-    return { ...base, products }
+    // normalisation noms selon nouvelle nomenclature
+    const renamed = (base.products || []).map((p,idx) => {
+      const names = DEFAULT_INPUT.products.map(x=>x.name)
+      return { ...p, name: names[idx] ?? p.name }
+    }).slice(0,4)
+    return { ...base, products: renamed }
   })
 
-  // durées de focus par colonne (par défaut 20 ans)
-  const [focusYears, setFocusYears] = useState(
+  // durées par colonne (défaut 20 ans)
+  const [durations, setDurations] = useState(
     () => Array.from({length: DEFAULT_INPUT.products.length}, () => 20)
   )
-
-  // si le nombre de colonnes change (normalisation), on recadre le tableau des focus
   useEffect(()=>{
-    setFocusYears(prev=>{
+    // recadre le tableau si nb colonnes change
+    setDurations(prev=>{
       const n = inp.products.length
-      const next = Array.from({length:n}, (_,i)=> prev[i] ?? 20)
-      return next
+      return Array.from({length:n}, (_,i)=> prev[i] ?? 20)
     })
   }, [inp.products.length])
 
@@ -67,14 +64,12 @@ export default function Placement(){
   const onCalc = async ()=>{
     setLoading(true); setError(null)
     try{
-      // ⚠️ on force l’horizon du back à couvrir le plus grand “focus”
-      const maxFocus = Math.max(...focusYears, inp.duration || 0, inp.custom1Years || 0)
+      const maxDur = Math.max(...durations, inp.duration || 0, 1)
       const payload = {
         ...inp,
-        duration: maxFocus,                 // <- garantit les années jusqu’au focus maxi
-        custom1Years: focusYears[0] || 1    // <- compat (utilisé par le back pour la ligne horizon)
+        duration: maxDur,                 // calcule assez loin pour couvrir toutes les colonnes
+        custom1Years: durations[0] || inp.custom1Years // compat (non utilisé en affichage)
       }
-
       const r = await fetch(`${API_BASE}/api/placement`,{
         method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
       })
@@ -87,20 +82,8 @@ export default function Placement(){
   }
 
   // Séries pour le tableau (on masque “Total” dans le tableau, mais on l’affiche au graphe)
-  const tableYears = res?.years ?? []
-  const tableSeries = useMemo(()=> (res?.series ?? []).filter(s=> s.name !== 'Total'), [res])
-
-  // valeurs de focus par colonne, à partir des séries calculées
-  const focusValues = useMemo(()=>{
-    if(!res?.years?.length || !res?.series?.length) return null
-    const yearsLen = res.years.length
-    const prodSeries = res.series.filter(s=> s.name!=='Total')
-    return prodSeries.map((s, i) => {
-      const y = Math.max(1, Math.round(focusYears[i] || 1))
-      const idx = Math.min(yearsLen, y) - 1 // clamp 1..yearsLen
-      return { year: y, value: s.values[idx] }
-    })
-  }, [res, focusYears])
+  const years = res?.years ?? []
+  const series = useMemo(()=> (res?.series ?? []).filter(s=> s.name !== 'Total'), [res])
 
   return (
     <div className="panel">
@@ -183,7 +166,7 @@ export default function Placement(){
               })}
             </tr>
 
-            {/* Durée en année — une cellule par colonne (focus par produit) */}
+            {/* Durée en année — par colonne */}
             <tr>
               <td className="cell-strong">Durée en année</td>
               {inp.products.map((_,i)=>(
@@ -192,10 +175,10 @@ export default function Placement(){
                     <input
                       type="number"
                       min="1"
-                      value={focusYears[i]}
+                      value={durations[i]}
                       onChange={e=>{
                         const v = Math.max(1, +e.target.value||1)
-                        setFocusYears(prev=>{
+                        setDurations(prev=>{
                           const copy = prev.slice()
                           copy[i] = v
                           return copy
@@ -209,30 +192,20 @@ export default function Placement(){
               ))}
             </tr>
 
-            {/* Lignes “Année N” (après calcul) */}
-            {tableYears.map((y,yi)=>(
+            {/* Lignes Année N : on tronque l'affichage au-delà de la durée de chaque colonne */}
+            {years.map((y, yi)=>(
               <tr key={yi}>
                 <td>{`Année ${y}`}</td>
-                {tableSeries.map((s,si)=>(
-                  <td key={si} className="cell-strong">{euro(s.values[yi])}</td>
-                ))}
+                {series.map((s, si)=> {
+                  const show = (yi + 1) <= (durations[si] || 1)
+                  return (
+                    <td key={si} className="cell-strong">
+                      {show ? euro(s.values[yi]) : ''}
+                    </td>
+                  )
+                })}
               </tr>
             ))}
-
-            {/* Focus personnalisé par colonne (à l’année de chaque colonne) */}
-            {focusValues && (
-              <tr>
-                <td className="cell-strong">Focus</td>
-                {focusValues.map((fv, i)=>(
-                  <td key={i} className="cell-strong">
-                    <div style={{display:'flex', flexDirection:'column', alignItems:'flex-end', lineHeight:1.2}}>
-                      <span>{euro(fv.value)}</span>
-                      <small className="cell-muted">{fv.year} ans</small>
-                    </div>
-                  </td>
-                ))}
-              </tr>
-            )}
           </tbody>
         </table>
 
@@ -244,7 +217,7 @@ export default function Placement(){
         </div>
       </div>
 
-      {/* === Graphique DESSOUS === */}
+      {/* === Graphique dessous === */}
       <div className="chart-card" style={{marginTop:20}}>
         <SmoothChart res={res}/>
       </div>
