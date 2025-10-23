@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react'
-
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000'
-const fmt = n => n?.toLocaleString?.('fr-FR', { maximumFractionDigits: 0 }) ?? n
+const € = (n)=> (n??0).toLocaleString('fr-FR', { maximumFractionDigits: 0 })+' €'
+
+// Palette stable (mémo pour éviter re-rendu inutile)
+const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
 
 const DEFAULT_INPUT = {
   duration: 16,
@@ -21,168 +23,192 @@ export default function Placement(){
     return saved ? JSON.parse(saved) : DEFAULT_INPUT
   })
   const [res, setRes] = useState(null)
-  const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
-  const totalInitial = useMemo(
-    ()=> inp.products?.reduce((a,p)=>a+(+p.initial||0),0),
-    [inp]
-  )
+  const setField = (k,v)=> setInp(p=>({...p,[k]:v}))
+  const setProd  = (i,patch)=> setInp(p=>({...p, products:p.products.map((x,idx)=> idx===i?{...x,...patch}:x)}))
 
-  const handleChange = (k, v) => setInp(prev => ({ ...prev, [k]: v }))
-  const setProd = (i, patch) => setInp(prev => ({
-    ...prev,
-    products: prev.products.map((p,idx)=> idx===i ? { ...p, ...patch } : p)
-  }))
-
-  const onCalc = async () => {
-    setLoading(true); setError(null); setRes(null)
+  const onCalc = async ()=>{
+    setLoading(true); setError(null)
     try{
-      const r = await fetch(`${API_BASE}/api/placement`, {
-        method:'POST',
-        headers:{ 'Content-Type':'application/json' },
-        body: JSON.stringify(inp)
+      const r = await fetch(`${API_BASE}/api/placement`,{
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(inp)
       })
-      const text = await r.text()
-      const j = text ? JSON.parse(text) : null
+      const txt = await r.text(); const j = txt? JSON.parse(txt):null
       if(!r.ok) throw new Error(j?.error || `HTTP ${r.status}`)
-      setRes(j)
-      localStorage.setItem('ser1:sim:placement:inp', JSON.stringify(inp))
-    }catch(e){
-      setError(e.message)
-    }finally{
-      setLoading(false)
-    }
+      setRes(j); localStorage.setItem('ser1:sim:placement:inp', JSON.stringify(inp))
+    }catch(e){ setError(e.message) }
+    finally{ setLoading(false) }
   }
 
+  // Prépare les lignes du tableau côté client pour l’affichage
+  const table = useMemo(()=>{
+    if(!res) return null
+    const years = res.years
+    const cols  = res.series.filter(s=> s.name!=='Total') // les produits seuls
+    const rows = []
+
+    // Ligne en-têtes produits
+    const headers = [''].concat(cols.map(c=>c.name))
+    rows.push({ type:'header', cells: headers })
+
+    // Ligne Rendement (affichage)
+    rows.push({ type:'rate', cells: ['Rendement Net de FG'].concat(inp.products.map(p=> (p.rate*100).toFixed(2)+'%')) })
+
+    // Ligne placement initial (après frais d’entrée)
+    const net0 = inp.products.map(p=> p.initial*(1-(p.entryFeePct||0)))
+    rows.push({ type:'strong', cells: ['Placement initial'].concat(net0.map(€)) })
+
+    // Ligne frais d’entrée
+    rows.push({ type:'muted', cells: ['Frais d’entrée'].concat(inp.products.map(p=> ((p.entryFeePct||0)*100).toFixed(2)+'%')) })
+
+    // Années
+    years.forEach((y,yi)=>{
+      const cells = ['Année '+(yi+1)].concat(cols.map(c => €(c.values[yi])))
+      rows.push({ type: yi===0?'row-first':'row', cells })
+    })
+
+    // Horizon personnalisé
+    if(res.horizon){
+      rows.push({
+        type:'strong',
+        cells: [`Durée "sur mesure" du placement 1`, res.horizon.year+'', ...Array(Math.max(0,cols.length-1)).fill(''), €(res.horizon.total)]
+      })
+    }
+
+    return rows
+  },[res, inp])
+
   return (
-    <div style={{display:'grid', gap:16, gridTemplateColumns:'1fr 1fr'}}>
-      <div>
-        <h2>Paramètres</h2>
+    <div className="panel">
+      <div className="plac-title">Comparer différents placements</div>
 
-        <label style={{display:'block', marginBottom:8}}>
-          Durée (années)
-          <input
-            type="number"
-            value={inp.duration}
-            onChange={e=>handleChange('duration', +e.target.value)}
-            style={{display:'block', width:'100%'}}
-          />
-        </label>
+      <div className="plac-layout">
+        {/* ---- Tableau ---- */}
+        <div className="plac-table-wrap">
+          <table className="plac-table" role="grid" aria-label="tableau placement">
+            <thead>
+              <tr>
+                <th></th>
+                {inp.products.map((p,i)=> <th key={i}>{p.name}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {/* Rendement */}
+              <tr>
+                <td className="cell-muted">Rendement Net de FG</td>
+                {inp.products.map((p,i)=>(
+                  <td key={i} className="input-cell">
+                    <input type="number" step="0.001" value={p.rate}
+                      onChange={e=>setProd(i,{rate:+e.target.value||0})}/>
+                  </td>
+                ))}
+              </tr>
+              {/* Placement initial */}
+              <tr>
+                <td className="cell-strong">Placement Initial</td>
+                {inp.products.map((p,i)=>(
+                  <td key={i} className="input-cell">
+                    <input type="number" value={p.initial}
+                      onChange={e=>setProd(i,{initial:+e.target.value||0})}/>
+                  </td>
+                ))}
+              </tr>
+              {/* Frais d’entrée */}
+              <tr>
+                <td className="cell-muted">Frais d’entrée</td>
+                {inp.products.map((p,i)=>(
+                  <td key={i} className="input-cell">
+                    <input type="number" step="0.001" value={p.entryFeePct}
+                      onChange={e=>setProd(i,{entryFeePct:+e.target.value||0})}/>
+                  </td>
+                ))}
+              </tr>
 
-        <label style={{display:'block', marginBottom:8}}>
-          Horizon perso (années)
-          <input
-            type="number"
-            value={inp.custom1Years}
-            onChange={e=>handleChange('custom1Years', +e.target.value)}
-            style={{display:'block', width:'100%'}}
-          />
-        </label>
+              {/* Lignes d'années (affichées après calcul pour refléter le backend) */}
+              {res?.years?.map((y,yi)=>(
+                <tr key={yi}>
+                  <td>{`Année ${y}`}</td>
+                  {res.series.filter(s=>s.name!=='Total').map((s,si)=>(
+                    <td key={si} className="cell-strong">{€(s.values[yi])}</td>
+                  ))}
+                </tr>
+              ))}
 
-        <h3>Produits</h3>
-        {inp.products.map((p,i)=> (
-          <div key={i} style={{border:'1px solid #ddd', padding:8, borderRadius:8, marginBottom:8}}>
-            <input
-              style={{width:'100%', marginBottom:8}}
-              value={p.name}
-              onChange={e=>setProd(i,{name:e.target.value})}
-            />
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:8}}>
-              <label>
-                Taux
-                <input
-                  type="number"
-                  step="0.001"
-                  value={p.rate}
-                  onChange={e=>setProd(i,{rate:+e.target.value})}
-                  style={{display:'block', width:'100%'}}
-                />
-              </label>
-              <label>
-                Initial (€)
-                <input
-                  type="number"
-                  value={p.initial}
-                  onChange={e=>setProd(i,{initial:+e.target.value})}
-                  style={{display:'block', width:'100%'}}
-                />
-              </label>
-              <label>
-                Frais entrée (%) (ex: 0.085 = 8.5%)
-                <input
-                  type="number"
-                  step="0.001"
-                  value={p.entryFeePct}
-                  onChange={e=>setProd(i,{entryFeePct:+e.target.value})}
-                  style={{display:'block', width:'100%'}}
-                />
-              </label>
-            </div>
+              {/* Ligne horizon */}
+              {res?.horizon && (
+                <tr>
+                  <td className="cell-strong">Durée “sur mesure” du placement 1</td>
+                  <td className="cell-strong">{res.horizon.year}</td>
+                  {Array.from({length: Math.max(0, (res.series.length-2))}).map((_,i)=> <td key={i}></td>)}
+                  <td className="cell-strong">{€(res.horizon.total)}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+
+          <div style={{marginTop:10, display:'flex', gap:8}}>
+            <button className="chip" onClick={onCalc} disabled={loading}>
+              {loading?'Calcul…':'Calculer'}
+            </button>
+            {error && <span className="cell-muted" style={{color:'#b00'}}>Erreur : {error}</span>}
           </div>
-        ))}
-
-        <button onClick={onCalc} disabled={loading}>
-          {loading ? 'Calcul…' : 'Calculer'}
-        </button>
-
-        {error && (
-          <div style={{color:'#b00', background:'#fee', padding:8, borderRadius:6, marginTop:8}}>
-            Erreur : {error}
-          </div>
-        )}
-
-        <div style={{marginTop:8, color:'#666'}}>
-          Total initial : {fmt(totalInitial)} €
         </div>
-      </div>
 
-      <div>
-        <h2>Résultats</h2>
-        <ChartPanel res={res} />
-        {res?.horizon && (
-          <div style={{marginTop:12}}>
-            <strong>Valeur à {res.horizon.year} ans :</strong> {fmt(res.horizon.total)} €
-          </div>
-        )}
+        {/* ---- Graphique ---- */}
+        <div className="chart-card">
+          <SmoothChart res={res}/>
+        </div>
       </div>
     </div>
   )
 }
 
-function ChartPanel({ res }){
-  if(!res?.series?.length)
-    return <div style={{color:'#666'}}>Le graphique s’affichera après calcul.</div>
+/** Graphique SVG “fluide” (optimisé avec useMemo) */
+function SmoothChart({res}){
+  if(!res?.series?.length) return <div className="cell-muted">Le graphique s’affichera après calcul.</div>
 
-  const W=560, H=320, P=40
-  let max=0
-  res.series.forEach(s => s.values.forEach(v => { if(v>max) max=v }))
-
-  const x = (i) => P + i*((W-2*P)/(res.years.length-1||1))
-  const y = (v) => H-P - ((v/max)*(H-2*P))
-  const colors = ['#2C3D38','#CEC1B6','#E4D0BB','#888888','#444555']
+  const { W, H, P, max, x, y, paths } = useMemo(()=>{
+    const W=720, H=420, P=40
+    let max=0
+    res.series.forEach(s=>s.values.forEach(v=>{ if(v>max) max=v }))
+    const x = i => P + i*((W-2*P)/(res.years.length-1||1))
+    const y = v => H-P - ((v/max)*(H-2*P))
+    const paths = res.series.map(s => s.values.map((v,i)=>`${i===0?'M':'L'} ${x(i)} ${y(v)}`).join(' '))
+    return { W,H,P,max,x,y,paths }
+  },[res])
 
   return (
-    <svg width={W} height={H}>
-      <line x1={P} y1={H-P} x2={W-P} y2={H-P} stroke="#bbb"/>
-      <line x1={P} y1={P} x2={P} y2={H-P} stroke="#bbb"/>
+    <>
+      <svg width={W} height={H} role="img" aria-label="évolution des placements">
+        <rect x="0" y="0" width={W} height={H} fill="#fff"/>
+        <line x1={P} y1={H-P} x2={W-P} y2={H-P} stroke="#bbb"/>
+        <line x1={P} y1={P}   x2={P}   y2={H-P} stroke="#bbb"/>
 
-      {res.series.map((s,si)=>{
-        const d = s.values.map((v,i)=>`${i===0?'M':'L'} ${x(i)} ${y(v)}`).join(' ')
-        return <path key={si} d={d} fill="none" stroke={colors[si%colors.length]} strokeWidth="2.5"/>
-      })}
+        {res.series.map((s,si)=>(
+          <path key={si} d={paths[si]} fill="none" stroke={COLORS[si%COLORS.length]} strokeWidth="2.5"/>
+        ))}
 
-      {res.series.map((s,si)=>{
-        const i = s.values.length-1
-        const v = s.values[i]
-        return (
-          <g key={'lbl'+si}>
-            <circle cx={x(i)} cy={y(v)} r={3}/>
-            <text x={x(i)+6} y={y(v)-4} fontSize="12" fill="#333">{s.name}</text>
-            <text x={x(i)+6} y={y(v)+12} fontSize="12" fill="#333">{fmt(v)} €</text>
-          </g>
-        )
-      })}
-    </svg>
+        {/* Derniers labels */}
+        {res.series.map((s,si)=>{
+          const i=s.values.length-1, v=s.values[i]
+          return (
+            <g key={'lbl'+si}>
+              <circle cx={x(i)} cy={y(v)} r="3" fill={COLORS[si%COLORS.length]}/>
+              <text x={x(i)+6} y={y(v)-6} fontSize="12" fill="#333">{s.name}</text>
+              <text x={x(i)+6} y={y(v)+10} fontSize="12" fill="#333">{€(v)}</text>
+            </g>
+          )
+        })}
+      </svg>
+
+      {/* Légende compacte */}
+      <div className="chart-legend">
+        {res.series.map((s,si)=>(
+          <div key={si}><span className="legend-dot" style={{background:COLORS[si%COLORS.length]}}/> {s.name}</div>
+        ))}
+      </div>
+    </>
   )
 }
