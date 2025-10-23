@@ -1,28 +1,55 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 
-const sims = [
-  { id:'potentiel', label:'Contrôle du potentiel Épargne retraite' },
-  { id:'transfert', label:'Transfert vers PER' },
-  { id:'perin', label:'Ouverture PERin' },
-  { id:'ir', label:'Impôt sur le revenu' },
-  { id:'placement', label:'Placement' },
-  { id:'credit', label:'Crédit' },
-  { id:'is', label:'Stratégie trésorerie IS (préparation retraite)' }
-]
-
 export default function Home(){
   return (
-    <div className='excel'>
-      <h2>Tableau de bord</h2>
-      <div className='board'>
-        {sims.map(s => (
-          <Link key={s.id} className='tile' to={'/sim/'+s.id}>
-            <div style={{fontWeight:600, marginBottom:6}}>{s.label}</div>
-            <div style={{fontSize:12, color:'#666'}}>Ouvrir</div>
-          </Link>
-        ))}
+    <div className="panel">
+      <div className="grid-2">
+        <div>
+          <div className="section-title">
+            <h2 style={{margin:0}}>Simulateurs épargne retraite</h2>
+            <div className="rule"></div>
+          </div>
+          <div className="tiles">
+            <Link className="tile" to="/sim/potentiel">
+              <div className="ico">📊</div>
+              <div><b>Contrôle du potentiel Epargne retraite</b></div>
+            </Link>
+            <Link className="tile" to="/sim/transfert">
+              <div className="ico">🪙</div>
+              <div><b>Transfert vers PER</b></div>
+            </Link>
+            <Link className="tile" to="/sim/perin">
+              <div className="ico">🗂️</div>
+              <div><b>Ouverture PERin</b></div>
+            </Link>
+          </div>
+        </div>
+        <div>
+          <div className="section-title" style={{justifyContent:'center'}}>
+            <h2 style={{margin:0, color:'#7c8480', fontWeight:600}}>Simulateurs divers</h2>
+          </div>
+          <div className="tiles">
+            <Link className="tile" to="/sim/ir">
+              <div className="ico">🧮</div>
+              <div><b>Impôt sur le revenu</b></div>
+            </Link>
+            <Link className="tile" to="/sim/placement">
+              <div className="ico">📈</div>
+              <div><b>Placement</b></div>
+            </Link>
+            <Link className="tile" to="/sim/credit">
+              <div className="ico">📑</div>
+              <div><b>Crédit</b></div>
+            </Link>
+            <Link className="tile" to="/sim/is">
+              <div className="ico">🏛️</div>
+              <div><b>Stratégie trésorerie IS <span className="muted">(préparation retraite)</span></b></div>
+            </Link>
+          </div>
+        </div>
       </div>
+      <div className="footer-note">Icônes et couleurs seront harmonisées avec votre charte lors de la prochaine passe.</div>
     </div>
   )
 }

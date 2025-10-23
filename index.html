@@ -2,22 +2,32 @@
 <html lang="fr"><head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SER1 — Accueil</title>
+<title>SER1</title>
 <style>
-:root { --grid:#d0d7de; --accent:#0f172a; --tile:#f8fafc; }
-body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin:0; }
-.xl { border:1px solid var(--grid); background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.04); }
-.btn { background:#0f172a; color:#fff; border:none; padding:10px 16px; border-radius:10px; cursor:pointer; }
-.btn:disabled { opacity:.6; cursor:not-allowed; }
-.board { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:16px; }
-.tile { background:var(--tile); border:1px solid var(--grid); border-radius:12px; padding:16px; text-decoration:none; color:#111; display:block; }
-.tile:hover { outline:2px solid #0ea5e9; }
-input, .box { border:1px solid var(--grid); border-radius:8px; padding:10px; }
-header { display:flex; justify-content:space-between; align-items:center; padding:16px; border-bottom:1px solid var(--grid); position:sticky; top:0; background:#fff; }
-.excel { background:#fff; border:1px solid var(--grid); border-radius:10px; padding:16px; }
+:root { --bg:#fff; --ink:#111; --grid:#d0d7de; --panel:#f9fafb; --brand:#2b3b35; --accent:#d6b997; --shadow:0 6px 18px rgba(0,0,0,.12); }
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+.topbar{background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:2px solid #1c2622}
+.top-left{display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.3px}
+.brand img{height:28px;border-radius:6px}
+.top-actions{display:flex;align-items:center;gap:10px}
+.chip{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.25);padding:8px 14px;border-radius:999px;cursor:pointer}
+.chip:hover{background:rgba(255,255,255,.18)}
+.container{max-width:1150px;margin:26px auto;padding:0 20px}
+.reset{display:flex;align-items:center;gap:10px;color:#333;margin:8px 0 14px}
+.reset .icon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#f4f2ee;border:1px solid var(--grid);box-shadow:var(--shadow)}
+.panel{background:#fff;border:1px solid #bbb;box-shadow:var(--shadow);padding:20px}
+.section-title{display:flex;align-items:center;justify-content:space-between;color:#5a615f;font-weight:600;margin:0 0 12px}
+.section-title .rule{height:2px;flex:1;background:var(--grid);margin-left:12px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.tiles{display:grid;gap:16px}
+.tile{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #cfd5da;border-radius:8px;padding:14px 16px;text-decoration:none;color:inherit;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.tile:hover{outline:2px solid #c9d6cf}
+.tile .ico{width:34px;height:34px;border:1px solid #e2e8f0;border-radius:6px;display:grid;place-items:center;background:#f7fafc}
+.muted{color:#6b7280;font-style:italic;font-size:13px}
+.footer-note{color:#666;font-size:12px;margin-top:14px}
 </style>
-</head>
-<body>
+</head><body>
 <div id="root"></div>
 <script type="module" src="/src/main.jsx"></script>
 </body></html>
