@@ -46,14 +46,6 @@ export default function App(){
           </div>
         </div>
 
-        <Routes>
-          <Route path="/" element={<Home/>} />
-          <Route path="/sim/:id" element={<Sim/>} />
-          <Route path="/params" element={<Params/>} />
-          <Route path="/sim/credit" element={<Credit/>} />
-          <Route path="/sim/placement" element={<Placement/>} />
-        </Routes>
-        <Outlet/>
       </div>
     </div>
   )
