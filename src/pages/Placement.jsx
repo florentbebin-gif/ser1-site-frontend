@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
 
 /* ===== Helpers format ===== */
 const euro  = (n)=> (n ?? 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' €'
@@ -311,44 +311,142 @@ export default function Placement(){
 }
 
 /* ===== Graphe simple SVG ===== */
+/* ===== Graphique responsive avec légende à droite ===== */
 const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
-function SmoothChart({res}){
+
+function SmoothChart({res}) {
+  const wrapRef = useRef(null)
+  const [wrapW, setWrapW] = useState(900)   // largeur dispo (px)
+
+  // Mesure responsive
+  useEffect(()=>{
+    const ro = new ResizeObserver(entries=>{
+      const w = entries[0]?.contentRect?.width || 900
+      setWrapW(w)
+    })
+    if(wrapRef.current) ro.observe(wrapRef.current)
+    return ()=> ro.disconnect()
+  },[])
+
   if(!res?.series?.length) return null
 
-  const W=820, H=420, P=40
-  // max Y sur les points définis uniquement
-  let max=0
-  res.series.forEach(s=> s.values.forEach(v=> { if(v!==undefined && v>max) max=v }))
-  if(max===0) max=1
+  // Filtre: n’afficher que les séries avec au moins une valeur > 0
+  const filtered = res.series.map(s=>{
+    const vals = (s.values || []).map(v => (v !== undefined && v > 0) ? v : undefined)
+    const anyPos = vals.some(v => v !== undefined && v > 0)
+    return anyPos ? { ...s, values: vals } : null
+  }).filter(Boolean)
+  if(!filtered.length) return null
 
-  const x = (i, nPts) => P + i*((W-2*P)/Math.max(1, nPts-1))
-  const y = (v) => H-P - ((v/max)*(H-2*P))
+  // Mise en page interne (sans dépasser le cadre)
+  const LEG_W = 180               // légende à droite
+  const PAD   = 40                // marge pour axes
+  const W     = Math.max(600, wrapW - 24)   // –24px pour le padding de la card
+  const SVG_W = Math.max(420, W - LEG_W)    // largeur graphe
+  const SVG_H = 360
+
+  const years = res.years || []
+  const N     = years.length
+
+  // Max Y (sur points définis uniquement)
+  let maxY = 0
+  filtered.forEach(s => s.values.forEach(v => { if(v!==undefined && v>maxY) maxY = v }))
+  if(maxY <= 0) maxY = 1
+
+  // Échelles
+  const x = (i) => PAD + (N>1 ? i*((SVG_W-2*PAD)/(N-1)) : 0)
+  const y = (v) => SVG_H - PAD - ((v/maxY)*(SVG_H-2*PAD))
+
+  // Graduations Y
+  const TICKS_Y = 5
+  const ticksY = Array.from({length:TICKS_Y+1}, (_,k)=>{
+    const val = (maxY * k) / TICKS_Y
+    return { val, y: y(val) }
+  })
 
   return (
-    <>
-      <svg width={W} height={H} role="img" aria-label="évolution des placements">
-        <rect x="0" y="0" width={W} height={H} fill="#fff"/>
-        <line x1={P} y1={H-P} x2={W-P} y2={H-P} stroke="#bbb"/>
-        <line x1={P} y1={P}   x2={P}   y2={H-P} stroke="#bbb"/>
+    <div ref={wrapRef} style={{display:'flex', alignItems:'stretch', gap:12, width:'100%'}}>
+      {/* === GRAPHE === */}
+      <svg width={SVG_W} height={SVG_H} role="img" aria-label="Évolution des placements">
+        <rect x="0" y="0" width={SVG_W} height={SVG_H} fill="#fff"/>
+        {/* Axes */}
+        <line x1={PAD} y1={SVG_H-PAD} x2={SVG_W-PAD} y2={SVG_H-PAD} stroke="#bbb"/>
+        <line x1={PAD} y1={PAD}       x2={PAD}       y2={SVG_H-PAD} stroke="#bbb"/>
 
-        {res.series.map((s,si)=>{
-          const pts = s.values
-          const n   = res.years.length
-          let d = ''
-          for(let i=0;i<n;i++){
-            const v = pts[i]
-            if(v===undefined) continue
-            d += (d===''?'M':'L') + ' ' + x(i,n) + ' ' + y(v) + ' '
-          }
-          return <path key={si} d={d} fill="none" stroke={COLORS[si%COLORS.length]} strokeWidth="2.5"/>
+        {/* Graduations Y + labels € */}
+        {ticksY.map((t,i)=>(
+          <g key={'gy'+i}>
+            <line x1={PAD-4} y1={t.y} x2={SVG_W-PAD} y2={t.y} stroke="#eee"/>
+            <text x={PAD-8} y={t.y+4} fontSize="11" fill="#666" textAnchor="end">
+              {formatEuroAxis(t.val)}
+            </text>
+          </g>
+        ))}
+
+        {/* Graduations X (années) */}
+        {years.map((yr,i)=>(
+          <g key={'gx'+i}>
+            <line x1={x(i)} y1={SVG_H-PAD} x2={x(i)} y2={SVG_H-PAD+4} stroke="#bbb"/>
+            {(i===0 || i===N-1 || (i%2===0 && N>10)) && (
+              <text x={x(i)} y={SVG_H-PAD+16} fontSize="11" fill="#666" textAnchor="middle">{yr}</text>
+            )}
+          </g>
+        ))}
+
+        {/* Labels axes */}
+        <text x={(SVG_W)/2} y={SVG_H-6} fontSize="12" fill="#444" textAnchor="middle">Années</text>
+        <text x={12} y={PAD-10} fontSize="12" fill="#444" textAnchor="start">Valeur (€)</text>
+
+        {/* Courbes + valeur de la dernière année */}
+        {filtered.map((s,si)=>{
+          let d = '', lastIdx = -1
+          s.values.forEach((v,i)=>{
+            if(v===undefined) return
+            d += (d===''?'M':'L') + ' ' + x(i) + ' ' + y(v) + ' '
+            lastIdx = i
+          })
+          if(!d) return null
+          const color = COLORS[si%COLORS.length]
+          const lastVal = s.values[lastIdx]
+
+          return (
+            <g key={'s'+si}>
+              <path d={d} fill="none" stroke={color} strokeWidth="2.5"/>
+              <circle cx={x(lastIdx)} cy={y(lastVal)} r="3.5" fill={color}/>
+              <text x={x(lastIdx)+6} y={y(lastVal)-8} fontSize="12" fill="#333">
+                {formatEuroAxis(lastVal)}
+              </text>
+            </g>
+          )
         })}
       </svg>
 
-      <div className="chart-legend">
-        {res.series.map((s,si)=>(
-          <div key={si}><span className="legend-dot" style={{background:COLORS[si%COLORS.length]}}/> {s.name}</div>
+      {/* === LÉGENDE à droite (dans le cadre) === */}
+      <div
+        style={{
+          width:LEG_W, minWidth:LEG_W, maxWidth:LEG_W,
+          display:'flex', flexDirection:'column', gap:8, paddingTop:6
+        }}
+      >
+        {filtered.map((s,si)=>(
+          <div key={'lg'+si} style={{display:'flex', alignItems:'center', gap:8}}>
+            <span style={{
+              width:10, height:10, borderRadius:9999,
+              background:COLORS[si%COLORS.length], display:'inline-block'
+            }}/>
+            <span style={{fontSize:13, color:'#333'}}>{s.name}</span>
+          </div>
         ))}
       </div>
-    </>
+    </div>
   )
 }
+
+/* Format € compact pour les axes/labels */
+function formatEuroAxis(v){
+  if (v >= 1_000_000_000) return (v/1_000_000_000).toFixed(2).replace('.',',')+' Md€'
+  if (v >= 1_000_000)     return (v/1_000_000).toFixed(2).replace('.',',')+' M€'
+  if (v >= 1_000)         return (v/1_000).toFixed(2).replace('.',',')+' k€'
+  return Math.round(v).toLocaleString('fr-FR')+' €'
+}
+
