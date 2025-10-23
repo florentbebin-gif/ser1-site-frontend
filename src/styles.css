@@ -1,3 +1,6 @@
+/* ================================
+   Base / Variables
+=================================== */
 :root{
   --green:#2b5a52;
   --green-2:#2c6d63;
@@ -5,51 +8,211 @@
   --ink:#222;
   --muted:#666;
   --border:#D9D9D9;
+  --bg:#f7f7f7;
 }
 
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial}
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  font-family: Inter, system-ui, "Segoe UI", Arial, sans-serif;
+  color:var(--ink);
+  background:var(--bg);
+}
 
+/* Reset typographies et éléments */
+h1,h2,h3,h4,h5,h6{ margin:0 0 .5rem; }
+p{ margin:.3rem 0; }
+button,input,select,textarea{ font:inherit; }
+
+/* ================================
+   Topbar / Navigation
+=================================== */
 .topbar{
-  height:64px; background:var(--green); color:#fff;
-  display:flex; align-items:center; justify-content:space-between; padding:0 20px;
+  height:64px;
+  background:var(--green);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
   box-shadow:0 2px 0 rgba(0,0,0,.15) inset;
 }
-.brandword{font-weight:700; letter-spacing:.5px}
-.top-actions{display:flex; gap:8px; align-items:center}
+.brandword{
+  font-weight:700;
+  letter-spacing:.5px;
+  font-size:20px; /* plus net et compact */
+}
+.top-actions{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
 .chip, .chip:visited{
-  background:#fff; color:var(--green); border-radius:18px; padding:6px 12px;
-  text-decoration:none; border:1px solid rgba(0,0,0,.08); font-weight:600
+  background:#fff;
+  color:var(--green);
+  border-radius:18px;
+  padding:6px 12px;
+  text-decoration:none;
+  border:1px solid rgba(0,0,0,.08);
+  font-weight:600;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  cursor:pointer;
 }
-.container{max-width:1120px;margin:24px auto;padding:0 16px}
+.chip:hover{ filter:brightness(.98); }
 
+/* ================================
+   Layout général
+=================================== */
+.container{
+  max-width:1120px;
+  margin:24px auto;
+  padding:0 16px;
+}
 .panel{
-  background:#fff; border:1px solid var(--border); border-radius:6px; padding:16px;
-  box-shadow:0 1px 3px rgba(0,0,0,.05)
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:16px;
+  box-shadow:0 1px 3px rgba(0,0,0,.05);
 }
 
-/* ---- Tableau Placement (style “Laplace”) ---- */
+/* Bandeau reset (texte très petit) */
+.panel-reset{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.reset-note{
+  font-size:11px;       /* <<< beaucoup plus petit */
+  color:#888;
+}
+
+/* ================================
+   Formulaires / Inputs
+=================================== */
+input[type="number"], input[type="text"]{
+  height:32px;
+  border:1px solid #bbb;
+  background:#fafafa;
+  border-radius:6px;
+  padding:0 8px;
+  outline:none;
+}
+input[type="number"]:focus, input[type="text"]:focus{
+  border-color:var(--green-2);
+  box-shadow:0 0 0 2px rgba(43,106,96,.12);
+}
+
+/* ================================
+   Page Placement — style maquette
+=================================== */
 .plac-layout{
-  display:grid; grid-template-columns: 1.2fr .8fr; gap:20px;
+  display:grid;
+  grid-template-columns: 1.15fr .85fr; /* tableau / graphe */
+  gap:20px;
 }
 .plac-title{
-  font-weight:700; font-size:22px; color:var(--ink);
-  border-bottom:4px solid var(--beige); padding-bottom:8px; margin-bottom:12px;
-}
-.plac-table-wrap{border:1px solid #333; padding:16px;}
-.plac-table{width:100%; border-collapse:collapse; font-size:14px}
-.plac-table th, .plac-table td{padding:6px 10px; border-bottom:1px solid #ddd; text-align:right}
-.plac-table th:first-child, .plac-table td:first-child{text-align:left}
-.plac-table thead th{
-  border-bottom:2px solid #333; font-weight:700
-}
-.cell-strong{font-weight:800}
-.cell-muted{color:var(--muted)}
-.input-cell input{
-  width:100%; text-align:right; padding:4px 6px; border:1px solid #bbb; border-radius:4px
+  font-weight:700;
+  font-size:22px;
+  color:#222;
+  border-bottom:4px solid var(--beige);
+  padding-bottom:8px;
+  margin:4px 0 12px;
 }
 
-/* Chart */
-.chart-card{border:1px solid #333; padding:16px; height:420px}
-.chart-legend{display:flex; gap:10px; font-size:12px; color:#444; margin-top:8px}
-.legend-dot{width:10px; height:10px; border-radius:999px; display:inline-block; margin-right:6px}
+/* Tableau encadré noir comme sur la capture */
+.plac-table-wrap{
+  border:1px solid #333;
+  padding:14px;
+  background:#fff;
+}
+.plac-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+}
+.plac-table th,
+.plac-table td{
+  padding:6px 10px;
+  border-bottom:1px solid #ddd;
+  text-align:right;
+  white-space:nowrap;
+}
+.plac-table thead th{
+  text-align:center;
+  font-weight:700;
+  border-bottom:2px solid #333;
+}
+.plac-table th:first-child,
+.plac-table td:first-child{
+  text-align:left;
+  width:180px;
+}
+.cell-strong{ font-weight:800; }
+.cell-muted{ color:var(--muted); }
+
+/* cellules éditables */
+.input-cell input{
+  width:120px;
+  max-width:100%;
+  text-align:right;
+  padding:4px 6px;
+  border:1px solid #bbb;
+  border-radius:4px;
+  background:#fafafa;
+}
+
+/* ================================
+   Graphique Placement (SVG)
+=================================== */
+.chart-card{
+  border:1px solid #333;
+  padding:12px;
+  height:420px;
+  background:#fff;
+  position:relative;
+}
+.chart-legend{
+  display:flex;
+  gap:12px;
+  font-size:12px;
+  color:#444;
+  margin-top:6px;
+  flex-wrap:wrap;
+}
+.legend-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  display:inline-block;
+  margin-right:6px;
+}
+
+/* ================================
+   Cartes / Tuiles (page d’accueil)
+=================================== */
+.tile{
+  border:1px solid var(--border);
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  box-shadow:0 1px 3px rgba(0,0,0,.04);
+  text-decoration:none;
+  color:inherit;
+  display:block;
+}
+.tile:hover{ box-shadow:0 2px 10px rgba(0,0,0,.06); }
+.tile-title{ font-weight:700; margin-bottom:6px; }
+.tile-desc{ color:var(--muted); font-size:13px; }
+
+/* ================================
+   Utils
+=================================== */
+.mt-8{ margin-top:8px; }
+.mt-12{ margin-top:12px; }
+.mt-16{ margin-top:16px; }
+.text-muted{ color:var(--muted); }
+.align-right{ text-align:right; }
