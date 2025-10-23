@@ -39,10 +39,10 @@ export default function App(){
       </div>
 
       <div className="container">
-        <div className="panel" style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12}}>
+        <div className="panel panel-reset" style={{marginBottom:12}}>
           <div style={{display:'flex', alignItems:'center', gap:10}}>
             <button className="chip" onClick={handleReset}>Reset</button>
-            <span className="cell-muted">Réinitialise toutes les saisies</span>
+            <span className="reset-note">Réinitialise toutes les saisies</span>
           </div>
         </div>
 
