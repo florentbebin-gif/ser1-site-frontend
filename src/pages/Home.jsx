@@ -43,13 +43,15 @@ function IconBank(){return (
   </svg>
 )}
 
-function Tile({to, icon, label, italic}){
+function Tile({to, icon, label, italic, weight}) {
   return (
     <Link className="tile" to={to}>
       <div className="ico">{icon}</div>
-      <div className="label">
+      <div className="label" style={{ fontWeight: weight === "normal" ? 500 : 700 }}>
         <div className="bar"></div>
-        <div><b>{label}{italic && <span className="muted"> {italic}</span>}</b></div>
+        <div>
+          {label}{italic && <span className="muted"> {italic}</span>}
+        </div>
       </div>
     </Link>
   )
@@ -75,11 +77,17 @@ export default function Home(){
             <h2 style={{color:'#3b4a45'}}>Simulateurs divers</h2>
           </div>
           <div className="tiles">
-            <Tile to="/sim/ir" icon={<IconCalc/>} label="Impôt sur le revenu" />
-            <Tile to="/sim/placement" icon={<IconChartUp/>} label="Placement" />
-            <Tile to="/sim/credit" icon={<IconDoc/>} label="Crédit" />
-            <Tile to="/sim/is" icon={<IconBank/>} label="Stratégie trésorerie IS" italic="(préparation retraite)" />
-          </div>
+            <Tile to="/sim/ir" icon={<IconCalc/>} label="Impôt sur le revenu" weight="normal" />
+            <Tile to="/sim/placement" icon={<IconChartUp/>} label="Placement" weight="normal" />
+            <Tile to="/sim/credit" icon={<IconDoc/>} label="Crédit" weight="normal" />
+            <Tile
+              to="/sim/is"
+              icon={<IconBank/>}
+              label="Stratégie trésorerie IS"
+              italic="(préparation retraite)"
+              weight="normal"
+            />
+          </div>        
         </div>
       </div>
       <div className="footer-note">Couleurs appliquées depuis l’onglet Home du classeur : vert #2C3D38, beige #CEC1B6, ocre #E4D0BB, noir #000000.</div>
