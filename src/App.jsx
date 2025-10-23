@@ -28,20 +28,21 @@ export default function App(){
   return (
     <div>
       <div className="topbar">
-        <div className="top-left">
-          <div className="brand">
-            <img src="/logo.png" alt="Laplace / SER1" />
-            <span>Laplace</span>
-          </div>
-        </div>
+        <div className="brandword">SER1</div>
         <div className="top-actions">
           <Link className="chip" to="/params">Paramètres</Link>
           <button className="chip" onClick={handleLogout}>Déconnexion</button>
         </div>
       </div>
       <div className="container">
-        <div className="reset">
-          <div className="icon">🗑️</div>
+        <div className="reset-wrap">
+          <div className="reset-ico">
+            <!-- trash can svg -->
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M3 6h18M9 6v-2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14" stroke-width="1.6" />
+              <path d="M10 11v6M14 11v6" stroke-width="1.6"/>
+            </svg>
+          </div>
           <button className="chip" onClick={handleReset}>Reset</button>
         </div>
         <Routes>

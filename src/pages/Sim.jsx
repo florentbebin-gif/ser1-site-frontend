@@ -68,7 +68,7 @@ export default function Sim(){
         </>}
         {id === 'ir' && <>
           <label>Revenu imposable (€)</label><input type='number' value={revenu} onChange={e=>setRevenu(+e.target.value)}/>
-          <div style={{gridColumn:'1 / span 2', fontSize:12, color:'#666'}}>(Version initiale : champs additionnels dès la prochaine passe)</div>
+          <div style={{gridColumn:'1 / span 2', fontSize:12, color:'#666'}}>(Champs additionnels à venir)</div>
         </>}
       </div>
       <button className='chip' onClick={calc} disabled={loading} style={{marginTop:16}}>{loading?'Calcul...':'Calculer'}</button>
