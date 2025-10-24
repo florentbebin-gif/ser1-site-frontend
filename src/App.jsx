@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from './supabaseClient.js'
 import { clearAllUserInputs } from './utils/reset.js'
 
 export default function App(){
   const [session, setSession] = useState(null)
   const nav = useNavigate()
+  const location = useLocation()           // ← pour savoir quelle page est active
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session))
@@ -28,11 +29,33 @@ export default function App(){
     <div>
       <div className="topbar">
         <div className="brandword">SER1</div>
+
         <div className="top-actions">
-          <Link className="chip" to="/">HOME</Link>
-          <button className="chip" onClick={handleReset}>Reset</button> {/* ← ICI */}
-          <Link className="chip" to="/params">Paramètres</Link>
-          <button className="chip" onClick={handleLogout}>Déconnexion</button>
+          {/* HOME */}
+          <Link
+            to="/"
+            className={`chip ${location.pathname === '/' ? 'active' : ''}`}
+          >
+            HOME
+          </Link>
+
+          {/* Reset */}
+          <button className="chip" onClick={handleReset}>
+            Reset
+          </button>
+
+          {/* Paramètres */}
+          <Link
+            to="/params"
+            className={`chip ${location.pathname.startsWith('/params') ? 'active' : ''}`}
+          >
+            Paramètres
+          </Link>
+
+          {/* Déconnexion */}
+          <button className="chip logout" onClick={handleLogout}>
+            Déconnexion
+          </button>
         </div>
       </div>
 
