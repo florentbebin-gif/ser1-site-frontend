@@ -873,6 +873,26 @@ const diffDureesMois = dureeLisseMois - dureeBaseMois
           /* ---- VUE ANNUELLE ---- */
           <>
             {/* Bandeau résumé (1ère année visible) */}
+            {/* Contrôles lissage (à droite) */}
+            <div style={{display:'flex', justifyContent:'flex-end', gap:8, marginTop:6, flexWrap:'wrap'}}>
+              <button
+                className={`chip ${lissageMode==='mensu' ? 'active' : ''}`}
+                onClick={()=> setLissageMode('mensu')}
+                disabled={!lisserPret1}
+                title="Lisser en maintenant la mensualité totale (peut réduire la durée)"
+              >
+                Lissage : mensualité constante
+              </button>
+              <button
+                className={`chip ${lissageMode==='duree' ? 'active' : ''}`}
+                onClick={()=> setLissageMode('duree')}
+                disabled={!lisserPret1}
+                title="Lisser en maintenant la durée du prêt 1"
+              >
+                Lissage : durée constante
+              </button>
+            </div>
+
           {(() => {
             const ann = aggregateToYears(agrRows)
             const dureeAnnees = ann.length || 1
