@@ -164,6 +164,7 @@ export default function Credit(){
   const [pretsPlus, setPretsPlus]     = useState([])             // [{id,capital,duree,taux,startYM,type}]
   const [lisserPret1, setLisserPret1] = useState(false)
   const [viewMode, setViewMode]       = useState('mensuel')      // 'mensuel' | 'annuel'
+  const [lissageMode, setLissageMode] = useState('mensu') // 'mensu' | 'duree'
 
   // PERSISTENCE
   const STORE_KEY = storageKeyFor('credit')
