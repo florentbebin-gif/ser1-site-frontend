@@ -560,7 +560,14 @@ for(const lab of labelsRaw){
                 rx="3"
               />
               <text x={p.x} y={p.y + 4} fontSize="13" fill={p.color} textAnchor="middle">
-                {p.label}
+                {(() => {
+                 const n = Number(p.val) || 0
+                 if (n >= 1_000_000)
+                   return (n / 1_000_000).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' M€'
+                 if (n >= 1_000)
+                   return (n / 1_000).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' k€'
+                 return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+                })()}
               </text>
             </g>
           )
