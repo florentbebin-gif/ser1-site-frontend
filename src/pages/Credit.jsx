@@ -604,18 +604,19 @@ const diffDureesMois = dureeLisseMois - dureeBaseMois
             <tr>
               <td className="cell-strong">Coût total (intérêts + assurance)</td>
               <td className="input-cell" style={{textAlign:'right', fontWeight:600}}>
-                {euro0(coutInteretsAgr + coutAssurAgr)}
+                {euro0(pret1Interets + pret1Assurance)}
                 <div className="cell-muted" style={{fontSize:12}}>
-                  dont intérêts {euro0(coutInteretsAgr)} • assurance {euro0(coutAssurAgr)}
+                  dont intérêts {euro0(pret1Interets)} • assurance {euro0(pret1Assurance)}
                 </div>
               </td>
 
               <td className="cell-strong">Vue</td>
               <td className="input-cell" style={{display:'flex', gap:8, justifyContent:'flex-end'}}>
                 <button className={`chip ${viewMode==='mensuel'?'active':''}`} onClick={()=> setViewMode('mensuel')}>Vue mensuelle</button>
-                <button className={`chip ${viewMode==='annuel'?'active':''}`} onClick={()=> setViewMode('annuel')}>Vue annuelle</button>
+                <button className={`chip ${viewMode==='annuel'?'active':''}`}  onClick={()=> setViewMode('annuel')}>Vue annuelle</button>
               </td>
             </tr>
+
           </tbody>
         </table>
       </div>
