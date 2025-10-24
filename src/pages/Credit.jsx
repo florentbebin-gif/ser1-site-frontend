@@ -893,36 +893,27 @@ const diffDureesMois = dureeLisseMois - dureeBaseMois
               </button>
             </div>
 
-          {(() => {
-            const ann = aggregateToYears(agrRows)
-            const dureeAnnees = ann.length || 1
+         {(() => {
+          const ann = aggregateToYears(agrRows)
+          const annuiteMaxSansAss = ann.length ? Math.max(...ann.map(a => a.mensu)) : 0
 
-            const annuitesSansAss  = ann.reduce((s, a) => s + a.mensu, 0)
-            const annuitesAvecAss  = ann.reduce((s, a) => s + a.mensuTotal, 0)
-            const annuiteMoyenneSansAss = annuitesSansAss / dureeAnnees
-            const annuiteMoyenneAvecAss = annuitesAvecAss / dureeAnnees
-
-            return (
-              <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
-
-                {/* Annuité moyenne par an — sur la durée réelle du crédit */}
-                <div>
-                  <div className="cell-muted">Votre annuité totale :</div>
-                  <div style={{fontWeight:700, color:'#2C3D38'}}>
-                    {euro0(annuiteMoyenneSansAss)} <span className="cell-muted">(hors assurance)</span>
-                  </div>
-                  <div style={{fontSize:12, color:'#666'}}>moyenne/an sur {dureeAnnees} an(s)</div>
+          return (
+            <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
+              <div>
+                <div className="cell-muted">Votre annuité totale :</div>
+                <div style={{fontWeight:700, color:'#2C3D38'}}>
+                  {euro0(annuiteMaxSansAss)} <span className="cell-muted">(hors assurance)</span>
                 </div>
-
-                {/* Coût total des prêts (hors assurance) */}
-                <div>
-                  <div className="cell-muted">Coût total des prêts (hors assurance) :</div>
-                  <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(coutInteretsAgr)}</div>
-                </div>
-
               </div>
-            )
-          })()}
+
+              <div>
+                <div className="cell-muted">Coût total des prêts (hors assurance) :</div>
+                <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(coutInteretsAgr)}</div>
+              </div>
+            </div>
+          )
+        })()}
+
 
             <div className="cell-muted" style={{marginTop:6}}>
               Différence de durées : <span style={{fontWeight:700, color:'#2C3D38'}}>
