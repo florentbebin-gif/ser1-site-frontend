@@ -277,3 +277,19 @@ input:focus{
 .mt-20{ margin-top:20px; }
 .text-muted{ color:var(--muted); }
 .align-right{ text-align:right; }
+
+/* 🔹 Suppression du soulignement sur tous les liens/boutons dans la topbar */
+.topbar a,
+.topbar .chip {
+  text-decoration: none !important;
+}
+
+/* 🔹 Style du bouton actif : fond noir, texte blanc (HOME, Paramètres...) */
+.topbar .chip.active {
+  background:#000 !important;
+  color:#fff !important;
+  border-color:#000 !important;
+}
+.topbar .chip.active:hover {
+  filter:none !important;
+}
