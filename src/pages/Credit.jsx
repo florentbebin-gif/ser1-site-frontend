@@ -794,9 +794,16 @@ const pret1Rows = useMemo(() => {
           <div className="cell-strong">Prêts additionnels (max 2)</div>
           <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
             <button className="chip" onClick={addPret} disabled={pretsPlus.length>=2}>+ Ajouter un prêt</button>
-            <button className={`chip ${lisserPret1 ? 'active' : ''}`} onClick={()=> setLisserPret1(v => !v)} title="Lisser la mensualité totale en ajustant le prêt 1">
+            <button
+              className={`chip ${lisserPret1 ? 'active' : ''}`}
+              onClick={()=> setLisserPret1(v => !v)}
+              disabled={pret1IsInfine}
+              title={pret1IsInfine
+                ? "Le lissage est indisponible pour un prêt In fine"
+                : "Lisser la mensualité totale en ajustant le prêt 1"}
+            >
               {lisserPret1 ? 'Lisser le prêt 1 : ON' : 'Lisser le prêt 1'}
-            </button>
+          </button>
           </div>
         </div>
 
