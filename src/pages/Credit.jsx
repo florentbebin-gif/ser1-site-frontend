@@ -165,6 +165,50 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
   }
   return rows
 }
+// ---- Échéancier lissé avec "T" constant (durée conservée) ----
+function scheduleLisseePret1Duration({ basePret1, autresPretsRows, totalConst }) {
+  const { capital, r, rAss, N, assurMode } = basePret1
+  const rows = []
+
+  let crd = Math.max(0, capital)
+  const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
+  const EPS = 1e-8
+
+  // Somme des mensualités des autres prêts au mois m
+  const sumAutres = (m) => autresPretsRows.reduce((s, arr) => s + ((arr[m - 1]?.mensu) || 0), 0)
+
+  for (let m = 1; m <= N; m++) {
+    if (crd <= EPS) break
+
+    const crdStart = crd
+    const interet  = crdStart * r
+    const autres   = sumAutres(m)
+
+    // Part dédiée au prêt 1 = T - autres
+    let mensu1 = totalConst - autres
+
+    // pas d’amort négatif : on borne à au moins les intérêts (avant le dernier mois)
+    if (m < N && mensu1 < interet) mensu1 = interet
+
+    // borne naturelle : jamais > intérêts + CRD
+    const capMensu = interet + crdStart
+    if (mensu1 > capMensu) mensu1 = capMensu
+
+    // dernier mois : on solde exactement ce qui reste
+    if (m === N) mensu1 = Math.min(mensu1, interet + crdStart)
+
+    const amort = Math.max(0, mensu1 - interet)
+    const crdEnd = Math.max(0, crdStart - amort)
+
+    // Assurance : si CRD → on prend CRD début de mois ; si CI → prime fixe
+    const assur = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)
+    const mensuTotal = mensu1 + (assur || 0)
+
+    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu:mensu1, mensuTotal, crd:crdEnd })
+    crd = crdEnd
+  }
+  return rows
+}
 
 
 // Calcule la cible de mensualité totale (Prêt1 + autres) pour conserver une durée cible
