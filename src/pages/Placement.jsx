@@ -1,12 +1,11 @@
 /* ===========================================================
-   PLACEMENT — Option B (refactor + UX fixes)
-   - Inputs factorisés
-   - Unités alignées
-   - 8 chiffres max sur Placement initial
-   - Graphique: ticks 1 000 / 10 000, labels lisibles, valeur finale
-   - Tableau: format € complet
+   PLACEMENT — Refactor + Correctifs
+   - Saisie "Placement initial" jusqu'à 8 chiffres (ex: 10000000)
+   - Tableau Année N : valeurs arrondies à l'euro (pas de décimales)
+   - Graphique : pas 1 000 ou multiples de 10 000 (≤12 ticks), lisible
+   - Étiquette finale sur les courbes
    - Titres colonnes sur 2 lignes
-   - Phrase modifiée “les intérêts de l’année…”
+   - Phrase: "les intérêts de l’année sont..."
 =========================================================== */
 
 import React, { useMemo, useState, useEffect, useRef } from 'react'
@@ -20,9 +19,10 @@ const toNum  = (v)=> {
   const n = Number(s)
   return Number.isFinite(n) ? n : 0
 }
-const euroFull = (n)=> (Number(n)||0).toLocaleString('fr-FR') + ' €'
+// Affichage complet en € sans décimales
+const euroFull0 = (n)=> Math.round(Number(n)||0).toLocaleString('fr-FR') + ' €'
 
-// Format court pour graphique uniquement
+// Format court pour le graphique uniquement
 const fmtShortEuro = (v)=>{
   const n = Number(v)||0
   if (n >= 1_000_000) return (n / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' M€'
@@ -122,7 +122,7 @@ function simulateWithContrib({ rate, initial, entryFeePct }, startMonth, contrib
    INPUTS factorisés
 =========================================================== */
 
-function InputWithUnit({ value, onChange, type='text', unit='', width=COL_INPUT_W, maxLength, inputMode='numeric' }){
+function InputWithUnit({ value, onChange, type='text', unit='', width=COL_INPUT_W, inputMode='numeric' }){
   return (
     <div style={{
       display:'flex', alignItems:'center', justifyContent:'flex-end',
@@ -132,7 +132,6 @@ function InputWithUnit({ value, onChange, type='text', unit='', width=COL_INPUT_
         type={type}
         inputMode={inputMode}
         value={value}
-        {...(maxLength ? { maxLength } : {})}
         onChange={onChange}
         style={{width:'100%', textAlign:'right', height:INPUT_H, lineHeight:`${INPUT_H}px`}}
       />
@@ -147,8 +146,8 @@ function TwoLineHeader({ name }){
   const type  = parts[parts.length-1] // Capitalisation / Distribution
   const label = parts.slice(0, parts.length-1).join(' ') // Placement X
   return (
-    <div style={{lineHeight:1.15}}>
-      {label}<br/>{type}
+    <div style={{lineHeight:1.15, whiteSpace:'pre-line'}}>
+      {label}{'\n'}{type}
     </div>
   )
 }
@@ -247,7 +246,7 @@ export default function Placement(){
               })}
             </tr>
 
-            {/* Placement initial — 8 chiffres max */}
+            {/* Placement initial — autorise 8 chiffres (pas de maxLength visuel) */}
             <tr>
               <td className="cell-strong">Placement Initial</td>
               {products.map((p,i)=>(
@@ -255,14 +254,13 @@ export default function Placement(){
                   <InputWithUnit
                     value={fmtInt(p.initial)}
                     onChange={e=>{
-                      const clean = e.target.value.replace(/\D/g,'').slice(0,8) // 8 chiffres
+                      // Garde uniquement les chiffres, tronque à 8
+                      const clean = e.target.value.replace(/\D/g,'').slice(0,8)
                       setProd(i,{initial: toNum(clean)})
                     }}
-                    // onBlur: re-formate en FR
                     type="text"
                     unit="€"
                     inputMode="numeric"
-                    maxLength={8}
                   />
                 </td>
               ))}
@@ -301,7 +299,6 @@ export default function Placement(){
                           setContrib(i,{amount: toNum(clean)})
                         }}
                         style={{width:AMOUNT_W_IN_VERS, textAlign:'right', height:INPUT_H, lineHeight:`${INPUT_H}px`}}
-                        maxLength={6}
                       />
                       <span style={{height:INPUT_H, lineHeight:`${INPUT_H}px`}}>€</span>
                       <select
@@ -335,13 +332,13 @@ export default function Placement(){
               ))}
             </tr>
 
-            {/* Lignes Année N — valeurs en € plein format */}
+            {/* Lignes Année N — valeurs en € plein format (sans décimales) */}
             {years.map((y, yi)=>(
               <tr key={yi}>
                 <td>{`Année ${y}`}</td>
                 {series.map((s, si)=>(
                   <td key={si} style={{textAlign:'center', fontWeight:600}}>
-                    {s.values[yi] !== undefined ? euroFull(s.values[yi]) : '0 €'}
+                    {s.values[yi] !== undefined ? euroFull0(s.values[yi]) : '0 €'}
                   </td>
                 ))}
               </tr>
@@ -359,7 +356,9 @@ export default function Placement(){
 }
 
 /* ===========================================================
-   Graphique SVG — ticks 1 000 / 10 000, labels lisibles
+   Graphique SVG — ticks lisibles
+   - Pas 1 000 si petite échelle
+   - Sinon pas = multiple de 10 000, avec au plus 12 ticks
 =========================================================== */
 
 const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
@@ -389,7 +388,7 @@ function SmoothChart({res}) {
 
   // Mise en page
   const LEG_W = 180
-  const PAD   = 60 // plus de marge gauche pour éviter les labels coupés
+  const PAD   = 60 // marge pour labels Y
   const W     = Math.max(600, wrapW - 24)
   const SVG_W = Math.max(420, W - LEG_W)
   const SVG_H = 360
@@ -402,8 +401,16 @@ function SmoothChart({res}) {
   filtered.forEach(s => s.values.forEach(v => { if(v!==undefined && v>maxY) maxY = v }))
   if(maxY <= 0) maxY = 1
 
-  // Choix du pas: 1 000 ou 10 000 selon l'échelle visée (~ jusqu'à 15 ticks)
-  const step = (Math.ceil(maxY / 1000) <= 15) ? 1000 : 10000
+  // Choix du pas: 1 000 si petit; sinon multiple de 10 000 pour ≤ 12 ticks
+  let step
+  if (maxY <= 12_000) {
+    step = 1_000
+  } else {
+    const base = 10_000
+    const desiredMaxTicks = 12
+    const factor = Math.ceil(maxY / (base * desiredMaxTicks)) // >=1
+    step = base * factor // 10k, 20k, 30k, ... pour limiter le nombre de ticks
+  }
   const topY = Math.ceil(maxY / step) * step
 
   const x = (i) => PAD + (N>1 ? i*((SVG_W-2*PAD)/(N-1)) : 0)
@@ -469,7 +476,7 @@ function SmoothChart({res}) {
           )
         })}
 
-        {/* Étiquettes de valeur finale sur chaque série */}
+        {/* Étiquette finale sur chaque série */}
         {lastPoints.map((p,i)=>(
           <g key={'lbl'+i}>
             <text x={p.lx + 8} y={p.ly - 6} fontSize="13" fill={p.color}>
