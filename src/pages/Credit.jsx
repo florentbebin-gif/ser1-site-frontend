@@ -364,6 +364,8 @@ const diffDureesMois = dureeLisseMois - dureeBaseMois
   const coutInteretsPret1 = pret1Rows.reduce((s,l)=> s + (l.interet||0), 0)
   const coutInteretsAgr   = agrRows.reduce((s,l)=> s + l.interet, 0)
   const coutAssurAgr      = agrRows.reduce((s,l)=> s + l.assurance, 0)
+  const pret1Interets   = pret1Rows.reduce((s,l)=> s + (l.interet   || 0), 0)
+  const pret1Assurance  = pret1Rows.reduce((s,l)=> s + (l.assurance || 0), 0)
 
   // Synthèse annuelle (première année visible)
   const synthAnnuelle = useMemo(()=>{
