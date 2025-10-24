@@ -420,9 +420,24 @@ export default function Credit(){
 
     const hP = ['Mois','Intérêts','Assurance','Amort.','Mensualité','Mensualité + Assur.','CRD']
     const p1 = pret1Rows.map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
-    const p2 = (autresRows[0]||[]).map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet||0), Math.round(l.assurance||0), Math.round(l.amort||0), Math.round(l.mensu||0), Math.round(l.mensuTotal||0), Math.round(l.crd||0)])
-    const p3 = (autresRows[1]||[]).map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet||0), Math.round(l.assurance||0), Math.round(l.amort||0), Math.round(l.mensu||0), Math.round(l.mensuTotal||0), Math.round(l.crd||0)])
-
+    const p2 = (autresRows[0] || []).map((l,idx)=>[
+      labelMonthFR(addMonths(startYM, idx)),
+      Math.round(l?.interet ?? 0),
+      Math.round(l?.assurance ?? 0),
+      Math.round(l?.amort ?? 0),
+      Math.round(l?.mensu ?? 0),
+      Math.round(l?.mensuTotal ?? 0),
+      Math.round(l?.crd ?? 0)
+    ])
+    const p3 = (autresRows[1] || []).map((l,idx)=>[
+      labelMonthFR(addMonths(startYM, idx)),
+      Math.round(l?.interet ?? 0),
+      Math.round(l?.assurance ?? 0),
+      Math.round(l?.amort ?? 0),
+      Math.round(l?.mensu ?? 0),
+      Math.round(l?.mensuTotal ?? 0),
+      Math.round(l?.crd ?? 0)
+    ])
     const xml =
       `<?xml version="1.0"?>
       <?mso-application progid="Excel.Sheet"?>
