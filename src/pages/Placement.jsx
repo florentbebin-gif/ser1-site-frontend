@@ -377,9 +377,7 @@ export default function Placement(){
   )
 }
 
-/* ===========================================================
-   Graphique SVG — ticks lisibles
-=========================================================== */
+/* ==== Graphique SVG — ticks lisibles + étiquette finale safe ==== */
 
 const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
 
@@ -398,6 +396,7 @@ function SmoothChart({res}) {
 
   if(!res?.series?.length) return null
 
+  // Filtre séries non vides
   const filtered = res.series.map(s=>{
     const vals = (s.values || []).map(v => (v !== undefined && v > 0) ? v : undefined)
     const anyPos = vals.some(v => v !== undefined && v > 0)
@@ -405,8 +404,9 @@ function SmoothChart({res}) {
   }).filter(Boolean)
   if(!filtered.length) return null
 
+  // Mise en page
   const LEG_W = 180
-  const PAD   = 60
+  const PAD   = 60 // marge pour labels Y
   const W     = Math.max(600, wrapW - 24)
   const SVG_W = Math.max(420, W - LEG_W)
   const SVG_H = 360
@@ -414,18 +414,19 @@ function SmoothChart({res}) {
   const years = res.years || []
   const N     = years.length
 
+  // Max Y
   let maxY = 0
   filtered.forEach(s => s.values.forEach(v => { if(v!==undefined && v>maxY) maxY = v }))
   if(maxY <= 0) maxY = 1
 
-  // pas 1 000 si petit, sinon multiple de 10 000 pour ≤ 12 ticks
+  // Pas: 1 000 si petit; sinon multiple de 10 000 pour ≤ 12 ticks
   let step
   if (maxY <= 12_000) {
     step = 1_000
   } else {
     const base = 10_000
     const desiredMaxTicks = 12
-    const factor = Math.ceil(maxY / (base * desiredMaxTicks)) // >=1
+    const factor = Math.ceil(maxY / (base * desiredMaxTicks))
     step = base * factor // 10k, 20k, 30k, ...
   }
   const topY = Math.ceil(maxY / step) * step
@@ -433,11 +434,13 @@ function SmoothChart({res}) {
   const x = (i) => PAD + (N>1 ? i*((SVG_W-2*PAD)/(N-1)) : 0)
   const y = (v) => SVG_H - PAD - ((v/topY)*(SVG_H-2*PAD))
 
+  // Ticks Y
   const ticksY = []
   for(let v=0; v<=topY; v+=step){
     ticksY.push({ val:v, y:y(v) })
   }
 
+  // Derniers points (pour l'étiquette finale)
   const lastPoints = filtered.map((s,si)=>{
     let lastIdx = -1
     s.values.forEach((v,i)=> { if(v!==undefined) lastIdx = i })
@@ -450,6 +453,9 @@ function SmoothChart({res}) {
       ly: y(s.values[lastIdx])
     }
   }).filter(Boolean)
+
+  // Helper d'estimation de largeur du texte (approx. 7 px/caractère)
+  const estimateTextWidth = (text) => Math.max(8, String(text).length * 7)
 
   return (
     <div ref={wrapRef} style={{display:'flex', alignItems:'stretch', gap:12, width:'100%'}}>
@@ -490,20 +496,45 @@ function SmoothChart({res}) {
           )
         })}
 
-        {/* Étiquette finale */}
-        {lastPoints.map((p,i)=>(
-          <g key={'lbl'+i}>
-            <text x={p.lx + 8} y={p.ly - 6} fontSize="13" fill={p.color}>
-              {fmtShortEuro(p.val)}
-            </text>
-          </g>
-        ))}
+        {/* Étiquettes finales — clamp à l'intérieur du cadre */}
+        {lastPoints.map((p,i)=>{
+          const label = fmtShortEuro(p.val)
+          const textW = estimateTextWidth(label)
+          const minX  = PAD + 4
+          const maxX  = SVG_W - PAD - 4 - textW
+          const rawX  = p.lx + 8
+          const xClamped = Math.max(minX, Math.min(maxX, rawX))
+
+          // Clamp vertical pour éviter coupe en haut/bas
+          const minY = PAD + 14
+          const maxY = SVG_H - PAD - 6
+          const rawY = p.ly - 6
+          const yClamped = Math.max(minY, Math.min(maxY, rawY))
+
+          return (
+            <g key={'lbl'+i}>
+              {/* petit fond blanc lisible */}
+              <rect
+                x={xClamped - 2}
+                y={yClamped - 12}
+                width={textW + 6}
+                height={18}
+                fill="#fff"
+                opacity="0.9"
+                rx="3"
+              />
+              <text x={xClamped} y={yClamped} fontSize="13" fill={p.color}>
+                {label}
+              </text>
+            </g>
+          )
+        })}
       </svg>
 
       {/* Légende */}
       <div
         style={{
-          width:LEG_W, minWidth:LEG_W, maxWidth:LEG_W,
+          width:180, minWidth:180, maxWidth:180,
           display:'flex', flexDirection:'column', gap:8, paddingTop:6
         }}
       >
