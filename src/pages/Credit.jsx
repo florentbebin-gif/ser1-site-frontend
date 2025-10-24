@@ -786,39 +786,37 @@ const diffDureesMois = dureeLisseMois - dureeBaseMois
           /* ---- VUE ANNUELLE ---- */
           <>
             {/* Bandeau résumé (1ère année visible) */}
-           {(() => {
+          {(() => {
             const ann = aggregateToYears(agrRows)
-            const first = ann[0] || {periode:'—', interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0}
+            const dureeAnnees = ann.length || 1
+
+            const annuitesSansAss  = ann.reduce((s, a) => s + a.mensu, 0)
+            const annuitesAvecAss  = ann.reduce((s, a) => s + a.mensuTotal, 0)
+            const annuiteMoyenneSansAss = annuitesSansAss / dureeAnnees
+            const annuiteMoyenneAvecAss = annuitesAvecAss / dureeAnnees
+
             return (
               <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
 
-              {/* Annuité au lieu de Paiement, sans l'année dans le libellé */}
-              <div>
-                <div className="cell-muted">Votre annuité totale :</div>
-                <div style={{fontWeight:700, color:'#2C3D38'}}>
-                  {euro0(first.mensu)} <span className="cell-muted">(hors assurance)</span>
+                {/* Annuité moyenne par an — sur la durée réelle du crédit */}
+                <div>
+                  <div className="cell-muted">Votre annuité totale :</div>
+                  <div style={{fontWeight:700, color:'#2C3D38'}}>
+                    {euro0(annuiteMoyenneSansAss)} <span className="cell-muted">(hors assurance)</span>
+                  </div>
+                  <div style={{fontSize:12, color:'#666'}}>moyenne/an sur {dureeAnnees} an(s)</div>
                 </div>
-              </div>
 
-              <div>
-                <div className="cell-muted">Annuité + assurance :</div>
-                <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(first.mensuTotal)}</div>
-              </div>
+                {/* Coût total des prêts (hors assurance) */}
+                <div>
+                  <div className="cell-muted">Coût total des prêts (hors assurance) :</div>
+                  <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(coutInteretsAgr)}</div>
+                </div>
 
-              {/* Nouvelle info : prime d’assurance annuelle */}
-              <div>
-                <div className="cell-muted">Votre prime d’assurance annuelle :</div>
-                <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(first.assurance)}</div>
               </div>
-
-              {/* Coût total de TOUS les prêts (hors assurance), comme en vue mensuelle */}
-              <div>
-                <div className="cell-muted">Coût total des prêts (hors assurance) :</div>
-                <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(coutInteretsAgr)}</div>
-              </div>
-             </div>
             )
           })()}
+
             <div className="cell-muted" style={{marginTop:6}}>
               Différence de durées : <span style={{fontWeight:700, color:'#2C3D38'}}>
                 {diffDureesMois > 0 ? `+${diffDureesMois}` : diffDureesMois} mois
