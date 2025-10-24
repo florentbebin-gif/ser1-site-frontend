@@ -913,7 +913,9 @@ const diffDureesMois = dureeLisseMois - dureeBaseMois
             </div>
           )
         })()}
-
+      const isAnnual = viewMode === 'annuel'
+      const colLabelPaiement    = isAnnual ? 'Annuité' : 'Mensualité'
+      const colLabelPaiementAss = isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'
 
             <div className="cell-muted" style={{marginTop:6}}>
               Différence de durées : <span style={{fontWeight:700, color:'#2C3D38'}}>
