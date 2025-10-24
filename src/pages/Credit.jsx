@@ -121,28 +121,43 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
   const EPS = 1e-8
 
+  // Amortissement minimal « sensible » (même logique que findTargetForDuration)
+  const minAmort = Math.max(1, capital / Math.max(12, N) / 50)
+
   const sumMensuAutresAtMonth = (m) =>
     autresPretsRows.reduce((s, arr) => s + ((arr[m-1]?.mensu) || 0), 0)
 
   for (let m = 1; m <= N; m++) {
     if (crd <= EPS) break
 
-    const crdStart = crd
-    const interet  = crdStart * r
+    const crdStart   = crd
+    const interet    = crdStart * r
     const mensuAutres = sumMensuAutresAtMonth(m)
+
+    // Part dispo pour le prêt 1
     let mensu1 = Math.max(0, cibleMensuTotale - mensuAutres)
 
-    // borne “intérêt + CRD” et sécurisation amort > 0 (si pas la dernière)
+    // ▸ Sécurise un amortissement réel sur les mois < N
+    const besoinMin = (m < N && type === 'amortissable')
+      ? (interet + minAmort)
+      : interet
+
+    if (mensu1 < besoinMin && r > 0) mensu1 = besoinMin
+
+    // ▸ Dernier mois pour amortissable : solder
+    if (type === 'amortissable' && m === N) {
+      mensu1 = Math.max(mensu1, interet + crdStart)
+    }
+
+    // ▸ Bornes naturelles
     const capMensu = interet + crdStart
     if (mensu1 > capMensu) mensu1 = capMensu
-    if (m < N && mensu1 < interet && r > 0) mensu1 = interet + 1e-6  // <-- évite prêt qui n'amortit pas
-    if (type === 'amortissable' && m === N) mensu1 = interet + crdStart
 
     let amort = Math.max(0, mensu1 - interet)
     if (amort > crdStart) amort = crdStart
 
     const crdEnd = Math.max(0, crdStart - amort)
-    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)  // <-- assurance sur CRD début
+    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss) // assurance sur CRD début
 
     const mensuTotal = mensu1 + (assur || 0)
     rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu:mensu1, mensuTotal, crd: crdEnd })
