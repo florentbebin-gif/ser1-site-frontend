@@ -736,8 +736,8 @@ const diffDureesMois = dureeLisseMois - dureeBaseMois
                 </div>
               </div>
               <div>
-                <div className="cell-muted">Coût total du prêt principal (hors assurance) :</div>
-                <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(coutInteretsPret1)}</div>
+                <div className="cell-muted">Coût total des prêts principal (hors assurance) :</div>
+                <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(coutInteretsAgr)}</div>
               </div>
               <div>
                 <div className="cell-muted">Votre prime d’assurance mensuelle :</div>
