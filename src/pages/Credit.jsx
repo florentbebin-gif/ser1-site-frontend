@@ -694,257 +694,258 @@ const synthesePeriodes = useMemo(() => {
 {/* SYNTHESE */}
 <div style={{ marginTop:14, border:'1px solid #C0B5AA', borderRadius:10, padding:'12px 14px', background:'#F8F6F4' }}>
   {viewMode !== 'annuel' ? (
-    /* ---- VUE MENSUELLE ---- */
-    <>
-      <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
-        <div>
-          <div className="cell-muted">Votre mensualité totale :</div>
-          <div style={{fontWeight:700, color:'#2C3D38'}}>
-            {euro0(mensualiteTotaleM1)} <span className="cell-muted">(hors assurance)</span>
-          </div>
-        </div>
-        <div>
-          <div className="cell-muted">Coût total du prêt principal (hors assurance) :</div>
-          <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(coutInteretsPret1)}</div>
-        </div>
-        <div>
-          <div className="cell-muted">Votre prime d’assurance mensuelle :</div>
-          <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(primeAssMensuelle)}</div>
-        </div>
-      </div>
-
-      {/* Tableau synthétique de lissage (périodes) */}
-      {lisserPret1 && syntheseLissage.length > 0 && (
-        <div style={{marginTop:10}}>
-          <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
-            <colgroup>
-              <col style={{width:'40%'}}/>
-              <col style={{width:'20%'}}/>
-              <col style={{width:'20%'}}/>
-              <col style={{width:'20%'}}/>
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Période</th>
-                <th>Prêt 1</th>
-                <th>Prêt 2</th>
-                <th>Prêt 3</th>
-              </tr>
-            </thead>
-            <tbody>
-              {syntheseLissage.map((ln, i)=>(
-                <tr key={i}>
-                  <td className="cell-strong">{ln.from}</td>
-                  <td style={{textAlign:'right'}}>{ln.p1>0 ? euro0(ln.p1) : '—'}</td>
-                  <td style={{textAlign:'right'}}>{ln.p2>0 ? euro0(ln.p2) : '—'}</td>
-                  <td style={{textAlign:'right'}}>{ln.p3>0 ? euro0(ln.p3) : '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </>
-  ) : (
-    /* ---- VUE ANNUELLE ---- */
-    <>
-      {/* Bandeau résumé (1ère année visible) */}
-      {(() => {
-        const ann = aggregateToYears(agrRows)
-        const first = ann[0] || {periode:'—', interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0}
-        return (
-          <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
-            <div>
-              <div className="cell-muted">Votre paiement total en {first.periode} :</div>
-              <div style={{fontWeight:700, color:'#2C3D38'}}>
-                {euro0(first.mensu)} <span className="cell-muted">(hors assurance)</span>
-              </div>
-            </div>
-            <div>
-              <div className="cell-muted">Paiement + assurance en {first.periode} :</div>
-              <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(first.mensuTotal)}</div>
-            </div>
-            <div>
-              <div className="cell-muted">Intérêts • Assurance • Amort. ({first.periode}) :</div>
-              <div style={{fontWeight:700, color:'#2C3D38'}}>
-                {euro0(first.interet)} • {euro0(first.assurance)} • {euro0(first.amort)}
-              </div>
-            </div>
-            <div>
-              <div className="cell-muted">CRD fin {first.periode} :</div>
-              <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(first.crd)}</div>
-            </div>
-          </div>
-        )
-      })()}
-
-      {/* ➜ En vue annuelle, on garde un tableau de périodes (comme en mensuel) */}
-      {lisserPret1 && syntheseLissage.length > 0 && (
-        <div style={{marginTop:10}}>
-          <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
-            <colgroup>
-              <col style={{width:'40%'}}/>
-              <col style={{width:'20%'}}/>
-              <col style={{width:'20%'}}/>
-              <col style={{width:'20%'}}/>
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Période</th>
-                <th>Prêt 1</th>
-                <th>Prêt 2</th>
-                <th>Prêt 3</th>
-              </tr>
-            </thead>
-            <tbody>
-              {syntheseLissage.map((ln, i)=>(
-                <tr key={i}>
-                  <td className="cell-strong">{ln.from}</td>
-                  <td style={{textAlign:'right'}}>{ln.p1>0 ? euro0(ln.p1) : '—'}</td>
-                  <td style={{textAlign:'right'}}>{ln.p2>0 ? euro0(ln.p2) : '—'}</td>
-                  <td style={{textAlign:'right'}}>{ln.p3>0 ? euro0(ln.p3) : '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </>
-  )}
-</div>
-      <div className="plac-table-wrap" style={{marginTop:16}}>
-        <table className="plac-table" role="grid" aria-label="amortissement" style={{tableLayout:'fixed', width:'100%'}}>
-          <thead>
-            <tr>
-              <th>Période</th>
-              <th style={{textAlign:'right'}}>Intérêts</th>
-              <th style={{textAlign:'right'}}>Assurance</th>
-              <th style={{textAlign:'right'}}>Amort.</th>
-              <th style={{textAlign:'right'}}>{colLabelPaiement}</th>
-              <th style={{textAlign:'right'}}>{colLabelPaiementAss}</th>
-              <th style={{textAlign:'right'}}>CRD total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tableDisplay.map((l, i) => (
-              <tr key={i}>
-                <td>{l.periode}</td>
-                <td style={{textAlign:'right'}}>{euro0(l.interet)}</td>
-                <td style={{textAlign:'right'}}>{euro0(l.assurance)}</td>
-                <td style={{textAlign:'right'}}>{euro0(l.amort)}</td>
-                <td style={{textAlign:'right', fontWeight:600}}>{euro0(l.mensu)}</td>
-                <td style={{textAlign:'right', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
-                <td style={{textAlign:'right'}}>{euro0(l.crd)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* DÉTAIL PAR PRÊT — reste mensuel */}
-      <div className="plac-table-wrap" style={{marginTop:16}}>
-        <div className="cell-strong" style={{marginBottom:8}}>Détail par prêt (mensuel)</div>
-
-        {/* PRÊT 1 */}
-        <div style={{marginBottom:12}}>
-          <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 1</div>
-          <table className="plac-table" role="grid" aria-label="amortissement prêt 1"
-                 style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
-            <thead>
-              <tr>
-                <th>Période</th>
-                <th style={{textAlign:'right'}}>Intérêts</th>
-                <th style={{textAlign:'right'}}>Assurance</th>
-                <th style={{textAlign:'right'}}>Amort.</th>
-                <th style={{textAlign:'right'}}>Mensualité</th>
-                <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
-                <th style={{textAlign:'right'}}>CRD</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pret1Rows.map((l, idx)=>(
-                <tr key={idx}>
-                  <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
-                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
-                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
-                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
-                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu)}</td>
-                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
-                  <td style={{textAlign:'right'}}>{euro0(l.crd)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* PRÊT 2 */}
-        {autresRows[0] && (
-          <div style={{marginBottom:12}}>
-            <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 2</div>
-            <table className="plac-table" role="grid" aria-label="amortissement prêt 2"
-                   style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
-              <thead>
-                <tr>
-                  <th>Période</th>
-                  <th style={{textAlign:'right'}}>Intérêts</th>
-                  <th style={{textAlign:'right'}}>Assurance</th>
-                  <th style={{textAlign:'right'}}>Amort.</th>
-                  <th style={{textAlign:'right'}}>Mensualité</th>
-                  <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
-                  <th style={{textAlign:'right'}}>CRD</th>
-                </tr>
-              </thead>
-              <tbody>
-                {autresRows[0].map((l, idx)=>(
-                  <tr key={idx}>
-                    <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.interet ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.assurance ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.amort ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensu ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensuTotal ?? 0)}</td>
-                    <td style={{textAlign:'right'}}>{euro0(l?.crd ?? 0)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* PRÊT 3 */}
-        {autresRows[1] && (
-          <div>
-            <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 3</div>
-            <table className="plac-table" role="grid" aria-label="amortissement prêt 3"
-                   style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
-              <thead>
-                <tr>
-                  <th>Période</th>
-                  <th style={{textAlign:'right'}}>Intérêts</th>
-                  <th style={{textAlign:'right'}}>Assurance</th>
-                  <th style={{textAlign:'right'}}>Amort.</th>
-                  <th style={{textAlign:'right'}}>Mensualité</th>
-                  <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
-                  <th style={{textAlign:'right'}}>CRD</th>
-                </tr>
-              </thead>
-              <tbody>
-                {autresRows[1].map((l, idx)=>(
-                  <tr key={idx}>
-                    <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.interet ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.assurance ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.amort ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensu ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensuTotal ?? 0)}</td>
-                    <td style={{textAlign:'right'}}>{euro0(l?.crd ?? 0)}</td>
-                  </tr>
-                ))}
-            </tbody>
-            </table>
-          </div>
-        )}
+   /* ---- VUE MENSUELLE ---- */
+<>
+  <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
+    <div>
+      <div className="cell-muted">Votre mensualité totale :</div>
+      <div style={{fontWeight:700, color:'#2C3D38'}}>
+        {euro0(mensualiteTotaleM1)} <span className="cell-muted">(hors assurance)</span>
       </div>
     </div>
-  )
+    <div>
+      <div className="cell-muted">Coût total du prêt principal (hors assurance) :</div>
+      <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(coutInteretsPret1)}</div>
+    </div>
+    <div>
+      <div className="cell-muted">Votre prime d’assurance mensuelle :</div>
+      <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(primeAssMensuelle)}</div>
+    </div>
+  </div>
+
+  {/* Tableau synthétique de périodes — seulement si >1 prêt ET lissage ON */}
+  {pretsPlus.length > 0 && lisserPret1 && syntheseLissage.length > 0 && (
+    <div style={{marginTop:10}}>
+      <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
+        <colgroup>
+          <col style={{width:'40%'}}/>
+          <col style={{width:'20%'}}/>
+          <col style={{width:'20%'}}/>
+          <col style={{width:'20%'}}/>
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Période</th>
+            <th>Prêt 1</th>
+            <th>Prêt 2</th>
+            <th>Prêt 3</th>
+          </tr>
+        </thead>
+        <tbody>
+          {syntheseLissage.map((ln, i)=>(
+            <tr key={i}>
+              <td className="cell-strong">{ln.from}</td>
+              <td style={{textAlign:'right'}}>{ln.p1>0 ? euro0(ln.p1) : '—'}</td>
+              <td style={{textAlign:'right'}}>{ln.p2>0 ? euro0(ln.p2) : '—'}</td>
+              <td style={{textAlign:'right'}}>{ln.p3>0 ? euro0(ln.p3) : '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</>
+) : (
+/* ---- VUE ANNUELLE ---- */
+<>
+  {/* Bandeau résumé (1ère année visible) */}
+  {(() => {
+    const ann = aggregateToYears(agrRows)
+    const first = ann[0] || {periode:'—', interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0}
+    return (
+      <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
+        <div>
+          <div className="cell-muted">Votre paiement total en {first.periode} :</div>
+          <div style={{fontWeight:700, color:'#2C3D38'}}>
+            {euro0(first.mensu)} <span className="cell-muted">(hors assurance)</span>
+          </div>
+        </div>
+        <div>
+          <div className="cell-muted">Paiement + assurance en {first.periode} :</div>
+          <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(first.mensuTotal)}</div>
+        </div>
+        <div>
+          <div className="cell-muted">Intérêts • Assurance • Amort. ({first.periode}) :</div>
+          <div style={{fontWeight:700, color:'#2C3D38'}}>
+            {euro0(first.interet)} • {euro0(first.assurance)} • {euro0(first.amort)}
+          </div>
+        </div>
+        <div>
+          <div className="cell-muted">CRD fin {first.periode} :</div>
+          <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(first.crd)}</div>
+        </div>
+      </div>
+    )
+  })()}
+
+  {/* En vue annuelle, on peut aussi afficher le tableau de périodes si >1 prêt ET lissage ON */}
+  {pretsPlus.length > 0 && lisserPret1 && syntheseLissage.length > 0 && (
+    <div style={{marginTop:10}}>
+      <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
+        <colgroup>
+          <col style={{width:'40%'}}/>
+          <col style={{width:'20%'}}/>
+          <col style={{width:'20%'}}/>
+          <col style={{width:'20%'}}/>
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Période</th>
+            <th>Prêt 1</th>
+            <th>Prêt 2</th>
+            <th>Prêt 3</th>
+          </tr>
+        </thead>
+        <tbody>
+          {syntheseLissage.map((ln, i)=>(
+            <tr key={i}>
+              <td className="cell-strong">{ln.from}</td>
+              <td style={{textAlign:'right'}}>{ln.p1>0 ? euro0(ln.p1) : '—'}</td>
+              <td style={{textAlign:'right'}}>{ln.p2>0 ? euro0(ln.p2) : '—'}</td>
+              <td style={{textAlign:'right'}}>{ln.p3>0 ? euro0(ln.p3) : '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</>
+)}
+</div>
+
+<div className="plac-table-wrap" style={{marginTop:16}}>
+  <table className="plac-table" role="grid" aria-label="amortissement" style={{tableLayout:'fixed', width:'100%'}}>
+    <thead>
+      <tr>
+        <th>Période</th>
+        <th style={{textAlign:'right'}}>Intérêts</th>
+        <th style={{textAlign:'right'}}>Assurance</th>
+        <th style={{textAlign:'right'}}>Amort.</th>
+        <th style={{textAlign:'right'}}>{colLabelPaiement}</th>
+        <th style={{textAlign:'right'}}>{colLabelPaiementAss}</th>
+        <th style={{textAlign:'right'}}>CRD total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {tableDisplay.map((l, i) => (
+        <tr key={i}>
+          <td>{l.periode}</td>
+          <td style={{textAlign:'right'}}>{euro0(l.interet)}</td>
+          <td style={{textAlign:'right'}}>{euro0(l.assurance)}</td>
+          <td style={{textAlign:'right'}}>{euro0(l.amort)}</td>
+          <td style={{textAlign:'right', fontWeight:600}}>{euro0(l.mensu)}</td>
+          <td style={{textAlign:'right', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
+          <td style={{textAlign:'right'}}>{euro0(l.crd)}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+{/* DÉTAIL PAR PRÊT — reste mensuel */}
+<div className="plac-table-wrap" style={{marginTop:16}}>
+  <div className="cell-strong" style={{marginBottom:8}}>Détail par prêt (mensuel)</div>
+
+  {/* PRÊT 1 */}
+  <div style={{marginBottom:12}}>
+    <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 1</div>
+    <table className="plac-table" role="grid" aria-label="amortissement prêt 1"
+           style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
+      <thead>
+        <tr>
+          <th>Période</th>
+          <th style={{textAlign:'right'}}>Intérêts</th>
+          <th style={{textAlign:'right'}}>Assurance</th>
+          <th style={{textAlign:'right'}}>Amort.</th>
+          <th style={{textAlign:'right'}}>Mensualité</th>
+          <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
+          <th style={{textAlign:'right'}}>CRD</th>
+        </tr>
+      </thead>
+      <tbody>
+        {pret1Rows.map((l, idx)=>(
+          <tr key={idx}>
+            <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
+            <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
+            <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
+            <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
+            <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu)}</td>
+            <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
+            <td style={{textAlign:'right'}}>{euro0(l.crd)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  {/* PRÊT 2 */}
+  {autresRows[0] && (
+    <div style={{marginBottom:12}}>
+      <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 2</div>
+      <table className="plac-table" role="grid" aria-label="amortissement prêt 2"
+             style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
+        <thead>
+          <tr>
+            <th>Période</th>
+            <th style={{textAlign:'right'}}>Intérêts</th>
+            <th style={{textAlign:'right'}}>Assurance</th>
+            <th style={{textAlign:'right'}}>Amort.</th>
+            <th style={{textAlign:'right'}}>Mensualité</th>
+            <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
+            <th style={{textAlign:'right'}}>CRD</th>
+          </tr>
+        </thead>
+        <tbody>
+          {autresRows[0].map((l, idx)=>(
+            <tr key={idx}>
+              <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.interet ?? 0)}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.assurance ?? 0)}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.amort ?? 0)}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensu ?? 0)}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensuTotal ?? 0)}</td>
+              <td style={{textAlign:'right'}}>{euro0(l?.crd ?? 0)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+
+  {/* PRÊT 3 */}
+  {autresRows[1] && (
+    <div>
+      <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 3</div>
+      <table className="plac-table" role="grid" aria-label="amortissement prêt 3"
+             style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
+        <thead>
+          <tr>
+            <th>Période</th>
+            <th style={{textAlign:'right'}}>Intérêts</th>
+            <th style={{textAlign:'right'}}>Assurance</th>
+            <th style={{textAlign:'right'}}>Amort.</th>
+            <th style={{textAlign:'right'}}>Mensualité</th>
+            <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
+            <th style={{textAlign:'right'}}>CRD</th>
+          </tr>
+        </thead>
+        <tbody>
+          {autresRows[1].map((l, idx)=>(
+            <tr key={idx}>
+              <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.interet ?? 0)}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.assurance ?? 0)}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.amort ?? 0)}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensu ?? 0)}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensuTotal ?? 0)}</td>
+              <td style={{textAlign:'right'}}>{euro0(l?.crd ?? 0)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</div>
+</div>
+)
 }
