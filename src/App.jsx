@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from './supabaseClient.js'
-import { clearAllUserInputs } from './utils/reset.js'
+import { triggerReset } from './utils/reset.js'
 
 export default function App(){
   const [session, setSession] = useState(null)
   const nav = useNavigate()
-  const location = useLocation()           // ← pour savoir quelle page est active
+  const location = useLocation()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => setSession(session))
@@ -17,12 +17,12 @@ export default function App(){
 
   async function handleLogout(){
     await supabase.auth.signOut()
-    nav('/') // retour accueil
+    nav('/')
   }
 
   function handleReset(){
-    clearAllUserInputs()
-    alert('Toutes les saisies des 7 simulateurs ont été réinitialisées.')
+    triggerReset()
+    alert('Toutes les saisies des simulateurs ont été réinitialisées.')
   }
 
   return (
