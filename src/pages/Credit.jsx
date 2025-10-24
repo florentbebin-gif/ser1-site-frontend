@@ -663,13 +663,13 @@ const warnings = useMemo(() => {
       </div>
 
       {/* WARNINGS */}
-      {warnings.length > 0 && (
+      {Array.isArray(warnings) && warnings.length > 0 && (
         <div style={{background:'#FFF7E6', border:'1px solid #E5C07B', color:'#7A5A00', padding:'8px 12px', borderRadius:8, marginTop:8}}>
           <ul style={{margin:0, paddingLeft:18}}>
             {warnings.map((w,i)=><li key={i}>{w}</li>)}
           </ul>
         </div>
-      )}
+        )}
 
       {/* PRÊTS ADDITIONNELS */}
       <div style={{marginTop:14}}>
