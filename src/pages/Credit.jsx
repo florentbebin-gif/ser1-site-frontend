@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 
 /* ---------- Helpers format ---------- */
 const MONTHS = [
@@ -13,9 +14,10 @@ const toNum  = (v)=> {
   const n = Number(s)
   return Number.isFinite(n) ? n : 0
 }
+const rid = () => Math.random().toString(36).slice(2,9)
 
 /* ===============================
-   Échéanciers de prêts
+   Formules & échéanciers
 ================================ */
 function mensualiteAmortissable(C, r, N) {
   if (N <= 0) return 0
@@ -24,7 +26,6 @@ function mensualiteAmortissable(C, r, N) {
 }
 
 function scheduleAmortissable({ capital, r, rAss, N, assurMode, mensuOverride }) {
-  // r, rAss = taux mensuels
   const rows = []
   let crd = capital
   const mensuFixe = (typeof mensuOverride === 'number' && mensuOverride > 0)
@@ -36,7 +37,7 @@ function scheduleAmortissable({ capital, r, rAss, N, assurMode, mensuOverride })
   for (let m = 1; m <= N; m++) {
     const interet = crd * r
     let mensu = mensuFixe
-    if (mensu < interet && r > 0) mensu = interet // évite l’augmentation du CRD
+    if (mensu < interet && r > 0) mensu = interet
     let amort = Math.min(crd, mensu - interet)
     if (!Number.isFinite(amort) || amort < 0) amort = 0
     crd = Math.max(0, crd - amort)
@@ -57,9 +58,7 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
     let mensu = (typeof mensuOverride === 'number' && mensuOverride > 0) ? mensuOverride : interet
     let amort = 0
     if (m === N) {
-      // solde du capital
       amort = crd
-      // si une mensualité hors assur. a été saisie, on la respecte si elle suffit
       mensu = Math.max(mensu, interet + amort)
       amort = mensu - interet
       if (amort > crd) amort = crd
@@ -74,23 +73,20 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
   return rows
 }
 
-/* Lissage du prêt 1 en fonction des autres prêts (hors assurance) */
 function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
-  // pret1: {capital, r, rAss, N, assurMode, type, mensuBase}
   const { capital, r, rAss, N, assurMode, type } = pret1
   const rows = []
   let crd = capital
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
-
   const sumMensuAutresAtMonth = (m) =>
     autresPretsRows.reduce((s, arr) => s + (arr[m-1]?.mensu || 0), 0)
 
   for (let m = 1; m <= N; m++) {
     const interet = crd * r
     const mensuAutres = sumMensuAutresAtMonth(m)
-    let mensu1 = Math.max(0, cibleMensuTotale - mensuAutres) // pour respecter la cible
+    let mensu1 = Math.max(0, cibleMensuTotale - mensuAutres)
+
     if (type === 'infine') {
-      // In fine lissé : paie au moins les intérêts, on solde au dernier mois
       if (m === N) {
         const due = interet + crd
         mensu1 = Math.max(mensu1, due)
@@ -101,196 +97,264 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
       if (m === N) amort = crd
       crd = Math.max(0, crd - amort)
     } else {
-      // Amortissable lissé
       if (mensu1 < interet && r > 0) mensu1 = interet
       let amort = Math.max(0, mensu1 - interet)
-      if (m === N) {
-        // ajustement final pour solder
-        amort = crd
-        mensu1 = interet + amort
-      }
+      if (m === N) { amort = crd; mensu1 = interet + amort }
       crd = Math.max(0, crd - amort)
     }
     const assur = (assurMode === 'CI') ? assurFixe : (crd * rAss)
     const mensuTotal = mensu1 + (assur || 0)
-    rows.push({ mois:m, interet, assurance:(assur||0), amort:(mensu1 - interet > 0 ? mensu1 - interet : (m===N ? capital : 0)), mensu:mensu1, mensuTotal, crd })
+    rows.push({
+      mois:m, interet, assurance:(assur||0),
+      amort: Math.max(0, mensu1 - interet), mensu:mensu1, mensuTotal, crd
+    })
   }
   return rows
 }
 
-/* id utilitaire */
-const rid = () => Math.random().toString(36).slice(2,9)
-
 /* ===============================
-   Composant principal
+   Page Crédit
 ================================ */
 export default function Credit(){
 
-  /* ---- États principaux ---- */
+  /* ---- ÉTATS ---- */
   const [creditType, setCreditType]   = useState('amortissable') // 'amortissable' | 'infine'
   const [startMonth, setStartMonth]   = useState(1)              // Janvier=1
-  const [assurMode, setAssurMode]     = useState('CRD')          // 'CI' (capital initial) | 'CRD'
-  const [capital, setCapital]         = useState(300000)         // 8 chiffres max
-  const [duree, setDuree]             = useState(240)            // 3 chiffres max
-  const [taux, setTaux]               = useState(3.50)           // % annuel
-  const [tauxAssur, setTauxAssur]     = useState(0.30)           // % annuel
+  const [assurMode, setAssurMode]     = useState('CRD')          // 'CI' | 'CRD'
+
+  const [capital, setCapital]         = useState(300000)         // prêt 1
+  const [duree, setDuree]             = useState(240)
+  const [taux, setTaux]               = useState(3.50)
+  const [tauxAssur, setTauxAssur]     = useState(0.30)
   const [mensuBase, setMensuBase]     = useState('')             // saisie mensu prêt 1
 
-  // Prêts additionnels (max 2)
-  const [pretsPlus, setPretsPlus] = useState([]) // {id, capital, duree, taux}
-
-  // Lissage actif ?
+  const [pretsPlus, setPretsPlus]     = useState([])             // [{id,capital,duree,taux}]
   const [lisserPret1, setLisserPret1] = useState(false)
 
-  /* ---- Handlers inputs bornés ---- */
-  const onChangeCapital = (val) => {
-    const clean = String(val).replace(/\D/g,'').slice(0,8)     // 8 chiffres
-    setCapital(toNum(clean))
-  }
-  const onChangeDuree = (val) => {
-    const clean = String(val).replace(/\D/g,'').slice(0,3)     // 3 chiffres
-    setDuree(Math.max(1, toNum(clean)))
-  }
+  // PERSISTENCE
+  const STORE_KEY = storageKeyFor('credit')
+  const [hydrated, setHydrated] = useState(false)
+  useEffect(()=>{
+    try{
+      const raw = localStorage.getItem(STORE_KEY)
+      if(raw){
+        const s = JSON.parse(raw)
+        if (s && typeof s === 'object'){
+          setCreditType(s.creditType ?? 'amortissable')
+          setStartMonth(s.startMonth ?? 1)
+          setAssurMode(s.assurMode ?? 'CRD')
+          setCapital(s.capital ?? 300000)
+          setDuree(s.duree ?? 240)
+          setTaux(s.taux ?? 3.5)
+          setTauxAssur(s.tauxAssur ?? 0.3)
+          setMensuBase(s.mensuBase ?? '')
+          setPretsPlus(Array.isArray(s.pretsPlus) ? s.pretsPlus : [])
+          setLisserPret1(!!s.lisserPret1)
+        }
+      }
+    }catch{}
+    setHydrated(true)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  useEffect(()=>{
+    if(!hydrated) return
+    try{
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        creditType, startMonth, assurMode, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1
+      }))
+    }catch{}
+  }, [hydrated, creditType, startMonth, assurMode, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1])
+
+  // Reset global
+  useEffect(()=>{
+    const off = onResetEvent?.(()=>{
+      setCreditType('amortissable')
+      setStartMonth(1)
+      setAssurMode('CRD')
+      setCapital(300000)
+      setDuree(240)
+      setTaux(3.5)
+      setTauxAssur(0.3)
+      setMensuBase('')
+      setPretsPlus([])
+      setLisserPret1(false)
+      try { localStorage.removeItem(STORE_KEY) } catch {}
+    })
+    return off || (()=>{})
+  }, [STORE_KEY])
+
+  /* ---- Handlers bornés ---- */
+  const onChangeCapital = (val) => setCapital(toNum(String(val).replace(/\D/g,'').slice(0,8)))
+  const onChangeDuree   = (val) => setDuree(Math.max(1, toNum(String(val).replace(/\D/g,'').slice(0,3))))
   const onChangeMensuBase = (val) => {
     const clean = String(val).replace(/[^\d]/g,'').slice(0,8)
     setMensuBase(clean ? Number(clean).toLocaleString('fr-FR') : '')
   }
 
-  /* ---- Taux mensuels ---- */
+  /* ---- Taux mensuels & paramètres ---- */
   const rAn  = Math.max(0, Number(taux) || 0)/100
   const rAss = Math.max(0, Number(tauxAssur) || 0)/100
   const r    = rAn / 12
   const rA   = rAss / 12
   const N    = Math.max(1, Math.floor(duree || 0))
 
-  /* ---- Mensualité de base prêt 1 (hors assurance) et capital effectif ---- */
+  /* ---- Mensualité base prêt 1 + capital recalculé si mensu saisie ---- */
   const mensuHorsAssurance_base = useMemo(()=>{
-    if (creditType === 'infine') {
-      return r === 0 ? 0 : capital * r
-    }
+    if (creditType === 'infine') return r === 0 ? 0 : capital * r
     return mensualiteAmortissable(capital, r, N)
   }, [creditType, capital, r, N])
 
   const effectiveCapitalPret1 = useMemo(()=>{
     const hasOthers = pretsPlus.length > 0
     const mensuUser = toNum(mensuBase)
-    if (!mensuUser || hasOthers) return capital // si autres prêts, on ne recalcule pas le capital du prêt 1
-    if (creditType === 'infine') {
-      return (r === 0) ? capital : Math.floor(mensuUser / r)
-    }
+    if (!mensuUser || hasOthers) return capital
+    if (creditType === 'infine') return (r === 0) ? capital : Math.floor(mensuUser / r)
     if (r === 0) return Math.floor(mensuUser * N)
-    const C = mensuUser * (1 - Math.pow(1+r, -N)) / r
-    return Math.floor(C)
+    return Math.floor(mensuUser * (1 - Math.pow(1+r, -N)) / r)
   }, [capital, pretsPlus.length, mensuBase, creditType, r, N])
 
   const mensuBaseEffectivePret1 = useMemo(()=>{
     const hasOthers = pretsPlus.length > 0
     const mensuUser = toNum(mensuBase)
-    if (hasOthers) return mensuHorsAssurance_base
-    return mensuUser ? mensuUser : mensuHorsAssurance_base
+    return hasOthers ? mensuHorsAssurance_base : (mensuUser || mensuHorsAssurance_base)
   }, [pretsPlus.length, mensuBase, mensuHorsAssurance_base])
 
-  /* ---- Échéanciers des prêts additionnels ---- */
+  /* ---- Échéanciers prêts additionnels ---- */
   const autresRows = useMemo(()=>{
     return pretsPlus.map(p=>{
       const rM = (Math.max(0, Number(p.taux)||0)/100)/12
-      const Np = Math.max(1, Math.floor(p.duree||0))
-      if (creditType === 'infine') {
-        return scheduleInFine({
-          capital: Math.max(0, toNum(p.capital)),
-          r: rM,
-          rAss: rA,
-          N: Np,
-          assurMode,
-        })
-      }
-      return scheduleAmortissable({
-        capital: Math.max(0, toNum(p.capital)),
-        r: rM,
-        rAss: rA,
-        N: Np,
-        assurMode,
-      })
+      const Np = Math.max(1, Math.floor(toNum(p.duree)||0))
+      const C  = Math.max(0, toNum(p.capital))
+      return (creditType === 'infine')
+        ? scheduleInFine({ capital:C, r:rM, rAss:rA, N:Np, assurMode })
+        : scheduleAmortissable({ capital:C, r:rM, rAss:rA, N:Np, assurMode })
     })
   }, [pretsPlus, creditType, rA, assurMode])
 
-  /* ---- Cible de lissage et échéancier du prêt 1 ---- */
+  /* ---- Prêt 1 (standard ou lissé) ---- */
   const pret1Rows = useMemo(()=>{
-    const basePret1 = {
-      capital: effectiveCapitalPret1,
-      r,
-      rAss: rA,
-      N,
-      assurMode,
-      type: creditType
-    }
+    const basePret1 = { capital: effectiveCapitalPret1, r, rAss:rA, N, assurMode, type: creditType }
     if (!lisserPret1 || autresRows.length === 0) {
-      // pas de lissage → échéancier standard avec mensualité de base (ou type in fine)
-      if (creditType === 'infine') {
-        return scheduleInFine({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
-      }
-      return scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
+      return (creditType === 'infine')
+        ? scheduleInFine({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
+        : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
     }
-    // LISSAGE
     const mensuAutresM1 = autresRows.reduce((s,arr)=> s + (arr[0]?.mensu || 0), 0)
     const cible = mensuBaseEffectivePret1 + mensuAutresM1
-    return scheduleLisseePret1({
-      pret1: basePret1,
-      autresPretsRows: autresRows,
-      cibleMensuTotale: cible
-    })
-  }, [
-    effectiveCapitalPret1, r, rA, N, assurMode, creditType,
-    mensuBaseEffectivePret1, lisserPret1, autresRows
-  ])
+    return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
+  }, [effectiveCapitalPret1, r, rA, N, assurMode, creditType, mensuBaseEffectivePret1, lisserPret1, autresRows])
 
-  /* ---- Agrégation (tous prêts) ---- */
-  const maxMois = useMemo(()=>{
-    return Math.max(
-      pret1Rows.length,
-      ...autresRows.map(r => r.length),
-      N
-    )
-  }, [pret1Rows.length, autresRows, N])
-
-  const table = useMemo(()=>{
-    const rows = []
-    for (let m = 1; m <= maxMois; m++) {
-      let interet = 0, assurance = 0, amort = 0, mensu = 0, mensuTotal = 0, crdTot = 0
-
-      const addLine = l => {
-        if (!l) return
-        interet    += l.interet || 0
-        assurance  += l.assurance || 0
-        amort      += l.amort || 0
-        mensu      += l.mensu || 0
-        mensuTotal += l.mensuTotal || 0
-        crdTot     += l.crd || 0
-      }
-      addLine(pret1Rows[m-1])
-      autresRows.forEach(arr => addLine(arr[m-1]))
-
-      rows.push({ mois:m, interet, assurance, amort, mensu, mensuTotal, crd:crdTot })
+  /* ---- Tables ---- */
+  const agrRows = useMemo(()=>{
+    const maxLen = Math.max(pret1Rows.length, ...autresRows.map(a => a.length), N)
+    const out = []
+    for(let m=1; m<=maxLen; m++){
+      const collect = (row)=> row ? ({
+        i: row.interet||0, a: row.assurance||0, am: row.amort||0, me: row.mensu||0, mt: row.mensuTotal||0, c: row.crd||0
+      }) : ({ i:0,a:0,am:0,me:0,mt:0,c:0 })
+      const p1 = collect(pret1Rows[m-1])
+      const others = autresRows.reduce((s,arr)=> {
+        const r = collect(arr[m-1]); return { i:s.i+r.i, a:s.a+r.a, am:s.am+r.am, me:s.me+r.me, mt:s.mt+r.mt, c:s.c+r.c }
+      }, {i:0,a:0,am:0,me:0,mt:0,c:0})
+      out.push({
+        mois:m,
+        interet: p1.i + others.i,
+        assurance: p1.a + others.a,
+        amort: p1.am + others.am,
+        mensu: p1.me + others.me,
+        mensuTotal: p1.mt + others.mt,
+        crd: p1.c + others.c
+      })
     }
-    return rows
-  }, [pret1Rows, autresRows, maxMois])
+    return out
+  }, [pret1Rows, autresRows, N])
 
-  const coutInterets = useMemo(()=> table.reduce((s,l)=> s + l.interet, 0), [table])
-  const coutAssur    = useMemo(()=> table.reduce((s,l)=> s + l.assurance,0), [table])
+  const coutInterets = useMemo(()=> agrRows.reduce((s,l)=> s + l.interet, 0), [agrRows])
+  const coutAssur    = useMemo(()=> agrRows.reduce((s,l)=> s + l.assurance,0), [agrRows])
 
-  /* ---- UI actions prêts additionnels ---- */
+  /* ---- Vérifications ---- */
+  const warnings = useMemo(()=>{
+    const w = []
+    if (effectiveCapitalPret1 <= 0) w.push('Le capital du prêt 1 doit être > 0.')
+    if (N <= 0) w.push('La durée (mois) doit être > 0.')
+    if (creditType === 'amortissable') {
+      // mensu prêt 1 au mois 1 (hors assurance)
+      const m1 = pret1Rows[0]?.mensu || 0
+      const int1 = pret1Rows[0]?.interet || 0
+      if (m1 < int1 - 1e-6) w.push('La mensualité du prêt 1 est inférieure aux intérêts du premier mois.')
+    }
+    pretsPlus.forEach((p,i)=>{
+      if (toNum(p.capital) <= 0) w.push(`Le capital du prêt ${i+2} doit être > 0.`)
+      if (toNum(p.duree) <= 0) w.push(`La durée du prêt ${i+2} doit être > 0.`)
+    })
+    return w
+  }, [effectiveCapitalPret1, N, creditType, pret1Rows, pretsPlus])
+
+  /* ---- Actions prêts additionnels ---- */
   const addPret = () => {
     if (pretsPlus.length >= 2) return
     setPretsPlus(arr => [...arr, { id: rid(), capital: 100000, duree: 120, taux: 2.50 }])
   }
-  const updatePret = (id, patch) => {
-    setPretsPlus(arr => arr.map(p => p.id === id ? { ...p, ...patch } : p))
-  }
+  const updatePret = (id, patch) => setPretsPlus(arr => arr.map(p => p.id === id ? ({ ...p, ...patch }) : p))
   const removePret = (id) => setPretsPlus(arr => arr.filter(p => p.id !== id))
 
+  /* ---- Export Excel (.xls) ---- */
+  function buildWorksheetXml(title, header, rows) {
+    const esc = (s)=> String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    const rowXml = (cells)=> `<Row>${
+      cells.map(v => `<Cell><Data ss:Type="${typeof v === 'number' ? 'Number' : 'String'}">${esc(v)}</Data></Cell>`).join('')
+    }</Row>`
+    return `
+      <Worksheet ss:Name="${esc(title)}">
+        <Table>
+          ${rowXml(header)}
+          ${rows.map(r => rowXml(r)).join('')}
+        </Table>
+      </Worksheet>`
+  }
+  function exportExcel() {
+    // Feuille Agrégée
+    const header = ['Mois','Intérêts','Assurance','Amort.','Mensualité','Mensualité + Assur.','CRD total']
+    const agr = agrRows.map(l => [l.mois, Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
+
+    // Prêt 1
+    const hP = ['Mois','Intérêts','Assurance','Amort.','Mensualité','Mensualité + Assur.','CRD']
+    const p1 = pret1Rows.map(l => [l.mois, Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
+    // Prêt 2 & 3
+    const p2 = (autresRows[0]||[]).map(l => [l.mois, Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
+    const p3 = (autresRows[1]||[]).map(l => [l.mois, Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
+
+    const xml =
+      `<?xml version="1.0"?>
+      <?mso-application progid="Excel.Sheet"?>
+      <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+        xmlns:o="urn:schemas-microsoft-com:office:office"
+        xmlns:x="urn:schemas-microsoft-com:office:excel"
+        xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+        ${buildWorksheetXml('Agrégé', header, agr)}
+        ${buildWorksheetXml('Prêt 1', hP, p1)}
+        ${buildWorksheetXml('Prêt 2', hP, p2)}
+        ${buildWorksheetXml('Prêt 3', hP, p3)}
+      </Workbook>`
+
+    const blob = new Blob([xml], { type: 'application/vnd.ms-excel' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'amortissement.xls'
+    document.body.appendChild(a); a.click(); a.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  /* ---- Rendu ---- */
   return (
     <div className="panel">
-      <div className="plac-title">Simulateur de crédit</div>
+      <div className="plac-title" style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:12}}>
+        <span>Simulateur de crédit</span>
+        <div style={{display:'flex', gap:8}}>
+          <button className="chip" onClick={exportExcel}>Exporter (Excel)</button>
+        </div>
+      </div>
 
       {/* Bandeau paramètres globaux */}
       <div style={{display:'flex', alignItems:'center', gap:12, marginBottom:12, flexWrap:'wrap'}}>
@@ -312,19 +376,25 @@ export default function Credit(){
         </select>
       </div>
 
-      {/* Tuiles de saisie (Prêt 1) */}
+      {/* PARAMÈTRES PRÊT 1 — table fixe 4 colonnes sans débordement */}
       <div className="plac-table-wrap" style={{padding:12}}>
-        <table className="plac-table" role="grid" aria-label="paramètres crédit">
+        <table className="plac-table" role="grid" aria-label="paramètres crédit" style={{tableLayout:'fixed', width:'100%'}}>
+          <colgroup>
+            <col style={{width:'25%'}}/>
+            <col style={{width:'25%'}}/>
+            <col style={{width:'25%'}}/>
+            <col style={{width:'25%'}}/>
+          </colgroup>
           <tbody>
             <tr>
               <td className="cell-strong">Montant emprunté (Prêt 1)</td>
               <td className="input-cell">
-                <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end', width:220}}>
+                <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
                   <input
                     type="text" inputMode="numeric"
                     value={fmt0(effectiveCapitalPret1)}
                     onChange={e=> onChangeCapital(e.target.value)}
-                    style={{width:'100%', textAlign:'right', height:32, lineHeight:'32px'}}
+                    style={{width:'100%', textAlign:'right', height:32}}
                   />
                   <span>€</span>
                 </div>
@@ -332,12 +402,12 @@ export default function Credit(){
 
               <td className="cell-strong">Durée (mois)</td>
               <td className="input-cell">
-                <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end', width:220}}>
+                <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
                   <input
                     type="text" inputMode="numeric"
                     value={String(N)}
                     onChange={e=> onChangeDuree(e.target.value)}
-                    style={{width:'100%', textAlign:'right', height:32, lineHeight:'32px'}}
+                    style={{width:'100%', textAlign:'right', height:32}}
                   />
                   <span>mois</span>
                 </div>
@@ -347,7 +417,7 @@ export default function Credit(){
             <tr>
               <td className="cell-muted">Taux annuel (crédit)</td>
               <td className="input-cell">
-                <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end', width:220}}>
+                <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
                   <input
                     type="number" step="0.01"
                     value={Number((taux).toFixed(2))}
@@ -360,7 +430,7 @@ export default function Credit(){
 
               <td className="cell-muted">Taux annuel (assurance)</td>
               <td className="input-cell">
-                <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end', width:220}}>
+                <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
                   <input
                     type="number" step="0.01"
                     value={Number((tauxAssur).toFixed(2))}
@@ -375,13 +445,13 @@ export default function Credit(){
             <tr>
               <td className="cell-strong">Mensualité (hors assurance) — Prêt 1</td>
               <td className="input-cell">
-                <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end', width:220}}>
+                <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
                   <input
                     type="text" inputMode="numeric"
                     placeholder={fmt0(mensuHorsAssurance_base)}
                     value={mensuBase}
                     onChange={e=> onChangeMensuBase(e.target.value)}
-                    style={{width:'100%', textAlign:'right', height:32, lineHeight:'32px'}}
+                    style={{width:'100%', textAlign:'right', height:32}}
                   />
                   <span>€</span>
                 </div>
@@ -402,7 +472,16 @@ export default function Credit(){
         </table>
       </div>
 
-      {/* Prêts additionnels & Lissage */}
+      {/* WARNINGS */}
+      {warnings.length > 0 && (
+        <div style={{background:'#FFF7E6', border:'1px solid #E5C07B', color:'#7A5A00', padding:'8px 12px', borderRadius:8, marginTop:8}}>
+          <ul style={{margin:0, paddingLeft:18}}>
+            {warnings.map((w,i)=><li key={i}>{w}</li>)}
+          </ul>
+        </div>
+      )}
+
+      {/* PRÊTS ADDITIONNELS & LISSAGE */}
       <div style={{marginTop:14}}>
         <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap'}}>
           <div className="cell-strong">Prêts additionnels (max 2)</div>
@@ -420,7 +499,16 @@ export default function Credit(){
 
         {pretsPlus.length > 0 && (
           <div className="plac-table-wrap" style={{padding:12, marginTop:8}}>
-            <table className="plac-table" role="grid" aria-label="prêts additionnels">
+            <table className="plac-table" role="grid" aria-label="prêts additionnels"
+                   style={{tableLayout:'fixed', width:'100%'}}>
+              <colgroup>
+                <col style={{width:'8%'}}/>
+                <col style={{width:'24%'}}/>
+                <col style={{width:'22%'}}/>
+                <col style={{width:'22%'}}/>
+                <col style={{width:'18%'}}/>
+                <col style={{width:'6%'}}/>
+              </colgroup>
               <thead>
                 <tr>
                   <th>#</th>
@@ -434,7 +522,7 @@ export default function Credit(){
               <tbody>
                 {pretsPlus.map((p,idx)=>{
                   const rM = (Math.max(0, Number(p.taux)||0)/100)/12
-                  const Np = Math.max(1, Math.floor(p.duree||0))
+                  const Np = Math.max(1, Math.floor(toNum(p.duree)||0))
                   const C  = Math.max(0, toNum(p.capital))
                   const mensu = (creditType === 'infine')
                     ? (rM === 0 ? 0 : C * rM)
@@ -447,7 +535,7 @@ export default function Credit(){
                           type="text" inputMode="numeric"
                           value={fmt0(C)}
                           onChange={e=> updatePret(p.id, { capital: String(e.target.value).replace(/\D/g,'').slice(0,8) })}
-                          style={{width:140, textAlign:'right', height:28}}
+                          style={{width:'100%', textAlign:'right', height:28}}
                         />
                       </td>
                       <td className="input-cell" style={{textAlign:'right'}}>
@@ -455,7 +543,7 @@ export default function Credit(){
                           type="text" inputMode="numeric"
                           value={String(Np)}
                           onChange={e=> updatePret(p.id, { duree: String(e.target.value).replace(/\D/g,'').slice(0,3) })}
-                          style={{width:110, textAlign:'right', height:28}}
+                          style={{width:'100%', textAlign:'right', height:28}}
                         />
                       </td>
                       <td className="input-cell" style={{textAlign:'right'}}>
@@ -463,7 +551,7 @@ export default function Credit(){
                           type="number" step="0.01"
                           value={Number((Number(p.taux)||0).toFixed(2))}
                           onChange={e=> updatePret(p.id, { taux: +e.target.value || 0 })}
-                          style={{width:120, textAlign:'right', height:28}}
+                          style={{width:'100%', textAlign:'right', height:28}}
                         />
                       </td>
                       <td style={{textAlign:'right', fontWeight:600}}>{euro0(mensu)}</td>
@@ -479,9 +567,9 @@ export default function Credit(){
         )}
       </div>
 
-      {/* Tableau d’amortissement complet (agrégé) */}
+      {/* TABLEAU D’AMORTISSEMENT AGRÉGÉ */}
       <div className="plac-table-wrap" style={{marginTop:16}}>
-        <table className="plac-table" role="grid" aria-label="amortissement agrégé">
+        <table className="plac-table" role="grid" aria-label="amortissement agrégé" style={{tableLayout:'fixed', width:'100%'}}>
           <thead>
             <tr>
               <th>Mois</th>
@@ -494,7 +582,7 @@ export default function Credit(){
             </tr>
           </thead>
           <tbody>
-            {table.map((l) => (
+            {agrRows.map((l) => (
               <tr key={l.mois}>
                 <td>{l.mois}</td>
                 <td style={{textAlign:'right'}}>{euro0(l.interet)}</td>
@@ -509,6 +597,110 @@ export default function Credit(){
         </table>
       </div>
 
+      {/* DÉTAIL PAR PRÊT — police réduite + traits de colonnes #CEC1B6 */}
+      <div className="plac-table-wrap" style={{marginTop:16}}>
+        <div className="cell-strong" style={{marginBottom:8}}>Détail par prêt</div>
+
+        {/* PRÊT 1 */}
+        <div style={{marginBottom:12}}>
+          <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 1</div>
+          <table className="plac-table" role="grid" aria-label="amortissement prêt 1"
+                 style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
+            <thead>
+              <tr>
+                <th>Mois</th>
+                <th style={{textAlign:'right'}}>Intérêts</th>
+                <th style={{textAlign:'right'}}>Assurance</th>
+                <th style={{textAlign:'right'}}>Amort.</th>
+                <th style={{textAlign:'right'}}>Mensualité</th>
+                <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
+                <th style={{textAlign:'right'}}>CRD</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pret1Rows.map((l)=>(
+                <tr key={l.mois}>
+                  <td style={{borderRight:'1px solid #CEC1B6'}}>{l.mois}</td>
+                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
+                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
+                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
+                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu)}</td>
+                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
+                  <td style={{textAlign:'right'}}>{euro0(l.crd)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* PRÊT 2 */}
+        {autresRows[0] && (
+          <div style={{marginBottom:12}}>
+            <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 2</div>
+            <table className="plac-table" role="grid" aria-label="amortissement prêt 2"
+                   style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
+              <thead>
+                <tr>
+                  <th>Mois</th>
+                  <th style={{textAlign:'right'}}>Intérêts</th>
+                  <th style={{textAlign:'right'}}>Assurance</th>
+                  <th style={{textAlign:'right'}}>Amort.</th>
+                  <th style={{textAlign:'right'}}>Mensualité</th>
+                  <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
+                  <th style={{textAlign:'right'}}>CRD</th>
+                </tr>
+              </thead>
+              <tbody>
+                {autresRows[0].map((l)=>(
+                  <tr key={l.mois}>
+                    <td style={{borderRight:'1px solid #CEC1B6'}}>{l.mois}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
+                    <td style={{textAlign:'right'}}>{euro0(l.crd)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* PRÊT 3 */}
+        {autresRows[1] && (
+          <div>
+            <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 3</div>
+            <table className="plac-table" role="grid" aria-label="amortissement prêt 3"
+                   style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
+              <thead>
+                <tr>
+                  <th>Mois</th>
+                  <th style={{textAlign:'right'}}>Intérêts</th>
+                  <th style={{textAlign:'right'}}>Assurance</th>
+                  <th style={{textAlign:'right'}}>Amort.</th>
+                  <th style={{textAlign:'right'}}>Mensualité</th>
+                  <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
+                  <th style={{textAlign:'right'}}>CRD</th>
+                </tr>
+              </thead>
+              <tbody>
+                {autresRows[1].map((l)=>(
+                  <tr key={l.mois}>
+                    <td style={{borderRight:'1px solid #CEC1B6'}}>{l.mois}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
+                    <td style={{textAlign:'right'}}>{euro0(l.crd)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
