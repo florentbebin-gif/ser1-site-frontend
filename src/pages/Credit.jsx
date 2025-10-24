@@ -817,6 +817,25 @@ const diffDureesMois = dureeLisseMois - dureeBaseMois
               {diffDureesMois > 0 ? `+${diffDureesMois}` : diffDureesMois} mois
             </span>
           </div>
+      {/* Contrôles lissage (à droite) */}
+      <div style={{display:'flex', justifyContent:'flex-end', gap:8, marginTop:6, flexWrap:'wrap'}}>
+        <button
+          className={`chip ${lissageMode==='mensu' ? 'active' : ''}`}
+            onClick={()=> setLissageMode('mensu')}
+            disabled={!lisserPret1}
+            title="Lisser en maintenant la mensualité totale (peut réduire la durée)"
+        >
+          Lissage : mensualité constante
+        </button>
+        <button
+          className={`chip ${lissageMode==='duree' ? 'active' : ''}`}
+          onClick={()=> setLissageMode('duree')}
+          disabled={!lisserPret1}
+          title="Lisser en maintenant la durée du prêt 1"
+        >
+          Lissage : durée constante
+        </button>
+      </div>
 
             {/* Tableau synthétique de périodes — s'affiche dès qu'il y a ≥1 prêt additionnel */}
             {pretsPlus.length > 0 && synthesePeriodes.length > 0 && (
