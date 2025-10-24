@@ -377,7 +377,7 @@ export default function Placement(){
   )
 }
 
-/* ==== Graphique SVG — ticks lisibles + étiquette finale safe ==== */
+/* ==== Graphique SVG — labels au-dessus + anti-chevauchement ==== */
 
 const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
 
@@ -396,7 +396,7 @@ function SmoothChart({res}) {
 
   if(!res?.series?.length) return null
 
-  // Filtre séries non vides
+  // Filtrer les séries non vides
   const filtered = res.series.map(s=>{
     const vals = (s.values || []).map(v => (v !== undefined && v > 0) ? v : undefined)
     const anyPos = vals.some(v => v !== undefined && v > 0)
@@ -406,7 +406,7 @@ function SmoothChart({res}) {
 
   // Mise en page
   const LEG_W = 180
-  const PAD   = 60 // marge pour labels Y
+  const PAD   = 60 // marge gauche/droite pour labels y
   const W     = Math.max(600, wrapW - 24)
   const SVG_W = Math.max(420, W - LEG_W)
   const SVG_H = 360
@@ -419,7 +419,7 @@ function SmoothChart({res}) {
   filtered.forEach(s => s.values.forEach(v => { if(v!==undefined && v>maxY) maxY = v }))
   if(maxY <= 0) maxY = 1
 
-  // Pas: 1 000 si petit; sinon multiple de 10 000 pour ≤ 12 ticks
+  // Pas : 1 000 si petit; sinon multiple de 10 000 (≤ 12 ticks)
   let step
   if (maxY <= 12_000) {
     step = 1_000
@@ -440,7 +440,7 @@ function SmoothChart({res}) {
     ticksY.push({ val:v, y:y(v) })
   }
 
-  // Derniers points (pour l'étiquette finale)
+  // Points finaux
   const lastPoints = filtered.map((s,si)=>{
     let lastIdx = -1
     s.values.forEach((v,i)=> { if(v!==undefined) lastIdx = i })
@@ -454,8 +454,47 @@ function SmoothChart({res}) {
     }
   }).filter(Boolean)
 
-  // Helper d'estimation de largeur du texte (approx. 7 px/caractère)
-  const estimateTextWidth = (text) => Math.max(8, String(text).length * 7)
+  // Helper largeur texte
+  const estimateTextWidth = (text) => Math.max(10, String(text).length * 7)
+
+  // Construire labels au-dessus + éviter chevauchements
+  const LABEL_H = 18
+  const MIN_GAP = 18 // écart vertical minimal entre labels
+  const labelsRaw = lastPoints.map(p => {
+    const label = fmtShortEuro(p.val)
+    const w = estimateTextWidth(label)
+    const minX = PAD + 4 + w/2
+    const maxX = SVG_W - PAD - 4 - w/2
+    const cx   = Math.min(maxX, Math.max(minX, p.lx)) // centré sur le point, clampé
+    const cy   = p.ly - 10                              // au-dessus du point
+    return { ...p, label, w, cx, cy }
+  })
+
+  // Tri par y cible puis ajustement pour éviter les chevauchements
+  labelsRaw.sort((a,b)=> a.cy - b.cy) // de haut en bas
+
+  const minY = PAD + LABEL_H/2
+  const maxY = SVG_H - PAD - LABEL_H/2
+
+  const labelsPlaced = []
+  for(const lab of labelsRaw){
+    let yPlace = Math.max(minY, lab.cy)
+    if (labelsPlaced.length){
+      const prev = labelsPlaced[labelsPlaced.length-1]
+      // empêcher chevauchement vertical
+      if (yPlace < prev.y + MIN_GAP) yPlace = prev.y + MIN_GAP
+    }
+    yPlace = Math.min(maxY, yPlace)
+    labelsPlaced.push({ ...lab, x: lab.cx, y: yPlace })
+  }
+  // Passe inverse (du bas vers le haut) pour recoller si on a poussé trop bas
+  for(let i = labelsPlaced.length - 2; i >= 0; i--){
+    const cur = labelsPlaced[i]
+    const next = labelsPlaced[i+1]
+    if (cur.y > next.y - MIN_GAP){
+      cur.y = Math.max(minY, next.y - MIN_GAP)
+    }
+  }
 
   return (
     <div ref={wrapRef} style={{display:'flex', alignItems:'stretch', gap:12, width:'100%'}}>
@@ -496,35 +535,30 @@ function SmoothChart({res}) {
           )
         })}
 
-        {/* Étiquettes finales — clamp à l'intérieur du cadre */}
-        {lastPoints.map((p,i)=>{
-          const label = fmtShortEuro(p.val)
-          const textW = estimateTextWidth(label)
-          const minX  = PAD + 4
-          const maxX  = SVG_W - PAD - 4 - textW
-          const rawX  = p.lx + 8
-          const xClamped = Math.max(minX, Math.min(maxX, rawX))
-
-          // Clamp vertical pour éviter coupe en haut/bas
-          const minY = PAD + 14
-          const maxY = SVG_H - PAD - 6
-          const rawY = p.ly - 6
-          const yClamped = Math.max(minY, Math.min(maxY, rawY))
-
+        {/* Labels au-dessus + anti-chevauchement */}
+        {labelsPlaced.map((p,i)=>{
+          const left = p.x - p.w/2
+          const top  = p.y - LABEL_H/2
+          // Si on a dû décaler le label, tracer un petit trait depuis le point
+          const needsLeader = (p.y > p.ly - 10 - 0.5) ? false : true
+          const leaderToY = top + LABEL_H // bas du cartouche
+          const leaderToX = p.x
           return (
             <g key={'lbl'+i}>
-              {/* petit fond blanc lisible */}
+              {needsLeader && (
+                <line x1={p.lx} y1={p.ly} x2={leaderToX} y2={leaderToY} stroke={p.color} strokeWidth="1"/>
+              )}
               <rect
-                x={xClamped - 2}
-                y={yClamped - 12}
-                width={textW + 6}
-                height={18}
+                x={left - 3}
+                y={top - 2}
+                width={p.w + 6}
+                height={LABEL_H + 4}
                 fill="#fff"
-                opacity="0.9"
+                opacity="0.92"
                 rx="3"
               />
-              <text x={xClamped} y={yClamped} fontSize="13" fill={p.color}>
-                {label}
+              <text x={p.x} y={p.y + 4} fontSize="13" fill={p.color} textAnchor="middle">
+                {p.label}
               </text>
             </g>
           )
@@ -534,7 +568,7 @@ function SmoothChart({res}) {
       {/* Légende */}
       <div
         style={{
-          width:180, minWidth:180, maxWidth:180,
+          width:LEG_W, minWidth:LEG_W, maxWidth:LEG_W,
           display:'flex', flexDirection:'column', gap:8, paddingTop:6
         }}
       >
