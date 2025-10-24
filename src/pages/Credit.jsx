@@ -321,6 +321,13 @@ export default function Credit(){
     return shiftRows(rows, off)
   })
 }, [pretsPlus, creditType, assurMode, startYM])
+// ====== Durée "de base" du prêt 1 (sans lissage) ======
+const basePret1Rows = useMemo(() => {
+  const base = { capital: effectiveCapitalPret1, r, rAss: rA, N, assurMode, type: creditType }
+  return (creditType === 'infine')
+    ? scheduleInFine({ ...base, mensuOverride: mensuHorsAssurance_base })
+    : scheduleAmortissable({ ...base, mensuOverride: mensuHorsAssurance_base })
+}, [effectiveCapitalPret1, r, rA, N, assurMode, creditType, mensuHorsAssurance_base])
 
   /* ---- Prêt 1 (standard ou lissé) ---- */
   const pret1Rows = useMemo(()=>{
