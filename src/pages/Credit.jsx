@@ -394,13 +394,19 @@ export default function Credit(){
         : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
     }
 
-    if (lissageMode === 'mensu') {
-      // Mode historique : maintenir la mensualité totale (M1)
-      const mensuAutresM1 = autresRows.reduce((s,arr)=> s + ((arr[0]?.mensu) || 0), 0)
-      const cible = mensuBaseEffectivePret1 + mensuAutresM1
-      return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
-    }
+    // === Nouveau mode : MAINTENIR LA DURÉE (solution analytique) ===
+    if (lissageMode === 'duree') {
+      // 1) on calcule T (annuité totale constante) qui garantit CRD_N = 0
+      const T = totalConstantForDuration({ basePret1, autresPretsRows: autresRows })
 
+      // 2) on génère l’échéancier du prêt 1 avec cette T
+      return scheduleLisseePret1Duration({
+        basePret1,
+        autresPretsRows: autresRows,
+        totalConst: T
+      })
+    }
+    
     // Nouveau mode : maintenir la DURÉE (identique à la durée "base")
     const targetLen = basePret1Rows.length
     const cible = findTargetForDuration({ basePret1, autresPretsRows: autresRows, targetLen })
