@@ -679,11 +679,8 @@ export default function Credit(){
           </div>
         )}
       </div>
-/******  SYNTHÈSE  ******/
-<div style={{
-  marginTop:14, border:'1px solid #C0B5AA', borderRadius:10, padding:'12px 14px',
-  background:'#F8F6F4'
-}}>
+{/* SYNTHESE */}
+<div style={{ marginTop:14, border:'1px solid #C0B5AA', borderRadius:10, padding:'12px 14px', background:'#F8F6F4' }}>
   {viewMode !== 'annuel' ? (
     /* ---- VUE MENSUELLE ---- */
     <>
@@ -704,7 +701,7 @@ export default function Credit(){
         </div>
       </div>
 
-      {/* Tableau synthétique de lissage (mensuel) */}
+      {/* Tableau synthétique de lissage (périodes) */}
       {lisserPret1 && syntheseLissage.length > 0 && (
         <div style={{marginTop:10}}>
           <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
@@ -738,12 +735,12 @@ export default function Credit(){
     </>
   ) : (
     /* ---- VUE ANNUELLE ---- */
-    (() => {
-      const ann = aggregateToYears(agrRows)  // [{periode, interet, assurance, amort, mensu, mensuTotal, crd}]
-      const first = ann[0] || {periode:'—', interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0}
-      return (
-        <>
-          {/* Bandeau de synthèse pour la 1ère année visible */}
+    <>
+      {/* Bandeau résumé (1ère année visible) */}
+      {(() => {
+        const ann = aggregateToYears(agrRows)
+        const first = ann[0] || {periode:'—', interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0}
+        return (
           <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
             <div>
               <div className="cell-muted">Votre paiement total en {first.periode} :</div>
@@ -766,50 +763,44 @@ export default function Credit(){
               <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(first.crd)}</div>
             </div>
           </div>
+        )
+      })()}
 
-          {/* Tableau annuel complet */}
-          <div style={{marginTop:10}}>
-            <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
-              <colgroup>
-                <col style={{width:'20%'}}/>
-                <col style={{width:'14%'}}/>
-                <col style={{width:'14%'}}/>
-                <col style={{width:'14%'}}/>
-                <col style={{width:'14%'}}/>
-                <col style={{width:'14%'}}/>
-                <col style={{width:'10%'}}/>
-              </colgroup>
-              <thead>
-                <tr>
-                  <th>Année</th>
-                  <th>Intérêts</th>
-                  <th>Assurance</th>
-                  <th>Amort.</th>
-                  <th>Paiement</th>
-                  <th>Paiement + Assur.</th>
-                  <th>CRD fin</th>
+      {/* ➜ En vue annuelle, on garde un tableau de périodes (comme en mensuel) */}
+      {lisserPret1 && syntheseLissage.length > 0 && (
+        <div style={{marginTop:10}}>
+          <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
+            <colgroup>
+              <col style={{width:'40%'}}/>
+              <col style={{width:'20%'}}/>
+              <col style={{width:'20%'}}/>
+              <col style={{width:'20%'}}/>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Période</th>
+                <th>Prêt 1</th>
+                <th>Prêt 2</th>
+                <th>Prêt 3</th>
+              </tr>
+            </thead>
+            <tbody>
+              {syntheseLissage.map((ln, i)=>(
+                <tr key={i}>
+                  <td className="cell-strong">{ln.from}</td>
+                  <td style={{textAlign:'right'}}>{ln.p1>0 ? euro0(ln.p1) : '—'}</td>
+                  <td style={{textAlign:'right'}}>{ln.p2>0 ? euro0(ln.p2) : '—'}</td>
+                  <td style={{textAlign:'right'}}>{ln.p3>0 ? euro0(ln.p3) : '—'}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {ann.map((a,i)=>(
-                  <tr key={i}>
-                    <td>{a.periode}</td>
-                    <td style={{textAlign:'right'}}>{euro0(a.interet)}</td>
-                    <td style={{textAlign:'right'}}>{euro0(a.assurance)}</td>
-                    <td style={{textAlign:'right'}}>{euro0(a.amort)}</td>
-                    <td style={{textAlign:'right', fontWeight:600}}>{euro0(a.mensu)}</td>
-                    <td style={{textAlign:'right', fontWeight:600}}>{euro0(a.mensuTotal)}</td>
-                    <td style={{textAlign:'right'}}>{euro0(a.crd)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )
-    })()
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
   )}
 </div>
+
 /******  TABLEAU D’AMORTISSEMENT (vue mensuelle/annuelle) ******/
       <div className="plac-table-wrap" style={{marginTop:16}}>
         <table className="plac-table" role="grid" aria-label="amortissement" style={{tableLayout:'fixed', width:'100%'}}>
