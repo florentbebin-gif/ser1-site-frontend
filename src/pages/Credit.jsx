@@ -216,6 +216,7 @@ export default function Credit(){
       setPretsPlus([])
       setLisserPret1(false)
       setViewMode('mensuel')
+      setLissageMode('mensu')
       try { localStorage.removeItem(STORE_KEY) } catch {}
     })
     return off || (()=>{})
