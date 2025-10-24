@@ -421,37 +421,32 @@ export default function Credit(){
   }, [effectiveCapitalPret1, r, rA, N, assurMode, creditType, mensuHorsAssurance_base])
 
   /* ---- Prêt 1 (standard ou lissé) ---- */
-  const pret1Rows = useMemo(()=>{
-    const basePret1 = { capital: effectiveCapitalPret1, r, rAss:rA, N, assurMode, type: creditType }
+const pret1Rows = useMemo(() => {
+  const basePret1 = { capital: effectiveCapitalPret1, r, rAss:rA, N, assurMode, type: creditType }
 
-    // Pas de lissage ou pas d'autres prêts => comportement standard
-    if (!lisserPret1 || autresRows.length === 0) {
-      return (creditType === 'infine')
-        ? scheduleInFine({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
-        : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
-    }
+  // 0) Pas de lissage ou pas d'autres prêts => échéancier standard
+  if (!lisserPret1 || autresRows.length === 0) {
+    return (creditType === 'infine')
+      ? scheduleInFine({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
+      : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
+  }
 
-    // === Nouveau mode : MAINTENIR LA DURÉE (solution analytique) ===
-    if (lissageMode === 'duree') {
-      // 1) on calcule T (annuité totale constante) qui garantit CRD_N = 0
-      const T = totalConstantForDuration({ basePret1, autresPretsRows: autresRows })
-
-      // 2) on génère l’échéancier du prêt 1 avec cette T
-      return scheduleLisseePret1Duration({
-        basePret1,
-        autresPretsRows: autresRows,
-        totalConst: T
-      })
-    }
-    
-    // Nouveau mode : maintenir la DURÉE (identique à la durée "base")
-    const targetLen = basePret1Rows.length
-    const cible = findTargetForDuration({ basePret1, autresPretsRows: autresRows, targetLen })
+  if (lissageMode === 'mensu') {
+    // 1) LISSAGE « mensualité constante » (comportement historique)
+    //    cible = M1 du prêt 1 (hors assurance) + M1 des autres prêts (hors assurance)
+    const mensuAutresM1 = autresRows.reduce((s, arr) => s + ((arr[0]?.mensu) || 0), 0)
+    const cible = mensuBaseEffectivePret1 + mensuAutresM1
     return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
-  }, [
-    effectiveCapitalPret1, r, rA, N, assurMode, creditType,
-    mensuBaseEffectivePret1, lisserPret1, autresRows, lissageMode, basePret1Rows.length
-  ])
+  }
+
+  // 2) LISSAGE « durée constante » (ta nouvelle voie analytique)
+  const T = totalConstantForDuration({ basePret1, autresPretsRows: autresRows })
+  return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, totalConst: T })
+
+}, [
+  effectiveCapitalPret1, r, rA, N, assurMode, creditType,
+  mensuBaseEffectivePret1, lisserPret1, autresRows, lissageMode
+])
 
   // Durées & différence
   const dureeBaseMois  = basePret1Rows.length
