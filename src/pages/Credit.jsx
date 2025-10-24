@@ -421,6 +421,40 @@ export default function Credit(){
   const coutInteretsAgr   = agrRows.reduce((s,l)=> s + l.interet, 0)
   const pret1Interets     = pret1Rows.reduce((s,l)=> s + (l.interet   || 0), 0)
   const pret1Assurance    = pret1Rows.reduce((s,l)=> s + (l.assurance || 0), 0)
+
+  /* ---- Vérifications ---- */
+const warnings = useMemo(() => {
+  const w = [];
+
+  // Capital prêt 1
+  if ((effectiveCapitalPret1 || 0) <= 0) {
+    w.push('Le capital du prêt 1 doit être > 0.');
+  }
+
+  // Durée prêt 1
+  if ((N || 0) <= 0) {
+    w.push('La durée (mois) doit être > 0.');
+  }
+
+  // Mensualité vs intérêts (prêt 1) si amortissable
+  if (creditType === 'amortissable') {
+    const m1  = pret1Rows?.[0]?.mensu ?? 0;
+    const i1  = pret1Rows?.[0]?.interet ?? 0;
+    if (m1 < i1 - 1e-6) {
+      w.push('La mensualité du prêt 1 est inférieure aux intérêts du premier mois.');
+    }
+  }
+
+  // Prêts additionnels
+  pretsPlus.forEach((p, idx) => {
+    const k = idx + 2;
+    if ((toNum(p.capital) || 0) <= 0)  w.push(`Le capital du prêt ${k} doit être > 0.`);
+    if ((toNum(p.duree)   || 0) <= 0)  w.push(`La durée du prêt ${k} doit être > 0.`);
+  });
+
+  return w;
+}, [effectiveCapitalPret1, N, creditType, pret1Rows, pretsPlus]);
+
   
   /* ---- Export Excel (.xls) ---- */
   function buildWorksheetXml(title, header, rows) {
