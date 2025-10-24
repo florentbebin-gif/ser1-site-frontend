@@ -474,19 +474,19 @@ function SmoothChart({res}) {
   labelsRaw.sort((a,b)=> a.cy - b.cy) // de haut en bas
 
   const minY = PAD + LABEL_H/2
-  const maxY = SVG_H - PAD - LABEL_H/2
+  const maxLabelY = SVG_H - PAD - LABEL_H/2
 
   const labelsPlaced = []
-  for(const lab of labelsRaw){
-    let yPlace = Math.max(minY, lab.cy)
-    if (labelsPlaced.length){
-      const prev = labelsPlaced[labelsPlaced.length-1]
-      // empêcher chevauchement vertical
-      if (yPlace < prev.y + MIN_GAP) yPlace = prev.y + MIN_GAP
-    }
-    yPlace = Math.min(maxY, yPlace)
-    labelsPlaced.push({ ...lab, x: lab.cx, y: yPlace })
+for(const lab of labelsRaw){
+  let yPlace = Math.max(minY, lab.cy)
+  if (labelsPlaced.length){
+    const prev = labelsPlaced[labelsPlaced.length-1]
+    if (yPlace < prev.y + MIN_GAP) yPlace = prev.y + MIN_GAP
   }
+  yPlace = Math.min(maxLabelY, yPlace)
+  labelsPlaced.push({ ...lab, x: lab.cx, y: yPlace })
+}
+
   // Passe inverse (du bas vers le haut) pour recoller si on a poussé trop bas
   for(let i = labelsPlaced.length - 2; i >= 0; i--){
     const cur = labelsPlaced[i]
