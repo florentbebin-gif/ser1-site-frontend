@@ -142,6 +142,46 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
   }
   return rows
 }
+// Calcule la cible de mensualité totale (Prêt1 + autres) pour conserver une durée cible.
+function findTargetForDuration({ basePret1, autresPretsRows, targetLen }) {
+  // Simule une cible -> renvoie {len, lastCRD}
+  const simulate = (cible) => {
+    const rows = scheduleLisseePret1({
+      pret1: basePret1,
+      autresPretsRows,
+      cibleMensuTotale: cible
+    })
+    const len = rows.length
+    const lastCRD = rows[len-1]?.crd ?? 0
+    return { len, lastCRD }
+  }
+
+  // Borne basse : intérêts du 1er mois + mensualité des autres prêts au mois 1
+  const interet1 = basePret1.capital * basePret1.r
+  const autresM1 = autresPretsRows.reduce((s, arr)=> s + (arr[0]?.mensu || 0), 0)
+  let lo = Math.max(0, interet1 + autresM1)
+
+  // Borne haute : on double jusqu'à atteindre une durée <= targetLen
+  let hi = Math.max(lo + 1, lo * 2 || 1000)
+  while (true) {
+    const { len } = simulate(hi)
+    if (len <= targetLen) break
+    hi *= 2
+    if (hi > 1e7) break // garde-fou
+  }
+
+  // Dichotomie
+  for (let i=0; i<36; i++){
+    const mid = (lo + hi) / 2
+    const { len, lastCRD } = simulate(mid)
+    if (len > targetLen || lastCRD > 1) {
+      lo = mid
+    } else {
+      hi = mid
+    }
+  }
+  return hi
+}
 
 
 /* ===============================
