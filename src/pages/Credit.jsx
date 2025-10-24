@@ -714,7 +714,7 @@ const synthesePeriodes = useMemo(() => {
   </div>
 
   {/* Tableau synthétique de périodes — seulement si >1 prêt ET lissage ON */}
-  {pretsPlus.length > 0 && lisserPret1 && syntheseLissage.length > 0 && (
+  {pretsPlus.length > 0 && syntheseLissage.length > 0 && (
     <div style={{marginTop:10}}>
       <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
         <colgroup>
