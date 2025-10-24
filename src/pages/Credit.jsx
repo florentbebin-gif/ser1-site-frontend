@@ -355,6 +355,9 @@ const basePret1Rows = useMemo(() => {
   effectiveCapitalPret1, r, rA, N, assurMode, creditType,
   mensuBaseEffectivePret1, lisserPret1, autresRows, lissageMode, basePret1Rows.length
 ])
+const dureeBaseMois  = basePret1Rows.length
+const dureeLisseMois = pret1Rows.length
+const diffDureesMois = dureeLisseMois - dureeBaseMois
 
 // ====== Durées "de base" vs "lissée" (en nombre de mois) ======
 // 1) Échéancier "de base" du prêt 1, SANS lissage, avec les mêmes paramètres
