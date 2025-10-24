@@ -114,57 +114,50 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
   return rows
 }
 
+// === LISSAGE : MENSUALITÉ TOTALE CONSTANTE (hors assurance) ===
+// On impose que (mensu_prêt1 + somme(mensu_autres)) = cibleMensuTotale à chaque mois.
+// L'assurance (si CRD ou CI) du prêt 1 est ajoutée à part, elle n'entre PAS dans la cible.
 function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
   const { capital, r, rAss, N, assurMode, type } = pret1
   const rows = []
+
   let crd = Math.max(0, capital)
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
   const EPS = 1e-8
 
-  // Amortissement minimal « sensible » (même logique que findTargetForDuration)
-  const minAmort = Math.max(1, capital / Math.max(12, N) / 50)
-
-  const sumMensuAutresAtMonth = (m) =>
+  const mensuAutresAt = (m) =>
     autresPretsRows.reduce((s, arr) => s + ((arr[m-1]?.mensu) || 0), 0)
 
   for (let m = 1; m <= N; m++) {
     if (crd <= EPS) break
 
-    const crdStart   = crd
-    const interet    = crdStart * r
-    const mensuAutres = sumMensuAutresAtMonth(m)
+    const crdStart = crd
+    const interet  = crdStart * r
+    const autres   = mensuAutresAt(m)
 
-    // Part dispo pour le prêt 1
-    let mensu1 = Math.max(0, cibleMensuTotale - mensuAutres)
+    // part prêt 1 = cible - autres (hors assurance)
+    let mensu1 = Math.max(0, cibleMensuTotale - autres)
 
-    // ▸ Sécurise un amortissement réel sur les mois < N
-    const besoinMin = (m < N && type === 'amortissable')
-      ? (interet + minAmort)
-      : interet
-
-    if (mensu1 < besoinMin && r > 0) mensu1 = besoinMin
-
-    // ▸ Dernier mois pour amortissable : solder
-    if (type === 'amortissable' && m === N) {
-      mensu1 = Math.max(mensu1, interet + crdStart)
-    }
-
-    // ▸ Bornes naturelles
+    // bornes « sûreté »
     const capMensu = interet + crdStart
     if (mensu1 > capMensu) mensu1 = capMensu
+    if (type !== 'infine' && m < N && mensu1 < interet) mensu1 = interet
+    if (type === 'infine' && mensu1 < interet) mensu1 = interet
+    if (m === N) mensu1 = Math.min(mensu1, capMensu)
 
-    let amort = Math.max(0, mensu1 - interet)
-    if (amort > crdStart) amort = crdStart
-
+    const amort  = Math.max(0, mensu1 - interet)
     const crdEnd = Math.max(0, crdStart - amort)
-    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss) // assurance sur CRD début
 
+    // assurance sur le prêt 1 uniquement
+    const assur = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)
     const mensuTotal = mensu1 + (assur || 0)
-    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu:mensu1, mensuTotal, crd: crdEnd })
+
+    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu:mensu1, mensuTotal, crd:crdEnd })
     crd = crdEnd
   }
   return rows
 }
+
 // ---- Échéancier lissé avec "T" constant (durée conservée) ----
 function scheduleLisseePret1Duration({ basePret1, autresPretsRows, totalConst }) {
   const { capital, r, rAss, N, assurMode } = basePret1
