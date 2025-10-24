@@ -137,18 +137,18 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
 export default function Credit(){
 
   /* ---- ÉTATS ---- */
-  const [creditType, setCreditType]   = useState('amortissable') // 'amortissable' | 'infine'
-  const [startYM, setStartYM]         = useState(nowYearMonth()) // Date de souscription (YYYY-MM)
+  const [startYM, setStartYM]         = useState(nowYearMonth()) // Date souscription prêt 1
   const [assurMode, setAssurMode]     = useState('CRD')          // 'CI' | 'CRD'
+  const [creditType, setCreditType]   = useState('amortissable') // type prêt 1 (et défaut pour autres)
 
-  const [capital, setCapital]         = useState(300000)         // prêt 1
+  const [capital, setCapital]         = useState(300000)
   const [duree, setDuree]             = useState(240)
   const [taux, setTaux]               = useState(3.50)
   const [tauxAssur, setTauxAssur]     = useState(0.30)
   const [mensuBase, setMensuBase]     = useState('')             // saisie mensu prêt 1
 
-  // prêts additionnels : + startYM spécifique
-  const [pretsPlus, setPretsPlus]     = useState([])             // [{id,capital,duree,taux,startYM}]
+  // prêts additionnels : + type & startYM
+  const [pretsPlus, setPretsPlus]     = useState([])             // [{id,capital,duree,taux,startYM,type}]
   const [lisserPret1, setLisserPret1] = useState(false)
   const [viewMode, setViewMode]       = useState('mensuel')      // 'mensuel' | 'annuel'
 
@@ -161,9 +161,9 @@ export default function Credit(){
       if(raw){
         const s = JSON.parse(raw)
         if (s && typeof s === 'object'){
-          setCreditType(s.creditType ?? 'amortissable')
           setStartYM(s.startYM ?? nowYearMonth())
           setAssurMode(s.assurMode ?? 'CRD')
+          setCreditType(s.creditType ?? 'amortissable')
           setCapital(s.capital ?? 300000)
           setDuree(s.duree ?? 240)
           setTaux(s.taux ?? 3.5)
@@ -182,17 +182,17 @@ export default function Credit(){
     if(!hydrated) return
     try{
       localStorage.setItem(STORE_KEY, JSON.stringify({
-        creditType, startYM, assurMode, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode
+        startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode
       }))
     }catch{}
-  }, [hydrated, creditType, startYM, assurMode, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode])
+  }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode])
 
   // Reset global
   useEffect(()=>{
     const off = onResetEvent?.(()=>{
-      setCreditType('amortissable')
       setStartYM(nowYearMonth())
       setAssurMode('CRD')
+      setCreditType('amortissable')
       setCapital(300000)
       setDuree(240)
       setTaux(3.5)
@@ -242,7 +242,7 @@ export default function Credit(){
     return hasOthers ? mensuHorsAssurance_base : (mensuUser || mensuHorsAssurance_base)
   }, [pretsPlus.length, mensuBase, mensuHorsAssurance_base])
 
-  /* ---- Gen échéanciers prêts additionnels (avec décalage startYM propre) ---- */
+  /* ---- Gen échéanciers prêts additionnels (avec décalage startYM propre + type propre) ---- */
   function shiftRows(rows, offset){
     if (offset === 0) return rows.slice()
     if (offset > 0) return Array.from({length:offset}, () => null).concat(rows)
@@ -255,7 +255,8 @@ export default function Credit(){
       const rM = (Math.max(0, Number(p.taux)||0)/100)/12
       const Np = Math.max(1, Math.floor(toNum(p.duree)||0))
       const C  = Math.max(0, toNum(p.capital))
-      const rows = (creditType === 'infine')
+      const type = p.type || creditType
+      const rows = (type === 'infine')
         ? scheduleInFine({ capital:C, r:rM, rAss:rA, N:Np, assurMode })
         : scheduleAmortissable({ capital:C, r:rM, rAss:rA, N:Np, assurMode })
 
@@ -272,7 +273,6 @@ export default function Credit(){
         ? scheduleInFine({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
         : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
     }
-    // cible calculée sur le mois 0 : somme des mensualités des prêts actifs au mois 0
     const mensuAutresM1 = autresRows.reduce((s,arr)=> s + ((arr[0]?.mensu) || 0), 0)
     const cible = mensuBaseEffectivePret1 + mensuAutresM1
     return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
@@ -336,6 +336,19 @@ export default function Credit(){
   const coutInteretsAgr   = agrRows.reduce((s,l)=> s + l.interet, 0)
   const coutAssurAgr      = agrRows.reduce((s,l)=> s + l.assurance, 0)
 
+  // Synthèse annuelle (première année visible)
+  const synthAnnuelle = useMemo(()=>{
+    if (viewMode !== 'annuel') return null
+    const ann = aggregateToYears(agrRows)
+    if (!ann.length) return null
+    const y1 = ann[0]
+    return {
+      paiement: y1.mensu, paiementAss: y1.mensuTotal,
+      interets: y1.interet, assurance: y1.assurance, amort: y1.amort, crd: y1.crd,
+      periode: y1.periode
+    }
+  }, [viewMode, agrRows])
+
   // Synthèse périodes lissage (points de changement = débuts / fins des prêts 2 & 3)
   const syntheseLissage = useMemo(()=>{
     if (!lisserPret1) return []
@@ -351,13 +364,11 @@ export default function Credit(){
     for (let i=0;i<points.length;i++){
       const t = points[i]
       const ym = addMonths(startYM, t)
-      // valeurs mensuelles au mois t
       const p1 = pret1Rows[t]?.mensu || 0
       const p2 = autresRows[0]?.[t]?.mensu || 0
       const p3 = autresRows[1]?.[t]?.mensu || 0
       lines.push({ from: `À partir de ${labelMonthFR(ym)}`, p1, p2, p3 })
     }
-    // si dernier point n'est pas la fin, ajouter fin (facultatif, on garde simple)
     return lines
   }, [lisserPret1, pretsPlus, startYM, agrRows.length, pret1Rows, autresRows])
 
@@ -382,11 +393,8 @@ export default function Credit(){
   const addPret = () => {
     if (pretsPlus.length >= 2) return
     setPretsPlus(arr => [...arr, {
-      id: rid(),
-      capital: 100000,
-      duree: 120,
-      taux: 2.50,
-      startYM: startYM   // par défaut à la même date que le prêt 1
+      id: rid(), capital: 100000, duree: 120, taux: 2.50,
+      startYM, type: creditType
     }])
   }
   const updatePret = (id, patch) => setPretsPlus(arr => arr.map(p => p.id === id ? ({ ...p, ...patch }) : p))
@@ -407,7 +415,7 @@ export default function Credit(){
       </Worksheet>`
   }
   function exportExcel() {
-    const header = ['Mois','Intérêts','Assurance','Amort.','Mensualité','Mensualité + Assur.','CRD total']
+    const header = ['Mois','Intérêts','Assurance','Amort.','Paiement','Paiement + Assur.','CRD total']
     const agr = agrRows.map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
 
     const hP = ['Mois','Intérêts','Assurance','Amort.','Mensualité','Mensualité + Assur.','CRD']
@@ -438,6 +446,10 @@ export default function Credit(){
   }
 
   /* ---- Rendu ---- */
+  const isAnnual = viewMode === 'annuel'
+  const colLabelPaiement = isAnnual ? 'Paiement' : 'Mensualité'
+  const colLabelPaiementAss = isAnnual ? 'Paiement + Assur.' : 'Mensualité + Assur.'
+
   return (
     <div className="panel">
       <div className="plac-title" style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:12}}>
@@ -447,37 +459,9 @@ export default function Credit(){
         </div>
       </div>
 
-      {/* Bandeau paramètres globaux */}
-      <div style={{display:'flex', alignItems:'center', gap:12, marginBottom:12, flexWrap:'wrap'}}>
-        <div className="cell-strong">Type de crédit</div>
-        <select value={creditType} onChange={e=> setCreditType(e.target.value)} style={{height:32}}>
-          <option value="amortissable">Amortissable</option>
-          <option value="infine">In fine</option>
-        </select>
-
-        <div className="cell-strong" style={{marginLeft:18}}>Date de souscription</div>
-        <input
-          type="month"
-          value={startYM}
-          onChange={e=> setStartYM(e.target.value)}
-          style={{height:32}}
-        />
-
-        <div className="cell-strong" style={{marginLeft:18}}>Mode de l’assurance</div>
-        <select value={assurMode} onChange={e=> setAssurMode(e.target.value)} style={{height:32}}>
-          <option value="CI">Capital initial</option>
-          <option value="CRD">Capital restant dû</option>
-        </select>
-
-        <div style={{marginLeft:'auto', display:'flex', gap:8}}>
-          <button className={`chip ${viewMode==='mensuel'?'active':''}`} onClick={()=> setViewMode('mensuel')}>Vue mensuelle</button>
-          <button className={`chip ${viewMode==='annuel'?'active':''}`} onClick={()=> setViewMode('annuel')}>Vue annuelle</button>
-        </div>
-      </div>
-
-      {/* PARAMÈTRES PRÊT 1 — table fixe 4 colonnes */}
+      {/* PARAMÈTRES PRÊT 1 — intègre Type / Date / Mode assurance + valeurs */}
       <div className="plac-table-wrap" style={{padding:12}}>
-        <table className="plac-table" role="grid" aria-label="paramètres crédit" style={{tableLayout:'fixed', width:'100%'}}>
+        <table className="plac-table" role="grid" aria-label="paramètres prêt 1" style={{tableLayout:'fixed', width:'100%'}}>
           <colgroup>
             <col style={{width:'25%'}}/>
             <col style={{width:'25%'}}/>
@@ -485,57 +469,53 @@ export default function Credit(){
             <col style={{width:'25%'}}/>
           </colgroup>
           <tbody>
+            {/* Ligne des trois contrôles globaux */}
             <tr>
-              <td className="cell-strong">Montant emprunté (Prêt 1)</td>
+              <td className="cell-strong">Type de crédit (Prêt 1)</td>
               <td className="input-cell">
-                <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
-                  <input
-                    type="text" inputMode="numeric"
-                    value={fmt0(effectiveCapitalPret1)}
-                    onChange={e=> onChangeCapital(e.target.value)}
-                    style={{width:'100%', textAlign:'right', height:32}}
-                  />
-                  <span>€</span>
-                </div>
+                <select value={creditType} onChange={e=> setCreditType(e.target.value)} style={{height:32, width:'100%'}}>
+                  <option value="amortissable">Amortissable</option>
+                  <option value="infine">In fine</option>
+                </select>
+              </td>
+
+              <td className="cell-strong">Date de souscription (Prêt 1)</td>
+              <td className="input-cell">
+                <input type="month" value={startYM} onChange={e=> setStartYM(e.target.value)} style={{height:32, width:'100%'}}/>
+              </td>
+            </tr>
+
+            <tr>
+              <td className="cell-strong">Mode de l’assurance</td>
+              <td className="input-cell">
+                <select value={assurMode} onChange={e=> setAssurMode(e.target.value)} style={{height:32, width:'100%'}}>
+                  <option value="CI">Capital initial</option>
+                  <option value="CRD">Capital restant dû</option>
+                </select>
               </td>
 
               <td className="cell-strong">Durée (mois)</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
-                  <input
-                    type="text" inputMode="numeric"
-                    value={String(N)}
-                    onChange={e=> onChangeDuree(e.target.value)}
-                    style={{width:'100%', textAlign:'right', height:32}}
-                  />
+                  <input type="text" inputMode="numeric" value={String(N)} onChange={e=> onChangeDuree(e.target.value)} style={{width:'100%', textAlign:'right', height:32}}/>
                   <span>mois</span>
                 </div>
               </td>
             </tr>
 
             <tr>
-              <td className="cell-muted">Taux annuel (crédit)</td>
+              <td className="cell-strong">Montant emprunté (Prêt 1)</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
-                  <input
-                    type="number" step="0.01"
-                    value={Number((taux).toFixed(2))}
-                    onChange={e=> setTaux(+e.target.value || 0)}
-                    style={{width:'100%', textAlign:'right', height:32}}
-                  />
-                  <span>%</span>
+                  <input type="text" inputMode="numeric" value={fmt0(effectiveCapitalPret1)} onChange={e=> onChangeCapital(e.target.value)} style={{width:'100%', textAlign:'right', height:32}}/>
+                  <span>€</span>
                 </div>
               </td>
 
-              <td className="cell-muted">Taux annuel (assurance)</td>
+              <td className="cell-muted">Taux annuel (crédit)</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
-                  <input
-                    type="number" step="0.01"
-                    value={Number((tauxAssur).toFixed(2))}
-                    onChange={e=> setTauxAssur(+e.target.value || 0)}
-                    style={{width:'100%', textAlign:'right', height:32}}
-                  />
+                  <input type="number" step="0.01" value={Number((taux).toFixed(2))} onChange={e=> setTaux(+e.target.value || 0)} style={{width:'100%', textAlign:'right', height:32}}/>
                   <span>%</span>
                 </div>
               </td>
@@ -545,23 +525,33 @@ export default function Credit(){
               <td className="cell-strong">Mensualité (hors assurance) — Prêt 1</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
-                  <input
-                    type="text" inputMode="numeric"
-                    placeholder={fmt0(mensuHorsAssurance_base)}
-                    value={mensuBase}
-                    onChange={e=> onChangeMensuBase(e.target.value)}
-                    style={{width:'100%', textAlign:'right', height:32}}
-                  />
+                  <input type="text" inputMode="numeric" placeholder={fmt0(mensuHorsAssurance_base)} value={mensuBase} onChange={e=> onChangeMensuBase(e.target.value)} style={{width:'100%', textAlign:'right', height:32}}/>
                   <span>€</span>
                 </div>
               </td>
 
+              <td className="cell-muted">Taux annuel (assurance)</td>
+              <td className="input-cell">
+                <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
+                  <input type="number" step="0.01" value={Number((tauxAssur).toFixed(2))} onChange={e=> setTauxAssur(+e.target.value || 0)} style={{width:'100%', textAlign:'right', height:32}}/>
+                  <span>%</span>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
               <td className="cell-strong">Coût total (intérêts + assurance)</td>
-              <td className="input-cell" style={{textAlign:'right', paddingRight:12, fontWeight:600}}>
+              <td className="input-cell" style={{textAlign:'right', fontWeight:600}}>
                 {euro0(coutInteretsAgr + coutAssurAgr)}
                 <div className="cell-muted" style={{fontSize:12}}>
                   dont intérêts {euro0(coutInteretsAgr)} • assurance {euro0(coutAssurAgr)}
                 </div>
+              </td>
+
+              <td className="cell-strong">Vue</td>
+              <td className="input-cell" style={{display:'flex', gap:8, justifyContent:'flex-end'}}>
+                <button className={`chip ${viewMode==='mensuel'?'active':''}`} onClick={()=> setViewMode('mensuel')}>Vue mensuelle</button>
+                <button className={`chip ${viewMode==='annuel'?'active':''}`} onClick={()=> setViewMode('annuel')}>Vue annuelle</button>
               </td>
             </tr>
           </tbody>
@@ -577,18 +567,14 @@ export default function Credit(){
         </div>
       )}
 
-      {/* PRÊTS ADDITIONNELS & LISSAGE */}
+      {/* PRÊTS ADDITIONNELS */}
       <div style={{marginTop:14}}>
         <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap'}}>
           <div className="cell-strong">Prêts additionnels (max 2)</div>
           <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
             <button className="chip" onClick={addPret} disabled={pretsPlus.length>=2}>+ Ajouter un prêt</button>
-            <button
-              className={`chip ${lisserPret1 ? 'active' : ''}`}
-              onClick={()=> setLisserPret1(v => !v)}
-              title="Lisser la mensualité totale en ajustant le prêt 1"
-            >
-              {lisserPret1 ? 'Lissage prêt 1 : ON' : 'Lisser le prêt 1'}
+            <button className={`chip ${lisserPret1 ? 'active' : ''}`} onClick={()=> setLisserPret1(v => !v)} title="Lisser la mensualité totale en ajustant le prêt 1">
+              {lisserPret1 ? 'Lisser le prêt 1 : ON' : 'Lisser le prêt 1'}
             </button>
           </div>
         </div>
@@ -598,20 +584,22 @@ export default function Credit(){
             <table className="plac-table" role="grid" aria-label="prêts additionnels"
                    style={{tableLayout:'fixed', width:'100%'}}>
               <colgroup>
-                <col style={{width:'6%'}}/>
-                <col style={{width:'18%'}}/>{/* Capital */}
-                <col style={{width:'14%'}}/>{/* Durée */}
-                <col style={{width:'14%'}}/>{/* Taux */}
-                <col style={{width:'20%'}}/>{/* Mensu */}
-                <col style={{width:'18%'}}/>{/* Date souscription */}
-                <col style={{width:'10%'}}/>{/* Action */}
+                <col style={{width:'5%'}}/>{/* # */}
+                <col style={{width:'12%'}}/>{/* Type */}
+                <col style={{width:'14%'}}/>{/* Capital */}
+                <col style={{width:'10%'}}/>{/* Durée */}
+                <col style={{width:'10%'}}/>{/* Taux */}
+                <col style={{width:'16%'}}/>{/* Mensu */}
+                <col style={{width:'18%'}}/>{/* Date */}
+                <col style={{width:'15%'}}/>{/* Btn */}
               </colgroup>
               <thead>
                 <tr>
                   <th>#</th>
+                  <th>Type</th>
                   <th style={{textAlign:'right'}}>Capital (€)</th>
-                  <th style={{textAlign:'right'}}>Durée (mois)</th>
-                  <th style={{textAlign:'right'}}>Taux annuel (%)</th>
+                  <th style={{textAlign:'right'}}>Durée</th>
+                  <th style={{textAlign:'right'}}>Taux (%)</th>
                   <th style={{textAlign:'right'}}>Mensualité (hors assur.)</th>
                   <th>Date de souscription</th>
                   <th></th>
@@ -622,44 +610,43 @@ export default function Credit(){
                   const rM = (Math.max(0, Number(p.taux)||0)/100)/12
                   const Np = Math.max(1, Math.floor(toNum(p.duree)||0))
                   const C  = Math.max(0, toNum(p.capital))
-                  const mensu = (rM === 0 && creditType!=='infine')
-                    ? (C / Np)
-                    : (creditType === 'infine' ? (rM === 0 ? 0 : C * rM) : mensualiteAmortissable(C, rM, Np))
+                  const type = p.type || creditType
+                  const mensu = (type === 'infine')
+                    ? (rM === 0 ? 0 : C * rM)
+                    : mensualiteAmortissable(C, rM, Np)
                   return (
                     <tr key={p.id}>
                       <td>{idx+2}</td>
-                      <td className="input-cell" style={{textAlign:'right'}}>
-                        <input
-                          type="text" inputMode="numeric"
-                          value={fmt0(C)}
-                          onChange={e=> updatePret(p.id, { capital: String(e.target.value).replace(/\D/g,'').slice(0,8) })}
-                          style={{width:'100%', textAlign:'right', height:28}}
-                        />
+                      <td className="input-cell">
+                        <select
+                          value={type}
+                          onChange={e=> updatePret(p.id, { type: e.target.value })}
+                          style={{height:28, width:'100%'}}
+                        >
+                          <option value="amortissable">Amortissable</option>
+                          <option value="infine">In fine</option>
+                        </select>
                       </td>
                       <td className="input-cell" style={{textAlign:'right'}}>
-                        <input
-                          type="text" inputMode="numeric"
-                          value={String(Np)}
-                          onChange={e=> updatePret(p.id, { duree: String(e.target.value).replace(/\D/g,'').slice(0,3) })}
-                          style={{width:'100%', textAlign:'right', height:28}}
-                        />
+                        <input type="text" inputMode="numeric" value={fmt0(C)}
+                               onChange={e=> updatePret(p.id, { capital: String(e.target.value).replace(/\D/g,'').slice(0,8) })}
+                               style={{width:'100%', textAlign:'right', height:28}}/>
                       </td>
                       <td className="input-cell" style={{textAlign:'right'}}>
-                        <input
-                          type="number" step="0.01"
-                          value={Number((Number(p.taux)||0).toFixed(2))}
-                          onChange={e=> updatePret(p.id, { taux: +e.target.value || 0 })}
-                          style={{width:'100%', textAlign:'right', height:28}}
-                        />
+                        <input type="text" inputMode="numeric" value={String(Np)}
+                               onChange={e=> updatePret(p.id, { duree: String(e.target.value).replace(/\D/g,'').slice(0,3) })}
+                               style={{width:'100%', textAlign:'right', height:28}}/>
+                      </td>
+                      <td className="input-cell" style={{textAlign:'right'}}>
+                        <input type="number" step="0.01" value={Number((Number(p.taux)||0).toFixed(2))}
+                               onChange={e=> updatePret(p.id, { taux: +e.target.value || 0 })}
+                               style={{width:'100%', textAlign:'right', height:28}}/>
                       </td>
                       <td style={{textAlign:'right', fontWeight:600}}>{euro0(mensu)}</td>
                       <td className="input-cell" style={{textAlign:'center'}}>
-                        <input
-                          type="month"
-                          value={p.startYM || startYM}
-                          onChange={e=> updatePret(p.id, { startYM: e.target.value })}
-                          style={{height:28, width:'100%'}}
-                        />
+                        <input type="month" value={p.startYM || startYM}
+                               onChange={e=> updatePret(p.id, { startYM: e.target.value })}
+                               style={{height:28, width:'100%'}}/>
                       </td>
                       <td style={{textAlign:'center'}}>
                         <button className="chip" style={{width:'100%'}} onClick={()=> removePret(p.id)}>Supprimer</button>
@@ -673,28 +660,48 @@ export default function Credit(){
         )}
       </div>
 
-      {/* SYNTHÈSE (style site) */}
-      <div style={{
-        marginTop:14, border:'1px solid #C0B5AA', borderRadius:10, padding:'12px 14px',
-        background:'#F8F6F4'
-      }}>
-        <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
-          <div>
-            <div className="cell-muted">Votre mensualité totale (M1) :</div>
-            <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(mensualiteTotaleM1)} <span className="cell-muted">(hors assurance)</span></div>
+      {/* SYNTHÈSE */}
+      <div style={{marginTop:14, border:'1px solid #C0B5AA', borderRadius:10, padding:'12px 14px', background:'#F8F6F4'}}>
+        {!isAnnual ? (
+          <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
+            <div>
+              <div className="cell-muted">Votre mensualité totale (M1) :</div>
+              <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(mensualiteTotaleM1)} <span className="cell-muted">(hors assurance)</span></div>
+            </div>
+            <div>
+              <div className="cell-muted">Coût total du prêt principal (hors assurance) :</div>
+              <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(coutInteretsPret1)}</div>
+            </div>
+            <div>
+              <div className="cell-muted">Votre prime d’assurance mensuelle :</div>
+              <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(primeAssMensuelle)}</div>
+            </div>
           </div>
-          <div>
-            <div className="cell-muted">Coût total du prêt principal (hors assurance) :</div>
-            <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(coutInteretsPret1)}</div>
-          </div>
-          <div>
-            <div className="cell-muted">Votre prime d’assurance mensuelle :</div>
-            <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(primeAssMensuelle)}</div>
-          </div>
-        </div>
+        ) : (
+          synthAnnuelle && (
+            <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
+              <div>
+                <div className="cell-muted">Votre paiement total en {synthAnnuelle.periode} :</div>
+                <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(synthAnnuelle.paiement)} <span className="cell-muted">(hors assurance)</span></div>
+              </div>
+              <div>
+                <div className="cell-muted">Paiement + assurance en {synthAnnuelle.periode} :</div>
+                <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(synthAnnuelle.paiementAss)}</div>
+              </div>
+              <div>
+                <div className="cell-muted">Intérêts • Assurance • Amort. :</div>
+                <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(synthAnnuelle.interets)} • {euro0(synthAnnuelle.assurance)} • {euro0(synthAnnuelle.amort)}</div>
+              </div>
+              <div>
+                <div className="cell-muted">CRD fin {synthAnnuelle.periode} :</div>
+                <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(synthAnnuelle.crd)}</div>
+              </div>
+            </div>
+          )
+        )}
 
-        {/* Tableau synthétique quand lissage ON */}
-        {lisserPret1 && syntheseLissage.length > 0 && (
+        {/* Tableau synthétique lissage */}
+        {lisserPret1 && syntheseLissage.length > 0 && !isAnnual && (
           <div style={{marginTop:10}}>
             <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
               <colgroup>
@@ -735,8 +742,8 @@ export default function Credit(){
               <th style={{textAlign:'right'}}>Intérêts</th>
               <th style={{textAlign:'right'}}>Assurance</th>
               <th style={{textAlign:'right'}}>Amort.</th>
-              <th style={{textAlign:'right'}}>Mensualité</th>
-              <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
+              <th style={{textAlign:'right'}}>{colLabelPaiement}</th>
+              <th style={{textAlign:'right'}}>{colLabelPaiementAss}</th>
               <th style={{textAlign:'right'}}>CRD total</th>
             </tr>
           </thead>
@@ -756,7 +763,7 @@ export default function Credit(){
         </table>
       </div>
 
-      {/* DÉTAIL PAR PRÊT — police réduite + traits de colonnes #CEC1B6 */}
+      {/* DÉTAIL PAR PRÊT — reste mensuel */}
       <div className="plac-table-wrap" style={{marginTop:16}}>
         <div className="cell-strong" style={{marginBottom:8}}>Détail par prêt (mensuel)</div>
 
