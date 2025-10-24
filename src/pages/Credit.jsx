@@ -800,8 +800,6 @@ export default function Credit(){
     </>
   )}
 </div>
-
-/******  TABLEAU D’AMORTISSEMENT (vue mensuelle/annuelle) ******/
       <div className="plac-table-wrap" style={{marginTop:16}}>
         <table className="plac-table" role="grid" aria-label="amortissement" style={{tableLayout:'fixed', width:'100%'}}>
           <thead>
