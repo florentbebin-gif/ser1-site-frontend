@@ -349,28 +349,40 @@ export default function Credit(){
     }
   }, [viewMode, agrRows])
 
-  // Synthèse périodes lissage (points de changement = débuts / fins des prêts 2 & 3)
-  const syntheseLissage = useMemo(()=>{
-    if (!lisserPret1) return []
-    const changeSet = new Set([0]) // mois 0
-    pretsPlus.forEach(p=>{
-      const off = Math.max(0, monthsDiff(startYM, p.startYM || startYM))
-      const Np  = Math.max(1, Math.floor(toNum(p.duree)||0))
-      changeSet.add(off)
-      changeSet.add(off + Np)
-    })
-    const points = Array.from(changeSet).sort((a,b)=>a-b).filter(x => x < agrRows.length)
-    const lines = []
-    for (let i=0;i<points.length;i++){
-      const t = points[i]
-      const ym = addMonths(startYM, t)
-      const p1 = pret1Rows[t]?.mensu || 0
-      const p2 = autresRows[0]?.[t]?.mensu || 0
-      const p3 = autresRows[1]?.[t]?.mensu || 0
-      lines.push({ from: `À partir de ${labelMonthFR(ym)}`, p1, p2, p3 })
-    }
-    return lines
-  }, [lisserPret1, pretsPlus, startYM, agrRows.length, pret1Rows, autresRows])
+  // ---- Synthèse "périodes" (changements aux débuts/fins des prêts 2 & 3)
+// --> indépendante du lissage ; affichée seulement s'il y a > 1 prêt
+const synthesePeriodes = useMemo(() => {
+  if (pretsPlus.length === 0) return []
+
+  const changeSet = new Set([0]) // mois 0 = démarrage prêt 1
+  pretsPlus.forEach(p => {
+    const off = Math.max(0, monthsDiff(startYM, p.startYM || startYM))
+    const Np  = Math.max(1, Math.floor(toNum(p.duree) || 0))
+    changeSet.add(off)
+    changeSet.add(off + Np)
+  })
+
+  const points = Array.from(changeSet)
+    .sort((a,b)=>a-b)
+    .filter(x => x < agrRows.length)
+
+  const rows = points.map(t => {
+    const ym = addMonths(startYM, t)
+    const p1 = pret1Rows[t]?.mensu || 0
+    const p2 = autresRows[0]?.[t]?.mensu || 0
+    const p3 = autresRows[1]?.[t]?.mensu || 0
+    return { from:`À partir de ${labelMonthFR(ym)}`, p1, p2, p3 }
+  })
+
+  // Déduplique si identique à la ligne précédente
+  const dedup = []
+  for (const r of rows) {
+    const last = dedup[dedup.length-1]
+    if (last && last.p1===r.p1 && last.p2===r.p2 && last.p3===r.p3) continue
+    dedup.push(r)
+  }
+  return dedup
+}, [pretsPlus, startYM, agrRows.length, pret1Rows, autresRows])
 
   /* ---- Vérifications ---- */
   const warnings = useMemo(()=>{
