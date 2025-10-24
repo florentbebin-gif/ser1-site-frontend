@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 
-/* ---------- Utils format ---------- */
+/* ---------- Helpers format ---------- */
 const MONTHS = [
   'Janvier','Février','Mars','Avril','Mai','Juin',
   'Juillet','Août','Septembre','Octobre','Novembre','Décembre'
@@ -14,20 +14,133 @@ const toNum  = (v)=> {
   return Number.isFinite(n) ? n : 0
 }
 
-/* ---------- Composant principal ---------- */
+/* ===============================
+   Échéanciers de prêts
+================================ */
+function mensualiteAmortissable(C, r, N) {
+  if (N <= 0) return 0
+  if (r === 0) return C / N
+  return (C * r) / (1 - Math.pow(1 + r, -N))
+}
+
+function scheduleAmortissable({ capital, r, rAss, N, assurMode, mensuOverride }) {
+  // r, rAss = taux mensuels
+  const rows = []
+  let crd = capital
+  const mensuFixe = (typeof mensuOverride === 'number' && mensuOverride > 0)
+    ? mensuOverride
+    : mensualiteAmortissable(capital, r, N)
+
+  const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
+
+  for (let m = 1; m <= N; m++) {
+    const interet = crd * r
+    let mensu = mensuFixe
+    if (mensu < interet && r > 0) mensu = interet // évite l’augmentation du CRD
+    let amort = Math.min(crd, mensu - interet)
+    if (!Number.isFinite(amort) || amort < 0) amort = 0
+    crd = Math.max(0, crd - amort)
+    const assur = (assurMode === 'CI') ? assurFixe : (crd * rAss)
+    const mensuTotal = mensu + (assur || 0)
+    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu, mensuTotal, crd })
+  }
+  return rows
+}
+
+function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
+  const rows = []
+  let crd = capital
+  const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
+
+  for (let m = 1; m <= N; m++) {
+    const interet = crd * r
+    let mensu = (typeof mensuOverride === 'number' && mensuOverride > 0) ? mensuOverride : interet
+    let amort = 0
+    if (m === N) {
+      // solde du capital
+      amort = crd
+      // si une mensualité hors assur. a été saisie, on la respecte si elle suffit
+      mensu = Math.max(mensu, interet + amort)
+      amort = mensu - interet
+      if (amort > crd) amort = crd
+    } else if (mensu > interet) {
+      amort = Math.min(crd, mensu - interet)
+    }
+    crd = Math.max(0, crd - amort)
+    const assur = (assurMode === 'CI') ? assurFixe : (crd * rAss)
+    const mensuTotal = mensu + (assur || 0)
+    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu, mensuTotal, crd })
+  }
+  return rows
+}
+
+/* Lissage du prêt 1 en fonction des autres prêts (hors assurance) */
+function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
+  // pret1: {capital, r, rAss, N, assurMode, type, mensuBase}
+  const { capital, r, rAss, N, assurMode, type } = pret1
+  const rows = []
+  let crd = capital
+  const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
+
+  const sumMensuAutresAtMonth = (m) =>
+    autresPretsRows.reduce((s, arr) => s + (arr[m-1]?.mensu || 0), 0)
+
+  for (let m = 1; m <= N; m++) {
+    const interet = crd * r
+    const mensuAutres = sumMensuAutresAtMonth(m)
+    let mensu1 = Math.max(0, cibleMensuTotale - mensuAutres) // pour respecter la cible
+    if (type === 'infine') {
+      // In fine lissé : paie au moins les intérêts, on solde au dernier mois
+      if (m === N) {
+        const due = interet + crd
+        mensu1 = Math.max(mensu1, due)
+      } else if (mensu1 < interet && r > 0) {
+        mensu1 = interet
+      }
+      let amort = Math.max(0, mensu1 - interet)
+      if (m === N) amort = crd
+      crd = Math.max(0, crd - amort)
+    } else {
+      // Amortissable lissé
+      if (mensu1 < interet && r > 0) mensu1 = interet
+      let amort = Math.max(0, mensu1 - interet)
+      if (m === N) {
+        // ajustement final pour solder
+        amort = crd
+        mensu1 = interet + amort
+      }
+      crd = Math.max(0, crd - amort)
+    }
+    const assur = (assurMode === 'CI') ? assurFixe : (crd * rAss)
+    const mensuTotal = mensu1 + (assur || 0)
+    rows.push({ mois:m, interet, assurance:(assur||0), amort:(mensu1 - interet > 0 ? mensu1 - interet : (m===N ? capital : 0)), mensu:mensu1, mensuTotal, crd })
+  }
+  return rows
+}
+
+/* id utilitaire */
+const rid = () => Math.random().toString(36).slice(2,9)
+
+/* ===============================
+   Composant principal
+================================ */
 export default function Credit(){
 
   /* ---- États principaux ---- */
-  const [creditType, setCreditType] = useState('amortissable') // 'amortissable' | 'infine'
-  const [startMonth, setStartMonth] = useState(1)              // Janvier=1
-  const [capital, setCapital]       = useState(300000)         // Montant emprunté (8 chiffres max)
-  const [duree, setDuree]           = useState(240)            // Durée en mois (3 chiffres max)
-  const [taux, setTaux]             = useState(3.50)           // % annuel
-  const [tauxAssur, setTauxAssur]   = useState(0.30)           // % annuel
-  const [mensuBase, setMensuBase]   = useState('')             // champ de saisie (string formaté)
+  const [creditType, setCreditType]   = useState('amortissable') // 'amortissable' | 'infine'
+  const [startMonth, setStartMonth]   = useState(1)              // Janvier=1
+  const [assurMode, setAssurMode]     = useState('CRD')          // 'CI' (capital initial) | 'CRD'
+  const [capital, setCapital]         = useState(300000)         // 8 chiffres max
+  const [duree, setDuree]             = useState(240)            // 3 chiffres max
+  const [taux, setTaux]               = useState(3.50)           // % annuel
+  const [tauxAssur, setTauxAssur]     = useState(0.30)           // % annuel
+  const [mensuBase, setMensuBase]     = useState('')             // saisie mensu prêt 1
 
-  // Paliers: { id, start, months, mensu, taux }
-  const [paliers, setPaliers] = useState([])
+  // Prêts additionnels (max 2)
+  const [pretsPlus, setPretsPlus] = useState([]) // {id, capital, duree, taux}
+
+  // Lissage actif ?
+  const [lisserPret1, setLisserPret1] = useState(false)
 
   /* ---- Handlers inputs bornés ---- */
   const onChangeCapital = (val) => {
@@ -50,119 +163,130 @@ export default function Credit(){
   const rA   = rAss / 12
   const N    = Math.max(1, Math.floor(duree || 0))
 
-  /* ---- Mensualité de base ou calcul du capital si saisie mensu ---- */
+  /* ---- Mensualité de base prêt 1 (hors assurance) et capital effectif ---- */
   const mensuHorsAssurance_base = useMemo(()=>{
     if (creditType === 'infine') {
-      // intérêt seul (hors assurance), capital remboursé au dernier mois
       return r === 0 ? 0 : capital * r
     }
-    // Amortissable standard
-    if (r === 0) return capital / N
-    return (capital * r) / (1 - Math.pow(1 + r, -N))
+    return mensualiteAmortissable(capital, r, N)
   }, [creditType, capital, r, N])
 
-  // Si l'utilisateur saisit une mensualité (sans paliers), recalculer le capital
-  const effectiveCapital = useMemo(()=>{
-    const hasPaliers = paliers.length > 0
+  const effectiveCapitalPret1 = useMemo(()=>{
+    const hasOthers = pretsPlus.length > 0
     const mensuUser = toNum(mensuBase)
-    if (!mensuUser || hasPaliers) return capital // pas de recalcul si paliers
+    if (!mensuUser || hasOthers) return capital // si autres prêts, on ne recalcule pas le capital du prêt 1
     if (creditType === 'infine') {
-      // m = C * r  => C = m/r  (si r=0, on ne peut pas déterminer)
       return (r === 0) ? capital : Math.floor(mensuUser / r)
     }
-    // amortissable : C = m * (1 - (1+r)^-N) / r   (si r=0 => C = m*N)
     if (r === 0) return Math.floor(mensuUser * N)
     const C = mensuUser * (1 - Math.pow(1+r, -N)) / r
     return Math.floor(C)
-  }, [capital, paliers.length, mensuBase, creditType, r, N])
+  }, [capital, pretsPlus.length, mensuBase, creditType, r, N])
 
-  const mensuBaseEffective = useMemo(()=>{
-    const hasPaliers = paliers.length > 0
+  const mensuBaseEffectivePret1 = useMemo(()=>{
+    const hasOthers = pretsPlus.length > 0
     const mensuUser = toNum(mensuBase)
-    if (hasPaliers) return mensuHorsAssurance_base // les paliers dictent ensuite
+    if (hasOthers) return mensuHorsAssurance_base
     return mensuUser ? mensuUser : mensuHorsAssurance_base
-  }, [paliers.length, mensuBase, mensuHorsAssurance_base])
+  }, [pretsPlus.length, mensuBase, mensuHorsAssurance_base])
 
-  /* ---- Construction de la timeline de paliers (mois 1..N) ---- */
-  const palMap = useMemo(()=>{
-    // génère un tableau de N entrées { mensu:?, taux:? } si défini
-    const arr = Array.from({length:N}, () => ({}))
-    paliers.forEach(p=>{
-      const s = Math.max(1, Math.floor(p.start || 1))
-      const d = Math.max(1, Math.floor(p.months || 0))
-      const e = Math.min(N, s + d - 1)
-      for(let m=s; m<=e; m++){
-        const i = m-1
-        if (p.mensu !== '' && p.mensu != null) {
-          arr[i].mensu = Math.max(0, toNum(String(p.mensu).replace(/\D/g,'')))
-        }
-        if (p.taux !== '' && p.taux != null) {
-          const t = Math.max(0, Number(p.taux)||0)/100/12
-          arr[i].taux = t
-        }
+  /* ---- Échéanciers des prêts additionnels ---- */
+  const autresRows = useMemo(()=>{
+    return pretsPlus.map(p=>{
+      const rM = (Math.max(0, Number(p.taux)||0)/100)/12
+      const Np = Math.max(1, Math.floor(p.duree||0))
+      if (creditType === 'infine') {
+        return scheduleInFine({
+          capital: Math.max(0, toNum(p.capital)),
+          r: rM,
+          rAss: rA,
+          N: Np,
+          assurMode,
+        })
       }
+      return scheduleAmortissable({
+        capital: Math.max(0, toNum(p.capital)),
+        r: rM,
+        rAss: rA,
+        N: Np,
+        assurMode,
+      })
     })
-    return arr
-  }, [paliers, N])
+  }, [pretsPlus, creditType, rA, assurMode])
 
-  /* ---- Calcul du tableau d’amortissement ---- */
+  /* ---- Cible de lissage et échéancier du prêt 1 ---- */
+  const pret1Rows = useMemo(()=>{
+    const basePret1 = {
+      capital: effectiveCapitalPret1,
+      r,
+      rAss: rA,
+      N,
+      assurMode,
+      type: creditType
+    }
+    if (!lisserPret1 || autresRows.length === 0) {
+      // pas de lissage → échéancier standard avec mensualité de base (ou type in fine)
+      if (creditType === 'infine') {
+        return scheduleInFine({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
+      }
+      return scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
+    }
+    // LISSAGE
+    const mensuAutresM1 = autresRows.reduce((s,arr)=> s + (arr[0]?.mensu || 0), 0)
+    const cible = mensuBaseEffectivePret1 + mensuAutresM1
+    return scheduleLisseePret1({
+      pret1: basePret1,
+      autresPretsRows: autresRows,
+      cibleMensuTotale: cible
+    })
+  }, [
+    effectiveCapitalPret1, r, rA, N, assurMode, creditType,
+    mensuBaseEffectivePret1, lisserPret1, autresRows
+  ])
+
+  /* ---- Agrégation (tous prêts) ---- */
+  const maxMois = useMemo(()=>{
+    return Math.max(
+      pret1Rows.length,
+      ...autresRows.map(r => r.length),
+      N
+    )
+  }, [pret1Rows.length, autresRows, N])
+
   const table = useMemo(()=>{
     const rows = []
-    let crd = effectiveCapital
-    for(let m=1; m<=N; m++){
-      const idx = m-1
-      const rM  = palMap[idx].taux ?? r   // taux du mois
-      // mensualité hors assurance pour ce mois :
-      let mHorsAss = palMap[idx].mensu ?? mensuBaseEffective
-      if (creditType === 'infine'){
-        // Paiement d'intérêt uniquement, CRD remboursé au dernier mois
-        const interet = crd * rM
-        let amort = (m === N) ? crd : 0
-        // Si l'utilisateur a saisi une mensualité (ou palier), on respecte ce montant,
-        // mais on s'assure au mois N de solder le capital
-        if (mHorsAss > 0 && m !== N) {
-          // l'utilisateur peut payer + que les intérêts : on amortit le surplus
-          const surplus = Math.max(0, mHorsAss - interet)
-          amort = Math.min(crd, surplus)
-        }
-        crd = Math.max(0, crd - amort)
-        const assur = crd * rA
-        const mTotal = mHorsAss + assur
-        rows.push({ mois: m, interet, assurance: assur, amort, mensu: mHorsAss, mensuTotal: mTotal, crd })
-      } else {
-        // Amortissable
-        const interet = crd * rM
-        // si la mensualité définie est insuffisante pour couvrir les intérêts, on la rehausse
-        if (mHorsAss < interet && rM > 0) mHorsAss = interet
-        let amort = Math.min(crd, mHorsAss - interet)
-        if (!Number.isFinite(amort) || amort < 0) amort = 0
-        crd = Math.max(0, crd - amort)
-        const assur = crd * rA
-        const mTotal = mHorsAss + assur
-        rows.push({ mois: m, interet, assurance: assur, amort, mensu: mHorsAss, mensuTotal: mTotal, crd })
+    for (let m = 1; m <= maxMois; m++) {
+      let interet = 0, assurance = 0, amort = 0, mensu = 0, mensuTotal = 0, crdTot = 0
+
+      const addLine = l => {
+        if (!l) return
+        interet    += l.interet || 0
+        assurance  += l.assurance || 0
+        amort      += l.amort || 0
+        mensu      += l.mensu || 0
+        mensuTotal += l.mensuTotal || 0
+        crdTot     += l.crd || 0
       }
+      addLine(pret1Rows[m-1])
+      autresRows.forEach(arr => addLine(arr[m-1]))
+
+      rows.push({ mois:m, interet, assurance, amort, mensu, mensuTotal, crd:crdTot })
     }
     return rows
-  }, [creditType, effectiveCapital, N, palMap, mensuBaseEffective, rA])
+  }, [pret1Rows, autresRows, maxMois])
 
   const coutInterets = useMemo(()=> table.reduce((s,l)=> s + l.interet, 0), [table])
   const coutAssur    = useMemo(()=> table.reduce((s,l)=> s + l.assurance,0), [table])
 
-  /* ---- UI helpers ---- */
-  const addPalier = () => {
-    setPaliers(arr => [
-      ...arr,
-      { id:cryptoRandom(), start:1, months:12, mensu:'', taux:'' }
-    ])
+  /* ---- UI actions prêts additionnels ---- */
+  const addPret = () => {
+    if (pretsPlus.length >= 2) return
+    setPretsPlus(arr => [...arr, { id: rid(), capital: 100000, duree: 120, taux: 2.50 }])
   }
-  const updatePalier = (id, patch) => {
-    setPaliers(arr => arr.map(p => p.id === id ? {...p, ...patch} : p))
+  const updatePret = (id, patch) => {
+    setPretsPlus(arr => arr.map(p => p.id === id ? { ...p, ...patch } : p))
   }
-  const removePalier = (id) => setPaliers(arr => arr.filter(p => p.id !== id))
-  function cryptoRandom() {
-    // petit id unique
-    return Math.random().toString(36).slice(2,9)
-  }
+  const removePret = (id) => setPretsPlus(arr => arr.filter(p => p.id !== id))
 
   return (
     <div className="panel">
@@ -180,19 +304,25 @@ export default function Credit(){
         <select value={startMonth} onChange={e=> setStartMonth(Number(e.target.value))} style={{height:32}}>
           {MONTHS.map((m,idx)=> <option key={idx} value={idx+1}>{m}</option>)}
         </select>
+
+        <div className="cell-strong" style={{marginLeft:18}}>Mode de l’assurance</div>
+        <select value={assurMode} onChange={e=> setAssurMode(e.target.value)} style={{height:32}}>
+          <option value="CI">Capital initial</option>
+          <option value="CRD">Capital restant dû</option>
+        </select>
       </div>
 
-      {/* Tuiles de saisie */}
+      {/* Tuiles de saisie (Prêt 1) */}
       <div className="plac-table-wrap" style={{padding:12}}>
         <table className="plac-table" role="grid" aria-label="paramètres crédit">
           <tbody>
             <tr>
-              <td className="cell-strong">Montant emprunté</td>
+              <td className="cell-strong">Montant emprunté (Prêt 1)</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end', width:220}}>
                   <input
                     type="text" inputMode="numeric"
-                    value={fmt0(effectiveCapital)}
+                    value={fmt0(effectiveCapitalPret1)}
                     onChange={e=> onChangeCapital(e.target.value)}
                     style={{width:'100%', textAlign:'right', height:32, lineHeight:'32px'}}
                   />
@@ -243,7 +373,7 @@ export default function Credit(){
             </tr>
 
             <tr>
-              <td className="cell-strong">Mensualité (hors assurance)</td>
+              <td className="cell-strong">Mensualité (hors assurance) — Prêt 1</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end', width:220}}>
                   <input
@@ -256,11 +386,11 @@ export default function Credit(){
                   <span>€</span>
                 </div>
                 <div className="cell-muted" style={{textAlign:'right', fontSize:12, marginTop:2}}>
-                  Saisie ici = recalcul du montant emprunté (hors assurance) lorsqu’il n’y a pas de palier.
+                  Saisie ici = recalcul du montant emprunté (hors assurance) lorsqu’il n’y a pas de prêt additionnel.
                 </div>
               </td>
 
-              <td className="cell-strong">Coût total</td>
+              <td className="cell-strong">Coût total (intérêts + assurance)</td>
               <td className="input-cell" style={{textAlign:'right', paddingRight:12, fontWeight:600}}>
                 {euro0(coutInterets + coutAssur)}
                 <div className="cell-muted" style={{fontSize:12}}>
@@ -272,75 +402,86 @@ export default function Credit(){
         </table>
       </div>
 
-      {/* Paliers */}
+      {/* Prêts additionnels & Lissage */}
       <div style={{marginTop:14}}>
-        <div style={{display:'flex', alignItems:'center', justifyContent:'space-between'}}>
-          <div className="cell-strong">Paliers (optionnel)</div>
-          <button className="chip" onClick={addPalier}>+ Ajouter un palier</button>
+        <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap'}}>
+          <div className="cell-strong">Prêts additionnels (max 2)</div>
+          <div style={{display:'flex', gap:8}}>
+            <button className="chip" onClick={addPret} disabled={pretsPlus.length>=2}>+ Ajouter un prêt</button>
+            <button
+              className={`chip ${lisserPret1 ? 'active' : ''}`}
+              onClick={()=> setLisserPret1(v => !v)}
+              title="Lisser la mensualité totale en ajustant le prêt 1"
+            >
+              {lisserPret1 ? 'Lissage prêt 1 : ON' : 'Lisser le prêt 1'}
+            </button>
+          </div>
         </div>
-        {paliers.length > 0 && (
+
+        {pretsPlus.length > 0 && (
           <div className="plac-table-wrap" style={{padding:12, marginTop:8}}>
-            <table className="plac-table" role="grid" aria-label="paliers crédit">
+            <table className="plac-table" role="grid" aria-label="prêts additionnels">
               <thead>
                 <tr>
-                  <th>Début (mois)</th>
-                  <th>Durée (mois)</th>
-                  <th>Mensualité (€, hors assur.)</th>
-                  <th>Taux annuel (%)</th>
+                  <th>#</th>
+                  <th style={{textAlign:'right'}}>Capital (€)</th>
+                  <th style={{textAlign:'right'}}>Durée (mois)</th>
+                  <th style={{textAlign:'right'}}>Taux annuel (%)</th>
+                  <th style={{textAlign:'right'}}>Mensualité (hors assur.)</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {paliers.map(p=>(
-                  <tr key={p.id}>
-                    <td className="input-cell" style={{textAlign:'right'}}>
-                      <input
-                        type="text" inputMode="numeric"
-                        value={String(p.start)}
-                        onChange={e=> updatePalier(p.id, { start: Math.max(1, toNum(e.target.value)) })}
-                        style={{width:100, textAlign:'right', height:28}}
-                      />
-                    </td>
-                    <td className="input-cell" style={{textAlign:'right'}}>
-                      <input
-                        type="text" inputMode="numeric"
-                        value={String(p.months)}
-                        onChange={e=> updatePalier(p.id, { months: Math.max(1, toNum(e.target.value)) })}
-                        style={{width:100, textAlign:'right', height:28}}
-                      />
-                    </td>
-                    <td className="input-cell" style={{textAlign:'right'}}>
-                      <input
-                        type="text" inputMode="numeric"
-                        value={p.mensu === '' ? '' : (toNum(p.mensu).toLocaleString('fr-FR'))}
-                        onChange={e=> updatePalier(p.id, { mensu: e.target.value })}
-                        placeholder="(laisser vide = base)"
-                        style={{width:150, textAlign:'right', height:28}}
-                      />
-                    </td>
-                    <td className="input-cell" style={{textAlign:'right'}}>
-                      <input
-                        type="number" step="0.01"
-                        value={p.taux === '' ? '' : Number(p.taux)}
-                        onChange={e=> updatePalier(p.id, { taux: e.target.value })}
-                        placeholder="(base)"
-                        style={{width:120, textAlign:'right', height:28}}
-                      />
-                    </td>
-                    <td style={{textAlign:'center'}}>
-                      <button className="chip" onClick={()=> removePalier(p.id)}>Supprimer</button>
-                    </td>
-                  </tr>
-                ))}
+                {pretsPlus.map((p,idx)=>{
+                  const rM = (Math.max(0, Number(p.taux)||0)/100)/12
+                  const Np = Math.max(1, Math.floor(p.duree||0))
+                  const C  = Math.max(0, toNum(p.capital))
+                  const mensu = (creditType === 'infine')
+                    ? (rM === 0 ? 0 : C * rM)
+                    : mensualiteAmortissable(C, rM, Np)
+                  return (
+                    <tr key={p.id}>
+                      <td>{idx+2}</td>
+                      <td className="input-cell" style={{textAlign:'right'}}>
+                        <input
+                          type="text" inputMode="numeric"
+                          value={fmt0(C)}
+                          onChange={e=> updatePret(p.id, { capital: String(e.target.value).replace(/\D/g,'').slice(0,8) })}
+                          style={{width:140, textAlign:'right', height:28}}
+                        />
+                      </td>
+                      <td className="input-cell" style={{textAlign:'right'}}>
+                        <input
+                          type="text" inputMode="numeric"
+                          value={String(Np)}
+                          onChange={e=> updatePret(p.id, { duree: String(e.target.value).replace(/\D/g,'').slice(0,3) })}
+                          style={{width:110, textAlign:'right', height:28}}
+                        />
+                      </td>
+                      <td className="input-cell" style={{textAlign:'right'}}>
+                        <input
+                          type="number" step="0.01"
+                          value={Number((Number(p.taux)||0).toFixed(2))}
+                          onChange={e=> updatePret(p.id, { taux: +e.target.value || 0 })}
+                          style={{width:120, textAlign:'right', height:28}}
+                        />
+                      </td>
+                      <td style={{textAlign:'right', fontWeight:600}}>{euro0(mensu)}</td>
+                      <td style={{textAlign:'center'}}>
+                        <button className="chip" onClick={()=> removePret(p.id)}>Supprimer</button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
-      {/* Tableau d’amortissement complet */}
+      {/* Tableau d’amortissement complet (agrégé) */}
       <div className="plac-table-wrap" style={{marginTop:16}}>
-        <table className="plac-table" role="grid" aria-label="amortissement">
+        <table className="plac-table" role="grid" aria-label="amortissement agrégé">
           <thead>
             <tr>
               <th>Mois</th>
@@ -349,7 +490,7 @@ export default function Credit(){
               <th style={{textAlign:'right'}}>Amort.</th>
               <th style={{textAlign:'right'}}>Mensualité</th>
               <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
-              <th style={{textAlign:'right'}}>CRD</th>
+              <th style={{textAlign:'right'}}>CRD total</th>
             </tr>
           </thead>
           <tbody>
