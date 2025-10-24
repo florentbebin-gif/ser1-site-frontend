@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
+import { onResetEvent } from '../utils/reset.js'
 
 /* ------------------- Helpers format ------------------- */
 const euro  = (n)=> (n ?? 0).toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' €'
@@ -11,7 +12,7 @@ const toNum = (v)=> {
 }
 
 /* ------------------- Layout (alignement) ------------------- */
-const COL_INPUT_W = 160      // largeur de conteneur identique pour aligner les colonnes
+const COL_INPUT_W = 160      // largeur fixe pour aligner les colonnes
 const AMOUNT_W_IN_VERS = '60%'
 
 /* ------------------- Defaults ------------------- */
@@ -20,20 +21,18 @@ const MONTHS = [
   'Juillet','Août','Septembre','Octobre','Novembre','Décembre'
 ]
 
-// Valeurs par défaut universelles
-const DEFAULTS = {
-  rate: 0,
-  initial: 0,
-  fee: 0,
-  programm: 0,
-  freq: 'mensuel',
-  duration: 1,
-}
-const [p1, setP1] = useState({ ...DEFAULTS })
-const [p2, setP2] = useState({ ...DEFAULTS })
-const [p3, setP3] = useState({ ...DEFAULTS })
-const [p4, setP4] = useState({ ...DEFAULTS })
+// Produits (noms fixes)
+const DEFAULT_PRODUCTS = [
+  { name:'Placement 1 Capitalisation', rate:0, initial:0, entryFeePct:0 },
+  { name:'Placement 2 Capitalisation', rate:0, initial:0, entryFeePct:0 },
+  { name:'Placement 3 Distribution',   rate:0, initial:0, entryFeePct:0 },
+  { name:'Placement 4 Distribution',   rate:0, initial:0, entryFeePct:0 },
+]
 
+// Durée (toutes à 1 an au départ)
+const defaultDurations = [1,1,1,1]
+
+// Versements programmés (uniquement colonnes 1 & 2)
 const defaultContribs  = [
   { amount:0,     freq:'mensuel' },
   { amount:0,     freq:'annuel'  },
@@ -53,7 +52,7 @@ function simulateSimpleOnInitial({ rate, initial, entryFeePct }, startMonth, dur
   const values = []
 
   for(let y=1; y<=yearsMax; y++){
-    const monthsCum = (13 - startMonth) + 12*(y-1) // mois cumulés jusqu'à fin année y
+    const monthsCum = (13 - startMonth) + 12*(y-1) // mois cumulés jusqu'à fin de l'année y
     const val = initNet * (1 + r * (monthsCum/12))
     values.push( (y <= durYears) ? val : undefined )
   }
@@ -119,6 +118,17 @@ export default function Placement(){
   const [products,   setProducts]   = useState(DEFAULT_PRODUCTS)
   const [durations,  setDurations]  = useState(defaultDurations)
   const [contribs,   setContribs]   = useState(defaultContribs)
+
+  // Reset global (optionnel si tu utilises onResetEvent)
+  useEffect(()=>{
+    const off = onResetEvent?.(() => {
+      setStartMonth(1)
+      setProducts(DEFAULT_PRODUCTS)
+      setDurations([1,1,1,1])
+      setContribs(defaultContribs)
+    })
+    return off || (()=>{})
+  }, [])
 
   const setProd     = (i,patch)=> setProducts(a=>a.map((p,idx)=> idx===i ? {...p, ...patch} : p))
   const setDuration = (i,v)=> setDurations(a=>a.map((x,idx)=> idx===i ? Math.max(1, v||1) : x))
@@ -272,43 +282,43 @@ export default function Placement(){
               ))}
             </tr>
 
-            {/* Durée en année */}
-<tr>
-  <td /* label normal (pas en gras) */>Durée en année</td>
-  {products.map((_,i)=>(
-    <td key={i} className="input-cell">
-      <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end', width:COL_INPUT_W}}>
-        <input
-          type="number" min="1"
-          value={durations[i]}
-          onChange={e=> setDuration(i, +e.target.value||1)}
-          style={{width:'100%', textAlign:'right'}}
-        />
-        <span>an(s)</span>
-      </div>
-    </td>
-  ))}
-</tr>
+            {/* Durée en année (label non gras) */}
+            <tr>
+              <td>Durée en année</td>
+              {products.map((_,i)=>(
+                <td key={i} className="input-cell">
+                  <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end', width:COL_INPUT_W}}>
+                    <input
+                      type="number" min="1"
+                      value={durations[i]}
+                      onChange={e=> setDuration(i, +e.target.value||1)}
+                      style={{width:'100%', textAlign:'right'}}
+                    />
+                    <span>an(s)</span>
+                  </div>
+                </td>
+              ))}
+            </tr>
 
-{/* Lignes Année N (valeurs centrées) */}
-{years.map((y, yi)=>(
-  <tr key={yi}>
-    <td>{`Année ${y}`}</td>
-    {series.map((s, si)=>(
-      <td key={si} style={{textAlign:'center', fontWeight:600}}>
-        {s.values[yi] !== undefined ? euro(s.values[yi]) : ''}
-      </td>
-    ))}
-  </tr>
-))}          
+            {/* Lignes Année N (valeurs centrées) */}
+            {years.map((y, yi)=>(
+              <tr key={yi}>
+                <td>{`Année ${y}`}</td>
+                {series.map((s, si)=>(
+                  <td key={si} style={{textAlign:'center', fontWeight:600}}>
+                    {s.values[yi] !== undefined ? euro(s.values[yi]) : '0 €'}
+                  </td>
+                ))}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
 
-{/* Graphique */}
-<div className="chart-card" style={{marginTop:20, border:'none', boxShadow:'none', outline:'none'}}>
-  <SmoothChart res={result}/>
-</div>
+      {/* Graphique */}
+      <div className="chart-card" style={{marginTop:20, border:'none', boxShadow:'none', outline:'none'}}>
+        <SmoothChart res={result}/>
+      </div>
     </div>
   )
 }
@@ -384,23 +394,19 @@ function SmoothChart({res}) {
     }
   }).filter(p => p.lastIdx >= 0)
 
-  // Place les labels sans chevauchement (tri par Y puis décalage)
-  // écart vertical minimal entre deux labels
+  // Place les labels sans chevauchement
   const MIN_GAP = 16
   lastPoints.sort((a,b)=> a.ly - b.ly)
   const placed = []
   lastPoints.forEach(pt=>{
-    let labelY = pt.ly - 8 // offset de base au-dessus du point
-    // éviter le chevauchement avec le label précédent déjà placé
+    let labelY = pt.ly - 8
     if (placed.length){
       const prev = placed[placed.length-1]
       if (labelY < prev.labelY + MIN_GAP) {
         labelY = prev.labelY + MIN_GAP
       }
     }
-    // clamp à l’intérieur du graphe
     labelY = Math.min(SVG_H - PAD - 6, Math.max(PAD + 12, labelY))
-    // largeur de texte estimée pour ne pas sortir à droite
     const lbl = (pt.lastVal/1000).toFixed(2) + ' k€'
     const estW = 7 * lbl.length
     const labelX = Math.min(SVG_W - PAD - estW - 4, pt.lx + 8)
@@ -411,7 +417,6 @@ function SmoothChart({res}) {
     <div ref={wrapRef} style={{display:'flex', alignItems:'stretch', gap:12, width:'100%'}}>
       {/* === GRAPHE sans cadre === */}
       <svg width={SVG_W} height={SVG_H} role="img" aria-label="Évolution des placements" style={{display:'block'}}>
-        {/* pas de rect ni de bordure autour */}
         {/* Axes */}
         <line x1={PAD} y1={SVG_H-PAD} x2={SVG_W-PAD} y2={SVG_H-PAD} stroke="#bbb"/>
         <line x1={PAD} y1={PAD}       x2={PAD}       y2={SVG_H-PAD} stroke="#bbb"/>
@@ -449,7 +454,6 @@ function SmoothChart({res}) {
             d += (d===''?'M':'L') + ' ' + x(i) + ' ' + y(v) + ' '
           })
           if(!d) return null
-          // ligne + petits points pour la lisibilité
           return (
             <g key={'s'+si}>
               <path d={d} fill="none" stroke={color} strokeWidth="2.5"/>
@@ -462,7 +466,6 @@ function SmoothChart({res}) {
         {placed.map((p,i)=>(
           <g key={'lbl'+i}>
             <circle cx={p.lx} cy={p.ly} r="3.5" fill={p.color}/>
-            {/* fond blanc pour éviter de “toucher” la courbe visuellement */}
             <rect x={p.labelX-2} y={p.labelY-11} width={(p.label.length*7)+6} height="16" fill="#fff" opacity="0.9" rx="2"/>
             <text x={p.labelX} y={p.labelY} fontSize="12" fill="#333">{p.label}</text>
           </g>
