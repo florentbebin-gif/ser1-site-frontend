@@ -679,6 +679,44 @@ export default function Credit(){
       <div style={{marginTop:14, border:'1px solid #C0B5AA', borderRadius:10, padding:'12px 14px', background:'#F8F6F4'}}>
         {!isAnnual ? (
           <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
+            )}
+{isAnnual && (
+  <div style={{marginTop:10}}>
+    <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
+      <colgroup>
+        <col style={{width:'25%'}}/>
+        <col style={{width:'15%'}}/>
+        <col style={{width:'15%'}}/>
+        <col style={{width:'15%'}}/>
+        <col style={{width:'15%'}}/>
+        <col style={{width:'15%'}}/>
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Année</th>
+          <th>Paiement</th>
+          <th>P + Assur.</th>
+          <th>Intérêts</th>
+          <th>Assurance</th>
+          <th>CRD fin</th>
+        </tr>
+      </thead>
+      <tbody>
+        {aggregateToYears(agrRows).map((a,i)=>(
+          <tr key={i}>
+            <td>{a.periode}</td>
+            <td style={{textAlign:'right'}}>{euro0(a.mensu)}</td>
+            <td style={{textAlign:'right'}}>{euro0(a.mensuTotal)}</td>
+            <td style={{textAlign:'right'}}>{euro0(a.interet)}</td>
+            <td style={{textAlign:'right'}}>{euro0(a.assurance)}</td>
+            <td style={{textAlign:'right'}}>{euro0(a.crd)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+
             <div>
               <div className="cell-muted">Votre mensualité totale (M1) :</div>
               <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(mensualiteTotaleM1)} <span className="cell-muted">(hors assurance)</span></div>
