@@ -786,34 +786,46 @@ const diffDureesMois = dureeLisseMois - dureeBaseMois
           /* ---- VUE ANNUELLE ---- */
           <>
             {/* Bandeau résumé (1ère année visible) */}
-            {(() => {
-              const ann = aggregateToYears(agrRows)
-              const first = ann[0] || {periode:'—', interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0}
-              return (
-                <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
-                  <div>
-                    <div className="cell-muted">Votre paiement total en {first.periode} :</div>
-                    <div style={{fontWeight:700, color:'#2C3D38'}}>
-                      {euro0(first.mensu)} <span className="cell-muted">(hors assurance)</span>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="cell-muted">Paiement + assurance en {first.periode} :</div>
-                    <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(first.mensuTotal)}</div>
-                  </div>
-                  <div>
-                    <div className="cell-muted">Intérêts • Assurance • Amort. ({first.periode}) :</div>
-                    <div style={{fontWeight:700, color:'#2C3D38'}}>
-                      {euro0(first.interet)} • {euro0(first.assurance)} • {euro0(first.amort)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="cell-muted">CRD fin {first.periode} :</div>
-                    <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(first.crd)}</div>
-                  </div>
-                </div>
-              )
-            })()}
+           {(() => {
+  const ann = aggregateToYears(agrRows)
+  const first = ann[0] || {periode:'—', interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0}
+  return (
+    <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
+      
+      {/* Annuités au lieu de Paiement */}
+      <div>
+        <div className="cell-muted">Votre annuité totale en {first.periode} :</div>
+        <div style={{fontWeight:700, color:'#2C3D38'}}>
+          {euro0(first.mensu)} <span className="cell-muted">(hors assurance)</span>
+        </div>
+      </div>
+
+      <div>
+        <div className="cell-muted">Annuité + assurance en {first.periode} :</div>
+        <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(first.mensuTotal)}</div>
+      </div>
+
+      <div>
+        <div className="cell-muted">Intérêts • Assurance • Amort. ({first.periode}) :</div>
+        <div style={{fontWeight:700, color:'#2C3D38'}}>
+          {euro0(first.interet)} • {euro0(first.assurance)} • {euro0(first.amort)}
+        </div>
+      </div>
+
+      <div>
+        <div className="cell-muted">CRD fin {first.periode} :</div>
+        <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(first.crd)}</div>
+      </div>
+
+      {/* 🔹 Ajout : coût total Interest-only prêt principal (multi-prêts) */}
+      <div>
+        <div className="cell-muted">Coût total des prêts principal (hors assurance) :</div>
+        <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(coutInteretsAgr)}</div>
+      </div>
+    </div>
+  )
+})()}
+
             <div className="cell-muted" style={{marginTop:6}}>
               Différence de durées : <span style={{fontWeight:700, color:'#2C3D38'}}>
                 {diffDureesMois > 0 ? `+${diffDureesMois}` : diffDureesMois} mois
