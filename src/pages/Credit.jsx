@@ -56,21 +56,25 @@ function scheduleAmortissable({ capital, r, rAss, N, assurMode, mensuOverride })
 
   for (let m = 1; m <= N; m++) {
     if (crd <= EPS) break
-    const interet = crd * r
+
+    const crdStart = crd                     // <-- CRD début de mois (référence CRD)
+    const interet  = crdStart * r
+    let mensu      = mensuFixe
 
     // borne dernière échéance
-    let mensu = mensuFixe
-    const maxMensu = interet + crd
+    const maxMensu = interet + crdStart
     if (mensu > maxMensu) mensu = maxMensu
     if (mensu < interet && r > 0) mensu = interet
 
     let amort = Math.max(0, mensu - interet)
-    if (amort > crd) amort = crd
+    if (amort > crdStart) amort = crdStart
 
-    crd = Math.max(0, crd - amort)
-    const assur = (assurMode === 'CI') ? assurFixe : (crd * rAss)
+    const crdEnd = Math.max(0, crdStart - amort)
+    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)  // <-- assurance sur CRD début
+
     const mensuTotal = mensu + (assur || 0)
-    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu, mensuTotal, crd })
+    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu, mensuTotal, crd: crdEnd })
+    crd = crdEnd
   }
   return rows
 }
@@ -83,25 +87,29 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
 
   for (let m = 1; m <= N; m++) {
     if (crd <= EPS) break
-    const interet = crd * r
 
+    const crdStart = crd
+    const interet  = crdStart * r
     let mensu = (typeof mensuOverride === 'number' && mensuOverride > 0) ? mensuOverride : interet
-    const maxMensu = interet + (m === N ? crd : crd)
+
+    const maxMensu = interet + (m === N ? crdStart : 0) + interet  // borne si dernière
     if (mensu > maxMensu) mensu = maxMensu
     if (mensu < interet && r > 0) mensu = interet
 
     let amort = 0
     if (m === N) {
-      amort = crd
+      amort = crdStart
       mensu = interet + amort
     } else if (mensu > interet) {
-      amort = Math.min(crd, mensu - interet)
+      amort = Math.min(crdStart, mensu - interet)
     }
 
-    crd = Math.max(0, crd - amort)
-    const assur = (assurMode === 'CI') ? assurFixe : (crd * rAss)
+    const crdEnd = Math.max(0, crdStart - amort)
+    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)  // <-- assurance sur CRD début
+
     const mensuTotal = mensu + (assur || 0)
-    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu, mensuTotal, crd })
+    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu, mensuTotal, crd: crdEnd })
+    crd = crdEnd
   }
   return rows
 }
@@ -118,25 +126,31 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
 
   for (let m = 1; m <= N; m++) {
     if (crd <= EPS) break
-    const interet = crd * r
+
+    const crdStart = crd
+    const interet  = crdStart * r
     const mensuAutres = sumMensuAutresAtMonth(m)
     let mensu1 = Math.max(0, cibleMensuTotale - mensuAutres)
 
-    const capMensu = interet + crd
+    // borne “intérêt + CRD” et sécurisation amort > 0 (si pas la dernière)
+    const capMensu = interet + crdStart
     if (mensu1 > capMensu) mensu1 = capMensu
-    if (mensu1 < interet && r > 0) mensu1 = interet
-    if (type === 'amortissable' && m === N) mensu1 = interet + crd
+    if (m < N && mensu1 < interet && r > 0) mensu1 = interet + 1e-6  // <-- évite prêt qui n'amortit pas
+    if (type === 'amortissable' && m === N) mensu1 = interet + crdStart
 
     let amort = Math.max(0, mensu1 - interet)
-    if (amort > crd) amort = crd
+    if (amort > crdStart) amort = crdStart
 
-    crd = Math.max(0, crd - amort)
-    const assur = (assurMode === 'CI') ? assurFixe : (crd * rAss)
+    const crdEnd = Math.max(0, crdStart - amort)
+    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)  // <-- assurance sur CRD début
+
     const mensuTotal = mensu1 + (assur || 0)
-    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu:mensu1, mensuTotal, crd })
+    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu:mensu1, mensuTotal, crd: crdEnd })
+    crd = crdEnd
   }
   return rows
 }
+
 
 /** Calcule la cible de mensualité totale (Prêt1 + autres) pour conserver une durée cible. */
 function findTargetForDuration({ basePret1, autresPretsRows, targetLen }) {
