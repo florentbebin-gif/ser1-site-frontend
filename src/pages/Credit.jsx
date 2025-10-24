@@ -291,6 +291,21 @@ export default function Credit(){
     const cible = mensuBaseEffectivePret1 + mensuAutresM1
     return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
   }, [effectiveCapitalPret1, r, rA, N, assurMode, creditType, mensuBaseEffectivePret1, lisserPret1, autresRows])
+// ====== Durées "de base" vs "lissée" (en nombre de mois) ======
+// 1) Échéancier "de base" du prêt 1, SANS lissage, avec les mêmes paramètres
+const basePret1Rows = useMemo(() => {
+  const base = { capital: effectiveCapitalPret1, r, rAss: rA, N, assurMode, type: creditType }
+  return (creditType === 'infine')
+    ? scheduleInFine({ ...base, mensuOverride: mensuHorsAssurance_base })
+    : scheduleAmortissable({ ...base, mensuOverride: mensuHorsAssurance_base })
+}, [effectiveCapitalPret1, r, rA, N, assurMode, creditType, mensuHorsAssurance_base])
+
+// 2) Longueurs des 2 échéanciers (en mois)
+const dureeBaseMois  = basePret1Rows.length
+const dureeLisseMois = pret1Rows.length
+
+// 3) Différence (négative = gain de durée quand lissage ON)
+const diffDureesMois = dureeLisseMois - dureeBaseMois
 
   /* ---- Table mensuelle agrégée ---- */
   const agrRows = useMemo(()=>{
