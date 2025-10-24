@@ -29,6 +29,11 @@ function labelMonthFR(ym){
   return `${String(m).padStart(2,'0')}/${y}`
 }
 function labelYear(ym){ return ym.split('-')[0] }
+function monthsDiff(a/*YYYY-MM*/, b/*YYYY-MM*/){
+  const [ya,ma] = a.split('-').map(Number)
+  const [yb,mb] = b.split('-').map(Number)
+  return (yb-ya)*12 + (mb-ma)
+}
 
 /* ===============================
    Formules & échéanciers
@@ -93,7 +98,7 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
   let crd = capital
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
   const sumMensuAutresAtMonth = (m) =>
-    autresPretsRows.reduce((s, arr) => s + (arr[m-1]?.mensu || 0), 0)
+    autresPretsRows.reduce((s, arr) => s + ((arr[m-1]?.mensu) || 0), 0)
 
   for (let m = 1; m <= N; m++) {
     const interet = crd * r
@@ -142,7 +147,8 @@ export default function Credit(){
   const [tauxAssur, setTauxAssur]     = useState(0.30)
   const [mensuBase, setMensuBase]     = useState('')             // saisie mensu prêt 1
 
-  const [pretsPlus, setPretsPlus]     = useState([])             // [{id,capital,duree,taux}]
+  // prêts additionnels : + startYM spécifique
+  const [pretsPlus, setPretsPlus]     = useState([])             // [{id,capital,duree,taux,startYM}]
   const [lisserPret1, setLisserPret1] = useState(false)
   const [viewMode, setViewMode]       = useState('mensuel')      // 'mensuel' | 'annuel'
 
@@ -236,17 +242,27 @@ export default function Credit(){
     return hasOthers ? mensuHorsAssurance_base : (mensuUser || mensuHorsAssurance_base)
   }, [pretsPlus.length, mensuBase, mensuHorsAssurance_base])
 
-  /* ---- Échéanciers prêts additionnels ---- */
+  /* ---- Gen échéanciers prêts additionnels (avec décalage startYM propre) ---- */
+  function shiftRows(rows, offset){
+    if (offset === 0) return rows.slice()
+    if (offset > 0) return Array.from({length:offset}, () => null).concat(rows)
+    // offset < 0 : démarre avant le prêt 1 → on coupe le début
+    return rows.slice(-offset)
+  }
+
   const autresRows = useMemo(()=>{
     return pretsPlus.map(p=>{
       const rM = (Math.max(0, Number(p.taux)||0)/100)/12
       const Np = Math.max(1, Math.floor(toNum(p.duree)||0))
       const C  = Math.max(0, toNum(p.capital))
-      return (creditType === 'infine')
+      const rows = (creditType === 'infine')
         ? scheduleInFine({ capital:C, r:rM, rAss:rA, N:Np, assurMode })
         : scheduleAmortissable({ capital:C, r:rM, rAss:rA, N:Np, assurMode })
+
+      const off = monthsDiff(startYM, p.startYM || startYM)
+      return shiftRows(rows, off)
     })
-  }, [pretsPlus, creditType, rA, assurMode])
+  }, [pretsPlus, creditType, rA, assurMode, startYM])
 
   /* ---- Prêt 1 (standard ou lissé) ---- */
   const pret1Rows = useMemo(()=>{
@@ -256,12 +272,13 @@ export default function Credit(){
         ? scheduleInFine({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
         : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
     }
-    const mensuAutresM1 = autresRows.reduce((s,arr)=> s + (arr[0]?.mensu || 0), 0)
+    // cible calculée sur le mois 0 : somme des mensualités des prêts actifs au mois 0
+    const mensuAutresM1 = autresRows.reduce((s,arr)=> s + ((arr[0]?.mensu) || 0), 0)
     const cible = mensuBaseEffectivePret1 + mensuAutresM1
     return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
   }, [effectiveCapitalPret1, r, rA, N, assurMode, creditType, mensuBaseEffectivePret1, lisserPret1, autresRows])
 
-  /* ---- Tables mensuelles agrégées ---- */
+  /* ---- Table mensuelle agrégée ---- */
   const agrRows = useMemo(()=>{
     const maxLen = Math.max(pret1Rows.length, ...autresRows.map(a => a.length), N)
     const out = []
@@ -288,10 +305,9 @@ export default function Credit(){
 
   /* ---- Agrégation annuelle (si besoin) ---- */
   function aggregateToYears(rows /*mensuel*/) {
-    // regroupe par année civile basée sur startYM
-    const map = new Map() // year -> { sums... }
+    const map = new Map()
     rows.forEach((r, idx) => {
-      const ym = addMonths(startYM, idx)           // 0-based
+      const ym = addMonths(startYM, idx)
       const year = labelYear(ym)
       const cur = map.get(year) || { interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0 }
       cur.interet    += r.interet
@@ -299,7 +315,7 @@ export default function Credit(){
       cur.amort      += r.amort
       cur.mensu      += r.mensu
       cur.mensuTotal += r.mensuTotal
-      cur.crd         = r.crd  // last CRD of the year
+      cur.crd         = r.crd
       map.set(year, cur)
     })
     return Array.from(map.entries()).map(([year, v])=> ({ periode: year, ...v }))
@@ -313,12 +329,37 @@ export default function Credit(){
     return attachMonthLabels(agrRows)
   }, [agrRows, viewMode, startYM])
 
-  /* ---- Synthèse style site ---- */
-  const mensualiteTotaleM1 = (pret1Rows[0]?.mensu || 0) + autresRows.reduce((s,arr)=> s + (arr[0]?.mensu || 0), 0)
-  const primeAssMensuelle = (pret1Rows[0]?.assurance || 0) + autresRows.reduce((s,arr)=> s + (arr[0]?.assurance || 0), 0)
+  /* ---- Synthèse ---- */
+  const mensualiteTotaleM1 = (pret1Rows[0]?.mensu || 0) + autresRows.reduce((s,arr)=> s + ((arr[0]?.mensu) || 0), 0)
+  const primeAssMensuelle = (pret1Rows[0]?.assurance || 0) + autresRows.reduce((s,arr)=> s + ((arr[0]?.assurance) || 0), 0)
   const coutInteretsPret1 = pret1Rows.reduce((s,l)=> s + (l.interet||0), 0)
-  const coutInteretsAgr   = agrRows.reduce((s,l)=> s + (l.interet||0), 0)
-  const coutAssurAgr      = agrRows.reduce((s,l)=> s + (l.assurance||0), 0)
+  const coutInteretsAgr   = agrRows.reduce((s,l)=> s + l.interet, 0)
+  const coutAssurAgr      = agrRows.reduce((s,l)=> s + l.assurance, 0)
+
+  // Synthèse périodes lissage (points de changement = débuts / fins des prêts 2 & 3)
+  const syntheseLissage = useMemo(()=>{
+    if (!lisserPret1) return []
+    const changeSet = new Set([0]) // mois 0
+    pretsPlus.forEach(p=>{
+      const off = Math.max(0, monthsDiff(startYM, p.startYM || startYM))
+      const Np  = Math.max(1, Math.floor(toNum(p.duree)||0))
+      changeSet.add(off)
+      changeSet.add(off + Np)
+    })
+    const points = Array.from(changeSet).sort((a,b)=>a-b).filter(x => x < agrRows.length)
+    const lines = []
+    for (let i=0;i<points.length;i++){
+      const t = points[i]
+      const ym = addMonths(startYM, t)
+      // valeurs mensuelles au mois t
+      const p1 = pret1Rows[t]?.mensu || 0
+      const p2 = autresRows[0]?.[t]?.mensu || 0
+      const p3 = autresRows[1]?.[t]?.mensu || 0
+      lines.push({ from: `À partir de ${labelMonthFR(ym)}`, p1, p2, p3 })
+    }
+    // si dernier point n'est pas la fin, ajouter fin (facultatif, on garde simple)
+    return lines
+  }, [lisserPret1, pretsPlus, startYM, agrRows.length, pret1Rows, autresRows])
 
   /* ---- Vérifications ---- */
   const warnings = useMemo(()=>{
@@ -340,7 +381,13 @@ export default function Credit(){
   /* ---- Actions prêts additionnels ---- */
   const addPret = () => {
     if (pretsPlus.length >= 2) return
-    setPretsPlus(arr => [...arr, { id: rid(), capital: 100000, duree: 120, taux: 2.50 }])
+    setPretsPlus(arr => [...arr, {
+      id: rid(),
+      capital: 100000,
+      duree: 120,
+      taux: 2.50,
+      startYM: startYM   // par défaut à la même date que le prêt 1
+    }])
   }
   const updatePret = (id, patch) => setPretsPlus(arr => arr.map(p => p.id === id ? ({ ...p, ...patch }) : p))
   const removePret = (id) => setPretsPlus(arr => arr.filter(p => p.id !== id))
@@ -365,8 +412,8 @@ export default function Credit(){
 
     const hP = ['Mois','Intérêts','Assurance','Amort.','Mensualité','Mensualité + Assur.','CRD']
     const p1 = pret1Rows.map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
-    const p2 = (autresRows[0]||[]).map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
-    const p3 = (autresRows[1]||[]).map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
+    const p2 = (autresRows[0]||[]).map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet||0), Math.round(l.assurance||0), Math.round(l.amort||0), Math.round(l.mensu||0), Math.round(l.mensuTotal||0), Math.round(l.crd||0)])
+    const p3 = (autresRows[1]||[]).map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet||0), Math.round(l.assurance||0), Math.round(l.amort||0), Math.round(l.mensu||0), Math.round(l.mensuTotal||0), Math.round(l.crd||0)])
 
     const xml =
       `<?xml version="1.0"?>
@@ -428,7 +475,7 @@ export default function Credit(){
         </div>
       </div>
 
-      {/* PARAMÈTRES PRÊT 1 — table fixe 4 colonnes sans débordement */}
+      {/* PARAMÈTRES PRÊT 1 — table fixe 4 colonnes */}
       <div className="plac-table-wrap" style={{padding:12}}>
         <table className="plac-table" role="grid" aria-label="paramètres crédit" style={{tableLayout:'fixed', width:'100%'}}>
           <colgroup>
@@ -507,9 +554,6 @@ export default function Credit(){
                   />
                   <span>€</span>
                 </div>
-                <div className="cell-muted" style={{textAlign:'right', fontSize:12, marginTop:2}}>
-                  Saisie ici = recalcul du montant emprunté (hors assurance) lorsqu’il n’y a pas de prêt additionnel.
-                </div>
               </td>
 
               <td className="cell-strong">Coût total (intérêts + assurance)</td>
@@ -554,12 +598,13 @@ export default function Credit(){
             <table className="plac-table" role="grid" aria-label="prêts additionnels"
                    style={{tableLayout:'fixed', width:'100%'}}>
               <colgroup>
-                <col style={{width:'8%'}}/>
-                <col style={{width:'26%'}}/>
-                <col style={{width:'20%'}}/>
-                <col style={{width:'20%'}}/>
-                <col style={{width:'18%'}}/>
-                <col style={{width:'8%'}}/>
+                <col style={{width:'6%'}}/>
+                <col style={{width:'18%'}}/>{/* Capital */}
+                <col style={{width:'14%'}}/>{/* Durée */}
+                <col style={{width:'14%'}}/>{/* Taux */}
+                <col style={{width:'20%'}}/>{/* Mensu */}
+                <col style={{width:'18%'}}/>{/* Date souscription */}
+                <col style={{width:'10%'}}/>{/* Action */}
               </colgroup>
               <thead>
                 <tr>
@@ -568,6 +613,7 @@ export default function Credit(){
                   <th style={{textAlign:'right'}}>Durée (mois)</th>
                   <th style={{textAlign:'right'}}>Taux annuel (%)</th>
                   <th style={{textAlign:'right'}}>Mensualité (hors assur.)</th>
+                  <th>Date de souscription</th>
                   <th></th>
                 </tr>
               </thead>
@@ -576,9 +622,9 @@ export default function Credit(){
                   const rM = (Math.max(0, Number(p.taux)||0)/100)/12
                   const Np = Math.max(1, Math.floor(toNum(p.duree)||0))
                   const C  = Math.max(0, toNum(p.capital))
-                  const mensu = (creditType === 'infine')
-                    ? (rM === 0 ? 0 : C * rM)
-                    : mensualiteAmortissable(C, rM, Np)
+                  const mensu = (rM === 0 && creditType!=='infine')
+                    ? (C / Np)
+                    : (creditType === 'infine' ? (rM === 0 ? 0 : C * rM) : mensualiteAmortissable(C, rM, Np))
                   return (
                     <tr key={p.id}>
                       <td>{idx+2}</td>
@@ -607,6 +653,14 @@ export default function Credit(){
                         />
                       </td>
                       <td style={{textAlign:'right', fontWeight:600}}>{euro0(mensu)}</td>
+                      <td className="input-cell" style={{textAlign:'center'}}>
+                        <input
+                          type="month"
+                          value={p.startYM || startYM}
+                          onChange={e=> updatePret(p.id, { startYM: e.target.value })}
+                          style={{height:28, width:'100%'}}
+                        />
+                      </td>
                       <td style={{textAlign:'center'}}>
                         <button className="chip" style={{width:'100%'}} onClick={()=> removePret(p.id)}>Supprimer</button>
                       </td>
@@ -626,7 +680,7 @@ export default function Credit(){
       }}>
         <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
           <div>
-            <div className="cell-muted">Votre mensualité {lisserPret1 ? 'lissée' : 'totale (M1)'} :</div>
+            <div className="cell-muted">Votre mensualité totale (M1) :</div>
             <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(mensualiteTotaleM1)} <span className="cell-muted">(hors assurance)</span></div>
           </div>
           <div>
@@ -638,6 +692,38 @@ export default function Credit(){
             <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(primeAssMensuelle)}</div>
           </div>
         </div>
+
+        {/* Tableau synthétique quand lissage ON */}
+        {lisserPret1 && syntheseLissage.length > 0 && (
+          <div style={{marginTop:10}}>
+            <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
+              <colgroup>
+                <col style={{width:'40%'}}/>
+                <col style={{width:'20%'}}/>
+                <col style={{width:'20%'}}/>
+                <col style={{width:'20%'}}/>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Période</th>
+                  <th>Prêt 1</th>
+                  <th>Prêt 2</th>
+                  <th>Prêt 3</th>
+                </tr>
+              </thead>
+              <tbody>
+                {syntheseLissage.map((ln, i)=>(
+                  <tr key={i}>
+                    <td className="cell-strong">{ln.from}</td>
+                    <td style={{textAlign:'right'}}>{ln.p1>0 ? euro0(ln.p1) : '—'}</td>
+                    <td style={{textAlign:'right'}}>{ln.p2>0 ? euro0(ln.p2) : '—'}</td>
+                    <td style={{textAlign:'right'}}>{ln.p3>0 ? euro0(ln.p3) : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* TABLEAU D’AMORTISSEMENT (vue mensuelle/annuelle) */}
@@ -727,12 +813,12 @@ export default function Credit(){
                 {autresRows[0].map((l, idx)=>(
                   <tr key={idx}>
                     <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
-                    <td style={{textAlign:'right'}}>{euro0(l.crd)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet||0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance||0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort||0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu||0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal||0)}</td>
+                    <td style={{textAlign:'right'}}>{euro0(l.crd||0)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -761,12 +847,12 @@ export default function Credit(){
                 {autresRows[1].map((l, idx)=>(
                   <tr key={idx}>
                     <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
-                    <td style={{textAlign:'right'}}>{euro0(l.crd)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet||0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance||0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort||0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu||0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal||0)}</td>
+                    <td style={{textAlign:'right'}}>{euro0(l.crd||0)}</td>
                   </tr>
                 ))}
               </tbody>
