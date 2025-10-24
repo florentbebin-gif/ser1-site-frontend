@@ -2,10 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 
 /* ---------- Helpers format ---------- */
-const MONTHS = [
-  'Janvier','Février','Mars','Avril','Mai','Juin',
-  'Juillet','Août','Septembre','Octobre','Novembre','Décembre'
-]
 const fmt0 = (n)=> (Math.round(Number(n)||0)).toLocaleString('fr-FR')
 const euro0 = (n)=> fmt0(n) + ' €'
 const toNum  = (v)=> {
@@ -15,6 +11,24 @@ const toNum  = (v)=> {
   return Number.isFinite(n) ? n : 0
 }
 const rid = () => Math.random().toString(36).slice(2,9)
+
+/* Date utils (YYYY-MM) */
+function nowYearMonth(){
+  const d = new Date()
+  const m = String(d.getMonth()+1).padStart(2,'0')
+  return `${d.getFullYear()}-${m}`
+}
+function addMonths(ym/*YYYY-MM*/, k/*int*/){
+  const [y,m] = ym.split('-').map(Number)
+  const d = new Date(y, m-1 + k, 1)
+  const mm = String(d.getMonth()+1).padStart(2,'0')
+  return `${d.getFullYear()}-${mm}`
+}
+function labelMonthFR(ym){
+  const [y,m] = ym.split('-').map(Number)
+  return `${String(m).padStart(2,'0')}/${y}`
+}
+function labelYear(ym){ return ym.split('-')[0] }
 
 /* ===============================
    Formules & échéanciers
@@ -119,7 +133,7 @@ export default function Credit(){
 
   /* ---- ÉTATS ---- */
   const [creditType, setCreditType]   = useState('amortissable') // 'amortissable' | 'infine'
-  const [startMonth, setStartMonth]   = useState(1)              // Janvier=1
+  const [startYM, setStartYM]         = useState(nowYearMonth()) // Date de souscription (YYYY-MM)
   const [assurMode, setAssurMode]     = useState('CRD')          // 'CI' | 'CRD'
 
   const [capital, setCapital]         = useState(300000)         // prêt 1
@@ -130,6 +144,7 @@ export default function Credit(){
 
   const [pretsPlus, setPretsPlus]     = useState([])             // [{id,capital,duree,taux}]
   const [lisserPret1, setLisserPret1] = useState(false)
+  const [viewMode, setViewMode]       = useState('mensuel')      // 'mensuel' | 'annuel'
 
   // PERSISTENCE
   const STORE_KEY = storageKeyFor('credit')
@@ -141,7 +156,7 @@ export default function Credit(){
         const s = JSON.parse(raw)
         if (s && typeof s === 'object'){
           setCreditType(s.creditType ?? 'amortissable')
-          setStartMonth(s.startMonth ?? 1)
+          setStartYM(s.startYM ?? nowYearMonth())
           setAssurMode(s.assurMode ?? 'CRD')
           setCapital(s.capital ?? 300000)
           setDuree(s.duree ?? 240)
@@ -150,6 +165,7 @@ export default function Credit(){
           setMensuBase(s.mensuBase ?? '')
           setPretsPlus(Array.isArray(s.pretsPlus) ? s.pretsPlus : [])
           setLisserPret1(!!s.lisserPret1)
+          setViewMode(s.viewMode ?? 'mensuel')
         }
       }
     }catch{}
@@ -160,16 +176,16 @@ export default function Credit(){
     if(!hydrated) return
     try{
       localStorage.setItem(STORE_KEY, JSON.stringify({
-        creditType, startMonth, assurMode, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1
+        creditType, startYM, assurMode, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode
       }))
     }catch{}
-  }, [hydrated, creditType, startMonth, assurMode, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1])
+  }, [hydrated, creditType, startYM, assurMode, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode])
 
   // Reset global
   useEffect(()=>{
     const off = onResetEvent?.(()=>{
       setCreditType('amortissable')
-      setStartMonth(1)
+      setStartYM(nowYearMonth())
       setAssurMode('CRD')
       setCapital(300000)
       setDuree(240)
@@ -178,6 +194,7 @@ export default function Credit(){
       setMensuBase('')
       setPretsPlus([])
       setLisserPret1(false)
+      setViewMode('mensuel')
       try { localStorage.removeItem(STORE_KEY) } catch {}
     })
     return off || (()=>{})
@@ -244,7 +261,7 @@ export default function Credit(){
     return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
   }, [effectiveCapitalPret1, r, rA, N, assurMode, creditType, mensuBaseEffectivePret1, lisserPret1, autresRows])
 
-  /* ---- Tables ---- */
+  /* ---- Tables mensuelles agrégées ---- */
   const agrRows = useMemo(()=>{
     const maxLen = Math.max(pret1Rows.length, ...autresRows.map(a => a.length), N)
     const out = []
@@ -269,8 +286,39 @@ export default function Credit(){
     return out
   }, [pret1Rows, autresRows, N])
 
-  const coutInterets = useMemo(()=> agrRows.reduce((s,l)=> s + l.interet, 0), [agrRows])
-  const coutAssur    = useMemo(()=> agrRows.reduce((s,l)=> s + l.assurance,0), [agrRows])
+  /* ---- Agrégation annuelle (si besoin) ---- */
+  function aggregateToYears(rows /*mensuel*/) {
+    // regroupe par année civile basée sur startYM
+    const map = new Map() // year -> { sums... }
+    rows.forEach((r, idx) => {
+      const ym = addMonths(startYM, idx)           // 0-based
+      const year = labelYear(ym)
+      const cur = map.get(year) || { interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0 }
+      cur.interet    += r.interet
+      cur.assurance  += r.assurance
+      cur.amort      += r.amort
+      cur.mensu      += r.mensu
+      cur.mensuTotal += r.mensuTotal
+      cur.crd         = r.crd  // last CRD of the year
+      map.set(year, cur)
+    })
+    return Array.from(map.entries()).map(([year, v])=> ({ periode: year, ...v }))
+  }
+  function attachMonthLabels(rows){
+    return rows.map((r, idx)=> ({ periode: labelMonthFR(addMonths(startYM, idx)), ...r }))
+  }
+
+  const tableDisplay = useMemo(()=>{
+    if (viewMode === 'annuel') return aggregateToYears(agrRows)
+    return attachMonthLabels(agrRows)
+  }, [agrRows, viewMode, startYM])
+
+  /* ---- Synthèse style site ---- */
+  const mensualiteTotaleM1 = (pret1Rows[0]?.mensu || 0) + autresRows.reduce((s,arr)=> s + (arr[0]?.mensu || 0), 0)
+  const primeAssMensuelle = (pret1Rows[0]?.assurance || 0) + autresRows.reduce((s,arr)=> s + (arr[0]?.assurance || 0), 0)
+  const coutInteretsPret1 = pret1Rows.reduce((s,l)=> s + (l.interet||0), 0)
+  const coutInteretsAgr   = agrRows.reduce((s,l)=> s + (l.interet||0), 0)
+  const coutAssurAgr      = agrRows.reduce((s,l)=> s + (l.assurance||0), 0)
 
   /* ---- Vérifications ---- */
   const warnings = useMemo(()=>{
@@ -278,7 +326,6 @@ export default function Credit(){
     if (effectiveCapitalPret1 <= 0) w.push('Le capital du prêt 1 doit être > 0.')
     if (N <= 0) w.push('La durée (mois) doit être > 0.')
     if (creditType === 'amortissable') {
-      // mensu prêt 1 au mois 1 (hors assurance)
       const m1 = pret1Rows[0]?.mensu || 0
       const int1 = pret1Rows[0]?.interet || 0
       if (m1 < int1 - 1e-6) w.push('La mensualité du prêt 1 est inférieure aux intérêts du premier mois.')
@@ -313,16 +360,13 @@ export default function Credit(){
       </Worksheet>`
   }
   function exportExcel() {
-    // Feuille Agrégée
     const header = ['Mois','Intérêts','Assurance','Amort.','Mensualité','Mensualité + Assur.','CRD total']
-    const agr = agrRows.map(l => [l.mois, Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
+    const agr = agrRows.map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
 
-    // Prêt 1
     const hP = ['Mois','Intérêts','Assurance','Amort.','Mensualité','Mensualité + Assur.','CRD']
-    const p1 = pret1Rows.map(l => [l.mois, Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
-    // Prêt 2 & 3
-    const p2 = (autresRows[0]||[]).map(l => [l.mois, Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
-    const p3 = (autresRows[1]||[]).map(l => [l.mois, Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
+    const p1 = pret1Rows.map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
+    const p2 = (autresRows[0]||[]).map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
+    const p3 = (autresRows[1]||[]).map((l,idx) => [labelMonthFR(addMonths(startYM, idx)), Math.round(l.interet), Math.round(l.assurance), Math.round(l.amort), Math.round(l.mensu), Math.round(l.mensuTotal), Math.round(l.crd)])
 
     const xml =
       `<?xml version="1.0"?>
@@ -364,16 +408,24 @@ export default function Credit(){
           <option value="infine">In fine</option>
         </select>
 
-        <div className="cell-strong" style={{marginLeft:18}}>Mois de souscription</div>
-        <select value={startMonth} onChange={e=> setStartMonth(Number(e.target.value))} style={{height:32}}>
-          {MONTHS.map((m,idx)=> <option key={idx} value={idx+1}>{m}</option>)}
-        </select>
+        <div className="cell-strong" style={{marginLeft:18}}>Date de souscription</div>
+        <input
+          type="month"
+          value={startYM}
+          onChange={e=> setStartYM(e.target.value)}
+          style={{height:32}}
+        />
 
         <div className="cell-strong" style={{marginLeft:18}}>Mode de l’assurance</div>
         <select value={assurMode} onChange={e=> setAssurMode(e.target.value)} style={{height:32}}>
           <option value="CI">Capital initial</option>
           <option value="CRD">Capital restant dû</option>
         </select>
+
+        <div style={{marginLeft:'auto', display:'flex', gap:8}}>
+          <button className={`chip ${viewMode==='mensuel'?'active':''}`} onClick={()=> setViewMode('mensuel')}>Vue mensuelle</button>
+          <button className={`chip ${viewMode==='annuel'?'active':''}`} onClick={()=> setViewMode('annuel')}>Vue annuelle</button>
+        </div>
       </div>
 
       {/* PARAMÈTRES PRÊT 1 — table fixe 4 colonnes sans débordement */}
@@ -462,9 +514,9 @@ export default function Credit(){
 
               <td className="cell-strong">Coût total (intérêts + assurance)</td>
               <td className="input-cell" style={{textAlign:'right', paddingRight:12, fontWeight:600}}>
-                {euro0(coutInterets + coutAssur)}
+                {euro0(coutInteretsAgr + coutAssurAgr)}
                 <div className="cell-muted" style={{fontSize:12}}>
-                  dont intérêts {euro0(coutInterets)} • assurance {euro0(coutAssur)}
+                  dont intérêts {euro0(coutInteretsAgr)} • assurance {euro0(coutAssurAgr)}
                 </div>
               </td>
             </tr>
@@ -485,7 +537,7 @@ export default function Credit(){
       <div style={{marginTop:14}}>
         <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap'}}>
           <div className="cell-strong">Prêts additionnels (max 2)</div>
-          <div style={{display:'flex', gap:8}}>
+          <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
             <button className="chip" onClick={addPret} disabled={pretsPlus.length>=2}>+ Ajouter un prêt</button>
             <button
               className={`chip ${lisserPret1 ? 'active' : ''}`}
@@ -503,11 +555,11 @@ export default function Credit(){
                    style={{tableLayout:'fixed', width:'100%'}}>
               <colgroup>
                 <col style={{width:'8%'}}/>
-                <col style={{width:'24%'}}/>
-                <col style={{width:'22%'}}/>
-                <col style={{width:'22%'}}/>
+                <col style={{width:'26%'}}/>
+                <col style={{width:'20%'}}/>
+                <col style={{width:'20%'}}/>
                 <col style={{width:'18%'}}/>
-                <col style={{width:'6%'}}/>
+                <col style={{width:'8%'}}/>
               </colgroup>
               <thead>
                 <tr>
@@ -556,7 +608,7 @@ export default function Credit(){
                       </td>
                       <td style={{textAlign:'right', fontWeight:600}}>{euro0(mensu)}</td>
                       <td style={{textAlign:'center'}}>
-                        <button className="chip" onClick={()=> removePret(p.id)}>Supprimer</button>
+                        <button className="chip" style={{width:'100%'}} onClick={()=> removePret(p.id)}>Supprimer</button>
                       </td>
                     </tr>
                   )
@@ -567,12 +619,33 @@ export default function Credit(){
         )}
       </div>
 
-      {/* TABLEAU D’AMORTISSEMENT AGRÉGÉ */}
+      {/* SYNTHÈSE (style site) */}
+      <div style={{
+        marginTop:14, border:'1px solid #C0B5AA', borderRadius:10, padding:'12px 14px',
+        background:'#F8F6F4'
+      }}>
+        <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
+          <div>
+            <div className="cell-muted">Votre mensualité {lisserPret1 ? 'lissée' : 'totale (M1)'} :</div>
+            <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(mensualiteTotaleM1)} <span className="cell-muted">(hors assurance)</span></div>
+          </div>
+          <div>
+            <div className="cell-muted">Coût total du prêt principal (hors assurance) :</div>
+            <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(coutInteretsPret1)}</div>
+          </div>
+          <div>
+            <div className="cell-muted">Votre prime d’assurance mensuelle :</div>
+            <div style={{fontWeight:700, color:'#2C3D38'}}>{euro0(primeAssMensuelle)}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* TABLEAU D’AMORTISSEMENT (vue mensuelle/annuelle) */}
       <div className="plac-table-wrap" style={{marginTop:16}}>
-        <table className="plac-table" role="grid" aria-label="amortissement agrégé" style={{tableLayout:'fixed', width:'100%'}}>
+        <table className="plac-table" role="grid" aria-label="amortissement" style={{tableLayout:'fixed', width:'100%'}}>
           <thead>
             <tr>
-              <th>Mois</th>
+              <th>Période</th>
               <th style={{textAlign:'right'}}>Intérêts</th>
               <th style={{textAlign:'right'}}>Assurance</th>
               <th style={{textAlign:'right'}}>Amort.</th>
@@ -582,9 +655,9 @@ export default function Credit(){
             </tr>
           </thead>
           <tbody>
-            {agrRows.map((l) => (
-              <tr key={l.mois}>
-                <td>{l.mois}</td>
+            {tableDisplay.map((l, i) => (
+              <tr key={i}>
+                <td>{l.periode}</td>
                 <td style={{textAlign:'right'}}>{euro0(l.interet)}</td>
                 <td style={{textAlign:'right'}}>{euro0(l.assurance)}</td>
                 <td style={{textAlign:'right'}}>{euro0(l.amort)}</td>
@@ -599,7 +672,7 @@ export default function Credit(){
 
       {/* DÉTAIL PAR PRÊT — police réduite + traits de colonnes #CEC1B6 */}
       <div className="plac-table-wrap" style={{marginTop:16}}>
-        <div className="cell-strong" style={{marginBottom:8}}>Détail par prêt</div>
+        <div className="cell-strong" style={{marginBottom:8}}>Détail par prêt (mensuel)</div>
 
         {/* PRÊT 1 */}
         <div style={{marginBottom:12}}>
@@ -608,7 +681,7 @@ export default function Credit(){
                  style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
             <thead>
               <tr>
-                <th>Mois</th>
+                <th>Période</th>
                 <th style={{textAlign:'right'}}>Intérêts</th>
                 <th style={{textAlign:'right'}}>Assurance</th>
                 <th style={{textAlign:'right'}}>Amort.</th>
@@ -618,9 +691,9 @@ export default function Credit(){
               </tr>
             </thead>
             <tbody>
-              {pret1Rows.map((l)=>(
-                <tr key={l.mois}>
-                  <td style={{borderRight:'1px solid #CEC1B6'}}>{l.mois}</td>
+              {pret1Rows.map((l, idx)=>(
+                <tr key={idx}>
+                  <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
                   <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
                   <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
                   <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
@@ -641,7 +714,7 @@ export default function Credit(){
                    style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
               <thead>
                 <tr>
-                  <th>Mois</th>
+                  <th>Période</th>
                   <th style={{textAlign:'right'}}>Intérêts</th>
                   <th style={{textAlign:'right'}}>Assurance</th>
                   <th style={{textAlign:'right'}}>Amort.</th>
@@ -651,9 +724,9 @@ export default function Credit(){
                 </tr>
               </thead>
               <tbody>
-                {autresRows[0].map((l)=>(
-                  <tr key={l.mois}>
-                    <td style={{borderRight:'1px solid #CEC1B6'}}>{l.mois}</td>
+                {autresRows[0].map((l, idx)=>(
+                  <tr key={idx}>
+                    <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
                     <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
                     <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
                     <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
@@ -675,7 +748,7 @@ export default function Credit(){
                    style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
               <thead>
                 <tr>
-                  <th>Mois</th>
+                  <th>Période</th>
                   <th style={{textAlign:'right'}}>Intérêts</th>
                   <th style={{textAlign:'right'}}>Assurance</th>
                   <th style={{textAlign:'right'}}>Amort.</th>
@@ -685,9 +758,9 @@ export default function Credit(){
                 </tr>
               </thead>
               <tbody>
-                {autresRows[1].map((l)=>(
-                  <tr key={l.mois}>
-                    <td style={{borderRight:'1px solid #CEC1B6'}}>{l.mois}</td>
+                {autresRows[1].map((l, idx)=>(
+                  <tr key={idx}>
+                    <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
                     <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
                     <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
                     <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
