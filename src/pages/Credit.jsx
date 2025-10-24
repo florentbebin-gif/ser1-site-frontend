@@ -421,6 +421,94 @@ export default function Credit(){
   const coutInteretsAgr   = agrRows.reduce((s,l)=> s + l.interet, 0)
   const pret1Interets     = pret1Rows.reduce((s,l)=> s + (l.interet   || 0), 0)
   const pret1Assurance    = pret1Rows.reduce((s,l)=> s + (l.assurance || 0), 0)
+  
+  /* ---- Export Excel (.xls) ---- */
+  function buildWorksheetXml(title, header, rows) {
+    const esc = (s)=> String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    const rowXml = (cells)=> `<Row>${
+      cells.map(v => `<Cell><Data ss:Type="${typeof v === 'number' ? 'Number' : 'String'}">${esc(v)}</Data></Cell>`).join('')
+    }</Row>`
+    return `
+      <Worksheet ss:Name="${esc(title)}">
+        <Table>
+          ${rowXml(header)}
+          ${rows.map(r => rowXml(r)).join('')}
+        </Table>
+      </Worksheet>`
+  }
+
+  function exportExcel() {
+    try {
+      // Feuille AGRÉGÉ (toujours en mensuel pour l’export, lisible)
+      const header = ['Mois','Intérêts','Assurance','Amort.','Paiement','Paiement + Assur.','CRD total']
+      const agr = agrRows.map((l,idx) => [
+        labelMonthFR(addMonths(startYM, idx)),
+        Math.round(l.interet),
+        Math.round(l.assurance),
+        Math.round(l.amort),
+        Math.round(l.mensu),
+        Math.round(l.mensuTotal),
+        Math.round(l.crd)
+      ])
+
+      // DÉTAIL PAR PRÊT (mensuel)
+      const hP = ['Mois','Intérêts','Assurance','Amort.','Mensualité','Mensualité + Assur.','CRD']
+
+      const p1 = pret1Rows.map((l,idx) => [
+        labelMonthFR(addMonths(startYM, idx)),
+        Math.round(l.interet),
+        Math.round(l.assurance),
+        Math.round(l.amort),
+        Math.round(l.mensu),
+        Math.round(l.mensuTotal),
+        Math.round(l.crd)
+      ])
+
+      const p2 = (autresRows[0] || []).map((l,idx)=>[
+        labelMonthFR(addMonths(startYM, idx)),
+        Math.round(l?.interet ?? 0),
+        Math.round(l?.assurance ?? 0),
+        Math.round(l?.amort ?? 0),
+        Math.round(l?.mensu ?? 0),
+        Math.round(l?.mensuTotal ?? 0),
+        Math.round(l?.crd ?? 0)
+      ])
+
+      const p3 = (autresRows[1] || []).map((l,idx)=>[
+        labelMonthFR(addMonths(startYM, idx)),
+        Math.round(l?.interet ?? 0),
+        Math.round(l?.assurance ?? 0),
+        Math.round(l?.amort ?? 0),
+        Math.round(l?.mensu ?? 0),
+        Math.round(l?.mensuTotal ?? 0),
+        Math.round(l?.crd ?? 0)
+      ])
+
+      const xml =
+        `<?xml version="1.0"?>
+        <?mso-application progid="Excel.Sheet"?>
+        <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+          xmlns:o="urn:schemas-microsoft-com:office:office"
+          xmlns:x="urn:schemas-microsoft-com:office:excel"
+          xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+          ${buildWorksheetXml('Agrégé', header, agr)}
+          ${buildWorksheetXml('Prêt 1', hP, p1)}
+          ${buildWorksheetXml('Prêt 2', hP, p2)}
+          ${buildWorksheetXml('Prêt 3', hP, p3)}
+        </Workbook>`
+
+      const blob = new Blob([xml], { type: 'application/vnd.ms-excel' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'amortissement.xls'
+      document.body.appendChild(a); a.click(); a.remove()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error('Export Excel échoué', e)
+      alert('Impossible de générer le fichier Excel.')
+    }
+  }
 
   /* ---- Rendu ---- */
   const isAnnual = viewMode === 'annuel'
