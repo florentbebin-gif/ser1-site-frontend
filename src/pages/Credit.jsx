@@ -152,8 +152,28 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
 }
 
 
-/** Calcule la cible de mensualité totale (Prêt1 + autres) pour conserver une durée cible. */
+// Calcule la cible de mensualité totale (Prêt1 + autres) pour conserver une durée cible
 function findTargetForDuration({ basePret1, autresPretsRows, targetLen }) {
+  // Amortissement minimal « sensible » (pas juste un epsilon)
+  const minAmort = Math.max(1, basePret1.capital / Math.max(12, basePret1.N) / 50) // ≈ 2% de l’amortissement moyen mensuel
+
+  // Somme mensuelle maximale des autres prêts (pire palier)
+  const maxMensuAutres = (()=>{
+    let mx = 0
+    const horizon = Math.max(...autresPretsRows.map(a => a.length), basePret1.N)
+    for (let m = 1; m <= horizon; m++) {
+      const tot = autresPretsRows.reduce((s, arr) => s + ((arr[m-1]?.mensu) || 0), 0)
+      if (tot > mx) mx = tot
+    }
+    return mx
+  })()
+
+  const interet1 = basePret1.capital * basePret1.r
+
+  // ▸ Borne basse : intérêts 1er mois + max autres + amort minimal
+  let lo = interet1 + maxMensuAutres + minAmort
+
+  // ▸ Borne haute : on augmente jusqu'à ce que la durée simulée ≤ targetLen
   const simulate = (cible) => {
     const rows = scheduleLisseePret1({
       pret1: basePret1,
@@ -165,19 +185,15 @@ function findTargetForDuration({ basePret1, autresPretsRows, targetLen }) {
     return { len, lastCRD }
   }
 
-  const interet1 = basePret1.capital * basePret1.r
-  const autresM1 = autresPretsRows.reduce((s, arr)=> s + (arr[0]?.mensu || 0), 0)
-  let lo = Math.max(0, interet1 + autresM1)
-
-  let hi = Math.max(lo + 1, lo * 2 || 1000)
-  while (true) {
+  let hi = Math.max(lo + 1, lo * 2)
+  for (let guard = 0; guard < 20; guard++) {
     const { len } = simulate(hi)
     if (len <= targetLen) break
     hi *= 2
-    if (hi > 1e7) break
   }
 
-  for (let i=0; i<36; i++){
+  // ▸ Dichotomie
+  for (let i = 0; i < 40; i++) {
     const mid = (lo + hi) / 2
     const { len, lastCRD } = simulate(mid)
     if (len > targetLen || lastCRD > 1) {
@@ -188,6 +204,7 @@ function findTargetForDuration({ basePret1, autresPretsRows, targetLen }) {
   }
   return hi
 }
+
 
 /* ===============================
    Page Crédit
