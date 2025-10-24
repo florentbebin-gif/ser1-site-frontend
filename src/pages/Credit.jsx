@@ -332,7 +332,7 @@ export default function Credit(){
 
   /* ---- Synthèse ---- */
   const mensualiteTotaleM1 = (pret1Rows[0]?.mensu || 0) + autresRows.reduce((s,arr)=> s + ((arr[0]?.mensu) || 0), 0)
-  const primeAssMensuelle = (pret1Rows[0]?.assurance || 0) + autresRows.reduce((s,arr)=> s + ((arr[0]?.assurance) || 0), 0)
+  const primeAssMensuelle = (pret1Rows[0]?.assurance || 0)
   const coutInteretsPret1 = pret1Rows.reduce((s,l)=> s + (l.interet||0), 0)
   const coutInteretsAgr   = agrRows.reduce((s,l)=> s + l.interet, 0)
   const coutAssurAgr      = agrRows.reduce((s,l)=> s + l.assurance, 0)
