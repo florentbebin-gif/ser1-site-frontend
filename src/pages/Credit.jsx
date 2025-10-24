@@ -331,16 +331,31 @@ const basePret1Rows = useMemo(() => {
 
   /* ---- Prêt 1 (standard ou lissé) ---- */
   const pret1Rows = useMemo(()=>{
-    const basePret1 = { capital: effectiveCapitalPret1, r, rAss:rA, N, assurMode, type: creditType }
-    if (!lisserPret1 || autresRows.length === 0) {
-      return (creditType === 'infine')
-        ? scheduleInFine({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
-        : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
-    }
+  const basePret1 = { capital: effectiveCapitalPret1, r, rAss:rA, N, assurMode, type: creditType }
+
+  // Pas de lissage ou pas d'autres prêts => comportement standard
+  if (!lisserPret1 || autresRows.length === 0) {
+    return (creditType === 'infine')
+      ? scheduleInFine({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
+      : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
+  }
+
+  if (lissageMode === 'mensu') {
+    // === Mode historique : maintenir la mensualité totale (M1) ===
     const mensuAutresM1 = autresRows.reduce((s,arr)=> s + ((arr[0]?.mensu) || 0), 0)
     const cible = mensuBaseEffectivePret1 + mensuAutresM1
     return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
-  }, [effectiveCapitalPret1, r, rA, N, assurMode, creditType, mensuBaseEffectivePret1, lisserPret1, autresRows])
+  }
+
+  // === Nouveau mode : maintenir la DURÉE (identique à la durée "base") ===
+  const targetLen = basePret1Rows.length
+  const cible = findTargetForDuration({ basePret1, autresPretsRows: autresRows, targetLen })
+  return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
+}, [
+  effectiveCapitalPret1, r, rA, N, assurMode, creditType,
+  mensuBaseEffectivePret1, lisserPret1, autresRows, lissageMode, basePret1Rows.length
+])
+
 // ====== Durées "de base" vs "lissée" (en nombre de mois) ======
 // 1) Échéancier "de base" du prêt 1, SANS lissage, avec les mêmes paramètres
 const basePret1Rows = useMemo(() => {
