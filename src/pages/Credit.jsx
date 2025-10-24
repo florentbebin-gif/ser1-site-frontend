@@ -835,12 +835,12 @@ export default function Credit(){
                 {autresRows[0].map((l, idx)=>(
                   <tr key={idx}>
                     <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet||0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance||0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort||0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu||0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal||0)}</td>
-                    <td style={{textAlign:'right'}}>{euro0(l.crd||0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.interet ?? 0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.assurance ?? 0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.amort ?? 0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensu ?? 0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensuTotal ?? 0)}</td>
+                    <td style={{textAlign:'right'}}>{euro0(l?.crd ?? 0)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -869,15 +869,15 @@ export default function Credit(){
                 {autresRows[1].map((l, idx)=>(
                   <tr key={idx}>
                     <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet||0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance||0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort||0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu||0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal||0)}</td>
-                    <td style={{textAlign:'right'}}>{euro0(l.crd||0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.interet ?? 0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.assurance ?? 0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.amort ?? 0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensu ?? 0)}</td>
+                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensuTotal ?? 0)}</td>
+                    <td style={{textAlign:'right'}}>{euro0(l?.crd ?? 0)}</td>
                   </tr>
                 ))}
-              </tbody>
+            </tbody>
             </table>
           </div>
         )}
