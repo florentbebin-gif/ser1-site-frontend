@@ -505,8 +505,8 @@ const diffDureesMois = dureeLisseMois - dureeBaseMois
 
   /* ---- Rendu ---- */
   const isAnnual = viewMode === 'annuel'
-  const colLabelPaiement = isAnnual ? 'Paiement' : 'Mensualité'
-  const colLabelPaiementAss = isAnnual ? 'Paiement + Assur.' : 'Mensualité + Assur.'
+  const colLabelPaiement = isAnnual ? 'Annuité' : 'Mensualité'
+  const colLabelPaiementAss = isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'
 
   return (
     <div className="panel">
