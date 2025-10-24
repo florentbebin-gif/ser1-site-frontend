@@ -249,21 +249,22 @@ export default function Credit(){
     // offset < 0 : démarre avant le prêt 1 → on coupe le début
     return rows.slice(-offset)
   }
-
   const autresRows = useMemo(()=>{
-    return pretsPlus.map(p=>{
-      const rM = (Math.max(0, Number(p.taux)||0)/100)/12
-      const Np = Math.max(1, Math.floor(toNum(p.duree)||0))
-      const C  = Math.max(0, toNum(p.capital))
-      const type = p.type || creditType
-      const rows = (type === 'infine')
-        ? scheduleInFine({ capital:C, r:rM, rAss:rA, N:Np, assurMode })
-        : scheduleAmortissable({ capital:C, r:rM, rAss:rA, N:Np, assurMode })
+  return pretsPlus.map(p=>{
+    const rM = (Math.max(0, Number(p.taux)||0)/100)/12
+    const Np = Math.max(1, Math.floor(toNum(p.duree)||0))
+    const C  = Math.max(0, toNum(p.capital))
+    const type = p.type || creditType
 
-      const off = monthsDiff(startYM, p.startYM || startYM)
-      return shiftRows(rows, off)
-    })
-  }, [pretsPlus, creditType, rA, assurMode, startYM])
+    // ✅ AUCUNE assurance sur les prêts additionnels
+    const rows = (type === 'infine')
+      ? scheduleInFine({ capital:C, r:rM, rAss:0, N:Np, assurMode })
+      : scheduleAmortissable({ capital:C, r:rM, rAss:0, N:Np, assurMode })
+
+    const off = monthsDiff(startYM, p.startYM || startYM)
+    return shiftRows(rows, off)
+  })
+}, [pretsPlus, creditType, assurMode, startYM])
 
   /* ---- Prêt 1 (standard ou lissé) ---- */
   const pret1Rows = useMemo(()=>{
