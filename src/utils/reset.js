@@ -1,21 +1,16 @@
 // utils/reset.js
 const RESET_EVENT = 'ser1:reset'
-const RESET_PENDING_KEY = 'ser1:reset:pending' // jeton anti-reset involontaire
+const RESET_PENDING_KEY = 'ser1:reset:pending'
 
-/**
- * À appeler depuis le bouton "Reset" de la topbar.
- * Exemple : onClick={() => triggerReset()}
- */
+// ✅ Fonction appelée UNIQUEMENT par le bouton Reset
 export function triggerReset() {
-  // Marque le reset comme explicitement demandé par l'utilisateur
   try { sessionStorage.setItem(RESET_PENDING_KEY, '1') } catch {}
-  // Exécute immédiatement le reset
   clearAllUserInputs(true)
 }
 
 /**
- * Effectue le reset SEULEMENT s'il a été explicitement demandé (jeton présent),
- * ou si fromUserClick === true (appel direct depuis triggerReset()).
+ * Efface uniquement si un reset a été explicitement demandé,
+ * ou si fromUserClick == true (cas du bouton).
  */
 export function clearAllUserInputs(fromUserClick = false) {
   const pending =
@@ -23,54 +18,48 @@ export function clearAllUserInputs(fromUserClick = false) {
     (typeof sessionStorage !== 'undefined' &&
      sessionStorage.getItem(RESET_PENDING_KEY) === '1')
 
-  // Si le reset n'a pas été demandé, on sort sans rien faire
+  // ❌ Arrêt immédiat si reset non demandé
   if (!pending) return
 
-  // Ne pas réinitialiser sur la page Paramètres
   const isParamsPage = window.location.pathname.startsWith('/params')
   if (isParamsPage) {
-    alert('Le reset est désactivé sur la page Paramètres.')
+    alert("Le reset est désactivé sur la page Paramètres.")
     try { sessionStorage.removeItem(RESET_PENDING_KEY) } catch {}
     return
   }
 
-  // 1) Réinitialise le stockage des simulateurs seulement
+  // ✅ Effacer seulement les données des simulateurs
   try {
-    Object.keys(localStorage).forEach((k) => {
+    Object.keys(localStorage).forEach(k => {
       if (k.startsWith('ser1:sim:')) localStorage.removeItem(k)
     })
   } catch {}
 
-  // 2) Efface les contenus visibles dans la page (inputs)
-  //    + déclenche un event 'input' pour que React mette à jour si nécessaire
+  // ✅ Effacer les champs visibles + notifier React par events input/change
   document
     .querySelectorAll('input[type="number"], input[type="text"]')
-    .forEach((input) => {
+    .forEach(input => {
       input.value = ''
       try {
-        input.dispatchEvent(new Event('input', { bubbles: true }))
-        input.dispatchEvent(new Event('change', { bubbles: true }))
+        input.dispatchEvent(new Event('input', { bubbles:true }))
+        input.dispatchEvent(new Event('change', { bubbles:true }))
       } catch {}
     })
 
-  // 3) Notifie React (les écrans écoutent cet event via onResetEvent)
+  // ✅ Informer les composants React d’un reset
   window.dispatchEvent(new CustomEvent(RESET_EVENT))
 
-  // 4) Consomme le jeton
+  // ✅ Reset consommé → on supprime le jeton
   try { sessionStorage.removeItem(RESET_PENDING_KEY) } catch {}
 }
 
-/**
- * Hook utilitaire côté React pour écouter le reset.
- * Usage:
- *   useEffect(() => onResetEvent(() => { ...reset states... }), [])
- */
-export function onResetEvent(handler) {
+// Hook d’écoute dans les pages
+export function onResetEvent(handler){
   const fn = () => handler()
   window.addEventListener(RESET_EVENT, fn)
   return () => window.removeEventListener(RESET_EVENT, fn)
 }
 
-export function storageKeyFor(simId) {
+export function storageKeyFor(simId){
   return `ser1:sim:${simId}`
 }
