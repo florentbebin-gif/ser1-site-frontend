@@ -46,19 +46,27 @@ function mensualiteAmortissable(C, r, N) {
 
 function scheduleAmortissable({ capital, r, rAss, N, assurMode, mensuOverride }) {
   const rows = []
-  let crd = capital
+  let crd = Math.max(0, capital)
   const mensuFixe = (typeof mensuOverride === 'number' && mensuOverride > 0)
     ? mensuOverride
     : mensualiteAmortissable(capital, r, N)
 
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
+  const EPS = 1e-8
 
   for (let m = 1; m <= N; m++) {
+    if (crd <= EPS) break
     const interet = crd * r
+
+    // ✅ borne la dernière mensualité
     let mensu = mensuFixe
+    const maxMensu = interet + crd
+    if (mensu > maxMensu) mensu = maxMensu
     if (mensu < interet && r > 0) mensu = interet
-    let amort = Math.min(crd, mensu - interet)
-    if (!Number.isFinite(amort) || amort < 0) amort = 0
+
+    let amort = Math.max(0, mensu - interet)
+    if (amort > crd) amort = crd
+
     crd = Math.max(0, crd - amort)
     const assur = (assurMode === 'CI') ? assurFixe : (crd * rAss)
     const mensuTotal = mensu + (assur || 0)
@@ -69,21 +77,27 @@ function scheduleAmortissable({ capital, r, rAss, N, assurMode, mensuOverride })
 
 function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
   const rows = []
-  let crd = capital
+  let crd = Math.max(0, capital)
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
+  const EPS = 1e-8
 
   for (let m = 1; m <= N; m++) {
+    if (crd <= EPS) break
     const interet = crd * r
+
     let mensu = (typeof mensuOverride === 'number' && mensuOverride > 0) ? mensuOverride : interet
+    const maxMensu = interet + (m === N ? crd : crd) // borne si dernière
+    if (mensu > maxMensu) mensu = maxMensu
+    if (mensu < interet && r > 0) mensu = interet
+
     let amort = 0
     if (m === N) {
       amort = crd
-      mensu = Math.max(mensu, interet + amort)
-      amort = mensu - interet
-      if (amort > crd) amort = crd
+      mensu = interet + amort
     } else if (mensu > interet) {
       amort = Math.min(crd, mensu - interet)
     }
+
     crd = Math.max(0, crd - amort)
     const assur = (assurMode === 'CI') ? assurFixe : (crd * rAss)
     const mensuTotal = mensu + (assur || 0)
@@ -95,41 +109,40 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
 function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
   const { capital, r, rAss, N, assurMode, type } = pret1
   const rows = []
-  let crd = capital
+  let crd = Math.max(0, capital)
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
+  const EPS = 1e-8
+
   const sumMensuAutresAtMonth = (m) =>
     autresPretsRows.reduce((s, arr) => s + ((arr[m-1]?.mensu) || 0), 0)
 
   for (let m = 1; m <= N; m++) {
+    if (crd <= EPS) break
     const interet = crd * r
     const mensuAutres = sumMensuAutresAtMonth(m)
     let mensu1 = Math.max(0, cibleMensuTotale - mensuAutres)
 
+    // borne “intérêt + CRD” et plan selon type
+    const capMensu = interet + crd
+    if (mensu1 > capMensu) mensu1 = capMensu
     if (type === 'infine') {
-      if (m === N) {
-        const due = interet + crd
-        mensu1 = Math.max(mensu1, due)
-      } else if (mensu1 < interet && r > 0) {
-        mensu1 = interet
-      }
-      let amort = Math.max(0, mensu1 - interet)
-      if (m === N) amort = crd
-      crd = Math.max(0, crd - amort)
+      if (m < N && mensu1 < interet && r > 0) mensu1 = interet
     } else {
       if (mensu1 < interet && r > 0) mensu1 = interet
-      let amort = Math.max(0, mensu1 - interet)
-      if (m === N) { amort = crd; mensu1 = interet + amort }
-      crd = Math.max(0, crd - amort)
+      if (m === N) mensu1 = interet + crd
     }
+
+    let amort = Math.max(0, mensu1 - interet)
+    if (amort > crd) amort = crd
+
+    crd = Math.max(0, crd - amort)
     const assur = (assurMode === 'CI') ? assurFixe : (crd * rAss)
     const mensuTotal = mensu1 + (assur || 0)
-    rows.push({
-      mois:m, interet, assurance:(assur||0),
-      amort: Math.max(0, mensu1 - interet), mensu:mensu1, mensuTotal, crd
-    })
+    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu:mensu1, mensuTotal, crd })
   }
   return rows
 }
+
 
 /* ===============================
    Page Crédit
