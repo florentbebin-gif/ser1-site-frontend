@@ -379,7 +379,7 @@ export default function Placement(){
   )
 }
 
-/* ==== Graphique SVG — labels au-dessus + anti-chevauchement ==== */
+/* ==== Graphique SVG — labels au-dessus (2 décimales) + anti-chevauchement ==== */
 
 const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
 
@@ -398,7 +398,7 @@ function SmoothChart({res}) {
 
   if(!res?.series?.length) return null
 
-  // Filtrer les séries non vides
+  // Séries non vides
   const filtered = res.series.map(s=>{
     const vals = (s.values || []).map(v => (v !== undefined && v > 0) ? v : undefined)
     const anyPos = vals.some(v => v !== undefined && v > 0)
@@ -408,7 +408,7 @@ function SmoothChart({res}) {
 
   // Mise en page
   const LEG_W = 180
-  const PAD   = 60 // marge gauche/droite pour labels y
+  const PAD   = 60
   const W     = Math.max(600, wrapW - 24)
   const SVG_W = Math.max(420, W - LEG_W)
   const SVG_H = 360
@@ -421,7 +421,7 @@ function SmoothChart({res}) {
   filtered.forEach(s => s.values.forEach(v => { if(v!==undefined && v>maxY) maxY = v }))
   if(maxY <= 0) maxY = 1
 
-  // Pas : 1 000 si petit; sinon multiple de 10 000 (≤ 12 ticks)
+  // Pas Y : 1000 si petit, sinon multiple de 10000 (≤ 12 ticks)
   let step
   if (maxY <= 12_000) {
     step = 1_000
@@ -429,12 +429,28 @@ function SmoothChart({res}) {
     const base = 10_000
     const desiredMaxTicks = 12
     const factor = Math.ceil(maxY / (base * desiredMaxTicks))
-    step = base * factor // 10k, 20k, 30k, ...
+    step = base * factor
   }
   const topY = Math.ceil(maxY / step) * step
 
   const x = (i) => PAD + (N>1 ? i*((SVG_W-2*PAD)/(N-1)) : 0)
   const y = (v) => SVG_H - PAD - ((v/topY)*(SVG_H-2*PAD))
+
+  // --- Formats ---
+  // Axe Y: sans décimales (conservé)
+  const fmtShortEuro = (val) => {
+    const n = Number(val) || 0
+    if (n >= 1_000_000) return Math.round(n/1_000_000).toLocaleString('fr-FR') + ' M€'
+    if (n >= 1_000)     return Math.round(n/1_000).toLocaleString('fr-FR')     + ' k€'
+    return Math.round(n).toLocaleString('fr-FR') + ' €'
+  }
+  // Étiquette finale: 2 décimales (nouveau)
+  const fmtShortEuro2 = (val) => {
+    const n = Number(val) || 0
+    if (n >= 1_000_000) return (n/1_000_000).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' M€'
+    if (n >= 1_000)     return (n/1_000).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})     + ' k€'
+    return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €'
+  }
 
   // Ticks Y
   const ticksY = []
@@ -442,7 +458,7 @@ function SmoothChart({res}) {
     ticksY.push({ val:v, y:y(v) })
   }
 
-  // Points finaux
+  // Derniers points
   const lastPoints = filtered.map((s,si)=>{
     let lastIdx = -1
     s.values.forEach((v,i)=> { if(v!==undefined) lastIdx = i })
@@ -456,45 +472,43 @@ function SmoothChart({res}) {
     }
   }).filter(Boolean)
 
-  // Helper largeur texte
+  // Estimation largeur texte (approx 7 px / caractère)
   const estimateTextWidth = (text) => Math.max(10, String(text).length * 7)
 
-  // Construire labels au-dessus + éviter chevauchements
+  // Prépare labels au-dessus (avec 2 décimales) + clamp horizontal
   const LABEL_H = 18
-  const MIN_GAP = 18 // écart vertical minimal entre labels
   const labelsRaw = lastPoints.map(p => {
-    const label = fmtShortEuro(p.val)
+    const label = fmtShortEuro2(p.val)           // <-- 2 décimales
     const w = estimateTextWidth(label)
     const minX = PAD + 4 + w/2
     const maxX = SVG_W - PAD - 4 - w/2
-    const cx   = Math.min(maxX, Math.max(minX, p.lx)) // centré sur le point, clampé
-    const cy   = p.ly - 10                              // au-dessus du point
+    const cx   = Math.min(maxX, Math.max(minX, p.lx)) // centré sur point, clampé
+    const cy   = p.ly - 10                             // au-dessus du point
     return { ...p, label, w, cx, cy }
   })
 
-  // Tri par y cible puis ajustement pour éviter les chevauchements
-  labelsRaw.sort((a,b)=> a.cy - b.cy) // de haut en bas
-
-  const minY = PAD + LABEL_H/2
+  // Anti-chevauchement vertical (double passe)
+  const MIN_GAP = 18
+  const minLabelY = PAD + LABEL_H/2
   const maxLabelY = SVG_H - PAD - LABEL_H/2
 
-  const labelsPlaced = []
-for(const lab of labelsRaw){
-  let yPlace = Math.max(minY, lab.cy)
-  if (labelsPlaced.length){
-    const prev = labelsPlaced[labelsPlaced.length-1]
-    if (yPlace < prev.y + MIN_GAP) yPlace = prev.y + MIN_GAP
-  }
-  yPlace = Math.min(maxLabelY, yPlace)
-  labelsPlaced.push({ ...lab, x: lab.cx, y: yPlace })
-}
+  labelsRaw.sort((a,b)=> a.cy - b.cy) // haut -> bas
 
-  // Passe inverse (du bas vers le haut) pour recoller si on a poussé trop bas
+  const labelsPlaced = []
+  for(const lab of labelsRaw){
+    let yPlace = Math.max(minLabelY, lab.cy)
+    if (labelsPlaced.length){
+      const prev = labelsPlaced[labelsPlaced.length-1]
+      if (yPlace < prev.y + MIN_GAP) yPlace = prev.y + MIN_GAP
+    }
+    yPlace = Math.min(maxLabelY, yPlace)
+    labelsPlaced.push({ ...lab, x: lab.cx, y: yPlace })
+  }
   for(let i = labelsPlaced.length - 2; i >= 0; i--){
     const cur = labelsPlaced[i]
     const next = labelsPlaced[i+1]
     if (cur.y > next.y - MIN_GAP){
-      cur.y = Math.max(minY, next.y - MIN_GAP)
+      cur.y = Math.max(minLabelY, next.y - MIN_GAP)
     }
   }
 
@@ -505,7 +519,7 @@ for(const lab of labelsRaw){
         <line x1={PAD} y1={SVG_H-PAD} x2={SVG_W-PAD} y2={SVG_H-PAD} stroke="#bbb"/>
         <line x1={PAD} y1={PAD}       x2={PAD}       y2={SVG_H-PAD} stroke="#bbb"/>
 
-        {/* Grille Y + labels */}
+        {/* Grille Y + labels (sans décimales) */}
         {ticksY.map((t,i)=>(
           <g key={'gy'+i}>
             <line x1={PAD-5} y1={t.y} x2={SVG_W-PAD} y2={t.y} stroke="#eee"/>
@@ -537,13 +551,12 @@ for(const lab of labelsRaw){
           )
         })}
 
-        {/* Labels au-dessus + anti-chevauchement */}
+        {/* Labels au-dessus + anti-chevauchement (avec fond ajusté à la largeur du texte) */}
         {labelsPlaced.map((p,i)=>{
           const left = p.x - p.w/2
           const top  = p.y - LABEL_H/2
-          // Si on a dû décaler le label, tracer un petit trait depuis le point
-          const needsLeader = (p.y > p.ly - 10 - 0.5) ? false : true
-          const leaderToY = top + LABEL_H // bas du cartouche
+          const needsLeader = (p.y < p.ly - 10 - 0.5) // si on a remonté le label
+          const leaderToY = top + LABEL_H
           const leaderToX = p.x
           return (
             <g key={'lbl'+i}>
@@ -553,21 +566,14 @@ for(const lab of labelsRaw){
               <rect
                 x={left - 3}
                 y={top - 2}
-                width={p.w + 6}
+                width={p.w + 6}           // <-- largeur calée sur le texte à 2 décimales
                 height={LABEL_H + 4}
                 fill="#fff"
                 opacity="0.92"
                 rx="3"
               />
               <text x={p.x} y={p.y + 4} fontSize="13" fill={p.color} textAnchor="middle">
-                {(() => {
-                 const n = Number(p.val) || 0
-                 if (n >= 1_000_000)
-                   return (n / 1_000_000).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' M€'
-                 if (n >= 1_000)
-                   return (n / 1_000).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' k€'
-                 return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
-                })()}
+                {p.label}                  {/* <-- texte à 2 décimales */}
               </text>
             </g>
           )
