@@ -22,10 +22,12 @@ const toNum  = (v)=> {
 }
 const euroFull0 = (n)=> Math.round(Number(n)||0).toLocaleString('fr-FR') + ' €'
 const fmtShortEuro = (v)=>{
-  const n = Number(v)||0
-  if (n >= 1_000_000) return (n / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' M€'
-  if (n >= 1_000)     return (n / 1_000).toLocaleString('fr-FR', { maximumFractionDigits: 2 }) + ' k€'
-  return n.toLocaleString('fr-FR') + ' €'
+  const n = Number(v) || 0
+   if (n >= 1_000_000)
+      return Math.round(n / 1_000_000).toLocaleString('fr-FR') + ' M€'
+   if (n >= 1_000)
+      return Math.round(n / 1_000).toLocaleString('fr-FR') + ' k€'
+   return Math.round(n).toLocaleString('fr-FR') + ' €'
 }
 
 /* ------------------- UI constants ------------------- */
