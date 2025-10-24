@@ -220,6 +220,23 @@ function findTargetForDuration({ basePret1, autresPretsRows, targetLen }) {
   return hi
 }
 
+// ---- Annuité totale "T" qui garantit CRD_N = 0 (durée constante) ----
+function totalConstantForDuration({ basePret1, autresPretsRows }) {
+  const { capital: B0, r, N } = basePret1
+  const pow = Math.pow(1 + r, N)
+
+  let A = 0 // somme des poids a_t = (1+r)^(N-t)
+  let B = 0 // somme des o_t * a_t
+
+  for (let t = 1; t <= N; t++) {
+    const a = Math.pow(1 + r, N - t)
+    A += a
+
+    const autres = autresPretsRows.reduce((s, arr) => s + ((arr[t - 1]?.mensu) || 0), 0)
+    B += autres * a
+  }
+  return (B0 * pow + B) / A
+}
 
 /* ===============================
    Page Crédit
