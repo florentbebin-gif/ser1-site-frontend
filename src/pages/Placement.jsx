@@ -20,14 +20,20 @@ const MONTHS = [
   'Juillet','Août','Septembre','Octobre','Novembre','Décembre'
 ]
 
-const DEFAULT_PRODUCTS = [
-  { name:'Placement 1 Capitalisation', rate:0.05,   initial:100000, entryFeePct:0.00 },
-  { name:'Placement 2 Capitalisation', rate:0.04,   initial:0,      entryFeePct:0.00 },
-  { name:'Placement 3 Distribution',   rate:0.04,   initial:97000,  entryFeePct:0.085 },
-  { name:'Placement 4 Distribution',   rate:0.05,   initial:100000, entryFeePct:0.00 },
-]
+// Valeurs par défaut universelles
+const DEFAULTS = {
+  rate: 0,
+  initial: 0,
+  fee: 0,
+  programm: 0,
+  freq: 'mensuel',
+  duration: 1,
+}
+const [p1, setP1] = useState({ ...DEFAULTS })
+const [p2, setP2] = useState({ ...DEFAULTS })
+const [p3, setP3] = useState({ ...DEFAULTS })
+const [p4, setP4] = useState({ ...DEFAULTS })
 
-const defaultDurations = [20,20,5,5]
 const defaultContribs  = [
   { amount:0,     freq:'mensuel' },
   { amount:0,     freq:'annuel'  },
