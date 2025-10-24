@@ -197,7 +197,7 @@ export default function Credit(){
     if(!hydrated) return
     try{
       localStorage.setItem(STORE_KEY, JSON.stringify({
-        startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode
+        startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode
       }))
     }catch{}
   }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode])
