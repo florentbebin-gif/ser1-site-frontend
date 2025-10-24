@@ -297,6 +297,10 @@ export default function Credit(){
   const [viewMode, setViewMode]       = useState('mensuel')      // 'mensuel' | 'annuel'
   const [lissageMode, setLissageMode] = useState('mensu')        // 'mensu' | 'duree'
 
+  // Helpers d'état pour l'UI du lissage
+  const pret1IsInfine = creditType === 'infine'
+  const canShowLissageChips = lisserPret1 && !pret1IsInfine
+
   // PERSISTENCE
   const STORE_KEY = storageKeyFor('credit')
   const [hydrated, setHydrated] = useState(false)
