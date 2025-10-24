@@ -186,6 +186,7 @@ export default function Credit(){
           setPretsPlus(Array.isArray(s.pretsPlus) ? s.pretsPlus : [])
           setLisserPret1(!!s.lisserPret1)
           setViewMode(s.viewMode ?? 'mensuel')
+          setLissageMode(s.lissageMode ?? 'mensu')
         }
       }
     }catch{}
