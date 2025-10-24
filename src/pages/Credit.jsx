@@ -811,6 +811,11 @@ const diffDureesMois = dureeLisseMois - dureeBaseMois
                 </div>
               )
             })()}
+            <div className="cell-muted" style={{marginTop:6}}>
+              Différence de durées : <span style={{fontWeight:700, color:'#2C3D38'}}>
+                {diffDureesMois > 0 ? `+${diffDureesMois}` : diffDureesMois} mois
+              </span>
+            </div>
 
             {/* En vue annuelle, le tableau de périodes s'affiche aussi si ≥1 prêt additionnel */}
             {pretsPlus.length > 0 && synthesePeriodes.length > 0 && (
