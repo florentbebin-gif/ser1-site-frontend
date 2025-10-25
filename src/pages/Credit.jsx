@@ -893,7 +893,7 @@ return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, tot
             <button
               className={`chip ${lisserPret1 ? 'active' : ''}`}
               onClick={()=> setLisserPret1(v => !v)}
-              disabled={pret1IsInfine}
+              disabled={anyInfine}
               title={pret1IsInfine
                 ? "Le lissage est indisponible pour un prêt In fine"
                 : "Lisser la mensualité totale en ajustant le prêt 1"}
