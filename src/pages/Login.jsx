@@ -7,7 +7,20 @@ export default function Login(){
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
-
+  useEffect(() => {
+    const hash = window.location.hash || ''
+    const params = new URLSearchParams(hash.replace(/^#/, ''))
+    const errCode = params.get('error_code')
+    if (errCode === 'otp_expired') {
+      setError("Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien.")
+      // Nettoie l'URL pour éviter que le message revienne
+      history.replaceState(null, '', window.location.pathname)
+    }
+    if (params.get('error')) {
+      // Nettoie de toute façon si une erreur est renvoyée
+      history.replaceState(null, '', window.location.pathname)
+    }
+  }, [])
   async function onSubmit(e){
     e.preventDefault()
     setLoading(true); setError(''); setInfo('')
