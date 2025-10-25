@@ -5,63 +5,27 @@ import { triggerReset } from './utils/reset.js'
 
 export default function App(){
   const [session, setSession] = useState(null)
+  const [loadingSession, setLoadingSession] = useState(true)
   const nav = useNavigate()
   const location = useLocation()
 
+  // Charger la session + écouter les changements (login/logout)
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => setSession(session))
-    const { data: { subscription } } =
-      supabase.auth.onAuthStateChange((_e, s) => setSession(s))
-    return () => subscription.unsubscribe()
+    let mounted = true
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return
+      setSession(session)
+      setLoadingSession(false)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s)
+    })
+    return () => { mounted = false; subscription.unsubscribe() }
   }, [])
 
-  async function handleLogout(){
-    await supabase.auth.signOut()
-    nav('/')
-  }
-
-  function handleReset(){
-    triggerReset()
-    alert('Toutes les saisies des simulateurs ont été réinitialisées.')
-  }
-
-  return (
-    <div>
-      <div className="topbar">
-        <div className="brandword">SER1</div>
-
-        <div className="top-actions">
-          {/* HOME */}
-          <Link
-            to="/"
-            className={`chip ${location.pathname === '/' ? 'active' : ''}`}
-          >
-            HOME
-          </Link>
-
-          {/* Reset */}
-          <button className="chip" onClick={handleReset}>
-            Reset
-          </button>
-
-          {/* Paramètres */}
-          <Link
-            to="/params"
-            className={`chip ${location.pathname.startsWith('/params') ? 'active' : ''}`}
-          >
-            Paramètres
-          </Link>
-
-          {/* Déconnexion */}
-          <button className="chip logout" onClick={handleLogout}>
-            Déconnexion
-          </button>
-        </div>
-      </div>
-
-      <div className="container">
-        <Outlet/>
-      </div>
-    </div>
-  )
-}
+  // Garde d’auth : redirige sur /login si non connecté (sauf si on est déjà sur /login)
+  useEffect(() => {
+    if (loadingSession) return
+    const isOnLogin = location.pathname === '/login'
+    if (!session && !isOnLogin) {
+      nav('/login'
