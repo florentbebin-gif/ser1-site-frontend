@@ -274,6 +274,96 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
   }
   return (B0 * pow + B) / A
 }
+// --- Simule l'échéancier du prêt 1 pour une annuité totale "T" (durée constante) ---
+// Retourne { len, lastCRD, feasible } ; feasible = false s'il existe un mois m<N où T - autres(m) < intérêts(m)
+function simulateDurationWithT({ basePret1, autresPretsRows, T }) {
+  const { capital, r, rAss, N, assurMode } = basePret1
+  const rows = []
+  let crd = Math.max(0, capital)
+  const EPS = 1e-8
+  const assurFixe = (assurMode === 'CI') ? (capital * (basePret1.rAss || 0)) : null
+
+  const autresAt = (m) => autresPretsRows.reduce((s, arr) => s + ((arr[m-1]?.mensu) || 0), 0)
+
+  let feasible = true
+
+  for (let m = 1; m <= N; m++) {
+    if (crd <= EPS) break
+    const crdStart = crd
+    const interet  = crdStart * r
+    const autres   = autresAt(m)
+
+    // part du prêt 1 visée pour respecter T
+    let mensu1 = T - autres
+
+    // faisabilité : pour m < N, il faut au minimum payer les intérêts du prêt 1
+    if (m < N && mensu1 < interet - 1e-9) feasible = false
+
+    // bornes
+    if (m < N) mensu1 = Math.max(mensu1, interet)    // pour éviter un CRD qui augmente
+    const capMensu = interet + crdStart
+    mensu1 = Math.min(mensu1, capMensu)              // jamais > intérêts + CRD
+    if (m === N) mensu1 = Math.min(mensu1, capMensu) // dernier mois : solde au plus
+
+    const amort  = Math.max(0, mensu1 - interet)
+    const crdEnd = Math.max(0, crdStart - amort)
+
+    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * (basePret1.rAss || 0))
+    const mensuTotal = mensu1 + (assur || 0)
+
+    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu:mensu1, mensuTotal, crd:crdEnd })
+    crd = crdEnd
+  }
+  const len = rows.length
+  const lastCRD = rows[len-1]?.crd ?? 0
+  return { len, lastCRD, feasible, rows }
+}
+
+// --- Trouve la plus petite "T" qui rend la simulation faisable et solde au mois N ---
+function findTotalConstForDurationRobuste({ basePret1, autresPretsRows }) {
+  const { capital, r, N } = basePret1
+  const EPS = 1e-6
+
+  // borne basse : intérêts 1er mois + max des autres (pire mois) + un très léger amort
+  const interet1 = capital * r
+  let maxAutres = 0
+  const horizon = Math.max(...autresPretsRows.map(a=>a.length), N)
+  for (let m=1; m<=horizon; m++){
+    const a = autresPretsRows.reduce((s, arr)=> s + ((arr[m-1]?.mensu) || 0), 0)
+    if (a > maxAutres) maxAutres = a
+  }
+  let lo = interet1 + maxAutres + Math.max(1, capital / N / 100) // amort mini
+
+  // borne haute : on part d’une estimation fermée puis on grossit au besoin
+  const Tclosed = (() => {
+    // estimation fermée (optionnelle) – si tu as gardé totalConstantForDuration
+    try { return totalConstantForDuration({ basePret1, autresPretsRows }) || (lo*2) } catch { return lo*2 }
+  })()
+  let hi = Math.max(lo + 1, Tclosed)
+
+  // élargit hi jusqu’à faisabilité + CRD_N ≈ 0
+  for (let k=0; k<30; k++){
+    const { feasible, lastCRD, len } = simulateDurationWithT({ basePret1, autresPretsRows, T:hi })
+    if (feasible && len === N && Math.abs(lastCRD) < 5e-2) break // ok
+    hi *= 1.5
+    if (hi > 1e9) break
+  }
+
+  // dichotomie pour le T minimal faisable & qui solde à N
+  for (let it=0; it<50; it++){
+    const mid = (lo + hi) / 2
+    const { feasible, lastCRD, len } = simulateDurationWithT({ basePret1, autresPretsRows, T:mid })
+
+    // on veut : feasible === true, len === N, lastCRD ≈ 0
+    const ok = feasible && len === N && Math.abs(lastCRD) < 5e-2
+    if (ok) {
+      hi = mid
+    } else {
+      lo = mid
+    }
+  }
+  return hi
+}
 
 /* ===============================
    Page Crédit
