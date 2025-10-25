@@ -230,6 +230,23 @@ export default function Credit(){
   const [viewMode, setViewMode]       = useState('mensuel')      // 'mensuel' | 'annuel'
   const [lissageMode, setLissageMode] = useState('mensu')        // 'mensu' | 'duree'
 
+  // --- Dropdown Export
+const [exportOpen, setExportOpen] = useState(false)
+const exportRef = useRef(null)
+useEffect(() => {
+  const onDocClick = (e) => {
+    if (!exportRef.current) return
+    if (!exportRef.current.contains(e.target)) setExportOpen(false)
+  }
+  document.addEventListener('click', onDocClick)
+  return () => document.removeEventListener('click', onDocClick)
+}, [])
+
+// --- Si plus de prêt 2/3, éteindre le lissage s'il était ON
+useEffect(() => {
+  if (pretsPlus.length === 0 && lisserPret1) setLisserPret1(false)
+}, [pretsPlus.length, lisserPret1])
+
   // PERSISTENCE
   const STORE_KEY = storageKeyFor('credit')
   const [hydrated, setHydrated] = useState(false)
