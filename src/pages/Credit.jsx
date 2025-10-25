@@ -842,7 +842,6 @@ function exportPowerPoint() {
               <tbody>
                 {pretsPlus.map((p,idx)=>{
                   const rM = (Math.max(0, Number(p.taux)||0)/100)/12
-                  const Np = Math.max(1, Math.floor(toNum(p.duree)||0))
                   const C  = Math.max(0, toNum(p.capital))
                   const type = p.type || creditType
                   const mensu = (type === 'infine')
@@ -868,7 +867,7 @@ function exportPowerPoint() {
                       </td>
                       <td className="input-cell" style={{textAlign:'right'}}>
                         <input type="text" inputMode="numeric" value={String(Np)}
-                               onChange={e=> updatePret(p.id, { duree: String(e.target.value).replace(/\D/g,'').slice(0,3) })}
+                               <input type="text" inputMode="numeric" value={String(toNum(p.duree)||0)}
                                style={{width:'100%', textAlign:'right', height:28}}/>
                       </td>
                       <td className="input-cell" style={{textAlign:'right'}}>
