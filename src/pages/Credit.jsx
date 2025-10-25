@@ -92,7 +92,7 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
     const interet  = crdStart * r
     let mensu = (typeof mensuOverride === 'number' && mensuOverride > 0) ? mensuOverride : interet
 
-    const maxMensu = interet + (m === N ? crdStart : 0) + interet  // borne si dernière
+    const maxMensu = interet + (m === N ? crdStart : 0)  // borne si dernière
     if (mensu > maxMensu) mensu = maxMensu
     if (mensu < interet && r > 0) mensu = interet
 
