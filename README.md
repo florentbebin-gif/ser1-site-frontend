@@ -1,18 +1,37 @@
-# SER1 Site (Frontend)
-- Login Supabase (email/mot de passe)
-- Board (7 simulateurs)
-- Pages de simulateurs reliées à l'API backend
+# SER1 – Frontend (Vercel + React)
 
-## Config .env.local
-VITE_SUPABASE_URL="https://...supabase.co"
-VITE_SUPABASE_ANON_KEY="..."
-VITE_API_BASE="https://ser1-backend.onrender.com"
+App React (pages : **Home** – 7 tuiles, **Placement**, **Crédit**, **Params**, **Sim** – charte SER1).  
+Backend consommé : Express sur Render (`/api/placement`, `/health`).  
+Authentification & données : **Supabase**.
 
-## Démarrer en local
-npm install
+## 1) Arborescence
+src/
+pages/
+Home.jsx
+Placement.jsx
+Credit.jsx
+Params.jsx
+Sim.jsx
+utils/
+reset.js
+App.jsx
+main.jsx
+styles.css
+
+bash
+Copier le code
+
+## 2) Variables d'environnement
+Crée `.env` à la racine :
+VITE_API_BASE_URL=https://ser1-backend.onrender.com # ou https://api.ser1.app après domaine
+VITE_SUPABASE_URL=... # depuis Supabase
+VITE_SUPABASE_ANON_KEY=... # depuis Supabase
+
+shell
+Copier le code
+
+## 3) Lancer en local
+```bash
+npm i
 npm run dev
-
-## Déployer sur Vercel
-Build: npm run build
-Output: dist
-Env: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_API_BASE
+# http://localhost:5173
