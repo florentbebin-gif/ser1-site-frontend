@@ -46,26 +46,26 @@ export default function Login(){
   const versionIR = g?.irVersion || '2025'
 
   return (
-    <div className="login-fullbleed">
-      {/* fond plein écran */}
+    <div className="login-wrapper">
+      {/* Fond image */}
       <div className="login-hero">
         {/* voile vert 30% */}
         <div className="login-overlay" />
 
-        {/* bandeau infos (on garde uniquement Version) */}
+        {/* badge version */}
         <div className="login-meta">
           <span className="meta-chip">
             <LockIcon/> Version {versionIR}
           </span>
         </div>
 
-        {/* Bloc titre repositionné plus haut */}
+        {/* Bloc titre centré à gauche */}
         <div className="login-left">
           <h1 className="login-brand">SER1</h1>
           <div className="login-sub">Simulateur épargne retraite</div>
         </div>
 
-        {/* Carte de connexion */}
+        {/* Bloc connexion parfaitement centré */}
         <div className="login-card">
           <div className="card-title">Connexion</div>
 
@@ -109,111 +109,112 @@ export default function Login(){
         </div>
       </div>
 
-      {/* styles locaux */}
+      {/* Styles */}
       <style>{`
         :root{
           --green:#2C3D38;
           --beige:#e8ded5;
           --ink:#222;
-          --muted:#98a3a0;
           --border:#D9D9D9;
         }
 
-        /* 🟢 sort de la largeur limitée de .container (full-bleed) */
-        .login-fullbleed{
+        /* Supprime les marges par défaut du layout */
+        .login-wrapper{
           width:100vw;
-          margin-left:calc(50% - 50vw);
+          height:100vh;
+          padding:0;
+          margin:0;
         }
 
         .login-hero{
           position:relative;
-          min-height:100vh;
           width:100%;
-          background-image:url('/login-hero.avif'); /* << nouvelle image */
+          height:100%;
+          background-image:url('/login-bg.jpg');
           background-size:cover;
           background-position:center;
-          display:grid;
-          grid-template-columns: 1fr;
-          place-items:center;
-        }
-        @media(min-width:1100px){
-          .login-hero{
-            grid-template-columns: 1fr 520px; /* zone gauche + carte */
-            column-gap: 40px;
-            align-items:center;
-            padding: 40px 60px;
-          }
+          display:flex;
+          justify-content:center;
+          align-items:center;
         }
 
         .login-overlay{
           position:absolute; inset:0;
-          background:rgba(44,61,56,0.30); /* vert 30% */
+          background:rgba(44,61,56,0.30); /* voile vert 30% */
+        }
+
+        .login-left{
+          position:absolute;
+          top:22vh;
+          left:8vw;
+          z-index:2;
+          color:#fff;
+          text-shadow:0 2px 4px rgba(0,0,0,.25);
+        }
+
+        .login-brand{
+          font-size:64px; font-weight:800;
+          border-bottom:4px solid var(--beige);
+          margin-bottom:6px;
+        }
+        .login-sub{
+          font-size:28px; font-weight:600;
         }
 
         .login-meta{
           position:absolute; top:20px; left:20px; z-index:2;
-          display:flex; gap:12px; flex-wrap:wrap;
         }
         .meta-chip{
-          display:inline-flex; align-items:center; gap:8px;
-          background:rgba(255,255,255,0.18);
-          color:#fff; padding:8px 12px; border-radius:16px;
-          backdrop-filter: blur(2px);
+          background:rgba(255,255,255,.25);
+          color:white;
+          padding:8px 12px;
+          border-radius:18px;
+          display:inline-flex;
+          align-items:center;
           font-size:14px;
+          gap:6px;
         }
 
-        /* Bloc titre placé plus haut (≈ 18vh du haut) */
-        .login-left{
-          position:absolute; z-index:2; left:60px; top:18vh; color:#fff;
-          max-width:min(680px, 60vw);
-        }
-        @media(max-width:1099px){ .login-left{ left:24px; top:14vh; } }
-
-        .login-brand{
-          font-size:64px; line-height:1.0; margin:0 0 8px 0; font-weight:800;
-          border-bottom:4px solid var(--beige); display:inline-block; padding-bottom:6px;
-        }
-        @media(max-width:640px){ .login-brand{ font-size:46px; } }
-        .login-sub{ font-size:28px; font-weight:600; opacity:.95; }
-        @media(max-width:640px){ .login-sub{ font-size:22px; } }
-
+        /* Carte centrée */
         .login-card{
-          position:relative; z-index:3;
-          width:min(92vw,520px);
-          background:#fff; border-radius:14px; padding:22px 22px 18px;
-          box-shadow: 0 8px 30px rgba(0,0,0,.18);
-          border: 1px solid rgba(0,0,0,.06);
-          margin: 80px 0 60px; /* un peu d'air */
+          position:relative;
+          z-index:3;
+          width:min(92vw,460px);
+          background:#fff;
+          border-radius:14px;
+          padding:26px 22px;
+          box-shadow:0 8px 30px rgba(0,0,0,.22);
         }
-        .card-title{ font-size:22px; font-weight:700; margin-bottom:10px; color:#1e1e1e; }
+
+        .card-title{ font-weight:700; font-size:22px; margin-bottom:14px; }
 
         .form-grid{ display:flex; flex-direction:column; gap:12px; }
         .form-row{ display:flex; flex-direction:column; gap:6px; }
-        .form-row.btns{ flex-direction:row; flex-wrap:wrap; align-items:center; gap:10px; margin-top:6px; }
+        .btns{ flex-direction:row; flex-wrap:wrap; gap:10px; }
 
-        label{ color:#2a2a2a; font-weight:600; }
         input{
-          border:1px solid var(--border); border-radius:10px;
-          padding:10px 12px; outline:none; font-size:15px;
+          padding:10px 12px;
+          font-size:15px;
+          border:1px solid var(--border);
+          border-radius:10px;
         }
-        input:focus{ border-color: var(--green); box-shadow: 0 0 0 3px rgba(44,61,56,0.12); }
 
         .btn{
-          background:var(--green); color:#fff; border:none;
-          padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700;
+          background:var(--green); color:white;
+          padding:10px 16px;
+          border-radius:12px; border:none; cursor:pointer;
         }
-        .btn:disabled{ opacity:.6; cursor:not-allowed; }
-
         .btn-outline{
-          background:#fff; color:var(--ink);
-          border:1px solid var(--border); border-radius:12px;
-          padding:10px 14px; cursor:pointer;
+          padding:10px 14px;
+          border-radius:12px;
+          background:white;
+          border:1px solid var(--border);
+          cursor:pointer;
         }
-        .btn-outline:disabled{ opacity:.6; cursor:not-allowed; }
 
-        .alert{ padding:10px 12px; border-radius:10px; margin-bottom:8px; }
-        .alert.error{ background:#fee2e2; color:#991b1b; }
-        .alert.success{ background:#e7f9ee; color:#166534; }
+        .alert{ padding:10px; border-radius:10px; margin-bottom:6px;}
+        .alert.error{background:#fee2e2;color:#991b1b;}
+        .alert.success{background:#e7f9ee;color:#166534;}
       `}</style>
     </div>
   )
