@@ -3,12 +3,6 @@ import { supabase } from '../supabaseClient.js'
 
 const ParamsContext = createContext(null)
 
-/**
- * Charge une seule fois la row params/global et expose:
- *  - params: objet avec valeurs globales
- *  - reload(): rechargement manuel
- *  - loading, error
- */
 export function ParamsProvider({ children }) {
   const [params, setParams] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -26,7 +20,6 @@ export function ParamsProvider({ children }) {
       setError("Impossible de charger les paramètres.")
       setParams(null)
     } else {
-      // Valeurs par défaut au cas où la BDD est vide
       const defaults = {
         irVersion: '2025',
         defaultLoanRate: 4.0,
@@ -40,16 +33,12 @@ export function ParamsProvider({ children }) {
   }
 
   useEffect(() => {
-    // Recharge quand la session change (login/logout)
     const sub = supabase.auth.onAuthStateChange(() => fetchParams())
     fetchParams()
     return () => { sub?.data?.subscription?.unsubscribe?.() }
   }, [])
 
-  const value = useMemo(() => ({
-    params, loading, error, reload: fetchParams
-  }), [params, loading, error])
-
+  const value = useMemo(() => ({ params, loading, error, reload: fetchParams }), [params, loading, error])
   return <ParamsContext.Provider value={value}>{children}</ParamsContext.Provider>
 }
 
