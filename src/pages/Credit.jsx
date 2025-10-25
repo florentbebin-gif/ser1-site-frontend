@@ -61,7 +61,6 @@ function scheduleAmortissable({ capital, r, rAss, N, assurMode, mensuOverride })
     const interet  = crdStart * r
     let mensu      = mensuFixe
 
-    // borne dernière échéance
     const maxMensu = interet + crdStart
     if (mensu > maxMensu) mensu = maxMensu
     if (mensu < interet && r > 0) mensu = interet
@@ -70,7 +69,7 @@ function scheduleAmortissable({ capital, r, rAss, N, assurMode, mensuOverride })
     if (amort > crdStart) amort = crdStart
 
     const crdEnd = Math.max(0, crdStart - amort)
-    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss) // assurance sur CRD début
+    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss) // assurance CRD début
 
     const mensuTotal = mensu + (assur || 0)
     rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu, mensuTotal, crd: crdEnd })
@@ -92,7 +91,7 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
     const interet  = crdStart * r
     let mensu = (typeof mensuOverride === 'number' && mensuOverride > 0) ? mensuOverride : interet
 
-    const maxMensu = interet + (m === N ? crdStart : 0) // borne si dernière
+    const maxMensu = interet + (m === N ? crdStart : 0)
     if (mensu > maxMensu) mensu = maxMensu
     if (mensu < interet && r > 0) mensu = interet
 
@@ -105,7 +104,7 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
     }
 
     const crdEnd = Math.max(0, crdStart - amort)
-    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss) // assurance sur CRD début
+    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)
 
     const mensuTotal = mensu + (assur || 0)
     rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu, mensuTotal, crd: crdEnd })
@@ -195,13 +194,12 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
   const { capital: B0, r, N } = basePret1
   const pow = Math.pow(1 + r, N)
 
-  let A = 0 // somme des poids a_t = (1+r)^(N-t)
-  let B = 0 // somme des o_t * a_t
+  let A = 0
+  let B = 0
 
   for (let t = 1; t <= N; t++) {
     const a = Math.pow(1 + r, N - t)
     A += a
-
     const autres = autresPretsRows.reduce((s, arr) => s + ((arr[t - 1]?.mensu) || 0), 0)
     B += autres * a
   }
@@ -214,7 +212,7 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
 export default function Credit(){
 
   /* ---- ÉTATS ---- */
-  const [startYM, setStartYM]         = useState(nowYearMonth()) // Date souscription prêt 1
+  const [startYM, setStartYM]         = useState(nowYearMonth())
   const [assurMode, setAssurMode]     = useState('CRD')          // 'CI' | 'CRD'
   const [creditType, setCreditType]   = useState('amortissable') // type prêt 1
 
@@ -222,30 +220,29 @@ export default function Credit(){
   const [duree, setDuree]             = useState(240)
   const [taux, setTaux]               = useState(3.50)
   const [tauxAssur, setTauxAssur]     = useState(0.30)
-  const [mensuBase, setMensuBase]     = useState('')             // saisie mensu prêt 1
+  const [mensuBase, setMensuBase]     = useState('')
 
-  // prêts additionnels : + type & startYM
   const [pretsPlus, setPretsPlus]     = useState([])             // [{id,capital,duree,taux,startYM,type}]
   const [lisserPret1, setLisserPret1] = useState(false)
   const [viewMode, setViewMode]       = useState('mensuel')      // 'mensuel' | 'annuel'
   const [lissageMode, setLissageMode] = useState('mensu')        // 'mensu' | 'duree'
 
   // --- Dropdown Export
-const [exportOpen, setExportOpen] = useState(false)
-const exportRef = useRef(null)
-useEffect(() => {
-  const onDocClick = (e) => {
-    if (!exportRef.current) return
-    if (!exportRef.current.contains(e.target)) setExportOpen(false)
-  }
-  document.addEventListener('click', onDocClick)
-  return () => document.removeEventListener('click', onDocClick)
-}, [])
+  const [exportOpen, setExportOpen] = useState(false)
+  const exportRef = useRef(null)
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!exportRef.current) return
+      if (!exportRef.current.contains(e.target)) setExportOpen(false)
+    }
+    document.addEventListener('click', onDocClick)
+    return () => document.removeEventListener('click', onDocClick)
+  }, [])
 
-// --- Si plus de prêt 2/3, éteindre le lissage s'il était ON
-useEffect(() => {
-  if (pretsPlus.length === 0 && lisserPret1) setLisserPret1(false)
-}, [pretsPlus.length, lisserPret1])
+  // --- Si plus de prêt 2/3, éteindre le lissage s'il était ON
+  useEffect(() => {
+    if (pretsPlus.length === 0 && lisserPret1) setLisserPret1(false)
+  }, [pretsPlus.length, lisserPret1])
 
   // PERSISTENCE
   const STORE_KEY = storageKeyFor('credit')
@@ -282,29 +279,25 @@ useEffect(() => {
       }))
     }catch{}
   }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode])
-useEffect(() => {
-  if (pretsPlus.length === 0 && lisserPret1) setLisserPret1(false)
-}, [pretsPlus.length, lisserPret1])
-  // Reset global
+
+  // Reset global (ne réinitialise que les champs saisissables)
   useEffect(()=>{
     const off = onResetEvent?.(()=>{
-     // ➜ Ne réinitialiser QUE les zones saisissables
-     const ym = nowYearMonth()
-     setStartYM(ym)           // date prêt 1 = mois/année courants
-     setCapital(0)
-     setDuree(0)
-     setTaux(0)
-     setTauxAssur(0)
-     setMensuBase('')
-     // Conserver la liste des prêts 2/3, mais vider leurs champs saisissables + date courante
-     setPretsPlus(arr => arr.map(p => ({
-       ...p,
-       capital: 0,
-       duree: 0,
-       taux: 0,
-       startYM: ym
-     })))
-     // NE PAS toucher à : assurMode, creditType, lisserPret1, viewMode, lissageMode
+      const ym = nowYearMonth()
+      setStartYM(ym)
+      setCapital(0)
+      setDuree(0)
+      setTaux(0)
+      setTauxAssur(0)
+      setMensuBase('')
+      setPretsPlus(arr => arr.map(p => ({
+        ...p,
+        capital: 0,
+        duree: 0,
+        taux: 0,
+        startYM: ym
+      })))
+      // On ne touche pas: assurMode, creditType, lisserPret1, viewMode, lissageMode
     })
     return off || (()=>{})
   }, [STORE_KEY])
@@ -358,7 +351,6 @@ useEffect(() => {
       const C  = Math.max(0, toNum(p.capital))
       const type = p.type || creditType
 
-      // AUCUNE assurance sur les prêts additionnels
       const rows = (type === 'infine')
         ? scheduleInFine({ capital:C, r:rM, rAss:0, N:Np, assurMode })
         : scheduleAmortissable({ capital:C, r:rM, rAss:0, N:Np, assurMode })
@@ -378,7 +370,7 @@ useEffect(() => {
 
   // === Statut In fine global (désactive le lissage partout)
   const pret1IsInfine = (creditType === 'infine')
-  const anyInfine = pret1IsInfine || pretsPlus.some(p => p.type === 'infine')
+  const anyInfine = pret1IsInfine || pretsPlus.some(p => (p?.type || '') === 'infine')
 
   // Si un prêt est In fine → on coupe le lissage si ON
   useEffect(()=>{
@@ -397,13 +389,12 @@ useEffect(() => {
     }
 
     if (lissageMode === 'mensu') {
-      // LISSAGE « mensualité totale constante »
       const mensuAutresM1 = autresRows.reduce((s, arr) => s + ((arr[0]?.mensu) || 0), 0)
       const cible = mensuBaseEffectivePret1 + mensuAutresM1
       return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
     }
 
-    // LISSAGE « durée constante » — version analytique (stable, amortissables only)
+    // LISSAGE « durée constante » — analytique (amortissables only)
     const T = totalConstantForDuration({ basePret1, autresPretsRows: autresRows })
     return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, totalConst: T })
 
@@ -471,7 +462,7 @@ useEffect(() => {
 
   /* ---- Synthèse ---- */
   const mensualiteTotaleM1 = (pret1Rows[0]?.mensu || 0) + autresRows.reduce((s,arr)=> s + ((arr[0]?.mensu) || 0), 0)
-  const primeAssMensuelle  = (pret1Rows[0]?.assurance || 0) // assurance uniquement prêt 1
+  const primeAssMensuelle  = (pret1Rows[0]?.assurance || 0)
   const coutInteretsPret1  = pret1Rows.reduce((s,l)=> s + (l.interet||0), 0)
   const coutInteretsAgr    = agrRows.reduce((s,l)=> s + l.interet, 0)
   const pret1Interets      = pret1Rows.reduce((s,l)=> s + (l.interet   || 0), 0)
@@ -484,7 +475,7 @@ useEffect(() => {
     return ann.length ? Math.max(...ann.map(a => a.mensu)) : 0
   }, [isAnnual, agrRows])
 
-  // === Tableau des périodes (affiché s’il y a ≥1 prêt additionnel)
+  // === Tableau des périodes
   const synthesePeriodes = useMemo(() => {
     if (pretsPlus.length === 0) return []
 
@@ -546,7 +537,7 @@ useEffect(() => {
   const updatePret = (id, patch) => setPretsPlus(arr => arr.map(p => p.id === id ? ({ ...p, ...patch }) : p))
   const removePret = (id) => setPretsPlus(arr => arr.filter(p => p.id !== id))
 
-  /* ---- Export Excel (.xls) ---- */
+  /* ---- Export ---- */
   function buildWorksheetXml(title, header, rows) {
     const esc = (s)=> String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     const rowXml = (cells)=> `<Row>${
@@ -627,62 +618,61 @@ useEffect(() => {
       alert('Impossible de générer le fichier Excel.')
     }
   }
-function exportPowerPoint() {
-  // Placeholder : on connectera la vraie génération plus tard
-  alert('Export PowerPoint : paramétrage à venir 👍')
-}
+  function exportPowerPoint() {
+    alert('Export PowerPoint : paramétrage à venir 👍')
+  }
 
   /* ---- Rendu ---- */
   const colLabelPaiement    = isAnnual ? 'Annuité' : 'Mensualité'
   const colLabelPaiementAss = isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'
-  const canShowLissageChips = lisserPret1 && !anyInfine && pretsPlus.length > 0; // aussi seulement s'il existe un prêt 2/3
+  const canShowLissageChips = lisserPret1 && !anyInfine && pretsPlus.length > 0
 
   return (
     <div className="panel">
       <div className="plac-title" style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:12}}>
         <span>Simulateur de crédit</span>
-<div style={{display:'flex', gap:8}}>
-  <div ref={exportRef} style={{position:'relative'}}>
-    <button
-      className="chip"
-      aria-haspopup="menu"
-      aria-expanded={exportOpen ? 'true' : 'false'}
-      onClick={()=> setExportOpen(v => !v)}
-    >
-      Exporter ▾
-    </button>
 
-    {exportOpen && (
-      <div
-        role="menu"
-        style={{
-          position:'absolute', right:0, marginTop:6, minWidth:180,
-          background:'#fff', border:'1px solid #C0B5AA', borderRadius:8,
-          boxShadow:'0 6px 20px rgba(0,0,0,0.12)', padding:6, zIndex:20
-        }}
-      >
-        <button
-          role="menuitem"
-          className="chip"
-          style={{width:'100%', justifyContent:'flex-start'}}
-          onClick={()=>{ setExportOpen(false); exportExcel(); }}
-        >
-          Excel
-        </button>
+        <div style={{display:'flex', gap:8}}>
+          <div ref={exportRef} style={{position:'relative'}}>
+            <button
+              className="chip"
+              aria-haspopup="menu"
+              aria-expanded={exportOpen ? 'true' : 'false'}
+              onClick={()=> setExportOpen(v => !v)}
+            >
+              Exporter ▾
+            </button>
 
-        <button
-          role="menuitem"
-          className="chip"
-          style={{width:'100%', justifyContent:'flex-start'}}
-          onClick={()=>{ setExportOpen(false); exportPowerPoint(); }}
-        >
-          PowerPoint
-        </button>
-      </div>
-    )}
-  </div>
-</div>
+            {exportOpen && (
+              <div
+                role="menu"
+                style={{
+                  position:'absolute', right:0, marginTop:6, minWidth:180,
+                  background:'#fff', border:'1px solid #C0B5AA', borderRadius:8,
+                  boxShadow:'0 6px 20px rgba(0,0,0,0.12)', padding:6, zIndex:20
+                }}
+              >
+                <button
+                  role="menuitem"
+                  className="chip"
+                  style={{width:'100%', justifyContent:'flex-start'}}
+                  onClick={()=>{ setExportOpen(false); exportExcel(); }}
+                >
+                  Excel
+                </button>
 
+                <button
+                  role="menuitem"
+                  className="chip"
+                  style={{width:'100%', justifyContent:'flex-start'}}
+                  onClick={()=>{ setExportOpen(false); exportPowerPoint(); }}
+                >
+                  PowerPoint
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* PARAMÈTRES PRÊT 1 */}
@@ -799,17 +789,17 @@ function exportPowerPoint() {
           <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
             <button className="chip" onClick={addPret} disabled={pretsPlus.length>=2}>+ Ajouter un prêt</button>
             {pretsPlus.length > 0 && (
-             <button
-               className={`chip ${lisserPret1 ? 'active' : ''}`}
-               onClick={()=> setLisserPret1(v => !v)}
-               disabled={anyInfine}
-               title={anyInfine
-                 ? "Le lissage est indisponible si un prêt est en In fine"
-                 : "Lisser la mensualité totale en ajustant le prêt 1"}
-             >
-               {lisserPret1 ? 'Lisser le prêt 1 : ON' : 'Lisser le prêt 1'}
-             </button>
-           )}
+              <button
+                className={`chip ${lisserPret1 ? 'active' : ''}`}
+                onClick={()=> setLisserPret1(v => !v)}
+                disabled={anyInfine}
+                title={anyInfine
+                  ? "Le lissage est indisponible si un prêt est en In fine"
+                  : "Lisser la mensualité totale en ajustant le prêt 1"}
+              >
+                {lisserPret1 ? 'Lisser le prêt 1 : ON' : 'Lisser le prêt 1'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -842,6 +832,7 @@ function exportPowerPoint() {
               <tbody>
                 {pretsPlus.map((p,idx)=>{
                   const rM = (Math.max(0, Number(p.taux)||0)/100)/12
+                  const Np = Math.max(1, Math.floor(toNum(p.duree)||0))   // <-- (FIX) Np bien défini ici
                   const C  = Math.max(0, toNum(p.capital))
                   const type = p.type || creditType
                   const mensu = (type === 'infine')
@@ -923,13 +914,13 @@ function exportPowerPoint() {
               </div>
             </div>
 
-          {lisserPret1 && (
-            <div className="cell-muted" style={{marginTop:6}}>
-              Différence de durées : <span style={{fontWeight:700, color:'#2C3D38'}}>
-                {diffDureesMois > 0 ? `+${diffDureesMois}` : diffDureesMois} mois
-              </span>
-            </div>
-          )}
+            {lisserPret1 && (
+              <div className="cell-muted" style={{marginTop:6}}>
+                Différence de durées : <span style={{fontWeight:700, color:'#2C3D38'}}>
+                  {diffDureesMois > 0 ? `+${diffDureesMois}` : diffDureesMois} mois
+                </span>
+              </div>
+            )}
 
             {/* Contrôles lissage */}
             {canShowLissageChips && (
@@ -948,10 +939,9 @@ function exportPowerPoint() {
                 >
                   Lissage : durée constante
                 </button>
-               </div>
+              </div>
             )}
 
-            {/* Tableau des périodes si ≥1 prêt additionnel */}
             {pretsPlus.length > 0 && synthesePeriodes.length > 0 && (
               <div style={{marginTop:10}}>
                 <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
@@ -1002,7 +992,7 @@ function exportPowerPoint() {
                 >
                   Lissage : durée constante
                 </button>
-               </div>
+              </div>
             )}
 
             <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
