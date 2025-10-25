@@ -915,24 +915,24 @@ const pret1Rows = useMemo(() => {
             </div>
 
             {/* Contrôles lissage */}
-            {lisserPret1 && (
+            {canShowLissageChips && (
               <div style={{display:'flex', justifyContent:'flex-end', gap:8, marginTop:6, flexWrap:'wrap'}}>
                 <button
                   className={`chip ${lissageMode==='mensu' ? 'active' : ''}`}
                   onClick={()=> setLissageMode('mensu')}
                   title="Lisser en maintenant la mensualité totale (peut réduire la durée)"
-              >
-              Lissage : mensualité constante
-            </button>
-            <button
-              className={`chip ${lissageMode==='duree' ? 'active' : ''}`}
-              onClick={()=> setLissageMode('duree')}
-              title="Lisser en maintenant la durée du prêt 1"
-           >
-            Lissage : durée constante
-          </button>
-        </div>
-      )}
+                >
+                  Lissage : mensualité constante
+                </button>
+                <button
+                  className={`chip ${lissageMode==='duree' ? 'active' : ''}`}
+                  onClick={()=> setLissageMode('duree')}
+                  title="Lisser en maintenant la durée du prêt 1"
+                >
+                  Lissage : durée constante
+                </button>
+               </div>
+              )}
 
             {/* Tableau des périodes si ≥1 prêt additionnel */}
             {pretsPlus.length > 0 && synthesePeriodes.length > 0 && (
@@ -969,24 +969,24 @@ const pret1Rows = useMemo(() => {
         ) : (
           <>
             {/* Contrôles lissage */}
-            {lisserPret1 && (
+            {canShowLissageChips && (
               <div style={{display:'flex', justifyContent:'flex-end', gap:8, marginTop:6, flexWrap:'wrap'}}>
                 <button
                   className={`chip ${lissageMode==='mensu' ? 'active' : ''}`}
                   onClick={()=> setLissageMode('mensu')}
                   title="Lisser en maintenant la mensualité totale (peut réduire la durée)"
-                >
-                  Lissage : mensualité constante
-                </button>
-                <button
-                  className={`chip ${lissageMode==='duree' ? 'active' : ''}`}
-                  onClick={()=> setLissageMode('duree')}
-                  title="Lisser en maintenant la durée du prêt 1"
-                >
-                  Lissage : durée constante
-                </button>
-               </div>
-            )}
+              >
+                Lissage : mensualité constante
+              </button>
+              <button
+                className={`chip ${lissageMode==='duree' ? 'active' : ''}`}
+                onClick={()=> setLissageMode('duree')}
+                title="Lisser en maintenant la durée du prêt 1"
+              >
+                Lissage : durée constante
+              </button>
+            </div>
+          )}
 
             <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
               <div>
