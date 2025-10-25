@@ -621,6 +621,10 @@ useEffect(() => {
       alert('Impossible de générer le fichier Excel.')
     }
   }
+function exportPowerPoint() {
+  // Placeholder : on connectera la vraie génération plus tard
+  alert('Export PowerPoint : paramétrage à venir 👍')
+}
 
   /* ---- Rendu ---- */
   const colLabelPaiement    = isAnnual ? 'Annuité' : 'Mensualité'
