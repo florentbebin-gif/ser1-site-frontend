@@ -625,7 +625,7 @@ useEffect(() => {
   /* ---- Rendu ---- */
   const colLabelPaiement    = isAnnual ? 'Annuité' : 'Mensualité'
   const colLabelPaiementAss = isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'
-  const canShowLissageChips = lisserPret1 && !anyInfine // on montre les 2 chips seulement si lissage ON & aucun prêt In fine
+  const canShowLissageChips = lisserPret1 && !anyInfine && pretsPlus.length > 0; // aussi seulement s'il existe un prêt 2/3
 
   return (
     <div className="panel">
