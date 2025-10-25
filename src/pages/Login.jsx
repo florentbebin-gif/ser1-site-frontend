@@ -48,7 +48,7 @@ export default function Login(){
       {error && <div className="alert error">{error}</div>}
       {info && <div className="alert success">{info}</div>}
 
-      <form onSubmit={onSubmit} className="form-grid" style={{maxWidth: 420}}>
+      <form onSubmit={onSubmit} className="form-grid" style={{maxWidth: 520}}>
         <div className="form-row">
           <label>Email</label>
           <input
@@ -70,16 +70,51 @@ export default function Login(){
           />
         </div>
 
-        <div className="form-row" style={{display:'flex', gap:8}}>
+        {/* Boutons : 1 primaire (Se connecter) + 2 secondaires lisibles */}
+        <div
+          className="form-row"
+          style={{
+            display:'flex',
+            gap:10,
+            flexWrap:'wrap',
+            alignItems:'center'
+          }}
+        >
           <button className="btn" type="submit" disabled={loading}>
             {loading ? 'Connexion…' : 'Se connecter'}
           </button>
 
-          <button className="chip" onClick={sendReset} disabled={loading || !email}>
+          {/* Bouton secondaire (outline clair) */}
+          <button
+            type="button"
+            onClick={sendReset}
+            disabled={loading || !email}
+            style={{
+              background:'#fff',
+              border:'1px solid var(--border)',
+              color:'var(--ink)',
+              borderRadius:12,
+              padding:'10px 14px',
+              cursor:'pointer'
+            }}
+          >
             Mot de passe oublié ?
           </button>
 
-          <button className="chip" onClick={sendMagicLink} disabled={loading || !email}>
+          {/* Bouton secondaire (outline clair) */}
+          <button
+            type="button"
+            onClick={sendMagicLink}
+            disabled={loading || !email}
+            style={{
+              background:'#fff',
+              border:'1px solid var(--border)',
+              color:'var(--ink)',
+              borderRadius:12,
+              padding:'10px 14px',
+              cursor:'pointer'
+            }}
+          >
             Lien magique
           </button>
         </div>
