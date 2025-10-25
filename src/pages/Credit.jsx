@@ -911,11 +911,13 @@ function exportPowerPoint() {
               </div>
             </div>
 
+          {lisserPret1 && (
             <div className="cell-muted" style={{marginTop:6}}>
               Différence de durées : <span style={{fontWeight:700, color:'#2C3D38'}}>
                 {diffDureesMois > 0 ? `+${diffDureesMois}` : diffDureesMois} mois
               </span>
             </div>
+          )}
 
             {/* Contrôles lissage */}
             {canShowLissageChips && (
@@ -1004,11 +1006,13 @@ function exportPowerPoint() {
               </div>
             </div>
 
-            <div className="cell-muted" style={{marginTop:6}}>
-              Différence de durées : <span style={{fontWeight:700, color:'#2C3D38'}}>
-                {diffDureesMois > 0 ? `+${diffDureesMois}` : diffDureesMois} mois
-              </span>
-            </div>
+            {lisserPret1 && (
+              <div className="cell-muted" style={{marginTop:6}}>
+                Différence de durées : <span style={{fontWeight:700, color:'#2C3D38'}}>
+                  {diffDureesMois > 0 ? `+${diffDureesMois}` : diffDureesMois} mois
+                </span>
+              </div>
+            )}
 
             {pretsPlus.length > 0 && synthesePeriodes.length > 0 && (
               <div style={{marginTop:10}}>
