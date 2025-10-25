@@ -635,9 +635,48 @@ function exportPowerPoint() {
     <div className="panel">
       <div className="plac-title" style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:12}}>
         <span>Simulateur de crédit</span>
-        <div style={{display:'flex', gap:8}}>
-          <button className="chip" onClick={exportExcel}>Exporter (Excel)</button>
-        </div>
+<div style={{display:'flex', gap:8}}>
+  <div ref={exportRef} style={{position:'relative'}}>
+    <button
+      className="chip"
+      aria-haspopup="menu"
+      aria-expanded={exportOpen ? 'true' : 'false'}
+      onClick={()=> setExportOpen(v => !v)}
+    >
+      Exporter ▾
+    </button>
+
+    {exportOpen && (
+      <div
+        role="menu"
+        style={{
+          position:'absolute', right:0, marginTop:6, minWidth:180,
+          background:'#fff', border:'1px solid #C0B5AA', borderRadius:8,
+          boxShadow:'0 6px 20px rgba(0,0,0,0.12)', padding:6, zIndex:20
+        }}
+      >
+        <button
+          role="menuitem"
+          className="chip"
+          style={{width:'100%', justifyContent:'flex-start'}}
+          onClick={()=>{ setExportOpen(false); exportExcel(); }}
+        >
+          Excel
+        </button>
+
+        <button
+          role="menuitem"
+          className="chip"
+          style={{width:'100%', justifyContent:'flex-start'}}
+          onClick={()=>{ setExportOpen(false); exportPowerPoint(); }}
+        >
+          PowerPoint
+        </button>
+      </div>
+    )}
+  </div>
+</div>
+
       </div>
 
       {/* PARAMÈTRES PRÊT 1 */}
