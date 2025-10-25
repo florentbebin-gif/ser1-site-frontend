@@ -9,7 +9,7 @@ export default function App(){
   const nav = useNavigate()
   const location = useLocation()
 
-  // Charger la session + écouter les changements (login/logout)
+  // Charger session + écouter login/logout
   useEffect(() => {
     let mounted = true
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -23,13 +23,17 @@ export default function App(){
     return () => { mounted = false; subscription.unsubscribe() }
   }, [])
 
-  // Garde d’auth : redirige /login si non connecté (sauf si déjà sur /login)
+  // Garde d’auth
   useEffect(() => {
     if (loadingSession) return
-    const isOnLogin = location.pathname === '/login'
-    if (!session && !isOnLogin) {
+    
+    const isAuthFree =
+      location.pathname === '/login' ||
+      location.pathname === '/reset'   // ✅ autoriser /reset sans session
+
+    if (!session && !isAuthFree) {
       nav('/login', { replace: true })
-    } else if (session && isOnLogin) {
+    } else if (session && location.pathname === '/login') {
       nav('/', { replace: true })
     }
   }, [session, loadingSession, location.pathname, nav])
@@ -44,7 +48,6 @@ export default function App(){
     alert('Toutes les saisies des simulateurs ont été réinitialisées.')
   }
 
-  // État transitoire pendant la détection de session
   if (loadingSession) {
     return (
       <div style={{padding:24, fontFamily:'system-ui'}}>
@@ -64,7 +67,7 @@ export default function App(){
         <div className="brandword">SER1</div>
 
         <div className="top-actions">
-          {/* HOME */}
+          
           {isAuthed && (
             <Link
               to="/"
@@ -74,14 +77,12 @@ export default function App(){
             </Link>
           )}
 
-          {/* Reset */}
           {isAuthed && (
             <button className="chip" onClick={handleReset}>
               Reset
             </button>
           )}
 
-          {/* Paramètres */}
           {isAuthed && (
             <Link
               to="/params"
@@ -91,7 +92,6 @@ export default function App(){
             </Link>
           )}
 
-          {/* Déconnexion / Connexion */}
           {isAuthed ? (
             <button className="chip logout" onClick={handleLogout}>
               Déconnexion
