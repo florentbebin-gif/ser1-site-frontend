@@ -671,6 +671,9 @@ const pret1Rows = useMemo(() => {
   /* ---- Rendu ---- */
   const colLabelPaiement    = isAnnual ? 'Annuité' : 'Mensualité'
   const colLabelPaiementAss = isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'
+  // === États d'UI pour le lissage ===
+  const pret1IsInfine = (creditType === 'infine');      // prêt 1 en In fine ?
+  const canShowLissageChips = lisserPret1 && !pret1IsInfine; // on montre les 2 chips seulement si lissage ON & prêt 1 non In fine
 
   return (
     <div className="panel">
