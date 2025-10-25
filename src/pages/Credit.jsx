@@ -282,7 +282,9 @@ useEffect(() => {
       }))
     }catch{}
   }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode])
-
+useEffect(() => {
+  if (pretsPlus.length === 0 && lisserPret1) setLisserPret1(false)
+}, [pretsPlus.length, lisserPret1])
   // Reset global
   useEffect(()=>{
     const off = onResetEvent?.(()=>{
