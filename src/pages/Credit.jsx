@@ -866,10 +866,19 @@ function exportPowerPoint() {
                                style={{width:'100%', textAlign:'right', height:28}}/>
                       </td>
                       <td className="input-cell" style={{textAlign:'right'}}>
-                        <input type="text" inputMode="numeric" value={String(Np)}
-                               <input type="text" inputMode="numeric" value={String(toNum(p.duree)||0)}
-                               style={{width:'100%', textAlign:'right', height:28}}/>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={String(toNum(p.duree) || 0)}
+                          onChange={e =>
+                            updatePret(p.id, {
+                              duree: String(e.target.value).replace(/\D/g, '').slice(0, 3)
+                            })
+                          }
+                          style={{ width:'100%', textAlign:'right', height:28 }}
+                        />
                       </td>
+
                       <td className="input-cell" style={{textAlign:'right'}}>
                         <input type="number" step="0.01" value={Number((Number(p.taux)||0).toFixed(2))}
                                onChange={e=> updatePret(p.id, { taux: +e.target.value || 0 })}
