@@ -792,16 +792,18 @@ function exportPowerPoint() {
           <div className="cell-strong">Prêts additionnels (max 2)</div>
           <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
             <button className="chip" onClick={addPret} disabled={pretsPlus.length>=2}>+ Ajouter un prêt</button>
-            <button
-              className={`chip ${lisserPret1 ? 'active' : ''}`}
-              onClick={()=> setLisserPret1(v => !v)}
-              disabled={anyInfine}
-              title={anyInfine
-                ? "Le lissage est indisponible si au moins un prêt est In fine"
-                : "Lisser la mensualité totale en ajustant le prêt 1"}
-            >
-              {lisserPret1 ? 'Lisser le prêt 1 : ON' : 'Lisser le prêt 1'}
-            </button>
+            {pretsPlus.length > 0 && (
+             <button
+               className={`chip ${lisserPret1 ? 'active' : ''}`}
+               onClick={()=> setLisserPret1(v => !v)}
+               disabled={anyInfine}
+               title={anyInfine
+                 ? "Le lissage est indisponible si un prêt est en In fine"
+                 : "Lisser la mensualité totale en ajustant le prêt 1"}
+             >
+               {lisserPret1 ? 'Lisser le prêt 1 : ON' : 'Lisser le prêt 1'}
+             </button>
+           )}
           </div>
         </div>
 
