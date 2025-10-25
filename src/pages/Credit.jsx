@@ -764,6 +764,8 @@ return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, tot
   const colLabelPaiementAss = isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'
   // === États d'UI pour le lissage ===
   const pret1IsInfine = (creditType === 'infine');      // prêt 1 en In fine ?
+  // TRUE si l’un des prêts (1,2 ou 3) est en In fine → lissage impossible
+  const anyInfine = pret1IsInfine || pretsPlus.some(p => p.type === 'infine')
   const canShowLissageChips = lisserPret1 && !pret1IsInfine; // on montre les 2 chips seulement si lissage ON & prêt 1 non In fine
 
   return (
