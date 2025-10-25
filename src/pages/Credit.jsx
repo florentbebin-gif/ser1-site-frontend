@@ -534,9 +534,9 @@ const pret1Rows = useMemo(() => {
     return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
   }
 
-  // 2) LISSAGE « durée constante » (ta nouvelle voie analytique)
-  const T = totalConstantForDuration({ basePret1, autresPretsRows: autresRows })
-  return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, totalConst: T })
+// 2) LISSAGE « durée constante » ROBUSTE (compatible prêts In fine)
+const T = findTotalConstForDurationRobuste({ basePret1, autresPretsRows: autresRows })
+return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, totalConst: T })
 
 }, [
   effectiveCapitalPret1, r, rA, N, assurMode, creditType,
