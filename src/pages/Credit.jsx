@@ -333,6 +333,11 @@ export default function Credit(){
     }catch{}
   }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode])
 
+  // Si le prêt 1 passe en "In fine", on coupe le lissage (il est indisponible)
+useEffect(() => {
+  if (creditType === 'infine' && lisserPret1) setLisserPret1(false);
+}, [creditType, lisserPret1]);
+
   // Reset global
   useEffect(()=>{
     const off = onResetEvent?.(()=>{
