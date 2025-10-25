@@ -1,4 +1,13 @@
 import React from 'react'
+import { useParamsGlobal } from '../context/ParamsProvider.jsx'
+
+const { params: globalParams, loading: gLoading, error: gError, reload } = useParamsGlobal()
+useEffect(() => {
+  if (globalParams) {
+    setForm(prev => ({ ...prev, ...globalParams }))
+  }
+}, [globalParams])
+
 export default function Params(){
   return (
     <div className="panel">
