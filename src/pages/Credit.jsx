@@ -288,19 +288,23 @@ useEffect(() => {
   // Reset global
   useEffect(()=>{
     const off = onResetEvent?.(()=>{
-      setStartYM(nowYearMonth())
-      setAssurMode('CRD')
-      setCreditType('amortissable')
-      setCapital(300000)
-      setDuree(240)
-      setTaux(3.5)
-      setTauxAssur(0.3)
-      setMensuBase('')
-      setPretsPlus([])
-      setLisserPret1(false)
-      setViewMode('mensuel')
-      setLissageMode('mensu')
-      try { localStorage.removeItem(STORE_KEY) } catch {}
+     // ➜ Ne réinitialiser QUE les zones saisissables
+     const ym = nowYearMonth()
+     setStartYM(ym)           // date prêt 1 = mois/année courants
+     setCapital(0)
+     setDuree(0)
+     setTaux(0)
+     setTauxAssur(0)
+     setMensuBase('')
+     // Conserver la liste des prêts 2/3, mais vider leurs champs saisissables + date courante
+     setPretsPlus(arr => arr.map(p => ({
+       ...p,
+       capital: 0,
+       duree: 0,
+       taux: 0,
+       startYM: ym
+     })))
+     // NE PAS toucher à : assurMode, creditType, lisserPret1, viewMode, lissageMode
     })
     return off || (()=>{})
   }, [STORE_KEY])
