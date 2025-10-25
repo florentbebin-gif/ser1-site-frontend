@@ -35,3 +35,21 @@ Copier le code
 npm i
 npm run dev
 # http://localhost:5173
+4) Déploiement (CI/CD)
+GitHub → repo ser1-site-frontend
+
+Vercel relié à la branche main
+
+Chaque push = nouveau déploiement (preview + prod)
+
+5) Réglages importants Vercel
+Environment Variables (mêmes clés que .env) dans Settings → Environment Variables
+
+Domains : ajouter le domaine principal (ex : app.ser1.app)
+
+6) Points d’attention
+L’app lit VITE_API_BASE_URL → mettre le domaine Render ou api.ser1.app
+
+CORS : le backend doit autoriser le domaine Vercel (voir README backend)
+
+Le bouton Exporter propose Excel & PowerPoint (PPTX à brancher plus tard)
