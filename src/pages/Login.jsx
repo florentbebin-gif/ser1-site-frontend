@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
 
 export default function Login(){
@@ -7,20 +7,25 @@ export default function Login(){
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
+
+  // Affiche un message clair si l’URL contient une erreur Supabase (ex: otp_expired)
   useEffect(() => {
     const hash = window.location.hash || ''
-    const params = new URLSearchParams(hash.replace(/^#/, ''))
-    const errCode = params.get('error_code')
-    if (errCode === 'otp_expired') {
-      setError("Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien.")
-      // Nettoie l'URL pour éviter que le message revienne
-      history.replaceState(null, '', window.location.pathname)
-    }
-    if (params.get('error')) {
-      // Nettoie de toute façon si une erreur est renvoyée
+    if (!hash) return
+    const p = new URLSearchParams(hash.replace(/^#/, ''))
+    const err = p.get('error')
+    const code = p.get('error_code')
+    if (err || code) {
+      if (code === 'otp_expired') {
+        setError("Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien.")
+      } else {
+        setError("Une erreur d’authentification est survenue. Veuillez réessayer.")
+      }
+      // Nettoie l’URL pour ne pas réafficher le message au refresh
       history.replaceState(null, '', window.location.pathname)
     }
   }, [])
+
   async function onSubmit(e){
     e.preventDefault()
     setLoading(true); setError(''); setInfo('')
@@ -60,13 +65,13 @@ export default function Login(){
         {/* Voile vert 30% */}
         <div className="login-overlay" />
 
-        {/* Bloc titre : plus à gauche et un peu haut */}
+        {/* Bloc titre à gauche */}
         <div className="login-left">
           <h1 className="login-brand">SER1</h1>
           <div className="login-sub">Simulateur épargne retraite</div>
         </div>
 
-        {/* Carte de connexion parfaitement centrée */}
+        {/* Carte de connexion centrée */}
         <div className="login-card">
           <div className="card-title">Connexion</div>
 
@@ -109,43 +114,41 @@ export default function Login(){
         </div>
       </div>
 
-      {/* Styles locaux */}
+      {/* Styles locaux spécifiques à la page Login */}
       <style>{`
         :root{
           --green:#2C3D38;
           --beige:#e8ded5;
           --ink:#222;
           --border:#D9D9D9;
-          --topbar-h: 56px; /* ajuste si ta topbar est plus haute/basse */
+          --topbar-h: 56px; /* ajuste-la si ta topbar a une autre hauteur */
         }
 
-        /* Fond plein écran fixé sous la topbar */
+        /* Fond plein écran, fixé sous la topbar (plus aucune bande blanche) */
         .login-fixed{
           position: fixed;
           top: var(--topbar-h);
           left: 0; right: 0; bottom: 0;
           z-index: 1;
-          background-image: url('/login-bg.jpg'); /* image depuis /public */
+          background-image: url('/login-bg.jpg'); /* place ton image dans /public */
           background-size: cover;
           background-position: center;
-          /* Centrer la carte au milieu */
           display: flex;
-          align-items: center;
-          justify-content: center;
+          align-items: center;   /* centre verticalement la carte */
+          justify-content: center; /* centre horizontalement la carte */
         }
 
-        /* Voile vert 30% par-dessus l'image */
         .login-overlay{
           position: absolute; inset: 0;
-          background: rgba(44,61,56,0.30);
+          background: rgba(44,61,56,0.30); /* voile vert 30% */
           pointer-events: none;
         }
 
-        /* Bloc titre : plus à gauche (4vw) et plus haut (18vh) */
+        /* Bloc titre : plus à gauche et en haut */
         .login-left{
           position: absolute;
-          left: 4vw;          /* ⬅️ plus vers la gauche */
-          top: 18vh;          /* ⬆️ un peu plus haut */
+          left: 4vw;
+          top: 18vh;
           z-index: 2;
           color: #fff;
           text-shadow: 0 2px 4px rgba(0,0,0,.25);
@@ -164,7 +167,7 @@ export default function Login(){
         @media (max-width: 640px){ .login-brand { font-size: 46px; } }
         .login-sub{ font-size: 28px; font-weight: 600; }
 
-        /* Carte centrée */
+        /* Carte de connexion centrée */
         .login-card{
           position: relative;
           z-index: 2;
