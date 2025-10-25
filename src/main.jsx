@@ -1,7 +1,9 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
+import { ParamsProvider } from './context/ParamsProvider.jsx'
 import Home from './pages/Home.jsx'
 import Placement from './pages/Placement.jsx'
 import Credit from './pages/Credit.jsx'
@@ -21,8 +23,10 @@ const router = createBrowserRouter([
   }
 ])
 
-createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <ParamsProvider>
+      <App/>
+    </ParamsProvider>
   </React.StrictMode>
 )
