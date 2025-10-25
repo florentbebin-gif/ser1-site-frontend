@@ -9,15 +9,16 @@ export default function Login(){
   const [error, setError] = useState('')
   const nav = useNavigate()
 
-  async function onSubmit(e){
-    e.preventDefault()
-    setLoading(true); setError('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    setLoading(false)
-    if(error){ setError(error.message); return }
-    nav('/')
-  }
-
+async function sendReset(e){
+  e.preventDefault()
+  setLoading(true); setError(''); setInfo('')
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset`   // <= très important
+  })
+  setLoading(false)
+  if (error) setError(error.message)
+  else setInfo('Email de réinitialisation envoyé. Consultez votre boîte mail.')
+}
   return (
     <div className='excel'>
       <h2>Connexion</h2>
