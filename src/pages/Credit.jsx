@@ -714,7 +714,7 @@ function exportPowerPoint() {
               <td className="cell-strong">Durée (mois)</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
-                  <input type="text" inputMode="numeric" value={String(N)} onChange={e=> onChangeDuree(e.target.value)} style={{width:'100%', textAlign:'right', height:32}}/>
+                  <input type="text" inputMode="numeric" value={String(duree)} onChange={e=> onChangeDuree(e.target.value)} style={{width:'100%', textAlign:'right', height:32}}/>
                   <span>mois</span>
                 </div>
               </td>
