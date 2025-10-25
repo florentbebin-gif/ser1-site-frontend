@@ -8,22 +8,22 @@ import Credit from './pages/Credit.jsx'
 import Params from './pages/Params.jsx'
 import Sim from './pages/Sim.jsx'
 import Login from './pages/Login.jsx'
-import ResetPassword from './pages/ResetPassword.jsx'           // <= AJOUT
-import { ParamsProvider } from './context/ParamsProvider.jsx'   // <= si déjà créé
+import ResetPassword from './pages/ResetPassword.jsx'
+import { ParamsProvider } from './context/ParamsProvider.jsx'
 import './styles.css'
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App/>,
+    element: <App />,
     children: [
-      { index: true, element: <Home/> },
-      { path: '/sim/placement', element: <Placement/> },
-      { path: '/sim/credit', element: <Credit/> },
-      { path: '/params', element: <Params/> },
-      { path: '/sim', element: <Sim/> },
-      { path: '/login', element: <Login/> },
-      { path: '/reset', element: <ResetPassword/> },            // <= AJOUT
+      { index: true, element: <Home /> },
+      { path: 'sim/placement', element: <Placement /> },
+      { path: 'sim/credit', element: <Credit /> },
+      { path: 'params', element: <Params /> },
+      { path: 'sim', element: <Sim /> },
+      { path: 'login', element: <Login /> },
+      { path: 'reset', element: <ResetPassword /> },
     ],
   },
 ])
