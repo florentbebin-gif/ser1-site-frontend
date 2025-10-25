@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react' 
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 
 /* ---------- Helpers format ---------- */
@@ -57,7 +57,7 @@ function scheduleAmortissable({ capital, r, rAss, N, assurMode, mensuOverride })
   for (let m = 1; m <= N; m++) {
     if (crd <= EPS) break
 
-    const crdStart = crd                     // <-- CRD début de mois (référence CRD)
+    const crdStart = crd
     const interet  = crdStart * r
     let mensu      = mensuFixe
 
@@ -70,7 +70,7 @@ function scheduleAmortissable({ capital, r, rAss, N, assurMode, mensuOverride })
     if (amort > crdStart) amort = crdStart
 
     const crdEnd = Math.max(0, crdStart - amort)
-    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)  // <-- assurance sur CRD début
+    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss) // assurance sur CRD début
 
     const mensuTotal = mensu + (assur || 0)
     rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu, mensuTotal, crd: crdEnd })
@@ -92,7 +92,7 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
     const interet  = crdStart * r
     let mensu = (typeof mensuOverride === 'number' && mensuOverride > 0) ? mensuOverride : interet
 
-    const maxMensu = interet + (m === N ? crdStart : 0)  // borne si dernière
+    const maxMensu = interet + (m === N ? crdStart : 0) // borne si dernière
     if (mensu > maxMensu) mensu = maxMensu
     if (mensu < interet && r > 0) mensu = interet
 
@@ -105,7 +105,7 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
     }
 
     const crdEnd = Math.max(0, crdStart - amort)
-    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)  // <-- assurance sur CRD début
+    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss) // assurance sur CRD début
 
     const mensuTotal = mensu + (assur || 0)
     rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu, mensuTotal, crd: crdEnd })
@@ -115,8 +115,6 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
 }
 
 // === LISSAGE : MENSUALITÉ TOTALE CONSTANTE (hors assurance) ===
-// On impose que (mensu_prêt1 + somme(mensu_autres)) = cibleMensuTotale à chaque mois.
-// L'assurance (si CRD ou CI) du prêt 1 est ajoutée à part, elle n'entre PAS dans la cible.
 function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
   const { capital, r, rAss, N, assurMode, type } = pret1
   const rows = []
@@ -135,10 +133,8 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
     const interet  = crdStart * r
     const autres   = mensuAutresAt(m)
 
-    // part prêt 1 = cible - autres (hors assurance)
     let mensu1 = Math.max(0, cibleMensuTotale - autres)
 
-    // bornes « sûreté »
     const capMensu = interet + crdStart
     if (mensu1 > capMensu) mensu1 = capMensu
     if (type !== 'infine' && m < N && mensu1 < interet) mensu1 = interet
@@ -148,7 +144,6 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
     const amort  = Math.max(0, mensu1 - interet)
     const crdEnd = Math.max(0, crdStart - amort)
 
-    // assurance sur le prêt 1 uniquement
     const assur = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)
     const mensuTotal = mensu1 + (assur || 0)
 
@@ -167,7 +162,6 @@ function scheduleLisseePret1Duration({ basePret1, autresPretsRows, totalConst })
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
   const EPS = 1e-8
 
-  // Somme des mensualités des autres prêts au mois m
   const sumAutres = (m) => autresPretsRows.reduce((s, arr) => s + ((arr[m - 1]?.mensu) || 0), 0)
 
   for (let m = 1; m <= N; m++) {
@@ -177,23 +171,16 @@ function scheduleLisseePret1Duration({ basePret1, autresPretsRows, totalConst })
     const interet  = crdStart * r
     const autres   = sumAutres(m)
 
-    // Part dédiée au prêt 1 = T - autres
     let mensu1 = totalConst - autres
 
-    // pas d’amort négatif : on borne à au moins les intérêts (avant le dernier mois)
     if (m < N && mensu1 < interet) mensu1 = interet
-
-    // borne naturelle : jamais > intérêts + CRD
     const capMensu = interet + crdStart
     if (mensu1 > capMensu) mensu1 = capMensu
-
-    // dernier mois : on solde exactement ce qui reste
     if (m === N) mensu1 = Math.min(mensu1, interet + crdStart)
 
     const amort = Math.max(0, mensu1 - interet)
     const crdEnd = Math.max(0, crdStart - amort)
 
-    // Assurance : si CRD → on prend CRD début de mois ; si CI → prime fixe
     const assur = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)
     const mensuTotal = mensu1 + (assur || 0)
 
@@ -203,61 +190,7 @@ function scheduleLisseePret1Duration({ basePret1, autresPretsRows, totalConst })
   return rows
 }
 
-
-// Calcule la cible de mensualité totale (Prêt1 + autres) pour conserver une durée cible
-function findTargetForDuration({ basePret1, autresPretsRows, targetLen }) {
-  // Amortissement minimal « sensible » (pas juste un epsilon)
-  const minAmort = Math.max(1, basePret1.capital / Math.max(12, basePret1.N) / 50) // ≈ 2% de l’amortissement moyen mensuel
-
-  // Somme mensuelle maximale des autres prêts (pire palier)
-  const maxMensuAutres = (()=>{
-    let mx = 0
-    const horizon = Math.max(...autresPretsRows.map(a => a.length), basePret1.N)
-    for (let m = 1; m <= horizon; m++) {
-      const tot = autresPretsRows.reduce((s, arr) => s + ((arr[m-1]?.mensu) || 0), 0)
-      if (tot > mx) mx = tot
-    }
-    return mx
-  })()
-
-  const interet1 = basePret1.capital * basePret1.r
-
-  // ▸ Borne basse : intérêts 1er mois + max autres + amort minimal
-  let lo = interet1 + maxMensuAutres + minAmort
-
-  // ▸ Borne haute : on augmente jusqu'à ce que la durée simulée ≤ targetLen
-  const simulate = (cible) => {
-    const rows = scheduleLisseePret1({
-      pret1: basePret1,
-      autresPretsRows,
-      cibleMensuTotale: cible
-    })
-    const len = rows.length
-    const lastCRD = rows[len-1]?.crd ?? 0
-    return { len, lastCRD }
-  }
-
-  let hi = Math.max(lo + 1, lo * 2)
-  for (let guard = 0; guard < 20; guard++) {
-    const { len } = simulate(hi)
-    if (len <= targetLen) break
-    hi *= 2
-  }
-
-  // ▸ Dichotomie
-  for (let i = 0; i < 40; i++) {
-    const mid = (lo + hi) / 2
-    const { len, lastCRD } = simulate(mid)
-    if (len > targetLen || lastCRD > 1) {
-      lo = mid
-    } else {
-      hi = mid
-    }
-  }
-  return hi
-}
-
-// ---- Annuité totale "T" qui garantit CRD_N = 0 (durée constante) ----
+// ---- Annuité totale "T" (fermeture analytique) qui garantit CRD_N = 0 ----
 function totalConstantForDuration({ basePret1, autresPretsRows }) {
   const { capital: B0, r, N } = basePret1
   const pow = Math.pow(1 + r, N)
@@ -273,96 +206,6 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
     B += autres * a
   }
   return (B0 * pow + B) / A
-}
-// --- Simule l'échéancier du prêt 1 pour une annuité totale "T" (durée constante) ---
-// Retourne { len, lastCRD, feasible } ; feasible = false s'il existe un mois m<N où T - autres(m) < intérêts(m)
-function simulateDurationWithT({ basePret1, autresPretsRows, T }) {
-  const { capital, r, rAss, N, assurMode } = basePret1
-  const rows = []
-  let crd = Math.max(0, capital)
-  const EPS = 1e-8
-  const assurFixe = (assurMode === 'CI') ? (capital * (basePret1.rAss || 0)) : null
-
-  const autresAt = (m) => autresPretsRows.reduce((s, arr) => s + ((arr[m-1]?.mensu) || 0), 0)
-
-  let feasible = true
-
-  for (let m = 1; m <= N; m++) {
-    if (crd <= EPS) break
-    const crdStart = crd
-    const interet  = crdStart * r
-    const autres   = autresAt(m)
-
-    // part du prêt 1 visée pour respecter T
-    let mensu1 = T - autres
-
-    // faisabilité : pour m < N, il faut au minimum payer les intérêts du prêt 1
-    if (m < N && mensu1 < interet - 1e-9) feasible = false
-
-    // bornes
-    if (m < N) mensu1 = Math.max(mensu1, interet)    // pour éviter un CRD qui augmente
-    const capMensu = interet + crdStart
-    mensu1 = Math.min(mensu1, capMensu)              // jamais > intérêts + CRD
-    if (m === N) mensu1 = Math.min(mensu1, capMensu) // dernier mois : solde au plus
-
-    const amort  = Math.max(0, mensu1 - interet)
-    const crdEnd = Math.max(0, crdStart - amort)
-
-    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * (basePret1.rAss || 0))
-    const mensuTotal = mensu1 + (assur || 0)
-
-    rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu:mensu1, mensuTotal, crd:crdEnd })
-    crd = crdEnd
-  }
-  const len = rows.length
-  const lastCRD = rows[len-1]?.crd ?? 0
-  return { len, lastCRD, feasible, rows }
-}
-
-// --- Trouve la plus petite "T" qui rend la simulation faisable et solde au mois N ---
-function findTotalConstForDurationRobuste({ basePret1, autresPretsRows }) {
-  const { capital, r, N } = basePret1
-  const EPS = 1e-6
-
-  // borne basse : intérêts 1er mois + max des autres (pire mois) + un très léger amort
-  const interet1 = capital * r
-  let maxAutres = 0
-  const horizon = Math.max(...autresPretsRows.map(a=>a.length), N)
-  for (let m=1; m<=horizon; m++){
-    const a = autresPretsRows.reduce((s, arr)=> s + ((arr[m-1]?.mensu) || 0), 0)
-    if (a > maxAutres) maxAutres = a
-  }
-  let lo = interet1 + maxAutres + Math.max(1, capital / N / 100) // amort mini
-
-  // borne haute : on part d’une estimation fermée puis on grossit au besoin
-  const Tclosed = (() => {
-    // estimation fermée (optionnelle) – si tu as gardé totalConstantForDuration
-    try { return totalConstantForDuration({ basePret1, autresPretsRows }) || (lo*2) } catch { return lo*2 }
-  })()
-  let hi = Math.max(lo + 1, Tclosed)
-
-  // élargit hi jusqu’à faisabilité + CRD_N ≈ 0
-  for (let k=0; k<30; k++){
-    const { feasible, lastCRD, len } = simulateDurationWithT({ basePret1, autresPretsRows, T:hi })
-    if (feasible && len === N && Math.abs(lastCRD) < 5e-2) break // ok
-    hi *= 1.5
-    if (hi > 1e9) break
-  }
-
-  // dichotomie pour le T minimal faisable & qui solde à N
-  for (let it=0; it<50; it++){
-    const mid = (lo + hi) / 2
-    const { feasible, lastCRD, len } = simulateDurationWithT({ basePret1, autresPretsRows, T:mid })
-
-    // on veut : feasible === true, len === N, lastCRD ≈ 0
-    const ok = feasible && len === N && Math.abs(lastCRD) < 5e-2
-    if (ok) {
-      hi = mid
-    } else {
-      lo = mid
-    }
-  }
-  return hi
 }
 
 /* ===============================
@@ -422,11 +265,6 @@ export default function Credit(){
       }))
     }catch{}
   }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode])
-
-  // Si le prêt 1 passe en "In fine", on coupe le lissage (il est indisponible)
-useEffect(() => {
-  if (creditType === 'infine' && lisserPret1) setLisserPret1(false);
-}, [creditType, lisserPret1]);
 
   // Reset global
   useEffect(()=>{
@@ -515,33 +353,41 @@ useEffect(() => {
       : scheduleAmortissable({ ...base, mensuOverride: mensuHorsAssurance_base })
   }, [effectiveCapitalPret1, r, rA, N, assurMode, creditType, mensuHorsAssurance_base])
 
+  // === Statut In fine global (désactive le lissage partout)
+  const pret1IsInfine = (creditType === 'infine')
+  const anyInfine = pret1IsInfine || pretsPlus.some(p => p.type === 'infine')
+
+  // Si un prêt est In fine → on coupe le lissage si ON
+  useEffect(()=>{
+    if (anyInfine && lisserPret1) setLisserPret1(false)
+  }, [anyInfine, lisserPret1])
+
   /* ---- Prêt 1 (standard ou lissé) ---- */
-const pret1Rows = useMemo(() => {
-  const basePret1 = { capital: effectiveCapitalPret1, r, rAss:rA, N, assurMode, type: creditType }
+  const pret1Rows = useMemo(() => {
+    const basePret1 = { capital: effectiveCapitalPret1, r, rAss:rA, N, assurMode, type: creditType }
 
-  // 0) Pas de lissage ou pas d'autres prêts => échéancier standard
-  if (!lisserPret1 || autresRows.length === 0) {
-    return (creditType === 'infine')
-      ? scheduleInFine({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
-      : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
-  }
+    // Pas de lissage (ou impossible) ou pas d'autres prêts => échéancier standard
+    if (!lisserPret1 || anyInfine || autresRows.length === 0) {
+      return (creditType === 'infine')
+        ? scheduleInFine({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
+        : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
+    }
 
-  if (lissageMode === 'mensu') {
-    // 1) LISSAGE « mensualité constante » (comportement historique)
-    //    cible = M1 du prêt 1 (hors assurance) + M1 des autres prêts (hors assurance)
-    const mensuAutresM1 = autresRows.reduce((s, arr) => s + ((arr[0]?.mensu) || 0), 0)
-    const cible = mensuBaseEffectivePret1 + mensuAutresM1
-    return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
-  }
+    if (lissageMode === 'mensu') {
+      // LISSAGE « mensualité totale constante »
+      const mensuAutresM1 = autresRows.reduce((s, arr) => s + ((arr[0]?.mensu) || 0), 0)
+      const cible = mensuBaseEffectivePret1 + mensuAutresM1
+      return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
+    }
 
-// 2) LISSAGE « durée constante » ROBUSTE (compatible prêts In fine)
-const T = findTotalConstForDurationRobuste({ basePret1, autresPretsRows: autresRows })
-return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, totalConst: T })
+    // LISSAGE « durée constante » — version analytique (stable, amortissables only)
+    const T = totalConstantForDuration({ basePret1, autresPretsRows: autresRows })
+    return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, totalConst: T })
 
-}, [
-  effectiveCapitalPret1, r, rA, N, assurMode, creditType,
-  mensuBaseEffectivePret1, lisserPret1, autresRows, lissageMode
-])
+  }, [
+    effectiveCapitalPret1, r, rA, N, assurMode, creditType,
+    mensuBaseEffectivePret1, lisserPret1, autresRows, lissageMode, anyInfine
+  ])
 
   // Durées & différence
   const dureeBaseMois  = basePret1Rows.length
@@ -563,10 +409,10 @@ return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, tot
       out.push({
         mois:m,
         interet: p1.i + others.i,
-        assurance: p1.a + others.a,     // autres = 0 car pas d’assur.
+        assurance: p1.a + others.a,
         amort: p1.am + others.am,
         mensu: p1.me + others.me,
-        mensuTotal: p1.mt + others.mt,  // autres = mensu (assur. 0)
+        mensuTotal: p1.mt + others.mt,
         crd: p1.c + others.c
       })
     }
@@ -762,11 +608,7 @@ return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, tot
   /* ---- Rendu ---- */
   const colLabelPaiement    = isAnnual ? 'Annuité' : 'Mensualité'
   const colLabelPaiementAss = isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'
-  // === États d'UI pour le lissage ===
-  const pret1IsInfine = (creditType === 'infine');      // prêt 1 en In fine ?
-  // TRUE si l’un des prêts (1,2 ou 3) est en In fine → lissage impossible
-  const anyInfine = pret1IsInfine || pretsPlus.some(p => p.type === 'infine')
-  const canShowLissageChips = lisserPret1 && !pret1IsInfine; // on montre les 2 chips seulement si lissage ON & prêt 1 non In fine
+  const canShowLissageChips = lisserPret1 && !anyInfine // on montre les 2 chips seulement si lissage ON & aucun prêt In fine
 
   return (
     <div className="panel">
@@ -894,12 +736,12 @@ return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, tot
               className={`chip ${lisserPret1 ? 'active' : ''}`}
               onClick={()=> setLisserPret1(v => !v)}
               disabled={anyInfine}
-              title={pret1IsInfine
-                ? "Le lissage est indisponible pour un prêt In fine"
+              title={anyInfine
+                ? "Le lissage est indisponible si au moins un prêt est In fine"
                 : "Lisser la mensualité totale en ajustant le prêt 1"}
             >
               {lisserPret1 ? 'Lisser le prêt 1 : ON' : 'Lisser le prêt 1'}
-          </button>
+            </button>
           </div>
         </div>
 
@@ -1029,7 +871,7 @@ return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, tot
                   Lissage : durée constante
                 </button>
                </div>
-              )}
+            )}
 
             {/* Tableau des périodes si ≥1 prêt additionnel */}
             {pretsPlus.length > 0 && synthesePeriodes.length > 0 && (
@@ -1072,18 +914,18 @@ return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, tot
                   className={`chip ${lissageMode==='mensu' ? 'active' : ''}`}
                   onClick={()=> setLissageMode('mensu')}
                   title="Lisser en maintenant la mensualité totale (peut réduire la durée)"
-              >
-                Lissage : mensualité constante
-              </button>
-              <button
-                className={`chip ${lissageMode==='duree' ? 'active' : ''}`}
-                onClick={()=> setLissageMode('duree')}
-                title="Lisser en maintenant la durée du prêt 1"
-              >
-                Lissage : durée constante
-              </button>
-            </div>
-          )}
+                >
+                  Lissage : mensualité constante
+                </button>
+                <button
+                  className={`chip ${lissageMode==='duree' ? 'active' : ''}`}
+                  onClick={()=> setLissageMode('duree')}
+                  title="Lisser en maintenant la durée du prêt 1"
+                >
+                  Lissage : durée constante
+                </button>
+               </div>
+            )}
 
             <div style={{display:'flex', gap:24, flexWrap:'wrap'}}>
               <div>
