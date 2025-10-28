@@ -1,35 +1,20 @@
-// src/utils/idle.js
-export function startIdleTimer({ timeoutMs = 10 * 60 * 1000, onTimeout } = {}) {
-  let timerId = null
+/// Démarre un timer d’inactivité. Appelle onTimeout après timeoutMs sans activité.
+// Retourne une fonction stop() pour retirer les écouteurs.
+export function startIdleTimer({ timeoutMs = 10 * 60 * 1000, onTimeout }) {
+  let timer = null
+  const events = ['mousemove','mousedown','keydown','touchstart','scroll','visibilitychange']
 
-  const reset = () => {
-    if (timerId) clearTimeout(timerId)
-    timerId = setTimeout(() => {
-      try {
-        onTimeout && onTimeout()
-      } finally {
-        // après le timeout, on arrête d'écouter
-        stop()
-      }
-    }, timeoutMs)
+  function reset() {
+    if (document.visibilityState === 'hidden') return
+    clearTimeout(timer)
+    timer = setTimeout(() => onTimeout?.(), timeoutMs)
   }
 
-  const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click']
+  function add()  { events.forEach(e => window.addEventListener(e, reset, { passive: true })) }
+  function remove(){ events.forEach(e => window.removeEventListener(e, reset)) }
 
-  const onActivity = () => reset()
+  add(); reset()
 
-  const start = () => {
-    events.forEach(ev => window.addEventListener(ev, onActivity, { passive: true }))
-    reset()
-  }
-
-  const stop = () => {
-    if (timerId) clearTimeout(timerId)
-    timerId = null
-    events.forEach(ev => window.removeEventListener(ev, onActivity))
-  }
-
-  // auto-démarre
-  start()
-  return stop
+  return () => { clearTimeout(timer); remove() }
 }
+
