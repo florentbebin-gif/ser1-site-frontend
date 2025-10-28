@@ -33,24 +33,21 @@ async function signOutWithTimeout(ms = 1500) {
   }, [])
 
   // 🔔 Déconnexion auto après 10 min d’inactivité
-  useEffect(() => {
-    if (!session) return
-    const stop = startIdleTimer({
-      timeoutMs: 10 * 60 * 1000,
-      onTimeout: async () => {
-        try {
-          await supabase.auth.signOut({ scope: 'global' })
-        } catch {}
-        // Purge "ceinture + bretelles"
-        try {
-          Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k))
-        } catch {}
-        try { sessionStorage.clear() } catch {}
-        window.location.replace('/login?logout=1')
-      }
-    })
-    return stop
-  }, [session])
+useEffect(() => {
+  if (!session) return
+  const stop = startIdleTimer({
+    timeoutMs: 10 * 60 * 1000,
+    onTimeout: async () => {
+      await signOutWithTimeout(1500)
+      try {
+        Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k))
+      } catch {}
+      try { sessionStorage.clear() } catch {}
+      window.location.href = '/login?logout=1'
+    }
+  })
+  return stop
+}, [session])
 
 async function handleLogout(){
   if (loggingOut) return
