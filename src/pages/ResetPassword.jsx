@@ -56,9 +56,9 @@ export default function ResetPassword() {
       const type    = search.get('type')
 
       // --- chemin “recovery moderne” (hash avec access/refresh) ---
-     if (access && refresh) {
+    if (access && refresh) {
   try {
-    // 0) Diagnostic (tu l'as déjà, je le garde)
+    // 0) Diagnostic : l’access token est valide ?
     const u = await supabase.auth.getUser(access)
     if (u.error) {
       addDebug(`getUser(access) ERROR: ${u.error.message}`)
@@ -66,56 +66,42 @@ export default function ResetPassword() {
       addDebug(`getUser(access) OK user.id=${u.data?.user?.id || 'unknown'}`)
     }
 
-    // 1) Chemin recommandé : laisser le SDK traiter le hash
-    //    -> crée et stocke la session dans sessionStorage
-    const res = await supabase.auth.getSessionFromUrl({ storeSession: true, createUser: false })
-    if (res.error) {
-      addDebug(`getSessionFromUrl ERROR: ${res.error.message}`)
-    } else {
-      addDebug(`getSessionFromUrl OK: has session=${!!res.data?.session}`)
-    }
+    // 1) Récupère éventuellement expires_at du hash (présent dans ton URL)
+    const exp = Number(
+      (new URLSearchParams((window.location.hash || '').replace(/^#/, ''))).get('expires_at')
+      || 0
+    )
 
-    // 2) Vérification immédiate
+    // 2) Pose explicitement la session (v2)
+    const { data: setData, error: setErr } = await supabase.auth.setSession({
+      access_token: access,
+      refresh_token: refresh,
+      token_type: 'bearer',
+      expires_at: Number.isFinite(exp) && exp > 0 ? exp : undefined,
+    })
+    if (setErr) {
+      addDebug(`setSession ERROR: ${setErr.message}`)
+      setPhase('error')
+      setError("Impossible d'initialiser la session de réinitialisation.")
+      return
+    }
+    addDebug(`setSession OK: has session=${!!setData?.session}`)
+
+    // 3) Vérifie immédiatement que la session est bien stockée
     const after = await supabase.auth.getSession()
-    addDebug(`getSession() after getSessionFromUrl: has session=${!!after.data?.session}`)
-
-    // 3) Fallback si jamais (très rare) getSessionFromUrl n’a rien posé
+    addDebug(`getSession() after setSession: has session=${!!after.data?.session}`)
     if (!after.data?.session) {
-      // on tente setSession manuellement (avec expires_at si dispo)
-      const exp = Number(
-        (new URLSearchParams((window.location.hash || '').replace(/^#/, ''))).get('expires_at')
-        || (new URLSearchParams((window.location.search || '').replace(/^\?/, ''))).get('expires_at')
-        || 0
-      )
-      const { data: setData, error: setErr } = await supabase.auth.setSession({
-        access_token: access,
-        refresh_token: refresh,
-        expires_at: Number.isFinite(exp) && exp > 0 ? exp : undefined,
-        token_type: 'bearer',
-      })
-      if (setErr) {
-        addDebug(`setSession ERROR: ${setErr.message}`)
-        setPhase('error')
-        setError("Impossible d'initialiser la session de réinitialisation.")
-        return
-      }
-      addDebug(`setSession OK: has session=${!!setData?.session}`)
-
-      const again = await supabase.auth.getSession()
-      addDebug(`getSession() after setSession: has session=${!!again.data?.session}`)
-      if (!again.data?.session) {
-        setPhase('error')
-        setError("La session n'a pas pu être enregistrée. Réessayez le lien.")
-        return
-      }
+      setPhase('error')
+      setError("La session n'a pas pu être enregistrée. Réessayez le lien.")
+      return
     }
 
-    // 4) Nettoyage de l’URL et passage en READY
+    // 4) Nettoie l’URL et passe en READY
     try { history.replaceState(null, '', window.location.pathname) } catch {}
     setPhase('ready')
     return
   } catch (e) {
-    addDebug(`TRY/CATCH in access+refresh block: ${e?.message || e}`)
+    addDebug(`setSession TRY/CATCH ERROR: ${e?.message || e}`)
     setPhase('error')
     setError("Impossible d'initialiser la session de réinitialisation.")
     return
