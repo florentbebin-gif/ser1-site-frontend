@@ -8,7 +8,7 @@ export default function Login(){
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
 
-  // 1) Nettoie un éventuel hash d'erreur et affiche un message clair
+  // Nettoie un éventuel hash d'erreur (#error=...) et affiche un message clair
   useEffect(() => {
     const hash = window.location.hash || ''
     if (!hash) return
@@ -23,15 +23,12 @@ export default function Login(){
     history.replaceState(null, '', window.location.pathname)
   }, [])
 
-  // 2) Si une session apparaît (password / magic link / reset), on fait un HARD redirect
+  // Dès qu'une session apparaît (login / magic link / reset) → HARD redirect vers /
   useEffect(() => {
     let mounted = true
     ;(async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (mounted && session) {
-        // redémarre l’appli proprement -> évite tout état collant après plusieurs cycles
-        window.location.replace('/')
-      }
+      if (mounted && session) window.location.replace('/')
     })()
     const { data } = supabase.auth.onAuthStateChange((_e, s) => {
       if (s) window.location.replace('/')
@@ -45,10 +42,7 @@ export default function Login(){
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
     if (error) setError(error.message)
-    else {
-      // on ne passe pas par le routeur SPA -> on repart “propre”
-      window.location.replace('/')
-    }
+    else window.location.replace('/') // redémarre proprement l’app
   }
 
   async function sendReset(e){
@@ -77,12 +71,13 @@ export default function Login(){
   }
 
   return (
-    <div className="login-fullbleed">
-      <section className="login-hero">
-        <div className="login-hero__bg" />
-        <div className="login-hero__overlay" />
+    <div className="login-root">
+      {/* Fond plein écran sous/derrière la topbar */}
+      <div className="login-bg" aria-hidden="true" />
+      <div className="login-overlay" aria-hidden="true" />
 
-        <div className="login-hero__title">
+      <div className="login-rail">
+        <div className="login-title">
           <h1 className="login-brand">SER1</h1>
           <div className="login-sub">Simulateur épargne retraite</div>
         </div>
@@ -127,80 +122,92 @@ export default function Login(){
             </div>
           </form>
         </div>
-      </section>
+      </div>
 
-      {/* Styles locaux */}
+      {/* Styles locaux : fond recouvre TOUT, y compris sous la topbar */}
       <style>{`
         :root{
           --green:#2C3D38;
           --beige:#e8ded5;
           --ink:#222;
           --border:#D9D9D9;
-          --topbar-h:56px; /* hauteur de ta topbar */
         }
 
-        /* 🔥 Full-bleed: sort du conteneur .container pour prendre 100% largeur */
-        .login-fullbleed{
-          width:100vw;
-          margin-left:calc(50% - 50vw);
-        }
+        /* La topbar passe au-dessus, le fond passe dessous (=> aucune bande blanche) */
+        .topbar{ position: relative; z-index: 10; }
 
-        .login-hero{
+        .login-root{
           position: relative;
           width: 100%;
-          min-height: calc(100vh - var(--topbar-h));
-          margin-top: var(--topbar-h); /* sous la topbar */
-          display: grid;
-          grid-template-columns: 1fr;
-          justify-items: center;
-          align-items: center;
-          overflow: hidden;
+          min-height: 100vh; /* recouvre toute la page */
         }
-        .login-hero__bg{
-          position:absolute; inset:0;
+
+        /* Fond image plein écran, derrière la topbar */
+        .login-bg{
+          position: fixed;
+          inset: 0;
+          z-index: 0;                 /* DERRIÈRE la topbar */
           background-image: url('/login-bg.jpg');
           background-size: cover;
           background-position: center;
         }
-        .login-hero__overlay{
-          position:absolute; inset:0;
-          background: rgba(44,61,56,0.30); /* voile vert 30% */
+        .login-overlay{
+          position: fixed;
+          inset: 0;
+          z-index: 1;                 /* toujours derrière la topbar (z-index 10) */
+          background: rgba(44,61,56,0.30);
+          pointer-events: none;
         }
-        .login-hero__title{
-          position:absolute; left:4vw; top:18vh; z-index:1; color:#fff;
-          text-shadow:0 2px 4px rgba(0,0,0,.25);
-          max-width:min(680px,60vw);
+
+        /* Rail de contenu */
+        .login-rail{
+          position: relative;
+          z-index: 11;                /* au-dessus du fond, en-dessous/topbar ok */
+          display: grid;
+          grid-template-columns: 1fr;
+          justify-items: center;
+          align-items: center;
+          padding: 72px 16px 48px;    /* marge visuelle */
         }
-        @media (max-width:768px){
-          .login-hero__title{ left:20px; top:14vh; max-width:86vw; }
+
+        .login-title{
+          position: absolute;
+          left: 4vw;
+          top: 18vh;
+          color: #fff;
+          text-shadow: 0 2px 4px rgba(0,0,0,.25);
+          max-width: min(680px, 60vw);
         }
+        @media (max-width: 768px){
+          .login-title{ left: 20px; top: 14vh; max-width: 86vw; }
+        }
+
         .login-brand{
-          font-size:64px; font-weight:800; line-height:1;
-          margin:0 0 8px 0;
-          border-bottom:4px solid var(--beige);
-          display:inline-block; padding-bottom:6px;
+          font-size: 64px; font-weight: 800; line-height: 1; margin: 0 0 8px 0;
+          border-bottom: 4px solid var(--beige); display: inline-block; padding-bottom: 6px;
         }
-        @media (max-width:640px){ .login-brand{ font-size:46px; } }
-        .login-sub{ font-size:28px; font-weight:600; }
+        @media (max-width: 640px){ .login-brand{ font-size: 46px; } }
+        .login-sub{ font-size: 28px; font-weight: 600; }
 
         .login-card{
-          position:relative; z-index:1;
-          width:min(92vw,520px);
-          background:#fff; border-radius:14px;
-          padding:22px; box-shadow:0 8px 30px rgba(0,0,0,.22);
-          border:1px solid rgba(0,0,0,.08);
+          width: min(92vw, 520px);
+          background: #fff; border-radius: 14px; padding: 22px;
+          box-shadow: 0 8px 30px rgba(0,0,0,.22);
+          border: 1px solid rgba(0,0,0,.08);
+          margin-top: 22vh; /* positionne la carte sous la topbar + titre */
         }
-        .card-title{ font-size:22px; font-weight:700; margin-bottom:10px; color:#1e1e1e; }
+        .card-title{ font-size: 22px; font-weight: 700; margin-bottom: 10px; color:#1e1e1e; }
 
         .form-grid{ display:flex; flex-direction:column; gap:12px; }
         .form-row{ display:flex; flex-direction:column; gap:6px; }
         .form-row.btns{ flex-direction:row; flex-wrap:wrap; gap:10px; }
+
         label{ color:#2a2a2a; font-weight:600; }
         input{
           border:1px solid var(--border); border-radius:10px;
           padding:10px 12px; outline:none; font-size:15px;
         }
-        input:focus{ border-color:var(--green); box-shadow:0 0 0 3px rgba(44,61,56,0.12); }
+        input:focus{ border-color: var(--green); box-shadow: 0 0 0 3px rgba(44,61,56,0.12); }
 
         .btn{
           background:var(--green); color:#fff; border:none;
@@ -212,6 +219,7 @@ export default function Login(){
           border:1px solid var(--border); border-radius:12px;
           padding:10px 14px; cursor:pointer;
         }
+
         .alert{ padding:10px 12px; border-radius:10px; margin-bottom:8px; }
         .alert.error{ background:#fee2e2; color:#991b1b; }
         .alert.success{ background:#e7f9ee; color:#166534; }
