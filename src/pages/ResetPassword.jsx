@@ -10,7 +10,7 @@ export default function ResetPassword() {
   const [confirm, setConfirm] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [debugText, setDebugText] = useState('')  // ← visible à l’écran
+  const [debugText, setDebugText] = useState('')
 
   const H = () => (window.location.hash || '').replace(/^#/, '')
   const S = () => (window.location.search || '').replace(/^\?/, '')
@@ -26,7 +26,7 @@ export default function ResetPassword() {
       const hash = new URLSearchParams(hashStr)
       const search = new URLSearchParams(searchStr)
 
-      // 1) Erreurs remontées par Supabase
+      // 1) Erreurs explicites
       const errCode = hash.get('error_code') || hash.get('error') || search.get('error_code') || search.get('error')
       if (errCode) {
         if (cancelled) return
@@ -38,7 +38,7 @@ export default function ResetPassword() {
         return
       }
 
-      // 2) Cas normal : jetons dans le hash
+      // 2) Jetons dans le hash (chemin normal)
       const access = hash.get('access_token')
       const refresh = hash.get('refresh_token')
       if (access && refresh) {
@@ -60,7 +60,7 @@ export default function ResetPassword() {
         return
       }
 
-      // 3) Fallback : lien ouvert en ?token=…&type=recovery
+      // 3) Fallback : ?token=...&type=recovery
       const token = search.get('token')
       const type = search.get('type')
       if (token && (type === 'recovery' || type === 'recovery_token')) {
@@ -70,12 +70,8 @@ export default function ResetPassword() {
           const { data, error } = await supabase.auth.verifyOtp({ type: 'recovery', token, email })
           if (error) throw error
           if (cancelled) return
-          if (data?.user) {
-            setPhase('ready')
-          } else {
-            setPhase('error')
-            setError("Le lien de réinitialisation n'a pas pu être vérifié.")
-          }
+          if (data?.user) setPhase('ready')
+          else { setPhase('error'); setError("Le lien de réinitialisation n'a pas pu être vérifié.") }
         } catch (e) {
           if (cancelled) return
           setPhase('error')
@@ -88,7 +84,7 @@ export default function ResetPassword() {
         return
       }
 
-      // 4) Aucune info dans l’URL → tente session existante
+      // 4) Pas d’info → session existante ?
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         if (cancelled) return
@@ -97,7 +93,7 @@ export default function ResetPassword() {
         return
       }
 
-      // 5) Rien du tout → erreur explicite
+      // 5) Rien du tout
       if (cancelled) return
       setPhase('error')
       setError("Lien de réinitialisation non reconnu. Renvoyez un nouveau lien.")
@@ -107,30 +103,11 @@ export default function ResetPassword() {
     return () => { cancelled = true }
   }, [])
 
-  async function resendLink() {
-    if (!email) { setError("Saisissez votre email."); return }
-    setBusy(true); setError('')
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset`
-      })
-      if (error) throw error
-      try { localStorage.setItem('lastResetEmail', email) } catch {}
-      setDebugText(prev => prev + `\n\nrenvoi: OK`)
-    } catch (e) {
-      setError(e?.message || "Échec de l'envoi du lien.")
-      setDebugText(prev => prev + `\n\nrenvoi error: ${e?.message || e}`)
-    } finally {
-      setBusy(false)
-    }
-  }
-
   async function onSubmit(e) {
     e.preventDefault()
     setError(''); setBusy(true)
     if (password.length < 8) { setBusy(false); return setError('Au moins 8 caractères.') }
     if (password !== confirm) { setBusy(false); return setError('Les deux mots de passe ne correspondent pas.') }
-
     const { error } = await supabase.auth.updateUser({ password })
     setBusy(false)
     if (error) return setError(error.message)
@@ -138,14 +115,9 @@ export default function ResetPassword() {
     setTimeout(() => window.location.replace('/'), 800)
   }
 
-  // ==== UI ====
+  // --- UI ---
   if (phase === 'init') {
-    return (
-      <div className="panel">
-        <h2>Réinitialisation du mot de passe</h2>
-        <div>Initialisation…</div>
-      </div>
-    )
+    return <div className="panel"><h2>Réinitialisation du mot de passe</h2><div>Initialisation…</div></div>
   }
 
   if (phase === 'need_email') {
@@ -156,7 +128,7 @@ export default function ResetPassword() {
         <div style={{display:'grid', gap:12, maxWidth:420, marginTop:12}}>
           <label>Email</label>
           <input type="email" value={email} onChange={e=>setEmail(e.target.value)} />
-          <button className="btn" disabled={!email || busy} onClick={() => {
+          <button className="btn" disabled={!email || busy} onClick={()=>{
             try { localStorage.setItem('lastResetEmail', email) } catch {}
             window.location.reload()
           }}>{busy ? 'Patientez…' : 'Continuer'}</button>
@@ -175,11 +147,7 @@ export default function ResetPassword() {
             {debugText}
           </pre>
         )}
-        <div style={{display:'grid', gap:12, maxWidth:420, marginTop:16}}>
-          <label>Renvoyer le lien à</label>
-          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} />
-          <button className="btn" onClick={resendLink} disabled={busy || !email}>{busy ? 'Envoi…' : 'Renvoyer le lien'}</button>
-        </div>
+        <a className="btn" href="/login" style={{marginTop:16}}>Retour à la connexion</a>
       </div>
     )
   }
@@ -193,7 +161,7 @@ export default function ResetPassword() {
     )
   }
 
-  // phase === 'ready' → formulaire
+  // phase === 'ready'
   return (
     <div className="panel">
       <h2>Réinitialisation du mot de passe</h2>
