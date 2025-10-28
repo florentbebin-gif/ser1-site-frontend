@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { supabase } from './supabaseClient.js'
 import { triggerReset } from './utils/reset.js'
-import { startIdleTimer } from './utils/idle.js'   // ⬅️ AJOUT
+import { startIdleTimer } from './utils/idle.js'
 
 export default function App(){
   const [session, setSession] = useState(null)
+  const [loggingOut, setLoggingOut] = useState(false)
   const location = useLocation()
 
-  // État de session pour l’UI
+  // Suivre la session pour l'UI
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -27,16 +28,36 @@ export default function App(){
     const stop = startIdleTimer({
       timeoutMs: 10 * 60 * 1000,
       onTimeout: async () => {
-        try { await supabase.auth.signOut() } catch {}
+        try {
+          await supabase.auth.signOut({ scope: 'global' })
+        } catch {}
+        // Purge "ceinture + bretelles"
+        try {
+          Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k))
+        } catch {}
+        try { sessionStorage.clear() } catch {}
         window.location.replace('/login?logout=1')
       }
     })
     return stop
   }, [session])
 
-  // Déconnexion robuste: lien + signOut (navigation dure garantie)
-  async function onLogoutClick(){
-    try { await supabase.auth.signOut() } catch {}
+  // Déconnexion manuelle robuste (bouton)
+  async function handleLogout(){
+    if (loggingOut) return
+    setLoggingOut(true)
+
+    try {
+      await supabase.auth.signOut({ scope: 'global' })
+    } catch {}
+
+    // Purge locale au cas où
+    try {
+      Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k))
+    } catch {}
+    try { sessionStorage.clear() } catch {}
+
+    window.location.replace('/login?logout=1')
   }
 
   function handleReset(){
@@ -53,26 +74,52 @@ export default function App(){
         <div className="brandword">SER1</div>
 
         <div className="top-actions">
+          {/* HOME */}
           {isAuthed && (
-            <Link to="/" className={`chip ${location.pathname === '/' ? 'active' : ''}`}>HOME</Link>
-          )}
-          {isAuthed && (
-            <button className="chip" onClick={handleReset}>Reset</button>
-          )}
-          {isAuthed && (
-            <Link to="/params" className={`chip ${location.pathname.startsWith('/params') ? 'active' : ''}`}>Paramètres</Link>
+            <Link to="/" className={`chip ${location.pathname === '/' ? 'active' : ''}`}>
+              HOME
+            </Link>
           )}
 
+          {/* Reset */}
+          {isAuthed && (
+            <button className="chip" onClick={handleReset}>
+              Reset
+            </button>
+          )}
+
+          {/* Paramètres */}
+          {isAuthed && (
+            <Link
+              to="/params"
+              className={`chip ${location.pathname.startsWith('/params') ? 'active' : ''}`}
+            >
+              Paramètres
+            </Link>
+          )}
+
+          {/* Déconnexion / Connexion */}
           {isAuthed ? (
-            <a href="/login?logout=1" className="chip logout" onClick={onLogoutClick}>Déconnexion</a>
+            <button
+              type="button"
+              className="chip logout"
+              onClick={handleLogout}
+              disabled={loggingOut}
+            >
+              {loggingOut ? 'Déconnexion…' : 'Déconnexion'}
+            </button>
           ) : (
-            !onAuthFree && <Link to="/login" className="chip">Connexion</Link>
+            !onAuthFree && (
+              <Link to="/login" className="chip">
+                Connexion
+              </Link>
+            )
           )}
         </div>
       </div>
 
       <div className="container">
-        <Outlet/>
+        <Outlet />
       </div>
     </div>
   )
