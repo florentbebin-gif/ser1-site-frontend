@@ -4,6 +4,23 @@ import { supabase } from './supabaseClient.js'
 import { triggerReset } from './utils/reset.js'
 import { startIdleTimer } from './utils/idle.js'
 
+/** Petite redirection infaillible : tente navigate, puis fallback hard redirect */
+function Redirector({ to = '/login' }) {
+  const nav = useNavigate()
+  useEffect(() => {
+    // 1) tente SPA
+    nav(to, { replace: true })
+    // 2) assure le coup si le routeur n’applique pas
+    const t = setTimeout(() => {
+      if (window.location.pathname !== to) {
+        window.location.assign(to)
+      }
+    }, 50)
+    return () => clearTimeout(t)
+  }, [nav, to])
+  return null
+}
+
 export default function App(){
   const [session, setSession] = useState(null)
   const [loadingSession, setLoadingSession] = useState(true)
@@ -18,7 +35,7 @@ export default function App(){
     return /^\/login(\/|$)/.test(p) || /^\/reset(\/|$)/.test(p)
   }, [location.pathname])
 
-  // Charger la session + écouter login/logout
+  // Session + listener
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -27,28 +44,29 @@ export default function App(){
         if (!mounted) return
         setSession(session)
       } catch (e) {
-        console.warn('supabase.auth.getSession failed:', e)
+        console.warn('getSession failed', e)
       } finally {
         if (mounted) setLoadingSession(false)
       }
     })()
 
-    const { data } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data } = supabase.auth.onAuthStateChange((_ev, s) => {
       setSession(s)
-      // dès que la session tombe à null (logout/expiration), go /login
       if (!s) {
-        // évite l’affichage de pages privées résiduelles
+        // si la session tombe, forcer la page login
         nav('/login', { replace: true })
+        setTimeout(() => {
+          if (!/^\/login(\/|$)/.test(window.location.pathname)) {
+            window.location.assign('/login')
+          }
+        }, 50)
       }
     })
     unsubRef.current = data?.subscription
-    return () => {
-      unsubRef.current?.unsubscribe?.()
-      unsubRef.current = null
-    }
+    return () => { unsubRef.current?.unsubscribe?.(); unsubRef.current = null }
   }, [nav])
 
-  // Garde d’auth (après chargement)
+  // Garde d’auth
   useEffect(() => {
     if (loadingSession) return
     if (!session && !isAuthFree) {
@@ -58,7 +76,7 @@ export default function App(){
     }
   }, [session, loadingSession, isAuthFree, location.pathname, nav])
 
-  // Auto-logout inactivité (10 min)
+  // Auto-logout 10 min
   useEffect(() => {
     if (!session) return
     const stop = startIdleTimer({
@@ -66,39 +84,31 @@ export default function App(){
       onTimeout: async () => {
         if (logoutInProgress.current) return
         logoutInProgress.current = true
-        try {
-          // on coupe toute session locale
-          await supabase.auth.signOut({ scope: 'local' })
-        } catch (e) {
-          console.warn('auto signOut failed', e)
-        } finally {
-          setSession(null) // optimiste: coupe tout rendu privé
-          // Hard reload pour repartir proprement
-          window.location.href = '/login'
-        }
+        try { await supabase.auth.signOut({ scope: 'local' }) } catch {}
+        setSession(null)
+        // double redirection
+        nav('/login', { replace: true })
+        setTimeout(() => window.location.assign('/login'), 50)
       },
     })
     return stop
-  }, [session])
+  }, [session, nav])
 
-  // Déconnexion manuelle 100% fiable
+  // Déconnexion manuelle
   async function handleLogout(){
     if (logoutInProgress.current) return
     logoutInProgress.current = true
     try {
-      // optimiste: coupe l’UI privée tout de suite
-      setSession(null)
-      // déconnexion locale (suffisant pour email/mdp & magic link)
+      setSession(null)                  // coupe immédiatement le rendu privé
       await supabase.auth.signOut({ scope: 'local' })
     } catch (e) {
-      console.warn('manual signOut failed', e)
+      console.warn('signOut failed', e)
     } finally {
-      // on retire l’abonnement pour éviter tout écho
       unsubRef.current?.unsubscribe?.()
       unsubRef.current = null
-      // Hard redirect pour éviter tout état résiduel du SPA
-      window.location.href = '/login'
-      // (pas de finally reset: on quitte la page)
+      // double redirection
+      nav('/login', { replace: true })
+      setTimeout(() => window.location.assign('/login'), 50)
     }
   }
 
@@ -136,9 +146,7 @@ export default function App(){
           )}
 
           {isAuthed ? (
-            <button className="chip logout" onClick={handleLogout}>
-              Déconnexion
-            </button>
+            <button className="chip logout" onClick={handleLogout}>Déconnexion</button>
           ) : (
             !(/^\/login(\/|$)|^\/reset(\/|$)/.test(location.pathname)) && (
               <Link to="/login" className="chip">Connexion</Link>
@@ -148,7 +156,12 @@ export default function App(){
       </div>
 
       <div className="container">
-        {canView ? <Outlet/> : null}
+        {/* Si pas de session et route privée => redirection rendue (pas seulement en effet) */}
+        {!loadingSession && !isAuthFree && !isAuthed ? (
+          <Redirector to="/login" />
+        ) : (
+          <Outlet/>
+        )}
       </div>
     </div>
   )
