@@ -153,29 +153,91 @@ export default function Login(){
         </div>
       </div>
 
-      <style>{`
-        :root{ --green:#2C3D38; --beige:#e8ded5; --ink:#222; --border:#D9D9D9; }
-        .topbar { display: none !important; }
-        .login-root{ position:relative; width:100%; min-height:100vh; overflow:hidden; }
-        .login-bg{ position:fixed; inset:0; background-image:url('/login-bg.jpg'); background-size:cover; background-position:center; }
-        .login-overlay{ position:fixed; inset:0; background:rgba(44,61,56,0.30); }
-        .login-grid{ display:grid; grid-template-columns:1.2fr 0.8fr; padding:96px 48px; align-items:center; gap:40px; }
-        .login-title{ color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.25); }
-        .login-brand{ font-size:72px; font-weight:800; border-bottom:5px solid var(--beige); display:inline-block; margin-bottom:12px; }
-        .login-sub{ font-size:32px; font-weight:600; }
-        .login-card{ background:#fff; padding:24px; border-radius:14px; width:min(92vw,560px); box-shadow:0 8px 30px rgba(0,0,0,.22); }
-        .card-title{ font-size:22px; font-weight:700; margin-bottom:10px; }
-        .form-grid{ display:flex; flex-direction:column; gap:12px; }
-        .form-row{ display:flex; flex-direction:column; gap:6px; }
-        .form-row.btns{ flex-direction:row; gap:10px; }
-        input{ padding:10px 12px; border:1px solid var(--border); border-radius:10px; }
-        input:focus{ border-color:var(--green); box-shadow:0 0 0 3px rgba(44,61,56,0.12); outline:none; }
-        .btn{ background:var(--green); color:#fff; padding:10px 16px; border-radius:12px; border:none; }
-        .btn-outline{ border:1px solid var(--border); padding:10px 14px; border-radius:12px; background:#fff; }
-        .alert{ padding:10px; border-radius:10px; }
-        .alert.error{ background:#fee2e2; color:#991b1b; }
-        .alert.success{ background:#e7f9ee; color:#166534; }
-      `}</style>
+<style>{`
+  :root{ --green:#2C3D38; --beige:#e8ded5; --ink:#222; --border:#D9D9D9; }
+
+  /* Masquer la topbar sur la page login */
+  .topbar { display: none !important; }
+
+  .login-root{
+    position:relative;
+    width:100%;
+    min-height:100vh;
+    overflow:hidden;
+  }
+
+  /* Fond sous le contenu */
+  .login-bg{
+    position:fixed; inset:0;
+    z-index:0;                         /* ✅ sous le masque et le contenu */
+    background-image:url('/login-bg.jpg');
+    background-size:cover;
+    background-position:center;
+  }
+
+  /* Masque vert à 30% — sous le contenu, clics transparents */
+  .login-overlay{
+    position:fixed; inset:0;
+    z-index:1;                         /* ✅ sous le contenu */
+    background:rgba(44,61,56,0.30);
+    pointer-events:none;               /* ✅ ne bloque pas les clics */
+  }
+
+  /* Grille du contenu par-dessus */
+  .login-grid{
+    position:relative;                 /* ✅ crée un contexte pour z-index */
+    z-index:2;                         /* ✅ au-dessus du fond/masque */
+    display:grid;
+    grid-template-columns:1.2fr 0.8fr;
+    gap:40px;
+    align-items:center;
+    padding:96px 48px;
+  }
+
+  .login-title{
+    color:#fff;
+    text-shadow:0 2px 4px rgba(0,0,0,.25);
+  }
+
+  .login-brand{
+    font-size:72px;
+    font-weight:800;
+    border-bottom:5px solid var(--beige);
+    display:inline-block;
+    margin-bottom:12px;
+  }
+
+  .login-sub{ font-size:32px; font-weight:600; }
+
+  .login-card{
+    background:#fff;
+    padding:24px;
+    border-radius:14px;
+    width:min(92vw,560px);
+    box-shadow:0 8px 30px rgba(0,0,0,.22);
+  }
+
+  .card-title{ font-size:22px; font-weight:700; margin-bottom:10px; }
+  .form-grid{ display:flex; flex-direction:column; gap:12px; }
+  .form-row{ display:flex; flex-direction:column; gap:6px; }
+  .form-row.btns{ flex-direction:row; gap:10px; }
+  input{
+    padding:10px 12px; border:1px solid var(--border); border-radius:10px;
+  }
+  input:focus{ border-color:var(--green); box-shadow:0 0 0 3px rgba(44,61,56,0.12); outline:none; }
+  .btn{ background:var(--green); color:#fff; padding:10px 16px; border-radius:12px; border:none; }
+  .btn-outline{ border:1px solid var(--border); padding:10px 14px; border-radius:12px; background:#fff; }
+  .alert{ padding:10px; border-radius:10px; }
+  .alert.error{ background:#fee2e2; color:#991b1b; }
+  .alert.success{ background:#e7f9ee; color:#166534; }
+
+  @media (max-width:1024px){
+    .login-grid{ grid-template-columns:1fr; padding:88px 20px; row-gap:28px; }
+    .login-brand{ font-size:48px; border-bottom-width:4px; }
+    .login-sub{ font-size:22px; }
+  }
+`}</style>
+
     </div>
   )
 }
