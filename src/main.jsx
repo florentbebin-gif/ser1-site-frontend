@@ -10,6 +10,7 @@ import Sim from './pages/Sim.jsx'
 import Login from './pages/Login.jsx'
 import ResetPassword from './pages/ResetPassword.jsx'
 import { ParamsProvider } from './context/ParamsProvider.jsx'
+import RequireAuth from './components/RequireAuth.jsx'
 import './styles.css'
 
 const router = createBrowserRouter([
@@ -17,13 +18,16 @@ const router = createBrowserRouter([
     path: '/',
     element: <App />,
     children: [
-      { index: true, element: <Home /> },
-      { path: 'sim/placement', element: <Placement /> },
-      { path: 'sim/credit', element: <Credit /> },
-      { path: 'params', element: <Params /> },
-      { path: 'sim', element: <Sim /> },
-      { path: 'login', element: <Login /> },
-      { path: 'reset', element: <ResetPassword /> },
+      // PRIVÉ
+      { index: true, element: <RequireAuth><Home/></RequireAuth> },
+      { path: 'sim/placement', element: <RequireAuth><Placement/></RequireAuth> },
+      { path: 'sim/credit', element: <RequireAuth><Credit/></RequireAuth> },
+      { path: 'params', element: <RequireAuth><Params/></RequireAuth> },
+      { path: 'sim', element: <RequireAuth><Sim/></RequireAuth> },
+
+      // PUBLIC
+      { path: 'login', element: <Login/> },
+      { path: 'reset', element: <ResetPassword/> },
     ],
   },
 ])
