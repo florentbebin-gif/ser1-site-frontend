@@ -10,23 +10,23 @@ export default function Login(){
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
 
-  // Si on arrive avec une erreur dans le hash (ex: otp_expired), on l'affiche puis on nettoie l'URL
+  // Nettoie les erreurs hash (#error=...) et redirige si session déjà présente
   useEffect(() => {
     const hash = window.location.hash || ''
-    if (!hash) return
-    const p = new URLSearchParams(hash.replace(/^#/, ''))
-    const err = p.get('error'); const code = p.get('error_code')
-    if (err || code) {
-      if (code === 'otp_expired') {
-        setError("Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien.")
-      } else {
-        setError("Une erreur d’authentification est survenue. Veuillez réessayer.")
+    if (hash) {
+      const p = new URLSearchParams(hash.replace(/^#/, ''))
+      const code = p.get('error_code')
+      if (code) {
+        setError(code === 'otp_expired'
+          ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
+          : "Une erreur d’authentification est survenue. Veuillez réessayer."
+        )
       }
       history.replaceState(null, '', window.location.pathname)
     }
   }, [])
 
-  // 🔁 Redirige automatiquement quand une session apparaît (login réussi, magic link, reset, etc.)
+  // Si une session arrive (password login, magic link, reset…), on va sur /
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -45,7 +45,7 @@ export default function Login(){
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
     if (error) setError(error.message)
-    else nav('/', { replace: true }) // ✅ navigation explicite après succès
+    else nav('/', { replace: true })
   }
 
   async function sendReset(e){
@@ -75,10 +75,12 @@ export default function Login(){
 
   return (
     <>
-      <div className="login-fixed">
-        <div className="login-overlay" />
+      {/* HERO non fixe = aucune surcouche persistante */}
+      <section className="login-hero">
+        <div className="login-hero__bg" />
+        <div className="login-hero__overlay" />
 
-        <div className="login-left">
+        <div className="login-hero__title">
           <h1 className="login-brand">SER1</h1>
           <div className="login-sub">Simulateur épargne retraite</div>
         </div>
@@ -123,56 +125,86 @@ export default function Login(){
             </div>
           </form>
         </div>
-      </div>
+      </section>
 
-      {/* Styles locaux */}
+      {/* Styles locaux : aucun position:fixed */}
       <style>{`
         :root{
           --green:#2C3D38;
           --beige:#e8ded5;
           --ink:#222;
           --border:#D9D9D9;
-          --topbar-h: 56px;
+          --topbar-h:56px; /* hauteur de ta topbar */
         }
-        .login-fixed{
-          position: fixed;
-          top: var(--topbar-h);
-          left: 0; right: 0; bottom: 0;
-          z-index: 1;
+        .login-hero{
+          position: relative;
+          width: 100%;
+          min-height: calc(100vh - var(--topbar-h));
+          margin-top: calc(var(--topbar-h)); /* se place sous la topbar */
+          display: grid;
+          grid-template-columns: 1fr;
+          justify-items: center;
+          align-items: center;
+          overflow: hidden;
+        }
+        .login-hero__bg{
+          position:absolute; inset:0;
           background-image: url('/login-bg.jpg');
           background-size: cover;
           background-position: center;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          transform: translateZ(0);
         }
-        .login-overlay{ position:absolute; inset:0; background:rgba(44,61,56,0.30); pointer-events:none; }
-        .login-left{
-          position:absolute; left:4vw; top:18vh; z-index:2; color:#fff;
-          text-shadow:0 2px 4px rgba(0,0,0,.25); max-width:min(680px,60vw);
+        .login-hero__overlay{
+          position:absolute; inset:0;
+          background: rgba(44,61,56,0.30); /* voile vert 30% */
         }
-        @media (max-width: 768px){ .login-left{ left:20px; top:14vh; max-width:86vw; } }
-        .login-brand{ font-size:64px; font-weight:800; line-height:1; margin:0 0 8px; border-bottom:4px solid var(--beige); display:inline-block; padding-bottom:6px; }
+        .login-hero__title{
+          position:absolute; left:4vw; top:18vh; z-index:1; color:#fff;
+          text-shadow:0 2px 4px rgba(0,0,0,.25);
+          max-width:min(680px,60vw);
+        }
+        @media (max-width:768px){
+          .login-hero__title{ left:20px; top:14vh; max-width:86vw; }
+        }
+        .login-brand{
+          font-size:64px; font-weight:800; line-height:1;
+          margin:0 0 8px 0;
+          border-bottom:4px solid var(--beige);
+          display:inline-block; padding-bottom:6px;
+        }
         @media (max-width:640px){ .login-brand{ font-size:46px; } }
         .login-sub{ font-size:28px; font-weight:600; }
 
         .login-card{
-          position:relative; z-index:2; width:min(92vw,520px); background:#fff; border-radius:14px;
-          padding:22px; box-shadow:0 8px 30px rgba(0,0,0,.22); border:1px solid rgba(0,0,0,.08);
+          position:relative; z-index:1;
+          width:min(92vw,520px);
+          background:#fff; border-radius:14px;
+          padding:22px; box-shadow:0 8px 30px rgba(0,0,0,.22);
+          border:1px solid rgba(0,0,0,.08);
         }
         .card-title{ font-size:22px; font-weight:700; margin-bottom:10px; color:#1e1e1e; }
 
         .form-grid{ display:flex; flex-direction:column; gap:12px; }
         .form-row{ display:flex; flex-direction:column; gap:6px; }
         .form-row.btns{ flex-direction:row; flex-wrap:wrap; gap:10px; }
+
         label{ color:#2a2a2a; font-weight:600; }
-        input{ border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none; font-size:15px; }
+        input{
+          border:1px solid var(--border); border-radius:10px;
+          padding:10px 12px; outline:none; font-size:15px;
+        }
         input:focus{ border-color:var(--green); box-shadow:0 0 0 3px rgba(44,61,56,0.12); }
 
-        .btn{ background:var(--green); color:#fff; border:none; padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700; }
+        .btn{
+          background:var(--green); color:#fff; border:none;
+          padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700;
+        }
         .btn:disabled{ opacity:.6; cursor:not-allowed; }
-        .btn-outline{ background:#fff; color:var(--ink); border:1px solid var(--border); border-radius:12px; padding:10px 14px; cursor:pointer; }
-
+        .btn-outline{
+          background:#fff; color:var(--ink);
+          border:1px solid var(--border); border-radius:12px;
+          padding:10px 14px; cursor:pointer;
+        }
         .alert{ padding:10px 12px; border-radius:10px; margin-bottom:8px; }
         .alert.error{ background:#fee2e2; color:#991b1b; }
         .alert.success{ background:#e7f9ee; color:#166534; }
