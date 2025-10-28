@@ -61,6 +61,7 @@ function scheduleAmortissable({ capital, r, rAss, N, assurMode, mensuOverride })
     const interet  = crdStart * r
     let mensu      = mensuFixe
 
+    // borne dernière échéance
     const maxMensu = interet + crdStart
     if (mensu > maxMensu) mensu = maxMensu
     if (mensu < interet && r > 0) mensu = interet
@@ -91,7 +92,7 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
     const interet  = crdStart * r
     let mensu = (typeof mensuOverride === 'number' && mensuOverride > 0) ? mensuOverride : interet
 
-    const maxMensu = interet + (m === N ? crdStart : 0)
+    const maxMensu = interet + (m === N ? crdStart : 0) // borne si dernière
     if (mensu > maxMensu) mensu = maxMensu
     if (mensu < interet && r > 0) mensu = interet
 
@@ -104,7 +105,7 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
     }
 
     const crdEnd = Math.max(0, crdStart - amort)
-    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)
+    const assur  = (assurMode === 'CI') ? assurFixe : (crdStart * rAss) // assurance CRD début
 
     const mensuTotal = mensu + (assur || 0)
     rows.push({ mois:m, interet, assurance:(assur||0), amort, mensu, mensuTotal, crd: crdEnd })
@@ -132,8 +133,10 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
     const interet  = crdStart * r
     const autres   = mensuAutresAt(m)
 
+    // part prêt 1 = cible - autres (hors assurance)
     let mensu1 = Math.max(0, cibleMensuTotale - autres)
 
+    // bornes « sûreté »
     const capMensu = interet + crdStart
     if (mensu1 > capMensu) mensu1 = capMensu
     if (type !== 'infine' && m < N && mensu1 < interet) mensu1 = interet
@@ -143,6 +146,7 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
     const amort  = Math.max(0, mensu1 - interet)
     const crdEnd = Math.max(0, crdStart - amort)
 
+    // assurance sur le prêt 1 uniquement
     const assur = (assurMode === 'CI') ? assurFixe : (crdStart * rAss)
     const mensuTotal = mensu1 + (assur || 0)
 
@@ -159,8 +163,8 @@ function scheduleLisseePret1Duration({ basePret1, autresPretsRows, totalConst })
 
   let crd = Math.max(0, capital)
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
-  const EPS = 1e-8
 
+  const EPS = 1e-8
   const sumAutres = (m) => autresPretsRows.reduce((s, arr) => s + ((arr[m - 1]?.mensu) || 0), 0)
 
   for (let m = 1; m <= N; m++) {
@@ -194,8 +198,8 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
   const { capital: B0, r, N } = basePret1
   const pow = Math.pow(1 + r, N)
 
-  let A = 0
-  let B = 0
+  let A = 0 // somme des poids a_t = (1+r)^(N-t)
+  let B = 0 // somme des o_t * a_t
 
   for (let t = 1; t <= N; t++) {
     const a = Math.pow(1 + r, N - t)
@@ -212,7 +216,7 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
 export default function Credit(){
 
   /* ---- ÉTATS ---- */
-  const [startYM, setStartYM]         = useState(nowYearMonth())
+  const [startYM, setStartYM]         = useState(nowYearMonth()) // Date souscription prêt 1
   const [assurMode, setAssurMode]     = useState('CRD')          // 'CI' | 'CRD'
   const [creditType, setCreditType]   = useState('amortissable') // type prêt 1
 
@@ -220,8 +224,9 @@ export default function Credit(){
   const [duree, setDuree]             = useState(240)
   const [taux, setTaux]               = useState(3.50)
   const [tauxAssur, setTauxAssur]     = useState(0.30)
-  const [mensuBase, setMensuBase]     = useState('')
+  const [mensuBase, setMensuBase]     = useState('')             // saisie mensu prêt 1
 
+  // prêts additionnels : + type & startYM
   const [pretsPlus, setPretsPlus]     = useState([])             // [{id,capital,duree,taux,startYM,type}]
   const [lisserPret1, setLisserPret1] = useState(false)
   const [viewMode, setViewMode]       = useState('mensuel')      // 'mensuel' | 'annuel'
@@ -284,12 +289,13 @@ export default function Credit(){
   useEffect(()=>{
     const off = onResetEvent?.(()=>{
       const ym = nowYearMonth()
-      setStartYM(ym)
+      setStartYM(ym)           // date prêt 1 = mois/année courants
       setCapital(0)
       setDuree(0)
       setTaux(0)
       setTauxAssur(0)
       setMensuBase('')
+      // Conserver la liste des prêts 2/3, mais vider leurs champs saisissables + date courante
       setPretsPlus(arr => arr.map(p => ({
         ...p,
         capital: 0,
@@ -297,7 +303,7 @@ export default function Credit(){
         taux: 0,
         startYM: ym
       })))
-      // On ne touche pas: assurMode, creditType, lisserPret1, viewMode, lissageMode
+      // NE PAS toucher à : assurMode, creditType, lisserPret1, viewMode, lissageMode
     })
     return off || (()=>{})
   }, [STORE_KEY])
@@ -351,6 +357,7 @@ export default function Credit(){
       const C  = Math.max(0, toNum(p.capital))
       const type = p.type || creditType
 
+      // AUCUNE assurance sur les prêts additionnels
       const rows = (type === 'infine')
         ? scheduleInFine({ capital:C, r:rM, rAss:0, N:Np, assurMode })
         : scheduleAmortissable({ capital:C, r:rM, rAss:0, N:Np, assurMode })
@@ -389,12 +396,13 @@ export default function Credit(){
     }
 
     if (lissageMode === 'mensu') {
+      // LISSAGE « mensualité totale constante »
       const mensuAutresM1 = autresRows.reduce((s, arr) => s + ((arr[0]?.mensu) || 0), 0)
       const cible = mensuBaseEffectivePret1 + mensuAutresM1
       return scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
     }
 
-    // LISSAGE « durée constante » — analytique (amortissables only)
+    // LISSAGE « durée constante » — version analytique (stable, amortissables only)
     const T = totalConstantForDuration({ basePret1, autresPretsRows: autresRows })
     return scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, totalConst: T })
 
@@ -462,7 +470,7 @@ export default function Credit(){
 
   /* ---- Synthèse ---- */
   const mensualiteTotaleM1 = (pret1Rows[0]?.mensu || 0) + autresRows.reduce((s,arr)=> s + ((arr[0]?.mensu) || 0), 0)
-  const primeAssMensuelle  = (pret1Rows[0]?.assurance || 0)
+  const primeAssMensuelle  = (pret1Rows[0]?.assurance || 0) // assurance uniquement prêt 1
   const coutInteretsPret1  = pret1Rows.reduce((s,l)=> s + (l.interet||0), 0)
   const coutInteretsAgr    = agrRows.reduce((s,l)=> s + l.interet, 0)
   const pret1Interets      = pret1Rows.reduce((s,l)=> s + (l.interet   || 0), 0)
@@ -475,7 +483,13 @@ export default function Credit(){
     return ann.length ? Math.max(...ann.map(a => a.mensu)) : 0
   }, [isAnnual, agrRows])
 
-  // === Tableau des périodes
+  // === Synthèse des périodes (réactive aux dates)
+  // clé dédiée pour réagir aux changements de startYM des prêts 2/3
+  const datesKey = useMemo(
+    () => pretsPlus.map(p => p.startYM || '').join('|'),
+    [pretsPlus]
+  )
+
   const synthesePeriodes = useMemo(() => {
     if (pretsPlus.length === 0) return []
 
@@ -506,7 +520,8 @@ export default function Credit(){
       dedup.push(r)
     }
     return dedup
-  }, [pretsPlus, startYM, agrRows.length, pret1Rows, autresRows])
+  // ➜ dépend aussi explicitement de startYM et des dates des prêts additionnels
+  }, [pretsPlus, datesKey, startYM, agrRows.length, pret1Rows, autresRows])
 
   /* ---- Vérifications ---- */
   const warnings = useMemo(() => {
@@ -537,7 +552,7 @@ export default function Credit(){
   const updatePret = (id, patch) => setPretsPlus(arr => arr.map(p => p.id === id ? ({ ...p, ...patch }) : p))
   const removePret = (id) => setPretsPlus(arr => arr.filter(p => p.id !== id))
 
-  /* ---- Export ---- */
+  /* ---- Export Excel (.xls) ---- */
   function buildWorksheetXml(title, header, rows) {
     const esc = (s)=> String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     const rowXml = (cells)=> `<Row>${
@@ -619,19 +634,19 @@ export default function Credit(){
     }
   }
   function exportPowerPoint() {
+    // Placeholder : on connectera la vraie génération plus tard
     alert('Export PowerPoint : paramétrage à venir 👍')
   }
 
   /* ---- Rendu ---- */
   const colLabelPaiement    = isAnnual ? 'Annuité' : 'Mensualité'
   const colLabelPaiementAss = isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'
-  const canShowLissageChips = lisserPret1 && !anyInfine && pretsPlus.length > 0
+  const canShowLissageChips = lisserPret1 && !anyInfine && pretsPlus.length > 0 // chips visibles si lissage ON & au moins 1 prêt 2/3
 
   return (
     <div className="panel">
       <div className="plac-title" style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:12}}>
         <span>Simulateur de crédit</span>
-
         <div style={{display:'flex', gap:8}}>
           <div ref={exportRef} style={{position:'relative'}}>
             <button
@@ -789,17 +804,17 @@ export default function Credit(){
           <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
             <button className="chip" onClick={addPret} disabled={pretsPlus.length>=2}>+ Ajouter un prêt</button>
             {pretsPlus.length > 0 && (
-              <button
-                className={`chip ${lisserPret1 ? 'active' : ''}`}
-                onClick={()=> setLisserPret1(v => !v)}
-                disabled={anyInfine}
-                title={anyInfine
-                  ? "Le lissage est indisponible si un prêt est en In fine"
-                  : "Lisser la mensualité totale en ajustant le prêt 1"}
-              >
-                {lisserPret1 ? 'Lisser le prêt 1 : ON' : 'Lisser le prêt 1'}
-              </button>
-            )}
+             <button
+               className={`chip ${lisserPret1 ? 'active' : ''}`}
+               onClick={()=> setLisserPret1(v => !v)}
+               disabled={anyInfine}
+               title={anyInfine
+                 ? "Le lissage est indisponible si un prêt est en In fine"
+                 : "Lisser la mensualité totale en ajustant le prêt 1"}
+             >
+               {lisserPret1 ? 'Lisser le prêt 1 : ON' : 'Lisser le prêt 1'}
+             </button>
+           )}
           </div>
         </div>
 
@@ -832,7 +847,7 @@ export default function Credit(){
               <tbody>
                 {pretsPlus.map((p,idx)=>{
                   const rM = (Math.max(0, Number(p.taux)||0)/100)/12
-                  const Np = Math.max(1, Math.floor(toNum(p.duree)||0))   // <-- (FIX) Np bien défini ici
+                  const Np = Math.max(1, Math.floor(toNum(p.duree)||0))   // bien défini ici
                   const C  = Math.max(0, toNum(p.capital))
                   const type = p.type || creditType
                   const mensu = (type === 'infine')
@@ -942,6 +957,7 @@ export default function Credit(){
               </div>
             )}
 
+            {/* Tableau des périodes si ≥1 prêt additionnel */}
             {pretsPlus.length > 0 && synthesePeriodes.length > 0 && (
               <div style={{marginTop:10}}>
                 <table className="plac-table" style={{tableLayout:'fixed', width:'100%'}}>
