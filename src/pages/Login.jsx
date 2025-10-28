@@ -12,7 +12,7 @@ export default function Login(){
   const inFlight = useRef(false)
   const loadingTimer = useRef(null)
 
-  // ?logout=1 -> force logout et empêche l’auto-redirect tant que la session n’est pas vraiment tombée
+  // ?logout=1 -> force logout et empêche l’auto-redirect tant que la session n’est pas tombée
   useEffect(() => {
     const url = new URL(window.location.href)
     if (url.searchParams.get('logout') === '1') {
@@ -28,7 +28,7 @@ export default function Login(){
     }
   }, [])
 
-  // Nettoyage des erreurs dans le hash (#error=…)
+  // Nettoyage des erreurs (#error=…)
   useEffect(() => {
     const hash = window.location.hash || ''
     if (!hash) return
@@ -43,7 +43,7 @@ export default function Login(){
     history.replaceState(null, '', window.location.pathname)
   }, [])
 
-  // Redirection automatique quand une session apparaît (sauf si on vient de ?logout=1)
+  // Redirection auto quand la session apparaît (sauf blocage post-logout)
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -52,7 +52,6 @@ export default function Login(){
       if (session && !blockAutoRedirect) window.location.replace('/')
       if (!session && signedOutOnce.current) setBlockAutoRedirect(false)
     })()
-
     const { data } = supabase.auth.onAuthStateChange((_e, s) => {
       if (!mounted) return
       if (s) {
@@ -61,19 +60,14 @@ export default function Login(){
         if (signedOutOnce.current) setBlockAutoRedirect(false)
       }
     })
-
     return () => { data?.subscription?.unsubscribe?.(); mounted = false }
   }, [blockAutoRedirect])
 
-  // --- Actions ---
   function startLoadingSafely() {
     setLoading(true)
-    // Fallback: si on n’a pas reçu d’event au bout de 10s, on sort de l’état “Connexion…”
     clearTimeout(loadingTimer.current)
     loadingTimer.current = setTimeout(async () => {
-      setLoading(false)
-      inFlight.current = false
-      // Dernière vérif: si la session est quand même là, on redirige
+      setLoading(false); inFlight.current = false
       const { data: { session } } = await supabase.auth.getSession()
       if (session && !blockAutoRedirect) window.location.replace('/')
     }, 10000)
@@ -81,8 +75,7 @@ export default function Login(){
 
   function stopLoadingSafely() {
     clearTimeout(loadingTimer.current)
-    setLoading(false)
-    inFlight.current = false
+    setLoading(false); inFlight.current = false
   }
 
   async function onSubmit(e){
@@ -90,25 +83,14 @@ export default function Login(){
     if (inFlight.current) return
     inFlight.current = true
     setError(''); setInfo('')
-    // On ré-autorise la redirection auto (au cas où elle avait été bloquée par ?logout=1)
     setBlockAutoRedirect(false)
     startLoadingSafely()
 
-    // ⚠️ NE PAS await : on laisse l’event onAuthStateChange rediriger
     supabase.auth.signInWithPassword({ email, password })
       .then(({ error }) => {
-        if (error) {
-          stopLoadingSafely()
-          setError(error.message)
-        } else {
-          // on reste en “Connexion…” le temps que l’event arrive (puis hard redirect)
-          // fallback déjà programmé si l’event ne vient pas
-        }
+        if (error) { stopLoadingSafely(); setError(error.message) }
       })
-      .catch(() => {
-        stopLoadingSafely()
-        setError("Impossible de se connecter pour le moment. Réessayez.")
-      })
+      .catch(() => { stopLoadingSafely(); setError("Impossible de se connecter. Réessayez.") })
   }
 
   async function sendReset(e){
@@ -126,25 +108,8 @@ export default function Login(){
     }
   }
 
-  async function sendMagicLink(e){
-    e.preventDefault()
-    if (!email) return setError("Saisissez votre email.")
-    setError(''); setInfo(''); setLoading(true)
-    try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: `${window.location.origin}/reset` }
-      })
-      if (error) setError(error.message)
-      else setInfo('Lien magique envoyé. Vérifiez votre boîte mail.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <div className="login-root">
-      {/* Fond plein écran qui recouvre la topbar */}
       <div className="login-bg" aria-hidden="true" />
       <div className="login-overlay" aria-hidden="true" />
 
@@ -188,54 +153,34 @@ export default function Login(){
               <button type="button" className="btn-outline" onClick={sendReset} disabled={loading || !email}>
                 Mot de passe oublié ?
               </button>
-              <button type="button" className="btn-outline" onClick={sendMagicLink} disabled={loading || !email}>
-                Lien magique
-              </button>
             </div>
           </form>
         </div>
       </div>
 
       <style>{`
-        :root{
-          --green:#2C3D38;
-          --beige:#e8ded5;
-          --ink:#222;
-          --border:#D9D9D9;
-        }
+        :root{ --green:#2C3D38; --beige:#e8ded5; --ink:#222; --border:#D9D9D9; }
         .topbar { display: none !important; }
-
         .login-root{ position:relative; width:100%; min-height:100vh; overflow:hidden; }
         .login-bg{ position:fixed; inset:0; z-index:0; background-image:url('/login-bg.jpg'); background-size:cover; background-position:center; }
         .login-overlay{ position:fixed; inset:0; z-index:1; background:rgba(44,61,56,0.30); pointer-events:none; }
-
-        .login-grid{
-          position:relative; z-index:2;
-          display:grid; grid-template-columns:1.2fr 0.8fr; gap:40px; align-items:center;
-          padding:96px 48px;
-        }
+        .login-grid{ position:relative; z-index:2; display:grid; grid-template-columns:1.2fr 0.8fr; gap:40px; align-items:center; padding:96px 48px; }
         @media (max-width:1024px){ .login-grid{ grid-template-columns:1fr; padding:88px 20px; row-gap:28px; } }
-
         .login-title{ color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.25); max-width:800px; }
         .login-brand{ font-size:72px; font-weight:800; line-height:1.05; margin:0 0 10px 0; border-bottom:5px solid var(--beige); display:inline-block; padding-bottom:8px; }
         .login-sub{ font-size:32px; font-weight:600; }
         @media (max-width:640px){ .login-brand{ font-size:48px; border-bottom-width:4px; } .login-sub{ font-size:22px; } }
-
         .login-card{ width:min(92vw,560px); background:#fff; border-radius:14px; padding:22px; box-shadow:0 8px 30px rgba(0,0,0,.22); border:1px solid rgba(0,0,0,.08); justify-self:center; }
         .card-title{ font-size:22px; font-weight:700; margin-bottom:10px; color:#1e1e1e; }
-
         .form-grid{ display:flex; flex-direction:column; gap:12px; }
         .form-row{ display:flex; flex-direction:column; gap:6px; }
         .form-row.btns{ flex-direction:row; flex-wrap:wrap; gap:10px; }
-
         label{ color:#2a2a2a; font-weight:600; }
         input{ border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none; font-size:15px; }
         input:focus{ border-color:var(--green); box-shadow:0 0 0 3px rgba(44,61,56,0.12); }
-
         .btn{ background:var(--green); color:#fff; border:none; padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700; }
         .btn:disabled{ opacity:.6; cursor:not-allowed; }
         .btn-outline{ background:#fff; color:var(--ink); border:1px solid var(--border); border-radius:12px; padding:10px 14px; cursor:pointer; }
-
         .alert{ padding:10px 12px; border-radius:10px; margin-bottom:8px; }
         .alert.error{ background:#fee2e2; color:#991b1b; }
         .alert.success{ background:#e7f9ee; color:#166534; }
