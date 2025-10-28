@@ -52,23 +52,22 @@ async function signOutWithTimeout(ms = 1500) {
     return stop
   }, [session])
 
-  // Déconnexion manuelle robuste (bouton)
-  async function handleLogout(){
-    if (loggingOut) return
-    setLoggingOut(true)
+async function handleLogout(){
+  if (loggingOut) return
+  setLoggingOut(true)
 
-    try {
-      await supabase.auth.signOut({ scope: 'global' })
-    } catch {}
+  // 1) on tente le signOut mais on n'attend pas indéfiniment
+  await signOutWithTimeout(1500)
 
-    // Purge locale au cas où
-    try {
-      Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k))
-    } catch {}
-    try { sessionStorage.clear() } catch {}
+  // 2) purge locale "ceinture + bretelles"
+  try {
+    Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k))
+  } catch {}
+  try { sessionStorage.clear() } catch {}
 
-    window.location.replace('/login?logout=1')
-  }
+  // 3) redirection dure (on n'utilise pas Link ici)
+  window.location.href = '/login?logout=1'
+}
 
   function handleReset(){
     triggerReset()
