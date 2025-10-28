@@ -2,61 +2,112 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
 
 export default function ResetPassword() {
-  const [phase, setPhase] = useState('init') // init | ready | done | error
+  const [phase, setPhase] = useState('init') // init | need_email | ready | done | error
+  const [email, setEmail] = useState(() => {
+    try { return localStorage.getItem('lastResetEmail') || '' } catch { return '' }
+  })
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
-  const [resendEmail, setResendEmail] = useState(() => {
-    try { return localStorage.getItem('lastResetEmail') || '' } catch { return '' }
-  })
   const [busy, setBusy] = useState(false)
 
-  // Si Supabase nous renvoie un hash d’erreur (#error=...), affichons un message propre
-  useEffect(() => {
-    const hash = window.location.hash || ''
-    if (!hash) return
-    const p = new URLSearchParams(hash.replace(/^#/, ''))
-    const code = p.get('error_code')
-    if (code) {
-      setPhase('error')
-      setError(code === 'otp_expired'
-        ? "Le lien a déjà été utilisé (souvent par un scanner d’emails) ou a expiré. Renvoyez un nouveau lien."
-        : "Lien invalide. Renvoyez un nouveau lien."
-      )
-    }
-    // Nettoyer l’URL
-    history.replaceState(null, '', window.location.pathname)
-  }, [])
+  // Utilitaires parsing
+  const parseHash = () => new URLSearchParams((window.location.hash || '').replace(/^#/, ''))
+  const parseSearch = () => new URLSearchParams(window.location.search || '')
 
-  // Sinon, essayons d’entrer dans la session "recovery" (quand le lien est valide)
   useEffect(() => {
-    if (phase !== 'init') return
-    let mounted = true
-    ;(async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!mounted) return
-        if (session) {
+    (async () => {
+      // 1) Si le hash contient une erreur, on l’affiche tout de suite
+      const hash = parseHash()
+      const errCode = hash.get('error_code')
+      if (errCode) {
+        setPhase('error')
+        setError(errCode === 'otp_expired'
+          ? "Le lien a expiré ou a déjà été utilisé. Renvoyez un nouveau lien."
+          : "Lien de réinitialisation invalide."
+        )
+        history.replaceState(null, '', window.location.pathname)
+        return
+      }
+
+      // 2) Si le hash contient des jetons (cas normal de Supabase), on crée la session
+      const access = hash.get('access_token')
+      const refresh = hash.get('refresh_token')
+      if (access && refresh) {
+        try {
+          const { error } = await supabase.auth.setSession({ access_token: access, refresh_token: refresh })
+          if (error) throw error
           setPhase('ready')
+        } catch (e) {
+          setPhase('error'); setError("Impossible d'initialiser la session de réinitialisation.")
+        } finally {
+          history.replaceState(null, '', window.location.pathname)
+        }
+        return
+      }
+
+      // 3) Fallback : le lien a peut-être ?token=...&type=recovery (sans hash)
+      const search = parseSearch()
+      const token = search.get('token')
+      const type = search.get('type')
+      if (token && (type === 'recovery' || type === 'recovery_token')) {
+        if (!email) {
+          // On a besoin de l'email pour verifyOtp
+          setPhase('need_email')
           return
         }
-        // Attendre un évènement (PASSWORD_RECOVERY / SIGNED_IN)
-        const { data } = supabase.auth.onAuthStateChange((event, s) => {
-          if (!mounted) return
-          if ((event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') && s) {
+        setBusy(true)
+        try {
+          const { data, error } = await supabase.auth.verifyOtp({
+            type: 'recovery',
+            token,
+            email,
+          })
+          if (error) throw error
+          if (data?.user) {
             setPhase('ready')
+          } else {
+            setPhase('error'); setError("Le lien de réinitialisation n'a pas pu être vérifié.")
           }
-        })
-        // garde-fou 12s : si rien ne vient, on bascule en erreur
-        setTimeout(() => { if (mounted && phase === 'init') { setPhase('error'); setError("Lien de réinitialisation non reconnu. Renvoyez un nouveau lien.") } }, 12000)
-        return () => data?.subscription?.unsubscribe?.()
-      } catch {
-        if (mounted) { setPhase('error'); setError("Lien de réinitialisation non reconnu. Renvoyez un nouveau lien.") }
+        } catch (e) {
+          setPhase('error'); setError("Lien de réinitialisation non reconnu ou expiré. Renvoyez un nouveau lien.")
+        } finally {
+          setBusy(false)
+          history.replaceState(null, '', window.location.pathname)
+        }
+        return
+      }
+
+      // 4) Dernier cas : pas de hash, pas de token → on tente de voir si une session existe déjà
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        setPhase('ready')
+      } else {
+        // Rien à exploiter → message clair + option renvoi
+        setPhase('error')
+        setError("Lien de réinitialisation non reconnu. Renvoyez un nouveau lien.")
       }
     })()
-    return () => { mounted = false }
-  }, [phase])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function resendLink() {
+    if (!email) { setError("Saisissez votre email."); return }
+    setBusy(true); setError(''); setInfo('')
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset`
+      })
+      if (error) throw error
+      try { localStorage.setItem('lastResetEmail', email) } catch {}
+      setInfo('Nouveau lien envoyé. Ouvrez-le depuis votre boîte mail.')
+    } catch (e) {
+      setError(e?.message || "Échec de l'envoi du lien.")
+    } finally {
+      setBusy(false)
+    }
+  }
 
   async function onSubmit(e) {
     e.preventDefault()
@@ -73,17 +124,7 @@ export default function ResetPassword() {
     setTimeout(() => window.location.replace('/'), 900)
   }
 
-  async function resendLink() {
-    setError(''); setInfo(''); setBusy(true)
-    if (!resendEmail) { setBusy(false); return setError("Saisissez votre email puis renvoyez le lien.") }
-    const { error } = await supabase.auth.resetPasswordForEmail(resendEmail, {
-      redirectTo: `${window.location.origin}/reset`
-    })
-    setBusy(false)
-    if (error) setError(error.message)
-    else setInfo('Nouveau lien envoyé. Ouvrez-le depuis votre navigateur (copier/coller si besoin).')
-  }
-
+  // === Rendu ===
   if (phase === 'init') {
     return (
       <div className="panel">
@@ -93,23 +134,32 @@ export default function ResetPassword() {
     )
   }
 
+  if (phase === 'need_email') {
+    return (
+      <div className="panel">
+        <h2>Réinitialisation du mot de passe</h2>
+        <p>Veuillez saisir l’email utilisé pour demander la réinitialisation afin de vérifier le lien.</p>
+        <div style={{display:'grid', gap:12, maxWidth:420, marginTop:12}}>
+          <label>Email</label>
+          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="vous@exemple.com" />
+          <button className="btn" onClick={() => {
+            try { localStorage.setItem('lastResetEmail', email) } catch {}
+            window.location.reload()
+          }} disabled={!email || busy}>{busy ? 'Patientez…' : 'Continuer'}</button>
+        </div>
+      </div>
+    )
+  }
+
   if (phase === 'error') {
     return (
       <div className="panel">
         <h2>Réinitialisation du mot de passe</h2>
         <div style={{color:'#b00020', marginTop:12}}>{error}</div>
-
         <div style={{display:'grid', gap:12, maxWidth:420, marginTop:16}}>
-          <label>Email pour renvoyer le lien</label>
-          <input
-            type="email"
-            value={resendEmail}
-            onChange={e=>setResendEmail(e.target.value)}
-            placeholder="vous@exemple.com"
-          />
-          <button className="btn" onClick={resendLink} disabled={busy}>
-            {busy ? 'Envoi…' : 'Renvoyer le lien'}
-          </button>
+          <label>Renvoyer le lien à</label>
+          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="vous@exemple.com" />
+          <button className="btn" onClick={resendLink} disabled={busy || !email}>{busy ? 'Envoi…' : 'Renvoyer le lien'}</button>
           {info && <div style={{color:'#166534'}}>{info}</div>}
         </div>
       </div>
