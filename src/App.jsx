@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo } from 'react'
-import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient.js'
 import { triggerReset } from './utils/reset.js'
 
@@ -9,12 +9,13 @@ export default function App(){
   const nav = useNavigate()
   const location = useLocation()
 
+  // Routes accessibles sans auth (tolère /login, /login/, /reset, /reset/…)
   const isAuthFree = useMemo(() => {
-    // Routes accessibles sans être connecté
-    return location.pathname === '/login' || location.pathname === '/reset'
+    const p = location.pathname || '/'
+    return /^\/login(\/|$)/.test(p) || /^\/reset(\/|$)/.test(p)
   }, [location.pathname])
 
-  // Charger session + écouter login/logout (robuste)
+  // Charger la session + écouter login/logout
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -23,7 +24,7 @@ export default function App(){
         if (!mounted) return
         setSession(session)
       } catch (e) {
-        console.warn('getSession failed:', e)
+        console.warn('supabase.auth.getSession failed:', e)
       } finally {
         if (mounted) setLoadingSession(false)
       }
@@ -32,46 +33,29 @@ export default function App(){
     const { data } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
     })
-
-    return () => {
-      mounted = false
-      data?.subscription?.unsubscribe?.()
-    }
+    return () => { data?.subscription?.unsubscribe?.(); mounted = false }
   }, [])
 
-  // Garde d’auth : redirige si non connecté (sauf routes libres)
+  // Garde d’auth (ne s’active qu’après la fin du chargement de session)
   useEffect(() => {
     if (loadingSession) return
     if (!session && !isAuthFree) {
       nav('/login', { replace: true })
-    } else if (session && location.pathname === '/login') {
+    } else if (session && /^\/login(\/|$)/.test(location.pathname)) {
       nav('/', { replace: true })
     }
   }, [session, loadingSession, isAuthFree, location.pathname, nav])
 
   async function handleLogout(){
-    await supabase.auth.signOut()
-    // On laisse la garde d’auth gérer, mais on force vers /login par sécurité
-    nav('/login', { replace: true })
+    try { await supabase.auth.signOut() } finally {
+      // On laisse la garde d’auth gérer ensuite, mais on force vers /login par sécurité
+      nav('/login', { replace: true })
+    }
   }
 
   function handleReset(){
     triggerReset()
     alert('Toutes les saisies des simulateurs ont été réinitialisées.')
-  }
-
-  // ⬇️ Nouveau comportement :
-  // - Si on est SUR une route libre (/login, /reset), on REND l’Outlet même si loadingSession est true
-  // - Sinon, on montre "Initialisation…" le temps de charger
-  if (loadingSession && !isAuthFree) {
-    return (
-      <div style={{padding:24, fontFamily:'system-ui'}}>
-        <div className="topbar">
-          <div className="brandword">SER1</div>
-        </div>
-        <div style={{padding:24}}>Initialisation…</div>
-      </div>
-    )
   }
 
   const isAuthed = !!session
@@ -92,9 +76,7 @@ export default function App(){
           )}
 
           {isAuthed && (
-            <button className="chip" onClick={handleReset}>
-              Reset
-            </button>
+            <button className="chip" onClick={handleReset}>Reset</button>
           )}
 
           {isAuthed && (
@@ -107,17 +89,17 @@ export default function App(){
           )}
 
           {isAuthed ? (
-            <button className="chip logout" onClick={handleLogout}>
-              Déconnexion
-            </button>
+            <button className="chip logout" onClick={handleLogout}>Déconnexion</button>
           ) : (
-            location.pathname !== '/login' && (
+            // Sur /login on n’affiche pas le bouton “Connexion” (inutile)
+            !/^\/login(\/|$)/.test(location.pathname) && (
               <Link to="/login" className="chip">Connexion</Link>
             )
           )}
         </div>
       </div>
 
+      {/* IMPORTANT : on rend TOUJOURS l’Outlet (même pendant le chargement) */}
       <div className="container">
         <Outlet/>
       </div>
