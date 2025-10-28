@@ -12,85 +12,112 @@ export default function ResetPassword() {
   const [info, setInfo] = useState('')
   const [busy, setBusy] = useState(false)
 
-  // Utilitaires parsing
   const parseHash = () => new URLSearchParams((window.location.hash || '').replace(/^#/, ''))
   const parseSearch = () => new URLSearchParams(window.location.search || '')
 
   useEffect(() => {
-    (async () => {
-      // 1) Si le hash contient une erreur, on l’affiche tout de suite
-      const hash = parseHash()
-      const errCode = hash.get('error_code')
-      if (errCode) {
-        setPhase('error')
-        setError(errCode === 'otp_expired'
-          ? "Le lien a expiré ou a déjà été utilisé. Renvoyez un nouveau lien."
-          : "Lien de réinitialisation invalide."
-        )
-        history.replaceState(null, '', window.location.pathname)
-        return
-      }
+    let cancelled = false
 
-      // 2) Si le hash contient des jetons (cas normal de Supabase), on crée la session
-      const access = hash.get('access_token')
-      const refresh = hash.get('refresh_token')
-      if (access && refresh) {
-        try {
-          const { error } = await supabase.auth.setSession({ access_token: access, refresh_token: refresh })
-          if (error) throw error
-          setPhase('ready')
-        } catch (e) {
-          setPhase('error'); setError("Impossible d'initialiser la session de réinitialisation.")
-        } finally {
+    async function bootstrap() {
+      try {
+        const hash = parseHash()
+        const search = parseSearch()
+
+        // 0) Debug minimal dans la console (n'affecte pas l'UI)
+        // eslint-disable-next-line no-console
+        console.info('[RESET] hash=', hash.toString(), ' search=', search.toString())
+
+        // A) Erreur explicite côté Supabase
+        const errCode = hash.get('error_code') || search.get('error_code') || search.get('error')
+        if (errCode) {
+          if (cancelled) return
+          setPhase('error')
+          setError(
+            errCode === 'otp_expired'
+              ? "Le lien a expiré ou a déjà été utilisé. Renvoyez un nouveau lien."
+              : "Lien de réinitialisation invalide."
+          )
           history.replaceState(null, '', window.location.pathname)
-        }
-        return
-      }
-
-      // 3) Fallback : le lien a peut-être ?token=...&type=recovery (sans hash)
-      const search = parseSearch()
-      const token = search.get('token')
-      const type = search.get('type')
-      if (token && (type === 'recovery' || type === 'recovery_token')) {
-        if (!email) {
-          // On a besoin de l'email pour verifyOtp
-          setPhase('need_email')
           return
         }
-        setBusy(true)
-        try {
-          const { data, error } = await supabase.auth.verifyOtp({
-            type: 'recovery',
-            token,
-            email,
-          })
-          if (error) throw error
-          if (data?.user) {
-            setPhase('ready')
-          } else {
-            setPhase('error'); setError("Le lien de réinitialisation n'a pas pu être vérifié.")
-          }
-        } catch (e) {
-          setPhase('error'); setError("Lien de réinitialisation non reconnu ou expiré. Renvoyez un nouveau lien.")
-        } finally {
-          setBusy(false)
-          history.replaceState(null, '', window.location.pathname)
-        }
-        return
-      }
 
-      // 4) Dernier cas : pas de hash, pas de token → on tente de voir si une session existe déjà
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        setPhase('ready')
-      } else {
-        // Rien à exploiter → message clair + option renvoi
+        // B) Cas “normal” : jetons dans le hash
+        const access = hash.get('access_token')
+        const refresh = hash.get('refresh_token')
+        if (access && refresh) {
+          try {
+            const { error: setErr } = await supabase.auth.setSession({
+              access_token: access, refresh_token: refresh
+            })
+            if (setErr) throw setErr
+            if (cancelled) return
+            setPhase('ready')
+          } catch (e) {
+            if (cancelled) return
+            setPhase('error')
+            setError("Impossible d'initialiser la session de réinitialisation.")
+          } finally {
+            history.replaceState(null, '', window.location.pathname)
+          }
+          return
+        }
+
+        // C) Fallback : lien ?token=...&type=recovery (certains clients l'ouvrent tel quel)
+        const token = search.get('token')
+        const type = search.get('type')
+        if (token && (type === 'recovery' || type === 'recovery_token')) {
+          if (!email) {
+            if (cancelled) return
+            setPhase('need_email')
+            return
+          }
+          setBusy(true)
+          try {
+            const { data, error: vErr } = await supabase.auth.verifyOtp({
+              type: 'recovery', token, email
+            })
+            if (vErr) throw vErr
+            if (cancelled) return
+            if (data?.user) {
+              setPhase('ready')
+            } else {
+              setPhase('error')
+              setError("Le lien de réinitialisation n'a pas pu être vérifié.")
+            }
+          } catch (e) {
+            if (cancelled) return
+            setPhase('error')
+            setError("Lien de réinitialisation non reconnu ou expiré. Renvoyez un nouveau lien.")
+          } finally {
+            setBusy(false)
+            history.replaceState(null, '', window.location.pathname)
+          }
+          return
+        }
+
+        // D) Si rien de tout ça, on regarde si une session “recovery” existe déjà
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          if (cancelled) return
+          setPhase('ready')
+          history.replaceState(null, '', window.location.pathname)
+          return
+        }
+
+        // E) Toujours rien -> afficher une erreur claire (jamais bloqué sur "init")
+        if (cancelled) return
         setPhase('error')
         setError("Lien de réinitialisation non reconnu. Renvoyez un nouveau lien.")
+      } catch (e) {
+        if (cancelled) return
+        setPhase('error')
+        setError("Une erreur est survenue pendant l'initialisation du reset.")
       }
-    })()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+    }
+
+    bootstrap()
+    return () => { cancelled = true }
+  }, []) // une seule fois
 
   async function resendLink() {
     if (!email) { setError("Saisissez votre email."); return }
@@ -124,7 +151,7 @@ export default function ResetPassword() {
     setTimeout(() => window.location.replace('/'), 900)
   }
 
-  // === Rendu ===
+  // === UI ===
   if (phase === 'init') {
     return (
       <div className="panel">
@@ -138,7 +165,7 @@ export default function ResetPassword() {
     return (
       <div className="panel">
         <h2>Réinitialisation du mot de passe</h2>
-        <p>Veuillez saisir l’email utilisé pour demander la réinitialisation afin de vérifier le lien.</p>
+        <p>Veuillez saisir l’email utilisé lors de la demande pour valider le lien.</p>
         <div style={{display:'grid', gap:12, maxWidth:420, marginTop:12}}>
           <label>Email</label>
           <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="vous@exemple.com" />
@@ -159,7 +186,9 @@ export default function ResetPassword() {
         <div style={{display:'grid', gap:12, maxWidth:420, marginTop:16}}>
           <label>Renvoyer le lien à</label>
           <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="vous@exemple.com" />
-          <button className="btn" onClick={resendLink} disabled={busy || !email}>{busy ? 'Envoi…' : 'Renvoyer le lien'}</button>
+          <button className="btn" onClick={resendLink} disabled={busy || !email}>
+            {busy ? 'Envoi…' : 'Renvoyer le lien'}
+          </button>
           {info && <div style={{color:'#166534'}}>{info}</div>}
         </div>
       </div>
