@@ -2,43 +2,34 @@ import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
 
 export default function ResetPassword() {
-  const [phase, setPhase] = useState('init') // init | ready | done | need_email | error
-  const [email, setEmail]   = useState(() => {
+  const [phase, setPhase] = useState('init') // init | need_email | ready | done | error
+  const [email, setEmail] = useState(() => {
     try { return localStorage.getItem('lastResetEmail') || '' } catch { return '' }
   })
   const [password, setPassword] = useState('')
-  const [confirm,  setConfirm]  = useState('')
-  const [busy,     setBusy]     = useState(false)
-  const [error,    setError]    = useState('')
-  const [debug,    setDebug]    = useState('')
+  const [confirm, setConfirm]   = useState('')
+  const [busy, setBusy]         = useState(false)
+  const [error, setError]       = useState('')
+  const [debug, setDebug]       = useState('')
 
   const H = () => (window.location.hash || '').replace(/^#/, '')
   const S = () => (window.location.search || '').replace(/^\?/, '')
-
-  function addDebug(line){
-    setDebug(prev => (prev ? prev + '\n' : '') + line)
-  }
+  const addDebug = (line) => setDebug(prev => (prev ? prev + '\n' : '') + line)
 
   useEffect(() => {
     let cancelled = false
-    const timeout = setTimeout(() => {
-      if (!cancelled && phase === 'init') {
-        setPhase('error')
-        setError("Lien de réinitialisation non reconnu. Renvoyez un nouveau lien.")
-      }
-    }, 3500)
 
     async function boot(){
-      const hashStr   = H()
+      const hashStr = H()
       const searchStr = S()
       addDebug(`href=${window.location.href}`)
       addDebug(`hash=${hashStr}`)
       addDebug(`search=${searchStr}`)
 
-      const hash   = new URLSearchParams(hashStr)
+      const hash = new URLSearchParams(hashStr)
       const search = new URLSearchParams(searchStr)
 
-      // 1) erreurs explicites
+      // 1) Erreurs explicites
       const err = hash.get('error_code') || hash.get('error') || search.get('error_code') || search.get('error')
       if (err) {
         setPhase('error')
@@ -49,108 +40,88 @@ export default function ResetPassword() {
         return
       }
 
-      // 2) tokens depuis hash OU query
+      // 2) Jetons (hash OU query)
       const access  = hash.get('access_token')  || search.get('access_token')
       const refresh = hash.get('refresh_token') || search.get('refresh_token')
-      const token   = search.get('token')       // fallback supabase (certaines messageries)
-      const type    = search.get('type')
 
-      // --- chemin “recovery moderne” (hash avec access/refresh) ---
-    if (access && refresh) {
-  try {
-    // 0) Diagnostic : l’access token est valide ?
-    const u = await supabase.auth.getUser(access)
-    if (u.error) {
-      addDebug(`getUser(access) ERROR: ${u.error.message}`)
-    } else {
-      addDebug(`getUser(access) OK user.id=${u.data?.user?.id || 'unknown'}`)
-    }
+      if (access && refresh) {
+        try {
+          // (a) Diagnostic : l’access token est valide ?
+          const u = await supabase.auth.getUser(access)
+          if (u.error) addDebug(`getUser(access) ERROR: ${u.error.message}`)
+          else addDebug(`getUser(access) OK user.id=${u.data?.user?.id || 'unknown'}`)
 
-    // 1) Récupère éventuellement expires_at du hash (présent dans ton URL)
-    const exp = Number(
-      (new URLSearchParams((window.location.hash || '').replace(/^#/, ''))).get('expires_at')
-      || 0
-    )
+          // (b) Pose explicitement la session (SDK v2)
+          const exp = Number(hash.get('expires_at') || search.get('expires_at') || 0)
+          const { data: setData, error: setErr } = await supabase.auth.setSession({
+            access_token: access,
+            refresh_token: refresh,
+            token_type: 'bearer',
+            expires_at: Number.isFinite(exp) && exp > 0 ? exp : undefined,
+          })
+          if (setErr) {
+            addDebug(`setSession ERROR: ${setErr.message}`)
+            setPhase('error'); setError("Impossible d'initialiser la session de réinitialisation.")
+            return
+          }
+          addDebug(`setSession OK: has session=${!!setData?.session}`)
 
-    // 2) Pose explicitement la session (v2)
-    const { data: setData, error: setErr } = await supabase.auth.setSession({
-      access_token: access,
-      refresh_token: refresh,
-      token_type: 'bearer',
-      expires_at: Number.isFinite(exp) && exp > 0 ? exp : undefined,
-    })
-    if (setErr) {
-      addDebug(`setSession ERROR: ${setErr.message}`)
-      setPhase('error')
-      setError("Impossible d'initialiser la session de réinitialisation.")
-      return
-    }
-    addDebug(`setSession OK: has session=${!!setData?.session}`)
+          // (c) Vérification immédiate
+          const after = await supabase.auth.getSession()
+          addDebug(`getSession() after setSession: has session=${!!after.data?.session}`)
+          if (!after.data?.session) {
+            setPhase('error')
+            setError("La session n'a pas pu être enregistrée. Réessayez le lien.")
+            return
+          }
 
-    // 3) Vérifie immédiatement que la session est bien stockée
-    const after = await supabase.auth.getSession()
-    addDebug(`getSession() after setSession: has session=${!!after.data?.session}`)
-    if (!after.data?.session) {
-      setPhase('error')
-      setError("La session n'a pas pu être enregistrée. Réessayez le lien.")
-      return
-    }
+          // (d) Nettoyage du hash puis READY
+          try { history.replaceState(null, '', window.location.pathname) } catch {}
+          if (!cancelled) setPhase('ready')
+          return
+        } catch (e) {
+          addDebug(`setSession TRY/CATCH ERROR: ${e?.message || e}`)
+          setPhase('error'); setError("Impossible d'initialiser la session de réinitialisation.")
+          return
+        }
+      }
 
-    // 4) Nettoie l’URL et passe en READY
-    try { history.replaceState(null, '', window.location.pathname) } catch {}
-    setPhase('ready')
-    return
-  } catch (e) {
-    addDebug(`setSession TRY/CATCH ERROR: ${e?.message || e}`)
-    setPhase('error')
-    setError("Impossible d'initialiser la session de réinitialisation.")
-    return
-  } finally {
-    clearTimeout(timeout)
-  }
-}
-
-      // --- chemin de repli : ?token=...&type=recovery ---
+      // 3) Fallback : ?token=...&type=recovery
+      const token = search.get('token')
+      const type  = search.get('type')
       if (token && (type === 'recovery' || type === 'recovery_token')) {
         if (!email) { setPhase('need_email'); return }
         setBusy(true)
         try {
           const { data, error } = await supabase.auth.verifyOtp({ type: 'recovery', token, email })
-          if (error) {
-            addDebug(`verifyOtp ERROR: ${error.message}`)
-            setPhase('error')
-            setError("Lien de réinitialisation non reconnu ou expiré. Renvoyez un nouveau lien.")
-            return
-          }
+          if (error) { addDebug(`verifyOtp ERROR: ${error.message}`); throw error }
           addDebug(`verifyOtp OK user.id=${data?.user?.id || 'unknown'}`)
           try { history.replaceState(null, '', window.location.pathname) } catch {}
           setPhase('ready')
+        } catch (e) {
+          setPhase('error'); setError("Lien de réinitialisation non reconnu ou expiré. Renvoyez un nouveau lien.")
         } finally {
           setBusy(false)
-          clearTimeout(timeout)
         }
         return
       }
 
-      // --- déjà connecté via un autre mécanisme ? ---
+      // 4) Session déjà présente ?
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         addDebug('getSession() found an existing session')
         try { history.replaceState(null, '', window.location.pathname) } catch {}
         setPhase('ready')
-        clearTimeout(timeout)
         return
       }
 
-      // Rien d’exploitable
-      clearTimeout(timeout)
+      // 5) Rien d’exploitable → erreur
       setPhase('error')
       setError("Lien de réinitialisation non reconnu. Renvoyez un nouveau lien.")
     }
 
     boot()
-    return () => { cancelled = true; clearTimeout(timeout) }
-    // eslint-disable-next-line
+    return () => { cancelled = true }
   }, [])
 
   async function onSubmit(e){
@@ -161,20 +132,16 @@ export default function ResetPassword() {
 
     const { error } = await supabase.auth.updateUser({ password })
     setBusy(false)
-    if (error) {
-      addDebug(`updateUser ERROR: ${error.message}`)
-      return setError(error.message)
-    }
+    if (error) { setError(error.message); addDebug(`updateUser ERROR: ${error.message}`); return }
     addDebug('updateUser OK')
     setPhase('done')
     setTimeout(() => window.location.replace('/'), 800)
   }
 
   const Debug = () => (
-    <pre style={{
-      marginTop:16, background:'#f6f6f6', padding:12, borderRadius:8, fontSize:12,
-      whiteSpace:'pre-wrap', wordBreak:'break-word', color:'#333'
-    }}>{debug}</pre>
+    <pre style={{marginTop:16, background:'#f6f6f6', padding:12, borderRadius:8, fontSize:12, whiteSpace:'pre-wrap'}}>
+      {debug}
+    </pre>
   )
 
   if (phase === 'init') {
