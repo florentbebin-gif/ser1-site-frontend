@@ -7,7 +7,7 @@ export default function App(){
   const [session, setSession] = useState(null)
   const location = useLocation()
 
-  // simple listener pour l'UI (afficher/masquer boutons)
+  // Écoute la session uniquement pour afficher/masquer les boutons
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -22,12 +22,17 @@ export default function App(){
 
   async function handleLogout(){
     try {
+      // Déconnexion (local suffit pour l’app)
       await supabase.auth.signOut()
     } finally {
-      // Hard redirect systématique pour être certain d'atterrir sur /login
+      // Hard redirect pour être CERTAIN d’atterrir sur /login
       window.location.replace('/login')
-      // et fallback au cas où
-      setTimeout(() => { if (!/\/login(\/|$)/.test(window.location.pathname)) window.location.assign('/login') }, 50)
+      // Ceinture de sécurité si le navigateur ignore replace()
+      setTimeout(() => {
+        if (!/^\/login(\/|$)/.test(window.location.pathname)) {
+          window.location.assign('/login')
+        }
+      }, 50)
     }
   }
 
@@ -48,11 +53,9 @@ export default function App(){
           {isAuthed && (
             <Link to="/" className={`chip ${location.pathname === '/' ? 'active' : ''}`}>HOME</Link>
           )}
-
           {isAuthed && (
             <button className="chip" onClick={handleReset}>Reset</button>
           )}
-
           {isAuthed && (
             <Link to="/params" className={`chip ${location.pathname.startsWith('/params') ? 'active' : ''}`}>Paramètres</Link>
           )}
