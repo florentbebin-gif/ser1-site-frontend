@@ -5,12 +5,12 @@ const supabaseAnon = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 export const supabase = createClient(supabaseUrl, supabaseAnon, {
   auth: {
-    // Session vivante tant que l’onglet est ouvert (sécurisé à la fermeture)
+    // Session persiste tant que l’onglet est ouvert
     persistSession: true,
     storage: window.sessionStorage,
 
-    // ✅ on gère nous-mêmes le hash de reset dans la page /reset
-    detectSessionInUrl: false,
+    // ✅ ON LAISSE LE SDK LIRE LE HASH ET POSER LA SESSION
+    detectSessionInUrl: true,
 
     autoRefreshToken: true,
   },
