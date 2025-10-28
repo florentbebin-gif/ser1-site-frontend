@@ -57,41 +57,51 @@ export default function ResetPassword() {
 
       // --- chemin “recovery moderne” (hash avec access/refresh) ---
       if (access && refresh) {
-        try {
-          // (a) Diagnostic clair : le token est-il valide ?
-          const u = await supabase.auth.getUser(access)
-          if (u.error) {
-            addDebug(`getUser(access) ERROR: ${u.error.message}`)
-          } else {
-            addDebug(`getUser(access) OK user.id=${u.data?.user?.id || 'unknown'}`)
-          }
+  try {
+    // (a) Diagnostic : ce jeton accède bien à un user ? (tu le vois déjà OK)
+    const u = await supabase.auth.getUser(access)
+    if (u.error) {
+      addDebug(`getUser(access) ERROR: ${u.error.message}`)
+    } else {
+      addDebug(`getUser(access) OK user.id=${u.data?.user?.id || 'unknown'}`)
+    }
 
-          // (b) Création de session pour pouvoir faire updateUser
-          const { data, error } = await supabase.auth.setSession({
-            access_token: access,
-            refresh_token: refresh
-          })
-          if (error) {
-            addDebug(`setSession ERROR: ${error.message}`)
-            setPhase('error')
-            setError("Impossible d'initialiser la session de réinitialisation.")
-            return
-          }
-          addDebug(`setSession OK: has session=${!!data?.session}`)
+    // (b) Pose la session
+    const { data: setData, error: setErr } = await supabase.auth.setSession({
+      access_token: access,
+      refresh_token: refresh
+    })
+    if (setErr) {
+      addDebug(`setSession ERROR: ${setErr.message}`)
+      setPhase('error')
+      setError("Impossible d'initialiser la session de réinitialisation.")
+      return
+    }
+    addDebug(`setSession OK: has session=${!!setData?.session}`)
 
-          try { history.replaceState(null, '', window.location.pathname) } catch {}
-          if (cancelled) return
-          setPhase('ready')
-          return
-        } catch (e) {
-          addDebug(`setSession TRY/CATCH ERROR: ${e?.message || e}`)
-          setPhase('error')
-          setError("Impossible d'initialiser la session de réinitialisation.")
-          return
-        } finally {
-          clearTimeout(timeout)
-        }
-      }
+    // (c) Vérifie immédiatement que la session est bien là
+    const after = await supabase.auth.getSession()
+    addDebug(`getSession() after setSession: has session=${!!after.data?.session}`)
+
+    if (!after.data?.session) {
+      setPhase('error')
+      setError("La session n'a pas pu être enregistrée. Réessayez le lien.")
+      return
+    }
+
+    // (d) Nettoie l'URL et passe en READY
+    try { history.replaceState(null, '', window.location.pathname) } catch {}
+    setPhase('ready')
+    return
+  } catch (e) {
+    addDebug(`setSession TRY/CATCH ERROR: ${e?.message || e}`)
+    setPhase('error')
+    setError("Impossible d'initialiser la session de réinitialisation.")
+    return
+  } finally {
+    clearTimeout(timeout)
+  }
+}
 
       // --- chemin de repli : ?token=...&type=recovery ---
       if (token && (type === 'recovery' || type === 'recovery_token')) {
