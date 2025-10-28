@@ -7,18 +7,18 @@ export default function Login(){
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
-  const [blockAutoRedirect, setBlockAutoRedirect] = useState(false) // ⬅️ empêche l’auto-redirect après logout
+  const [blockAutoRedirect, setBlockAutoRedirect] = useState(false)
   const signedOutOnce = useRef(false)
+  const inFlight = useRef(false)
+  const loadingTimer = useRef(null)
 
-  // 0) Si on arrive avec ?logout=1 : on force la déconnexion et on BLOQUE l'auto-redirect
+  // ?logout=1 -> force logout et empêche l’auto-redirect tant que la session n’est pas vraiment tombée
   useEffect(() => {
     const url = new URL(window.location.href)
     if (url.searchParams.get('logout') === '1') {
       setBlockAutoRedirect(true)
       ;(async () => {
-        try {
-          await supabase.auth.signOut()
-        } catch {}
+        try { await supabase.auth.signOut() } catch {}
         finally {
           signedOutOnce.current = true
           url.searchParams.delete('logout')
@@ -28,7 +28,7 @@ export default function Login(){
     }
   }, [])
 
-  // 1) Nettoie un éventuel hash d’erreur Supabase
+  // Nettoyage des erreurs dans le hash (#error=…)
   useEffect(() => {
     const hash = window.location.hash || ''
     if (!hash) return
@@ -43,18 +43,14 @@ export default function Login(){
     history.replaceState(null, '', window.location.pathname)
   }, [])
 
-  // 2) Suivi de session : on NE redirige que si blockAutoRedirect === false
+  // Redirection automatique quand une session apparaît (sauf si on vient de ?logout=1)
   useEffect(() => {
     let mounted = true
     ;(async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!mounted) return
-      if (session) {
-        if (!blockAutoRedirect) window.location.replace('/')  // ✅ pas de ré-connexion instantanée après logout
-      } else {
-        // Quand on a bien détecté l’absence de session après un logout, on déverrouille
-        if (signedOutOnce.current) setBlockAutoRedirect(false)
-      }
+      if (session && !blockAutoRedirect) window.location.replace('/')
+      if (!session && signedOutOnce.current) setBlockAutoRedirect(false)
     })()
 
     const { data } = supabase.auth.onAuthStateChange((_e, s) => {
@@ -69,43 +65,86 @@ export default function Login(){
     return () => { data?.subscription?.unsubscribe?.(); mounted = false }
   }, [blockAutoRedirect])
 
+  // --- Actions ---
+  function startLoadingSafely() {
+    setLoading(true)
+    // Fallback: si on n’a pas reçu d’event au bout de 10s, on sort de l’état “Connexion…”
+    clearTimeout(loadingTimer.current)
+    loadingTimer.current = setTimeout(async () => {
+      setLoading(false)
+      inFlight.current = false
+      // Dernière vérif: si la session est quand même là, on redirige
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session && !blockAutoRedirect) window.location.replace('/')
+    }, 10000)
+  }
+
+  function stopLoadingSafely() {
+    clearTimeout(loadingTimer.current)
+    setLoading(false)
+    inFlight.current = false
+  }
+
   async function onSubmit(e){
     e.preventDefault()
-    setLoading(true); setError(''); setInfo('')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    setLoading(false)
-    if (error) setError(error.message)
-    else window.location.replace('/') // on repart proprement (hard redirect)
+    if (inFlight.current) return
+    inFlight.current = true
+    setError(''); setInfo('')
+    // On ré-autorise la redirection auto (au cas où elle avait été bloquée par ?logout=1)
+    setBlockAutoRedirect(false)
+    startLoadingSafely()
+
+    // ⚠️ NE PAS await : on laisse l’event onAuthStateChange rediriger
+    supabase.auth.signInWithPassword({ email, password })
+      .then(({ error }) => {
+        if (error) {
+          stopLoadingSafely()
+          setError(error.message)
+        } else {
+          // on reste en “Connexion…” le temps que l’event arrive (puis hard redirect)
+          // fallback déjà programmé si l’event ne vient pas
+        }
+      })
+      .catch(() => {
+        stopLoadingSafely()
+        setError("Impossible de se connecter pour le moment. Réessayez.")
+      })
   }
 
   async function sendReset(e){
     e.preventDefault()
     if (!email) return setError("Saisissez votre email.")
-    setLoading(true); setError(''); setInfo('')
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset`
-    })
-    setLoading(false)
-    if (error) setError(error.message)
-    else setInfo('Lien de réinitialisation envoyé. Vérifiez vos emails.')
+    setError(''); setInfo(''); setLoading(true)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset`
+      })
+      if (error) setError(error.message)
+      else setInfo('Lien de réinitialisation envoyé. Vérifiez vos emails.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function sendMagicLink(e){
     e.preventDefault()
     if (!email) return setError("Saisissez votre email.")
-    setLoading(true); setError(''); setInfo('')
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: `${window.location.origin}/reset` }
-    })
-    setLoading(false)
-    if (error) setError(error.message)
-    else setInfo('Lien magique envoyé. Vérifiez votre boîte mail.')
+    setError(''); setInfo(''); setLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: `${window.location.origin}/reset` }
+      })
+      if (error) setError(error.message)
+      else setInfo('Lien magique envoyé. Vérifiez votre boîte mail.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="login-root">
-      {/* Fond plein écran qui RECOUVRE aussi la topbar */}
+      {/* Fond plein écran qui recouvre la topbar */}
       <div className="login-bg" aria-hidden="true" />
       <div className="login-overlay" aria-hidden="true" />
 
@@ -164,88 +203,38 @@ export default function Login(){
           --ink:#222;
           --border:#D9D9D9;
         }
-
-        /* On MASQUE la topbar sur la page login (tu demandais à la recouvrir) */
         .topbar { display: none !important; }
 
-        .login-root{
-          position: relative;
-          width: 100%;
-          min-height: 100vh; /* recouvre toute la page */
-          overflow: hidden;
-        }
-        /* Image de fond qui couvre TOUT, y compris la zone topbar */
-        .login-bg{
-          position: fixed; inset: 0; z-index: 0;
-          background-image: url('/login-bg.jpg');
-          background-size: cover; background-position: center;
-        }
-        .login-overlay{
-          position: fixed; inset: 0; z-index: 1;
-          background: rgba(44,61,56,0.30);
-          pointer-events: none;
-        }
+        .login-root{ position:relative; width:100%; min-height:100vh; overflow:hidden; }
+        .login-bg{ position:fixed; inset:0; z-index:0; background-image:url('/login-bg.jpg'); background-size:cover; background-position:center; }
+        .login-overlay{ position:fixed; inset:0; z-index:1; background:rgba(44,61,56,0.30); pointer-events:none; }
 
-        /* Grille: titre à gauche, carte à droite (1 colonne en mobile) */
         .login-grid{
-          position: relative; z-index: 2;
-          display: grid;
-          grid-template-columns: 1.2fr 0.8fr;
-          gap: 40px;
-          align-items: center;
-          padding: 96px 48px;
+          position:relative; z-index:2;
+          display:grid; grid-template-columns:1.2fr 0.8fr; gap:40px; align-items:center;
+          padding:96px 48px;
         }
-        @media (max-width: 1024px){
-          .login-grid{ grid-template-columns: 1fr; padding: 88px 20px; row-gap: 28px; }
-        }
+        @media (max-width:1024px){ .login-grid{ grid-template-columns:1fr; padding:88px 20px; row-gap:28px; } }
 
-        .login-title{
-          color: #fff;
-          text-shadow: 0 2px 4px rgba(0,0,0,.25);
-          max-width: 800px;
-        }
-        .login-brand{
-          font-size: 72px; font-weight: 800; line-height: 1.05;
-          margin: 0 0 10px 0;
-          border-bottom: 5px solid var(--beige);
-          display: inline-block; padding-bottom: 8px;
-        }
-        .login-sub{ font-size: 32px; font-weight: 600; }
-        @media (max-width: 640px){
-          .login-brand{ font-size: 48px; border-bottom-width: 4px; }
-          .login-sub{ font-size: 22px; }
-        }
+        .login-title{ color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.25); max-width:800px; }
+        .login-brand{ font-size:72px; font-weight:800; line-height:1.05; margin:0 0 10px 0; border-bottom:5px solid var(--beige); display:inline-block; padding-bottom:8px; }
+        .login-sub{ font-size:32px; font-weight:600; }
+        @media (max-width:640px){ .login-brand{ font-size:48px; border-bottom-width:4px; } .login-sub{ font-size:22px; } }
 
-        .login-card{
-          width: min(92vw, 560px);
-          background: #fff; border-radius: 14px; padding: 22px;
-          box-shadow: 0 8px 30px rgba(0,0,0,.22);
-          border: 1px solid rgba(0,0,0,.08);
-          justify-self: center;
-        }
-        .card-title{ font-size: 22px; font-weight: 700; margin-bottom: 10px; color:#1e1e1e; }
+        .login-card{ width:min(92vw,560px); background:#fff; border-radius:14px; padding:22px; box-shadow:0 8px 30px rgba(0,0,0,.22); border:1px solid rgba(0,0,0,.08); justify-self:center; }
+        .card-title{ font-size:22px; font-weight:700; margin-bottom:10px; color:#1e1e1e; }
 
         .form-grid{ display:flex; flex-direction:column; gap:12px; }
         .form-row{ display:flex; flex-direction:column; gap:6px; }
         .form-row.btns{ flex-direction:row; flex-wrap:wrap; gap:10px; }
 
         label{ color:#2a2a2a; font-weight:600; }
-        input{
-          border:1px solid var(--border); border-radius:10px;
-          padding:10px 12px; outline:none; font-size:15px;
-        }
-        input:focus{ border-color: var(--green); box-shadow: 0 0 0 3px rgba(44,61,56,0.12); }
+        input{ border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none; font-size:15px; }
+        input:focus{ border-color:var(--green); box-shadow:0 0 0 3px rgba(44,61,56,0.12); }
 
-        .btn{
-          background:var(--green); color:#fff; border:none;
-          padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700;
-        }
+        .btn{ background:var(--green); color:#fff; border:none; padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700; }
         .btn:disabled{ opacity:.6; cursor:not-allowed; }
-        .btn-outline{
-          background:#fff; color:var(--ink);
-          border:1px solid var(--border); border-radius:12px;
-          padding:10px 14px; cursor:pointer;
-        }
+        .btn-outline{ background:#fff; color:var(--ink); border:1px solid var(--border); border-radius:12px; padding:10px 14px; cursor:pointer; }
 
         .alert{ padding:10px 12px; border-radius:10px; margin-bottom:8px; }
         .alert.error{ background:#fee2e2; color:#991b1b; }
