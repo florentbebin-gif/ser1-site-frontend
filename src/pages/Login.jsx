@@ -1,30 +1,43 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient.js'
 
 export default function Login(){
+  const nav = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
 
-  // Affiche un message clair si l’URL contient une erreur Supabase (ex: otp_expired)
+  // Si on arrive avec une erreur dans le hash (ex: otp_expired), on l'affiche puis on nettoie l'URL
   useEffect(() => {
     const hash = window.location.hash || ''
     if (!hash) return
     const p = new URLSearchParams(hash.replace(/^#/, ''))
-    const err = p.get('error')
-    const code = p.get('error_code')
+    const err = p.get('error'); const code = p.get('error_code')
     if (err || code) {
       if (code === 'otp_expired') {
         setError("Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien.")
       } else {
         setError("Une erreur d’authentification est survenue. Veuillez réessayer.")
       }
-      // Nettoie l’URL pour ne pas réafficher le message au refresh
       history.replaceState(null, '', window.location.pathname)
     }
   }, [])
+
+  // 🔁 Redirige automatiquement quand une session apparaît (login réussi, magic link, reset, etc.)
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (mounted && session) nav('/', { replace: true })
+    })()
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (s) nav('/', { replace: true })
+    })
+    return () => { data?.subscription?.unsubscribe?.(); mounted = false }
+  }, [nav])
 
   async function onSubmit(e){
     e.preventDefault()
@@ -32,6 +45,7 @@ export default function Login(){
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
     if (error) setError(error.message)
+    else nav('/', { replace: true }) // ✅ navigation explicite après succès
   }
 
   async function sendReset(e){
@@ -62,16 +76,13 @@ export default function Login(){
   return (
     <>
       <div className="login-fixed">
-        {/* Voile vert 30% */}
         <div className="login-overlay" />
 
-        {/* Bloc titre à gauche */}
         <div className="login-left">
           <h1 className="login-brand">SER1</h1>
           <div className="login-sub">Simulateur épargne retraite</div>
         </div>
 
-        {/* Carte de connexion centrée */}
         <div className="login-card">
           <div className="card-title">Connexion</div>
 
@@ -114,93 +125,53 @@ export default function Login(){
         </div>
       </div>
 
-      {/* Styles locaux spécifiques à la page Login */}
+      {/* Styles locaux */}
       <style>{`
         :root{
           --green:#2C3D38;
           --beige:#e8ded5;
           --ink:#222;
           --border:#D9D9D9;
-          --topbar-h: 56px; /* ajuste-la si ta topbar a une autre hauteur */
+          --topbar-h: 56px;
         }
-
-        /* Fond plein écran, fixé sous la topbar (plus aucune bande blanche) */
         .login-fixed{
           position: fixed;
           top: var(--topbar-h);
           left: 0; right: 0; bottom: 0;
           z-index: 1;
-          background-image: url('/login-bg.jpg'); /* place ton image dans /public */
+          background-image: url('/login-bg.jpg');
           background-size: cover;
           background-position: center;
           display: flex;
-          align-items: center;   /* centre verticalement la carte */
-          justify-content: center; /* centre horizontalement la carte */
+          align-items: center;
+          justify-content: center;
         }
-
-        .login-overlay{
-          position: absolute; inset: 0;
-          background: rgba(44,61,56,0.30); /* voile vert 30% */
-          pointer-events: none;
-        }
-
-        /* Bloc titre : plus à gauche et en haut */
+        .login-overlay{ position:absolute; inset:0; background:rgba(44,61,56,0.30); pointer-events:none; }
         .login-left{
-          position: absolute;
-          left: 4vw;
-          top: 18vh;
-          z-index: 2;
-          color: #fff;
-          text-shadow: 0 2px 4px rgba(0,0,0,.25);
-          max-width: min(680px, 60vw);
+          position:absolute; left:4vw; top:18vh; z-index:2; color:#fff;
+          text-shadow:0 2px 4px rgba(0,0,0,.25); max-width:min(680px,60vw);
         }
-        @media (max-width: 768px){
-          .login-left{ left: 20px; top: 14vh; max-width: 86vw; }
-        }
+        @media (max-width: 768px){ .login-left{ left:20px; top:14vh; max-width:86vw; } }
+        .login-brand{ font-size:64px; font-weight:800; line-height:1; margin:0 0 8px; border-bottom:4px solid var(--beige); display:inline-block; padding-bottom:6px; }
+        @media (max-width:640px){ .login-brand{ font-size:46px; } }
+        .login-sub{ font-size:28px; font-weight:600; }
 
-        .login-brand{
-          font-size: 64px; font-weight: 800; line-height: 1;
-          margin: 0 0 8px 0;
-          border-bottom: 4px solid var(--beige);
-          display: inline-block; padding-bottom: 6px;
-        }
-        @media (max-width: 640px){ .login-brand { font-size: 46px; } }
-        .login-sub{ font-size: 28px; font-weight: 600; }
-
-        /* Carte de connexion centrée */
         .login-card{
-          position: relative;
-          z-index: 2;
-          width: min(92vw, 520px);
-          background: #fff;
-          border-radius: 14px;
-          padding: 22px;
-          box-shadow: 0 8px 30px rgba(0,0,0,.22);
-          border: 1px solid rgba(0,0,0,.08);
+          position:relative; z-index:2; width:min(92vw,520px); background:#fff; border-radius:14px;
+          padding:22px; box-shadow:0 8px 30px rgba(0,0,0,.22); border:1px solid rgba(0,0,0,.08);
         }
-        .card-title{ font-size: 22px; font-weight: 700; margin-bottom: 10px; color:#1e1e1e; }
+        .card-title{ font-size:22px; font-weight:700; margin-bottom:10px; color:#1e1e1e; }
 
         .form-grid{ display:flex; flex-direction:column; gap:12px; }
         .form-row{ display:flex; flex-direction:column; gap:6px; }
         .form-row.btns{ flex-direction:row; flex-wrap:wrap; gap:10px; }
-
         label{ color:#2a2a2a; font-weight:600; }
-        input{
-          border:1px solid var(--border); border-radius:10px;
-          padding:10px 12px; outline:none; font-size:15px;
-        }
-        input:focus{ border-color: var(--green); box-shadow: 0 0 0 3px rgba(44,61,56,0.12); }
+        input{ border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none; font-size:15px; }
+        input:focus{ border-color:var(--green); box-shadow:0 0 0 3px rgba(44,61,56,0.12); }
 
-        .btn{
-          background:var(--green); color:#fff; border:none;
-          padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700;
-        }
+        .btn{ background:var(--green); color:#fff; border:none; padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700; }
         .btn:disabled{ opacity:.6; cursor:not-allowed; }
-        .btn-outline{
-          background:#fff; color:var(--ink);
-          border:1px solid var(--border); border-radius:12px;
-          padding:10px 14px; cursor:pointer;
-        }
+        .btn-outline{ background:#fff; color:var(--ink); border:1px solid var(--border); border-radius:12px; padding:10px 14px; cursor:pointer; }
 
         .alert{ padding:10px 12px; border-radius:10px; margin-bottom:8px; }
         .alert.error{ background:#fee2e2; color:#991b1b; }
