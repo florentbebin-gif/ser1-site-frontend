@@ -1,80 +1,108 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
 
-/**
- * Page ResetPassword
- * - Cible de redirection des emails Supabase (recover / magic link)
- * - Permet de définir un nouveau mot de passe via supabase.auth.updateUser
- */
-export default function ResetPassword(){
-  const [hasSession, setHasSession] = useState(false)
-  const [loading, setLoading] = useState(true)
+export default function ResetPassword() {
+  const [status, setStatus] = useState<'init' | 'ready' | 'done' | 'error'>('init')
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
-  const [info, setInfo] = useState('')
-  const [pwd1, setPwd1] = useState('')
-  const [pwd2, setPwd2] = useState('')
 
+  // 1) Supabase ouvre cette page via le lien email. Quand la page charge,
+  //    Supabase crée une session "recovery". On attend qu’elle soit là.
   useEffect(() => {
     let mounted = true
+
     ;(async () => {
-      // Quand on arrive depuis l’email, Supabase met un access_token dans le hash
-      // et crée une session "recovery". On vérifie juste qu’elle est active.
-      const { data } = await supabase.auth.getSession()
-      if (!mounted) return
-      setHasSession(!!data?.session)
-      setLoading(false)
-      if (!data?.session) {
-        setError("Lien invalide ou expiré. Recommencez la procédure depuis l'email.")
-      } else {
-        setInfo("Session de récupération détectée. Choisissez un nouveau mot de passe.")
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!mounted) return
+        if (session) {
+          setStatus('ready')
+        } else {
+          // Attendre un éventuel event d’auth
+          const { data } = supabase.auth.onAuthStateChange((event, s) => {
+            if (!mounted) return
+            if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
+              setStatus('ready')
+            }
+          })
+          // petit garde-fou de 10s si rien ne vient
+          setTimeout(() => { if (mounted && status === 'init') setStatus('error') }, 10000)
+          return () => data?.subscription?.unsubscribe?.()
+        }
+      } catch {
+        if (mounted) setStatus('error')
       }
     })()
 
-    // Si l’état de session change (ex: refresh du token), on met à jour l’UI
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, sess) => {
-      setHasSession(!!sess)
-    })
-    return () => { mounted = false; listener?.subscription?.unsubscribe?.() }
+    return () => { mounted = false }
   }, [])
 
-  async function onSubmit(e){
+  async function onSubmit(e) {
     e.preventDefault()
-    setError(''); setInfo('')
-    if (pwd1.length < 8) { setError('Mot de passe trop court (min. 8 caractères).'); return }
-    if (pwd1 !== pwd2)  { setError('La confirmation ne correspond pas.'); return }
+    setError('')
+    if (password.length < 8) return setError('Le mot de passe doit contenir au moins 8 caractères.')
+    if (password !== confirm) return setError('Les deux mots de passe ne correspondent pas.')
 
-    setLoading(true)
-    const { error } = await supabase.auth.updateUser({ password: pwd1 })
-    setLoading(false)
-    if (error) setError(error.message)
-    else setInfo("Mot de passe mis à jour. Vous pouvez maintenant vous connecter sur la page de connexion.")
+    // 2) Mettre à jour le mot de passe avec la session "recovery"
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) {
+      setError(error.message)
+      return
+    }
+    setStatus('done')
+
+    // 3) Option : rediriger proprement vers l’accueil (session valide) :
+    setTimeout(() => { window.location.replace('/') }, 800)
   }
 
+  if (status === 'init') {
+    return (
+      <div className="panel">
+        <h2>Réinitialisation du mot de passe</h2>
+        <div>Initialisation…</div>
+      </div>
+    )
+  }
+
+  if (status === 'error') {
+    return (
+      <div className="panel">
+        <h2>Réinitialisation du mot de passe</h2>
+        <div style={{color:'#b00020', marginTop:12}}>
+          Le lien de réinitialisation est invalide ou expiré. Demandez un nouveau lien depuis la page de connexion.
+        </div>
+      </div>
+    )
+  }
+
+  if (status === 'done') {
+    return (
+      <div className="panel">
+        <h2>Réinitialisation du mot de passe</h2>
+        <div style={{color:'#166534', marginTop:12}}>
+          Mot de passe mis à jour. Redirection…
+        </div>
+      </div>
+    )
+  }
+
+  // status === 'ready'
   return (
     <div className="panel">
-      <div className="plac-title">Réinitialisation du mot de passe</div>
+      <h2>Réinitialisation du mot de passe</h2>
 
-      {loading && <div className="hint">Initialisation…</div>}
-      {error && <div className="alert error">{error}</div>}
-      {info && <div className="alert success">{info}</div>}
+      {error && <div style={{color:'#b00020', marginTop:12}}>{error}</div>}
 
-      {hasSession && (
-        <form onSubmit={onSubmit} className="form-grid" style={{maxWidth: 420, opacity: loading ? .6 : 1}}>
-          <div className="form-row">
-            <label>Nouveau mot de passe</label>
-            <input type="password" value={pwd1} onChange={e=>setPwd1(e.target.value)} />
-          </div>
-          <div className="form-row">
-            <label>Confirmer le mot de passe</label>
-            <input type="password" value={pwd2} onChange={e=>setPwd2(e.target.value)} />
-          </div>
-          <div className="form-row">
-            <button className="btn" type="submit" disabled={loading}>
-              {loading ? 'Mise à jour…' : 'Enregistrer le nouveau mot de passe'}
-            </button>
-          </div>
-        </form>
-      )}
+      <form onSubmit={onSubmit} style={{display:'grid', gap:12, maxWidth:420, marginTop:12}}>
+        <label>Nouveau mot de passe</label>
+        <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
+
+        <label>Confirmer le mot de passe</label>
+        <input type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} required />
+
+        <button className="btn">Valider</button>
+      </form>
     </div>
   )
 }
