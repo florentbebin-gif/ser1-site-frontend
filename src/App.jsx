@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { supabase } from './supabaseClient.js'
 import { triggerReset } from './utils/reset.js'
+import { startIdleTimer } from './utils/idle.js'   // ⬅️ AJOUT
 
 export default function App(){
   const [session, setSession] = useState(null)
@@ -20,9 +21,21 @@ export default function App(){
     return () => { data?.subscription?.unsubscribe?.(); mounted = false }
   }, [])
 
-  // Déconnexion robuste: lien + signOut
-  async function onLogoutClick(e){
-    // On laisse le lien naviguer (href) mais on tente quand même un signOut
+  // 🔔 Déconnexion auto après 10 min d’inactivité
+  useEffect(() => {
+    if (!session) return
+    const stop = startIdleTimer({
+      timeoutMs: 10 * 60 * 1000,
+      onTimeout: async () => {
+        try { await supabase.auth.signOut() } catch {}
+        window.location.replace('/login?logout=1')
+      }
+    })
+    return stop
+  }, [session])
+
+  // Déconnexion robuste: lien + signOut (navigation dure garantie)
+  async function onLogoutClick(){
     try { await supabase.auth.signOut() } catch {}
   }
 
@@ -51,10 +64,7 @@ export default function App(){
           )}
 
           {isAuthed ? (
-            // ⬇️ lien HTML => navigation dure vers /login?logout=1
-            <a href="/login?logout=1" className="chip logout" onClick={onLogoutClick}>
-              Déconnexion
-            </a>
+            <a href="/login?logout=1" className="chip logout" onClick={onLogoutClick}>Déconnexion</a>
           ) : (
             !onAuthFree && <Link to="/login" className="chip">Connexion</Link>
           )}
