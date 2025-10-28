@@ -1,43 +1,43 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient.js'
 
 export default function Login(){
-  const nav = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
 
-  // Nettoie les erreurs hash (#error=...) et redirige si session déjà présente
+  // 1) Nettoie un éventuel hash d'erreur et affiche un message clair
   useEffect(() => {
     const hash = window.location.hash || ''
-    if (hash) {
-      const p = new URLSearchParams(hash.replace(/^#/, ''))
-      const code = p.get('error_code')
-      if (code) {
-        setError(code === 'otp_expired'
-          ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
-          : "Une erreur d’authentification est survenue. Veuillez réessayer."
-        )
-      }
-      history.replaceState(null, '', window.location.pathname)
+    if (!hash) return
+    const p = new URLSearchParams(hash.replace(/^#/, ''))
+    const code = p.get('error_code')
+    if (code) {
+      setError(code === 'otp_expired'
+        ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
+        : "Une erreur d’authentification est survenue. Veuillez réessayer."
+      )
     }
+    history.replaceState(null, '', window.location.pathname)
   }, [])
 
-  // Si une session arrive (password login, magic link, reset…), on va sur /
+  // 2) Si une session apparaît (password / magic link / reset), on fait un HARD redirect
   useEffect(() => {
     let mounted = true
     ;(async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (mounted && session) nav('/', { replace: true })
+      if (mounted && session) {
+        // redémarre l’appli proprement -> évite tout état collant après plusieurs cycles
+        window.location.replace('/')
+      }
     })()
     const { data } = supabase.auth.onAuthStateChange((_e, s) => {
-      if (s) nav('/', { replace: true })
+      if (s) window.location.replace('/')
     })
     return () => { data?.subscription?.unsubscribe?.(); mounted = false }
-  }, [nav])
+  }, [])
 
   async function onSubmit(e){
     e.preventDefault()
@@ -45,7 +45,10 @@ export default function Login(){
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
     if (error) setError(error.message)
-    else nav('/', { replace: true })
+    else {
+      // on ne passe pas par le routeur SPA -> on repart “propre”
+      window.location.replace('/')
+    }
   }
 
   async function sendReset(e){
@@ -74,8 +77,7 @@ export default function Login(){
   }
 
   return (
-    <>
-      {/* HERO non fixe = aucune surcouche persistante */}
+    <div className="login-fullbleed">
       <section className="login-hero">
         <div className="login-hero__bg" />
         <div className="login-hero__overlay" />
@@ -127,7 +129,7 @@ export default function Login(){
         </div>
       </section>
 
-      {/* Styles locaux : aucun position:fixed */}
+      {/* Styles locaux */}
       <style>{`
         :root{
           --green:#2C3D38;
@@ -136,11 +138,18 @@ export default function Login(){
           --border:#D9D9D9;
           --topbar-h:56px; /* hauteur de ta topbar */
         }
+
+        /* 🔥 Full-bleed: sort du conteneur .container pour prendre 100% largeur */
+        .login-fullbleed{
+          width:100vw;
+          margin-left:calc(50% - 50vw);
+        }
+
         .login-hero{
           position: relative;
           width: 100%;
           min-height: calc(100vh - var(--topbar-h));
-          margin-top: calc(var(--topbar-h)); /* se place sous la topbar */
+          margin-top: var(--topbar-h); /* sous la topbar */
           display: grid;
           grid-template-columns: 1fr;
           justify-items: center;
@@ -152,7 +161,6 @@ export default function Login(){
           background-image: url('/login-bg.jpg');
           background-size: cover;
           background-position: center;
-          transform: translateZ(0);
         }
         .login-hero__overlay{
           position:absolute; inset:0;
@@ -187,7 +195,6 @@ export default function Login(){
         .form-grid{ display:flex; flex-direction:column; gap:12px; }
         .form-row{ display:flex; flex-direction:column; gap:6px; }
         .form-row.btns{ flex-direction:row; flex-wrap:wrap; gap:10px; }
-
         label{ color:#2a2a2a; font-weight:600; }
         input{
           border:1px solid var(--border); border-radius:10px;
@@ -209,6 +216,6 @@ export default function Login(){
         .alert.error{ background:#fee2e2; color:#991b1b; }
         .alert.success{ background:#e7f9ee; color:#166534; }
       `}</style>
-    </>
+    </div>
   )
 }
