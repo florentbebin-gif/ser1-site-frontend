@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
 
 export default function Login(){
@@ -7,18 +7,28 @@ export default function Login(){
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
+  const [blockAutoRedirect, setBlockAutoRedirect] = useState(false) // ⬅️ empêche l’auto-redirect après logout
+  const signedOutOnce = useRef(false)
 
-  // 0) Si on arrive avec ?logout=1 => on force la déconnexion
+  // 0) Si on arrive avec ?logout=1 : on force la déconnexion et on BLOQUE l'auto-redirect
   useEffect(() => {
     const url = new URL(window.location.href)
     if (url.searchParams.get('logout') === '1') {
-      ;(async () => { try { await supabase.auth.signOut() } catch {} })()
-      url.searchParams.delete('logout')
-      window.history.replaceState(null, '', url.toString())
+      setBlockAutoRedirect(true)
+      ;(async () => {
+        try {
+          await supabase.auth.signOut()
+        } catch {}
+        finally {
+          signedOutOnce.current = true
+          url.searchParams.delete('logout')
+          window.history.replaceState(null, '', url.toString())
+        }
+      })()
     }
   }, [])
 
-  // 1) Nettoyer un éventuel hash d’erreur Supabase
+  // 1) Nettoie un éventuel hash d’erreur Supabase
   useEffect(() => {
     const hash = window.location.hash || ''
     if (!hash) return
@@ -33,18 +43,31 @@ export default function Login(){
     history.replaceState(null, '', window.location.pathname)
   }, [])
 
-  // 2) Dès qu’une session apparaît => hard redirect vers /
+  // 2) Suivi de session : on NE redirige que si blockAutoRedirect === false
   useEffect(() => {
     let mounted = true
     ;(async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (mounted && session) window.location.replace('/')
+      if (!mounted) return
+      if (session) {
+        if (!blockAutoRedirect) window.location.replace('/')  // ✅ pas de ré-connexion instantanée après logout
+      } else {
+        // Quand on a bien détecté l’absence de session après un logout, on déverrouille
+        if (signedOutOnce.current) setBlockAutoRedirect(false)
+      }
     })()
+
     const { data } = supabase.auth.onAuthStateChange((_e, s) => {
-      if (s) window.location.replace('/')
+      if (!mounted) return
+      if (s) {
+        if (!blockAutoRedirect) window.location.replace('/')
+      } else {
+        if (signedOutOnce.current) setBlockAutoRedirect(false)
+      }
     })
+
     return () => { data?.subscription?.unsubscribe?.(); mounted = false }
-  }, [])
+  }, [blockAutoRedirect])
 
   async function onSubmit(e){
     e.preventDefault()
@@ -52,7 +75,7 @@ export default function Login(){
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
     if (error) setError(error.message)
-    else window.location.replace('/') // on repart proprement
+    else window.location.replace('/') // on repart proprement (hard redirect)
   }
 
   async function sendReset(e){
@@ -82,7 +105,7 @@ export default function Login(){
 
   return (
     <div className="login-root">
-      {/* Fond plein écran, derrière la topbar */}
+      {/* Fond plein écran qui RECOUVRE aussi la topbar */}
       <div className="login-bg" aria-hidden="true" />
       <div className="login-overlay" aria-hidden="true" />
 
@@ -142,13 +165,16 @@ export default function Login(){
           --border:#D9D9D9;
         }
 
-        .topbar{ position: relative; z-index: 10; }
+        /* On MASQUE la topbar sur la page login (tu demandais à la recouvrir) */
+        .topbar { display: none !important; }
 
         .login-root{
           position: relative;
           width: 100%;
-          min-height: 100vh;
+          min-height: 100vh; /* recouvre toute la page */
+          overflow: hidden;
         }
+        /* Image de fond qui couvre TOUT, y compris la zone topbar */
         .login-bg{
           position: fixed; inset: 0; z-index: 0;
           background-image: url('/login-bg.jpg');
@@ -160,22 +186,17 @@ export default function Login(){
           pointer-events: none;
         }
 
-        /* 🎯 Grille: 2 colonnes sur desktop, 1 colonne sur mobile/tablette */
+        /* Grille: titre à gauche, carte à droite (1 colonne en mobile) */
         .login-grid{
-          position: relative;
-          z-index: 11;
+          position: relative; z-index: 2;
           display: grid;
           grid-template-columns: 1.2fr 0.8fr;
           gap: 40px;
           align-items: center;
-          padding: 96px 48px;    /* espace sous topbar + respirations */
+          padding: 96px 48px;
         }
         @media (max-width: 1024px){
-          .login-grid{
-            grid-template-columns: 1fr;
-            padding: 88px 20px;
-            row-gap: 28px;
-          }
+          .login-grid{ grid-template-columns: 1fr; padding: 88px 20px; row-gap: 28px; }
         }
 
         .login-title{
