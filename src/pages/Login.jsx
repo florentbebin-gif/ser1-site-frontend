@@ -8,7 +8,17 @@ export default function Login(){
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
 
-  // Nettoie un éventuel hash d'erreur (#error=...) et affiche un message clair
+  // 0) Si on arrive avec ?logout=1 => on force la déconnexion
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (url.searchParams.get('logout') === '1') {
+      ;(async () => { try { await supabase.auth.signOut() } catch {} })()
+      url.searchParams.delete('logout')
+      window.history.replaceState(null, '', url.toString())
+    }
+  }, [])
+
+  // 1) Nettoyer un éventuel hash d’erreur Supabase
   useEffect(() => {
     const hash = window.location.hash || ''
     if (!hash) return
@@ -23,7 +33,7 @@ export default function Login(){
     history.replaceState(null, '', window.location.pathname)
   }, [])
 
-  // Dès qu'une session apparaît (login / magic link / reset) → HARD redirect vers /
+  // 2) Dès qu’une session apparaît => hard redirect vers /
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -42,7 +52,7 @@ export default function Login(){
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
     if (error) setError(error.message)
-    else window.location.replace('/') // redémarre proprement l’app
+    else window.location.replace('/') // on repart proprement
   }
 
   async function sendReset(e){
@@ -72,11 +82,11 @@ export default function Login(){
 
   return (
     <div className="login-root">
-      {/* Fond plein écran sous/derrière la topbar */}
+      {/* Fond plein écran, derrière la topbar */}
       <div className="login-bg" aria-hidden="true" />
       <div className="login-overlay" aria-hidden="true" />
 
-      <div className="login-rail">
+      <div className="login-grid">
         <div className="login-title">
           <h1 className="login-brand">SER1</h1>
           <div className="login-sub">Simulateur épargne retraite</div>
@@ -124,7 +134,6 @@ export default function Login(){
         </div>
       </div>
 
-      {/* Styles locaux : fond recouvre TOUT, y compris sous la topbar */}
       <style>{`
         :root{
           --green:#2C3D38;
@@ -133,68 +142,65 @@ export default function Login(){
           --border:#D9D9D9;
         }
 
-        /* La topbar passe au-dessus, le fond passe dessous (=> aucune bande blanche) */
         .topbar{ position: relative; z-index: 10; }
 
         .login-root{
           position: relative;
           width: 100%;
-          min-height: 100vh; /* recouvre toute la page */
+          min-height: 100vh;
         }
-
-        /* Fond image plein écran, derrière la topbar */
         .login-bg{
-          position: fixed;
-          inset: 0;
-          z-index: 0;                 /* DERRIÈRE la topbar */
+          position: fixed; inset: 0; z-index: 0;
           background-image: url('/login-bg.jpg');
-          background-size: cover;
-          background-position: center;
+          background-size: cover; background-position: center;
         }
         .login-overlay{
-          position: fixed;
-          inset: 0;
-          z-index: 1;                 /* toujours derrière la topbar (z-index 10) */
+          position: fixed; inset: 0; z-index: 1;
           background: rgba(44,61,56,0.30);
           pointer-events: none;
         }
 
-        /* Rail de contenu */
-        .login-rail{
+        /* 🎯 Grille: 2 colonnes sur desktop, 1 colonne sur mobile/tablette */
+        .login-grid{
           position: relative;
-          z-index: 11;                /* au-dessus du fond, en-dessous/topbar ok */
+          z-index: 11;
           display: grid;
-          grid-template-columns: 1fr;
-          justify-items: center;
+          grid-template-columns: 1.2fr 0.8fr;
+          gap: 40px;
           align-items: center;
-          padding: 72px 16px 48px;    /* marge visuelle */
+          padding: 96px 48px;    /* espace sous topbar + respirations */
+        }
+        @media (max-width: 1024px){
+          .login-grid{
+            grid-template-columns: 1fr;
+            padding: 88px 20px;
+            row-gap: 28px;
+          }
         }
 
         .login-title{
-          position: absolute;
-          left: 4vw;
-          top: 18vh;
           color: #fff;
           text-shadow: 0 2px 4px rgba(0,0,0,.25);
-          max-width: min(680px, 60vw);
+          max-width: 800px;
         }
-        @media (max-width: 768px){
-          .login-title{ left: 20px; top: 14vh; max-width: 86vw; }
-        }
-
         .login-brand{
-          font-size: 64px; font-weight: 800; line-height: 1; margin: 0 0 8px 0;
-          border-bottom: 4px solid var(--beige); display: inline-block; padding-bottom: 6px;
+          font-size: 72px; font-weight: 800; line-height: 1.05;
+          margin: 0 0 10px 0;
+          border-bottom: 5px solid var(--beige);
+          display: inline-block; padding-bottom: 8px;
         }
-        @media (max-width: 640px){ .login-brand{ font-size: 46px; } }
-        .login-sub{ font-size: 28px; font-weight: 600; }
+        .login-sub{ font-size: 32px; font-weight: 600; }
+        @media (max-width: 640px){
+          .login-brand{ font-size: 48px; border-bottom-width: 4px; }
+          .login-sub{ font-size: 22px; }
+        }
 
         .login-card{
-          width: min(92vw, 520px);
+          width: min(92vw, 560px);
           background: #fff; border-radius: 14px; padding: 22px;
           box-shadow: 0 8px 30px rgba(0,0,0,.22);
           border: 1px solid rgba(0,0,0,.08);
-          margin-top: 22vh; /* positionne la carte sous la topbar + titre */
+          justify-self: center;
         }
         .card-title{ font-size: 22px; font-weight: 700; margin-bottom: 10px; color:#1e1e1e; }
 
