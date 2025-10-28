@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient.js'
 import { triggerReset } from './utils/reset.js'
+import { startIdleTimer } from './utils/idle.js'
 
 export default function App(){
   const [session, setSession] = useState(null)
@@ -46,9 +47,33 @@ export default function App(){
     }
   }, [session, loadingSession, isAuthFree, location.pathname, nav])
 
+  // ⏱️ Auto-logout après 10 min d'inactivité (sans perdre les saisies)
+  useEffect(() => {
+    if (!session) return
+    const stop = startIdleTimer({
+      timeoutMs: 10 * 60 * 1000, // 10 minutes
+      onTimeout: async () => {
+        try {
+          await supabase.auth.signOut()
+        } catch (e) {
+          console.warn('auto signOut failed', e)
+        } finally {
+          // on ne touche PAS aux données locales (localStorage etc.)
+          nav('/login', { replace: true })
+        }
+      },
+    })
+    return stop
+  }, [session, nav])
+
   async function handleLogout(){
-    try { await supabase.auth.signOut() } finally {
-      // On laisse la garde d’auth gérer ensuite, mais on force vers /login par sécurité
+    try {
+      await supabase.auth.signOut()
+    } catch (e) {
+      console.warn('manual signOut failed', e)
+    } finally {
+      // ⚠️ On NE réinitialise PAS les saisies ici
+      // (triggerReset reste disponible dans le menu si l’utilisateur le veut)
       nav('/login', { replace: true })
     }
   }
@@ -91,7 +116,6 @@ export default function App(){
           {isAuthed ? (
             <button className="chip logout" onClick={handleLogout}>Déconnexion</button>
           ) : (
-            // Sur /login on n’affiche pas le bouton “Connexion” (inutile)
             !/^\/login(\/|$)/.test(location.pathname) && (
               <Link to="/login" className="chip">Connexion</Link>
             )
@@ -99,7 +123,7 @@ export default function App(){
         </div>
       </div>
 
-      {/* IMPORTANT : on rend TOUJOURS l’Outlet (même pendant le chargement) */}
+      {/* On rend toujours l’Outlet, même si la session charge, pour éviter les écrans vides */}
       <div className="container">
         <Outlet/>
       </div>
