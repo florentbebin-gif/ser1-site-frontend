@@ -10,7 +10,7 @@ export default function App(){
   const nav = useNavigate()
   const location = useLocation()
 
-  // Routes accessibles sans auth (tolère /login, /login/, /reset, /reset/…)
+  // Routes accessibles sans auth
   const isAuthFree = useMemo(() => {
     const p = location.pathname || '/'
     return /^\/login(\/|$)/.test(p) || /^\/reset(\/|$)/.test(p)
@@ -33,11 +33,13 @@ export default function App(){
 
     const { data } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
+      // Si la session devient nulle, on force vers /login
+      if (!s) nav('/login', { replace: true })
     })
     return () => { data?.subscription?.unsubscribe?.(); mounted = false }
-  }, [])
+  }, [nav])
 
-  // Garde d’auth (ne s’active qu’après la fin du chargement de session)
+  // Garde d’auth (après chargement)
   useEffect(() => {
     if (loadingSession) return
     if (!session && !isAuthFree) {
@@ -47,34 +49,27 @@ export default function App(){
     }
   }, [session, loadingSession, isAuthFree, location.pathname, nav])
 
-  // ⏱️ Auto-logout après 10 min d'inactivité (sans perdre les saisies)
+  // Auto-logout inactivité (10 min)
   useEffect(() => {
     if (!session) return
     const stop = startIdleTimer({
-      timeoutMs: 10 * 60 * 1000, // 10 minutes
+      timeoutMs: 10 * 60 * 1000,
       onTimeout: async () => {
-        try {
-          await supabase.auth.signOut()
-        } catch (e) {
-          console.warn('auto signOut failed', e)
-        } finally {
-          // on ne touche PAS aux données locales (localStorage etc.)
-          nav('/login', { replace: true })
-        }
+        try { await supabase.auth.signOut() } catch {}
+        // Hard redirect pour éviter tout état transitoire
+        window.location.replace('/login')
       },
     })
     return stop
-  }, [session, nav])
+  }, [session])
 
+  // Déconnexion manuelle fiable
   async function handleLogout(){
-    try {
-      await supabase.auth.signOut()
-    } catch (e) {
+    try { await supabase.auth.signOut() } catch (e) {
       console.warn('manual signOut failed', e)
     } finally {
-      // ⚠️ On NE réinitialise PAS les saisies ici
-      // (triggerReset reste disponible dans le menu si l’utilisateur le veut)
-      nav('/login', { replace: true })
+      // Hard redirect = pas de flicker, pas de reste d’état
+      window.location.replace('/login')
     }
   }
 
@@ -84,6 +79,7 @@ export default function App(){
   }
 
   const isAuthed = !!session
+  const canView = isAuthFree || isAuthed || loadingSession // on laisse /login et /reset s'afficher même si ça charge
 
   return (
     <div>
@@ -92,12 +88,7 @@ export default function App(){
 
         <div className="top-actions">
           {isAuthed && (
-            <Link
-              to="/"
-              className={`chip ${location.pathname === '/' ? 'active' : ''}`}
-            >
-              HOME
-            </Link>
+            <Link to="/" className={`chip ${location.pathname === '/' ? 'active' : ''}`}>HOME</Link>
           )}
 
           {isAuthed && (
@@ -105,27 +96,23 @@ export default function App(){
           )}
 
           {isAuthed && (
-            <Link
-              to="/params"
-              className={`chip ${location.pathname.startsWith('/params') ? 'active' : ''}`}
-            >
-              Paramètres
-            </Link>
+            <Link to="/params" className={`chip ${location.pathname.startsWith('/params') ? 'active' : ''}`}>Paramètres</Link>
           )}
 
           {isAuthed ? (
             <button className="chip logout" onClick={handleLogout}>Déconnexion</button>
           ) : (
-            !/^\/login(\/|$)/.test(location.pathname) && (
+            // Sur /login et /reset, pas de bouton "Connexion"
+            !(/^\/login(\/|$)|^\/reset(\/|$)/.test(location.pathname)) && (
               <Link to="/login" className="chip">Connexion</Link>
             )
           )}
         </div>
       </div>
 
-      {/* On rend toujours l’Outlet, même si la session charge, pour éviter les écrans vides */}
+      {/* IMPORTANT : ne jamais afficher le contenu privé quand il n'y a pas de session */}
       <div className="container">
-        <Outlet/>
+        {canView ? <Outlet/> : null}
       </div>
     </div>
   )
