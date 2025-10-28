@@ -8,7 +8,17 @@ export default function App(){
   const [session, setSession] = useState(null)
   const [loggingOut, setLoggingOut] = useState(false)
   const location = useLocation()
-
+// petit helper : n'attend pas indéfiniment le signOut
+async function signOutWithTimeout(ms = 1500) {
+  try {
+    await Promise.race([
+      supabase.auth.signOut({ scope: 'global' }),
+      new Promise(resolve => setTimeout(resolve, ms))
+    ])
+  } catch {
+    // on ignore : on passe à la suite de toute façon
+  }
+}
   // Suivre la session pour l'UI
   useEffect(() => {
     let mounted = true
