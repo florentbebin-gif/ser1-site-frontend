@@ -58,7 +58,7 @@ export default function ResetPassword() {
       // --- chemin “recovery moderne” (hash avec access/refresh) ---
      if (access && refresh) {
   try {
-    // (a) Log de diagnostic (déjà OK chez toi)
+    // 0) Diagnostic (tu l'as déjà, je le garde)
     const u = await supabase.auth.getUser(access)
     if (u.error) {
       addDebug(`getUser(access) ERROR: ${u.error.message}`)
@@ -66,44 +66,56 @@ export default function ResetPassword() {
       addDebug(`getUser(access) OK user.id=${u.data?.user?.id || 'unknown'}`)
     }
 
-    // (b) On passe aussi expires_at (certains environnements en ont besoin)
-    const exp = Number(
-      (new URLSearchParams((window.location.hash || '').replace(/^#/, ''))).get('expires_at')
-      || (new URLSearchParams((window.location.search || '').replace(/^\?/, ''))).get('expires_at')
-      || 0
-    )
-
-    const { data: setData, error: setErr } = await supabase.auth.setSession({
-      access_token: access,
-      refresh_token: refresh,
-      // Optionnel mais utile : si présent, le SDK le respecte
-      expires_at: Number.isFinite(exp) && exp > 0 ? exp : undefined,
-      token_type: 'bearer',
-    })
-
-    if (setErr) {
-      addDebug(`setSession ERROR: ${setErr.message}`)
-      setPhase('error')
-      setError("Impossible d'initialiser la session de réinitialisation.")
-      return
+    // 1) Chemin recommandé : laisser le SDK traiter le hash
+    //    -> crée et stocke la session dans sessionStorage
+    const res = await supabase.auth.getSessionFromUrl({ storeSession: true, createUser: false })
+    if (res.error) {
+      addDebug(`getSessionFromUrl ERROR: ${res.error.message}`)
+    } else {
+      addDebug(`getSessionFromUrl OK: has session=${!!res.data?.session}`)
     }
-    addDebug(`setSession OK: has session=${!!setData?.session}`)
 
-    // (c) Vérification immédiate
+    // 2) Vérification immédiate
     const after = await supabase.auth.getSession()
-    addDebug(`getSession() after setSession: has session=${!!after.data?.session}`)
+    addDebug(`getSession() after getSessionFromUrl: has session=${!!after.data?.session}`)
+
+    // 3) Fallback si jamais (très rare) getSessionFromUrl n’a rien posé
     if (!after.data?.session) {
-      setPhase('error')
-      setError("La session n'a pas pu être enregistrée. Réessayez le lien.")
-      return
+      // on tente setSession manuellement (avec expires_at si dispo)
+      const exp = Number(
+        (new URLSearchParams((window.location.hash || '').replace(/^#/, ''))).get('expires_at')
+        || (new URLSearchParams((window.location.search || '').replace(/^\?/, ''))).get('expires_at')
+        || 0
+      )
+      const { data: setData, error: setErr } = await supabase.auth.setSession({
+        access_token: access,
+        refresh_token: refresh,
+        expires_at: Number.isFinite(exp) && exp > 0 ? exp : undefined,
+        token_type: 'bearer',
+      })
+      if (setErr) {
+        addDebug(`setSession ERROR: ${setErr.message}`)
+        setPhase('error')
+        setError("Impossible d'initialiser la session de réinitialisation.")
+        return
+      }
+      addDebug(`setSession OK: has session=${!!setData?.session}`)
+
+      const again = await supabase.auth.getSession()
+      addDebug(`getSession() after setSession: has session=${!!again.data?.session}`)
+      if (!again.data?.session) {
+        setPhase('error')
+        setError("La session n'a pas pu être enregistrée. Réessayez le lien.")
+        return
+      }
     }
 
-    // (d) Nettoyage du hash puis passage en READY
+    // 4) Nettoyage de l’URL et passage en READY
     try { history.replaceState(null, '', window.location.pathname) } catch {}
     setPhase('ready')
     return
   } catch (e) {
-    addDebug(`setSession TRY/CATCH ERROR: ${e?.message || e}`)
+    addDebug(`TRY/CATCH in access+refresh block: ${e?.message || e}`)
     setPhase('error')
     setError("Impossible d'initialiser la session de réinitialisation.")
     return
@@ -111,7 +123,6 @@ export default function ResetPassword() {
     clearTimeout(timeout)
   }
 }
-
 
       // --- chemin de repli : ?token=...&type=recovery ---
       if (token && (type === 'recovery' || type === 'recovery_token')) {
