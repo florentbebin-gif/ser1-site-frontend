@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { supabase } from '../supabaseClient.js'
 
 export default function Login(){
@@ -7,105 +7,35 @@ export default function Login(){
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
-  const [blockAutoRedirect, setBlockAutoRedirect] = useState(false)
-  const signedOutOnce = useRef(false)
-  const inFlight = useRef(false)
-  const loadingTimer = useRef(null)
-
-  // ?logout=1 → force logout puis empêche l’auto redirect jusqu’à fin déconnexion
-  useEffect(() => {
-    const url = new URL(window.location.href)
-    if (url.searchParams.get('logout') === '1') {
-      setBlockAutoRedirect(true)
-      ;(async () => {
-        try { await supabase.auth.signOut() } catch {}
-        finally {
-          signedOutOnce.current = true
-          url.searchParams.delete('logout')
-          window.history.replaceState(null, '', url.toString())
-        }
-      })()
-    }
-  }, [])
-
-  // Nettoyage erreurs dans l’URL (#error=…)
-  useEffect(() => {
-    const hash = window.location.hash || ''
-    if (!hash) return
-    const p = new URLSearchParams(hash.replace(/^#/, ''))
-    const code = p.get('error_code')
-    if (code) {
-      setError(code === 'otp_expired'
-        ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
-        : "Une erreur d’authentification est survenue. Réessayez."
-      )
-    }
-    history.replaceState(null, '', window.location.pathname)
-  }, [])
-
-  // Auto redirect si session détectée
-  useEffect(() => {
-    let mounted = true
-    ;(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!mounted) return
-      if (session && !blockAutoRedirect) window.location.replace('/')
-      if (!session && signedOutOnce.current) setBlockAutoRedirect(false)
-    })()
-
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return
-      if (session && !blockAutoRedirect) window.location.replace('/')
-      if (!session && signedOutOnce.current) setBlockAutoRedirect(false)
-    })
-
-    return () => { data?.subscription?.unsubscribe?.(); mounted = false }
-  }, [blockAutoRedirect])
-
-  function startLoadingSafely() {
-    setLoading(true)
-    clearTimeout(loadingTimer.current)
-    loadingTimer.current = setTimeout(async () => {
-      setLoading(false); inFlight.current = false
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session && !blockAutoRedirect) window.location.replace('/')
-    }, 10000)
-  }
-
-  function stopLoadingSafely() {
-    clearTimeout(loadingTimer.current)
-    setLoading(false); inFlight.current = false
-  }
 
   async function onSubmit(e){
     e.preventDefault()
-    if (inFlight.current) return
-    inFlight.current = true
-    setError(''); setInfo('')
-    setBlockAutoRedirect(false)
-    startLoadingSafely()
-
-    supabase.auth.signInWithPassword({ email, password })
-      .then(({ error }) => {
-        if (error) { stopLoadingSafely(); setError(error.message) }
-      })
-      .catch(() => { stopLoadingSafely(); setError("Impossible de se connecter.") })
+    setError(''); setInfo(''); setLoading(true)
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
+      // ✅ Navigation dure immédiate : on arrive bien sur les tuiles
+      window.location.assign('/')
+    } catch (e) {
+      setError(e?.message || "Impossible de se connecter. Réessayez.")
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // ✅ Version correcte (unique, dans le composant)
   async function sendReset(e){
     e.preventDefault()
     if (!email) return setError("Saisissez votre email.")
     setError(''); setInfo(''); setLoading(true)
-
-    try { localStorage.setItem('lastResetEmail', email) } catch {}
-
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset`
       })
-      if (error) setError(error.message)
-      else setInfo('Lien envoyé. Vérifiez vos emails.')
+      if (error) throw error
+      try { localStorage.setItem('lastResetEmail', email) } catch {}
+      setInfo('Lien de réinitialisation envoyé. Vérifiez vos emails.')
+    } catch (e) {
+      setError(e?.message || "Échec de l’envoi du lien.")
     } finally {
       setLoading(false)
     }
@@ -124,21 +54,28 @@ export default function Login(){
 
         <div className="login-card">
           <div className="card-title">Connexion</div>
-
           {error && <div className="alert error">{error}</div>}
           {info && <div className="alert success">{info}</div>}
 
           <form onSubmit={onSubmit} className="form-grid">
             <div className="form-row">
               <label>Email</label>
-              <input type="email" placeholder="vous@exemple.com"
-                value={email} onChange={e=>setEmail(e.target.value)} required />
+              <input
+                type="email"
+                placeholder="vous@exemple.com"
+                value={email}
+                onChange={e=>setEmail(e.target.value)}
+                required
+              />
             </div>
-
             <div className="form-row">
               <label>Mot de passe</label>
-              <input type="password"
-                value={password} onChange={e=>setPassword(e.target.value)} required />
+              <input
+                type="password"
+                value={password}
+                onChange={e=>setPassword(e.target.value)}
+                required
+              />
             </div>
 
             <div className="form-row btns">
