@@ -8,6 +8,7 @@ export default function App(){
   const [session, setSession] = useState(null)
   const [loggingOut, setLoggingOut] = useState(false)
   const location = useLocation()
+  const onResetPage = location.pathname.startsWith('/reset')
 // petit helper : n'attend pas indéfiniment le signOut
 async function signOutWithTimeout(ms = 1500) {
   try {
@@ -34,20 +35,18 @@ async function signOutWithTimeout(ms = 1500) {
 
   // 🔔 Déconnexion auto après 10 min d’inactivité
 useEffect(() => {
-  if (!session) return
+  if (!session || onResetPage) return
   const stop = startIdleTimer({
     timeoutMs: 10 * 60 * 1000,
     onTimeout: async () => {
-      await signOutWithTimeout(1500)
-      try {
-        Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k))
-      } catch {}
+      await signOutWithTimeout?.(1500) // si tu as ce helper ; sinon supprime cette ligne
+      try { Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k)) } catch {}
       try { sessionStorage.clear() } catch {}
       window.location.href = '/login?logout=1'
     }
   })
   return stop
-}, [session])
+}, [session, onResetPage])
 
 async function handleLogout(){
   if (loggingOut) return
