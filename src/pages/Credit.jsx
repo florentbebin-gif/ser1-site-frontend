@@ -490,38 +490,53 @@ export default function Credit(){
     [pretsPlus]
   )
 
-  const synthesePeriodes = useMemo(() => {
-    if (pretsPlus.length === 0) return []
+  // === Tableau des périodes (affiché s’il y a ≥1 prêt additionnel)
+const synthesePeriodes = useMemo(() => {
+  if (pretsPlus.length === 0) return []
 
-    const changeSet = new Set([0])
-    pretsPlus.forEach(p => {
-      const off = Math.max(0, monthsDiff(startYM, p.startYM || startYM))
-      const Np  = Math.max(1, Math.floor(toNum(p.duree) || 0))
-      changeSet.add(off)
-      changeSet.add(off + Np)
-    })
+  // 1) Points de rupture : 0 + début/fin effectifs (relatifs à startYM) de chaque prêt 2/3
+  const changeSet = new Set([0])
 
-    const points = Array.from(changeSet)
-      .sort((a,b)=>a-b)
-      .filter(x => x < agrRows.length)
+  pretsPlus.forEach(p => {
+    const offRaw = monthsDiff(startYM, p.startYM || startYM) // peut être négatif si le prêt a déjà commencé
+    const Np     = Math.max(1, Math.floor(toNum(p.duree) || 0))
 
-    const rows = points.map(t => {
-      const ym = addMonths(startYM, t)
-      const p1 = pret1Rows[t]?.mensu || 0
-      const p2 = autresRows[0]?.[t]?.mensu || 0
-      const p3 = autresRows[1]?.[t]?.mensu || 0
-      return { from:`À partir de ${labelMonthFR(ym)}`, p1, p2, p3 }
-    })
+    // Début “vu depuis startYM” (si prêt déjà en cours, c’est 0)
+    const startIdx = Math.max(0, offRaw)
 
-    const dedup = []
-    for (const r of rows) {
-      const last = dedup[dedup.length-1]
-      if (last && last.p1===r.p1 && last.p2===r.p2 && last.p3===r.p3) continue
-      dedup.push(r)
-    }
-    return dedup
-  // ➜ dépend aussi explicitement de startYM et des dates des prêts additionnels
-  }, [pretsPlus, datesKey, startYM, agrRows.length, pret1Rows, autresRows])
+    // Fin “vu depuis startYM”
+    // - si offRaw < 0  => endIdx = Np + offRaw (mois restants)
+    // - si offRaw >= 0 => endIdx = offRaw + Np
+    const endIdx = Math.max(0, offRaw + Np)
+
+    changeSet.add(startIdx)
+    changeSet.add(endIdx)
+  })
+
+  // 2) On garde seulement les points dans l’horizon simulé
+  const maxLen = Math.max(pret1Rows.length, ...autresRows.map(a => a.length), N)
+  const points = Array.from(changeSet)
+    .sort((a, b) => a - b)
+    .filter(x => x < maxLen)
+
+  // 3) Matérialise les lignes avec leurs mensualités à ces points
+  const rows = points.map(t => {
+    const ym = addMonths(startYM, t)
+    const p1 = pret1Rows[t]?.mensu || 0
+    const p2 = autresRows[0]?.[t]?.mensu || 0
+    const p3 = autresRows[1]?.[t]?.mensu || 0
+    return { from: `À partir de ${labelMonthFR(ym)}`, p1, p2, p3 }
+  })
+
+  // 4) Dédupe les lignes consécutives identiques
+  const dedup = []
+  for (const r of rows) {
+    const last = dedup[dedup.length - 1]
+    if (last && last.p1 === r.p1 && last.p2 === r.p2 && last.p3 === r.p3) continue
+    dedup.push(r)
+  }
+  return dedup
+}, [pretsPlus, startYM, pret1Rows, autresRows, N])
 
   /* ---- Vérifications ---- */
   const warnings = useMemo(() => {
