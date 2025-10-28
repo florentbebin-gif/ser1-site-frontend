@@ -188,3 +188,19 @@ export default function Login(){
     </div>
   )
 }
+  async function sendReset(e){
+    e.preventDefault()
+    if (!email) return setError("Saisissez votre email.")
+    setError(''); setInfo(''); setLoading(true)
++   try { localStorage.setItem('lastResetEmail', email) } catch {}
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset`
+      })
+      if (error) setError(error.message)
+      else setInfo('Lien de réinitialisation envoyé. Vérifiez vos emails.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
