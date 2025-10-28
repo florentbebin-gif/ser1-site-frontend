@@ -7,7 +7,7 @@ export default function App(){
   const [session, setSession] = useState(null)
   const location = useLocation()
 
-  // Écoute la session uniquement pour afficher/masquer les boutons
+  // État de session pour l’UI
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -20,20 +20,10 @@ export default function App(){
     return () => { data?.subscription?.unsubscribe?.(); mounted = false }
   }, [])
 
-  async function handleLogout(){
-    try {
-      // Déconnexion (local suffit pour l’app)
-      await supabase.auth.signOut()
-    } finally {
-      // Hard redirect pour être CERTAIN d’atterrir sur /login
-      window.location.replace('/login')
-      // Ceinture de sécurité si le navigateur ignore replace()
-      setTimeout(() => {
-        if (!/^\/login(\/|$)/.test(window.location.pathname)) {
-          window.location.assign('/login')
-        }
-      }, 50)
-    }
+  // Déconnexion robuste: lien + signOut
+  async function onLogoutClick(e){
+    // On laisse le lien naviguer (href) mais on tente quand même un signOut
+    try { await supabase.auth.signOut() } catch {}
   }
 
   function handleReset(){
@@ -61,7 +51,10 @@ export default function App(){
           )}
 
           {isAuthed ? (
-            <button className="chip logout" onClick={handleLogout}>Déconnexion</button>
+            // ⬇️ lien HTML => navigation dure vers /login?logout=1
+            <a href="/login?logout=1" className="chip logout" onClick={onLogoutClick}>
+              Déconnexion
+            </a>
           ) : (
             !onAuthFree && <Link to="/login" className="chip">Connexion</Link>
           )}
