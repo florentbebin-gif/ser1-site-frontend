@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient.js'
 import { triggerReset } from './utils/reset.js'
@@ -9,6 +9,8 @@ export default function App(){
   const [loadingSession, setLoadingSession] = useState(true)
   const nav = useNavigate()
   const location = useLocation()
+  const logoutInProgress = useRef(false)
+  const unsubRef = useRef(null)
 
   // Routes accessibles sans auth
   const isAuthFree = useMemo(() => {
@@ -33,10 +35,17 @@ export default function App(){
 
     const { data } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s)
-      // Si la session devient nulle, on force vers /login
-      if (!s) nav('/login', { replace: true })
+      // dès que la session tombe à null (logout/expiration), go /login
+      if (!s) {
+        // évite l’affichage de pages privées résiduelles
+        nav('/login', { replace: true })
+      }
     })
-    return () => { data?.subscription?.unsubscribe?.(); mounted = false }
+    unsubRef.current = data?.subscription
+    return () => {
+      unsubRef.current?.unsubscribe?.()
+      unsubRef.current = null
+    }
   }, [nav])
 
   // Garde d’auth (après chargement)
@@ -55,21 +64,41 @@ export default function App(){
     const stop = startIdleTimer({
       timeoutMs: 10 * 60 * 1000,
       onTimeout: async () => {
-        try { await supabase.auth.signOut() } catch {}
-        // Hard redirect pour éviter tout état transitoire
-        window.location.replace('/login')
+        if (logoutInProgress.current) return
+        logoutInProgress.current = true
+        try {
+          // on coupe toute session locale
+          await supabase.auth.signOut({ scope: 'local' })
+        } catch (e) {
+          console.warn('auto signOut failed', e)
+        } finally {
+          setSession(null) // optimiste: coupe tout rendu privé
+          // Hard reload pour repartir proprement
+          window.location.href = '/login'
+        }
       },
     })
     return stop
   }, [session])
 
-  // Déconnexion manuelle fiable
+  // Déconnexion manuelle 100% fiable
   async function handleLogout(){
-    try { await supabase.auth.signOut() } catch (e) {
+    if (logoutInProgress.current) return
+    logoutInProgress.current = true
+    try {
+      // optimiste: coupe l’UI privée tout de suite
+      setSession(null)
+      // déconnexion locale (suffisant pour email/mdp & magic link)
+      await supabase.auth.signOut({ scope: 'local' })
+    } catch (e) {
       console.warn('manual signOut failed', e)
     } finally {
-      // Hard redirect = pas de flicker, pas de reste d’état
-      window.location.replace('/login')
+      // on retire l’abonnement pour éviter tout écho
+      unsubRef.current?.unsubscribe?.()
+      unsubRef.current = null
+      // Hard redirect pour éviter tout état résiduel du SPA
+      window.location.href = '/login'
+      // (pas de finally reset: on quitte la page)
     }
   }
 
@@ -79,7 +108,7 @@ export default function App(){
   }
 
   const isAuthed = !!session
-  const canView = isAuthFree || isAuthed || loadingSession // on laisse /login et /reset s'afficher même si ça charge
+  const canView = isAuthFree || isAuthed || loadingSession
 
   return (
     <div>
@@ -88,7 +117,9 @@ export default function App(){
 
         <div className="top-actions">
           {isAuthed && (
-            <Link to="/" className={`chip ${location.pathname === '/' ? 'active' : ''}`}>HOME</Link>
+            <Link to="/" className={`chip ${location.pathname === '/' ? 'active' : ''}`}>
+              HOME
+            </Link>
           )}
 
           {isAuthed && (
@@ -96,13 +127,19 @@ export default function App(){
           )}
 
           {isAuthed && (
-            <Link to="/params" className={`chip ${location.pathname.startsWith('/params') ? 'active' : ''}`}>Paramètres</Link>
+            <Link
+              to="/params"
+              className={`chip ${location.pathname.startsWith('/params') ? 'active' : ''}`}
+            >
+              Paramètres
+            </Link>
           )}
 
           {isAuthed ? (
-            <button className="chip logout" onClick={handleLogout}>Déconnexion</button>
+            <button className="chip logout" onClick={handleLogout}>
+              Déconnexion
+            </button>
           ) : (
-            // Sur /login et /reset, pas de bouton "Connexion"
             !(/^\/login(\/|$)|^\/reset(\/|$)/.test(location.pathname)) && (
               <Link to="/login" className="chip">Connexion</Link>
             )
@@ -110,7 +147,6 @@ export default function App(){
         </div>
       </div>
 
-      {/* IMPORTANT : ne jamais afficher le contenu privé quand il n'y a pas de session */}
       <div className="container">
         {canView ? <Outlet/> : null}
       </div>
