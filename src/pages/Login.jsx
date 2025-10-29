@@ -2,85 +2,70 @@ import React, { useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
 
 export default function Login(){
-  // --- états communs ---
-  const [email, setEmail]           = useState('')
-  const [password, setPassword]     = useState('')
-  const [loading, setLoading]       = useState(false)
-  const [error, setError]           = useState('')
-  const [info, setInfo]             = useState('')
-  const inFlight                    = useRef(false)
+  // --- Connexion classique ---
+  const [email, setEmail]       = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading]   = useState(false)
+  const [error, setError]       = useState('')
+  const [info, setInfo]         = useState('')
+  const inFlight                = useRef(false)
 
-  // --- états récupération ---
+  // --- Réinitialisation (mode recovery déclenché par Supabase) ---
   const [isRecovery, setIsRecovery] = useState(false)
-  const [newPwd, setNewPwd]         = useState('')
-  const [newPwd2, setNewPwd2]       = useState('')
-  const [recoBusy, setRecoBusy]     = useState(false)
-  const [recoDebug, setRecoDebug]   = useState('')
+  const [newPwd, setNewPwd]   = useState('')
+  const [newPwd2, setNewPwd2] = useState('')
+  const [recoBusy, setRecoBusy] = useState(false)
 
-  const addDbg = (l) => setRecoDebug(prev => (prev ? prev + '\n' : '') + l)
-
-  // Au montage : détecte un retour de Supabase avec jetons dans le hash
+  // 1) Laisse Supabase parser le hash et déclencher PASSWORD_RECOVERY
   useEffect(() => {
+    let mounted = true
+
+    // Affiche une erreur si Supabase a renvoyé un code d’erreur dans le hash
     const raw = (window.location.hash || '').replace(/^#/, '')
-    if (!raw) return
-    const p = new URLSearchParams(raw)
-
-    // erreurs explicites
-    const err = p.get('error_code') || p.get('error')
-    if (err) {
-      setError(err === 'otp_expired'
-        ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
-        : "Lien de réinitialisation invalide."
-      )
-      history.replaceState(null, '', window.location.pathname)
-      return
+    if (raw) {
+      const p = new URLSearchParams(raw)
+      const err = p.get('error_code') || p.get('error')
+      if (err) {
+        setError(err === 'otp_expired'
+          ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
+          : "Lien de réinitialisation invalide."
+        )
+        // On laisse quand même le SDK traiter le hash pour créer la session si possible
+      }
     }
 
-    const access  = p.get('access_token')
-    const refresh = p.get('refresh_token')
-    addDbg(`hash=${raw}`)
+    // Ecoute des changements d’état d’auth
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return
 
-    if (access && refresh) {
-      // On se met en mode recovery et on pose la session pour autoriser updateUser
-      ;(async () => {
-        try {
-          const u = await supabase.auth.getUser(access)
-          if (u.error) addDbg(`getUser(access) ERROR: ${u.error.message}`)
-          else addDbg(`getUser(access) OK user.id=${u.data?.user?.id || 'unknown'}`)
+      // Quand l’utilisateur clique le lien de reset, le SDK :
+      // 1) lit le hash
+      // 2) pose la session dans sessionStorage
+      // 3) déclenche PASSWORD_RECOVERY
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecovery(true)
+      }
 
-          const exp = Number(p.get('expires_at') || 0)
-          const { data, error } = await supabase.auth.setSession({
-            access_token: access,
-            refresh_token: refresh,
-            token_type: 'bearer',
-            expires_at: Number.isFinite(exp) && exp > 0 ? exp : undefined,
-          })
-          if (error) {
-            addDbg(`setSession ERROR: ${error.message}`)
-            setError("Impossible d'initialiser la session de réinitialisation.")
-            return
-          }
-          addDbg(`setSession OK: has session=${!!data?.session}`)
+      // Si on est connecté “normalement” (hors recovery), on va aux tuiles
+      if (event === 'SIGNED_IN' && !isRecovery) {
+        window.location.assign('/')
+      }
+    })
 
-          const after = await supabase.auth.getSession()
-          addDbg(`getSession() after setSession: has session=${!!after.data?.session}`)
-          if (!after.data?.session) {
-            setError("La session n'a pas pu être enregistrée. Rouvrez le lien.")
-            return
-          }
+    // Si on arrive sur /login déjà connecté (ex: retour manuel)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return
+      if (session && !isRecovery) {
+        // Si la session provient du lien de recovery, l’event ci-dessus passera isRecovery à true
+        // Sinon on redirige vers /
+        window.location.assign('/')
+      }
+    })
 
-          setIsRecovery(true)
-          // On nettoie l’URL pour éviter de garder les tokens
-          try { history.replaceState(null, '', window.location.pathname) } catch {}
-        } catch (e) {
-          addDbg(`TRY/CATCH recovery: ${e?.message || e}`)
-          setError("Erreur pendant l'initialisation de la réinitialisation.")
-        }
-      })()
-    }
-  }, [])
+    return () => { mounted = false; sub?.subscription?.unsubscribe?.() }
+  }, [isRecovery])
 
-  // Connexion classique
+  // 2) Connexion classique
   async function onSubmit(e){
     e.preventDefault()
     if (inFlight.current) return
@@ -89,7 +74,7 @@ export default function Login(){
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
-      window.location.assign('/') // navigation dure vers les tuiles
+      window.location.assign('/') // redirection tuiles
     } catch (e) {
       setError(e?.message || "Impossible de se connecter. Réessayez.")
     } finally {
@@ -98,7 +83,7 @@ export default function Login(){
     }
   }
 
-  // Envoi du mail de reset → redirige vers /login (cette page)
+  // 3) Envoi du mail de reset (redirige vers /login)
   async function sendReset(e){
     e.preventDefault()
     if (!email) return setError("Saisissez votre email.")
@@ -109,7 +94,7 @@ export default function Login(){
       })
       if (error) throw error
       try { localStorage.setItem('lastResetEmail', email) } catch {}
-      setInfo('Lien de réinitialisation envoyé. Vérifiez vos emails.')
+      setInfo('Lien de réinitialisation envoyé. Ouvrez l’email et cliquez sur le lien.')
     } catch (e) {
       setError(e?.message || "Échec de l’envoi du lien.")
     } finally {
@@ -117,7 +102,7 @@ export default function Login(){
     }
   }
 
-  // Validation du nouveau mot de passe (mode recovery)
+  // 4) Validation du nouveau mot de passe (mode recovery)
   async function submitNewPwd(e){
     e.preventDefault()
     setError(''); setRecoBusy(true)
@@ -128,7 +113,7 @@ export default function Login(){
     setRecoBusy(false)
     if (error) return setError(error.message)
 
-    // Succès → on revient sur les tuiles
+    // Succès → on va sur les tuiles
     window.location.assign('/')
   }
 
@@ -147,8 +132,8 @@ export default function Login(){
         {/* Bloc connexion */}
         <div className="login-card">
           <div className="card-title">Connexion</div>
-          {error && !isRecovery && <div className="alert error">{error}</div>}
-          {info && !isRecovery && <div className="alert success">{info}</div>}
+          {!isRecovery && error && <div className="alert error">{error}</div>}
+          {!isRecovery && info && <div className="alert success">{info}</div>}
 
           <form onSubmit={onSubmit} className="form-grid" style={{opacity: isRecovery ? .35 : 1, pointerEvents: isRecovery ? 'none' : 'auto'}}>
             <div className="form-row">
@@ -183,7 +168,7 @@ export default function Login(){
         </div>
       </div>
 
-      {/* --- Box de RÉINITIALISATION (s’affiche uniquement en mode recovery) --- */}
+      {/* --- Box de RÉINITIALISATION (affichée uniquement en mode recovery) --- */}
       {isRecovery && (
         <div className="login-recovery">
           <div className="login-card">
@@ -206,13 +191,6 @@ export default function Login(){
                 <a className="btn-outline" href="/login">Annuler</a>
               </div>
             </form>
-
-            {/* Debug repli — optionnel. Laisse-le qq jours pour vérifier */}
-            {recoDebug && (
-              <pre style={{marginTop:12, background:'#f6f6f6', padding:12, borderRadius:8, fontSize:12, whiteSpace:'pre-wrap'}}>
-                {recoDebug}
-              </pre>
-            )}
           </div>
         </div>
       )}
@@ -241,7 +219,7 @@ export default function Login(){
         .btn:disabled{ opacity:.6; cursor:not-allowed; }
         .btn-outline{ background:#fff; color:#111; border:1px solid var(--border); border-radius:12px; padding:10px 14px; cursor:pointer; }
 
-        /* Box recovery en dessous, centrée */
+        /* Box recovery sous la box de login */
         .login-recovery{
           position:relative; z-index:2;
           display:flex; justify-content:center;
