@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "./supabaseClient";
 import { useNavigate } from "react-router-dom";
 
@@ -15,10 +15,7 @@ export default function ProtectedRoute({ children }) {
       if (!mounted) return;
       setSession(session);
       setChecked(true);
-      if (!session) {
-        // on protège seulement ici
-        navigate("/login", { replace: true });
-      }
+      if (!session) navigate("/login", { replace: true });
     })();
 
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
@@ -33,17 +30,10 @@ export default function ProtectedRoute({ children }) {
   }, [navigate]);
 
   if (!checked) {
-    return (
-      <div style={{ padding: 24, fontFamily: "system-ui" }}>
-        Initialisation…
-      </div>
-    );
+    return <div style={{ padding: 24 }}>Initialisation…</div>;
   }
 
-  if (!session) {
-    // Une redirection a déjà été déclenchée ci-dessus.
-    return null;
-  }
+  if (!session) return null;
 
   return children;
 }
