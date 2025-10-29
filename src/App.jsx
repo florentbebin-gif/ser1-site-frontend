@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import { supabase } from './supabaseClient.js'
 import { triggerReset } from './utils/reset.js'
 import { startIdleTimer } from './utils/idle.js'
-
+<Route path="/reset" element={<ResetPassword />} />
 export default function App(){
   const [session, setSession] = useState(null)
   const [loggingOut, setLoggingOut] = useState(false)
