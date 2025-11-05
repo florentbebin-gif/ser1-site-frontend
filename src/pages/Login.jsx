@@ -10,7 +10,7 @@ export default function Login(){
   const [info, setInfo]             = useState('')
   const inFlight                    = useRef(false)
   const recoveryAccessRef = useRef(null) // access_token du lien pour fallback REST
-  
+  const gotAuthEventRef = useRef(false);
   // --- états récupération ---
   const [isRecovery, setIsRecovery] = useState(false)
   const [newPwd, setNewPwd]         = useState('')
@@ -68,16 +68,15 @@ useEffect(() => {
   recoveryAccessRef.current = access;
 
   // 1) Écoute les événements Supabase (plus fiable que d’attendre setSession)
-  const sub = supabase.auth.onAuthStateChange((evt) => {
-    // Ces événements signifient que la session est posée. On peut ouvrir la box.
-    if (evt === "PASSWORD_RECOVERY" || evt === "SIGNED_IN" || evt === "INITIAL_SESSION") {
-      setIsRecovery(true);
-      try {
-        const clean = window.location.pathname + window.location.search;
-        window.history.replaceState(null, "", clean);
-      } catch {}
-    }
-  });
+ const sub = supabase.auth.onAuthStateChange((evt) => {
+   if (evt === "PASSWORD_RECOVERY" || evt === "SIGNED_IN" || evt === "INITIAL_SESSION") {
+     gotAuthEventRef.current = true;     // <-- on a bien une session
+     setError("");                       // <-- efface tout message d'erreur résiduel
+     setInfo("");
+     setIsRecovery(true);                // <-- ouvre la box
+     try { window.history.replaceState(null, "", window.location.pathname + window.location.search); } catch {}
+   }
+ });
 
   // 2) Tente setSession mais avec TIMEOUT, et sans bloquer l’UI
   const delay = (ms) => new Promise(res => setTimeout(res, ms));
@@ -95,8 +94,8 @@ useEffect(() => {
       const { data } = await withTimeout(supabase.auth.getSession(), 2000).catch(()=>({}));
       if (data?.session) {
         setIsRecovery(true);
-      } else {
-        setError("Impossible d'initialiser la session de récupération. Renvoyez un nouveau lien.");
+      } else if (!gotAuthEventRef.current) {
+       setError("Impossible d'initialiser la session de récupération. Renvoyez un nouveau lien.");
       }
     } finally {
       // dans tous les cas, on nettoie l’URL
@@ -149,10 +148,10 @@ useEffect(() => {
   }
 
   // Validation du nouveau mot de passe (mode recovery)
-// REMPLACER ENTIEREMENT submitNewPwd par ceci
 async function submitNewPwd(e){
   e.preventDefault();
   setError('');
+
   if (newPwd.length < 8) return setError("Au moins 8 caractères.");
   if (newPwd !== newPwd2) return setError("Les deux mots de passe ne correspondent pas.");
 
@@ -171,35 +170,43 @@ async function submitNewPwd(e){
     ]);
 
   try {
-    // 1) Tentative SDK rapide (6s)
-    const res1 = await withTimeout(supabase.auth.updateUser({ password: newPwd }), 6000, "updateUser(1)")
-      .catch((e) => e);
-
-    if (!(res1 instanceof Error) && !res1?.error) {
-      setRecoBusy(false);
+    // 1) SDK direct
+    const r1 = await withTimeout(supabase.auth.updateUser({ password: newPwd }), 6000, "updateUser(1)")
+      .catch(e => e);
+    if (!(r1 instanceof Error) && !r1?.error) {
+      // succès immédiat
       await supabase.auth.signOut().catch(()=>{});
-      return window.location.assign('/login');
+      setRecoBusy(false);
+      // Nettoyage UI : ferme la box et vide les champs
+      setIsRecovery(false);
+      setNewPwd(""); setNewPwd2("");
+      setPassword("");                 // <-- vide le champ mot de passe de la zone de connexion
+      setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
+      return;
     }
 
-    // 2) Refresh puis 2e essai SDK
-    await withTimeout(supabase.auth.refreshSession(), 2500, "refreshSession").catch(() => {});
-    const res2 = await withTimeout(supabase.auth.updateUser({ password: newPwd }), 6000, "updateUser(2)")
-      .catch((e) => e);
-
-    if (!(res2 instanceof Error) && !res2?.error) {
-      setRecoBusy(false);
+    // 2) refresh + 2e essai SDK
+    await withTimeout(supabase.auth.refreshSession(), 2500, "refreshSession").catch(()=>{});
+    const r2 = await withTimeout(supabase.auth.updateUser({ password: newPwd }), 6000, "updateUser(2)")
+      .catch(e => e);
+    if (!(r2 instanceof Error) && !r2?.error) {
       await supabase.auth.signOut().catch(()=>{});
-      return window.location.assign('/login');
+      setRecoBusy(false);
+      setIsRecovery(false);
+      setNewPwd(""); setNewPwd2("");
+      setPassword("");
+      setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
+      return;
     }
 
-    // 3) Fallback REST: PUT puis PATCH /auth/v1/user, avec access_token du lien
+    // 3) Fallback REST
     const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
     const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
     const accessFromLink = recoveryAccessRef.current;
 
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !accessFromLink) {
       setRecoBusy(false);
-      return setError("Impossible de finaliser la réinitialisation (config manquante). Renvoyez-vous un nouveau lien.");
+      return setError("Impossible de finaliser la réinitialisation (config manquante). Renvoyez un nouveau lien.");
     }
 
     const endpoints = [
@@ -219,14 +226,12 @@ async function submitNewPwd(e){
           },
           body: JSON.stringify({ password: newPwd }),
         }), 7000, `REST:${ep.method}`);
-
         if (!resp.ok) {
           const t = await resp.text().catch(()=> "");
           restErr = `HTTP ${resp.status} ${resp.statusText} :: ${t}`;
           continue;
         }
-        restOk = true;
-        break;
+        restOk = true; break;
       } catch (e3) {
         restErr = e3?._timeout ? "timeout" : (e3?.message || "fetch error");
       }
@@ -236,24 +241,23 @@ async function submitNewPwd(e){
 
     if (restOk) {
       await supabase.auth.signOut().catch(()=>{});
-      return window.location.assign('/login');
+      setIsRecovery(false);
+      setNewPwd(""); setNewPwd2("");
+      setPassword("");
+      setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
+      return;
     }
 
-    // sinon : message utile
-    if (res2 instanceof Error) {
-      if (res2?._timeout) {
-        return setError("La validation prend trop de temps. Vérifiez votre connexion ou désactivez temporairement les bloqueurs (adblock / cookies), puis réessayez.");
-      }
-      return setError("Erreur inattendue pendant la mise à jour. Réessayez.");
-    } else {
-      return setError(res2?.error?.message || restErr || "Impossible de mettre à jour le mot de passe.");
+    // Échec final : message utile
+    if (r2 instanceof Error && r2?._timeout) {
+      return setError("La validation prend trop de temps. Vérifiez votre connexion ou désactivez temporairement les bloqueurs (adblock / cookies), puis réessayez.");
     }
+    return setError((r2?.error?.message || restErr || "Impossible de mettre à jour le mot de passe."));
   } catch (e) {
     setRecoBusy(false);
     return setError("Erreur inattendue lors de la mise à jour du mot de passe.");
   }
 }
-
 
   return (
     <div className="login-root">
