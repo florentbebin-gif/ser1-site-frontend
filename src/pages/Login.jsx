@@ -36,20 +36,6 @@ export default function Login(){
     return out;
   }
 
-  // AJOUT — parse "#a=b&c=d" en préservant les '+'
-function parseHashPreservingPlus(rawHash) {
-  const out = {};
-  if (!rawHash) return out;
-  const s = rawHash.replace(/^#/, "");
-  for (const pair of s.split("&")) {
-    if (!pair) continue;
-    const eq = pair.indexOf("=");
-    const k = eq >= 0 ? pair.slice(0, eq) : pair;
-    const v = eq >= 0 ? pair.slice(eq + 1) : "";
-    out[decodeURIComponent(k)] = decodeURIComponent(v); // ne transforme pas '+' en espace
-  }
-  return out;
-}
   
 // AJOUT — active la réinitialisation SANS changer de page
 useEffect(() => {
@@ -124,7 +110,7 @@ useEffect(() => {
     setError(''); setInfo(''); setLoading(true)
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/login`,
+        redirectTo: `${window.location.origin}/login#recovery`,
       })
       if (error) throw error
       try { localStorage.setItem('lastResetEmail', email) } catch {}
