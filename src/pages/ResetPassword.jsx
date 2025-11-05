@@ -224,54 +224,78 @@ export default function ResetPassword() {
     if (password.length < 8) return setError("Le mot de passe doit contenir au moins 8 caractères.");
     if (password !== confirm) return setError("Les deux mots de passe ne correspondent pas.");
 
-    // 1) session présente ?
-    addDbg("submit: vérification session…");
-    const { data: sessData, error: sessErr } = await supabase.auth.getSession();
-    if (sessErr) {
-      addDbg(`submit:getSession ERROR: ${sessErr.message}`);
-      return setError("Session indisponible. Rouvrez le lien depuis l’email.");
-    }
-    if (!sessData?.session) {
-      addDbg("submit:getSession → pas de session.");
-      return setError("Session expirée. Renvoyez-vous un nouveau lien de réinitialisation.");
-    }
-    addDbg("submit: session OK, on appelle updateUser…");
+    // NB: Certains navigateurs/extensions font traîner getSession().
+    // On NE l'utilise plus ici pour ne pas bloquer la soumission.
 
     setSaving(true);
-    // 2) on protège l'appel par un timeout pour éviter le blocage UI
+    addDbg("submit:start → updateUser()");
+
+    // petite aide locale
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-    try {
-      const result = await Promise.race([
-        supabase.auth.updateUser({ password }),
+    const withTimeout = (p, ms, label) =>
+      Promise.race([
+        p,
         (async () => {
-          await delay(8000);
-          const e = new Error("TIMEOUT:updateUser:8000");
-          e._timeout = true;
-          throw e;
+          await delay(ms);
+          const err = new Error(`TIMEOUT:${label}:${ms}`);
+          err._timeout = true;
+          throw err;
         })(),
       ]);
 
-      if (result?.error) {
-        addDbg(`submit:updateUser ERROR: ${result.error.message}`);
+    try {
+      // Tentative 1 : updateUser direct (6s)
+      const res1 = await withTimeout(supabase.auth.updateUser({ password }), 6000, "updateUser(1)")
+        .catch((e) => e);
+
+      if (!(res1 instanceof Error) && !res1?.error) {
+        addDbg("submit:updateUser(1) OK → signOut + redirect");
+        await supabase.auth.signOut().catch(() => {});
         setSaving(false);
-        // messages fréquents : "New password should be different", "Password should be at least X characters"
-        return setError(result.error.message || "Impossible de mettre à jour le mot de passe.");
+        window.location.assign("/login");
+        return;
       }
 
-      addDbg("submit:updateUser OK → signOut + redirect");
-      // 3) on se déconnecte de la session recovery puis on redirige
-      await supabase.auth.signOut().catch(() => {});
+      // Si erreur/timeout → petit refresh de session + 2e essai
+      if (res1 instanceof Error) {
+        addDbg(`submit:updateUser(1) ERROR: ${res1?._timeout ? "timeout" : res1.message}`);
+      } else {
+        addDbg(`submit:updateUser(1) ERROR(api): ${res1.error?.message || "unknown"}`);
+      }
+
+      addDbg("submit:refreshSession() puis updateUser(2)");
+      await withTimeout(supabase.auth.refreshSession(), 2500, "refreshSession").catch(() => {});
+
+      const res2 = await withTimeout(supabase.auth.updateUser({ password }), 6000, "updateUser(2)")
+        .catch((e) => e);
+
+      if (!(res2 instanceof Error) && !res2?.error) {
+        addDbg("submit:updateUser(2) OK → signOut + redirect");
+        await supabase.auth.signOut().catch(() => {});
+        setSaving(false);
+        window.location.assign("/login");
+        return;
+      }
+
+      // Toujours pas → messages utiles
       setSaving(false);
-      window.location.assign("/login");
+      if (res2 instanceof Error) {
+        if (res2?._timeout) {
+          addDbg("submit:updateUser(2) TIMEOUT");
+          return setError(
+            "La validation prend trop de temps. Vérifiez votre connexion ou désactivez temporairement les bloqueurs (adblock / cookies), puis réessayez."
+          );
+        }
+        addDbg(`submit TRY/CATCH (updateUser): ${res2.message}`);
+        return setError("Erreur inattendue pendant la mise à jour. Réessayez.");
+      } else {
+        const msg = res2.error?.message || "Impossible de mettre à jour le mot de passe.";
+        addDbg(`submit:updateUser(2) API ERROR: ${msg}`);
+        return setError(msg);
+      }
     } catch (e) {
       setSaving(false);
-      if (e?._timeout) {
-        addDbg("submit:updateUser TIMEOUT");
-        return setError(
-          "La validation prend trop de temps. Vérifiez votre connexion ou désactivez temporairement les bloqueurs (adblock / cookies), puis réessayez."
-        );
-      }
-      addDbg(`submit TRY/CATCH: ${e?.message || e}`);
+      addDbg(`submit FATAL: ${e?.message || e}`);
       return setError("Erreur inattendue lors de la mise à jour du mot de passe.");
     }
   }
