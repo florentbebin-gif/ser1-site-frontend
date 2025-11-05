@@ -11,6 +11,7 @@ export default function Login(){
   const inFlight                    = useRef(false)
   const recoveryAccessRef = useRef(null) // access_token du lien pour fallback REST
   const gotAuthEventRef = useRef(false);
+  const closingRecoveryRef = useRef(false); // <-- garde: on ignore les events quand on ferme la box
   // --- états récupération ---
   const [isRecovery, setIsRecovery] = useState(false)
   const [newPwd, setNewPwd]         = useState('')
@@ -69,7 +70,8 @@ useEffect(() => {
 
   // 1) Écoute les événements Supabase (plus fiable que d’attendre setSession)
  const sub = supabase.auth.onAuthStateChange((evt) => {
-   if (evt === "PASSWORD_RECOVERY" || evt === "SIGNED_IN" || evt === "INITIAL_SESSION") {
+   if (closingRecoveryRef.current) return; // <-- ne pas ré-ouvrir si on est en train de fermer
+    if (evt === "PASSWORD_RECOVERY" || evt === "SIGNED_IN" || evt === "INITIAL_SESSION") {
      gotAuthEventRef.current = true;     // <-- on a bien une session
      setError("");                       // <-- efface tout message d'erreur résiduel
      setInfo("");
@@ -175,10 +177,10 @@ async function submitNewPwd(e){
       .catch(e => e);
     if (!(r1 instanceof Error) && !r1?.error) {
       // succès immédiat
-      await supabase.auth.signOut().catch(()=>{});
-      setRecoBusy(false);
-      // Nettoyage UI : ferme la box et vide les champs
-      setIsRecovery(false);
+     closingRecoveryRef.current = true;           // <-- active la garde
+     setIsRecovery(false);                        // ferme la box tout de suite
+     await supabase.auth.signOut().catch(()=>{}); // puis déconnexion
+     setRecoBusy(false);
       setNewPwd(""); setNewPwd2("");
       setPassword("");                 // <-- vide le champ mot de passe de la zone de connexion
       setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
@@ -190,9 +192,10 @@ async function submitNewPwd(e){
     const r2 = await withTimeout(supabase.auth.updateUser({ password: newPwd }), 6000, "updateUser(2)")
       .catch(e => e);
     if (!(r2 instanceof Error) && !r2?.error) {
-      await supabase.auth.signOut().catch(()=>{});
-      setRecoBusy(false);
-      setIsRecovery(false);
+     closingRecoveryRef.current = true;           // <-- active la garde
+     setIsRecovery(false);                        // ferme la box tout de suite
+     await supabase.auth.signOut().catch(()=>{}); // puis déconnexion
+     setRecoBusy(false);   
       setNewPwd(""); setNewPwd2("");
       setPassword("");
       setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
@@ -240,8 +243,9 @@ async function submitNewPwd(e){
     setRecoBusy(false);
 
     if (restOk) {
-      await supabase.auth.signOut().catch(()=>{});
-      setIsRecovery(false);
+     closingRecoveryRef.current = true;
+     setIsRecovery(false);
+     await supabase.auth.signOut().catch(()=>{});
       setNewPwd(""); setNewPwd2("");
       setPassword("");
       setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
