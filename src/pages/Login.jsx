@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
 
-const DEBUG_AUTH = import.meta.env.VITE_DEBUG_AUTH === "1";
-
 export default function Login(){
   // --- états communs ---
   const [email, setEmail]           = useState('')
@@ -12,161 +10,146 @@ export default function Login(){
   const [info, setInfo]             = useState('')
   const inFlight                    = useRef(false)
 
-  // --- mode récupération ---
+  // --- états récupération ---
   const [isRecovery, setIsRecovery] = useState(false)
   const [newPwd, setNewPwd]         = useState('')
   const [newPwd2, setNewPwd2]       = useState('')
   const [recoBusy, setRecoBusy]     = useState(false)
   const [recoDebug, setRecoDebug]   = useState('')
-  const recoveryAccessRef           = useRef(null)
 
-  const addDbg = (msg) => {
-    if (!DEBUG_AUTH) return;
-    setRecoDebug(prev => (prev ? prev + "\n" : "") + msg);
-    console.log("[LOGIN:RECOVERY]", msg);
-  };
+  const addDbg = (l) => setRecoDebug(prev => (prev ? prev + '\n' : '') + l)
 
-  function parseHashPreservingPlus(raw){
+  // --- parseur de hash qui préserve les "+" dans refresh_token ---
+  function parseHashPreservingPlus(rawHash) {
     const out = {};
-    if (!raw) return out;
-    const s = raw.replace(/^#/, '');
-    for(const part of s.split('&')){
-      if (!part) continue;
-      const eq = part.indexOf('=');
-      const k = eq >= 0 ? part.slice(0, eq) : part;
-      const v = eq >= 0 ? part.slice(eq+1) : '';
+    if (!rawHash) return out;
+    const s = rawHash.replace(/^#/, ''); // enlève le #
+    for (const pair of s.split('&')) {
+      if (!pair) continue;
+      const eq = pair.indexOf('=');
+      const k = eq >= 0 ? pair.slice(0, eq) : pair;
+      const v = eq >= 0 ? pair.slice(eq + 1) : '';
+      // Important: on n'interprète pas "+" comme espace (contrairement à URLSearchParams).
       out[decodeURIComponent(k)] = decodeURIComponent(v);
     }
     return out;
   }
 
+  // Au montage : détecte un retour de Supabase avec jetons dans le hash
   useEffect(() => {
-    const raw = window.location.hash || '';
-    if (!raw) return;
+    const rawHash = window.location.hash || ''
+    if (!rawHash) return
+    const p = parseHashPreservingPlus(rawHash)
 
-    const p = parseHashPreservingPlus(raw);
-    const err = p.error_code || p.error;
-    if (err){
-      setError(err === "otp_expired"
+    // erreurs explicites
+    const err = p.error_code || p.error
+    if (err) {
+      setError(err === 'otp_expired'
         ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
         : "Lien de réinitialisation invalide."
-      );
-      window.history.replaceState(null, '', window.location.pathname);
-      return;
+      )
+      window.history.replaceState(null, '', window.location.pathname)
+      return
     }
 
-    const access = p.access_token;
-    const refresh = p.refresh_token;
-    const type = p.type;
+    const access  = p.access_token
+    const refresh = p.refresh_token
+    const type    = p.type
 
-    if (type === "recovery" && access && refresh){
-      recoveryAccessRef.current = access;
-      addDbg(`hash=${raw}`);
+    // log utile
+    const cleanedHash = rawHash.replace(/^#/, '')
+    addDbg(`hash=${cleanedHash}`)
 
-      (async () => {
+    if (type === 'recovery' && access && refresh) {
+      // On se met en mode recovery et on pose la session pour autoriser updateUser
+      ;(async () => {
         try {
-          addDbg("→ setSession");
-          const { error } = await supabase.auth.setSession({ access_token: access, refresh_token: refresh });
-          if (error){
-            addDbg("setSession ERROR: " + error.message);
-            setError("Lien invalide ou expiré.");
-            return;
+          const u = await supabase.auth.getUser(access)
+          if (u.error) addDbg(`getUser(access) ERROR: ${u.error.message}`)
+          else addDbg(`getUser(access) OK user.id=${u.data?.user?.id || 'unknown'}`)
+
+          const { data, error } = await supabase.auth.setSession({
+            access_token: access,
+            refresh_token: refresh,
+          })
+          if (error) {
+            addDbg(`setSession ERROR: ${error.message}`)
+            setError("Lien invalide ou expiré. Demandez un nouveau lien de réinitialisation.")
+            return
           }
-          addDbg("setSession OK");
+          addDbg(`setSession OK: has session=${!!data?.session}`)
 
-          const { data } = await supabase.auth.getSession();
-          addDbg("session now=" + !!data?.session);
+          const after = await supabase.auth.getSession()
+          addDbg(`getSession() after setSession: has session=${!!after.data?.session}`)
+          if (!after.data?.session) {
+            setError("La session n'a pas pu être enregistrée. Rouvrez le lien.")
+            return
+          }
 
-          setIsRecovery(true);
+          setIsRecovery(true)
+          // Nettoie l'URL (hash) sans perdre la page courante
           try {
-            const clean = window.location.pathname + window.location.search;
-            window.history.replaceState(null, '', clean);
+            const clean = window.location.pathname + window.location.search
+            window.history.replaceState(null, '', clean)
           } catch {}
-        } catch(e){
-          addDbg("RECOVERY ERROR: " + e?.message);
-          setError("Erreur lors du chargement du lien.");
+        } catch (e) {
+          addDbg(`TRY/CATCH recovery: ${e?.message || e}`)
+          setError("Erreur pendant l'initialisation de la réinitialisation.")
         }
-      })();
+      })()
     }
-  }, []);
+  }, [])
 
+  // Connexion classique
   async function onSubmit(e){
-    e.preventDefault();
-    if (inFlight.current) return;
-    inFlight.current = true;
-    setError(''); setInfo(''); setLoading(true);
-
+    e.preventDefault()
+    if (inFlight.current) return
+    inFlight.current = true
+    setError(''); setInfo(''); setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      window.location.assign('/');
-    } catch(e){
-      setError(e?.message || "Impossible de se connecter.");
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
+      window.location.assign('/') // navigation dure vers les tuiles
+    } catch (e) {
+      setError(e?.message || "Impossible de se connecter. Réessayez.")
     } finally {
-      setLoading(false);
-      inFlight.current = false;
+      setLoading(false)
+      inFlight.current = false
     }
   }
 
+  // Envoi du mail de reset → redirige vers /reset
   async function sendReset(e){
-    e.preventDefault();
-    if(!email) return setError("Saisissez votre email.");
-    setError(''); setInfo(''); setLoading(true);
+    e.preventDefault()
+    if (!email) return setError("Saisissez votre email.")
+    setError(''); setInfo(''); setLoading(true)
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset`,
-      });
-      if (error) throw error;
-      setInfo("Si ce compte existe, un email vient d’être envoyé.");
-    } catch(e){
-      setError(e?.message || "Échec de l’envoi.");
+      })
+      if (error) throw error
+      try { localStorage.setItem('lastResetEmail', email) } catch {}
+      setInfo('Si ce compte existe, un email vient d’être envoyé. Vérifiez vos emails.')
+    } catch (e) {
+      setError(e?.message || "Échec de l’envoi du lien.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
-  // === Soumission du NOUVEAU mot de passe (avec fallback REST) ===
+  // Validation du nouveau mot de passe (mode recovery)
   async function submitNewPwd(e){
-    e.preventDefault();
-    setError('');
-    if (newPwd.length < 8) return setError("Au moins 8 caractères.");
-    if (newPwd !== newPwd2) return setError("Les deux mots de passe ne correspondent pas.");
+    e.preventDefault()
+    setError(''); setRecoBusy(true)
+    if (newPwd.length < 8) { setRecoBusy(false); return setError('Au moins 8 caractères.') }
+    if (newPwd !== newPwd2) { setRecoBusy(false); return setError('Les deux mots de passe ne correspondent pas.') }
 
-    setRecoBusy(true);
-    const direct = await supabase.auth.updateUser({ password: newPwd })
-      .catch(e => e);
+    const { error } = await supabase.auth.updateUser({ password: newPwd })
+    setRecoBusy(false)
+    if (error) return setError(error.message)
 
-    if (!(direct instanceof Error) && !direct?.error){
-      setRecoBusy(false);
-      await supabase.auth.signOut().catch(()=>{});
-      return window.location.assign('/login');
-    }
-
-    addDbg("⚠ updateUser bloqué → fallback REST");
-
-    const access = recoveryAccessRef.current;
-    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${access}`,
-        "apikey": SUPABASE_ANON_KEY
-      },
-      body: JSON.stringify({ password: newPwd })
-    }).catch(e=>e);
-
-    setRecoBusy(false);
-
-    if (!res || res.status >= 400){
-      setError("Impossible de mettre à jour le mot de passe. Renvoyez un nouveau lien.");
-      return;
-    }
-
-    await supabase.auth.signOut().catch(()=>{});
-    return window.location.assign('/login');
+    // Succès → on revient sur les tuiles
+    window.location.assign('/')
   }
 
   return (
@@ -175,15 +158,17 @@ export default function Login(){
       <div className="login-overlay" aria-hidden="true" />
 
       <div className="login-grid">
+        {/* Bloc titre gauche */}
         <div className="login-title">
           <h1 className="login-brand">SER1</h1>
           <div className="login-sub">Simulateur épargne retraite</div>
         </div>
 
+        {/* Bloc connexion */}
         <div className="login-card">
           <div className="card-title">Connexion</div>
           {error && !isRecovery && <div className="alert error">{error}</div>}
-          {info  && !isRecovery && <div className="alert success">{info}</div>}
+          {info && !isRecovery && <div className="alert success">{info}</div>}
 
           <form onSubmit={onSubmit} className="form-grid" style={{opacity: isRecovery ? .35 : 1, pointerEvents: isRecovery ? 'none' : 'auto'}}>
             <div className="form-row">
@@ -196,7 +181,6 @@ export default function Login(){
                 required
               />
             </div>
-
             <div className="form-row">
               <label>Mot de passe</label>
               <input
@@ -219,10 +203,11 @@ export default function Login(){
         </div>
       </div>
 
+      {/* --- Box de RÉINITIALISATION (s’affiche uniquement en mode recovery) --- */}
       {isRecovery && (
         <div className="login-recovery">
           <div className="login-card">
-            <div className="card-title">Réinitialisation</div>
+            <div className="card-title">Réinitialisation du mot de passe</div>
             {error && <div className="alert error">{error}</div>}
 
             <form onSubmit={submitNewPwd} className="form-grid">
@@ -231,10 +216,9 @@ export default function Login(){
                 <input type="password" value={newPwd} onChange={e=>setNewPwd(e.target.value)} required />
               </div>
               <div className="form-row">
-                <label>Confirmer</label>
+                <label>Confirmer le mot de passe</label>
                 <input type="password" value={newPwd2} onChange={e=>setNewPwd2(e.target.value)} required />
               </div>
-
               <div className="form-row btns">
                 <button className="btn" disabled={recoBusy}>
                   {recoBusy ? 'Validation…' : 'Valider'}
@@ -243,7 +227,8 @@ export default function Login(){
               </div>
             </form>
 
-            {DEBUG_AUTH && recoDebug && (
+            {/* Debug repli — optionnel */}
+            {recoDebug && (
               <pre style={{marginTop:12, background:'#f6f6f6', padding:12, borderRadius:8, fontSize:12, whiteSpace:'pre-wrap'}}>
                 {recoDebug}
               </pre>
@@ -251,6 +236,45 @@ export default function Login(){
           </div>
         </div>
       )}
+
+      {/* Bloc style sécurisé pour Vercel/Esbuild */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        :root{ --green:#2C3D38; --beige:#e8ded5; --ink:#222; --border:#D9D9D9; }
+        .topbar { display: none !important; }
+        .login-root{ position:relative; width:100%; min-height:100vh; overflow:hidden; }
+        .login-bg{ position:fixed; inset:0; z-index:0; background-image:url('/login-bg.jpg'); background-size:cover; background-position:center; }
+        .login-overlay{ position:fixed; inset:0; z-index:1; background:rgba(44,61,56,0.30); pointer-events:none; }
+        .login-grid{ position:relative; z-index:2; display:grid; grid-template-columns:1.2fr 0.8fr; gap:40px; align-items:center; padding:96px 48px; }
+        @media (max-width:1024px){ .login-grid{ grid-template-columns:1fr; padding:88px 20px; row-gap:28px; } }
+        .login-title{ color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.25); max-width:800px; }
+        .login-brand{ font-size:72px; font-weight:800; line-height:1.05; margin:0 0 10px 0; border-bottom:5px solid var(--beige); display:inline-block; padding-bottom:8px; }
+        .login-sub{ font-size:32px; font-weight:600; }
+        @media (max-width:640px){ .login-brand{ font-size:48px; border-bottom-width:4px; } .login-sub{ font-size:22px; } }
+        .login-card{ width:min(92vw,560px); background:#fff; border-radius:14px; padding:22px; box-shadow:0 8px 30px rgba(0,0,0,.22); border:1px solid rgba(0,0,0,.08); justify-self:center; }
+        .card-title{ font-size:22px; font-weight:700; margin-bottom:10px; color:#1e1e1e; }
+        .form-grid{ display:flex; flex-direction:column; gap:12px; }
+        .form-row{ display:flex; flex-direction:column; gap:6px; }
+        .form-row.btns{ flex-direction:row; flex-wrap:wrap; gap:10px; }
+        label{ color:#2a2a2a; font-weight:600; }
+        input{ border:1px solid var(--border); border-radius:10px; padding:10px 12px; outline:none; font-size:15px; }
+        input:focus{ border-color:var(--green); box-shadow:0 0 0 3px rgba(44,61,56,0.12); }
+        .btn{ background:var(--green); color:#fff; border:none; padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700; }
+        .btn:disabled{ opacity:.6; cursor:not-allowed; }
+        .btn-outline{ background:#fff; color:#111; border:1px solid var(--border); border-radius:12px; padding:10px 14px; cursor:pointer; }
+
+        /* Box recovery en dessous, centrée */
+        .login-recovery{
+          position:relative; z-index:2;
+          display:flex; justify-content:center;
+          margin: -12px 0 24px;
+          padding: 0 48px;
+        }
+        @media (max-width:1024px){ .login-recovery{ padding: 0 20px; } }
+        `,
+        }}
+      />
     </div>
   )
 }
