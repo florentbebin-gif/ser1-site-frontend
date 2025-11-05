@@ -98,18 +98,18 @@ export default function Login(){
     }
   }
 
-  // Envoi du mail de reset → redirige vers /login (cette page)
+  // Envoi du mail de reset → redirige vers /reset
   async function sendReset(e){
     e.preventDefault()
     if (!email) return setError("Saisissez votre email.")
     setError(''); setInfo(''); setLoading(true)
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset
+        redirectTo: `${window.location.origin}/reset`,
       })
       if (error) throw error
       try { localStorage.setItem('lastResetEmail', email) } catch {}
-      setInfo('Lien de réinitialisation envoyé. Vérifiez vos emails.')
+      setInfo('Si ce compte existe, un email vient d’être envoyé. Vérifiez vos emails.')
     } catch (e) {
       setError(e?.message || "Échec de l’envoi du lien.")
     } finally {
