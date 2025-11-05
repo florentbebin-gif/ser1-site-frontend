@@ -1,210 +1,182 @@
-import React, { useEffect, useState } from 'react'
-import { supabase } from '../supabaseClient.js'
+import React, { useEffect, useState } from "react";
+import { supabase } from "../supabaseClient";
+
+// Parse le fragment "#a=b&c=d" en préservant les "+"
+function parseHashPreservingPlus(rawHash) {
+  const out = {};
+  if (!rawHash) return out;
+  const s = rawHash.replace(/^#/, "");
+  for (const pair of s.split("&")) {
+    if (!pair) continue;
+    const eq = pair.indexOf("=");
+    const k = eq >= 0 ? pair.slice(0, eq) : pair;
+    const v = eq >= 0 ? pair.slice(eq + 1) : "";
+    out[decodeURIComponent(k)] = decodeURIComponent(v); // ne convertit pas "+" en espace
+  }
+  return out;
+}
 
 export default function ResetPassword() {
-  const [phase, setPhase] = useState('init') // init | need_email | ready | done | error
-  const [email, setEmail] = useState(() => {
-    try { return localStorage.getItem('lastResetEmail') || '' } catch { return '' }
-  })
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm]   = useState('')
-  const [busy, setBusy]         = useState(false)
-  const [error, setError]       = useState('')
-  const [debug, setDebug]       = useState('')
+  const [ready, setReady] = useState(false);      // prêt à afficher le formulaire
+  const [error, setError] = useState("");         // message d’erreur lisible
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [debug, setDebug] = useState("");         // facultatif, pratique en dev
 
-  const H = () => (window.location.hash || '').replace(/^#/, '')
-  const S = () => (window.location.search || '').replace(/^\?/, '')
-  const addDebug = (line) => setDebug(prev => (prev ? prev + '\n' : '') + line)
+  const addDbg = (l) => setDebug((p) => (p ? p + "\n" : "") + l);
 
+  // 1) Au chargement, si on a un hash Supabase (#access_token=...&refresh_token=...&type=recovery)
+  //    -> on pose la session, on nettoie l’URL, puis on affiche le formulaire.
   useEffect(() => {
-    let cancelled = false
+    (async () => {
+      const rawHash = window.location.hash || "";
+      if (!rawHash) {
+        // Pas de hash : on vérifie s'il existe déjà une session (ex: detectSessionInUrl a fait le job)
+        const { data } = await supabase.auth.getSession();
+        setReady(true);
+        if (!data?.session) {
+          // pas de session : l'utilisateur est probablement venu sans passer par l’email
+          setError("Lien de réinitialisation absent ou invalide. Merci d’utiliser le lien reçu par email.");
+        }
+        return;
+      }
 
-    async function boot(){
-      const hashStr = H()
-      const searchStr = S()
-      addDebug(`href=${window.location.href}`)
-      addDebug(`hash=${hashStr}`)
-      addDebug(`search=${searchStr}`)
+      const p = parseHashPreservingPlus(rawHash);
+      addDbg(`hash=${rawHash.replace(/^#/, "")}`);
 
-      const hash = new URLSearchParams(hashStr)
-      const search = new URLSearchParams(searchStr)
-
-      // 1) Erreurs explicites
-      const err = hash.get('error_code') || hash.get('error') || search.get('error_code') || search.get('error')
+      const err = p.error_code || p.error;
       if (err) {
-        setPhase('error')
-        setError(err === 'otp_expired'
-          ? "Le lien a expiré ou a déjà été utilisé. Renvoyez un nouveau lien."
-          : "Lien de réinitialisation invalide.")
-        addDebug(`error_code=${err}`)
-        return
-      }
-
-      // 2) Jetons (hash OU query)
-      const access  = hash.get('access_token')  || search.get('access_token')
-      const refresh = hash.get('refresh_token') || search.get('refresh_token')
-
-      if (access && refresh) {
+        setError(err === "otp_expired"
+          ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
+          : "Lien de réinitialisation invalide."
+        );
         try {
-          // (a) Diagnostic : l’access token est valide ?
-          const u = await supabase.auth.getUser(access)
-          if (u.error) addDebug(`getUser(access) ERROR: ${u.error.message}`)
-          else addDebug(`getUser(access) OK user.id=${u.data?.user?.id || 'unknown'}`)
-
-          // (b) Pose explicitement la session (SDK v2)
-          const exp = Number(hash.get('expires_at') || search.get('expires_at') || 0)
-          const { data: setData, error: setErr } = await supabase.auth.setSession({
-            access_token: access,
-            refresh_token: refresh,
-            token_type: 'bearer',
-            expires_at: Number.isFinite(exp) && exp > 0 ? exp : undefined,
-          })
-          if (setErr) {
-            addDebug(`setSession ERROR: ${setErr.message}`)
-            setPhase('error'); setError("Impossible d'initialiser la session de réinitialisation.")
-            return
-          }
-          addDebug(`setSession OK: has session=${!!setData?.session}`)
-
-          // (c) Vérification immédiate
-          const after = await supabase.auth.getSession()
-          addDebug(`getSession() after setSession: has session=${!!after.data?.session}`)
-          if (!after.data?.session) {
-            setPhase('error')
-            setError("La session n'a pas pu être enregistrée. Réessayez le lien.")
-            return
-          }
-
-          // (d) Nettoyage du hash puis READY
-          try { history.replaceState(null, '', window.location.pathname) } catch {}
-          if (!cancelled) setPhase('ready')
-          return
-        } catch (e) {
-          addDebug(`setSession TRY/CATCH ERROR: ${e?.message || e}`)
-          setPhase('error'); setError("Impossible d'initialiser la session de réinitialisation.")
-          return
-        }
+          const clean = window.location.pathname + window.location.search;
+          window.history.replaceState(null, "", clean);
+        } catch {}
+        setReady(true);
+        return;
       }
 
-      // 3) Fallback : ?token=...&type=recovery
-      const token = search.get('token')
-      const type  = search.get('type')
-      if (token && (type === 'recovery' || type === 'recovery_token')) {
-        if (!email) { setPhase('need_email'); return }
-        setBusy(true)
+      const type    = p.type;
+      const access  = p.access_token;
+      const refresh = p.refresh_token;
+
+      if (type !== "recovery" || !access || !refresh) {
+        setError("Lien de réinitialisation invalide. Merci d’utiliser le lien reçu par email.");
         try {
-          const { data, error } = await supabase.auth.verifyOtp({ type: 'recovery', token, email })
-          if (error) { addDebug(`verifyOtp ERROR: ${error.message}`); throw error }
-          addDebug(`verifyOtp OK user.id=${data?.user?.id || 'unknown'}`)
-          try { history.replaceState(null, '', window.location.pathname) } catch {}
-          setPhase('ready')
-        } catch (e) {
-          setPhase('error'); setError("Lien de réinitialisation non reconnu ou expiré. Renvoyez un nouveau lien.")
-        } finally {
-          setBusy(false)
-        }
-        return
+          const clean = window.location.pathname + window.location.search;
+          window.history.replaceState(null, "", clean);
+        } catch {}
+        setReady(true);
+        return;
       }
 
-      // 4) Session déjà présente ?
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        addDebug('getSession() found an existing session')
-        try { history.replaceState(null, '', window.location.pathname) } catch {}
-        setPhase('ready')
-        return
+      // Pose la session de recovery
+      const { data, error } = await supabase.auth.setSession({
+        access_token: access,
+        refresh_token: refresh,
+      });
+      if (error) {
+        addDbg(`setSession ERROR: ${error.message}`);
+        setError("Lien invalide ou expiré. Demandez un nouveau lien de réinitialisation.");
+        setReady(true);
+        return;
       }
+      addDbg(`setSession OK: has session=${!!data?.session}`);
 
-      // 5) Rien d’exploitable → erreur
-      setPhase('error')
-      setError("Lien de réinitialisation non reconnu. Renvoyez un nouveau lien.")
+      // Nettoie l'URL (retire le #…)
+      try {
+        const clean = window.location.pathname + window.location.search;
+        window.history.replaceState(null, "", clean);
+      } catch {}
+
+      setReady(true);
+    })();
+  }, []);
+
+  async function onSubmit(e) {
+    e.preventDefault();
+    setError("");
+    if (password.length < 8) return setError("Le mot de passe doit contenir au moins 8 caractères.");
+    if (password !== confirm) return setError("Les deux mots de passe ne correspondent pas.");
+
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({ password });
+    setSaving(false);
+    if (error) {
+      return setError(error.message || "Impossible de mettre à jour le mot de passe.");
     }
 
-    boot()
-    return () => { cancelled = true }
-  }, [])
-
-  async function onSubmit(e){
-    e.preventDefault()
-    setError(''); setBusy(true)
-    if (password.length < 8) { setBusy(false); return setError('Au moins 8 caractères.') }
-    if (password !== confirm) { setBusy(false); return setError('Les deux mots de passe ne correspondent pas.') }
-
-    const { error } = await supabase.auth.updateUser({ password })
-    setBusy(false)
-    if (error) { setError(error.message); addDebug(`updateUser ERROR: ${error.message}`); return }
-    addDebug('updateUser OK')
-    setPhase('done')
-    setTimeout(() => window.location.replace('/'), 800)
+    // Succès : redirection vers la page de connexion (ou auto-login si tu préfères)
+    window.location.assign("/login");
   }
 
-  const Debug = () => (
-    <pre style={{marginTop:16, background:'#f6f6f6', padding:12, borderRadius:8, fontSize:12, whiteSpace:'pre-wrap'}}>
-      {debug}
-    </pre>
-  )
-
-  if (phase === 'init') {
-    return (
-      <div className="panel">
-        <h2>Réinitialisation du mot de passe</h2>
-        <div>Initialisation…</div>
-        <Debug/>
-      </div>
-    )
-  }
-
-  if (phase === 'need_email') {
-    return (
-      <div className="panel">
-        <h2>Réinitialisation du mot de passe</h2>
-        <p>Indique l’email utilisé pour la demande afin de vérifier le lien.</p>
-        <div style={{display:'grid', gap:12, maxWidth:420, marginTop:12}}>
-          <label>Email</label>
-          <input type="email" value={email} onChange={e=>setEmail(e.target.value)} />
-          <button className="btn" disabled={!email || busy} onClick={()=>{
-            try { localStorage.setItem('lastResetEmail', email) } catch {}
-            window.location.reload()
-          }}>{busy ? 'Patientez…' : 'Continuer'}</button>
-        </div>
-        <Debug/>
-      </div>
-    )
-  }
-
-  if (phase === 'error') {
-    return (
-      <div className="panel">
-        <h2>Réinitialisation du mot de passe</h2>
-        <div style={{color:'#b00020', marginTop:12}}>{error}</div>
-        <Debug/>
-        <a className="btn" href="/login" style={{marginTop:16}}>Retour à la connexion</a>
-      </div>
-    )
-  }
-
-  if (phase === 'done') {
-    return (
-      <div className="panel">
-        <h2>Réinitialisation du mot de passe</h2>
-        <div style={{color:'#166534', marginTop:12}}>Mot de passe mis à jour. Redirection…</div>
-        <Debug/>
-      </div>
-    )
-  }
-
-  // phase === 'ready'
   return (
-    <div className="panel">
-      <h2>Réinitialisation du mot de passe</h2>
-      <form onSubmit={onSubmit} style={{display:'grid', gap:12, maxWidth:420, marginTop:12}}>
-        <label>Nouveau mot de passe</label>
-        <input type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
-        <label>Confirmer le mot de passe</label>
-        <input type="password" value={confirm} onChange={e=>setConfirm(e.target.value)} required />
-        <button className="btn" disabled={busy}>{busy ? 'Validation…' : 'Valider'}</button>
-      </form>
-      <Debug/>
+    <div className="reset-root" style={{ display: "grid", placeItems: "center", minHeight: "100vh", padding: 16 }}>
+      <div className="reset-card" style={{ width: "min(560px, 92vw)", background: "#fff", borderRadius: 14, padding: 22, border: "1px solid #e5e5e5", boxShadow: "0 8px 30px rgba(0,0,0,.08)" }}>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#2C3D38" }}>Réinitialiser votre mot de passe</h1>
+
+        {!ready ? (
+          <p style={{ marginTop: 12 }}>Initialisation…</p>
+        ) : (
+          <>
+            {error && (
+              <div style={{ marginTop: 12, background: "#fff3f3", border: "1px solid #ffd3d3", color: "#b00020", padding: "8px 10px", borderRadius: 8 }}>
+                {error}
+              </div>
+            )}
+
+            {!error && (
+              <form onSubmit={onSubmit} style={{ display: "grid", gap: 10, marginTop: 12 }}>
+                <label>
+                  <div style={{ fontWeight: 600, marginBottom: 6 }}>Nouveau mot de passe</div>
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    style={{ width: "100%", padding: "12px 14px", border: "1px solid #D9D9D9", borderRadius: 10, outline: "none" }}
+                  />
+                </label>
+
+                <label>
+                  <div style={{ fontWeight: 600, marginBottom: 6 }}>Confirmer le mot de passe</div>
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                    required
+                    style={{ width: "100%", padding: "12px 14px", border: "1px solid #D9D9D9", borderRadius: 10, outline: "none" }}
+                  />
+                </label>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
+                  <a href="/login" className="btn-secondary" style={{ background: "#f6f6f6", border: "1px solid #D9D9D9", borderRadius: 10, padding: "10px 14px", textDecoration: "none", color: "#111" }}>
+                    Annuler
+                  </a>
+                  <button type="submit" className="btn-primary" disabled={saving} style={{ background: "#2C3D38", color: "#fff", border: "none", borderRadius: 10, padding: "10px 14px", fontWeight: 700 }}>
+                    {saving ? "Validation…" : "Valider"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Débogage (optionnel) */}
+            {debug && (
+              <details style={{ marginTop: 12 }}>
+                <summary>Debug</summary>
+                <pre style={{ background: "#f6f6f6", padding: 12, borderRadius: 8, fontSize: 12, whiteSpace: "pre-wrap" }}>
+                  {debug}
+                </pre>
+              </details>
+            )}
+          </>
+        )}
+      </div>
     </div>
-  )
+  );
 }
