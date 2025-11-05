@@ -220,13 +220,60 @@ export default function ResetPassword() {
   async function onSubmit(e) {
     e.preventDefault();
     setError("");
+    // 0) validations UI
     if (password.length < 8) return setError("Le mot de passe doit contenir au moins 8 caractères.");
     if (password !== confirm) return setError("Les deux mots de passe ne correspondent pas.");
+
+    // 1) session présente ?
+    addDbg("submit: vérification session…");
+    const { data: sessData, error: sessErr } = await supabase.auth.getSession();
+    if (sessErr) {
+      addDbg(`submit:getSession ERROR: ${sessErr.message}`);
+      return setError("Session indisponible. Rouvrez le lien depuis l’email.");
+    }
+    if (!sessData?.session) {
+      addDbg("submit:getSession → pas de session.");
+      return setError("Session expirée. Renvoyez-vous un nouveau lien de réinitialisation.");
+    }
+    addDbg("submit: session OK, on appelle updateUser…");
+
     setSaving(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    setSaving(false);
-    if (error) return setError(error.message || "Impossible de mettre à jour le mot de passe.");
-    window.location.assign("/login");
+    // 2) on protège l'appel par un timeout pour éviter le blocage UI
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+    try {
+      const result = await Promise.race([
+        supabase.auth.updateUser({ password }),
+        (async () => {
+          await delay(8000);
+          const e = new Error("TIMEOUT:updateUser:8000");
+          e._timeout = true;
+          throw e;
+        })(),
+      ]);
+
+      if (result?.error) {
+        addDbg(`submit:updateUser ERROR: ${result.error.message}`);
+        setSaving(false);
+        // messages fréquents : "New password should be different", "Password should be at least X characters"
+        return setError(result.error.message || "Impossible de mettre à jour le mot de passe.");
+      }
+
+      addDbg("submit:updateUser OK → signOut + redirect");
+      // 3) on se déconnecte de la session recovery puis on redirige
+      await supabase.auth.signOut().catch(() => {});
+      setSaving(false);
+      window.location.assign("/login");
+    } catch (e) {
+      setSaving(false);
+      if (e?._timeout) {
+        addDbg("submit:updateUser TIMEOUT");
+        return setError(
+          "La validation prend trop de temps. Vérifiez votre connexion ou désactivez temporairement les bloqueurs (adblock / cookies), puis réessayez."
+        );
+      }
+      addDbg(`submit TRY/CATCH: ${e?.message || e}`);
+      return setError("Erreur inattendue lors de la mise à jour du mot de passe.");
+    }
   }
 
   const isReady = step === "ready";
