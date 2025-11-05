@@ -9,7 +9,8 @@ export default function Login(){
   const [error, setError]           = useState('')
   const [info, setInfo]             = useState('')
   const inFlight                    = useRef(false)
-
+  const recoveryAccessRef = useRef(null) // access_token du lien pour fallback REST
+  
   // --- états récupération ---
   const [isRecovery, setIsRecovery] = useState(false)
   const [newPwd, setNewPwd]         = useState('')
@@ -35,70 +36,68 @@ export default function Login(){
     return out;
   }
 
-  // Au montage : détecte un retour de Supabase avec jetons dans le hash
-  useEffect(() => {
-    const rawHash = window.location.hash || ''
-    if (!rawHash) return
-    const p = parseHashPreservingPlus(rawHash)
+  // AJOUT — parse "#a=b&c=d" en préservant les '+'
+function parseHashPreservingPlus(rawHash) {
+  const out = {};
+  if (!rawHash) return out;
+  const s = rawHash.replace(/^#/, "");
+  for (const pair of s.split("&")) {
+    if (!pair) continue;
+    const eq = pair.indexOf("=");
+    const k = eq >= 0 ? pair.slice(0, eq) : pair;
+    const v = eq >= 0 ? pair.slice(eq + 1) : "";
+    out[decodeURIComponent(k)] = decodeURIComponent(v); // ne transforme pas '+' en espace
+  }
+  return out;
+}
+  
+// AJOUT — active la réinitialisation SANS changer de page
+useEffect(() => {
+  const rawHash = window.location.hash || "";
+  if (!rawHash) return;
 
-    // erreurs explicites
-    const err = p.error_code || p.error
-    if (err) {
-      setError(err === 'otp_expired'
-        ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
-        : "Lien de réinitialisation invalide."
-      )
-      window.history.replaceState(null, '', window.location.pathname)
-      return
-    }
+  const p = parseHashPreservingPlus(rawHash);
+  const err = p.error_code || p.error;
+  if (err) {
+    setError(err === "otp_expired"
+      ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
+      : "Lien de réinitialisation invalide."
+    );
+    try {
+      const clean = window.location.pathname + window.location.search;
+      window.history.replaceState(null, "", clean);
+    } catch {}
+    return;
+  }
 
-    const access  = p.access_token
-    const refresh = p.refresh_token
-    const type    = p.type
+  const type    = p.type;
+  const access  = p.access_token;
+  const refresh = p.refresh_token;
 
-    // log utile
-    const cleanedHash = rawHash.replace(/^#/, '')
-    addDbg(`hash=${cleanedHash}`)
+  if (type === "recovery" && access && refresh) {
+    recoveryAccessRef.current = access; // on mémorise l'access token pour le fallback REST
 
-    if (type === 'recovery' && access && refresh) {
-      // On se met en mode recovery et on pose la session pour autoriser updateUser
-      ;(async () => {
-        try {
-          const u = await supabase.auth.getUser(access)
-          if (u.error) addDbg(`getUser(access) ERROR: ${u.error.message}`)
-          else addDbg(`getUser(access) OK user.id=${u.data?.user?.id || 'unknown'}`)
+    (async () => {
+      const { error } = await supabase.auth.setSession({
+        access_token: access,
+        refresh_token: refresh,
+      });
+      if (error) {
+        setError("Lien invalide ou expiré. Demandez un nouveau lien de réinitialisation.");
+        return;
+      }
 
-          const { data, error } = await supabase.auth.setSession({
-            access_token: access,
-            refresh_token: refresh,
-          })
-          if (error) {
-            addDbg(`setSession ERROR: ${error.message}`)
-            setError("Lien invalide ou expiré. Demandez un nouveau lien de réinitialisation.")
-            return
-          }
-          addDbg(`setSession OK: has session=${!!data?.session}`)
+      // on nettoie l'URL et on affiche la box
+      try {
+        const clean = window.location.pathname + window.location.search;
+        window.history.replaceState(null, "", clean);
+      } catch {}
+      setIsRecovery(true);
+    })();
+  }
+}, []);
 
-          const after = await supabase.auth.getSession()
-          addDbg(`getSession() after setSession: has session=${!!after.data?.session}`)
-          if (!after.data?.session) {
-            setError("La session n'a pas pu être enregistrée. Rouvrez le lien.")
-            return
-          }
 
-          setIsRecovery(true)
-          // Nettoie l'URL (hash) sans perdre la page courante
-          try {
-            const clean = window.location.pathname + window.location.search
-            window.history.replaceState(null, '', clean)
-          } catch {}
-        } catch (e) {
-          addDbg(`TRY/CATCH recovery: ${e?.message || e}`)
-          setError("Erreur pendant l'initialisation de la réinitialisation.")
-        }
-      })()
-    }
-  }, [])
 
   // Connexion classique
   async function onSubmit(e){
@@ -118,14 +117,14 @@ export default function Login(){
     }
   }
 
-  // Envoi du mail de reset → redirige vers /reset
+  // Envoi du mail de reset → redirige vers /login
   async function sendReset(e){
     e.preventDefault()
     if (!email) return setError("Saisissez votre email.")
     setError(''); setInfo(''); setLoading(true)
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset`,
+        redirectTo: `${window.location.origin}/login`,
       })
       if (error) throw error
       try { localStorage.setItem('lastResetEmail', email) } catch {}
@@ -138,19 +137,111 @@ export default function Login(){
   }
 
   // Validation du nouveau mot de passe (mode recovery)
-  async function submitNewPwd(e){
-    e.preventDefault()
-    setError(''); setRecoBusy(true)
-    if (newPwd.length < 8) { setRecoBusy(false); return setError('Au moins 8 caractères.') }
-    if (newPwd !== newPwd2) { setRecoBusy(false); return setError('Les deux mots de passe ne correspondent pas.') }
+// REMPLACER ENTIEREMENT submitNewPwd par ceci
+async function submitNewPwd(e){
+  e.preventDefault();
+  setError('');
+  if (newPwd.length < 8) return setError("Au moins 8 caractères.");
+  if (newPwd !== newPwd2) return setError("Les deux mots de passe ne correspondent pas.");
 
-    const { error } = await supabase.auth.updateUser({ password: newPwd })
-    setRecoBusy(false)
-    if (error) return setError(error.message)
+  setRecoBusy(true);
 
-    // Succès → on revient sur les tuiles
-    window.location.assign('/')
+  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+  const withTimeout = (p, ms, label) =>
+    Promise.race([
+      p,
+      (async () => {
+        await delay(ms);
+        const err = new Error(`TIMEOUT:${label}:${ms}`);
+        err._timeout = true;
+        throw err;
+      })(),
+    ]);
+
+  try {
+    // 1) Tentative SDK rapide (6s)
+    const res1 = await withTimeout(supabase.auth.updateUser({ password: newPwd }), 6000, "updateUser(1)")
+      .catch((e) => e);
+
+    if (!(res1 instanceof Error) && !res1?.error) {
+      setRecoBusy(false);
+      await supabase.auth.signOut().catch(()=>{});
+      return window.location.assign('/login');
+    }
+
+    // 2) Refresh puis 2e essai SDK
+    await withTimeout(supabase.auth.refreshSession(), 2500, "refreshSession").catch(() => {});
+    const res2 = await withTimeout(supabase.auth.updateUser({ password: newPwd }), 6000, "updateUser(2)")
+      .catch((e) => e);
+
+    if (!(res2 instanceof Error) && !res2?.error) {
+      setRecoBusy(false);
+      await supabase.auth.signOut().catch(()=>{});
+      return window.location.assign('/login');
+    }
+
+    // 3) Fallback REST: PUT puis PATCH /auth/v1/user, avec access_token du lien
+    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const accessFromLink = recoveryAccessRef.current;
+
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !accessFromLink) {
+      setRecoBusy(false);
+      return setError("Impossible de finaliser la réinitialisation (config manquante). Renvoyez-vous un nouveau lien.");
+    }
+
+    const endpoints = [
+      { method: "PUT",   url: `${SUPABASE_URL}/auth/v1/user` },
+      { method: "PATCH", url: `${SUPABASE_URL}/auth/v1/user` },
+    ];
+    let restOk = false, restErr = null;
+
+    for (const ep of endpoints) {
+      try {
+        const resp = await withTimeout(fetch(ep.url, {
+          method: ep.method,
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${accessFromLink}`,
+            "apikey": SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ password: newPwd }),
+        }), 7000, `REST:${ep.method}`);
+
+        if (!resp.ok) {
+          const t = await resp.text().catch(()=> "");
+          restErr = `HTTP ${resp.status} ${resp.statusText} :: ${t}`;
+          continue;
+        }
+        restOk = true;
+        break;
+      } catch (e3) {
+        restErr = e3?._timeout ? "timeout" : (e3?.message || "fetch error");
+      }
+    }
+
+    setRecoBusy(false);
+
+    if (restOk) {
+      await supabase.auth.signOut().catch(()=>{});
+      return window.location.assign('/login');
+    }
+
+    // sinon : message utile
+    if (res2 instanceof Error) {
+      if (res2?._timeout) {
+        return setError("La validation prend trop de temps. Vérifiez votre connexion ou désactivez temporairement les bloqueurs (adblock / cookies), puis réessayez.");
+      }
+      return setError("Erreur inattendue pendant la mise à jour. Réessayez.");
+    } else {
+      return setError(res2?.error?.message || restErr || "Impossible de mettre à jour le mot de passe.");
+    }
+  } catch (e) {
+    setRecoBusy(false);
+    return setError("Erreur inattendue lors de la mise à jour du mot de passe.");
   }
+}
+
 
   return (
     <div className="login-root">
