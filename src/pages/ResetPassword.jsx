@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "../supabaseClient";
 
-// --- util: parse "#a=b&c=d" en préservant les "+" ---
+// Parse "#a=b&c=d" en préservant les "+"
 function parseHashPreservingPlus(rawHash) {
   const out = {};
   if (!rawHash) return out;
@@ -24,12 +24,14 @@ export default function ResetPassword() {
   const [confirm, setConfirm] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // drapeau: session OK via event ou via getSession()
+  const sessionOK = useRef(false);
+
   const addDbg = (l) => {
     setDebug((p) => (p ? p + "\n" : "") + l);
     try { console.debug("[RESET]", l); } catch {}
   };
 
-  // ---- helpers timeout / race ----
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
   function withTimeout(promise, ms, label) {
     return Promise.race([
@@ -43,9 +45,31 @@ export default function ResetPassword() {
     ]);
   }
 
+  function cleanupUrl() {
+    try {
+      const clean = window.location.pathname + window.location.search;
+      window.history.replaceState(null, "", clean);
+    } catch {}
+  }
+
+  async function goReady() {
+    // double check: avons-nous bien une session ?
+    const { data } = await supabase.auth.getSession();
+    addDbg(`goReady(): has session=${!!data?.session}`);
+    setStep("ready");
+  }
+
   useEffect(() => {
-    const unsub = supabase.auth.onAuthStateChange((evt) => {
-      addDbg(`onAuthStateChange → ${evt}`);
+    // 1) Ecoute des events Supabase pour court-circuiter si la session est déjà posée
+    const sub = supabase.auth.onAuthStateChange((_evt, _sess) => {
+      addDbg(`onAuthStateChange → ${_evt}`);
+      if (_evt === "SIGNED_IN" || _evt === "INITIAL_SESSION" || _evt === "PASSWORD_RECOVERY") {
+        sessionOK.current = true;
+        // on nettoie l’URL au plus tôt pour enlever le hash
+        cleanupUrl();
+        // et on passe en ready (sans attendre setSession)
+        goReady();
+      }
     }).data.subscription;
 
     (async () => {
@@ -62,10 +86,9 @@ export default function ResetPassword() {
         addDbg(`hashRaw = "${rawHash}" (onlySharp=${onlySharp}, hasParams=${hasHashParams})`);
 
         if (!hasHashParams) {
-          // Pas de hash → vérifier si une session existe déjà
           setStep("handle-no-hash");
           addDbg("→ Étape: handle-no-hash");
-          const { data, error } = await withTimeout(supabase.auth.getSession(), 5000, "getSession(no-hash)");
+          const { data, error } = await withTimeout(supabase.auth.getSession(), 4000, "getSession(no-hash)");
           if (error) {
             addDbg(`getSession ERROR: ${error.message}`);
             setError("Impossible de vérifier la session. Ouvrez le lien depuis l’email ou renvoyez-en un.");
@@ -91,10 +114,7 @@ export default function ResetPassword() {
               ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
               : "Lien de réinitialisation invalide.";
           setError(msg);
-          try {
-            const clean = window.location.pathname + window.location.search;
-            window.history.replaceState(null, "", clean);
-          } catch {}
+          cleanupUrl();
           setStep("ready");
           return;
         }
@@ -105,83 +125,88 @@ export default function ResetPassword() {
         if (type !== "recovery" || !access || !refresh) {
           addDbg(`type="${type}", access=${!!access}, refresh=${!!refresh}`);
           setError("Lien incomplet. Ouvrez le lien directement depuis l’email sans le modifier.");
-          try {
-            const clean = window.location.pathname + window.location.search;
-            window.history.replaceState(null, "", clean);
-          } catch {}
+          cleanupUrl();
           setStep("ready");
           return;
         }
 
-        // TENTATIVE A: setSession (avec timeout court)
+        // TENTATIVE A: setSession rapidement, mais si les events nous disent qu'on est signé, on s'arrête.
         setStep("set-session");
         addDbg("→ Étape: set-session (tentative A)");
         try {
           const { data } = await withTimeout(
             supabase.auth.setSession({ access_token: access, refresh_token: refresh }),
-            6500,
+            3000,
             "setSession(A)"
           );
           addDbg(`setSession(A) OK: has session=${!!data?.session}`);
+          cleanupUrl();
+          return goReady();
         } catch (e) {
-          if (e?._timeout) {
-            addDbg("setSession(A) TIMEOUT → on tente le fallback B");
-          } else {
-            addDbg(`setSession(A) ERROR: ${e?.message || e}`);
+          if (sessionOK.current) {
+            addDbg("setSession(A) timeout/erreur MAIS events → session OK. On continue.");
+            cleanupUrl();
+            return goReady();
           }
+          if (e?._timeout) addDbg("setSession(A) TIMEOUT");
+          else addDbg(`setSession(A) ERROR: ${e?.message || e}`);
+        }
 
-          // FALLBACK B: vérifier access_token puis retenter setSession une fois
-          setStep("fallback-verify");
-          addDbg("→ Étape: fallback-verify (getUser(access))");
-          try {
-            const u = await withTimeout(supabase.auth.getUser(access), 5000, "getUser(access)");
-            if (u.error) {
-              addDbg(`getUser(access) ERROR: ${u.error.message}`);
-              setError("Le lien semble invalide. Renvoyez-vous un nouveau lien depuis la page de connexion.");
-              setStep("ready");
-              return;
-            }
-            addDbg(`getUser(access) OK user.id=${u.data?.user?.id || "unknown"}`);
-
-            setStep("set-session-2");
-            addDbg("→ Étape: set-session-2 (tentative B)");
-            const { data, error } = await withTimeout(
-              supabase.auth.setSession({ access_token: access, refresh_token: refresh }),
-              6500,
-              "setSession(B)"
-            );
-            if (error) {
-              addDbg(`setSession(B) ERROR: ${error.message}`);
-              setError("Impossible d’initialiser la session. Renvoyez-vous un nouveau lien.");
-              setStep("ready");
-              return;
-            }
-            addDbg(`setSession(B) OK: has session=${!!data?.session}`);
-          } catch (e2) {
-            if (e2?._timeout) {
-              addDbg("getUser/access ou setSession(B) TIMEOUT");
-              setError(
-                "Temps d’attente dépassé pendant l’initialisation. Fermez l’onglet et rouvrez le lien depuis l’email."
-              );
-            } else {
-              addDbg(`Fallback TRY/CATCH: ${e2?.message || e2}`);
-              setError("Erreur pendant l’initialisation. Renvoyez-vous un nouveau lien.");
-            }
+        // FALLBACK B: on valide l'access token puis on retente setSession une fois
+        setStep("fallback-verify");
+        addDbg("→ Étape: fallback-verify (getUser(access))");
+        try {
+          const u = await withTimeout(supabase.auth.getUser(access), 4000, "getUser(access)");
+          if (u.error) {
+            addDbg(`getUser(access) ERROR: ${u.error.message}`);
+            setError("Le lien semble invalide. Renvoyez-vous un nouveau lien depuis la page de connexion.");
             setStep("ready");
             return;
           }
+          addDbg(`getUser(access) OK user.id=${u.data?.user?.id || "unknown"}`);
+
+          setStep("set-session-2");
+          addDbg("→ Étape: set-session-2 (tentative B)");
+          const resB = await withTimeout(
+            supabase.auth.setSession({ access_token: access, refresh_token: refresh }),
+            3000,
+            "setSession(B)"
+          ).catch((e) => e);
+          if (resB && resB.error) {
+            addDbg(`setSession(B) ERROR: ${resB.error.message}`);
+          }
+          if (sessionOK.current) {
+            addDbg("Après tentative B : events indiquent session OK → on continue.");
+            cleanupUrl();
+            return goReady();
+          }
+          // Dernière vérif
+          const s = await withTimeout(supabase.auth.getSession(), 2000, "getSession(final)");
+          if (s?.data?.session) {
+            addDbg("getSession(final) OK → session présente.");
+            cleanupUrl();
+            return goReady();
+          }
+
+          setError("Impossible d’initialiser la session. Renvoyez-vous un nouveau lien.");
+          setStep("ready");
+        } catch (e2) {
+          if (sessionOK.current) {
+            addDbg("Fallback: erreur/time-out mais events OK → on continue.");
+            cleanupUrl();
+            return goReady();
+          }
+          if (e2?._timeout) {
+            addDbg("Fallback TIMEOUT");
+            setError(
+              "Temps d’attente dépassé pendant l’initialisation. Fermez l’onglet et rouvrez le lien depuis l’email."
+            );
+          } else {
+            addDbg(`Fallback TRY/CATCH: ${e2?.message || e2}`);
+            setError("Erreur pendant l’initialisation. Renvoyez-vous un nouveau lien.");
+          }
+          setStep("ready");
         }
-
-        // Nettoyage du hash après succès
-        setStep("cleanup-url");
-        addDbg("→ Étape: cleanup-url");
-        try {
-          const clean = window.location.pathname + window.location.search;
-          window.history.replaceState(null, "", clean);
-        } catch {}
-
-        // prêt
-        setStep("ready");
       } catch (fatal) {
         addDbg(`FATAL: ${fatal?.message || fatal}`);
         setError("Erreur inattendue. Renvoyez-vous un nouveau lien et réessayez.");
@@ -189,7 +214,7 @@ export default function ResetPassword() {
       }
     })();
 
-    return () => unsub?.unsubscribe?.();
+    return () => sub?.unsubscribe?.();
   }, []);
 
   async function onSubmit(e) {
