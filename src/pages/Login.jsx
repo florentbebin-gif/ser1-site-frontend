@@ -18,15 +18,33 @@ export default function Login(){
   const [recoDebug, setRecoDebug]   = useState('')
 
   const addDbg = (l) => setRecoDebug(prev => (prev ? prev + '\n' : '') + l)
-
+function parseHashPreservingPlus(rawHash) {
+  // rawHash: "access_token=...&refresh_token=...&type=recovery"
+  const out = {};
+  if (!rawHash) return out;
+  const s = rawHash.replace(/^#/, ''); // enlève le #
+  for (const pair of s.split('&')) {
+    if (!pair) continue;
+    const eq = pair.indexOf('=');
+    const k = eq >= 0 ? pair.slice(0, eq) : pair;
+    const v = eq >= 0 ? pair.slice(eq + 1) : '';
+    // Important: on N'INTERPRÈTE PAS le '+' comme un espace.
+    // decodeURIComponent ne touche pas aux '+' => parfait.
+    const key = decodeURIComponent(k);
+    const val = decodeURIComponent(v);
+    out[key] = val;
+  }
+  return out;
+}
+  
   // Au montage : détecte un retour de Supabase avec jetons dans le hash
   useEffect(() => {
-    const raw = (window.location.hash || '').replace(/^#/, '')
-    if (!raw) return
-    const p = new URLSearchParams(raw)
-
+    const rawHash = window.location.hash || ''
+    if (!rawHash) return
+    const p = parseHashPreservingPlus(rawHash)
+  
     // erreurs explicites
-    const err = p.get('error_code') || p.get('error')
+    const err = p.error_code || p.error
     if (err) {
       setError(err === 'otp_expired'
         ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
@@ -36,10 +54,9 @@ export default function Login(){
       return
     }
 
-    const access  = p.get('access_token')
-    // Certains navigateurs/clients transforment '+' en espace lors d'un collage manuel
-    let refresh = p.get('refresh_token') || ''
-    if (refresh.includes(' ')) refresh = refresh.replace(/ /g, '+')
+    const access  = p.access_token
+    const refresh = p.refresh_token
+    const type    = p.type
     addDbg(`hash=${raw}`)
 
   const type = p.get('type')
@@ -57,7 +74,7 @@ export default function Login(){
           })
           if (error) {
             addDbg(`setSession ERROR: ${error.message}`)
-            setError("Impossible d'initialiser la session de réinitialisation.")
+            setError("Lien invalide ou expiré. Demandez un nouveau lien de réinitialisation.")
             return
           }
           addDbg(`setSession OK: has session=${!!data?.session}`)
