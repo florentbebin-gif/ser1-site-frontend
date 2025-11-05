@@ -210,8 +210,8 @@ async function submitNewPwd(e){
 
     for (const ep of endpoints) {
       try {
-        const resp = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-        method: "PATCH", // (ou tente PUT puis PATCH)
+        const resp = await withTimeout(fetch(ep.url, {
+          method: ep.method,
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${accessFromLink}`,
