@@ -18,31 +18,29 @@ export default function Login(){
   const [recoDebug, setRecoDebug]   = useState('')
 
   const addDbg = (l) => setRecoDebug(prev => (prev ? prev + '\n' : '') + l)
-function parseHashPreservingPlus(rawHash) {
-  // rawHash: "access_token=...&refresh_token=...&type=recovery"
-  const out = {};
-  if (!rawHash) return out;
-  const s = rawHash.replace(/^#/, ''); // enlève le #
-  for (const pair of s.split('&')) {
-    if (!pair) continue;
-    const eq = pair.indexOf('=');
-    const k = eq >= 0 ? pair.slice(0, eq) : pair;
-    const v = eq >= 0 ? pair.slice(eq + 1) : '';
-    // Important: on N'INTERPRÈTE PAS le '+' comme un espace.
-    // decodeURIComponent ne touche pas aux '+' => parfait.
-    const key = decodeURIComponent(k);
-    const val = decodeURIComponent(v);
-    out[key] = val;
+
+  // --- parseur de hash qui préserve les "+" dans refresh_token ---
+  function parseHashPreservingPlus(rawHash) {
+    const out = {};
+    if (!rawHash) return out;
+    const s = rawHash.replace(/^#/, ''); // enlève le #
+    for (const pair of s.split('&')) {
+      if (!pair) continue;
+      const eq = pair.indexOf('=');
+      const k = eq >= 0 ? pair.slice(0, eq) : pair;
+      const v = eq >= 0 ? pair.slice(eq + 1) : '';
+      // Important: on n'interprète pas "+" comme espace (contrairement à URLSearchParams).
+      out[decodeURIComponent(k)] = decodeURIComponent(v);
+    }
+    return out;
   }
-  return out;
-}
-  
+
   // Au montage : détecte un retour de Supabase avec jetons dans le hash
   useEffect(() => {
     const rawHash = window.location.hash || ''
     if (!rawHash) return
     const p = parseHashPreservingPlus(rawHash)
-  
+
     // erreurs explicites
     const err = p.error_code || p.error
     if (err) {
@@ -50,16 +48,18 @@ function parseHashPreservingPlus(rawHash) {
         ? "Le lien a expiré ou a déjà été utilisé. Demandez un nouveau lien."
         : "Lien de réinitialisation invalide."
       )
-      history.replaceState(null, '', window.location.pathname)
+      window.history.replaceState(null, '', window.location.pathname)
       return
     }
 
     const access  = p.access_token
     const refresh = p.refresh_token
     const type    = p.type
-    addDbg(`hash=${raw}`)
 
-  const type = p.get('type')
+    // log utile
+    const cleanedHash = rawHash.replace(/^#/, '')
+    addDbg(`hash=${cleanedHash}`)
+
     if (type === 'recovery' && access && refresh) {
       // On se met en mode recovery et on pose la session pour autoriser updateUser
       ;(async () => {
@@ -87,13 +87,11 @@ function parseHashPreservingPlus(rawHash) {
           }
 
           setIsRecovery(true)
-          // On nettoie l’URL pour éviter de garder les tokens
           // Nettoie l'URL (hash) sans perdre la page courante
           try {
             const clean = window.location.pathname + window.location.search
             window.history.replaceState(null, '', clean)
           } catch {}
-          
         } catch (e) {
           addDbg(`TRY/CATCH recovery: ${e?.message || e}`)
           setError("Erreur pendant l'initialisation de la réinitialisation.")
@@ -229,7 +227,7 @@ function parseHashPreservingPlus(rawHash) {
               </div>
             </form>
 
-            {/* Debug repli — optionnel. Laisse-le qq jours pour vérifier */}
+            {/* Debug repli — optionnel */}
             {recoDebug && (
               <pre style={{marginTop:12, background:'#f6f6f6', padding:12, borderRadius:8, fontSize:12, whiteSpace:'pre-wrap'}}>
                 {recoDebug}
@@ -239,7 +237,10 @@ function parseHashPreservingPlus(rawHash) {
         </div>
       )}
 
-      <style>{`
+      {/* Bloc style sécurisé pour Vercel/Esbuild */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         :root{ --green:#2C3D38; --beige:#e8ded5; --ink:#222; --border:#D9D9D9; }
         .topbar { display: none !important; }
         .login-root{ position:relative; width:100%; min-height:100vh; overflow:hidden; }
@@ -271,7 +272,9 @@ function parseHashPreservingPlus(rawHash) {
           padding: 0 48px;
         }
         @media (max-width:1024px){ .login-recovery{ padding: 0 20px; } }
-      `}</style>
+        `,
+        }}
+      />
     </div>
   )
 }
