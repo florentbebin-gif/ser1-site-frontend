@@ -21,11 +21,11 @@ export default function Login(){
   const addDbg = (l) => setRecoDebug(prev => (prev ? prev + '\n' : '') + l)
 
   // --- parseur de hash qui préserve les "+" dans refresh_token ---
+// Remplacer TOUTE ta fonction parseHashPreservingPlus par celle-ci :
 function parseHashPreservingPlus(rawHash) {
-  // 1) on enlève le premier '#'
-  // 2) on transforme tout autre '#' restant en '&' (cas "#type=recovery#access_token=...")
+  // 1) enlève le 1er '#', 2) remplace les autres '#' par '&' (cas "#type=recovery#access_token=...")
   const s0 = (rawHash || "").replace(/^#/, "");
-  const s = s0.replace(/#/g, "&"); // <= clé du correctif
+  const s = s0.replace(/#/g, "&");
 
   const out = {};
   if (!s) return out;
@@ -34,13 +34,10 @@ function parseHashPreservingPlus(rawHash) {
     const eq = pair.indexOf("=");
     const k = eq >= 0 ? pair.slice(0, eq) : pair;
     const v = eq >= 0 ? pair.slice(eq + 1) : "";
-    // decodeURIComponent préserve '+' (il ne transforme pas + en espace)
-    out[decodeURIComponent(k)] = decodeURIComponent(v);
+    out[decodeURIComponent(k)] = decodeURIComponent(v); // garde les "+"
   }
   return out;
 }
-
-
   
 // AJOUT — active la réinitialisation SANS changer de page
 useEffect(() => {
@@ -48,7 +45,6 @@ useEffect(() => {
   if (!rawHash) return;
 
   const p = parseHashPreservingPlus(rawHash);
-
   const err = p.error_code || p.error;
   if (err) {
     setError(err === "otp_expired"
@@ -66,30 +62,55 @@ useEffect(() => {
   const access  = p.access_token;
   const refresh = p.refresh_token;
 
-  if (type === "recovery" && access && refresh) {
-    // si tu utilises un fallback REST, mémorise access ici :
-    // recoveryAccessRef.current = access;
+  if (!(type === "recovery" && access && refresh)) return;
 
-    (async () => {
-      const { error } = await supabase.auth.setSession({ access_token: access, refresh_token: refresh });
-      if (error) {
-        setError("Lien invalide ou expiré. Demandez un nouveau lien de réinitialisation.");
-        return;
-      }
-      // Nettoyage de l'URL pour cacher les tokens
+  // on garde l'access token pour le fallback REST
+  recoveryAccessRef.current = access;
+
+  // 1) Écoute les événements Supabase (plus fiable que d’attendre setSession)
+  const sub = supabase.auth.onAuthStateChange((evt) => {
+    // Ces événements signifient que la session est posée. On peut ouvrir la box.
+    if (evt === "PASSWORD_RECOVERY" || evt === "SIGNED_IN" || evt === "INITIAL_SESSION") {
+      setIsRecovery(true);
       try {
         const clean = window.location.pathname + window.location.search;
         window.history.replaceState(null, "", clean);
       } catch {}
-      // Ouvre la box de reset sur la même page (aucun changement d'apparence)
-      setIsRecovery(true);
-    })();
-  }
+    }
+  });
+
+  // 2) Tente setSession mais avec TIMEOUT, et sans bloquer l’UI
+  const delay = (ms) => new Promise(res => setTimeout(res, ms));
+  const withTimeout = (p, ms) => Promise.race([p, delay(ms).then(()=>{throw Object.assign(new Error("timeout"), {_timeout:true})})]);
+
+  (async () => {
+    try {
+      await withTimeout(
+        supabase.auth.setSession({ access_token: access, refresh_token: refresh }),
+        3000
+      );
+      // si ça passe vite, l’event onAuthStateChange ouvrira la box
+    } catch (_) {
+      // Timeout/erreur : on vérifie si la session est quand même là
+      const { data } = await withTimeout(supabase.auth.getSession(), 2000).catch(()=>({}));
+      if (data?.session) {
+        setIsRecovery(true);
+      } else {
+        setError("Impossible d'initialiser la session de récupération. Renvoyez un nouveau lien.");
+      }
+    } finally {
+      // dans tous les cas, on nettoie l’URL
+      try {
+        const clean = window.location.pathname + window.location.search;
+        window.history.replaceState(null, "", clean);
+      } catch {}
+    }
+  })();
+
+  return () => sub?.data?.subscription?.unsubscribe?.();
 }, []);
 
-
-
-
+  
   // Connexion classique
   async function onSubmit(e){
     e.preventDefault()
@@ -189,8 +210,8 @@ async function submitNewPwd(e){
 
     for (const ep of endpoints) {
       try {
-        const resp = await withTimeout(fetch(ep.url, {
-          method: ep.method,
+        const resp = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        method: "PATCH", // (ou tente PUT puis PATCH)
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${accessFromLink}`,
