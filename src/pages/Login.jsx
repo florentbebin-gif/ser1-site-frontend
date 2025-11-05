@@ -110,7 +110,7 @@ useEffect(() => {
     setError(''); setInfo(''); setLoading(true)
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/login#recovery`,
+        redirectTo: `${window.location.origin}/login#type=recovery`,
       })
       if (error) throw error
       try { localStorage.setItem('lastResetEmail', email) } catch {}
