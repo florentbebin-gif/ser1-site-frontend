@@ -21,20 +21,25 @@ export default function Login(){
   const addDbg = (l) => setRecoDebug(prev => (prev ? prev + '\n' : '') + l)
 
   // --- parseur de hash qui préserve les "+" dans refresh_token ---
-  function parseHashPreservingPlus(rawHash) {
-    const out = {};
-    if (!rawHash) return out;
-    const s = rawHash.replace(/^#/, ''); // enlève le #
-    for (const pair of s.split('&')) {
-      if (!pair) continue;
-      const eq = pair.indexOf('=');
-      const k = eq >= 0 ? pair.slice(0, eq) : pair;
-      const v = eq >= 0 ? pair.slice(eq + 1) : '';
-      // Important: on n'interprète pas "+" comme espace (contrairement à URLSearchParams).
-      out[decodeURIComponent(k)] = decodeURIComponent(v);
-    }
-    return out;
+function parseHashPreservingPlus(rawHash) {
+  // 1) on enlève le premier '#'
+  // 2) on transforme tout autre '#' restant en '&' (cas "#type=recovery#access_token=...")
+  const s0 = (rawHash || "").replace(/^#/, "");
+  const s = s0.replace(/#/g, "&"); // <= clé du correctif
+
+  const out = {};
+  if (!s) return out;
+  for (const pair of s.split("&")) {
+    if (!pair) continue;
+    const eq = pair.indexOf("=");
+    const k = eq >= 0 ? pair.slice(0, eq) : pair;
+    const v = eq >= 0 ? pair.slice(eq + 1) : "";
+    // decodeURIComponent préserve '+' (il ne transforme pas + en espace)
+    out[decodeURIComponent(k)] = decodeURIComponent(v);
   }
+  return out;
+}
+
 
   
 // AJOUT — active la réinitialisation SANS changer de page
@@ -43,6 +48,7 @@ useEffect(() => {
   if (!rawHash) return;
 
   const p = parseHashPreservingPlus(rawHash);
+
   const err = p.error_code || p.error;
   if (err) {
     setError(err === "otp_expired"
@@ -61,27 +67,26 @@ useEffect(() => {
   const refresh = p.refresh_token;
 
   if (type === "recovery" && access && refresh) {
-    recoveryAccessRef.current = access; // on mémorise l'access token pour le fallback REST
+    // si tu utilises un fallback REST, mémorise access ici :
+    // recoveryAccessRef.current = access;
 
     (async () => {
-      const { error } = await supabase.auth.setSession({
-        access_token: access,
-        refresh_token: refresh,
-      });
+      const { error } = await supabase.auth.setSession({ access_token: access, refresh_token: refresh });
       if (error) {
         setError("Lien invalide ou expiré. Demandez un nouveau lien de réinitialisation.");
         return;
       }
-
-      // on nettoie l'URL et on affiche la box
+      // Nettoyage de l'URL pour cacher les tokens
       try {
         const clean = window.location.pathname + window.location.search;
         window.history.replaceState(null, "", clean);
       } catch {}
+      // Ouvre la box de reset sur la même page (aucun changement d'apparence)
       setIsRecovery(true);
     })();
   }
 }, []);
+
 
 
 
@@ -110,7 +115,7 @@ useEffect(() => {
     setError(''); setInfo(''); setLoading(true)
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/login#type=recovery`,
+        redirectTo: `${window.location.origin}/login`,
       })
       if (error) throw error
       try { localStorage.setItem('lastResetEmail', email) } catch {}
