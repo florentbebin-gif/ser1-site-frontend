@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "../supabaseClient";
 
+// === Debug flag (active les logs si VITE_DEBUG_AUTH=1) ===
+const DEBUG_AUTH = import.meta.env.VITE_DEBUG_AUTH === "1";
+
 // Parse "#a=b&c=d" en préservant les "+"
 function parseHashPreservingPlus(rawHash) {
   const out = {};
@@ -16,6 +19,15 @@ function parseHashPreservingPlus(rawHash) {
   return out;
 }
 
+// Erreurs lisibles côté UI
+function normalizeError(msg) {
+  if (!msg) return "Impossible de mettre à jour le mot de passe.";
+  const m = msg.toLowerCase();
+  if (m.includes("least") && m.includes("character")) return "Mot de passe trop court. Essayez 12+ caractères.";
+  if (m.includes("should be different")) return "Le nouveau mot de passe doit être différent de l'ancien.";
+  return msg;
+}
+
 export default function ResetPassword() {
   const [step, setStep] = useState("start");
   const [error, setError] = useState("");
@@ -23,11 +35,14 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [saving, setSaving] = useState(false);
-const recoveryAccessRef = useRef(null);
-  // drapeau: session OK via event ou via getSession()
+
+  // access_token du lien (utile pour le fallback REST)
+  const recoveryAccessRef = useRef(null);
+  // drapeau: session OK via event / getSession
   const sessionOK = useRef(false);
 
   const addDbg = (l) => {
+    if (!DEBUG_AUTH) return;
     setDebug((p) => (p ? p + "\n" : "") + l);
     try { console.debug("[RESET]", l); } catch {}
   };
@@ -60,14 +75,12 @@ const recoveryAccessRef = useRef(null);
   }
 
   useEffect(() => {
-    // 1) Ecoute des events Supabase pour court-circuiter si la session est déjà posée
-    const sub = supabase.auth.onAuthStateChange((_evt, _sess) => {
+    // 1) Écoute des events Supabase pour court-circuiter si la session est déjà posée
+    const sub = supabase.auth.onAuthStateChange((_evt) => {
       addDbg(`onAuthStateChange → ${_evt}`);
       if (_evt === "SIGNED_IN" || _evt === "INITIAL_SESSION" || _evt === "PASSWORD_RECOVERY") {
         sessionOK.current = true;
-        // on nettoie l’URL au plus tôt pour enlever le hash
         cleanupUrl();
-        // et on passe en ready (sans attendre setSession)
         goReady();
       }
     }).data.subscription;
@@ -122,8 +135,10 @@ const recoveryAccessRef = useRef(null);
         const type = p.type;
         const access = p.access_token;
         const refresh = p.refresh_token;
-          // on garde l'access token du lien pour un fallback REST si updateUser() est bloqué
+
+        // stocke l'access token pour le fallback REST si le SDK bloque
         recoveryAccessRef.current = access;
+
         if (type !== "recovery" || !access || !refresh) {
           addDbg(`type="${type}", access=${!!access}, refresh=${!!refresh}`);
           setError("Lien incomplet. Ouvrez le lien directement depuis l’email sans le modifier.");
@@ -219,135 +234,137 @@ const recoveryAccessRef = useRef(null);
     return () => sub?.unsubscribe?.();
   }, []);
 
- async function onSubmit(e) {
-  e.preventDefault();
-  setError("");
+  // Soumission: SDK (2 essais) puis fallback REST, puis signOut + redirect
+  async function onSubmit(e) {
+    e.preventDefault();
+    setError("");
 
-  // 0) validations UI de base
-  if (password.length < 8) return setError("Le mot de passe doit contenir au moins 8 caractères.");
-  if (password !== confirm) return setError("Les deux mots de passe ne correspondent pas.");
+    // 0) validations UI
+    if (password.length < 8) return setError("Le mot de passe doit contenir au moins 8 caractères.");
+    if (password !== confirm) return setError("Les deux mots de passe ne correspondent pas.");
 
-  setSaving(true);
-  addDbg("submit:start → updateUser()");
+    setSaving(true);
+    addDbg("submit:start → updateUser()");
 
-  // petits helpers
-  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-  const withTimeout = (p, ms, label) =>
-    Promise.race([
-      p,
-      (async () => {
-        await delay(ms);
-        const err = new Error(`TIMEOUT:${label}:${ms}`);
-        err._timeout = true;
-        throw err;
-      })(),
-    ]);
+    const withTimeoutLocal = (p, ms, label) =>
+      Promise.race([
+        p,
+        (async () => {
+          await delay(ms);
+          const err = new Error(`TIMEOUT:${label}:${ms}`);
+          err._timeout = true;
+          throw err;
+        })(),
+      ]);
 
-  try {
-    // Tentative 1 : SDK
-    const res1 = await withTimeout(supabase.auth.updateUser({ password }), 6000, "updateUser(1)")
-      .catch((e) => e);
+    try {
+      // Tentative 1 : SDK
+      const res1 = await withTimeoutLocal(supabase.auth.updateUser({ password }), 6000, "updateUser(1)")
+        .catch((e) => e);
 
-    if (!(res1 instanceof Error) && !res1?.error) {
-      addDbg("submit:updateUser(1) OK → signOut + redirect");
-      await supabase.auth.signOut().catch(() => {});
-      setSaving(false);
-      window.location.assign("/login");
-      return;
-    }
-
-    // Tentative 2 : refresh + SDK
-    if (res1 instanceof Error) addDbg(`submit:updateUser(1) ERROR: ${res1?._timeout ? "timeout" : res1.message}`);
-    else addDbg(`submit:updateUser(1) API ERROR: ${res1.error?.message || "unknown"}`);
-
-    addDbg("submit:refreshSession() puis updateUser(2)");
-    await withTimeout(supabase.auth.refreshSession(), 2500, "refreshSession").catch(() => {});
-    const res2 = await withTimeout(supabase.auth.updateUser({ password }), 6000, "updateUser(2)")
-      .catch((e) => e);
-
-    if (!(res2 instanceof Error) && !res2?.error) {
-      addDbg("submit:updateUser(2) OK → signOut + redirect");
-      await supabase.auth.signOut().catch(() => {});
-      setSaving(false);
-      window.location.assign("/login");
-      return;
-    }
-
-    // Fallback 3 : REST direct → PATCH/PUT /auth/v1/user avec le access_token recovery
-    addDbg("submit:SDK KO → fallback REST /auth/v1/user");
-    const accessFromLink = recoveryAccessRef.current;
-    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !accessFromLink) {
-      addDbg(`fallback REST impossible: url/key/token manquants (url=${!!SUPABASE_URL}, key=${!!SUPABASE_ANON_KEY}, token=${!!accessFromLink})`);
-      setSaving(false);
-      return setError("Impossible de finaliser la réinitialisation (config manquante). Renvoyez-vous un nouveau lien.");
-    }
-
-    // On tente PUT puis PATCH (selon la version GoTrue)
-    const endpoints = [
-      { method: "PUT", url: `${SUPABASE_URL}/auth/v1/user` },
-      { method: "PATCH", url: `${SUPABASE_URL}/auth/v1/user` },
-    ];
-    let restOk = false, restErr = null;
-
-    for (const ep of endpoints) {
-      try {
-        addDbg(`REST ${ep.method} ${ep.url}`);
-        const resp = await withTimeout(fetch(ep.url, {
-          method: ep.method,
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${accessFromLink}`,
-            "apikey": SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({ password }),
-        }), 7000, `REST:${ep.method}`);
-
-        if (!resp.ok) {
-          const t = await resp.text().catch(() => "");
-          restErr = `HTTP ${resp.status} ${resp.statusText} :: ${t}`;
-          addDbg(`REST ${ep.method} NOT OK → ${restErr}`);
-          continue;
-        }
-        // Succès
-        restOk = true;
-        break;
-      } catch (e3) {
-        restErr = e3?._timeout ? "timeout" : (e3?.message || "fetch error");
-        addDbg(`REST ${ep.method} ERROR: ${restErr}`);
+      if (!(res1 instanceof Error) && !res1?.error) {
+        addDbg("submit:updateUser(1) OK → signOut + redirect");
+        await supabase.auth.signOut().catch(() => {});
+        setSaving(false);
+        window.location.assign("/login");
+        return;
       }
-    }
 
-    if (restOk) {
-      addDbg("REST fallback OK → signOut + redirect");
-      await supabase.auth.signOut().catch(() => {});
-      setSaving(false);
-      window.location.assign("/login");
-      return;
-    }
+      // Tentative 2 : refresh + SDK
+      if (res1 instanceof Error) addDbg(`submit:updateUser(1) ERROR: ${res1?._timeout ? "timeout" : res1.message}`);
+      else addDbg(`submit:updateUser(1) API ERROR: ${normalizeError(res1.error?.message)}`);
 
-    // Rien n'a marché → messages utiles
-    setSaving(false);
-    if (res2 instanceof Error) {
-      if (res2?._timeout) {
-        return setError(
-          "La validation prend trop de temps. Vérifiez votre connexion ou désactivez temporairement les bloqueurs (adblock / cookies), puis réessayez."
+      addDbg("submit:refreshSession() puis updateUser(2)");
+      await withTimeoutLocal(supabase.auth.refreshSession(), 2500, "refreshSession").catch(() => {});
+      const res2 = await withTimeoutLocal(supabase.auth.updateUser({ password }), 6000, "updateUser(2)")
+        .catch((e) => e);
+
+      if (!(res2 instanceof Error) && !res2?.error) {
+        addDbg("submit:updateUser(2) OK → signOut + redirect");
+        await supabase.auth.signOut().catch(() => {});
+        setSaving(false);
+        window.location.assign("/login");
+        return;
+      }
+
+      // Fallback 3 : REST direct → PUT/PATCH /auth/v1/user avec le access_token du lien
+      addDbg("submit:SDK KO → fallback REST /auth/v1/user");
+      const accessFromLink = recoveryAccessRef.current;
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !accessFromLink) {
+        addDbg(
+          `fallback REST impossible: url/key/token manquants (url=${!!SUPABASE_URL}, key=${!!SUPABASE_ANON_KEY}, token=${!!accessFromLink})`
         );
+        setSaving(false);
+        return setError("Impossible de finaliser la réinitialisation (config manquante). Renvoyez-vous un nouveau lien.");
       }
-      return setError("Erreur inattendue pendant la mise à jour. Réessayez.");
-    } else {
-      const apiMsg = res2?.error?.message || restErr || "Impossible de mettre à jour le mot de passe.";
-      return setError(apiMsg);
+
+      const endpoints = [
+        { method: "PUT", url: `${SUPABASE_URL}/auth/v1/user` },
+        { method: "PATCH", url: `${SUPABASE_URL}/auth/v1/user` },
+      ];
+      let restOk = false, restErr = null;
+
+      for (const ep of endpoints) {
+        try {
+          addDbg(`REST ${ep.method} ${ep.url}`);
+          const resp = await withTimeoutLocal(
+            fetch(ep.url, {
+              method: ep.method,
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessFromLink}`,
+                "apikey": SUPABASE_ANON_KEY,
+              },
+              body: JSON.stringify({ password }),
+            }),
+            7000,
+            `REST:${ep.method}`
+          );
+
+          if (!resp.ok) {
+            const t = await resp.text().catch(() => "");
+            restErr = `HTTP ${resp.status} ${resp.statusText} :: ${t}`;
+            addDbg(`REST ${ep.method} NOT OK → ${restErr}`);
+            continue;
+          }
+          restOk = true;
+          break;
+        } catch (e3) {
+          restErr = e3?._timeout ? "timeout" : (e3?.message || "fetch error");
+          addDbg(`REST ${ep.method} ERROR: ${restErr}`);
+        }
+      }
+
+      if (restOk) {
+        addDbg("REST fallback OK → signOut + redirect");
+        await supabase.auth.signOut().catch(() => {});
+        setSaving(false);
+        window.location.assign("/login");
+        return;
+      }
+
+      // Rien n'a marché → messages utiles
+      setSaving(false);
+      if (res2 instanceof Error) {
+        if (res2?._timeout) {
+          return setError(
+            "La validation prend trop de temps. Vérifiez votre connexion ou désactivez temporairement les bloqueurs (adblock / cookies), puis réessayez."
+          );
+        }
+        return setError("Erreur inattendue pendant la mise à jour. Réessayez.");
+      } else {
+        const apiMsg = res2?.error?.message || restErr || "Impossible de mettre à jour le mot de passe.";
+        return setError(normalizeError(apiMsg));
+      }
+    } catch (e) {
+      setSaving(false);
+      addDbg(`submit FATAL: ${e?.message || e}`);
+      return setError("Erreur inattendue lors de la mise à jour du mot de passe.");
     }
-  } catch (e) {
-    setSaving(false);
-    addDbg(`submit FATAL: ${e?.message || e}`);
-    return setError("Erreur inattendue lors de la mise à jour du mot de passe.");
   }
-}
- 
 
   const isReady = step === "ready";
 
@@ -446,7 +463,7 @@ const recoveryAccessRef = useRef(null);
               </form>
             )}
 
-            {debug && (
+            {DEBUG_AUTH && debug && (
               <details open style={{ marginTop: 12 }}>
                 <summary>Debug</summary>
                 <pre style={{ background: "#f6f6f6", padding: 12, borderRadius: 8, fontSize: 12, whiteSpace: "pre-wrap" }}>
