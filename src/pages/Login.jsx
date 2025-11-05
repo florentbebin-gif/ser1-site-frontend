@@ -37,10 +37,13 @@ export default function Login(){
     }
 
     const access  = p.get('access_token')
-    const refresh = p.get('refresh_token')
+    // Certains navigateurs/clients transforment '+' en espace lors d'un collage manuel
+    let refresh = p.get('refresh_token') || ''
+    if (refresh.includes(' ')) refresh = refresh.replace(/ /g, '+')
     addDbg(`hash=${raw}`)
 
-    if (access && refresh) {
+  const type = p.get('type')
+    if (type === 'recovery' && access && refresh) {
       // On se met en mode recovery et on pose la session pour autoriser updateUser
       ;(async () => {
         try {
@@ -48,12 +51,9 @@ export default function Login(){
           if (u.error) addDbg(`getUser(access) ERROR: ${u.error.message}`)
           else addDbg(`getUser(access) OK user.id=${u.data?.user?.id || 'unknown'}`)
 
-          const exp = Number(p.get('expires_at') || 0)
           const { data, error } = await supabase.auth.setSession({
             access_token: access,
             refresh_token: refresh,
-            token_type: 'bearer',
-            expires_at: Number.isFinite(exp) && exp > 0 ? exp : undefined,
           })
           if (error) {
             addDbg(`setSession ERROR: ${error.message}`)
@@ -71,7 +71,12 @@ export default function Login(){
 
           setIsRecovery(true)
           // On nettoie l’URL pour éviter de garder les tokens
-          try { history.replaceState(null, '', window.location.pathname) } catch {}
+          // Nettoie l'URL (hash) sans perdre la page courante
+          try {
+            const clean = window.location.pathname + window.location.search
+            window.history.replaceState(null, '', clean)
+          } catch {}
+          
         } catch (e) {
           addDbg(`TRY/CATCH recovery: ${e?.message || e}`)
           setError("Erreur pendant l'initialisation de la réinitialisation.")
