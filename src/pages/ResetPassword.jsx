@@ -1,4 +1,4 @@
-imimport React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
 
 export default function ResetPassword() {
