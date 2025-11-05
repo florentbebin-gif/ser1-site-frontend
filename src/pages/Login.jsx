@@ -105,7 +105,7 @@ export default function Login(){
     setError(''); setInfo(''); setLoading(true)
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/login`
+        redirectTo: `${window.location.origin}/reset
       })
       if (error) throw error
       try { localStorage.setItem('lastResetEmail', email) } catch {}
