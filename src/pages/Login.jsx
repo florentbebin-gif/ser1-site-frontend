@@ -19,6 +19,25 @@ export default function Login(){
   const [authCooling, setAuthCooling] = useState(false);
   const authSubRef = useRef(null);              // pour pouvoir unsubscribe
   const addDbg = (l) => setRecoDebug(prev => (prev ? prev + '\n' : '') + l)
+// Debug flag: active si URL contient ?authdebug=1 ou si localStorage.authDebug = "1"
+const authDebugOn = (() => {
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get("authdebug");
+    const fromLS  = localStorage.getItem("authDebug");
+    return fromUrl === "1" || fromLS === "1";
+  } catch { return false; }
+})();
+const [authLog, setAuthLog] = useState([]);
+const log = (...args) => { if (authDebugOn) setAuthLog(prev => [...prev, `${new Date().toISOString()} — ${args.join(" ")}`]); };
+
+// Loggue aussi les events auth
+useEffect(() => {
+  if (!authDebugOn) return;
+  const sub = supabase.auth.onAuthStateChange((evt, sess) => {
+    log(`[evt]`, evt, sess?.session ? `user=${sess.session.user?.id}` : "(no session)");
+  });
+  return () => sub.data.subscription?.unsubscribe?.();
+}, [authDebugOn]);
 
   // --- parseur de hash qui préserve les "+" dans refresh_token ---
 // Remplacer TOUTE ta fonction parseHashPreservingPlus par celle-ci :
@@ -116,8 +135,11 @@ authSubRef.current = sub?.data?.subscription;
 async function onSubmit(e) {
   e.preventDefault();
   if (inFlight.current) return;
+  if (authCooling) { setInfo("Finalisation en cours…"); return; }
+
   inFlight.current = true;
   setError(""); setInfo(""); setLoading(true);
+  log('onSubmit:start');
 
   const delay = (ms) => new Promise(r => setTimeout(r, ms));
   const withTimeout = (p, ms, label) => Promise.race([
@@ -126,17 +148,25 @@ async function onSubmit(e) {
   ]);
 
   try {
-    // 1) tentative normale (8s max)
+    // 🔧 Anti-session-ghost : on nettoie agressivement AVANT la connexion
+    log('preSignIn: signOut + clear sb-*');
+    await supabase.auth.signOut().catch(()=>{});
+    try { Object.keys(localStorage).filter(k=>k.startsWith('sb-')).forEach(k=>localStorage.removeItem(k)); } catch {}
+    await delay(200);
+
+    // Tentative 1 — timeout 8s
+    log('signIn(1)…');
     let r = await withTimeout(
       supabase.auth.signInWithPassword({ email, password }),
       8000,
       "signIn(1)"
     ).catch(e => e);
 
-    // 2) timeout/échec → mini-reset + retry
+    // Si timeout/échec → petit cooldown + retry
     if (r instanceof Error || r?.error) {
-      await supabase.auth.signOut().catch(()=>{});
-      await delay(400);
+      log('signIn(1) failed → retry after cooldown');
+      await delay(500);
+      log('signIn(2)…');
       r = await withTimeout(
         supabase.auth.signInWithPassword({ email, password }),
         8000,
@@ -145,25 +175,31 @@ async function onSubmit(e) {
     }
 
     if (!(r instanceof Error) && !r?.error) {
+      log('signIn:SUCCESS → redirect /');
       window.location.assign("/");
       return;
     }
 
-     const raw = (r?.error?.message || (r instanceof Error && r.message) || "").toLowerCase();
-     if (raw.includes("invalid") || raw.includes("credentials") || raw.includes("email") || raw.includes("password")) {
-       setError("Email ou mot de passe invalide.");
-     } else if (r instanceof Error && r?._timeout) {
-       setError("Connexion trop lente, réessayez.");
-     } else {
-       setError(r?.error?.message || "Impossible de se connecter.");
-     }
+    // Message clair + défige
+    const raw = (r?.error?.message || (r instanceof Error && r.message) || "").toLowerCase();
+    if (raw.includes("invalid") || raw.includes("credentials") || raw.includes("email") || raw.includes("password")) {
+      setError("Email ou mot de passe invalide.");
+    } else if (r instanceof Error && r?._timeout) {
+      setError("Connexion trop lente, réessayez.");
+    } else {
+      setError(r?.error?.message || "Impossible de se connecter.");
+    }
+    log('signIn:ERROR', setError.toString());
   } catch (e) {
     setError("Erreur inattendue lors de la connexion.");
+    log('onSubmit:EXCEPTION', e?.message);
   } finally {
     setLoading(false);
     inFlight.current = false;
+    log('onSubmit:end');
   }
 }
+
 
   // Envoi du mail de reset → redirige vers /login
   async function sendReset(e){
@@ -467,6 +503,28 @@ return;
         `,
         }}
       />
+      {authDebugOn && (
+  <div style={{position:'fixed', bottom:8, right:8, zIndex:9999, width:380,
+               background:'#111', color:'#ddd', padding:'10px 12px', borderRadius:10,
+               fontSize:12, maxHeight:'40vh', overflow:'auto', opacity:.92}}>
+    <div style={{fontWeight:700, marginBottom:6}}>Auth Debug</div>
+    <div style={{display:'flex', gap:8, marginBottom:6}}>
+      <button className="btn" onClick={async ()=>{
+        log('getSession()…');
+        const { data, error } = await supabase.auth.getSession();
+        log('getSession', error ? `ERR:${error.message}` : `OK:${!!data?.session} user=${data?.session?.user?.id||'-'}`);
+      }}>getSession</button>
+      <button className="btn" onClick={async ()=>{
+        log('HARD CLEAR: signOut + clear sb-* from localStorage');
+        await supabase.auth.signOut().catch(()=>{});
+        try { Object.keys(localStorage).filter(k=>k.startsWith('sb-')).forEach(k=>localStorage.removeItem(k)); } catch {}
+      }}>Hard clear</button>
+      <button className="btn" onClick={()=>{ try{ localStorage.setItem('authDebug','1'); }catch{} window.location.reload(); }}>Persist debug</button>
+    </div>
+    <pre style={{whiteSpace:'pre-wrap'}}>{authLog.join('\n')}</pre>
+  </div>
+)}
+
     </div>
   )
 }
