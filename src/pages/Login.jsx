@@ -229,6 +229,7 @@ setTimeout(() => {
   closingRecoveryRef.current = false;  // OK pour de futurs flux recovery
   setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
   setAuthCooling(false);               // ← on réactive la connexion après ~1,2 s
+  window.location.replace("/login");
 }, 1200);
 
 return;
@@ -256,6 +257,7 @@ setTimeout(() => {
   closingRecoveryRef.current = false;  // OK pour de futurs flux recovery
   setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
   setAuthCooling(false);               // ← on réactive la connexion après ~1,2 s
+  window.location.replace("/login");
 }, 1200);
 
 return;
@@ -319,6 +321,7 @@ setTimeout(() => {
   closingRecoveryRef.current = false;  // OK pour de futurs flux recovery
   setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
   setAuthCooling(false);               // ← on réactive la connexion après ~1,2 s
+  window.location.replace("/login");
 }, 1200);
 
 return;
