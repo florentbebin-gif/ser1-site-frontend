@@ -139,48 +139,38 @@ async function onSubmit(e) {
 
   inFlight.current = true;
   setError(""); setInfo(""); setLoading(true);
-  log('onSubmit:start');
 
   const delay = (ms) => new Promise(r => setTimeout(r, ms));
-  const withTimeout = (p, ms, label) => Promise.race([
-    p,
-    delay(ms).then(() => { const e = new Error(`TIMEOUT:${label}`); e._timeout = true; throw e; })
-  ]);
+  const withTimeout = (p, ms, label) =>
+    Promise.race([
+      p,
+      delay(ms).then(() => { const err = new Error(`TIMEOUT:${label}`); err._timeout = true; throw err; })
+    ]);
 
   try {
-    // 🔧 Anti-session-ghost : on nettoie agressivement AVANT la connexion
-    log('preSignIn: signOut + clear sb-*');
-    await supabase.auth.signOut().catch(()=>{});
-    try { Object.keys(localStorage).filter(k=>k.startsWith('sb-')).forEach(k=>localStorage.removeItem(k)); } catch {}
-    await delay(200);
-
-    // Tentative 1 — timeout 8s
-    log('signIn(1)…');
+    // Tentative 1 — on ne fait plus de signOut/clear avant
     let r = await withTimeout(
       supabase.auth.signInWithPassword({ email, password }),
-      8000,
+      9000,
       "signIn(1)"
     ).catch(e => e);
 
-    // Si timeout/échec → petit cooldown + retry
+    // Si timeout/échec → courte pause puis retry
     if (r instanceof Error || r?.error) {
-      log('signIn(1) failed → retry after cooldown');
       await delay(500);
-      log('signIn(2)…');
       r = await withTimeout(
         supabase.auth.signInWithPassword({ email, password }),
-        8000,
+        9000,
         "signIn(2)"
       ).catch(e => e);
     }
 
     if (!(r instanceof Error) && !r?.error) {
-      log('signIn:SUCCESS → redirect /');
-      window.location.assign("/");
+      // Redirection « dure » pour éviter tout reste d’état
+      window.location.replace("/");
       return;
     }
 
-    // Message clair + défige
     const raw = (r?.error?.message || (r instanceof Error && r.message) || "").toLowerCase();
     if (raw.includes("invalid") || raw.includes("credentials") || raw.includes("email") || raw.includes("password")) {
       setError("Email ou mot de passe invalide.");
@@ -189,16 +179,14 @@ async function onSubmit(e) {
     } else {
       setError(r?.error?.message || "Impossible de se connecter.");
     }
-    log('signIn:ERROR', setError.toString());
   } catch (e) {
     setError("Erreur inattendue lors de la connexion.");
-    log('onSubmit:EXCEPTION', e?.message);
   } finally {
     setLoading(false);
     inFlight.current = false;
-    log('onSubmit:end');
   }
 }
+
 
 
   // Envoi du mail de reset → redirige vers /login
