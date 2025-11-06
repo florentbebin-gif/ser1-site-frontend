@@ -1,86 +1,98 @@
-// src/pages/Home.jsx
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React from "react";
+import { Link } from "react-router-dom";
 
-export default function Home(){
+export default function Home() {
   return (
-    <div className="tiles-wrap">
-      {/* Colonne gauche */}
-      <div className="section-card">
-        <div className="section-title">Simulateurs épargne retraite</div>
+    <div className="tiles-root">
+      {/* Styles portés par le composant pour éviter tout conflit */}
+      <style>{`
+        :root{
+          --green:#2C3D38; --beige:#E8DED5; --ink:#222; --muted:#666;
+          --border:#EAEAEA; --shadow:0 10px 30px rgba(0,0,0,.06);
+        }
+        .tiles-root{ padding:28px 22px 60px; }
+        .tiles-wrap{
+          max-width:1200px; margin: 0 auto;
+          display:grid; grid-template-columns:1fr 1fr; gap:28px;
+        }
+        .tiles-col{ background:#fff; border-radius:14px; box-shadow:var(--shadow); padding:22px; }
+        .tiles-title{
+          font-size:22px; font-weight:800; color:var(--ink);
+          display:flex; align-items:center; gap:12px; margin-bottom:18px;
+        }
+        .tiles-title::after{
+          content:""; height:2px; background:#e7e0d8; flex:1; border-radius:2px;
+        }
+        .card{
+          display:flex; align-items:center; gap:14px;
+          background:#fff; border:1px solid var(--border);
+          border-radius:12px; padding:16px 18px; transition:transform .15s ease, box-shadow .2s ease;
+          text-decoration:none; color:var(--ink);
+        }
+        .card + .card{ margin-top:14px; }
+        .card:hover{ transform:translateY(-2px); box-shadow:0 14px 34px rgba(0,0,0,.08); }
+        .card.is-disabled{ opacity:.55; pointer-events:none; }
+        .ic{
+          width:36px; height:36px; display:grid; place-items:center;
+          border-radius:10px; background:#F6F5F3; border:1px solid var(--border);
+          font-weight:700; color:#7b7b7b;
+        }
+        .lbl{ font-size:16px; font-weight:700; }
+        .hint{ font-size:13px; color:var(--muted); margin-left:6px; font-style:italic; }
+        @media (max-width: 980px){
+          .tiles-wrap{ grid-template-columns:1fr; }
+        }
+      `}</style>
 
-        <Tile to="/sim/potentiel" icon={<IconGauge/>} title="Contrôle du potentiel Epargne retraite" />
-        <Tile to="/sim/transfert" icon={<IconTarget/>} title="Transfert vers PER" />
-        <Tile to="/sim/ouverture" icon={<IconFolder/>} title="Ouverture PERin" />
-      </div>
+      <div className="tiles-wrap">
+        {/* Colonne gauche */}
+        <section className="tiles-col">
+          <h2 className="tiles-title">Simulateurs épargne retraite</h2>
 
-      {/* Colonne droite */}
-      <div className="section-card">
-        <div className="section-title">Simulateurs rapides</div>
+          <div className="card is-disabled" title="À venir">
+            <span className="ic">↗</span>
+            <span className="lbl">Contrôle du potentiel Epargne retraite</span>
+          </div>
 
-        <Tile to="/sim/impot" icon={<IconList/>} title="Impôt sur le revenu" />
+          <div className="card is-disabled" title="À venir">
+            <span className="ic">＋</span>
+            <span className="lbl">Transfert vers PER</span>
+          </div>
 
-        <Tile to="/placement" icon={<IconChart/>} title="Placement" />
-        <Tile to="/credit" icon={<IconCard/>} title="Crédit" />
+          <div className="card is-disabled" title="À venir">
+            <span className="ic">▣</span>
+            <span className="lbl">Ouverture PERin</span>
+          </div>
+        </section>
 
-        <Tile
-          to="/sim/is"
-          icon={<IconHome/>}
-          title={<>Stratégie trésorerie IS<span className="tile-note"> (préparation retraite)</span></>}
-        />
+        {/* Colonne droite */}
+        <section className="tiles-col">
+          <h2 className="tiles-title">Simulateurs rapides</h2>
+
+          <div className="card is-disabled" title="À venir">
+            <span className="ic">€</span>
+            <span className="lbl">Impôt sur le revenu</span>
+          </div>
+
+          {/* ► LIENS ACTIFS */}
+          <Link className="card" to="/placement">
+            <span className="ic">📈</span>
+            <span className="lbl">Placement</span>
+          </Link>
+
+          <Link className="card" to="/credit">
+            <span className="ic">💳</span>
+            <span className="lbl">Crédit</span>
+          </Link>
+
+          <div className="card is-disabled" title="À venir">
+            <span className="ic">🏠</span>
+            <span className="lbl">
+              Stratégie trésorerie IS <span className="hint">(préparation retraite)</span>
+            </span>
+          </div>
+        </section>
       </div>
     </div>
-  )
+  );
 }
-
-function Tile({to, icon, title}){
-  return (
-    <Link to={to} className="tile">
-      <div className="tile-row">
-        <div className="tile-icon">{icon}</div>
-        <div className="tile-sep" />
-        <div className="tile-title">
-          <div className="tile-bar" />
-          <div>{title}</div>
-        </div>
-      </div>
-    </Link>
-  )
-}
-
-/* Icônes SVG légères */
-function IconGauge(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <path d="M12 13l3-3" /><path d="M20 14A8 8 0 1 0 4 14" /><path d="M6 14h.01M10 14h.01M14 14h.01M18 14h.01"/>
-  </svg>
-)}
-function IconTarget(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <path d="M12 7v10M7 12h10"/><circle cx="12" cy="12" r="8"/>
-  </svg>
-)}
-function IconFolder(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <path d="M3 7h6l2 2h10v10H3z"/>
-  </svg>
-)}
-function IconList(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h8"/>
-  </svg>
-)}
-function IconChart(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <path d="M3 20h18"/><path d="M7 16l3-3 3 2 5-6"/>
-  </svg>
-)}
-function IconCard(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>
-  </svg>
-)}
-function IconHome(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>
-  </svg>
-)}
