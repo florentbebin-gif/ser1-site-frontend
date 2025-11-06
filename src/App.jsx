@@ -1,138 +1,101 @@
 import React, { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { supabase } from './supabaseClient.js'
-import { triggerPageReset } from './utils/reset.js'
-import { startIdleTimer } from './utils/idle.js'
+import { supabase } from './supabaseClient'
+import { triggerPageReset } from './utils/reset'
+import { startIdleTimer } from './utils/idle'
 
 export default function App(){
   const [session, setSession] = useState(null)
   const [loggingOut, setLoggingOut] = useState(false)
   const location = useLocation()
-  // Détecte un hash d'auth Supabase (invite/signup/recovery)
-const hasRecoveryLikeHash = () => {
-  try {
-    const s = (window.location.hash || '').toLowerCase()
-    return s.includes('type=recovery') || s.includes('type=invite') || s.includes('type=signup')
-  } catch { return false }
-}
+  const navigate = useNavigate()
 
-  const onResetPage = location.pathname.startsWith('/reset')
-// petit helper : n'attend pas indéfiniment le signOut
-async function signOutWithTimeout(ms = 1500) {
-  try {
-    await Promise.race([
-      supabase.auth.signOut({ scope: 'global' }),
-      new Promise(resolve => setTimeout(resolve, ms))
-    ])
-  } catch {
-    // on ignore : on passe à la suite de toute façon
+  const isRecoveryLikeHash = () => {
+    const h = (window.location.hash || '').toLowerCase()
+    return h.includes('type=recovery') || h.includes('type=invite') || h.includes('type=signup')
   }
-}
-  function currentSimId(pathname) {
-  // adapte la liste si tu ajoutes d’autres écrans
-  if (pathname.startsWith('/placement')) return 'placement';
-  if (pathname.startsWith('/credit')) return 'credit';
-  return null; // Home, Params, etc.
-}
-  // Suivre la session pour l'UI
+
+  const currentSimId = (pathname) => {
+    if (pathname.startsWith('/placement')) return 'placement'
+    if (pathname.startsWith('/credit')) return 'credit'
+    return null
+  }
+
   useEffect(() => {
     let mounted = true
     ;(async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (mounted) setSession(session)
     })()
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data } = supabase.auth.onAuthStateChange((_event, s) => {
       if (mounted) setSession(s)
     })
     return () => { data?.subscription?.unsubscribe?.(); mounted = false }
   }, [])
 
-  // 🔔 Déconnexion auto après 10 min d’inactivité
-useEffect(() => {
-  if (!session || onResetPage) return
-  const stop = startIdleTimer({
-    timeoutMs: 10 * 60 * 1000,
-    onTimeout: async () => {
-      await signOutWithTimeout?.(1500) // si tu as ce helper ; sinon supprime cette ligne
-      try { Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k)) } catch {}
-      try { sessionStorage.clear() } catch {}
-      window.location.href = '/login?logout=1'
+  useEffect(() => {
+    if (!session) return
+    const stop = startIdleTimer({
+      timeoutMs: 10 * 60 * 1000,
+      onTimeout: async () => {
+        try { await supabase.auth.signOut({ scope: 'global' }) } catch {}
+        try { sessionStorage.clear() } catch {}
+        try { Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k)) } catch {}
+        window.location.href = '/login?logout=1'
+      }
+    })
+    return stop
+  }, [session])
+
+  useEffect(() => {
+    if (isRecoveryLikeHash() && location.pathname !== '/login') {
+      navigate('/login' + window.location.hash, { replace: true })
     }
-  })
-  return stop
-}, [session, onResetPage])
+  }, [location.pathname, navigate])
 
-const navigate = useNavigate()
-
-useEffect(() => {
-  // Si un lien Supabase contient un token (#...type=invite|signup|recovery),
-  // on redirige vers /login en conservant le hash pour que Login.jsx ouvre la box.
-  if (hasRecoveryLikeHash() && location.pathname !== '/login') {
-    navigate('/login' + window.location.hash, { replace: true })
+  async function handleLogout(){
+    if (loggingOut) return
+    setLoggingOut(true)
+    try { await supabase.auth.signOut({ scope: 'global' }) } catch {}
+    try { sessionStorage.clear() } catch {}
+    try { Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k)) } catch {}
+    window.location.href = '/login?logout=1'
   }
-}, [location.pathname, navigate])
-
-
-  
-async function handleLogout(){
-  if (loggingOut) return
-  setLoggingOut(true)
-
-  // 1) on tente le signOut mais on n'attend pas indéfiniment
-  await signOutWithTimeout(1500)
-
-  // 2) purge locale "ceinture + bretelles"
-  try {
-    Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k))
-  } catch {}
-  try { sessionStorage.clear() } catch {}
-
-  // 3) redirection dure (on n'utilise pas Link ici)
-  window.location.href = '/login?logout=1'
-}
 
   function handleReset(){
-    const simId = currentSimId(location.pathname);
-    if (!simId) return;                    // Pas de reset sur Home/Params
-    triggerPageReset(simId);               // Reset ciblé
-    alert('Les champs de cette page ont été réinitialisés.');
+    const simId = currentSimId(location.pathname)
+    if (!simId) return
+    triggerPageReset(simId)
+    alert('Les champs de cette page ont été réinitialisés.')
   }
 
   const isAuthed = !!session
-  const onAuthFree = /^\/login(\/|$)|^\/reset(\/|$)/.test(location.pathname)
 
   return (
     <div>
       <div className="topbar">
         <div className="brandword">SER1</div>
 
-        <div className="top-actions">
-          {/* HOME */}
-          {isAuthed && (
+        {isAuthed && (
+          <div className="top-actions">
+
             <Link to="/" className={`chip ${location.pathname === '/' ? 'active' : ''}`}>
               HOME
             </Link>
-          )}
 
-          {/* Reset : uniquement quand on est sur un simulateur */}
-          {isAuthed && currentSimId(location.pathname) && (
-            <button className="chip" onClick={handleReset}>
-              Reset
-            </button>
-          )}
+            {currentSimId(location.pathname) && (
+              <button className="chip" onClick={handleReset}>
+                Reset
+              </button>
+            )}
 
-          {/* Paramètres */}
-          {isAuthed && (
             <Link
               to="/params"
               className={`chip ${location.pathname.startsWith('/params') ? 'active' : ''}`}
             >
               Paramètres
             </Link>
-          )}
 
-          {/* Déconnexion / Connexion */}
-          {isAuthed ? (
             <button
               type="button"
               className="chip logout"
@@ -141,14 +104,9 @@ async function handleLogout(){
             >
               {loggingOut ? 'Déconnexion…' : 'Déconnexion'}
             </button>
-          ) : (
-            !onAuthFree && (
-              <Link to="/login" className="chip">
-                Connexion
-              </Link>
-            )
-          )}
-        </div>
+
+          </div>
+        )}
       </div>
 
       <div className="container">
