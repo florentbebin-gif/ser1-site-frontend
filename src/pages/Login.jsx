@@ -152,38 +152,31 @@ async function restSignIn(email, password) {
     throw new Error(`REST ${resp.status}: ${t || resp.statusText}`);
   }
 
-  const data = await resp.json(); // contient access_token, refresh_token, expires_in, etc.
+  const data = await resp.json(); // access_token, refresh_token, ...
   if (!data?.access_token || !data?.refresh_token) {
     throw new Error("Réponse REST incomplète.");
   }
 
-  // ---------- IMPORTANT ----------
-  // 1) Dépose les tokens mais ne bloque pas si le SDK est lent
+  // Dépose les tokens sans bloquer inutilement
   const setP = supabase.auth.setSession({
     access_token: data.access_token,
     refresh_token: data.refresh_token,
-  }).catch(() => {}); // on ignore l'erreur ici, on va vérifier nous-mêmes
-
-  // 2) Attente très courte (<= 800ms) puis vérification locale
-  const shortWait = (ms)=>new Promise(r=>setTimeout(r,ms));
+  }).catch(() => {});
+  const shortWait = (ms) => new Promise(r => setTimeout(r, ms));
   await Promise.race([setP, shortWait(800)]);
 
-  // 3) Vérifie rapidement que la session est visible côté SDK
   try {
     const { data: s } = await Promise.race([
       supabase.auth.getSession(),
-      shortWait(700).then(()=>({data:null}))
+      shortWait(700).then(() => ({ data: null })),
     ]);
     if (s?.session?.user?.id) return true;
   } catch {}
 
-  // 4) Même si la promesse ne s'est pas résolue, on considère OK :
-  //    setSession a déjà écrit dans le storage de toute façon.
   return true;
- }
-  
-  // Connexion classique
-async function onSubmit(e) {
+}
+
+  async function onSubmit(e) {
   e.preventDefault();
   if (inFlight.current) return;
   if (authCooling) { setInfo("Finalisation en cours…"); return; }
@@ -199,23 +192,21 @@ async function onSubmit(e) {
     ]);
 
   try {
-    // 1) Tentative SDK (rapide)
+    // Tentative SDK rapide
     let r = await withTimeout(
       supabase.auth.signInWithPassword({ email, password }),
       5000,
       "sdk-signIn"
     ).catch(e => e);
 
-    // 2) Si SDK en erreur/timeout → Fallback REST
+    // Fallback REST si SDK lent/KO
     if (r instanceof Error || r?.error) {
       try {
         await withTimeout(restSignIn(email, password), 7000, "rest-signIn");
-        // Succès REST (non-bloquant) → message puis redirection « dure »
         setInfo("Connexion établie, redirection…");
         window.location.replace("/");
         return;
       } catch (restErr) {
-        // REST a échoué → on construit un message clair
         const raw = (r?.error?.message || restErr?.message || "").toLowerCase();
         if (raw.includes("invalid") || raw.includes("credentials") || raw.includes("email") || raw.includes("password")) {
           setError("Email ou mot de passe invalide.");
@@ -228,16 +219,16 @@ async function onSubmit(e) {
       }
     }
 
-    // 3) Succès SDK → redirection « dure »
+    // Succès SDK → redirection dure
     window.location.replace("/");
-  } catch (e) {
+  } catch {
     setError("Erreur inattendue lors de la connexion.");
   } finally {
     setLoading(false);
     inFlight.current = false;
   }
 }
-
+  
   // Envoi du mail de reset → redirige vers /login
   async function sendReset(e){
     e.preventDefault()
