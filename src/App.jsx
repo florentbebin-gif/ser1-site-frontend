@@ -1,86 +1,160 @@
-// src/pages/Home.jsx
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { supabase } from './supabaseClient.js'
+import { triggerReset } from './utils/reset.js'
+import { startIdleTimer } from './utils/idle.js'
 
-export default function Home(){
+export default function App(){
+  const [session, setSession] = useState(null)
+  const [loggingOut, setLoggingOut] = useState(false)
+  const location = useLocation()
+  // Détecte un hash d'auth Supabase (invite/signup/recovery)
+const hasRecoveryLikeHash = () => {
+  try {
+    const s = (window.location.hash || '').toLowerCase()
+    return s.includes('type=recovery') || s.includes('type=invite') || s.includes('type=signup')
+  } catch { return false }
+}
+
+  const onResetPage = location.pathname.startsWith('/reset')
+// petit helper : n'attend pas indéfiniment le signOut
+async function signOutWithTimeout(ms = 1500) {
+  try {
+    await Promise.race([
+      supabase.auth.signOut({ scope: 'global' }),
+      new Promise(resolve => setTimeout(resolve, ms))
+    ])
+  } catch {
+    // on ignore : on passe à la suite de toute façon
+  }
+}
+  // Suivre la session pour l'UI
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (mounted) setSession(session)
+    })()
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (mounted) setSession(s)
+    })
+    return () => { data?.subscription?.unsubscribe?.(); mounted = false }
+  }, [])
+
+  // 🔔 Déconnexion auto après 10 min d’inactivité
+useEffect(() => {
+  if (!session || onResetPage) return
+  const stop = startIdleTimer({
+    timeoutMs: 10 * 60 * 1000,
+    onTimeout: async () => {
+      await signOutWithTimeout?.(1500) // si tu as ce helper ; sinon supprime cette ligne
+      try { Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k)) } catch {}
+      try { sessionStorage.clear() } catch {}
+      window.location.href = '/login?logout=1'
+    }
+  })
+  return stop
+}, [session, onResetPage])
+
+const navigate = useNavigate()
+
+useEffect(() => {
+  // Si un lien Supabase contient un token (#...type=invite|signup|recovery),
+  // on redirige vers /login en conservant le hash pour que Login.jsx ouvre la box.
+  if (hasRecoveryLikeHash() && location.pathname !== '/login') {
+    navigate('/login' + window.location.hash, { replace: true })
+  }
+}, [location.pathname, navigate])
+
+
+  
+async function handleLogout(){
+  if (loggingOut) return
+  setLoggingOut(true)
+
+  // 1) on tente le signOut mais on n'attend pas indéfiniment
+  await signOutWithTimeout(1500)
+
+  // 2) purge locale "ceinture + bretelles"
+  try {
+    Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k))
+  } catch {}
+  try { sessionStorage.clear() } catch {}
+
+  // 3) redirection dure (on n'utilise pas Link ici)
+  window.location.href = '/login?logout=1'
+}
+
+  function handleReset(){
+    triggerReset()
+    alert('Toutes les saisies des simulateurs ont été réinitialisées.')
+  }
+
+  const isAuthed = !!session
+  const onAuthFree = /^\/login(\/|$)|^\/reset(\/|$)/.test(location.pathname)
+
   return (
-    <div className="tiles-wrap">
-      {/* Colonne gauche */}
-      <div className="section-card">
-        <div className="section-title">Simulateurs épargne retraite</div>
+    <div>
+      <div className="topbar">
+        <div className="brandword">SER1</div>
 
-        <Tile to="/sim/potentiel" icon={<IconGauge/>} title="Contrôle du potentiel Epargne retraite" />
-        <Tile to="/sim/transfert" icon={<IconTarget/>} title="Transfert vers PER" />
-        <Tile to="/sim/ouverture" icon={<IconFolder/>} title="Ouverture PERin" />
+        <div className="top-actions">
+          {/* HOME */}
+          {isAuthed && (
+            <Link to="/" className={`chip ${location.pathname === '/' ? 'active' : ''}`}>
+              HOME
+            </Link>
+          )}
+
+          {/* Reset (masqué sur la page d’accueil) */}
+            {(() => {
+              const p = location.pathname
+              const showReset =
+               isAuthed &&
+              (p.startsWith('/placement') ||
+               p.startsWith('/credit') ||
+               p.startsWith('/sim') ||
+               p.startsWith('/params'))
+
+            return showReset ? (
+              <button className="chip" onClick={handleReset}>
+                Reset
+            </button>
+            ) : null
+          })()}
+          {/* Paramètres */}
+          {isAuthed && (
+            <Link
+              to="/params"
+              className={`chip ${location.pathname.startsWith('/params') ? 'active' : ''}`}
+            >
+              Paramètres
+            </Link>
+          )}
+
+          {/* Déconnexion / Connexion */}
+          {isAuthed ? (
+            <button
+              type="button"
+              className="chip logout"
+              onClick={handleLogout}
+              disabled={loggingOut}
+            >
+              {loggingOut ? 'Déconnexion…' : 'Déconnexion'}
+            </button>
+          ) : (
+            !onAuthFree && (
+              <Link to="/login" className="chip">
+                Connexion
+              </Link>
+            )
+          )}
+        </div>
       </div>
 
-      {/* Colonne droite */}
-      <div className="section-card">
-        <div className="section-title">Simulateurs rapides</div>
-
-        <Tile to="/sim/impot" icon={<IconList/>} title="Impôt sur le revenu" />
-
-        <Tile to="/placement" icon={<IconChart/>} title="Placement" />
-        <Tile to="/credit" icon={<IconCard/>} title="Crédit" />
-
-        <Tile
-          to="/sim/is"
-          icon={<IconHome/>}
-          title={<>Stratégie trésorerie IS<span className="tile-note"> (préparation retraite)</span></>}
-        />
+      <div className="container">
+        <Outlet />
       </div>
     </div>
   )
 }
-
-function Tile({to, icon, title}){
-  return (
-    <Link to={to} className="tile">
-      <div className="tile-row">
-        <div className="tile-icon">{icon}</div>
-        <div className="tile-sep" />
-        <div className="tile-title">
-          <div className="tile-bar" />
-          <div>{title}</div>
-        </div>
-      </div>
-    </Link>
-  )
-}
-
-/* Icônes SVG légères */
-function IconGauge(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <path d="M12 13l3-3" /><path d="M20 14A8 8 0 1 0 4 14" /><path d="M6 14h.01M10 14h.01M14 14h.01M18 14h.01"/>
-  </svg>
-)}
-function IconTarget(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <path d="M12 7v10M7 12h10"/><circle cx="12" cy="12" r="8"/>
-  </svg>
-)}
-function IconFolder(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <path d="M3 7h6l2 2h10v10H3z"/>
-  </svg>
-)}
-function IconList(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h8"/>
-  </svg>
-)}
-function IconChart(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <path d="M3 20h18"/><path d="M7 16l3-3 3 2 5-6"/>
-  </svg>
-)}
-function IconCard(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>
-  </svg>
-)}
-function IconHome(){ return (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
-    <path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>
-  </svg>
-)}
