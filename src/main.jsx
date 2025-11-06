@@ -9,7 +9,7 @@ import Params from './pages/Params.jsx'
 import Sim from './pages/Sim.jsx'
 import Login from './pages/Login.jsx'
 import { ParamsProvider } from './context/ParamsProvider.jsx'
-import RequireAuth from './components/RequireAuth.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx' // <-- remplacement
 import './styles.css'
 
 const router = createBrowserRouter([
@@ -18,11 +18,11 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       // PRIVÉ
-      { index: true, element: <RequireAuth><Home/></RequireAuth> },
-      { path: 'sim/placement', element: <RequireAuth><Placement/></RequireAuth> },
-      { path: 'sim/credit', element: <RequireAuth><Credit/></RequireAuth> },
-      { path: 'params', element: <RequireAuth><Params/></RequireAuth> },
-      { path: 'sim', element: <RequireAuth><Sim/></RequireAuth> },
+      { index: true, element: <ProtectedRoute><Home/></ProtectedRoute> },
+      { path: 'sim/placement', element: <ProtectedRoute><Placement/></ProtectedRoute> },
+      { path: 'sim/credit', element: <ProtectedRoute><Credit/></ProtectedRoute> },
+      { path: 'params', element: <ProtectedRoute><Params/></ProtectedRoute> },
+      { path: 'sim', element: <ProtectedRoute><Sim/></ProtectedRoute> },
 
       // PUBLIC
       { path: 'login', element: <Login/> },
