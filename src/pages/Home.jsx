@@ -33,7 +33,6 @@ export default function Home(){
   )
 }
 
-/* Tuile générique : icône • barre ocre • titre */
 function Tile({to, icon, title}){
   return (
     <Link to={to} className="tile">
@@ -49,7 +48,7 @@ function Tile({to, icon, title}){
   )
 }
 
-/* Icônes SVG (légères, neutres) */
+/* Icônes SVG légères */
 function IconGauge(){ return (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2b5a52" strokeWidth="1.8">
     <path d="M12 13l3-3" /><path d="M20 14A8 8 0 1 0 4 14" /><path d="M6 14h.01M10 14h.01M14 14h.01M18 14h.01"/>
