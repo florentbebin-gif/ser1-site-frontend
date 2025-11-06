@@ -8,7 +8,6 @@ import Credit from './pages/Credit.jsx'
 import Params from './pages/Params.jsx'
 import Sim from './pages/Sim.jsx'
 import Login from './pages/Login.jsx'
-import ResetPassword from './pages/ResetPassword.jsx'
 import { ParamsProvider } from './context/ParamsProvider.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
 import './styles.css'
@@ -27,7 +26,6 @@ const router = createBrowserRouter([
 
       // PUBLIC
       { path: 'login', element: <Login/> },
-      { path: 'reset', element: <ResetPassword/> },
     ],
   },
 ])
