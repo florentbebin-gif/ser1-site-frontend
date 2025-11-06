@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
 
 export default function Login(){
-  // --- états communs ---
   const [email, setEmail]           = useState('')
   const [password, setPassword]     = useState('')
   const [loading, setLoading]       = useState(false)
@@ -12,13 +11,13 @@ export default function Login(){
   const recoveryAccessRef = useRef(null) // access_token du lien pour fallback REST
   const gotAuthEventRef = useRef(false);
   const closingRecoveryRef = useRef(false); // <-- garde: on ignore les events quand on ferme la box
-  // --- états récupération ---
   const [isRecovery, setIsRecovery] = useState(false)
   const [newPwd, setNewPwd]         = useState('')
   const [newPwd2, setNewPwd2]       = useState('')
   const [recoBusy, setRecoBusy]     = useState(false)
   const [recoDebug, setRecoDebug]   = useState('')
-
+  const closingRecoveryRef = useRef(false);     // on ferme la box → ignorer les events
+  const authSubRef = useRef(null);              // pour pouvoir unsubscribe
   const addDbg = (l) => setRecoDebug(prev => (prev ? prev + '\n' : '') + l)
 
   // --- parseur de hash qui préserve les "+" dans refresh_token ---
@@ -79,7 +78,8 @@ useEffect(() => {
      try { window.history.replaceState(null, "", window.location.pathname + window.location.search); } catch {}
    }
  });
-
+authSubRef.current = sub?.data?.subscription;
+  
   // 2) Tente setSession mais avec TIMEOUT, et sans bloquer l’UI
   const delay = (ms) => new Promise(res => setTimeout(res, ms));
   const withTimeout = (p, ms) => Promise.race([p, delay(ms).then(()=>{throw Object.assign(new Error("timeout"), {_timeout:true})})]);
@@ -113,22 +113,50 @@ useEffect(() => {
 
   
   // Connexion classique
-  async function onSubmit(e){
-    e.preventDefault()
-    if (inFlight.current) return
-    inFlight.current = true
-    setError(''); setInfo(''); setLoading(true)
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) throw error
-      window.location.assign('/') // navigation dure vers les tuiles
-    } catch (e) {
-      setError(e?.message || "Impossible de se connecter. Réessayez.")
-    } finally {
-      setLoading(false)
-      inFlight.current = false
+async function onSubmit(e) {
+  e.preventDefault();
+  if (inFlight.current) return;
+  inFlight.current = true;
+  setError(""); setInfo(""); setLoading(true);
+
+  const delay = (ms) => new Promise(r => setTimeout(r, ms));
+  const withTimeout = (p, ms, label) => Promise.race([
+    p,
+    delay(ms).then(() => { const e = new Error(`TIMEOUT:${label}`); e._timeout = true; throw e; })
+  ]);
+
+  try {
+    // 1) tentative normale (8s max)
+    let r = await withTimeout(
+      supabase.auth.signInWithPassword({ email, password }),
+      8000,
+      "signIn(1)"
+    ).catch(e => e);
+
+    // 2) timeout/échec → mini-reset + retry
+    if (r instanceof Error || r?.error) {
+      await supabase.auth.signOut().catch(()=>{});
+      await delay(400);
+      r = await withTimeout(
+        supabase.auth.signInWithPassword({ email, password }),
+        8000,
+        "signIn(2)"
+      ).catch(e => e);
     }
+
+    if (!(r instanceof Error) && !r?.error) {
+      window.location.assign("/");
+      return;
+    }
+
+    setError(r instanceof Error ? (r?._timeout ? "Connexion trop lente, réessayez." : r.message) : (r?.error?.message || "Impossible de se connecter."));
+  } catch (e) {
+    setError("Erreur inattendue lors de la connexion.");
+  } finally {
+    setLoading(false);
+    inFlight.current = false;
   }
+}
 
   // Envoi du mail de reset → redirige vers /login
   async function sendReset(e){
@@ -177,14 +205,24 @@ async function submitNewPwd(e){
       .catch(e => e);
     if (!(r1 instanceof Error) && !r1?.error) {
       // succès immédiat
-     closingRecoveryRef.current = true;           // <-- active la garde
-     setIsRecovery(false);                        // ferme la box tout de suite
-     await supabase.auth.signOut().catch(()=>{}); // puis déconnexion
-     setRecoBusy(false);
-      setNewPwd(""); setNewPwd2("");
-      setPassword("");                 // <-- vide le champ mot de passe de la zone de connexion
-      setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
-      return;
+closingRecoveryRef.current = true;     // empêcher le listener de ré-ouvrir
+setIsRecovery(false);                  // ferme la box immédiatement
+setRecoBusy(false);                    // enlève l’état "Validation…"
+setNewPwd(""); setNewPwd2("");         // nettoie la box
+setPassword("");                       // vide le champ mot de passe du login
+setInfo("Mot de passe mis à jour. Merci de patienter…");
+
+// on lance signOut en tâche de fond, mais on n'attend pas:
+supabase.auth.signOut().catch(() => {});
+
+// on coupe le listener auth après ~1s pour éviter tout ré-ouverture tardive
+setTimeout(() => {
+  authSubRef.current?.unsubscribe?.();
+  closingRecoveryRef.current = false;  // OK pour de futurs flux recovery
+  setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
+}, 1200);
+
+return;
     }
 
     // 2) refresh + 2e essai SDK
@@ -192,14 +230,24 @@ async function submitNewPwd(e){
     const r2 = await withTimeout(supabase.auth.updateUser({ password: newPwd }), 6000, "updateUser(2)")
       .catch(e => e);
     if (!(r2 instanceof Error) && !r2?.error) {
-     closingRecoveryRef.current = true;           // <-- active la garde
-     setIsRecovery(false);                        // ferme la box tout de suite
-     await supabase.auth.signOut().catch(()=>{}); // puis déconnexion
-     setRecoBusy(false);   
-      setNewPwd(""); setNewPwd2("");
-      setPassword("");
-      setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
-      return;
+closingRecoveryRef.current = true;     // empêcher le listener de ré-ouvrir
+setIsRecovery(false);                  // ferme la box immédiatement
+setRecoBusy(false);                    // enlève l’état "Validation…"
+setNewPwd(""); setNewPwd2("");         // nettoie la box
+setPassword("");                       // vide le champ mot de passe du login
+setInfo("Mot de passe mis à jour. Merci de patienter…");
+
+// on lance signOut en tâche de fond, mais on n'attend pas:
+supabase.auth.signOut().catch(() => {});
+
+// on coupe le listener auth après ~1s pour éviter tout ré-ouverture tardive
+setTimeout(() => {
+  authSubRef.current?.unsubscribe?.();
+  closingRecoveryRef.current = false;  // OK pour de futurs flux recovery
+  setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
+}, 1200);
+
+return;
     }
 
     // 3) Fallback REST
@@ -243,13 +291,24 @@ async function submitNewPwd(e){
     setRecoBusy(false);
 
     if (restOk) {
-     closingRecoveryRef.current = true;
-     setIsRecovery(false);
-     await supabase.auth.signOut().catch(()=>{});
-      setNewPwd(""); setNewPwd2("");
-      setPassword("");
-      setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
-      return;
+closingRecoveryRef.current = true;     // empêcher le listener de ré-ouvrir
+setIsRecovery(false);                  // ferme la box immédiatement
+setRecoBusy(false);                    // enlève l’état "Validation…"
+setNewPwd(""); setNewPwd2("");         // nettoie la box
+setPassword("");                       // vide le champ mot de passe du login
+setInfo("Mot de passe mis à jour. Merci de patienter…");
+
+// on lance signOut en tâche de fond, mais on n'attend pas:
+supabase.auth.signOut().catch(() => {});
+
+// on coupe le listener auth après ~1s pour éviter tout ré-ouverture tardive
+setTimeout(() => {
+  authSubRef.current?.unsubscribe?.();
+  closingRecoveryRef.current = false;  // OK pour de futurs flux recovery
+  setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
+}, 1200);
+
+return;
     }
 
     // Échec final : message utile
