@@ -130,6 +130,41 @@ authSubRef.current = sub?.data?.subscription;
   return () => sub?.data?.subscription?.unsubscribe?.();
 }, []);
 
+async function restSignIn(email, password) {
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new Error("Configuration Supabase manquante.");
+  }
+
+  const url = `${SUPABASE_URL}/auth/v1/token?grant_type=password`;
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!resp.ok) {
+    const t = await resp.text().catch(() => "");
+    throw new Error(`REST ${resp.status}: ${t || resp.statusText}`);
+  }
+
+  const data = await resp.json(); // contient access_token, refresh_token, expires_in, etc.
+  if (!data?.access_token || !data?.refresh_token) {
+    throw new Error("Réponse REST incomplète.");
+  }
+
+  // On force l'installation de la session côté SDK
+  await supabase.auth.setSession({
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+  });
+
+  return true;
+}
   
   // Connexion classique
 async function onSubmit(e) {
@@ -148,37 +183,36 @@ async function onSubmit(e) {
     ]);
 
   try {
-    // Tentative 1 — on ne fait plus de signOut/clear avant
+    // 1) Tentative SDK (rapide)
     let r = await withTimeout(
       supabase.auth.signInWithPassword({ email, password }),
-      9000,
-      "signIn(1)"
+      5000,
+      "sdk-signIn"
     ).catch(e => e);
 
-    // Si timeout/échec → courte pause puis retry
+    // 2) Si SDK en erreur/timeout → Fallback REST
     if (r instanceof Error || r?.error) {
-      await delay(500);
-      r = await withTimeout(
-        supabase.auth.signInWithPassword({ email, password }),
-        9000,
-        "signIn(2)"
-      ).catch(e => e);
+      try {
+        await withTimeout(restSignIn(email, password), 7000, "rest-signIn");
+        // Succès REST → on redirige
+        window.location.replace("/");
+        return;
+      } catch (restErr) {
+        // REST a échoué → on construit un message clair
+        const raw = (r?.error?.message || restErr?.message || "").toLowerCase();
+        if (raw.includes("invalid") || raw.includes("credentials") || raw.includes("email") || raw.includes("password")) {
+          setError("Email ou mot de passe invalide.");
+        } else if ((r instanceof Error && r?._timeout) || (restErr instanceof Error && restErr?._timeout)) {
+          setError("Connexion trop lente, réessayez.");
+        } else {
+          setError(restErr?.message || r?.error?.message || "Impossible de se connecter.");
+        }
+        return;
+      }
     }
 
-    if (!(r instanceof Error) && !r?.error) {
-      // Redirection « dure » pour éviter tout reste d’état
-      window.location.replace("/");
-      return;
-    }
-
-    const raw = (r?.error?.message || (r instanceof Error && r.message) || "").toLowerCase();
-    if (raw.includes("invalid") || raw.includes("credentials") || raw.includes("email") || raw.includes("password")) {
-      setError("Email ou mot de passe invalide.");
-    } else if (r instanceof Error && r?._timeout) {
-      setError("Connexion trop lente, réessayez.");
-    } else {
-      setError(r?.error?.message || "Impossible de se connecter.");
-    }
+    // 3) Succès SDK → redirection « dure »
+    window.location.replace("/");
   } catch (e) {
     setError("Erreur inattendue lors de la connexion.");
   } finally {
@@ -186,8 +220,6 @@ async function onSubmit(e) {
     inFlight.current = false;
   }
 }
-
-
 
   // Envoi du mail de reset → redirige vers /login
   async function sendReset(e){
