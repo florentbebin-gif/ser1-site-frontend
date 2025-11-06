@@ -1,3 +1,4 @@
+// src/main.jsx
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
@@ -9,7 +10,7 @@ import Params from './pages/Params.jsx'
 import Sim from './pages/Sim.jsx'
 import Login from './pages/Login.jsx'
 import { ParamsProvider } from './context/ParamsProvider.jsx'
-import ProtectedRoute from './components/ProtectedRoute.jsx' // <-- remplacement
+import ProtectedRoute from './components/ProtectedRoute.jsx'
 import './styles.css'
 
 const router = createBrowserRouter([
@@ -17,15 +18,20 @@ const router = createBrowserRouter([
     path: '/',
     element: <App />,
     children: [
-      // PRIVÉ
-      { index: true, element: <ProtectedRoute><Home/></ProtectedRoute> },
-      { path: 'sim/placement', element: <ProtectedRoute><Placement/></ProtectedRoute> },
-      { path: 'sim/credit', element: <ProtectedRoute><Credit/></ProtectedRoute> },
-      { path: 'params', element: <ProtectedRoute><Params/></ProtectedRoute> },
-      { path: 'sim', element: <ProtectedRoute><Sim/></ProtectedRoute> },
+      // zone protégée
+      {
+        element: <ProtectedRoute />, // protège tout ce qui suit
+        children: [
+          { index: true, element: <Home /> },               // /
+          { path: 'placement', element: <Placement /> },    // /placement
+          { path: 'credit', element: <Credit /> },          // /credit
+          { path: 'params', element: <Params /> },          // /params
+          { path: 'sim/:section', element: <Sim /> },       // /sim/potentiel etc.
+        ],
+      },
 
-      // PUBLIC
-      { path: 'login', element: <Login/> },
+      // public
+      { path: 'login', element: <Login /> },
     ],
   },
 ])
