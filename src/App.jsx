@@ -106,13 +106,22 @@ async function handleLogout(){
             </Link>
           )}
 
-          {/* Reset */}
-          {isAuthed && (
-            <button className="chip" onClick={handleReset}>
-              Reset
-            </button>
-          )}
+          {/* Reset (masqué sur la page d’accueil) */}
+            {(() => {
+              const p = location.pathname
+              const showReset =
+               isAuthed &&
+              (p.startsWith('/placement') ||
+               p.startsWith('/credit') ||
+               p.startsWith('/sim') ||
+               p.startsWith('/params'))
 
+            return showReset ? (
+              <button className="chip" onClick={handleReset}>
+                Reset
+            </button>
+            ) : null
+          })()}
           {/* Paramètres */}
           {isAuthed && (
             <Link
