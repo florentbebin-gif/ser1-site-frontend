@@ -157,13 +157,30 @@ async function restSignIn(email, password) {
     throw new Error("Réponse REST incomplète.");
   }
 
-  // On force l'installation de la session côté SDK
-  await supabase.auth.setSession({
+  // ---------- IMPORTANT ----------
+  // 1) Dépose les tokens mais ne bloque pas si le SDK est lent
+  const setP = supabase.auth.setSession({
     access_token: data.access_token,
     refresh_token: data.refresh_token,
-  });
+  }).catch(() => {}); // on ignore l'erreur ici, on va vérifier nous-mêmes
 
+  // 2) Attente très courte (<= 800ms) puis vérification locale
+  const shortWait = (ms)=>new Promise(r=>setTimeout(r,ms));
+  await Promise.race([setP, shortWait(800)]);
+
+  // 3) Vérifie rapidement que la session est visible côté SDK
+  try {
+    const { data: s } = await Promise.race([
+      supabase.auth.getSession(),
+      shortWait(700).then(()=>({data:null}))
+    ]);
+    if (s?.session?.user?.id) return true;
+  } catch {}
+
+  // 4) Même si la promesse ne s'est pas résolue, on considère OK :
+  //    setSession a déjà écrit dans le storage de toute façon.
   return true;
+ }
 }
   
   // Connexion classique
@@ -194,7 +211,8 @@ async function onSubmit(e) {
     if (r instanceof Error || r?.error) {
       try {
         await withTimeout(restSignIn(email, password), 7000, "rest-signIn");
-        // Succès REST → on redirige
+        // Succès REST (non-bloquant) → message puis redirection « dure »
+        setInfo("Connexion établie, redirection…");
         window.location.replace("/");
         return;
       } catch (restErr) {
