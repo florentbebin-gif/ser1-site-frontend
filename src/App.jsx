@@ -1,93 +1,115 @@
 import React, { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient.js'
-import { triggerReset } from './utils/reset.js'
 import { startIdleTimer } from './utils/idle.js'
 
-export default function App(){
+export default function App() {
   const [session, setSession] = useState(null)
   const [loggingOut, setLoggingOut] = useState(false)
   const location = useLocation()
-  // Détecte un hash d'auth Supabase (invite/signup/recovery)
-const hasRecoveryLikeHash = () => {
-  try {
-    const s = (window.location.hash || '').toLowerCase()
-    return s.includes('type=recovery') || s.includes('type=invite') || s.includes('type=signup')
-  } catch { return false }
-}
+  const navigate = useNavigate()
 
-  const onResetPage = location.pathname.startsWith('/reset')
-// petit helper : n'attend pas indéfiniment le signOut
-async function signOutWithTimeout(ms = 1500) {
-  try {
-    await Promise.race([
-      supabase.auth.signOut({ scope: 'global' }),
-      new Promise(resolve => setTimeout(resolve, ms))
-    ])
-  } catch {
-    // on ignore : on passe à la suite de toute façon
+  // Détecte un hash d'auth Supabase (invite/signup/recovery)
+  const hasRecoveryLikeHash = () => {
+    try {
+      const s = (window.location.hash || '').toLowerCase()
+      return (
+        s.includes('type=recovery') ||
+        s.includes('type=invite') ||
+        s.includes('type=signup')
+      )
+    } catch {
+      return false
+    }
   }
-}
-  // Suivre la session pour l'UI
+
+  // Helper: signOut avec timeout pour ne pas bloquer l’UI
+  async function signOutWithTimeout(ms = 1500) {
+    try {
+      await Promise.race([
+        supabase.auth.signOut({ scope: 'global' }),
+        new Promise((resolve) => setTimeout(resolve, ms)),
+      ])
+    } catch {
+      // on ignore, on passe à la suite
+    }
+  }
+
+  // Suivre la session
   useEffect(() => {
     let mounted = true
+
     ;(async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (mounted) setSession(session)
+      if (mounted) setSession(session || null)
     })()
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => {
-      if (mounted) setSession(s)
+
+    const { data } = supabase.auth.onAuthStateChange((_evt, s) => {
+      if (mounted) setSession(s || null)
     })
-    return () => { data?.subscription?.unsubscribe?.(); mounted = false }
+
+    return () => {
+      data?.subscription?.unsubscribe?.()
+      mounted = false
+    }
   }, [])
 
-  // 🔔 Déconnexion auto après 10 min d’inactivité
-useEffect(() => {
-  if (!session || onResetPage) return
-  const stop = startIdleTimer({
-    timeoutMs: 10 * 60 * 1000,
-    onTimeout: async () => {
-      await signOutWithTimeout?.(1500) // si tu as ce helper ; sinon supprime cette ligne
-      try { Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k)) } catch {}
-      try { sessionStorage.clear() } catch {}
-      window.location.href = '/login?logout=1'
+  // Entonnoir: si on reçoit un lien Supabase avec token, forcer /login + hash
+  useEffect(() => {
+    if (hasRecoveryLikeHash() && location.pathname !== '/login') {
+      navigate('/login' + (window.location.hash || ''), { replace: true })
     }
-  })
-  return stop
-}, [session, onResetPage])
+  }, [location.pathname, navigate])
 
-const navigate = useNavigate()
+  // Déconnexion auto après 10 min d’inactivité (hors page reset)
+  const onResetPage = location.pathname.startsWith('/reset')
+  useEffect(() => {
+    if (!session || onResetPage) return
+    const stop = startIdleTimer({
+      timeoutMs: 10 * 60 * 1000,
+      onTimeout: async () => {
+        await signOutWithTimeout(1500)
+        try {
+          // purge ceinture+bretelles
+          Object.keys(localStorage)
+            .filter((k) => k.startsWith('sb-'))
+            .forEach((k) => localStorage.removeItem(k))
+        } catch {}
+        try {
+          sessionStorage.clear()
+        } catch {}
+        window.location.href = '/login?logout=1'
+      },
+    })
+    return stop
+  }, [session, onResetPage])
 
-useEffect(() => {
-  // Si un lien Supabase contient un token (#...type=invite|signup|recovery),
-  // on redirige vers /login en conservant le hash pour que Login.jsx ouvre la box.
-  if (hasRecoveryLikeHash() && location.pathname !== '/login') {
-    navigate('/login' + window.location.hash, { replace: true })
+  async function handleLogout() {
+    if (loggingOut) return
+    setLoggingOut(true)
+
+    await signOutWithTimeout(1500)
+
+    // purge locale
+    try {
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith('sb-'))
+        .forEach((k) => localStorage.removeItem(k))
+    } catch {}
+    try {
+      sessionStorage.clear()
+    } catch {}
+
+    window.location.href = '/login?logout=1'
   }
-}, [location.pathname, navigate])
 
-
-  
-async function handleLogout(){
-  if (loggingOut) return
-  setLoggingOut(true)
-
-  // 1) on tente le signOut mais on n'attend pas indéfiniment
-  await signOutWithTimeout(1500)
-
-  // 2) purge locale "ceinture + bretelles"
-  try {
-    Object.keys(localStorage).filter(k => k.startsWith('sb-')).forEach(k => localStorage.removeItem(k))
-  } catch {}
-  try { sessionStorage.clear() } catch {}
-
-  // 3) redirection dure (on n'utilise pas Link ici)
-  window.location.href = '/login?logout=1'
-}
-
-  function handleReset(){
-    triggerReset()
-    alert('Toutes les saisies des simulateurs ont été réinitialisées.')
+  // Bouton Reset global (affiché seulement hors Home) :
+  // Ici on émet un event ; chaque page peut écouter 'page-reset' si besoin.
+  function handleReset() {
+    try {
+      window.dispatchEvent(new CustomEvent('page-reset'))
+    } catch {}
+    alert('Les champs de la page peuvent être réinitialisés (selon l’implémentation locale).')
   }
 
   const isAuthed = !!session
@@ -95,33 +117,38 @@ async function handleLogout(){
 
   return (
     <div>
+      {/* TOPBAR */}
       <div className="topbar">
-        <div className="brandword">SER1</div>
+        <div className="brandword">SER1 — Simulateur épargne retraite</div>
 
         <div className="top-actions">
           {/* HOME */}
           {isAuthed && (
-            <Link to="/" className={`chip ${location.pathname === '/' ? 'active' : ''}`}>
+            <Link
+              to="/"
+              className={`chip ${location.pathname === '/' ? 'active' : ''}`}
+            >
               HOME
             </Link>
           )}
 
           {/* Reset (masqué sur la page d’accueil) */}
-            {(() => {
-              const p = location.pathname
-              const showReset =
-               isAuthed &&
+          {(() => {
+            const p = location.pathname
+            const showReset =
+              isAuthed &&
               (p.startsWith('/placement') ||
-               p.startsWith('/credit') ||
-               p.startsWith('/sim') ||
-               p.startsWith('/params'))
+                p.startsWith('/credit') ||
+                p.startsWith('/sim') ||
+                p.startsWith('/params'))
 
             return showReset ? (
               <button className="chip" onClick={handleReset}>
                 Reset
-            </button>
+              </button>
             ) : null
           })()}
+
           {/* Paramètres */}
           {isAuthed && (
             <Link
@@ -152,6 +179,7 @@ async function handleLogout(){
         </div>
       </div>
 
+      {/* CONTENU ROUTES */}
       <div className="container">
         <Outlet />
       </div>
