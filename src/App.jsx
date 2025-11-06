@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient.js'
-import { triggerReset } from './utils/reset.js'
+import { triggerPageReset } from './utils/reset.js'
 import { startIdleTimer } from './utils/idle.js'
 
 export default function App(){
@@ -27,6 +27,12 @@ async function signOutWithTimeout(ms = 1500) {
   } catch {
     // on ignore : on passe à la suite de toute façon
   }
+}
+  function currentSimId(pathname) {
+  // adapte la liste si tu ajoutes d’autres écrans
+  if (pathname.startsWith('/placement')) return 'placement';
+  if (pathname.startsWith('/credit')) return 'credit';
+  return null; // Home, Params, etc.
 }
   // Suivre la session pour l'UI
   useEffect(() => {
@@ -86,8 +92,10 @@ async function handleLogout(){
 }
 
   function handleReset(){
-    triggerReset()
-    alert('Toutes les saisies des simulateurs ont été réinitialisées.')
+    const simId = currentSimId(location.pathname);
+    if (!simId) return;                    // Pas de reset sur Home/Params
+    triggerPageReset(simId);               // Reset ciblé
+    alert('Les champs de cette page ont été réinitialisés.');
   }
 
   const isAuthed = !!session
@@ -106,8 +114,8 @@ async function handleLogout(){
             </Link>
           )}
 
-          {/* Reset */}
-          {isAuthed && (
+          {/* Reset : uniquement quand on est sur un simulateur */}
+          {isAuthed && currentSimId(location.pathname) && (
             <button className="chip" onClick={handleReset}>
               Reset
             </button>
