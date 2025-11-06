@@ -1,67 +1,42 @@
 // utils/reset.js
-const RESET_EVENT = 'ser1:reset'
-const RESET_PENDING_KEY = 'ser1:reset:pending' // jeton pour éviter tout reset non-intentionnel
 
-/**
- * À appeler depuis le bouton "Reset" (App.jsx).
- */
-export function triggerReset() {
-  try { sessionStorage.setItem(RESET_PENDING_KEY, '1') } catch {}
-  clearAllUserInputs(true)
+// 👉 On passe désormais un "simId" pour cibler un seul simulateur
+const RESET_EVENT = 'ser1:reset'; // CustomEvent envoyé aux pages { detail: { simId } }
+
+// ----------------- API publique -----------------
+
+/** Clé de stockage par simulateur */
+export function storageKeyFor(simId) {
+  return `ser1:sim:${simId}`;
 }
 
-/**
- * N'effectue le reset QUE si :
- *  - fromUserClick === true (appel depuis triggerReset), OU
- *  - un jeton 'pending' est présent (sécurité au cas où).
- *
- * IMPORTANT : on NE touche PAS aux <input> du DOM. Les pages
- * écoutent l'évènement RESET_EVENT et remettent leurs states.
- */
-export function clearAllUserInputs(fromUserClick = false) {
-  const pending =
-    fromUserClick ||
-    (typeof sessionStorage !== 'undefined' &&
-     sessionStorage.getItem(RESET_PENDING_KEY) === '1')
-
-  if (!pending) return
-
-  // Ne pas réinitialiser sur la page Paramètres
-  const isParamsPage = window.location.pathname.startsWith('/params')
-  if (isParamsPage) {
-    alert('Le reset est désactivé sur la page Paramètres.')
-    try { sessionStorage.removeItem(RESET_PENDING_KEY) } catch {}
-    return
-  }
-
-  // 1) Efface uniquement les données persistées des simulateurs
+/** Demande de reset pour un simulateur spécifique (ex: 'placement', 'credit') */
+export function triggerPageReset(simId) {
+  if (!simId) return;
   try {
-    Object.keys(localStorage).forEach((k) => {
-      if (k.startsWith('ser1:sim:')) localStorage.removeItem(k)
-    })
+    // 1) Efface uniquement les données persistées du simulateur visé
+    const key = storageKeyFor(simId);
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem(key);
+    }
   } catch {}
 
-  // 2) Notifie les écrans (React écoute RESET_EVENT via onResetEvent)
+  // 2) Notifie UNIQUEMENT l’écran concerné
   try {
-    window.dispatchEvent(new CustomEvent(RESET_EVENT))
+    const evt = new CustomEvent(RESET_EVENT, { detail: { simId } });
+    window.dispatchEvent(evt);
   } catch {}
-
-  // 3) Consomme le jeton
-  try { sessionStorage.removeItem(RESET_PENDING_KEY) } catch {}
 }
 
 /**
  * Hook utilitaire côté React pour écouter le reset.
  * Exemple d'usage dans une page :
- *   useEffect(() => onResetEvent(() => setState(DEFAULTS)), [])
+ *   useEffect(() => onResetEvent(({ simId }) => {
+ *     if (simId === 'placement') setState(DEFAULTS)
+ *   }), [])
  */
-export function onResetEvent(handler){
-  const fn = () => handler()
-  window.addEventListener(RESET_EVENT, fn)
-  return () => window.removeEventListener(RESET_EVENT, fn)
-}
-
-/** Génère une clé de stockage cohérente par simulateur */
-export function storageKeyFor(simId){
-  return `ser1:sim:${simId}`
+export function onResetEvent(handler) {
+  const fn = (e) => handler(e?.detail || {});
+  window.addEventListener(RESET_EVENT, fn);
+  return () => window.removeEventListener(RESET_EVENT, fn);
 }
