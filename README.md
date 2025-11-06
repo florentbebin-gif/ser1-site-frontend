@@ -40,6 +40,7 @@ Copier le code
 npm i
 npm run dev
 # http://localhost:5173
+
 ## 4) Déploiement (CI/CD)
 GitHub → repo ser1-site-frontend
 
