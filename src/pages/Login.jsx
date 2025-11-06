@@ -181,7 +181,6 @@ async function restSignIn(email, password) {
   //    setSession a déjà écrit dans le storage de toute façon.
   return true;
  }
-}
   
   // Connexion classique
 async function onSubmit(e) {
