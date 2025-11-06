@@ -415,7 +415,7 @@ return;
         </div>
 
         {/* Bloc connexion */}
-        <div className="login-card">
+        <div className={`login-card ${isRecovery ? 'login-card--hidden' : ''}`}>
           <div className="card-title">Connexion</div>
           {error && !isRecovery && <div className="alert error">{error}</div>}
           {info && !isRecovery && <div className="alert success">{info}</div>}
@@ -454,9 +454,9 @@ return;
       </div>
 
       {/* --- Box de RÉINITIALISATION (s’affiche uniquement en mode recovery) --- */}
-      {isRecovery && (
-        <div className="login-recovery">
-          <div className="login-card">
+     {isRecovery && (
+       <div className="recovery-modal" role="dialog" aria-modal="true">
+         <div className="login-card">
             <div className="card-title">Réinitialisation du mot de passe</div>
             {error && <div className="alert error">{error}</div>}
 
@@ -519,6 +519,33 @@ return;
         .btn{ background:var(--green); color:#fff; border:none; padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:700; }
         .btn:disabled{ opacity:.6; cursor:not-allowed; }
         .btn-outline{ background:#fff; color:#111; border:1px solid var(--border); border-radius:12px; padding:10px 14px; cursor:pointer; }
+        /* Modal de réinitialisation : au-dessus de tout, masque la box connexion */
+        .recovery-modal{
+          position: fixed;
+          inset: 0;
+          z-index: 50;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+        }
+        .recovery-modal::before{
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: rgba(0,0,0,.35);
+          backdrop-filter: blur(2px);
+        }
+        .recovery-modal .login-card{
+          position: relative;
+          z-index: 1;
+          width: min(92vw, 640px);
+        }
+
+/* Cache complètement la carte de connexion quand recovery est ouvert */
+.login-card--hidden{
+  visibility: hidden;   /* plus d’espace “cliquable” ni de texte visible */
+}
 
         /* Box recovery en dessous, centrée */
         .login-recovery{
