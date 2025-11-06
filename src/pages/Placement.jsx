@@ -153,11 +153,9 @@ export default function Placement(){
   const [durations,  setDurations]  = useState(defaultDurations)
   const [contribs,   setContribs]   = useState(defaultContribs)
 
-  // ------- PERSISTENCE -------
-  const STORE_KEY = storageKeyFor('placement') // "ser1:sim:placement"
+  const STORE_KEY = storageKeyFor('placement')
   const [hydrated, setHydrated] = useState(false)
 
-  // 1) Charger depuis localStorage au MONTAGE (une seule fois)
   useEffect(()=>{
     try{
       const raw = localStorage.getItem(STORE_KEY)
@@ -172,10 +170,8 @@ export default function Placement(){
       }
     }catch(_e){}
     setHydrated(true)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // 2) Sauver à chaque changement une fois hydraté
   useEffect(()=>{
     if(!hydrated) return
     try{
@@ -184,7 +180,6 @@ export default function Placement(){
     }catch(_e){}
   }, [hydrated, startMonth, products, durations, contribs, STORE_KEY])
 
-  // 3) Réagir au bouton Reset : remettre les défauts ET sauver en storage
   useEffect(()=>{
     const off = onResetEvent?.(() => {
       setStartMonth(1)
@@ -196,12 +191,10 @@ export default function Placement(){
     return off || (()=>{})
   }, [STORE_KEY])
 
-  // ------- Setters -------
   const setProd     = (i,patch)=> setProducts(a=>a.map((p,idx)=> idx===i ? {...p, ...patch} : p))
   const setDuration = (i,v)=> setDurations(a=>a.map((x,idx)=> idx===i ? Math.max(1, v||1) : x))
   const setContrib  = (i,patch)=> setContribs(a=>a.map((c,idx)=> idx===i ? {...c, ...patch} : c))
 
-  // ------- Calculs -------
   const result = useMemo(()=>{
     const yearsMax = Math.max(...durations, 1)
     const sims = products.map((p,i)=>{
@@ -230,7 +223,6 @@ export default function Placement(){
     <div className="panel">
       <div className="plac-title">Comparer différents placements</div>
 
-      {/* Mois de souscription */}
       <div style={{display:'flex', alignItems:'center', gap:12, margin:'0 0 10px 0'}}>
         <div className="cell-strong">Mois de souscription</div>
         <select value={startMonth} onChange={e=> setStartMonth(Number(e.target.value))} style={{height:INPUT_H}}>
@@ -253,7 +245,6 @@ export default function Placement(){
           </thead>
 
           <tbody>
-            {/* Rendement Net de FG */}
             <tr>
               <td className="cell-muted">Rendement Net de FG</td>
               {products.map((p,i)=>{
@@ -271,7 +262,6 @@ export default function Placement(){
               })}
             </tr>
 
-            {/* Placement initial — 8 chiffres max (saisie "10000000" OK) */}
             <tr>
               <td className="cell-strong">Placement Initial</td>
               {products.map((p,i)=>(
@@ -279,7 +269,7 @@ export default function Placement(){
                   <InputWithUnit
                     value={fmtInt(p.initial)}
                     onChange={e=>{
-                      const clean = e.target.value.replace(/\D/g,'').slice(0,8) // 8 chiffres
+                      const clean = e.target.value.replace(/\D/g,'').slice(0,8)
                       setProd(i,{initial: toNum(clean)})
                     }}
                     type="text"
@@ -290,7 +280,6 @@ export default function Placement(){
               ))}
             </tr>
 
-            {/* Frais d’entrée */}
             <tr>
               <td className="cell-muted">Frais d’entrée</td>
               {products.map((p,i)=>{
@@ -308,7 +297,6 @@ export default function Placement(){
               })}
             </tr>
 
-            {/* Versement programmé (— pour 3 & 4) */}
             <tr>
               <td className="cell-strong">Versement programmé</td>
               {products.map((_,i)=>(
@@ -341,7 +329,6 @@ export default function Placement(){
               ))}
             </tr>
 
-            {/* Durée en année */}
             <tr>
               <td>Durée en année</td>
               {products.map((_,i)=>(
@@ -356,7 +343,6 @@ export default function Placement(){
               ))}
             </tr>
 
-            {/* Lignes Année N — valeurs en € plein format (sans décimales) */}
             {years.map((y, yi)=>(
               <tr key={yi}>
                 <td>{`Année ${y}`}</td>
@@ -371,7 +357,6 @@ export default function Placement(){
         </table>
       </div>
 
-      {/* Graphique */}
       <div className="chart-card" style={{marginTop:20, border:'none', boxShadow:'none', outline:'none'}}>
         <SmoothChart res={result}/>
       </div>
@@ -379,7 +364,7 @@ export default function Placement(){
   )
 }
 
-/* ==== Graphique SVG — labels au-dessus (2 décimales) + anti-chevauchement ==== */
+/* ==== Graphique SVG — labels au-dessus + anti-chevauchement ==== */
 
 const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555']
 
@@ -398,7 +383,6 @@ function SmoothChart({res}) {
 
   if(!res?.series?.length) return null
 
-  // Séries non vides
   const filtered = res.series.map(s=>{
     const vals = (s.values || []).map(v => (v !== undefined && v > 0) ? v : undefined)
     const anyPos = vals.some(v => v !== undefined && v > 0)
@@ -406,7 +390,6 @@ function SmoothChart({res}) {
   }).filter(Boolean)
   if(!filtered.length) return null
 
-  // Mise en page
   const LEG_W = 180
   const PAD   = 60
   const W     = Math.max(600, wrapW - 24)
@@ -416,12 +399,10 @@ function SmoothChart({res}) {
   const years = res.years || []
   const N     = years.length
 
-  // Max Y
   let maxY = 0
   filtered.forEach(s => s.values.forEach(v => { if(v!==undefined && v>maxY) maxY = v }))
   if(maxY <= 0) maxY = 1
 
-  // Pas Y : 1000 si petit, sinon multiple de 10000 (≤ 12 ticks)
   let step
   if (maxY <= 12_000) {
     step = 1_000
@@ -436,15 +417,6 @@ function SmoothChart({res}) {
   const x = (i) => PAD + (N>1 ? i*((SVG_W-2*PAD)/(N-1)) : 0)
   const y = (v) => SVG_H - PAD - ((v/topY)*(SVG_H-2*PAD))
 
-  // --- Formats ---
-  // Axe Y: sans décimales (conservé)
-  const fmtShortEuro = (val) => {
-    const n = Number(val) || 0
-    if (n >= 1_000_000) return Math.round(n/1_000_000).toLocaleString('fr-FR') + ' M€'
-    if (n >= 1_000)     return Math.round(n/1_000).toLocaleString('fr-FR')     + ' k€'
-    return Math.round(n).toLocaleString('fr-FR') + ' €'
-  }
-  // Étiquette finale: 2 décimales (nouveau)
   const fmtShortEuro2 = (val) => {
     const n = Number(val) || 0
     if (n >= 1_000_000) return (n/1_000_000).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' M€'
@@ -452,13 +424,11 @@ function SmoothChart({res}) {
     return n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €'
   }
 
-  // Ticks Y
   const ticksY = []
   for(let v=0; v<=topY; v+=step){
     ticksY.push({ val:v, y:y(v) })
   }
 
-  // Derniers points
   const lastPoints = filtered.map((s,si)=>{
     let lastIdx = -1
     s.values.forEach((v,i)=> { if(v!==undefined) lastIdx = i })
@@ -472,27 +442,24 @@ function SmoothChart({res}) {
     }
   }).filter(Boolean)
 
-  // Estimation largeur texte (approx 7 px / caractère)
   const estimateTextWidth = (text) => Math.max(10, String(text).length * 7)
 
-  // Prépare labels au-dessus (avec 2 décimales) + clamp horizontal
   const LABEL_H = 18
   const labelsRaw = lastPoints.map(p => {
-    const label = fmtShortEuro2(p.val)           // <-- 2 décimales
+    const label = fmtShortEuro2(p.val)
     const w = estimateTextWidth(label)
     const minX = PAD + 4 + w/2
     const maxX = SVG_W - PAD - 4 - w/2
-    const cx   = Math.min(maxX, Math.max(minX, p.lx)) // centré sur point, clampé
-    const cy   = p.ly - 10                             // au-dessus du point
+    const cx   = Math.min(maxX, Math.max(minX, p.lx))
+    const cy   = p.ly - 10
     return { ...p, label, w, cx, cy }
   })
 
-  // Anti-chevauchement vertical (double passe)
   const MIN_GAP = 18
   const minLabelY = PAD + LABEL_H/2
   const maxLabelY = SVG_H - PAD - LABEL_H/2
 
-  labelsRaw.sort((a,b)=> a.cy - b.cy) // haut -> bas
+  labelsRaw.sort((a,b)=> a.cy - b.cy)
 
   const labelsPlaced = []
   for(const lab of labelsRaw){
@@ -515,11 +482,9 @@ function SmoothChart({res}) {
   return (
     <div ref={wrapRef} style={{display:'flex', alignItems:'stretch', gap:12, width:'100%'}}>
       <svg width={SVG_W} height={SVG_H} role="img" aria-label="Évolution des placements" style={{display:'block'}}>
-        {/* Axes */}
         <line x1={PAD} y1={SVG_H-PAD} x2={SVG_W-PAD} y2={SVG_H-PAD} stroke="#bbb"/>
         <line x1={PAD} y1={PAD}       x2={PAD}       y2={SVG_H-PAD} stroke="#bbb"/>
 
-        {/* Grille Y + labels (sans décimales) */}
         {ticksY.map((t,i)=>(
           <g key={'gy'+i}>
             <line x1={PAD-5} y1={t.y} x2={SVG_W-PAD} y2={t.y} stroke="#eee"/>
@@ -529,12 +494,10 @@ function SmoothChart({res}) {
           </g>
         ))}
 
-        {/* Ticks X */}
         {years.map((yr,i)=>(
           <text key={'gx'+i} x={x(i)} y={SVG_H-PAD+16} fontSize="12" fill="#666" textAnchor="middle">{yr}</text>
         ))}
 
-        {/* Courbes + points */}
         {filtered.map((s,si)=>{
           const color = COLORS[si%COLORS.length]
           let d = ''
@@ -551,11 +514,10 @@ function SmoothChart({res}) {
           )
         })}
 
-        {/* Labels au-dessus + anti-chevauchement (avec fond ajusté à la largeur du texte) */}
         {labelsPlaced.map((p,i)=>{
           const left = p.x - p.w/2
           const top  = p.y - LABEL_H/2
-          const needsLeader = (p.y < p.ly - 10 - 0.5) // si on a remonté le label
+          const needsLeader = (p.y < p.ly - 10 - 0.5)
           const leaderToY = top + LABEL_H
           const leaderToX = p.x
           return (
@@ -566,21 +528,20 @@ function SmoothChart({res}) {
               <rect
                 x={left - 3}
                 y={top - 2}
-                width={p.w + 6}           // <-- largeur calée sur le texte à 2 décimales
+                width={p.w + 6}
                 height={LABEL_H + 4}
                 fill="#fff"
                 opacity="0.92"
                 rx="3"
               />
               <text x={p.x} y={p.y + 4} fontSize="13" fill={p.color} textAnchor="middle">
-                {p.label}                  {/* <-- texte à 2 décimales */}
+                {p.label}
               </text>
             </g>
           )
         })}
       </svg>
 
-      {/* Légende */}
       <div
         style={{
           width:LEG_W, minWidth:LEG_W, maxWidth:LEG_W,
