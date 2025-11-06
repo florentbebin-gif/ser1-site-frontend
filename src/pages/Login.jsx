@@ -16,6 +16,7 @@ export default function Login(){
   const [newPwd2, setNewPwd2]       = useState('')
   const [recoBusy, setRecoBusy]     = useState(false)
   const [recoDebug, setRecoDebug]   = useState('')
+  const [authCooling, setAuthCooling] = useState(false);
   const authSubRef = useRef(null);              // pour pouvoir unsubscribe
   const addDbg = (l) => setRecoDebug(prev => (prev ? prev + '\n' : '') + l)
 
@@ -148,7 +149,14 @@ async function onSubmit(e) {
       return;
     }
 
-    setError(r instanceof Error ? (r?._timeout ? "Connexion trop lente, réessayez." : r.message) : (r?.error?.message || "Impossible de se connecter."));
+     const raw = (r?.error?.message || (r instanceof Error && r.message) || "").toLowerCase();
+     if (raw.includes("invalid") || raw.includes("credentials") || raw.includes("email") || raw.includes("password")) {
+       setError("Email ou mot de passe invalide.");
+     } else if (r instanceof Error && r?._timeout) {
+       setError("Connexion trop lente, réessayez.");
+     } else {
+       setError(r?.error?.message || "Impossible de se connecter.");
+     }
   } catch (e) {
     setError("Erreur inattendue lors de la connexion.");
   } finally {
@@ -210,6 +218,7 @@ setRecoBusy(false);                    // enlève l’état "Validation…"
 setNewPwd(""); setNewPwd2("");         // nettoie la box
 setPassword("");                       // vide le champ mot de passe du login
 setInfo("Mot de passe mis à jour. Merci de patienter…");
+setAuthCooling(true);                // ← on gèle le bouton Connexion
 
 // on lance signOut en tâche de fond, mais on n'attend pas:
 supabase.auth.signOut().catch(() => {});
@@ -219,6 +228,7 @@ setTimeout(() => {
   authSubRef.current?.unsubscribe?.();
   closingRecoveryRef.current = false;  // OK pour de futurs flux recovery
   setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
+  setAuthCooling(false);               // ← on réactive la connexion après ~1,2 s
 }, 1200);
 
 return;
@@ -235,6 +245,7 @@ setRecoBusy(false);                    // enlève l’état "Validation…"
 setNewPwd(""); setNewPwd2("");         // nettoie la box
 setPassword("");                       // vide le champ mot de passe du login
 setInfo("Mot de passe mis à jour. Merci de patienter…");
+setAuthCooling(true);                // ← on gèle le bouton Connexion
 
 // on lance signOut en tâche de fond, mais on n'attend pas:
 supabase.auth.signOut().catch(() => {});
@@ -244,6 +255,7 @@ setTimeout(() => {
   authSubRef.current?.unsubscribe?.();
   closingRecoveryRef.current = false;  // OK pour de futurs flux recovery
   setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
+  setAuthCooling(false);               // ← on réactive la connexion après ~1,2 s
 }, 1200);
 
 return;
@@ -296,6 +308,7 @@ setRecoBusy(false);                    // enlève l’état "Validation…"
 setNewPwd(""); setNewPwd2("");         // nettoie la box
 setPassword("");                       // vide le champ mot de passe du login
 setInfo("Mot de passe mis à jour. Merci de patienter…");
+setAuthCooling(true);                // ← on gèle le bouton Connexion
 
 // on lance signOut en tâche de fond, mais on n'attend pas:
 supabase.auth.signOut().catch(() => {});
@@ -305,6 +318,7 @@ setTimeout(() => {
   authSubRef.current?.unsubscribe?.();
   closingRecoveryRef.current = false;  // OK pour de futurs flux recovery
   setInfo("Mot de passe mis à jour. Vous pouvez vous reconnecter.");
+  setAuthCooling(false);               // ← on réactive la connexion après ~1,2 s
 }, 1200);
 
 return;
@@ -361,9 +375,9 @@ return;
             </div>
 
             <div className="form-row btns">
-              <button className="btn" type="submit" disabled={loading}>
-                {loading ? 'Connexion…' : 'Se connecter'}
-              </button>
+               <button className="btn" type="submit" disabled={loading || authCooling}>
+                 {authCooling ? 'Finalisation…' : (loading ? 'Connexion…' : 'Se connecter')}
+               </button>
               <button type="button" className="btn-outline" onClick={sendReset} disabled={loading || !email}>
                 Mot de passe oublié ?
               </button>
@@ -394,6 +408,12 @@ return;
                 </button>
                 <a className="btn-outline" href="/login">Annuler</a>
               </div>
+              {recoBusy && (
+                <div style={{fontSize:12, opacity:.8, marginTop:4}}>
+                  Traitement en cours… cela peut prendre jusqu’à 15 secondes.
+                  </div>
+                )}
+
             </form>
 
             {/* Debug repli — optionnel */}
