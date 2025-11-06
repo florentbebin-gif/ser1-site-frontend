@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient.js'
 import { triggerReset } from './utils/reset.js'
 import { startIdleTimer } from './utils/idle.js'
@@ -8,6 +8,14 @@ export default function App(){
   const [session, setSession] = useState(null)
   const [loggingOut, setLoggingOut] = useState(false)
   const location = useLocation()
+  // Détecte un hash d'auth Supabase (invite/signup/recovery)
+const hasRecoveryLikeHash = () => {
+  try {
+    const s = (window.location.hash || '').toLowerCase()
+    return s.includes('type=recovery') || s.includes('type=invite') || s.includes('type=signup')
+  } catch { return false }
+}
+
   const onResetPage = location.pathname.startsWith('/reset')
 // petit helper : n'attend pas indéfiniment le signOut
 async function signOutWithTimeout(ms = 1500) {
@@ -48,6 +56,18 @@ useEffect(() => {
   return stop
 }, [session, onResetPage])
 
+const navigate = useNavigate()
+
+useEffect(() => {
+  // Si un lien Supabase contient un token (#...type=invite|signup|recovery),
+  // on redirige vers /login en conservant le hash pour que Login.jsx ouvre la box.
+  if (hasRecoveryLikeHash() && location.pathname !== '/login') {
+    navigate('/login' + window.location.hash, { replace: true })
+  }
+}, [location.pathname, navigate])
+
+
+  
 async function handleLogout(){
   if (loggingOut) return
   setLoggingOut(true)
