@@ -1,38 +1,44 @@
+// src/ProtectedRoute.jsx
 import React, { useEffect, useState } from "react";
-import { supabase } from "./supabaseClient";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { supabase } from "./supabaseClient"; // ✅ Bon chemin si le fichier est dans /src
 
 export default function ProtectedRoute({ children }) {
-  const [checked, setChecked] = useState(false);
+  const [ready, setReady] = useState(false);
   const [session, setSession] = useState(null);
+  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
 
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getSession();
       if (!mounted) return;
-      setSession(session);
-      setChecked(true);
-      if (!session) navigate("/login", { replace: true });
+      setSession(data?.session ?? null);
+      setReady(true);
     })();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: subscription } = supabase.auth.onAuthStateChange((_evt, sess) => {
       if (!mounted) return;
-      setSession(s);
+      setSession(sess ?? null);
     });
 
     return () => {
-      sub?.subscription?.unsubscribe?.();
       mounted = false;
+      subscription?.subscription?.unsubscribe?.();
     };
-  }, [navigate]);
+  }, []);
 
-  if (!checked) {
-    return <div style={{ padding: 24 }}>Initialisation…</div>;
-  }
+  useEffect(() => {
+    if (!ready) return;
+    if (session) return;
 
+    const hash = window.location.hash || "";
+    navigate("/login" + hash, { replace: true, state: { from: location } });
+  }, [ready, session, navigate, location]);
+
+  if (!ready) return null;
   if (!session) return null;
 
   return children;
