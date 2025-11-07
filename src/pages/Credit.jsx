@@ -1,15 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
+ import { toNumber } from '../utils/number.js'
 
 /* ---------- Helpers format ---------- */
 const fmt0  = (n)=> (Math.round(Number(n)||0)).toLocaleString('fr-FR')
 const euro0 = (n)=> fmt0(n) + ' €'
-const toNum = (v)=> {
-  if (typeof v === 'number') return v
-  const s = String(v || '').replace(/[^\d.-]/g,'')
-  const n = Number(s)
-  return Number.isFinite(n) ? n : 0
-}
+
+ const toNum = (v)=> toNumber(v, 0)
+
 const rid = () => Math.random().toString(36).slice(2,9)
 
 /* Date utils (YYYY-MM) */
