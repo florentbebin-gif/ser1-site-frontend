@@ -285,28 +285,32 @@ export default function Credit(){
     }catch{}
   }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode])
 
-  // Reset global (ne réinitialise que les champs saisissables)
-  useEffect(()=>{
-    const off = onResetEvent?.(()=>{
-      const ym = nowYearMonth()
-      setStartYM(ym)           // date prêt 1 = mois/année courants
-      setCapital(0)
-      setDuree(0)
-      setTaux(0)
-      setTauxAssur(0)
-      setMensuBase('')
-      // Conserver la liste des prêts 2/3, mais vider leurs champs saisissables + date courante
-      setPretsPlus(arr => arr.map(p => ({
-        ...p,
-        capital: 0,
-        duree: 0,
-        taux: 0,
-        startYM: ym
-      })))
-      // NE PAS toucher à : assurMode, creditType, lisserPret1, viewMode, lissageMode
-    })
-    return off || (()=>{})
-  }, [STORE_KEY])
+// Reset global (ne réinitialise que les champs saisissables)
+useEffect(() => {
+  const off = onResetEvent?.(() => {
+    const ym = nowYearMonth();
+
+    // champs "saisissables" du prêt 1
+    setStartYM(ym);
+    setCapital(0);
+    setDuree(0);
+    setTaux(0);
+    setTauxAssur(0);
+    setMensuBase('');
+
+    // >>> ICI le changement : on supprime carrément les prêts 2 & 3
+    setPretsPlus([]); // au lieu de mapper/vider, on efface la liste
+
+    // On ne touche PAS à :
+    // - assurMode
+    // - creditType
+    // - lisserPret1 (sera remis à false automatiquement si plus de prêts)
+    // - viewMode
+    // - lissageMode
+  });
+  return off || (() => {});
+}, [STORE_KEY]);
+
 
   /* ---- Handlers bornés ---- */
   const onChangeCapital = (val) => setCapital(toNum(String(val).replace(/\D/g,'').slice(0,8)))
