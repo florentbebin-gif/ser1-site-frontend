@@ -116,7 +116,10 @@ function simulateWithContrib({ rate, initial, entryFeePct }, startMonth, contrib
 /* ===========================================================
    INPUTS factorisés
 =========================================================== */
-function InputWithUnit({ value, onChange, type='text', unit='', width=COL_INPUT_W, inputMode='numeric' }){
+function InputWithUnit({
+  value, onChange, type='text', unit='',
+  width=COL_INPUT_W, inputMode='numeric', ...rest
+}){
   return (
     <div style={{
       display:'flex', alignItems:'center', justifyContent:'flex-end',
@@ -128,18 +131,9 @@ function InputWithUnit({ value, onChange, type='text', unit='', width=COL_INPUT_
         value={value}
         onChange={onChange}
         style={{width:'100%', textAlign:'right', height:INPUT_H, lineHeight:`${INPUT_H}px`}}
+        {...rest}   {/* <-- permet de passer onBlur, min, max, etc. */}
       />
       {unit && <span style={{lineHeight:`${INPUT_H}px`, height:INPUT_H}}>{unit}</span>}
-    </div>
-  )
-}
-function TwoLineHeader({ name }){
-  const parts = name.split(' ')
-  const type  = parts[parts.length-1]
-  const label = parts.slice(0, parts.length-1).join(' ')
-  return (
-    <div style={{lineHeight:1.15, whiteSpace:'pre-line'}}>
-      {label}{'\n'}{type}
     </div>
   )
 }
@@ -329,19 +323,35 @@ export default function Placement(){
               ))}
             </tr>
 
-            <tr>
-              <td>Durée en année</td>
-              {products.map((_,i)=>(
-                <td key={i} className="input-cell">
-                  <InputWithUnit
-                    type="number"
-                    value={durations[i]}
-                    onChange={e=> setDuration(i, +e.target.value||1)}
-                    unit="an(s)"
-                  />
-                </td>
-              ))}
-            </tr>
+<tr>
+  <td>Durée en année</td>
+  {products.map((_, i) => (
+    <td key={i} className="input-cell">
+      <InputWithUnit
+        /* type=text + inputMode numeric pour pouvoir limiter à 2 chiffres */
+        type="text"
+        inputMode="numeric"
+        value={String(durations[i])}
+        onChange={(e) => {
+          // on garde uniquement les chiffres, on tronque à 2
+          const v = e.target.value.replace(/\D/g, '').slice(0, 2);
+          // valeur temporaire à l’écran (y compris vide)
+          e.target.value = v;
+          // on n’enregistre que si non vide, sinon on laisse la mise au point au blur
+          if (v !== '') setDuration(i, Math.max(1, Number(v)));
+        }}
+        onBlur={(e) => {
+          // si l’utilisateur laisse vide, on retombe sur 1
+          let v = e.target.value.replace(/\D/g, '').slice(0, 2);
+          if (v === '') v = '1';
+          setDuration(i, Math.max(1, Number(v)));
+          e.target.value = v;
+        }}
+        unit="an(s)"
+      />
+    </td>
+  ))}
+</tr>
 
             {years.map((y, yi)=>(
               <tr key={yi}>
