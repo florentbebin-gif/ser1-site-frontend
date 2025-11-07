@@ -1332,6 +1332,10 @@ const synthesePeriodes = useMemo(() => {
         </table>
       </div>
     )}
-  </div>
-)}
+  </div>   {/* ← ferme le bloc .plac-table-wrap */}
+)}         {/* ← ferme le bloc conditionnel {pretsPlus.length > 0 && ( ... )} */}
 
+</div>     {/* ← ferme le <div className="panel"> du début du return */}
+
+)          {/* ← ferme le return( ... ) */}
+}          {/* ← ferme le composant */}
