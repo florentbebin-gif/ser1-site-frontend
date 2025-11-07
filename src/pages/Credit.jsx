@@ -476,6 +476,26 @@ useEffect(() => {
     return rows.map((r, idx)=> ({ periode: labelMonthFR(addMonths(startYM, idx)), ...r }))
   }
 
+ // Agrège des rows (format {interet, assurance, amort, mensu, mensuTotal, crd}) par année
+function aggregateToYearsFromRows(rows, startYMBase) {
+  const map = new Map();
+  rows.forEach((r, idx) => {
+    if (!r) return;
+    const ym = addMonths(startYMBase, idx);
+    const year = labelYear(ym);
+    const acc = map.get(year) || { interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0 };
+    acc.interet    += r.interet || 0;
+    acc.assurance  += r.assurance || 0;
+    acc.amort      += r.amort || 0;
+    acc.mensu      += r.mensu || 0;
+    acc.mensuTotal += r.mensuTotal || 0;
+    // on prend le dernier CRD de l'année
+    acc.crd         = r.crd || acc.crd || 0;
+    map.set(year, acc);
+  });
+  return Array.from(map.entries()).map(([periode, v]) => ({ periode, ...v }));
+}
+ 
   const isAnnual = viewMode === 'annuel'
   const tableDisplay = useMemo(()=>{
     if (isAnnual) return aggregateToYears(agrRows)
