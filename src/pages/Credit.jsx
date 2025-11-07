@@ -226,8 +226,8 @@ const [rawTauxAss, setRawTauxAss] = useState('');
 const [rawTauxPlus, setRawTauxPlus] = useState({}); // par prêt id -> string
 
 //  version normalisée dès l’affichage
-const [rawTaux, setRawTaux] = useState(Number(taux).toFixed(2).replace('.', ','));
-const [rawTauxAssur, setRawTauxAssur] = useState(Number(tauxAssur).toFixed(2).replace('.', ','));
+const [rawTaux, setRawTaux] = useState((taux * 100).toFixed(2).replace('.', ','));
+const [rawTauxAssur, setRawTauxAssur] = useState((tauxAssur * 100).toFixed(2).replace('.', ','));
 
 
 // Sync initial / reset
@@ -476,27 +476,6 @@ useEffect(() => {
     return rows.map((r, idx)=> ({ periode: labelMonthFR(addMonths(startYM, idx)), ...r }))
   }
 
-// Agrège des rows (format {interet, assurance, amort, mensu, mensuTotal, crd}) par année
-function aggregateToYearsFromRows(rows, startYMBase) {
-  const map = new Map();
-  rows.forEach((r, idx) => {
-    if (!r) return;
-    const ym = addMonths(startYMBase, idx);
-    const year = labelYear(ym);
-    const cur = map.get(year) || { interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0 };
-    cur.interet    += r.interet || 0;
-    cur.assurance  += r.assurance || 0;
-    cur.amort      += r.amort || 0;
-    cur.mensu      += r.mensu || 0;
-    cur.mensuTotal += r.mensuTotal || 0;
-    // On prend le dernier CRD de l'année
-    cur.crd         = r.crd || cur.crd || 0;
-    map.set(year, cur);
-  });
-  return Array.from(map.entries()).map(([year, v])=> ({ periode: year, ...v }));
-}
-
- 
   const isAnnual = viewMode === 'annuel'
   const tableDisplay = useMemo(()=>{
     if (isAnnual) return aggregateToYears(agrRows)
@@ -789,9 +768,9 @@ const synthesePeriodes = useMemo(() => {
                    setRawTaux(raw); // ← uniquement l'affichage brut
                   }}
                   onBlur={() => {
-                   const num = toNumber(rawTaux);  // on garde un % (4.5 reste 4.5)
+                   const num = toNumber(rawTaux) / 100; // ← on commit ici seulement
                    setTaux(num);
-                   setRawTaux(Number(num).toFixed(2).replace('.', ','));
+                   setRawTaux((num * 100).toFixed(2).replace('.', ','));
                   }}
                   style={{ width: '100%', textAlign: 'right', height: 32 }}
                   />
@@ -842,9 +821,9 @@ const synthesePeriodes = useMemo(() => {
                    setRawTauxAssur(raw);
                   }}
                   onBlur={() => {
-                   const num = toNumber(rawTauxAssur);  // % direct
+                   const num = toNumber(rawTauxAssur) / 100;
                    setTauxAssur(num);
-                   setRawTauxAssur(Number(num).toFixed(2).replace('.', ','));
+                   setRawTauxAssur((num * 100).toFixed(2).replace('.', ','));
                   }}
                   style={{ width: '100%', textAlign: 'right', height: 32 }}
                   />
@@ -1186,13 +1165,10 @@ const synthesePeriodes = useMemo(() => {
           </tbody>
         </table>
       </div>
-     
-     {/* DÉTAIL PAR PRÊT — visible seulement s’il y a ≥ 2 prêts */}
-     {pretsPlus.length > 0 && (
-     <div className="plac-table-wrap" style={{marginTop:16}}>
-      <div className="cell-strong" style={{marginBottom:8}}>
-       Détail par prêt ({isAnnual ? 'annuel' : 'mensuel'})
-      </div>
+
+      {/* DÉTAIL PAR PRÊT — mensuel */}
+      <div className="plac-table-wrap" style={{marginTop:16}}>
+        <div className="cell-strong" style={{marginBottom:8}}>Détail par prêt (mensuel)</div>
 
         {/* PRÊT 1 */}
         <div style={{marginBottom:12}}>
@@ -1205,21 +1181,20 @@ const synthesePeriodes = useMemo(() => {
                 <th style={{textAlign:'right'}}>Intérêts</th>
                 <th style={{textAlign:'right'}}>Assurance</th>
                 <th style={{textAlign:'right'}}>Amort.</th>
-               <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité' : 'Mensualité'}</th>
-               <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'}</th>
+                <th style={{textAlign:'right'}}>Mensualité</th>
+                <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
                 <th style={{textAlign:'right'}}>CRD</th>
               </tr>
             </thead>
             <tbody>
-         {(isAnnual ? aggregateToYearsFromRows(pret1Rows, startYM)
-                    : attachMonthLabels(pret1Rows)).map((l, idx)=>(
+              {pret1Rows.map((l, idx)=>(
                 <tr key={idx}>
-                  <td style={{borderRight:'1px solid #CEC1B6'}}>{l.periode}</td>
+                  <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
                   <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
                   <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
                   <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
-                 <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu)}</td>
-                 <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
+                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu)}</td>
+                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
                   <td style={{textAlign:'right'}}>{euro0(l.crd)}</td>
                 </tr>
               ))}
@@ -1239,16 +1214,15 @@ const synthesePeriodes = useMemo(() => {
                   <th style={{textAlign:'right'}}>Intérêts</th>
                   <th style={{textAlign:'right'}}>Assurance</th>
                   <th style={{textAlign:'right'}}>Amort.</th>
-                 <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité' : 'Mensualité'}</th>
-                 <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'}</th>
+                  <th style={{textAlign:'right'}}>Mensualité</th>
+                  <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
                   <th style={{textAlign:'right'}}>CRD</th>
                 </tr>
               </thead>
               <tbody>
-           {(isAnnual ? aggregateToYearsFromRows(autresRows[0], startYM)
-                      : attachMonthLabels(autresRows[0])).map((l, idx)=>(
+                {autresRows[0].map((l, idx)=>(
                   <tr key={idx}>
-                    <td style={{borderRight:'1px solid #CEC1B6'}}>{l.periode}</td>
+                    <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
                     <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.interet ?? 0)}</td>
                     <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.assurance ?? 0)}</td>
                     <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.amort ?? 0)}</td>
@@ -1274,16 +1248,15 @@ const synthesePeriodes = useMemo(() => {
                   <th style={{textAlign:'right'}}>Intérêts</th>
                   <th style={{textAlign:'right'}}>Assurance</th>
                   <th style={{textAlign:'right'}}>Amort.</th>
-                 <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité' : 'Mensualité'}</th>
-                 <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'}</th>
+                  <th style={{textAlign:'right'}}>Mensualité</th>
+                  <th style={{textAlign:'right'}}>Mensualité + Assur.</th>
                   <th style={{textAlign:'right'}}>CRD</th>
                 </tr>
               </thead>
               <tbody>
-           {(isAnnual ? aggregateToYearsFromRows(autresRows[1], startYM)
-                      : attachMonthLabels(autresRows[1])).map((l, idx)=>(
+                {autresRows[1].map((l, idx)=>(
                   <tr key={idx}>
-                    <td style={{borderRight:'1px solid #CEC1B6'}}>{l.periode}</td>
+                    <td style={{borderRight:'1px solid #CEC1B6'}}>{labelMonthFR(addMonths(startYM, idx))}</td>
                     <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.interet ?? 0)}</td>
                     <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.assurance ?? 0)}</td>
                     <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.amort ?? 0)}</td>
