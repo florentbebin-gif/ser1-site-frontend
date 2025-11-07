@@ -11,15 +11,12 @@
 
 import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
+import { toNumber } from '../utils/number.js'
 
 /* ------------------- Helpers format ------------------- */
 const fmtInt = (n)=> (Math.round(n) || 0).toLocaleString('fr-FR')
-const toNum  = (v)=> {
-  if (typeof v === 'number') return v
-  const s = String(v || '').replace(/[^\d.-]/g,'')
-  const n = Number(s)
-  return Number.isFinite(n) ? n : 0
-}
+const toNum = (v)=> toNumber(v, 0)
+
 const euroFull0 = (n)=> Math.round(Number(n)||0).toLocaleString('fr-FR') + ' €'
 const fmtShortEuro = (v)=>{
   const n = Number(v) || 0
@@ -279,7 +276,7 @@ export default function Placement(){
                     <InputWithUnit
                       type="number"
                       value={Number(ratePct.toFixed(2))}
-                      onChange={e=> setProd(i,{rate:(+e.target.value||0)/100})}
+                      onChange={e=> setProd(i,{rate:(toNumber(e.target.value))/100})}
                       unit="%"
                     />
                   </td>
@@ -316,7 +313,7 @@ export default function Placement(){
                     <InputWithUnit
                       type="number"
                       value={Number(feePct.toFixed(2))}
-                      onChange={e=> setProd(i,{entryFeePct:(+e.target.value||0)/100})}
+                      onChange={e=> setProd(i,{entryFeePct:(toNumber(e.target.value))/100})}
                       unit="%"
                     />
                   </td>
