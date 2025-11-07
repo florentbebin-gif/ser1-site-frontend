@@ -185,8 +185,12 @@ const [rawFees,  setRawFees]  = useState(['','','','']);
 
 // Ré-initialise l'affichage brut quand on reset / recharge
 useEffect(() => {
-  setRawRates(products.map(p => ((Number(p.rate)||0)*100).toString().replace('.', ',')));
-  setRawFees(products.map(p => ((Number(p.entryFeePct)||0)*100).toString().replace('.', ',')));
+  setRawRates(products.map(p =>
+    (Number(p.rate) * 100).toFixed(2).replace('.', ',')
+  ));
+  setRawFees(products.map(p =>
+    (Number(p.entryFeePct) * 100).toFixed(2).replace('.', ',')
+  ));
 }, [products]);
    
   useEffect(()=>{
