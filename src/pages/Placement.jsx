@@ -52,6 +52,16 @@ const defaultContribs  = [
   { amount:0, freq:'annuel'  },
 ]
 
+// Saisie brute pour chaque colonne % (indexées comme products)
+const [rawRates, setRawRates] = useState(['','','','']);
+const [rawFees,  setRawFees]  = useState(['','','','']);
+
+// Ré-initialise l'affichage brut quand on reset / recharge
+useEffect(() => {
+  setRawRates(products.map(p => ((Number(p.rate)||0)*100).toString().replace('.', ',')));
+  setRawFees(products.map(p => ((Number(p.entryFeePct)||0)*100).toString().replace('.', ',')));
+}, [products]);
+
 /* ===========================================================
    SIMULATIONS
 =========================================================== */
@@ -273,13 +283,20 @@ export default function Placement(){
                 const ratePct = (Number(p.rate)||0)*100
                 return (
                   <td key={i} className="input-cell">
-                   <InputWithUnit
                      type="text"
                      inputMode="decimal"
-                      value={Number(ratePct.toFixed(2))}
-                      onChange={e=> setProd(i,{rate:(toNumber(e.target.value))/100})}
-                      unit="%"
-                    />
+                     value={rawRates[i] ?? ''}
+                  onChange={e=>{
+                       const raw = e.target.value;              // garde "2.", "2,3", etc.
+                       setRawRates(a => a.map((s,k)=> k===i ? raw : s));
+                       setProd(i, { rate: toNumber(raw)/100 }); // alimente le modèle numérique
+                     }}
+                     onBlur={()=>{
+                       // normalise l’affichage quand on sort du champ
+                          setRawRates(a => a.map((s,k)=> k===i ? ((Number((Number(products[i].rate)||0)*100).toFixed(2)).toString()) : s));
+                     }}
+                     unit="%"
+                   />
                   </td>
                 )
               })}
@@ -311,13 +328,21 @@ export default function Placement(){
                 const feePct = (Number(p.entryFeePct)||0)*100
                 return (
                   <td key={i} className="input-cell">
-                   <InputWithUnit
-                     type="text"
+                  <InputWithUnit
+                        type="text"
                      inputMode="decimal"
-                      value={Number(feePct.toFixed(2))}
-                      onChange={e=> setProd(i,{entryFeePct:(toNumber(e.target.value))/100})}
-                      unit="%"
-                    />
+                     value={rawRates[i] ?? ''}
+                     onChange={e=>{
+                        const raw = e.target.value;              // garde "2.", "2,3", etc.
+                        setRawRates(a => a.map((s,k)=> k===i ? raw : s));
+                        setProd(i, { rate: toNumber(raw)/100 }); // alimente le modèle numérique
+                     }}
+                     onBlur={()=>{
+                        // normalise l’affichage quand on sort du champ
+                        setRawRates(a => a.map((s,k)=> k===i ? ((Number((Number(products[i].rate)||0)*100).toFixed(2)).toString()) : s));
+                     }}
+                     unit="%"
+                     />
                   </td>
                 )
               })}
