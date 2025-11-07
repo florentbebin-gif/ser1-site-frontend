@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../supabaseClient.js'
 import { useParamsGlobal } from '../context/ParamsProvider.jsx'
+import { toNumber } from '../utils/number.js'
 
 /**
  * Page Params — version fonctionnelle et sûre (hooks À L’INTÉRIEUR du composant)
@@ -60,10 +61,9 @@ export default function Params(){
     setOkMsg(''); setError('')
     setForm(prev => ({
       ...prev,
-      [name]:
-        type === 'checkbox'
-          ? !!checked
-          : (name.includes('Rate') || name.includes('Inflation') ? Number(value) : value)
+       [name]: type === 'checkbox'
+         ? !!checked
+         : (name.includes('Rate') || name.includes('Inflation') ? toNumber(value) : value)
     }))
   }
 
