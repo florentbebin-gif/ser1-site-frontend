@@ -71,7 +71,14 @@ Lors d’une récupération ou d’une invitation :
 | Auth / DB | Supabase |
 
 Les variables d’environnement Supabase sont configurées dans Vercel.
-Vue d’ensemble
+
+
+
+
+## Vue d’ensemble
+
+| Vue | d’ensemble |
+|-----------|----------------|
 
 Stack : React + Vite.
 
