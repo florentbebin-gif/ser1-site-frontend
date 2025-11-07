@@ -8,16 +8,6 @@ const euro0 = (n)=> fmt0(n) + ' €'
 const toNum = (v)=> toNumber(v, 0)
 const rid = () => Math.random().toString(36).slice(2,9)
 
-const [rawTaux, setRawTaux] = useState('');
-const [rawTauxAss, setRawTauxAss] = useState('');
-const [rawTauxPlus, setRawTauxPlus] = useState({}); // par prêt id -> string
-
-// Sync initial / reset
-useEffect(() => {
-  setRawTaux((Number(taux).toFixed(2)).toString());
-  setRawTauxAss((Number(tauxAssur).toFixed(2)).toString());
-}, [taux, tauxAssur]);
-
 /* Date utils (YYYY-MM) */
 function nowYearMonth(){
   const d = new Date()
@@ -232,6 +222,16 @@ export default function Credit(){
   const [tauxAssur, setTauxAssur]     = useState(0.30)
   const [mensuBase, setMensuBase]     = useState('')             // saisie mensu prêt 1
 
+ const [rawTaux, setRawTaux] = useState('');
+const [rawTauxAss, setRawTauxAss] = useState('');
+const [rawTauxPlus, setRawTauxPlus] = useState({}); // par prêt id -> string
+
+// Sync initial / reset
+useEffect(() => {
+  setRawTaux((Number(taux).toFixed(2)).toString());
+  setRawTauxAss((Number(tauxAssur).toFixed(2)).toString());
+}, [taux, tauxAssur]);
+ 
   // prêts additionnels : + type & startYM
   const [pretsPlus, setPretsPlus]     = useState([])             // [{id,capital,duree,taux,startYM,type}]
   const [lisserPret1, setLisserPret1] = useState(false)
