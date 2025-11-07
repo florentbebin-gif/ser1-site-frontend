@@ -279,22 +279,31 @@ useEffect(() => {
 
           <tbody>
             {/* Rendement Net de FG */}
-            <tr>
-              <td className="cell-muted">Rendement Net de FG</td>
-              {products.map((p,i)=>{
-                const ratePct = (Number(p.rate)||0)*100
-                return (
-                  <InputWithUnit
-                    type="text"
-                    inputMode="decimal"
-                    value={rawRates[i] ?? ''}
-                    onChange={(e)=>{ const raw=e.target.value; setRawRates(a=>a.map((s,k)=>k===i?raw:s)); setProd(i,{ rate: toNumber(raw)/100 }); }}
-                    onBlur={()=>{ setRawRates(a=>a.map((s,k)=>k===i ? (Number((Number(products[i].rate)||0)*100).toFixed(2)).toString() : s)); }}
-                    unit="%"
-                  />
-                )
-              })}
-            </tr>
+<tr>
+  <td className="cell-muted">Rendement Net de FG</td>
+  {products.map((p, i) => (
+    <td key={i} className="input-cell">
+      <InputWithUnit
+        type="text"
+        inputMode="decimal"
+        value={rawRates[i] ?? ''}
+        onChange={(e) => {
+          const raw = e.target.value;
+          setRawRates(a => a.map((s, k) => k === i ? raw : s));
+          setProd(i, { rate: toNumber(raw) / 100 });
+        }}
+        onBlur={() => {
+          setRawRates(a => a.map((s, k) =>
+            k === i
+              ? (Number(((Number(products[i].rate) || 0) * 100)).toFixed(2)).toString()
+              : s
+          ));
+        }}
+        unit="%"
+      />
+    </td>
+  ))}
+</tr>
 
             {/* Placement initial */}
             <tr>
@@ -316,22 +325,31 @@ useEffect(() => {
             </tr>
 
             {/* Frais d’entrée */}
-            <tr>
-              <td className="cell-muted">Frais d’entrée</td>
-              {products.map((p,i)=>{
-                const feePct = (Number(p.entryFeePct)||0)*100
-                return (
-                  <InputWithUnit
-                    type="text"
-                    inputMode="decimal"
-                    value={rawRates[i] ?? ''}
-                    onChange={(e)=>{ const raw=e.target.value; setRawRates(a=>a.map((s,k)=>k===i?raw:s)); setProd(i,{ rate: toNumber(raw)/100 }); }}
-                    onBlur={()=>{ setRawRates(a=>a.map((s,k)=>k===i ? (Number((Number(products[i].rate)||0)*100).toFixed(2)).toString() : s)); }}
-                    unit="%"
-                  />
-                )
-              })}
-            </tr>
+<tr>
+  <td className="cell-muted">Frais d’entrée</td>
+  {products.map((p, i) => (
+    <td key={i} className="input-cell">
+      <InputWithUnit
+        type="text"
+        inputMode="decimal"
+        value={rawFees[i] ?? ''}
+        onChange={(e) => {
+          const raw = e.target.value;
+          setRawFees(a => a.map((s, k) => k === i ? raw : s));
+          setProd(i, { entryFeePct: toNumber(raw) / 100 });
+        }}
+        onBlur={() => {
+          setRawFees(a => a.map((s, k) =>
+            k === i
+              ? (Number(((Number(products[i].entryFeePct) || 0) * 100)).toFixed(2)).toString()
+              : s
+          ));
+        }}
+        unit="%"
+      />
+    </td>
+  ))}
+</tr>
 
             {/* Versement programmé (— pour 3 & 4) */}
             <tr>
