@@ -1187,116 +1187,114 @@ const synthesePeriodes = useMemo(() => {
         </table>
       </div>
      
-     {/* DÉTAIL PAR PRÊT — visible seulement s’il y a ≥ 2 prêts */}
-     {pretsPlus.length > 0 && (
-     <div className="plac-table-wrap" style={{marginTop:16}}>
-      <div className="cell-strong" style={{marginBottom:8}}>
-       Détail par prêt ({isAnnual ? 'annuel' : 'mensuel'})
-      </div>
-
-        {/* PRÊT 1 */}
-        <div style={{marginBottom:12}}>
-          <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 1</div>
-          <table className="plac-table" role="grid" aria-label="amortissement prêt 1"
-                 style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
-            <thead>
-              <tr>
-                <th>Période</th>
-                <th style={{textAlign:'right'}}>Intérêts</th>
-                <th style={{textAlign:'right'}}>Assurance</th>
-                <th style={{textAlign:'right'}}>Amort.</th>
-               <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité' : 'Mensualité'}</th>
-               <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'}</th>
-                <th style={{textAlign:'right'}}>CRD</th>
-              </tr>
-            </thead>
-            <tbody>
-         {(isAnnual ? aggregateToYearsFromRows(pret1Rows, startYM)
-                    : attachMonthLabels(pret1Rows)).map((l, idx)=>(
-                <tr key={idx}>
-                  <td style={{borderRight:'1px solid #CEC1B6'}}>{l.periode}</td>
-                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
-                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
-                  <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
-                 <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu)}</td>
-                 <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
-                  <td style={{textAlign:'right'}}>{euro0(l.crd)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* PRÊT 2 */}
-        {autresRows[0] && (
-          <div style={{marginBottom:12}}>
-            <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 2</div>
-            <table className="plac-table" role="grid" aria-label="amortissement prêt 2"
-                   style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
-              <thead>
-                <tr>
-                  <th>Période</th>
-                  <th style={{textAlign:'right'}}>Intérêts</th>
-                  <th style={{textAlign:'right'}}>Assurance</th>
-                  <th style={{textAlign:'right'}}>Amort.</th>
-                 <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité' : 'Mensualité'}</th>
-                 <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'}</th>
-                  <th style={{textAlign:'right'}}>CRD</th>
-                </tr>
-              </thead>
-              <tbody>
-           {(isAnnual ? aggregateToYearsFromRows(autresRows[0], startYM)
-                      : attachMonthLabels(autresRows[0])).map((l, idx)=>(
-                  <tr key={idx}>
-                    <td style={{borderRight:'1px solid #CEC1B6'}}>{l.periode}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.interet ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.assurance ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.amort ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensu ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensuTotal ?? 0)}</td>
-                    <td style={{textAlign:'right'}}>{euro0(l?.crd ?? 0)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* PRÊT 3 */}
-        {autresRows[1] && (
-          <div>
-            <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 3</div>
-            <table className="plac-table" role="grid" aria-label="amortissement prêt 3"
-                   style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
-              <thead>
-                <tr>
-                  <th>Période</th>
-                  <th style={{textAlign:'right'}}>Intérêts</th>
-                  <th style={{textAlign:'right'}}>Assurance</th>
-                  <th style={{textAlign:'right'}}>Amort.</th>
-                 <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité' : 'Mensualité'}</th>
-                 <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'}</th>
-                  <th style={{textAlign:'right'}}>CRD</th>
-                </tr>
-              </thead>
-              <tbody>
-           {(isAnnual ? aggregateToYearsFromRows(autresRows[1], startYM)
-                      : attachMonthLabels(autresRows[1])).map((l, idx)=>(
-                  <tr key={idx}>
-                    <td style={{borderRight:'1px solid #CEC1B6'}}>{l.periode}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.interet ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.assurance ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.amort ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensu ?? 0)}</td>
-                    <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensuTotal ?? 0)}</td>
-                    <td style={{textAlign:'right'}}>{euro0(l?.crd ?? 0)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+   {/* DÉTAIL PAR PRÊT — visible seulement s’il y a ≥ 2 prêts */}
+{pretsPlus.length > 0 && (
+  <div className="plac-table-wrap" style={{marginTop:16}}>
+    <div className="cell-strong" style={{marginBottom:8}}>
+      Détail par prêt ({isAnnual ? 'annuel' : 'mensuel'})
     </div>
-  )
-}
+
+    {/* PRÊT 1 */}
+    <div style={{marginBottom:12}}>
+      <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 1</div>
+      <table className="plac-table" role="grid" aria-label="amortissement prêt 1"
+             style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
+        <thead>
+          <tr>
+            <th>Période</th>
+            <th style={{textAlign:'right'}}>Intérêts</th>
+            <th style={{textAlign:'right'}}>Assurance</th>
+            <th style={{textAlign:'right'}}>Amort.</th>
+            <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité' : 'Mensualité'}</th>
+            <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'}</th>
+            <th style={{textAlign:'right'}}>CRD</th>
+          </tr>
+        </thead>
+        <tbody>
+          {(isAnnual ? aggregateToYearsFromRows(pret1Rows, startYM)
+                     : attachMonthLabels(pret1Rows)).map((l, idx)=>(
+            <tr key={idx}>
+              <td style={{borderRight:'1px solid #CEC1B6'}}>{l.periode}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.interet)}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.assurance)}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l.amort)}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensu)}</td>
+              <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6', fontWeight:600}}>{euro0(l.mensuTotal)}</td>
+              <td style={{textAlign:'right'}}>{euro0(l.crd)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {/* PRÊT 2 */}
+    {autresRows[0] && (
+      <div style={{marginBottom:12}}>
+        <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 2</div>
+        <table className="plac-table" role="grid" aria-label="amortissement prêt 2"
+               style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
+          <thead>
+            <tr>
+              <th>Période</th>
+              <th style={{textAlign:'right'}}>Intérêts</th>
+              <th style={{textAlign:'right'}}>Assurance</th>
+              <th style={{textAlign:'right'}}>Amort.</th>
+              <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité' : 'Mensualité'}</th>
+              <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'}</th>
+              <th style={{textAlign:'right'}}>CRD</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(isAnnual ? aggregateToYearsFromRows(autresRows[0], startYM)
+                       : attachMonthLabels(autresRows[0])).map((l, idx)=>(
+              <tr key={idx}>
+                <td style={{borderRight:'1px solid #CEC1B6'}}>{l.periode}</td>
+                <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.interet ?? 0)}</td>
+                <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.assurance ?? 0)}</td>
+                <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.amort ?? 0)}</td>
+                <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensu ?? 0)}</td>
+                <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensuTotal ?? 0)}</td>
+                <td style={{textAlign:'right'}}>{euro0(l?.crd ?? 0)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+
+    {/* PRÊT 3 */}
+    {autresRows[1] && (
+      <div>
+        <div className="cell-muted" style={{fontSize:13, margin:'6px 0'}}>Prêt 3</div>
+        <table className="plac-table" role="grid" aria-label="amortissement prêt 3"
+               style={{tableLayout:'fixed', width:'100%', fontSize:13}}>
+          <thead>
+            <tr>
+              <th>Période</th>
+              <th style={{textAlign:'right'}}>Intérêts</th>
+              <th style={{textAlign:'right'}}>Assurance</th>
+              <th style={{textAlign:'right'}}>Amort.</th>
+              <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité' : 'Mensualité'}</th>
+              <th style={{textAlign:'right'}}>{isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'}</th>
+              <th style={{textAlign:'right'}}>CRD</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(isAnnual ? aggregateToYearsFromRows(autresRows[1], startYM)
+                       : attachMonthLabels(autresRows[1])).map((l, idx)=>(
+              <tr key={idx}>
+                <td style={{borderRight:'1px solid #CEC1B6'}}>{l.periode}</td>
+                <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.interet ?? 0)}</td>
+                <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.assurance ?? 0)}</td>
+                <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.amort ?? 0)}</td>
+                <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensu ?? 0)}</td>
+                <td style={{textAlign:'right', borderRight:'1px solid #CEC1B6'}}>{euro0(l?.mensuTotal ?? 0)}</td>
+                <td style={{textAlign:'right'}}>{euro0(l?.crd ?? 0)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+)}
