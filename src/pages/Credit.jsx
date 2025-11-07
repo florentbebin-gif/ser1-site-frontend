@@ -744,7 +744,7 @@ const synthesePeriodes = useMemo(() => {
               <td className="cell-muted">Taux annuel (crédit)</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
-                  <input type="number" step="0.01" value={Number((taux).toFixed(2))} onChange={e=> setTaux(toNumber(e.target.value))} style={{width:'100%', textAlign:'right', height:32}}/>
+                  <input type="text" inputMode="decimal" value={Number((taux).toFixed(2))} onChange={e=> setTaux(toNumber(e.target.value))} style={{width:'100%', textAlign:'right', height:32}}/>
                   <span>%</span>
                 </div>
               </td>
@@ -780,7 +780,7 @@ const synthesePeriodes = useMemo(() => {
               <td className="cell-muted">Taux annuel (assurance)</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
-                  <input type="number" step="0.01" value={Number((tauxAssur).toFixed(2))} onChange={e=> setTauxAssur(toNumber(e.target.value))} style={{width:'100%', textAlign:'right', height:32}}/>
+                  <input type="text" inputMode="decimal" value={Number((tauxAssur).toFixed(2))} onChange={e=> setTauxAssur(toNumber(e.target.value))} style={{width:'100%', textAlign:'right', height:32}}/>
                   <span>%</span>
                 </div>
               </td>
@@ -903,7 +903,7 @@ const synthesePeriodes = useMemo(() => {
                       </td>
 
                       <td className="input-cell" style={{textAlign:'right'}}>
-                        <input type="number" step="0.01" value={Number((Number(p.taux)||0).toFixed(2))}
+                        <input type="text" inputMode="decimal" value={Number((Number(p.taux)||0).toFixed(2))}
                                onChange={e=> updatePret(p.id, { taux: toNumber(e.target.value) })}
                                style={{width:'100%', textAlign:'right', height:28}}/>
                       </td>
