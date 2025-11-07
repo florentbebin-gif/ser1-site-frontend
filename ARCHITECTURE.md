@@ -77,8 +77,6 @@ Les variables d’environnement Supabase sont configurées dans Vercel.
 
 ## Vue d’ensemble
 
-| Vue | d’ensemble |
-|-----------|----------------|
 
 Stack : React + Vite.
 
