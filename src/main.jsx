@@ -12,6 +12,8 @@ import ResetPassword from './pages/ResetPassword.jsx'
 import { ParamsProvider } from './context/ParamsProvider.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
 import './styles.css'
+import { enableDotAsDecimal } from './utils/decimalInput';
+enableDotAsDecimal();
 
 const router = createBrowserRouter([
   {
