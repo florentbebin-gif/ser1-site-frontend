@@ -753,8 +753,15 @@ const synthesePeriodes = useMemo(() => {
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
                    <input type="text" inputMode="decimal" value={rawTaux}
-                    onChange={e=> { setRawTaux(e.target.value); setTaux(toNumber(e.target.value)); }}
-                    onBlur={()=> setRawTaux((Number(taux).toFixed(2)).toString())} style={{width:'100%', textAlign:'right', height:32}}/>
+                    onChange={e => {
+                     let v = e.target.value.replace(',', '.');       // virgule autorisée
+                     v = v.replace(/[^0-9.]/g, '');                  // on garde chiffres et un point
+                     const parts = v.split('.');
+                     if (parts.length > 2) v = parts.shift() + '.' + parts.join(''); // un seul point
+                     setRawTaux(v);
+                     setTaux(toNumber(v));
+                    }}
+                    onBlur={()=> setRawTaux((Number(taux).toFixed(2)).replace('.', ','))} style={{width:'100%', textAlign:'right', height:32}}/>
                   <span>%</span>
                 </div>
               </td>
@@ -791,8 +798,15 @@ const synthesePeriodes = useMemo(() => {
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
                    <input type="text" inputMode="decimal" value={rawTauxAss}
-                    onChange={e=> { setRawTauxAss(e.target.value); setTauxAssur(toNumber(e.target.value)); }}
-                    onBlur={()=> setRawTauxAss((Number(tauxAssur).toFixed(2)).toString())} style={{width:'100%', textAlign:'right', height:32}}/>
+                    onChange={e => {
+                     let v = e.target.value.replace(',', '.');
+                     v = v.replace(/[^0-9.]/g, '');
+                     const parts = v.split('.');
+                     if (parts.length > 2) v = parts.shift() + '.' + parts.join('');
+                     setRawTauxAss(v);
+                     setTauxAssur(toNumber(v));
+                    }}
+                    onBlur={()=> setRawTauxAss((Number(tauxAssur).toFixed(2)).replace('.', ','))} style={{width:'100%', textAlign:'right', height:32}}/>
                   <span>%</span>
                 </div>
               </td>
