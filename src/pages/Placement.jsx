@@ -273,8 +273,9 @@ export default function Placement(){
                 const ratePct = (Number(p.rate)||0)*100
                 return (
                   <td key={i} className="input-cell">
-                    <InputWithUnit
-                      type="number"
+                   <InputWithUnit
+                     type="text"
+                     inputMode="decimal"
                       value={Number(ratePct.toFixed(2))}
                       onChange={e=> setProd(i,{rate:(toNumber(e.target.value))/100})}
                       unit="%"
@@ -310,8 +311,9 @@ export default function Placement(){
                 const feePct = (Number(p.entryFeePct)||0)*100
                 return (
                   <td key={i} className="input-cell">
-                    <InputWithUnit
-                      type="number"
+                   <InputWithUnit
+                     type="text"
+                     inputMode="decimal"
                       value={Number(feePct.toFixed(2))}
                       onChange={e=> setProd(i,{entryFeePct:(toNumber(e.target.value))/100})}
                       unit="%"
