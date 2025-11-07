@@ -52,15 +52,7 @@ const defaultContribs  = [
   { amount:0, freq:'annuel'  },
 ]
 
-// Saisie brute pour chaque colonne % (indexées comme products)
-const [rawRates, setRawRates] = useState(['','','','']);
-const [rawFees,  setRawFees]  = useState(['','','','']);
 
-// Ré-initialise l'affichage brut quand on reset / recharge
-useEffect(() => {
-  setRawRates(products.map(p => ((Number(p.rate)||0)*100).toString().replace('.', ',')));
-  setRawFees(products.map(p => ((Number(p.entryFeePct)||0)*100).toString().replace('.', ',')));
-}, [products]);
 
 /* ===========================================================
    SIMULATIONS
@@ -187,6 +179,16 @@ export default function Placement(){
   const STORE_KEY = storageKeyFor('placement')
   const [hydrated, setHydrated] = useState(false)
 
+// Saisie brute pour chaque colonne % (indexées comme products)
+const [rawRates, setRawRates] = useState(['','','','']);
+const [rawFees,  setRawFees]  = useState(['','','','']);
+
+// Ré-initialise l'affichage brut quand on reset / recharge
+useEffect(() => {
+  setRawRates(products.map(p => ((Number(p.rate)||0)*100).toString().replace('.', ',')));
+  setRawFees(products.map(p => ((Number(p.entryFeePct)||0)*100).toString().replace('.', ',')));
+}, [products]);
+   
   useEffect(()=>{
     try{
       const raw = localStorage.getItem(STORE_KEY)
@@ -282,22 +284,14 @@ export default function Placement(){
               {products.map((p,i)=>{
                 const ratePct = (Number(p.rate)||0)*100
                 return (
-                  <td key={i} className="input-cell">
-                     type="text"
-                     inputMode="decimal"
-                     value={rawRates[i] ?? ''}
-                  onChange={e=>{
-                       const raw = e.target.value;              // garde "2.", "2,3", etc.
-                       setRawRates(a => a.map((s,k)=> k===i ? raw : s));
-                       setProd(i, { rate: toNumber(raw)/100 }); // alimente le modèle numérique
-                     }}
-                     onBlur={()=>{
-                       // normalise l’affichage quand on sort du champ
-                          setRawRates(a => a.map((s,k)=> k===i ? ((Number((Number(products[i].rate)||0)*100).toFixed(2)).toString()) : s));
-                     }}
-                     unit="%"
-                   />
-                  </td>
+                  <InputWithUnit
+                    type="text"
+                    inputMode="decimal"
+                    value={rawRates[i] ?? ''}
+                    onChange={(e)=>{ const raw=e.target.value; setRawRates(a=>a.map((s,k)=>k===i?raw:s)); setProd(i,{ rate: toNumber(raw)/100 }); }}
+                    onBlur={()=>{ setRawRates(a=>a.map((s,k)=>k===i ? (Number((Number(products[i].rate)||0)*100).toFixed(2)).toString() : s)); }}
+                    unit="%"
+                  />
                 )
               })}
             </tr>
@@ -327,23 +321,14 @@ export default function Placement(){
               {products.map((p,i)=>{
                 const feePct = (Number(p.entryFeePct)||0)*100
                 return (
-                  <td key={i} className="input-cell">
                   <InputWithUnit
-                        type="text"
-                     inputMode="decimal"
-                     value={rawRates[i] ?? ''}
-                     onChange={e=>{
-                        const raw = e.target.value;              // garde "2.", "2,3", etc.
-                        setRawRates(a => a.map((s,k)=> k===i ? raw : s));
-                        setProd(i, { rate: toNumber(raw)/100 }); // alimente le modèle numérique
-                     }}
-                     onBlur={()=>{
-                        // normalise l’affichage quand on sort du champ
-                        setRawRates(a => a.map((s,k)=> k===i ? ((Number((Number(products[i].rate)||0)*100).toFixed(2)).toString()) : s));
-                     }}
-                     unit="%"
-                     />
-                  </td>
+                    type="text"
+                    inputMode="decimal"
+                    value={rawRates[i] ?? ''}
+                    onChange={(e)=>{ const raw=e.target.value; setRawRates(a=>a.map((s,k)=>k===i?raw:s)); setProd(i,{ rate: toNumber(raw)/100 }); }}
+                    onBlur={()=>{ setRawRates(a=>a.map((s,k)=>k===i ? (Number((Number(products[i].rate)||0)*100).toFixed(2)).toString() : s)); }}
+                    unit="%"
+                  />
                 )
               })}
             </tr>
