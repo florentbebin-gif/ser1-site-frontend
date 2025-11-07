@@ -10,6 +10,16 @@ const euro0 = (n)=> fmt0(n) + ' €'
 
 const rid = () => Math.random().toString(36).slice(2,9)
 
+const [rawTaux, setRawTaux] = useState('');
+const [rawTauxAss, setRawTauxAss] = useState('');
+const [rawTauxPlus, setRawTauxPlus] = useState({}); // par prêt id -> string
+
+// Sync initial / reset
+useEffect(() => {
+  setRawTaux((Number(taux).toFixed(2)).toString());
+  setRawTauxAss((Number(tauxAssur).toFixed(2)).toString());
+}, [taux, tauxAssur]);
+
 /* Date utils (YYYY-MM) */
 function nowYearMonth(){
   const d = new Date()
@@ -744,7 +754,9 @@ const synthesePeriodes = useMemo(() => {
               <td className="cell-muted">Taux annuel (crédit)</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
-                  <input type="text" inputMode="decimal" value={Number((taux).toFixed(2))} onChange={e=> setTaux(toNumber(e.target.value))} style={{width:'100%', textAlign:'right', height:32}}/>
+                   <input type="text" inputMode="decimal" value={rawTaux}
+                    onChange={e=> { setRawTaux(e.target.value); setTaux(toNumber(e.target.value)); }}
+                    onBlur={()=> setRawTaux((Number(taux).toFixed(2)).toString())} style={{width:'100%', textAlign:'right', height:32}}/>
                   <span>%</span>
                 </div>
               </td>
@@ -780,7 +792,9 @@ const synthesePeriodes = useMemo(() => {
               <td className="cell-muted">Taux annuel (assurance)</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
-                  <input type="text" inputMode="decimal" value={Number((tauxAssur).toFixed(2))} onChange={e=> setTauxAssur(toNumber(e.target.value))} style={{width:'100%', textAlign:'right', height:32}}/>
+                   <input type="text" inputMode="decimal" value={rawTauxAss}
+                    onChange={e=> { setRawTauxAss(e.target.value); setTauxAssur(toNumber(e.target.value)); }}
+                    onBlur={()=> setRawTauxAss((Number(tauxAssur).toFixed(2)).toString())} style={{width:'100%', textAlign:'right', height:32}}/>
                   <span>%</span>
                 </div>
               </td>
@@ -903,8 +917,16 @@ const synthesePeriodes = useMemo(() => {
                       </td>
 
                       <td className="input-cell" style={{textAlign:'right'}}>
-                        <input type="text" inputMode="decimal" value={Number((Number(p.taux)||0).toFixed(2))}
-                               onChange={e=> updatePret(p.id, { taux: toNumber(e.target.value) })}
+                         <input type="text" inputMode="decimal"
+                          value={rawTauxPlus[p.id] ?? (Number((Number(p.taux)||0).toFixed(2)).toString())}
+                          onChange={e=>{
+                           const v = e.target.value;
+                           setRawTauxPlus(m => ({ ...m, [p.id]: v }));
+                           updatePret(p.id, { taux: toNumber(v) });
+                          }}
+                          onBlur={()=>{
+                           setRawTauxPlus(m => ({ ...m, [p.id]: (Number((Number(p.taux)||0).toFixed(2)).toString()) }));
+                          }}
                                style={{width:'100%', textAlign:'right', height:28}}/>
                       </td>
                       <td style={{textAlign:'right', fontWeight:600}}>{euro0(mensu)}</td>
