@@ -283,24 +283,25 @@ useEffect(() => {
   <td className="cell-muted">Rendement Net de FG</td>
   {products.map((p, i) => (
     <td key={i} className="input-cell">
-      <InputWithUnit
-        type="text"
-        inputMode="decimal"
-        value={rawRates[i] ?? ''}
-        onChange={(e) => {
-          const raw = e.target.value;
-          setRawRates(a => a.map((s, k) => k === i ? raw : s));
-          setProd(i, { rate: toNumber(raw) / 100 });
-        }}
-        onBlur={() => {
-          setRawRates(a => a.map((s, k) =>
-            k === i
-              ? (Number(((Number(products[i].rate) || 0) * 100)).toFixed(2)).toString()
-              : s
-          ));
-        }}
-        unit="%"
-      />
+<InputWithUnit
+  type="text"
+  inputMode="decimal"
+  value={rawRates[i] ?? ''}
+  onChange={(e) => {
+    const raw = e.target.value;                        // garde 2. / 2,3, etc.
+    setRawRates(a => a.map((s, k) => (k === i ? raw : s)));
+  }}
+  onBlur={(e) => {
+    const v = e.target.value;
+    const rateNum = toNumber(v) / 100;
+    setProd(i, { rate: rateNum });                     // commit ici, une seule fois
+    // normalise l’affichage en 2 décimales
+    setRawRates(a => a.map((s, k) =>
+      k === i ? (Number(rateNum * 100).toFixed(2)).toString() : s
+    ));
+  }}
+  unit="%"
+/>
     </td>
   ))}
 </tr>
@@ -329,24 +330,24 @@ useEffect(() => {
   <td className="cell-muted">Frais d’entrée</td>
   {products.map((p, i) => (
     <td key={i} className="input-cell">
-      <InputWithUnit
-        type="text"
-        inputMode="decimal"
-        value={rawFees[i] ?? ''}
-        onChange={(e) => {
-          const raw = e.target.value;
-          setRawFees(a => a.map((s, k) => k === i ? raw : s));
-          setProd(i, { entryFeePct: toNumber(raw) / 100 });
-        }}
-        onBlur={() => {
-          setRawFees(a => a.map((s, k) =>
-            k === i
-              ? (Number(((Number(products[i].entryFeePct) || 0) * 100)).toFixed(2)).toString()
-              : s
-          ));
-        }}
-        unit="%"
-      />
+<InputWithUnit
+  type="text"
+  inputMode="decimal"
+  value={rawFees[i] ?? ''}
+  onChange={(e) => {
+    const raw = e.target.value;
+    setRawFees(a => a.map((s, k) => (k === i ? raw : s)));
+  }}
+  onBlur={(e) => {
+    const v = e.target.value;
+    const feeNum = toNumber(v) / 100;
+    setProd(i, { entryFeePct: feeNum });               // commit ici
+    setRawFees(a => a.map((s, k) =>
+      k === i ? (Number(feeNum * 100).toFixed(2)).toString() : s
+    ));
+  }}
+  unit="%"
+/>
     </td>
   ))}
 </tr>
