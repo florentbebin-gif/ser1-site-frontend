@@ -156,6 +156,17 @@ function InputWithUnit({
   )
 }
 
+/* Titre de colonne sur deux lignes */
+function TwoLineHeader({ name }) {
+  const parts = String(name).split(' ')
+  const top = parts.slice(0, 2).join(' ')
+  const bottom = parts.slice(2).join(' ')
+  return (
+    <div style={{ lineHeight: 1.1 }}>
+      {top}<br/>{bottom}
+    </div>
+  )
+}
 
 /* ===========================================================
    MAIN
@@ -258,6 +269,7 @@ export default function Placement(){
           </thead>
 
           <tbody>
+            {/* Rendement Net de FG */}
             <tr>
               <td className="cell-muted">Rendement Net de FG</td>
               {products.map((p,i)=>{
@@ -275,6 +287,7 @@ export default function Placement(){
               })}
             </tr>
 
+            {/* Placement initial */}
             <tr>
               <td className="cell-strong">Placement Initial</td>
               {products.map((p,i)=>(
@@ -293,6 +306,7 @@ export default function Placement(){
               ))}
             </tr>
 
+            {/* Frais d’entrée */}
             <tr>
               <td className="cell-muted">Frais d’entrée</td>
               {products.map((p,i)=>{
@@ -310,6 +324,7 @@ export default function Placement(){
               })}
             </tr>
 
+            {/* Versement programmé (— pour 3 & 4) */}
             <tr>
               <td className="cell-strong">Versement programmé</td>
               {products.map((_,i)=>(
@@ -342,37 +357,33 @@ export default function Placement(){
               ))}
             </tr>
 
-<tr>
-  <td>Durée en année</td>
-  {products.map((_, i) => (
-    <td key={i} className="input-cell">
-      <InputWithUnit
-        /* type=text + inputMode=numeric pour limiter à 2 chiffres */
-        type="text"
-        inputMode="numeric"
-        value={String(durations[i])}
-        onChange={(e) => {
-          // ne garde que les chiffres et tronque à 2
-          const v = e.target.value.replace(/\D/g, '').slice(0, 2)
-          // affichage immédiat côté UI
-          e.target.value = v
-          // enregistre si non vide ; sinon on laisse le blur remettre 1
-          if (v !== '') setDuration(i, Math.max(1, Number(v)))
-        }}
-        onBlur={(e) => {
-          let v = e.target.value.replace(/\D/g, '').slice(0, 2)
-          if (v === '') v = '1'
-          setDuration(i, Math.max(1, Number(v)))
-          e.target.value = v
-        }}
-        unit="an(s)"
-      />
-    </td>
-  ))}
-</tr>
+            {/* Durée en année (saisie limitée à 2 chiffres) */}
+            <tr>
+              <td>Durée en année</td>
+              {products.map((_, i) => (
+                <td key={i} className="input-cell">
+                  <InputWithUnit
+                    type="text"
+                    inputMode="numeric"
+                    value={String(durations[i])}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, '').slice(0, 2)
+                      e.target.value = v
+                      if (v !== '') setDuration(i, Math.max(1, Number(v)))
+                    }}
+                    onBlur={(e) => {
+                      let v = e.target.value.replace(/\D/g, '').slice(0, 2)
+                      if (v === '') v = '1'
+                      setDuration(i, Math.max(1, Number(v)))
+                      e.target.value = v
+                    }}
+                    unit="an(s)"
+                  />
+                </td>
+              ))}
+            </tr>
 
-
-
+            {/* Lignes Année N */}
             {years.map((y, yi)=>(
               <tr key={yi}>
                 <td>{`Année ${y}`}</td>
