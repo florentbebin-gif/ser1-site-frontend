@@ -112,11 +112,15 @@ export default function App(){
             </Link>
 
             {/* Reset : visible uniquement sur /placement et /credit */}
-            {simId && (
-              <button className="chip" onClick={handleReset} title="Réinitialiser uniquement cette page">
-                Reset
-              </button>
-            )}
+           {simId && (
+             <button
+               className="chip"
+               onClick={() => triggerPageReset(simId)}
+               title="Réinitialiser uniquement cette page"
+             >
+               Reset
+             </button>
+           )}
 
             <Link
               to="/params"
