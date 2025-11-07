@@ -211,22 +211,24 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
 ================================ */
 export default function Credit(){
 
-  /* ---- ÉTATS ---- */
-  const [startYM, setStartYM]         = useState(nowYearMonth()) // Date souscription prêt 1
-  const [assurMode, setAssurMode]     = useState('CRD')          // 'CI' | 'CRD'
-  const [creditType, setCreditType]   = useState('amortissable') // type prêt 1
+/* ---- ÉTATS ---- */
+const [startYM, setStartYM]         = useState(nowYearMonth()) // Date souscription prêt 1
+const [assurMode, setAssurMode]     = useState('CRD')          // 'CI' | 'CRD'
+const [creditType, setCreditType]   = useState('amortissable') // type prêt 1
 
-  const [capital, setCapital]         = useState(300000)
-  const [duree, setDuree]             = useState(240)
-  const [taux, setTaux]               = useState(3.50)
-  const [tauxAssur, setTauxAssur]     = useState(0.30)
-  const [mensuBase, setMensuBase]     = useState('')             // saisie mensu prêt 1
+const [capital, setCapital]         = useState(300000)
+const [duree, setDuree]             = useState(240)
+const [taux, setTaux]               = useState(3.50)
+const [tauxAssur, setTauxAssur]     = useState(0.30)
+const [mensuBase, setMensuBase]     = useState('')             // saisie mensu prêt 1
 
- const [rawTaux, setRawTaux] = useState('');
 const [rawTauxAss, setRawTauxAss] = useState('');
 const [rawTauxPlus, setRawTauxPlus] = useState({}); // par prêt id -> string
- const [rawTaux, setRawTaux] = useState((taux * 100).toFixed(2).replace('.', ','));
+
+//  version normalisée dès l’affichage
+const [rawTaux, setRawTaux] = useState((taux * 100).toFixed(2).replace('.', ','));
 const [rawTauxAssur, setRawTauxAssur] = useState((tauxAssur * 100).toFixed(2).replace('.', ','));
+
 
 // Sync initial / reset
 useEffect(() => {
