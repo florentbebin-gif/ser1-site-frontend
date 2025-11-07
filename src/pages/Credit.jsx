@@ -1336,6 +1336,5 @@ const synthesePeriodes = useMemo(() => {
 )}         {/* ← ferme le bloc conditionnel {pretsPlus.length > 0 && ( ... )} */}
 
 </div>     {/* ← ferme le <div className="panel"> du début du return */}
-
-)          {/* ← ferme le return( ... ) */}
-}          {/* ← ferme le composant */}
+)
+}
