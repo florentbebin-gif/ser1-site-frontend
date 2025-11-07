@@ -226,8 +226,8 @@ const [rawTauxAss, setRawTauxAss] = useState('');
 const [rawTauxPlus, setRawTauxPlus] = useState({}); // par prêt id -> string
 
 //  version normalisée dès l’affichage
-const [rawTaux, setRawTaux] = useState((taux * 100).toFixed(2).replace('.', ','));
-const [rawTauxAssur, setRawTauxAssur] = useState((tauxAssur * 100).toFixed(2).replace('.', ','));
+const [rawTaux, setRawTaux] = useState(Number(taux).toFixed(2).replace('.', ','));
+const [rawTauxAssur, setRawTauxAssur] = useState(Number(tauxAssur).toFixed(2).replace('.', ','));
 
 
 // Sync initial / reset
@@ -768,9 +768,9 @@ const synthesePeriodes = useMemo(() => {
                    setRawTaux(raw); // ← uniquement l'affichage brut
                   }}
                   onBlur={() => {
-                   const num = toNumber(rawTaux) / 100; // ← on commit ici seulement
+                   const num = toNumber(rawTaux);  // on garde un % (4.5 reste 4.5)
                    setTaux(num);
-                   setRawTaux((num * 100).toFixed(2).replace('.', ','));
+                   setRawTaux(Number(num).toFixed(2).replace('.', ','));
                   }}
                   style={{ width: '100%', textAlign: 'right', height: 32 }}
                   />
@@ -821,9 +821,9 @@ const synthesePeriodes = useMemo(() => {
                    setRawTauxAssur(raw);
                   }}
                   onBlur={() => {
-                   const num = toNumber(rawTauxAssur) / 100;
+                   const num = toNumber(rawTauxAssur);  // % direct
                    setTauxAssur(num);
-                   setRawTauxAssur((num * 100).toFixed(2).replace('.', ','));
+                   setRawTauxAssur(Number(num).toFixed(2).replace('.', ','));
                   }}
                   style={{ width: '100%', textAlign: 'right', height: 32 }}
                   />
