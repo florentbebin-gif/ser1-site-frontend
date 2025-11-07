@@ -225,6 +225,8 @@ export default function Credit(){
  const [rawTaux, setRawTaux] = useState('');
 const [rawTauxAss, setRawTauxAss] = useState('');
 const [rawTauxPlus, setRawTauxPlus] = useState({}); // par prêt id -> string
+ const [rawTaux, setRawTaux] = useState((taux * 100).toFixed(2).replace('.', ','));
+const [rawTauxAssur, setRawTauxAssur] = useState((tauxAssur * 100).toFixed(2).replace('.', ','));
 
 // Sync initial / reset
 useEffect(() => {
@@ -752,16 +754,24 @@ const synthesePeriodes = useMemo(() => {
               <td className="cell-muted">Taux annuel (crédit)</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
-                   <input type="text" inputMode="decimal" value={rawTaux}
-                    onChange={e => {
-                     let v = e.target.value.replace(',', '.');       // virgule autorisée
-                     v = v.replace(/[^0-9.]/g, '');                  // on garde chiffres et un point
-                     const parts = v.split('.');
-                     if (parts.length > 2) v = parts.shift() + '.' + parts.join(''); // un seul point
-                     setRawTaux(v);
-                     setTaux(toNumber(v));
-                    }}
-                    onBlur={()=> setRawTaux((Number(taux).toFixed(2)).replace('.', ','))} style={{width:'100%', textAlign:'right', height:32}}/>
+                 <input
+                  type="text"
+                  inputMode="decimal"
+                  value={rawTaux}
+                  onChange={e => {
+                   let raw = e.target.value.replace(',', '.');
+                   raw = raw.replace(/[^0-9.]/g, '');
+                   const parts = raw.split('.');
+                   if (parts.length > 2) raw = parts.shift() + '.' + parts.join('');
+                   setRawTaux(raw); // ← uniquement l'affichage brut
+                  }}
+                  onBlur={() => {
+                   const num = toNumber(rawTaux) / 100; // ← on commit ici seulement
+                   setTaux(num);
+                   setRawTaux((num * 100).toFixed(2).replace('.', ','));
+                  }}
+                  style={{ width: '100%', textAlign: 'right', height: 32 }}
+                  />
                   <span>%</span>
                 </div>
               </td>
@@ -797,16 +807,24 @@ const synthesePeriodes = useMemo(() => {
               <td className="cell-muted">Taux annuel (assurance)</td>
               <td className="input-cell">
                 <div style={{display:'flex', alignItems:'center', gap:6, justifyContent:'flex-end'}}>
-                   <input type="text" inputMode="decimal" value={rawTauxAss}
-                    onChange={e => {
-                     let v = e.target.value.replace(',', '.');
-                     v = v.replace(/[^0-9.]/g, '');
-                     const parts = v.split('.');
-                     if (parts.length > 2) v = parts.shift() + '.' + parts.join('');
-                     setRawTauxAss(v);
-                     setTauxAssur(toNumber(v));
-                    }}
-                    onBlur={()=> setRawTauxAss((Number(tauxAssur).toFixed(2)).replace('.', ','))} style={{width:'100%', textAlign:'right', height:32}}/>
+                 <input
+                  type="text"
+                  inputMode="decimal"
+                  value={rawTauxAssur}
+                  onChange={e => {
+                   let raw = e.target.value.replace(',', '.');
+                   raw = raw.replace(/[^0-9.]/g, '');
+                   const parts = raw.split('.');
+                   if (parts.length > 2) raw = parts.shift() + '.' + parts.join('');
+                   setRawTauxAssur(raw);
+                  }}
+                  onBlur={() => {
+                   const num = toNumber(rawTauxAssur) / 100;
+                   setTauxAssur(num);
+                   setRawTauxAssur((num * 100).toFixed(2).replace('.', ','));
+                  }}
+                  style={{ width: '100%', textAlign: 'right', height: 32 }}
+                  />
                   <span>%</span>
                 </div>
               </td>
