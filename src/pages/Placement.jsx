@@ -324,34 +324,23 @@ export default function Placement(){
             </tr>
 
 <tr>
+<tr>
   <td>Durée en année</td>
-  {products.map((_, i) => (
+  {products.map((_,i)=>(
     <td key={i} className="input-cell">
       <InputWithUnit
-        /* type=text + inputMode numeric pour pouvoir limiter à 2 chiffres */
-        type="text"
-        inputMode="numeric"
-        value={String(durations[i])}
-        onChange={(e) => {
-          // on garde uniquement les chiffres, on tronque à 2
-          const v = e.target.value.replace(/\D/g, '').slice(0, 2);
-          // valeur temporaire à l’écran (y compris vide)
-          e.target.value = v;
-          // on n’enregistre que si non vide, sinon on laisse la mise au point au blur
-          if (v !== '') setDuration(i, Math.max(1, Number(v)));
-        }}
-        onBlur={(e) => {
-          // si l’utilisateur laisse vide, on retombe sur 1
-          let v = e.target.value.replace(/\D/g, '').slice(0, 2);
-          if (v === '') v = '1';
-          setDuration(i, Math.max(1, Number(v)));
-          e.target.value = v;
+        type="number"
+        value={durations[i]}
+        onChange={e=>{
+          const clean = e.target.value.replace(/\D/g,'').slice(0,2); // max 2 chiffres
+          setDuration(i, +clean || 1);
         }}
         unit="an(s)"
       />
     </td>
   ))}
 </tr>
+
 
             {years.map((y, yi)=>(
               <tr key={yi}>
