@@ -73,25 +73,29 @@ export default function App(){
     }
   }, [location.pathname, navigate])
 
-  async function handleLogout(){
-    if (loggingOut) return
-    setLoggingOut(true)
-    try { await supabase.auth.signOut({ scope: 'global' }) } catch {}
-    try { sessionStorage.clear() } catch {}
-    try {
-      Object.keys(localStorage)
-        .filter(k => k.startsWith('sb-'))
-        .forEach(k => localStorage.removeItem(k))
-    } catch {}
-    window.location.href = '/login?logout=1'
-  }
 
-  function handleReset(){
-    const simId = getSimId(location.pathname)
-    if (!simId) return
-    triggerPageReset(simId)                // ← reset ciblé (placement / credit)
-    alert('Les champs de cette page ont été réinitialisés.')
-  }
+    async function handleLogout(){
+      if (loggingOut) return
+      setLoggingOut(true)
+      try {
+        await supabase.auth.signOut({ scope: 'global' })
+      } catch (e) {
+        console.error('Erreur de déconnexion', e)
+        // On ne bloque pas l'UI si Supabase jette une erreur
+      } finally {
+        try { sessionStorage.clear() } catch {}
+        try {
+          Object.keys(localStorage)
+            .filter(k => k.startsWith('sb-'))
+            .forEach(k => localStorage.removeItem(k))
+        } catch {}
+        // Redirection fiable (évite l’état “gelé”)
+        window.location.assign('/login?logout=1')
+        // + filet de sécurité si la redirection est différée
+        setLoggingOut(false)
+      }
+    }
+
 
   const isAuthed = !!session
   const simId = getSimId(location.pathname) // null sur Home/Params/Login, 'placement' sur /placement, etc.
