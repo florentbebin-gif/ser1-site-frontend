@@ -5,9 +5,7 @@ import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 /* ---------- Helpers format ---------- */
 const fmt0  = (n)=> (Math.round(Number(n)||0)).toLocaleString('fr-FR')
 const euro0 = (n)=> fmt0(n) + ' €'
-
- const toNum = (v)=> toNumber(v, 0)
-
+const toNum = (v)=> toNumber(v, 0)
 const rid = () => Math.random().toString(36).slice(2,9)
 
 const [rawTaux, setRawTaux] = useState('');
