@@ -4,31 +4,134 @@ import { useParamsGlobal } from '../context/ParamsProvider.jsx'
 import { toNumber } from '../utils/number.js'
 
 /**
- * Page Params — version fonctionnelle et sûre (hooks À L’INTÉRIEUR du composant)
+ * Params page — étendue avec affichage / édition des tableaux (PASS, IR, Assurance vie, ...)
+ * - Lecture single-row 'global' via ParamsProvider (useParamsGlobal)
+ * - Edition possible si profil.role === 'admin'
+ *
+ * Remarque: conserve l'export par défaut (important pour le router).
  */
+
+function SimpleTableView({data}) {
+  if (!data) return null
+  if (data.columns && Array.isArray(data.rows)) {
+    return (
+      <table className="plac-table" style={{width:'100%'}}>
+        <thead>
+          <tr>{data.columns.map((c,i)=>(<th key={i}>{c}</th>))}</tr>
+        </thead>
+        <tbody>
+          {data.rows.map((r,ri)=>(
+            <tr key={ri}>
+              {r.map((cell,ci)=>(<td key={ci} style={{textAlign: typeof cell === 'number' ? 'right' : 'left'}}>{cell}</td>))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )
+  }
+
+  // keyed rows (array of objects)
+  if (Array.isArray(data.rows)) {
+    const keys = data.keys || Object.keys(data.rows[0] || {})
+    return (
+      <table className="plac-table" style={{width:'100%'}}>
+        <thead><tr>{keys.map(k=> (<th key={k}>{k}</th>))}</tr></thead>
+        <tbody>
+          {data.rows.map((row,ri)=>(
+            <tr key={ri}>
+              {keys.map(k=>(<td key={k}>{row[k]}</td>))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )
+  }
+
+  return <pre>{JSON.stringify(data,null,2)}</pre>
+}
+
+function EditableTable({ data, onChange }) {
+  // clones to avoid mutating prop
+  if (!data) return null
+
+  // matrix mode
+  if (data.columns && Array.isArray(data.rows)) {
+    const setCell = (r,c,val) => {
+      const rows = data.rows.map((rr,ri)=> ri===r ? rr.map((cc,ci)=> ci===c ? val : cc) : rr)
+      onChange({ ...data, rows })
+    }
+    return (
+      <table className="plac-table" style={{width:'100%'}}>
+        <thead>
+          <tr>{data.columns.map((c,i)=>(<th key={i}>{c}</th>))}</tr>
+        </thead>
+        <tbody>
+          {data.rows.map((r,ri)=>(
+            <tr key={ri}>
+              {r.map((cell,ci)=>(
+                <td key={ci}>
+                  <input
+                    value={cell ?? ''}
+                    onChange={e => setCell(ri,ci,e.target.value)}
+                    style={{width:'100%', boxSizing:'border-box'}}
+                  />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )
+  }
+
+  // keyed mode
+  if (Array.isArray(data.rows)) {
+    const keys = data.keys || Object.keys(data.rows[0] || {})
+    const setCell = (r,k,val) => {
+      const rows = data.rows.map((rr,ri)=> ri===r ? ({ ...rr, [k]: val }) : rr)
+      onChange({ ...data, rows })
+    }
+    return (
+      <table className="plac-table" style={{width:'100%'}}>
+        <thead><tr>{keys.map(k=> (<th key={k}>{k}</th>))}</tr></thead>
+        <tbody>
+          {data.rows.map((row,ri)=>(
+            <tr key={ri}>
+              {keys.map(k=>(
+                <td key={k}>
+                  <input value={row[k] ?? ''} onChange={e=> setCell(ri,k,e.target.value)} style={{width:'100%'}}/>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )
+  }
+
+  return <pre>{JSON.stringify(data,null,2)}</pre>
+}
+
 export default function Params(){
-  // Hooks du provider : à l’intérieur du composant (pas en top-level)
   const { params: globalParams, loading: gLoading, error: gError, reload } = useParamsGlobal()
 
-  // état local du formulaire (valeurs défaut – seront écrasées par globalParams au chargement)
   const [form, setForm] = useState({
     irVersion: '2025',
     defaultLoanRate: 4.0,
     defaultInflation: 2.0,
     amortOnlySmoothing: true,
     pptxTemplateUrl: '',
+    tables: {}
   })
 
-  // session + profil (pour savoir si admin)
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [okMsg, setOkMsg] = useState('')
-
   const isAdmin = useMemo(()=> (profile?.role || '').toLowerCase() === 'admin', [profile])
 
-  // Charger session + profil
+  // charger session + profil (comme avant)
   useEffect(() => {
     let mounted = true
     ;(async ()=>{
@@ -42,35 +145,37 @@ export default function Params(){
           .eq('id', s.session.user.id)
           .maybeSingle()
         if (mounted) setProfile(prof || null)
-      } else {
-        setProfile(null)
-      }
+      } else setProfile(null)
     })()
     return () => { mounted = false }
   }, [])
 
-  // Quand les params globaux arrivent, on remplit le formulaire
-  useEffect(() => {
+  // initialisation du form à partir du provider
+  useEffect(()=>{
     if (globalParams) {
-      setForm(prev => ({ ...prev, ...globalParams }))
+      setForm(prev => ({ ...prev, ...globalParams, tables: (globalParams.tables || {}) }))
     }
   }, [globalParams])
 
-  function onChange(e){
+  function onChangeBase(e){
     const { name, value, type, checked } = e.target
-    setOkMsg(''); setError('')
+    setError(''); setOkMsg('')
     setForm(prev => ({
       ...prev,
-       [name]: type === 'checkbox'
-         ? !!checked
-         : (name.includes('Rate') || name.includes('Inflation') ? toNumber(value) : value)
+      [name]: type === 'checkbox' ? !!checked : (name.includes('Rate') || name.includes('Inflation') ? toNumber(value) : value)
     }))
   }
 
+  // helpers pour tables
+  function setTable(key, newTable) {
+    setForm(prev => ({ ...prev, tables: { ...(prev.tables || {}), [key]: newTable } }))
+  }
+
   async function onSave(e){
-    e.preventDefault()
+    e?.preventDefault?.()
     setSaving(true); setError(''); setOkMsg('')
-    // mini validation
+
+    // validations simples
     const numOk = (n)=> typeof n === 'number' && isFinite(n)
     if (!['2024','2025','2026'].includes(String(form.irVersion))) {
       setError("irVersion doit être 2024, 2025 ou 2026."); setSaving(false); return
@@ -86,7 +191,8 @@ export default function Params(){
         defaultLoanRate: Number(form.defaultLoanRate),
         defaultInflation: Number(form.defaultInflation),
         amortOnlySmoothing: !!form.amortOnlySmoothing,
-        pptxTemplateUrl: String(form.pptxTemplateUrl || '')
+        pptxTemplateUrl: String(form.pptxTemplateUrl || ''),
+        tables: form.tables || {}
       }
     }
 
@@ -100,7 +206,6 @@ export default function Params(){
       setError("Échec de l'enregistrement.")
     } else {
       setOkMsg('Paramètres enregistrés.')
-      // recharge le provider pour propager aux autres pages
       reload?.()
     }
   }
@@ -122,34 +227,112 @@ export default function Params(){
       <form onSubmit={onSave} className="form-grid" style={{opacity: gLoading ? .6 : 1}}>
         <div className="form-row">
           <label>Version barème IR (ex: 2025)</label>
-          <input name="irVersion" value={form.irVersion} onChange={onChange} disabled={!isAdmin} placeholder="2025" />
+          <input name="irVersion" value={form.irVersion} onChange={onChangeBase} disabled={!isAdmin} placeholder="2025" />
         </div>
 
-        <div className="form-row two">
-          <div>
+        <div className="form-row two" style={{display:'flex', gap:12}}>
+          <div style={{flex:1}}>
             <label>Taux par défaut des prêts (%)</label>
-            <input name="defaultLoanRate" type="number" step="0.01" value={form.defaultLoanRate} onChange={onChange} disabled={!isAdmin} />
+            <input name="defaultLoanRate" type="number" step="0.01" value={form.defaultLoanRate} onChange={onChangeBase} disabled={!isAdmin} />
           </div>
-          <div>
+          <div style={{flex:1}}>
             <label>Inflation par défaut (%)</label>
-            <input name="defaultInflation" type="number" step="0.01" value={form.defaultInflation} onChange={onChange} disabled={!isAdmin} />
+            <input name="defaultInflation" type="number" step="0.01" value={form.defaultInflation} onChange={onChangeBase} disabled={!isAdmin} />
           </div>
         </div>
 
         <div className="form-row">
           <label className="checkbox">
-            <input type="checkbox" name="amortOnlySmoothing" checked={!!form.amortOnlySmoothing} onChange={onChange} disabled={!isAdmin} />
+            <input type="checkbox" name="amortOnlySmoothing" checked={!!form.amortOnlySmoothing} onChange={onChangeBase} disabled={!isAdmin} />
             Appliquer le lissage « amortissable only » par défaut
           </label>
         </div>
 
         <div className="form-row">
           <label>Modèle PPTX (URL publique)</label>
-          <input name="pptxTemplateUrl" value={form.pptxTemplateUrl} onChange={onChange} disabled={!isAdmin} placeholder="https://…" />
+          <input name="pptxTemplateUrl" value={form.pptxTemplateUrl} onChange={onChangeBase} disabled={!isAdmin} placeholder="https://…" />
           <small className="hint">Optionnel : sera utilisé pour l'export PowerPoint (à venir).</small>
         </div>
 
-        <div className="form-row">
+        <div style={{marginTop:12}}>
+          <div style={{display:'flex', gap:12, alignItems:'center', justifyContent:'space-between'}}>
+            <div style={{fontWeight:700}}>Tables paramétriques</div>
+            <div style={{fontSize:13, color:'#666'}}>
+              {isAdmin ? 'Édition autorisée (admin)' : 'Lecture seule (non admin)'}
+            </div>
+          </div>
+
+          <div className="plac-table-wrap" style={{marginTop:10}}>
+            {/* PASS */}
+            <div style={{marginBottom:12}}>
+              <div className="cell-strong" style={{marginBottom:8}}>PASS</div>
+              <div style={{border:'1px solid #E5E5E5', padding:10, borderRadius:8, background:'#fff'}}>
+                {isAdmin ? (
+                  <EditableTable data={form.tables?.pass || {columns:['Année','PASS'], rows:[]}} onChange={t=> setTable('pass', t)} />
+                ) : (
+                  <SimpleTableView data={form.tables?.pass} />
+                )}
+              </div>
+            </div>
+
+            {/* IR */}
+            <div style={{marginBottom:12}}>
+              <div className="cell-strong" style={{marginBottom:8}}>Impôt sur le revenu</div>
+              <div style={{border:'1px solid #E5E5E5', padding:10, borderRadius:8, background:'#fff'}}>
+                {isAdmin ? (
+                  <EditableTable data={form.tables?.ir || {columns:['Début','Fin','Taux','Retraitement'], rows:[]}} onChange={t=> setTable('ir', t)} />
+                ) : (
+                  <SimpleTableView data={form.tables?.ir} />
+                )}
+              </div>
+            </div>
+
+            {/* Assurance vie / CEHR / IS / SortieCapital / PS — rendu similaire */}
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12}}>
+              <div>
+                <div className="cell-strong" style={{marginBottom:8}}>Assurance vie</div>
+                <div style={{border:'1px solid #E5E5E5', padding:10, borderRadius:8, background:'#fff'}}>
+                  {isAdmin ? <EditableTable data={form.tables?.assuranceVie || {keys:['Libellé','Montant'], rows:[]}} onChange={t=> setTable('assuranceVie', t)} />
+                           : <SimpleTableView data={form.tables?.assuranceVie} />}
+                </div>
+              </div>
+
+              <div>
+                <div className="cell-strong" style={{marginBottom:8}}>CEHR</div>
+                <div style={{border:'1px solid #E5E5E5', padding:10, borderRadius:8, background:'#fff'}}>
+                  {isAdmin ? <EditableTable data={form.tables?.cehr || {keys:['Seuil','Seul','Couple'], rows:[]}} onChange={t=> setTable('cehr', t)} />
+                           : <SimpleTableView data={form.tables?.cehr} />}
+                </div>
+              </div>
+
+              <div>
+                <div className="cell-strong" style={{marginBottom:8}}>IS</div>
+                <div style={{border:'1px solid #E5E5E5', padding:10, borderRadius:8, background:'#fff'}}>
+                  {isAdmin ? <EditableTable data={form.tables?.is || {keys:['Libellé','Valeur'], rows:[]}} onChange={t=> setTable('is', t)} />
+                           : <SimpleTableView data={form.tables?.is} />}
+                </div>
+              </div>
+
+              <div>
+                <div className="cell-strong" style={{marginBottom:8}}>Paramètres sortie capital anciens CT</div>
+                <div style={{border:'1px solid #E5E5E5', padding:10, borderRadius:8, background:'#fff'}}>
+                  {isAdmin ? <EditableTable data={form.tables?.sortieCapital || {keys:['Libellé','Valeur'], rows:[]}} onChange={t=> setTable('sortieCapital', t)} />
+                           : <SimpleTableView data={form.tables?.sortieCapital} />}
+                </div>
+              </div>
+
+              <div style={{gridColumn:'1 / span 2'}}>
+                <div className="cell-strong" style={{marginBottom:8}}>PS (prélèvements sociaux)</div>
+                <div style={{border:'1px solid #E5E5E5', padding:10, borderRadius:8, background:'#fff'}}>
+                  {isAdmin ? <EditableTable data={form.tables?.ps || {columns:['Libellé','PS','Déductible'], rows:[]}} onChange={t=> setTable('ps', t)} />
+                           : <SimpleTableView data={form.tables?.ps} />}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="form-row" style={{marginTop:12}}>
           <button className="btn" type="submit" disabled={!isAdmin || saving}>
             {saving ? 'Enregistrement…' : 'Enregistrer'}
           </button>
