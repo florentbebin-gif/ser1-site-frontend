@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import './Login.css'
 
@@ -44,12 +45,17 @@ export default function Login({ onLogin }) {
   const [isRecovery, setIsRecovery] = useState(false)
   const [resetSent, setResetSent] = useState(false)
 
-useEffect(() => {
-  if (window.location.href.includes('type=recovery')) setIsRecovery(true)
-}, [])
+  // 1) Détection recovery (URL entière)
+  useEffect(() => {
+    const url = window.location.href
+    if (url.includes('type=recovery') && url.includes('access_token')) {
+      setIsRecovery(true)
+      // ➜ on vide la session pour forcer la box
+      supabase.auth.signOut().catch(() => {})
+    }
+  }, [])
 
-  
-  // ---------- CONNEXION ----------
+  // 2) Connexion classique
   const handleLogin = async e => {
     e.preventDefault()
     setLoading(true)
@@ -60,7 +66,7 @@ useEffect(() => {
     setLoading(false)
   }
 
-  // ---------- 1 CLIC = ENVOI ----------
+  // 3) Envoi du lien de réinitialisation
   const handleForgot = async () => {
     if (!email) {
       setError('Merci de renseigner votre e-mail')
@@ -75,7 +81,7 @@ useEffect(() => {
     setLoading(false)
   }
 
-  // ---------- AFFICHAGE ----------
+  // 4) Affichage
   if (isRecovery) {
     return (
       <div className="login-wrapper">
@@ -133,13 +139,7 @@ useEffect(() => {
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
-          
-          <div className="top-actions">
-            {!isRecovery && <Link to="/" className="chip">HOME</Link>}
-            {/* autres boutons */}
-          </div>
-          
-          {/* Bouton qui déclenche l’envoi */}
+
           <button
             type="button"
             className="btn-link"
