@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import './Login.css'
 
@@ -45,12 +44,13 @@ export default function Login({ onLogin }) {
   const [isRecovery, setIsRecovery] = useState(false)
   const [resetSent, setResetSent] = useState(false)
 
-  // Détection lien réinitialisation
+  // Détection recovery via **session Supabase** (plus fiable que hash)
   useEffect(() => {
-    const hash = window.location.hash
-    if (hash.includes('type=recovery')) {
-      setIsRecovery(true)
-    }
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user && window.location.hash.includes('type=recovery')) {
+        setIsRecovery(true)
+      }
+    })
   }, [])
 
   // ---------- CONNEXION ----------
@@ -109,7 +109,6 @@ export default function Login({ onLogin }) {
         <div className="login-card">
           <h2 className="card-title">Connexion</h2>
 
-          {/* Message d'erreur ou de succès */}
           {error && <div className="alert error">{error}</div>}
           {resetSent && (
             <div className="alert success">
@@ -138,7 +137,6 @@ export default function Login({ onLogin }) {
             </button>
           </form>
 
-          {/* Lien « Mot de passe oublié ? » déclenche l’envoi */}
           <button
             type="button"
             className="btn-link"
