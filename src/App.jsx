@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Routes, Route, Link, useNavigate, Outlet } from 'react-router-dom'
+import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 import { supabase } from './supabaseClient'
 import Login from './pages/Login'
 import Home from './pages/Home'
@@ -33,12 +33,9 @@ export default function App() {
       <div className="container">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/forgot" element={<ForgotPassword />} />
         </Routes>
       </div>
     </div>
-    <Routes>
-  <Route path="/" element={<Home />} />
-  <Route path="/forgot" element={<ForgotPassword />} />
-</Routes>
   )
 }
