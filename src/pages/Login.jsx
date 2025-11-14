@@ -8,7 +8,15 @@ export default function Login({ onLogin }) {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [isRecovery, setIsRecovery] = useState(false)
 
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash.includes('type=recovery') && hash.includes('access_token')) {
+      setIsRecovery(true)
+    }
+  }, [])
+  
   const handleLogin = async e => {
     e.preventDefault()
     setLoading(true)
