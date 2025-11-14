@@ -1,7 +1,41 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import './Login.css'
+
+function ResetBox({ onDone }) {
+  const [pwd, setPwd] = useState('')
+  const [pwd2, setPwd2] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleReset = async e => {
+    e.preventDefault()
+    if (pwd !== pwd2) return alert('Les mots de passe ne correspondent pas')
+    setLoading(true)
+    const { error } = await supabase.auth.updateUser({ password: pwd })
+    if (error) alert(error.message)
+    else {
+      alert('Mot de passe mis à jour !')
+      onDone()
+    }
+    setLoading(false)
+  }
+
+  return (
+    <div className="login-card">
+      <h2 className="card-title">Réinitialisation du mot de passe</h2>
+      <form onSubmit={handleReset} className="form-grid">
+        <label>Nouveau mot de passe</label>
+        <input type="password" value={pwd} onChange={e => setPwd(e.target.value)} required />
+        <label>Confirmer le mot de passe</label>
+        <input type="password" value={pwd2} onChange={e => setPwd2(e.target.value)} required />
+        <button className="btn" disabled={loading}>
+          {loading ? 'Validation…' : 'Valider'}
+        </button>
+      </form>
+    </div>
+  )
+}
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('')
@@ -10,13 +44,14 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState('')
   const [isRecovery, setIsRecovery] = useState(false)
 
+  // Détection du lien de réinitialisation
   useEffect(() => {
     const hash = window.location.hash
     if (hash.includes('type=recovery') && hash.includes('access_token')) {
       setIsRecovery(true)
     }
   }, [])
-  
+
   const handleLogin = async e => {
     e.preventDefault()
     setLoading(true)
@@ -25,6 +60,22 @@ export default function Login({ onLogin }) {
     if (error) setError('Email ou mot de passe invalide.')
     else onLogin()
     setLoading(false)
+  }
+
+  if (isRecovery) {
+    return (
+      <div className="login-wrapper">
+        <div className="login-bg" />
+        <div className="login-overlay" />
+        <div className="login-grid">
+          <div className="login-title">
+            <h1 className="login-brand">SER1</h1>
+            <div className="login-sub">Simulateur épargne retraite</div>
+          </div>
+          <ResetBox onDone={() => setIsRecovery(false)} />
+        </div>
+      </div>
+    )
   }
 
   return (
