@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { supabase } from '../supabaseClient'
+import './Login.css' // on externalise le style pour plus de clarté
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('')
@@ -12,28 +13,46 @@ export default function Login({ onLogin }) {
     setLoading(true)
     setError('')
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) setError("Email ou mot de passe invalide.")
+    if (error) setError('Email ou mot de passe invalide.')
     else onLogin()
     setLoading(false)
   }
 
   return (
-    <div className="login-root">
+    <div className="login-wrapper">
+      <div className="login-bg" />
+      <div className="login-overlay" />
+
       <div className="login-grid">
         <div className="login-title">
           <h1 className="login-brand">SER1</h1>
           <div className="login-sub">Simulateur épargne retraite</div>
         </div>
+
         <div className="login-card">
           <h2 className="card-title">Connexion</h2>
           {error && <div className="alert error">{error}</div>}
           <form onSubmit={handleLogin} className="form-grid">
             <label>Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+            <input
+              type="email"
+              placeholder="vous@exemple.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
             <label>Mot de passe</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
             <button className="btn" type="submit" disabled={loading}>
               {loading ? 'Connexion…' : 'Se connecter'}
+            </button>
+            <button type="button" className="btn-link" onClick={() => alert('Lien à implémenter via Supabase')}>
+              Mot de passe oublié ?
             </button>
           </form>
         </div>
