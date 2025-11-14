@@ -43,8 +43,9 @@ export default function Login({ onLogin }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isRecovery, setIsRecovery] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
 
-  // Détection du lien de réinitialisation
+  // Détection lien réinitialisation
   useEffect(() => {
     const hash = window.location.hash
     if (hash.includes('type=recovery') && hash.includes('access_token')) {
@@ -52,6 +53,7 @@ export default function Login({ onLogin }) {
     }
   }, [])
 
+  // ---------- CONNEXION ----------
   const handleLogin = async e => {
     e.preventDefault()
     setLoading(true)
@@ -62,6 +64,22 @@ export default function Login({ onLogin }) {
     setLoading(false)
   }
 
+  // ---------- 1 CLIC = ENVOI ----------
+  const handleForgot = async () => {
+    if (!email) {
+      setError('Merci de renseigner votre e-mail')
+      return
+    }
+    setError('')
+    setLoading(true)
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login`
+    })
+    setResetSent(true)
+    setLoading(false)
+  }
+
+  // ---------- AFFICHAGE ----------
   if (isRecovery) {
     return (
       <div className="login-wrapper">
@@ -82,7 +100,6 @@ export default function Login({ onLogin }) {
     <div className="login-wrapper">
       <div className="login-bg" />
       <div className="login-overlay" />
-
       <div className="login-grid">
         <div className="login-title">
           <h1 className="login-brand">SER1</h1>
@@ -91,7 +108,15 @@ export default function Login({ onLogin }) {
 
         <div className="login-card">
           <h2 className="card-title">Connexion</h2>
+
+          {/* Message d'erreur ou de succès */}
           {error && <div className="alert error">{error}</div>}
+          {resetSent && (
+            <div className="alert success">
+              Si votre adresse e-mail existe, un lien vous a été envoyé.
+            </div>
+          )}
+
           <form onSubmit={handleLogin} className="form-grid">
             <label>Email</label>
             <input
@@ -111,10 +136,17 @@ export default function Login({ onLogin }) {
             <button className="btn" type="submit" disabled={loading}>
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
-            <Link to="/forgot" className="btn-link">
-              Mot de passe oublié ?
-            </Link>
           </form>
+
+          {/* Lien « Mot de passe oublié ? » déclenche l’envoi */}
+          <button
+            type="button"
+            className="btn-link"
+            onClick={handleForgot}
+            disabled={loading}
+          >
+            Mot de passe oublié ?
+          </button>
         </div>
       </div>
     </div>
