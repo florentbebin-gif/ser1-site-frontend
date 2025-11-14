@@ -44,21 +44,9 @@ export default function Login({ onLogin }) {
   const [isRecovery, setIsRecovery] = useState(false)
   const [resetSent, setResetSent] = useState(false)
 
-  useEffect(() => {
-    // On vérifie TOUTE l’URL (hash compris) une seule fois au montage
-    const url = window.location.href
-    if (url.includes('type=recovery') && url.includes('access_token')) {
-      setIsRecovery(true)
-    }
-  }, [])
-  useEffect(() => {
-    const url = window.location.href
-    if (url.includes('type=recovery') && url.includes('access_token')) {
-      setIsRecovery(true)
-      // ➜ on vide la session pour forcer l’affichage de la box
-      supabase.auth.signOut().catch(() => {})
-    }
-  }, [])
+useEffect(() => {
+  if (window.location.href.includes('type=recovery')) setIsRecovery(true)
+}, [])
 
   
   // ---------- CONNEXION ----------
@@ -145,7 +133,12 @@ export default function Login({ onLogin }) {
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
-
+          
+          <div className="top-actions">
+            {!isRecovery && <Link to="/" className="chip">HOME</Link>}
+            {/* autres boutons */}
+          </div>
+          
           {/* Bouton qui déclenche l’envoi */}
           <button
             type="button"
