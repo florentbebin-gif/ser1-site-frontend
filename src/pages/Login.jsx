@@ -1,22 +1,69 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import './Login.css'
 
-export default function ForgotPassword() {
-  const [email, setEmail] = useState('')
-  const [done, setDone]   = useState(false)
+function ResetBox({ onDone }) {
+  const [pwd, setPwd] = useState('')
+  const [pwd2, setPwd2] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSend = async e => {
+  const handleReset = async e => {
     e.preventDefault()
-    if (!email) return
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login`
-    })
-    setDone(true)
+    if (pwd !== pwd2) return alert('Les mots de passe ne correspondent pas')
+    setLoading(true)
+    const { error } = await supabase.auth.updateUser({ password: pwd })
+    if (error) alert(error.message)
+    else {
+      alert('Mot de passe mis à jour !')
+      onDone()
+    }
+    setLoading(false)
   }
 
-  if (done) {
+  return (
+    <div className="login-card">
+      <h2 className="card-title">Réinitialisation du mot de passe</h2>
+      <form onSubmit={handleReset} className="form-grid">
+        <label>Nouveau mot de passe</label>
+        <input type="password" value={pwd} onChange={e => setPwd(e.target.value)} required />
+        <label>Confirmer le mot de passe</label>
+        <input type="password" value={pwd2} onChange={e => setPwd2(e.target.value)} required />
+        <button className="btn" disabled={loading}>
+          {loading ? 'Validation…' : 'Valider'}
+        </button>
+      </form>
+    </div>
+  )
+}
+
+export default function Login({ onLogin }) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [isRecovery, setIsRecovery] = useState(false)
+
+  // Détection lien réinitialisation (hash simple)
+  useEffect(() => {
+    if (window.location.hash.includes('type=recovery')) {
+      setIsRecovery(true)
+    }
+  }, [])
+
+  // ---------- CONNEXION ----------
+  const handleLogin = async e => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) setError('Email ou mot de passe invalide.')
+    else onLogin()
+    setLoading(false)
+  }
+
+  // ---------- AFFICHAGE ----------
+  if (isRecovery) {
     return (
       <div className="login-wrapper">
         <div className="login-bg" />
@@ -26,13 +73,7 @@ export default function ForgotPassword() {
             <h1 className="login-brand">SER1</h1>
             <div className="login-sub">Simulateur épargne retraite</div>
           </div>
-          <div className="login-card">
-            <h2 className="card-title">Email envoyé</h2>
-            <p style={{margin:'12px 0'}}>
-              Si cette adresse existe, un lien vient d’être envoyé à <strong>{email}</strong>.
-            </p>
-            <Link to="/login" className="btn">Retour à la connexion</Link>
-          </div>
+          <ResetBox onDone={() => setIsRecovery(false)} />
         </div>
       </div>
     )
@@ -47,10 +88,12 @@ export default function ForgotPassword() {
           <h1 className="login-brand">SER1</h1>
           <div className="login-sub">Simulateur épargne retraite</div>
         </div>
+
         <div className="login-card">
-          <h2 className="card-title">Mot de passe oublié</h2>
-          <form onSubmit={handleSend} className="form-grid">
-            <label>Adresse e-mail</label>
+          <h2 className="card-title">Connexion</h2>
+          {error && <div className="alert error">{error}</div>}
+          <form onSubmit={handleLogin} className="form-grid">
+            <label>Email</label>
             <input
               type="email"
               placeholder="vous@exemple.com"
@@ -58,9 +101,18 @@ export default function ForgotPassword() {
               onChange={e => setEmail(e.target.value)}
               required
             />
-            <button className="btn" type="submit">Envoyer le lien</button>
-            <Link to="/login" className="btn-link">Annuler</Link>
+            <label>Mot de passe</label>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+            />
+            <button className="btn" type="submit" disabled={loading}>
+              {loading ? 'Connexion…' : 'Se connecter'}
+            </button>
           </form>
+          <Link to="/forgot" className="btn-link">Mot de passe oublié ?</Link>
         </div>
       </div>
     </div>
