@@ -3,6 +3,7 @@ import { Routes, Route, Link, useNavigate, Outlet } from 'react-router-dom'
 import { supabase } from './supabaseClient'
 import Login from './pages/Login'
 import Home from './pages/Home'
+import ForgotPassword from './pages/ForgotPassword'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -35,5 +36,9 @@ export default function App() {
         </Routes>
       </div>
     </div>
+    <Routes>
+  <Route path="/" element={<Home />} />
+  <Route path="/forgot" element={<ForgotPassword />} />
+</Routes>
   )
 }
