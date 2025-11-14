@@ -13,10 +13,12 @@ export default function ForgotPassword() {
     e.preventDefault()
     if (!email) return
     setLoading(true)
+    // On montre le message tout de suite
+    setDone(true)
+    // Appel asynchrone en fond
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/login`
     })
-    setDone(true)
     setLoading(false)
   }
 
