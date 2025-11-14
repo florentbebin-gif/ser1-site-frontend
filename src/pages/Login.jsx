@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
-import './Login.css' // on externalise le style pour plus de clarté
+import './Login.css'
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('')
@@ -51,9 +52,9 @@ export default function Login({ onLogin }) {
             <button className="btn" type="submit" disabled={loading}>
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
-            <button type="button" className="btn-link" onClick=<Link to="/forgot" className="btn-link">Mot de passe oublié ?</Link>>
+            <Link to="/forgot" className="btn-link">
               Mot de passe oublié ?
-            </button>
+            </Link>
           </form>
         </div>
       </div>
