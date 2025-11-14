@@ -44,9 +44,10 @@ export default function Login({ onLogin }) {
   const [isRecovery, setIsRecovery] = useState(false)
   const [resetSent, setResetSent] = useState(false)
 
-  // Détection recovery (hash)
   useEffect(() => {
-    if (window.location.href.includes('type=recovery')) {
+    // On vérifie TOUTE l’URL (hash compris) une seule fois au montage
+    const url = window.location.href
+    if (url.includes('type=recovery') && url.includes('access_token')) {
       setIsRecovery(true)
     }
   }, [])
