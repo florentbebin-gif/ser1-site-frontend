@@ -1,6 +1,6 @@
 {
-  "name": "ser1-frontend-tiles",
-  "version": "1.4.0",
+  "name": "ser1-simple",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "vite",
