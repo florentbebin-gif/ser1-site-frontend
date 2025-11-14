@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import './Login.css'
 
@@ -38,24 +38,45 @@ function ResetBox({ onDone }) {
 }
 
 export default function Login({ onLogin }) {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [isRecovery, setIsRecovery] = useState(false)
   const [resetSent, setResetSent] = useState(false)
 
-  // 1) Détection recovery (URL entière)
-  useEffect(() => {
-    const url = window.location.href
-    if (url.includes('type=recovery') && url.includes('access_token')) {
-      setIsRecovery(true)
-      // ➜ on vide la session pour forcer la box
-      supabase.auth.signOut().catch(() => {})
-    }
-  }, [])
+  // 1) Lecture du hash
+  const h = new URLSearchParams((window.location.hash || '').replace(/^#/, ''))
+  const type = h.get('type')
+  const at = h.get('access_token')
+  const rt = h.get('refresh_token')
+  const inRecovery = ['recovery', 'invite', 'reauthentication'].includes(type)
 
-  // 2) Connexion classique
+  // 2) Bloque la redirection automatique pendant recovery
+  useEffect(() => {
+    if (inRecovery) {
+      supabase.auth.signOut().catch(() => {}) // vide la session
+    }
+  }, [inRecovery])
+
+  // 3) Pose la session à partir du hash (si tokens présents)
+  useEffect(() => {
+    if (inRecovery && at && rt) {
+      supabase.auth.setSession({ access_token: at, refresh_token: rt })
+        .then(() => {
+          // 4) Nettoie le hash pour éviter boucle au refresh
+          window.history.replaceState({}, '', window.location.pathname)
+        })
+        .catch(() => {
+          // Plan B : affiche quand même la box même si setSession échoue
+        })
+    }
+  }, [inRecovery, at, rt])
+
+  // 5) Détection finale : on affiche la box uniquement en recovery
+  const [showRecovery, setShowRecovery] = useState(inRecovery)
+
+  // 6) Connexion classique
   const handleLogin = async e => {
     e.preventDefault()
     setLoading(true)
@@ -66,7 +87,7 @@ export default function Login({ onLogin }) {
     setLoading(false)
   }
 
-  // 3) Envoi du lien de réinitialisation
+  // 7) Envoi du lien de réinitialisation
   const handleForgot = async () => {
     if (!email) {
       setError('Merci de renseigner votre e-mail')
@@ -81,8 +102,14 @@ export default function Login({ onLogin }) {
     setLoading(false)
   }
 
-  // 4) Affichage
-  if (isRecovery) {
+  // 8) Après changement de mot de passe : on navigue
+  const handleResetDone = () => {
+    setShowRecovery(false)
+    navigate('/') // ou /login si tu veux forcer une nouvelle connexion
+  }
+
+  // 9) Affichage
+  if (showRecovery) {
     return (
       <div className="login-wrapper">
         <div className="login-bg" />
@@ -92,7 +119,7 @@ export default function Login({ onLogin }) {
             <h1 className="login-brand">SER1</h1>
             <div className="login-sub">Simulateur épargne retraite</div>
           </div>
-          <ResetBox onDone={() => setIsRecovery(false)} />
+          <ResetBox onDone={handleResetDone} />
         </div>
       </div>
     )
@@ -111,7 +138,6 @@ export default function Login({ onLogin }) {
         <div className="login-card">
           <h2 className="card-title">Connexion</h2>
 
-          {/* Messages colorés */}
           {error && <div className="alert error">{error}</div>}
           {resetSent && (
             <div className="alert success">
