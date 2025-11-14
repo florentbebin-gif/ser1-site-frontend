@@ -51,7 +51,7 @@ export default function Login({ onLogin }) {
             <button className="btn" type="submit" disabled={loading}>
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
-            <button type="button" className="btn-link" onClick={() => alert('Lien à implémenter via Supabase')}>
+            <button type="button" className="btn-link" onClick=<Link to="/forgot" className="btn-link">Mot de passe oublié ?</Link>>
               Mot de passe oublié ?
             </button>
           </form>
