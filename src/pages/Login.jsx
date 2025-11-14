@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import './Login.css'
 
@@ -43,10 +42,11 @@ export default function Login({ onLogin }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [isRecovery, setIsRecovery] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
 
-  // Détection lien réinitialisation (hash simple)
+  // Détection recovery (hash)
   useEffect(() => {
-    if (window.location.hash.includes('type=recovery')) {
+    if (window.location.href.includes('type=recovery')) {
       setIsRecovery(true)
     }
   }, [])
@@ -59,6 +59,21 @@ export default function Login({ onLogin }) {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) setError('Email ou mot de passe invalide.')
     else onLogin()
+    setLoading(false)
+  }
+
+  // ---------- 1 CLIC = ENVOI ----------
+  const handleForgot = async () => {
+    if (!email) {
+      setError('Merci de renseigner votre e-mail')
+      return
+    }
+    setError('')
+    setLoading(true)
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login`
+    })
+    setResetSent(true)
     setLoading(false)
   }
 
@@ -91,7 +106,15 @@ export default function Login({ onLogin }) {
 
         <div className="login-card">
           <h2 className="card-title">Connexion</h2>
+
+          {/* Messages colorés */}
           {error && <div className="alert error">{error}</div>}
+          {resetSent && (
+            <div className="alert success">
+              Si votre adresse e-mail existe, un lien vous a été envoyé.
+            </div>
+          )}
+
           <form onSubmit={handleLogin} className="form-grid">
             <label>Email</label>
             <input
@@ -112,7 +135,16 @@ export default function Login({ onLogin }) {
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
-          <Link to="/forgot" className="btn-link">Mot de passe oublié ?</Link>
+
+          {/* Bouton qui déclenche l’envoi */}
+          <button
+            type="button"
+            className="btn-link"
+            onClick={handleForgot}
+            disabled={loading}
+          >
+            Mot de passe oublié ?
+          </button>
         </div>
       </div>
     </div>
