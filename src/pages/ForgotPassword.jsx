@@ -1,24 +1,21 @@
 import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
-import './ForgotPassword.css'
+import './Login.css'   // même style
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
-  const [done, setDone] = useState(false)
-  const navigate = useNavigate()
+  const [done, setDone]   = useState(false)
 
-  const handleSubmit = async e => {
+  const handleSend = async e => {
     e.preventDefault()
     if (!email) return
     setLoading(true)
-    // On montre le message tout de suite
-    setDone(true)
-    // Appel asynchrone en fond
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/login`
     })
+    setDone(true)
     setLoading(false)
   }
 
@@ -34,12 +31,10 @@ export default function ForgotPassword() {
           </div>
           <div className="login-card">
             <h2 className="card-title">Email envoyé</h2>
-            <p style={{ margin: '12px 0' }}>
-              Si ce compte existe, un lien vient d’être envoyé à <strong>{email}</strong>.
+            <p style={{margin:'12px 0'}}>
+              Si cette adresse existe, un lien vient d’être envoyé à <strong>{email}</strong>.
             </p>
-            <button className="btn" onClick={() => navigate('/login')}>
-              Retour à la connexion
-            </button>
+            <Link to="/login" className="btn">Retour à la connexion</Link>
           </div>
         </div>
       </div>
@@ -55,28 +50,21 @@ export default function ForgotPassword() {
           <h1 className="login-brand">SER1</h1>
           <div className="login-sub">Simulateur épargne retraite</div>
         </div>
-
         <div className="login-card">
-          <h2 className="card-title">Réinitialisation du mot de passe</h2>
-          <form onSubmit={handleSubmit} className="form-grid">
-            <label>Nouveau mot de passe</label>
+          <h2 className="card-title">Mot de passe oublié</h2>
+          <form onSubmit={handleSend} className="form-grid">
+            <label>Adresse e-mail</label>
             <input
-              type="password"
-              placeholder="••••••••"
+              type="email"
+              placeholder="vous@exemple.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               required
             />
-            <label>Confirmer le mot de passe</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              required
-            />
-            <div className="form-row btns">
-              <Link to="/login" className="btn-outline">Annuler</Link>
-              <button className="btn" disabled={loading}>
-                {loading ? 'Envoi…' : 'Valider'}
-              </button>
-            </div>
+            <button className="btn" disabled={loading}>
+              {loading ? 'Envoi…' : 'Envoyer le lien'}
+            </button>
+            <Link to="/login" className="btn-link">Annuler</Link>
           </form>
         </div>
       </div>
