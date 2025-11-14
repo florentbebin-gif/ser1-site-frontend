@@ -138,12 +138,8 @@ export default function Login({ onLogin }) {
             </button>
           </form>
 
-          <button
-            type="button"
-            className="btn-link"
-            onClick={handleForgot}
-            disabled={loading}
-          >
+          <Link to="/forgot" className="btn-link">Mot de passe oublié ?</Link>
+          
             Mot de passe oublié ?
           </button>
         </div>
