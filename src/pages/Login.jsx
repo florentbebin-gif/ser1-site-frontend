@@ -51,7 +51,16 @@ export default function Login({ onLogin }) {
       setIsRecovery(true)
     }
   }, [])
+  useEffect(() => {
+    const url = window.location.href
+    if (url.includes('type=recovery') && url.includes('access_token')) {
+      setIsRecovery(true)
+      // ➜ on vide la session pour forcer l’affichage de la box
+      supabase.auth.signOut().catch(() => {})
+    }
+  }, [])
 
+  
   // ---------- CONNEXION ----------
   const handleLogin = async e => {
     e.preventDefault()
