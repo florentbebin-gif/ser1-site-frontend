@@ -45,9 +45,10 @@ export default function Login({ onLogin }) {
   const [resetSent, setResetSent] = useState(false)
 
   useEffect(() => {
-    // On regarde si un user est connecté ET qu’on vient d’un lien recovery
+    // On regarde TOUTE l’URL (hash OU search) + présence user
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session?.user && window.location.hash.includes('type=recovery')) {
+      const url = window.location.href
+      if (data.session?.user && url.includes('type=recovery')) {
         setIsRecovery(true)
       }
     })
