@@ -1,22 +1,19 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
-import './Login.css'   // même style
+import './Login.css'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
   const [done, setDone]   = useState(false)
 
   const handleSend = async e => {
     e.preventDefault()
     if (!email) return
-    setLoading(true)
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/login`
     })
     setDone(true)
-    setLoading(false)
   }
 
   if (done) {
@@ -61,9 +58,7 @@ export default function ForgotPassword() {
               onChange={e => setEmail(e.target.value)}
               required
             />
-            <button className="btn" disabled={loading}>
-              {loading ? 'Envoi…' : 'Envoyer le lien'}
-            </button>
+            <button className="btn" type="submit">Envoyer le lien</button>
             <Link to="/login" className="btn-link">Annuler</Link>
           </form>
         </div>
