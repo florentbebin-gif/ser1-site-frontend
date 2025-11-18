@@ -12,12 +12,7 @@ export const supabase = createClient(url, key, {
   },
 })
 
-// Attendre que Supabase ait consommé le hash (recovery, invite, etc.)
 export async function waitInitialSession() {
-  const { data } = await supabase.auth.getSession()
-  if (!data.session && window.location.hash.includes('access_token')) {
-    // Le hash est encore présent : on le consomme une seule fois
-    const params = Object.fromEntries(new URLSearchParams(window.location.hash.slice(1)))
-    await supabase.auth.setSession(params)
-  }
+
+  await supabase.auth.getSession()
 }
