@@ -51,6 +51,7 @@ export default function Login({ onLogin }) {
   const at = h.get('access_token')
   const rt = h.get('refresh_token')
   const inRecovery = ['recovery', 'invite', 'reauthentication'].includes(type)
+  console.log('Hash params:', { type, at, rt, inRecovery })
 
   // 2) Bloque la redirection automatique pendant recovery
   useEffect(() => {
