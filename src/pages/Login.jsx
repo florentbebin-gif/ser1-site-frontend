@@ -22,28 +22,26 @@ function ResetBox({ onDone }) {
   };
 
   return (
-    <div className="login-root">
-      <div className="login-card">
-        <h3>Réinitialisation du mot de passe</h3>
-        <form className="form-grid" onSubmit={handleReset}>
-          <input
-            type="password"
-            placeholder="Nouveau mot de passe"
-            value={pwd}
-            onChange={(e) => setPwd(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Confirmer le mot de passe"
-            value={pwd2}
-            onChange={(e) => setPwd2(e.target.value)}
-            required
-          />
-          <button className="btn" type="submit" disabled={loading}>
-            {loading ? 'Validation…' : 'Valider'}
-          </button>
-        </form>
+    <div className="login-wrapper">
+      <div className="login-bg" />
+      <div className="login-overlay" />
+      <div className="login-grid">
+        <div className="login-title">
+          <h1 className="login-brand">SER1</h1>
+          <div className="login-sub">Simulateur épargne retraite</div>
+        </div>
+        <div className="login-card">
+          <h2 className="card-title">Réinitialisation du mot de passe</h2>
+          <form onSubmit={handleReset} className="form-grid">
+            <label>Nouveau mot de passe</label>
+            <input type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} required />
+            <label>Confirmer le mot de passe</label>
+            <input type="password" value={pwd2} onChange={(e) => setPwd2(e.target.value)} required />
+            <button className="btn" disabled={loading}>
+              {loading ? 'Validation…' : 'Valider'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
@@ -57,21 +55,12 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [resetSent, setResetSent] = useState(false);
 
-  // Lecture du hash
   const h = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
   const type = h.get('type');
   const at = h.get('access_token');
   const rt = h.get('refresh_token');
   const inRecovery = ['recovery', 'invite', 'reauthentication'].includes(type);
 
-  // Bloque la session auto pendant recovery
-  useEffect(() => {
-    if (inRecovery) {
-      supabase.auth.signOut().catch(() => {});
-    }
-  }, [inRecovery]);
-
-  // Pose la session à partir du hash
   useEffect(() => {
     if (inRecovery && at && rt) {
       supabase.auth.setSession({ access_token: at, refresh_token: rt }).then(() => {
@@ -80,7 +69,6 @@ export default function Login({ onLogin }) {
     }
   }, [inRecovery, at, rt]);
 
-  // Affichage ResetBox
   const [showRecovery, setShowRecovery] = useState(inRecovery);
   useEffect(() => {
     setShowRecovery(inRecovery);
@@ -115,43 +103,51 @@ export default function Login({ onLogin }) {
     navigate('/');
   };
 
-  // Si recovery → affiche ResetBox
   if (showRecovery) {
     return <ResetBox onDone={handleResetDone} />;
   }
 
   return (
-    <div className="login-root">
-      <div className="login-card">
-        <h3>Connexion</h3>
-        {error && <div className="alert error">{error}</div>}
-        {resetSent && (
-          <div className="alert success">
-            Si votre adresse e-mail existe, un lien vous a été envoyé.
-          </div>
-        )}
-        <form className="form-grid" onSubmit={handleLogin}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Mot de passe"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button className="btn" type="submit" disabled={loading}>
-            {loading ? 'Connexion…' : 'Se connecter'}
+    <div className="login-wrapper">
+      <div className="login-bg" />
+      <div className="login-overlay" />
+      <div className="login-grid">
+        <div className="login-title">
+          <h1 className="login-brand">SER1</h1>
+          <div className="login-sub">Simulateur épargne retraite</div>
+        </div>
+        <div className="login-card">
+          <h2 className="card-title">Connexion</h2>
+          {error && <div className="alert error">{error}</div>}
+          {resetSent && (
+            <div className="alert success">
+              Si votre adresse e-mail existe, un lien vous a été envoyé.
+            </div>
+          )}
+          <form onSubmit={handleLogin} className="form-grid">
+            <label>Email</label>
+            <input
+              type="email"
+              placeholder="vous@exemple.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <label>Mot de passe</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button className="btn" type="submit" disabled={loading}>
+              {loading ? 'Connexion…' : 'Se connecter'}
+            </button>
+          </form>
+          <button type="button" className="btn-link" onClick={handleForgot} disabled={loading}>
+            Mot de passe oublié ?
           </button>
-        </form>
-        <button className="btn-link" onClick={handleForgot}>
-          Mot de passe oublié ?
-        </button>
+        </div>
       </div>
     </div>
   );
