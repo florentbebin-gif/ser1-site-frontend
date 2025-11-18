@@ -78,6 +78,11 @@ export default function Login({ onLogin }) {
   // 5) Détection finale : on affiche la box uniquement en recovery
   const [showRecovery, setShowRecovery] = useState(inRecovery)
 
+useEffect(() => {
+    setShowRecovery(inRecovery);
+}, [inRecovery]);
+
+
   // 6) Connexion classique
   const handleLogin = async e => {
     e.preventDefault()
