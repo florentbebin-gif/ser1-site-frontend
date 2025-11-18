@@ -38,6 +38,7 @@ function ResetBox({ onDone }) {
 }
 
 export default function Login({ onLogin }) {
+  console.log('Login page loaded')
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
