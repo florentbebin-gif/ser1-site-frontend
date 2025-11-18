@@ -71,14 +71,6 @@ export default function Login({ onLogin }) {
   const rt = h.get('refresh_token');
   const inRecovery = ['recovery', 'invite', 'reauthentication'].includes(type);
 
-  useEffect(() => {
-    if (inRecovery && at && rt) {
-      supabase.auth.setSession({ access_token: at, refresh_token: rt }).then(() => {
-        window.history.replaceState({}, '', window.location.pathname);
-      });
-    }
-  }, [inRecovery, at, rt]);
-
   const [showRecovery, setShowRecovery] = useState(inRecovery);
   useEffect(() => {
     setShowRecovery(inRecovery);
