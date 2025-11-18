@@ -32,12 +32,22 @@ function ResetBox({ onDone }) {
         </div>
         <div className="login-card">
           <h2 className="card-title">Réinitialisation du mot de passe</h2>
-          <form onSubmit={handleReset} className="form-grid">
+          <form className="form-grid" onSubmit={handleReset}>
             <label>Nouveau mot de passe</label>
-            <input type="password" value={pwd} onChange={(e) => setPwd(e.target.value)} required />
+            <input
+              type="password"
+              value={pwd}
+              onChange={(e) => setPwd(e.target.value)}
+              required
+            />
             <label>Confirmer le mot de passe</label>
-            <input type="password" value={pwd2} onChange={(e) => setPwd2(e.target.value)} required />
-            <button className="btn" disabled={loading}>
+            <input
+              type="password"
+              value={pwd2}
+              onChange={(e) => setPwd2(e.target.value)}
+              required
+            />
+            <button className="btn" type="submit" disabled={loading}>
               {loading ? 'Validation…' : 'Valider'}
             </button>
           </form>
@@ -80,7 +90,7 @@ export default function Login({ onLogin }) {
     setError('');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setError('Email ou mot de passe invalide.');
-    else onLogin();
+    else onLogin(); // Redirection normale après login
     setLoading(false);
   };
 
@@ -100,7 +110,7 @@ export default function Login({ onLogin }) {
 
   const handleResetDone = () => {
     setShowRecovery(false);
-    navigate('/');
+    navigate('/login'); // Retour à la page login après reset
   };
 
   if (showRecovery) {
@@ -124,11 +134,10 @@ export default function Login({ onLogin }) {
               Si votre adresse e-mail existe, un lien vous a été envoyé.
             </div>
           )}
-          <form onSubmit={handleLogin} className="form-grid">
+          <form className="form-grid" onSubmit={handleLogin}>
             <label>Email</label>
             <input
               type="email"
-              placeholder="vous@exemple.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -144,7 +153,7 @@ export default function Login({ onLogin }) {
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
-          <button type="button" className="btn-link" onClick={handleForgot} disabled={loading}>
+          <button className="btn-link" onClick={handleForgot}>
             Mot de passe oublié ?
           </button>
         </div>
