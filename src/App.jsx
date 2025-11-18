@@ -32,6 +32,7 @@ export default function App() {
       </div>
       <div className="container">
         <Routes>
+          <Route path="/login" element={<Login onLogin={() => navigate('/')} />} />
           <Route path="/" element={<Home />} />
           <Route path="/forgot" element={<ForgotPassword />} />
         </Routes>
