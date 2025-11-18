@@ -32,6 +32,7 @@ export default function App() {
       </div>
       <div className="container">
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/forgot" element={<ForgotPassword />} />
         </Routes>
       </div>
