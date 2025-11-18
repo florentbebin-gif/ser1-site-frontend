@@ -108,7 +108,7 @@ export default function Login({ onLogin }) {
     setShowRecovery(false)
     navigate('/') // ou /login si tu veux forcer une nouvelle connexion
   }
-
+console.log('Affichage ResetBox:', showRecovery)
   // 9) Affichage
   if (showRecovery) {
     return (
