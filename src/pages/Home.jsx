@@ -7,9 +7,9 @@ export default function Home(){
       {/* Colonne gauche */}
       <div className="section-card">
         <div className="section-title strong-title">Simulateurs épargne retraite</div>
-        <Tile to="/sim/potentiel" icon={<IconGauge/>} title="Contrôle du potentiel Epargne retraite" />
-        <Tile to="/sim/transfert" icon={<IconTarget/>} title="Transfert vers PER" />
-        <Tile to="/sim/ouverture" icon={<IconFolder/>} title="Ouverture PERin" />
+        <Tile to="/sim/potentiel" icon={<IconGauge/>} title="Epargne retraite, contrôle du potentiel" />
+        <Tile to="/sim/transfert" icon={<IconTarget/>} title="PER, transfert d'un dispositif" />
+        <Tile to="/sim/strategie-is" icon={<IconHome/>} title={<><span>SERenity</span><span className="tile-note">, une approche de la capacité d'épargne</span></>} />
       </div>
 
       {/* Colonne droite */}
@@ -18,7 +18,6 @@ export default function Home(){
         <Tile to="/sim/ir" icon={<IconCalc/>} title="Impôt sur le revenu" />
         <Tile to="/sim/placement" icon={<IconChart/>} title="Placement" />
         <Tile to="/sim/credit" icon={<IconCalc/>} title="Crédit" />
-        <Tile to="/sim/strategie-is" icon={<IconHome/>} title={<><span>Stratégie trésorerie IS</span><span className="tile-note"> (préparation retraite)</span></>} />
       </div>
     </div>
   );
