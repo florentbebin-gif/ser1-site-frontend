@@ -67,12 +67,21 @@ body {
   box-shadow: 0 4px 14px rgba(0, 0, 0, .07);
 }
 
+/* Titre avec barre sous le texte */
 .section-title {
   font-size: 26px;
   margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  height: 4px;
+  background: var(--beige);
+  border-radius: 3px;
+  margin-top: 8px;
 }
 
 .strong-title {
@@ -81,14 +90,6 @@ body {
 
 .normal-title {
   font-weight: 400;
-}
-
-.section-title::after {
-  content: '';
-  height: 4px;
-  background: var(--beige);
-  flex: 1;
-  border-radius: 3px;
 }
 
 /* Tuiles */
