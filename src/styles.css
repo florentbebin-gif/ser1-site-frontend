@@ -4,13 +4,43 @@
   --bg: #f7f7f7;
   --radius: 12px;
 }
-body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); }
-.topbar { background: var(--green); color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
-.chip { background: #fff; color: #111; border: 1px solid #ccc; padding: 6px 12px; border-radius: 999px; text-decoration: none; font-size: 14px; }
-.login-root { display: grid; place-items: center; min-height: 100vh; }
-.login-card { background: #fff; padding: 24px; border-radius: 12px; width: 320px; }
-.form-grid { display: flex; flex-direction: column; gap: 10px; }
-.btn { background: var(--green); color: #fff; border: none; padding: 10px; border-radius: 8px; cursor: pointer; }
-.tiles-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-.tile { display: flex; align-items: center; gap: 12px; padding: 12px; background: #fff; border: 1px solid #ddd; border-radius: 8px; text-decoration: none; color: #111; }
-.tile-icon { font-size: 24px; }
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+}
+
+.topbar {
+  background: var(--green);
+  color: #fff;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brandbar {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.top-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.chip {
+  background: #fff;
+  color: #111;
+  border: 1px solid #ccc;
+  padding: 6px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: var(--beige);
+}
