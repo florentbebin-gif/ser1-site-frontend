@@ -1,5 +1,5 @@
 .home-container {
-  max-width: 1400px; /* élargir le conteneur */
+  max-width: 1500px; /* encore plus large */
   margin: 40px auto;
   padding: 0 20px;
 }
@@ -7,11 +7,11 @@
 .tiles-wrap {
   display: grid;
   grid-template-columns: 1fr 1fr; /* deux colonnes égales */
-  gap: 24px; /* réduire l'espace entre colonnes */
+  gap: 24px; /* espace entre colonnes */
 }
 
 .tile-column {
-  flex: 1; /* chaque colonne prend plus d'espace */
+  flex: 1;
   background: #fff;
   border-radius: var(--radius);
   padding: 24px;
@@ -54,7 +54,7 @@
 }
 
 .tile:hover {
-  border-color: #8fbf9f; /* vert clair sur le contour */
+  border-color: #8fbf9f;
 }
 
 .tile-icon {
