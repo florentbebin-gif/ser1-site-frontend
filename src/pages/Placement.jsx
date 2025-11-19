@@ -237,9 +237,12 @@ export default function Placement() {
       series: sims.map((vals, i) => ({ name: products[i].name, values: vals }))
     };
   }, [products, durations, contribs, startMonth]);
-
+  
+console.log("Result:", result)
+  
   return (
     <div className="panel">
+      <div style={{color:'red', fontWeight:'bold'}}>TEST RENDU</div>
       <div className="plac-title">Comparer différents placements</div>
       <div style={{ display:'flex', gap:12, marginBottom:10 }}>
         <div>Mois de souscription</div>
@@ -272,4 +275,5 @@ export default function Placement() {
       </div>
     </div>
   );
+}
 }
