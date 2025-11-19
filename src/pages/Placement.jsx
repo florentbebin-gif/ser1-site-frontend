@@ -273,5 +273,4 @@ export default function Placement() {
     </div>
   );
 }
-console.log("Result:", result);
 }
