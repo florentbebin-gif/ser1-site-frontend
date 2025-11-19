@@ -4,6 +4,7 @@ import { supabase } from './supabaseClient';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import ForgotPassword from './pages/ForgotPassword';
+import Placement from './pages/Placement';
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/login" element={<Login onLogin={() => navigate('/')} />} />
         <Route path="/" element={session && !isRecoveryMode ? <Home /> : <Login onLogin={() => navigate('/')} />} />
         <Route path="/forgot" element={<ForgotPassword />} />
+        <Route path="/placement" element={<Placement />} />
       </Routes>
     </div>
   );
