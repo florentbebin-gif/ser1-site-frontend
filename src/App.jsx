@@ -24,23 +24,26 @@ export default function App() {
   const isRecoveryMode = window.location.hash.includes('type=recovery');
 
   return (
-    <div>
+    <>
       <div className="topbar">
         <div className="brandbar">SER1 — Simulateur épargne retraite</div>
         {session && !isRecoveryMode && (
           <div className="top-actions">
-            <Link className="chip" to="/">HOME</Link>
+            {/* Bouton Reset visible uniquement sur simulateurs */}
+            {window.location.pathname.includes('placement') && (
+              <button className="chip" onClick={() => triggerPageReset('placement')}>Reset</button>
+            )}
             <button className="chip" onClick={handleLogout}>Déconnexion</button>
           </div>
         )}
       </div>
       <Routes>
-        <Route path="/login" element={<Login onLogin={() => navigate('/')} />} />
-        <Route path="/" element={session && !isRecoveryMode ? <Home /> : <Login onLogin={() => navigate('/')} />} />
-        <Route path="/forgot" element={<ForgotPassword />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/placement" element={<Placement />} />
       </Routes>
-    </div>
+    </>
   );
   
 {session && !isRecoveryMode && (
