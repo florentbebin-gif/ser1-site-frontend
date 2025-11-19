@@ -9,14 +9,13 @@ export default function Home() {
           <h2 className="tile-title">Simulateurs épargne retraite</h2>
           <Tile to="#" title="Contrôle du potentiel Épargne retraite" icon="📈" />
           <Tile to="#" title="Transfert vers PER" icon="🔄" />
-          <Tile to="#" title="Ouverture PERin" icon="📝" />
+          <Tile to="#" title="SERenity (capactité d'épargne)" icon="📝" />
         </div>
         <div className="tile-column">
           <h2 className="tile-title">Simulateurs rapides</h2>
           <Tile to="#" title="Impôt sur le revenu" icon="📄" />
           <Tile to="#" title="Placement" icon="💰" />
           <Tile to="#" title="Crédit" icon="🏦" />
-          <Tile to="#" title="Stratégie trésorerie IS (préparation retraite)" icon="📊" />
         </div>
       </div>
     </div>
