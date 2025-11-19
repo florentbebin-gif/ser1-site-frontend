@@ -8,29 +8,22 @@
   justify-content: center;
 }
 
-/* Carte principale du simulateur */
 .panel.sim-placement {
   max-width: 1120px;
   width: 100%;
   background: #fff;
   border-radius: var(--radius);
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--border);
   padding: 28px 32px 32px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
 
-/* 2 colonnes : tableau à gauche / graphique à droite */
+/* flux vertical simple : tableau puis graphique */
 .plac-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
-  gap: 24px;
-  align-items: flex-start;
+  display: block;
 }
-
-@media (max-width: 1024px) {
-  .plac-layout {
-    grid-template-columns: 1fr;
-  }
+.plac-layout > * + * {
+  margin-top: 24px;
 }
 
 /* ================================
@@ -48,6 +41,7 @@
 
 .plac-sub {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   margin-bottom: 10px;
@@ -99,29 +93,19 @@
   white-space: nowrap;
 }
 
-/* cellule avec input + unité / select */
-.input-cell {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.input-cell input {
+/* style générique pour tous les inputs et selects du tableau
+   -> on ne touche plus à la logique dans Placement.jsx */
+.plac-table input[type="text"],
+.plac-table input[type="number"],
+.plac-table select {
   width: 100%;
   padding: 4px 6px;
   border-radius: 6px;
   border: 1px solid #d9d9d9;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
-.input-cell select {
-  padding: 4px 6px;
-  border-radius: 6px;
-  border: 1px solid #d9d9d9;
-  font-size: 13px;
-}
-
-/* variations de texte */
 .cell-muted {
   color: #666;
   font-size: 13px;
@@ -141,29 +125,6 @@
   border: 1px solid #d9d9d9;
   padding: 18px 20px;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-}
-
-.chart-title {
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-/* légende en dessous du graphique (si tu l’utilises) */
-.chart-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 12px;
-  font-size: 12px;
-  color: #444;
-}
-
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 4px;
 }
 
 /* ================================
