@@ -4,6 +4,9 @@ import { onResetEvent, storageKeyFor } from '../utils/reset.js';
 import { toNumber } from '../utils/number.js';
 import './Placement.css';
 
+export default function Placement() {
+  console.log("Placement chargé");
+
 // Helpers
 const fmtInt = (n) => (Math.round(n) || 0).toLocaleString('fr-FR');
 const toNum = (v) => toNumber(v, 0);
@@ -269,4 +272,6 @@ export default function Placement() {
       </div>
     </div>
   );
+}
+console.log("Result:", result);
 }
