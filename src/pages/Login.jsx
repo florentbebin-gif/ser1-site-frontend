@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import './Login.css';
 
-function ResetBox({ onDone }) {
+function ResetBox({ onDone, at, rt }) {
   const [pwd, setPwd] = useState('');
   const [pwd2, setPwd2] = useState('');
   const [loading, setLoading] = useState(false);
@@ -12,11 +12,25 @@ function ResetBox({ onDone }) {
     e.preventDefault();
     if (pwd !== pwd2) return alert('Les mots de passe ne correspondent pas');
     setLoading(true);
+
+    // Crée la session temporaire avant updateUser
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: at,
+      refresh_token: rt,
+    });
+    if (sessionError) {
+      alert('Erreur de session : ' + sessionError.message);
+      setLoading(false);
+      return;
+    }
+
+    // Met à jour le mot de passe
     const { error } = await supabase.auth.updateUser({ password: pwd });
-    if (error) alert(error.message);
-    else {
+    if (error) {
+      alert(error.message);
+    } else {
       alert('Mot de passe mis à jour !');
-      onDone();
+      onDone(); // Redirection après succès
     }
     setLoading(false);
   };
@@ -65,6 +79,7 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState('');
   const [resetSent, setResetSent] = useState(false);
 
+  // Lecture du hash
   const h = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
   const type = h.get('type');
   const at = h.get('access_token');
@@ -82,7 +97,7 @@ export default function Login({ onLogin }) {
     setError('');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setError('Email ou mot de passe invalide.');
-    else onLogin(); // Redirection normale après login
+    else onLogin();
     setLoading(false);
   };
 
@@ -102,11 +117,11 @@ export default function Login({ onLogin }) {
 
   const handleResetDone = () => {
     setShowRecovery(false);
-    navigate('/login'); // Retour à la page login après reset
+    navigate('/'); // Redirection vers Home après succès
   };
 
   if (showRecovery) {
-    return <ResetBox onDone={handleResetDone} />;
+    return <ResetBox onDone={handleResetDone} at={at} rt={rt} />;
   }
 
   return (
