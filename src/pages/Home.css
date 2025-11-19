@@ -24,7 +24,9 @@
   margin-bottom: 16px;
   position: relative;
   padding-bottom: 12px;
-  color: var(--green)!important; /* vert foncé du site */
+.home-container h2.tile-title {
+  color: var(--green) !important;
+}
 }
 
 .tile-title::after {
