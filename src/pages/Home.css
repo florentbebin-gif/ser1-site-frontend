@@ -1,5 +1,5 @@
 .home-container {
-  max-width: 1700px;
+  max-width: 1200px;
   margin: 40px auto;
   padding: 0 20px;
 }
@@ -7,11 +7,10 @@
 .tiles-wrap {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 32px;
 }
 
 .tile-column {
-  flex: 1;
   background: #fff;
   border-radius: var(--radius);
   padding: 24px;
@@ -19,53 +18,50 @@
 }
 
 .tile-title {
-  font-size: 22px;
+  font-size: 20px;
   margin-bottom: 16px;
-  position: relative;
-  padding-bottom: 12px;
-  color: var(--green);
+  border-bottom: 2px solid var(--beige);
+  padding-bottom: 8px;
 }
 
-.tile-title::after {
-  content: '';
-  display: block;
-  height: 4px;
-  background: var(--beige);
-  border-radius: 3px;
-  margin-top: 8px;
+.strong-title {
+  font-weight: 700;
+}
+
+.normal-title {
+  font-weight: 400;
 }
 
 .tile {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 18px;
+  padding: 18px; /* plus grande hauteur */
   background: #fff;
   border: 2px solid #ddd;
   border-radius: 10px;
   text-decoration: none;
   color: #111;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 700; /* texte en gras */
   margin-bottom: 14px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); /* ombre autour */
   transition: border-color 0.2s ease;
 }
 
 .tile:hover {
-  border-color: #8fbf9f;
+  border-color: #8fbf9f; /* vert clair sur le contour */
 }
 
 .tile-icon {
   font-size: 22px;
-  color: #555;
+  color: #555; /* sobre */
 }
 
-.tile-note {
-  color: #666;
-  font-style: italic;
-  margin-left: 4px;
-  font-size: 13px;
+.tile-separator {
+  width: 1px;
+  height: 24px;
+  background: #ccc;
 }
 
 @media (max-width: 768px) {
