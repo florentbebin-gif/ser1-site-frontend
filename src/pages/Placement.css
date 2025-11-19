@@ -29,7 +29,7 @@
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
-  color: #111; /* ✅ Ajout pour rendre le texte visible */
+  color: #111 !important; /* ✅ Ajout pour rendre le texte visible */
 }
 
 .plac-table th {
