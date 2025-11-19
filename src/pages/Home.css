@@ -1,5 +1,5 @@
 .home-container {
-  max-width: 1700px; /* très large */
+  max-width: 1700px;
   margin: 40px auto;
   padding: 0 20px;
 }
@@ -18,13 +18,12 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Titre des colonnes */
 .tile-title {
   font-size: 22px;
   margin-bottom: 16px;
   position: relative;
   padding-bottom: 12px;
-  color: var(--green); /* vert foncé */
+  color: var(--green);
 }
 
 .tile-title::after {
@@ -36,7 +35,6 @@
   margin-top: 8px;
 }
 
-/* Tuiles */
 .tile {
   display: flex;
   align-items: center;
