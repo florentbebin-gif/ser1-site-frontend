@@ -17,7 +17,7 @@ export default function Home(){
         <div className="section-title normal-title">Simulateurs rapides</div>
         <Tile to="/sim/ir" icon={<IconCalc/>} title="Impôt sur le revenu" />
         <Tile to="/sim/placement" icon={<IconChart/>} title="Placement" />
-        <Tile to="/sim/credit" icon={<IconFolder/>} title="Crédit" />
+        <Tile to="/sim/credit" icon={<IconPercent />} title="Crédit" />
       </div>
     </div>
   );
@@ -37,7 +37,7 @@ function Tile({to, icon, title}){
 
 function IconGauge(){ return (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="1.8"><path d="M12 13l3-3" /><path d="M20 14A8 8 0 1 0 4 14" /><path d="M6 14h.01M10 14h.01M14 14h.01M18 14h.01"/></svg>)}
 function IconTarget(){ return (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="1.8"><path d="M12 7v10M7 12h10"/><circle cx="12" cy="12" r="8"/></svg>)}
-function IconFolder(){ return (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="1.8"><path d="M3 7h6l2 2h10v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>)}
+function IconPercent() { return (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="2" /><circle cx="18" cy="18" r="2" /><line x1="8" y1="16" x2="16" y2="8" /></svg>);}
 function IconCalc(){ return (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="1.8"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h8"/></svg>)}
 function IconChart(){ return (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="1.8"><path d="M3 20h18"/><path d="M7 16l3-3 3 2 5-6"/></svg>)}
 function IconHome(){ return (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="1.8"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>)}
