@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import Login from './pages/Login';
 import Home from './pages/Home';
@@ -43,12 +43,17 @@ export default function App() {
           </div>
         )}
       </div>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login onLogin={() => navigate('/')} />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/placement" element={<Placement />} />
-      </Routes>
+<Routes>
+  <Route path="/" element={<Home />} />
+  <Route path="/login" element={<Login onLogin={() => navigate('/')} />} />
+  <Route path="/forgot-password" element={<ForgotPassword />} />
+
+  {/* Nouvelle route avec le préfixe /sim */}
+  <Route path="/sim/placement" element={<Placement />} />
+
+  {/* Optionnel : compat pour /placement tout court */}
+  <Route path="/placement" element={<Navigate to="/sim/placement" replace />} />
+</Routes>
     </>
   );
 }
