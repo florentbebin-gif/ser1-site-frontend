@@ -1,19 +1,16 @@
 import React from 'react';
-import './styles.css';
+import './Home.css';
 
 export default function Home() {
   return (
     <div className="home-container">
       <div className="tiles-wrap">
-        {/* Colonne 1 */}
         <div className="tile-column">
           <h2 className="tile-title">Simulateurs épargne retraite</h2>
           <Tile to="#" title="Contrôle du potentiel Épargne retraite" icon="📈" />
           <Tile to="#" title="Transfert vers PER" icon="🔄" />
           <Tile to="#" title="Ouverture PERin" icon="📝" />
         </div>
-
-        {/* Colonne 2 */}
         <div className="tile-column">
           <h2 className="tile-title">Simulateurs rapides</h2>
           <Tile to="#" title="Impôt sur le revenu" icon="📄" />
