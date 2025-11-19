@@ -67,7 +67,14 @@ function IconCalc() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="4" y="4" width="16" height="16" rx="2" />
-      width="24" height="24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="8" y1="8" x2="8" y2="8" />
+      <line x1="16" y1="8" x2="16" y2="8" />
+      <line x1="8" y1="16" x2="16" y2="16" />
+    </svg>
+  );
+}
+
+://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="4" y1="20" x2="4" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
       <line x1="20" y1="20" x2="20" y2="14" />
