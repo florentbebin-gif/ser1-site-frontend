@@ -24,8 +24,11 @@
   margin-bottom: 16px;
   position: relative;
   padding-bottom: 12px;
+
+.tile-column h2 {
   color: var(--green); /* vert foncé du site */
 }
+
 
 .tile-title::after {
   content: '';
