@@ -2,7 +2,7 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { onResetEvent, storageKeyFor } from '../utils/reset.js';
 import { toNumber } from '../utils/number.js';
-import '../pages/Placement.css';
+import './Placement.css';
 
 // Helpers
 const fmtInt = (n) => (Math.round(n) || 0).toLocaleString('fr-FR');
@@ -30,7 +30,7 @@ const defaultContribs = [
   { amount:0, freq:'annuel' },
 ];
 
-// Simulation logic (identique à Old)
+// Simulation logic
 function simulateSimpleOnInitial({ rate, initial, entryFeePct }, startMonth, durYears, yearsMax) {
   const r = rate || 0;
   const fee = entryFeePct || 0;
@@ -81,6 +81,102 @@ function simulateWithContrib({ rate, initial, entryFeePct }, startMonth, contrib
   return values;
 }
 
+// Graphique SVG
+const COLORS = ['#2B5A52','#C0B5AA','#E4D0BB','#7A7A7A','#444555'];
+function SmoothChart({ res }) {
+  const wrapRef = useRef(null);
+  const [wrapW, setWrapW] = useState(900);
+  useEffect(() => {
+    const ro = new ResizeObserver(entries => {
+      const w = entries[0]?.contentRect?.width || 900;
+      setWrapW(w);
+    });
+    if (wrapRef.current) ro.observe(wrapRef.current);
+    return () => ro.disconnect();
+  }, []);
+  if (!res?.series?.length) return null;
+  const filtered = res.series.map(s => {
+    const vals = (s.values || []).map(v => (v !== undefined && v > 0) ? v : undefined);
+    const anyPos = vals.some(v => v !== undefined && v > 0);
+    return anyPos ? { ...s, values: vals } : null;
+  }).filter(Boolean);
+  if (!filtered.length) return null;
+  const LEG_W = 180;
+  const PAD = 60;
+  const W = Math.max(600, wrapW - 24);
+  const SVG_W = Math.max(420, W - LEG_W);
+  const SVG_H = 360;
+  const years = res.years || [];
+  const N = years.length;
+  let maxY = 0;
+  filtered.forEach(s => s.values.forEach(v => { if (v !== undefined && v > maxY) maxY = v; }));
+  if (maxY <= 0) maxY = 1;
+  let step;
+  if (maxY <= 12000) {
+    step = 1000;
+  } else {
+    const base = 10000;
+    const desiredMaxTicks = 12;
+    const factor = Math.ceil(maxY / (base * desiredMaxTicks));
+    step = base * factor;
+  }
+  const topY = Math.ceil(maxY / step) * step;
+  const x = (i) => PAD + (N > 1 ? i * ((SVG_W - 2 * PAD) / (N - 1)) : 0);
+  const y = (v) => SVG_H - PAD - ((v / topY) * (SVG_H - 2 * PAD));
+  const fmtShortEuro2 = (val) => {
+    const n = Number(val) || 0;
+    if (n >= 1_000_000) return (n / 1_000_000).toLocaleString('fr-FR', { minimumFractionDigits: 2 }) + ' M€';
+    if (n >= 1_000) return (n / 1_000).toLocaleString('fr-FR', { minimumFractionDigits: 2 }) + ' k€';
+    return n.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) + ' €';
+  };
+  const ticksY = [];
+  for (let v = 0; v <= topY; v += step) ticksY.push({ val: v, y: y(v) });
+  return (
+    <div ref={wrapRef} style={{ display: 'flex', gap: 12, width: '100%' }}>
+      <svg width={SVG_W} height={SVG_H} role="img" aria-label="Évolution des placements">
+        <line x1={PAD} y1={SVG_H - PAD} x2={SVG_W - PAD} y2={SVG_H - PAD} stroke="#bbb" />
+        <line x1={PAD} y1={PAD} x2={PAD} y2={SVG_H - PAD} stroke="#bbb" />
+        {ticksY.map((t, i) => (
+          <g key={'gy' + i}>
+            <line x1={PAD - 5} y1={t.y} x2={SVG_W - PAD} y2={t.y} stroke="#eee" />
+            <text x={PAD - 10} y={t.y + 4} fontSize="12" fill="#555" textAnchor="end">
+              {fmtShortEuro(t.val)}
+            </text>
+          </g>
+        ))}
+        {years.map((yr, i) => (
+          <text key={'gx' + i} x={x(i)} y={SVG_H - PAD + 16} fontSize="12" fill="#666" textAnchor="middle">
+            {yr}
+          </text>
+        ))}
+        {filtered.map((s, si) => {
+          const color = COLORS[si % COLORS.length];
+          let d = '';
+          s.values.forEach((v, i) => {
+            if (v === undefined) return;
+            d += (d === '' ? 'M' : 'L') + ' ' + x(i) + ' ' + y(v) + ' ';
+          });
+          if (!d) return null;
+          return (
+            <g key={'s' + si}>
+              <path d={d} fill="none" stroke={color} strokeWidth="2.5" />
+              {s.values.map((v, i) => v !== undefined ? <circle key={i} cx={x(i)} cy={y(v)} r="3" fill={color} /> : null)}
+            </g>
+          );
+        })}
+      </svg>
+      <div style={{ width: LEG_W, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {filtered.map((s, si) => (
+          <div key={'lg' + si} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ width: 10, height: 10, borderRadius: '50%', background: COLORS[si % COLORS.length] }}></span>
+            <span style={{ fontSize: 13 }}>{s.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Placement() {
   const [startMonth, setStartMonth] = useState(1);
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
@@ -89,7 +185,6 @@ export default function Placement() {
   const STORE_KEY = storageKeyFor('placement');
   const [hydrated, setHydrated] = useState(false);
 
-  // Persistance
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORE_KEY);
@@ -114,7 +209,6 @@ export default function Placement() {
     } catch {}
   }, [hydrated, startMonth, products, durations, contribs]);
 
-  // Reset
   useEffect(() => {
     const off = onResetEvent(({ simId }) => {
       if (simId === 'placement') {
@@ -127,10 +221,6 @@ export default function Placement() {
     });
     return off;
   }, [STORE_KEY]);
-
-  const setProd = (i, patch) => setProducts(a => a.map((p, idx) => idx === i ? { ...p, ...patch } : p));
-  const setDuration = (i, v) => setDurations(a => a.map((x, idx) => idx === i ? Math.max(1, v || 1) : x));
-  const setContrib = (i, patch) => setContribs(a => a.map((c, idx) => idx === i ? { ...c, ...patch } : c));
 
   const result = useMemo(() => {
     const yearsMax = Math.max(...durations, 1);
@@ -145,20 +235,15 @@ export default function Placement() {
     };
   }, [products, durations, contribs, startMonth]);
 
-  const years = result.years;
-  const series = result.series;
-
   return (
     <div className="panel">
       <div className="plac-title">Comparer différents placements</div>
-      {/* Inputs */}
       <div style={{ display:'flex', gap:12, marginBottom:10 }}>
         <div>Mois de souscription</div>
         <select value={startMonth} onChange={e => setStartMonth(Number(e.target.value))}>
           {MONTHS.map((m, idx) => <option key={idx} value={idx+1}>{m}</option>)}
         </select>
       </div>
-      {/* Table */}
       <div className="plac-table-wrap">
         <table className="plac-table">
           <thead>
@@ -168,10 +253,10 @@ export default function Placement() {
             </tr>
           </thead>
           <tbody>
-            {years.map((y, yi) => (
+            {result.years.map((y, yi) => (
               <tr key={yi}>
                 <td>{`Année ${y}`}</td>
-                {series.map((s, si) => (
+                {result.series.map((s, si) => (
                   <td key={si}>{s.values[yi] !== undefined ? euroFull0(s.values[yi]) : '0 €'}</td>
                 ))}
               </tr>
@@ -179,9 +264,8 @@ export default function Placement() {
           </tbody>
         </table>
       </div>
-      {/* Graph */}
       <div className="chart-card">
-        {/* Graphique SVG identique à Old */}
+        <SmoothChart res={result} />
       </div>
     </div>
   );
