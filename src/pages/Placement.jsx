@@ -226,6 +226,7 @@ export default function Placement() {
   }, [STORE_KEY]);
 
   const result = useMemo(() => {
+    console.log("Calcul en cours..."); // ✅ Vérifie que useMemo démarre
     const yearsMax = Math.max(...durations, 1);
     const sims = products.map((p, i) => {
       const base = { rate: Number(p.rate) || 0, initial: toNum(p.initial), entryFeePct: Number(p.entryFeePct) || 0 };
@@ -239,9 +240,10 @@ export default function Placement() {
   }, [products, durations, contribs, startMonth]);
 
   console.log("Result:", result);
-
+  console.log("Avant return Placement"); // ✅ Vérifie que le code atteint le rendu
   return (
     <div className="panel">
+      div style={{color:'blue', fontWeight:'bold'}}>TEST RENDU</div> {/* ✅ Vérifie le rendu */}
       <div style={{color:'red', fontWeight:'bold'}}>TEST RENDU</div>
       <div className="plac-title">Comparer différents placements</div>
       <div style={{ display:'flex', gap:12, marginBottom:10 }}>
