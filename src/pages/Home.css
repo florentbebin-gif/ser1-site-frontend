@@ -1,5 +1,5 @@
 .home-container {
-  max-width: 1600px; /* encore plus large */
+  max-width: 1700px; /* encore plus large */
   margin: 40px auto;
   padding: 0 20px;
 }
@@ -24,6 +24,7 @@
   margin-bottom: 16px;
   position: relative;
   padding-bottom: 12px;
+  color: var(--green); /* vert foncé du site */
 }
 
 .tile-title::after {
