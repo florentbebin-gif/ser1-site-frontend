@@ -24,7 +24,7 @@
   margin-bottom: 16px;
   position: relative;
   padding-bottom: 12px;
-  color: var(--green); /* vert foncé du site */
+  color: var(--green)!important; /* vert foncé du site */
 }
 
 .tile-title::after {
