@@ -12,6 +12,7 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 import { toNumber } from '../utils/number.js'
+import './Placement.css'
 
 /* ------------------- Helpers format ------------------- */
 const fmtInt = (n)=> (Math.round(n) || 0).toLocaleString('fr-FR')
@@ -217,16 +218,19 @@ useEffect(() => {
     }catch(_e){}
   }, [hydrated, startMonth, products, durations, contribs, STORE_KEY])
 
-  useEffect(()=>{
-    const off = onResetEvent?.(() => {
-      setStartMonth(1)
-      setProducts(DEFAULT_PRODUCTS)
-      setDurations([1,1,1,1])
-      setContribs(defaultContribs)
-      try { localStorage.removeItem(STORE_KEY) } catch {}
-    })
-    return off || (()=>{})
-  }, [STORE_KEY])
+useEffect(()=>{
+  const off = onResetEvent?.(({ simId }) => {
+    // Ne réagit qu'au reset du simulateur "placement"
+    if (simId && simId !== 'placement') return
+
+    setStartMonth(1)
+    setProducts(DEFAULT_PRODUCTS)
+    setDurations([1,1,1,1])
+    setContribs(defaultContribs)
+    try { localStorage.removeItem(STORE_KEY) } catch {}
+  })
+  return off || (()=>{})
+}, [STORE_KEY])
 
   const setProd     = (i,patch)=> setProducts(a=>a.map((p,idx)=> idx===i ? {...p, ...patch} : p))
   const setDuration = (i,v)=> setDurations(a=>a.map((x,idx)=> idx===i ? Math.max(1, v||1) : x))
