@@ -11,7 +11,6 @@ export default function App() {
   const [session, setSession] = useState(null);
   const navigate = useNavigate();
 
-  // ✅ Récupération session Supabase
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     supabase.auth.onAuthStateChange((_event, s) => setSession(s));
@@ -24,7 +23,7 @@ export default function App() {
 
   const isRecoveryMode = window.location.hash.includes('type=recovery');
 
-  // ✅ Redirection si pas connecté et pas en mode recovery
+  // ✅ Redirection si pas connecté
   useEffect(() => {
     if (!session && !isRecoveryMode) {
       navigate('/login');
@@ -33,26 +32,17 @@ export default function App() {
 
   return (
     <>
-      {/* Topbar */}
       <div className="topbar">
         <div className="brandbar">SER1 — Simulateur épargne retraite</div>
         {session && !isRecoveryMode && (
           <div className="top-actions">
-            {/* Bouton Reset visible uniquement sur simulateurs */}
             {window.location.pathname.includes('placement') && (
-              <button
-                className="chip"
-                onClick={() => triggerPageReset('placement')}
-              >
-                Reset
-              </button>
+              <button className="chip" onClick={() => triggerPageReset('placement')}>Reset</button>
             )}
             <button className="chip" onClick={handleLogout}>Déconnexion</button>
           </div>
         )}
       </div>
-
-      {/* Routes */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login onLogin={() => navigate('/')} />} />
