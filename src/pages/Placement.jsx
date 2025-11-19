@@ -243,8 +243,7 @@ export default function Placement() {
   console.log("Avant return Placement"); // ✅ Vérifie que le code atteint le rendu
   return (
     <div className="panel">
-      div style={{color:'blue', fontWeight:'bold'}}>TEST RENDU</div> {/* ✅ Vérifie le rendu */}
-      <div style={{color:'red', fontWeight:'bold'}}>TEST RENDU</div>
+      <div style={{color:'blue', fontWeight:'bold'}}>TEST RENDU</div> {/* ✅ Vérifie le rendu */}
       <div className="plac-title">Comparer différents placements</div>
       <div style={{ display:'flex', gap:12, marginBottom:10 }}>
         <div>Mois de souscription</div>
