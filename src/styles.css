@@ -1,46 +1,13 @@
-:root {
-  --green: #2C3D38;
-  --beige: #e8ded5;
-  --bg: #f7f7f7;
-  --radius: 12px;
-}
-
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: var(--bg);
-}
-
-.topbar {
-  background: var(--green);
-  color: #fff;
-  padding: 12px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.brandbar {
-  font-weight: 700;
-  font-size: 18px;
-}
-
-.top-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.chip {
-  background: #fff;
-  color: #111;
-  border: 1px solid #ccc;
-  padding: 6px 12px;
-  border-radius: 999px;
-  text-decoration: none;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.chip:hover {
-  background: var(--beige);
-}
+.tiles-wrap{display:grid;grid-template-columns:1fr 1fr;gap:32px;}
+.section-card{background:#fff;border:1px solid #D9D9D9;border-radius:12px;padding:28px;box-shadow:0 4px 14px rgba(0,0,0,.07);}
+.section-title{font-size:26px;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.strong-title{font-weight:800;}
+.normal-title{font-weight:400;}
+.section-title::after{content:'';height:4px;background:#e8ded5;flex:1;border-radius:3px;}
+.tile{border:2px solid #E5E5E5;background:#fff;border-radius:12px;padding:20px;text-decoration:none;color:inherit;display:block;transition:border-color .15s;}
+.tile:hover{border-color:#8fbf9f;}
+.tile-row{display:flex;align-items:center;gap:16px;}
+.tile-icon{width:44px;height:44px;border:1px solid #E5E5E5;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#f9f9f9;}
+.tile-sep{width:4px;height:22px;border-radius:4px;background:#e8ded5;}
+.tile-title{font-weight:700;font-size:15px;}
+.tile-note{color:#666;font-style:italic;margin-left:4px;font-size:13px;}
