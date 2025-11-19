@@ -60,16 +60,16 @@ function IconTarget() {
       <circle cx="12" cy="12" r="6" />
       <circle cx="12" cy="12" r="2" />
     </svg>
-  );
-}
-
-function IconHome() {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+ 24" height="24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9l9-7 9 7" />
       <path d="M9 22V12h6v10" />
     </svg>
-  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  );
+}
+
+function IconCalc() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="4" y="4" width="16" height="16" rx="2" />
       <line x1="8" y1="8" x2="8" y2="8" />
       <line x1="16" y1="8" x2="16" y2="8" />
