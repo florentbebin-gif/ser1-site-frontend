@@ -19,36 +19,49 @@
 
 .tile-title {
   font-size: 20px;
-  font-weight: 700;
-  color: var(--green);
   margin-bottom: 16px;
   border-bottom: 2px solid var(--beige);
   padding-bottom: 8px;
+}
+
+.strong-title {
+  font-weight: 700;
+}
+
+.normal-title {
+  font-weight: 400;
 }
 
 .tile {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px;
+  padding: 18px; /* plus grande hauteur */
   background: #fff;
-  border: 1px solid #ddd;
+  border: 2px solid #ddd;
   border-radius: 10px;
   text-decoration: none;
   color: #111;
   font-size: 16px;
-  margin-bottom: 12px;
-  transition: all 0.2s ease;
+  font-weight: 700; /* texte en gras */
+  margin-bottom: 14px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); /* ombre autour */
+  transition: border-color 0.2s ease;
 }
 
 .tile:hover {
-  background: var(--beige);
-  transform: translateY(-2px);
+  border-color: #8fbf9f; /* vert clair sur le contour */
 }
 
 .tile-icon {
   font-size: 22px;
-  color: var(--green);
+  color: #555; /* sobre */
+}
+
+.tile-separator {
+  width: 1px;
+  height: 24px;
+  background: #ccc;
 }
 
 @media (max-width: 768px) {
