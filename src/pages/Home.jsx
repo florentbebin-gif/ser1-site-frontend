@@ -17,7 +17,7 @@ export default function Home(){
         <div className="section-title normal-title">Simulateurs rapides</div>
         <Tile to="/sim/ir" icon={<IconCalc/>} title="Impôt sur le revenu" />
         <Tile to="/sim/placement" icon={<IconChart/>} title="Placement" />
-        <Tile to="/sim/credit" icon={<IconCalc/>} title="Crédit" />
+        <Tile to="/sim/credit" icon={<IconCredi/>} title="Crédit" />
       </div>
     </div>
   );
@@ -32,6 +32,17 @@ function Tile({to, icon, title}){
         <div className="tile-title">{title}</div>
       </div>
     </Link>
+  );
+}
+
+
+function IconCredit() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="4" width="20" height="16" rx="2" ry="2"/>
+      <line x1="2" y1="10" x2="22" y2="10"/>
+      <line x1="6" y1="14" x2="10" y2="14"/>
+    </svg>
   );
 }
 
