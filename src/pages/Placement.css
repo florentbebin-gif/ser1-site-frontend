@@ -11,6 +11,7 @@
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 16px;
+  color: #111;
 }
 
 .plac-table-wrap {
@@ -28,6 +29,7 @@
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
+  color: #111; /* ✅ Ajout pour rendre le texte visible */
 }
 
 .plac-table th {
