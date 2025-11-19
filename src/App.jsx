@@ -23,6 +23,13 @@ export default function App() {
 
   const isRecoveryMode = window.location.hash.includes('type=recovery');
 
+  // ✅ Redirection si pas de session et pas en mode recovery
+  useEffect(() => {
+    if (!session && !isRecoveryMode) {
+      navigate('/login');
+    }
+  }, [session, isRecoveryMode, navigate]);
+
   return (
     <>
       <div className="topbar">
@@ -45,12 +52,4 @@ export default function App() {
       </Routes>
     </>
   );
-  
-{session && !isRecoveryMode && (
-  <div className="top-actions">
-    <button className="chip" onClick={() => triggerPageReset('placement')}>Reset</button>
-    <button className="chip" onClick={handleLogout}>Déconnexion</button>
-  </div>
-)}
-
 }
