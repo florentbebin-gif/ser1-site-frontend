@@ -1,46 +1,182 @@
-.panel {
-  background: #fff;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
-  max-width: 1200px;
-  margin: 20px auto;
+/* ================================
+   Placement – Layout général
+=================================== */
+
+.placement-page {
+  padding: 32px 0 40px;
+  display: flex;
+  justify-content: center;
 }
 
-.plac-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: #111;
+/* Carte principale du simulateur */
+.panel.sim-placement {
+  max-width: 1120px;
+  width: 100%;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid #d9d9d9;
+  padding: 28px 32px 32px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
+
+/* 2 colonnes : tableau à gauche / graphique à droite */
+.plac-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 24px;
+  align-items: flex-start;
+}
+
+@media (max-width: 1024px) {
+  .plac-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================================
+   Titre + sous-titre
+=================================== */
+
+.plac-title {
+  font-weight: 700;
+  font-size: 22px;
+  color: #222;
+  border-bottom: 4px solid var(--beige);
+  padding-bottom: 8px;
+  margin: 0 0 18px;
+}
+
+.plac-sub {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.plac-sub select {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.plac-sub-note {
+  color: var(--muted, #666);
+  font-size: 13px;
+}
+
+/* ================================
+   Tableau
+=================================== */
 
 .plac-table-wrap {
   overflow-x: auto;
-  margin-top: 16px;
 }
 
 .plac-table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 14px;
 }
 
 .plac-table th,
 .plac-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-  color: #111 !important; /* ✅ Ajout pour rendre le texte visible */
+  border: 1px solid #d9d9d9;
+  padding: 6px 8px;
+  text-align: right;
 }
 
-.plac-table th {
-  background: #f7f7f7;
+.plac-table thead th {
+  background: #f4f4f4;
+  font-weight: 600;
+  text-align: center;
+}
+
+.plac-table th:first-child,
+.plac-table td:first-child {
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* cellule avec input + unité / select */
+.input-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.input-cell input {
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  font-size: 13px;
+}
+
+.input-cell select {
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  font-size: 13px;
+}
+
+/* variations de texte */
+.cell-muted {
+  color: #666;
+  font-size: 13px;
+}
+
+.cell-strong {
   font-weight: 600;
 }
 
+/* ================================
+   Carte graphique
+=================================== */
+
 .chart-card {
-  margin-top: 24px;
-  padding: 16px;
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
+  border-radius: var(--radius);
+  border: 1px solid #d9d9d9;
+  padding: 18px 20px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.chart-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* légende en dessous du graphique (si tu l’utilises) */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: #444;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+/* ================================
+   Responsive
+=================================== */
+
+@media (max-width: 768px) {
+  .panel.sim-placement {
+    padding: 20px 16px 24px;
+  }
+
+  .plac-table th,
+  .plac-table td {
+    font-size: 12px;
+  }
 }
