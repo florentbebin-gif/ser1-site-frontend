@@ -1,13 +1,13 @@
 .home-container {
-  max-width: 1700px; /* encore plus large */
+  max-width: 1700px; /* très large */
   margin: 40px auto;
   padding: 0 20px;
 }
 
 .tiles-wrap {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* deux colonnes égales */
-  gap: 24px; /* espace entre colonnes */
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
 }
 
 .tile-column {
@@ -18,17 +18,14 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Titre avec barre sous le texte */
+/* Titre des colonnes */
 .tile-title {
-  font-size: 20px;
+  font-size: 22px;
   margin-bottom: 16px;
   position: relative;
   padding-bottom: 12px;
-
-.tile-column h2 {
-  color: var(--green); /* vert foncé du site */
+  color: var(--green); /* vert foncé */
 }
-
 
 .tile-title::after {
   content: '';
@@ -66,10 +63,11 @@
   color: #555;
 }
 
-.tile-separator {
-  width: 1px;
-  height: 24px;
-  background: #ccc;
+.tile-note {
+  color: #666;
+  font-style: italic;
+  margin-left: 4px;
+  font-size: 13px;
 }
 
 @media (max-width: 768px) {
