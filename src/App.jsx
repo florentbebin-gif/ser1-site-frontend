@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import ForgotPassword from './pages/ForgotPassword';
 import Placement from './pages/Placement';
+import { triggerPageReset } from './utils/reset';
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -41,4 +42,12 @@ export default function App() {
       </Routes>
     </div>
   );
+  
+{session && !isRecoveryMode && (
+  <div className="top-actions">
+    <button className="chip" onClick={() => triggerPageReset('placement')}>Reset</button>
+    <button className="chip" onClick={handleLogout}>Déconnexion</button>
+  </div>
+)}
+
 }
