@@ -24,24 +24,37 @@ export default function Settings() {
 
         setUser(u);
 
-        if (u) {
-          // Différentes façons possibles de stocker le rôle :
-          const meta = u.user_metadata || {};
-          const appMeta = u.app_metadata || {};
+       if (u) {
+  const meta = u.user_metadata || {};
+  const appMeta = u.app_metadata || {};
 
-          const rawRole =
-            (meta.role ||
-              appMeta.role ||
-              (meta.is_admin ? 'admin' : null) ||
-              (appMeta.is_admin ? 'admin' : null) ||
-              '').toString();
+  // On collecte tous les champs "candidats" qui pourraient contenir le rôle
+  const candidates = [
+    meta.role,
+    appMeta.role,
+    meta.user_role,
+    appMeta.user_role,
+    meta.profile,
+    appMeta.profile,
+  ];
 
-          const isAdmin =
-            rawRole.toLowerCase() === 'admin' ||
-            rawRole.toLowerCase() === 'administrator';
+  let isAdmin = false;
 
-          setRoleLabel(isAdmin ? 'Admin' : 'User');
-        }
+  // Cas 1 : booléens explicites
+  if (meta.is_admin === true || appMeta.is_admin === true) {
+    isAdmin = true;
+  }
+
+  // Cas 2 : une chaîne contenant "admin" (Admin, ADMIN, Administrateur...)
+  if (!isAdmin) {
+    isAdmin = candidates.some(
+      (v) => typeof v === 'string' && v.toLowerCase().includes('admin')
+    );
+  }
+
+  setRoleLabel(isAdmin ? 'Admin' : 'User');
+}
+
 
         setLoading(false);
       } catch (e) {
