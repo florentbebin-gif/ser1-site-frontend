@@ -180,7 +180,16 @@ export default function App() {
                   <IconTrash className="icon" />
                 </button>
               )}
-
+              {/* RESET Crédit */}
+              {window.location.pathname.includes('credit') && (
+                <button
+                  className="chip icon-btn"
+                  onClick={() => triggerPageReset('credit')}
+                  title="Réinitialiser la simulation"
+                >
+                  <IconTrash className="icon" />
+                </button>
+                )}
               {/* PARAMÈTRES — juste avant Déconnexion */}
               <button
                 className="chip icon-btn"
