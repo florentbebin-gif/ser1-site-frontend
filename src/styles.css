@@ -170,3 +170,40 @@ body {
   width: 20px;
   height: 20px;
 }
+/* Page paramètres – layout de base */
+.settings-page {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+/* Barre d’onglets "pilules" */
+.settings-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* Pilules de navigation */
+.settings-pill {
+  border-radius: 999px;              /* forme pilule */
+  background: #f2f2f2;               /* couleur de base */
+  border: 1px solid transparent;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.18); /* ombre autour */
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Hover : bord #9FBDB2 */
+.settings-pill:hover {
+  border-color: #9fbdb2;
+}
+
+/* Pilule active : fond #CFDED8 */
+.settings-pill.is-active {
+  background: #cfDED8;
+  border-color: #9fbdb2;
+}
