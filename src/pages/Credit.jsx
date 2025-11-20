@@ -613,56 +613,175 @@ const synthesePeriodes = useMemo(() => {
   }
   const updatePret = (id, patch) => setPretsPlus(arr => arr.map(p => p.id === id ? ({ ...p, ...patch }) : p))
   const removePret = (id) => setPretsPlus(arr => arr.filter(p => p.id !== id))
-// Transpose un array-of-arrays
-function transpose(aoa) {
-  if (!aoa.length) return aoa;
-  const rows = aoa.length;
-  const cols = Math.max(...aoa.map(r => r.length));
-  const out = Array.from({ length: cols }, () => Array(rows).fill(''));
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      out[c][r] = aoa[r][c] ?? '';
+  // Transpose un array-of-arrays (pour les échéanciers : périodes en colonnes)
+  function transpose(aoa) {
+    if (!aoa.length) return aoa;
+    const rows = aoa.length;
+    const cols = Math.max(...aoa.map(r => r.length));
+    const out = Array.from({ length: cols }, () => Array(rows).fill(''));
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        out[c][r] = aoa[r][c] ?? '';
+      }
     }
+    return out;
   }
-  return out;
-}
 
   /* ---- Export Excel (.xls) ---- */
- function buildWorksheetXml(title, header, rows) {
-  // 1) on compose l'AOA vertical (entête + lignes)
-  const aoa = [header, ...rows];
-  // 2) on transpose pour exporter horizontalement (périodes en colonnes)
-  const t = transpose(aoa);
-  const esc = (s)=> String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-   const rowXml = (cells)=> `<Row>${
-    cells.map(v => `<Cell><Data ss:Type="${typeof v === 'number' ? 'Number' : 'String'}">${esc(v)}</Data></Cell>`).join('')
-   }</Row>`
+
+  // Feuilles "classiques" : périodes en colonnes (on transpose)
+  function buildWorksheetXml(title, header, rows) {
+    const aoa = [header, ...rows];
+    const t = transpose(aoa);
+    const esc = (s) =>
+      String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    const rowXml = (cells) =>
+      `<Row>${
+        cells
+          .map(
+            (v) =>
+              `<Cell><Data ss:Type="${
+                typeof v === 'number' ? 'Number' : 'String'
+              }">${esc(v)}</Data></Cell>`
+          )
+          .join('')
+      }</Row>`;
+
     return `
-    <Worksheet ss:Name="${esc(title)}">
-    <Table>
-    ${t.map(r => rowXml(r)).join('')}
-    </Table>
-    </Worksheet>`
- }
- 
+      <Worksheet ss:Name="${esc(title)}">
+        <Table>
+          ${t.map((r) => rowXml(r)).join('')}
+        </Table>
+      </Worksheet>`;
+  }
+
+  // Feuille "Paramètres" : on garde l’orientation verticale (Pas de transpose)
+  function buildWorksheetXmlVertical(title, header, rows) {
+    const aoa = [header, ...rows];
+    const esc = (s) =>
+      String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    const rowXml = (cells) =>
+      `<Row>${
+        cells
+          .map(
+            (v) =>
+              `<Cell><Data ss:Type="${
+                typeof v === 'number' ? 'Number' : 'String'
+              }">${esc(v)}</Data></Cell>`
+          )
+          .join('')
+      }</Row>`;
+
+    return `
+      <Worksheet ss:Name="${esc(title)}">
+        <Table>
+          ${aoa.map((r) => rowXml(r)).join('')}
+        </Table>
+      </Worksheet>`;
+  }
+
   function exportExcel() {
     try {
       // En-têtes alignés sur la vue
       const headerResume = [
-        'Période','Intérêts','Assurance','Amort.',
-        (isAnnual ? 'Annuité' : 'Mensualité'),
-        (isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'),
-        'CRD total'
+        'Période',
+        'Intérêts',
+        'Assurance',
+        'Amort.',
+        isAnnual ? 'Annuité' : 'Mensualité',
+        isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.',
+        'CRD total',
       ];
       const headerPret = [
-        'Période','Intérêts','Assurance','Amort.',
-        (isAnnual ? 'Annuité' : 'Mensualité'),
-        (isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.'),
-        'CRD'
+        'Période',
+        'Intérêts',
+        'Assurance',
+        'Amort.',
+        isAnnual ? 'Annuité' : 'Mensualité',
+        isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.',
+        'CRD',
       ];
 
-      // 1) Résumé : on exporte ce qui est affiché (tableDisplay)
-      const resumeRows = tableDisplay.map(l => [
+      // 0) Onglet PARAMÈTRES : tout ce qui est saisi par l’utilisateur
+      const headerParams = ['Champ', 'Valeur'];
+      const rowsParams = [];
+
+      // Prêt 1
+      rowsParams.push([
+        'Type de crédit (Prêt 1)',
+        creditType === 'amortissable' ? 'Amortissable' : 'In fine',
+      ]);
+      rowsParams.push([
+        'Date de souscription (Prêt 1)',
+        startYM ? labelMonthFR(startYM) : '',
+      ]);
+      rowsParams.push(['Durée (mois) — Prêt 1', duree]);
+      rowsParams.push(['Montant emprunté (Prêt 1)', euro0(capital)]);
+      rowsParams.push([
+        'Taux annuel (crédit) — Prêt 1',
+        `${Number(taux).toFixed(2).replace('.', ',')} %`,
+      ]);
+      rowsParams.push([
+        'Mensualité (hors assurance) — Prêt 1',
+        mensuBase ? `${mensuBase} €` : '',
+      ]);
+      rowsParams.push([
+        "Mode de l’assurance (Prêt 1)",
+        assurMode === 'CI' ? 'Capital initial' : 'Capital restant dû',
+      ]);
+      rowsParams.push([
+        'Taux annuel (assurance)',
+        `${Number(tauxAssur).toFixed(2).replace('.', ',')} %`,
+      ]);
+      rowsParams.push([
+        'Vue',
+        isAnnual ? 'Vue annuelle' : 'Vue mensuelle',
+      ]);
+      rowsParams.push([
+        'Lissage prêt 1',
+        lisserPret1
+          ? lissageMode === 'mensu'
+            ? 'Mensualité constante'
+            : 'Durée constante'
+          : 'Aucun',
+      ]);
+
+      // Prêts additionnels (Prêt 2 / Prêt 3)
+      pretsPlus.forEach((p, idx) => {
+        const k = idx + 2;
+        const type = p.type || creditType;
+        rowsParams.push([
+          `Prêt ${k} - Type de crédit`,
+          type === 'amortissable' ? 'Amortissable' : 'In fine',
+        ]);
+        rowsParams.push([
+          `Prêt ${k} - Montant emprunté`,
+          euro0(toNum(p.capital)),
+        ]);
+        rowsParams.push([
+          `Prêt ${k} - Durée (mois)`,
+          toNum(p.duree),
+        ]);
+        rowsParams.push([
+          `Prêt ${k} - Taux annuel (crédit)`,
+          `${Number(p.taux || 0).toFixed(2).replace('.', ',')} %`,
+        ]);
+        rowsParams.push([
+          `Prêt ${k} - Date de souscription`,
+          p.startYM ? labelMonthFR(p.startYM) : '',
+        ]);
+      });
+
+      // 1) Résumé : ce qui est affiché dans le tableau principal
+      const resumeRows = tableDisplay.map((l) => [
         l.periode,
         Math.round(l.interet),
         Math.round(l.assurance),
@@ -672,11 +791,11 @@ function transpose(aoa) {
         Math.round(l.crd),
       ]);
 
-      // 2) Détail par prêt selon la vue
+      // 2) Détail par prêt selon la vue actuelle
       const pret1Arr = (isAnnual
         ? aggregateToYearsFromRows(pret1Rows, startYM)
         : attachMonthLabels(pret1Rows)
-      ).map(l => [
+      ).map((l) => [
         l.periode,
         Math.round(l.interet),
         Math.round(l.assurance),
@@ -687,9 +806,11 @@ function transpose(aoa) {
       ]);
 
       const pret2Arr = (autresRows[0]
-        ? (isAnnual ? aggregateToYearsFromRows(autresRows[0], startYM) : attachMonthLabels(autresRows[0]))
+        ? isAnnual
+          ? aggregateToYearsFromRows(autresRows[0], startYM)
+          : attachMonthLabels(autresRows[0])
         : []
-      ).map(l => [
+      ).map((l) => [
         l.periode,
         Math.round(l?.interet ?? 0),
         Math.round(l?.assurance ?? 0),
@@ -700,9 +821,11 @@ function transpose(aoa) {
       ]);
 
       const pret3Arr = (autresRows[1]
-        ? (isAnnual ? aggregateToYearsFromRows(autresRows[1], startYM) : attachMonthLabels(autresRows[1]))
+        ? isAnnual
+          ? aggregateToYearsFromRows(autresRows[1], startYM)
+          : attachMonthLabels(autresRows[1])
         : []
-      ).map(l => [
+      ).map((l) => [
         l.periode,
         Math.round(l?.interet ?? 0),
         Math.round(l?.assurance ?? 0),
@@ -710,33 +833,36 @@ function transpose(aoa) {
         Math.round(l?.mensu ?? 0),
         Math.round(l?.mensuTotal ?? 0),
         Math.round(l?.crd ?? 0),
-      ]);   
+      ]);
 
-      const xml =
-        `<?xml version="1.0"?>
+      const xml = `<?xml version="1.0"?>
         <?mso-application progid="Excel.Sheet"?>
         <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
           xmlns:o="urn:schemas-microsoft-com:office:office"
           xmlns:x="urn:schemas-microsoft-com:office:excel"
           xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+          ${buildWorksheetXmlVertical('Paramètres', headerParams, rowsParams)}
           ${buildWorksheetXml('Résumé', headerResume, resumeRows)}
           ${buildWorksheetXml('Prêt 1', headerPret, pret1Arr)}
           ${pretsPlus.length > 0 ? buildWorksheetXml('Prêt 2', headerPret, pret2Arr) : ''}
-          ${pretsPlus.length > 0 ? buildWorksheetXml('Prêt 3', headerPret, pret3Arr) : ''}
-        </Workbook>`
+          ${pretsPlus.length > 1 ? buildWorksheetXml('Prêt 3', headerPret, pret3Arr) : ''}
+        </Workbook>`;
 
-      const blob = new Blob([xml], { type: 'application/vnd.ms-excel' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `SER1_${isAnnual ? 'Annuel' : 'Mensuel'}.xls`
-      document.body.appendChild(a); a.click(); a.remove()
-      URL.revokeObjectURL(url)
+      const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `SER1_${isAnnual ? 'Annuel' : 'Mensuel'}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
     } catch (e) {
-      console.error('Export Excel échoué', e)
-      alert('Impossible de générer le fichier Excel.')
+      console.error('Export Excel échoué', e);
+      alert('Impossible de générer le fichier Excel.');
     }
   }
+
   function exportPowerPoint() {
     // Placeholder : on connectera la vraie génération plus tard
     alert('Export PowerPoint : paramétrage à venir 👍')
