@@ -68,6 +68,39 @@ const IconFolder = ({ className }) => (
     />
   </svg>
 );
+const IconTrash = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      d="M4 7h16M10 11v6M14 11v6M9 7V4h6v3M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const IconLogout = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      d="M15 12H4M11 8l-4 4 4 4M15 4h4v16h-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -99,55 +132,63 @@ export default function App() {
       <div className="topbar">
         <div className="brandbar">SER1 — Simulateur épargne retraite</div>
         {session && !isRecoveryMode && (
-          <div className="top-actions">
-            {/* HOME (icone + tooltip) */}
-            {isSimRoute && (
-              <button
-                className="chip icon-btn"
-                onClick={() => navigate('/')}
-                title="Retour à l'accueil"
-              >
-                <IconHome className="icon" />
-              </button>
-            )}
+<div className="top-actions">
 
-            {/* SAVE */}
-            {isSimRoute && (
-              <button
-                className="chip icon-btn"
-                onClick={() => console.log('SAVE TODO')}
-                title="Sauvegarder le dossier"
-              >
-                <IconSave className="icon" />
-              </button>
-            )}
+  {/* HOME */}
+  {isSimRoute && (
+    <button
+      className="chip icon-btn"
+      onClick={() => navigate('/')}
+      title="Retour à l'accueil"
+    >
+      <IconHome className="icon" />
+    </button>
+  )}
 
-            {/* CHARGER */}
-            {isSimRoute && (
-              <button
-                className="chip icon-btn"
-                onClick={() => console.log('LOAD TODO')}
-                title="Charger un dossier"
-              >
-                <IconFolder className="icon" />
-              </button>
-            )}
+  {/* SAVE */}
+  {isSimRoute && (
+    <button
+      className="chip icon-btn"
+      onClick={() => console.log('SAVE TODO')}
+      title="Sauvegarder le dossier"
+    >
+      <IconSave className="icon" />
+    </button>
+  )}
 
-            {/* RESET spécifique au placement */}
-            {window.location.pathname.includes('placement') && (
-              <button
-                className="chip"
-                onClick={() => triggerPageReset('placement')}
-              >
-                Reset
-              </button>
-            )}
+  {/* CHARGER */}
+  {isSimRoute && (
+    <button
+      className="chip icon-btn"
+      onClick={() => console.log('LOAD TODO')}
+      title="Charger un dossier"
+    >
+      <IconFolder className="icon" />
+    </button>
+  )}
 
-            {/* Déconnexion */}
-            <button className="chip" onClick={handleLogout}>
-              Déconnexion
-            </button>
-          </div>
+  {/* RESET → icône corbeille */}
+  {window.location.pathname.includes('placement') && (
+    <button
+      className="chip icon-btn"
+      onClick={() => triggerPageReset('placement')}
+      title="Réinitialiser la simulation"
+    >
+      <IconTrash className="icon" />
+    </button>
+  )}
+
+  {/* DECONNEXION → icône logout */}
+  <button
+    className="chip icon-btn"
+    onClick={handleLogout}
+    title="Se déconnecter"
+  >
+    <IconLogout className="icon" />
+  </button>
+
+</div>
+
         )}
       </div>
 
