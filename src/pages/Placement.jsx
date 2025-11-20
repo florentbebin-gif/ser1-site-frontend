@@ -13,7 +13,6 @@ import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 import { toNumber } from '../utils/number.js'
 import './Placement.css'
-
 /* ------------------- Helpers format ------------------- */
 const fmtInt = (n)=> (Math.round(n) || 0).toLocaleString('fr-FR')
 const toNum = (v)=> toNumber(v, 0)
@@ -257,174 +256,249 @@ useEffect(()=>{
     }
   }, [products, durations, contribs, startMonth])
 
-  const years  = result.years
-  const series = result.series
+const years  = result.years
+const series = result.series
 
-  return (
+return (
   <div className="placement-page">
-    <div className="panel sim-placement">
-      <div className="plac-layout">
-        {/* Colonne gauche : titre + tableau */}
-        <div>
-          <h1 className="plac-title">Comparer différents placements</h1>
+    <div className="panel">
+      <div className="plac-title">Comparer différents placements</div>
 
-          <div className="plac-sub">
-            <span>Mois de souscription</span>
-            <select
-              value={startMonth}
-              onChange={(e) => setStartMonth(Number(e.target.value))}
-            >
-              {MONTHS.map((m, idx) => (
-                <option key={idx} value={idx + 1}>
-                  {m}
-                </option>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          margin: '0 0 10px 0',
+        }}
+      >
+        <div className="cell-strong">Mois de souscription</div>
+        <select
+          value={startMonth}
+          onChange={(e) => setStartMonth(Number(e.target.value))}
+          style={{ height: INPUT_H }}
+        >
+          {MONTHS.map((m, idx) => (
+            <option key={idx} value={idx + 1}>
+              {m}
+            </option>
+          ))}
+        </select>
+        <span className="cell-muted" style={{ fontSize: 13 }}>
+          (les intérêts de l’année sont au pro-rata du mois de souscription)
+        </span>
+      </div>
+
+      <div className="plac-table-wrap">
+        <table className="plac-table" role="grid" aria-label="tableau placement">
+          <thead>
+            <tr>
+              <th></th>
+              {products.map((p, i) => (
+                <th key={i}>
+                  <TwoLineHeader name={p.name} />
+                </th>
               ))}
-            </select>
-            <span className="plac-sub-note">
-              (les intérêts de l’année sont au pro-rata du mois de souscription)
-            </span>
-          </div>
+            </tr>
+          </thead>
 
-          <div className="plac-table-wrap">
-            <table className="plac-table">
-              <thead>
-                <tr>
-                  <th></th>
-                  {products.map((p, i) => (
-                    <th key={i}>{p.name}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {/* Rendement net */}
-                <tr>
-                  <td>Rendement Net de FG</td>
-                  {products.map((p, i) => (
-                    <td key={i}>
-                      <div className="input-cell">
-                        <input
-                          type="text"
-                          value={p.rate}
-                          onChange={(e) =>
-                            updateProduct(i, { rate: e.target.value })
-                          }
-                        />
-                        <span>%</span>
-                      </div>
-                    </td>
-                  ))}
-                </tr>
+          <tbody>
+            {/* Rendement Net de FG */}
+            <tr>
+              <td className="cell-muted">Rendement Net de FG</td>
+              {products.map((p, i) => (
+                <td key={i} className="input-cell">
+                  <InputWithUnit
+                    type="text"
+                    inputMode="decimal"
+                    value={rawRates[i] ?? ''}
+                    onChange={(e) => {
+                      const raw = e.target.value
+                      setRawRates((a) => a.map((s, k) => (k === i ? raw : s)))
+                    }}
+                    onBlur={(e) => {
+                      const v = e.target.value
+                      const rateNum = toNumber(v) / 100
+                      setProd(i, { rate: rateNum })
+                      setRawRates((a) =>
+                        a.map((s, k) =>
+                          k === i
+                            ? Number(rateNum * 100)
+                                .toFixed(2)
+                                .toString()
+                            : s
+                        )
+                      )
+                    }}
+                    unit="%"
+                  />
+                </td>
+              ))}
+            </tr>
 
-                {/* Placement initial */}
-                <tr>
-                  <td>Placement Initial</td>
-                  {products.map((p, i) => (
-                    <td key={i}>
-                      <div className="input-cell">
-                        <input
-                          type="text"
-                          value={p.initial}
-                          onChange={(e) =>
-                            updateProduct(i, { initial: e.target.value })
-                          }
-                        />
-                        <span>€</span>
-                      </div>
-                    </td>
-                  ))}
-                </tr>
+            {/* Placement initial */}
+            <tr>
+              <td className="cell-strong">Placement Initial</td>
+              {products.map((p, i) => (
+                <td key={i} className="input-cell">
+                  <InputWithUnit
+                    value={fmtInt(p.initial)}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/\D/g, '').slice(0, 8)
+                      setProd(i, { initial: toNum(clean) })
+                    }}
+                    type="text"
+                    unit="€"
+                    inputMode="numeric"
+                  />
+                </td>
+              ))}
+            </tr>
 
-                {/* Frais d’entrée */}
-                <tr>
-                  <td>Frais d’entrée</td>
-                  {products.map((p, i) => (
-                    <td key={i}>
-                      <div className="input-cell">
-                        <input
-                          type="text"
-                          value={p.entryFee}
-                          onChange={(e) =>
-                            updateProduct(i, { entryFee: e.target.value })
-                          }
-                        />
-                        <span>%</span>
-                      </div>
-                    </td>
-                  ))}
-                </tr>
+            {/* Frais d’entrée */}
+            <tr>
+              <td className="cell-muted">Frais d’entrée</td>
+              {products.map((p, i) => (
+                <td key={i} className="input-cell">
+                  <InputWithUnit
+                    type="text"
+                    inputMode="decimal"
+                    value={rawFees[i] ?? ''}
+                    onChange={(e) => {
+                      const raw = e.target.value
+                      setRawFees((a) => a.map((s, k) => (k === i ? raw : s)))
+                    }}
+                    onBlur={(e) => {
+                      const v = e.target.value
+                      const feeNum = toNumber(v) / 100
+                      setProd(i, { entryFeePct: feeNum })
+                      setRawFees((a) =>
+                        a.map((s, k) =>
+                          k === i
+                            ? Number(feeNum * 100)
+                                .toFixed(2)
+                                .toString()
+                            : s
+                        )
+                      )
+                    }}
+                    unit="%"
+                  />
+                </td>
+              ))}
+            </tr>
 
-                {/* Versement programmé */}
-                <tr>
-                  <td>Versement programmé</td>
-                  {products.map((p, i) => (
-                    <td key={i}>
-                      <div className="input-cell">
-                        <input
-                          type="text"
-                          value={contribs[i].amount}
-                          onChange={(e) =>
-                            updateContrib(i, { amount: e.target.value })
-                          }
-                        />
-                        <span>€</span>
-                        <select
-                          value={contribs[i].freq}
-                          onChange={(e) =>
-                            updateContrib(i, { freq: e.target.value })
-                          }
-                        >
-                          <option value="none">—</option>
-                          <option value="monthly">mensuel</option>
-                          <option value="yearly">annuel</option>
-                        </select>
-                      </div>
-                    </td>
-                  ))}
-                </tr>
+            {/* Versement programmé (— pour 3 & 4) */}
+            <tr>
+              <td className="cell-strong">Versement programmé</td>
+              {products.map((_, i) => (
+                <td key={i} className="input-cell">
+                  {i < 2 ? (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        justifyContent: 'flex-end',
+                        width: COL_INPUT_W,
+                        height: INPUT_H,
+                      }}
+                    >
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={fmtInt(contribs[i].amount)}
+                        onChange={(e) => {
+                          const clean = e.target.value.replace(/\D/g, '').slice(0, 6)
+                          setContrib(i, { amount: toNum(clean) })
+                        }}
+                        style={{
+                          width: AMOUNT_W_IN_VERS,
+                          textAlign: 'right',
+                          height: INPUT_H,
+                          lineHeight: `${INPUT_H}px`,
+                        }}
+                      />
+                      <span
+                        style={{
+                          height: INPUT_H,
+                          lineHeight: `${INPUT_H}px`,
+                        }}
+                      >
+                        €
+                      </span>
+                      <select
+                        value={contribs[i].freq}
+                        onChange={(e) => setContrib(i, { freq: e.target.value })}
+                        style={{ height: INPUT_H }}
+                      >
+                        <option value="mensuel">mensuel</option>
+                        <option value="annuel">annuel</option>
+                      </select>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        textAlign: 'right',
+                        color: '#777',
+                        width: COL_INPUT_W,
+                        height: INPUT_H,
+                        lineHeight: `${INPUT_H}px`,
+                      }}
+                    >
+                      —
+                    </div>
+                  )}
+                </td>
+              ))}
+            </tr>
 
-                {/* Durée */}
-                <tr>
-                  <td>Durée en année</td>
-                  {products.map((p, i) => (
-                    <td key={i}>
-                      <div className="input-cell">
-                        <input
-                          type="number"
-                          min={1}
-                          max={50}
-                          value={durations[i]}
-                          onChange={(e) =>
-                            updateDuration(i, Number(e.target.value) || 1)
-                          }
-                        />
-                        <span>an(s)</span>
-                      </div>
-                    </td>
-                  ))}
-                </tr>
+            {/* Durée en année (saisie limitée à 2 chiffres) */}
+            <tr>
+              <td>Durée en année</td>
+              {products.map((_, i) => (
+                <td key={i} className="input-cell">
+                  <InputWithUnit
+                    type="text"
+                    inputMode="numeric"
+                    value={String(durations[i])}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, '').slice(0, 2)
+                      e.target.value = v
+                      if (v !== '') setDuration(i, Math.max(1, Number(v)))
+                    }}
+                    onBlur={(e) => {
+                      let v = e.target.value.replace(/\D/g, '').slice(0, 2)
+                      if (v === '') v = '1'
+                      setDuration(i, Math.max(1, Number(v)))
+                      e.target.value = v
+                    }}
+                    unit="an(s)"
+                  />
+                </td>
+              ))}
+            </tr>
 
-                {/* Lignes Année 1, Année 2, ...  (en te basant sur ton code existant) */}
-                {result.years.map((yearLabel, yi) => (
-                  <tr key={yi}>
-                    <td className="cell-strong">{yearLabel}</td>
-                    {result.series.map((s, si) => (
-                      <td key={si}>
-                        {s.values[yi] !== undefined
-                          ? euroFull0(s.values[yi])
-                          : '0 €'}
-                      </td>
-                    ))}
-                  </tr>
+            {/* Lignes Année N */}
+            {years.map((y, yi) => (
+              <tr key={yi}>
+                <td>{`Année ${y}`}</td>
+                {series.map((s, si) => (
+                  <td key={si} style={{ textAlign: 'center', fontWeight: 600 }}>
+                    {s.values[yi] !== undefined ? euroFull0(s.values[yi]) : '0 €'}
+                  </td>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-        {/* Colonne droite : graphique */}
-        <div className="chart-card">
-          <SmoothChart res={result} />
-        </div>
+      <div
+        className="chart-card"
+        style={{ marginTop: 20, border: 'none', boxShadow: 'none', outline: 'none' }}
+      >
+        <SmoothChart res={result} />
       </div>
     </div>
   </div>
