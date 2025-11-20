@@ -156,75 +156,74 @@ export default function App() {
 <div className="topbar">
   <div className="brandbar">SER1 — Simulateur épargne retraite</div>
 
-  <div className="top-actions">
-    {/* PARAMÈTRES visible sur TOUTES les pages */}
-    <button
-      className="chip icon-btn"
-      onClick={() => navigate('/settings')}
-      title="Paramètres"
-    >
-      <IconSettings className="icon" />
-    </button>
-
-    {/* BOUTONS AFFICHÉS UNIQUEMENT SI SESSION ACTIVE */}
-    {session && !isRecoveryMode && (
-      <>
-        {/* HOME */}
-        {isSimRoute && (
-          <button
-            className="chip icon-btn"
-            onClick={() => navigate('/')}
-            title="Retour à l'accueil"
-          >
-            <IconHome className="icon" />
-          </button>
-        )}
-
-        {/* SAVE */}
-        {isSimRoute && (
-          <button
-            className="chip icon-btn"
-            onClick={() => console.log('SAVE TODO')}
-            title="Sauvegarder le dossier"
-          >
-            <IconSave className="icon" />
-          </button>
-        )}
-
-        {/* CHARGER */}
-        {isSimRoute && (
-          <button
-            className="chip icon-btn"
-            onClick={() => console.log('LOAD TODO')}
-            title="Charger un dossier"
-          >
-            <IconFolder className="icon" />
-          </button>
-        )}
-
-        {/* RESET */}
-        {window.location.pathname.includes('placement') && (
-          <button
-            className="chip icon-btn"
-            onClick={() => triggerPageReset('placement')}
-            title="Réinitialiser la simulation"
-          >
-            <IconTrash className="icon" />
-          </button>
-        )}
-
-        {/* DÉCONNEXION */}
+<div className="top-actions">
+  {session && !isRecoveryMode && (
+    <>
+      {/* HOME */}
+      {isSimRoute && (
         <button
           className="chip icon-btn"
-          onClick={handleLogout}
-          title="Se déconnecter"
+          onClick={() => navigate('/')}
+          title="Retour à l'accueil"
         >
-          <IconLogout className="icon" />
+          <IconHome className="icon" />
         </button>
-      </>
-    )}
-  </div>
+      )}
+
+      {/* SAVE */}
+      {isSimRoute && (
+        <button
+          className="chip icon-btn"
+          onClick={() => console.log('SAVE TODO')}
+          title="Sauvegarder le dossier"
+        >
+          <IconSave className="icon" />
+        </button>
+      )}
+
+      {/* CHARGER */}
+      {isSimRoute && (
+        <button
+          className="chip icon-btn"
+          onClick={() => console.log('LOAD TODO')}
+          title="Charger un dossier"
+        >
+          <IconFolder className="icon" />
+        </button>
+      )}
+
+      {/* RESET */}
+      {window.location.pathname.includes('placement') && (
+        <button
+          className="chip icon-btn"
+          onClick={() => triggerPageReset('placement')}
+          title="Réinitialiser la simulation"
+        >
+          <IconTrash className="icon" />
+        </button>
+      )}
+
+      {/* PARAMÈTRES — juste avant Déconnexion */}
+      <button
+        className="chip icon-btn"
+        onClick={() => navigate('/settings')}
+        title="Paramètres"
+      >
+        <IconSettings className="icon" />
+      </button>
+
+      {/* DÉCONNEXION */}
+      <button
+        className="chip icon-btn"
+        onClick={handleLogout}
+        title="Se déconnecter"
+      >
+        <IconLogout className="icon" />
+      </button>
+    </>
+  )}
 </div>
+
 
 
       <Routes>
