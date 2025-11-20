@@ -204,10 +204,7 @@ export default function App() {
 
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route
-          path="/login"
-          element={<Login onLogin={() => navigate('/')} />}
-        />
+        <Route path="/login" element={<Login onLogin={() => navigate('/')} />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Route simulateur */}
@@ -215,9 +212,9 @@ export default function App() {
         <Route path="/sim/credit" element={<Credit />} />
 
         {/* compat /placement => /sim/placement */}
-        <Route path="/placement" element={<Navigate to="/sim/placement" replace />}
+        <Route path="/placement" element={<Navigate to="/sim/placement" replace />}/>
         <Route path="/credit" element={<Navigate to="/sim/credit" replace />} />
-        />
+        
       </Routes>
     </>
   );
