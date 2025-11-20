@@ -102,6 +102,30 @@ const IconLogout = ({ className }) => (
   </svg>
 );
 
+const IconSettings = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M19.4 15a7.6 7.6 0 0 0 .1-6l-2.2-.4a5.8 5.8 0 0 0-1.1-1.9l.4-2.1a7.6 7.6 0 0 0-6 0l.4 2.1a5.8 5.8 0 0 0-1.1 1.9l-2.2.4a7.6 7.6 0 0 0 .1 6l2.2.4a5.8 5.8 0 0 0 1.1 1.9l-.4 2.1a7.6 7.6 0 0 0 6 0l-.4-2.1a5.8 5.8 0 0 0 1.1-1.9z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 export default function App() {
   const [session, setSession] = useState(null);
   const navigate = useNavigate();
@@ -129,68 +153,79 @@ export default function App() {
 
   return (
     <>
-      <div className="topbar">
-        <div className="brandbar">SER1 — Simulateur épargne retraite</div>
-        {session && !isRecoveryMode && (
-<div className="top-actions">
+<div className="topbar">
+  <div className="brandbar">SER1 — Simulateur épargne retraite</div>
 
-  {/* HOME */}
-  {isSimRoute && (
+  <div className="top-actions">
+    {/* PARAMÈTRES visible sur TOUTES les pages */}
     <button
       className="chip icon-btn"
-      onClick={() => navigate('/')}
-      title="Retour à l'accueil"
+      onClick={() => navigate('/settings')}
+      title="Paramètres"
     >
-      <IconHome className="icon" />
+      <IconSettings className="icon" />
     </button>
-  )}
 
-  {/* SAVE */}
-  {isSimRoute && (
-    <button
-      className="chip icon-btn"
-      onClick={() => console.log('SAVE TODO')}
-      title="Sauvegarder le dossier"
-    >
-      <IconSave className="icon" />
-    </button>
-  )}
+    {/* BOUTONS AFFICHÉS UNIQUEMENT SI SESSION ACTIVE */}
+    {session && !isRecoveryMode && (
+      <>
+        {/* HOME */}
+        {isSimRoute && (
+          <button
+            className="chip icon-btn"
+            onClick={() => navigate('/')}
+            title="Retour à l'accueil"
+          >
+            <IconHome className="icon" />
+          </button>
+        )}
 
-  {/* CHARGER */}
-  {isSimRoute && (
-    <button
-      className="chip icon-btn"
-      onClick={() => console.log('LOAD TODO')}
-      title="Charger un dossier"
-    >
-      <IconFolder className="icon" />
-    </button>
-  )}
+        {/* SAVE */}
+        {isSimRoute && (
+          <button
+            className="chip icon-btn"
+            onClick={() => console.log('SAVE TODO')}
+            title="Sauvegarder le dossier"
+          >
+            <IconSave className="icon" />
+          </button>
+        )}
 
-  {/* RESET → icône corbeille */}
-  {window.location.pathname.includes('placement') && (
-    <button
-      className="chip icon-btn"
-      onClick={() => triggerPageReset('placement')}
-      title="Réinitialiser la simulation"
-    >
-      <IconTrash className="icon" />
-    </button>
-  )}
+        {/* CHARGER */}
+        {isSimRoute && (
+          <button
+            className="chip icon-btn"
+            onClick={() => console.log('LOAD TODO')}
+            title="Charger un dossier"
+          >
+            <IconFolder className="icon" />
+          </button>
+        )}
 
-  {/* DECONNEXION → icône logout */}
-  <button
-    className="chip icon-btn"
-    onClick={handleLogout}
-    title="Se déconnecter"
-  >
-    <IconLogout className="icon" />
-  </button>
+        {/* RESET */}
+        {window.location.pathname.includes('placement') && (
+          <button
+            className="chip icon-btn"
+            onClick={() => triggerPageReset('placement')}
+            title="Réinitialiser la simulation"
+          >
+            <IconTrash className="icon" />
+          </button>
+        )}
 
+        {/* DÉCONNEXION */}
+        <button
+          className="chip icon-btn"
+          onClick={handleLogout}
+          title="Se déconnecter"
+        >
+          <IconLogout className="icon" />
+        </button>
+      </>
+    )}
+  </div>
 </div>
 
-        )}
-      </div>
 
       <Routes>
         <Route path="/" element={<Home />} />
