@@ -11,11 +11,7 @@ import { triggerPageReset } from './utils/reset';
 // Icônes SVG "maison"
 // -----------------------
 const IconHome = ({ className }) => (
-  <svg
-    className={className}
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
+  <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
     <path
       d="M4 11.5 12 4l8 7.5v7.5a1 1 0 0 1-1 1h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"
       fill="none"
@@ -28,11 +24,7 @@ const IconHome = ({ className }) => (
 );
 
 const IconSave = ({ className }) => (
-  <svg
-    className={className}
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
+  <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
     <path
       d="M5 4h10l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"
       fill="none"
@@ -53,11 +45,7 @@ const IconSave = ({ className }) => (
 );
 
 const IconFolder = ({ className }) => (
-  <svg
-    className={className}
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
+  <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
     <path
       d="M3.5 6.5a1.5 1.5 0 0 1 1.5-1.5h4.2l1.6 2h8.7a1.5 1.5 0 0 1 1.5 1.5v8.5a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5z"
       fill="none"
@@ -68,12 +56,9 @@ const IconFolder = ({ className }) => (
     />
   </svg>
 );
+
 const IconTrash = ({ className }) => (
-  <svg
-    className={className}
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
+  <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
     <path
       d="M4 7h16M10 11v6M14 11v6M9 7V4h6v3M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"
       fill="none"
@@ -86,11 +71,7 @@ const IconTrash = ({ className }) => (
 );
 
 const IconLogout = ({ className }) => (
-  <svg
-    className={className}
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
+  <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
     <path
       d="M15 12H4M11 8l-4 4 4 4M15 4h4v16h-4"
       fill="none"
@@ -103,11 +84,7 @@ const IconLogout = ({ className }) => (
 );
 
 const IconSettings = ({ className }) => (
-  <svg
-    className={className}
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
+  <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
     <path
       d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"
       fill="none"
@@ -126,6 +103,7 @@ const IconSettings = ({ className }) => (
     />
   </svg>
 );
+
 export default function App() {
   const [session, setSession] = useState(null);
   const navigate = useNavigate();
@@ -141,6 +119,7 @@ export default function App() {
   };
 
   const isRecoveryMode = window.location.hash.includes('type=recovery');
+  const isSimRoute = window.location.pathname.startsWith('/sim');
 
   // Redirection si pas connecté
   useEffect(() => {
@@ -149,82 +128,79 @@ export default function App() {
     }
   }, [session, isRecoveryMode, navigate]);
 
-  const isSimRoute = window.location.pathname.startsWith('/sim');
-
   return (
     <>
-<div className="topbar">
-  <div className="brandbar">SER1 — Simulateur épargne retraite</div>
+      <div className="topbar">
+        <div className="brandbar">SER1 — Simulateur épargne retraite</div>
 
-<div className="top-actions">
-  {session && !isRecoveryMode && (
-    <>
-      {/* HOME */}
-      {isSimRoute && (
-        <button
-          className="chip icon-btn"
-          onClick={() => navigate('/')}
-          title="Retour à l'accueil"
-        >
-          <IconHome className="icon" />
-        </button>
-      )}
+        <div className="top-actions">
+          {session && !isRecoveryMode && (
+            <>
+              {/* HOME */}
+              {isSimRoute && (
+                <button
+                  className="chip icon-btn"
+                  onClick={() => navigate('/')}
+                  title="Retour à l'accueil"
+                >
+                  <IconHome className="icon" />
+                </button>
+              )}
 
-      {/* SAVE */}
-      {isSimRoute && (
-        <button
-          className="chip icon-btn"
-          onClick={() => console.log('SAVE TODO')}
-          title="Sauvegarder le dossier"
-        >
-          <IconSave className="icon" />
-        </button>
-      )}
+              {/* SAVE */}
+              {isSimRoute && (
+                <button
+                  className="chip icon-btn"
+                  onClick={() => console.log('SAVE TODO')}
+                  title="Sauvegarder le dossier"
+                >
+                  <IconSave className="icon" />
+                </button>
+              )}
 
-      {/* CHARGER */}
-      {isSimRoute && (
-        <button
-          className="chip icon-btn"
-          onClick={() => console.log('LOAD TODO')}
-          title="Charger un dossier"
-        >
-          <IconFolder className="icon" />
-        </button>
-      )}
+              {/* CHARGER */}
+              {isSimRoute && (
+                <button
+                  className="chip icon-btn"
+                  onClick={() => console.log('LOAD TODO')}
+                  title="Charger un dossier"
+                >
+                  <IconFolder className="icon" />
+                </button>
+              )}
 
-      {/* RESET */}
-      {window.location.pathname.includes('placement') && (
-        <button
-          className="chip icon-btn"
-          onClick={() => triggerPageReset('placement')}
-          title="Réinitialiser la simulation"
-        >
-          <IconTrash className="icon" />
-        </button>
-      )}
+              {/* RESET */}
+              {window.location.pathname.includes('placement') && (
+                <button
+                  className="chip icon-btn"
+                  onClick={() => triggerPageReset('placement')}
+                  title="Réinitialiser la simulation"
+                >
+                  <IconTrash className="icon" />
+                </button>
+              )}
 
-      {/* PARAMÈTRES — juste avant Déconnexion */}
-      <button
-        className="chip icon-btn"
-        onClick={() => navigate('/settings')}
-        title="Paramètres"
-      >
-        <IconSettings className="icon" />
-      </button>
+              {/* PARAMÈTRES — juste avant Déconnexion */}
+              <button
+                className="chip icon-btn"
+                onClick={() => navigate('/settings')}
+                title="Paramètres"
+              >
+                <IconSettings className="icon" />
+              </button>
 
-      {/* DÉCONNEXION */}
-      <button
-        className="chip icon-btn"
-        onClick={handleLogout}
-        title="Se déconnecter"
-      >
-        <IconLogout className="icon" />
-      </button>
-    </>
-  )}
-</div>
-
-
+              {/* DÉCONNEXION */}
+              <button
+                className="chip icon-btn"
+                onClick={handleLogout}
+                title="Se déconnecter"
+              >
+                <IconLogout className="icon" />
+              </button>
+            </>
+          )}
+        </div>
+      </div>
 
       <Routes>
         <Route path="/" element={<Home />} />
