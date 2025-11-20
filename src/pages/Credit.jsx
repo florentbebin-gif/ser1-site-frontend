@@ -295,9 +295,12 @@ useEffect(() => {
     }catch{}
   }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode])
 
-// Reset global (ne réinitialise que les champs saisissables)
+// Reset global (ne réinitialise que les champs saisissables du simulateur CRÉDIT)
 useEffect(() => {
-  const off = onResetEvent?.(() => {
+  const off = onResetEvent?.(({ simId }) => {
+    // Ne réagit qu'au reset du simulateur "credit"
+    if (simId && simId !== 'credit') return;
+
     const ym = nowYearMonth();
 
     // champs "saisissables" du prêt 1
@@ -308,8 +311,17 @@ useEffect(() => {
     setTauxAssur(0);
     setMensuBase('');
 
-    // >>> ICI le changement : on supprime carrément les prêts 2 & 3
-    setPretsPlus([]); // au lieu de mapper/vider, on efface la liste
+    // prêts additionnels : on efface tout
+    setPretsPlus([]);
+
+    // champs "bruts" utilisés pour la saisie des taux
+    setRawTauxAss('');
+    setRawTauxPlus({});
+
+    // on nettoie aussi le localStorage pour repartir d'une feuille blanche
+    try {
+      localStorage.removeItem(STORE_KEY);
+    } catch {}
 
     // On ne touche PAS à :
     // - assurMode
@@ -318,6 +330,7 @@ useEffect(() => {
     // - viewMode
     // - lissageMode
   });
+
   return off || (() => {});
 }, [STORE_KEY]);
 
