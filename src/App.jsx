@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import ForgotPassword from './pages/ForgotPassword';
 import Placement from './pages/Placement';
 import { triggerPageReset } from './utils/reset';
+import {  HomeIcon,  FolderIcon,  CloudArrowUpIcon} from "https://esm.sh/@heroicons/react/24/outline";
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -35,12 +36,46 @@ export default function App() {
       <div className="topbar">
         <div className="brandbar">SER1 — Simulateur épargne retraite</div>
         {session && !isRecoveryMode && (
-          <div className="top-actions">
-            {window.location.pathname.includes('placement') && (
-              <button className="chip" onClick={() => triggerPageReset('placement')}>Reset</button>
-            )}
-            <button className="chip" onClick={handleLogout}>Déconnexion</button>
-          </div>
+<div className="top-actions">
+  {/* HOME — affiché dans les simulateurs */}
+  {window.location.pathname.startsWith("/sim") && (
+    <button className="chip icon-btn" onClick={() => navigate("/")}>
+      <HomeIcon className="icon" />
+    </button>
+  )}
+
+  {/* SAVE */}
+  {window.location.pathname.startsWith("/sim") && (
+    <button
+      className="chip icon-btn"
+      onClick={() => console.log("SAVE TODO")}
+    >
+      <CloudArrowUpIcon className="icon" />
+    </button>
+  )}
+
+  {/* CHARGER */}
+  {window.location.pathname.startsWith("/sim") && (
+    <button
+      className="chip icon-btn"
+      onClick={() => console.log("LOAD TODO")}
+    >
+      <FolderIcon className="icon" />
+    </button>
+  )}
+
+  {/* RESET */}
+  {window.location.pathname.includes("placement") && (
+    <button className="chip" onClick={() => triggerPageReset("placement")}>
+      Reset
+    </button>
+  )}
+
+  {/* Déconnexion */}
+  <button className="chip" onClick={handleLogout}>
+    Déconnexion
+  </button>
+</div>
         )}
       </div>
 <Routes>
