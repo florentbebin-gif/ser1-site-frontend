@@ -5,11 +5,11 @@ import { supabase } from '../supabaseClient';
 // --- navigation en pilules pour les sous-pages Paramètres ---
 
 const SETTINGS_TABS = [
-  { key: 'general', label: 'Général', path: '/settings' },
+  { key: 'general', label: 'Généraux', path: '/settings' },
   { key: 'impots', label: 'Impôts', path: '/settings/impots' },
   { key: 'prelevements', label: 'Prélèvements sociaux', path: '/settings/prelevements-sociaux' },
   { key: 'fiscalites', label: 'Fiscalités contrats', path: '/settings/fiscalites-contrats' },
-  { key: 'base-contrat', label: 'Base de contrat', path: '/settings/base-contrat' },
+  { key: 'base-contrat', label: 'Base contrats', path: '/settings/base-contrat' },
   { key: 'table-mortalite', label: 'Table de mortalité', path: '/settings/table-mortalite' },
 ];
 
