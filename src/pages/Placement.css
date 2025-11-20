@@ -100,3 +100,22 @@
   border-radius: 50%;
   display: inline-block;
 }
+
+/* Style Champs de saisie */
+.plac-table input[type="text"],
+.plac-table input[type="number"] {
+  height: 32px;
+  border: 1px solid #bbb;
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 0 8px;
+  outline: none;
+  text-align: right;
+}
+
+/* Focus */
+.plac-table input[type="text"]:focus,
+.plac-table input[type="number"]:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(43, 90, 82, .12);
+}
