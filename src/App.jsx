@@ -8,7 +8,12 @@ import Placement from './pages/Placement';
 import { triggerPageReset } from './utils/reset';
 import Credit from './pages/Credit';
 import Settings from './pages/Settings';
-
+import Settings from './pages/Settings';
+import SettingsImpots from './pages/SettingsImpots';
+import SettingsPrelevements from './pages/SettingsPrelevements';
+import SettingsFiscalites from './pages/SettingsFiscalites';
+import SettingsBaseContrats from './pages/SettingsBaseContrats';
+import SettingsTableMortalite from './pages/SettingsTableMortalite';
 
 // -----------------------
 // Icônes SVG "maison"
@@ -229,7 +234,19 @@ const isSettingsRoute = path.startsWith('/settings');
         {/* compat /placement => /sim/placement */}
         <Route path="/placement" element={<Navigate to="/sim/placement" replace />}/>
         <Route path="/credit" element={<Navigate to="/sim/credit" replace />} />
-        
+                {/* Paramètres + sous-pages */}
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/impots" element={<SettingsImpots />} />
+        <Route path="/settings/prelevements-sociaux" element={<SettingsPrelevements />}/>
+        <Route path="/settings/fiscalites-contrats" element={<SettingsFiscalites />}/>
+        <Route path="/settings/base-contrat" element={<SettingsBaseContrats />}/>
+        <Route path="/settings/table-mortalite" element={<SettingsTableMortalite />}/>
+
+        {/* compat /placement => /sim/placement */}
+        <Route
+          path="/placement"
+          element={<Navigate to="/sim/placement" replace />}
+        />
       </Routes>
     </>
   );
