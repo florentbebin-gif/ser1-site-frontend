@@ -6,7 +6,68 @@ import Home from './pages/Home';
 import ForgotPassword from './pages/ForgotPassword';
 import Placement from './pages/Placement';
 import { triggerPageReset } from './utils/reset';
-import {  HomeIcon,  FolderIcon,  CloudArrowUpIcon} from "https://esm.sh/@heroicons/react/24/outline";
+
+// -----------------------
+// Icônes SVG "maison"
+// -----------------------
+const IconHome = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      d="M4 11.5 12 4l8 7.5v7.5a1 1 0 0 1-1 1h-4.5a1 1 0 0 1-1-1v-4h-3v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const IconSave = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      d="M5 4h10l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M9 4v4h6V4M9 20v-5h6v5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const IconFolder = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path
+      d="M3.5 6.5a1.5 1.5 0 0 1 1.5-1.5h4.2l1.6 2h8.7a1.5 1.5 0 0 1 1.5 1.5v8.5a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5z"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -24,71 +85,89 @@ export default function App() {
 
   const isRecoveryMode = window.location.hash.includes('type=recovery');
 
-  // ✅ Redirection si pas connecté
+  // Redirection si pas connecté
   useEffect(() => {
     if (!session && !isRecoveryMode) {
       navigate('/login');
     }
   }, [session, isRecoveryMode, navigate]);
 
+  const isSimRoute = window.location.pathname.startsWith('/sim');
+
   return (
     <>
       <div className="topbar">
         <div className="brandbar">SER1 — Simulateur épargne retraite</div>
         {session && !isRecoveryMode && (
-<div className="top-actions">
-  {/* HOME — affiché dans les simulateurs */}
-  {window.location.pathname.startsWith("/sim") && (
-    <button className="chip icon-btn" onClick={() => navigate("/")}>
-      <HomeIcon className="icon" />
-    </button>
-  )}
+          <div className="top-actions">
+            {/* HOME (icone + tooltip) */}
+            {isSimRoute && (
+              <button
+                className="chip icon-btn"
+                onClick={() => navigate('/')}
+                title="Retour à l'accueil"
+              >
+                <IconHome className="icon" />
+              </button>
+            )}
 
-  {/* SAVE */}
-  {window.location.pathname.startsWith("/sim") && (
-    <button
-      className="chip icon-btn"
-      onClick={() => console.log("SAVE TODO")}
-    >
-      <CloudArrowUpIcon className="icon" />
-    </button>
-  )}
+            {/* SAVE */}
+            {isSimRoute && (
+              <button
+                className="chip icon-btn"
+                onClick={() => console.log('SAVE TODO')}
+                title="Sauvegarder le dossier"
+              >
+                <IconSave className="icon" />
+              </button>
+            )}
 
-  {/* CHARGER */}
-  {window.location.pathname.startsWith("/sim") && (
-    <button
-      className="chip icon-btn"
-      onClick={() => console.log("LOAD TODO")}
-    >
-      <FolderIcon className="icon" />
-    </button>
-  )}
+            {/* CHARGER */}
+            {isSimRoute && (
+              <button
+                className="chip icon-btn"
+                onClick={() => console.log('LOAD TODO')}
+                title="Charger un dossier"
+              >
+                <IconFolder className="icon" />
+              </button>
+            )}
 
-  {/* RESET */}
-  {window.location.pathname.includes("placement") && (
-    <button className="chip" onClick={() => triggerPageReset("placement")}>
-      Reset
-    </button>
-  )}
+            {/* RESET spécifique au placement */}
+            {window.location.pathname.includes('placement') && (
+              <button
+                className="chip"
+                onClick={() => triggerPageReset('placement')}
+              >
+                Reset
+              </button>
+            )}
 
-  {/* Déconnexion */}
-  <button className="chip" onClick={handleLogout}>
-    Déconnexion
-  </button>
-</div>
+            {/* Déconnexion */}
+            <button className="chip" onClick={handleLogout}>
+              Déconnexion
+            </button>
+          </div>
         )}
       </div>
-<Routes>
-  <Route path="/" element={<Home />} />
-  <Route path="/login" element={<Login onLogin={() => navigate('/')} />} />
-  <Route path="/forgot-password" element={<ForgotPassword />} />
 
-  {/* Nouvelle route avec le préfixe /sim */}
-  <Route path="/sim/placement" element={<Placement />} />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route
+          path="/login"
+          element={<Login onLogin={() => navigate('/')} />}
+        />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
-  {/* Optionnel : compat pour /placement tout court */}
-  <Route path="/placement" element={<Navigate to="/sim/placement" replace />} />
-</Routes>
+        {/* Route simulateur */}
+        <Route path="/sim/placement" element={<Placement />} />
+
+        {/* compat /placement => /sim/placement */}
+        <Route
+          path="/placement"
+          element={<Navigate to="/sim/placement" replace />}
+        />
+      </Routes>
     </>
   );
 }
