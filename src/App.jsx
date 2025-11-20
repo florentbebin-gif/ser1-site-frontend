@@ -212,11 +212,11 @@ export default function App() {
 
         {/* Route simulateur */}
         <Route path="/sim/placement" element={<Placement />} />
+        <Route path="/sim/credit" element={<Credit />} />
 
         {/* compat /placement => /sim/placement */}
-        <Route
-          path="/placement"
-          element={<Navigate to="/sim/placement" replace />}
+        <Route path="/placement" element={<Navigate to="/sim/placement" replace />}
+        <Route path="/credit" element={<Navigate to="/sim/credit" replace />} />
         />
       </Routes>
     </>
