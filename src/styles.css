@@ -145,7 +145,11 @@ body {
   margin-left: 4px;
   font-size: 13px;
 }
-
+/* largeur de la page Crédit */
+.credit-panel {
+  max-width: 1120px;
+  margin: 32px auto 40px;
+}
 /* Responsive */
 @media (max-width: 768px) {
   .tiles-wrap {
