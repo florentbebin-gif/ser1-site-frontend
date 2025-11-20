@@ -7,6 +7,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import Placement from './pages/Placement';
 import { triggerPageReset } from './utils/reset';
 import Credit from './pages/Credit';
+import Settings from './pages/Settings';
+
 
 // -----------------------
 // Icônes SVG "maison"
@@ -220,6 +222,7 @@ export default function App() {
         {/* Route simulateur */}
         <Route path="/sim/placement" element={<Placement />} />
         <Route path="/sim/credit" element={<Credit />} />
+        <Route path="/settings" element={<Settings />} />
 
         {/* compat /placement => /sim/placement */}
         <Route path="/placement" element={<Navigate to="/sim/placement" replace />}/>
