@@ -121,8 +121,10 @@ export default function App() {
     navigate('/login');
   };
 
-  const isRecoveryMode = window.location.hash.includes('type=recovery');
-  const isSimRoute = window.location.pathname.startsWith('/sim');
+const isRecoveryMode = window.location.hash.includes('type=recovery');
+const path = window.location.pathname;
+const isSimRoute = path.startsWith('/sim');
+const isSettingsRoute = path.startsWith('/settings');
 
   // Redirection si pas connecté
   useEffect(() => {
@@ -140,7 +142,7 @@ export default function App() {
           {session && !isRecoveryMode && (
             <>
               {/* HOME */}
-              {isSimRoute && (
+              {(isSimRoute || isSettingsRoute) && (
                 <button
                   className="chip icon-btn"
                   onClick={() => navigate('/')}
