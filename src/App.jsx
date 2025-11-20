@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import ForgotPassword from './pages/ForgotPassword';
 import Placement from './pages/Placement';
 import { triggerPageReset } from './utils/reset';
+import Credit from './pages/Credit';
 
 // -----------------------
 // Icônes SVG "maison"
