@@ -8,12 +8,11 @@ import Placement from './pages/Placement';
 import { triggerPageReset } from './utils/reset';
 import Credit from './pages/Credit';
 import Settings from './pages/Settings';
-import Settings from './pages/Settings';
-import SettingsImpots from './pages/SettingsImpots';
-import SettingsPrelevements from './pages/SettingsPrelevements';
-import SettingsFiscalites from './pages/SettingsFiscalites';
-import SettingsBaseContrats from './pages/SettingsBaseContrats';
-import SettingsTableMortalite from './pages/SettingsTableMortalite';
+import SettingsImpots from './pages/Sous-Settings/SettingsImpots';
+import SettingsPrelevements from './pages/Sous-Settings/SettingsPrelevements';
+import SettingsFiscalites from './pages/Sous-Settings/SettingsFiscalites';
+import SettingsBaseContrats from './pages/Sous-Settings/SettingsBaseContrats';
+import SettingsTableMortalite from './pages/Sous-Settings/SettingsTableMortalite';
 
 // -----------------------
 // Icônes SVG "maison"
