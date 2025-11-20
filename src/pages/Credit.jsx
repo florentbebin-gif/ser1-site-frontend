@@ -735,7 +735,7 @@ function transpose(aoa) {
   const canShowLissageChips = lisserPret1 && !anyInfine && pretsPlus.length > 0 // chips visibles si lissage ON & au moins 1 prêt 2/3
 
   return (
-    <div className="panel">
+    <div className="panel credit-panel">
       <div className="plac-title" style={{display:'flex', alignItems:'center', justifyContent:'space-between', gap:12}}>
         <span>Simulateur de crédit</span>
         <div style={{display:'flex', gap:8}}>
