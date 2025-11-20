@@ -104,23 +104,9 @@ return (
           <strong>Statut :</strong> <span>{roleLabel}</span>
         </div>
       </div>
-
-      {/* 🔍 DEBUG des métadonnées Supabase */}
-      <pre style={{
-        marginTop: 16,
-        fontSize: 12,
-        background: '#f5f5f5',
-        padding: 10,
-        borderRadius: 8,
-        overflowX: 'auto'
-      }}>
-        {JSON.stringify({
-          app_metadata: user.app_metadata,
-          user_metadata: user.user_metadata
-        }, null, 2)}
-      </pre>
     </div>
   </div>
 );
+
 
 }
