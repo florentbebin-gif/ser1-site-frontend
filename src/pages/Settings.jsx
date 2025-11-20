@@ -91,22 +91,36 @@ export default function Settings() {
     );
   }
 
-  return (
-    <div style={{ maxWidth: 600, margin: '40px auto', padding: '0 20px' }}>
-      <div className="section-card">
-        <div className="section-title">Paramètres</div>
+return (
+  <div style={{ maxWidth: 600, margin: '40px auto', padding: '0 20px' }}>
+    <div className="section-card">
+      <div className="section-title">Paramètres</div>
 
-        <div style={{ fontSize: 16 }}>
-          <div style={{ marginBottom: 8 }}>
-            <strong>Utilisateur :</strong>{' '}
-            <span>{user.email}</span>
-          </div>
-          <div>
-            <strong>Statut :</strong>{' '}
-            <span>{roleLabel}</span>
-          </div>
+      <div style={{ fontSize: 16 }}>
+        <div style={{ marginBottom: 8 }}>
+          <strong>Utilisateur :</strong> <span>{user.email}</span>
+        </div>
+        <div>
+          <strong>Statut :</strong> <span>{roleLabel}</span>
         </div>
       </div>
+
+      {/* 🔍 DEBUG des métadonnées Supabase */}
+      <pre style={{
+        marginTop: 16,
+        fontSize: 12,
+        background: '#f5f5f5',
+        padding: 10,
+        borderRadius: 8,
+        overflowX: 'auto'
+      }}>
+        {JSON.stringify({
+          app_metadata: user.app_metadata,
+          user_metadata: user.user_metadata
+        }, null, 2)}
+      </pre>
     </div>
-  );
+  </div>
+);
+
 }
