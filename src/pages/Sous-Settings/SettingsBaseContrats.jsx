@@ -1,5 +1,5 @@
 import React from 'react';
-import SettingsNav from './SettingsNav';
+import SettingsNav from '../SettingsNav';
 
 export default function SettingsBaseContrats() {
   return (
