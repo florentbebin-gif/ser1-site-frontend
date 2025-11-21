@@ -85,7 +85,7 @@ export default function Settings() {
 
           // nom de la page de garde (si déjà enregistré)
           if (meta.cover_slide_name) {
-            setCoverName(meta.cover_slide_name);
+            setCoverName(meta.cover_slide_url);
           }
         }
 
@@ -328,21 +328,36 @@ const handleCoverFileChange = async (e) => {
 
           <div>
             <h3 style={{ marginBottom: 8 }}>Choix de la page de garde des présentations</h3>
-            <p style={{ marginBottom: 8, fontSize: 14, color: '#555' }}>
-              Chargez une image permettant de créer votre première page de vos présentations. Cette page sera utilisée comme
-              page de garde dans les futures éditions PowerPoint de l’étude (Charger ici un format image .png, .jpg, ...)
-            </p>
+<p style={{ marginBottom: 8, fontSize: 14, color: '#555' }}>
+  Chargez une image (.jpg ou .png) d'au moins 1200 × 700 pixels.
+  Cette image sera utilisée comme page de garde dans les futures éditions PowerPoint de l’étude.
+</p>
 
-            <input
-              type="file"
-              accept=".ppt,.pptx"
-              onChange={handleCoverFileChange}
-            />
+<input
+  type="file"
+  accept="image/png,image/jpeg"
+  onChange={handleCoverFileChange}
+/>
 
-            <div style={{ marginTop: 8, fontSize: 13, color: '#444' }}>
-              <strong>Fichier sélectionné :</strong>{' '}
-              {coverName || 'Aucun'}
-            </div>
+<div style={{ marginTop: 8, fontSize: 13, color: '#444' }}>
+  <strong>Page de garde sélectionnée :</strong>{' '}
+  {coverName ? (
+    <div style={{ marginTop: 8 }}>
+      <img
+        src={coverName}
+        alt="Page de garde"
+        style={{
+          maxWidth: '260px',
+          borderRadius: 8,
+          border: '1px solid #ccc',
+        }}
+      />
+      <div style={{ fontSize: 12, marginTop: 4 }}>{coverName}</div>
+    </div>
+  ) : (
+    'Aucune'
+  )}
+</div>
           </div>
 
           {saveMessage && (
