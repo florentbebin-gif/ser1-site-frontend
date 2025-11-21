@@ -213,7 +213,7 @@ export default function Settings() {
 
           {/* Choix du code couleur */}
           <div>
-            <h3 style={{ marginBottom: 8 }}>Choix du code couleur de l’étude</h3>
+            <h3 style={{ marginBottom: 8 }}>Choix du code couleur des présentations</h3>
             <p style={{ marginBottom: 12, fontSize: 14, color: '#555' }}>
               Ces couleurs seront utilisées dans les futures éditions PowerPoint de l’étude.
             </p>
