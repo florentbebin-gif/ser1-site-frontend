@@ -78,3 +78,27 @@
   border: 1px solid #e3e3e3;
   font-size: 13px;
 }
+/* Barème IR en 2 colonnes : 2025 gauche, 2024 droite */
+.income-tax-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: flex-start;
+  margin-top: 8px;
+}
+
+.income-tax-col-right {
+  border-left: 1px solid #e0e0e0;
+  padding-left: 24px;
+}
+
+/* Bords arrondis pour les champs des tableaux de barème */
+.settings-table input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 3px 4px;
+  font-size: 13px;
+  text-align: right;
+  border: 1px solid #ccc;
+  border-radius: 4px;   /* <-- arrondi comme les autres */
+}
