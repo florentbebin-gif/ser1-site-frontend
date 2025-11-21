@@ -325,14 +325,12 @@ const handleCoverFileChange = async (e) => {
           </div>
 
           {/* Choix de la page de garde */}
-          // Pour la page de garde : on mémorise aujourd’hui le nom dans Supabase.Le jour où tu feras réellement la génération PowerPoint, on branchera un upload dans Supabase Storage et on stockera l’URL du fichier au lieu (ou en plus) du nom.
-          // définir ensemble la forme exacte de theme_colors et cover_slide_name côté générateur PowerPoint, préparer un petit helper /utils/theme.js qui les charge et fournit une palette prête à appliquer aux slides.
 
           <div>
-            <h3 style={{ marginBottom: 8 }}>Choix de la page de garde de l’étude</h3>
+            <h3 style={{ marginBottom: 8 }}>Choix de la page de garde des présentations</h3>
             <p style={{ marginBottom: 8, fontSize: 14, color: '#555' }}>
-              Chargez une seule diapositive PowerPoint (.ppt ou .pptx). Cette page sera utilisée comme
-              page de garde dans les futures éditions PowerPoint de l’étude.
+              Chargez une image permettant de créer votre première page de vos présentations. Cette page sera utilisée comme
+              page de garde dans les futures éditions PowerPoint de l’étude (Charger ici un format image .png, .jpg, ...)
             </p>
 
             <input
