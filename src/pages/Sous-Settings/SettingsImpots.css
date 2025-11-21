@@ -1,12 +1,22 @@
-/* Mise en page générale de la page Impôts */
+/* Largeur max de la carte paramètres */
 .settings-page .section-card {
   max-width: 1050px;
 }
 
+/* Séparation douce entre sections */
 .settings-page .section-card section {
   margin-top: 18px;
   padding-top: 6px;
   border-top: 1px solid #eee;
+}
+
+/* Bandeau utilisateur */
+.tax-user-banner {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  border: 1px solid #e3e3e3;
+  font-size: 13px;
 }
 
 /* Tableaux de barème IR */
@@ -33,6 +43,7 @@
   text-align: left;
 }
 
+/* Champs dans les tableaux (barème IR) */
 .settings-table input {
   width: 100%;
   box-sizing: border-box;
@@ -40,7 +51,7 @@
   font-size: 13px;
   text-align: right;
   border: 1px solid #ccc;
-  border-radius: 4px;   /* <-- arrondi comme les autres */
+  border-radius: 4px; /* arrondi comme les autres champs */
 }
 
 /* Lignes "label + input + unité" (PFU, CEHR, IS, etc.) */
@@ -72,15 +83,7 @@
   color: #555;
 }
 
-/* Bandeau utilisateur en haut de la page impôts */
-.tax-user-banner {
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: #f5f5f5;
-  border: 1px solid #e3e3e3;
-  font-size: 13px;
-}
-/* Barème IR en 2 colonnes : 2025 gauche, 2024 droite */
+/* Colonnes 2025 / 2024 (barème IR) */
 .income-tax-columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -90,6 +93,20 @@
 }
 
 .income-tax-col-right {
+  border-left: 1px solid #e0e0e0;
+  padding-left: 24px;
+}
+
+/* Colonnes 2025 / 2024 pour PFU, CEHR, IS */
+.tax-two-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: flex-start;
+  margin-top: 8px;
+}
+
+.tax-two-cols-right {
   border-left: 1px solid #e0e0e0;
   padding-left: 24px;
 }
