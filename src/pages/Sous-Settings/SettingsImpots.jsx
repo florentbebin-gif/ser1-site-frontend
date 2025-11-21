@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import SettingsNav from '../SettingsNav';
+import './SettingsImpots.css';
 
 // ----------------------
 // Valeurs par défaut
@@ -239,26 +240,11 @@ export default function SettingsImpots() {
           }}
         >
           {/* Bandeau info */}
-          <div
-            style={{
-              padding: '8px 10px',
-              borderRadius: 8,
-              background: '#f5f5f5',
-              border: '1px solid #e3e3e3',
-              display: 'flex',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div>
-              <strong>Utilisateur :</strong> {user.email} —{' '}
-              <strong>Statut :</strong> {roleLabel}
-            </div>
-            {!isAdmin && (
-              <div style={{ fontSize: 13, color: '#a33' }}>
-                Lecture seule (réservé à l’admin pour modification)
-              </div>
-            )}
+          <div className="tax-user-banner">
+            <strong>Utilisateur :</strong> {user.email} —{' '}
+            <strong>Statut :</strong> {roleLabel}
           </div>
+
 
           {/* 1. Barème impôt sur le revenu */}
           <section>
