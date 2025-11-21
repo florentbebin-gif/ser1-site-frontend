@@ -137,33 +137,87 @@ export default function Settings() {
     }
   };
 
-  const handleCoverFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+const handleCoverFileChange = async (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    // On mémorise uniquement le nom pour le moment.
-    setCoverName(file.name);
-    setSaveMessage('');
+  setSaveMessage('');
 
-    try {
-      const { error } = await supabase.auth.updateUser({
-        data: {
-          cover_slide_name: file.name,
-          theme_colors: colors, // on conserve aussi les couleurs actuelles
-        },
+  // Vérifier format
+  if (!file.type.startsWith("image/")) {
+    setSaveMessage("Veuillez sélectionner une image (jpg ou png).");
+    return;
+  }
+
+  // Vérifier dimensions ⇒ on charge l'image dans un objet Image()
+  const imageCheck = new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve({ width: img.width, height: img.height });
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+
+  let dimensions;
+  try {
+    dimensions = await imageCheck;
+  } catch {
+    setSaveMessage("Impossible de lire l'image.");
+    return;
+  }
+
+  if (dimensions.width < 1200 || dimensions.height < 700) {
+    setSaveMessage("L'image doit faire au minimum 1200 × 700 pixels.");
+    return;
+  }
+
+  try {
+    // Nom du fichier unique
+    const ext = file.name.split('.').pop().toLowerCase();
+    const filePath = `${user.id}/page_de_garde.${ext}`;
+
+    // 1) Upload dans Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('covers')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true, // remplace l'ancienne image
       });
 
-      if (error) {
-        console.error('Erreur enregistrement page de garde :', error);
-        setSaveMessage("Erreur lors de l'enregistrement de la page de garde.");
-      } else {
-        setSaveMessage('Page de garde enregistrée (nom mémorisé).');
-      }
-    } catch (err) {
-      console.error(err);
-      setSaveMessage("Erreur lors de l'enregistrement de la page de garde.");
+    if (uploadError) {
+      console.error('Erreur upload :', uploadError);
+      setSaveMessage("Erreur lors de l'upload dans Supabase Storage.");
+      return;
     }
-  };
+
+    // 2) URL publique
+    const { data: publicData } = supabase.storage
+      .from('covers')
+      .getPublicUrl(filePath);
+
+    const publicUrl = publicData.publicUrl;
+
+    // 3) Sauvegarde dans user_metadata
+    const { error: metaError } = await supabase.auth.updateUser({
+      data: {
+        cover_slide_url: publicUrl,
+        theme_colors: colors, // on sauvegarde aussi les couleurs
+      },
+    });
+
+    if (metaError) {
+      console.error('Erreur metadata :', metaError);
+      setSaveMessage("Erreur lors de l'enregistrement dans les métadonnées.");
+      return;
+    }
+
+    setCoverName(publicUrl);
+    setSaveMessage("Page de garde enregistrée avec succès.");
+  } catch (err) {
+    console.error(err);
+    setSaveMessage("Erreur lors de l'enregistrement de la page de garde.");
+  }
+};
+
 
   if (loading) {
     return (
