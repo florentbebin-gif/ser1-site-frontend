@@ -34,11 +34,12 @@ export default function Settings() {
   const [roleLabel, setRoleLabel] = useState('User');
   const [loading, setLoading] = useState(true);
 
-  const [colors, setColors] = useState(DEFAULT_COLORS);
+  const [colors, setColors] = useState(DEFAULT_COLORS);       // valeurs “réelles”
+  const [colorText, setColorText] = useState(DEFAULT_COLORS); // texte tapé par l’utilisateur
   const [savingColors, setSavingColors] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
-  const [coverName, setCoverName] = useState('');
+  const [coverUrl, setCoverUrl] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -70,7 +71,7 @@ export default function Settings() {
 
           // couleurs sauvegardées (si déjà présentes)
           const savedColors = meta.theme_colors || {};
-          setColors({
+          const merged = {
             color1: savedColors.color1 || DEFAULT_COLORS.color1,
             color2: savedColors.color2 || DEFAULT_COLORS.color2,
             color3: savedColors.color3 || DEFAULT_COLORS.color3,
@@ -81,11 +82,13 @@ export default function Settings() {
             color8: savedColors.color8 || DEFAULT_COLORS.color8,
             color9: savedColors.color9 || DEFAULT_COLORS.color9,
             color10: savedColors.color10 || DEFAULT_COLORS.color10,
-          });
+          };
+          setColors(merged);
+          setColorText(merged);
 
-          // nom de la page de garde (si déjà enregistré)
-          if (meta.cover_slide_name) {
-            setCoverName(meta.cover_slide_url);
+          // URL de la page de garde (si déjà enregistrée)
+          if (meta.cover_slide_url) {
+            setCoverUrl(meta.cover_slide_url);
           }
         }
 
@@ -102,12 +105,35 @@ export default function Settings() {
     };
   }, []);
 
+  /* ---------- Gestion des couleurs ---------- */
+
   const handleColorChange = (key, value) => {
-    setColors((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    // changement via palette → on met à jour la valeur réelle ET le texte
+    setColors(prev => ({ ...prev, [key]: value }));
+    setColorText(prev => ({ ...prev, [key]: value.toUpperCase() }));
     setSaveMessage('');
+  };
+
+  const handleColorTextChange = (key, value) => {
+    // l’utilisateur tape dans le champ texte
+    setColorText(prev => ({ ...prev, [key]: value }));
+    setSaveMessage('');
+  };
+
+  const handleColorTextBlur = (key) => {
+    const v = (colorText[key] || '').trim();
+    const hex = v.startsWith('#') ? v : `#${v}`;
+
+    // hex complet #RRGGBB
+    const isValid = /^#[0-9a-fA-F]{6}$/.test(hex);
+
+    if (isValid) {
+      setColors(prev => ({ ...prev, [key]: hex }));
+      setColorText(prev => ({ ...prev, [key]: hex.toUpperCase() }));
+    } else {
+      // invalide → on revient à la couleur réelle
+      setColorText(prev => ({ ...prev, [key]: prev[key] || colors[key] || '' }));
+    }
   };
 
   const handleSaveColors = async () => {
@@ -118,8 +144,7 @@ export default function Settings() {
       const { error } = await supabase.auth.updateUser({
         data: {
           theme_colors: colors,
-          // on laisse aussi le nom de la page de garde si disponible
-          ...(coverName ? { cover_slide_name: coverName } : {}),
+          ...(coverUrl ? { cover_slide_url: coverUrl } : {}),
         },
       });
 
@@ -137,87 +162,110 @@ export default function Settings() {
     }
   };
 
-const handleCoverFileChange = async (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+  /* ---------- Upload / suppression page de garde ---------- */
 
-  setSaveMessage('');
+  const handleCoverFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  // Vérifier format
-  if (!file.type.startsWith("image/")) {
-    setSaveMessage("Veuillez sélectionner une image (jpg ou png).");
-    return;
-  }
+    setSaveMessage('');
 
-  // Vérifier dimensions ⇒ on charge l'image dans un objet Image()
-  const imageCheck = new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve({ width: img.width, height: img.height });
-    img.onerror = reject;
-    img.src = URL.createObjectURL(file);
-  });
-
-  let dimensions;
-  try {
-    dimensions = await imageCheck;
-  } catch {
-    setSaveMessage("Impossible de lire l'image.");
-    return;
-  }
-
-  if (dimensions.width < 1200 || dimensions.height < 700) {
-    setSaveMessage("L'image doit faire au minimum 1200 × 700 pixels.");
-    return;
-  }
-
-  try {
-    // Nom du fichier unique
-    const ext = file.name.split('.').pop().toLowerCase();
-    const filePath = `${user.id}/page_de_garde.${ext}`;
-
-    // 1) Upload dans Supabase Storage
-    const { error: uploadError } = await supabase.storage
-      .from('covers')
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true, // remplace l'ancienne image
-      });
-
-    if (uploadError) {
-      console.error('Erreur upload :', uploadError);
-      setSaveMessage("Erreur lors de l'upload dans Supabase Storage.");
+    if (!file.type.startsWith('image/')) {
+      setSaveMessage('Veuillez sélectionner une image (jpg ou png).');
       return;
     }
 
-    // 2) URL publique
-    const { data: publicData } = supabase.storage
-      .from('covers')
-      .getPublicUrl(filePath);
-
-    const publicUrl = publicData.publicUrl;
-
-    // 3) Sauvegarde dans user_metadata
-    const { error: metaError } = await supabase.auth.updateUser({
-      data: {
-        cover_slide_url: publicUrl,
-        theme_colors: colors, // on sauvegarde aussi les couleurs
-      },
+    // vérif dimensions
+    const imageCheck = new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.width, height: img.height });
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
     });
 
-    if (metaError) {
-      console.error('Erreur metadata :', metaError);
-      setSaveMessage("Erreur lors de l'enregistrement dans les métadonnées.");
+    let dimensions;
+    try {
+      dimensions = await imageCheck;
+    } catch {
+      setSaveMessage("Impossible de lire l'image.");
       return;
     }
 
-    setCoverName(publicUrl);
-    setSaveMessage("Page de garde enregistrée avec succès.");
-  } catch (err) {
-    console.error(err);
-    setSaveMessage("Erreur lors de l'enregistrement de la page de garde.");
-  }
-};
+    if (dimensions.width < 1200 || dimensions.height < 700) {
+      setSaveMessage("L'image doit faire au minimum 1200 × 700 pixels.");
+      return;
+    }
 
+    try {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const filePath = `${user.id}/page_de_garde.${ext}`;
+
+      // upload dans le bucket covers
+      const { error: uploadError } = await supabase.storage
+        .from('covers')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (uploadError) {
+        console.error('Erreur upload :', uploadError);
+        setSaveMessage(
+          "Erreur lors de l'upload dans Supabase Storage : " +
+          (uploadError.message || uploadError.error_description || '')
+        );
+        return;
+      }
+
+      const { data: publicData } = supabase.storage
+        .from('covers')
+        .getPublicUrl(filePath);
+
+      const publicUrl = publicData.publicUrl;
+
+      const { error: metaError } = await supabase.auth.updateUser({
+        data: {
+          cover_slide_url: publicUrl,
+          theme_colors: colors,
+        },
+      });
+
+      if (metaError) {
+        console.error('Erreur metadata :', metaError);
+        setSaveMessage("Erreur lors de l'enregistrement dans les métadonnées.");
+        return;
+      }
+
+      setCoverUrl(publicUrl);
+      setSaveMessage('Page de garde enregistrée avec succès.');
+    } catch (err) {
+      console.error(err);
+      setSaveMessage("Erreur lors de l'enregistrement de la page de garde.");
+    }
+  };
+
+  const handleRemoveCover = async () => {
+    if (!coverUrl) return;
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          cover_slide_url: null,
+        },
+      });
+      if (error) {
+        console.error('Erreur suppression cover :', error);
+        setSaveMessage("Erreur lors de la suppression de la page de garde.");
+        return;
+      }
+      setCoverUrl('');
+      setSaveMessage('Page de garde supprimée.');
+    } catch (e) {
+      console.error(e);
+      setSaveMessage("Erreur lors de la suppression de la page de garde.");
+    }
+  };
+
+  /* ---------- Rendu ---------- */
 
   if (loading) {
     return (
@@ -251,8 +299,16 @@ const handleCoverFileChange = async (e) => {
         {/* Nav en pilules */}
         <SettingsNav />
 
-        {/* Contenu de l’onglet Généraux */}
-        <div style={{ fontSize: 16, marginTop: 24, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* Contenu onglet Généraux */}
+        <div
+          style={{
+            fontSize: 16,
+            marginTop: 24,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 24,
+          }}
+        >
           {/* Infos utilisateur */}
           <div>
             <div style={{ marginBottom: 8 }}>
@@ -267,7 +323,7 @@ const handleCoverFileChange = async (e) => {
 
           {/* Choix du code couleur */}
           <div>
-            <h3 style={{ marginBottom: 8 }}>Choix du code couleur des présentations</h3>
+            <h3 style={{ marginBottom: 8 }}>Choix du code couleur de l’étude</h3>
             <p style={{ marginBottom: 12, fontSize: 14, color: '#555' }}>
               Ces couleurs seront utilisées dans les futures éditions PowerPoint de l’étude.
             </p>
@@ -275,7 +331,7 @@ const handleCoverFileChange = async (e) => {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
                 gap: 12,
               }}
             >
@@ -293,6 +349,8 @@ const handleCoverFileChange = async (e) => {
                   }}
                 >
                   <span style={{ minWidth: 90, fontSize: 13 }}>{label}</span>
+
+                  {/* Palette */}
                   <input
                     type="color"
                     value={colors[key]}
@@ -306,9 +364,23 @@ const handleCoverFileChange = async (e) => {
                       cursor: 'pointer',
                     }}
                   />
-                  <span style={{ fontFamily: 'monospace', fontSize: 12 }}>
-                    {colors[key].toUpperCase()}
-                  </span>
+
+                  {/* Saisie hexadécimale */}
+                  <input
+                    type="text"
+                    value={colorText[key]}
+                    onChange={(e) => handleColorTextChange(key, e.target.value)}
+                    onBlur={() => handleColorTextBlur(key)}
+                    style={{
+                      width: 90,
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                      padding: '4px 6px',
+                      borderRadius: 4,
+                      border: '1px solid #ccc',
+                    }}
+                    placeholder="#000000"
+                  />
                 </div>
               ))}
             </div>
@@ -325,39 +397,46 @@ const handleCoverFileChange = async (e) => {
           </div>
 
           {/* Choix de la page de garde */}
-
           <div>
-            <h3 style={{ marginBottom: 8 }}>Choix de la page de garde des présentations</h3>
-<p style={{ marginBottom: 8, fontSize: 14, color: '#555' }}>
-  Chargez une image (.jpg ou .png) d'au moins 1200 × 700 pixels.
-  Cette image sera utilisée comme page de garde dans les futures éditions PowerPoint de l’étude.
-</p>
+            <h3 style={{ marginBottom: 8 }}>Choix de la page de garde de l’étude</h3>
+            <p style={{ marginBottom: 8, fontSize: 14, color: '#555' }}>
+              Chargez une image (.jpg ou .png) d&apos;au moins 1200 × 700 pixels.
+              Cette image sera utilisée comme page de garde dans les futures éditions PowerPoint de l’étude.
+            </p>
 
-<input
-  type="file"
-  accept="image/png,image/jpeg"
-  onChange={handleCoverFileChange}
-/>
+            <input
+              type="file"
+              accept="image/png,image/jpeg"
+              onChange={handleCoverFileChange}
+            />
 
-<div style={{ marginTop: 8, fontSize: 13, color: '#444' }}>
-  <strong>Page de garde sélectionnée :</strong>{' '}
-  {coverName ? (
-    <div style={{ marginTop: 8 }}>
-      <img
-        src={coverName}
-        alt="Page de garde"
-        style={{
-          maxWidth: '260px',
-          borderRadius: 8,
-          border: '1px solid #ccc',
-        }}
-      />
-      <div style={{ fontSize: 12, marginTop: 4 }}>{coverName}</div>
-    </div>
-  ) : (
-    'Aucune'
-  )}
-</div>
+            <div style={{ marginTop: 8, fontSize: 13, color: '#444' }}>
+              <strong>Page de garde sélectionnée :</strong>{' '}
+              {coverUrl ? (
+                <div style={{ marginTop: 8 }}>
+                  <img
+                    src={coverUrl}
+                    alt="Page de garde"
+                    style={{
+                      maxWidth: '260px',
+                      borderRadius: 8,
+                      border: '1px solid #ccc',
+                    }}
+                  />
+                  <div style={{ fontSize: 12, marginTop: 4 }}>{coverUrl}</div>
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={handleRemoveCover}
+                    style={{ marginTop: 8 }}
+                  >
+                    Supprimer la page de garde
+                  </button>
+                </div>
+              ) : (
+                'Aucune'
+              )}
+            </div>
           </div>
 
           {saveMessage && (
