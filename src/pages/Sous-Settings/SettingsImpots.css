@@ -39,6 +39,8 @@
   padding: 3px 4px;
   font-size: 13px;
   text-align: right;
+  border: 1px solid #ccc;
+  border-radius: 4px;   /* <-- arrondi comme les autres */
 }
 
 /* Lignes "label + input + unité" (PFU, CEHR, IS, etc.) */
@@ -90,15 +92,4 @@
 .income-tax-col-right {
   border-left: 1px solid #e0e0e0;
   padding-left: 24px;
-}
-
-/* Bords arrondis pour les champs des tableaux de barème */
-.settings-table input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 3px 4px;
-  font-size: 13px;
-  text-align: right;
-  border: 1px solid #ccc;
-  border-radius: 4px;   /* <-- arrondi comme les autres */
 }
