@@ -254,394 +254,194 @@ export default function SettingsImpots() {
               barème actuel et celui de l’année précédente.
             </p>
 
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-                gap: 16,
-              }}
-            >
-              {/* Barème actuel */}
-              <div>
-                <div style={{ fontWeight: 600, marginBottom: 6 }}>
-                  Barème {incomeTax.currentYearLabel}
-                </div>
-                <table className="settings-table">
-                  <thead>
-                    <tr>
-                      <th>De</th>
-                      <th>À</th>
-                      <th>Taux&nbsp;%</th>
-                      <th>Retraitement&nbsp;€</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {incomeTax.scaleCurrent.map((row, idx) => (
-                      <tr key={idx}>
-                        <td>
-                          <input
-                            type="number"
-                            value={numberOrEmpty(row.from)}
-                            onChange={(e) =>
-                              updateIncomeScale(
-                                'scaleCurrent',
-                                idx,
-                                'from',
-                                e.target.value === ''
-                                  ? null
-                                  : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            value={numberOrEmpty(row.to)}
-                            onChange={(e) =>
-                              updateIncomeScale(
-                                'scaleCurrent',
-                                idx,
-                                'to',
-                                e.target.value === ''
-                                  ? null
-                                  : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={numberOrEmpty(row.rate)}
-                            onChange={(e) =>
-                              updateIncomeScale(
-                                'scaleCurrent',
-                                idx,
-                                'rate',
-                                e.target.value === ''
-                                  ? null
-                                  : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={numberOrEmpty(row.deduction)}
-                            onChange={(e) =>
-                              updateIncomeScale(
-                                'scaleCurrent',
-                                idx,
-                                'deduction',
-                                e.target.value === ''
-                                  ? null
-                                  : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+             <div className="income-tax-columns">
+    {/* Barème 2025 / revenus 2024 */}
+    <div className="income-tax-col">
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>
+        Barème {incomeTax.currentYearLabel}
+      </div>
+      <table className="settings-table">
+        <thead>
+          <tr>
+            <th>De</th>
+            <th>À</th>
+            <th>Taux&nbsp;%</th>
+            <th>Retraitement&nbsp;€</th>
+          </tr>
+        </thead>
+        <tbody>
+          {incomeTax.scaleCurrent.map((row, idx) => (
+            <tr key={idx}>
+              <td>
+                <input
+                  type="number"
+                  value={numberOrEmpty(row.from)}
+                  onChange={(e) =>
+                    updateIncomeScale(
+                      'scaleCurrent',
+                      idx,
+                      'from',
+                      e.target.value === ''
+                        ? null
+                        : Number(e.target.value)
+                    )
+                  }
+                  disabled={!isAdmin}
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  value={numberOrEmpty(row.to)}
+                  onChange={(e) =>
+                    updateIncomeScale(
+                      'scaleCurrent',
+                      idx,
+                      'to',
+                      e.target.value === ''
+                        ? null
+                        : Number(e.target.value)
+                    )
+                  }
+                  disabled={!isAdmin}
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={numberOrEmpty(row.rate)}
+                  onChange={(e) =>
+                    updateIncomeScale(
+                      'scaleCurrent',
+                      idx,
+                      'rate',
+                      e.target.value === ''
+                        ? null
+                        : Number(e.target.value)
+                    )
+                  }
+                  disabled={!isAdmin}
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={numberOrEmpty(row.deduction)}
+                  onChange={(e) =>
+                    updateIncomeScale(
+                      'scaleCurrent',
+                      idx,
+                      'deduction',
+                      e.target.value === ''
+                        ? null
+                        : Number(e.target.value)
+                    )
+                  }
+                  disabled={!isAdmin}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
 
-              {/* Barème précédent */}
-              <div>
-                <div style={{ fontWeight: 600, marginBottom: 6 }}>
-                  Barème {incomeTax.previousYearLabel}
-                </div>
-                <table className="settings-table">
-                  <thead>
-                    <tr>
-                      <th>De</th>
-                      <th>À</th>
-                      <th>Taux&nbsp;%</th>
-                      <th>Retraitement&nbsp;€</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {incomeTax.scalePrevious.map((row, idx) => (
-                      <tr key={idx}>
-                        <td>
-                          <input
-                            type="number"
-                            value={numberOrEmpty(row.from)}
-                            onChange={(e) =>
-                              updateIncomeScale(
-                                'scalePrevious',
-                                idx,
-                                'from',
-                                e.target.value === ''
-                                  ? null
-                                  : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            value={numberOrEmpty(row.to)}
-                            onChange={(e) =>
-                              updateIncomeScale(
-                                'scalePrevious',
-                                idx,
-                                'to',
-                                e.target.value === ''
-                                  ? null
-                                  : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={numberOrEmpty(row.rate)}
-                            onChange={(e) =>
-                              updateIncomeScale(
-                                'scalePrevious',
-                                idx,
-                                'rate',
-                                e.target.value === ''
-                                  ? null
-                                  : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={numberOrEmpty(row.deduction)}
-                            onChange={(e) =>
-                              updateIncomeScale(
-                                'scalePrevious',
-                                idx,
-                                'deduction',
-                                e.target.value === ''
-                                  ? null
-                                  : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+    {/* Barème 2024 / revenus 2023 */}
+    <div className="income-tax-col income-tax-col-right">
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>
+        Barème {incomeTax.previousYearLabel}
+      </div>
+      <table className="settings-table">
+        <thead>
+          <tr>
+            <th>De</th>
+            <th>À</th>
+            <th>Taux&nbsp;%</th>
+            <th>Retraitement&nbsp;€</th>
+          </tr>
+        </thead>
+        <tbody>
+          {incomeTax.scalePrevious.map((row, idx) => (
+            <tr key={idx}>
+              <td>
+                <input
+                  type="number"
+                  value={numberOrEmpty(row.from)}
+                  onChange={(e) =>
+                    updateIncomeScale(
+                      'scalePrevious',
+                      idx,
+                      'from',
+                      e.target.value === ''
+                        ? null
+                        : Number(e.target.value)
+                    )
+                  }
+                  disabled={!isAdmin}
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  value={numberOrEmpty(row.to)}
+                  onChange={(e) =>
+                    updateIncomeScale(
+                      'scalePrevious',
+                      idx,
+                      'to',
+                      e.target.value === ''
+                        ? null
+                        : Number(e.target.value)
+                    )
+                  }
+                  disabled={!isAdmin}
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={numberOrEmpty(row.rate)}
+                  onChange={(e) =>
+                    updateIncomeScale(
+                      'scalePrevious',
+                      idx,
+                      'rate',
+                      e.target.value === ''
+                        ? null
+                        : Number(e.target.value)
+                    )
+                  }
+                  disabled={!isAdmin}
+                />
+              </td>
+              <td>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={numberOrEmpty(row.deduction)}
+                  onChange={(e) =>
+                    updateIncomeScale(
+                      'scalePrevious',
+                      idx,
+                      'deduction',
+                      e.target.value === ''
+                        ? null
+                        : Number(e.target.value)
+                    )
+                  }
+                  disabled={!isAdmin}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-            {/* Quotient familial + décote + abattement 10 % */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))',
-                gap: 16,
-                marginTop: 16,
-              }}
-            >
-              <div>
-                <strong>Plafond du quotient familial</strong>
-                <div className="settings-field-row">
-                  <label>Par 1/2 part supplémentaire</label>
-                  <input
-                    type="number"
-                    value={numberOrEmpty(incomeTax.quotientFamily.plafondPartSup)}
-                    onChange={(e) =>
-                      updateField(
-                        ['incomeTax', 'quotientFamily', 'plafondPartSup'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>€</span>
-                </div>
-                <div className="settings-field-row">
-                  <label>Parent isolé (2 premières parts)</label>
-                  <input
-                    type="number"
-                    value={numberOrEmpty(
-                      incomeTax.quotientFamily
-                        .plafondParentIsoléDeuxPremièresParts
-                    )}
-                    onChange={(e) =>
-                      updateField(
-                        [
-                          'incomeTax',
-                          'quotientFamily',
-                          'plafondParentIsoléDeuxPremièresParts',
-                        ],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>€</span>
-                </div>
-              </div>
-
-              <div>
-                <strong>Décote</strong>
-                <div className="settings-field-row">
-                  <label>Déclenchement célibataire</label>
-                  <input
-                    type="number"
-                    value={numberOrEmpty(incomeTax.decote.triggerSingle)}
-                    onChange={(e) =>
-                      updateField(
-                        ['incomeTax', 'decote', 'triggerSingle'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>€</span>
-                </div>
-                <div className="settings-field-row">
-                  <label>Déclenchement couple</label>
-                  <input
-                    type="number"
-                    value={numberOrEmpty(incomeTax.decote.triggerCouple)}
-                    onChange={(e) =>
-                      updateField(
-                        ['incomeTax', 'decote', 'triggerCouple'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>€</span>
-                </div>
-                <div className="settings-field-row">
-                  <label>Montant célibataire</label>
-                  <input
-                    type="number"
-                    value={numberOrEmpty(incomeTax.decote.amountSingle)}
-                    onChange={(e) =>
-                      updateField(
-                        ['incomeTax', 'decote', 'amountSingle'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>€</span>
-                </div>
-                <div className="settings-field-row">
-                  <label>Montant couple</label>
-                  <input
-                    type="number"
-                    value={numberOrEmpty(incomeTax.decote.amountCouple)}
-                    onChange={(e) =>
-                      updateField(
-                        ['incomeTax', 'decote', 'amountCouple'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>€</span>
-                </div>
-                <div className="settings-field-row">
-                  <label>Taux de la décote</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={numberOrEmpty(incomeTax.decote.ratePercent)}
-                    onChange={(e) =>
-                      updateField(
-                        ['incomeTax', 'decote', 'ratePercent'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>%</span>
-                </div>
-              </div>
-
-              <div>
-                <strong>Abattement 10&nbsp;%</strong>
-                <div className="settings-field-row">
-                  <label>Plafond {incomeTax.currentYearLabel}</label>
-                  <input
-                    type="number"
-                    value={numberOrEmpty(incomeTax.abat10.current.plafond)}
-                    onChange={(e) =>
-                      updateField(
-                        ['incomeTax', 'abat10', 'current', 'plafond'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>€</span>
-                </div>
-                <div className="settings-field-row">
-                  <label>Plancher {incomeTax.currentYearLabel}</label>
-                  <input
-                    type="number"
-                    value={numberOrEmpty(incomeTax.abat10.current.plancher)}
-                    onChange={(e) =>
-                      updateField(
-                        ['incomeTax', 'abat10', 'current', 'plancher'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>€</span>
-                </div>
-                <div className="settings-field-row">
-                  <label>Plafond {incomeTax.previousYearLabel}</label>
-                  <input
-                    type="number"
-                    value={numberOrEmpty(incomeTax.abat10.previous.plafond)}
-                    onChange={(e) =>
-                      updateField(
-                        ['incomeTax', 'abat10', 'previous', 'plafond'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>€</span>
-                </div>
-                <div className="settings-field-row">
-                  <label>Plancher {incomeTax.previousYearLabel}</label>
-                  <input
-                    type="number"
-                    value={numberOrEmpty(incomeTax.abat10.previous.plancher)}
-                    onChange={(e) =>
-                      updateField(
-                        ['incomeTax', 'abat10', 'previous', 'plancher'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>€</span>
-                </div>
-              </div>
-            </div>
           </section>
 
           {/* 2. PFU */}
