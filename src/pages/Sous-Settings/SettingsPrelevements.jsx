@@ -16,8 +16,8 @@ import './SettingsImpots.css';
 
 const DEFAULT_PS_SETTINGS = {
   labels: {
-    currentYearLabel: '2025 (revenus 2024)',
-    previousYearLabel: '2024 (revenus 2023)',
+    currentYearLabel: '2025 (RFR 2023 & Avis IR 2024)',
+    previousYearLabel: '2024 (RFR 2022 & Avis IR 2023)',
   },
 
   // PS sur patrimoine / capital (revenus du patrimoine, placements…)
