@@ -110,3 +110,23 @@
   border-left: 1px solid #e0e0e0;
   padding-left: 24px;
 }
+/* Blocs sous chaque barème (quotient, décote, abattements) */
+.income-tax-extra {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.income-tax-block {
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #f9f9f9;
+  border: 1px solid #e6e6e6;
+}
+
+.income-tax-block-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
