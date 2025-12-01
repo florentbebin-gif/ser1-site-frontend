@@ -267,10 +267,11 @@ export default function SettingsImpots() {
                   <tr>
                     <th>De</th>
                     <th>À</th>
-                    <th>Taux&nbsp;%</th>
+                    <th className="taux-col">Taux&nbsp;%</th>
                     <th>Retraitement&nbsp;€</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {incomeTax.scaleCurrent.map((row, idx) => (
                     <tr key={idx}>
@@ -308,24 +309,25 @@ export default function SettingsImpots() {
                           disabled={!isAdmin}
                         />
                       </td>
-                      <td>
+                        <td className="taux-col">
                         <input
                           type="number"
                           step="0.01"
                           value={numberOrEmpty(row.rate)}
                           onChange={(e) =>
                             updateIncomeScale(
-                              'scaleCurrent',
-                              idx,
-                              'rate',
-                              e.target.value === ''
-                                ? null
-                                : Number(e.target.value)
+                            'scaleCurrent',
+                            idx,
+                            'rate',
+                            e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
                             )
                           }
-                          disabled={!isAdmin}
+                        disabled={!isAdmin}
                         />
                       </td>
+
                       <td>
                         <input
                           type="number"
@@ -597,10 +599,11 @@ export default function SettingsImpots() {
                   <tr>
                     <th>De</th>
                     <th>À</th>
-                    <th>Taux&nbsp;%</th>
+                    <th className="taux-col">Taux&nbsp;%</th>
                     <th>Retraitement&nbsp;€</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {incomeTax.scalePrevious.map((row, idx) => (
                     <tr key={idx}>
@@ -638,7 +641,7 @@ export default function SettingsImpots() {
                           disabled={!isAdmin}
                         />
                       </td>
-                      <td>
+                        <td className="taux-col">
                         <input
                           type="number"
                           step="0.01"
@@ -646,16 +649,17 @@ export default function SettingsImpots() {
                           onChange={(e) =>
                             updateIncomeScale(
                               'scalePrevious',
-                              idx,
-                              'rate',
-                              e.target.value === ''
-                                ? null
-                                : Number(e.target.value)
-                            )
-                          }
+                                idx,
+                                'rate',
+                                e.target.value === ''
+                                  ? null
+                                  : Number(e.target.value)
+                              )
+                            }
                           disabled={!isAdmin}
                         />
                       </td>
+
                       <td>
                         <input
                           type="number"
