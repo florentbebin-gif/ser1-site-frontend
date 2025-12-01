@@ -140,14 +140,18 @@ function numberOrEmpty(v) {
 
 export default function SettingsPrelevements() {
   const [user, setUser] = useState(null);
-  const [role, setRole] = useState('User');
+  const [roleLabel, setRoleLabel] = useState('User');
   const [settings, setSettings] = useState(DEFAULT_PS_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  const isAdmin = role === 'Admin';
+  const isAdmin =
+    user &&
+    ((typeof user?.user_metadata?.role === 'string' &&
+      user.user_metadata.role.toLowerCase() === 'admin') ||
+      user?.user_metadata?.is_admin === true);
 
   // ----------------------
   // Chargement initial
@@ -162,73 +166,55 @@ export default function SettingsPrelevements() {
         setMessage('');
 
         // 1. Récupérer l'utilisateur connecté
-        const {
-          data: { user: currentUser },
-          error: userError,
-        } = await supabase.auth.getUser();
-
-        if (userError) throw userError;
-
-        if (!currentUser) {
-          if (!mounted) return;
-          setUser(null);
-          setRole('User');
-          setSettings(DEFAULT_PS_SETTINGS);
+        const { data: userData, error: userErr } = await supabase.auth.getUser();
+        if (userErr) {
+          console.error('Erreur user:', userErr);
+          if (mounted) setLoading(false);
           return;
         }
 
+        const currentUser = userData?.user || null;
         if (!mounted) return;
+
         setUser(currentUser);
 
-        // 2. Déterminer le rôle depuis les metadata de l'utilisateur
-        // Dans ton projet, le rôle est stocké dans user_metadata.role
-        const metadataRole =
-          currentUser.user_metadata?.role ||
-          currentUser.app_metadata?.role ||
-          'User';
+        if (currentUser) {
+          const meta = currentUser.user_metadata || {};
+          const admin =
+            (typeof meta.role === 'string' &&
+              meta.role.toLowerCase() === 'admin') ||
+            meta.is_admin === true;
+          setRoleLabel(admin ? 'Admin' : 'User');
+        }
 
-        if (!mounted) return;
-        setRole(metadataRole);
-
-        // 3. Récupérer les paramètres PS (table ps_settings, id = 1)
-        const { data: row, error: psError } = await supabase
+        // 2. Récupérer les paramètres PS (table ps_settings, id = 1)
+        const { data: rows, error: psErr } = await supabase
           .from('ps_settings')
           .select('data')
-          .eq('id', 1)
-          .maybeSingle();
+          .eq('id', 1);
 
-        if (psError) {
-          // Si la table n'existe pas encore, on garde les valeurs par défaut
-          console.warn('Erreur lecture ps_settings', psError);
+        if (!psErr && rows && rows.length > 0 && rows[0].data) {
+          setSettings((prev) => ({
+            ...prev,
+            ...rows[0].data,
+          }));
+        } else if (psErr && psErr.code !== 'PGRST116') {
+          console.error('Erreur chargement ps_settings :', psErr);
         }
 
-        let finalSettings = DEFAULT_PS_SETTINGS;
-        if (row && row.data) {
-          // Merge simple : si tu ajoutes des champs plus tard,
-          // les valeurs manquantes seront prises dans DEFAULT_PS_SETTINGS.
-          finalSettings = {
-            ...DEFAULT_PS_SETTINGS,
-            ...row.data,
-          };
-        }
-
-        if (!mounted) return;
-        setSettings(finalSettings);
+        if (mounted) setLoading(false);
       } catch (e) {
         console.error(e);
-        if (!mounted) return;
-        setError('Erreur lors du chargement des paramètres de prélèvements sociaux.');
-      } finally {
         if (mounted) setLoading(false);
       }
     }
 
     load();
-
     return () => {
       mounted = false;
     };
   }, []);
+
 
   // ----------------------
   // Helpers de mise à jour
@@ -261,6 +247,7 @@ export default function SettingsPrelevements() {
   // Sauvegarde
   // ----------------------
   const handleSave = async () => {
+    if (!isAdmin) return;  // on ne fait rien si pas admin
     try {
       setSaving(true);
       setError('');
@@ -305,7 +292,7 @@ export default function SettingsPrelevements() {
             {user ? (
               <>
                 Utilisateur : <strong>{user.email}</strong> — Statut :{' '}
-                <strong>{role}</strong>
+                <strong>{roleLabel}</strong>
               </>
             ) : (
               <>Non connecté</>
