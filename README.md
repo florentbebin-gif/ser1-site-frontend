@@ -5,21 +5,31 @@ Application web React permettant :
 - la **connexion sécurisée** via Supabase,
 - l’accès à plusieurs **simulateurs** (épargne / placement, crédit…),
 - la **configuration centrale** de paramètres fiscaux et graphiques (page Paramètres).
+  
+👉 Projet **100 % frontend** basé sur **React + Supabase**.  
+👉 Déployé sur **Vercel**.
 
-Déployé sur **Vercel** avec **Vite** comme outil de build.  
-L’application consomme :
+## 1. Stack technique
 
-- une **API backend** (Render ou autre) pour certains calculs,
-- une base **Supabase** (authentification, paramètres, fichiers).
+### Frontend
+- **React** (Vite)
+- JavaScript
+- CSS simple (pas de framework type MUI / Tailwind)
+- State local (`useState`, `useEffect`)
+
+### Backend / Services
+- ❌ Pas de backend applicatif actif
+- ✅ **Supabase uniquement** :
+  - Authentification
+  - Base de données (paramètres)
+  - Storage (images – page de garde PowerPoint)
 
 ---
 
-## 1. Architecture globale
+## 2. Architecture globale
 
 ### Frontend
 
-- **Framework** : React + Vite
-- **Typage** : JavaScript (pas de TypeScript à ce jour)
 - **State management** : `useState`, `useEffect` et état local dans chaque page
 - **Routing** : géré dans `src/App.jsx` (pages Login, Home, Placement, Crédit, Paramètres, etc.)
 
@@ -39,9 +49,12 @@ L’application consomme :
 
 ## 2. Arborescence (simplifiée)
 
-> Les noms peuvent légèrement évoluer, se référer aux fichiers réels pour les détails.
-
 ```text
+.env
+README.md
+index.html
+package.json
+vercel.json
 src/
   main.jsx                # Entrée Vite/React
   App.jsx                 # Routing et topbar commune
@@ -52,42 +65,40 @@ src/
   utils/
     ...                   # Fonctions utilitaires (formatage, calculs...)
 
-  components/
-    Topbar.jsx            # Barre supérieure commune
-    SmoothChart.jsx       # Composant graphique (Placement)
-    InputWithUnit.jsx     # Champ + unité (Placement)
 
   pages/
     Login.jsx             # Page de connexion / récupération
+    Login.css
     Home.jsx              # Page d'accueil avec tuiles de navigation
+    Home.css
 
     Placement.jsx         # Simulateur de placements (capit./distribution)
     Placement.css
 
     Credit.jsx            # Simulateur de crédit
-    Credit.css
 
     Settings.jsx          # Page Paramètres principale (onglet Général + sous-onglets)
     Settings.css
     SettingsNav.jsx       # Navigation "pilules" des sous-pages
+    ForgotPassword.jsx    # Gestion de la page mot de passe oublié
+    ForgotPassword.css
 
     Sous-Settings/
       SettingsGeneraux.jsx      # Sous-page "Généraux"
       SettingsImpots.jsx        # Sous-page "Impôts"
+      SettingsImpots.css
       SettingsPrelevements.jsx  # Sous-page "Prélèvements sociaux" (squelette)
       SettingsFiscalites.jsx    # Sous-page "Fiscalités contrats" (squelette)
       SettingsBaseContrats.jsx  # Sous-page "Base contrats" (squelette)
       SettingsTableMortalite.jsx# Sous-page "Table de mortalité" (squelette)
 
-      SettingsGeneraux.css
-      SettingsImpots.css
-      ...
+  
 ---
 
 ## 3. Navigation & topbar
 La navigation de haut niveau est gérée dans App.jsx :
 
-/login (ou racine non authentifiée) → page Login
+/login → page Login
 
 / → Home (tuiles)
 
