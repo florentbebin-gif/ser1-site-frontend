@@ -922,6 +922,455 @@ export default function SettingsImpots() {
           </div>
         </section>
 
+                    </section>
+
+          {/* 2. PFU */}
+          <section>
+  <h3>PFU (flat tax)</h3>
+
+  <div className="tax-two-cols">
+    {/* Colonne 2025 (revenus 2024) */}
+    <div>
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>
+        {incomeTax.currentYearLabel}
+      </div>
+      <div className="settings-field-row">
+        <label>Part impôt sur le revenu</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(pfu.rateIR)}
+          onChange={(e) =>
+            updateField(
+              ['pfu', 'rateIR'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+      <div className="settings-field-row">
+        <label>Prélèvements sociaux</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(pfu.rateSocial)}
+          onChange={(e) =>
+            updateField(
+              ['pfu', 'rateSocial'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+      <div className="settings-field-row">
+        <label>Taux global PFU</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(pfu.rateTotal)}
+          onChange={(e) =>
+            updateField(
+              ['pfu', 'rateTotal'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+    </div>
+
+    {/* Colonne 2024 (revenus 2023) – mêmes données pour l’instant */}
+    <div className="tax-two-cols-right">
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>
+        {incomeTax.previousYearLabel}
+      </div>
+      <div className="settings-field-row">
+        <label>Part impôt sur le revenu</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(pfu.rateIR)}
+          onChange={(e) =>
+            updateField(
+              ['pfu', 'rateIR'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+      <div className="settings-field-row">
+        <label>Prélèvements sociaux</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(pfu.rateSocial)}
+          onChange={(e) =>
+            updateField(
+              ['pfu', 'rateSocial'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+      <div className="settings-field-row">
+        <label>Taux global PFU</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(pfu.rateTotal)}
+          onChange={(e) =>
+            updateField(
+              ['pfu', 'rateTotal'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+          {/* 3. CEHR / CDHR */}
+          <section>
+  <h3>CEHR / CDHR</h3>
+  <p style={{ fontSize: 13, color: '#555' }}>
+    Contribution exceptionnelle sur les hauts revenus (CEHR) et
+    contribution différentielle (CDHR).
+  </p>
+
+  <div className="tax-two-cols">
+    {/* Colonne 2025 */}
+    <div>
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>
+        {incomeTax.currentYearLabel}
+      </div>
+
+      <strong>CEHR – personne seule</strong>
+      {cehr.single.map((row, idx) => (
+        <div className="settings-field-row" key={`cehrS_2025_${idx}`}>
+          <label>
+            De {numberOrEmpty(row.from)} € à{' '}
+            {row.to ? `${row.to} €` : 'plus'}
+          </label>
+          <input
+            type="number"
+            step="0.1"
+            value={numberOrEmpty(row.rate)}
+            onChange={(e) =>
+              updateField(
+                ['cehr', 'single', idx, 'rate'],
+                e.target.value === '' ? null : Number(e.target.value)
+              )
+            }
+            disabled={!isAdmin}
+          />
+          <span>%</span>
+        </div>
+      ))}
+
+      <strong>CEHR – couple</strong>
+      {cehr.couple.map((row, idx) => (
+        <div className="settings-field-row" key={`cehrC_2025_${idx}`}>
+          <label>
+            De {numberOrEmpty(row.from)} € à{' '}
+            {row.to ? `${row.to} €` : 'plus'}
+          </label>
+          <input
+            type="number"
+            step="0.1"
+            value={numberOrEmpty(row.rate)}
+            onChange={(e) =>
+              updateField(
+                ['cehr', 'couple', idx, 'rate'],
+                e.target.value === '' ? null : Number(e.target.value)
+              )
+            }
+            disabled={!isAdmin}
+          />
+          <span>%</span>
+        </div>
+      ))}
+
+      <strong>CDHR (taux minimal)</strong>
+      <div className="settings-field-row">
+        <label>Taux effectif minimal</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(cdhr.minEffectiveRate)}
+          onChange={(e) =>
+            updateField(
+              ['cdhr', 'minEffectiveRate'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+      <div className="settings-field-row">
+        <label>Seuil RFR personne seule</label>
+        <input
+          type="number"
+          value={numberOrEmpty(cdhr.thresholdSingle)}
+          onChange={(e) =>
+            updateField(
+              ['cdhr', 'thresholdSingle'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>€</span>
+      </div>
+      <div className="settings-field-row">
+        <label>Seuil RFR couple</label>
+        <input
+          type="number"
+          value={numberOrEmpty(cdhr.thresholdCouple)}
+          onChange={(e) =>
+            updateField(
+              ['cdhr', 'thresholdCouple'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>€</span>
+      </div>
+    </div>
+
+    {/* Colonne 2024 – mêmes paramètres pour l’instant */}
+    <div className="tax-two-cols-right">
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>
+        {incomeTax.previousYearLabel}
+      </div>
+
+      <strong>CEHR – personne seule</strong>
+      {cehr.single.map((row, idx) => (
+        <div className="settings-field-row" key={`cehrS_2024_${idx}`}>
+          <label>
+            De {numberOrEmpty(row.from)} € à{' '}
+            {row.to ? `${row.to} €` : 'plus'}
+          </label>
+          <input
+            type="number"
+            step="0.1"
+            value={numberOrEmpty(row.rate)}
+            onChange={(e) =>
+              updateField(
+                ['cehr', 'single', idx, 'rate'],
+                e.target.value === '' ? null : Number(e.target.value)
+              )
+            }
+            disabled={!isAdmin}
+          />
+          <span>%</span>
+        </div>
+      ))}
+
+      <strong>CEHR – couple</strong>
+      {cehr.couple.map((row, idx) => (
+        <div className="settings-field-row" key={`cehrC_2024_${idx}`}>
+          <label>
+            De {numberOrEmpty(row.from)} € à{' '}
+            {row.to ? `${row.to} €` : 'plus'}
+          </label>
+          <input
+            type="number"
+            step="0.1"
+            value={numberOrEmpty(row.rate)}
+            onChange={(e) =>
+              updateField(
+                ['cehr', 'couple', idx, 'rate'],
+                e.target.value === '' ? null : Number(e.target.value)
+              )
+            }
+            disabled={!isAdmin}
+          />
+          <span>%</span>
+        </div>
+      ))}
+
+      <strong>CDHR (taux minimal)</strong>
+      <div className="settings-field-row">
+        <label>Taux effectif minimal</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(cdhr.minEffectiveRate)}
+          onChange={(e) =>
+            updateField(
+              ['cdhr', 'minEffectiveRate'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+      <div className="settings-field-row">
+        <label>Seuil RFR personne seule</label>
+        <input
+          type="number"
+          value={numberOrEmpty(cdhr.thresholdSingle)}
+          onChange={(e) =>
+            updateField(
+              ['cdhr', 'thresholdSingle'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>€</span>
+      </div>
+      <div className="settings-field-row">
+        <label>Seuil RFR couple</label>
+        <input
+          type="number"
+          value={numberOrEmpty(cdhr.thresholdCouple)}
+          onChange={(e) =>
+            updateField(
+              ['cdhr', 'thresholdCouple'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>€</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+          {/* 4. Impôt sur les sociétés */}
+          <section>
+  <h3>Impôt sur les sociétés</h3>
+
+  <div className="tax-two-cols">
+    {/* 2025 */}
+    <div>
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>
+        {incomeTax.currentYearLabel}
+      </div>
+      <div className="settings-field-row">
+        <label>Taux normal IS</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(corporateTax.normalRate)}
+          onChange={(e) =>
+            updateField(
+              ['corporateTax', 'normalRate'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+      <div className="settings-field-row">
+        <label>Taux réduit IS</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(corporateTax.reducedRate)}
+          onChange={(e) =>
+            updateField(
+              ['corporateTax', 'reducedRate'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+      <div className="settings-field-row">
+        <label>Seuil de bénéfice au taux réduit</label>
+        <input
+          type="number"
+          value={numberOrEmpty(corporateTax.reducedThreshold)}
+          onChange={(e) =>
+            updateField(
+              ['corporateTax', 'reducedThreshold'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>€</span>
+      </div>
+    </div>
+
+    {/* 2024 – mêmes valeurs aujourd’hui */}
+    <div className="tax-two-cols-right">
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>
+        {incomeTax.previousYearLabel}
+      </div>
+      <div className="settings-field-row">
+        <label>Taux normal IS</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(corporateTax.normalRate)}
+          onChange={(e) =>
+            updateField(
+              ['corporateTax', 'normalRate'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+      <div className="settings-field-row">
+        <label>Taux réduit IS</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(corporateTax.reducedRate)}
+          onChange={(e) =>
+            updateField(
+              ['corporateTax', 'reducedRate'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+      <div className="settings-field-row">
+        <label>Seuil de bénéfice au taux réduit</label>
+        <input
+          type="number"
+          value={numberOrEmpty(corporateTax.reducedThreshold)}
+          onChange={(e) =>
+            updateField(
+              ['corporateTax', 'reducedThreshold'],
+              e.target.value === '' ? null : Number(e.target.value)
+            )
+          }
+          disabled={!isAdmin}
+        />
+        <span>€</span>
+      </div>
+    </div>
+  </div>
+</section>
+          
           {/* Bouton Enregistrer */}
           {isAdmin && (
             <button
