@@ -132,7 +132,78 @@ const DEFAULT_PS_SETTINGS = {
       ],
     },
   },
+  // Seuils RFR pour CSG / CRDS / CASA
+  //  - par lieu de résidence (Métropole / DOM / Guyane)
+  //  - pour 1 part de quotient familial
+  //  - et majoration par quart de part supplémentaire
+  //
+  // 2025 : RFR 2023 — barème CNIEG (tableau seuils 2025)
+  // 2024 : RFR 2022 — barème CRPCEN (tableaux seuils 2024)
+  retirementThresholds: {
+    current: {
+      // Résidence en métropole
+      metropole: {
+        rfrMaxExemption1Part: 12817, // plafond exonération totale
+        rfrMaxReduced1Part: 16755,   // plafond CSG 3,8 % (taux réduit)
+        rfrMaxMedian1Part: 26004,    // plafond CSG 6,6 % (taux médian). Au-delà : taux normal 8,3 %
+        // Majoration par quart de part supplémentaire
+        incrementQuarterExemption: 1711,
+        incrementQuarterReduced: 2237,
+        incrementQuarterMedian: 3471,
+      },
+      // Résidence en Guadeloupe / Martinique / Réunion / St-Barth / St-Martin
+      gmr: {
+        rfrMaxExemption1Part: 15164,
+        rfrMaxReduced1Part: 18331,
+        rfrMaxMedian1Part: 26004,
+        // valeurs initialisées d'après le tableau 2025 (premier quart puis quarts suivants),
+        // tu pourras les affiner dans l'interface si besoin
+        incrementQuarterExemption: 1882,
+        incrementQuarterReduced: 2459,
+        incrementQuarterMedian: 3471,
+      },
+      // Résidence en Guyane
+      guyane: {
+        rfrMaxExemption1Part: 15856,
+        rfrMaxReduced1Part: 19200,
+        rfrMaxMedian1Part: 26004,
+        incrementQuarterExemption: 1968,
+        incrementQuarterReduced: 2572,
+        incrementQuarterMedian: 3471,
+      },
+    },
+    previous: {
+      // 2024 — métropole
+      metropole: {
+        rfrMaxExemption1Part: 12230,
+        rfrMaxReduced1Part: 15988,
+        rfrMaxMedian1Part: 24812,
+        incrementQuarterExemption: 1633,
+        incrementQuarterReduced: 2135,
+        incrementQuarterMedian: 3312,
+      },
+      // 2024 — Guadeloupe / Martinique / Réunion / St-Barth / St-Martin
+      gmr: {
+        rfrMaxExemption1Part: 14469,
+        rfrMaxReduced1Part: 17491,
+        rfrMaxMedian1Part: 24812,
+        incrementQuarterExemption: 1633,
+        incrementQuarterReduced: 2135,
+        incrementQuarterMedian: 3312,
+      },
+      // 2024 — Guyane
+      guyane: {
+        rfrMaxExemption1Part: 15130,
+        rfrMaxReduced1Part: 18321,
+        rfrMaxMedian1Part: 24812,
+        incrementQuarterExemption: 1633,
+        incrementQuarterReduced: 2135,
+        incrementQuarterMedian: 3312,
+      },
+    },
+  },
 };
+
 
 function numberOrEmpty(v) {
   return v === null || v === undefined || Number.isNaN(v) ? '' : String(v);
@@ -275,7 +346,7 @@ export default function SettingsPrelevements() {
     }
   };
 
-  const { labels, patrimony, retirement } = settings;
+  const { labels, patrimony, retirement, retirementThresholds } = settings;
 
   // ----------------------
   // Rendu
@@ -785,6 +856,928 @@ export default function SettingsPrelevements() {
 
             </section>
 
+                        {/* 3. Seuils RFR pour CSG / CRDS / CASA */}
+            <section>
+              <h3 style={{ marginTop: 24 }}>
+                Seuils de revenus pour la CSG, la CRDS et la CASA (RFR)
+              </h3>
+              <p style={{ fontSize: 13, color: '#555', marginBottom: 12 }}>
+                Seuils de revenu fiscal de référence (RFR) utilisés pour déterminer
+                l&apos;exonération ou l&apos;assujettissement aux taux réduit, médian
+                ou normal de CSG sur les pensions de retraite. Ces seuils s&apos;appliquent
+                aussi pour la CRDS et la CASA.
+                Les montants sont indiqués pour <strong>1 part</strong>, avec une
+                majoration par <strong>quart de part supplémentaire</strong>.
+              </p>
+
+              <div className="tax-two-cols">
+                {/* Colonne 2025 */}
+                <div>
+                  <div style={{ fontWeight: 600, marginBottom: 6 }}>
+                    {labels.currentYearLabel}
+                  </div>
+
+                  {/* Métropole */}
+                  <div style={{ fontWeight: 500, marginTop: 8, marginBottom: 4 }}>
+                    Résidence en métropole
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond exonération (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.metropole.rfrMaxExemption1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'metropole',
+                            'rfrMaxExemption1Part',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond taux réduit (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.metropole.rfrMaxReduced1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'metropole',
+                            'rfrMaxReduced1Part',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond taux médian (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.metropole.rfrMaxMedian1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'metropole',
+                            'rfrMaxMedian1Part',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  <div className="settings-field-row">
+                    <label>
+                      Majoration par quart de part – plafond exonération
+                    </label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.metropole
+                          .incrementQuarterExemption
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'metropole',
+                            'incrementQuarterExemption',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>
+                      Majoration par quart de part – plafond taux réduit
+                    </label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.metropole
+                          .incrementQuarterReduced
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'metropole',
+                            'incrementQuarterReduced',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>
+                      Majoration par quart de part – plafond taux médian
+                    </label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.metropole
+                          .incrementQuarterMedian
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'metropole',
+                            'incrementQuarterMedian',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  {/* DOM hors Guyane */}
+                  <div style={{ fontWeight: 500, marginTop: 16, marginBottom: 4 }}>
+                    Résidence en Martinique, Guadeloupe, Réunion,
+                    Saint-Barthélemy, Saint-Martin
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond exonération (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.gmr.rfrMaxExemption1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          ['retirementThresholds', 'current', 'gmr', 'rfrMaxExemption1Part'],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond taux réduit (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.gmr.rfrMaxReduced1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          ['retirementThresholds', 'current', 'gmr', 'rfrMaxReduced1Part'],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond taux médian (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.gmr.rfrMaxMedian1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          ['retirementThresholds', 'current', 'gmr', 'rfrMaxMedian1Part'],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – exonération</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.gmr.incrementQuarterExemption
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'gmr',
+                            'incrementQuarterExemption',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – taux réduit</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.gmr.incrementQuarterReduced
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'gmr',
+                            'incrementQuarterReduced',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – taux médian</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.gmr.incrementQuarterMedian
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'gmr',
+                            'incrementQuarterMedian',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  {/* Guyane */}
+                  <div style={{ fontWeight: 500, marginTop: 16, marginBottom: 4 }}>
+                    Résidence en Guyane
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond exonération (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.guyane.rfrMaxExemption1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'guyane',
+                            'rfrMaxExemption1Part',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond taux réduit (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.guyane.rfrMaxReduced1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'guyane',
+                            'rfrMaxReduced1Part',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond taux médian (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.guyane.rfrMaxMedian1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'guyane',
+                            'rfrMaxMedian1Part',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – exonération</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.guyane
+                          .incrementQuarterExemption
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'guyane',
+                            'incrementQuarterExemption',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – taux réduit</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.guyane
+                          .incrementQuarterReduced
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'guyane',
+                            'incrementQuarterReduced',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – taux médian</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.current.guyane
+                          .incrementQuarterMedian
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'current',
+                            'guyane',
+                            'incrementQuarterMedian',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                </div>
+
+                {/* Colonne 2024 */}
+                <div className="tax-two-cols-right">
+                  <div style={{ fontWeight: 600, marginBottom: 6 }}>
+                    {labels.previousYearLabel}
+                  </div>
+
+                  {/* Métropole */}
+                  <div style={{ fontWeight: 500, marginTop: 8, marginBottom: 4 }}>
+                    Résidence en métropole
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond exonération (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.metropole.rfrMaxExemption1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'metropole',
+                            'rfrMaxExemption1Part',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond taux réduit (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.metropole.rfrMaxReduced1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'metropole',
+                            'rfrMaxReduced1Part',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond taux médian (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.metropole.rfrMaxMedian1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'metropole',
+                            'rfrMaxMedian1Part',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – exonération</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.metropole
+                          .incrementQuarterExemption
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'metropole',
+                            'incrementQuarterExemption',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – taux réduit</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.metropole
+                          .incrementQuarterReduced
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'metropole',
+                            'incrementQuarterReduced',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – taux médian</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.metropole
+                          .incrementQuarterMedian
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'metropole',
+                            'incrementQuarterMedian',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  {/* GMR */}
+                  <div style={{ fontWeight: 500, marginTop: 16, marginBottom: 4 }}>
+                    Résidence en Martinique, Guadeloupe, Réunion,
+                    Saint-Barthélemy, Saint-Martin
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond exonération (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.gmr.rfrMaxExemption1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          ['retirementThresholds', 'previous', 'gmr', 'rfrMaxExemption1Part'],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond taux réduit (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.gmr.rfrMaxReduced1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          ['retirementThresholds', 'previous', 'gmr', 'rfrMaxReduced1Part'],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond taux médian (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.gmr.rfrMaxMedian1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          ['retirementThresholds', 'previous', 'gmr', 'rfrMaxMedian1Part'],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – exonération</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.gmr.incrementQuarterExemption
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'gmr',
+                            'incrementQuarterExemption',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – taux réduit</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.gmr.incrementQuarterReduced
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'gmr',
+                            'incrementQuarterReduced',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – taux médian</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.gmr.incrementQuarterMedian
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'gmr',
+                            'incrementQuarterMedian',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  {/* Guyane */}
+                  <div style={{ fontWeight: 500, marginTop: 16, marginBottom: 4 }}>
+                    Résidence en Guyane
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond exonération (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.guyane.rfrMaxExemption1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'guyane',
+                            'rfrMaxExemption1Part',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond taux réduit (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.guyane.rfrMaxReduced1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'guyane',
+                            'rfrMaxReduced1Part',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Plafond taux médian (1 part)</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.guyane.rfrMaxMedian1Part
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'guyane',
+                            'rfrMaxMedian1Part',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – exonération</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.guyane
+                          .incrementQuarterExemption
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'guyane',
+                            'incrementQuarterExemption',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – taux réduit</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.guyane
+                          .incrementQuarterReduced
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'guyane',
+                            'incrementQuarterReduced',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Majoration par quart – taux médian</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(
+                        retirementThresholds.previous.guyane
+                          .incrementQuarterMedian
+                      )}
+                      onChange={(e) =>
+                        updateField(
+                          [
+                            'retirementThresholds',
+                            'previous',
+                            'guyane',
+                            'incrementQuarterMedian',
+                          ],
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            
             {/* Bouton de sauvegarde */}
             {isAdmin && (
               <div style={{ marginTop: 24 }}>
