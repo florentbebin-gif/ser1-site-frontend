@@ -81,7 +81,7 @@ src/
 
       SettingsGeneraux.css
       SettingsImpots.css
-      ...>
+      ...<
 ---
 
 ##3. Navigation & topbar
