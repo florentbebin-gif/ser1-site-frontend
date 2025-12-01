@@ -499,7 +499,7 @@ export default function SettingsPrelevements() {
             {/* 2. PS retraites */}
             <section>
               <h3 style={{ marginTop: 24 }}>
-                Prélèvements sociaux — pensions de retraite
+                Prélèvements sociaux — pensions de retraite - (Focus résidence en métropole)
               </h3>
               <p style={{ fontSize: 13, color: '#555' }}>
                 Barème des prélèvements sociaux sur les pensions de retraite
@@ -956,7 +956,7 @@ export default function SettingsPrelevements() {
 
                   <div className="settings-field-row">
                     <label>
-                      Majoration par quart de part – plafond exonération
+                      Majoration par quart – exonération
                     </label>
                     <input
                       type="number"
@@ -983,7 +983,7 @@ export default function SettingsPrelevements() {
                   </div>
                   <div className="settings-field-row">
                     <label>
-                      Majoration par quart de part – plafond taux réduit
+                      Majoration par quart – taux réduit
                     </label>
                     <input
                       type="number"
@@ -1010,7 +1010,7 @@ export default function SettingsPrelevements() {
                   </div>
                   <div className="settings-field-row">
                     <label>
-                      Majoration par quart de part – plafond taux médian
+                      Majoration par quart – taux médian
                     </label>
                     <input
                       type="number"
