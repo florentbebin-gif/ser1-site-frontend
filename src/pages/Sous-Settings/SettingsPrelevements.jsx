@@ -180,21 +180,15 @@ export default function SettingsPrelevements() {
         if (!mounted) return;
         setUser(currentUser);
 
-        // 2. Récupérer le rôle (table users)
-        const { data: userRow, error: roleError } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', currentUser.id)
-          .maybeSingle();
+        // 2. Déterminer le rôle depuis les metadata de l'utilisateur
+        // Dans ton projet, le rôle est stocké dans user_metadata.role
+        const metadataRole =
+          currentUser.user_metadata?.role ||
+          currentUser.app_metadata?.role ||
+          'User';
 
-        if (roleError) {
-          // On loggue juste, on ne bloque pas l'affichage
-          console.warn('Erreur lecture rôle utilisateur', roleError);
-        }
-
-        const dbRole = userRow?.role || 'User';
         if (!mounted) return;
-        setRole(dbRole);
+        setRole(metadataRole);
 
         // 3. Récupérer les paramètres PS (table ps_settings, id = 1)
         const { data: row, error: psError } = await supabase
