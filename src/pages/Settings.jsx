@@ -401,7 +401,7 @@ export default function Settings() {
             <h3 style={{ marginBottom: 8 }}>Choix de la page de garde de l’étude</h3>
             <p style={{ marginBottom: 8, fontSize: 14, color: '#555' }}>
               Chargez une image (.jpg ou .png) d&apos;au moins 1200 × 700 pixels.
-              Cette image sera utilisée comme page de garde dans les futures éditions PowerPoint de l’étude.
+              Cette image est urilisée comme page de garde dans vos éditions PowerPoint.
             </p>
 
             <input
