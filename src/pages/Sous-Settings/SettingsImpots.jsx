@@ -922,7 +922,6 @@ export default function SettingsImpots() {
           </div>
         </section>
 
-                    </section>
 
           {/* 2. PFU */}
           <section>
@@ -1370,7 +1369,7 @@ export default function SettingsImpots() {
     </div>
   </div>
 </section>
-          
+
           {/* Bouton Enregistrer */}
           {isAdmin && (
             <button
