@@ -82,7 +82,9 @@ src/
       SettingsGeneraux.css
       SettingsImpots.css
       ...
-3. Navigation & topbar
+---
+
+##3. Navigation & topbar
 La navigation de haut niveau est gérée dans App.jsx :
 
 /login (ou racine non authentifiée) → page Login
@@ -116,7 +118,9 @@ Déconnexion (icône logout) → appel à supabase.auth.signOut() puis redirecti
 
 Les boutons sont stylés comme des puces arrondies avec icônes, le texte s’affiche en tooltip au survol (par ex. “Charger un dossier”).
 
-4. Authentification & gestion des rôles
+---
+
+##4. Authentification & gestion des rôles
 Auth Supabase
 Connexion par email/mot de passe via Login.jsx.
 
@@ -147,7 +151,9 @@ Le statut est affiché dans la page Paramètres (bandeau Utilisateur : xxx — S
 Les métadonnées sont éditées côté Supabase, dans Authentication → Users → Edit user metadata
 (par exemple {"role": "admin"}).
 
-5. Pages fonctionnelles
+---
+
+##5. Pages fonctionnelles
 5.1. Home
 Page d’accueil avec des tuiles permettant d’accéder :
 
@@ -416,7 +422,9 @@ upsert dans Supabase table tax_settings, ligne id = 1, champ data (JSON).
 
 Pour les autres sous-pages (Prélèvements sociaux, Fiscalités contrats, Base contrats, Table de mortalité), seules des squelettes sont en place pour l’instant. La mécanique pourra suivre la même logique que SettingsImpots.jsx.
 
-6. Données stockées côté Supabase
+---
+
+##6. Données stockées côté Supabase
 6.1. Auth
 Table système auth.users (gérée par Supabase).
 
@@ -445,7 +453,9 @@ accessible via une policy autorisant l’upload / lecture des images par les uti
 L’URL publique (ou le chemin) est stockée dans une table de settings utilisateur
 (voir l’implémentation de SettingsGeneraux.jsx pour le nom exact de la table / colonne).
 
-7. Variables d’environnement
+---
+
+##7. Variables d’environnement
 Créer un fichier .env à la racine du projet (non commité) :
 
 bash
@@ -455,7 +465,9 @@ VITE_SUPABASE_URL=https://<project>.supabase.co
 VITE_SUPABASE_ANON_KEY=<clé anonyme Supabase>
 Sur Vercel, reproduire les mêmes clés dans Settings → Environment Variables.
 
-8. Démarrer en local
+---
+
+##8. Démarrer en local
 bash
 Copier le code
 npm install
@@ -463,7 +475,9 @@ npm run dev
 # ou yarn dev / pnpm dev suivant l’outil
 Par défaut : http://localhost:5173
 
-9. Déploiement
+---
+
+##9. Déploiement
 Repo GitHub relié à Vercel.
 
 Branch principale : main.
@@ -478,7 +492,9 @@ un déploiement production selon la configuration Vercel.
 
 CORS côté backend : penser à autoriser le domaine Vercel (et/ou le domaine custom).
 
-10. TODO / pistes d’évolution
+---
+
+##10. TODO / pistes d’évolution
 Simulateurs supplémentaires :
 
 Impôt sur le revenu (en utilisant les paramètres de SettingsImpots.jsx),
