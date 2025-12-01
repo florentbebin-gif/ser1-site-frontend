@@ -203,7 +203,7 @@ n’affecte que cette page.
 5.3. Crédit
 src/pages/Credit.jsx
 
-Simulateur de crédit amortissable (et prêts additionnels).
+Simulateur de crédit amortissable et infine (et prêts additionnels).
 
 Champs :
 
@@ -467,17 +467,7 @@ Sur Vercel, reproduire les mêmes clés dans Settings → Environment Variables.
 
 ---
 
-## 8. Démarrer en local
-bash
-Copier le code
-npm install
-npm run dev
-# ou yarn dev / pnpm dev suivant l’outil
-Par défaut : http://localhost:5173
-
----
-
-## 9. Déploiement
+## 8. Déploiement
 Repo GitHub relié à Vercel.
 
 Branch principale : main.
@@ -494,7 +484,7 @@ CORS côté backend : penser à autoriser le domaine Vercel (et/ou le domaine cu
 
 ---
 
-## 10. TODO / pistes d’évolution
+## 9. TODO / pistes d’évolution
 Simulateurs supplémentaires :
 
 Impôt sur le revenu (en utilisant les paramètres de SettingsImpots.jsx),
