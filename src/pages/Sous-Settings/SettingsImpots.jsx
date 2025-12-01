@@ -103,7 +103,7 @@ const DEFAULT_TAX_SETTINGS = {
       reducedThreshold: 42500,
     },
   },
-
+};
 
 function numberOrEmpty(v) {
   return v === null || v === undefined || Number.isNaN(v) ? '' : String(v);
@@ -1311,7 +1311,7 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(corporateTax.current.normalRatee)}
+          value={numberOrEmpty(corporateTax.current.normalRate)}
           onChange={(e) =>
             updateField(
               ['corporateTax', 'current', 'normalRate'],
