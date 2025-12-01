@@ -70,21 +70,17 @@ src/
 Les composants transverses (topbar, boutons icônes, pilules, etc.)
 sont gérés directement dans App.jsx et les pages associées.
 
-3. Navigation & Topbar
+## 3. Navigation & Topbar
+
 La topbar est commune à toutes les pages (sauf login si non connecté).
 
 Boutons disponibles (icônes)
-🏠 Home → retour à l’accueil
-
-💾 Save → prévu (non implémenté)
-
-📂 Charger → prévu (non implémenté)
-
-🔄 Reset → remet à zéro le simulateur actif (Placement / Crédit)
-
-⚙️ Paramètres → visible uniquement si session active
-
-🚪 Déconnexion → Supabase signOut
+- 🏠 **Home** → retour à l’accueil  
+- 💾 **Save** → prévu
+- 📂 Charger → prévu (non implémenté)
+- 🔄 Reset → remet à zéro le simulateur actif (Placement / Crédit)
+- ⚙️ Paramètres → visible uniquement si session active
+- 🚪 Déconnexion → Supabase signOut
 
 UX
 Boutons sous forme de puces arrondies
@@ -112,13 +108,11 @@ Le rôle est stocké dans les user_metadata Supabase.
 
 Exemple :
 
-json
-Copier le code
+```json
 {
   "role": "admin"
 }
-Admin
-
+---
 Peut modifier et sauvegarder les paramètres
 
 User
