@@ -28,16 +28,32 @@ const DEFAULT_TAX_SETTINGS = {
       { from: 177107, to: null, rate: 45, deduction: 0 },
     ],
     quotientFamily: {
-      plafondPartSup: 1791,
-      plafondParentIsoléDeuxPremièresParts: 4224,
+      current: {
+        plafondPartSup: 1791,
+        plafondParentIsoléDeuxPremièresParts: 4224,
+      },
+      previous: {
+        plafondPartSup: 1791,
+        plafondParentIsoléDeuxPremièresParts: 4224,
+      },
     },
     decote: {
-      triggerSingle: 1964,
-      triggerCouple: 3248,
-      amountSingle: 889,
-      amountCouple: 1470,
-      ratePercent: 45.25,
+      current: {
+        triggerSingle: 1964,
+        triggerCouple: 3248,
+        amountSingle: 889,
+        amountCouple: 1470,
+        ratePercent: 45.25,
+      },
+      previous: {
+        triggerSingle: 1964,
+        triggerCouple: 3248,
+        amountSingle: 889,
+        amountCouple: 1470,
+        ratePercent: 45.25,
+      },
     },
+
     abat10: {
       current: { plafond: 14426, plancher: 504 },
       previous: { plafond: 14171, plancher: 495 },
@@ -386,146 +402,149 @@ export default function SettingsImpots() {
 
               {/* Blocs sous le barème 2025 */}
               <div className="income-tax-extra">
-                {/* 1. Plafond du quotient familial */}
-                <div className="income-tax-block">
-                  <div className="income-tax-block-title">
-                    Plafond du quotient familial
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Par 1/2 part supplémentaire</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(
-                        incomeTax.quotientFamily.plafondPartSup
-                      )}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'quotientFamily', 'plafondPartSup'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Parent isolé (2 premières parts)</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(
-                        incomeTax.quotientFamily
-                          .plafondParentIsoléDeuxPremièresParts
-                      )}
-                      onChange={(e) =>
-                        updateField(
-                          [
-                            'incomeTax',
-                            'quotientFamily',
-                            'plafondParentIsoléDeuxPremièresParts',
-                          ],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                </div>
+{/* 1. Plafond du quotient familial */}
+<div className="income-tax-block">
+  <div className="income-tax-block-title">
+    Plafond du quotient familial
+  </div>
+  <div className="settings-field-row">
+    <label>Par 1/2 part supplémentaire</label>
+    <input
+      type="number"
+      value={numberOrEmpty(
+        incomeTax.quotientFamily.current.plafondPartSup
+      )}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'quotientFamily', 'current', 'plafondPartSup'],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+  <div className="settings-field-row">
+    <label>Parent isolé (2 premières parts)</label>
+    <input
+      type="number"
+      value={numberOrEmpty(
+        incomeTax.quotientFamily.current
+          .plafondParentIsoléDeuxPremièresParts
+      )}
+      onChange={(e) =>
+        updateField(
+          [
+            'incomeTax',
+            'quotientFamily',
+            'current',
+            'plafondParentIsoléDeuxPremièresParts',
+          ],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+</div>
 
-                {/* 2. Décote */}
-                <div className="income-tax-block">
-                  <div className="income-tax-block-title">Décote</div>
-                  <div className="settings-field-row">
-                    <label>Déclenchement célibataire</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(incomeTax.decote.triggerSingle)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'decote', 'triggerSingle'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Déclenchement couple</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(incomeTax.decote.triggerCouple)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'decote', 'triggerCouple'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Montant célibataire</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(incomeTax.decote.amountSingle)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'decote', 'amountSingle'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Montant couple</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(incomeTax.decote.amountCouple)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'decote', 'amountCouple'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Taux de la décote</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={numberOrEmpty(incomeTax.decote.ratePercent)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'decote', 'ratePercent'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>%</span>
-                  </div>
-                </div>
+
+{/* 2. Décote */}
+<div className="income-tax-block">
+  <div className="income-tax-block-title">Décote</div>
+  <div className="settings-field-row">
+    <label>Déclenchement célibataire</label>
+    <input
+      type="number"
+      value={numberOrEmpty(incomeTax.decote.current.triggerSingle)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'decote', 'current', 'triggerSingle'],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+  <div className="settings-field-row">
+    <label>Déclenchement couple</label>
+    <input
+      type="number"
+      value={numberOrEmpty(incomeTax.decote.current.triggerCouple)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'decote', 'current', 'triggerCouple'],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+  <div className="settings-field-row">
+    <label>Montant célibataire</label>
+    <input
+      type="number"
+      value={numberOrEmpty(incomeTax.decote.current.amountSingle)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'decote', 'current', 'amountSingle'],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+  <div className="settings-field-row">
+    <label>Montant couple</label>
+    <input
+      type="number"
+      value={numberOrEmpty(incomeTax.decote.current.amountCouple)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'decote', 'current', 'amountCouple'],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+  <div className="settings-field-row">
+    <label>Taux de la décote</label>
+    <input
+      type="number"
+      step="0.01"
+      value={numberOrEmpty(incomeTax.decote.current.ratePercent)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'decote', 'current', 'ratePercent'],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>%</span>
+  </div>
+</div>
+
 
                 {/* 3. Abattement 10 % */}
                 <div className="income-tax-block">
@@ -718,146 +737,149 @@ export default function SettingsImpots() {
 
               {/* Blocs sous le barème 2024 */}
               <div className="income-tax-extra">
-                {/* 1. Plafond du quotient familial */}
-                <div className="income-tax-block">
-                  <div className="income-tax-block-title">
-                    Plafond du quotient familial
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Par 1/2 part supplémentaire</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(
-                        incomeTax.quotientFamily.plafondPartSup
-                      )}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'quotientFamily', 'plafondPartSup'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Parent isolé (2 premières parts)</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(
-                        incomeTax.quotientFamily
-                          .plafondParentIsoléDeuxPremièresParts
-                      )}
-                      onChange={(e) =>
-                        updateField(
-                          [
-                            'incomeTax',
-                            'quotientFamily',
-                            'plafondParentIsoléDeuxPremièresParts',
-                          ],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                </div>
+{/* 1. Plafond du quotient familial */}
+<div className="income-tax-block">
+  <div className="income-tax-block-title">
+    Plafond du quotient familial
+  </div>
+  <div className="settings-field-row">
+    <label>Par 1/2 part supplémentaire</label>
+    <input
+      type="number"
+      value={numberOrEmpty(
+        incomeTax.quotientFamily.previous.plafondPartSup
+      )}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'quotientFamily', 'previous', 'plafondPartSup'],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+  <div className="settings-field-row">
+    <label>Parent isolé (2 premières parts)</label>
+    <input
+      type="number"
+      value={numberOrEmpty(
+        incomeTax.quotientFamily.previous
+          .plafondParentIsoléDeuxPremièresParts
+      )}
+      onChange={(e) =>
+        updateField(
+          [
+            'incomeTax',
+            'quotientFamily',
+            'previous',
+            'plafondParentIsoléDeuxPremièresParts',
+          ],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+</div>
+
 
                 {/* 2. Décote */}
-                <div className="income-tax-block">
-                  <div className="income-tax-block-title">Décote</div>
-                  <div className="settings-field-row">
-                    <label>Déclenchement célibataire</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(incomeTax.decote.triggerSingle)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'decote', 'triggerSingle'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Déclenchement couple</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(incomeTax.decote.triggerCouple)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'decote', 'triggerCouple'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Montant célibataire</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(incomeTax.decote.amountSingle)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'decote', 'amountSingle'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Montant couple</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(incomeTax.decote.amountCouple)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'decote', 'amountCouple'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Taux de la décote</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={numberOrEmpty(incomeTax.decote.ratePercent)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'decote', 'ratePercent'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>%</span>
-                  </div>
-                </div>
+<div className="income-tax-block">
+  <div className="income-tax-block-title">Décote</div>
+  <div className="settings-field-row">
+    <label>Déclenchement célibataire</label>
+    <input
+      type="number"
+      value={numberOrEmpty(incomeTax.decote.previous.triggerSingle)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'decote', 'previous', 'triggerSingle'],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+  <div className="settings-field-row">
+    <label>Déclenchement couple</label>
+    <input
+      type="number"
+      value={numberOrEmpty(incomeTax.decote.previous.triggerCouple)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'decote', 'previous', 'triggerCouple'],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+  <div className="settings-field-row">
+    <label>Montant célibataire</label>
+    <input
+      type="number"
+      value={numberOrEmpty(incomeTax.decote.previous.amountSingle)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'decote', 'previous', 'amountSingle'],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+  <div className="settings-field-row">
+    <label>Montant couple</label>
+    <input
+      type="number"
+      value={numberOrEmpty(incomeTax.decote.previous.amountCouple)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'decote', 'previous', 'amountCouple'],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+  <div className="settings-field-row">
+    <label>Taux de la décote</label>
+    <input
+      type="number"
+      step="0.01"
+      value={numberOrEmpty(incomeTax.decote.previous.ratePercent)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'decote', 'previous', 'ratePercent'],
+          e.target.value === ''
+            ? null
+            : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>%</span>
+  </div>
+</div>
+
 
                 {/* 3. Abattement 10 % */}
                 <div className="income-tax-block">
