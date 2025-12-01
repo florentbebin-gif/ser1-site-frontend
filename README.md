@@ -81,10 +81,10 @@ src/
 
       SettingsGeneraux.css
       SettingsImpots.css
-      ...<
+      ...
 ---
 
-##3. Navigation & topbar
+## 3. Navigation & topbar
 La navigation de haut niveau est gérée dans App.jsx :
 
 /login (ou racine non authentifiée) → page Login
@@ -120,7 +120,7 @@ Les boutons sont stylés comme des puces arrondies avec icônes, le texte s’af
 
 ---
 
-##4. Authentification & gestion des rôles
+## 4. Authentification & gestion des rôles
 Auth Supabase
 Connexion par email/mot de passe via Login.jsx.
 
@@ -153,7 +153,7 @@ Les métadonnées sont éditées côté Supabase, dans Authentication → Users 
 
 ---
 
-##5. Pages fonctionnelles
+## 5. Pages fonctionnelles
 5.1. Home
 Page d’accueil avec des tuiles permettant d’accéder :
 
@@ -424,7 +424,7 @@ Pour les autres sous-pages (Prélèvements sociaux, Fiscalités contrats, Base c
 
 ---
 
-##6. Données stockées côté Supabase
+## 6. Données stockées côté Supabase
 6.1. Auth
 Table système auth.users (gérée par Supabase).
 
@@ -455,7 +455,7 @@ L’URL publique (ou le chemin) est stockée dans une table de settings utilisat
 
 ---
 
-##7. Variables d’environnement
+## 7. Variables d’environnement
 Créer un fichier .env à la racine du projet (non commité) :
 
 bash
@@ -467,7 +467,7 @@ Sur Vercel, reproduire les mêmes clés dans Settings → Environment Variables.
 
 ---
 
-##8. Démarrer en local
+## 8. Démarrer en local
 bash
 Copier le code
 npm install
@@ -477,7 +477,7 @@ Par défaut : http://localhost:5173
 
 ---
 
-##9. Déploiement
+## 9. Déploiement
 Repo GitHub relié à Vercel.
 
 Branch principale : main.
@@ -494,7 +494,7 @@ CORS côté backend : penser à autoriser le domaine Vercel (et/ou le domaine cu
 
 ---
 
-##10. TODO / pistes d’évolution
+## 10. TODO / pistes d’évolution
 Simulateurs supplémentaires :
 
 Impôt sur le revenu (en utilisant les paramètres de SettingsImpots.jsx),
