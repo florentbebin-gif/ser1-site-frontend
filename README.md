@@ -12,8 +12,6 @@ L’application consomme :
 - une **API backend** (Render ou autre) pour certains calculs,
 - une base **Supabase** (authentification, paramètres, fichiers).
 
-> Ce document remplace l’ancien README et sert de mémo pour reprendre facilement le développement. :contentReference[oaicite:0]{index=0}
-
 ---
 
 ## 1. Architecture globale
