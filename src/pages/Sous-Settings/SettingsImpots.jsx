@@ -46,31 +46,64 @@ const DEFAULT_TAX_SETTINGS = {
     },
   },
   pfu: {
-    rateIR: 12.8,
-    rateSocial: 17.2,
-    rateTotal: 30.0,
+    current: {
+      rateIR: 12.8,
+      rateSocial: 17.2,
+      rateTotal: 30.0,
+    },
+    previous: {
+      rateIR: 12.8,
+      rateSocial: 17.2,
+      rateTotal: 30.0,
+    },
   },
   cehr: {
-    single: [
-      { from: 250000, to: 500000, rate: 3 },
-      { from: 500000, to: null, rate: 4 },
-    ],
-    couple: [
-      { from: 500000, to: 1000000, rate: 3 },
-      { from: 1000000, to: null, rate: 4 },
-    ],
+    current: {
+      single: [
+        { from: 250000, to: 500000, rate: 3 },
+        { from: 500000, to: null, rate: 4 },
+      ],
+      couple: [
+        { from: 500000, to: 1000000, rate: 3 },
+        { from: 1000000, to: null, rate: 4 },
+      ],
+    },
+    previous: {
+      single: [
+        { from: 250000, to: 500000, rate: 3 },
+        { from: 500000, to: null, rate: 4 },
+      ],
+      couple: [
+        { from: 500000, to: 1000000, rate: 3 },
+        { from: 1000000, to: null, rate: 4 },
+      ],
+    },
   },
   cdhr: {
-    minEffectiveRate: 20,
-    thresholdSingle: 250000,
-    thresholdCouple: 500000,
+    current: {
+      minEffectiveRate: 20,
+      thresholdSingle: 250000,
+      thresholdCouple: 500000,
+    },
+    previous: {
+      minEffectiveRate: 20,
+      thresholdSingle: 250000,
+      thresholdCouple: 500000,
+    },
   },
   corporateTax: {
-    normalRate: 25,
-    reducedRate: 15,
-    reducedThreshold: 42500,
+    current: {
+      normalRate: 25,
+      reducedRate: 15,
+      reducedThreshold: 42500,
+    },
+    previous: {
+      normalRate: 25,
+      reducedRate: 15,
+      reducedThreshold: 42500,
+    },
   },
-};
+
 
 function numberOrEmpty(v) {
   return v === null || v === undefined || Number.isNaN(v) ? '' : String(v);
@@ -932,7 +965,8 @@ export default function SettingsImpots() {
   <h3>PFU (flat tax)</h3>
 
   <div className="tax-two-cols">
-    {/* Colonne 2025 (revenus 2024) */}
+    
+     {/* Colonne 2025 (revenus 2024) */}
     <div>
       <div style={{ fontWeight: 600, marginBottom: 6 }}>
         {incomeTax.currentYearLabel}
@@ -942,10 +976,10 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(pfu.rateIR)}
+          value={numberOrEmpty(pfu.current.rateIR)}
           onChange={(e) =>
             updateField(
-              ['pfu', 'rateIR'],
+              ['pfu', 'current', 'rateIR'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -958,10 +992,10 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(pfu.rateSocial)}
+          value={numberOrEmpty(pfu.current.rateSocial)}
           onChange={(e) =>
             updateField(
-              ['pfu', 'rateSocial'],
+              ['pfu', 'current', 'rateSocial'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -974,10 +1008,10 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(pfu.rateTotal)}
+          value={numberOrEmpty(pfu.current.rateTotal)}
           onChange={(e) =>
             updateField(
-              ['pfu', 'rateTotal'],
+              ['pfu', 'current', 'rateTotal'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -987,7 +1021,8 @@ export default function SettingsImpots() {
       </div>
     </div>
 
-    {/* Colonne 2024 (revenus 2023) – mêmes données pour l’instant */}
+
+       {/* Colonne 2024 (revenus 2023) */}
     <div className="tax-two-cols-right">
       <div style={{ fontWeight: 600, marginBottom: 6 }}>
         {incomeTax.previousYearLabel}
@@ -997,10 +1032,10 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(pfu.rateIR)}
+          value={numberOrEmpty(pfu.previous.rateIR)}
           onChange={(e) =>
             updateField(
-              ['pfu', 'rateIR'],
+              ['pfu', 'previous', 'rateIR'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1013,10 +1048,10 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(pfu.rateSocial)}
+          value={numberOrEmpty(pfu.previous.rateSocial)}
           onChange={(e) =>
             updateField(
-              ['pfu', 'rateSocial'],
+              ['pfu', 'previous', 'rateSocial'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1029,10 +1064,10 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(pfu.rateTotal)}
+          value={numberOrEmpty(pfu.previous.rateTotal)}
           onChange={(e) =>
             updateField(
-              ['pfu', 'rateTotal'],
+              ['pfu', 'previous', 'rateTotal'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1041,12 +1076,14 @@ export default function SettingsImpots() {
         <span>%</span>
       </div>
     </div>
+
   </div>
 </section>
 
 
           {/* 3. CEHR / CDHR */}
           <section>
+            
   <h3>CEHR / CDHR</h3>
   <p style={{ fontSize: 13, color: '#555' }}>
     Contribution exceptionnelle sur les hauts revenus (CEHR) et
@@ -1061,7 +1098,7 @@ export default function SettingsImpots() {
       </div>
 
       <strong>CEHR – personne seule</strong>
-      {cehr.single.map((row, idx) => (
+      {cehr.current.single.map((row, idx) => (
         <div className="settings-field-row" key={`cehrS_2025_${idx}`}>
           <label>
             De {numberOrEmpty(row.from)} € à{' '}
@@ -1073,7 +1110,7 @@ export default function SettingsImpots() {
             value={numberOrEmpty(row.rate)}
             onChange={(e) =>
               updateField(
-                ['cehr', 'single', idx, 'rate'],
+                ['cehr', 'current', 'single', idx, 'rate'],
                 e.target.value === '' ? null : Number(e.target.value)
               )
             }
@@ -1084,7 +1121,7 @@ export default function SettingsImpots() {
       ))}
 
       <strong>CEHR – couple</strong>
-      {cehr.couple.map((row, idx) => (
+      {cehr.current.couple.map((row, idx) => (
         <div className="settings-field-row" key={`cehrC_2025_${idx}`}>
           <label>
             De {numberOrEmpty(row.from)} € à{' '}
@@ -1096,7 +1133,7 @@ export default function SettingsImpots() {
             value={numberOrEmpty(row.rate)}
             onChange={(e) =>
               updateField(
-                ['cehr', 'couple', idx, 'rate'],
+                ['cehr', 'current', 'couple', idx, 'rate'],
                 e.target.value === '' ? null : Number(e.target.value)
               )
             }
@@ -1112,10 +1149,10 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(cdhr.minEffectiveRate)}
+          value={numberOrEmpty(cdhr.current.minEffectiveRate)}
           onChange={(e) =>
             updateField(
-              ['cdhr', 'minEffectiveRate'],
+              ['cdhr', 'current', 'minEffectiveRate'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1127,10 +1164,10 @@ export default function SettingsImpots() {
         <label>Seuil RFR personne seule</label>
         <input
           type="number"
-          value={numberOrEmpty(cdhr.thresholdSingle)}
+          value={numberOrEmpty(cdhr.current.thresholdSingle)}
           onChange={(e) =>
             updateField(
-              ['cdhr', 'thresholdSingle'],
+              ['cdhr', 'current', 'thresholdSingle'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1142,10 +1179,10 @@ export default function SettingsImpots() {
         <label>Seuil RFR couple</label>
         <input
           type="number"
-          value={numberOrEmpty(cdhr.thresholdCouple)}
+          value={numberOrEmpty(cdhr.current.thresholdCouple)}
           onChange={(e) =>
             updateField(
-              ['cdhr', 'thresholdCouple'],
+              ['cdhr', 'current', 'thresholdCouple'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1162,7 +1199,7 @@ export default function SettingsImpots() {
       </div>
 
       <strong>CEHR – personne seule</strong>
-      {cehr.single.map((row, idx) => (
+      {cehr.previous.single.map((row, idx) => (
         <div className="settings-field-row" key={`cehrS_2024_${idx}`}>
           <label>
             De {numberOrEmpty(row.from)} € à{' '}
@@ -1174,7 +1211,7 @@ export default function SettingsImpots() {
             value={numberOrEmpty(row.rate)}
             onChange={(e) =>
               updateField(
-                ['cehr', 'single', idx, 'rate'],
+                ['cehr', 'previous', 'single', idx, 'rate'],
                 e.target.value === '' ? null : Number(e.target.value)
               )
             }
@@ -1185,7 +1222,7 @@ export default function SettingsImpots() {
       ))}
 
       <strong>CEHR – couple</strong>
-      {cehr.couple.map((row, idx) => (
+      {cehr.previous.couple.map((row, idx) => (
         <div className="settings-field-row" key={`cehrC_2024_${idx}`}>
           <label>
             De {numberOrEmpty(row.from)} € à{' '}
@@ -1197,7 +1234,7 @@ export default function SettingsImpots() {
             value={numberOrEmpty(row.rate)}
             onChange={(e) =>
               updateField(
-                ['cehr', 'couple', idx, 'rate'],
+                ['cehr', 'previous', 'couple', idx, 'rate'],
                 e.target.value === '' ? null : Number(e.target.value)
               )
             }
@@ -1213,10 +1250,10 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(cdhr.minEffectiveRate)}
+          value={numberOrEmpty(cdhr.previous.minEffectiveRate)}
           onChange={(e) =>
             updateField(
-              ['cdhr', 'minEffectiveRate'],
+              ['cdhr', 'previous', 'minEffectiveRate'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1228,10 +1265,10 @@ export default function SettingsImpots() {
         <label>Seuil RFR personne seule</label>
         <input
           type="number"
-          value={numberOrEmpty(cdhr.thresholdSingle)}
+          value={numberOrEmpty(cdhr.previous.thresholdSingle)}
           onChange={(e) =>
             updateField(
-              ['cdhr', 'thresholdSingle'],
+              ['cdhr', 'previous', 'thresholdSingle'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1243,10 +1280,10 @@ export default function SettingsImpots() {
         <label>Seuil RFR couple</label>
         <input
           type="number"
-          value={numberOrEmpty(cdhr.thresholdCouple)}
+          value={numberOrEmpty(cdhr.previous.thresholdCouple)}
           onChange={(e) =>
             updateField(
-              ['cdhr', 'thresholdCouple'],
+              ['cdhr', 'previous', 'thresholdCouple'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1274,10 +1311,10 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(corporateTax.normalRate)}
+          value={numberOrEmpty(corporateTax.current.normalRatee)}
           onChange={(e) =>
             updateField(
-              ['corporateTax', 'normalRate'],
+              ['corporateTax', 'current', 'normalRate'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1290,10 +1327,10 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(corporateTax.reducedRate)}
+          value={numberOrEmpty(corporateTax.current.reducedRate)}
           onChange={(e) =>
             updateField(
-              ['corporateTax', 'reducedRate'],
+              ['corporateTax', 'current', 'reducedRate'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1305,10 +1342,10 @@ export default function SettingsImpots() {
         <label>Seuil de bénéfice au taux réduit</label>
         <input
           type="number"
-          value={numberOrEmpty(corporateTax.reducedThreshold)}
+          value={numberOrEmpty(corporateTax.current.reducedThreshold)}
           onChange={(e) =>
             updateField(
-              ['corporateTax', 'reducedThreshold'],
+              ['corporateTax', 'current', 'reducedThreshold'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1328,10 +1365,10 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(corporateTax.normalRate)}
+          value={numberOrEmpty(corporateTax.previous.normalRate)}
           onChange={(e) =>
             updateField(
-              ['corporateTax', 'normalRate'],
+              ['corporateTax', 'previous', 'normalRate'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1344,10 +1381,10 @@ export default function SettingsImpots() {
         <input
           type="number"
           step="0.1"
-          value={numberOrEmpty(corporateTax.reducedRate)}
+          value={numberOrEmpty(corporateTax.previous.reducedRate)}
           onChange={(e) =>
             updateField(
-              ['corporateTax', 'reducedRate'],
+              ['corporateTax', 'previous', 'reducedRate'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
@@ -1359,10 +1396,10 @@ export default function SettingsImpots() {
         <label>Seuil de bénéfice au taux réduit</label>
         <input
           type="number"
-          value={numberOrEmpty(corporateTax.reducedThreshold)}
+          value={numberOrEmpty(corporateTax.previous.reducedThreshold)}
           onChange={(e) =>
             updateField(
-              ['corporateTax', 'reducedThreshold'],
+              ['corporateTax', 'previous', 'reducedThreshold'],
               e.target.value === '' ? null : Number(e.target.value)
             )
           }
