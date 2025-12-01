@@ -1,4 +1,252 @@
-        {/* 1. Barème impôt sur le revenu */}
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../../supabaseClient';
+import SettingsNav from '../SettingsNav';
+import './SettingsImpots.css';
+
+// ----------------------
+// Valeurs par défaut
+// ----------------------
+// Barème 2025 (revenus 2024) + retraitements : Word + brochure IR 2025
+// Barème 2024 (revenus 2023) : barème officiel 2024
+// PFU, CEHR, CDHR, IS : sources officielles.
+const DEFAULT_TAX_SETTINGS = {
+  incomeTax: {
+    currentYearLabel: '2025 (revenus 2024)',
+    previousYearLabel: '2024 (revenus 2023)',
+    scaleCurrent: [
+      { from: 0, to: 11497, rate: 0, deduction: 0 },
+      { from: 11498, to: 29315, rate: 11, deduction: 1264.78 },
+      { from: 29316, to: 83823, rate: 30, deduction: 6834.63 },
+      { from: 83824, to: 180294, rate: 41, deduction: 16055.16 },
+      { from: 180295, to: null, rate: 45, deduction: 23266.92 },
+    ],
+    scalePrevious: [
+      { from: 0, to: 11294, rate: 0, deduction: 0 },
+      { from: 11295, to: 28797, rate: 11, deduction: 0 },
+      { from: 28798, to: 82341, rate: 30, deduction: 0 },
+      { from: 82342, to: 177106, rate: 41, deduction: 0 },
+      { from: 177107, to: null, rate: 45, deduction: 0 },
+    ],
+    quotientFamily: {
+      plafondPartSup: 1791,
+      plafondParentIsoléDeuxPremièresParts: 4224,
+    },
+    decote: {
+      triggerSingle: 1964,
+      triggerCouple: 3248,
+      amountSingle: 889,
+      amountCouple: 1470,
+      ratePercent: 45.25,
+    },
+    abat10: {
+      current: { plafond: 14426, plancher: 504 },
+      previous: { plafond: 14171, plancher: 495 },
+      retireesCurrent: { plafond: 4399, plancher: 450 },
+      retireesPrevious: { plafond: 4321, plancher: 442 },
+    },
+  },
+  pfu: {
+    rateIR: 12.8,
+    rateSocial: 17.2,
+    rateTotal: 30.0,
+  },
+  cehr: {
+    single: [
+      { from: 250000, to: 500000, rate: 3 },
+      { from: 500000, to: null, rate: 4 },
+    ],
+    couple: [
+      { from: 500000, to: 1000000, rate: 3 },
+      { from: 1000000, to: null, rate: 4 },
+    ],
+  },
+  cdhr: {
+    minEffectiveRate: 20,
+    thresholdSingle: 250000,
+    thresholdCouple: 500000,
+  },
+  corporateTax: {
+    normalRate: 25,
+    reducedRate: 15,
+    reducedThreshold: 42500,
+  },
+};
+
+function numberOrEmpty(v) {
+  return v === null || v === undefined || Number.isNaN(v) ? '' : String(v);
+}
+
+export default function SettingsImpots() {
+  const [user, setUser] = useState(null);
+  const [roleLabel, setRoleLabel] = useState('User');
+  const [loading, setLoading] = useState(true);
+
+  const [settings, setSettings] = useState(DEFAULT_TAX_SETTINGS);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+
+  const isAdmin =
+    user &&
+    ((typeof user?.user_metadata?.role === 'string' &&
+      user.user_metadata.role.toLowerCase() === 'admin') ||
+      user?.user_metadata?.is_admin === true);
+
+  // Chargement user + paramètres depuis la table tax_settings
+  useEffect(() => {
+    let mounted = true;
+
+    async function load() {
+      try {
+        const { data: userData, error: userErr } = await supabase.auth.getUser();
+        if (userErr) {
+          console.error('Erreur user:', userErr);
+          if (mounted) setLoading(false);
+          return;
+        }
+
+        const u = userData?.user || null;
+        if (!mounted) return;
+
+        setUser(u);
+        if (u) {
+          const meta = u.user_metadata || {};
+          const admin =
+            (typeof meta.role === 'string' &&
+              meta.role.toLowerCase() === 'admin') ||
+            meta.is_admin === true;
+          setRoleLabel(admin ? 'Admin' : 'User');
+        }
+
+        // Charge la ligne id=1 si elle existe
+        const { data: rows, error: taxErr } = await supabase
+          .from('tax_settings')
+          .select('data')
+          .eq('id', 1);
+
+        if (!taxErr && rows && rows.length > 0 && rows[0].data) {
+          setSettings((prev) => ({
+            ...prev,
+            ...rows[0].data,
+          }));
+        } else if (taxErr && taxErr.code !== 'PGRST116') {
+          console.error('Erreur chargement tax_settings :', taxErr);
+        }
+
+        if (mounted) setLoading(false);
+      } catch (e) {
+        console.error(e);
+        if (mounted) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const handleSave = async () => {
+    if (!isAdmin) return;
+    try {
+      setSaving(true);
+      setMessage('');
+
+      const { error } = await supabase
+        .from('tax_settings')
+        .upsert({ id: 1, data: settings });
+
+      if (error) {
+        console.error(error);
+        setMessage("Erreur lors de l'enregistrement.");
+      } else {
+        setMessage('Paramètres impôts enregistrés.');
+      }
+    } catch (e) {
+      console.error(e);
+      setMessage("Erreur lors de l'enregistrement.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Helpers de MAJ
+  const updateIncomeScale = (which, index, key, value) => {
+    setSettings((prev) => ({
+      ...prev,
+      incomeTax: {
+        ...prev.incomeTax,
+        [which]: prev.incomeTax[which].map((row, i) =>
+          i === index ? { ...row, [key]: value } : row
+        ),
+      },
+    }));
+    setMessage('');
+  };
+
+  const updateField = (path, value) => {
+    // path du style ['incomeTax','decote','triggerSingle']
+    setSettings((prev) => {
+      const clone = structuredClone(prev);
+      let obj = clone;
+      for (let i = 0; i < path.length - 1; i++) {
+        obj = obj[path[i]];
+      }
+      obj[path[path.length - 1]] = value;
+      return clone;
+    });
+    setMessage('');
+  };
+
+  if (loading) {
+    return (
+      <div className="settings-page">
+        <div className="section-card">
+          <div className="section-title">Paramètres — Impôts</div>
+          <SettingsNav />
+          <p>Chargement…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="settings-page">
+        <div className="section-card">
+          <div className="section-title">Paramètres — Impôts</div>
+          <SettingsNav />
+          <p>Aucun utilisateur connecté.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const { incomeTax, pfu, cehr, cdhr, corporateTax } = settings;
+
+  return (
+    <div className="settings-page">
+      <div className="section-card">
+        <div className="section-title">Paramètres — Impôts</div>
+
+        <SettingsNav />
+
+        <div
+          style={{
+            fontSize: 15,
+            marginTop: 24,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 24,
+          }}
+        >
+          {/* Bandeau info */}
+          <div className="tax-user-banner">
+            <strong>Utilisateur :</strong> {user.email} —{' '}
+            <strong>Statut :</strong> {roleLabel}
+          </div>
+
+
+                  {/* 1. Barème impôt sur le revenu */}
         <section>
           <h3>Barème de l’impôt sur le revenu</h3>
           <p style={{ fontSize: 13, color: '#555', marginBottom: 8 }}>
@@ -673,3 +921,26 @@
             </div>
           </div>
         </section>
+
+          {/* Bouton Enregistrer */}
+          {isAdmin && (
+            <button
+              type="button"
+              className="chip"
+              onClick={handleSave}
+              disabled={saving}
+            >
+              {saving
+                ? 'Enregistrement…'
+                : 'Enregistrer les paramètres impôts'}
+            </button>
+          )}
+
+          {message && (
+            <div style={{ fontSize: 13, marginTop: 8 }}>{message}</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
