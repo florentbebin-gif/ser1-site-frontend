@@ -130,3 +130,15 @@
   font-size: 13px;
   margin-bottom: 4px;
 }
+/* Colonne "Taux %" plus étroite */
+.settings-table th.taux-col,
+.settings-table td.taux-col {
+  width: 70px;      /* Tu peux tester 60 / 80 si besoin */
+  text-align: center;
+}
+
+/* Input dans la colonne Taux % */
+.settings-table td.taux-col input {
+  width: 60px;
+  text-align: right;
+}
