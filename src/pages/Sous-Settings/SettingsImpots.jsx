@@ -250,7 +250,7 @@ export default function SettingsImpots() {
     return (
       <div className="settings-page">
         <div className="section-card">
-          <div className="section-title">Paramètres — Impôts</div>
+          <div className="section-title">Paramètres</div>
           <SettingsNav />
           <p>Chargement…</p>
         </div>
@@ -262,7 +262,7 @@ export default function SettingsImpots() {
     return (
       <div className="settings-page">
         <div className="section-card">
-          <div className="section-title">Paramètres — Impôts</div>
+          <div className="section-title">Paramètres</div>
           <SettingsNav />
           <p>Aucun utilisateur connecté.</p>
         </div>
@@ -275,7 +275,7 @@ export default function SettingsImpots() {
   return (
     <div className="settings-page">
       <div className="section-card">
-        <div className="section-title">Paramètres — Impôts</div>
+        <div className="section-title">Paramètres</div>
 
         <SettingsNav />
 
