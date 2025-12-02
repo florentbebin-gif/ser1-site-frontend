@@ -177,16 +177,24 @@ function determinePsBracketLabel(rfr, thresholds) {
 // ---- Calcul global IR + CEHR + CDHR + PS ----
 function computeIrResult({
   yearKey,
-  status, // 'single' | 'couple'
+  status,
   parts,
-  location, // 'metropole' | 'gmr' | 'guyane'
+  location,
   incomes,
   deductions,
   credits,
   taxSettings,
   psSettings,
 }) {
-  if (!taxSettings || !psSettings) return null;
+  // On exige les paramètres d'IR, mais on accepte l'absence de PS
+  if (!taxSettings) return null;
+
+  const incomeTaxCfg = taxSettings.incomeTax || {};
+
+  // si pas de param PS, on mettra juste PS = 0
+  const psCfg = psSettings || {};
+  const retirementCfg = psCfg.retirement || {};
+  const thresholdsCfg = psCfg.retirementThresholds || {};
 
   const incomeTaxCfg = taxSettings.incomeTax || {};
   const scale = (incomeTaxCfg.scale && incomeTaxCfg.scale[yearKey]) || [];
@@ -260,7 +268,10 @@ function computeIrResult({
   const psBracketLabel = determinePsBracketLabel(rfr, thresholds);
 
   if (psBracketLabel) {
-    const psBracket = psBrackets.find((b) => b.label === psBracketLabel);
+    const psBrackets =
+    retirementCfg[yearKey] && retirementCfg[yearKey].brackets
+      ? retirementCfg[yearKey].brackets
+      : [];
     if (psBracket) {
       psRateLabel = psBracket.label;
       psRateTotal = Number(psBracket.totalRate) || 0;
