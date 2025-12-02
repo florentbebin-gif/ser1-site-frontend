@@ -13,6 +13,7 @@ import SettingsPrelevements from './pages/Sous-Settings/SettingsPrelevements';
 import SettingsFiscalites from './pages/Sous-Settings/SettingsFiscalites';
 import SettingsBaseContrats from './pages/Sous-Settings/SettingsBaseContrats';
 import SettingsTableMortalite from './pages/Sous-Settings/SettingsTableMortalite';
+import Ir from './pages/Ir';
 
 // -----------------------
 // Icônes SVG "maison"
@@ -229,10 +230,13 @@ const isSettingsRoute = path.startsWith('/settings');
         <Route path="/sim/placement" element={<Placement />} />
         <Route path="/sim/credit" element={<Credit />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/sim/ir" element={<Ir />} />
 
         {/* compat /placement => /sim/placement */}
         <Route path="/placement" element={<Navigate to="/sim/placement" replace />}/>
         <Route path="/credit" element={<Navigate to="/sim/credit" replace />} />
+        
+        
                 {/* Paramètres + sous-pages */}
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/impots" element={<SettingsImpots />} />
