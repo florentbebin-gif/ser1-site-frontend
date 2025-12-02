@@ -189,32 +189,37 @@ function computeIrResult({
   // On exige les paramètres d'IR, mais on accepte l'absence de PS
   if (!taxSettings) return null;
 
+  // ---- Paramètres IR ----
   const incomeTaxCfg = taxSettings.incomeTax || {};
+  const scale =
+    yearKey === 'current'
+      ? incomeTaxCfg.scaleCurrent || []
+      : incomeTaxCfg.scalePrevious || [];
 
-  // si pas de param PS, on mettra juste PS = 0
+  const cehrCfg = taxSettings.cehr || {};
+  const cehrYearCfg = cehrCfg[yearKey] || {};
+  const cehrBrackets =
+    cehrYearCfg[status === 'couple' ? 'couple' : 'single'] || [];
+
+  const cdhrCfg =
+    taxSettings.cdhr && taxSettings.cdhr[yearKey]
+      ? taxSettings.cdhr[yearKey]
+      : null;
+
+  // ---- Paramètres PS (optionnels) ----
   const psCfg = psSettings || {};
   const retirementCfg = psCfg.retirement || {};
   const thresholdsCfg = psCfg.retirementThresholds || {};
 
-  const incomeTaxCfg = taxSettings.incomeTax || {};
-  const scale = (incomeTaxCfg.scale && incomeTaxCfg.scale[yearKey]) || [];
+  const psYearCfg = retirementCfg[yearKey] || {};
+  const psBrackets = psYearCfg.brackets || [];
 
-  const cehrCfg = taxSettings.cehr || {};
-  const cehrBrackets =
-    cehrCfg[yearKey] && cehrCfg[yearKey][status === 'couple' ? 'couple' : 'single'];
-
-  const cdhrCfg = taxSettings.cdhr && taxSettings.cdhr[yearKey];
-
-  const retirementCfg = psSettings.retirement || {};
-  const psBrackets =
-    retirementCfg[yearKey] && retirementCfg[yearKey].brackets
-      ? retirementCfg[yearKey].brackets
-      : [];
   const psThresholdsByLoc =
-    retirementCfg.thresholds &&
-    retirementCfg.thresholds[yearKey] &&
-    retirementCfg.thresholds[yearKey][location];
+    thresholdsCfg[yearKey] && thresholdsCfg[yearKey][location]
+      ? thresholdsCfg[yearKey][location]
+      : null;
 
+  // ---- Revenus / parts ----
   const partsNb = Math.max(0.5, Number(parts) || 1);
 
   const totalIncomeD1 =
@@ -259,7 +264,7 @@ function computeIrResult({
     status === 'couple' ? 'couple' : 'single'
   );
 
-  // PS sur pensions de retraite
+  // ---- PS sur pensions de retraite ----
   let psRateLabel = null;
   let psRateTotal = 0;
   let psTotal = 0;
@@ -267,11 +272,8 @@ function computeIrResult({
   const thresholds = computeRfrThresholdsForParts(psThresholdsByLoc, partsNb);
   const psBracketLabel = determinePsBracketLabel(rfr, thresholds);
 
-  if (psBracketLabel) {
-    const psBrackets =
-    retirementCfg[yearKey] && retirementCfg[yearKey].brackets
-      ? retirementCfg[yearKey].brackets
-      : [];
+  if (psBracketLabel && psBrackets.length > 0) {
+    const psBracket = psBrackets.find((b) => b.label === psBracketLabel);
     if (psBracket) {
       psRateLabel = psBracket.label;
       psRateTotal = Number(psBracket.totalRate) || 0;
@@ -282,7 +284,6 @@ function computeIrResult({
   }
 
   const tmiBaseGlobal = tmiBasePerPart * partsNb;
-
   const totalTax = irNetAfterCredits + cehr + cdhr + psTotal;
 
   return {
@@ -308,6 +309,7 @@ function computeIrResult({
     totalTax,
   };
 }
+
 
 /* ===============================
    Page IR
@@ -499,6 +501,10 @@ export default function Ir() {
     yearKey === 'current'
       ? '2025 (RFR 2023 & Avis IR 2024)'
       : '2024 (RFR 2022 & Avis IR 2023)';
+  const tmiScale =
+  yearKey === 'current'
+    ? taxSettings?.incomeTax?.scaleCurrent || []
+    : taxSettings?.incomeTax?.scalePrevious || [];
 
   // Export Excel très simplifié
   function buildWorksheetXmlVertical(title, header, rows) {
@@ -846,20 +852,21 @@ export default function Ir() {
           <div className="ir-tmi-card">
             <div className="ir-tmi-header">Estimation IR</div>
 
-            <div className="ir-tmi-bar">
-              {(taxSettings?.incomeTax?.scale?.[yearKey] || []).map((br, idx) => {
-                const rate = Number(br.rate) || 0;
-                const isActive = rate === (result?.tmiRate || 0);
-                return (
-                  <div
-                    key={idx}
-                    className={`ir-tmi-segment${isActive ? ' is-active' : ''}`}
-                  >
-                    <span>{rate}%</span>
-                  </div>
-                );
-              })}
-            </div>
+<div className="ir-tmi-bar">
+  {tmiScale.map((br, idx) => {
+    const rate = Number(br.rate) || 0;
+    const isActive = rate === (result?.tmiRate || 0);
+    return (
+      <div
+        key={idx}
+        className={`ir-tmi-segment${isActive ? ' is-active' : ''}`}
+      >
+        <span>{rate}%</span>
+      </div>
+    );
+  })}
+</div>
+
 
             <div className="ir-tmi-rows">
               <div className="ir-tmi-row">
