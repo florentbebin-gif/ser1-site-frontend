@@ -260,23 +260,35 @@
   font-size: 13px;
 }
 .ir-disclaimer {
-  margin-top: 24px;
-  padding: 14px 16px;
+  margin-top: 12px;
+  padding: 6px 8px;
   background: #f8f8f8;
-  border-left: 4px solid var(--beige);
-  font-size: 13px;
-  color: #444;
+  border-left: 3px solid var(--beige);
+  font-size: 11px;
+  font-style: italic;
+  color: #555;
+  line-height: 1.25;
 }
 
 .ir-disclaimer strong {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-style: italic;
 }
 
 .ir-disclaimer p {
-  margin: 6px 0;
+  margin: 2px 0;
+  white-space: nowrap;      /* → pas de retour à la ligne dans les paragraphes */
 }
 
 .ir-disclaimer ul {
-  margin: 6px 0 6px 18px;
+  margin: 2px 0 2px 14px;
+  padding: 0;
+}
+
+.ir-disclaimer li {
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;      /* → pas de retour à la ligne dans les puces non plus */
 }
