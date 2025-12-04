@@ -16,6 +16,17 @@ const formatMoneyInput = (n) => {
   if (!v) return '';
   return v.toLocaleString('fr-FR');
 };
+// abattement 10 % avec plafond / plancher
+function computeAbattement10(base, cfg) {
+  if (!cfg || base <= 0) return 0;
+  const plafond = Number(cfg.plafond) || 0;
+  const plancher = Number(cfg.plancher) || 0;
+
+  let val = base * 0.1;
+  if (plafond > 0) val = Math.min(val, plafond);
+  if (plancher > 0) val = Math.max(val, plancher);
+  return val;
+}
 
 // ---- Calcul IR progressif + TMI ----
 function computeProgressiveTax(scale = [], taxablePerPart) {
@@ -24,6 +35,7 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
       taxPerPart: 0,
       tmiRate: 0,
       tmiBasePerPart: 0,
+      tmiBracketTo: null,
       bracketsDetails: [],
     };
   }
@@ -32,6 +44,7 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
   let tax = 0;
   let tmiRate = 0;
   let tmiBasePerPart = 0;
+  let tmiBracketTo = null;
   const details = [];
 
   for (const br of scale) {
@@ -66,7 +79,9 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
     if (base > 0) {
       tmiRate = rate;
       tmiBasePerPart = base;
+      tmiBracketTo = to;
     }
+
 
     if (to == null || taxablePerPart <= to) break;
   }
@@ -75,6 +90,7 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
     taxPerPart: tax,
     tmiRate,
     tmiBasePerPart,
+    tmiBracketTo,
     bracketsDetails: details,
   };
 }
@@ -184,6 +200,7 @@ function determinePsBracketLabel(rfr, thresholds) {
 function computeIrResult({
   yearKey,
   status,
+  isIsolated,
   parts,
   location,
   incomes,
@@ -192,6 +209,7 @@ function computeIrResult({
   taxSettings,
   psSettings,
 }) {
+
   // On exige les paramètres d'IR, mais on accepte l'absence de PS
   if (!taxSettings) return null;
 
@@ -212,17 +230,11 @@ function computeIrResult({
       ? taxSettings.cdhr[yearKey]
       : null;
 
-  // ---- Paramètres PS (optionnels) ----
+  // PS patrimoine (pour revenus fonciers)
   const psCfg = psSettings || {};
-  const retirementCfg = psCfg.retirement || {};
-  const thresholdsCfg = psCfg.retirementThresholds || {};
-
-  const psYearCfg = retirementCfg[yearKey] || {};
-  const psBrackets = psYearCfg.brackets || [];
-
-  const psThresholdsByLoc =
-    thresholdsCfg[yearKey] && thresholdsCfg[yearKey][location]
-      ? thresholdsCfg[yearKey][location]
+  const patrimonyCfg =
+    psCfg.patrimony && psCfg.patrimony[yearKey]
+      ? psCfg.patrimony[yearKey]
       : null;
 
   // ---- Revenus / parts ----
@@ -244,7 +256,6 @@ function computeIrResult({
     (incomes.d2.fonciers || 0) +
     (incomes.d2.autres || 0);
 
-
   const totalIncome = totalIncomeD1 + totalIncomeD2;
   const deductionsTotal = Math.max(0, deductions || 0);
   const creditsTotal = Math.max(0, credits || 0);
@@ -256,10 +267,58 @@ function computeIrResult({
     taxPerPart,
     tmiRate,
     tmiBasePerPart,
+    tmiBracketTo,
     bracketsDetails,
   } = computeProgressiveTax(scale, taxablePerPart);
 
-  const irBrutFoyer = taxPerPart * partsNb;
+  // IR brut avec le nombre de parts saisi
+  let irBrutFoyer = taxPerPart * partsNb;
+
+  // ---- Plafonnement du quotient familial ----
+  const qfCfgRoot = incomeTaxCfg.quotientFamily || {};
+  const qfYearCfg = qfCfgRoot[yearKey] || {};
+  const plafondPartSup = Number(qfYearCfg.plafondPartSup) || 0;
+  const plafondParentIsoléDeuxPremièresParts =
+    Number(qfYearCfg.plafondParentIsoléDeuxPremièresParts) || 0;
+
+  const basePartsForQF = status === 'couple' ? 2 : 1;
+  const extraParts = Math.max(0, partsNb - basePartsForQF);
+  const extraHalfParts = extraParts * 2;
+
+  if (extraHalfParts > 0 && plafondPartSup > 0) {
+    // IR avec parts "de base" (sans les parts supplémentaires)
+    const taxablePerPartBase =
+      basePartsForQF > 0 ? taxableIncome / basePartsForQF : taxableIncome;
+    const { taxPerPart: taxPerPartBase } = computeProgressiveTax(
+      scale,
+      taxablePerPartBase
+    );
+    const irBase = taxPerPartBase * basePartsForQF;
+
+    const avantageBrut = irBase - irBrutFoyer;
+    if (avantageBrut > 0) {
+      let maxAvantage = 0;
+
+      if (isIsolated && plafondParentIsoléDeuxPremièresParts > 0) {
+        if (extraHalfParts <= 2) {
+          maxAvantage = plafondParentIsoléDeuxPremièresParts;
+        } else {
+          maxAvantage =
+            plafondParentIsoléDeuxPremièresParts +
+            (extraHalfParts - 2) * plafondPartSup;
+        }
+      } else {
+        maxAvantage = extraHalfParts * plafondPartSup;
+      }
+
+      if (maxAvantage > 0 && avantageBrut > maxAvantage) {
+        // IR après plafonnement
+        irBrutFoyer = irBase - maxAvantage;
+      }
+    }
+  }
+
+  // IR net après crédits (mais avant CEHR / CDHR / PS)
   const irNetAfterCredits = Math.max(0, irBrutFoyer - creditsTotal);
 
   // On approxime le RFR par le revenu imposable
@@ -273,26 +332,23 @@ function computeIrResult({
     status === 'couple' ? 'couple' : 'single'
   );
 
-  // ---- PS sur pensions de retraite ----
-  let psRateLabel = null;
+  // ---- PS sur revenus fonciers ----
   let psRateTotal = 0;
   let psTotal = 0;
-
-  const thresholds = computeRfrThresholdsForParts(psThresholdsByLoc, partsNb);
-  const psBracketLabel = determinePsBracketLabel(rfr, thresholds);
-
-  if (psBracketLabel && psBrackets.length > 0) {
-    const psBracket = psBrackets.find((b) => b.label === psBracketLabel);
-    if (psBracket) {
-      psRateLabel = psBracket.label;
-      psRateTotal = Number(psBracket.totalRate) || 0;
-
-      const pensionsBase = (incomes.d1.pensions || 0) + (incomes.d2.pensions || 0);
-      psTotal = pensionsBase * (psRateTotal / 100);
-    }
+  if (patrimonyCfg) {
+    psRateTotal = Number(patrimonyCfg.totalRate) || 0;
+    const fonciersBase =
+      (incomes.d1.fonciers || 0) + (incomes.d2.fonciers || 0);
+    psTotal = fonciersBase * (psRateTotal / 100);
   }
 
   const tmiBaseGlobal = tmiBasePerPart * partsNb;
+  let tmiMarginGlobal = null;
+  if (tmiBracketTo != null) {
+    const margeParPart = Math.max(0, tmiBracketTo - taxablePerPart);
+    tmiMarginGlobal = margeParPart * partsNb;
+  }
+
   const totalTax = irNetAfterCredits + cehr + cdhr + psTotal;
 
   return {
@@ -307,17 +363,18 @@ function computeIrResult({
     tmiRate,
     tmiBasePerPart,
     tmiBaseGlobal,
+    tmiMarginGlobal,
     bracketsDetails,
     rfr,
     cehr,
     cehrDetails,
     cdhr,
     psTotal,
-    psRateLabel,
     psRateTotal,
     totalTax,
   };
 }
+
 
 
 /* ===============================
@@ -507,10 +564,33 @@ export default function Ir() {
   const baseParts = Math.max(minParts, Number(parts) || minParts);
   const effectiveParts =
     status === 'single' && isIsolated ? baseParts + 0.5 : baseParts;
-  // Frais réels déclarés par le foyer
+
+  // Abattement 10 % salaires / art. 62 (par déclarant)
+  const abat10CfgRoot = taxSettings?.incomeTax?.abat10 || {};
+  const abat10SalCfg =
+    yearKey === 'current'
+      ? abat10CfgRoot.current
+      : abat10CfgRoot.previous;
+
+  const baseSalD1 = (incomes.d1.salaries || 0) + (incomes.d1.associes62 || 0);
+  const baseSalD2 = (incomes.d2.salaries || 0) + (incomes.d2.associes62 || 0);
+
+  const abat10SalD1 = computeAbattement10(baseSalD1, abat10SalCfg);
+  const abat10SalD2 = computeAbattement10(baseSalD2, abat10SalCfg);
+
+  // Frais réels / 10 % déclarés par le foyer (s'ajoutent aux "Déductions")
   const extraDeductions =
-    (realMode.d1 === 'reels' ? (realExpenses.d1 || 0) : 0) +
-    (realMode.d2 === 'reels' ? (realExpenses.d2 || 0) : 0);
+    (realMode.d1 === 'reels'
+      ? realExpenses.d1 || 0
+      : realMode.d1 === 'abat10'
+      ? abat10SalD1
+      : 0) +
+    (realMode.d2 === 'reels'
+      ? realExpenses.d2 || 0
+      : realMode.d2 === 'abat10'
+      ? abat10SalD2
+      : 0);
+
 
   // Calcul principal
   const result = useMemo(
@@ -518,6 +598,7 @@ export default function Ir() {
       computeIrResult({
         yearKey,
         status,
+        isIsolated,
         parts: effectiveParts,
         location,
         incomes,
@@ -526,19 +607,23 @@ export default function Ir() {
         taxSettings,
         psSettings,
       }),
+
     [
       yearKey,
       status,
+      isIsolated,
       effectiveParts,
       location,
       incomes,
       deductions,
+      extraDeductions,
       credits,
       taxSettings,
       psSettings,
       realMode,
       realExpenses,
     ]
+
   );
 
 
@@ -606,11 +691,11 @@ export default function Ir() {
       rows.push(['Revenus imposables total', euro0(result.totalIncome)]);
       rows.push(['Revenu imposable du foyer', euro0(result.taxableIncome)]);
       rows.push(['TMI', `${result.tmiRate || 0} %`]);
-      rows.push(['IR (après crédits)', euro0(result.irNetAfterCredits)]);
+      rows.push(['Impôt sur le revenu', euro0(result.irNetAfterCredits)]);
       rows.push(['CEHR', euro0(result.cehr)]);
       rows.push(['CDHR', euro0(result.cdhr)]);
-      rows.push(['Prélèvements sociaux retraite', euro0(result.psTotal)]);
-      rows.push(['Impôts totaux (IR + CEHR + CDHR + PS)', euro0(result.totalTax)]);
+      rows.push(['PS sur les revenus fonciers', euro0(result.psTotal)]);
+      rows.push(['Imposition totale (IR + CEHR + CDHR + PS)', euro0(result.totalTax)]);
 
       const xml = `<?xml version="1.0"?>
 <?mso-application progid="Excel.Sheet"?>
@@ -861,7 +946,7 @@ export default function Ir() {
                     />
                   </td>
                 </tr>
-                                <tr>
+                <tr>
                   <td>Frais réels ou abattement 10&nbsp;%</td>
                   <td>
                     <div style={{ display: 'flex', gap: 4 }}>
@@ -872,10 +957,10 @@ export default function Ir() {
                           setRealMode((m) => ({ ...m, d1: e.target.value }))
                         }
                       >
-                        <option value="abat10">Abattement forfaitaire 10 %</option>
-                        <option value="reels">Frais réels</option>
+                        <option value="reels">FR</option>
+                        <option value="abat10">10%</option>
                       </select>
-                      {realMode.d1 === 'reels' && (
+                      {realMode.d1 === 'reels' ? (
                         <input
                           type="text"
                           inputMode="numeric"
@@ -890,6 +975,13 @@ export default function Ir() {
                             }));
                           }}
                         />
+                      ) : (
+                        <input
+                          type="text"
+                          style={{ flex: 1, background: '#f3f3f3' }}
+                          readOnly
+                          value={formatMoneyInput(abat10SalD1)}
+                        />
                       )}
                     </div>
                   </td>
@@ -902,10 +994,10 @@ export default function Ir() {
                           setRealMode((m) => ({ ...m, d2: e.target.value }))
                         }
                       >
-                        <option value="abat10">Abattement forfaitaire 10 %</option>
-                        <option value="reels">Frais réels</option>
+                        <option value="reels">FR</option>
+                        <option value="abat10">10%</option>
                       </select>
-                      {realMode.d2 === 'reels' && (
+                      {realMode.d2 === 'reels' ? (
                         <input
                           type="text"
                           inputMode="numeric"
@@ -920,10 +1012,18 @@ export default function Ir() {
                             }));
                           }}
                         />
+                      ) : (
+                        <input
+                          type="text"
+                          style={{ flex: 1, background: '#f3f3f3' }}
+                          readOnly
+                          value={formatMoneyInput(abat10SalD2)}
+                        />
                       )}
                     </div>
                   </td>
                 </tr>
+
                 <tr>
                   <td>Pensions, retraites et rentes</td>
                   <td>
@@ -954,13 +1054,21 @@ export default function Ir() {
                 <tr className="ir-row-title">
                   <td>Abattement 10&nbsp;% pensions retraite (foyer)</td>
                   <td colSpan={2} style={{ textAlign: 'center' }}>
-                    {euro0(
-                      0.1 *
-                        ((incomes.d1.pensions || 0) +
-                          (incomes.d2.pensions || 0))
-                    )}
+                    {(() => {
+                      const abat10CfgRoot = taxSettings?.incomeTax?.abat10 || {};
+                      const cfgRet =
+                        yearKey === 'current'
+                          ? abat10CfgRoot.retireesCurrent
+                          : abat10CfgRoot.retireesPrevious;
+                      const baseRet =
+                        (incomes.d1.pensions || 0) +
+                        (incomes.d2.pensions || 0);
+                      const val = computeAbattement10(baseRet, cfgRet);
+                      return euro0(val);
+                    })()}
                   </td>
                 </tr>
+
                 <tr>
                   <td>BIC-BNC-BA imposables</td>
                   <td>
@@ -1050,9 +1158,14 @@ export default function Ir() {
                   <td>Déductions (pensions alimentaires, etc.)</td>
                   <td colSpan={2}>
                     <input
-                      type="number"
-                      value={deductions}
-                      onChange={(e) => setDeductions(toNum(e.target.value, 0))}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(deductions)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        setDeductions(raw === '' ? 0 : Number(raw));
+                      }}
                     />
                   </td>
                 </tr>
@@ -1060,12 +1173,18 @@ export default function Ir() {
                   <td>Réductions / crédits d&apos;impôt</td>
                   <td colSpan={2}>
                     <input
-                      type="number"
-                      value={credits}
-                      onChange={(e) => setCredits(toNum(e.target.value, 0))}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(credits)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        setCredits(raw === '' ? 0 : Number(raw));
+                      }}
                     />
                   </td>
                 </tr>
+
               </tbody>
             </table>
           </div>
@@ -1091,21 +1210,30 @@ export default function Ir() {
   })}
 </div>
 
-              <div className="ir-tmi-rows">
-                <div className="ir-tmi-row">
-                  <span>TMI</span>
-                  <span>{result ? `${result.tmiRate || 0} %` : '-'}</span>
-                </div>
-                <div className="ir-tmi-row">
-                  <span>IR total (après crédits)</span>
-                  <span>{result ? euro0(result.irNetAfterCredits) : '-'}</span>
-                </div>
+            <div className="ir-tmi-rows">
+              <div className="ir-tmi-row">
+                <span>TMI</span>
+                <span>{result ? `${result.tmiRate || 0} %` : '-'}</span>
               </div>
+              <div className="ir-tmi-row">
+                <span>Impôt sur le revenu</span>
+                <span>{result ? euro0(result.irNetAfterCredits) : '-'}</span>
+              </div>
+            </div>
 
             <div className="ir-tmi-sub">
-              Montant des revenus dans cette TMI :{' '}
-              {result ? euro0(result.tmiBaseGlobal) : '0 €'}
+              <div>
+                Montant des revenus dans cette TMI :{' '}
+                {result ? euro0(result.tmiBaseGlobal) : '0 €'}
+              </div>
+              <div>
+                Montant des revenus avant changement de TMI :{' '}
+                {result && result.tmiMarginGlobal != null
+                  ? euro0(result.tmiMarginGlobal)
+                  : '—'}
+              </div>
             </div>
+
           </div>
 
           {result && (
@@ -1118,13 +1246,13 @@ export default function Ir() {
                 <span>Nombre de parts</span>
                 <span>{result.partsNb}</span>
               </div>
-              <div className="ir-summary-row">
+               <div className="ir-summary-row">
                 <span>Revenu par part</span>
                 <span>{euro0(result.taxablePerPart)}</span>
               </div>
               <div className="ir-summary-row">
-                <span>IR (après crédits)</span>
-                <span>{euro0(result.irNetAfterCredits)}</span>
+                <span>Imposition totale</span>
+                <span>{euro0(result.totalTax)}</span>
               </div>
               <div className="ir-summary-row">
                 <span>CEHR</span>
@@ -1135,9 +1263,10 @@ export default function Ir() {
                 <span>{euro0(result.cdhr)}</span>
               </div>
               <div className="ir-summary-row">
-                <span>Prélèvements sociaux retraite</span>
+                <span>PS sur les revenus fonciers</span>
                 <span>{euro0(result.psTotal)}</span>
               </div>
+
             </div>
           )}
 
