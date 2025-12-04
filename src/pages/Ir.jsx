@@ -1480,11 +1480,7 @@ onChange={(e) => {
     </p>
 
     <p>
-      Avantage fiscal lié aux parts supplémentaires plafonné à{' '}
-      <strong>{euro0(result.qfAdvantage)}</strong>, correspondant à{' '}
-      <strong>{result.qfExtraHalfParts}</strong>{' '}
-      demi-part{result.qfExtraHalfParts > 1 ? 's' : ''} supplémentaire
-      {result.qfExtraHalfParts > 1 ? 's' : ''}.
+      Avantage fiscal lié aux parts supplémentaires plafonné à <strong>{euro0(result.qfAdvantage)}</strong>, correspondant à <strong>{result.qfExtraHalfParts}</strong> demi-part{result.qfExtraHalfParts > 1 ? 's' : ''} supplémentaire{result.qfExtraHalfParts > 1 ? 's' : ''}.
     </p>
 
     <p>
@@ -1511,8 +1507,7 @@ onChange={(e) => {
     </ul>
 
     <p>
-      En présence de ces situations, le résultat fourni constitue une{' '}
-      <strong>estimation</strong>.
+      En présence de ces situations, le résultat fourni constitue une <strong>estimation</strong>.
     </p>
   </div>
 )}
