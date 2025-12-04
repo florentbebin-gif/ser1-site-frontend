@@ -10,6 +10,12 @@ import { toNumber } from '../utils/number';
 const fmt0 = (n) => (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
 const euro0 = (n) => `${fmt0(n)} €`;
 const toNum = (v, def = 0) => toNumber(v, def);
+// pour afficher joliment les entrées monétaires
+const formatMoneyInput = (n) => {
+  const v = Math.round(Number(n) || 0);
+  if (!v) return '';
+  return v.toLocaleString('fr-FR');
+};
 
 // ---- Calcul IR progressif + TMI ----
 function computeProgressiveTax(scale = [], taxablePerPart) {
@@ -323,7 +329,8 @@ export default function Ir() {
   // Choix utilisateur
   const [yearKey, setYearKey] = useState('current'); // current = 2025, previous = 2024
   const [status, setStatus] = useState('couple'); // 'single' | 'couple'
-  const [parts, setParts] = useState(2);
+  const [isIsolated, setIsIsolated] = useState(false); // option parent isolé
+  const [parts, setParts] = useState(2); // parts "de base" (hors demi-part isolé)
   const [location, setLocation] = useState('metropole'); // metropole | gmr | guyane
 
   const [incomes, setIncomes] = useState({
@@ -392,6 +399,7 @@ export default function Ir() {
         if (s && typeof s === 'object') {
           setYearKey(s.yearKey ?? 'current');
           setStatus(s.status ?? 'couple');
+          setIsIsolated(s.isIsolated ?? false);
           setParts(s.parts ?? 2);
           setLocation(s.location ?? 'metropole');
           setIncomes(
@@ -420,6 +428,7 @@ export default function Ir() {
         JSON.stringify({
           yearKey,
           status,
+          isIsolated,
           parts,
           location,
           incomes,
@@ -440,6 +449,7 @@ export default function Ir() {
 
       setYearKey('current');
       setStatus('couple');
+      setIsIsolated(false);
       setParts(2);
       setLocation('metropole');
       setIncomes({
@@ -479,6 +489,12 @@ export default function Ir() {
       },
     }));
   };
+  
+  // Parts effectives prenant en compte le statut et l'option "isolé"
+  const minParts = status === 'couple' ? 2 : 1;
+  const baseParts = Math.max(minParts, Number(parts) || minParts);
+  const effectiveParts =
+    status === 'single' && isIsolated ? baseParts + 0.5 : baseParts;
 
   // Calcul principal
   const result = useMemo(
@@ -486,7 +502,7 @@ export default function Ir() {
       computeIrResult({
         yearKey,
         status,
-        parts,
+        parts: effectiveParts,
         location,
         incomes,
         deductions,
@@ -494,13 +510,24 @@ export default function Ir() {
         taxSettings,
         psSettings,
       }),
-    [yearKey, status, parts, location, incomes, deductions, credits, taxSettings, psSettings]
+    [
+      yearKey,
+      status,
+      effectiveParts,
+      location,
+      incomes,
+      deductions,
+      credits,
+      taxSettings,
+      psSettings,
+    ]
   );
+
 
   const yearLabel =
     yearKey === 'current'
-      ? '2025 (RFR 2023 & Avis IR 2024)'
-      : '2024 (RFR 2022 & Avis IR 2023)';
+      ? 'Barème 2025 (revenus 2024)'
+      : 'Barème 2024 (revenus 2023)';
   const tmiScale =
   yearKey === 'current'
     ? taxSettings?.incomeTax?.scaleCurrent || []
@@ -675,31 +702,60 @@ export default function Ir() {
             <div className="ir-field">
               <label>Barème</label>
               <select value={yearKey} onChange={(e) => setYearKey(e.target.value)}>
-                <option value="current">
-                  2025 (RFR 2023 &amp; Avis IR 2024)
-                </option>
-                <option value="previous">
-                  2024 (RFR 2022 &amp; Avis IR 2023)
-                </option>
+                <option value="current">Barème 2025 (revenus 2024)</option>
+                <option value="previous">Barème 2024 (revenus 2023)</option>
               </select>
             </div>
 
+
             <div className="ir-field">
               <label>Situation familiale</label>
-              <select value={status} onChange={(e) => setStatus(e.target.value)}>
+              <select
+                value={status}
+                onChange={(e) => {
+                  const newStatus = e.target.value;
+                  setStatus(newStatus);
+                  if (newStatus === 'couple') {
+                    setIsIsolated(false);
+                    if (parts < 2) setParts(2);
+                  } else {
+                    if (parts < 1) setParts(1);
+                  }
+                }}
+              >
                 <option value="single">Célibataire / Veuf / Divorcé</option>
                 <option value="couple">Marié / Pacsé</option>
               </select>
             </div>
 
+            
+            {status === 'single' && (
+              <div className="ir-field">
+                <label>Isolé</label>
+                <select
+                  value={isIsolated ? 'yes' : 'no'}
+                  onChange={(e) => setIsIsolated(e.target.value === 'yes')}
+                >
+                  <option value="no">Non</option>
+                  <option value="yes">Oui</option>
+                </select>
+              </div>
+            )}
+
             <div className="ir-field">
               <label>Nombre de parts</label>
               <input
                 type="number"
-                step="0.5"
-                min="0.5"
+                step="0.25"
+                min={status === 'couple' ? 2 : 1}
                 value={parts}
-                onChange={(e) => setParts(toNum(e.target.value, 1))}
+                onChange={(e) => {
+                  const min = status === 'couple' ? 2 : 1;
+                  const raw = toNum(e.target.value, min);
+                  // on "accroche" à un quart de part
+                  const snapped = Math.round(raw * 4) / 4;
+                  setParts(snapped < min ? min : snapped);
+                }}
               />
             </div>
 
@@ -737,19 +793,30 @@ export default function Ir() {
                   <td>Traitements et salaires</td>
                   <td>
                     <input
-                      type="number"
-                      value={incomes.d1.salaries}
-                      onChange={(e) => updateIncome('d1', 'salaries', e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d1.salaries)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d1', 'salaries', raw === '' ? 0 : Number(raw));
+                      }}
                     />
                   </td>
                   <td>
                     <input
-                      type="number"
-                      value={incomes.d2.salaries}
-                      onChange={(e) => updateIncome('d2', 'salaries', e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d2.salaries)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d2', 'salaries', raw === '' ? 0 : Number(raw));
+                      }}
                     />
                   </td>
                 </tr>
+
                 <tr>
                   <td>Pensions, retraites et rentes</td>
                   <td>
