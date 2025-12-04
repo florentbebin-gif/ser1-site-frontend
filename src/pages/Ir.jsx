@@ -657,10 +657,12 @@ export default function Ir() {
       : realMode.d1 === 'abat10'
       ? abat10SalD1
       : 0) +
-    (realMode.d2 === 'reels'
-      ? realExpenses.d2 || 0
-      : realMode.d2 === 'abat10'
-      ? abat10SalD2
+    (status === 'couple'
+      ? realMode.d2 === 'reels'
+        ? realExpenses.d2 || 0
+        : realMode.d2 === 'abat10'
+        ? abat10SalD2
+        : 0
       : 0);
 
 
@@ -1154,7 +1156,7 @@ onChange={(e) => {
                           : abat10CfgRoot.retireesPrevious;
                       const baseRet =
                         (incomes.d1.pensions || 0) +
-                        (incomes.d2.pensions || 0);
+                        (status === 'couple' ? incomes.d2.pensions || 0 : 0);
                       const val = computeAbattement10(baseRet, cfgRet);
                       return euro0(val);
                     })()}
