@@ -321,20 +321,8 @@ function computeIrResult({
     const avantageBrut = Math.max(0, irBase - irBrutFoyerSansPlafond);
 
     // Construction du plafond global en fonction du nombre de 1/2 parts en plus
-    let maxAvantage = 0;
-    if (!isCouple && isIsolated && plafondParentIsoléDeuxPremièresParts > 0) {
-      // Parent isolé : les 2 premières 1/2 parts ont un plafond spécifique
-      if (extraHalfParts <= 2) {
-        maxAvantage = plafondParentIsoléDeuxPremièresParts;
-      } else {
-        maxAvantage =
-          plafondParentIsoléDeuxPremièresParts +
-          (extraHalfParts - 2) * plafondPartSup;
-      }
-    } else {
-      // Cas général : toutes les 1/2 parts supplémentaires au plafond standard
-      maxAvantage = plafondPartSup * extraHalfParts;
-    }
+    const maxAvantage = plafondPartSup * extraHalfParts;
+
 
     const avantageRetenu = Math.min(avantageBrut, maxAvantage);
 
