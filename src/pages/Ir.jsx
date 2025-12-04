@@ -964,7 +964,10 @@ onChange={(e) => {
           </div>
 
           <div className="ir-table-wrapper">
-            <table className="ir-table" aria-label="Revenus imposables">
+            <table
+            className={`ir-table ${status === 'single' ? 'ir-table-single' : ''}`}
+            aria-label="Revenus imposables"
+            >
               <colgroup>
                 <col style={{ width: '40%' }} />
                 <col style={{ width: '30%' }} />
