@@ -1472,7 +1472,7 @@ onChange={(e) => {
       )}
 {result && result.qfAdvantage > 0 && (
   <div className="ir-disclaimer">
-    <strong>ℹ️ Plafonnement du quotient familial appliqué</strong>
+    <strong>Plafonnement du quotient familial appliqué</strong>
 
     <p>
       Le nombre de parts déclaré entraîne l’application du plafonnement du
