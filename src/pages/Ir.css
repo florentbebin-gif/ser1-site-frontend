@@ -259,3 +259,24 @@
   color: #b00020;
   font-size: 13px;
 }
+.ir-disclaimer {
+  margin-top: 24px;
+  padding: 14px 16px;
+  background: #f8f8f8;
+  border-left: 4px solid var(--beige);
+  font-size: 13px;
+  color: #444;
+}
+
+.ir-disclaimer strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.ir-disclaimer p {
+  margin: 6px 0;
+}
+
+.ir-disclaimer ul {
+  margin: 6px 0 6px 18px;
+}
