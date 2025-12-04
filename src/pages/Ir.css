@@ -270,12 +270,21 @@
   line-height: 1.25;
 }
 
-.ir-disclaimer strong {
+/* Titre du bloc : le strong directement enfant de .ir-disclaimer */
+.ir-disclaimer > strong {
   display: block;
   margin-bottom: 4px;
   font-size: 11px;
   font-style: italic;
 }
+
+/* Strong à l'intérieur des paragraphes : inline, pas de retour à la ligne */
+.ir-disclaimer p strong {
+  display: inline;
+  margin: 0;
+  font-style: inherit;
+}
+
 
 .ir-disclaimer p {
   margin: 2px 0;
