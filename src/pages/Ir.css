@@ -16,6 +16,14 @@
   font-weight: 600;
   color: #2b3e37;
 }
+.ir-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #222;
+  border-bottom: 4px solid var(--beige);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
 
 .ir-export-menu {
   position: absolute;
