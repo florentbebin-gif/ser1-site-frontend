@@ -235,8 +235,12 @@ function computeIrResult({
   const decoteYearCfg = decoteCfgRoot[yearKey] || {};
 
   // Quotient familial (plafond de l'avantage lié aux parts supplémentaires)
-  const qfCfgRoot = incomeTaxCfg.quotientFamilial || {};
-  const qfYearCfg = qfCfgRoot[yearKey] || {};
+  const qfCfgRoot = incomeTax.quotientFamily || {};
+  const qfYearCfg =
+    yearKey === 'current'
+      ? qfCfgRoot.current || {}
+      : qfCfgRoot.previous || {};
+
 
   // PS patrimoine (revenus fonciers)
   const psCfg = psSettings || {};
@@ -294,11 +298,12 @@ function computeIrResult({
   const extraParts = Math.max(0, partsNb - minPartsBase);
   const extraHalfParts = extraParts * 2;
 
-  const plafondParDemiPartSup = isCouple
-    ? Number(qfYearCfg.plafondParDemiPartSupCouple || 0)
-    : Number(qfYearCfg.plafondParDemiPartSupSingle || 0);
+  const plafondPartSup = Number(qfYearCfg.plafondPartSup || 0);
+  const plafondParentIsoléDeuxPremièresParts = Number(
+    qfYearCfg.plafondParentIsoléDeuxPremièresParts || 0
+  );
 
-  if (plafondParDemiPartSup > 0 && extraHalfParts > 0 && taxableIncome > 0) {
+  if (plafondPartSup > 0 && extraHalfParts > 0 && taxableIncome > 0) {
     const basePartsForQf = minPartsBase;
 
     // IR avec seulement les parts de base (1 pour célibataire, 2 pour couple)
@@ -312,7 +317,23 @@ function computeIrResult({
     irBeforeQfBase = irBase;
 
     const avantageBrut = Math.max(0, irBase - irBrutFoyerSansPlafond);
-    const maxAvantage = plafondParDemiPartSup * extraHalfParts;
+
+    // Construction du plafond global en fonction du nombre de 1/2 parts en plus
+    let maxAvantage = 0;
+    if (!isCouple && isIsolated && plafondParentIsoléDeuxPremièresParts > 0) {
+      // Parent isolé : les 2 premières 1/2 parts ont un plafond spécifique
+      if (extraHalfParts <= 2) {
+        maxAvantage = plafondParentIsoléDeuxPremièresParts;
+      } else {
+        maxAvantage =
+          plafondParentIsoléDeuxPremièresParts +
+          (extraHalfParts - 2) * plafondPartSup;
+      }
+    } else {
+      // Cas général : toutes les 1/2 parts supplémentaires au plafond standard
+      maxAvantage = plafondPartSup * extraHalfParts;
+    }
+
     const avantageRetenu = Math.min(avantageBrut, maxAvantage);
 
     qfAdvantage = avantageRetenu;
@@ -323,6 +344,7 @@ function computeIrResult({
     irBeforeQfBase = irBrutFoyerSansPlafond;
     qfAdvantage = Math.max(0, irBeforeQfBase - irBrutFoyer);
   }
+
 
   // ---- Décote ----
   let decote = 0;
@@ -386,6 +408,7 @@ function computeIrResult({
     irBrutFoyer,          // IR brut du foyer après quotient familial
     irBeforeQfBase,       // Impôt avant quotient familial (avec parts de base)
     qfAdvantage,          // Avantage du quotient familial retenu
+    qfExtraHalfParts,
     irAfterQf: irBrutFoyer,
 
     creditsTotal,
@@ -1445,6 +1468,54 @@ onChange={(e) => {
           )}
         </div>
       )}
+{result && result.qfAdvantage > 0 && (
+  <div className="ir-disclaimer">
+    <strong>ℹ️ Plafonnement du quotient familial appliqué</strong>
+
+    <p>
+      Le nombre de parts déclaré entraîne l’application du plafonnement du
+      quotient familial.
+    </p>
+
+    <p>
+      Avantage fiscal lié aux parts supplémentaires plafonné à{' '}
+      <strong>{euro0(result.qfAdvantage)}</strong>, correspondant à{' '}
+      <strong>{result.qfExtraHalfParts}</strong>{' '}
+      demi-part{result.qfExtraHalfParts > 1 ? 's' : ''} supplémentaire
+      {result.qfExtraHalfParts > 1 ? 's' : ''}.
+    </p>
+
+    <p>
+      Pour simplifier la saisie, toute part au-delà de{' '}
+      {status === 'couple' ? '2 parts (couple)' : '1 part (personne seule)'} est
+      assimilée à une part liée à des enfants à charge.
+    </p>
+
+    <p>
+      Certains cas particuliers ne sont pas traités spécifiquement par le
+      simulateur, notamment :
+    </p>
+
+    <ul>
+      <li>garde alternée,</li>
+      <li>enfants ou adultes à charge en situation de handicap,</li>
+      <li>
+        majorations spécifiques (invalidité, ancien combattant, veuf avec enfant
+        non rattaché, etc.),
+      </li>
+      <li>
+        situations complexes de rattachement ou de demi-parts spécifiques.
+      </li>
+    </ul>
+
+    <p>
+      En présence de ces situations, le résultat fourni constitue une{' '}
+      <strong>estimation</strong>.
+    </p>
+  </div>
+)}
+
+      
     </div>
   );
 }
