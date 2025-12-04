@@ -230,6 +230,7 @@ function computeIrResult({
 
   const totalIncomeD1 =
     (incomes.d1.salaries || 0) +
+    (incomes.d1.associes62 || 0) +
     (incomes.d1.pensions || 0) +
     (incomes.d1.bic || 0) +
     (incomes.d1.fonciers || 0) +
@@ -237,10 +238,12 @@ function computeIrResult({
 
   const totalIncomeD2 =
     (incomes.d2.salaries || 0) +
+    (incomes.d2.associes62 || 0) +
     (incomes.d2.pensions || 0) +
     (incomes.d2.bic || 0) +
     (incomes.d2.fonciers || 0) +
     (incomes.d2.autres || 0);
+
 
   const totalIncome = totalIncomeD1 + totalIncomeD2;
   const deductionsTotal = Math.max(0, deductions || 0);
@@ -334,9 +337,12 @@ export default function Ir() {
   const [location, setLocation] = useState('metropole'); // metropole | gmr | guyane
 
   const [incomes, setIncomes] = useState({
-    d1: { salaries: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-    d2: { salaries: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+    d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+    d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
   });
+  // Mode de déduction des frais pour salaires / art.62
+  const [realMode, setRealMode] = useState({ d1: 'abat10', d2: 'abat10' }); // 'abat10' | 'reels'
+  const [realExpenses, setRealExpenses] = useState({ d1: 0, d2: 0 });
 
   const [deductions, setDeductions] = useState(0);
   const [credits, setCredits] = useState(0);
@@ -404,10 +410,12 @@ export default function Ir() {
           setLocation(s.location ?? 'metropole');
           setIncomes(
             s.incomes ?? {
-              d1: { salaries: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-              d2: { salaries: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+              d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+              d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
             }
           );
+          setRealMode(s.realMode ?? { d1: 'abat10', d2: 'abat10' });
+          setRealExpenses(s.realExpenses ?? { d1: 0, d2: 0 });
           setDeductions(s.deductions ?? 0);
           setCredits(s.credits ?? 0);
         }
@@ -432,6 +440,8 @@ export default function Ir() {
           parts,
           location,
           incomes,
+          realMode,
+          realExpenses,
           deductions,
           credits,
         })
@@ -453,11 +463,13 @@ export default function Ir() {
       setParts(2);
       setLocation('metropole');
       setIncomes({
-        d1: { salaries: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-        d2: { salaries: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+          d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+          d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
       });
       setDeductions(0);
       setCredits(0);
+      setRealMode({ d1: 'abat10', d2: 'abat10' });
+      setRealExpenses({ d1: 0, d2: 0 });
 
       try {
         localStorage.removeItem(STORE_KEY);
@@ -495,6 +507,10 @@ export default function Ir() {
   const baseParts = Math.max(minParts, Number(parts) || minParts);
   const effectiveParts =
     status === 'single' && isIsolated ? baseParts + 0.5 : baseParts;
+  // Frais réels déclarés par le foyer
+  const extraDeductions =
+    (realMode.d1 === 'reels' ? (realExpenses.d1 || 0) : 0) +
+    (realMode.d2 === 'reels' ? (realExpenses.d2 || 0) : 0);
 
   // Calcul principal
   const result = useMemo(
@@ -505,7 +521,7 @@ export default function Ir() {
         parts: effectiveParts,
         location,
         incomes,
-        deductions,
+        deductions: deductions + extraDeductions,
         credits,
         taxSettings,
         psSettings,
@@ -520,6 +536,8 @@ export default function Ir() {
       credits,
       taxSettings,
       psSettings,
+      realMode,
+      realExpenses,
     ]
   );
 
@@ -816,38 +834,157 @@ export default function Ir() {
                     />
                   </td>
                 </tr>
-
                 <tr>
-                  <td>Pensions, retraites et rentes</td>
+                  <td>Revenus des associés / gérants (art. 62 CGI)</td>
                   <td>
                     <input
-                      type="number"
-                      value={incomes.d1.pensions}
-                      onChange={(e) => updateIncome('d1', 'pensions', e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d1.associes62)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d1', 'associes62', raw === '' ? 0 : Number(raw));
+                      }}
                     />
                   </td>
                   <td>
                     <input
-                      type="number"
-                      value={incomes.d2.pensions}
-                      onChange={(e) => updateIncome('d2', 'pensions', e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d2.associes62)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d2', 'associes62', raw === '' ? 0 : Number(raw));
+                      }}
                     />
+                  </td>
+                </tr>
+                                <tr>
+                  <td>Frais réels ou abattement 10&nbsp;%</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <select
+                        style={{ flex: 1 }}
+                        value={realMode.d1}
+                        onChange={(e) =>
+                          setRealMode((m) => ({ ...m, d1: e.target.value }))
+                        }
+                      >
+                        <option value="abat10">Abattement forfaitaire 10 %</option>
+                        <option value="reels">Frais réels</option>
+                      </select>
+                      {realMode.d1 === 'reels' && (
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="0 €"
+                          style={{ flex: 1 }}
+                          value={formatMoneyInput(realExpenses.d1)}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/[^\d]/g, '');
+                            setRealExpenses((r) => ({
+                              ...r,
+                              d1: raw === '' ? 0 : Number(raw),
+                            }));
+                          }}
+                        />
+                      )}
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <select
+                        style={{ flex: 1 }}
+                        value={realMode.d2}
+                        onChange={(e) =>
+                          setRealMode((m) => ({ ...m, d2: e.target.value }))
+                        }
+                      >
+                        <option value="abat10">Abattement forfaitaire 10 %</option>
+                        <option value="reels">Frais réels</option>
+                      </select>
+                      {realMode.d2 === 'reels' && (
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="0 €"
+                          style={{ flex: 1 }}
+                          value={formatMoneyInput(realExpenses.d2)}
+                          onChange={(e) => {
+                            const raw = e.target.value.replace(/[^\d]/g, '');
+                            setRealExpenses((r) => ({
+                              ...r,
+                              d2: raw === '' ? 0 : Number(raw),
+                            }));
+                          }}
+                        />
+                      )}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Pensions, retraites et rentes</td>
+                  <td>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d1.pensions)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d1', 'pensions', raw === '' ? 0 : Number(raw));
+                      }}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d2.pensions)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d2', 'pensions', raw === '' ? 0 : Number(raw));
+                      }}
+                    />
+                  </td>
+                </tr>
+                <tr className="ir-row-title">
+                  <td>Abattement 10&nbsp;% pensions retraite (foyer)</td>
+                  <td colSpan={2} style={{ textAlign: 'center' }}>
+                    {euro0(
+                      0.1 *
+                        ((incomes.d1.pensions || 0) +
+                          (incomes.d2.pensions || 0))
+                    )}
                   </td>
                 </tr>
                 <tr>
                   <td>BIC-BNC-BA imposables</td>
                   <td>
                     <input
-                      type="number"
-                      value={incomes.d1.bic}
-                      onChange={(e) => updateIncome('d1', 'bic', e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d1.bic)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d1', 'bic', raw === '' ? 0 : Number(raw));
+                      }}
                     />
                   </td>
                   <td>
                     <input
-                      type="number"
-                      value={incomes.d2.bic}
-                      onChange={(e) => updateIncome('d2', 'bic', e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d2.bic)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d2', 'bic', raw === '' ? 0 : Number(raw));
+                      }}
                     />
                   </td>
                 </tr>
@@ -855,16 +992,26 @@ export default function Ir() {
                   <td>Revenus fonciers nets</td>
                   <td>
                     <input
-                      type="number"
-                      value={incomes.d1.fonciers}
-                      onChange={(e) => updateIncome('d1', 'fonciers', e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d1.fonciers)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d1', 'fonciers', raw === '' ? 0 : Number(raw));
+                      }}
                     />
                   </td>
                   <td>
                     <input
-                      type="number"
-                      value={incomes.d2.fonciers}
-                      onChange={(e) => updateIncome('d2', 'fonciers', e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d2.fonciers)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d2', 'fonciers', raw === '' ? 0 : Number(raw));
+                      }}
                     />
                   </td>
                 </tr>
@@ -872,16 +1019,26 @@ export default function Ir() {
                   <td>Autres revenus imposables</td>
                   <td>
                     <input
-                      type="number"
-                      value={incomes.d1.autres}
-                      onChange={(e) => updateIncome('d1', 'autres', e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d1.autres)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d1', 'autres', raw === '' ? 0 : Number(raw));
+                      }}
                     />
                   </td>
                   <td>
                     <input
-                      type="number"
-                      value={incomes.d2.autres}
-                      onChange={(e) => updateIncome('d2', 'autres', e.target.value)}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d2.autres)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d2', 'autres', raw === '' ? 0 : Number(raw));
+                      }}
                     />
                   </td>
                 </tr>
@@ -934,17 +1091,16 @@ export default function Ir() {
   })}
 </div>
 
-
-            <div className="ir-tmi-rows">
-              <div className="ir-tmi-row">
-                <span>TMI</span>
-                <span>{result ? `${result.tmiRate || 0} %` : '-'}</span>
+              <div className="ir-tmi-rows">
+                <div className="ir-tmi-row">
+                  <span>TMI</span>
+                  <span>{result ? `${result.tmiRate || 0} %` : '-'}</span>
+                </div>
+                <div className="ir-tmi-row">
+                  <span>IR total (après crédits)</span>
+                  <span>{result ? euro0(result.irNetAfterCredits) : '-'}</span>
+                </div>
               </div>
-              <div className="ir-tmi-row">
-                <span>IR total (IR + CEHR + CDHR + PS)</span>
-                <span>{result ? euro0(result.totalTax) : '-'}</span>
-              </div>
-            </div>
 
             <div className="ir-tmi-sub">
               Montant des revenus dans cette TMI :{' '}
