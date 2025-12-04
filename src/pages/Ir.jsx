@@ -200,7 +200,7 @@ function determinePsBracketLabel(rfr, thresholds) {
 function computeIrResult({
   yearKey,
   status,
-  isIsolated,
+  isIsolated, // actuellement pas utilisé dans ce calcul, mais gardé pour cohérence
   parts,
   location,
   incomes,
@@ -209,9 +209,9 @@ function computeIrResult({
   taxSettings,
   psSettings,
 }) {
-
-  // On exige les paramètres d'IR, mais on accepte l'absence de PS
   if (!taxSettings) return null;
+
+  const isCouple = status === 'couple';
 
   // ---- Paramètres IR ----
   const incomeTaxCfg = taxSettings.incomeTax || {};
@@ -223,14 +223,22 @@ function computeIrResult({
   const cehrCfg = taxSettings.cehr || {};
   const cehrYearCfg = cehrCfg[yearKey] || {};
   const cehrBrackets =
-    cehrYearCfg[status === 'couple' ? 'couple' : 'single'] || [];
+    cehrYearCfg[isCouple ? 'couple' : 'single'] || [];
 
   const cdhrCfg =
     taxSettings.cdhr && taxSettings.cdhr[yearKey]
       ? taxSettings.cdhr[yearKey]
       : null;
 
-  // PS patrimoine (pour revenus fonciers)
+  // Décote (paramètres dans taxSettings.incomeTax.decote)
+  const decoteCfgRoot = incomeTaxCfg.decote || {};
+  const decoteYearCfg = decoteCfgRoot[yearKey] || {};
+
+  // Quotient familial (plafond de l'avantage lié aux parts supplémentaires)
+  const qfCfgRoot = incomeTaxCfg.quotientFamilial || {};
+  const qfYearCfg = qfCfgRoot[yearKey] || {};
+
+  // PS patrimoine (revenus fonciers)
   const psCfg = psSettings || {};
   const patrimonyCfg =
     psCfg.patrimony && psCfg.patrimony[yearKey]
@@ -248,13 +256,15 @@ function computeIrResult({
     (incomes.d1.fonciers || 0) +
     (incomes.d1.autres || 0);
 
-  const totalIncomeD2 =
-    (incomes.d2.salaries || 0) +
-    (incomes.d2.associes62 || 0) +
-    (incomes.d2.pensions || 0) +
-    (incomes.d2.bic || 0) +
-    (incomes.d2.fonciers || 0) +
-    (incomes.d2.autres || 0);
+  // Si on est en "célibataire / veuf / divorcé", on ignore le déclarant 2 dans le calcul
+  const totalIncomeD2 = isCouple
+    ? (incomes.d2.salaries || 0) +
+      (incomes.d2.associes62 || 0) +
+      (incomes.d2.pensions || 0) +
+      (incomes.d2.bic || 0) +
+      (incomes.d2.fonciers || 0) +
+      (incomes.d2.autres || 0)
+    : 0;
 
   const totalIncome = totalIncomeD1 + totalIncomeD2;
   const deductionsTotal = Math.max(0, deductions || 0);
@@ -271,65 +281,78 @@ function computeIrResult({
     bracketsDetails,
   } = computeProgressiveTax(scale, taxablePerPart);
 
-  // IR brut avec le nombre de parts saisi
-  let irBrutFoyer = taxPerPart * partsNb;
+  // IR brut avec le nombre de parts effectif (avant plafonnement du QF)
+  const irBrutFoyerSansPlafond = taxPerPart * partsNb;
+  let irBrutFoyer = irBrutFoyerSansPlafond;
 
-  // ---- Plafonnement du quotient familial ----
-  const qfCfgRoot = incomeTaxCfg.quotientFamily || {};
-  const qfYearCfg = qfCfgRoot[yearKey] || {};
-  const plafondPartSup = Number(qfYearCfg.plafondPartSup) || 0;
-  const plafondParentIsoléDeuxPremièresParts =
-    Number(qfYearCfg.plafondParentIsoléDeuxPremièresParts) || 0;
+  // Variables pour le détail du quotient familial
+  let irBeforeQfBase = irBrutFoyerSansPlafond; // impôt théorique avec parts "de base"
+  let qfAdvantage = 0; // avantage effectivement retenu
 
-  const basePartsForQF = status === 'couple' ? 2 : 1;
-  const extraParts = Math.max(0, partsNb - basePartsForQF);
+  // Gestion du plafonnement du quotient familial (parts supplémentaires)
+  const minPartsBase = isCouple ? 2 : 1;
+  const extraParts = Math.max(0, partsNb - minPartsBase);
   const extraHalfParts = extraParts * 2;
 
-  if (extraHalfParts > 0 && plafondPartSup > 0) {
-    // IR avec parts "de base" (sans les parts supplémentaires)
+  const plafondParDemiPartSup = isCouple
+    ? Number(qfYearCfg.plafondParDemiPartSupCouple || 0)
+    : Number(qfYearCfg.plafondParDemiPartSupSingle || 0);
+
+  if (plafondParDemiPartSup > 0 && extraHalfParts > 0 && taxableIncome > 0) {
+    const basePartsForQf = minPartsBase;
+
+    // IR avec seulement les parts de base (1 pour célibataire, 2 pour couple)
     const taxablePerPartBase =
-      basePartsForQF > 0 ? taxableIncome / basePartsForQF : taxableIncome;
+      basePartsForQf > 0 ? taxableIncome / basePartsForQf : taxableIncome;
     const { taxPerPart: taxPerPartBase } = computeProgressiveTax(
       scale,
       taxablePerPartBase
     );
-    const irBase = taxPerPartBase * basePartsForQF;
+    const irBase = taxPerPartBase * basePartsForQf;
+    irBeforeQfBase = irBase;
 
-    const avantageBrut = irBase - irBrutFoyer;
-    if (avantageBrut > 0) {
-      let maxAvantage = 0;
+    const avantageBrut = Math.max(0, irBase - irBrutFoyerSansPlafond);
+    const maxAvantage = plafondParDemiPartSup * extraHalfParts;
+    const avantageRetenu = Math.min(avantageBrut, maxAvantage);
 
-      if (isIsolated && plafondParentIsoléDeuxPremièresParts > 0) {
-        if (extraHalfParts <= 2) {
-          maxAvantage = plafondParentIsoléDeuxPremièresParts;
-        } else {
-          maxAvantage =
-            plafondParentIsoléDeuxPremièresParts +
-            (extraHalfParts - 2) * plafondPartSup;
-        }
-      } else {
-        maxAvantage = extraHalfParts * plafondPartSup;
-      }
-
-      if (maxAvantage > 0 && avantageBrut > maxAvantage) {
-        // IR après plafonnement
-        irBrutFoyer = irBase - maxAvantage;
-      }
-    }
+    qfAdvantage = avantageRetenu;
+    // IR après plafonnement : on retire seulement l'avantage retenu
+    irBrutFoyer = irBase - avantageRetenu;
+  } else {
+    // Pas de parts supplémentaires ou pas de plafonnement
+    irBeforeQfBase = irBrutFoyerSansPlafond;
+    qfAdvantage = Math.max(0, irBeforeQfBase - irBrutFoyer);
   }
 
-  // IR net après crédits (mais avant CEHR / CDHR / PS)
-  const irNetAfterCredits = Math.max(0, irBrutFoyer - creditsTotal);
+  // ---- Décote ----
+  let decote = 0;
+  const decoteTrigger = isCouple
+    ? Number(decoteYearCfg.triggerCouple || 0)
+    : Number(decoteYearCfg.triggerSingle || 0);
+  const decoteAmount = isCouple
+    ? Number(decoteYearCfg.amountCouple || 0)
+    : Number(decoteYearCfg.amountSingle || 0);
+  const decoteRate = Number(decoteYearCfg.ratePercent || 0);
+
+  if (decoteTrigger > 0 && decoteAmount > 0 && irBrutFoyer <= decoteTrigger) {
+    const raw = decoteAmount - (decoteRate / 100) * irBrutFoyer;
+    if (raw > 0) decote = raw;
+  }
+  if (decote > irBrutFoyer) decote = irBrutFoyer;
+
+  // IR net après crédits et décote (c'est ce qu'on appellera "Impôt sur le revenu")
+  const irNet = Math.max(0, irBrutFoyer - creditsTotal - decote);
 
   // On approxime le RFR par le revenu imposable
   const rfr = taxableIncome;
 
+  // CEHR / CDHR
   const { cehr, cehrDetails } = computeCEHR(cehrBrackets, rfr);
   const { cdhr } = computeCDHR(
     cdhrCfg,
     rfr,
-    irNetAfterCredits + cehr,
-    status === 'couple' ? 'couple' : 'single'
+    irNet + cehr,
+    isCouple ? 'couple' : 'single'
   );
 
   // ---- PS sur revenus fonciers ----
@@ -338,7 +361,8 @@ function computeIrResult({
   if (patrimonyCfg) {
     psRateTotal = Number(patrimonyCfg.totalRate) || 0;
     const fonciersBase =
-      (incomes.d1.fonciers || 0) + (incomes.d2.fonciers || 0);
+      (incomes.d1.fonciers || 0) +
+      (isCouple ? incomes.d2.fonciers || 0 : 0);
     psTotal = fonciersBase * (psRateTotal / 100);
   }
 
@@ -349,7 +373,7 @@ function computeIrResult({
     tmiMarginGlobal = margeParPart * partsNb;
   }
 
-  const totalTax = irNetAfterCredits + cehr + cdhr + psTotal;
+  const totalTax = irNet + cehr + cdhr + psTotal;
 
   return {
     totalIncome,
@@ -358,8 +382,16 @@ function computeIrResult({
     taxableIncome,
     taxablePerPart,
     partsNb,
-    irBrutFoyer,
-    irNetAfterCredits,
+
+    irBrutFoyer,          // IR brut du foyer après quotient familial
+    irBeforeQfBase,       // Impôt avant quotient familial (avec parts de base)
+    qfAdvantage,          // Avantage du quotient familial retenu
+    irAfterQf: irBrutFoyer,
+
+    creditsTotal,
+    decote,
+    irNet,                // Impôt sur le revenu net (après crédits + décote)
+
     tmiRate,
     tmiBasePerPart,
     tmiBaseGlobal,
@@ -374,6 +406,7 @@ function computeIrResult({
     totalTax,
   };
 }
+
 
 
 
@@ -506,7 +539,21 @@ export default function Ir() {
     } catch {
       // ignore
     }
-  }, [STORE_KEY, hydrated, yearKey, status, parts, location, incomes, deductions, credits]);
+    }, [
+    STORE_KEY,
+    hydrated,
+    yearKey,
+    status,
+    isIsolated,
+    parts,
+    location,
+    incomes,
+    realMode,
+    realExpenses,
+    deductions,
+    credits,
+  ]);
+
 
   // Reset global depuis la topbar
   useEffect(() => {
@@ -691,7 +738,7 @@ export default function Ir() {
       rows.push(['Revenus imposables total', euro0(result.totalIncome)]);
       rows.push(['Revenu imposable du foyer', euro0(result.taxableIncome)]);
       rows.push(['TMI', `${result.tmiRate || 0} %`]);
-      rows.push(['Impôt sur le revenu', euro0(result.irNetAfterCredits)]);
+      rows.push(['Impôt sur le revenu', euro0(result.irNet || 0)]);
       rows.push(['CEHR', euro0(result.cehr)]);
       rows.push(['CDHR', euro0(result.cdhr)]);
       rows.push(['PS sur les revenus fonciers', euro0(result.psTotal)]);
@@ -753,7 +800,7 @@ export default function Ir() {
   return (
     <div className="panel ir-panel">
       <div className="ir-header">
-        <span>Simulateur d&apos;impôt sur le revenu</span>
+        <div className="ir-title">Simulateur d&apos;impôt sur le revenu</div>
 
         <div ref={exportRef} style={{ position: 'relative' }}>
           <button
@@ -815,16 +862,33 @@ export default function Ir() {
               <label>Situation familiale</label>
               <select
                 value={status}
-                onChange={(e) => {
-                  const newStatus = e.target.value;
-                  setStatus(newStatus);
-                  if (newStatus === 'couple') {
-                    setIsIsolated(false);
-                    if (parts < 2) setParts(2);
-                  } else {
-                    if (parts < 1) setParts(1);
-                  }
-                }}
+onChange={(e) => {
+  const newStatus = e.target.value;
+  setStatus(newStatus);
+
+  if (newStatus === 'couple') {
+    setIsIsolated(false);
+    if (parts < 2) setParts(2);
+  } else {
+    // Célibataire / Veuf / Divorcé :
+    if (parts < 1) setParts(1);
+
+    // On efface les revenus du déclarant 2 et ses frais
+    setIncomes((prev) => ({
+      ...prev,
+      d2: {
+        salaries: 0,
+        associes62: 0,
+        pensions: 0,
+        bic: 0,
+        fonciers: 0,
+        autres: 0,
+      },
+    }));
+    setRealMode((prev) => ({ ...prev, d2: 'abat10' }));
+    setRealExpenses((prev) => ({ ...prev, d2: 0 }));
+  }
+}}
               >
                 <option value="single">Célibataire / Veuf / Divorcé</option>
                 <option value="couple">Marié / Pacsé</option>
@@ -1210,16 +1274,17 @@ export default function Ir() {
   })}
 </div>
 
-            <div className="ir-tmi-rows">
-              <div className="ir-tmi-row">
-                <span>TMI</span>
-                <span>{result ? `${result.tmiRate || 0} %` : '-'}</span>
-              </div>
-              <div className="ir-tmi-row">
-                <span>Impôt sur le revenu</span>
-                <span>{result ? euro0(result.irNetAfterCredits) : '-'}</span>
-              </div>
-            </div>
+<div className="ir-tmi-rows">
+  <div className="ir-tmi-row">
+    <span>TMI</span>
+    <span>{result ? `${result.tmiRate || 0} %` : '-'}</span>
+  </div>
+  <div className="ir-tmi-row">
+    <span>Impôt sur le revenu</span>
+    <span>{result ? euro0(result.irNet || 0) : '-'}</span>
+  </div>
+</div>
+
 
             <div className="ir-tmi-sub">
               <div>
@@ -1306,6 +1371,52 @@ export default function Ir() {
               ))}
             </tbody>
           </table>
+    <table className="ir-details-table">
+      <tbody>
+        <tr>
+          <td>Base imposable du foyer</td>
+          <td style={{ textAlign: 'right' }}>
+            {euro0(result.taxableIncome)}
+          </td>
+        </tr>
+        <tr>
+          <td>Impôt avant quotient familial</td>
+          <td style={{ textAlign: 'right' }}>
+            {euro0(result.irBeforeQfBase || 0)}
+          </td>
+        </tr>
+        <tr>
+          <td>Quotient familial</td>
+          <td style={{ textAlign: 'right' }}>
+            {euro0(result.qfAdvantage || 0)}
+          </td>
+        </tr>
+        <tr>
+          <td>Impôt après quotient familial</td>
+          <td style={{ textAlign: 'right' }}>
+            {euro0(result.irAfterQf || 0)}
+          </td>
+        </tr>
+        <tr>
+          <td>Réductions et crédits d&apos;impôt</td>
+          <td style={{ textAlign: 'right' }}>
+            {euro0(result.creditsTotal || 0)}
+          </td>
+        </tr>
+        <tr>
+          <td>Décote</td>
+          <td style={{ textAlign: 'right' }}>
+            {euro0(result.decote || 0)}
+          </td>
+        </tr>
+        <tr>
+          <td>Impôt après réductions, crédits d&apos;impôt et décote</td>
+          <td style={{ textAlign: 'right' }}>
+            {euro0(result.irNet || 0)}
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
           <h4>CEHR</h4>
           {result.cehrDetails && result.cehrDetails.length > 0 ? (
