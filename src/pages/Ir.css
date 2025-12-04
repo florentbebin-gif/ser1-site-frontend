@@ -8,21 +8,20 @@
 
 .ir-header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 16px;
   font-size: 18px;
   font-weight: 600;
   color: #2b3e37;
+  border-bottom: 4px solid var(--beige);
+  padding-bottom: 8px;
 }
 .ir-title {
   font-size: 22px;
   font-weight: 700;
   color: #222;
-  border-bottom: 4px solid var(--beige);
-  padding-bottom: 8px;
-  margin-bottom: 16px;
 }
 
 .ir-export-menu {
