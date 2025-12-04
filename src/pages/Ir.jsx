@@ -235,7 +235,7 @@ function computeIrResult({
   const decoteYearCfg = decoteCfgRoot[yearKey] || {};
 
   // Quotient familial (plafond de l'avantage lié aux parts supplémentaires)
-  const qfCfgRoot = incomeTax.quotientFamily || {};
+  const qfCfgRoot = incomeTaxCfg.quotientFamily || {};
   const qfYearCfg =
     yearKey === 'current'
       ? qfCfgRoot.current || {}
