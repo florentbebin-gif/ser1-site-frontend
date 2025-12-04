@@ -241,7 +241,6 @@ function computeIrResult({
       ? qfCfgRoot.current || {}
       : qfCfgRoot.previous || {};
 
-
   // PS patrimoine (revenus fonciers)
   const psCfg = psSettings || {};
   const patrimonyCfg =
@@ -292,6 +291,8 @@ function computeIrResult({
   // Variables pour le détail du quotient familial
   let irBeforeQfBase = irBrutFoyerSansPlafond; // impôt théorique avec parts "de base"
   let qfAdvantage = 0; // avantage effectivement retenu
+  let qfExtraHalfParts = 0; // nombre de demi-parts supplémentaires prises en compte
+
 
   // Gestion du plafonnement du quotient familial (parts supplémentaires)
   const minPartsBase = isCouple ? 2 : 1;
@@ -304,8 +305,9 @@ function computeIrResult({
   );
 
   if (plafondPartSup > 0 && extraHalfParts > 0 && taxableIncome > 0) {
+    qfExtraHalfParts = extraHalfParts;
     const basePartsForQf = minPartsBase;
-
+    
     // IR avec seulement les parts de base (1 pour célibataire, 2 pour couple)
     const taxablePerPartBase =
       basePartsForQf > 0 ? taxableIncome / basePartsForQf : taxableIncome;
