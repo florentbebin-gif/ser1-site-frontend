@@ -920,7 +920,7 @@ export default function Ir() {
                   </td>
                 </tr>
                 <tr>
-                  <td>Revenus des associés / gérants (art. 62 CGI)</td>
+                  <td>Revenus des associés / gérants</td>
                   <td>
                     <input
                       type="text"
@@ -1052,7 +1052,7 @@ export default function Ir() {
                   </td>
                 </tr>
                 <tr className="ir-row-title">
-                  <td>Abattement 10&nbsp;% pensions retraite (foyer)</td>
+                  <td>Abattement 10&nbsp;% pensions (foyer)</td>
                   <td colSpan={2} style={{ textAlign: 'center' }}>
                     {(() => {
                       const abat10CfgRoot = taxSettings?.incomeTax?.abat10 || {};
