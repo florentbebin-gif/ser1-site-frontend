@@ -461,14 +461,17 @@ export default function Ir() {
   const [parts, setParts] = useState(2); // parts "de base" (hors demi-part isolé)
   const [location, setLocation] = useState('metropole'); // metropole | gmr | guyane
 
-const [incomes, setIncomes] = useState({
+  const DEFAULT_INCOMES = {
   d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
   d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
   capital: {
     withPs: 0,
     withoutPs: 0,
   },
-});
+};
+
+const [incomes, setIncomes] = useState(DEFAULT_INCOMES);
+
 
   // Mode de déduction des frais pour salaires / art.62
   const [realMode, setRealMode] = useState({ d1: 'abat10', d2: 'abat10' }); // 'abat10' | 'reels'
@@ -540,11 +543,18 @@ const [incomes, setIncomes] = useState({
           setParts(s.parts ?? 2);
           setLocation(s.location ?? 'metropole');
           setIncomes(
-            s.incomes ?? {
-              d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-              d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-            }
-          );
+  s.incomes
+    ? {
+        d1: { ...DEFAULT_INCOMES.d1, ...(s.incomes.d1 || {}) },
+        d2: { ...DEFAULT_INCOMES.d2, ...(s.incomes.d2 || {}) },
+        capital: {
+          ...DEFAULT_INCOMES.capital,
+          ...(s.incomes.capital || {}),
+        },
+      }
+    : DEFAULT_INCOMES
+);
+
           setRealMode(s.realMode ?? { d1: 'abat10', d2: 'abat10' });
           setRealExpenses(s.realExpenses ?? { d1: 0, d2: 0 });
           setDeductions(s.deductions ?? 0);
@@ -609,10 +619,7 @@ JSON.stringify({
       setIsIsolated(false);
       setParts(2);
       setLocation('metropole');
-      setIncomes({
-          d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-          d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-      });
+      setIncomes(DEFAULT_INCOMES);
       setDeductions(0);
       setCredits(0);
       setRealMode({ d1: 'abat10', d2: 'abat10' });
