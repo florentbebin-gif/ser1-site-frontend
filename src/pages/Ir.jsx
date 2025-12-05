@@ -724,11 +724,17 @@ JSON.stringify({
 const baseParts = status === 'couple' ? 2 : 1;
 
 // Parts liées aux enfants
-const childrenParts = children.reduce((sum, child) => {
-  if (child.mode === 'charge') return sum + 0.5;
-  if (child.mode === 'shared') return sum + 0.25;
+const childrenParts = children.reduce((sum, child, idx) => {
+  const isFirstTwo = idx < 2;
+  if (child.mode === 'charge') {
+    return sum + (isFirstTwo ? 0.5 : 1);
+  }
+  if (child.mode === 'shared') {
+    return sum + (isFirstTwo ? 0.25 : 0.5);
+  }
   return sum;
 }, 0);
+
 
 // Majoration parent isolé (case T simplifiée)
 const isolatedBonus =
@@ -1043,15 +1049,12 @@ onChange={(e) => {
               </colgroup>
               <thead>
                 <tr>
-                  <th />
+                  <th>Revenus imposables</th>
                   <th>Déclarant 1</th>
                   <th>Déclarant 2</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="ir-row-title">
-                  <td colSpan={3}>Revenus imposables</td>
-                </tr>
                 <tr>
                   <td>Traitements et salaires</td>
                   <td>
@@ -1486,27 +1489,29 @@ onChange={(e) => {
             </div>
           ))}
 
-          <div className="ir-field" style={{ marginTop: 8 }}>
-            <label>Nombre de parts (calculé)</label>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <input
-                type="text"
-                readOnly
-                value={effectiveParts.toFixed(2)}
-              />
-              <input
-                type="number"
-                step="0.25"
-                value={parts}
-                onChange={(e) =>
-                  setParts(
-                    Math.round(Number(e.target.value || 0) * 4) / 4
-                  )
-                }
-                title="Ajustement manuel"
-              />
-            </div>
-          </div>
+<div className="ir-field" style={{ marginTop: 8 }}>
+  <label>Nombre de parts (calculé)</label>
+  <input
+    type="text"
+    readOnly
+    value={effectiveParts.toFixed(2)}
+    style={{ background: '#f3f3f3' }}
+  />
+
+  <label style={{ fontSize: 12, marginTop: 4 }}>Ajustement de parts</label>
+  <input
+    type="number"
+    step="0.25"
+    value={parts}
+    onChange={(e) =>
+      setParts(
+        Math.round(Number(e.target.value || 0) * 4) / 4
+      )
+    }
+    title="Ajustement manuel"
+  />
+</div>
+
 
           <div className="ir-tmi-card">
             <div className="ir-tmi-header">Estimation IR</div>
