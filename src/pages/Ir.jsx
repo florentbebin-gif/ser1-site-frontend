@@ -1755,9 +1755,8 @@ setParts(0);
       )}
 <div className="ir-disclaimer">
   <p>
-    Le simulateur prend en compte la garde alternée et le plafonnement
-    du quotient familial. Certaines situations particulières (enfants
-    majeurs rattachés, pensions complexes, fiscalité étrangère) peuvent
+    Le simulateur ne prend pas en compte certaines situations particulières (enfants
+    majeurs rattachés, pensions complexes, fiscalité étrangère). Ces situations peuvent
     nécessiter une analyse personnalisée.
   </p>
 </div>
