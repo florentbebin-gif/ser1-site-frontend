@@ -201,7 +201,6 @@ function computeIrResult({
   yearKey,
   status,
   isIsolated,
-  hasSharedCustody,
   parts,
   location,
   incomes,
@@ -522,7 +521,6 @@ export default function Ir() {
   const [yearKey, setYearKey] = useState('current'); // current = 2025, previous = 2024
   const [status, setStatus] = useState('couple'); // 'single' | 'couple'
   const [isIsolated, setIsIsolated] = useState(false); // option parent isolé
-  const [hasSharedCustody, setHasSharedCustody] = useState(false);
   const [parts, setParts] = useState(2); // parts "de base" (hors demi-part isolé)
   const [location, setLocation] = useState('metropole'); // metropole | gmr | guyane
   const [children, setChildren] = useState([]);
@@ -608,7 +606,6 @@ const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
           setYearKey(s.yearKey ?? 'current');
           setStatus(s.status ?? 'couple');
           setIsIsolated(s.isIsolated ?? false);
-          setHasSharedCustody(s.hasSharedCustody ?? false);
           setParts(s.parts ?? 2);
           setLocation(s.location ?? 'metropole');
           setIncomes(
@@ -648,7 +645,6 @@ JSON.stringify({
   yearKey,
   status,
   isIsolated,
-  hasSharedCustody,
   parts,
   location,
   incomes,
@@ -697,8 +693,6 @@ JSON.stringify({
       setRealMode({ d1: 'abat10', d2: 'abat10' });
       setRealExpenses({ d1: 0, d2: 0 });
       setCapitalMode('pfu');
-      setHasSharedCustody(false);
-
       try {
         localStorage.removeItem(STORE_KEY);
       } catch {
@@ -730,11 +724,31 @@ JSON.stringify({
     }));
   };
   
-  // Parts effectives prenant en compte le statut et l'option "isolé"
-  const minParts = status === 'couple' ? 2 : 1;
-  const baseParts = Math.max(minParts, Number(parts) || minParts);
-  const effectiveParts =
-    status === 'single' && isIsolated ? baseParts + 0.5 : baseParts;
+// ===== Calcul automatique du nombre de parts =====
+
+// Parts de base selon la situation familiale
+const baseParts = status === 'couple' ? 2 : 1;
+
+// Parts liées aux enfants
+const childrenParts = children.reduce((sum, child) => {
+  if (child.mode === 'charge') return sum + 0.5;
+  if (child.mode === 'shared') return sum + 0.25;
+  return sum;
+}, 0);
+
+// Majoration parent isolé (case T simplifiée)
+const isolatedBonus =
+  status === 'single' && isIsolated ? 0.5 : 0;
+
+// Nombre de parts calculé automatiquement
+const computedParts = baseParts + childrenParts + isolatedBonus;
+
+// Ajustement manuel (par quart de part)
+const effectiveParts = Math.max(
+  baseParts,
+  Math.round((computedParts + (Number(parts) || 0)) * 4) / 4
+);
+
 
   // Abattement 10 % salaires / art. 62 (par déclarant)
   const abat10CfgRoot = taxSettings?.incomeTax?.abat10 || {};
@@ -772,7 +786,6 @@ const result = useMemo(
       yearKey,
       status,
       isIsolated,
-      hasSharedCustody,
       parts: effectiveParts,
       location,
       incomes,
@@ -786,7 +799,6 @@ const result = useMemo(
     yearKey,
     status,
     isIsolated,
-    hasSharedCustody,
     effectiveParts,
     location,
     incomes,
@@ -1023,26 +1035,7 @@ onChange={(e) => {
                 <option value="couple">Marié / Pacsé</option>
               </select>
             </div>
-
             
-            <div className="ir-field">
-              <label>Nombre de parts</label>
-              <input
-                type="number"
-                step="0.25"
-                min={status === 'couple' ? 2 : 1}
-                value={parts}
-                onChange={(e) => {
-                  const min = status === 'couple' ? 2 : 1;
-                  const raw = toNum(e.target.value, min);
-                  // on "accroche" à un quart de part
-                  const snapped = Math.round(raw * 4) / 4;
-                  setParts(snapped < min ? min : snapped);
-                }}
-              />
-            </div>
-
-
           <div className="ir-table-wrapper">
             <table
             className={`ir-table ${status === 'single' ? 'ir-table-single' : ''}`}
