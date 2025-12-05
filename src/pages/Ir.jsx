@@ -1342,7 +1342,7 @@ onChange={(e) => {
   </td>
 </tr>
 <tr>
-  <td>Option d&apos;imposition des capitaux mobiliers</td>
+  <td>Option d&apos;imposition des RCM</td>
   <td colSpan={2}>
     <select
       value={capitalMode}
