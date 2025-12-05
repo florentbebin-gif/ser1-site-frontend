@@ -1609,11 +1609,13 @@ onChange={(e) => {
               ? 'Masquer le détail du calcul'
               : 'Afficher le détail du calcul'}
           </button>
-        </div>
+        </div> {/* fin .ir-right */}
 
+      </div>
 
       {showDetails && result && (
         <div className="ir-details">
+
           <h3>Détail du calcul</h3>
 
           <h4>Barème de l&apos;impôt sur le revenu</h4>
@@ -1753,7 +1755,7 @@ onChange={(e) => {
   </div>
 )}
 
-      </div>
+
     </div>
   );
 }
