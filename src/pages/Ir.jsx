@@ -292,6 +292,8 @@ function computeIrResult({
   let irBeforeQfBase = irBrutFoyerSansPlafond; // impôt théorique avec parts "de base"
   let qfAdvantage = 0; // avantage effectivement retenu
   let qfExtraHalfParts = 0; // nombre de demi-parts supplémentaires prises en compte
+  let irAfterQf = irBrutFoyerSansPlafond; // IR après quotient familial
+
 
 
   // Gestion du plafonnement du quotient familial (parts supplémentaires)
@@ -418,7 +420,7 @@ function computeIrResult({
     irBeforeQfBase,       // Impôt avant quotient familial (avec parts de base)
     qfAdvantage,          // Avantage du quotient familial retenu
     qfExtraHalfParts,
-    irAfterQf: irBrutFoyer,
+    irAfterQf,
 
     creditsTotal,
     decote,
