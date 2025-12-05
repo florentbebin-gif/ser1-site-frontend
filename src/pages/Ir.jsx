@@ -857,8 +857,8 @@ const result = useMemo(
         location === 'metropole'
           ? 'Métropole'
           : location === 'gmr'
-          ? 'Guadeloupe / Martinique / Réunion / St-Barth / St-Martin'
-          : 'Guyane',
+          ? 'Guadeloupe / Martinique / Réunion'
+          : 'Guyane / Mayotte',
       ]);
 
       rows.push(['Revenus imposables total', euro0(result.totalIncome)]);
