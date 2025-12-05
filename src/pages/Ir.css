@@ -96,7 +96,7 @@
 }
 
 .ir-table thead {
-  background: #f5f3f0;
+  background: #f0ebe4;
 }
 
 .ir-table th,
@@ -126,7 +126,7 @@
 }
 
 .ir-row-title td {
-  background: #f0ebe4;
+  background: #f5f3f0;
   font-weight: 600;
   color: #2b3e37;
 }
