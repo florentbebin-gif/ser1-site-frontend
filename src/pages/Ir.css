@@ -304,3 +304,10 @@
   padding: 0;
   white-space: nowrap;      /* → pas de retour à la ligne dans les puces non plus */
 }
+.ir-table select {
+  font-size: 13px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid #c7c7c7;
+  background: #fff;
+}
