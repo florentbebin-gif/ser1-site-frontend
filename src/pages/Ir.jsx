@@ -1029,7 +1029,8 @@ onChange={(e) => {
                 <option value="couple">Marié / Pacsé</option>
               </select>
             </div>
-            
+          </div>
+
           <div className="ir-table-wrapper">
             <table
             className={`ir-table ${status === 'single' ? 'ir-table-single' : ''}`}
@@ -1391,7 +1392,9 @@ onChange={(e) => {
               </tbody>
             </table>
           </div>
-        </div>
+
+
+          
           </div>
 
         {/* Bloc de droite */}
