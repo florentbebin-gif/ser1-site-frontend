@@ -525,6 +525,9 @@ export default function Ir() {
   const [hasSharedCustody, setHasSharedCustody] = useState(false);
   const [parts, setParts] = useState(2); // parts "de base" (hors demi-part isolé)
   const [location, setLocation] = useState('metropole'); // metropole | gmr | guyane
+  const [children, setChildren] = useState([]);
+// ex : [{ id: 1, mode: 'charge' | 'shared' }]
+
 
   const DEFAULT_INCOMES = {
   d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
@@ -1022,33 +1025,6 @@ onChange={(e) => {
             </div>
 
             
-{status === 'single' && (
-  <div className="ir-field">
-    <label>Situation particulière</label>
-
-    <label style={{ fontSize: 12 }}>
-      <input
-        type="checkbox"
-        checked={isIsolated}
-        onChange={(e) => setIsIsolated(e.target.checked)}
-        style={{ marginRight: 6 }}
-      />
-      Parent isolé
-    </label>
-
-    <label style={{ fontSize: 12 }}>
-      <input
-        type="checkbox"
-        checked={hasSharedCustody}
-        onChange={(e) => setHasSharedCustody(e.target.checked)}
-        style={{ marginRight: 6 }}
-      />
-      Garde alternée
-    </label>
-  </div>
-)}
-
-
             <div className="ir-field">
               <label>Nombre de parts</label>
               <input
@@ -1066,17 +1042,6 @@ onChange={(e) => {
               />
             </div>
 
-            <div className="ir-field">
-              <label>Résidence</label>
-              <select value={location} onChange={(e) => setLocation(e.target.value)}>
-                <option value="metropole">Métropole</option>
-                <option value="gmr">
-                  Guadeloupe / Martinique / Réunion / St-Barth / St-Martin
-                </option>
-                <option value="guyane">Guyane</option>
-              </select>
-            </div>
-          </div>
 
           <div className="ir-table-wrapper">
             <table
@@ -1441,8 +1406,106 @@ onChange={(e) => {
           </div>
         </div>
 
-        {/* Bloc de droite : synthèse / TMI */}
+        {/* Bloc de droite }
         <div className="ir-right">
+          
+            <div className="ir-field">
+              <label>Résidence</label>
+              <select value={location} onChange={(e) => setLocation(e.target.value)}>
+                <option value="metropole">Métropole</option>
+                <option value="gmr">
+                  Guadeloupe / Martinique / Réunion
+                </option>
+                <option value="guyane">Guyane / Mayotte</option>
+              </select>
+            </div>
+          </div>
+{status === 'single' && (
+  <div className="ir-field">
+    <label>Situation familiale particulière</label>
+
+    <label style={{ fontSize: 12 }}>
+      <input
+        type="checkbox"
+        checked={isIsolated}
+        onChange={(e) => setIsIsolated(e.target.checked)}
+        style={{ marginRight: 6 }}
+      />
+      Parent isolé
+    </label>
+  </div>
+)}
+<button
+  type="button"
+  className="chip"
+  onClick={() =>
+    setChildren((c) => [
+      ...c,
+      { id: Date.now(), mode: 'charge' },
+    ])
+  }
+>
+  + Ajouter un enfant
+</button>
+{children.map((child, idx) => (
+  <div
+    key={child.id}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8,
+      fontSize: 13,
+    }}
+  >
+    <strong>Enfant {idx + 1}</strong>
+
+    <select
+      value={child.mode}
+      onChange={(e) =>
+        setChildren((list) =>
+          list.map((c) =>
+            c.id === child.id ? { ...c, mode: e.target.value } : c
+          )
+        )
+      }
+    >
+      <option value="charge">À charge</option>
+      <option value="shared">Garde alternée</option>
+    </select>
+
+    <button
+      type="button"
+      className="chip"
+      style={{ padding: '2px 6px', fontSize: 12 }}
+      onClick={() =>
+        setChildren((list) => list.filter((c) => c.id !== child.id))
+      }
+    >
+      −
+    </button>
+  </div>
+))}
+<div className="ir-field">
+  <label>Nombre de parts (calculé)</label>
+  <div style={{ display: 'flex', gap: 6 }}>
+    <input
+      type="text"
+      readOnly
+      value={effectiveParts.toFixed(2)}
+    />
+    <input
+      type="number"
+      step="0.25"
+      value={parts}
+      onChange={(e) =>
+        setParts(Math.round(Number(e.target.value || 0) * 4) / 4)
+      }
+      title="Ajustement manuel"
+    />
+  </div>
+</div>
+
+          
           <div className="ir-tmi-card">
             <div className="ir-tmi-header">Estimation IR</div>
 
