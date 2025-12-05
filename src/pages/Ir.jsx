@@ -1189,52 +1189,6 @@ onChange={(e) => {
                     </div>
                   </td>
                 </tr>
-
-                <tr>
-                  <td>Pensions, retraites et rentes</td>
-                  <td>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0 €"
-                      value={formatMoneyInput(incomes.d1.pensions)}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, '');
-                        updateIncome('d1', 'pensions', raw === '' ? 0 : Number(raw));
-                      }}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0 €"
-                      value={formatMoneyInput(incomes.d2.pensions)}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, '');
-                        updateIncome('d2', 'pensions', raw === '' ? 0 : Number(raw));
-                      }}
-                    />
-                  </td>
-                </tr>
-                <tr className="ir-row-title">
-                  <td>Abattement 10&nbsp;% pensions (foyer)</td>
-                  <td colSpan={2} style={{ textAlign: 'center' }}>
-                    {(() => {
-                      const abat10CfgRoot = taxSettings?.incomeTax?.abat10 || {};
-                      const cfgRet =
-                        yearKey === 'current'
-                          ? abat10CfgRoot.retireesCurrent
-                          : abat10CfgRoot.retireesPrevious;
-                      const baseRet =
-                        (incomes.d1.pensions || 0) +
-                        (status === 'couple' ? incomes.d2.pensions || 0 : 0);
-                      const val = computeAbattement10(baseRet, cfgRet);
-                      return euro0(val);
-                    })()}
-                  </td>
-                </tr>
-
                 <tr>
                   <td>BIC-BNC-BA imposables</td>
                   <td>
@@ -1290,6 +1244,52 @@ onChange={(e) => {
                     />
                   </td>
                 </tr>
+                <tr>
+                  <td>Pensions, retraites et rentes</td>
+                  <td>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d1.pensions)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d1', 'pensions', raw === '' ? 0 : Number(raw));
+                      }}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d2.pensions)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d2', 'pensions', raw === '' ? 0 : Number(raw));
+                      }}
+                    />
+                  </td>
+                </tr>
+                <tr className="ir-row-title">
+                  <td>Abattement 10&nbsp;% pensions (foyer)</td>
+                  <td colSpan={2} style={{ textAlign: 'center' }}>
+                    {(() => {
+                      const abat10CfgRoot = taxSettings?.incomeTax?.abat10 || {};
+                      const cfgRet =
+                        yearKey === 'current'
+                          ? abat10CfgRoot.retireesCurrent
+                          : abat10CfgRoot.retireesPrevious;
+                      const baseRet =
+                        (incomes.d1.pensions || 0) +
+                        (status === 'couple' ? incomes.d2.pensions || 0 : 0);
+                      const val = computeAbattement10(baseRet, cfgRet);
+                      return euro0(val);
+                    })()}
+                  </td>
+                </tr>
+
+
 <tr>
   <td>Revenus fonciers nets</td>
   <td colSpan={2}>
@@ -1721,43 +1721,12 @@ onChange={(e) => {
       )}
 {result && result.qfAdvantage > 0 && (
   <div className="ir-disclaimer">
-    <strong>Plafonnement du quotient familial appliqué</strong>
-
-    <p>
-      Le nombre de parts déclaré entraîne l’application du plafonnement du
-      quotient familial.
-    </p>
-
-    <p>
-      Avantage fiscal lié aux parts supplémentaires plafonné à <strong>{euro0(result.qfAdvantage)}</strong>, correspondant à <strong>{result.qfExtraHalfParts}</strong> demi-part{result.qfExtraHalfParts > 1 ? 's' : ''} supplémentaire{result.qfExtraHalfParts > 1 ? 's' : ''}.
-    </p>
-
-    <p>
-      Pour simplifier la saisie, toute part au-delà de{' '}
-      {status === 'couple' ? '2 parts (couple)' : '1 part (personne seule)'} est
-      assimilée à une part liée à des enfants à charge.
-    </p>
-
-    <p>
-      Certains cas particuliers ne sont pas traités spécifiquement par le
-      simulateur, notamment :
-    </p>
-
-    <ul>
-      <li>garde alternée,</li>
-      <li>enfants ou adultes à charge en situation de handicap,</li>
-      <li>
-        majorations spécifiques (invalidité, ancien combattant, veuf avec enfant
-        non rattaché, etc.),
-      </li>
-      <li>
-        situations complexes de rattachement ou de demi-parts spécifiques.
-      </li>
-    </ul>
-
-    <p>
-      En présence de ces situations, le résultat fourni constitue une <strong>estimation</strong>.
-    </p>
+      <p>
+    Le simulateur prend en compte la garde alternée et le plafonnement du
+    quotient familial. Certaines situations particulières (enfants majeurs
+    rattachés, pensions complexes, fiscalité étrangère) peuvent nécessiter
+    une analyse personnalisée.
+  </p>
   </div>
 )}
 
