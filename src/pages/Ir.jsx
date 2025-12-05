@@ -200,7 +200,8 @@ function determinePsBracketLabel(rfr, thresholds) {
 function computeIrResult({
   yearKey,
   status,
-  isIsolated, // actuellement pas utilisé dans ce calcul, mais gardé pour cohérence
+  isIsolated,
+  hasSharedCustody,
   parts,
   location,
   incomes,
@@ -208,7 +209,9 @@ function computeIrResult({
   credits,
   taxSettings,
   psSettings,
+  capitalMode,
 }) {
+
   if (!taxSettings) return null;
 
   const isCouple = status === 'couple';
@@ -269,12 +272,36 @@ function computeIrResult({
       (incomes.d2.autres || 0)
     : 0;
 
-  const totalIncome = totalIncomeD1 + totalIncomeD2;
+  // Revenus de capitaux mobiliers (foyer)
+  const capWithPs = incomes.capital?.withPs || 0;
+  const capWithoutPs = incomes.capital?.withoutPs || 0;
+  const capTotal = capWithPs + capWithoutPs;
+
+  const modeCap = capitalMode || 'pfu';
+
+  let capitalBaseBareme = 0;
+  let capitalBasePfu = 0;
+
+  if (modeCap === 'bareme') {
+    // Abattement de 40 % avant intégration au barème
+    capitalBaseBareme = capTotal * 0.6;
+  } else {
+    // PFU : base brute soumise à 12,8 %
+    capitalBasePfu = capTotal;
+  }
+
+  const baseRevenusBareme = totalIncomeD1 + totalIncomeD2 + capitalBaseBareme;
+
   const deductionsTotal = Math.max(0, deductions || 0);
   const creditsTotal = Math.max(0, credits || 0);
 
-  const taxableIncome = Math.max(0, totalIncome - deductionsTotal);
+  // Revenu imposable au barème
+  const taxableIncome = Math.max(0, baseRevenusBareme - deductionsTotal);
   const taxablePerPart = partsNb > 0 ? taxableIncome / partsNb : taxableIncome;
+
+  // Total "revenus" global pour info/export (barème + PFU)
+  const totalIncome = baseRevenusBareme + capitalBasePfu;
+
 
   const {
     taxPerPart,
@@ -302,9 +329,16 @@ function computeIrResult({
   const extraHalfParts = extraParts * 2;
 
   const plafondPartSup = Number(qfYearCfg.plafondPartSup || 0); // F18
-  const plafondParentIso2 = Number(
+
+  const plafondParentIsoBrut = Number(
     qfYearCfg.plafondParentIsoléDeuxPremièresParts || 0 // G18
   );
+  // Si garde alternée cochée => on divise le plafond parent isolé par 2
+  const plafondParentIso2 =
+    isIsolated && hasSharedCustody
+      ? plafondParentIsoBrut / 2
+      : plafondParentIsoBrut;
+
 
   let irBase = irBrutFoyerSansPlafond; // par défaut, on met quelque chose
   let maxAvantage = 0;
@@ -376,8 +410,20 @@ function computeIrResult({
   // IR net après crédits et décote (c'est ce qu'on appellera "Impôt sur le revenu")
   const irNet = Math.max(0, irBrutFoyer - creditsTotal - decote);
 
-  // On approxime le RFR par le revenu imposable
-  const rfr = taxableIncome;
+  // PFU 12,8 % sur les revenus de capitaux mobiliers en option PFU
+  let pfuIr = 0;
+  if (capitalBasePfu > 0) {
+    const pfuCfg =
+      taxSettings.pfu && taxSettings.pfu[yearKey]
+        ? taxSettings.pfu[yearKey]
+        : null;
+    const pfuRateIR = pfuCfg ? Number(pfuCfg.rateIR) || 12.8 : 12.8;
+    pfuIr = capitalBasePfu * (pfuRateIR / 100);
+  }
+
+  // On approxime le RFR : revenu imposable + revenus taxés au PFU
+  const rfr = taxableIncome + capitalBasePfu;
+
 
   // CEHR / CDHR
   const { cehr, cehrDetails } = computeCEHR(cehrBrackets, rfr);
@@ -388,16 +434,29 @@ function computeIrResult({
     isCouple ? 'couple' : 'single'
   );
 
-  // ---- PS sur revenus fonciers ----
+  // ---- PS sur revenus fonciers + dividendes ----
   let psRateTotal = 0;
+  let psFoncier = 0;
+  let psDividends = 0;
   let psTotal = 0;
+
   if (patrimonyCfg) {
     psRateTotal = Number(patrimonyCfg.totalRate) || 0;
+
     const fonciersBase =
       (incomes.d1.fonciers || 0) +
       (isCouple ? incomes.d2.fonciers || 0 : 0);
-    psTotal = fonciersBase * (psRateTotal / 100);
+
+    psFoncier = fonciersBase * (psRateTotal / 100);
+
+    // PS sur dividendes : uniquement sur la ligne "soumis aux PS"
+    if (capWithPs > 0) {
+      psDividends = capWithPs * (psRateTotal / 100);
+    }
+
+    psTotal = psFoncier + psDividends;
   }
+
 
   const tmiBaseGlobal = tmiBasePerPart * partsNb;
   let tmiMarginGlobal = null;
@@ -406,7 +465,8 @@ function computeIrResult({
     tmiMarginGlobal = margeParPart * partsNb;
   }
 
-  const totalTax = irNet + cehr + cdhr + psTotal;
+    const totalTax = irNet + pfuIr + cehr + cdhr + psTotal;
+
 
   return {
     totalIncome,
@@ -435,8 +495,13 @@ function computeIrResult({
     cehr,
     cehrDetails,
     cdhr,
+
+    psFoncier,
+    psDividends,
     psTotal,
     psRateTotal,
+
+    pfuIr,
     totalTax,
   };
 }
@@ -471,6 +536,7 @@ export default function Ir() {
 };
 
 const [incomes, setIncomes] = useState(DEFAULT_INCOMES);
+const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
 
 
   // Mode de déduction des frais pour salaires / art.62
@@ -559,6 +625,7 @@ const [incomes, setIncomes] = useState(DEFAULT_INCOMES);
           setRealExpenses(s.realExpenses ?? { d1: 0, d2: 0 });
           setDeductions(s.deductions ?? 0);
           setCredits(s.credits ?? 0);
+          setCapitalMode(s.capitalMode ?? 'pfu');
         }
       }
     } catch {
@@ -586,6 +653,7 @@ JSON.stringify({
   realExpenses,
   deductions,
   credits,
+  capitalMode,
 })
 
       );
@@ -605,6 +673,7 @@ JSON.stringify({
     realExpenses,
     deductions,
     credits,
+    capitalMode,
   ]);
 
 
@@ -624,6 +693,8 @@ JSON.stringify({
       setCredits(0);
       setRealMode({ d1: 'abat10', d2: 'abat10' });
       setRealExpenses({ d1: 0, d2: 0 });
+      setCapitalMode('pfu');
+      setHasSharedCustody(false);
 
       try {
         localStorage.removeItem(STORE_KEY);
@@ -692,38 +763,41 @@ JSON.stringify({
 
 
   // Calcul principal
-  const result = useMemo(
-    () =>
-      computeIrResult({
-        yearKey,
-        status,
-        isIsolated,
-        parts: effectiveParts,
-        location,
-        incomes,
-        deductions: deductions + extraDeductions,
-        credits,
-        taxSettings,
-        psSettings,
-      }),
-
-    [
+const result = useMemo(
+  () =>
+    computeIrResult({
       yearKey,
       status,
       isIsolated,
-      effectiveParts,
+      hasSharedCustody,
+      parts: effectiveParts,
       location,
       incomes,
-      deductions,
-      extraDeductions,
+      deductions: deductions + extraDeductions,
       credits,
       taxSettings,
       psSettings,
-      realMode,
-      realExpenses,
-    ]
+      capitalMode,
+    }),
+  [
+    yearKey,
+    status,
+    isIsolated,
+    hasSharedCustody,
+    effectiveParts,
+    location,
+    incomes,
+    deductions,
+    extraDeductions,
+    credits,
+    taxSettings,
+    psSettings,
+    realMode,
+    realExpenses,
+    capitalMode,
+  ]
+);
 
-  );
 
 
   const yearLabel =
@@ -1284,7 +1358,7 @@ onChange={(e) => {
                   </td>
                 </tr>
 <tr>
-  <td>Revenus de capitaux mobiliers soumis aux PS à 17,2 %</td>
+  <td>RCM soumis aux PS à 17,2 %</td>
   <td colSpan={2}>
     <input
       type="text"
@@ -1300,7 +1374,7 @@ onChange={(e) => {
 </tr>
 
 <tr>
-  <td>Revenus de capitaux mobiliers non soumis aux PS à 17,2 %</td>
+  <td>RCM non soumis aux PS à 17,2 %</td>
   <td colSpan={2}>
     <input
       type="text"
@@ -1312,6 +1386,19 @@ onChange={(e) => {
         updateIncome('capital', 'withoutPs', raw === '' ? 0 : Number(raw));
       }}
     />
+  </td>
+</tr>
+<tr>
+  <td>Option d&apos;imposition des capitaux mobiliers</td>
+  <td colSpan={2}>
+    <select
+      value={capitalMode}
+      onChange={(e) => setCapitalMode(e.target.value)}
+      style={{ width: '100%' }}
+    >
+      <option value="pfu">PFU 12,8 %</option>
+      <option value="bareme">Barème de l&apos;IR (abattement 40 %)</option>
+    </select>
   </td>
 </tr>
 
@@ -1401,39 +1488,52 @@ onChange={(e) => {
 
           </div>
 
-          {result && (
-            <div className="ir-summary-card">
-              <div className="ir-summary-row">
-                <span>Revenu imposable du foyer</span>
-                <span>{euro0(result.taxableIncome)}</span>
-              </div>
-              <div className="ir-summary-row">
-                <span>Nombre de parts</span>
-                <span>{result.partsNb}</span>
-              </div>
-               <div className="ir-summary-row">
-                <span>Revenu par part</span>
-                <span>{euro0(result.taxablePerPart)}</span>
-              </div>
-              <div className="ir-summary-row">
-                <span>Imposition totale</span>
-                <span>{euro0(result.totalTax)}</span>
-              </div>
-              <div className="ir-summary-row">
-                <span>CEHR</span>
-                <span>{euro0(result.cehr)}</span>
-              </div>
-              <div className="ir-summary-row">
-                <span>CDHR</span>
-                <span>{euro0(result.cdhr)}</span>
-              </div>
-              <div className="ir-summary-row">
-                <span>PS sur les revenus fonciers</span>
-                <span>{euro0(result.psTotal)}</span>
-              </div>
+{result && (
+  <div className="ir-summary-card">
+    <div className="ir-summary-row">
+      <span>Revenu imposable du foyer</span>
+      <span>{euro0(result.taxableIncome)}</span>
+    </div>
+    <div className="ir-summary-row">
+      <span>Nombre de parts</span>
+      <span>{result.partsNb}</span>
+    </div>
+    <div className="ir-summary-row">
+      <span>Revenu par part</span>
+      <span>{euro0(result.taxablePerPart)}</span>
+    </div>
 
-            </div>
-          )}
+    <div className="ir-summary-row">
+      <span>Impôt sur le revenu</span>
+      <span>{euro0(result.irNet || 0)}</span>
+    </div>
+    <div className="ir-summary-row">
+      <span>PFU 12,8 %</span>
+      <span>{euro0(result.pfuIr || 0)}</span>
+    </div>
+    <div className="ir-summary-row">
+      <span>CEHR</span>
+      <span>{euro0(result.cehr || 0)}</span>
+    </div>
+    <div className="ir-summary-row">
+      <span>CDHR</span>
+      <span>{euro0(result.cdhr || 0)}</span>
+    </div>
+    <div className="ir-summary-row">
+      <span>PS sur les revenus fonciers</span>
+      <span>{euro0(result.psFoncier || 0)}</span>
+    </div>
+    <div className="ir-summary-row">
+      <span>PS sur dividendes</span>
+      <span>{euro0(result.psDividends || 0)}</span>
+    </div>
+    <div className="ir-summary-row">
+      <span>Imposition totale</span>
+      <span>{euro0(result.totalTax || 0)}</span>
+    </div>
+  </div>
+)}
+
 
           <button
             type="button"
