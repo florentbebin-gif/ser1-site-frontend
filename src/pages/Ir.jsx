@@ -253,23 +253,21 @@ function computeIrResult({
   // ---- Revenus / parts ----
   const partsNb = Math.max(0.5, Number(parts) || 1);
 
-  const totalIncomeD1 =
-    (incomes.d1.salaries || 0) +
-    (incomes.d1.associes62 || 0) +
-    (incomes.d1.pensions || 0) +
-    (incomes.d1.bic || 0) +
-    (incomes.d1.fonciers || 0) +
-    (incomes.d1.autres || 0);
+const totalIncomeD1 =
+  (incomes.d1.salaries || 0) +
+  (incomes.d1.associes62 || 0) +
+  (incomes.d1.pensions || 0) +
+  (incomes.d1.bic || 0) +
+  (incomes.d1.autres || 0);
 
-  // Si on est en "célibataire / veuf / divorcé", on ignore le déclarant 2 dans le calcul
-  const totalIncomeD2 = isCouple
-    ? (incomes.d2.salaries || 0) +
-      (incomes.d2.associes62 || 0) +
-      (incomes.d2.pensions || 0) +
-      (incomes.d2.bic || 0) +
-      (incomes.d2.fonciers || 0) +
-      (incomes.d2.autres || 0)
-    : 0;
+const totalIncomeD2 = isCouple
+  ? (incomes.d2.salaries || 0) +
+    (incomes.d2.associes62 || 0) +
+    (incomes.d2.pensions || 0) +
+    (incomes.d2.bic || 0) +
+    (incomes.d2.autres || 0)
+  : 0;
+
 
   // Revenus de capitaux mobiliers (foyer)
   const capWithPs = incomes.capital?.withPs || 0;
@@ -289,7 +287,12 @@ function computeIrResult({
     capitalBasePfu = capTotal;
   }
 
-  const baseRevenusBareme = totalIncomeD1 + totalIncomeD2 + capitalBaseBareme;
+ const baseRevenusBareme =
+  totalIncomeD1 +
+  totalIncomeD2 +
+  (incomes.fonciersFoyer || 0) +
+  capitalBaseBareme;
+
 
   const deductionsTotal = Math.max(0, deductions || 0);
   const creditsTotal = Math.max(0, credits || 0);
@@ -436,11 +439,9 @@ function computeIrResult({
   if (patrimonyCfg) {
     psRateTotal = Number(patrimonyCfg.totalRate) || 0;
 
-    const fonciersBase =
-      (incomes.d1.fonciers || 0) +
-      (isCouple ? incomes.d2.fonciers || 0 : 0);
+const fonciersBase = incomes.fonciersFoyer || 0;
+psFoncier = fonciersBase * (psRateTotal / 100);
 
-    psFoncier = fonciersBase * (psRateTotal / 100);
 
     // PS sur dividendes : uniquement sur la ligne "soumis aux PS"
     if (capWithPs > 0) {
@@ -528,6 +529,7 @@ export default function Ir() {
     withPs: 0,
     withoutPs: 0,
   },
+    fonciersFoyer: 0,
 };
 
 const [incomes, setIncomes] = useState(DEFAULT_INCOMES);
@@ -602,7 +604,7 @@ const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
           setIsIsolated(s.isIsolated ?? false);
           setParts(s.parts ?? 2);
           setLocation(s.location ?? 'metropole');
-          setIncomes(
+setIncomes(
   s.incomes
     ? {
         d1: { ...DEFAULT_INCOMES.d1, ...(s.incomes.d1 || {}) },
@@ -611,6 +613,7 @@ const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
           ...DEFAULT_INCOMES.capital,
           ...(s.incomes.capital || {}),
         },
+        fonciersFoyer: s.incomes.fonciersFoyer ?? 0,
       }
     : DEFAULT_INCOMES
 );
@@ -1109,7 +1112,7 @@ onChange={(e) => {
                     />
                   </td>
                 </tr>
-                <tr>
+                <tr className="ir-row-title">
                   <td>Frais réels ou abattement 10&nbsp;%</td>
                   <td>
                     <div style={{ display: 'flex', gap: 4 }}>
@@ -1259,33 +1262,7 @@ onChange={(e) => {
                     />
                   </td>
                 </tr>
-                <tr>
-                  <td>Revenus fonciers nets</td>
-                  <td>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0 €"
-                      value={formatMoneyInput(incomes.d1.fonciers)}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, '');
-                        updateIncome('d1', 'fonciers', raw === '' ? 0 : Number(raw));
-                      }}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0 €"
-                      value={formatMoneyInput(incomes.d2.fonciers)}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, '');
-                        updateIncome('d2', 'fonciers', raw === '' ? 0 : Number(raw));
-                      }}
-                    />
-                  </td>
-                </tr>
+
                 <tr>
                   <td>Autres revenus imposables</td>
                   <td>
@@ -1313,6 +1290,26 @@ onChange={(e) => {
                     />
                   </td>
                 </tr>
+<tr>
+  <td>Revenus fonciers nets</td>
+  <td colSpan={2}>
+    <input
+      type="text"
+      inputMode="numeric"
+      placeholder="0 €"
+      value={formatMoneyInput(incomes.fonciersFoyer || 0)}
+      onChange={(e) => {
+        const raw = e.target.value.replace(/[^\d]/g, '');
+        const val = raw === '' ? 0 : Number(raw);
+        setIncomes((prev) => ({
+          ...prev,
+          fonciersFoyer: val,
+        }));
+      }}
+    />
+  </td>
+</tr>
+
 <tr>
   <td>RCM soumis aux PS à 17,2 %</td>
   <td colSpan={2}>
