@@ -1515,27 +1515,31 @@ onChange={(e) => {
             </div>
           ))}
 
-<div className="ir-field" style={{ marginTop: 8 }}>
-  <label>Nombre de parts (calculé)</label>
-  <input
-    type="text"
-    readOnly
-    value={effectiveParts.toFixed(2)}
-    style={{ background: '#f3f3f3' }}
-  />
+<div className="ir-parts-row">
+  <div className="ir-field">
+    <label>Nombre de parts (calculé)</label>
+    <input
+      type="text"
+      readOnly
+      value={effectiveParts.toFixed(2)}
+      style={{ background: '#f3f3f3' }}
+    />
+  </div>
 
-  <label style={{ fontSize: 12, marginTop: 4 }}>Ajustement de parts</label>
-  <input
-    type="number"
-    step="0.25"
-    value={parts}
-    onChange={(e) =>
-      setParts(
-        Math.round(Number(e.target.value || 0) * 4) / 4
-      )
-    }
-    title="Ajustement manuel"
-  />
+  <div className="ir-field">
+    <label>Ajustement de parts</label>
+    <input
+      type="number"
+      step="0.25"
+      value={parts}
+      onChange={(e) =>
+        setParts(
+          Math.round(Number(e.target.value || 0) * 4) / 4
+        )
+      }
+      title="Ajustement manuel"
+    />
+  </div>
 </div>
 
 
