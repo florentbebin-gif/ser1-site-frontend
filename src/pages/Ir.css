@@ -318,3 +318,8 @@
   border: 1px solid #c7c7c7;
   background: #fff;
 }
+.ir-parts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
