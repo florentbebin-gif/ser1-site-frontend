@@ -199,6 +199,16 @@ const isSettingsRoute = path.startsWith('/settings');
                   <IconTrash className="icon" />
                 </button>
                 )}
+              {window.location.pathname.includes('/sim/ir') && (
+                <button
+                className="chip icon-btn"
+                onClick={() => triggerPageReset('ir')}
+                title="Réinitialiser la simulation IR"
+                >
+                  <IconTrash className="icon" />
+                </button>
+                )}
+
               {/* PARAMÈTRES — juste avant Déconnexion */}
               <button
                 className="chip icon-btn"
