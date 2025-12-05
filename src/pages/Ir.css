@@ -311,3 +311,10 @@
   border: 1px solid #c7c7c7;
   background: #fff;
 }
+.ir-child-select {
+  font-size: 13px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid #c7c7c7;
+  background: #fff;
+}
