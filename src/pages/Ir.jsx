@@ -1392,6 +1392,7 @@ onChange={(e) => {
             </table>
           </div>
         </div>
+          </div>
 
         {/* Bloc de droite */}
         <div className="ir-right">
