@@ -295,44 +295,63 @@ function computeIrResult({
 
 
   // Gestion du plafonnement du quotient familial (parts supplémentaires)
-  const minPartsBase = isCouple ? 2 : 1;
-  const extraParts = Math.max(0, partsNb - minPartsBase);
+  const basePartsForQf = isCouple ? 2 : 1;
+  const extraParts = Math.max(0, partsNb - basePartsForQf);
   const extraHalfParts = extraParts * 2;
 
-  const plafondPartSup = Number(qfYearCfg.plafondPartSup || 0);
-  const plafondParentIsoléDeuxPremièresParts = Number(
-    qfYearCfg.plafondParentIsoléDeuxPremièresParts || 0
+  const plafondPartSup = Number(qfYearCfg.plafondPartSup || 0); // F18
+  const plafondParentIso2 = Number(
+    qfYearCfg.plafondParentIsoléDeuxPremièresParts || 0 // G18
   );
 
-  if (plafondPartSup > 0 && extraHalfParts > 0 && taxableIncome > 0) {
-    qfExtraHalfParts = extraHalfParts;
-    const basePartsForQf = minPartsBase;
-    
-    // IR avec seulement les parts de base (1 pour célibataire, 2 pour couple)
+  let irBase = irBrutFoyerSansPlafond; // par défaut, on met quelque chose
+  let maxAvantage = 0;
+
+  if (taxableIncome > 0 && extraHalfParts > 0 && plafondPartSup > 0) {
+    // 1) Impôt avec les parts "de base"
     const taxablePerPartBase =
       basePartsForQf > 0 ? taxableIncome / basePartsForQf : taxableIncome;
     const { taxPerPart: taxPerPartBase } = computeProgressiveTax(
       scale,
       taxablePerPartBase
     );
-    const irBase = taxPerPartBase * basePartsForQf;
+    irBase = taxPerPartBase * basePartsForQf;
     irBeforeQfBase = irBase;
 
+    // 2) Avantage brut du QF (comme en Excel : IR_base - IR_toutes_parts)
     const avantageBrut = Math.max(0, irBase - irBrutFoyerSansPlafond);
+    qfExtraHalfParts = extraHalfParts;
 
-    // Construction du plafond global en fonction du nombre de 1/2 parts en plus
-    const maxAvantage = plafondPartSup * extraHalfParts;
+    // 3) Plafond max de l'avantage (traduction de ta formule Excel)
+    const isSingle = !isCouple;
 
+    if (!isIsolated || !isSingle || plafondParentIso2 <= 0) {
+      // Cas général : pas isolé, ou marié, ou pas de plafond isolé paramétré
+      // -> (S22 - base) * (F18 * 2)
+      maxAvantage = extraParts * 2 * plafondPartSup;
+    } else {
+      // Cas parent isolé (isIsolated = true et célibataire)
+      if (partsNb <= 2) {
+        // S22 <= 2 : (S22 - 1) * G18
+        maxAvantage = (partsNb - 1) * plafondParentIso2;
+      } else {
+        // S22 > 2 : G18 + (S22 - 2) * (F18 * 2)
+        maxAvantage =
+          plafondParentIso2 + (partsNb - 2) * 2 * plafondPartSup;
+      }
+    }
 
+    // 4) Avantage retenu = minimum (brut, plafond)
     const avantageRetenu = Math.min(avantageBrut, maxAvantage);
 
     qfAdvantage = avantageRetenu;
-    // IR après plafonnement : on retire seulement l'avantage retenu
-    irBrutFoyer = irBase - avantageRetenu;
+    irBrutFoyer = irBase - avantageRetenu; // IR après plafonnement
+    irAfterQf = irBrutFoyer;
   } else {
-    // Pas de parts supplémentaires ou pas de plafonnement
+    // Pas de parts supplémentaires ou pas de plafonnement applicable
     irBeforeQfBase = irBrutFoyerSansPlafond;
-    qfAdvantage = Math.max(0, irBeforeQfBase - irBrutFoyer);
+    qfAdvantage = 0;
+    irAfterQf = irBrutFoyerSansPlafond;
   }
 
 
