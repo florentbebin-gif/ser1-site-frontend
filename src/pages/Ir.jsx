@@ -457,13 +457,19 @@ export default function Ir() {
   const [yearKey, setYearKey] = useState('current'); // current = 2025, previous = 2024
   const [status, setStatus] = useState('couple'); // 'single' | 'couple'
   const [isIsolated, setIsIsolated] = useState(false); // option parent isolé
+  const [hasSharedCustody, setHasSharedCustody] = useState(false);
   const [parts, setParts] = useState(2); // parts "de base" (hors demi-part isolé)
   const [location, setLocation] = useState('metropole'); // metropole | gmr | guyane
 
-  const [incomes, setIncomes] = useState({
-    d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-    d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-  });
+const [incomes, setIncomes] = useState({
+  d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+  d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+  capital: {
+    withPs: 0,
+    withoutPs: 0,
+  },
+});
+
   // Mode de déduction des frais pour salaires / art.62
   const [realMode, setRealMode] = useState({ d1: 'abat10', d2: 'abat10' }); // 'abat10' | 'reels'
   const [realExpenses, setRealExpenses] = useState({ d1: 0, d2: 0 });
@@ -530,6 +536,7 @@ export default function Ir() {
           setYearKey(s.yearKey ?? 'current');
           setStatus(s.status ?? 'couple');
           setIsIsolated(s.isIsolated ?? false);
+          setHasSharedCustody(s.hasSharedCustody ?? false);
           setParts(s.parts ?? 2);
           setLocation(s.location ?? 'metropole');
           setIncomes(
@@ -557,18 +564,20 @@ export default function Ir() {
     try {
       localStorage.setItem(
         STORE_KEY,
-        JSON.stringify({
-          yearKey,
-          status,
-          isIsolated,
-          parts,
-          location,
-          incomes,
-          realMode,
-          realExpenses,
-          deductions,
-          credits,
-        })
+JSON.stringify({
+  yearKey,
+  status,
+  isIsolated,
+  hasSharedCustody,
+  parts,
+  location,
+  incomes,
+  realMode,
+  realExpenses,
+  deductions,
+  credits,
+})
+
       );
     } catch {
       // ignore
@@ -932,18 +941,32 @@ onChange={(e) => {
             </div>
 
             
-            {status === 'single' && (
-              <div className="ir-field">
-                <label>Isolé</label>
-                <select
-                  value={isIsolated ? 'yes' : 'no'}
-                  onChange={(e) => setIsIsolated(e.target.value === 'yes')}
-                >
-                  <option value="no">Non</option>
-                  <option value="yes">Oui</option>
-                </select>
-              </div>
-            )}
+{status === 'single' && (
+  <div className="ir-field">
+    <label>Situation particulière</label>
+
+    <label style={{ fontSize: 12 }}>
+      <input
+        type="checkbox"
+        checked={isIsolated}
+        onChange={(e) => setIsIsolated(e.target.checked)}
+        style={{ marginRight: 6 }}
+      />
+      Parent isolé
+    </label>
+
+    <label style={{ fontSize: 12 }}>
+      <input
+        type="checkbox"
+        checked={hasSharedCustody}
+        onChange={(e) => setHasSharedCustody(e.target.checked)}
+        style={{ marginRight: 6 }}
+      />
+      Garde alternée
+    </label>
+  </div>
+)}
+
 
             <div className="ir-field">
               <label>Nombre de parts</label>
@@ -1253,6 +1276,37 @@ onChange={(e) => {
                     />
                   </td>
                 </tr>
+<tr>
+  <td>Revenus de capitaux mobiliers soumis aux PS à 17,2 %</td>
+  <td colSpan={2}>
+    <input
+      type="text"
+      inputMode="numeric"
+      placeholder="0 €"
+      value={formatMoneyInput(incomes.capital.withPs)}
+      onChange={(e) => {
+        const raw = e.target.value.replace(/[^\d]/g, '');
+        updateIncome('capital', 'withPs', raw === '' ? 0 : Number(raw));
+      }}
+    />
+  </td>
+</tr>
+
+<tr>
+  <td>Revenus de capitaux mobiliers non soumis aux PS à 17,2 %</td>
+  <td colSpan={2}>
+    <input
+      type="text"
+      inputMode="numeric"
+      placeholder="0 €"
+      value={formatMoneyInput(incomes.capital.withoutPs)}
+      onChange={(e) => {
+        const raw = e.target.value.replace(/[^\d]/g, '');
+        updateIncome('capital', 'withoutPs', raw === '' ? 0 : Number(raw));
+      }}
+    />
+  </td>
+</tr>
 
                 <tr className="ir-row-title">
                   <td colSpan={3}>Ajustements</td>
