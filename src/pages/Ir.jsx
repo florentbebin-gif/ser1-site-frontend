@@ -545,7 +545,7 @@ export default function Ir() {
   const [yearKey, setYearKey] = useState('current'); // current = 2025, previous = 2024
   const [status, setStatus] = useState('couple'); // 'single' | 'couple'
   const [isIsolated, setIsIsolated] = useState(false); // option parent isolé
-  const [parts, setParts] = useState(2); // parts "de base" (hors demi-part isolé)
+  const [parts, setParts] = useState(0); // ajustement manuel en nombre de parts
   const [location, setLocation] = useState('metropole'); // metropole | gmr | guyane
   const [children, setChildren] = useState([]);
 // ex : [{ id: 1, mode: 'charge' | 'shared' }]
@@ -631,7 +631,7 @@ const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
           setYearKey(s.yearKey ?? 'current');
           setStatus(s.status ?? 'couple');
           setIsIsolated(s.isIsolated ?? false);
-          setParts(s.parts ?? 2);
+          setParts(s.parts ?? 0);
           setLocation(s.location ?? 'metropole');
 setIncomes(
   s.incomes
@@ -708,17 +708,19 @@ JSON.stringify({
       // ne réagit qu'au reset du simulateur IR
       if (simId && simId !== 'ir') return;
 
-      setYearKey('current');
-      setStatus('couple');
-      setIsIsolated(false);
-      setParts(2);
-      setLocation('metropole');
-      setIncomes(DEFAULT_INCOMES);
-      setDeductions(0);
-      setCredits(0);
-      setRealMode({ d1: 'abat10', d2: 'abat10' });
-      setRealExpenses({ d1: 0, d2: 0 });
-      setCapitalMode('pfu');
+setYearKey('current');
+setStatus('couple');
+setIsIsolated(false);
+setParts(0);            // ajustement remis à zéro
+setLocation('metropole');
+setIncomes(DEFAULT_INCOMES);
+setChildren([]);        // on supprime tous les enfants
+setDeductions(0);
+setCredits(0);
+setRealMode({ d1: 'abat10', d2: 'abat10' });
+setRealExpenses({ d1: 0, d2: 0 });
+setCapitalMode('pfu');
+
       try {
         localStorage.removeItem(STORE_KEY);
       } catch {
@@ -1039,28 +1041,27 @@ onChange={(e) => {
   const newStatus = e.target.value;
   setStatus(newStatus);
 
-  if (newStatus === 'couple') {
-    setIsIsolated(false);
-    if (parts < 2) setParts(2);
-  } else {
-    // Célibataire / Veuf / Divorcé :
-    if (parts < 1) setParts(1);
-
-    // On efface les revenus du déclarant 2 et ses frais
-    setIncomes((prev) => ({
-      ...prev,
-      d2: {
-        salaries: 0,
-        associes62: 0,
-        pensions: 0,
-        bic: 0,
-        fonciers: 0,
-        autres: 0,
-      },
-    }));
-    setRealMode((prev) => ({ ...prev, d2: 'abat10' }));
-    setRealExpenses((prev) => ({ ...prev, d2: 0 }));
-  }
+if (newStatus === 'couple') {
+  setIsIsolated(false);
+} else {
+  // Célibataire / Veuf / Divorcé :
+  // On efface les revenus du déclarant 2
+  setIncomes((prev) => ({
+    ...prev,
+    d2: {
+      salaries: 0,
+      associes62: 0,
+      pensions: 0,
+      bic: 0,
+      fonciers: 0,
+      autres: 0,
+    },
+  }));
+  setRealMode((prev) => ({ ...prev, d2: 'abat10' }));
+  setRealExpenses((prev) => ({ ...prev, d2: 0 }));
+}
+// quel que soit le cas, on remet l’ajustement manuel à 0
+setParts(0);
 }}
               >
                 <option value="single">Célibataire / Veuf / Divorcé</option>
@@ -1752,16 +1753,15 @@ onChange={(e) => {
           )}
         </div>
       )}
-{result && result.qfAdvantage > 0 && (
-  <div className="ir-disclaimer">
-      <p>
-    Le simulateur prend en compte la garde alternée et le plafonnement du
-    quotient familial. Certaines situations particulières (enfants majeurs
-    rattachés, pensions complexes, fiscalité étrangère) peuvent nécessiter
-    une analyse personnalisée.
+<div className="ir-disclaimer">
+  <p>
+    Le simulateur prend en compte la garde alternée et le plafonnement
+    du quotient familial. Certaines situations particulières (enfants
+    majeurs rattachés, pensions complexes, fiscalité étrangère) peuvent
+    nécessiter une analyse personnalisée.
   </p>
-  </div>
-)}
+</div>
+
 
 
     </div>
