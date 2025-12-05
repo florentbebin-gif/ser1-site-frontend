@@ -47,6 +47,7 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
   let tmiBracketTo = null;
   const details = [];
 
+  // 1) calcul progressif standard par tranches
   for (const br of scale) {
     const from = Number(br.from) || 0;
     const to = br.to == null ? null : Number(br.to);
@@ -54,7 +55,9 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
 
     if (taxablePerPart <= from) {
       details.push({
-        label: `De ${from.toLocaleString('fr-FR')}€ à ${to ? to.toLocaleString('fr-FR') + '€' : 'plus'}`,
+        label: `De ${from.toLocaleString('fr-FR')}€ à ${
+          to ? to.toLocaleString('fr-FR') + '€' : 'plus'
+        }`,
         base: 0,
         rate,
         tax: 0,
@@ -70,7 +73,9 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
     remaining -= base;
 
     details.push({
-      label: `De ${from.toLocaleString('fr-FR')}€ à ${to ? to.toLocaleString('fr-FR') + '€' : 'plus'}`,
+      label: `De ${from.toLocaleString('fr-FR')}€ à ${
+        to ? to.toLocaleString('fr-FR') + '€' : 'plus'
+      }`,
       base,
       rate,
       tax: trancheTax,
@@ -82,9 +87,32 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
       tmiBracketTo = to;
     }
 
-
     if (to == null || taxablePerPart <= to) break;
   }
+
+  // 2) Retraitement global (colonne "Retraitement €" de SettingsImpots)
+  //    On applique : impôt = impôt_progressif - deduction de la tranche du revenu
+  let deduction = 0;
+  for (const br of scale) {
+    const from = Number(br.from) || 0;
+    const to = br.to == null ? null : Number(br.to);
+    if (taxablePerPart > from && (to == null || taxablePerPart <= to)) {
+      deduction = Number(br.deduction) || 0;
+      break;
+    }
+  }
+
+  if (deduction) {
+    tax -= deduction;
+    details.push({
+      label: 'Retraitement',
+      base: 0,
+      rate: '',
+      tax: -deduction,
+    });
+  }
+
+  if (tax < 0) tax = 0;
 
   return {
     taxPerPart: tax,
@@ -94,6 +122,7 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
     bracketsDetails: details,
   };
 }
+
 
 // ---- CEHR (contrib. exceptionnelle hauts revenus) ----
 function computeCEHR(brackets = [], rfr) {
@@ -1455,21 +1484,21 @@ onChange={(e) => {
             >
               <strong>Enfant {idx + 1}</strong>
 
-              <select
-                value={child.mode}
-                onChange={(e) =>
-                  setChildren((list) =>
-                    list.map((c) =>
-                      c.id === child.id
-                        ? { ...c, mode: e.target.value }
-                        : c
-                    )
-                  )
-                }
-              >
-                <option value="charge">À charge</option>
-                <option value="shared">Garde alternée</option>
-              </select>
+<select
+  className="ir-child-select"
+  value={child.mode}
+  onChange={(e) =>
+    setChildren((list) =>
+      list.map((c) =>
+        c.id === child.id ? { ...c, mode: e.target.value } : c
+      )
+    )
+  }
+>
+  <option value="charge">À charge</option>
+  <option value="shared">Garde alternée</option>
+</select>
+
 
               <button
                 type="button"
