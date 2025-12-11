@@ -456,57 +456,48 @@ psFoncier = fonciersBase * (psRateTotal / 100);
     psTotal = psFoncier + psDividends;
   }
 
-
-  const tmiBaseGlobal = tmiBasePerPart * partsNb;
+  // ---- TMI : montants associés ----
+  let tmiBaseGlobal = 0;
   let tmiMarginGlobal = null;
-  if (tmiBracketTo != null) {
-    const margeParPart = Math.max(0, tmiBracketTo - taxablePerPart);
-    tmiMarginGlobal = margeParPart * partsNb;
+
+  if (tmiRate > 0) {
+    // 1) "Montant des revenus dans cette TMI"
+    // Si la décote est active, on veut le montant de revenu dans la TMI
+    // qui, retiré, ramènerait l'impôt NET à 0 en tenant compte de la décote.
+    //
+    // Formule que tu utilises dans ton Excel (cas décote) :
+    //   IR_net = (1 + décote_taux) * IR_brut - décote_montant
+    //   => ΔRevenu = IR_net / (tmiRate * (1 + décote_taux))
+    //
+    // On l'exprime directement avec IR_net :
+    if (decote > 0 && decoteRate > 0 && irNet > 0) {
+      const tmiFactor =
+        (tmiRate / 100) * (1 + decoteRate / 100); // ex : 11% et 45,25%
+      tmiBaseGlobal = tmiFactor > 0 ? irNet / tmiFactor : 0;
+    } else {
+      // Pas de décote : on reste sur la base "classique" dans la tranche
+      tmiBaseGlobal = tmiBasePerPart * partsNb;
+    }
+
+    // 2) "Montant des revenus avant changement de TMI"
+    // => marge restante jusqu'au plafond de la tranche marginale
+    if (tmiBracketTo != null) {
+      const margeParPart = Math.max(0, tmiBracketTo - taxablePerPart);
+      tmiMarginGlobal = margeParPart * partsNb;
+    }
   }
 
-    const totalTax = irNet + pfuIr + cehr + cdhr + psTotal;
-
+  const totalTax = irNet + pfuIr + cehr + cdhr + psTotal;
 
   return {
     totalIncome,
-    totalIncomeD1,
-    totalIncomeD2,
-    taxableIncome,
-    taxablePerPart,
-    partsNb,
-
-    irBrutFoyer,          // IR brut du foyer après quotient familial
-    irBeforeQfBase,       // Impôt avant quotient familial (avec parts de base)
-    qfAdvantage,          // Avantage du quotient familial retenu
-    qfExtraHalfParts,
-    irAfterQf,
-
-    creditsTotal,
-    decote,
-    irNet,                // Impôt sur le revenu net (après crédits + décote)
-
-    tmiRate,
-    tmiBasePerPart,
+    ...
     tmiBaseGlobal,
     tmiMarginGlobal,
     bracketsDetails,
-    rfr,
-    cehr,
-    cehrDetails,
-    cdhr,
-
-    psFoncier,
-    psDividends,
-    psTotal,
-    psRateTotal,
-
-    pfuIr,
-    totalTax,
+    ...
   };
 }
-
-
-
 
 /* ===============================
    Page IR
