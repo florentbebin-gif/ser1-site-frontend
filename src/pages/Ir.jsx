@@ -28,7 +28,7 @@ function computeAbattement10(base, cfg) {
   return val;
 }
 
-// ---- Calcul IR progressif + TMI ----
+// ---- Calcul IR progressif + TMI (sans retraitement global) ----
 function computeProgressiveTax(scale = [], taxablePerPart) {
   if (!Array.isArray(scale) || !scale.length || taxablePerPart <= 0) {
     return {
@@ -40,14 +40,12 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
     };
   }
 
-  let remaining = taxablePerPart;
   let tax = 0;
   let tmiRate = 0;
   let tmiBasePerPart = 0;
   let tmiBracketTo = null;
   const details = [];
 
-  // 1) calcul progressif standard par tranches
   for (const br of scale) {
     const from = Number(br.from) || 0;
     const to = br.to == null ? null : Number(br.to);
@@ -70,7 +68,6 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
     const trancheTax = base * (rate / 100);
 
     tax += trancheTax;
-    remaining -= base;
 
     details.push({
       label: `De ${from.toLocaleString('fr-FR')}€ à ${
@@ -90,28 +87,6 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
     if (to == null || taxablePerPart <= to) break;
   }
 
-  // 2) Retraitement global (colonne "Retraitement €" de SettingsImpots)
-  //    On applique : impôt = impôt_progressif - deduction de la tranche du revenu
-  let deduction = 0;
-  for (const br of scale) {
-    const from = Number(br.from) || 0;
-    const to = br.to == null ? null : Number(br.to);
-    if (taxablePerPart > from && (to == null || taxablePerPart <= to)) {
-      deduction = Number(br.deduction) || 0;
-      break;
-    }
-  }
-
-  if (deduction) {
-    tax -= deduction;
-    details.push({
-      label: 'Retraitement',
-      base: 0,
-      rate: '',
-      tax: -deduction,
-    });
-  }
-
   if (tax < 0) tax = 0;
 
   return {
@@ -122,6 +97,7 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
     bracketsDetails: details,
   };
 }
+
 
 
 // ---- CEHR (contrib. exceptionnelle hauts revenus) ----
