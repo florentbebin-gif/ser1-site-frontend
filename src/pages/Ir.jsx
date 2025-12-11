@@ -491,13 +491,42 @@ psFoncier = fonciersBase * (psRateTotal / 100);
 
   return {
     totalIncome,
-    ...
+    taxableIncome,
+    taxablePerPart,
+    partsNb,
+
+    // Quotient familial
+    irBeforeQfBase,
+    qfAdvantage,
+    irAfterQf,
+
+    // Décote / crédits
+    decote,
+    creditsTotal,
+
+    // IR & composantes
+    irNet,
+    pfuIr,
+    cehr,
+    cehrDetails,
+    cdhr,
+
+    // Prélèvements sociaux
+    psFoncier,
+    psDividends,
+    psTotal,
+
+    // Total global
+    totalTax,
+
+    // TMI / barème
+    tmiRate,
     tmiBaseGlobal,
     tmiMarginGlobal,
     bracketsDetails,
-    ...
   };
 }
+
 
 /* ===============================
    Page IR
