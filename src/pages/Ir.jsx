@@ -143,51 +143,93 @@ function computeCEHR(brackets = [], rfr) {
   return { cehr, cehrDetails: details };
 }
 
-// ---- CDHR (version complète : contribution différentielle) ----
-// Formule utilisée (comme ton Excel) :
-// CDHR = max(0, (taux_min * RFR) - (IR_progressif_avant_decote + PFU_IR + CEHR + majoration))
-// NB : on déclenche seulement si RFR > seuil (single/couple)
-function computeCDHR(config, rfr, irProgressifAvantDecote, pfuIr, cehr, statusKey) {
-  if (!config || rfr <= 0) return { cdhr: 0, cdhrDetails: null };
+// ---- CDHR (Contribution différentielle sur les hauts revenus) ----
+// D’après le guide usager (article 224 CGI) :
+// CDHR = max(0, A - B)
+// A = 20% * assiette (RFR "retraité"/autonome), avec décote d'entrée éventuelle
+// B = (IR retenu + CEHR retenue + PFU part IR) + majorations (12 500 couple, 1 500 / personne à charge)
+function computeCDHR(config, assiette, irRetenu, pfuIr, cehr, isCouple, personsAChargeCount) {
+  if (!config || !Number.isFinite(assiette) || assiette <= 0) {
+    return { cdhr: 0, cdhrDetails: null };
+  }
 
-  const minEffectiveRate = Number(config.minEffectiveRate) || 0;
-  if (!minEffectiveRate) return { cdhr: 0, cdhrDetails: null };
+  // Taux minimal : si la config est "20" => 20% ; si un jour c’est "0.20" => on accepte aussi.
+  const rawRate = Number(config.minEffectiveRate);
+  const minRate = !rawRate ? 0 : rawRate > 1 ? rawRate / 100 : rawRate; // 0.20 attendu
+  if (!minRate) return { cdhr: 0, cdhrDetails: null };
 
-  const threshold =
-    statusKey === 'couple'
-      ? Number(config.thresholdCouple) || 0
-      : Number(config.thresholdSingle) || 0;
+  // Seuils d'entrée (champ) : 250k / 500k
+  const threshold = isCouple
+    ? Number(config.thresholdCouple) || 500000
+    : Number(config.thresholdSingle) || 250000;
 
-  if (rfr <= threshold) return { cdhr: 0, cdhrDetails: null };
+  if (assiette <= threshold) return { cdhr: 0, cdhrDetails: null };
 
-  // Majorations : pas paramétrées dans SettingsImpots.jsx pour l’instant
-  // => on met 12 500€ par défaut (comme dans ton exemple), mais si un jour tu ajoutes cdhr.majoration on la prendra.
-  const majoration = Number(config.majoration) || 12500;
+  // Plafond de zone de décote : 330k / 660k
+  const decoteMaxAssiette = isCouple
+    ? Number(config.decoteMaxAssietteCouple) || 660000
+    : Number(config.decoteMaxAssietteSingle) || 330000;
 
-  const terme1 = (minEffectiveRate / 100) * rfr;
-  const terme2 =
-    (Number(irProgressifAvantDecote) || 0) +
-    (Number(pfuIr) || 0) +
+  // Paramètre guide : 82,5%
+  const decoteSlope = Number(config.decoteSlopePercent);
+  const slope = Number.isFinite(decoteSlope) && decoteSlope > 0
+    ? decoteSlope / 100
+    : 0.825;
+
+  // A = 20% * assiette (avant décote)
+  const termA_beforeDecote = minRate * assiette;
+
+  // Décote d'entrée (si assiette <= 330k/660k)
+  // Le guide dit : la cotisation de 20% est diminuée de (A - 82,5%*(assiette - seuil)) si positive
+  let decoteApplied = 0;
+  if (assiette <= decoteMaxAssiette) {
+    const target = slope * Math.max(0, assiette - threshold);
+    decoteApplied = Math.max(0, termA_beforeDecote - target);
+  }
+
+  const termA_afterDecote = Math.max(0, termA_beforeDecote - decoteApplied);
+
+  // Majorations (guide)
+  const majCouple = isCouple ? (Number(config.majorationCouple) || 12500) : 0;
+  const majPerCharge = Number(config.majorationPerCharge) || 1500;
+  const personsCount = Math.max(0, Number(personsAChargeCount) || 0);
+  const majCharges = personsCount * majPerCharge;
+  const majorations = majCouple + majCharges;
+
+  // B = IR retenu + CEHR + PFU(part IR) + majorations
+  const termB =
+    (Number(irRetenu) || 0) +
     (Number(cehr) || 0) +
-    majoration;
+    (Number(pfuIr) || 0) +
+    majorations;
 
-  const cdhr = Math.max(0, terme1 - terme2);
+  const cdhr = Math.max(0, termA_afterDecote - termB);
 
   return {
     cdhr,
     cdhrDetails: {
-      minEffectiveRate,
+      assiette,
       threshold,
-      majoration,
-      terme1,
-      terme2,
-      irProgressifAvantDecote: Number(irProgressifAvantDecote) || 0,
-      pfuIr: Number(pfuIr) || 0,
+      minRatePercent: minRate * 100,
+      decoteMaxAssiette,
+      slopePercent: slope * 100,
+
+      termA_beforeDecote,
+      decoteApplied,
+      termA_afterDecote,
+
+      termB,
+      irRetenu: Number(irRetenu) || 0,
       cehr: Number(cehr) || 0,
-      rfr: Number(rfr) || 0,
+      pfuIr: Number(pfuIr) || 0,
+      majorations,
+      majCouple,
+      majCharges,
+      personsAChargeCount: personsCount,
     },
   };
 }
+
 
 
 // ---- Seuils RFR pour PS retraite (par quart de part) ----
@@ -459,16 +501,27 @@ const totalIncomeD2 = isCouple
 // CEHR / CDHR
 const { cehr, cehrDetails } = computeCEHR(cehrBrackets, rfr);
 
-// IMPORTANT : pour la CDHR on utilise l'impôt progressif AVANT décote/crédits
-// => irBrutFoyer correspond à l'IR progressif après quotient familial, mais avant décote/crédits
+// personnes à charge : enfants "à charge" + "garde alternée"
+const personsAChargeCount =
+  Array.isArray(incomes?.childrenForCdhr)
+    ? incomes.childrenForCdhr.length
+    : 0;
+
+// Dans ton simulateur, on a déjà `children` en state (hors computeIrResult),
+// donc on va plutôt passer ce compteur via computeIrResult.
+// => solution simple (sans refactor lourd) : calculer le count AVANT useMemo
+// et le passer en paramètre computeIrResult (voir note juste après).
+
 const { cdhr, cdhrDetails } = computeCDHR(
   cdhrCfg,
   rfr,
-  irBrutFoyer,
+  irBrutFoyer, // IR progressif après quotient, avant décote/crédits (ok pour notre besoin)
   pfuIr,
   cehr,
-  isCouple ? 'couple' : 'single'
+  isCouple,
+  personsAChargeCount
 );
+
 
 
   // ---- PS sur revenus fonciers + dividendes ----
