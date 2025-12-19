@@ -60,6 +60,19 @@ const DEFAULT_TAX_SETTINGS = {
       retireesCurrent: { plafond: 4399, plancher: 450 },
       retireesPrevious: { plafond: 4321, plancher: 442 },
     },
+        domAbatement: {
+      // Réduction DOM (CGI art. 197) appliquée sur l'impôt issu du barème
+      // après plafonnement du quotient familial et avant décote + réductions/crédits.
+      current: {
+        gmr: { ratePercent: 30, cap: 2450 },     // Guadeloupe / Martinique / Réunion
+        guyane: { ratePercent: 40, cap: 4050 },  // Guyane (et Mayotte)
+      },
+      previous: {
+        gmr: { ratePercent: 30, cap: 2450 },
+        guyane: { ratePercent: 40, cap: 4050 },
+      },
+    },
+
   },
   pfu: {
     current: {
