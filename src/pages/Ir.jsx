@@ -284,7 +284,9 @@ function computeIrResult({
   taxSettings,
   psSettings,
   capitalMode,
+  personsAChargeCount,
 }) {
+
 
   if (!taxSettings) return null;
 
@@ -500,17 +502,6 @@ const totalIncomeD2 = isCouple
 
 // CEHR / CDHR
 const { cehr, cehrDetails } = computeCEHR(cehrBrackets, rfr);
-
-// personnes à charge : enfants "à charge" + "garde alternée"
-const personsAChargeCount =
-  Array.isArray(incomes?.childrenForCdhr)
-    ? incomes.childrenForCdhr.length
-    : 0;
-
-// Dans ton simulateur, on a déjà `children` en state (hors computeIrResult),
-// donc on va plutôt passer ce compteur via computeIrResult.
-// => solution simple (sans refactor lourd) : calculer le count AVANT useMemo
-// et le passer en paramètre computeIrResult (voir note juste après).
 
 const { cdhr, cdhrDetails } = computeCDHR(
   cdhrCfg,
@@ -920,6 +911,7 @@ const result = useMemo(
       taxSettings,
       psSettings,
       capitalMode,
+      personsAChargeCount: Array.isArray(children) ? children.length : 0,
     }),
   [
     yearKey,
