@@ -39,7 +39,19 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
       bracketsDetails: [],
     };
   }
+  
+  // --- TMI d'affichage : si plafonnement QF actif, on se base sur les parts "de base" (1 ou 2)
+  const partsForTmi = qfIsCapped ? basePartsForQf : partsNb;
+  const taxablePerPartForTmi =
+    partsForTmi > 0 ? taxableIncome / partsForTmi : taxableIncome;
 
+  const tmiComputedForDisplay = computeProgressiveTax(scale, taxablePerPartForTmi);
+
+  const tmiRateDisplay = tmiComputedForDisplay.tmiRate || 0;
+  const tmiBasePerPartDisplay = tmiComputedForDisplay.tmiBasePerPart || 0;
+  const tmiBracketToDisplay = tmiComputedForDisplay.tmiBracketTo;
+
+  
   let tax = 0;
   let tmiRate = 0;
   let tmiBasePerPart = 0;
@@ -91,7 +103,7 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
 
   return {
     taxPerPart: tax,
-    tmiRate,
+    tmiRate: tmiRateDisplay,
     tmiBasePerPart,
     tmiBracketTo,
     bracketsDetails: details,
@@ -343,7 +355,8 @@ const totalIncomeD2 = isCouple
 
   let irBase = irBrutFoyerSansPlafond; // par défaut, on met quelque chose
   let maxAvantage = 0;
-
+  let qfIsCapped = false; // plafonnement actif
+  
   if (taxableIncome > 0 && extraHalfParts > 0 && plafondPartSup > 0) {
     // 1) Impôt avec les parts "de base"
     const taxablePerPartBase =
@@ -380,6 +393,7 @@ const totalIncomeD2 = isCouple
 
     // 4) Avantage retenu = minimum (brut, plafond)
     const avantageRetenu = Math.min(avantageBrut, maxAvantage);
+    qfIsCapped = avantageBrut > maxAvantage;
 
     qfAdvantage = avantageRetenu;
     irBrutFoyer = irBase - avantageRetenu; // IR après plafonnement
@@ -456,36 +470,29 @@ psFoncier = fonciersBase * (psRateTotal / 100);
     psTotal = psFoncier + psDividends;
   }
 
-  // ---- TMI : montants associés ----
+  // ---- TMI : montants associés (affichage) ----
   let tmiBaseGlobal = 0;
   let tmiMarginGlobal = null;
 
-  if (tmiRate > 0) {
+  if (tmiRateDisplay > 0) {
     // 1) "Montant des revenus dans cette TMI"
-    // Si la décote est active, on veut le montant de revenu dans la TMI
-    // qui, retiré, ramènerait l'impôt NET à 0 en tenant compte de la décote.
-    //
-    // Formule que tu utilises dans ton Excel (cas décote) :
-    //   IR_net = (1 + décote_taux) * IR_brut - décote_montant
-    //   => ΔRevenu = IR_net / (tmiRate * (1 + décote_taux))
-    //
-    // On l'exprime directement avec IR_net :
-    if (decote > 0 && decoteRate > 0 && irNet > 0) {
+    if (decote > 0 && decoteRate > 0 && irNet > 0 && !qfIsCapped) {
+      // cas décote (on garde ta logique précédente), uniquement quand pas de plafonnement QF bloquant
       const tmiFactor =
-        (tmiRate / 100) * (1 + decoteRate / 100); // ex : 11% et 45,25%
+        (tmiRateDisplay / 100) * (1 + decoteRate / 100);
       tmiBaseGlobal = tmiFactor > 0 ? irNet / tmiFactor : 0;
     } else {
-      // Pas de décote : on reste sur la base "classique" dans la tranche
-      tmiBaseGlobal = tmiBasePerPart * partsNb;
+      // cas général (dont plafonnement QF actif) : base dans la tranche * partsForTmi
+      tmiBaseGlobal = tmiBasePerPartDisplay * partsForTmi;
     }
 
     // 2) "Montant des revenus avant changement de TMI"
-    // => marge restante jusqu'au plafond de la tranche marginale
-    if (tmiBracketTo != null) {
-      const margeParPart = Math.max(0, tmiBracketTo - taxablePerPart);
-      tmiMarginGlobal = margeParPart * partsNb;
+    if (tmiBracketToDisplay != null) {
+      const margeParPart = Math.max(0, tmiBracketToDisplay - taxablePerPartForTmi);
+      tmiMarginGlobal = margeParPart * partsForTmi;
     }
   }
+
 
   const totalTax = irNet + pfuIr + cehr + cdhr + psTotal;
 
