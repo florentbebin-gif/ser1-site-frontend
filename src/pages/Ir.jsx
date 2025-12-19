@@ -465,6 +465,32 @@ const totalIncomeD2 = isCouple
     irAfterQf = irBrutFoyerSansPlafond;
   }
 
+  // ---- Abattement DOM (CGI art.197) ----
+  // S'applique sur l'impôt issu du barème après plafonnement du QF et avant décote + réductions/crédits.
+  // Ici on l'active si l'utilisateur est en DOM ET qu'il a des revenus d'activité type BIC/BNC/BA (champ "bic" dans l'UI).
+  let domAbatementAmount = 0;
+
+  const domCfgRoot = incomeTaxCfg.domAbatement || {};
+  const domYearCfg =
+    yearKey === 'current' ? domCfgRoot.current || {} : domCfgRoot.previous || {};
+
+  const bicTotalFoyer = (incomes.d1.bic || 0) + (isCouple ? (incomes.d2.bic || 0) : 0);
+
+  if ((location === 'gmr' || location === 'guyane') && bicTotalFoyer > 0) {
+    const domCfg = location === 'gmr' ? domYearCfg.gmr : domYearCfg.guyane;
+    const rate = Number(domCfg?.ratePercent || 0);
+    const cap = Number(domCfg?.cap || 0);
+
+    if (rate > 0) {
+      const raw = irAfterQf * (rate / 100);
+      domAbatementAmount = cap > 0 ? Math.min(raw, cap) : raw;
+      domAbatementAmount = Math.max(0, domAbatementAmount);
+    }
+  }
+
+  // On remplace la base d'impôt "avant décote/crédits" par l'impôt après abattement DOM
+  // (car la décote se calcule ensuite sur cette base).
+  irBrutFoyer = Math.max(0, irAfterQf - domAbatementAmount);
 
   // ---- Décote ----
   let decote = 0;
@@ -585,6 +611,7 @@ const bracketsDetailsDisplay = tmiComputedForDisplay.bracketsDetails || [];
     irBeforeQfBase,
     qfAdvantage,
     irAfterQf,
+    domAbatementAmount,
 
     // Décote / crédits
     decote,
@@ -1779,6 +1806,7 @@ setParts(0);
             {euro0(result.irBeforeQfBase || 0)}
           </td>
         </tr>
+        
         <tr>
           <td>Quotient familial</td>
           <td style={{ textAlign: 'right' }}>
