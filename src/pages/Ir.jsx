@@ -471,15 +471,23 @@ const totalIncomeD2 = isCouple
   let domAbatementAmount = 0;
 
   const domCfgRoot = incomeTaxCfg.domAbatement || {};
-  const domYearCfg =
-    yearKey === 'current' ? domCfgRoot.current || {} : domCfgRoot.previous || {};
 
-  const bicTotalFoyer = (incomes.d1.bic || 0) + (isCouple ? (incomes.d2.bic || 0) : 0);
+  const bicTotalFoyer =
+    (incomes.d1.bic || 0) + (isCouple ? (incomes.d2.bic || 0) : 0);
 
   if ((location === 'gmr' || location === 'guyane') && bicTotalFoyer > 0) {
-    const domCfg = location === 'gmr' ? domYearCfg.gmr : domYearCfg.guyane;
-    const rate = Number(domCfg?.ratePercent || 0);
+    // Supabase : domAbatement.gmr / domAbatement.guyane (pas de current/previous)
+    const domCfg = location === 'gmr' ? domCfgRoot.gmr : domCfgRoot.guyane;
+    const rate = Number(domCfg?.rate || 0); // <-- chez toi c'est "rate"
     const cap = Number(domCfg?.cap || 0);
+
+    if (rate > 0) {
+      const raw = irAfterQf * (rate / 100);
+      domAbatementAmount = cap > 0 ? Math.min(raw, cap) : raw;
+      domAbatementAmount = Math.max(0, domAbatementAmount);
+    }
+  }
+
 
     if (rate > 0) {
       const raw = irAfterQf * (rate / 100);
@@ -510,6 +518,10 @@ const totalIncomeD2 = isCouple
 
   // IR net après crédits et décote (c'est ce qu'on appellera "Impôt sur le revenu")
   const irNet = Math.max(0, irBrutFoyer - creditsTotal - decote);
+
+  // PAS (estimation) : impôt sur le revenu / revenu imposable (barème)
+  const pasRate =
+    taxableIncome > 0 ? (irNet / taxableIncome) * 100 : 0;
 
   // PFU 12,8 % sur les revenus de capitaux mobiliers en option PFU
   let pfuIr = 0;
@@ -581,11 +593,11 @@ const bracketsDetailsDisplay = tmiComputedForDisplay.bracketsDetails || [];
 
   if (tmiRateDisplay > 0) {
     // 1) "Montant des revenus dans cette TMI"
-    if (decote > 0 && decoteRate > 0 && irNet > 0 && !qfIsCapped) {
+    if (decote > 0 && decoteRate > 0 &&  > 0 && !qfIsCapped) {
       // cas décote (on garde ta logique précédente), uniquement quand pas de plafonnement QF bloquant
       const tmiFactor =
         (tmiRateDisplay / 100) * (1 + decoteRate / 100);
-      tmiBaseGlobal = tmiFactor > 0 ? irNet / tmiFactor : 0;
+      tmiBaseGlobal = tmiFactor > 0 ?  / tmiFactor : 0;
     } else {
       // cas général (dont plafonnement QF actif) : base dans la tranche * partsForTmi
       tmiBaseGlobal = tmiBasePerPartDisplay * partsForTmi;
@@ -599,7 +611,7 @@ const bracketsDetailsDisplay = tmiComputedForDisplay.bracketsDetails || [];
   }
 
 
-  const totalTax = irNet + pfuIr + cehr + cdhr + psTotal;
+  const totalTax =  + pfuIr + cehr + cdhr + psTotal;
 
   return {
     totalIncome,
@@ -619,6 +631,7 @@ const bracketsDetailsDisplay = tmiComputedForDisplay.bracketsDetails || [];
 
     // IR & composantes
     irNet,
+    pasRate,
     pfuIr,
     cehr,
     cehrDetails,
@@ -1690,6 +1703,11 @@ setParts(0);
                   {result ? euro0(result.irNet || 0) : '-'}
                 </span>
               </div>
+              <div className="ir-tmi-row">
+  <span>Taux PAS estimatif (taux foyer)</span>
+  <span>{result ? `${(result.pasRate || 0).toFixed(1)} %` : '-'}</span>
+</div>
+
             </div>
 
             <div className="ir-tmi-sub">
@@ -1819,6 +1837,21 @@ setParts(0);
             {euro0(result.irAfterQf || 0)}
           </td>
         </tr>
+        {(result.domAbatementAmount || 0) > 0 && (
+  <tr>
+    <td>Abattement DOM</td>
+    <td style={{ textAlign: 'right' }}>
+      - {euro0(result.domAbatementAmount)}
+    </td>
+  </tr>
+)}
+        <tr>
+  <td>Impôt après abattement DOM</td>
+  <td style={{ textAlign: 'right' }}>
+    {euro0(Math.max(0, (result.irAfterQf || 0) - (result.domAbatementAmount || 0)))}
+  </td>
+</tr>
+
         <tr>
           <td>Réductions et crédits d&apos;impôt</td>
           <td style={{ textAlign: 'right' }}>
