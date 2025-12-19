@@ -143,25 +143,52 @@ function computeCEHR(brackets = [], rfr) {
   return { cehr, cehrDetails: details };
 }
 
-// ---- CDHR (version simplifiée : plancher de taux effectif) ----
-function computeCDHR(config, rfr, taxBeforeCdhr, statusKey) {
-  if (!config || rfr <= 0) return { cdhr: 0 };
+// ---- CDHR (version complète : contribution différentielle) ----
+// Formule utilisée (comme ton Excel) :
+// CDHR = max(0, (taux_min * RFR) - (IR_progressif_avant_decote + PFU_IR + CEHR + majoration))
+// NB : on déclenche seulement si RFR > seuil (single/couple)
+function computeCDHR(config, rfr, irProgressifAvantDecote, pfuIr, cehr, statusKey) {
+  if (!config || rfr <= 0) return { cdhr: 0, cdhrDetails: null };
 
   const minEffectiveRate = Number(config.minEffectiveRate) || 0;
-  if (!minEffectiveRate) return { cdhr: 0 };
+  if (!minEffectiveRate) return { cdhr: 0, cdhrDetails: null };
 
   const threshold =
     statusKey === 'couple'
       ? Number(config.thresholdCouple) || 0
       : Number(config.thresholdSingle) || 0;
 
-  if (rfr <= threshold) return { cdhr: 0 };
+  if (rfr <= threshold) return { cdhr: 0, cdhrDetails: null };
 
-  const minTax = (minEffectiveRate / 100) * rfr;
-  const cdhr = Math.max(0, minTax - taxBeforeCdhr);
+  // Majorations : pas paramétrées dans SettingsImpots.jsx pour l’instant
+  // => on met 12 500€ par défaut (comme dans ton exemple), mais si un jour tu ajoutes cdhr.majoration on la prendra.
+  const majoration = Number(config.majoration) || 12500;
 
-  return { cdhr };
+  const terme1 = (minEffectiveRate / 100) * rfr;
+  const terme2 =
+    (Number(irProgressifAvantDecote) || 0) +
+    (Number(pfuIr) || 0) +
+    (Number(cehr) || 0) +
+    majoration;
+
+  const cdhr = Math.max(0, terme1 - terme2);
+
+  return {
+    cdhr,
+    cdhrDetails: {
+      minEffectiveRate,
+      threshold,
+      majoration,
+      terme1,
+      terme2,
+      irProgressifAvantDecote: Number(irProgressifAvantDecote) || 0,
+      pfuIr: Number(pfuIr) || 0,
+      cehr: Number(cehr) || 0,
+      rfr: Number(rfr) || 0,
+    },
+  };
 }
+
 
 // ---- Seuils RFR pour PS retraite (par quart de part) ----
 function computeRfrThresholdsForParts(baseThresholds, parts) {
@@ -429,14 +456,20 @@ const totalIncomeD2 = isCouple
   const rfr = taxableIncome + capitalBasePfu;
 
 
-  // CEHR / CDHR
-  const { cehr, cehrDetails } = computeCEHR(cehrBrackets, rfr);
-  const { cdhr } = computeCDHR(
-    cdhrCfg,
-    rfr,
-    irNet + cehr,
-    isCouple ? 'couple' : 'single'
-  );
+// CEHR / CDHR
+const { cehr, cehrDetails } = computeCEHR(cehrBrackets, rfr);
+
+// IMPORTANT : pour la CDHR on utilise l'impôt progressif AVANT décote/crédits
+// => irBrutFoyer correspond à l'IR progressif après quotient familial, mais avant décote/crédits
+const { cdhr, cdhrDetails } = computeCDHR(
+  cdhrCfg,
+  rfr,
+  irBrutFoyer,
+  pfuIr,
+  cehr,
+  isCouple ? 'couple' : 'single'
+);
+
 
   // ---- PS sur revenus fonciers + dividendes ----
   let psRateTotal = 0;
@@ -518,6 +551,7 @@ psFoncier = fonciersBase * (psRateTotal / 100);
     cehr,
     cehrDetails,
     cdhr,
+    cdhrDetails,
 
     // Prélèvements sociaux
     psFoncier,
@@ -1755,6 +1789,42 @@ setParts(0);
           ) : (
             <p>Aucune CEHR due.</p>
           )}
+
+<h4>CDHR</h4>
+{result.cdhrDetails ? (
+  <table className="ir-details-table">
+    <tbody>
+      <tr>
+        <td>Terme 1 : {result.cdhrDetails.minEffectiveRate}% × RFR</td>
+        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.terme1)}</td>
+      </tr>
+      <tr>
+        <td>Terme 2 : IR progressif (avant décote)</td>
+        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.irProgressifAvantDecote)}</td>
+      </tr>
+      <tr>
+        <td>+ PFU 12,8% (part IR)</td>
+        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.pfuIr)}</td>
+      </tr>
+      <tr>
+        <td>+ CEHR</td>
+        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.cehr)}</td>
+      </tr>
+      <tr>
+        <td>+ Majoration</td>
+        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.majoration)}</td>
+      </tr>
+      <tr>
+        <td><strong>CDHR = max(0, Terme 1 − Terme 2)</strong></td>
+        <td style={{ textAlign: 'right' }}><strong>{euro0(result.cdhr || 0)}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+) : (
+  <p>Aucune CDHR due.</p>
+)}
+
+          
         </div>
       )}
 <div className="ir-disclaimer">
