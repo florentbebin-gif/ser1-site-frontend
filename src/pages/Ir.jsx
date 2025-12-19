@@ -1843,27 +1843,59 @@ setParts(0);
   <table className="ir-details-table">
     <tbody>
       <tr>
-        <td>Terme 1 : {result.cdhrDetails.minEffectiveRate}% × RFR</td>
-        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.terme1)}</td>
+        <td>Assiette (RFR)</td>
+        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.assiette)}</td>
       </tr>
+
       <tr>
-        <td>Terme 2 : IR progressif (avant décote)</td>
-        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.irProgressifAvantDecote)}</td>
+        <td>Terme A (avant décote) : {result.cdhrDetails.minRatePercent}% × assiette</td>
+        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.termA_beforeDecote)}</td>
       </tr>
+
+      <tr>
+        <td>Décote CDHR appliquée</td>
+        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.decoteApplied)}</td>
+      </tr>
+
+      <tr>
+        <td><strong>Terme A (après décote)</strong></td>
+        <td style={{ textAlign: 'right' }}><strong>{euro0(result.cdhrDetails.termA_afterDecote)}</strong></td>
+      </tr>
+
+      <tr>
+        <td>Terme B : IR retenu</td>
+        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.irRetenu)}</td>
+      </tr>
+
       <tr>
         <td>+ PFU 12,8% (part IR)</td>
         <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.pfuIr)}</td>
       </tr>
+
       <tr>
         <td>+ CEHR</td>
         <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.cehr)}</td>
       </tr>
+
       <tr>
-        <td>+ Majoration</td>
-        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.majoration)}</td>
+        <td>
+          + Majorations (couple + charges) — charges : {result.cdhrDetails.personsAChargeCount}
+        </td>
+        <td style={{ textAlign: 'right' }}>{euro0(result.cdhrDetails.majorations)}</td>
       </tr>
+
       <tr>
-        <td><strong>CDHR = max(0, Terme 1 − Terme 2)</strong></td>
+        <td style={{ paddingLeft: 18, opacity: 0.85 }}>• Majoration couple</td>
+        <td style={{ textAlign: 'right', opacity: 0.85 }}>{euro0(result.cdhrDetails.majCouple)}</td>
+      </tr>
+
+      <tr>
+        <td style={{ paddingLeft: 18, opacity: 0.85 }}>• Majoration personnes à charge</td>
+        <td style={{ textAlign: 'right', opacity: 0.85 }}>{euro0(result.cdhrDetails.majCharges)}</td>
+      </tr>
+
+      <tr>
+        <td><strong>CDHR = max(0, Terme A (après décote) − Terme B)</strong></td>
         <td style={{ textAlign: 'right' }}><strong>{euro0(result.cdhr || 0)}</strong></td>
       </tr>
     </tbody>
@@ -1871,6 +1903,7 @@ setParts(0);
 ) : (
   <p>Aucune CDHR due.</p>
 )}
+
 
           
         </div>
