@@ -911,7 +911,9 @@ const result = useMemo(
       taxSettings,
       psSettings,
       capitalMode,
-      personsAChargeCount: Array.isArray(children) ? children.length : 0,
+      personsAChargeCount: Array.isArray(children)
+  ? children.filter((c) => c && (c.mode === 'charge' || c.mode === 'shared')).length
+  : 0,
     }),
   [
     yearKey,
