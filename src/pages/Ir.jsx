@@ -28,7 +28,7 @@ function computeAbattement10(base, cfg) {
   return val;
 }
 
-// ---- Calcul IR progressif + TMI (sans retraitement global) ----
+// ---- Calcul IR progressif + TMI (base par part) ----
 function computeProgressiveTax(scale = [], taxablePerPart) {
   if (!Array.isArray(scale) || !scale.length || taxablePerPart <= 0) {
     return {
@@ -39,19 +39,7 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
       bracketsDetails: [],
     };
   }
-  
-  // --- TMI d'affichage : si plafonnement QF actif, on se base sur les parts "de base" (1 ou 2)
-  const partsForTmi = qfIsCapped ? basePartsForQf : partsNb;
-  const taxablePerPartForTmi =
-    partsForTmi > 0 ? taxableIncome / partsForTmi : taxableIncome;
 
-  const tmiComputedForDisplay = computeProgressiveTax(scale, taxablePerPartForTmi);
-
-  const tmiRateDisplay = tmiComputedForDisplay.tmiRate || 0;
-  const tmiBasePerPartDisplay = tmiComputedForDisplay.tmiBasePerPart || 0;
-  const tmiBracketToDisplay = tmiComputedForDisplay.tmiBracketTo;
-
-  
   let tax = 0;
   let tmiRate = 0;
   let tmiBasePerPart = 0;
@@ -103,12 +91,13 @@ function computeProgressiveTax(scale = [], taxablePerPart) {
 
   return {
     taxPerPart: tax,
-    tmiRate: tmiRateDisplay,
+    tmiRate,
     tmiBasePerPart,
     tmiBracketTo,
     bracketsDetails: details,
   };
 }
+
 
 
 
@@ -470,6 +459,18 @@ psFoncier = fonciersBase * (psRateTotal / 100);
     psTotal = psFoncier + psDividends;
   }
 
+  // --- TMI d'affichage : si plafonnement QF actif, on se base sur les parts "de base" (1 ou 2)
+  const partsForTmi = qfIsCapped ? basePartsForQf : partsNb;
+  const taxablePerPartForTmi =
+    partsForTmi > 0 ? taxableIncome / partsForTmi : taxableIncome;
+
+  const tmiComputedForDisplay = computeProgressiveTax(scale, taxablePerPartForTmi);
+
+  const tmiRateDisplay = tmiComputedForDisplay.tmiRate || 0;
+  const tmiBasePerPartDisplay = tmiComputedForDisplay.tmiBasePerPart || 0;
+  const tmiBracketToDisplay = tmiComputedForDisplay.tmiBracketTo;
+
+  
   // ---- TMI : montants associés (affichage) ----
   let tmiBaseGlobal = 0;
   let tmiMarginGlobal = null;
@@ -527,7 +528,7 @@ psFoncier = fonciersBase * (psRateTotal / 100);
     totalTax,
 
     // TMI / barème
-    tmiRate,
+    tmiRate: tmiRateDisplay,
     tmiBaseGlobal,
     tmiMarginGlobal,
     bracketsDetails,
