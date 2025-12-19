@@ -502,6 +502,7 @@ psFoncier = fonciersBase * (psRateTotal / 100);
   const tmiRateDisplay = tmiComputedForDisplay.tmiRate || 0;
   const tmiBasePerPartDisplay = tmiComputedForDisplay.tmiBasePerPart || 0;
   const tmiBracketToDisplay = tmiComputedForDisplay.tmiBracketTo;
+const bracketsDetailsDisplay = tmiComputedForDisplay.bracketsDetails || [];
 
   
   // ---- TMI : montants associés (affichage) ----
@@ -565,7 +566,7 @@ psFoncier = fonciersBase * (psRateTotal / 100);
     tmiRate: tmiRateDisplay,
     tmiBaseGlobal,
     tmiMarginGlobal,
-    bracketsDetails,
+    bracketsDetails: bracketsDetailsDisplay,
   };
 }
 
