@@ -61,8 +61,14 @@ const DEFAULT_TAX_SETTINGS = {
       retireesPrevious: { plafond: 4321, plancher: 442 },
     },
 domAbatement: {
-  gmr: { rate: 30, cap: 2450 },     // Guadeloupe / Martinique / Réunion
-  guyane: { rate: 40, cap: 4050 },  // Guyane (et Mayotte)
+  current: {
+    gmr: { ratePercent: 30, cap: 2450 },
+    guyane: { ratePercent: 40, cap: 4050 },
+  },
+  previous: {
+    gmr: { ratePercent: 30, cap: 2450 },
+    guyane: { ratePercent: 40, cap: 4050 },
+  },
 },
 
   },
@@ -849,6 +855,76 @@ export default function SettingsImpots() {
   </div>
 </div>
 
+                                {/* 2. Abattement DOM (CGI art. 197) */}
+<div className="income-tax-block">
+  <div className="income-tax-block-title">Abattement DOM (sur IR barème)</div>
+
+  <div className="settings-field-row">
+    <label>Guadeloupe / Martinique / Réunion — Taux</label>
+    <input
+      type="number"
+      step="0.01"
+      value={numberOrEmpty(incomeTax.domAbatement?.gmr?.rate)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'domAbatement', 'gmr', 'rate'],
+          e.target.value === '' ? null : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>%</span>
+  </div>
+
+  <div className="settings-field-row">
+    <label>Guadeloupe / Martinique / Réunion — Plafond</label>
+    <input
+      type="number"
+      value={numberOrEmpty(incomeTax.domAbatement?.gmr?.cap)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'domAbatement', 'gmr', 'cap'],
+          e.target.value === '' ? null : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+
+  <div className="settings-field-row">
+    <label>Guyane / Mayotte — Taux</label>
+    <input
+      type="number"
+      step="0.01"
+      value={numberOrEmpty(incomeTax.domAbatement?.guyane?.rate)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'domAbatement', 'guyane', 'rate'],
+          e.target.value === '' ? null : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>%</span>
+  </div>
+
+  <div className="settings-field-row">
+    <label>Guyane / Mayotte — Plafond</label>
+    <input
+      type="number"
+      value={numberOrEmpty(incomeTax.domAbatement?.guyane?.cap)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'domAbatement', 'guyane', 'cap'],
+          e.target.value === '' ? null : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+</div>
 
                 {/* 2. Décote */}
 <div className="income-tax-block">
