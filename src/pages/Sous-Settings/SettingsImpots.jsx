@@ -333,7 +333,6 @@ export default function SettingsImpots() {
                     <th>De</th>
                     <th>À</th>
                     <th className="taux-col">Taux&nbsp;%</th>
-                    <th>Retraitement&nbsp;€</th>
                   </tr>
                 </thead>
 
