@@ -468,28 +468,33 @@ const totalIncomeD2 = isCouple
   // ---- Abattement DOM (CGI art.197) ----
   // S'applique sur l'impôt issu du barème après plafonnement du QF et avant décote + réductions/crédits.
   // Ici on l'active si l'utilisateur est en DOM ET qu'il a des revenus d'activité type BIC/BNC/BA (champ "bic" dans l'UI).
-  let domAbatementAmount = 0;
+let domAbatementAmount = 0;
 
-  const domCfgRoot = incomeTaxCfg.domAbatement || {};
+const domCfgRoot = incomeTaxCfg.domAbatement || {};
+const domYearCfg =
+  yearKey === 'current' ? domCfgRoot.current || {} : domCfgRoot.previous || {};
 
-  const bicTotalFoyer =
-    (incomes.d1.bic || 0) + (isCouple ? (incomes.d2.bic || 0) : 0);
+const bicTotalFoyer =
+  (incomes.d1.bic || 0) + (isCouple ? (incomes.d2.bic || 0) : 0);
 
-if (location === 'gmr' || location === 'guyane') {
-  const domCfg = location === 'gmr' ? domCfgRoot.gmr : domCfgRoot.guyane;
-  const rate = Number(domCfg?.rate || 0);
+// Abattement DOM : uniquement si résidence DOM + revenus BIC (comme la règle prévue)
+if ((location === 'gmr' || location === 'guyane') && bicTotalFoyer > 0) {
+  const domCfg = location === 'gmr' ? domYearCfg.gmr : domYearCfg.guyane;
+
+  // Dans Supabase tu as "ratePercent"
+  const ratePercent = Number(domCfg?.ratePercent || 0);
   const cap = Number(domCfg?.cap || 0);
 
-  if (rate > 0) {
-    const raw = irAfterQf * (rate / 100);
+  if (ratePercent > 0) {
+    const raw = irAfterQf * (ratePercent / 100);
     domAbatementAmount = cap > 0 ? Math.min(raw, cap) : raw;
     domAbatementAmount = Math.max(0, domAbatementAmount);
   }
 }
-  
-  // On remplace la base d'impôt "avant décote/crédits" par l'impôt après abattement DOM
-  // (car la décote se calcule ensuite sur cette base).
-  irBrutFoyer = Math.max(0, irAfterQf - domAbatementAmount);
+
+// On remplace la base d'impôt "avant décote/crédits" par l'impôt après abattement DOM
+irBrutFoyer = Math.max(0, irAfterQf - domAbatementAmount);
+
 
   // ---- Décote ----
   let decote = 0;
