@@ -243,19 +243,23 @@ export default function SettingsImpots() {
     setMessage('');
   };
 
-  const updateField = (path, value) => {
-    // path du style ['incomeTax','decote','triggerSingle']
-    setSettings((prev) => {
-      const clone = structuredClone(prev);
-      let obj = clone;
-      for (let i = 0; i < path.length - 1; i++) {
-        obj = obj[path[i]];
-      }
-      obj[path[path.length - 1]] = value;
-      return clone;
-    });
-    setMessage('');
-  };
+const updateField = (path, value) => {
+  setSettings((prev) => {
+    const clone = structuredClone(prev);
+    let obj = clone;
+
+    for (let i = 0; i < path.length - 1; i++) {
+      const k = path[i];
+      if (obj[k] === undefined || obj[k] === null) obj[k] = {};
+      obj = obj[k];
+    }
+
+    obj[path[path.length - 1]] = value;
+    return clone;
+  });
+  setMessage('');
+};
+
 
   if (loading) {
     return (
@@ -456,7 +460,7 @@ export default function SettingsImpots() {
   </div>
 </div>
 
-                {/* 2. Abattement DOM (CGI art. 197) */}
+{/* 2. Abattement DOM (CGI art. 197) */}
 <div className="income-tax-block">
   <div className="income-tax-block-title">Abattement DOM (sur IR barème)</div>
 
@@ -465,10 +469,10 @@ export default function SettingsImpots() {
     <input
       type="number"
       step="0.01"
-      value={numberOrEmpty(incomeTax.domAbatement?.gmr?.rate)}
+      value={numberOrEmpty(incomeTax?.domAbatement?.current?.gmr?.ratePercent)}
       onChange={(e) =>
         updateField(
-          ['incomeTax', 'domAbatement', 'gmr', 'rate'],
+          ['incomeTax', 'domAbatement', 'current', 'gmr', 'ratePercent'],
           e.target.value === '' ? null : Number(e.target.value)
         )
       }
@@ -481,10 +485,10 @@ export default function SettingsImpots() {
     <label>Guadeloupe / Martinique / Réunion — Plafond</label>
     <input
       type="number"
-      value={numberOrEmpty(incomeTax.domAbatement?.gmr?.cap)}
+      value={numberOrEmpty(incomeTax?.domAbatement?.current?.gmr?.cap)}
       onChange={(e) =>
         updateField(
-          ['incomeTax', 'domAbatement', 'gmr', 'cap'],
+          ['incomeTax', 'domAbatement', 'current', 'gmr', 'cap'],
           e.target.value === '' ? null : Number(e.target.value)
         )
       }
@@ -498,10 +502,10 @@ export default function SettingsImpots() {
     <input
       type="number"
       step="0.01"
-      value={numberOrEmpty(incomeTax.domAbatement?.guyane?.rate)}
+      value={numberOrEmpty(incomeTax?.domAbatement?.current?.guyane?.ratePercent)}
       onChange={(e) =>
         updateField(
-          ['incomeTax', 'domAbatement', 'guyane', 'rate'],
+          ['incomeTax', 'domAbatement', 'current', 'guyane', 'ratePercent'],
           e.target.value === '' ? null : Number(e.target.value)
         )
       }
@@ -514,10 +518,10 @@ export default function SettingsImpots() {
     <label>Guyane / Mayotte — Plafond</label>
     <input
       type="number"
-      value={numberOrEmpty(incomeTax.domAbatement?.guyane?.cap)}
+      value={numberOrEmpty(incomeTax?.domAbatement?.current?.guyane?.cap)}
       onChange={(e) =>
         updateField(
-          ['incomeTax', 'domAbatement', 'guyane', 'cap'],
+          ['incomeTax', 'domAbatement', 'current', 'guyane', 'cap'],
           e.target.value === '' ? null : Number(e.target.value)
         )
       }
@@ -526,6 +530,7 @@ export default function SettingsImpots() {
     <span>€</span>
   </div>
 </div>
+
 
 
 {/* 2. Décote */}
@@ -855,7 +860,7 @@ export default function SettingsImpots() {
   </div>
 </div>
 
-                                {/* 2. Abattement DOM (CGI art. 197) */}
+{/* 2. Abattement DOM (CGI art. 197) */}
 <div className="income-tax-block">
   <div className="income-tax-block-title">Abattement DOM (sur IR barème)</div>
 
@@ -864,10 +869,10 @@ export default function SettingsImpots() {
     <input
       type="number"
       step="0.01"
-      value={numberOrEmpty(incomeTax.domAbatement?.gmr?.rate)}
+      value={numberOrEmpty(incomeTax?.domAbatement?.previous?.gmr?.ratePercent)}
       onChange={(e) =>
         updateField(
-          ['incomeTax', 'domAbatement', 'gmr', 'rate'],
+          ['incomeTax', 'domAbatement', 'previous', 'gmr', 'ratePercent'],
           e.target.value === '' ? null : Number(e.target.value)
         )
       }
@@ -880,10 +885,10 @@ export default function SettingsImpots() {
     <label>Guadeloupe / Martinique / Réunion — Plafond</label>
     <input
       type="number"
-      value={numberOrEmpty(incomeTax.domAbatement?.gmr?.cap)}
+      value={numberOrEmpty(incomeTax?.domAbatement?.previous?.gmr?.cap)}
       onChange={(e) =>
         updateField(
-          ['incomeTax', 'domAbatement', 'gmr', 'cap'],
+          ['incomeTax', 'domAbatement', 'previous', 'gmr', 'cap'],
           e.target.value === '' ? null : Number(e.target.value)
         )
       }
@@ -897,10 +902,10 @@ export default function SettingsImpots() {
     <input
       type="number"
       step="0.01"
-      value={numberOrEmpty(incomeTax.domAbatement?.guyane?.rate)}
+      value={numberOrEmpty(incomeTax?.domAbatement?.previous?.guyane?.ratePercent)}
       onChange={(e) =>
         updateField(
-          ['incomeTax', 'domAbatement', 'guyane', 'rate'],
+          ['incomeTax', 'domAbatement', 'previous', 'guyane', 'ratePercent'],
           e.target.value === '' ? null : Number(e.target.value)
         )
       }
@@ -913,10 +918,10 @@ export default function SettingsImpots() {
     <label>Guyane / Mayotte — Plafond</label>
     <input
       type="number"
-      value={numberOrEmpty(incomeTax.domAbatement?.guyane?.cap)}
+      value={numberOrEmpty(incomeTax?.domAbatement?.previous?.guyane?.cap)}
       onChange={(e) =>
         updateField(
-          ['incomeTax', 'domAbatement', 'guyane', 'cap'],
+          ['incomeTax', 'domAbatement', 'previous', 'guyane', 'cap'],
           e.target.value === '' ? null : Number(e.target.value)
         )
       }
@@ -925,6 +930,7 @@ export default function SettingsImpots() {
     <span>€</span>
   </div>
 </div>
+
 
                 {/* 2. Décote */}
 <div className="income-tax-block">
