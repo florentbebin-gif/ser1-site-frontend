@@ -961,10 +961,11 @@ const result = useMemo(
 
 
 
-  const yearLabel =
-    yearKey === 'current'
-      ? 'Barème 2025 (revenus 2024)'
-      : 'Barème 2024 (revenus 2023)';
+const yearLabel =
+  yearKey === 'current'
+    ? `Barème ${taxSettings?.incomeTax?.currentYearLabel || ''}`.trim()
+    : `Barème ${taxSettings?.incomeTax?.previousYearLabel || ''}`.trim();
+
   const tmiScale =
   yearKey === 'current'
     ? taxSettings?.incomeTax?.scaleCurrent || []
