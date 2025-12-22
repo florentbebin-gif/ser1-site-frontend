@@ -489,13 +489,6 @@ const totalIncomeD2 = isCouple
   }
 
 
-    if (rate > 0) {
-      const raw = irAfterQf * (rate / 100);
-      domAbatementAmount = cap > 0 ? Math.min(raw, cap) : raw;
-      domAbatementAmount = Math.max(0, domAbatementAmount);
-    }
-  }
-
   // On remplace la base d'impôt "avant décote/crédits" par l'impôt après abattement DOM
   // (car la décote se calcule ensuite sur cette base).
   irBrutFoyer = Math.max(0, irAfterQf - domAbatementAmount);
@@ -593,11 +586,11 @@ const bracketsDetailsDisplay = tmiComputedForDisplay.bracketsDetails || [];
 
   if (tmiRateDisplay > 0) {
     // 1) "Montant des revenus dans cette TMI"
-    if (decote > 0 && decoteRate > 0 &&  > 0 && !qfIsCapped) {
+    if (decote > 0 && decoteRate > 0 && irBrutFoyer > 0 && !qfIsCapped) {
       // cas décote (on garde ta logique précédente), uniquement quand pas de plafonnement QF bloquant
       const tmiFactor =
         (tmiRateDisplay / 100) * (1 + decoteRate / 100);
-      tmiBaseGlobal = tmiFactor > 0 ?  / tmiFactor : 0;
+      tmiBaseGlobal = tmiFactor > 0 ? decote / tmiFactor : 0;
     } else {
       // cas général (dont plafonnement QF actif) : base dans la tranche * partsForTmi
       tmiBaseGlobal = tmiBasePerPartDisplay * partsForTmi;
@@ -611,7 +604,7 @@ const bracketsDetailsDisplay = tmiComputedForDisplay.bracketsDetails || [];
   }
 
 
-  const totalTax =  + pfuIr + cehr + cdhr + psTotal;
+const totalTax = irNet + pfuIr + cehr + cdhr + psTotal;
 
   return {
     totalIncome,
