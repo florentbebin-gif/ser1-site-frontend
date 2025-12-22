@@ -510,10 +510,6 @@ if (location === 'gmr' || location === 'guyane') {
   // IR net après crédits et décote (c'est ce qu'on appellera "Impôt sur le revenu")
   const irNet = Math.max(0, irBrutFoyer - creditsTotal - decote);
 
-  // PAS (estimation) : impôt sur le revenu / revenu imposable (barème)
-  const pasRate =
-    taxableIncome > 0 ? (irNet / taxableIncome) * 100 : 0;
-
   // PFU 12,8 % sur les revenus de capitaux mobiliers en option PFU
   let pfuIr = 0;
   if (capitalBasePfu > 0) {
@@ -622,7 +618,6 @@ const totalTax = irNet + pfuIr + cehr + cdhr + psTotal;
 
     // IR & composantes
     irNet,
-    pasRate,
     pfuIr,
     cehr,
     cehrDetails,
@@ -1694,10 +1689,6 @@ setParts(0);
                   {result ? euro0(result.irNet || 0) : '-'}
                 </span>
               </div>
-              <div className="ir-tmi-row">
-  <span>Taux PAS estimatif (taux foyer)</span>
-  <span>{result ? `${(result.pasRate || 0).toFixed(1)} %` : '-'}</span>
-</div>
 
             </div>
 
