@@ -960,11 +960,11 @@ const result = useMemo(
 );
 
 
-
 const yearLabel =
   yearKey === 'current'
-    ? `Barème ${taxSettings?.incomeTax?.currentYearLabel || ''}`.trim()
-    : `Barème ${taxSettings?.incomeTax?.previousYearLabel || ''}`.trim();
+    ? (taxSettings?.incomeTax?.currentYearLabel || '')
+    : (taxSettings?.incomeTax?.previousYearLabel || '');
+
 
   const tmiScale =
   yearKey === 'current'
@@ -1140,8 +1140,12 @@ const yearLabel =
             <div className="ir-field">
               <label>Barème</label>
               <select value={yearKey} onChange={(e) => setYearKey(e.target.value)}>
-                <option value="current">Barème 2025 (revenus 2024)</option>
-                <option value="previous">Barème 2024 (revenus 2023)</option>
+<option value="current">
+  {taxSettings?.incomeTax?.currentYearLabel || 'Année N'}
+</option>
+<option value="previous">
+  {taxSettings?.incomeTax?.previousYearLabel || 'Année N-1'}
+</option>
               </select>
             </div>
 
