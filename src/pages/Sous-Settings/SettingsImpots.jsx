@@ -1117,6 +1117,172 @@ export default function SettingsImpots() {
             </div>
           </div>
         </section>
+{/* Abattement DOM sur l'IR (barème) */}
+<section>
+  <h3>Abattement DOM sur l’IR (barème)</h3>
+  <p style={{ fontSize: 13, color: '#555', marginBottom: 8 }}>
+    Appliqué sur l’impôt issu du barème <strong>après plafonnement du quotient familial</strong> et
+    <strong> avant</strong> décote + réductions/crédits.
+  </p>
+
+  <div className="income-tax-columns">
+    {/* Colonne CURRENT */}
+    <div className="income-tax-col">
+      <div style={{ fontWeight: 700, marginBottom: 8 }}>
+        {incomeTax.currentYearLabel || 'Année N'}
+      </div>
+
+      <table className="settings-table">
+        <thead>
+          <tr>
+            <th>Zone</th>
+            <th className="taux-col">Taux %</th>
+            <th>Plafond €</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Guadeloupe / Martinique / Réunion</td>
+            <td className="taux-col">
+              <input
+                type="number"
+                value={numberOrEmpty(incomeTax?.domAbatement?.current?.gmr?.ratePercent)}
+                onChange={(e) =>
+                  updateField(
+                    ['incomeTax', 'domAbatement', 'current', 'gmr', 'ratePercent'],
+                    e.target.value === '' ? '' : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                value={numberOrEmpty(incomeTax?.domAbatement?.current?.gmr?.cap)}
+                onChange={(e) =>
+                  updateField(
+                    ['incomeTax', 'domAbatement', 'current', 'gmr', 'cap'],
+                    e.target.value === '' ? '' : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Guyane / Mayotte</td>
+            <td className="taux-col">
+              <input
+                type="number"
+                value={numberOrEmpty(incomeTax?.domAbatement?.current?.guyane?.ratePercent)}
+                onChange={(e) =>
+                  updateField(
+                    ['incomeTax', 'domAbatement', 'current', 'guyane', 'ratePercent'],
+                    e.target.value === '' ? '' : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                value={numberOrEmpty(incomeTax?.domAbatement?.current?.guyane?.cap)}
+                onChange={(e) =>
+                  updateField(
+                    ['incomeTax', 'domAbatement', 'current', 'guyane', 'cap'],
+                    e.target.value === '' ? '' : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    {/* Colonne PREVIOUS */}
+    <div className="income-tax-col">
+      <div style={{ fontWeight: 700, marginBottom: 8 }}>
+        {incomeTax.previousYearLabel || 'Année N-1'}
+      </div>
+
+      <table className="settings-table">
+        <thead>
+          <tr>
+            <th>Zone</th>
+            <th className="taux-col">Taux %</th>
+            <th>Plafond €</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Guadeloupe / Martinique / Réunion</td>
+            <td className="taux-col">
+              <input
+                type="number"
+                value={numberOrEmpty(incomeTax?.domAbatement?.previous?.gmr?.ratePercent)}
+                onChange={(e) =>
+                  updateField(
+                    ['incomeTax', 'domAbatement', 'previous', 'gmr', 'ratePercent'],
+                    e.target.value === '' ? '' : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                value={numberOrEmpty(incomeTax?.domAbatement?.previous?.gmr?.cap)}
+                onChange={(e) =>
+                  updateField(
+                    ['incomeTax', 'domAbatement', 'previous', 'gmr', 'cap'],
+                    e.target.value === '' ? '' : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+            </td>
+          </tr>
+
+          <tr>
+            <td>Guyane / Mayotte</td>
+            <td className="taux-col">
+              <input
+                type="number"
+                value={numberOrEmpty(incomeTax?.domAbatement?.previous?.guyane?.ratePercent)}
+                onChange={(e) =>
+                  updateField(
+                    ['incomeTax', 'domAbatement', 'previous', 'guyane', 'ratePercent'],
+                    e.target.value === '' ? '' : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                value={numberOrEmpty(incomeTax?.domAbatement?.previous?.guyane?.cap)}
+                onChange={(e) =>
+                  updateField(
+                    ['incomeTax', 'domAbatement', 'previous', 'guyane', 'cap'],
+                    e.target.value === '' ? '' : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
 
           {/* 2. PFU */}
