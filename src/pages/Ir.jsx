@@ -475,20 +475,18 @@ const totalIncomeD2 = isCouple
   const bicTotalFoyer =
     (incomes.d1.bic || 0) + (isCouple ? (incomes.d2.bic || 0) : 0);
 
-  if ((location === 'gmr' || location === 'guyane') && bicTotalFoyer > 0) {
-    // Supabase : domAbatement.gmr / domAbatement.guyane (pas de current/previous)
-    const domCfg = location === 'gmr' ? domCfgRoot.gmr : domCfgRoot.guyane;
-    const rate = Number(domCfg?.rate || 0); // <-- chez toi c'est "rate"
-    const cap = Number(domCfg?.cap || 0);
+if (location === 'gmr' || location === 'guyane') {
+  const domCfg = location === 'gmr' ? domCfgRoot.gmr : domCfgRoot.guyane;
+  const rate = Number(domCfg?.rate || 0);
+  const cap = Number(domCfg?.cap || 0);
 
-    if (rate > 0) {
-      const raw = irAfterQf * (rate / 100);
-      domAbatementAmount = cap > 0 ? Math.min(raw, cap) : raw;
-      domAbatementAmount = Math.max(0, domAbatementAmount);
-    }
+  if (rate > 0) {
+    const raw = irAfterQf * (rate / 100);
+    domAbatementAmount = cap > 0 ? Math.min(raw, cap) : raw;
+    domAbatementAmount = Math.max(0, domAbatementAmount);
   }
-
-
+}
+  
   // On remplace la base d'impôt "avant décote/crédits" par l'impôt après abattement DOM
   // (car la décote se calcule ensuite sur cette base).
   irBrutFoyer = Math.max(0, irAfterQf - domAbatementAmount);
