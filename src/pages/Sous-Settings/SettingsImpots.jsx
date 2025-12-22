@@ -60,18 +60,10 @@ const DEFAULT_TAX_SETTINGS = {
       retireesCurrent: { plafond: 4399, plancher: 450 },
       retireesPrevious: { plafond: 4321, plancher: 442 },
     },
-        domAbatement: {
-      // Réduction DOM (CGI art. 197) appliquée sur l'impôt issu du barème
-      // après plafonnement du quotient familial et avant décote + réductions/crédits.
-      current: {
-        gmr: { ratePercent: 30, cap: 2450 },     // Guadeloupe / Martinique / Réunion
-        guyane: { ratePercent: 40, cap: 4050 },  // Guyane (et Mayotte)
-      },
-      previous: {
-        gmr: { ratePercent: 30, cap: 2450 },
-        guyane: { ratePercent: 40, cap: 4050 },
-      },
-    },
+domAbatement: {
+  gmr: { rate: 30, cap: 2450 },     // Guadeloupe / Martinique / Réunion
+  guyane: { rate: 40, cap: 4050 },  // Guyane (et Mayotte)
+},
 
   },
   pfu: {
@@ -319,9 +311,20 @@ export default function SettingsImpots() {
           <div className="income-tax-columns">
             {/* Colonne 2025 / revenus 2024 */}
             <div className="income-tax-col">
-              <div style={{ fontWeight: 600, marginBottom: 6 }}>
-                Barème {incomeTax.currentYearLabel}
-              </div>
+<div className="settings-field-row" style={{ marginBottom: 10 }}>
+  <label style={{ fontWeight: 600 }}>Barème</label>
+  <input
+    type="text"
+    value={incomeTax.currentYearLabel || ''}
+    onChange={(e) =>
+      updateField(['incomeTax', 'currentYearLabel'], e.target.value)
+    }
+    disabled={!isAdmin}
+    style={{ width: 220, textAlign: 'left' }}
+    placeholder="Ex: 2026 (revenus 2025)"
+  />
+</div>
+
 
               {/* Tableau barème 2025 */}
               <table className="settings-table">
@@ -390,25 +393,7 @@ export default function SettingsImpots() {
                         />
                       </td>
 
-                      <td>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={numberOrEmpty(row.deduction)}
-                          onChange={(e) =>
-                            updateIncomeScale(
-                              'scaleCurrent',
-                              idx,
-                              'deduction',
-                              e.target.value === ''
-                                ? null
-                                : Number(e.target.value)
-                            )
-                          }
-                          disabled={!isAdmin}
-                        />
-                      </td>
-                    </tr>
+                   </tr>
                   ))}
                 </tbody>
               </table>
@@ -458,6 +443,77 @@ export default function SettingsImpots() {
           e.target.value === ''
             ? null
             : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+</div>
+
+                {/* 2. Abattement DOM (CGI art. 197) */}
+<div className="income-tax-block">
+  <div className="income-tax-block-title">Abattement DOM (sur IR barème)</div>
+
+  <div className="settings-field-row">
+    <label>Guadeloupe / Martinique / Réunion — Taux</label>
+    <input
+      type="number"
+      step="0.01"
+      value={numberOrEmpty(incomeTax.domAbatement?.gmr?.rate)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'domAbatement', 'gmr', 'rate'],
+          e.target.value === '' ? null : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>%</span>
+  </div>
+
+  <div className="settings-field-row">
+    <label>Guadeloupe / Martinique / Réunion — Plafond</label>
+    <input
+      type="number"
+      value={numberOrEmpty(incomeTax.domAbatement?.gmr?.cap)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'domAbatement', 'gmr', 'cap'],
+          e.target.value === '' ? null : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>€</span>
+  </div>
+
+  <div className="settings-field-row">
+    <label>Guyane / Mayotte — Taux</label>
+    <input
+      type="number"
+      step="0.01"
+      value={numberOrEmpty(incomeTax.domAbatement?.guyane?.rate)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'domAbatement', 'guyane', 'rate'],
+          e.target.value === '' ? null : Number(e.target.value)
+        )
+      }
+      disabled={!isAdmin}
+    />
+    <span>%</span>
+  </div>
+
+  <div className="settings-field-row">
+    <label>Guyane / Mayotte — Plafond</label>
+    <input
+      type="number"
+      value={numberOrEmpty(incomeTax.domAbatement?.guyane?.cap)}
+      onChange={(e) =>
+        updateField(
+          ['incomeTax', 'domAbatement', 'guyane', 'cap'],
+          e.target.value === '' ? null : Number(e.target.value)
         )
       }
       disabled={!isAdmin}
@@ -654,19 +710,30 @@ export default function SettingsImpots() {
 
             {/* Colonne 2024 / revenus 2023 */}
             <div className="income-tax-col income-tax-col-right">
-              <div style={{ fontWeight: 600, marginBottom: 6 }}>
-                Barème {incomeTax.previousYearLabel}
-              </div>
+<div className="settings-field-row" style={{ marginBottom: 10 }}>
+  <label style={{ fontWeight: 600 }}>Barème</label>
+  <input
+    type="text"
+    value={incomeTax.previousYearLabel || ''}
+    onChange={(e) =>
+      updateField(['incomeTax', 'previousYearLabel'], e.target.value)
+    }
+    disabled={!isAdmin}
+    style={{ width: 220, textAlign: 'left' }}
+    placeholder="Ex: 2025 (revenus 2024)"
+  />
+</div>
+
 
               {/* Tableau barème 2024 */}
               <table className="settings-table">
                 <thead>
-                  <tr>
-                    <th>De</th>
-                    <th>À</th>
-                    <th className="taux-col">Taux&nbsp;%</th>
-                    <th>Retraitement&nbsp;€</th>
-                  </tr>
+<tr>
+  <th>De</th>
+  <th>À</th>
+  <th className="taux-col">Taux&nbsp;%</th>
+</tr>
+
                 </thead>
 
                 <tbody>
@@ -725,24 +792,6 @@ export default function SettingsImpots() {
                         />
                       </td>
 
-                      <td>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={numberOrEmpty(row.deduction)}
-                          onChange={(e) =>
-                            updateIncomeScale(
-                              'scalePrevious',
-                              idx,
-                              'deduction',
-                              e.target.value === ''
-                                ? null
-                                : Number(e.target.value)
-                            )
-                          }
-                          disabled={!isAdmin}
-                        />
-                      </td>
                     </tr>
                   ))}
                 </tbody>
