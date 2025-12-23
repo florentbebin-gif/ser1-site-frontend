@@ -577,28 +577,41 @@ psFoncier = fonciersBase * (psRateTotal / 100);
 const bracketsDetailsDisplay = tmiComputedForDisplay.bracketsDetails || [];
 
   
-  // ---- TMI : montants associés (affichage) ----
-  let tmiBaseGlobal = 0;
-  let tmiMarginGlobal = null;
+// ---- TMI : montants associés (affichage) ----
+// Objectif : toujours cohérent, même si TMI = 0% et/ou quotient plafonné.
+let tmiBaseGlobal = 0;
+let tmiMarginGlobal = null;
 
-  if (tmiRateDisplay > 0) {
-    // 1) "Montant des revenus dans cette TMI"
-    if (decote > 0 && decoteRate > 0 && irBrutFoyer > 0 && !qfIsCapped) {
-      // cas décote (on garde ta logique précédente), uniquement quand pas de plafonnement QF bloquant
-      const tmiFactor =
-        (tmiRateDisplay / 100) * (1 + decoteRate / 100);
-      tmiBaseGlobal = tmiFactor > 0 ? decote / tmiFactor : 0;
-    } else {
-      // cas général (dont plafonnement QF actif) : base dans la tranche * partsForTmi
-      tmiBaseGlobal = tmiBasePerPartDisplay * partsForTmi;
-    }
-
-    // 2) "Montant des revenus avant changement de TMI"
-    if (tmiBracketToDisplay != null) {
-      const margeParPart = Math.max(0, tmiBracketToDisplay - taxablePerPartForTmi);
-      tmiMarginGlobal = margeParPart * partsForTmi;
-    }
+// Trouver la tranche courante (celle qui contient taxablePerPartForTmi)
+let currentBracket = null;
+for (const br of scale) {
+  const from = Number(br.from) || 0;
+  const to = br.to == null ? null : Number(br.to);
+  if (taxablePerPartForTmi <= from) continue;
+  if (to == null || taxablePerPartForTmi <= to) {
+    currentBracket = { from, to, rate: Number(br.rate) || 0 };
+    break;
   }
+}
+
+// Calculs (si revenu > 0 et tranche trouvée)
+if (taxableIncome > 0 && currentBracket) {
+  const { from, to } = currentBracket;
+
+  // 1) Montant des revenus dans cette TMI (foyer)
+  // Base dans la tranche = (revenu par part - borne basse) * parts
+  const baseInTmiPerPart = Math.max(0, taxablePerPartForTmi - from);
+  tmiBaseGlobal = baseInTmiPerPart * partsForTmi;
+
+  // 2) Montant des revenus avant changement de TMI (foyer)
+  if (to != null) {
+    const marginPerPart = Math.max(0, to - taxablePerPartForTmi);
+    tmiMarginGlobal = marginPerPart * partsForTmi;
+  } else {
+    tmiMarginGlobal = null; // dernière tranche
+  }
+}
+
 
 
 const totalTax = irNet + pfuIr + cehr + cdhr + psTotal;
