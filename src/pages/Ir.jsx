@@ -653,6 +653,25 @@ const totalTax = irNet + pfuIr + cehr + cdhr + psTotal;
     tmiBaseGlobal,
     tmiMarginGlobal,
     bracketsDetails: bracketsDetailsDisplay,
+
+
+    // DEBUG TMI
+    _dbg: {
+      basePartsForQf,
+      partsForTmi,
+      taxableIncome,
+      taxablePerPartForTmi,
+      currentBracketFrom: currentBracket?.from ?? null,
+      currentBracketTo: currentBracket?.to ?? null,
+      tmiMarginGlobal,
+      qfIsCapped,
+      qfAdvantage,
+      irBrutFoyerSansPlafond,
+      irBeforeQfBase,
+      irAfterQf,
+    },
+
+    
   };
 }
 
@@ -1725,6 +1744,17 @@ setParts(0);
                   : '—'}
               </div>
             </div>
+
+
+{result?._dbg && (
+  <pre style={{ marginTop: 10, fontSize: 11, opacity: 0.75, whiteSpace: 'pre-wrap' }}>
+    {JSON.stringify(result._dbg, null, 2)}
+  </pre>
+)}
+
+
+
+            
           </div>
 
           {result && (
