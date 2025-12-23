@@ -576,6 +576,71 @@ psFoncier = fonciersBase * (psRateTotal / 100);
   const tmiBracketToDisplay = tmiComputedForDisplay.tmiBracketTo;
 const bracketsDetailsDisplay = tmiComputedForDisplay.bracketsDetails || [];
 
+    // ---- (TMI) Helper : trouver à quel delta de base imposable le plafonnement du QF s'active ----
+  // Si l'avantage brut du QF dépasse le plafond, on bascule en qfIsCapped=true,
+  // et notre affichage TMI se base alors sur partsForTmi=basePartsForQf.
+  function isQfCappedForTaxableIncome(taxableIncomeTest) {
+    if (taxableIncomeTest <= 0) return false;
+    if (extraHalfParts <= 0 || plafondPartSup <= 0) return false; // pas de parts sup => pas de plafonnement
+
+    // IR avec toutes les parts (partsNb inchangées, même composition du foyer)
+    const perPartAll = partsNb > 0 ? taxableIncomeTest / partsNb : taxableIncomeTest;
+    const { taxPerPart: taxPerPartAll } = computeProgressiveTax(scale, perPartAll);
+    const irAllParts = taxPerPartAll * partsNb;
+
+    // IR avec parts de base (1 si célibataire, 2 si couple)
+    const perPartBase =
+      basePartsForQf > 0 ? taxableIncomeTest / basePartsForQf : taxableIncomeTest;
+    const { taxPerPart: taxPerPartBase } = computeProgressiveTax(scale, perPartBase);
+    const irBaseTest = taxPerPartBase * basePartsForQf;
+
+    // Avantage brut
+    const avantageBrut = Math.max(0, irBaseTest - irAllParts);
+
+    // Plafond max de l'avantage (même logique que ton bloc QF)
+    let maxAvantageTest = 0;
+    const isSingle = !isCouple;
+
+    if (!isIsolated || !isSingle || plafondParentIso2 <= 0) {
+      // Cas général
+      maxAvantageTest = extraParts * 2 * plafondPartSup;
+    } else {
+      // Parent isolé
+      if (partsNb <= 2) {
+        maxAvantageTest = (partsNb - 1) * plafondParentIso2;
+      } else {
+        maxAvantageTest = plafondParentIso2 + (partsNb - 2) * 2 * plafondPartSup;
+      }
+    }
+
+    return avantageBrut > maxAvantageTest + 1e-9;
+  }
+
+  function findDeltaToQfCapActivation(taxableIncomeNow) {
+    // déjà plafonné => delta 0
+    if (isQfCappedForTaxableIncome(taxableIncomeNow)) return 0;
+
+    // sinon, on cherche le plus petit delta > 0 qui active le plafonnement
+    let lo = 0;
+    let hi = 50000; // point de départ raisonnable
+
+    // élargir hi si ça n'active pas
+    while (hi < 2000000 && !isQfCappedForTaxableIncome(taxableIncomeNow + hi)) {
+      hi *= 2;
+    }
+    if (hi >= 2000000 && !isQfCappedForTaxableIncome(taxableIncomeNow + hi)) {
+      return null; // ne s'active pas dans la plage
+    }
+
+    // dichotomie à ~1€ près
+    for (let i = 0; i < 40; i++) {
+      const mid = (lo + hi) / 2;
+      if (isQfCappedForTaxableIncome(taxableIncomeNow + mid)) hi = mid;
+      else lo = mid;
+    }
+    return Math.ceil(hi);
+  }
+
   
 // ---- TMI : montants associés (affichage) ----
 // Objectif : toujours cohérent, même si TMI = 0% et/ou quotient plafonné.
@@ -604,12 +669,23 @@ if (taxableIncome > 0 && currentBracket) {
   tmiBaseGlobal = baseInTmiPerPart * partsForTmi;
 
   // 2) Montant des revenus avant changement de TMI (foyer)
-  if (to != null) {
-    const marginPerPart = Math.max(0, to - taxablePerPartForTmi);
-    tmiMarginGlobal = marginPerPart * partsForTmi;
+if (to != null) {
+  const marginPerPart = Math.max(0, to - taxablePerPartForTmi);
+  const marginToNextBracket = marginPerPart * partsForTmi;
+
+  // NOUVEAU : marge avant activation du plafonnement du quotient familial
+  // (si le plafonnement s'active avant la prochaine tranche, la TMI affichée change avant)
+  const deltaToQfCap = findDeltaToQfCapActivation(taxableIncome);
+
+  if (deltaToQfCap != null) {
+    tmiMarginGlobal = Math.min(marginToNextBracket, deltaToQfCap);
   } else {
-    tmiMarginGlobal = null; // dernière tranche
+    tmiMarginGlobal = marginToNextBracket;
   }
+} else {
+  tmiMarginGlobal = null; // dernière tranche
+}
+
 }
 
 
