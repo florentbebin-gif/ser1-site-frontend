@@ -474,8 +474,6 @@ const domCfgRoot = incomeTaxCfg.domAbatement || {};
 const domYearCfg =
   yearKey === 'current' ? domCfgRoot.current || {} : domCfgRoot.previous || {};
 
-const bicTotalFoyer =
-  (incomes.d1.bic || 0) + (isCouple ? (incomes.d2.bic || 0) : 0);
 
 // Abattement DOM : uniquement si résidence DOM + revenus BIC (comme la règle prévue)
 if (location === 'gmr' || location === 'guyane') {
@@ -1964,8 +1962,9 @@ setParts(0);
 <div className="ir-disclaimer">
   <p>
     Le simulateur ne prend pas en compte certaines situations particulières (enfants
-    majeurs rattachés, pensions complexes, fiscalité étrangère, transfert de domicile en cours d'année, ...). Ces situations peuvent
-    nécessiter une analyse personnalisée.
+    majeurs rattachés, pensions complexes, fiscalité étrangère, transfert de domicile en cours d'année, ...).
+    <br />
+    Ces situations peuvent nécessiter une analyse personnalisée.
   </p>
 </div>
 
