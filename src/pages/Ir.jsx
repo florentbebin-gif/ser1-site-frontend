@@ -478,7 +478,7 @@ const bicTotalFoyer =
   (incomes.d1.bic || 0) + (isCouple ? (incomes.d2.bic || 0) : 0);
 
 // Abattement DOM : uniquement si résidence DOM + revenus BIC (comme la règle prévue)
-if ((location === 'gmr' || location === 'guyane') && bicTotalFoyer > 0) {
+if (location === 'gmr' || location === 'guyane') {
   const domCfg = location === 'gmr' ? domYearCfg.gmr : domYearCfg.guyane;
 
   // Dans Supabase tu as "ratePercent"
@@ -1964,7 +1964,7 @@ setParts(0);
 <div className="ir-disclaimer">
   <p>
     Le simulateur ne prend pas en compte certaines situations particulières (enfants
-    majeurs rattachés, pensions complexes, fiscalité étrangère). Ces situations peuvent
+    majeurs rattachés, pensions complexes, fiscalité étrangère, transfert de domicile en cours d'année, ...). Ces situations peuvent
     nécessiter une analyse personnalisée.
   </p>
 </div>
