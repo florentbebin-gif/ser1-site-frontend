@@ -73,7 +73,7 @@ const DEFAULT_FISCALITY_SETTINGS = {
           versements: { irMode: "bareme", note: "Part versements déduits : imposable au barème IR (sans abattement)." },
           gains: { mode: "pfu", note: "Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible." },
         },
-        nonDeduIts: {
+        nonDeduits: {
           versements: { irMode: "exonere", note: "Part versements non déduits : exonérée d'IR." },
           gains: { mode: "pfu", note: "Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible." },
         },
@@ -82,7 +82,7 @@ const DEFAULT_FISCALITY_SETTINGS = {
       anticipation: {
         achatRP: {
           deduits: { versementsIR: "bareme", gains: "pfu" },
-          nonDeduIts: { versementsIR: "exonere", gains: "pfu" },
+          nonDeduits: { versementsIR: "exonere", gains: "pfu" },
           note: "Déblocage anticipé pour achat de résidence principale : logique proche de la sortie à la retraite.",
         },
         accidentsDeLaVie: {
@@ -125,7 +125,7 @@ const DEFAULT_FISCALITY_SETTINGS = {
         note: "Rente issue de versements déduits : assimilée à pension (abattement 10% plafonné).",
       },
 
-      nonDeduIts: {
+      nonDeduits: {
         irMode: "rvto",
         taxableFractionByAgeAtFirstPayment: [
           { label: "< 50 ans", ageMaxInclusive: 49, fraction: 0.7 },
@@ -273,7 +273,7 @@ const PRODUCTS = [
 
   const av = settings.assuranceVie;
   const passHistory = settings.passHistory || [];
-  const per = settings.perIndividuel;
+  const per = settings.perIndividuel || DEFAULT_FISCALITY_SETTINGS.perIndividuel;
 
 
   // ---------------------------------------------
@@ -1537,8 +1537,8 @@ const handleSave = async () => {
 
           <div className="income-tax-block">
             <div className="income-tax-block-title">Retraite</div>
-            <div style={{ fontSize: 13, color: '#555' }}>{per.sortieCapital.retraite.deduIts.versements.note}</div>
-            <div style={{ fontSize: 13, color: '#555', marginTop: 6 }}>{per.sortieCapital.retraite.deduIts.gains.note}</div>
+            <div style={{ fontSize: 13, color: '#555' }}>{per.sortieCapital.retraite.deduits.versements.note}</div>
+            <div style={{ fontSize: 13, color: '#555', marginTop: 6 }}>{per.sortieCapital.retraite.deduits.gains.note}</div>
           </div>
 
           <div className="income-tax-block">
@@ -1553,8 +1553,8 @@ const handleSave = async () => {
 
           <div className="income-tax-block">
             <div className="income-tax-block-title">Retraite</div>
-            <div style={{ fontSize: 13, color: '#555' }}>{per.sortieCapital.retraite.nonDeduIts.versements.note}</div>
-            <div style={{ fontSize: 13, color: '#555', marginTop: 6 }}>{per.sortieCapital.retraite.nonDeduIts.gains.note}</div>
+            <div style={{ fontSize: 13, color: '#555' }}>{per.sortieCapital.retraite.nonDeduits.versements.note}</div>
+            <div style={{ fontSize: 13, color: '#555', marginTop: 6 }}>{per.sortieCapital.retraite.nonDeduits.gains.note}</div>
           </div>
 
           <div className="income-tax-block">
@@ -1699,7 +1699,7 @@ const handleSave = async () => {
             <input
               type="number"
               step="0.1"
-              value={numberOrEmpty(per.rente.deduIts.abattementPercent)}
+              value={numberOrEmpty(per.rente.deduits.abattementPercent)}
               onChange={(e) =>
                 updateField(['perIndividuel','rente','deduIts','abattementPercent'], e.target.value === '' ? null : Number(e.target.value))
               }
@@ -1710,7 +1710,7 @@ const handleSave = async () => {
 
           <input
             type="text"
-            value={textOrEmpty(per.rente.deduIts.note)}
+            value={textOrEmpty(per.rente.deduits.note)}
             onChange={(e) => updateField(['perIndividuel','rente','deduIts','note'], e.target.value)}
             disabled={!isAdmin}
             style={{ width: 720, textAlign: 'left' }}
@@ -1728,7 +1728,7 @@ const handleSave = async () => {
               </tr>
             </thead>
             <tbody>
-              {per.rente.nonDeduIts.taxableFractionByAgeAtFirstPayment.map((row, idx) => (
+              {per.rente.nonDeduits.taxableFractionByAgeAtFirstPayment.map((row, idx) => (
                 <tr key={idx}>
                   <td style={{ textAlign: 'left' }}>{row.label}</td>
                   <td className="taux-col">
@@ -1737,7 +1737,7 @@ const handleSave = async () => {
                       step="0.01"
                       value={numberOrEmpty(row.fraction)}
                       onChange={(e) =>
-                        updateField(['perIndividuel','rente','nonDeduIts','taxableFractionByAgeAtFirstPayment', idx, 'fraction'], e.target.value === '' ? null : Number(e.target.value))
+                        updateField(['perIndividuel','rente','nonDeduits','taxableFractionByAgeAtFirstPayment', idx, 'fraction'], e.target.value === '' ? null : Number(e.target.value))
                       }
                       disabled={!isAdmin}
                     />
@@ -1751,8 +1751,8 @@ const handleSave = async () => {
             <label>Note</label>
             <input
               type="text"
-              value={textOrEmpty(per.rente.nonDeduIts.note)}
-              onChange={(e) => updateField(['perIndividuel','rente','nonDeduIts','note'], e.target.value)}
+              value={textOrEmpty(per.rente.nonDeduits.note)}
+              onChange={(e) => updateField(['perIndividuel','rente','nonDeduits','note'], e.target.value)}
               disabled={!isAdmin}
               style={{ width: 520, textAlign: 'left' }}
             />
