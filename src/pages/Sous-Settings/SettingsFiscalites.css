@@ -5,8 +5,8 @@
 
 /* Séparation douce entre sections */
 .settings-page .section-card section {
-  margin-top: 18px;
-  padding-top: 6px;
+  margin-top: 10px;
+  padding-top: 4px;
   border-top: 1px solid #eee;
 }
 
@@ -158,4 +158,17 @@
   border-radius: 6px;
   border: 1px solid #ccc;
   font-size: 13px;
+}
+/* Titre produit (grand) */
+.fisc-product-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 6px 0 10px;
+}
+
+/* Titres de sections (compact) */
+.fisc-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 12px 0 6px;
 }
