@@ -323,8 +323,60 @@ const PRODUCTS = [
           .eq('id', 1);
 
         if (!err && rows && rows.length > 0 && rows[0].data) {
-          setSettings((prev) => ({ ...prev, ...rows[0].data }));
-        } else if (err && err.code !== 'PGRST116') {
+  const db = rows[0].data;
+
+  setSettings((prev) => ({
+    ...prev,
+    ...db,
+
+    // merge profond ciblé PER (évite écrasement de la structure par un jsonb partiel)
+    perIndividuel: {
+      ...DEFAULT_FISCALITY_SETTINGS.perIndividuel,
+      ...(db.perIndividuel || {}),
+      epargne: {
+        ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.epargne,
+        ...(db.perIndividuel?.epargne || {}),
+      },
+      sortieCapital: {
+        ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital,
+        ...(db.perIndividuel?.sortieCapital || {}),
+      },
+      deces: {
+        ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.deces,
+        ...(db.perIndividuel?.deces || {}),
+      },
+      rente: {
+        ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente,
+        ...(db.perIndividuel?.rente || {}),
+        deduits: {
+          ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits,
+          ...(db.perIndividuel?.rente?.deduits || {}),
+          capitalQuotePart: {
+            ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.capitalQuotePart,
+            ...(db.perIndividuel?.rente?.deduits?.capitalQuotePart || {}),
+          },
+          interestsQuotePart: {
+            ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.interestsQuotePart,
+            ...(db.perIndividuel?.rente?.deduits?.interestsQuotePart || {}),
+          },
+        },
+        nonDeduits: {
+          ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.nonDeduits,
+          ...(db.perIndividuel?.rente?.nonDeduits || {}),
+        },
+        rvtoTaxableFractionByAgeAtFirstPayment:
+          db.perIndividuel?.rente?.rvtoTaxableFractionByAgeAtFirstPayment ||
+          DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
+      },
+    },
+
+    // PASS aussi : merge “safe”
+    passHistory: Array.isArray(db.passHistory)
+      ? db.passHistory
+      : DEFAULT_FISCALITY_SETTINGS.passHistory,
+  }));
+}
+ else if (err && err.code !== 'PGRST116') {
           console.error('Erreur chargement fiscality_settings :', err);
         }
 
