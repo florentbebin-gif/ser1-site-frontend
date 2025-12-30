@@ -9,6 +9,135 @@ import './SettingsFiscalites.css';
 // (taux/abattements/seuils/dates) pour alimenter les simulateurs.
 // ------------------------------------------------------------
 const DEFAULT_FISCALITY_SETTINGS = {
+  passHistory: [
+    { year: 2019, amount: 40524 },
+    { year: 2020, amount: 41136 },
+    { year: 2021, amount: 41136 },
+    { year: 2022, amount: 41136 },
+    { year: 2023, amount: 43992 },
+    { year: 2024, amount: 46368 },
+    { year: 2025, amount: 47100 },
+    { year: 2026, amount: 48060 },
+  ],
+
+  perIndividuel: {
+    epargne: {
+      // Références plafonds (tu feras le calcul dans les simulateurs)
+      plafond163Quatervicies: {
+        ratePercent: 10,
+        base: "revenu imposable après abattement 10% (frais pro éventuels)",
+        minPassMultiple: 1,
+        maxPassMultiple: 8,
+        note:
+          "Plafond = 10% des revenus imposables (après abattement 10% si applicable). Minimum = 10% d'1 PASS, maximum = 10% de 8 PASS.",
+      },
+
+      plafond154Bis: {
+        // Le but est de stocker les règles + PASS multiples, pas de calculer ici
+        assiettePotentielle: {
+          base:
+            "assiette sociale (revenu imposable majoré des cotisations facultatives)",
+          part15: {
+            ratePercent: 15,
+            base: "revenus - 1 PASS",
+            maxPassMultiple: 8,
+          },
+          part10: {
+            ratePercent: 10,
+            base:
+              "revenus (après abattement 10% si applicable) - composante plancher/plafond",
+            minPassMultiple: 1,
+            maxPassMultiple: 8,
+          },
+        },
+        assietteReportDeclaration: {
+          base:
+            "recalcul sur revenu imposable (après abattement 10% si applicable) : on reporte uniquement le dépassement de l'enveloppe 15%",
+          note:
+            "Assiette report = dépassement de l'enveloppe 15%, recalculé sur l'assiette 'revenu imposable après abattement 10%'.",
+        },
+        note:
+          "Plafond 'Madelin' (154 bis) : 15% des revenus - 1 PASS (max 8 PASS) + 10% des revenus (max 8 PASS avec mini 10% PASS).",
+      },
+    },
+
+    sortieCapital: {
+      pfu: {
+        irRatePercent: 12.8,
+        psRatePercent: 17.2,
+        allowBaremeIR: true,
+      },
+
+      retraite: {
+        deduits: {
+          versements: { irMode: "bareme", note: "Part versements déduits : imposable au barème IR (sans abattement)." },
+          gains: { mode: "pfu", note: "Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible." },
+        },
+        nonDeduIts: {
+          versements: { irMode: "exonere", note: "Part versements non déduits : exonérée d'IR." },
+          gains: { mode: "pfu", note: "Part gains : PFU (12,8% + 17,2%) par défaut, option barème pour la part IR possible." },
+        },
+      },
+
+      anticipation: {
+        achatRP: {
+          deduits: { versementsIR: "bareme", gains: "pfu" },
+          nonDeduIts: { versementsIR: "exonere", gains: "pfu" },
+          note: "Déblocage anticipé pour achat de résidence principale : logique proche de la sortie à la retraite.",
+        },
+        accidentsDeLaVie: {
+          note:
+            "Déblocages anticipés 'accidents de la vie' : traitement fiscal à gérer au cas par cas (règles spécifiques, souvent exonérations).",
+        },
+      },
+    },
+
+    deces: {
+      perAssurantiel: {
+        // Présentation « logique CGP » : seuil total 852 500 = 152 500 + 700 000
+        allowancePerBeneficiary: 152500,
+        displayThresholdTotal: 852500,
+        taxableThresholdPart: 700000,
+        rates: [
+          { upToTotal: 852500, ratePercent: 20 },
+          { upToTotal: null, ratePercent: 31.25 },
+        ],
+        apres70ans: {
+          globalAllowance: 30500,
+          mode: "dmtg",
+          note: "Au-delà : DMTG (barème succession).",
+        },
+        note: "PER assurantiel : transmission alignée assurance-vie (990 I / 757 B).",
+      },
+
+      perBancaire: {
+        mode: "succession",
+        note: "PER bancaire : intégration à l'actif successoral (DMTG barème succession).",
+      },
+    },
+
+    rente: {
+      psRatePercent: 17.2,
+
+      deduits: {
+        irMode: "pension",
+        abattementPercent: 10,
+        note: "Rente issue de versements déduits : assimilée à pension (abattement 10% plafonné).",
+      },
+
+      nonDeduIts: {
+        irMode: "rvto",
+        taxableFractionByAgeAtFirstPayment: [
+          { label: "< 50 ans", ageMaxInclusive: 49, fraction: 0.7 },
+          { label: "50 à 59 ans", ageMaxInclusive: 59, fraction: 0.5 },
+          { label: "60 à 69 ans", ageMaxInclusive: 69, fraction: 0.4 },
+          { label: "≥ 70 ans", ageMaxInclusive: null, fraction: 0.3 },
+        ],
+        note: "Rente issue de versements non déduits : RVTO (fraction imposable selon âge).",
+      },
+    },
+  },
+  
   assuranceVie: {
 
     // 1) Phase d’épargne
@@ -130,8 +259,8 @@ export default function SettingsFiscalites() {
 
 const PRODUCTS = [
   { key: 'assuranceVie', label: 'Assurance vie' },
+  { key: 'perIndividuel', label: 'PER individuel' },
   // Plus tard :
-  // { key: 'perIndividuel', label: 'PER individuel' },
   // { key: 'cto', label: 'Compte-titres (CTO)' },
   // { key: 'pea', label: 'PEA' },
 ];
@@ -143,6 +272,9 @@ const PRODUCTS = [
       user?.user_metadata?.is_admin === true);
 
   const av = settings.assuranceVie;
+  const passHistory = settings.passHistory || [];
+  const per = settings.perIndividuel;
+
 
   // ---------------------------------------------
   // Chargement user + paramètres depuis Supabase
@@ -286,6 +418,54 @@ const PRODUCTS = [
 <div className="tax-user-banner">
   <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {roleLabel}
 </div>
+
+          <section>
+  <h4 className="fisc-section-title">Historique du PASS (8 dernières valeurs)</h4>
+
+  <div className="income-tax-block">
+    <div className="income-tax-block-title">Année & montant</div>
+
+    <table className="settings-table">
+      <thead>
+        <tr>
+          <th>Année</th>
+          <th className="taux-col">PASS</th>
+        </tr>
+      </thead>
+      <tbody>
+        {passHistory.map((row, idx) => (
+          <tr key={idx}>
+            <td style={{ textAlign: 'left' }}>
+              <input
+                type="number"
+                value={numberOrEmpty(row.year)}
+                onChange={(e) =>
+                  updateField(['passHistory', idx, 'year'], e.target.value === '' ? null : Number(e.target.value))
+                }
+                disabled={!isAdmin}
+                style={{ width: 110, textAlign: 'left' }}
+              />
+            </td>
+            <td className="taux-col">
+              <input
+                type="number"
+                value={numberOrEmpty(row.amount)}
+                onChange={(e) =>
+                  updateField(['passHistory', idx, 'amount'], e.target.value === '' ? null : Number(e.target.value))
+                }
+                disabled={!isAdmin}
+              />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    <div style={{ fontSize: 12, color: '#666', marginTop: 6 }}>
+      Ordre obligatoire : du plus ancien au plus récent (contrôle à l’enregistrement).
+    </div>
+  </div>
+</section>
 
 
 {/* Accordéon produits */}
@@ -1112,9 +1292,454 @@ const PRODUCTS = [
               </>
             )}
 
-            {p.key !== 'assuranceVie' && (
-              <div style={{ fontSize: 13, color: '#666' }}>Paramètres à venir.</div>
-            )}
+{p.key === 'perIndividuel' && (
+  <>
+    {/* 1) Phase d'épargne */}
+    <section>
+      <h4 className="fisc-section-title">Phase d’épargne</h4>
+
+      <div className="fisc-two-cols">
+        <div className="fisc-col">
+          <div className="income-tax-block">
+            <div className="income-tax-block-title">Plafond 163 quatervicies</div>
+
+            <div className="settings-field-row">
+              <label>Taux</label>
+              <input
+                type="number"
+                step="0.1"
+                value={numberOrEmpty(per.epargne.plafond163Quatervicies.ratePercent)}
+                onChange={(e) =>
+                  updateField(
+                    ['perIndividuel', 'epargne', 'plafond163Quatervicies', 'ratePercent'],
+                    e.target.value === '' ? null : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+              <span>%</span>
+            </div>
+
+            <div className="settings-field-row">
+              <label>Mini</label>
+              <input
+                type="number"
+                value={numberOrEmpty(per.epargne.plafond163Quatervicies.minPassMultiple)}
+                onChange={(e) =>
+                  updateField(
+                    ['perIndividuel', 'epargne', 'plafond163Quatervicies', 'minPassMultiple'],
+                    e.target.value === '' ? null : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+              <span>x PASS</span>
+            </div>
+
+            <div className="settings-field-row">
+              <label>Maxi</label>
+              <input
+                type="number"
+                value={numberOrEmpty(per.epargne.plafond163Quatervicies.maxPassMultiple)}
+                onChange={(e) =>
+                  updateField(
+                    ['perIndividuel', 'epargne', 'plafond163Quatervicies', 'maxPassMultiple'],
+                    e.target.value === '' ? null : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+              <span>x PASS</span>
+            </div>
+
+            <div className="settings-field-row">
+              <label>Note</label>
+              <input
+                type="text"
+                value={textOrEmpty(per.epargne.plafond163Quatervicies.note)}
+                onChange={(e) =>
+                  updateField(['perIndividuel', 'epargne', 'plafond163Quatervicies', 'note'], e.target.value)
+                }
+                disabled={!isAdmin}
+                style={{ width: 520, textAlign: 'left' }}
+              />
+              <span />
+            </div>
+          </div>
+        </div>
+
+        <div className="fisc-col fisc-col-right">
+          <div className="income-tax-block">
+            <div className="income-tax-block-title">Plafond 154 bis (TNS)</div>
+
+            <div className="settings-field-row">
+              <label>Part 15% — taux</label>
+              <input
+                type="number"
+                step="0.1"
+                value={numberOrEmpty(per.epargne.plafond154Bis.assiettePotentielle.part15.ratePercent)}
+                onChange={(e) =>
+                  updateField(
+                    ['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part15','ratePercent'],
+                    e.target.value === '' ? null : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+              <span>%</span>
+            </div>
+
+            <div className="settings-field-row">
+              <label>Part 15% — max</label>
+              <input
+                type="number"
+                value={numberOrEmpty(per.epargne.plafond154Bis.assiettePotentielle.part15.maxPassMultiple)}
+                onChange={(e) =>
+                  updateField(
+                    ['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part15','maxPassMultiple'],
+                    e.target.value === '' ? null : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+              <span>x PASS</span>
+            </div>
+
+            <div className="settings-field-row">
+              <label>Part 10% — taux</label>
+              <input
+                type="number"
+                step="0.1"
+                value={numberOrEmpty(per.epargne.plafond154Bis.assiettePotentielle.part10.ratePercent)}
+                onChange={(e) =>
+                  updateField(
+                    ['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part10','ratePercent'],
+                    e.target.value === '' ? null : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+              <span>%</span>
+            </div>
+
+            <div className="settings-field-row">
+              <label>Part 10% — mini</label>
+              <input
+                type="number"
+                value={numberOrEmpty(per.epargne.plafond154Bis.assiettePotentielle.part10.minPassMultiple)}
+                onChange={(e) =>
+                  updateField(
+                    ['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part10','minPassMultiple'],
+                    e.target.value === '' ? null : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+              <span>x PASS</span>
+            </div>
+
+            <div className="settings-field-row">
+              <label>Part 10% — max</label>
+              <input
+                type="number"
+                value={numberOrEmpty(per.epargne.plafond154Bis.assiettePotentielle.part10.maxPassMultiple)}
+                onChange={(e) =>
+                  updateField(
+                    ['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part10','maxPassMultiple'],
+                    e.target.value === '' ? null : Number(e.target.value)
+                  )
+                }
+                disabled={!isAdmin}
+              />
+              <span>x PASS</span>
+            </div>
+
+            <div className="settings-field-row">
+              <label>Note</label>
+              <input
+                type="text"
+                value={textOrEmpty(per.epargne.plafond154Bis.note)}
+                onChange={(e) => updateField(['perIndividuel','epargne','plafond154Bis','note'], e.target.value)}
+                disabled={!isAdmin}
+                style={{ width: 520, textAlign: 'left' }}
+              />
+              <span />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* 2) Sortie en capital */}
+    <section>
+      <h4 className="fisc-section-title">Sortie en capital</h4>
+
+      <div className="income-tax-block">
+        <div className="income-tax-block-title">PFU (référence)</div>
+        <div className="settings-field-row">
+          <label>IR PFU</label>
+          <input
+            type="number"
+            step="0.1"
+            value={numberOrEmpty(per.sortieCapital.pfu.irRatePercent)}
+            onChange={(e) =>
+              updateField(['perIndividuel','sortieCapital','pfu','irRatePercent'], e.target.value === '' ? null : Number(e.target.value))
+            }
+            disabled={!isAdmin}
+          />
+          <span>%</span>
+        </div>
+        <div className="settings-field-row">
+          <label>PS</label>
+          <input
+            type="number"
+            step="0.1"
+            value={numberOrEmpty(per.sortieCapital.pfu.psRatePercent)}
+            onChange={(e) =>
+              updateField(['perIndividuel','sortieCapital','pfu','psRatePercent'], e.target.value === '' ? null : Number(e.target.value))
+            }
+            disabled={!isAdmin}
+          />
+          <span>%</span>
+        </div>
+      </div>
+
+      <div className="fisc-two-cols">
+        <div className="fisc-col">
+          <div className="fisc-col-title">Versements déduits</div>
+
+          <div className="income-tax-block">
+            <div className="income-tax-block-title">Retraite</div>
+            <div style={{ fontSize: 13, color: '#555' }}>{per.sortieCapital.retraite.deduIts.versements.note}</div>
+            <div style={{ fontSize: 13, color: '#555', marginTop: 6 }}>{per.sortieCapital.retraite.deduIts.gains.note}</div>
+          </div>
+
+          <div className="income-tax-block">
+            <div className="income-tax-block-title">Achat résidence principale</div>
+            <div style={{ fontSize: 13, color: '#555' }}>Versements : barème IR</div>
+            <div style={{ fontSize: 13, color: '#555' }}>Gains : PFU</div>
+          </div>
+        </div>
+
+        <div className="fisc-col fisc-col-right">
+          <div className="fisc-col-title">Versements non déduits</div>
+
+          <div className="income-tax-block">
+            <div className="income-tax-block-title">Retraite</div>
+            <div style={{ fontSize: 13, color: '#555' }}>{per.sortieCapital.retraite.nonDeduIts.versements.note}</div>
+            <div style={{ fontSize: 13, color: '#555', marginTop: 6 }}>{per.sortieCapital.retraite.nonDeduIts.gains.note}</div>
+          </div>
+
+          <div className="income-tax-block">
+            <div className="income-tax-block-title">Achat résidence principale</div>
+            <div style={{ fontSize: 13, color: '#555' }}>Versements : exonérés d’IR</div>
+            <div style={{ fontSize: 13, color: '#555' }}>Gains : PFU</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="income-tax-block" style={{ marginTop: 10 }}>
+        <div className="income-tax-block-title">Déblocages “accidents de la vie”</div>
+        <input
+          type="text"
+          value={textOrEmpty(per.sortieCapital.anticipation.accidentsDeLaVie.note)}
+          onChange={(e) =>
+            updateField(['perIndividuel','sortieCapital','anticipation','accidentsDeLaVie','note'], e.target.value)
+          }
+          disabled={!isAdmin}
+          style={{ width: 720, textAlign: 'left' }}
+        />
+      </div>
+    </section>
+
+    {/* 3) Décès */}
+    <section>
+      <h4 className="fisc-section-title">Décès</h4>
+
+      <div className="fisc-two-cols">
+        <div className="fisc-col">
+          <div className="fisc-col-title">PER assurantiel</div>
+
+          <div className="settings-field-row">
+            <label>Abattement / bénéficiaire</label>
+            <input
+              type="number"
+              value={numberOrEmpty(per.deces.perAssurantiel.allowancePerBeneficiary)}
+              onChange={(e) =>
+                updateField(['perIndividuel','deces','perAssurantiel','allowancePerBeneficiary'], e.target.value === '' ? null : Number(e.target.value))
+              }
+              disabled={!isAdmin}
+            />
+            <span>€</span>
+          </div>
+
+          <div className="settings-field-row">
+            <label>Seuil “présentation”</label>
+            <input
+              type="number"
+              value={numberOrEmpty(per.deces.perAssurantiel.displayThresholdTotal)}
+              onChange={(e) =>
+                updateField(['perIndividuel','deces','perAssurantiel','displayThresholdTotal'], e.target.value === '' ? null : Number(e.target.value))
+              }
+              disabled={!isAdmin}
+            />
+            <span>€</span>
+          </div>
+
+          <table className="settings-table" style={{ marginTop: 8 }}>
+            <thead>
+              <tr>
+                <th>Jusqu’à</th>
+                <th className="taux-col">Taux %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {per.deces.perAssurantiel.rates.map((r, idx) => (
+                <tr key={idx}>
+                  <td style={{ textAlign: 'left' }}>
+                    {r.upToTotal === null ? 'Au-delà' : `${r.upToTotal.toLocaleString('fr-FR')} €`}
+                  </td>
+                  <td className="taux-col">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={numberOrEmpty(r.ratePercent)}
+                      onChange={(e) =>
+                        updateField(['perIndividuel','deces','perAssurantiel','rates', idx, 'ratePercent'], e.target.value === '' ? null : Number(e.target.value))
+                      }
+                      disabled={!isAdmin}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="income-tax-block" style={{ marginTop: 10 }}>
+            <div className="income-tax-block-title">Primes après 70 ans</div>
+            <div className="settings-field-row">
+              <label>Abattement global</label>
+              <input
+                type="number"
+                value={numberOrEmpty(per.deces.perAssurantiel.apres70ans.globalAllowance)}
+                onChange={(e) =>
+                  updateField(['perIndividuel','deces','perAssurantiel','apres70ans','globalAllowance'], e.target.value === '' ? null : Number(e.target.value))
+                }
+                disabled={!isAdmin}
+              />
+              <span>€</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="fisc-col fisc-col-right">
+          <div className="fisc-col-title">PER bancaire</div>
+          <input
+            type="text"
+            value={textOrEmpty(per.deces.perBancaire.note)}
+            onChange={(e) => updateField(['perIndividuel','deces','perBancaire','note'], e.target.value)}
+            disabled={!isAdmin}
+            style={{ width: 720, textAlign: 'left' }}
+          />
+        </div>
+      </div>
+    </section>
+
+    {/* 4) Rente */}
+    <section>
+      <h4 className="fisc-section-title">Liquidation en rente</h4>
+
+      <div className="settings-field-row">
+        <label>Taux de PS (référence)</label>
+        <input
+          type="number"
+          step="0.1"
+          value={numberOrEmpty(per.rente.psRatePercent)}
+          onChange={(e) =>
+            updateField(['perIndividuel','rente','psRatePercent'], e.target.value === '' ? null : Number(e.target.value))
+          }
+          disabled={!isAdmin}
+        />
+        <span>%</span>
+      </div>
+
+      <div className="fisc-two-cols">
+        <div className="fisc-col">
+          <div className="fisc-col-title">Versements déduits (pension)</div>
+
+          <div className="settings-field-row">
+            <label>Abattement pensions</label>
+            <input
+              type="number"
+              step="0.1"
+              value={numberOrEmpty(per.rente.deduIts.abattementPercent)}
+              onChange={(e) =>
+                updateField(['perIndividuel','rente','deduIts','abattementPercent'], e.target.value === '' ? null : Number(e.target.value))
+              }
+              disabled={!isAdmin}
+            />
+            <span>%</span>
+          </div>
+
+          <input
+            type="text"
+            value={textOrEmpty(per.rente.deduIts.note)}
+            onChange={(e) => updateField(['perIndividuel','rente','deduIts','note'], e.target.value)}
+            disabled={!isAdmin}
+            style={{ width: 720, textAlign: 'left' }}
+          />
+        </div>
+
+        <div className="fisc-col fisc-col-right">
+          <div className="fisc-col-title">Versements non déduits (RVTO)</div>
+
+          <table className="settings-table">
+            <thead>
+              <tr>
+                <th>Âge 1er paiement</th>
+                <th className="taux-col">Fraction</th>
+              </tr>
+            </thead>
+            <tbody>
+              {per.rente.nonDeduIts.taxableFractionByAgeAtFirstPayment.map((row, idx) => (
+                <tr key={idx}>
+                  <td style={{ textAlign: 'left' }}>{row.label}</td>
+                  <td className="taux-col">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={numberOrEmpty(row.fraction)}
+                      onChange={(e) =>
+                        updateField(['perIndividuel','rente','nonDeduIts','taxableFractionByAgeAtFirstPayment', idx, 'fraction'], e.target.value === '' ? null : Number(e.target.value))
+                      }
+                      disabled={!isAdmin}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="settings-field-row" style={{ marginTop: 6 }}>
+            <label>Note</label>
+            <input
+              type="text"
+              value={textOrEmpty(per.rente.nonDeduIts.note)}
+              onChange={(e) => updateField(['perIndividuel','rente','nonDeduIts','note'], e.target.value)}
+              disabled={!isAdmin}
+              style={{ width: 520, textAlign: 'left' }}
+            />
+            <span />
+          </div>
+        </div>
+      </div>
+    </section>
+  </>
+)}
+
+
+            
+
           </div>
         )}
       </div>
