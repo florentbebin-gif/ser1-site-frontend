@@ -172,3 +172,41 @@
   font-weight: 700;
   margin: 12px 0 6px;
 }
+/* Accordéon produits */
+.fisc-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fisc-acc-item {
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.fisc-acc-header {
+  width: 100%;
+  border: none;
+  background: #fafafa;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.fisc-acc-header:hover {
+  background: #f5f5f5;
+}
+
+.fisc-acc-chevron {
+  font-size: 14px;
+  color: #666;
+  padding-left: 10px;
+}
+
+.fisc-acc-body {
+  padding: 10px 12px 12px;
+}
