@@ -4,7 +4,7 @@ import { toNumber } from '../utils/number.js'
 
 // On réutilise le look&feel IR (classes .ir-*)
 import './Ir.css'
-import './Placement.v2.css'
+import './Placement.css'
 
 /* ===========================================================
    Helpers format / parsing (FR robuste)
