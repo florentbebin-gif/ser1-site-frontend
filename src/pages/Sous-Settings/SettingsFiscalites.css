@@ -1,0 +1,29 @@
+/* On garde l’esprit de SettingsImpots.css (mêmes bordures/typos) */
+
+.fiscalites-table th,
+.fiscalites-table td {
+  text-align: left; /* override : ici texte long */
+}
+
+.settings-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: vertical;
+  background: #fff;
+}
+
+.settings-textarea:disabled {
+  background: #f7f7f7;
+  color: #555;
+}
+
+.fiscalites-disclaimer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
