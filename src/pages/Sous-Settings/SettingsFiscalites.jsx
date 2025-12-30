@@ -116,26 +116,39 @@ const DEFAULT_FISCALITY_SETTINGS = {
       },
     },
 
-    rente: {
-      psRatePercent: 17.2,
+rente: {
+  // Barème RVTO (utilisé pour la quote-part intérêts et pour non déduits)
+  rvtoTaxableFractionByAgeAtFirstPayment: [
+    { label: "< 50 ans", ageMaxInclusive: 49, fraction: 0.7 },
+    { label: "50 à 59 ans", ageMaxInclusive: 59, fraction: 0.5 },
+    { label: "60 à 69 ans", ageMaxInclusive: 69, fraction: 0.4 },
+    { label: "≥ 70 ans", ageMaxInclusive: null, fraction: 0.3 },
+  ],
 
-      deduits: {
-        irMode: "pension",
-        abattementPercent: 10,
-        note: "Rente issue de versements déduits : assimilée à pension (abattement 10% plafonné).",
-      },
-
-      nonDeduits: {
-        irMode: "rvto",
-        taxableFractionByAgeAtFirstPayment: [
-          { label: "< 50 ans", ageMaxInclusive: 49, fraction: 0.7 },
-          { label: "50 à 59 ans", ageMaxInclusive: 59, fraction: 0.5 },
-          { label: "60 à 69 ans", ageMaxInclusive: 69, fraction: 0.4 },
-          { label: "≥ 70 ans", ageMaxInclusive: null, fraction: 0.3 },
-        ],
-        note: "Rente issue de versements non déduits : RVTO (fraction imposable selon âge).",
-      },
+  deduits: {
+    capitalQuotePart: {
+      irMode: "bareme_sans_abattement_10",
+      psRatePercent: 0.3,
+      psLabel: "CASA",
+      note:
+        "Quote-part capital : rente à titre gratuit, imposée au barème IR (sans abattement 10%). PS : CASA 0,3%.",
     },
+    interestsQuotePart: {
+      irMode: "rvto",
+      psRatePercent: 17.2,
+      note:
+        "Quote-part intérêts : RVTO (fraction imposable selon âge). PS : 17,2% sur l'assiette après abattement RVTO.",
+    },
+  },
+
+  nonDeduits: {
+    irMode: "rvto",
+    psRatePercent: 17.2,
+    note:
+      "Totalité de la rente : RVTO (fraction imposable selon âge). PS : 17,2% sur l'assiette après abattement RVTO.",
+  },
+},
+
   },
   
   assuranceVie: {
@@ -1661,106 +1674,193 @@ const handleSave = async () => {
 
         <div className="fisc-col fisc-col-right">
           <div className="fisc-col-title">PER bancaire</div>
-          <input
-            type="text"
-            value={textOrEmpty(per.deces.perBancaire.note)}
-            onChange={(e) => updateField(['perIndividuel','deces','perBancaire','note'], e.target.value)}
-            disabled={!isAdmin}
-            style={{ width: 720, textAlign: 'left' }}
-          />
+          <textarea
+  className="settings-note"
+  rows={3}
+  value={textOrEmpty(per.deces.perBancaire.note)}
+  onChange={(e) => updateField(['perIndividuel','deces','perBancaire','note'], e.target.value)}
+  disabled={!isAdmin}
+/>
         </div>
       </div>
     </section>
 
-    {/* 4) Rente */}
-    <section>
-      <h4 className="fisc-section-title">Liquidation en rente</h4>
+   {/* 4) Rente */}
+<section>
+  <h4 className="fisc-section-title">Liquidation en rente</h4>
 
-      <div className="settings-field-row">
-        <label>Taux de PS (référence)</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(per.rente.psRatePercent)}
+  <div className="fisc-two-cols">
+    {/* Colonne gauche : Déduits */}
+    <div className="fisc-col">
+      <div className="fisc-col-title">Versements déduits</div>
+
+      <div className="income-tax-block">
+        <div className="income-tax-block-title">Quote-part capital — rente à titre gratuit</div>
+
+        <div className="settings-field-row">
+          <label>IR</label>
+          <input type="text" value="Barème (sans abattement 10%)" disabled style={{ width: 220, textAlign: 'center' }} />
+          <span />
+        </div>
+
+        <div className="settings-field-row">
+          <label>PS (CASA)</label>
+          <input
+            type="number"
+            step="0.01"
+            value={numberOrEmpty(per.rente.deduits.capitalQuotePart.psRatePercent)}
+            onChange={(e) =>
+              updateField(
+                ['perIndividuel', 'rente', 'deduits', 'capitalQuotePart', 'psRatePercent'],
+                e.target.value === '' ? null : Number(e.target.value)
+              )
+            }
+            disabled={!isAdmin}
+          />
+          <span>%</span>
+        </div>
+
+        <textarea
+          className="settings-note"
+          rows={2}
+          value={textOrEmpty(per.rente.deduits.capitalQuotePart.note)}
           onChange={(e) =>
-            updateField(['perIndividuel','rente','psRatePercent'], e.target.value === '' ? null : Number(e.target.value))
+            updateField(['perIndividuel', 'rente', 'deduits', 'capitalQuotePart', 'note'], e.target.value)
           }
           disabled={!isAdmin}
         />
-        <span>%</span>
       </div>
 
-      <div className="fisc-two-cols">
-        <div className="fisc-col">
-          <div className="fisc-col-title">Versements déduits (pension)</div>
+      <div className="income-tax-block" style={{ marginTop: 10 }}>
+        <div className="income-tax-block-title">Quote-part intérêts — RVTO</div>
 
-          <div className="settings-field-row">
-            <label>Abattement pensions</label>
-            <input
-              type="number"
-              step="0.1"
-              value={numberOrEmpty(per.rente.deduits.abattementPercent)}
-              onChange={(e) =>
-                updateField(['perIndividuel','rente','deduIts','abattementPercent'], e.target.value === '' ? null : Number(e.target.value))
-              }
-              disabled={!isAdmin}
-            />
-            <span>%</span>
-          </div>
-
+        <div className="settings-field-row">
+          <label>PS</label>
           <input
-            type="text"
-            value={textOrEmpty(per.rente.deduits.note)}
-            onChange={(e) => updateField(['perIndividuel','rente','deduIts','note'], e.target.value)}
+            type="number"
+            step="0.1"
+            value={numberOrEmpty(per.rente.deduits.interestsQuotePart.psRatePercent)}
+            onChange={(e) =>
+              updateField(
+                ['perIndividuel', 'rente', 'deduits', 'interestsQuotePart', 'psRatePercent'],
+                e.target.value === '' ? null : Number(e.target.value)
+              )
+            }
             disabled={!isAdmin}
-            style={{ width: 720, textAlign: 'left' }}
           />
+          <span>%</span>
         </div>
 
-        <div className="fisc-col fisc-col-right">
-          <div className="fisc-col-title">Versements non déduits (RVTO)</div>
-
-          <table className="settings-table">
-            <thead>
-              <tr>
-                <th>Âge 1er paiement</th>
-                <th className="taux-col">Fraction</th>
+        <table className="settings-table">
+          <thead>
+            <tr>
+              <th>Âge 1er paiement</th>
+              <th className="taux-col">Fraction</th>
+            </tr>
+          </thead>
+          <tbody>
+            {per.rente.rvtoTaxableFractionByAgeAtFirstPayment.map((row, idx) => (
+              <tr key={idx}>
+                <td style={{ textAlign: 'left' }}>{row.label}</td>
+                <td className="taux-col">
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={numberOrEmpty(row.fraction)}
+                    onChange={(e) =>
+                      updateField(
+                        ['perIndividuel', 'rente', 'rvtoTaxableFractionByAgeAtFirstPayment', idx, 'fraction'],
+                        e.target.value === '' ? null : Number(e.target.value)
+                      )
+                    }
+                    disabled={!isAdmin}
+                  />
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {per.rente.nonDeduits.taxableFractionByAgeAtFirstPayment.map((row, idx) => (
-                <tr key={idx}>
-                  <td style={{ textAlign: 'left' }}>{row.label}</td>
-                  <td className="taux-col">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={numberOrEmpty(row.fraction)}
-                      onChange={(e) =>
-                        updateField(['perIndividuel','rente','nonDeduits','taxableFractionByAgeAtFirstPayment', idx, 'fraction'], e.target.value === '' ? null : Number(e.target.value))
-                      }
-                      disabled={!isAdmin}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            ))}
+          </tbody>
+        </table>
 
-          <div className="settings-field-row" style={{ marginTop: 6 }}>
-            <label>Note</label>
-            <input
-              type="text"
-              value={textOrEmpty(per.rente.nonDeduits.note)}
-              onChange={(e) => updateField(['perIndividuel','rente','nonDeduits','note'], e.target.value)}
-              disabled={!isAdmin}
-              style={{ width: 520, textAlign: 'left' }}
-            />
-            <span />
-          </div>
-        </div>
+        <textarea
+          className="settings-note"
+          rows={2}
+          value={textOrEmpty(per.rente.deduits.interestsQuotePart.note)}
+          onChange={(e) =>
+            updateField(['perIndividuel', 'rente', 'deduits', 'interestsQuotePart', 'note'], e.target.value)
+          }
+          disabled={!isAdmin}
+        />
       </div>
-    </section>
+    </div>
+
+    {/* Colonne droite : Non déduits */}
+    <div className="fisc-col fisc-col-right">
+      <div className="fisc-col-title">Versements non déduits — RVTO</div>
+
+      <div className="income-tax-block">
+        <div className="income-tax-block-title">Rente (totalité) — RVTO</div>
+
+        <div className="settings-field-row">
+          <label>PS</label>
+          <input
+            type="number"
+            step="0.1"
+            value={numberOrEmpty(per.rente.nonDeduits.psRatePercent)}
+            onChange={(e) =>
+              updateField(
+                ['perIndividuel', 'rente', 'nonDeduits', 'psRatePercent'],
+                e.target.value === '' ? null : Number(e.target.value)
+              )
+            }
+            disabled={!isAdmin}
+          />
+          <span>%</span>
+        </div>
+
+        <table className="settings-table">
+          <thead>
+            <tr>
+              <th>Âge 1er paiement</th>
+              <th className="taux-col">Fraction</th>
+            </tr>
+          </thead>
+          <tbody>
+            {per.rente.rvtoTaxableFractionByAgeAtFirstPayment.map((row, idx) => (
+              <tr key={idx}>
+                <td style={{ textAlign: 'left' }}>{row.label}</td>
+                <td className="taux-col">
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={numberOrEmpty(row.fraction)}
+                    onChange={(e) =>
+                      updateField(
+                        ['perIndividuel', 'rente', 'rvtoTaxableFractionByAgeAtFirstPayment', idx, 'fraction'],
+                        e.target.value === '' ? null : Number(e.target.value)
+                      )
+                    }
+                    disabled={!isAdmin}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <textarea
+          className="settings-note"
+          rows={2}
+          value={textOrEmpty(per.rente.nonDeduits.note)}
+          onChange={(e) =>
+            updateField(['perIndividuel', 'rente', 'nonDeduits', 'note'], e.target.value)
+          }
+          disabled={!isAdmin}
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
   </>
 )}
 
