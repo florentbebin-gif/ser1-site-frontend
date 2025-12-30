@@ -287,8 +287,6 @@ const PRODUCTS = [
   <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {roleLabel}
 </div>
 
-<h3 className="fisc-product-title">Assurance vie</h3>
-
 
 {/* Accordéon produits */}
 <div className="fisc-accordion">
