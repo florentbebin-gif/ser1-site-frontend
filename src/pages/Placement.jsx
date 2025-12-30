@@ -493,7 +493,16 @@ export default function Placement() {
       const raw = localStorage.getItem(STORE_KEY)
       if (raw) {
         const s = JSON.parse(raw)
-        if (s && typeof s === 'object') setState(prev => ({ ...prev, ...s }))
+        if (s && typeof s === 'object') {
+  const next = { ...DEFAULT_STATE, ...s }
+
+  // Force exactement 2 placements (évite les vieux states à 4 colonnes)
+  const p0 = (next.products && next.products[0]) ? next.products[0] : DEFAULT_STATE.products[0]
+  const p1 = (next.products && next.products[1]) ? next.products[1] : DEFAULT_STATE.products[1]
+  next.products = [p0, p1]
+
+  setState(next)
+}
       }
     } catch {}
     setHydrated(true)
@@ -722,7 +731,7 @@ export default function Placement() {
                     <th></th>
                     {state.products.map((p, i) => (
                       <th key={i} className="pl-colhead">
-                        <div className="pl-colname">{p.name}</div>
+                        <div className="pl-colname">{`Placement ${i + 1}`}</div>
                         <div className="pl-collabel">{ENVELOPES.find(x => x.key === p.envelope)?.label}</div>
                       </th>
                     ))}
@@ -732,20 +741,6 @@ export default function Placement() {
                 <tbody>
                   <tr className="ir-row-title">
                     <td colSpan={3}>Produit</td>
-                  </tr>
-
-                  <tr>
-                    <td>Nom</td>
-                    {state.products.map((p, i) => (
-                      <td key={i}>
-                        <input
-                          type="text"
-                          value={p.name}
-                          onChange={(e) => setProd(i, { name: e.target.value.slice(0, 28) })}
-                          aria-label={`Nom produit ${i + 1}`}
-                        />
-                      </td>
-                    ))}
                   </tr>
 
                   <tr>
