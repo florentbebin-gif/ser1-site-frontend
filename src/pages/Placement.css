@@ -1,121 +1,363 @@
-/* ================================
-   Placement – page wrapper
-=================================== */
+/* ===========================================================
+   Placement – alignement look&feel Ir.css
+   - réutilise ir-panel / ir-header / ir-grid / ir-table-wrapper / ir-table / ir-summary-card
+   - ajoute des classes pl-* pour la page Placement
+   Réf styles Ir.css : :contentReference[oaicite:13]{index=13}
+=========================================================== */
 
 .placement-page {
-  max-width: 1200px;
-  margin: 32px auto 40px;
-  padding: 0 24px;
-}
-
-/* Reprise des styles historiques du simulateur Placement */
-
-.panel {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
-}
-
-.plac-title {
-  font-weight: 700;
-  font-size: 22px;
-  color: #222;
-  border-bottom: 4px solid var(--beige);
-  padding-bottom: 8px;
-  margin-bottom: 16px;
-}
-
-.plac-table-wrap {
-  border: 1px solid #333;
-  border-radius: var(--radius);
   padding: 16px;
-  background: #fff;
 }
 
-.plac-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
+.pl-header {
+  position: relative;
 }
 
-.plac-table th,
-.plac-table td {
-  padding: 6px 8px;
-  border-bottom: 1px solid #ddd;
-  text-align: right;
-  white-space: nowrap;
+.pl-subtitle {
+  font-size: 12px;
+  color: #555;
+  margin-top: 2px;
 }
 
-.plac-table thead th {
-  text-align: center;
-  font-weight: 700;
-  border-bottom: 2px solid #333;
-}
-
-.plac-table th:first-child,
-.plac-table td:first-child {
-  text-align: left;
-  width: 170px;
-}
-
-.cell-strong {
-  font-weight: 800;
-}
-
-.cell-muted {
-  color: var(--muted);
-}
-
-/* largeur + alignement des inputs */
-.input-cell input {
-  width: 110px;
-  max-width: 100%;
-  text-align: right;
-}
-
-/* Carte du graphique */
-.chart-card {
-  border: 1px solid #333;
-  border-radius: var(--radius);
-  padding: 14px;
-  height: 420px;
-  background: #fff;
-}
-
-/* Légende éventuelle sous le graphique */
-.chart-legend {
+.pl-stepper {
   display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 10px;
+  gap: 8px;
+  align-items: center;
+}
+
+.pl-step {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid #c0b5aa;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  color: #2b3e37;
+}
+
+.pl-step.is-active {
+  background: #cfDED8;
+  border-color: #b6c9c2;
+  font-weight: 600;
+}
+
+.pl-topgrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+@media (max-width: 980px) {
+  .pl-topgrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pl-stepper {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+.pl-hint {
+  font-size: 11px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.pl-section-title {
+  font-weight: 700;
+  color: #2b3e37;
+  margin-bottom: 10px;
+}
+
+/* Inputs “avec unité” */
+.pl-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.pl-input__field {
+  height: 32px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #c7c7c7;
+  text-align: right;
+  background: #fff;
+}
+
+.pl-input__field:focus {
+  outline: none;
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(43, 90, 82, .12);
+}
+
+.pl-input__field:disabled {
+  background: #f4f4f4;
+  color: #777;
+}
+
+.pl-input__unit {
   font-size: 12px;
   color: #444;
+  min-width: 18px;
+  text-align: left;
 }
 
-.legend-dot {
+.pl-select {
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid #c7c7c7;
+  padding: 4px 6px;
+  font-size: 13px;
+  background: #fff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Table */
+.pl-table td,
+.pl-table th {
+  vertical-align: middle;
+}
+
+.pl-colhead {
+  min-width: 220px;
+}
+
+.pl-colname {
+  font-weight: 700;
+  color: #2b3e37;
+}
+
+.pl-collabel {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+}
+
+/* Inline groups */
+.pl-inline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px;
+  gap: 8px;
+  align-items: center;
+}
+
+.pl-muted {
+  color: #777;
+  font-size: 12px;
+}
+
+.pl-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #2b3e37;
+}
+
+/* Retraits en épargne */
+.pl-subblock {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e3e3e3;
+}
+
+.pl-subblock__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.pl-btn {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid #c0b5aa;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.pl-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.pl-btn--ghost {
+  background: #fff;
+}
+
+.pl-wdlist {
+  display: grid;
+  gap: 8px;
+}
+
+.pl-wdlist__row {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr) 120px;
+  gap: 10px;
+  align-items: center;
+}
+
+.pl-wdlist__head {
+  font-size: 12px;
+  color: #555;
+  font-weight: 600;
+}
+
+/* Liquidation block */
+.pl-liquid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+@media (max-width: 980px) {
+  .pl-liquid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+/* Synthèse toolbar */
+.pl-results-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.pl-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pl-tab {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid #ded1c4;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  color: #2b3e37;
+}
+
+.pl-tab.is-active {
+  background: #f0ebe4;
+  font-weight: 600;
+}
+
+/* Chart */
+.pl-chart-card {
+  border-radius: 10px;
+  border: 1px solid #ded1c4;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.pl-chart-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+}
+
+.pl-legend {
+  width: 200px;
+  min-width: 200px;
+  max-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+.pl-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #333;
+}
+
+.pl-legend__dot {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: 9999px;
   display: inline-block;
 }
 
-/* Style Champs de saisie */
-.plac-table input[type="text"],
-.plac-table input[type="number"] {
-  height: 32px;
-  border: 1px solid #bbb;
-  background: #fafafa;
-  border-radius: 8px;
-  padding: 0 8px;
-  outline: none;
-  text-align: right;
+/* Tableau détail */
+.pl-table-wrapper {
+  margin-top: 10px;
 }
 
-/* Focus */
-.plac-table input[type="text"]:focus,
-.plac-table input[type="number"]:focus {
-  border-color: var(--green);
-  box-shadow: 0 0 0 2px rgba(43, 90, 82, .12);
+.pl-details-table th {
+  text-align: left;
+}
+
+.pl-agecell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pl-cellstack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pl-big {
+  font-weight: 700;
+  color: #2b3e37;
+}
+
+/* Cards droite */
+.pl-card-title {
+  font-weight: 700;
+  color: #2b3e37;
+  margin-bottom: 6px;
+}
+
+.pl-card-big {
+  font-weight: 800;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.pl-minirow {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.pl-minirow__name {
+  color: #555;
+}
+
+.pl-minirow__val {
+  font-weight: 600;
+}
+
+.pl-bullets {
+  margin: 0;
+  padding-left: 18px;
+  color: #555;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.pl-disclaimer {
+  margin-top: 12px;
 }
