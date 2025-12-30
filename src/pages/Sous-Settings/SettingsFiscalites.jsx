@@ -126,7 +126,7 @@ export default function SettingsFiscalites() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
-  const [openProductKey, setOpenProductKey] = useState('assuranceVie');
+  const [openProductKey, setOpenProductKey] = useState(null);
 
 const PRODUCTS = [
   { key: 'assuranceVie', label: 'Assurance vie' },
@@ -291,12 +291,7 @@ const PRODUCTS = [
 {/* Accordéon produits */}
 <div className="fisc-accordion">
   {[
-    { key: 'assuranceVie', label: 'Assurance vie' },
-    // Plus tard :
-    // { key: 'perIndividuel', label: 'PER individuel' },
-    // { key: 'cto', label: 'Compte-titres (CTO)' },
-    // { key: 'pea', label: 'PEA' },
-  ].map((p) => {
+    {PRODUCTS.map((p) => {
     const isOpen = openProductKey === p.key;
 
     return (
@@ -1115,21 +1110,6 @@ const PRODUCTS = [
                   </div>
                 </section>
 
-                {/* Bouton Enregistrer */}
-                {isAdmin && (
-                  <button
-                    type="button"
-                    className="chip"
-                    onClick={handleSave}
-                    disabled={saving}
-                  >
-                    {saving ? 'Enregistrement…' : 'Enregistrer les paramètres fiscalités'}
-                  </button>
-                )}
-
-                {message && (
-                  <div style={{ fontSize: 13, marginTop: 8 }}>{message}</div>
-                )}
               </>
             )}
 
@@ -1142,6 +1122,21 @@ const PRODUCTS = [
     );
   })}
 </div>
+
+          
+          {/* Actions globales (hors accordéon) */}
+{isAdmin && (
+  <button
+    type="button"
+    className="chip"
+    onClick={handleSave}
+    disabled={saving}
+  >
+    {saving ? 'Enregistrement…' : 'Enregistrer les paramètres fiscalités'}
+  </button>
+)}
+
+{message && <div style={{ fontSize: 13, marginTop: 8 }}>{message}</div>}
 
           
         </div>
