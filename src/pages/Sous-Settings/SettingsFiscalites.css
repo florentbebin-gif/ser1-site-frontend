@@ -1,10 +1,48 @@
-/* On garde l’esprit de SettingsImpots.css (mêmes bordures/typos) */
+/* On garde l’esprit de SettingsImpots.css (mêmes typos/bordures) */
 
-.fiscalites-table th,
-.fiscalites-table td {
-  text-align: left; /* override : ici texte long */
+.matrix-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
 }
 
+/* matrice */
+.fiscalites-matrix {
+  table-layout: fixed;
+  min-width: 1200px;
+}
+
+.fiscalites-matrix .matrix-th {
+  background: #e8e8e8;
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* colonne Phase */
+.fiscalites-matrix .matrix-phase {
+  text-align: center;
+  font-weight: 700;
+  width: 140px;
+}
+
+/* inputs compacts */
+.matrix-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.matrix-readonly {
+  font-size: 13px;
+  color: #333;
+  white-space: pre-wrap;
+}
+
+/* textarea déjà existant mais on s’assure d’un rendu stable */
 .settings-textarea {
   width: 100%;
   box-sizing: border-box;
@@ -26,63 +64,4 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-/* Complément léger (SettingsImpots.css reste la base) */
-
-.settings-textarea {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 8px;
-  font-size: 13px;
-  line-height: 1.35;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  resize: vertical;
-  background: #fff;
-}
-
-.settings-textarea:disabled {
-  background: #f7f7f7;
-  color: #555;
-}
-
-.settings-input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 6px 8px;
-  font-size: 13px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-}
-
-.fiscalites-table th,
-.fiscalites-table td,
-.fiscalites-params-table th,
-.fiscalites-params-table td {
-  text-align: left;
-  vertical-align: top;
-}
-
-.param-key {
-  font-size: 12px;
-  color: #777;
-  margin-top: 2px;
-}
-
-.param-preview {
-  font-size: 12px;
-  color: #777;
-  margin-top: 6px;
-}
-
-.cell-readonly {
-  font-size: 13px;
-  color: #333;
-  white-space: pre-wrap;
-}
-
-.hint-tokens {
-  margin-top: 8px;
-  font-size: 12px;
-  color: #777;
 }
