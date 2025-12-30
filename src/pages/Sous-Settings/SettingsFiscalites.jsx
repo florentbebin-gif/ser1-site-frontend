@@ -10,11 +10,6 @@ import './SettingsFiscalites.css';
 // ------------------------------------------------------------
 const DEFAULT_FISCALITY_SETTINGS = {
   assuranceVie: {
-    meta: {
-      title: 'Assurance-vie',
-      versionLabel: 'Référentiel',
-      lastReviewed: null, // champ libre si tu veux (admin)
-    },
 
     // 1) Phase d’épargne
     epargne: {
@@ -233,7 +228,6 @@ export default function SettingsFiscalites() {
     }
   };
 
-  const leftColTitle = useMemo(() => 'Assurance-vie', []);
 
   // ---------------------------------------------
   // Rendu
@@ -283,39 +277,9 @@ export default function SettingsFiscalites() {
             <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {roleLabel}
           </div>
 
-          <section>
-            <h3>{leftColTitle} — Référentiel de calcul</h3>
-            <p style={{ fontSize: 13, color: '#555', marginBottom: 8 }}>
-              Paramètres utilisés par les simulateurs (lecture simple, champs modifiables <strong>admin uniquement</strong>).
-            </p>
-
-            {/* META (optionnel) */}
-            <div className="fisc-kpis">
-              <div className="fisc-kpi">
-                <div className="fisc-kpi-label">Libellé</div>
-                <input
-                  type="text"
-                  value={textOrEmpty(av?.meta?.versionLabel)}
-                  onChange={(e) => updateField(['assuranceVie', 'meta', 'versionLabel'], e.target.value)}
-                  disabled={!isAdmin}
-                />
-              </div>
-              <div className="fisc-kpi">
-                <div className="fisc-kpi-label">Dernière revue (libre)</div>
-                <input
-                  type="text"
-                  value={textOrEmpty(av?.meta?.lastReviewed)}
-                  onChange={(e) => updateField(['assuranceVie', 'meta', 'lastReviewed'], e.target.value)}
-                  disabled={!isAdmin}
-                  placeholder="Ex: 12/2025"
-                />
-              </div>
-            </div>
-          </section>
-
           {/* 1) Phase d'épargne */}
           <section>
-            <h3>Phase d’épargne</h3>
+            <h4 className="fisc-section-title">Phase d’épargne</h4>
 
             <div className="income-tax-block">
               <div className="income-tax-block-title">Versements</div>
@@ -371,7 +335,7 @@ export default function SettingsFiscalites() {
 
           {/* 2) Retraits en capital */}
           <section>
-            <h3>Retraits en capital</h3>
+            <h4 className="fisc-section-title">Retraits en capital</h4>
 
             <div className="income-tax-block">
               <div className="income-tax-block-title">Assiette & PS</div>
@@ -642,7 +606,7 @@ export default function SettingsFiscalites() {
 
           {/* 3) Décès */}
           <section>
-            <h3>Décès — transmission</h3>
+            <h4 className="fisc-section-title">Décès — transmission</h4>
 
             <div className="income-tax-block">
               <div className="income-tax-block-title">Dates & âge pivot</div>
@@ -802,7 +766,7 @@ export default function SettingsFiscalites() {
 
           {/* 4) Rente */}
           <section>
-            <h3>Liquidation en rente</h3>
+            <h4 className="fisc-section-title">Liquidation en rente</h4>
 
             <div className="income-tax-block">
               <div className="income-tax-block-title">Conditions & PS</div>
