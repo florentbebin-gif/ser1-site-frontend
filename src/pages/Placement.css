@@ -1,159 +1,121 @@
-/* Placement v2 — s’aligne sur Ir.css (cartes, wrappers, tableau) */
+/* ================================
+   Placement – page wrapper
+=================================== */
 
-.pl-panel { padding-bottom: 22px; }
-
-.pl-subtitle{
-  margin-top: 4px;
-  font-size: 12px;
-  color: #555;
+.placement-page {
+  max-width: 1200px;
+  margin: 32px auto 40px;
+  padding: 0 24px;
 }
 
-.pl-block{
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+/* Reprise des styles historiques du simulateur Placement */
+
+.panel {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
 }
 
-.pl-block-title{
-  font-size: 13px;
+.plac-title {
   font-weight: 700;
-  color: #2b3e37;
+  font-size: 22px;
+  color: #222;
+  border-bottom: 4px solid var(--beige);
+  padding-bottom: 8px;
+  margin-bottom: 16px;
 }
 
-.pl-card-title{
-  font-weight: 700;
-  color: #2b3e37;
-  margin-bottom: 4px;
-}
-
-.pl-divider{
-  height: 1px;
-  background: #e6e6e6;
-  margin: 6px 0;
-}
-
-.pl-hint{
-  margin-top: 8px;
-  font-size: 12px;
-  color: #555;
-}
-
-.pl-products .ir-table input[type="text"]{
-  width: 100%;
-}
-
-.pl-inline{
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.pl-unit{
-  font-size: 12px;
-  color: #666;
-}
-
-.pl-withdraw-grid{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 16px;
-}
-
-.pl-toggle{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #333;
-}
-
-.pl-toggle input{ transform: translateY(1px); }
-
-.pl-results-head{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.pl-view{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: #555;
-}
-
-.pl-view select{
-  font-size: 12px;
-  padding: 5px 8px;
-  border-radius: 6px;
-  border: 1px solid #c7c7c7;
+.plac-table-wrap {
+  border: 1px solid #333;
+  border-radius: var(--radius);
+  padding: 16px;
   background: #fff;
 }
 
-.pl-results-table td{
-  vertical-align: top;
-}
-
-.pl-cell-main{
-  font-weight: 700;
-  color: #222;
-}
-
-.pl-cell-sub{
-  margin-top: 2px;
-  font-size: 12px;
-  color: #666;
-}
-
-.pl-chart-wrap{
-  display: flex;
-  align-items: stretch;
-  gap: 12px;
+.plac-table {
   width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
 }
 
-.pl-legend{
+.plac-table th,
+.plac-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid #ddd;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.plac-table thead th {
+  text-align: center;
+  font-weight: 700;
+  border-bottom: 2px solid #333;
+}
+
+.plac-table th:first-child,
+.plac-table td:first-child {
+  text-align: left;
   width: 170px;
-  min-width: 170px;
-  max-width: 170px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 6px;
 }
 
-.pl-legend-item{
+.cell-strong {
+  font-weight: 800;
+}
+
+.cell-muted {
+  color: var(--muted);
+}
+
+/* largeur + alignement des inputs */
+.input-cell input {
+  width: 110px;
+  max-width: 100%;
+  text-align: right;
+}
+
+/* Carte du graphique */
+.chart-card {
+  border: 1px solid #333;
+  border-radius: var(--radius);
+  padding: 14px;
+  height: 420px;
+  background: #fff;
+}
+
+/* Légende éventuelle sous le graphique */
+.chart-legend {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 10px;
   font-size: 12px;
-  color: #333;
+  color: #444;
 }
 
-.pl-dot{
+.legend-dot {
   width: 10px;
   height: 10px;
-  border-radius: 9999px;
+  border-radius: 50%;
   display: inline-block;
 }
 
-.pl-list{
-  margin: 0;
-  padding-left: 16px;
-  font-size: 12px;
-  color: #555;
+/* Style Champs de saisie */
+.plac-table input[type="text"],
+.plac-table input[type="number"] {
+  height: 32px;
+  border: 1px solid #bbb;
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 0 8px;
+  outline: none;
+  text-align: right;
 }
 
-.pl-list li{
-  margin: 4px 0;
-}
-
-/* Responsive */
-@media (max-width: 920px){
-  .pl-withdraw-grid{ grid-template-columns: 1fr; }
-  .pl-chart-wrap{ flex-direction: column; }
-  .pl-legend{ width: 100%; min-width: 0; max-width: none; flex-direction: row; flex-wrap: wrap; }
+/* Focus */
+.plac-table input[type="text"]:focus,
+.plac-table input[type="number"]:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 2px rgba(43, 90, 82, .12);
 }
