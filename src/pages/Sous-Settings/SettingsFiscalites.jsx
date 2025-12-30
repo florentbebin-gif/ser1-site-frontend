@@ -6,278 +6,649 @@ import "./SettingsFiscalites.css";
 
 const SETTINGS_KEY = "fiscalites_v1";
 
-// =======================
-// DEFAULT SETTINGS
-// =======================
+/**
+ * DEFAULT_FISCALITES_SETTINGS
+ * - Assurance-vie : matrice extraite du fichier Excel fourni (valeurs + couleurs + rowspans de "Phase")
+ * - Autres enveloppes : matrice construite sur le même modèle (modifiable admin)
+ */
 export const DEFAULT_FISCALITES_SETTINGS = {
   meta: {
-    title: "Synthèse fiscalité des enveloppes (paramétrable)",
+    title: "Matrice fiscalité des enveloppes (seuils & taux éditables)",
     assumptions: [
       "Résident fiscal France",
-      "Chaque cellule peut contenir des tokens {{...}} remplacés par des seuils/taux éditables",
-      "Régime par défaut + Sur option systématiques",
+      "Matrice inspirée de l’Excel (lignes et sous-lignes par thématiques)",
+      "L’Admin peut modifier directement montants, taux et textes cellule par cellule",
       "SCPI uniquement en direct (revenus fonciers)"
     ],
-    lastReview: "2025-12-30",
-
-    // ✅ Paramètres chiffrés éditables (Admin)
-    parameters: [
-      // --- Assurance-vie : prélèvements sociaux (capture épargne)
-      { key: "av_ps_total", label: "Assurance-vie - PS total", value: 17.2, unit: "%", format: "percent", help: "Taux global PS sur produits (CSG/CRDS etc.)." },
-      { key: "av_ps_csg", label: "AV - CSG", value: 9.9, unit: "%", format: "percent", help: "Détail informatif (optionnel)." },
-      { key: "av_ps_crds", label: "AV - CRDS", value: 0.5, unit: "%", format: "percent", help: "Détail informatif (optionnel)." },
-      { key: "av_ps_prelev_social", label: "AV - Prélèvement social", value: 6.8, unit: "%", format: "percent", help: "Détail informatif (optionnel)." },
-      { key: "av_ps_contrib_add", label: "AV - Contributions additionnelles", value: 0.3, unit: "%", format: "percent", help: "Détail informatif (optionnel)." },
-
-      // --- Assurance-vie : retraits (capture rachat)
-      { key: "av_date_pfu", label: "AV - Date seuil PFU", value: "2017-09-27", unit: "", format: "date", help: "Versements avant/après cette date." },
-      { key: "av_pfl_0_4_ir", label: "AV - PFL 0-4 ans (IR)", value: 35, unit: "%", format: "percent", help: "Versements jusqu’au 27/09/2017 : option PFL 35%." },
-      { key: "av_pfl_4_8_ir", label: "AV - PFL 4-8 ans (IR)", value: 15, unit: "%", format: "percent", help: "Versements jusqu’au 27/09/2017 : option PFL 15%." },
-      { key: "av_pfl_8p_ir", label: "AV - PFL >8 ans (IR)", value: 7.5, unit: "%", format: "percent", help: "Versements jusqu’au 27/09/2017 : option PFL 7,5%." },
-      { key: "av_pfu_ir", label: "AV - PFU (IR) après 27/09/2017", value: 12.8, unit: "%", format: "percent", help: "Taux IR du PFU." },
-      { key: "av_abattement_8y_single", label: "AV - Abattement annuel >8 ans (personne seule)", value: 4600, unit: "€", format: "currency", help: "Abattement sur la part d’intérêts rachetée." },
-      { key: "av_abattement_8y_couple", label: "AV - Abattement annuel >8 ans (couple)", value: 9200, unit: "€", format: "currency", help: "Couple marié/PACS." },
-      { key: "av_seuil_150k", label: "AV - Seuil des 150 000 €", value: 150000, unit: "€", format: "currency", help: "Seuil sur versements (règles post-2017) pour taux 7,5% vs 12,8%." },
-      { key: "av_pf_8y_taux_reduit", label: "AV - PF après 8 ans (taux réduit IR)", value: 7.5, unit: "%", format: "percent", help: "Après 8 ans : IR 7,5% dans la limite des règles (ex: premiers 150k)."},
-      { key: "av_pf_8y_taux_plein", label: "AV - PF après 8 ans (taux plein IR)", value: 12.8, unit: "%", format: "percent", help: "Après 8 ans : IR 12,8% au-delà du seuil." },
-
-      // --- Assurance-vie : décès (capture décès)
-      { key: "av_deces_cut_1991", label: "AV Décès - date souscription 1", value: "1991-11-20", unit: "", format: "date", help: "Avant / après." },
-      { key: "av_deces_cut_1998", label: "AV Décès - date seuil 2", value: "1998-10-13", unit: "", format: "date", help: "Primes versées avant/après." },
-      { key: "av_deces_abatt_990i", label: "AV Décès - abattement 990 I / bénéficiaire", value: 152500, unit: "€", format: "currency", help: "Abattement par bénéficiaire (primes <70 ans selon cas)." },
-      { key: "av_deces_tranche_20_limite", label: "AV Décès - limite tranche 20%", value: 852500, unit: "€", format: "currency", help: "20% jusqu’à ce montant (après abattement)." },
-      { key: "av_deces_taux_20", label: "AV Décès - taux 20%", value: 20, unit: "%", format: "percent", help: "Taxation spécifique AV (990 I)." },
-      { key: "av_deces_taux_3125", label: "AV Décès - taux 31,25%", value: 31.25, unit: "%", format: "percent", help: "Au-delà de la tranche." },
-      { key: "av_deces_abatt_757b", label: "AV Décès - abattement 757 B global", value: 30500, unit: "€", format: "currency", help: "Primes versées après 70 ans : abattement global." },
-
-      // --- PER (minimal chiffré, extensible)
-      { key: "per_pfu_ir", label: "PER - PFU IR sur gains", value: 12.8, unit: "%", format: "percent", help: "IR du PFU sur produits (gains) lorsque applicable." },
-      { key: "per_ps_total", label: "PER - PS total", value: 17.2, unit: "%", format: "percent", help: "PS sur gains lorsque applicable." }
-    ]
+    lastReview: "2025-12-30"
   },
-
-  devices: [
-    // ==============================
-    // ASSURANCE-VIE (refait + seuils)
-    // ==============================
+  products: [
     {
       id: "assurance_vie",
       label: "Assurance-vie",
-      subtitle: "Seuils (rachats) + prélèvements sociaux + transmission (captures)",
-      table: {
-        columns: ["Phase", "Régime par défaut", "Sur option", "Notes / points d’attention"],
+      subtitle: "Matrice conforme au modèle Excel fourni",
+      matrix: {
+        columns: [
+          "Phase",
+          "Régime par défaut",
+          "Type 1",
+          "Type 2",
+          "Type 3",
+          "Type 4",
+          "Type 5",
+          "Type 6",
+          "Type 7",
+          "Type 8",
+          "Valeur par défaut",
+          "Commentaires"
+        ],
+        // rows = 54 lignes, 12 colonnes (cellules)
+        // NOTE: bg F2F2F2 = gris (col Type 8 : PFU/PS/IR)
+        //       bg F8FCF6 = vert clair (col Valeur par défaut : taux/montants)
         rows: [
-          {
-            phase: "Épargne",
-            default:
-              "Versement déductible des revenus (économie d’IR sur les versements) : **Non**\n" +
-              "Fiscalité en cours de constitution sur les intérêts : **Non**\n" +
-              "Prélèvements sociaux : **{{av_ps_total}}** sur les intérêts (fonds € prélevés au fil de l’eau)",
-            option:
-              "UC : PS dus **au rachat ou au décès** (pas d’IR pendant la phase d’épargne)\n" +
-              "Détail PS (informatif) : CSG {{av_ps_csg}} / CRDS {{av_ps_crds}} / Prélèvement social {{av_ps_prelev_social}} / Add. {{av_ps_contrib_add}}",
-            notes:
-              "Pendant l’épargne : pas d’IR sur intérêts tant qu’il n’y a pas de rachat.\n" +
-              "PS : timing différent Fonds € vs UC."
-          },
-          {
-            phase: "Retraits",
-            default:
-              "Assiette : **uniquement la part d’intérêts** comprise dans le rachat (prorata).\n\n" +
-              "Versements effectués **à partir du {{av_date_pfu}}** :\n" +
-              "• Par défaut : **PFU** = IR {{av_pfu_ir}} + PS {{av_ps_total}} (soit **30%** au total).\n\n" +
-              "Après 8 ans : abattement annuel sur intérêts rachetés :\n" +
-              "• {{av_abattement_8y_single}} (personne seule) / {{av_abattement_8y_couple}} (couple). \n" +
-              "• Puis IR : {{av_pf_8y_taux_reduit}} dans la limite des règles (ex : premiers {{av_seuil_150k}} de versements), sinon {{av_pf_8y_taux_plein}}.",
-            option:
-              "Versements effectués **jusqu’au {{av_date_pfu}}** : option PFL selon ancienneté du contrat :\n" +
-              "• <4 ans : IR {{av_pfl_0_4_ir}} + PS {{av_ps_total}} (≈ 52,20%)\n" +
-              "• 4-8 ans : IR {{av_pfl_4_8_ir}} + PS {{av_ps_total}} (≈ 32,20%)\n" +
-              "• >8 ans : IR {{av_pfl_8p_ir}} + PS {{av_ps_total}} (≈ 24,70%)\n\n" +
-              "Option barème IR : possible (au lieu PFU/PFL) + PS {{av_ps_total}}",
-            notes:
-              "Toujours vérifier : date des versements (avant/après {{av_date_pfu}}), ancienneté du contrat, et abattement annuel >8 ans.\n" +
-              "Rachat = taxation sur **produits** uniquement (pas sur capital)."
-          },
-          {
-            phase: "Décès",
-            default:
-              "Règles de transmission (résumé des seuils) :\n\n" +
-              "• Contrat souscrit **avant {{av_deces_cut_1991}}** :\n" +
-              "  - Primes versées jusqu’au 12/10/1998 : exonération totale\n" +
-              "  - Primes versées après {{av_deces_cut_1998}} : abattement {{av_deces_abatt_990i}} / bénéficiaire puis {{av_deces_taux_20}} jusqu’à {{av_deces_tranche_20_limite}}, puis {{av_deces_taux_3125}} au-delà\n\n" +
-              "• Contrat souscrit du {{av_deces_cut_1991}} au 12/10/1998 :\n" +
-              "  - Versements <70 ans : mêmes règles ({{av_deces_abatt_990i}} puis {{av_deces_taux_20}}/{{av_deces_taux_3125}})\n" +
-              "  - Versements ≥70 ans : abattement global {{av_deces_abatt_757b}} puis droits de succession",
-            option:
-              "• Contrat souscrit **après {{av_deces_cut_1998}}** :\n" +
-              "  - Versements <70 ans : abattement {{av_deces_abatt_990i}} / bénéficiaire puis {{av_deces_taux_20}} jusqu’à {{av_deces_tranche_20_limite}}, puis {{av_deces_taux_3125}} au-delà\n" +
-              "  - Versements ≥70 ans : abattement {{av_deces_abatt_757b}} (tous contrats et bénéficiaires confondus) puis droits de succession",
-            notes:
-              "Le décès est piloté par : (1) date de souscription, (2) âge au versement (<70 / ≥70), (3) date des primes (jusqu’au 12/10/1998 / après {{av_deces_cut_1998}}).\n" +
-              "Les produits attachés aux primes ≥70 ans ne sont pas traités comme les primes (règles spécifiques à rappeler au besoin)."
-          }
+          [{"v":"Épargne"},{"v":"Versement déductible des revenus"},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Non"},{"v":"-"}],
+          [{"v":""},{"v":"Fiscalité en cours de constitution sur les intérêts :"},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Non"},{"v":"*17.20% sur les intérêts du fonds € prélevés annuellement"}],
+
+          [{"v":"Retraits en capital"},{"v":"Assiette :"},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Intérets"},{"v":""}],
+          [{"v":""},{"v":"Taux applicable : "},{"v":"Versements effectués à partir du "},{"v":"2017-09-27","fmt":"date"},{"v":"<8 ans"},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PFU*","bg":"F2F2F2"},{"v":0.128,"bg":"F8FCF6","fmt":"percent"},{"v":"*Ou barème"}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":">8 ans"},{"v":"Célibataire"},{"v":4600,"fmt":"currency"},{"v":"Gain provenant des"},{"v":"<150 000 €"},{"v":"PFL*","bg":"F2F2F2"},{"v":0.075,"bg":"F8FCF6","fmt":"percent"},{"v":"*Ou barème"}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Gain au delà des"},{"v":">150 000 €"},{"v":"PFU*","bg":"F2F2F2"},{"v":0.128,"bg":"F8FCF6","fmt":"percent"},{"v":"*Ou barème"}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Couple"},{"v":9200,"fmt":"currency"},{"v":"Gain provenant des"},{"v":"<150 000 €"},{"v":"PFL*","bg":"F2F2F2"},{"v":0.075,"bg":"F8FCF6","fmt":"percent"},{"v":"*Ou barème"}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Gain au delà des"},{"v":">150 000 €"},{"v":"PFU*","bg":"F2F2F2"},{"v":0.128,"bg":"F8FCF6","fmt":"percent"},{"v":"*Ou barème"}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+
+          [{"v":""},{"v":""},{"v":"Versements effectués avant"},{"v":"2017-09-27","fmt":"date"},{"v":"<4 ans"},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PFL*","bg":"F2F2F2"},{"v":0.35,"bg":"F8FCF6","fmt":"percent"},{"v":"*Ou barème"}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":"4 à 8 ans"},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PFL*","bg":"F2F2F2"},{"v":0.15,"bg":"F8FCF6","fmt":"percent"},{"v":"*Ou barème"}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":">8 ans"},{"v":"Célibataire"},{"v":4600,"fmt":"currency"},{"v":""},{"v":""},{"v":"PFL*","bg":"F2F2F2"},{"v":0.075,"bg":"F8FCF6","fmt":"percent"},{"v":"*Ou barème"}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Couple"},{"v":9200,"fmt":"currency"},{"v":""},{"v":""},{"v":"PFL*","bg":"F2F2F2"},{"v":0.075,"bg":"F8FCF6","fmt":"percent"},{"v":"*Ou barème"}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+
+          [{"v":"Décès"},{"v":"Règles de transmission"},{"v":"Contrat souscrit avant le"},{"v":"1991-11-20","fmt":"date"},{"v":"Vst des primes jusqu'au"},{"v":"1998-10-12","fmt":"date"},{"v":""},{"v":""},{"v":""},{"v":""},{"v":0,"bg":"F8FCF6"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Vst des primes à partir"},{"v":"1998-10-13","fmt":"date"},{"v":"<152 500 €"},{"v":"/bénef"},{"v":""},{"v":0,"bg":"F8FCF6"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"<852 500 €"},{"v":"/bénef"},{"v":""},{"v":0.2,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":">852 500 €"},{"v":"/bénef"},{"v":""},{"v":0.35,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+
+          [{"v":""},{"v":""},{"v":""},{"v":"1991-11-20","fmt":"date"},{"v":"Vst des primes jusqu'au"},{"v":"1998-10-12","fmt":"date"},{"v":""},{"v":""},{"v":""},{"v":""},{"v":0,"bg":"F8FCF6"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Vst des primes à partir"},{"v":"1998-10-13","fmt":"date"},{"v":"<152 500 €"},{"v":"/bénef"},{"v":""},{"v":0,"bg":"F8FCF6"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"<852 500 €"},{"v":"/bénef"},{"v":""},{"v":0.2,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":">852 500 €"},{"v":"/bénef"},{"v":""},{"v":0.35,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Vst ≥70ans"},{"v":""},{"v":""},{"v":"< 30 500 €"},{"v":"global"},{"v":""},{"v":0,"bg":"F8FCF6"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"> 30 500 €"},{"v":"global"},{"v":"DMTG*","bg":"F2F2F2"},{"v":1,"bg":"F8FCF6"},{"v":"*Intègre le barème des droits de succession"}],
+
+          [{"v":""},{"v":""},{"v":"Contrat souscrit après le"},{"v":"1998-10-13","fmt":"date"},{"v":"Vst <70ans"},{"v":""},{"v":""},{"v":"<152 500 €"},{"v":"/bénef"},{"v":""},{"v":0,"bg":"F8FCF6"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"<852 500 €"},{"v":"/bénef"},{"v":""},{"v":0.2,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":">852 500 €"},{"v":"/bénef"},{"v":""},{"v":0.35,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Vst ≥70ans"},{"v":""},{"v":""},{"v":"< 30 500 €"},{"v":"global"},{"v":""},{"v":0,"bg":"F8FCF6"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"> 30 500 €"},{"v":"global"},{"v":"DMTG*","bg":"F2F2F2"},{"v":1,"bg":"F8FCF6"},{"v":"*Intègre le barème des droits de succession"}],
+
+          [{"v":"Liquidation en rente"},{"v":"Transformation du capital en rente viagère"},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Oui"},{"v":""}],
+          [{"v":""},{"v":"Fiscalité de la rente"},{"v":"Fraction générée par les primes"},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Selon l'âge de l’assuré lors de la transformation du capital en rente"},{"v":""},{"v":""},{"v":""},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"<60 ans"},{"v":0.5,"fmt":"percent"},{"v":"IR","bg":"F2F2F2"},{"v":"Barème"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"<70 ans"},{"v":0.4,"fmt":"percent"},{"v":"IR","bg":"F2F2F2"},{"v":"Barème"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"≥70 ans"},{"v":0.3,"fmt":"percent"},{"v":"IR","bg":"F2F2F2"},{"v":"Barème"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+
+          [{"v":""},{"v":""},{"v":"Fraction générée par les intérets"},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Selon l'âge de l’assuré lors de la transformation du capital en rente"},{"v":""},{"v":""},{"v":""},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":"Les PS sont calculés sur l'assiette après abattement"}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"<60 ans"},{"v":0.5,"fmt":"percent"},{"v":"IR","bg":"F2F2F2"},{"v":"Barème"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"<70 ans"},{"v":0.4,"fmt":"percent"},{"v":"IR","bg":"F2F2F2"},{"v":"Barème"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"≥70 ans"},{"v":0.3,"fmt":"percent"},{"v":"IR","bg":"F2F2F2"},{"v":"Barème"},{"v":""}],
+          [{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"PS","bg":"F2F2F2"},{"v":0.172,"bg":"F8FCF6","fmt":"percent"},{"v":""}],
+
+          [{"v":""},{"v":"Transmission des capitaux en cas de décès"},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":""},{"v":"Non*"},{"v":"*Sauf éventuelle réversion de la rente"}]
+        ],
+        merges: [
+          { col: 0, start: 0, end: 1 },     // Épargne
+          { col: 0, start: 2, end: 20 },    // Retraits en capital
+          { col: 0, start: 21, end: 35 },   // Décès
+          { col: 0, start: 36, end: 53 }    // Liquidation en rente
         ]
       }
     },
 
-    // ==============================
-    // PER INDIVIDUEL (refait notion)
-    // ==============================
+    // ---------- AUTRES PRODUITS (même matrice, éditable) ----------
     {
       id: "per_individuel",
       label: "PER individuel (PERIN)",
-      subtitle: "Déductibilité à l’entrée + sortie capital/rente",
-      table: {
-        columns: ["Phase", "Régime par défaut", "Sur option", "Notes / points d’attention"],
-        rows: [
-          {
-            phase: "Épargne",
-            default:
-              "Versement déductible des revenus (économie d’IR sur les versements) : **Oui** (dans la limite du plafond épargne retraite)\n" +
-              "Fiscalité en cours de constitution sur les intérêts : **Non**",
-            option:
-              "Renoncer à la déductibilité : **Oui possible** (versements « non déduits ») → sortie du capital moins taxée sur la part « capital »",
-            notes:
-              "Choix clé : déduire aujourd’hui (gain TMI) vs ne pas déduire (mieux à la sortie)."
-          },
-          {
-            phase: "Retraits",
-            default:
-              "Sortie en capital (cas courant) :\n" +
-              "• **Capital (versements déduits)** : imposé au **barème IR (TMI)**\n" +
-              "• **Intérêts / gains** : **PFU** = IR {{per_pfu_ir}} + PS {{per_ps_total}}\n\n" +
-              "Sortie en rente : imposée au barème IR (pensions) + prélèvements sociaux selon règles en vigueur",
-            option:
-              "Si versements **non déduits** :\n" +
-              "• Capital = non imposé (déjà « fiscalisé » à l’entrée)\n" +
-              "• Gains = PFU (IR {{per_pfu_ir}} + PS {{per_ps_total}})\n\n" +
-              "Lissage : sorties fractionnées pour piloter la TMI",
-            notes:
-              "Toujours dissocier : part « capital/versements » vs « gains ». Point critique : une sortie en capital importante peut faire monter la tranche."
-          },
-          {
-            phase: "Décès",
-            default:
-              "Traitement dépend de la forme du PER (assurantiel/titres) et des options contractuelles.\n" +
-              "En pratique : liquidation au décès au profit des ayants droit, avec régime de mutation souvent de nature successorale.",
-            option:
-              "Options contractuelles : rente de réversion, bénéficiaires, modalités de liquidation.\n" +
-              "À paramétrer en fonction de l’objectif (retraite vs transmission).",
-            notes:
-              "À détailler/paramétrer si tu veux une grille chiffrée similaire à l’AV (selon le type de PER retenu dans ton app)."
-          }
-        ]
-      }
+      subtitle: "Même structure de matrice (taux/assiettes/conditions)",
+      matrix: buildDefaultMatrix_PERIN()
     },
-
-    // Les autres enveloppes peuvent rester “texte” pour l’instant,
-    // et tu ajoutes leurs paramètres chiffrés au fur et à mesure.
-    // (CTO / PEA / SCPI / Livrets)
     {
       id: "cto",
       label: "Compte-titres ordinaire (CTO)",
-      subtitle: "PFU vs barème, PV/MV, succession",
-      table: {
-        columns: ["Phase", "Régime par défaut", "Sur option", "Notes / points d’attention"],
-        rows: [
-          { phase: "Épargne", default: "Revenus/cessions taxés au fil de l’eau (PFU par défaut).", option: "Option barème IR (annuelle, globale).", notes: "À enrichir en seuils/taux via paramètres si besoin." },
-          { phase: "Retraits", default: "Le retrait en soi n’est pas taxable : c’est la cession qui déclenche l’impôt.", option: "Pilotage PV/MV.", notes: "" },
-          { phase: "Décès", default: "Droits de mutation (successions).", option: "Donation/démembrement/pactes.", notes: "" }
-        ]
-      }
+      subtitle: "PFU vs option barème, PV/MV, décès",
+      matrix: buildDefaultMatrix_CTO()
     },
     {
       id: "pea",
       label: "PEA",
-      subtitle: "Durée de détention = clé",
-      table: {
-        columns: ["Phase", "Régime par défaut", "Sur option", "Notes / points d’attention"],
-        rows: [
-          { phase: "Épargne", default: "Capitalisation sans IR tant qu’il n’y a pas de retrait.", option: "—", notes: "" },
-          { phase: "Retraits", default: "Seuils de durée (exonération IR selon régime en vigueur) + PS.", option: "—", notes: "Tu peux ajouter des paramètres (durées, taux) si tu veux." },
-          { phase: "Décès", default: "Clôture au décès + succession.", option: "—", notes: "" }
-        ]
-      }
+      subtitle: "Seuils de durée, exonération IR, PS, décès",
+      matrix: buildDefaultMatrix_PEA()
     },
     {
       id: "scpi_direct",
       label: "SCPI en direct",
-      subtitle: "Revenus fonciers + PV immo (direct uniquement)",
-      table: {
-        columns: ["Phase", "Régime par défaut", "Sur option", "Notes / points d’attention"],
-        rows: [
-          { phase: "Épargne", default: "Revenus fonciers au barème IR + PS.", option: "Micro-foncier vs réel.", notes: "Direct uniquement." },
-          { phase: "Retraits", default: "PV immobilière des particuliers + abattements durée.", option: "—", notes: "" },
-          { phase: "Décès", default: "Succession (droits de mutation).", option: "—", notes: "" }
-        ]
-      }
+      subtitle: "Revenus fonciers + PV immobilières (direct uniquement)",
+      matrix: buildDefaultMatrix_SCPI()
     },
     {
       id: "livret_bancaire",
       label: "Livret bancaire (fiscalisé)",
-      subtitle: "Intérêts taxés, pas le retrait",
-      table: {
-        columns: ["Phase", "Régime par défaut", "Sur option", "Notes / points d’attention"],
-        rows: [
-          { phase: "Épargne", default: "Intérêts au PFU par défaut.", option: "Option barème IR.", notes: "Livret A/LDDS : intérêts exonérés (note), capital successoral." },
-          { phase: "Retraits", default: "Retrait non taxable (impôt sur intérêts).", option: "—", notes: "" },
-          { phase: "Décès", default: "Actif successoral.", option: "—", notes: "" }
-        ]
-      }
+      subtitle: "PFU / option barème ; note Livret A/LDDS",
+      matrix: buildDefaultMatrix_LIVRET()
     }
   ],
-
   disclaimer: [
     "Contenu informatif, non constitutif de conseil.",
-    "Taux/seuils modifiables dans l’admin : vérifier la réglementation en vigueur (LF/doctrine).",
-    "Adapter au cas client (RFR, TMI, situation familiale, dates exactes de versement, etc.)."
+    "Règles fiscales susceptibles d’évoluer (LF, doctrine). Vérifier l’actualité au moment du conseil.",
+    "Adapter au cas client : TMI, RFR, dates, situation familiale, objectifs, etc."
   ]
 };
 
+/** ===== Helpers Matrice ===== */
 
-// -----------------------
-// Helpers
-// -----------------------
-function getParamMap(parameters = []) {
-  const map = {};
-  for (const p of parameters) map[p.key] = p;
-  return map;
+const BG_GREY = "F2F2F2";
+const BG_GREEN = "F8FCF6";
+
+function makeCell(v = "", opts = {}) {
+  return { v, ...opts };
 }
 
-function formatParamValue(param) {
-  if (!param) return "";
-  const v = param.value;
+function makeRow(vals) {
+  const row = [];
+  for (let i = 0; i < 12; i++) row.push(makeCell(vals[i] ?? ""));
+  return row;
+}
 
-  if (param.format === "currency") {
-    const n = typeof v === "number" ? v : Number(v);
+function defaultColumns() {
+  return [
+    "Phase",
+    "Régime par défaut",
+    "Type 1",
+    "Type 2",
+    "Type 3",
+    "Type 4",
+    "Type 5",
+    "Type 6",
+    "Type 7",
+    "Type 8",
+    "Valeur par défaut",
+    "Commentaires"
+  ];
+}
+
+function buildDefaultMatrix_PERIN() {
+  const columns = defaultColumns();
+  const rows = [
+    makeRow(["Épargne", "Versement déductible des revenus", "", "", "", "", "", "", "", "", "Oui", "Plafond épargne retraite (à préciser/ajuster)"]),
+    makeRow(["", "Fiscalité en cours de constitution sur les intérêts", "", "", "", "", "", "", "", "", "Non", "Aucune taxation tant qu’il n’y a pas de sortie"]),
+    makeRow(["", "Disponibilité des fonds", "", "", "Cas de déblocage anticipé", "", "", "", "", "", "Oui", "Invalidité, décès, fin droits chômage, achat RP (selon règles)"]),
+
+    makeRow(["Retraits en capital", "Assiette :", "", "", "", "", "", "", "", "", "Capital + Gains", "Distinguer 'versements' vs 'gains'"]),
+    // Versements déduits
+    [
+      makeCell(""),
+      makeCell("Versements déduits à l'entrée"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("IR", { bg: BG_GREY }),
+      makeCell("Barème"),
+      makeCell("Sur la part 'capital' (TMI)")
+    ],
+    [
+      makeCell(""),
+      makeCell("Gains (intérêts/plus-values)"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PFU*", { bg: BG_GREY }),
+      makeCell(0.128, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("*Ou barème (option globale annuelle)")
+    ],
+    [
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PS", { bg: BG_GREY }),
+      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("")
+    ],
+    // Versements non déduits
+    [
+      makeCell(""),
+      makeCell("Versements NON déduits (sur option à l'entrée)"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("IR", { bg: BG_GREY }),
+      makeCell("0%"),
+      makeCell("Capital non imposé (si non déduit)")
+    ],
+    [
+      makeCell(""),
+      makeCell("Gains sur versements non déduits"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PFU*", { bg: BG_GREY }),
+      makeCell(0.128, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("")
+    ],
+    [
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PS", { bg: BG_GREY }),
+      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("")
+    ],
+
+    makeRow(["Liquidation en rente", "Transformation du capital en rente viagère", "", "", "", "", "", "", "", "", "Oui", ""]),
+    makeRow(["", "Fiscalité de la rente (principe)", "Rente assimilée pension", "", "", "", "", "", "", "IR", "Barème", "RTVG (règles à adapter)"]),
+    makeRow(["", "", "", "", "", "", "", "", "", "PS", "Selon règles", "CSG/CRDS sur pensions (à adapter)"]),
+
+    makeRow(["Décès", "Traitement en cas de décès", "Dépend du type de PER", "", "", "", "", "", "", "", "Succession", "À préciser selon PER assurantiel / compte-titres"]),
+    makeRow(["", "Clause bénéficiaire (si PER assurantiel)", "", "", "", "", "", "", "", "", "Oui", "Peut s’approcher d’un schéma AV selon contrat"]),
+    makeRow(["", "Réversion éventuelle de rente", "", "", "", "", "", "", "", "", "Oui", "Selon option de liquidation"])
+  ];
+
+  const merges = [
+    { col: 0, start: 0, end: 2 },
+    { col: 0, start: 3, end: 9 },
+    { col: 0, start: 10, end: 12 },
+    { col: 0, start: 13, end: 15 }
+  ];
+
+  return { columns, rows, merges };
+}
+
+function buildDefaultMatrix_CTO() {
+  const columns = defaultColumns();
+  const rows = [
+    makeRow(["Épargne", "Versement déductible des revenus", "", "", "", "", "", "", "", "", "Non", ""]),
+    [
+      makeCell(""),
+      makeCell("Fiscalité des revenus (dividendes / intérêts)"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PFU*", { bg: BG_GREY }),
+      makeCell(0.128, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("*Ou barème (option globale annuelle)")
+    ],
+    [
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PS", { bg: BG_GREY }),
+      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("")
+    ],
+    makeRow(["", "Abattement dividendes (si option barème)", "", "", "", "", "", "", "", "", "40%", "Sur dividendes éligibles (IR)"]),
+
+    makeRow(["Retraits en capital", "Assiette : plus-value de cession", "", "", "", "", "", "", "", "", "PV nette", "PV = prix cession - prix revient (frais)"]),
+    [
+      makeCell(""),
+      makeCell("Taux applicable (régime par défaut)"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PFU*", { bg: BG_GREY }),
+      makeCell(0.128, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("")
+    ],
+    [
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PS", { bg: BG_GREY }),
+      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("")
+    ],
+    makeRow(["", "Sur option : barème IR", "", "", "", "", "", "", "", "IR", "Barème", "Option globale PFU -> barème"]),
+    makeRow(["", "Moins-values", "", "", "", "", "", "", "", "", "Oui", "MV imputables, report (à ajuster)"]),
+
+    [
+      makeCell("Décès"),
+      makeCell("Règles de transmission"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("DMTG*", { bg: BG_GREY }),
+      makeCell(""),
+      makeCell("Droits de succession (actif successoral)")
+    ],
+    makeRow(["", "Plus-values latentes", "", "", "", "", "", "", "", "", "Non", "En principe, pas d’IR sur PV latentes au décès (base réévaluée)"])
+  ];
+
+  const merges = [
+    { col: 0, start: 0, end: 3 },
+    { col: 0, start: 4, end: 8 },
+    { col: 0, start: 9, end: 10 }
+  ];
+
+  return { columns, rows, merges };
+}
+
+function buildDefaultMatrix_PEA() {
+  const columns = defaultColumns();
+  const rows = [
+    makeRow(["Épargne", "Versement déductible des revenus", "", "", "", "", "", "", "", "", "Non", ""]),
+    makeRow(["", "Fiscalité en cours de constitution", "", "", "", "", "", "", "", "", "Non", "Tant qu’aucun retrait"]),
+
+    makeRow(["Retraits en capital", "Assiette : gains (produits)", "", "", "", "", "", "", "", "", "Gains", "Retrait selon durée : impact fiscal"]),
+    [
+      makeCell(""),
+      makeCell("Avant 5 ans"),
+      makeCell(""),
+      makeCell(""),
+      makeCell("Retrait"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PFU*", { bg: BG_GREY }),
+      makeCell(0.128, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("Clôture + PFU sur gains (à ajuster selon règles)")
+    ],
+    [
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PS", { bg: BG_GREY }),
+      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("")
+    ],
+    [
+      makeCell(""),
+      makeCell("Après 5 ans"),
+      makeCell(""),
+      makeCell(""),
+      makeCell("Retrait"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("IR", { bg: BG_GREY }),
+      makeCell("0%"),
+      makeCell("Exonération IR sur gains")
+    ],
+    [
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PS", { bg: BG_GREY }),
+      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("PS dus sur gains")
+    ],
+
+    [
+      makeCell("Décès"),
+      makeCell("Transmission"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("DMTG*", { bg: BG_GREY }),
+      makeCell(""),
+      makeCell("PEA clôturé, actif successoral")
+    ]
+  ];
+
+  const merges = [
+    { col: 0, start: 0, end: 1 },
+    { col: 0, start: 2, end: 6 },
+    { col: 0, start: 7, end: 7 }
+  ];
+
+  return { columns, rows, merges };
+}
+
+function buildDefaultMatrix_SCPI() {
+  const columns = defaultColumns();
+  const rows = [
+    makeRow(["Épargne", "Versement déductible des revenus", "", "", "", "", "", "", "", "", "Non", "Achat de parts : pas de déduction IR"]),
+    [
+      makeCell(""),
+      makeCell("Revenus (direct uniquement)"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("IR", { bg: BG_GREY }),
+      makeCell("Barème"),
+      makeCell("Revenus fonciers imposés au barème")
+    ],
+    [
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PS", { bg: BG_GREY }),
+      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("")
+    ],
+    [
+      makeCell(""),
+      makeCell("Micro-foncier (sur option)"),
+      makeCell(""),
+      makeCell(""),
+      makeCell("Seuil recettes"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("Abattement", { bg: BG_GREY }),
+      makeCell(0.30, { bg: BG_GREEN }),
+      makeCell("Applicable si recettes ≤ 15 000 € (à vérifier/ajuster)")
+    ],
+
+    makeRow(["Retraits en capital", "Cession de parts : plus-value immobilière", "", "", "", "", "", "", "", "", "PV immo", "Régime PV immo des particuliers"]),
+    makeRow(["", "Durée de détention", "", "", "", "", "", "", "", "", "Oui", "Abattements (IR/PS) selon durée (à détailler si besoin)"]),
+
+    [
+      makeCell("Décès"),
+      makeCell("Transmission"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("DMTG*", { bg: BG_GREY }),
+      makeCell(""),
+      makeCell("Parts dans l’actif successoral")
+    ]
+  ];
+
+  const merges = [
+    { col: 0, start: 0, end: 3 },
+    { col: 0, start: 4, end: 5 },
+    { col: 0, start: 6, end: 6 }
+  ];
+
+  return { columns, rows, merges };
+}
+
+function buildDefaultMatrix_LIVRET() {
+  const columns = defaultColumns();
+  const rows = [
+    makeRow(["Épargne", "Versement déductible des revenus", "", "", "", "", "", "", "", "", "Non", ""]),
+    [
+      makeCell(""),
+      makeCell("Intérêts fiscalisés (livrets bancaires)"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PFU*", { bg: BG_GREY }),
+      makeCell(0.128, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("*Ou barème (option globale annuelle)")
+    ],
+    [
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("PS", { bg: BG_GREY }),
+      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
+      makeCell("")
+    ],
+    makeRow(["", "Livret A / LDDS (note)", "", "", "", "", "", "", "", "IR", "0%", "Intérêts exonérés IR/PS (rappel)"]),
+
+    makeRow(["Retraits en capital", "Retrait (fait générateur)", "", "", "", "", "", "", "", "", "Aucun", "Retrait non imposable : seuls intérêts le sont"]),
+
+    [
+      makeCell("Décès"),
+      makeCell("Transmission"),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell(""),
+      makeCell("DMTG*", { bg: BG_GREY }),
+      makeCell(""),
+      makeCell("Solde au décès = actif successoral")
+    ]
+  ];
+
+  const merges = [
+    { col: 0, start: 0, end: 3 },
+    { col: 0, start: 4, end: 4 },
+    { col: 0, start: 5, end: 5 }
+  ];
+
+  return { columns, rows, merges };
+}
+
+function formatDisplay(cell) {
+  const v = cell?.v;
+
+  if (cell?.fmt === "percent") {
+    const n = Number(v);
     if (!Number.isFinite(n)) return String(v ?? "");
-    return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+    const pct = n * 100;
+    // 2 décimales si besoin
+    const digits = Number.isInteger(pct) ? 0 : 2;
+    return `${pct.toFixed(digits)}%`;
   }
 
-  if (param.format === "percent") {
-    const n = typeof v === "number" ? v : Number(v);
+  if (cell?.fmt === "currency") {
+    const n = Number(v);
     if (!Number.isFinite(n)) return String(v ?? "");
-    // On garde 2 décimales si besoin (31.25)
-    const digits = Number.isInteger(n) ? 0 : 2;
-    return `${n.toFixed(digits)}%`;
-  }
-
-  if (param.format === "date") {
-    return String(v ?? "");
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 0
+    }).format(n);
   }
 
   return String(v ?? "");
 }
 
-// Remplace {{param_key}} par sa valeur formatée
-function interpolate(text, paramMap) {
-  if (!text) return "";
-  return String(text).replace(/\{\{([a-zA-Z0-9_.-]+)\}\}/g, (_, key) => {
-    const p = paramMap[key];
-    if (!p) return `{{${key}}}`; // token inconnu => on laisse visible
-    return formatParamValue(p);
-  });
+function getRowSpan(merges, rowIndex, colIndex) {
+  const m = (merges || []).find((x) => x.col === colIndex && rowIndex >= x.start && rowIndex <= x.end);
+  if (!m) return 1;
+  if (rowIndex === m.start) return m.end - m.start + 1;
+  return 0; // dans la fusion mais pas la cellule "départ" => on ne rend pas la td
 }
 
 export default function SettingsFiscalites() {
@@ -290,7 +661,6 @@ export default function SettingsFiscalites() {
   const [message, setMessage] = useState("");
 
   const isAdmin = useMemo(() => roleLabel === "Admin", [roleLabel]);
-  const paramMap = useMemo(() => getParamMap(settings?.meta?.parameters || []), [settings]);
 
   useEffect(() => {
     let mounted = true;
@@ -306,6 +676,7 @@ export default function SettingsFiscalites() {
           if (mounted) setLoading(false);
           return;
         }
+
         const u = userData?.user || null;
         if (!mounted) return;
 
@@ -341,24 +712,14 @@ export default function SettingsFiscalites() {
         if (setErr) {
           console.error("settings_fiscalites load error:", setErr);
         } else if (row?.data) {
-          // Merge robuste : si ancienne version sans meta.parameters, fallback aux defaults
           setSettings((prev) => {
             const incoming = row.data;
-
-            const mergedMeta = {
-              ...(prev?.meta || {}),
-              ...(incoming?.meta || {}),
-              parameters: Array.isArray(incoming?.meta?.parameters)
-                ? incoming.meta.parameters
-                : (prev?.meta?.parameters || []),
-            };
-
             return {
               ...prev,
               ...incoming,
-              meta: mergedMeta,
-              devices: Array.isArray(incoming?.devices) ? incoming.devices : prev.devices,
-              disclaimer: Array.isArray(incoming?.disclaimer) ? incoming.disclaimer : prev.disclaimer,
+              meta: { ...(prev.meta || {}), ...(incoming.meta || {}) },
+              products: Array.isArray(incoming.products) ? incoming.products : prev.products,
+              disclaimer: Array.isArray(incoming.disclaimer) ? incoming.disclaimer : prev.disclaimer
             };
           });
         }
@@ -376,34 +737,13 @@ export default function SettingsFiscalites() {
     };
   }, []);
 
-  const updateParamValue = (key, rawValue) => {
+  const updateCell = (productId, rowIndex, colIndex, newValue) => {
     setSettings((prev) => {
-      const clone = structuredClone(prev);
-      const params = clone?.meta?.parameters || [];
-      const idx = params.findIndex((p) => p.key === key);
-      if (idx === -1) return prev;
-
-      const p = params[idx];
-      // cast selon format
-      let nextValue = rawValue;
-      if (p.format === "currency" || p.format === "percent") {
-        const n = Number(rawValue);
-        nextValue = Number.isFinite(n) ? n : rawValue;
-      }
-      p.value = nextValue;
-      clone.meta.parameters = params;
-      return clone;
-    });
-    setMessage("");
-  };
-
-  const updateCell = (deviceId, rowIndex, field, value) => {
-    setSettings((prev) => {
-      const clone = structuredClone(prev);
-      const dev = clone.devices?.find((d) => d.id === deviceId);
-      if (!dev?.table?.rows?.[rowIndex]) return prev;
-      dev.table.rows[rowIndex][field] = value;
-      return clone;
+      const next = structuredClone(prev);
+      const p = next.products?.find((x) => x.id === productId);
+      if (!p?.matrix?.rows?.[rowIndex]?.[colIndex]) return prev;
+      p.matrix.rows[rowIndex][colIndex].v = newValue;
+      return next;
     });
     setMessage("");
   };
@@ -419,12 +759,10 @@ export default function SettingsFiscalites() {
         key: SETTINGS_KEY,
         data: settings,
         updated_by: user.id,
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
-      const { error } = await supabase
-        .from("settings_fiscalites")
-        .upsert(payload, { onConflict: "key" });
+      const { error } = await supabase.from("settings_fiscalites").upsert(payload, { onConflict: "key" });
 
       if (error) {
         console.error(error);
@@ -481,188 +819,139 @@ export default function SettingsFiscalites() {
             <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {roleLabel}
           </div>
 
-          {/* META */}
           <section>
-            <h3>{settings?.meta?.title || "Synthèse fiscalité"}</h3>
-            <p style={{ fontSize: 13, color: "#555", marginBottom: 8 }}>
-              Les cellules peuvent contenir des tokens <code>{"{{...}}"}</code> remplacés par les paramètres chiffrés ci-dessous.
-              (Ex : <code>{"{{av_ps_total}}"}</code>).
+            <h3>{settings?.meta?.title || "Matrice fiscalité"}</h3>
+            <p style={{ fontSize: 13, color: "#555" }}>
+              Mode Admin : édition cellule par cellule (taux/montants/texte). Mode User : lecture seule.
             </p>
           </section>
 
-          {/* PARAMÈTRES CHIFFRÉS (Admin only edit) */}
-          <section>
-            <h3>Paramètres chiffrés (taux / montants / dates)</h3>
-            <p style={{ fontSize: 13, color: "#555", marginBottom: 8 }}>
-              Ici l’Admin peut modifier les valeurs numériques. Les tableaux utilisent ces valeurs via interpolation.
-            </p>
+          {(settings?.products || []).map((prod) => {
+            const { columns, rows, merges } = prod.matrix || {};
+            return (
+              <section key={prod.id}>
+                <h3>{prod.label}</h3>
+                {prod.subtitle && <p style={{ fontSize: 13, color: "#555", marginBottom: 10 }}>{prod.subtitle}</p>}
 
-            <table className="settings-table fiscalites-params-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 280, textAlign: "left" }}>Paramètre</th>
-                  <th style={{ width: 160, textAlign: "left" }}>Valeur</th>
-                  <th style={{ width: 80, textAlign: "left" }}>Unité</th>
-                  <th style={{ textAlign: "left" }}>Description</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(settings?.meta?.parameters || []).map((p) => (
-                  <tr key={p.key}>
-                    <td style={{ textAlign: "left", verticalAlign: "top" }}>
-                      <div style={{ fontWeight: 600 }}>{p.label}</div>
-                      <div className="param-key">key: {p.key}</div>
-                    </td>
-                    <td style={{ textAlign: "left", verticalAlign: "top" }}>
-                      {p.format === "date" ? (
-                        <input
-                          className="settings-input"
-                          type="text"
-                          value={p.value ?? ""}
-                          onChange={(e) => updateParamValue(p.key, e.target.value)}
-                          disabled={!isAdmin}
-                          placeholder="YYYY-MM-DD"
-                        />
-                      ) : (
-                        <input
-                          className="settings-input"
-                          type="number"
-                          step={p.format === "percent" ? "0.01" : "1"}
-                          value={p.value ?? ""}
-                          onChange={(e) => updateParamValue(p.key, e.target.value)}
-                          disabled={!isAdmin}
-                        />
-                      )}
-                      <div className="param-preview">Aperçu : {formatParamValue(p)}</div>
-                    </td>
-                    <td style={{ textAlign: "left", verticalAlign: "top" }}>{p.unit || ""}</td>
-                    <td style={{ textAlign: "left", verticalAlign: "top", fontSize: 13, color: "#555" }}>
-                      {p.help || ""}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
+                <div className="matrix-wrap">
+                  <table className="settings-table fiscalites-matrix">
+                    <thead>
+                      <tr>
+                        {(columns || []).map((col, idx) => (
+                          <th key={idx} className="matrix-th">
+                            {col}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
 
-          {/* DEVICES TABLES */}
-          {(settings?.devices || []).map((dev) => (
-            <section key={dev.id}>
-              <h3>{dev.label}</h3>
-              {dev.subtitle && <p style={{ fontSize: 13, color: "#555", marginBottom: 8 }}>{dev.subtitle}</p>}
+                    <tbody>
+                      {(rows || []).map((r, rowIdx) => (
+                        <tr key={rowIdx}>
+                          {r.map((cell, colIdx) => {
+                            const rowSpan = colIdx === 0 ? getRowSpan(merges, rowIdx, colIdx) : 1;
+                            if (colIdx === 0 && rowSpan === 0) return null;
 
-              <table className="settings-table fiscalites-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: 120, textAlign: "left" }}>Phase</th>
-                    <th>Régime par défaut</th>
-                    <th>Sur option</th>
-                    <th>Notes / points d’attention</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(dev?.table?.rows || []).map((row, idx) => (
-                    <tr key={`${dev.id}_${idx}`}>
-                      <td style={{ textAlign: "left", verticalAlign: "top", fontWeight: 600 }}>{row.phase}</td>
+                            const bg = cell?.bg ? `#${cell.bg}` : undefined;
+                            const isLongText = typeof cell?.v === "string" && cell.v.length > 40;
 
-                      {/* Default */}
-                      <td style={{ textAlign: "left", verticalAlign: "top" }}>
-                        {isAdmin ? (
-                          <textarea
-                            className="settings-textarea"
-                            value={row.default || ""}
-                            onChange={(e) => updateCell(dev.id, idx, "default", e.target.value)}
-                            disabled={!isAdmin}
-                            rows={8}
-                          />
-                        ) : (
-                          <div className="cell-readonly">
-                            {interpolate(row.default || "", paramMap).split("\n").map((line, i) => (
-                              <div key={i}>{line}</div>
-                            ))}
-                          </div>
-                        )}
-                      </td>
+                            const commonStyle = {
+                              background: bg,
+                              whiteSpace: "pre-wrap"
+                            };
 
-                      {/* Option */}
-                      <td style={{ textAlign: "left", verticalAlign: "top" }}>
-                        {isAdmin ? (
-                          <textarea
-                            className="settings-textarea"
-                            value={row.option || ""}
-                            onChange={(e) => updateCell(dev.id, idx, "option", e.target.value)}
-                            disabled={!isAdmin}
-                            rows={8}
-                          />
-                        ) : (
-                          <div className="cell-readonly">
-                            {interpolate(row.option || "", paramMap).split("\n").map((line, i) => (
-                              <div key={i}>{line}</div>
-                            ))}
-                          </div>
-                        )}
-                      </td>
-
-                      {/* Notes */}
-                      <td style={{ textAlign: "left", verticalAlign: "top" }}>
-                        {isAdmin ? (
-                          <textarea
-                            className="settings-textarea"
-                            value={row.notes || ""}
-                            onChange={(e) => updateCell(dev.id, idx, "notes", e.target.value)}
-                            disabled={!isAdmin}
-                            rows={8}
-                          />
-                        ) : (
-                          <div className="cell-readonly">
-                            {interpolate(row.notes || "", paramMap).split("\n").map((line, i) => (
-                              <div key={i}>{line}</div>
-                            ))}
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {isAdmin && (
-                <div className="hint-tokens">
-                  Astuce : tu peux insérer des tokens comme <code>{"{{av_ps_total}}"}</code> dans les cellules.
+                            return (
+                              <td
+                                key={colIdx}
+                                rowSpan={rowSpan}
+                                className={colIdx === 0 ? "matrix-phase" : ""}
+                                style={commonStyle}
+                              >
+                                {!isAdmin ? (
+                                  <div className="matrix-readonly">{formatDisplay(cell)}</div>
+                                ) : (
+                                  <>
+                                    {cell?.fmt === "percent" ? (
+                                      <input
+                                        className="matrix-input"
+                                        type="number"
+                                        step="0.0001"
+                                        value={cell?.v ?? ""}
+                                        onChange={(e) => updateCell(prod.id, rowIdx, colIdx, e.target.value)}
+                                      />
+                                    ) : cell?.fmt === "currency" ? (
+                                      <input
+                                        className="matrix-input"
+                                        type="number"
+                                        step="1"
+                                        value={cell?.v ?? ""}
+                                        onChange={(e) => updateCell(prod.id, rowIdx, colIdx, e.target.value)}
+                                      />
+                                    ) : cell?.fmt === "date" ? (
+                                      <input
+                                        className="matrix-input"
+                                        type="text"
+                                        placeholder="YYYY-MM-DD"
+                                        value={cell?.v ?? ""}
+                                        onChange={(e) => updateCell(prod.id, rowIdx, colIdx, e.target.value)}
+                                      />
+                                    ) : isLongText ? (
+                                      <textarea
+                                        className="settings-textarea"
+                                        rows={3}
+                                        value={cell?.v ?? ""}
+                                        onChange={(e) => updateCell(prod.id, rowIdx, colIdx, e.target.value)}
+                                      />
+                                    ) : (
+                                      <input
+                                        className="matrix-input"
+                                        type="text"
+                                        value={cell?.v ?? ""}
+                                        onChange={(e) => updateCell(prod.id, rowIdx, colIdx, e.target.value)}
+                                      />
+                                    )}
+                                  </>
+                                )}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-            </section>
-          ))}
+              </section>
+            );
+          })}
 
-          {/* DISCLAIMER */}
           <section>
             <h3>Disclaimer</h3>
-            {(settings?.disclaimer || []).map((d, idx) => (
-              <div key={idx} style={{ marginBottom: 8 }}>
-                {isAdmin ? (
-                  <textarea
-                    className="settings-textarea"
-                    value={d}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setSettings((prev) => {
-                        const clone = structuredClone(prev);
-                        clone.disclaimer[idx] = v;
-                        return clone;
-                      });
-                      setMessage("");
-                    }}
-                    disabled={!isAdmin}
-                    rows={2}
-                  />
-                ) : (
-                  <div style={{ fontSize: 13, color: "#555" }}>• {d}</div>
-                )}
-              </div>
-            ))}
+            <div className="fiscalites-disclaimer">
+              {(settings?.disclaimer || []).map((d, idx) => (
+                <div key={idx}>
+                  {isAdmin ? (
+                    <textarea
+                      className="settings-textarea"
+                      rows={2}
+                      value={d}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setSettings((prev) => {
+                          const next = structuredClone(prev);
+                          next.disclaimer[idx] = v;
+                          return next;
+                        });
+                        setMessage("");
+                      }}
+                    />
+                  ) : (
+                    <div style={{ fontSize: 13, color: "#555" }}>• {d}</div>
+                  )}
+                </div>
+              ))}
+            </div>
           </section>
 
-          {/* ACTIONS */}
           {isAdmin && (
             <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
               <button type="button" className="chip" onClick={handleSave} disabled={saving}>
