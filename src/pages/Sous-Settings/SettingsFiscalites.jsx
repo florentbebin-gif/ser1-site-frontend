@@ -290,7 +290,6 @@ const PRODUCTS = [
 
 {/* Accordéon produits */}
 <div className="fisc-accordion">
-  {[
     {PRODUCTS.map((p) => {
     const isOpen = openProductKey === p.key;
 
