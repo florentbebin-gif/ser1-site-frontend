@@ -346,29 +346,56 @@ const PRODUCTS = [
     setMessage('');
   };
 
-  const handleSave = async () => {
-    if (!isAdmin) return;
-    try {
-      setSaving(true);
-      setMessage('');
+const handleSave = async () => {
+  if (!isAdmin) return;
+  try {
+    setSaving(true);
+    setMessage('');
 
-      const { error } = await supabase
-        .from('fiscality_settings')
-        .upsert({ id: 1, data: settings });
+    // -----------------------------
+    // Validation PASS (8 lignes + ordre)
+    // -----------------------------
+    const ph = (settings.passHistory || []).slice();
 
-      if (error) {
-        console.error(error);
-        setMessage("Erreur lors de l'enregistrement.");
-      } else {
-        setMessage('Paramètres fiscalités enregistrés.');
-      }
-    } catch (e) {
-      console.error(e);
-      setMessage("Erreur lors de l'enregistrement.");
-    } finally {
+    if (ph.length !== 8) {
+      setMessage("Historique PASS : il faut exactement 8 lignes.");
       setSaving(false);
+      return;
     }
-  };
+
+    for (let i = 0; i < ph.length; i++) {
+      if (!ph[i]?.year || !ph[i]?.amount) {
+        setMessage("Historique PASS : année et montant obligatoires sur chaque ligne.");
+        setSaving(false);
+        return;
+      }
+      if (i > 0 && Number(ph[i].year) <= Number(ph[i - 1].year)) {
+        setMessage(
+          "Historique PASS : l’ordre doit être du plus ancien au plus récent (années strictement croissantes)."
+        );
+        setSaving(false);
+        return;
+      }
+    }
+
+    const { error } = await supabase
+      .from('fiscality_settings')
+      .upsert({ id: 1, data: settings });
+
+    if (error) {
+      console.error(error);
+      setMessage("Erreur lors de l'enregistrement.");
+    } else {
+      setMessage('Paramètres fiscalités enregistrés.');
+    }
+  } catch (e) {
+    console.error(e);
+    setMessage("Erreur lors de l'enregistrement.");
+  } finally {
+    setSaving(false);
+  }
+};
+
 
 
   // ---------------------------------------------
