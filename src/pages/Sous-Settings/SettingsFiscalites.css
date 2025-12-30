@@ -210,3 +210,22 @@
 .fisc-acc-body {
   padding: 10px 12px 12px;
 }
+/* Empêche les colonnes de “déborder” quand un enfant a une largeur fixe */
+.fisc-two-cols .fisc-col,
+.fisc-two-cols .fisc-col-right {
+  min-width: 0;
+}
+
+/* Champ note homogène (comme les autres champs, mais multi-ligne) */
+.settings-note {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  resize: vertical;
+  line-height: 1.35;
+}
