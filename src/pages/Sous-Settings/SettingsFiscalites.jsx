@@ -289,594 +289,863 @@ const PRODUCTS = [
 
 <h3 className="fisc-product-title">Assurance vie</h3>
 
-{/* 1) Phase d'épargne */}
-<section>
-  <h4 className="fisc-section-title">Phase d’épargne</h4>
 
-            <div className="income-tax-block">
-              <div className="income-tax-block-title">Versements</div>
-              <div className="settings-field-row">
-                <label>Versement déductible du revenu imposable</label>
-                <input
-                  type="text"
-                  value={av.epargne.versementDeductibleIR ? 'Oui' : 'Non'}
-                  disabled
-                  style={{ width: 90, textAlign: 'center' }}
-                />
-                <span />
-              </div>
-            </div>
+{/* Accordéon produits */}
+<div className="fisc-accordion">
+  {[
+    { key: 'assuranceVie', label: 'Assurance vie' },
+    // Plus tard :
+    // { key: 'perIndividuel', label: 'PER individuel' },
+    // { key: 'cto', label: 'Compte-titres (CTO)' },
+    // { key: 'pea', label: 'PEA' },
+  ].map((p) => {
+    const isOpen = openProductKey === p.key;
 
-            <div className="income-tax-block">
-              <div className="income-tax-block-title">Prélèvements sociaux pendant la capitalisation</div>
-              <div className="settings-field-row">
-                <label>Taux de PS sur intérêts</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={numberOrEmpty(av.epargne.socialOnInterestsDuringAccumulation.psRatePercent)}
-                  onChange={(e) =>
-                    updateField(
-                      ['assuranceVie', 'epargne', 'socialOnInterestsDuringAccumulation', 'psRatePercent'],
-                      e.target.value === '' ? null : Number(e.target.value)
-                    )
-                  }
-                  disabled={!isAdmin}
-                />
-                <span>%</span>
-              </div>
+    return (
+      <div key={p.key} className="fisc-acc-item">
+        <button
+          type="button"
+          className="fisc-acc-header"
+          onClick={() => setOpenProductKey(isOpen ? null : p.key)}
+        >
+          <span className="fisc-product-title" style={{ margin: 0 }}>
+            {p.label}
+          </span>
+          <span className="fisc-acc-chevron">{isOpen ? '▾' : '▸'}</span>
+        </button>
 
-              <div className="settings-field-row">
-                <label>Note</label>
-                <input
-                  type="text"
-                  value={textOrEmpty(av.epargne.socialOnInterestsDuringAccumulation.note)}
-                  onChange={(e) =>
-                    updateField(
-                      ['assuranceVie', 'epargne', 'socialOnInterestsDuringAccumulation', 'note'],
-                      e.target.value
-                    )
-                  }
-                  disabled={!isAdmin}
-                  style={{ width: 520, textAlign: 'left' }}
-                />
-                <span />
-              </div>
-            </div>
-          </section>
+        {isOpen && (
+          <div className="fisc-acc-body">
+            {p.key === 'assuranceVie' && (
+              <>
+                {/* 1) Phase d'épargne */}
+                <section>
+                  <h4 className="fisc-section-title">Phase d’épargne</h4>
 
-          {/* 2) Retraits en capital */}
-          <section>
-            <h4 className="fisc-section-title">Retraits en capital</h4>
-
-            <div className="income-tax-block">
-              <div className="income-tax-block-title">Assiette & PS</div>
-              <div className="settings-field-row">
-                <label>Assiette imposable</label>
-                <input type="text" value="Intérêts / gains" disabled style={{ width: 180, textAlign: 'center' }} />
-                <span />
-              </div>
-              <div className="settings-field-row">
-                <label>Taux de PS (global)</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={numberOrEmpty(av.retraitsCapital.psRatePercent)}
-                  onChange={(e) =>
-                    updateField(['assuranceVie', 'retraitsCapital', 'psRatePercent'], e.target.value === '' ? null : Number(e.target.value))
-                  }
-                  disabled={!isAdmin}
-                />
-                <span>%</span>
-              </div>
-            </div>
-
-            <div className="fisc-two-cols">
-              {/* Depuis 27/09/2017 */}
-              <div className="fisc-col">
-                <div className="fisc-col-title">Versements à partir du {av.retraitsCapital.depuis2017.startDate}</div>
-
-                <table className="settings-table">
-                  <thead>
-                    <tr>
-                      <th>Durée</th>
-                      <th className="taux-col">IR %</th>
-                      <th>Option barème</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>{av.retraitsCapital.depuis2017.moins8Ans.label}</td>
-                      <td className="taux-col">
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={numberOrEmpty(av.retraitsCapital.depuis2017.moins8Ans.irRatePercent)}
-                          onChange={(e) =>
-                            updateField(
-                              ['assuranceVie', 'retraitsCapital', 'depuis2017', 'moins8Ans', 'irRatePercent'],
-                              e.target.value === '' ? null : Number(e.target.value)
-                            )
-                          }
-                          disabled={!isAdmin}
-                        />
-                      </td>
-                      <td style={{ textAlign: 'left' }}>{av.retraitsCapital.depuis2017.moins8Ans.allowBaremeIR ? 'Oui' : 'Non'}</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <div className="income-tax-block" style={{ marginTop: 10 }}>
-                  <div className="income-tax-block-title">{av.retraitsCapital.depuis2017.plus8Ans.label}</div>
-
-                  <div className="settings-field-row">
-                    <label>Abattement annuel célibataire</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(av.retraitsCapital.depuis2017.plus8Ans.abattementAnnuel.single)}
-                      onChange={(e) =>
-                        updateField(
-                          ['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'abattementAnnuel', 'single'],
-                          e.target.value === '' ? null : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
+                  <div className="income-tax-block">
+                    <div className="income-tax-block-title">Versements</div>
+                    <div className="settings-field-row">
+                      <label>Versement déductible du revenu imposable</label>
+                      <input
+                        type="text"
+                        value={av.epargne.versementDeductibleIR ? 'Oui' : 'Non'}
+                        disabled
+                        style={{ width: 90, textAlign: 'center' }}
+                      />
+                      <span />
+                    </div>
                   </div>
 
-                  <div className="settings-field-row">
-                    <label>Abattement annuel couple</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(av.retraitsCapital.depuis2017.plus8Ans.abattementAnnuel.couple)}
-                      onChange={(e) =>
-                        updateField(
-                          ['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'abattementAnnuel', 'couple'],
-                          e.target.value === '' ? null : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
+                  <div className="income-tax-block">
+                    <div className="income-tax-block-title">
+                      Prélèvements sociaux pendant la capitalisation
+                    </div>
+                    <div className="settings-field-row">
+                      <label>Taux de PS sur intérêts</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={numberOrEmpty(
+                          av.epargne.socialOnInterestsDuringAccumulation.psRatePercent
+                        )}
+                        onChange={(e) =>
+                          updateField(
+                            [
+                              'assuranceVie',
+                              'epargne',
+                              'socialOnInterestsDuringAccumulation',
+                              'psRatePercent',
+                            ],
+                            e.target.value === '' ? null : Number(e.target.value)
+                          )
+                        }
+                        disabled={!isAdmin}
+                      />
+                      <span>%</span>
+                    </div>
+
+                    <div className="settings-field-row">
+                      <label>Note</label>
+                      <input
+                        type="text"
+                        value={textOrEmpty(
+                          av.epargne.socialOnInterestsDuringAccumulation.note
+                        )}
+                        onChange={(e) =>
+                          updateField(
+                            [
+                              'assuranceVie',
+                              'epargne',
+                              'socialOnInterestsDuringAccumulation',
+                              'note',
+                            ],
+                            e.target.value
+                          )
+                        }
+                        disabled={!isAdmin}
+                        style={{ width: 520, textAlign: 'left' }}
+                      />
+                      <span />
+                    </div>
+                  </div>
+                </section>
+
+                {/* 2) Retraits en capital */}
+                <section>
+                  <h4 className="fisc-section-title">Retraits en capital</h4>
+
+                  <div className="income-tax-block">
+                    <div className="income-tax-block-title">Assiette & PS</div>
+                    <div className="settings-field-row">
+                      <label>Assiette imposable</label>
+                      <input
+                        type="text"
+                        value="Intérêts / gains"
+                        disabled
+                        style={{ width: 180, textAlign: 'center' }}
+                      />
+                      <span />
+                    </div>
+                    <div className="settings-field-row">
+                      <label>Taux de PS (global)</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={numberOrEmpty(av.retraitsCapital.psRatePercent)}
+                        onChange={(e) =>
+                          updateField(
+                            ['assuranceVie', 'retraitsCapital', 'psRatePercent'],
+                            e.target.value === '' ? null : Number(e.target.value)
+                          )
+                        }
+                        disabled={!isAdmin}
+                      />
+                      <span>%</span>
+                    </div>
                   </div>
 
-                  <div className="settings-field-row">
-                    <label>Seuil de primes nettes</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(av.retraitsCapital.depuis2017.plus8Ans.primesNettesSeuil)}
-                      onChange={(e) =>
-                        updateField(
-                          ['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'primesNettesSeuil'],
-                          e.target.value === '' ? null : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
+                  <div className="fisc-two-cols">
+                    {/* Depuis 27/09/2017 */}
+                    <div className="fisc-col">
+                      <div className="fisc-col-title">
+                        Versements à partir du {av.retraitsCapital.depuis2017.startDate}
+                      </div>
 
-                  <table className="settings-table" style={{ marginTop: 8 }}>
-                    <thead>
-                      <tr>
-                        <th>Tranche</th>
-                        <th className="taux-col">IR %</th>
-                        <th>Option barème</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td style={{ textAlign: 'left' }}>Gain sous seuil</td>
-                        <td className="taux-col">
+                      <table className="settings-table">
+                        <thead>
+                          <tr>
+                            <th>Durée</th>
+                            <th className="taux-col">IR %</th>
+                            <th>Option barème</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>{av.retraitsCapital.depuis2017.moins8Ans.label}</td>
+                            <td className="taux-col">
+                              <input
+                                type="number"
+                                step="0.1"
+                                value={numberOrEmpty(
+                                  av.retraitsCapital.depuis2017.moins8Ans.irRatePercent
+                                )}
+                                onChange={(e) =>
+                                  updateField(
+                                    [
+                                      'assuranceVie',
+                                      'retraitsCapital',
+                                      'depuis2017',
+                                      'moins8Ans',
+                                      'irRatePercent',
+                                    ],
+                                    e.target.value === '' ? null : Number(e.target.value)
+                                  )
+                                }
+                                disabled={!isAdmin}
+                              />
+                            </td>
+                            <td style={{ textAlign: 'left' }}>
+                              {av.retraitsCapital.depuis2017.moins8Ans.allowBaremeIR
+                                ? 'Oui'
+                                : 'Non'}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      <div className="income-tax-block" style={{ marginTop: 10 }}>
+                        <div className="income-tax-block-title">
+                          {av.retraitsCapital.depuis2017.plus8Ans.label}
+                        </div>
+
+                        <div className="settings-field-row">
+                          <label>Abattement annuel célibataire</label>
                           <input
                             type="number"
-                            step="0.1"
-                            value={numberOrEmpty(av.retraitsCapital.depuis2017.plus8Ans.irRateUnderThresholdPercent)}
+                            value={numberOrEmpty(
+                              av.retraitsCapital.depuis2017.plus8Ans.abattementAnnuel.single
+                            )}
                             onChange={(e) =>
                               updateField(
-                                ['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'irRateUnderThresholdPercent'],
+                                [
+                                  'assuranceVie',
+                                  'retraitsCapital',
+                                  'depuis2017',
+                                  'plus8Ans',
+                                  'abattementAnnuel',
+                                  'single',
+                                ],
                                 e.target.value === '' ? null : Number(e.target.value)
                               )
                             }
                             disabled={!isAdmin}
                           />
-                        </td>
-                        <td style={{ textAlign: 'left' }}>{av.retraitsCapital.depuis2017.plus8Ans.allowBaremeIR ? 'Oui' : 'Non'}</td>
-                      </tr>
-                      <tr>
-                        <td style={{ textAlign: 'left' }}>Gain au-delà</td>
-                        <td className="taux-col">
+                          <span>€</span>
+                        </div>
+
+                        <div className="settings-field-row">
+                          <label>Abattement annuel couple</label>
                           <input
                             type="number"
-                            step="0.1"
-                            value={numberOrEmpty(av.retraitsCapital.depuis2017.plus8Ans.irRateOverThresholdPercent)}
+                            value={numberOrEmpty(
+                              av.retraitsCapital.depuis2017.plus8Ans.abattementAnnuel.couple
+                            )}
                             onChange={(e) =>
                               updateField(
-                                ['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'irRateOverThresholdPercent'],
+                                [
+                                  'assuranceVie',
+                                  'retraitsCapital',
+                                  'depuis2017',
+                                  'plus8Ans',
+                                  'abattementAnnuel',
+                                  'couple',
+                                ],
                                 e.target.value === '' ? null : Number(e.target.value)
                               )
                             }
                             disabled={!isAdmin}
                           />
-                        </td>
-                        <td style={{ textAlign: 'left' }}>{av.retraitsCapital.depuis2017.plus8Ans.allowBaremeIR ? 'Oui' : 'Non'}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                          <span>€</span>
+                        </div>
 
-              {/* Avant 27/09/2017 */}
-              <div className="fisc-col fisc-col-right">
-                <div className="fisc-col-title">Versements avant le {av.retraitsCapital.avant2017.endDate}</div>
-
-                <table className="settings-table">
-                  <thead>
-                    <tr>
-                      <th>Durée</th>
-                      <th className="taux-col">IR %</th>
-                      <th>Option barème</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>{av.retraitsCapital.avant2017.moins4Ans.label}</td>
-                      <td className="taux-col">
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={numberOrEmpty(av.retraitsCapital.avant2017.moins4Ans.irRatePercent)}
-                          onChange={(e) =>
-                            updateField(
-                              ['assuranceVie', 'retraitsCapital', 'avant2017', 'moins4Ans', 'irRatePercent'],
-                              e.target.value === '' ? null : Number(e.target.value)
-                            )
-                          }
-                          disabled={!isAdmin}
-                        />
-                      </td>
-                      <td style={{ textAlign: 'left' }}>{av.retraitsCapital.avant2017.moins4Ans.allowBaremeIR ? 'Oui' : 'Non'}</td>
-                    </tr>
-
-                    <tr>
-                      <td>{av.retraitsCapital.avant2017.de4a8Ans.label}</td>
-                      <td className="taux-col">
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={numberOrEmpty(av.retraitsCapital.avant2017.de4a8Ans.irRatePercent)}
-                          onChange={(e) =>
-                            updateField(
-                              ['assuranceVie', 'retraitsCapital', 'avant2017', 'de4a8Ans', 'irRatePercent'],
-                              e.target.value === '' ? null : Number(e.target.value)
-                            )
-                          }
-                          disabled={!isAdmin}
-                        />
-                      </td>
-                      <td style={{ textAlign: 'left' }}>{av.retraitsCapital.avant2017.de4a8Ans.allowBaremeIR ? 'Oui' : 'Non'}</td>
-                    </tr>
-
-                    <tr>
-                      <td>{av.retraitsCapital.avant2017.plus8Ans.label}</td>
-                      <td className="taux-col">
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={numberOrEmpty(av.retraitsCapital.avant2017.plus8Ans.irRatePercent)}
-                          onChange={(e) =>
-                            updateField(
-                              ['assuranceVie', 'retraitsCapital', 'avant2017', 'plus8Ans', 'irRatePercent'],
-                              e.target.value === '' ? null : Number(e.target.value)
-                            )
-                          }
-                          disabled={!isAdmin}
-                        />
-                      </td>
-                      <td style={{ textAlign: 'left' }}>{av.retraitsCapital.avant2017.plus8Ans.allowBaremeIR ? 'Oui' : 'Non'}</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <div className="income-tax-block" style={{ marginTop: 10 }}>
-                  <div className="income-tax-block-title">Abattement annuel (si &gt; 8 ans)</div>
-                  <div className="settings-field-row">
-                    <label>Célibataire</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(av.retraitsCapital.avant2017.plus8Ans.abattementAnnuel.single)}
-                      onChange={(e) =>
-                        updateField(
-                          ['assuranceVie', 'retraitsCapital', 'avant2017', 'plus8Ans', 'abattementAnnuel', 'single'],
-                          e.target.value === '' ? null : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Couple</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(av.retraitsCapital.avant2017.plus8Ans.abattementAnnuel.couple)}
-                      onChange={(e) =>
-                        updateField(
-                          ['assuranceVie', 'retraitsCapital', 'avant2017', 'plus8Ans', 'abattementAnnuel', 'couple'],
-                          e.target.value === '' ? null : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* 3) Décès */}
-          <section>
-            <h4 className="fisc-section-title">Décès — transmission</h4>
-
-            <div className="income-tax-block">
-              <div className="income-tax-block-title">Dates & âge pivot</div>
-
-              <div className="settings-field-row">
-                <label>Date pivot (contrats historiques)</label>
-                <input type="text" value={`${av.deces.contratApresDate}`} disabled style={{ width: 140, textAlign: 'center' }} />
-                <span />
-              </div>
-
-              <div className="settings-field-row">
-                <label>Âge pivot (primes)</label>
-                <input
-                  type="number"
-                  value={numberOrEmpty(av.deces.agePivotPrimes)}
-                  onChange={(e) =>
-                    updateField(['assuranceVie', 'deces', 'agePivotPrimes'], e.target.value === '' ? null : Number(e.target.value))
-                  }
-                  disabled={!isAdmin}
-                />
-                <span>ans</span>
-              </div>
-            </div>
-
-            <div className="fisc-two-cols">
-              <div className="fisc-col">
-                <div className="fisc-col-title">Primes versées avant {av.deces.contratApresDate}</div>
-                <div className="settings-field-row">
-                  <label>Taux</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={numberOrEmpty(av.deces.primesAvant1998.taxRatePercent)}
-                    onChange={(e) =>
-                      updateField(
-                        ['assuranceVie', 'deces', 'primesAvant1998', 'taxRatePercent'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>%</span>
-                </div>
-                <div className="settings-field-row">
-                  <label>Note</label>
-                  <input
-                    type="text"
-                    value={textOrEmpty(av.deces.primesAvant1998.note)}
-                    onChange={(e) => updateField(['assuranceVie', 'deces', 'primesAvant1998', 'note'], e.target.value)}
-                    disabled={!isAdmin}
-                    style={{ width: 520, textAlign: 'left' }}
-                  />
-                  <span />
-                </div>
-              </div>
-
-              <div className="fisc-col fisc-col-right">
-                <div className="fisc-col-title">Primes versées à partir du {av.deces.contratApresDate} (par bénéficiaire)</div>
-
-                <div className="settings-field-row">
-                  <label>Abattement / bénéficiaire</label>
-                  <input
-                    type="number"
-                    value={numberOrEmpty(av.deces.primesApres1998.allowancePerBeneficiary)}
-                    onChange={(e) =>
-                      updateField(
-                        ['assuranceVie', 'deces', 'primesApres1998', 'allowancePerBeneficiary'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                  <span>€</span>
-                </div>
-
-                <table className="settings-table" style={{ marginTop: 8 }}>
-                  <thead>
-                    <tr>
-                      <th>Jusqu’à</th>
-                      <th className="taux-col">Taux %</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {av.deces.primesApres1998.brackets.map((b, idx) => (
-                      <tr key={idx}>
-                        <td style={{ textAlign: 'left' }}>
-                          {b.upTo === null ? 'Au-delà' : `${b.upTo.toLocaleString('fr-FR')} €`}
-                        </td>
-                        <td className="taux-col">
+                        <div className="settings-field-row">
+                          <label>Seuil de primes nettes</label>
                           <input
                             type="number"
-                            step="0.1"
-                            value={numberOrEmpty(b.ratePercent)}
+                            value={numberOrEmpty(
+                              av.retraitsCapital.depuis2017.plus8Ans.primesNettesSeuil
+                            )}
                             onChange={(e) =>
                               updateField(
-                                ['assuranceVie', 'deces', 'primesApres1998', 'brackets', idx, 'ratePercent'],
+                                [
+                                  'assuranceVie',
+                                  'retraitsCapital',
+                                  'depuis2017',
+                                  'plus8Ans',
+                                  'primesNettesSeuil',
+                                ],
                                 e.target.value === '' ? null : Number(e.target.value)
                               )
                             }
                             disabled={!isAdmin}
                           />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          <span>€</span>
+                        </div>
 
-                <div className="settings-field-row" style={{ marginTop: 6 }}>
-                  <label>Note</label>
-                  <input
-                    type="text"
-                    value={textOrEmpty(av.deces.primesApres1998.note)}
-                    onChange={(e) => updateField(['assuranceVie', 'deces', 'primesApres1998', 'note'], e.target.value)}
-                    disabled={!isAdmin}
-                    style={{ width: 520, textAlign: 'left' }}
-                  />
-                  <span />
-                </div>
-              </div>
-            </div>
+                        <table className="settings-table" style={{ marginTop: 8 }}>
+                          <thead>
+                            <tr>
+                              <th>Tranche</th>
+                              <th className="taux-col">IR %</th>
+                              <th>Option barème</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td style={{ textAlign: 'left' }}>Gain sous seuil</td>
+                              <td className="taux-col">
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  value={numberOrEmpty(
+                                    av.retraitsCapital.depuis2017.plus8Ans
+                                      .irRateUnderThresholdPercent
+                                  )}
+                                  onChange={(e) =>
+                                    updateField(
+                                      [
+                                        'assuranceVie',
+                                        'retraitsCapital',
+                                        'depuis2017',
+                                        'plus8Ans',
+                                        'irRateUnderThresholdPercent',
+                                      ],
+                                      e.target.value === '' ? null : Number(e.target.value)
+                                    )
+                                  }
+                                  disabled={!isAdmin}
+                                />
+                              </td>
+                              <td style={{ textAlign: 'left' }}>
+                                {av.retraitsCapital.depuis2017.plus8Ans.allowBaremeIR
+                                  ? 'Oui'
+                                  : 'Non'}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style={{ textAlign: 'left' }}>Gain au-delà</td>
+                              <td className="taux-col">
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  value={numberOrEmpty(
+                                    av.retraitsCapital.depuis2017.plus8Ans
+                                      .irRateOverThresholdPercent
+                                  )}
+                                  onChange={(e) =>
+                                    updateField(
+                                      [
+                                        'assuranceVie',
+                                        'retraitsCapital',
+                                        'depuis2017',
+                                        'plus8Ans',
+                                        'irRateOverThresholdPercent',
+                                      ],
+                                      e.target.value === '' ? null : Number(e.target.value)
+                                    )
+                                  }
+                                  disabled={!isAdmin}
+                                />
+                              </td>
+                              <td style={{ textAlign: 'left' }}>
+                                {av.retraitsCapital.depuis2017.plus8Ans.allowBaremeIR
+                                  ? 'Oui'
+                                  : 'Non'}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
 
-            <div className="income-tax-block" style={{ marginTop: 10 }}>
-              <div className="income-tax-block-title">Primes versées après {av.deces.agePivotPrimes} ans (logique globale)</div>
-              <div className="settings-field-row">
-                <label>Abattement global</label>
-                <input
-                  type="number"
-                  value={numberOrEmpty(av.deces.apres70ans.globalAllowance)}
-                  onChange={(e) =>
-                    updateField(
-                      ['assuranceVie', 'deces', 'apres70ans', 'globalAllowance'],
-                      e.target.value === '' ? null : Number(e.target.value)
-                    )
-                  }
-                  disabled={!isAdmin}
-                />
-                <span>€</span>
-              </div>
-              <div className="settings-field-row">
-                <label>Mode de taxation</label>
-                <input type="text" value="DMTG (barème succession)" disabled style={{ width: 220, textAlign: 'center' }} />
-                <span />
-              </div>
-              <div className="settings-field-row">
-                <label>Note</label>
-                <input
-                  type="text"
-                  value={textOrEmpty(av.deces.apres70ans.note)}
-                  onChange={(e) => updateField(['assuranceVie', 'deces', 'apres70ans', 'note'], e.target.value)}
-                  disabled={!isAdmin}
-                  style={{ width: 520, textAlign: 'left' }}
-                />
-                <span />
-              </div>
-            </div>
-          </section>
+                    {/* Avant 27/09/2017 */}
+                    <div className="fisc-col fisc-col-right">
+                      <div className="fisc-col-title">
+                        Versements avant le {av.retraitsCapital.avant2017.endDate}
+                      </div>
 
-          {/* 4) Rente */}
-          <section>
-            <h4 className="fisc-section-title">Liquidation en rente</h4>
+                      <table className="settings-table">
+                        <thead>
+                          <tr>
+                            <th>Durée</th>
+                            <th className="taux-col">IR %</th>
+                            <th>Option barème</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>{av.retraitsCapital.avant2017.moins4Ans.label}</td>
+                            <td className="taux-col">
+                              <input
+                                type="number"
+                                step="0.1"
+                                value={numberOrEmpty(
+                                  av.retraitsCapital.avant2017.moins4Ans.irRatePercent
+                                )}
+                                onChange={(e) =>
+                                  updateField(
+                                    [
+                                      'assuranceVie',
+                                      'retraitsCapital',
+                                      'avant2017',
+                                      'moins4Ans',
+                                      'irRatePercent',
+                                    ],
+                                    e.target.value === '' ? null : Number(e.target.value)
+                                  )
+                                }
+                                disabled={!isAdmin}
+                              />
+                            </td>
+                            <td style={{ textAlign: 'left' }}>
+                              {av.retraitsCapital.avant2017.moins4Ans.allowBaremeIR
+                                ? 'Oui'
+                                : 'Non'}
+                            </td>
+                          </tr>
 
-            <div className="income-tax-block">
-              <div className="income-tax-block-title">Conditions & PS</div>
+                          <tr>
+                            <td>{av.retraitsCapital.avant2017.de4a8Ans.label}</td>
+                            <td className="taux-col">
+                              <input
+                                type="number"
+                                step="0.1"
+                                value={numberOrEmpty(
+                                  av.retraitsCapital.avant2017.de4a8Ans.irRatePercent
+                                )}
+                                onChange={(e) =>
+                                  updateField(
+                                    [
+                                      'assuranceVie',
+                                      'retraitsCapital',
+                                      'avant2017',
+                                      'de4a8Ans',
+                                      'irRatePercent',
+                                    ],
+                                    e.target.value === '' ? null : Number(e.target.value)
+                                  )
+                                }
+                                disabled={!isAdmin}
+                              />
+                            </td>
+                            <td style={{ textAlign: 'left' }}>
+                              {av.retraitsCapital.avant2017.de4a8Ans.allowBaremeIR
+                                ? 'Oui'
+                                : 'Non'}
+                            </td>
+                          </tr>
 
-              <div className="settings-field-row">
-                <label>Transformation du capital en rente possible</label>
-                <input type="text" value={av.rente.possible ? 'Oui' : 'Non'} disabled style={{ width: 90, textAlign: 'center' }} />
-                <span />
-              </div>
+                          <tr>
+                            <td>{av.retraitsCapital.avant2017.plus8Ans.label}</td>
+                            <td className="taux-col">
+                              <input
+                                type="number"
+                                step="0.1"
+                                value={numberOrEmpty(
+                                  av.retraitsCapital.avant2017.plus8Ans.irRatePercent
+                                )}
+                                onChange={(e) =>
+                                  updateField(
+                                    [
+                                      'assuranceVie',
+                                      'retraitsCapital',
+                                      'avant2017',
+                                      'plus8Ans',
+                                      'irRatePercent',
+                                    ],
+                                    e.target.value === '' ? null : Number(e.target.value)
+                                  )
+                                }
+                                disabled={!isAdmin}
+                              />
+                            </td>
+                            <td style={{ textAlign: 'left' }}>
+                              {av.retraitsCapital.avant2017.plus8Ans.allowBaremeIR
+                                ? 'Oui'
+                                : 'Non'}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
 
-              <div className="settings-field-row">
-                <label>Taux de PS</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={numberOrEmpty(av.rente.psRatePercent)}
-                  onChange={(e) =>
-                    updateField(['assuranceVie', 'rente', 'psRatePercent'], e.target.value === '' ? null : Number(e.target.value))
-                  }
-                  disabled={!isAdmin}
-                />
-                <span>%</span>
-              </div>
+                      <div className="income-tax-block" style={{ marginTop: 10 }}>
+                        <div className="income-tax-block-title">
+                          Abattement annuel (si &gt; 8 ans)
+                        </div>
+                        <div className="settings-field-row">
+                          <label>Célibataire</label>
+                          <input
+                            type="number"
+                            value={numberOrEmpty(
+                              av.retraitsCapital.avant2017.plus8Ans.abattementAnnuel.single
+                            )}
+                            onChange={(e) =>
+                              updateField(
+                                [
+                                  'assuranceVie',
+                                  'retraitsCapital',
+                                  'avant2017',
+                                  'plus8Ans',
+                                  'abattementAnnuel',
+                                  'single',
+                                ],
+                                e.target.value === '' ? null : Number(e.target.value)
+                              )
+                            }
+                            disabled={!isAdmin}
+                          />
+                          <span>€</span>
+                        </div>
+                        <div className="settings-field-row">
+                          <label>Couple</label>
+                          <input
+                            type="number"
+                            value={numberOrEmpty(
+                              av.retraitsCapital.avant2017.plus8Ans.abattementAnnuel.couple
+                            )}
+                            onChange={(e) =>
+                              updateField(
+                                [
+                                  'assuranceVie',
+                                  'retraitsCapital',
+                                  'avant2017',
+                                  'plus8Ans',
+                                  'abattementAnnuel',
+                                  'couple',
+                                ],
+                                e.target.value === '' ? null : Number(e.target.value)
+                              )
+                            }
+                            disabled={!isAdmin}
+                          />
+                          <span>€</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
 
-              <div className="settings-field-row">
-                <label>IR</label>
-                <input type="text" value="Barème" disabled style={{ width: 90, textAlign: 'center' }} />
-                <span />
-              </div>
-            </div>
+                {/* 3) Décès */}
+                <section>
+                  <h4 className="fisc-section-title">Décès — transmission</h4>
 
-            <div className="income-tax-block">
-              <div className="income-tax-block-title">Fraction imposable (selon âge à la liquidation)</div>
+                  <div className="income-tax-block">
+                    <div className="income-tax-block-title">Dates & âge pivot</div>
 
-              <table className="settings-table">
-                <thead>
-                  <tr>
-                    <th>Âge</th>
-                    <th className="taux-col">Fraction</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {av.rente.taxableFractionByAgeAtLiquidation.map((row, idx) => (
-                    <tr key={idx}>
-                      <td style={{ textAlign: 'left' }}>{row.label}</td>
-                      <td className="taux-col">
+                    <div className="settings-field-row">
+                      <label>Date pivot (contrats historiques)</label>
+                      <input
+                        type="text"
+                        value={`${av.deces.contratApresDate}`}
+                        disabled
+                        style={{ width: 140, textAlign: 'center' }}
+                      />
+                      <span />
+                    </div>
+
+                    <div className="settings-field-row">
+                      <label>Âge pivot (primes)</label>
+                      <input
+                        type="number"
+                        value={numberOrEmpty(av.deces.agePivotPrimes)}
+                        onChange={(e) =>
+                          updateField(
+                            ['assuranceVie', 'deces', 'agePivotPrimes'],
+                            e.target.value === '' ? null : Number(e.target.value)
+                          )
+                        }
+                        disabled={!isAdmin}
+                      />
+                      <span>ans</span>
+                    </div>
+                  </div>
+
+                  <div className="fisc-two-cols">
+                    <div className="fisc-col">
+                      <div className="fisc-col-title">
+                        Primes versées avant {av.deces.contratApresDate}
+                      </div>
+                      <div className="settings-field-row">
+                        <label>Taux</label>
                         <input
                           type="number"
-                          step="0.01"
-                          value={numberOrEmpty(row.fraction)}
+                          step="0.1"
+                          value={numberOrEmpty(av.deces.primesAvant1998.taxRatePercent)}
                           onChange={(e) =>
                             updateField(
-                              ['assuranceVie', 'rente', 'taxableFractionByAgeAtLiquidation', idx, 'fraction'],
+                              ['assuranceVie', 'deces', 'primesAvant1998', 'taxRatePercent'],
                               e.target.value === '' ? null : Number(e.target.value)
                             )
                           }
                           disabled={!isAdmin}
                         />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <span>%</span>
+                      </div>
+                      <div className="settings-field-row">
+                        <label>Note</label>
+                        <input
+                          type="text"
+                          value={textOrEmpty(av.deces.primesAvant1998.note)}
+                          onChange={(e) =>
+                            updateField(
+                              ['assuranceVie', 'deces', 'primesAvant1998', 'note'],
+                              e.target.value
+                            )
+                          }
+                          disabled={!isAdmin}
+                          style={{ width: 520, textAlign: 'left' }}
+                        />
+                        <span />
+                      </div>
+                    </div>
 
-              <div className="settings-field-row" style={{ marginTop: 6 }}>
-                <label>Note PS</label>
-                <input
-                  type="text"
-                  value={textOrEmpty(av.rente.notePs)}
-                  onChange={(e) => updateField(['assuranceVie', 'rente', 'notePs'], e.target.value)}
-                  disabled={!isAdmin}
-                  style={{ width: 520, textAlign: 'left' }}
-                />
-                <span />
-              </div>
+                    <div className="fisc-col fisc-col-right">
+                      <div className="fisc-col-title">
+                        Primes versées à partir du {av.deces.contratApresDate} (par bénéficiaire)
+                      </div>
 
-              <div className="settings-field-row">
-                <label>Note décès</label>
-                <input
-                  type="text"
-                  value={textOrEmpty(av.rente.noteCapitalOnDeath)}
-                  onChange={(e) => updateField(['assuranceVie', 'rente', 'noteCapitalOnDeath'], e.target.value)}
-                  disabled={!isAdmin}
-                  style={{ width: 520, textAlign: 'left' }}
-                />
-                <span />
-              </div>
-            </div>
-          </section>
+                      <div className="settings-field-row">
+                        <label>Abattement / bénéficiaire</label>
+                        <input
+                          type="number"
+                          value={numberOrEmpty(av.deces.primesApres1998.allowancePerBeneficiary)}
+                          onChange={(e) =>
+                            updateField(
+                              ['assuranceVie', 'deces', 'primesApres1998', 'allowancePerBeneficiary'],
+                              e.target.value === '' ? null : Number(e.target.value)
+                            )
+                          }
+                          disabled={!isAdmin}
+                        />
+                        <span>€</span>
+                      </div>
 
-          {/* Bouton Enregistrer */}
-          {isAdmin && (
-            <button type="button" className="chip" onClick={handleSave} disabled={saving}>
-              {saving ? 'Enregistrement…' : 'Enregistrer les paramètres fiscalités'}
-            </button>
-          )}
+                      <table className="settings-table" style={{ marginTop: 8 }}>
+                        <thead>
+                          <tr>
+                            <th>Jusqu’à</th>
+                            <th className="taux-col">Taux %</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {av.deces.primesApres1998.brackets.map((b, idx) => (
+                            <tr key={idx}>
+                              <td style={{ textAlign: 'left' }}>
+                                {b.upTo === null ? 'Au-delà' : `${b.upTo.toLocaleString('fr-FR')} €`}
+                              </td>
+                              <td className="taux-col">
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  value={numberOrEmpty(b.ratePercent)}
+                                  onChange={(e) =>
+                                    updateField(
+                                      [
+                                        'assuranceVie',
+                                        'deces',
+                                        'primesApres1998',
+                                        'brackets',
+                                        idx,
+                                        'ratePercent',
+                                      ],
+                                      e.target.value === '' ? null : Number(e.target.value)
+                                    )
+                                  }
+                                  disabled={!isAdmin}
+                                />
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
 
-          {message && <div style={{ fontSize: 13, marginTop: 8 }}>{message}</div>}
+                      <div className="settings-field-row" style={{ marginTop: 6 }}>
+                        <label>Note</label>
+                        <input
+                          type="text"
+                          value={textOrEmpty(av.deces.primesApres1998.note)}
+                          onChange={(e) =>
+                            updateField(
+                              ['assuranceVie', 'deces', 'primesApres1998', 'note'],
+                              e.target.value
+                            )
+                          }
+                          disabled={!isAdmin}
+                          style={{ width: 520, textAlign: 'left' }}
+                        />
+                        <span />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="income-tax-block" style={{ marginTop: 10 }}>
+                    <div className="income-tax-block-title">
+                      Primes versées après {av.deces.agePivotPrimes} ans (logique globale)
+                    </div>
+                    <div className="settings-field-row">
+                      <label>Abattement global</label>
+                      <input
+                        type="number"
+                        value={numberOrEmpty(av.deces.apres70ans.globalAllowance)}
+                        onChange={(e) =>
+                          updateField(
+                            ['assuranceVie', 'deces', 'apres70ans', 'globalAllowance'],
+                            e.target.value === '' ? null : Number(e.target.value)
+                          )
+                        }
+                        disabled={!isAdmin}
+                      />
+                      <span>€</span>
+                    </div>
+                    <div className="settings-field-row">
+                      <label>Mode de taxation</label>
+                      <input
+                        type="text"
+                        value="DMTG (barème succession)"
+                        disabled
+                        style={{ width: 220, textAlign: 'center' }}
+                      />
+                      <span />
+                    </div>
+                    <div className="settings-field-row">
+                      <label>Note</label>
+                      <input
+                        type="text"
+                        value={textOrEmpty(av.deces.apres70ans.note)}
+                        onChange={(e) =>
+                          updateField(
+                            ['assuranceVie', 'deces', 'apres70ans', 'note'],
+                            e.target.value
+                          )
+                        }
+                        disabled={!isAdmin}
+                        style={{ width: 520, textAlign: 'left' }}
+                      />
+                      <span />
+                    </div>
+                  </div>
+                </section>
+
+                {/* 4) Rente */}
+                <section>
+                  <h4 className="fisc-section-title">Liquidation en rente</h4>
+
+                  <div className="income-tax-block">
+                    <div className="income-tax-block-title">Conditions & PS</div>
+
+                    <div className="settings-field-row">
+                      <label>Transformation du capital en rente possible</label>
+                      <input
+                        type="text"
+                        value={av.rente.possible ? 'Oui' : 'Non'}
+                        disabled
+                        style={{ width: 90, textAlign: 'center' }}
+                      />
+                      <span />
+                    </div>
+
+                    <div className="settings-field-row">
+                      <label>Taux de PS</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={numberOrEmpty(av.rente.psRatePercent)}
+                        onChange={(e) =>
+                          updateField(
+                            ['assuranceVie', 'rente', 'psRatePercent'],
+                            e.target.value === '' ? null : Number(e.target.value)
+                          )
+                        }
+                        disabled={!isAdmin}
+                      />
+                      <span>%</span>
+                    </div>
+
+                    <div className="settings-field-row">
+                      <label>IR</label>
+                      <input
+                        type="text"
+                        value="Barème"
+                        disabled
+                        style={{ width: 90, textAlign: 'center' }}
+                      />
+                      <span />
+                    </div>
+                  </div>
+
+                  <div className="income-tax-block">
+                    <div className="income-tax-block-title">
+                      Fraction imposable (selon âge à la liquidation)
+                    </div>
+
+                    <table className="settings-table">
+                      <thead>
+                        <tr>
+                          <th>Âge</th>
+                          <th className="taux-col">Fraction</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {av.rente.taxableFractionByAgeAtLiquidation.map((row, idx) => (
+                          <tr key={idx}>
+                            <td style={{ textAlign: 'left' }}>{row.label}</td>
+                            <td className="taux-col">
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={numberOrEmpty(row.fraction)}
+                                onChange={(e) =>
+                                  updateField(
+                                    [
+                                      'assuranceVie',
+                                      'rente',
+                                      'taxableFractionByAgeAtLiquidation',
+                                      idx,
+                                      'fraction',
+                                    ],
+                                    e.target.value === '' ? null : Number(e.target.value)
+                                  )
+                                }
+                                disabled={!isAdmin}
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+
+                    <div className="settings-field-row" style={{ marginTop: 6 }}>
+                      <label>Note PS</label>
+                      <input
+                        type="text"
+                        value={textOrEmpty(av.rente.notePs)}
+                        onChange={(e) =>
+                          updateField(['assuranceVie', 'rente', 'notePs'], e.target.value)
+                        }
+                        disabled={!isAdmin}
+                        style={{ width: 520, textAlign: 'left' }}
+                      />
+                      <span />
+                    </div>
+
+                    <div className="settings-field-row">
+                      <label>Note décès</label>
+                      <input
+                        type="text"
+                        value={textOrEmpty(av.rente.noteCapitalOnDeath)}
+                        onChange={(e) =>
+                          updateField(
+                            ['assuranceVie', 'rente', 'noteCapitalOnDeath'],
+                            e.target.value
+                          )
+                        }
+                        disabled={!isAdmin}
+                        style={{ width: 520, textAlign: 'left' }}
+                      />
+                      <span />
+                    </div>
+                  </div>
+                </section>
+
+                {/* Bouton Enregistrer */}
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={handleSave}
+                    disabled={saving}
+                  >
+                    {saving ? 'Enregistrement…' : 'Enregistrer les paramètres fiscalités'}
+                  </button>
+                )}
+
+                {message && (
+                  <div style={{ fontSize: 13, marginTop: 8 }}>{message}</div>
+                )}
+              </>
+            )}
+
+            {p.key !== 'assuranceVie' && (
+              <div style={{ fontSize: 13, color: '#666' }}>Paramètres à venir.</div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  })}
+</div>
+
+          
         </div>
       </div>
     </div>
