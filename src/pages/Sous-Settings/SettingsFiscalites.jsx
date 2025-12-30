@@ -1,1071 +1,147 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { supabase } from "../../supabaseClient";
-import SettingsNav from "../SettingsNav";
-import "./SettingsImpots.css";
-import "./SettingsFiscalites.css";
+import React, { useEffect, useMemo, useState } from 'react';
+import { supabase } from '../../supabaseClient';
+import SettingsNav from '../SettingsNav';
+import './SettingsFiscalites.css';
 
-const SETTINGS_KEY = "fiscalites_v1";
-const TABLE_NAME = "settings_fiscalites";
+// ------------------------------------------------------------
+// Valeurs par défaut (Assurance-vie) — issues du tableau Excel PJ
+// Objectif: stocker uniquement les paramètres "légèrement mouvants"
+// (taux/abattements/seuils/dates) pour alimenter les simulateurs.
+// ------------------------------------------------------------
+const DEFAULT_FISCALITY_SETTINGS = {
+  assuranceVie: {
+    meta: {
+      title: 'Assurance-vie',
+      versionLabel: 'Référentiel',
+      lastReviewed: null, // champ libre si tu veux (admin)
+    },
 
-/** =========================
- * Helpers matrice / affichage
- * ========================= */
-
-const BG_GREY = "F2F2F2";
-const BG_GREEN = "F8FCF6";
-
-function makeCell(v = "", opts = {}) {
-  return { v, ...opts };
-}
-
-function defaultColumns() {
-  return [
-    "Phase",
-    "Régime par défaut",
-    "Type 1",
-    "Type 2",
-    "Type 3",
-    "Type 4",
-    "Type 5",
-    "Type 6",
-    "Type 7",
-    "Type 8",
-    "Valeur par défaut",
-    "Commentaires",
-  ];
-}
-
-function formatCellValue(cell) {
-  if (!cell) return "";
-  const { v, fmt } = cell;
-
-  if (fmt === "percent") {
-    const n = typeof v === "number" ? v : Number(String(v).replace(",", "."));
-    if (Number.isFinite(n)) {
-      const digits = Number.isInteger(n) ? 0 : 2;
-      return `${(n * (n <= 1 ? 100 : 1)).toFixed(digits)}%`;
-      // NOTE: ton Excel stocke parfois 0.128 (=12,8%) => on convertit si <=1
-    }
-    return String(v ?? "");
-  }
-
-  if (fmt === "currency") {
-    const n = typeof v === "number" ? v : Number(String(v).replace(/\s/g, "").replace(",", "."));
-    if (Number.isFinite(n)) {
-      return new Intl.NumberFormat("fr-FR", {
-        style: "currency",
-        currency: "EUR",
-        maximumFractionDigits: 0,
-      }).format(n);
-    }
-    return String(v ?? "");
-  }
-
-  if (fmt === "date") return String(v ?? "");
-  return String(v ?? "");
-}
-
-function parseAdminInput(cell, raw) {
-  const next = { ...(cell || {}) };
-
-  // admin tape du texte => on essaye de conserver number si fmt
-  if (next.fmt === "percent") {
-    const cleaned = String(raw).trim().replace("%", "").replace(",", ".");
-    const n = Number(cleaned);
-    if (Number.isFinite(n)) {
-      // si admin tape 12.8 => on stocke 0.128 (cohérent avec ton modèle)
-      next.v = n > 1 ? n / 100 : n;
-      return next;
-    }
-    next.v = raw;
-    return next;
-  }
-
-  if (next.fmt === "currency") {
-    const cleaned = String(raw).replace(/[€\s]/g, "").replace(",", ".");
-    const n = Number(cleaned);
-    next.v = Number.isFinite(n) ? n : raw;
-    return next;
-  }
-
-  // default : string
-  next.v = raw;
-  return next;
-}
-
-function getRowSpan(merges, rowIndex, colIndex) {
-  const m = (merges || []).find(
-    (x) => x.col === colIndex && rowIndex >= x.start && rowIndex <= x.end
-  );
-  if (!m) return 1;
-  if (rowIndex === m.start) return m.end - m.start + 1;
-  return 0;
-}
-
-/** =========================
- * Matrices par produit
- * (Assurance-vie = matrice Excel que tu avais déjà)
- * ========================= */
-
-function buildDefaultMatrix_PERIN() {
-  const columns = defaultColumns();
-
-  const rows = [
-    [
-      makeCell("Épargne"),
-      makeCell("Versement déductible des revenus"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("Oui", { bg: BG_GREEN }),
-      makeCell("Déductible dans la limite du plafond épargne retraite (à paramétrer/mettre en note)."),
-    ],
-    [
-      makeCell(""),
-      makeCell("Fiscalité en cours de constitution sur les intérêts"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("Non", { bg: BG_GREEN }),
-      makeCell("Pas d’imposition tant qu’il n’y a pas de sortie."),
-    ],
-    [
-      makeCell(""),
-      makeCell("Disponibilité / déblocages anticipés"),
-      makeCell(""),
-      makeCell("Cas principaux"),
-      makeCell("Invalidité"),
-      makeCell("Décès"),
-      makeCell("Fin droits chômage"),
-      makeCell("Surendettement"),
-      makeCell("Achat RP"),
-      makeCell(""),
-      makeCell("Oui", { bg: BG_GREEN }),
-      makeCell("Achat RP : possible selon règles (PERIN)."),
-    ],
-
-    [
-      makeCell("Retraits en capital"),
-      makeCell("Assiette :"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("Capital + gains", { bg: BG_GREEN }),
-      makeCell("Toujours dissocier capital (versements) vs gains."),
-    ],
-    [
-      makeCell(""),
-      makeCell("Capital (versements déduits à l’entrée)"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("IR", { bg: BG_GREY }),
-      makeCell("Barème (TMI)", { bg: BG_GREEN }),
-      makeCell("Imposé au barème IR (pensions/selon régime PER) – adapter si besoin."),
-    ],
-    [
-      makeCell(""),
-      makeCell("Gains (intérêts / plus-values)"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PFU*", { bg: BG_GREY }),
-      makeCell(0.128, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell("*Ou barème IR (option globale annuelle)."),
-    ],
-    [
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PS", { bg: BG_GREY }),
-      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell("Prélèvements sociaux sur gains."),
-    ],
-    [
-      makeCell(""),
-      makeCell("Sur option (à l’entrée) : versements NON déduits"),
-      makeCell(""),
-      makeCell(""),
-      makeCell("Capital"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("IR", { bg: BG_GREY }),
-      makeCell("0%", { bg: BG_GREEN }),
-      makeCell("Capital non imposé à la sortie si non déduit."),
-    ],
-    [
-      makeCell(""),
-      makeCell("Gains sur versements non déduits"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PFU*", { bg: BG_GREY }),
-      makeCell(0.128, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell(""),
-    ],
-    [
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PS", { bg: BG_GREY }),
-      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell(""),
-    ],
-
-    [
-      makeCell("Décès"),
-      makeCell("Traitement au décès"),
-      makeCell("Dépend du type de PER"),
-      makeCell("PER assurantiel vs compte-titres"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("À préciser", { bg: BG_GREEN }),
-      makeCell("Si tu veux une grille chiffrée type AV, il faut distinguer PER assurantiel / bancaire."),
-    ],
-  ];
-
-  const merges = [
-    { col: 0, start: 0, end: 2 },
-    { col: 0, start: 3, end: 9 },
-    { col: 0, start: 10, end: 10 },
-  ];
-
-  return { columns, rows, merges };
-}
-
-function buildDefaultMatrix_CTO() {
-  const columns = defaultColumns();
-
-  const rows = [
-    [
-      makeCell("Épargne"),
-      makeCell("Versement déductible des revenus"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("Non", { bg: BG_GREEN }),
-      makeCell(""),
-    ],
-    [
-      makeCell(""),
-      makeCell("Fiscalité des revenus (dividendes / intérêts)"),
-      makeCell(""),
-      makeCell("Régime par défaut"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PFU*", { bg: BG_GREY }),
-      makeCell(0.128, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell("*Ou option barème IR (globale annuelle)."),
-    ],
-    [
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PS", { bg: BG_GREY }),
-      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell(""),
-    ],
-    [
-      makeCell(""),
-      makeCell("Dividendes si option barème"),
-      makeCell("Abattement"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("IR", { bg: BG_GREY }),
-      makeCell("40%", { bg: BG_GREEN }),
-      makeCell("Abattement 40% sur dividendes éligibles (IR uniquement)."),
-    ],
-
-    [
-      makeCell("Retraits / cessions"),
-      makeCell("Assiette : plus-value de cession"),
-      makeCell("PV = prix - PRU"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PFU*", { bg: BG_GREY }),
-      makeCell(0.128, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell("La cession déclenche l’impôt (pas le retrait)."),
-    ],
-    [
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PS", { bg: BG_GREY }),
-      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell(""),
-    ],
-    [
-      makeCell(""),
-      makeCell("Sur option : barème IR"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("IR", { bg: BG_GREY }),
-      makeCell("Barème", { bg: BG_GREEN }),
-      makeCell("Option globale PFU → barème sur revenus mobiliers et PV."),
-    ],
-    [
-      makeCell(""),
-      makeCell("Moins-values"),
-      makeCell("Imputation"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("Oui", { bg: BG_GREEN }),
-      makeCell("MV imputables sur PV de même nature + report (à préciser si tu veux détailler)."),
-    ],
-
-    [
-      makeCell("Décès"),
-      makeCell("Transmission"),
-      makeCell("Actif successoral"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("DMTG", { bg: BG_GREY }),
-      makeCell("Barème", { bg: BG_GREEN }),
-      makeCell("En principe, pas d’IR sur PV latentes (PRU réévalué)."),
-    ],
-  ];
-
-  const merges = [
-    { col: 0, start: 0, end: 3 },
-    { col: 0, start: 4, end: 7 },
-    { col: 0, start: 8, end: 8 },
-  ];
-
-  return { columns, rows, merges };
-}
-
-function buildDefaultMatrix_PEA() {
-  const columns = defaultColumns();
-
-  const rows = [
-    [
-      makeCell("Épargne"),
-      makeCell("Versement déductible des revenus"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("Non", { bg: BG_GREEN }),
-      makeCell(""),
-    ],
-    [
-      makeCell(""),
-      makeCell("Fiscalité en cours de constitution"),
-      makeCell(""),
-      makeCell("Tant qu’aucun retrait"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("IR", { bg: BG_GREY }),
-      makeCell("0%", { bg: BG_GREEN }),
-      makeCell("Pas d’IR tant que pas de retrait."),
-    ],
-
-    [
-      makeCell("Retraits"),
-      makeCell("Avant 5 ans"),
-      makeCell(""),
-      makeCell("Clôture (règle générale)"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PFU*", { bg: BG_GREY }),
-      makeCell(0.128, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell("Gains imposés (règles à affiner si tu veux détailler cas 5-8 ans etc.)."),
-    ],
-    [
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PS", { bg: BG_GREY }),
-      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell(""),
-    ],
-    [
-      makeCell(""),
-      makeCell("Après 5 ans"),
-      makeCell(""),
-      makeCell("Exonération IR"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("IR", { bg: BG_GREY }),
-      makeCell("0%", { bg: BG_GREEN }),
-      makeCell("Gains exonérés d’IR (mais PS dus)."),
-    ],
-    [
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PS", { bg: BG_GREY }),
-      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell(""),
-    ],
-
-    [
-      makeCell("Décès"),
-      makeCell("Clôture + succession"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("DMTG", { bg: BG_GREY }),
-      makeCell("Barème", { bg: BG_GREEN }),
-      makeCell("Le PEA est clôturé au décès (principes)."),
-    ],
-  ];
-
-  const merges = [
-    { col: 0, start: 0, end: 1 },
-    { col: 0, start: 2, end: 5 },
-    { col: 0, start: 6, end: 6 },
-  ];
-
-  return { columns, rows, merges };
-}
-
-function buildDefaultMatrix_SCPI() {
-  const columns = defaultColumns();
-
-  const rows = [
-    [
-      makeCell("Épargne"),
-      makeCell("Revenus fonciers (SCPI en direct)"),
-      makeCell("Assiette"),
-      makeCell("Revenus nets fonciers"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("IR", { bg: BG_GREY }),
-      makeCell("Barème (TMI)", { bg: BG_GREEN }),
-      makeCell("Micro-foncier vs réel (sur option selon conditions)."),
-    ],
-    [
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PS", { bg: BG_GREY }),
-      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell("PS sur revenus fonciers."),
-    ],
-    [
-      makeCell("Retraits / cession"),
-      makeCell("Plus-value immobilière des particuliers"),
-      makeCell("Assiette"),
-      makeCell("PV = prix - prix acquisition"),
-      makeCell(""),
-      makeCell("Abattements durée"),
-      makeCell("IR / PS"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("Oui", { bg: BG_GREEN }),
-      makeCell("À détailler : abattements IR et PS selon durée de détention."),
-    ],
-    [
-      makeCell("Décès"),
-      makeCell("Transmission"),
-      makeCell("Parts dans la succession"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("DMTG", { bg: BG_GREY }),
-      makeCell("Barème", { bg: BG_GREEN }),
-      makeCell("Droits de succession selon lien de parenté."),
-    ],
-  ];
-
-  const merges = [
-    { col: 0, start: 0, end: 1 },
-    { col: 0, start: 2, end: 2 },
-    { col: 0, start: 3, end: 3 },
-  ];
-
-  return { columns, rows, merges };
-}
-
-function buildDefaultMatrix_LIVRET() {
-  const columns = defaultColumns();
-
-  const rows = [
-    [
-      makeCell("Épargne"),
-      makeCell("Versement déductible des revenus"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("Non", { bg: BG_GREEN }),
-      makeCell("Note : Livret A / LDDS = exonérés IR + PS (hors livret fiscalisé)."),
-    ],
-    [
-      makeCell(""),
-      makeCell("Fiscalité des intérêts"),
-      makeCell("Assiette"),
-      makeCell("Intérêts"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PFU*", { bg: BG_GREY }),
-      makeCell(0.128, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell("*Ou barème IR (option globale annuelle)."),
-    ],
-    [
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("PS", { bg: BG_GREY }),
-      makeCell(0.172, { bg: BG_GREEN, fmt: "percent" }),
-      makeCell(""),
-    ],
-    [
-      makeCell("Retraits"),
-      makeCell("Retrait"),
-      makeCell(""),
-      makeCell("Non taxable"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("—", { bg: BG_GREEN }),
-      makeCell("La fiscalité porte sur les intérêts, pas sur le retrait en lui-même."),
-    ],
-    [
-      makeCell("Décès"),
-      makeCell("Transmission"),
-      makeCell("Solde dans succession"),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell(""),
-      makeCell("DMTG", { bg: BG_GREY }),
-      makeCell("Barème", { bg: BG_GREEN }),
-      makeCell(""),
-    ],
-  ];
-
-  const merges = [
-    { col: 0, start: 0, end: 2 },
-    { col: 0, start: 3, end: 3 },
-    { col: 0, start: 4, end: 4 },
-  ];
-
-  return { columns, rows, merges };
-}
-
-/** =========================
- * DEFAULT_FISCALITES_SETTINGS
- * ========================= */
-
-export const DEFAULT_FISCALITES_SETTINGS = {
-  meta: {
-    title: "Matrice fiscalité des enveloppes (seuils & taux éditables)",
-    assumptions: [
-      "Résident fiscal France",
-      "Matrice inspirée de l’Excel (lignes et sous-lignes par thématiques)",
-      "L’Admin peut modifier directement montants, taux et textes cellule par cellule",
-      "SCPI uniquement en direct (revenus fonciers)",
-    ],
-    lastReview: "2025-12-30",
-  },
-  products: [
-    {
-      id: "assurance_vie",
-      label: "Assurance-vie",
-      subtitle: "Matrice conforme au modèle Excel fourni",
-      matrix: {
-        columns: defaultColumns(),
-        rows: [
-          [
-            { v: "Épargne" },
-            { v: "Versement déductible des revenus" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "Non", bg: BG_GREEN },
-            { v: "-" },
-          ],
-          [
-            { v: "" },
-            { v: "Fiscalité en cours de constitution sur les intérêts :" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "Non", bg: BG_GREEN },
-            { v: "*17.20% sur les intérêts du fonds € prélevés annuellement" },
-          ],
-
-          [{ v: "Retraits en capital" }, { v: "Assiette :" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "Intérets", bg: BG_GREEN }, { v: "" }],
-          [
-            { v: "" },
-            { v: "Taux applicable : " },
-            { v: "Versements effectués à partir du " },
-            { v: "2017-09-27", fmt: "date" },
-            { v: "<8 ans" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "PFU*", bg: BG_GREY },
-            { v: 0.128, bg: BG_GREEN, fmt: "percent" },
-            { v: "*Ou barème" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: ">8 ans" },
-            { v: "Célibataire" },
-            { v: 4600, fmt: "currency" },
-            { v: "Gain provenant des" },
-            { v: "<150 000 €" },
-            { v: "PFL*", bg: BG_GREY },
-            { v: 0.075, bg: BG_GREEN, fmt: "percent" },
-            { v: "*Ou barème" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "Gain au delà des" },
-            { v: ">150 000 €" },
-            { v: "PFU*", bg: BG_GREY },
-            { v: 0.128, bg: BG_GREEN, fmt: "percent" },
-            { v: "*Ou barème" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "Couple" },
-            { v: 9200, fmt: "currency" },
-            { v: "Gain provenant des" },
-            { v: "<150 000 €" },
-            { v: "PFL*", bg: BG_GREY },
-            { v: 0.075, bg: BG_GREEN, fmt: "percent" },
-            { v: "*Ou barème" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "Gain au delà des" },
-            { v: ">150 000 €" },
-            { v: "PFU*", bg: BG_GREY },
-            { v: 0.128, bg: BG_GREEN, fmt: "percent" },
-            { v: "*Ou barème" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-
-          [
-            { v: "" },
-            { v: "" },
-            { v: "Versements effectués avant" },
-            { v: "2017-09-27", fmt: "date" },
-            { v: "<4 ans" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "PFL*", bg: BG_GREY },
-            { v: 0.35, bg: BG_GREEN, fmt: "percent" },
-            { v: "*Ou barème" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "4 à 8 ans" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "PFL*", bg: BG_GREY },
-            { v: 0.15, bg: BG_GREEN, fmt: "percent" },
-            { v: "*Ou barème" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: ">8 ans" },
-            { v: "Célibataire" },
-            { v: 4600, fmt: "currency" },
-            { v: "" },
-            { v: "" },
-            { v: "PFL*", bg: BG_GREY },
-            { v: 0.075, bg: BG_GREEN, fmt: "percent" },
-            { v: "*Ou barème" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "Couple" },
-            { v: 9200, fmt: "currency" },
-            { v: "" },
-            { v: "" },
-            { v: "PFL*", bg: BG_GREY },
-            { v: 0.075, bg: BG_GREEN, fmt: "percent" },
-            { v: "*Ou barème" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-
-          [
-            { v: "Décès" },
-            { v: "Règles de transmission" },
-            { v: "Contrat souscrit avant le" },
-            { v: "1991-11-20", fmt: "date" },
-            { v: "Vst des primes jusqu'au" },
-            { v: "1998-10-12", fmt: "date" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: 0, bg: BG_GREEN },
-            { v: "" },
-          ],
-          [
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "Vst des primes à partir" },
-            { v: "1998-10-13", fmt: "date" },
-            { v: "<152 500 €" },
-            { v: "/bénef" },
-            { v: "" },
-            { v: 0, bg: BG_GREEN },
-            { v: "" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "<852 500 €" }, { v: "/bénef" }, { v: "" }, { v: 0.2, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: ">852 500 €" }, { v: "/bénef" }, { v: "" }, { v: 0.35, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-
-          [
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "1991-11-20", fmt: "date" },
-            { v: "Vst des primes jusqu'au" },
-            { v: "1998-10-12", fmt: "date" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: 0, bg: BG_GREEN },
-            { v: "" },
-          ],
-          [
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "Vst des primes à partir" },
-            { v: "1998-10-13", fmt: "date" },
-            { v: "<152 500 €" },
-            { v: "/bénef" },
-            { v: "" },
-            { v: 0, bg: BG_GREEN },
-            { v: "" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "<852 500 €" }, { v: "/bénef" }, { v: "" }, { v: 0.2, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: ">852 500 €" }, { v: "/bénef" }, { v: "" }, { v: 0.35, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "Vst ≥70ans" }, { v: "" }, { v: "" }, { v: "< 30 500 €" }, { v: "global" }, { v: "" }, { v: 0, bg: BG_GREEN }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "> 30 500 €" }, { v: "global" }, { v: "DMTG*", bg: BG_GREY }, { v: 1, bg: BG_GREEN }, { v: "*Intègre le barème des droits de succession" }],
-
-          [
-            { v: "" },
-            { v: "" },
-            { v: "Contrat souscrit après le" },
-            { v: "1998-10-13", fmt: "date" },
-            { v: "Vst <70ans" },
-            { v: "" },
-            { v: "" },
-            { v: "<152 500 €" },
-            { v: "/bénef" },
-            { v: "" },
-            { v: 0, bg: BG_GREEN },
-            { v: "" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "<852 500 €" }, { v: "/bénef" }, { v: "" }, { v: 0.2, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: ">852 500 €" }, { v: "/bénef" }, { v: "" }, { v: 0.35, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "Vst ≥70ans" }, { v: "" }, { v: "" }, { v: "< 30 500 €" }, { v: "global" }, { v: "" }, { v: 0, bg: BG_GREEN }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "> 30 500 €" }, { v: "global" }, { v: "DMTG*", bg: BG_GREY }, { v: 1, bg: BG_GREEN }, { v: "*Intègre le barème des droits de succession" }],
-
-          [
-            { v: "Liquidation en rente" },
-            { v: "Transformation du capital en rente viagère" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "Oui", bg: BG_GREEN },
-            { v: "" },
-          ],
-          [
-            { v: "" },
-            { v: "Fiscalité de la rente" },
-            { v: "Fraction générée par les primes" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "Selon l'âge de l’assuré lors de la transformation du capital en rente" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "<60 ans" }, { v: 0.5, fmt: "percent" }, { v: "IR", bg: BG_GREY }, { v: "Barème", bg: BG_GREEN }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "<70 ans" }, { v: 0.4, fmt: "percent" }, { v: "IR", bg: BG_GREY }, { v: "Barème", bg: BG_GREEN }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "≥70 ans" }, { v: 0.3, fmt: "percent" }, { v: "IR", bg: BG_GREY }, { v: "Barème", bg: BG_GREEN }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-
-          [
-            { v: "" },
-            { v: "" },
-            { v: "Fraction générée par les intérets" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "Selon l'âge de l’assuré lors de la transformation du capital en rente" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-            { v: "" },
-          ],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "Les PS sont calculés sur l'assiette après abattement" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "<60 ans" }, { v: 0.5, fmt: "percent" }, { v: "IR", bg: BG_GREY }, { v: "Barème", bg: BG_GREEN }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "<70 ans" }, { v: 0.4, fmt: "percent" }, { v: "IR", bg: BG_GREY }, { v: "Barème", bg: BG_GREEN }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "≥70 ans" }, { v: 0.3, fmt: "percent" }, { v: "IR", bg: BG_GREY }, { v: "Barème", bg: BG_GREEN }, { v: "" }],
-          [{ v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "PS", bg: BG_GREY }, { v: 0.172, bg: BG_GREEN, fmt: "percent" }, { v: "" }],
-
-          [{ v: "" }, { v: "Transmission des capitaux en cas de décès" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "" }, { v: "Non*", bg: BG_GREEN }, { v: "*Sauf éventuelle réversion de la rente" }],
-        ],
-        merges: [
-          { col: 0, start: 0, end: 1 }, // Épargne
-          { col: 0, start: 2, end: 20 }, // Retraits
-          { col: 0, start: 21, end: 35 }, // Décès
-          { col: 0, start: 36, end: 53 }, // Liquidation en rente
-        ],
+    // 1) Phase d’épargne
+    epargne: {
+      versementDeductibleIR: false,
+      socialOnInterestsDuringAccumulation: {
+        // commentaire Excel: PS sur intérêts fonds € prélevés annuellement
+        psRatePercent: 17.2,
+        note: "PS sur intérêts (fonds €) prélevés annuellement.",
       },
     },
 
-    { id: "per_individuel", label: "PER individuel (PERIN)", subtitle: "Structure identique (seuils & taux éditables)", matrix: buildDefaultMatrix_PERIN() },
-    { id: "cto", label: "Compte-titres ordinaire (CTO)", subtitle: "PFU vs option barème, PV/MV, décès", matrix: buildDefaultMatrix_CTO() },
-    { id: "pea", label: "PEA", subtitle: "Durées, exonération IR, PS, décès", matrix: buildDefaultMatrix_PEA() },
-    { id: "scpi_direct", label: "SCPI en direct", subtitle: "Revenus fonciers + PV immo (direct uniquement)", matrix: buildDefaultMatrix_SCPI() },
-    { id: "livret_bancaire", label: "Livret bancaire (fiscalisé)", subtitle: "PFU / option barème ; note Livret A/LDDS", matrix: buildDefaultMatrix_LIVRET() },
-  ],
-  disclaimer: [
-    "Contenu informatif, non constitutif de conseil.",
-    "Règles fiscales susceptibles d’évoluer (LF, doctrine). Vérifier l’actualité au moment du conseil.",
-    "Adapter au cas client : TMI, RFR, dates, situation familiale, objectifs, etc.",
-  ],
+    // 2) Retraits en capital
+    retraitsCapital: {
+      baseImposable: 'interets', // intérêts/gains uniquement
+      psRatePercent: 17.2,
+
+      // Versements effectués à partir du 27/09/2017
+      depuis2017: {
+        startDate: '2017-09-27',
+        moins8Ans: {
+          irRatePercent: 12.8, // PFU IR
+          allowBaremeIR: true,
+          label: '< 8 ans',
+        },
+        plus8Ans: {
+          label: '> 8 ans',
+          abattementAnnuel: {
+            single: 4600,
+            couple: 9200,
+          },
+          primesNettesSeuil: 150000,
+          irRateUnderThresholdPercent: 7.5, // PFL (ou barème) sous seuil
+          irRateOverThresholdPercent: 12.8, // PFU (ou barème) au-delà
+          allowBaremeIR: true,
+        },
+      },
+
+      // Versements effectués avant le 27/09/2017
+      avant2017: {
+        endDate: '2017-09-26',
+        moins4Ans: { label: '< 4 ans', irRatePercent: 35, allowBaremeIR: true },
+        de4a8Ans: { label: '4 à 8 ans', irRatePercent: 15, allowBaremeIR: true },
+        plus8Ans: {
+          label: '> 8 ans',
+          abattementAnnuel: { single: 4600, couple: 9200 },
+          irRatePercent: 7.5,
+          allowBaremeIR: true,
+        },
+      },
+    },
+
+    // 3) Décès (transmission)
+    deces: {
+      // Bornes historiques
+      contratAvantDate: '1998-10-12',
+      contratApresDate: '1998-10-13',
+      agePivotPrimes: 70,
+
+      // Primes versées avant 13/10/1998 : exonération (tableau = 0)
+      primesAvant1998: {
+        taxRatePercent: 0,
+        note: "Contrats souscrits avant le 13/10/1998 : primes versées avant le 13/10/1998 exonérées.",
+      },
+
+      // Primes versées à partir du 13/10/1998 (article 990 I — logique par bénéficiaire)
+      primesApres1998: {
+        allowancePerBeneficiary: 152500,
+        brackets: [
+          { upTo: 852500, ratePercent: 20 },
+          { upTo: null, ratePercent: 35 },
+        ],
+        note: 'Barème par bénéficiaire (990 I).',
+      },
+
+      // Primes versées après 70 ans (article 757 B — logique globale)
+      apres70ans: {
+        globalAllowance: 30500,
+        taxationMode: 'dmtg', // droits de mutation à titre gratuit
+        note: 'Au-delà de 30 500 € (global), taxation aux DMTG (barème succession).',
+      },
+    },
+
+    // 4) Liquidation en rente
+    rente: {
+      possible: true,
+      psRatePercent: 17.2,
+      taxableFractionByAgeAtLiquidation: [
+        { label: '< 60 ans', ageMaxInclusive: 59, fraction: 0.5 },
+        { label: '< 70 ans', ageMaxInclusive: 69, fraction: 0.4 },
+        { label: '≥ 70 ans', ageMaxInclusive: null, fraction: 0.3 },
+      ],
+      irMode: 'bareme',
+      notePs: "Les PS sont calculés sur l'assiette après abattement.",
+      noteCapitalOnDeath:
+        'Transmission des capitaux en cas de décès : non (sauf éventuelle réversion de la rente).',
+    },
+  },
 };
 
-/** =========================
- * Composant
- * ========================= */
+function numberOrEmpty(v) {
+  return v === null || v === undefined || Number.isNaN(v) ? '' : String(v);
+}
+
+function textOrEmpty(v) {
+  return v === null || v === undefined ? '' : String(v);
+}
 
 export default function SettingsFiscalites() {
   const [user, setUser] = useState(null);
-  const [roleLabel, setRoleLabel] = useState("User");
+  const [roleLabel, setRoleLabel] = useState('User');
   const [loading, setLoading] = useState(true);
 
-  const [settings, setSettings] = useState(DEFAULT_FISCALITES_SETTINGS);
+  const [settings, setSettings] = useState(DEFAULT_FISCALITY_SETTINGS);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
 
-  // Admin = user_metadata.role === 'admin' OU user_metadata.is_admin === true (comme SettingsImpots)
   const isAdmin =
     user &&
-    ((typeof user?.user_metadata?.role === "string" &&
-      user.user_metadata.role.toLowerCase() === "admin") ||
+    ((typeof user?.user_metadata?.role === 'string' &&
+      user.user_metadata.role.toLowerCase() === 'admin') ||
       user?.user_metadata?.is_admin === true);
 
+  const av = settings.assuranceVie;
+
+  // ---------------------------------------------
+  // Chargement user + paramètres depuis Supabase
+  // ---------------------------------------------
   useEffect(() => {
     let mounted = true;
 
@@ -1073,7 +149,7 @@ export default function SettingsFiscalites() {
       try {
         const { data: userData, error: userErr } = await supabase.auth.getUser();
         if (userErr) {
-          console.error("Erreur user:", userErr);
+          console.error('Erreur user:', userErr);
           if (mounted) setLoading(false);
           return;
         }
@@ -1082,38 +158,24 @@ export default function SettingsFiscalites() {
         if (!mounted) return;
 
         setUser(u);
-
         if (u) {
           const meta = u.user_metadata || {};
           const admin =
-            (typeof meta.role === "string" && meta.role.toLowerCase() === "admin") ||
+            (typeof meta.role === 'string' && meta.role.toLowerCase() === 'admin') ||
             meta.is_admin === true;
-          setRoleLabel(admin ? "Admin" : "User");
-        } else {
-          setRoleLabel("User");
+          setRoleLabel(admin ? 'Admin' : 'User');
         }
 
-        // Charge settings depuis settings_fiscalites.key = fiscalites_v1 (si la table existe)
-        const { data: row, error: setErr } = await supabase
-          .from(TABLE_NAME)
-          .select("data")
-          .eq("key", SETTINGS_KEY)
-          .maybeSingle();
+        // Charge la ligne id=1
+        const { data: rows, error: err } = await supabase
+          .from('fiscality_settings')
+          .select('data')
+          .eq('id', 1);
 
-        if (setErr) {
-          // Si table inexistante ou RLS => on reste en fallback defaults
-          console.warn("Load settings fiscalites error:", setErr);
-        } else if (row?.data) {
-          setSettings((prev) => {
-            const incoming = row.data || {};
-            return {
-              ...prev,
-              ...incoming,
-              meta: { ...(prev.meta || {}), ...(incoming.meta || {}) },
-              products: Array.isArray(incoming.products) ? incoming.products : prev.products,
-              disclaimer: Array.isArray(incoming.disclaimer) ? incoming.disclaimer : prev.disclaimer,
-            };
-          });
+        if (!err && rows && rows.length > 0 && rows[0].data) {
+          setSettings((prev) => ({ ...prev, ...rows[0].data }));
+        } else if (err && err.code !== 'PGRST116') {
+          console.error('Erreur chargement fiscality_settings :', err);
         }
 
         if (mounted) setLoading(false);
@@ -1129,40 +191,39 @@ export default function SettingsFiscalites() {
     };
   }, []);
 
-  const updateCell = (productId, rowIndex, colIndex, rawValue) => {
+  // ---------------------------------------------
+  // Helpers de MAJ
+  // ---------------------------------------------
+  const updateField = (path, value) => {
     setSettings((prev) => {
-      const next = structuredClone(prev);
-      const prod = (next.products || []).find((p) => p.id === productId);
-      if (!prod?.matrix?.rows?.[rowIndex]?.[colIndex]) return prev;
-
-      const currentCell = prod.matrix.rows[rowIndex][colIndex];
-      prod.matrix.rows[rowIndex][colIndex] = parseAdminInput(currentCell, rawValue);
-      return next;
+      const clone = structuredClone(prev);
+      let obj = clone;
+      for (let i = 0; i < path.length - 1; i++) {
+        const k = path[i];
+        if (obj[k] === undefined || obj[k] === null) obj[k] = {};
+        obj = obj[k];
+      }
+      obj[path[path.length - 1]] = value;
+      return clone;
     });
-    setMessage("");
+    setMessage('');
   };
 
   const handleSave = async () => {
-    if (!isAdmin || !user) return;
-
+    if (!isAdmin) return;
     try {
       setSaving(true);
-      setMessage("");
+      setMessage('');
 
-      const payload = {
-        key: SETTINGS_KEY,
-        data: settings,
-        updated_by: user.id,
-        updated_at: new Date().toISOString(),
-      };
-
-      const { error } = await supabase.from(TABLE_NAME).upsert(payload, { onConflict: "key" });
+      const { error } = await supabase
+        .from('fiscality_settings')
+        .upsert({ id: 1, data: settings });
 
       if (error) {
         console.error(error);
         setMessage("Erreur lors de l'enregistrement.");
       } else {
-        setMessage("Fiscalités enregistrées.");
+        setMessage('Paramètres fiscalités enregistrés.');
       }
     } catch (e) {
       console.error(e);
@@ -1172,12 +233,11 @@ export default function SettingsFiscalites() {
     }
   };
 
-  const handleResetDefault = () => {
-    if (!isAdmin) return;
-    setSettings(DEFAULT_FISCALITES_SETTINGS);
-    setMessage("Valeurs par défaut restaurées (non enregistrées).");
-  };
+  const leftColTitle = useMemo(() => 'Assurance-vie', []);
 
+  // ---------------------------------------------
+  // Rendu
+  // ---------------------------------------------
   if (loading) {
     return (
       <div className="settings-page">
@@ -1213,133 +273,634 @@ export default function SettingsFiscalites() {
           style={{
             fontSize: 15,
             marginTop: 24,
-            display: "flex",
-            flexDirection: "column",
+            display: 'flex',
+            flexDirection: 'column',
             gap: 24,
           }}
         >
+          {/* Bandeau info */}
           <div className="tax-user-banner">
             <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {roleLabel}
           </div>
 
           <section>
-            <h3>{settings?.meta?.title || "Matrice fiscalité"}</h3>
-            <p style={{ fontSize: 13, color: "#555", marginBottom: 8 }}>
-              Mode <strong>Admin</strong> : édition cellule par cellule (taux/montants/texte). Mode{" "}
-              <strong>User</strong> : lecture seule.
+            <h3>{leftColTitle} — Référentiel de calcul</h3>
+            <p style={{ fontSize: 13, color: '#555', marginBottom: 8 }}>
+              Paramètres utilisés par les simulateurs (lecture simple, champs modifiables <strong>admin uniquement</strong>).
             </p>
 
-            {Array.isArray(settings?.meta?.assumptions) && settings.meta.assumptions.length > 0 && (
-              <ul style={{ fontSize: 13, color: "#555", marginTop: 8 }}>
-                {settings.meta.assumptions.map((a, i) => (
-                  <li key={i}>{a}</li>
-                ))}
-              </ul>
-            )}
-
-            {isAdmin && (
-              <div style={{ display: "flex", gap: 10, marginTop: 12, alignItems: "center" }}>
-                <button className="chip" onClick={handleSave} disabled={saving}>
-                  {saving ? "Enregistrement…" : "Enregistrer"}
-                </button>
-                <button className="chip" onClick={handleResetDefault} disabled={saving}>
-                  Réinitialiser (non enregistré)
-                </button>
-                {message && <span style={{ fontSize: 13, color: "#555" }}>{message}</span>}
+            {/* META (optionnel) */}
+            <div className="fisc-kpis">
+              <div className="fisc-kpi">
+                <div className="fisc-kpi-label">Libellé</div>
+                <input
+                  type="text"
+                  value={textOrEmpty(av?.meta?.versionLabel)}
+                  onChange={(e) => updateField(['assuranceVie', 'meta', 'versionLabel'], e.target.value)}
+                  disabled={!isAdmin}
+                />
               </div>
-            )}
-
-            {!isAdmin && message && (
-              <p style={{ fontSize: 13, color: "#555", marginTop: 10 }}>{message}</p>
-            )}
-          </section>
-
-          {(settings?.products || []).map((prod) => {
-            const columns = prod?.matrix?.columns || [];
-            const rows = prod?.matrix?.rows || [];
-            const merges = prod?.matrix?.merges || [];
-
-            return (
-              <section key={prod.id}>
-                <h3>{prod.label}</h3>
-                {prod.subtitle && (
-                  <p style={{ fontSize: 13, color: "#555", marginBottom: 10 }}>
-                    {prod.subtitle}
-                  </p>
-                )}
-
-                <div className="matrix-wrap">
-                  <table className="settings-table fiscalites-matrix">
-                    <thead>
-                      <tr>
-                        {columns.map((col, idx) => (
-                          <th key={idx} className="matrix-th">
-                            {col}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {rows.map((row, rIdx) => (
-                        <tr key={rIdx}>
-                          {row.map((cell, cIdx) => {
-                            const rs = getRowSpan(merges, rIdx, cIdx);
-                            if (rs === 0) return null;
-
-                            const style = {};
-                            if (cell?.bg) style.background = `#${cell.bg}`;
-
-                            return (
-                              <td key={cIdx} rowSpan={rs} style={style}>
-                                {isAdmin ? (
-                                  <textarea
-                                    className="settings-textarea"
-                                    value={cell?.v ?? ""}
-                                    onChange={(e) => updateCell(prod.id, rIdx, cIdx, e.target.value)}
-                                    disabled={!isAdmin}
-                                    rows={Math.max(2, String(cell?.v ?? "").split("\n").length)}
-                                  />
-                                ) : (
-                                  <div className="cell-readonly">
-                                    {formatCellValue(cell)}
-                                  </div>
-                                )}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            );
-          })}
-
-          <section>
-            <h3>Disclaimer</h3>
-            <div className="fiscalites-disclaimer">
-              {(settings?.disclaimer || []).map((d, i) => (
-                <div key={i} className="cell-readonly">
-                  • {d}
-                </div>
-              ))}
+              <div className="fisc-kpi">
+                <div className="fisc-kpi-label">Dernière revue (libre)</div>
+                <input
+                  type="text"
+                  value={textOrEmpty(av?.meta?.lastReviewed)}
+                  onChange={(e) => updateField(['assuranceVie', 'meta', 'lastReviewed'], e.target.value)}
+                  disabled={!isAdmin}
+                  placeholder="Ex: 12/2025"
+                />
+              </div>
             </div>
           </section>
 
-          {!isAdmin && (
-            <p style={{ fontSize: 12, color: "#777", marginTop: 6 }}>
-              Lecture seule : demande un accès admin pour modifier et enregistrer les paramètres.
-            </p>
+          {/* 1) Phase d'épargne */}
+          <section>
+            <h3>Phase d’épargne</h3>
+
+            <div className="income-tax-block">
+              <div className="income-tax-block-title">Versements</div>
+              <div className="settings-field-row">
+                <label>Versement déductible du revenu imposable</label>
+                <input
+                  type="text"
+                  value={av.epargne.versementDeductibleIR ? 'Oui' : 'Non'}
+                  disabled
+                  style={{ width: 90, textAlign: 'center' }}
+                />
+                <span />
+              </div>
+            </div>
+
+            <div className="income-tax-block">
+              <div className="income-tax-block-title">Prélèvements sociaux pendant la capitalisation</div>
+              <div className="settings-field-row">
+                <label>Taux de PS sur intérêts</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={numberOrEmpty(av.epargne.socialOnInterestsDuringAccumulation.psRatePercent)}
+                  onChange={(e) =>
+                    updateField(
+                      ['assuranceVie', 'epargne', 'socialOnInterestsDuringAccumulation', 'psRatePercent'],
+                      e.target.value === '' ? null : Number(e.target.value)
+                    )
+                  }
+                  disabled={!isAdmin}
+                />
+                <span>%</span>
+              </div>
+
+              <div className="settings-field-row">
+                <label>Note</label>
+                <input
+                  type="text"
+                  value={textOrEmpty(av.epargne.socialOnInterestsDuringAccumulation.note)}
+                  onChange={(e) =>
+                    updateField(
+                      ['assuranceVie', 'epargne', 'socialOnInterestsDuringAccumulation', 'note'],
+                      e.target.value
+                    )
+                  }
+                  disabled={!isAdmin}
+                  style={{ width: 520, textAlign: 'left' }}
+                />
+                <span />
+              </div>
+            </div>
+          </section>
+
+          {/* 2) Retraits en capital */}
+          <section>
+            <h3>Retraits en capital</h3>
+
+            <div className="income-tax-block">
+              <div className="income-tax-block-title">Assiette & PS</div>
+              <div className="settings-field-row">
+                <label>Assiette imposable</label>
+                <input type="text" value="Intérêts / gains" disabled style={{ width: 180, textAlign: 'center' }} />
+                <span />
+              </div>
+              <div className="settings-field-row">
+                <label>Taux de PS (global)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={numberOrEmpty(av.retraitsCapital.psRatePercent)}
+                  onChange={(e) =>
+                    updateField(['assuranceVie', 'retraitsCapital', 'psRatePercent'], e.target.value === '' ? null : Number(e.target.value))
+                  }
+                  disabled={!isAdmin}
+                />
+                <span>%</span>
+              </div>
+            </div>
+
+            <div className="fisc-two-cols">
+              {/* Depuis 27/09/2017 */}
+              <div className="fisc-col">
+                <div className="fisc-col-title">Versements à partir du {av.retraitsCapital.depuis2017.startDate}</div>
+
+                <table className="settings-table">
+                  <thead>
+                    <tr>
+                      <th>Durée</th>
+                      <th className="taux-col">IR %</th>
+                      <th>Option barème</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{av.retraitsCapital.depuis2017.moins8Ans.label}</td>
+                      <td className="taux-col">
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={numberOrEmpty(av.retraitsCapital.depuis2017.moins8Ans.irRatePercent)}
+                          onChange={(e) =>
+                            updateField(
+                              ['assuranceVie', 'retraitsCapital', 'depuis2017', 'moins8Ans', 'irRatePercent'],
+                              e.target.value === '' ? null : Number(e.target.value)
+                            )
+                          }
+                          disabled={!isAdmin}
+                        />
+                      </td>
+                      <td style={{ textAlign: 'left' }}>{av.retraitsCapital.depuis2017.moins8Ans.allowBaremeIR ? 'Oui' : 'Non'}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div className="income-tax-block" style={{ marginTop: 10 }}>
+                  <div className="income-tax-block-title">{av.retraitsCapital.depuis2017.plus8Ans.label}</div>
+
+                  <div className="settings-field-row">
+                    <label>Abattement annuel célibataire</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(av.retraitsCapital.depuis2017.plus8Ans.abattementAnnuel.single)}
+                      onChange={(e) =>
+                        updateField(
+                          ['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'abattementAnnuel', 'single'],
+                          e.target.value === '' ? null : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  <div className="settings-field-row">
+                    <label>Abattement annuel couple</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(av.retraitsCapital.depuis2017.plus8Ans.abattementAnnuel.couple)}
+                      onChange={(e) =>
+                        updateField(
+                          ['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'abattementAnnuel', 'couple'],
+                          e.target.value === '' ? null : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  <div className="settings-field-row">
+                    <label>Seuil de primes nettes</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(av.retraitsCapital.depuis2017.plus8Ans.primesNettesSeuil)}
+                      onChange={(e) =>
+                        updateField(
+                          ['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'primesNettesSeuil'],
+                          e.target.value === '' ? null : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+
+                  <table className="settings-table" style={{ marginTop: 8 }}>
+                    <thead>
+                      <tr>
+                        <th>Tranche</th>
+                        <th className="taux-col">IR %</th>
+                        <th>Option barème</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style={{ textAlign: 'left' }}>Gain sous seuil</td>
+                        <td className="taux-col">
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={numberOrEmpty(av.retraitsCapital.depuis2017.plus8Ans.irRateUnderThresholdPercent)}
+                            onChange={(e) =>
+                              updateField(
+                                ['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'irRateUnderThresholdPercent'],
+                                e.target.value === '' ? null : Number(e.target.value)
+                              )
+                            }
+                            disabled={!isAdmin}
+                          />
+                        </td>
+                        <td style={{ textAlign: 'left' }}>{av.retraitsCapital.depuis2017.plus8Ans.allowBaremeIR ? 'Oui' : 'Non'}</td>
+                      </tr>
+                      <tr>
+                        <td style={{ textAlign: 'left' }}>Gain au-delà</td>
+                        <td className="taux-col">
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={numberOrEmpty(av.retraitsCapital.depuis2017.plus8Ans.irRateOverThresholdPercent)}
+                            onChange={(e) =>
+                              updateField(
+                                ['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'irRateOverThresholdPercent'],
+                                e.target.value === '' ? null : Number(e.target.value)
+                              )
+                            }
+                            disabled={!isAdmin}
+                          />
+                        </td>
+                        <td style={{ textAlign: 'left' }}>{av.retraitsCapital.depuis2017.plus8Ans.allowBaremeIR ? 'Oui' : 'Non'}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Avant 27/09/2017 */}
+              <div className="fisc-col fisc-col-right">
+                <div className="fisc-col-title">Versements avant le {av.retraitsCapital.avant2017.endDate}</div>
+
+                <table className="settings-table">
+                  <thead>
+                    <tr>
+                      <th>Durée</th>
+                      <th className="taux-col">IR %</th>
+                      <th>Option barème</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{av.retraitsCapital.avant2017.moins4Ans.label}</td>
+                      <td className="taux-col">
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={numberOrEmpty(av.retraitsCapital.avant2017.moins4Ans.irRatePercent)}
+                          onChange={(e) =>
+                            updateField(
+                              ['assuranceVie', 'retraitsCapital', 'avant2017', 'moins4Ans', 'irRatePercent'],
+                              e.target.value === '' ? null : Number(e.target.value)
+                            )
+                          }
+                          disabled={!isAdmin}
+                        />
+                      </td>
+                      <td style={{ textAlign: 'left' }}>{av.retraitsCapital.avant2017.moins4Ans.allowBaremeIR ? 'Oui' : 'Non'}</td>
+                    </tr>
+
+                    <tr>
+                      <td>{av.retraitsCapital.avant2017.de4a8Ans.label}</td>
+                      <td className="taux-col">
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={numberOrEmpty(av.retraitsCapital.avant2017.de4a8Ans.irRatePercent)}
+                          onChange={(e) =>
+                            updateField(
+                              ['assuranceVie', 'retraitsCapital', 'avant2017', 'de4a8Ans', 'irRatePercent'],
+                              e.target.value === '' ? null : Number(e.target.value)
+                            )
+                          }
+                          disabled={!isAdmin}
+                        />
+                      </td>
+                      <td style={{ textAlign: 'left' }}>{av.retraitsCapital.avant2017.de4a8Ans.allowBaremeIR ? 'Oui' : 'Non'}</td>
+                    </tr>
+
+                    <tr>
+                      <td>{av.retraitsCapital.avant2017.plus8Ans.label}</td>
+                      <td className="taux-col">
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={numberOrEmpty(av.retraitsCapital.avant2017.plus8Ans.irRatePercent)}
+                          onChange={(e) =>
+                            updateField(
+                              ['assuranceVie', 'retraitsCapital', 'avant2017', 'plus8Ans', 'irRatePercent'],
+                              e.target.value === '' ? null : Number(e.target.value)
+                            )
+                          }
+                          disabled={!isAdmin}
+                        />
+                      </td>
+                      <td style={{ textAlign: 'left' }}>{av.retraitsCapital.avant2017.plus8Ans.allowBaremeIR ? 'Oui' : 'Non'}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div className="income-tax-block" style={{ marginTop: 10 }}>
+                  <div className="income-tax-block-title">Abattement annuel (si &gt; 8 ans)</div>
+                  <div className="settings-field-row">
+                    <label>Célibataire</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(av.retraitsCapital.avant2017.plus8Ans.abattementAnnuel.single)}
+                      onChange={(e) =>
+                        updateField(
+                          ['assuranceVie', 'retraitsCapital', 'avant2017', 'plus8Ans', 'abattementAnnuel', 'single'],
+                          e.target.value === '' ? null : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                  <div className="settings-field-row">
+                    <label>Couple</label>
+                    <input
+                      type="number"
+                      value={numberOrEmpty(av.retraitsCapital.avant2017.plus8Ans.abattementAnnuel.couple)}
+                      onChange={(e) =>
+                        updateField(
+                          ['assuranceVie', 'retraitsCapital', 'avant2017', 'plus8Ans', 'abattementAnnuel', 'couple'],
+                          e.target.value === '' ? null : Number(e.target.value)
+                        )
+                      }
+                      disabled={!isAdmin}
+                    />
+                    <span>€</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* 3) Décès */}
+          <section>
+            <h3>Décès — transmission</h3>
+
+            <div className="income-tax-block">
+              <div className="income-tax-block-title">Dates & âge pivot</div>
+
+              <div className="settings-field-row">
+                <label>Date pivot (contrats historiques)</label>
+                <input type="text" value={`${av.deces.contratApresDate}`} disabled style={{ width: 140, textAlign: 'center' }} />
+                <span />
+              </div>
+
+              <div className="settings-field-row">
+                <label>Âge pivot (primes)</label>
+                <input
+                  type="number"
+                  value={numberOrEmpty(av.deces.agePivotPrimes)}
+                  onChange={(e) =>
+                    updateField(['assuranceVie', 'deces', 'agePivotPrimes'], e.target.value === '' ? null : Number(e.target.value))
+                  }
+                  disabled={!isAdmin}
+                />
+                <span>ans</span>
+              </div>
+            </div>
+
+            <div className="fisc-two-cols">
+              <div className="fisc-col">
+                <div className="fisc-col-title">Primes versées avant {av.deces.contratApresDate}</div>
+                <div className="settings-field-row">
+                  <label>Taux</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={numberOrEmpty(av.deces.primesAvant1998.taxRatePercent)}
+                    onChange={(e) =>
+                      updateField(
+                        ['assuranceVie', 'deces', 'primesAvant1998', 'taxRatePercent'],
+                        e.target.value === '' ? null : Number(e.target.value)
+                      )
+                    }
+                    disabled={!isAdmin}
+                  />
+                  <span>%</span>
+                </div>
+                <div className="settings-field-row">
+                  <label>Note</label>
+                  <input
+                    type="text"
+                    value={textOrEmpty(av.deces.primesAvant1998.note)}
+                    onChange={(e) => updateField(['assuranceVie', 'deces', 'primesAvant1998', 'note'], e.target.value)}
+                    disabled={!isAdmin}
+                    style={{ width: 520, textAlign: 'left' }}
+                  />
+                  <span />
+                </div>
+              </div>
+
+              <div className="fisc-col fisc-col-right">
+                <div className="fisc-col-title">Primes versées à partir du {av.deces.contratApresDate} (par bénéficiaire)</div>
+
+                <div className="settings-field-row">
+                  <label>Abattement / bénéficiaire</label>
+                  <input
+                    type="number"
+                    value={numberOrEmpty(av.deces.primesApres1998.allowancePerBeneficiary)}
+                    onChange={(e) =>
+                      updateField(
+                        ['assuranceVie', 'deces', 'primesApres1998', 'allowancePerBeneficiary'],
+                        e.target.value === '' ? null : Number(e.target.value)
+                      )
+                    }
+                    disabled={!isAdmin}
+                  />
+                  <span>€</span>
+                </div>
+
+                <table className="settings-table" style={{ marginTop: 8 }}>
+                  <thead>
+                    <tr>
+                      <th>Jusqu’à</th>
+                      <th className="taux-col">Taux %</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {av.deces.primesApres1998.brackets.map((b, idx) => (
+                      <tr key={idx}>
+                        <td style={{ textAlign: 'left' }}>
+                          {b.upTo === null ? 'Au-delà' : `${b.upTo.toLocaleString('fr-FR')} €`}
+                        </td>
+                        <td className="taux-col">
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={numberOrEmpty(b.ratePercent)}
+                            onChange={(e) =>
+                              updateField(
+                                ['assuranceVie', 'deces', 'primesApres1998', 'brackets', idx, 'ratePercent'],
+                                e.target.value === '' ? null : Number(e.target.value)
+                              )
+                            }
+                            disabled={!isAdmin}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <div className="settings-field-row" style={{ marginTop: 6 }}>
+                  <label>Note</label>
+                  <input
+                    type="text"
+                    value={textOrEmpty(av.deces.primesApres1998.note)}
+                    onChange={(e) => updateField(['assuranceVie', 'deces', 'primesApres1998', 'note'], e.target.value)}
+                    disabled={!isAdmin}
+                    style={{ width: 520, textAlign: 'left' }}
+                  />
+                  <span />
+                </div>
+              </div>
+            </div>
+
+            <div className="income-tax-block" style={{ marginTop: 10 }}>
+              <div className="income-tax-block-title">Primes versées après {av.deces.agePivotPrimes} ans (logique globale)</div>
+              <div className="settings-field-row">
+                <label>Abattement global</label>
+                <input
+                  type="number"
+                  value={numberOrEmpty(av.deces.apres70ans.globalAllowance)}
+                  onChange={(e) =>
+                    updateField(
+                      ['assuranceVie', 'deces', 'apres70ans', 'globalAllowance'],
+                      e.target.value === '' ? null : Number(e.target.value)
+                    )
+                  }
+                  disabled={!isAdmin}
+                />
+                <span>€</span>
+              </div>
+              <div className="settings-field-row">
+                <label>Mode de taxation</label>
+                <input type="text" value="DMTG (barème succession)" disabled style={{ width: 220, textAlign: 'center' }} />
+                <span />
+              </div>
+              <div className="settings-field-row">
+                <label>Note</label>
+                <input
+                  type="text"
+                  value={textOrEmpty(av.deces.apres70ans.note)}
+                  onChange={(e) => updateField(['assuranceVie', 'deces', 'apres70ans', 'note'], e.target.value)}
+                  disabled={!isAdmin}
+                  style={{ width: 520, textAlign: 'left' }}
+                />
+                <span />
+              </div>
+            </div>
+          </section>
+
+          {/* 4) Rente */}
+          <section>
+            <h3>Liquidation en rente</h3>
+
+            <div className="income-tax-block">
+              <div className="income-tax-block-title">Conditions & PS</div>
+
+              <div className="settings-field-row">
+                <label>Transformation du capital en rente possible</label>
+                <input type="text" value={av.rente.possible ? 'Oui' : 'Non'} disabled style={{ width: 90, textAlign: 'center' }} />
+                <span />
+              </div>
+
+              <div className="settings-field-row">
+                <label>Taux de PS</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={numberOrEmpty(av.rente.psRatePercent)}
+                  onChange={(e) =>
+                    updateField(['assuranceVie', 'rente', 'psRatePercent'], e.target.value === '' ? null : Number(e.target.value))
+                  }
+                  disabled={!isAdmin}
+                />
+                <span>%</span>
+              </div>
+
+              <div className="settings-field-row">
+                <label>IR</label>
+                <input type="text" value="Barème" disabled style={{ width: 90, textAlign: 'center' }} />
+                <span />
+              </div>
+            </div>
+
+            <div className="income-tax-block">
+              <div className="income-tax-block-title">Fraction imposable (selon âge à la liquidation)</div>
+
+              <table className="settings-table">
+                <thead>
+                  <tr>
+                    <th>Âge</th>
+                    <th className="taux-col">Fraction</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {av.rente.taxableFractionByAgeAtLiquidation.map((row, idx) => (
+                    <tr key={idx}>
+                      <td style={{ textAlign: 'left' }}>{row.label}</td>
+                      <td className="taux-col">
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={numberOrEmpty(row.fraction)}
+                          onChange={(e) =>
+                            updateField(
+                              ['assuranceVie', 'rente', 'taxableFractionByAgeAtLiquidation', idx, 'fraction'],
+                              e.target.value === '' ? null : Number(e.target.value)
+                            )
+                          }
+                          disabled={!isAdmin}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="settings-field-row" style={{ marginTop: 6 }}>
+                <label>Note PS</label>
+                <input
+                  type="text"
+                  value={textOrEmpty(av.rente.notePs)}
+                  onChange={(e) => updateField(['assuranceVie', 'rente', 'notePs'], e.target.value)}
+                  disabled={!isAdmin}
+                  style={{ width: 520, textAlign: 'left' }}
+                />
+                <span />
+              </div>
+
+              <div className="settings-field-row">
+                <label>Note décès</label>
+                <input
+                  type="text"
+                  value={textOrEmpty(av.rente.noteCapitalOnDeath)}
+                  onChange={(e) => updateField(['assuranceVie', 'rente', 'noteCapitalOnDeath'], e.target.value)}
+                  disabled={!isAdmin}
+                  style={{ width: 520, textAlign: 'left' }}
+                />
+                <span />
+              </div>
+            </div>
+          </section>
+
+          {/* Bouton Enregistrer */}
+          {isAdmin && (
+            <button type="button" className="chip" onClick={handleSave} disabled={saving}>
+              {saving ? 'Enregistrement…' : 'Enregistrer les paramètres fiscalités'}
+            </button>
           )}
 
-          {isAdmin && !message && (
-            <p style={{ fontSize: 12, color: "#777", marginTop: 6 }}>
-              Astuce : versionne en changeant <code>{SETTINGS_KEY}</code> (ex : fiscalites_v2) plutôt
-              que modifier destructivement.
-            </p>
-          )}
+          {message && <div style={{ fontSize: 13, marginTop: 8 }}>{message}</div>}
         </div>
       </div>
     </div>
