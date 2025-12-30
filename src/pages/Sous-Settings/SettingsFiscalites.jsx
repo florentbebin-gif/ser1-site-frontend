@@ -126,6 +126,16 @@ export default function SettingsFiscalites() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
+  const [openProductKey, setOpenProductKey] = useState('assuranceVie');
+
+const PRODUCTS = [
+  { key: 'assuranceVie', label: 'Assurance vie' },
+  // Plus tard :
+  // { key: 'perIndividuel', label: 'PER individuel' },
+  // { key: 'cto', label: 'Compte-titres (CTO)' },
+  // { key: 'pea', label: 'PEA' },
+];
+
   const isAdmin =
     user &&
     ((typeof user?.user_metadata?.role === 'string' &&
@@ -273,13 +283,15 @@ export default function SettingsFiscalites() {
           }}
         >
           {/* Bandeau info */}
-          <div className="tax-user-banner">
-            <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {roleLabel}
-          </div>
+<div className="tax-user-banner">
+  <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {roleLabel}
+</div>
 
-          {/* 1) Phase d'épargne */}
-          <section>
-            <h4 className="fisc-section-title">Phase d’épargne</h4>
+<h3 className="fisc-product-title">Assurance vie</h3>
+
+{/* 1) Phase d'épargne */}
+<section>
+  <h4 className="fisc-section-title">Phase d’épargne</h4>
 
             <div className="income-tax-block">
               <div className="income-tax-block-title">Versements</div>
