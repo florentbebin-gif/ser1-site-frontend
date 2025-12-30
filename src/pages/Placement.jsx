@@ -89,7 +89,6 @@ const DEFAULT_CLIENT = {
 }
 
 const defaultProduct = (n) => ({
-  name: `Produit ${n}`,
   envelope: 'AV',
   typeMode: 'capi', // capi | distri
   // Rendement(s) annuels (net de frais de gestion, avant impôts/PS)
@@ -437,7 +436,7 @@ function simulatePlan({ startMonth, client, products, savingWithdrawals, liquida
     const totalCashflow = t.cumCashflowNet
     const perSave = t.cumPerTaxSaving
     return {
-      name: p.name,
+      name: `Placement ${i + 1}`,
       envelope: p.envelope,
       finalCap,
       totalTax,
@@ -448,14 +447,15 @@ function simulatePlan({ startMonth, client, products, savingWithdrawals, liquida
 
   // dataset pour graph
   const years = rows.map(r => r.yearIndex)
-  const seriesCapital = products.map((p, i) => ({
-    name: p.name,
-    values: rows.map(r => r.byProd[i].capitalEnd),
-  }))
-  const seriesCashflow = products.map((p, i) => ({
-    name: `${p.name} (cashflow)`,
-    values: rows.map(r => r.byProd[i].cashflowNet),
-  }))
+const seriesCapital = products.map((p, i) => ({
+  name: `Placement ${i + 1}`,
+  values: rows.map(r => r.byProd[i].capitalEnd),
+}))
+const seriesCashflow = products.map((p, i) => ({
+  name: `Placement ${i + 1} (cashflow)`,
+  values: rows.map(r => r.byProd[i].cashflowNet),
+}))
+
 
   return {
     ageNow,
@@ -1164,8 +1164,8 @@ export default function Placement() {
                     <thead>
                       <tr>
                         <th>Âge</th>
-                        <th>{state.products[0].name}</th>
-                        <th>{state.products[1].name}</th>
+                        <th>Placement 1</th>
+                         <th>Placement 2</th>
                       </tr>
                     </thead>
                     <tbody>
