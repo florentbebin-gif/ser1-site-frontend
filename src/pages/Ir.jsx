@@ -1822,14 +1822,6 @@ setParts(0);
             </div>
 
 
-{result?._dbg && (
-  <pre style={{ marginTop: 10, fontSize: 11, opacity: 0.75, whiteSpace: 'pre-wrap' }}>
-    {JSON.stringify(result._dbg, null, 2)}
-  </pre>
-)}
-
-
-
             
           </div>
 
