@@ -1,0 +1,329 @@
+/* Import TopBar styles */
+@import './components/TopBar.css';
+
+/* Variables globales */
+:root {
+  /* Couleurs du thème (synchronisées avec ThemeProvider) */
+  --color-c1: #2B3E37;
+  --color-c2: #709B8B;
+  --color-c3: #9FBDB2;
+  --color-c4: #CFDED8;
+  --color-c5: #788781;
+  --color-c6: #CEC1B6;
+  --color-c7: #F5F3F0;
+  --color-c8: #D9D9D9;
+  --color-c9: #7F7F7F;
+  --color-c10: #000000;
+
+  /* Alias pour compatibilité */
+  --green: var(--color-c1);
+  --beige: var(--color-c6);
+  --bg: var(--color-c7);
+  --light-green: var(--color-c3);
+  --radius: 12px;
+}
+
+/* Reset */
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+}
+
+/* Topbar */
+.topbar {
+  background: var(--green);
+  color: var(--color-c7);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brandbar {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+}
+
+.brand-name {
+  font-weight: 700;
+  color: var(--color-c7);
+}
+
+.breadcrumb-separator {
+  font-weight: 400;
+  color: var(--color-c7);
+  margin: 0 4px;
+  opacity: 0.7;
+}
+
+.breadcrumb-context {
+  font-weight: 400;
+  color: var(--color-c7);
+  font-size: 17px;
+}
+
+.top-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Icônes topbar */
+.topbar .icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.topbar .icon--save {
+  width: 24px;
+  height: 24px;
+  flex-basis: 24px;
+}
+
+/* Boutons avec label (Accueil uniquement) */
+.chip.with-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: 6px;
+  white-space: nowrap;
+  min-width: 130px;
+  justify-content: center;
+}
+
+.btn-label {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.chip.with-label .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.chip {
+  background: #FFFFFF;  /* ✅ Blanc pur restauré */
+  color: var(--color-c10);
+  border: 1px solid var(--color-c8);
+  padding: 6px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chip:hover {
+  background: #f9f9f9;  /* ✅ Blanc grisé hover */
+  border-color: var(--color-c3);
+}
+
+.chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Layout Home */
+.tiles-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px; /* espace entre colonnes */
+  max-width: 1100px; /* largeur limitée */
+  margin: 40px auto; /* centré */
+  padding: 0 20px;
+}
+
+.section-card {
+  background: #FFFFFF;  /* ✅ Blanc pur restauré */
+  border: 1px solid var(--color-c8);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: 0 4px 14px var(--color-c9);
+}
+
+/* Titre avec barre sous le texte */
+.section-title {
+  font-size: 26px;
+  margin-bottom: 20px;
+  position: relative;
+  padding-bottom: 12px;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  height: 4px;
+  background: var(--beige);
+  border-radius: 3px;
+  margin-top: 8px;
+}
+
+.strong-title {
+  font-weight: 800;
+}
+
+.normal-title {
+  font-weight: 400;
+}
+
+/* Tuiles */
+.tile {
+  border: 2px solid var(--color-c8);
+  background: #FFFFFF;  /* ✅ Blanc pur restauré */
+  border-radius: var(--radius);
+  padding: 20px;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 8px var(--color-c9);
+  transition: border-color .15s;
+}
+
+.tile:hover {
+  border-color: var(--color-c3);
+}
+
+.tile-icon {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-c4);
+}
+
+.tile-sep {
+  margin: 12px 0;
+  border-top: 1px solid var(--color-c8);
+}
+
+.tile-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-c1);
+  margin-bottom: 4px;
+}
+
+.tile-note {
+  color: var(--color-c9);
+  font-style: italic;
+  margin-left: 4px;
+  font-size: 13px;
+}
+/* largeur de la page Crédit */
+.credit-panel {
+  max-width: 1120px;
+  margin: 32px auto 40px;
+}
+/* Responsive */
+@media (max-width: 768px) {
+  .tiles-wrap {
+    grid-template-columns: 1fr;
+  }
+}
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.icon-btn .icon {
+  width: 20px;
+  height: 20px;
+}
+/* Page paramètres – layout de base */
+.settings-page {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+/* Barre d’onglets "pilules" */
+.settings-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+/* Pilules de navigation */
+.settings-pill {
+  border-radius: 999px;              /* forme pilule */
+  background: #FFFFFF;               /* ✅ Blanc pur restauré */
+  border: 1px solid transparent;
+  padding: 6px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px var(--color-c9); /* ombre autour */
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Hover : bord var(--color-c3) */
+.settings-pill:hover {
+  border-color: var(--color-c3);
+}
+
+/* Pilule active : fond thématique (seul élément qui peut être coloré) */
+.settings-pill.is-active {
+  background: var(--color-c4);  /* ✅ Active state peut être thématique */
+  border-color: var(--color-c3);
+}
+
+/* ===== Notifications Toast ===== */
+.ser1-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 9999;
+  box-shadow: 0 4px 16px var(--color-c9);
+  animation: ser1-notification-in 0.3s ease-out;
+  max-width: 90vw;
+  text-align: center;
+}
+
+.ser1-notification--success {
+  background: var(--color-c3);
+  color: var(--color-c1);
+  border: 1px solid var(--color-c2);
+}
+
+.ser1-notification--error {
+  background: var(--color-c6);
+  color: var(--color-c5);
+  border: 1px solid var(--color-c8);
+}
+
+.ser1-notification--info {
+  background: var(--color-c4);
+  color: var(--color-c5);
+  border: 1px solid var(--color-c3);
+}
+
+@keyframes ser1-notification-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

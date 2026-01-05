@@ -1,0 +1,80 @@
+/* TopBar harmonisée - Styles */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--color-c7);
+  border-bottom: 1px solid var(--color-c8);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.topbar-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-c1);
+  white-space: nowrap;
+}
+
+/* Menu déroulant export */
+.topbar-export-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: white;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 150px;
+  padding: 4px;
+}
+
+.topbar-export-menu .chip {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin: 2px 0;
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 10px 12px;
+  }
+  
+  .topbar-left {
+    gap: 8px;
+  }
+  
+  .topbar-right {
+    gap: 4px;
+  }
+  
+  .topbar-title {
+    font-size: 16px;
+  }
+  
+  .topbar-export-menu {
+    right: -8px;
+  }
+}

@@ -1,0 +1,467 @@
+/* ===========================================================
+   Credit – Styles premium alignés sur Ir.css / Placement.css
+   Structure : Panel → Header → Grid (Params | Résultats) → Tableaux
+=========================================================== */
+
+.credit-page {
+  max-width: 1100px;
+  margin: 16px auto;
+  padding: 16px;
+}
+
+/* Header avec titre et actions */
+.credit-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2b3e37;
+  border-bottom: 4px solid var(--beige, #e8e0d5);
+  padding-bottom: 8px;
+}
+
+.credit-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #222;
+}
+
+.credit-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Menu export dropdown */
+.credit-export-menu {
+  position: absolute;
+  right: 0;
+  margin-top: 6px;
+  min-width: 180px;
+  background: #fff;
+  border: 1px solid #c0b5aa;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  padding: 6px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Grid principale : Paramètres à gauche, Synthèse à droite */
+.credit-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 900px) {
+  .credit-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.credit-left,
+.credit-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Scope Crédit : on neutralise le gap vertical pour éviter double-spacing avec margin-top */
+.sim-credit .credit-left {
+  gap: 0;
+}
+
+/* Section / Card */
+.sim-credit .credit-section {
+  background: #fff;
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  padding: 10px 16px;
+}
+
+.credit-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-c1);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Grille de paramètres (2 colonnes) */
+.credit-params-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px 16px;
+}
+
+.credit-view-toggle .chip.active {
+  background: var(--color-c1);
+  border-color: var(--color-c1);
+  color: #fff;
+}
+
+/* ➜ Espacement vertical unique via variable --credit-gap */
+.sim-credit {
+  --credit-gap: 16px; /* valeur de référence (Prêts additionnels → Échéancier) */
+}
+
+.sim-credit .credit-left {
+  gap: var(--credit-gap);
+}
+
+.sim-credit .credit-left .premium-section {
+  margin-bottom: 0;
+}
+
+/* par défaut, on espace les sections successives avec la même valeur */
+.sim-credit .credit-section + .credit-section {
+  margin-top: var(--credit-gap);
+}
+
+/* ...mais pas à l’intérieur de la colonne gauche (déjà gérée par gap) */
+.sim-credit .credit-left .credit-section + .credit-section {
+  margin-top: 0;
+}
+
+/* espacement entre colonne gauche (grid) et la suite des sections */
+.sim-credit .credit-grid {
+  margin-bottom: var(--credit-gap);
+}
+
+@media (max-width: 600px) {
+  .credit-params-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Champ de formulaire */
+.credit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.credit-field label {
+  color: var(--color-c10);
+  font-weight: 500;
+}
+
+.credit-field-hint {
+  font-size: 11px;
+  color: var(--color-c9);
+}
+
+/* Inputs harmonisés */
+.credit-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.credit-input__field {
+  height: 32px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-c8);
+  text-align: right;
+  background: #fff;
+  font-size: 13px;
+}
+
+.credit-input__field:focus {
+  outline: none;
+  border-color: var(--color-c2);
+  box-shadow: 0 0 0 2px rgba(61, 122, 111, 0.12);
+}
+
+.credit-input__unit {
+  font-size: 13px;
+  color: var(--color-c9);
+  min-width: 24px;
+}
+
+.credit-select {
+  height: 32px;
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-c8);
+  background: #fff;
+  font-size: 13px;
+}
+
+.credit-select:focus {
+  outline: none;
+  border-color: var(--color-c2);
+  box-shadow: 0 0 0 2px rgba(61, 122, 111, 0.12);
+}
+
+/* Card de synthèse / résultats */
+.credit-summary-card {
+  background: linear-gradient(135deg, var(--color-c7) 0%, #fff 100%);
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.credit-summary-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-c9);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.credit-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.credit-summary-row:last-child {
+  border-bottom: none;
+}
+
+.credit-summary-label {
+  font-size: 13px;
+  color: var(--color-c9);
+}
+
+.credit-summary-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-c1);
+}
+
+.credit-summary-value--highlight {
+  font-size: 18px;
+  color: var(--color-c2);
+}
+
+.credit-summary-detail {
+  font-size: 11px;
+  color: var(--color-c9);
+  margin-top: 2px;
+}
+
+/* Warnings */
+.credit-warnings {
+  background: #fff7e6;
+  border: 1px solid #e5c07b;
+  color: #7a5a00;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.credit-warnings ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.credit-warnings li {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Prêts additionnels */
+.credit-prets-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.credit-prets-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.credit-prets-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Tableau wrapper (style Ir/Placement) */
+.credit-table-wrapper {
+  border-radius: 10px;
+  border: 1px solid var(--color-c8);
+  background: #fff;
+  padding: 10px;
+  overflow-x: auto;
+}
+
+.credit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.credit-table thead {
+  background: var(--color-c7);
+}
+
+.credit-table th {
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-c1);
+  border-bottom: 2px solid var(--color-c8);
+}
+
+.credit-table th.text-right {
+  text-align: right;
+}
+
+.credit-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--color-c8);
+  color: var(--color-c10);
+}
+
+.credit-table td.text-right {
+  text-align: right;
+}
+
+.credit-table td.text-center {
+  text-align: center;
+}
+
+.credit-table td.font-semibold {
+  font-weight: 600;
+}
+
+.credit-table tbody tr:hover {
+  background: rgba(43, 90, 82, 0.03);
+}
+
+.credit-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Tableau compact pour prêts additionnels */
+.credit-table--compact {
+  font-size: 12px;
+}
+
+.credit-table--compact th,
+.credit-table--compact td {
+  padding: 5px 8px;
+}
+
+/* Toggle vue mensuelle/annuelle */
+.credit-view-toggle {
+  display: flex;
+  gap: 6px;
+}
+
+/* Encart Hypothèses (discret) */
+.credit-hypotheses {
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--color-c9);
+}
+
+.credit-hypotheses-title {
+  font-weight: 600;
+  color: var(--color-c9);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.credit-hypotheses ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.credit-hypotheses li {
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+
+/* Indicateurs clés (KPIs) en haut de la synthèse */
+.credit-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.credit-kpi {
+  text-align: center;
+  padding: 12px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid var(--color-c8);
+}
+
+.credit-kpi-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-c2);
+}
+
+.credit-kpi-label {
+  font-size: 11px;
+  color: var(--color-c9);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Section détail par prêt */
+.credit-detail-section {
+  margin-top: 16px;
+}
+
+.credit-detail-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-c9);
+  margin-bottom: 8px;
+}
+
+.credit-detail-subtitle {
+  font-size: 12px;
+  color: var(--color-c9);
+  margin: 8px 0 6px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .credit-page {
+    padding: 12px;
+  }
+  
+  .credit-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .credit-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,390 @@
+/* AuditWizard Styles */
+
+.audit-wizard {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.audit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.audit-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: var(--color-c1);
+}
+
+/* Menu export dropdown */
+.export-menu-container {
+  position: relative;
+}
+
+.export-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: white;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  min-width: 180px;
+  padding: 4px;
+}
+
+.export-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-c1);
+  transition: background 0.15s;
+}
+
+.export-dropdown-item:hover:not(:disabled) {
+  background: var(--color-c7);
+}
+
+.export-dropdown-item:disabled {
+  color: var(--color-c9);
+  cursor: not-allowed;
+}
+
+.unsaved-warning {
+  background: #fff3cd; /* Jaune standard warning */
+  border: 1px solid #ffc107;
+  color: #856404;
+  padding: 8px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+/* Barre de progression */
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--color-c8);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--color-c2);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 13px;
+  color: var(--color-c9);
+  white-space: nowrap;
+}
+
+/* Navigation étapes sobre */
+.steps-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.step-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.step-pill:hover {
+  border-color: var(--color-c5);
+}
+
+.step-pill.active {
+  background: var(--color-c1);
+  border-color: var(--color-c1);
+  color: white;
+}
+
+.step-pill.completed {
+  background: var(--color-c4);
+  border-color: var(--color-c3);
+}
+
+.step-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-c8);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.step-pill.active .step-num {
+  background: rgba(255,255,255,0.2);
+}
+
+.step-pill.completed .step-num {
+  background: var(--color-c2);
+  color: white;
+}
+
+.step-label {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .step-label {
+    display: inline;
+  }
+}
+
+/* Contenu étape */
+.step-content {
+  background: white;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  min-height: 400px;
+}
+
+.step-form h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: var(--color-c1);
+  font-size: 22px;
+}
+
+.step-form h3 {
+  margin-top: 24px;
+  margin-bottom: 12px;
+  color: var(--color-c5);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.form-hint {
+  color: var(--color-c9);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.form-section {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+.form-section:last-child {
+  border-bottom: none;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.form-row label {
+  font-size: 14px;
+  color: var(--color-c9);
+}
+
+.form-row input,
+.form-row select {
+  padding: 10px 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.form-row input:focus,
+.form-row select:focus {
+  outline: none;
+  border-color: var(--color-c3);
+}
+
+.form-row input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+}
+
+.form-card {
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+.summary-bar {
+  background: var(--color-c4);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+/* Navigation bas */
+.step-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  gap: 12px;
+}
+
+/* Boutons harmonisés */
+.chip-primary {
+  background: var(--color-c1) !important;
+  border-color: var(--color-c1) !important;
+  color: white !important;
+}
+
+.chip-primary:hover:not(:disabled) {
+  background: var(--color-c2) !important;
+  border-color: var(--color-c2) !important;
+}
+
+.chip-primary:disabled {
+  background: var(--color-c8) !important;
+  border-color: var(--color-c8) !important;
+  color: var(--color-c9) !important;
+}
+
+.chip-secondary {
+  background: white !important;
+  border-color: var(--color-c8) !important;
+  color: var(--color-c1) !important;
+}
+
+.chip-secondary:hover:not(:disabled) {
+  border-color: var(--color-c5) !important;
+}
+
+.chip-secondary:disabled {
+  color: var(--color-c9) !important;
+}
+
+/* Objectifs */
+.objectifs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.objectif-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 2px solid var(--color-c8);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.objectif-card:hover {
+  border-color: var(--color-c3);
+}
+
+.objectif-card.selected {
+  border-color: var(--color-c2);
+  background: var(--color-c4);
+}
+
+.objectif-card input[type="checkbox"] {
+  accent-color: var(--color-c2);
+}
+
+/* Chips */
+.chip-danger {
+  background: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+  color: #991b1b !important;
+}
+
+.chip-danger:hover {
+  background: #fecaca !important;
+}
+
+.chip-small {
+  padding: 4px 10px !important;
+  font-size: 12px !important;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* Overlay standard */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: var(--color-c1);
+}
+
+.modal-content p {
+  color: var(--color-c9);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}

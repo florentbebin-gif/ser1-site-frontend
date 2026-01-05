@@ -1,0 +1,36 @@
+# Windsurf Rules - Projet Gestion de Patrimoine (SER1)
+# Objectif : Précision fiscale maximale & Optimisation du budget (500 jetons/mois)
+
+## 🎯 STRATÉGIE DE SÉLECTION DES MODÈLES
+Avant chaque réponse, vérifie le chemin du fichier et le type de demande.
+
+### 1. LOGIQUE MÉTIER & CALCULS (Dossier: src/logic, src/calculs)
+- **Domaines :** Impôts (IR), Placements (Assurance Vie, PER), DMTG (Succession/Donation).
+- **Modèle :** o3 (high reasoning) [Coût 1x].
+- **Règle :** Priorité absolue à la précision mathématique. Utilise le raisonnement par étapes (Chain of Thought).
+
+### 2. DÉVELOPPEMENT WEB (Dossier: src/components, src/hooks)
+- **Domaines :** React, TypeScript, Tailwind CSS.
+- **Modèle :** SWE-1.5 (New) [Coût Free].
+- **Règle :** Ne consomme aucun jeton pour l'intégration UI ou le debug technique.
+
+### 3. ARCHITECTURE & ANALYSE DE CODE (Dossier: src/)
+- **Domaines :** Refactoring global, liens entre fiscalité et base de données.
+- **Modèle :** Gemini 3 Pro Medium [Coût 1.5x].
+- **Règle :** Utilise sa grande fenêtre contextuelle pour garder la cohérence entre les modules.
+
+### 4. RENDU CLIENT & ÉDITIONS (Dossier: src/reports, src/assets)
+- **Domaines :** Wording pédagogique, exports PowerPoint, styles visuels.
+- **Modèle :** Claude 3.7 Sonnet [Coût 2x].
+- **Règle :** Ton professionnel, clair et sécurisant pour le client final.
+
+---
+
+## ⚖️ RÈGLES FISCALE ET MÉTIER (CONTEXTE SER1)
+1. **DMTG :** Toujours vérifier les abattements selon le lien de parenté (Art. 777 CGI) avant de calculer les droits.
+2. **IR :** Appliquer le barème progressif par défaut, sauf option pour le PFU (Prélèvement Forfaitaire Unique).
+3. **Placements :** Distinguer la fiscalité selon la date des versements (avant/après 2017 pour l'AV).
+
+## 🚫 RESTRICTIONS BUDGÉTAIRES
+- Interdiction d'utiliser **Claude Opus 4.5 Thinking (5x)** sans une demande explicite de l'utilisateur commençant par "FORCE-OPUS".
+- Si le modèle actuel dépasse 2x de coût, propose systématiquement une alternative moins chère (ex: o3 ou SWE-1.5).

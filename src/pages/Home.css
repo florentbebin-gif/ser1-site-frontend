@@ -1,0 +1,286 @@
+/* ========================================
+   Page Accueil — Design Premium CGP
+   ======================================== */
+
+.home-layout {
+  display: flex;
+  min-height: calc(100vh - 60px);
+  position: relative;
+}
+
+/* ----------------------------------------
+   CARTE STATUT DOSSIER — Discrète
+   ---------------------------------------- */
+.status-card {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  width: 180px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  z-index: 10;
+}
+
+.status-row {
+  margin-bottom: 10px;
+}
+
+.status-row:last-child {
+  margin-bottom: 0;
+}
+
+.status-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--color-c9);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.status-value {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-c1);
+}
+
+.status-disclaimer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-c8);
+  font-size: 9px;
+  font-style: italic;
+  color: var(--color-c9);
+  line-height: 1.4;
+}
+
+/* ----------------------------------------
+   CONTENU PRINCIPAL
+   ---------------------------------------- */
+.home-main {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+  flex: 1;
+}
+
+/* ----------------------------------------
+   BLOC PRINCIPAL — AUDIT & STRATÉGIE
+   ---------------------------------------- */
+.home-hero {
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.hero-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: var(--color-c3);
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+}
+
+.hero-subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--color-c9);
+  margin: 0 0 28px 0;
+}
+
+.hero-tile {
+  display: block;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  background: #fff;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--color-c1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.hero-tile:hover {
+  border-color: var(--color-c3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.hero-tile-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hero-tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: var(--color-c7);
+  border-radius: 10px;
+  color: var(--color-c2);
+  flex-shrink: 0;
+}
+
+.hero-tile-text {
+  flex: 1;
+  text-align: left;
+}
+
+.hero-tile-label {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.hero-tile-chevron {
+  color: var(--color-c9);
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.hero-tile:hover .hero-tile-chevron {
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+/* ----------------------------------------
+   SÉPARATION PREMIUM
+   ---------------------------------------- */
+.home-divider {
+  width: 100%;
+  max-width: 200px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
+  margin: 40px auto;
+}
+
+/* ----------------------------------------
+   BLOC SECONDAIRE — SIMULATEURS
+   ---------------------------------------- */
+.home-tools {
+  text-align: center;
+}
+
+.tools-title {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  color: var(--color-c9);
+  margin: 0 0 16px 0;
+  text-transform: uppercase;
+}
+
+.tools-card {
+  background: #fff;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.tool-tile {
+  display: block;
+  padding: 12px 16px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--color-c1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.tool-tile:hover {
+  border-color: var(--color-c3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.tool-tile-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tool-tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: #fff;
+  border-radius: 6px;
+  color: var(--color-c2);
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.tool-tile-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.tool-tile-chevron {
+  color: var(--color-c9);
+  opacity: 0.5;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.tool-tile:hover .tool-tile-chevron {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* ----------------------------------------
+   RESPONSIVE
+   ---------------------------------------- */
+@media (max-width: 900px) {
+  .status-card {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .home-main {
+    padding: 32px 16px 48px;
+  }
+
+  .hero-tile {
+    padding: 20px 24px;
+  }
+
+  .hero-tile-label {
+    font-size: 16px;
+  }
+
+  .hero-subtitle {
+    font-size: 13px;
+  }
+
+  .tools-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-divider {
+    margin: 40px auto;
+  }
+}

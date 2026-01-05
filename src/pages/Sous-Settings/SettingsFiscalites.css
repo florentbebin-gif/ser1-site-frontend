@@ -1,0 +1,233 @@
+/* Largeur max de la carte paramètres */
+.settings-page .section-card {
+  max-width: 1050px;
+}
+
+/* Séparation douce entre sections */
+.settings-page .section-card section {
+  margin-top: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-c8);
+}
+
+/* Bandeau utilisateur */
+.tax-user-banner {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  font-size: 13px;
+}
+
+/* Tableaux */
+.settings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.settings-table thead {
+  background: var(--color-c7);
+}
+
+.settings-table th,
+.settings-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--color-c8);
+  text-align: right;
+}
+
+.settings-table th:first-child,
+.settings-table td:first-child {
+  text-align: left;
+}
+
+/* Inputs dans tableaux */
+.settings-table input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 3px 4px;
+  font-size: 13px;
+  text-align: right;
+  border: 1px solid var(--color-c8);
+  border-radius: 4px;
+}
+
+/* Colonne "Taux/Fraction" plus étroite */
+.settings-table th.taux-col,
+.settings-table td.taux-col {
+  width: 90px;
+  text-align: center;
+}
+
+.settings-table td.taux-col input {
+  width: 80px;
+  text-align: right;
+}
+
+/* Lignes "label + input + unité" */
+.settings-field-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+.settings-field-row label {
+  flex: 1 1 auto;
+}
+
+.settings-field-row input {
+  width: 120px;
+  padding: 3px 4px;
+  font-size: 13px;
+  border: 1px solid var(--color-c8);
+  border-radius: 4px;
+  text-align: right;
+}
+
+.settings-field-row span {
+  min-width: 26px;
+  text-align: left;
+  font-size: 12px;
+  color: var(--color-c9);
+}
+
+/* Blocs */
+.income-tax-block {
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  margin-top: 10px;
+}
+
+.income-tax-block-title {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+/* 2 colonnes "fiscalité" */
+.fisc-two-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: flex-start;
+  margin-top: 8px;
+}
+
+.fisc-col-right {
+  border-left: 1px solid var(--color-c8);
+  padding-left: 24px;
+}
+
+.fisc-col-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+/* Petits KPIs (meta) */
+.fisc-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.fisc-kpi {
+  padding: 8px;
+  border-radius: 10px;
+  border: 1px solid var(--color-c8);
+  background: var(--color-c7);
+}
+
+.fisc-kpi-label {
+  font-size: 12px;
+  color: var(--color-c9);
+  margin-bottom: 6px;
+}
+
+.fisc-kpi input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-c8);
+  font-size: 13px;
+}
+
+/* Titre produit (grand) */
+.fisc-product-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 6px 0 10px;
+}
+
+/* Titres de sections (compact) */
+.fisc-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 12px 0 6px;
+}
+/* Accordéon produits */
+.fisc-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fisc-acc-item {
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.fisc-acc-header {
+  width: 100%;
+  border: none;
+  background: var(--color-c7);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.fisc-acc-header:hover {
+  background: var(--color-c7);
+}
+
+.fisc-acc-chevron {
+  font-size: 14px;
+  color: var(--color-c9);
+  padding-left: 10px;
+}
+
+.fisc-acc-body {
+  padding: 10px 12px 12px;
+}
+
+/* Empêche les colonnes de “déborder” quand un enfant a une largeur fixe */
+.fisc-two-cols .fisc-col,
+.fisc-two-cols .fisc-col-right {
+  min-width: 0;
+}
+
+/* Champ note homogène (comme les autres champs, mais multi-ligne) */
+.settings-note {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  font-size: 13px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: #fff;
+  resize: vertical;
+  line-height: 1.35;
+}

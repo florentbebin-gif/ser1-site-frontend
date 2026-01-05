@@ -1,0 +1,278 @@
+/* ========================================
+   STYLES PREMIUM PARTAGÉS
+   PlacementV2, IR, Crédit
+   ======================================== */
+
+/* ----------------------------------------
+   TYPOGRAPHIE PREMIUM
+   ---------------------------------------- */
+.premium-title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--color-c1);
+  margin: 0;
+}
+
+.premium-subtitle {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-c9);
+  margin-top: 4px;
+}
+
+.premium-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+  margin-bottom: 12px;
+}
+
+.premium-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-c9);
+  letter-spacing: 0.3px;
+}
+
+.premium-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-c1);
+}
+
+/* ----------------------------------------
+   CARDS PREMIUM
+   ---------------------------------------- */
+.premium-card {
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.premium-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.premium-card-compact {
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.03);
+}
+
+/* ----------------------------------------
+   TABLES PREMIUM
+   ---------------------------------------- */
+.premium-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: var(--color-c7);
+}
+
+.premium-table thead {
+  background: var(--color-c7);
+  border-bottom: 2px solid var(--color-c8);
+}
+
+.premium-table thead th {
+  padding: 12px 10px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.premium-table thead th.align-right {
+  text-align: right;
+}
+
+.premium-table tbody tr {
+  border-bottom: 1px solid var(--color-c8);
+  transition: background-color 0.15s;
+}
+
+.premium-table tbody tr:hover {
+  background-color: var(--color-c7);
+}
+
+.premium-table tbody td {
+  padding: 10px;
+  color: var(--color-c10);
+  vertical-align: middle;
+}
+
+.premium-table tbody td.align-right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.premium-table tbody td.value-cell {
+  font-weight: 500;
+  color: var(--color-c1);
+}
+
+/* Sous-lignes discrètes (cumuls, détails) */
+.premium-table-subrow {
+  font-size: 11px;
+  font-style: italic;
+  color: var(--color-c9);
+  opacity: 0.85;
+  padding-top: 2px;
+}
+
+/* ----------------------------------------
+   BOUTONS PREMIUM
+   ---------------------------------------- */
+.premium-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--color-c8);
+  background: var(--color-c7);
+  color: var(--color-c1);
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.premium-btn:hover:not(:disabled) {
+  border-color: var(--color-c2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.premium-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.premium-btn-primary {
+  background: var(--color-c2);
+  border-color: var(--color-c2);
+  color: var(--color-c7);
+}
+
+.premium-btn-primary:hover:not(:disabled) {
+  background: var(--color-c1);
+  border-color: var(--color-c1);
+}
+
+/* ----------------------------------------
+   INPUTS PREMIUM
+   ---------------------------------------- */
+.premium-input {
+  padding: 8px 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--color-c10);
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.premium-input:focus {
+  outline: none;
+  border-color: var(--color-c2);
+  box-shadow: 0 0 0 3px rgba(127, 176, 143, 0.1);
+}
+
+.premium-select {
+  padding: 8px 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--color-c10);
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.premium-select:focus {
+  outline: none;
+  border-color: var(--color-c2);
+}
+
+/* ----------------------------------------
+   LAYOUT PREMIUM
+   ---------------------------------------- */
+.premium-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.premium-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--color-c8);
+}
+
+.premium-section {
+  margin-bottom: 32px;
+}
+
+.premium-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.premium-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.premium-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+/* ----------------------------------------
+   DIVIDER PREMIUM
+   ---------------------------------------- */
+.premium-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
+  margin: 32px 0;
+}
+
+/* ----------------------------------------
+   RESPONSIVE
+   ---------------------------------------- */
+@media (max-width: 900px) {
+  .premium-page {
+    padding: 24px 16px 48px;
+  }
+
+  .premium-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .premium-grid-2,
+  .premium-grid-3,
+  .premium-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
