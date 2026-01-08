@@ -6,6 +6,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const DEBUG_ADMIN = (Deno.env.get('DEBUG_ADMIN') ?? '').toLowerCase() === 'true'
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -55,11 +57,47 @@ serve(async (req) => {
     const action = payload?.action ?? url.searchParams.get('action') ?? null
     
     // Logs légers pour debug
-    console.log(`Method: ${method}, Action: ${action}, Body vide: ${Object.keys(payload).length === 0}`)
+    if (DEBUG_ADMIN) {
+      console.log(`Method: ${method}, Action: ${action}, Body vide: ${Object.keys(payload).length === 0}`)
+    }
     
     if (!action) {
       return new Response(JSON.stringify({ error: 'Missing action' }), {
         status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Mettre à jour le rôle d'un utilisateur
+    if (action === 'update_user_role') {
+      const userId = payload.userId ?? payload.user_id
+      const { role } = payload
+
+      if (!userId || !role) {
+        return new Response(JSON.stringify({ error: 'User ID and role required' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const { data: existing, error: getError } = await supabase.auth.admin.getUserById(userId)
+      if (getError || !existing?.user) {
+        return new Response(JSON.stringify({ error: 'User not found' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const nextUserMetadata = { ...(existing.user.user_metadata ?? {}), role }
+      const nextAppMetadata = { ...(existing.user.app_metadata ?? {}), role }
+
+      const { error } = await supabase.auth.admin.updateUserById(userId, {
+        user_metadata: nextUserMetadata,
+        app_metadata: nextAppMetadata,
+      })
+      if (error) throw error
+
+      return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
@@ -75,8 +113,11 @@ serve(async (req) => {
         .from('issue_reports')
         .select('user_id, created_at, admin_read_at, id')
 
+      // Trier par created_at DESC pour garantir latest_report_* correct
+      const sortedReports = (reports ?? []).slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
       // Agréger les données par user
-      const reportStats = (reports ?? []).reduce((acc, report) => {
+      const reportStats = sortedReports.reduce((acc, report) => {
         if (!acc[report.user_id]) {
           acc[report.user_id] = {
             total_reports: 0,
@@ -111,8 +152,20 @@ serve(async (req) => {
         total_reports: reportStats[user.id]?.total_reports || 0,
         unread_reports: reportStats[user.id]?.unread_reports || 0,
         latest_report_id: reportStats[user.id]?.latest_report_id || null,
+        latest_report_created_at: reportStats[user.id]?.latest_report_created_at || null,
         latest_report_is_unread: reportStats[user.id]?.latest_report_is_unread || false
       }))
+
+      if (DEBUG_ADMIN) {
+        const sample = usersWithReports.slice(0, 3).map((u) => ({
+          id: u.id,
+          total_reports: u.total_reports,
+          unread_reports: u.unread_reports,
+          latest_report_id: u.latest_report_id,
+          latest_report_created_at: u.latest_report_created_at,
+        }))
+        console.log('[admin:list_users] usersWithReports', { usersCount: usersWithReports.length, sample })
+      }
 
       return new Response(JSON.stringify({ users: usersWithReports }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -120,7 +173,7 @@ serve(async (req) => {
     }
 
     // Créer/inviter un utilisateur
-    if (action === 'create_user_invite') {
+    if (action === 'create_user_invite' || action === 'invite_user') {
       const { email } = payload
       if (!email) {
         return new Response(JSON.stringify({ error: 'Email required' }), {
@@ -139,7 +192,7 @@ serve(async (req) => {
 
     // Supprimer un utilisateur
     if (action === 'delete_user') {
-      const { userId } = payload
+      const userId = payload.userId ?? payload.user_id
       if (!userId) {
         return new Response(JSON.stringify({ error: 'User ID required' }), {
           status: 400,
@@ -157,12 +210,25 @@ serve(async (req) => {
 
     // Reset password / renvoyer invitation
     if (action === 'reset_password') {
-      const { userId, email } = payload
-      if (!userId || !email) {
-        return new Response(JSON.stringify({ error: 'User ID and email required' }), {
+      const userId = payload.userId ?? payload.user_id
+      let email = payload.email
+
+      if (!userId) {
+        return new Response(JSON.stringify({ error: 'User ID required' }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         })
+      }
+
+      if (!email) {
+        const { data: existing, error: getError } = await supabase.auth.admin.getUserById(userId)
+        if (getError || !existing?.user?.email) {
+          return new Response(JSON.stringify({ error: 'User email not found' }), {
+            status: 404,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        email = existing.user.email
       }
 
       const { error } = await supabase.auth.admin.generateLink({
@@ -193,9 +259,32 @@ serve(async (req) => {
       })
     }
 
+    // Lister les signalements d'un utilisateur
+    if (action === 'list_issue_reports') {
+      const userId = payload.userId ?? payload.user_id
+      if (!userId) {
+        return new Response(JSON.stringify({ error: 'User ID required' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const { data: reports, error } = await supabase
+        .from('issue_reports')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ reports }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     // Obtenir le dernier signalement pour un utilisateur
     if (action === 'get_latest_issue_for_user') {
-      const { userId } = payload
+      const userId = payload.userId ?? payload.user_id
       if (!userId) {
         return new Response(JSON.stringify({ error: 'User ID required' }), {
           status: 400,
@@ -218,8 +307,8 @@ serve(async (req) => {
     }
 
     // Marquer un signalement comme lu
-    if (action === 'mark_issue_read') {
-      const { reportId } = payload
+    if (action === 'mark_issue_read' || action === 'mark_issue_report_read') {
+      const reportId = payload.reportId ?? payload.report_id
       if (!reportId) {
         return new Response(JSON.stringify({ error: 'Report ID required' }), {
           status: 400,
@@ -240,8 +329,8 @@ serve(async (req) => {
     }
 
     // Supprimer un signalement
-    if (action === 'delete_issue') {
-      const { reportId } = payload
+    if (action === 'delete_issue' || action === 'delete_issue_report') {
+      const reportId = payload.reportId ?? payload.report_id
       if (!reportId) {
         return new Response(JSON.stringify({ error: 'Report ID required' }), {
           status: 400,
@@ -262,8 +351,8 @@ serve(async (req) => {
     }
 
     // Supprimer tous les signalements d'un utilisateur
-    if (action === 'delete_all_issues_for_user') {
-      const { userId } = payload
+    if (action === 'delete_all_issues_for_user' || action === 'delete_all_issue_reports') {
+      const userId = payload.userId ?? payload.user_id
       if (!userId) {
         return new Response(JSON.stringify({ error: 'User ID required' }), {
           status: 400,
@@ -287,6 +376,16 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         success: true, 
         deleted: reportsToDelete?.length || 0 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Version endpoint for deployment verification
+    if (action === 'version') {
+      return new Response(JSON.stringify({ 
+        version: 'SER1-admin-20250106-01',
+        deployedAt: new Date().toISOString()
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })

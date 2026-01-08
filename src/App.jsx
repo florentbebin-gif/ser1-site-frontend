@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
-import { supabase, DEBUG_AUTH } from './supabaseClient';
-import { PrivateRoute, useUserRole } from './auth';
+import { supabase } from './supabaseClient';
+import { PrivateRoute, useAuth, useUserRole } from './auth';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import ForgotPassword from './pages/ForgotPassword';
@@ -124,9 +124,9 @@ const IconSettings = ({ className }) => (
 );
 
 export default function App() {
-  const [session, setSession] = useState(null);
   const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
+  const { session } = useAuth();
   const { isAdmin } = useUserRole();
 
   useEffect(() => {
@@ -143,22 +143,7 @@ export default function App() {
       try { localStorage.removeItem(key); } catch {}
     });
 
-    // Initialisation robuste de la session
-    async function initSession() {
-      if (DEBUG_AUTH) console.log('[App] initSession:start');
-      const { data: { session } } = await supabase.auth.getSession();
-      if (DEBUG_AUTH) console.log('[App] initSession:done', { hasSession: !!session, userId: session?.user?.id });
-      setSession(session);
-    }
-    initSession();
-
-    // Écoute les changements d'auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
-      if (DEBUG_AUTH) console.log('[App] onAuthStateChange', { event: _event, hasSession: !!s, userId: s?.user?.id });
-      setSession(s);
-    });
-
-    return () => subscription.unsubscribe();
+    return undefined;
   }, []);
 
   const handleLogout = async () => {

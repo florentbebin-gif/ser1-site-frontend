@@ -1,5 +1,48 @@
 # Gestion Admin des Comptes et Signalements
 
+## 0. Test manuel de validation (post‑patch)
+
+### Objectif
+Vérifier que les patchs Niveau 1 (alt‑tab + signalements) fonctionnent.
+
+### Prérequis
+- Activer `DEBUG_AUTH=true` et `DEBUG_ADMIN_FETCH=true` dans `src/supabaseClient.js`.
+- Exécuter la migration `fix_issue_reports_rls.sql` dans Supabase SQL.
+- Build OK : `npm run build && npm run dev`.
+
+### Checklist
+1. **Alt‑tab / perte de focus**
+   - Se connecter admin.
+   - Ouvrir `/settings/comptes`.
+   - Alt‑tab 10×, revenir.
+   - ✅ Console : `[Auth] ensureSession:focus` avec `hasSession:true`.
+   - ✅ Network : aucun 401/403 sur `admin` invoke.
+   - ✅ UI : reste connectée, badge admin visible.
+
+2. **Multi‑signalements**
+   - Dans un autre onglet, créer 3 signalements pour un même user (via IssueReportButton).
+   - Revenir sur `/settings/comptes` sans F5.
+   - ✅ Badge `unread_reports` = 3.
+   - ✅ `latest_report_created_at` = le plus récent (comparer avec SQL `SELECT max(created_at)`).
+   - Marquer un signalement comme lu → badge passe à 2.
+
+3. **Retry 401/403**
+   - Forcer expiration token (attendre > 60 s ou alt‑tab prolongé).
+   - Aller sur `/settings/comptes`.
+   - ✅ Console : `[SettingsComptes] 401/403 → ensureSession retry` puis retry 200.
+   - ✅ UI affiche les utilisateurs sans rester “Chargement…”.
+
+4. **StrictMode**
+   - Recharger la page.
+   - ✅ Console : un seul `[Auth] onAuthStateChange:INITIAL_SESSION` (pas de double).
+
+### En cas d'échec
+- Si `SIGNED_OUT` apparaît : vérifier `storageKey` et policies RLS.
+- Si badge incorrect : vérifier tri dans Edge Function et policies admin.
+- Si retry échoue : vérifier que `ensureSession` est bien appelé avant invoke.
+
+---
+
 ## 1. Vue d'ensemble
 
 ### Rôle de la page `/settings/comptes`
@@ -135,6 +178,25 @@ const { data, error } = await supabase.functions.invoke('admin', {
 });
 ```
 
+**Réponse attendue** :
+```json
+{
+  "users": [
+    {
+      "id": "uuid",
+      "email": "...",
+      "created_at": "...",
+      "last_sign_in_at": "...",
+      "role": "admin|user",
+      "total_reports": 0,
+      "unread_reports": 0,
+      "latest_report_id": "uuid|null",
+      "latest_report_is_unread": false
+    }
+  ]
+}
+```
+
 ### 5.3 Actions supportées
 | Action | Description | Paramètres requis |
 |--------|-------------|-------------------|
@@ -146,6 +208,11 @@ const { data, error } = await supabase.functions.invoke('admin', {
 | `mark_issue_read` | Marquer signalement comme lu | `reportId` |
 | `delete_issue` | Supprimer définitivement un signalement | `reportId` |
 | `delete_all_issues_for_user` | Supprimer tous les signalements d'un user | `userId` |
+
+### 5.5 Debug (optionnel)
+- `src/supabaseClient.js` :
+  - `DEBUG_AUTH = true` → logs d’hydratation session (App / useUserRole / Settings)
+  - `DEBUG_ADMIN_FETCH = true` → logs des appels `invoke('admin')` sur `/settings/comptes`
 
 ### 5.4 Sécurité
 - **Vérification JWT** : Token utilisateur valide requis
@@ -281,7 +348,8 @@ WHERE lower(email) = lower('admin@example.com');
 **Debug rapide** :
 - Activer temporairement `DEBUG_COMPTES_REFRESH = true` dans `src/pages/Sous-Settings/SettingsComptes.jsx` et vérifier la console.
 
-### 9.7 Admin non détecté sans refresh (Aucun utilisateur connecté)
+### 9.7 Admin non détecté sans refresh
+ (Aucun utilisateur connecté)
 **Symptôme** : sur `/settings` ou `/settings/comptes`, l’UI affiche “Aucun utilisateur connecté” alors que l’utilisateur est bien connecté. Un simple refresh navigateur fait revenir l’état correct.
 
 **Causes fréquentes** :
@@ -292,13 +360,31 @@ WHERE lower(email) = lower('admin@example.com');
 - **Session persistée en `localStorage`** (plus robuste que `sessionStorage` pour les navigations partielles).
 - **Initialisation robuste** dans `App.jsx` et `useUserRole` avec `getSession()` + `onAuthStateChange`.
 - **État `authLoading`** respecté dans `SettingsComptes` : affiche “Chargement de l’authentification…” tant que `isLoading: true`.
-- **Debug optionnel** : activer `DEBUG_AUTH = true` dans `src/supabaseClient.js` pour tracer l’hydratation de session.
+- **Debug rapide** : activer temporairement `DEBUG_AUTH = true` dans `src/supabaseClient.js`.
 
-**Debug rapide** :
-- Activer `DEBUG_AUTH` et observer les logs `[App] initSession`, `[useUserRole] fetchRole`, `[Settings] loadUser`.
-- Vérifier que `localStorage` contient bien une clé `supabase.auth.token` après connexion.
+### 9.8 “Aucun utilisateur connecté” après alt-tab (perte à froid)
+- **Cause racine** : état auth React figé suite à des `getUser()` one-shot et/ou à un onglet “throttled” (auto-refresh token non exécuté au moment attendu). Au retour focus/visibilité, l’app n’initiait pas de ré-hydratation, donc certaines pages restaient sur `user=null` jusqu’au refresh.
+- **Correctif** : l’app utilise `AuthProvider` (`src/auth/AuthProvider.tsx`) comme source-of-truth.
+  - Au montage et au retour `focus` / `visibilitychange`, `ensureSession()` exécute `getSession()` puis tente `refreshSession()` (retry court) si nécessaire.
+  - Le rendu “Non connecté” n’est affiché que si `authReady === true` et `user === null`.
+- **Vérification** : activer temporairement `DEBUG_AUTH = true` dans `src/supabaseClient.js` et vérifier dans la console :
+  - `[Auth] ensureSession:getSession` (reason: `focus` / `visibility`)
+  - `[Auth] ensureSession:refreshSession` (si refresh tenté)
+  - `[Auth] onAuthStateChange` (INITIAL_SESSION / TOKEN_REFRESHED)
 
-## 10. Règles d'or
+### 9.9 Signalements en base mais non visibles dans /settings/comptes
+- **Checklist frontend** :
+  - Vérifier que la page affiche d’abord **“Chargement de l’authentification…”** (si besoin) puis la table.
+  - Bouton **Rafraîchir** : doit rappeler `list_users`.
+  - Au retour d’onglet (navigation interne), au retour focus/visibilité, ou après actions (mark read / delete), la page déclenche un refetch.
+  - Anti “stale” : une réponse plus ancienne ne doit pas écraser une plus récente (guard `requestId`).
+- **Checklist Edge Function** :
+  - Action `list_users` renvoie `users[]` avec : `total_reports`, `unread_reports`, `latest_report_id`, `latest_report_created_at`, `latest_report_is_unread`.
+  - Action `get_latest_issue_for_user` renvoie `report` (dernier signalement).
+  - Actions `mark_issue_read`, `delete_issue`, `delete_all_issues_for_user` renvoient `{ success: true }`.
+- **Debug** :
+  - Front: activer `DEBUG_ADMIN_FETCH = true` dans `src/supabaseClient.js`.
+  - Edge: définir `DEBUG_ADMIN=true` dans les variables d’environnement de la Function pour afficher un résumé des counts renvoyés (sans données sensibles).
 
 ### 10.1 Ce qu'il ne faut JAMAIS faire
 - ❌ Exposer `service_role_key` dans le frontend

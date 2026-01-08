@@ -6,9 +6,9 @@
  * Par défaut, un utilisateur est "user". Seuls les admins ont role="admin".
  */
 
-import { useEffect, useState } from 'react';
-import { supabase, DEBUG_AUTH } from '../supabaseClient';
+import { useMemo } from 'react';
 import type { User } from '@supabase/supabase-js';
+import { useAuth } from './AuthProvider';
 
 export type UserRole = 'admin' | 'user' | 'loading' | null;
 
@@ -20,127 +20,27 @@ export interface UserRoleState {
 }
 
 export function useUserRole(): UserRoleState {
-  const [state, setState] = useState<UserRoleState>({
-    role: 'loading',
-    user: null,
-    isAdmin: false,
-    isLoading: true,
-  });
+  const { authReady, user, role, isAdmin } = useAuth();
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function fetchRole() {
-      try {
-        if (DEBUG_AUTH) console.log('[useUserRole] fetchRole:start');
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!mounted) return;
-
-        if (!user) {
-          if (DEBUG_AUTH) console.log('[useUserRole] fetchRole:no user');
-          setState({
-            role: null,
-            user: null,
-            isAdmin: false,
-            isLoading: false,
-          });
-          return;
-        }
-
-        // Utiliser uniquement user_metadata comme source de vérité
-        const role = (
-          user.user_metadata?.role || 
-          user.app_metadata?.role || 
-          'user'
-        ) as 'admin' | 'user';
-
-        if (DEBUG_AUTH) {
-          console.log('[useUserRole] fetchRole:success', {
-            userId: user.id,
-            role,
-            isAdmin: role === 'admin',
-          });
-        }
-
-        setState({
-          role,
-          user,
-          isAdmin: role === 'admin',
-          isLoading: false,
-        });
-      } catch (error) {
-        console.error('Error fetching user role:', error);
-        if (mounted) {
-          setState({
-            role: null,
-            user: null,
-            isAdmin: false,
-            isLoading: false,
-          });
-        }
-      }
-    }
-
-    fetchRole();
-
-    // Écoute les changements d'auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (!mounted) return;
-        if (DEBUG_AUTH) console.log('[useUserRole] onAuthStateChange', { event: _event, hasSession: !!session });
-        
-        if (session?.user) {
-          // Utiliser uniquement user_metadata comme source de vérité
-          const role = (
-            session.user.user_metadata?.role || 
-            session.user.app_metadata?.role || 
-            'user'
-          ) as 'admin' | 'user';
-          
-          if (DEBUG_AUTH) {
-            console.log('[useUserRole] onAuthStateChange:session', {
-              userId: session.user.id,
-              role,
-              isAdmin: role === 'admin',
-            });
-          }
-          
-          setState({
-            role,
-            user: session.user,
-            isAdmin: role === 'admin',
-            isLoading: false,
-          });
-        } else {
-          if (DEBUG_AUTH) console.log('[useUserRole] onAuthStateChange:no session');
-          setState({
-            role: null,
-            user: null,
-            isAdmin: false,
-            isLoading: false,
-          });
-        }
-      }
-    );
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
+  return useMemo(() => {
+    const normalizedRole: UserRole = authReady ? ((role as any) ?? null) : 'loading';
+    return {
+      role: normalizedRole,
+      user,
+      isAdmin,
+      isLoading: !authReady,
     };
-  }, []);
-
-  return state;
+  }, [authReady, isAdmin, role, user]);
 }
 
 /**
  * Vérifie si l'utilisateur actuel est admin (fonction utilitaire)
  */
 export async function checkIsAdmin(): Promise<boolean> {
-  const { data: { user } } = await supabase.auth.getUser();
+  // Cette fonction est conservée pour compatibilité, mais ne devrait pas être
+  // utilisée comme source-of-truth côté UI.
+  const { data: { user } } = await (await import('../supabaseClient')).supabase.auth.getUser();
   if (!user) return false;
-  
-  // Utiliser uniquement user_metadata comme source de vérité
   const role = user.user_metadata?.role || user.app_metadata?.role || 'user';
   return role === 'admin';
 }

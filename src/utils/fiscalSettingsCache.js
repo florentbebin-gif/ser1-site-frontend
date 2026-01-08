@@ -224,21 +224,28 @@ export async function getFiscalSettings({ force = false } = {}) {
     error: null,
   };
 
-  // Retourner cache si valide et pas de force
+  const kinds = ['tax', 'ps', 'fiscality'];
+
   if (!force) {
-    ['tax', 'ps', 'fiscality'].forEach((kind) => {
+    kinds.forEach((kind) => {
       if (isCacheValid(kind)) {
         result[kind] = cache[kind];
       }
     });
+
+    kinds.forEach((kind) => fetchFromSupabase(kind));
+    return result;
   }
 
-  // Lancer les fetchs en arrière-plan (stale-while-revalidate)
-  const promises = ['tax', 'ps', 'fiscality'].map((kind) => fetchFromSupabase(kind));
-  // On n'attend pas: on retourne immédiatement cache/defaults
-  // Si tu veux attendre, décommente la ligne suivante :
-  // await Promise.allSettled(promises);
+  const promises = kinds.map((kind) =>
+    fetchFromSupabase(kind).then(() => {
+      if (cache[kind]) {
+        result[kind] = cache[kind];
+      }
+    })
+  );
 
+  await Promise.all(promises);
   return result;
 }
 

@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import SettingsNav from '../SettingsNav';
 import './SettingsFiscalites.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
+import { useAuth, useUserRole } from '../../auth';
+import { createRequestSequencer, withTimeout } from '../../utils/requestGuard';
 
 // ------------------------------------------------------------
 // Valeurs par défaut (Assurance-vie) — issues du tableau Excel PJ
@@ -261,13 +263,14 @@ function textOrEmpty(v) {
 }
 
 export default function SettingsFiscalites() {
-  const [user, setUser] = useState(null);
-  const [roleLabel, setRoleLabel] = useState('User');
+  const { authReady, user, ensureSession, appAwakeRevision } = useAuth();
+  const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(true);
 
   const [settings, setSettings] = useState(DEFAULT_FISCALITY_SETTINGS);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [loadError, setLoadError] = useState(null);
 
   const [openProductKey, setOpenProductKey] = useState(null);
 
@@ -278,12 +281,6 @@ const PRODUCTS = [
   { key: 'pea', label: 'Plan d\'épargne en actions (PEA)' },
 ];
 
-  const isAdmin =
-    user &&
-    ((typeof user?.user_metadata?.role === 'string' &&
-      user.user_metadata.role.toLowerCase() === 'admin') ||
-      user?.user_metadata?.is_admin === true);
-
   const av = settings.assuranceVie;
   const passHistory = settings.passHistory || [];
   const per = settings.perIndividuel || DEFAULT_FISCALITY_SETTINGS.perIndividuel;
@@ -292,106 +289,109 @@ const PRODUCTS = [
   // ---------------------------------------------
   // Chargement user + paramètres depuis Supabase
   // ---------------------------------------------
-  useEffect(() => {
-    let mounted = true;
+  const loadSequencer = useMemo(() => createRequestSequencer(), []);
 
-    async function load() {
-      try {
-        const { data: userData, error: userErr } = await supabase.auth.getUser();
-        if (userErr) {
-          console.error('Erreur user:', userErr);
-          if (mounted) setLoading(false);
-          return;
-        }
-
-        const u = userData?.user || null;
-        if (!mounted) return;
-
-        setUser(u);
-        if (u) {
-          const meta = u.user_metadata || {};
-          const admin =
-            (typeof meta.role === 'string' && meta.role.toLowerCase() === 'admin') ||
-            meta.is_admin === true;
-          setRoleLabel(admin ? 'Admin' : 'User');
-        }
-
-        // Charge la ligne id=1
-        const { data: rows, error: err } = await supabase
-          .from('fiscality_settings')
-          .select('data')
-          .eq('id', 1);
-
-        if (!err && rows && rows.length > 0 && rows[0].data) {
-  const db = rows[0].data;
-
-  setSettings((prev) => ({
-    ...prev,
-    ...db,
-
-    // merge profond ciblé PER (évite écrasement de la structure par un jsonb partiel)
-    perIndividuel: {
-      ...DEFAULT_FISCALITY_SETTINGS.perIndividuel,
-      ...(db.perIndividuel || {}),
-      epargne: {
-        ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.epargne,
-        ...(db.perIndividuel?.epargne || {}),
-      },
-      sortieCapital: {
-        ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital,
-        ...(db.perIndividuel?.sortieCapital || {}),
-      },
-      deces: {
-        ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.deces,
-        ...(db.perIndividuel?.deces || {}),
-      },
-      rente: {
-        ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente,
-        ...(db.perIndividuel?.rente || {}),
-        deduits: {
-          ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits,
-          ...(db.perIndividuel?.rente?.deduits || {}),
-          capitalQuotePart: {
-            ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.capitalQuotePart,
-            ...(db.perIndividuel?.rente?.deduits?.capitalQuotePart || {}),
-          },
-          interestsQuotePart: {
-            ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.interestsQuotePart,
-            ...(db.perIndividuel?.rente?.deduits?.interestsQuotePart || {}),
-          },
-        },
-        nonDeduits: {
-          ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.nonDeduits,
-          ...(db.perIndividuel?.rente?.nonDeduits || {}),
-        },
-        rvtoTaxableFractionByAgeAtFirstPayment:
-          db.perIndividuel?.rente?.rvtoTaxableFractionByAgeAtFirstPayment ||
-          DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
-      },
-    },
-
-    // PASS aussi : merge “safe”
-    passHistory: Array.isArray(db.passHistory)
-      ? db.passHistory
-      : DEFAULT_FISCALITY_SETTINGS.passHistory,
-  }));
-}
- else if (err && err.code !== 'PGRST116') {
-          console.error('Erreur chargement fiscality_settings :', err);
-        }
-
-        if (mounted) setLoading(false);
-      } catch (e) {
-        console.error(e);
-        if (mounted) setLoading(false);
-      }
+  const loadFiscalitySettings = useCallback(async (reason) => {
+    if (!authReady) return;
+    if (!user) {
+      setLoading(false);
+      setLoadError(null);
+      return;
     }
 
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    const requestId = loadSequencer.nextId();
+    setLoading(true);
+    setLoadError(null);
+
+    try {
+      await ensureSession?.(`settings-fiscalites:${reason}`);
+      const { data, error } = await withTimeout(
+        supabase
+          .from('fiscality_settings')
+          .select('data')
+          .eq('id', 1)
+          .maybeSingle(),
+        8000,
+        'fiscality_settings:load'
+      );
+
+      if (!loadSequencer.isLatest(requestId)) return;
+
+      if (!error && data?.data) {
+        const db = data.data;
+
+        setSettings((prev) => ({
+          ...prev,
+          ...db,
+          perIndividuel: {
+            ...DEFAULT_FISCALITY_SETTINGS.perIndividuel,
+            ...(db.perIndividuel || {}),
+            epargne: {
+              ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.epargne,
+              ...(db.perIndividuel?.epargne || {}),
+            },
+            sortieCapital: {
+              ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital,
+              ...(db.perIndividuel?.sortieCapital || {}),
+            },
+            deces: {
+              ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.deces,
+              ...(db.perIndividuel?.deces || {}),
+            },
+            rente: {
+              ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente,
+              ...(db.perIndividuel?.rente || {}),
+              deduits: {
+                ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits,
+                ...(db.perIndividuel?.rente?.deduits || {}),
+                capitalQuotePart: {
+                  ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.capitalQuotePart,
+                  ...(db.perIndividuel?.rente?.deduits?.capitalQuotePart || {}),
+                },
+                interestsQuotePart: {
+                  ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.interestsQuotePart,
+                  ...(db.perIndividuel?.rente?.deduits?.interestsQuotePart || {}),
+                },
+              },
+              nonDeduits: {
+                ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.nonDeduits,
+                ...(db.perIndividuel?.rente?.nonDeduits || {}),
+              },
+              rvtoTaxableFractionByAgeAtFirstPayment:
+                db.perIndividuel?.rente?.rvtoTaxableFractionByAgeAtFirstPayment ||
+                DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
+            },
+          },
+          passHistory: Array.isArray(db.passHistory)
+            ? db.passHistory
+            : DEFAULT_FISCALITY_SETTINGS.passHistory,
+        }));
+        setLoadError(null);
+      } else if (error && error.code !== 'PGRST116') {
+        console.error('Erreur chargement fiscality_settings :', error);
+        setLoadError("Erreur lors du chargement des paramètres fiscalités.");
+      } else {
+        setLoadError(null);
+      }
+    } catch (e) {
+      if (!loadSequencer.isLatest(requestId)) return;
+      console.error(e);
+      setLoadError(e?.message || "Erreur inattendue lors du chargement des paramètres fiscalités.");
+    } finally {
+      if (loadSequencer.isLatest(requestId)) {
+        setLoading(false);
+      }
+    }
+  }, [authReady, user?.id, ensureSession, loadSequencer]);
+
+  useEffect(() => {
+    if (!authReady) return;
+    loadFiscalitySettings('appAwake');
+  }, [authReady, user?.id, appAwakeRevision, loadFiscalitySettings]);
+
+  const handleReload = useCallback(() => {
+    loadFiscalitySettings('manual');
+  }, [loadFiscalitySettings]);
 
   // ---------------------------------------------
   // Helpers de MAJ
@@ -416,6 +416,8 @@ const handleSave = async () => {
   try {
     setSaving(true);
     setMessage('');
+
+    await ensureSession?.('settings-fiscalites:save');
 
     // -----------------------------
     // Validation PASS (8 lignes + ordre)
@@ -469,6 +471,18 @@ const handleSave = async () => {
   // ---------------------------------------------
   // Rendu
   // ---------------------------------------------
+  if (!authReady) {
+    return (
+      <div className="settings-page">
+        <div className="section-card">
+          <div className="section-title">Paramètres</div>
+          <SettingsNav />
+          <p>Chargement de l'authentification...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="settings-page">
@@ -500,6 +514,15 @@ const handleSave = async () => {
 
         <SettingsNav />
 
+        {loadError && (
+          <div className="settings-alert error" style={{ marginTop: 12 }}>
+            <span>{loadError}</span>
+            <button type="button" className="chip" style={{ marginLeft: 12 }} onClick={handleReload}>
+              Réessayer
+            </button>
+          </div>
+        )}
+
         <div
           style={{
             fontSize: 15,
@@ -511,7 +534,7 @@ const handleSave = async () => {
         >
           {/* Bandeau info */}
 <div className="tax-user-banner">
-  <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {roleLabel}
+  <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {isAdmin ? 'Admin' : 'User'}
 </div>
 
           <section>

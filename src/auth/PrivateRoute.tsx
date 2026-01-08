@@ -6,18 +6,18 @@
 
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useUserRole } from './useUserRole';
+import { useAuth } from './AuthProvider';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
 }
 
 export function PrivateRoute({ children }: PrivateRouteProps): React.ReactElement {
-  const { role, isLoading } = useUserRole();
+  const { authReady, user } = useAuth();
   const location = useLocation();
 
   // Affiche un loader pendant la vérification
-  if (isLoading) {
+  if (!authReady) {
     return (
       <div className="loading-container" style={{
         display: 'flex',
@@ -27,13 +27,13 @@ export function PrivateRoute({ children }: PrivateRouteProps): React.ReactElemen
         fontSize: '1.2rem',
         color: '#788781',
       }}>
-        Chargement...
+        Chargement session (PrivateRoute)…
       </div>
     );
   }
 
   // Redirige vers login si non connecté
-  if (role === null) {
+  if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

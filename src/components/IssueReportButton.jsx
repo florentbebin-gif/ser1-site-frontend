@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { useAuth } from '../auth';
 import { supabase } from '../supabaseClient';
 import './IssueReport.css';
 
 export default function IssueReportButton() {
+  const { user, session, ensureSession } = useAuth();
+  const DEBUG_ISSUE_REPORT = false;
   const [isOpen, setIsOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -20,23 +23,25 @@ export default function IssueReportButton() {
     setMessage('');
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: session } = await supabase.auth.getSession();
-      
-      // TODO: Retirer ces logs de debug après diagnostic
-      console.log('🔍 IssueReport - Diagnostic AVANT insert:', {
-        user_id: user?.id,
-        has_session: !!session,
-        has_access_token: !!session?.access_token,
-        supabase_url: import.meta.env.VITE_SUPABASE_URL?.replace(/https:\/\/.*\.supabase\.co/, 'https://***.supabase.co'),
-        page: window.location.pathname,
-        title: title.trim()
-      });
-
+      // S’assurer que la session est fraîche avant l’insert
+      await ensureSession('issue-report');
       if (!user) {
         setMessage('Erreur : utilisateur non connecté');
         return;
       }
+      
+      // TODO: Retirer ces logs de debug après diagnostic
+      if (DEBUG_ISSUE_REPORT) {
+        console.log('🔍 IssueReport - Diagnostic AVANT insert:', {
+          user_id: user?.id,
+          has_session: !!session,
+          has_access_token: !!session?.access_token,
+          supabase_url: import.meta.env.VITE_SUPABASE_URL?.replace(/https:\/\/.*\.supabase\.co/, 'https://***.supabase.co'),
+          page: window.location.pathname,
+          title: title.trim()
+        });
+      }
+
 
       const { error, data } = await supabase.from('issue_reports').insert({
         user_id: user.id,
@@ -51,15 +56,17 @@ export default function IssueReportButton() {
       });
 
       // TODO: Retirer ces logs de debug après diagnostic
-      console.log('🔍 IssueReport - Résultat insert:', {
-        success: !error,
-        error_code: error?.code,
-        error_message: error?.message,
-        error_details: error?.details,
-        error_hint: error?.hint,
-        data_keys: data ? Object.keys(data) : null,
-        http_status: error?.status || 'N/A'
-      });
+      if (DEBUG_ISSUE_REPORT) {
+        console.log('🔍 IssueReport - Résultat insert:', {
+          success: !error,
+          error_code: error?.code,
+          error_message: error?.message,
+          error_details: error?.details,
+          error_hint: error?.hint,
+          data_keys: data ? Object.keys(data) : null,
+          http_status: error?.status || 'N/A'
+        });
+      }
 
       if (error) {
         const errorMsg = error.status 
@@ -76,7 +83,7 @@ export default function IssueReportButton() {
         }, 2000);
       }
     } catch (err) {
-      console.error('🔍 IssueReport - Exception catch:', err);
+      if (DEBUG_ISSUE_REPORT) console.error('🔍 IssueReport - Exception catch:', err);
       setMessage('Erreur inattendue : ' + err.message);
     } finally {
       setIsSubmitting(false);

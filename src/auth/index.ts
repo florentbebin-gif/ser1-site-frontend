@@ -7,3 +7,5 @@ export type { UserRole, UserRoleState } from './useUserRole';
 
 export { PrivateRoute } from './PrivateRoute';
 export { AdminGate, useAdminAction } from './AdminGate';
+
+export { AuthProvider, useAuth } from './AuthProvider';

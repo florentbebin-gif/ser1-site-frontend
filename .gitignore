@@ -4,14 +4,28 @@ node_modules
 .pnp.js
 
 # Testing
-coverage
+coverage/
+vite.svg
+*.log
+*.tmp
+*.temp
+*.cache
+*.tsbuildinfo
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
 
 # Production
 dist
 build
+supabase/.temp/
+supabase/.supabase
 
 # Misc
 .DS_Store
+.AppleDouble
+.LSOverride
 .env
 .env.local
 .env.development.local
@@ -33,10 +47,14 @@ yarn-error.log*
 *.sw?
 
 # SER1 Artifacts
-outputs/
 tmp/
 temp/
 logs/
+outputs/
+.turbo/
+.parcel-cache/
+.cache/
+.eslintcache
 
 # Validation outputs
 validation_results.csv
@@ -44,8 +62,10 @@ validation_results.json
 validation_report.md
 validation_compared.csv
 *.xlsx
-!SER1 - LAPLACE 2025.xlsx
 
 # Python artifacts (if any)
 __pycache__/
 *.py[cod]
+
+# Corbeille (quarantaine temporaire)
+Corbeille/

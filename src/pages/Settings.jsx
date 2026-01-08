@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase, DEBUG_AUTH } from '../supabaseClient';
 import { useTheme } from '../settings/ThemeProvider';
 import SettingsNav from './SettingsNav';
+import { useAuth, useUserRole } from '../auth';
 
 // Couleurs par défaut
 const DEFAULT_COLORS = {
@@ -121,8 +122,8 @@ const COLOR_FIELDS = [
 
 export default function Settings({ isAdmin = false }) {
   const { colors, setColors, saveThemeToUiSettings, isLoading: themeLoading } = useTheme();
-  const [user, setUser] = useState(null);
-  const [roleLabel, setRoleLabel] = useState('User');
+  const { authReady, user } = useAuth();
+  const { isAdmin: isAdminFromAuth } = useUserRole();
   const [loading, setLoading] = useState(true);
 
   // Convertir le format ThemeProvider vers l'ancien format pour compatibilité
@@ -134,6 +135,11 @@ export default function Settings({ isAdmin = false }) {
   const [themeScope, setThemeScope] = useState('all'); // 'all' or 'ui-only'
 
   const [coverUrl, setCoverUrl] = useState('');
+
+  useEffect(() => {
+    if (!authReady) return;
+    setCoverUrl(user?.user_metadata?.cover_slide_url || '');
+  }, [authReady, user?.id]);
 
   // Convertir les couleurs du ThemeProvider vers l'ancien format
   useEffect(() => {
@@ -165,7 +171,6 @@ export default function Settings({ isAdmin = false }) {
   useEffect(() => {
     async function loadThemeScope() {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data: uiSettings, error } = await supabase
             .from('ui_settings')
@@ -212,68 +217,21 @@ export default function Settings({ isAdmin = false }) {
 
   useEffect(() => {
     let mounted = true;
-    let timeoutId;
 
-    async function loadUser() {
-      try {
-        if (DEBUG_AUTH) console.log('[Settings] loadUser:start');
-        // Timeout de 6s pour éviter le blocage infini
-        timeoutId = setTimeout(() => {
-          if (mounted) {
-            console.warn('[Settings] Timeout lors du chargement utilisateur, utilisation des valeurs par défaut');
-            setLoading(false);
-          }
-        }, 6000);
-
-        const { data, error } = await supabase.auth.getUser();
-        
-        if (error) {
-          console.error('Erreur chargement user :', error);
-          return;
-        }
-
-        const u = data?.user || null;
-        if (!mounted) return;
-
-        if (DEBUG_AUTH) console.log('[Settings] loadUser:success', { hasUser: !!u, userId: u?.id });
-
-        setUser(u);
-
-        if (u) {
-          const meta = u.user_metadata || {};
-
-          // rôle Admin / User
-          const isAdmin =
-            (typeof meta.role === 'string' &&
-              meta.role.toLowerCase() === 'admin') ||
-            meta.is_admin === true;
-
-          if (DEBUG_AUTH) {
-            console.log('[Settings] role detected', { userId: u.id, isAdmin, role: meta.role });
-          }
-
-          setRoleLabel(isAdmin ? 'Admin' : 'User');
-
-          // URL de la page de garde (si déjà enregistrée)
-          if (meta.cover_slide_url) {
-            setCoverUrl(meta.cover_slide_url);
-          }
-        }
-      } catch (e) {
-        console.error(e);
-      } finally {
-        // Annuler le timeout et forcer loading=false dans tous les cas
-        if (timeoutId) clearTimeout(timeoutId);
-        if (mounted) setLoading(false);
-      }
+    // loading UI local uniquement pour le rendu Settings (thèmes, etc.)
+    // La source-of-truth auth est AuthProvider.
+    if (!authReady) {
+      setLoading(true);
+      return () => {
+        mounted = false;
+      };
     }
 
-    loadUser();
+    if (mounted) setLoading(false);
     return () => {
       mounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, []);
+  }, [authReady]);
 
   /* ---------- Gestion des couleurs ---------- */
 
@@ -325,7 +283,7 @@ export default function Settings({ isAdmin = false }) {
   };
 
   const handleSaveColors = async () => {
-    if (!isAdmin) {
+    if (!isAdminFromAuth) {
       setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
       return;
     }
@@ -383,44 +341,39 @@ export default function Settings({ isAdmin = false }) {
     }
   };
 
-  // Gestionnaire de réinitialisation
   const handleResetTheme = async () => {
-    if (!isAdmin) {
-      setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
-      return;
-    }
-    
-    if (confirm('Réinitialiser au thème d\'origine ? Cette action remplacera toutes les couleurs personnalisées.')) {
-      // Appliquer le thème par défaut
+    if (!isAdminFromAuth) return;
+    if (!window.confirm('Réinitialiser le thème aux couleurs par défaut ?')) return;
+
+    try {
+      setSaveMessage('');
+      setSelectedTheme('Personnalisé');
+      setThemeScope('all');
+
       setColorsLegacy(DEFAULT_COLORS);
       setColorText(DEFAULT_COLORS);
       syncThemeColors(DEFAULT_COLORS);
-      setSelectedTheme('SER1 Classique – Thème original');
-      
+
       // Supprimer le thème personnalisé de ui_settings
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { error } = await supabase
-            .from('ui_settings')
-            .delete()
-            .eq('user_id', user.id)
-            .eq('theme_name', 'custom');
-            
-          if (error) {
-            console.error('Erreur suppression thème personnalisé:', error);
-          }
+      if (user) {
+        const { error } = await supabase
+          .from('ui_settings')
+          .delete()
+          .eq('user_id', user.id);
+        if (error) {
+          console.error('Erreur suppression ui_settings:', error);
         }
-        setSaveMessage('Thème réinitialisé avec succès.');
-      } catch (err) {
-        console.error('Erreur lors de la réinitialisation:', err);
-        setSaveMessage('Erreur lors de la réinitialisation.');
       }
+
+      setSaveMessage("Thème réinitialisé avec succès.");
+    } catch (err) {
+      console.error('Erreur lors de la réinitialisation:', err);
+      setSaveMessage('Erreur lors de la réinitialisation.');
     }
   };
 
   const handleCoverFileChange = async (e) => {
-    if (!isAdmin) {
+    if (!isAdminFromAuth) {
       setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
       return;
     }
@@ -504,7 +457,7 @@ export default function Settings({ isAdmin = false }) {
   };
 
   const handleRemoveCover = async () => {
-    if (!isAdmin) {
+    if (!isAdminFromAuth) {
       setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
       return;
     }
@@ -529,6 +482,18 @@ export default function Settings({ isAdmin = false }) {
   };
 
   /* ---------- Rendu ---------- */
+
+  if (!authReady) {
+    return (
+      <div className="settings-page">
+        <div className="section-card">
+          <div className="section-title">Paramètres</div>
+          <SettingsNav />
+          <p>Chargement de l'authentification...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -580,7 +545,7 @@ export default function Settings({ isAdmin = false }) {
             </div>
             <div>
               <strong>Statut :</strong>{' '}
-              <span>{roleLabel}</span>
+              <span>{isAdminFromAuth ? 'Admin' : 'User'}</span>
             </div>
           </div>
 
@@ -724,9 +689,9 @@ export default function Settings({ isAdmin = false }) {
                 type="button"
                 className="chip"
                 onClick={handleSaveColors}
-                disabled={savingColors || !isAdmin}
-                style={{ opacity: isAdmin ? 1 : 0.5 }}
-                title={isAdmin ? '' : 'Réservé aux administrateurs'}
+                disabled={savingColors || !isAdminFromAuth}
+                style={{ opacity: isAdminFromAuth ? 1 : 0.5 }}
+                title={isAdminFromAuth ? '' : 'Réservé aux administrateurs'}
               >
                 {savingColors ? 'Enregistrement…' : 'Enregistrer le thème'}
               </button>
@@ -735,18 +700,18 @@ export default function Settings({ isAdmin = false }) {
                 type="button"
                 className="chip"
                 onClick={handleResetTheme}
-                disabled={!isAdmin}
+                disabled={!isAdminFromAuth}
                 style={{ 
-                  opacity: isAdmin ? 1 : 0.5,
+                  opacity: isAdminFromAuth ? 1 : 0.5,
                   backgroundColor: '#f5f5f5',
                   color: '#666'
                 }}
-                title={isAdmin ? 'Réinitialiser le thème d\'origine' : 'Réservé aux administrateurs'}
+                title={isAdminFromAuth ? 'Réinitialiser le thème d\'origine' : 'Réservé aux administrateurs'}
               >
                 🔄 Réinitialiser le thème d'origine
               </button>
               
-              {!isAdmin && (
+              {!isAdminFromAuth && (
                 <div style={{ fontSize: 12, color: '#888' }}>
                   🔒 Modification réservée aux administrateurs
                 </div>

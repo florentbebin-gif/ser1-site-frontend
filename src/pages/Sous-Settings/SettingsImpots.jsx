@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import SettingsNav from '../SettingsNav';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
+import { useAuth, useUserRole } from '../../auth';
+import { createRequestSequencer, withTimeout } from '../../utils/requestGuard';
 
 // ----------------------
 // Valeurs par défaut
@@ -150,79 +152,82 @@ function numberOrEmpty(v) {
 }
 
 export default function SettingsImpots() {
-  const [user, setUser] = useState(null);
-  const [roleLabel, setRoleLabel] = useState('User');
+  const { authReady, user, ensureSession, appAwakeRevision } = useAuth();
+  const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(true);
-
+  const [loadError, setLoadError] = useState(null);
   const [settings, setSettings] = useState(DEFAULT_TAX_SETTINGS);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
-  const isAdmin =
-    user &&
-    ((typeof user?.user_metadata?.role === 'string' &&
-      user.user_metadata.role.toLowerCase() === 'admin') ||
-      user?.user_metadata?.is_admin === true);
+  const loadSequencer = useMemo(() => createRequestSequencer(), []);
 
-  // Chargement user + paramètres depuis la table tax_settings
-  useEffect(() => {
-    let mounted = true;
-
-    async function load() {
-      try {
-        const { data: userData, error: userErr } = await supabase.auth.getUser();
-        if (userErr) {
-          console.error('Erreur user:', userErr);
-          if (mounted) setLoading(false);
-          return;
-        }
-
-        const u = userData?.user || null;
-        if (!mounted) return;
-
-        setUser(u);
-        if (u) {
-          const meta = u.user_metadata || {};
-          const admin =
-            (typeof meta.role === 'string' &&
-              meta.role.toLowerCase() === 'admin') ||
-            meta.is_admin === true;
-          setRoleLabel(admin ? 'Admin' : 'User');
-        }
-
-        // Charge la ligne id=1 si elle existe
-        const { data: rows, error: taxErr } = await supabase
-          .from('tax_settings')
-          .select('data')
-          .eq('id', 1);
-
-        if (!taxErr && rows && rows.length > 0 && rows[0].data) {
-          setSettings((prev) => ({
-            ...prev,
-            ...rows[0].data,
-          }));
-        } else if (taxErr && taxErr.code !== 'PGRST116') {
-          console.error('Erreur chargement tax_settings :', taxErr);
-        }
-
-        if (mounted) setLoading(false);
-      } catch (e) {
-        console.error(e);
-        if (mounted) setLoading(false);
-      }
+  // Chargement paramètres depuis la table tax_settings
+  const loadTaxSettings = useCallback(async (reason) => {
+    if (!authReady) return;
+    if (!user) {
+      setLoading(false);
+      setLoadError(null);
+      return;
     }
 
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    const requestId = loadSequencer.nextId();
+    setLoading(true);
+    setLoadError(null);
+
+    try {
+      await ensureSession?.(`settings-impots:${reason}`);
+      const { data, error } = await withTimeout(
+        supabase
+          .from('tax_settings')
+          .select('data')
+          .eq('id', 1)
+          .maybeSingle(),
+        8000,
+        'tax_settings:load'
+      );
+
+      if (!loadSequencer.isLatest(requestId)) return;
+
+      if (!error && data?.data) {
+        setSettings((prev) => ({
+          ...prev,
+          ...data.data,
+        }));
+        setLoadError(null);
+      } else if (error && error.code !== 'PGRST116') {
+        console.error('Erreur chargement tax_settings :', error);
+        setLoadError("Erreur lors du chargement des paramètres d'impôts.");
+      } else {
+        setLoadError(null);
+      }
+    } catch (err) {
+      if (!loadSequencer.isLatest(requestId)) return;
+      console.error(err);
+      setLoadError(err?.message || "Erreur inattendue lors du chargement des paramètres d'impôts.");
+    } finally {
+      if (loadSequencer.isLatest(requestId)) {
+        setLoading(false);
+      }
+    }
+  }, [authReady, user?.id, ensureSession, loadSequencer]);
+
+  useEffect(() => {
+    if (!authReady) return;
+    loadTaxSettings('appAwake');
+  }, [authReady, user?.id, appAwakeRevision, loadTaxSettings]);
+
+  const handleReload = useCallback(() => {
+    loadTaxSettings('manual');
+  }, [loadTaxSettings]);
 
   const handleSave = async () => {
     if (!isAdmin) return;
     try {
       setSaving(true);
       setMessage('');
+
+      await ensureSession?.('settings-impots:save');
 
       const { error } = await supabase
         .from('tax_settings')
@@ -277,6 +282,18 @@ const updateField = (path, value) => {
 };
 
 
+  if (!authReady) {
+    return (
+      <div className="settings-page">
+        <div className="section-card">
+          <div className="section-title">Paramètres</div>
+          <SettingsNav />
+          <p>Chargement de l'authentification...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="settings-page">
@@ -323,6 +340,15 @@ const updateField = (path, value) => {
 
         <SettingsNav />
 
+        {loadError && (
+          <div className="settings-alert error" style={{ marginTop: 12 }}>
+            <span>{loadError}</span>
+            <button type="button" className="chip" style={{ marginLeft: 12 }} onClick={handleReload}>
+              Réessayer
+            </button>
+          </div>
+        )}
+
         <div
           style={{
             fontSize: 15,
@@ -335,7 +361,7 @@ const updateField = (path, value) => {
           {/* Bandeau info */}
           <div className="tax-user-banner">
             <strong>Utilisateur :</strong> {user.email} —{' '}
-            <strong>Statut :</strong> {roleLabel}
+            <strong>Statut :</strong> {isAdmin ? 'Admin' : 'User'}
           </div>
 
 

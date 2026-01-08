@@ -1,430 +1,394 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import { supabase, DEBUG_AUTH } from '../../supabaseClient';
-import SettingsNav from '../SettingsNav';
-import { useUserRole } from '../../auth/useUserRole';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './SettingsComptes.css';
+import { supabase } from '../../supabaseClient';
+import { useAuth } from '../../auth';
+import { createRequestSequencer, withTimeout } from '../../utils/requestGuard';
 
 export default function SettingsComptes() {
-  const { isAdmin, isLoading: authLoading } = useUserRole();
-  const location = useLocation();
+  const { authReady, authRevision, appAwakeRevision, isAdmin, ensureSession, session } = useAuth();
+
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const [showReportModal, setShowReportModal] = useState(false);
-  const [selectedReport, setSelectedReport] = useState(null);
-  const [newUserEmail, setNewUserEmail] = useState('');
-  const [actionLoading, setActionLoading] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const fetchUsersRequestIdRef = useRef(0);
-  const DEBUG_COMPTES_REFRESH = false;
+  const [selectedReportUser, setSelectedReportUser] = useState(null);
+  const [userReports, setUserReports] = useState([]);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState(null);
+
+  const loadSequencer = useMemo(() => createRequestSequencer(), []);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const callAdmin = useCallback(
+    async (action, payload = {}, { reason, signal, timeoutMs = 12000 } = {}) => {
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+      if (!SUPABASE_URL || !ANON_KEY) {
+        throw new Error('Configuration Supabase manquante (URL ou clé ANON).');
+      }
+
+      await ensureSession?.(`admin:${reason || action}`);
+      const token = session?.access_token;
+      if (!token) {
+        throw new Error('Session invalide : veuillez vous reconnecter.');
+      }
+
+      const response = await withTimeout(
+        fetch(`${SUPABASE_URL}/functions/v1/admin`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: ANON_KEY,
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action, ...payload }),
+          signal,
+        }),
+        timeoutMs,
+        `admin:${action}`
+      );
+
+      const text = await response.text();
+      if (!response.ok) {
+        let msg = text;
+        try {
+          const parsed = JSON.parse(text);
+          msg = parsed?.error || parsed?.message || msg;
+        } catch {
+          // ignore JSON parse errors
+        }
+        throw new Error(`[admin] ${response.status} ${response.statusText} - ${msg}`);
+      }
+
+      try {
+        return JSON.parse(text);
+      } catch {
+        return text;
+      }
+    },
+    [ensureSession, session?.access_token]
+  );
+
+  const fetchUsers = useCallback(
+    async (reason) => {
+      if (!authReady || !isAdmin) return;
+
+      const requestId = loadSequencer.nextId();
+      setLoading(true);
+      setError(null);
+
+      abortControllerRef.current?.abort('superseded');
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      try {
+        const data = await callAdmin(
+          'list_users',
+          {},
+          { reason, signal: controller.signal, timeoutMs: 12000 }
+        );
+
+        if (!loadSequencer.isLatest(requestId)) return;
+        const list = data?.users || data?.data?.users || [];
+        setUsers(Array.isArray(list) ? list : []);
+      } catch (err) {
+        if (!loadSequencer.isLatest(requestId)) return;
+        if (err?.name === 'AbortError') return;
+        console.error('[SettingsComptes] list_users:error', err);
+        setError(err?.message || String(err));
+        if (users.length === 0) {
+          setUsers([]);
+        }
+      } finally {
+        if (loadSequencer.isLatest(requestId)) {
+          setLoading(false);
+        }
+        if (abortControllerRef.current === controller) {
+          abortControllerRef.current = null;
+        }
+      }
+    },
+    [authReady, isAdmin, callAdmin, loadSequencer, users.length]
+  );
 
   useEffect(() => {
-    if (authLoading) {
-      if (DEBUG_AUTH || DEBUG_COMPTES_REFRESH) console.log('[SettingsComptes] authLoading → wait');
-      return;
-    }
-    if (!isAdmin) {
-      if (DEBUG_AUTH || DEBUG_COMPTES_REFRESH) console.log('[SettingsComptes] not admin → skip fetch');
-      return;
-    }
-    fetchUsers('effect');
-  }, [isAdmin, authLoading, location.key, refreshKey]);
+    return () => {
+      abortControllerRef.current?.abort('unmount');
+    };
+  }, []);
 
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  useEffect(() => {
+    if (!authReady || !isAdmin) return;
+    fetchUsers('appAwake');
+  }, [authReady, isAdmin, authRevision, appAwakeRevision, fetchUsers]);
 
-  const getSessionWithRetry = async (maxAttempts = 3, delayMs = 200) => {
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) return session;
-      if (attempt < maxAttempts) await sleep(delayMs);
-    }
-    return null;
-  };
 
-  const triggerRefresh = (reason = '') => {
-    if (DEBUG_COMPTES_REFRESH) {
-      console.log('[SettingsComptes] triggerRefresh', reason);
-    }
-    setRefreshKey((k) => k + 1);
-  };
+  const handleRefresh = useCallback(() => {
+    fetchUsers('manual_refresh');
+  }, [fetchUsers]);
 
-  const fetchUsers = async (reason = '') => {
-    const requestId = ++fetchUsersRequestIdRef.current;
+  const handleInviteUser = useCallback(async () => {
     try {
-      setLoading(true);
-      setError('');
-
-      if (DEBUG_COMPTES_REFRESH) {
-        console.log('[SettingsComptes] fetchUsers:start', { reason, requestId });
-      }
-
-      const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
-
-      const { data, error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { action: 'list_users' },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-
-      if (requestId !== fetchUsersRequestIdRef.current) return;
-
-      if (invokeError) throw new Error(invokeError.message);
-      setUsers(data.users || []);
-
-      if (DEBUG_COMPTES_REFRESH) {
-        console.log('[SettingsComptes] fetchUsers:success', {
-          reason,
-          requestId,
-          usersCount: (data.users || []).length,
-        });
-      }
-
-    } catch (err) {
-      if (requestId === fetchUsersRequestIdRef.current) {
-        setError(err.message);
-      }
-    } finally {
-      if (requestId === fetchUsersRequestIdRef.current) {
-        setLoading(false);
-      }
+      setError(null);
+      if (!email) return;
+      await callAdmin('invite_user', { email }, { reason: 'invite_user' });
+      setEmail('');
+      fetchUsers('after_invite');
+    } catch (e) {
+      setError(e?.message || String(e));
     }
-  };
+  }, [email, fetchUsers, callAdmin]);
 
-  const handleCreateUser = async (e) => {
-    e.preventDefault();
-    if (!newUserEmail.trim()) return;
-
+  const handleUpdateRole = useCallback(async (userId, role) => {
     try {
-      setActionLoading(true);
-      const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
-      
-      const { error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { 
-          action: 'create_user_invite',
-          email: newUserEmail.trim()
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-
-      if (invokeError) throw new Error(invokeError.message);
-      
-      setNewUserEmail('');
-      triggerRefresh('create_user_invite');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setActionLoading(false);
+      setError(null);
+      await callAdmin('update_user_role', { user_id: userId, role }, { reason: 'update_role' });
+      fetchUsers('after_update_role');
+    } catch (e) {
+      setError(e?.message || String(e));
     }
-  };
+  }, [fetchUsers, callAdmin]);
 
-  const handleDeleteUser = async (userId, email) => {
-    if (!confirm(`Supprimer l'utilisateur ${email} ?`)) return;
-
+  const handleDeleteUser = useCallback(async (userId) => {
+    if (!confirm('Supprimer cet utilisateur ?')) return;
     try {
-      setActionLoading(true);
-      const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
-      
-      const { error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { action: 'delete_user', userId },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-
-      if (invokeError) throw new Error(invokeError.message);
-      triggerRefresh('delete_user');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setActionLoading(false);
+      setError(null);
+      await callAdmin('delete_user', { user_id: userId }, { reason: 'delete_user' });
+      fetchUsers('after_delete_user');
+    } catch (e) {
+      setError(e?.message || String(e));
     }
-  };
+  }, [fetchUsers, callAdmin]);
 
-  const handleResetPassword = async (userId, email) => {
+  const handleResetPassword = useCallback(async (userId) => {
     try {
-      setActionLoading(true);
-      const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
-      
-      const { error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { 
-          action: 'reset_password',
-          userId,
-          email
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-
-      if (invokeError) throw new Error(invokeError.message);
-      alert('Email de réinitialisation envoyé');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setActionLoading(false);
+      setError(null);
+      await callAdmin('reset_password', { user_id: userId }, { reason: 'reset_password' });
+      alert('Email de reset envoyé.');
+    } catch (e) {
+      setError(e?.message || String(e));
     }
-  };
+  }, [callAdmin]);
 
-  const handleViewReports = async (userId) => {
+  const handleViewReports = useCallback(async (u) => {
     try {
-      const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
-      
-      const { data, error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { action: 'get_latest_issue_for_user', userId },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-
-      if (invokeError) throw new Error(invokeError.message);
-      
-      setSelectedReport(data.report);
+      setSelectedReportUser(u);
       setShowReportModal(true);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+      setReportLoading(true);
+      setReportError(null);
+      setUserReports([]);
 
-  const handleMarkAsRead = async (reportId) => {
+      const data = await callAdmin('list_issue_reports', { user_id: u.id }, { reason: 'list_issue_reports' });
+      const reports = Array.isArray(data?.reports) ? data.reports : [];
+      setUserReports(reports);
+    } catch (e) {
+      setReportError(e?.message || String(e));
+    } finally {
+      setReportLoading(false);
+    }
+  }, [callAdmin]);
+
+  const handleMarkAsRead = useCallback(async (reportId) => {
     try {
-      const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
-      
-      const { error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { 
-          action: 'mark_issue_read',
-          reportId
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
+      setReportError(null);
+      await callAdmin('mark_issue_report_read', { report_id: reportId }, { reason: 'mark_issue_report_read' });
 
-      if (invokeError) throw new Error(invokeError.message);
-      
-      triggerRefresh('mark_issue_read');
-      setShowReportModal(false);
-    } catch (err) {
-      setError(err.message);
+      // refresh modal + users counters
+      if (selectedReportUser) await handleViewReports(selectedReportUser);
+      fetchUsers('after_mark_read');
+    } catch (e) {
+      setReportError(e?.message || String(e));
     }
-  };
+  }, [fetchUsers, handleViewReports, callAdmin, selectedReportUser]);
 
-  const handleDeleteReport = async (reportId) => {
-    if (!confirm('Supprimer définitivement ce signalement ?')) return;
-
+  const handleDeleteReport = useCallback(async (reportId) => {
+    if (!confirm('Supprimer ce signalement ?')) return;
     try {
-      const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
-      
-      const { error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { 
-          action: 'delete_issue',
-          reportId
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
+      setReportError(null);
+      await callAdmin('delete_issue_report', { report_id: reportId }, { reason: 'delete_issue_report' });
 
-      if (invokeError) throw new Error(invokeError.message);
-      
-      setShowReportModal(false);
-      triggerRefresh('delete_issue');
-    } catch (err) {
-      setError(err.message);
+      if (selectedReportUser) await handleViewReports(selectedReportUser);
+      fetchUsers('after_delete_report');
+    } catch (e) {
+      setReportError(e?.message || String(e));
     }
-  };
+  }, [fetchUsers, handleViewReports, callAdmin, selectedReportUser]);
 
-  const handleDeleteAllReports = async (userId) => {
-    if (!confirm('Supprimer tout l\'historique des signalements pour cet utilisateur ?')) return;
-
+  const handleDeleteAllReports = useCallback(async () => {
+    if (!selectedReportUser) return;
+    if (!confirm('Supprimer TOUS les signalements de cet utilisateur ?')) return;
     try {
-      const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
-      
-      const { error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { 
-          action: 'delete_all_issues_for_user',
-          userId
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
+      setReportError(null);
+      await callAdmin('delete_all_issue_reports', { user_id: selectedReportUser.id }, { reason: 'delete_all_issue_reports' });
 
-      if (invokeError) throw new Error(invokeError.message);
-      
-      setShowReportModal(false);
-      triggerRefresh('delete_all_issues_for_user');
-    } catch (err) {
-      setError(err.message);
+      await handleViewReports(selectedReportUser);
+      fetchUsers('after_delete_all_reports');
+    } catch (e) {
+      setReportError(e?.message || String(e));
     }
-  };
+  }, [fetchUsers, handleViewReports, callAdmin, selectedReportUser]);
 
-  if (!isAdmin) {
-    return (
-      <div className="settings-page">
-        <div className="section-card">
-          <div className="section-title">Accès refusé</div>
-          <p>Vous n'avez pas les droits administrateurs pour accéder à cette page.</p>
-        </div>
-      </div>
-    );
+  const isInitialLoading = loading && users.length === 0;
+
+  const totalUnreadReports = useMemo(() => {
+    return users.reduce((sum, u) => sum + (u.unread_reports || 0), 0);
+  }, [users]);
+
+  if (!authReady) {
+    return <div style={{ padding: 16 }}>Chargement session…</div>;
   }
 
-  if (authLoading) {
-    return (
-      <div className="settings-page">
-        <div className="section-card">
-          <div className="section-title">Comptes</div>
-          <SettingsNav />
-          <p>Chargement de l'authentification...</p>
-        </div>
-      </div>
-    );
+  if (!isAdmin) {
+    return <div style={{ padding: 16 }}>Accès réservé administrateur.</div>;
   }
 
   return (
-    <div className="settings-page">
-      <div className="section-card">
-        <div className="section-title">Comptes</div>
-        <SettingsNav />
+    <div className="settings-comptes">
+      <h2>Comptes</h2>
 
-        {error && <div className="alert error">{error}</div>}
-        
-        {loading ? (
-          <p>Chargement...</p>
-        ) : (
-          <div className="admin-content">
-            {/* Créer un utilisateur */}
-            <div className="admin-section">
-              <h3>Créer un utilisateur</h3>
-              <form onSubmit={handleCreateUser} className="admin-form">
-                <input
-                  type="email"
-                  value={newUserEmail}
-                  onChange={(e) => setNewUserEmail(e.target.value)}
-                  placeholder="Email de l'utilisateur"
-                  required
-                />
-                <button type="submit" disabled={actionLoading}>
-                  {actionLoading ? 'Envoi...' : 'Inviter'}
-                </button>
-              </form>
-            </div>
+      {error && <div className="error">{error}</div>}
 
-            {/* Liste des utilisateurs */}
-            <div className="admin-section">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h3>Utilisateurs ({users.length})</h3>
-                <div className="actions">
-                  <button onClick={() => triggerRefresh('manual')} disabled={actionLoading}>
-                    Rafraîchir
-                  </button>
-                </div>
-              </div>
-              <div className="users-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Email</th>
-                      <th>Rôle</th>
-                      <th>Créé le</th>
-                      <th>Dernière connexion</th>
-                      <th>Signalements</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((user) => (
-                      <tr key={user.id}>
-                        <td>{user.email}</td>
-                        <td>
-                          <span className={`role-badge ${user.role}`}>
-                            {user.role}
-                          </span>
-                        </td>
-                        <td>{new Date(user.created_at).toLocaleDateString('fr-FR')}</td>
-                        <td>
-                          {user.last_sign_in_at 
-                            ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR')
-                            : 'Jamais'
-                          }
-                        </td>
-                        <td>
-                          {user.total_reports > 0 && (
-                            <span 
-                              className={`report-badge ${user.unread_reports === 0 ? 'read' : ''}`}
-                              onClick={() => handleViewReports(user.id)}
-                            >
-                              {user.total_reports}
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          <div className="actions">
-                            <button onClick={() => handleResetPassword(user.id, user.email)}>
-                              Reset
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteUser(user.id, user.email)}
-                              className="danger"
-                            >
-                              Supprimer
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="invite-section">
+        <h3>Créer un utilisateur</h3>
+        <div className="invite-form">
+          <input
+            type="email"
+            placeholder="Email de l'utilisateur"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <button onClick={handleInviteUser}>Inviter</button>
+        </div>
       </div>
 
-      {/* Modale de signalement réutilisée */}
-      {showReportModal && selectedReport && (
-        <div className="report-modal-overlay">
-          <div className="report-modal">
-            <div className="report-modal-header">
-              <h3>Signalement du {new Date(selectedReport.created_at).toLocaleString('fr-FR')}</h3>
+      {isInitialLoading ? (
+        <div className="loading-admin">Chargement admin (SettingsComptes)…</div>
+      ) : (
+        <>
+          {loading && users.length > 0 && (
+            <div className="loading-admin" style={{ marginBottom: 8 }}>
+              Mise à jour…
+            </div>
+          )}
+          {/* le reste de ton UI inchangé */}
+          <div className="users-section">
+            <div className="users-header">
+              <h3>Utilisateurs ({users.length})</h3>
+              <div className="users-actions">
+                <span className="reports-badge" title="Signalements non lus">
+                  Signalements non lus : {totalUnreadReports}
+                </span>
+                <button onClick={handleRefresh} disabled={loading}>
+                  {loading ? 'Chargement…' : 'Rafraîchir'}
+                </button>
+              </div>
+            </div>
+
+            {!loading && users.length === 0 && <div>Aucun utilisateur</div>}
+
+            {!loading && users.length > 0 && (
+              <table className="users-table">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Créé le</th>
+                    <th>Dernière connexion</th>
+                    <th>Signalements</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((u) => (
+                    <tr key={u.id}>
+                      <td>{u.email}</td>
+                      <td>
+                        <select
+                          value={u.role || 'user'}
+                          onChange={(e) => handleUpdateRole(u.id, e.target.value)}
+                        >
+                          <option value="user">user</option>
+                          <option value="admin">admin</option>
+                        </select>
+                      </td>
+                      <td>{u.created_at ? new Date(u.created_at).toLocaleString() : '-'}</td>
+                      <td>{u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString() : '-'}</td>
+                      <td>
+                        <button className="link-button" onClick={() => handleViewReports(u)}>
+                          {u.unread_reports ? (
+                            <span className="unread">{u.unread_reports} non lus</span>
+                          ) : (
+                            <span>0</span>
+                          )}
+                        </button>
+                      </td>
+                      <td className="actions">
+                        <button onClick={() => handleResetPassword(u.id)}>Reset</button>
+                        <button className="danger" onClick={() => handleDeleteUser(u.id)}>Suppr.</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </>
+      )}
+
+      {showReportModal && (
+        <div className="modal-overlay" onClick={() => setShowReportModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Signalements — {selectedReportUser?.email}</h3>
               <button onClick={() => setShowReportModal(false)}>✕</button>
             </div>
-            <div className="report-modal-content">
-              <p><strong>Page :</strong> {selectedReport.page}</p>
-              <p><strong>Titre :</strong> {selectedReport.title}</p>
-              <p><strong>Description :</strong></p>
-              <p>{selectedReport.description}</p>
-              {selectedReport.meta && (
-                <details>
-                  <summary>Informations techniques</summary>
-                  <pre>{JSON.stringify(selectedReport.meta, null, 2)}</pre>
-                </details>
-              )}
+
+            {reportError && <div className="error">{reportError}</div>}
+
+            <div className="modal-actions">
+              <button className="danger" onClick={handleDeleteAllReports} disabled={reportLoading}>
+                Supprimer tous
+              </button>
             </div>
-            <div className="report-modal-actions">
-              <button onClick={() => handleMarkAsRead(selectedReport.id)}>
-                Marquer comme lu
-              </button>
-              <button onClick={() => handleDeleteReport(selectedReport.id)} className="danger">
-                Supprimer le signalement
-              </button>
-              <button onClick={() => handleDeleteAllReports(selectedReport.user_id)} className="danger">
-                Supprimer l'historique
-              </button>
-              <button onClick={() => setShowReportModal(false)}>Fermer</button>
-            </div>
+
+            {reportLoading && <div>Chargement…</div>}
+
+            {!reportLoading && userReports.length === 0 && <div>Aucun signalement</div>}
+
+            {!reportLoading && userReports.length > 0 && (
+              <table className="reports-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Page</th>
+                    <th>Titre</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {userReports.map((r) => (
+                    <tr key={r.id}>
+                      <td>{r.created_at ? new Date(r.created_at).toLocaleString() : '-'}</td>
+                      <td>{r.page || '-'}</td>
+                      <td>{r.title || '-'}</td>
+                      <td>{r.admin_read_at ? 'lu' : 'non lu'}</td>
+                      <td className="actions">
+                        {!r.admin_read_at && (
+                          <button onClick={() => handleMarkAsRead(r.id)}>Marquer lu</button>
+                        )}
+                        <button className="danger" onClick={() => handleDeleteReport(r.id)}>
+                          Suppr.
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       )}
