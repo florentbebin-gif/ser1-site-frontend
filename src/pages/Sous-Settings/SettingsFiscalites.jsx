@@ -1,16 +1,8 @@
-<<<<<<< Updated upstream
 import React, { useEffect, useMemo, useState } from 'react';
-=======
-import React, { useCallback, useEffect, useState } from 'react';
->>>>>>> Stashed changes
 import { supabase } from '../../supabaseClient';
 import './SettingsFiscalites.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
-<<<<<<< Updated upstream
-=======
-import { useAuth, useUserRole } from '../../auth';
-import { UserInfoBanner } from '../../components/UserInfoBanner';
->>>>>>> Stashed changes
+import SettingsNav from '../SettingsNav';
 
 // ------------------------------------------------------------
 // Valeurs par défaut (Assurance-vie) — issues du tableau Excel PJ
@@ -269,101 +261,13 @@ function textOrEmpty(v) {
 }
 
 export default function SettingsFiscalites() {
-<<<<<<< Updated upstream
   const [user, setUser] = useState(null);
   const [roleLabel, setRoleLabel] = useState('User');
-  const [loading, setLoading] = useState(true);
-
-=======
-  const { authReady, user } = useAuth();
-  const { isAdmin } = useUserRole();
-  
-  // État local simple
->>>>>>> Stashed changes
   const [settings, setSettings] = useState(DEFAULT_FISCALITY_SETTINGS);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
   const [openProductKey, setOpenProductKey] = useState(null);
-
-  // Chargement une seule fois au mount
-  useEffect(() => {
-    if (!authReady || !user) {
-      if (authReady && !user) {
-        setLoading(false);
-      }
-      return;
-    }
-
-    let cancelled = false;
-
-    const loadSettings = async () => {
-      try {
-        setLoading(true);
-        setLoadError(null);
-
-        const { data, error } = await supabase
-          .from('fiscality_settings')
-          .select('data')
-          .eq('id', 1)
-          .maybeSingle();
-
-        if (cancelled) return;
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Erreur chargement fiscality_settings:', error);
-          setLoadError("Erreur lors du chargement des paramètres.");
-        } else if (data?.data) {
-          setSettings(prev => ({ ...prev, ...data.data }));
-        }
-      } catch (err) {
-        if (cancelled) return;
-        console.error('Erreur inattendue:', err);
-        setLoadError(err?.message || "Erreur inattendue.");
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadSettings();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authReady, user?.id]);
-
-  // Rechargement manuel
-  const handleReload = useCallback(async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    setLoadError(null);
-
-    try {
-      const { data, error } = await supabase
-        .from('fiscality_settings')
-        .select('data')
-        .eq('id', 1)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        setLoadError("Erreur lors du chargement.");
-      } else if (data?.data) {
-        setSettings(prev => ({ ...prev, ...data.data }));
-      }
-    } catch (err) {
-      setLoadError(err?.message || "Erreur inattendue.");
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
 
   // Alias pour compatibilité
   const setData = setSettings;
@@ -384,8 +288,6 @@ const PRODUCTS = [
   const av = settings.assuranceVie;
   const passHistory = settings.passHistory || [];
   const per = settings.perIndividuel || DEFAULT_FISCALITY_SETTINGS.perIndividuel;
-
-<<<<<<< Updated upstream
 
   // ---------------------------------------------
   // Chargement user + paramètres depuis Supabase
@@ -421,60 +323,54 @@ const PRODUCTS = [
           .eq('id', 1);
 
         if (!err && rows && rows.length > 0 && rows[0].data) {
-  const db = rows[0].data;
-
-  setSettings((prev) => ({
-    ...prev,
-    ...db,
-
-    // merge profond ciblé PER (évite écrasement de la structure par un jsonb partiel)
-    perIndividuel: {
-      ...DEFAULT_FISCALITY_SETTINGS.perIndividuel,
-      ...(db.perIndividuel || {}),
-      epargne: {
-        ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.epargne,
-        ...(db.perIndividuel?.epargne || {}),
-      },
-      sortieCapital: {
-        ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital,
-        ...(db.perIndividuel?.sortieCapital || {}),
-      },
-      deces: {
-        ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.deces,
-        ...(db.perIndividuel?.deces || {}),
-      },
-      rente: {
-        ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente,
-        ...(db.perIndividuel?.rente || {}),
-        deduits: {
-          ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits,
-          ...(db.perIndividuel?.rente?.deduits || {}),
-          capitalQuotePart: {
-            ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.capitalQuotePart,
-            ...(db.perIndividuel?.rente?.deduits?.capitalQuotePart || {}),
-          },
-          interestsQuotePart: {
-            ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.interestsQuotePart,
-            ...(db.perIndividuel?.rente?.deduits?.interestsQuotePart || {}),
-          },
-        },
-        nonDeduits: {
-          ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.nonDeduits,
-          ...(db.perIndividuel?.rente?.nonDeduits || {}),
-        },
-        rvtoTaxableFractionByAgeAtFirstPayment:
-          db.perIndividuel?.rente?.rvtoTaxableFractionByAgeAtFirstPayment ||
-          DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
-      },
-    },
-
-    // PASS aussi : merge “safe”
-    passHistory: Array.isArray(db.passHistory)
-      ? db.passHistory
-      : DEFAULT_FISCALITY_SETTINGS.passHistory,
-  }));
-}
- else if (err && err.code !== 'PGRST116') {
+          const db = rows[0].data;
+          setSettings((prev) => ({
+            ...prev,
+            ...db,
+            perIndividuel: {
+              ...DEFAULT_FISCALITY_SETTINGS.perIndividuel,
+              ...(db.perIndividuel || {}),
+              epargne: {
+                ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.epargne,
+                ...(db.perIndividuel?.epargne || {}),
+              },
+              sortieCapital: {
+                ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.sortieCapital,
+                ...(db.perIndividuel?.sortieCapital || {}),
+              },
+              deces: {
+                ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.deces,
+                ...(db.perIndividuel?.deces || {}),
+              },
+              rente: {
+                ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente,
+                ...(db.perIndividuel?.rente || {}),
+                deduits: {
+                  ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits,
+                  ...(db.perIndividuel?.rente?.deduits || {}),
+                  capitalQuotePart: {
+                    ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.capitalQuotePart,
+                    ...(db.perIndividuel?.rente?.deduits?.capitalQuotePart || {}),
+                  },
+                  interestsQuotePart: {
+                    ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.deduits.interestsQuotePart,
+                    ...(db.perIndividuel?.rente?.deduits?.interestsQuotePart || {}),
+                  },
+                },
+                nonDeduits: {
+                  ...DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.nonDeduits,
+                  ...(db.perIndividuel?.rente?.nonDeduits || {}),
+                },
+                rvtoTaxableFractionByAgeAtFirstPayment:
+                  db.perIndividuel?.rente?.rvtoTaxableFractionByAgeAtFirstPayment ||
+                  DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
+              },
+            },
+            passHistory: Array.isArray(db.passHistory)
+              ? db.passHistory
+              : DEFAULT_FISCALITY_SETTINGS.passHistory,
+          }));
+        } else if (err && err.code !== 'PGRST116') {
           console.error('Erreur chargement fiscality_settings :', err);
         }
 
@@ -491,8 +387,6 @@ const PRODUCTS = [
     };
   }, []);
 
-=======
->>>>>>> Stashed changes
   // ---------------------------------------------
   // Helpers de MAJ
   // ---------------------------------------------
@@ -541,35 +435,6 @@ const handleSave = async () => {
     setSaving(true);
     setMessage('');
 
-<<<<<<< Updated upstream
-    // -----------------------------
-    // Validation PASS (8 lignes + ordre)
-    // -----------------------------
-    const ph = (settings.passHistory || []).slice();
-
-    if (ph.length !== 8) {
-      setMessage("Historique PASS : il faut exactement 8 lignes.");
-      setSaving(false);
-      return;
-    }
-
-    for (let i = 0; i < ph.length; i++) {
-      if (!ph[i]?.year || !ph[i]?.amount) {
-        setMessage("Historique PASS : année et montant obligatoires sur chaque ligne.");
-        setSaving(false);
-        return;
-      }
-      if (i > 0 && Number(ph[i].year) <= Number(ph[i - 1].year)) {
-        setMessage(
-          "Historique PASS : l’ordre doit être du plus ancien au plus récent (années strictement croissantes)."
-        );
-        setSaving(false);
-        return;
-      }
-    }
-
-=======
->>>>>>> Stashed changes
     const { error } = await supabase
       .from('fiscality_settings')
       .upsert({ id: 1, data: settings });
@@ -602,23 +467,11 @@ const handleSave = async () => {
   }
 
   return (
-<<<<<<< Updated upstream
     <div className="settings-page">
       <div className="section-card">
         <div className="section-title">Paramètres</div>
 
         <SettingsNav />
-=======
-    <>
-      {loadError && (
-        <div className="settings-alert error" style={{ marginTop: 12 }}>
-          <span>{loadError}</span>
-          <button type="button" className="chip" style={{ marginLeft: 12 }} onClick={handleReload}>
-            Réessayer
-          </button>
-        </div>
-      )}
->>>>>>> Stashed changes
 
         <div
           style={{
@@ -629,15 +482,10 @@ const handleSave = async () => {
             gap: 24,
           }}
         >
-<<<<<<< Updated upstream
           {/* Bandeau info */}
-<div className="tax-user-banner">
-  <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {roleLabel}
-</div>
-=======
-          {/* Bandeau utilisateur */}
-          <UserInfoBanner />
->>>>>>> Stashed changes
+          <div className="tax-user-banner">
+            <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {roleLabel}
+          </div>
 
           <section>
   <h4 className="fisc-section-title">Historique du PASS (8 dernières valeurs)</h4>
@@ -2428,6 +2276,7 @@ const handleSave = async () => {
 )}
 
         </div>
-    </>
+      </div>
+    </div>
   );
 }

@@ -9,20 +9,12 @@ import './styles.css'
 // On attend que Supabase ait fini son travail avant de monter React
 waitInitialSession().then(() => {
   createRoot(document.getElementById('root')).render(
-<<<<<<< Updated upstream
     <React.StrictMode>
-=======
-    <>
->>>>>>> Stashed changes
       <BrowserRouter>
         <ThemeProvider>
           <App />
         </ThemeProvider>
       </BrowserRouter>
-<<<<<<< Updated upstream
     </React.StrictMode>
-=======
-    </>
->>>>>>> Stashed changes
   )
 })

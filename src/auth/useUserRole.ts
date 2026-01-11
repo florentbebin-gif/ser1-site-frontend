@@ -9,11 +9,6 @@
 import { useEffect, useState } from 'react';
 import { supabase, DEBUG_AUTH } from '../supabaseClient';
 import type { User } from '@supabase/supabase-js';
-<<<<<<< Updated upstream
-=======
-import { useAuth } from './AuthProvider';
-import { supabase } from '../supabaseClient';
->>>>>>> Stashed changes
 
 export type UserRole = 'admin' | 'user' | 'loading' | null;
 
@@ -142,11 +137,6 @@ export function useUserRole(): UserRoleState {
  * Vérifie si l'utilisateur actuel est admin (fonction utilitaire)
  */
 export async function checkIsAdmin(): Promise<boolean> {
-<<<<<<< Updated upstream
-=======
-  // Cette fonction est conservée pour compatibilité, mais ne devrait pas être
-  // utilisée comme source-of-truth côté UI.
->>>>>>> Stashed changes
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
   

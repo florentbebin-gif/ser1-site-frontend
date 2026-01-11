@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, DEBUG_AUTH } from '../supabaseClient';
 import { useTheme } from '../settings/ThemeProvider';
-<<<<<<< Updated upstream
 import SettingsNav from './SettingsNav';
-=======
-import { useAuth, useUserRole } from '../auth';
-import { UserInfoBanner } from '../components/UserInfoBanner';
->>>>>>> Stashed changes
 
 // Couleurs par défaut
 const DEFAULT_COLORS = {
@@ -330,13 +325,8 @@ export default function Settings({ isAdmin = false }) {
   };
 
   const handleSaveColors = async () => {
-<<<<<<< Updated upstream
     if (!isAdmin) {
       setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
-=======
-    if (!user) {
-      setSaveMessage('Utilisateur non connecté.');
->>>>>>> Stashed changes
       return;
     }
     try {
@@ -393,7 +383,6 @@ export default function Settings({ isAdmin = false }) {
     }
   };
 
-<<<<<<< Updated upstream
   // Gestionnaire de réinitialisation
   const handleResetTheme = async () => {
     if (!isAdmin) {
@@ -433,11 +422,6 @@ export default function Settings({ isAdmin = false }) {
   const handleCoverFileChange = async (e) => {
     if (!isAdmin) {
       setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
-=======
-  const handleCoverFileChange = async (e) => {
-    if (!user) {
-      setSaveMessage('Utilisateur non connecté.');
->>>>>>> Stashed changes
       return;
     }
     const file = e.target.files?.[0];
@@ -520,13 +504,8 @@ export default function Settings({ isAdmin = false }) {
   };
 
   const handleRemoveCover = async () => {
-<<<<<<< Updated upstream
     if (!isAdmin) {
       setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
-=======
-    if (!user) {
-      setSaveMessage('Utilisateur non connecté.');
->>>>>>> Stashed changes
       return;
     }
     if (!coverUrl) return;
@@ -551,13 +530,6 @@ export default function Settings({ isAdmin = false }) {
 
   /* ---------- Rendu ---------- */
 
-<<<<<<< Updated upstream
-=======
-  if (!authReady) {
-    return <p>Chargement de l'authentification...</p>;
-  }
-
->>>>>>> Stashed changes
   if (loading) {
     return <p>Chargement…</p>;
   }
@@ -579,7 +551,6 @@ export default function Settings({ isAdmin = false }) {
           }}
         >
           {/* Infos utilisateur */}
-<<<<<<< Updated upstream
           <div>
             <div style={{ marginBottom: 8 }}>
               <strong>Utilisateur :</strong>{' '}
@@ -590,9 +561,6 @@ export default function Settings({ isAdmin = false }) {
               <span>{roleLabel}</span>
             </div>
           </div>
-=======
-          <UserInfoBanner />
->>>>>>> Stashed changes
 
           {/* Personnalisation avancée du thème */}
           <div>
@@ -750,7 +718,6 @@ export default function Settings({ isAdmin = false }) {
                 </div>
               ))}
             </div>
-<<<<<<< Updated upstream
 
             {/* Boutons d'action */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -786,8 +753,6 @@ export default function Settings({ isAdmin = false }) {
                 </div>
               )}
             </div>
-=======
->>>>>>> Stashed changes
           </div>
 
           {/* Choix de la page de garde */}

@@ -1,16 +1,7 @@
-<<<<<<< Updated upstream
 import React, { useEffect, useState } from 'react';
-=======
-import React, { useCallback, useEffect, useState } from 'react';
->>>>>>> Stashed changes
 import { supabase } from '../../supabaseClient';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
-<<<<<<< Updated upstream
-=======
-import { useAuth, useUserRole } from '../../auth';
-import { UserInfoBanner } from '../../components/UserInfoBanner';
->>>>>>> Stashed changes
 
 // ----------------------
 // Valeurs par défaut
@@ -158,7 +149,6 @@ function numberOrEmpty(v) {
 }
 
 export default function SettingsImpots() {
-<<<<<<< Updated upstream
   const [user, setUser] = useState(null);
   const [roleLabel, setRoleLabel] = useState('User');
   const [loading, setLoading] = useState(true);
@@ -226,88 +216,6 @@ export default function SettingsImpots() {
       mounted = false;
     };
   }, []);
-=======
-  const { isAdmin } = useUserRole();
-  const { authReady, user } = useAuth();
-  
-  // État local simple
-  const [settings, setSettings] = useState(DEFAULT_TAX_SETTINGS);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
-
-  // Chargement au mount
-  useEffect(() => {
-    if (!authReady || !user) {
-      if (authReady && !user) {
-        setLoading(false);
-      }
-      return;
-    }
-
-    let cancelled = false;
-
-    const loadSettings = async () => {
-      setLoading(true);
-      setLoadError(null);
-      try {
-        const { data, error } = await supabase
-          .from('tax_settings')
-          .select('data')
-          .eq('id', 1)
-          .maybeSingle();
-
-        if (cancelled) return;
-
-        if (error && error.code !== 'PGRST116') {
-          setLoadError("Erreur lors du chargement des paramètres d'impôts.");
-        } else if (data?.data) {
-          setSettings(prev => ({ ...prev, ...data.data }));
-        }
-      } catch (err) {
-        if (cancelled) return;
-        setLoadError(err?.message || "Erreur inattendue.");
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadSettings();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authReady, user?.id]);
-
-  // Rechargement manuel
-  const handleReload = useCallback(async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    setLoadError(null);
-
-    try {
-      const { data, error } = await supabase
-        .from('tax_settings')
-        .select('data')
-        .eq('id', 1)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        setLoadError("Erreur lors du chargement.");
-      } else if (data?.data) {
-        setSettings(prev => ({ ...prev, ...data.data }));
-      }
-    } catch (err) {
-      setLoadError(err?.message || "Erreur inattendue.");
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
->>>>>>> Stashed changes
 
   // Sauvegarde
   const handleSave = async () => {
@@ -372,11 +280,6 @@ const updateField = (path, value) => {
   setMessage('');
 };
 
-<<<<<<< Updated upstream
-
-=======
-  // Gérer les états de chargement avec le hook
->>>>>>> Stashed changes
   if (loading) {
     return <p>Chargement…</p>;
   }
@@ -401,23 +304,11 @@ const updateField = (path, value) => {
   };
 
   return (
-<<<<<<< Updated upstream
     <div className="settings-page">
       <div className="section-card">
         <div className="section-title">Paramètres</div>
 
         <SettingsNav />
-=======
-    <>
-      {loadError && (
-        <div className="settings-alert error" style={{ marginTop: 12 }}>
-          <span>{loadError}</span>
-          <button type="button" className="chip" style={{ marginLeft: 12 }} onClick={handleReload}>
-            Réessayer
-          </button>
-        </div>
-      )}
->>>>>>> Stashed changes
 
         <div
           style={{
@@ -428,16 +319,11 @@ const updateField = (path, value) => {
             gap: 24,
           }}
         >
-<<<<<<< Updated upstream
           {/* Bandeau info */}
           <div className="tax-user-banner">
             <strong>Utilisateur :</strong> {user.email} —{' '}
             <strong>Statut :</strong> {roleLabel}
           </div>
-=======
-          {/* Bandeau utilisateur */}
-          <UserInfoBanner />
->>>>>>> Stashed changes
 
 
                   {/* 1. Barème impôt sur le revenu */}
@@ -1847,6 +1733,7 @@ const updateField = (path, value) => {
             }}>{message}</div>
           )}
         </div>
-    </>
+      </div>
+    </div>
   );
 }
