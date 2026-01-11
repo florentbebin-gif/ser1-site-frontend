@@ -84,49 +84,9 @@ export function useUserRole(): UserRoleState {
 
     fetchRole();
 
-    // Écoute les changements d'auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (!mounted) return;
-        if (DEBUG_AUTH) console.log('[useUserRole] onAuthStateChange', { event: _event, hasSession: !!session });
-        
-        if (session?.user) {
-          // Utiliser uniquement user_metadata comme source de vérité
-          const role = (
-            session.user.user_metadata?.role || 
-            session.user.app_metadata?.role || 
-            'user'
-          ) as 'admin' | 'user';
-          
-          if (DEBUG_AUTH) {
-            console.log('[useUserRole] onAuthStateChange:session', {
-              userId: session.user.id,
-              role,
-              isAdmin: role === 'admin',
-            });
-          }
-          
-          setState({
-            role,
-            user: session.user,
-            isAdmin: role === 'admin',
-            isLoading: false,
-          });
-        } else {
-          if (DEBUG_AUTH) console.log('[useUserRole] onAuthStateChange:no session');
-          setState({
-            role: null,
-            user: null,
-            isAdmin: false,
-            isLoading: false,
-          });
-        }
-      }
-    );
-
+    // Note: onAuthStateChange est géré par AuthProvider uniquement (règle: un seul listener global)
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
   }, []);
 

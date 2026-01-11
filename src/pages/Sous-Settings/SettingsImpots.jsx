@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
+import { UserInfoBanner } from '../../components/UserInfoBanner';
 
 // ----------------------
 // Valeurs par défaut
@@ -304,26 +305,17 @@ const updateField = (path, value) => {
   };
 
   return (
-    <div className="settings-page">
-      <div className="section-card">
-        <div className="section-title">Paramètres</div>
-
-        <SettingsNav />
-
-        <div
-          style={{
-            fontSize: 15,
-            marginTop: 24,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 24,
-          }}
-        >
-          {/* Bandeau info */}
-          <div className="tax-user-banner">
-            <strong>Utilisateur :</strong> {user.email} —{' '}
-            <strong>Statut :</strong> {roleLabel}
-          </div>
+    <div
+      style={{
+        fontSize: 15,
+        marginTop: 16,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 24,
+      }}
+    >
+      {/* Bandeau info */}
+      <UserInfoBanner />
 
 
                   {/* 1. Barème impôt sur le revenu */}
@@ -1720,20 +1712,18 @@ const updateField = (path, value) => {
             </button>
           )}
 
-          {message && (
-            <div className="settings-success-message" style={{ 
-              fontSize: 14, 
-              marginTop: 12, 
-              padding: '12px 16px', 
-              background: 'var(--color-success-bg)', 
-              border: '1px solid var(--color-success-border)', 
-              borderRadius: 6, 
-              color: 'var(--color-success-text)',
-              fontWeight: 500
-            }}>{message}</div>
-          )}
-        </div>
-      </div>
+      {message && (
+        <div className="settings-success-message" style={{ 
+          fontSize: 14, 
+          marginTop: 12, 
+          padding: '12px 16px', 
+          background: 'var(--color-success-bg)', 
+          border: '1px solid var(--color-success-border)', 
+          borderRadius: 6, 
+          color: 'var(--color-success-text)',
+          fontWeight: 500
+        }}>{message}</div>
+      )}
     </div>
   );
 }

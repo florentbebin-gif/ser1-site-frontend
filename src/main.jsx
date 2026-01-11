@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import { waitInitialSession } from './supabaseClient.js'
 import { ThemeProvider } from './settings/ThemeProvider'
+import { AuthProvider } from './auth'
 import './styles.css'
 
 // On attend que Supabase ait fini son travail avant de monter React
@@ -12,7 +13,9 @@ waitInitialSession().then(() => {
     <React.StrictMode>
       <BrowserRouter>
         <ThemeProvider>
-          <App />
+          <AuthProvider>
+            <App />
+          </AuthProvider>
         </ThemeProvider>
       </BrowserRouter>
     </React.StrictMode>

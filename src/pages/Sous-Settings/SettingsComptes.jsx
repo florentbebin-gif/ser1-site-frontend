@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase, DEBUG_AUTH } from '../../supabaseClient';
-import SettingsNav from '../SettingsNav';
 import { useUserRole } from '../../auth/useUserRole';
+import { UserInfoBanner } from '../../components/UserInfoBanner';
 import './SettingsComptes.css';
 
 export default function SettingsComptes() {
@@ -13,6 +13,9 @@ export default function SettingsComptes() {
   const [error, setError] = useState('');
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [userReports, setUserReports] = useState([]);
+  const [selectedReportUser, setSelectedReportUser] = useState(null);
+  const [reportLoading, setReportLoading] = useState(false);
   const [newUserEmail, setNewUserEmail] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -173,13 +176,19 @@ export default function SettingsComptes() {
     }
   };
 
-  const handleViewReports = async (userId) => {
+  const handleViewReports = async (userId, userEmail) => {
     try {
+      setReportLoading(true);
+      setSelectedReportUser({ id: userId, email: userEmail });
+      setSelectedReport(null);
+      setUserReports([]);
+      setShowReportModal(true);
+
       const session = await getSessionWithRetry();
       if (!session) throw new Error('Non authentifié');
       
       const { data, error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { action: 'get_latest_issue_for_user', userId },
+        body: { action: 'list_issue_reports', user_id: userId },
         headers: {
           Authorization: `Bearer ${session.access_token}`
         }
@@ -187,11 +196,29 @@ export default function SettingsComptes() {
 
       if (invokeError) throw new Error(invokeError.message);
       
-      setSelectedReport(data.report);
-      setShowReportModal(true);
+      // Gérer les deux formats de réponse possibles
+      const reports = data?.reports || data?.data?.reports || [];
+      setUserReports(Array.isArray(reports) ? reports : []);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setReportLoading(false);
     }
+  };
+
+  const handleSelectReport = (report) => {
+    setSelectedReport(report);
+  };
+
+  const handleBackToList = () => {
+    setSelectedReport(null);
+  };
+
+  const handleCloseModal = () => {
+    setShowReportModal(false);
+    setSelectedReport(null);
+    setUserReports([]);
+    setSelectedReportUser(null);
   };
 
   const handleMarkAsRead = async (reportId) => {
@@ -212,7 +239,10 @@ export default function SettingsComptes() {
       if (invokeError) throw new Error(invokeError.message);
       
       triggerRefresh('mark_issue_read');
-      setShowReportModal(false);
+      // Rafraîchir la liste des signalements
+      if (selectedReportUser) {
+        handleViewReports(selectedReportUser.id, selectedReportUser.email);
+      }
     } catch (err) {
       setError(err.message);
     }
@@ -237,8 +267,12 @@ export default function SettingsComptes() {
 
       if (invokeError) throw new Error(invokeError.message);
       
-      setShowReportModal(false);
+      setSelectedReport(null);
       triggerRefresh('delete_issue');
+      // Rafraîchir la liste des signalements
+      if (selectedReportUser) {
+        handleViewReports(selectedReportUser.id, selectedReportUser.email);
+      }
     } catch (err) {
       setError(err.message);
     }
@@ -263,7 +297,7 @@ export default function SettingsComptes() {
 
       if (invokeError) throw new Error(invokeError.message);
       
-      setShowReportModal(false);
+      handleCloseModal();
       triggerRefresh('delete_all_issues_for_user');
     } catch (err) {
       setError(err.message);
@@ -272,51 +306,61 @@ export default function SettingsComptes() {
 
   if (!isAdmin) {
     return (
-      <div className="settings-page">
-        <div className="section-card">
-          <div className="section-title">Accès refusé</div>
-          <p>Vous n'avez pas les droits administrateurs pour accéder à cette page.</p>
-        </div>
+      <div style={{ marginTop: 16 }}>
+        <p>Vous n'avez pas les droits administrateurs pour accéder à cette page.</p>
       </div>
     );
   }
 
   if (authLoading) {
     return (
-      <div className="settings-page">
-        <div className="section-card">
-          <div className="section-title">Comptes</div>
-          <SettingsNav />
-          <p>Chargement de l'authentification...</p>
-        </div>
+      <div style={{ marginTop: 16 }}>
+        <p>Chargement de l'authentification...</p>
       </div>
     );
   }
 
   return (
-    <div className="settings-page">
-      <div className="section-card">
-        <div className="section-title">Comptes</div>
-        <SettingsNav />
+    <div style={{ marginTop: 16 }}>
+      {/* Bandeau utilisateur */}
+      <UserInfoBanner />
 
-        {error && <div className="alert error">{error}</div>}
-        
-        {loading ? (
-          <p>Chargement...</p>
-        ) : (
-          <div className="admin-content">
+      {error && <div className="alert error">{error}</div>}
+      
+      {loading ? (
+        <p>Chargement...</p>
+      ) : (
+        <div className="admin-content">
             {/* Créer un utilisateur */}
-            <div className="admin-section">
+            <div className="invite-section">
               <h3>Créer un utilisateur</h3>
-              <form onSubmit={handleCreateUser} className="admin-form">
+              <form onSubmit={handleCreateUser} className="invite-form">
                 <input
                   type="email"
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
                   placeholder="Email de l'utilisateur"
                   required
+                  style={{
+                    flex: 1,
+                    padding: '10px 14px',
+                    border: '1px solid var(--color-c8)',
+                    borderRadius: 6,
+                    fontSize: 14,
+                    backgroundColor: '#FFFFFF',
+                    color: 'var(--color-c10)'
+                  }}
                 />
-                <button type="submit" disabled={actionLoading}>
+                <button 
+                  type="submit" 
+                  disabled={actionLoading}
+                  className="chip"
+                  style={{
+                    padding: '10px 20px',
+                    fontWeight: 600,
+                    opacity: actionLoading ? 0.6 : 1
+                  }}
+                >
                   {actionLoading ? 'Envoi...' : 'Inviter'}
                 </button>
               </form>
@@ -361,26 +405,37 @@ export default function SettingsComptes() {
                           }
                         </td>
                         <td>
-                          {user.total_reports > 0 && (
-                            <span 
-                              className={`report-badge ${user.unread_reports === 0 ? 'read' : ''}`}
-                              onClick={() => handleViewReports(user.id)}
+                          {user.total_reports > 0 ? (
+                            <div 
+                              className="report-badge-container"
+                              onClick={() => handleViewReports(user.id, user.email)}
                             >
-                              {user.total_reports}
-                            </span>
+                              <span className={`report-badge ${user.unread_reports > 0 ? 'has-unread' : 'all-read'}`}>
+                                {user.total_reports}
+                              </span>
+                              {user.unread_reports > 0 && (
+                                <span className="unread-indicator">
+                                  {user.unread_reports} non lu{user.unread_reports > 1 ? 's' : ''}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="no-reports">—</span>
                           )}
                         </td>
                         <td>
                           <div className="actions">
                             <button onClick={() => handleResetPassword(user.id, user.email)}>
-                              Reset
+                              Email Reinit
                             </button>
-                            <button 
-                              onClick={() => handleDeleteUser(user.id, user.email)}
-                              className="danger"
-                            >
-                              Supprimer
-                            </button>
+                            {user.role !== 'admin' && (
+                              <button 
+                                onClick={() => handleDeleteUser(user.id, user.email)}
+                                className="danger"
+                              >
+                                Supprimer
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -391,43 +446,145 @@ export default function SettingsComptes() {
             </div>
           </div>
         )}
-      </div>
 
-      {/* Modale de signalement réutilisée */}
-      {showReportModal && selectedReport && (
-        <div className="report-modal-overlay">
-          <div className="report-modal">
-            <div className="report-modal-header">
-              <h3>Signalement du {new Date(selectedReport.created_at).toLocaleString('fr-FR')}</h3>
-              <button onClick={() => setShowReportModal(false)}>✕</button>
-            </div>
-            <div className="report-modal-content">
-              <p><strong>Page :</strong> {selectedReport.page}</p>
-              <p><strong>Titre :</strong> {selectedReport.title}</p>
-              <p><strong>Description :</strong></p>
-              <p>{selectedReport.description}</p>
-              {selectedReport.meta && (
-                <details>
-                  <summary>Informations techniques</summary>
-                  <pre>{JSON.stringify(selectedReport.meta, null, 2)}</pre>
-                </details>
+        {/* Modale de signalements premium */}
+        {showReportModal && (
+          <div className="report-modal-overlay" onClick={handleCloseModal}>
+            <div className="report-modal" onClick={(e) => e.stopPropagation()}>
+              {/* Vue Liste */}
+              {!selectedReport ? (
+                <>
+                  <div className="report-modal-header">
+                    <div className="report-modal-title-section">
+                      <h3>Signalements</h3>
+                      {selectedReportUser && (
+                        <span className="report-modal-subtitle">{selectedReportUser.email}</span>
+                      )}
+                    </div>
+                    <button className="report-modal-close" onClick={handleCloseModal}>✕</button>
+                  </div>
+
+                  <div className="report-modal-content">
+                    {reportLoading ? (
+                      <div className="report-loading">Chargement des signalements...</div>
+                    ) : userReports.length === 0 ? (
+                      <div className="report-empty">Aucun signalement pour cet utilisateur.</div>
+                    ) : (
+                      <table className="reports-table">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Page</th>
+                            <th>Titre</th>
+                            <th>Statut</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {userReports.map((report) => (
+                            <tr key={report.id} className={report.admin_read_at ? 'read' : 'unread'}>
+                              <td>{new Date(report.created_at).toLocaleDateString('fr-FR')}</td>
+                              <td className="report-page-cell">{report.page || '-'}</td>
+                              <td className="report-title-cell">{report.title || 'Sans titre'}</td>
+                              <td>
+                                <span className={`report-status ${report.admin_read_at ? 'read' : 'unread'}`}>
+                                  {report.admin_read_at ? 'Lu' : 'Non lu'}
+                                </span>
+                              </td>
+                              <td>
+                                <button 
+                                  className="report-view-btn"
+                                  onClick={() => handleSelectReport(report)}
+                                >
+                                  Voir
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
+
+                  <div className="report-modal-actions">
+                    {userReports.length > 0 && (
+                      <button 
+                        className="danger"
+                        onClick={() => handleDeleteAllReports(selectedReportUser?.id)}
+                      >
+                        Supprimer tout l'historique
+                      </button>
+                    )}
+                    <button onClick={handleCloseModal}>Fermer</button>
+                  </div>
+                </>
+              ) : (
+                /* Vue Détail */
+                <>
+                  <div className="report-modal-header">
+                    <div className="report-modal-title-section">
+                      <button className="report-back-btn" onClick={handleBackToList}>
+                        ← Retour
+                      </button>
+                      <h3>Détail du signalement</h3>
+                    </div>
+                    <button className="report-modal-close" onClick={handleCloseModal}>✕</button>
+                  </div>
+
+                  <div className="report-modal-content">
+                    <div className="report-detail-meta">
+                      <div className="report-detail-field">
+                        <span className="report-detail-label">Date :</span>
+                        <span className="report-detail-value">
+                          {new Date(selectedReport.created_at).toLocaleString('fr-FR')}
+                        </span>
+                      </div>
+                      <div className="report-detail-field">
+                        <span className="report-detail-label">Page :</span>
+                        <span className="report-detail-value">{selectedReport.page || '-'}</span>
+                      </div>
+                      <div className="report-detail-field">
+                        <span className="report-detail-label">Statut :</span>
+                        <span className={`report-status ${selectedReport.admin_read_at ? 'read' : 'unread'}`}>
+                          {selectedReport.admin_read_at ? 'Lu' : 'Non lu'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="report-detail-section">
+                      <h4>{selectedReport.title || 'Sans titre'}</h4>
+                      <div className="report-description-box">
+                        {selectedReport.description || 'Aucune description fournie.'}
+                      </div>
+                    </div>
+
+                    {selectedReport.meta && Object.keys(selectedReport.meta).length > 0 && (
+                      <details className="report-detail-metadata">
+                        <summary>Informations techniques</summary>
+                        <pre>{JSON.stringify(selectedReport.meta, null, 2)}</pre>
+                      </details>
+                    )}
+                  </div>
+
+                  <div className="report-modal-actions">
+                    {!selectedReport.admin_read_at && (
+                      <button onClick={() => handleMarkAsRead(selectedReport.id)}>
+                        Marquer comme lu
+                      </button>
+                    )}
+                    <button 
+                      className="danger"
+                      onClick={() => handleDeleteReport(selectedReport.id)}
+                    >
+                      Supprimer
+                    </button>
+                    <button onClick={handleBackToList}>Retour à la liste</button>
+                  </div>
+                </>
               )}
             </div>
-            <div className="report-modal-actions">
-              <button onClick={() => handleMarkAsRead(selectedReport.id)}>
-                Marquer comme lu
-              </button>
-              <button onClick={() => handleDeleteReport(selectedReport.id)} className="danger">
-                Supprimer le signalement
-              </button>
-              <button onClick={() => handleDeleteAllReports(selectedReport.user_id)} className="danger">
-                Supprimer l'historique
-              </button>
-              <button onClick={() => setShowReportModal(false)}>Fermer</button>
-            </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

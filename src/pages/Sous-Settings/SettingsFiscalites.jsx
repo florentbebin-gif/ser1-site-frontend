@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import './SettingsFiscalites.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
-import SettingsNav from '../SettingsNav';
+import { UserInfoBanner } from '../../components/UserInfoBanner';
 
 // ------------------------------------------------------------
 // Valeurs par défaut (Assurance-vie) — issues du tableau Excel PJ
@@ -467,25 +467,17 @@ const handleSave = async () => {
   }
 
   return (
-    <div className="settings-page">
-      <div className="section-card">
-        <div className="section-title">Paramètres</div>
-
-        <SettingsNav />
-
-        <div
-          style={{
-            fontSize: 15,
-            marginTop: 24,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 24,
-          }}
-        >
-          {/* Bandeau info */}
-          <div className="tax-user-banner">
-            <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {roleLabel}
-          </div>
+    <div
+      style={{
+        fontSize: 15,
+        marginTop: 16,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 24,
+      }}
+    >
+      {/* Bandeau info */}
+      <UserInfoBanner />
 
           <section>
   <h4 className="fisc-section-title">Historique du PASS (8 dernières valeurs)</h4>
@@ -2275,8 +2267,6 @@ const handleSave = async () => {
   </div>
 )}
 
-        </div>
-      </div>
     </div>
   );
 }

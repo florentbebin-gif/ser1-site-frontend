@@ -146,13 +146,7 @@ export default function App() {
     }
     initSession();
 
-    // Écoute les changements d'auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
-      if (DEBUG_AUTH) console.log('[App] onAuthStateChange', { event: _event, hasSession: !!s, userId: s?.user?.id });
-      setSession(s);
-    });
-
-    return () => subscription.unsubscribe();
+    // Note: onAuthStateChange est géré par AuthProvider uniquement (règle: un seul listener global)
   }, []);
 
   const handleLogout = async () => {

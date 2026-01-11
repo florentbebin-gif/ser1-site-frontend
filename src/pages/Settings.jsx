@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, DEBUG_AUTH } from '../supabaseClient';
 import { useTheme } from '../settings/ThemeProvider';
-import SettingsNav from './SettingsNav';
+import { UserInfoBanner } from '../components/UserInfoBanner';
 
 // Couleurs par défaut
 const DEFAULT_COLORS = {
@@ -325,10 +325,6 @@ export default function Settings({ isAdmin = false }) {
   };
 
   const handleSaveColors = async () => {
-    if (!isAdmin) {
-      setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
-      return;
-    }
     try {
       setSavingColors(true);
       setSaveMessage('');
@@ -383,47 +379,7 @@ export default function Settings({ isAdmin = false }) {
     }
   };
 
-  // Gestionnaire de réinitialisation
-  const handleResetTheme = async () => {
-    if (!isAdmin) {
-      setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
-      return;
-    }
-    
-    if (confirm('Réinitialiser au thème d\'origine ? Cette action remplacera toutes les couleurs personnalisées.')) {
-      // Appliquer le thème par défaut
-      setColorsLegacy(DEFAULT_COLORS);
-      setColorText(DEFAULT_COLORS);
-      syncThemeColors(DEFAULT_COLORS);
-      setSelectedTheme('SER1 Classique – Thème original');
-      
-      // Supprimer le thème personnalisé de ui_settings
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { error } = await supabase
-            .from('ui_settings')
-            .delete()
-            .eq('user_id', user.id)
-            .eq('theme_name', 'custom');
-            
-          if (error) {
-            console.error('Erreur suppression thème personnalisé:', error);
-          }
-        }
-        setSaveMessage('Thème réinitialisé avec succès.');
-      } catch (err) {
-        console.error('Erreur lors de la réinitialisation:', err);
-        setSaveMessage('Erreur lors de la réinitialisation.');
-      }
-    }
-  };
-
   const handleCoverFileChange = async (e) => {
-    if (!isAdmin) {
-      setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
-      return;
-    }
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -504,10 +460,6 @@ export default function Settings({ isAdmin = false }) {
   };
 
   const handleRemoveCover = async () => {
-    if (!isAdmin) {
-      setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
-      return;
-    }
     if (!coverUrl) return;
     try {
       const { error } = await supabase.auth.updateUser({
@@ -551,16 +503,7 @@ export default function Settings({ isAdmin = false }) {
           }}
         >
           {/* Infos utilisateur */}
-          <div>
-            <div style={{ marginBottom: 8 }}>
-              <strong>Utilisateur :</strong>{' '}
-              <span>{user.email}</span>
-            </div>
-            <div>
-              <strong>Statut :</strong>{' '}
-              <span>{roleLabel}</span>
-            </div>
-          </div>
+          <UserInfoBanner />
 
           {/* Personnalisation avancée du thème */}
           <div>
@@ -719,40 +662,6 @@ export default function Settings({ isAdmin = false }) {
               ))}
             </div>
 
-            {/* Boutons d'action */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <button
-                type="button"
-                className="chip"
-                onClick={handleSaveColors}
-                disabled={savingColors || !isAdmin}
-                style={{ opacity: isAdmin ? 1 : 0.5 }}
-                title={isAdmin ? '' : 'Réservé aux administrateurs'}
-              >
-                {savingColors ? 'Enregistrement…' : 'Enregistrer le thème'}
-              </button>
-              
-              <button
-                type="button"
-                className="chip"
-                onClick={handleResetTheme}
-                disabled={!isAdmin}
-                style={{ 
-                  opacity: isAdmin ? 1 : 0.5,
-                  backgroundColor: '#f5f5f5',
-                  color: '#666'
-                }}
-                title={isAdmin ? 'Réinitialiser le thème d\'origine' : 'Réservé aux administrateurs'}
-              >
-                🔄 Réinitialiser le thème d'origine
-              </button>
-              
-              {!isAdmin && (
-                <div style={{ fontSize: 12, color: '#888' }}>
-                  🔒 Modification réservée aux administrateurs
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Choix de la page de garde */}

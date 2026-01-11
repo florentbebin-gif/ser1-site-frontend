@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
-import SettingsNav from '../SettingsNav';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
+import { UserInfoBanner } from '../../components/UserInfoBanner';
 
 // ----------------------
 // Valeurs par défaut
@@ -357,48 +357,33 @@ export default function SettingsPrelevements() {
   // Rendu
   // ----------------------
   return (
-    <div className="settings-page">
-      <div className="section-card">
-        <div className="section-title">Paramètres</div>
-        <SettingsNav />
+    <div style={{ marginTop: 16 }}>
+      {/* Bandeau utilisateur */}
+      <UserInfoBanner />
 
-        {/* Bandeau utilisateur */}
-        <div style={{ marginTop: 16 }}>
-          <div className="tax-user-banner">
-            {user ? (
-              <>
-                Utilisateur : <strong>{user.email}</strong> — Statut :{' '}
-                <strong>{roleLabel}</strong>
-              </>
-            ) : (
-              <>Non connecté</>
-            )}
-          </div>
+      {/* Messages */}
+      {error && (
+        <div style={{ color: 'var(--color-error-text)', background: 'var(--color-error-bg)', border: '1px solid var(--color-error-border)', padding: '12px 16px', borderRadius: 6, marginTop: 12, fontSize: 14 }}>
+          {error}
         </div>
+      )}
 
-        {/* Messages */}
-        {error && (
-          <div style={{ color: 'var(--color-error-text)', background: 'var(--color-error-bg)', border: '1px solid var(--color-error-border)', padding: '12px 16px', borderRadius: 6, marginTop: 12, fontSize: 14 }}>
-            {error}
-          </div>
-        )}
-
-        {loading ? (
-          <div style={{ marginTop: 24 }}>Chargement des paramètres…</div>
-        ) : !user ? (
-          <div style={{ marginTop: 24 }}>
-            Vous devez être connecté pour voir cette page.
-          </div>
-        ) : (
-          <div
-            style={{
-              fontSize: 15,
-              marginTop: 24,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 24,
-            }}
-          >
+      {loading ? (
+        <div style={{ marginTop: 24 }}>Chargement des paramètres…</div>
+      ) : !user ? (
+        <div style={{ marginTop: 24 }}>
+          Vous devez être connecté pour voir cette page.
+        </div>
+      ) : (
+        <div
+          style={{
+            fontSize: 15,
+            marginTop: 24,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 24,
+          }}
+        >
             {/* 1. PS patrimoine / capital */}
             <section>
               <h3>Prélèvements sociaux — patrimoine et capital</h3>
@@ -1815,7 +1800,6 @@ export default function SettingsPrelevements() {
             )}
           </div>
         )}
-      </div>
     </div>
   );
 }

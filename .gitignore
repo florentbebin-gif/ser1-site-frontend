@@ -49,3 +49,10 @@ validation_compared.csv
 # Python artifacts (if any)
 __pycache__/
 *.py[cod]
+
+# local/windsurf temp
+.windsurf/
+_style_ref/
+_signalements_ref/
+*.zip
+
