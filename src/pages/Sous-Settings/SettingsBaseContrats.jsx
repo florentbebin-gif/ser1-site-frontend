@@ -1,17 +1,15 @@
 import React from 'react';
-import SettingsNav from '../SettingsNav';
+import { UserInfoBanner } from '../../components/UserInfoBanner';
 
 export default function SettingsBaseContrats() {
   return (
-    <div className="settings-page">
-      <div className="section-card">
-        <div className="section-title">Paramètres</div>
-        <SettingsNav />
-
-        <div style={{ marginTop: 24 }}>
-          <p>Page Base contrats (contenu à venir).</p>
-        </div>
+    <>
+      <div style={{ marginTop: 24 }}>
+        {/* Bandeau utilisateur */}
+        <UserInfoBanner />
+        
+        <p>Page Base contrats (contenu à venir).</p>
       </div>
-    </div>
+    </>
   );
 }

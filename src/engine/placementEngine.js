@@ -1027,43 +1027,110 @@ export function calculTransmission(params, fiscalParams) {
   const {
     envelope,
     capitalTransmis,
+    cumulVersements = 0,
     ageAuDeces = 85,
     agePremierVersement = 45,
     nbBeneficiaires = 1,
+    beneficiaryType = 'enfants',
+    perBancaire = false,
   } = params;
 
   const fp = fiscalParams;
   // Taux DMTG choisi par l'utilisateur sur la page Transmission
   const dmtgTauxChoisi = fp.dmtgTauxChoisi || 0.20;
+
+  const effectiveNbBeneficiaires = beneficiaryType === 'conjoint' ? 1 : Math.max(1, nbBeneficiaires || 1);
   
-  let taxe = 0;
+  let taxeDmtg = 0; // droits de succession (barème DMTG choisi)
+  let taxeForfaitaire = 0; // prélèvement forfaitaire (990 I)
   let abattement = 0;
   let regime = '';
+  const psTaux = typeof fp.psPatrimoine === 'number' ? fp.psPatrimoine : 0.172;
+  const resultatPs = {
+    applicable: false,
+    assiette: 0,
+    taux: psTaux,
+    montant: 0,
+    note: '',
+  };
+
+  const computePsDeces = (assietteGains, noteIfZero = '') => {
+    const assiette = Math.max(0, assietteGains || 0);
+    if (assiette <= 0) {
+      resultatPs.applicable = false;
+      resultatPs.note = noteIfZero || 'Aucun gain latent soumis aux PS';
+      return 0;
+    }
+    resultatPs.applicable = true;
+    resultatPs.assiette = round2(assiette);
+    resultatPs.montant = round2(assiette * psTaux);
+    resultatPs.note = '';
+    return resultatPs.montant;
+  };
+
+  // Hypothèse : AV/PER/PEA 100% UC → PS sur gains latents
+  const isAssuranceVieLike = envelope === ENVELOPES.AV;
+  const isPea = envelope === ENVELOPES.PEA;
+  const gainsLatents = Math.max(0, capitalTransmis - (cumulVersements || 0));
+  const psMontant = (() => {
+    if (isAssuranceVieLike || isPea) {
+      return computePsDeces(gainsLatents);
+    }
+    if (perBancaire || envelope === ENVELOPES.CTO || envelope === ENVELOPES.PER) {
+      resultatPs.note = 'PS déjà acquittés pendant la vie du contrat';
+    } else if (envelope === ENVELOPES.SCPI) {
+      resultatPs.note = 'PS prélevés sur les loyers annuels';
+    }
+    return 0;
+  })();
+
+  const capitalApresPs = Math.max(0, capitalTransmis - psMontant);
+
+  if (beneficiaryType === 'conjoint') {
+    const assiette = 0;
+    return {
+      envelope,
+      capitalTransmis: round2(capitalTransmis),
+      regime: 'Exonération conjoint/PACS',
+      abattement: round2(capitalApresPs),
+      assiette,
+      taxeForfaitaire: 0,
+      taxeDmtg: 0,
+      taxe: 0,
+      capitalTransmisNet: round2(capitalTransmis - psMontant),
+      psDeces: {
+        applicable: resultatPs.applicable,
+        assiette: resultatPs.assiette,
+        taux: resultatPs.taux,
+        montant: round2(resultatPs.montant),
+        note: resultatPs.note,
+      },
+    };
+  }
 
   switch (envelope) {
     case ENVELOPES.AV: {
       if (agePremierVersement < 70) {
         // Article 990 I (primes versées avant 70 ans)
         regime = '990 I';
-        abattement = fp.av990IAbattement * nbBeneficiaires;
-        const assiette = Math.max(0, capitalTransmis - abattement);
-
+        abattement = fp.av990IAbattement * effectiveNbBeneficiaires;
+        const assiette = Math.max(0, capitalApresPs - abattement);
         // Tranche 1 : 20% jusqu'à 700k par bénéficiaire
-        const plafondTranche1 = fp.av990ITranche1Plafond * nbBeneficiaires;
+        const plafondTranche1 = fp.av990ITranche1Plafond * effectiveNbBeneficiaires;
         if (assiette <= plafondTranche1) {
-          taxe = assiette * fp.av990ITranche1Taux;
+          taxeForfaitaire = assiette * fp.av990ITranche1Taux;
         } else {
-          taxe = plafondTranche1 * fp.av990ITranche1Taux;
-          taxe += (assiette - plafondTranche1) * fp.av990ITranche2Taux;
+          taxeForfaitaire = plafondTranche1 * fp.av990ITranche1Taux;
+          taxeForfaitaire += (assiette - plafondTranche1) * fp.av990ITranche2Taux;
         }
       } else {
         // Article 757 B (primes versées après 70 ans)
         // Abattement global de 30 500 € puis taux DMTG choisi
         regime = '757 B';
         abattement = fp.av757BAbattement; // 30 500 € global
-        const assiette = Math.max(0, capitalTransmis - abattement);
+        const assiette = Math.max(0, capitalApresPs - abattement);
         // Appliquer le taux DMTG choisi par l'utilisateur
-        taxe = assiette * dmtgTauxChoisi;
+        taxeDmtg = assiette * dmtgTauxChoisi;
       }
       break;
     }
@@ -1077,27 +1144,27 @@ export function calculTransmission(params, fiscalParams) {
         // On part du principe que l'abattement de 100 000 € est déjà consommé
         regime = 'DMTG (PER bancaire)';
         abattement = 0; // Abattement déjà consommé
-        const assiette = capitalTransmis;
-        taxe = assiette * dmtgTauxChoisi;
+        const assiette = capitalApresPs;
+        taxeDmtg = assiette * dmtgTauxChoisi;
       } else if (ageAuDeces < 70) {
         // PER assurance + décès avant 70 ans → 990 I
         regime = '990 I (PER assurance)';
-        abattement = fp.av990IAbattement * nbBeneficiaires;
-        const assiette = Math.max(0, capitalTransmis - abattement);
-        const plafondTranche1 = fp.av990ITranche1Plafond * nbBeneficiaires;
+        abattement = fp.av990IAbattement * effectiveNbBeneficiaires;
+        const assiette = Math.max(0, capitalApresPs - abattement);
+        const plafondTranche1 = fp.av990ITranche1Plafond * effectiveNbBeneficiaires;
         if (assiette <= plafondTranche1) {
-          taxe = assiette * fp.av990ITranche1Taux;
+          taxeForfaitaire = assiette * fp.av990ITranche1Taux;
         } else {
-          taxe = plafondTranche1 * fp.av990ITranche1Taux;
-          taxe += (assiette - plafondTranche1) * fp.av990ITranche2Taux;
+          taxeForfaitaire = plafondTranche1 * fp.av990ITranche1Taux;
+          taxeForfaitaire += (assiette - plafondTranche1) * fp.av990ITranche2Taux;
         }
       } else {
         // PER assurance + décès >= 70 ans → 757 B
         // Abattement global de 30 500 € puis taux DMTG choisi
         regime = '757 B (PER assurance)';
         abattement = fp.av757BAbattement; // 30 500 € global
-        const assiette = Math.max(0, capitalTransmis - abattement);
-        taxe = assiette * dmtgTauxChoisi;
+        const assiette = Math.max(0, capitalApresPs - abattement);
+        taxeDmtg = assiette * dmtgTauxChoisi;
       }
       break;
     }
@@ -1110,19 +1177,32 @@ export function calculTransmission(params, fiscalParams) {
       // On part du principe que l'abattement de 100 000 € est déjà consommé
       regime = 'DMTG';
       abattement = 0; // Abattement déjà consommé
-      const assiette = capitalTransmis;
-      taxe = assiette * dmtgTauxChoisi;
+      const assiette = capitalApresPs;
+      taxeDmtg = assiette * dmtgTauxChoisi;
       break;
     }
   }
+
+  const assiette = Math.max(0, capitalApresPs - abattement);
+  const taxeTotal = taxeForfaitaire + taxeDmtg;
 
   return {
     envelope,
     capitalTransmis: round2(capitalTransmis),
     regime,
     abattement: round2(abattement),
-    taxe: round2(taxe),
-    capitalTransmisNet: round2(capitalTransmis - taxe),
+    assiette: round2(assiette),
+    taxeForfaitaire: round2(taxeForfaitaire),
+    taxeDmtg: round2(taxeDmtg),
+    taxe: round2(taxeTotal),
+    capitalTransmisNet: round2(capitalTransmis - psMontant - taxeTotal),
+    psDeces: {
+      applicable: resultatPs.applicable,
+      assiette: resultatPs.assiette,
+      taux: resultatPs.taux,
+      montant: round2(resultatPs.montant),
+      note: resultatPs.note,
+    },
   };
 }
 
@@ -1201,6 +1281,7 @@ export function simulateComplete(product, client, liquidationParams, transmissio
   const transmission = calculTransmission({
     envelope: product.envelope,
     capitalTransmis: capitalTransmis,
+    cumulVersements: epargne.cumulVersements,
     ageAuDeces: transmissionParams.ageAuDeces,
     agePremierVersement: transmissionParams.agePremierVersement || (client.ageActuel || 45),
     nbBeneficiaires: transmissionParams.nbBeneficiaires || 1,
@@ -1245,8 +1326,13 @@ export function simulateComplete(product, client, liquidationParams, transmissio
     transmission: {
       regime: transmission.regime,
       capitalTransmis: transmission.capitalTransmis,
+      abattement: transmission.abattement,
+      assiette: transmission.assiette,
+      taxeForfaitaire: transmission.taxeForfaitaire,
+      taxeDmtg: transmission.taxeDmtg,
       taxe: transmission.taxe,
       capitalTransmisNet: transmission.capitalTransmisNet,
+      psDeces: transmission.psDeces,
     },
 
     // Totaux

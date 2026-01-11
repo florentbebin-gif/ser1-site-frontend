@@ -22,6 +22,8 @@ import { onResetEvent, storageKeyFor } from '../utils/reset.js';
 import { PLACEMENT_SAVE_EVENT, PLACEMENT_LOAD_EVENT } from '../utils/placementEvents.js';
 import { buildWorksheetXml, buildWorksheetXmlVertical, downloadExcel } from '../utils/exportExcel.js';
 import { savePlacementState, loadPlacementStateFromFile } from '../utils/placementPersistence.js';
+import { TimelineBar } from '../components/TimelineBar.jsx';
+import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '../utils/transmissionDisclaimer.js';
 
 // ============================================================================
 // HELPERS
@@ -31,6 +33,19 @@ const fmt = (n) => Math.round(n).toLocaleString('fr-FR');
 const euro = (n) => `${fmt(n)} €`;
 const pct = (n) => `${(n * 100).toFixed(1).replace('.', ',')} %`;
 const EPSILON = 1e-6;
+const formatPercentValue = (value) => {
+  if (typeof value !== 'number' || Number.isNaN(value)) return '—';
+  return `${(value * 100).toFixed(1).replace('.', ',')} %`;
+};
+
+const formatPsApplicability = (ps) => (ps?.applicable ? 'Oui' : 'Non');
+const formatPsAssiette = (ps, formatter) => (ps?.applicable ? formatter(ps.assiette || 0) : '—');
+const formatPsTaux = (ps) => (ps?.applicable && typeof ps?.taux === 'number' ? formatPercentValue(ps.taux) : '—');
+const formatPsMontant = (ps, formatter) => (ps?.applicable ? formatter(ps.montant || 0) : '—');
+const formatPsNote = (ps) => ps?.note || '—';
+const getPsAssietteNumeric = (ps) => (ps?.applicable ? ps.assiette || 0 : 0);
+const getPsTauxNumeric = (ps) => (ps?.applicable && typeof ps?.taux === 'number' ? ps.taux : 0);
+const getPsMontantNumeric = (ps) => (ps?.applicable ? ps.montant || 0 : 0);
 
 const shortEuro = (v) => {
   const n = Number(v) || 0;
@@ -155,6 +170,8 @@ function buildDmtgOptions(scale) {
       {
         value: DEFAULT_DMTG_RATE,
         label: `${formatPercent(DEFAULT_DMTG_RATE)} (par défaut)`,
+        rangeFrom: 0,
+        rangeTo: null,
         key: 'dmtg-default',
       },
     ];
@@ -167,6 +184,8 @@ function buildDmtgOptions(scale) {
       return {
         value: rateValue,
         label: `${formatPercent(rateValue)} (${formatDmtgRange(tranche?.from, tranche?.to)})`,
+        rangeFrom: typeof tranche?.from === 'number' ? tranche.from : 0,
+        rangeTo: typeof tranche?.to === 'number' ? tranche.to : null,
         key: `dmtg-${idx}-${rateValue}`,
       };
     });
@@ -176,6 +195,8 @@ function buildCustomDmtgOption(value) {
   return {
     value,
     label: `Personnalisé (${formatPercent(value)})`,
+    rangeFrom: 0,
+    rangeTo: null,
     key: 'dmtg-custom',
   };
 }
@@ -184,7 +205,13 @@ const DEFAULT_TRANSMISSION = {
   ageAuDeces: 85,
   nbBeneficiaires: 2,
   dmtgTaux: null,
+  beneficiaryType: 'enfants',
 };
+
+const BENEFICIARY_OPTIONS = [
+  { value: 'conjoint', label: 'Conjoint / partenaire PACS' },
+  { value: 'enfants', label: 'Enfant(s)' },
+];
 
 const DEFAULT_STATE = {
   step: 'epargne',
@@ -603,7 +630,7 @@ function VersementConfigModal({ envelope, config, dureeEpargne, onSave, onClose 
         <div className="vcm__body">
           {isAV && (
             <div className="vcm__hint" style={{ marginBottom: 12 }}>
-              Hypothèse : investissement 100 % unités de compte&nbsp;– prélèvements sociaux dus au rachat.
+              Hypothèse : investissement 100 % unités de compte – prélèvements sociaux dus au rachat.
             </div>
           )}
           {/* VERSEMENT INITIAL */}
@@ -925,7 +952,7 @@ function buildEngineProduct(product) {
 
 export default function PlacementV2() {
   const STORE_KEY = storageKeyFor('placement');
-  const { fiscalParams, loading, error, tmiOptions, taxSettings } = usePlacementSettings();
+  const { fiscalParams, loading, error, tmiOptions, taxSettings, psSettings } = usePlacementSettings();
 
   const [hydrated, setHydrated] = useState(false);
   const [state, setState] = useState(DEFAULT_STATE);
@@ -944,6 +971,20 @@ export default function PlacementV2() {
     if (exists) return dmtgOptions;
     return [...dmtgOptions, buildCustomDmtgOption(current)];
   }, [dmtgOptions, state.transmission.dmtgTaux]);
+
+  const selectedDmtgOption = useMemo(
+    () => dmtgSelectOptions.find((opt) => opt.value === state.transmission.dmtgTaux),
+    [dmtgSelectOptions, state.transmission.dmtgTaux],
+  );
+
+  const selectedDmtgTrancheWidth = useMemo(() => {
+    if (!selectedDmtgOption) return null;
+    const from = typeof selectedDmtgOption.rangeFrom === 'number' ? selectedDmtgOption.rangeFrom : 0;
+    const to = typeof selectedDmtgOption.rangeTo === 'number' ? selectedDmtgOption.rangeTo : null;
+    if (to == null) return null; // pas de borne supérieure => pas de ratio pertinent
+    const width = to - from;
+    return width > 0 ? width : null;
+  }, [selectedDmtgOption]);
 
   // Hydratation depuis sessionStorage
   useEffect(() => {
@@ -1161,18 +1202,15 @@ export default function PlacementV2() {
       // Récupérer les résultats calculés
       const { produit1, produit2 } = results;
 
-      // 1) Table épargne (vertical)
-      const headerEpargne = [];
-      const rowsEpargne = [];
+      // 1) Tables épargne (vertical)
+      const buildEpargneSheet = (produit, suffix = '') => {
+        if (!produit?.epargne?.rows?.length) return null;
 
-      if (produit1?.epargne?.rows?.length) {
-        // En-têtes : Indicateur, Année 0, Année 1, ...
-        headerEpargne.push('Indicateur');
-        produit1.epargne.rows.forEach((row, idx) => {
-          headerEpargne.push(`Année ${idx}`);
+        const header = ['Indicateur'];
+        produit.epargne.rows.forEach((row, idx) => {
+          header.push(`Année ${idx}`);
         });
 
-        // Séries de données
         const series = [
           { key: 'capitalDebut', label: 'Capital début' },
           { key: 'versements', label: 'Versements' },
@@ -1185,26 +1223,30 @@ export default function PlacementV2() {
           { key: 'capitalDecesTheorique', label: 'Capital décès théorique' },
         ];
 
-        series.forEach(({ key, label }) => {
+        const rows = series.map(({ key, label }) => {
           const row = [label];
-          produit1.epargne.rows.forEach((r) => {
+          produit.epargne.rows.forEach((r) => {
             row.push(r[key] ?? 0);
           });
-          rowsEpargne.push(row);
-        });
-      }
-
-      // 2) Table liquidation (vertical)
-      const headerLiquidation = [];
-      const rowsLiquidation = [];
-
-      if (produit1?.liquidation?.rows?.length) {
-        headerLiquidation.push('Indicateur');
-        produit1.liquidation.rows.forEach((row, idx) => {
-          headerLiquidation.push(`Âge ${row.age || idx}`);
+          return row;
         });
 
-        const liquidationSeries = [
+        return { header, rows, name: `Épargne ${suffix}`.trim() };
+      };
+
+      const sheetEpargneProduit1 = buildEpargneSheet(produit1, 'Produit 1');
+      const sheetEpargneProduit2 = buildEpargneSheet(produit2, 'Produit 2');
+
+      // 2) Tables liquidation (vertical)
+      const buildLiquidationSheet = (produit, suffix = '') => {
+        if (!produit?.liquidation?.rows?.length) return null;
+
+        const header = ['Indicateur'];
+        produit.liquidation.rows.forEach((row, idx) => {
+          header.push(`Âge ${row.age ?? idx}`);
+        });
+
+        const series = [
           { key: 'capitalDebut', label: 'Capital début' },
           { key: 'retraitBrut', label: 'Retrait brut' },
           { key: 'fiscalite', label: 'Fiscalité' },
@@ -1214,23 +1256,61 @@ export default function PlacementV2() {
           { key: 'pvLatenteFin', label: 'PV latente fin' },
         ];
 
-        liquidationSeries.forEach(({ key, label }) => {
+        const rows = series.map(({ key, label }) => {
           const row = [label];
-          produit1.liquidation.rows.forEach((r) => {
+          produit.liquidation.rows.forEach((r) => {
             row.push(r[key] ?? 0);
           });
-          rowsLiquidation.push(row);
+          return row;
         });
-      }
+
+        return { header, rows, name: `Liquidation ${suffix}`.trim() };
+      };
+
+      const sheetLiquidationProduit1 = buildLiquidationSheet(produit1, 'Produit 1');
+      const sheetLiquidationProduit2 = buildLiquidationSheet(produit2, 'Produit 2');
 
       // 3) Transmission
       const headerTransmission = ['Indicateur', 'Produit 1', 'Produit 2'];
+      const psRowApplic = [
+        'PS décès - applicables ?',
+        formatPsApplicability(produit1?.transmission?.psDeces),
+        formatPsApplicability(produit2?.transmission?.psDeces),
+      ];
+      const psRowAssiette = [
+        'PS décès - assiette',
+        getPsAssietteNumeric(produit1?.transmission?.psDeces),
+        getPsAssietteNumeric(produit2?.transmission?.psDeces),
+      ];
+      const psRowTaux = [
+        'PS décès - taux',
+        getPsTauxNumeric(produit1?.transmission?.psDeces),
+        getPsTauxNumeric(produit2?.transmission?.psDeces),
+      ];
+      const psRowMontant = [
+        'PS décès - montant',
+        getPsMontantNumeric(produit1?.transmission?.psDeces),
+        getPsMontantNumeric(produit2?.transmission?.psDeces),
+      ];
+      const psRowNote = [
+        'PS décès - commentaire',
+        formatPsNote(produit1?.transmission?.psDeces),
+        formatPsNote(produit2?.transmission?.psDeces),
+      ];
+
       const rowsTransmission = [
         ['Capital transmis', produit1?.transmission?.capitalTransmis || 0, produit2?.transmission?.capitalTransmis || 0],
         ['Abattement', produit1?.transmission?.abattement || 0, produit2?.transmission?.abattement || 0],
         ['Assiette fiscale', produit1?.transmission?.assiette || 0, produit2?.transmission?.assiette || 0],
-        ['Fiscalité (DMTG)', produit1?.transmission?.fiscalite || 0, produit2?.transmission?.fiscalite || 0],
-        ['Net transmis', produit1?.transmission?.netTransmis || 0, produit2?.transmission?.netTransmis || 0],
+        psRowApplic,
+        psRowAssiette,
+        psRowTaux,
+        psRowMontant,
+        psRowNote,
+        ['Fiscalité forfaitaire (990 I / 757 B)', produit1?.transmission?.taxeForfaitaire || 0, produit2?.transmission?.taxeForfaitaire || 0],
+        ['Fiscalité DMTG', produit1?.transmission?.taxeDmtg || 0, produit2?.transmission?.taxeDmtg || 0],
+        ['Fiscalité totale', produit1?.transmission?.taxe || 0, produit2?.transmission?.taxe || 0],
+        ['Net transmis', produit1?.transmission?.capitalTransmisNet || 0, produit2?.transmission?.capitalTransmisNet || 0],
       ];
 
       // 4) Synthèse comparative
@@ -1239,17 +1319,17 @@ export default function PlacementV2() {
         ['Enveloppe', ENVELOPE_LABELS[produit1?.envelope] || '', ENVELOPE_LABELS[produit2?.envelope] || ''],
         ['Capital acquis épargne', produit1?.epargne?.capitalFin || 0, produit2?.epargne?.capitalFin || 0],
         ['Total retraits liquidation', produit1?.liquidation?.totalRetraits || 0, produit2?.liquidation?.totalRetraits || 0],
-        ['Fiscalité totale', (produit1?.liquidation?.totalFiscalite || 0) + (produit1?.transmission?.fiscalite || 0), (produit2?.liquidation?.totalFiscalite || 0) + (produit2?.transmission?.fiscalite || 0)],
-        ['Net global', (produit1?.liquidation?.totalRetraits || 0) + (produit1?.transmission?.netTransmis || 0), (produit2?.liquidation?.totalRetraits || 0) + (produit2?.transmission?.netTransmis || 0)],
+        ['Fiscalité totale', (produit1?.liquidation?.totalFiscalite || 0) + (produit1?.transmission?.taxe || 0), (produit2?.liquidation?.totalFiscalite || 0) + (produit2?.transmission?.taxe || 0)],
+        ['Net global', (produit1?.liquidation?.totalRetraits || 0) + (produit1?.transmission?.capitalTransmisNet || 0), (produit2?.liquidation?.totalRetraits || 0) + (produit2?.transmission?.capitalTransmisNet || 0)],
       ];
 
       console.info("[ExcelExport] Data preparation", {
         headerParamsLength: headerParams.length,
         rowsParamsLength: rowsParams.length,
-        headerEpargneLength: headerEpargne.length,
-        rowsEpargneLength: rowsEpargne.length,
-        headerLiquidationLength: headerLiquidation.length,
-        rowsLiquidationLength: rowsLiquidation.length
+        hasEpargneP1: !!sheetEpargneProduit1,
+        hasEpargneP2: !!sheetEpargneProduit2,
+        hasLiquidationP1: !!sheetLiquidationProduit1,
+        hasLiquidationP2: !!sheetLiquidationProduit2,
       });
 
       // Construction XML
@@ -1261,8 +1341,10 @@ export default function PlacementV2() {
           xmlns:x="urn:schemas-microsoft-com:office:excel"
           xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
           ${buildWorksheetXmlVertical('Paramètres', headerParams, rowsParams)}
-          ${headerEpargne.length ? buildWorksheetXmlVertical('Épargne', headerEpargne, rowsEpargne) : ''}
-          ${headerLiquidation.length ? buildWorksheetXmlVertical('Liquidation', headerLiquidation, rowsLiquidation) : ''}
+          ${sheetEpargneProduit1 ? buildWorksheetXmlVertical(sheetEpargneProduit1.name, sheetEpargneProduit1.header, sheetEpargneProduit1.rows) : ''}
+          ${sheetEpargneProduit2 ? buildWorksheetXmlVertical(sheetEpargneProduit2.name, sheetEpargneProduit2.header, sheetEpargneProduit2.rows) : ''}
+          ${sheetLiquidationProduit1 ? buildWorksheetXmlVertical(sheetLiquidationProduit1.name, sheetLiquidationProduit1.header, sheetLiquidationProduit1.rows) : ''}
+          ${sheetLiquidationProduit2 ? buildWorksheetXmlVertical(sheetLiquidationProduit2.name, sheetLiquidationProduit2.header, sheetLiquidationProduit2.rows) : ''}
           ${buildWorksheetXmlVertical('Transmission', headerTransmission, rowsTransmission)}
           ${buildWorksheetXmlVertical('Synthèse', headerSynthese, rowsSynthese)}
         </Workbook>`;
@@ -1293,6 +1375,32 @@ export default function PlacementV2() {
   }, [state, results]);
 
   const { produit1, produit2, deltas } = results || { produit1: null, produit2: null, deltas: {} };
+  const psDecesProduit1 = produit1?.transmission?.psDeces;
+  const psDecesProduit2 = produit2?.transmission?.psDeces;
+  const hasTransmissionData = Boolean(produit1 || produit2);
+
+  const assietteDmtgProduit1 = (produit1?.transmission?.taxeDmtg || 0) > 0
+    ? (produit1?.transmission?.assiette || 0)
+    : 0;
+  const assietteDmtgProduit2 = (produit2?.transmission?.taxeDmtg || 0) > 0
+    ? (produit2?.transmission?.assiette || 0)
+    : 0;
+
+  const dmtgConsumptionRatioProduit1 = computeDmtgConsumptionRatio(
+    assietteDmtgProduit1,
+    selectedDmtgTrancheWidth,
+  );
+  const dmtgConsumptionRatioProduit2 = computeDmtgConsumptionRatio(
+    assietteDmtgProduit2,
+    selectedDmtgTrancheWidth,
+  );
+
+  const showDmtgDisclaimer =
+    shouldShowDmtgDisclaimer(assietteDmtgProduit1, selectedDmtgTrancheWidth) ||
+    shouldShowDmtgDisclaimer(assietteDmtgProduit2, selectedDmtgTrancheWidth);
+
+  const dmtgConsumptionPercentProduit1 = Math.min(100, Math.round(dmtgConsumptionRatioProduit1 * 100));
+  const dmtgConsumptionPercentProduit2 = Math.min(100, Math.round(dmtgConsumptionRatioProduit2 * 100));
 
   // État pour le toggle "Afficher toutes les colonnes"
   const [showAllColumns, setShowAllColumns] = useState(false);
@@ -1452,34 +1560,42 @@ export default function PlacementV2() {
   // Fonction pour filtrer les colonnes pertinentes (valeurs > 0)
   const getRelevantColumns = (rows, baseColumns) => {
     if (showAllColumns || !rows || rows.length === 0) return baseColumns;
-    
-    const relevantColumns = new Set(['Âge', 'Capital début', 'Capital fin']); // Colonnes structurelles toujours visibles
-    
-    baseColumns.forEach(col => {
-      // Vérifier si au moins une ligne a une valeur > 0 pour cette colonne
-      const hasNonZeroValue = rows.some(row => {
-        // Mapping des colonnes vers les propriétés des données
+
+    const guaranteedColumns = baseColumns.slice(0, Math.min(3, baseColumns.length));
+    guaranteedColumns.push('Capital fin');
+
+    const relevantColumns = new Set(guaranteedColumns);
+
+    baseColumns.forEach((col) => {
+      const hasNonZeroValue = rows.some((row) => {
         const valueMap = {
-          'Versements': row.versementBrut,
-          'Gains annuels': row.gainsAnnee,
-          'Revenus nets': row.revenuNetPercu,
-          'Capital (capi)': row.capitalCapi,
-          'Capital (distrib)': row.capitalDistrib,
-          'Compte espèces': row.compteEspece,
+          'Capital': row.capitalDebut ?? row.capital ?? 0,
+          'Capital début': row.capitalDebut,
+          'Capital fin': row.capitalFin,
+          'Fiscalité': row.fiscaliteTotal,
+          'Loyers bruts': row.retraitBrut,
+          'Loyers nets': row.retraitNet,
+          'Cession brute': row.retraitBrut,
+          'PV latente (début)': row.pvLatenteDebut,
+          'Cession nette': row.retraitNet,
+          'PV latente (fin)': row.pvLatenteFin,
+          'Retrait brut': row.retraitBrut,
+          'Part intérêts': row.partGains,
+          'Part capital': row.partCapital,
+          'Retrait net': row.retraitNet,
           'Capital décès théorique': row.capitalDecesTheorique,
-          // Ajouter d'autres mappings si nécessaire
         };
-        
+
         const value = valueMap[col];
-        return value !== undefined && value !== null && value > 0;
+        return value !== undefined && value !== null && Math.abs(value) > EPSILON;
       });
-      
+
       if (hasNonZeroValue) {
         relevantColumns.add(col);
       }
     });
-    
-    return baseColumns.filter(col => relevantColumns.has(col));
+
+    return baseColumns.filter((col) => relevantColumns.has(col));
   };
 
   // Loading / Error (placés après les hooks pour respecter les Rules of Hooks)
@@ -1518,7 +1634,7 @@ export default function PlacementV2() {
     <div className="ir-panel placement-page premium-page">
       {/* Header */}
       <div className="ir-header pl-header premium-header">
-        <div>
+        <div className="pl-header-main">
           <div className="ir-title premium-title">Comparer deux placements</div>
           <div className="pl-subtitle premium-subtitle">
             Épargne → Liquidation → Transmission
@@ -1547,20 +1663,22 @@ export default function PlacementV2() {
               </div>
             )}
           </div>
-          <div className="pl-stepper">
-            {['epargne', 'liquidation', 'transmission'].map((s) => (
-              <button
-                key={s}
-                className={`pl-step premium-btn ${state.step === s ? 'is-active' : ''}`}
-                onClick={() => setStep(s)}
-              >
-                {s === 'epargne' && 'Épargne'}
-                {s === 'liquidation' && 'Liquidation'}
-                {s === 'transmission' && 'Transmission'}
-              </button>
-            ))}
-          </div>
         </div>
+      </div>
+
+      {/* Navigation par phases */}
+      <div className="pl-phase-nav">
+        {['epargne', 'liquidation', 'transmission'].map((s) => (
+          <button
+            key={s}
+            className={`pl-phase-tab ${state.step === s ? 'is-active' : ''}`}
+            onClick={() => setStep(s)}
+          >
+            {s === 'epargne' && 'Phase d\'épargne'}
+            {s === 'liquidation' && 'Phase de liquidation'}
+            {s === 'transmission' && 'Phase de transmission'}
+          </button>
+        ))}
       </div>
 
       <div className="ir-grid">
@@ -1612,11 +1730,15 @@ export default function PlacementV2() {
                     <th></th>
                     <th className="pl-colhead">
                       <div className="pl-colname">Produit 1</div>
-                      <div className="pl-collabel">{ENVELOPE_LABELS[state.products[0].envelope]}</div>
+                      <div className="pl-colbadge-wrapper">
+                        <div className="pl-collabel pl-collabel--product1">{ENVELOPE_LABELS[state.products[0].envelope]}</div>
+                      </div>
                     </th>
                     <th className="pl-colhead">
                       <div className="pl-colname">Produit 2</div>
-                      <div className="pl-collabel">{ENVELOPE_LABELS[state.products[1].envelope]}</div>
+                      <div className="pl-colbadge-wrapper">
+                        <div className="pl-collabel pl-collabel--product2">{ENVELOPE_LABELS[state.products[1].envelope]}</div>
+                      </div>
                     </th>
                   </tr>
                 </thead>
@@ -1690,7 +1812,7 @@ export default function PlacementV2() {
                   <tr>
                     <td>
                       Paramétrer les versements
-                      <div className="pl-detail-cumul">Initial, annuel, ponctuels, allocation</div>
+                      <div className="pl-detail-cumul">Initial, annuel, allocation, frais</div>
                     </td>
                     {state.products.map((p, i) => (
                       <td key={i}>
@@ -1821,41 +1943,35 @@ export default function PlacementV2() {
                       </td>
                     </tr>
                   )}
-                  {/* Option au barème IR - Séparé par produit pour plus de clarté */}
-                  {produit1 && (produit1.envelope === 'CTO' || produit1.envelope === 'AV' || produit1.envelope === 'PEA') && (
+                  {/* Option au barème IR - Une seule ligne avec checkboxes */}
+                  {(produit1 && (produit1.envelope === 'CTO' || produit1.envelope === 'AV' || produit1.envelope === 'PEA')) ||
+                   (produit2 && (produit2.envelope === 'CTO' || produit2.envelope === 'AV' || produit2.envelope === 'PEA')) ? (
                     <tr>
-                      <td>Option au barème IR - {produit1.envelopeLabel}</td>
-                      <td colSpan={2} style={{ textAlign: 'center' }}>
-                        <div className="pl-field-container">
-                        <Toggle
-                          checked={produit1.liquidation.optionBaremeIR}
-                          onChange={(v) => updateProductOption(0, 'liquidation.optionBaremeIR', v)}
-                          label=""
-                        />
-                        <div className="pl-field-help">
-                          {produit1.liquidation.optionBaremeIR ? 'Barème IR progressif' : 'PFU (Flat Tax 30%)'}
-                        </div>
-                      </div>
+                      <td>Option au barème IR</td>
+                      <td style={{ textAlign: 'center' }}>
+                        {produit1 && (produit1.envelope === 'CTO' || produit1.envelope === 'AV' || produit1.envelope === 'PEA') ? (
+                          <Toggle
+                            checked={produit1.liquidation.optionBaremeIR}
+                            onChange={(v) => updateProductOption(0, 'liquidation.optionBaremeIR', v)}
+                            label=""
+                          />
+                        ) : (
+                          <span className="pl-muted">—</span>
+                        )}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        {produit2 && (produit2.envelope === 'CTO' || produit2.envelope === 'AV' || produit2.envelope === 'PEA') ? (
+                          <Toggle
+                            checked={produit2.liquidation.optionBaremeIR}
+                            onChange={(v) => updateProductOption(1, 'liquidation.optionBaremeIR', v)}
+                            label=""
+                          />
+                        ) : (
+                          <span className="pl-muted">—</span>
+                        )}
                       </td>
                     </tr>
-                  )}
-                  {produit2 && (produit2.envelope === 'CTO' || produit2.envelope === 'AV' || produit2.envelope === 'PEA') && (
-                    <tr>
-                      <td>Option au barème IR - {produit2.envelopeLabel}</td>
-                      <td colSpan={2} style={{ textAlign: 'center' }}>
-                        <div className="pl-field-container">
-                        <Toggle
-                          checked={produit2.liquidation.optionBaremeIR}
-                          onChange={(v) => updateProductOption(1, 'liquidation.optionBaremeIR', v)}
-                          label=""
-                        />
-                        <div className="pl-field-help">
-                          {produit2.liquidation.optionBaremeIR ? 'Barème IR progressif' : 'PFU (Flat Tax 30%)'}
-                        </div>
-                      </div>
-                      </td>
-                    </tr>
-                  )}
+                  ) : null}
                 </tbody>
               </table>
 
@@ -1992,6 +2108,7 @@ export default function PlacementV2() {
 
           {/* Phase Transmission */}
           {state.step === 'transmission' && (
+            <>
             <div className="ir-table-wrapper premium-card premium-section">
               <div className="pl-section-title premium-section-title">Transmission</div>
               <table className="ir-table pl-table premium-table">
@@ -2015,17 +2132,42 @@ export default function PlacementV2() {
                     </td>
                   </tr>
                   <tr>
-                    <td>Nombre de bénéficiaires</td>
+                    <td>Choix du bénéficiaire</td>
                     <td colSpan={2}>
-                      <InputNumber
-                        value={state.transmission.nbBeneficiaires}
-                        onChange={(v) => setTransmission({ nbBeneficiaires: v })}
-                        min={1}
-                        max={10}
-                        inline
-                      />
+                      <select
+                        className="pl-select"
+                        value={state.transmission.beneficiaryType || 'enfants'}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === 'conjoint') {
+                            setTransmission({ beneficiaryType: value, nbBeneficiaires: 1 });
+                          } else {
+                            setTransmission({ beneficiaryType: value });
+                          }
+                        }}
+                      >
+                        {BENEFICIARY_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                   </tr>
+                  {state.transmission.beneficiaryType !== 'conjoint' && (
+                    <tr>
+                      <td>Nombre de bénéficiaires</td>
+                      <td colSpan={2}>
+                        <InputNumber
+                          value={state.transmission.nbBeneficiaires}
+                          onChange={(v) => setTransmission({ nbBeneficiaires: v })}
+                          min={1}
+                          max={10}
+                          inline
+                        />
+                      </td>
+                    </tr>
+                  )}
                   <tr>
                     <td>Tranche DMTG estimée</td>
                     <td colSpan={2}>
@@ -2046,26 +2188,40 @@ export default function PlacementV2() {
                       </select>
                     </td>
                   </tr>
+                  {showDmtgDisclaimer && (
+                    <tr>
+                      <td colSpan={3}>
+                        <div className="pl-alert pl-alert--warning">
+                          ⚠️ Consommation estimée de la tranche DMTG (sur l’assiette réellement soumise aux DMTG) <sup>(1)</sup> :
+                          <div style={{ marginTop: 6 }}>
+                            <div>
+                              Placement 1 : {dmtgConsumptionPercentProduit1}%
+                            </div>
+                            <div>
+                              Placement 2 : {dmtgConsumptionPercentProduit2}%
+                            </div>
+                          </div>
+                          <div style={{ marginTop: 6 }}>
+                            Pensez à ajuster la tranche DMTG pour refléter l’ensemble du patrimoine.
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
-              <div className="pl-hint">
-                <strong>Régimes applicables :</strong><br />
-                • AV : 990 I (versements avant 70 ans) ou 757 B (après 70 ans)<br />
-                • PER assurance : 990 I (décès avant 70 ans) ou 757 B (décès ≥ 70 ans)<br />
-                • PER bancaire / CTO / PEA : intégration à l'actif successoral (DMTG)<br />
-                <a href="/settings/impots" style={{ color: 'var(--color-c2)', fontSize: 11 }}>Consulter le barème DMTG →</a>
-              </div>
 
               {/* Tableau détaillé des droits de succession */}
               <div className="pl-section-title premium-section-title" style={{ marginTop: 24 }}>Détail des droits de succession</div>
-              <table className="ir-table pl-table premium-table">
+              <table className="ir-table pl-table premium-table pl-table--transmission-compact">
                 <thead>
                   <tr>
                     <th>Produit</th>
                     <th>Capital transmis</th>
                     <th>Abattement</th>
-                    <th>Assiette fiscale</th>
-                    <th>Fiscalité (DMTG)</th>
+                    <th>Assiette</th>
+                    <th>PS</th>
+                    <th>Taxes (Forfaitaire + DMTG)</th>
                     <th>Net transmis</th>
                   </tr>
                 </thead>
@@ -2075,20 +2231,22 @@ export default function PlacementV2() {
                     <td>{euro(produit1?.transmission?.capitalTransmis || 0)}</td>
                     <td>{euro(produit1?.transmission?.abattement || 0)}</td>
                     <td>{euro(produit1?.transmission?.assiette || 0)}</td>
-                    <td>{euro(produit1?.transmission?.fiscalite || 0)}</td>
-                    <td><strong>{euro(produit1?.transmission?.netTransmis || 0)}</strong></td>
+                    <td>{formatPsMontant(psDecesProduit1, euro)}</td>
+                    <td>{euro((produit1?.transmission?.taxeForfaitaire || 0) + (produit1?.transmission?.taxeDmtg || 0))}</td>
+                    <td><strong>{euro(produit1?.transmission?.capitalTransmisNet || 0)}</strong></td>
                   </tr>
                   <tr>
                     <td>{produit2?.envelopeLabel || 'Produit 2'}</td>
                     <td>{euro(produit2?.transmission?.capitalTransmis || 0)}</td>
                     <td>{euro(produit2?.transmission?.abattement || 0)}</td>
                     <td>{euro(produit2?.transmission?.assiette || 0)}</td>
-                    <td>{euro(produit2?.transmission?.fiscalite || 0)}</td>
-                    <td><strong>{euro(produit2?.transmission?.netTransmis || 0)}</strong></td>
+                    <td>{formatPsMontant(psDecesProduit2, euro)}</td>
+                    <td>{euro((produit2?.transmission?.taxeForfaitaire || 0) + (produit2?.transmission?.taxeDmtg || 0))}</td>
+                    <td><strong>{euro(produit2?.transmission?.capitalTransmisNet || 0)}</strong></td>
                   </tr>
-                  {!produit1 && !produit2 && (
+                  {!hasTransmissionData && (
                     <tr>
-                      <td colSpan={6} style={{ textAlign: 'center', color: 'var(--color-c8)', fontStyle: 'italic' }}>
+                      <td colSpan={7} style={{ textAlign: 'center', color: 'var(--color-c8)', fontStyle: 'italic' }}>
                         Aucune donnée à afficher - Configurez les paramètres de transmission ci-dessus
                       </td>
                     </tr>
@@ -2096,65 +2254,110 @@ export default function PlacementV2() {
                 </tbody>
               </table>
             </div>
+            <div className="pl-disclaimer pl-transmission-info-card">
+              <strong>Régimes applicables :</strong>
+              <ul>
+                <li>AV : 990 I (versements avant 70 ans) ou 757 B (après 70 ans)</li>
+                <li>PER assurance : 990 I (décès avant 70 ans) ou 757 B (décès ≥ 70 ans)</li>
+                <li>PER bancaire / CTO / PEA / SCPI : intégration à l'actif successoral (DMTG)</li>
+                <li>Conjoint / partenaire PACS : exonération du prélèvement 20 % et des DMTG</li>
+              </ul>
+              <p>
+                <a href="/settings/impots" className="pl-transmission-info-card__link">Consulter le barème DMTG →</a>
+              </p>
+              <strong>Hypothèses PS décès :</strong>
+              <p>
+                Assurance-vie & PER simulés à 100 % en unités de compte (pas de fonds €). Les PS au décès sont appliqués au taux de {psSettings?.patrimony?.current?.totalRate ?? 17.2}% (<a href="/settings/prelevements" className="pl-transmission-info-card__link">paramétrable</a>), puis les montants nets alimentent les DMTG.
+              </p>
+              <p className="pl-transmission-info-card__note">
+                La détermination de l’assiette taxable au prélèvement 990&nbsp;I s’effectue après imputation des PS dus sur les produits du contrat, prélevés par l’assureur au décès (BOI-TCAS-AUT-60).
+              </p>
+              <p className="pl-transmission-info-card__footnote"><sup>(1)</sup> Seuls les montants réellement soumis aux PS/DMTG sont utilisés pour les pourcentages affichés.</p>
+            </div>
+            </>
           )}
-
         </div>
 
         {/* RIGHT PANEL - Synthèse unifiée */}
-          <div className="ir-right">
+        <div className="ir-right">
             {produit1 && produit2 && (
               <div className="ir-synthesis-card premium-card">
                 <div className="pl-card-title premium-section-title">Synthèse comparative</div>
                 
-                {/* KPIs principaux */}
-                <div className="ir-kpi-grid">
-                  <div className="ir-kpi-item">
-                    <div className="ir-kpi-label">Meilleur effort</div>
-                    <div className="ir-kpi-value">{results.meilleurEffort === produit1.envelope ? produit1.envelopeLabel : produit2.envelopeLabel}</div>
-                    <div className="ir-kpi-delta">
-                      <DeltaIndicator value={deltas.effortTotal} inverse />
-                    </div>
-                  </div>
+                {/* Timeline visuelle du parcours */}
+                <TimelineBar
+                  ageActuel={state.client.ageActuel}
+                  ageDebutLiquidation={state.client.ageActuel + state.products[0].dureeEpargne}
+                  ageAuDeces={state.transmission.ageAuDeces}
+                />
+                
+                {/* Trait séparateur avant ROI */}
+                <div style={{ borderTop: '1px solid var(--color-c6)', margin: '12px 0' }} />
+                
+                {/* Calcul du ROI pour chaque produit */}
+                {(() => {
+                  const totalGains1 = produit1.totaux.revenusNetsLiquidation + produit1.totaux.capitalTransmisNet;
+                  const totalGains2 = produit2.totaux.revenusNetsLiquidation + produit2.totaux.capitalTransmisNet;
+                  const roi1 = produit1.totaux.effortReel > 0 ? totalGains1 / produit1.totaux.effortReel : 0;
+                  const roi2 = produit2.totaux.effortReel > 0 ? totalGains2 / produit2.totaux.effortReel : 0;
+                  const meilleurProduit = roi1 > roi2 ? 1 : 2;
                   
-                  <div className="ir-kpi-item">
-                    <div className="ir-kpi-label">Meilleurs revenus liquidation</div>
-                    <div className="ir-kpi-value">{results.meilleurRevenus === produit1.envelope ? produit1.envelopeLabel : produit2.envelopeLabel}</div>
-                    <div className="ir-kpi-delta">
-                      <DeltaIndicator value={deltas.revenusNetsLiquidation} />
-                    </div>
-                  </div>
-                  
-                  <div className="ir-kpi-item">
-                    <div className="ir-kpi-label">Meilleure transmission</div>
-                    <div className="ir-kpi-value">{results.meilleurTransmission === produit1.envelope ? produit1.envelopeLabel : produit2.envelopeLabel}</div>
-                    <div className="ir-kpi-delta">
-                      <DeltaIndicator value={deltas.capitalTransmisNet} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Détails par produit - grille partagée */}
-                <div className="pl-kpi-compare">
-                  <div className="pl-kpi-compare__header-empty"></div>
-                  <div className="pl-kpi-compare__header" title={produit1.envelopeLabel}>{produit1.envelopeLabel}</div>
-                  <div className="pl-kpi-compare__header" title={produit2.envelopeLabel}>{produit2.envelopeLabel}</div>
-                  
-                  <div className="pl-kpi-compare__label">Effort</div>
-                  <div className="pl-kpi-compare__value">{shortEuro(produit1.totaux.effortReel)}</div>
-                  <div className="pl-kpi-compare__value">{shortEuro(produit2.totaux.effortReel)}</div>
-                  
-                  <div className="pl-kpi-compare__label">Capital acquis</div>
-                  <div className="pl-kpi-compare__value">{shortEuro(produit1.epargne.capitalAcquis)}</div>
-                  <div className="pl-kpi-compare__value">{shortEuro(produit2.epargne.capitalAcquis)}</div>
-                  
-                  <div className="pl-kpi-compare__label">Revenus nets</div>
-                  <div className="pl-kpi-compare__value">{shortEuro(produit1.totaux.revenusNetsLiquidation)}</div>
-                  <div className="pl-kpi-compare__value">{shortEuro(produit2.totaux.revenusNetsLiquidation)}</div>
-                  
-                  <div className="pl-kpi-compare__label">Transmis net</div>
-                  <div className="pl-kpi-compare__value">{shortEuro(produit1.totaux.capitalTransmisNet)}</div>
-                  <div className="pl-kpi-compare__value">{shortEuro(produit2.totaux.capitalTransmisNet)}</div>
-                </div>
+                  return (
+                    <>
+                      {/* Comparaison ROI - 2 colonnes */}
+                      <div className="pl-roi-compare">
+                        <div className="pl-roi-compare__title">ROI</div>
+                        <div className="pl-roi-compare__grid">
+                          <div className={`pl-roi-compare__card ${meilleurProduit === 1 ? 'is-winner' : ''}`}>
+                            <div className="pl-roi-compare__product-indicator" style={{ background: 'var(--color-c2)' }}></div>
+                            <div className="pl-roi-compare__product">{produit1.envelopeLabel.replace('PER individuel déductible', 'PER individuel')}</div>
+                            <div className="pl-roi-compare__ratio">× {roi1.toFixed(2)}</div>
+                          </div>
+                          <div className={`pl-roi-compare__card ${meilleurProduit === 2 ? 'is-winner' : ''}`}>
+                            <div className="pl-roi-compare__product-indicator" style={{ background: 'var(--color-c4)' }}></div>
+                            <div className="pl-roi-compare__product">{produit2.envelopeLabel.replace('PER individuel déductible', 'PER individuel')}</div>
+                            <div className="pl-roi-compare__ratio">× {roi2.toFixed(2)}</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Tableau comparatif */}
+                      <div className="pl-kpi-compare">
+                        <div className="pl-kpi-compare__header-empty"></div>
+                        <div className="pl-kpi-compare__header">
+                          <div className="pl-kpi-compare__indicator" style={{ background: 'var(--color-c2)' }}>1</div>
+                        </div>
+                        <div className="pl-kpi-compare__header">
+                          <div className="pl-kpi-compare__indicator" style={{ background: 'var(--color-c4)' }}>2</div>
+                        </div>
+                        
+                        <div className="pl-kpi-compare__label">Effort total</div>
+                        <div className="pl-kpi-compare__value">{shortEuro(produit1.totaux.effortReel)}</div>
+                        <div className="pl-kpi-compare__value">{shortEuro(produit2.totaux.effortReel)}</div>
+                        
+                        <div className="pl-kpi-compare__label">Capital acquis</div>
+                        <div className="pl-kpi-compare__value">{shortEuro(produit1.epargne.capitalAcquis)}</div>
+                        <div className="pl-kpi-compare__value">{shortEuro(produit2.epargne.capitalAcquis)}</div>
+                        
+                        <div className="pl-kpi-compare__label">Revenus nets</div>
+                        <div className="pl-kpi-compare__value">{shortEuro(produit1.totaux.revenusNetsLiquidation)}</div>
+                        <div className="pl-kpi-compare__value">{shortEuro(produit2.totaux.revenusNetsLiquidation)}</div>
+                        
+                        <div className="pl-kpi-compare__label">Transmis net</div>
+                        <div className="pl-kpi-compare__value">{shortEuro(produit1.totaux.capitalTransmisNet)}</div>
+                        <div className="pl-kpi-compare__value">{shortEuro(produit2.totaux.capitalTransmisNet)}</div>
+                        
+                        <div className="pl-kpi-compare__separator"></div>
+                        <div className="pl-kpi-compare__separator"></div>
+                        <div className="pl-kpi-compare__separator"></div>
+                        
+                        <div className="pl-kpi-compare__label pl-kpi-compare__label--total">Total récupéré</div>
+                        <div className="pl-kpi-compare__value pl-kpi-compare__value--total">{shortEuro(totalGains1)}</div>
+                        <div className="pl-kpi-compare__value pl-kpi-compare__value--total">{shortEuro(totalGains2)}</div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             )}
           </div>

@@ -14,13 +14,7 @@ import {
   triggerPlacementLoadEvent,
 } from './utils/placementEvents';
 import Credit from './pages/Credit';
-import Settings from './pages/Settings';
-import SettingsImpots from './pages/Sous-Settings/SettingsImpots';
-import SettingsPrelevements from './pages/Sous-Settings/SettingsPrelevements';
-import SettingsFiscalites from './pages/Sous-Settings/SettingsFiscalites';
-import SettingsBaseContrats from './pages/Sous-Settings/SettingsBaseContrats';
-import SettingsTableMortalite from './pages/Sous-Settings/SettingsTableMortalite';
-import SettingsComptes from './pages/Sous-Settings/SettingsComptes';
+import SettingsShell from './pages/SettingsShell';
 import Ir from './pages/Ir';
 import { AuditWizard } from './features/audit';
 import StrategyPage from './pages/StrategyPage';
@@ -393,14 +387,8 @@ const contextLabel = getContextLabel(path);
         <Route path="/sim/credit" element={<PrivateRoute><Credit /></PrivateRoute>} />
         <Route path="/sim/ir" element={<PrivateRoute><Ir /></PrivateRoute>} />
 
-        {/* Paramètres (protégés) */}
-        <Route path="/settings" element={<PrivateRoute><Settings isAdmin={isAdmin} /></PrivateRoute>} />
-        <Route path="/settings/impots" element={<PrivateRoute><SettingsImpots isAdmin={isAdmin} /></PrivateRoute>} />
-        <Route path="/settings/prelevements-sociaux" element={<PrivateRoute><SettingsPrelevements isAdmin={isAdmin} /></PrivateRoute>}/>
-        <Route path="/settings/fiscalites-contrats" element={<PrivateRoute><SettingsFiscalites isAdmin={isAdmin} /></PrivateRoute>}/>
-        <Route path="/settings/base-contrat" element={<PrivateRoute><SettingsBaseContrats isAdmin={isAdmin} /></PrivateRoute>}/>
-        <Route path="/settings/table-mortalite" element={<PrivateRoute><SettingsTableMortalite isAdmin={isAdmin} /></PrivateRoute>}/>
-        <Route path="/settings/comptes" element={<PrivateRoute><SettingsComptes /></PrivateRoute>} />
+        {/* Paramètres (protégés) - Shell unique avec onglets internes */}
+        <Route path="/settings/*" element={<PrivateRoute><SettingsShell /></PrivateRoute>} />
 
         {/* Redirections de compatibilité */}
         <Route path="/placement" element={<Navigate to="/sim/placement" replace />}/>

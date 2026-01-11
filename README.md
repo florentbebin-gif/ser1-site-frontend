@@ -5,7 +5,7 @@ Application web interne pour CGP permettant :
 - l'**audit patrimonial complet** (6 étapes : famille, civil, actifs, passif, fiscalité, objectifs),
 - la **stratégie guidée** avec recommandations automatiques et projections comparées,
 - l'accès à plusieurs **simulateurs financiers** (IR, placement, crédit),
-- la **génération automatique de PowerPoint** (audit et stratégie),
+- la **sauvegarde et le chargement de dossiers complets** en local,
 - la **gestion centralisée de paramètres** (fiscalité, couleurs, page de garde),
 - la **conformité RGPD** (pas de stockage serveur des noms clients, export/import JSON local).
 
@@ -45,311 +45,155 @@ src/
   App.jsx                 # Routing global + topbar commune
 
   supabaseClient.js       # Initialisation Supabase
-  styles.css              # Styles globaux (layout, topbar, boutons)
+  styles/
+    global.css            # Styles globaux (layout, topbar, boutons)
+    premium-shared.css    # Styles partagés "premium"
 
   pages/
     Login.jsx             # Connexion / reset / invitation
     Home.jsx              # Accueil avec tuiles de navigation
-
-    Placement.jsx         # Simulateur de placement
+    PlacementV2.jsx       # Simulateur de placement
     Placement.css
-
     Credit.jsx            # Simulateur de crédit
     Credit.css
+    Settings/
+      SettingsPage.jsx    # Page Paramètres principale
+      SettingsNav.jsx     # Navigation interne par pilules
+      Settings.css
+      Sous-Settings/
+        SettingsGeneraux.jsx
+        SettingsImpots.jsx
+        SettingsPrelevements.jsx
+        SettingsFiscalites.jsx
+        SettingsBaseContrats.jsx
+        SettingsTableMortalite.jsx
 
-    Settings.jsx          # Page Paramètres principale
-    SettingsNav.jsx       # Navigation interne par pilules
-    Settings.css
+  components/             # Composants transverses (Topbar, Timeline, etc.)
+  utils/                  # Fonctions utilitaires (export Excel, reset, etc.)
+  engine/                 # Moteurs de calcul (placement, transmission, IR…)
+```
 
-    Sous-Settings/
-      SettingsGeneraux.jsx
-      SettingsImpots.jsx
-      SettingsPrelevements.jsx
-      SettingsFiscalites.jsx
-      SettingsBaseContrats.jsx
-      SettingsTableMortalite.jsx
+---
 
-      SettingsGeneraux.css
-      SettingsImpots.css
-Les composants transverses (topbar, boutons icônes, pilules, etc.)
-sont gérés directement dans App.jsx et les pages associées.
+## 3. Navigation & Topbar
 
-3. Navigation & Topbar
 La topbar est commune à toutes les pages (sauf login si non connecté).
 
-Boutons disponibles (icônes)
-🏠 Home → retour à l’accueil
+### Boutons disponibles (icônes)
+- 🏠 **Accueil** : retour à la Home.
+- 💾 **Sauvegarder** : déclenche `saveGlobalState()` et produit un fichier `.ser1`.
+- 📂 **Charger** : ouvre un fichier `.ser1` et restaure tous les simulateurs.
+- 🔄 **Réinitialiser** :
+  - Sur l’accueil : reset **global** (tous les simulateurs + sessionStorage associés).
+  - Sur une page simulateur : reset **ciblé** (`triggerPageReset('placement')`, `triggerPageReset('credit')`, etc.).
+- ⚙️ **Paramètres** : accès à la configuration (visible uniquement si session active).
+- 🚪 **Déconnexion** : `supabase.auth.signOut()`.
 
-💾 Save → prévu (non implémenté)
+Les boutons sont des puces arrondies, texte affiché via tooltip au survol.
 
-📂 Charger → prévu (non implémenté)
+---
 
-🔄 Reset → remet à zéro le simulateur actif (Placement / Crédit)
+## 4. Authentification & rôles
 
-⚙️ Paramètres → visible uniquement si session active
+- **Supabase Auth** (email / mot de passe, reset, invitation).
+- Le rôle (`admin` ou `user`) est stocké dans `user_metadata`.
+  ```json
+  {
+    "role": "admin"
+  }
+  ```
+- **Admin** : peut modifier et enregistrer les paramètres.
+- **User** : lecture seule (les champs sont désactivés et le bouton “Enregistrer” masqué).
 
-🚪 Déconnexion → Supabase signOut
+---
 
-UX
-Boutons sous forme de puces arrondies
+## 5. Pages principales
 
-Taille uniforme sur toutes les pages
+### 5.1 Home
+Tuiles de navigation vers Placement, Crédit, Paramètres, futures simulations (IR, stratégie…).
 
-Texte affiché via tooltip au survol
+### 5.2 Simulateur Placement (`PlacementV2.jsx`)
+- Compare **2 placements** (capitalisation / distribution).
+- Phases : Épargne → Liquidation → Transmission.
+- Paramètres : versements initiaux, périodiques, répartition Capi/Distrib, rendement, frais.
+- Résultats : tables détaillées, synthèse comparative, export Excel (Paramètres + Épargne/Liquidation/Transmission pour chaque produit).
+- Reset dédié via topbar.
 
-Le bouton Reset est spécifique à chaque page
+### 5.3 Simulateur Crédit (`Credit.jsx`)
+- Crédit amortissable ou in fine, assurance CRD/CI, lissage avec d’autres prêts.
+- Vue mensuelle / annuelle + tableaux d’amortissement.
+- Export Excel : paramètres saisis + échéanciers.
+- Reset dédié via topbar.
 
-4. Authentification & rôles
-Authentification
-Gérée par Supabase Auth
+### 5.4 Paramètres (`SettingsPage.jsx`)
+- Navigation par pilules (Généraux, Impôts, Prélèvements, Fiscalités, Base contrats, Table mortalité).
+- Les couleurs des pilules (fond #F2F2F2, hover #9FBDB2, active #CFDED8) sont définies dans `Settings.css`.
+- Sous-page “Généraux” : palette de 10 couleurs + upload d’une image pour les exports (stockage Supabase).
+- Sous-pages fiscales : **principe “zéro taux en dur”** → tous les taux, abattements et tranches sont saisis ici (table `tax_settings`).
+- Stockage : table Supabase `tax_settings` (1 ligne JSON `{ id: 1, data: {...} }`).
 
-Connexion email / mot de passe
+---
 
-Gestion de :
+## 6. Règles design & thèmes couleurs
 
-réinitialisation de mot de passe
+- **Palette globale** : 10 couleurs configurables depuis `/settings/generaux`. Aucun composant ne doit introduire une couleur “random” si un token existe déjà.
+- **Typographies & layout** : CSS natif. Les sections premium (Placement Transmission, info cards, etc.) réutilisent `premium-shared.css` pour assurer cohérence.
+- **Disclaimers & cartes** : utiliser les classes locales (`.pl-disclaimer`, `.ir-disclaimer`, `.credit-hypotheses`) au lieu de styles partagés pour éviter les effets de bord.
+- **Accessibilité** : contrastes vérifiés manuellement lors des revues UI. Les tables sensibles (transmission) imposent centrage et `table-layout: fixed` pour garantir la lisibilité.
 
-invitation utilisateur
+---
 
-Rôles
-Le rôle est stocké dans les user_metadata Supabase.
+## 7. Paramètres & administration
 
-Exemple :
+- **Accès** : `/settings` nécessite une session Supabase active. Navigation par pilules (Généraux, Impôts, Prélèvements, Fiscalités, Base contrats, Table mortalité).
+- **Gestion des droits** : `session.user.user_metadata.role` pilote l’édition. Seuls les admins voient le bouton “Enregistrer les paramètres” et les champs actifs.
+- **Persistant storage** :
+  - Table `tax_settings` (Supabase) contenant l’ensemble des paramètres (abattements, barèmes IR, PS, fiscalités contrats…) sous forme d’un objet JSON.
+  - Bucket Supabase Storage pour l’image de page de garde PowerPoint (une seule image active par cabinet).
+- **Principe “zéro taux en dur”** : toute évolution métier doit lire ses taux/abattements depuis les settings admin. Si un fallback est nécessaire, il doit être implémenté dans les settings par défaut, jamais dans le moteur.
 
-json
-Copier le code
-{
-  "role": "admin"
-}
-Admin
+---
 
-Peut modifier et sauvegarder les paramètres
+## 8. Supabase
 
-User
+- **Auth** : utilisateurs + `user_metadata.role`.
+- **Database** : table `tax_settings` pour l’ensemble des paramètres fiscaux.
+- **Storage** : bucket pour les images (page de garde). Accès protégé par RLS et policies Supabase.
 
-Accès en lecture seule
+---
 
-Le statut est affiché dans la page Paramètres :
+## 9. Variables d’environnement
 
-Utilisateur : email — Statut : User / Admin
+Créer un fichier `.env` à la racine :
 
-5. Pages principales
-5.1. Home
-Page d’accueil avec des tuiles de navigation vers :
-
-Simulateur Placement
-
-Simulateur Crédit
-
-Paramètres
-
-Futures fonctionnalités (IR, épargne globale, etc.)
-
-5.2. Simulateur Placement
-Placement.jsx
-
-Objectif : comparer plusieurs placements financiers.
-
-Fonctionnalités :
-
-4 placements comparables
-
-capitalisation / distribution
-
-Paramètres :
-
-mois de souscription
-
-rendement net
-
-placement initial
-
-frais d’entrée
-
-versements programmés
-
-durée
-
-Résultats :
-
-tableau annuel (Année 1, 2, …)
-
-graphique de valorisation
-
-Calculs réalisés en frontend
-
-Bouton Reset dédié dans la topbar
-
-5.3. Simulateur Crédit
-Credit.jsx
-
-Fonctionnalités :
-
-Crédit amortissable
-
-Assurance emprunteur
-
-Vue mensuelle / annuelle
-
-Tableau d’amortissement détaillé
-
-Synthèse :
-
-mensualité
-
-coût total intérêts + assurance
-
-Export Excel :
-
-tableau d’amortissement
-
-onglet “Paramètres saisis”
-
-Bouton Reset dédié dans la topbar
-
-6. Page Paramètres
-Navigation interne via pilules :
-
-Généraux
-
-Impôts
-
-Prélèvements sociaux
-
-Fiscalités contrats
-
-Base contrats
-
-Table de mortalité
-
-Style des pilules
-Fond : #F2F2F2
-
-Hover : bordure #9FBDB2
-
-Active : fond #CFDED8
-
-Clic sur la pilule active : aucun effet
-
-6.1. Sous-page « Généraux »
-Palette de couleurs de l’étude
-10 couleurs configurables
-
-Chaque couleur est saisissable :
-
-via un color picker
-
-via un champ texte hexadécimal
-
-Valeurs par défaut :
-
-#2B3E37, #709B8B, #9FBDB2, #CFDED8,
-
-#788781, #CEC1B6, #F5F3F0, #D9D9D9,
-
-#7F7F7F, #000000
-
-Les choix sont sauvegardés en base
-
-Ces couleurs seront utilisées ultérieurement pour les exports PowerPoint
-
-Page de garde PowerPoint
-Upload d’une image (jpg / png)
-
-Stockage dans Supabase Storage
-
-Une seule image active par utilisateur
-
-Affichage d’une miniature
-
-Possibilité de supprimer l’image
-
-Cette image sera utilisée comme première page des éditions PowerPoint
-
-6.2. Sous-page « Impôts »
-Page structurée en deux colonnes permanentes :
-
-2025 (revenus 2024)
-
-2024 (revenus 2023)
-
-Sections :
-
-Barème de l’impôt sur le revenu
-
-Tranches (de / à / taux / retraitement)
-
-Quotient familial
-
-Décote
-
-Abattement 10 %
-
-Abattement 10 % retraités
-
-PFU (flat tax)
-
-CEHR / CDHR
-
-Impôt sur les sociétés
-
-Caractéristiques :
-
-Champs modifiables uniquement pour les admins
-
-Users : lecture seule
-
-Bouton “Enregistrer les paramètres” visible pour admin uniquement
-
-Stockage :
-
-Table Supabase : tax_settings
-
-Les données sont stockées sous forme JSON
-
-Une ligne globale (id = 1)
-
-7. Supabase
-Auth
-Utilisateurs
-
-Métadonnées (rôles)
-
-Database
-tax_settings : paramètres fiscaux globaux
-
-Tables additionnelles possibles pour l’évolution
-
-Storage
-Bucket dédié aux images (page de garde)
-
-Accès contrôlé par policies Supabase
-
-Utilisation pour les futures éditions PowerPoint
-
-8. Variables d’environnement
-env
-Copier le code
+```env
 VITE_SUPABASE_URL=https://xxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=xxxxxxxx
-➡️ Aucune API backend externe n’est requise.
+```
 
-9. Déploiement
-Repo GitHub connecté à Vercel
+Aucune API backend externe supplémentaire.
 
-Build via Vite
+---
 
-Variables d’environnement définies dans Vercel
+## 10. Déploiement
 
-Déploiement automatique à chaque push sur la branche principale
+- Repo GitHub connecté à Vercel.
+- `npm run build` (Vite) → déploiement automatique sur branche `main`.
+- Variables d’environnement configurées dans Vercel.
 
-10. Pistes d’évolution
-Simulateur d’impôt sur le revenu
+---
 
-Sauvegarde et chargement de dossiers clients
+## 11. Exports
 
-Génération automatique de PowerPoint
+- **Excel Placement** : depuis `/sim/placement`, export structuré en onglets (Paramètres, Épargne, Liquidation, Transmission) pour chacun des deux produits simulés. Généré via `utils/exportExcel.js`.
+- **Excel Crédit** : depuis `/sim/credit`, export des paramètres saisis et du tableau d’amortissement (mensuel ou annuel) avec assurance intégrée.
+- **PowerPoint** : non implémenté. Pré-requis existants : palette couleurs et page de garde dans Supabase Storage. À implémenter via `pptxgenjs` ou équivalent.
 
-Centralisation des composants UI
+---
 
-Validation métier et contrôles utilisateurs
+## 12. Pistes d’évolution
+
+- Simulateur d’impôt sur le revenu complet.
+- Génération automatique de présentations PowerPoint.
+- Centralisation des composants UI (design system / tokens).
+- Validation métier renforcée (contrôles de saisie, disclaimers).

@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, DEBUG_AUTH } from '../supabaseClient';
 import { useTheme } from '../settings/ThemeProvider';
+<<<<<<< Updated upstream
 import SettingsNav from './SettingsNav';
+=======
+import { useAuth, useUserRole } from '../auth';
+import { UserInfoBanner } from '../components/UserInfoBanner';
+>>>>>>> Stashed changes
 
 // Couleurs par défaut
 const DEFAULT_COLORS = {
@@ -325,8 +330,13 @@ export default function Settings({ isAdmin = false }) {
   };
 
   const handleSaveColors = async () => {
+<<<<<<< Updated upstream
     if (!isAdmin) {
       setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
+=======
+    if (!user) {
+      setSaveMessage('Utilisateur non connecté.');
+>>>>>>> Stashed changes
       return;
     }
     try {
@@ -383,6 +393,7 @@ export default function Settings({ isAdmin = false }) {
     }
   };
 
+<<<<<<< Updated upstream
   // Gestionnaire de réinitialisation
   const handleResetTheme = async () => {
     if (!isAdmin) {
@@ -422,6 +433,11 @@ export default function Settings({ isAdmin = false }) {
   const handleCoverFileChange = async (e) => {
     if (!isAdmin) {
       setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
+=======
+  const handleCoverFileChange = async (e) => {
+    if (!user) {
+      setSaveMessage('Utilisateur non connecté.');
+>>>>>>> Stashed changes
       return;
     }
     const file = e.target.files?.[0];
@@ -504,8 +520,13 @@ export default function Settings({ isAdmin = false }) {
   };
 
   const handleRemoveCover = async () => {
+<<<<<<< Updated upstream
     if (!isAdmin) {
       setSaveMessage('Seuls les administrateurs peuvent modifier les paramètres.');
+=======
+    if (!user) {
+      setSaveMessage('Utilisateur non connecté.');
+>>>>>>> Stashed changes
       return;
     }
     if (!coverUrl) return;
@@ -530,40 +551,25 @@ export default function Settings({ isAdmin = false }) {
 
   /* ---------- Rendu ---------- */
 
+<<<<<<< Updated upstream
+=======
+  if (!authReady) {
+    return <p>Chargement de l'authentification...</p>;
+  }
+
+>>>>>>> Stashed changes
   if (loading) {
-    return (
-      <div className="settings-page">
-        <div className="section-card">
-          <div className="section-title">Paramètres</div>
-          <SettingsNav />
-          <p>Chargement…</p>
-        </div>
-      </div>
-    );
+    return <p>Chargement…</p>;
   }
 
   if (!user) {
-    return (
-      <div className="settings-page">
-        <div className="section-card">
-          <div className="section-title">Paramètres</div>
-          <SettingsNav />
-          <p>Aucun utilisateur connecté.</p>
-        </div>
-      </div>
-    );
+    return <p>Aucun utilisateur connecté.</p>;
   }
 
   return (
-    <div className="settings-page">
-      <div className="section-card">
-        <div className="section-title">Paramètres</div>
-
-        {/* Nav en pilules */}
-        <SettingsNav />
-
-        {/* Contenu onglet Généraux */}
-        <div
+    <>
+      {/* Contenu onglet Généraux */}
+      <div
           style={{
             fontSize: 16,
             marginTop: 24,
@@ -573,6 +579,7 @@ export default function Settings({ isAdmin = false }) {
           }}
         >
           {/* Infos utilisateur */}
+<<<<<<< Updated upstream
           <div>
             <div style={{ marginBottom: 8 }}>
               <strong>Utilisateur :</strong>{' '}
@@ -583,13 +590,15 @@ export default function Settings({ isAdmin = false }) {
               <span>{roleLabel}</span>
             </div>
           </div>
+=======
+          <UserInfoBanner />
+>>>>>>> Stashed changes
 
           {/* Personnalisation avancée du thème */}
           <div>
             <h3 style={{ marginBottom: 8 }}>Personnalisation avancée du thème</h3>
-            <p style={{ marginBottom: 12, fontSize: 14, color: '#555' }}>
+            <p style={{ marginBottom: 12, fontSize: 14, color: 'var(--color-c9)' }}>
               Personnalisez l'interface complète avec des thèmes prédéfinis ou des couleurs sur mesure.
-              Ces changements s'appliquent immédiatement à toute l'application et aux études powerpoint.
             </p>
 
             {/* Thèmes prédéfinis */}
@@ -597,29 +606,56 @@ export default function Settings({ isAdmin = false }) {
               <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--color-c10)' }}>
                 Thèmes prédéfinis
               </label>
-              <select
-                value={selectedTheme}
-                onChange={(e) => handleThemeSelect(e.target.value)}
-                style={{
-                  width: '100%',
-                  maxWidth: '300px',
-                  padding: '8px 12px',
-                  border: '1px solid var(--color-c8)',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  backgroundColor: '#FFFFFF',
-                  cursor: 'pointer',
-                  color: 'var(--color-c10)'
-                }}
-              >
-                <option value="Personnalisé">Personnalisé</option>
-                {PREDEFINED_THEMES.map((theme) => (
-                  <option key={theme.name} value={theme.name}>
-                    {theme.name}
-                  </option>
-                ))}
-              </select>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <select
+                  value={selectedTheme}
+                  onChange={(e) => handleThemeSelect(e.target.value)}
+                  style={{
+                    flex: 1,
+                    maxWidth: '300px',
+                    padding: '8px 12px',
+                    border: '1px solid var(--color-c8)',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    backgroundColor: 'var(--color-c7)',
+                    cursor: 'pointer',
+                    color: 'var(--color-c10)'
+                  }}
+                >
+                  <option value="Personnalisé">Personnalisé</option>
+                  {PREDEFINED_THEMES.map((theme) => (
+                    <option key={theme.name} value={theme.name}>
+                      {theme.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="chip"
+                  onClick={handleSaveColors}
+                  disabled={savingColors || !user}
+                  style={{ opacity: user ? 1 : 0.5 }}
+                  title={user ? '' : 'Utilisateur non connecté'}
+                >
+                  {savingColors ? 'Enregistrement…' : 'Enregistrer le thème'}
+                </button>
+              </div>
             </div>
+
+            {saveMessage && (
+              <div className="settings-success-message" style={{ 
+                fontSize: 14, 
+                marginTop: 12, 
+                padding: '12px 16px', 
+                background: saveMessage.includes('Erreur') ? 'var(--color-error-bg)' : 'var(--color-success-bg)', 
+                border: saveMessage.includes('Erreur') ? '1px solid var(--color-error-border)' : '1px solid var(--color-success-border)', 
+                borderRadius: 6, 
+                color: saveMessage.includes('Erreur') ? 'var(--color-error-text)' : 'var(--color-success-text)',
+                fontWeight: 500
+              }}>
+                {saveMessage}
+              </div>
+            )}
 
             {/* Scope d'application du thème */}
             <div style={{ marginBottom: 20, padding: '12px', backgroundColor: 'var(--color-c7)', borderRadius: '6px' }}>
@@ -653,9 +689,6 @@ export default function Settings({ isAdmin = false }) {
                     Appliquer le thème à l'interface uniquement
                   </span>
                 </label>
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--color-c9)', marginTop: '8px' }}>
-                💡 Le choix est sauvegardé et s'appliquera automatiquement lors de votre prochaine connexion.
               </div>
             </div>
 
@@ -710,13 +743,14 @@ export default function Settings({ isAdmin = false }) {
                       fontSize: 12,
                       padding: '4px 6px',
                       borderRadius: 4,
-                      border: '1px solid #ccc',
+                      border: '1px solid var(--color-c8)',
                     }}
-                    placeholder="#000000"
+                    placeholder="var(--color-c10)"
                   />
                 </div>
               ))}
             </div>
+<<<<<<< Updated upstream
 
             {/* Boutons d'action */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -752,12 +786,14 @@ export default function Settings({ isAdmin = false }) {
                 </div>
               )}
             </div>
+=======
+>>>>>>> Stashed changes
           </div>
 
           {/* Choix de la page de garde */}
           <div>
             <h3 style={{ marginBottom: 8 }}>Choix de la page de garde de l’étude</h3>
-            <p style={{ marginBottom: 8, fontSize: 14, color: '#555' }}>
+            <p style={{ marginBottom: 8, fontSize: 14, color: 'var(--color-c9)' }}>
               Chargez une image (.jpg ou .png) d&apos;au moins 1200 × 700 pixels.
               Cette image est utilisée comme page de garde dans vos éditions d'étude PowerPoint.
             </p>
@@ -768,7 +804,7 @@ export default function Settings({ isAdmin = false }) {
               onChange={handleCoverFileChange}
             />
 
-            <div style={{ marginTop: 8, fontSize: 13, color: '#444' }}>
+            <div style={{ marginTop: 8, fontSize: 13, color: 'var(--color-c9)' }}>
               <strong>Page de garde sélectionnée :</strong>{' '}
               {coverUrl ? (
                 <div style={{ marginTop: 8 }}>
@@ -778,7 +814,7 @@ export default function Settings({ isAdmin = false }) {
                     style={{
                       maxWidth: '260px',
                       borderRadius: 8,
-                      border: '1px solid #ccc',
+                      border: '1px solid var(--color-c8)',
                     }}
                   />
                   <div style={{ fontSize: 12, marginTop: 4 }}>{coverUrl}</div>
@@ -797,13 +833,7 @@ export default function Settings({ isAdmin = false }) {
             </div>
           </div>
 
-          {saveMessage && (
-            <div style={{ fontSize: 13, color: '#2B3E37' }}>
-              {saveMessage}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+          </div>
+    </>
   );
 }

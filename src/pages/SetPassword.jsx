@@ -21,8 +21,12 @@ export default function SetPassword() {
     // Vérifier si les tokens sont présents
     if (!accessToken || !refreshToken) {
       setError('Lien de réinitialisation invalide ou expiré');
+      // Rediriger automatiquement vers la page de mot de passe oublié après 3 secondes
+      setTimeout(() => {
+        navigate('/forgot-password');
+      }, 3000);
     }
-  }, [accessToken, refreshToken]);
+  }, [accessToken, refreshToken, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,6 +53,10 @@ export default function SetPassword() {
 
       if (sessionError) {
         setError('Session expirée. Veuillez demander un nouveau lien de réinitialisation.');
+        // Rediriger automatiquement vers la page de mot de passe oublié après 3 secondes
+        setTimeout(() => {
+          navigate('/forgot-password');
+        }, 3000);
         return;
       }
 
@@ -108,7 +116,16 @@ export default function SetPassword() {
             {type === 'recovery' ? 'Réinitialiser votre mot de passe' : 'Définir votre mot de passe'}
           </h2>
           
-          {error && <div className="alert error">{error}</div>}
+          {error && (
+            <div className="alert error">
+              {error}
+              {error.includes('expiré') || error.includes('invalide') ? (
+                <div style={{ fontSize: '0.9em', marginTop: '8px' }}>
+                  Redirection automatique vers la page de mot de passe oublié...
+                </div>
+              ) : null}
+            </div>
+          )}
           
           <form className="form-grid" onSubmit={handleSubmit}>
             <label>Nouveau mot de passe</label>

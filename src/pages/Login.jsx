@@ -49,7 +49,8 @@ export default function Login({ onLogin }) {
           {error && <div className="alert error">{error}</div>}
           {resetSent && (
             <div className="alert success">
-              Si votre adresse e-mail existe, un lien vous a été envoyé.
+              Si votre adresse e-mail existe, un lien vous a été envoyé.<br />
+              <small style={{ opacity: 0.8 }}>Cliquez sur le lien dans l'email pour définir votre mot de passe.</small>
             </div>
           )}
           <form className="form-grid" onSubmit={handleLogin}>

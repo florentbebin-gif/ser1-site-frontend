@@ -1,14 +1,45 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const ALLOWED_HEADERS = 'authorization, x-client-info, apikey, content-type, x-request-id'
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') ?? '*'
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Headers': ALLOWED_HEADERS,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    Vary: 'Origin',
+  }
 }
 
 serve(async (req) => {
+  const reqStart = Date.now()
+  const requestId = req.headers.get('x-request-id') || crypto.randomUUID()
+  const corsHeaders = getCorsHeaders(req)
+  const responseHeaders = { ...corsHeaders, 'x-request-id': requestId }
+  const origin = req.headers.get('origin') ?? 'unknown'
+  const hasAuthHeader = !!req.headers.get('Authorization')
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { status: 204, headers: responseHeaders })
+  }
+
+  // === PING_PUBLIC: healthcheck sans auth ===
+  // Doit être AVANT toute vérification d'auth
+  const urlCheck = new URL(req.url)
+  const actionFromQuery = urlCheck.searchParams.get('action')
+  if (actionFromQuery === 'ping_public') {
+    const duration = Date.now() - reqStart
+    console.log(`[admin] ping_public | rid=${requestId} | ${duration}ms | 200 | origin=${origin}`)
+    return new Response(JSON.stringify({ 
+      ok: true, 
+      ts: Date.now(),
+      requestId,
+      durationMs: duration
+    }), {
+      headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+    })
   }
 
   try {
@@ -21,7 +52,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Missing authorization' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
@@ -29,7 +60,7 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
@@ -37,7 +68,7 @@ serve(async (req) => {
     if (userRole !== 'admin') {
       return new Response(JSON.stringify({ error: 'Admin access required' }), {
         status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
@@ -54,16 +85,58 @@ serve(async (req) => {
     
     const action = payload?.action ?? url.searchParams.get('action') ?? null
     
+<<<<<<< Updated upstream
     // Logs légers pour debug
     console.log(`Method: ${method}, Action: ${action}, Body vide: ${Object.keys(payload).length === 0}`)
+=======
+    // Logs corrélés avec request-id
+    console.log(`[EDGE_REQ] rid=${requestId} method=${method} origin=${origin} hasAuthHeader=${hasAuthHeader} action=${action}`)
+>>>>>>> Stashed changes
     
     if (!action) {
       return new Response(JSON.stringify({ error: 'Missing action' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
+<<<<<<< Updated upstream
+=======
+    // Mettre à jour le rôle d'un utilisateur
+    if (action === 'update_user_role') {
+      const userId = payload.userId ?? payload.user_id
+      const { role } = payload
+
+      if (!userId || !role) {
+        return new Response(JSON.stringify({ error: 'User ID and role required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const { data: existing, error: getError } = await supabase.auth.admin.getUserById(userId)
+      if (getError || !existing?.user) {
+        return new Response(JSON.stringify({ error: 'User not found' }), {
+          status: 404,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const nextUserMetadata = { ...(existing.user.user_metadata ?? {}), role }
+      const nextAppMetadata = { ...(existing.user.app_metadata ?? {}), role }
+
+      const { error } = await supabase.auth.admin.updateUserById(userId, {
+        user_metadata: nextUserMetadata,
+        app_metadata: nextAppMetadata,
+      })
+      if (error) throw error
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+>>>>>>> Stashed changes
     // Lister les utilisateurs avec count de signalements
     // Support GET + "users" (compat) et POST + "list_users" (frontend)
     if (action === 'users' || action === 'list_users') {
@@ -71,9 +144,13 @@ serve(async (req) => {
       if (error) throw error
 
       // Compter les signalements par user (total + unread) et latest
-      const { data: reports } = await supabase
+      const { data: reports, error: reportsError } = await supabase
         .from('issue_reports')
         .select('user_id, created_at, admin_read_at, id')
+      
+      if (reportsError) {
+        console.log('[admin:list_users] Reports query error:', reportsError.message)
+      }
 
       // Agréger les données par user
       const reportStats = (reports ?? []).reduce((acc, report) => {
@@ -115,7 +192,7 @@ serve(async (req) => {
       }))
 
       return new Response(JSON.stringify({ users: usersWithReports }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
@@ -125,7 +202,7 @@ serve(async (req) => {
       if (!email) {
         return new Response(JSON.stringify({ error: 'Email required' }), {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
       }
 
@@ -133,7 +210,7 @@ serve(async (req) => {
       if (error) throw error
 
       return new Response(JSON.stringify({ success: true, user: data }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
@@ -143,7 +220,7 @@ serve(async (req) => {
       if (!userId) {
         return new Response(JSON.stringify({ error: 'User ID required' }), {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
       }
 
@@ -151,7 +228,7 @@ serve(async (req) => {
       if (error) throw error
 
       return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
@@ -161,10 +238,24 @@ serve(async (req) => {
       if (!userId || !email) {
         return new Response(JSON.stringify({ error: 'User ID and email required' }), {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
       }
 
+<<<<<<< Updated upstream
+=======
+      if (!email) {
+        const { data: existing, error: getError } = await supabase.auth.admin.getUserById(userId)
+        if (getError || !existing?.user?.email) {
+          return new Response(JSON.stringify({ error: 'User email not found' }), {
+            status: 404,
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        email = existing.user.email
+      }
+
+>>>>>>> Stashed changes
       const { error } = await supabase.auth.admin.generateLink({
         type: 'recovery',
         email,
@@ -175,7 +266,7 @@ serve(async (req) => {
       if (error) throw error
 
       return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
@@ -189,17 +280,83 @@ serve(async (req) => {
       if (error) throw error
 
       return new Response(JSON.stringify({ reports }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
+<<<<<<< Updated upstream
+=======
+    // Lister les signalements d'un utilisateur
+    if (action === 'list_issue_reports') {
+      const userId = payload.userId ?? payload.user_id
+      console.log(`[admin:list_issue_reports] Received request for user_id: ${userId}`, { payload })
+      
+      if (!userId) {
+        console.log('[admin:list_issue_reports] Error: User ID required')
+        return new Response(JSON.stringify({ error: 'User ID required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      try {
+        // Vérifier d'abord si la table existe
+        const { data: tableExists, error: tableCheckError } = await supabase
+          .from('issue_reports')
+          .select('id')
+          .limit(1)
+        
+        if (tableCheckError) {
+          console.error('[admin:list_issue_reports] Table check error:', tableCheckError)
+          return new Response(JSON.stringify({ 
+            error: 'Table check failed', 
+            details: tableCheckError.message,
+            reports: []
+          }), {
+            status: 500,
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        
+        console.log('[admin:list_issue_reports] Table exists, querying reports')
+        
+        const { data: reports, error } = await supabase
+          .from('issue_reports')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+
+        if (error) {
+          console.error('[admin:list_issue_reports] Query error:', error)
+          throw error
+        }
+
+        console.log(`[admin:list_issue_reports] Found ${reports?.length || 0} reports for user ${userId}`)
+        
+        return new Response(JSON.stringify({ reports: reports || [] }), {
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      } catch (e) {
+        console.error('[admin:list_issue_reports] Exception:', e)
+        return new Response(JSON.stringify({ 
+          error: 'Internal server error', 
+          details: e.message,
+          reports: []
+        }), {
+          status: 500,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+    }
+
+>>>>>>> Stashed changes
     // Obtenir le dernier signalement pour un utilisateur
     if (action === 'get_latest_issue_for_user') {
       const { userId } = payload
       if (!userId) {
         return new Response(JSON.stringify({ error: 'User ID required' }), {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
       }
 
@@ -213,7 +370,7 @@ serve(async (req) => {
       if (error) throw error
 
       return new Response(JSON.stringify({ report: reports?.[0] || null }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
@@ -223,7 +380,7 @@ serve(async (req) => {
       if (!reportId) {
         return new Response(JSON.stringify({ error: 'Report ID required' }), {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
       }
 
@@ -235,7 +392,29 @@ serve(async (req) => {
       if (error) throw error
 
       return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    
+    // Marquer un signalement comme non lu
+    if (action === 'mark_issue_unread' || action === 'mark_issue_report_unread') {
+      const reportId = payload.reportId ?? payload.report_id
+      if (!reportId) {
+        return new Response(JSON.stringify({ error: 'Report ID required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const { error } = await supabase
+        .from('issue_reports')
+        .update({ admin_read_at: null })
+        .eq('id', reportId)
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
@@ -245,7 +424,7 @@ serve(async (req) => {
       if (!reportId) {
         return new Response(JSON.stringify({ error: 'Report ID required' }), {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
       }
 
@@ -267,7 +446,7 @@ serve(async (req) => {
       if (!userId) {
         return new Response(JSON.stringify({ error: 'User ID required' }), {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
       }
 
@@ -288,20 +467,65 @@ serve(async (req) => {
         success: true, 
         deleted: reportsToDelete?.length || 0 
       }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
+    // Ping endpoint for connectivity/latency testing (requires auth)
+    if (action === 'ping') {
+      const duration = Date.now() - reqStart
+      console.log(`[admin] END | rid=${requestId} | action=ping | ${duration}ms | 200`)
+      return new Response(JSON.stringify({ 
+        ok: true,
+        ts: Date.now(),
+        requestId,
+        durationMs: duration
+      }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Echo endpoint for debugging headers/origin
+    if (action === 'echo') {
+      const headerKeys = Array.from(req.headers.keys())
+      return new Response(JSON.stringify({
+        ok: true,
+        origin,
+        hasAuthHeader,
+        headersKeys: headerKeys,
+        requestId,
+      }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+<<<<<<< Updated upstream
     return new Response(JSON.stringify({ error: 'Invalid action' }), {
+=======
+    // Version endpoint for deployment verification
+    if (action === 'version') {
+      return new Response(JSON.stringify({ 
+        version: 'SER1-admin-20250106-01',
+        deployedAt: new Date().toISOString()
+      }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    const duration = Date.now() - reqStart
+    console.log(`[admin] END | rid=${requestId} | action=${action} | ${duration}ms | 400 invalid`)
+    return new Response(JSON.stringify({ error: 'Invalid action', requestId }), {
+>>>>>>> Stashed changes
       status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...responseHeaders, 'Content-Type': 'application/json' }
     })
 
   } catch (error) {
-    console.error('Admin edge function error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    const duration = Date.now() - reqStart
+    console.error(`[admin] ERROR | rid=${requestId} | ${duration}ms | 500`, error)
+    return new Response(JSON.stringify({ error: error.message, requestId }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { ...responseHeaders, 'Content-Type': 'application/json' }
     })
   }
 })

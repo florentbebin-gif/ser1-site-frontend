@@ -6,7 +6,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { useUserRole } from '../auth';
+import { useAuth } from '../auth';
 
 interface TopBarProps {
   title?: string;
@@ -41,7 +41,7 @@ export default function TopBar({
   showLogout = true
 }: TopBarProps) {
   const navigate = useNavigate();
-  const { user, isAdmin } = useUserRole();
+  const { user, isAdmin } = useAuth();
   const [exportOpen, setExportOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
 

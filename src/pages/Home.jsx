@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { ModeToggle } from '../components/ModeToggle';
 import './Home.css';
 
 export default function Home(){
@@ -27,6 +28,11 @@ export default function Home(){
         <div className="status-disclaimer">
           Les données seront effacées à la fermeture du navigateur ou de l'onglet.
         </div>
+      </aside>
+
+      {/* Carte mode utilisateur */}
+      <aside className="mode-card">
+        <ModeToggle />
       </aside>
 
       {/* Contenu principal */}

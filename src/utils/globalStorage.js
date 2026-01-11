@@ -42,7 +42,7 @@ function buildSnapshotPayload() {
 function generateFilename() {
   const date = new Date().toISOString().split('T')[0];
   const time = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
-  return `SER1_Snapshot_${date}_${time}.json`;
+  return `SER1_Snapshot_${date}_${time}.ser1`;
 }
 
 function hasFileSystemAccess() {

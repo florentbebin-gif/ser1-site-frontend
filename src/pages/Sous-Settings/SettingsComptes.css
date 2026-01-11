@@ -1,40 +1,50 @@
 /* Styles pour la page de gestion des comptes admin */
 
-.admin-content {
+.settings-comptes {
   margin-top: 24px;
 }
 
-.admin-section {
-  margin-bottom: 32px;
+.settings-comptes h2 {
+  margin: 0 0 24px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-c10);
+}
+
+.invite-section,
+.users-section {
+  margin-bottom: 24px;
   padding: 20px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   background: var(--color-c7);
 }
 
-.admin-section h3 {
+.invite-section h3,
+.users-section h3 {
   margin: 0 0 16px 0;
   color: var(--color-c10);
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
 }
 
-.admin-form {
+.invite-form {
   display: flex;
   gap: 12px;
   align-items: center;
 }
 
-.admin-form input {
+.invite-form input {
   flex: 1;
   padding: 10px 12px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
   font-size: 14px;
-  background: white;
+  background: var(--color-c7);
 }
 
-.admin-form button {
+.invite-form button,
+.users-actions button {
   padding: 10px 20px;
   background: var(--color-c1);
   color: white;
@@ -42,28 +52,63 @@
   border-radius: 6px;
   cursor: pointer;
   font-weight: 600;
-  transition: background 0.2s ease;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
-.admin-form button:hover {
+.invite-form button:hover,
+.users-actions button:hover {
   background: var(--color-c2);
 }
 
-.admin-form button:disabled {
+.invite-form button:disabled,
+.users-actions button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.users-table {
-  overflow-x: auto;
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
-.users-table table {
+.users-header h3 {
+  margin: 0;
+}
+
+.users-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.reports-badge {
+  padding: 6px 12px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--color-c10);
+  font-weight: 500;
+}
+
+.loading-admin {
+  padding: 12px 16px;
+  background: var(--color-c7);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--color-c9);
+}
+
+.users-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: var(--color-c7);
   border-radius: 8px;
   overflow: hidden;
+  font-size: 13px;
 }
 
 .users-table th,
@@ -74,15 +119,24 @@
 }
 
 .users-table th {
-  background: var(--color-c7);
+  background: var(--color-c6);
   font-weight: 600;
   color: var(--color-c10);
-  font-size: 13px;
+  font-size: 12px;
   text-transform: uppercase;
 }
 
-.users-table tr:hover {
+.users-table tbody tr:hover {
   background: var(--color-c7);
+}
+
+.users-table select {
+  padding: 6px 10px;
+  border: 1px solid var(--color-c8);
+  border-radius: 4px;
+  font-size: 13px;
+  background: var(--color-c7);
+  cursor: pointer;
 }
 
 .role-badge {
@@ -106,7 +160,7 @@
 .report-badge {
   display: inline-block;
   padding: 4px 8px;
-  background: #ff6b6b;
+  background: var(--color-error-border);
   color: white;
   border-radius: 4px;
   font-size: 12px;
@@ -116,7 +170,7 @@
 }
 
 .report-badge:hover {
-  background: #ff5252;
+  background: var(--color-error-text);
 }
 
 .report-badge.read {
@@ -134,28 +188,31 @@
 }
 
 .actions button {
-  padding: 6px 12px;
+  padding: 8px 14px;
   border: 1px solid var(--color-c8);
-  border-radius: 4px;
-  background: white;
+  border-radius: 6px;
+  background: var(--color-c7);
   color: var(--color-c10);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
   transition: all 0.2s ease;
 }
 
 .actions button:hover {
   background: var(--color-c7);
+  border-color: var(--color-c2);
 }
 
 .actions button.danger {
-  border-color: #ff6b6b;
-  color: #ff6b6b;
+  border-color: var(--color-error-border);
+  color: var(--color-error-text);
 }
 
 .actions button.danger:hover {
-  background: #ff6b6b;
+  background: var(--color-error-border);
   color: white;
+  border-color: var(--color-error-border);
 }
 
 /* Modale de signalement */
@@ -173,14 +230,14 @@
 }
 
 .report-modal {
-  background: white;
+  background: var(--color-c7);
   border-radius: 12px;
   padding: 24px;
-  max-width: 600px;
+  max-width: 800px;
   width: 90%;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 32px var(--color-c8);
 }
 
 .report-modal-header {
@@ -260,11 +317,152 @@
   background: var(--color-c6);
 }
 
-.alert.error {
-  background: #fff3f3;
-  border: 1px solid #ffd3d3;
-  color: #b00020;
-  padding: 12px;
+.settings-comptes .error {
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  color: var(--color-error-text);
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.settings-comptes .error button {
+  padding: 8px 16px;
+  background: var(--color-c1);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+/* Styles pour la vue détaillée des signalements */
+.report-detail-view {
+  width: 100%;
+}
+
+.report-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.report-detail-header {
+  margin-bottom: 10px;
+}
+
+.report-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: var(--color-c6);
+  padding: 16px;
   border-radius: 8px;
   margin-bottom: 16px;
+}
+
+.report-detail-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-detail-label {
+  font-weight: 600;
+  color: var(--color-c10);
+}
+
+.report-detail-value {
+  color: var(--color-c9);
+}
+
+.report-detail-title h4 {
+  font-size: 18px;
+  margin: 0 0 16px 0;
+  color: var(--color-c10);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+.report-detail-description h5 {
+  font-size: 16px;
+  margin: 0 0 12px 0;
+  color: var(--color-c10);
+}
+
+.report-description-content {
+  background: #FFFFFF;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--color-c8);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  color: var(--color-c10);
+}
+
+.report-detail-metadata h5 {
+  font-size: 16px;
+  margin: 0 0 12px 0;
+  color: var(--color-c10);
+}
+
+.report-detail-metadata pre {
+  background: var(--color-c6);
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 13px;
+  color: var(--color-c10);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.report-detail-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.report-detail-actions button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.report-detail-actions button:not(.danger) {
+  background: var(--color-c1);
+  color: white;
+  border: none;
+}
+
+.report-detail-actions button:not(.danger):hover {
+  background: var(--color-c2);
+}
+
+.report-modal-header button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: var(--color-c6);
+  color: var(--color-c10);
+  border: 1px solid var(--color-c8);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.report-modal-header button:hover {
+  background: var(--color-c5);
+}
+
+.view-details {
+  background-color: var(--color-c5) !important;
+  color: var(--color-c10) !important;
 }

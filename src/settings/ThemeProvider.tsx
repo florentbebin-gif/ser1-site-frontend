@@ -200,6 +200,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       return;
     }
 
+<<<<<<< Updated upstream
     console.info(`[ThemeProvider] APPLYING - Hash: ${hash.substring(0, 20)}... (source: ${source})`);
     
     const root = document.documentElement;
@@ -446,6 +447,29 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       subscription.unsubscribe();
     };
   }, []);
+=======
+  // 2) DÉSACTIVÉ - écoute changements auth causait des re-renders en cascade
+  // useEffect(() => {
+  //   const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+  //     if (DEBUG_AUTH) console.log('[ThemeProvider] auth event', event, session?.user?.id);
+
+  //     if (!session?.user) {
+  //       // si logout, on remet default (ou cache si tu préfères)
+  //       const fallback = getThemeFromCache() || DEFAULT_COLORS;
+  //       setColorsState(fallback);
+  //       applyColorsToCSS(fallback);
+  //       setLogo(undefined);
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     setIsLoading(true);
+  //     await loadThemeForUser(session.user, `auth:${event}`);
+  //   });
+
+  //   return () => subscription.unsubscribe();
+  // }, [loadThemeForUser]);
+>>>>>>> Stashed changes
 
   // Met à jour les couleurs et applique immédiatement
   const setColors = useCallback((newColors: ThemeColors) => {

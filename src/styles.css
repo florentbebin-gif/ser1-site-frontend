@@ -15,6 +15,17 @@
   --color-c9: #7F7F7F;
   --color-c10: #000000;
 
+  /* Couleurs pour les messages de statut - utilisent les variables du thème */
+  --color-success-bg: var(--color-c4);
+  --color-success-border: var(--color-c8);
+  --color-success-text: var(--color-c10);
+  --color-error-bg: var(--color-c7);
+  --color-error-border: var(--color-c8);
+  --color-error-text: var(--color-c10);
+  --color-warning-bg: var(--color-c7);
+  --color-warning-border: var(--color-c8);
+  --color-warning-text: var(--color-c10);
+
   /* Alias pour compatibilité */
   --green: var(--color-c1);
   --beige: var(--color-c6);
@@ -281,6 +292,112 @@ body {
 .settings-pill.is-active {
   background: var(--color-c4);  /* ✅ Active state peut être thématique */
   border-color: var(--color-c3);
+}
+
+/* ===== Modal des signalements ===== */
+.report-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.report-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 800px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.report-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--color-c8);
+  padding-bottom: 12px;
+}
+
+.report-modal-header h3 {
+  margin: 0;
+  color: var(--color-c10);
+  font-size: 18px;
+}
+
+.report-modal-header button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--color-c9);
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.report-modal-header button:hover {
+  background: var(--color-c7);
+  color: var(--color-c10);
+}
+
+.report-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.report-modal-actions button {
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.report-modal-actions button.danger {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  border: 1px solid var(--color-error-border);
+}
+
+.report-modal-actions button.danger:hover {
+  background: var(--color-error-border);
+  color: white;
+}
+
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+.reports-table th,
+.reports-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+.reports-table th {
+  background: var(--color-c7);
+  font-weight: 600;
+  color: var(--color-c10);
+  font-size: 13px;
+}
+
+.reports-table tr:hover {
+  background: var(--color-c7);
 }
 
 /* ===== Notifications Toast ===== */

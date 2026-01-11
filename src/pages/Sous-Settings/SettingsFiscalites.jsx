@@ -1,8 +1,16 @@
+<<<<<<< Updated upstream
 import React, { useEffect, useMemo, useState } from 'react';
+=======
+import React, { useCallback, useEffect, useState } from 'react';
+>>>>>>> Stashed changes
 import { supabase } from '../../supabaseClient';
-import SettingsNav from '../SettingsNav';
 import './SettingsFiscalites.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
+<<<<<<< Updated upstream
+=======
+import { useAuth, useUserRole } from '../../auth';
+import { UserInfoBanner } from '../../components/UserInfoBanner';
+>>>>>>> Stashed changes
 
 // ------------------------------------------------------------
 // Valeurs par défaut (Assurance-vie) — issues du tableau Excel PJ
@@ -261,15 +269,104 @@ function textOrEmpty(v) {
 }
 
 export default function SettingsFiscalites() {
+<<<<<<< Updated upstream
   const [user, setUser] = useState(null);
   const [roleLabel, setRoleLabel] = useState('User');
   const [loading, setLoading] = useState(true);
 
+=======
+  const { authReady, user } = useAuth();
+  const { isAdmin } = useUserRole();
+  
+  // État local simple
+>>>>>>> Stashed changes
   const [settings, setSettings] = useState(DEFAULT_FISCALITY_SETTINGS);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
   const [openProductKey, setOpenProductKey] = useState(null);
+
+  // Chargement une seule fois au mount
+  useEffect(() => {
+    if (!authReady || !user) {
+      if (authReady && !user) {
+        setLoading(false);
+      }
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadSettings = async () => {
+      try {
+        setLoading(true);
+        setLoadError(null);
+
+        const { data, error } = await supabase
+          .from('fiscality_settings')
+          .select('data')
+          .eq('id', 1)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Erreur chargement fiscality_settings:', error);
+          setLoadError("Erreur lors du chargement des paramètres.");
+        } else if (data?.data) {
+          setSettings(prev => ({ ...prev, ...data.data }));
+        }
+      } catch (err) {
+        if (cancelled) return;
+        console.error('Erreur inattendue:', err);
+        setLoadError(err?.message || "Erreur inattendue.");
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadSettings();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authReady, user?.id]);
+
+  // Rechargement manuel
+  const handleReload = useCallback(async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    setLoadError(null);
+
+    try {
+      const { data, error } = await supabase
+        .from('fiscality_settings')
+        .select('data')
+        .eq('id', 1)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        setLoadError("Erreur lors du chargement.");
+      } else if (data?.data) {
+        setSettings(prev => ({ ...prev, ...data.data }));
+      }
+    } catch (err) {
+      setLoadError(err?.message || "Erreur inattendue.");
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Alias pour compatibilité
+  const setData = setSettings;
 
 const PRODUCTS = [
   { key: 'assuranceVie', label: 'Assurance vie' },
@@ -288,6 +385,7 @@ const PRODUCTS = [
   const passHistory = settings.passHistory || [];
   const per = settings.perIndividuel || DEFAULT_FISCALITY_SETTINGS.perIndividuel;
 
+<<<<<<< Updated upstream
 
   // ---------------------------------------------
   // Chargement user + paramètres depuis Supabase
@@ -393,11 +491,13 @@ const PRODUCTS = [
     };
   }, []);
 
+=======
+>>>>>>> Stashed changes
   // ---------------------------------------------
   // Helpers de MAJ
   // ---------------------------------------------
   const updateField = (path, value) => {
-    setSettings((prev) => {
+    setData((prev) => {
       const clone = structuredClone(prev);
       let obj = clone;
       for (let i = 0; i < path.length - 1; i++) {
@@ -413,10 +513,35 @@ const PRODUCTS = [
 
 const handleSave = async () => {
   if (!isAdmin) return;
+  
+  // -----------------------------
+  // Validation PASS (8 lignes + ordre)
+  // -----------------------------
+  const ph = (settings.passHistory || []).slice();
+
+  if (ph.length !== 8) {
+    setMessage("Historique PASS : il faut exactement 8 lignes.");
+    return;
+  }
+
+  for (let i = 0; i < ph.length; i++) {
+    if (!ph[i]?.year || !ph[i]?.amount) {
+      setMessage("Historique PASS : année et montant obligatoires sur chaque ligne.");
+      return;
+    }
+    if (i > 0 && Number(ph[i].year) <= Number(ph[i - 1].year)) {
+      setMessage(
+        "Historique PASS : l'ordre doit être du plus ancien au plus récent (années strictement croissantes)."
+      );
+      return;
+    }
+  }
+
   try {
     setSaving(true);
     setMessage('');
 
+<<<<<<< Updated upstream
     // -----------------------------
     // Validation PASS (8 lignes + ordre)
     // -----------------------------
@@ -443,6 +568,8 @@ const handleSave = async () => {
       }
     }
 
+=======
+>>>>>>> Stashed changes
     const { error } = await supabase
       .from('fiscality_settings')
       .upsert({ id: 1, data: settings });
@@ -452,7 +579,6 @@ const handleSave = async () => {
       setMessage("Erreur lors de l'enregistrement.");
     } else {
       setMessage('Paramètres fiscalités enregistrés.');
-      // Invalider le cache pour que /ir et autres pages rafraîchissent
       invalidate('fiscality');
       broadcastInvalidation('fiscality');
     }
@@ -464,41 +590,35 @@ const handleSave = async () => {
   }
 };
 
-
-
   // ---------------------------------------------
   // Rendu
   // ---------------------------------------------
   if (loading) {
-    return (
-      <div className="settings-page">
-        <div className="section-card">
-          <div className="section-title">Paramètres</div>
-          <SettingsNav />
-          <p>Chargement…</p>
-        </div>
-      </div>
-    );
+    return <p>Chargement...</p>;
   }
 
   if (!user) {
-    return (
-      <div className="settings-page">
-        <div className="section-card">
-          <div className="section-title">Paramètres</div>
-          <SettingsNav />
-          <p>Aucun utilisateur connecté.</p>
-        </div>
-      </div>
-    );
+    return <p>Vous devez être connecté pour voir cette page.</p>;
   }
 
   return (
+<<<<<<< Updated upstream
     <div className="settings-page">
       <div className="section-card">
         <div className="section-title">Paramètres</div>
 
         <SettingsNav />
+=======
+    <>
+      {loadError && (
+        <div className="settings-alert error" style={{ marginTop: 12 }}>
+          <span>{loadError}</span>
+          <button type="button" className="chip" style={{ marginLeft: 12 }} onClick={handleReload}>
+            Réessayer
+          </button>
+        </div>
+      )}
+>>>>>>> Stashed changes
 
         <div
           style={{
@@ -509,10 +629,15 @@ const handleSave = async () => {
             gap: 24,
           }}
         >
+<<<<<<< Updated upstream
           {/* Bandeau info */}
 <div className="tax-user-banner">
   <strong>Utilisateur :</strong> {user.email} — <strong>Statut :</strong> {roleLabel}
 </div>
+=======
+          {/* Bandeau utilisateur */}
+          <UserInfoBanner />
+>>>>>>> Stashed changes
 
           <section>
   <h4 className="fisc-section-title">Historique du PASS (8 dernières valeurs)</h4>
@@ -2287,11 +2412,22 @@ const handleSave = async () => {
   </button>
 )}
 
-{message && <div style={{ fontSize: 13, marginTop: 8 }}>{message}</div>}
+{message && (
+  <div style={{ 
+    fontSize: 14, 
+    marginTop: 12, 
+    padding: '12px 16px', 
+    background: message.includes('Erreur') ? 'var(--color-error-bg)' : 'var(--color-success-bg)', 
+    border: message.includes('Erreur') ? '1px solid var(--color-error-border)' : '1px solid var(--color-success-border)', 
+    borderRadius: 6, 
+    color: message.includes('Erreur') ? 'var(--color-error-text)' : 'var(--color-success-text)',
+    fontWeight: 500
+  }}>
+    {message}
+  </div>
+)}
 
-          
         </div>
-      </div>
-    </div>
+    </>
   );
 }

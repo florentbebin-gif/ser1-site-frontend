@@ -1,8 +1,17 @@
+<<<<<<< Updated upstream
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import SettingsNav from '../SettingsNav';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
+=======
+import React, { useCallback, useEffect, useState } from 'react';
+import { supabase } from '../../supabaseClient';
+import './SettingsPrelevements.css';
+import { useAuth, useUserRole } from '../../auth';
+import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
+import { UserInfoBanner } from '../../components/UserInfoBanner';
+>>>>>>> Stashed changes
 
 // ----------------------
 // Valeurs par défaut
@@ -211,6 +220,7 @@ function numberOrEmpty(v) {
 }
 
 export default function SettingsPrelevements() {
+<<<<<<< Updated upstream
   const [user, setUser] = useState(null);
   const [roleLabel, setRoleLabel] = useState('User');
   const [settings, setSettings] = useState(DEFAULT_PS_SETTINGS);
@@ -286,13 +296,123 @@ export default function SettingsPrelevements() {
       mounted = false;
     };
   }, []);
+=======
+  const { authReady, user } = useAuth();
+  const { isAdmin } = useUserRole();
+  
+  // État local simple
+  const [settings, setSettings] = useState(DEFAULT_PS_SETTINGS);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
 
+  // Chargement au mount
+  useEffect(() => {
+    if (!authReady || !user) {
+      if (authReady && !user) {
+        setLoading(false);
+      }
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadSettings = async () => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const { data, error } = await supabase
+          .from('ps_settings')
+          .select('data')
+          .eq('id', 1)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        if (error && error.code !== 'PGRST116') {
+          setLoadError("Erreur lors du chargement des paramètres.");
+        } else if (data?.data) {
+          setSettings(prev => ({ ...prev, ...data.data }));
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setLoadError(err?.message || "Erreur inattendue.");
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadSettings();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authReady, user?.id]);
+
+  // Rechargement manuel
+  const handleReload = useCallback(async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    setLoadError(null);
+
+    try {
+      const { data, error } = await supabase
+        .from('ps_settings')
+        .select('data')
+        .eq('id', 1)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        setLoadError("Erreur lors du chargement.");
+      } else if (data?.data) {
+        setSettings(prev => ({ ...prev, ...data.data }));
+      }
+    } catch (err) {
+      setLoadError(err?.message || "Erreur inattendue.");
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Sauvegarde
+  const handleSave = async () => {
+    if (!isAdmin) return;
+    
+    try {
+      setSaving(true);
+      setMessage('');
+
+      const { error } = await supabase
+        .from('ps_settings')
+        .upsert({ id: 1, data: settings });
+
+      if (error) {
+        setMessage("Erreur lors de l'enregistrement.");
+      } else {
+        setMessage('Paramètres prélèvements sociaux enregistrés.');
+        invalidate('ps');
+        broadcastInvalidation('ps');
+      }
+    } catch (e) {
+      setMessage("Erreur lors de l'enregistrement.");
+    } finally {
+      setSaving(false);
+    }
+  };
+>>>>>>> Stashed changes
+
+  // Alias pour compatibilité
+  const setData = setSettings;
 
   // ----------------------
   // Helpers de mise à jour
   // ----------------------
   const updateField = (path, value) => {
-    setSettings((prev) => {
+    setData((prev) => {
       const copy = structuredClone(prev);
       let obj = copy;
       for (let i = 0; i < path.length - 1; i += 1) {
@@ -302,16 +422,16 @@ export default function SettingsPrelevements() {
       return copy;
     });
     setMessage('');
-    setError('');
   };
 
   const updateRetirementBracket = (yearKey, index, key, value) => {
-    setSettings((prev) => {
+    setData((prev) => {
       const copy = structuredClone(prev);
       copy.retirement[yearKey].brackets[index][key] = value;
       return copy;
     });
     setMessage('');
+<<<<<<< Updated upstream
     setError('');
   };
 
@@ -348,6 +468,8 @@ export default function SettingsPrelevements() {
     } finally {
       setSaving(false);
     }
+=======
+>>>>>>> Stashed changes
   };
 
   const { labels, patrimony, retirement, retirementThresholds } = settings;
@@ -355,6 +477,7 @@ export default function SettingsPrelevements() {
   // ----------------------
   // Rendu
   // ----------------------
+<<<<<<< Updated upstream
   return (
     <div className="settings-page">
       <div className="section-card">
@@ -374,16 +497,26 @@ export default function SettingsPrelevements() {
             )}
           </div>
         </div>
+=======
+  if (loading) {
+    return <p>Chargement...</p>;
+  }
+
+  if (!user) {
+    return <p>Vous devez être connecté pour voir cette page.</p>;
+  }
+
+  return (
+    <>
+
+        {/* Bandeau utilisateur */}
+          <UserInfoBanner />
+>>>>>>> Stashed changes
 
         {/* Messages */}
-        {error && (
-          <div style={{ color: '#b3261e', marginTop: 12, fontSize: 13 }}>
-            {error}
-          </div>
-        )}
-        {message && (
-          <div style={{ color: '#1b5e20', marginTop: 12, fontSize: 13 }}>
-            {message}
+        {loadError && (
+          <div style={{ color: 'var(--color-error-text)', background: 'var(--color-error-bg)', border: '1px solid var(--color-error-border)', padding: '12px 16px', borderRadius: 6, marginTop: 12, fontSize: 14 }}>
+            {loadError}
           </div>
         )}
 
@@ -394,11 +527,19 @@ export default function SettingsPrelevements() {
             Vous devez être connecté pour voir cette page.
           </div>
         ) : (
-          <div style={{ marginTop: 24 }}>
+          <div
+            style={{
+              fontSize: 15,
+              marginTop: 24,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 24,
+            }}
+          >
             {/* 1. PS patrimoine / capital */}
             <section>
               <h3>Prélèvements sociaux — patrimoine et capital</h3>
-              <p style={{ fontSize: 13, color: '#555' }}>
+              <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
                 Taux globaux applicables aux revenus du patrimoine et de
                 placement (intérêts, dividendes, etc.).
               </p>
@@ -505,7 +646,7 @@ export default function SettingsPrelevements() {
               <h3 style={{ marginTop: 24 }}>
                 Prélèvements sociaux — pensions de retraite - (Focus résidence en métropole)
               </h3>
-              <p style={{ fontSize: 13, color: '#555' }}>
+              <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
                 Barème des prélèvements sociaux sur les pensions de retraite
                 (RFR pour 1 part). Les montants sont ajustés en fonction des
                 parts, mais on stocke ici la base &quot;1 part&quot;.
@@ -865,7 +1006,7 @@ export default function SettingsPrelevements() {
               <h3 style={{ marginTop: 24 }}>
                 Seuils de revenus pour la CSG, la CRDS et la CASA (RFR)
               </h3>
-              <p style={{ fontSize: 13, color: '#555', marginBottom: 12 }}>
+              <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 12 }}>
                 Seuils de revenu fiscal de référence (RFR) utilisés pour déterminer
                 l&apos;exonération ou l&apos;assujettissement aux taux réduit, médian
                 ou normal de CSG sur les pensions de retraite. Ces seuils s&apos;appliquent
@@ -1784,30 +1925,33 @@ export default function SettingsPrelevements() {
             
             {/* Bouton de sauvegarde */}
             {isAdmin && (
-              <div style={{ marginTop: 24 }}>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={saving}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: 6,
-                    border: 'none',
-                    background: '#2B3E37',
-                    color: 'white',
-                    cursor: saving ? 'default' : 'pointer',
-                    fontSize: 14,
-                  }}
-                >
-                  {saving
-                    ? 'Enregistrement...'
-                    : 'Enregistrer les paramètres'}
-                </button>
+              <button
+                type="button"
+                className="chip"
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving
+                  ? 'Enregistrement...'
+                  : 'Enregistrer les paramètres'}
+              </button>
+            )}
+            {message && (
+              <div className="settings-success-message" style={{ 
+                fontSize: 14, 
+                marginTop: 12, 
+                padding: '12px 16px', 
+                background: message.includes('Erreur') ? 'var(--color-error-bg)' : 'var(--color-success-bg)', 
+                border: message.includes('Erreur') ? '1px solid var(--color-error-border)' : '1px solid var(--color-success-border)', 
+                borderRadius: 6, 
+                color: message.includes('Erreur') ? 'var(--color-error-text)' : 'var(--color-success-text)',
+                fontWeight: 500
+              }}>
+                {message}
               </div>
             )}
           </div>
         )}
-      </div>
-    </div>
+    </>
   );
 }

@@ -1,8 +1,16 @@
+<<<<<<< Updated upstream
 import React, { useEffect, useState } from 'react';
+=======
+import React, { useCallback, useEffect, useState } from 'react';
+>>>>>>> Stashed changes
 import { supabase } from '../../supabaseClient';
-import SettingsNav from '../SettingsNav';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
+<<<<<<< Updated upstream
+=======
+import { useAuth, useUserRole } from '../../auth';
+import { UserInfoBanner } from '../../components/UserInfoBanner';
+>>>>>>> Stashed changes
 
 // ----------------------
 // Valeurs par défaut
@@ -150,6 +158,7 @@ function numberOrEmpty(v) {
 }
 
 export default function SettingsImpots() {
+<<<<<<< Updated upstream
   const [user, setUser] = useState(null);
   const [roleLabel, setRoleLabel] = useState('User');
   const [loading, setLoading] = useState(true);
@@ -217,9 +226,93 @@ export default function SettingsImpots() {
       mounted = false;
     };
   }, []);
+=======
+  const { isAdmin } = useUserRole();
+  const { authReady, user } = useAuth();
+  
+  // État local simple
+  const [settings, setSettings] = useState(DEFAULT_TAX_SETTINGS);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
 
+  // Chargement au mount
+  useEffect(() => {
+    if (!authReady || !user) {
+      if (authReady && !user) {
+        setLoading(false);
+      }
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadSettings = async () => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const { data, error } = await supabase
+          .from('tax_settings')
+          .select('data')
+          .eq('id', 1)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        if (error && error.code !== 'PGRST116') {
+          setLoadError("Erreur lors du chargement des paramètres d'impôts.");
+        } else if (data?.data) {
+          setSettings(prev => ({ ...prev, ...data.data }));
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setLoadError(err?.message || "Erreur inattendue.");
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadSettings();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authReady, user?.id]);
+
+  // Rechargement manuel
+  const handleReload = useCallback(async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    setLoadError(null);
+
+    try {
+      const { data, error } = await supabase
+        .from('tax_settings')
+        .select('data')
+        .eq('id', 1)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        setLoadError("Erreur lors du chargement.");
+      } else if (data?.data) {
+        setSettings(prev => ({ ...prev, ...data.data }));
+      }
+    } catch (err) {
+      setLoadError(err?.message || "Erreur inattendue.");
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+>>>>>>> Stashed changes
+
+  // Sauvegarde
   const handleSave = async () => {
     if (!isAdmin) return;
+    
     try {
       setSaving(true);
       setMessage('');
@@ -245,9 +338,12 @@ export default function SettingsImpots() {
     }
   };
 
+  // Alias pour compatibilité
+  const setData = setSettings;
+
   // Helpers de MAJ
   const updateIncomeScale = (which, index, key, value) => {
-    setSettings((prev) => ({
+    setData((prev) => ({
       ...prev,
       incomeTax: {
         ...prev.incomeTax,
@@ -260,7 +356,7 @@ export default function SettingsImpots() {
   };
 
 const updateField = (path, value) => {
-  setSettings((prev) => {
+  setData((prev) => {
     const clone = structuredClone(prev);
     let obj = clone;
 
@@ -276,35 +372,23 @@ const updateField = (path, value) => {
   setMessage('');
 };
 
+<<<<<<< Updated upstream
 
+=======
+  // Gérer les états de chargement avec le hook
+>>>>>>> Stashed changes
   if (loading) {
-    return (
-      <div className="settings-page">
-        <div className="section-card">
-          <div className="section-title">Paramètres</div>
-          <SettingsNav />
-          <p>Chargement…</p>
-        </div>
-      </div>
-    );
+    return <p>Chargement…</p>;
   }
 
   if (!user) {
-    return (
-      <div className="settings-page">
-        <div className="section-card">
-          <div className="section-title">Paramètres</div>
-          <SettingsNav />
-          <p>Aucun utilisateur connecté.</p>
-        </div>
-      </div>
-    );
+    return <p>Aucun utilisateur connecté.</p>;
   }
 
   const { incomeTax, pfu, cehr, cdhr, corporateTax, dmtg } = settings;
 
   const updateDmtgScale = (index, key, value) => {
-    setSettings((prev) => ({
+    setData((prev) => ({
       ...prev,
       dmtg: {
         ...prev.dmtg,
@@ -317,11 +401,23 @@ const updateField = (path, value) => {
   };
 
   return (
+<<<<<<< Updated upstream
     <div className="settings-page">
       <div className="section-card">
         <div className="section-title">Paramètres</div>
 
         <SettingsNav />
+=======
+    <>
+      {loadError && (
+        <div className="settings-alert error" style={{ marginTop: 12 }}>
+          <span>{loadError}</span>
+          <button type="button" className="chip" style={{ marginLeft: 12 }} onClick={handleReload}>
+            Réessayer
+          </button>
+        </div>
+      )}
+>>>>>>> Stashed changes
 
         <div
           style={{
@@ -332,17 +428,22 @@ const updateField = (path, value) => {
             gap: 24,
           }}
         >
+<<<<<<< Updated upstream
           {/* Bandeau info */}
           <div className="tax-user-banner">
             <strong>Utilisateur :</strong> {user.email} —{' '}
             <strong>Statut :</strong> {roleLabel}
           </div>
+=======
+          {/* Bandeau utilisateur */}
+          <UserInfoBanner />
+>>>>>>> Stashed changes
 
 
                   {/* 1. Barème impôt sur le revenu */}
         <section>
           <h3>Barème de l’impôt sur le revenu</h3>
-          <p style={{ fontSize: 13, color: '#555', marginBottom: 8 }}>
+          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 8 }}>
             Barème progressif par tranches (taux et retraitement) pour le
             barème actuel et celui de l’année précédente.
           </p>
@@ -1011,7 +1112,7 @@ const updateField = (path, value) => {
 {/* Abattement DOM sur l'IR (barème) */}
 <section>
   <h3>Abattement DOM sur l’IR (barème)</h3>
-  <p style={{ fontSize: 13, color: '#555', marginBottom: 8 }}>
+  <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 8 }}>
     Appliqué sur l’impôt issu du barème <strong>après plafonnement du quotient familial</strong> et
     <strong> avant</strong> décote + réductions/crédits.
   </p>
@@ -1301,7 +1402,7 @@ const updateField = (path, value) => {
           <section>
             
   <h3>CEHR / CDHR</h3>
-  <p style={{ fontSize: 13, color: '#555' }}>
+  <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
     Contribution exceptionnelle sur les hauts revenus (CEHR) et
     contribution différentielle (CDHR).
   </p>
@@ -1630,7 +1731,7 @@ const updateField = (path, value) => {
 {/* Section DMTG - Droits de Mutation à Titre Gratuit */}
 <section>
   <h3>Droits de Mutation à Titre Gratuit (DMTG) - Ligne directe</h3>
-  <p style={{ fontSize: 13, color: '#555', marginBottom: 8 }}>
+  <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 8 }}>
     Barème applicable aux successions et donations en ligne directe (parents → enfants).
     Utilisé par le simulateur de placement pour la phase de transmission.
   </p>
@@ -1734,10 +1835,18 @@ const updateField = (path, value) => {
           )}
 
           {message && (
-            <div style={{ fontSize: 13, marginTop: 8 }}>{message}</div>
+            <div className="settings-success-message" style={{ 
+              fontSize: 14, 
+              marginTop: 12, 
+              padding: '12px 16px', 
+              background: 'var(--color-success-bg)', 
+              border: '1px solid var(--color-success-border)', 
+              borderRadius: 6, 
+              color: 'var(--color-success-text)',
+              fontWeight: 500
+            }}>{message}</div>
           )}
         </div>
-      </div>
-    </div>
+    </>
   );
 }
