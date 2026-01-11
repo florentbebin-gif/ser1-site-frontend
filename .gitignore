@@ -49,3 +49,10 @@ validation_compared.csv
 # Python artifacts (if any)
 __pycache__/
 *.py[cod]
+
+# Local / refs (do not commit)
+.windsurf/
+_signalements_ref/
+_style_ref/
+*.zip
+
