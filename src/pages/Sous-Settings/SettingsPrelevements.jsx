@@ -1,17 +1,8 @@
-<<<<<<< Updated upstream
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
-import SettingsNav from '../SettingsNav';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
-=======
-import React, { useCallback, useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
-import './SettingsPrelevements.css';
-import { useAuth, useUserRole } from '../../auth';
-import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '../../components/UserInfoBanner';
->>>>>>> Stashed changes
 
 // ----------------------
 // Valeurs par défaut
@@ -220,7 +211,6 @@ function numberOrEmpty(v) {
 }
 
 export default function SettingsPrelevements() {
-<<<<<<< Updated upstream
   const [user, setUser] = useState(null);
   const [roleLabel, setRoleLabel] = useState('User');
   const [settings, setSettings] = useState(DEFAULT_PS_SETTINGS);
@@ -296,114 +286,6 @@ export default function SettingsPrelevements() {
       mounted = false;
     };
   }, []);
-=======
-  const { authReady, user } = useAuth();
-  const { isAdmin } = useUserRole();
-  
-  // État local simple
-  const [settings, setSettings] = useState(DEFAULT_PS_SETTINGS);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
-
-  // Chargement au mount
-  useEffect(() => {
-    if (!authReady || !user) {
-      if (authReady && !user) {
-        setLoading(false);
-      }
-      return;
-    }
-
-    let cancelled = false;
-
-    const loadSettings = async () => {
-      setLoading(true);
-      setLoadError(null);
-      try {
-        const { data, error } = await supabase
-          .from('ps_settings')
-          .select('data')
-          .eq('id', 1)
-          .maybeSingle();
-
-        if (cancelled) return;
-
-        if (error && error.code !== 'PGRST116') {
-          setLoadError("Erreur lors du chargement des paramètres.");
-        } else if (data?.data) {
-          setSettings(prev => ({ ...prev, ...data.data }));
-        }
-      } catch (err) {
-        if (cancelled) return;
-        setLoadError(err?.message || "Erreur inattendue.");
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadSettings();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authReady, user?.id]);
-
-  // Rechargement manuel
-  const handleReload = useCallback(async () => {
-    if (!user) return;
-    
-    setLoading(true);
-    setLoadError(null);
-
-    try {
-      const { data, error } = await supabase
-        .from('ps_settings')
-        .select('data')
-        .eq('id', 1)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') {
-        setLoadError("Erreur lors du chargement.");
-      } else if (data?.data) {
-        setSettings(prev => ({ ...prev, ...data.data }));
-      }
-    } catch (err) {
-      setLoadError(err?.message || "Erreur inattendue.");
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  // Sauvegarde
-  const handleSave = async () => {
-    if (!isAdmin) return;
-    
-    try {
-      setSaving(true);
-      setMessage('');
-
-      const { error } = await supabase
-        .from('ps_settings')
-        .upsert({ id: 1, data: settings });
-
-      if (error) {
-        setMessage("Erreur lors de l'enregistrement.");
-      } else {
-        setMessage('Paramètres prélèvements sociaux enregistrés.');
-        invalidate('ps');
-        broadcastInvalidation('ps');
-      }
-    } catch (e) {
-      setMessage("Erreur lors de l'enregistrement.");
-    } finally {
-      setSaving(false);
-    }
-  };
->>>>>>> Stashed changes
 
   // Alias pour compatibilité
   const setData = setSettings;
@@ -431,7 +313,6 @@ export default function SettingsPrelevements() {
       return copy;
     });
     setMessage('');
-<<<<<<< Updated upstream
     setError('');
   };
 
@@ -468,8 +349,6 @@ export default function SettingsPrelevements() {
     } finally {
       setSaving(false);
     }
-=======
->>>>>>> Stashed changes
   };
 
   const { labels, patrimony, retirement, retirementThresholds } = settings;
@@ -477,65 +356,34 @@ export default function SettingsPrelevements() {
   // ----------------------
   // Rendu
   // ----------------------
-<<<<<<< Updated upstream
   return (
-    <div className="settings-page">
-      <div className="section-card">
-        <div className="section-title">Paramètres</div>
-        <SettingsNav />
+    <div style={{ marginTop: 16 }}>
+      {/* Bandeau utilisateur */}
+      <UserInfoBanner />
 
-        {/* Bandeau utilisateur */}
-        <div style={{ marginTop: 16 }}>
-          <div className="tax-user-banner">
-            {user ? (
-              <>
-                Utilisateur : <strong>{user.email}</strong> — Statut :{' '}
-                <strong>{roleLabel}</strong>
-              </>
-            ) : (
-              <>Non connecté</>
-            )}
-          </div>
+      {/* Messages */}
+      {error && (
+        <div style={{ color: 'var(--color-error-text)', background: 'var(--color-error-bg)', border: '1px solid var(--color-error-border)', padding: '12px 16px', borderRadius: 6, marginTop: 12, fontSize: 14 }}>
+          {error}
         </div>
-=======
-  if (loading) {
-    return <p>Chargement...</p>;
-  }
+      )}
 
-  if (!user) {
-    return <p>Vous devez être connecté pour voir cette page.</p>;
-  }
-
-  return (
-    <>
-
-        {/* Bandeau utilisateur */}
-          <UserInfoBanner />
->>>>>>> Stashed changes
-
-        {/* Messages */}
-        {loadError && (
-          <div style={{ color: 'var(--color-error-text)', background: 'var(--color-error-bg)', border: '1px solid var(--color-error-border)', padding: '12px 16px', borderRadius: 6, marginTop: 12, fontSize: 14 }}>
-            {loadError}
-          </div>
-        )}
-
-        {loading ? (
-          <div style={{ marginTop: 24 }}>Chargement des paramètres…</div>
-        ) : !user ? (
-          <div style={{ marginTop: 24 }}>
-            Vous devez être connecté pour voir cette page.
-          </div>
-        ) : (
-          <div
-            style={{
-              fontSize: 15,
-              marginTop: 24,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 24,
-            }}
-          >
+      {loading ? (
+        <div style={{ marginTop: 24 }}>Chargement des paramètres…</div>
+      ) : !user ? (
+        <div style={{ marginTop: 24 }}>
+          Vous devez être connecté pour voir cette page.
+        </div>
+      ) : (
+        <div
+          style={{
+            fontSize: 15,
+            marginTop: 24,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 24,
+          }}
+        >
             {/* 1. PS patrimoine / capital */}
             <section>
               <h3>Prélèvements sociaux — patrimoine et capital</h3>
@@ -1952,6 +1800,6 @@ export default function SettingsPrelevements() {
             )}
           </div>
         )}
-    </>
+    </div>
   );
 }

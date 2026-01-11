@@ -200,7 +200,6 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       return;
     }
 
-<<<<<<< Updated upstream
     console.info(`[ThemeProvider] APPLYING - Hash: ${hash.substring(0, 20)}... (source: ${source})`);
     
     const root = document.documentElement;
@@ -337,139 +336,12 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
 
     loadTheme();
 
-    // Écoute les changements d'auth pour recharger le thème
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        console.info(`[ThemeProvider] AUTH STATE CHANGE - Event: ${_event}, User: ${session?.user?.id || 'none'}, LastUser: ${lastAppliedUserIdRef.current}`);
-        
-        if (!mounted) return;
-
-        // 🚨 DIAGNOSTIC: Skip unnecessary events
-        if (_event === 'TOKEN_REFRESHED' || _event === 'INITIAL_SESSION') {
-          const currentUserId = session?.user?.id;
-          if (currentUserId === lastAppliedUserIdRef.current) {
-            console.info(`[ThemeProvider] SKIPPED AUTH EVENT - ${_event} (same user)`);
-            return;
-          }
-        }
-
-        // Si cache déjà appliqué et user=anonymous, ne rien faire
-        if (cacheAppliedRef.current && !session?.user && _event === 'INITIAL_SESSION') {
-          console.info('[ThemeProvider] Cache already applied, skipping default for anonymous user');
-          return;
-        }
-
-        // Appliquer le thème par défaut uniquement si aucun cache
-        if (!cacheAppliedRef.current) {
-          applyColorsToCSSWithGuard(DEFAULT_COLORS, session?.user?.id, 'auth-change-default');
-        }
-        
-        let finalColors = DEFAULT_COLORS;
-        let source = 'default (auth change)';
-
-        if (session?.user) {
-          // 1) Essayer ui_settings
-          try {
-            const { data: uiSettings, error: uiError } = await supabase
-              .from('ui_settings')
-              .select('colors')
-              .eq('user_id', session.user.id)
-              .order('updated_at', { ascending: false })
-              .limit(1)
-              .maybeSingle();
-
-            if (!uiError && uiSettings?.colors) {
-              const userColors = convertFromSettingsFormat(uiSettings.colors);
-              const userHash = getThemeHash(userColors, session.user.id);
-              const currentHash = getThemeHash(finalColors, session.user.id);
-              
-              // N'appliquer que si différent du cache
-              if (userHash !== currentHash) {
-                finalColors = userColors;
-                source = 'ui_settings (auth change)';
-                // Sauvegarder dans le cache
-                saveThemeToCache(finalColors);
-              } else {
-                source = 'ui_settings (same as cache)';
-              }
-            } else {
-              // 2) Fallback metadata
-              if (session.user.user_metadata?.theme_colors) {
-                const legacyColors = convertFromSettingsFormat(session.user.user_metadata.theme_colors);
-                const legacyHash = getThemeHash(legacyColors, session.user.id);
-                const currentHash = getThemeHash(finalColors, session.user.id);
-                
-                if (legacyHash !== currentHash) {
-                  finalColors = legacyColors;
-                  source = 'user_metadata (auth change)';
-                  saveThemeToCache(finalColors);
-                } else {
-                  source = 'user_metadata (same as cache)';
-                }
-              } else {
-                source = 'default (auth change)';
-              }
-            }
-          } catch (uiError) {
-            // 3) Fallback metadata
-            if (session.user.user_metadata?.theme_colors) {
-              const fallbackColors = convertFromSettingsFormat(session.user.user_metadata.theme_colors);
-              const fallbackHash = getThemeHash(fallbackColors, session.user.id);
-              const currentHash = getThemeHash(finalColors, session.user.id);
-              
-              if (fallbackHash !== currentHash) {
-                finalColors = fallbackColors;
-                source = 'user_metadata (auth change fallback)';
-                saveThemeToCache(finalColors);
-              } else {
-                source = 'user_metadata (same as cache)';
-              }
-            } else {
-              source = 'default (auth change catch)';
-            }
-          }
-        }
-
-        setColorsState(finalColors);
-        // Appliquer seulement si différent du thème déjà appliqué
-        if (source !== 'default (auth change)' && source !== 'ui_settings (same as cache)' && source !== 'user_metadata (same as cache)') {
-          applyColorsToCSSWithGuard(finalColors, session?.user?.id, source);
-        }
-
-        if (session?.user?.user_metadata?.cover_slide_url) {
-          setLogo(session.user.user_metadata.cover_slide_url);
-        }
-      }
-    );
-
+    // Note: onAuthStateChange est géré par AuthProvider uniquement (règle: un seul listener global)
+    // Le thème est chargé au mount via loadTheme() ci-dessus
     return () => {
       mounted = false;
-      subscription.unsubscribe();
     };
   }, []);
-=======
-  // 2) DÉSACTIVÉ - écoute changements auth causait des re-renders en cascade
-  // useEffect(() => {
-  //   const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-  //     if (DEBUG_AUTH) console.log('[ThemeProvider] auth event', event, session?.user?.id);
-
-  //     if (!session?.user) {
-  //       // si logout, on remet default (ou cache si tu préfères)
-  //       const fallback = getThemeFromCache() || DEFAULT_COLORS;
-  //       setColorsState(fallback);
-  //       applyColorsToCSS(fallback);
-  //       setLogo(undefined);
-  //       setIsLoading(false);
-  //       return;
-  //     }
-
-  //     setIsLoading(true);
-  //     await loadThemeForUser(session.user, `auth:${event}`);
-  //   });
-
-  //   return () => subscription.unsubscribe();
-  // }, [loadThemeForUser]);
->>>>>>> Stashed changes
 
   // Met à jour les couleurs et applique immédiatement
   const setColors = useCallback((newColors: ThemeColors) => {
