@@ -110,6 +110,8 @@ export interface DrawKpiRowOptions {
   sublabelColor?: HexColor;
   showIcons?: boolean;
   kpis: KpiItem[];
+  title?: string;
+  titleColor?: HexColor;
 }
 
 export interface Segment {
@@ -408,15 +410,33 @@ export function drawKpiRow(slide: Slide, options: DrawKpiRowOptions): void {
     sublabelColor = '9CA3AF',
     showIcons = true,
     kpis,
+    title,
+    titleColor = '3D4A47',
   } = options;
 
   if (!kpis.length) return;
+
+  let currentY = y;
+
+  if (title) {
+    slide.addText(title, {
+      x,
+      y: currentY,
+      w: width,
+      h: 0.3,
+      align: 'left',
+      fontSize: 14,
+      bold: true,
+      color: normalizeHexColor(titleColor),
+    });
+    currentY += 0.4;
+  }
 
   const columnWidth = width / kpis.length;
 
   kpis.forEach((kpi, idx) => {
     const columnX = x + idx * columnWidth;
-    let currentY = y;
+    let itemY = currentY;
 
     if (showIcons && kpi.iconDataUri) {
       slide.addImage({

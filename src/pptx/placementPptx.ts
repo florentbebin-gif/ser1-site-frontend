@@ -8,6 +8,9 @@ import {
   drawKpiRow,
   drawFooter,
   loadIconAsDataUri,
+  applySplitLayout,
+  drawAccentBar,
+  drawPhaseTimeline,
 } from './slideHelpers';
 
 const SHORT_DISCLAIMER = 'Simulation indicative non contractuelle.';
@@ -18,6 +21,8 @@ const ICONS = {
   tax: '/ppt-assets/icons/icon-tax.svg',
   net: '/ppt-assets/icons/icon-document.svg',
   perf: '/ppt-assets/icons/icon-percent.svg',
+  versement: '/ppt-assets/icons/icon-versement.svg',
+  economie: '/ppt-assets/icons/icon-economie.svg',
 };
 
 function formatEuro(value?: number | null): string {
@@ -25,20 +30,39 @@ function formatEuro(value?: number | null): string {
   return `${Math.round(value || 0).toLocaleString('fr-FR')} €`;
 }
 
-// Définition des structures de données pour les résultats de simulation
-interface EpargneResult {
+// --- DATA STRUCTURES ---
+
+interface EpargneRow {
+  annee: number;
   capitalFin: number;
-  totalVersements: number;
+}
+
+interface EpargneResult {
+  capitalAcquis: number;
+  cumulVersements: number;
+  effortReel: number;
+  cumulEconomieIR: number;
+  rows: EpargneRow[];
+}
+
+interface LiquidationRow {
+  age: number;
+  retraitNet: number;
 }
 
 interface LiquidationResult {
-  totalRetraits: number;
-  totalFiscalite: number;
+  revenuAnnuelMoyenNet: number;
+  cumulRetraitsNetsAuDeces: number;
+  capitalRestantAuDeces: number;
+  rows: LiquidationRow[];
 }
 
 interface TransmissionResult {
-  capitalTransmisNet: number;
+  capitalTransmis: number;
+  regime: string;
+  abattement: number;
   taxe: number;
+  capitalTransmisNet: number;
 }
 
 interface ProductResult {
@@ -46,18 +70,22 @@ interface ProductResult {
   epargne: EpargneResult;
   liquidation: LiquidationResult;
   transmission: TransmissionResult;
-  versementConfig?: {
-    initial?: { montant: number };
-    annuel?: { montant: number };
-  };
-  epargneTable: any[];
-  liquidationTable: any[];
+  versementConfig?: any;
+  fraisGestion: number;
+  rendements: any;
 }
 
 export interface PlacementPptxData {
-  produit1: ProductResult;
-  produit2: ProductResult;
+  produit1: ProductResult | null;
+  produit2: ProductResult | null;
+  client: {
+    ageActuel: number;
+  };
+  dureeEpargne: number;
+  ageAuDeces: number;
   deltas: any;
+  recommandations: { critere: string; solution: string }[];
+  risques: { [key: string]: string[] };
 }
 
 export interface PlacementPptxOptions {
@@ -68,240 +96,214 @@ export interface PlacementPptxOptions {
   clientName?: string;
 }
 
-function addSyntheseSlide(pptx: PptxGenJS, title: string, data: ProductResult, colors: PptxColors, icons: any, pageNumber: number) {
+function addEpargneSlides(pptx: PptxGenJS, produit1: ProductResult, produit2: ProductResult, colors: PptxColors, icons: any, pageNumber: number): number {
   const slide = pptx.addSlide();
-  const c1 = colors.c1, c2 = colors.c2, c10 = colors.c10;
+  const c1 = colors.c1, c2 = colors.c2;
 
-  drawTitleWithUnderline(slide, { title, color: c1, underlineColor: c2 });
+  drawTitleWithUnderline(slide, { title: 'Phase Épargne : Capital Acquis', color: c1, underlineColor: c2 });
 
-  drawKpiRow(slide, {
-    y: STYLE.MARGIN + 0.8,
-    kpis: [
-      { label: 'Capital Acquis (Épargne)', value: formatEuro(data.epargne.capitalFin), iconDataUri: icons.capital },
-      { label: 'Total Retraits Nets (Liquidation)', value: formatEuro(data.liquidation.totalRetraits), iconDataUri: icons.net },
-      { label: 'Net Transmis (Succession)', value: formatEuro(data.transmission.capitalTransmisNet), iconDataUri: icons.tax },
-    ],
-  });
+  // KPIs
+  const kpis = [
+    { label: 'Capital Acquis', value: formatEuro(produit1.epargne.capitalAcquis), iconDataUri: icons.capital },
+    { label: 'Versements Cumulés', value: formatEuro(produit1.epargne.cumulVersements), iconDataUri: icons.versement },
+    { label: 'Effort Réel', value: formatEuro(produit1.epargne.effortReel), iconDataUri: icons.net },
+    { label: 'Économie IR', value: formatEuro(produit1.epargne.cumulEconomieIR), iconDataUri: icons.economie },
+  ];
+  drawKpiRow(slide, { y: STYLE.MARGIN + 0.8, kpis, title: produit1.envelopeLabel, titleColor: c1 });
+  
+  const kpis2 = [
+    { label: 'Capital Acquis', value: formatEuro(produit2.epargne.capitalAcquis), iconDataUri: icons.capital },
+    { label: 'Versements Cumulés', value: formatEuro(produit2.epargne.cumulVersements), iconDataUri: icons.versement },
+    { label: 'Effort Réel', value: formatEuro(produit2.epargne.effortReel), iconDataUri: icons.net },
+    { label: 'Économie IR', value: formatEuro(produit2.epargne.cumulEconomieIR), iconDataUri: icons.economie },
+  ];
+  drawKpiRow(slide, { y: STYLE.MARGIN + 2.8, kpis: kpis2, title: produit2.envelopeLabel, titleColor: c1 });
 
-  drawFooter(slide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber, color: c10 });
-}
+  drawFooter(slide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber, color: colors.c10 });
 
-function addSynthesisSlide(
-  pptx: PptxGenJS,
-  produit1: ProductResult | null,
-  produit2: ProductResult | null,
-  colors: PptxColors,
-  pageNumber: number
-) {
-  if (!produit1 && !produit2) return;
-  const slide = pptx.addSlide();
-  const c1 = colors.c1, c2 = colors.c2, c7 = colors.c7, c10 = colors.c10;
+  // Slide Graphe
+  const graphSlide = pptx.addSlide();
+  drawTitleWithUnderline(graphSlide, { title: 'Phase Épargne : Évolution du capital', color: c1, underlineColor: c2 });
 
-  drawTitleWithUnderline(slide, { title: 'Synthèse comparative', color: c1, underlineColor: c2 });
-
-  const tableData = [
-    ['Effort réel', formatEuro(produit1?.epargne?.totalVersements), formatEuro(produit2?.epargne?.totalVersements)],
-    ['Capital acquis', formatEuro(produit1?.epargne?.capitalFin), formatEuro(produit2?.epargne?.capitalFin)],
-    ['Revenus nets liquidation', formatEuro(produit1?.liquidation?.totalRetraits), formatEuro(produit2?.liquidation?.totalRetraits)],
-    ['Net transmis', formatEuro(produit1?.transmission?.capitalTransmisNet), formatEuro(produit2?.transmission?.capitalTransmisNet)],
+  const chartData = [
+    {
+      name: produit1.envelopeLabel,
+      labels: produit1.epargne.rows.map((r, i) => `A${i}`),
+      values: produit1.epargne.rows.map(r => r.capitalFin),
+    },
+    {
+      name: produit2.envelopeLabel,
+      labels: produit2.epargne.rows.map((r, i) => `A${i}`),
+      values: produit2.epargne.rows.map(r => r.capitalFin),
+    },
   ];
 
-  slide.addTable(
-    [
-      [
-        { text: '', options: { bold: true, color: c1 } },
-        {
-          text: produit1?.envelopeLabel || 'Produit 1',
-          options: { bold: true, color: c1, align: 'center' as const },
-        },
-        {
-          text: produit2?.envelopeLabel || 'Produit 2',
-          options: { bold: true, color: c1, align: 'center' as const },
-        },
-      ],
-      ...tableData.map((row) => [
-        { text: row[0], options: { color: c10, align: 'left' as const } },
-        { text: row[1], options: { color: c10, align: 'center' as const } },
-        { text: row[2], options: { color: c10, align: 'center' as const } },
-      ]),
-    ],
-    {
-      x: STYLE.MARGIN,
-      y: STYLE.MARGIN + 0.8,
-      w: STYLE.SLIDE_WIDTH - STYLE.MARGIN * 2,
-      fontSize: 12,
-      fill: { color: c7 },
-      border: { type: 'solid', color: c2, pt: 0.5 },
-      colW: [3.5, 3.25, 3.25],
-    }
-  );
-
-  slide.addText('Quelle stratégie privilégier ?', {
-    x: STYLE.MARGIN,
-    y: STYLE.MARGIN + 2.9,
-    fontSize: 14,
-    color: c1,
-    bold: true,
+  graphSlide.addChart(pptx.ChartType.line, chartData, {
+    x: 0.5, y: 1, w: 9, h: 4, 
+    showLegend: true, legendPos: 'b',
+    catAxisLabelColor: colors.c10, valAxisLabelColor: colors.c10,
+    chartColors: [colors.c2, colors.c3 || '00BFFF'],
   });
 
-  slide.addText(
-    'Le meilleur compromis dépend de votre besoin : effort initial réduit, revenus élevés ou transmission optimisée.',
-    {
-      x: STYLE.MARGIN,
-      y: STYLE.MARGIN + 3.2,
-      w: STYLE.SLIDE_WIDTH - STYLE.MARGIN * 2,
-      fontSize: 12,
-      color: c10,
-    }
-  );
+  drawFooter(graphSlide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber: pageNumber + 1, color: colors.c10 });
 
-  drawFooter(slide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber, color: c10 });
+  return 2;
 }
 
-function addMatchSlide(pptx: PptxGenJS, produit1: ProductResult, produit2: ProductResult, colors: PptxColors, pageNumber: number) {
-  if (!produit1 || !produit2) return;
+function addLiquidationSlides(pptx: PptxGenJS, produit1: ProductResult, produit2: ProductResult, colors: PptxColors, icons: any, pageNumber: number): number {
   const slide = pptx.addSlide();
-  const c1 = colors.c1, c2 = colors.c2, c7 = colors.c7, c10 = colors.c10;
+  const c1 = colors.c1, c2 = colors.c2;
 
-  drawTitleWithUnderline(slide, { title: 'Match des placements', color: c1, underlineColor: c2 });
+  drawTitleWithUnderline(slide, { title: 'Phase Liquidation : Synthèse des revenus', color: c1, underlineColor: c2 });
 
-  const cardWidth = (STYLE.SLIDE_WIDTH - STYLE.MARGIN * 2 - 0.5) / 2;
-  const cardHeight = 2.8;
-  const topY = STYLE.MARGIN + 0.7;
+  const kpis = [
+    { label: 'Revenu Annuel Moyen Net', value: formatEuro(produit1.liquidation.revenuAnnuelMoyenNet), iconDataUri: icons.capital },
+    { label: 'Cumul Revenus Nets', value: formatEuro(produit1.liquidation.cumulRetraitsNetsAuDeces), iconDataUri: icons.net },
+    { label: 'Capital Restant', value: formatEuro(produit1.liquidation.capitalRestantAuDeces), iconDataUri: icons.tax },
+  ];
+  drawKpiRow(slide, { y: STYLE.MARGIN + 0.8, kpis, title: produit1.envelopeLabel, titleColor: c1 });
 
-  const renderCard = (x: number, produit: ProductResult, label: string, highlight: boolean) => {
-    slide.addShape('rect', {
-      x,
-      y: topY,
-      w: cardWidth,
-      h: cardHeight,
-      fill: { color: c7 },
-      line: { color: highlight ? c2 : c1, width: highlight ? 2 : 1 },
-    });
+  const kpis2 = [
+    { label: 'Revenu Annuel Moyen Net', value: formatEuro(produit2.liquidation.revenuAnnuelMoyenNet), iconDataUri: icons.capital },
+    { label: 'Cumul Revenus Nets', value: formatEuro(produit2.liquidation.cumulRetraitsNetsAuDeces), iconDataUri: icons.net },
+    { label: 'Capital Restant', value: formatEuro(produit2.liquidation.capitalRestantAuDeces), iconDataUri: icons.tax },
+  ];
+  drawKpiRow(slide, { y: STYLE.MARGIN + 2.8, kpis: kpis2, title: produit2.envelopeLabel, titleColor: c1 });
 
-    slide.addText(label, {
-      x: x + 0.3,
-      y: topY + 0.2,
-      w: cardWidth - 0.6,
-      fontSize: 16,
-      color: c1,
-      bold: true,
-    });
+  drawFooter(slide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber, color: colors.c10 });
 
-    const metrics = [
-      { label: 'Capital acquis', value: formatEuro(produit?.epargne?.capitalFin) },
-      { label: 'Revenus nets', value: formatEuro(produit?.liquidation?.totalRetraits) },
-      { label: 'Net transmis', value: formatEuro(produit?.transmission?.capitalTransmisNet) },
-    ];
+  // Slide Graphe
+  const graphSlide = pptx.addSlide();
+  drawTitleWithUnderline(graphSlide, { title: 'Phase Liquidation : Évolution des retraits', color: c1, underlineColor: c2 });
 
-    metrics.forEach((metric, index) => {
-      slide.addText(metric.label.toUpperCase(), {
-        x: x + 0.3,
-        y: topY + 0.6 + index * 0.7,
-        w: cardWidth - 0.6,
-        fontSize: 10,
-        color: c10,
-        bold: true,
-        charSpacing: 50,
-      });
-      slide.addText(metric.value, {
-        x: x + 0.3,
-        y: topY + 0.6 + index * 0.7 + 0.2,
-        w: cardWidth - 0.6,
-        fontSize: 20,
-        color: c1,
-        bold: true,
-      });
-    });
-  };
-
-  const net1 =
-    (produit1?.liquidation?.totalRetraits || 0) + (produit1?.transmission?.capitalTransmisNet || 0);
-  const net2 =
-    (produit2?.liquidation?.totalRetraits || 0) + (produit2?.transmission?.capitalTransmisNet || 0);
-
-  const winner =
-    net1 === net2 ? null : net1 > net2 ? produit1?.envelopeLabel : produit2?.envelopeLabel;
-
-  renderCard(STYLE.MARGIN, produit1, produit1?.envelopeLabel || 'Produit 1', winner === produit1?.envelopeLabel);
-  renderCard(STYLE.MARGIN + cardWidth + 0.5, produit2, produit2?.envelopeLabel || 'Produit 2', winner === produit2?.envelopeLabel);
-
-  slide.addText(
-    winner
-      ? `✅ Avantage global : ${winner}`
-      : 'Les deux scénarios offrent des performances équivalentes',
+  const chartData = [
     {
-      x: STYLE.MARGIN,
-      y: topY + cardHeight + 0.4,
-      w: STYLE.SLIDE_WIDTH - STYLE.MARGIN * 2,
-      fontSize: 14,
-      color: c1,
-      bold: true,
-      align: 'center',
-    }
-  );
+      name: produit1.envelopeLabel,
+      labels: produit1.liquidation.rows.map(r => `${r.age}`),
+      values: produit1.liquidation.rows.map(r => r.retraitNet),
+    },
+    {
+      name: produit2.envelopeLabel,
+      labels: produit2.liquidation.rows.map(r => `${r.age}`),
+      values: produit2.liquidation.rows.map(r => r.retraitNet),
+    },
+  ];
 
-  drawFooter(slide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber, color: c10 });
+  graphSlide.addChart(pptx.ChartType.bar, chartData, {
+    x: 0.5, y: 1, w: 9, h: 4, 
+    showLegend: true, legendPos: 'b',
+    catAxisLabelColor: colors.c10, valAxisLabelColor: colors.c10,
+    barDir: 'col',
+  });
+
+  drawFooter(graphSlide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber: pageNumber + 1, color: colors.c10 });
+
+  return 2;
+}
+
+function addTransmissionSlides(pptx: PptxGenJS, produit1: ProductResult, produit2: ProductResult, colors: PptxColors, icons: any, pageNumber: number): number {
+  const slide = pptx.addSlide();
+  const c1 = colors.c1, c2 = colors.c2;
+
+  drawTitleWithUnderline(slide, { title: 'Phase Transmission : Synthèse', color: c1, underlineColor: c2 });
+
+  const kpis = [
+    { label: 'Capital Transmis Brut', value: formatEuro(produit1.transmission.capitalTransmis), iconDataUri: icons.capital },
+    { label: 'Abattement', value: formatEuro(produit1.transmission.abattement), iconDataUri: icons.economie },
+    { label: 'Fiscalité Décès', value: formatEuro(produit1.transmission.taxe), iconDataUri: icons.tax },
+    { label: 'Capital Transmis Net', value: formatEuro(produit1.transmission.capitalTransmisNet), iconDataUri: icons.net },
+  ];
+  drawKpiRow(slide, { y: STYLE.MARGIN + 0.8, kpis, title: produit1.envelopeLabel, titleColor: c1 });
+
+  const kpis2 = [
+    { label: 'Capital Transmis Brut', value: formatEuro(produit2.transmission.capitalTransmis), iconDataUri: icons.capital },
+    { label: 'Abattement', value: formatEuro(produit2.transmission.abattement), iconDataUri: icons.economie },
+    { label: 'Fiscalité Décès', value: formatEuro(produit2.transmission.taxe), iconDataUri: icons.tax },
+    { label: 'Capital Transmis Net', value: formatEuro(produit2.transmission.capitalTransmisNet), iconDataUri: icons.net },
+  ];
+  drawKpiRow(slide, { y: STYLE.MARGIN + 2.8, kpis: kpis2, title: produit2.envelopeLabel, titleColor: c1 });
+
+  drawFooter(slide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber, color: colors.c10 });
+
   return 1;
 }
 
-function addPhaseSlide(
-  pptx: PptxGenJS,
-  title: string,
-  metrics: { label: string; value: string; iconDataUri?: string }[],
-  narrative: string,
-  colors: PptxColors,
-  pageNumber: number
-) {
+function addComparisonSlide(pptx: PptxGenJS, data: PlacementPptxData, colors: PptxColors, pageNumber: number) {
   const slide = pptx.addSlide();
   const c1 = colors.c1, c2 = colors.c2, c10 = colors.c10;
+  drawTitleWithUnderline(slide, { title: 'Comparaison Globale', color: c1, underlineColor: c2 });
 
-  drawTitleWithUnderline(slide, { title, color: c1, underlineColor: c2 });
+  const p1 = data.produit1;
+  const p2 = data.produit2;
 
-  drawKpiRow(slide, {
-    y: STYLE.MARGIN + 0.7,
-    kpis: metrics,
-  });
+  const header = [
+    { text: 'Indicateur', options: { bold: true, color: 'FFFFFF', fill: { color: c2 } } },
+    { text: p1?.envelopeLabel || '', options: { bold: true, color: 'FFFFFF', fill: { color: c2 } } },
+    { text: p2?.envelopeLabel || '', options: { bold: true, color: 'FFFFFF', fill: { color: c2 } } },
+  ];
 
-  slide.addShape('line', {
-    x: STYLE.MARGIN,
-    y: STYLE.MARGIN + 2.7,
-    w: STYLE.SLIDE_WIDTH - STYLE.MARGIN * 2,
-    h: 0,
-    line: { color: c2, width: 1 },
-  });
+  const rows = [
+    ['Effort réel', formatEuro(p1?.epargne.effortReel), formatEuro(p2?.epargne.effortReel)],
+    ['Revenus nets (retraite)', formatEuro(p1?.liquidation.cumulRetraitsNetsAuDeces), formatEuro(p2?.liquidation.cumulRetraitsNetsAuDeces)],
+    ['Capital transmis net', formatEuro(p1?.transmission.capitalTransmisNet), formatEuro(p2?.transmission.capitalTransmisNet)],
+  ];
 
-  slide.addText(narrative, {
-    x: STYLE.MARGIN,
-    y: STYLE.MARGIN + 3.0,
-    w: STYLE.SLIDE_WIDTH - STYLE.MARGIN * 2,
-    fontSize: 13,
-    color: c10,
-    align: 'left',
+  const tableData = [header, ...rows.map(row => row.map(cell => ({ text: cell })))];
+
+  slide.addTable(tableData, {
+    x: STYLE.MARGIN, y: 1.5, w: STYLE.SLIDE_WIDTH - STYLE.MARGIN * 2,
+    colW: [4, 2.5, 2.5],
+    border: { type: 'solid', pt: 1, color: colors.c4 }
   });
 
   drawFooter(slide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber, color: c10 });
 }
 
-function addAnnexesSlide(pptx: PptxGenJS, title: string, table: any[], columns: {key: string, label: string}[], colors: PptxColors, pageNumber: number) {
-  if (!table || table.length === 0) return;
+function addRisksSlide(pptx: PptxGenJS, data: PlacementPptxData, colors: PptxColors, pageNumber: number) {
   const slide = pptx.addSlide();
-  const c1 = colors.c1, c2 = colors.c2, c7 = colors.c7, c4 = colors.c4, c10 = colors.c10;
+  const c1 = colors.c1, c2 = colors.c2, c9 = colors.c9, c10 = colors.c10;
+  drawTitleWithUnderline(slide, { title: 'Risques et Points de Vigilance', color: c1, underlineColor: c2 });
 
-  drawTitleWithUnderline(slide, { title, color: c1, underlineColor: c2 });
+  const p1Risks = data.risques[data.produit1?.envelopeLabel || ''] || [];
+  const p2Risks = data.risques[data.produit2?.envelopeLabel || ''] || [];
 
-  const head = [columns.map(c => ({ text: c.label, options: { bold: true, fill: c2, color: 'FFFFFF' } }))];
-  const body = table.map(row => columns.map(col => ({ text: formatEuro(row[col.key] ?? 0) })));
+  const contentY = 1.8;
+  const colWidth = 4;
+  const col1X = 1;
+  const col2X = 5.5;
 
-  slide.addTable([...head, ...body], {
-    x: STYLE.MARGIN_SLIM,
-    y: STYLE.MARGIN + 0.6,
-    w: STYLE.SLIDE_WIDTH - STYLE.MARGIN_SLIM * 2,
-    fontSize: 8,
-    fill: { color: c7 },
-    border: { type: 'solid', color: c4, pt: 1 },
-    autoPage: true,
-    colW: columns.map(() => (STYLE.SLIDE_WIDTH - STYLE.MARGIN_SLIM * 2) / columns.length),
+  if (data.produit1) {
+    drawAccentBar(slide, {x: col1X - 0.2, y: contentY - 0.2, height: 2.5, color: c2});
+    slide.addText(data.produit1.envelopeLabel, { x: col1X, y: contentY - 0.3, w: colWidth, h: 0.3, fontSize: 14, bold: true, color: c1 });
+    slide.addText(p1Risks.join('\n'), { x: col1X, y: contentY, w: colWidth, h: 2.5, fontSize: 11, color: c10, bullet: true });
+  }
+
+  if (data.produit2) {
+    drawAccentBar(slide, {x: col2X - 0.2, y: contentY - 0.2, height: 2.5, color: c2});
+    slide.addText(data.produit2.envelopeLabel, { x: col2X, y: contentY - 0.3, w: colWidth, h: 0.3, fontSize: 14, bold: true, color: c1 });
+    slide.addText(p2Risks.join('\n'), { x: col2X, y: contentY, w: colWidth, h: 2.5, fontSize: 11, color: c10, bullet: true });
+  }
+
+  drawFooter(slide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber, color: c10 });
+}
+
+function addRecommandationSlide(pptx: PptxGenJS, data: PlacementPptxData, colors: PptxColors, pageNumber: number) {
+  const slide = pptx.addSlide();
+  const c1 = colors.c1, c2 = colors.c2, c10 = colors.c10;
+  drawTitleWithUnderline(slide, { title: 'Synthèse : Quel Produit Choisir ?', color: c1, underlineColor: c2 });
+
+  const header = [
+    { text: 'Votre Priorité', options: { bold: true, color: 'FFFFFF', fill: { color: c2 } } },
+    { text: 'Solution Suggérée', options: { bold: true, color: 'FFFFFF', fill: { color: c2 } } },
+  ];
+
+  const rows = data.recommandations.map(r => [r.critere, r.solution]);
+  const tableData = [header, ...rows.map(row => row.map(cell => ({ text: cell })))];
+
+  slide.addTable(tableData, {
+    x: STYLE.MARGIN, y: 1.5, w: STYLE.SLIDE_WIDTH - STYLE.MARGIN * 2,
+    colW: [4, 4.5],
+    border: { type: 'solid', pt: 1, color: colors.c4 }
   });
 
   drawFooter(slide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber, color: c10 });
@@ -310,127 +312,68 @@ function addAnnexesSlide(pptx: PptxGenJS, title: string, table: any[], columns: 
 export async function generatePlacementPptx(options: PlacementPptxOptions): Promise<void> {
   const { data, colors = DEFAULT_COLORS as unknown as PptxColors, coverUrl, clientName = 'Client' } = options;
   const pptx = new PptxGenJS();
-  pptx.title = 'Comparatif de Placements';
+  pptx.title = 'Étude Comparative Placement';
   pptx.author = 'SER1 - Cabinet CGP';
 
-  const c1 = colors.c1, c2 = colors.c2, c4 = colors.c4, c10 = colors.c10;
+  const c1 = colors.c1, c2 = colors.c2, c4 = colors.c4;
 
   const icons = {
     capital: await loadIconAsDataUri(ICONS.capital),
     tax: await loadIconAsDataUri(ICONS.tax),
     net: await loadIconAsDataUri(ICONS.net),
     perf: await loadIconAsDataUri(ICONS.perf),
+    versement: await loadIconAsDataUri(ICONS.versement),
+    economie: await loadIconAsDataUri(ICONS.economie),
   };
-  const safeIcon = (icon?: string | null) => (icon ? icon : undefined);
 
   // Slide 1: Cover
   const coverSlide = pptx.addSlide();
   coverSlide.background = { color: c1 };
   drawTitleWithOverline(coverSlide, {
-    title: 'Analyse de Placements',
-    subtitle: clientName,
+    title: clientName || 'Client',
+    subtitle: 'Étude comparative placement patrimonial',
     date: new Date().toLocaleDateString('fr-FR'),
     lineColor: 'FFFFFF', titleColor: 'FFFFFF', subtitleColor: c4,
   });
-  if (coverUrl) coverSlide.addImage({ path: coverUrl, x: STYLE.SLIDE_WIDTH * 0.7, y: STYLE.SLIDE_HEIGHT * 0.7, w: 2.5, h: 1.5, transparency: 20 });
+  if (coverUrl) coverSlide.addImage({ path: coverUrl, x: STYLE.SLIDE_WIDTH * 0.7, y: STYLE.SLIDE_HEIGHT * 0.7, w: 2.5, h: 1.5, transparency: 60 });
 
-  const produit1 = data.produit1 || null;
-  const produit2 = data.produit2 || null;
+  const { produit1, produit2 } = data;
+  if (!produit1 || !produit2) {
+    const errorSlide = pptx.addSlide();
+    errorSlide.addText('Données de simulation incomplètes pour la comparaison.', { x: 1, y: 1, w: 8, h: 2, color: 'FF0000' });
+    await pptx.writeFile({ fileName: `Erreur_Placement_${clientName}.pptx` });
+    return;
+  }
 
   let page = 2;
 
-  if (produit1 && produit2) {
-    page += addMatchSlide(pptx, produit1, produit2, colors, page) || 0;
-    page++;
-  }
+  // Slide 2: Objectifs et horizon
+  const horizonSlide = pptx.addSlide();
+  drawPhaseTimeline(horizonSlide, {
+    ageActuel: data.client.ageActuel,
+    ageFinEpargne: data.client.ageActuel + data.dureeEpargne,
+    ageAuDeces: data.ageAuDeces,
+    colors: { epargne: colors.c2, liquidation: colors.c3, transmission: colors.c4, text: colors.c10 },
+  });
+  drawFooter(horizonSlide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber: page++, color: colors.c10 });
 
-  const versements1 = produit1?.epargne?.totalVersements;
-  const versements2 = produit2?.epargne?.totalVersements;
+  // Slides 3 & 4: Phase Épargne
+  page += addEpargneSlides(pptx, produit1, produit2, colors, icons, page);
 
-  addPhaseSlide(
-    pptx,
-    'Phase Épargne — Je constitue',
-    [
-      { label: `${produit1?.envelopeLabel || 'Produit 1'} — Versements cumulés`, value: formatEuro(versements1), iconDataUri: safeIcon(icons.net) },
-      { label: `${produit2?.envelopeLabel || 'Produit 2'} — Versements cumulés`, value: formatEuro(versements2), iconDataUri: safeIcon(icons.net) },
-      { label: 'Capital acquis', value: `${formatEuro(produit1?.epargne?.capitalFin)} / ${formatEuro(produit2?.epargne?.capitalFin)}`, iconDataUri: safeIcon(icons.capital) },
-    ],
-    'Chaque année, vos versements réguliers et ponctuels sont répartis sur les supports choisis. Les intérêts composés font diverger progressivement les capitalisations.',
-    colors,
-    page++
-  );
+  // Slides 5 & 6: Phase Liquidation
+  page += addLiquidationSlides(pptx, produit1, produit2, colors, icons, page);
 
-  addPhaseSlide(
-    pptx,
-    'Phase Liquidation — Je profite',
-    [
-      { label: `${produit1?.envelopeLabel || 'Produit 1'} — Revenus nets`, value: formatEuro(produit1?.liquidation?.totalRetraits), iconDataUri: safeIcon(icons.net) },
-      { label: `${produit2?.envelopeLabel || 'Produit 2'} — Revenus nets`, value: formatEuro(produit2?.liquidation?.totalRetraits), iconDataUri: safeIcon(icons.net) },
-      { label: 'Fiscalité totale', value: `${formatEuro(produit1?.liquidation?.totalFiscalite)} / ${formatEuro(produit2?.liquidation?.totalFiscalite)}`, iconDataUri: safeIcon(icons.tax) },
-    ],
-    'Les retraits suivent la stratégie paramétrée (mensuels, annuels ou à la carte). Nous suivons la fiscalité associée pour garantir un revenu net maîtrisé.',
-    colors,
-    page++
-  );
+  // Slide 7: Phase Transmission
+  page += addTransmissionSlides(pptx, produit1, produit2, colors, icons, page);
 
-  addPhaseSlide(
-    pptx,
-    'Phase Transmission — Je transmets',
-    [
-      { label: `${produit1?.envelopeLabel || 'Produit 1'} — Net transmis`, value: formatEuro(produit1?.transmission?.capitalTransmisNet), iconDataUri: safeIcon(icons.capital) },
-      { label: `${produit2?.envelopeLabel || 'Produit 2'} — Net transmis`, value: formatEuro(produit2?.transmission?.capitalTransmisNet), iconDataUri: safeIcon(icons.capital) },
-      { label: 'Fiscalité décès', value: `${formatEuro(produit1?.transmission?.taxe)} / ${formatEuro(produit2?.transmission?.taxe)}`, iconDataUri: safeIcon(icons.tax) },
-    ],
-    'En cas de décès à l’âge projeté, chaque enveloppe applique son régime fiscal (AV, PER, etc.). Cette slide visualise la part nette perçue par vos bénéficiaires.',
-    colors,
-    page++
-  );
+  // Slide 8: Comparaison
+  addComparisonSlide(pptx, data, colors, page++);
 
-  addSynthesisSlide(pptx, produit1, produit2, colors, page++);
+  // Slide 9: Risques
+  addRisksSlide(pptx, data, colors, page++);
 
-  // Slides de synthèse par produit (détails)
-  if (produit1) {
-    addSyntheseSlide(pptx, `Synthèse - ${produit1.envelopeLabel}`, produit1, colors, icons, page++);
-  }
-  if (produit2) {
-    addSyntheseSlide(pptx, `Synthèse - ${produit2.envelopeLabel}`, produit2, colors, icons, page++);
-  }
-
-  // Séparateur Annexes
-  const sepSlide = pptx.addSlide();
-  sepSlide.background = { color: c2 };
-  drawTitleWithOverline(sepSlide, { title: 'ANNEXES', lineColor: 'FFFFFF', titleColor: 'FFFFFF' });
-  page++;
-
-  // Slides Annexes
-  const epargneCols = [
-    { key: 'age', label: 'Âge' },
-    { key: 'capitalDebut', label: 'Capital Début' },
-    { key: 'versementNet', label: 'Versement' },
-    { key: 'gainsAnnee', label: 'Gains' },
-    { key: 'capitalFin', label: 'Capital Fin' },
-  ];
-  if (data.produit1) {
-    addAnnexesSlide(pptx, `Annexe Épargne - ${data.produit1.envelopeLabel}`, data.produit1.epargneTable, epargneCols, colors, page++);
-  }
-  if (data.produit2) {
-    addAnnexesSlide(pptx, `Annexe Épargne - ${data.produit2.envelopeLabel}`, data.produit2.epargneTable, epargneCols, colors, page++);
-  }
-
-  const liqCols = [
-    { key: 'age', label: 'Âge' },
-    { key: 'capitalDebut', label: 'Capital Début' },
-    { key: 'retraitBrut', label: 'Retrait Brut' },
-    { key: 'fiscalite', label: 'Fiscalité' },
-    { key: 'retraitNet', label: 'Retrait Net' },
-    { key: 'capitalFin', label: 'Capital Fin' },
-  ];
-  if (data.produit1) {
-    addAnnexesSlide(pptx, `Annexe Liquidation - ${data.produit1.envelopeLabel}`, data.produit1.liquidationTable, liqCols, colors, page++);
-  }
-  if (data.produit2) {
-    addAnnexesSlide(pptx, `Annexe Liquidation - ${data.produit2.envelopeLabel}`, data.produit2.liquidationTable, liqCols, colors, page++);
-  }
+  // Slide 10: Recommandations
+  addRecommandationSlide(pptx, data, colors, page++);
 
   // Slide N: Disclaimer
   const disclaimerSlide = pptx.addSlide();
@@ -451,6 +394,6 @@ export async function generatePlacementPptx(options: PlacementPptxOptions): Prom
     fontFace: 'Arial',
   });
 
-  const filename = `Placement_${clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pptx`;
+  const filename = `Placement_${clientName?.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pptx`;
   await pptx.writeFile({ fileName: filename });
 }
