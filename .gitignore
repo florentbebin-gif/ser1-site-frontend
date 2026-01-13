@@ -1,18 +1,22 @@
 # Dependencies
-node_modules
+node_modules/
 .pnp
 .pnp.js
 
 # Testing
-coverage
+coverage/
 
 # Production
-dist
-build
+dist/
+build/
 
 # Misc
 .DS_Store
+
+# Env
 .env
+.env.*
+!.env.example
 .env.local
 .env.development.local
 .env.test.local
@@ -22,10 +26,12 @@ build
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+logs/
 
 # Editor directories and files
-.idea
-.vscode
+.idea/
+.vscode/
 *.suo
 *.ntvs*
 *.njsproj
@@ -36,23 +42,29 @@ yarn-error.log*
 outputs/
 tmp/
 temp/
-logs/
+
+# Local tools / refs (do not commit)
+.windsurf/
+_signalements_ref/
+_style_ref/
+*.zip
 
 # Validation outputs
 validation_results.csv
 validation_results.json
 validation_report.md
 validation_compared.csv
-*.xlsx
-!SER1 - LAPLACE 2025.xlsx
+
+# Office exports / docs (do not commit)
+docs/*.pptx
+docs/*.png
+docs/*.xlsx
+**/render_*/**
+**/*.pptx
+**/*.xlsx
+
+
 
 # Python artifacts (if any)
 __pycache__/
 *.py[cod]
-
-# Local / refs (do not commit)
-.windsurf/
-_signalements_ref/
-_style_ref/
-*.zip
-
