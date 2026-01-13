@@ -56,12 +56,3 @@ _signalements_ref/
 _style_ref/
 *.zip
 
-# --- Generated exports / local docs (do not commit) ---
-docs/*.pptx
-docs/*.png
-docs/*.xlsx
-
-# (optionnel) si tu as aussi des exports ailleurs
-**/render_*/**
-**/*.pptx
-**/*.xlsx

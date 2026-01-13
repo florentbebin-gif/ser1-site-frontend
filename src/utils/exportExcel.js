@@ -73,42 +73,6 @@ export function buildWorksheetXmlVertical(title, header, rows) {
     </Worksheet>`;
 }
 
-/**
- * @typedef {Object} ExcelSheet
- * @property {string} title - The title of the sheet.
- * @property {string[]} header - The header row.
- * @property {Array<Array<string|number>>} rows - The data rows.
- * @property {'vertical'|'horizontal'} [orientation='vertical'] - The table orientation.
- */
-
-/**
- * Generates a full Excel XML workbook from multiple sheets.
- * @param {ExcelSheet[]} sheets - An array of sheet configurations.
- * @returns {string} The full XML content for the .xls file.
- */
-export function generateExcelWorkbook(sheets) {
-  if (!Array.isArray(sheets) || sheets.length === 0) {
-    throw new Error('Sheet data is required.');
-  }
-
-  const worksheetsXml = sheets.map(sheet => {
-    const { title, header, rows, orientation = 'vertical' } = sheet;
-    if (orientation === 'horizontal') {
-      return buildWorksheetXml(title, header, rows);
-    }
-    return buildWorksheetXmlVertical(title, header, rows);
-  }).join('');
-
-  return `<?xml version="1.0"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
-  xmlns:o="urn:schemas-microsoft-com:office:office"
-  xmlns:x="urn:schemas-microsoft-com:office:excel"
-  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-  ${worksheetsXml}
-</Workbook>`;
-}
-
 // Génère et télécharge un fichier Excel
 export async function downloadExcel(xml, filename) {
   try {
