@@ -192,6 +192,18 @@ export interface DrawResultLineOptions {
   underlineColor?: HexColor;
 }
 
+export interface PedagogicalBlockOptions {
+  title: string;
+  content: string | string[];
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  titleColor?: HexColor;
+  contentColor?: HexColor;
+  backgroundColor?: HexColor;
+}
+
 export function drawTitleWithOverline(slide: Slide, options: TitleWithOverlineOptions): void {
   const {
     title,
@@ -905,6 +917,35 @@ export function normalizeHexColor(color: string, fallback: HexColor = '000000'):
   const cleaned = color.replace('#', '').trim();
   const match = cleaned.match(/^[0-9a-fA-F]{6}$/);
   return match ? cleaned.toUpperCase() : fallback;
+}
+
+export function drawPedagogicalBlock(slide: Slide, options: PedagogicalBlockOptions): void {
+  const {
+    title, content, x, y, w, h,
+    titleColor = '3D4A47',
+    contentColor = '6B7280',
+    backgroundColor = 'F3F4F6',
+  } = options;
+
+  slide.addShape('rect', {
+    x, y, w, h,
+    fill: { color: normalizeHexColor(backgroundColor) },
+  });
+
+  slide.addText(title.toUpperCase(), {
+    x: x + 0.2, y: y + 0.15, w: w - 0.4, h: 0.3,
+    fontSize: 12,
+    bold: true,
+    color: normalizeHexColor(titleColor),
+    charSpacing: 2,
+  });
+
+  const contentText = Array.isArray(content) ? content.join('\n') : content;
+  slide.addText(contentText, {
+    x: x + 0.2, y: y + 0.5, w: w - 0.4, h: h - 0.6,
+    fontSize: 10,
+    color: normalizeHexColor(contentColor),
+  });
 }
 
 function clampUnit(value: number): number {

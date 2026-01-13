@@ -13,6 +13,7 @@ import {
   drawKpiRow,
   drawFooter,
   loadIconAsDataUri,
+  drawPedagogicalBlock,
 } from './slideHelpers';
 
 export interface CreditPptxData {
@@ -243,7 +244,47 @@ export async function generateCreditPptx(options: CreditPptxOptions): Promise<vo
     color: c10,
   });
 
-  // Slide 3: Annexes (paramètres)
+  // Slide 3: Annexes (Hypothèses & Formules)
+  const annexFormulaSlide = pptx.addSlide();
+  drawTitleWithUnderline(annexFormulaSlide, {
+    title: 'Annexe Crédit — Hypothèses & Formules',
+    color: c1,
+    underlineColor: c2,
+  });
+
+  drawPedagogicalBlock(annexFormulaSlide, {
+    title: 'Hypothèses du prêt',
+    content: [
+      `Capital Emprunté : ${formatEuro(data.capitalEmprunte)}`,
+      `Durée : ${formatDuration(data.dureeAnnees)}`,
+      `Taux Nominal : ${formatRate(data.tauxNominal)}`,
+      `Taux Assurance : ${formatRate(data.tauxAssurance)}`,
+    ],
+    x: STYLE.MARGIN, y: 1.5, w: 4, h: 3, 
+    backgroundColor: c7
+  });
+
+  drawPedagogicalBlock(annexFormulaSlide, {
+    title: 'Formule de la mensualité',
+    content: [
+      'M = C * [r / (1 - (1 + r)^-n)]',
+      'M: Mensualité (hors assurance)',
+      'C: Capital emprunté',
+      'r: Taux mensuel (nominal / 12)',
+      'n: Nombre de mois (durée * 12)',
+    ],
+    x: STYLE.MARGIN + 4.5, y: 1.5, w: 4, h: 3, 
+    backgroundColor: c7
+  });
+
+  drawFooter(annexFormulaSlide, {
+    date: new Date().toLocaleDateString('fr-FR'),
+    disclaimer: SHORT_DISCLAIMER,
+    pageNumber: 3,
+    color: c10,
+  });
+
+  // Slide 4: Annexes (détail des coûts)
   const annexSlide = pptx.addSlide();
   drawTitleWithUnderline(annexSlide, {
     title: 'Annexes crédit',
@@ -292,7 +333,7 @@ export async function generateCreditPptx(options: CreditPptxOptions): Promise<vo
   drawFooter(annexSlide, {
     date: new Date().toLocaleDateString('fr-FR'),
     disclaimer: SHORT_DISCLAIMER,
-    pageNumber: 3,
+    pageNumber: 4,
     color: c10,
   });
 

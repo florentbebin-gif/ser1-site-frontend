@@ -11,6 +11,8 @@ import {
   applySplitLayout,
   drawAccentBar,
   drawPhaseTimeline,
+  drawPedagogicalBlock,
+  paginateTableRows,
 } from './slideHelpers';
 
 const SHORT_DISCLAIMER = 'Simulation indicative non contractuelle.';
@@ -73,6 +75,8 @@ interface ProductResult {
   versementConfig?: any;
   fraisGestion: number;
   rendements: any;
+  epargneTable: any[];
+  liquidationTable: any[];
 }
 
 export interface PlacementPptxData {
@@ -315,7 +319,7 @@ export async function generatePlacementPptx(options: PlacementPptxOptions): Prom
   pptx.title = 'Étude Comparative Placement';
   pptx.author = 'SER1 - Cabinet CGP';
 
-  const c1 = colors.c1, c2 = colors.c2, c4 = colors.c4;
+  const c1 = colors.c1, c2 = colors.c2, c4 = colors.c4, c7 = colors.c7, c10 = colors.c10;
 
   const icons = {
     capital: await loadIconAsDataUri(ICONS.capital),
@@ -374,6 +378,82 @@ export async function generatePlacementPptx(options: PlacementPptxOptions): Prom
 
   // Slide 10: Recommandations
   addRecommandationSlide(pptx, data, colors, page++);
+
+  // --- ANNEXES ---
+  const sepSlide = pptx.addSlide();
+  sepSlide.background = { color: c2 };
+  drawTitleWithOverline(sepSlide, { title: 'ANNEXES', lineColor: 'FFFFFF', titleColor: 'FFFFFF' });
+  page++;
+
+  // Annexe: Hypothèses
+  const annexHypothesesSlide = pptx.addSlide();
+  drawTitleWithUnderline(annexHypothesesSlide, { title: 'Annexe : Hypothèses de simulation', color: c1, underlineColor: c2 });
+
+  drawPedagogicalBlock(annexHypothesesSlide, {
+    title: 'Paramètres Client',
+    content: [
+      `Âge actuel : ${data.client.ageActuel} ans`,
+      `Horizon d'épargne : ${data.dureeEpargne} ans`,
+      `Âge projeté au décès : ${data.ageAuDeces} ans`,
+    ],
+    x: 1, y: 1.5, w: 3.5, h: 3, backgroundColor: c7
+  });
+
+  drawPedagogicalBlock(annexHypothesesSlide, {
+    title: `Hypothèses ${produit1.envelopeLabel}`,
+    content: [
+      `Rendement annuel brut : ${produit1.rendements.brut * 100}%`,
+      `Frais de gestion annuels : ${produit1.fraisGestion * 100}%`,
+    ],
+    x: 5.5, y: 1.5, w: 3.5, h: 1.4, backgroundColor: c7
+  });
+
+  drawPedagogicalBlock(annexHypothesesSlide, {
+    title: `Hypothèses ${produit2.envelopeLabel}`,
+    content: [
+      `Rendement annuel brut : ${produit2.rendements.brut * 100}%`,
+      `Frais de gestion annuels : ${produit2.fraisGestion * 100}%`,
+    ],
+    x: 5.5, y: 3.1, w: 3.5, h: 1.4, backgroundColor: c7
+  });
+
+  drawFooter(annexHypothesesSlide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber: page++, color: colors.c10 });
+
+  // Annexe: Tableaux détaillés
+  const addAnnexTableSlide = (title: string, tableData: any[], columns: any[]) => {
+    const chunks = paginateTableRows(tableData, 15);
+    chunks.forEach((chunk, i) => {
+      const slide = pptx.addSlide();
+      const slideTitle = chunks.length > 1 ? `${title} (${i + 1}/${chunks.length})` : title;
+      drawTitleWithUnderline(slide, { title: slideTitle, color: c1, underlineColor: c2 });
+      slide.addTable([columns.map(c => ({ text: c.label, options: { bold: true, fill: { color: c2 }, color: 'FFFFFF' } })), ...chunk.map(row => columns.map(col => ({ text: col.formatter(row[col.key]) })))], {
+        x: STYLE.MARGIN_SLIM, y: 1.2, w: STYLE.SLIDE_WIDTH - STYLE.MARGIN_SLIM * 2, fontSize: 9,
+        border: { type: 'solid', color: c4, pt: 1 }, colW: columns.map(c => c.w)
+      });
+      drawFooter(slide, { date: new Date().toLocaleDateString('fr-FR'), disclaimer: SHORT_DISCLAIMER, pageNumber: page++, color: colors.c10 });
+    });
+  };
+
+  const epargneCols = [
+    { key: 'annee', label: 'Année', w: 1, formatter: (v: any) => String(v) },
+    { key: 'age', label: 'Âge', w: 1, formatter: (v: any) => String(v) },
+    { key: 'versementNet', label: 'Versement', w: 1.5, formatter: formatEuro },
+    { key: 'gainsAnnee', label: 'Gains', w: 1.5, formatter: formatEuro },
+    { key: 'capitalFin', label: 'Capital Fin', w: 2, formatter: formatEuro },
+  ];
+  addAnnexTableSlide(`Annexe Épargne - ${produit1.envelopeLabel}`, produit1.epargneTable, epargneCols);
+  addAnnexTableSlide(`Annexe Épargne - ${produit2.envelopeLabel}`, produit2.epargneTable, epargneCols);
+
+  const liqCols = [
+    { key: 'age', label: 'Âge', w: 1, formatter: (v: any) => String(v) },
+    { key: 'capitalDebut', label: 'Capital Début', w: 1.5, formatter: formatEuro },
+    { key: 'retraitBrut', label: 'Retrait Brut', w: 1.5, formatter: formatEuro },
+    { key: 'fiscalite', label: 'Fiscalité', w: 1.5, formatter: formatEuro },
+    { key: 'retraitNet', label: 'Retrait Net', w: 1.5, formatter: formatEuro },
+    { key: 'capitalFin', label: 'Capital Fin', w: 2, formatter: formatEuro },
+  ];
+  addAnnexTableSlide(`Annexe Liquidation - ${produit1.envelopeLabel}`, produit1.liquidationTable, liqCols);
+  addAnnexTableSlide(`Annexe Liquidation - ${produit2.envelopeLabel}`, produit2.liquidationTable, liqCols);
 
   // Slide N: Disclaimer
   const disclaimerSlide = pptx.addSlide();

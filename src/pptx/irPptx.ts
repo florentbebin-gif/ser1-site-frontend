@@ -16,6 +16,7 @@ import {
   drawFooter,
   loadIconAsDataUri,
   paginateTableRows,
+  drawPedagogicalBlock,
 } from './slideHelpers';
 export interface IRPptxData {
   revenuNetImposable: number;
@@ -246,7 +247,45 @@ export async function generateIRPptx(options: IRPptxOptions): Promise<void> {
   });
   pageNumber++;
 
-  const trancheChunks = paginateTableRows(data.detailTranches || [], 8);
+  // Slide Annexe: Hypothèses & Méthodologie
+  const annexIntroSlide = pptx.addSlide();
+  drawTitleWithUnderline(annexIntroSlide, {
+    title: 'Annexe IR — Hypothèses & Méthode',
+    color: c1,
+    underlineColor: c2,
+  });
+
+  drawPedagogicalBlock(annexIntroSlide, {
+    title: 'Hypothèses de calcul',
+    content: [
+      `Revenu Net Imposable : ${formatEuro(data.revenuNetImposable)}`,
+      `Nombre de parts fiscales : ${data.nombreParts}`,
+      `Quotient Familial (Revenu / Parts) : ${formatEuro(data.revenuParPart)}`,
+    ],
+    x: STYLE.MARGIN, y: 1.5, w: 4, h: 3, 
+    backgroundColor: c7
+  });
+
+  drawPedagogicalBlock(annexIntroSlide, {
+    title: 'Méthodologie',
+    content: [
+      '1. Calcul du Quotient Familial (QF).',
+      '2. Application du barème progressif sur le QF.',
+      '3. L\'impôt par part est obtenu.',
+      '4. Multiplication par le nombre de parts pour l\'impôt brut.',
+    ],
+    x: STYLE.MARGIN + 4.5, y: 1.5, w: 4, h: 3, 
+    backgroundColor: c7
+  });
+
+  drawFooter(annexIntroSlide, {
+    date: new Date().toLocaleDateString('fr-FR'),
+    disclaimer: SHORT_DISCLAIMER,
+    pageNumber: pageNumber++,
+    color: c10,
+  });
+
+  const trancheChunks = paginateTableRows(data.detailTranches || [], 12);
   trancheChunks.forEach((chunk, index) => {
     const annexSlide = pptx.addSlide();
     drawTitleWithUnderline(annexSlide, {
