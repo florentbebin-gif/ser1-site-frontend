@@ -67,7 +67,6 @@ export async function generateIRPptx(options: IRPptxOptions): Promise<void> {
     data,
     colors = DEFAULT_COLORS as unknown as PptxColors,
     coverUrl,
-    theme_scope,
     clientName = 'Client',
   } = options;
 

@@ -71,7 +71,6 @@ export async function generateCreditPptx(options: CreditPptxOptions): Promise<vo
     data,
     colors = DEFAULT_COLORS as unknown as PptxColors,
     coverUrl,
-    theme_scope,
     clientName = 'Client',
   } = options;
 

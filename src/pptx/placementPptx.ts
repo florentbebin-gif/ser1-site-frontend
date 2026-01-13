@@ -96,7 +96,6 @@ export interface PlacementPptxOptions {
   data: PlacementPptxData;
   colors?: PptxColors;
   coverUrl?: string | null;
-  theme_scope?: ThemeScope;
   clientName?: string;
 }
 
