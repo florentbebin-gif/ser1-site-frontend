@@ -658,8 +658,7 @@ export default function Settings({ isAdmin = false }) {
                       border: '1px solid var(--color-c8)',
                     }}
                   />
-                  <div style={{ fontSize: 12, marginTop: 4 }}>{coverUrl}</div>
-                  <button
+                                    <button
                     type="button"
                     className="chip"
                     onClick={handleRemoveCover}
