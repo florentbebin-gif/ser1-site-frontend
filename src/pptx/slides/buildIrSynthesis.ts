@@ -87,27 +87,32 @@ const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
 const CONTENT_HEIGHT = CONTENT_BOTTOM_Y - CONTENT_TOP_Y; // ~4.42
 
 // ============================================================================
-// LAYOUT CONSTANTS (inches) - PREMIUM DESIGN V3
+// LAYOUT CONSTANTS (inches) - PREMIUM DESIGN V4
 // 
-// MORE BREATHING ROOM between KPIs and TMI bar
+// MORE AERATION: increased gap below cursor for breathing room
 // TMI bar segments have PROPORTIONAL widths based on income ranges
+// Cursor position is INTELLIGENT (1/3, 2/3, 3/3 based on income in bracket)
 // 
 // ZONE ALLOCATION:
 // - KPIs:      Y 2.78 → 3.90 (1.12") - icons, labels, values
-// - GAP:       Y 3.90 → 4.30 (0.40") - breathing room
-// - TMI Bar:   Y 4.30 → 4.65 (0.35") - bracket segments (proportional widths)
-// - Cursor:    Y 4.65 → 4.85 (0.20") - premium triangle pointer
-// - Callout:   Y 4.90 → 5.12 (0.22") - "Part de revenu taxée..."
-// - HERO:      Y 5.20 → 5.95 (0.75") - PRIMARY tax result
-// - Margin:    Y 6.00 → 6.20 (0.20") - "Encore X € avant..."
-// - Buffer:    Y 6.20 → 6.80 (0.60" safety margin to footer)
+// - GAP:       Y 3.90 → 4.25 (0.35") - breathing room
+// - TMI Bar:   Y 4.25 → 4.58 (0.33") - bracket segments (proportional widths)
+// - Cursor:    Y 4.58 → 4.78 (0.20") - premium triangle pointer
+// - BIG GAP:   Y 4.78 → 5.20 (0.42") - strong aeration below cursor
+// - Callout:   Y 5.20 → 5.40 (0.20") - "Part de revenu taxée..."
+// - HERO:      Y 5.45 → 6.15 (0.70") - PRIMARY tax result
+// - Margin:    Y 6.20 → 6.38 (0.18") - "Encore X € avant..."
+// - Buffer:    Y 6.38 → 6.80 (0.42" safety margin to footer)
 // ============================================================================
 
 // Vertical offset to shift everything down for better balance
 const VERTICAL_SHIFT = 0.40;
 
-// Additional gap between KPIs and TMI bar for aeration
-const KPI_TO_BAR_GAP = 0.35;
+// Gap between KPIs and TMI bar
+const KPI_TO_BAR_GAP = 0.30;
+
+// Gap below cursor for strong aeration
+const CURSOR_TO_CONTENT_GAP = 0.42;
 
 const LAYOUT = {
   // Standard margins
@@ -126,41 +131,41 @@ const LAYOUT = {
     sectionEndY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12, // 3.90
   },
   
-  // ===== SECTION 2: TMI Bar (Y 4.30 → 4.65) =====
+  // ===== SECTION 2: TMI Bar (Y 4.25 → 4.58) =====
   bar: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP, // 4.30 - more breathing room
-    height: 0.35,                              // Slightly shorter
-    marginX: 0.60,                             // Wider bar
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.35, // 4.65
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP, // 4.25
+    height: 0.33,
+    marginX: 0.60,
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33, // 4.58
   },
   
-  // ===== SECTION 2b: Cursor/Triangle (Y 4.65 → 4.85) =====
+  // ===== SECTION 2b: Cursor/Triangle (Y 4.58 → 4.78) =====
   cursor: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.35, // 4.65
-    height: 0.20,                              // Taller for visibility
-  },
-  
-  // ===== SECTION 3: Callout - SECONDARY (Y 4.90 → 5.12) =====
-  callout: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.60, // 4.90
-    height: 0.22,
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.82, // 5.12
-  },
-  
-  // ===== SECTION 4: HERO - Tax Result (Y 5.20 → 5.95) =====
-  hero: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.90, // 5.20
-    labelHeight: 0.26,
-    valueHeight: 0.48,
-    lineY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 1.64, // 5.94
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 1.65, // 5.95
-  },
-  
-  // ===== SECTION 5: Margin Info - TERTIARY (Y 6.00 → 6.20) =====
-  marginInfo: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 1.70, // 6.00
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33, // 4.58
     height: 0.20,
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 1.90, // 6.20
+  },
+  
+  // ===== SECTION 3: Callout - SECONDARY (Y 5.20 → 5.40) =====
+  callout: {
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP, // 5.20
+    height: 0.20,
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 0.20, // 5.40
+  },
+  
+  // ===== SECTION 4: HERO - Tax Result (Y 5.45 → 6.15) =====
+  hero: {
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 0.25, // 5.45
+    labelHeight: 0.24,
+    valueHeight: 0.44,
+    lineY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 0.93, // 6.13
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 0.95, // 6.15
+  },
+  
+  // ===== SECTION 5: Margin Info - TERTIARY (Y 6.20 → 6.38) =====
+  marginInfo: {
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 1.00, // 6.20
+    height: 0.18,
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 1.18, // 6.38
   },
 } as const;
 
@@ -241,40 +246,101 @@ function getAmountInCurrentBracket(taxablePerPart: number, tmiRate: number, part
 }
 
 /**
- * Get color for TMI bracket - GRADIENT from color3 to color2
+ * Calculate cursor position within a TMI bracket (0 = start, 1 = end)
+ * Returns position ratio for intelligent cursor placement:
+ * - < 0.33: first third (just entered this bracket)
+ * - 0.33-0.66: middle third (roughly half-way)
+ * - > 0.66: last third (close to next bracket)
+ */
+function getCursorPositionInBracket(taxablePerPart: number, tmiRate: number): number {
+  const bracket = TMI_BRACKETS.find(b => b.rate === tmiRate);
+  if (!bracket) return 0.5;
+  
+  // For TMI 0% or if income is below bracket min
+  if (taxablePerPart <= bracket.min) return 0.16; // First third center
+  
+  // For TMI 45% (infinite max), use a virtual max of ~300k for positioning
+  const effectiveMax = bracket.max === Infinity ? 300_000 : bracket.max;
+  const bracketRange = effectiveMax - bracket.min;
+  
+  if (bracketRange <= 0) return 0.5;
+  
+  const positionInBracket = taxablePerPart - bracket.min;
+  const ratio = Math.min(1, positionInBracket / bracketRange);
+  
+  return ratio;
+}
+
+/**
+ * Get cursor X offset based on position in bracket
+ * Divides segment into 3 parts and returns offset for:
+ * - ratio < 0.33: first third (offset = -segmentWidth/3)
+ * - ratio 0.33-0.66: center (offset = 0)
+ * - ratio > 0.66: last third (offset = +segmentWidth/3)
+ */
+function getCursorXOffset(positionRatio: number, segmentWidth: number, tmiRate: number): number {
+  const thirdWidth = segmentWidth / 3;
+  
+  // For TMI 45%, only use first 2/3 (first third or middle)
+  if (tmiRate === 45) {
+    return positionRatio < 0.50 ? -thirdWidth : 0;
+  }
+  
+  // For other brackets: 3 positions
+  if (positionRatio < 0.33) {
+    return -thirdWidth; // First third
+  } else if (positionRatio > 0.66) {
+    return thirdWidth; // Last third (close to next bracket)
+  }
+  return 0; // Middle
+}
+
+/**
+ * Get color for TMI bracket - GRADIENT from color4 to color2
  * 
  * Premium design: smooth gradient using theme colors
- * - 0%/11%: starts at color3 (lighter)
- * - 45%: ends at color2 (darker/richer)
+ * - 0%: lightest (mix with white from color4)
+ * - 11%: color4 (start of gradient)
+ * - 45%: color2 (end of gradient, richest)
  */
 function getBracketColor(rate: number, theme: PptxThemeRoles): string {
-  const color3 = theme.colors.color3.replace('#', '');
+  const color4 = theme.colors.color4.replace('#', '');
   const color2 = theme.colors.color2.replace('#', '');
   
   // Parse both colors to RGB
-  const r3 = parseInt(color3.substring(0, 2), 16);
-  const g3 = parseInt(color3.substring(2, 4), 16);
-  const b3 = parseInt(color3.substring(4, 6), 16);
+  const r4 = parseInt(color4.substring(0, 2), 16);
+  const g4 = parseInt(color4.substring(2, 4), 16);
+  const b4 = parseInt(color4.substring(4, 6), 16);
   
   const r2 = parseInt(color2.substring(0, 2), 16);
   const g2 = parseInt(color2.substring(2, 4), 16);
   const b2 = parseInt(color2.substring(4, 6), 16);
   
-  // Gradient progression: 0% = 0, 11% = 0.25, 30% = 0.5, 41% = 0.75, 45% = 1.0
+  // Gradient progression: 0% very light, 11% = color4, 45% = color2
+  // TMI 0% gets a lightened version of color4
+  if (rate === 0) {
+    // Mix color4 with white (70% white, 30% color4)
+    const mixR = Math.round(255 - (255 - r4) * 0.30);
+    const mixG = Math.round(255 - (255 - g4) * 0.30);
+    const mixB = Math.round(255 - (255 - b4) * 0.30);
+    const toHex = (n: number) => n.toString(16).padStart(2, '0');
+    return `${toHex(mixR)}${toHex(mixG)}${toHex(mixB)}`;
+  }
+  
+  // For 11% to 45%: linear interpolation from color4 to color2
   const progressMap: Record<number, number> = {
-    0: 0.0,    // Pure color3
-    11: 0.25,  // 75% color3, 25% color2
-    30: 0.50,  // 50/50 mix
-    41: 0.75,  // 25% color3, 75% color2
+    11: 0.0,   // Pure color4
+    30: 0.40,  // 60% color4, 40% color2
+    41: 0.70,  // 30% color4, 70% color2
     45: 1.0,   // Pure color2
   };
   
   const t = progressMap[rate] ?? 0.5;
   
-  // Linear interpolation between color3 and color2
-  const mixR = Math.round(r3 + (r2 - r3) * t);
-  const mixG = Math.round(g3 + (g2 - g3) * t);
-  const mixB = Math.round(b3 + (b2 - b3) * t);
+  // Linear interpolation between color4 and color2
+  const mixR = Math.round(r4 + (r2 - r4) * t);
+  const mixG = Math.round(g4 + (g2 - g4) * t);
+  const mixB = Math.round(b4 + (b2 - b4) * t);
   
   const toHex = (n: number) => n.toString(16).padStart(2, '0');
   return `${toHex(mixR)}${toHex(mixG)}${toHex(mixB)}`;
@@ -372,7 +438,7 @@ export function buildIrSynthesis(
   }> = [
     {
       icon: 'money',
-      label: 'Estimation de vos revenus',
+      label: "Vos revenus d'activités",
       value: data.isCouple ? '' : euro(totalRevenue),
       subValue: data.isCouple 
         ? `D1: ${euro(data.income1)} | D2: ${euro(data.income2)}`
@@ -505,20 +571,27 @@ export function buildIrSynthesis(
     currentX += segmentWidth;
   });
   
-  // ========== PREMIUM TRIANGLE CURSOR (pointing UP toward active segment) ==========
+  // ========== PREMIUM TRIANGLE CURSOR (intelligent positioning) ==========
   if (data.tmiRate > 0 && activeSegmentCenterX > 0) {
-    const triangleSize = 0.18; // Size of the triangle
-    const cursorY = LAYOUT.cursor.y + 0.03; // Small gap below bar
+    const triangleWidth = 0.22;
+    const triangleHeight = 0.14;
+    const cursorY = LAYOUT.cursor.y + 0.02;
     
-    // Draw triangle using rotated square (diamond shape pointing up)
-    // PptxGenJS doesn't support custom polygons, so we use a diamond/rhombus
-    slide.addShape('diamond', {
-      x: activeSegmentCenterX - triangleSize / 2,
+    // Calculate intelligent cursor position based on income in bracket
+    const positionRatio = getCursorPositionInBracket(data.taxablePerPart, data.tmiRate);
+    const xOffset = getCursorXOffset(positionRatio, activeSegmentWidth, data.tmiRate);
+    const cursorCenterX = activeSegmentCenterX + xOffset;
+    
+    // Draw isoceles triangle pointing UP using 'triangle' shape
+    // PptxGenJS 'triangle' is an isoceles triangle pointing up by default
+    slide.addShape('triangle', {
+      x: cursorCenterX - triangleWidth / 2,
       y: cursorY,
-      w: triangleSize,
-      h: triangleSize,
-      fill: { color: theme.colors.color2.replace('#', '') },
-      line: { color: theme.colors.color2.replace('#', ''), width: 0 },
+      w: triangleWidth,
+      h: triangleHeight,
+      fill: { color: theme.colors.color5.replace('#', '') },
+      line: { color: theme.colors.color5.replace('#', ''), width: 0 },
+      rotate: 180, // Point upward (triangle default points down)
     });
   }
   
