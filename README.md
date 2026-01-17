@@ -907,8 +907,8 @@ npm run build       # Vérifie la compilation
 ## 🔮 Évolutions prévues
 
 ### Court terme
-- Simulateur d'impôt sur le revenu complet
-- Génération PowerPoint automatique
+- ✅ Simulateur d'impôt sur le revenu complet (implémenté)
+- ✅ Génération PowerPoint automatique (implémentée)
 - Centralisation composants UI (design system)
 
 ### Moyen terme
@@ -924,6 +924,13 @@ npm run build       # Vérifie la compilation
 ---
 
 ## 🐛 Débuggage & Maintenance
+
+### Logo Management
+- Upload via Settings page (PNG/JPG) with **aspect ratio preservation**
+- Storage as **dataUri in user_metadata** (bypasses Storage RLS issues)
+- Automatic insertion on PPTX cover slides with **contain sizing** (no deformation)
+- Immediate availability for PPTX export after upload
+- RLS protection through user_metadata (no Storage bucket needed)
 
 ### Logs et monitoring
 - Console browser pour le frontend
