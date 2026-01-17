@@ -365,33 +365,47 @@ export default function Settings({ isAdmin = false }) {
       return;
     }
 
-    // vérif dimensions
-    const imageCheck = new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve({ width: img.width, height: img.height });
-      img.onerror = reject;
-      img.src = URL.createObjectURL(file);
+    // Convert file to dataUri AND check dimensions
+    const imageResult = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          // Create canvas to ensure PNG format for PPTX compatibility
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const dataUri = canvas.toDataURL('image/png');
+          resolve({ 
+            width: img.width, 
+            height: img.height, 
+            dataUri 
+          });
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = reader.result;
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    }).catch(err => {
+      console.error('Image processing error:', err);
+      return null;
     });
 
-    let dimensions;
-    try {
-      dimensions = await imageCheck;
-    } catch {
+    if (!imageResult) {
       setSaveMessage("Impossible de lire l'image.");
       return;
     }
 
-    // Suppression de la vérification de taille minimale
-    // if (dimensions.width < 1200 || dimensions.height < 700) {
-    //   setSaveMessage("L'image doit faire au minimum 1200 × 700 pixels.");
-    //   return;
-    // }
+    console.log('[Settings] Logo converted to dataUri, length:', imageResult.dataUri.length);
 
     try {
       const ext = file.name.split('.').pop().toLowerCase();
       const filePath = `${user.id}/page_de_garde.${ext}`;
 
-      // upload dans le bucket covers
+      // upload dans le bucket covers (for backup/display purposes)
       const { error: uploadError } = await supabase.storage
         .from('covers')
         .upload(filePath, file, {
@@ -428,7 +442,10 @@ export default function Settings({ isAdmin = false }) {
       }
 
       setCoverUrl(publicUrl);
-      setLogo(publicUrl); // Sync with ThemeProvider for immediate PPTX export
+      // IMPORTANT: Pass dataUri directly to ThemeProvider for PPTX export
+      // This bypasses CORS issues with Supabase Storage URLs
+      setLogo(imageResult.dataUri);
+      console.log('[Settings] Logo dataUri synced with ThemeProvider');
       setSaveMessage('Logo enregistré avec succès.');
     } catch (err) {
       console.error(err);
