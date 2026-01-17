@@ -95,6 +95,7 @@ interface ThemeContextValue {
   logo?: string;
   setLogo: (logo: string | undefined) => void;
   themeScope: ThemeScope;
+  setThemeScope: (scope: ThemeScope) => void; // Allow Settings to update scope globally
   pptxColors: ThemeColors; // Colors to use for PPTX (respects scope)
 }
 
@@ -106,6 +107,7 @@ const ThemeContext = createContext<ThemeContextValue>({
   logo: undefined,
   setLogo: () => {},
   themeScope: 'all',
+  setThemeScope: () => {},
   pptxColors: DEFAULT_COLORS,
 });
 
@@ -445,7 +447,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ colors, setColors, saveThemeToUiSettings, isLoading, logo, setLogo, themeScope, pptxColors }}>
+    <ThemeContext.Provider value={{ colors, setColors, saveThemeToUiSettings, isLoading, logo, setLogo, themeScope, setThemeScope, pptxColors }}>
       {children}
     </ThemeContext.Provider>
   );

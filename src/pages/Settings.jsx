@@ -120,7 +120,7 @@ const COLOR_FIELDS = [
 ];
 
 export default function Settings({ isAdmin = false }) {
-  const { colors, setColors, saveThemeToUiSettings, isLoading: themeLoading } = useTheme();
+  const { colors, setColors, saveThemeToUiSettings, isLoading: themeLoading, themeScope, setThemeScope } = useTheme();
   const [user, setUser] = useState(null);
   const [roleLabel, setRoleLabel] = useState('User');
   const [loading, setLoading] = useState(true);
@@ -131,7 +131,7 @@ export default function Settings({ isAdmin = false }) {
   const [savingColors, setSavingColors] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   const [selectedTheme, setSelectedTheme] = useState('Personnalisé');
-  const [themeScope, setThemeScope] = useState('all'); // 'all' or 'ui-only'
+  // themeScope is now from ThemeProvider context (not local state)
 
   const [coverUrl, setCoverUrl] = useState('');
 
@@ -161,36 +161,7 @@ export default function Settings({ isAdmin = false }) {
     }
   }, [colors, themeLoading]);
 
-  // Charger le scope du thème depuis ui_settings
-  useEffect(() => {
-    async function loadThemeScope() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: uiSettings, error } = await supabase
-            .from('ui_settings')
-            .select('theme_name')
-            .eq('user_id', user.id)
-            .maybeSingle(); // ✅ maybeSingle() ne lève pas d'erreur si aucune ligne
-          
-          if (!error && uiSettings?.theme_name) {
-            // Le scope est encodé dans theme_name: "custom-ui-only" ou "custom"
-            if (uiSettings.theme_name.includes('ui-only')) {
-              setThemeScope('ui-only');
-            } else {
-              setThemeScope('all');
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Erreur chargement scope thème:', err);
-      }
-    }
-    
-    if (user) {
-      loadThemeScope();
-    }
-  }, [user]);
+  // NOTE: themeScope is now loaded by ThemeProvider, no need for local loading
 
   // Fonction pour synchroniser les couleurs avec ThemeProvider
   const syncThemeColors = (settingsColors) => {
