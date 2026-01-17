@@ -101,134 +101,168 @@ function fmt2(n: number): string {
 }
 
 /**
- * Build adaptive prose text for the annexe
- * Only includes sections that apply to this client's situation
+ * Build professional prose text for the annexe
+ * Written as an expert wealth engineer (ingénieur patrimonial) would explain to a client
+ * Client-specific values are in BOLD
  */
-function buildAnnexeText(data: IrAnnexeData): string[] {
-  const sections: string[] = [];
+function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: boolean }[]> {
+  const paragraphs: Array<{ text: string; bold?: boolean }[]> = [];
   
-  // Section 1: Introduction
-  sections.push('DÉTAIL DU CALCUL DE L\'IMPÔT SUR LE REVENU');
-  sections.push('');
+  // Foyer description
+  const foyerDesc = data.isCouple 
+    ? (data.childrenCount && data.childrenCount > 0 
+        ? `un couple avec ${data.childrenCount} enfant${data.childrenCount > 1 ? 's' : ''}`
+        : 'un couple')
+    : 'une personne seule';
   
-  // Section 2: Base imposable
-  sections.push('1. Revenu imposable du foyer');
-  sections.push(`Votre revenu net imposable s'élève à ${euro(data.taxableIncome)}.`);
-  sections.push('');
+  // ===== PARAGRAPH 1: Introduction et base imposable =====
+  paragraphs.push([
+    { text: 'Votre foyer fiscal, composé de ' },
+    { text: foyerDesc, bold: true },
+    { text: ', dispose d\'un revenu net imposable de ' },
+    { text: euro(data.taxableIncome), bold: true },
+    { text: '. Ce montant correspond à l\'ensemble de vos revenus après déduction des charges et abattements applicables.' },
+  ]);
   
-  // Section 3: Quotient familial
-  sections.push('2. Application du quotient familial');
-  let qfText = `Votre foyer fiscal dispose de ${fmt2(data.partsNb)} part${data.partsNb > 1 ? 's' : ''} fiscale${data.partsNb > 1 ? 's' : ''}`;
-  if (data.isCouple && data.childrenCount && data.childrenCount > 0) {
-    qfText += ` (couple avec ${data.childrenCount} enfant${data.childrenCount > 1 ? 's' : ''})`;
-  } else if (data.isCouple) {
-    qfText += ' (couple)';
-  }
-  qfText += '.';
-  sections.push(qfText);
-  sections.push(`Le revenu par part est de ${euro(data.taxablePerPart)}.`);
-  sections.push('');
+  // ===== PARAGRAPH 2: Quotient familial =====
+  paragraphs.push([
+    { text: 'Le système fiscal français applique le mécanisme du quotient familial afin d\'adapter l\'impôt à la composition du foyer. Votre foyer bénéficie de ' },
+    { text: `${fmt2(data.partsNb)} part${data.partsNb > 1 ? 's' : ''} fiscale${data.partsNb > 1 ? 's' : ''}`, bold: true },
+    { text: ', ce qui porte votre revenu imposable par part à ' },
+    { text: euro(data.taxablePerPart), bold: true },
+    { text: '.' },
+  ]);
   
-  // Section 4: Barème progressif
-  sections.push('3. Application du barème progressif');
-  if (data.bracketsDetails && data.bracketsDetails.length > 0) {
-    sections.push('L\'impôt est calculé par tranche :');
-    for (const bracket of data.bracketsDetails) {
-      if (bracket.tax > 0) {
-        sections.push(`  • Tranche à ${pct(bracket.rate)} : ${euro(bracket.base)} × ${pct(bracket.rate)} = ${euro(bracket.tax)}`);
-      }
-    }
-  } else if (data.tmiRate === 0) {
-    sections.push('Votre revenu par part est inférieur au seuil d\'imposition (11 294 €).');
-    sections.push('Vous n\'êtes pas imposable au titre de l\'impôt sur le revenu.');
-  }
-  sections.push('');
-  
-  // Section 5: TMI
-  sections.push('4. Tranche marginale d\'imposition (TMI)');
+  // ===== PARAGRAPH 3: Barème progressif =====
   if (data.tmiRate === 0) {
-    sections.push('Votre TMI est de 0% (non imposable).');
+    paragraphs.push([
+      { text: 'Votre revenu par part étant inférieur au seuil d\'entrée dans le barème progressif (11 294 € pour les revenus 2024), ' },
+      { text: 'vous n\'êtes pas imposable', bold: true },
+      { text: ' au titre de l\'impôt sur le revenu.' },
+    ]);
   } else {
-    sections.push(`Votre TMI est de ${pct(data.tmiRate)}. Cela signifie que tout revenu supplémentaire sera imposé à ce taux.`);
-  }
-  sections.push('');
-  
-  // Section 6: Corrections (only if applicable)
-  const hasCorrections = (data.decote && data.decote > 0) || 
-                         (data.qfAdvantage && data.qfAdvantage > 0) || 
-                         (data.creditsTotal && data.creditsTotal > 0);
-  
-  if (hasCorrections) {
-    sections.push('5. Corrections et réductions');
+    // Build bracket details text
+    let bracketText: { text: string; bold?: boolean }[] = [
+      { text: 'L\'impôt sur le revenu est calculé selon un barème progressif comportant plusieurs tranches. Pour chaque part fiscale, le revenu est taxé successivement : ' },
+    ];
     
-    if (data.decote && data.decote > 0) {
-      sections.push(`  • Décote : -${euro(data.decote)}`);
-      sections.push('    La décote s\'applique aux foyers modestes pour réduire progressivement l\'impôt.');
+    if (data.bracketsDetails && data.bracketsDetails.length > 0) {
+      const taxedBrackets = data.bracketsDetails.filter(b => b.tax > 0);
+      taxedBrackets.forEach((bracket, idx) => {
+        if (idx > 0) bracketText.push({ text: ', ' });
+        bracketText.push({ text: `${euro(bracket.base)} à ${pct(bracket.rate)}`, bold: true });
+      });
+      bracketText.push({ text: '. ' });
     }
     
-    if (data.qfAdvantage && data.qfAdvantage > 0) {
-      sections.push(`  • Avantage du quotient familial : ${euro(data.qfAdvantage)}`);
-    }
+    bracketText.push({ text: 'Votre tranche marginale d\'imposition (TMI) est de ' });
+    bracketText.push({ text: `${pct(data.tmiRate)}`, bold: true });
+    bracketText.push({ text: ', ce qui signifie que tout euro supplémentaire de revenu sera imposé à ce taux.' });
     
-    if (data.creditsTotal && data.creditsTotal > 0) {
-      sections.push(`  • Réductions et crédits d'impôt : -${euro(data.creditsTotal)}`);
-    }
-    
-    sections.push('');
+    paragraphs.push(bracketText);
   }
   
-  // Section 7: Result
-  const sectionNum = hasCorrections ? 6 : 5;
-  sections.push(`${sectionNum}. Impôt sur le revenu net`);
+  // ===== PARAGRAPH 4: Corrections (if applicable) =====
+  const hasDecote = data.decote && data.decote > 0;
+  const hasQfAdvantage = data.qfAdvantage && data.qfAdvantage > 0;
+  const hasCredits = data.creditsTotal && data.creditsTotal > 0;
+  
+  if (hasDecote || hasQfAdvantage || hasCredits) {
+    let correctionText: { text: string; bold?: boolean }[] = [
+      { text: 'Plusieurs mécanismes correcteurs s\'appliquent à votre situation : ' },
+    ];
+    
+    const corrections: string[] = [];
+    if (hasDecote) {
+      corrections.push(`une décote de ${euro(data.decote!)} destinée à alléger l'impôt des foyers modestes`);
+    }
+    if (hasQfAdvantage) {
+      corrections.push(`un avantage lié au quotient familial de ${euro(data.qfAdvantage!)}`);
+    }
+    if (hasCredits) {
+      corrections.push(`des réductions et crédits d'impôt pour un total de ${euro(data.creditsTotal!)}`);
+    }
+    
+    corrections.forEach((c, idx) => {
+      if (idx > 0 && idx === corrections.length - 1) {
+        correctionText.push({ text: ' et ' });
+      } else if (idx > 0) {
+        correctionText.push({ text: ', ' });
+      }
+      correctionText.push({ text: c, bold: true });
+    });
+    correctionText.push({ text: '.' });
+    
+    paragraphs.push(correctionText);
+  }
+  
+  // ===== PARAGRAPH 5: Result =====
   if (data.irNet === 0) {
-    sections.push('Vous n\'êtes pas redevable de l\'impôt sur le revenu.');
+    paragraphs.push([
+      { text: 'Après application de l\'ensemble des mécanismes fiscaux, ' },
+      { text: 'vous n\'êtes redevable d\'aucun impôt sur le revenu', bold: true },
+      { text: ' au titre de cette année.' },
+    ]);
   } else {
-    sections.push(`Votre impôt sur le revenu net s'élève à ${euro(data.irNet)}.`);
+    paragraphs.push([
+      { text: 'Après application du barème et des éventuelles corrections, votre ' },
+      { text: 'impôt sur le revenu net s\'élève à ', bold: false },
+      { text: euro(data.irNet), bold: true },
+      { text: '.' },
+    ]);
   }
-  sections.push('');
   
-  // Section 8: Contributions (only if applicable)
-  const hasContributions = (data.cehr && data.cehr > 0) || 
-                           (data.cdhr && data.cdhr > 0) ||
-                           (data.psFoncier && data.psFoncier > 0) ||
-                           (data.psDividends && data.psDividends > 0);
+  // ===== PARAGRAPH 6: Contributions (if applicable) =====
+  const hasCehr = data.cehr && data.cehr > 0;
+  const hasCdhr = data.cdhr && data.cdhr > 0;
+  const hasPsFoncier = data.psFoncier && data.psFoncier > 0;
+  const hasPsDividends = data.psDividends && data.psDividends > 0;
+  const hasContributions = hasCehr || hasCdhr || hasPsFoncier || hasPsDividends;
   
   if (hasContributions) {
-    sections.push(`${sectionNum + 1}. Contributions et prélèvements sociaux`);
+    let contribText: { text: string; bold?: boolean }[] = [
+      { text: 'À cet impôt s\'ajoutent des contributions complémentaires : ' },
+    ];
     
-    if (data.cehr && data.cehr > 0) {
-      sections.push(`  • Contribution exceptionnelle sur les hauts revenus (CEHR) : ${euro(data.cehr)}`);
-    }
+    const contribs: string[] = [];
+    if (hasCehr) contribs.push(`la CEHR (${euro(data.cehr!)})`);
+    if (hasCdhr) contribs.push(`la CDHR (${euro(data.cdhr!)})`);
+    if (hasPsFoncier) contribs.push(`les prélèvements sociaux sur revenus fonciers (${euro(data.psFoncier!)})`);
+    if (hasPsDividends) contribs.push(`les prélèvements sociaux sur dividendes (${euro(data.psDividends!)})`);
     
-    if (data.cdhr && data.cdhr > 0) {
-      sections.push(`  • Contribution différentielle sur les hauts revenus (CDHR) : ${euro(data.cdhr)}`);
-    }
+    contribs.forEach((c, idx) => {
+      if (idx > 0 && idx === contribs.length - 1) {
+        contribText.push({ text: ' et ' });
+      } else if (idx > 0) {
+        contribText.push({ text: ', ' });
+      }
+      contribText.push({ text: c, bold: true });
+    });
+    contribText.push({ text: '.' });
     
-    if (data.psFoncier && data.psFoncier > 0) {
-      sections.push(`  • Prélèvements sociaux sur revenus fonciers : ${euro(data.psFoncier)}`);
-    }
-    
-    if (data.psDividends && data.psDividends > 0) {
-      sections.push(`  • Prélèvements sociaux sur dividendes : ${euro(data.psDividends)}`);
-    }
-    
-    sections.push('');
+    paragraphs.push(contribText);
   }
   
-  // Section 9: Total
-  if (data.totalTax !== data.irNet) {
-    const finalSectionNum = sectionNum + (hasContributions ? 2 : 1);
-    sections.push(`${finalSectionNum}. Imposition totale`);
-    sections.push(`Votre imposition totale (IR + contributions) s'élève à ${euro(data.totalTax)}.`);
-    
-    // Average rate
-    if (data.taxableIncome > 0) {
-      const tauxMoyen = (data.totalTax / data.taxableIncome) * 100;
-      sections.push(`Cela représente un taux moyen d'imposition de ${pct(tauxMoyen)}.`);
-    }
+  // ===== PARAGRAPH 7: Total and average rate =====
+  if (data.totalTax !== data.irNet && data.totalTax > 0) {
+    const tauxMoyen = data.taxableIncome > 0 ? (data.totalTax / data.taxableIncome) * 100 : 0;
+    paragraphs.push([
+      { text: 'Au total, votre ' },
+      { text: `imposition globale s'élève à ${euro(data.totalTax)}`, bold: true },
+      { text: ', soit un ' },
+      { text: `taux moyen d'imposition de ${pct(tauxMoyen)}`, bold: true },
+      { text: ' de vos revenus.' },
+    ]);
+  } else if (data.irNet > 0 && data.taxableIncome > 0) {
+    const tauxMoyen = (data.irNet / data.taxableIncome) * 100;
+    paragraphs.push([
+      { text: 'Cela représente un ' },
+      { text: `taux moyen d'imposition de ${pct(tauxMoyen)}`, bold: true },
+      { text: ' de vos revenus.' },
+    ]);
   }
   
-  return sections;
+  return paragraphs;
 }
 
 // ============================================================================
@@ -244,7 +278,9 @@ function buildAnnexeText(data: IrAnnexeData): string[] {
  * - Subtitle (H2, left-aligned)
  * - Footer (date, disclaimer, slide number)
  * 
- * All visual content is placed within CONTENT_ZONE
+ * NEW DESIGN: Single text block with professional prose
+ * Written as an ingénieur patrimonial would explain to a client
+ * Client-specific values are highlighted in BOLD
  */
 export function buildIrAnnexe(
   pptx: PptxGenJS,
@@ -282,65 +318,52 @@ export function buildIrAnnexe(
     valign: 'top',
   });
   
-  // ========== CONTENT (within content zone) ==========
-  const textLines = buildAnnexeText(data);
+  // ========== SINGLE TEXT BLOCK (professional prose) ==========
+  // Build paragraphs with mixed bold/normal text
+  const paragraphs = buildAnnexeProse(data);
   
-  let currentY = LAYOUT.contentY;
-  const maxY = LAYOUT.maxY; // Stay above footer
+  // Convert paragraphs to PptxGenJS TextProps format
+  // Each paragraph is an array of text segments with optional bold
+  const textProps: PptxGenJS.TextProps[] = [];
   
-  for (const line of textLines) {
-    if (currentY >= maxY) break; // Prevent overflow into footer
-    
-    const isSection = /^\d+\./.test(line) || line === 'DÉTAIL DU CALCUL DE L\'IMPÔT SUR LE REVENU';
-    const isBullet = line.startsWith('  •');
-    const isSubBullet = line.startsWith('    ');
-    const isEmpty = line === '';
-    
-    if (isEmpty) {
-      currentY += LAYOUT.sectionSpacing;
-      continue;
+  paragraphs.forEach((paragraph, pIdx) => {
+    // Add paragraph spacing between paragraphs
+    if (pIdx > 0) {
+      textProps.push({ text: '\n\n', options: { fontSize: 11, fontFace: TYPO.fontFace } });
     }
     
-    // Skip the main title from buildAnnexeText (we use the standard header)
-    if (line === 'DÉTAIL DU CALCUL DE L\'IMPÔT SUR LE REVENU') {
-      continue;
-    }
-    
-    let fontSize: number = TYPO.sizes.body;
-    let isBold = false;
-    let indent = 0;
-    let lineColor = theme.textBody.replace('#', '');
-    
-    if (isSection) {
-      fontSize = 12;
-      isBold = true;
-      lineColor = theme.textMain.replace('#', '');
-    } else if (isBullet) {
-      indent = 0.3;
-      fontSize = 10;
-    } else if (isSubBullet) {
-      indent = 0.5;
-      fontSize = 9;
-      lineColor = '666666';
-    } else {
-      fontSize = 10;
-    }
-    
-    slide.addText(line, {
-      x: LAYOUT.marginX + indent,
-      y: currentY,
-      w: LAYOUT.contentWidth - indent,
-      h: LAYOUT.lineHeight,
-      fontSize,
-      fontFace: TYPO.fontFace,
-      color: lineColor,
-      bold: isBold,
-      align: 'left',
-      valign: 'top',
+    // Add each text segment of the paragraph
+    paragraph.forEach((segment) => {
+      textProps.push({
+        text: segment.text,
+        options: {
+          fontSize: 11,
+          fontFace: TYPO.fontFace,
+          color: theme.textBody.replace('#', ''),
+          bold: segment.bold || false,
+        },
+      });
     });
-    
-    currentY += LAYOUT.lineHeight;
-  }
+  });
+  
+  // Single text block that fills the content zone
+  // Respects margins and stops above footer
+  const contentBlockY = LAYOUT.contentY;
+  const contentBlockH = LAYOUT.maxY - contentBlockY;
+  
+  slide.addText(textProps, {
+    x: LAYOUT.marginX,
+    y: contentBlockY,
+    w: LAYOUT.contentWidth,
+    h: contentBlockH,
+    fontSize: 11,
+    fontFace: TYPO.fontFace,
+    color: theme.textBody.replace('#', ''),
+    align: 'left',
+    valign: 'top',
+    wrap: true,
+    lineSpacingMultiple: 1.3, // Comfortable reading spacing
+  });
   
   // ========== STANDARD FOOTER (from design system) ==========
   addFooter(slide, ctx, slideIndex, 'onLight');

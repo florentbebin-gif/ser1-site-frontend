@@ -337,8 +337,14 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
           console.info(`[ThemeProvider] Theme source: ${source}`);
         }
 
+        // Load logo from user_metadata (cover_slide_url is stored as dataUri)
+        // This is CRITICAL for PPTX export - logo must be available
         if (user?.user_metadata?.cover_slide_url && mounted) {
-          setLogo(user.user_metadata.cover_slide_url);
+          const logoUrl = user.user_metadata.cover_slide_url;
+          setLogo(logoUrl);
+          console.info('[ThemeProvider] Logo loaded from user_metadata:', logoUrl.substring(0, 50) + '...');
+        } else if (user && mounted) {
+          console.info('[ThemeProvider] No logo found in user_metadata');
         }
       } catch (error) {
         if (mounted) {

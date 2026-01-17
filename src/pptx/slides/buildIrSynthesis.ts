@@ -152,20 +152,20 @@ const LAYOUT = {
     endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 0.20, // 5.40
   },
   
-  // ===== SECTION 4: HERO - Tax Result (Y 5.45 → 6.15) =====
+  // ===== SECTION 4: HERO - Tax Result (Y 5.45 → 6.05) =====
   hero: {
     y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 0.25, // 5.45
     labelHeight: 0.24,
     valueHeight: 0.44,
-    lineY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 0.93, // 6.13
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 0.95, // 6.15
+    lineY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 1.05, // 6.25 - moved down
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 1.07, // 6.27
   },
   
-  // ===== SECTION 5: Margin Info - TERTIARY (Y 6.20 → 6.38) =====
+  // ===== SECTION 5: Margin Info - TERTIARY (Y 6.32 → 6.50) =====
   marginInfo: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 1.00, // 6.20
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 1.12, // 6.32 - moved down
     height: 0.18,
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 1.18, // 6.38
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.33 + 0.20 + CURSOR_TO_CONTENT_GAP + 1.30, // 6.50
   },
 } as const;
 
@@ -582,8 +582,8 @@ export function buildIrSynthesis(
     const xOffset = getCursorXOffset(positionRatio, activeSegmentWidth, data.tmiRate);
     const cursorCenterX = activeSegmentCenterX + xOffset;
     
-    // Draw isoceles triangle pointing UP using 'triangle' shape
-    // PptxGenJS 'triangle' is an isoceles triangle pointing up by default
+    // Draw isoceles triangle pointing DOWN using 'triangle' shape
+    // PptxGenJS 'triangle' default points down - no rotation needed
     slide.addShape('triangle', {
       x: cursorCenterX - triangleWidth / 2,
       y: cursorY,
@@ -591,7 +591,6 @@ export function buildIrSynthesis(
       h: triangleHeight,
       fill: { color: theme.colors.color5.replace('#', '') },
       line: { color: theme.colors.color5.replace('#', ''), width: 0 },
-      rotate: 180, // Point upward (triangle default points down)
     });
   }
   

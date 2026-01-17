@@ -51,8 +51,13 @@ export function buildEnd(
   // Corner marks (diagonal placement) - uses accent color
   addCornerMarks(slide, theme, 'endDiagonal');
   
-  // Footer (onMain variant - uses textOnMain for text on colored background)
-  addFooter(slide, ctx, slideIndex, 'onMain');
+  // Footer (onMain variant) - WITHOUT the "Document non contractuel..." disclaimer
+  // Create a modified context with empty disclaimer for the end slide
+  const endCtx = {
+    ...ctx,
+    footerDisclaimer: '', // Remove disclaimer from end slide footer
+  };
+  addFooter(slide, endCtx, slideIndex, 'onMain');
 }
 
 export default buildEnd;

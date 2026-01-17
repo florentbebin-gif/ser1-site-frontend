@@ -9,6 +9,7 @@ import { getFiscalSettings, addInvalidationListener } from '../utils/fiscalSetti
 import { useTheme } from '../settings/ThemeProvider';
 import { buildIrStudyDeck } from '../pptx/presets/irDeckBuilder';
 import { exportAndDownloadStudyDeck } from '../pptx/export/exportStudyDeck';
+import { supabase } from '../supabaseClient';
 
 // ---- Helpers formats ----
 const fmt0 = (n) => (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
@@ -43,7 +44,7 @@ function computeAbattement10(base, cfg) {
 export default function Ir() {
   // Theme colors and logo from ThemeProvider
   // pptxColors respects the theme scope setting (SER1 classic if ui-only)
-  const { colors, logo, pptxColors } = useTheme();
+  const { colors, logo, setLogo, pptxColors } = useTheme();
 
   const [taxSettings, setTaxSettings] = useState(null);
   const [psSettings, setPsSettings] = useState(null);
@@ -470,6 +471,26 @@ const yearLabel =
     }
 
     try {
+      // CRITICAL: Ensure logo is loaded before export
+      // If logo is not available in context, try to reload it from user metadata
+      let exportLogo = logo;
+      if (!exportLogo) {
+        console.info('[IR Export] Logo not in context, attempting to reload from user metadata...');
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.user_metadata?.cover_slide_url) {
+            exportLogo = user.user_metadata.cover_slide_url;
+            // Also update the context for future exports
+            setLogo(exportLogo);
+            console.info('[IR Export] Logo reloaded successfully');
+          } else {
+            console.info('[IR Export] No logo found in user metadata');
+          }
+        } catch (logoError) {
+          console.warn('[IR Export] Failed to reload logo:', logoError);
+        }
+      }
+
       // Build IR data from current result
       const irData = {
         taxableIncome: result.taxableIncome || 0,
@@ -478,7 +499,7 @@ const yearLabel =
         tmiRate: result.tmiRate || 0,
         irNet: result.irNet || 0,
         totalTax: result.totalTax || 0,
-        // Income breakdown for KPI display
+        // Income breakdown for KPI display - sum of activity incomes
         income1: incomes.salaries1 + incomes.pensions1 + incomes.nonSalaried1,
         income2: incomes.salaries2 + incomes.pensions2 + incomes.nonSalaried2,
         pfuIr: result.pfuIr || 0,
@@ -499,7 +520,8 @@ const yearLabel =
       };
 
       // Build deck spec using pptxColors (respects theme scope setting)
-      const deck = buildIrStudyDeck(irData, pptxColors, logo);
+      // Use exportLogo which is guaranteed to be loaded if available
+      const deck = buildIrStudyDeck(irData, pptxColors, exportLogo);
 
       // Generate filename with date
       const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
