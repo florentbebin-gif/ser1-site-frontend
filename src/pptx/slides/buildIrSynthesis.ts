@@ -87,17 +87,22 @@ const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
 const CONTENT_HEIGHT = CONTENT_BOTTOM_Y - CONTENT_TOP_Y; // ~4.42
 
 // ============================================================================
-// LAYOUT CONSTANTS (inches) - ANTI-OVERLAP DESIGN
-// Premium layout with STRICT vertical separation
+// LAYOUT CONSTANTS (inches) - PREMIUM DESIGN V2
+// 
+// SHIFTED DOWN 0.4" for better balance (less gap before footer)
 // 
 // ZONE ALLOCATION (total ~4.4"):
-// - KPIs:     Y 2.38 → 3.55 (1.17")
-// - TMI Bar:  Y 3.65 → 4.15 (0.50")
-// - Callout:  Y 4.20 → 4.50 (0.30") - SECONDARY info
-// - HERO:     Y 4.70 → 5.50 (0.80") - PRIMARY result
-// - Margin:   Y 5.60 → 5.85 (0.25") - tertiary info
-// - Buffer:   Y 5.85 → 6.80 (safety margin to footer)
+// - KPIs:      Y 2.78 → 3.95 (1.17") - icons, labels, values
+// - TMI Bar:   Y 4.10 → 4.50 (0.40") - bracket segments
+// - Cursor:    Y 4.50 → 4.65 (0.15") - triangle pointer
+// - Callout:   Y 4.68 → 4.92 (0.24") - "Part de revenu taxée..."
+// - HERO:      Y 5.10 → 5.90 (0.80") - PRIMARY tax result
+// - Margin:    Y 5.95 → 6.17 (0.22") - "Encore X € avant..."
+// - Buffer:    Y 6.17 → 6.80 (0.63" safety margin to footer)
 // ============================================================================
+
+// Vertical offset to shift everything down for better balance
+const VERTICAL_SHIFT = 0.40;
 
 const LAYOUT = {
   // Standard margins
@@ -105,49 +110,52 @@ const LAYOUT = {
   contentWidth: COORDS_CONTENT.margin.w, // 11.5
   slideWidth: SLIDE_SIZE.width, // 13.3333
   
-  // ===== SECTION 1: KPIs (Y 2.38 → 3.55) =====
+  // ===== SECTION 1: KPIs (Y 2.78 → 3.95) =====
   kpi: {
-    iconSize: 0.45,
-    iconY: CONTENT_TOP_Y,           // 2.38 - icons at very top
-    labelY: CONTENT_TOP_Y + 0.50,   // 2.88 - label below icon
-    valueY: CONTENT_TOP_Y + 0.75,   // 3.13 - main value
-    // For couples: inline display "Déclarant 1: X € | Déclarant 2: Y €"
+    iconSize: 0.50,                            // Slightly larger icons
+    iconY: CONTENT_TOP_Y + VERTICAL_SHIFT,     // 2.78 - icons
+    labelY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.55, // 3.33 - label below icon
+    valueY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.82, // 3.60 - main value
     colWidth: 2.9,
     colSpacing: 0.15,
-    sectionEndY: CONTENT_TOP_Y + 1.17, // 3.55 - END of KPI section
+    sectionEndY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.17, // 3.95
   },
   
-  // ===== SECTION 2: TMI Bar (Y 3.65 → 4.15) =====
+  // ===== SECTION 2: TMI Bar (Y 4.10 → 4.50) =====
   bar: {
-    y: CONTENT_TOP_Y + 1.27,        // 3.65 - START (10px gap from KPIs)
-    height: 0.45,                   // Elegant height
-    marginX: 0.85,                  // Side margins for bar
-    endY: CONTENT_TOP_Y + 1.72,     // 4.10 - END of bar
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.32,  // 4.10 - START
+    height: 0.40,                              // Elegant height
+    marginX: 0.70,                             // Wider bar
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.72, // 4.50 - END
   },
   
-  // ===== SECTION 3: Callout - SECONDARY (Y 4.20 → 4.50) =====
-  // "Part de revenu taxée à X% : Y €" - clearly labeled as secondary
+  // ===== SECTION 2b: Cursor/Triangle (Y 4.50 → 4.65) =====
+  cursor: {
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.72,  // 4.50 - just below bar
+    height: 0.15,                              // Triangle height
+  },
+  
+  // ===== SECTION 3: Callout - SECONDARY (Y 4.68 → 4.92) =====
   callout: {
-    y: CONTENT_TOP_Y + 1.82,        // 4.20 - START (10px gap from bar)
-    height: 0.28,
-    endY: CONTENT_TOP_Y + 2.10,     // 4.48 - END
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.90,  // 4.68 - START
+    height: 0.24,
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 2.14, // 4.92 - END
   },
   
-  // ===== SECTION 4: HERO - Tax Result (Y 4.70 → 5.50) =====
-  // This is THE main information - must be unmissable
+  // ===== SECTION 4: HERO - Tax Result (Y 5.10 → 5.90) =====
   hero: {
-    y: CONTENT_TOP_Y + 2.32,        // 4.70 - START (20px gap - breathing room)
-    labelHeight: 0.30,
-    valueHeight: 0.45,
-    lineY: CONTENT_TOP_Y + 3.07,    // 5.45 - decorative line
-    endY: CONTENT_TOP_Y + 3.12,     // 5.50 - END
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 2.32,  // 5.10 - START
+    labelHeight: 0.28,
+    valueHeight: 0.50,                         // Taller for bigger font
+    lineY: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.10, // 5.88 - decorative line
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.12, // 5.90 - END
   },
   
-  // ===== SECTION 5: Margin Info - TERTIARY (Y 5.60 → 5.85) =====
+  // ===== SECTION 5: Margin Info - TERTIARY (Y 5.95 → 6.17) =====
   marginInfo: {
-    y: CONTENT_TOP_Y + 3.22,        // 5.60 - START (10px gap)
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.17,  // 5.95 - START
     height: 0.22,
-    endY: CONTENT_TOP_Y + 3.44,     // 5.82 - END
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.39, // 6.17 - END
   },
 } as const;
 
@@ -206,12 +214,12 @@ function getAmountInCurrentBracket(taxablePerPart: number, tmiRate: number, part
 }
 
 /**
- * Get color for TMI bracket - PROGRESSIVE GRADIENT
- * From lightest (0%) to darkest (45%) using theme accent
+ * Get color for TMI bracket - SMOOTH BEIGE/TAUPE GRADIENT
+ * Premium design: elegant progression from light beige to rich taupe
  * 
- * Premium design: smooth gradient progression
+ * Uses theme accent as base, creates harmonious warm tones
  */
-function getBracketColor(rate: number, theme: PptxThemeRoles, isActive: boolean): string {
+function getBracketColor(rate: number, theme: PptxThemeRoles): string {
   const accent = theme.accent.replace('#', '');
   
   // Parse accent color to RGB
@@ -219,19 +227,20 @@ function getBracketColor(rate: number, theme: PptxThemeRoles, isActive: boolean)
   const g = parseInt(accent.substring(2, 4), 16);
   const b = parseInt(accent.substring(4, 6), 16);
   
-  // Progressive gradient: lighter for lower brackets, darker for higher
-  // 0% = 85% lightness, 45% = full color
+  // Premium gradient: very light → rich color
+  // Lower brackets = more white mixed in
+  // Higher brackets = closer to full accent
   const intensityMap: Record<number, number> = {
-    0: 0.25,   // Very light (25% of accent)
-    11: 0.40,  // Light (40% of accent)
-    30: 0.60,  // Medium (60% of accent)
-    41: 0.80,  // Strong (80% of accent)
-    45: 1.00,  // Full accent color
+    0: 0.15,   // Very light (15% of accent) - almost white
+    11: 0.30,  // Light (30% of accent)
+    30: 0.55,  // Medium (55% of accent)
+    41: 0.75,  // Strong (75% of accent)
+    45: 0.90,  // Rich (90% of accent)
   };
   
   const intensity = intensityMap[rate] || 0.5;
   
-  // Mix with white for lighter shades
+  // Mix with white for lighter shades (warm beige tones)
   const mixR = Math.round(255 - (255 - r) * intensity);
   const mixG = Math.round(255 - (255 - g) * intensity);
   const mixB = Math.round(255 - (255 - b) * intensity);
@@ -390,35 +399,39 @@ export function buildIrSynthesis(
     }
   });
   
-  // ========== TMI BRACKET BAR (PROGRESSIVE GRADIENT) ==========
+  // ========== TMI BRACKET BAR (PREMIUM BEIGE GRADIENT) ==========
   const segmentWidth = barWidth / TMI_BRACKETS.length;
+  let activeSegmentCenterX = 0;
   
   TMI_BRACKETS.forEach((bracket, idx) => {
     const segX = LAYOUT.bar.marginX + idx * segmentWidth;
     const isActive = bracket.rate === data.tmiRate;
-    const bgColor = getBracketColor(bracket.rate, theme, isActive);
+    const bgColor = getBracketColor(bracket.rate, theme);
     
-    // Segment rectangle - gradient colors, white border on active
+    // Track active segment center for cursor positioning
+    if (isActive) {
+      activeSegmentCenterX = segX + (segmentWidth - 0.02) / 2;
+    }
+    
+    // Segment rectangle - NO BORDER (clean look)
     slide.addShape('rect', {
       x: segX,
       y: LAYOUT.bar.y,
-      w: segmentWidth - 0.03, // Small gap between segments
+      w: segmentWidth - 0.02, // Tiny gap between segments
       h: LAYOUT.bar.height,
       fill: { color: bgColor },
-      line: isActive 
-        ? { color: 'FFFFFF', width: 2.5 } // White border for active segment
-        : { color: bgColor, width: 0 },   // No border for inactive
+      line: { color: bgColor, width: 0 }, // No border
     });
     
     // Rate label centered in segment
-    // Text color: white for darker brackets (30%+), dark for lighter
-    const textColor = bracket.rate >= 30 ? 'FFFFFF' : theme.textMain.replace('#', '');
+    // Text color: white for darker brackets (41%+), dark for lighter
+    const textColor = bracket.rate >= 41 ? 'FFFFFF' : theme.textMain.replace('#', '');
     slide.addText(bracket.label, {
       x: segX,
       y: LAYOUT.bar.y,
-      w: segmentWidth - 0.03,
+      w: segmentWidth - 0.02,
       h: LAYOUT.bar.height,
-      fontSize: 13,
+      fontSize: 12,
       fontFace: TYPO.fontFace,
       color: textColor,
       bold: isActive,
@@ -427,18 +440,32 @@ export function buildIrSynthesis(
     });
   });
   
-  // ========== SECTION 3: CALLOUT - SECONDARY INFO (Y 4.20 → 4.48) ==========
-  // "Part de revenu taxée à X% : Y €" - CLEARLY labeled as secondary
+  // ========== CURSOR INDICATOR (below active segment) ==========
+  if (data.tmiRate > 0 && activeSegmentCenterX > 0) {
+    const cursorY = LAYOUT.cursor.y + 0.02; // Small gap below bar
+    
+    // Small accent-colored rectangle as position marker
+    slide.addShape('rect', {
+      x: activeSegmentCenterX - 0.10,
+      y: cursorY,
+      w: 0.20,
+      h: 0.05,
+      fill: { color: theme.accent.replace('#', '') },
+      line: { color: theme.accent.replace('#', ''), width: 0 },
+    });
+  }
+  
+  // ========== SECTION 3: CALLOUT - SECONDARY INFO ==========
+  // "Part de revenu taxée à X% : Y €" - clearly secondary, below cursor
   if (data.tmiRate > 0) {
     const amountInBracket = getAmountInCurrentBracket(data.taxablePerPart, data.tmiRate, data.partsNb);
     
-    // Full-width centered text with explicit label (no box, no ambiguity)
     slide.addText(`Part de revenu taxée à ${data.tmiRate}% : ${euro(amountInBracket)}`, {
       x: LAYOUT.marginX,
       y: LAYOUT.callout.y,
       w: LAYOUT.contentWidth,
       h: LAYOUT.callout.height,
-      fontSize: 9,
+      fontSize: 10,
       fontFace: TYPO.fontFace,
       color: theme.textBody.replace('#', ''),
       italic: true,
@@ -447,8 +474,8 @@ export function buildIrSynthesis(
     });
   }
   
-  // ========== SECTION 4: HERO - TAX RESULT (Y 4.70 → 5.50) ==========
-  // This is THE main information - unmissable, no overlap possible
+  // ========== SECTION 4: HERO - TAX RESULT ==========
+  // THE main information - IMPOSSIBLE TO MISS
   
   // Label centered
   slide.addText('Estimation du montant de votre impôt sur le revenu', {
@@ -456,20 +483,20 @@ export function buildIrSynthesis(
     y: LAYOUT.hero.y,
     w: LAYOUT.contentWidth,
     h: LAYOUT.hero.labelHeight,
-    fontSize: 12,
+    fontSize: 13,
     fontFace: TYPO.fontFace,
     color: theme.textBody.replace('#', ''),
     align: 'center',
     valign: 'middle',
   });
   
-  // Tax amount - LARGE, BOLD, CENTERED (the HERO element)
+  // Tax amount - VERY LARGE (30pt), BOLD, CENTERED = HERO
   slide.addText(data.irNet === 0 ? 'Non imposable' : euro(data.irNet), {
     x: LAYOUT.marginX,
     y: LAYOUT.hero.y + LAYOUT.hero.labelHeight,
     w: LAYOUT.contentWidth,
     h: LAYOUT.hero.valueHeight,
-    fontSize: 26,
+    fontSize: 30,
     fontFace: TYPO.fontFace,
     color: theme.textMain.replace('#', ''),
     bold: true,
@@ -477,16 +504,16 @@ export function buildIrSynthesis(
     valign: 'middle',
   });
   
-  // Decorative line below (premium separator)
+  // Decorative accent line below (premium touch)
   slide.addShape('line', {
-    x: slideWidth / 2 - 2,
+    x: slideWidth / 2 - 1.5,
     y: LAYOUT.hero.lineY,
-    w: 4,
+    w: 3,
     h: 0,
     line: { color: theme.accent.replace('#', ''), width: 1.5 },
   });
   
-  // ========== SECTION 5: MARGIN INFO - TERTIARY (Y 5.60 → 5.82) ==========
+  // ========== SECTION 5: MARGIN INFO - TERTIARY ==========
   const nextTmiInfo = calculateMarginToNextTmi(data.taxablePerPart, data.tmiRate);
   if (nextTmiInfo && nextTmiInfo.margin > 0) {
     slide.addText(`Encore ${euro(nextTmiInfo.margin * data.partsNb)} avant la tranche ${nextTmiInfo.nextRate}%`, {
@@ -494,7 +521,7 @@ export function buildIrSynthesis(
       y: LAYOUT.marginInfo.y,
       w: LAYOUT.contentWidth,
       h: LAYOUT.marginInfo.height,
-      fontSize: 9,
+      fontSize: 10,
       fontFace: TYPO.fontFace,
       color: theme.textBody.replace('#', ''),
       italic: true,
