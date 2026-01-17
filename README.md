@@ -278,9 +278,9 @@ npm run typecheck
 - Génération d'exports Excel/PowerPoint
 
 ### Gestion des paramètres
-- **Settings** : Navigation par pilules (Généraux, Impôts, Prélèvements, Fiscalités, Base contrats, Table mortalité)
-- **Stockage Supabase** : Table `tax_settings` pour tous les paramètres fiscaux
-- **Storage** : Logos pour page de garde PowerPoint
+- **Settings** : Navigation par pilules (Généraux, Impôts, Prélèvements, Fiscalités, Base contrats, Table mortalité, **Logo étude**)
+- **Stockage Supabase** : Table `tax_settings` pour paramètres fiscaux, `user_metadata` pour logo
+- **Logo** : Upload PNG/JPG → dataUri → stockage dans `user_metadata.cover_slide_url`
 - **Rôles** : Admin (édition) vs User (lecture seule)
 
 ---
@@ -357,7 +357,7 @@ npm run typecheck
 - **Sauvegarde** : Fichier `.ser1` avec état complet
 - **Chargement** : Restauration de tous les simulateurs
 - **Réinitialisation** : Globale (accueil) ou ciblée (par page)
-- **Exports** : Excel (implémenté), PowerPoint (prévu)
+- **Exports** : Excel (implémenté), PowerPoint (implémenté avec logo intelligent)
 
 ---
 
@@ -369,8 +369,9 @@ npm run typecheck
 - `issue_reports` : Rapports de bugs
 
 ### Storage
-- Bucket pour logos page de garde PowerPoint
-- Accès protégé par RLS (Row Level Security)
+- **Logos** : Stockés dans `user_metadata.cover_slide_url` (dataUri) - bypass RLS
+- **Assets statiques** : Images chapitres et icônes dans `public/pptx/`
+- Plus de bucket Storage pour logos (approche dataUri plus fiable)
 
 ### Fonctions Edge
 - Gestion CORS pour l'admin
@@ -488,7 +489,7 @@ public/
 ### Distinction importante
 
 - **Assets statiques** (`public/pptx/*`) : Images fixes intégrées dans l'application
-- **Covers dynamiques** (Supabase Storage) : Logos uploadés par les admins dans `{user.id}/page_de_garde.{ext}`
+- **Logos dynamiques** (user_metadata) : Logos uploadés par les admins stockés en dataUri
 
 ### Restrictions
 
@@ -642,7 +643,7 @@ src/pptx/
 ├── assets/
 │   └── resolvePublicAsset.ts    # Chargement assets /public
 ├── logo/
-│   └── loadLogoDataUri.ts       # Chargement logo Supabase
+│   └── loadLogoDataUri.ts       # Chargement logo depuis dataUri
 ├── icons/
 │   └── addBusinessIcon.ts       # Injection icônes business
 ├── slides/
@@ -814,7 +815,7 @@ const spec: StudyDeckSpec = {
     type: 'cover',
     title: 'Simulation IR',
     subtitle: 'NOM Prénom',
-    logoUrl: 'https://supabase.../logo.png',
+    logoDataUri: 'data:image/png;base64,iVBORw0KGgoAAAANS...',
     leftMeta: '17 janvier 2026',
     rightMeta: 'Conseiller CGP',
   },
