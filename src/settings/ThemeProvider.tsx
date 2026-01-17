@@ -338,7 +338,10 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         }
 
         if (user?.user_metadata?.cover_slide_url && mounted) {
+          console.log('[ThemeProvider] Loading logo URL:', user.user_metadata.cover_slide_url);
           setLogo(user.user_metadata.cover_slide_url);
+        } else {
+          console.log('[ThemeProvider] No logo URL in user_metadata');
         }
       } catch (error) {
         if (mounted) {

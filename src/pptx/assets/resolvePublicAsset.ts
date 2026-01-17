@@ -30,13 +30,23 @@ export function resolvePublicAsset(assetPath: string): string {
  */
 export async function fetchAsDataUri(url: string): Promise<string> {
   try {
-    const response = await fetch(url);
+    console.log('[fetchAsDataUri] Fetching:', url);
+    
+    // Use cors mode for external URLs (like Supabase Storage)
+    const isExternal = url.startsWith('http://') || url.startsWith('https://');
+    const response = await fetch(url, {
+      mode: isExternal ? 'cors' : 'same-origin',
+      credentials: 'omit', // Don't send cookies for external resources
+    });
+    
+    console.log('[fetchAsDataUri] Response status:', response.status, response.statusText);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch asset: ${url} (${response.status} ${response.statusText})`);
     }
     
     const blob = await response.blob();
+    console.log('[fetchAsDataUri] Blob type:', blob.type, 'size:', blob.size);
     
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader();

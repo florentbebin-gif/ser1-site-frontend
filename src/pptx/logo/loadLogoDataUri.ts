@@ -3,9 +3,51 @@
  * 
  * Fetches user logo from Supabase Storage and converts to data URI
  * for use with PptxGenJS addImage({ data }).
+ * 
+ * Uses Image element approach to bypass CORS restrictions.
  */
 
-import { fetchAsDataUri } from '../assets/resolvePublicAsset';
+/**
+ * Load logo using Image element (bypasses CORS for public images)
+ * This approach works better with Supabase Storage public URLs
+ */
+async function loadLogoViaImage(logoUrl: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous'; // Required for canvas export
+    
+    img.onload = () => {
+      try {
+        // Create canvas and draw image
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0);
+        
+        // Convert to data URI (PNG format for best quality)
+        const dataUri = canvas.toDataURL('image/png');
+        console.log('[loadLogoViaImage] Successfully converted to dataUri, length:', dataUri.length);
+        resolve(dataUri);
+      } catch (error) {
+        reject(new Error(`Canvas conversion failed: ${error}`));
+      }
+    };
+    
+    img.onerror = () => {
+      reject(new Error(`Failed to load image from URL: ${logoUrl}`));
+    };
+    
+    // Start loading
+    img.src = logoUrl;
+  });
+}
 
 /**
  * Load logo from Supabase Storage URL as data URI
@@ -26,15 +68,19 @@ export async function loadLogoDataUri(logoUrl: string): Promise<string> {
   
   // If already a data URI, return as-is
   if (logoUrl.startsWith('data:')) {
+    console.log('[loadLogoDataUri] Already a data URI, returning as-is');
     return logoUrl;
   }
   
+  console.log('[loadLogoDataUri] Loading logo via Image element:', logoUrl);
+  
   try {
-    const dataUri = await fetchAsDataUri(logoUrl);
+    // Use Image element approach (better CORS handling for Supabase Storage)
+    const dataUri = await loadLogoViaImage(logoUrl);
     
     // Validate it's an image
     if (!dataUri.startsWith('data:image/')) {
-      throw new Error('Fetched resource is not an image');
+      throw new Error('Converted resource is not an image');
     }
     
     return dataUri;
@@ -44,7 +90,7 @@ export async function loadLogoDataUri(logoUrl: string): Promise<string> {
       `Failed to load logo from Supabase Storage.\n` +
       `URL: ${logoUrl}\n` +
       `Error: ${message}\n` +
-      `Please verify the URL is valid and accessible.`
+      `Please verify the URL is valid and the bucket is public.`
     );
   }
 }
@@ -57,13 +103,18 @@ export async function loadLogoDataUri(logoUrl: string): Promise<string> {
  */
 export async function loadLogoDataUriSafe(logoUrl?: string): Promise<string | undefined> {
   if (!logoUrl) {
+    console.log('[PPTX Logo] No logo URL provided');
     return undefined;
   }
   
+  console.log('[PPTX Logo] Attempting to load logo from:', logoUrl);
+  
   try {
-    return await loadLogoDataUri(logoUrl);
+    const dataUri = await loadLogoDataUri(logoUrl);
+    console.log('[PPTX Logo] Successfully loaded logo, dataUri length:', dataUri.length);
+    return dataUri;
   } catch (error) {
-    console.warn('[PPTX Logo] Failed to load logo:', error);
+    console.error('[PPTX Logo] Failed to load logo:', error);
     return undefined;
   }
 }

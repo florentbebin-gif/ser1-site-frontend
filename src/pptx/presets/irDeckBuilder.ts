@@ -8,7 +8,7 @@
 import type { StudyDeckSpec, ContentSlideSpec, ChapterSlideSpec, IconPlacement } from '../theme/types';
 
 // Debug flag for development
-export const DEBUG_PPTX = false;
+export const DEBUG_PPTX = true;
 
 /**
  * IR Simulation Data (matches result from irEngine)
