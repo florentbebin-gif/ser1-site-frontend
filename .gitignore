@@ -47,6 +47,10 @@ temp/
 .windsurf/
 _signalements_ref/
 _style_ref/
+!_style_ref/pptx_chapters_raw/
+_style_ref/pptx_chapters_raw/*.png
+_style_ref/pptx_chapters_raw/*.jpg
+_style_ref/pptx_chapters_raw/*.jpeg
 *.zip
 
 # Validation outputs

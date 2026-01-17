@@ -94,7 +94,7 @@ SER1/
 │   │       └── 📄 login-bg.png    # Fond d'écran login
 │   └── 📁 pptx/                    # Assets PowerPoint
 │       ├── 📁 chapters/            # Images chapitres (max 10)
-│       └── 📁 icons/               # Icônes PPTX (max 5)
+│       └── 📁 icons/                    # Icônes PPTX (générées depuis src/icons/business/svg)
 ├── 📁 dist/                       # Build de production
 ├── 📁 node_modules/               # Dépendances npm
 ├── 📁 .vscode/                    # Configuration VS Code
@@ -461,27 +461,27 @@ public/
 │   └── login/
 │       └── login-bg.png          # Fond d'écran page de connexion
 └── pptx/
-    ├── chapters/                 # Images chapitres PowerPoint (max 10)
-    │   ├── ch-01.jpg
-    │   ├── ch-02.jpg
-    │   └── ...
-    └── icons/                    # Icônes PowerPoint (max 5)
-        ├── mail.svg
-        ├── phone.svg
-        └── ...
+    ├── chapters/                 # Images chapitres PowerPoint (pré-traitées)
+    ├── ch-01.png
+    ├── ch-02.png
+    └── ... (jusqu'à ch-09.png)
+    └── icons/                    # Icônes PPTX (générées depuis src/icons/business/svg)
+        ├── icon-money.svg
+        ├── icon-bank.svg
+        └── ... (12 icônes business)
 ```
 
 ### Règles de nommage
 
-- **Images chapitres** : `ch-01.jpg` à `ch-10.jpg` (maximum 10 images)
-- **Icônes** : Noms descriptifs en minuscules (ex: `mail.svg`, `phone.svg`)
+- **Images chapitres** : `ch-01.png` à `ch-10.png` (PNG recommandé, pré-traitées)
+- **Icônes** : Noms descriptifs en minuscules (ex: `icon-money.svg`, `icon-bank.svg`)
 - **UI** : Contexte fonctionnel (ex: `login-bg.png`)
 
 ### Recommandations techniques
 
 | Type | Format | Qualité | Taille recommandée |
 |------|--------|---------|--------------------|
-| Photos chapitres | JPG | 82-88% | 1200-1600px largeur |
+| Images chapitres | PNG (pré-traitées) | - | Ratio 3:4, coins arrondis, saturation ~30% |
 | Icônes | SVG (préféré) ou PNG | - | 32-64px |
 | Fond d'écran | JPG/PNG | 85% | 1920×1080px minimum |
 
@@ -495,7 +495,132 @@ public/
 - ❌ **Aucun screenshot** dans le repository (docs/ ou racine)
 - ❌ **Aucune image** à la racine du repo
 - ❌ **dist/ jamais versionné** (build artifacts)
-- ✅ **Maximum 10 images chapitres** et **5 icônes** pour maintenir la simplicité
+- ✅ **9 images chapitres** et **12 icônes business** actuellement disponibles
+
+---
+
+## 🎯 Icônes Business (UI + Exports PPTX)
+
+### Structure des icônes
+
+```text
+src/icons/business/
+├── _raw/           # SVG bruts depuis PowerPoint (Image1.svg ... Image12.svg)
+├── svg/            # SVG normalisés et renommés
+└── businessIconLibrary.ts  # Library TypeScript
+```
+
+### Workflow d'intégration
+
+1. **Déposer les SVG bruts** : Placez les 12 fichiers `Image1.svg` ... `Image12.svg` dans `src/icons/business/_raw/`
+
+2. **Générer les icônes normalisées** :
+   ```bash
+   npm run icons:build
+   ```
+
+3. **Résultat** : Les SVG normalisés sont générés dans :
+   - `src/icons/business/svg/` (pour l'UI)
+   - `public/pptx/icons/` (pour les exports PPTX)
+
+### Mapping des icônes
+
+| Fichier original | Nom normalisé | Usage |
+|------------------|---------------|-------|
+| Image1.svg | icon-money.svg | Argent/finance |
+| Image2.svg | icon-cheque.svg | Chèques/paiements |
+| Image3.svg | icon-bank.svg | Banque/établissements |
+| Image4.svg | icon-calculator.svg | Calculatrices/comptes |
+| Image5.svg | icon-checklist.svg | Listes/tâches |
+| Image6.svg | icon-buildings.svg | Immeubles/propriétés |
+| Image7.svg | icon-gauge.svg | Indicateurs/métriques |
+| Image8.svg | icon-pen.svg | Écriture/signatures |
+| Image9.svg | icon-chart-down.svg | Graphiques baissiers |
+| Image10.svg | icon-chart-up.svg | Graphiques haussiers |
+| Image11.svg | icon-balance.svg | Balance/justice |
+| Image12.svg | icon-tower.svg | Tour/protection |
+
+### Utilisation dans l'UI
+
+```jsx
+import { BusinessIcon } from '@/components/ui/BusinessIcon';
+
+// Usage basique
+<BusinessIcon name="bank" size={18} />
+
+// Avec couleur personnalisée
+<BusinessIcon name="money" size={24} color="#3F6F63" />
+
+// Avec variable CSS
+<BusinessIcon name="calculator" size={20} color="var(--color-c2)" />
+```
+
+### Utilisation dans les exports PPTX
+
+```typescript
+import { getBusinessIconDataUri } from '@/icons/business/businessIconLibrary';
+
+// Pour PPTXGenJS
+const iconDataUri = getBusinessIconDataUri('bank', { color: '#3F6F63' });
+slide.addImage({
+  data: iconDataUri,
+  x: 1, y: 1, w: 0.5, h: 0.5
+});
+```
+
+### Caractéristiques techniques
+
+- **Format** : SVG normalisés avec `fill="currentColor"`
+- **Scalable** : Taille infinie sans perte de qualité
+- **Thème-compatible** : S'adapte automatiquement aux couleurs du thème
+- **Idempotent** : Le script peut être relancé sans risque
+- **Zéro dépendance** : Utilise uniquement les APIs natives
+
+---
+
+## 📖 Images Chapitres (Assets PPTX)
+
+### Structure des images chapitres
+
+```text
+config/assets/_style_ref/
+└── pptx_chapters_raw/           # Images brutes originales (sources)
+
+public/pptx/
+└── chapters/                    # Images finalisées prêtes PPTX
+    ├── ch-01.png
+    ├── ch-02.png
+    └── ... (jusqu'à ch-09.png)
+```
+
+### Workflow de traitement
+
+1. **Déposer les brutes** : Placez les images originales dans `config/assets/_style_ref/pptx_chapters_raw/`
+
+2. **Traiter les images** : Appliquer le traitement nécessaire :
+   - **Format** : PNG avec fond transparent (coins arrondis)
+   - **Ratio** : Portrait 3:4 (ex: 1200×1600px)
+   - **Saturation** : ~30% (désaturées pour intégration PPTX)
+   - **Recadrage** : Centré sans déformation
+
+3. **Placer les finalisées** : Copiez les images traitées dans `public/pptx/chapters/` avec le naming `ch-01.png` ... `ch-09.png`
+
+### Utilisation dans les exports PPTX
+
+```typescript
+// Les images chapitres sont "prêtes à poser" - aucune transformation nécessaire
+slide.addImage({
+  path: '/pptx/chapters/ch-01.png',
+  x: 0.5, y: 0.5, w: 4, h: 5.33  // Ratio 3:4 respecté
+});
+```
+
+### Caractéristiques techniques
+
+- **Pré-traitées** : Coins arrondis, saturation ajustée, ratio fixe
+- **Optimisées PPTX** : Utilisation directe sans traitement en code
+- **Scalables** : Haute résolution pour impression si nécessaire
+- **Thème-neutres** : Désaturées pour s'intégrer à tous les thèmes
 
 ---
 

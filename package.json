@@ -10,7 +10,8 @@
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "icons:build": "node scripts/normalize-business-icons.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.42.0",
