@@ -7,8 +7,9 @@
  * - Contexte React pour accéder aux couleurs partout
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
-import { supabase } from '../supabaseClient';
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
+import { supabase, DEBUG_AUTH } from '../supabaseClient';
+import { resolvePptxColors } from '../pptx/theme/resolvePptxColors';
 
 // Cache local pour les thèmes (performance)
 const THEME_CACHE_KEY = 'ser1_theme_cache';
@@ -80,19 +81,9 @@ export const DEFAULT_COLORS: ThemeColors = {
   c10: '#000000',
 };
 
-// SER1 Classic colors for PPTX when ui-only mode is selected
-export const SER1_CLASSIC_COLORS: ThemeColors = {
-  c1: '#2B3E37',
-  c2: '#709B8B',
-  c3: '#9FBDB2',
-  c4: '#CFDED8',
-  c5: '#788781',
-  c6: '#CEC1B6',
-  c7: '#F5F3F0',
-  c8: '#D9D9D9',
-  c9: '#7F7F7F',
-  c10: '#000000',
-};
+// SER1 Classic colors are now centralized in pptx/theme/resolvePptxColors.ts
+// Import from there to ensure consistency across PPTX exports
+import { SER1_CLASSIC_COLORS } from '../pptx/theme/resolvePptxColors';
 
 export type ThemeScope = 'all' | 'ui-only';
 
@@ -174,9 +165,8 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const [themeScope, setThemeScope] = useState<ThemeScope>('all');
   
   // Compute PPTX colors based on theme scope
-  // If 'ui-only', use SER1 Classic colors for PPTX
-  // If 'all', use current theme colors for PPTX
-  const pptxColors: ThemeColors = themeScope === 'ui-only' ? SER1_CLASSIC_COLORS : colors;
+  // CRITICAL: Use centralized resolver to ensure PPTX never uses web colors when ui-only
+  const pptxColors: ThemeColors = resolvePptxColors(colors, themeScope);
 
   // 🚨 DIAGNOSTIC: Track hash and user ID to prevent unnecessary reapplications
   const lastAppliedHashRef = useRef<string>('');
