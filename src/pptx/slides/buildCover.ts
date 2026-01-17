@@ -39,14 +39,86 @@ export function buildCover(
   
   // Logo (if provided)
   if (logoDataUri) {
-    slide.addImage({
-      data: logoDataUri,
-      x: COORDS_COVER.logo.x,
-      y: COORDS_COVER.logo.y,
-      w: COORDS_COVER.logo.w,
-      h: COORDS_COVER.logo.h,
-      sizing: { type: 'contain', w: COORDS_COVER.logo.w, h: COORDS_COVER.logo.h },
-    });
+    // Extract dimensions from dataUri (synchronous approach)
+    const getDimensionsFromDataUri = (dataUri: string) => {
+      const base64Data = dataUri.split(',')[1];
+      const binaryString = atob(base64Data);
+      const bytes = new Uint8Array(binaryString.length);
+      
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      
+      // Parse PNG header for dimensions
+      if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
+        const width = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19];
+        const height = (bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23];
+        return { width, height };
+      }
+      
+      // Parse JPEG header for dimensions
+      if (bytes[0] === 0xFF && bytes[1] === 0xD8) {
+        let i = 2;
+        while (i < bytes.length) {
+          if (bytes[i] === 0xFF) {
+            const marker = bytes[i + 1];
+            if (marker === 0xC0 || marker === 0xC2) {
+              const height = (bytes[i + 5] << 8) | bytes[i + 6];
+              const width = (bytes[i + 7] << 8) | bytes[i + 8];
+              return { width, height };
+            }
+            const length = (bytes[i + 2] << 8) | bytes[i + 3];
+            i += length + 2;
+          } else {
+            i++;
+          }
+        }
+      }
+      
+      // Fallback to reasonable default
+      return { width: 400, height: 200 };
+    };
+    
+    const { width: imgWidth, height: imgHeight } = getDimensionsFromDataUri(logoDataUri);
+    
+    // Convert pixel dimensions to inches (96 DPI standard)
+    const W0 = imgWidth / 96;
+    const H0 = imgHeight / 96;
+    
+    // Box dimensions
+    const boxW = COORDS_COVER.logo.w;
+    const boxH = COORDS_COVER.logo.h;
+    
+    // Check if logo fits without scaling
+    if (W0 <= boxW && H0 <= boxH) {
+      // No scaling needed - use original size
+      const centerX = COORDS_COVER.logo.x + (boxW - W0) / 2;
+      const centerY = COORDS_COVER.logo.y + (boxH - H0) / 2;
+      
+      slide.addImage({
+        data: logoDataUri,
+        x: centerX,
+        y: centerY,
+        w: W0,
+        h: H0,
+      });
+    } else {
+      // Scale down proportionally
+      const scale = Math.min(boxW / W0, boxH / H0);
+      const W = W0 * scale;
+      const H = H0 * scale;
+      
+      const centerX = COORDS_COVER.logo.x + (boxW - W) / 2;
+      const centerY = COORDS_COVER.logo.y + (boxH - H) / 2;
+      
+      slide.addImage({
+        data: logoDataUri,
+        x: centerX,
+        y: centerY,
+        w: W,
+        h: H,
+      });
+    }
   }
   
   // Title (ALL CAPS, centered)
