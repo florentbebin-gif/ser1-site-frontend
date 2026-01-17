@@ -93,7 +93,10 @@ export function buildCover(
     if (W0 <= boxW && H0 <= boxH) {
       // No scaling needed - use original size
       const centerX = COORDS_COVER.logo.x + (boxW - W0) / 2;
-      const centerY = COORDS_COVER.logo.y + (boxH - H0) / 2;
+      // Position logo with bottom aligned 1.5cm below slide center
+      const slideCenterY = 3.75; // Slide height / 2
+      const logoBottomY = slideCenterY - 0.5906; // 1.5cm = 0.5906 inches below center
+      const centerY = logoBottomY - H0; // Y position for bottom alignment
       
       slide.addImage({
         data: logoDataUri,
@@ -109,7 +112,10 @@ export function buildCover(
       const H = H0 * scale;
       
       const centerX = COORDS_COVER.logo.x + (boxW - W) / 2;
-      const centerY = COORDS_COVER.logo.y + (boxH - H) / 2;
+      // Position logo with bottom aligned 1.5cm below slide center
+      const slideCenterY = 3.75; // Slide height / 2
+      const logoBottomY = slideCenterY - 0.5906; // 1.5cm = 0.5906 inches below center
+      const centerY = logoBottomY - H; // Y position for bottom alignment
       
       slide.addImage({
         data: logoDataUri,
