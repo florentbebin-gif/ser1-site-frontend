@@ -120,7 +120,7 @@ const COLOR_FIELDS = [
 ];
 
 export default function Settings({ isAdmin = false }) {
-  const { colors, setColors, saveThemeToUiSettings, isLoading: themeLoading, themeScope, setThemeScope } = useTheme();
+  const { colors, setColors, saveThemeToUiSettings, isLoading: themeLoading, themeScope, setThemeScope, logo, setLogo } = useTheme();
   const [user, setUser] = useState(null);
   const [roleLabel, setRoleLabel] = useState('User');
   const [loading, setLoading] = useState(true);
@@ -228,6 +228,10 @@ export default function Settings({ isAdmin = false }) {
           // URL du logo (si déjà enregistré)
           if (meta.cover_slide_url) {
             setCoverUrl(meta.cover_slide_url);
+            // Also sync with ThemeProvider if not already set
+            if (!logo) {
+              setLogo(meta.cover_slide_url);
+            }
           }
         }
       } catch (e) {
@@ -424,6 +428,7 @@ export default function Settings({ isAdmin = false }) {
       }
 
       setCoverUrl(publicUrl);
+      setLogo(publicUrl); // Sync with ThemeProvider for immediate PPTX export
       setSaveMessage('Logo enregistré avec succès.');
     } catch (err) {
       console.error(err);
@@ -445,6 +450,7 @@ export default function Settings({ isAdmin = false }) {
         return;
       }
       setCoverUrl('');
+      setLogo(undefined); // Sync with ThemeProvider
       setSaveMessage('Logo supprimé.');
     } catch (e) {
       console.error(e);
