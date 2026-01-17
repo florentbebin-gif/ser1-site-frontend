@@ -191,7 +191,7 @@ export async function exportStudyDeck(
         irNet: synthesisSpec.irNet,
         taxablePerPart: synthesisSpec.taxablePerPart,
         bracketsDetails: synthesisSpec.bracketsDetails,
-      }, ctx.theme, slideIndex);
+      }, ctx.theme, ctx, slideIndex);
     } else if (slideSpec.type === 'ir-annexe') {
       // IR Annexe slide (detailed calculation prose)
       const annexeSpec = slideSpec as IrAnnexeSlideSpec;
@@ -213,7 +213,7 @@ export async function exportStudyDeck(
         psTotal: annexeSpec.psTotal,
         isCouple: annexeSpec.isCouple,
         childrenCount: annexeSpec.childrenCount,
-      }, ctx.theme, slideIndex);
+      }, ctx.theme, ctx, slideIndex);
     }
     
     slideIndex++;

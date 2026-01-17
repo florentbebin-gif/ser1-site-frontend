@@ -8,11 +8,23 @@
  * - Margin to next bracket callout
  * 
  * Design: White background, generous spacing, institutional look
+ * 
+ * IMPORTANT: Uses standard SER1 template (title, subtitle, accent line, footer)
+ * All visual elements MUST stay within CONTENT_ZONE (below subtitle, above footer)
  */
 
 import PptxGenJS from 'pptxgenjs';
-import type { PptxThemeRoles } from '../theme/types';
-import { SLIDE_SIZE, TYPO } from '../designSystem/serenity';
+import type { PptxThemeRoles, ExportContext } from '../theme/types';
+import {
+  SLIDE_SIZE,
+  TYPO,
+  COORDS_CONTENT,
+  COORDS_FOOTER,
+  addTextBox,
+  addAccentLine,
+  addFooter,
+  roleColor,
+} from '../designSystem/serenity';
 import { getBusinessIconDataUri, type BusinessIconName } from '../../icons/business/businessIconLibrary';
 
 // ============================================================================
@@ -54,50 +66,69 @@ const TMI_BRACKETS = [
 ];
 
 // ============================================================================
-// LAYOUT CONSTANTS (inches)
+// CONTENT ZONE BOUNDARIES (STRICT - NO OVERFLOW)
+// ============================================================================
+
+/**
+ * Content zone starts AFTER the subtitle (y + h)
+ * All visual elements MUST have y >= CONTENT_TOP_Y
+ */
+const CONTENT_TOP_Y = COORDS_CONTENT.content.y; // 2.3754
+
+/**
+ * Content zone ends BEFORE the footer
+ * All visual elements MUST have (y + h) <= CONTENT_BOTTOM_Y
+ */
+const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
+
+/**
+ * Available content height
+ */
+const CONTENT_HEIGHT = CONTENT_BOTTOM_Y - CONTENT_TOP_Y; // ~4.42
+
+// ============================================================================
+// LAYOUT CONSTANTS (inches) - ALL WITHIN CONTENT ZONE
 // ============================================================================
 
 const LAYOUT = {
-  // Safe margins
-  marginX: 0.6,
-  marginTop: 0.5,
-  marginBottom: 1.0, // Footer space
+  // Use standard margins from design system
+  marginX: COORDS_CONTENT.margin.x, // 0.9167
+  contentWidth: COORDS_CONTENT.margin.w, // 11.5
   
-  // KPI Section (top)
+  // KPI Section (top of content zone)
   kpi: {
-    y: 0.6,
-    iconSize: 0.55,
-    iconY: 0.7,
-    labelY: 1.35,
-    valueY: 1.65,
-    detailY: 2.1,
-    colWidth: 3.0,
-    colSpacing: 0.2,
+    iconSize: 0.5,
+    iconY: CONTENT_TOP_Y + 0.1, // 2.48
+    labelY: CONTENT_TOP_Y + 0.7, // 3.08
+    valueY: CONTENT_TOP_Y + 1.0, // 3.38
+    detailY: CONTENT_TOP_Y + 1.4, // 3.78
+    colWidth: 2.7,
+    colSpacing: 0.15,
   },
   
-  // TMI Bar (middle)
+  // TMI Bar (middle of content zone)
   bar: {
-    y: 3.2,
-    height: 0.7,
-    marginX: 1.2,
+    y: CONTENT_TOP_Y + 2.0, // 4.38
+    height: 0.6,
+    marginX: 1.0,
   },
   
   // Active bracket callout
   callout: {
-    y: 4.1,
-    height: 0.5,
-  },
-  
-  // Tax result (bottom center)
-  result: {
-    y: 5.0,
-    height: 0.9,
-  },
-  
-  // Margin to next TMI
-  margin: {
-    y: 5.9,
+    y: CONTENT_TOP_Y + 2.7, // 5.08
     height: 0.4,
+  },
+  
+  // Tax result (center of content zone)
+  result: {
+    y: CONTENT_TOP_Y + 3.2, // 5.58
+    height: 0.8,
+  },
+  
+  // Margin to next TMI (bottom of content zone)
+  margin: {
+    y: CONTENT_TOP_Y + 4.1, // 6.48
+    height: 0.3,
   },
 } as const;
 
@@ -177,11 +208,20 @@ function getBracketColor(rate: number, theme: PptxThemeRoles, isActive: boolean)
 
 /**
  * Build IR Synthesis slide (premium KPI layout)
+ * 
+ * Uses standard SER1 template:
+ * - Title (H1, left-aligned, uppercase)
+ * - Accent line under title
+ * - Subtitle (H2, left-aligned)
+ * - Footer (date, disclaimer, slide number)
+ * 
+ * All visual content is placed within CONTENT_ZONE
  */
 export function buildIrSynthesis(
   pptx: PptxGenJS,
   data: IrSynthesisData,
   theme: PptxThemeRoles,
+  ctx: ExportContext,
   slideIndex: number
 ): void {
   const slide = pptx.addSlide();
@@ -192,17 +232,28 @@ export function buildIrSynthesis(
   const slideWidth = SLIDE_SIZE.width;
   const barWidth = slideWidth - LAYOUT.bar.marginX * 2;
   
-  // ========== TITLE ==========
-  slide.addText('SYNTHÈSE DE VOTRE SIMULATION', {
-    x: LAYOUT.marginX,
-    y: LAYOUT.marginTop,
-    w: slideWidth - LAYOUT.marginX * 2,
-    h: 0.5,
+  // ========== STANDARD HEADER (from design system) ==========
+  
+  // Title (H1, ALL CAPS, LEFT-ALIGNED) - using helper
+  addTextBox(slide, 'Synthèse de votre simulation', COORDS_CONTENT.title, {
     fontSize: TYPO.sizes.h1,
-    fontFace: TYPO.fontFace,
-    color: theme.textMain.replace('#', ''),
+    color: theme.textMain,
     bold: true,
-    align: 'center',
+    align: 'left',
+    valign: 'top',
+    isUpperCase: true,
+  });
+  
+  // Accent line under title - using helper
+  addAccentLine(slide, theme, 'content');
+  
+  // Subtitle (H2) - using helper
+  addTextBox(slide, 'Principaux indicateurs fiscaux', COORDS_CONTENT.subtitle, {
+    fontSize: TYPO.sizes.h2,
+    color: theme.textMain,
+    bold: true,
+    align: 'left',
+    valign: 'top',
   });
   
   // ========== 4 KPI COLUMNS ==========
@@ -421,7 +472,7 @@ export function buildIrSynthesis(
     slide.addText(`Encore ${euro(marginInfo.margin * data.partsNb)} avant la tranche ${marginInfo.nextRate}%`, {
       x: LAYOUT.marginX,
       y: LAYOUT.margin.y,
-      w: slideWidth - LAYOUT.marginX * 2,
+      w: LAYOUT.contentWidth,
       h: LAYOUT.margin.height,
       fontSize: 10,
       fontFace: TYPO.fontFace,
@@ -432,17 +483,8 @@ export function buildIrSynthesis(
     });
   }
   
-  // ========== FOOTER ==========
-  slide.addText(`${slideIndex}`, {
-    x: slideWidth - 1.5,
-    y: SLIDE_SIZE.height - 0.5,
-    w: 1,
-    h: 0.3,
-    fontSize: TYPO.sizes.footer,
-    fontFace: TYPO.fontFace,
-    color: '999999',
-    align: 'right',
-  });
+  // ========== STANDARD FOOTER (from design system) ==========
+  addFooter(slide, ctx, slideIndex, 'onLight');
 }
 
 export default buildIrSynthesis;

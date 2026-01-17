@@ -5,11 +5,22 @@
  * Only includes mechanisms that actually apply (decote, credits, etc.)
  * 
  * Design: White background, hierarchical typography, readable paragraphs
+ * 
+ * IMPORTANT: Uses standard SER1 template (title, subtitle, accent line, footer)
+ * All visual elements MUST stay within CONTENT_ZONE (below subtitle, above footer)
  */
 
 import PptxGenJS from 'pptxgenjs';
-import type { PptxThemeRoles } from '../theme/types';
-import { SLIDE_SIZE, TYPO } from '../designSystem/serenity';
+import type { PptxThemeRoles, ExportContext } from '../theme/types';
+import {
+  SLIDE_SIZE,
+  TYPO,
+  COORDS_CONTENT,
+  COORDS_FOOTER,
+  addTextBox,
+  addAccentLine,
+  addFooter,
+} from '../designSystem/serenity';
 
 // ============================================================================
 // TYPES
@@ -45,18 +56,32 @@ export interface IrAnnexeData {
 }
 
 // ============================================================================
-// LAYOUT CONSTANTS
+// CONTENT ZONE BOUNDARIES (STRICT - NO OVERFLOW)
+// ============================================================================
+
+/**
+ * Content zone starts AFTER the subtitle (y + h)
+ * All visual elements MUST have y >= CONTENT_TOP_Y
+ */
+const CONTENT_TOP_Y = COORDS_CONTENT.content.y; // 2.3754
+
+/**
+ * Content zone ends BEFORE the footer
+ * All visual elements MUST have (y + h) <= CONTENT_BOTTOM_Y
+ */
+const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
+
+// ============================================================================
+// LAYOUT CONSTANTS - ALL WITHIN CONTENT ZONE
 // ============================================================================
 
 const LAYOUT = {
-  marginX: 0.8,
-  marginTop: 0.5,
-  titleY: 0.5,
-  contentY: 1.2,
-  contentWidth: 11.7,
-  lineHeight: 0.28,
-  sectionSpacing: 0.15,
-  footerY: 6.95,
+  marginX: COORDS_CONTENT.margin.x, // 0.9167
+  contentWidth: COORDS_CONTENT.margin.w, // 11.5
+  contentY: CONTENT_TOP_Y,
+  lineHeight: 0.26,
+  sectionSpacing: 0.12,
+  maxY: CONTENT_BOTTOM_Y,
 } as const;
 
 // ============================================================================
@@ -212,11 +237,20 @@ function buildAnnexeText(data: IrAnnexeData): string[] {
 
 /**
  * Build IR Annexe slide (detailed calculation prose)
+ * 
+ * Uses standard SER1 template:
+ * - Title (H1, left-aligned, uppercase)
+ * - Accent line under title
+ * - Subtitle (H2, left-aligned)
+ * - Footer (date, disclaimer, slide number)
+ * 
+ * All visual content is placed within CONTENT_ZONE
  */
 export function buildIrAnnexe(
   pptx: PptxGenJS,
   data: IrAnnexeData,
   theme: PptxThemeRoles,
+  ctx: ExportContext,
   slideIndex: number
 ): void {
   const slide = pptx.addSlide();
@@ -224,40 +258,38 @@ export function buildIrAnnexe(
   // White background
   slide.background = { color: 'FFFFFF' };
   
-  const slideWidth = SLIDE_SIZE.width;
+  // ========== STANDARD HEADER (from design system) ==========
   
-  // ========== TITLE ==========
-  slide.addText('ANNEXE : DÉTAIL DU CALCUL', {
-    x: LAYOUT.marginX,
-    y: LAYOUT.titleY,
-    w: LAYOUT.contentWidth,
-    h: 0.5,
+  // Title (H1, ALL CAPS, LEFT-ALIGNED) - using helper
+  addTextBox(slide, 'Annexe : Détail du calcul', COORDS_CONTENT.title, {
     fontSize: TYPO.sizes.h1,
-    fontFace: TYPO.fontFace,
-    color: theme.textMain.replace('#', ''),
+    color: theme.textMain,
     bold: true,
     align: 'left',
+    valign: 'top',
+    isUpperCase: true,
   });
   
-  // Accent line under title
-  slide.addShape('line', {
-    x: LAYOUT.marginX,
-    y: LAYOUT.titleY + 0.55,
-    w: 1.2,
-    h: 0,
-    line: { color: theme.accent.replace('#', ''), width: 2 },
+  // Accent line under title - using helper
+  addAccentLine(slide, theme, 'content');
+  
+  // Subtitle (H2) - using helper
+  addTextBox(slide, 'Méthode de calcul de l\'impôt sur le revenu', COORDS_CONTENT.subtitle, {
+    fontSize: TYPO.sizes.h2,
+    color: theme.textMain,
+    bold: true,
+    align: 'left',
+    valign: 'top',
   });
   
-  // ========== CONTENT ==========
+  // ========== CONTENT (within content zone) ==========
   const textLines = buildAnnexeText(data);
   
-  // Join all lines with proper formatting
-  // We'll use a single text box with line breaks for better control
   let currentY = LAYOUT.contentY;
-  const maxY = LAYOUT.footerY - 0.3; // Leave space for footer
+  const maxY = LAYOUT.maxY; // Stay above footer
   
   for (const line of textLines) {
-    if (currentY >= maxY) break; // Prevent overflow
+    if (currentY >= maxY) break; // Prevent overflow into footer
     
     const isSection = /^\d+\./.test(line) || line === 'DÉTAIL DU CALCUL DE L\'IMPÔT SUR LE REVENU';
     const isBullet = line.startsWith('  •');
@@ -269,24 +301,29 @@ export function buildIrAnnexe(
       continue;
     }
     
+    // Skip the main title from buildAnnexeText (we use the standard header)
+    if (line === 'DÉTAIL DU CALCUL DE L\'IMPÔT SUR LE REVENU') {
+      continue;
+    }
+    
     let fontSize: number = TYPO.sizes.body;
     let isBold = false;
     let indent = 0;
     let lineColor = theme.textBody.replace('#', '');
     
     if (isSection) {
-      fontSize = 13;
+      fontSize = 12;
       isBold = true;
       lineColor = theme.textMain.replace('#', '');
     } else if (isBullet) {
       indent = 0.3;
-      fontSize = 11;
+      fontSize = 10;
     } else if (isSubBullet) {
       indent = 0.5;
-      fontSize = 10;
+      fontSize = 9;
       lineColor = '666666';
     } else {
-      fontSize = 11;
+      fontSize = 10;
     }
     
     slide.addText(line, {
@@ -305,29 +342,8 @@ export function buildIrAnnexe(
     currentY += LAYOUT.lineHeight;
   }
   
-  // ========== FOOTER ==========
-  slide.addText('Simulation indicative - Les résultats réels peuvent varier selon votre situation.', {
-    x: LAYOUT.marginX,
-    y: LAYOUT.footerY,
-    w: LAYOUT.contentWidth - 2,
-    h: 0.3,
-    fontSize: 8,
-    fontFace: TYPO.fontFace,
-    color: '999999',
-    italic: true,
-    align: 'left',
-  });
-  
-  slide.addText(`${slideIndex}`, {
-    x: slideWidth - 1.5,
-    y: LAYOUT.footerY,
-    w: 1,
-    h: 0.3,
-    fontSize: TYPO.sizes.footer,
-    fontFace: TYPO.fontFace,
-    color: '999999',
-    align: 'right',
-  });
+  // ========== STANDARD FOOTER (from design system) ==========
+  addFooter(slide, ctx, slideIndex, 'onLight');
 }
 
 export default buildIrAnnexe;
