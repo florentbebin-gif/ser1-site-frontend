@@ -87,22 +87,27 @@ const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
 const CONTENT_HEIGHT = CONTENT_BOTTOM_Y - CONTENT_TOP_Y; // ~4.42
 
 // ============================================================================
-// LAYOUT CONSTANTS (inches) - PREMIUM DESIGN V2
+// LAYOUT CONSTANTS (inches) - PREMIUM DESIGN V3
 // 
-// SHIFTED DOWN 0.4" for better balance (less gap before footer)
+// MORE BREATHING ROOM between KPIs and TMI bar
+// TMI bar segments have PROPORTIONAL widths based on income ranges
 // 
-// ZONE ALLOCATION (total ~4.4"):
-// - KPIs:      Y 2.78 → 3.95 (1.17") - icons, labels, values
-// - TMI Bar:   Y 4.10 → 4.50 (0.40") - bracket segments
-// - Cursor:    Y 4.50 → 4.65 (0.15") - triangle pointer
-// - Callout:   Y 4.68 → 4.92 (0.24") - "Part de revenu taxée..."
-// - HERO:      Y 5.10 → 5.90 (0.80") - PRIMARY tax result
-// - Margin:    Y 5.95 → 6.17 (0.22") - "Encore X € avant..."
-// - Buffer:    Y 6.17 → 6.80 (0.63" safety margin to footer)
+// ZONE ALLOCATION:
+// - KPIs:      Y 2.78 → 3.90 (1.12") - icons, labels, values
+// - GAP:       Y 3.90 → 4.30 (0.40") - breathing room
+// - TMI Bar:   Y 4.30 → 4.65 (0.35") - bracket segments (proportional widths)
+// - Cursor:    Y 4.65 → 4.85 (0.20") - premium triangle pointer
+// - Callout:   Y 4.90 → 5.12 (0.22") - "Part de revenu taxée..."
+// - HERO:      Y 5.20 → 5.95 (0.75") - PRIMARY tax result
+// - Margin:    Y 6.00 → 6.20 (0.20") - "Encore X € avant..."
+// - Buffer:    Y 6.20 → 6.80 (0.60" safety margin to footer)
 // ============================================================================
 
 // Vertical offset to shift everything down for better balance
 const VERTICAL_SHIFT = 0.40;
+
+// Additional gap between KPIs and TMI bar for aeration
+const KPI_TO_BAR_GAP = 0.35;
 
 const LAYOUT = {
   // Standard margins
@@ -110,54 +115,76 @@ const LAYOUT = {
   contentWidth: COORDS_CONTENT.margin.w, // 11.5
   slideWidth: SLIDE_SIZE.width, // 13.3333
   
-  // ===== SECTION 1: KPIs (Y 2.78 → 3.95) =====
+  // ===== SECTION 1: KPIs (Y 2.78 → 3.90) =====
   kpi: {
-    iconSize: 0.50,                            // Slightly larger icons
-    iconY: CONTENT_TOP_Y + VERTICAL_SHIFT,     // 2.78 - icons
-    labelY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.55, // 3.33 - label below icon
-    valueY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.82, // 3.60 - main value
+    iconSize: 0.50,
+    iconY: CONTENT_TOP_Y + VERTICAL_SHIFT,     // 2.78
+    labelY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.55, // 3.33
+    valueY: CONTENT_TOP_Y + VERTICAL_SHIFT + 0.80, // 3.58
     colWidth: 2.9,
     colSpacing: 0.15,
-    sectionEndY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.17, // 3.95
+    sectionEndY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12, // 3.90
   },
   
-  // ===== SECTION 2: TMI Bar (Y 4.10 → 4.50) =====
+  // ===== SECTION 2: TMI Bar (Y 4.30 → 4.65) =====
   bar: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.32,  // 4.10 - START
-    height: 0.40,                              // Elegant height
-    marginX: 0.70,                             // Wider bar
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.72, // 4.50 - END
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP, // 4.30 - more breathing room
+    height: 0.35,                              // Slightly shorter
+    marginX: 0.60,                             // Wider bar
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.35, // 4.65
   },
   
-  // ===== SECTION 2b: Cursor/Triangle (Y 4.50 → 4.65) =====
+  // ===== SECTION 2b: Cursor/Triangle (Y 4.65 → 4.85) =====
   cursor: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.72,  // 4.50 - just below bar
-    height: 0.15,                              // Triangle height
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.35, // 4.65
+    height: 0.20,                              // Taller for visibility
   },
   
-  // ===== SECTION 3: Callout - SECONDARY (Y 4.68 → 4.92) =====
+  // ===== SECTION 3: Callout - SECONDARY (Y 4.90 → 5.12) =====
   callout: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.90,  // 4.68 - START
-    height: 0.24,
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 2.14, // 4.92 - END
-  },
-  
-  // ===== SECTION 4: HERO - Tax Result (Y 5.10 → 5.90) =====
-  hero: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 2.32,  // 5.10 - START
-    labelHeight: 0.28,
-    valueHeight: 0.50,                         // Taller for bigger font
-    lineY: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.10, // 5.88 - decorative line
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.12, // 5.90 - END
-  },
-  
-  // ===== SECTION 5: Margin Info - TERTIARY (Y 5.95 → 6.17) =====
-  marginInfo: {
-    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.17,  // 5.95 - START
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.60, // 4.90
     height: 0.22,
-    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.39, // 6.17 - END
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.82, // 5.12
+  },
+  
+  // ===== SECTION 4: HERO - Tax Result (Y 5.20 → 5.95) =====
+  hero: {
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 0.90, // 5.20
+    labelHeight: 0.26,
+    valueHeight: 0.48,
+    lineY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 1.64, // 5.94
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 1.65, // 5.95
+  },
+  
+  // ===== SECTION 5: Margin Info - TERTIARY (Y 6.00 → 6.20) =====
+  marginInfo: {
+    y: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 1.70, // 6.00
+    height: 0.20,
+    endY: CONTENT_TOP_Y + VERTICAL_SHIFT + 1.12 + KPI_TO_BAR_GAP + 1.90, // 6.20
   },
 } as const;
+
+// ============================================================================
+// TMI BRACKET WIDTHS (proportional to income ranges)
+// Based on 1 fiscal part - ranges in euros:
+// - 0%:  0 → 11 294 = 11 294 € (narrow - not taxed)
+// - 11%: 11 294 → 28 797 = 17 503 €
+// - 30%: 28 797 → 82 341 = 53 544 € (wider)
+// - 41%: 82 341 → 177 106 = 94 765 € (even wider)
+// - 45%: 177 106 → ∞ = ~100 000 € visual equiv (widest)
+// ============================================================================
+
+const TMI_WIDTHS = {
+  // Relative weights (normalized later)
+  0: 1.0,   // Smallest (11k range)
+  11: 1.5,  // Small (17k range)  
+  30: 3.5,  // Medium (54k range)
+  41: 5.0,  // Large (95k range)
+  45: 5.5,  // Largest (infinite, but visually capped)
+} as const;
+
+// Total weight for normalization
+const TOTAL_WEIGHT = Object.values(TMI_WIDTHS).reduce((a, b) => a + b, 0);
 
 // Safety check: ensure nothing exceeds content zone
 const SAFETY_CHECK = {
@@ -214,39 +241,69 @@ function getAmountInCurrentBracket(taxablePerPart: number, tmiRate: number, part
 }
 
 /**
- * Get color for TMI bracket - SMOOTH BEIGE/TAUPE GRADIENT
- * Premium design: elegant progression from light beige to rich taupe
+ * Get color for TMI bracket - GRADIENT from color3 to color2
  * 
- * Uses theme accent as base, creates harmonious warm tones
+ * Premium design: smooth gradient using theme colors
+ * - 0%/11%: starts at color3 (lighter)
+ * - 45%: ends at color2 (darker/richer)
  */
 function getBracketColor(rate: number, theme: PptxThemeRoles): string {
-  const accent = theme.accent.replace('#', '');
+  const color3 = theme.colors.color3.replace('#', '');
+  const color2 = theme.colors.color2.replace('#', '');
   
-  // Parse accent color to RGB
-  const r = parseInt(accent.substring(0, 2), 16);
-  const g = parseInt(accent.substring(2, 4), 16);
-  const b = parseInt(accent.substring(4, 6), 16);
+  // Parse both colors to RGB
+  const r3 = parseInt(color3.substring(0, 2), 16);
+  const g3 = parseInt(color3.substring(2, 4), 16);
+  const b3 = parseInt(color3.substring(4, 6), 16);
   
-  // Premium gradient: very light → rich color
-  // Lower brackets = more white mixed in
-  // Higher brackets = closer to full accent
-  const intensityMap: Record<number, number> = {
-    0: 0.15,   // Very light (15% of accent) - almost white
-    11: 0.30,  // Light (30% of accent)
-    30: 0.55,  // Medium (55% of accent)
-    41: 0.75,  // Strong (75% of accent)
-    45: 0.90,  // Rich (90% of accent)
+  const r2 = parseInt(color2.substring(0, 2), 16);
+  const g2 = parseInt(color2.substring(2, 4), 16);
+  const b2 = parseInt(color2.substring(4, 6), 16);
+  
+  // Gradient progression: 0% = 0, 11% = 0.25, 30% = 0.5, 41% = 0.75, 45% = 1.0
+  const progressMap: Record<number, number> = {
+    0: 0.0,    // Pure color3
+    11: 0.25,  // 75% color3, 25% color2
+    30: 0.50,  // 50/50 mix
+    41: 0.75,  // 25% color3, 75% color2
+    45: 1.0,   // Pure color2
   };
   
-  const intensity = intensityMap[rate] || 0.5;
+  const t = progressMap[rate] ?? 0.5;
   
-  // Mix with white for lighter shades (warm beige tones)
-  const mixR = Math.round(255 - (255 - r) * intensity);
-  const mixG = Math.round(255 - (255 - g) * intensity);
-  const mixB = Math.round(255 - (255 - b) * intensity);
+  // Linear interpolation between color3 and color2
+  const mixR = Math.round(r3 + (r2 - r3) * t);
+  const mixG = Math.round(g3 + (g2 - g3) * t);
+  const mixB = Math.round(b3 + (b2 - b3) * t);
   
   const toHex = (n: number) => n.toString(16).padStart(2, '0');
   return `${toHex(mixR)}${toHex(mixG)}${toHex(mixB)}`;
+}
+
+/**
+ * Calculate relative luminance of a color (0-1)
+ * Used to determine if text should be light or dark
+ */
+function getRelativeLuminance(hexColor: string): number {
+  const hex = hexColor.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  
+  // sRGB to linear
+  const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+/**
+ * Get appropriate text color for a background
+ * Returns white for dark backgrounds, textMain for light backgrounds
+ */
+function getTextColorForBackground(bgColor: string, theme: PptxThemeRoles): string {
+  const luminance = getRelativeLuminance(bgColor);
+  // Threshold: 0.4 works well for most colors
+  return luminance < 0.4 ? 'FFFFFF' : theme.textMain.replace('#', '');
 }
 
 // ============================================================================
@@ -345,8 +402,8 @@ export function buildIrSynthesis(
     const colX = kpiStartX + idx * (LAYOUT.kpi.colWidth + LAYOUT.kpi.colSpacing);
     const centerX = colX + LAYOUT.kpi.colWidth / 2;
     
-    // Icon (accent color, centered)
-    const iconDataUri = getBusinessIconDataUri(kpi.icon, { color: theme.accent });
+    // Icon (color5, centered) - premium look
+    const iconDataUri = getBusinessIconDataUri(kpi.icon, { color: theme.colors.color5 });
     slide.addImage({
       data: iconDataUri,
       x: centerX - LAYOUT.kpi.iconSize / 2,
@@ -399,59 +456,69 @@ export function buildIrSynthesis(
     }
   });
   
-  // ========== TMI BRACKET BAR (PREMIUM BEIGE GRADIENT) ==========
-  const segmentWidth = barWidth / TMI_BRACKETS.length;
+  // ========== TMI BRACKET BAR (PROPORTIONAL WIDTHS, COLOR3→COLOR2 GRADIENT) ==========
+  let currentX = LAYOUT.bar.marginX;
   let activeSegmentCenterX = 0;
+  let activeSegmentWidth = 0;
   
-  TMI_BRACKETS.forEach((bracket, idx) => {
-    const segX = LAYOUT.bar.marginX + idx * segmentWidth;
+  TMI_BRACKETS.forEach((bracket) => {
     const isActive = bracket.rate === data.tmiRate;
     const bgColor = getBracketColor(bracket.rate, theme);
     
-    // Track active segment center for cursor positioning
+    // Calculate proportional width based on income range
+    const weight = TMI_WIDTHS[bracket.rate as keyof typeof TMI_WIDTHS] || 1;
+    const segmentWidth = (barWidth * weight) / TOTAL_WEIGHT;
+    const gap = 0.02; // Tiny gap between segments
+    
+    // Track active segment for cursor positioning
     if (isActive) {
-      activeSegmentCenterX = segX + (segmentWidth - 0.02) / 2;
+      activeSegmentCenterX = currentX + (segmentWidth - gap) / 2;
+      activeSegmentWidth = segmentWidth - gap;
     }
     
     // Segment rectangle - NO BORDER (clean look)
     slide.addShape('rect', {
-      x: segX,
+      x: currentX,
       y: LAYOUT.bar.y,
-      w: segmentWidth - 0.02, // Tiny gap between segments
+      w: segmentWidth - gap,
       h: LAYOUT.bar.height,
       fill: { color: bgColor },
-      line: { color: bgColor, width: 0 }, // No border
+      line: { color: bgColor, width: 0 },
     });
     
     // Rate label centered in segment
-    // Text color: white for darker brackets (41%+), dark for lighter
-    const textColor = bracket.rate >= 41 ? 'FFFFFF' : theme.textMain.replace('#', '');
+    // Text color adapts to background luminance
+    const textColor = getTextColorForBackground(bgColor, theme);
     slide.addText(bracket.label, {
-      x: segX,
+      x: currentX,
       y: LAYOUT.bar.y,
-      w: segmentWidth - 0.02,
+      w: segmentWidth - gap,
       h: LAYOUT.bar.height,
-      fontSize: 12,
+      fontSize: 11,
       fontFace: TYPO.fontFace,
       color: textColor,
       bold: isActive,
       align: 'center',
       valign: 'middle',
     });
+    
+    currentX += segmentWidth;
   });
   
-  // ========== CURSOR INDICATOR (below active segment) ==========
+  // ========== PREMIUM TRIANGLE CURSOR (pointing UP toward active segment) ==========
   if (data.tmiRate > 0 && activeSegmentCenterX > 0) {
-    const cursorY = LAYOUT.cursor.y + 0.02; // Small gap below bar
+    const triangleSize = 0.18; // Size of the triangle
+    const cursorY = LAYOUT.cursor.y + 0.03; // Small gap below bar
     
-    // Small accent-colored rectangle as position marker
-    slide.addShape('rect', {
-      x: activeSegmentCenterX - 0.10,
+    // Draw triangle using rotated square (diamond shape pointing up)
+    // PptxGenJS doesn't support custom polygons, so we use a diamond/rhombus
+    slide.addShape('diamond', {
+      x: activeSegmentCenterX - triangleSize / 2,
       y: cursorY,
-      w: 0.20,
-      h: 0.05,
-      fill: { color: theme.accent.replace('#', '') },
-      line: { color: theme.accent.replace('#', ''), width: 0 },
+      w: triangleSize,
+      h: triangleSize,
+      fill: { color: theme.colors.color2.replace('#', '') },
+      line: { color: theme.colors.color2.replace('#', ''), width: 0 },
     });
   }
   
