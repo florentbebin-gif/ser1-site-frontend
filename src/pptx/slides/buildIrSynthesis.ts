@@ -87,52 +87,76 @@ const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
 const CONTENT_HEIGHT = CONTENT_BOTTOM_Y - CONTENT_TOP_Y; // ~4.42
 
 // ============================================================================
-// LAYOUT CONSTANTS (inches) - ALL WITHIN CONTENT ZONE
-// Premium design: airy spacing, clear hierarchy
+// LAYOUT CONSTANTS (inches) - ANTI-OVERLAP DESIGN
+// Premium layout with STRICT vertical separation
+// 
+// ZONE ALLOCATION (total ~4.4"):
+// - KPIs:     Y 2.38 → 3.55 (1.17")
+// - TMI Bar:  Y 3.65 → 4.15 (0.50")
+// - Callout:  Y 4.20 → 4.50 (0.30") - SECONDARY info
+// - HERO:     Y 4.70 → 5.50 (0.80") - PRIMARY result
+// - Margin:   Y 5.60 → 5.85 (0.25") - tertiary info
+// - Buffer:   Y 5.85 → 6.80 (safety margin to footer)
 // ============================================================================
 
 const LAYOUT = {
-  // Use standard margins from design system
+  // Standard margins
   marginX: COORDS_CONTENT.margin.x, // 0.9167
   contentWidth: COORDS_CONTENT.margin.w, // 11.5
+  slideWidth: SLIDE_SIZE.width, // 13.3333
   
-  // KPI Section (top of content zone) - AIRY
+  // ===== SECTION 1: KPIs (Y 2.38 → 3.55) =====
   kpi: {
-    iconSize: 0.55,  // Slightly larger icons
-    iconY: CONTENT_TOP_Y + 0.05, // 2.43 - icons at top
-    labelY: CONTENT_TOP_Y + 0.65, // 3.03 - label below icon
-    valueY: CONTENT_TOP_Y + 0.95, // 3.33 - main value
-    detailY: CONTENT_TOP_Y + 1.35, // 3.73 - detail lines
-    colWidth: 2.8,   // Wider columns
-    colSpacing: 0.1, // Tighter spacing between columns
+    iconSize: 0.45,
+    iconY: CONTENT_TOP_Y,           // 2.38 - icons at very top
+    labelY: CONTENT_TOP_Y + 0.50,   // 2.88 - label below icon
+    valueY: CONTENT_TOP_Y + 0.75,   // 3.13 - main value
+    // For couples: inline display "Déclarant 1: X € | Déclarant 2: Y €"
+    colWidth: 2.9,
+    colSpacing: 0.15,
+    sectionEndY: CONTENT_TOP_Y + 1.17, // 3.55 - END of KPI section
   },
   
-  // TMI Bar (middle of content zone) - PROMINENT
+  // ===== SECTION 2: TMI Bar (Y 3.65 → 4.15) =====
   bar: {
-    y: CONTENT_TOP_Y + 1.85, // 4.23 - moved up slightly
-    height: 0.5,     // Slightly thinner for elegance
-    marginX: 0.7,    // More bar width
+    y: CONTENT_TOP_Y + 1.27,        // 3.65 - START (10px gap from KPIs)
+    height: 0.45,                   // Elegant height
+    marginX: 0.85,                  // Side margins for bar
+    endY: CONTENT_TOP_Y + 1.72,     // 4.10 - END of bar
   },
   
-  // Active bracket callout - below bar
+  // ===== SECTION 3: Callout - SECONDARY (Y 4.20 → 4.50) =====
+  // "Part de revenu taxée à X% : Y €" - clearly labeled as secondary
   callout: {
-    y: CONTENT_TOP_Y + 2.45, // 4.83
-    height: 0.35,
+    y: CONTENT_TOP_Y + 1.82,        // 4.20 - START (10px gap from bar)
+    height: 0.28,
+    endY: CONTENT_TOP_Y + 2.10,     // 4.48 - END
   },
   
-  // Tax result (prominent center) - HERO SECTION
-  result: {
-    labelY: CONTENT_TOP_Y + 2.95, // 5.33
-    valueY: CONTENT_TOP_Y + 3.25, // 5.63
-    lineY: CONTENT_TOP_Y + 3.75,  // 6.13 - decorative line
+  // ===== SECTION 4: HERO - Tax Result (Y 4.70 → 5.50) =====
+  // This is THE main information - must be unmissable
+  hero: {
+    y: CONTENT_TOP_Y + 2.32,        // 4.70 - START (20px gap - breathing room)
+    labelHeight: 0.30,
+    valueHeight: 0.45,
+    lineY: CONTENT_TOP_Y + 3.07,    // 5.45 - decorative line
+    endY: CONTENT_TOP_Y + 3.12,     // 5.50 - END
   },
   
-  // Margin to next TMI (bottom info)
-  margin: {
-    y: CONTENT_TOP_Y + 3.95, // 6.33
-    height: 0.25,
+  // ===== SECTION 5: Margin Info - TERTIARY (Y 5.60 → 5.85) =====
+  marginInfo: {
+    y: CONTENT_TOP_Y + 3.22,        // 5.60 - START (10px gap)
+    height: 0.22,
+    endY: CONTENT_TOP_Y + 3.44,     // 5.82 - END
   },
 } as const;
+
+// Safety check: ensure nothing exceeds content zone
+const SAFETY_CHECK = {
+  lastElementEndY: LAYOUT.marginInfo.endY,
+  footerStartY: CONTENT_BOTTOM_Y,
+  safetyMargin: CONTENT_BOTTOM_Y - LAYOUT.marginInfo.endY, // Should be > 0.5"
+};
 
 // ============================================================================
 // HELPERS
@@ -270,32 +294,32 @@ export function buildIrSynthesis(
     valign: 'top',
   });
   
-  // ========== 4 KPI COLUMNS (PREMIUM DESIGN) ==========
-  // KPI data with proper breakdown for couples
+  // ========== SECTION 1: 4 KPI COLUMNS (Y 2.38 → 3.55) ==========
+  // Compact, aligned, premium design
   const totalRevenue = data.income1 + data.income2;
   
   const kpiData: Array<{
     icon: BusinessIconName;
     label: string;
     value: string;
-    subLines?: string[];  // Additional detail lines below value
+    subValue?: string; // For couples: "D1: X € | D2: Y €"
   }> = [
     {
       icon: 'money',
       label: 'Estimation de vos revenus',
-      value: '', // Value will be shown via subLines for clarity
-      subLines: data.isCouple 
-        ? [`Déclarant 1`, `${euro(data.income1)}`, `Déclarant 2`, `${euro(data.income2)}`]
-        : [`${euro(totalRevenue)}`],
+      value: data.isCouple ? '' : euro(totalRevenue),
+      subValue: data.isCouple 
+        ? `D1: ${euro(data.income1)} | D2: ${euro(data.income2)}`
+        : undefined,
     },
     {
       icon: 'cheque',
-      label: 'Estimation du revenu imposable',
+      label: 'Revenu imposable',
       value: euro(data.taxableIncome),
     },
     {
       icon: 'balance',
-      label: 'Nombre de parts fiscales',
+      label: 'Parts fiscales',
       value: fmt2(data.partsNb),
     },
     {
@@ -312,7 +336,7 @@ export function buildIrSynthesis(
     const colX = kpiStartX + idx * (LAYOUT.kpi.colWidth + LAYOUT.kpi.colSpacing);
     const centerX = colX + LAYOUT.kpi.colWidth / 2;
     
-    // Icon (centered, using theme accent color)
+    // Icon (accent color, centered)
     const iconDataUri = getBusinessIconDataUri(kpi.icon, { color: theme.accent });
     slide.addImage({
       data: iconDataUri,
@@ -322,12 +346,12 @@ export function buildIrSynthesis(
       h: LAYOUT.kpi.iconSize,
     });
     
-    // Label (sentence case, not uppercase - more readable)
+    // Label (sentence case, gray)
     slide.addText(kpi.label, {
       x: colX,
       y: LAYOUT.kpi.labelY,
       w: LAYOUT.kpi.colWidth,
-      h: 0.28,
+      h: 0.22,
       fontSize: 9,
       fontFace: TYPO.fontFace,
       color: theme.textBody.replace('#', ''),
@@ -335,91 +359,34 @@ export function buildIrSynthesis(
       valign: 'middle',
     });
     
-    // Main value (bold, black, centered) - if provided
+    // Main value OR sub-value for couples
     if (kpi.value) {
       slide.addText(kpi.value, {
         x: colX,
         y: LAYOUT.kpi.valueY,
         w: LAYOUT.kpi.colWidth,
-        h: 0.35,
-        fontSize: 16,
+        h: 0.32,
+        fontSize: 15,
         fontFace: TYPO.fontFace,
         color: theme.textMain.replace('#', ''),
         bold: true,
         align: 'center',
         valign: 'middle',
       });
-    }
-    
-    // Sub-lines (for income breakdown - couple case)
-    if (kpi.subLines && kpi.subLines.length > 0) {
-      // For couple: show "Déclarant 1" then amount, "Déclarant 2" then amount
-      if (data.isCouple && kpi.subLines.length === 4) {
-        // Déclarant 1 label
-        slide.addText(kpi.subLines[0], {
-          x: colX,
-          y: LAYOUT.kpi.valueY - 0.05,
-          w: LAYOUT.kpi.colWidth,
-          h: 0.22,
-          fontSize: 9,
-          fontFace: TYPO.fontFace,
-          color: theme.textBody.replace('#', ''),
-          align: 'center',
-          valign: 'middle',
-        });
-        // Déclarant 1 value
-        slide.addText(kpi.subLines[1], {
-          x: colX,
-          y: LAYOUT.kpi.valueY + 0.15,
-          w: LAYOUT.kpi.colWidth,
-          h: 0.25,
-          fontSize: 12,
-          fontFace: TYPO.fontFace,
-          color: theme.textMain.replace('#', ''),
-          bold: true,
-          align: 'center',
-          valign: 'middle',
-        });
-        // Déclarant 2 label
-        slide.addText(kpi.subLines[2], {
-          x: colX,
-          y: LAYOUT.kpi.valueY + 0.38,
-          w: LAYOUT.kpi.colWidth,
-          h: 0.22,
-          fontSize: 9,
-          fontFace: TYPO.fontFace,
-          color: theme.textBody.replace('#', ''),
-          align: 'center',
-          valign: 'middle',
-        });
-        // Déclarant 2 value
-        slide.addText(kpi.subLines[3], {
-          x: colX,
-          y: LAYOUT.kpi.valueY + 0.58,
-          w: LAYOUT.kpi.colWidth,
-          h: 0.25,
-          fontSize: 12,
-          fontFace: TYPO.fontFace,
-          color: theme.textMain.replace('#', ''),
-          bold: true,
-          align: 'center',
-          valign: 'middle',
-        });
-      } else {
-        // Single person: just show the total
-        slide.addText(kpi.subLines[0], {
-          x: colX,
-          y: LAYOUT.kpi.valueY,
-          w: LAYOUT.kpi.colWidth,
-          h: 0.35,
-          fontSize: 16,
-          fontFace: TYPO.fontFace,
-          color: theme.textMain.replace('#', ''),
-          bold: true,
-          align: 'center',
-          valign: 'middle',
-        });
-      }
+    } else if (kpi.subValue) {
+      // Compact inline for couples: "D1: X € | D2: Y €"
+      slide.addText(kpi.subValue, {
+        x: colX,
+        y: LAYOUT.kpi.valueY,
+        w: LAYOUT.kpi.colWidth,
+        h: 0.32,
+        fontSize: 10,
+        fontFace: TYPO.fontFace,
+        color: theme.textMain.replace('#', ''),
+        bold: true,
+        align: 'center',
+        valign: 'middle',
+      });
     }
   });
   
@@ -460,85 +427,74 @@ export function buildIrSynthesis(
     });
   });
   
-  // ========== ACTIVE BRACKET CALLOUT (Amount in current TMI) ==========
+  // ========== SECTION 3: CALLOUT - SECONDARY INFO (Y 4.20 → 4.48) ==========
+  // "Part de revenu taxée à X% : Y €" - CLEARLY labeled as secondary
   if (data.tmiRate > 0) {
-    const activeBracketIdx = TMI_BRACKETS.findIndex(b => b.rate === data.tmiRate);
-    if (activeBracketIdx >= 0) {
-      const calloutX = LAYOUT.bar.marginX + activeBracketIdx * segmentWidth;
-      const amountInBracket = getAmountInCurrentBracket(data.taxablePerPart, data.tmiRate, data.partsNb);
-      
-      // Simple callout with amount - white background, subtle border
-      slide.addShape('rect', {
-        x: calloutX + (segmentWidth - 0.03) / 2 - 0.7, // Centered under segment
-        y: LAYOUT.callout.y,
-        w: 1.4,
-        h: LAYOUT.callout.height,
-        fill: { color: 'FFFFFF' },
-        line: { color: theme.accent.replace('#', ''), width: 0.75 },
-      });
-      
-      // Amount text
-      slide.addText(euro(amountInBracket), {
-        x: calloutX + (segmentWidth - 0.03) / 2 - 0.7,
-        y: LAYOUT.callout.y,
-        w: 1.4,
-        h: LAYOUT.callout.height,
-        fontSize: 10,
-        fontFace: TYPO.fontFace,
-        color: theme.textMain.replace('#', ''),
-        bold: true,
-        align: 'center',
-        valign: 'middle',
-      });
-    }
+    const amountInBracket = getAmountInCurrentBracket(data.taxablePerPart, data.tmiRate, data.partsNb);
+    
+    // Full-width centered text with explicit label (no box, no ambiguity)
+    slide.addText(`Part de revenu taxée à ${data.tmiRate}% : ${euro(amountInBracket)}`, {
+      x: LAYOUT.marginX,
+      y: LAYOUT.callout.y,
+      w: LAYOUT.contentWidth,
+      h: LAYOUT.callout.height,
+      fontSize: 9,
+      fontFace: TYPO.fontFace,
+      color: theme.textBody.replace('#', ''),
+      italic: true,
+      align: 'center',
+      valign: 'middle',
+    });
   }
   
-  // ========== TAX RESULT (HERO SECTION) ==========
-  // Label - "Estimation du montant de votre impôt sur le revenu :"
-  slide.addText('Estimation du montant de votre impôt sur le revenu :', {
+  // ========== SECTION 4: HERO - TAX RESULT (Y 4.70 → 5.50) ==========
+  // This is THE main information - unmissable, no overlap possible
+  
+  // Label centered
+  slide.addText('Estimation du montant de votre impôt sur le revenu', {
     x: LAYOUT.marginX,
-    y: LAYOUT.result.labelY,
-    w: slideWidth - LAYOUT.marginX * 2 - 2.5, // Leave space for value
-    h: 0.35,
+    y: LAYOUT.hero.y,
+    w: LAYOUT.contentWidth,
+    h: LAYOUT.hero.labelHeight,
     fontSize: 12,
     fontFace: TYPO.fontFace,
     color: theme.textBody.replace('#', ''),
-    align: 'right',
+    align: 'center',
     valign: 'middle',
   });
   
-  // Tax amount (inline with label, bold, prominent)
+  // Tax amount - LARGE, BOLD, CENTERED (the HERO element)
   slide.addText(data.irNet === 0 ? 'Non imposable' : euro(data.irNet), {
-    x: slideWidth / 2 + 1.5,
-    y: LAYOUT.result.labelY,
-    w: 3,
-    h: 0.35,
-    fontSize: 16,
+    x: LAYOUT.marginX,
+    y: LAYOUT.hero.y + LAYOUT.hero.labelHeight,
+    w: LAYOUT.contentWidth,
+    h: LAYOUT.hero.valueHeight,
+    fontSize: 26,
     fontFace: TYPO.fontFace,
     color: theme.textMain.replace('#', ''),
     bold: true,
-    align: 'left',
+    align: 'center',
     valign: 'middle',
   });
   
   // Decorative line below (premium separator)
   slide.addShape('line', {
-    x: slideWidth / 2 - 2.5,
-    y: LAYOUT.result.lineY,
-    w: 5,
+    x: slideWidth / 2 - 2,
+    y: LAYOUT.hero.lineY,
+    w: 4,
     h: 0,
-    line: { color: theme.accent.replace('#', ''), width: 1 },
+    line: { color: theme.accent.replace('#', ''), width: 1.5 },
   });
   
-  // ========== MARGIN TO NEXT TMI ==========
-  const marginInfo = calculateMarginToNextTmi(data.taxablePerPart, data.tmiRate);
-  if (marginInfo && marginInfo.margin > 0) {
-    slide.addText(`Encore ${euro(marginInfo.margin * data.partsNb)} avant la tranche ${marginInfo.nextRate}%`, {
+  // ========== SECTION 5: MARGIN INFO - TERTIARY (Y 5.60 → 5.82) ==========
+  const nextTmiInfo = calculateMarginToNextTmi(data.taxablePerPart, data.tmiRate);
+  if (nextTmiInfo && nextTmiInfo.margin > 0) {
+    slide.addText(`Encore ${euro(nextTmiInfo.margin * data.partsNb)} avant la tranche ${nextTmiInfo.nextRate}%`, {
       x: LAYOUT.marginX,
-      y: LAYOUT.margin.y,
+      y: LAYOUT.marginInfo.y,
       w: LAYOUT.contentWidth,
-      h: LAYOUT.margin.height,
-      fontSize: 10,
+      h: LAYOUT.marginInfo.height,
+      fontSize: 9,
       fontFace: TYPO.fontFace,
       color: theme.textBody.replace('#', ''),
       italic: true,
