@@ -893,7 +893,62 @@ npm run build       # Vérifie la compilation
 
 ---
 
-## 📚 Documentation complémentaire
+## � Slide 3 IR - Synthèse Fiscale Premium
+
+### Architecture anti-overlap
+
+La slide de synthèse IR utilise un **layout à zones strictes** pour garantir aucun chevauchement :
+
+```typescript
+// ZONE ALLOCATION (total ~4.4")
+// - KPIs:     Y 2.38 → 3.55 (1.17")
+// - TMI Bar:  Y 3.65 → 4.15 (0.50") 
+// - Callout:  Y 4.20 → 4.50 (0.30") - SECONDARY info
+// - HERO:     Y 4.70 → 5.50 (0.80") - PRIMARY result
+// - Margin:   Y 5.60 → 5.85 (0.25") - tertiary info
+// - Buffer:   Y 5.85 → 6.80 (safety margin to footer)
+```
+
+### Hiérarchie visuelle
+
+| Niveau | Élément | Style | Objectif |
+|--------|---------|-------|----------|
+| **HERO** | Montant impôt | 26pt bold, centré | **Impossible à rater** |
+| **SECONDARY** | Part revenu TMI | 9pt italic, centré | Info contextuelle |
+| **TERTIARY** | Marge avant TMI | 9pt italic, discret | Complément |
+
+### KPIs compacts
+
+- **4 colonnes alignées** : Revenus, Revenu imposable, Parts, TMI
+- **Icônes accent** : Utilisation du thème couleur
+- **Couples** : Format inline `D1: X € | D2: Y €`
+- **Personnes seules** : Montant unique
+
+### Barre TMI dégradé
+
+- **Gradient progressif** : 0% (25% intensité) → 45% (100% intensité)
+- **Segment actif** : Bordure blanche 2.5pt
+- **Texte adaptatif** : Blanc sur fonds foncés (30%+)
+
+### Sécurité anti-overlap
+
+```typescript
+const SAFETY_CHECK = {
+  lastElementEndY: LAYOUT.marginInfo.endY,
+  footerStartY: CONTENT_BOTTOM_Y,
+  safetyMargin: CONTENT_BOTTOM_Y - LAYOUT.marginInfo.endY, // > 0.5"
+};
+```
+
+### Fichiers concernés
+
+- **Builder** : `src/pptx/slides/buildIrSynthesis.ts`
+- **Design system** : `src/pptx/designSystem/serenity.ts`
+- **Export** : `src/pptx/export/exportStudyDeck.ts`
+
+---
+
+## �📚 Documentation complémentaire
 
 ### Fichiers de documentation
 - `ADMIN_COMPTES_ET_SIGNALMENTS.md` : Gestion admin
