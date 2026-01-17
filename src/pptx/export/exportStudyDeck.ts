@@ -65,11 +65,9 @@ async function preloadAssets(
   const chapterImages = new Map<number, string>();
   
   // Load logo if specified
-  console.log('[PPTX Export] Logo URL from spec:', spec.cover.logoUrl || '(none)');
   const logoDataUri = spec.cover.logoUrl 
     ? await loadLogoDataUriSafe(spec.cover.logoUrl)
     : undefined;
-  console.log('[PPTX Export] Logo DataUri loaded:', logoDataUri ? `YES (${logoDataUri.length} chars)` : 'NO');
   
   // Collect unique chapter image indices
   const chapterIndices = new Set<number>();

@@ -33,7 +33,6 @@ async function loadLogoViaImage(logoUrl: string): Promise<string> {
         
         // Convert to data URI (PNG format for best quality)
         const dataUri = canvas.toDataURL('image/png');
-        console.log('[loadLogoViaImage] Successfully converted to dataUri, length:', dataUri.length);
         resolve(dataUri);
       } catch (error) {
         reject(new Error(`Canvas conversion failed: ${error}`));
@@ -68,11 +67,8 @@ export async function loadLogoDataUri(logoUrl: string): Promise<string> {
   
   // If already a data URI, return as-is
   if (logoUrl.startsWith('data:')) {
-    console.log('[loadLogoDataUri] Already a data URI, returning as-is');
     return logoUrl;
   }
-  
-  console.log('[loadLogoDataUri] Loading logo via Image element:', logoUrl);
   
   try {
     // Use Image element approach (better CORS handling for Supabase Storage)
@@ -103,18 +99,13 @@ export async function loadLogoDataUri(logoUrl: string): Promise<string> {
  */
 export async function loadLogoDataUriSafe(logoUrl?: string): Promise<string | undefined> {
   if (!logoUrl) {
-    console.log('[PPTX Logo] No logo URL provided');
     return undefined;
   }
   
-  console.log('[PPTX Logo] Attempting to load logo from:', logoUrl);
-  
   try {
-    const dataUri = await loadLogoDataUri(logoUrl);
-    console.log('[PPTX Logo] Successfully loaded logo, dataUri length:', dataUri.length);
-    return dataUri;
+    return await loadLogoDataUri(logoUrl);
   } catch (error) {
-    console.error('[PPTX Logo] Failed to load logo:', error);
+    console.warn('[PPTX Logo] Failed to load logo:', error);
     return undefined;
   }
 }

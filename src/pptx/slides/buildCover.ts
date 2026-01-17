@@ -38,24 +38,15 @@ export function buildCover(
   addBackground(slide, theme.bgMain);
   
   // Logo (if provided)
-  console.log('[buildCover] logoDataUri provided:', logoDataUri ? `YES (${logoDataUri.length} chars)` : 'NO');
   if (logoDataUri) {
-    console.log('[buildCover] Adding logo image at:', COORDS_COVER.logo);
-    try {
-      slide.addImage({
-        data: logoDataUri,
-        x: COORDS_COVER.logo.x,
-        y: COORDS_COVER.logo.y,
-        w: COORDS_COVER.logo.w,
-        h: COORDS_COVER.logo.h,
-        sizing: { type: 'contain', w: COORDS_COVER.logo.w, h: COORDS_COVER.logo.h },
-      });
-      console.log('[buildCover] Logo image added successfully');
-    } catch (error) {
-      console.error('[buildCover] Failed to add logo image:', error);
-    }
-  } else {
-    console.log('[buildCover] No logo provided, skipping logo insertion');
+    slide.addImage({
+      data: logoDataUri,
+      x: COORDS_COVER.logo.x,
+      y: COORDS_COVER.logo.y,
+      w: COORDS_COVER.logo.w,
+      h: COORDS_COVER.logo.h,
+      sizing: { type: 'contain', w: COORDS_COVER.logo.w, h: COORDS_COVER.logo.h },
+    });
   }
   
   // Title (ALL CAPS, centered)

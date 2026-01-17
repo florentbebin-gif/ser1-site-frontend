@@ -44,9 +44,6 @@ export default function Ir() {
   // Theme colors and logo from ThemeProvider
   // pptxColors respects the theme scope setting (SER1 classic if ui-only)
   const { colors, logo, pptxColors } = useTheme();
-  
-  // Debug: Log logo state
-  console.log('[Ir.jsx] Logo from ThemeProvider:', logo || '(undefined)');
 
   const [taxSettings, setTaxSettings] = useState(null);
   const [psSettings, setPsSettings] = useState(null);
