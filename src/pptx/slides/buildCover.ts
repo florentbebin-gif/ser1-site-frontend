@@ -96,7 +96,7 @@ export function buildCover(
       // Position logo with bottom aligned 1.5cm below slide center
       const slideCenterY = 3.75; // Slide height / 2
       const logoBottomY = slideCenterY - 0.5906; // 1.5cm = 0.5906 inches below center
-      const centerY = logoBottomY - H0; // Y position for bottom alignment
+      const centerY = logoBottomY; // Y position for bottom alignment (bottom edge at this position)
       
       slide.addImage({
         data: logoDataUri,
@@ -115,7 +115,7 @@ export function buildCover(
       // Position logo with bottom aligned 1.5cm below slide center
       const slideCenterY = 3.75; // Slide height / 2
       const logoBottomY = slideCenterY - 0.5906; // 1.5cm = 0.5906 inches below center
-      const centerY = logoBottomY - H; // Y position for bottom alignment
+      const centerY = logoBottomY; // Y position for bottom alignment (bottom edge at this position)
       
       slide.addImage({
         data: logoDataUri,
