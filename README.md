@@ -856,7 +856,10 @@ downloadPptx(blob, 'simulation.pptx');
 ### Coordonnées exactes (inches)
 
 #### Cover (13.3333" × 7.5")
-- Logo : x=4.4844, y=1.9542, w=4.3646, h=1.9896
+- Logo : Positionnement dynamique avec **alignement bas 1.5cm sous centre**
+  - **Règles** : Pas d'agrandissement, ratio préservé, réduction uniforme si nécessaire
+  - **Calcul** : Bas du logo à 3.1594" (1.5cm sous centre slide à 3.75")
+  - **Centrage** : Horizontal centré dans zone 4.3646"×1.9896"
 - Titre : x=1.5528, y=4.0986, w=10.2277, h=0.8333
 - Date (gauche, aligné gauche) : x=0.9784, y=6.0417
 - Conseiller (droite, aligné droite) : x=9.4903, y=6.0417
@@ -883,7 +886,7 @@ npm run build       # Vérifie la compilation
 1. Ouvrir la console navigateur (F12)
 2. Exécuter : `window.exportSerenityDemoPptx()`
 3. Vérifier le fichier PPTX téléchargé :
-   - Cover : couleurs thème, date alignée gauche, conseiller aligné droite
+   - Cover : couleurs thème, logo positionné avec bas aligné 1.5cm sous centre, date alignée gauche, conseiller aligné droite
    - Chapter : accent line sous titre, coins arrondis harmonisés
    - End : disclaimer complet, fond coloré, texte adaptatif
 
@@ -928,7 +931,9 @@ npm run build       # Vérifie la compilation
 ### Logo Management
 - Upload via Settings page (PNG/JPG) with **aspect ratio preservation**
 - Storage as **dataUri in user_metadata** (bypasses Storage RLS issues)
-- Automatic insertion on PPTX cover slides with **contain sizing** (no deformation)
+- **Smart sizing algorithm** : No upscale, ratio preserved, uniform downscale if needed
+- **Precise positioning** : Bottom edge aligned 1.5cm below slide center
+- **Synchronous dimension extraction** : PNG/JPEG header parsing for accurate sizing
 - Immediate availability for PPTX export after upload
 - RLS protection through user_metadata (no Storage bucket needed)
 
