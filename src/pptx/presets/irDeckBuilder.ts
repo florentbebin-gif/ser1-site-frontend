@@ -5,7 +5,7 @@
  * Now with KPI-style slides matching the design specification.
  */
 
-import type { StudyDeckSpec, ContentSlideSpec, ChapterSlideSpec, IconPlacement } from '../theme/types';
+import type { StudyDeckSpec, ChapterSlideSpec, IrSynthesisSlideSpec, IrAnnexeSlideSpec } from '../theme/types';
 
 // Debug flag for development
 export const DEBUG_PPTX = false;
@@ -74,176 +74,6 @@ export interface AdvisorInfo {
   office?: string;
 }
 
-/**
- * Format number as Euro
- */
-function euro(n: number): string {
-  return `${Math.round(n).toLocaleString('fr-FR')} €`;
-}
-
-/**
- * Format percentage
- */
-function pct(n: number): string {
-  return `${n.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}%`;
-}
-
-/**
- * Format number with 2 decimals
- */
-function fmt2(n: number): string {
-  return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-/**
- * Build KPI summary body text (styled for visual presentation)
- * This creates the 4-column KPI layout content
- */
-function buildKpiSummaryBody(irData: IrData): string {
-  const lines: string[] = [];
-  
-  // KPI 1: Estimation de vos revenus
-  lines.push('ESTIMATION DE VOS REVENUS');
-  if (irData.status === 'couple' && (irData.income1 || irData.income2)) {
-    lines.push(`Déclarant 1 : ${euro(irData.income1 || 0)}`);
-    lines.push(`Déclarant 2 : ${euro(irData.income2 || 0)}`);
-  } else {
-    lines.push(`Total : ${euro(irData.taxableIncome)}`);
-  }
-  lines.push('');
-  
-  // KPI 2: Estimation du revenu imposable
-  lines.push('ESTIMATION DU REVENU IMPOSABLE');
-  lines.push(euro(irData.taxableIncome));
-  lines.push('');
-  
-  // KPI 3: Nombre de parts fiscales
-  lines.push('NOMBRE DE PARTS FISCALES');
-  lines.push(fmt2(irData.partsNb));
-  lines.push('');
-  
-  // KPI 4: TMI
-  lines.push('TMI (TRANCHE MARGINALE D\'IMPOSITION)');
-  lines.push(pct(irData.tmiRate));
-  lines.push('');
-  
-  // Tax brackets bar representation
-  lines.push('─────────────────────────────────────────');
-  lines.push('BARÈME PROGRESSIF DE L\'IMPÔT');
-  lines.push('0% │ 11% │ 30% │ 41% │ 45%');
-  lines.push(`Votre TMI : ${pct(irData.tmiRate)}`);
-  lines.push('─────────────────────────────────────────');
-  lines.push('');
-  
-  // Final result
-  lines.push('ESTIMATION DU MONTANT DE VOTRE IMPÔT SUR LE REVENU');
-  lines.push(euro(irData.irNet));
-  
-  return lines.join('\n');
-}
-
-/**
- * Build detailed calculation body text
- */
-function buildDetailedCalculationBody(irData: IrData): string {
-  const lines: string[] = [];
-  
-  lines.push('DÉTAIL DU CALCUL DE L\'IMPÔT SUR LE REVENU');
-  lines.push('');
-  
-  // Base imposable
-  lines.push('▸ Revenu imposable du foyer');
-  lines.push(`   ${euro(irData.taxableIncome)}`);
-  lines.push('');
-  
-  // Quotient familial
-  lines.push('▸ Quotient familial');
-  lines.push(`   Nombre de parts : ${fmt2(irData.partsNb)}`);
-  lines.push(`   Revenu par part : ${euro(irData.taxablePerPart)}`);
-  lines.push('');
-  
-  // Barème progressif détaillé
-  if (irData.bracketsDetails && irData.bracketsDetails.length > 0) {
-    lines.push('▸ Application du barème progressif');
-    for (const bracket of irData.bracketsDetails) {
-      if (bracket.tax > 0) {
-        lines.push(`   Tranche ${bracket.label} : ${euro(bracket.base)} × ${pct(bracket.rate)} = ${euro(bracket.tax)}`);
-      }
-    }
-    lines.push('');
-  }
-  
-  // TMI
-  lines.push('▸ Tranche marginale d\'imposition (TMI)');
-  lines.push(`   ${pct(irData.tmiRate)}`);
-  lines.push('');
-  
-  // Impôt brut
-  lines.push('▸ Impôt brut avant corrections');
-  lines.push(`   ${euro(irData.irNet + (irData.decote || 0) + (irData.creditsTotal || 0))}`);
-  lines.push('');
-  
-  // Corrections
-  if (irData.decote && irData.decote > 0) {
-    lines.push('▸ Décote');
-    lines.push(`   -${euro(irData.decote)}`);
-    lines.push('');
-  }
-  
-  if (irData.qfAdvantage && irData.qfAdvantage > 0) {
-    lines.push('▸ Avantage du quotient familial');
-    lines.push(`   ${euro(irData.qfAdvantage)}`);
-    lines.push('');
-  }
-  
-  if (irData.creditsTotal && irData.creditsTotal > 0) {
-    lines.push('▸ Réductions et crédits d\'impôt');
-    lines.push(`   -${euro(irData.creditsTotal)}`);
-    lines.push('');
-  }
-  
-  // Impôt net
-  lines.push('▸ IMPÔT SUR LE REVENU NET');
-  lines.push(`   ${euro(irData.irNet)}`);
-  lines.push('');
-  
-  // Prélèvements sociaux
-  if ((irData.psFoncier && irData.psFoncier > 0) || (irData.psDividends && irData.psDividends > 0)) {
-    lines.push('▸ Prélèvements sociaux');
-    if (irData.psFoncier && irData.psFoncier > 0) {
-      lines.push(`   Sur revenus fonciers : ${euro(irData.psFoncier)}`);
-    }
-    if (irData.psDividends && irData.psDividends > 0) {
-      lines.push(`   Sur dividendes : ${euro(irData.psDividends)}`);
-    }
-    lines.push('');
-  }
-  
-  // Contributions exceptionnelles
-  if ((irData.cehr && irData.cehr > 0) || (irData.cdhr && irData.cdhr > 0)) {
-    lines.push('▸ Contributions exceptionnelles');
-    if (irData.cehr && irData.cehr > 0) {
-      lines.push(`   CEHR : ${euro(irData.cehr)}`);
-    }
-    if (irData.cdhr && irData.cdhr > 0) {
-      lines.push(`   CDHR : ${euro(irData.cdhr)}`);
-    }
-    lines.push('');
-  }
-  
-  // Total
-  lines.push('═══════════════════════════════════════');
-  lines.push('▸ IMPOSITION TOTALE');
-  lines.push(`   ${euro(irData.totalTax)}`);
-  
-  // Taux moyen
-  if (irData.taxableIncome > 0) {
-    const tauxMoyen = (irData.totalTax / irData.taxableIncome) * 100;
-    lines.push(`   Taux moyen d'imposition : ${pct(tauxMoyen)}`);
-  }
-  
-  return lines.join('\n');
-}
 
 /**
  * Build IR Study Deck Specification
@@ -296,16 +126,8 @@ export function buildIrStudyDeck(
     ? advisor.name
     : 'NOM Prénom';
   
-  // Icons for KPI content slide (matching the screenshot layout)
-  const kpiIcons: IconPlacement[] = [
-    { name: 'money', x: 1.5, y: 1.2, w: 0.8, h: 0.8, colorRole: 'accent' },
-    { name: 'cheque', x: 4.5, y: 1.2, w: 0.8, h: 0.8, colorRole: 'accent' },
-    { name: 'balance', x: 7.5, y: 1.2, w: 0.8, h: 0.8, colorRole: 'accent' },
-    { name: 'percent', x: 10.5, y: 1.2, w: 0.8, h: 0.8, colorRole: 'accent' },
-  ];
-  
-  // Build slides array
-  const slides: Array<ChapterSlideSpec | ContentSlideSpec> = [
+  // Build slides array with new premium slide types
+  const slides: Array<ChapterSlideSpec | IrSynthesisSlideSpec | IrAnnexeSlideSpec> = [
     // Chapter 1: Objectifs et contexte (title + short description only)
     {
       type: 'chapter',
@@ -313,13 +135,18 @@ export function buildIrStudyDeck(
       subtitle: 'Vous souhaitez estimer le montant de votre impôt sur le revenu',
       chapterImageIndex: 1,
     },
-    // Content: Synthèse KPI style
+    // Slide 3: Synthèse Premium (4 KPI + barre TMI + impôt central)
     {
-      type: 'content',
-      title: 'Synthèse de votre simulation',
-      subtitle: 'Principaux indicateurs fiscaux',
-      body: buildKpiSummaryBody(irData),
-      icons: kpiIcons,
+      type: 'ir-synthesis',
+      income1: irData.income1 || 0,
+      income2: irData.income2 || 0,
+      isCouple: irData.status === 'couple',
+      taxableIncome: irData.taxableIncome,
+      partsNb: irData.partsNb,
+      tmiRate: irData.tmiRate,
+      irNet: irData.irNet,
+      taxablePerPart: irData.taxablePerPart,
+      bracketsDetails: irData.bracketsDetails,
     },
     // Chapter 2: Annexes
     {
@@ -328,12 +155,26 @@ export function buildIrStudyDeck(
       subtitle: 'Détail des calculs et informations complémentaires',
       chapterImageIndex: 3,
     },
-    // Content: Détail du calcul
+    // Slide 5: Annexe rédigée (détail calcul adapté au cas client)
     {
-      type: 'content',
-      title: 'Détail du calcul',
-      subtitle: 'Méthode de calcul de l\'impôt sur le revenu',
-      body: buildDetailedCalculationBody(irData),
+      type: 'ir-annexe',
+      taxableIncome: irData.taxableIncome,
+      partsNb: irData.partsNb,
+      taxablePerPart: irData.taxablePerPart,
+      tmiRate: irData.tmiRate,
+      irNet: irData.irNet,
+      totalTax: irData.totalTax,
+      bracketsDetails: irData.bracketsDetails,
+      decote: irData.decote,
+      qfAdvantage: irData.qfAdvantage,
+      creditsTotal: irData.creditsTotal,
+      cehr: irData.cehr,
+      cdhr: irData.cdhr,
+      psFoncier: irData.psFoncier,
+      psDividends: irData.psDividends,
+      psTotal: irData.psTotal,
+      isCouple: irData.status === 'couple',
+      childrenCount: irData.childrenCount,
     },
   ];
   

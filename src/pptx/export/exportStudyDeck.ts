@@ -11,6 +11,8 @@ import type {
   ExportContext, 
   ChapterSlideSpec, 
   ContentSlideSpec,
+  IrSynthesisSlideSpec,
+  IrAnnexeSlideSpec,
   PptxThemeRoles 
 } from '../theme/types';
 import { SLIDE_SIZE } from '../designSystem/serenity';
@@ -18,6 +20,8 @@ import { getPptxThemeFromUiSettings } from '../theme/getPptxThemeFromUiSettings'
 import { loadLogoDataUriSafe } from '../logo/loadLogoDataUri';
 import { fetchChapterImageDataUri } from '../assets/resolvePublicAsset';
 import { buildCover, buildChapter, buildContent, buildEnd } from '../slides';
+import { buildIrSynthesis } from '../slides/buildIrSynthesis';
+import { buildIrAnnexe } from '../slides/buildIrAnnexe';
 import { injectThemeColors } from '../theme/themeBuilder';
 
 /**
@@ -174,6 +178,42 @@ export async function exportStudyDeck(
       buildChapter(pptx, chapterSpec, ctx, imageDataUri, slideIndex);
     } else if (slideSpec.type === 'content') {
       buildContent(pptx, slideSpec as ContentSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'ir-synthesis') {
+      // Premium IR Synthesis slide (4 KPI + TMI bar + tax result)
+      const synthesisSpec = slideSpec as IrSynthesisSlideSpec;
+      buildIrSynthesis(pptx, {
+        income1: synthesisSpec.income1,
+        income2: synthesisSpec.income2,
+        isCouple: synthesisSpec.isCouple,
+        taxableIncome: synthesisSpec.taxableIncome,
+        partsNb: synthesisSpec.partsNb,
+        tmiRate: synthesisSpec.tmiRate,
+        irNet: synthesisSpec.irNet,
+        taxablePerPart: synthesisSpec.taxablePerPart,
+        bracketsDetails: synthesisSpec.bracketsDetails,
+      }, ctx.theme, slideIndex);
+    } else if (slideSpec.type === 'ir-annexe') {
+      // IR Annexe slide (detailed calculation prose)
+      const annexeSpec = slideSpec as IrAnnexeSlideSpec;
+      buildIrAnnexe(pptx, {
+        taxableIncome: annexeSpec.taxableIncome,
+        partsNb: annexeSpec.partsNb,
+        taxablePerPart: annexeSpec.taxablePerPart,
+        tmiRate: annexeSpec.tmiRate,
+        irNet: annexeSpec.irNet,
+        totalTax: annexeSpec.totalTax,
+        bracketsDetails: annexeSpec.bracketsDetails,
+        decote: annexeSpec.decote,
+        qfAdvantage: annexeSpec.qfAdvantage,
+        creditsTotal: annexeSpec.creditsTotal,
+        cehr: annexeSpec.cehr,
+        cdhr: annexeSpec.cdhr,
+        psFoncier: annexeSpec.psFoncier,
+        psDividends: annexeSpec.psDividends,
+        psTotal: annexeSpec.psTotal,
+        isCouple: annexeSpec.isCouple,
+        childrenCount: annexeSpec.childrenCount,
+      }, ctx.theme, slideIndex);
     }
     
     slideIndex++;

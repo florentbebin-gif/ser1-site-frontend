@@ -142,6 +142,46 @@ export type ContentSlideSpec = {
 };
 
 /**
+ * IR Synthesis Slide Specification (premium KPI layout)
+ */
+export type IrSynthesisSlideSpec = {
+  type: 'ir-synthesis';
+  income1: number;
+  income2: number;
+  isCouple: boolean;
+  taxableIncome: number;
+  partsNb: number;
+  tmiRate: number;
+  irNet: number;
+  taxablePerPart: number;
+  bracketsDetails?: Array<{ label: string; base: number; rate: number; tax: number }>;
+};
+
+/**
+ * IR Annexe Slide Specification (detailed calculation prose)
+ */
+export type IrAnnexeSlideSpec = {
+  type: 'ir-annexe';
+  taxableIncome: number;
+  partsNb: number;
+  taxablePerPart: number;
+  tmiRate: number;
+  irNet: number;
+  totalTax: number;
+  bracketsDetails?: Array<{ label: string; base: number; rate: number; tax: number }>;
+  decote?: number;
+  qfAdvantage?: number;
+  creditsTotal?: number;
+  cehr?: number;
+  cdhr?: number;
+  psFoncier?: number;
+  psDividends?: number;
+  psTotal?: number;
+  isCouple?: boolean;
+  childrenCount?: number;
+};
+
+/**
  * End/Legal Slide Specification
  */
 export type EndSlideSpec = {
@@ -154,6 +194,6 @@ export type EndSlideSpec = {
  */
 export type StudyDeckSpec = {
   cover: CoverSlideSpec;
-  slides: Array<ChapterSlideSpec | ContentSlideSpec>;
+  slides: Array<ChapterSlideSpec | ContentSlideSpec | IrSynthesisSlideSpec | IrAnnexeSlideSpec>;
   end: EndSlideSpec;
 };
