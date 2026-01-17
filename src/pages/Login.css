@@ -9,7 +9,7 @@
 .login-bg {
   position: fixed;
   inset: 0;
-  background-image: url('/login-bg.png');
+  background-image: url('/ui/login/login-bg.png');
   background-size: cover;
   background-position: center;
   z-index: 0;
