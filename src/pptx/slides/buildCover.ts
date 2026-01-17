@@ -43,7 +43,9 @@ export function buildCover(
       data: logoDataUri,
       x: COORDS_COVER.logo.x,
       y: COORDS_COVER.logo.y,
-      sizing: { type: 'cover', w: COORDS_COVER.logo.w, h: COORDS_COVER.logo.h },
+      w: COORDS_COVER.logo.w,
+      h: COORDS_COVER.logo.h,
+      sizing: { type: 'contain', w: COORDS_COVER.logo.w, h: COORDS_COVER.logo.h },
     });
   }
   
