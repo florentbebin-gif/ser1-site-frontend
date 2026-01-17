@@ -18,7 +18,8 @@ export type BusinessIconName =
   | 'chart-down'
   | 'chart-up'
   | 'balance'
-  | 'tower';
+  | 'tower'
+  | 'percent';
 
 // Import des SVG normalisés via Vite raw import
 import moneySvg from './svg/icon-money.svg?raw';
@@ -33,6 +34,7 @@ import chartDownSvg from './svg/icon-chart-down.svg?raw';
 import chartUpSvg from './svg/icon-chart-up.svg?raw';
 import balanceSvg from './svg/icon-balance.svg?raw';
 import towerSvg from './svg/icon-tower.svg?raw';
+import percentSvg from './svg/icon-percent.svg?raw';
 
 // Mapping des noms vers les SVG
 const svgMap: Record<BusinessIconName, string> = {
@@ -47,7 +49,8 @@ const svgMap: Record<BusinessIconName, string> = {
   'chart-down': chartDownSvg,
   'chart-up': chartUpSvg,
   'balance': balanceSvg,
-  'tower': towerSvg
+  'tower': towerSvg,
+  'percent': percentSvg
 };
 
 /**

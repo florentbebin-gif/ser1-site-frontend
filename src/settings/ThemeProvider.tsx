@@ -80,6 +80,22 @@ export const DEFAULT_COLORS: ThemeColors = {
   c10: '#000000',
 };
 
+// SER1 Classic colors for PPTX when ui-only mode is selected
+export const SER1_CLASSIC_COLORS: ThemeColors = {
+  c1: '#2B3E37',
+  c2: '#709B8B',
+  c3: '#9FBDB2',
+  c4: '#CFDED8',
+  c5: '#788781',
+  c6: '#CEC1B6',
+  c7: '#F5F3F0',
+  c8: '#D9D9D9',
+  c9: '#7F7F7F',
+  c10: '#000000',
+};
+
+export type ThemeScope = 'all' | 'ui-only';
+
 interface ThemeContextValue {
   colors: ThemeColors;
   setColors: (colors: ThemeColors) => void;
@@ -87,6 +103,8 @@ interface ThemeContextValue {
   isLoading: boolean;
   logo?: string;
   setLogo: (logo: string | undefined) => void;
+  themeScope: ThemeScope;
+  pptxColors: ThemeColors; // Colors to use for PPTX (respects scope)
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
@@ -96,6 +114,8 @@ const ThemeContext = createContext<ThemeContextValue>({
   isLoading: true,
   logo: undefined,
   setLogo: () => {},
+  themeScope: 'all',
+  pptxColors: DEFAULT_COLORS,
 });
 
 export function useTheme(): ThemeContextValue {
@@ -151,6 +171,12 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   
   const [logo, setLogo] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
+  const [themeScope, setThemeScope] = useState<ThemeScope>('all');
+  
+  // Compute PPTX colors based on theme scope
+  // If 'ui-only', use SER1 Classic colors for PPTX
+  // If 'all', use current theme colors for PPTX
+  const pptxColors: ThemeColors = themeScope === 'ui-only' ? SER1_CLASSIC_COLORS : colors;
 
   // 🚨 DIAGNOSTIC: Track hash and user ID to prevent unnecessary reapplications
   const lastAppliedHashRef = useRef<string>('');
@@ -399,8 +425,37 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     }
   }, []);
 
+  // Load theme scope from ui_settings
+  useEffect(() => {
+    async function loadThemeScope() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data: uiSettings, error } = await supabase
+            .from('ui_settings')
+            .select('theme_name')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          
+          if (!error && uiSettings?.theme_name) {
+            // Le scope est encodé dans theme_name: "custom-ui-only" ou "custom"
+            if (uiSettings.theme_name.includes('ui-only')) {
+              setThemeScope('ui-only');
+            } else {
+              setThemeScope('all');
+            }
+          }
+        }
+      } catch (err) {
+        console.error('[ThemeProvider] Error loading theme scope:', err);
+      }
+    }
+    
+    loadThemeScope();
+  }, []);
+
   return (
-    <ThemeContext.Provider value={{ colors, setColors, saveThemeToUiSettings, isLoading, logo, setLogo }}>
+    <ThemeContext.Provider value={{ colors, setColors, saveThemeToUiSettings, isLoading, logo, setLogo, themeScope, pptxColors }}>
       {children}
     </ThemeContext.Provider>
   );

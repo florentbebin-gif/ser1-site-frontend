@@ -624,6 +624,271 @@ slide.addImage({
 
 ---
 
+## 🎯 PPTX Exports — Serenity (Programmatic)
+
+### Limitation PptxGenJS
+
+**Important** : PptxGenJS ne peut pas ouvrir/éditer des fichiers PPTX existants. Le template Serenity est donc **reconstruit programmatiquement** en code, reproduisant fidèlement les coordonnées, couleurs et typographies du template original.
+
+### Architecture
+
+```text
+src/pptx/
+├── designSystem/
+│   └── serenity.ts              # Design system (coords, typo, radius, helpers)
+├── theme/
+│   ├── types.ts                 # Types TypeScript
+│   └── getPptxThemeFromUiSettings.ts  # Mapping UI → PPTX theme
+├── assets/
+│   └── resolvePublicAsset.ts    # Chargement assets /public
+├── logo/
+│   └── loadLogoDataUri.ts       # Chargement logo Supabase
+├── icons/
+│   └── addBusinessIcon.ts       # Injection icônes business
+├── slides/
+│   ├── buildCover.ts            # Slide couverture
+│   ├── buildChapter.ts          # Slide chapitre (image gauche + accent line)
+│   ├── buildContent.ts          # Slide contenu
+│   ├── buildEnd.ts              # Slide mentions légales
+│   └── index.ts
+├── presets/
+│   └── irDeckBuilder.ts         # Builder deck IR avec KPIs
+└── export/
+    ├── exportStudyDeck.ts       # Orchestrateur principal
+    ├── demoExport.ts            # Fonction démo pour tests
+    └── index.ts
+```
+
+### Types de slides
+
+| Type | Builder | Description |
+|------|---------|-------------|
+| **COVER** | `buildCover()` | Fond color1, logo, titre/sous-titre centrés, marques d'angle |
+| **CHAPTER** | `buildChapter()` | Panneau blanc arrondi, image chapitre à gauche, **accent line sous titre** |
+| **CONTENT** | `buildContent()` | Titre/sous-titre, contenu, icônes business optionnelles |
+| **END** | `buildEnd()` | Fond color1, mentions légales, marques d'angle diagonales |
+
+### Mapping des couleurs
+
+Le template Serenity utilise **les couleurs du thème** + blanc :
+
+| Rôle PPTX | Source UI | Usage |
+|-----------|-----------|-------|
+| `bgMain` | `color1` | Fond couverture et slide end |
+| `textMain` | `color1` | Titres sur fond clair |
+| `textOnMain` | Auto | Texte sur fond coloré (blanc si sombre, noir si clair) |
+| `accent` | `color6` | Lignes décoratives, marques d'angle |
+| `textBody` | `color10` | Corps de texte |
+| `panelBorder` | `color8` | Bordure panneau chapitre (couleur douce) |
+| `white` | `#FFFFFF` | Seule couleur hardcodée autorisée |
+
+**Règle stricte** : Aucune couleur hex codée en dur sauf blanc (#FFFFFF).
+
+### Design Tokens
+
+#### Radius et Bleed (élimination des trous aux coins)
+
+```typescript
+export const RADIUS = {
+  panel: 0.12,    // Radius panneau chapitre
+  imageAdj: 0.12, // Radius image (identique pour cohérence)
+};
+
+export const BLEED = {
+  image: 0.02,    // Débordement image sous la bordure (élimine le "trou" anti-aliasing)
+};
+
+export const CORNER_MARKS = {
+  size: 0.65,           // Taille du groupe
+  marginX: 0.75,        // Marge horizontale depuis le bord
+  marginY: 0.75,        // Marge verticale depuis le bord
+  lineSpacing: 0.12,    // Espacement entre les 2 lignes verticales
+  primaryHeight: 0.55,  // Hauteur ligne principale
+  secondaryHeight: 0.40,// Hauteur ligne secondaire
+};
+```
+
+#### Layout Contract (zones strictes)
+
+```typescript
+export const LAYOUT_ZONES = {
+  chapter: {
+    titleBox: { x: 4.9909, y: 0.9223, w: 7.3319, h: 0.8663 },
+    subtitleBox: { x: 4.9909, y: 1.9535, w: 7.3319, h: 0.6 },
+    bodyBox: { x: 4.9909, y: 2.6, w: 7.3319, h: 3.6 },
+  },
+  // ... autres layouts
+};
+
+export const MIN_FONT_SIZES = { h1: 18, h2: 12, body: 10 };
+```
+
+**Règles absolues** :
+- Aucun texte/icône dans les zones `titleBox` ou `subtitleBox` sauf placeholders prévus
+- Aucun débordement hors slide (text fitting automatique si nécessaire)
+
+### Slides Chapter — Spécificités
+
+**Ordre de dessin (z-order)** — l'image est AU-DESSUS du cadre :
+1. **Panneau + Ombre** : 1 seul `roundRect` avec shadow native PPTXGenJS
+2. **Image ON TOP** : Dessinée EN DERNIER avec **BLEED** (0.02") pour couvrir les gaps
+
+**Composant UI Kit** : `addCardPanelWithShadow(slide, rect, theme, radius)`
+
+```typescript
+// UNE SEULE shape avec shadow native (pas de simulation multi-couches)
+slide.addShape('roundRect', {
+  fill: { color: 'FFFFFF' },           // Fill blanc
+  line: { color: panelBorder, width: 0.75 }, // Contour couleur 8
+  shadow: {
+    type: 'outer',
+    angle: 74,      // Direction ombre
+    blur: 23,       // Flou en pt
+    offset: 14,     // Distance en pt
+    opacity: 0.24,  // 24% opacité
+    color: shadowBase // Dérivée de textMain
+  }
+});
+```
+
+- **Ombre native** : Outer shadow PPTXGenJS (24% opacity, 23pt blur, 14pt offset, 74°)
+- **Fill** : Blanc (#FFFFFF)
+- **Bordure** : Couleur 8 du thème (`panelBorder`), épaisseur 0.75pt
+- **Image** : PNG pré-traité avec coins arrondis, AU-DESSUS du cadre (z-order)
+- **Bleed** : L'image déborde de 0.02" pour éliminer le "trou" aux coins
+
+> **Important** : Plus aucune simulation multi-cadres. 1 seul roundRect avec shadow native.
+
+### Slide End — Disclaimer légal
+
+Le bloc légal utilise le texte exact suivant :
+
+> Document établi à titre strictement indicatif et dépourvu de valeur contractuelle. Il a été élaboré sur la base des dispositions légales et réglementaires en vigueur à la date de sa remise, lesquelles sont susceptibles d'évoluer.
+>
+> Les informations qu'il contient sont strictement confidentielles et destinées exclusivement aux personnes expressément autorisées.
+>
+> Toute reproduction, représentation, diffusion ou rediffusion, totale ou partielle, sur quelque support ou par quelque procédé que ce soit, ainsi que toute vente, revente, retransmission ou mise à disposition de tiers, est strictement encadrée. Le non-respect de ces dispositions est susceptible de constituer une contrefaçon engageant la responsabilité civile et pénale de son auteur, conformément aux articles L335-1 à L335-10 du Code de la propriété intellectuelle.
+
+**Mise en forme** : Arial 11pt, **alignement centré** (horizontal et vertical), interligne 1.15.
+
+### Corner Marks (marques d'angle) — Symétrie
+
+Les barres verticales sur la slide de fin sont positionnées de manière parfaitement symétrique :
+
+```typescript
+// Top right: x = slideWidth - marginX - size, y = marginY
+// Bottom left: x = marginX, y = slideHeight - marginY - size
+```
+
+Cela garantit des marges identiques depuis les bords de la slide.
+
+### Thème PowerPoint (clrScheme)
+
+Le PPTX exporté embarque un **vrai thème PowerPoint** avec les 10 couleurs utilisateur :
+
+| Slot PowerPoint | Couleur SER1 |
+|-----------------|---------------|
+| dk1 | c10 (texte principal) |
+| lt1 | #FFFFFF (blanc) |
+| dk2 | c1 (couleur marque) |
+| lt2 | c7 (fond clair) |
+| accent1-6 | c2, c3, c4, c5, c6, c8 |
+| hlink/folHlink | c9 (liens) |
+
+L'utilisateur voit ses couleurs dans **PowerPoint > Couleurs du thème**.
+
+### Option Thème PPTX
+
+Le `ThemeProvider` expose `pptxColors` qui respecte le paramètre utilisateur :
+- **"Appliquer à toute l'interface et aux PowerPoint"** → Utilise les couleurs personnalisées
+- **"Appliquer à l'interface uniquement"** → Utilise les couleurs SER1 Classique pour le PPTX
+
+### API d'export
+
+#### Export complet
+```typescript
+import { exportStudyDeck, downloadPptx } from '@/pptx/export';
+
+const spec: StudyDeckSpec = {
+  cover: {
+    type: 'cover',
+    title: 'Simulation IR',
+    subtitle: 'NOM Prénom',
+    logoUrl: 'https://supabase.../logo.png',
+    leftMeta: '17 janvier 2026',
+    rightMeta: 'Conseiller CGP',
+  },
+  slides: [
+    {
+      type: 'chapter',
+      title: 'Objectifs et contexte',
+      subtitle: 'Description courte',
+      chapterImageIndex: 1,
+    },
+    {
+      type: 'content',
+      title: 'Synthèse',
+      subtitle: 'Indicateurs',
+      body: 'Contenu...',
+      icons: [{ name: 'money', x: 1.5, y: 1.2, w: 0.8, h: 0.8, colorRole: 'accent' }],
+    },
+  ],
+  end: {
+    type: 'end',
+    legalText: '...',
+  },
+};
+
+// Export avec thème utilisateur (format ThemeProvider: c1..c10)
+const blob = await exportStudyDeck(spec, pptxColors);
+downloadPptx(blob, 'simulation.pptx');
+```
+
+### Typographie
+
+- **Font** : Arial uniquement
+- **H1** : 24pt, bold, ALL CAPS
+- **H2** : 16pt, bold
+- **Body** : 14pt, normal
+- **Footer** : 8pt, normal
+- **Legal** : 11pt, normal, interligne 1.15
+
+### Coordonnées exactes (inches)
+
+#### Cover (13.3333" × 7.5")
+- Logo : x=4.4844, y=1.9542, w=4.3646, h=1.9896
+- Titre : x=1.5528, y=4.0986, w=10.2277, h=0.8333
+- Date (gauche, aligné gauche) : x=0.9784, y=6.0417
+- Conseiller (droite, aligné droite) : x=9.4903, y=6.0417
+
+#### Chapter
+- Panneau : x=0.5966, y=0.7347, w=12.14, h=5.8704
+- Image : x=0.5966, y=0.7347, w=4.2424, h=5.8704
+- Titre : x=4.9909, y=0.9223, w=7.3319, h=0.8663
+- Accent line : x=5.0818, y=1.7886, w=1.1278
+
+#### Footer
+- Date : x=0.9167, y=6.9514, w=1.6875, h=0.3993
+- Disclaimer : x=2.9792, y=6.9514, w=7.375, h=0.3993
+- Slide num : x=10.7292, y=6.9514, w=1.6875, h=0.3993
+
+### Tests et validation
+
+```bash
+npm run typecheck   # Vérifie les types
+npm run build       # Vérifie la compilation
+```
+
+#### Test manuel
+1. Ouvrir la console navigateur (F12)
+2. Exécuter : `window.exportSerenityDemoPptx()`
+3. Vérifier le fichier PPTX téléchargé :
+   - Cover : couleurs thème, date alignée gauche, conseiller aligné droite
+   - Chapter : accent line sous titre, coins arrondis harmonisés
+   - End : disclaimer complet, fond coloré, texte adaptatif
+
+---
+
 ## 📚 Documentation complémentaire
 
 ### Fichiers de documentation

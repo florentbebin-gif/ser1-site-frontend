@@ -6,6 +6,9 @@ import { onResetEvent, storageKeyFor } from '../utils/reset';
 import { toNumber } from '../utils/number';
 import { computeIrResult as computeIrResultEngine } from '../utils/irEngine.js';
 import { getFiscalSettings, addInvalidationListener } from '../utils/fiscalSettingsCache.js';
+import { useTheme } from '../settings/ThemeProvider';
+import { buildIrStudyDeck } from '../pptx/presets/irDeckBuilder';
+import { exportAndDownloadStudyDeck } from '../pptx/export/exportStudyDeck';
 
 // ---- Helpers formats ----
 const fmt0 = (n) => (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
@@ -38,6 +41,10 @@ function computeAbattement10(base, cfg) {
    Page IR
 ================================ */
 export default function Ir() {
+  // Theme colors and logo from ThemeProvider
+  // pptxColors respects the theme scope setting (SER1 classic if ui-only)
+  const { colors, logo, pptxColors } = useTheme();
+
   const [taxSettings, setTaxSettings] = useState(null);
   const [psSettings, setPsSettings] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -456,9 +463,54 @@ const yearLabel =
     }
   }
 
-  function exportPowerPoint() {
-    // même logique que Credit.jsx : placeholder pour la vraie génération
-    alert('Export PowerPoint (IR) : paramétrage à venir 👍');
+  async function exportPowerPoint() {
+    if (!result) {
+      alert('Les résultats ne sont pas disponibles.');
+      return;
+    }
+
+    try {
+      // Build IR data from current result
+      const irData = {
+        taxableIncome: result.taxableIncome || 0,
+        partsNb: result.partsNb || effectiveParts,
+        taxablePerPart: result.taxablePerPart || 0,
+        tmiRate: result.tmiRate || 0,
+        irNet: result.irNet || 0,
+        totalTax: result.totalTax || 0,
+        // Income breakdown for KPI display
+        income1: incomes.salaries1 + incomes.pensions1 + incomes.nonSalaried1,
+        income2: incomes.salaries2 + incomes.pensions2 + incomes.nonSalaried2,
+        pfuIr: result.pfuIr || 0,
+        cehr: result.cehr || 0,
+        cdhr: result.cdhr || 0,
+        psFoncier: result.psFoncier || 0,
+        psDividends: result.psDividends || 0,
+        psTotal: result.psTotal || 0,
+        status: status,
+        childrenCount: children.length,
+        location: location,
+        decote: result.decote || 0,
+        qfAdvantage: result.qfAdvantage || 0,
+        creditsTotal: result.creditsTotal || 0,
+        bracketsDetails: result.bracketsDetails || [],
+        // Client name will be passed from user profile if available
+        clientName: undefined, // TODO: Get from user profile or form input
+      };
+
+      // Build deck spec using pptxColors (respects theme scope setting)
+      const deck = buildIrStudyDeck(irData, pptxColors, logo);
+
+      // Generate filename with date
+      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const filename = `simulation-ir-${dateStr}.pptx`;
+
+      // Export and download using pptxColors (respects theme scope setting)
+      await exportAndDownloadStudyDeck(deck, pptxColors, filename);
+    } catch (error) {
+      console.error('Export PowerPoint IR échoué:', error);
+      alert('Erreur lors de la génération du PowerPoint. Veuillez réessayer.');
+    }
   }
 
   // ------------ Rendu --------------
