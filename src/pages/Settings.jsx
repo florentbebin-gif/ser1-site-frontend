@@ -402,50 +402,23 @@ export default function Settings({ isAdmin = false }) {
     console.log('[Settings] Logo converted to dataUri, length:', imageResult.dataUri.length);
 
     try {
-      const ext = file.name.split('.').pop().toLowerCase();
-      const filePath = `${user.id}/page_de_garde.${ext}`;
-
-      // upload dans le bucket covers (for backup/display purposes)
-      const { error: uploadError } = await supabase.storage
-        .from('covers')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-        });
-
-      if (uploadError) {
-        console.error('Erreur upload :', uploadError);
-        setSaveMessage(
-          "Erreur lors de l'upload dans Supabase Storage : " +
-          (uploadError.message || uploadError.error_description || '')
-        );
-        return;
-      }
-
-      const { data: publicData } = supabase.storage
-        .from('covers')
-        .getPublicUrl(filePath);
-
-      const publicUrl = publicData.publicUrl;
-
+      // Store dataUri directly in user_metadata (bypasses Storage RLS issues)
+      // This is more reliable than Storage + URL approach
       const { error: metaError } = await supabase.auth.updateUser({
         data: {
-          cover_slide_url: publicUrl,
+          cover_slide_url: imageResult.dataUri, // Store dataUri directly
           theme_colors: colors,
         },
       });
 
       if (metaError) {
         console.error('Erreur metadata :', metaError);
-        setSaveMessage("Erreur lors de l'enregistrement dans les métadonnées.");
+        setSaveMessage("Erreur lors de l'enregistrement du logo.");
         return;
       }
 
-      setCoverUrl(publicUrl);
-      // IMPORTANT: Pass dataUri directly to ThemeProvider for PPTX export
-      // This bypasses CORS issues with Supabase Storage URLs
+      setCoverUrl(imageResult.dataUri);
       setLogo(imageResult.dataUri);
-      console.log('[Settings] Logo dataUri synced with ThemeProvider');
       setSaveMessage('Logo enregistré avec succès.');
     } catch (err) {
       console.error(err);
