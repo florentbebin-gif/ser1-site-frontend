@@ -6,7 +6,7 @@ Application web interne pour CGP permettant :
 - la **stratégie guidée** avec recommandations automatiques et projections comparées,
 - l'accès à plusieurs **simulateurs financiers** (IR, placement, crédit),
 - la **sauvegarde et le chargement de dossiers complets** en local,
-- la **gestion centralisée de paramètres** (fiscalité, couleurs, page de garde),
+- la **gestion centralisée de paramètres** (fiscalité, couleurs, logo d'étude),
 - la **conformité RGPD** (pas de stockage serveur des noms clients, export/import JSON local).
 
 ✅ Projet **100 % frontend**  
@@ -280,7 +280,7 @@ npm run typecheck
 ### Gestion des paramètres
 - **Settings** : Navigation par pilules (Généraux, Impôts, Prélèvements, Fiscalités, Base contrats, Table mortalité)
 - **Stockage Supabase** : Table `tax_settings` pour tous les paramètres fiscaux
-- **Storage** : Images pour page de garde PowerPoint
+- **Storage** : Logos pour page de garde PowerPoint
 - **Rôles** : Admin (édition) vs User (lecture seule)
 
 ---
@@ -369,7 +369,7 @@ npm run typecheck
 - `issue_reports` : Rapports de bugs
 
 ### Storage
-- Bucket pour images page de garde PowerPoint
+- Bucket pour logos page de garde PowerPoint
 - Accès protégé par RLS (Row Level Security)
 
 ### Fonctions Edge
@@ -488,7 +488,7 @@ public/
 ### Distinction importante
 
 - **Assets statiques** (`public/pptx/*`) : Images fixes intégrées dans l'application
-- **Covers dynamiques** (Supabase Storage) : Images de page de garde uploadées par les admins dans `{user.id}/page_de_garde.{ext}`
+- **Covers dynamiques** (Supabase Storage) : Logos uploadés par les admins dans `{user.id}/page_de_garde.{ext}`
 
 ### Restrictions
 

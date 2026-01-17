@@ -254,7 +254,7 @@ export default function Settings({ isAdmin = false }) {
 
           setRoleLabel(isAdmin ? 'Admin' : 'User');
 
-          // URL de la page de garde (si déjà enregistrée)
+          // URL du logo (si déjà enregistré)
           if (meta.cover_slide_url) {
             setCoverUrl(meta.cover_slide_url);
           }
@@ -406,10 +406,11 @@ export default function Settings({ isAdmin = false }) {
       return;
     }
 
-    if (dimensions.width < 1200 || dimensions.height < 700) {
-      setSaveMessage("L'image doit faire au minimum 1200 × 700 pixels.");
-      return;
-    }
+    // Suppression de la vérification de taille minimale
+    // if (dimensions.width < 1200 || dimensions.height < 700) {
+    //   setSaveMessage("L'image doit faire au minimum 1200 × 700 pixels.");
+    //   return;
+    // }
 
     try {
       const ext = file.name.split('.').pop().toLowerCase();
@@ -452,10 +453,10 @@ export default function Settings({ isAdmin = false }) {
       }
 
       setCoverUrl(publicUrl);
-      setSaveMessage('Page de garde enregistrée avec succès.');
+      setSaveMessage('Logo enregistré avec succès.');
     } catch (err) {
       console.error(err);
-      setSaveMessage("Erreur lors de l'enregistrement de la page de garde.");
+      setSaveMessage("Erreur lors de l'enregistrement du logo.");
     }
   };
 
@@ -469,14 +470,14 @@ export default function Settings({ isAdmin = false }) {
       });
       if (error) {
         console.error('Erreur suppression cover :', error);
-        setSaveMessage("Erreur lors de la suppression de la page de garde.");
+        setSaveMessage("Erreur lors de la suppression du logo.");
         return;
       }
       setCoverUrl('');
-      setSaveMessage('Page de garde supprimée.');
+      setSaveMessage('Logo supprimé.');
     } catch (e) {
       console.error(e);
-      setSaveMessage("Erreur lors de la suppression de la page de garde.");
+      setSaveMessage("Erreur lors de la suppression du logo.");
     }
   };
 
@@ -664,12 +665,11 @@ export default function Settings({ isAdmin = false }) {
 
           </div>
 
-          {/* Choix de la page de garde */}
+          {/* Choix du logo */}
           <div>
-            <h3 style={{ marginBottom: 8 }}>Choix de la page de garde de l’étude</h3>
+            <h3 style={{ marginBottom: 8 }}>Choix du logo de l’étude</h3>
             <p style={{ marginBottom: 8, fontSize: 14, color: 'var(--color-c9)' }}>
-              Chargez une image (.jpg ou .png) d&apos;au moins 1200 × 700 pixels.
-              Cette image est utilisée comme page de garde dans vos éditions d'étude PowerPoint.
+              Chargez une image (.jpg ou .png). Cette image est utilisée comme logo sur la page de garde dans vos éditions d'étude PowerPoint.
             </p>
 
             <input
@@ -679,12 +679,12 @@ export default function Settings({ isAdmin = false }) {
             />
 
             <div style={{ marginTop: 8, fontSize: 13, color: 'var(--color-c9)' }}>
-              <strong>Page de garde sélectionnée :</strong>{' '}
+              <strong>Logo sélectionné :</strong>{' '}
               {coverUrl ? (
                 <div style={{ marginTop: 8 }}>
                   <img
                     src={coverUrl}
-                    alt="Page de garde"
+                    alt="Logo"
                     style={{
                       maxWidth: '260px',
                       borderRadius: 8,
@@ -698,7 +698,7 @@ export default function Settings({ isAdmin = false }) {
                     onClick={handleRemoveCover}
                     style={{ marginTop: 8 }}
                   >
-                    Supprimer la page de garde
+                    Supprimer le logo
                   </button>
                 </div>
               ) : (
