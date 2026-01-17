@@ -88,6 +88,7 @@ const CONTENT_HEIGHT = CONTENT_BOTTOM_Y - CONTENT_TOP_Y; // ~4.42
 
 // ============================================================================
 // LAYOUT CONSTANTS (inches) - ALL WITHIN CONTENT ZONE
+// Premium design: airy spacing, clear hierarchy
 // ============================================================================
 
 const LAYOUT = {
@@ -95,40 +96,41 @@ const LAYOUT = {
   marginX: COORDS_CONTENT.margin.x, // 0.9167
   contentWidth: COORDS_CONTENT.margin.w, // 11.5
   
-  // KPI Section (top of content zone)
+  // KPI Section (top of content zone) - AIRY
   kpi: {
-    iconSize: 0.5,
-    iconY: CONTENT_TOP_Y + 0.1, // 2.48
-    labelY: CONTENT_TOP_Y + 0.7, // 3.08
-    valueY: CONTENT_TOP_Y + 1.0, // 3.38
-    detailY: CONTENT_TOP_Y + 1.4, // 3.78
-    colWidth: 2.7,
-    colSpacing: 0.15,
+    iconSize: 0.55,  // Slightly larger icons
+    iconY: CONTENT_TOP_Y + 0.05, // 2.43 - icons at top
+    labelY: CONTENT_TOP_Y + 0.65, // 3.03 - label below icon
+    valueY: CONTENT_TOP_Y + 0.95, // 3.33 - main value
+    detailY: CONTENT_TOP_Y + 1.35, // 3.73 - detail lines
+    colWidth: 2.8,   // Wider columns
+    colSpacing: 0.1, // Tighter spacing between columns
   },
   
-  // TMI Bar (middle of content zone)
+  // TMI Bar (middle of content zone) - PROMINENT
   bar: {
-    y: CONTENT_TOP_Y + 2.0, // 4.38
-    height: 0.6,
-    marginX: 1.0,
+    y: CONTENT_TOP_Y + 1.85, // 4.23 - moved up slightly
+    height: 0.5,     // Slightly thinner for elegance
+    marginX: 0.7,    // More bar width
   },
   
-  // Active bracket callout
+  // Active bracket callout - below bar
   callout: {
-    y: CONTENT_TOP_Y + 2.7, // 5.08
-    height: 0.4,
+    y: CONTENT_TOP_Y + 2.45, // 4.83
+    height: 0.35,
   },
   
-  // Tax result (center of content zone)
+  // Tax result (prominent center) - HERO SECTION
   result: {
-    y: CONTENT_TOP_Y + 3.2, // 5.58
-    height: 0.8,
+    labelY: CONTENT_TOP_Y + 2.95, // 5.33
+    valueY: CONTENT_TOP_Y + 3.25, // 5.63
+    lineY: CONTENT_TOP_Y + 3.75,  // 6.13 - decorative line
   },
   
-  // Margin to next TMI (bottom of content zone)
+  // Margin to next TMI (bottom info)
   margin: {
-    y: CONTENT_TOP_Y + 4.1, // 6.48
-    height: 0.3,
+    y: CONTENT_TOP_Y + 3.95, // 6.33
+    height: 0.25,
   },
 } as const;
 
@@ -180,26 +182,38 @@ function getAmountInCurrentBracket(taxablePerPart: number, tmiRate: number, part
 }
 
 /**
- * Get color intensity for bracket (gradient from light to dark)
+ * Get color for TMI bracket - PROGRESSIVE GRADIENT
+ * From lightest (0%) to darkest (45%) using theme accent
+ * 
+ * Premium design: smooth gradient progression
  */
 function getBracketColor(rate: number, theme: PptxThemeRoles, isActive: boolean): string {
-  // Use theme accent with varying opacity simulation via color mixing
   const accent = theme.accent.replace('#', '');
   
-  if (isActive) {
-    return accent; // Full accent color for active bracket
-  }
+  // Parse accent color to RGB
+  const r = parseInt(accent.substring(0, 2), 16);
+  const g = parseInt(accent.substring(2, 4), 16);
+  const b = parseInt(accent.substring(4, 6), 16);
   
-  // Desaturated/lighter versions for inactive brackets
-  const intensityMap: Record<number, string> = {
-    0: 'E8E8E8',   // Very light gray
-    11: 'D0D0D0',  // Light gray
-    30: 'B8B8B8',  // Medium gray
-    41: 'A0A0A0',  // Darker gray
-    45: '888888',  // Dark gray
+  // Progressive gradient: lighter for lower brackets, darker for higher
+  // 0% = 85% lightness, 45% = full color
+  const intensityMap: Record<number, number> = {
+    0: 0.25,   // Very light (25% of accent)
+    11: 0.40,  // Light (40% of accent)
+    30: 0.60,  // Medium (60% of accent)
+    41: 0.80,  // Strong (80% of accent)
+    45: 1.00,  // Full accent color
   };
   
-  return intensityMap[rate] || 'CCCCCC';
+  const intensity = intensityMap[rate] || 0.5;
+  
+  // Mix with white for lighter shades
+  const mixR = Math.round(255 - (255 - r) * intensity);
+  const mixG = Math.round(255 - (255 - g) * intensity);
+  const mixB = Math.round(255 - (255 - b) * intensity);
+  
+  const toHex = (n: number) => n.toString(16).padStart(2, '0');
+  return `${toHex(mixR)}${toHex(mixG)}${toHex(mixB)}`;
 }
 
 // ============================================================================
@@ -256,31 +270,32 @@ export function buildIrSynthesis(
     valign: 'top',
   });
   
-  // ========== 4 KPI COLUMNS ==========
+  // ========== 4 KPI COLUMNS (PREMIUM DESIGN) ==========
+  // KPI data with proper breakdown for couples
+  const totalRevenue = data.income1 + data.income2;
+  
   const kpiData: Array<{
     icon: BusinessIconName;
     label: string;
     value: string;
-    details?: string[];
+    subLines?: string[];  // Additional detail lines below value
   }> = [
     {
       icon: 'money',
       label: 'Estimation de vos revenus',
-      value: data.isCouple 
-        ? '' 
-        : euro(data.income1 + data.income2),
-      details: data.isCouple 
-        ? [`Déclarant 1 : ${euro(data.income1)}`, `Déclarant 2 : ${euro(data.income2)}`]
-        : undefined,
+      value: '', // Value will be shown via subLines for clarity
+      subLines: data.isCouple 
+        ? [`Déclarant 1`, `${euro(data.income1)}`, `Déclarant 2`, `${euro(data.income2)}`]
+        : [`${euro(totalRevenue)}`],
     },
     {
       icon: 'cheque',
-      label: 'Revenu imposable',
+      label: 'Estimation du revenu imposable',
       value: euro(data.taxableIncome),
     },
     {
       icon: 'balance',
-      label: 'Parts fiscales',
+      label: 'Nombre de parts fiscales',
       value: fmt2(data.partsNb),
     },
     {
@@ -297,7 +312,7 @@ export function buildIrSynthesis(
     const colX = kpiStartX + idx * (LAYOUT.kpi.colWidth + LAYOUT.kpi.colSpacing);
     const centerX = colX + LAYOUT.kpi.colWidth / 2;
     
-    // Icon (centered, outline style via accent color)
+    // Icon (centered, using theme accent color)
     const iconDataUri = getBusinessIconDataUri(kpi.icon, { color: theme.accent });
     slide.addImage({
       data: iconDataUri,
@@ -307,12 +322,12 @@ export function buildIrSynthesis(
       h: LAYOUT.kpi.iconSize,
     });
     
-    // Label (small, centered)
-    slide.addText(kpi.label.toUpperCase(), {
+    // Label (sentence case, not uppercase - more readable)
+    slide.addText(kpi.label, {
       x: colX,
       y: LAYOUT.kpi.labelY,
       w: LAYOUT.kpi.colWidth,
-      h: 0.3,
+      h: 0.28,
       fontSize: 9,
       fontFace: TYPO.fontFace,
       color: theme.textBody.replace('#', ''),
@@ -320,14 +335,14 @@ export function buildIrSynthesis(
       valign: 'middle',
     });
     
-    // Value (bold, centered)
+    // Main value (bold, black, centered) - if provided
     if (kpi.value) {
       slide.addText(kpi.value, {
         x: colX,
         y: LAYOUT.kpi.valueY,
         w: LAYOUT.kpi.colWidth,
-        h: 0.4,
-        fontSize: 18,
+        h: 0.35,
+        fontSize: 16,
         fontFace: TYPO.fontFace,
         color: theme.textMain.replace('#', ''),
         bold: true,
@@ -336,25 +351,79 @@ export function buildIrSynthesis(
       });
     }
     
-    // Details (for couple income breakdown)
-    if (kpi.details && kpi.details.length > 0) {
-      kpi.details.forEach((detail, detailIdx) => {
-        slide.addText(detail, {
+    // Sub-lines (for income breakdown - couple case)
+    if (kpi.subLines && kpi.subLines.length > 0) {
+      // For couple: show "Déclarant 1" then amount, "Déclarant 2" then amount
+      if (data.isCouple && kpi.subLines.length === 4) {
+        // Déclarant 1 label
+        slide.addText(kpi.subLines[0], {
           x: colX,
-          y: LAYOUT.kpi.valueY + detailIdx * 0.3,
+          y: LAYOUT.kpi.valueY - 0.05,
           w: LAYOUT.kpi.colWidth,
-          h: 0.3,
-          fontSize: 11,
+          h: 0.22,
+          fontSize: 9,
           fontFace: TYPO.fontFace,
           color: theme.textBody.replace('#', ''),
           align: 'center',
           valign: 'middle',
         });
-      });
+        // Déclarant 1 value
+        slide.addText(kpi.subLines[1], {
+          x: colX,
+          y: LAYOUT.kpi.valueY + 0.15,
+          w: LAYOUT.kpi.colWidth,
+          h: 0.25,
+          fontSize: 12,
+          fontFace: TYPO.fontFace,
+          color: theme.textMain.replace('#', ''),
+          bold: true,
+          align: 'center',
+          valign: 'middle',
+        });
+        // Déclarant 2 label
+        slide.addText(kpi.subLines[2], {
+          x: colX,
+          y: LAYOUT.kpi.valueY + 0.38,
+          w: LAYOUT.kpi.colWidth,
+          h: 0.22,
+          fontSize: 9,
+          fontFace: TYPO.fontFace,
+          color: theme.textBody.replace('#', ''),
+          align: 'center',
+          valign: 'middle',
+        });
+        // Déclarant 2 value
+        slide.addText(kpi.subLines[3], {
+          x: colX,
+          y: LAYOUT.kpi.valueY + 0.58,
+          w: LAYOUT.kpi.colWidth,
+          h: 0.25,
+          fontSize: 12,
+          fontFace: TYPO.fontFace,
+          color: theme.textMain.replace('#', ''),
+          bold: true,
+          align: 'center',
+          valign: 'middle',
+        });
+      } else {
+        // Single person: just show the total
+        slide.addText(kpi.subLines[0], {
+          x: colX,
+          y: LAYOUT.kpi.valueY,
+          w: LAYOUT.kpi.colWidth,
+          h: 0.35,
+          fontSize: 16,
+          fontFace: TYPO.fontFace,
+          color: theme.textMain.replace('#', ''),
+          bold: true,
+          align: 'center',
+          valign: 'middle',
+        });
+      }
     }
   });
   
-  // ========== TMI BRACKET BAR ==========
+  // ========== TMI BRACKET BAR (PROGRESSIVE GRADIENT) ==========
   const segmentWidth = barWidth / TMI_BRACKETS.length;
   
   TMI_BRACKETS.forEach((bracket, idx) => {
@@ -362,55 +431,59 @@ export function buildIrSynthesis(
     const isActive = bracket.rate === data.tmiRate;
     const bgColor = getBracketColor(bracket.rate, theme, isActive);
     
-    // Segment rectangle
+    // Segment rectangle - gradient colors, white border on active
     slide.addShape('rect', {
       x: segX,
       y: LAYOUT.bar.y,
-      w: segmentWidth - 0.02, // Small gap between segments
+      w: segmentWidth - 0.03, // Small gap between segments
       h: LAYOUT.bar.height,
       fill: { color: bgColor },
-      line: { color: isActive ? theme.accent.replace('#', '') : 'CCCCCC', width: isActive ? 2 : 0.5 },
+      line: isActive 
+        ? { color: 'FFFFFF', width: 2.5 } // White border for active segment
+        : { color: bgColor, width: 0 },   // No border for inactive
     });
     
     // Rate label centered in segment
+    // Text color: white for darker brackets (30%+), dark for lighter
+    const textColor = bracket.rate >= 30 ? 'FFFFFF' : theme.textMain.replace('#', '');
     slide.addText(bracket.label, {
       x: segX,
       y: LAYOUT.bar.y,
-      w: segmentWidth - 0.02,
+      w: segmentWidth - 0.03,
       h: LAYOUT.bar.height,
-      fontSize: 14,
+      fontSize: 13,
       fontFace: TYPO.fontFace,
-      color: isActive ? 'FFFFFF' : '666666',
+      color: textColor,
       bold: isActive,
       align: 'center',
       valign: 'middle',
     });
   });
   
-  // ========== ACTIVE BRACKET CALLOUT ==========
+  // ========== ACTIVE BRACKET CALLOUT (Amount in current TMI) ==========
   if (data.tmiRate > 0) {
     const activeBracketIdx = TMI_BRACKETS.findIndex(b => b.rate === data.tmiRate);
     if (activeBracketIdx >= 0) {
       const calloutX = LAYOUT.bar.marginX + activeBracketIdx * segmentWidth;
       const amountInBracket = getAmountInCurrentBracket(data.taxablePerPart, data.tmiRate, data.partsNb);
       
-      // Callout box (beige accent)
+      // Simple callout with amount - white background, subtle border
       slide.addShape('rect', {
-        x: calloutX,
+        x: calloutX + (segmentWidth - 0.03) / 2 - 0.7, // Centered under segment
         y: LAYOUT.callout.y,
-        w: segmentWidth - 0.02,
+        w: 1.4,
         h: LAYOUT.callout.height,
-        fill: { color: 'F5F0E8' }, // Beige clair
-        line: { color: theme.accent.replace('#', ''), width: 1 },
+        fill: { color: 'FFFFFF' },
+        line: { color: theme.accent.replace('#', ''), width: 0.75 },
       });
       
-      // Amount in bracket
+      // Amount text
       slide.addText(euro(amountInBracket), {
-        x: calloutX,
+        x: calloutX + (segmentWidth - 0.03) / 2 - 0.7,
         y: LAYOUT.callout.y,
-        w: segmentWidth - 0.02,
+        w: 1.4,
         h: LAYOUT.callout.height,
-        fontSize: 11,
+        fontSize: 10,
         fontFace: TYPO.fontFace,
         color: theme.textMain.replace('#', ''),
         bold: true,
@@ -420,50 +493,41 @@ export function buildIrSynthesis(
     }
   }
   
-  // ========== TAX RESULT (CENTER) ==========
-  // Decorative line above
-  slide.addShape('line', {
-    x: slideWidth / 2 - 2,
-    y: LAYOUT.result.y - 0.15,
-    w: 4,
-    h: 0,
-    line: { color: theme.accent.replace('#', ''), width: 1.5 },
-  });
-  
-  // Label
-  slide.addText('Estimation du montant de votre impôt sur le revenu', {
+  // ========== TAX RESULT (HERO SECTION) ==========
+  // Label - "Estimation du montant de votre impôt sur le revenu :"
+  slide.addText('Estimation du montant de votre impôt sur le revenu :', {
     x: LAYOUT.marginX,
-    y: LAYOUT.result.y,
-    w: slideWidth - LAYOUT.marginX * 2,
+    y: LAYOUT.result.labelY,
+    w: slideWidth - LAYOUT.marginX * 2 - 2.5, // Leave space for value
     h: 0.35,
-    fontSize: 14,
+    fontSize: 12,
     fontFace: TYPO.fontFace,
     color: theme.textBody.replace('#', ''),
-    align: 'center',
+    align: 'right',
     valign: 'middle',
   });
   
-  // Tax amount (large, bold)
+  // Tax amount (inline with label, bold, prominent)
   slide.addText(data.irNet === 0 ? 'Non imposable' : euro(data.irNet), {
-    x: LAYOUT.marginX,
-    y: LAYOUT.result.y + 0.35,
-    w: slideWidth - LAYOUT.marginX * 2,
-    h: 0.55,
-    fontSize: 28,
+    x: slideWidth / 2 + 1.5,
+    y: LAYOUT.result.labelY,
+    w: 3,
+    h: 0.35,
+    fontSize: 16,
     fontFace: TYPO.fontFace,
     color: theme.textMain.replace('#', ''),
     bold: true,
-    align: 'center',
+    align: 'left',
     valign: 'middle',
   });
   
-  // Decorative line below
+  // Decorative line below (premium separator)
   slide.addShape('line', {
-    x: slideWidth / 2 - 2,
-    y: LAYOUT.result.y + LAYOUT.result.height + 0.05,
-    w: 4,
+    x: slideWidth / 2 - 2.5,
+    y: LAYOUT.result.lineY,
+    w: 5,
     h: 0,
-    line: { color: theme.accent.replace('#', ''), width: 1.5 },
+    line: { color: theme.accent.replace('#', ''), width: 1 },
   });
   
   // ========== MARGIN TO NEXT TMI ==========
