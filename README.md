@@ -1016,19 +1016,23 @@ N. End            → Mentions légales crédit
 N. End            → Mentions légales crédit
 ```
 
-### Slide Synthèse Globale (Multi-Prêts) - Design Premium Aéré
+### Slide Synthèse Globale (Multi-Prêts) - Design Premium
 
-Layout ultra-lisible en **3 secondes** pour montages multi-prêts :
+Layout reproduisant fidèlement la maquette de référence :
 
 | Zone | Contenu | Style |
 |------|---------|-------|
-| **HERO** | Mensualité initiale (en haut, proéminent) | 32pt bold, centré |
-| **KPIs** | Capital total, Durée max, Coût total | 3 colonnes icônes (compactes) |
-| **Timeline Paliers** | Évolution des mensualités par période | Segments colorés avec dates + montants |
-| **Assurance Décès** | Barre de couverture sur la durée | Mini-bar avec coût total |
-| **Footer info** | Total remboursé + badge lissage | Aligné footer |
+| **HERO** | "VOTRE MENSUALITÉ" + valeur | 28pt bold, centré |
+| **KPIs** | Capital total, Durée max, Coût total | 3 colonnes icônes |
+| **Timeline Paliers** | 2 segments colorés (vert foncé/clair) + dates au-dessus | Mensualité dans chaque segment |
+| **Barres grises** | Ticks gris avec labels capital ("400 K€", "300 K€") | Sous la timeline |
+| **Bottom row** | 3 icônes : Total remboursé, Lissage, Assurance décès | Aligné en bas |
 
-**Règle subtitle immuable** : Le sous-titre est TOUJOURS positionné via `COORDS_CONTENT.subtitle` (y=1.7956, sous la barre de soulignement) et stylé via `addTextBox()` helper. Interdit de repositionner manuellement.
+### Langue fr-FR
+
+Tous les textes PPTX utilisent `lang: 'fr-FR'` pour la vérification orthographique française dans PowerPoint :
+- Appliqué via le helper `addTextBox()` (paramètre automatique)
+- Également sur les `slide.addText()` directs dans les builders
 
 ### Slides Chapitre (IR + Crédit)
 
@@ -1046,21 +1050,34 @@ Même layout que la synthèse mono-prêt, avec titre "SYNTHÈSE PRÊT N°X" :
 | **Visual** | Barre Capital vs Coût | Split bar proportionnelle |
 | **HERO** | Coût total du prêt | 24pt bold, centré |
 
-### Annexe Multi-Prêts (version compacte)
+### Annexe Multi-Prêts (style ingénieur patrimonial)
 
-L'annexe utilise un format compact pour éviter le débordement avec 3 prêts :
-- **Introduction globale** : Capital total, durée, résumé compact des prêts sur une ligne
-- **Lissage** (si activé) : Une ligne courte
-- **Coûts** : Intérêts + Assurance = Total remboursé (format compact)
-- **Avertissement** : Version courte en une ligne
+L'annexe utilise un style professionnel avec phrases complètes :
+- **Introduction** : Présentation du montage (capital total, durée, nombre de prêts)
+- **Détail par prêt** : Caractéristiques complètes (capital, durée, taux, mensualité, coût)
+- **Lissage** (si activé) : Explication pédagogique du mécanisme
+- **Coûts globaux** : Intérêts + Assurance + Total remboursé
+- **Avertissement** : Mention légale complète
 
-### Tableau d'Amortissement Multi-Prêts
+### Tableau d'Amortissement Combiné Multi-Prêts
 
-Structure avec sections et hiérarchie typographique :
-- **Section headers** : "PRÊT PRINCIPAL N°1", "PRÊT N°2", etc. (bold 11pt, fond coloré)
-- **Lignes principales** : Annuité, CRD (bold 9pt)
-- **Lignes secondaires** : Intérêts, Assurance, Capital amorti (regular 8pt)
-- **Pagination** : Max 8 années par slide, sections groupées par prêt
+Structure reproduisant fidèlement la maquette de référence :
+
+1. **Section GLOBALE d'abord** (totaux agrégés sur tous les prêts) :
+   - Annuité globale (hors ass.) - bold
+   - Intérêts - regular
+   - Assurance - regular
+   - Capital amorti - regular
+   - CRD fin d'année - bold, fond vert clair
+
+2. **Sections par prêt ensuite** (Prêt N°1, N°2, N°3) :
+   - Prêt N°X Annuité (hors ass.)
+   - Assurance
+   - Capital amorti
+   - CRD fin de période
+
+- **Pagination** : Max 8 années par slide (1/2, 2/2, etc.)
+- **Style** : En-tête vert foncé, alternance de fonds, bordures fines
 
 ### Fichiers concernés
 

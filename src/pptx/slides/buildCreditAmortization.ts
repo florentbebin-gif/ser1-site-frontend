@@ -50,13 +50,21 @@ const LAYOUT = {
   tableMaxH: CONTENT_BOTTOM_Y - CONTENT_TOP_Y - 0.20,
 } as const;
 
-// Row labels (metrics shown in rows) - secondary typography
-const ROW_LABELS = [
-  'Annuité (hors ass.)',
+// Row labels for GLOBAL section (aggregated across all loans)
+const GLOBAL_ROW_LABELS = [
+  'Annuité globale (hors ass.)',
   'Intérêts',
   'Assurance',
   'Capital amorti',
   'CRD fin d\'année',
+];
+
+// Row labels for PER-LOAN sections (simplified)
+const LOAN_ROW_LABELS = [
+  'Annuité (hors ass.)',
+  'Assurance',
+  'Capital amorti',
+  'CRD fin de période',
 ];
 
 /**
@@ -255,60 +263,109 @@ export function buildCreditAmortization(
     ];
   };
   
-  // Build table rows
+  // Build table rows - COMBINED structure matching reference:
+  // 1. GLOBAL section first (aggregated totals)
+  // 2. Per-loan sections (Prêt N°1, N°2, N°3)
   const tableRows: PptxGenJS.TableRow[] = [headerRow];
   
+  // Helper to compute global aggregates per year
+  const computeGlobalAggregates = () => {
+    // Group by periode (year) and sum across all loans
+    const yearMap = new Map<string, { annuite: number; interet: number; assurance: number; amort: number; crd: number }>();
+    allRows.forEach(r => {
+      const existing = yearMap.get(r.periode) || { annuite: 0, interet: 0, assurance: 0, amort: 0, crd: 0 };
+      yearMap.set(r.periode, {
+        annuite: existing.annuite + r.annuite,
+        interet: existing.interet + r.interet,
+        assurance: existing.assurance + r.assurance,
+        amort: existing.amort + r.amort,
+        crd: existing.crd + r.crd,
+      });
+    });
+    return yearMap;
+  };
+  
+  // CRD row with special styling (light green background, bold)
+  const buildCrdRow = (label: string, values: string[], rowIndex: number): PptxGenJS.TableCell[] => {
+    const crdFill = lightenColor(theme.colors.color1.replace('#', ''), 0.75);
+    return [
+      {
+        text: label,
+        options: {
+          fill: { color: crdFill },
+          color: theme.textMain.replace('#', ''),
+          bold: true,
+          fontSize: 9,
+          fontFace: TYPO.fontFace,
+          align: 'left' as const,
+          valign: 'middle' as const,
+        },
+      },
+      ...values.map(val => ({
+        text: val,
+        options: {
+          fill: { color: crdFill },
+          color: theme.textMain.replace('#', ''),
+          bold: true,
+          fontSize: 9,
+          fontFace: TYPO.fontFace,
+          align: 'right' as const,
+          valign: 'middle' as const,
+        },
+      })),
+    ];
+  };
+  
   if (isMultiLoan) {
-    // Multi-loan: add section headers + data for each loan
+    // ===== GLOBAL SECTION (aggregated totals) =====
+    const globalAggregates = computeGlobalAggregates();
+    const years = Array.from(new Set(allRows.map(r => r.periode))).sort();
+    
+    const globalAnnuite = years.map(y => euro(globalAggregates.get(y)?.annuite || 0));
+    const globalInteret = years.map(y => euro(globalAggregates.get(y)?.interet || 0));
+    const globalAssurance = years.map(y => euro(globalAggregates.get(y)?.assurance || 0));
+    const globalAmort = years.map(y => euro(globalAggregates.get(y)?.amort || 0));
+    const globalCrd = years.map(y => euro(globalAggregates.get(y)?.crd || 0));
+    
+    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[0], globalAnnuite, 0, false));
+    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[1], globalInteret, 1, true));
+    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[2], globalAssurance, 2, true));
+    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[3], globalAmort, 3, true));
+    tableRows.push(buildCrdRow(GLOBAL_ROW_LABELS[4], globalCrd, 4));
+    
+    // ===== PER-LOAN SECTIONS =====
     const sortedLoanIndices = Array.from(loanGroups.keys()).sort((a, b) => a - b);
     
     sortedLoanIndices.forEach((loanIdx, sectionIdx) => {
       const loanRows = loanGroups.get(loanIdx)!;
       
-      // Section header
-      tableRows.push(buildSectionHeader(loanIdx));
+      // Extract values for this loan's years (padded to match all years)
+      const loanYearMap = new Map(loanRows.map(r => [r.periode, r]));
+      const annuiteValues = years.map(y => loanYearMap.has(y) ? euro(loanYearMap.get(y)!.annuite) : '—');
+      const assuranceValues = years.map(y => loanYearMap.has(y) ? euro(loanYearMap.get(y)!.assurance) : '—');
+      const amortValues = years.map(y => loanYearMap.has(y) ? euro(loanYearMap.get(y)!.amort) : '—');
+      const crdValues = years.map(y => loanYearMap.has(y) ? euro(loanYearMap.get(y)!.crd) : '—');
       
-      // Extract values for this loan's years
-      const annuiteValues = loanRows.map(r => euro(r.annuite));
-      const interetValues = loanRows.map(r => euro(r.interet));
-      const assuranceValues = loanRows.map(r => euro(r.assurance));
-      const amortValues = loanRows.map(r => euro(r.amort));
-      const crdValues = loanRows.map(r => euro(r.crd));
-      
-      // Pad arrays to match total columns (for multi-loan alignment)
-      const padValues = (vals: string[]): string[] => {
-        const result: string[] = [];
-        let valIdx = 0;
-        allRows.forEach(r => {
-          if (r.loanIndex === loanIdx || (!r.loanIndex && loanIdx === 1)) {
-            result.push(vals[valIdx++] || '');
-          } else {
-            result.push('—');
-          }
-        });
-        return result;
-      };
-      
-      // Data rows (secondary typography for details)
-      tableRows.push(buildDataRow(ROW_LABELS[0], padValues(annuiteValues), sectionIdx * 6 + 0, false));
-      tableRows.push(buildDataRow(ROW_LABELS[1], padValues(interetValues), sectionIdx * 6 + 1, true));
-      tableRows.push(buildDataRow(ROW_LABELS[2], padValues(assuranceValues), sectionIdx * 6 + 2, true));
-      tableRows.push(buildDataRow(ROW_LABELS[3], padValues(amortValues), sectionIdx * 6 + 3, true));
-      tableRows.push(buildDataRow(ROW_LABELS[4], padValues(crdValues), sectionIdx * 6 + 4, false));
+      // Section header row with loan label
+      const loanLabel = `Prêt N°${loanIdx} ${LOAN_ROW_LABELS[0]}`;
+      tableRows.push(buildDataRow(loanLabel, annuiteValues, (sectionIdx + 1) * 5, false));
+      tableRows.push(buildDataRow(LOAN_ROW_LABELS[1], assuranceValues, (sectionIdx + 1) * 5 + 1, true));
+      tableRows.push(buildDataRow(LOAN_ROW_LABELS[2], amortValues, (sectionIdx + 1) * 5 + 2, true));
+      tableRows.push(buildDataRow(LOAN_ROW_LABELS[3], crdValues, (sectionIdx + 1) * 5 + 3, true));
     });
   } else {
-    // Single loan: simple table without section headers
+    // Single loan: simple table with global labels
     const annuiteValues = allRows.map(r => euro(r.annuite));
     const interetValues = allRows.map(r => euro(r.interet));
     const assuranceValues = allRows.map(r => euro(r.assurance));
     const amortValues = allRows.map(r => euro(r.amort));
     const crdValues = allRows.map(r => euro(r.crd));
     
-    tableRows.push(buildDataRow(ROW_LABELS[0], annuiteValues, 0, false));
-    tableRows.push(buildDataRow(ROW_LABELS[1], interetValues, 1, true));
-    tableRows.push(buildDataRow(ROW_LABELS[2], assuranceValues, 2, true));
-    tableRows.push(buildDataRow(ROW_LABELS[3], amortValues, 3, true));
-    tableRows.push(buildDataRow(ROW_LABELS[4], crdValues, 4, false));
+    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[0], annuiteValues, 0, false));
+    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[1], interetValues, 1, true));
+    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[2], assuranceValues, 2, true));
+    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[3], amortValues, 3, true));
+    tableRows.push(buildCrdRow(GLOBAL_ROW_LABELS[4], crdValues, 4));
   }
   
   // Add table

@@ -1,15 +1,15 @@
 /**
  * Credit Global Synthesis Slide Builder
  * 
- * Premium multi-loan overview slide - AERATED DESIGN
- * Comprehensible in 3 seconds:
- * - HERO at top (Mensualité initiale)
- * - 3 KPIs (Capital total, Durée max, Coût total)
- * - Mini-cards for each loan
- * - Smoothing badge if enabled
+ * REPRODUCES EXACTLY the reference mockup:
+ * - Title + beige underline
+ * - Subtitle: "Vue d'ensemble de votre montage multi-prêts"
+ * - Central: "VOTRE MENSUALITÉ" + big value
+ * - 3 KPIs with thin icons (Capital, Durée, Coût)
+ * - Timeline with 2 colored segments + dates above + gray ticks below with capital labels
+ * - Bottom row: 3 icons (Total remboursé, Lissage, Assurance décès)
  * 
  * IMPORTANT: Uses standard Serenity template (title, accent line, subtitle, footer)
- * Subtitle MUST use COORDS_CONTENT.subtitle (below accent line)
  */
 
 import PptxGenJS from 'pptxgenjs';
@@ -19,7 +19,6 @@ import {
   TYPO,
   COORDS_CONTENT, 
   COORDS_FOOTER,
-  addTextBox,
   addHeader,
   addFooter,
   roleColor,
@@ -28,48 +27,41 @@ import { addBusinessIconToSlide } from '../icons/addBusinessIcon';
 import type { BusinessIconName } from '../icons/addBusinessIcon';
 
 // ============================================================================
-// CONSTANTS - PREMIUM AERATED LAYOUT
+// CONSTANTS - LAYOUT MATCHING REFERENCE MOCKUP
 // ============================================================================
 
-// Content zone boundaries (below subtitle, above footer)
 const CONTENT_TOP_Y = COORDS_CONTENT.content.y; // 2.3754
 const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
 
 const LAYOUT = {
-  // HERO zone (mensualité initiale) - prominent at top
+  // HERO zone (VOTRE MENSUALITÉ)
   hero: {
     y: CONTENT_TOP_Y + 0.05,
-    height: 0.85,
+    height: 0.75,
   },
   
-  // 3 KPIs row - centered, compact
+  // 3 KPIs row
   kpi: {
-    y: CONTENT_TOP_Y + 0.95,
-    height: 0.85,
+    y: CONTENT_TOP_Y + 0.85,
+    height: 0.80,
     marginX: 2.0,
-    gap: 0.4,
-    iconSize: 0.4,
+    gap: 0.5,
+    iconSize: 0.35,
   },
   
-  // Timeline paliers (central visual)
+  // Timeline with paliers
   timeline: {
-    y: CONTENT_TOP_Y + 1.95,
-    height: 1.1,
-    marginX: 1.2,
-    barHeight: 0.5,
+    y: CONTENT_TOP_Y + 1.75,
+    marginX: 1.0,
+    barHeight: 0.40,
+    tickHeight: 0.18,
   },
   
-  // Insurance mini-bar
-  insurance: {
-    y: CONTENT_TOP_Y + 3.15,
-    height: 0.55,
-    marginX: 1.2,
-  },
-  
-  // Footer info (total remboursé + smoothing badge)
-  footerInfo: {
-    y: CONTENT_BOTTOM_Y - 0.45,
-    height: 0.35,
+  // Bottom info row (3 elements with icons)
+  bottomRow: {
+    y: CONTENT_BOTTOM_Y - 0.55,
+    height: 0.45,
+    marginX: 1.0,
   },
 };
 
@@ -81,6 +73,13 @@ function formatEuro(n: number): string {
   return Math.round(n).toLocaleString('fr-FR') + ' €';
 }
 
+function formatEuroShort(n: number): string {
+  if (n >= 1000) {
+    return Math.round(n / 1000).toLocaleString('fr-FR') + ' K€';
+  }
+  return Math.round(n).toLocaleString('fr-FR') + ' €';
+}
+
 function formatDuree(mois: number): string {
   const annees = Math.floor(mois / 12);
   const moisReste = mois % 12;
@@ -88,16 +87,13 @@ function formatDuree(mois: number): string {
   return `${annees} an${annees > 1 ? 's' : ''} ${moisReste} mois`;
 }
 
-/**
- * Get color for loan index (using theme variations)
- */
-function getLoanColor(index: number, theme: PptxThemeRoles): string {
-  const colors = [
-    roleColor(theme, 'bgMain'),      // Loan 1: main color
-    roleColor(theme, 'accent'),      // Loan 2: accent
-    theme.colors.color3.replace('#', ''), // Loan 3: color3
-  ];
-  return colors[index - 1] || colors[0];
+function formatDate(dateStr: string): string {
+  // Convert "À partir de 01/2025" or date string to "01/2025"
+  if (dateStr.includes('/')) {
+    const match = dateStr.match(/(\d{2}\/\d{4})/);
+    return match ? match[1] : dateStr;
+  }
+  return dateStr;
 }
 
 /**
@@ -113,7 +109,7 @@ function lightenColor(hex: string, percent: number): string {
 }
 
 // ============================================================================
-// MAIN BUILDER - PREMIUM AERATED DESIGN
+// MAIN BUILDER - MATCHING REFERENCE MOCKUP EXACTLY
 // ============================================================================
 
 export function buildCreditGlobalSynthesis(
@@ -128,44 +124,29 @@ export function buildCreditGlobalSynthesis(
   // White background
   slide.background = { color: 'FFFFFF' };
   
-  // ========== STANDARD HEADER (centralized) ==========
+  // ========== STANDARD HEADER ==========
   addHeader(slide, 'Synthèse globale de votre financement', 'Vue d\'ensemble de votre montage multi-prêts', theme, 'content');
   
-  // ========== HERO ZONE: MENSUALITÉ INITIALE ==========
-  
+  // ========== HERO: VOTRE MENSUALITÉ ==========
   const heroY = LAYOUT.hero.y;
   const initialMensualite = data.paymentPeriods.length > 0 ? data.paymentPeriods[0].total : 0;
   
-  // HERO label
   slide.addText('VOTRE MENSUALITÉ', {
-    x: 0,
-    y: heroY,
-    w: SLIDE_SIZE.width,
-    h: 0.35,
-    fontSize: 12,
-    color: roleColor(theme, 'textBody'),
-    fontFace: TYPO.fontFace,
-    align: 'center',
+    x: 0, y: heroY, w: SLIDE_SIZE.width, h: 0.30,
+    fontSize: 11, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
+    lang: 'fr-FR',
   });
   
-  // HERO value (big, prominent)
   slide.addText(formatEuro(initialMensualite) + ' / mois', {
-    x: 0,
-    y: heroY + 0.35,
-    w: SLIDE_SIZE.width,
-    h: 0.6,
-    fontSize: 32,
-    bold: true,
-    color: roleColor(theme, 'textMain'),
-    fontFace: TYPO.fontFace,
-    align: 'center',
+    x: 0, y: heroY + 0.28, w: SLIDE_SIZE.width, h: 0.50,
+    fontSize: 28, bold: true, color: roleColor(theme, 'textMain'), fontFace: TYPO.fontFace, align: 'center',
+    lang: 'fr-FR',
   });
   
-  // ========== 3 KPIs ROW (Capital, Durée, Coût total) ==========
-  
+  // ========== 3 KPIs ROW ==========
   const kpiData = [
     { icon: 'money' as BusinessIconName, label: 'Capital total', value: formatEuro(data.totalCapital) },
-    { icon: 'calculator' as BusinessIconName, label: 'Durée maximale', value: formatDuree(data.maxDureeMois) },
+    { icon: 'calendar' as BusinessIconName, label: 'Durée maximale', value: formatDuree(data.maxDureeMois) },
     { icon: 'chart-up' as BusinessIconName, label: 'Coût total', value: formatEuro(data.coutTotalCredit) },
   ];
   
@@ -177,223 +158,163 @@ export function buildCreditGlobalSynthesis(
   kpiData.forEach((kpi, idx) => {
     const kpiX = LAYOUT.kpi.marginX + idx * (kpiW + LAYOUT.kpi.gap);
     
-    // Icon (centered)
-    addBusinessIconToSlide(
-      slide,
-      kpi.icon,
-      {
-        x: kpiX + kpiW / 2 - LAYOUT.kpi.iconSize / 2,
-        y: kpiY,
-        w: LAYOUT.kpi.iconSize,
-        h: LAYOUT.kpi.iconSize,
-      },
-      theme,
-      'accent'
-    );
+    addBusinessIconToSlide(slide, kpi.icon, {
+      x: kpiX + kpiW / 2 - LAYOUT.kpi.iconSize / 2,
+      y: kpiY,
+      w: LAYOUT.kpi.iconSize,
+      h: LAYOUT.kpi.iconSize,
+    }, theme, 'accent');
     
-    // Label
     slide.addText(kpi.label, {
-      x: kpiX,
-      y: kpiY + LAYOUT.kpi.iconSize + 0.08,
-      w: kpiW,
-      h: 0.22,
-      fontSize: 10,
-      color: roleColor(theme, 'textBody'),
-      fontFace: TYPO.fontFace,
-      align: 'center',
+      x: kpiX, y: kpiY + LAYOUT.kpi.iconSize + 0.06, w: kpiW, h: 0.20,
+      fontSize: 10, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
+      lang: 'fr-FR',
     });
     
-    // Value
     slide.addText(kpi.value, {
-      x: kpiX,
-      y: kpiY + LAYOUT.kpi.iconSize + 0.26,
-      w: kpiW,
-      h: 0.28,
-      fontSize: 14,
-      bold: true,
-      color: roleColor(theme, 'textMain'),
-      fontFace: TYPO.fontFace,
-      align: 'center',
+      x: kpiX, y: kpiY + LAYOUT.kpi.iconSize + 0.24, w: kpiW, h: 0.26,
+      fontSize: 14, bold: true, color: roleColor(theme, 'textMain'), fontFace: TYPO.fontFace, align: 'center',
+      lang: 'fr-FR',
     });
   });
   
-  // ========== TIMELINE PALIERS (payment periods visualization) ==========
-  
+  // ========== TIMELINE WITH PALIERS ==========
+  const periods = data.paymentPeriods;
   const timelineY = LAYOUT.timeline.y;
   const timelineW = SLIDE_SIZE.width - 2 * LAYOUT.timeline.marginX;
-  const periods = data.paymentPeriods;
   
   if (periods.length > 0) {
-    // Timeline label
-    slide.addText('ÉVOLUTION DE VOS MENSUALITÉS', {
-      x: LAYOUT.timeline.marginX,
-      y: timelineY,
-      w: timelineW,
-      h: 0.25,
-      fontSize: 10,
-      bold: true,
-      color: roleColor(theme, 'textBody'),
-      fontFace: TYPO.fontFace,
-      align: 'left',
+    const segmentCount = Math.min(periods.length, 2); // Max 2 segments like reference
+    const segmentW = timelineW / segmentCount;
+    const barY = timelineY + 0.22;
+    
+    // Compute capital per period from loans
+    const capitalPeriod1 = data.totalCapital;
+    const capitalPeriod2 = data.loans.length > 1 
+      ? data.loans.reduce((sum, loan) => loan.dureeMois > (data.loans[0]?.dureeMois || 0) ? sum + loan.capital : sum, 0)
+      : data.totalCapital;
+    
+    // Date labels ABOVE the bars
+    const startYear = new Date().getFullYear();
+    const period1End = Math.floor((data.loans[0]?.dureeMois || data.maxDureeMois) / 12);
+    const dateLabels = [
+      `01/${startYear}`,
+      `01/${startYear + period1End}`,
+      `01/${startYear + Math.floor(data.maxDureeMois / 12)}`,
+    ];
+    
+    // Draw date labels above
+    slide.addText(dateLabels[0], {
+      x: LAYOUT.timeline.marginX, y: timelineY, w: 0.6, h: 0.20,
+      fontSize: 8, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'left',
+      lang: 'fr-FR',
     });
     
-    // Calculate segment widths based on periods (equal segments for simplicity)
-    const segmentCount = Math.min(periods.length, 4); // Max 4 segments to avoid clutter
-    const segmentGap = 0.08;
-    const segmentW = (timelineW - (segmentCount - 1) * segmentGap) / segmentCount;
-    const barY = timelineY + 0.30;
+    if (segmentCount >= 2) {
+      slide.addText(dateLabels[1], {
+        x: LAYOUT.timeline.marginX + segmentW - 0.3, y: timelineY, w: 0.6, h: 0.20,
+        fontSize: 8, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
+        lang: 'fr-FR',
+      });
+    }
     
-    periods.slice(0, 4).forEach((period, idx) => {
-      const segX = LAYOUT.timeline.marginX + idx * (segmentW + segmentGap);
-      const segColor = idx === 0 ? roleColor(theme, 'bgMain') : roleColor(theme, 'accent');
+    slide.addText(dateLabels[dateLabels.length - 1], {
+      x: LAYOUT.timeline.marginX + timelineW - 0.6, y: timelineY, w: 0.6, h: 0.20,
+      fontSize: 8, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'right',
+      lang: 'fr-FR',
+    });
+    
+    // Draw colored segments
+    periods.slice(0, 2).forEach((period, idx) => {
+      const segX = LAYOUT.timeline.marginX + idx * segmentW;
+      const segColor = idx === 0 ? roleColor(theme, 'bgMain') : lightenColor(roleColor(theme, 'bgMain'), 0.4);
       
-      // Segment bar
       slide.addShape('rect', {
-        x: segX,
-        y: barY,
-        w: segmentW,
-        h: LAYOUT.timeline.barHeight,
+        x: segX, y: barY, w: segmentW, h: LAYOUT.timeline.barHeight,
         fill: { color: segColor },
       });
       
-      // Period label (top of bar)
-      slide.addText(period.label, {
-        x: segX,
-        y: barY + 0.05,
-        w: segmentW,
-        h: 0.18,
-        fontSize: 8,
-        color: 'FFFFFF',
-        fontFace: TYPO.fontFace,
-        align: 'center',
-      });
-      
-      // Mensualité value (center of bar)
       slide.addText(formatEuro(period.total) + '/mois', {
-        x: segX,
-        y: barY + 0.22,
-        w: segmentW,
-        h: 0.22,
-        fontSize: 11,
-        bold: true,
-        color: 'FFFFFF',
-        fontFace: TYPO.fontFace,
-        align: 'center',
+        x: segX, y: barY + 0.08, w: segmentW, h: 0.24,
+        fontSize: 11, bold: true, color: 'FFFFFF', fontFace: TYPO.fontFace, align: 'center',
+        lang: 'fr-FR',
       });
     });
-  }
-  
-  // ========== INSURANCE MINI-BAR (death coverage visualization) ==========
-  
-  const insuranceY = LAYOUT.insurance.y;
-  const insuranceW = SLIDE_SIZE.width - 2 * LAYOUT.insurance.marginX;
-  const totalInsuranceCost = data.coutTotalAssurance;
-  
-  if (totalInsuranceCost > 0) {
-    // Insurance label
-    slide.addText('COUVERTURE ASSURANCE DÉCÈS', {
-      x: LAYOUT.insurance.marginX,
-      y: insuranceY,
-      w: insuranceW * 0.4,
-      h: 0.22,
-      fontSize: 9,
-      bold: true,
-      color: roleColor(theme, 'textBody'),
-      fontFace: TYPO.fontFace,
-      align: 'left',
-    });
     
-    // Insurance bar (full duration coverage)
-    const barX = LAYOUT.insurance.marginX + insuranceW * 0.42;
-    const barW = insuranceW * 0.38;
+    // Draw gray ticks below with capital labels
+    const tickY = barY + LAYOUT.timeline.barHeight + 0.08;
+    const tickGap = 0.02;
     
-    slide.addShape('rect', {
-      x: barX,
-      y: insuranceY,
-      w: barW,
-      h: 0.22,
-      fill: { color: lightenColor(roleColor(theme, 'accent'), 0.6) },
-      line: { color: roleColor(theme, 'accent'), width: 0.5 },
-    });
-    
-    // Duration label inside bar
-    slide.addText(`Couverture sur ${formatDuree(data.maxDureeMois)}`, {
-      x: barX,
-      y: insuranceY,
-      w: barW,
-      h: 0.22,
-      fontSize: 8,
-      color: roleColor(theme, 'textMain'),
-      fontFace: TYPO.fontFace,
-      align: 'center',
-      valign: 'middle',
-    });
-    
-    // Cost label
-    slide.addText(`Coût : ${formatEuro(totalInsuranceCost)}`, {
-      x: LAYOUT.insurance.marginX + insuranceW * 0.82,
-      y: insuranceY,
-      w: insuranceW * 0.18,
-      h: 0.22,
-      fontSize: 9,
-      bold: true,
-      color: roleColor(theme, 'textMain'),
-      fontFace: TYPO.fontFace,
-      align: 'right',
+    periods.slice(0, 2).forEach((period, pIdx) => {
+      const periodYears = pIdx === 0 
+        ? Math.floor((data.loans[0]?.dureeMois || data.maxDureeMois) / 12) 
+        : Math.floor(data.maxDureeMois / 12) - Math.floor((data.loans[0]?.dureeMois || 0) / 12);
+      const capitalLabel = pIdx === 0 ? formatEuroShort(capitalPeriod1) : formatEuroShort(capitalPeriod2);
+      const tickCount = Math.min(periodYears, 10);
+      const tickW = (segmentW - (tickCount - 1) * tickGap) / tickCount;
+      
+      for (let t = 0; t < tickCount; t++) {
+        const tickX = LAYOUT.timeline.marginX + pIdx * segmentW + t * (tickW + tickGap);
+        
+        // Gray tick
+        slide.addShape('rect', {
+          x: tickX, y: tickY, w: tickW, h: LAYOUT.timeline.tickHeight,
+          fill: { color: 'D0D0D0' },
+        });
+        
+        // Capital label under each tick
+        slide.addText(capitalLabel, {
+          x: tickX, y: tickY + LAYOUT.timeline.tickHeight + 0.02, w: tickW, h: 0.14,
+          fontSize: 6, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
+          lang: 'fr-FR',
+        });
+      }
     });
   }
   
-  // ========== FOOTER INFO (Total remboursé + Smoothing badge) ==========
+  // ========== BOTTOM ROW: 3 ELEMENTS WITH ICONS ==========
+  const bottomY = LAYOUT.bottomRow.y;
+  const bottomW = SLIDE_SIZE.width - 2 * LAYOUT.bottomRow.marginX;
+  const bottomItemW = bottomW / 3;
+  const iconSize = 0.32;
   
-  const footerInfoY = LAYOUT.footerInfo.y;
-  
-  // Total remboursé
   const totalRembourse = data.totalCapital + data.coutTotalCredit;
-  slide.addText(`Total remboursé : ${formatEuro(totalRembourse)}`, {
-    x: COORDS_CONTENT.margin.x,
-    y: footerInfoY,
-    w: COORDS_CONTENT.margin.w * 0.5,
-    h: 0.3,
-    fontSize: 11,
-    color: roleColor(theme, 'textBody'),
-    fontFace: TYPO.fontFace,
-    align: 'left',
+  const smoothingLabel = data.smoothingEnabled 
+    ? (data.smoothingMode === 'duree' ? 'Lissage activé : durée constante' : 'Lissage activé : mensualité constante')
+    : '';
+  
+  const bottomItems = [
+    { icon: 'building' as BusinessIconName, label: 'Total remboursé :', value: formatEuro(totalRembourse) },
+    { icon: 'umbrella' as BusinessIconName, label: smoothingLabel, value: '' },
+    { icon: 'shield' as BusinessIconName, label: 'Coût assurance décès :', value: formatEuro(data.coutTotalAssurance) },
+  ];
+  
+  bottomItems.forEach((item, idx) => {
+    const itemX = LAYOUT.bottomRow.marginX + idx * bottomItemW;
+    
+    addBusinessIconToSlide(slide, item.icon, {
+      x: itemX + bottomItemW / 2 - iconSize / 2,
+      y: bottomY,
+      w: iconSize,
+      h: iconSize,
+    }, theme, 'textBody');
+    
+    if (item.value) {
+      slide.addText(`${item.label} ${item.value}`, {
+        x: itemX, y: bottomY + iconSize + 0.04, w: bottomItemW, h: 0.18,
+        fontSize: 9, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
+        lang: 'fr-FR',
+      });
+    } else if (item.label) {
+      slide.addText(item.label, {
+        x: itemX, y: bottomY + iconSize + 0.04, w: bottomItemW, h: 0.18,
+        fontSize: 9, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
+        lang: 'fr-FR',
+      });
+    }
   });
   
-  // Smoothing badge (if enabled)
-  if (data.smoothingEnabled) {
-    const smoothingLabel = data.smoothingMode === 'duree' 
-      ? 'Lissage activé : durée constante' 
-      : 'Lissage activé : mensualité constante';
-    
-    // Badge background
-    const badgeX = COORDS_CONTENT.margin.x + COORDS_CONTENT.margin.w - 3.2;
-    slide.addShape('rect', {
-      x: badgeX,
-      y: footerInfoY + 0.02,
-      w: 3.0,
-      h: 0.26,
-      fill: { color: lightenColor(roleColor(theme, 'accent'), 0.7) },
-      line: { color: roleColor(theme, 'accent'), width: 0.5 },
-    });
-    
-    // Badge text
-    slide.addText(smoothingLabel, {
-      x: badgeX,
-      y: footerInfoY + 0.02,
-      w: 3.0,
-      h: 0.26,
-      fontSize: 9,
-      bold: true,
-      color: roleColor(theme, 'accent'),
-      fontFace: TYPO.fontFace,
-      align: 'center',
-      valign: 'middle',
-    });
-  }
-  
   // ========== STANDARD FOOTER ==========
-  
   addFooter(slide, ctx, slideIndex, 'onLight');
 }
 

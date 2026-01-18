@@ -155,12 +155,13 @@ export async function exportStudyDeck(
   // PptxGenJS allows defining theme colors that appear in the presentation
   const themeColors = theme.colors;
   try {
-    // Define custom theme with all 10 colors
+    // Define custom theme with all 10 colors + French language for proofing
     // These will be available in PowerPoint's theme color palette
     pptx.theme = {
       headFontFace: 'Arial',
       bodyFontFace: 'Arial',
     };
+    // Note: French proofing language is set per-text via lang: 'fr-FR' in addText options
   } catch (e) {
     // Theme definition is optional, continue if not supported
     console.warn('[PPTX Export] Theme colors not fully supported:', e);

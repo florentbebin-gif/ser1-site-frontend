@@ -823,7 +823,7 @@ export function addTextBox(
   validateNoOverflow(rect, 'TextBox');
   const safeRect = clampToSlide(rect);
   
-  // Build text options
+  // Build text options with French proofing language
   const textOptions: PptxGenJS.TextPropsOptions = {
     x: safeRect.x,
     y: safeRect.y,
@@ -836,6 +836,7 @@ export function addTextBox(
     align: style.align || 'left',
     valign: style.valign || 'top',
     wrap: style.wrap !== false, // Default to true for text fitting
+    lang: 'fr-FR', // French proofing language
   };
   
   // Add line spacing if specified (PptxGenJS uses lineSpacingMultiple)
