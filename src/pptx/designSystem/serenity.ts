@@ -235,74 +235,97 @@ export const SHADOW_PARAMS = {
 // ============================================================================
 
 /**
- * Normalize title text by removing trailing whitespace and newlines
- * This prevents empty lines from affecting layout calculations
+ * Normalize title text to force SINGLE LINE
+ * - Trim whitespace
+ * - Replace all newlines with space
+ * - Collapse multiple spaces into one
+ * => Result: title NEVER contains line breaks, NEVER forces 2 lines
  */
 export function normalizeTitleText(text: string): string {
-  return text.trim().replace(/\n+$/g, '');
+  return text
+    .trim()
+    .replace(/\n+/g, ' ')      // Replace ALL newlines with space
+    .replace(/\s+/g, ' ')      // Collapse multiple spaces into one
+    .trim();                    // Final trim
 }
 
 /**
- * Calculate the visual height of title text based on font size and line count
- * This returns the actual height of the rendered text, not the box height
+ * Calculate the visual height of title text
+ * Since title is FORCED to single line after normalization,
+ * height = 1 * fontSize * lineHeightMultiple
  */
 export function calculateTitleTextHeight(
-  titleText: string,
+  _titleText: string,
   fontSize: number,
   lineHeightMultiple: number = 1.15
 ): number {
-  const normalizedText = normalizeTitleText(titleText);
-  const lines = normalizedText.split('\n').length;
+  // Title is always 1 line after normalization
+  const lines = 1;
   
   // Convert font size from points to inches (1 point = 1/72 inch)
   const fontSizeInInches = fontSize / 72;
   const textHeight = lines * fontSizeInInches * lineHeightMultiple;
   
-  if (DEBUG_LAYOUT_ZONES) {
-    console.log('[DEBUG] Title text height calculation:', {
-      originalText: titleText,
-      normalizedText,
-      lines,
-      fontSize,
-      lineHeightMultiple,
-      textHeightInInches: textHeight,
-    });
-  }
-  
   return textHeight;
 }
 
 /**
- * Draw debug borders around layout zones (when DEBUG_LAYOUT_ZONES is true)
+ * Draw debug borders around layout zones and reference lines (when DEBUG_LAYOUT_ZONES is true)
  */
 export function drawDebugLayoutZones(
   slide: PptxGenJS.Slide,
-  variant: 'chapter' | 'content'
+  variant: 'chapter' | 'content',
+  titleTextBottomY?: number,
+  accentLineY?: number
 ): void {
   if (!DEBUG_LAYOUT_ZONES) return;
   
   const layoutZones = variant === 'chapter' ? LAYOUT_ZONES.chapter : LAYOUT_ZONES.content;
-  const debugColor = 'FF0000'; // Red for visibility
+  const debugColorRed = 'FF0000';    // Red for boxes
+  const debugColorGreen = '00FF00'; // Green for titleTextBottomY
+  const debugColorBlue = '0000FF';  // Blue for accentLineY
   
-  // Draw title box border
+  // Draw title box border (RED)
   slide.addShape('rect', {
     x: layoutZones.titleBox.x,
     y: layoutZones.titleBox.y,
     w: layoutZones.titleBox.w,
     h: layoutZones.titleBox.h,
     fill: { color: 'FFFFFF', transparency: 80 },
-    line: { color: debugColor, width: 0.5 },
+    line: { color: debugColorRed, width: 0.5 },
   });
   
-  // Draw subtitle box border
+  // Draw subtitle box border (RED)
   slide.addShape('rect', {
     x: layoutZones.subtitleBox.x,
     y: layoutZones.subtitleBox.y,
     w: layoutZones.subtitleBox.w,
     h: layoutZones.subtitleBox.h,
     fill: { color: 'FFFFFF', transparency: 80 },
-    line: { color: debugColor, width: 0.5 },
+    line: { color: debugColorRed, width: 0.5 },
   });
+  
+  // Draw reference line at titleTextBottomY (GREEN) - proves position is TEXT-based
+  if (titleTextBottomY !== undefined) {
+    slide.addShape('line', {
+      x: layoutZones.titleBox.x,
+      y: titleTextBottomY,
+      w: layoutZones.titleBox.w,
+      h: 0,
+      line: { color: debugColorGreen, width: 0.25, dashType: 'dash' },
+    });
+  }
+  
+  // Draw reference line at accentLineY (BLUE) - shows where bar will be
+  if (accentLineY !== undefined) {
+    slide.addShape('line', {
+      x: layoutZones.titleBox.x,
+      y: accentLineY,
+      w: layoutZones.titleBox.w,
+      h: 0,
+      line: { color: debugColorBlue, width: 0.25, dashType: 'dash' },
+    });
+  }
 }
 export function roleColor(theme: PptxThemeRoles, role: keyof PptxThemeRoles): string {
   const color = theme[role];
@@ -396,33 +419,47 @@ export function addHeader(
   const layoutZones = variant === 'chapter' ? LAYOUT_ZONES.chapter : LAYOUT_ZONES.content;
   const baseCoords = variant === 'chapter' ? COORDS_CHAPTER : COORDS_CONTENT;
   
-  // Draw debug zones if enabled
-  drawDebugLayoutZones(slide, variant);
-  
-  // Normalize title text to remove trailing empty lines
+  // ========== B1: Normalize title to SINGLE LINE ==========
   const normalizedTitleText = normalizeTitleText(titleText);
   
-  // Calculate the actual visual height of the title text
+  // ========== B2: Calculate Y of accent line CENTERED ==========
+  // Title text height (always 1 line after normalization)
   const titleTextHeight = calculateTitleTextHeight(normalizedTitleText, titleFontSize);
   
-  // Calculate positions based on TEXT height, not box height
-  const titleVisualBottomY = layoutZones.titleBox.y + titleTextHeight;
-  const accentLineY = titleVisualBottomY + TEXT_GAPS.afterTitle;
-  const subtitleY = accentLineY + TEXT_GAPS.afterLine;
+  // Bottom of title TEXT (not box)
+  const titleTextBottomY = layoutZones.titleBox.y + titleTextHeight;
   
+  // Top of subtitle (fixed position from layout)
+  const subtitleTopY = layoutZones.subtitleBox.y;
+  
+  // Accent line Y = CENTERED between title text bottom and subtitle top
+  const accentLineY = titleTextBottomY + (subtitleTopY - titleTextBottomY) * 0.5;
+  
+  // ========== B3: Ensure subtitle stays below accent line ==========
+  const minGapAfterLine = 0.08; // minimum gap after accent line
+  const subtitleY = Math.max(subtitleTopY, accentLineY + minGapAfterLine);
+  
+  // ========== C1: Debug mode logging and visual markers ==========
   if (DEBUG_LAYOUT_ZONES) {
-    console.log('[DEBUG] Header positioning:', {
-      variant,
-      normalizedTitleText,
-      titleTextHeight,
-      titleVisualBottomY,
-      accentLineY,
-      subtitleY,
-      subtitleBoxTop: layoutZones.subtitleBox.y,
+    console.log('[DEBUG HEADER]', {
+      slideType: variant,
+      titleOriginal: titleText,
+      titleNormalized: normalizedTitleText,
+      titleBox: layoutZones.titleBox,
+      subtitleBox: layoutZones.subtitleBox,
+      titleTextBottomY: titleTextBottomY.toFixed(3),
+      subtitleTopY: subtitleTopY.toFixed(3),
+      accentLineY: accentLineY.toFixed(3),
+      subtitleY: subtitleY.toFixed(3),
+      gap_title_to_line: (accentLineY - titleTextBottomY).toFixed(3),
+      gap_line_to_subtitle: (subtitleY - accentLineY).toFixed(3),
     });
   }
   
-  // Add title (using original title box for positioning, but text is normalized)
+  // Draw debug zones with reference lines
+  drawDebugLayoutZones(slide, variant, titleTextBottomY, accentLineY);
+  
+  // ========== Render title ==========
   addTextBox(slide, normalizedTitleText, layoutZones.titleBox, {
     fontSize: titleFontSize,
     color: theme.textMain,
@@ -432,17 +469,11 @@ export function addHeader(
     isUpperCase: true,
   });
   
-  // Add accent line at calculated Y position (based on text height)
-  const accentLineCoords = {
+  // ========== Render accent line (CENTERED) ==========
+  slide.addShape('line', {
     x: baseCoords.accentLine.x,
     y: accentLineY,
     w: baseCoords.accentLine.w,
-  };
-  
-  slide.addShape('line', {
-    x: accentLineCoords.x,
-    y: accentLineCoords.y,
-    w: accentLineCoords.w,
     h: 0,
     line: {
       color: roleColor(theme, 'accent'),
@@ -450,7 +481,7 @@ export function addHeader(
     },
   });
   
-  // Add subtitle at calculated Y position
+  // ========== Render subtitle (below accent line) ==========
   const subtitleRect = {
     x: layoutZones.subtitleBox.x,
     y: subtitleY,

@@ -1127,6 +1127,25 @@ Le système de génération PowerPoint suit une architecture modulaire permettan
 - **Header** : Titre (H1 CAPS), sous-titre (H2), accent line
 - **Footer** : Date, disclaimer, numéro de slide
 
+#### Fonction centralisée `addHeader()`
+
+Toutes les slides avec header standard utilisent la fonction centralisée `addHeader()` :
+
+```typescript
+addHeader(slide, titleText, subtitleText, theme, 'content' | 'chapter');
+```
+
+**Comportement** :
+- **Normalisation titre** : Force le titre sur UNE SEULE LIGNE (remplace `\n` par espace, collapse espaces multiples)
+- **Position barre** : Centrée entre le bas du TEXTE du titre et le haut du sous-titre
+- **Sous-titre** : Toujours positionné sous la barre avec gap minimum
+
+**Mode debug** : Activer `DEBUG_LAYOUT_ZONES = true` dans `serenity.ts` pour :
+- Afficher des bordures rouges autour des zones titre/sous-titre
+- Afficher une ligne verte au niveau du bas du texte titre
+- Afficher une ligne bleue au niveau de la barre d'accent
+- Logger les positions calculées dans la console
+
 ### Zone contenu (MODIFIABLE)
 
 Tout élément ajouté doit respecter :

@@ -25,11 +25,12 @@
 import PptxGenJS from 'pptxgenjs';
 import type { PptxThemeRoles, ExportContext, CreditAmortizationRow } from '../theme/types';
 import {
+  SLIDE_SIZE,
   TYPO,
   COORDS_CONTENT,
   COORDS_FOOTER,
   addTextBox,
-  addAccentLine,
+  addHeader,
   addFooter,
 } from '../designSystem/serenity';
 
@@ -145,26 +146,8 @@ export function buildCreditAmortization(
     ? ` (${data.pageIndex + 1}/${data.totalPages})`
     : '';
   
-  addTextBox(slide, `Tableau d'amortissement${pageIndicator}`, COORDS_CONTENT.title, {
-    fontSize: TYPO.sizes.h1,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-    isUpperCase: true,
-  });
-  
-  // Accent line under title
-  addAccentLine(slide, theme, 'content');
-  
-  // Subtitle
-  addTextBox(slide, 'Échéancier annuel de remboursement', COORDS_CONTENT.subtitle, {
-    fontSize: TYPO.sizes.h2,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-  });
+  // Header (centralized)
+  addHeader(slide, `Tableau d'amortissement${pageIndicator}`, 'Échéancier annuel de remboursement', theme, 'content');
   
   // ========== TABLE (years in columns, multi-loan sections) ==========
   

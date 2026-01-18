@@ -10,12 +10,13 @@
 
 import PptxGenJS from 'pptxgenjs';
 import type { CreditLoanSynthesisSlideSpec, PptxThemeRoles, ExportContext } from '../theme/types';
-import { 
-  TYPO, 
+import {
+  SLIDE_SIZE,
+  TYPO,
   COORDS_CONTENT, 
   COORDS_FOOTER,
   addTextBox,
-  addAccentLine,
+  addHeader,
   addFooter,
   roleColor,
 } from '../designSystem/serenity';
@@ -25,8 +26,6 @@ import type { BusinessIconName } from '../icons/addBusinessIcon';
 // ============================================================================
 // CONSTANTS
 // ============================================================================
-
-const SLIDE_SIZE = { width: 13.3333, height: 7.5 };
 
 // Content zone boundaries (below subtitle, above footer)
 const CONTENT_TOP_Y = COORDS_CONTENT.content.y; // 2.3754
@@ -93,32 +92,12 @@ export function buildCreditLoanSynthesis(
   // White background
   slide.background = { color: 'FFFFFF' };
   
-  // ========== STANDARD HEADER (using Serenity helpers) ==========
+  // ========== STANDARD HEADER (centralized) ==========
   
   const loanLabel = `Synthèse prêt n°${data.loanIndex}`;
   const creditTypeLabel = data.creditType === 'infine' ? 'Crédit in fine' : 'Crédit amortissable';
   
-  // Title (H1, ALL CAPS, LEFT-ALIGNED) - using helper with COORDS_CONTENT.title
-  addTextBox(slide, loanLabel, COORDS_CONTENT.title, {
-    fontSize: TYPO.sizes.h1,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-    isUpperCase: true,
-  });
-  
-  // Accent line under title - using helper
-  addAccentLine(slide, theme, 'content');
-  
-  // Subtitle (H2) - MUST use COORDS_CONTENT.subtitle (below accent line)
-  addTextBox(slide, creditTypeLabel, COORDS_CONTENT.subtitle, {
-    fontSize: TYPO.sizes.h2,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-  });
+  addHeader(slide, loanLabel, creditTypeLabel, theme, 'content');
   
   // ========== KPIs ROW ==========
   

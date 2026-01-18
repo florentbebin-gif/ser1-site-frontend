@@ -14,12 +14,13 @@
 
 import PptxGenJS from 'pptxgenjs';
 import type { CreditGlobalSynthesisSlideSpec, PptxThemeRoles, ExportContext } from '../theme/types';
-import { 
-  TYPO, 
+import {
+  SLIDE_SIZE,
+  TYPO,
   COORDS_CONTENT, 
   COORDS_FOOTER,
   addTextBox,
-  addAccentLine,
+  addHeader,
   addFooter,
   roleColor,
 } from '../designSystem/serenity';
@@ -29,8 +30,6 @@ import type { BusinessIconName } from '../icons/addBusinessIcon';
 // ============================================================================
 // CONSTANTS - PREMIUM AERATED LAYOUT
 // ============================================================================
-
-const SLIDE_SIZE = { width: 13.3333, height: 7.5 };
 
 // Content zone boundaries (below subtitle, above footer)
 const CONTENT_TOP_Y = COORDS_CONTENT.content.y; // 2.3754
@@ -123,29 +122,8 @@ export function buildCreditGlobalSynthesis(
   // White background
   slide.background = { color: 'FFFFFF' };
   
-  // ========== STANDARD HEADER (using Serenity helpers) ==========
-  
-  // Title (H1, ALL CAPS, LEFT-ALIGNED) - using helper with COORDS_CONTENT.title
-  addTextBox(slide, 'Synthèse globale de votre financement', COORDS_CONTENT.title, {
-    fontSize: TYPO.sizes.h1,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-    isUpperCase: true,
-  });
-  
-  // Accent line under title - using helper
-  addAccentLine(slide, theme, 'content');
-  
-  // Subtitle (H2) - MUST use COORDS_CONTENT.subtitle (below accent line)
-  addTextBox(slide, 'Vue d\'ensemble de votre montage multi-prêts', COORDS_CONTENT.subtitle, {
-    fontSize: TYPO.sizes.h2,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-  });
+  // ========== STANDARD HEADER (centralized) ==========
+  addHeader(slide, 'Synthèse globale de votre financement', 'Vue d\'ensemble de votre montage multi-prêts', theme, 'content');
   
   // ========== HERO ZONE: MENSUALITÉ INITIALE ==========
   

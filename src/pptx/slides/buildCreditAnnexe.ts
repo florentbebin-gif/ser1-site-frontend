@@ -22,7 +22,7 @@ import {
   COORDS_CONTENT,
   COORDS_FOOTER,
   addTextBox,
-  addAccentLine,
+  addHeader,
   addFooter,
 } from '../designSystem/serenity';
 
@@ -223,29 +223,8 @@ export function buildCreditAnnexe(
   // White background
   slide.background = { color: 'FFFFFF' };
   
-  // ========== STANDARD HEADER (from design system) ==========
-  
-  // Title (H1, ALL CAPS, LEFT-ALIGNED)
-  addTextBox(slide, 'Annexe : Détail de votre crédit', COORDS_CONTENT.title, {
-    fontSize: TYPO.sizes.h1,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-    isUpperCase: true,
-  });
-  
-  // Accent line under title
-  addAccentLine(slide, theme, 'content');
-  
-  // Subtitle (H2)
-  addTextBox(slide, 'Explication des modalités de remboursement', COORDS_CONTENT.subtitle, {
-    fontSize: TYPO.sizes.h2,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-  });
+  // ========== STANDARD HEADER (centralized) ==========
+  addHeader(slide, 'Annexe : Détail de votre crédit', 'Explication des modalités de remboursement', theme, 'content');
   
   // ========== SINGLE TEXT BLOCK (professional prose) ==========
   const paragraphs = buildCreditAnnexeProse(data);

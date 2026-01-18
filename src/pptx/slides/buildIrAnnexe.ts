@@ -18,7 +18,7 @@ import {
   COORDS_CONTENT,
   COORDS_FOOTER,
   addTextBox,
-  addAccentLine,
+  addHeader,
   addFooter,
 } from '../designSystem/serenity';
 
@@ -281,29 +281,8 @@ export function buildIrAnnexe(
   // White background
   slide.background = { color: 'FFFFFF' };
   
-  // ========== STANDARD HEADER (from design system) ==========
-  
-  // Title (H1, ALL CAPS, LEFT-ALIGNED) - using helper
-  addTextBox(slide, 'Annexe : Détail du calcul', COORDS_CONTENT.title, {
-    fontSize: TYPO.sizes.h1,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-    isUpperCase: true,
-  });
-  
-  // Accent line under title - using helper
-  addAccentLine(slide, theme, 'content');
-  
-  // Subtitle (H2) - using helper
-  addTextBox(slide, 'Méthode de calcul de l\'impôt sur le revenu', COORDS_CONTENT.subtitle, {
-    fontSize: TYPO.sizes.h2,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-  });
+  // ========== STANDARD HEADER (centralized) ==========
+  addHeader(slide, 'Annexe : Détail du calcul', 'Méthode de calcul de l\'impôt sur le revenu', theme, 'content');
   
   // ========== SINGLE TEXT BLOCK (professional prose) ==========
   // Build paragraphs with mixed bold/normal text
