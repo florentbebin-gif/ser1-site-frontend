@@ -239,11 +239,11 @@ const [touched, setTouched]         = useState({ capital: false, duree: false })
 
 const [rawTauxAss, setRawTauxAss] = useState('');
 const [rawTauxPlus, setRawTauxPlus] = useState({}); // par prêt id -> string
+const [rawTauxAssurPlus, setRawTauxAssurPlus] = useState({}); // par prêt id -> string pour taux assurance
 
 //  version normalisée dès l’affichage
 const [rawTaux, setRawTaux] = useState(Number(taux).toFixed(2).replace('.', ','));
 const [rawTauxAssur, setRawTauxAssur] = useState(Number(tauxAssur).toFixed(2).replace('.', ','));
-
 
 // Sync initial / reset
 useEffect(() => {
@@ -333,6 +333,7 @@ useEffect(() => {
     // champs "bruts" utilisés pour la saisie des taux
     setRawTauxAss('');
     setRawTauxPlus({});
+    setRawTauxAssurPlus({});
 
     // Réinitialiser l'état touched
     setTouched({ capital: false, duree: false });
@@ -1263,8 +1264,9 @@ const synthesePeriodes = useMemo(() => {
                       </td>
                       <td className="text-right">
                         <input type="text" inputMode="decimal" className="credit-input__field" 
-                          value={Number((Number(p.tauxAssur)||0).toFixed(2)).toString()}
-                          onChange={e => updatePret(p.id, { tauxAssur: Math.max(0, toNumber(e.target.value)) })}
+                          value={rawTauxAssurPlus[p.id] ?? (Number((Number(p.tauxAssur)||0).toFixed(2)).toString())}
+                          onChange={e=>{ setRawTauxAssurPlus(m => ({ ...m, [p.id]: e.target.value })); updatePret(p.id, { tauxAssur: Math.max(0, toNumber(e.target.value)) }); }}
+                          onBlur={()=>{ setRawTauxAssurPlus(m => ({ ...m, [p.id]: (Number((Number(p.tauxAssur)||0).toFixed(2)).toString()) })); }}
                           style={{height:28, width:60}}
                           placeholder="0.00"
                         />

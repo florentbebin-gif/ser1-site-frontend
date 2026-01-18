@@ -274,7 +274,7 @@ describe('Settings - Timeout anti-blocage', () => {
 
     // Simuler la logique de timeout de Settings.jsx
     const loadUser = async () => {
-      let timeoutId: number | undefined;
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
       
       try {
         timeoutId = setTimeout(() => {
@@ -312,7 +312,7 @@ describe('Settings - Timeout anti-blocage', () => {
     let mounted = true;
 
     const loadUser = async () => {
-      let timeoutId: number | undefined;
+      let timeoutId: ReturnType<typeof setTimeout> | undefined;
       
       try {
         timeoutId = setTimeout(() => {
