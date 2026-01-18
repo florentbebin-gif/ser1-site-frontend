@@ -599,9 +599,14 @@ export function buildIrSynthesis(
   }
   
   // ========== SECTION 3: CALLOUT - SECONDARY INFO ==========
-  // "Montant des revenus dans cette TMI : X €" - uses exact value from IR card
-  if (data.tmiRate > 0 && data.tmiBaseGlobal !== undefined && data.tmiBaseGlobal > 0) {
-    slide.addText(`Montant des revenus dans cette TMI : ${euro(data.tmiBaseGlobal)}`, {
+  // "Montant des revenus dans cette TMI : X €" - uses tmiBaseGlobal from IR card, or fallback to calculated value
+  if (data.tmiRate > 0) {
+    // Use tmiBaseGlobal if available, otherwise calculate from bracket
+    const amountInTmi = (data.tmiBaseGlobal !== undefined && data.tmiBaseGlobal !== null) 
+      ? data.tmiBaseGlobal 
+      : getAmountInCurrentBracket(data.taxablePerPart, data.tmiRate, data.partsNb);
+    
+    slide.addText(`Montant des revenus dans cette TMI : ${euro(amountInTmi)}`, {
       x: LAYOUT.marginX,
       y: LAYOUT.callout.y,
       w: LAYOUT.contentWidth,
@@ -655,13 +660,16 @@ export function buildIrSynthesis(
   });
   
   // ========== SECTION 5: MARGIN INFO - TERTIARY ==========
-  // "Marge avant changement de TMI : X €" - uses exact value from IR card
-  if (data.tmiMarginGlobal !== undefined && data.tmiMarginGlobal !== null && data.tmiMarginGlobal > 0) {
-    // Find next TMI rate
-    const nextTmiInfo = calculateMarginToNextTmi(data.taxablePerPart, data.tmiRate);
-    const nextRate = nextTmiInfo?.nextRate || (data.tmiRate + 1);
-    
-    slide.addText(`Marge avant changement de TMI : ${euro(data.tmiMarginGlobal)}`, {
+  // "Marge avant changement de TMI : X €" - uses tmiMarginGlobal from IR card, or fallback to calculated value
+  const nextTmiInfo = calculateMarginToNextTmi(data.taxablePerPart, data.tmiRate);
+  
+  // Use tmiMarginGlobal if available, otherwise calculate
+  const marginValue = (data.tmiMarginGlobal !== undefined && data.tmiMarginGlobal !== null)
+    ? data.tmiMarginGlobal
+    : (nextTmiInfo ? nextTmiInfo.margin * data.partsNb : null);
+  
+  if (marginValue !== null && marginValue > 0) {
+    slide.addText(`Marge avant changement de TMI : ${euro(marginValue)}`, {
       x: LAYOUT.marginX,
       y: LAYOUT.marginInfo.y,
       w: LAYOUT.contentWidth,

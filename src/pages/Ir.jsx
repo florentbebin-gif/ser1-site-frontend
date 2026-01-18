@@ -499,9 +499,10 @@ const yearLabel =
         tmiRate: result.tmiRate || 0,
         irNet: result.irNet || 0,
         totalTax: result.totalTax || 0,
-        // Income breakdown for KPI display - sum of activity incomes
-        income1: incomes.salaries1 + incomes.pensions1 + incomes.nonSalaried1,
-        income2: incomes.salaries2 + incomes.pensions2 + incomes.nonSalaried2,
+        // Income breakdown for KPI display - sum of activity incomes BEFORE abatement
+        // = Traitements et salaires + Revenus associés/gérants + BIC-BNC-BA + Pensions
+        income1: (incomes.d1.salaries || 0) + (incomes.d1.associes62 || 0) + (incomes.d1.bic || 0) + (incomes.d1.pensions || 0),
+        income2: (incomes.d2.salaries || 0) + (incomes.d2.associes62 || 0) + (incomes.d2.bic || 0) + (incomes.d2.pensions || 0),
         pfuIr: result.pfuIr || 0,
         cehr: result.cehr || 0,
         cdhr: result.cdhr || 0,

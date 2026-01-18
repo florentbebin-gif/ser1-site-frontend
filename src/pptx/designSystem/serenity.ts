@@ -396,8 +396,10 @@ export function addFooter(
     textColor = roleColor(ctx.theme, 'footerAccent');
   }
   
-  const disclaimer = ctx.footerDisclaimer || 
-    "Document non contractuel établi en fonction des dispositions fiscales ou sociales en vigueur à la date des présentes";
+  // Use explicit check to allow empty string to suppress disclaimer
+  const disclaimer = ctx.footerDisclaimer !== undefined 
+    ? ctx.footerDisclaimer 
+    : "Document non contractuel établi en fonction des dispositions fiscales ou sociales en vigueur à la date des présentes";
   
   // Date
   slide.addText(formatDateFr(ctx.generatedAt), {
