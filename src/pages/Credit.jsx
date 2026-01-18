@@ -500,9 +500,25 @@ useEffect(() => {
       const others = autresRows.reduce((s,arr)=> {
         const r = collect(arr[m-1]); return { i:s.i+r.i, a:s.a+r.a, am:s.am+r.am, me:s.me+r.me, mt:s.mt+r.mt, c:s.c+r.c }
       }, {i:0,a:0,am:0,me:0,mt:0,c:0})
+      // Assurance décès cumulée de tous les prêts selon leur mode respectif
+      let assuranceDecesCumul = 0
+      
+      // Prêt 1
       const crdStartPret1 = (p1Row ? (p1Row.crd || 0) + (p1Row.amort || 0) : 0)
-      // Convention : l'assiette d'assurance décès correspond soit au capital initial (mode CI) soit au CRD début de période
-      const assuranceDecesBase = (assurMode === 'CI') ? effectiveCapitalPret1 : crdStartPret1
+      assuranceDecesCumul += (assurMode === 'CI') ? effectiveCapitalPret1 : crdStartPret1
+      
+      // Prêts additionnels (2 et 3)
+      autresRows.forEach((arr, idx) => {
+        const row = arr[m-1]
+        if (row) {
+          const pret = pretsPlus[idx]
+          const pretMode = pret?.assurMode || 'CRD'
+          const pretCapital = Math.max(0, toNum(pret?.capital) || 0)
+          const crdStartPret = (row.crd || 0) + (row.amort || 0)
+          assuranceDecesCumul += (pretMode === 'CI') ? pretCapital : crdStartPret
+        }
+      })
+      
       out.push({
         mois:m,
         interet: p1.i + others.i,
@@ -511,11 +527,11 @@ useEffect(() => {
         mensu: p1.me + others.me,
         mensuTotal: p1.mt + others.mt,
         crd: p1.c + others.c,
-        assuranceDeces: assuranceDecesBase
+        assuranceDeces: assuranceDecesCumul
       })
     }
     return out
-  }, [pret1Rows, autresRows, N, assurMode, effectiveCapitalPret1])
+  }, [pret1Rows, autresRows, pretsPlus, N, assurMode, effectiveCapitalPret1])
 
   /* ---- Agrégation annuelle (si besoin) ---- */
   function aggregateToYears(rows) {
