@@ -72,21 +72,19 @@ SER1/
 │       └── 📄 check-ui-settings-rls.sql
 │
 ├── 📁 config/                     # Configuration locale
-│   ├── 📁 supabase/                # Config Supabase locale
-│   │   ├── 📄 config.toml         # Config projet Supabase
-│   │   ├── 📁 functions/          # Fonctions edge
-│   │   └── 📁 .temp/              # Fichiers temporaires
-│   └── 📁 assets/                  # Assets de référence
-│       ├── 📁 _signalements_ref/
-│       └── 📁 _style_ref/
+│   └── 📁 supabase/                # Config Supabase locale
+│       ├── 📄 config.toml         # Config projet Supabase
+│       └── 📁 functions/          # Fonctions edge
+│
+├── 📁 tools/                      # Outils de développement
+│   └── 📁 scripts/                # Scripts utilitaires
+│       ├── 📄 admin-smoke.ps1     # Script admin PowerShell
+│       ├── � validate_ir_excel.mjs # Validation exports IR
+│       └── � normalize-business-icons.mjs # Normalisation icônes
 │
 ├── 📁 docs/                       # Documentation et exports
 │   ├── 📄 *.xlsx                  # Fichiers Excel exemples
 │   └── 📄 brainstorming-session-results.md
-│
-├── � scripts/                    # Scripts utilitaires
-│   ├── 📄 admin-smoke.ps1         # Script admin PowerShell
-│   └── 📄 validate_ir_excel.mjs   # Validation exports IR
 │
 ├── 📁 public/                     # Fichiers statiques
 │   ├── 📁 ui/                      # Assets UI
@@ -105,25 +103,54 @@ SER1/
 
 ---
 
-## 🛠 Stack technique
+## 🏗️ Architecture
 
-### Frontend
-- **React 18** avec TypeScript
-- **Vite 5** comme bundler
-- **CSS natif** (pas de framework UI)
-- **React Router DOM** pour la navigation
-- **Supabase Client** pour l'authentification et BDD
-- **PPTXGenJS** pour la génération PowerPoint
-- **Zod** pour la validation des données
+### Structure du Projet
 
-### Backend & Services
-- **Supabase** (authentification + base de données + storage)
-- **Aucun backend applicatif dédié**
+```text
+ser1/
+├── src/                    # Code source actif
+│   ├── pages/             # Pages UI (IR, Placement, Crédit, Settings...)
+│   ├── components/        # Composants réutilisables
+│   ├── hooks/             # Hooks personnalisés
+│   ├── utils/             # Utilitaires métier
+│   ├── engine/            # Moteurs de calcul (placement, fiscalité, succession)
+│   ├── features/          # Features métier (audit, strategy)
+│   ├── pptx/              # Génération PowerPoint
+│   ├── auth/              # Authentification
+│   ├── settings/          # Thème et configuration
+│   └── styles/            # Styles partagés
+├── tools/                 # Outils de développement
+│   └── scripts/           # Scripts utilitaires (validation, admin)
+├── config/                # Configuration
+│   └── supabase/          # Configuration Supabase locale
+├── database/              # Base de données
+│   ├── migrations/        # Scripts migration
+│   ├── fixes/             # Scripts correctifs
+│   └── setup/             # Scripts setup initial
+├── docs/                  # Documentation
+│   ├── technical/         # Documentation technique
+│   └── examples/          # Exemples clients
+└── public/                # Assets statiques
+```
 
-### Outils de développement
-- **ESLint** avec configuration React/TypeScript
-- **Vitest** pour les tests unitaires
-- **PowerShell** pour les scripts d'administration
+### Frontend (React + TypeScript)
+- **Pages** : Simulateurs (IR, Placement, Crédit, Audit, Stratégie)
+- **Components** : UI réutilisables, formulaires, tableaux
+- **Hooks** : Logique métier réutilisable
+- **Utils** : Calculs fiscaux, helpers, exports
+- **Engine** : Moteurs de calcul (placement, fiscalité, succession)
+
+### Backend (Supabase)
+- **Authentification** : Users, rôles (admin/user)
+- **Database** : PostgreSQL avec RLS
+- **Storage** : Images, documents
+- **Edge Functions** : API admin
+
+### PowerPoint Generation
+- **PptxGenJS** : Génération de présentations
+- **Design System** : Thème SER1, layouts standards
+- **Templates** : Audit, Stratégie, IR
 
 ---
 
@@ -1016,7 +1043,7 @@ pfuIr: result.pfuIr,
 
 ---
 
-## �📚 Documentation complémentaire
+## �� Documentation complémentaire
 
 ### Fichiers de documentation
 - `ADMIN_COMPTES_ET_SIGNALMENTS.md` : Gestion admin
