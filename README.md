@@ -1023,11 +1023,18 @@ Layout ultra-lisible en **3 secondes** pour montages multi-prêts :
 | Zone | Contenu | Style |
 |------|---------|-------|
 | **HERO** | Mensualité initiale (en haut, proéminent) | 32pt bold, centré |
-| **KPIs** | Capital total, Durée max, Coût total | 3 colonnes icônes (aérées) |
-| **Mini-cards** | Un card par prêt (capital + durée) | Cards colorées selon thème |
+| **KPIs** | Capital total, Durée max, Coût total | 3 colonnes icônes (compactes) |
+| **Timeline Paliers** | Évolution des mensualités par période | Segments colorés avec dates + montants |
+| **Assurance Décès** | Barre de couverture sur la durée | Mini-bar avec coût total |
 | **Footer info** | Total remboursé + badge lissage | Aligné footer |
 
 **Règle subtitle immuable** : Le sous-titre est TOUJOURS positionné via `COORDS_CONTENT.subtitle` (y=1.7956, sous la barre de soulignement) et stylé via `addTextBox()` helper. Interdit de repositionner manuellement.
+
+### Slides Chapitre (IR + Crédit)
+
+Les slides chapitre utilisent maintenant un wording distinct pour éviter la répétition :
+- **subtitle** : Description courte du chapitre (ex: "Vue d'ensemble de votre crédit")
+- **body** : Objectif client (ex: "Vous souhaitez mesurer l'efficacité de votre financement...")
 
 ### Slide Synthèse Par Prêt
 
@@ -1039,13 +1046,13 @@ Même layout que la synthèse mono-prêt, avec titre "SYNTHÈSE PRÊT N°X" :
 | **Visual** | Barre Capital vs Coût | Split bar proportionnelle |
 | **HERO** | Coût total du prêt | 24pt bold, centré |
 
-### Annexe Multi-Prêts
+### Annexe Multi-Prêts (version compacte)
 
-L'annexe inclut désormais :
-- **Introduction globale** : Capital total, durée max, nombre de prêts
-- **Détail par prêt** : Caractéristiques de chaque prêt (Prêt N°1, N°2, N°3)
-- **Mécanisme de lissage** (si activé) : Explication pédagogique du lissage
-- **Coûts globaux** : Intérêts + assurance + total remboursé
+L'annexe utilise un format compact pour éviter le débordement avec 3 prêts :
+- **Introduction globale** : Capital total, durée, résumé compact des prêts sur une ligne
+- **Lissage** (si activé) : Une ligne courte
+- **Coûts** : Intérêts + Assurance = Total remboursé (format compact)
+- **Avertissement** : Version courte en une ligne
 
 ### Tableau d'Amortissement Multi-Prêts
 

@@ -132,11 +132,12 @@ export function buildIrStudyDeck(
   
   // Build slides array with new premium slide types
   const slides: Array<ChapterSlideSpec | IrSynthesisSlideSpec | IrAnnexeSlideSpec> = [
-    // Chapter 1: Objectifs et contexte (title + short description only)
+    // Chapter 1: Objectifs et contexte
     {
       type: 'chapter',
       title: 'Objectifs et contexte',
-      subtitle: 'Vous souhaitez estimer le montant de votre impôt sur le revenu',
+      subtitle: 'Estimation de votre impôt sur le revenu',
+      body: 'Vous souhaitez connaître le montant de votre impôt et comprendre les mécanismes de calcul qui s\'appliquent à votre situation.',
       chapterImageIndex: 1,
     },
     // Slide 3: Synthèse Premium (4 KPI + barre TMI + impôt central)
@@ -159,7 +160,8 @@ export function buildIrStudyDeck(
     {
       type: 'chapter',
       title: 'Annexes',
-      subtitle: 'Détail des calculs et informations complémentaires',
+      subtitle: 'Informations complémentaires',
+      body: 'Retrouvez ci-après le détail des calculs appliqués à votre situation fiscale.',
       chapterImageIndex: 3,
     },
     // Slide 5: Annexe rédigée (détail calcul adapté au cas client)

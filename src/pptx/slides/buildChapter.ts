@@ -60,16 +60,17 @@ export function buildChapter(
   addChapterImage(slide, chapterImageDataUri, COORDS_CHAPTER.image, true);
   
   // Add header (title + accent line + subtitle) with text-based positioning
+  // Note: subtitle = short chapter description (displayed once only, no duplication)
   addHeader(slide, spec.title, spec.subtitle || '', theme, 'chapter');
   
-  // Description/Body text (if provided) - positioned below header
-  const description = spec.subtitle || '';
-  if (description) {
+  // Body text: client-focused objective (different from subtitle to avoid repetition)
+  // Only add if spec.body is provided (optional "objectif client" text)
+  if (spec.body) {
     // Calculate position below the header area
-    const headerHeight = TYPO.sizes.h1 / 72 + 0.1 + 0.15 + TYPO.sizes.h2 / 72; // Approximate header height
+    const headerHeight = TYPO.sizes.h1 / 72 + 0.1 + 0.15 + TYPO.sizes.h2 / 72;
     const bodyY = COORDS_CHAPTER.subtitle.y + headerHeight;
     
-    addTextBox(slide, description, {
+    addTextBox(slide, spec.body, {
       x: COORDS_CHAPTER.body.x,
       y: bodyY,
       w: COORDS_CHAPTER.body.w,

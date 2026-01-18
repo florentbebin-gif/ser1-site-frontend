@@ -167,8 +167,32 @@ export function buildCreditStudyDeck(
   // Total remboursé
   const totalRembourse = totalCapital + creditData.coutTotalCredit;
   
+  // Build amortization rows with proper loanIndex for multi-loan support
+  // If loans have their own amortizationRows, merge them with loanIndex set
+  let allAmortizationRows: CreditAmortizationRow[] = [];
+  
+  if (isMultiLoan && loans.some(loan => loan.amortizationRows && loan.amortizationRows.length > 0)) {
+    // Multi-loan with per-loan amortization data: merge with loanIndex
+    loans.forEach(loan => {
+      if (loan.amortizationRows) {
+        loan.amortizationRows.forEach(row => {
+          allAmortizationRows.push({
+            ...row,
+            loanIndex: loan.index,
+          });
+        });
+      }
+    });
+  } else {
+    // Fallback to legacy single amortization array
+    allAmortizationRows = creditData.amortizationRows.map(row => ({
+      ...row,
+      loanIndex: row.loanIndex ?? 1, // Default to loan 1
+    }));
+  }
+  
   // Paginate amortization rows
-  const amortizationPages = paginateAmortizationRows(creditData.amortizationRows);
+  const amortizationPages = paginateAmortizationRows(allAmortizationRows);
   const totalAmortizationPages = amortizationPages.length;
   
   // Build slides array dynamically based on loan count
@@ -186,8 +210,9 @@ export function buildCreditStudyDeck(
     type: 'chapter',
     title: 'Votre projet de financement',
     subtitle: isMultiLoan 
-      ? 'Analyse détaillée de votre montage multi-prêts'
-      : 'Analyse détaillée de votre crédit immobilier',
+      ? 'Vue d\'ensemble de votre montage multi-prêts'
+      : 'Vue d\'ensemble de votre crédit immobilier',
+    body: 'Vous souhaitez mesurer l\'efficacité de votre financement et comprendre l\'impact des paramètres clés sur votre mensualité et le coût total.',
     chapterImageIndex: 1,
   });
   
@@ -260,7 +285,8 @@ export function buildCreditStudyDeck(
   slides.push({
     type: 'chapter',
     title: 'Annexes',
-    subtitle: 'Détail du calcul et tableau d\'amortissement',
+    subtitle: 'Informations complémentaires',
+    body: 'Retrouvez ci-après le détail des calculs et le tableau d\'amortissement de votre financement.',
     chapterImageIndex: 3,
   });
   

@@ -38,32 +38,38 @@ const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
 const LAYOUT = {
   // HERO zone (mensualité initiale) - prominent at top
   hero: {
-    y: CONTENT_TOP_Y + 0.15,
-    height: 1.1,
+    y: CONTENT_TOP_Y + 0.05,
+    height: 0.85,
   },
   
-  // 3 KPIs row - centered, generous spacing
+  // 3 KPIs row - centered, compact
   kpi: {
-    y: CONTENT_TOP_Y + 1.45,
-    height: 1.0,
+    y: CONTENT_TOP_Y + 0.95,
+    height: 0.85,
     marginX: 2.0,
-    gap: 0.5,
-    iconSize: 0.5,
+    gap: 0.4,
+    iconSize: 0.4,
   },
   
-  // Mini-cards for loans - clean visual
-  cards: {
-    y: CONTENT_TOP_Y + 2.7,
-    height: 1.2,
-    marginX: 1.5,
-    gap: 0.4,
-    cardHeight: 1.0,
+  // Timeline paliers (central visual)
+  timeline: {
+    y: CONTENT_TOP_Y + 1.95,
+    height: 1.1,
+    marginX: 1.2,
+    barHeight: 0.5,
+  },
+  
+  // Insurance mini-bar
+  insurance: {
+    y: CONTENT_TOP_Y + 3.15,
+    height: 0.55,
+    marginX: 1.2,
   },
   
   // Footer info (total remboursé + smoothing badge)
   footerInfo: {
-    y: CONTENT_BOTTOM_Y - 0.5,
-    height: 0.4,
+    y: CONTENT_BOTTOM_Y - 0.45,
+    height: 0.35,
   },
 };
 
@@ -160,7 +166,7 @@ export function buildCreditGlobalSynthesis(
   const kpiData = [
     { icon: 'money' as BusinessIconName, label: 'Capital total', value: formatEuro(data.totalCapital) },
     { icon: 'calculator' as BusinessIconName, label: 'Durée maximale', value: formatDuree(data.maxDureeMois) },
-    { icon: 'chart-up' as BusinessIconName, label: 'Coût total crédit', value: formatEuro(data.coutTotalCredit) },
+    { icon: 'chart-up' as BusinessIconName, label: 'Coût total', value: formatEuro(data.coutTotalCredit) },
   ];
   
   const kpiCount = kpiData.length;
@@ -200,76 +206,142 @@ export function buildCreditGlobalSynthesis(
     // Value
     slide.addText(kpi.value, {
       x: kpiX,
-      y: kpiY + LAYOUT.kpi.iconSize + 0.32,
+      y: kpiY + LAYOUT.kpi.iconSize + 0.26,
       w: kpiW,
-      h: 0.30,
-      fontSize: 16,
-      bold: true,
-      color: roleColor(theme, 'textMain'),
-      fontFace: TYPO.fontFace,
-      align: 'center',
-    });
-  });
-  
-  // ========== MINI-CARDS: ONE PER LOAN ==========
-  
-  const cardsY = LAYOUT.cards.y;
-  const loansCount = Math.min(data.loans.length, 3);
-  const cardsAvailableW = SLIDE_SIZE.width - 2 * LAYOUT.cards.marginX;
-  const cardW = (cardsAvailableW - (loansCount - 1) * LAYOUT.cards.gap) / loansCount;
-  
-  data.loans.slice(0, 3).forEach((loan, idx) => {
-    const cardX = LAYOUT.cards.marginX + idx * (cardW + LAYOUT.cards.gap);
-    const cardColor = getLoanColor(loan.index, theme);
-    
-    // Card background (rounded rect simulation with fill)
-    slide.addShape('rect', {
-      x: cardX,
-      y: cardsY,
-      w: cardW,
-      h: LAYOUT.cards.cardHeight,
-      fill: { color: lightenColor(cardColor, 0.85) },
-      line: { color: cardColor, width: 1 },
-    });
-    
-    // Card header (loan number)
-    slide.addText(`PRÊT N°${loan.index}`, {
-      x: cardX,
-      y: cardsY + 0.08,
-      w: cardW,
-      h: 0.25,
-      fontSize: 10,
-      bold: true,
-      color: cardColor,
-      fontFace: TYPO.fontFace,
-      align: 'center',
-    });
-    
-    // Card capital (main value)
-    slide.addText(formatEuro(loan.capital), {
-      x: cardX,
-      y: cardsY + 0.35,
-      w: cardW,
-      h: 0.30,
+      h: 0.28,
       fontSize: 14,
       bold: true,
       color: roleColor(theme, 'textMain'),
       fontFace: TYPO.fontFace,
       align: 'center',
     });
-    
-    // Card duration
-    slide.addText(formatDuree(loan.dureeMois), {
-      x: cardX,
-      y: cardsY + 0.68,
-      w: cardW,
-      h: 0.22,
+  });
+  
+  // ========== TIMELINE PALIERS (payment periods visualization) ==========
+  
+  const timelineY = LAYOUT.timeline.y;
+  const timelineW = SLIDE_SIZE.width - 2 * LAYOUT.timeline.marginX;
+  const periods = data.paymentPeriods;
+  
+  if (periods.length > 0) {
+    // Timeline label
+    slide.addText('ÉVOLUTION DE VOS MENSUALITÉS', {
+      x: LAYOUT.timeline.marginX,
+      y: timelineY,
+      w: timelineW,
+      h: 0.25,
       fontSize: 10,
+      bold: true,
       color: roleColor(theme, 'textBody'),
       fontFace: TYPO.fontFace,
-      align: 'center',
+      align: 'left',
     });
-  });
+    
+    // Calculate segment widths based on periods (equal segments for simplicity)
+    const segmentCount = Math.min(periods.length, 4); // Max 4 segments to avoid clutter
+    const segmentGap = 0.08;
+    const segmentW = (timelineW - (segmentCount - 1) * segmentGap) / segmentCount;
+    const barY = timelineY + 0.30;
+    
+    periods.slice(0, 4).forEach((period, idx) => {
+      const segX = LAYOUT.timeline.marginX + idx * (segmentW + segmentGap);
+      const segColor = idx === 0 ? roleColor(theme, 'bgMain') : roleColor(theme, 'accent');
+      
+      // Segment bar
+      slide.addShape('rect', {
+        x: segX,
+        y: barY,
+        w: segmentW,
+        h: LAYOUT.timeline.barHeight,
+        fill: { color: segColor },
+      });
+      
+      // Period label (top of bar)
+      slide.addText(period.label, {
+        x: segX,
+        y: barY + 0.05,
+        w: segmentW,
+        h: 0.18,
+        fontSize: 8,
+        color: 'FFFFFF',
+        fontFace: TYPO.fontFace,
+        align: 'center',
+      });
+      
+      // Mensualité value (center of bar)
+      slide.addText(formatEuro(period.total) + '/mois', {
+        x: segX,
+        y: barY + 0.22,
+        w: segmentW,
+        h: 0.22,
+        fontSize: 11,
+        bold: true,
+        color: 'FFFFFF',
+        fontFace: TYPO.fontFace,
+        align: 'center',
+      });
+    });
+  }
+  
+  // ========== INSURANCE MINI-BAR (death coverage visualization) ==========
+  
+  const insuranceY = LAYOUT.insurance.y;
+  const insuranceW = SLIDE_SIZE.width - 2 * LAYOUT.insurance.marginX;
+  const totalInsuranceCost = data.coutTotalAssurance;
+  
+  if (totalInsuranceCost > 0) {
+    // Insurance label
+    slide.addText('COUVERTURE ASSURANCE DÉCÈS', {
+      x: LAYOUT.insurance.marginX,
+      y: insuranceY,
+      w: insuranceW * 0.4,
+      h: 0.22,
+      fontSize: 9,
+      bold: true,
+      color: roleColor(theme, 'textBody'),
+      fontFace: TYPO.fontFace,
+      align: 'left',
+    });
+    
+    // Insurance bar (full duration coverage)
+    const barX = LAYOUT.insurance.marginX + insuranceW * 0.42;
+    const barW = insuranceW * 0.38;
+    
+    slide.addShape('rect', {
+      x: barX,
+      y: insuranceY,
+      w: barW,
+      h: 0.22,
+      fill: { color: lightenColor(roleColor(theme, 'accent'), 0.6) },
+      line: { color: roleColor(theme, 'accent'), width: 0.5 },
+    });
+    
+    // Duration label inside bar
+    slide.addText(`Couverture sur ${formatDuree(data.maxDureeMois)}`, {
+      x: barX,
+      y: insuranceY,
+      w: barW,
+      h: 0.22,
+      fontSize: 8,
+      color: roleColor(theme, 'textMain'),
+      fontFace: TYPO.fontFace,
+      align: 'center',
+      valign: 'middle',
+    });
+    
+    // Cost label
+    slide.addText(`Coût : ${formatEuro(totalInsuranceCost)}`, {
+      x: LAYOUT.insurance.marginX + insuranceW * 0.82,
+      y: insuranceY,
+      w: insuranceW * 0.18,
+      h: 0.22,
+      fontSize: 9,
+      bold: true,
+      color: roleColor(theme, 'textMain'),
+      fontFace: TYPO.fontFace,
+      align: 'right',
+    });
+  }
   
   // ========== FOOTER INFO (Total remboursé + Smoothing badge) ==========
   
