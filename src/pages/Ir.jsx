@@ -515,6 +515,9 @@ const yearLabel =
         qfAdvantage: result.qfAdvantage || 0,
         creditsTotal: result.creditsTotal || 0,
         bracketsDetails: result.bracketsDetails || [],
+        // TMI details (exact values from IR card)
+        tmiBaseGlobal: result.tmiBaseGlobal || 0,
+        tmiMarginGlobal: result.tmiMarginGlobal || null,
         // Client name will be passed from user profile if available
         clientName: undefined, // TODO: Get from user profile or form input
       };

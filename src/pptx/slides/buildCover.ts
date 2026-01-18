@@ -147,22 +147,26 @@ export function buildCover(
     valign: 'top',
   });
   
-  // Meta blocks (left = date aligned left, right = advisor aligned right)
+  // Meta blocks (left = date aligned left, right = advisor info aligned right)
   const leftMeta = spec.leftMeta || ctx.coverLeftMeta || 'Janvier 2026';
-  const rightMeta = spec.rightMeta || ctx.coverRightMeta || 
-    'NOM Prénom / Conseiller en gestion de Patrimoine / Bureau';
   
-  // Date: font size 14, aligned LEFT
+  // Date: font size 12, aligned LEFT (reduced from 14)
   addTextBox(slide, leftMeta, COORDS_COVER.metaLeft, {
-    fontSize: TYPO.sizes.coverMeta, // 14
+    fontSize: 12,
     color: theme.textOnMain,
     align: 'left',
     valign: 'middle',
   });
   
-  // Advisor: font size 14, aligned RIGHT
-  addTextBox(slide, rightMeta, COORDS_COVER.metaRight, {
-    fontSize: TYPO.sizes.coverMeta, // 14
+  // Advisor info: 2 lines, font size 12, aligned RIGHT
+  // Line 1: "Conseiller en gestion de patrimoine"
+  // Line 2: "Bureau de [location]"
+  const advisorLine1 = 'Conseiller en gestion de patrimoine';
+  const advisorLine2 = 'Bureau de ';
+  const advisorText = `${advisorLine1}\n${advisorLine2}`;
+  
+  addTextBox(slide, advisorText, COORDS_COVER.metaRight, {
+    fontSize: 12,
     color: theme.textOnMain,
     align: 'right',
     valign: 'middle',

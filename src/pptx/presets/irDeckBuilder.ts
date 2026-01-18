@@ -45,6 +45,10 @@ export interface IrData {
   creditsTotal?: number;
   bracketsDetails?: Array<{ label: string; base: number; rate: number; tax: number }>;
   
+  // TMI details (from IR card - exact values)
+  tmiBaseGlobal?: number;   // Montant des revenus dans cette TMI
+  tmiMarginGlobal?: number; // Marge avant changement de TMI
+  
   // Client info
   clientName?: string; // NOM Prénom for cover
 }
@@ -147,6 +151,9 @@ export function buildIrStudyDeck(
       irNet: irData.irNet,
       taxablePerPart: irData.taxablePerPart,
       bracketsDetails: irData.bracketsDetails,
+      // TMI details (exact values from IR card)
+      tmiBaseGlobal: irData.tmiBaseGlobal,
+      tmiMarginGlobal: irData.tmiMarginGlobal,
     },
     // Chapter 2: Annexes
     {
@@ -168,6 +175,7 @@ export function buildIrStudyDeck(
       decote: irData.decote,
       qfAdvantage: irData.qfAdvantage,
       creditsTotal: irData.creditsTotal,
+      pfuIr: irData.pfuIr, // PFU 12.8% sur revenus du capital
       cehr: irData.cehr,
       cdhr: irData.cdhr,
       psFoncier: irData.psFoncier,

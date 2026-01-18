@@ -54,6 +54,10 @@ export interface IrSynthesisData {
   
   // Bracket details for "revenus dans cette TMI"
   bracketsDetails?: Array<{ label: string; base: number; rate: number; tax: number }>;
+  
+  // TMI details (exact values from IR card - REQUIRED for correct display)
+  tmiBaseGlobal?: number;   // Montant des revenus dans cette TMI
+  tmiMarginGlobal?: number | null; // Marge avant changement de TMI
 }
 
 // TMI Brackets (matching BAREME_IR_2024)
@@ -595,11 +599,9 @@ export function buildIrSynthesis(
   }
   
   // ========== SECTION 3: CALLOUT - SECONDARY INFO ==========
-  // "Part de revenu taxée à X% : Y €" - clearly secondary, below cursor
-  if (data.tmiRate > 0) {
-    const amountInBracket = getAmountInCurrentBracket(data.taxablePerPart, data.tmiRate, data.partsNb);
-    
-    slide.addText(`Part de revenu taxée à ${data.tmiRate}% : ${euro(amountInBracket)}`, {
+  // "Montant des revenus dans cette TMI : X €" - uses exact value from IR card
+  if (data.tmiRate > 0 && data.tmiBaseGlobal !== undefined && data.tmiBaseGlobal > 0) {
+    slide.addText(`Montant des revenus dans cette TMI : ${euro(data.tmiBaseGlobal)}`, {
       x: LAYOUT.marginX,
       y: LAYOUT.callout.y,
       w: LAYOUT.contentWidth,
@@ -653,9 +655,13 @@ export function buildIrSynthesis(
   });
   
   // ========== SECTION 5: MARGIN INFO - TERTIARY ==========
-  const nextTmiInfo = calculateMarginToNextTmi(data.taxablePerPart, data.tmiRate);
-  if (nextTmiInfo && nextTmiInfo.margin > 0) {
-    slide.addText(`Encore ${euro(nextTmiInfo.margin * data.partsNb)} avant la tranche ${nextTmiInfo.nextRate}%`, {
+  // "Marge avant changement de TMI : X €" - uses exact value from IR card
+  if (data.tmiMarginGlobal !== undefined && data.tmiMarginGlobal !== null && data.tmiMarginGlobal > 0) {
+    // Find next TMI rate
+    const nextTmiInfo = calculateMarginToNextTmi(data.taxablePerPart, data.tmiRate);
+    const nextRate = nextTmiInfo?.nextRate || (data.tmiRate + 1);
+    
+    slide.addText(`Marge avant changement de TMI : ${euro(data.tmiMarginGlobal)}`, {
       x: LAYOUT.marginX,
       y: LAYOUT.marginInfo.y,
       w: LAYOUT.contentWidth,

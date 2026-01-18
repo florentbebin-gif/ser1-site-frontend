@@ -43,6 +43,9 @@ export interface IrAnnexeData {
   qfAdvantage?: number;
   creditsTotal?: number;
   
+  // PFU (Prélèvement Forfaitaire Unique)
+  pfuIr?: number; // 12.8% sur revenus du capital
+  
   // Contributions
   cehr?: number;
   cdhr?: number;
@@ -108,7 +111,7 @@ function fmt2(n: number): string {
 function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: boolean }[]> {
   const paragraphs: Array<{ text: string; bold?: boolean }[]> = [];
   
-  // Foyer description
+  // Foyer description - with proper French liaison (d'un instead of de un)
   const foyerDesc = data.isCouple 
     ? (data.childrenCount && data.childrenCount > 0 
         ? `un couple avec ${data.childrenCount} enfant${data.childrenCount > 1 ? 's' : ''}`
@@ -117,7 +120,7 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
   
   // ===== PARAGRAPH 1: Introduction et base imposable =====
   paragraphs.push([
-    { text: 'Votre foyer fiscal, composé de ' },
+    { text: 'Votre foyer fiscal, composé d\'' },
     { text: foyerDesc, bold: true },
     { text: ', dispose d\'un revenu net imposable de ' },
     { text: euro(data.taxableIncome), bold: true },
@@ -212,7 +215,20 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
     ]);
   }
   
-  // ===== PARAGRAPH 6: Contributions (if applicable) =====
+  // ===== PARAGRAPH 6: PFU (if applicable) =====
+  const hasPfuIr = data.pfuIr && data.pfuIr > 0;
+  
+  if (hasPfuIr) {
+    paragraphs.push([
+      { text: 'Concernant vos revenus du capital (dividendes, intérêts, plus-values), ceux-ci sont soumis au ' },
+      { text: 'prélèvement forfaitaire unique (PFU) au taux de 12,8%', bold: true },
+      { text: ', représentant un montant de ' },
+      { text: euro(data.pfuIr!), bold: true },
+      { text: '. Ce prélèvement s\'ajoute aux prélèvements sociaux de 17,2% pour former la "flat tax" de 30%.' },
+    ]);
+  }
+  
+  // ===== PARAGRAPH 7: Contributions (if applicable) =====
   const hasCehr = data.cehr && data.cehr > 0;
   const hasCdhr = data.cdhr && data.cdhr > 0;
   const hasPsFoncier = data.psFoncier && data.psFoncier > 0;
@@ -243,22 +259,12 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
     paragraphs.push(contribText);
   }
   
-  // ===== PARAGRAPH 7: Total and average rate =====
+  // ===== PARAGRAPH 8: Total (WITHOUT average rate as per user request) =====
   if (data.totalTax !== data.irNet && data.totalTax > 0) {
-    const tauxMoyen = data.taxableIncome > 0 ? (data.totalTax / data.taxableIncome) * 100 : 0;
     paragraphs.push([
       { text: 'Au total, votre ' },
       { text: `imposition globale s'élève à ${euro(data.totalTax)}`, bold: true },
-      { text: ', soit un ' },
-      { text: `taux moyen d'imposition de ${pct(tauxMoyen)}`, bold: true },
-      { text: ' de vos revenus.' },
-    ]);
-  } else if (data.irNet > 0 && data.taxableIncome > 0) {
-    const tauxMoyen = (data.irNet / data.taxableIncome) * 100;
-    paragraphs.push([
-      { text: 'Cela représente un ' },
-      { text: `taux moyen d'imposition de ${pct(tauxMoyen)}`, bold: true },
-      { text: ' de vos revenus.' },
+      { text: '.' },
     ]);
   }
   

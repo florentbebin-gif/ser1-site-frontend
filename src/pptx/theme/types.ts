@@ -155,6 +155,9 @@ export type IrSynthesisSlideSpec = {
   irNet: number;
   taxablePerPart: number;
   bracketsDetails?: Array<{ label: string; base: number; rate: number; tax: number }>;
+  // TMI details (exact values from IR card)
+  tmiBaseGlobal?: number;   // Montant des revenus dans cette TMI
+  tmiMarginGlobal?: number | null; // Marge avant changement de TMI
 };
 
 /**
@@ -172,6 +175,7 @@ export type IrAnnexeSlideSpec = {
   decote?: number;
   qfAdvantage?: number;
   creditsTotal?: number;
+  pfuIr?: number; // PFU 12.8% sur revenus du capital
   cehr?: number;
   cdhr?: number;
   psFoncier?: number;
