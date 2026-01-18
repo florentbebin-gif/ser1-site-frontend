@@ -218,10 +218,19 @@ export function buildCreditAnnexe(
   // Convert paragraphs to PptxGenJS TextProps format
   const textProps: PptxGenJS.TextProps[] = [];
   
+  const lastIdx = paragraphs.length - 1;
+  
   paragraphs.forEach((paragraph, pIdx) => {
-    // Add single newline between paragraphs (no empty line)
+    // Spacing rules:
+    // - After intro (pIdx === 0): blank line
+    // - Before disclaimer (last paragraph): blank line
+    // - Otherwise: single newline
     if (pIdx > 0) {
-      textProps.push({ text: '\n', options: { fontSize: 11, fontFace: TYPO.fontFace } });
+      const needsExtraSpace = (pIdx === 1) || (pIdx === lastIdx);
+      textProps.push({ 
+        text: needsExtraSpace ? '\n\n' : '\n', 
+        options: { fontSize: 11, fontFace: TYPO.fontFace } 
+      });
     }
     
     // Add each text segment of the paragraph

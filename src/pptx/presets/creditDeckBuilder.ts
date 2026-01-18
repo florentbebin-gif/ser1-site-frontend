@@ -98,19 +98,34 @@ export interface AdvisorInfo {
 }
 
 // ============================================================================
-// PAGINATION HELPER
+// PAGINATION HELPER (column-based: paginate by YEARS, not rows)
 // ============================================================================
 
-const MAX_YEARS_PER_SLIDE = 8;
+const MAX_YEARS_PER_SLIDE = 10;
 
-function paginateAmortizationRows(
+/**
+ * Get unique sorted years from all amortization rows
+ */
+function getUniqueYears(rows: CreditAmortizationRow[]): string[] {
+  const years = new Set(rows.map(r => r.periode));
+  return Array.from(years).sort();
+}
+
+/**
+ * Paginate years into chunks for column-based pagination
+ * Returns { allRows, yearPages } where yearPages is array of year arrays
+ */
+function paginateByYearColumns(
   rows: CreditAmortizationRow[]
-): CreditAmortizationRow[][] {
-  const pages: CreditAmortizationRow[][] = [];
-  for (let i = 0; i < rows.length; i += MAX_YEARS_PER_SLIDE) {
-    pages.push(rows.slice(i, i + MAX_YEARS_PER_SLIDE));
+): { allRows: CreditAmortizationRow[]; yearPages: string[][] } {
+  const allYears = getUniqueYears(rows);
+  const yearPages: string[][] = [];
+  
+  for (let i = 0; i < allYears.length; i += MAX_YEARS_PER_SLIDE) {
+    yearPages.push(allYears.slice(i, i + MAX_YEARS_PER_SLIDE));
   }
-  return pages;
+  
+  return { allRows: rows, yearPages };
 }
 
 // ============================================================================
@@ -191,9 +206,9 @@ export function buildCreditStudyDeck(
     }));
   }
   
-  // Paginate amortization rows
-  const amortizationPages = paginateAmortizationRows(allAmortizationRows);
-  const totalAmortizationPages = amortizationPages.length;
+  // Paginate amortization by YEAR COLUMNS (not rows)
+  const { allRows: amortAllRows, yearPages } = paginateByYearColumns(allAmortizationRows);
+  const totalAmortizationPages = yearPages.length;
   
   // Build slides array dynamically based on loan count
   const slides: Array<
@@ -325,11 +340,12 @@ export function buildCreditStudyDeck(
     assuranceMode: creditData.assuranceMode,
   });
   
-  // Amortization tables (paginated)
-  amortizationPages.forEach((pageRows, pageIndex) => {
+  // Amortization tables (paginated by YEAR COLUMNS)
+  yearPages.forEach((yearsForPage, pageIndex) => {
     slides.push({
       type: 'credit-amortization',
-      rows: pageRows,
+      allRows: amortAllRows,
+      yearsForPage,
       pageIndex,
       totalPages: totalAmortizationPages,
     });

@@ -259,10 +259,11 @@ export async function exportStudyDeck(
       const creditAnnexeSpec = slideSpec as CreditAnnexeSlideSpec;
       buildCreditAnnexe(pptx, creditAnnexeSpec, ctx.theme, ctx, slideIndex);
     } else if (slideSpec.type === 'credit-amortization') {
-      // Credit Amortization slide (paginated table)
+      // Credit Amortization slide (paginated by YEAR COLUMNS)
       const amortSpec = slideSpec as CreditAmortizationSlideSpec;
       buildCreditAmortization(pptx, {
-        rows: amortSpec.rows,
+        allRows: amortSpec.allRows,
+        yearsForPage: amortSpec.yearsForPage,
         pageIndex: amortSpec.pageIndex,
         totalPages: amortSpec.totalPages,
       }, ctx.theme, ctx, slideIndex);

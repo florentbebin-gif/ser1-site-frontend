@@ -320,13 +320,20 @@ export type CreditAmortizationRow = {
 };
 
 /**
- * Credit Amortization Slide Specification (paginated tables)
+ * Credit Amortization Slide Specification (paginated by YEAR COLUMNS)
+ * 
+ * Structure: Same row structure on every page, only year columns change
+ * - allRows: ALL amortization rows from all loans
+ * - yearsForPage: Years to display on THIS page (column headers)
  */
 export type CreditAmortizationSlideSpec = {
   type: 'credit-amortization';
-  rows: CreditAmortizationRow[];
-  pageIndex: number;   // 0-based page number
+  allRows: CreditAmortizationRow[];  // ALL rows from all loans
+  yearsForPage: string[];             // Years for THIS page's columns
+  pageIndex: number;                  // 0-based page number
   totalPages: number;
+  // Legacy field for backward compatibility
+  rows?: CreditAmortizationRow[];
 };
 
 /**

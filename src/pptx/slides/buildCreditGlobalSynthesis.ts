@@ -189,20 +189,26 @@ export function buildCreditGlobalSynthesis(
     const segmentCount = Math.min(periods.length, 3); // Support up to 3 segments
     const barY = timelineY + 0.22;
     
-    // Calculate segment widths proportional to duration
+    // Calculate segment durations from loan end dates (sorted by duration ASC)
+    // Each period corresponds to when a loan ends
+    const sortedLoans = [...data.loans].sort((a, b) => a.dureeMois - b.dureeMois);
+    const breakpoints = [0, ...sortedLoans.map(l => l.dureeMois)]; // [0, dur1, dur2, dur3]
+    
+    // Segment durations = differences between consecutive breakpoints
     const segmentDurations: number[] = [];
-    let cumulativeDuration = 0;
-    periods.slice(0, 3).forEach((period, idx) => {
-      // Calculate this segment's duration in months
-      const startMois = cumulativeDuration;
-      const endMois = idx < periods.length - 1 
-        ? Math.min(data.loans[idx]?.dureeMois || data.maxDureeMois, data.maxDureeMois)
-        : data.maxDureeMois;
-      const durationMois = endMois - startMois;
-      segmentDurations.push(durationMois);
-      cumulativeDuration = endMois;
-    });
-    const totalDuration = segmentDurations.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < segmentCount; i++) {
+      const start = breakpoints[i] || 0;
+      const end = breakpoints[i + 1] || data.maxDureeMois;
+      segmentDurations.push(Math.max(0, end - start));
+    }
+    
+    // Ensure we cover full duration
+    const computedTotal = segmentDurations.reduce((a, b) => a + b, 0);
+    if (computedTotal < data.maxDureeMois && segmentDurations.length > 0) {
+      segmentDurations[segmentDurations.length - 1] += (data.maxDureeMois - computedTotal);
+    }
+    
+    const totalDuration = segmentDurations.reduce((a, b) => a + b, 0) || data.maxDureeMois;
     const segmentWidths = segmentDurations.map(d => (d / totalDuration) * timelineW);
     
     // 3-color palette from theme (dark -> medium -> light)
