@@ -5,6 +5,7 @@ import { useTheme } from '../settings/ThemeProvider'
 import { buildCreditStudyDeck } from '../pptx/presets/creditDeckBuilder'
 import { exportAndDownloadStudyDeck } from '../pptx/export/exportStudyDeck'
 import { supabase } from '../supabaseClient'
+import { computeCapitalDecesSchedule, computeGlobalCapitalDecesSchedule } from '../engine/credit/capitalDeces';
 import './Credit.css'
 import '../styles/premium-shared.css'
 
@@ -401,7 +402,6 @@ useEffect(() => {
     return hasOthers ? mensuHorsAssurance_base : (mensuUser || mensuHorsAssurance_base)
   }, [pretsPlus.length, mensuBase, mensuHorsAssurance_base])
 
-  /* ---- Gen échéanciers prêts additionnels (avec assurance si définie) ---- */
   function shiftRows(rows, offset){
     if (offset === 0) return rows.slice()
     if (offset > 0) return Array.from({length:offset}, () => null).concat(rows)
@@ -423,9 +423,17 @@ useEffect(() => {
         ? scheduleInFine({ capital:C, r:rM, rAss:rAssP, N:Np, assurMode: pAssurMode })
         : scheduleAmortissable({ capital:C, r:rM, rAss:rAssP, N:Np, assurMode: pAssurMode })
 
-      const rows = baseRows.map(row => ({
+      // Calcule les capitaux décès avec la source de vérité unique
+      const loanParams = {
+        capital: C,
+        tauxAssur: pTauxAssur * 100, // Convertir en % annuel
+        assurMode: pAssurMode
+      };
+      const rowsWithDeces = computeCapitalDecesSchedule(loanParams, baseRows);
+      
+      const rows = rowsWithDeces.map(row => ({
         ...row,
-        assuranceDeces: (pAssurMode === 'CI') ? C : ((row.crd || 0) + (row.amort || 0))
+        // assuranceDeces est déjà calculé par computeCapitalDecesSchedule
       }))
 
       const off = monthsDiff(startYM, p.startYM || startYM)
@@ -470,12 +478,15 @@ useEffect(() => {
       rows = scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, totalConst: T })
     }
 
-    return rows.map(row => ({
-      ...row,
-      assuranceDeces: (assurMode === 'CI')
-        ? effectiveCapitalPret1
-        : ((row.crd || 0) + (row.amort || 0))
-    }))
+    // Calcule les capitaux décès avec la source de vérité unique
+      const loanParams = {
+        capital: effectiveCapitalPret1,
+        tauxAssur: tauxAssur, // Déjà en % annuel
+        assurMode: assurMode
+      };
+      const rowsWithDeces = computeCapitalDecesSchedule(loanParams, rows);
+      
+      return rowsWithDeces
 
   }, [
     effectiveCapitalPret1, r, rA, N, assurMode, creditType,
@@ -489,49 +500,26 @@ useEffect(() => {
 
   /* ---- Table mensuelle agrégée ---- */
   const agrRows = useMemo(()=>{
-    const maxLen = Math.max(pret1Rows.length, ...autresRows.map(a => a.length), N)
-    const out = []
-    for(let m=1; m<=maxLen; m++){
-      const collect = (row)=> row ? ({
-        i: row.interet||0, a: row.assurance||0, am: row.amort||0, me: row.mensu||0, mt: row.mensuTotal||0, c: row.crd||0
-      }) : ({ i:0,a:0,am:0,me:0,mt:0,c:0 })
-      const p1Row = pret1Rows[m-1]
-      const p1 = collect(p1Row)
-      const others = autresRows.reduce((s,arr)=> {
-        const r = collect(arr[m-1]); return { i:s.i+r.i, a:s.a+r.a, am:s.am+r.am, me:s.me+r.me, mt:s.mt+r.mt, c:s.c+r.c }
-      }, {i:0,a:0,am:0,me:0,mt:0,c:0})
-      // Assurance décès cumulée de tous les prêts selon leur mode respectif
-      let assuranceDecesCumul = 0
-      
-      // Prêt 1
-      const crdStartPret1 = (p1Row ? (p1Row.crd || 0) + (p1Row.amort || 0) : 0)
-      assuranceDecesCumul += (assurMode === 'CI') ? effectiveCapitalPret1 : crdStartPret1
-      
-      // Prêts additionnels (2 et 3)
-      autresRows.forEach((arr, idx) => {
-        const row = arr[m-1]
-        if (row) {
-          const pret = pretsPlus[idx]
-          const pretMode = pret?.assurMode || 'CRD'
-          const pretCapital = Math.max(0, toNum(pret?.capital) || 0)
-          const crdStartPret = (row.crd || 0) + (row.amort || 0)
-          assuranceDecesCumul += (pretMode === 'CI') ? pretCapital : crdStartPret
-        }
-      })
-      
-      out.push({
-        mois:m,
-        interet: p1.i + others.i,
-        assurance: p1.a + others.a,
-        amort: p1.am + others.am,
-        mensu: p1.me + others.me,
-        mensuTotal: p1.mt + others.mt,
-        crd: p1.c + others.c,
-        assuranceDeces: assuranceDecesCumul
-      })
-    }
-    return out
-  }, [pret1Rows, autresRows, pretsPlus, N, assurMode, effectiveCapitalPret1])
+    // Prépare les paramètres pour tous les prêts
+    const allLoansParams = [
+      {
+        capital: effectiveCapitalPret1,
+        tauxAssur: tauxAssur,
+        assurMode: assurMode
+      },
+      ...pretsPlus.map(p => ({
+        capital: Math.max(0, toNum(p.capital)),
+        tauxAssur: Math.max(0, Number(p.tauxAssur) || 0),
+        assurMode: p.assurMode || 'CRD'
+      }))
+    ];
+    
+    // Prépare les échéanciers bruts pour tous les prêts
+    const allSchedules = [pret1Rows, ...autresRows];
+    
+    // Calcule l'échéancier global avec capitaux décès unifiés
+    return computeGlobalCapitalDecesSchedule(allLoansParams, allSchedules);
+  }, [pret1Rows, autresRows, pretsPlus, N, assurMode, effectiveCapitalPret1, tauxAssur])
 
   /* ---- Agrégation annuelle (si besoin) ---- */
   function aggregateToYears(rows) {
@@ -1484,6 +1472,7 @@ const synthesePeriodes = useMemo(() => {
                     <th className="text-right">Amort.</th>
                     <th className="text-right">{colLabelPaiement}</th>
                     <th className="text-right">CRD</th>
+                    <th className="text-right">Capitaux décès</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1495,6 +1484,7 @@ const synthesePeriodes = useMemo(() => {
                       <td className="text-right">{euro0(l.amort)}</td>
                       <td className="text-right font-semibold">{euro0(l.mensu)}</td>
                       <td className="text-right">{euro0(l.crd)}</td>
+                      <td className="text-right">{l.assuranceDeces ? euro0(l.assuranceDeces) : '—'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1525,6 +1515,7 @@ const synthesePeriodes = useMemo(() => {
                           <td className="text-right">{euro0(l?.amort ?? 0)}</td>
                           <td className="text-right font-semibold">{euro0(l?.mensu ?? 0)}</td>
                           <td className="text-right">{euro0(l?.crd ?? 0)}</td>
+                          <td className="text-right">{l?.assuranceDeces ? euro0(l.assuranceDeces) : '—'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1557,6 +1548,7 @@ const synthesePeriodes = useMemo(() => {
                           <td className="text-right">{euro0(l?.amort ?? 0)}</td>
                           <td className="text-right font-semibold">{euro0(l?.mensu ?? 0)}</td>
                           <td className="text-right">{euro0(l?.crd ?? 0)}</td>
+                          <td className="text-right">{l?.assuranceDeces ? euro0(l.assuranceDeces) : '—'}</td>
                         </tr>
                       ))}
                     </tbody>

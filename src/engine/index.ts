@@ -23,3 +23,4 @@ export { mkResult, addValidationWarning, mkRuleVersion, trace } from './helpers'
 export * from './civil';
 export * from './tax';
 export * from './succession';
+export * from './credit/capitalDeces';

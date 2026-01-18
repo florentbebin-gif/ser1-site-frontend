@@ -375,8 +375,9 @@ npm run typecheck
 - Crédit amortissable ou in fine
 - Assurance CRD/CI intégrée pour tous les prêts (principal + additionnels)
 - Lissage avec plusieurs prêts (mensualité constante ou durée constante)
-- Tableaux d'amortissement mensuels/annuels avec colonne assurance
+- Tableaux d'amortissement mensuels/annuels avec colonnes assurance et capitaux décès
 - Prêts additionnels (max 2) avec paramètres d'assurance individuels
+- Calcul unifié des capitaux décès (source de vérité unique)
 - Exports Excel et PowerPoint avec totaux tous prêts
 
 ### Gestion des données
