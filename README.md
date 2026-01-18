@@ -983,7 +983,63 @@ const SAFETY_CHECK = {
 
 ---
 
-## � Structure PPTX - Modèle réutilisable
+## 💳 Slide Crédit - Synthèse Premium
+
+### Structure du deck Crédit
+
+Le deck Crédit suit le même pattern Serenity que l'IR, avec des slides adaptées au contexte du financement :
+
+```
+1. Cover        → "Simulation Crédit Immobilier" + NOM Prénom
+2. Chapter 1    → "Votre projet de financement"
+3. Synthesis    → 4 KPIs + HERO (Coût total) + barre visuelle Capital/Coût
+4. Chapter 2    → "Annexes"
+5. Annexe       → Explication rédigée style ingénieur patrimonial
+6. Amortization → Tableau années en colonnes (paginé si > 8 ans)
+7. End          → Mentions légales crédit
+```
+
+### Slide Synthèse Crédit (Slide 3)
+
+Layout ultra-lisible en **3 secondes** :
+
+| Zone | Contenu | Style |
+|------|---------|-------|
+| **KPIs** | Capital, Durée, Mensualité, Taux | 4 colonnes avec icônes |
+| **HERO** | Coût total du crédit | 32pt bold, centré |
+| **Visual** | Barre Capital vs Coût | Split bar proportionnelle |
+
+### Slides Amortissement (Slides 6+)
+
+- **Orientation horizontale** : Années en colonnes pour lecture rapide
+- **Pagination automatique** : Max 8 années par slide
+- **Métriques en lignes** : Annuité, Intérêts, Assurance, Capital amorti, CRD
+- **Style premium** : Header thème, alternance lignes, bordures fines
+
+### Fichiers concernés
+
+- **Builders** :
+  - `src/pptx/slides/buildCreditSynthesis.ts`
+  - `src/pptx/slides/buildCreditAnnexe.ts`
+  - `src/pptx/slides/buildCreditAmortization.ts`
+- **Deck builder** : `src/pptx/presets/creditDeckBuilder.ts`
+- **Types** : `src/pptx/theme/types.ts` (CreditSynthesisSlideSpec, etc.)
+
+### Source des données
+
+Les valeurs PPTX proviennent **exactement** de `Credit.jsx` :
+
+```typescript
+// ✅ CORRECT : Réutiliser les valeurs calculées dans l'UI
+capitalEmprunte: effectiveCapitalPret1,
+mensualiteTotale: mensuHorsAssurance_base + primeAssMensuelle,
+coutTotalCredit: pret1Interets + pret1Assurance,
+amortizationRows: aggregatedYears.map(...)
+```
+
+---
+
+## 📊 Structure PPTX - Modèle réutilisable
 
 Le système de génération PowerPoint suit une architecture modulaire permettant de créer des présentations pour différents simulateurs.
 
@@ -994,8 +1050,11 @@ Le système de génération PowerPoint suit une architecture modulaire permettan
 | **Cover** | Page de garde avec logo, titre, date et conseiller | `buildCover.ts` |
 | **Chapter** | Page de chapitre avec image et titre | `buildChapter.ts` |
 | **Content** | Page de contenu avec visuels (KPIs, graphiques) | `buildContent.ts` |
-| **Synthesis** | Synthèse avec données client (ex: IR slide 3) | `buildIrSynthesis.ts` |
-| **Annexe** | Détail rédigé par un ingénieur patrimonial | `buildIrAnnexe.ts` |
+| **IR Synthesis** | Synthèse IR (KPIs + barre TMI + impôt) | `buildIrSynthesis.ts` |
+| **IR Annexe** | Détail calcul IR rédigé | `buildIrAnnexe.ts` |
+| **Credit Synthesis** | Synthèse Crédit (KPIs + HERO + barre Capital/Coût) | `buildCreditSynthesis.ts` |
+| **Credit Annexe** | Détail crédit rédigé | `buildCreditAnnexe.ts` |
+| **Credit Amortization** | Tableau amortissement paginé (années en colonnes) | `buildCreditAmortization.ts` |
 | **End** | Slide de fin avec mentions légales | `buildEnd.ts` |
 
 ### Enchaînement type d'un deck

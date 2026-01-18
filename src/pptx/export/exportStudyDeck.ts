@@ -13,6 +13,9 @@ import type {
   ContentSlideSpec,
   IrSynthesisSlideSpec,
   IrAnnexeSlideSpec,
+  CreditSynthesisSlideSpec,
+  CreditAnnexeSlideSpec,
+  CreditAmortizationSlideSpec,
   PptxThemeRoles 
 } from '../theme/types';
 import { SLIDE_SIZE } from '../designSystem/serenity';
@@ -22,6 +25,9 @@ import { fetchChapterImageDataUri } from '../assets/resolvePublicAsset';
 import { buildCover, buildChapter, buildContent, buildEnd } from '../slides';
 import { buildIrSynthesis } from '../slides/buildIrSynthesis';
 import { buildIrAnnexe } from '../slides/buildIrAnnexe';
+import { buildCreditSynthesis } from '../slides/buildCreditSynthesis';
+import { buildCreditAnnexe } from '../slides/buildCreditAnnexe';
+import { buildCreditAmortization } from '../slides/buildCreditAmortization';
 import { injectThemeColors } from '../theme/themeBuilder';
 
 /**
@@ -218,6 +224,47 @@ export async function exportStudyDeck(
         psTotal: annexeSpec.psTotal,
         isCouple: annexeSpec.isCouple,
         childrenCount: annexeSpec.childrenCount,
+      }, ctx.theme, ctx, slideIndex);
+    } else if (slideSpec.type === 'credit-synthesis') {
+      // Credit Synthesis slide (premium visual)
+      const creditSynthSpec = slideSpec as CreditSynthesisSlideSpec;
+      buildCreditSynthesis(pptx, {
+        capitalEmprunte: creditSynthSpec.capitalEmprunte,
+        dureeMois: creditSynthSpec.dureeMois,
+        tauxNominal: creditSynthSpec.tauxNominal,
+        tauxAssurance: creditSynthSpec.tauxAssurance,
+        mensualiteHorsAssurance: creditSynthSpec.mensualiteHorsAssurance,
+        mensualiteTotale: creditSynthSpec.mensualiteTotale,
+        coutTotalInterets: creditSynthSpec.coutTotalInterets,
+        coutTotalAssurance: creditSynthSpec.coutTotalAssurance,
+        coutTotalCredit: creditSynthSpec.coutTotalCredit,
+        creditType: creditSynthSpec.creditType,
+        assuranceMode: creditSynthSpec.assuranceMode,
+      }, ctx.theme, ctx, slideIndex);
+    } else if (slideSpec.type === 'credit-annexe') {
+      // Credit Annexe slide (detailed prose)
+      const creditAnnexeSpec = slideSpec as CreditAnnexeSlideSpec;
+      buildCreditAnnexe(pptx, {
+        capitalEmprunte: creditAnnexeSpec.capitalEmprunte,
+        dureeMois: creditAnnexeSpec.dureeMois,
+        tauxNominal: creditAnnexeSpec.tauxNominal,
+        tauxAssurance: creditAnnexeSpec.tauxAssurance,
+        mensualiteHorsAssurance: creditAnnexeSpec.mensualiteHorsAssurance,
+        mensualiteTotale: creditAnnexeSpec.mensualiteTotale,
+        coutTotalInterets: creditAnnexeSpec.coutTotalInterets,
+        coutTotalAssurance: creditAnnexeSpec.coutTotalAssurance,
+        coutTotalCredit: creditAnnexeSpec.coutTotalCredit,
+        creditType: creditAnnexeSpec.creditType,
+        assuranceMode: creditAnnexeSpec.assuranceMode,
+        totalRembourse: creditAnnexeSpec.totalRembourse,
+      }, ctx.theme, ctx, slideIndex);
+    } else if (slideSpec.type === 'credit-amortization') {
+      // Credit Amortization slide (paginated table)
+      const amortSpec = slideSpec as CreditAmortizationSlideSpec;
+      buildCreditAmortization(pptx, {
+        rows: amortSpec.rows,
+        pageIndex: amortSpec.pageIndex,
+        totalPages: amortSpec.totalPages,
       }, ctx.theme, ctx, slideIndex);
     }
     

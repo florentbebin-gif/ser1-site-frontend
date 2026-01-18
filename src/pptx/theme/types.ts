@@ -194,10 +194,78 @@ export type EndSlideSpec = {
 };
 
 /**
+ * Credit Synthesis Slide Specification (premium KPI layout)
+ */
+export type CreditSynthesisSlideSpec = {
+  type: 'credit-synthesis';
+  capitalEmprunte: number;
+  dureeMois: number;
+  tauxNominal: number;       // taux annuel %
+  tauxAssurance: number;     // taux annuel %
+  mensualiteHorsAssurance: number;
+  mensualiteTotale: number;
+  coutTotalInterets: number;
+  coutTotalAssurance: number;
+  coutTotalCredit: number;   // intérêts + assurance
+  creditType: 'amortissable' | 'infine';
+  assuranceMode: 'CI' | 'CRD';
+};
+
+/**
+ * Credit Annexe Slide Specification (detailed prose)
+ */
+export type CreditAnnexeSlideSpec = {
+  type: 'credit-annexe';
+  capitalEmprunte: number;
+  dureeMois: number;
+  tauxNominal: number;
+  tauxAssurance: number;
+  mensualiteHorsAssurance: number;
+  mensualiteTotale: number;
+  coutTotalInterets: number;
+  coutTotalAssurance: number;
+  coutTotalCredit: number;
+  creditType: 'amortissable' | 'infine';
+  assuranceMode: 'CI' | 'CRD';
+  totalRembourse: number;    // capital + coût total
+};
+
+/**
+ * Credit Amortization Row (annual aggregation)
+ */
+export type CreditAmortizationRow = {
+  periode: string;  // year label e.g. "2026"
+  interet: number;
+  assurance: number;
+  amort: number;
+  annuite: number;      // hors assurance
+  annuiteTotale: number; // avec assurance
+  crd: number;          // CRD fin de période
+};
+
+/**
+ * Credit Amortization Slide Specification (paginated tables)
+ */
+export type CreditAmortizationSlideSpec = {
+  type: 'credit-amortization';
+  rows: CreditAmortizationRow[];
+  pageIndex: number;   // 0-based page number
+  totalPages: number;
+};
+
+/**
  * Study Deck Specification (complete presentation)
  */
 export type StudyDeckSpec = {
   cover: CoverSlideSpec;
-  slides: Array<ChapterSlideSpec | ContentSlideSpec | IrSynthesisSlideSpec | IrAnnexeSlideSpec>;
+  slides: Array<
+    | ChapterSlideSpec 
+    | ContentSlideSpec 
+    | IrSynthesisSlideSpec 
+    | IrAnnexeSlideSpec
+    | CreditSynthesisSlideSpec
+    | CreditAnnexeSlideSpec
+    | CreditAmortizationSlideSpec
+  >;
   end: EndSlideSpec;
 };

@@ -1,6 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 import { toNumber } from '../utils/number.js'
+import { useTheme } from '../settings/ThemeProvider'
+import { buildCreditStudyDeck } from '../pptx/presets/creditDeckBuilder'
+import { exportAndDownloadStudyDeck } from '../pptx/export/exportStudyDeck'
+import { supabase } from '../supabaseClient'
 import './Credit.css'
 import '../styles/premium-shared.css'
 
@@ -212,6 +216,9 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
    Page Crédit
 ================================ */
 export default function Credit(){
+
+/* ---- THEME ---- */
+const { colors: themeColors } = useTheme()
 
 /* ---- ÉTATS ---- */
 const [startYM, setStartYM]         = useState(nowYearMonth()) // Date souscription prêt 1
@@ -902,9 +909,79 @@ const synthesePeriodes = useMemo(() => {
     }
   }
 
-  function exportPowerPoint() {
-    // Placeholder : on connectera la vraie génération plus tard
-    alert('Export PowerPoint : paramétrage à venir 👍')
+  async function exportPowerPoint() {
+    try {
+      // Build PPTX colors from theme
+      const pptxColors = {
+        c1: themeColors.c1,
+        c2: themeColors.c2,
+        c3: themeColors.c3,
+        c4: themeColors.c4,
+        c5: themeColors.c5,
+        c6: themeColors.c6,
+        c7: themeColors.c7,
+        c8: themeColors.c8,
+        c9: themeColors.c9,
+        c10: themeColors.c10,
+      }
+
+      // Try to load logo from Supabase storage
+      let logoUrl = null
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data } = await supabase.storage
+            .from('logos')
+            .createSignedUrl(`${user.id}/logo.png`, 60)
+          if (data?.signedUrl) {
+            logoUrl = data.signedUrl
+          }
+        }
+      } catch (logoError) {
+        console.warn('Logo loading failed, continuing without logo:', logoError)
+      }
+
+      // Build amortization rows (annual aggregation)
+      const amortizationRows = aggregatedYears.map(row => ({
+        periode: row.periode,
+        interet: row.interet,
+        assurance: row.assurance,
+        amort: row.amort,
+        annuite: row.mensu,
+        annuiteTotale: row.mensuTotal,
+        crd: row.crd,
+      }))
+
+      // Build credit data for PPTX
+      const creditData = {
+        capitalEmprunte: effectiveCapitalPret1,
+        dureeMois: N,
+        tauxNominal: taux,
+        tauxAssurance: tauxAssur,
+        mensualiteHorsAssurance: mensuHorsAssurance_base,
+        mensualiteTotale: mensuHorsAssurance_base + primeAssMensuelle,
+        coutTotalInterets: pret1Interets,
+        coutTotalAssurance: pret1Assurance,
+        coutTotalCredit: pret1Interets + pret1Assurance,
+        creditType: creditType,
+        assuranceMode: assurMode,
+        amortizationRows,
+        clientName: undefined, // Could be passed from props/context if available
+      }
+
+      // Build deck spec
+      const deck = buildCreditStudyDeck(creditData, pptxColors, logoUrl)
+
+      // Generate filename with date
+      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '')
+      const filename = `simulation-credit-${dateStr}.pptx`
+
+      // Export and download
+      await exportAndDownloadStudyDeck(deck, pptxColors, filename)
+    } catch (error) {
+      console.error('Export PowerPoint Crédit échoué:', error)
+      alert('Erreur lors de la génération du PowerPoint. Veuillez réessayer.')
+    }
   }
 
   /* ---- Rendu ---- */
