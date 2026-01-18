@@ -1,5 +1,5 @@
 // src/pages/Ir.jsx
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../utils/xlsxBuilder';
 import './Ir.css';
 import '../styles/premium-shared.css';

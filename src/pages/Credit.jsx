@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useContext } from "react"
+import React, { useEffect, useMemo, useRef, useState, useContext } from "react"
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 import { toNumber } from '../utils/number.js'
 import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../utils/xlsxBuilder'
