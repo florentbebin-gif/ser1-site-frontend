@@ -378,7 +378,7 @@ npm run typecheck
 - Tableaux d'amortissement mensuels/annuels avec colonnes assurance et capitaux décès
 - Prêts additionnels (max 2) avec paramètres d'assurance individuels
 - Calcul unifié des capitaux décès (source de vérité unique)
-- Exports Excel et PowerPoint avec totaux tous prêts
+- Exports Excel et PowerPoint avec totaux tous prêts (Excel inclut capitaux décès)
 
 ### Gestion des données
 - **Sauvegarde** : Fichier `.ser1` avec état complet

@@ -426,7 +426,7 @@ useEffect(() => {
       // Calcule les capitaux décès avec la source de vérité unique
       const loanParams = {
         capital: C,
-        tauxAssur: pTauxAssur * 100, // Convertir en % annuel
+        tauxAssur: pTauxAssur,
         assurMode: pAssurMode
       };
       const rowsWithDeces = computeCapitalDecesSchedule(loanParams, baseRows);
@@ -531,7 +531,7 @@ useEffect(() => {
       cur.interet    += r.interet
       cur.assurance  += r.assurance
       cur.amort      += r.amort
-      cur.assuranceDeces = cur.assuranceDeces ?? r.assuranceDeces ?? null
+      cur.assuranceDeces = r.assuranceDeces ?? cur.assuranceDeces ?? null
       cur.mensu      += r.mensu
       cur.mensuTotal += r.mensuTotal
       cur.crd         = r.crd
@@ -550,14 +550,15 @@ function aggregateToYearsFromRows(rows, startYMBase) {
     if (!r) return;
     const ym = addMonths(startYMBase, idx);
     const year = labelYear(ym);
-    const acc = map.get(year) || { interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0 };
+    const acc = map.get(year) || { interet:0, assurance:0, amort:0, mensu:0, mensuTotal:0, crd:0, assuranceDeces:null };
     acc.interet    += r.interet || 0;
     acc.assurance  += r.assurance || 0;
     acc.amort      += r.amort || 0;
     acc.mensu      += r.mensu || 0;
     acc.mensuTotal += r.mensuTotal || 0;
-    // on prend le dernier CRD de l'année
+    // on prend le dernier CRD / capital décès de l'année
     acc.crd         = r.crd || acc.crd || 0;
+    acc.assuranceDeces = r.assuranceDeces ?? acc.assuranceDeces ?? null;
     map.set(year, acc);
   });
   return Array.from(map.entries()).map(([periode, v]) => ({ periode, ...v }));
@@ -773,6 +774,7 @@ const synthesePeriodes = useMemo(() => {
         isAnnual ? 'Annuité' : 'Mensualité',
         isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.',
         'CRD total',
+        'Assurance décès',
       ];
       const headerPret = [
         'Période',
@@ -782,6 +784,7 @@ const synthesePeriodes = useMemo(() => {
         isAnnual ? 'Annuité' : 'Mensualité',
         isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.',
         'CRD',
+        'Capitaux décès',
       ];
 
       // 0) Onglet PARAMÈTRES : tout ce qui est saisi par l’utilisateur
@@ -872,6 +875,7 @@ const synthesePeriodes = useMemo(() => {
         Math.round(l.mensu),
         Math.round(l.mensuTotal),
         Math.round(l.crd),
+        Math.round(l.assuranceDeces ?? 0),
       ]);
 
       // 2) Détail par prêt selon la vue actuelle
@@ -886,6 +890,7 @@ const synthesePeriodes = useMemo(() => {
         Math.round(l.mensu),
         Math.round(l.mensuTotal),
         Math.round(l.crd),
+        Math.round(l.assuranceDeces ?? 0),
       ]);
 
       const pret2Arr = (autresRows[0]
@@ -901,6 +906,7 @@ const synthesePeriodes = useMemo(() => {
         Math.round(l?.mensu ?? 0),
         Math.round(l?.mensuTotal ?? 0),
         Math.round(l?.crd ?? 0),
+        Math.round(l?.assuranceDeces ?? 0),
       ]);
 
       const pret3Arr = (autresRows[1]
@@ -916,6 +922,7 @@ const synthesePeriodes = useMemo(() => {
         Math.round(l?.mensu ?? 0),
         Math.round(l?.mensuTotal ?? 0),
         Math.round(l?.crd ?? 0),
+        Math.round(l?.assuranceDeces ?? 0),
       ]);
 
       const xml = `<?xml version="1.0"?>
@@ -1504,6 +1511,7 @@ const synthesePeriodes = useMemo(() => {
                         <th className="text-right">Amort.</th>
                         <th className="text-right">{colLabelPaiement}</th>
                         <th className="text-right">CRD</th>
+                        <th className="text-right">Capitaux décès</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1537,6 +1545,7 @@ const synthesePeriodes = useMemo(() => {
                         <th className="text-right">Amort.</th>
                         <th className="text-right">{colLabelPaiement}</th>
                         <th className="text-right">CRD</th>
+                        <th className="text-right">Capitaux décès</th>
                       </tr>
                     </thead>
                     <tbody>

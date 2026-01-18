@@ -58,16 +58,10 @@ export function computeCapitalDecesSchedule(
   params: LoanParams,
   schedule: ScheduleRow[]
 ): ScheduleRow[] {
-  return schedule.map((row, index) => {
-    // Pour la première période, CRD début = capital initial
-    let crdDebut: number;
-    if (index === 0) {
-      crdDebut = params.capital;
-    } else {
-      // CRD début = CRD fin précédent + amortissement précédent
-      const prevRow = schedule[index - 1];
-      crdDebut = prevRow.crd + (prevRow.amort || 0);
-    }
+  return schedule.map((row) => {
+    // CRD début = CRD fin de la période + amortissement de la période
+    // (la ligne courante contient le CRD fin et l'amortissement de la même période)
+    const crdDebut = (row.crd || 0) + (row.amort || 0);
 
     const assuranceDeces = computeCapitalDecesPeriod(params, crdDebut);
 
@@ -117,15 +111,10 @@ export function aggregateCapitalDecesGlobal(
  */
 export function computeGlobalCapitalDecesSchedule(
   allLoansParams: LoanParams[],
-  allSchedules: ScheduleRow[][]
+  allSchedules: Array<Array<ScheduleRow | null>>
 ): ScheduleRow[] {
   const maxLength = Math.max(...allSchedules.map(s => s.length));
   const globalSchedule: ScheduleRow[] = [];
-
-  // D'abord, calculer les capitaux décès pour chaque prêt
-  const loansWithDeces = allSchedules.map((schedule, idx) => 
-    computeCapitalDecesSchedule(allLoansParams[idx], schedule)
-  );
 
   // Ensuite, agréger par période
   for (let period = 0; period < maxLength; period++) {
@@ -142,17 +131,24 @@ export function computeGlobalCapitalDecesSchedule(
     };
 
     // Sommer les valeurs de tous les prêts pour cette période
-    loansWithDeces.forEach(schedule => {
+    allSchedules.forEach((schedule, idx) => {
       const row = schedule[period];
-      if (row) {
-        aggregated.interet += row.interet;
-        aggregated.assurance += row.assurance;
-        aggregated.amort += row.amort;
-        aggregated.mensu += row.mensu;
-        aggregated.mensuTotal += row.mensuTotal;
-        aggregated.crd += row.crd;
-        aggregated.assuranceDeces += row.assuranceDeces;
+      if (!row) {
+        return;
       }
+
+      const assuranceDeces = computeCapitalDecesPeriod(
+        allLoansParams[idx],
+        (row.crd || 0) + (row.amort || 0)
+      );
+
+      aggregated.interet += row.interet;
+      aggregated.assurance += row.assurance;
+      aggregated.amort += row.amort;
+      aggregated.mensu += row.mensu;
+      aggregated.mensuTotal += row.mensuTotal;
+      aggregated.crd += row.crd;
+      aggregated.assuranceDeces += assuranceDeces;
     });
 
     globalSchedule.push(aggregated);

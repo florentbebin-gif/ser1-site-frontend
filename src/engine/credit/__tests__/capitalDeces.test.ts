@@ -65,9 +65,9 @@ describe('Capital Décès Calculator', () => {
       expect(result[2].mois).toBe(3);
       
       // Vérifie les capitaux décès en mode CRD
-      expect(result[0].assuranceDeces).toBe(100000); // CRD début période 1 = capital initial
-      expect(result[1].assuranceDeces).toBe(100000); // CRD début période 2 = 99700 + 300
-      expect(result[2].assuranceDeces).toBe(99700);  // CRD début période 3 = 99399 + 301
+      expect(result[0].assuranceDeces).toBe(100000); // CRD début période 1 = 99700 + 300
+      expect(result[1].assuranceDeces).toBe(99700);  // CRD début période 2 = 99399 + 301
+      expect(result[2].assuranceDeces).toBe(99399);  // CRD début période 3 = 99097 + 302
     });
 
     it('mode CI → capital décès constant', () => {
@@ -156,7 +156,7 @@ describe('Capital Décès Calculator', () => {
       
       // Vérifie les capitaux décès agrégés
       expect(result[0].assuranceDeces).toBe(150000); // 100000 (CRD prêt1) + 50000 (CI prêt2)
-      expect(result[1].assuranceDeces).toBe(150000); // 100000 (CRD prêt1) + 50000 (CI prêt2)
+      expect(result[1].assuranceDeces).toBe(149700); // 99700 (CRD prêt1) + 50000 (CI prêt2)
     });
   });
 });
