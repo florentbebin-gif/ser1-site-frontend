@@ -1,5 +1,6 @@
 // src/pages/Ir.jsx
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../utils/xlsxBuilder';
 import './Ir.css';
 import '../styles/premium-shared.css';
 import { onResetEvent, storageKeyFor } from '../utils/reset';
@@ -380,81 +381,13 @@ const yearLabel =
   const psPatrimonyRate = toNum(psSettings?.patrimony?.[yearKey]?.totalRate, 17.2);
 
   const cell = (v, style) => ({ v, style });
-  const escXml = (s) =>
-    String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
 
-  const normalizeCell = (c) =>
-    c && typeof c === 'object' && Object.prototype.hasOwnProperty.call(c, 'v')
-      ? c
-      : { v: c ?? '', style: undefined };
-
-  const rowXml = (cells) =>
-    `<Row>${cells
-      .map((raw) => {
-        const { v, style } = normalizeCell(raw);
-        const type = typeof v === 'number' ? 'Number' : 'String';
-        return `<Cell${style ? ` ss:StyleID="${style}"` : ''}><Data ss:Type="${type}">${escXml(v)}</Data></Cell>`;
-      })
-      .join('')}</Row>`;
-
-  function buildWorksheetXmlVertical(title, header, rows, options = {}) {
-    const aoa = [header, ...rows];
-    const cols = options.columnWidths || [];
-    const colXml = cols.map((w) => `<Column ss:Width="${w}"/>`).join('');
-
-    return `
-      <Worksheet ss:Name="${escXml(title)}">
-        <Table>
-          ${colXml}
-          ${aoa.map((r) => rowXml(r)).join('')}
-        </Table>
-      </Worksheet>`;
-  }
-
-  function exportExcel() {
+  async function exportExcel() {
     try {
       if (!result) {
         alert('Les résultats ne sont pas disponibles.');
         return;
       }
-
-      const headerFill = (colors?.c1 || '#2F4A6D').replace('#', '');
-      const sectionFill = (colors?.c7 || '#E5EAF2').replace('#', '');
-
-      const stylesXml = `
-        <Styles>
-          <Style ss:ID="sHeader">
-            <Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/>
-            <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
-            <Interior ss:Color="#${headerFill}" ss:Pattern="Solid"/>
-          </Style>
-          <Style ss:ID="sSection">
-            <Font ss:FontName="Arial" ss:Size="10" ss:Bold="1"/>
-            <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
-            <Interior ss:Color="#${sectionFill}" ss:Pattern="Solid"/>
-          </Style>
-          <Style ss:ID="sText">
-            <Font ss:FontName="Arial" ss:Size="10"/>
-            <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
-          </Style>
-          <Style ss:ID="sCenter">
-            <Font ss:FontName="Arial" ss:Size="10"/>
-            <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
-          </Style>
-          <Style ss:ID="sMoney">
-            <Font ss:FontName="Arial" ss:Size="10"/>
-            <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
-            <NumberFormat ss:Format="#\,##0 \"€\""/>
-          </Style>
-          <Style ss:ID="sPercent">
-            <Font ss:FontName="Arial" ss:Size="10"/>
-            <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
-            <NumberFormat ss:Format="0.00%"/>
-          </Style>
-        </Styles>`;
 
       const headerParams = [cell('Champ', 'sHeader'), cell('Valeur', 'sHeader')];
       const rowsParams = [];
@@ -535,27 +468,32 @@ const yearLabel =
       rowsDetails.push([cell('PS dividendes', 'sText'), cell(result.psDividends || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
       rowsDetails.push([cell('PS total', 'sText'), cell(result.psTotal || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
 
-      const xml = `<?xml version="1.0"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
-  xmlns:o="urn:schemas-microsoft-com:office:office"
-  xmlns:x="urn:schemas-microsoft-com:office:excel"
-  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-  ${stylesXml}
-  ${buildWorksheetXmlVertical('Paramètres', headerParams, rowsParams, { columnWidths: [240, 180] })}
-  ${buildWorksheetXmlVertical('Synthèse impôts', headerSynth, rowsSynth, { columnWidths: [240, 180] })}
-  ${buildWorksheetXmlVertical('Détails calculs', headerDetails, rowsDetails, { columnWidths: [240, 120, 90, 120] })}
-</Workbook>`;
-
-      const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'SER1_IR.xls';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      const blob = await buildXlsxBlob({
+        sheets: [
+          {
+            name: 'Paramètres',
+            rows: [headerParams, ...rowsParams],
+            columnWidths: [36, 22],
+          },
+          {
+            name: 'Synthèse impôts',
+            rows: [headerSynth, ...rowsSynth],
+            columnWidths: [36, 22],
+          },
+          {
+            name: 'Détails calculs',
+            rows: [headerDetails, ...rowsDetails],
+            columnWidths: [36, 18, 14, 18],
+          },
+        ],
+        headerFill: colors?.c1,
+        sectionFill: colors?.c7,
+      });
+      const isValid = await validateXlsxBlob(blob);
+      if (!isValid) {
+        throw new Error('XLSX invalide (signature PK manquante).');
+      }
+      downloadXlsx(blob, 'SER1_IR.xlsx');
     } catch (e) {
       console.error('Export Excel IR échoué', e);
       alert('Impossible de générer le fichier Excel.');

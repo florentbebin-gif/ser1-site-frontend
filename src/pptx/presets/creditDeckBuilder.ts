@@ -44,6 +44,7 @@ export interface CreditData {
   coutTotalInterets: number;
   coutTotalAssurance: number;
   coutTotalCredit: number;
+  assuranceDecesByYear?: number[];
   
   // Smoothing info
   smoothingEnabled?: boolean;
@@ -241,6 +242,7 @@ export function buildCreditStudyDeck(
       coutTotalInterets: creditData.coutTotalInterets,
       coutTotalAssurance: creditData.coutTotalAssurance,
       coutTotalCredit: creditData.coutTotalCredit,
+      assuranceDecesByYear: creditData.assuranceDecesByYear,
       loans,
       paymentPeriods,
       smoothingEnabled,

@@ -23,6 +23,7 @@ import {
   addTextBox,
   addHeader,
   addFooter,
+  addTextFr,
 } from '../designSystem/serenity';
 import { getBusinessIconDataUri, type BusinessIconName } from '../../icons/business/businessIconLibrary';
 
@@ -240,7 +241,7 @@ export function buildCreditSynthesis(
     });
     
     // Label (sentence case, gray)
-    slide.addText(kpi.label, {
+    addTextFr(slide, kpi.label, {
       x: colX,
       y: LAYOUT.kpi.labelY,
       w: LAYOUT.kpi.colWidth,
@@ -253,7 +254,7 @@ export function buildCreditSynthesis(
     });
     
     // Main value
-    slide.addText(kpi.value, {
+    addTextFr(slide, kpi.value, {
       x: colX,
       y: LAYOUT.kpi.valueY,
       w: LAYOUT.kpi.colWidth,
@@ -268,7 +269,7 @@ export function buildCreditSynthesis(
     
     // Sub-value (if present)
     if (kpi.subValue) {
-      slide.addText(kpi.subValue, {
+      addTextFr(slide, kpi.subValue, {
         x: colX,
         y: LAYOUT.kpi.valueY + 0.30,
         w: LAYOUT.kpi.colWidth,
@@ -286,7 +287,7 @@ export function buildCreditSynthesis(
   // ========== SECTION 2: HERO - Coût total du crédit ==========
   
   // Hero label
-  slide.addText('Coût total de votre crédit', {
+  addTextFr(slide, 'Coût total de votre crédit', {
     x: LAYOUT.marginX,
     y: LAYOUT.hero.y,
     w: LAYOUT.contentWidth,
@@ -299,7 +300,7 @@ export function buildCreditSynthesis(
   });
   
   // Hero value - VERY LARGE (32pt), BOLD = impossible to miss
-  slide.addText(euro(data.coutTotalCredit), {
+  addTextFr(slide, euro(data.coutTotalCredit), {
     x: LAYOUT.marginX,
     y: LAYOUT.hero.y + LAYOUT.hero.labelHeight,
     w: LAYOUT.contentWidth,
@@ -314,7 +315,7 @@ export function buildCreditSynthesis(
   
   // Breakdown under hero (intérêts + assurance)
   const breakdownText = `(${euro(data.coutTotalInterets)} intérêts + ${euro(data.coutTotalAssurance)} assurance)`;
-  slide.addText(breakdownText, {
+  addTextFr(slide, breakdownText, {
     x: LAYOUT.marginX,
     y: LAYOUT.hero.y + LAYOUT.hero.labelHeight + LAYOUT.hero.valueHeight,
     w: LAYOUT.contentWidth,
@@ -376,7 +377,7 @@ export function buildCreditSynthesis(
   
   // Capital label (if segment wide enough)
   if (capitalBarWidth > 1.5) {
-    slide.addText(`Capital : ${euro(data.capitalEmprunte)}`, {
+    addTextFr(slide, `Capital : ${euro(data.capitalEmprunte)}`, {
       x: LAYOUT.bar.marginX,
       y: LAYOUT.bar.y,
       w: capitalBarWidth - 0.02,
@@ -392,7 +393,7 @@ export function buildCreditSynthesis(
   
   // Coût label (if segment wide enough)
   if (coutBarWidth > 1.5) {
-    slide.addText(`Coût : ${euro(data.coutTotalCredit)}`, {
+    addTextFr(slide, `Coût : ${euro(data.coutTotalCredit)}`, {
       x: LAYOUT.bar.marginX + capitalBarWidth,
       y: LAYOUT.bar.y,
       w: coutBarWidth,
@@ -410,7 +411,7 @@ export function buildCreditSynthesis(
   const legendY = LAYOUT.bar.legendY;
   const legendCenterX = slideWidth / 2;
   
-  slide.addText(`Total remboursé : ${euro(totalRembourse)}`, {
+  addTextFr(slide, `Total remboursé : ${euro(totalRembourse)}`, {
     x: legendCenterX - 2,
     y: legendY,
     w: 4,

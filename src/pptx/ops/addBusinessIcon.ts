@@ -6,6 +6,7 @@
  */
 
 import { getBusinessIconDataUri, type BusinessIconName } from '../../icons/business/businessIconLibrary';
+import { addTextFr } from '../designSystem/serenity';
 
 export interface BusinessIconOptions {
   name: BusinessIconName;
@@ -48,13 +49,13 @@ export function addBusinessIcon(
     console.error(`❌ Failed to add business icon ${iconName}:`, error);
     
     // Fallback : texte avec le nom de l'icône
-    slide.addText(`[${iconName}]`, {
-      x: options.x,
-      y: options.y,
+    addTextFr(slide, `[${iconName}]`, {
+      x: options.x as unknown as number,
+      y: options.y as unknown as number,
       w: options.w,
       h: options.h,
       fontSize: Math.min(options.w, options.h) * 8, // Taille proportionnelle
-      color: options.color || '#000000',
+      color: options.color || 'FFFFFF',
       align: 'center',
       valign: 'middle',
     });

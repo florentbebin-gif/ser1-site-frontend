@@ -8,6 +8,7 @@
 import PptxGenJS from 'pptxgenjs';
 import type { ThemeColors } from '../settings/ThemeProvider';
 import { DEFAULT_COLORS } from '../settings/ThemeProvider';
+import { addTextFr } from './designSystem/serenity';
 
 export type { ThemeColors };
 export { DEFAULT_COLORS };
@@ -38,7 +39,7 @@ export function addTitleSlide(
   slide.background = { color: colors.c1.replace('#', '') };
   
   // Nom et prénom centré
-  slide.addText(clientName || 'Nom et Prénom', {
+  addTextFr(slide, clientName || 'Nom et Prénom', {
     x: '10%',
     y: '40%',
     w: '80%',

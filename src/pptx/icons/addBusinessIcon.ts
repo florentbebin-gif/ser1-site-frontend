@@ -8,7 +8,7 @@
 import PptxGenJS from 'pptxgenjs';
 import { getBusinessIconDataUri, type BusinessIconName } from '../../icons/business/businessIconLibrary';
 import type { PptxThemeRoles, IconPlacement } from '../theme/types';
-import { roleColor } from '../designSystem/serenity';
+import { roleColor, addTextFr } from '../designSystem/serenity';
 
 export type { BusinessIconName, IconPlacement };
 
@@ -66,7 +66,7 @@ export function addBusinessIconToSlide(
   } catch (error) {
     console.error(`[PPTX Icons] Failed to add icon ${iconName}:`, error);
     // Fallback: add placeholder text
-    slide.addText(`[${iconName}]`, {
+    addTextFr(slide, `[${iconName}]`, {
       x: placement.x,
       y: placement.y,
       w: placement.w,

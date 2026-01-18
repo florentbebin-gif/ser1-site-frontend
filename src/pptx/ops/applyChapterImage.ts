@@ -6,6 +6,7 @@
  */
 
 import type { PptxTheme } from '../theme/pptxTheme';
+import { addTextFr } from '../designSystem/serenity';
 
 export interface ChapterImageOptions {
   chapterIndex: number;  // 1-9 (correspond à ch-01.png ... ch-09.png)
@@ -61,14 +62,14 @@ export function applyChapterImage(
     console.error(`❌ Failed to apply chapter image ${fileName}:`, error);
     
     // Fallback : placeholder avec texte
-    slide.addText(`Image ${chapterIndex}`, {
+    addTextFr(slide, `Image ${chapterIndex}`, {
       x: placement.x,
       y: placement.y,
       w: placement.w,
       h: placement.h,
       fontSize: 14,
-      color: theme?.textMain || '#FFFFFF',
-      fill: theme?.bgMain || '#2B3F37',
+      color: theme?.textMain || 'FFFFFF',
+      fill: theme?.bgMain || 'FFFFFF',
       align: 'center',
       valign: 'middle',
     });

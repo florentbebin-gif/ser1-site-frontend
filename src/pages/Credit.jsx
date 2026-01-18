@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useState, useContext } from "react"
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 import { toNumber } from '../utils/number.js'
+import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../utils/xlsxBuilder'
 import { useTheme } from '../settings/ThemeProvider'
 import { buildCreditStudyDeck } from '../pptx/presets/creditDeckBuilder'
 import { exportAndDownloadStudyDeck } from '../pptx/export/exportStudyDeck'
@@ -702,100 +703,12 @@ const synthesePeriodes = useMemo(() => {
     return out;
   }
 
-  /* ---- Export Excel (.xls) ---- */
+  /* ---- Export Excel (.xlsx) ---- */
 
   const cell = (v, style) => ({ v, style });
 
-  const escXml = (s) =>
-    String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-  const normalizeCell = (c) =>
-    c && typeof c === 'object' && Object.prototype.hasOwnProperty.call(c, 'v')
-      ? c
-      : { v: c ?? '', style: undefined };
-
-  const rowXml = (cells) =>
-    `<Row>${
-      cells
-        .map((raw) => {
-          const { v, style } = normalizeCell(raw);
-          const type = typeof v === 'number' ? 'Number' : 'String';
-          return `<Cell${style ? ` ss:StyleID="${style}"` : ''}><Data ss:Type="${type}">${escXml(v)}</Data></Cell>`;
-        })
-        .join('')
-    }</Row>`;
-
-  // Feuilles "classiques" : périodes en colonnes (on transpose)
-  function buildWorksheetXml(title, header, rows, options = {}) {
-    const aoa = [header, ...rows];
-    const t = transpose(aoa);
-    const cols = options.columnWidths || [];
-    const colXml = cols.map((w) => `<Column ss:Width="${w}"/>`).join('');
-
-    return `
-      <Worksheet ss:Name="${escXml(title)}">
-        <Table>
-          ${colXml}
-          ${t.map((r) => rowXml(r)).join('')}
-        </Table>
-      </Worksheet>`;
-  }
-
-  // Feuille "Paramètres" : orientation verticale
-  function buildWorksheetXmlVertical(title, header, rows, options = {}) {
-    const aoa = [header, ...rows];
-    const cols = options.columnWidths || [];
-    const colXml = cols.map((w) => `<Column ss:Width="${w}"/>`).join('');
-
-    return `
-      <Worksheet ss:Name="${escXml(title)}">
-        <Table>
-          ${colXml}
-          ${aoa.map((r) => rowXml(r)).join('')}
-        </Table>
-      </Worksheet>`;
-  }
-
-  function exportExcel() {
+  async function exportExcel() {
     try {
-      const headerFill = (themeColors?.c1 || '#2F4A6D').replace('#', '');
-      const sectionFill = (themeColors?.c7 || '#E5EAF2').replace('#', '');
-
-      const stylesXml = `
-        <Styles>
-          <Style ss:ID="sHeader">
-            <Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/>
-            <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
-            <Interior ss:Color="#${headerFill}" ss:Pattern="Solid"/>
-          </Style>
-          <Style ss:ID="sSection">
-            <Font ss:FontName="Arial" ss:Size="10" ss:Bold="1"/>
-            <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
-            <Interior ss:Color="#${sectionFill}" ss:Pattern="Solid"/>
-          </Style>
-          <Style ss:ID="sText">
-            <Font ss:FontName="Arial" ss:Size="10"/>
-            <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
-          </Style>
-          <Style ss:ID="sCenter">
-            <Font ss:FontName="Arial" ss:Size="10"/>
-            <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
-          </Style>
-          <Style ss:ID="sMoney">
-            <Font ss:FontName="Arial" ss:Size="10"/>
-            <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
-            <NumberFormat ss:Format="#\,##0 \"€\""/>
-          </Style>
-          <Style ss:ID="sPercent">
-            <Font ss:FontName="Arial" ss:Size="10"/>
-            <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
-            <NumberFormat ss:Format="0.00%"/>
-          </Style>
-        </Styles>`;
-
       const headerResume = [
         cell('Période', 'sHeader'),
         cell('Intérêts', 'sHeader'),
@@ -909,29 +822,52 @@ const synthesePeriodes = useMemo(() => {
         cell(Math.round(l?.assuranceDeces ?? 0), 'sMoney'),
       ]);
 
-      const xml = `<?xml version="1.0"?>
-        <?mso-application progid="Excel.Sheet"?>
-        <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
-          xmlns:o="urn:schemas-microsoft-com:office:office"
-          xmlns:x="urn:schemas-microsoft-com:office:excel"
-          xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-          ${stylesXml}
-          ${buildWorksheetXmlVertical('Paramètres', headerParams, rowsParams, { columnWidths: [260, 180] })}
-          ${buildWorksheetXml('Résumé', headerResume, resumeRows, { columnWidths: [120, 90, 90, 90, 90, 90, 90, 90] })}
-          ${buildWorksheetXml('Prêt 1', headerPret, pret1Arr, { columnWidths: [120, 90, 90, 90, 90, 90, 90, 90] })}
-          ${pretsPlus.length > 0 ? buildWorksheetXml('Prêt 2', headerPret, pret2Arr, { columnWidths: [120, 90, 90, 90, 90, 90, 90, 90] }) : ''}
-          ${pretsPlus.length > 1 ? buildWorksheetXml('Prêt 3', headerPret, pret3Arr, { columnWidths: [120, 90, 90, 90, 90, 90, 90, 90] }) : ''}
-        </Workbook>`;
+      const sheets = [
+        {
+          name: 'Paramètres',
+          rows: [headerParams, ...rowsParams],
+          columnWidths: [36, 22],
+        },
+        {
+          name: 'Résumé',
+          rows: transpose([headerResume, ...resumeRows]),
+          columnWidths: [18, 14, 14, 14, 14, 14, 14, 14],
+        },
+        {
+          name: 'Prêt 1',
+          rows: transpose([headerPret, ...pret1Arr]),
+          columnWidths: [18, 14, 14, 14, 14, 14, 14, 14],
+        },
+        ...(pretsPlus.length > 0
+          ? [
+              {
+                name: 'Prêt 2',
+                rows: transpose([headerPret, ...pret2Arr]),
+                columnWidths: [18, 14, 14, 14, 14, 14, 14, 14],
+              },
+            ]
+          : []),
+        ...(pretsPlus.length > 1
+          ? [
+              {
+                name: 'Prêt 3',
+                rows: transpose([headerPret, ...pret3Arr]),
+                columnWidths: [18, 14, 14, 14, 14, 14, 14, 14],
+              },
+            ]
+          : []),
+      ];
 
-      const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `SER1_${isAnnual ? 'Annuel' : 'Mensuel'}.xls`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
+      const blob = await buildXlsxBlob({
+        sheets,
+        headerFill: themeColors?.c1,
+        sectionFill: themeColors?.c7,
+      });
+      const isValid = await validateXlsxBlob(blob);
+      if (!isValid) {
+        throw new Error('XLSX invalide (signature PK manquante).');
+      }
+      downloadXlsx(blob, `SER1_${isAnnual ? 'Annuel' : 'Mensuel'}.xlsx`);
     } catch (e) {
       console.error('Export Excel échoué', e);
       alert('Impossible de générer le fichier Excel.');
@@ -1057,8 +993,7 @@ const synthesePeriodes = useMemo(() => {
         total: p.p1 + p.p2 + p.p3,
       }))
 
-      // Capital décès initial (source-of-truth UI: first aggregated period)
-      const capitalDecesInitial = agrRows?.[0]?.assuranceDeces ?? 0;
+      const assuranceDecesByYear = aggregatedYears.map((row) => row?.assuranceDeces ?? 0);
 
       // Build credit data for PPTX with full multi-loan support
       const creditData = {
@@ -1068,7 +1003,7 @@ const synthesePeriodes = useMemo(() => {
         coutTotalInterets: totalInterets,
         coutTotalAssurance: totalAssurance,
         coutTotalCredit: coutTotalCredit,
-        capitalDecesInitial,
+        assuranceDecesByYear,
         
         // Smoothing info
         smoothingEnabled: lisserPret1 && pretsPlus.length > 0,

@@ -23,6 +23,7 @@ import {
   addTextBox,
   addHeader,
   addFooter,
+  addTextFr,
   roleColor,
 } from '../designSystem/serenity';
 import { getBusinessIconDataUri, type BusinessIconName } from '../../icons/business/businessIconLibrary';
@@ -483,7 +484,7 @@ export function buildIrSynthesis(
     });
     
     // Label (sentence case, gray)
-    slide.addText(kpi.label, {
+    addTextFr(slide, kpi.label, {
       x: colX,
       y: LAYOUT.kpi.labelY,
       w: LAYOUT.kpi.colWidth,
@@ -497,7 +498,7 @@ export function buildIrSynthesis(
     
     // Main value OR sub-value for couples
     if (kpi.value) {
-      slide.addText(kpi.value, {
+      addTextFr(slide, kpi.value, {
         x: colX,
         y: LAYOUT.kpi.valueY,
         w: LAYOUT.kpi.colWidth,
@@ -511,7 +512,7 @@ export function buildIrSynthesis(
       });
     } else if (kpi.subValue) {
       // Compact inline for couples: "D1: X € | D2: Y €"
-      slide.addText(kpi.subValue, {
+      addTextFr(slide, kpi.subValue, {
         x: colX,
         y: LAYOUT.kpi.valueY,
         w: LAYOUT.kpi.colWidth,
@@ -559,7 +560,7 @@ export function buildIrSynthesis(
     // Rate label centered in segment
     // Text color adapts to background luminance
     const textColor = getTextColorForBackground(bgColor, theme);
-    slide.addText(bracket.label, {
+    addTextFr(slide, bracket.label, {
       x: currentX,
       y: LAYOUT.bar.y,
       w: segmentWidth - gap,
@@ -611,7 +612,7 @@ export function buildIrSynthesis(
       ? data.tmiBaseGlobal 
       : getAmountInCurrentBracket(data.taxablePerPart, data.tmiRate, data.partsNb);
     
-    slide.addText(`Montant des revenus dans cette TMI : ${euro(amountInTmi)}`, {
+    addTextFr(slide, `Montant des revenus dans cette TMI : ${euro(amountInTmi)}`, {
       x: LAYOUT.marginX,
       y: LAYOUT.callout.y,
       w: LAYOUT.contentWidth,
@@ -629,7 +630,7 @@ export function buildIrSynthesis(
   // THE main information - IMPOSSIBLE TO MISS
   
   // Label centered
-  slide.addText('Estimation du montant de votre impôt sur le revenu', {
+  addTextFr(slide, 'Estimation du montant de votre impôt sur le revenu', {
     x: LAYOUT.marginX,
     y: LAYOUT.hero.y,
     w: LAYOUT.contentWidth,
@@ -642,7 +643,7 @@ export function buildIrSynthesis(
   });
   
   // Tax amount - VERY LARGE (30pt), BOLD, CENTERED = HERO
-  slide.addText(data.irNet === 0 ? 'Non imposable' : euro(data.irNet), {
+  addTextFr(slide, data.irNet === 0 ? 'Non imposable' : euro(data.irNet), {
     x: LAYOUT.marginX,
     y: LAYOUT.hero.y + LAYOUT.hero.labelHeight,
     w: LAYOUT.contentWidth,
@@ -674,7 +675,7 @@ export function buildIrSynthesis(
     : (nextTmiInfo ? nextTmiInfo.margin * data.partsNb : null);
   
   if (marginValue !== null && marginValue > 0) {
-    slide.addText(`Marge avant changement de TMI : ${euro(marginValue)}`, {
+    addTextFr(slide, `Marge avant changement de TMI : ${euro(marginValue)}`, {
       x: LAYOUT.marginX,
       y: LAYOUT.marginInfo.y,
       w: LAYOUT.contentWidth,

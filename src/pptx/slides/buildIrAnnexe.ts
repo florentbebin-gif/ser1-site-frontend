@@ -20,6 +20,8 @@ import {
   addTextBox,
   addHeader,
   addFooter,
+  addTextFr,
+  roleColor,
 } from '../designSystem/serenity';
 
 // ============================================================================
@@ -323,7 +325,7 @@ export function buildIrAnnexe(
   const contentBlockY = LAYOUT.contentY;
   const contentBlockH = LAYOUT.maxY - contentBlockY;
   
-  slide.addText(textProps, {
+  addTextFr(slide, textProps, {
     x: LAYOUT.marginX,
     y: contentBlockY,
     w: LAYOUT.contentWidth,

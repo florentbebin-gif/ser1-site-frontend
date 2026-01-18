@@ -148,6 +148,7 @@ ser1/
 - **PptxGenJS** : Génération de présentations
 - **Design System** : Thème SER1, layouts standards
 - **Templates** : Audit, Stratégie, IR
+- **Règle immuable** : tout texte PPTX doit passer par `addTextFr` (langue de vérification **fr-FR** obligatoire)
 
 ---
 
@@ -383,6 +384,7 @@ npm run typecheck
 - Prêts additionnels (max 2) avec paramètres d'assurance individuels
 - Calcul unifié des capitaux décès (source de vérité unique)
 - Exports Excel et PowerPoint avec totaux tous prêts (Excel inclut capitaux décès)
+- Export Excel **.xlsx valide** (fichier ZIP/PK, ouverture sans avertissement)
 
 ### Gestion des données
 - **Sauvegarde** : Fichier `.ser1` avec état complet

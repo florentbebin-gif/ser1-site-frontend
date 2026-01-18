@@ -635,7 +635,7 @@ export function addFooter(
     : "Document non contractuel établi en fonction des dispositions fiscales ou sociales en vigueur à la date des présentes";
   
   // Date
-  slide.addText(formatDateFr(ctx.generatedAt), {
+  addTextFr(slide, formatDateFr(ctx.generatedAt), {
     x: COORDS_FOOTER.date.x,
     y: COORDS_FOOTER.date.y,
     w: COORDS_FOOTER.date.w,
@@ -648,7 +648,7 @@ export function addFooter(
   });
   
   // Disclaimer
-  slide.addText(disclaimer, {
+  addTextFr(slide, disclaimer, {
     x: COORDS_FOOTER.disclaimer.x,
     y: COORDS_FOOTER.disclaimer.y,
     w: COORDS_FOOTER.disclaimer.w,
@@ -662,7 +662,7 @@ export function addFooter(
   
   // Slide number
   const slideNumText = ctx.showSlideNumbers !== false ? `${slideIndex}` : 'N°';
-  slide.addText(slideNumText, {
+  addTextFr(slide, slideNumText, {
     x: COORDS_FOOTER.slideNum.x,
     y: COORDS_FOOTER.slideNum.y,
     w: COORDS_FOOTER.slideNum.w,
@@ -798,6 +798,32 @@ export function clampToSlide(
 }
 
 /**
+ * Add text with enforced French proofing and default Arial font
+ * Use this helper instead of slide.addText directly.
+ */
+export function addTextFr(
+  slide: PptxGenJS.Slide,
+  text: string | PptxGenJS.TextProps[],
+  options: PptxGenJS.TextPropsOptions & { [key: string]: any }
+): void {
+  const normalizedText = Array.isArray(text)
+    ? text.map((run) => ({
+        ...run,
+        options: {
+          ...run.options,
+          lang: 'fr-FR',
+          fontFace: run.options?.fontFace || TYPO.fontFace,
+        },
+      }))
+    : text;
+  slide.addText(normalizedText, {
+    ...options,
+    fontFace: options.fontFace || TYPO.fontFace,
+    lang: 'fr-FR',
+  });
+}
+
+/**
  * Add text box with consistent defaults
  * Enforces NO OVERFLOW by clamping to slide bounds
  */
@@ -872,6 +898,7 @@ export default {
   addCardPanelWithShadow,
   addPanelWithShadow,
   addChapterImage,
+  addTextFr,
   addTextBox,
   normalizeTitleText,
   calculateTitleTextHeight,

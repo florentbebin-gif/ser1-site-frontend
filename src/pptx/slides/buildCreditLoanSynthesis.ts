@@ -18,6 +18,7 @@ import {
   addTextBox,
   addHeader,
   addFooter,
+  addTextFr,
   roleColor,
 } from '../designSystem/serenity';
 import { addBusinessIconToSlide } from '../icons/addBusinessIcon';
@@ -131,7 +132,7 @@ export function buildCreditLoanSynthesis(
     );
     
     // Label
-    slide.addText(kpi.label, {
+    addTextFr(slide, kpi.label, {
       x: kpiX,
       y: kpiY + LAYOUT.kpi.iconSize + 0.1,
       w: kpiW,
@@ -143,7 +144,7 @@ export function buildCreditLoanSynthesis(
     });
     
     // Value
-    slide.addText(kpi.value, {
+    addTextFr(slide, kpi.value, {
       x: kpiX,
       y: kpiY + LAYOUT.kpi.iconSize + 0.35,
       w: kpiW,
@@ -175,7 +176,7 @@ export function buildCreditLoanSynthesis(
   });
   
   // Capital label
-  slide.addText(`Capital : ${formatEuro(data.capitalEmprunte)}`, {
+  addTextFr(slide, `Capital : ${formatEuro(data.capitalEmprunte)}`, {
     x: LAYOUT.visualBar.marginX,
     y: barY,
     w: barW * capitalRatio,
@@ -199,7 +200,7 @@ export function buildCreditLoanSynthesis(
   
   // Cost label
   if (costRatio > 0.15) {
-    slide.addText(`Coût : ${formatEuro(totalCost)}`, {
+    addTextFr(slide, `Coût : ${formatEuro(totalCost)}`, {
       x: LAYOUT.visualBar.marginX + barW * capitalRatio,
       y: barY,
       w: barW * costRatio,
@@ -214,7 +215,7 @@ export function buildCreditLoanSynthesis(
   }
   
   // Legend
-  slide.addText(`Intérêts : ${formatEuro(data.coutTotalInterets)}  |  Assurance : ${formatEuro(data.coutTotalAssurance)}`, {
+  addTextFr(slide, `Intérêts : ${formatEuro(data.coutTotalInterets)}  |  Assurance : ${formatEuro(data.coutTotalAssurance)}`, {
     x: LAYOUT.visualBar.marginX,
     y: barY + 0.48,
     w: barW,
@@ -239,7 +240,7 @@ export function buildCreditLoanSynthesis(
   });
   
   // HERO value
-  slide.addText(`COÛT TOTAL : ${formatEuro(totalCost)}`, {
+  addTextFr(slide, `COÛT TOTAL : ${formatEuro(totalCost)}`, {
     x: 0,
     y: heroY,
     w: SLIDE_SIZE.width,
@@ -252,7 +253,7 @@ export function buildCreditLoanSynthesis(
   });
   
   // Total remboursé
-  slide.addText(`Total remboursé : ${formatEuro(totalAmount)}`, {
+  addTextFr(slide, `Total remboursé : ${formatEuro(totalAmount)}`, {
     x: 0,
     y: heroY + 0.5,
     w: SLIDE_SIZE.width,
@@ -269,7 +270,7 @@ export function buildCreditLoanSynthesis(
   const detailsY = LAYOUT.details.topY;
   const assurModeLabel = data.assuranceMode === 'CI' ? 'Capital initial' : 'Capital restant dû';
   
-  slide.addText(`Assurance : ${formatPct(data.tauxAssurance)} (${assurModeLabel})  |  Mensualité hors assurance : ${formatEuro(data.mensualiteHorsAssurance)}`, {
+  addTextFr(slide, `Assurance : ${formatPct(data.tauxAssurance)} (${assurModeLabel})  |  Mensualité hors assurance : ${formatEuro(data.mensualiteHorsAssurance)}`, {
     x: 0,
     y: detailsY,
     w: SLIDE_SIZE.width,

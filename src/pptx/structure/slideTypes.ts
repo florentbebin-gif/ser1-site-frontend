@@ -9,6 +9,7 @@ import type { PptxTheme } from '../theme/pptxTheme';
 import { applyCoverLogo, DEFAULT_LOGO_PLACEMENT } from '../ops/applyCoverLogo';
 import { applyChapterImage, CHAPTER_IMAGE_PLACEMENT } from '../ops/applyChapterImage';
 import { addBusinessIcon, ICON_SIZES } from '../ops/addBusinessIcon';
+import { addTextFr } from '../designSystem/serenity';
 
 // Types de données pour chaque slide
 export interface CoverSlideData {
@@ -58,7 +59,7 @@ export function buildSlideCover(
   slide.background = { color: data.theme.bgMain };
   
   // Titre principal
-  slide.addText(data.title, {
+  addTextFr(slide, data.title, {
     x: 1, y: 1, w: 8, h: 1.5,
     fontSize: 44,
     color: data.theme.textMain,
@@ -68,7 +69,7 @@ export function buildSlideCover(
   
   // Sous-titre optionnel
   if (data.subtitle) {
-    slide.addText(data.subtitle, {
+    addTextFr(slide, data.subtitle, {
       x: 1, y: 2.5, w: 8, h: 1,
       fontSize: 24,
       color: data.theme.accent,
@@ -77,7 +78,7 @@ export function buildSlideCover(
   }
   
   // Auteur
-  slide.addText(data.author, {
+  addTextFr(slide, data.author, {
     x: 1, y: 4, w: 8, h: 0.5,
     fontSize: 18,
     color: data.theme.textMain,
@@ -113,14 +114,14 @@ export function buildSlideChapter(
   const titleX = data.showImage !== false ? 3.5 : 1;
   const titleW = data.showImage !== false ? 5.5 : 8;
   
-  slide.addText(`Chapitre ${data.chapterNumber}`, {
+  addTextFr(slide, `Chapitre ${data.chapterNumber}`, {
     x: titleX, y: 1, w: titleW, h: 0.5,
     fontSize: 20,
     color: data.theme.accent,
     bold: true,
   });
   
-  slide.addText(data.title, {
+  addTextFr(slide, data.title, {
     x: titleX, y: 1.5, w: titleW, h: 1,
     fontSize: 28,
     color: data.theme.textMain,
@@ -129,7 +130,7 @@ export function buildSlideChapter(
   
   // Sous-titre optionnel
   if (data.subtitle) {
-    slide.addText(data.subtitle, {
+    addTextFr(slide, data.subtitle, {
       x: titleX, y: 2.5, w: titleW, h: 0.5,
       fontSize: 18,
       color: data.theme.textMain,
@@ -152,7 +153,7 @@ export function buildSlideContent(
   slide.background = { color: data.theme.bgMain };
   
   // Titre
-  slide.addText(data.title, {
+  addTextFr(slide, data.title, {
     x: 1, y: 0.5, w: 8, h: 0.75,
     fontSize: 32,
     color: data.theme.textMain,
@@ -163,7 +164,7 @@ export function buildSlideContent(
   const contentArray = Array.isArray(data.content) ? data.content : [data.content];
   
   contentArray.forEach((text, index) => {
-    slide.addText(text, {
+    addTextFr(slide, text, {
       x: 1, y: 1.5 + (index * 0.75), w: 8, h: 0.5,
       fontSize: 18,
       color: data.theme.textMain,
@@ -200,7 +201,7 @@ export function buildSlideEnd(
   
   // Titre
   const title = data.title || 'Merci';
-  slide.addText(title, {
+  addTextFr(slide, title, {
     x: 1, y: 2, w: 8, h: 1,
     fontSize: 44,
     color: data.theme.textMain,
@@ -210,7 +211,7 @@ export function buildSlideEnd(
   
   // Message optionnel
   if (data.message) {
-    slide.addText(data.message, {
+    addTextFr(slide, data.message, {
       x: 1, y: 3.5, w: 8, h: 0.75,
       fontSize: 20,
       color: data.theme.textMain,
@@ -220,7 +221,7 @@ export function buildSlideEnd(
   
   // Contact optionnel
   if (data.contact) {
-    slide.addText(data.contact, {
+    addTextFr(slide, data.contact, {
       x: 1, y: 4.5, w: 8, h: 0.5,
       fontSize: 16,
       color: data.theme.accent,
