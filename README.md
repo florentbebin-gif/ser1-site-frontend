@@ -1016,16 +1016,18 @@ N. End            → Mentions légales crédit
 N. End            → Mentions légales crédit
 ```
 
-### Slide Synthèse Globale (Multi-Prêts)
+### Slide Synthèse Globale (Multi-Prêts) - Design Premium Aéré
 
 Layout ultra-lisible en **3 secondes** pour montages multi-prêts :
 
 | Zone | Contenu | Style |
 |------|---------|-------|
-| **KPIs** | Capital total, Durée max, Coût intérêts, Coût assurance | 4 colonnes icônes |
-| **Timeline** | Évolution mensualités (paliers visuels) | Barres horizontales |
-| **Split Bar** | Répartition des prêts + badge lissage | Segments colorés |
-| **HERO** | Coût total du crédit | 22pt bold, centré |
+| **HERO** | Mensualité initiale (en haut, proéminent) | 32pt bold, centré |
+| **KPIs** | Capital total, Durée max, Coût total | 3 colonnes icônes (aérées) |
+| **Mini-cards** | Un card par prêt (capital + durée) | Cards colorées selon thème |
+| **Footer info** | Total remboursé + badge lissage | Aligné footer |
+
+**Règle subtitle immuable** : Le sous-titre est TOUJOURS positionné via `COORDS_CONTENT.subtitle` (y=1.7956, sous la barre de soulignement) et stylé via `addTextBox()` helper. Interdit de repositionner manuellement.
 
 ### Slide Synthèse Par Prêt
 
@@ -1044,6 +1046,14 @@ L'annexe inclut désormais :
 - **Détail par prêt** : Caractéristiques de chaque prêt (Prêt N°1, N°2, N°3)
 - **Mécanisme de lissage** (si activé) : Explication pédagogique du lissage
 - **Coûts globaux** : Intérêts + assurance + total remboursé
+
+### Tableau d'Amortissement Multi-Prêts
+
+Structure avec sections et hiérarchie typographique :
+- **Section headers** : "PRÊT PRINCIPAL N°1", "PRÊT N°2", etc. (bold 11pt, fond coloré)
+- **Lignes principales** : Annuité, CRD (bold 9pt)
+- **Lignes secondaires** : Intérêts, Assurance, Capital amorti (regular 8pt)
+- **Pagination** : Max 8 années par slide, sections groupées par prêt
 
 ### Fichiers concernés
 

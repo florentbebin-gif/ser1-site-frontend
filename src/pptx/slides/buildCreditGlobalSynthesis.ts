@@ -1,14 +1,15 @@
 /**
  * Credit Global Synthesis Slide Builder
  * 
- * Premium multi-loan overview slide with:
- * - 4 KPIs (Total Capital, Max Duration, Total Cost, Insurance)
- * - Timeline visualization of payment periods (paliers)
- * - Multi-loan split bar visualization
+ * Premium multi-loan overview slide - AERATED DESIGN
+ * Comprehensible in 3 seconds:
+ * - HERO at top (Mensualité initiale)
+ * - 3 KPIs (Capital total, Durée max, Coût total)
+ * - Mini-cards for each loan
  * - Smoothing badge if enabled
- * - HERO metric: Total cost
  * 
- * Design: Ultra-premium, comprehensible in 3 seconds
+ * IMPORTANT: Uses standard Serenity template (title, accent line, subtitle, footer)
+ * Subtitle MUST use COORDS_CONTENT.subtitle (below accent line)
  */
 
 import PptxGenJS from 'pptxgenjs';
@@ -17,6 +18,8 @@ import {
   TYPO, 
   COORDS_CONTENT, 
   COORDS_FOOTER,
+  addTextBox,
+  addAccentLine,
   addFooter,
   roleColor,
 } from '../designSystem/serenity';
@@ -24,52 +27,44 @@ import { addBusinessIconToSlide } from '../icons/addBusinessIcon';
 import type { BusinessIconName } from '../icons/addBusinessIcon';
 
 // ============================================================================
-// CONSTANTS
+// CONSTANTS - PREMIUM AERATED LAYOUT
 // ============================================================================
 
 const SLIDE_SIZE = { width: 13.3333, height: 7.5 };
 
+// Content zone boundaries (below subtitle, above footer)
+const CONTENT_TOP_Y = COORDS_CONTENT.content.y; // 2.3754
+const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
+
 const LAYOUT = {
-  // Header (using COORDS_CONTENT structure)
-  title: { x: COORDS_CONTENT.title.x, y: COORDS_CONTENT.title.y, w: COORDS_CONTENT.title.w, h: 0.5 },
-  subtitle: { x: COORDS_CONTENT.title.x, y: COORDS_CONTENT.title.y + 0.55, w: COORDS_CONTENT.title.w, h: 0.35 },
-  accentLine: { x: COORDS_CONTENT.accentLine.x, y: COORDS_CONTENT.accentLine.y, w: COORDS_CONTENT.accentLine.w },
-  
-  // Content zones
-  contentTopY: 2.15,
-  contentBottomY: COORDS_FOOTER.date.y - 0.15,
-  
-  // KPIs row
-  kpi: {
-    topY: 2.15,
-    height: 0.95,
-    marginX: 0.8,
-    gap: 0.25,
-    iconSize: 0.45,
-  },
-  
-  // Timeline (paliers)
-  timeline: {
-    topY: 3.25,
-    height: 1.35,
-    marginX: 1.2,
-    barHeight: 0.28,
-    labelHeight: 0.22,
-    gap: 0.12,
-  },
-  
-  // Loans split bar
-  loansBar: {
-    topY: 4.75,
-    height: 0.85,
-    marginX: 1.2,
-    barHeight: 0.35,
-  },
-  
-  // HERO (total cost)
+  // HERO zone (mensualité initiale) - prominent at top
   hero: {
-    topY: 5.75,
-    height: 0.7,
+    y: CONTENT_TOP_Y + 0.15,
+    height: 1.1,
+  },
+  
+  // 3 KPIs row - centered, generous spacing
+  kpi: {
+    y: CONTENT_TOP_Y + 1.45,
+    height: 1.0,
+    marginX: 2.0,
+    gap: 0.5,
+    iconSize: 0.5,
+  },
+  
+  // Mini-cards for loans - clean visual
+  cards: {
+    y: CONTENT_TOP_Y + 2.7,
+    height: 1.2,
+    marginX: 1.5,
+    gap: 0.4,
+    cardHeight: 1.0,
+  },
+  
+  // Footer info (total remboursé + smoothing badge)
+  footerInfo: {
+    y: CONTENT_BOTTOM_Y - 0.5,
+    height: 0.4,
   },
 };
 
@@ -113,7 +108,7 @@ function lightenColor(hex: string, percent: number): string {
 }
 
 // ============================================================================
-// MAIN BUILDER
+// MAIN BUILDER - PREMIUM AERATED DESIGN
 // ============================================================================
 
 export function buildCreditGlobalSynthesis(
@@ -128,61 +123,80 @@ export function buildCreditGlobalSynthesis(
   // White background
   slide.background = { color: 'FFFFFF' };
   
-  // ========== HEADER ==========
+  // ========== STANDARD HEADER (using Serenity helpers) ==========
   
-  // Title
-  slide.addText('SYNTHÈSE GLOBALE DE VOTRE FINANCEMENT', {
-    x: LAYOUT.title.x,
-    y: LAYOUT.title.y,
-    w: LAYOUT.title.w,
-    h: LAYOUT.title.h,
+  // Title (H1, ALL CAPS, LEFT-ALIGNED) - using helper with COORDS_CONTENT.title
+  addTextBox(slide, 'Synthèse globale de votre financement', COORDS_CONTENT.title, {
     fontSize: TYPO.sizes.h1,
+    color: theme.textMain,
+    bold: true,
+    align: 'left',
+    valign: 'top',
+    isUpperCase: true,
+  });
+  
+  // Accent line under title - using helper
+  addAccentLine(slide, theme, 'content');
+  
+  // Subtitle (H2) - MUST use COORDS_CONTENT.subtitle (below accent line)
+  addTextBox(slide, 'Vue d\'ensemble de votre montage multi-prêts', COORDS_CONTENT.subtitle, {
+    fontSize: TYPO.sizes.h2,
+    color: theme.textMain,
+    bold: true,
+    align: 'left',
+    valign: 'top',
+  });
+  
+  // ========== HERO ZONE: MENSUALITÉ INITIALE ==========
+  
+  const heroY = LAYOUT.hero.y;
+  const initialMensualite = data.paymentPeriods.length > 0 ? data.paymentPeriods[0].total : 0;
+  
+  // HERO label
+  slide.addText('VOTRE MENSUALITÉ', {
+    x: 0,
+    y: heroY,
+    w: SLIDE_SIZE.width,
+    h: 0.35,
+    fontSize: 12,
+    color: roleColor(theme, 'textBody'),
+    fontFace: TYPO.fontFace,
+    align: 'center',
+  });
+  
+  // HERO value (big, prominent)
+  slide.addText(formatEuro(initialMensualite) + ' / mois', {
+    x: 0,
+    y: heroY + 0.35,
+    w: SLIDE_SIZE.width,
+    h: 0.6,
+    fontSize: 32,
     bold: true,
     color: roleColor(theme, 'textMain'),
     fontFace: TYPO.fontFace,
+    align: 'center',
   });
   
-  // Subtitle
-  slide.addText('Récapitulatif de votre projet immobilier', {
-    x: LAYOUT.subtitle.x,
-    y: LAYOUT.subtitle.y,
-    w: LAYOUT.subtitle.w,
-    h: LAYOUT.subtitle.h,
-    fontSize: TYPO.sizes.h2,
-    color: roleColor(theme, 'textBody'),
-    fontFace: TYPO.fontFace,
-  });
-  
-  // Accent line
-  slide.addShape('line', {
-    x: LAYOUT.accentLine.x,
-    y: LAYOUT.accentLine.y,
-    w: LAYOUT.accentLine.w,
-    h: 0,
-    line: { color: roleColor(theme, 'accent'), width: 1.5 },
-  });
-  
-  // ========== KPIs ROW ==========
+  // ========== 3 KPIs ROW (Capital, Durée, Coût total) ==========
   
   const kpiData = [
-    { icon: 'money' as const, label: 'Capital total', value: formatEuro(data.totalCapital) },
-    { icon: 'calculator' as const, label: 'Durée max.', value: formatDuree(data.maxDureeMois) },
-    { icon: 'chart-up' as const, label: 'Coût intérêts', value: formatEuro(data.coutTotalInterets) },
-    { icon: 'balance' as const, label: 'Coût assurance', value: formatEuro(data.coutTotalAssurance) },
+    { icon: 'money' as BusinessIconName, label: 'Capital total', value: formatEuro(data.totalCapital) },
+    { icon: 'calculator' as BusinessIconName, label: 'Durée maximale', value: formatDuree(data.maxDureeMois) },
+    { icon: 'chart-up' as BusinessIconName, label: 'Coût total crédit', value: formatEuro(data.coutTotalCredit) },
   ];
   
   const kpiCount = kpiData.length;
   const kpiAvailableW = SLIDE_SIZE.width - 2 * LAYOUT.kpi.marginX;
   const kpiW = (kpiAvailableW - (kpiCount - 1) * LAYOUT.kpi.gap) / kpiCount;
+  const kpiY = LAYOUT.kpi.y;
   
   kpiData.forEach((kpi, idx) => {
     const kpiX = LAYOUT.kpi.marginX + idx * (kpiW + LAYOUT.kpi.gap);
-    const kpiY = LAYOUT.kpi.topY;
     
-    // Icon
+    // Icon (centered)
     addBusinessIconToSlide(
       slide,
-      kpi.icon as BusinessIconName,
+      kpi.icon,
       {
         x: kpiX + kpiW / 2 - LAYOUT.kpi.iconSize / 2,
         y: kpiY,
@@ -199,254 +213,138 @@ export function buildCreditGlobalSynthesis(
       y: kpiY + LAYOUT.kpi.iconSize + 0.08,
       w: kpiW,
       h: 0.22,
-      fontSize: 9,
-      color: theme.colors.color9,
-      fontFace: 'Arial',
+      fontSize: 10,
+      color: roleColor(theme, 'textBody'),
+      fontFace: TYPO.fontFace,
       align: 'center',
     });
     
     // Value
     slide.addText(kpi.value, {
       x: kpiX,
-      y: kpiY + LAYOUT.kpi.iconSize + 0.30,
+      y: kpiY + LAYOUT.kpi.iconSize + 0.32,
       w: kpiW,
-      h: 0.28,
-      fontSize: 14,
+      h: 0.30,
+      fontSize: 16,
       bold: true,
       color: roleColor(theme, 'textMain'),
-      fontFace: 'Arial',
+      fontFace: TYPO.fontFace,
       align: 'center',
     });
   });
   
-  // ========== TIMELINE (PALIERS) ==========
+  // ========== MINI-CARDS: ONE PER LOAN ==========
   
-  if (data.paymentPeriods.length > 1) {
-    const timelineY = LAYOUT.timeline.topY;
-    const timelineW = SLIDE_SIZE.width - 2 * LAYOUT.timeline.marginX;
+  const cardsY = LAYOUT.cards.y;
+  const loansCount = Math.min(data.loans.length, 3);
+  const cardsAvailableW = SLIDE_SIZE.width - 2 * LAYOUT.cards.marginX;
+  const cardW = (cardsAvailableW - (loansCount - 1) * LAYOUT.cards.gap) / loansCount;
+  
+  data.loans.slice(0, 3).forEach((loan, idx) => {
+    const cardX = LAYOUT.cards.marginX + idx * (cardW + LAYOUT.cards.gap);
+    const cardColor = getLoanColor(loan.index, theme);
     
-    // Section title
-    slide.addText('ÉVOLUTION DE VOS MENSUALITÉS', {
-      x: LAYOUT.timeline.marginX,
-      y: timelineY,
-      w: timelineW,
+    // Card background (rounded rect simulation with fill)
+    slide.addShape('rect', {
+      x: cardX,
+      y: cardsY,
+      w: cardW,
+      h: LAYOUT.cards.cardHeight,
+      fill: { color: lightenColor(cardColor, 0.85) },
+      line: { color: cardColor, width: 1 },
+    });
+    
+    // Card header (loan number)
+    slide.addText(`PRÊT N°${loan.index}`, {
+      x: cardX,
+      y: cardsY + 0.08,
+      w: cardW,
       h: 0.25,
       fontSize: 10,
       bold: true,
-      color: roleColor(theme, 'textMain'),
-      fontFace: 'Arial',
+      color: cardColor,
+      fontFace: TYPO.fontFace,
+      align: 'center',
     });
     
-    // Find max mensualité for scaling
-    const maxMensu = Math.max(...data.paymentPeriods.map(p => p.total));
-    
-    // Draw period bars
-    const barStartY = timelineY + 0.35;
-    const periodsCount = Math.min(data.paymentPeriods.length, 4); // Max 4 periods
-    
-    data.paymentPeriods.slice(0, periodsCount).forEach((period, idx) => {
-      const barY = barStartY + idx * (LAYOUT.timeline.barHeight + LAYOUT.timeline.gap);
-      const barWidthRatio = maxMensu > 0 ? period.total / maxMensu : 0;
-      const barW = timelineW * 0.6 * barWidthRatio;
-      
-      // Period label
-      slide.addText(period.label, {
-        x: LAYOUT.timeline.marginX,
-        y: barY,
-        w: timelineW * 0.25,
-        h: LAYOUT.timeline.barHeight,
-        fontSize: 8,
-        color: theme.colors.color9,
-        fontFace: 'Arial',
-        align: 'left',
-        valign: 'middle',
-      });
-      
-      // Bar
-      slide.addShape('rect', {
-        x: LAYOUT.timeline.marginX + timelineW * 0.28,
-        y: barY,
-        w: Math.max(barW, 0.3),
-        h: LAYOUT.timeline.barHeight,
-        fill: { color: lightenColor(roleColor(theme, 'bgMain'), 0.3 - idx * 0.1) },
-        line: { color: roleColor(theme, 'bgMain'), width: 0.5 },
-      });
-      
-      // Amount
-      slide.addText(formatEuro(period.total), {
-        x: LAYOUT.timeline.marginX + timelineW * 0.28 + Math.max(barW, 0.3) + 0.1,
-        y: barY,
-        w: timelineW * 0.2,
-        h: LAYOUT.timeline.barHeight,
-        fontSize: 10,
-        bold: true,
-        color: roleColor(theme, 'textMain'),
-        fontFace: 'Arial',
-        align: 'left',
-        valign: 'middle',
-      });
-    });
-  }
-  
-  // ========== LOANS SPLIT BAR ==========
-  
-  if (data.loans.length > 1) {
-    const loansBarY = LAYOUT.loansBar.topY;
-    const loansBarW = SLIDE_SIZE.width - 2 * LAYOUT.loansBar.marginX;
-    
-    // Section title with smoothing badge
-    let titleText = 'RÉPARTITION DES PRÊTS';
-    slide.addText(titleText, {
-      x: LAYOUT.loansBar.marginX,
-      y: loansBarY,
-      w: loansBarW * 0.5,
-      h: 0.25,
-      fontSize: 10,
+    // Card capital (main value)
+    slide.addText(formatEuro(loan.capital), {
+      x: cardX,
+      y: cardsY + 0.35,
+      w: cardW,
+      h: 0.30,
+      fontSize: 14,
       bold: true,
       color: roleColor(theme, 'textMain'),
-      fontFace: 'Arial',
+      fontFace: TYPO.fontFace,
+      align: 'center',
     });
     
-    // Smoothing badge
-    if (data.smoothingEnabled) {
-      const smoothingLabel = data.smoothingMode === 'duree' 
-        ? '🔵 Lissage: Durée constante' 
-        : '🔵 Lissage: Mensualité constante';
-      slide.addText(smoothingLabel, {
-        x: LAYOUT.loansBar.marginX + loansBarW * 0.5,
-        y: loansBarY,
-        w: loansBarW * 0.5,
-        h: 0.25,
-        fontSize: 9,
-        italic: true,
-        color: roleColor(theme, 'accent'),
-        fontFace: 'Arial',
-        align: 'right',
-      });
-    }
-    
-    // Split bar
-    const barY = loansBarY + 0.32;
-    let currentX = LAYOUT.loansBar.marginX;
-    
-    data.loans.forEach((loan, idx) => {
-      const loanRatio = data.totalCapital > 0 ? loan.capital / data.totalCapital : 0;
-      const segmentW = loansBarW * loanRatio;
-      
-      if (segmentW > 0.1) {
-        // Bar segment
-        slide.addShape('rect', {
-          x: currentX,
-          y: barY,
-          w: segmentW,
-          h: LAYOUT.loansBar.barHeight,
-          fill: { color: getLoanColor(loan.index, theme) },
-        });
-        
-        // Label inside bar
-        if (segmentW > 1.5) {
-          slide.addText(`Prêt ${loan.index}: ${formatEuro(loan.capital)}`, {
-            x: currentX,
-            y: barY,
-            w: segmentW,
-            h: LAYOUT.loansBar.barHeight,
-            fontSize: 9,
-            bold: true,
-            color: 'FFFFFF',
-            fontFace: 'Arial',
-            align: 'center',
-            valign: 'middle',
-          });
-        }
-        
-        currentX += segmentW;
-      }
+    // Card duration
+    slide.addText(formatDuree(loan.dureeMois), {
+      x: cardX,
+      y: cardsY + 0.68,
+      w: cardW,
+      h: 0.22,
+      fontSize: 10,
+      color: roleColor(theme, 'textBody'),
+      fontFace: TYPO.fontFace,
+      align: 'center',
     });
-    
-    // Legend below bar
-    const legendY = barY + LAYOUT.loansBar.barHeight + 0.08;
-    let legendX = LAYOUT.loansBar.marginX;
-    
-    data.loans.forEach((loan) => {
-      // Color dot
-      slide.addShape('ellipse', {
-        x: legendX,
-        y: legendY + 0.05,
-        w: 0.12,
-        h: 0.12,
-        fill: { color: getLoanColor(loan.index, theme) },
-      });
-      
-      // Label
-      const labelText = `Prêt ${loan.index}: ${formatEuro(loan.capital)} sur ${formatDuree(loan.dureeMois)}`;
-      slide.addText(labelText, {
-        x: legendX + 0.18,
-        y: legendY,
-        w: 3.5,
-        h: 0.22,
-        fontSize: 8,
-        color: theme.colors.color9,
-        fontFace: 'Arial',
-        align: 'left',
-      });
-      
-      legendX += 4;
-    });
-  }
-  
-  // ========== HERO: TOTAL COST ==========
-  
-  const heroY = LAYOUT.hero.topY;
-  
-  // Decorative line
-  slide.addShape('rect', {
-    x: SLIDE_SIZE.width / 2 - 2,
-    y: heroY - 0.08,
-    w: 4,
-    h: 0.02,
-    fill: { color: roleColor(theme, 'accent') },
   });
   
-  // HERO value
-  slide.addText(`COÛT TOTAL DU CRÉDIT : ${formatEuro(data.coutTotalCredit)}`, {
-    x: 0,
-    y: heroY,
-    w: SLIDE_SIZE.width,
-    h: 0.5,
-    fontSize: 22,
-    bold: true,
-    color: roleColor(theme, 'textMain'),
-    fontFace: 'Arial',
-    align: 'center',
-  });
+  // ========== FOOTER INFO (Total remboursé + Smoothing badge) ==========
   
-  // Total remboursé (smaller, secondary)
+  const footerInfoY = LAYOUT.footerInfo.y;
+  
+  // Total remboursé
   const totalRembourse = data.totalCapital + data.coutTotalCredit;
   slide.addText(`Total remboursé : ${formatEuro(totalRembourse)}`, {
-    x: 0,
-    y: heroY + 0.45,
-    w: SLIDE_SIZE.width,
-    h: 0.25,
-    fontSize: 10,
-    italic: true,
-    color: theme.colors.color9,
-    fontFace: 'Arial',
-    align: 'center',
+    x: COORDS_CONTENT.margin.x,
+    y: footerInfoY,
+    w: COORDS_CONTENT.margin.w * 0.5,
+    h: 0.3,
+    fontSize: 11,
+    color: roleColor(theme, 'textBody'),
+    fontFace: TYPO.fontFace,
+    align: 'left',
   });
   
-  // ========== FOOTER ==========
+  // Smoothing badge (if enabled)
+  if (data.smoothingEnabled) {
+    const smoothingLabel = data.smoothingMode === 'duree' 
+      ? 'Lissage activé : durée constante' 
+      : 'Lissage activé : mensualité constante';
+    
+    // Badge background
+    const badgeX = COORDS_CONTENT.margin.x + COORDS_CONTENT.margin.w - 3.2;
+    slide.addShape('rect', {
+      x: badgeX,
+      y: footerInfoY + 0.02,
+      w: 3.0,
+      h: 0.26,
+      fill: { color: lightenColor(roleColor(theme, 'accent'), 0.7) },
+      line: { color: roleColor(theme, 'accent'), width: 0.5 },
+    });
+    
+    // Badge text
+    slide.addText(smoothingLabel, {
+      x: badgeX,
+      y: footerInfoY + 0.02,
+      w: 3.0,
+      h: 0.26,
+      fontSize: 9,
+      bold: true,
+      color: roleColor(theme, 'accent'),
+      fontFace: TYPO.fontFace,
+      align: 'center',
+      valign: 'middle',
+    });
+  }
   
-  addFooter(
-    slide,
-    {
-      generatedAt: ctx.generatedAt,
-      footerDisclaimer: ctx.footerDisclaimer,
-      showSlideNumbers: ctx.showSlideNumbers,
-      theme,
-    },
-    slideIndex,
-    'onLight'
-  );
+  // ========== STANDARD FOOTER ==========
+  
+  addFooter(slide, ctx, slideIndex, 'onLight');
 }
 
 export default buildCreditGlobalSynthesis;

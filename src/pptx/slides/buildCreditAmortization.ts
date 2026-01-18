@@ -4,7 +4,12 @@
  * Table with YEARS in COLUMNS (horizontal orientation) for easy column reading.
  * Automatic pagination: max 8 year columns per slide.
  * 
- * Rows (metrics):
+ * MULTI-LOAN SUPPORT:
+ * - Groups rows by loanIndex
+ * - Adds section headers for each loan ("PRÊT N°1", "PRÊT N°2", etc.)
+ * - Typographic hierarchy: section headers bold 11pt, data rows 9pt
+ * 
+ * Rows (metrics per loan):
  * - Annuité (hors assurance)
  * - Intérêts
  * - Assurance
@@ -44,7 +49,7 @@ const LAYOUT = {
   tableMaxH: CONTENT_BOTTOM_Y - CONTENT_TOP_Y - 0.20,
 } as const;
 
-// Row labels (metrics shown in rows)
+// Row labels (metrics shown in rows) - secondary typography
 const ROW_LABELS = [
   'Annuité (hors ass.)',
   'Intérêts',
@@ -52,6 +57,23 @@ const ROW_LABELS = [
   'Capital amorti',
   'CRD fin d\'année',
 ];
+
+/**
+ * Group amortization rows by loan index
+ */
+function groupRowsByLoan(rows: CreditAmortizationRow[]): Map<number, CreditAmortizationRow[]> {
+  const groups = new Map<number, CreditAmortizationRow[]>();
+  
+  rows.forEach(row => {
+    const loanIdx = row.loanIndex ?? 1; // Default to loan 1 for backward compat
+    if (!groups.has(loanIdx)) {
+      groups.set(loanIdx, []);
+    }
+    groups.get(loanIdx)!.push(row);
+  });
+  
+  return groups;
+}
 
 // ============================================================================
 // HELPERS
@@ -144,18 +166,25 @@ export function buildCreditAmortization(
     valign: 'top',
   });
   
-  // ========== TABLE (years in columns) ==========
+  // ========== TABLE (years in columns, multi-loan sections) ==========
   
-  // Build table data: rows = metrics, columns = years
-  // First column = metric label, then one column per year
+  // Group rows by loan for multi-loan support
+  const loanGroups = groupRowsByLoan(data.rows);
+  const isMultiLoan = loanGroups.size > 1;
   
-  const numYears = data.rows.length;
+  // For single loan, use all rows; for multi-loan, process each group
+  const allRows = data.rows;
+  const numYears = allRows.length;
   const numCols = numYears + 1; // +1 for label column
   
   // Calculate column widths
   const labelColWidth = 1.8;
-  const yearColWidth = (LAYOUT.contentWidth - labelColWidth) / numYears;
+  const yearColWidth = (LAYOUT.contentWidth - labelColWidth) / Math.max(numYears, 1);
   const colWidths = [labelColWidth, ...Array(numYears).fill(yearColWidth)];
+  
+  // Color definitions
+  const altRowColor = lightenColor(theme.colors.color7, 0.5);
+  const sectionHeaderColor = lightenColor(theme.colors.color1.replace('#', ''), 0.6);
   
   // Build header row (empty + year labels)
   const headerRow: PptxGenJS.TableCell[] = [
@@ -171,7 +200,7 @@ export function buildCreditAmortization(
         valign: 'middle' as const,
       } 
     },
-    ...data.rows.map(row => ({
+    ...allRows.map(row => ({
       text: row.periode,
       options: {
         fill: { color: theme.colors.color1.replace('#', '') },
@@ -185,16 +214,36 @@ export function buildCreditAmortization(
     })),
   ];
   
-  // Build data rows (one per metric)
-  const altRowColor = lightenColor(theme.colors.color7, 0.5);
+  // Build section header row (for multi-loan)
+  const buildSectionHeader = (loanIndex: number): PptxGenJS.TableCell[] => {
+    const label = loanIndex === 1 ? 'PRÊT PRINCIPAL N°1' : `PRÊT N°${loanIndex}`;
+    return [
+      {
+        text: label,
+        options: {
+          fill: { color: sectionHeaderColor },
+          color: theme.textMain.replace('#', ''),
+          bold: true,
+          fontSize: 11,
+          fontFace: TYPO.fontFace,
+          align: 'left' as const,
+          valign: 'middle' as const,
+          colspan: numCols,
+        },
+      },
+    ];
+  };
   
+  // Build data row (one per metric)
   const buildDataRow = (
     label: string, 
     values: string[], 
-    rowIndex: number
+    rowIndex: number,
+    isSecondary: boolean = false
   ): PptxGenJS.TableCell[] => {
     const isAlt = rowIndex % 2 === 1;
     const rowFill = isAlt ? altRowColor : 'FFFFFF';
+    const fontSize = isSecondary ? 8 : 9;
     
     return [
       {
@@ -202,8 +251,8 @@ export function buildCreditAmortization(
         options: {
           fill: { color: rowFill },
           color: theme.textMain.replace('#', ''),
-          bold: true,
-          fontSize: 9,
+          bold: !isSecondary,
+          fontSize: fontSize,
           fontFace: TYPO.fontFace,
           align: 'left' as const,
           valign: 'middle' as const,
@@ -214,7 +263,7 @@ export function buildCreditAmortization(
         options: {
           fill: { color: rowFill },
           color: theme.textBody.replace('#', ''),
-          fontSize: 9,
+          fontSize: fontSize,
           fontFace: TYPO.fontFace,
           align: 'right' as const,
           valign: 'middle' as const,
@@ -223,21 +272,61 @@ export function buildCreditAmortization(
     ];
   };
   
-  // Extract values for each metric
-  const annuiteValues = data.rows.map(r => euro(r.annuite));
-  const interetValues = data.rows.map(r => euro(r.interet));
-  const assuranceValues = data.rows.map(r => euro(r.assurance));
-  const amortValues = data.rows.map(r => euro(r.amort));
-  const crdValues = data.rows.map(r => euro(r.crd));
+  // Build table rows
+  const tableRows: PptxGenJS.TableRow[] = [headerRow];
   
-  const tableRows: PptxGenJS.TableRow[] = [
-    headerRow,
-    buildDataRow(ROW_LABELS[0], annuiteValues, 0),
-    buildDataRow(ROW_LABELS[1], interetValues, 1),
-    buildDataRow(ROW_LABELS[2], assuranceValues, 2),
-    buildDataRow(ROW_LABELS[3], amortValues, 3),
-    buildDataRow(ROW_LABELS[4], crdValues, 4),
-  ];
+  if (isMultiLoan) {
+    // Multi-loan: add section headers + data for each loan
+    const sortedLoanIndices = Array.from(loanGroups.keys()).sort((a, b) => a - b);
+    
+    sortedLoanIndices.forEach((loanIdx, sectionIdx) => {
+      const loanRows = loanGroups.get(loanIdx)!;
+      
+      // Section header
+      tableRows.push(buildSectionHeader(loanIdx));
+      
+      // Extract values for this loan's years
+      const annuiteValues = loanRows.map(r => euro(r.annuite));
+      const interetValues = loanRows.map(r => euro(r.interet));
+      const assuranceValues = loanRows.map(r => euro(r.assurance));
+      const amortValues = loanRows.map(r => euro(r.amort));
+      const crdValues = loanRows.map(r => euro(r.crd));
+      
+      // Pad arrays to match total columns (for multi-loan alignment)
+      const padValues = (vals: string[]): string[] => {
+        const result: string[] = [];
+        let valIdx = 0;
+        allRows.forEach(r => {
+          if (r.loanIndex === loanIdx || (!r.loanIndex && loanIdx === 1)) {
+            result.push(vals[valIdx++] || '');
+          } else {
+            result.push('—');
+          }
+        });
+        return result;
+      };
+      
+      // Data rows (secondary typography for details)
+      tableRows.push(buildDataRow(ROW_LABELS[0], padValues(annuiteValues), sectionIdx * 6 + 0, false));
+      tableRows.push(buildDataRow(ROW_LABELS[1], padValues(interetValues), sectionIdx * 6 + 1, true));
+      tableRows.push(buildDataRow(ROW_LABELS[2], padValues(assuranceValues), sectionIdx * 6 + 2, true));
+      tableRows.push(buildDataRow(ROW_LABELS[3], padValues(amortValues), sectionIdx * 6 + 3, true));
+      tableRows.push(buildDataRow(ROW_LABELS[4], padValues(crdValues), sectionIdx * 6 + 4, false));
+    });
+  } else {
+    // Single loan: simple table without section headers
+    const annuiteValues = allRows.map(r => euro(r.annuite));
+    const interetValues = allRows.map(r => euro(r.interet));
+    const assuranceValues = allRows.map(r => euro(r.assurance));
+    const amortValues = allRows.map(r => euro(r.amort));
+    const crdValues = allRows.map(r => euro(r.crd));
+    
+    tableRows.push(buildDataRow(ROW_LABELS[0], annuiteValues, 0, false));
+    tableRows.push(buildDataRow(ROW_LABELS[1], interetValues, 1, true));
+    tableRows.push(buildDataRow(ROW_LABELS[2], assuranceValues, 2, true));
+    tableRows.push(buildDataRow(ROW_LABELS[3], amortValues, 3, true));
+    tableRows.push(buildDataRow(ROW_LABELS[4], crdValues, 4, false));
+  }
   
   // Add table
   slide.addTable(tableRows, {

@@ -306,9 +306,11 @@ export type CreditAnnexeSlideSpec = {
 
 /**
  * Credit Amortization Row (annual aggregation)
+ * Supports multi-loan scenarios with loanIndex for grouping
  */
 export type CreditAmortizationRow = {
-  periode: string;  // year label e.g. "2026"
+  loanIndex?: number;   // 1, 2, 3 for multi-loan grouping (optional for backward compat)
+  periode: string;      // year label e.g. "2026"
   interet: number;
   assurance: number;
   amort: number;

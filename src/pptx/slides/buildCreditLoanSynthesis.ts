@@ -14,6 +14,8 @@ import {
   TYPO, 
   COORDS_CONTENT, 
   COORDS_FOOTER,
+  addTextBox,
+  addAccentLine,
   addFooter,
   roleColor,
 } from '../designSystem/serenity';
@@ -26,13 +28,13 @@ import type { BusinessIconName } from '../icons/addBusinessIcon';
 
 const SLIDE_SIZE = { width: 13.3333, height: 7.5 };
 
+// Content zone boundaries (below subtitle, above footer)
+const CONTENT_TOP_Y = COORDS_CONTENT.content.y; // 2.3754
+const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
+
 const LAYOUT = {
-  title: { x: COORDS_CONTENT.title.x, y: COORDS_CONTENT.title.y, w: COORDS_CONTENT.title.w, h: 0.5 },
-  subtitle: { x: COORDS_CONTENT.title.x, y: COORDS_CONTENT.title.y + 0.55, w: COORDS_CONTENT.title.w, h: 0.35 },
-  accentLine: { x: COORDS_CONTENT.accentLine.x, y: COORDS_CONTENT.accentLine.y, w: COORDS_CONTENT.accentLine.w },
-  
   kpi: {
-    topY: 2.3,
+    topY: CONTENT_TOP_Y + 0.1,
     height: 1.1,
     marginX: 1.0,
     gap: 0.3,
@@ -91,41 +93,31 @@ export function buildCreditLoanSynthesis(
   // White background
   slide.background = { color: 'FFFFFF' };
   
-  // ========== HEADER ==========
+  // ========== STANDARD HEADER (using Serenity helpers) ==========
   
-  const loanLabel = `SYNTHÈSE PRÊT N°${data.loanIndex}`;
+  const loanLabel = `Synthèse prêt n°${data.loanIndex}`;
   const creditTypeLabel = data.creditType === 'infine' ? 'Crédit in fine' : 'Crédit amortissable';
   
-  // Title
-  slide.addText(loanLabel, {
-    x: LAYOUT.title.x,
-    y: LAYOUT.title.y,
-    w: LAYOUT.title.w,
-    h: LAYOUT.title.h,
+  // Title (H1, ALL CAPS, LEFT-ALIGNED) - using helper with COORDS_CONTENT.title
+  addTextBox(slide, loanLabel, COORDS_CONTENT.title, {
     fontSize: TYPO.sizes.h1,
+    color: theme.textMain,
     bold: true,
-    color: roleColor(theme, 'textMain'),
-    fontFace: TYPO.fontFace,
+    align: 'left',
+    valign: 'top',
+    isUpperCase: true,
   });
   
-  // Subtitle
-  slide.addText(creditTypeLabel, {
-    x: LAYOUT.subtitle.x,
-    y: LAYOUT.subtitle.y,
-    w: LAYOUT.subtitle.w,
-    h: LAYOUT.subtitle.h,
+  // Accent line under title - using helper
+  addAccentLine(slide, theme, 'content');
+  
+  // Subtitle (H2) - MUST use COORDS_CONTENT.subtitle (below accent line)
+  addTextBox(slide, creditTypeLabel, COORDS_CONTENT.subtitle, {
     fontSize: TYPO.sizes.h2,
-    color: roleColor(theme, 'textBody'),
-    fontFace: TYPO.fontFace,
-  });
-  
-  // Accent line
-  slide.addShape('line', {
-    x: LAYOUT.accentLine.x,
-    y: LAYOUT.accentLine.y,
-    w: LAYOUT.accentLine.w,
-    h: 0,
-    line: { color: roleColor(theme, 'accent'), width: 1.5 },
+    color: theme.textMain,
+    bold: true,
+    align: 'left',
+    valign: 'top',
   });
   
   // ========== KPIs ROW ==========
@@ -309,19 +301,9 @@ export function buildCreditLoanSynthesis(
     align: 'center',
   });
   
-  // ========== FOOTER ==========
+  // ========== STANDARD FOOTER ==========
   
-  addFooter(
-    slide,
-    {
-      generatedAt: ctx.generatedAt,
-      footerDisclaimer: ctx.footerDisclaimer,
-      showSlideNumbers: ctx.showSlideNumbers,
-      theme,
-    },
-    slideIndex,
-    'onLight'
-  );
+  addFooter(slide, ctx, slideIndex, 'onLight');
 }
 
 export default buildCreditLoanSynthesis;
