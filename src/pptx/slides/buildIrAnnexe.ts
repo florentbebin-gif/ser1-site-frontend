@@ -107,46 +107,42 @@ function fmt2(n: number): string {
  * Build professional prose text for the annexe
  * Written as an expert wealth engineer (ingénieur patrimonial) would explain to a client
  * Client-specific values are in BOLD
+ * 
+ * OPTIMIZED: Condensed paragraphs to fit content zone without overflow
  */
 function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: boolean }[]> {
   const paragraphs: Array<{ text: string; bold?: boolean }[]> = [];
   
-  // Foyer description - with proper French liaison (d'un instead of de un)
+  // Foyer description
   const foyerDesc = data.isCouple 
     ? (data.childrenCount && data.childrenCount > 0 
         ? `un couple avec ${data.childrenCount} enfant${data.childrenCount > 1 ? 's' : ''}`
         : 'un couple')
     : 'une personne seule';
   
-  // ===== PARAGRAPH 1: Introduction et base imposable =====
+  // ===== PARAGRAPH 1: Introduction, base imposable et quotient familial (MERGED) =====
   paragraphs.push([
-    { text: 'Votre foyer fiscal, composé d\'' },
+    { text: 'Votre foyer fiscal (' },
     { text: foyerDesc, bold: true },
-    { text: ', dispose d\'un revenu net imposable de ' },
+    { text: ') dispose d\'un revenu net imposable de ' },
     { text: euro(data.taxableIncome), bold: true },
-    { text: '. Ce montant correspond à l\'ensemble de vos revenus après déduction des charges et abattements applicables.' },
-  ]);
-  
-  // ===== PARAGRAPH 2: Quotient familial =====
-  paragraphs.push([
-    { text: 'Le système fiscal français applique le mécanisme du quotient familial afin d\'adapter l\'impôt à la composition du foyer. Votre foyer bénéficie de ' },
+    { text: '. Avec ' },
     { text: `${fmt2(data.partsNb)} part${data.partsNb > 1 ? 's' : ''} fiscale${data.partsNb > 1 ? 's' : ''}`, bold: true },
-    { text: ', ce qui porte votre revenu imposable par part à ' },
+    { text: ', votre revenu imposable par part s\'établit à ' },
     { text: euro(data.taxablePerPart), bold: true },
     { text: '.' },
   ]);
   
-  // ===== PARAGRAPH 3: Barème progressif =====
+  // ===== PARAGRAPH 2: Barème progressif (CONDENSED) =====
   if (data.tmiRate === 0) {
     paragraphs.push([
-      { text: 'Votre revenu par part étant inférieur au seuil d\'entrée dans le barème progressif (11 294 € pour les revenus 2024), ' },
+      { text: 'Votre revenu par part étant inférieur au seuil d\'imposition, ' },
       { text: 'vous n\'êtes pas imposable', bold: true },
       { text: ' au titre de l\'impôt sur le revenu.' },
     ]);
   } else {
-    // Build bracket details text
     let bracketText: { text: string; bold?: boolean }[] = [
-      { text: 'L\'impôt sur le revenu est calculé selon un barème progressif comportant plusieurs tranches. Pour chaque part fiscale, le revenu est taxé successivement : ' },
+      { text: 'Le barème progressif s\'applique par tranches : ' },
     ];
     
     if (data.bracketsDetails && data.bracketsDetails.length > 0) {
@@ -158,40 +154,30 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
       bracketText.push({ text: '. ' });
     }
     
-    bracketText.push({ text: 'Votre tranche marginale d\'imposition (TMI) est de ' });
+    bracketText.push({ text: 'Votre TMI : ' });
     bracketText.push({ text: `${pct(data.tmiRate)}`, bold: true });
-    bracketText.push({ text: ', ce qui signifie que tout euro supplémentaire de revenu sera imposé à ce taux.' });
+    bracketText.push({ text: ' (tout euro supplémentaire sera imposé à ce taux).' });
     
     paragraphs.push(bracketText);
   }
   
-  // ===== PARAGRAPH 4: Corrections (if applicable) =====
+  // ===== PARAGRAPH 3: Corrections (CONDENSED) =====
   const hasDecote = data.decote && data.decote > 0;
   const hasQfAdvantage = data.qfAdvantage && data.qfAdvantage > 0;
   const hasCredits = data.creditsTotal && data.creditsTotal > 0;
   
   if (hasDecote || hasQfAdvantage || hasCredits) {
     let correctionText: { text: string; bold?: boolean }[] = [
-      { text: 'Plusieurs mécanismes correcteurs s\'appliquent à votre situation : ' },
+      { text: 'Corrections appliquées : ' },
     ];
     
     const corrections: string[] = [];
-    if (hasDecote) {
-      corrections.push(`une décote de ${euro(data.decote!)} destinée à alléger l'impôt des foyers modestes`);
-    }
-    if (hasQfAdvantage) {
-      corrections.push(`un avantage lié au quotient familial de ${euro(data.qfAdvantage!)}`);
-    }
-    if (hasCredits) {
-      corrections.push(`des réductions et crédits d'impôt pour un total de ${euro(data.creditsTotal!)}`);
-    }
+    if (hasDecote) corrections.push(`décote ${euro(data.decote!)}`);
+    if (hasQfAdvantage) corrections.push(`avantage QF ${euro(data.qfAdvantage!)}`);
+    if (hasCredits) corrections.push(`réductions/crédits ${euro(data.creditsTotal!)}`);
     
     corrections.forEach((c, idx) => {
-      if (idx > 0 && idx === corrections.length - 1) {
-        correctionText.push({ text: ' et ' });
-      } else if (idx > 0) {
-        correctionText.push({ text: ', ' });
-      }
+      if (idx > 0) correctionText.push({ text: ', ' });
       correctionText.push({ text: c, bold: true });
     });
     correctionText.push({ text: '.' });
@@ -199,36 +185,35 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
     paragraphs.push(correctionText);
   }
   
-  // ===== PARAGRAPH 5: Result =====
+  // ===== PARAGRAPH 4: Result (CONDENSED) =====
   if (data.irNet === 0) {
     paragraphs.push([
-      { text: 'Après application de l\'ensemble des mécanismes fiscaux, ' },
+      { text: 'Résultat : ' },
       { text: 'vous n\'êtes redevable d\'aucun impôt sur le revenu', bold: true },
-      { text: ' au titre de cette année.' },
+      { text: '.' },
     ]);
   } else {
     paragraphs.push([
-      { text: 'Après application du barème et des éventuelles corrections, votre ' },
-      { text: 'impôt sur le revenu net s\'élève à ', bold: false },
+      { text: 'Votre impôt sur le revenu net s\'élève à ' },
       { text: euro(data.irNet), bold: true },
       { text: '.' },
     ]);
   }
   
-  // ===== PARAGRAPH 6: PFU (if applicable) =====
+  // ===== PARAGRAPH 5: PFU (CONDENSED) =====
   const hasPfuIr = data.pfuIr && data.pfuIr > 0;
   
   if (hasPfuIr) {
     paragraphs.push([
-      { text: 'Concernant vos revenus du capital (dividendes, intérêts, plus-values), ceux-ci sont soumis au ' },
-      { text: 'prélèvement forfaitaire unique (PFU) au taux de 12,8%', bold: true },
-      { text: ', représentant un montant de ' },
+      { text: 'Revenus du capital : ' },
+      { text: 'PFU 12,8%', bold: true },
+      { text: ' de ' },
       { text: euro(data.pfuIr!), bold: true },
-      { text: '. Ce prélèvement s\'ajoute aux prélèvements sociaux de 17,2% pour former la "flat tax" de 30%.' },
+      { text: ' (+ PS 17,2% = flat tax 30%).' },
     ]);
   }
   
-  // ===== PARAGRAPH 7: Contributions (if applicable) =====
+  // ===== PARAGRAPH 6: Contributions (CONDENSED) =====
   const hasCehr = data.cehr && data.cehr > 0;
   const hasCdhr = data.cdhr && data.cdhr > 0;
   const hasPsFoncier = data.psFoncier && data.psFoncier > 0;
@@ -237,21 +222,17 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
   
   if (hasContributions) {
     let contribText: { text: string; bold?: boolean }[] = [
-      { text: 'À cet impôt s\'ajoutent des contributions complémentaires : ' },
+      { text: 'Contributions complémentaires : ' },
     ];
     
     const contribs: string[] = [];
-    if (hasCehr) contribs.push(`la CEHR (${euro(data.cehr!)})`);
-    if (hasCdhr) contribs.push(`la CDHR (${euro(data.cdhr!)})`);
-    if (hasPsFoncier) contribs.push(`les prélèvements sociaux sur revenus fonciers (${euro(data.psFoncier!)})`);
-    if (hasPsDividends) contribs.push(`les prélèvements sociaux sur dividendes (${euro(data.psDividends!)})`);
+    if (hasCehr) contribs.push(`CEHR ${euro(data.cehr!)}`);
+    if (hasCdhr) contribs.push(`CDHR ${euro(data.cdhr!)}`);
+    if (hasPsFoncier) contribs.push(`PS fonciers ${euro(data.psFoncier!)}`);
+    if (hasPsDividends) contribs.push(`PS dividendes ${euro(data.psDividends!)}`);
     
     contribs.forEach((c, idx) => {
-      if (idx > 0 && idx === contribs.length - 1) {
-        contribText.push({ text: ' et ' });
-      } else if (idx > 0) {
-        contribText.push({ text: ', ' });
-      }
+      if (idx > 0) contribText.push({ text: ', ' });
       contribText.push({ text: c, bold: true });
     });
     contribText.push({ text: '.' });
@@ -259,11 +240,11 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
     paragraphs.push(contribText);
   }
   
-  // ===== PARAGRAPH 8: Total (WITHOUT average rate as per user request) =====
+  // ===== PARAGRAPH 7: Total =====
   if (data.totalTax !== data.irNet && data.totalTax > 0) {
     paragraphs.push([
-      { text: 'Au total, votre ' },
-      { text: `imposition globale s'élève à ${euro(data.totalTax)}`, bold: true },
+      { text: 'Imposition globale : ' },
+      { text: euro(data.totalTax), bold: true },
       { text: '.' },
     ]);
   }

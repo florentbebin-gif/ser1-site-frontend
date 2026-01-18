@@ -255,8 +255,26 @@ function getAmountInCurrentBracket(taxablePerPart: number, tmiRate: number, part
  * - < 0.33: first third (just entered this bracket)
  * - 0.33-0.66: middle third (roughly half-way)
  * - > 0.66: last third (close to next bracket)
+ * 
+ * USES tmiBaseGlobal and tmiMarginGlobal when available for consistency with displayed values
  */
-function getCursorPositionInBracket(taxablePerPart: number, tmiRate: number): number {
+function getCursorPositionInBracket(
+  taxablePerPart: number, 
+  tmiRate: number,
+  tmiBaseGlobal?: number,
+  tmiMarginGlobal?: number | null
+): number {
+  // If both tmiBaseGlobal and tmiMarginGlobal are available, use them for accurate positioning
+  // This ensures cursor matches the "Montant des revenus dans cette TMI" and "Marge avant changement" values
+  if (tmiBaseGlobal !== undefined && tmiBaseGlobal !== null && 
+      tmiMarginGlobal !== undefined && tmiMarginGlobal !== null && tmiMarginGlobal > 0) {
+    const totalBracketUsed = tmiBaseGlobal + tmiMarginGlobal;
+    if (totalBracketUsed > 0) {
+      return tmiBaseGlobal / totalBracketUsed;
+    }
+  }
+  
+  // Fallback to original calculation if tmiBaseGlobal/tmiMarginGlobal not available
   const bracket = TMI_BRACKETS.find(b => b.rate === tmiRate);
   if (!bracket) return 0.5;
   
@@ -581,8 +599,13 @@ export function buildIrSynthesis(
     const triangleHeight = 0.14;
     const cursorY = LAYOUT.cursor.y + 0.02;
     
-    // Calculate intelligent cursor position based on income in bracket
-    const positionRatio = getCursorPositionInBracket(data.taxablePerPart, data.tmiRate);
+    // Calculate intelligent cursor position based on tmiBaseGlobal/tmiMarginGlobal (same source as displayed values)
+    const positionRatio = getCursorPositionInBracket(
+      data.taxablePerPart, 
+      data.tmiRate,
+      data.tmiBaseGlobal,
+      data.tmiMarginGlobal
+    );
     const xOffset = getCursorXOffset(positionRatio, activeSegmentWidth, data.tmiRate);
     const cursorCenterX = activeSegmentCenterX + xOffset;
     

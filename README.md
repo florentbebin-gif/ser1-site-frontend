@@ -948,6 +948,74 @@ const SAFETY_CHECK = {
 
 ---
 
+## � Structure PPTX - Modèle réutilisable
+
+Le système de génération PowerPoint suit une architecture modulaire permettant de créer des présentations pour différents simulateurs.
+
+### Types de slides disponibles
+
+| Type | Description | Fichier Builder |
+|------|-------------|-----------------|
+| **Cover** | Page de garde avec logo, titre, date et conseiller | `buildCover.ts` |
+| **Chapter** | Page de chapitre avec image et titre | `buildChapter.ts` |
+| **Content** | Page de contenu avec visuels (KPIs, graphiques) | `buildContent.ts` |
+| **Synthesis** | Synthèse avec données client (ex: IR slide 3) | `buildIrSynthesis.ts` |
+| **Annexe** | Détail rédigé par un ingénieur patrimonial | `buildIrAnnexe.ts` |
+| **End** | Slide de fin avec mentions légales | `buildEnd.ts` |
+
+### Enchaînement type d'un deck
+
+```
+1. Cover        → Présentation cabinet + client
+2. Chapter 1    → Introduction (image thématique)
+3. Content      → Données clés visuelles (KPIs, barres)
+4. Chapter 2    → Annexe (image thématique)
+5. Annexe       → Explication rédigée personnalisée
+6. End          → Mentions légales + coordonnées
+```
+
+### Zones protégées (NON MODIFIABLES)
+
+- **Header** : Titre (H1 CAPS), sous-titre (H2), accent line
+- **Footer** : Date, disclaimer, numéro de slide
+
+### Zone contenu (MODIFIABLE)
+
+Tout élément ajouté doit respecter :
+- **Y min** : `CONTENT_TOP_Y` (après accent line sous-titre)
+- **Y max** : `CONTENT_BOTTOM_Y` (avant footer)
+- **Pas de chevauchement** avec header/footer
+
+### Règles de style
+
+- **Police** : Arial uniquement
+- **Couleurs** : Thème dynamique (`color1` à `color10`), blanc autorisé
+- **Pas de hardcoded colors** sauf blanc (`FFFFFF`)
+
+### Création d'un nouveau simulateur
+
+1. Créer un `build[Simulator]Synthesis.ts` pour la slide de synthèse
+2. Créer un `build[Simulator]Annexe.ts` pour l'explication rédigée
+3. Créer un `[simulator]DeckBuilder.ts` pour assembler le deck
+4. Ajouter les types dans `theme/types.ts`
+5. Connecter dans `exportStudyDeck.ts`
+
+### Cohérence données UI ↔ PPTX
+
+**Règle critique** : Les valeurs affichées dans le PPTX doivent provenir de la **même source** que l'UI web.
+
+```typescript
+// ✅ CORRECT : Réutiliser les champs calculés côté UI
+tmiBaseGlobal: result.tmiBaseGlobal,
+tmiMarginGlobal: result.tmiMarginGlobal,
+pfuIr: result.pfuIr,
+
+// ❌ INCORRECT : Recalculer dans le PPTX builder
+// Risque de divergence avec l'UI
+```
+
+---
+
 ## �📚 Documentation complémentaire
 
 ### Fichiers de documentation
