@@ -116,7 +116,7 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
   return rows
 }
 
-// === LISSAGE : MENSUALITÉ TOTALE CONSTANTE (hors assurance) ===
+// === LISSAGE : MENSUALITÉ TOTALE CONSTANTE (avec assurance tous prêts) ===
 function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
   const { capital, r, rAss, N, assurMode, type } = pret1
   const rows = []
@@ -125,8 +125,9 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
   const EPS = 1e-8
 
+  // Utilise mensuTotal (avec assurance) pour le lissage global
   const mensuAutresAt = (m) =>
-    autresPretsRows.reduce((s, arr) => s + ((arr[m-1]?.mensu) || 0), 0)
+    autresPretsRows.reduce((s, arr) => s + ((arr[m-1]?.mensuTotal) || 0), 0)
 
   for (let m = 1; m <= N; m++) {
     if (crd <= EPS) break
@@ -158,7 +159,7 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
   return rows
 }
 
-// ---- Échéancier lissé avec "T" constant (durée conservée) ----
+// ---- Échéancier lissé avec "T" constant (durée conservée, avec assurance tous prêts) ----
 function scheduleLisseePret1Duration({ basePret1, autresPretsRows, totalConst }) {
   const { capital, r, rAss, N, assurMode } = basePret1
   const rows = []
@@ -167,7 +168,8 @@ function scheduleLisseePret1Duration({ basePret1, autresPretsRows, totalConst })
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
 
   const EPS = 1e-8
-  const sumAutres = (m) => autresPretsRows.reduce((s, arr) => s + ((arr[m - 1]?.mensu) || 0), 0)
+  // Utilise mensuTotal (avec assurance) pour le lissage global
+  const sumAutres = (m) => autresPretsRows.reduce((s, arr) => s + ((arr[m - 1]?.mensuTotal) || 0), 0)
 
   for (let m = 1; m <= N; m++) {
     if (crd <= EPS) break
@@ -195,7 +197,7 @@ function scheduleLisseePret1Duration({ basePret1, autresPretsRows, totalConst })
   return rows
 }
 
-// ---- Annuité totale "T" (fermeture analytique) qui garantit CRD_N = 0 ----
+// ---- Annuité totale "T" (fermeture analytique) qui garantit CRD_N = 0 (avec assurance tous prêts) ----
 function totalConstantForDuration({ basePret1, autresPretsRows }) {
   const { capital: B0, r, N } = basePret1
   const pow = Math.pow(1 + r, N)
@@ -206,7 +208,8 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
   for (let t = 1; t <= N; t++) {
     const a = Math.pow(1 + r, N - t)
     A += a
-    const autres = autresPretsRows.reduce((s, arr) => s + ((arr[t - 1]?.mensu) || 0), 0)
+    // Utilise mensuTotal (avec assurance) pour le lissage global
+    const autres = autresPretsRows.reduce((s, arr) => s + ((arr[t - 1]?.mensuTotal) || 0), 0)
     B += autres * a
   }
   return (B0 * pow + B) / A
@@ -397,7 +400,7 @@ useEffect(() => {
     return hasOthers ? mensuHorsAssurance_base : (mensuUser || mensuHorsAssurance_base)
   }, [pretsPlus.length, mensuBase, mensuHorsAssurance_base])
 
-  /* ---- Gen échéanciers prêts additionnels (assurance = 0) ---- */
+  /* ---- Gen échéanciers prêts additionnels (avec assurance si définie) ---- */
   function shiftRows(rows, offset){
     if (offset === 0) return rows.slice()
     if (offset > 0) return Array.from({length:offset}, () => null).concat(rows)
@@ -409,21 +412,25 @@ useEffect(() => {
       const Np = Math.max(1, Math.floor(toNum(p.duree)||0))
       const C  = Math.max(0, toNum(p.capital))
       const type = p.type || creditType
+      
+      // Assurance prêt additionnel : utilise tauxAssur et assurMode du prêt (défaut: 0, CRD)
+      const pTauxAssur = Math.max(0, Number(p.tauxAssur) || 0)
+      const pAssurMode = p.assurMode || 'CRD'
+      const rAssP = pTauxAssur / 100 / 12
 
-      // AUCUNE assurance sur les prêts additionnels
       const baseRows = (type === 'infine')
-        ? scheduleInFine({ capital:C, r:rM, rAss:0, N:Np, assurMode })
-        : scheduleAmortissable({ capital:C, r:rM, rAss:0, N:Np, assurMode })
+        ? scheduleInFine({ capital:C, r:rM, rAss:rAssP, N:Np, assurMode: pAssurMode })
+        : scheduleAmortissable({ capital:C, r:rM, rAss:rAssP, N:Np, assurMode: pAssurMode })
 
       const rows = baseRows.map(row => ({
         ...row,
-        assuranceDeces: (type === 'infine' ? (row.crd || 0) + (row.amort || 0) : C)
+        assuranceDeces: (pAssurMode === 'CI') ? C : ((row.crd || 0) + (row.amort || 0))
       }))
 
       const off = monthsDiff(startYM, p.startYM || startYM)
       return shiftRows(rows, off)
     })
-  }, [pretsPlus, creditType, assurMode, startYM])
+  }, [pretsPlus, creditType, startYM])
 
   /* ---- Prêt 1 : base (sans lissage) ---- */
   const basePret1Rows = useMemo(() => {
@@ -453,7 +460,8 @@ useEffect(() => {
         ? scheduleInFine({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
         : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBaseEffectivePret1 })
     } else if (lissageMode === 'mensu') {
-      const mensuAutresM1 = autresRows.reduce((s, arr) => s + ((arr[0]?.mensu) || 0), 0)
+      // Utilise mensuTotal (avec assurance) pour la cible de lissage
+      const mensuAutresM1 = autresRows.reduce((s, arr) => s + ((arr[0]?.mensuTotal) || 0), 0)
       const cible = mensuBaseEffectivePret1 + mensuAutresM1
       rows = scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible })
     } else {
@@ -562,12 +570,26 @@ function aggregateToYearsFromRows(rows, startYMBase) {
   const firstYearAggregate = isAnnual ? aggregatedYears[0] : null
   // Valeurs d'affichage selon mode (mensuel/annuel)
   const montantPrincipalAff = isAnnual ? (firstYearAggregate?.mensu || 0) : mensualiteTotaleM1;
-  const primeAssMensuelle  = (pret1Rows[0]?.assurance || 0) // assurance uniquement prêt 1
+  
+  // Assurance mensuelle M1 tous prêts
+  const primeAssMensuellePret1 = (pret1Rows[0]?.assurance || 0)
+  const primeAssMensuelleAutres = autresRows.reduce((s,arr)=> s + ((arr[0]?.assurance) || 0), 0)
+  const primeAssMensuelle = primeAssMensuellePret1 + primeAssMensuelleAutres
   const primeAssAff = isAnnual ? (firstYearAggregate?.assurance || 0) : primeAssMensuelle;
+  
   const coutInteretsPret1  = pret1Rows.reduce((s,l)=> s + (l.interet||0), 0)
   const coutInteretsAgr    = agrRows.reduce((s,l)=> s + l.interet, 0)
   const pret1Interets      = pret1Rows.reduce((s,l)=> s + (l.interet   || 0), 0)
   const pret1Assurance     = pret1Rows.reduce((s,l)=> s + (l.assurance || 0), 0)
+  
+  // Totaux assurance et intérêts tous prêts (pour synthèse globale)
+  const autresInterets = autresRows.reduce((total, arr) => 
+    total + arr.reduce((s, row) => s + ((row?.interet) || 0), 0), 0)
+  const autresAssurance = autresRows.reduce((total, arr) => 
+    total + arr.reduce((s, row) => s + ((row?.assurance) || 0), 0), 0)
+  const totalInterets = pret1Interets + autresInterets
+  const totalAssurance = pret1Assurance + autresAssurance
+  const coutTotalCredit = totalInterets + totalAssurance
 
   // Annuité max (hors assurance) pour la vue annuelle
   const annuiteMaxSansAss = useMemo(()=>{
@@ -654,7 +676,8 @@ const synthesePeriodes = useMemo(() => {
     if (pretsPlus.length >= 2) return
     setPretsPlus(arr => [...arr, {
       id: rid(), capital: 100000, duree: 120, taux: 2.50,
-      startYM, type: creditType
+      startYM, type: creditType,
+      tauxAssur: 0, assurMode: 'CRD'  // Assurance désactivée par défaut (zéro régression)
     }])
   }
   const updatePret = (id, patch) => setPretsPlus(arr => arr.map(p => p.id === id ? ({ ...p, ...patch }) : p))
@@ -804,6 +827,7 @@ const synthesePeriodes = useMemo(() => {
       pretsPlus.forEach((p, idx) => {
         const k = idx + 2;
         const type = p.type || creditType;
+        const pAssurMode = p.assurMode || 'CRD';
         rowsParams.push([
           `Prêt ${k} - Type de crédit`,
           type === 'amortissable' ? 'Amortissable' : 'In fine',
@@ -819,6 +843,14 @@ const synthesePeriodes = useMemo(() => {
         rowsParams.push([
           `Prêt ${k} - Taux annuel (crédit)`,
           `${Number(p.taux || 0).toFixed(2).replace('.', ',')} %`,
+        ]);
+        rowsParams.push([
+          `Prêt ${k} - Taux annuel (assurance)`,
+          `${Number(p.tauxAssur || 0).toFixed(2).replace('.', ',')} %`,
+        ]);
+        rowsParams.push([
+          `Prêt ${k} - Mode assurance`,
+          pAssurMode === 'CI' ? 'Capital initial' : 'Capital restant dû',
         ]);
         rowsParams.push([
           `Prêt ${k} - Date de souscription`,
@@ -952,7 +984,7 @@ const synthesePeriodes = useMemo(() => {
         crd: row.crd,
       }))
 
-      // Build credit data for PPTX
+      // Build credit data for PPTX (utilise totaux tous prêts pour cohérence avec UI)
       const creditData = {
         capitalEmprunte: effectiveCapitalPret1,
         dureeMois: N,
@@ -960,9 +992,9 @@ const synthesePeriodes = useMemo(() => {
         tauxAssurance: tauxAssur,
         mensualiteHorsAssurance: mensuHorsAssurance_base,
         mensualiteTotale: mensuHorsAssurance_base + primeAssMensuelle,
-        coutTotalInterets: pret1Interets,
-        coutTotalAssurance: pret1Assurance,
-        coutTotalCredit: pret1Interets + pret1Assurance,
+        coutTotalInterets: totalInterets,      // Totaux tous prêts
+        coutTotalAssurance: totalAssurance,    // Totaux tous prêts
+        coutTotalCredit: coutTotalCredit,      // Totaux tous prêts
         creditType: creditType,
         assuranceMode: assurMode,
         amortizationRows,
@@ -1139,15 +1171,15 @@ const synthesePeriodes = useMemo(() => {
             </div>
             <div className="credit-summary-row premium-summary-row">
               <span className="credit-summary-label premium-summary-label">Coût total des intérêts</span>
-              <span className="credit-summary-value premium-summary-value">{euro0(coutInteretsAgr)}</span>
+              <span className="credit-summary-value premium-summary-value">{euro0(totalInterets)}</span>
             </div>
             <div className="credit-summary-row">
               <span className="credit-summary-label">Coût total assurance</span>
-              <span className="credit-summary-value">{euro0(pret1Assurance)}</span>
+              <span className="credit-summary-value">{euro0(totalAssurance)}</span>
             </div>
             <div className="credit-summary-row">
               <span className="credit-summary-label">Coût total du crédit</span>
-              <span className="credit-summary-value credit-summary-value--highlight">{euro0(pret1Interets + pret1Assurance)}</span>
+              <span className="credit-summary-value credit-summary-value--highlight">{euro0(coutTotalCredit)}</span>
             </div>
             {lisserPret1 && (
               <div className="credit-summary-row">
@@ -1194,6 +1226,8 @@ const synthesePeriodes = useMemo(() => {
                   <th className="text-right">Capital</th>
                   <th className="text-right">Durée</th>
                   <th className="text-right">Taux</th>
+                  <th className="text-right">Taux (ass.)</th>
+                  <th>Mode</th>
                   <th className="text-right">Mensualité</th>
                   <th>Date</th>
                   <th></th>
@@ -1226,6 +1260,20 @@ const synthesePeriodes = useMemo(() => {
                           onChange={e=>{ setRawTauxPlus(m => ({ ...m, [p.id]: e.target.value })); updatePret(p.id, { taux: toNumber(e.target.value) }); }}
                           onBlur={()=>{ setRawTauxPlus(m => ({ ...m, [p.id]: (Number((Number(p.taux)||0).toFixed(2)).toString()) })); }}
                           style={{height:28}}/>
+                      </td>
+                      <td className="text-right">
+                        <input type="text" inputMode="decimal" className="credit-input__field" 
+                          value={Number((Number(p.tauxAssur)||0).toFixed(2)).toString()}
+                          onChange={e => updatePret(p.id, { tauxAssur: Math.max(0, toNumber(e.target.value)) })}
+                          style={{height:28, width:60}}
+                          placeholder="0.00"
+                        />
+                      </td>
+                      <td>
+                        <select className="credit-select" value={p.assurMode || 'CRD'} onChange={e=> updatePret(p.id, { assurMode: e.target.value })} style={{height:28, minWidth:60}}>
+                          <option value="CI">CI</option>
+                          <option value="CRD">CRD</option>
+                        </select>
                       </td>
                       <td className="text-right font-semibold">{euro0(mensu)}</td>
                       <td className="text-center">
@@ -1350,6 +1398,7 @@ const synthesePeriodes = useMemo(() => {
                       <tr>
                         <th>Période</th>
                         <th className="text-right">Intérêts</th>
+                        <th className="text-right">Assur.</th>
                         <th className="text-right">Amort.</th>
                         <th className="text-right">{colLabelPaiement}</th>
                         <th className="text-right">CRD</th>
@@ -1360,6 +1409,7 @@ const synthesePeriodes = useMemo(() => {
                         <tr key={idx}>
                           <td>{l.periode}</td>
                           <td className="text-right">{euro0(l?.interet ?? 0)}</td>
+                          <td className="text-right">{euro0(l?.assurance ?? 0)}</td>
                           <td className="text-right">{euro0(l?.amort ?? 0)}</td>
                           <td className="text-right font-semibold">{euro0(l?.mensu ?? 0)}</td>
                           <td className="text-right">{euro0(l?.crd ?? 0)}</td>
@@ -1380,6 +1430,7 @@ const synthesePeriodes = useMemo(() => {
                       <tr>
                         <th>Période</th>
                         <th className="text-right">Intérêts</th>
+                        <th className="text-right">Assur.</th>
                         <th className="text-right">Amort.</th>
                         <th className="text-right">{colLabelPaiement}</th>
                         <th className="text-right">CRD</th>
@@ -1390,6 +1441,7 @@ const synthesePeriodes = useMemo(() => {
                         <tr key={idx}>
                           <td>{l.periode}</td>
                           <td className="text-right">{euro0(l?.interet ?? 0)}</td>
+                          <td className="text-right">{euro0(l?.assurance ?? 0)}</td>
                           <td className="text-right">{euro0(l?.amort ?? 0)}</td>
                           <td className="text-right font-semibold">{euro0(l?.mensu ?? 0)}</td>
                           <td className="text-right">{euro0(l?.crd ?? 0)}</td>
@@ -1410,9 +1462,8 @@ const synthesePeriodes = useMemo(() => {
         <ul>
           <li>Les résultats sont indicatifs et ne constituent pas une offre de prêt.</li>
           <li>Le calcul suppose un taux fixe sur toute la durée du prêt.</li>
-          <li>L'assurance emprunteur est calculée selon le mode sélectionné (capital initial ou restant dû).</li>
+          <li>L'assurance emprunteur est calculée selon le mode sélectionné (capital initial ou restant dû) pour chaque prêt.</li>
           <li>Les frais de dossier, de garantie et de notaire ne sont pas inclus dans ce simulateur.</li>
-          <li>Pour les prêts additionnels, seul le prêt principal bénéficie de l'assurance.</li>
         </ul>
       </div>
     </div>

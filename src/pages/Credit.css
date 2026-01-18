@@ -108,6 +108,14 @@
   color: #fff;
 }
 
+/* Style actif pour les boutons de lissage (Lissage ON, Mensualité cste, Durée cste) */
+.credit-prets-actions .chip.active {
+  background: var(--color-c2);
+  border-color: var(--color-c2);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
 /* ➜ Espacement vertical unique via variable --credit-gap */
 .sim-credit {
   --credit-gap: 16px; /* valeur de référence (Prêts additionnels → Échéancier) */

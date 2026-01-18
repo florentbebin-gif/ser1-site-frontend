@@ -384,9 +384,11 @@ npm run typecheck
 
 ### Simulateur Crédit
 - Crédit amortissable ou in fine
-- Assurance CRD/CI intégrée
-- Lissage avec plusieurs prêts
-- Tableaux d'amortissement mensuels/annuels
+- Assurance CRD/CI intégrée pour tous les prêts (principal + additionnels)
+- Lissage avec plusieurs prêts (mensualité constante ou durée constante)
+- Tableaux d'amortissement mensuels/annuels avec colonne assurance
+- Prêts additionnels (max 2) avec paramètres d'assurance individuels
+- Exports Excel et PowerPoint avec totaux tous prêts
 
 ### Gestion des données
 - **Sauvegarde** : Fichier `.ser1` avec état complet
