@@ -1,8 +1,13 @@
 /**
- * Credit Annexe Slide Builder (Slide 5)
+ * Credit Annexe Slide Builder
  * 
  * Detailed explanation prose - written as an expert wealth engineer (ingénieur patrimonial)
  * would explain to a client. Client-specific values are in BOLD.
+ * 
+ * Supports multi-loan scenarios with:
+ * - Global financing explanation
+ * - Per-loan explanations
+ * - Smoothing mechanism explanation (if active)
  * 
  * Design: White background, hierarchical typography, readable paragraphs
  * 
@@ -11,7 +16,7 @@
  */
 
 import PptxGenJS from 'pptxgenjs';
-import type { PptxThemeRoles, ExportContext } from '../theme/types';
+import type { PptxThemeRoles, ExportContext, CreditAnnexeSlideSpec, LoanSummary } from '../theme/types';
 import {
   TYPO,
   COORDS_CONTENT,
@@ -25,20 +30,7 @@ import {
 // TYPES
 // ============================================================================
 
-export interface CreditAnnexeData {
-  capitalEmprunte: number;
-  dureeMois: number;
-  tauxNominal: number;
-  tauxAssurance: number;
-  mensualiteHorsAssurance: number;
-  mensualiteTotale: number;
-  coutTotalInterets: number;
-  coutTotalAssurance: number;
-  coutTotalCredit: number;
-  creditType: 'amortissable' | 'infine';
-  assuranceMode: 'CI' | 'CRD';
-  totalRembourse: number;
-}
+export type CreditAnnexeData = CreditAnnexeSlideSpec;
 
 // ============================================================================
 // CONTENT ZONE BOUNDARIES (STRICT - NO OVERFLOW)
@@ -80,53 +72,105 @@ function formatDuree(mois: number): string {
 }
 
 /**
- * Build professional prose text for the annexe
+ * Build professional prose text for the annexe (multi-loan aware)
  * Written as an expert wealth engineer would explain to a client
  * Client-specific values are in BOLD
  */
 function buildCreditAnnexeProse(data: CreditAnnexeData): Array<{ text: string; bold?: boolean }[]> {
   const paragraphs: Array<{ text: string; bold?: boolean }[]> = [];
+  const loans = data.loans || [];
+  const isMultiLoan = loans.length > 1;
   
-  const creditTypeLabel = data.creditType === 'amortissable' 
-    ? 'amortissable classique' 
-    : 'in fine';
+  // ===== GLOBAL INTRODUCTION =====
+  if (isMultiLoan) {
+    paragraphs.push([
+      { text: 'Votre projet de financement repose sur un montage multi-prêts portant sur un capital total de ' },
+      { text: euro(data.totalCapital), bold: true },
+      { text: ' sur une durée maximale de ' },
+      { text: formatDuree(data.maxDureeMois), bold: true },
+      { text: '. Ce montage comprend ' },
+      { text: `${loans.length} prêts distincts`, bold: true },
+      { text: ' dont les caractéristiques sont détaillées ci-après.' },
+    ]);
+  } else {
+    const loan = loans[0];
+    if (loan) {
+      const creditTypeLabel = loan.creditType === 'amortissable' ? 'amortissable classique' : 'in fine';
+      paragraphs.push([
+        { text: 'Votre projet de financement porte sur un emprunt de ' },
+        { text: euro(loan.capital), bold: true },
+        { text: ' sur une durée de ' },
+        { text: formatDuree(loan.dureeMois), bold: true },
+        { text: `. Il s'agit d'un crédit ` },
+        { text: creditTypeLabel, bold: true },
+        { text: ' au taux nominal annuel de ' },
+        { text: pct(loan.tauxNominal), bold: true },
+        { text: '.' },
+      ]);
+    }
+  }
   
-  const assurModeLabel = data.assuranceMode === 'CI'
-    ? 'sur le capital initial'
-    : 'sur le capital restant dû';
+  // ===== PER-LOAN DETAILS =====
+  loans.forEach((loan, idx) => {
+    const loanLabel = loans.length > 1 ? `Prêt N°${loan.index}` : 'Votre prêt';
+    const creditTypeLabel = loan.creditType === 'amortissable' ? 'amortissable' : 'in fine';
+    const assurModeLabel = loan.assuranceMode === 'CI' ? 'sur le capital initial' : 'sur le capital restant dû';
+    
+    if (isMultiLoan) {
+      paragraphs.push([
+        { text: `${loanLabel} : `, bold: true },
+        { text: 'Capital de ' },
+        { text: euro(loan.capital), bold: true },
+        { text: ' sur ' },
+        { text: formatDuree(loan.dureeMois), bold: true },
+        { text: ` (crédit ${creditTypeLabel} au taux de ` },
+        { text: pct(loan.tauxNominal), bold: true },
+        { text: '). ' },
+        { text: 'Mensualité totale : ' },
+        { text: euro(loan.mensualiteTotale), bold: true },
+        { text: '. Coût total : ' },
+        { text: euro(loan.coutInterets + loan.coutAssurance), bold: true },
+        { text: '.' },
+      ]);
+    } else {
+      // Single loan: detailed mensualité explanation
+      paragraphs.push([
+        { text: 'Votre mensualité s\'établit à ' },
+        { text: euro(loan.mensualiteHorsAssurance), bold: true },
+        { text: ' hors assurance. ' },
+        ...(loan.tauxAssurance > 0 ? [
+          { text: `Avec l'assurance emprunteur (taux de ` },
+          { text: pct(loan.tauxAssurance), bold: true },
+          { text: ` calculée ${assurModeLabel}), votre mensualité totale atteint ` },
+          { text: euro(loan.mensualiteTotale), bold: true },
+          { text: '.' },
+        ] : [
+          { text: 'Aucune assurance emprunteur n\'est incluse dans cette simulation.' },
+        ]),
+      ]);
+    }
+  });
   
-  // ===== PARAGRAPH 1: Introduction et paramètres =====
+  // ===== SMOOTHING EXPLANATION =====
+  if (data.smoothingEnabled && isMultiLoan) {
+    const smoothingLabel = data.smoothingMode === 'duree' 
+      ? 'durée constante' 
+      : 'mensualité constante';
+    
+    paragraphs.push([
+      { text: 'Mécanisme de lissage : ', bold: true },
+      { text: `Afin d'optimiser votre budget mensuel, un lissage à ` },
+      { text: smoothingLabel, bold: true },
+      { text: ' a été appliqué à votre montage. ' },
+      { text: 'Ce mécanisme ajuste automatiquement les remboursements du prêt principal ' },
+      { text: 'pour compenser la fin des prêts complémentaires, ' },
+      { text: 'vous permettant de maintenir une charge financière régulière tout au long du financement.' },
+    ]);
+  }
+  
+  // ===== GLOBAL COSTS =====
   paragraphs.push([
-    { text: 'Votre projet de financement porte sur un emprunt de ' },
-    { text: euro(data.capitalEmprunte), bold: true },
-    { text: ' sur une durée de ' },
-    { text: formatDuree(data.dureeMois), bold: true },
-    { text: `. Il s'agit d'un crédit ` },
-    { text: creditTypeLabel, bold: true },
-    { text: ' au taux nominal annuel de ' },
-    { text: pct(data.tauxNominal), bold: true },
-    { text: '.' },
-  ]);
-  
-  // ===== PARAGRAPH 2: Mensualités =====
-  paragraphs.push([
-    { text: 'Votre mensualité s\'établit à ' },
-    { text: euro(data.mensualiteHorsAssurance), bold: true },
-    { text: ' hors assurance. ' },
-    ...(data.tauxAssurance > 0 ? [
-      { text: `Avec l'assurance emprunteur (taux de ` },
-      { text: pct(data.tauxAssurance), bold: true },
-      { text: ` calculée ${assurModeLabel}), votre mensualité totale atteint ` },
-      { text: euro(data.mensualiteTotale), bold: true },
-      { text: '.' },
-    ] : [
-      { text: 'Aucune assurance emprunteur n\'est incluse dans cette simulation.' },
-    ]),
-  ]);
-  
-  // ===== PARAGRAPH 3: Coûts détaillés =====
-  paragraphs.push([
-    { text: 'Sur la durée totale du prêt, le coût des intérêts s\'élève à ' },
+    { text: 'Sur la durée totale du financement, le coût des intérêts s\'élève à ' },
     { text: euro(data.coutTotalInterets), bold: true },
     { text: '. ' },
     ...(data.coutTotalAssurance > 0 ? [
@@ -134,41 +178,23 @@ function buildCreditAnnexeProse(data: CreditAnnexeData): Array<{ text: string; b
       { text: euro(data.coutTotalAssurance), bold: true },
       { text: '. ' },
     ] : []),
-    { text: 'Le coût total du crédit (intérêts' },
-    ...(data.coutTotalAssurance > 0 ? [{ text: ' + assurance' }] : []),
-    { text: ') s\'établit ainsi à ' },
+    { text: 'Le coût total du crédit s\'établit ainsi à ' },
     { text: euro(data.coutTotalCredit), bold: true },
     { text: '.' },
   ]);
   
-  // ===== PARAGRAPH 4: Total remboursé =====
+  // ===== TOTAL REMBOURSÉ =====
   paragraphs.push([
     { text: 'Au terme du remboursement, vous aurez versé un total de ' },
     { text: euro(data.totalRembourse), bold: true },
     { text: ', soit le capital emprunté (' },
-    { text: euro(data.capitalEmprunte), bold: true },
+    { text: euro(data.totalCapital), bold: true },
     { text: ') augmenté du coût du crédit (' },
     { text: euro(data.coutTotalCredit), bold: true },
     { text: ').' },
   ]);
   
-  // ===== PARAGRAPH 5: Type de crédit spécifique =====
-  if (data.creditType === 'amortissable') {
-    paragraphs.push([
-      { text: 'Avec un prêt amortissable, chaque mensualité comprend une part de capital et une part d\'intérêts. ' },
-      { text: 'La part de capital augmente progressivement tandis que celle des intérêts diminue, ' },
-      { text: 'le capital restant dû décroissant au fil des remboursements.' },
-    ]);
-  } else {
-    paragraphs.push([
-      { text: 'Avec un prêt in fine, vous ne remboursez que les intérêts pendant toute la durée du prêt. ' },
-      { text: 'Le capital emprunté (' },
-      { text: euro(data.capitalEmprunte), bold: true },
-      { text: ') est remboursé en une seule fois à l\'échéance du prêt.' },
-    ]);
-  }
-  
-  // ===== PARAGRAPH 6: Avertissement =====
+  // ===== AVERTISSEMENT =====
   paragraphs.push([
     { text: 'Cette simulation est fournie à titre indicatif et ne constitue pas une offre de prêt. ' },
     { text: 'Les conditions réelles dépendront de l\'établissement prêteur et de votre profil emprunteur. ' },

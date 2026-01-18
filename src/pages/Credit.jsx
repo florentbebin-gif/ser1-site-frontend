@@ -221,7 +221,7 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
 export default function Credit(){
 
 /* ---- THEME ---- */
-const { colors: themeColors } = useTheme()
+const { colors: themeColors, logo, setLogo } = useTheme()
 
 /* ---- ÉTATS ---- */
 const [startYM, setStartYM]         = useState(nowYearMonth()) // Date souscription prêt 1
@@ -974,24 +974,27 @@ const synthesePeriodes = useMemo(() => {
         c10: themeColors.c10,
       }
 
-      // Try to load logo from Supabase storage
-      let logoUrl = null
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          const { data } = await supabase.storage
-            .from('logos')
-            .createSignedUrl(`${user.id}/logo.png`, 60)
-          if (data?.signedUrl) {
-            logoUrl = data.signedUrl
+      // CRITICAL: Use logo from ThemeProvider (same as IR.jsx)
+      // Logo is stored as dataUri in user_metadata.cover_slide_url
+      let exportLogo = logo
+      if (!exportLogo) {
+        console.info('[Credit Export] Logo not in context, attempting to reload from user metadata...')
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user?.user_metadata?.cover_slide_url) {
+            exportLogo = user.user_metadata.cover_slide_url
+            setLogo(exportLogo)
+            console.info('[Credit Export] Logo reloaded successfully')
+          } else {
+            console.info('[Credit Export] No logo found in user metadata')
           }
+        } catch (logoError) {
+          console.warn('[Credit Export] Failed to reload logo:', logoError)
         }
-      } catch (logoError) {
-        console.warn('Logo loading failed, continuing without logo:', logoError)
       }
 
-      // Build amortization rows (annual aggregation)
-      const amortizationRows = aggregatedYears.map(row => ({
+      // Build amortization rows for TOTAL (annual aggregation)
+      const amortizationRowsTotal = aggregatedYears.map(row => ({
         periode: row.periode,
         interet: row.interet,
         assurance: row.assurance,
@@ -1001,25 +1004,116 @@ const synthesePeriodes = useMemo(() => {
         crd: row.crd,
       }))
 
-      // Build credit data for PPTX (utilise totaux tous prêts pour cohérence avec UI)
+      // Build per-loan amortization rows
+      const pret1AggregatedYears = aggregateToYearsFromRows(pret1Rows, startYM)
+      const amortizationRowsPret1 = pret1AggregatedYears.map(row => ({
+        periode: row.periode,
+        interet: row.interet,
+        assurance: row.assurance,
+        amort: row.amort,
+        annuite: row.mensu,
+        annuiteTotale: row.mensuTotal,
+        crd: row.crd,
+      }))
+
+      // Calculate total capital (all loans)
+      const totalCapital = effectiveCapitalPret1 + pretsPlus.reduce((s, p) => s + toNum(p.capital), 0)
+      
+      // Calculate max duration across all loans
+      const maxDureeMois = Math.max(N, ...pretsPlus.map(p => toNum(p.duree) || 0))
+
+      // Build loans array for multi-loan PPTX
+      const loans = [
+        {
+          index: 1,
+          capital: effectiveCapitalPret1,
+          dureeMois: N,
+          tauxNominal: taux,
+          tauxAssurance: tauxAssur,
+          creditType: creditType,
+          assuranceMode: assurMode,
+          mensualiteHorsAssurance: mensuHorsAssurance_base,
+          mensualiteTotale: mensuHorsAssurance_base + primeAssMensuellePret1,
+          coutInterets: pret1Interets,
+          coutAssurance: pret1Assurance,
+          amortizationRows: amortizationRowsPret1,
+        },
+        ...pretsPlus.map((p, idx) => {
+          const pRows = autresRows[idx] || []
+          const pAggregated = aggregateToYearsFromRows(pRows.filter(r => r), startYM)
+          const pInterets = pRows.reduce((s, row) => s + ((row?.interet) || 0), 0)
+          const pAssurance = pRows.reduce((s, row) => s + ((row?.assurance) || 0), 0)
+          return {
+            index: idx + 2,
+            capital: toNum(p.capital),
+            dureeMois: toNum(p.duree),
+            tauxNominal: Number(p.taux) || 0,
+            tauxAssurance: Number(p.tauxAssur) || 0,
+            creditType: p.type || creditType,
+            assuranceMode: p.assurMode || 'CRD',
+            mensualiteHorsAssurance: pRows[0]?.mensu || 0,
+            mensualiteTotale: pRows[0]?.mensuTotal || 0,
+            coutInterets: pInterets,
+            coutAssurance: pAssurance,
+            amortizationRows: pAggregated.map(row => ({
+              periode: row.periode,
+              interet: row.interet,
+              assurance: row.assurance,
+              amort: row.amort,
+              annuite: row.mensu,
+              annuiteTotale: row.mensuTotal,
+              crd: row.crd,
+            })),
+          }
+        })
+      ]
+
+      // Build payment periods for timeline visualization
+      const paymentPeriods = synthesePeriodes.map(p => ({
+        label: p.from,
+        mensualitePret1: p.p1,
+        mensualitePret2: p.p2,
+        mensualitePret3: p.p3,
+        total: p.p1 + p.p2 + p.p3,
+      }))
+
+      // Build credit data for PPTX with full multi-loan support
       const creditData = {
-        capitalEmprunte: effectiveCapitalPret1,
-        dureeMois: N,
+        // Global totals
+        totalCapital,
+        maxDureeMois,
+        coutTotalInterets: totalInterets,
+        coutTotalAssurance: totalAssurance,
+        coutTotalCredit: coutTotalCredit,
+        
+        // Smoothing info
+        smoothingEnabled: lisserPret1 && pretsPlus.length > 0,
+        smoothingMode: lissageMode,
+        
+        // Per-loan data
+        loans,
+        
+        // Payment periods timeline
+        paymentPeriods,
+        
+        // Total amortization (aggregated all loans)
+        amortizationRows: amortizationRowsTotal,
+        
+        // Legacy fields for backward compatibility
+        capitalEmprunte: totalCapital,
+        dureeMois: maxDureeMois,
         tauxNominal: taux,
         tauxAssurance: tauxAssur,
         mensualiteHorsAssurance: mensuHorsAssurance_base,
         mensualiteTotale: mensuHorsAssurance_base + primeAssMensuelle,
-        coutTotalInterets: totalInterets,      // Totaux tous prêts
-        coutTotalAssurance: totalAssurance,    // Totaux tous prêts
-        coutTotalCredit: coutTotalCredit,      // Totaux tous prêts
         creditType: creditType,
         assuranceMode: assurMode,
-        amortizationRows,
-        clientName: undefined, // Could be passed from props/context if available
+        
+        clientName: undefined,
       }
 
-      // Build deck spec
-      const deck = buildCreditStudyDeck(creditData, pptxColors, logoUrl)
+      // Build deck spec with logo from ThemeProvider
+      const deck = buildCreditStudyDeck(creditData, pptxColors, exportLogo)
 
       // Generate filename with date
       const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '')

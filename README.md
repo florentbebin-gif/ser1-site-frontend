@@ -985,58 +985,98 @@ const SAFETY_CHECK = {
 
 ---
 
-## 💳 Slide Crédit - Synthèse Premium
+## 💳 Slide Crédit - Synthèse Premium (Multi-Prêts)
 
 ### Structure du deck Crédit
 
-Le deck Crédit suit le même pattern Serenity que l'IR, avec des slides adaptées au contexte du financement :
+Le deck Crédit supporte les montages **multi-prêts** (jusqu'à 3 prêts) avec **lissage** optionnel :
 
+**Mono-prêt (1 prêt) :**
 ```
-1. Cover        → "Simulation Crédit Immobilier" + NOM Prénom
-2. Chapter 1    → "Votre projet de financement"
-3. Synthesis    → 4 KPIs + HERO (Coût total) + barre visuelle Capital/Coût
-4. Chapter 2    → "Annexes"
-5. Annexe       → Explication rédigée style ingénieur patrimonial
-6. Amortization → Tableau années en colonnes (paginé si > 8 ans)
-7. End          → Mentions légales crédit
+1. Cover          → "Simulation Crédit Immobilier" + NOM Prénom
+2. Chapter 1      → "Votre projet de financement"
+3. Synthesis      → 4 KPIs + HERO (Coût total) + barre Capital/Coût
+4. Chapter 2      → "Annexes"
+5. Annexe         → Explication rédigée style ingénieur patrimonial
+6+ Amortization   → Tableau années en colonnes (paginé si > 8 ans)
+N. End            → Mentions légales crédit
 ```
 
-### Slide Synthèse Crédit (Slide 3)
+**Multi-prêts (2-3 prêts) :**
+```
+1. Cover          → "Simulation Crédit Immobilier" + NOM Prénom
+2. Chapter 1      → "Votre montage multi-prêts"
+3. Global Synth   → Vue d'ensemble multi-prêts + timeline paliers + badge lissage
+4. Loan 1 Synth   → Synthèse Prêt N°1 (détail)
+5. Loan 2 Synth   → Synthèse Prêt N°2 (si existe)
+6. Loan 3 Synth   → Synthèse Prêt N°3 (si existe)
+7. Chapter 2      → "Annexes"
+8. Annexe         → Global + per-loan + lissage (prose patrimoniale)
+9+ Amortization   → Tableau multi-prêts (paginé)
+N. End            → Mentions légales crédit
+```
 
-Layout ultra-lisible en **3 secondes** :
+### Slide Synthèse Globale (Multi-Prêts)
+
+Layout ultra-lisible en **3 secondes** pour montages multi-prêts :
 
 | Zone | Contenu | Style |
 |------|---------|-------|
-| **KPIs** | Capital, Durée, Mensualité, Taux | 4 colonnes avec icônes |
-| **HERO** | Coût total du crédit | 32pt bold, centré |
+| **KPIs** | Capital total, Durée max, Coût intérêts, Coût assurance | 4 colonnes icônes |
+| **Timeline** | Évolution mensualités (paliers visuels) | Barres horizontales |
+| **Split Bar** | Répartition des prêts + badge lissage | Segments colorés |
+| **HERO** | Coût total du crédit | 22pt bold, centré |
+
+### Slide Synthèse Par Prêt
+
+Même layout que la synthèse mono-prêt, avec titre "SYNTHÈSE PRÊT N°X" :
+
+| Zone | Contenu | Style |
+|------|---------|-------|
+| **KPIs** | Capital, Durée, Taux, Mensualité | 4 colonnes icônes |
 | **Visual** | Barre Capital vs Coût | Split bar proportionnelle |
+| **HERO** | Coût total du prêt | 24pt bold, centré |
 
-### Slides Amortissement (Slides 6+)
+### Annexe Multi-Prêts
 
-- **Orientation horizontale** : Années en colonnes pour lecture rapide
-- **Pagination automatique** : Max 8 années par slide
-- **Métriques en lignes** : Annuité, Intérêts, Assurance, Capital amorti, CRD
-- **Style premium** : Header thème, alternance lignes, bordures fines
+L'annexe inclut désormais :
+- **Introduction globale** : Capital total, durée max, nombre de prêts
+- **Détail par prêt** : Caractéristiques de chaque prêt (Prêt N°1, N°2, N°3)
+- **Mécanisme de lissage** (si activé) : Explication pédagogique du lissage
+- **Coûts globaux** : Intérêts + assurance + total remboursé
 
 ### Fichiers concernés
 
 - **Builders** :
-  - `src/pptx/slides/buildCreditSynthesis.ts`
-  - `src/pptx/slides/buildCreditAnnexe.ts`
+  - `src/pptx/slides/buildCreditSynthesis.ts` (mono-prêt legacy)
+  - `src/pptx/slides/buildCreditGlobalSynthesis.ts` (multi-prêts)
+  - `src/pptx/slides/buildCreditLoanSynthesis.ts` (per-loan)
+  - `src/pptx/slides/buildCreditAnnexe.ts` (multi-loan aware)
   - `src/pptx/slides/buildCreditAmortization.ts`
 - **Deck builder** : `src/pptx/presets/creditDeckBuilder.ts`
-- **Types** : `src/pptx/theme/types.ts` (CreditSynthesisSlideSpec, etc.)
+- **Types** : `src/pptx/theme/types.ts` (LoanSummary, PaymentPeriod, CreditGlobalSynthesisSlideSpec, etc.)
 
 ### Source des données
 
-Les valeurs PPTX proviennent **exactement** de `Credit.jsx` :
+Les valeurs PPTX proviennent **exactement** de `Credit.jsx` (source de vérité UI) :
 
 ```typescript
-// ✅ CORRECT : Réutiliser les valeurs calculées dans l'UI
-capitalEmprunte: effectiveCapitalPret1,
-mensualiteTotale: mensuHorsAssurance_base + primeAssMensuelle,
-coutTotalCredit: pret1Interets + pret1Assurance,
-amortizationRows: aggregatedYears.map(...)
+// ✅ Multi-prêts : Aggrégation correcte
+totalCapital: effectiveCapitalPret1 + pretsPlus.reduce((s, p) => s + toNum(p.capital), 0),
+loans: [{ index: 1, capital: effectiveCapitalPret1, ... }, ...pretsPlus.map(...)],
+paymentPeriods: synthesePeriodes.map(...),
+smoothingEnabled: lisserPret1 && pretsPlus.length > 0,
+smoothingMode: lissageMode,
+```
+
+### Logo Cover
+
+Le logo est chargé depuis `user_metadata.cover_slide_url` (même source que IR) via `useTheme()` :
+
+```typescript
+const { colors: themeColors, logo, setLogo } = useTheme()
+// ...
+const deck = buildCreditStudyDeck(creditData, pptxColors, exportLogo)
 ```
 
 ---
@@ -1054,8 +1094,10 @@ Le système de génération PowerPoint suit une architecture modulaire permettan
 | **Content** | Page de contenu avec visuels (KPIs, graphiques) | `buildContent.ts` |
 | **IR Synthesis** | Synthèse IR (KPIs + barre TMI + impôt) | `buildIrSynthesis.ts` |
 | **IR Annexe** | Détail calcul IR rédigé | `buildIrAnnexe.ts` |
-| **Credit Synthesis** | Synthèse Crédit (KPIs + HERO + barre Capital/Coût) | `buildCreditSynthesis.ts` |
-| **Credit Annexe** | Détail crédit rédigé | `buildCreditAnnexe.ts` |
+| **Credit Synthesis** | Synthèse Crédit mono-prêt (KPIs + HERO + barre Capital/Coût) | `buildCreditSynthesis.ts` |
+| **Credit Global Synthesis** | Synthèse multi-prêts (timeline + split bar + lissage) | `buildCreditGlobalSynthesis.ts` |
+| **Credit Loan Synthesis** | Synthèse par prêt (Prêt N°1/2/3) | `buildCreditLoanSynthesis.ts` |
+| **Credit Annexe** | Détail crédit multi-prêts + lissage (prose patrimoniale) | `buildCreditAnnexe.ts` |
 | **Credit Amortization** | Tableau amortissement paginé (années en colonnes) | `buildCreditAmortization.ts` |
 | **End** | Slide de fin avec mentions légales | `buildEnd.ts` |
 

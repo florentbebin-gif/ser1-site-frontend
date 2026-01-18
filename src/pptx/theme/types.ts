@@ -194,7 +194,72 @@ export type EndSlideSpec = {
 };
 
 /**
- * Credit Synthesis Slide Specification (premium KPI layout)
+ * Loan Summary for multi-loan PPTX
+ */
+export type LoanSummary = {
+  index: number;  // 1, 2, or 3
+  capital: number;
+  dureeMois: number;
+  tauxNominal: number;
+  tauxAssurance: number;
+  creditType: 'amortissable' | 'infine';
+  assuranceMode: 'CI' | 'CRD';
+  mensualiteHorsAssurance: number;
+  mensualiteTotale: number;
+  coutInterets: number;
+  coutAssurance: number;
+  amortizationRows?: CreditAmortizationRow[];
+};
+
+/**
+ * Payment Period for timeline visualization
+ */
+export type PaymentPeriod = {
+  label: string;  // e.g. "À partir de 01/2025"
+  mensualitePret1: number;
+  mensualitePret2: number;
+  mensualitePret3: number;
+  total: number;
+};
+
+/**
+ * Credit Global Synthesis Slide Specification (multi-loan overview)
+ */
+export type CreditGlobalSynthesisSlideSpec = {
+  type: 'credit-global-synthesis';
+  totalCapital: number;
+  maxDureeMois: number;
+  coutTotalInterets: number;
+  coutTotalAssurance: number;
+  coutTotalCredit: number;
+  loans: LoanSummary[];
+  paymentPeriods: PaymentPeriod[];
+  smoothingEnabled: boolean;
+  smoothingMode?: 'mensu' | 'duree';
+};
+
+/**
+ * Credit Loan Synthesis Slide Specification (per-loan detail)
+ */
+export type CreditLoanSynthesisSlideSpec = {
+  type: 'credit-loan-synthesis';
+  loanIndex: number;  // 1, 2, or 3
+  capitalEmprunte: number;
+  dureeMois: number;
+  tauxNominal: number;
+  tauxAssurance: number;
+  mensualiteHorsAssurance: number;
+  mensualiteTotale: number;
+  coutTotalInterets: number;
+  coutTotalAssurance: number;
+  coutTotalCredit: number;
+  creditType: 'amortissable' | 'infine';
+  assuranceMode: 'CI' | 'CRD';
+};
+
+/**
+ * Credit Synthesis Slide Specification (legacy - single loan)
+ * @deprecated Use CreditGlobalSynthesisSlideSpec and CreditLoanSynthesisSlideSpec instead
  */
 export type CreditSynthesisSlideSpec = {
   type: 'credit-synthesis';
@@ -212,22 +277,31 @@ export type CreditSynthesisSlideSpec = {
 };
 
 /**
- * Credit Annexe Slide Specification (detailed prose)
+ * Credit Annexe Slide Specification (detailed prose - multi-loan support)
  */
 export type CreditAnnexeSlideSpec = {
   type: 'credit-annexe';
-  capitalEmprunte: number;
-  dureeMois: number;
-  tauxNominal: number;
-  tauxAssurance: number;
-  mensualiteHorsAssurance: number;
-  mensualiteTotale: number;
+  // Global totals
+  totalCapital: number;
+  maxDureeMois: number;
   coutTotalInterets: number;
   coutTotalAssurance: number;
   coutTotalCredit: number;
-  creditType: 'amortissable' | 'infine';
-  assuranceMode: 'CI' | 'CRD';
-  totalRembourse: number;    // capital + coût total
+  totalRembourse: number;
+  // Multi-loan data
+  loans: LoanSummary[];
+  // Smoothing
+  smoothingEnabled: boolean;
+  smoothingMode?: 'mensu' | 'duree';
+  // Legacy single-loan fields (for backward compatibility)
+  capitalEmprunte?: number;
+  dureeMois?: number;
+  tauxNominal?: number;
+  tauxAssurance?: number;
+  mensualiteHorsAssurance?: number;
+  mensualiteTotale?: number;
+  creditType?: 'amortissable' | 'infine';
+  assuranceMode?: 'CI' | 'CRD';
 };
 
 /**
@@ -264,6 +338,8 @@ export type StudyDeckSpec = {
     | IrSynthesisSlideSpec 
     | IrAnnexeSlideSpec
     | CreditSynthesisSlideSpec
+    | CreditGlobalSynthesisSlideSpec
+    | CreditLoanSynthesisSlideSpec
     | CreditAnnexeSlideSpec
     | CreditAmortizationSlideSpec
   >;

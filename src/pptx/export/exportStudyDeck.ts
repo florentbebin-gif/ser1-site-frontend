@@ -14,6 +14,8 @@ import type {
   IrSynthesisSlideSpec,
   IrAnnexeSlideSpec,
   CreditSynthesisSlideSpec,
+  CreditGlobalSynthesisSlideSpec,
+  CreditLoanSynthesisSlideSpec,
   CreditAnnexeSlideSpec,
   CreditAmortizationSlideSpec,
   PptxThemeRoles 
@@ -26,6 +28,8 @@ import { buildCover, buildChapter, buildContent, buildEnd } from '../slides';
 import { buildIrSynthesis } from '../slides/buildIrSynthesis';
 import { buildIrAnnexe } from '../slides/buildIrAnnexe';
 import { buildCreditSynthesis } from '../slides/buildCreditSynthesis';
+import { buildCreditGlobalSynthesis } from '../slides/buildCreditGlobalSynthesis';
+import { buildCreditLoanSynthesis } from '../slides/buildCreditLoanSynthesis';
 import { buildCreditAnnexe } from '../slides/buildCreditAnnexe';
 import { buildCreditAmortization } from '../slides/buildCreditAmortization';
 import { injectThemeColors } from '../theme/themeBuilder';
@@ -226,7 +230,7 @@ export async function exportStudyDeck(
         childrenCount: annexeSpec.childrenCount,
       }, ctx.theme, ctx, slideIndex);
     } else if (slideSpec.type === 'credit-synthesis') {
-      // Credit Synthesis slide (premium visual)
+      // Credit Synthesis slide (premium visual - single loan)
       const creditSynthSpec = slideSpec as CreditSynthesisSlideSpec;
       buildCreditSynthesis(pptx, {
         capitalEmprunte: creditSynthSpec.capitalEmprunte,
@@ -241,23 +245,18 @@ export async function exportStudyDeck(
         creditType: creditSynthSpec.creditType,
         assuranceMode: creditSynthSpec.assuranceMode,
       }, ctx.theme, ctx, slideIndex);
+    } else if (slideSpec.type === 'credit-global-synthesis') {
+      // Credit Global Synthesis slide (multi-loan overview)
+      const globalSynthSpec = slideSpec as CreditGlobalSynthesisSlideSpec;
+      buildCreditGlobalSynthesis(pptx, globalSynthSpec, ctx.theme, ctx, slideIndex);
+    } else if (slideSpec.type === 'credit-loan-synthesis') {
+      // Credit Per-Loan Synthesis slide
+      const loanSynthSpec = slideSpec as CreditLoanSynthesisSlideSpec;
+      buildCreditLoanSynthesis(pptx, loanSynthSpec, ctx.theme, ctx, slideIndex);
     } else if (slideSpec.type === 'credit-annexe') {
-      // Credit Annexe slide (detailed prose)
+      // Credit Annexe slide (detailed prose - multi-loan aware)
       const creditAnnexeSpec = slideSpec as CreditAnnexeSlideSpec;
-      buildCreditAnnexe(pptx, {
-        capitalEmprunte: creditAnnexeSpec.capitalEmprunte,
-        dureeMois: creditAnnexeSpec.dureeMois,
-        tauxNominal: creditAnnexeSpec.tauxNominal,
-        tauxAssurance: creditAnnexeSpec.tauxAssurance,
-        mensualiteHorsAssurance: creditAnnexeSpec.mensualiteHorsAssurance,
-        mensualiteTotale: creditAnnexeSpec.mensualiteTotale,
-        coutTotalInterets: creditAnnexeSpec.coutTotalInterets,
-        coutTotalAssurance: creditAnnexeSpec.coutTotalAssurance,
-        coutTotalCredit: creditAnnexeSpec.coutTotalCredit,
-        creditType: creditAnnexeSpec.creditType,
-        assuranceMode: creditAnnexeSpec.assuranceMode,
-        totalRembourse: creditAnnexeSpec.totalRembourse,
-      }, ctx.theme, ctx, slideIndex);
+      buildCreditAnnexe(pptx, creditAnnexeSpec, ctx.theme, ctx, slideIndex);
     } else if (slideSpec.type === 'credit-amortization') {
       // Credit Amortization slide (paginated table)
       const amortSpec = slideSpec as CreditAmortizationSlideSpec;

@@ -13,5 +13,7 @@ export { buildIrSynthesis } from './buildIrSynthesis';
 export { buildIrAnnexe } from './buildIrAnnexe';
 
 export { buildCreditSynthesis } from './buildCreditSynthesis';
+export { buildCreditGlobalSynthesis } from './buildCreditGlobalSynthesis';
+export { buildCreditLoanSynthesis } from './buildCreditLoanSynthesis';
 export { buildCreditAnnexe } from './buildCreditAnnexe';
 export { buildCreditAmortization, buildAllCreditAmortizationSlides } from './buildCreditAmortization';
