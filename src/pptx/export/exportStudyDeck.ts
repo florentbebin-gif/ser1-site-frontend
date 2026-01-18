@@ -191,6 +191,9 @@ export async function exportStudyDeck(
         irNet: synthesisSpec.irNet,
         taxablePerPart: synthesisSpec.taxablePerPart,
         bracketsDetails: synthesisSpec.bracketsDetails,
+        // TMI details (MUST use same source as UI - no recalculation)
+        tmiBaseGlobal: synthesisSpec.tmiBaseGlobal,
+        tmiMarginGlobal: synthesisSpec.tmiMarginGlobal,
       }, ctx.theme, ctx, slideIndex);
     } else if (slideSpec.type === 'ir-annexe') {
       // IR Annexe slide (detailed calculation prose)
@@ -206,6 +209,8 @@ export async function exportStudyDeck(
         decote: annexeSpec.decote,
         qfAdvantage: annexeSpec.qfAdvantage,
         creditsTotal: annexeSpec.creditsTotal,
+        // PFU 12.8% (MUST use same source as UI)
+        pfuIr: annexeSpec.pfuIr,
         cehr: annexeSpec.cehr,
         cdhr: annexeSpec.cdhr,
         psFoncier: annexeSpec.psFoncier,
