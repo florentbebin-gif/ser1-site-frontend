@@ -1,3 +1,52 @@
+- `src/utils/xlsxBuilder.ts` : Génère les `.xlsx` (IR & Crédit) avec feuille `Parameters` + résumés stylés. Utilise JSZip + `validateXlsxBlob` pour éviter les archives corrompues / mismatch extension.
+
+### Exports Excel — Règles de style
+
+- **Structure IR** : `Paramètres` (inputs), `Synthèse impôts` (résumé), `Détails calculs` (tranches).
+- **Structure Crédit** : `Paramètres`, `Synthèse globale`, `Prêt n` (jusqu'à 3), colonnes assurance & capitaux décès alignées sur moteur.
+- **Style commun** :
+  - Formats `#,##0 €`, `0.00 %`, alignements cohérents
+  - Largeurs auto + minWidth forcé pour textes
+  - Headers (fond accent, texte contrasté)
+  - Totaux surlignés (`bold`, `borderTop`)
+- **Validation** : `buildXlsxBlob` + `validateXlsxBlob` (refus d'un blob dont le header ZIP n'est pas `PK`).
+
+## 🔧 Troubleshooting / Correctifs récents
+
+| Date | Problème | Cause racine | Fix | Validation |
+|------|----------|--------------|-----|------------|
+| 19 jan 2026 | Crash `/sim/credit` + `/sim/ir` (« useRef is not defined ») | Hook utilisé sans import dans `Credit.jsx` / `Ir.jsx` | Ajout `useRef` dans les imports React | `npm run build`, navigation `/sim/credit` & `/sim/ir` |
+
+> Rappel : même en runtime automatique React 18, **tous** les hooks (`useRef`, `useMemo`, etc.) doivent être importés explicitement.
+
+## ✅ Checklists de validation
+
+### PPTX Serenity (avant merge)
+- [ ] Export IR et Crédit générés et ouverts dans PowerPoint sans avertissement
+- [ ] Aucun overlap footer / titres (contrôle visuel + logs helpers)
+- [ ] `addTextFr` utilisé partout (langue `fr-FR` confirmée)
+- [ ] Couleurs respectent `resolvePptxColors` (pas d'hex arbitraire)
+- [ ] Pagination amortissement & annexes complètes
+
+### Excel (IR & Crédit)
+- [ ] Le `.xlsx` téléchargé s'ouvre sans message de corruption
+- [ ] Formats € / % + colonnes ajustées automatiquement
+- [ ] Tous les onglets requis remplis (Paramètres / Synthèse / Détails / Prêts)
+- [ ] Totaux alignés avec l'UI (mensualités, TMI, capitaux décès)
+- [ ] `validateXlsxBlob()` passe (header `PK`)
+### Règles immuables (source de vérité)
+
+1. **Police** : Arial partout, pilotée par `TYPO` dans `designSystem/serenity.ts` (ne pas introduire d'autre fontFace).
+2. **Langue de vérification** : `lang = 'fr-FR'` forcé via `addTextFr()` pour 100% des blocs (IR, Crédit, futurs exports).
+3. **Couleurs** : seules les couleurs issues du thème sont autorisées (blanc hardcodé toléré). Toute nouvelle couleur doit passer par `resolvePptxColors`.
+4. **Zones protégées** : Titres/sous-titres/footer gérés par les helpers. Aucune insertion libre dans `LAYOUT_ZONES.*` réservés.
+5. **Safety checks** :
+   - `ensureNoOverlap()` pour les cartons multi-blocs
+   - Fallback icônes/images (`addBusinessIcon`, `applyChapterImage`) déjà couverts par `addTextFr`
+   - Pagination amortissement (1 slide = 14 lignes max) obligatoire
+
+> Toute PR PPTX doit mentionner la vérification de ces 5 règles.
+
 # SER1 — Audit Patrimonial Express + Stratégie Guidée
 
 Application web interne pour CGP permettant :
@@ -148,7 +197,11 @@ ser1/
 - **PptxGenJS** : Génération de présentations
 - **Design System** : Thème SER1, layouts standards
 - **Templates** : Audit, Stratégie, IR
-- **Règle immuable** : tout texte PPTX doit passer par `addTextFr` (langue de vérification **fr-FR** obligatoire)
+- **Règles immuables** :
+  - Tout texte PPTX doit passer par `addTextFr` (langue de vérification **fr-FR** forcée + Arial par défaut)
+  - Pas de couleurs hex hardcodées (sauf blanc `#FFFFFF` et variantes littérales)
+  - Pas d'écriture directe dans les zones protégées (titre, sous-titre, footer) : utiliser les helpers `addHeader`, `addFooter`, etc.
+  - Toute nouvelle slide doit intégrer les safety checks (no overlap, textes tronqués détectés, fallback icônes/images déjà en place)
 
 ---
 
@@ -373,8 +426,9 @@ npm run typecheck
 - Calculs détaillés avec warnings
 
 ### Simulateur IR
-- Export Excel premium en 3 onglets : **Paramètres**, **Synthèse impôts**, **Détails calculs**
-- Formats € / % homogènes, en-têtes stylés et colonnes ajustées
+- Export Excel premium en 3 onglets : **Paramètres** (entrées + fiscal settings), **Synthèse impôts** (TMI, effort, graphiques), **Détails calculs** (tranches + IR final)
+- Formats € / % homogènes, en-têtes stylés et colonnes ajustées (autoWidth, alignements, header gris clair)
+- Génération `.xlsx` via `buildXlsxBlob()` (Zip/PK valide) + `validateXlsxBlob()` pour refuser toute archive corrompue
 
 ### Simulateur Crédit
 - Crédit amortissable ou in fine
@@ -383,8 +437,11 @@ npm run typecheck
 - Tableaux d'amortissement mensuels/annuels avec colonnes assurance et capitaux décès
 - Prêts additionnels (max 2) avec paramètres d'assurance individuels
 - Calcul unifié des capitaux décès (source de vérité unique)
+- Export PPTX Serenity : slide 3 = synthèse globale multi-prêts (histogrammes assurance + lissage), slides "prêt par prêt", annexe narrative, amortissement global paginé (fusion multi-prêts)
 - Exports Excel et PowerPoint avec totaux tous prêts (Excel inclut capitaux décès)
-- Export Excel **.xlsx valide** (fichier ZIP/PK, ouverture sans avertissement)
+- Export Excel **.xlsx valide** (fichier ZIP/PK, ouverture sans avertissement) — onglets : **Paramètres**, **Synthèse globale**, **Prêt 1**, **Prêt 2**, **Prêt 3** (si existants)
+  - Formats monétaires/percent, largeurs figées, header contrasté
+  - Blob binaire généré par `buildXlsxBlob()` (JSZip contrôlé) puis validé via `validateXlsxBlob()` avant téléchargement
 
 ### Gestion des données
 - **Sauvegarde** : Fichier `.ser1` avec état complet
