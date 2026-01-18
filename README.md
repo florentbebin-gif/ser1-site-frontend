@@ -73,19 +73,28 @@ SER1/
 │
 ├── 📁 config/                     # Configuration locale
 │   └── 📁 supabase/                # Config Supabase locale
-│       ├── 📄 config.toml         # Config projet Supabase
-│       └── 📁 functions/          # Fonctions edge
 │
-├── 📁 tools/                      # Outils de développement
-│   └── 📁 scripts/                # Scripts utilitaires
-│       ├── 📄 admin-smoke.ps1     # Script admin PowerShell
-│       ├── � validate_ir_excel.mjs # Validation exports IR
-│       └── � normalize-business-icons.mjs # Normalisation icônes
+├── tools/                      # Outils de développement
+│   └── scripts/                # Scripts utilitaires
+│       ├── admin-smoke.ps1     # Script admin PowerShell
+│       ├── validate_ir_excel.mjs # Validation exports IR
+│       └── normalize-business-icons.mjs # Normalisation icônes
 │
-├── 📁 docs/                       # Documentation et exports
-│   ├── 📄 *.xlsx                  # Fichiers Excel exemples
-│   └── 📄 brainstorming-session-results.md
+├── docs/                       # Documentation et exports
+│   ├── *.xlsx                  # Fichiers Excel exemples
+│   └── brainstorming-session-results.md
 │
+├── public/                     # Fichiers statiques
+│   ├── ui/                      # Assets UI
+│   │   └── login/
+│   │       └── login-bg.png    # Fond d'écran login
+│   └── pptx/                    # Assets PowerPoint
+│       ├── chapters/            # Images chapitres (max 10)
+│       └── icons/               # Icônes PPTX (générées depuis src/icons/business/svg)
+├── dist/                       # Build de production
+├── node_modules/               # Dépendances npm
+├── .vscode/                    # Configuration VS Code
+├── .windsurf/                  # Configuration Windsurf
 ├── 📁 public/                     # Fichiers statiques
 │   ├── 📁 ui/                      # Assets UI
 │   │   └── 📁 login/
@@ -196,7 +205,6 @@ Via l'éditeur SQL Supabase :
 |-------|-------------|
 | `profiles` | Utilisateurs + rôle admin |
 | `tax_settings` | Paramètres fiscaux (JSONB) |
-| `profiles` | Profils utilisateurs (rôles) |
 | `issue_reports` | Rapports de bugs |
 
 ### 6) Sécurité (RLS)
