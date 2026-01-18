@@ -9,8 +9,8 @@ Application web interne pour CGP permettant :
 - la **gestion centralisée de paramètres** (fiscalité, couleurs, logo d'étude),
 - la **conformité RGPD** (pas de stockage serveur des noms clients, export/import JSON local).
 
-✅ Projet **100 % frontend**  
-✅ Basé sur **React 18 + TypeScript + Vite 5 + Supabase**  
+✅ **Application frontend**, backend managé via Supabase (Auth/DB/Storage/Edge Functions)  
+✅ Basé sur **React 18 + Vite 5**, codebase mix JS/TS (migration progressive)  
 ✅ Moteur de calcul traçable avec warnings  
 ✅ 44 tests unitaires (Vitest)  
 ✅ Déploiement automatisé sur Vercel  
@@ -95,18 +95,6 @@ SER1/
 ├── node_modules/               # Dépendances npm
 ├── .vscode/                    # Configuration VS Code
 ├── .windsurf/                  # Configuration Windsurf
-├── 📁 public/                     # Fichiers statiques
-│   ├── 📁 ui/                      # Assets UI
-│   │   └── 📁 login/
-│   │       └── 📄 login-bg.png    # Fond d'écran login
-│   └── 📁 pptx/                    # Assets PowerPoint
-│       ├── 📁 chapters/            # Images chapitres (max 10)
-│       └── 📁 icons/                    # Icônes PPTX (générées depuis src/icons/business/svg)
-├── 📁 dist/                       # Build de production
-├── 📁 node_modules/               # Dépendances npm
-├── 📁 .vscode/                    # Configuration VS Code
-├── 📁 .windsurf/                  # Configuration Windsurf
-│
 ├── 📄 *.sql                       # Scripts SQL Supabase
 └── 📄 *.md                        # Documentation technique
 
@@ -266,8 +254,9 @@ cd SER1
 npm install
 
 # Configurer les variables d'environnement
-cp .env.example .env
-# Éditer .env avec vos clés Supabase
+# Créer un fichier .env à la racine avec les variables suivantes :
+# VITE_SUPABASE_URL=https://VOTRE-PROJET.supabase.co
+# VITE_SUPABASE_ANON_KEY=eyJ...
 ```
 
 ### Variables d'environnement
