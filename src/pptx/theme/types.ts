@@ -232,6 +232,7 @@ export type CreditGlobalSynthesisSlideSpec = {
   coutTotalInterets: number;
   coutTotalAssurance: number;
   coutTotalCredit: number;
+  capitalDecesInitial?: number;
   loans: LoanSummary[];
   paymentPeriods: PaymentPeriod[];
   smoothingEnabled: boolean;

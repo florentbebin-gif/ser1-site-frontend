@@ -379,28 +379,36 @@ const yearLabel =
   const pfuRateIR = toNum(taxSettings?.pfu?.[yearKey]?.rateIR, 12.8);
   const psPatrimonyRate = toNum(psSettings?.patrimony?.[yearKey]?.totalRate, 17.2);
 
-  // Export Excel très simplifié
-  function buildWorksheetXmlVertical(title, header, rows) {
-    const aoa = [header, ...rows];
-    const esc = (s) =>
-      String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+  const cell = (v, style) => ({ v, style });
+  const escXml = (s) =>
+    String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
 
-    const rowXml = (cells) =>
-      `<Row>${cells
-        .map(
-          (v) =>
-            `<Cell><Data ss:Type="${
-              typeof v === 'number' ? 'Number' : 'String'
-            }">${esc(v)}</Data></Cell>`
-        )
-        .join('')}</Row>`;
+  const normalizeCell = (c) =>
+    c && typeof c === 'object' && Object.prototype.hasOwnProperty.call(c, 'v')
+      ? c
+      : { v: c ?? '', style: undefined };
+
+  const rowXml = (cells) =>
+    `<Row>${cells
+      .map((raw) => {
+        const { v, style } = normalizeCell(raw);
+        const type = typeof v === 'number' ? 'Number' : 'String';
+        return `<Cell${style ? ` ss:StyleID="${style}"` : ''}><Data ss:Type="${type}">${escXml(v)}</Data></Cell>`;
+      })
+      .join('')}</Row>`;
+
+  function buildWorksheetXmlVertical(title, header, rows, options = {}) {
+    const aoa = [header, ...rows];
+    const cols = options.columnWidths || [];
+    const colXml = cols.map((w) => `<Column ss:Width="${w}"/>`).join('');
 
     return `
-      <Worksheet ss:Name="${esc(title)}">
+      <Worksheet ss:Name="${escXml(title)}">
         <Table>
+          ${colXml}
           ${aoa.map((r) => rowXml(r)).join('')}
         </Table>
       </Worksheet>`;
@@ -413,32 +421,119 @@ const yearLabel =
         return;
       }
 
-      const header = ['Champ', 'Valeur'];
-      const rows = [];
+      const headerFill = (colors?.c1 || '#2F4A6D').replace('#', '');
+      const sectionFill = (colors?.c7 || '#E5EAF2').replace('#', '');
 
-      rows.push(['Barème', yearLabel]);
-      rows.push([
-        'Situation familiale',
-        status === 'couple' ? 'Marié / Pacsé' : 'Célibataire / Veuf / Divorcé',
-      ]);
-      rows.push(['Nombre de parts', result.partsNb]);
-      rows.push([
-        'Zone géographique',
-        location === 'metropole'
-          ? 'Métropole'
-          : location === 'gmr'
-          ? 'Guadeloupe / Martinique / Réunion'
-          : 'Guyane / Mayotte',
-      ]);
+      const stylesXml = `
+        <Styles>
+          <Style ss:ID="sHeader">
+            <Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/>
+            <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+            <Interior ss:Color="#${headerFill}" ss:Pattern="Solid"/>
+          </Style>
+          <Style ss:ID="sSection">
+            <Font ss:FontName="Arial" ss:Size="10" ss:Bold="1"/>
+            <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+            <Interior ss:Color="#${sectionFill}" ss:Pattern="Solid"/>
+          </Style>
+          <Style ss:ID="sText">
+            <Font ss:FontName="Arial" ss:Size="10"/>
+            <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+          </Style>
+          <Style ss:ID="sCenter">
+            <Font ss:FontName="Arial" ss:Size="10"/>
+            <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+          </Style>
+          <Style ss:ID="sMoney">
+            <Font ss:FontName="Arial" ss:Size="10"/>
+            <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+            <NumberFormat ss:Format="#\,##0 \"€\""/>
+          </Style>
+          <Style ss:ID="sPercent">
+            <Font ss:FontName="Arial" ss:Size="10"/>
+            <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+            <NumberFormat ss:Format="0.00%"/>
+          </Style>
+        </Styles>`;
 
-      rows.push(['Revenus imposables total', euro0(result.totalIncome)]);
-      rows.push(['Revenu imposable du foyer', euro0(result.taxableIncome)]);
-      rows.push(['TMI', `${result.tmiRate || 0} %`]);
-      rows.push(['Impôt sur le revenu', euro0(result.irNet || 0)]);
-      rows.push(['CEHR', euro0(result.cehr)]);
-      rows.push(['CDHR', euro0(result.cdhr)]);
-      rows.push(['PS sur les revenus fonciers', euro0(result.psTotal)]);
-      rows.push(['Imposition totale (IR + CEHR + CDHR + PS)', euro0(result.totalTax)]);
+      const headerParams = [cell('Champ', 'sHeader'), cell('Valeur', 'sHeader')];
+      const rowsParams = [];
+
+      rowsParams.push([cell('Paramètres fiscaux', 'sSection'), cell('', 'sSection')]);
+      rowsParams.push([cell('Barème', 'sText'), cell(yearLabel, 'sText')]);
+      rowsParams.push([
+        cell('Situation familiale', 'sText'),
+        cell(status === 'couple' ? 'Marié / Pacsé' : 'Célibataire / Veuf / Divorcé', 'sText'),
+      ]);
+      rowsParams.push([cell('Parent isolé', 'sText'), cell(isIsolated ? 'Oui' : 'Non', 'sText')]);
+      rowsParams.push([cell('Nombre de parts (calculé)', 'sText'), cell(result.partsNb || effectiveParts, 'sCenter')]);
+      rowsParams.push([cell('Zone géographique', 'sText'), cell(location === 'metropole'
+        ? 'Métropole'
+        : location === 'gmr'
+        ? 'Guadeloupe / Martinique / Réunion'
+        : 'Guyane / Mayotte', 'sText')]);
+
+      rowsParams.push([cell('Revenus', 'sSection'), cell('', 'sSection')]);
+      rowsParams.push([cell('Salaires D1', 'sText'), cell(incomes.d1.salaries || 0, 'sMoney')]);
+      rowsParams.push([cell('Salaires D2', 'sText'), cell(incomes.d2.salaries || 0, 'sMoney')]);
+      rowsParams.push([cell('Associés/gérants D1', 'sText'), cell(incomes.d1.associes62 || 0, 'sMoney')]);
+      rowsParams.push([cell('Associés/gérants D2', 'sText'), cell(incomes.d2.associes62 || 0, 'sMoney')]);
+      rowsParams.push([cell('BIC/BNC/BA D1', 'sText'), cell(incomes.d1.bic || 0, 'sMoney')]);
+      rowsParams.push([cell('BIC/BNC/BA D2', 'sText'), cell(incomes.d2.bic || 0, 'sMoney')]);
+      rowsParams.push([cell('Pensions D1', 'sText'), cell(incomes.d1.pensions || 0, 'sMoney')]);
+      rowsParams.push([cell('Pensions D2', 'sText'), cell(incomes.d2.pensions || 0, 'sMoney')]);
+      rowsParams.push([cell('Revenus fonciers nets', 'sText'), cell(incomes.fonciersFoyer || 0, 'sMoney')]);
+      rowsParams.push([cell('RCM soumis aux PS', 'sText'), cell(incomes.capital.withPs || 0, 'sMoney')]);
+      rowsParams.push([cell('RCM hors PS', 'sText'), cell(incomes.capital.withoutPs || 0, 'sMoney')]);
+      rowsParams.push([cell('Option RCM', 'sText'), cell(capitalMode === 'pfu' ? 'PFU (flat tax)' : 'Barème', 'sText')]);
+
+      rowsParams.push([cell('Déductions / crédits', 'sSection'), cell('', 'sSection')]);
+      rowsParams.push([cell('Frais réels D1', 'sText'), cell(realMode.d1 === 'reels' ? realExpenses.d1 || 0 : 0, 'sMoney')]);
+      rowsParams.push([cell('Frais réels D2', 'sText'), cell(realMode.d2 === 'reels' ? realExpenses.d2 || 0 : 0, 'sMoney')]);
+      rowsParams.push([cell('Déductions foyer', 'sText'), cell(deductions || 0, 'sMoney')]);
+      rowsParams.push([cell('Crédits d’impôt', 'sText'), cell(credits || 0, 'sMoney')]);
+
+      const headerSynth = [cell('Indicateur', 'sHeader'), cell('Valeur', 'sHeader')];
+      const rowsSynth = [];
+      rowsSynth.push([cell('Revenu imposable du foyer', 'sText'), cell(result.taxableIncome || 0, 'sMoney')]);
+      rowsSynth.push([cell('Revenu imposable par part', 'sText'), cell(result.taxablePerPart || 0, 'sMoney')]);
+      rowsSynth.push([cell('TMI', 'sText'), cell((result.tmiRate || 0) / 100, 'sPercent')]);
+      rowsSynth.push([cell('Impôt sur le revenu', 'sText'), cell(result.irNet || 0, 'sMoney')]);
+      rowsSynth.push([cell('PFU IR', 'sText'), cell(result.pfuIr || 0, 'sMoney')]);
+      rowsSynth.push([cell('CEHR', 'sText'), cell(result.cehr || 0, 'sMoney')]);
+      rowsSynth.push([cell('CDHR', 'sText'), cell(result.cdhr || 0, 'sMoney')]);
+      rowsSynth.push([cell('PS fonciers', 'sText'), cell(result.psFoncier || 0, 'sMoney')]);
+      rowsSynth.push([cell('PS dividendes', 'sText'), cell(result.psDividends || 0, 'sMoney')]);
+      rowsSynth.push([cell('PS total', 'sText'), cell(result.psTotal || 0, 'sMoney')]);
+      rowsSynth.push([cell('Imposition totale', 'sText'), cell(result.totalTax || 0, 'sMoney')]);
+
+      const headerDetails = [
+        cell('Poste', 'sHeader'),
+        cell('Base', 'sHeader'),
+        cell('Taux', 'sHeader'),
+        cell('Impôt', 'sHeader'),
+      ];
+
+      const rowsDetails = [];
+      rowsDetails.push([cell('Barème (tranches)', 'sSection'), cell('', 'sSection'), cell('', 'sSection'), cell('', 'sSection')]);
+      (result.bracketsDetails || []).forEach((b) => {
+        rowsDetails.push([
+          cell(b.label || '', 'sText'),
+          cell(b.base || 0, 'sMoney'),
+          cell((b.rate || 0) / 100, 'sPercent'),
+          cell(b.tax || 0, 'sMoney'),
+        ]);
+      });
+
+      rowsDetails.push([cell('Décote', 'sText'), cell(result.decote || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
+      rowsDetails.push([cell('Avantage QF', 'sText'), cell(result.qfAdvantage || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
+      rowsDetails.push([cell('Crédits / Réductions', 'sText'), cell(result.creditsTotal || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
+      rowsDetails.push([cell('PFU IR', 'sText'), cell(result.pfuIr || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
+      rowsDetails.push([cell('CEHR', 'sText'), cell(result.cehr || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
+      rowsDetails.push([cell('CDHR', 'sText'), cell(result.cdhr || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
+      rowsDetails.push([cell('PS fonciers', 'sText'), cell(result.psFoncier || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
+      rowsDetails.push([cell('PS dividendes', 'sText'), cell(result.psDividends || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
+      rowsDetails.push([cell('PS total', 'sText'), cell(result.psTotal || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
 
       const xml = `<?xml version="1.0"?>
 <?mso-application progid="Excel.Sheet"?>
@@ -446,7 +541,10 @@ const yearLabel =
   xmlns:o="urn:schemas-microsoft-com:office:office"
   xmlns:x="urn:schemas-microsoft-com:office:excel"
   xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-  ${buildWorksheetXmlVertical('IR', header, rows)}
+  ${stylesXml}
+  ${buildWorksheetXmlVertical('Paramètres', headerParams, rowsParams, { columnWidths: [240, 180] })}
+  ${buildWorksheetXmlVertical('Synthèse impôts', headerSynth, rowsSynth, { columnWidths: [240, 180] })}
+  ${buildWorksheetXmlVertical('Détails calculs', headerDetails, rowsDetails, { columnWidths: [240, 120, 90, 120] })}
 </Workbook>`;
 
       const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });

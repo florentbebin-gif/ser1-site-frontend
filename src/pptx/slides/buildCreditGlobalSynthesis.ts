@@ -55,6 +55,9 @@ const LAYOUT = {
     marginX: 1.0,
     barHeight: 0.40,
     tickHeight: 0.18,
+    dateH: 0.20,
+    tickGap: 0.08,
+    labelH: 0.12,
   },
   
   // Bottom info row (3 elements with icons)
@@ -181,7 +184,9 @@ export function buildCreditGlobalSynthesis(
   
   // ========== TIMELINE WITH PALIERS (up to 3 segments) ==========
   const periods = data.paymentPeriods;
-  const timelineY = LAYOUT.timeline.y;
+  const kpiBottomY = LAYOUT.kpi.y + LAYOUT.kpi.iconSize + 0.24 + 0.26;
+  const timelineBlockH = LAYOUT.timeline.dateH + 0.22 + LAYOUT.timeline.barHeight + 0.08 + LAYOUT.timeline.tickHeight + 0.02 + LAYOUT.timeline.labelH;
+  const timelineY = kpiBottomY + (LAYOUT.bottomRow.y - kpiBottomY - timelineBlockH) / 2;
   const timelineW = SLIDE_SIZE.width - 2 * LAYOUT.timeline.marginX;
   const totalYears = Math.floor(data.maxDureeMois / 12);
   
@@ -312,20 +317,22 @@ export function buildCreditGlobalSynthesis(
   // ========== BOTTOM ROW: 3 ELEMENTS WITH ICONS ==========
   const bottomY = LAYOUT.bottomRow.y;
   const bottomW = SLIDE_SIZE.width - 2 * LAYOUT.bottomRow.marginX;
-  const bottomItemW = bottomW / 3;
   const iconSize = 0.32;
   
   const totalRembourse = data.totalCapital + data.coutTotalCredit;
   const smoothingLabel = data.smoothingEnabled 
     ? (data.smoothingMode === 'duree' ? 'Lissage activé : durée constante' : 'Lissage activé : mensualité constante')
     : '';
+  const capitalDecesInitial = data.capitalDecesInitial ?? 0;
   
   // Icons from repo: buildings, checklist (smoothing), balance (insurance)
   const bottomItems = [
     { icon: 'buildings' as BusinessIconName, label: 'Total remboursé :', value: formatEuro(totalRembourse) },
-    { icon: 'checklist' as BusinessIconName, label: smoothingLabel, value: '' },
-    { icon: 'balance' as BusinessIconName, label: 'Coût assurance décès :', value: formatEuro(data.coutTotalAssurance) },
+    ...(data.smoothingEnabled ? [{ icon: 'checklist' as BusinessIconName, label: smoothingLabel, value: '' }] : []),
+    { icon: 'balance' as BusinessIconName, label: 'Capital décès initial :', value: formatEuro(capitalDecesInitial) },
   ];
+  
+  const bottomItemW = bottomW / Math.max(bottomItems.length, 1);
   
   bottomItems.forEach((item, idx) => {
     const itemX = LAYOUT.bottomRow.marginX + idx * bottomItemW;

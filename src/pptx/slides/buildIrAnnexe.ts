@@ -282,7 +282,13 @@ export function buildIrAnnexe(
   slide.background = { color: 'FFFFFF' };
   
   // ========== STANDARD HEADER (centralized) ==========
-  addHeader(slide, 'Annexe : Détail du calcul', 'Méthode de calcul de l\'impôt sur le revenu', theme, 'content');
+  addHeader(
+    slide,
+    'Annexe : Détail du calcul',
+    'Méthode de calcul de l\'impôt sur le revenu (Barème 2025 (revenus 2024))',
+    theme,
+    'content'
+  );
   
   // ========== SINGLE TEXT BLOCK (professional prose) ==========
   // Build paragraphs with mixed bold/normal text

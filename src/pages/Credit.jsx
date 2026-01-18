@@ -704,60 +704,56 @@ const synthesePeriodes = useMemo(() => {
 
   /* ---- Export Excel (.xls) ---- */
 
+  const cell = (v, style) => ({ v, style });
+
+  const escXml = (s) =>
+    String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+  const normalizeCell = (c) =>
+    c && typeof c === 'object' && Object.prototype.hasOwnProperty.call(c, 'v')
+      ? c
+      : { v: c ?? '', style: undefined };
+
+  const rowXml = (cells) =>
+    `<Row>${
+      cells
+        .map((raw) => {
+          const { v, style } = normalizeCell(raw);
+          const type = typeof v === 'number' ? 'Number' : 'String';
+          return `<Cell${style ? ` ss:StyleID="${style}"` : ''}><Data ss:Type="${type}">${escXml(v)}</Data></Cell>`;
+        })
+        .join('')
+    }</Row>`;
+
   // Feuilles "classiques" : périodes en colonnes (on transpose)
-  function buildWorksheetXml(title, header, rows) {
+  function buildWorksheetXml(title, header, rows, options = {}) {
     const aoa = [header, ...rows];
     const t = transpose(aoa);
-    const esc = (s) =>
-      String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-
-    const rowXml = (cells) =>
-      `<Row>${
-        cells
-          .map(
-            (v) =>
-              `<Cell><Data ss:Type="${
-                typeof v === 'number' ? 'Number' : 'String'
-              }">${esc(v)}</Data></Cell>`
-          )
-          .join('')
-      }</Row>`;
+    const cols = options.columnWidths || [];
+    const colXml = cols.map((w) => `<Column ss:Width="${w}"/>`).join('');
 
     return `
-      <Worksheet ss:Name="${esc(title)}">
+      <Worksheet ss:Name="${escXml(title)}">
         <Table>
+          ${colXml}
           ${t.map((r) => rowXml(r)).join('')}
         </Table>
       </Worksheet>`;
   }
 
-  // Feuille "Paramètres" : on garde l’orientation verticale (Pas de transpose)
-  function buildWorksheetXmlVertical(title, header, rows) {
+  // Feuille "Paramètres" : orientation verticale
+  function buildWorksheetXmlVertical(title, header, rows, options = {}) {
     const aoa = [header, ...rows];
-    const esc = (s) =>
-      String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-
-    const rowXml = (cells) =>
-      `<Row>${
-        cells
-          .map(
-            (v) =>
-              `<Cell><Data ss:Type="${
-                typeof v === 'number' ? 'Number' : 'String'
-              }">${esc(v)}</Data></Cell>`
-          )
-          .join('')
-      }</Row>`;
+    const cols = options.columnWidths || [];
+    const colXml = cols.map((w) => `<Column ss:Width="${w}"/>`).join('');
 
     return `
-      <Worksheet ss:Name="${esc(title)}">
+      <Worksheet ss:Name="${escXml(title)}">
         <Table>
+          ${colXml}
           ${aoa.map((r) => rowXml(r)).join('')}
         </Table>
       </Worksheet>`;
@@ -765,117 +761,105 @@ const synthesePeriodes = useMemo(() => {
 
   function exportExcel() {
     try {
-      // En-têtes alignés sur la vue
+      const headerFill = (themeColors?.c1 || '#2F4A6D').replace('#', '');
+      const sectionFill = (themeColors?.c7 || '#E5EAF2').replace('#', '');
+
+      const stylesXml = `
+        <Styles>
+          <Style ss:ID="sHeader">
+            <Font ss:FontName="Arial" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/>
+            <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+            <Interior ss:Color="#${headerFill}" ss:Pattern="Solid"/>
+          </Style>
+          <Style ss:ID="sSection">
+            <Font ss:FontName="Arial" ss:Size="10" ss:Bold="1"/>
+            <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+            <Interior ss:Color="#${sectionFill}" ss:Pattern="Solid"/>
+          </Style>
+          <Style ss:ID="sText">
+            <Font ss:FontName="Arial" ss:Size="10"/>
+            <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+          </Style>
+          <Style ss:ID="sCenter">
+            <Font ss:FontName="Arial" ss:Size="10"/>
+            <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+          </Style>
+          <Style ss:ID="sMoney">
+            <Font ss:FontName="Arial" ss:Size="10"/>
+            <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+            <NumberFormat ss:Format="#\,##0 \"€\""/>
+          </Style>
+          <Style ss:ID="sPercent">
+            <Font ss:FontName="Arial" ss:Size="10"/>
+            <Alignment ss:Horizontal="Right" ss:Vertical="Center"/>
+            <NumberFormat ss:Format="0.00%"/>
+          </Style>
+        </Styles>`;
+
       const headerResume = [
-        'Période',
-        'Intérêts',
-        'Assurance',
-        'Amort.',
-        isAnnual ? 'Annuité' : 'Mensualité',
-        isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.',
-        'CRD total',
-        'Assurance décès',
+        cell('Période', 'sHeader'),
+        cell('Intérêts', 'sHeader'),
+        cell('Assurance', 'sHeader'),
+        cell('Amort.', 'sHeader'),
+        cell(isAnnual ? 'Annuité' : 'Mensualité', 'sHeader'),
+        cell(isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.', 'sHeader'),
+        cell('CRD total', 'sHeader'),
+        cell('Assurance décès', 'sHeader'),
       ];
       const headerPret = [
-        'Période',
-        'Intérêts',
-        'Assurance',
-        'Amort.',
-        isAnnual ? 'Annuité' : 'Mensualité',
-        isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.',
-        'CRD',
-        'Capitaux décès',
+        cell('Période', 'sHeader'),
+        cell('Intérêts', 'sHeader'),
+        cell('Assurance', 'sHeader'),
+        cell('Amort.', 'sHeader'),
+        cell(isAnnual ? 'Annuité' : 'Mensualité', 'sHeader'),
+        cell(isAnnual ? 'Annuité + Assur.' : 'Mensualité + Assur.', 'sHeader'),
+        cell('CRD', 'sHeader'),
+        cell('Capitaux décès', 'sHeader'),
       ];
 
       // 0) Onglet PARAMÈTRES : tout ce qui est saisi par l’utilisateur
-      const headerParams = ['Champ', 'Valeur'];
+      const headerParams = [cell('Champ', 'sHeader'), cell('Valeur', 'sHeader')];
       const rowsParams = [];
 
       // Prêt 1
-      rowsParams.push([
-        'Type de crédit (Prêt 1)',
-        creditType === 'amortissable' ? 'Amortissable' : 'In fine',
-      ]);
-      rowsParams.push([
-        'Date de souscription (Prêt 1)',
-        startYM ? labelMonthFR(startYM) : '',
-      ]);
-      rowsParams.push(['Durée (mois) — Prêt 1', duree]);
-      rowsParams.push(['Montant emprunté (Prêt 1)', euro0(capital)]);
-      rowsParams.push([
-        'Taux annuel (crédit) — Prêt 1',
-        `${Number(taux).toFixed(2).replace('.', ',')} %`,
-      ]);
-      rowsParams.push([
-        'Mensualité (hors assurance) — Prêt 1',
-        mensuBase ? `${mensuBase} €` : '',
-      ]);
-      rowsParams.push([
-        "Mode de l’assurance (Prêt 1)",
-        assurMode === 'CI' ? 'Capital initial' : 'Capital restant dû',
-      ]);
-      rowsParams.push([
-        'Taux annuel (assurance)',
-        `${Number(tauxAssur).toFixed(2).replace('.', ',')} %`,
-      ]);
-      rowsParams.push([
-        'Vue',
-        isAnnual ? 'Vue annuelle' : 'Vue mensuelle',
-      ]);
-      rowsParams.push([
-        'Lissage prêt 1',
-        lisserPret1
-          ? lissageMode === 'mensu'
-            ? 'Mensualité constante'
-            : 'Durée constante'
-          : 'Aucun',
-      ]);
+      rowsParams.push([cell('Prêt 1', 'sSection'), cell('', 'sSection')]);
+      rowsParams.push([cell('Type de crédit (Prêt 1)', 'sText'), cell(creditType === 'amortissable' ? 'Amortissable' : 'In fine', 'sText')]);
+      rowsParams.push([cell('Date de souscription (Prêt 1)', 'sText'), cell(startYM ? labelMonthFR(startYM) : '', 'sText')]);
+      rowsParams.push([cell('Durée (mois) — Prêt 1', 'sText'), cell(duree, 'sCenter')]);
+      rowsParams.push([cell('Montant emprunté (Prêt 1)', 'sText'), cell(toNum(capital), 'sMoney')]);
+      rowsParams.push([cell('Taux annuel (crédit) — Prêt 1', 'sText'), cell((Number(taux) || 0) / 100, 'sPercent')]);
+      rowsParams.push([cell('Mensualité (hors assurance) — Prêt 1', 'sText'), cell(toNum(mensuBase), 'sMoney')]);
+      rowsParams.push([cell('Mensualité totale estimée', 'sText'), cell(Math.round(mensuHorsAssurance_base + primeAssMensuelle), 'sMoney')]);
+      rowsParams.push([cell("Mode de l’assurance (Prêt 1)", 'sText'), cell(assurMode === 'CI' ? 'Capital initial' : 'Capital restant dû', 'sText')]);
+      rowsParams.push([cell('Taux annuel (assurance) — Prêt 1', 'sText'), cell((Number(tauxAssur) || 0) / 100, 'sPercent')]);
+      rowsParams.push([cell('Vue', 'sText'), cell(isAnnual ? 'Vue annuelle' : 'Vue mensuelle', 'sText')]);
+      rowsParams.push([cell('Lissage prêt 1', 'sText'), cell(lisserPret1 ? (lissageMode === 'mensu' ? 'Mensualité constante' : 'Durée constante') : 'Aucun', 'sText')]);
 
       // Prêts additionnels (Prêt 2 / Prêt 3)
       pretsPlus.forEach((p, idx) => {
         const k = idx + 2;
         const type = p.type || creditType;
         const pAssurMode = p.assurMode || 'CRD';
-        rowsParams.push([
-          `Prêt ${k} - Type de crédit`,
-          type === 'amortissable' ? 'Amortissable' : 'In fine',
-        ]);
-        rowsParams.push([
-          `Prêt ${k} - Montant emprunté`,
-          euro0(toNum(p.capital)),
-        ]);
-        rowsParams.push([
-          `Prêt ${k} - Durée (mois)`,
-          toNum(p.duree),
-        ]);
-        rowsParams.push([
-          `Prêt ${k} - Taux annuel (crédit)`,
-          `${Number(p.taux || 0).toFixed(2).replace('.', ',')} %`,
-        ]);
-        rowsParams.push([
-          `Prêt ${k} - Taux annuel (assurance)`,
-          `${Number(p.tauxAssur || 0).toFixed(2).replace('.', ',')} %`,
-        ]);
-        rowsParams.push([
-          `Prêt ${k} - Mode assurance`,
-          pAssurMode === 'CI' ? 'Capital initial' : 'Capital restant dû',
-        ]);
-        rowsParams.push([
-          `Prêt ${k} - Date de souscription`,
-          p.startYM ? labelMonthFR(p.startYM) : '',
-        ]);
+        rowsParams.push([cell(`Prêt ${k}`, 'sSection'), cell('', 'sSection')]);
+        rowsParams.push([cell(`Prêt ${k} - Type de crédit`, 'sText'), cell(type === 'amortissable' ? 'Amortissable' : 'In fine', 'sText')]);
+        rowsParams.push([cell(`Prêt ${k} - Montant emprunté`, 'sText'), cell(toNum(p.capital), 'sMoney')]);
+        rowsParams.push([cell(`Prêt ${k} - Durée (mois)`, 'sText'), cell(toNum(p.duree), 'sCenter')]);
+        rowsParams.push([cell(`Prêt ${k} - Taux annuel (crédit)`, 'sText'), cell((Number(p.taux || 0) || 0) / 100, 'sPercent')]);
+        rowsParams.push([cell(`Prêt ${k} - Taux annuel (assurance)`, 'sText'), cell((Number(p.tauxAssur || 0) || 0) / 100, 'sPercent')]);
+        rowsParams.push([cell(`Prêt ${k} - Mode assurance`, 'sText'), cell(pAssurMode === 'CI' ? 'Capital initial' : 'Capital restant dû', 'sText')]);
+        rowsParams.push([cell(`Prêt ${k} - Date de souscription`, 'sText'), cell(p.startYM ? labelMonthFR(p.startYM) : '', 'sText')]);
       });
 
       // 1) Résumé : ce qui est affiché dans le tableau principal
       const resumeRows = tableDisplay.map((l) => [
-        l.periode,
-        Math.round(l.interet),
-        Math.round(l.assurance),
-        Math.round(l.amort),
-        Math.round(l.mensu),
-        Math.round(l.mensuTotal),
-        Math.round(l.crd),
-        Math.round(l.assuranceDeces ?? 0),
+        cell(l.periode, 'sCenter'),
+        cell(Math.round(l.interet), 'sMoney'),
+        cell(Math.round(l.assurance), 'sMoney'),
+        cell(Math.round(l.amort), 'sMoney'),
+        cell(Math.round(l.mensu), 'sMoney'),
+        cell(Math.round(l.mensuTotal), 'sMoney'),
+        cell(Math.round(l.crd), 'sMoney'),
+        cell(Math.round(l.assuranceDeces ?? 0), 'sMoney'),
       ]);
 
       // 2) Détail par prêt selon la vue actuelle
@@ -883,14 +867,14 @@ const synthesePeriodes = useMemo(() => {
         ? aggregateToYearsFromRows(pret1Rows, startYM)
         : attachMonthLabels(pret1Rows)
       ).map((l) => [
-        l.periode,
-        Math.round(l.interet),
-        Math.round(l.assurance),
-        Math.round(l.amort),
-        Math.round(l.mensu),
-        Math.round(l.mensuTotal),
-        Math.round(l.crd),
-        Math.round(l.assuranceDeces ?? 0),
+        cell(l.periode, 'sCenter'),
+        cell(Math.round(l.interet), 'sMoney'),
+        cell(Math.round(l.assurance), 'sMoney'),
+        cell(Math.round(l.amort), 'sMoney'),
+        cell(Math.round(l.mensu), 'sMoney'),
+        cell(Math.round(l.mensuTotal), 'sMoney'),
+        cell(Math.round(l.crd), 'sMoney'),
+        cell(Math.round(l.assuranceDeces ?? 0), 'sMoney'),
       ]);
 
       const pret2Arr = (autresRows[0]
@@ -899,14 +883,14 @@ const synthesePeriodes = useMemo(() => {
           : attachMonthLabels(autresRows[0])
         : []
       ).map((l) => [
-        l.periode,
-        Math.round(l?.interet ?? 0),
-        Math.round(l?.assurance ?? 0),
-        Math.round(l?.amort ?? 0),
-        Math.round(l?.mensu ?? 0),
-        Math.round(l?.mensuTotal ?? 0),
-        Math.round(l?.crd ?? 0),
-        Math.round(l?.assuranceDeces ?? 0),
+        cell(l.periode, 'sCenter'),
+        cell(Math.round(l?.interet ?? 0), 'sMoney'),
+        cell(Math.round(l?.assurance ?? 0), 'sMoney'),
+        cell(Math.round(l?.amort ?? 0), 'sMoney'),
+        cell(Math.round(l?.mensu ?? 0), 'sMoney'),
+        cell(Math.round(l?.mensuTotal ?? 0), 'sMoney'),
+        cell(Math.round(l?.crd ?? 0), 'sMoney'),
+        cell(Math.round(l?.assuranceDeces ?? 0), 'sMoney'),
       ]);
 
       const pret3Arr = (autresRows[1]
@@ -915,14 +899,14 @@ const synthesePeriodes = useMemo(() => {
           : attachMonthLabels(autresRows[1])
         : []
       ).map((l) => [
-        l.periode,
-        Math.round(l?.interet ?? 0),
-        Math.round(l?.assurance ?? 0),
-        Math.round(l?.amort ?? 0),
-        Math.round(l?.mensu ?? 0),
-        Math.round(l?.mensuTotal ?? 0),
-        Math.round(l?.crd ?? 0),
-        Math.round(l?.assuranceDeces ?? 0),
+        cell(l.periode, 'sCenter'),
+        cell(Math.round(l?.interet ?? 0), 'sMoney'),
+        cell(Math.round(l?.assurance ?? 0), 'sMoney'),
+        cell(Math.round(l?.amort ?? 0), 'sMoney'),
+        cell(Math.round(l?.mensu ?? 0), 'sMoney'),
+        cell(Math.round(l?.mensuTotal ?? 0), 'sMoney'),
+        cell(Math.round(l?.crd ?? 0), 'sMoney'),
+        cell(Math.round(l?.assuranceDeces ?? 0), 'sMoney'),
       ]);
 
       const xml = `<?xml version="1.0"?>
@@ -931,11 +915,12 @@ const synthesePeriodes = useMemo(() => {
           xmlns:o="urn:schemas-microsoft-com:office:office"
           xmlns:x="urn:schemas-microsoft-com:office:excel"
           xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-          ${buildWorksheetXmlVertical('Paramètres', headerParams, rowsParams)}
-          ${buildWorksheetXml('Résumé', headerResume, resumeRows)}
-          ${buildWorksheetXml('Prêt 1', headerPret, pret1Arr)}
-          ${pretsPlus.length > 0 ? buildWorksheetXml('Prêt 2', headerPret, pret2Arr) : ''}
-          ${pretsPlus.length > 1 ? buildWorksheetXml('Prêt 3', headerPret, pret3Arr) : ''}
+          ${stylesXml}
+          ${buildWorksheetXmlVertical('Paramètres', headerParams, rowsParams, { columnWidths: [260, 180] })}
+          ${buildWorksheetXml('Résumé', headerResume, resumeRows, { columnWidths: [120, 90, 90, 90, 90, 90, 90, 90] })}
+          ${buildWorksheetXml('Prêt 1', headerPret, pret1Arr, { columnWidths: [120, 90, 90, 90, 90, 90, 90, 90] })}
+          ${pretsPlus.length > 0 ? buildWorksheetXml('Prêt 2', headerPret, pret2Arr, { columnWidths: [120, 90, 90, 90, 90, 90, 90, 90] }) : ''}
+          ${pretsPlus.length > 1 ? buildWorksheetXml('Prêt 3', headerPret, pret3Arr, { columnWidths: [120, 90, 90, 90, 90, 90, 90, 90] }) : ''}
         </Workbook>`;
 
       const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
@@ -1072,6 +1057,9 @@ const synthesePeriodes = useMemo(() => {
         total: p.p1 + p.p2 + p.p3,
       }))
 
+      // Capital décès initial (source-of-truth UI: first aggregated period)
+      const capitalDecesInitial = agrRows?.[0]?.assuranceDeces ?? 0;
+
       // Build credit data for PPTX with full multi-loan support
       const creditData = {
         // Global totals
@@ -1080,6 +1068,7 @@ const synthesePeriodes = useMemo(() => {
         coutTotalInterets: totalInterets,
         coutTotalAssurance: totalAssurance,
         coutTotalCredit: coutTotalCredit,
+        capitalDecesInitial,
         
         // Smoothing info
         smoothingEnabled: lisserPret1 && pretsPlus.length > 0,

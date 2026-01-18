@@ -371,6 +371,10 @@ npm run typecheck
 - Export Excel structuré (paramètres + résultats)
 - Calculs détaillés avec warnings
 
+### Simulateur IR
+- Export Excel premium en 3 onglets : **Paramètres**, **Synthèse impôts**, **Détails calculs**
+- Formats € / % homogènes, en-têtes stylés et colonnes ajustées
+
 ### Simulateur Crédit
 - Crédit amortissable ou in fine
 - Assurance CRD/CI intégrée pour tous les prêts (principal + additionnels)
