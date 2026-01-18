@@ -21,7 +21,7 @@ import {
   COORDS_CONTENT,
   COORDS_FOOTER,
   addTextBox,
-  addAccentLine,
+  addHeader,
   addFooter,
   roleColor,
 } from '../designSystem/serenity';
@@ -427,26 +427,8 @@ export function buildIrSynthesis(
   // ========== STANDARD HEADER (from design system) ==========
   
   // Title (H1, ALL CAPS, LEFT-ALIGNED) - using helper
-  addTextBox(slide, 'Synthèse de votre simulation', COORDS_CONTENT.title, {
-    fontSize: TYPO.sizes.h1,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-    isUpperCase: true,
-  });
-  
-  // Accent line under title - using helper
-  addAccentLine(slide, theme, 'content');
-  
-  // Subtitle (H2) - using helper
-  addTextBox(slide, 'Principaux indicateurs fiscaux', COORDS_CONTENT.subtitle, {
-    fontSize: TYPO.sizes.h2,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-  });
+  // Add header (title + accent line + subtitle) with text-based positioning
+  addHeader(slide, 'Synthèse de votre simulation', 'Principaux indicateurs fiscaux', theme, 'content');
   
   // ========== SECTION 1: 4 KPI COLUMNS (Y 2.38 → 3.55) ==========
   // Compact, aligned, premium design

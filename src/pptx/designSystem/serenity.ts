@@ -198,6 +198,21 @@ export const MIN_FONT_SIZES = {
 } as const;
 
 // ============================================================================
+// TEXT-BASED LAYOUT TOKENS (for accent line positioning)
+// ============================================================================
+
+/** Gaps for text-based layout (in inches) */
+export const TEXT_GAPS = {
+  /** Gap after title text before accent line */
+  afterTitle: 0.1,
+  /** Gap after accent line before subtitle */
+  afterLine: 0.15,
+} as const;
+
+/** Debug mode flag (set to true to visualize layout zones) */
+export const DEBUG_LAYOUT_ZONES = false;
+
+// ============================================================================
 // SHADOW PARAMS (premium outer shadow spec)
 // Based on: 24% opacity, 23.3pt blur, 14.3pt distance, 74° angle
 // ============================================================================
@@ -220,8 +235,75 @@ export const SHADOW_PARAMS = {
 // ============================================================================
 
 /**
- * Get a color from theme by role name
+ * Normalize title text by removing trailing whitespace and newlines
+ * This prevents empty lines from affecting layout calculations
  */
+export function normalizeTitleText(text: string): string {
+  return text.trim().replace(/\n+$/g, '');
+}
+
+/**
+ * Calculate the visual height of title text based on font size and line count
+ * This returns the actual height of the rendered text, not the box height
+ */
+export function calculateTitleTextHeight(
+  titleText: string,
+  fontSize: number,
+  lineHeightMultiple: number = 1.15
+): number {
+  const normalizedText = normalizeTitleText(titleText);
+  const lines = normalizedText.split('\n').length;
+  
+  // Convert font size from points to inches (1 point = 1/72 inch)
+  const fontSizeInInches = fontSize / 72;
+  const textHeight = lines * fontSizeInInches * lineHeightMultiple;
+  
+  if (DEBUG_LAYOUT_ZONES) {
+    console.log('[DEBUG] Title text height calculation:', {
+      originalText: titleText,
+      normalizedText,
+      lines,
+      fontSize,
+      lineHeightMultiple,
+      textHeightInInches: textHeight,
+    });
+  }
+  
+  return textHeight;
+}
+
+/**
+ * Draw debug borders around layout zones (when DEBUG_LAYOUT_ZONES is true)
+ */
+export function drawDebugLayoutZones(
+  slide: PptxGenJS.Slide,
+  variant: 'chapter' | 'content'
+): void {
+  if (!DEBUG_LAYOUT_ZONES) return;
+  
+  const layoutZones = variant === 'chapter' ? LAYOUT_ZONES.chapter : LAYOUT_ZONES.content;
+  const debugColor = 'FF0000'; // Red for visibility
+  
+  // Draw title box border
+  slide.addShape('rect', {
+    x: layoutZones.titleBox.x,
+    y: layoutZones.titleBox.y,
+    w: layoutZones.titleBox.w,
+    h: layoutZones.titleBox.h,
+    fill: { color: 'FFFFFF', transparency: 80 },
+    line: { color: debugColor, width: 0.5 },
+  });
+  
+  // Draw subtitle box border
+  slide.addShape('rect', {
+    x: layoutZones.subtitleBox.x,
+    y: layoutZones.subtitleBox.y,
+    w: layoutZones.subtitleBox.w,
+    h: layoutZones.subtitleBox.h,
+    fill: { color: 'FFFFFF', transparency: 80 },
+    line: { color: debugColor, width: 0.5 },
+  });
+}
 export function roleColor(theme: PptxThemeRoles, role: keyof PptxThemeRoles): string {
   const color = theme[role];
   if (typeof color === 'string') {
@@ -238,20 +320,42 @@ export function addBackground(slide: PptxGenJS.Slide, color: string): void {
 }
 
 /**
- * Add accent line (horizontal)
+ * Add accent line (horizontal) - POSITIONED BETWEEN TITLE AND SUBTITLE
+ * 
+ * IMPORTANT: The line is now positioned at the MIDPOINT between title and subtitle zones,
+ * not at the bottom of the title box. This creates proper visual separation.
+ * 
+ * @deprecated Use addHeader() instead for text-based positioning
  */
 export function addAccentLine(
   slide: PptxGenJS.Slide,
   theme: PptxThemeRoles,
   variant: 'cover' | 'chapter' | 'content'
 ): void {
-  const coords = variant === 'cover' 
-    ? COORDS_COVER.dividerLine 
-    : variant === 'chapter' 
-      ? COORDS_CHAPTER.accentLine 
-      : COORDS_CONTENT.accentLine;
+  let coords: { x: number; y: number; w: number };
+  let lineWidth: number;
   
-  const lineWidth = variant === 'cover' ? 0.75 : 1.5;
+  if (variant === 'cover') {
+    // Cover slide uses fixed coordinates (no subtitle zone)
+    coords = COORDS_COVER.dividerLine;
+    lineWidth = 0.75;
+  } else {
+    // Chapter and Content: calculate Y position at midpoint between title and subtitle
+    const layoutZones = variant === 'chapter' ? LAYOUT_ZONES.chapter : LAYOUT_ZONES.content;
+    const baseCoords = variant === 'chapter' ? COORDS_CHAPTER.accentLine : COORDS_CONTENT.accentLine;
+    
+    // Calculate midpoint between title bottom and subtitle top
+    const titleBottomY = layoutZones.titleBox.y + layoutZones.titleBox.h;
+    const subtitleTopY = layoutZones.subtitleBox.y;
+    const accentLineY = titleBottomY + (subtitleTopY - titleBottomY) * 0.5;
+    
+    coords = {
+      x: baseCoords.x,
+      y: accentLineY,
+      w: baseCoords.w
+    };
+    lineWidth = 1.5;
+  }
   
   slide.addShape('line', {
     x: coords.x,
@@ -262,6 +366,104 @@ export function addAccentLine(
       color: roleColor(theme, 'accent'),
       width: lineWidth,
     },
+  });
+}
+
+/**
+ * Add complete header (title + accent line + subtitle) with TEXT-BASED positioning
+ * 
+ * IMPORTANT: This function positions the accent line based on the ACTUAL height of the title text,
+ * not the title box height. This prevents the line from being "stuck" when the title box is too large
+ * or contains empty lines.
+ * 
+ * @param slide - PptxGenJS slide
+ * @param titleText - Title text (will be normalized)
+ * @param subtitleText - Subtitle text
+ * @param theme - Theme roles for colors
+ * @param variant - 'chapter' or 'content' layout
+ * @param titleFontSize - Font size for title (default: TYPO.sizes.h1)
+ * @param subtitleFontSize - Font size for subtitle (default: TYPO.sizes.h2)
+ */
+export function addHeader(
+  slide: PptxGenJS.Slide,
+  titleText: string,
+  subtitleText: string,
+  theme: PptxThemeRoles,
+  variant: 'chapter' | 'content',
+  titleFontSize: number = TYPO.sizes.h1,
+  subtitleFontSize: number = TYPO.sizes.h2
+): void {
+  const layoutZones = variant === 'chapter' ? LAYOUT_ZONES.chapter : LAYOUT_ZONES.content;
+  const baseCoords = variant === 'chapter' ? COORDS_CHAPTER : COORDS_CONTENT;
+  
+  // Draw debug zones if enabled
+  drawDebugLayoutZones(slide, variant);
+  
+  // Normalize title text to remove trailing empty lines
+  const normalizedTitleText = normalizeTitleText(titleText);
+  
+  // Calculate the actual visual height of the title text
+  const titleTextHeight = calculateTitleTextHeight(normalizedTitleText, titleFontSize);
+  
+  // Calculate positions based on TEXT height, not box height
+  const titleVisualBottomY = layoutZones.titleBox.y + titleTextHeight;
+  const accentLineY = titleVisualBottomY + TEXT_GAPS.afterTitle;
+  const subtitleY = accentLineY + TEXT_GAPS.afterLine;
+  
+  if (DEBUG_LAYOUT_ZONES) {
+    console.log('[DEBUG] Header positioning:', {
+      variant,
+      normalizedTitleText,
+      titleTextHeight,
+      titleVisualBottomY,
+      accentLineY,
+      subtitleY,
+      subtitleBoxTop: layoutZones.subtitleBox.y,
+    });
+  }
+  
+  // Add title (using original title box for positioning, but text is normalized)
+  addTextBox(slide, normalizedTitleText, layoutZones.titleBox, {
+    fontSize: titleFontSize,
+    color: theme.textMain,
+    bold: true,
+    align: 'left',
+    valign: 'top',
+    isUpperCase: true,
+  });
+  
+  // Add accent line at calculated Y position (based on text height)
+  const accentLineCoords = {
+    x: baseCoords.accentLine.x,
+    y: accentLineY,
+    w: baseCoords.accentLine.w,
+  };
+  
+  slide.addShape('line', {
+    x: accentLineCoords.x,
+    y: accentLineCoords.y,
+    w: accentLineCoords.w,
+    h: 0,
+    line: {
+      color: roleColor(theme, 'accent'),
+      width: 1.5,
+    },
+  });
+  
+  // Add subtitle at calculated Y position
+  const subtitleRect = {
+    x: layoutZones.subtitleBox.x,
+    y: subtitleY,
+    w: layoutZones.subtitleBox.w,
+    h: layoutZones.subtitleBox.h,
+  };
+  
+  addTextBox(slide, subtitleText, subtitleRect, {
+    fontSize: subtitleFontSize,
+    color: theme.textMain,
+    bold: true,
+    align: 'left',
+    valign: 'top',
   });
 }
 
@@ -621,6 +823,7 @@ export default {
   CORNER_MARKS,
   LAYOUT_ZONES,
   MIN_FONT_SIZES,
+  TEXT_GAPS,
   COORDS_COVER,
   COORDS_CHAPTER,
   COORDS_CONTENT,
@@ -631,12 +834,16 @@ export default {
   roleColor,
   addBackground,
   addAccentLine,
+  addHeader,
   addCornerMarks,
   addFooter,
   addCardPanelWithShadow,
   addPanelWithShadow,
   addChapterImage,
   addTextBox,
+  normalizeTitleText,
+  calculateTitleTextHeight,
+  drawDebugLayoutZones,
   validateNoOverflow,
   clampToSlide,
 };

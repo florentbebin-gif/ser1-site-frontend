@@ -21,7 +21,7 @@ import {
   COORDS_CONTENT,
   COORDS_FOOTER,
   addTextBox,
-  addAccentLine,
+  addHeader,
   addFooter,
 } from '../designSystem/serenity';
 import { getBusinessIconDataUri, type BusinessIconName } from '../../icons/business/businessIconLibrary';
@@ -187,26 +187,8 @@ export function buildCreditSynthesis(
   // ========== STANDARD HEADER (from design system) ==========
   
   // Title (H1, ALL CAPS, LEFT-ALIGNED)
-  addTextBox(slide, 'Synthèse de votre financement', COORDS_CONTENT.title, {
-    fontSize: TYPO.sizes.h1,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-    isUpperCase: true,
-  });
-  
-  // Accent line under title
-  addAccentLine(slide, theme, 'content');
-  
-  // Subtitle (H2)
-  addTextBox(slide, 'Principaux indicateurs de votre crédit', COORDS_CONTENT.subtitle, {
-    fontSize: TYPO.sizes.h2,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-  });
+  // Add header (title + accent line + subtitle) with text-based positioning
+  addHeader(slide, 'Synthèse de votre financement', 'Principaux indicateurs de votre crédit', theme, 'content');
   
   // ========== SECTION 1: 4 KPI COLUMNS ==========
   const kpiData: Array<{

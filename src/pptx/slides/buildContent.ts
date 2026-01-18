@@ -11,7 +11,7 @@ import {
   COORDS_CONTENT,
   TYPO,
   roleColor,
-  addAccentLine,
+  addHeader,
   addFooter,
   addTextBox,
 } from '../designSystem/serenity';
@@ -37,27 +37,8 @@ export function buildContent(
   // Background: white
   slide.background = { color: 'FFFFFF' };
   
-  // Title (H1, ALL CAPS)
-  addTextBox(slide, spec.title, COORDS_CONTENT.title, {
-    fontSize: TYPO.sizes.h1,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-    isUpperCase: true,
-  });
-  
-  // Accent line
-  addAccentLine(slide, theme, 'content');
-  
-  // Subtitle (H2)
-  addTextBox(slide, spec.subtitle, COORDS_CONTENT.subtitle, {
-    fontSize: TYPO.sizes.h2,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-  });
+  // Add header (title + accent line + subtitle) with text-based positioning
+  addHeader(slide, spec.title, spec.subtitle, theme, 'content');
   
   // Body text (if provided)
   if (spec.body) {

@@ -16,7 +16,7 @@ import {
   addCardPanelWithShadow,
   addChapterImage,
   addTextBox,
-  addAccentLine,
+  addHeader,
 } from '../designSystem/serenity';
 
 /**
@@ -59,28 +59,21 @@ export function buildChapter(
   // Bleed eliminates the "hole" at haut-gauche and bas-gauche corners
   addChapterImage(slide, chapterImageDataUri, COORDS_CHAPTER.image, true);
   
-  // Title (H1, ALL CAPS) - Chapter pages only have title + short description
-  addTextBox(slide, spec.title, COORDS_CHAPTER.title, {
-    fontSize: TYPO.sizes.h1,
-    color: theme.textMain,
-    bold: true,
-    align: 'left',
-    valign: 'top',
-    isUpperCase: true,
-  });
+  // Add header (title + accent line + subtitle) with text-based positioning
+  addHeader(slide, spec.title, spec.subtitle || '', theme, 'chapter');
   
-  // Accent line under title (same as content slides)
-  addAccentLine(slide, theme, 'chapter');
-  
-  // Subtitle/Description (short description only, no body text on chapter slides)
-  // This replaces both subtitle and body - chapter slides are title + description only
+  // Description/Body text (if provided) - positioned below header
   const description = spec.subtitle || '';
   if (description) {
+    // Calculate position below the header area
+    const headerHeight = TYPO.sizes.h1 / 72 + 0.1 + 0.15 + TYPO.sizes.h2 / 72; // Approximate header height
+    const bodyY = COORDS_CHAPTER.subtitle.y + headerHeight;
+    
     addTextBox(slide, description, {
-      x: COORDS_CHAPTER.subtitle.x,
-      y: COORDS_CHAPTER.subtitle.y,
-      w: COORDS_CHAPTER.subtitle.w,
-      h: 1.5, // Larger height for description
+      x: COORDS_CHAPTER.body.x,
+      y: bodyY,
+      w: COORDS_CHAPTER.body.w,
+      h: COORDS_CHAPTER.body.h,
     }, {
       fontSize: TYPO.sizes.body,
       color: theme.textBody,
