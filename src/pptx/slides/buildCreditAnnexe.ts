@@ -219,9 +219,9 @@ export function buildCreditAnnexe(
   const textProps: PptxGenJS.TextProps[] = [];
   
   paragraphs.forEach((paragraph, pIdx) => {
-    // Add paragraph spacing between paragraphs
+    // Add single newline between paragraphs (no empty line)
     if (pIdx > 0) {
-      textProps.push({ text: '\n\n', options: { fontSize: 11, fontFace: TYPO.fontFace } });
+      textProps.push({ text: '\n', options: { fontSize: 11, fontFace: TYPO.fontFace } });
     }
     
     // Add each text segment of the paragraph

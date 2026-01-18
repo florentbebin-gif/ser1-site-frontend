@@ -144,9 +144,10 @@ export function buildCreditGlobalSynthesis(
   });
   
   // ========== 3 KPIs ROW ==========
+  // Icons from repo: money, gauge (duration), chart-up (cost)
   const kpiData = [
     { icon: 'money' as BusinessIconName, label: 'Capital total', value: formatEuro(data.totalCapital) },
-    { icon: 'calendar' as BusinessIconName, label: 'Durée maximale', value: formatDuree(data.maxDureeMois) },
+    { icon: 'gauge' as BusinessIconName, label: 'Durée maximale', value: formatDuree(data.maxDureeMois) },
     { icon: 'chart-up' as BusinessIconName, label: 'Coût total', value: formatEuro(data.coutTotalCredit) },
   ];
   
@@ -178,98 +179,128 @@ export function buildCreditGlobalSynthesis(
     });
   });
   
-  // ========== TIMELINE WITH PALIERS ==========
+  // ========== TIMELINE WITH PALIERS (up to 3 segments) ==========
   const periods = data.paymentPeriods;
   const timelineY = LAYOUT.timeline.y;
   const timelineW = SLIDE_SIZE.width - 2 * LAYOUT.timeline.marginX;
+  const totalYears = Math.floor(data.maxDureeMois / 12);
   
   if (periods.length > 0) {
-    const segmentCount = Math.min(periods.length, 2); // Max 2 segments like reference
-    const segmentW = timelineW / segmentCount;
+    const segmentCount = Math.min(periods.length, 3); // Support up to 3 segments
     const barY = timelineY + 0.22;
     
-    // Compute capital per period from loans
-    const capitalPeriod1 = data.totalCapital;
-    const capitalPeriod2 = data.loans.length > 1 
-      ? data.loans.reduce((sum, loan) => loan.dureeMois > (data.loans[0]?.dureeMois || 0) ? sum + loan.capital : sum, 0)
-      : data.totalCapital;
+    // Calculate segment widths proportional to duration
+    const segmentDurations: number[] = [];
+    let cumulativeDuration = 0;
+    periods.slice(0, 3).forEach((period, idx) => {
+      // Calculate this segment's duration in months
+      const startMois = cumulativeDuration;
+      const endMois = idx < periods.length - 1 
+        ? Math.min(data.loans[idx]?.dureeMois || data.maxDureeMois, data.maxDureeMois)
+        : data.maxDureeMois;
+      const durationMois = endMois - startMois;
+      segmentDurations.push(durationMois);
+      cumulativeDuration = endMois;
+    });
+    const totalDuration = segmentDurations.reduce((a, b) => a + b, 0);
+    const segmentWidths = segmentDurations.map(d => (d / totalDuration) * timelineW);
     
-    // Date labels ABOVE the bars
-    const startYear = new Date().getFullYear();
-    const period1End = Math.floor((data.loans[0]?.dureeMois || data.maxDureeMois) / 12);
-    const dateLabels = [
-      `01/${startYear}`,
-      `01/${startYear + period1End}`,
-      `01/${startYear + Math.floor(data.maxDureeMois / 12)}`,
+    // 3-color palette from theme (dark -> medium -> light)
+    const segmentColors = [
+      roleColor(theme, 'bgMain'),
+      lightenColor(roleColor(theme, 'bgMain'), 0.25),
+      lightenColor(roleColor(theme, 'bgMain'), 0.50),
     ];
     
-    // Draw date labels above
-    slide.addText(dateLabels[0], {
-      x: LAYOUT.timeline.marginX, y: timelineY, w: 0.6, h: 0.20,
-      fontSize: 8, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'left',
-      lang: 'fr-FR',
-    });
+    // Text colors: white for dark segments, textMain for light
+    const textColors = ['FFFFFF', 'FFFFFF', roleColor(theme, 'textMain')];
     
-    if (segmentCount >= 2) {
-      slide.addText(dateLabels[1], {
-        x: LAYOUT.timeline.marginX + segmentW - 0.3, y: timelineY, w: 0.6, h: 0.20,
-        fontSize: 8, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
-        lang: 'fr-FR',
+    // Date labels ABOVE the bars (compact format on single line)
+    const startYear = new Date().getFullYear();
+    let cumulativeYears = 0;
+    const datePositions: { label: string; x: number; align: 'left' | 'center' | 'right' }[] = [];
+    
+    // Start date
+    datePositions.push({ label: `01/${startYear}`, x: LAYOUT.timeline.marginX, align: 'left' });
+    
+    // Intermediate dates
+    let xOffset = 0;
+    for (let i = 0; i < segmentCount - 1; i++) {
+      xOffset += segmentWidths[i];
+      cumulativeYears += Math.floor(segmentDurations[i] / 12);
+      datePositions.push({ 
+        label: `01/${startYear + cumulativeYears}`, 
+        x: LAYOUT.timeline.marginX + xOffset - 0.35, 
+        align: 'center' 
       });
     }
     
-    slide.addText(dateLabels[dateLabels.length - 1], {
-      x: LAYOUT.timeline.marginX + timelineW - 0.6, y: timelineY, w: 0.6, h: 0.20,
-      fontSize: 8, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'right',
-      lang: 'fr-FR',
+    // End date
+    datePositions.push({ 
+      label: `01/${startYear + totalYears}`, 
+      x: LAYOUT.timeline.marginX + timelineW - 0.7, 
+      align: 'right' 
+    });
+    
+    // Draw date labels (wider zones to prevent wrapping)
+    datePositions.forEach(dp => {
+      slide.addText(dp.label, {
+        x: dp.x, y: timelineY, w: 0.7, h: 0.20,
+        fontSize: 8, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: dp.align,
+        lang: 'fr-FR',
+      });
     });
     
     // Draw colored segments
-    periods.slice(0, 2).forEach((period, idx) => {
-      const segX = LAYOUT.timeline.marginX + idx * segmentW;
-      const segColor = idx === 0 ? roleColor(theme, 'bgMain') : lightenColor(roleColor(theme, 'bgMain'), 0.4);
+    let segX = LAYOUT.timeline.marginX;
+    periods.slice(0, 3).forEach((period, idx) => {
+      const segW = segmentWidths[idx];
+      const segColor = segmentColors[idx];
+      const txtColor = textColors[idx];
       
       slide.addShape('rect', {
-        x: segX, y: barY, w: segmentW, h: LAYOUT.timeline.barHeight,
+        x: segX, y: barY, w: segW, h: LAYOUT.timeline.barHeight,
         fill: { color: segColor },
       });
       
       slide.addText(formatEuro(period.total) + '/mois', {
-        x: segX, y: barY + 0.08, w: segmentW, h: 0.24,
-        fontSize: 11, bold: true, color: 'FFFFFF', fontFace: TYPO.fontFace, align: 'center',
+        x: segX, y: barY + 0.08, w: segW, h: 0.24,
+        fontSize: 11, bold: true, color: txtColor, fontFace: TYPO.fontFace, align: 'center',
         lang: 'fr-FR',
       });
-    });
-    
-    // Draw gray ticks below with capital labels
-    const tickY = barY + LAYOUT.timeline.barHeight + 0.08;
-    const tickGap = 0.02;
-    
-    periods.slice(0, 2).forEach((period, pIdx) => {
-      const periodYears = pIdx === 0 
-        ? Math.floor((data.loans[0]?.dureeMois || data.maxDureeMois) / 12) 
-        : Math.floor(data.maxDureeMois / 12) - Math.floor((data.loans[0]?.dureeMois || 0) / 12);
-      const capitalLabel = pIdx === 0 ? formatEuroShort(capitalPeriod1) : formatEuroShort(capitalPeriod2);
-      const tickCount = Math.min(periodYears, 10);
-      const tickW = (segmentW - (tickCount - 1) * tickGap) / tickCount;
       
-      for (let t = 0; t < tickCount; t++) {
-        const tickX = LAYOUT.timeline.marginX + pIdx * segmentW + t * (tickW + tickGap);
-        
-        // Gray tick
-        slide.addShape('rect', {
-          x: tickX, y: tickY, w: tickW, h: LAYOUT.timeline.tickHeight,
-          fill: { color: 'D0D0D0' },
-        });
-        
-        // Capital label under each tick
-        slide.addText(capitalLabel, {
-          x: tickX, y: tickY + LAYOUT.timeline.tickHeight + 0.02, w: tickW, h: 0.14,
-          fontSize: 6, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
-          lang: 'fr-FR',
-        });
-      }
+      segX += segW;
     });
+    
+    // ========== INSURANCE HISTOGRAM BARS (1 bar per year over total duration) ==========
+    const tickY = barY + LAYOUT.timeline.barHeight + 0.08;
+    const tickGap = 0.015;
+    const tickCount = totalYears;
+    const tickW = (timelineW - (tickCount - 1) * tickGap) / tickCount;
+    
+    // Calculate annual insurance (assume constant if no per-year data)
+    const annualInsurance = (data.coutTotalAssurance / totalYears) || 0;
+    const maxInsurance = annualInsurance; // For proportional height (all same if constant)
+    
+    for (let t = 0; t < tickCount; t++) {
+      const tickX = LAYOUT.timeline.marginX + t * (tickW + tickGap);
+      
+      // Gray tick bar
+      slide.addShape('rect', {
+        x: tickX, y: tickY, w: tickW, h: LAYOUT.timeline.tickHeight,
+        fill: { color: 'D0D0D0' },
+      });
+      
+      // Capital label under each tick (K€ format)
+      // Calculate remaining capital at this year
+      const yearFraction = t / totalYears;
+      const remainingCapital = data.totalCapital * (1 - yearFraction * 0.8); // Approximate linear decrease
+      slide.addText(formatEuroShort(remainingCapital), {
+        x: tickX, y: tickY + LAYOUT.timeline.tickHeight + 0.02, w: tickW, h: 0.12,
+        fontSize: 5, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
+        lang: 'fr-FR',
+      });
+    }
   }
   
   // ========== BOTTOM ROW: 3 ELEMENTS WITH ICONS ==========
@@ -283,10 +314,11 @@ export function buildCreditGlobalSynthesis(
     ? (data.smoothingMode === 'duree' ? 'Lissage activé : durée constante' : 'Lissage activé : mensualité constante')
     : '';
   
+  // Icons from repo: buildings, checklist (smoothing), balance (insurance)
   const bottomItems = [
-    { icon: 'building' as BusinessIconName, label: 'Total remboursé :', value: formatEuro(totalRembourse) },
-    { icon: 'umbrella' as BusinessIconName, label: smoothingLabel, value: '' },
-    { icon: 'shield' as BusinessIconName, label: 'Coût assurance décès :', value: formatEuro(data.coutTotalAssurance) },
+    { icon: 'buildings' as BusinessIconName, label: 'Total remboursé :', value: formatEuro(totalRembourse) },
+    { icon: 'checklist' as BusinessIconName, label: smoothingLabel, value: '' },
+    { icon: 'balance' as BusinessIconName, label: 'Coût assurance décès :', value: formatEuro(data.coutTotalAssurance) },
   ];
   
   bottomItems.forEach((item, idx) => {

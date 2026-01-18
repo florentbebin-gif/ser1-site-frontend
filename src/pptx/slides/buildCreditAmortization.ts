@@ -225,8 +225,8 @@ export function buildCreditAmortization(
     ];
   };
   
-  // Build data row (one per metric)
-  const buildDataRow = (
+  // Build data row for GLOBAL section (white/alternating background)
+  const buildGlobalDataRow = (
     label: string, 
     values: string[], 
     rowIndex: number,
@@ -255,6 +255,40 @@ export function buildCreditAmortization(
           fill: { color: rowFill },
           color: theme.textBody.replace('#', ''),
           fontSize: fontSize,
+          fontFace: TYPO.fontFace,
+          align: 'right' as const,
+          valign: 'middle' as const,
+        },
+      })),
+    ];
+  };
+  
+  // Build data row for PER-LOAN section (gray background, font 8)
+  const loanSectionFill = lightenColor(theme.colors.color7, 0.6);
+  const buildLoanDataRow = (
+    label: string, 
+    values: string[], 
+    isBold: boolean = false
+  ): PptxGenJS.TableCell[] => {
+    return [
+      {
+        text: label,
+        options: {
+          fill: { color: loanSectionFill },
+          color: theme.textMain.replace('#', ''),
+          bold: isBold,
+          fontSize: 8,
+          fontFace: TYPO.fontFace,
+          align: 'left' as const,
+          valign: 'middle' as const,
+        },
+      },
+      ...values.map(val => ({
+        text: val,
+        options: {
+          fill: { color: loanSectionFill },
+          color: theme.textBody.replace('#', ''),
+          fontSize: 8,
           fontFace: TYPO.fontFace,
           align: 'right' as const,
           valign: 'middle' as const,
@@ -327,10 +361,10 @@ export function buildCreditAmortization(
     const globalAmort = years.map(y => euro(globalAggregates.get(y)?.amort || 0));
     const globalCrd = years.map(y => euro(globalAggregates.get(y)?.crd || 0));
     
-    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[0], globalAnnuite, 0, false));
-    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[1], globalInteret, 1, true));
-    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[2], globalAssurance, 2, true));
-    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[3], globalAmort, 3, true));
+    tableRows.push(buildGlobalDataRow(GLOBAL_ROW_LABELS[0], globalAnnuite, 0, false));
+    tableRows.push(buildGlobalDataRow(GLOBAL_ROW_LABELS[1], globalInteret, 1, true));
+    tableRows.push(buildGlobalDataRow(GLOBAL_ROW_LABELS[2], globalAssurance, 2, true));
+    tableRows.push(buildGlobalDataRow(GLOBAL_ROW_LABELS[3], globalAmort, 3, true));
     tableRows.push(buildCrdRow(GLOBAL_ROW_LABELS[4], globalCrd, 4));
     
     // ===== PER-LOAN SECTIONS =====
@@ -346,12 +380,12 @@ export function buildCreditAmortization(
       const amortValues = years.map(y => loanYearMap.has(y) ? euro(loanYearMap.get(y)!.amort) : '—');
       const crdValues = years.map(y => loanYearMap.has(y) ? euro(loanYearMap.get(y)!.crd) : '—');
       
-      // Section header row with loan label
+      // Per-loan rows with gray background (font 8)
       const loanLabel = `Prêt N°${loanIdx} ${LOAN_ROW_LABELS[0]}`;
-      tableRows.push(buildDataRow(loanLabel, annuiteValues, (sectionIdx + 1) * 5, false));
-      tableRows.push(buildDataRow(LOAN_ROW_LABELS[1], assuranceValues, (sectionIdx + 1) * 5 + 1, true));
-      tableRows.push(buildDataRow(LOAN_ROW_LABELS[2], amortValues, (sectionIdx + 1) * 5 + 2, true));
-      tableRows.push(buildDataRow(LOAN_ROW_LABELS[3], crdValues, (sectionIdx + 1) * 5 + 3, true));
+      tableRows.push(buildLoanDataRow(loanLabel, annuiteValues, true));
+      tableRows.push(buildLoanDataRow(LOAN_ROW_LABELS[1], assuranceValues, false));
+      tableRows.push(buildLoanDataRow(LOAN_ROW_LABELS[2], amortValues, false));
+      tableRows.push(buildLoanDataRow(LOAN_ROW_LABELS[3], crdValues, false));
     });
   } else {
     // Single loan: simple table with global labels
@@ -361,10 +395,10 @@ export function buildCreditAmortization(
     const amortValues = allRows.map(r => euro(r.amort));
     const crdValues = allRows.map(r => euro(r.crd));
     
-    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[0], annuiteValues, 0, false));
-    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[1], interetValues, 1, true));
-    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[2], assuranceValues, 2, true));
-    tableRows.push(buildDataRow(GLOBAL_ROW_LABELS[3], amortValues, 3, true));
+    tableRows.push(buildGlobalDataRow(GLOBAL_ROW_LABELS[0], annuiteValues, 0, false));
+    tableRows.push(buildGlobalDataRow(GLOBAL_ROW_LABELS[1], interetValues, 1, true));
+    tableRows.push(buildGlobalDataRow(GLOBAL_ROW_LABELS[2], assuranceValues, 2, true));
+    tableRows.push(buildGlobalDataRow(GLOBAL_ROW_LABELS[3], amortValues, 3, true));
     tableRows.push(buildCrdRow(GLOBAL_ROW_LABELS[4], crdValues, 4));
   }
   
@@ -374,7 +408,7 @@ export function buildCreditAmortization(
     y: LAYOUT.tableY,
     w: LAYOUT.contentWidth,
     colW: colWidths,
-    rowH: 0.38,
+    rowH: 0.28,
     border: { 
       type: 'solid', 
       color: theme.colors.color8.replace('#', ''), 

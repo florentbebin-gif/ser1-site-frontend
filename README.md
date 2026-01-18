@@ -1023,10 +1023,25 @@ Layout reproduisant fidèlement la maquette de référence :
 | Zone | Contenu | Style |
 |------|---------|-------|
 | **HERO** | "VOTRE MENSUALITÉ" + valeur | 28pt bold, centré |
-| **KPIs** | Capital total, Durée max, Coût total | 3 colonnes icônes |
-| **Timeline Paliers** | 2 segments colorés (vert foncé/clair) + dates au-dessus | Mensualité dans chaque segment |
-| **Barres grises** | Ticks gris avec labels capital ("400 K€", "300 K€") | Sous la timeline |
-| **Bottom row** | 3 icônes : Total remboursé, Lissage, Assurance décès | Aligné en bas |
+| **KPIs** | Capital total, Durée max, Coût total | 3 colonnes icônes (money, gauge, chart-up) |
+| **Timeline Paliers** | Jusqu'à 3 segments (vert foncé/moyen/clair) + dates au-dessus | Mensualité dans chaque segment |
+| **Barres grises** | 1 barre par année sur durée totale (ex: 20 barres = 20 ans) | Sous la timeline |
+| **Bottom row** | 3 icônes : buildings, checklist, balance | Aligné en bas |
+
+#### Icônes business utilisées
+
+Toutes les icônes proviennent de `src/icons/business/svg` :
+- **money** : Capital total
+- **gauge** : Durée maximale
+- **chart-up** : Coût total
+- **buildings** : Total remboursé
+- **checklist** : Lissage
+- **balance** : Assurance décès
+
+#### Palette 3 segments (dérivée thème)
+- **Segment 1** : `bgMain` (vert foncé) - texte blanc
+- **Segment 2** : `lighten(bgMain, 25%)` (vert moyen) - texte blanc
+- **Segment 3** : `lighten(bgMain, 50%)` (vert clair) - texte textMain
 
 ### Langue fr-FR
 
@@ -1063,21 +1078,22 @@ L'annexe utilise un style professionnel avec phrases complètes :
 
 Structure reproduisant fidèlement la maquette de référence :
 
-1. **Section GLOBALE d'abord** (totaux agrégés sur tous les prêts) :
+1. **Section GLOBALE d'abord** (fond blanc/alterné, police 9) :
    - Annuité globale (hors ass.) - bold
    - Intérêts - regular
    - Assurance - regular
    - Capital amorti - regular
    - CRD fin d'année - bold, fond vert clair
 
-2. **Sections par prêt ensuite** (Prêt N°1, N°2, N°3) :
-   - Prêt N°X Annuité (hors ass.)
+2. **Sections par prêt ensuite** (fond gris, police 8) :
+   - Prêt N°X Annuité (hors ass.) - bold
    - Assurance
    - Capital amorti
    - CRD fin de période
 
 - **Pagination** : Max 8 années par slide (1/2, 2/2, etc.)
-- **Style** : En-tête vert foncé, alternance de fonds, bordures fines
+- **Hauteur lignes** : 0.28" (resserrées)
+- **Style** : En-tête vert foncé, sections prêts sur fond gris
 
 ### Fichiers concernés
 
