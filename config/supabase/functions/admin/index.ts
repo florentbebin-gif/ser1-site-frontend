@@ -1,23 +1,37 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getCorsHeaders } from './cors.ts'
 
-const ALLOWED_HEADERS = 'authorization, x-client-info, apikey, content-type, x-request-id'
-
-function getCorsHeaders(req: Request) {
-  const origin = req.headers.get('origin') ?? '*'
-  return {
-    'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Headers': ALLOWED_HEADERS,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    Vary: 'Origin',
-  }
+type AdminPayload = Record<string, unknown>
+interface ReportAgg {
+  total_reports: number
+  unread_reports: number
+  latest_report_id: string | null
+  latest_report_created_at: string | null
+  latest_report_is_unread: boolean
 }
 
-serve(async (req) => {
+function getSupabaseServiceClient(): SupabaseClient {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing')
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
+
+serve(async (req: Request) => {
   const reqStart = Date.now()
   const requestId = req.headers.get('x-request-id') || crypto.randomUUID()
   const corsHeaders = getCorsHeaders(req)
-  const responseHeaders = { ...corsHeaders, 'x-request-id': requestId }
+  const responseHeaders = { 
+    ...corsHeaders, 
+    'x-request-id': requestId,
+    'x-admin-version': '2026-01-20-fix-cors-v1'
+  }
   const origin = req.headers.get('origin') ?? 'unknown'
   const hasAuthHeader = !!req.headers.get('Authorization')
 
@@ -43,9 +57,7 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = getSupabaseServiceClient()
 
     // Vérifier que l'utilisateur est admin
     const authHeader = req.headers.get('Authorization')
@@ -76,22 +88,16 @@ serve(async (req) => {
     const url = new URL(req.url)
     
     // Lecture robuste du body
-    let payload: any = {}
+    let payload: AdminPayload = {}
     try {
       payload = await req.json()
-    } catch (e) {
-      console.log('Body vide ou invalide, utilisation payload vide')
+    } catch (_err) {
+      console.log('[admin] Body vide ou invalide, utilisation payload vide')
     }
     
-    const action = payload?.action ?? url.searchParams.get('action') ?? null
+    const action = (payload?.action as string | null) ?? url.searchParams.get('action') ?? null
     
-<<<<<<< Updated upstream
-    // Logs légers pour debug
-    console.log(`Method: ${method}, Action: ${action}, Body vide: ${Object.keys(payload).length === 0}`)
-=======
-    // Logs corrélés avec request-id
     console.log(`[EDGE_REQ] rid=${requestId} method=${method} origin=${origin} hasAuthHeader=${hasAuthHeader} action=${action}`)
->>>>>>> Stashed changes
     
     if (!action) {
       return new Response(JSON.stringify({ error: 'Missing action' }), {
@@ -100,12 +106,10 @@ serve(async (req) => {
       })
     }
 
-<<<<<<< Updated upstream
-=======
     // Mettre à jour le rôle d'un utilisateur
     if (action === 'update_user_role') {
-      const userId = payload.userId ?? payload.user_id
-      const { role } = payload
+      const userId = (payload.userId ?? payload.user_id) as string | undefined
+      const role = payload.role as string | undefined
 
       if (!userId || !role) {
         return new Response(JSON.stringify({ error: 'User ID and role required' }), {
@@ -135,8 +139,6 @@ serve(async (req) => {
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
-
->>>>>>> Stashed changes
     // Lister les utilisateurs avec count de signalements
     // Support GET + "users" (compat) et POST + "list_users" (frontend)
     if (action === 'users' || action === 'list_users') {
@@ -153,7 +155,7 @@ serve(async (req) => {
       }
 
       // Agréger les données par user
-      const reportStats = (reports ?? []).reduce((acc, report) => {
+      const reportStats = (reports ?? []).reduce<Record<string, ReportAgg>>((acc, report) => {
         if (!acc[report.user_id]) {
           acc[report.user_id] = {
             total_reports: 0,
@@ -170,7 +172,8 @@ serve(async (req) => {
         }
         
         // Garder le plus récent
-        if (new Date(report.created_at) > new Date(acc[report.user_id].latest_report_created_at)) {
+        const currentLatest = acc[report.user_id].latest_report_created_at
+        if (!currentLatest || new Date(report.created_at) > new Date(currentLatest)) {
           acc[report.user_id].latest_report_id = report.id
           acc[report.user_id].latest_report_created_at = report.created_at
           acc[report.user_id].latest_report_is_unread = report.admin_read_at === null
@@ -234,16 +237,13 @@ serve(async (req) => {
 
     // Reset password / renvoyer invitation
     if (action === 'reset_password') {
-      const { userId, email } = payload
-      if (!userId || !email) {
+      let { userId, email } = payload as { userId?: string; email?: string }
+      if (!userId) {
         return new Response(JSON.stringify({ error: 'User ID and email required' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
       }
-
-<<<<<<< Updated upstream
-=======
       if (!email) {
         const { data: existing, error: getError } = await supabase.auth.admin.getUserById(userId)
         if (getError || !existing?.user?.email) {
@@ -254,8 +254,6 @@ serve(async (req) => {
         }
         email = existing.user.email
       }
-
->>>>>>> Stashed changes
       const { error } = await supabase.auth.admin.generateLink({
         type: 'recovery',
         email,
@@ -284,11 +282,9 @@ serve(async (req) => {
       })
     }
 
-<<<<<<< Updated upstream
-=======
     // Lister les signalements d'un utilisateur
     if (action === 'list_issue_reports') {
-      const userId = payload.userId ?? payload.user_id
+      const userId = (payload.userId ?? payload.user_id) as string | undefined
       console.log(`[admin:list_issue_reports] Received request for user_id: ${userId}`, { payload })
       
       if (!userId) {
@@ -300,8 +296,7 @@ serve(async (req) => {
       }
 
       try {
-        // Vérifier d'abord si la table existe
-        const { data: tableExists, error: tableCheckError } = await supabase
+        const { error: tableCheckError } = await supabase
           .from('issue_reports')
           .select('id')
           .limit(1)
@@ -318,8 +313,6 @@ serve(async (req) => {
           })
         }
         
-        console.log('[admin:list_issue_reports] Table exists, querying reports')
-        
         const { data: reports, error } = await supabase
           .from('issue_reports')
           .select('*')
@@ -331,8 +324,6 @@ serve(async (req) => {
           throw error
         }
 
-        console.log(`[admin:list_issue_reports] Found ${reports?.length || 0} reports for user ${userId}`)
-        
         return new Response(JSON.stringify({ reports: reports || [] }), {
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -340,7 +331,7 @@ serve(async (req) => {
         console.error('[admin:list_issue_reports] Exception:', e)
         return new Response(JSON.stringify({ 
           error: 'Internal server error', 
-          details: e.message,
+          details: e instanceof Error ? e.message : 'unknown error',
           reports: []
         }), {
           status: 500,
@@ -348,8 +339,6 @@ serve(async (req) => {
         })
       }
     }
-
->>>>>>> Stashed changes
     // Obtenir le dernier signalement pour un utilisateur
     if (action === 'get_latest_issue_for_user') {
       const { userId } = payload
@@ -436,7 +425,7 @@ serve(async (req) => {
       if (error) throw error
 
       return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
@@ -499,9 +488,6 @@ serve(async (req) => {
       })
     }
 
-<<<<<<< Updated upstream
-    return new Response(JSON.stringify({ error: 'Invalid action' }), {
-=======
     // Version endpoint for deployment verification
     if (action === 'version') {
       return new Response(JSON.stringify({ 
@@ -515,7 +501,6 @@ serve(async (req) => {
     const duration = Date.now() - reqStart
     console.log(`[admin] END | rid=${requestId} | action=${action} | ${duration}ms | 400 invalid`)
     return new Response(JSON.stringify({ error: 'Invalid action', requestId }), {
->>>>>>> Stashed changes
       status: 400,
       headers: { ...responseHeaders, 'Content-Type': 'application/json' }
     })
@@ -523,7 +508,8 @@ serve(async (req) => {
   } catch (error) {
     const duration = Date.now() - reqStart
     console.error(`[admin] ERROR | rid=${requestId} | ${duration}ms | 500`, error)
-    return new Response(JSON.stringify({ error: error.message, requestId }), {
+    const message = error instanceof Error ? error.message : 'Internal server error'
+    return new Response(JSON.stringify({ error: message, requestId }), {
       status: 500,
       headers: { ...responseHeaders, 'Content-Type': 'application/json' }
     })

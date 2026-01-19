@@ -207,6 +207,38 @@ ser1/
 
 ## 🛠 Setup Supabase
 
+### Déploiement de la fonction Edge `admin` (CORS, prod)
+
+- Code source : `config/supabase/functions/admin` (utilise `cors.ts` + gestion OPTIONS 204)
+- Projet Supabase : `xnpbxrqkzgimiugqtago`
+- Commande de déploiement (important : `--workdir config`):
+
+```bash
+npx supabase functions deploy admin --project-ref xnpbxrqkzgimiugqtago --workdir config
+```
+
+### Vérifications rapides CORS (origin prod)
+
+```bash
+# Préflight
+curl --ssl-no-revoke -i -X OPTIONS "https://xnpbxrqkzgimiugqtago.supabase.co/functions/v1/admin" \
+  -H "Origin: https://ser1-site-frontend.vercel.app" \
+  -H "Access-Control-Request-Method: POST"
+
+# Requête réelle minimale (401 attendu sans token, mais doit inclure CORS)
+curl --ssl-no-revoke -i -X POST "https://xnpbxrqkzgimiugqtago.supabase.co/functions/v1/admin" \
+  -H "Origin: https://ser1-site-frontend.vercel.app" \
+  -H "Content-Type: application/json" \
+  -d "{}"
+```
+
+Attendu :
+- `Access-Control-Allow-Origin: https://ser1-site-frontend.vercel.app`
+- `Access-Control-Allow-Methods: POST, GET, OPTIONS`
+- `Access-Control-Allow-Headers: authorization, apikey, content-type, x-request-id`
+- Header de version : `x-admin-version: 2026-01-20-fix-cors-v1`
+
+
 ### 1) Créer le projet Supabase
 
 1. Allez sur https://supabase.com
