@@ -5,13 +5,7 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 5173,
     strictPort: true,
-    proxy: {
-      '/api': {
-        target: 'https://xnpbxrqkzgimiugqtago.supabase.co/functions/v1',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        secure: false,
-      },
-    },
+    // NOTE: Pour tester /api/admin en local, utiliser 'vercel dev' au lieu de 'npm run dev'
+    // Le proxy Vite vers Supabase direct a été supprimé car il contournait les gardes apikey
   },
 })
