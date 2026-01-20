@@ -9,6 +9,9 @@ export default async function handler(req, res) {
     'Content-Type, Authorization, apikey, x-client-info'
   );
 
+  // === VERSION HEADER (diagnostic) ===
+  res.setHeader('x-proxy-version', '2026-01-20-v1');
+
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
