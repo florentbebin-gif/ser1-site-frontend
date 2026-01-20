@@ -225,17 +225,33 @@ Bien que l'accès passe par un proxy, la fonction Edge doit toujours être dépl
 npx supabase functions deploy admin --project-ref xnpbxrqkzgimiugqtago --workdir config
 ```
 
+### Variables d'environnement Vercel (OBLIGATOIRE)
+
+Le proxy Vercel (`api/admin.js`) nécessite ces variables **côté serveur** (sans le préfixe `VITE_`) :
+
+| Variable | Description | Exemple |
+|----------|-------------|---------|
+| `SUPABASE_URL` | URL du projet Supabase | `https://xnpbxrqkzgimiugqtago.supabase.co` |
+| `SUPABASE_ANON_KEY` | Clé publique anon | `eyJhbGciOiJIUzI1NiIs...` |
+
+> ⚠️ **Important** : Les variables `VITE_*` ne sont PAS accessibles dans les Serverless Functions Vercel. Le proxy accepte aussi `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` comme fallback, mais il est recommandé de configurer les deux versions.
+
 ### Troubleshooting /api/admin
 
-Si `/settings/comptes` échoue :
+Si `/settings/comptes` échoue avec erreur 400 ou 500 :
 
-1. **Vérifier les logs Vercel** : Regarder les logs de la fonction `api/admin`.
-2. **En local** :
-   - Vérifier que `npm run dev` tourne sur `localhost:5173`.
-   - Le proxy Vite redirige `/api` vers `https://xnpbxrqkzgimiugqtago.supabase.co/functions/v1`.
-3. **Variables d'environnement** :
-   - `VITE_SUPABASE_URL` doit être défini côté Vercel (pour que le proxy sache où taper).
-   - `VITE_SUPABASE_ANON_KEY` est utilisé par le proxy si l'apikey n'est pas fournie.
+1. **Vérifier les variables d'environnement Vercel** :
+   - Dashboard Vercel → Settings → Environment Variables
+   - S'assurer que `SUPABASE_URL` et `SUPABASE_ANON_KEY` sont définis (sans `VITE_`)
+2. **Vérifier les logs Vercel** :
+   - Dashboard Vercel → Functions → `api/admin`
+   - Chercher les logs `[api/admin]` pour diagnostic
+3. **En local** :
+   - `npm run dev` sur `localhost:5173`
+   - Le proxy Vite redirige `/api` vers `https://xnpbxrqkzgimiugqtago.supabase.co/functions/v1`
+4. **Erreur "Non authentifié"** :
+   - L'utilisateur n'est pas connecté ou la session a expiré
+   - Recharger la page ou se reconnecter
 
 
 ### 1) Créer le projet Supabase
