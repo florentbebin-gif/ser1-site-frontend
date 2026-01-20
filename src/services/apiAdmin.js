@@ -1,12 +1,9 @@
 import { supabase } from '../supabaseClient';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
 /**
- * Appelle la Edge Function admin.
- * - En LOCAL: fetch direct vers Edge Function (headers minimaux)
- * - En PROD: /api/admin proxy Vercel
+ * Appelle la Edge Function admin via /api/admin.
+ * - En LOCAL: Vite proxy → Edge Function
+ * - En PROD: Vercel serverless → Edge Function
  * 
  * @param {string} action - Nom de l'action admin
  * @param {object} payload - Paramètres additionnels
@@ -20,23 +17,13 @@ export async function invokeAdmin(action, payload = {}) {
       return { data: null, error: { message: 'Non authentifié' } };
     }
 
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    
-    // URL cible: Edge Function directe en local, proxy en prod
-    const url = isLocal 
-      ? `${SUPABASE_URL}/functions/v1/admin`
-      : '/api/admin';
-
-    // Headers minimaux pour éviter 431 et CORS issues
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${session.access_token}`,
-      'apikey': SUPABASE_ANON_KEY,
-    };
-
-    const response = await fetch(url, {
+    // Toujours utiliser /api/admin - Vite proxy en local, Vercel en prod
+    const response = await fetch('/api/admin', {
       method: 'POST',
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
       body: JSON.stringify({ action, ...payload })
     });
 
