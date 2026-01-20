@@ -1,12 +1,15 @@
 import { supabase } from '../supabaseClient';
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 /**
  * Appelle la Edge Function admin.
- * - En LOCAL (npm run dev): utilise supabase.functions.invoke() directement
- * - En PROD (Vercel): utilise /api/admin proxy
+ * - En LOCAL: fetch direct vers Edge Function (headers minimaux)
+ * - En PROD: /api/admin proxy Vercel
  * 
- * @param {string} action - Nom de l'action admin (list_users, create_user_invite, etc.)
- * @param {object} payload - Paramètres additionnels pour l'action
+ * @param {string} action - Nom de l'action admin
+ * @param {object} payload - Paramètres additionnels
  * @returns {{ data: any, error: { message: string } | null }}
  */
 export async function invokeAdmin(action, payload = {}) {
@@ -17,29 +20,23 @@ export async function invokeAdmin(action, payload = {}) {
       return { data: null, error: { message: 'Non authentifié' } };
     }
 
-    // En local: utiliser le SDK Supabase directement (évite les problèmes de proxy)
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     
-    if (isLocal) {
-      // Appel direct via SDK Supabase
-      const { data, error } = await supabase.functions.invoke('admin', {
-        body: { action, ...payload },
-      });
-      
-      if (error) {
-        return { data: null, error: { message: error.message } };
-      }
-      return { data, error: null };
-    }
+    // URL cible: Edge Function directe en local, proxy en prod
+    const url = isLocal 
+      ? `${SUPABASE_URL}/functions/v1/admin`
+      : '/api/admin';
 
-    // En production: utiliser le proxy Vercel /api/admin
-    const response = await fetch('/api/admin', {
+    // Headers minimaux pour éviter 431 et CORS issues
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`,
+      'apikey': SUPABASE_ANON_KEY,
+    };
+
+    const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || '',
-      },
+      headers,
       body: JSON.stringify({ action, ...payload })
     });
 

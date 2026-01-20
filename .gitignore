@@ -72,3 +72,5 @@ docs/*.xlsx
 # Python artifacts (if any)
 __pycache__/
 *.py[cod]
+.vercel
+.env*.local
