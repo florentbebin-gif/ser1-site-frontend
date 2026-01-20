@@ -236,7 +236,19 @@ Attendu :
 - `Access-Control-Allow-Origin: https://ser1-site-frontend.vercel.app`
 - `Access-Control-Allow-Methods: POST, GET, OPTIONS`
 - `Access-Control-Allow-Headers: authorization, apikey, content-type, x-request-id`
-- Header de version : `x-admin-version: 2026-01-20-fix-cors-v1`
+- Header de version : `x-admin-version: 2026-01-20-fix-cors-v2`
+
+### Troubleshooting CORS persistant en Prod
+
+Si `curl` fonctionne mais que le navigateur bloque toujours :
+1. **Vérifier l'URL Supabase dans Vercel** :
+   - Variable `VITE_SUPABASE_URL` doit être exactement `https://xnpbxrqkzgimiugqtago.supabase.co`
+   - Si elle pointe ailleurs, le `invoke('admin')` tape sur un autre projet qui n'a pas le fix.
+2. **Vider le cache navigateur** :
+   - Le navigateur peut cacher le résultat du preflight `OPTIONS`.
+   - Tester en navigation privée ou avec "Disable Cache" dans les DevTools.
+3. **Vérifier les redirections** :
+   - Dans l'onglet Network, si vous voyez un status `3xx` avant le blocage, c'est souvent un problème d'URL (slash final manquant/en trop). Le client `supabase-js` gère normalement cela.
 
 
 ### 1) Créer le projet Supabase

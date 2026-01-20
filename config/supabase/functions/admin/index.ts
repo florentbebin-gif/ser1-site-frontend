@@ -26,13 +26,18 @@ function getSupabaseServiceClient(): SupabaseClient {
 serve(async (req: Request) => {
   const reqStart = Date.now()
   const requestId = req.headers.get('x-request-id') || crypto.randomUUID()
+  const origin = req.headers.get('origin') ?? 'unknown'
+  const method = req.method
+  const url = req.url
+
+  console.log(`[admin] START | rid=${requestId} | method=${method} | url=${url} | origin=${origin}`)
+
   const corsHeaders = getCorsHeaders(req)
   const responseHeaders = { 
     ...corsHeaders, 
     'x-request-id': requestId,
-    'x-admin-version': '2026-01-20-fix-cors-v1'
+    'x-admin-version': '2026-01-20-fix-cors-v2'
   }
-  const origin = req.headers.get('origin') ?? 'unknown'
   const hasAuthHeader = !!req.headers.get('Authorization')
 
   if (req.method === 'OPTIONS') {
