@@ -236,7 +236,7 @@ Attendu :
 - `Access-Control-Allow-Origin: https://ser1-site-frontend.vercel.app`
 - `Access-Control-Allow-Methods: POST, GET, OPTIONS`
 - `Access-Control-Allow-Headers: authorization, apikey, content-type, x-request-id`
-- Header de version : `x-admin-version: 2026-01-20-fix-cors-v3`
+- Header de version : `x-admin-version: 2026-01-20-fix-cors-v4`
 
 ### Troubleshooting CORS persistant en Prod
 
@@ -249,6 +249,11 @@ Si `curl` fonctionne mais que le navigateur bloque toujours :
    - Tester en navigation privée ou avec "Disable Cache" dans les DevTools.
 3. **Vérifier les redirections** :
    - Dans l'onglet Network, si vous voyez un status `3xx` avant le blocage, c'est souvent un problème d'URL (slash final manquant/en trop). Le client `supabase-js` gère normalement cela.
+4. **Erreur "Bearer undefined"** (Gateway 400 + CORS blocked) :
+   - Si le front envoie `Authorization: Bearer undefined` ou `Bearer null`, la gateway Supabase rejette la requête (400) AVANT d'atteindre la fonction, donc sans headers CORS.
+   - Vérifier que le code attend bien `session?.access_token` avant d'appeler `invoke`.
+5. **Localhost CORS** :
+   - Si vous testez en local (`http://localhost:5173`), assurez-vous que cette origine est bien whitelistée dans `config/supabase/functions/admin/cors.ts`.
 
 
 ### 1) Créer le projet Supabase

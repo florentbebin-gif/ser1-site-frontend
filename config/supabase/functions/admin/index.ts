@@ -36,7 +36,7 @@ serve(async (req: Request) => {
   const responseHeaders = { 
     ...corsHeaders, 
     'x-request-id': requestId,
-    'x-admin-version': '2026-01-20-fix-cors-v3'
+    'x-admin-version': '2026-01-20-fix-cors-v4'
   }
   const hasAuthHeader = !!req.headers.get('Authorization')
 

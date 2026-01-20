@@ -63,7 +63,7 @@ export default function SettingsComptes() {
       }
 
       const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
+      if (!session?.access_token) throw new Error('Non authentifié');
 
       const { data, error: invokeError } = await supabase.functions.invoke('admin', {
         body: { action: 'list_users' },
@@ -103,7 +103,7 @@ export default function SettingsComptes() {
     try {
       setActionLoading(true);
       const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
+      if (!session?.access_token) throw new Error('Non authentifié');
       
       const { error: invokeError } = await supabase.functions.invoke('admin', {
         body: { 
@@ -132,7 +132,7 @@ export default function SettingsComptes() {
     try {
       setActionLoading(true);
       const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
+      if (!session?.access_token) throw new Error('Non authentifié');
       
       const { error: invokeError } = await supabase.functions.invoke('admin', {
         body: { action: 'delete_user', userId },
@@ -154,7 +154,7 @@ export default function SettingsComptes() {
     try {
       setActionLoading(true);
       const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
+      if (!session?.access_token) throw new Error('Non authentifié');
       
       const { error: invokeError } = await supabase.functions.invoke('admin', {
         body: { 
@@ -185,7 +185,7 @@ export default function SettingsComptes() {
       setShowReportModal(true);
 
       const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
+      if (!session?.access_token) throw new Error('Non authentifié');
       
       const { data, error: invokeError } = await supabase.functions.invoke('admin', {
         body: { action: 'list_issue_reports', user_id: userId },
@@ -224,7 +224,7 @@ export default function SettingsComptes() {
   const handleMarkAsRead = async (reportId) => {
     try {
       const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
+      if (!session?.access_token) throw new Error('Non authentifié');
       
       const { error: invokeError } = await supabase.functions.invoke('admin', {
         body: { 
@@ -253,7 +253,7 @@ export default function SettingsComptes() {
 
     try {
       const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
+      if (!session?.access_token) throw new Error('Non authentifié');
       
       const { error: invokeError } = await supabase.functions.invoke('admin', {
         body: { 
@@ -283,7 +283,7 @@ export default function SettingsComptes() {
 
     try {
       const session = await getSessionWithRetry();
-      if (!session) throw new Error('Non authentifié');
+      if (!session?.access_token) throw new Error('Non authentifié');
       
       const { error: invokeError } = await supabase.functions.invoke('admin', {
         body: { 

@@ -2,6 +2,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
   'https://ser1-site-frontend.vercel.app',
   'http://localhost:5173',
   'http://localhost:5174',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
 ]
 
 const ALLOWED_ORIGINS = new Set(DEFAULT_ALLOWED_ORIGINS)
@@ -12,6 +14,8 @@ export const ALLOWED_HEADERS = [
   'apikey',
   'content-type',
   'x-request-id',
+  'x-admin-version',
+  'x-supabase-api-version',
 ].join(', ')
 
 export function resolveAllowedOrigin(origin: string | null): string | null {
