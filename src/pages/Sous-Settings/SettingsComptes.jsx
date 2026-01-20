@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { supabase, DEBUG_AUTH } from '../../supabaseClient';
 import { useUserRole } from '../../auth/useUserRole';
 import { UserInfoBanner } from '../../components/UserInfoBanner';
+import { invokeAdmin } from '../../services/apiAdmin';
 import './SettingsComptes.css';
 
 export default function SettingsComptes() {
@@ -62,15 +63,7 @@ export default function SettingsComptes() {
         console.log('[SettingsComptes] fetchUsers:start', { reason, requestId });
       }
 
-      const session = await getSessionWithRetry();
-      if (!session?.access_token) throw new Error('Non authentifié');
-
-      const { data, error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { action: 'list_users' },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
+      const { data, error: invokeError } = await invokeAdmin('list_users');
 
       if (requestId !== fetchUsersRequestIdRef.current) return;
 
@@ -102,17 +95,8 @@ export default function SettingsComptes() {
 
     try {
       setActionLoading(true);
-      const session = await getSessionWithRetry();
-      if (!session?.access_token) throw new Error('Non authentifié');
-      
-      const { error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { 
-          action: 'create_user_invite',
-          email: newUserEmail.trim()
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
+      const { error: invokeError } = await invokeAdmin('create_user_invite', { 
+        email: newUserEmail.trim() 
       });
 
       if (invokeError) throw new Error(invokeError.message);
@@ -131,15 +115,7 @@ export default function SettingsComptes() {
 
     try {
       setActionLoading(true);
-      const session = await getSessionWithRetry();
-      if (!session?.access_token) throw new Error('Non authentifié');
-      
-      const { error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { action: 'delete_user', userId },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
+      const { error: invokeError } = await invokeAdmin('delete_user', { userId });
 
       if (invokeError) throw new Error(invokeError.message);
       triggerRefresh('delete_user');
@@ -153,18 +129,9 @@ export default function SettingsComptes() {
   const handleResetPassword = async (userId, email) => {
     try {
       setActionLoading(true);
-      const session = await getSessionWithRetry();
-      if (!session?.access_token) throw new Error('Non authentifié');
-      
-      const { error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { 
-          action: 'reset_password',
-          userId,
-          email
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
+      const { error: invokeError } = await invokeAdmin('reset_password', { 
+        userId, 
+        email 
       });
 
       if (invokeError) throw new Error(invokeError.message);
@@ -184,15 +151,7 @@ export default function SettingsComptes() {
       setUserReports([]);
       setShowReportModal(true);
 
-      const session = await getSessionWithRetry();
-      if (!session?.access_token) throw new Error('Non authentifié');
-      
-      const { data, error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { action: 'list_issue_reports', user_id: userId },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
+      const { data, error: invokeError } = await invokeAdmin('list_issue_reports', { user_id: userId });
 
       if (invokeError) throw new Error(invokeError.message);
       
@@ -223,18 +182,7 @@ export default function SettingsComptes() {
 
   const handleMarkAsRead = async (reportId) => {
     try {
-      const session = await getSessionWithRetry();
-      if (!session?.access_token) throw new Error('Non authentifié');
-      
-      const { error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { 
-          action: 'mark_issue_read',
-          reportId
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
+      const { error: invokeError } = await invokeAdmin('mark_issue_read', { reportId });
 
       if (invokeError) throw new Error(invokeError.message);
       
@@ -252,18 +200,7 @@ export default function SettingsComptes() {
     if (!confirm('Supprimer définitivement ce signalement ?')) return;
 
     try {
-      const session = await getSessionWithRetry();
-      if (!session?.access_token) throw new Error('Non authentifié');
-      
-      const { error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { 
-          action: 'delete_issue',
-          reportId
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
+      const { error: invokeError } = await invokeAdmin('delete_issue', { reportId });
 
       if (invokeError) throw new Error(invokeError.message);
       
@@ -282,18 +219,7 @@ export default function SettingsComptes() {
     if (!confirm('Supprimer tout l\'historique des signalements pour cet utilisateur ?')) return;
 
     try {
-      const session = await getSessionWithRetry();
-      if (!session?.access_token) throw new Error('Non authentifié');
-      
-      const { error: invokeError } = await supabase.functions.invoke('admin', {
-        body: { 
-          action: 'delete_all_issues_for_user',
-          userId
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
+      const { error: invokeError } = await invokeAdmin('delete_all_issues_for_user', { userId });
 
       if (invokeError) throw new Error(invokeError.message);
       

@@ -207,53 +207,35 @@ ser1/
 
 ## 🛠 Setup Supabase
 
-### Déploiement de la fonction Edge `admin` (CORS, prod)
+### Architecture Admin (Proxy)
 
-- Code source : `config/supabase/functions/admin` (utilise `cors.ts` + gestion OPTIONS 204)
-- Projet Supabase : `xnpbxrqkzgimiugqtago`
-- Commande de déploiement (important : `--workdir config`):
+Pour éviter les problèmes de CORS récurrents sur la Edge Function, l'architecture a évolué (Jan 2026) :
 
+1. **Frontend** : Appelle `/api/admin` (Same-Origin) via `src/services/apiAdmin.js`.
+2. **Vercel (Proxy)** : La Serverless Function `api/admin.js` relai la requête vers Supabase.
+3. **Supabase** : La Edge Function `admin` reçoit la requête (de serveur à serveur).
+
+### Déploiement de la fonction Edge `admin`
+
+Bien que l'accès passe par un proxy, la fonction Edge doit toujours être déployée sur Supabase.
+
+- Code source : `config/supabase/functions/admin`
+- Commande de déploiement :
 ```bash
 npx supabase functions deploy admin --project-ref xnpbxrqkzgimiugqtago --workdir config
 ```
 
-### Vérifications rapides CORS (origin prod)
+### Troubleshooting /api/admin
 
-```bash
-# Préflight
-curl --ssl-no-revoke -i -X OPTIONS "https://xnpbxrqkzgimiugqtago.supabase.co/functions/v1/admin" \
-  -H "Origin: https://ser1-site-frontend.vercel.app" \
-  -H "Access-Control-Request-Method: POST"
+Si `/settings/comptes` échoue :
 
-# Requête réelle minimale (401 attendu sans token, mais doit inclure CORS)
-curl --ssl-no-revoke -i -X POST "https://xnpbxrqkzgimiugqtago.supabase.co/functions/v1/admin" \
-  -H "Origin: https://ser1-site-frontend.vercel.app" \
-  -H "Content-Type: application/json" \
-  -d "{}"
-```
-
-Attendu :
-- `Access-Control-Allow-Origin: https://ser1-site-frontend.vercel.app`
-- `Access-Control-Allow-Methods: POST, GET, OPTIONS`
-- `Access-Control-Allow-Headers: authorization, apikey, content-type, x-request-id`
-- Header de version : `x-admin-version: 2026-01-20-fix-cors-v4`
-
-### Troubleshooting CORS persistant en Prod
-
-Si `curl` fonctionne mais que le navigateur bloque toujours :
-1. **Vérifier l'URL Supabase dans Vercel** :
-   - Variable `VITE_SUPABASE_URL` doit être exactement `https://xnpbxrqkzgimiugqtago.supabase.co`
-   - Si elle pointe ailleurs, le `invoke('admin')` tape sur un autre projet qui n'a pas le fix.
-2. **Vider le cache navigateur** :
-   - Le navigateur peut cacher le résultat du preflight `OPTIONS`.
-   - Tester en navigation privée ou avec "Disable Cache" dans les DevTools.
-3. **Vérifier les redirections** :
-   - Dans l'onglet Network, si vous voyez un status `3xx` avant le blocage, c'est souvent un problème d'URL (slash final manquant/en trop). Le client `supabase-js` gère normalement cela.
-4. **Erreur "Bearer undefined"** (Gateway 400 + CORS blocked) :
-   - Si le front envoie `Authorization: Bearer undefined` ou `Bearer null`, la gateway Supabase rejette la requête (400) AVANT d'atteindre la fonction, donc sans headers CORS.
-   - Vérifier que le code attend bien `session?.access_token` avant d'appeler `invoke`.
-5. **Localhost CORS** :
-   - Si vous testez en local (`http://localhost:5173`), assurez-vous que cette origine est bien whitelistée dans `config/supabase/functions/admin/cors.ts`.
+1. **Vérifier les logs Vercel** : Regarder les logs de la fonction `api/admin`.
+2. **En local** :
+   - Vérifier que `npm run dev` tourne sur `localhost:5173`.
+   - Le proxy Vite redirige `/api` vers `https://xnpbxrqkzgimiugqtago.supabase.co/functions/v1`.
+3. **Variables d'environnement** :
+   - `VITE_SUPABASE_URL` doit être défini côté Vercel (pour que le proxy sache où taper).
+   - `VITE_SUPABASE_ANON_KEY` est utilisé par le proxy si l'apikey n'est pas fournie.
 
 
 ### 1) Créer le projet Supabase
