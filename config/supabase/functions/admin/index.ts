@@ -30,13 +30,13 @@ serve(async (req: Request) => {
   const method = req.method
   const url = req.url
 
-  console.log(`[admin] START | rid=${requestId} | method=${method} | url=${url} | origin=${origin}`)
+  console.log(`[admin] START v3 | rid=${requestId} | method=${method} | url=${url} | origin=${origin}`)
 
   const corsHeaders = getCorsHeaders(req)
   const responseHeaders = { 
     ...corsHeaders, 
     'x-request-id': requestId,
-    'x-admin-version': '2026-01-20-fix-cors-v2'
+    'x-admin-version': '2026-01-20-fix-cors-v3'
   }
   const hasAuthHeader = !!req.headers.get('Authorization')
 

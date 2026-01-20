@@ -236,7 +236,7 @@ Attendu :
 - `Access-Control-Allow-Origin: https://ser1-site-frontend.vercel.app`
 - `Access-Control-Allow-Methods: POST, GET, OPTIONS`
 - `Access-Control-Allow-Headers: authorization, apikey, content-type, x-request-id`
-- Header de version : `x-admin-version: 2026-01-20-fix-cors-v2`
+- Header de version : `x-admin-version: 2026-01-20-fix-cors-v3`
 
 ### Troubleshooting CORS persistant en Prod
 
