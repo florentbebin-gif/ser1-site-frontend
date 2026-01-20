@@ -36,7 +36,7 @@ serve(async (req: Request) => {
   const responseHeaders = { 
     ...corsHeaders, 
     'x-request-id': requestId,
-    'x-admin-version': '2026-01-20-fix-cors-v4'
+    'x-admin-version': '2026-01-20-fix-proxy-v5'
   }
   const hasAuthHeader = !!req.headers.get('Authorization')
 
@@ -94,15 +94,21 @@ serve(async (req: Request) => {
     
     // Lecture robuste du body
     let payload: AdminPayload = {}
+    let rawBodyPreview = '(empty)'
     try {
-      payload = await req.json()
+      const rawBody = await req.text()
+      rawBodyPreview = rawBody.slice(0, 100) + (rawBody.length > 100 ? '...' : '')
+      if (rawBody) {
+        payload = JSON.parse(rawBody)
+      }
     } catch (_err) {
-      console.log('[admin] Body vide ou invalide, utilisation payload vide')
+      console.log(`[admin] Body parse error, raw preview: ${rawBodyPreview}`)
     }
     
     const action = (payload?.action as string | null) ?? url.searchParams.get('action') ?? null
+    const payloadKeys = Object.keys(payload).join(',') || '(none)'
     
-    console.log(`[EDGE_REQ] rid=${requestId} method=${method} origin=${origin} hasAuthHeader=${hasAuthHeader} action=${action}`)
+    console.log(`[EDGE_REQ] rid=${requestId} method=${method} origin=${origin} hasAuth=${hasAuthHeader} action=${action} payloadKeys=${payloadKeys}`)
     
     if (!action) {
       return new Response(JSON.stringify({ error: 'Missing action' }), {

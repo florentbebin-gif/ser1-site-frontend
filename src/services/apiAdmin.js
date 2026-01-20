@@ -3,6 +3,10 @@ import { supabase } from '../supabaseClient';
 /**
  * Appelle l'API proxy /api/admin qui relai vers la Supabase Edge Function.
  * Cela évite les problèmes CORS en passant par le serveur Vercel (Same-Origin).
+ * 
+ * @param {string} action - Nom de l'action admin (list_users, create_user_invite, etc.)
+ * @param {object} payload - Paramètres additionnels pour l'action
+ * @returns {{ data: any, error: { message: string } | null }}
  */
 export async function invokeAdmin(action, payload = {}) {
   try {
@@ -12,31 +16,47 @@ export async function invokeAdmin(action, payload = {}) {
       return { data: null, error: { message: 'Non authentifié' } };
     }
 
+    // Build headers - NEVER send apikey if undefined/empty (server will use its own)
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${session.access_token}`,
+    };
+    
+    // Only add apikey header if we have a valid value
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    if (anonKey && anonKey !== 'undefined' && anonKey !== 'null') {
+      headers['apikey'] = anonKey;
+    }
+
+    // Normalize body: always {action, ...payload}
+    const body = { action, ...payload };
+
     const response = await fetch('/api/admin', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-        // L'API Key est gérée côté serveur (Vercel) via env var, 
-        // ou on peut l'envoyer si besoin, mais mieux vaut le cacher.
-        // On l'envoie ici au cas où le proxy attendrait explicitement un header apikey du client
-        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY
-      },
-      body: JSON.stringify({
-        action,
-        ...payload
-      })
+      headers,
+      body: JSON.stringify(body)
     });
 
-    const isJson = response.headers.get('content-type')?.includes('application/json');
-    const data = isJson ? await response.json() : await response.text();
+    const contentType = response.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+    
+    let data;
+    if (isJson) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      // For non-JSON responses, include a snippet in the error
+      data = { 
+        _rawText: text,
+        error: `Réponse non-JSON (${response.status}): ${text.slice(0, 200)}${text.length > 200 ? '...' : ''}`
+      };
+    }
 
     if (!response.ok) {
+      const errorMsg = data?.error || data?._rawText?.slice(0, 200) || `Erreur serveur (${response.status})`;
       return { 
         data: null, 
-        error: { 
-          message: (data && data.error) || `Erreur serveur (${response.status})` 
-        } 
+        error: { message: errorMsg } 
       };
     }
 
