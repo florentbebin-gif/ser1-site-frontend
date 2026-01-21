@@ -69,6 +69,9 @@ docs/*.xlsx
 
 
 
+# Vercel CLI cache
+.vercel/
+
 # Python artifacts (if any)
 __pycache__/
 *.py[cod]
