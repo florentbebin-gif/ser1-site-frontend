@@ -383,10 +383,8 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 
 [functions.admin]
 enabled = true
-# === DEBUG TEMPORAIRE (12h max) ===
-# Pour confirmer les erreurs CORS/gateway liées aux jetons,
-# on désactive verify_jwt localement. Remettre à true après tests.
-verify_jwt = false  # TODO revert true
+# JWT verification enabled (production standard)
+verify_jwt = true
 import_map = "./functions/admin/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
