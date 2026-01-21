@@ -1,5 +1,8 @@
 import { defineConfig, loadEnv } from 'vite'
 
+// Debug flag for proxy logs (set to true for troubleshooting /api/admin)
+const DEBUG_PROXY = false;
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   
@@ -34,23 +37,24 @@ export default defineConfig(({ mode }) => {
                 proxyReq.setHeader('apikey', supabaseAnonKey);
               }
               
-              // DIAGNOSTIC LOGS (sans secrets)
-              console.log('[PROXY_REQ]', {
-                method: proxyReq.method,
-                path: proxyReq.path,
-                host: proxyReq.getHeader('host'),
-                hasApikey: !!proxyReq.getHeader('apikey'),
-                apikeyLen: proxyReq.getHeader('apikey')?.toString().length || 0,
-                hasAuth: !!proxyReq.getHeader('authorization'),
-                contentType: proxyReq.getHeader('content-type'),
-              });
+              // Debug logs (enable DEBUG_PROXY for troubleshooting)
+              if (DEBUG_PROXY) {
+                console.log('[PROXY_REQ]', {
+                  method: proxyReq.method,
+                  path: proxyReq.path,
+                  host: proxyReq.getHeader('host'),
+                  hasApikey: !!proxyReq.getHeader('apikey'),
+                  hasAuth: !!proxyReq.getHeader('authorization'),
+                });
+              }
             });
-            proxy.on('proxyRes', (proxyRes, req) => {
-              console.log('[PROXY_RES]', {
-                status: proxyRes.statusCode,
-                server: proxyRes.headers['server'],
-                contentType: proxyRes.headers['content-type'],
-              });
+            proxy.on('proxyRes', (proxyRes) => {
+              if (DEBUG_PROXY) {
+                console.log('[PROXY_RES]', {
+                  status: proxyRes.statusCode,
+                  contentType: proxyRes.headers['content-type'],
+                });
+              }
             });
           },
         },

@@ -8,7 +8,10 @@
  */
 
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
-import { supabase, DEBUG_AUTH } from '../supabaseClient';
+import { supabase } from '../supabaseClient';
+
+// Debug flag for theme-related logs (set to true for troubleshooting)
+const DEBUG_THEME = false;
 import { resolvePptxColors } from '../pptx/theme/resolvePptxColors';
 
 // Cache local pour les thèmes (performance)
@@ -30,7 +33,7 @@ function getThemeFromCache(): ThemeColors | null {
       
       // Valider le cache
       if (now - cache.timestamp < THEME_CACHE_TTL) {
-        console.info('[ThemeProvider] Using cached theme');
+        if (DEBUG_THEME) console.info('[ThemeProvider] Using cached theme');
         return cache.colors;
       } else {
         localStorage.removeItem(THEME_CACHE_KEY);
@@ -176,8 +179,8 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const mountIdRef = useRef<string>(Date.now().toString());
   const cacheAppliedRef = useRef<boolean>(false);
 
-  // 🚨 DIAGNOSTIC: Log mount/unmount
-  console.info(`[ThemeProvider] MOUNTING - ID: ${mountIdRef.current}`);
+  // Debug: Log mount/unmount
+  if (DEBUG_THEME) console.info(`[ThemeProvider] MOUNTING - ID: ${mountIdRef.current}`);
 
   // ⚡ APPLY IMMEDIATELY : Si cache présent, appliquer tout de suite (avant useEffect)
   // Utilisation d'un ref pour ne le faire qu'une fois au montage initial du composant React
@@ -187,19 +190,19 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     if (cached) {
       applyColorsToCSSWithGuard(cached, undefined, 'cache-sync-init');
       cacheAppliedRef.current = true;
-      console.info('[ThemeProvider] Cache theme applied immediately, skipping default');
+      if (DEBUG_THEME) console.info('[ThemeProvider] Cache theme applied immediately, skipping default');
     } else {
       // Only apply default if NO cache exists
       applyColorsToCSSWithGuard(DEFAULT_COLORS, undefined, 'default-sync-init');
       cacheAppliedRef.current = false;
-      console.info('[ThemeProvider] No cache found, applied default theme');
+      if (DEBUG_THEME) console.info('[ThemeProvider] No cache found, applied default theme');
     }
     initialApplyDone.current = true;
   }
 
   useEffect(() => {
     return () => {
-      console.info(`[ThemeProvider] UNMOUNTING - ID: ${mountIdRef.current}`);
+      if (DEBUG_THEME) console.info(`[ThemeProvider] UNMOUNTING - ID: ${mountIdRef.current}`);
     };
   }, []);
 
@@ -214,11 +217,11 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     const hash = getThemeHash(colors, userId);
     
     if (lastAppliedHashRef.current === hash) {
-      console.info(`[ThemeProvider] SKIPPED - Same colors already applied (source: ${source})`);
+      if (DEBUG_THEME) console.info(`[ThemeProvider] SKIPPED - Same colors already applied (source: ${source})`);
       return;
     }
 
-    console.info(`[ThemeProvider] APPLYING - Hash: ${hash.substring(0, 20)}... (source: ${source})`);
+    if (DEBUG_THEME) console.info(`[ThemeProvider] APPLYING - Hash: ${hash.substring(0, 20)}... (source: ${source})`);
     
     const root = document.documentElement;
     root.style.setProperty('--color-c1', colors.c1);
@@ -247,11 +250,11 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         
         if (!mounted) return;
 
-        console.info(`[ThemeProvider] LOAD THEME - User: ${user?.id || 'anonymous'}, Request: ${requestId}`);
+        if (DEBUG_THEME) console.info(`[ThemeProvider] LOAD THEME - User: ${user?.id || 'anonymous'}, Request: ${requestId}`);
 
         // Si cache déjà appliqué, attendre l'auth sans appliquer de default
         if (cacheAppliedRef.current) {
-          console.info('[ThemeProvider] Cache already applied, waiting for auth resolution...');
+          if (DEBUG_THEME) console.info('[ThemeProvider] Cache already applied, waiting for auth resolution...');
         } else {
           // Appliquer le thème par défaut uniquement si aucun cache
           applyColorsToCSSWithGuard(DEFAULT_COLORS, user?.id, 'default-initial');
@@ -334,7 +337,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
           if (source !== 'cache/local' && source !== 'ui_settings (same as cache)' && source !== 'user_metadata (same as cache)') {
             applyColorsToCSSWithGuard(finalColors, user?.id, source);
           }
-          console.info(`[ThemeProvider] Theme source: ${source}`);
+          if (DEBUG_THEME) console.info(`[ThemeProvider] Theme source: ${source}`);
         }
 
         // Load logo from user_metadata (cover_slide_url is stored as dataUri)
@@ -342,9 +345,9 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         if (user?.user_metadata?.cover_slide_url && mounted) {
           const logoUrl = user.user_metadata.cover_slide_url;
           setLogo(logoUrl);
-          console.info('[ThemeProvider] Logo loaded from user_metadata:', logoUrl.substring(0, 50) + '...');
+          if (DEBUG_THEME) console.info('[ThemeProvider] Logo loaded from user_metadata');
         } else if (user && mounted) {
-          console.info('[ThemeProvider] No logo found in user_metadata');
+          if (DEBUG_THEME) console.info('[ThemeProvider] No logo found in user_metadata');
         }
       } catch (error) {
         if (mounted) {
@@ -414,7 +417,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       // Sauvegarder dans le cache local
       saveThemeToCache(colors, themeName);
       
-      console.info('[ThemeProvider] Theme saved to ui_settings and cache');
+      if (DEBUG_THEME) console.info('[ThemeProvider] Theme saved to ui_settings and cache');
       return { success: true, data };
 
     } catch (err) {
