@@ -52,7 +52,7 @@ Pour éviter les régressions "ça marche chez moi", vérifier ces points avant 
 
 ## ✅ Checklists de validation
 
-### Troubleshooting /api/admin {#troubleshooting-api-admin}
+### Troubleshooting /api/admin
 
 Si `/settings/comptes` échoue avec erreur 400 ou 500 :
 
@@ -287,7 +287,7 @@ Le proxy Vercel (`api/admin.js`) nécessite ces variables **côté serveur** (sa
 
 > ⚠️ **Important** : Les variables `VITE_*` ne sont PAS accessibles dans les Serverless Functions Vercel. Le proxy accepte aussi `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` comme fallback, mais il est recommandé de configurer les deux versions.
 
-> Voir section [Troubleshooting /api/admin](#troubleshooting-api-admin) ci-dessus pour le diagnostic complet.
+> Voir section [Troubleshooting /api/admin](#troubleshooting--apiadmin) ci-dessus pour le diagnostic complet.
 
 
 ### 1) Créer le projet Supabase
@@ -392,6 +392,7 @@ npm install
 
 # Configurer les variables d'environnement
 # Copier .env.example → .env.local (Vite lit automatiquement .env.local)
+# Note: si votre setup utilise déjà .env, vérifiez avant de changer
 # VITE_SUPABASE_URL=https://VOTRE-PROJET.supabase.co
 # VITE_SUPABASE_ANON_KEY=eyJ...
 ```
