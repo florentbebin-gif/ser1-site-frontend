@@ -16,6 +16,7 @@
 | Date | Problème | Cause racine | Fix | Validation |
 |------|----------|--------------|-----|------------|
 | 21 jan 2026 | POST /api/admin retourne 400 Bad Request (HTML Cloudflare) en local | Proxy Vite supprime header Host, invalidant requête HTTP | Retirer 'host' de headersToRemove dans vite.config.ts | curl.exe POST /api/admin → 401 JSON au lieu de 400 HTML |
+| 22 jan 2026 | Audit hardening: sécurité renforcée, logs nettoyés | Mise à jour post-audit technique | verify_jwt=true, .env.example, headers Vercel, flags DEBUG_* | npm run build passe, console nettoyée |
 
 > Rappel : même en runtime automatique React 18, **tous** les hooks (`useRef`, `useMemo`, etc.) doivent être importés explicitement.
 
@@ -62,6 +63,15 @@ Redémarrer Vite : `Ctrl+C` puis `npm run dev`
 - Redémarrer Vite après modification de `vite.config.ts`
 - Tester `/api/admin` sans auth pour valider le proxy (401 = OK, 400 = bug)
 - Ne pas hardcoder de clés/tokens dans le code (utiliser `loadEnv` pour `.env.local`)
+
+### Activation des logs de debug
+
+Pour faciliter le troubleshooting, certains composants incluent des flags de debug :
+
+- **ThemeProvider** (`src/settings/ThemeProvider.tsx`) : `const DEBUG_THEME = false;` - Activer pour voir les logs de chargement des thèmes
+- **Proxy Vite** (`vite.config.ts`) : `const DEBUG_PROXY = false;` - Activer pour voir les logs de requêtes /api/admin
+
+Pour activer temporairement : changer `false` en `true`, redémarrer Vite (`npm run dev`).
 
 ## ✅ Checklists de validation
 
@@ -192,8 +202,6 @@ SER1/
 └── 📄 *.md                        # Documentation technique
 
 ---
-
-## 🏗️ Architecture
 
 ### Structure du Projet
 
@@ -412,10 +420,14 @@ VITE_SUPABASE_URL=https://xxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=xxxxxxxx
 ```
 
+> Voir `.env.example` pour un modèle complet avec toutes les variables nécessaires.
+
 ### Lancement
 ```bash
 # Développement
 npm run dev
+
+Note: Si le port 5173 est occupé, Vite utilisera automatiquement le port 5174.
 
 # Build production
 npm run build
