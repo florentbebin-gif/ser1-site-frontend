@@ -423,7 +423,7 @@ database/
 ## 🚀 Démarrage rapide
 
 ### Prérequis
-- Node.js 18+
+- Node.js 22.x (obligatoire) - Utiliser `.nvmrc` pour version automatique
 - Compte Supabase
 
 ### Installation
@@ -436,13 +436,13 @@ cd SER1
 npm install
 
 # Configurer les variables d'environnement
-# Créer un fichier .env à la racine avec les variables suivantes :
+# Copier .env.example → .env.local (Vite lit automatiquement .env.local)
 # VITE_SUPABASE_URL=https://VOTRE-PROJET.supabase.co
 # VITE_SUPABASE_ANON_KEY=eyJ...
 ```
 
 ### Variables d'environnement
-Créer un fichier `.env` à la racine :
+Créer un fichier `.env.local` à la racine :
 ```env
 VITE_SUPABASE_URL=https://xxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=xxxxxxxx
@@ -1115,7 +1115,7 @@ npm run build       # Vérifie la compilation
 
 ---
 
-## � Slide 3 IR - Synthèse Fiscale Premium
+## 📊 Slide 3 IR - Synthèse Fiscale Premium
 
 ### Architecture anti-overlap
 
