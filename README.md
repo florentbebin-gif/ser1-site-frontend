@@ -156,7 +156,7 @@ SER1/
 ├── 📄 package.json                 # Dépendances et scripts npm
 ├── 📄 vite.config.ts              # Configuration Vite
 ├── 📄 tsconfig.json               # Configuration TypeScript
-├── 📄 .env                        # Variables d'environnement (à créer)
+├── 📄 .env.local                        # Variables d'environnement (à créer)
 ├── 📄 .gitignore                  # Fichiers ignorés par Git
 ├── 📄 vercel.json                 # Configuration déploiement Vercel
 │
@@ -347,7 +347,7 @@ Si `/settings/comptes` échoue avec erreur 400 ou 500 :
 
 ### 2) Configurer le frontend (.env)
 
-Dans `.env` à la racine du projet :
+Dans `.env.local` à la racine du projet :
 
 ```env
 VITE_SUPABASE_URL=https://VOTRE-PROJET.supabase.co
