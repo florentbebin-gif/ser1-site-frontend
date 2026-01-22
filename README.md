@@ -327,9 +327,8 @@ Si `/settings/comptes` échoue avec erreur 400 ou 500 :
    - Dashboard Vercel → Functions → `api/admin`
    - Chercher les logs `[api/admin]` pour diagnostic
 3. **En local (pour tester /api/admin)** :
-   - Utiliser `vercel dev` au lieu de `npm run dev`
-   - Cela exécute les Serverless Functions localement avec les mêmes gardes qu'en prod
-   - `npm run dev` seul ne supporte pas `/api/admin` (erreur 404)
+   - `npm run dev` fonctionne avec le proxy Vite (retourne 401 JSON attendu)
+   - `vercel dev` optionnel pour parité serverless complète (même environnement que prod)
 4. **Erreur "Non authentifié"** :
    - L'utilisateur n'est pas connecté ou la session a expiré
    - Recharger la page ou se reconnecter
@@ -345,7 +344,7 @@ Si `/settings/comptes` échoue avec erreur 400 ou 500 :
    - **Project URL** (ex: `https://xxxxxxxx.supabase.co`)
    - **anon public** key (commence par `eyJ...`)
 
-### 2) Configurer le frontend (.env)
+### 2) Configurer le frontend (.env.local)
 
 Dans `.env.local` à la racine du projet :
 
