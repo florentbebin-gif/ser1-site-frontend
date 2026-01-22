@@ -48,60 +48,31 @@ Pour éviter les régressions "ça marche chez moi", vérifier ces points avant 
 
 > Rappel : même en runtime automatique React 18, **tous** les hooks (`useRef`, `useMemo`, etc.) doivent être importés explicitement.
 
-### Dépannage: /api/admin renvoie 400 Cloudflare en local
-
-#### Symptômes
-- En local (`npm run dev`), l'appel POST `/api/admin` (utilisé par `/settings/comptes`) retourne `400 Bad Request`
-- Réponse : HTML "400 Bad Request" avec signature "cloudflare" (pas JSON)
-- DevTools Network montre la requête sans réponse JSON valide
-- La page `/settings/comptes` affiche une erreur au lieu de la liste des utilisateurs
-
-#### Cause racine
-Le proxy Vite (`vite.config.ts`) supprime le header HTTP `Host` via la liste `headersToRemove`. Une requête HTTP/1.1 sans header `Host` est invalide, Cloudflare rejette immédiatement avec 400 avant d'atteindre l'Edge Function Supabase.
-
-#### Comment diagnostiquer
-1. **Confirmer le serveur local** : `netstat -ano | findstr ":5173"` → doit afficher `LISTENING`
-2. **Test curl basique** :
-   ```powershell
-   curl.exe -i -X POST http://localhost:5173/api/admin -H "Content-Type: application/json" --data-raw "{\"action\":\"list_users\"}"
-   ```
-   - **Avant fix** : Status `400`, Content-Type `text/html`, réponse HTML cloudflare
-   - **Après fix** : Status `401` (auth requis), Content-Type `application/json`, réponse `{"error":"Missing authorization"}`
-3. **Logs Vite** : Les logs proxy montrent `host: undefined` avant fix, `host: 'xnpbxrqkzgimiugqtago.supabase.co'` après
-4. **DevTools** : L'apikey n'est pas visible dans les headers (injectée par proxy), mais vérifiez l'absence d'erreur réseau
-
-#### Fix
-Modifier `vite.config.ts` (ligne ~25) :
-```diff
-  const headersToRemove = [
--   'cookie', 'host', 'connection', 'accept-language',
-+   'cookie', 'connection', 'accept-language',
-  ];
-```
-Redémarrer Vite : `Ctrl+C` puis `npm run dev`
-
-#### Validation
-- **curl** : Retourne 401 JSON (au lieu de 400 HTML)
-- **Navigateur** : Se connecter → `/settings/comptes` → liste utilisateurs affichée (200 JSON)
-- **Build** : `npm run build` passe sans erreur
-
-#### Bonnes pratiques
-- Ne jamais supprimer le header `Host` dans un proxy HTTP
-- Éviter les headers toxiques (`cookie`, `connection`, `origin`) mais conserver `Host` pour la validité HTTP
-- Redémarrer Vite après modification de `vite.config.ts`
-- Tester `/api/admin` sans auth pour valider le proxy (401 = OK, 400 = bug)
-- Ne pas hardcoder de clés/tokens dans le code (utiliser `loadEnv` pour `.env.local`)
-
-### Activation des logs de debug
-
-Pour faciliter le troubleshooting, certains composants incluent des flags de debug :
-
-- **ThemeProvider** (`src/settings/ThemeProvider.tsx`) : `const DEBUG_THEME = false;` - Activer pour voir les logs de chargement des thèmes
-- **Proxy Vite** (`vite.config.ts`) : `const DEBUG_PROXY = false;` - Activer pour voir les logs de requêtes /api/admin
-
-Pour activer temporairement : changer `false` en `true`, redémarrer Vite (`npm run dev`).
+---
 
 ## ✅ Checklists de validation
+
+### Troubleshooting /api/admin
+
+Si `/settings/comptes` échoue avec erreur 400 ou 500 :
+
+1. **Vérifier les variables d'environnement Vercel** :
+   - Dashboard Vercel → Settings → Environment Variables
+   - S'assurer que `SUPABASE_URL` et `SUPABASE_ANON_KEY` sont définis (sans `VITE_`)
+2. **Vérifier les logs Vercel** :
+   - Dashboard Vercel → Functions → `api/admin`
+   - Chercher les logs `[api/admin]` pour diagnostic
+3. **En local (pour tester /api/admin)** :
+   - `npm run dev` fonctionne avec le proxy Vite (retourne 401 JSON attendu)
+   - `vercel dev` optionnel pour parité serverless complète (même environnement que prod)
+4. **Erreur "Non authentifié"** :
+   - L'utilisateur n'est pas connecté ou la session a expiré
+   - Recharger la page ou se reconnecter
+
+#### Historique des corrections
+| Date | Issue | Correction | Résultat |
+|------|-------|------------|----------|
+| 21 jan 2026 | POST /api/admin retourne 400 Bad Request (HTML Cloudflare) en local | Proxy Vite supprime header Host, invalidant requête HTTP | Retirer 'host' de headersToRemove dans vite.config.ts | curl.exe POST /api/admin → 401 JSON au lieu de 400 HTML |
 
 ### PPTX Serenity (avant merge)
 - [ ] Export IR et Crédit générés et ouverts dans PowerPoint sans avertissement
