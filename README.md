@@ -11,12 +11,40 @@
   - Totaux surlignés (`bold`, `borderTop`)
 - **Validation** : `buildXlsxBlob` + `validateXlsxBlob` (refus d'un blob dont le header ZIP n'est pas `PK`).
 
+## 📅 Release Notes — Janvier 2026
+
+### Stabilisation & Hardening (v1.0.1)
+- **Node.js** : Stabilisation sur version **22.x** (via `.nvmrc` + `engines`) pour parité parfaite Local/Vercel.
+- **Sécurité** :
+  - Headers de sécurité HTTP ajoutés (nosniff, frame-options, etc.).
+  - Nettoyage des logs (plus de secrets ou données sensibles dans la console).
+  - Validation stricte des exports Excel (vérification signature PK/Zip).
+- **Architecture** :
+  - **Proxy Admin** : Correction du header `Host` manquant en local (évite erreur 400 Cloudflare).
+  - **Auth** : Suppression des `console.log` verbeux par défaut (flags `DEBUG_*`).
+- **DX (Expérience Développeur)** :
+  - Checklist de parité dev/prod.
+  - Documentation troubleshooting enrichie.
+
+### ✅ Checklist Parité Local / Prod
+Pour éviter les régressions "ça marche chez moi", vérifier ces points avant tout merge :
+
+| Point de contrôle | Local (`npm run dev`) | Production (Vercel) | Note |
+|-------------------|-----------------------|---------------------|------|
+| **Node Version** | `node -v` = 22.x | 22.x (Settings Vercel) | Configuré via `engines` |
+| **API Admin** | Proxy Vite (`/api/admin`) | Vercel Function (`/api/admin`) | Proxy local simule Vercel |
+| **Supabase** | URL/Key `.env.local` | Env Vars Vercel | **Mêmes** projets recommandés |
+| **Auth Token** | `sb-access-token` | `sb-access-token` | Géré par Supabase Auth |
+| **Logs** | Console propre (sauf si `DEBUG_=true`) | Console propre | Pas de secrets affichés |
+
+---
+
 ## 🔧 Troubleshooting / Correctifs récents
 
 | Date | Problème | Cause racine | Fix | Validation |
 |------|----------|--------------|-----|------------|
+| 22 jan 2026 | Logs verbeux + Node version mismatch | Config par défaut trop permissive | Flags `DEBUG_*` + `.nvmrc` | Console propre, build stable |
 | 21 jan 2026 | POST /api/admin retourne 400 Bad Request (HTML Cloudflare) en local | Proxy Vite supprime header Host, invalidant requête HTTP | Retirer 'host' de headersToRemove dans vite.config.ts | curl.exe POST /api/admin → 401 JSON au lieu de 400 HTML |
-| 22 jan 2026 | Audit hardening: sécurité renforcée, logs nettoyés | Mise à jour post-audit technique | verify_jwt=true, .env.example, headers Vercel, flags DEBUG_* | npm run build passe, console nettoyée |
 
 > Rappel : même en runtime automatique React 18, **tous** les hooks (`useRef`, `useMemo`, etc.) doivent être importés explicitement.
 
