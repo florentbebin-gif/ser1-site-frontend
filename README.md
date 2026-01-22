@@ -1408,7 +1408,7 @@ pfuIr: result.pfuIr,
 
 ---
 
-## �� Documentation complémentaire
+## 📋 Documentation complémentaire
 
 ### Fichiers de documentation
 - `ADMIN_COMPTES_ET_SIGNALMENTS.md` : Gestion admin
