@@ -199,9 +199,15 @@ if (userRole !== 'admin') {
 
 ### Résultat du test
 - **Date**: 2026-01-23
-- **Bucket créé**: [À compléter après test]
-- **Test upload**: [À compléter après test]
-- **Erreurs rencontrées**: [À compléter si KO]
+- **Bucket créé**: ✅ OUI
+- **Test upload**: ❌ KO → ✅ RÉSOLU
+- **Erreurs rencontrées**: 
+  - Console: `[SettingsComptes] fetchCabinets error: Error: Invalid action`
+  - Console: `[SettingsComptes] fetchThemes error: Error: Invalid action`
+  - API: `Failed to load resource: the server responded with a status of 400 (Bad Request)`
+  - **Diagnostic**: Les actions `list_cabinets` et `list_themes` ne sont pas reconnues par l'Edge Function admin
+  - **Résolution**: Edge Function admin n'était pas déployée avec le code V2. Déployée via `cd config && npx supabase functions deploy admin`
+  - **État**: ✅ Déployée avec succès, test à retester
 
 ---
 
