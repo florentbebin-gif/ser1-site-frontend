@@ -499,6 +499,623 @@ serve(async (req: Request) => {
       })
     }
 
+    // ============================================================================
+    // V1: CABINETS, THEMES, LOGOS ACTIONS
+    // ============================================================================
+
+    // Lister les cabinets
+    if (action === 'list_cabinets') {
+      const { data, error } = await supabase
+        .from('cabinets')
+        .select(`
+          id, 
+          name, 
+          created_at, 
+          updated_at,
+          default_theme_id,
+          logo_id,
+          themes:default_theme_id(name, is_system),
+          logos:logo_id(sha256, storage_path, mime, width, height, bytes)
+        `)
+        .order('name')
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ cabinets: data || [] }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Créer un cabinet
+    if (action === 'create_cabinet') {
+      const { name, default_theme_id } = payload as { name?: string; default_theme_id?: string }
+      
+      if (!name || typeof name !== 'string' || name.trim().length === 0) {
+        return new Response(JSON.stringify({ error: 'Cabinet name required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Vérifier si le thème existe si fourni
+      if (default_theme_id) {
+        const { data: themeCheck, error: themeError } = await supabase
+          .from('themes')
+          .select('id')
+          .eq('id', default_theme_id)
+          .single()
+        
+        if (themeError || !themeCheck) {
+          return new Response(JSON.stringify({ error: 'Invalid theme_id' }), {
+            status: 400,
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('cabinets')
+        .insert({ 
+          name: name.trim(),
+          default_theme_id: default_theme_id || null
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ cabinet: data }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Mettre à jour un cabinet
+    if (action === 'update_cabinet') {
+      const { id, name, default_theme_id, logo_id } = payload as { 
+        id?: string; 
+        name?: string; 
+        default_theme_id?: string | null;
+        logo_id?: string | null;
+      }
+      
+      if (!id) {
+        return new Response(JSON.stringify({ error: 'Cabinet ID required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const updateData: any = {}
+      
+      if (name !== undefined) {
+        if (!name || typeof name !== 'string' || name.trim().length === 0) {
+          return new Response(JSON.stringify({ error: 'Valid cabinet name required' }), {
+            status: 400,
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        updateData.name = name.trim()
+      }
+
+      if (default_theme_id !== undefined) {
+        if (default_theme_id) {
+          const { data: themeCheck, error: themeError } = await supabase
+            .from('themes')
+            .select('id')
+            .eq('id', default_theme_id)
+            .single()
+          
+          if (themeError || !themeCheck) {
+            return new Response(JSON.stringify({ error: 'Invalid theme_id' }), {
+              status: 400,
+              headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+        }
+        updateData.default_theme_id = default_theme_id
+      }
+
+      if (logo_id !== undefined) {
+        if (logo_id) {
+          const { data: logoCheck, error: logoError } = await supabase
+            .from('logos')
+            .select('id')
+            .eq('id', logo_id)
+            .single()
+          
+          if (logoError || !logoCheck) {
+            return new Response(JSON.stringify({ error: 'Invalid logo_id' }), {
+              status: 400,
+              headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+            })
+          }
+        }
+        updateData.logo_id = logo_id
+      }
+
+      const { data, error } = await supabase
+        .from('cabinets')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ cabinet: data }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Supprimer un cabinet
+    if (action === 'delete_cabinet') {
+      const { id } = payload as { id?: string }
+      
+      if (!id) {
+        return new Response(JSON.stringify({ error: 'Cabinet ID required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Vérifier qu'aucun profil n'est assigné à ce cabinet
+      const { data: profilesCount, error: countError } = await supabase
+        .from('profiles')
+        .select('id', { count: 'exact' })
+        .eq('cabinet_id', id)
+
+      if (countError) throw countError
+
+      if (profilesCount && profilesCount.length > 0) {
+        return new Response(JSON.stringify({ 
+          error: 'Cannot delete cabinet: users are still assigned to it',
+          assigned_users: profilesCount.length
+        }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const { error } = await supabase
+        .from('cabinets')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Lister les thèmes
+    if (action === 'list_themes') {
+      const { data, error } = await supabase
+        .from('themes')
+        .select('*')
+        .order('is_system', { ascending: false })
+        .order('name')
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ themes: data || [] }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Créer un thème
+    if (action === 'create_theme') {
+      const { name, palette } = payload as { name?: string; palette?: any }
+      
+      if (!name || typeof name !== 'string' || name.trim().length === 0) {
+        return new Response(JSON.stringify({ error: 'Theme name required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      if (!palette || typeof palette !== 'object') {
+        return new Response(JSON.stringify({ error: 'Palette object required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Valider que la palette contient les 10 couleurs requises
+      const requiredColors = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10']
+      const missingColors = requiredColors.filter(color => !(color in palette))
+      if (missingColors.length > 0) {
+        return new Response(JSON.stringify({ 
+          error: 'Palette missing required colors', 
+          missing: missingColors 
+        }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const { data, error } = await supabase
+        .from('themes')
+        .insert({ 
+          name: name.trim(),
+          palette,
+          is_system: false
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ theme: data }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Mettre à jour un thème
+    if (action === 'update_theme') {
+      const { id, name, palette } = payload as { 
+        id?: string; 
+        name?: string; 
+        palette?: any;
+      }
+      
+      if (!id) {
+        return new Response(JSON.stringify({ error: 'Theme ID required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Vérifier que le thème n'est pas système
+      const { data: existingTheme, error: fetchError } = await supabase
+        .from('themes')
+        .select('is_system')
+        .eq('id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      if (existingTheme?.is_system) {
+        return new Response(JSON.stringify({ error: 'Cannot modify system theme' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const updateData: any = {}
+      
+      if (name !== undefined) {
+        if (!name || typeof name !== 'string' || name.trim().length === 0) {
+          return new Response(JSON.stringify({ error: 'Valid theme name required' }), {
+            status: 400,
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        updateData.name = name.trim()
+      }
+
+      if (palette !== undefined) {
+        if (!palette || typeof palette !== 'object') {
+          return new Response(JSON.stringify({ error: 'Palette object required' }), {
+            status: 400,
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+
+        // Valider que la palette contient les 10 couleurs requises
+        const requiredColors = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10']
+        const missingColors = requiredColors.filter(color => !(color in palette))
+        if (missingColors.length > 0) {
+          return new Response(JSON.stringify({ 
+            error: 'Palette missing required colors', 
+            missing: missingColors 
+          }), {
+            status: 400,
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+
+        updateData.palette = palette
+      }
+
+      const { data, error } = await supabase
+        .from('themes')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ theme: data }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Supprimer un thème
+    if (action === 'delete_theme') {
+      const { id } = payload as { id?: string }
+      
+      if (!id) {
+        return new Response(JSON.stringify({ error: 'Theme ID required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Vérifier que le thème n'est pas système
+      const { data: existingTheme, error: fetchError } = await supabase
+        .from('themes')
+        .select('is_system')
+        .eq('id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      if (existingTheme?.is_system) {
+        return new Response(JSON.stringify({ error: 'Cannot delete system theme' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Vérifier qu'aucun cabinet n'utilise ce thème
+      const { data: cabinetsCount, error: countError } = await supabase
+        .from('cabinets')
+        .select('id', { count: 'exact' })
+        .eq('default_theme_id', id)
+
+      if (countError) throw countError
+
+      if (cabinetsCount && cabinetsCount.length > 0) {
+        return new Response(JSON.stringify({ 
+          error: 'Cannot delete theme: still assigned to cabinets',
+          assigned_cabinets: cabinetsCount.length
+        }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const { error } = await supabase
+        .from('themes')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Assigner un utilisateur à un cabinet
+    if (action === 'assign_user_cabinet') {
+      const { user_id, cabinet_id } = payload as { 
+        user_id?: string; 
+        cabinet_id?: string | null;
+      }
+      
+      if (!user_id) {
+        return new Response(JSON.stringify({ error: 'User ID required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Si cabinet_id est fourni, vérifier qu'il existe
+      if (cabinet_id) {
+        const { data: cabinetCheck, error: cabinetError } = await supabase
+          .from('cabinets')
+          .select('id')
+          .eq('id', cabinet_id)
+          .single()
+        
+        if (cabinetError || !cabinetCheck) {
+          return new Response(JSON.stringify({ error: 'Invalid cabinet_id' }), {
+            status: 400,
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ cabinet_id: cabinet_id || null })
+        .eq('id', user_id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ profile: data }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Assigner un thème à un cabinet
+    if (action === 'assign_cabinet_theme') {
+      const { cabinet_id, theme_id } = payload as { 
+        cabinet_id?: string; 
+        theme_id?: string | null;
+      }
+      
+      if (!cabinet_id) {
+        return new Response(JSON.stringify({ error: 'Cabinet ID required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Si theme_id est fourni, vérifier qu'il existe
+      if (theme_id) {
+        const { data: themeCheck, error: themeError } = await supabase
+          .from('themes')
+          .select('id')
+          .eq('id', theme_id)
+          .single()
+        
+        if (themeError || !themeCheck) {
+          return new Response(JSON.stringify({ error: 'Invalid theme_id' }), {
+            status: 400,
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('cabinets')
+        .update({ default_theme_id: theme_id || null })
+        .eq('id', cabinet_id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ cabinet: data }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Vérifier si un logo existe par SHA256
+    if (action === 'check_logo_exists') {
+      const { sha256 } = payload as { sha256?: string }
+      
+      if (!sha256 || typeof sha256 !== 'string') {
+        return new Response(JSON.stringify({ error: 'SHA256 hash required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      const { data, error } = await supabase
+        .from('logos')
+        .select('id, storage_path, mime, width, height, bytes')
+        .eq('sha256', sha256)
+        .single()
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // Pas de résultat = logo n'existe pas
+          return new Response(JSON.stringify({ exists: false }), {
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        throw error
+      }
+
+      return new Response(JSON.stringify({ exists: true, logo: data }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Créer un logo
+    if (action === 'create_logo') {
+      const { sha256, storage_path, mime, width, height, bytes } = payload as { 
+        sha256?: string; 
+        storage_path?: string; 
+        mime?: string; 
+        width?: number; 
+        height?: number; 
+        bytes?: number;
+      }
+      
+      if (!sha256 || !storage_path || !mime) {
+        return new Response(JSON.stringify({ error: 'sha256, storage_path, and mime required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      if (typeof width !== 'number' || typeof height !== 'number' || typeof bytes !== 'number') {
+        return new Response(JSON.stringify({ error: 'width, height, and bytes must be numbers' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Récupérer l'ID de l'utilisateur admin depuis le JWT
+      const authHeader = req.headers.get('Authorization')
+      let adminUserId = null
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.substring(7)
+        try {
+          const { data: { user } } = await supabase.auth.getUser(token)
+          adminUserId = user?.id || null
+        } catch (e) {
+          console.warn('[admin] Could not extract user ID from token')
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('logos')
+        .insert({ 
+          sha256,
+          storage_path,
+          mime,
+          width,
+          height,
+          bytes,
+          created_by: adminUserId
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ logo: data }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Assigner un logo à un cabinet
+    if (action === 'assign_cabinet_logo') {
+      const { cabinet_id, logo_id } = payload as { 
+        cabinet_id?: string; 
+        logo_id?: string | null;
+      }
+      
+      if (!cabinet_id) {
+        return new Response(JSON.stringify({ error: 'Cabinet ID required' }), {
+          status: 400,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Si logo_id est fourni, vérifier qu'il existe
+      if (logo_id) {
+        const { data: logoCheck, error: logoError } = await supabase
+          .from('logos')
+          .select('id')
+          .eq('id', logo_id)
+          .single()
+        
+        if (logoError || !logoCheck) {
+          return new Response(JSON.stringify({ error: 'Invalid logo_id' }), {
+            status: 400,
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('cabinets')
+        .update({ logo_id: logo_id || null })
+        .eq('id', cabinet_id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return new Response(JSON.stringify({ cabinet: data }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // ============================================================================
+    // ACTIONS EXISTANTES (non modifiées)
+    // ============================================================================
+
     // Version endpoint for deployment verification
     if (action === 'version') {
       return new Response(JSON.stringify({ 
