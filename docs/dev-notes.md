@@ -178,10 +178,37 @@ if (userRole !== 'admin') {
 
 ---
 
+## TEST MANUEL V2 - BUCKET STORAGE LOGOS
+
+### Étapes à exécuter manuellement
+1. **Créer bucket Supabase Storage**:
+   - Nom: `logos`
+   - Type: `private`
+   - RLS: activé (par défaut)
+
+2. **Test depuis /settings/comptes**:
+   - Créer un cabinet "Cabinet Test"
+   - Uploader un logo (fichier PNG/JPG réel)
+   - Assigner un user au cabinet
+
+3. **Vérifications Supabase**:
+   - Storage: fichier dans `logos/{cabinet_id}/timestamp-hash.ext`
+   - DB `logos`: row avec sha256, storage_path, bytes
+   - DB `cabinets`: logo_id non null
+   - DB `profiles`: cabinet_id du user non null
+
+### Résultat du test
+- **Date**: 2026-01-23
+- **Bucket créé**: [À compléter après test]
+- **Test upload**: [À compléter après test]
+- **Erreurs rencontrées**: [À compléter si KO]
+
+---
+
 ## PROCHAINES ÉTAPES (V3+)
 
-1. Créer bucket Storage "logos" (manuel Dashboard)
-2. Smoke tests manuels de l'UI admin
+1. ✅ Créer bucket Storage "logos" (manuel Dashboard)
+2. ✅ Smoke tests manuels de l'UI admin
 3. V3: Intégration thème cabinet dans Settings user (option "Utiliser thème cabinet")
 4. V4: Optimisation perf (chunking pptxgenjs)
 
