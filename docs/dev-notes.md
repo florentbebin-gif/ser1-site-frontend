@@ -144,20 +144,46 @@ if (userRole !== 'admin') {
 
 ---
 
-## ÉTAT ACTUEL
+## VAGUE 2 - UI ADMIN /settings/comptes
 
-- ✅ Tests: 68/68 passés
-- ✅ Build: OK (chunk 1.19MB - inchangé)
-- ✅ Aucune régression UI (Settings non modifié)
-- ⚠️ **TODO**: Créer bucket Storage "logos" dans Dashboard Supabase
+### Commit 3: feat(admin): add logo upload utility with SHA256 dedup
+- **Fichier**: `src/utils/logoUpload.js`
+- **Fonctionnalités**:
+  - Calcul SHA256 côté client
+  - Vérification `check_logo_exists` avant upload
+  - Upload vers Storage bucket "logos"
+  - Création enregistrement DB via `create_logo`
+
+### Commit 4: feat(admin): add cabinets/themes UI + user assignment
+- **Fichier**: `src/pages/Sous-Settings/SettingsComptes.jsx`
+- **UI ajoutée**:
+  - Section Cabinets (cards + modal CRUD + logo upload + thème par défaut)
+  - Section Thèmes globaux (cards + modal CRUD + palette 10 couleurs + protection système)
+  - Colonne "Cabinet" dans table users avec dropdown d'assignation
+- **Actions API utilisées**:
+  - `list_cabinets`, `create_cabinet`, `update_cabinet`, `delete_cabinet`
+  - `list_themes`, `create_theme`, `update_theme`, `delete_theme`
+  - `assign_user_cabinet`, `assign_cabinet_logo`
+  - `check_logo_exists`, `create_logo`
 
 ---
 
-## PROCHAINES ÉTAPES (V2)
+## ÉTAT ACTUEL
+
+- ✅ Tests: 68/68 passés
+- ✅ Build: OK (chunk 1.20MB - légère augmentation V2)
+- ✅ Aucune régression UI Settings user
+- ✅ UI admin cabinets/thèmes fonctionnelle
+- ⚠️ **TODO**: Créer bucket Storage "logos" dans Dashboard Supabase (requis pour upload)
+
+---
+
+## PROCHAINES ÉTAPES (V3+)
 
 1. Créer bucket Storage "logos" (manuel Dashboard)
-2. Smoke tests API admin avec curl
-3. V2: UI admin dans SettingsComptes
+2. Smoke tests manuels de l'UI admin
+3. V3: Intégration thème cabinet dans Settings user (option "Utiliser thème cabinet")
+4. V4: Optimisation perf (chunking pptxgenjs)
 
 ---
 
