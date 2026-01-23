@@ -117,6 +117,45 @@ if (userRole !== 'admin') {
 
 ---
 
+## VAGUE 1 - DB + API MINIMAL
+
+### Commit 1: feat(db): add cabinets themes logos schema + RLS
+- **Fichiers**: `database/migrations/create-cabinets-themes-logos.sql`
+- **Tables créées**: `themes`, `logos`, `cabinets`
+- **FK ajoutée**: `profiles.cabinet_id`
+- **Fonction admin**: `public.is_admin()` basée sur JWT claims
+- **RLS**: Policies admin-only (V1 minimal)
+- **Seed**: Thème SER1 Classique + cabinet Défaut
+
+### Commit 2: feat(api): add admin actions for cabinets/themes/logos
+- **Fichier**: `config/supabase/functions/admin/index.ts`
+- **Actions ajoutées**:
+  - Cabinets: `list_cabinets`, `create_cabinet`, `update_cabinet`, `delete_cabinet`
+  - Themes: `list_themes`, `create_theme`, `update_theme`, `delete_theme`
+  - Logos: `check_logo_exists`, `create_logo`, `assign_cabinet_logo`
+  - Assignments: `assign_user_cabinet`, `assign_cabinet_theme`
+- **Validation**: Payload basique + erreurs consistantes
+- **Auth**: Préserve logique existante (user_metadata.role)
+
+---
+
+## ÉTAT ACTUEL
+
+- ✅ Tests: 68/68 passés
+- ✅ Build: OK (chunk 1.19MB - inchangé)
+- ✅ Aucune régression UI (Settings non modifié)
+- ⚠️ **TODO**: Créer bucket Storage "logos" dans Dashboard Supabase
+
+---
+
+## PROCHAINES ÉTAPES (V2)
+
+1. Créer bucket Storage "logos" (manuel Dashboard)
+2. Smoke tests API admin avec curl
+3. V2: UI admin dans SettingsComptes
+
+---
+
 ## ANNEXE - COMMANDES UTILES
 
 ```bash
