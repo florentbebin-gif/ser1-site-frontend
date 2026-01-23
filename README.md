@@ -72,7 +72,6 @@ Si `/settings/comptes` échoue avec erreur 400 ou 500 :
 #### Historique des corrections
 | Date | Issue | Correction | Résultat |
 |------|-------|------------|----------|
-| 21 jan 2026 | POST /api/admin retourne 400 Bad Request (HTML Cloudflare) en local | Proxy Vite supprime header Host, invalidant requête HTTP | Retirer 'host' de headersToRemove dans vite.config.ts | curl.exe POST /api/admin → 401 JSON au lieu de 400 HTML |
 
 ### PPTX Serenity (avant merge)
 - [ ] Export IR et Crédit générés et ouverts dans PowerPoint sans avertissement
@@ -392,7 +391,7 @@ npm install
 
 # Configurer les variables d'environnement
 # Copier .env.example → .env.local (Vite lit automatiquement .env.local)
-# Note: si votre setup utilise déjà .env, vérifiez avant de changer
+# Note: si votre setup utilise déjà .env, vérifiez avant de changer. Vérifier la présence d'un fichier .env existant, les variables déjà définies, et l'ordre de chargement (Vite priorise .env.local, Vercel utilise les env vars).
 # VITE_SUPABASE_URL=https://VOTRE-PROJET.supabase.co
 # VITE_SUPABASE_ANON_KEY=eyJ...
 ```
