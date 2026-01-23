@@ -200,14 +200,13 @@ if (userRole !== 'admin') {
 ### Résultat du test
 - **Date**: 2026-01-23
 - **Bucket créé**: ✅ OUI
-- **Test upload**: ❌ KO → ✅ RÉSOLU
+- **Test upload**: ❌ KO → ❌ 500 ERROR
 - **Erreurs rencontrées**: 
-  - Console: `[SettingsComptes] fetchCabinets error: Error: Invalid action`
-  - Console: `[SettingsComptes] fetchThemes error: Error: Invalid action`
-  - API: `Failed to load resource: the server responded with a status of 400 (Bad Request)`
-  - **Diagnostic**: Les actions `list_cabinets` et `list_themes` ne sont pas reconnues par l'Edge Function admin
-  - **Résolution**: Edge Function admin n'était pas déployée avec le code V2. Déployée via `cd config && npx supabase functions deploy admin`
-  - **État**: ✅ Déployée avec succès, test à retester
+  - **Round 1**: `Invalid action` (400) → **Résolu**: Edge Function déployée
+  - **Round 2**: `Internal server error` (500) sur `list_cabinets` et `list_themes`
+  - **Diagnostic**: Les tables `cabinets` et `themes` n'existent pas en base de données
+  - **Hypothèse**: La migration SQL `create-cabinets-themes-logos.sql` n'a pas été appliquée
+  - **Action requise**: Appliquer la migration SQL manuellement depuis Supabase Dashboard
 
 ---
 
