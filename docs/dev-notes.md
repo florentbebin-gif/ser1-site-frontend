@@ -137,6 +137,11 @@ if (userRole !== 'admin') {
 - **Validation**: Payload basique + erreurs consistantes
 - **Auth**: Préserve logique existante (user_metadata.role)
 
+### Note: actions historiques toujours présentes
+- Users: `users`, `list_users`, `create_user_invite`, `delete_user`, `reset_password`, `update_user_role`
+- Issues: `list_issue_counts`, `list_issue_reports`, `get_latest_issue_for_user`, `mark_issue_read`, `mark_issue_unread`, `delete_issue`, `delete_all_issues_for_user`
+- Debug/health: `ping_public` (sans auth via query), `ping`, `echo`, `version`
+
 ---
 
 ## ÉTAT ACTUEL

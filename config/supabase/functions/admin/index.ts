@@ -4,6 +4,15 @@ import type { SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getCorsHeaders } from './cors.ts'
 
 type AdminPayload = Record<string, unknown>
+
+const ADMIN_VERSION = '2026-01-23-v1'
+
+function parseBearerToken(authHeader: string | null): string | null {
+  if (!authHeader) return null
+  const match = authHeader.match(/^\s*Bearer\s+(.+?)\s*$/i)
+  return match?.[1] ?? null
+}
+
 interface ReportAgg {
   total_reports: number
   unread_reports: number
@@ -30,13 +39,13 @@ serve(async (req: Request) => {
   const method = req.method
   const url = req.url
 
-  console.log(`[admin] START v3 | rid=${requestId} | method=${method} | url=${url} | origin=${origin}`)
+  console.log(`[admin] START ${ADMIN_VERSION} | rid=${requestId} | method=${method} | url=${url} | origin=${origin}`)
 
   const corsHeaders = getCorsHeaders(req)
   const responseHeaders = { 
     ...corsHeaders, 
     'x-request-id': requestId,
-    'x-admin-version': '2026-01-20-fix-proxy-v5'
+    'x-admin-version': ADMIN_VERSION
   }
   const hasAuthHeader = !!req.headers.get('Authorization')
 
@@ -66,20 +75,23 @@ serve(async (req: Request) => {
 
     // Vérifier que l'utilisateur est admin
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Missing authorization' }), {
+    const token = parseBearerToken(authHeader)
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'Missing bearer token' }), {
         status: 401,
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
+
+    const adminUserId = user.id
 
     const userRole = user.user_metadata?.role || user.app_metadata?.role || 'user'
     if (userRole !== 'admin') {
@@ -659,17 +671,17 @@ serve(async (req: Request) => {
       }
 
       // Vérifier qu'aucun profil n'est assigné à ce cabinet
-      const { data: profilesCount, error: countError } = await supabase
+      const { count: assignedUsersCount, error: countError } = await supabase
         .from('profiles')
-        .select('id', { count: 'exact' })
+        .select('id', { count: 'exact', head: true })
         .eq('cabinet_id', id)
 
       if (countError) throw countError
 
-      if (profilesCount && profilesCount.length > 0) {
+      if ((assignedUsersCount ?? 0) > 0) {
         return new Response(JSON.stringify({ 
           error: 'Cannot delete cabinet: users are still assigned to it',
-          assigned_users: profilesCount.length
+          assigned_users: assignedUsersCount
         }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
@@ -1034,19 +1046,6 @@ serve(async (req: Request) => {
         })
       }
 
-      // Récupérer l'ID de l'utilisateur admin depuis le JWT
-      const authHeader = req.headers.get('Authorization')
-      let adminUserId = null
-      if (authHeader?.startsWith('Bearer ')) {
-        const token = authHeader.substring(7)
-        try {
-          const { data: { user } } = await supabase.auth.getUser(token)
-          adminUserId = user?.id || null
-        } catch (e) {
-          console.warn('[admin] Could not extract user ID from token')
-        }
-      }
-
       const { data, error } = await supabase
         .from('logos')
         .insert({ 
@@ -1119,7 +1118,7 @@ serve(async (req: Request) => {
     // Version endpoint for deployment verification
     if (action === 'version') {
       return new Response(JSON.stringify({ 
-        version: 'SER1-admin-20250106-01',
+        version: ADMIN_VERSION,
         deployedAt: new Date().toISOString()
       }), {
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }
