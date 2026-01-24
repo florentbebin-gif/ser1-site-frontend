@@ -938,7 +938,17 @@ serve(async (req: Request) => {
         .select()
         .single()
 
-      if (error) throw error
+      if (error) {
+        // Gérer le cas où le profile n'existe pas (PGRST116)
+        if (error.code === 'PGRST116') {
+          console.log(`[admin] assign_user_cabinet: profile not found for user_id=${user_id}`)
+          return new Response(JSON.stringify({ error: 'Profile not found for user' }), {
+            status: 404,
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+        throw error
+      }
 
       return new Response(JSON.stringify({ profile: data }), {
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }
