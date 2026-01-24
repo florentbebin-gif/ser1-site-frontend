@@ -8,7 +8,6 @@ const DEBUG_THEME = false; // Debug flag for theme logs
 // V4: PPTX/Excel imports moved to dynamic import() in export functions
 import { computeCapitalDecesSchedule, computeGlobalCapitalDecesSchedule } from '../engine/credit/capitalDeces';
 import './Credit.css'
-import '../styles/premium-shared.css'
 
 /* ---------- Helpers format ---------- */
 const fmt0  = (n)=> (Math.round(Number(n)||0)).toLocaleString('fr-FR')

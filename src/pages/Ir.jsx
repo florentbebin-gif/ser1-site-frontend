@@ -1,7 +1,6 @@
 // src/pages/Ir.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './Ir.css';
-import '../styles/premium-shared.css';
 import { onResetEvent, storageKeyFor } from '../utils/reset';
 import { toNumber } from '../utils/number';
 import { computeIrResult as computeIrResultEngine } from '../utils/irEngine.js';

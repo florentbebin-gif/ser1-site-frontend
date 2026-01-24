@@ -6,6 +6,7 @@ import { waitInitialSession } from './supabaseClient.js'
 import { ThemeProvider } from './settings/ThemeProvider'
 import { AuthProvider } from './auth'
 import './styles.css'
+import './styles/premium-shared.css'
 
 // On attend que Supabase ait fini son travail avant de monter React
 waitInitialSession().then(() => {
