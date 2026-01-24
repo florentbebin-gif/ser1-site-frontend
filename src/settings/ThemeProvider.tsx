@@ -434,7 +434,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [themeSource]);
 
   // Met à jour les couleurs et applique immédiatement
   const setColors = useCallback((newColors: ThemeColors) => {

@@ -499,9 +499,15 @@ export default function Settings({ isAdmin = false }) {
                     type="button"
                     className="chip"
                     onClick={handleSaveColors}
-                    disabled={savingColors || !user}
-                    style={{ opacity: user ? 1 : 0.5 }}
-                    title={user ? '' : 'Utilisateur non connecté'}
+                    disabled={savingColors || !user || themeSource === 'cabinet'}
+                    style={{ opacity: (user && themeSource !== 'cabinet') ? 1 : 0.5 }}
+                    title={
+                      !user 
+                        ? 'Utilisateur non connecté' 
+                        : themeSource === 'cabinet'
+                        ? 'Le thème cabinet est géré par l\'administrateur'
+                        : ''
+                    }
                   >
                     {savingColors ? 'Enregistrement…' : 'Enregistrer le thème'}
                   </button>
