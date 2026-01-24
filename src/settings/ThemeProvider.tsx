@@ -179,35 +179,24 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   // CRITICAL: Use centralized resolver to ensure PPTX never uses web colors when ui-only
   const pptxColors: ThemeColors = resolvePptxColors(colors, themeScope);
 
-  // Load cabinet theme for user
+  // Load cabinet theme for user via RPC (contourne RLS)
   const loadCabinetTheme = async (userId: string): Promise<ThemeColors> => {
     try {
-      // 1. Récupérer cabinet_id depuis profiles (profiles.id = user.id)
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('cabinet_id')
-        .eq('id', userId)
-        .single();
+      // Utiliser RPC SECURITY DEFINER pour récupérer la palette sans RLS
+      const { data: palette, error: rpcError } = await supabase
+        .rpc('get_my_cabinet_theme_palette');
         
-      if (profileError || !profile?.cabinet_id) {
-        if (DEBUG_THEME) console.warn('[ThemeProvider] No cabinet found for user:', userId);
+      if (rpcError) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] RPC error:', rpcError);
         return DEFAULT_COLORS;
       }
       
-      // 2. Récupérer thème du cabinet avec jointure
-      const { data: cabinet, error: cabinetError } = await supabase
-        .from('cabinets')
-        .select('default_theme_id, themes:default_theme_id(palette)')
-        .eq('id', profile.cabinet_id)
-        .single();
-        
-      if (cabinetError || !(cabinet as any)?.themes?.palette) {
-        if (DEBUG_THEME) console.warn('[ThemeProvider] No theme found for cabinet:', profile.cabinet_id);
+      if (!palette) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] No cabinet theme found for user:', userId);
         return DEFAULT_COLORS;
       }
       
-      // 3. Convertir palette DB vers format ThemeColors
-      const palette = (cabinet as any).themes.palette;
+      // Convertir palette DB vers format ThemeColors
       const cabinetColors: ThemeColors = {
         c1: palette.c1 || DEFAULT_COLORS.c1,
         c2: palette.c2 || DEFAULT_COLORS.c2,
