@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { supabase, DEBUG_AUTH } from './supabaseClient';
 import { PrivateRoute, useUserRole } from './auth';
+import { useTheme } from './settings/ThemeProvider';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import ForgotPassword from './pages/ForgotPassword';
@@ -36,12 +37,22 @@ const PageLoader = () => (
   </div>
 );
 
-// Wrapper component to avoid repeating Suspense on every route
-const LazyRoute = ({ children }) => (
-  <Suspense fallback={<PageLoader />}>
-    {children}
-  </Suspense>
-);
+// Wrapper component that waits for theme to be ready before rendering lazy routes
+// This prevents FOUC (Flash of Unstyled Content) on route navigation
+const LazyRoute = ({ children }) => {
+  const { themeReady } = useTheme();
+  
+  // Block render until CSS variables are applied
+  if (!themeReady) {
+    return <PageLoader />;
+  }
+  
+  return (
+    <Suspense fallback={<PageLoader />}>
+      {children}
+    </Suspense>
+  );
+};
 
 // -----------------------
 // Icônes SVG "maison"

@@ -114,6 +114,7 @@ interface ThemeContextValue {
   setColors: (colors: ThemeColors) => void;
   saveThemeToUiSettings: (colors: ThemeColors, themeName?: string) => Promise<{ success: boolean; error?: string }>;
   isLoading: boolean;
+  themeReady: boolean; // true when CSS variables are applied (safe to render routes)
   logo?: string;
   setLogo: (logo: string | undefined) => void;
   cabinetLogo?: string; // Logo cabinet (via RPC)
@@ -129,6 +130,7 @@ const ThemeContext = createContext<ThemeContextValue>({
   setColors: () => {},
   saveThemeToUiSettings: async () => ({ success: false, error: 'Not implemented' }),
   isLoading: true,
+  themeReady: false,
   logo: undefined,
   setLogo: () => {},
   cabinetLogo: undefined,
@@ -189,6 +191,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const [logo, setLogo] = useState<string | undefined>(undefined);
   const [cabinetLogo, setCabinetLogo] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
+  const [themeReady, setThemeReady] = useState(false); // true when CSS vars applied
   const [themeScope, setThemeScope] = useState<ThemeScope>('all');
   const [themeSource, setThemeSource] = useState<ThemeSource>('cabinet');
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
@@ -384,6 +387,12 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
 
     lastAppliedHashRef.current = hash;
     lastAppliedUserIdRef.current = userId || '';
+    
+    // Mark theme as ready for rendering routes
+    if (!themeReady) {
+      setThemeReady(true);
+      if (DEBUG_THEME) console.info('[ThemeProvider] themeReady = true');
+    }
   }
 
   // Watch auth state changes and load theme when user changes
@@ -611,7 +620,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, isLoading, logo, setLogo, cabinetLogo, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource }}>
+    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, isLoading, themeReady, logo, setLogo, cabinetLogo, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource }}>
       {children}
     </ThemeContext.Provider>
   );
