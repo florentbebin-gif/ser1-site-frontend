@@ -895,11 +895,16 @@ const synthesePeriodes = useMemo(() => {
       if (themeSource === 'cabinet') {
         // Mode cabinet: priorité logo cabinet, fallback logo user
         exportLogo = cabinetLogo || logo
-        if (DEBUG_THEME) console.info('[Credit Export] Using cabinet logo:', !!cabinetLogo)
       } else {
         // Mode custom: logo user uniquement
         exportLogo = logo
       }
+      
+      // TRACE: Log exact logo being used for debugging
+      console.info('[Credit Export] exportLogo resolved =', exportLogo 
+        ? (exportLogo.startsWith('data:') ? `dataURI (${exportLogo.length} chars)` : exportLogo.substring(0, 80) + '...')
+        : '(none)')
+      console.info('[Credit Export] themeSource:', themeSource, '| cabinetLogo:', !!cabinetLogo, '| userLogo:', !!logo)
       
       // Fallback: reload from user_metadata if still undefined
       if (!exportLogo) {

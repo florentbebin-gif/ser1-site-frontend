@@ -198,6 +198,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const pptxColors: ThemeColors = resolvePptxColors(colorsState, themeScope);
 
   // Load cabinet logo for user via RPC (contourne RLS)
+  // Returns data URI (base64) for direct use in PPTX exports
   const loadCabinetLogo = async (userId: string): Promise<string | undefined> => {
     try {
       // Utiliser RPC SECURITY DEFINER pour récupérer le storage_path sans RLS
@@ -214,13 +215,26 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         return undefined;
       }
       
-      // Récupérer URL publique depuis bucket 'logos'
-      const { data: urlData } = supabase.storage
+      // Download blob from Storage (works with public AND private buckets)
+      const { data: blob, error: downloadError } = await supabase.storage
         .from('logos')
-        .getPublicUrl(storagePath);
+        .download(storagePath);
       
-      if (DEBUG_THEME) console.info('[ThemeProvider] Cabinet logo loaded:', urlData.publicUrl);
-      return urlData.publicUrl;
+      if (downloadError || !blob) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] Cabinet logo download error:', downloadError);
+        return undefined;
+      }
+      
+      // Convert blob to data URI for direct use in PPTX
+      const dataUri = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+      
+      if (DEBUG_THEME) console.info('[ThemeProvider] Cabinet logo loaded as dataURI, size:', dataUri.length);
+      return dataUri;
     } catch (error) {
       console.error('[ThemeProvider] Error loading cabinet logo:', error);
       return undefined;
