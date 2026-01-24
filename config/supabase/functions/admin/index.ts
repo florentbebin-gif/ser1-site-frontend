@@ -205,12 +205,26 @@ serve(async (req: Request) => {
         return acc
       }, {})
 
+      // Charger les cabinet_id pour tous les users
+      const userIds = users.users.map(u => u.id)
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, cabinet_id')
+        .in('id', userIds)
+
+      if (profilesError) {
+        console.log('[admin:list_users] profiles query error:', profilesError.message)
+      }
+
+      const cabinetByUserId = new Map((profiles ?? []).map(p => [p.id, p.cabinet_id]))
+
       const usersWithReports = users.users.map(user => ({
         id: user.id,
         email: user.email,
         created_at: user.created_at,
         last_sign_in_at: user.last_sign_in_at,
         role: user.user_metadata?.role || user.app_metadata?.role || 'user',
+        cabinet_id: cabinetByUserId.get(user.id) ?? null,
         total_reports: reportStats[user.id]?.total_reports || 0,
         unread_reports: reportStats[user.id]?.unread_reports || 0,
         latest_report_id: reportStats[user.id]?.latest_report_id || null,
