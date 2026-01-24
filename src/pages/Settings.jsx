@@ -132,14 +132,21 @@ export default function Settings({ isAdmin = false }) {
   const [savingColors, setSavingColors] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   
-  // V3.1: Theme source state (cabinet vs custom)
+  // V3.1: Theme source state (cabinet vs custom) - synchronisé avec ThemeProvider
   const [themeSource, setThemeSource] = useState(() => {
     return localStorage.getItem('themeSource') || 'cabinet';
   });
 
+  // Synchroniser avec ThemeProvider
+  const { setColors: setColorsFromProvider, themeSource: providerThemeSource, setThemeSource: setProviderThemeSource } = useTheme();
+
   useEffect(() => {
     localStorage.setItem('themeSource', themeSource);
-  }, [themeSource]);
+    // Synchroniser avec ThemeProvider
+    if (providerThemeSource !== themeSource) {
+      setProviderThemeSource?.(themeSource);
+    }
+  }, [themeSource, providerThemeSource, setProviderThemeSource]);
 
   // V3.1: Advanced colors visibility
   const [showAdvancedColors, setShowAdvancedColors] = useState(false);
@@ -268,7 +275,12 @@ export default function Settings({ isAdmin = false }) {
   /* ---------- Gestion des couleurs ---------- */
 
   const handleColorChange = (key, value) => {
-    // changement via palette → on met à jour la valeur réelle ET le texte
+    // Bloquer l'édition en mode cabinet
+    if (themeSource === 'cabinet') {
+      return;
+    }
+    
+    // l'utilisateur clique sur un swatch de couleur
     const newColors = { ...colorsLegacy, [key]: value };
     setColorsLegacy(newColors);
     setColorText(prev => ({ ...prev, [key]: value.toUpperCase() }));

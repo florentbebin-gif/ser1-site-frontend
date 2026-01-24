@@ -89,6 +89,7 @@ export const DEFAULT_COLORS: ThemeColors = {
 import { SER1_CLASSIC_COLORS } from '../pptx/theme/resolvePptxColors';
 
 export type ThemeScope = 'all' | 'ui-only';
+export type ThemeSource = 'cabinet' | 'custom';
 
 interface ThemeContextValue {
   colors: ThemeColors;
@@ -100,6 +101,8 @@ interface ThemeContextValue {
   themeScope: ThemeScope;
   setThemeScope: (scope: ThemeScope) => void; // Allow Settings to update scope globally
   pptxColors: ThemeColors; // Colors to use for PPTX (respects scope)
+  themeSource: ThemeSource;
+  setThemeSource: (source: ThemeSource) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
@@ -112,6 +115,8 @@ const ThemeContext = createContext<ThemeContextValue>({
   themeScope: 'all',
   setThemeScope: () => {},
   pptxColors: DEFAULT_COLORS,
+  themeSource: 'cabinet',
+  setThemeSource: () => {},
 });
 
 export function useTheme(): ThemeContextValue {
@@ -168,10 +173,61 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const [logo, setLogo] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [themeScope, setThemeScope] = useState<ThemeScope>('all');
+  const [themeSource, setThemeSource] = useState<ThemeSource>('cabinet');
   
   // Compute PPTX colors based on theme scope
   // CRITICAL: Use centralized resolver to ensure PPTX never uses web colors when ui-only
   const pptxColors: ThemeColors = resolvePptxColors(colors, themeScope);
+
+  // Load cabinet theme for user
+  const loadCabinetTheme = async (userId: string): Promise<ThemeColors> => {
+    try {
+      // 1. Récupérer cabinet_id depuis profiles (profiles.id = user.id)
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('cabinet_id')
+        .eq('id', userId)
+        .single();
+        
+      if (profileError || !profile?.cabinet_id) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] No cabinet found for user:', userId);
+        return DEFAULT_COLORS;
+      }
+      
+      // 2. Récupérer thème du cabinet avec jointure
+      const { data: cabinet, error: cabinetError } = await supabase
+        .from('cabinets')
+        .select('default_theme_id, themes:default_theme_id(palette)')
+        .eq('id', profile.cabinet_id)
+        .single();
+        
+      if (cabinetError || !(cabinet as any)?.themes?.palette) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] No theme found for cabinet:', profile.cabinet_id);
+        return DEFAULT_COLORS;
+      }
+      
+      // 3. Convertir palette DB vers format ThemeColors
+      const palette = (cabinet as any).themes.palette;
+      const cabinetColors: ThemeColors = {
+        c1: palette.c1 || DEFAULT_COLORS.c1,
+        c2: palette.c2 || DEFAULT_COLORS.c2,
+        c3: palette.c3 || DEFAULT_COLORS.c3,
+        c4: palette.c4 || DEFAULT_COLORS.c4,
+        c5: palette.c5 || DEFAULT_COLORS.c5,
+        c6: palette.c6 || DEFAULT_COLORS.c6,
+        c7: palette.c7 || DEFAULT_COLORS.c7,
+        c8: palette.c8 || DEFAULT_COLORS.c8,
+        c9: palette.c9 || DEFAULT_COLORS.c9,
+        c10: palette.c10 || DEFAULT_COLORS.c10,
+      };
+      
+      if (DEBUG_THEME) console.info('[ThemeProvider] Cabinet theme loaded for user:', userId);
+      return cabinetColors;
+    } catch (error) {
+      console.error('[ThemeProvider] Error loading cabinet theme:', error);
+      return DEFAULT_COLORS;
+    }
+  };
 
   // 🚨 DIAGNOSTIC: Track hash and user ID to prevent unnecessary reapplications
   const lastAppliedHashRef = useRef<string>('');
@@ -260,54 +316,63 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
           applyColorsToCSSWithGuard(DEFAULT_COLORS, user?.id, 'default-initial');
         }
 
-        // Hiérarchie : 1) cache, 2) ui_settings, 3) metadata (legacy), 4) défaut
-        let finalColors = cacheAppliedRef.current ? getThemeFromCache() || DEFAULT_COLORS : DEFAULT_COLORS;
-        let source = cacheAppliedRef.current ? 'cache/local' : 'default';
+        // Hiérarchie modifiée selon themeSource
+        let finalColors = DEFAULT_COLORS;
+        let source = 'default';
 
         if (user) {
-          // 1) Essayer ui_settings (nouveau système)
-          try {
-            const { data: uiSettings, error: uiError } = await supabase
-              .from('ui_settings')
-              .select('colors')
-              .eq('user_id', user.id)
-              .order('updated_at', { ascending: false }) // En cas de doublons, prendre le plus récent
-              .limit(1)
-              .maybeSingle();
+          // Si themeSource='cabinet', ignorer cache/ui_settings et charger thème cabinet
+          if (themeSource === 'cabinet') {
+            const cabinetColors = await loadCabinetTheme(user.id);
+            finalColors = cabinetColors;
+            source = 'cabinet-theme';
+            // Ne pas sauvegarder en cache pour permettre le switch custom/cabinet
+          } else {
+            // themeSource='custom' : logique normale avec cache/ui_settings
+            finalColors = cacheAppliedRef.current ? getThemeFromCache() || DEFAULT_COLORS : DEFAULT_COLORS;
+            source = cacheAppliedRef.current ? 'cache/local' : 'default';
+            
+            // 1) Essayer ui_settings (nouveau système)
+            try {
+              const { data: uiSettings, error: uiError } = await supabase
+                .from('ui_settings')
+                .select('colors')
+                .eq('user_id', user.id)
+                .order('updated_at', { ascending: false }) // En cas de doublons, prendre le plus récent
+                .limit(1)
+                .maybeSingle();
 
-            if (!mounted || requestId !== Date.now()) return; // ⚠️ Race condition guard
+              if (!mounted || requestId !== Date.now()) return; // ⚠️ Race condition guard
 
-            if (!uiError && uiSettings?.colors) {
-              const userColors = convertFromSettingsFormat(uiSettings.colors);
-              const userHash = getThemeHash(userColors, user.id);
-              const currentHash = getThemeHash(finalColors, user.id);
-              
-              // N'appliquer que si différent du cache
-              if (userHash !== currentHash) {
-                finalColors = userColors;
-                source = 'ui_settings';
-                // Sauvegarder dans le cache
-                saveThemeToCache(finalColors);
-              } else {
-                source = 'ui_settings (same as cache)';
-              }
-            } else {
-              // 2) Fallback metadata (legacy admin)
-              if (user.user_metadata?.theme_colors) {
-                const legacyColors = convertFromSettingsFormat(user.user_metadata.theme_colors);
-                const legacyHash = getThemeHash(legacyColors, user.id);
+              if (!uiError && uiSettings?.colors) {
+                const userColors = convertFromSettingsFormat(uiSettings.colors);
+                const userHash = getThemeHash(userColors, user.id);
                 const currentHash = getThemeHash(finalColors, user.id);
                 
-                if (legacyHash !== currentHash) {
-                  finalColors = legacyColors;
-                  source = 'user_metadata (legacy)';
+                // N'appliquer que si différent du cache
+                if (userHash !== currentHash) {
+                  finalColors = userColors;
+                  source = 'ui_settings';
                   // Sauvegarder dans le cache
                   saveThemeToCache(finalColors);
                 } else {
-                  source = 'user_metadata (same as cache)';
+                  source = 'ui_settings (same as cache)';
                 }
               } else {
-                source = 'default (no ui_settings row)';
+                // 2) Fallback metadata (legacy admin)
+                if (user.user_metadata?.theme_colors) {
+                  const legacyColors = convertFromSettingsFormat(user.user_metadata.theme_colors);
+                  const legacyHash = getThemeHash(legacyColors, user.id);
+                  const currentHash = getThemeHash(finalColors, user.id);
+                  
+                  if (legacyHash !== currentHash) {
+                    finalColors = legacyColors;
+                    source = 'user_metadata (legacy)';
+                    // Sauvegarder dans le cache
+                    saveThemeToCache(finalColors);
+                  } else {
+                    source = 'user_metadata (same as cache)';
+                  }
               }
             }
           } catch (uiError) {
@@ -330,6 +395,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
             }
           }
         }
+      }
 
         if (mounted) {
           setColorsState(finalColors);
@@ -456,7 +522,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ colors, setColors, saveThemeToUiSettings, isLoading, logo, setLogo, themeScope, setThemeScope, pptxColors }}>
+    <ThemeContext.Provider value={{ colors, setColors, saveThemeToUiSettings, isLoading, logo, setLogo, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource }}>
       {children}
     </ThemeContext.Provider>
   );
