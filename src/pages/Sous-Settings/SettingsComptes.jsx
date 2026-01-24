@@ -593,7 +593,7 @@ export default function SettingsComptes() {
                       <th>Créé le</th>
                       <th>Dernière connexion</th>
                       <th>Signalements</th>
-                      <th className="w-[1%] whitespace-nowrap">Actions</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -652,8 +652,8 @@ export default function SettingsComptes() {
                             <span className="no-reports">—</span>
                           )}
                         </td>
-                        <td className="w-[1%]">
-                          <div className="flex flex-wrap justify-end gap-2">
+                        <td>
+                          <div className="actions">
                             <button onClick={() => handleResetPassword(user.id, user.email)}>
                               Email Reinit
                             </button>
@@ -661,9 +661,8 @@ export default function SettingsComptes() {
                               <button 
                                 onClick={() => handleDeleteUser(user.id, user.email)}
                                 className="danger"
-                                title="Supprimer"
                               >
-                                Suppr.
+                                Supprimer
                               </button>
                             )}
                           </div>
