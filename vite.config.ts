@@ -14,6 +14,13 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    build: {
+      // 🚨 CRITICAL: Disable CSS code splitting to prevent FOUC on lazy routes
+      // Without this, route-specific CSS (e.g., PlacementV2-*.css) loads AFTER
+      // the component renders on direct refresh, causing layout issues.
+      // Trade-off: slightly larger initial CSS bundle, but 100% style stability.
+      cssCodeSplit: false,
+    },
     server: {
       host: 'localhost',
       port: 5173,
