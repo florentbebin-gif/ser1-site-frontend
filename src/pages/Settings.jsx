@@ -530,7 +530,7 @@ export default function Settings({ isAdmin = false }) {
                 <div
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                    gridTemplateColumns: '1fr',
                     gap: 12,
                     marginBottom: 16,
                   }}
@@ -541,24 +541,37 @@ export default function Settings({ isAdmin = false }) {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 8,
-                      padding: '6px 8px',
+                      padding: '8px 12px',
                       borderRadius: 8,
                       background: 'var(--color-c7)',
                       border: '1px solid var(--color-c8)',
+                      minWidth: 0,
                     }}
                   >
-                    <span style={{ minWidth: 90, fontSize: 13, color: 'var(--color-c10)' }}>Couleur 1</span>
+                    <span style={{ minWidth: 80, fontSize: 13, fontWeight: 500, color: 'var(--color-c10)', flexShrink: 0 }}>Couleur 1</span>
+                    
+                    <div
+                      style={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: '4px',
+                        backgroundColor: colorsLegacy.color1,
+                        border: '1px solid var(--color-c8)',
+                        flexShrink: 0,
+                      }}
+                    />
 
                     <input
                       type="color"
                       value={colorsLegacy.color1}
                       onChange={(e) => handleColorChange('color1', e.target.value)}
                       style={{
-                        width: 40,
-                        height: 40,
+                        width: 32,
+                        height: 32,
                         border: 'none',
                         borderRadius: '4px',
                         cursor: 'pointer',
+                        flexShrink: 0,
                       }}
                     />
 
@@ -569,11 +582,14 @@ export default function Settings({ isAdmin = false }) {
                       onBlur={() => handleColorTextBlur('color1')}
                       placeholder="#RRGGBB"
                       style={{
-                        flex: 1,
+                        flex: '1 1 auto',
+                        minWidth: 0,
+                        maxWidth: '140px',
                         padding: '6px 8px',
                         border: '1px solid var(--color-c8)',
                         borderRadius: '4px',
                         fontSize: '13px',
+                        fontFamily: 'monospace',
                         backgroundColor: 'var(--color-c7)',
                         color: 'var(--color-c10)',
                       }}
@@ -588,24 +604,37 @@ export default function Settings({ isAdmin = false }) {
                         display: 'flex',
                         alignItems: 'center',
                         gap: 8,
-                        padding: '6px 8px',
+                        padding: '8px 12px',
                         borderRadius: 8,
                         background: 'var(--color-c7)',
                         border: '1px solid var(--color-c8)',
+                        minWidth: 0,
                       }}
                     >
-                      <span style={{ minWidth: 90, fontSize: 13, color: 'var(--color-c10)' }}>{label}</span>
+                      <span style={{ minWidth: 80, fontSize: 13, fontWeight: 500, color: 'var(--color-c10)', flexShrink: 0 }}>{label}</span>
+                      
+                      <div
+                        style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: '4px',
+                          backgroundColor: colorsLegacy[key],
+                          border: '1px solid var(--color-c8)',
+                          flexShrink: 0,
+                        }}
+                      />
 
                       <input
                         type="color"
                         value={colorsLegacy[key]}
                         onChange={(e) => handleColorChange(key, e.target.value)}
                         style={{
-                          width: 40,
-                          height: 40,
+                          width: 32,
+                          height: 32,
                           border: 'none',
                           borderRadius: '4px',
                           cursor: 'pointer',
+                          flexShrink: 0,
                         }}
                       />
 
@@ -616,11 +645,14 @@ export default function Settings({ isAdmin = false }) {
                         onBlur={() => handleColorTextBlur(key)}
                         placeholder="#RRGGBB"
                         style={{
-                          flex: 1,
+                          flex: '1 1 auto',
+                          minWidth: 0,
+                          maxWidth: '140px',
                           padding: '6px 8px',
                           border: '1px solid var(--color-c8)',
                           borderRadius: '4px',
                           fontSize: '13px',
+                          fontFamily: 'monospace',
                           backgroundColor: 'var(--color-c7)',
                           color: 'var(--color-c10)',
                         }}

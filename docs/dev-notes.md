@@ -245,6 +245,16 @@ if (userRole !== 'admin') {
 5. Modifier Couleur 1 → autres couleurs changent (si avancées ouvertes)
 6. Refresh page → état conservé (localStorage)
 
+### V3.1.1 - Fix layout couleurs avancées
+- **Problème**: Champs hex débordent/chevauchent, swatches invisibles
+- **Solution**: 
+  - Grid 1 colonne (pas auto-fit) pour éviter overlap
+  - Flex avec `minWidth: 0` sur conteneurs
+  - Swatch 20x20px visible (div avec backgroundColor)
+  - Input color 32x32px + input text maxWidth 140px
+  - Font monospace pour hex
+- **Test**: Ouvrir /settings → déplier "Couleurs avancées" → pas d'overlap + swatches visibles + changer couleur → swatch se met à jour
+
 ---
 
 ## PROCHAINES ÉTAPES (V3+)
