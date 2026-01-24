@@ -22,7 +22,7 @@ const DEFAULT_COLORS = {
 const PREDEFINED_THEMES = Object.freeze([
   {
     id: 'ser1-classic',
-    name: 'SER1 Classique – Thème original',
+    name: 'Thème Original',
     description: 'Thème original élégant et professionnel',
     colors: Object.freeze({
       color1: '#2B3E37',

@@ -125,16 +125,16 @@ CREATE POLICY "Admins can manage cabinets" ON public.cabinets
 -- 8) SEEDS initiaux
 -- ============================================================================
 
--- Thème SER1 Classique (palette exacte depuis le code)
+-- Thème Original (palette exacte depuis le code)
 INSERT INTO public.themes (name, palette, is_system) VALUES
-('SER1 Classique', 
+('Thème Original', 
   '{"c1":"#2B3E37","c2":"#709B8B","c3":"#9FBDB2","c4":"#CFDED8","c5":"#788781","c6":"#CEC1B6","c7":"#F5F3F0","c8":"#D9D9D9","c9":"#7F7F7F","c10":"#000000"}',
   true
 ) ON CONFLICT (name) DO NOTHING;
 
--- Cabinet "Défaut" (optionnel, non assigné automatiquement)
+-- Cabinet "Défaut" (lié par ID, pas par name)
 INSERT INTO public.cabinets (name, default_theme_id) 
-SELECT 'Défaut', id FROM public.themes WHERE name = 'SER1 Classique' AND is_system = true
+SELECT 'Défaut', id FROM public.themes WHERE name = 'Thème Original' AND is_system = true
 ON CONFLICT (name) DO NOTHING;
 
 -- ============================================================================
