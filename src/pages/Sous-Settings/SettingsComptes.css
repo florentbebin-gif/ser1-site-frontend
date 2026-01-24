@@ -184,23 +184,19 @@
 
 .actions {
   display: flex;
-  flex-wrap: nowrap;
-  gap: 6px;
-  justify-content: flex-end;
-  min-width: 0;
+  gap: 8px;
 }
 
 .actions button {
-  padding: 6px 10px;
+  padding: 8px 14px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
   background: var(--color-c7);
   color: var(--color-c10);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   transition: all 0.2s ease;
-  white-space: nowrap;
 }
 
 .actions button:hover {
@@ -214,6 +210,47 @@
 }
 
 .actions button.danger:hover {
+  background: var(--color-error-border);
+  color: white;
+  border-color: var(--color-error-border);
+}
+
+/* Colonne Actions spécifique à la table users - isolation stricte */
+.users-table .actionsCell .actionsContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.users-table .actionsCell button {
+  padding: 6px 10px;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  background: var(--color-c7);
+  color: var(--color-c10);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.users-table .actionsCell button:hover {
+  background: var(--color-c7);
+  border-color: var(--color-c2);
+}
+
+.users-table .actionsCell button.danger {
+  border-color: var(--color-error-border);
+  color: var(--color-error-text);
+}
+
+.users-table .actionsCell button.danger:hover {
   background: var(--color-error-border);
   color: white;
   border-color: var(--color-error-border);

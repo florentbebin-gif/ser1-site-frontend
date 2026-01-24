@@ -430,10 +430,8 @@ export default function SettingsComptes() {
       if (invokeError) throw new Error(invokeError.message);
       
       setUserModalSuccess('Invitation envoyée avec succès !');
-      setTimeout(() => {
-        closeUserModal();
-        triggerRefresh('create_user_invite');
-      }, 1500);
+      closeUserModal();
+      triggerRefresh('create_user_invite');
     } catch (err) {
       setUserModalError(err.message);
     } finally {
@@ -813,16 +811,21 @@ export default function SettingsComptes() {
                             <span className="no-reports">—</span>
                           )}
                         </td>
-                        <td>
-                          <div className="actions">
-                            <button onClick={() => handleResetPassword(user.id, user.email)}>
-                              Email Reinit
+                        <td className="actionsCell">
+                          <div className="actionsContainer">
+                            <button 
+                              onClick={() => handleResetPassword(user.id, user.email)}
+                              title="Envoyer un email de réinitialisation"
+                              aria-label="Envoyer un email de réinitialisation"
+                            >
+                              Réinit.
                             </button>
                             {user.role !== 'admin' && (
                               <button 
                                 onClick={() => handleDeleteUser(user.id, user.email)}
                                 className="danger"
                                 title="Supprimer l'utilisateur"
+                                aria-label="Supprimer l'utilisateur"
                               >
                                 Suppr.
                               </button>
