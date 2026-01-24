@@ -661,8 +661,9 @@ export default function SettingsComptes() {
                               <button 
                                 onClick={() => handleDeleteUser(user.id, user.email)}
                                 className="danger"
+                                title="Supprimer"
                               >
-                                Supprimer
+                                Suppr.
                               </button>
                             )}
                           </div>
