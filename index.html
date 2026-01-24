@@ -4,6 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SER1</title>
+  <!-- Critical CSS variables - prevents FOUC on lazy route navigation -->
+  <style>
+    :root {
+      --color-c1: #2B3E37;
+      --color-c2: #709B8B;
+      --color-c3: #9FBDB2;
+      --color-c4: #CFDED8;
+      --color-c5: #788781;
+      --color-c6: #CEC1B6;
+      --color-c7: #F5F3F0;
+      --color-c8: #D9D9D9;
+      --color-c9: #7F7F7F;
+      --color-c10: #000000;
+      --green: var(--color-c1);
+      --beige: var(--color-c6);
+      --bg: var(--color-c7);
+      --light-green: var(--color-c3);
+      --radius: 12px;
+    }
+    body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); }
+  </style>
   <link rel="stylesheet" href="/src/styles.css" />
 </head>
 <body>
