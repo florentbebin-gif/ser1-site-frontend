@@ -1,24 +1,58 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { supabase, DEBUG_AUTH } from './supabaseClient';
 import { PrivateRoute, useUserRole } from './auth';
+import { useTheme } from './settings/ThemeProvider';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import ForgotPassword from './pages/ForgotPassword';
 import SetPassword from './pages/SetPassword';
-import Placement from './pages/PlacementV2';
 import { triggerPageReset, triggerGlobalReset } from './utils/reset';
 import { saveGlobalState, loadGlobalStateWithDialog } from './utils/globalStorage';
 import {
   triggerPlacementSaveEvent,
   triggerPlacementLoadEvent,
 } from './utils/placementEvents';
-import Credit from './pages/Credit';
-import SettingsShell from './pages/SettingsShell';
-import Ir from './pages/Ir';
-import { AuditWizard } from './features/audit';
-import StrategyPage from './pages/StrategyPage';
 import IssueReportButton from './components/IssueReportButton';
+
+// V4: Lazy load heavy pages to reduce initial bundle size
+const Placement = lazy(() => import('./pages/PlacementV2'));
+const Credit = lazy(() => import('./pages/Credit'));
+const Ir = lazy(() => import('./pages/Ir'));
+const AuditWizard = lazy(() => import('./features/audit').then(m => ({ default: m.AuditWizard })));
+const StrategyPage = lazy(() => import('./pages/StrategyPage'));
+const SettingsShell = lazy(() => import('./pages/SettingsShell'));
+
+// Fallback UI for lazy-loaded routes
+const PageLoader = () => (
+  <div style={{ 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    height: '100vh',
+    color: 'var(--color-c9)',
+    fontSize: '14px'
+  }}>
+    Chargement...
+  </div>
+);
+
+// Wrapper component that waits for theme to be ready before rendering lazy routes
+// This prevents FOUC (Flash of Unstyled Content) on route navigation
+const LazyRoute = ({ children }) => {
+  const { themeReady } = useTheme();
+  
+  // Block render until CSS variables are applied
+  if (!themeReady) {
+    return <PageLoader />;
+  }
+  
+  return (
+    <Suspense fallback={<PageLoader />}>
+      {children}
+    </Suspense>
+  );
+};
 
 // -----------------------
 // Icônes SVG "maison"
@@ -378,17 +412,41 @@ const contextLabel = getContextLabel(path);
         {/* Routes protégées */}
         <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
         
-        {/* Audit patrimonial */}
-        <Route path="/audit" element={<PrivateRoute><AuditWizard /></PrivateRoute>} />
-        <Route path="/strategy" element={<PrivateRoute><StrategyPage /></PrivateRoute>} />
+        {/* Audit patrimonial - Lazy loaded */}
+        <Route path="/audit" element={
+          <PrivateRoute>
+            <LazyRoute><AuditWizard /></LazyRoute>
+          </PrivateRoute>
+        } />
+        <Route path="/strategy" element={
+          <PrivateRoute>
+            <LazyRoute><StrategyPage /></LazyRoute>
+          </PrivateRoute>
+        } />
 
-        {/* Simulateurs */}
-        <Route path="/sim/placement" element={<PrivateRoute><Placement /></PrivateRoute>} />
-        <Route path="/sim/credit" element={<PrivateRoute><Credit /></PrivateRoute>} />
-        <Route path="/sim/ir" element={<PrivateRoute><Ir /></PrivateRoute>} />
+        {/* Simulateurs - Lazy loaded */}
+        <Route path="/sim/placement" element={
+          <PrivateRoute>
+            <LazyRoute><Placement /></LazyRoute>
+          </PrivateRoute>
+        } />
+        <Route path="/sim/credit" element={
+          <PrivateRoute>
+            <LazyRoute><Credit /></LazyRoute>
+          </PrivateRoute>
+        } />
+        <Route path="/sim/ir" element={
+          <PrivateRoute>
+            <LazyRoute><Ir /></LazyRoute>
+          </PrivateRoute>
+        } />
 
-        {/* Paramètres (protégés) - Shell unique avec onglets internes */}
-        <Route path="/settings/*" element={<PrivateRoute><SettingsShell /></PrivateRoute>} />
+        {/* Paramètres (protégés) - Shell unique avec onglets internes - Lazy loaded */}
+        <Route path="/settings/*" element={
+          <PrivateRoute>
+            <LazyRoute><SettingsShell /></LazyRoute>
+          </PrivateRoute>
+        } />
 
         {/* Redirections de compatibilité */}
         <Route path="/placement" element={<Navigate to="/sim/placement" replace />}/>

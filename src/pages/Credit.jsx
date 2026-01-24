@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState, useContext } from "react"
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 import { toNumber } from '../utils/number.js'
-import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../utils/xlsxBuilder'
 import { useTheme } from '../settings/ThemeProvider'
-import { buildCreditStudyDeck } from '../pptx/presets/creditDeckBuilder'
-import { exportAndDownloadStudyDeck } from '../pptx/export/exportStudyDeck'
 import { supabase } from '../supabaseClient'
+
+const DEBUG_THEME = false; // Debug flag for theme logs
+// V4: PPTX/Excel imports moved to dynamic import() in export functions
 import { computeCapitalDecesSchedule, computeGlobalCapitalDecesSchedule } from '../engine/credit/capitalDeces';
 import './Credit.css'
-import '../styles/premium-shared.css'
 
 /* ---------- Helpers format ---------- */
 const fmt0  = (n)=> (Math.round(Number(n)||0)).toLocaleString('fr-FR')
@@ -223,7 +222,7 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
 export default function Credit(){
 
 /* ---- THEME ---- */
-const { colors: themeColors, logo, setLogo } = useTheme()
+const { colors: themeColors, logo, setLogo, cabinetLogo, themeSource, pptxColors } = useTheme()
 
 /* ---- ÉTATS ---- */
 const [startYM, setStartYM]         = useState(nowYearMonth()) // Date souscription prêt 1
@@ -259,8 +258,9 @@ useEffect(() => {
   const [viewMode, setViewMode]       = useState('mensuel')      // 'mensuel' | 'annuel'
   const [lissageMode, setLissageMode] = useState('mensu')        // 'mensu' | 'duree'
 
-  // --- Dropdown Export
+  // --- Dropdown Export + Loading state
   const [exportOpen, setExportOpen] = useState(false)
+  const [exportLoading, setExportLoading] = useState(false)
   const exportRef = useRef(null)
   useEffect(() => {
     const onDocClick = (e) => {
@@ -708,7 +708,10 @@ const synthesePeriodes = useMemo(() => {
   const cell = (v, style) => ({ v, style });
 
   async function exportExcel() {
+    setExportLoading(true);
     try {
+      // V4: Dynamic import Excel builder
+      const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } = await import('../utils/xlsxBuilder');
       const headerResume = [
         cell('Période', 'sHeader'),
         cell('Intérêts', 'sHeader'),
@@ -871,38 +874,47 @@ const synthesePeriodes = useMemo(() => {
     } catch (e) {
       console.error('Export Excel échoué', e);
       alert('Impossible de générer le fichier Excel.');
+    } finally {
+      setExportLoading(false);
     }
   }
 
   async function exportPowerPoint() {
+    setExportLoading(true);
     try {
+      // V4: Dynamic import PPTX builders
+      const [{ buildCreditStudyDeck }, { exportAndDownloadStudyDeck }] = await Promise.all([
+        import('../pptx/presets/creditDeckBuilder'),
+        import('../pptx/export/exportStudyDeck')
+      ]);
+      
       // Build PPTX colors from theme
-      const pptxColors = {
-        c1: themeColors.c1,
-        c2: themeColors.c2,
-        c3: themeColors.c3,
-        c4: themeColors.c4,
-        c5: themeColors.c5,
-        c6: themeColors.c6,
-        c7: themeColors.c7,
-        c8: themeColors.c8,
-        c9: themeColors.c9,
-        c10: themeColors.c10,
+      // V3.3: Logo resolution based on themeSource
+      // Priority: cabinet logo > user logo > undefined
+      let exportLogo
+      if (themeSource === 'cabinet') {
+        // Mode cabinet: priorité logo cabinet, fallback logo user
+        exportLogo = cabinetLogo || logo
+      } else {
+        // Mode custom: logo user uniquement
+        exportLogo = logo
       }
-
-      // CRITICAL: Use logo from ThemeProvider (same as IR.jsx)
-      // Logo is stored as dataUri in user_metadata.cover_slide_url
-      let exportLogo = logo
+      
+      // TRACE: Log exact logo being used for debugging
+      console.info('[Credit Export] exportLogo resolved =', exportLogo 
+        ? (exportLogo.startsWith('data:') ? `dataURI (${exportLogo.length} chars)` : exportLogo.substring(0, 80) + '...')
+        : '(none)')
+      console.info('[Credit Export] themeSource:', themeSource, '| cabinetLogo:', !!cabinetLogo, '| userLogo:', !!logo)
+      
+      // Fallback: reload from user_metadata if still undefined
       if (!exportLogo) {
-        console.info('[Credit Export] Logo not in context, attempting to reload from user metadata...')
+        console.info('[Credit Export] No logo in context, attempting reload from user_metadata...')
         try {
           const { data: { user } } = await supabase.auth.getUser()
           if (user?.user_metadata?.cover_slide_url) {
             exportLogo = user.user_metadata.cover_slide_url
             setLogo(exportLogo)
-            console.info('[Credit Export] Logo reloaded successfully')
-          } else {
-            console.info('[Credit Export] No logo found in user metadata')
+            console.info('[Credit Export] Logo reloaded from user_metadata')
           }
         } catch (logoError) {
           console.warn('[Credit Export] Failed to reload logo:', logoError)
@@ -1043,6 +1055,8 @@ const synthesePeriodes = useMemo(() => {
     } catch (error) {
       console.error('Export PowerPoint Crédit échoué:', error)
       alert('Erreur lors de la génération du PowerPoint. Veuillez réessayer.')
+    } finally {
+      setExportLoading(false);
     }
   }
 
@@ -1062,10 +1076,16 @@ const synthesePeriodes = useMemo(() => {
             <button className={`chip premium-btn ${viewMode==='annuel'?'active':''}`} onClick={()=> setViewMode('annuel')}>Annuel</button>
           </div>
           <div ref={exportRef} style={{position:'relative'}}>
-            <button className="chip premium-btn" aria-haspopup="menu" aria-expanded={exportOpen ? 'true' : 'false'} onClick={()=> setExportOpen(v => !v)}>
-              Exporter ▾
+            <button
+              className="chip premium-btn"
+              ref={exportRef}
+              onClick={() => setExportOpen(!exportOpen)}
+              disabled={exportLoading}
+              style={{ position: 'relative' }}
+            >
+              {exportLoading ? 'Génération...' : 'Exporter'}
             </button>
-            {exportOpen && (
+            {exportOpen && !exportLoading && (
               <div role="menu" className="credit-export-menu">
                 <button role="menuitem" className="chip premium-btn" style={{width:'100%', justifyContent:'flex-start'}} onClick={()=>{ setExportOpen(false); exportExcel(); }}>Excel</button>
                 <button role="menuitem" className="chip premium-btn" style={{width:'100%', justifyContent:'flex-start'}} onClick={()=>{ setExportOpen(false); exportPowerPoint(); }}>PowerPoint</button>

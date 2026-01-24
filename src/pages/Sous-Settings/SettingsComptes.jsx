@@ -900,12 +900,32 @@ export default function SettingsComptes() {
                     style={{ marginBottom: 8 }}
                   />
                   {logoPreview && (
-                    <div style={{ marginTop: 8 }}>
+                    <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
                       <img 
                         src={logoPreview} 
                         alt="Aperçu logo" 
                         style={{ maxWidth: 150, maxHeight: 80, objectFit: 'contain', borderRadius: 4, border: '1px solid var(--color-c8)' }}
                       />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLogoPreview(null);
+                          setLogoFile(null);
+                          setCabinetForm(prev => ({ ...prev, logo_id: '' }));
+                        }}
+                        style={{
+                          padding: '6px 12px',
+                          fontSize: 12,
+                          background: 'transparent',
+                          border: '1px solid var(--color-c8)',
+                          borderRadius: 6,
+                          color: 'var(--color-c9)',
+                          cursor: 'pointer'
+                        }}
+                        title="Supprimer le logo"
+                      >
+                        🗑️ Supprimer
+                      </button>
                     </div>
                   )}
                   {logoUploading && <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>Upload en cours...</p>}

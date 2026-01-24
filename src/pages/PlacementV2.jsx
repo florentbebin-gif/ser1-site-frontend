@@ -16,7 +16,6 @@ import {
   compareProducts,
 } from '../engine/placementEngine.js';
 import './Placement.css';
-import '../styles/premium-shared.css';
 import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from '../utils/versementConfig.js';
 import { onResetEvent, storageKeyFor } from '../utils/reset.js';
 import { PLACEMENT_SAVE_EVENT, PLACEMENT_LOAD_EVENT } from '../utils/placementEvents.js';

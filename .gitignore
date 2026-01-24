@@ -77,3 +77,6 @@ __pycache__/
 *.py[cod]
 .vercel
 .env*.local
+
+# Supabase CLI local artifacts
+supabase/.temp/
