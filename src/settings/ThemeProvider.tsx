@@ -218,6 +218,45 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     }
   };
 
+  // Retry helper for cabinet theme with exponential backoff (first login timing issue)
+  const loadCabinetThemeWithRetry = async (
+    userId: string,
+    mountedRef: React.MutableRefObject<boolean>
+  ): Promise<ThemeColors> => {
+    const delays = [500, 1500, 3000]; // Backoff: 500ms, 1.5s, 3s
+    
+    // Helper to check if colors are default fallback
+    const isDefaultFallback = (colors: ThemeColors): boolean => {
+      return Object.keys(DEFAULT_COLORS).every(
+        (key) => colors[key as keyof ThemeColors] === DEFAULT_COLORS[key as keyof ThemeColors]
+      );
+    };
+    
+    for (let attempt = 0; attempt < delays.length + 1; attempt++) {
+      if (!mountedRef.current) return DEFAULT_COLORS; // Abort if unmounted
+      
+      const palette = await loadCabinetTheme(userId);
+      
+      // Success: got a real cabinet theme (not fallback)
+      if (!isDefaultFallback(palette)) {
+        if (DEBUG_THEME) console.info(`[ThemeProvider] Cabinet theme loaded on attempt ${attempt + 1}`);
+        return palette;
+      }
+      
+      // Last attempt: accept fallback
+      if (attempt === delays.length) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] Cabinet theme fallback after max attempts');
+        return DEFAULT_COLORS;
+      }
+      
+      // Wait before next retry
+      if (DEBUG_THEME) console.info(`[ThemeProvider] Retry cabinet theme in ${delays[attempt]}ms (attempt ${attempt + 1})`);
+      await new Promise(resolve => setTimeout(resolve, delays[attempt]));
+    }
+    
+    return DEFAULT_COLORS;
+  };
+
   // 🚨 DIAGNOSTIC: Track hash and user ID to prevent unnecessary reapplications
   const lastAppliedHashRef = useRef<string>('');
   const lastAppliedUserIdRef = useRef<string>('');
@@ -287,6 +326,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   // Charge les couleurs depuis Supabase au montage
   useEffect(() => {
     let mounted = true;
+    const mountedRef = { current: true }; // Ref for retry mechanism
     const requestId = Date.now(); // ID unique pour cette requête
 
     async function loadTheme() {
@@ -312,7 +352,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         if (user) {
           // Si themeSource='cabinet', ignorer cache/ui_settings et charger thème cabinet
           if (themeSource === 'cabinet') {
-            const cabinetColors = await loadCabinetTheme(user.id);
+            const cabinetColors = await loadCabinetThemeWithRetry(user.id, mountedRef);
             finalColors = cabinetColors;
             source = 'cabinet-theme';
             // Ne pas sauvegarder en cache pour permettre le switch custom/cabinet
@@ -422,6 +462,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     // Le thème est chargé au mount via loadTheme() ci-dessus
     return () => {
       mounted = false;
+      mountedRef.current = false;
     };
   }, [themeSource]);
 
