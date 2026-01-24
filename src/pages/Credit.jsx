@@ -6,6 +6,8 @@ import { useTheme } from '../settings/ThemeProvider'
 import { buildCreditStudyDeck } from '../pptx/presets/creditDeckBuilder'
 import { exportAndDownloadStudyDeck } from '../pptx/export/exportStudyDeck'
 import { supabase } from '../supabaseClient'
+
+const DEBUG_THEME = false; // Debug flag for theme logs
 import { computeCapitalDecesSchedule, computeGlobalCapitalDecesSchedule } from '../engine/credit/capitalDeces';
 import './Credit.css'
 import '../styles/premium-shared.css'
@@ -223,7 +225,7 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
 export default function Credit(){
 
 /* ---- THEME ---- */
-const { colors: themeColors, logo, setLogo } = useTheme()
+const { colors: themeColors, logo, setLogo, cabinetLogo, themeSource, pptxColors } = useTheme()
 
 /* ---- ÉTATS ---- */
 const [startYM, setStartYM]         = useState(nowYearMonth()) // Date souscription prêt 1
@@ -877,32 +879,27 @@ const synthesePeriodes = useMemo(() => {
   async function exportPowerPoint() {
     try {
       // Build PPTX colors from theme
-      const pptxColors = {
-        c1: themeColors.c1,
-        c2: themeColors.c2,
-        c3: themeColors.c3,
-        c4: themeColors.c4,
-        c5: themeColors.c5,
-        c6: themeColors.c6,
-        c7: themeColors.c7,
-        c8: themeColors.c8,
-        c9: themeColors.c9,
-        c10: themeColors.c10,
+      // V3.3: Logo resolution based on themeSource
+      // Priority: cabinet logo > user logo > undefined
+      let exportLogo
+      if (themeSource === 'cabinet') {
+        // Mode cabinet: priorité logo cabinet, fallback logo user
+        exportLogo = cabinetLogo || logo
+        if (DEBUG_THEME) console.info('[Credit Export] Using cabinet logo:', !!cabinetLogo)
+      } else {
+        // Mode custom: logo user uniquement
+        exportLogo = logo
       }
-
-      // CRITICAL: Use logo from ThemeProvider (same as IR.jsx)
-      // Logo is stored as dataUri in user_metadata.cover_slide_url
-      let exportLogo = logo
+      
+      // Fallback: reload from user_metadata if still undefined
       if (!exportLogo) {
-        console.info('[Credit Export] Logo not in context, attempting to reload from user metadata...')
+        console.info('[Credit Export] No logo in context, attempting reload from user_metadata...')
         try {
           const { data: { user } } = await supabase.auth.getUser()
           if (user?.user_metadata?.cover_slide_url) {
             exportLogo = user.user_metadata.cover_slide_url
             setLogo(exportLogo)
-            console.info('[Credit Export] Logo reloaded successfully')
-          } else {
-            console.info('[Credit Export] No logo found in user metadata')
+            console.info('[Credit Export] Logo reloaded from user_metadata')
           }
         } catch (logoError) {
           console.warn('[Credit Export] Failed to reload logo:', logoError)

@@ -12,6 +12,8 @@ import { buildIrStudyDeck } from '../pptx/presets/irDeckBuilder';
 import { exportAndDownloadStudyDeck } from '../pptx/export/exportStudyDeck';
 import { supabase } from '../supabaseClient';
 
+const DEBUG_THEME = false; // Debug flag for theme logs
+
 // ---- Helpers formats ----
 const fmt0 = (n) => (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
 const euro0 = (n) => `${fmt0(n)} €`;
@@ -45,7 +47,7 @@ function computeAbattement10(base, cfg) {
 export default function Ir() {
   // Theme colors and logo from ThemeProvider
   // pptxColors respects the theme scope setting (SER1 classic if ui-only)
-  const { colors, logo, setLogo, pptxColors } = useTheme();
+  const { colors, logo, setLogo, cabinetLogo, themeSource, pptxColors } = useTheme();
 
   const [taxSettings, setTaxSettings] = useState(null);
   const [psSettings, setPsSettings] = useState(null);
@@ -507,20 +509,27 @@ const yearLabel =
     }
 
     try {
-      // CRITICAL: Ensure logo is loaded before export
-      // If logo is not available in context, try to reload it from user metadata
-      let exportLogo = logo;
+      // V3.3: Logo resolution based on themeSource
+      // Priority: cabinet logo > user logo > undefined
+      let exportLogo;
+      if (themeSource === 'cabinet') {
+        // Mode cabinet: priorité logo cabinet, fallback logo user
+        exportLogo = cabinetLogo || logo;
+        if (DEBUG_THEME) console.info('[IR Export] Using cabinet logo:', !!cabinetLogo);
+      } else {
+        // Mode custom: logo user uniquement
+        exportLogo = logo;
+      }
+      
+      // Fallback: reload from user_metadata if still undefined
       if (!exportLogo) {
-        console.info('[IR Export] Logo not in context, attempting to reload from user metadata...');
+        console.info('[IR Export] No logo in context, attempting reload from user_metadata...');
         try {
           const { data: { user } } = await supabase.auth.getUser();
           if (user?.user_metadata?.cover_slide_url) {
             exportLogo = user.user_metadata.cover_slide_url;
-            // Also update the context for future exports
             setLogo(exportLogo);
-            console.info('[IR Export] Logo reloaded successfully');
-          } else {
-            console.info('[IR Export] No logo found in user metadata');
+            console.info('[IR Export] Logo reloaded from user_metadata');
           }
         } catch (logoError) {
           console.warn('[IR Export] Failed to reload logo:', logoError);

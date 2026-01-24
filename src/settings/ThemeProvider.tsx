@@ -116,6 +116,7 @@ interface ThemeContextValue {
   isLoading: boolean;
   logo?: string;
   setLogo: (logo: string | undefined) => void;
+  cabinetLogo?: string; // Logo cabinet (via RPC)
   themeScope: ThemeScope;
   setThemeScope: (scope: ThemeScope) => void; // Allow Settings to update scope globally
   pptxColors: ThemeColors; // Colors to use for PPTX (respects scope)
@@ -130,6 +131,7 @@ const ThemeContext = createContext<ThemeContextValue>({
   isLoading: true,
   logo: undefined,
   setLogo: () => {},
+  cabinetLogo: undefined,
   themeScope: 'all',
   setThemeScope: () => {},
   pptxColors: DEFAULT_COLORS,
@@ -185,6 +187,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   // Cela empêche le flash "default" si un cache existe
   const [colorsState, setColorsState] = useState<ThemeColors>(DEFAULT_COLORS);
   const [logo, setLogo] = useState<string | undefined>(undefined);
+  const [cabinetLogo, setCabinetLogo] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [themeScope, setThemeScope] = useState<ThemeScope>('all');
   const [themeSource, setThemeSource] = useState<ThemeSource>('cabinet');
@@ -193,6 +196,36 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   // Compute PPTX colors based on theme scope
   // CRITICAL: Use centralized resolver to ensure PPTX never uses web colors when ui-only
   const pptxColors: ThemeColors = resolvePptxColors(colorsState, themeScope);
+
+  // Load cabinet logo for user via RPC (contourne RLS)
+  const loadCabinetLogo = async (userId: string): Promise<string | undefined> => {
+    try {
+      // Utiliser RPC SECURITY DEFINER pour récupérer le storage_path sans RLS
+      const { data: storagePath, error: rpcError } = await supabase
+        .rpc('get_my_cabinet_logo');
+        
+      if (rpcError) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] Cabinet logo RPC error:', rpcError);
+        return undefined;
+      }
+      
+      if (!storagePath) {
+        if (DEBUG_THEME) console.info('[ThemeProvider] No cabinet logo found for user:', userId);
+        return undefined;
+      }
+      
+      // Récupérer URL publique depuis bucket 'logos'
+      const { data: urlData } = supabase.storage
+        .from('logos')
+        .getPublicUrl(storagePath);
+      
+      if (DEBUG_THEME) console.info('[ThemeProvider] Cabinet logo loaded:', urlData.publicUrl);
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error('[ThemeProvider] Error loading cabinet logo:', error);
+      return undefined;
+    }
+  };
 
   // Load cabinet theme for user via RPC (contourne RLS)
   const loadCabinetTheme = async (userId: string): Promise<ThemeColors> => {
@@ -353,6 +386,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         setColorsState(DEFAULT_COLORS);
         applyColorsToCSSWithGuard(DEFAULT_COLORS, undefined, 'signed-out');
         setLogo(undefined);
+        setCabinetLogo(undefined);
         setIsLoading(false);
         if (DEBUG_THEME) console.info('[ThemeProvider] User signed out - reset to defaults');
         return;
@@ -414,6 +448,12 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
           finalColors = cabinetColors;
           source = 'cabinet-theme';
           // Ne pas sauvegarder en cache pour permettre le switch custom/cabinet
+          
+          // Charger logo cabinet en parallèle
+          const logoUrl = await loadCabinetLogo(user.id);
+          if (mountedRef.current && requestId === activeRequestIdRef.current) {
+            setCabinetLogo(logoUrl);
+          }
         } else {
           // themeSource='custom' : logique normale avec cache/ui_settings
           if (!cachedColors) {
@@ -557,7 +597,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, isLoading, logo, setLogo, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource }}>
+    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, isLoading, logo, setLogo, cabinetLogo, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource }}>
       {children}
     </ThemeContext.Provider>
   );
