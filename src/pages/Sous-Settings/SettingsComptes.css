@@ -184,22 +184,23 @@
 
 .actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-wrap: nowrap;
+  gap: 6px;
   justify-content: flex-end;
   min-width: 0;
 }
 
 .actions button {
-  padding: 8px 14px;
+  padding: 6px 10px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
   background: var(--color-c7);
   color: var(--color-c10);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .actions button:hover {
