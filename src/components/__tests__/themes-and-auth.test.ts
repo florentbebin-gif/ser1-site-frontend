@@ -75,7 +75,7 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
     const mockSyncThemeColors = vi.fn();
     
     // État initial : thème prédéfini sélectionné
-    let selectedTheme = 'SER1 Classique – Thème original';
+    let selectedTheme = 'Thème Original';
     const colorsLegacy = {
       color1: '#2B3E37',
       color2: '#709B8B',
@@ -122,7 +122,7 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
     const PREDEFINED_THEMES = [
       {
         id: 'ser1-classic',
-        name: 'SER1 Classique – Thème original',
+        name: 'Thème Original',
         colors: Object.freeze({
           color1: '#2B3E37',
           color2: '#709B8B',
@@ -159,7 +159,7 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
     };
 
     // Action : sélectionner un thème prédéfini
-    handleThemeSelect('SER1 Classique – Thème original');
+    handleThemeSelect('Thème Original');
 
     // Vérifications
     expect(mockSetColorsLegacy).toHaveBeenCalledWith(
