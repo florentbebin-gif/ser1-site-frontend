@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase, DEBUG_AUTH } from '../supabaseClient';
 import { useTheme } from '../settings/ThemeProvider';
 import { UserInfoBanner } from '../components/UserInfoBanner';
+import { recalculatePaletteFromC1 } from '../utils/paletteGenerator';
 
 // Couleurs par défaut
 const DEFAULT_COLORS = {
@@ -120,7 +121,7 @@ const COLOR_FIELDS = [
 ];
 
 export default function Settings({ isAdmin = false }) {
-  const { colors, setColors, saveThemeToUiSettings, isLoading: themeLoading, themeScope, setThemeScope, logo, setLogo } = useTheme();
+  const { colors, setColors, saveThemeToUiSettings, isLoading: themeLoading, logo, setLogo } = useTheme();
   const [user, setUser] = useState(null);
   const [roleLabel, setRoleLabel] = useState('User');
   const [loading, setLoading] = useState(true);
@@ -130,8 +131,25 @@ export default function Settings({ isAdmin = false }) {
   const [colorText, setColorText] = useState(DEFAULT_COLORS);
   const [savingColors, setSavingColors] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  
+  // V3.1: Theme source state (cabinet vs custom)
+  const [themeSource, setThemeSource] = useState(() => {
+    return localStorage.getItem('themeSource') || 'cabinet';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('themeSource', themeSource);
+  }, [themeSource]);
+
+  // V3.1: Advanced colors visibility
+  const [showAdvancedColors, setShowAdvancedColors] = useState(false);
+
+  // Legacy states (kept for compatibility)
   const [selectedTheme, setSelectedTheme] = useState('Personnalisé');
-  // themeScope is now from ThemeProvider context (not local state)
+  
+  // TODO: themeScope will be removed fully in V3.3 when PPTX is cabinet-governed
+  // Default stable value for compatibility
+  const themeScope = 'ui-only';
 
   const [coverUrl, setCoverUrl] = useState('');
 
@@ -225,13 +243,10 @@ export default function Settings({ isAdmin = false }) {
 
           setRoleLabel(isAdmin ? 'Admin' : 'User');
 
-          // URL du logo (si déjà enregistré)
-          if (meta.cover_slide_url) {
-            setCoverUrl(meta.cover_slide_url);
-            // Also sync with ThemeProvider if not already set
-            if (!logo) {
-              setLogo(meta.cover_slide_url);
-            }
+          // TODO: Logo handling deprecated in V3.1 - cabinet logos now managed in admin
+          // Kept for compatibility only
+          if (meta.cover_slide_url && !logo) {
+            setLogo(meta.cover_slide_url);
           }
         }
       } catch (e) {
@@ -264,8 +279,18 @@ export default function Settings({ isAdmin = false }) {
       setSelectedTheme('Personnalisé');
     }
     
-    // Synchronisation temps réel avec le nouveau thème
-    syncThemeColors(newColors);
+    // If changing c1, recalculate other colors automatically
+    if (key === 'color1' && themeSource === 'custom') {
+      const recalculated = recalculatePaletteFromC1(value);
+      setColorsLegacy(prev => ({ ...prev, ...recalculated }));
+      setColorText(prev => ({ ...prev, ...Object.fromEntries(
+        Object.entries(recalculated).map(([k, v]) => [k, v.toUpperCase()])
+      ) }));
+      syncThemeColors({ ...newColors, ...recalculated });
+    } else {
+      // Synchronisation temps réel avec le nouveau thème
+      syncThemeColors(newColors);
+    }
   };
 
   const handleColorTextChange = (key, value) => {
@@ -354,98 +379,13 @@ export default function Settings({ isAdmin = false }) {
     }
   };
 
+  // TODO: Logo upload deprecated in V3.1 - use cabinet admin instead
   const handleCoverFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setSaveMessage('');
-
-    if (!file.type.startsWith('image/')) {
-      setSaveMessage('Veuillez sélectionner une image (jpg ou png).');
-      return;
-    }
-
-    // Convert file to dataUri AND check dimensions
-    const imageResult = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const img = new Image();
-        img.onload = () => {
-          // Create canvas to ensure PNG format for PPTX compatibility
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0);
-          const dataUri = canvas.toDataURL('image/png');
-          resolve({ 
-            width: img.width, 
-            height: img.height, 
-            dataUri 
-          });
-        };
-        img.onerror = () => reject(new Error('Failed to load image'));
-        img.src = reader.result;
-      };
-      reader.onerror = () => reject(new Error('Failed to read file'));
-      reader.readAsDataURL(file);
-    }).catch(err => {
-      console.error('Image processing error:', err);
-      return null;
-    });
-
-    if (!imageResult) {
-      setSaveMessage("Impossible de lire l'image.");
-      return;
-    }
-
-    console.log('[Settings] Logo converted to dataUri, length:', imageResult.dataUri.length);
-
-    try {
-      // Store dataUri directly in user_metadata (bypasses Storage RLS issues)
-      // This is more reliable than Storage + URL approach
-      const { error: metaError } = await supabase.auth.updateUser({
-        data: {
-          cover_slide_url: imageResult.dataUri, // Store dataUri directly
-          theme_colors: colors,
-        },
-      });
-
-      if (metaError) {
-        console.error('Erreur metadata :', metaError);
-        setSaveMessage("Erreur lors de l'enregistrement du logo.");
-        return;
-      }
-
-      setCoverUrl(imageResult.dataUri);
-      setLogo(imageResult.dataUri);
-      setSaveMessage('Logo enregistré avec succès.');
-    } catch (err) {
-      console.error(err);
-      setSaveMessage("Erreur lors de l'enregistrement du logo.");
-    }
+    setSaveMessage('Le téléchargement de logo est désormais géré depuis l\'administration des cabinets.');
   };
 
   const handleRemoveCover = async () => {
-    if (!coverUrl) return;
-    try {
-      const { error } = await supabase.auth.updateUser({
-        data: {
-          cover_slide_url: null,
-        },
-      });
-      if (error) {
-        console.error('Erreur suppression cover :', error);
-        setSaveMessage("Erreur lors de la suppression du logo.");
-        return;
-      }
-      setCoverUrl('');
-      setLogo(undefined); // Sync with ThemeProvider
-      setSaveMessage('Logo supprimé.');
-    } catch (e) {
-      console.error(e);
-      setSaveMessage("Erreur lors de la suppression du logo.");
-    }
+    setSaveMessage('La suppression de logo est désormais gérée depuis l\'administration des cabinets.');
   };
 
   /* ---------- Rendu ---------- */
@@ -483,42 +423,68 @@ export default function Settings({ isAdmin = false }) {
             {/* Thèmes prédéfinis */}
             <div style={{ marginBottom: 20 }}>
               <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--color-c10)' }}>
-                Thèmes prédéfinis
+                Source du thème
               </label>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                <select
-                  value={selectedTheme}
-                  onChange={(e) => handleThemeSelect(e.target.value)}
-                  style={{
-                    flex: 1,
-                    maxWidth: '300px',
-                    padding: '8px 12px',
-                    border: '1px solid var(--color-c8)',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    backgroundColor: 'var(--color-c7)',
-                    cursor: 'pointer',
-                    color: 'var(--color-c10)'
-                  }}
-                >
-                  <option value="Personnalisé">Personnalisé</option>
-                  {PREDEFINED_THEMES.map((theme) => (
-                    <option key={theme.name} value={theme.name}>
-                      {theme.name}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  className="chip"
-                  onClick={handleSaveColors}
-                  disabled={savingColors || !user}
-                  style={{ opacity: user ? 1 : 0.5 }}
-                  title={user ? '' : 'Utilisateur non connecté'}
-                >
-                  {savingColors ? 'Enregistrement…' : 'Enregistrer le thème'}
-                </button>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--color-c10)' }}>
+                  <input
+                    type="radio"
+                    name="themeSource"
+                    value="cabinet"
+                    checked={themeSource === 'cabinet'}
+                    onChange={(e) => setThemeSource(e.target.value)}
+                    style={{ margin: 0 }}
+                  />
+                  <span style={{ fontSize: '14px' }}>Thème du cabinet</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--color-c10)' }}>
+                  <input
+                    type="radio"
+                    name="themeSource"
+                    value="custom"
+                    checked={themeSource === 'custom'}
+                    onChange={(e) => setThemeSource(e.target.value)}
+                    style={{ margin: 0 }}
+                  />
+                  <span style={{ fontSize: '14px' }}>Thème personnalisé</span>
+                </label>
               </div>
+              {themeSource === 'custom' && (
+                <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <select
+                    value={selectedTheme}
+                    onChange={(e) => handleThemeSelect(e.target.value)}
+                    style={{
+                      flex: 1,
+                      maxWidth: '300px',
+                      padding: '8px 12px',
+                      border: '1px solid var(--color-c8)',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      backgroundColor: 'var(--color-c7)',
+                      cursor: 'pointer',
+                      color: 'var(--color-c10)'
+                    }}
+                  >
+                    <option value="Personnalisé">Personnalisé</option>
+                    {PREDEFINED_THEMES.map((theme) => (
+                      <option key={theme.name} value={theme.name}>
+                        {theme.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={handleSaveColors}
+                    disabled={savingColors || !user}
+                    style={{ opacity: user ? 1 : 0.5 }}
+                    title={user ? '' : 'Utilisateur non connecté'}
+                  >
+                    {savingColors ? 'Enregistrement…' : 'Enregistrer le thème'}
+                  </button>
+                </div>
+              )}
             </div>
 
             {saveMessage && (
@@ -536,144 +502,137 @@ export default function Settings({ isAdmin = false }) {
               </div>
             )}
 
-            {/* Scope d'application du thème */}
-            <div style={{ marginBottom: 20, padding: '12px', backgroundColor: 'var(--color-c7)', borderRadius: '6px' }}>
-              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--color-c10)' }}>
-                Application du thème
-              </label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--color-c10)' }}>
-                  <input
-                    type="radio"
-                    name="themeScope"
-                    value="all"
-                    checked={themeScope === 'all'}
-                    onChange={(e) => setThemeScope(e.target.value)}
-                    style={{ margin: 0 }}
-                  />
-                  <span style={{ fontSize: '14px' }}>
-                    Appliquer le thème à toute l'interface et aux études PowerPoint
-                  </span>
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--color-c10)' }}>
-                  <input
-                    type="radio"
-                    name="themeScope"
-                    value="ui-only"
-                    checked={themeScope === 'ui-only'}
-                    onChange={(e) => setThemeScope(e.target.value)}
-                    style={{ margin: 0 }}
-                  />
-                  <span style={{ fontSize: '14px' }}>
-                    Appliquer le thème à l'interface uniquement
-                  </span>
-                </label>
-              </div>
-            </div>
 
             {/* Éditeur de couleurs */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-                gap: 12,
-                marginBottom: 16,
-              }}
-            >
-              {COLOR_FIELDS.map(({ key, label }) => (
-                <div
-                  key={key}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: '6px 8px',
-                    borderRadius: 8,
-                    background: 'var(--color-c7)',
-                    border: '1px solid var(--color-c8)',
-                  }}
-                >
-                  <span style={{ minWidth: 90, fontSize: 13, color: 'var(--color-c10)' }}>{label}</span>
-
-                  {/* Palette */}
-                  <input
-                    type="color"
-                    value={colorsLegacy[key] || DEFAULT_COLORS[key]}
-                    onChange={(e) => handleColorChange(key, e.target.value)}
-                    style={{
-                      width: 32,
-                      height: 32,
-                      border: 'none',
-                      padding: 0,
-                      background: 'transparent',
-                      cursor: 'pointer',
-                    }}
-                  />
-
-                  {/* Saisie hexadécimale */}
-                  <input
-                    type="text"
-                    value={colorText[key] || DEFAULT_COLORS[key]}
-                    onChange={(e) => handleColorTextChange(key, e.target.value)}
-                    onBlur={() => handleColorTextBlur(key)}
-                    style={{
-                      width: 90,
-                      fontFamily: 'monospace',
-                      fontSize: 12,
-                      padding: '4px 6px',
-                      borderRadius: 4,
-                      border: '1px solid var(--color-c8)',
-                    }}
-                    placeholder="var(--color-c10)"
-                  />
-                </div>
-              ))}
-            </div>
-
-          </div>
-
-          {/* Choix du logo */}
-          <div>
-            <h3 style={{ marginBottom: 8 }}>Choix du logo de l’étude</h3>
-            <p style={{ marginBottom: 8, fontSize: 14, color: 'var(--color-c9)' }}>
-              Chargez une image (.jpg ou .png). Cette image est utilisée comme logo sur la page de garde dans vos éditions d'étude PowerPoint.
-            </p>
-
-            <input
-              type="file"
-              accept="image/png,image/jpeg"
-              onChange={handleCoverFileChange}
-            />
-
-            <div style={{ marginTop: 8, fontSize: 13, color: 'var(--color-c9)' }}>
-              <strong>Logo sélectionné :</strong>{' '}
-              {coverUrl ? (
-                <div style={{ marginTop: 8 }}>
-                  <img
-                    src={coverUrl}
-                    alt="Logo"
-                    style={{
-                      maxWidth: '260px',
-                      borderRadius: 8,
-                      border: '1px solid var(--color-c8)',
-                    }}
-                  />
-                                    <button
+            {themeSource === 'custom' && (
+              <>
+                <div style={{ marginBottom: 16 }}>
+                  <button
                     type="button"
-                    className="chip"
-                    onClick={handleRemoveCover}
-                    style={{ marginTop: 8 }}
+                    onClick={() => setShowAdvancedColors(!showAdvancedColors)}
+                    style={{
+                      padding: '8px 16px',
+                      border: '1px solid var(--color-c8)',
+                      borderRadius: '6px',
+                      backgroundColor: 'var(--color-c7)',
+                      color: 'var(--color-c10)',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
                   >
-                    Supprimer le logo
+                    <span>{showAdvancedColors ? '▼' : '▶'}</span>
+                    <span>Couleurs avancées</span>
                   </button>
                 </div>
-              ) : (
-                'Aucune'
-              )}
-            </div>
-          </div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                    gap: 12,
+                    marginBottom: 16,
+                  }}
+                >
+                  {/* Always show color1 */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '6px 8px',
+                      borderRadius: 8,
+                      background: 'var(--color-c7)',
+                      border: '1px solid var(--color-c8)',
+                    }}
+                  >
+                    <span style={{ minWidth: 90, fontSize: 13, color: 'var(--color-c10)' }}>Couleur 1</span>
+
+                    <input
+                      type="color"
+                      value={colorsLegacy.color1}
+                      onChange={(e) => handleColorChange('color1', e.target.value)}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                      }}
+                    />
+
+                    <input
+                      type="text"
+                      value={colorText.color1 || ''}
+                      onChange={(e) => handleColorTextChange('color1', e.target.value)}
+                      onBlur={() => handleColorTextBlur('color1')}
+                      placeholder="#RRGGBB"
+                      style={{
+                        flex: 1,
+                        padding: '6px 8px',
+                        border: '1px solid var(--color-c8)',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        backgroundColor: 'var(--color-c7)',
+                        color: 'var(--color-c10)',
+                      }}
+                    />
+                  </div>
+
+                  {/* Advanced colors */}
+                  {showAdvancedColors && COLOR_FIELDS.filter(({ key }) => key !== 'color1').map(({ key, label }) => (
+                    <div
+                      key={key}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '6px 8px',
+                        borderRadius: 8,
+                        background: 'var(--color-c7)',
+                        border: '1px solid var(--color-c8)',
+                      }}
+                    >
+                      <span style={{ minWidth: 90, fontSize: 13, color: 'var(--color-c10)' }}>{label}</span>
+
+                      <input
+                        type="color"
+                        value={colorsLegacy[key]}
+                        onChange={(e) => handleColorChange(key, e.target.value)}
+                        style={{
+                          width: 40,
+                          height: 40,
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                        }}
+                      />
+
+                      <input
+                        type="text"
+                        value={colorText[key] || ''}
+                        onChange={(e) => handleColorTextChange(key, e.target.value)}
+                        onBlur={() => handleColorTextBlur(key)}
+                        placeholder="#RRGGBB"
+                        style={{
+                          flex: 1,
+                          padding: '6px 8px',
+                          border: '1px solid var(--color-c8)',
+                          borderRadius: '4px',
+                          fontSize: '13px',
+                          backgroundColor: 'var(--color-c7)',
+                          color: 'var(--color-c10)',
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
 
           </div>
+        </div>
     </>
   );
 }

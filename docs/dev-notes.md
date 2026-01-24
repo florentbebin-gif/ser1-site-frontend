@@ -223,13 +223,39 @@ if (userRole !== 'admin') {
 
 ---
 
+## V3.1 - UI SETTINGS REFACTOR (LOGO + THEME)
+
+### Changements V3.1
+- **Suppression bloc logo**: Upload/suppression logo déprécié, redirigé vers admin cabinets
+- **Suppression bloc "Application du thème"**: Scope UI-only par défaut, TODO pour V3.3
+- **Nouveau choix thème**: Radio "Thème du cabinet" (défaut) vs "Thème personnalisé"
+- **Palette couleurs**: Affiche Couleur 1 par défaut + bouton "Couleurs avancées"
+- **Générateur palette**: `src/utils/paletteGenerator.ts` recalcule c2..c10 depuis c1
+- **Persistance**: `themeSource` stocké dans localStorage (en attente V3.2)
+
+### Fichiers modifiés
+- `src/pages/Settings.jsx` - Refactor UI complet
+- `src/utils/paletteGenerator.ts` - Nouveau utilitaire palette
+
+### Tests manuels requis
+1. /settings: bloc logo absent
+2. /settings: bloc "Application du thème" absent  
+3. /settings: radio "Thème du cabinet"/"Personnalisé" visible
+4. /settings: Couleur 1 visible + bouton "Couleurs avancées"
+5. Modifier Couleur 1 → autres couleurs changent (si avancées ouvertes)
+6. Refresh page → état conservé (localStorage)
+
+---
+
 ## PROCHAINES ÉTAPES (V3+)
 
 1. ✅ Créer bucket Storage "logos" (manuel Dashboard)
 2. ✅ Smoke tests manuels de l'UI admin
 3. ✅ Auto-création profiles sur assignment
-4. V3: Intégration thème cabinet dans Settings user (option "Utiliser thème cabinet")
-5. V4: Optimisation perf (chunking pptxgenjs)
+4. ✅ V3.1 UI Settings refactor (logo + thème)
+5. V3.2: Intégration thème cabinet réel (API + ThemeProvider)
+6. V3.3: Suppression complète themeScope + PPTX cabinet-governed
+7. V4: Optimisation perf (chunking pptxgenjs)
 
 ---
 
