@@ -48,6 +48,7 @@ export default function SettingsComptes() {
   // User Modal state
   const [showUserModal, setShowUserModal] = useState(false);
   const [userModalEmail, setUserModalEmail] = useState('');
+  const [userModalCabinetId, setUserModalCabinetId] = useState('');
   const [userModalError, setUserModalError] = useState('');
   const [userModalSuccess, setUserModalSuccess] = useState('');
 
@@ -408,6 +409,7 @@ export default function SettingsComptes() {
   const closeUserModal = () => {
     setShowUserModal(false);
     setUserModalEmail('');
+    setUserModalCabinetId('');
     setUserModalError('');
     setUserModalSuccess('');
   };
@@ -423,9 +425,12 @@ export default function SettingsComptes() {
       setUserModalError('');
       setUserModalSuccess('');
 
-      const { error: invokeError } = await invokeAdmin('create_user_invite', { 
-        email: userModalEmail.trim() 
-      });
+      const payload = { email: userModalEmail.trim() };
+      if (userModalCabinetId) {
+        payload.cabinet_id = userModalCabinetId;
+      }
+
+      const { error: invokeError } = await invokeAdmin('create_user_invite', payload);
 
       if (invokeError) throw new Error(invokeError.message);
       
@@ -1061,6 +1066,30 @@ export default function SettingsComptes() {
                       backgroundColor: '#FFFFFF'
                     }}
                   />
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>Cabinet (optionnel)</label>
+                  <select
+                    value={userModalCabinetId}
+                    onChange={(e) => setUserModalCabinetId(e.target.value)}
+                    disabled={actionLoading || cabinetsLoading}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: '1px solid var(--color-c8)',
+                      borderRadius: 6,
+                      fontSize: 14,
+                      backgroundColor: '#FFFFFF',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="">-- Aucun cabinet --</option>
+                    {cabinets.map((cabinet) => (
+                      <option key={cabinet.id} value={cabinet.id}>
+                        {cabinet.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="report-modal-actions">

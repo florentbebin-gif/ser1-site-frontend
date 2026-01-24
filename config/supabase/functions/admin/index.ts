@@ -238,7 +238,7 @@ serve(async (req: Request) => {
 
     // Créer/inviter un utilisateur
     if (action === 'create_user_invite') {
-      const { email } = payload
+      const { email, cabinet_id } = payload
       if (!email) {
         return new Response(JSON.stringify({ error: 'Email required' }), {
           status: 400,
@@ -246,10 +246,33 @@ serve(async (req: Request) => {
         })
       }
 
-      const { data, error } = await supabase.auth.admin.inviteUserByEmail(email)
-      if (error) throw error
+      // 1. Inviter l'utilisateur via Supabase Auth
+      const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email)
+      if (inviteError) throw inviteError
 
-      return new Response(JSON.stringify({ success: true, user: data }), {
+      // 2. Créer/MAJ la ligne profiles avec cabinet_id (idempotent)
+      if (inviteData?.user?.id) {
+        const profilePayload: any = {
+          id: inviteData.user.id,
+          email: email,
+          role: 'user'
+        }
+        
+        if (cabinet_id) {
+          profilePayload.cabinet_id = cabinet_id
+        }
+
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert(profilePayload, { onConflict: 'id' })
+
+        if (profileError) {
+          console.error('[admin] Profile upsert error:', profileError)
+          // Ne pas throw - l'invitation est déjà faite
+        }
+      }
+
+      return new Response(JSON.stringify({ success: true, user: inviteData }), {
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }
