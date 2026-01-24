@@ -198,15 +198,15 @@ if (userRole !== 'admin') {
    - DB `profiles`: cabinet_id du user non null
 
 ### Résultat du test
-- **Date**: 2026-01-23
+- **Date**: 2026-01-24
 - **Bucket créé**: ✅ OUI
-- **Test upload**: ❌ KO → ❌ 500 ERROR
+- **Test upload**: ❌ KO → ✅ RÉSOLU
 - **Erreurs rencontrées**: 
   - **Round 1**: `Invalid action` (400) → **Résolu**: Edge Function déployée
-  - **Round 2**: `Internal server error` (500) sur `list_cabinets` et `list_themes`
-  - **Diagnostic**: Les tables `cabinets` et `themes` n'existent pas en base de données
-  - **Hypothèse**: La migration SQL `create-cabinets-themes-logos.sql` n'a pas été appliquée
-  - **Action requise**: Appliquer la migration SQL manuellement depuis Supabase Dashboard
+  - **Round 2**: `Internal server error` (500) sur `list_cabinets` et `list_thèmes` → **Résolu**: Migration DB appliquée
+  - **Round 3**: `assign_user_cabinet` 500 → **Résolu**: Gestion profile manquant (PGRST116)
+  - **Round 4**: Logo upload 400 RLS → **Résolu**: Policies storage.objects pour bucket 'logos'
+  - **État final**: ✅ V2 fonctionnelle après patchs Edge Function + RLS Storage
 
 ---
 
