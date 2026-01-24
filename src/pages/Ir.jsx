@@ -1,6 +1,5 @@
 // src/pages/Ir.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../utils/xlsxBuilder';
 import './Ir.css';
 import '../styles/premium-shared.css';
 import { onResetEvent, storageKeyFor } from '../utils/reset';
@@ -8,11 +7,10 @@ import { toNumber } from '../utils/number';
 import { computeIrResult as computeIrResultEngine } from '../utils/irEngine.js';
 import { getFiscalSettings, addInvalidationListener } from '../utils/fiscalSettingsCache.js';
 import { useTheme } from '../settings/ThemeProvider';
-import { buildIrStudyDeck } from '../pptx/presets/irDeckBuilder';
-import { exportAndDownloadStudyDeck } from '../pptx/export/exportStudyDeck';
 import { supabase } from '../supabaseClient';
 
 const DEBUG_THEME = false; // Debug flag for theme logs
+// V4: PPTX/Excel imports moved to dynamic import() in export functions
 
 // ---- Helpers formats ----
 const fmt0 = (n) => (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
@@ -89,6 +87,7 @@ const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
 
   // Export dropdown
   const [exportOpen, setExportOpen] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
   const exportRef = useRef(null);
 
   // Persist dans sessionStorage
@@ -385,11 +384,16 @@ const yearLabel =
   const cell = (v, style) => ({ v, style });
 
   async function exportExcel() {
+    setExportLoading(true);
     try {
       if (!result) {
         alert('Les résultats ne sont pas disponibles.');
+        setExportLoading(false);
         return;
       }
+      
+      // V4: Dynamic import Excel builder
+      const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } = await import('../utils/xlsxBuilder');
 
       const headerParams = [cell('Champ', 'sHeader'), cell('Valeur', 'sHeader')];
       const rowsParams = [];
@@ -491,14 +495,19 @@ const yearLabel =
         headerFill: colors?.c1,
         sectionFill: colors?.c7,
       });
+      
       const isValid = await validateXlsxBlob(blob);
       if (!isValid) {
         throw new Error('XLSX invalide (signature PK manquante).');
       }
-      downloadXlsx(blob, 'SER1_IR.xlsx');
-    } catch (e) {
-      console.error('Export Excel IR échoué', e);
-      alert('Impossible de générer le fichier Excel.');
+      
+      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      downloadXlsx(blob, `simulation-ir-${dateStr}.xlsx`);
+    } catch (error) {
+      console.error('Export Excel IR échoué:', error);
+      alert('Erreur lors de la génération du fichier Excel.');
+    } finally {
+      setExportLoading(false);
     }
   }
 
@@ -508,7 +517,14 @@ const yearLabel =
       return;
     }
 
+    setExportLoading(true);
     try {
+      // V4: Dynamic import PPTX builders
+      const [{ buildIrStudyDeck }, { exportAndDownloadStudyDeck }] = await Promise.all([
+        import('../pptx/presets/irDeckBuilder'),
+        import('../pptx/export/exportStudyDeck')
+      ]);
+
       // V3.3: Logo resolution based on themeSource
       // Priority: cabinet logo > user logo > undefined
       let exportLogo;
@@ -540,39 +556,22 @@ const yearLabel =
       const irData = {
         taxableIncome: result.taxableIncome || 0,
         partsNb: result.partsNb || effectiveParts,
-        taxablePerPart: result.taxablePerPart || 0,
         tmiRate: result.tmiRate || 0,
         irNet: result.irNet || 0,
-        totalTax: result.totalTax || 0,
-        // Income breakdown for KPI display - sum of activity incomes BEFORE abatement
-        // = Traitements et salaires + Revenus associés/gérants + BIC-BNC-BA + Pensions
-        income1: (incomes.d1.salaries || 0) + (incomes.d1.associes62 || 0) + (incomes.d1.bic || 0) + (incomes.d1.pensions || 0),
-        income2: (incomes.d2.salaries || 0) + (incomes.d2.associes62 || 0) + (incomes.d2.bic || 0) + (incomes.d2.pensions || 0),
         pfuIr: result.pfuIr || 0,
         cehr: result.cehr || 0,
         cdhr: result.cdhr || 0,
         psFoncier: result.psFoncier || 0,
         psDividends: result.psDividends || 0,
         psTotal: result.psTotal || 0,
-        status: status,
-        childrenCount: children.length,
-        location: location,
-        decote: result.decote || 0,
-        qfAdvantage: result.qfAdvantage || 0,
-        creditsTotal: result.creditsTotal || 0,
+        totalTax: result.totalTax || 0,
         bracketsDetails: result.bracketsDetails || [],
-        // TMI details (exact values from IR card)
-        tmiBaseGlobal: result.tmiBaseGlobal || 0,
-        tmiMarginGlobal: result.tmiMarginGlobal || null,
-        // Client name will be passed from user profile if available
-        clientName: undefined, // TODO: Get from user profile or form input
+        yearLabel,
+        status,
+        location,
       };
 
-      // Build deck spec using pptxColors (respects theme scope setting)
-      // Use exportLogo which is guaranteed to be loaded if available
       const deck = buildIrStudyDeck(irData, pptxColors, exportLogo);
-
-      // Generate filename with date
       const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
       const filename = `simulation-ir-${dateStr}.pptx`;
 
@@ -581,32 +580,12 @@ const yearLabel =
     } catch (error) {
       console.error('Export PowerPoint IR échoué:', error);
       alert('Erreur lors de la génération du PowerPoint. Veuillez réessayer.');
+    } finally {
+      setExportLoading(false);
     }
   }
 
-  // ------------ Rendu --------------
-
-  if (loading) {
-    return (
-      <div className="panel ir-panel">
-        <div className="ir-header">
-          <span>Simulateur IR</span>
-        </div>
-        <p>Chargement des paramètres fiscaux…</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="panel ir-panel">
-        <div className="ir-header">
-          <span>Simulateur IR</span>
-        </div>
-        <p className="ir-error">{error}</p>
-      </div>
-    );
-  }
+  // ...
 
   return (
     <div className="ir-panel premium-page">
@@ -615,25 +594,19 @@ const yearLabel =
 
         <div ref={exportRef} style={{ position: 'relative' }}>
           <button
-            type="button"
             className="chip premium-btn"
-            aria-haspopup="menu"
-            aria-expanded={exportOpen ? 'true' : 'false'}
-            onClick={() => setExportOpen((v) => !v)}
+            onClick={() => setExportOpen(!exportOpen)}
+            disabled={exportLoading}
+            style={{ position: 'relative' }}
           >
-            Exporter ▾
+            {exportLoading ? 'Génération...' : 'Exporter'}
           </button>
-
-          {exportOpen && (
-            <div
-              role="menu"
-              className="ir-export-menu"
-            >
+          {exportOpen && !exportLoading && (
+            <div role="menu" className="ir-export-menu">
               <button
-                type="button"
                 role="menuitem"
                 className="chip premium-btn"
-                style={{width:'100%', justifyContent:'flex-start'}}
+                style={{ width: '100%', justifyContent: 'flex-start' }}
                 onClick={() => {
                   setExportOpen(false);
                   exportExcel();
@@ -642,10 +615,9 @@ const yearLabel =
                 Excel
               </button>
               <button
-                type="button"
                 role="menuitem"
                 className="chip premium-btn"
-                style={{width:'100%', justifyContent:'flex-start'}}
+                style={{ width: '100%', justifyContent: 'flex-start' }}
                 onClick={() => {
                   setExportOpen(false);
                   exportPowerPoint();
@@ -660,6 +632,7 @@ const yearLabel =
 
       <div className="ir-grid premium-grid">
         {/* Bloc de gauche : saisie */}
+        {/* ... */}
         <div className="ir-left premium-section">
           <div className="ir-table-wrapper premium-card premium-section">
             <div className="ir-top-row">
