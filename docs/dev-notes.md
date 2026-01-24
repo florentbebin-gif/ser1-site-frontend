@@ -210,12 +210,26 @@ if (userRole !== 'admin') {
 
 ---
 
+## V2.1 - AUTO-CRÉATION PROFILES SUR ASSIGNMENT
+
+### Patch: assign_user_cabinet auto-create missing profiles
+- **Problème**: Users existant dans `auth.users` mais sans row dans `public.profiles` → 404
+- **Solution**: Si `profiles.update()` retourne null/PGRST116, créer automatiquement le profile depuis `auth.users`
+- **Implémentation**: 
+  - `maybeSingle()` pour éviter 500 sur row manquante
+  - `supabase.auth.admin.getUserById()` pour récupérer email + rôle
+  - `profiles.insert()` avec `id`, `email`, `role`, `cabinet_id`
+- **Test**: Assigner un cabinet à un user sans profile → profile créé automatiquement (200)
+
+---
+
 ## PROCHAINES ÉTAPES (V3+)
 
 1. ✅ Créer bucket Storage "logos" (manuel Dashboard)
 2. ✅ Smoke tests manuels de l'UI admin
-3. V3: Intégration thème cabinet dans Settings user (option "Utiliser thème cabinet")
-4. V4: Optimisation perf (chunking pptxgenjs)
+3. ✅ Auto-création profiles sur assignment
+4. V3: Intégration thème cabinet dans Settings user (option "Utiliser thème cabinet")
+5. V4: Optimisation perf (chunking pptxgenjs)
 
 ---
 

@@ -931,28 +931,59 @@ serve(async (req: Request) => {
         }
       }
 
+      // Essayer d'abord l'UPDATE
       const { data, error } = await supabase
         .from('profiles')
         .update({ cabinet_id: cabinet_id || null })
         .eq('id', user_id)
         .select()
-        .single()
+        .maybeSingle()
 
-      if (error) {
-        // Gérer le cas où le profile n'existe pas (PGRST116)
-        if (error.code === 'PGRST116') {
-          console.log(`[admin] assign_user_cabinet: profile not found for user_id=${user_id}`)
-          return new Response(JSON.stringify({ error: 'Profile not found for user' }), {
+      // Si profile existe, retourner le résultat
+      if (!error && data) {
+        return new Response(JSON.stringify({ profile: data }), {
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+
+      // Si profile manquant (PGRST116 ou data null), le créer depuis auth.users
+      if (error?.code === 'PGRST116' || (!error && !data)) {
+        console.log(`[admin] assign_user_cabinet: profile missing for user_id=${user_id}, creating...`)
+        
+        // Récupérer l'utilisateur depuis auth.users
+        const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(user_id)
+        
+        if (authError || !authUser.user) {
+          return new Response(JSON.stringify({ error: 'User not found' }), {
             status: 404,
             headers: { ...responseHeaders, 'Content-Type': 'application/json' }
           })
         }
-        throw error
+
+        const user = authUser.user
+        const role = user.user_metadata?.role || user.app_metadata?.role || 'user'
+        
+        // Insérer le profile manquant
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user_id,
+            email: user.email ?? null,
+            role: role,
+            cabinet_id: cabinet_id || null
+          })
+          .select()
+          .single()
+
+        if (insertError) throw insertError
+
+        return new Response(JSON.stringify({ profile: newProfile }), {
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
       }
 
-      return new Response(JSON.stringify({ profile: data }), {
-        headers: { ...responseHeaders, 'Content-Type': 'application/json' }
-      })
+      // Autre erreur non gérée
+      throw error
     }
 
     // Assigner un thème à un cabinet
