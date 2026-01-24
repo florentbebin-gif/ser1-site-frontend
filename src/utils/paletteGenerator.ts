@@ -92,9 +92,28 @@ function clamp(value: number, min: number, max: number): number {
 /**
  * Generate a complete palette from base color (c1)
  * Uses SER1 Classic deltas as reference, with safety clamps
+ * Returns palette in color1..color10 format for Settings.jsx compatibility
  */
 export function recalculatePaletteFromC1(baseC1: string): Record<string, string> {
-  const baseHsl = hexToHsl(baseC1);
+  // Validate and normalize hex input
+  const normalizedHex = baseC1.trim().toUpperCase();
+  if (!/^#[0-9A-F]{6}$/.test(normalizedHex)) {
+    console.warn('[paletteGenerator] Invalid hex color, using fallback:', baseC1);
+    return {
+      color1: '#2B3E37',
+      color2: '#709B8B',
+      color3: '#9FBDB2',
+      color4: '#CFDED8',
+      color5: '#788781',
+      color6: '#CEC1B6',
+      color7: '#F5F3F0',
+      color8: '#D9D9D9',
+      color9: '#7F7F7F',
+      color10: '#000000',
+    };
+  }
+
+  const baseHsl = hexToHsl(normalizedHex);
   const refHsl = hexToHsl(SER1_CLASSIC.c1);
 
   // Calculate deltas from reference
@@ -108,19 +127,19 @@ export function recalculatePaletteFromC1(baseC1: string): Record<string, string>
     const newH = (ref.h + deltaH + hMod + 360) % 360;
     const newS = clamp(ref.s + deltaS * sMod, 0, 65); // Avoid fluorescent saturation
     const newL = clamp(ref.l + deltaL * lMod, 10, 95); // Avoid pure white/black extremes
-    return hslToHex(newH, newS, newL);
+    return hslToHex(newH, newS, newL).toUpperCase();
   };
 
   return {
-    c1: baseC1,
-    c2: applyDelta(SER1_CLASSIC.c2, 0, 0.8, 0.9),
-    c3: applyDelta(SER1_CLASSIC.c3, 0, 0.6, 0.8),
-    c4: applyDelta(SER1_CLASSIC.c4, 0, 0.4, 0.7),
-    c5: applyDelta(SER1_CLASSIC.c5, 0, 0.9, 0.8),
-    c6: applyDelta(SER1_CLASSIC.c6, 0, 0.3, 0.6),
-    c7: applyDelta(SER1_CLASSIC.c7, 0, 0.2, 0.5),
-    c8: applyDelta(SER1_CLASSIC.c8, 0, 0.1, 0.4),
-    c9: applyDelta(SER1_CLASSIC.c9, 0, 0, 0.3),
-    c10: SER1_CLASSIC.c10, // Keep black stable
+    color1: normalizedHex,
+    color2: applyDelta(SER1_CLASSIC.c2, 0, 0.8, 0.9),
+    color3: applyDelta(SER1_CLASSIC.c3, 0, 0.6, 0.8),
+    color4: applyDelta(SER1_CLASSIC.c4, 0, 0.4, 0.7),
+    color5: applyDelta(SER1_CLASSIC.c5, 0, 0.9, 0.8),
+    color6: applyDelta(SER1_CLASSIC.c6, 0, 0.3, 0.6),
+    color7: applyDelta(SER1_CLASSIC.c7, 0, 0.2, 0.5),
+    color8: applyDelta(SER1_CLASSIC.c8, 0, 0.1, 0.4),
+    color9: applyDelta(SER1_CLASSIC.c9, 0, 0, 0.3),
+    color10: SER1_CLASSIC.c10, // Keep black stable
   };
 }

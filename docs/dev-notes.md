@@ -255,6 +255,22 @@ if (userRole !== 'admin') {
   - Font monospace pour hex
 - **Test**: Ouvrir /settings → déplier "Couleurs avancées" → pas d'overlap + swatches visibles + changer couleur → swatch se met à jour
 
+### V3.1.2 - Auto-recalcul palette depuis c1
+- **Objectif**: Changer c1 recalcule automatiquement c2..c10 pour cohérence visuelle
+- **Implémentation**:
+  - `recalculatePaletteFromC1()` dans `paletteGenerator.ts` retourne `color1..color10`
+  - Validation hex + normalisation (uppercase, fallback si invalide)
+  - Deltas HSL appliqués depuis SER1 Classic avec clamps (S≤65%, L 10-95%)
+  - Déclenchement: `handleColorChange('color1')` ET `handleColorTextBlur('color1')` si `themeSource === 'custom'`
+  - c10 (noir) reste stable pour contraste texte
+- **Tests manuels**:
+  1. ✅ Changer c1 via picker → c2..c10 recalculées automatiquement
+  2. ✅ Changer c1 via champ hex → c2..c10 recalculées au blur
+  3. ✅ Ouvrir/fermer "Couleurs avancées" → état cohérent
+  4. ✅ Sauvegarder → reload → persistance OK
+  5. ✅ Valeur hex invalide → fallback SER1 Classic, pas de crash
+  6. ✅ Contraste c7 (fond) / c10 (texte) reste lisible
+
 ---
 
 ## PROCHAINES ÉTAPES (V3+)

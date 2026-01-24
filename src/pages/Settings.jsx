@@ -316,8 +316,18 @@ export default function Settings({ isAdmin = false }) {
         setSelectedTheme('Personnalisé');
       }
       
-      // Synchronisation temps réel avec le nouveau thème
-      syncThemeColors(newColors);
+      // If changing c1 via text input, recalculate other colors automatically
+      if (key === 'color1' && themeSource === 'custom') {
+        const recalculated = recalculatePaletteFromC1(hex);
+        setColorsLegacy(prev => ({ ...prev, ...recalculated }));
+        setColorText(prev => ({ ...prev, ...Object.fromEntries(
+          Object.entries(recalculated).map(([k, v]) => [k, v.toUpperCase()])
+        ) }));
+        syncThemeColors({ ...newColors, ...recalculated });
+      } else {
+        // Synchronisation temps réel avec le nouveau thème
+        syncThemeColors(newColors);
+      }
     } else {
       // invalide → on revient à la couleur réelle
       setColorText(prev => ({ ...prev, [key]: prev[key] || colorsLegacy[key] || '' }));
