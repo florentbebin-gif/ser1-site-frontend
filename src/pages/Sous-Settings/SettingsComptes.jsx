@@ -538,145 +538,8 @@ export default function SettingsComptes() {
         <p>Chargement...</p>
       ) : (
         <div className="admin-content">
-            {/* Créer un utilisateur */}
-            <div className="invite-section">
-              <h3>Créer un utilisateur</h3>
-              <form onSubmit={handleCreateUser} className="invite-form">
-                <input
-                  type="email"
-                  value={newUserEmail}
-                  onChange={(e) => setNewUserEmail(e.target.value)}
-                  placeholder="Email de l'utilisateur"
-                  required
-                  style={{
-                    flex: 1,
-                    padding: '10px 14px',
-                    border: '1px solid var(--color-c8)',
-                    borderRadius: 6,
-                    fontSize: 14,
-                    backgroundColor: '#FFFFFF',
-                    color: 'var(--color-c10)'
-                  }}
-                />
-                <button 
-                  type="submit" 
-                  disabled={actionLoading}
-                  className="chip"
-                  style={{
-                    padding: '10px 20px',
-                    fontWeight: 600,
-                    opacity: actionLoading ? 0.6 : 1
-                  }}
-                >
-                  {actionLoading ? 'Envoi...' : 'Inviter'}
-                </button>
-              </form>
-            </div>
-
-            {/* Liste des utilisateurs */}
-            <div className="admin-section">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h3>Utilisateurs ({users.length})</h3>
-                <div className="actions">
-                  <button onClick={() => triggerRefresh('manual')} disabled={actionLoading}>
-                    Rafraîchir
-                  </button>
-                </div>
-              </div>
-              <div className="users-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Email</th>
-                      <th>Rôle</th>
-                      <th>Cabinet</th>
-                      <th>Créé le</th>
-                      <th>Dernière connexion</th>
-                      <th>Signalements</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((user) => (
-                      <tr key={user.id}>
-                        <td>{user.email}</td>
-                        <td>
-                          <span className={`role-badge ${user.role}`}>
-                            {user.role}
-                          </span>
-                        </td>
-                        <td>
-                          <select
-                            value={user.cabinet_id || ''}
-                            onChange={(e) => handleAssignUserCabinet(user.id, e.target.value)}
-                            disabled={actionLoading}
-                            style={{
-                              padding: '6px 10px',
-                              border: '1px solid var(--color-c8)',
-                              borderRadius: 4,
-                              fontSize: 12,
-                              backgroundColor: 'var(--color-c7)',
-                              cursor: 'pointer',
-                              minWidth: 120
-                            }}
-                          >
-                            <option value="">— Aucun —</option>
-                            {cabinets.map(cab => (
-                              <option key={cab.id} value={cab.id}>{cab.name}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td>{new Date(user.created_at).toLocaleDateString('fr-FR')}</td>
-                        <td>
-                          {user.last_sign_in_at 
-                            ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR')
-                            : 'Jamais'
-                          }
-                        </td>
-                        <td>
-                          {user.total_reports > 0 ? (
-                            <div 
-                              className="report-badge-container"
-                              onClick={() => handleViewReports(user.id, user.email)}
-                            >
-                              <span className={`report-badge ${user.unread_reports > 0 ? 'has-unread' : 'all-read'}`}>
-                                {user.total_reports}
-                              </span>
-                              {user.unread_reports > 0 && (
-                                <span className="unread-indicator">
-                                  {user.unread_reports} non lu{user.unread_reports > 1 ? 's' : ''}
-                                </span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="no-reports">—</span>
-                          )}
-                        </td>
-                        <td>
-                          <div className="actions">
-                            <button onClick={() => handleResetPassword(user.id, user.email)}>
-                              Email Reinit
-                            </button>
-                            {user.role !== 'admin' && (
-                              <button 
-                                onClick={() => handleDeleteUser(user.id, user.email)}
-                                className="danger"
-                                title="Supprimer l'utilisateur"
-                              >
-                                Suppr.
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
             {/* V2: Section Cabinets */}
-            <div className="admin-section" style={{ marginTop: 24 }}>
+            <div className="admin-section">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                 <h3>Cabinets ({cabinets.length})</h3>
                 <button 
@@ -810,6 +673,143 @@ export default function SettingsComptes() {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Créer un utilisateur */}
+            <div className="invite-section" style={{ marginTop: 24 }}>
+              <h3>Créer un utilisateur</h3>
+              <form onSubmit={handleCreateUser} className="invite-form">
+                <input
+                  type="email"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  placeholder="Email de l'utilisateur"
+                  required
+                  style={{
+                    flex: 1,
+                    padding: '10px 14px',
+                    border: '1px solid var(--color-c8)',
+                    borderRadius: 6,
+                    fontSize: 14,
+                    backgroundColor: '#FFFFFF',
+                    color: 'var(--color-c10)'
+                  }}
+                />
+                <button 
+                  type="submit" 
+                  disabled={actionLoading}
+                  className="chip"
+                  style={{
+                    padding: '10px 20px',
+                    fontWeight: 600,
+                    opacity: actionLoading ? 0.6 : 1
+                  }}
+                >
+                  {actionLoading ? 'Envoi...' : 'Inviter'}
+                </button>
+              </form>
+            </div>
+
+            {/* Liste des utilisateurs */}
+            <div className="admin-section">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h3>Utilisateurs ({users.length})</h3>
+                <div className="actions">
+                  <button onClick={() => triggerRefresh('manual')} disabled={actionLoading}>
+                    Rafraîchir
+                  </button>
+                </div>
+              </div>
+              <div className="users-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Email</th>
+                      <th>Rôle</th>
+                      <th>Cabinet</th>
+                      <th>Créé le</th>
+                      <th>Dernière connexion</th>
+                      <th>Signalements</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr key={user.id}>
+                        <td>{user.email}</td>
+                        <td>
+                          <span className={`role-badge ${user.role}`}>
+                            {user.role}
+                          </span>
+                        </td>
+                        <td>
+                          <select
+                            value={user.cabinet_id || ''}
+                            onChange={(e) => handleAssignUserCabinet(user.id, e.target.value)}
+                            disabled={actionLoading}
+                            style={{
+                              padding: '6px 10px',
+                              border: '1px solid var(--color-c8)',
+                              borderRadius: 4,
+                              fontSize: 12,
+                              backgroundColor: 'var(--color-c7)',
+                              cursor: 'pointer',
+                              minWidth: 120
+                            }}
+                          >
+                            <option value="">— Aucun —</option>
+                            {cabinets.map(cab => (
+                              <option key={cab.id} value={cab.id}>{cab.name}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td>{new Date(user.created_at).toLocaleDateString('fr-FR')}</td>
+                        <td>
+                          {user.last_sign_in_at 
+                            ? new Date(user.last_sign_in_at).toLocaleDateString('fr-FR')
+                            : 'Jamais'
+                          }
+                        </td>
+                        <td>
+                          {user.total_reports > 0 ? (
+                            <div 
+                              className="report-badge-container"
+                              onClick={() => handleViewReports(user.id, user.email)}
+                            >
+                              <span className={`report-badge ${user.unread_reports > 0 ? 'has-unread' : 'all-read'}`}>
+                                {user.total_reports}
+                              </span>
+                              {user.unread_reports > 0 && (
+                                <span className="unread-indicator">
+                                  {user.unread_reports} non lu{user.unread_reports > 1 ? 's' : ''}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="no-reports">—</span>
+                          )}
+                        </td>
+                        <td>
+                          <div className="actions">
+                            <button onClick={() => handleResetPassword(user.id, user.email)}>
+                              Email Reinit
+                            </button>
+                            {user.role !== 'admin' && (
+                              <button 
+                                onClick={() => handleDeleteUser(user.id, user.email)}
+                                className="danger"
+                                title="Supprimer l'utilisateur"
+                              >
+                                Suppr.
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
