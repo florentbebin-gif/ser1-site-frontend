@@ -44,6 +44,12 @@ export default function SettingsComptes() {
   const [editingTheme, setEditingTheme] = useState(null);
   const [themeForm, setThemeForm] = useState({ name: '', palette: {} });
   const [themeSaving, setThemeSaving] = useState(false);
+  
+  // User Modal state
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [userModalEmail, setUserModalEmail] = useState('');
+  const [userModalError, setUserModalError] = useState('');
+  const [userModalSuccess, setUserModalSuccess] = useState('');
 
   const DEFAULT_PALETTE = {
     c1: '#2B3E37', c2: '#709B8B', c3: '#9FBDB2', c4: '#CFDED8', c5: '#788781',
@@ -391,6 +397,50 @@ export default function SettingsComptes() {
     }
   };
 
+  // User Modal handlers
+  const openUserModal = () => {
+    setUserModalEmail('');
+    setUserModalError('');
+    setUserModalSuccess('');
+    setShowUserModal(true);
+  };
+
+  const closeUserModal = () => {
+    setShowUserModal(false);
+    setUserModalEmail('');
+    setUserModalError('');
+    setUserModalSuccess('');
+  };
+
+  const handleInviteUser = async () => {
+    if (!userModalEmail.trim()) {
+      setUserModalError('L\'email est requis.');
+      return;
+    }
+
+    try {
+      setActionLoading(true);
+      setUserModalError('');
+      setUserModalSuccess('');
+
+      const { error: invokeError } = await invokeAdmin('create_user_invite', { 
+        email: userModalEmail.trim() 
+      });
+
+      if (invokeError) throw new Error(invokeError.message);
+      
+      setUserModalSuccess('Invitation envoyée avec succès !');
+      setTimeout(() => {
+        closeUserModal();
+        triggerRefresh('create_user_invite');
+      }, 1500);
+    } catch (err) {
+      setUserModalError(err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleDeleteUser = async (userId, email) => {
     if (!confirm(`Supprimer l'utilisateur ${email} ?`)) return;
 
@@ -675,47 +725,21 @@ export default function SettingsComptes() {
               )}
             </div>
 
-            {/* Créer un utilisateur */}
-            <div className="invite-section" style={{ marginTop: 24 }}>
-              <h3>Créer un utilisateur</h3>
-              <form onSubmit={handleCreateUser} className="invite-form">
-                <input
-                  type="email"
-                  value={newUserEmail}
-                  onChange={(e) => setNewUserEmail(e.target.value)}
-                  placeholder="Email de l'utilisateur"
-                  required
-                  style={{
-                    flex: 1,
-                    padding: '10px 14px',
-                    border: '1px solid var(--color-c8)',
-                    borderRadius: 6,
-                    fontSize: 14,
-                    backgroundColor: '#FFFFFF',
-                    color: 'var(--color-c10)'
-                  }}
-                />
-                <button 
-                  type="submit" 
-                  disabled={actionLoading}
-                  className="chip"
-                  style={{
-                    padding: '10px 20px',
-                    fontWeight: 600,
-                    opacity: actionLoading ? 0.6 : 1
-                  }}
-                >
-                  {actionLoading ? 'Envoi...' : 'Inviter'}
-                </button>
-              </form>
-            </div>
 
             {/* Liste des utilisateurs */}
-            <div className="admin-section">
+            <div className="admin-section" style={{ marginTop: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <h3>Utilisateurs ({users.length})</h3>
-                <div className="actions">
-                  <button onClick={() => triggerRefresh('manual')} disabled={actionLoading}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <button 
+                    className="chip"
+                    onClick={() => setShowUserModal(true)}
+                    disabled={actionLoading}
+                    style={{ padding: '8px 16px', fontWeight: 600 }}
+                  >
+                    + Nouvel utilisateur
+                  </button>
+                  <button onClick={() => triggerRefresh('manual')} disabled={actionLoading} style={{ fontSize: 12, padding: '6px 10px' }}>
                     Rafraîchir
                   </button>
                 </div>
@@ -977,6 +1001,75 @@ export default function SettingsComptes() {
                     {themeSaving ? 'Enregistrement...' : 'Enregistrer'}
                   </button>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Nouvel Utilisateur */}
+        {showUserModal && (
+          <div className="report-modal-overlay" onClick={closeUserModal}>
+            <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
+              <div className="report-modal-header">
+                <h3>Nouvel utilisateur</h3>
+                <button className="report-modal-close" onClick={closeUserModal}>✕</button>
+              </div>
+              <div className="report-modal-content">
+                {userModalError && (
+                  <div style={{ 
+                    padding: '12px', 
+                    background: 'var(--color-error-bg)', 
+                    border: '1px solid var(--color-error-border)', 
+                    color: 'var(--color-error-text)', 
+                    borderRadius: 6, 
+                    marginBottom: 16,
+                    fontSize: 14
+                  }}>
+                    {userModalError}
+                  </div>
+                )}
+                {userModalSuccess && (
+                  <div style={{ 
+                    padding: '12px', 
+                    background: '#d4edda', 
+                    border: '1px solid #c3e6cb', 
+                    color: '#155724', 
+                    borderRadius: 6, 
+                    marginBottom: 16,
+                    fontSize: 14
+                  }}>
+                    {userModalSuccess}
+                  </div>
+                )}
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>Email *</label>
+                  <input
+                    type="email"
+                    value={userModalEmail}
+                    onChange={(e) => setUserModalEmail(e.target.value)}
+                    placeholder="utilisateur@exemple.com"
+                    disabled={actionLoading}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: '1px solid var(--color-c8)',
+                      borderRadius: 6,
+                      fontSize: 14,
+                      backgroundColor: '#FFFFFF'
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="report-modal-actions">
+                <button onClick={closeUserModal} disabled={actionLoading}>Annuler</button>
+                <button 
+                  className="chip"
+                  onClick={handleInviteUser}
+                  disabled={actionLoading}
+                  style={{ opacity: actionLoading ? 0.6 : 1 }}
+                >
+                  {actionLoading ? 'Envoi...' : 'Inviter'}
+                </button>
               </div>
             </div>
           </div>
