@@ -3,7 +3,7 @@
  * Valide le comportement UX des thèmes et la fonctionnalité de logout
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock window object
 Object.defineProperty(globalThis, 'window', {

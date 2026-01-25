@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PlacementV2.jsx - Simulateur de placement refondu
  * 
  * Architecture :
@@ -500,21 +500,7 @@ function AllocationSlider({ pctCapi, pctDistrib, onChange, disabled, isSCPI }) {
 }
 
 // ============================================================================
-// Helper function for updating product options
-const updateProductOption = (productIndex, path, value) => {
-    setState(prev => {
-      const newState = { ...prev };
-      const pathParts = path.split('.');
-      let current = newState.products[productIndex];
-      
-      for (let i = 0; i < pathParts.length - 1; i++) {
-        current = current[pathParts[i]];
-      }
-      
-      current[pathParts[pathParts.length - 1]] = value;
-      return newState;
-    });
-  };
+// Helper function for updating product options (moved inside component)
 
 function VersementConfigModal({ envelope, config, dureeEpargne, onSave, onClose }) {
   const [draft, setDraft] = useState(() => normalizeVersementConfig(config));
@@ -629,7 +615,7 @@ function VersementConfigModal({ envelope, config, dureeEpargne, onSave, onClose 
         <div className="vcm__body">
           {isAV && (
             <div className="vcm__hint" style={{ marginBottom: 12 }}>
-              Hypothèse : investissement 100 % unités de compte – prélèvements sociaux dus au rachat.
+              Hypothèse : investissement 100 % unités de compte – prélèvements sociaux dus au rachat.
             </div>
           )}
           {/* VERSEMENT INITIAL */}
@@ -1135,6 +1121,21 @@ export default function PlacementV2() {
         idx === productIndex ? { ...p, versementConfig: normalized } : p
       ),
     }));
+  };
+
+  const updateProductOption = (productIndex, path, value) => {
+    setState(prev => {
+      const newState = { ...prev };
+      const pathParts = path.split('.');
+      let current = newState.products[productIndex];
+      
+      for (let i = 0; i < pathParts.length - 1; i++) {
+        current = current[pathParts[i]];
+      }
+      
+      current[pathParts[pathParts.length - 1]] = value;
+      return newState;
+    });
   };
 
   const handleVersementSave = useCallback(async (productIndex, config) => {

@@ -9,8 +9,10 @@ export default defineConfig(({ mode }) => {
   const supabaseUrl = env.VITE_SUPABASE_URL;
   const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY;
   
+  // Fail-fast: les variables Supabase sont requises pour le proxy /api/admin
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('[vite.config] ERREUR: VITE_SUPABASE_URL ou VITE_SUPABASE_ANON_KEY manquant dans .env.local');
+    console.warn('[vite.config] ⚠️ VITE_SUPABASE_URL ou VITE_SUPABASE_ANON_KEY manquant dans .env.local');
+    console.warn('[vite.config] Le proxy /api/admin sera désactivé. Voir .env.example pour la configuration.');
   }
 
   return {
@@ -24,9 +26,9 @@ export default defineConfig(({ mode }) => {
     server: {
       host: 'localhost',
       port: 5173,
-      proxy: {
+      proxy: supabaseUrl ? {
         '/api/admin': {
-          target: supabaseUrl ? `${supabaseUrl}/functions/v1/admin` : 'https://xnpbxrqkzgimiugqtago.supabase.co/functions/v1/admin',
+          target: `${supabaseUrl}/functions/v1/admin`,
           changeOrigin: true,
           rewrite: () => '',
           configure: (proxy) => {
@@ -65,7 +67,7 @@ export default defineConfig(({ mode }) => {
             });
           },
         },
-      },
+      } : undefined,
     },
   };
 })

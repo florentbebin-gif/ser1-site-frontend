@@ -1,4 +1,6 @@
-- # SER1 — Audit Patrimonial Express + Stratégie Guidée
+# SER1 — Audit Patrimonial Express + Stratégie Guidée
+
+![CI](https://github.com/florentbebin-gif/ser1-site-frontend/actions/workflows/ci.yml/badge.svg)
 
 README opérationnel (release/ops). Les détails historiques restent plus bas pour référence.
 
@@ -22,10 +24,12 @@ npm run test
 ## 3) Plan du repo (réel)
 ```text
 api/                      # Proxy Vercel -> Edge Function Supabase
-config/supabase/          # Config + Edge Functions (admin)
-database/migrations/      # Migrations SQL (RPC, buckets, schema)
-database/setup/           # Setup initial DB
-docs/                     # Docs techniques (diagnostics, runbooks)
+config/supabase/          # Config + Edge Functions (admin) ← SOURCE DE VÉRITÉ
+database/                 # Scripts SQL (voir database/README.md)
+  migrations/             # Migrations reproductibles
+  setup/                  # Setup initial DB
+  fixes/                  # Scripts one-shot
+docs/                     # Documentation (voir docs/README.md)
 public/                   # Assets statiques (pptx/, ui/)
 src/
   App.jsx                 # Routing global + routes lazy
@@ -34,8 +38,8 @@ src/
   settings/               # ThemeProvider + gestion thème/logo
   pptx/                   # Export PPTX (Serenity)
   utils/                  # xlsxBuilder, logoUpload, helpers
-supabase/functions/       # Edge Function admin (copie)
-tools/scripts/            # Scripts utilitaires
+tools/scripts/            # Scripts utilitaires (scan-secrets.ps1, etc.)
+.github/workflows/        # CI GitHub Actions
 ```
 
 ## 4) Points d’entrée clés
@@ -75,17 +79,12 @@ tools/scripts/            # Scripts utilitaires
 - **Export PPTX** : logos chargés en data-uri (base64) pour compatibilité offline
 
 ### Edge Function admin
-- **Code source** : `config/supabase/functions/admin/index.ts` (développement)
-- **Code déployé** : `supabase/functions/admin/` (copie pour deploy)
+- **Code source** : `config/supabase/functions/admin/index.ts` ← **SOURCE DE VÉRITÉ UNIQUE**
 - **Proxy Vercel** : `api/admin.js` (évite CORS, relai vers Edge Function)
 - **Déploiement** (PowerShell, sans chevrons) :
 ```powershell
-# Option 1: Deploy depuis config/ (si supabase/functions/admin/ existe et est à jour)
+# Déployer depuis config/ (source de vérité)
 npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
-
-# Option 2: Copier puis deploy depuis racine (si erreur "folder not found")
-cp -r config/supabase/functions/admin supabase/functions/
-npx supabase functions deploy admin --project-ref PROJECT_REF
 ```
 - **Actions** : gestion users, cabinets, logos, themes, issue_reports (voir `config/supabase/functions/admin/index.ts`)
 
@@ -101,10 +100,11 @@ npx supabase functions deploy admin --project-ref PROJECT_REF
   - **Solution** : non bloquant si usage via `npx supabase` (voir `docs/technical/diagnostics/edge-functions-diagnostics.md`)
 
 - **Symptôme** : Edge Function path not found lors du deploy
-  - **Cause** : CLI cherche `supabase/functions/admin/` mais code source est dans `config/supabase/functions/admin/`
-  - **Solution** : 
-    1. **Avec --workdir** : `npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config`
-    2. **Sans --workdir** : copier d'abord `cp -r config/supabase/functions/admin supabase/functions/` puis `npx supabase functions deploy admin --project-ref PROJECT_REF`
+  - **Cause** : CLI cherche `supabase/functions/admin/` par défaut
+  - **Solution** : Utiliser `--workdir config` pour pointer vers la source de vérité :
+    ```powershell
+    npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
+    ```
 
 - **Symptôme** : PowerShell erreur avec `<PROJECT_REF>`
   - **Cause** : chevrons interprétés comme redirection
