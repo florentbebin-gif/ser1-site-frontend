@@ -48,7 +48,7 @@ function normalizePonctuel(ponctuel, fallback) {
     montant: ponctuel?.montant ?? 0,
     fraisEntree: ponctuel?.fraisEntree ?? fallback.fraisEntree,
     pctCapitalisation: Math.max(0, Math.min(100, pctCapi ?? 0)),
-    pctDistribution: Math.max(0, Math.min(100, pctDistrib ?? (100 - pctCapi ?? 0))),
+    pctDistribution: Math.max(0, Math.min(100, pctDistrib ?? (100 - (pctCapi ?? 0)))),
   };
 }
 
