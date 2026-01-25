@@ -435,12 +435,22 @@ Via l'éditeur SQL Supabase :
 
 ### 4) Rendre un utilisateur admin
 
-1. Connectez-vous à l'application
-2. Allez dans **Supabase > Table Editor > profiles**
-3. Éditez votre ligne : `role` → `admin`
-4. Sauvegardez
+**Méthode recommandée** (via Edge Function admin) :
+1. Un admin existant utilise l'action `update_user_role` pour promouvoir l'utilisateur
+2. L'Edge Function met à jour `user_metadata.role` ET `app_metadata.role` dans Supabase Auth
 
-> **Note** : Le rôle admin est stocké dans `profiles.role`. La fonction RLS `public.is_admin()` lit les JWT claims (`user_metadata.role` ou `app_metadata.role`) pour vérifier les permissions côté base de données. L'Edge Function admin vérifie aussi le rôle via JWT.
+**Méthode manuelle** (setup initial uniquement) :
+1. Allez dans **Supabase > Authentication > Users**
+2. Cliquez sur l'utilisateur → **Edit user**
+3. Dans **User metadata**, ajoutez : `{ "role": "admin" }`
+4. Dans **App metadata**, ajoutez : `{ "role": "admin" }`
+5. Sauvegardez
+
+> **Source de vérité admin** :
+> - **RLS (DB)** : `public.is_admin()` lit les JWT claims (`user_metadata.role` ou `app_metadata.role`)
+> - **Edge Function** : vérifie `user.user_metadata?.role || user.app_metadata?.role`
+> - **Frontend** : hook `useUserRole()` lit `session.user.user_metadata.role`
+> - **`profiles.role`** : colonne informative (non utilisée par RLS), peut être désynchronisée
 
 ### 5) Structure des tables principales
 
@@ -457,9 +467,11 @@ Via l'éditeur SQL Supabase :
 ### 6) Sécurité (RLS)
 
 - **Lecture** : tout utilisateur authentifié peut lire les settings
-- **Écriture** : seul les admins (vérifié via `public.is_admin()` lisant JWT claims) peuvent écrire
+- **Écriture** : seul les admins peuvent écrire (vérifié via `public.is_admin()` lisant JWT claims)
 - RLS activé sur toutes les tables
-- Admin vérifié via : `profiles.role = 'admin'` (DB) + JWT claims `user_metadata.role` ou `app_metadata.role` (RLS/Edge Function)
+- **Source de vérité admin** : JWT claims `user_metadata.role` ou `app_metadata.role` = `'admin'`
+
+> ⚠️ `profiles.role` n'est **PAS** utilisé par RLS. La fonction `is_admin()` lit uniquement les JWT claims.
 
 ---
 
@@ -582,8 +594,9 @@ npm run typecheck
 
 ### Flux d'authentification
 - Connexion via Supabase Auth
-- Rôle stocké dans `user_metadata.role`
+- **Rôle stocké dans** : `user_metadata.role` ET `app_metadata.role` (JWT claims)
 - Deux rôles : `admin` et `user`
+- Vérification : voir [Source de vérité admin](#4-rendre-un-utilisateur-admin)
 
 ### Droits d'accès
 - **Admin** : Modification et sauvegarde des paramètres
@@ -831,7 +844,7 @@ src/icons/business/
 
 ### Workflow d'intégration
 
-1. **Déposer les SVG bruts** : Placez les 12 fichiers `Image1.svg` ... `Image12.svg` dans `src/icons/business/_raw/`
+1. **Déposer les SVG bruts** : Placez les fichiers `Image1.svg` ... `Image12.svg` dans `src/icons/business/_raw/`
 
 2. **Générer les icônes normalisées** :
    ```bash
@@ -841,6 +854,12 @@ src/icons/business/
 3. **Résultat** : Les SVG normalisés sont générés dans :
    - `src/icons/business/svg/` (pour l'UI)
    - `public/pptx/icons/` (pour les exports PPTX)
+
+4. **Vérification** (PowerShell) :
+   ```powershell
+   (Get-ChildItem public/pptx/icons/*.svg).Count
+   # Attendu : 13 icônes (12 sources + icon-percent.svg ajouté manuellement)
+   ```
 
 ### Mapping des icônes
 
