@@ -163,6 +163,27 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 
 ## 📅 Release Notes — Janvier 2026
 
+### Audit & Refactoring (v1.0.3) - 25 Janvier
+- **Thème & PPTX** :
+  - **cabinetColors séparé** : Les couleurs cabinet sont chargées 1x au login et stockées séparément dans `ThemeProvider`. PPTX utilise toujours les couleurs cabinet (ou SER1 Classic si pas de cabinet).
+  - **themeSource persisté** : La préférence user (cabinet/custom) est lue depuis `localStorage` au démarrage.
+  - **resolvePptxColors simplifié** : Priorité cabinet → SER1 Classic, plus de dépendance à themeScope.
+- **ExportMenu unifié** :
+  - **Composant partagé** : `src/components/ExportMenu.tsx` remplace les menus inline dans IR, Credit, Placement.
+  - **Accessibilité** : click outside, Escape, aria-expanded, role="menu".
+- **UI/CSS** :
+  - **Selects thémés** : `var(--color-c7)` remplace les `#fff` hardcodés dans Placement.css.
+  - **Placement table** : Suppression du texte "Produit 1/2" redondant, seul le badge enveloppe reste.
+  - **Cards compactes** : SettingsComptes utilise des cards compactes avec icônes SVG (edit/delete) au hover.
+- **Credit - Quotité (préparation)** :
+  - **Interface LoanParams** : Ajout `quotite?: number` (0..1, défaut 1) dans `capitalDeces.ts`.
+  - **Calcul capital décès** : Applique quotité au capital décès (CI × quotité ou CRD × quotité).
+  - **Tests** : 3 nouveaux tests unitaires pour la quotité.
+  - **Note** : UI Credit.jsx et affichage PPTX non implémentés (prochaine itération).
+- **Signalements** :
+  - **Nouvelle page Settings** : `SettingsSignalements.jsx` intégrée dans SettingsShell (onglet "Signalements").
+  - **FAB supprimé** : `IssueReportButton` retiré de App.jsx, formulaire déplacé dans Settings.
+
 ### Stabilisation & Hardening (v1.0.2) - 24 Janvier
 - **UX/UI Stabilité** :
   - **Correction FOUC (Flash of Unstyled Content)** : Résolution définitive des pertes de style intermittentes sur les routes lazy (`/sim/placement`).

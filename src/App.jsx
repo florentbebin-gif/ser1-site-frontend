@@ -13,7 +13,6 @@ import {
   triggerPlacementSaveEvent,
   triggerPlacementLoadEvent,
 } from './utils/placementEvents';
-import IssueReportButton from './components/IssueReportButton';
 
 // V4: Lazy load heavy pages to reduce initial bundle size
 const Placement = lazy(() => import('./pages/PlacementV2'));
@@ -453,10 +452,6 @@ const contextLabel = getContextLabel(path);
         <Route path="/credit" element={<Navigate to="/sim/credit" replace />} />
       </Routes>
 
-      {/* Bouton "Signaler un problème" sur les pages de simulation */}
-      {session && (isSimRoute || isAuditRoute || isStrategyRoute) && !isRecoveryMode && (
-        <IssueReportButton />
-      )}
     </>
   );
 }

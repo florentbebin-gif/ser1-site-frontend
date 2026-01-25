@@ -1,5 +1,5 @@
 // src/pages/Ir.jsx
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import './Ir.css';
 import { onResetEvent, storageKeyFor } from '../utils/reset';
 import { toNumber } from '../utils/number';
@@ -7,6 +7,7 @@ import { computeIrResult as computeIrResultEngine } from '../utils/irEngine.js';
 import { getFiscalSettings, addInvalidationListener } from '../utils/fiscalSettingsCache.js';
 import { useTheme } from '../settings/ThemeProvider';
 import { supabase } from '../supabaseClient';
+import { ExportMenu } from '../components/ExportMenu';
 
 const DEBUG_THEME = false; // Debug flag for theme logs
 // V4: PPTX/Excel imports moved to dynamic import() in export functions
@@ -84,10 +85,8 @@ const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
 
   const [showDetails, setShowDetails] = useState(false);
 
-  // Export dropdown
-  const [exportOpen, setExportOpen] = useState(false);
+  // Export state
   const [exportLoading, setExportLoading] = useState(false);
-  const exportRef = useRef(null);
 
   // Persist dans sessionStorage
   const STORE_KEY = storageKeyFor('ir');
@@ -246,15 +245,6 @@ setCapitalMode('pfu');
     return off || (() => {});
   }, [STORE_KEY]);
 
-  // Fermeture menu export au clic extérieur
-  useEffect(() => {
-    const handler = (e) => {
-      if (!exportRef.current) return;
-      if (!exportRef.current.contains(e.target)) setExportOpen(false);
-    };
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
-  }, []);
 
   // Handlers de saisie
   const updateIncome = (who, field, value) => {
@@ -596,42 +586,13 @@ const yearLabel =
       <div className="ir-header premium-header">
         <div className="ir-title premium-title">Simulateur d'impôt sur le revenu</div>
 
-        <div ref={exportRef} style={{ position: 'relative' }}>
-          <button
-            className="chip premium-btn"
-            onClick={() => setExportOpen(!exportOpen)}
-            disabled={exportLoading}
-            style={{ position: 'relative' }}
-          >
-            {exportLoading ? 'Génération...' : 'Exporter'}
-          </button>
-          {exportOpen && !exportLoading && (
-            <div role="menu" className="ir-export-menu">
-              <button
-                role="menuitem"
-                className="chip premium-btn"
-                style={{ width: '100%', justifyContent: 'flex-start' }}
-                onClick={() => {
-                  setExportOpen(false);
-                  exportExcel();
-                }}
-              >
-                Excel
-              </button>
-              <button
-                role="menuitem"
-                className="chip premium-btn"
-                style={{ width: '100%', justifyContent: 'flex-start' }}
-                onClick={() => {
-                  setExportOpen(false);
-                  exportPowerPoint();
-                }}
-              >
-                PowerPoint
-              </button>
-            </div>
-          )}
-        </div>
+        <ExportMenu
+          options={[
+            { label: 'Excel', onClick: exportExcel },
+            { label: 'PowerPoint', onClick: exportPowerPoint },
+          ]}
+          loading={exportLoading}
+        />
       </div>
 
       <div className="ir-grid premium-grid">

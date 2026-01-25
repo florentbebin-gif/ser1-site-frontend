@@ -609,40 +609,38 @@ export default function SettingsComptes() {
               ) : cabinets.length === 0 ? (
                 <p style={{ color: 'var(--color-c9)', fontSize: 14 }}>Aucun cabinet créé.</p>
               ) : (
-                <div className="cabinets-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+                <div className="admin-cards-grid">
                   {cabinets.map(cabinet => (
-                    <div key={cabinet.id} className="cabinet-card" style={{
-                      padding: 16,
-                      border: '1px solid var(--color-c8)',
-                      borderRadius: 8,
-                      backgroundColor: 'var(--color-c7)'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div>
-                          <h4 style={{ margin: '0 0 8px 0', fontSize: 16, color: 'var(--color-c10)' }}>{cabinet.name}</h4>
-                          <p style={{ margin: 0, fontSize: 13, color: 'var(--color-c9)' }}>
-                            Thème: {cabinet.themes?.name || '—'}
-                          </p>
-                          {cabinet.logos?.storage_path && (
-                            <img 
-                              src={getLogoPublicUrl(cabinet.logos.storage_path)} 
-                              alt="Logo" 
-                              style={{ marginTop: 8, maxWidth: 80, maxHeight: 40, objectFit: 'contain', borderRadius: 4 }}
-                            />
-                          )}
+                    <div key={cabinet.id} className="admin-card-compact">
+                      <div className="admin-card-compact__info">
+                        <div className="admin-card-compact__name">{cabinet.name}</div>
+                        <div className="admin-card-compact__meta">
+                          {cabinet.themes?.name || 'Aucun thème'}
                         </div>
-                        <div className="actions" style={{ flexShrink: 0 }}>
-                          <button onClick={() => openCabinetModal(cabinet)} style={{ fontSize: 12, padding: '6px 10px' }}>
-                            Modifier
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteCabinet(cabinet)} 
-                            className="danger"
-                            style={{ fontSize: 12, padding: '6px 10px' }}
-                          >
-                            Supprimer
-                          </button>
-                        </div>
+                      </div>
+                      <div className="admin-card-compact__actions">
+                        <button 
+                          className="icon-btn" 
+                          onClick={() => openCabinetModal(cabinet)}
+                          title="Modifier"
+                          aria-label="Modifier le cabinet"
+                        >
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                        <button 
+                          className="icon-btn danger" 
+                          onClick={() => handleDeleteCabinet(cabinet)}
+                          title="Supprimer"
+                          aria-label="Supprimer le cabinet"
+                        >
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -668,60 +666,60 @@ export default function SettingsComptes() {
               ) : themes.length === 0 ? (
                 <p style={{ color: 'var(--color-c9)', fontSize: 14 }}>Aucun thème créé.</p>
               ) : (
-                <div className="themes-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                <div className="admin-cards-grid">
                   {themes.map(theme => (
-                    <div key={theme.id} className="theme-card" style={{
-                      padding: 16,
-                      border: '1px solid var(--color-c8)',
-                      borderRadius: 8,
-                      backgroundColor: 'var(--color-c7)'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                            <h4 style={{ margin: 0, fontSize: 15, color: 'var(--color-c10)' }}>{theme.name}</h4>
-                            {theme.is_system && (
-                              <span style={{ 
-                                fontSize: 10, 
-                                padding: '2px 6px', 
-                                background: 'var(--color-c2)', 
-                                color: 'white', 
-                                borderRadius: 4,
-                                fontWeight: 600
-                              }}>SYSTÈME</span>
-                            )}
-                          </div>
-                          <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                            {theme.palette && Object.entries(theme.palette).slice(0, 10).map(([key, color]) => (
-                              <div 
-                                key={key}
-                                style={{
-                                  width: 20,
-                                  height: 20,
-                                  backgroundColor: color,
-                                  borderRadius: 3,
-                                  border: '1px solid var(--color-c8)'
-                                }}
-                                title={`${key}: ${color}`}
-                              />
-                            ))}
-                          </div>
+                    <div key={theme.id} className="admin-card-compact">
+                      <div className="admin-card-compact__info">
+                        <div className="admin-card-compact__name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          {theme.name}
+                          {theme.is_system && (
+                            <span style={{ 
+                              fontSize: 9, 
+                              padding: '1px 4px', 
+                              background: 'var(--color-c2)', 
+                              color: 'white', 
+                              borderRadius: 3,
+                              fontWeight: 600
+                            }}>SYS</span>
+                          )}
                         </div>
-                        {!theme.is_system && (
-                          <div className="actions" style={{ flexShrink: 0 }}>
-                            <button onClick={() => openThemeModal(theme)} style={{ fontSize: 12, padding: '6px 10px' }}>
-                              Modifier
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteTheme(theme)} 
-                              className="danger"
-                              style={{ fontSize: 12, padding: '6px 10px' }}
-                            >
-                              Supprimer
-                            </button>
-                          </div>
-                        )}
+                        <div className="admin-card-compact__palette">
+                          {theme.palette && Object.entries(theme.palette).slice(0, 6).map(([key, color]) => (
+                            <div 
+                              key={key}
+                              className="admin-card-compact__palette-color"
+                              style={{ backgroundColor: color }}
+                              title={`${key}: ${color}`}
+                            />
+                          ))}
+                        </div>
                       </div>
+                      {!theme.is_system && (
+                        <div className="admin-card-compact__actions">
+                          <button 
+                            className="icon-btn" 
+                            onClick={() => openThemeModal(theme)}
+                            title="Modifier"
+                            aria-label="Modifier le thème"
+                          >
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                          </button>
+                          <button 
+                            className="icon-btn danger" 
+                            onClick={() => handleDeleteTheme(theme)}
+                            title="Supprimer"
+                            aria-label="Supprimer le thème"
+                          >
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

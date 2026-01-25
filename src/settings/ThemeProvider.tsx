@@ -102,9 +102,8 @@ export const DEFAULT_COLORS: ThemeColors = {
   c10: '#000000',
 };
 
-// SER1 Classic colors are now centralized in pptx/theme/resolvePptxColors.ts
-// Import from there to ensure consistency across PPTX exports
-import { SER1_CLASSIC_COLORS } from '../pptx/theme/resolvePptxColors';
+// SER1 Classic colors centralized in pptx/theme/resolvePptxColors.ts
+// (not imported here - only used by resolvePptxColors for PPTX exports)
 
 export type ThemeScope = 'all' | 'ui-only';
 export type ThemeSource = 'cabinet' | 'custom';
@@ -118,6 +117,7 @@ interface ThemeContextValue {
   logo?: string;
   setLogo: (logo: string | undefined) => void;
   cabinetLogo?: string; // Logo cabinet (via RPC)
+  cabinetColors: ThemeColors | null; // Couleurs cabinet (chargées 1x au login, read-only)
   themeScope: ThemeScope;
   setThemeScope: (scope: ThemeScope) => void; // Allow Settings to update scope globally
   pptxColors: ThemeColors; // Colors to use for PPTX (respects scope)
@@ -127,39 +127,23 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue>({
   colors: DEFAULT_COLORS,
-  setColors: () => {},
-  saveThemeToUiSettings: async () => ({ success: false, error: 'Not implemented' }),
+  setColors: (_colors: ThemeColors) => {},
+  saveThemeToUiSettings: async (_colors: ThemeColors, _themeName?: string) => ({ success: false, error: 'Not implemented' }),
   isLoading: true,
   themeReady: false,
   logo: undefined,
-  setLogo: () => {},
+  setLogo: (_logo: string | undefined) => {},
   cabinetLogo: undefined,
+  cabinetColors: null,
   themeScope: 'all',
-  setThemeScope: () => {},
+  setThemeScope: (_scope: ThemeScope) => {},
   pptxColors: DEFAULT_COLORS,
   themeSource: 'cabinet',
-  setThemeSource: () => {},
+  setThemeSource: (_source: ThemeSource) => {},
 });
 
 export function useTheme(): ThemeContextValue {
   return useContext(ThemeContext);
-}
-
-/**
- * Applique les couleurs en CSS variables sur :root
- */
-function applyColorsToCSS(colors: ThemeColors): void {
-  const root = document.documentElement;
-  root.style.setProperty('--color-c1', colors.c1);
-  root.style.setProperty('--color-c2', colors.c2);
-  root.style.setProperty('--color-c3', colors.c3);
-  root.style.setProperty('--color-c4', colors.c4);
-  root.style.setProperty('--color-c5', colors.c5);
-  root.style.setProperty('--color-c6', colors.c6);
-  root.style.setProperty('--color-c7', colors.c7);
-  root.style.setProperty('--color-c8', colors.c8);
-  root.style.setProperty('--color-c9', colors.c9);
-  root.style.setProperty('--color-c10', colors.c10);
 }
 
 /**
@@ -193,12 +177,21 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const [isLoading, setIsLoading] = useState(true);
   const [themeReady, setThemeReady] = useState(false); // true when CSS vars applied
   const [themeScope, setThemeScope] = useState<ThemeScope>('all');
-  const [themeSource, setThemeSource] = useState<ThemeSource>('cabinet');
+  // Lire themeSource depuis localStorage pour persister la préférence user
+  const [themeSource, setThemeSource] = useState<ThemeSource>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('themeSource');
+      if (stored === 'cabinet' || stored === 'custom') return stored;
+    }
+    return 'cabinet';
+  });
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
+  // Couleurs cabinet stockées séparément (chargées 1x, read-only pour PPTX)
+  const [cabinetColors, setCabinetColors] = useState<ThemeColors | null>(null);
 
-  // Compute PPTX colors based on theme scope
-  // CRITICAL: Use centralized resolver to ensure PPTX never uses web colors when ui-only
-  const pptxColors: ThemeColors = resolvePptxColors(colorsState, themeScope);
+  // Compute PPTX colors - TOUJOURS utiliser cabinetColors si disponible
+  // RÈGLE MÉTIER: PPTX = couleurs cabinet (ou SER1 Classic si pas de cabinet)
+  const pptxColors: ThemeColors = resolvePptxColors(colorsState, themeScope, cabinetColors);
 
   // Load cabinet logo for user via RPC (contourne RLS)
   // Returns data URI (base64) for direct use in PPTX exports
@@ -456,30 +449,35 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         let finalColors = DEFAULT_COLORS;
         let source = 'default';
 
-        // Try cache first
-        const cachedColors = getThemeFromCache(user.id);
-        if (cachedColors && themeSource === 'custom') {
-          finalColors = cachedColors;
-          source = 'cache';
-          cacheAppliedRef.current = true;
+        // TOUJOURS charger les couleurs cabinet (pour PPTX) - indépendamment de themeSource
+        // Cela garantit que cabinetColors est disponible pour les exports PPTX
+        if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
+        const loadedCabinetColors = await loadCabinetThemeWithRetry(user.id, mountedRef, activeRequestIdRef, requestId);
+        if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
+        
+        // Stocker les couleurs cabinet séparément (read-only, pour PPTX)
+        setCabinetColors(loadedCabinetColors);
+        if (DEBUG_THEME) console.info('[ThemeProvider] Cabinet colors loaded and stored for PPTX');
+        
+        // TOUJOURS charger le logo cabinet aussi
+        const logoUrl = await loadCabinetLogo(user.id);
+        if (mountedRef.current && requestId === activeRequestIdRef.current) {
+          setCabinetLogo(logoUrl);
         }
-        // Si themeSource='cabinet', ignorer cache/ui_settings et charger thème cabinet
+
+        // Maintenant déterminer les couleurs UI selon themeSource
         if (themeSource === 'cabinet') {
-          if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
-          const cabinetColors = await loadCabinetThemeWithRetry(user.id, mountedRef, activeRequestIdRef, requestId);
-          if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
-          finalColors = cabinetColors;
+          // Mode cabinet: utiliser les couleurs cabinet pour l'UI
+          finalColors = loadedCabinetColors;
           source = 'cabinet-theme';
-          // Ne pas sauvegarder en cache pour permettre le switch custom/cabinet
-          
-          // Charger logo cabinet en parallèle
-          const logoUrl = await loadCabinetLogo(user.id);
-          if (mountedRef.current && requestId === activeRequestIdRef.current) {
-            setCabinetLogo(logoUrl);
-          }
         } else {
           // themeSource='custom' : logique normale avec cache/ui_settings
-          if (!cachedColors) {
+          const cachedColors = getThemeFromCache(user.id);
+          if (cachedColors) {
+            finalColors = cachedColors;
+            source = 'cache';
+            cacheAppliedRef.current = true;
+          } else {
             // 1) Essayer ui_settings (nouveau système)
             try {
               const { data: uiSettings, error: uiError } = await supabase
@@ -502,7 +500,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
                 source = 'user_metadata (legacy)';
                 saveThemeToCache(finalColors, user.id);
               }
-            } catch (uiError) {
+            } catch {
               if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
               // 2) Fallback metadata (legacy admin)
               if (user.user_metadata?.theme_colors) {
@@ -620,7 +618,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, isLoading, themeReady, logo, setLogo, cabinetLogo, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource }}>
+    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, isLoading, themeReady, logo, setLogo, cabinetLogo, cabinetColors, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource }}>
       {children}
     </ThemeContext.Provider>
   );
