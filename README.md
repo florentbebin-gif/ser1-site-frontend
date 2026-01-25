@@ -1,4 +1,154 @@
-- `src/utils/xlsxBuilder.ts` : Génère les `.xlsx` (IR & Crédit) avec feuille `Parameters` + résumés stylés. Utilise JSZip + `validateXlsxBlob` pour éviter les archives corrompues / mismatch extension.
+- # SER1 — Audit Patrimonial Express + Stratégie Guidée
+
+README opérationnel (release/ops). Les détails historiques restent plus bas pour référence.
+
+## 1) Présentation & Stack
+- Application web interne pour CGP : audit patrimonial, stratégie guidée, simulateurs IR/Placement/Crédit.
+- Stack : **React 18**, **Vite 5**, **Supabase** (Auth/DB/Storage/Edge Functions), **Vercel**.
+
+## 2) Prérequis & commandes (Windows/PowerShell)
+- **Node.js 22.x** (voir `.nvmrc` et `package.json > engines.node`)
+- **npm** (version alignée Node 22.x)
+
+```powershell
+node -v
+npm -v
+npm install
+npm run dev
+npm run build
+npm run test
+```
+
+## 3) Plan du repo (réel)
+```text
+api/                      # Proxy Vercel -> Edge Function Supabase
+config/supabase/          # Config + Edge Functions (admin)
+database/migrations/      # Migrations SQL (RPC, buckets, schema)
+database/setup/           # Setup initial DB
+docs/                     # Docs techniques (diagnostics, runbooks)
+public/                   # Assets statiques (pptx/, ui/)
+src/
+  App.jsx                 # Routing global + routes lazy
+  main.jsx                # Bootstrap React + variables CSS
+  pages/                  # PlacementV2, Credit, Ir, Settings...
+  settings/               # ThemeProvider + gestion thème/logo
+  pptx/                   # Export PPTX (Serenity)
+  utils/                  # xlsxBuilder, logoUpload, helpers
+supabase/functions/       # Edge Function admin (copie)
+tools/scripts/            # Scripts utilitaires
+```
+
+## 4) Points d’entrée clés
+- `src/main.jsx` : bootstrap React + application synchronisée des variables CSS.
+- `src/App.jsx` : routes (React.lazy), loader et gating du rendu.
+- `src/settings/ThemeProvider.tsx` : thème, CSS vars, RPC logos cabinet.
+- `src/pages/PlacementV2.jsx`, `Credit.jsx`, `Ir.jsx` : pages lourdes.
+- `src/pptx/export/exportStudyDeck.ts` + `src/pptx/presets/*` : export PPTX.
+- `src/utils/xlsxBuilder.ts` : export Excel.
+- `api/admin.js` + `config/supabase/functions/admin/index.ts` : proxy + Edge Function admin.
+
+## 5) Supabase — Auth / DB / Storage / Edge
+
+### Auth & rôles
+- Auth Supabase standard.
+- **Rôle admin** : `user_metadata.role` ou `app_metadata.role` = `'admin'` (vérifié par Edge Function).
+- **RLS DB** : fonction `public.is_admin()` lit JWT claims pour vérifier le rôle.
+
+### DB & migrations
+- **Setup initial** : `database/setup/supabase-setup.sql`
+- **Migrations** : `database/migrations/` (create-cabinets-themes-logos.sql, create-logos-bucket.sql, add-rpc-*.sql)
+- **Tables principales** :
+  - `profiles` : utilisateurs + `cabinet_id` (FK vers cabinets)
+  - `cabinets` : entités cabinet avec `logo_id` et `default_theme_id`
+  - `logos` : métadonnées logos (sha256, storage_path, mime, dimensions)
+  - `themes` : palettes de couleurs (JSONB c1-c10)
+  - `tax_settings`, `ui_settings`, `issue_reports`
+- **RPC SECURITY DEFINER** :
+  - `get_my_cabinet_logo()` : retourne `storage_path` du logo du cabinet de l'utilisateur (bypass RLS)
+  - `get_my_cabinet_theme_palette()` : retourne la palette JSONB du thème du cabinet
+
+### Storage (logos)
+- **Bucket** : `logos` (créé par `database/migrations/create-logos-bucket.sql`)
+- **Upload** : `src/utils/logoUpload.js` → déduplication SHA256 via admin RPC → stockage dans bucket
+- **Download** : `src/settings/ThemeProvider.tsx` → RPC `get_my_cabinet_logo()` → `storage.from('logos').download()` → conversion base64 data-uri
+- **RLS** : policies admin pour upload/delete, lecture via RPC SECURITY DEFINER
+- **Export PPTX** : logos chargés en data-uri (base64) pour compatibilité offline
+
+### Edge Function admin
+- **Code source** : `config/supabase/functions/admin/index.ts` (développement)
+- **Code déployé** : `supabase/functions/admin/` (copie pour deploy)
+- **Proxy Vercel** : `api/admin.js` (évite CORS, relai vers Edge Function)
+- **Déploiement** (PowerShell, sans chevrons) :
+```powershell
+# Option 1: Deploy depuis config/ (si supabase/functions/admin/ existe et est à jour)
+npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
+
+# Option 2: Copier puis deploy depuis racine (si erreur "folder not found")
+cp -r config/supabase/functions/admin supabase/functions/
+npx supabase functions deploy admin --project-ref PROJECT_REF
+```
+- **Actions** : gestion users, cabinets, logos, themes, issue_reports (voir `config/supabase/functions/admin/index.ts`)
+
+## 6) Runbook — erreurs fréquentes
+
+### Supabase CLI / Edge Functions
+- **Symptôme** : `supabase: command not found`
+  - **Cause** : CLI non installée globalement
+  - **Solution** : utiliser `npx supabase` ou installer `npm i -g supabase`
+
+- **Symptôme** : Deno non installé (warning)
+  - **Cause** : Deno manquant sur le système
+  - **Solution** : non bloquant si usage via `npx supabase` (voir `docs/technical/diagnostics/edge-functions-diagnostics.md`)
+
+- **Symptôme** : Edge Function path not found lors du deploy
+  - **Cause** : CLI cherche `supabase/functions/admin/` mais code source est dans `config/supabase/functions/admin/`
+  - **Solution** : 
+    1. **Avec --workdir** : `npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config`
+    2. **Sans --workdir** : copier d'abord `cp -r config/supabase/functions/admin supabase/functions/` puis `npx supabase functions deploy admin --project-ref PROJECT_REF`
+
+- **Symptôme** : PowerShell erreur avec `<PROJECT_REF>`
+  - **Cause** : chevrons interprétés comme redirection
+  - **Solution** : ne pas utiliser de chevrons, écrire directement `PROJECT_REF`
+
+### Storage & RPC
+- **Symptôme** : Storage "Bucket not found" (logos)
+  - **Cause** : bucket `logos` non créé
+  - **Solution** : appliquer `database/migrations/create-logos-bucket.sql` via SQL Editor
+
+- **Symptôme** : RPC 404 / PGRST202 (`get_my_cabinet_logo` introuvable)
+  - **Cause** : migration RPC non appliquée OU schema cache PostgREST pas rafraîchi
+  - **Solution** : 
+    1. Vérifier migration `database/migrations/add-rpc-get-my-cabinet-logo.sql` appliquée
+    2. Attendre 1-2 min (refresh auto schema cache) OU redémarrer projet Supabase
+
+### CSS / Styles
+- **Symptôme** : Perte de style intermittente sur `/sim/placement` (FOUC au refresh F5)
+  - **Cause** : CSS lazy-loaded après rendu React + imports CSS dupliqués dans routes lazy
+  - **Solution** : 
+    1. `vite.config.ts` : `build.cssCodeSplit: false` (bundle CSS unique)
+    2. `index.html` : variables CSS critiques inline avant `<script>`
+    3. `main.jsx` : application synchrone des CSS vars avant `createRoot()`
+  - **Validation** : refresh direct `/sim/placement` → pas de flash blanc, layout immédiat
+
+### Vercel / Node.js
+- **Symptôme** : Build Vercel utilise Node 24.x malgré Project Settings 22.x
+  - **Cause** : `engines: ">=22.0.0"` autorise upgrade auto
+  - **Solution** : pin strict `"engines": { "node": "22.x" }` dans `package.json`
+  - **Validation** : log build Vercel affiche "Node.js Version: 22.x"
+
+## 7) Checklist GO (avant merge)
+- [ ] `node -v` = 22.x
+- [ ] `npm run test` → **68 tests passed (68)**
+- [ ] `npm run build` → build réussi
+- [ ] Vérifier CSS unique : `ls dist/assets/*.css` → **1 seul fichier** `style-*.css` (cssCodeSplit=false)
+- [ ] Vérifier VITE_ variables : `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` pour frontend, `SUPABASE_URL` et `SUPABASE_ANON_KEY` pour Vercel proxy
+- [ ] Tests manuels : login, switch user, export PPTX/Excel, logo cabinet, navigation /placement /credit /ir, refresh direct `/sim/placement`
+
+---
+
+## Annexes détaillées (historique)
+
+`src/utils/xlsxBuilder.ts` : Génère les `.xlsx` (IR & Crédit) avec feuille `Parameters` + résumés stylés. Utilise JSZip + `validateXlsxBlob` pour éviter les archives corrompues / mismatch extension.
 
 ### Exports Excel — Règles de style
 
@@ -12,6 +162,16 @@
 - **Validation** : `buildXlsxBlob` + `validateXlsxBlob` (refus d'un blob dont le header ZIP n'est pas `PK`).
 
 ## 📅 Release Notes — Janvier 2026
+
+### Stabilisation & Hardening (v1.0.2) - 24 Janvier
+- **UX/UI Stabilité** :
+  - **Correction FOUC (Flash of Unstyled Content)** : Résolution définitive des pertes de style intermittentes sur les routes lazy (`/sim/placement`).
+  - **Architecture CSS** : Désactivation du split CSS (`vite.config.ts`) pour garantir un chargement synchrone unique. Application des variables CSS critiques avant le rendu React.
+- **Cabinet & Logos** :
+  - **Support Logos Cabinet** : Correction complète du flux (Upload bucket `logos` + RPC `get_my_cabinet_logo` + Export PPTX base64).
+  - **Gestion Logo** : Ajout fonction suppression logo dans paramètres cabinet.
+- **Infrastructure** :
+  - **Node.js** : Pin strict version **22.x** dans `package.json` (au lieu de `>=22`) pour forcer Vercel à respecter la version LTS et bloquer les upgrades auto vers 24.x.
 
 ### Stabilisation & Hardening (v1.0.1)
 - **Node.js** : Stabilisation sur version **22.x** (via `.nvmrc` + `engines`) pour parité parfaite Local/Vercel.
@@ -31,7 +191,8 @@ Pour éviter les régressions "ça marche chez moi", vérifier ces points avant 
 
 | Point de contrôle | Local (`npm run dev`) | Production (Vercel) | Note |
 |-------------------|-----------------------|---------------------|------|
-| **Node Version** | `node -v` = 22.x | 22.x (Settings Vercel) | Configuré via `engines` |
+| **Node Version** | `node -v` = 22.x | 22.x (Log Build) | Forcé via `engines: "22.x"` |
+| **CSS Loading** | 1 fichier CSS unique (Network) | 1 fichier CSS unique | `cssCodeSplit: false` |
 | **API Admin** | Proxy Vite (`/api/admin`) | Vercel Function (`/api/admin`) | Proxy local simule Vercel |
 | **Supabase** | URL/Key `.env.local` | Env Vars Vercel | **Mêmes** projets recommandés |
 | **Auth Token** | `sb-access-token` | `sb-access-token` | Géré par Supabase Auth |
@@ -43,6 +204,9 @@ Pour éviter les régressions "ça marche chez moi", vérifier ces points avant 
 
 | Date | Problème | Cause racine | Fix | Validation |
 |------|----------|--------------|-----|------------|
+| 24 jan 2026 | Build Vercel utilise Node 24.x malgré Project Settings 22.x | `engines: ">=22.0.0"` autorise upgrade auto | Pin `engines: "22.x"` dans package.json | Log build: "Node.js Version 22.x" |
+| 24 jan 2026 | Perte style `/sim/placement` au refresh (FOUC) | CSS lazy chargé après rendu + conflit import dupliqué | `cssCodeSplit: false` + Vars CSS appliquées avant React | Refresh `/sim/placement` immédiat sans flash |
+| 24 jan 2026 | Logo cabinet manquant dans PPTX | Bucket `logos` manquant + RLS restrictif | Migration bucket + RPC `get_my_cabinet_logo` + Base64 | Export PPTX avec logo cabinet OK |
 | 22 jan 2026 | Logs verbeux + Node version mismatch | Config par défaut trop permissive | Flags `DEBUG_*` + `.nvmrc` | Console propre, build stable |
 | 21 jan 2026 | POST /api/admin retourne 400 Bad Request (HTML Cloudflare) en local | Proxy Vite supprime header Host, invalidant requête HTTP | Retirer 'host' de headersToRemove dans vite.config.ts | curl.exe POST /api/admin → 401 JSON au lieu de 400 HTML |
 
@@ -58,7 +222,7 @@ Si `/settings/comptes` échoue avec erreur 400 ou 500 :
 
 1. **Vérifier les variables d'environnement Vercel** :
    - Dashboard Vercel → Settings → Environment Variables
-   - S'assurer que `SUPABASE_URL` et `SUPABASE_ANON_KEY` sont définis (sans `VITE_`)
+   - S'assurer que `SUPABASE_URL` et `SUPABASE_ANON_KEY` sont définis (le proxy accepte aussi `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` comme fallback)
 2. **Vérifier les logs Vercel** :
    - Dashboard Vercel → Functions → `api/admin`
    - Chercher les logs `[api/admin]` pour diagnostic
@@ -113,7 +277,7 @@ Application web interne pour CGP permettant :
 ✅ **Application frontend**, backend managé via Supabase (Auth/DB/Storage/Edge Functions)  
 ✅ Basé sur **React 18 + Vite 5**, codebase mix JS/TS (migration progressive)  
 ✅ Moteur de calcul traçable avec warnings  
-✅ 44 tests unitaires (Vitest)  
+✅ 68 tests unitaires (Vitest)  
 ✅ Déploiement automatisé sur Vercel  
 
 ---
@@ -201,60 +365,6 @@ SER1/
 
 ---
 
-### Structure du Projet
-
-```text
-ser1/
-├── src/                    # Code source actif
-│   ├── pages/             # Pages UI (IR, Placement, Crédit, Settings...)
-│   ├── components/        # Composants réutilisables
-│   ├── hooks/             # Hooks personnalisés
-│   ├── utils/             # Utilitaires métier
-│   ├── engine/            # Moteurs de calcul (placement, fiscalité, succession)
-│   ├── features/          # Features métier (audit, strategy)
-│   ├── pptx/              # Génération PowerPoint
-│   ├── auth/              # Authentification
-│   ├── settings/          # Thème et configuration
-│   └── styles/            # Styles partagés
-├── tools/                 # Outils de développement
-│   └── scripts/           # Scripts utilitaires (validation, admin)
-├── config/                # Configuration
-│   └── supabase/          # Configuration Supabase locale
-├── database/              # Base de données
-│   ├── migrations/        # Scripts migration
-│   ├── fixes/             # Scripts correctifs
-│   └── setup/             # Scripts setup initial
-├── docs/                  # Documentation
-│   ├── technical/         # Documentation technique
-│   └── examples/          # Exemples clients
-└── public/                # Assets statiques
-```
-
-### Frontend (React + TypeScript)
-- **Pages** : Simulateurs (IR, Placement, Crédit, Audit, Stratégie)
-- **Components** : UI réutilisables, formulaires, tableaux
-- **Hooks** : Logique métier réutilisable
-- **Utils** : Calculs fiscaux, helpers, exports
-- **Engine** : Moteurs de calcul (placement, fiscalité, succession)
-
-### Backend (Supabase)
-- **Authentification** : Users, rôles (admin/user)
-- **Database** : PostgreSQL avec RLS
-- **Storage** : Images, documents
-- **Edge Functions** : API admin
-
-### PowerPoint Generation
-- **PptxGenJS** : Génération de présentations
-- **Design System** : Thème SER1, layouts standards
-- **Templates** : Audit, Stratégie, IR
-- **Règles immuables** :
-  - Tout texte PPTX doit passer par `addTextFr` (langue de vérification **fr-FR** forcée + Arial par défaut)
-  - Pas de couleurs hex hardcodées (sauf blanc `#FFFFFF` et variantes littérales)
-  - Pas d'écriture directe dans les zones protégées (titre, sous-titre, footer) : utiliser les helpers `addHeader`, `addFooter`, etc.
-  - Toute nouvelle slide doit intégrer les safety checks (no overlap, textes tronqués détectés, fallback icônes/images déjà en place)
-
----
-
 ## 🛠 Setup Supabase
 
 ### Architecture Admin (Proxy)
@@ -272,19 +382,26 @@ Bien que l'accès passe par un proxy, la fonction Edge doit toujours être dépl
 - Code source : `config/supabase/functions/admin`
 - Commande de déploiement :
 ```bash
-npx supabase functions deploy admin --project-ref xnpbxrqkzgimiugqtago --workdir config
+npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 ```
 
-### Variables d'environnement Vercel (OBLIGATOIRE)
+### Variables d'environnement
 
-Le proxy Vercel (`api/admin.js`) nécessite ces variables **côté serveur** (sans le préfixe `VITE_`) :
+**Frontend (Vite)** : utilise le préfixe `VITE_` (lu par `import.meta.env`)
 
 | Variable | Description | Exemple |
 |----------|-------------|---------|
-| `SUPABASE_URL` | URL du projet Supabase | `https://xnpbxrqkzgimiugqtago.supabase.co` |
+| `VITE_SUPABASE_URL` | URL du projet Supabase | `https://PROJECT_REF.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | Clé publique anon | `eyJhbGciOiJIUzI1NiIs...` |
+
+**Proxy Vercel (Serverless Function)** : utilise variables **sans** préfixe `VITE_` (lu par `process.env`)
+
+| Variable | Description | Exemple |
+|----------|-------------|---------|
+| `SUPABASE_URL` | URL du projet Supabase | `https://PROJECT_REF.supabase.co` |
 | `SUPABASE_ANON_KEY` | Clé publique anon | `eyJhbGciOiJIUzI1NiIs...` |
 
-> ⚠️ **Important** : Les variables `VITE_*` ne sont PAS accessibles dans les Serverless Functions Vercel. Le proxy accepte aussi `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` comme fallback, mais il est recommandé de configurer les deux versions.
+> ⚠️ **Important** : Le proxy Vercel (`api/admin.js`) accepte les deux formats (`SUPABASE_URL` ou `VITE_SUPABASE_URL` comme fallback). Pour éviter toute confusion, configurer **les deux versions** dans Vercel Dashboard → Settings → Environment Variables.
 
 > Voir section [Troubleshooting /api/admin](#troubleshooting--apiadmin) ci-dessus pour le diagnostic complet.
 
@@ -443,9 +560,13 @@ npm run typecheck
 - Génération d'exports Excel/PowerPoint
 
 ### Gestion des paramètres
-- **Settings** : Navigation par pilules (Généraux, Impôts, Prélèvements, Fiscalités, Base contrats, Table mortalité, **Logo étude**)
-- **Stockage Supabase** : Table `tax_settings` pour paramètres fiscaux, `user_metadata` pour logo
-- **Logo** : Upload PNG/JPG → dataUri → stockage dans `user_metadata.cover_slide_url`
+- **Settings** : Navigation par pilules (Généraux, Impôts, Prélèvements, Fiscalités, Base contrats, Table mortalité, **Cabinets & Logos**)
+- **Stockage Supabase** : 
+  - `tax_settings` : paramètres fiscaux (JSONB)
+  - `cabinets` : entités cabinet avec logo et thème
+  - `logos` : métadonnées + storage_path dans bucket `logos`
+- **Logo cabinet** : Upload PNG/JPG → dédup SHA256 → bucket `logos` → association cabinet → export PPTX base64
+- **Logo utilisateur (legacy)** : `user_metadata.cover_slide_url` (fallback export PPTX si pas de logo cabinet)
 - **Rôles** : Admin (édition) vs User (lecture seule)
 
 ---
@@ -541,18 +662,30 @@ npm run typecheck
 ## 🗄 Base de données Supabase
 
 ### Tables principales
-- `tax_settings` : Paramètres fiscaux (JSON)
-- `profiles` : Profils utilisateurs (rôles)
-- `issue_reports` : Rapports de bugs
+- `profiles` : utilisateurs + `cabinet_id` (FK vers cabinets) + `role` (admin/user)
+- `cabinets` : entités cabinet avec `logo_id` (FK vers logos) et `default_theme_id` (FK vers themes)
+- `logos` : métadonnées logos (sha256, storage_path, mime, width, height, bytes, created_by)
+- `themes` : palettes de couleurs (name, palette JSONB c1-c10, is_system)
+- `tax_settings` : paramètres fiscaux (JSONB)
+- `ui_settings` : préférences UI utilisateur
+- `issue_reports` : rapports de bugs
 
 ### Storage
-- **Logos** : Stockés dans `user_metadata.cover_slide_url` (dataUri) - bypass RLS
-- **Assets statiques** : Images chapitres et icônes dans `public/pptx/`
-- Plus de bucket Storage pour logos (approche dataUri plus fiable)
+- **Bucket `logos`** : logos cabinet uploadés (PNG/JPG)
+  - Path : `{cabinet_id}/{timestamp}-{hash}.{ext}`
+  - RLS : admin upload/delete, lecture via RPC SECURITY DEFINER
+  - Déduplication SHA256 (table `logos`)
+- **Assets statiques** : images chapitres et icônes dans `public/pptx/`
+
+### RPC (Remote Procedure Calls)
+- `get_my_cabinet_logo()` : retourne `storage_path` du logo du cabinet de l'utilisateur (SECURITY DEFINER)
+- `get_my_cabinet_theme_palette()` : retourne palette JSONB du thème du cabinet (SECURITY DEFINER)
+- `is_admin()` : vérifie si l'utilisateur a le rôle admin (lecture JWT claims)
 
 ### Fonctions Edge
-- Gestion CORS pour l'admin
-- Validation des accès
+- **admin** : API centralisée pour opérations admin (users, cabinets, logos, themes, reports)
+- Proxy Vercel (`api/admin.js`) pour éviter CORS
+- Validation JWT + rôle admin côté serveur
 
 ---
 
@@ -665,8 +798,9 @@ public/
 
 ### Distinction importante
 
-- **Assets statiques** (`public/pptx/*`) : Images fixes intégrées dans l'application
-- **Logos dynamiques** (user_metadata) : Logos uploadés par les admins stockés en dataUri
+- **Assets statiques** (`public/pptx/*`) : Images fixes intégrées dans l'application (chapitres, icônes)
+- **Logos cabinet** (bucket `logos`) : Logos uploadés par les admins, stockés dans Supabase Storage, convertis en data-uri pour export PPTX
+- **Logo utilisateur legacy** (`user_metadata.cover_slide_url`) : Fallback pour export PPTX si pas de logo cabinet
 
 ### Restrictions
 
@@ -1261,11 +1395,15 @@ smoothingMode: lissageMode,
 
 ### Logo Cover
 
-Le logo est chargé depuis `user_metadata.cover_slide_url` (même source que IR) via `useTheme()` :
+Le logo est résolu dans cet ordre de priorité via `useTheme()` :
+
+1. **Logo cabinet** : `cabinetLogo` (chargé via RPC `get_my_cabinet_logo()` + download base64)
+2. **Logo utilisateur** : `logo` (depuis `user_metadata.cover_slide_url`, legacy)
+3. **Fallback** : aucun logo
 
 ```typescript
-const { colors: themeColors, logo, setLogo } = useTheme()
-// ...
+const { colors: themeColors, logo, cabinetLogo } = useTheme()
+const exportLogo = cabinetLogo || logo || user?.user_metadata?.cover_slide_url
 const deck = buildCreditStudyDeck(creditData, pptxColors, exportLogo)
 ```
 
