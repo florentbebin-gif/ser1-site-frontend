@@ -724,7 +724,7 @@ Interface d'administration réservée aux utilisateurs avec rôle `admin` permet
 ## 🧪 Tests
 
 ### Tests unitaires
-- **44 tests** avec Vitest
+- **68 tests** avec Vitest (vérifier avec `npm run test`)
 - Couverture des moteurs de calcul
 - Tests des utilitaires et services
 - Validation des exports
@@ -750,7 +750,7 @@ npm run build         # Génération du dossier dist/
 ```
 
 ### Environnement
-- **Production** : https://ser1-simple.vercel.app
+- **Production** : https://[VOTRE-DOMAINE].vercel.app (à configurer dans Vercel)
 - **Développement** : localhost:5173
 
 ---
@@ -814,7 +814,7 @@ public/
 - ❌ **Aucun screenshot** dans le repository (docs/ ou racine)
 - ❌ **Aucune image** à la racine du repo
 - ❌ **dist/ jamais versionné** (build artifacts)
-- ✅ **9 images chapitres** et **12 icônes business** actuellement disponibles
+- ✅ **9 images chapitres** (ch-01 à ch-09) et **13 icônes business** actuellement disponibles
 
 ---
 
