@@ -440,19 +440,26 @@ Via l'éditeur SQL Supabase :
 3. Éditez votre ligne : `role` → `admin`
 4. Sauvegardez
 
+> **Note** : Le rôle admin est stocké dans `profiles.role`. La fonction RLS `public.is_admin()` lit les JWT claims (`user_metadata.role` ou `app_metadata.role`) pour vérifier les permissions côté base de données. L'Edge Function admin vérifie aussi le rôle via JWT.
+
 ### 5) Structure des tables principales
 
 | Table | Description |
 |-------|-------------|
-| `profiles` | Utilisateurs + rôle admin |
+| `profiles` | Utilisateurs + `cabinet_id` (FK vers cabinets) + `role` (admin/user) |
+| `cabinets` | Entités cabinet avec `logo_id` (FK vers logos) et `default_theme_id` (FK vers themes) |
+| `logos` | Métadonnées logos (sha256, storage_path, mime, dimensions) |
+| `themes` | Palettes de couleurs (name, palette JSONB c1-c10, is_system) |
 | `tax_settings` | Paramètres fiscaux (JSONB) |
+| `ui_settings` | Préférences UI utilisateur |
 | `issue_reports` | Rapports de bugs |
 
 ### 6) Sécurité (RLS)
 
 - **Lecture** : tout utilisateur authentifié peut lire les settings
-- **Écriture** : seul `profiles.role = 'admin'` peut écrire
+- **Écriture** : seul les admins (vérifié via `public.is_admin()` lisant JWT claims) peuvent écrire
 - RLS activé sur toutes les tables
+- Admin vérifié via : `profiles.role = 'admin'` (DB) + JWT claims `user_metadata.role` ou `app_metadata.role` (RLS/Edge Function)
 
 ---
 
@@ -1537,14 +1544,19 @@ pfuIr: result.pfuIr,
 
 ## 🐛 Débuggage & Maintenance
 
-### Logo Management
-- Upload via Settings page (PNG/JPG) with **aspect ratio preservation**
-- Storage as **dataUri in user_metadata** (bypasses Storage RLS issues)
-- **Smart sizing algorithm** : No upscale, ratio preserved, uniform downscale if needed
-- **Precise positioning** : Bottom edge aligned 1.5cm below slide center
-- **Synchronous dimension extraction** : PNG/JPEG header parsing for accurate sizing
-- Immediate availability for PPTX export after upload
-- RLS protection through user_metadata (no Storage bucket needed)
+### Logo Cabinet Management
+- **Upload** : Settings > Comptes > Cabinet modal (PNG/JPG)
+- **Stockage** : Bucket Supabase Storage `logos` (path: `{cabinet_id}/{timestamp}-{hash}.{ext}`)
+- **Déduplication** : SHA256 hash via admin RPC (table `logos`)
+- **Chargement** : RPC `get_my_cabinet_logo()` (SECURITY DEFINER) → `storage.from('logos').download()` → conversion base64 data-uri
+- **Export PPTX** : Ordre priorité `cabinetLogo` → `logo` utilisateur → fallback `user_metadata.cover_slide_url`
+- **Suppression** : Bouton "Supprimer" dans modal cabinet (set `logo_id = null`)
+- **RLS** : Admin full access, utilisateurs via RPC SECURITY DEFINER
+
+### Logo Utilisateur (Legacy)
+- **Stockage** : `user_metadata.cover_slide_url` (data URI)
+- **Usage** : Fallback export PPTX si pas de logo cabinet
+- **Status** : Déprécié au profit des logos cabinet
 
 ### Logs et monitoring
 - Console browser pour le frontend
@@ -1552,9 +1564,9 @@ pfuIr: result.pfuIr,
 - Rapports de bugs via `issue_reports`
 
 ### Procédures de fix
-- Diagnostic dans fichiers `*_FIX.md`
-- Scripts SQL de correction
-- Tests de régression
+- Diagnostic dans `docs/technical/diagnostics/` et `docs/technical/fixes/`
+- Scripts SQL de correction dans `database/fixes/`
+- Tests de régression (68 tests Vitest)
 
 ---
 
