@@ -581,7 +581,7 @@ export default function SettingsComptes() {
   }
 
   return (
-    <div style={{ marginTop: 16 }}>
+    <div className="settings-comptes" style={{ marginTop: 16 }}>
       {/* Bandeau utilisateur */}
       <UserInfoBanner />
 

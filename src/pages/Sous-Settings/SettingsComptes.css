@@ -553,7 +553,7 @@
 }
 
 /* Icon buttons */
-.icon-btn {
+.settings-comptes .icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -568,17 +568,17 @@
   transition: background-color 0.15s, color 0.15s;
 }
 
-.icon-btn:hover {
+.settings-comptes .icon-btn:hover {
   background: var(--color-c4);
   color: var(--color-c1);
 }
 
-.icon-btn:focus-visible {
+.settings-comptes .icon-btn:focus-visible {
   outline: 2px solid var(--color-c2);
   outline-offset: 2px;
 }
 
-.icon-btn.danger:hover {
+.settings-comptes .icon-btn.danger:hover {
   background: #fee2e2;
   color: #dc2626;
 }

@@ -1,3 +1,11 @@
+Mise à jour : 2026-01-27 21:23 (Europe/Paris)
+Cause : collision CSS globale .icon-btn injectée par SettingsComptes.css (lazy /settings).
+Fix : scoping des styles .icon-btn sous .settings-comptes + ajout de la classe racine.
+Topbar : styles globaux .icon-btn (styles.css) inchangés, plus d’override.
+Fichiers : src/pages/Sous-Settings/SettingsComptes.jsx ; src/pages/Sous-Settings/SettingsComptes.css.
+Tests : npm run lint ; npm test ; npm run build (à exécuter).
+Impact : aucun changement UI hors settings, topbar stable après navigation.
+
 Dernière mise à jour : 2026-01-27 00:48 (Europe/Paris)
 Objectif : aligner le calcul des parts (parent isolé / alternée) avec l’oracle 10 cas + disclaimer conditionnel.
 Fichiers touchés : src/utils/irEngine.js, src/utils/irEngine.parts.test.js, src/pages/Ir.jsx
