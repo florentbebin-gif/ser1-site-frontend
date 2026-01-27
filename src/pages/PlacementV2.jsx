@@ -23,6 +23,7 @@ import { buildWorksheetXml, buildWorksheetXmlVertical, downloadExcel } from '../
 import { savePlacementState, loadPlacementStateFromFile } from '../utils/placementPersistence.js';
 import { TimelineBar } from '../components/TimelineBar.jsx';
 import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '../utils/transmissionDisclaimer.js';
+import { ExportMenu } from '../components/ExportMenu';
 
 // ============================================================================
 // HELPERS
@@ -943,7 +944,6 @@ export default function PlacementV2() {
   const [state, setState] = useState(DEFAULT_STATE);
   const [modalOpen, setModalOpen] = useState(null); // null | 0 | 1
   const [actionInProgress, setActionInProgress] = useState(false);
-  const [exportOpen, setExportOpen] = useState(false);
 
   const dmtgScale = taxSettings?.dmtg?.scale;
   const dmtgOptions = useMemo(() => buildDmtgOptions(dmtgScale), [dmtgScale]);
@@ -1355,7 +1355,6 @@ export default function PlacementV2() {
         console.info("[ExcelExport] Starting download");
         await downloadExcel(xml, `SER1_Placement_${new Date().toISOString().slice(0, 10)}.xls`);
         console.info("[ExcelExport] Download completed successfully");
-        setExportOpen(false);
       } catch (downloadErr) {
         console.error("[ExcelExport] Download failed", { 
           err: downloadErr, 
@@ -1642,27 +1641,11 @@ export default function PlacementV2() {
         </div>
 
         <div className="pl-header-actions">
-          <div className="pl-export-dropdown" style={{ position: 'relative' }}>
-            <button
-              className="chip premium-btn"
-              onClick={() => setExportOpen(!exportOpen)}
-              title="Exporter les résultats"
-            >
-              Exporter ▾
-            </button>
-            {exportOpen && (
-              <div className="pl-export-menu" style={{ position: 'absolute', top: '100%', right: 0, background: 'var(--color-c7)', border: '1px solid var(--color-c8)', borderRadius: '4px', marginTop: '4px', minWidth: '120px', zIndex: 1000 }}>
-                <button
-                  className="chip premium-btn"
-                  style={{ width: '100%', justifyContent: 'flex-start' }}
-                  onClick={() => { setExportOpen(false); exportExcel(); }}
-                  disabled={!results || !results.produit1}
-                >
-                  Excel
-                </button>
-              </div>
-            )}
-          </div>
+          <ExportMenu
+            options={[
+              { label: 'Excel', onClick: exportExcel, disabled: !results || !results.produit1 },
+            ]}
+          />
         </div>
       </div>
 
@@ -1728,14 +1711,12 @@ export default function PlacementV2() {
                 <thead>
                   <tr>
                     <th></th>
-                    <th className="pl-colhead">
-                      <div className="pl-colname">Produit 1</div>
+                    <th className="pl-colhead" aria-label="Produit 1">
                       <div className="pl-colbadge-wrapper">
                         <div className="pl-collabel pl-collabel--product1">{ENVELOPE_LABELS[state.products[0].envelope]}</div>
                       </div>
                     </th>
-                    <th className="pl-colhead">
-                      <div className="pl-colname">Produit 2</div>
+                    <th className="pl-colhead" aria-label="Produit 2">
                       <div className="pl-colbadge-wrapper">
                         <div className="pl-collabel pl-collabel--product2">{ENVELOPE_LABELS[state.products[1].envelope]}</div>
                       </div>

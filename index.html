@@ -4,6 +4,96 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SER1</title>
+  <script>
+    (function () {
+      try {
+        var THEME_CACHE_KEY_PREFIX = 'ser1_theme_cache_';
+        var CABINET_THEME_CACHE_KEY_PREFIX = 'ser1_cabinet_theme_cache_';
+        var THEME_CACHE_TTL = 24 * 60 * 60 * 1000;
+        var DEFAULT_COLORS = {
+          c1: '#2B3E37',
+          c2: '#709B8B',
+          c3: '#9FBDB2',
+          c4: '#CFDED8',
+          c5: '#788781',
+          c6: '#CEC1B6',
+          c7: '#F5F3F0',
+          c8: '#D9D9D9',
+          c9: '#7F7F7F',
+          c10: '#000000'
+        };
+
+        var themeSource = localStorage.getItem('themeSource') === 'custom' ? 'custom' : 'cabinet';
+        var userId = getUserIdFromAuthStorage();
+        var prefix = themeSource === 'cabinet' ? CABINET_THEME_CACHE_KEY_PREFIX : THEME_CACHE_KEY_PREFIX;
+        var cachedColors = userId ? readCachedColors(prefix, userId, THEME_CACHE_TTL, DEFAULT_COLORS) : null;
+        var colors = cachedColors || DEFAULT_COLORS;
+        applyCSSVariables(colors);
+        window.__ser1ThemeBootstrap = {
+          colors: colors,
+          userId: userId || null,
+          themeSource: themeSource,
+          hasCache: !!cachedColors
+        };
+        if (localStorage.getItem('DEBUG_THEME_BOOTSTRAP') === 'true') {
+          console.log('[THEME-BOOTSTRAP] applied', themeSource, userId, !!cachedColors);
+        }
+      } catch (e) {
+        // noop: fallback to default :root values
+      }
+
+      function applyCSSVariables(colors) {
+        var root = document.documentElement;
+        root.style.setProperty('--color-c1', colors.c1, 'important');
+        root.style.setProperty('--color-c2', colors.c2, 'important');
+        root.style.setProperty('--color-c3', colors.c3, 'important');
+        root.style.setProperty('--color-c4', colors.c4, 'important');
+        root.style.setProperty('--color-c5', colors.c5, 'important');
+        root.style.setProperty('--color-c6', colors.c6, 'important');
+        root.style.setProperty('--color-c7', colors.c7, 'important');
+        root.style.setProperty('--color-c8', colors.c8, 'important');
+        root.style.setProperty('--color-c9', colors.c9, 'important');
+        root.style.setProperty('--color-c10', colors.c10, 'important');
+      }
+
+      function readCachedColors(prefix, userId, ttl, defaults) {
+        try {
+          var raw = localStorage.getItem(prefix + userId);
+          if (!raw) return null;
+          var parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== 'object' || !parsed.colors) return null;
+          var timestamp = parsed.timestamp;
+          if (typeof timestamp !== 'number' || Date.now() - timestamp >= ttl) {
+            localStorage.removeItem(prefix + userId);
+            return null;
+          }
+          return Object.assign({}, defaults, parsed.colors);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function getUserIdFromAuthStorage() {
+        try {
+          for (var i = 0; i < localStorage.length; i += 1) {
+            var key = localStorage.key(i);
+            if (!key) continue;
+            if (key.indexOf('auth-token') === -1 && key !== 'sb-access-token') continue;
+            var raw = localStorage.getItem(key);
+            if (!raw) continue;
+            var parsed = JSON.parse(raw);
+            var userId =
+              (parsed && parsed.user && parsed.user.id) ||
+              (parsed && parsed.currentSession && parsed.currentSession.user && parsed.currentSession.user.id);
+            if (userId) return userId;
+          }
+        } catch (e) {
+          return null;
+        }
+        return null;
+      }
+    })();
+  </script>
   <!-- Critical CSS variables - prevents FOUC on lazy route navigation -->
   <style>
     :root {

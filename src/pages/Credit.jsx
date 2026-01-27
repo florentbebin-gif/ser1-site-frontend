@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState, useContext } from "react"
+import React, { useEffect, useMemo, useState, useContext } from "react"
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 import { toNumber } from '../utils/number.js'
 import { useTheme } from '../settings/ThemeProvider'
 import { supabase } from '../supabaseClient'
+import { ExportMenu } from '../components/ExportMenu'
 
 const DEBUG_THEME = false; // Debug flag for theme logs
 // V4: PPTX/Excel imports moved to dynamic import() in export functions
@@ -258,19 +259,8 @@ useEffect(() => {
   const [viewMode, setViewMode]       = useState('mensuel')      // 'mensuel' | 'annuel'
   const [lissageMode, setLissageMode] = useState('mensu')        // 'mensu' | 'duree'
 
-  // --- Dropdown Export + Loading state
-  const [exportOpen, setExportOpen] = useState(false)
+  // --- Export Loading state
   const [exportLoading, setExportLoading] = useState(false)
-  const exportRef = useRef(null)
-  useEffect(() => {
-    const onDocClick = (e) => {
-      if (!exportRef.current) return
-      if (exportRef.current.contains(e.target)) return
-      setExportOpen(false)
-    }
-    document.addEventListener('click', onDocClick)
-    return () => document.removeEventListener('click', onDocClick)
-  }, [])
 
   // --- Si plus de prêt 2/3, éteindre le lissage s'il était ON
   useEffect(() => {
@@ -1075,23 +1065,13 @@ const synthesePeriodes = useMemo(() => {
             <button className={`chip premium-btn ${viewMode==='mensuel'?'active':''}`} onClick={()=> setViewMode('mensuel')}>Mensuel</button>
             <button className={`chip premium-btn ${viewMode==='annuel'?'active':''}`} onClick={()=> setViewMode('annuel')}>Annuel</button>
           </div>
-          <div ref={exportRef} style={{position:'relative'}}>
-            <button
-              className="chip premium-btn"
-              ref={exportRef}
-              onClick={() => setExportOpen(!exportOpen)}
-              disabled={exportLoading}
-              style={{ position: 'relative' }}
-            >
-              {exportLoading ? 'Génération...' : 'Exporter'}
-            </button>
-            {exportOpen && !exportLoading && (
-              <div role="menu" className="credit-export-menu">
-                <button role="menuitem" className="chip premium-btn" style={{width:'100%', justifyContent:'flex-start'}} onClick={()=>{ setExportOpen(false); exportExcel(); }}>Excel</button>
-                <button role="menuitem" className="chip premium-btn" style={{width:'100%', justifyContent:'flex-start'}} onClick={()=>{ setExportOpen(false); exportPowerPoint(); }}>PowerPoint</button>
-              </div>
-            )}
-          </div>
+          <ExportMenu
+            options={[
+              { label: 'Excel', onClick: exportExcel },
+              { label: 'PowerPoint', onClick: exportPowerPoint },
+            ]}
+            loading={exportLoading}
+          />
         </div>
       </div>
 

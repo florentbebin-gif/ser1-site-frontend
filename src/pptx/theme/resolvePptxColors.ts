@@ -26,23 +26,30 @@ export const SER1_CLASSIC_COLORS: ThemeColors = {
 };
 
 /**
- * Resolve PPTX colors based on theme scope
+ * Resolve PPTX colors based on cabinet colors availability
  * 
- * @param webColors - Current web theme colors (from ThemeProvider)
- * @param themeScope - Theme scope: 'all' or 'ui-only'
+ * RÈGLE MÉTIER: PPTX utilise TOUJOURS les couleurs du cabinet
+ * - Si cabinetColors disponible → utiliser cabinetColors
+ * - Sinon → fallback vers SER1_CLASSIC_COLORS
+ * - Les couleurs custom user ne sont JAMAIS utilisées pour PPTX
+ * 
+ * @param webColors - Current web theme colors (unused, kept for backward compat)
+ * @param themeScope - Theme scope (unused, kept for backward compat)
+ * @param cabinetColors - Cabinet colors loaded at login (null if no cabinet)
  * @returns Colors to use for PPTX export
  */
 export function resolvePptxColors(
   webColors: ThemeColors,
-  themeScope: 'all' | 'ui-only'
+  themeScope: 'all' | 'ui-only',
+  cabinetColors?: ThemeColors | null
 ): ThemeColors {
-  // CRITICAL: When ui-only, NEVER use web colors - always use SER1 Classic
-  if (themeScope === 'ui-only') {
-    return SER1_CLASSIC_COLORS;
+  // PRIORITÉ 1: Si cabinetColors disponible → TOUJOURS utiliser pour PPTX
+  if (cabinetColors) {
+    return cabinetColors;
   }
   
-  // When 'all', use the user's current web theme colors
-  return webColors;
+  // PRIORITÉ 2: Fallback classic (pas de cabinet configuré)
+  return SER1_CLASSIC_COLORS;
 }
 
 /**

@@ -1,3 +1,17 @@
+Mise à jour : 2026-01-27 21:23 (Europe/Paris)
+Cause : collision CSS globale .icon-btn injectée par SettingsComptes.css (lazy /settings).
+Fix : scoping des styles .icon-btn sous .settings-comptes + ajout de la classe racine.
+Topbar : styles globaux .icon-btn (styles.css) inchangés, plus d’override.
+Fichiers : src/pages/Sous-Settings/SettingsComptes.jsx ; src/pages/Sous-Settings/SettingsComptes.css.
+Tests : npm run lint ; npm test ; npm run build (à exécuter).
+Impact : aucun changement UI hors settings, topbar stable après navigation.
+
+Dernière mise à jour : 2026-01-27 00:48 (Europe/Paris)
+Objectif : aligner le calcul des parts (parent isolé / alternée) avec l’oracle 10 cas + disclaimer conditionnel.
+Fichiers touchés : src/utils/irEngine.js, src/utils/irEngine.parts.test.js, src/pages/Ir.jsx
+Commandes : npm run lint ; npm run test ; npm run build
+Résultat attendu : les 10 cas oracle de parts sont OK, build/lint/test OK
+
 # SER1 — Audit Patrimonial Express + Stratégie Guidée
 
 ![CI](https://github.com/florentbebin-gif/ser1-site-frontend/actions/workflows/ci.yml/badge.svg)
@@ -129,6 +143,14 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
     2. `index.html` : variables CSS critiques inline avant `<script>`
     3. `main.jsx` : application synchrone des CSS vars avant `createRoot()`
   - **Validation** : refresh direct `/sim/placement` → pas de flash blanc, layout immédiat
+- **Symptôme** : Flash de thème au F5 (thème original visible 1 s, puis thème cabinet/custom)
+  - **Cause** : Le CSS `:root` dans `src/styles.css` écrase les variables après le bootstrap head, et `ThemeProvider` réapplique `DEFAULT_COLORS` au montage.
+  - **Solution** (anti‑FOUC) :
+    1. **Bootstrap head** (dans `index.html`) : script inline qui lit `localStorage` (cache thème/cabinet) et applique les CSS vars **avec `!important`** avant tout rendu.
+    2. **Flag global** : le script expose `window.__ser1ThemeBootstrap = { colors, userId, themeSource, hasCache }`.
+    3. **ThemeProvider** : au montage, si ce flag existe, il réutilise les couleurs du bootstrap au lieu de forcer `DEFAULT_COLORS`.
+    4. **main.jsx** : ne refait pas de bootstrap si le flag existe déjà.
+  - **Validation** : F5 sur `/settings` (thème cabinet ou custom) → **aucun flash visible**.
 
 ### Vercel / Node.js
 - **Symptôme** : Build Vercel utilise Node 24.x malgré Project Settings 22.x
@@ -162,6 +184,27 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 - **Validation** : `buildXlsxBlob` + `validateXlsxBlob` (refus d'un blob dont le header ZIP n'est pas `PK`).
 
 ## 📅 Release Notes — Janvier 2026
+
+### Audit & Refactoring (v1.0.3) - 25 Janvier
+- **Thème & PPTX** :
+  - **cabinetColors séparé** : Les couleurs cabinet sont chargées 1x au login et stockées séparément dans `ThemeProvider`. PPTX utilise toujours les couleurs cabinet (ou SER1 Classic si pas de cabinet).
+  - **themeSource persisté** : La préférence user (cabinet/custom) est lue depuis `localStorage` au démarrage.
+  - **resolvePptxColors simplifié** : Priorité cabinet → SER1 Classic, plus de dépendance à themeScope.
+- **ExportMenu unifié** :
+  - **Composant partagé** : `src/components/ExportMenu.tsx` remplace les menus inline dans IR, Credit, Placement.
+  - **Accessibilité** : click outside, Escape, aria-expanded, role="menu".
+- **UI/CSS** :
+  - **Selects thémés** : `var(--color-c7)` remplace les `#fff` hardcodés dans Placement.css.
+  - **Placement table** : Suppression du texte "Produit 1/2" redondant, seul le badge enveloppe reste.
+  - **Cards compactes** : SettingsComptes utilise des cards compactes avec icônes SVG (edit/delete) au hover.
+- **Credit - Quotité (préparation)** :
+  - **Interface LoanParams** : Ajout `quotite?: number` (0..1, défaut 1) dans `capitalDeces.ts`.
+  - **Calcul capital décès** : Applique quotité au capital décès (CI × quotité ou CRD × quotité).
+  - **Tests** : 3 nouveaux tests unitaires pour la quotité.
+  - **Note** : UI Credit.jsx et affichage PPTX non implémentés (prochaine itération).
+- **Signalements** :
+  - **Nouvelle page Settings** : `SettingsSignalements.jsx` intégrée dans SettingsShell (onglet "Signalements").
+  - **FAB supprimé** : `IssueReportButton` retiré de App.jsx, formulaire déplacé dans Settings.
 
 ### Stabilisation & Hardening (v1.0.2) - 24 Janvier
 - **UX/UI Stabilité** :
