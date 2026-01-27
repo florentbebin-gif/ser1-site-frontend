@@ -1,3 +1,9 @@
+Dernière mise à jour : 2026-01-27 00:48 (Europe/Paris)
+Objectif : aligner le calcul des parts (parent isolé / alternée) avec l’oracle 10 cas + disclaimer conditionnel.
+Fichiers touchés : src/utils/irEngine.js, src/utils/irEngine.parts.test.js, src/pages/Ir.jsx
+Commandes : npm run lint ; npm run test ; npm run build
+Résultat attendu : les 10 cas oracle de parts sont OK, build/lint/test OK
+
 # SER1 — Audit Patrimonial Express + Stratégie Guidée
 
 ![CI](https://github.com/florentbebin-gif/ser1-site-frontend/actions/workflows/ci.yml/badge.svg)
@@ -129,6 +135,14 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
     2. `index.html` : variables CSS critiques inline avant `<script>`
     3. `main.jsx` : application synchrone des CSS vars avant `createRoot()`
   - **Validation** : refresh direct `/sim/placement` → pas de flash blanc, layout immédiat
+- **Symptôme** : Flash de thème au F5 (thème original visible 1 s, puis thème cabinet/custom)
+  - **Cause** : Le CSS `:root` dans `src/styles.css` écrase les variables après le bootstrap head, et `ThemeProvider` réapplique `DEFAULT_COLORS` au montage.
+  - **Solution** (anti‑FOUC) :
+    1. **Bootstrap head** (dans `index.html`) : script inline qui lit `localStorage` (cache thème/cabinet) et applique les CSS vars **avec `!important`** avant tout rendu.
+    2. **Flag global** : le script expose `window.__ser1ThemeBootstrap = { colors, userId, themeSource, hasCache }`.
+    3. **ThemeProvider** : au montage, si ce flag existe, il réutilise les couleurs du bootstrap au lieu de forcer `DEFAULT_COLORS`.
+    4. **main.jsx** : ne refait pas de bootstrap si le flag existe déjà.
+  - **Validation** : F5 sur `/settings` (thème cabinet ou custom) → **aucun flash visible**.
 
 ### Vercel / Node.js
 - **Symptôme** : Build Vercel utilise Node 24.x malgré Project Settings 22.x

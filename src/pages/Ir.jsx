@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import './Ir.css';
 import { onResetEvent, storageKeyFor } from '../utils/reset';
 import { toNumber } from '../utils/number';
-import { computeIrResult as computeIrResultEngine } from '../utils/irEngine.js';
+import { computeIrResult as computeIrResultEngine, computeAutoPartsWithChildren } from '../utils/irEngine.js';
 import { getFiscalSettings, addInvalidationListener } from '../utils/fiscalSettingsCache.js';
 import { useTheme } from '../settings/ThemeProvider';
 import { supabase } from '../supabaseClient';
@@ -259,28 +259,11 @@ setCapitalMode('pfu');
   
 // ===== Calcul automatique du nombre de parts =====
 
-// Parts de base selon la situation familiale
+// Parts de base selon la situation familiale (sert de minimum après ajustement manuel)
 const baseParts = status === 'couple' ? 2 : 1;
 
-// Parts liées aux enfants
-const childrenParts = children.reduce((sum, child, idx) => {
-  const isFirstTwo = idx < 2;
-  if (child.mode === 'charge') {
-    return sum + (isFirstTwo ? 0.5 : 1);
-  }
-  if (child.mode === 'shared') {
-    return sum + (isFirstTwo ? 0.25 : 0.5);
-  }
-  return sum;
-}, 0);
-
-
-// Majoration parent isolé (case T simplifiée)
-const isolatedBonus =
-  status === 'single' && isIsolated ? 0.5 : 0;
-
-// Nombre de parts calculé automatiquement
-const computedParts = baseParts + childrenParts + isolatedBonus;
+// Source de vérité : calcule parts enfants + bonus parent isolé uniquement si ≥1 enfant en charge exclusive
+const computedParts = computeAutoPartsWithChildren({ status, isIsolated, children });
 
 // Ajustement manuel (par quart de part)
 const effectiveParts = Math.max(
@@ -1445,6 +1428,13 @@ const yearLabel =
     <br />
     Ces situations peuvent nécessiter une analyse personnalisée.
   </p>
+  {isIsolated && (
+    <p>
+      Règle clé : tu dois choisir entre le calcul en "parts" (enfant à charge / alternée) et la
+      "déduction de pension alimentaire". Si tu déduis une pension pour un enfant, cet enfant ne
+      peut pas être compté à ta charge pour le quotient familial.
+    </p>
+  )}
 </div>
 
 
