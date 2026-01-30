@@ -493,6 +493,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const cabinetThemeRequestIdRef = useRef<number>(0);
   const cabinetLogoRequestIdRef = useRef<number>(0);
   const themeSourceRef = useRef<ThemeSource>(themeSource);
+  const applyColorsToCSSWithGuardRef = useRef(applyColorsToCSSWithGuard);
 
   // Debug: Log mount/unmount
   if (DEBUG_THEME) console.info(`[ThemeProvider] MOUNTING - ID: ${mountIdRef.current}`);
@@ -513,9 +514,10 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   // Cleanup on unmount
   useEffect(() => {
     mountedRef.current = true;
+    const mountId = mountIdRef.current;
     return () => {
       mountedRef.current = false;
-      if (DEBUG_THEME) console.info(`[ThemeProvider] UNMOUNTING - ID: ${mountIdRef.current}`);
+      if (DEBUG_THEME) console.info(`[ThemeProvider] UNMOUNTING - ID: ${mountId}`);
     };
   }, []);
 
@@ -561,6 +563,8 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       if (DEBUG_THEME) console.info('[ThemeProvider] themeReady = true');
     }
   }
+
+  applyColorsToCSSWithGuardRef.current = applyColorsToCSSWithGuard;
 
   // Watch auth state changes and load theme when user changes
   useEffect(() => {
@@ -725,7 +729,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   // Met à jour les couleurs et applique immédiatement
   const setColors = useCallback((newColors: ThemeColors) => {
     setColorsState(newColors);
-    applyColorsToCSSWithGuard(newColors, lastAppliedUserIdRef.current, 'setColors-manual');
+    applyColorsToCSSWithGuardRef.current(newColors, lastAppliedUserIdRef.current, 'setColors-manual');
   }, []);
 
   // Sauvegarde le thème dans ui_settings (nouveau système)

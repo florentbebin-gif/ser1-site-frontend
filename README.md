@@ -1,3 +1,11 @@
+Mise à jour : 2026-01-30 23:45 (Europe/Paris)
+Lot : ESLint warnings — Lot 4B1 (ThemeProvider micro)
+Fix : capture mountIdRef cleanup + stabilisation setColors (refs) pour exhaustive-deps.
+Fichiers : src/settings/ThemeProvider.tsx ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 28 warnings (0 errors).
+Impact : 2 warnings exhaustive-deps résolus (ThemeProvider), aucun changement fonctionnel.
+
 Mise à jour : 2026-01-30 22:50 (Europe/Paris)
 Lot : ESLint warnings — Lot 4A (react-hooks/exhaustive-deps)
 Fix : ajustement deps hooks + useCallback/hoist pour exhaustive-deps (hors ThemeProvider).
