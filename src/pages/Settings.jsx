@@ -120,10 +120,9 @@ const COLOR_FIELDS = [
   { key: 'color10', label: 'Couleur 10' },
 ];
 
-export default function Settings({ isAdmin = false }) {
+export default function Settings() {
   const { colors, setColors, saveThemeToUiSettings, isLoading: themeLoading, logo, setLogo } = useTheme();
   const [user, setUser] = useState(null);
-  const [roleLabel, setRoleLabel] = useState('User');
   const [loading, setLoading] = useState(true);
 
   // Convertir le format ThemeProvider vers l'ancien format pour compatibilité
@@ -138,7 +137,7 @@ export default function Settings({ isAdmin = false }) {
   });
 
   // Synchroniser avec ThemeProvider
-  const { setColors: setColorsFromProvider, themeSource: providerThemeSource, setThemeSource: setProviderThemeSource } = useTheme();
+  const { themeSource: providerThemeSource, setThemeSource: setProviderThemeSource } = useTheme();
 
   useEffect(() => {
     localStorage.setItem('themeSource', themeSource);
@@ -157,8 +156,6 @@ export default function Settings({ isAdmin = false }) {
   // TODO: themeScope will be removed fully in V3.3 when PPTX is cabinet-governed
   // Default stable value for compatibility
   const themeScope = 'ui-only';
-
-  const [coverUrl, setCoverUrl] = useState('');
 
   // Convertir les couleurs du ThemeProvider vers l'ancien format
   useEffect(() => {
@@ -247,8 +244,6 @@ export default function Settings({ isAdmin = false }) {
           if (DEBUG_AUTH) {
             console.log('[Settings] role detected', { userId: u.id, isAdmin, role: meta.role });
           }
-
-          setRoleLabel(isAdmin ? 'Admin' : 'User');
 
           // TODO: Logo handling deprecated in V3.1 - cabinet logos now managed in admin
           // Kept for compatibility only
@@ -399,15 +394,6 @@ export default function Settings({ isAdmin = false }) {
       syncThemeColors(theme.colors);
       setSaveMessage('');
     }
-  };
-
-  // TODO: Logo upload deprecated in V3.1 - use cabinet admin instead
-  const handleCoverFileChange = async (e) => {
-    setSaveMessage('Le téléchargement de logo est désormais géré depuis l\'administration des cabinets.');
-  };
-
-  const handleRemoveCover = async () => {
-    setSaveMessage('La suppression de logo est désormais gérée depuis l\'administration des cabinets.');
   };
 
   /* ---------- Rendu ---------- */

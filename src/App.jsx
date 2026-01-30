@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { supabase, DEBUG_AUTH } from './supabaseClient';
-import { PrivateRoute, useUserRole } from './auth';
+import { PrivateRoute } from './auth';
 import { useTheme } from './settings/ThemeProvider';
 import Login from './pages/Login';
 import Home from './pages/Home';
@@ -9,10 +9,6 @@ import ForgotPassword from './pages/ForgotPassword';
 import SetPassword from './pages/SetPassword';
 import { triggerPageReset, triggerGlobalReset } from './utils/reset';
 import { saveGlobalState, loadGlobalStateWithDialog } from './utils/globalStorage';
-import {
-  triggerPlacementSaveEvent,
-  triggerPlacementLoadEvent,
-} from './utils/placementEvents';
 
 // V4: Lazy load heavy pages to reduce initial bundle size
 const Placement = lazy(() => import('./pages/PlacementV2'));
@@ -154,7 +150,6 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
-  const { isAdmin } = useUserRole();
 
   useEffect(() => {
     // Nettoyer les anciennes clés localStorage (migration vers sessionStorage)

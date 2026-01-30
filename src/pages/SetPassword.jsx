@@ -73,7 +73,7 @@ export default function SetPassword() {
           navigate('/login');
         }, 3000);
       }
-    } catch (err) {
+    } catch {
       setError('Erreur inattendue. Veuillez réessayer.');
     } finally {
       setLoading(false);

@@ -18,7 +18,6 @@ export default function SettingsComptes() {
   const [userReports, setUserReports] = useState([]);
   const [selectedReportUser, setSelectedReportUser] = useState(null);
   const [reportLoading, setReportLoading] = useState(false);
-  const [newUserEmail, setNewUserEmail] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const fetchUsersRequestIdRef = useRef(0);
@@ -70,17 +69,6 @@ export default function SettingsComptes() {
     fetchCabinets();
     fetchThemes();
   }, [isAdmin, authLoading, location.key, refreshKey]);
-
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-  const getSessionWithRetry = async (maxAttempts = 3, delayMs = 200) => {
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) return session;
-      if (attempt < maxAttempts) await sleep(delayMs);
-    }
-    return null;
-  };
 
   const triggerRefresh = (reason = '') => {
     if (DEBUG_COMPTES_REFRESH) {
@@ -375,35 +363,6 @@ export default function SettingsComptes() {
     } finally {
       setActionLoading(false);
     }
-  };
-
-  const handleCreateUser = async (e) => {
-    e.preventDefault();
-    if (!newUserEmail.trim()) return;
-
-    try {
-      setActionLoading(true);
-      const { error: invokeError } = await invokeAdmin('create_user_invite', { 
-        email: newUserEmail.trim() 
-      });
-
-      if (invokeError) throw new Error(invokeError.message);
-      
-      setNewUserEmail('');
-      triggerRefresh('create_user_invite');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  // User Modal handlers
-  const openUserModal = () => {
-    setUserModalEmail('');
-    setUserModalError('');
-    setUserModalSuccess('');
-    setShowUserModal(true);
   };
 
   const closeUserModal = () => {

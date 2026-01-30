@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useState, useContext } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 import { toNumber } from '../utils/number.js'
 import { useTheme } from '../settings/ThemeProvider'
 import { supabase } from '../supabaseClient'
 import { ExportMenu } from '../components/ExportMenu'
 
-const DEBUG_THEME = false; // Debug flag for theme logs
 // V4: PPTX/Excel imports moved to dynamic import() in export functions
 import { computeCapitalDecesSchedule, computeGlobalCapitalDecesSchedule } from '../engine/credit/capitalDeces';
 import './Credit.css'
@@ -239,7 +238,6 @@ const [mensuBase, setMensuBase]     = useState('')             // saisie mensu p
 // État "touched" pour tracker si l'utilisateur a interagi avec les champs
 const [touched, setTouched]         = useState({ capital: false, duree: false })
 
-const [rawTauxAss, setRawTauxAss] = useState('');
 const [rawTauxPlus, setRawTauxPlus] = useState({}); // par prêt id -> string
 const [rawTauxAssurPlus, setRawTauxAssurPlus] = useState({}); // par prêt id -> string pour taux assurance
 
@@ -250,7 +248,6 @@ const [rawTauxAssur, setRawTauxAssur] = useState(Number(tauxAssur).toFixed(2).re
 // Sync initial / reset
 useEffect(() => {
   setRawTaux((Number(taux).toFixed(2)).toString());
-  setRawTauxAss((Number(tauxAssur).toFixed(2)).toString());
 }, [taux, tauxAssur]);
  
   // prêts additionnels : + type & startYM
@@ -323,7 +320,6 @@ useEffect(() => {
     setPretsPlus([]);
 
     // champs "bruts" utilisés pour la saisie des taux
-    setRawTauxAss('');
     setRawTauxPlus({});
     setRawTauxAssurPlus({});
 
@@ -350,11 +346,6 @@ useEffect(() => {
   /* ---- Handlers bornés ---- */
   const onChangeCapital = (val) => setCapital(toNum(String(val).replace(/\D/g,'').slice(0,8)))
   const onChangeDuree   = (val) => setDuree(Math.max(1, toNum(String(val).replace(/\D/g,'').slice(0,3))))
-  const onChangeMensuBase = (val) => {
-    const clean = String(val).replace(/[^\d]/g,'').slice(0,8)
-    setMensuBase(clean ? Number(clean).toLocaleString('fr-FR') : '')
-  }
-
   /* ---- Taux mensuels & paramètres ---- */
   const rAn  = Math.max(0, Number(taux) || 0)/100
   const rAss = Math.max(0, Number(tauxAssur) || 0)/100
@@ -367,16 +358,6 @@ useEffect(() => {
     if (creditType === 'infine') return r === 0 ? 0 : capital * r
     return mensualiteAmortissable(capital, r, N)
   }, [creditType, capital, r, N])
-
-  /* ---- Variables manquantes pour éviter le crash ---- */
-  const mensuAssurance_base = useMemo(()=>{
-    const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
-    return (assurMode === 'CI') ? assurFixe : 0 // Fallback simple pour éviter crash
-  }, [assurMode, capital, rAss])
-
-  const mensuTotal_base = useMemo(()=>{
-    return mensuHorsAssurance_base + mensuAssurance_base
-  }, [mensuHorsAssurance_base, mensuAssurance_base])
 
   const effectiveCapitalPret1 = useMemo(()=>{
     const hasOthers = pretsPlus.length > 0
@@ -574,8 +555,6 @@ function aggregateToYearsFromRows(rows, startYMBase) {
   const primeAssMensuelle = primeAssMensuellePret1 + primeAssMensuelleAutres
   const primeAssAff = isAnnual ? (firstYearAggregate?.assurance || 0) : primeAssMensuelle;
   
-  const coutInteretsPret1  = pret1Rows.reduce((s,l)=> s + (l.interet||0), 0)
-  const coutInteretsAgr    = agrRows.reduce((s,l)=> s + l.interet, 0)
   const pret1Interets      = pret1Rows.reduce((s,l)=> s + (l.interet   || 0), 0)
   const pret1Assurance     = pret1Rows.reduce((s,l)=> s + (l.assurance || 0), 0)
   
@@ -589,18 +568,6 @@ function aggregateToYearsFromRows(rows, startYMBase) {
   const coutTotalCredit = totalInterets + totalAssurance
 
   // Annuité max (hors assurance) pour la vue annuelle
-  const annuiteMaxSansAss = useMemo(()=>{
-    if (!isAnnual) return 0
-    return aggregatedYears.length ? Math.max(...aggregatedYears.map(a => a.mensu)) : 0
-  }, [aggregatedYears, isAnnual])
-
-  // === Synthèse des périodes (réactive aux dates)
-  // clé dédiée pour réagir aux changements de startYM des prêts 2/3
-  const datesKey = useMemo(
-    () => pretsPlus.map(p => p.startYM || '').join('|'),
-    [pretsPlus]
-  )
-
   // === Tableau des périodes (affiché s’il y a ≥1 prêt additionnel)
 const synthesePeriodes = useMemo(() => {
   if (pretsPlus.length === 0) return []

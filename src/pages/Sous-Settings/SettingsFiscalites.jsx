@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import './SettingsFiscalites.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
@@ -262,7 +262,6 @@ function textOrEmpty(v) {
 
 export default function SettingsFiscalites() {
   const [user, setUser] = useState(null);
-  const [roleLabel, setRoleLabel] = useState('User');
   const [settings, setSettings] = useState(DEFAULT_FISCALITY_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -308,13 +307,6 @@ const PRODUCTS = [
         if (!mounted) return;
 
         setUser(u);
-        if (u) {
-          const meta = u.user_metadata || {};
-          const admin =
-            (typeof meta.role === 'string' && meta.role.toLowerCase() === 'admin') ||
-            meta.is_admin === true;
-          setRoleLabel(admin ? 'Admin' : 'User');
-        }
 
         // Charge la ligne id=1
         const { data: rows, error: err } = await supabase

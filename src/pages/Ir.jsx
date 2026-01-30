@@ -9,9 +9,7 @@ import { useTheme } from '../settings/ThemeProvider';
 import { supabase } from '../supabaseClient';
 import { ExportMenu } from '../components/ExportMenu';
 
-const DEBUG_THEME = false; // Debug flag for theme logs
 // V4: PPTX/Excel imports moved to dynamic import() in export functions
-
 // ---- Helpers formats ----
 const fmt0 = (n) => (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
 const euro0 = (n) => `${fmt0(n)} €`;
@@ -49,8 +47,6 @@ export default function Ir() {
 
   const [taxSettings, setTaxSettings] = useState(null);
   const [psSettings, setPsSettings] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   // Choix utilisateur
   const [yearKey, setYearKey] = useState('current'); // current = 2025, previous = 2024
@@ -99,19 +95,12 @@ const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
     let mounted = true;
     async function load() {
       try {
-        setLoading(true);
-        setError('');
         const settings = await getFiscalSettings();
         if (!mounted) return;
         setTaxSettings(settings.tax);
         setPsSettings(settings.ps);
-        setLoading(false);
       } catch (e) {
         console.error('[IR] Erreur chargement settings:', e);
-        if (mounted) {
-          setError('Erreur lors du chargement des paramètres');
-          setLoading(false);
-        }
       }
     }
     load();

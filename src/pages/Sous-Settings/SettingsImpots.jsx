@@ -151,7 +151,6 @@ function numberOrEmpty(v) {
 
 export default function SettingsImpots() {
   const [user, setUser] = useState(null);
-  const [roleLabel, setRoleLabel] = useState('User');
   const [loading, setLoading] = useState(true);
 
   const [settings, setSettings] = useState(DEFAULT_TAX_SETTINGS);
@@ -181,14 +180,6 @@ export default function SettingsImpots() {
         if (!mounted) return;
 
         setUser(u);
-        if (u) {
-          const meta = u.user_metadata || {};
-          const admin =
-            (typeof meta.role === 'string' &&
-              meta.role.toLowerCase() === 'admin') ||
-            meta.is_admin === true;
-          setRoleLabel(admin ? 'Admin' : 'User');
-        }
 
         // Charge la ligne id=1 si elle existe
         const { data: rows, error: taxErr } = await supabase

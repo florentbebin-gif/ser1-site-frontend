@@ -1,3 +1,11 @@
+Mise à jour : 2026-01-30 07:40 (Europe/Paris)
+Lot : ESLint warnings — Lot 2 (pages)
+Fix : suppressions/renommages d’arguments/imports/variables inutilisés (pages).
+Fichiers : src/App.jsx ; src/pages/Credit.jsx ; src/pages/Ir.jsx ; src/pages/Login.jsx ; src/pages/SetPassword.jsx ; src/pages/PlacementV2.jsx ; src/pages/Settings.jsx ; src/pages/Sous-Settings/SettingsComptes.jsx ; src/pages/Sous-Settings/SettingsFiscalites.jsx ; src/pages/Sous-Settings/SettingsImpots.jsx ; src/pages/Sous-Settings/SettingsPrelevements.jsx ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 70 warnings (0 errors).
+Impact : warnings réduits, aucun changement fonctionnel.
+
 Mise à jour : 2026-01-30 01:36 (Europe/Paris)
 Lot : ESLint warnings — Lot 1 (tests + utils)
 Fix : suppressions/renommages d’arguments/imports/variables inutilisés (tests + utils).

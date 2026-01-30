@@ -10,16 +10,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePlacementSettings } from '../hooks/usePlacementSettings.js';
 import {
-  ENVELOPES,
   ENVELOPE_LABELS,
   simulateComplete,
   compareProducts,
 } from '../engine/placementEngine.js';
+import './Ir.css';
 import './Placement.css';
 import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from '../utils/versementConfig.js';
 import { onResetEvent, storageKeyFor } from '../utils/reset.js';
 import { PLACEMENT_SAVE_EVENT, PLACEMENT_LOAD_EVENT } from '../utils/placementEvents.js';
-import { buildWorksheetXml, buildWorksheetXmlVertical, downloadExcel } from '../utils/exportExcel.js';
+import { buildWorksheetXmlVertical, downloadExcel } from '../utils/exportExcel.js';
 import { savePlacementState, loadPlacementStateFromFile } from '../utils/placementPersistence.js';
 import { TimelineBar } from '../components/TimelineBar.jsx';
 import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '../utils/transmissionDisclaimer.js';
@@ -31,16 +31,9 @@ import { ExportMenu } from '../components/ExportMenu';
 
 const fmt = (n) => Math.round(n).toLocaleString('fr-FR');
 const euro = (n) => `${fmt(n)} €`;
-const pct = (n) => `${(n * 100).toFixed(1).replace('.', ',')} %`;
 const EPSILON = 1e-6;
-const formatPercentValue = (value) => {
-  if (typeof value !== 'number' || Number.isNaN(value)) return '—';
-  return `${(value * 100).toFixed(1).replace('.', ',')} %`;
-};
 
 const formatPsApplicability = (ps) => (ps?.applicable ? 'Oui' : 'Non');
-const formatPsAssiette = (ps, formatter) => (ps?.applicable ? formatter(ps.assiette || 0) : '—');
-const formatPsTaux = (ps) => (ps?.applicable && typeof ps?.taux === 'number' ? formatPercentValue(ps.taux) : '—');
 const formatPsMontant = (ps, formatter) => (ps?.applicable ? formatter(ps.montant || 0) : '—');
 const formatPsNote = (ps) => ps?.note || '—';
 const getPsAssietteNumeric = (ps) => (ps?.applicable ? ps.assiette || 0 : 0);
@@ -118,17 +111,6 @@ function getRendementLiquidation(product) {
   if (typeof override === 'number') return override;
   return product.versementConfig?.capitalisation?.rendementAnnuel ?? 0.03;
 }
-
-const STRATEGIE_COMPTE_ESPECE_OPTIONS = {
-  apprehender: 'Appréhender chaque année',
-  stocker: 'Stocker',
-  reinvestir: 'Réinvestir chaque année',
-};
-
-const ALLOCATION_OPTIONS = {
-  capitalisation: 'Capitalisation',
-  distribution: 'Distribution',
-};
 
 const DEFAULT_CLIENT = {
   ageActuel: 45,
@@ -392,16 +374,6 @@ function Toggle({ checked, onChange, label }) {
   );
 }
 
-function KpiCard({ title, value, subtitle, highlight }) {
-  return (
-    <div className={`pl-kpi ${highlight ? 'pl-kpi--highlight' : ''}`}>
-      <div className="pl-kpi__title">{title}</div>
-      <div className="pl-kpi__value">{value}</div>
-      {subtitle && <div className="pl-kpi__subtitle">{subtitle}</div>}
-    </div>
-  );
-}
-
 function CollapsibleTable({ title, rows, columns, renderRow }) {
   const [open, setOpen] = useState(false);
   if (!rows || rows.length === 0) return null;
@@ -423,16 +395,6 @@ function CollapsibleTable({ title, rows, columns, renderRow }) {
         </table>
       )}
     </div>
-  );
-}
-
-function DeltaIndicator({ value, inverse = false }) {
-  const isPositive = inverse ? value < 0 : value > 0;
-  const isNegative = inverse ? value > 0 : value < 0;
-  return (
-    <span className={`pl-delta ${isPositive ? 'pl-delta--positive' : ''} ${isNegative ? 'pl-delta--negative' : ''}`}>
-      {value > 0 ? '+' : ''}{shortEuro(value)}
-    </span>
   );
 }
 
@@ -508,7 +470,6 @@ function VersementConfigModal({ envelope, config, dureeEpargne, onSave, onClose 
   
   const isSCPI = envelope === 'SCPI';
   const isPER = envelope === 'PER';
-  const isPEA = envelope === 'PEA';
   const isCTO = envelope === 'CTO';
   const isAV = envelope === 'AV';
   
@@ -1138,15 +1099,6 @@ export default function PlacementV2() {
     });
   };
 
-  const handleVersementSave = useCallback(async (productIndex, config) => {
-    try {
-      setVersementConfig(productIndex, config);
-    } catch (error) {
-      console.error('[PlacementV2] Failed to save versement config', error);
-      throw error;
-    }
-  }, []);
-
   // Export Excel
   const exportExcel = useCallback(async () => {
     try {
@@ -1439,10 +1391,6 @@ export default function PlacementV2() {
     return baseColumns.filter((col) => isColumnRelevant(rows, col));
   };
 
-  // Vérifier si au moins un produit PER a la garantie de bonne fin active
-  const hasGarantieBonneFin = (produit1?.envelope === 'PER' && produit1?.versementConfig?.annuel?.garantieBonneFin?.active) ||
-                              (produit2?.envelope === 'PER' && produit2?.versementConfig?.annuel?.garantieBonneFin?.active);
-
   // Fonction pour construire les colonnes du tableau
   const buildColumns = (produit) => {
     const baseColumns = produit.envelope === 'SCPI'
@@ -1598,16 +1546,6 @@ export default function PlacementV2() {
   };
 
   // Loading / Error (placés après les hooks pour respecter les Rules of Hooks)
-  if (loading) {
-    return (
-      <div className="ir-panel placement-page">
-        <div className="ir-header">
-          <div className="ir-title">Chargement des paramètres fiscaux...</div>
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="ir-panel placement-page">
@@ -1617,16 +1555,6 @@ export default function PlacementV2() {
         </div>
       </div>
     );
-  };
-
-  // Déterminer le label pour le solde du compte espèce selon la stratégie
-  const getSoldeLabel = (product) => {
-    if (!product || !['CTO', 'PEA'].includes(product.envelope)) return 'Cumul';
-    const strategie = state.products.find(p => p.envelope === product.envelope)?.strategieCompteEspece;
-    if (strategie === 'apprehender') return 'Solde (toujours 0)';
-    if (strategie === 'stocker') return 'Solde';
-    if (strategie === 'reinvestir') return 'Solde (net année)';
-    return 'Solde';
   };
 
   return (
@@ -2261,20 +2189,27 @@ export default function PlacementV2() {
 
         {/* RIGHT PANEL - Synthèse unifiée */}
         <div className="ir-right">
-            {produit1 && produit2 && (
-              <div className="ir-synthesis-card premium-card">
-                <div className="pl-card-title premium-section-title">Synthèse comparative</div>
-                
+          <div className="ir-synthesis-card premium-card">
+            <div className="pl-card-title premium-section-title">Synthèse comparative</div>
+
+            {loading ? (
+              <div className="pl-synthesis-placeholder">Chargement…</div>
+            ) : !hydrated || !results ? (
+              <div className="pl-synthesis-placeholder">Aucune simulation (recharger ou compléter Produit 1/2)</div>
+            ) : !produit1 || !produit2 ? (
+              <div className="pl-synthesis-placeholder">Sélectionne Produit 1 et Produit 2…</div>
+            ) : (
+              <>
                 {/* Timeline visuelle du parcours */}
                 <TimelineBar
                   ageActuel={state.client.ageActuel}
                   ageDebutLiquidation={state.client.ageActuel + state.products[0].dureeEpargne}
                   ageAuDeces={state.transmission.ageAuDeces}
                 />
-                
+
                 {/* Trait séparateur avant ROI */}
                 <div style={{ borderTop: '1px solid var(--color-c6)', margin: '12px 0' }} />
-                
+
                 {/* Calcul du ROI pour chaque produit */}
                 {(() => {
                   const totalGains1 = produit1.totaux.revenusNetsLiquidation + produit1.totaux.capitalTransmisNet;
@@ -2282,7 +2217,7 @@ export default function PlacementV2() {
                   const roi1 = produit1.totaux.effortReel > 0 ? totalGains1 / produit1.totaux.effortReel : 0;
                   const roi2 = produit2.totaux.effortReel > 0 ? totalGains2 / produit2.totaux.effortReel : 0;
                   const meilleurProduit = roi1 > roi2 ? 1 : 2;
-                  
+
                   return (
                     <>
                       {/* Comparaison ROI - 2 colonnes */}
@@ -2301,7 +2236,7 @@ export default function PlacementV2() {
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Tableau comparatif */}
                       <div className="pl-kpi-compare">
                         <div className="pl-kpi-compare__header-empty"></div>
@@ -2311,27 +2246,27 @@ export default function PlacementV2() {
                         <div className="pl-kpi-compare__header">
                           <div className="pl-kpi-compare__indicator" style={{ background: 'var(--color-c4)' }}>2</div>
                         </div>
-                        
+
                         <div className="pl-kpi-compare__label">Effort total</div>
                         <div className="pl-kpi-compare__value">{shortEuro(produit1.totaux.effortReel)}</div>
                         <div className="pl-kpi-compare__value">{shortEuro(produit2.totaux.effortReel)}</div>
-                        
+
                         <div className="pl-kpi-compare__label">Capital acquis</div>
                         <div className="pl-kpi-compare__value">{shortEuro(produit1.epargne.capitalAcquis)}</div>
                         <div className="pl-kpi-compare__value">{shortEuro(produit2.epargne.capitalAcquis)}</div>
-                        
+
                         <div className="pl-kpi-compare__label">Revenus nets</div>
                         <div className="pl-kpi-compare__value">{shortEuro(produit1.totaux.revenusNetsLiquidation)}</div>
                         <div className="pl-kpi-compare__value">{shortEuro(produit2.totaux.revenusNetsLiquidation)}</div>
-                        
+
                         <div className="pl-kpi-compare__label">Transmis net</div>
                         <div className="pl-kpi-compare__value">{shortEuro(produit1.totaux.capitalTransmisNet)}</div>
                         <div className="pl-kpi-compare__value">{shortEuro(produit2.totaux.capitalTransmisNet)}</div>
-                        
+
                         <div className="pl-kpi-compare__separator"></div>
                         <div className="pl-kpi-compare__separator"></div>
                         <div className="pl-kpi-compare__separator"></div>
-                        
+
                         <div className="pl-kpi-compare__label pl-kpi-compare__label--total">Total récupéré</div>
                         <div className="pl-kpi-compare__value pl-kpi-compare__value--total">{shortEuro(totalGains1)}</div>
                         <div className="pl-kpi-compare__value pl-kpi-compare__value--total">{shortEuro(totalGains2)}</div>
@@ -2339,9 +2274,10 @@ export default function PlacementV2() {
                     </>
                   );
                 })()}
-              </div>
+              </>
             )}
           </div>
+        </div>
       </div>
 
       {/* Modal de configuration des versements */}

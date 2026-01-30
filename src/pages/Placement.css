@@ -566,6 +566,12 @@
   grid-template-columns: minmax(0, 2.6fr) minmax(0, 0.9fr); /* Élargir gauche, réduire droite */
 }
 
+@media (max-width: 1100px) {
+  .placement-page .ir-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .pl-card-big {
   font-weight: 800;
   font-size: 14px;
@@ -1364,6 +1370,17 @@
 /* Synthesis card - unified KPI display */
 .ir-synthesis-card {
   padding: 20px;
+}
+
+.pl-synthesis-placeholder {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px dashed var(--color-c8);
+  background: var(--color-c7);
+  color: var(--color-c9);
+  font-size: 12px;
+  text-align: center;
 }
 
 /* Comparaison ROI - 2 colonnes premium */
