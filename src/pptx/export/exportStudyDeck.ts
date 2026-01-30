@@ -17,8 +17,7 @@ import type {
   CreditGlobalSynthesisSlideSpec,
   CreditLoanSynthesisSlideSpec,
   CreditAnnexeSlideSpec,
-  CreditAmortizationSlideSpec,
-  PptxThemeRoles 
+  CreditAmortizationSlideSpec
 } from '../theme/types';
 import { SLIDE_SIZE } from '../designSystem/serenity';
 import { getPptxThemeFromUiSettings } from '../theme/getPptxThemeFromUiSettings';
@@ -153,7 +152,6 @@ export async function exportStudyDeck(
   
   // Set theme colors (available in PowerPoint color picker)
   // PptxGenJS allows defining theme colors that appear in the presentation
-  const themeColors = theme.colors;
   try {
     // Define custom theme with all 10 colors + French language for proofing
     // These will be available in PowerPoint's theme color palette

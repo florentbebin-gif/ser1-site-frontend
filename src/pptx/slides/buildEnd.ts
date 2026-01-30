@@ -10,7 +10,6 @@ import type { EndSlideSpec, ExportContext } from '../theme/types';
 import {
   COORDS_END,
   TYPO,
-  roleColor,
   addCornerMarks,
   addFooter,
   addTextBox,

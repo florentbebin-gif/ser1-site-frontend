@@ -16,16 +16,14 @@
  */
 
 import PptxGenJS from 'pptxgenjs';
-import type { PptxThemeRoles, ExportContext, CreditAnnexeSlideSpec, LoanSummary } from '../theme/types';
+import type { PptxThemeRoles, ExportContext, CreditAnnexeSlideSpec } from '../theme/types';
 import {
   TYPO,
   COORDS_CONTENT,
   COORDS_FOOTER,
-  addTextBox,
   addHeader,
   addFooter,
   addTextFr,
-  roleColor,
 } from '../designSystem/serenity';
 
 // ============================================================================

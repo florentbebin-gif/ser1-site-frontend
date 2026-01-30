@@ -220,7 +220,6 @@ export function buildCreditAmortization(
   const smallFontSize = Math.max(6, baseFontSize - 1);
   
   const numYears = yearsForPage.length;
-  const numCols = numYears + 1;
   
   // Column widths
   const labelColWidth = 1.9;

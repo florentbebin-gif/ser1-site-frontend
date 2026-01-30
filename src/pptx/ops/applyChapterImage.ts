@@ -69,7 +69,7 @@ export function applyChapterImage(
       h: placement.h,
       fontSize: 14,
       color: theme?.textMain || 'FFFFFF',
-      fill: theme?.bgMain || 'FFFFFF',
+      fill: { color: (theme?.bgMain || 'FFFFFF').replace('#', '') },
       align: 'center',
       valign: 'middle',
     });
@@ -85,7 +85,7 @@ export function applyChapterImageWithPlacement(
   slide: any,
   options: ChapterImageOptions
 ): void {
-  const { chapterIndex, placement, theme } = options;
+  const { chapterIndex, placement } = options;
   
   // Validation
   if (chapterIndex < 1 || chapterIndex > 9) {

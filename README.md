@@ -1,3 +1,11 @@
+Mise à jour : 2026-01-30 19:35 (Europe/Paris)
+Lot : ESLint warnings — Lot 3 (PPTX)
+Fix : suppressions/renommages d’arguments/imports/variables inutilisés (PPTX).
+Fichiers : src/pptx/creditPptx.ts ; src/pptx/irPptx.ts ; src/pptx/export/exportStudyDeck.ts ; src/pptx/ops/applyChapterImage.ts ; src/pptx/slides/buildChapter.ts ; src/pptx/slides/buildContent.ts ; src/pptx/slides/buildCover.ts ; src/pptx/slides/buildCreditAmortization.ts ; src/pptx/slides/buildCreditAnnexe.ts ; src/pptx/slides/buildCreditGlobalSynthesis.ts ; src/pptx/slides/buildCreditLoanSynthesis.ts ; src/pptx/slides/buildCreditSynthesis.ts ; src/pptx/slides/buildEnd.ts ; src/pptx/slides/buildIrAnnexe.ts ; src/pptx/slides/buildIrSynthesis.ts ; src/pptx/strategyPptx.ts ; src/pptx/structure/slideTypes.ts ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 40 warnings (0 errors).
+Impact : warnings réduits, aucun changement fonctionnel.
+
 Mise à jour : 2026-01-30 07:40 (Europe/Paris)
 Lot : ESLint warnings — Lot 2 (pages)
 Fix : suppressions/renommages d’arguments/imports/variables inutilisés (pages).

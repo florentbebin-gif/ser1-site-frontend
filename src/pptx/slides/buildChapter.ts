@@ -11,7 +11,6 @@ import {
   COORDS_CHAPTER,
   TYPO,
   RADIUS,
-  BLEED,
   addFooter,
   addCardPanelWithShadow,
   addChapterImage,
