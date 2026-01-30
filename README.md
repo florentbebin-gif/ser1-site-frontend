@@ -1,3 +1,11 @@
+Mise à jour : 2026-01-30 22:50 (Europe/Paris)
+Lot : ESLint warnings — Lot 4A (react-hooks/exhaustive-deps)
+Fix : ajustement deps hooks + useCallback/hoist pour exhaustive-deps (hors ThemeProvider).
+Fichiers : src/features/audit/AuditWizard.tsx ; src/pages/Credit.jsx ; src/pages/Ir.jsx ; src/pages/Settings.jsx ; src/pages/Sous-Settings/SettingsComptes.jsx ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 30 warnings (0 errors).
+Impact : warnings exhaustive-deps corrigés dans le scope, aucun changement fonctionnel.
+
 Mise à jour : 2026-01-30 19:35 (Europe/Paris)
 Lot : ESLint warnings — Lot 3 (PPTX)
 Fix : suppressions/renommages d’arguments/imports/variables inutilisés (PPTX).

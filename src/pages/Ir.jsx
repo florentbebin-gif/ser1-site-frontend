@@ -19,6 +19,15 @@ const fmtPct = (n) =>
     maximumFractionDigits: 1,
   });
 const toNum = (v, def = 0) => toNumber(v, def);
+const DEFAULT_INCOMES = {
+  d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+  d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+  capital: {
+    withPs: 0,
+    withoutPs: 0,
+  },
+  fonciersFoyer: 0,
+};
 // pour afficher joliment les entrées monétaires
 const formatMoneyInput = (n) => {
   const v = Math.round(Number(n) || 0);
@@ -58,18 +67,8 @@ export default function Ir() {
 // ex : [{ id: 1, mode: 'charge' | 'shared' }]
 
 
-  const DEFAULT_INCOMES = {
-  d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-  d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-  capital: {
-    withPs: 0,
-    withoutPs: 0,
-  },
-    fonciersFoyer: 0,
-};
-
-const [incomes, setIncomes] = useState(DEFAULT_INCOMES);
-const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
+  const [incomes, setIncomes] = useState(DEFAULT_INCOMES);
+  const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
 
 
   // Mode de déduction des frais pour salaires / art.62
@@ -321,9 +320,8 @@ const result = useMemo(
     credits,
     taxSettings,
     psSettings,
-    realMode,
-    realExpenses,
     capitalMode,
+    children,
   ]
 );
 

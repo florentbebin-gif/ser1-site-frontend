@@ -265,7 +265,7 @@ export default function Settings() {
       mounted = false;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, []);
+  }, [logo, setLogo]);
 
   /* ---------- Gestion des couleurs ---------- */
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase, DEBUG_AUTH } from '../../supabaseClient';
 import { useUserRole } from '../../auth/useUserRole';
@@ -56,20 +56,6 @@ export default function SettingsComptes() {
     c6: '#CEC1B6', c7: '#F5F3F0', c8: '#D9D9D9', c9: '#7F7F7F', c10: '#000000'
   };
 
-  useEffect(() => {
-    if (authLoading) {
-      if (DEBUG_AUTH || DEBUG_COMPTES_REFRESH) console.log('[SettingsComptes] authLoading → wait');
-      return;
-    }
-    if (!isAdmin) {
-      if (DEBUG_AUTH || DEBUG_COMPTES_REFRESH) console.log('[SettingsComptes] not admin → skip fetch');
-      return;
-    }
-    fetchUsers('effect');
-    fetchCabinets();
-    fetchThemes();
-  }, [isAdmin, authLoading, location.key, refreshKey]);
-
   const triggerRefresh = (reason = '') => {
     if (DEBUG_COMPTES_REFRESH) {
       console.log('[SettingsComptes] triggerRefresh', reason);
@@ -77,7 +63,7 @@ export default function SettingsComptes() {
     setRefreshKey((k) => k + 1);
   };
 
-  const fetchUsers = async (reason = '') => {
+  const fetchUsers = useCallback(async (reason = '') => {
     const requestId = ++fetchUsersRequestIdRef.current;
     try {
       setLoading(true);
@@ -111,7 +97,7 @@ export default function SettingsComptes() {
         setLoading(false);
       }
     }
-  };
+  }, [DEBUG_COMPTES_REFRESH]);
 
   // V2: Fetch cabinets
   const fetchCabinets = async () => {
@@ -140,6 +126,20 @@ export default function SettingsComptes() {
       setThemesLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (authLoading) {
+      if (DEBUG_AUTH || DEBUG_COMPTES_REFRESH) console.log('[SettingsComptes] authLoading → wait');
+      return;
+    }
+    if (!isAdmin) {
+      if (DEBUG_AUTH || DEBUG_COMPTES_REFRESH) console.log('[SettingsComptes] not admin → skip fetch');
+      return;
+    }
+    fetchUsers('effect');
+    fetchCabinets();
+    fetchThemes();
+  }, [isAdmin, authLoading, location.key, refreshKey, fetchUsers, DEBUG_COMPTES_REFRESH]);
 
   // V2: Cabinet Modal handlers
   const openCabinetModal = (cabinet = null) => {

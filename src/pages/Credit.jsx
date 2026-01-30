@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 import { toNumber } from '../utils/number.js'
 import { useTheme } from '../settings/ThemeProvider'
@@ -298,7 +298,7 @@ useEffect(() => {
         startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode
       }))
     }catch{}
-  }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode])
+  }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode, STORE_KEY])
 
 // Reset global (ne réinitialise que les champs saisissables du simulateur CRÉDIT)
 useEffect(() => {
@@ -461,7 +461,7 @@ useEffect(() => {
       return rowsWithDeces
 
   }, [
-    effectiveCapitalPret1, r, rA, N, assurMode, creditType,
+    effectiveCapitalPret1, r, rA, N, assurMode, creditType, tauxAssur,
     mensuBaseEffectivePret1, lisserPret1, autresRows, lissageMode, anyInfine
   ])
 
@@ -491,10 +491,10 @@ useEffect(() => {
     
     // Calcule l'échéancier global avec capitaux décès unifiés
     return computeGlobalCapitalDecesSchedule(allLoansParams, allSchedules);
-  }, [pret1Rows, autresRows, pretsPlus, N, assurMode, effectiveCapitalPret1, tauxAssur])
+  }, [pret1Rows, autresRows, pretsPlus, assurMode, effectiveCapitalPret1, tauxAssur])
 
   /* ---- Agrégation annuelle (si besoin) ---- */
-  function aggregateToYears(rows) {
+  const aggregateToYears = useCallback((rows) => {
     const map = new Map()
     rows.forEach((r, idx) => {
       const ym = addMonths(startYM, idx)
@@ -510,10 +510,10 @@ useEffect(() => {
       map.set(year, cur)
     })
     return Array.from(map.entries()).map(([year, v])=> ({ periode: year, ...v }))
-  }
-  function attachMonthLabels(rows){
-    return rows.map((r, idx)=> ({ periode: labelMonthFR(addMonths(startYM, idx)), ...r }))
-}
+  }, [startYM])
+  const attachMonthLabels = useCallback((rows) => (
+    rows.map((r, idx)=> ({ periode: labelMonthFR(addMonths(startYM, idx)), ...r }))
+  ), [startYM])
 
  // Agrège des rows (format {interet, assurance, amort, mensu, mensuTotal, crd}) par année
 function aggregateToYearsFromRows(rows, startYMBase) {
@@ -537,11 +537,11 @@ function aggregateToYearsFromRows(rows, startYMBase) {
 }
  
   const isAnnual = viewMode === 'annuel'
-  const aggregatedYears = useMemo(() => aggregateToYears(agrRows), [agrRows, startYM])
+  const aggregatedYears = useMemo(() => aggregateToYears(agrRows), [agrRows, aggregateToYears])
   const tableDisplay = useMemo(()=>{
     if (isAnnual) return aggregatedYears
     return attachMonthLabels(agrRows)
-  }, [aggregatedYears, agrRows, isAnnual, startYM])
+  }, [aggregatedYears, agrRows, isAnnual, attachMonthLabels])
 
   /* ---- Synthèse ---- */
   const mensualiteTotaleM1 = (pret1Rows[0]?.mensu || 0) + autresRows.reduce((s,arr)=> s + ((arr[0]?.mensu) || 0), 0)

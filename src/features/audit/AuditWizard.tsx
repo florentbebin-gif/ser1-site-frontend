@@ -74,6 +74,11 @@ export default function AuditWizard(): React.ReactElement {
     return off || (() => {});
   }, []);
 
+  const handleExport = useCallback(() => {
+    exportDossierToFile(dossier);
+    setHasChanges(false);
+  }, [dossier]);
+
   // Écoute de l'événement Save depuis la Topbar
   useEffect(() => {
     const handler = () => {
@@ -83,7 +88,7 @@ export default function AuditWizard(): React.ReactElement {
     };
     window.addEventListener(SAVE_EVENT, handler);
     return () => window.removeEventListener(SAVE_EVENT, handler);
-  }, [dossier]);
+  }, [handleExport]);
 
   // Écoute de l'événement Load depuis la Topbar
   useEffect(() => {
@@ -114,11 +119,6 @@ export default function AuditWizard(): React.ReactElement {
     }));
     setHasChanges(true);
   }, []);
-
-  const handleExport = () => {
-    exportDossierToFile(dossier);
-    setHasChanges(false);
-  };
 
   const handleExportPptx = async () => {
     try {
