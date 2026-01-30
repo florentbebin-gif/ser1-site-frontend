@@ -3,7 +3,7 @@
  * Scénarios A-D requis par l'utilisateur
  */
 
-import { computeIrPlafonneFoyer, computeMarginalRate, computeTmiMetrics } from './tmiMetrics.js';
+import { computeTmiMetrics } from './tmiMetrics.js';
 
 // Barème IR simplifié pour les tests (approximatif 2024)
 const DEFAULT_SCALE = [

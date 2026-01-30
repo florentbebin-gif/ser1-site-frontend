@@ -212,7 +212,7 @@ export function loadGlobalState(file) {
         let data;
         try {
           data = JSON.parse(content);
-        } catch (parseError) {
+        } catch {
           resolve({
             success: false,
             message: 'Le fichier est corrompu ou ne contient pas de JSON valide.',

@@ -125,7 +125,7 @@ describe('Calcul assurance décès', () => {
       
       // Vérification que le montant assuré correspond au CRD début de période
       let crdAttendu = capital;
-      rows.forEach((row, index) => {
+      rows.forEach((row) => {
         expect(row.assuranceDeces).toBeCloseTo(crdAttendu, 2);
         expect(row.assurance).toBeCloseTo(crdAttendu * rAss, 2);
         

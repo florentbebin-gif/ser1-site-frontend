@@ -201,7 +201,7 @@ async function fetchFromSupabase(kind) {
       } else {
         // On ne met pas à jour le cache si erreur ou pas de données
       }
-    } catch (err) {
+    } catch {
       // On ne met pas à jour le cache si erreur (timeout ou autre)
     } finally {
       cache.inflight[kind] = null;
@@ -234,7 +234,9 @@ export async function getFiscalSettings({ force = false } = {}) {
   }
 
   // Lancer les fetchs en arrière-plan (stale-while-revalidate)
-  const promises = ['tax', 'ps', 'fiscality'].map((kind) => fetchFromSupabase(kind));
+  ['tax', 'ps', 'fiscality'].forEach((kind) => {
+    fetchFromSupabase(kind);
+  });
   // On n'attend pas: on retourne immédiatement cache/defaults
   // Si tu veux attendre, décommente la ligne suivante :
   // await Promise.allSettled(promises);

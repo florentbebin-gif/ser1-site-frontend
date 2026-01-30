@@ -1,3 +1,33 @@
+Mise à jour : 2026-01-30 01:36 (Europe/Paris)
+Lot : ESLint warnings — Lot 1 (tests + utils)
+Fix : suppressions/renommages d’arguments/imports/variables inutilisés (tests + utils).
+Fichiers : src/components/__tests__/themes-and-auth.test.ts ; src/engine/__tests__/assurance.test.ts ; src/utils/tmiMetrics.test.js ; src/utils/fiscalSettingsCache.js ; src/utils/globalStorage.js ; src/utils/placementPersistence.js ; src/utils/xlsxBuilder.ts ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 114 warnings (0 errors).
+Impact : warnings réduits, aucun changement fonctionnel.
+
+Mise à jour : 2026-01-30 00:21 (Europe/Paris)
+Cause : règles .ir-grid/.ir-right chargées uniquement via Ir.jsx (lazy), absentes au F5 sur /sim/placement.
+Fix : ordre CSS / placement refresh dépendant de IR (import Ir.css dans PlacementV2.jsx).
+Fichiers : src/pages/PlacementV2.jsx ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Impact : layout IR chargé dès /sim/placement, colonne droite stable après F5.
+
+Mise à jour : 2026-01-29 23:57 (Europe/Paris)
+Cause : grille .ir-grid toujours en 2 colonnes, colonne droite hors viewport en largeur réduite.
+Fix : breakpoint placement → 1 colonne sous 1100px (synthèse visible).
+Fichiers : src/pages/Placement.css ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Impact : synthèse visible après F5 (à droite ou sous la colonne gauche).
+
+Mise à jour : 2026-01-29 22:42 (Europe/Paris)
+Objectif : garder la synthèse comparative visible après refresh sur /sim/placement.
+Cause : rendu conditionnel (produit1 && produit2) alors que results est null tant que !hydrated || loading.
+Fix : carte “Synthèse comparative” toujours rendue + placeholders (chargement / aucune simulation / produits manquants).
+Fichiers : src/pages/PlacementV2.jsx ; src/pages/Placement.css.
+Tests : npm run lint ; npm test ; npm run build.
+Impact : layout 2 colonnes stable au F5, placeholder premium visible.
+
 Mise à jour : 2026-01-27 21:23 (Europe/Paris)
 Cause : collision CSS globale .icon-btn injectée par SettingsComptes.css (lazy /settings).
 Fix : scoping des styles .icon-btn sous .settings-comptes + ajout de la classe racine.

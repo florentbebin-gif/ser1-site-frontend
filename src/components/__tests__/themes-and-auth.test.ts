@@ -177,7 +177,7 @@ describe('Thèmes - Mode Personnalisé automatique', () => {
     
     let selectedTheme = 'Personnalisé';
     
-    const handleColorChange = (key: string, value: string) => {
+    const handleColorChange = (_key: string, _value: string) => {
       // 🔄 UX: Si on modifie une couleur manuellement, basculer sur "Personnalisé"
       if (selectedTheme !== 'Personnalisé') {
         selectedTheme = 'Personnalisé';
@@ -287,7 +287,7 @@ describe('Settings - Timeout anti-blocage', () => {
         await supabaseMock.auth.getUser();
         
         if (timeoutId) clearTimeout(timeoutId);
-      } catch (e) {
+      } catch {
         if (timeoutId) clearTimeout(timeoutId);
         if (mounted) mockSetLoading(false);
       }
@@ -326,7 +326,7 @@ describe('Settings - Timeout anti-blocage', () => {
         
         if (timeoutId) clearTimeout(timeoutId);
         mockSetLoading(false);
-      } catch (e) {
+      } catch {
         if (timeoutId) clearTimeout(timeoutId);
         if (mounted) mockSetLoading(false);
       }
