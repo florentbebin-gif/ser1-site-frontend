@@ -1325,7 +1325,7 @@ export default function PlacementV2() {
     }
   }, [state, results]);
 
-  const { produit1, produit2, deltas } = results || { produit1: null, produit2: null, deltas: {} };
+  const { produit1, produit2 } = results || { produit1: null, produit2: null, deltas: {} };
   const psDecesProduit1 = produit1?.transmission?.psDeces;
   const psDecesProduit2 = produit2?.transmission?.psDeces;
   const hasTransmissionData = Boolean(produit1 || produit2);

@@ -1,3 +1,11 @@
+Mise à jour : 2026-01-31 00:17 (Europe/Paris)
+Lot : ESLint warnings — Lot 4C1 (no-unused-vars)
+Fix : suppression imports/vars/fonctions inutilisées + renommage params en _arg.
+Fichiers : src/auth/AuthProvider.tsx ; src/components/TopBar.tsx ; src/components/ThemeCustomizer.jsx ; src/engine/placementEngine.js ; src/features/audit/AuditWizard.tsx ; src/features/audit/storage.ts ; src/features/strategy/calculations.ts ; src/features/strategy/types.ts ; src/hooks/usePlacementSettings.js ; src/hooks/useTheme.js ; src/pages/PlacementV2.jsx ; src/pages/Sous-Settings/SettingsComptes.jsx ; src/settings/ThemeProvider.tsx ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 0 warnings (0 errors).
+Impact : 26 warnings no-unused-vars résolus, aucun changement fonctionnel.
+
 Mise à jour : 2026-01-31 00:05 (Europe/Paris)
 Lot : ESLint warnings — Lot 4B2 (ThemeProvider micro)
 Fix : stabilisation via refs pour deps useEffect (auth subscription + loadTheme) sans boucles.

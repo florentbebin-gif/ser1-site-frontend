@@ -14,7 +14,7 @@ const DEFAULT_COLOR_PRESETS = [
 ];
 
 function ThemeCustomizer() {
-  const { theme, colors, saveTheme, resetToDefault, isCustom, loading } = useTheme();
+  const { colors, saveTheme, resetToDefault, isCustom, loading } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [tempColors, setTempColors] = useState(colors);
   const [saving, setSaving] = useState(false);

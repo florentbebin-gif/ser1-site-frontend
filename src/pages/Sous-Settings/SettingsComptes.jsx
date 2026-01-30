@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { supabase, DEBUG_AUTH } from '../../supabaseClient';
+import { DEBUG_AUTH } from '../../supabaseClient';
 import { useUserRole } from '../../auth/useUserRole';
 import { UserInfoBanner } from '../../components/UserInfoBanner';
 import { invokeAdmin } from '../../services/apiAdmin';

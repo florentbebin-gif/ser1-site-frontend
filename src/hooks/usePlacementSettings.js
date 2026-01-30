@@ -8,19 +8,9 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import { supabase } from '../supabaseClient';
 import { extractFiscalParams } from '../engine/placementEngine';
 import { getFiscalSettings, addInvalidationListener } from '../utils/fiscalSettingsCache.js';
 
-
-// Timeout pour éviter les blocages Supabase
-const SUPABASE_TIMEOUT = 8000; // 8 secondes
-
-function createTimeoutPromise(ms) {
-  return new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Timeout Supabase')), ms);
-  });
-}
 
 const DEFAULT_TMI_OPTIONS = [
   { value: 0, label: '0 %' },

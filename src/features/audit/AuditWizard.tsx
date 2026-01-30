@@ -279,7 +279,7 @@ export default function AuditWizard(): React.ReactElement {
 // Composants étapes simplifiés (MVP)
 interface StepProps {
   dossier: DossierAudit;
-  updateDossier: (updates: Partial<DossierAudit>) => void;
+  updateDossier: (_updates: Partial<DossierAudit>) => void;
 }
 
 function StepFamille({ dossier, updateDossier }: StepProps) {

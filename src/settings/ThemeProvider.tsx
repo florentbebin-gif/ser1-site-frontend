@@ -209,19 +209,19 @@ export type ThemeSource = 'cabinet' | 'custom';
 
 interface ThemeContextValue {
   colors: ThemeColors;
-  setColors: (colors: ThemeColors) => void;
-  saveThemeToUiSettings: (colors: ThemeColors, themeName?: string) => Promise<{ success: boolean; error?: string }>;
+  setColors: (_colors: ThemeColors) => void;
+  saveThemeToUiSettings: (_colors: ThemeColors, _themeName?: string) => Promise<{ success: boolean; error?: string }>;
   isLoading: boolean;
   themeReady: boolean; // true when CSS variables are applied (safe to render routes)
   logo?: string;
-  setLogo: (logo: string | undefined) => void;
+  setLogo: (_logo: string | undefined) => void;
   cabinetLogo?: string; // Logo cabinet (via RPC)
   cabinetColors: ThemeColors | null; // Couleurs cabinet (chargées 1x au login, read-only)
   themeScope: ThemeScope;
-  setThemeScope: (scope: ThemeScope) => void; // Allow Settings to update scope globally
+  setThemeScope: (_scope: ThemeScope) => void; // Allow Settings to update scope globally
   pptxColors: ThemeColors; // Colors to use for PPTX (respects scope)
   themeSource: ThemeSource;
-  setThemeSource: (source: ThemeSource) => void;
+  setThemeSource: (_source: ThemeSource) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({

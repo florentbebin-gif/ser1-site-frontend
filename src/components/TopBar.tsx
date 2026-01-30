@@ -13,7 +13,7 @@ interface TopBarProps {
   onSave?: () => void;
   onLoad?: () => void;
   onReset?: () => void;
-  onExport?: () => void;
+  _onExport?: () => void;
   exportOptions?: Array<{
     label: string;
     onClick: () => void | Promise<void>;
@@ -31,7 +31,7 @@ export default function TopBar({
   onSave, 
   onLoad, 
   onReset, 
-  onExport, 
+  _onExport, 
   exportOptions = [],
   showSave = true,
   showLoad = true,
