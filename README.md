@@ -1,3 +1,11 @@
+Mise à jour : 2026-01-31 00:05 (Europe/Paris)
+Lot : ESLint warnings — Lot 4B2 (ThemeProvider micro)
+Fix : stabilisation via refs pour deps useEffect (auth subscription + loadTheme) sans boucles.
+Fichiers : src/settings/ThemeProvider.tsx ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 26 warnings (0 errors).
+Impact : warnings exhaustive-deps résolus sur les 2 useEffect ThemeProvider, aucun changement fonctionnel.
+
 Mise à jour : 2026-01-30 23:45 (Europe/Paris)
 Lot : ESLint warnings — Lot 4B1 (ThemeProvider micro)
 Fix : capture mountIdRef cleanup + stabilisation setColors (refs) pour exhaustive-deps.

@@ -493,6 +493,10 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const cabinetThemeRequestIdRef = useRef<number>(0);
   const cabinetLogoRequestIdRef = useRef<number>(0);
   const themeSourceRef = useRef<ThemeSource>(themeSource);
+  const cabinetColorsRef = useRef<ThemeColors | null>(cabinetColors);
+  const cabinetLogoRef = useRef<string | undefined>(cabinetLogo);
+  const ensureCabinetThemeFetchRef = useRef<((_userId: string) => Promise<ThemeColors>) | null>(null);
+  const ensureCabinetLogoFetchRef = useRef<((_userId: string) => Promise<string | undefined>) | null>(null);
   const applyColorsToCSSWithGuardRef = useRef(applyColorsToCSSWithGuard);
 
   // Debug: Log mount/unmount
@@ -565,6 +569,10 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   }
 
   applyColorsToCSSWithGuardRef.current = applyColorsToCSSWithGuard;
+  ensureCabinetThemeFetchRef.current = ensureCabinetThemeFetch;
+  ensureCabinetLogoFetchRef.current = ensureCabinetLogoFetch;
+  cabinetColorsRef.current = cabinetColors;
+  cabinetLogoRef.current = cabinetLogo;
 
   // Watch auth state changes and load theme when user changes
   useEffect(() => {
@@ -584,7 +592,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         cabinetLogoRequestIdRef.current += 1;
         setActiveUserId(null);
         setColorsState(DEFAULT_COLORS);
-        applyColorsToCSSWithGuard(DEFAULT_COLORS, undefined, 'signed-out');
+        applyColorsToCSSWithGuardRef.current(DEFAULT_COLORS, undefined, 'signed-out');
         setLogo(undefined);
         setCabinetLogo(undefined);
         setIsLoading(false);
@@ -627,18 +635,18 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         const cachedCabinetColors = getCabinetThemeFromCache(activeUserId);
         const cachedCabinetLogo = getCabinetLogoFromCache(activeUserId);
 
-        if (cachedCabinetColors && !cabinetColors) {
+        if (cachedCabinetColors && !cabinetColorsRef.current) {
           setCabinetColors(cachedCabinetColors);
         }
 
-        if (cachedCabinetLogo !== undefined && cabinetLogo === undefined) {
+        if (cachedCabinetLogo !== undefined && cabinetLogoRef.current === undefined) {
           setCabinetLogo(cachedCabinetLogo ?? undefined);
         }
 
-        const immediateCabinetColors = cabinetColors ?? cachedCabinetColors;
+        const immediateCabinetColors = cabinetColorsRef.current ?? cachedCabinetColors;
         if (themeSource === 'cabinet' && immediateCabinetColors) {
           setColorsState(immediateCabinetColors);
-          applyColorsToCSSWithGuard(immediateCabinetColors, activeUserId || undefined, cachedCabinetColors ? 'cabinet-cache' : 'cabinet-state');
+          applyColorsToCSSWithGuardRef.current(immediateCabinetColors, activeUserId || undefined, cachedCabinetColors ? 'cabinet-cache' : 'cabinet-state');
         }
 
         const { data: { user } } = await supabase.auth.getUser();
@@ -650,8 +658,8 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         let finalColors = DEFAULT_COLORS;
         let source = 'default';
 
-        void ensureCabinetThemeFetch(user.id);
-        void ensureCabinetLogoFetch(user.id);
+        void ensureCabinetThemeFetchRef.current?.(user.id);
+        void ensureCabinetLogoFetchRef.current?.(user.id);
 
         // Maintenant déterminer les couleurs UI selon themeSource
         if (themeSource === 'cabinet') {
@@ -702,7 +710,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
 
         if (mountedRef.current && requestId === activeRequestIdRef.current) {
           setColorsState(finalColors);
-          applyColorsToCSSWithGuard(finalColors, user.id, source);
+          applyColorsToCSSWithGuardRef.current(finalColors, user.id, source);
           if (DEBUG_THEME) console.info(`[ThemeProvider] Theme loaded: ${source}`);
         }
 
@@ -714,7 +722,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       } catch (error) {
         if (mountedRef.current && requestId === activeRequestIdRef.current) {
           console.error('[ThemeProvider] Error loading theme:', error);
-          applyColorsToCSSWithGuard(DEFAULT_COLORS, undefined, 'error-fallback');
+          applyColorsToCSSWithGuardRef.current(DEFAULT_COLORS, undefined, 'error-fallback');
         }
       } finally {
         if (mountedRef.current && requestId === activeRequestIdRef.current) {
