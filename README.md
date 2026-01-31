@@ -1,3 +1,17 @@
+Mise à jour : 2026-01-31 09:56 (Europe/Paris)
+Thème Original DB + Logique No-Cabinet
+Problème : le Thème Original était hardcodé, et les users sans cabinet n'avaient pas de fallback cohérent entre UI et PPTX.
+Fix :
+- Thème Original éditable via /settings/comptes (non supprimable)
+- Edge Function : action get_original_theme (auth requise, non-admin) retournant {name, palette}
+- ThemeProvider : charge originalColors depuis DB, fallback UI = originalColors ?? DEFAULT_COLORS
+- resolvePptxColors : support themeScope (all/ui-only) + originalColors pour users sans cabinet
+- PPTX sans cabinet : custom si scope=all, Thème Original si scope=ui-only
+- Cleanup ESLint : suppression imports/variables non utilisés (0 warning)
+Fichiers : config/supabase/functions/admin/index.ts ; src/settings/ThemeProvider.tsx ; src/pptx/theme/resolvePptxColors.ts ; src/pages/Sous-Settings/SettingsComptes.jsx ; src/pages/Credit.jsx ; src/pages/Ir.jsx.
+Tests : npm run lint (0 warnings), npm test (71 passed), npm run build.
+E2E : sans cabinet + themeSource=cabinet → UI/PPTX = Thème Original ; sans cabinet + custom + scope=ui-only → UI custom, PPTX = Thème Original ; sans cabinet + custom + scope=all → UI/PPTX = custom ; avec cabinet → PPTX = cabinet (couleurs + logo).
+
 Mise à jour : 2026-01-31 01:25 (Europe/Paris)
 Roadmap #3 — PPTX: logo cabinet uniquement (admin), aucun logo user
 Problème : en UI custom, les exports PPTX pouvaient utiliser `user_metadata.cover_slide_url` au lieu du logo cabinet.
