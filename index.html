@@ -35,9 +35,6 @@
           themeSource: themeSource,
           hasCache: !!cachedColors
         };
-        if (localStorage.getItem('DEBUG_THEME_BOOTSTRAP') === 'true') {
-          console.log('[THEME-BOOTSTRAP] applied', themeSource, userId, !!cachedColors);
-        }
       } catch (e) {
         // noop: fallback to default :root values
       }
