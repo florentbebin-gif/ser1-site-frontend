@@ -29,6 +29,33 @@ function applyDefaultCSSVariables() {
 // Apply IMMEDIATELY - before any async work
 applyDefaultCSSVariables();
 
+// 🚨 SENTINEL DEBUG TEMPORAIRE - tracer qui modifie --color-c1
+if (typeof window !== 'undefined') {
+  let lastC1 = getComputedStyle(document.documentElement).getPropertyValue('--color-c1')
+  console.log('[SENTINEL] Boot --color-c1:', lastC1)
+  
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'style') {
+        const newC1 = getComputedStyle(document.documentElement).getPropertyValue('--color-c1')
+        if (newC1 !== lastC1) {
+          console.log('[SENTINEL] --color-c1 changed:', lastC1, '->', newC1)
+          console.trace('[SENTINEL] Stack trace')
+          lastC1 = newC1
+        }
+      }
+    })
+  })
+  
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] })
+  
+  // Arrêter après 10s pour ne pas polluer
+  setTimeout(() => {
+    observer.disconnect()
+    console.log('[SENTINEL] Observer stopped after 10s')
+  }, 10000)
+}
+
 // On attend que Supabase ait fini son travail avant de monter React
 waitInitialSession().then(() => {
   createRoot(document.getElementById('root')).render(

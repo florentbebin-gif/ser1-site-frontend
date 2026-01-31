@@ -875,6 +875,9 @@ serve(async (req: Request) => {
         .single()
 
       if (error) throw error
+      
+      // Log temporaire pour diagnostic (sera retiré)
+      console.log(`[admin] update_theme success | rid=${requestId} | themeId=${id} | name=${data?.name} | rowsReturned=${data ? 1 : 0}`)
 
       return new Response(JSON.stringify({ theme: data }), {
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }

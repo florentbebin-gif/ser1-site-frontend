@@ -372,6 +372,27 @@ export default function Settings({ isAdmin = false }) {
       
       if (result.success) {
         setSaveMessage('Thème enregistré avec succès.');
+        
+        // 🚨 FIX: Appliquer immédiatement le thème sans rechargement
+        // Synchroniser avec ThemeProvider (déjà fait par syncThemeColors pendant l'édition,
+        // mais on s'assure que les couleurs finales sont bien appliquées)
+        const finalColors = {
+          c1: colorsLegacy.color1,
+          c2: colorsLegacy.color2,
+          c3: colorsLegacy.color3,
+          c4: colorsLegacy.color4,
+          c5: colorsLegacy.color5,
+          c6: colorsLegacy.color6,
+          c7: colorsLegacy.color7,
+          c8: colorsLegacy.color8,
+          c9: colorsLegacy.color9,
+          c10: colorsLegacy.color10,
+        };
+        
+        // Dispatcher un événement pour notifier ThemeProvider de forcer l'application
+        window.dispatchEvent(new CustomEvent('ser1-theme-updated', {
+          detail: { themeSource: 'custom', colors: finalColors }
+        }));
       } else {
         setSaveMessage("Erreur lors de l'enregistrement : " + result.error);
       }
