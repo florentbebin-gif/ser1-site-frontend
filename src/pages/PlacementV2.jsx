@@ -2263,13 +2263,9 @@ export default function PlacementV2() {
           config={state.products[modalOpen].versementConfig}
           dureeEpargne={state.products[modalOpen].dureeEpargne}
           onSave={(config) => {
-            console.log('[PlacementV2] onSave called with config:', config);
-            console.log('[PlacementV2] modalOpen:', modalOpen);
             try {
               setVersementConfig(modalOpen, config);
-              console.log('[PlacementV2] setVersementConfig called');
               setModalOpen(null);
-              console.log('[PlacementV2] setModalOpen(null) called');
             } catch (error) {
               console.error('[PlacementV2] Error in onSave handler:', error);
             }

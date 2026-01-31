@@ -21,24 +21,14 @@ export default function IssueReportButton() {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: session } = await supabase.auth.getSession();
-      
-      // TODO: Retirer ces logs de debug après diagnostic
-      console.log('🔍 IssueReport - Diagnostic AVANT insert:', {
-        user_id: user?.id,
-        has_session: !!session,
-        has_access_token: !!session?.access_token,
-        supabase_url: import.meta.env.VITE_SUPABASE_URL?.replace(/https:\/\/.*\.supabase\.co/, 'https://***.supabase.co'),
-        page: window.location.pathname,
-        title: title.trim()
-      });
+      await supabase.auth.getSession();
 
       if (!user) {
         setMessage('Erreur : utilisateur non connecté');
         return;
       }
 
-      const { error, data } = await supabase.from('issue_reports').insert({
+      const { error } = await supabase.from('issue_reports').insert({
         user_id: user.id,
         page: window.location.pathname,
         title: title.trim(),
@@ -48,17 +38,6 @@ export default function IssueReportButton() {
           timestamp: new Date().toISOString(),
           url: window.location.href,
         }
-      });
-
-      // TODO: Retirer ces logs de debug après diagnostic
-      console.log('🔍 IssueReport - Résultat insert:', {
-        success: !error,
-        error_code: error?.code,
-        error_message: error?.message,
-        error_details: error?.details,
-        error_hint: error?.hint,
-        data_keys: data ? Object.keys(data) : null,
-        http_status: error?.status || 'N/A'
       });
 
       if (error) {

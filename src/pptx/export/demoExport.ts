@@ -96,8 +96,6 @@ Document établi le ${new Date().toLocaleDateString('fr-FR')}`,
  * ```
  */
 export async function exportSerenityDemoPptx(): Promise<void> {
-  console.log('[PPTX Demo] Starting demo export...');
-  
   try {
     await exportAndDownloadStudyDeck(
       DEMO_DECK,
@@ -110,8 +108,6 @@ export async function exportSerenityDemoPptx(): Promise<void> {
         coverRightMeta: 'Cabinet Serenity / CGP',
       }
     );
-    
-    console.log('[PPTX Demo] ✅ Export completed successfully!');
   } catch (error) {
     console.error('[PPTX Demo] ❌ Export failed:', error);
     throw error;
@@ -124,16 +120,12 @@ export async function exportSerenityDemoPptx(): Promise<void> {
 export async function exportSerenityDemoWithTheme(
   themeColors: typeof DEMO_THEME
 ): Promise<void> {
-  console.log('[PPTX Demo] Starting export with custom theme...');
-  
   try {
     await exportAndDownloadStudyDeck(
       DEMO_DECK,
       themeColors,
       'serenity-custom-theme-export.pptx'
     );
-    
-    console.log('[PPTX Demo] ✅ Export with custom theme completed!');
   } catch (error) {
     console.error('[PPTX Demo] ❌ Export failed:', error);
     throw error;
