@@ -124,8 +124,8 @@ serve(async (req: Request) => {
       }
     }
 
-    // Vérifier le rôle admin pour les actions sensibles
-    const userRole = user.user_metadata?.role || user.app_metadata?.role || 'user'
+    // Vérifier le rôle admin pour les actions sensibles (app_metadata uniquement - sécurisé)
+    const userRole = user.app_metadata?.role || 'user'
     if (userRole !== 'admin') {
       return new Response(JSON.stringify({ error: 'Admin access required' }), {
         status: 403,
@@ -181,6 +181,8 @@ serve(async (req: Request) => {
         })
       }
 
+      // SECURITY: Never use user_metadata for authorization; display/backward-compat only.
+      // The actual role check for security uses app_metadata only (see line 128).
       const nextUserMetadata = { ...(existing.user.user_metadata ?? {}), role }
       const nextAppMetadata = { ...(existing.user.app_metadata ?? {}), role }
 
@@ -255,6 +257,7 @@ serve(async (req: Request) => {
         email: user.email,
         created_at: user.created_at,
         last_sign_in_at: user.last_sign_in_at,
+        // SECURITY: user_metadata is for display/backward-compat only. Authorization uses app_metadata only.
         role: user.user_metadata?.role || user.app_metadata?.role || 'user',
         cabinet_id: cabinetByUserId.get(user.id) ?? null,
         total_reports: reportStats[user.id]?.total_reports || 0,
@@ -1033,6 +1036,7 @@ serve(async (req: Request) => {
         }
 
         const user = authUser.user
+        // SECURITY: user_metadata is for display/backward-compat only. Authorization uses app_metadata only.
         const role = user.user_metadata?.role || user.app_metadata?.role || 'user'
         
         // Insérer le profile manquant

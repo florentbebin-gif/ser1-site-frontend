@@ -1,0 +1,144 @@
+# Historique des évolutions — SER1
+
+> Ce fichier conserve l'historique détaillé des changements, post-mortems et évolutions techniques.
+> Pour la documentation opérationnelle, voir [README.md](../README.md).
+
+---
+
+## 2026-01-31 — Security Patch: RLS user_metadata → app_metadata
+
+### Problème (CRITIQUE)
+Les RLS policies et Edge Function utilisaient `auth.user_metadata` pour vérifier le rôle admin. `user_metadata` est modifiable par l'utilisateur → élévation de privilèges possible.
+
+### Changements
+| Composant | Avant | Après |
+|-----------|-------|-------|
+| `public.is_admin()` | Check `user_metadata` + `app_metadata` | Check `app_metadata` uniquement |
+| RLS policies | `fiscality_settings_write_admin` utilisait `user_metadata` | Toutes les policies utilisent `public.is_admin()` |
+| Edge Function admin | `user.user_metadata?.role \|\| user.app_metadata?.role` | `user.app_metadata?.role` uniquement (ligne 128) |
+| `set_updated_at()` | `search_path` mutable | `search_path = pg_catalog, public` fixé |
+| `update_updated_at_column()` | `search_path` mutable | `search_path = pg_catalog, public` fixé |
+
+### Fichiers modifiés
+- `database/migrations/202601312200_security_rls_no_user_metadata.sql`
+- `config/supabase/functions/admin/index.ts`
+- `docs/technical/security-user-metadata-guidelines.md` (nouveau)
+
+### Résultat Security Advisor
+- ✅ ERROR `rls_references_user_metadata` : résolu
+- ✅ WARN `function_search_path_mutable` (fonctions critiques) : résolus
+
+---
+
+## 2026-01-31 — Thème Original SYS + Application immédiate custom
+
+### Problème 1 (CRITIQUE): Thème Original SYS écrasé après flash correct
+**Cause** : `loadCabinetTheme()` retournait `DEFAULT_COLORS` quand pas de cabinet → sauvegardé en cache → écrasait original-db.
+
+**Fix** : Tri-état `cabinetColors` (undefined/null/ThemeColors), `loadCabinetTheme()` retourne `null` si pas de cabinet, purge cache si null.
+
+### Problème 2 (UX): Bouton "Enregistrer le thème" ne changeait pas l'UI sans F5
+**Cause** : `saveThemeToUiSettings()` sauvegardait mais n'appliquait pas les CSS variables (pas d'update React state).
+
+**Fix PROPRE** : Event-driven — `Settings.jsx` dispatch `'ser1-theme-updated'` après save, `ThemeProvider` écoute et applique immédiatement (avec reset rank pour bypass guard).
+
+### Hiérarchie de priorité (source de vérité)
+```
+cabinet (rank 3) > custom/ui_settings (rank 1) > original-db (rank 2) > default (rank 0)
+```
+Note: original-db rank 2 mais custom rank 1 — après save explicite, on reset rank pour permettre l'application custom.
+
+**Fichiers** : `src/settings/ThemeProvider.tsx`, `src/pages/Settings.jsx`
+
+---
+
+## 2026-01-31 — Thème Original éditable + Fallback sans cabinet
+
+### RÈGLES MÉTIER (source de vérité)
+- **R1 (Sans cabinet)** : `themeSource=cabinet` → UI/PPTX = Thème Original DB ; `custom+scope=ui-only` → UI=custom, PPTX=Thème Original ; `custom+scope=all` → UI/PPTX=custom
+- **R2 (Avec cabinet)** : PPTX = cabinet TOUJOURS (couleurs + logo) ; UI = cabinet ou custom selon settings
+- **R3 (/settings/comptes)** : "Aucun" = `cabinet_id NULL` ; "Thème Original" éditable (pas les autres système) et non supprimable
+
+### TECHNIQUE
+- Edge Function: action `get_original_theme` (auth Bearer requis) retourne `{name, palette}`
+- Déploiement: `--workdir ./config` (pas `./config/supabase`) car source de vérité dans `config/supabase/functions/admin/index.ts`
+- `ThemeProvider`: `loadOriginalTheme()` au montage, fallback UI = `originalColors ?? DEFAULT_COLORS`
+- PPTX: `resolvePptxColors()` priorité cabinet > (scope=all ? custom : original)
+
+**Fichiers** : `config/supabase/functions/admin/index.ts`, `src/settings/ThemeProvider.tsx`, `src/pptx/theme/resolvePptxColors.ts`, `src/pages/Sous-Settings/SettingsComptes.jsx`
+
+---
+
+## 2026-01-31 — Thème Original DB + Logique No-Cabinet
+
+**Problème** : Thème Original hardcodé, users sans cabinet sans fallback cohérent entre UI et PPTX.
+
+**Fix** :
+- Thème Original éditable via /settings/comptes (non supprimable)
+- Edge Function : action `get_original_theme` (auth requise, non-admin)
+- `ThemeProvider` : charge `originalColors` depuis DB
+- `resolvePptxColors` : support `themeScope` (all/ui-only) + `originalColors`
+- PPTX sans cabinet : custom si scope=all, Thème Original si scope=ui-only
+
+---
+
+## 2026-01-31 — Roadmap #3: Logo cabinet uniquement
+
+**Problème** : En UI custom, exports PPTX utilisaient `user_metadata.cover_slide_url` au lieu du logo cabinet.
+
+**Fix** : `exportLogo = cabinetLogo || undefined` dans IR et Crédit (suppression fallback user logo).
+
+---
+
+## 2026-01-30 — ESLint Warnings Cleanup (Lots 1-4C1)
+
+| Lot | Scope | Résultat |
+|-----|-------|----------|
+| 4C1 | no-unused-vars (ThemeProvider, auth, etc.) | 0 warning |
+| 4B2 | ThemeProvider micro (stabilisation refs) | 26 warnings |
+| 4B1 | ThemeProvider micro (mountIdRef) | 28 warnings |
+| 4A | exhaustive-deps (hors ThemeProvider) | 30 warnings |
+| 3 | PPTX | 40 warnings |
+| 2 | Pages | 70 warnings |
+| 1 | Tests + utils | 114 warnings |
+
+---
+
+## 2026-01-30 — CSS Fix: Placement Grid
+
+**Problème** : Règles `.ir-grid/.ir-right` chargées uniquement via `Ir.jsx` (lazy), absentes au F5 sur `/sim/placement`.
+
+**Fix** : Import `Ir.css` dans `PlacementV2.jsx`.
+
+---
+
+## 2026-01-29 — Placement Responsive
+
+**Problème** : Grille `.ir-grid` en 2 colonnes, colonne droite hors viewport en largeur réduite.
+
+**Fix** : Breakpoint placement → 1 colonne sous 1100px (synthèse visible).
+
+---
+
+## 2026-01-27 — Parts IR (Oracle 10 cas)
+
+**Objectif** : Aligner calcul des parts (parent isolé / alternée) avec oracle 10 cas + disclaimer conditionnel.
+
+**Fichiers** : `src/utils/irEngine.js`, `src/utils/irEngine.parts.test.js`, `src/pages/Ir.jsx`
+
+---
+
+## 2026-01-27 — Collision CSS `.icon-btn`
+
+**Problème** : Collision CSS globale `.icon-btn` injectée par `SettingsComptes.css` (lazy /settings).
+
+**Fix** : Scoping des styles `.icon-btn` sous `.settings-comptes` + ajout classe racine.
+
+---
+
+## Archives
+
+Pour l'historique complet antérieur, consulter le git log :
+```bash
+git log --oneline --since="2025-01-01" --grep="fix\|feat\|chore" > docs/notes/full-git-history.txt
+```
