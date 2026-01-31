@@ -86,6 +86,12 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 
 ⚠️ `--workdir config` obligatoire (pas `config/supabase`).
 
+### 3.3 Protection mots de passe (Security Advisor)
+**Leaked Password Protection** : Détection des mots de passe compromis via HaveIBeenPwned.org.
+- **Disponibilité** : Plan Pro et supérieur uniquement
+- **Emplacement** : Supabase Dashboard → Authentication → Policies → "Prevent use of leaked passwords"
+- **Statut** : Warning Security Advisor normal si plan Free (fonctionnalité payante)
+
 ---
 
 ## 4. Supabase — RLS & Storage
