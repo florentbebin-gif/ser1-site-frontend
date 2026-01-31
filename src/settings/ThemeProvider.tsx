@@ -17,11 +17,24 @@ import { resolvePptxColors } from '../pptx/theme/resolvePptxColors';
 // Cache local pour les thèmes (performance) - ISOLÉ PAR USER
 const THEME_CACHE_KEY_PREFIX = 'ser1_theme_cache_';
 const THEME_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 heures
+const CABINET_THEME_CACHE_KEY_PREFIX = 'ser1_cabinet_theme_cache_';
+const CABINET_LOGO_CACHE_KEY_PREFIX = 'ser1_cabinet_logo_cache_';
+const CABINET_CACHE_TTL = THEME_CACHE_TTL;
 
 interface ThemeCache {
   colors: ThemeColors;
   timestamp: number;
   themeName?: string;
+}
+
+interface CabinetThemeCache {
+  colors: ThemeColors;
+  timestamp: number;
+}
+
+interface CabinetLogoCache {
+  logo: string;
+  timestamp: number;
 }
 
 function getThemeFromCache(userId: string | null): ThemeColors | null {
@@ -64,6 +77,82 @@ function saveThemeToCache(colors: ThemeColors, userId: string | null, themeName?
   }
 }
 
+const CABINET_LOGO_EMPTY = '__none__';
+
+function getCabinetThemeFromCache(userId: string | null): ThemeColors | null {
+  if (!userId) return null;
+
+  try {
+    const cacheKey = `${CABINET_THEME_CACHE_KEY_PREFIX}${userId}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const cache: CabinetThemeCache = JSON.parse(cached);
+      const now = Date.now();
+
+      if (now - cache.timestamp < CABINET_CACHE_TTL) {
+        if (DEBUG_THEME) console.info('[ThemeProvider] Using cached cabinet theme for user:', userId);
+        return cache.colors;
+      }
+      localStorage.removeItem(cacheKey);
+    }
+  } catch (e) {
+    console.warn('[ThemeProvider] Cabinet cache read error:', e);
+  }
+  return null;
+}
+
+function saveCabinetThemeToCache(colors: ThemeColors, userId: string | null): void {
+  if (!userId) return;
+
+  try {
+    const cacheKey = `${CABINET_THEME_CACHE_KEY_PREFIX}${userId}`;
+    const cache: CabinetThemeCache = {
+      colors,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(cacheKey, JSON.stringify(cache));
+  } catch (e) {
+    console.warn('[ThemeProvider] Cabinet cache write error:', e);
+  }
+}
+
+function getCabinetLogoFromCache(userId: string | null): string | null | undefined {
+  if (!userId) return undefined;
+
+  try {
+    const cacheKey = `${CABINET_LOGO_CACHE_KEY_PREFIX}${userId}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const cache: CabinetLogoCache = JSON.parse(cached);
+      const now = Date.now();
+
+      if (now - cache.timestamp < CABINET_CACHE_TTL) {
+        if (DEBUG_THEME) console.info('[ThemeProvider] Using cached cabinet logo for user:', userId);
+        return cache.logo === CABINET_LOGO_EMPTY ? null : cache.logo;
+      }
+      localStorage.removeItem(cacheKey);
+    }
+  } catch (e) {
+    console.warn('[ThemeProvider] Cabinet logo cache read error:', e);
+  }
+  return undefined;
+}
+
+function saveCabinetLogoToCache(logo: string | undefined | null, userId: string | null): void {
+  if (!userId) return;
+
+  try {
+    const cacheKey = `${CABINET_LOGO_CACHE_KEY_PREFIX}${userId}`;
+    const cache: CabinetLogoCache = {
+      logo: logo ? logo : CABINET_LOGO_EMPTY,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(cacheKey, JSON.stringify(cache));
+  } catch (e) {
+    console.warn('[ThemeProvider] Cabinet logo cache write error:', e);
+  }
+}
+
 function clearThemeCacheForUser(userId: string | null): void {
   if (!userId) return;
   
@@ -102,64 +191,58 @@ export const DEFAULT_COLORS: ThemeColors = {
   c10: '#000000',
 };
 
-// SER1 Classic colors are now centralized in pptx/theme/resolvePptxColors.ts
-// Import from there to ensure consistency across PPTX exports
-import { SER1_CLASSIC_COLORS } from '../pptx/theme/resolvePptxColors';
+function getThemeBootstrap(): { colors: ThemeColors; userId?: string | null } | null {
+  if (typeof window === 'undefined') return null;
+  const bootstrap = (window as any).__ser1ThemeBootstrap;
+  if (!bootstrap?.colors) return null;
+  return {
+    colors: bootstrap.colors as ThemeColors,
+    userId: bootstrap.userId ?? null
+  };
+}
+
+// SER1 Classic colors centralized in pptx/theme/resolvePptxColors.ts
+// (not imported here - only used by resolvePptxColors for PPTX exports)
 
 export type ThemeScope = 'all' | 'ui-only';
 export type ThemeSource = 'cabinet' | 'custom';
 
 interface ThemeContextValue {
   colors: ThemeColors;
-  setColors: (colors: ThemeColors) => void;
-  saveThemeToUiSettings: (colors: ThemeColors, themeName?: string) => Promise<{ success: boolean; error?: string }>;
+  setColors: (_colors: ThemeColors) => void;
+  saveThemeToUiSettings: (_colors: ThemeColors, _themeName?: string) => Promise<{ success: boolean; error?: string }>;
   isLoading: boolean;
   themeReady: boolean; // true when CSS variables are applied (safe to render routes)
   logo?: string;
-  setLogo: (logo: string | undefined) => void;
+  setLogo: (_logo: string | undefined) => void;
   cabinetLogo?: string; // Logo cabinet (via RPC)
+  cabinetColors: ThemeColors | null | undefined; // Tri-état: undefined=not loaded, null=no cabinet, ThemeColors=cabinet palette
   themeScope: ThemeScope;
-  setThemeScope: (scope: ThemeScope) => void; // Allow Settings to update scope globally
+  setThemeScope: (_scope: ThemeScope) => void; // Allow Settings to update scope globally
   pptxColors: ThemeColors; // Colors to use for PPTX (respects scope)
   themeSource: ThemeSource;
-  setThemeSource: (source: ThemeSource) => void;
+  setThemeSource: (_source: ThemeSource) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
   colors: DEFAULT_COLORS,
-  setColors: () => {},
-  saveThemeToUiSettings: async () => ({ success: false, error: 'Not implemented' }),
+  setColors: (_colors: ThemeColors) => {},
+  saveThemeToUiSettings: async (_colors: ThemeColors, _themeName?: string) => ({ success: false, error: 'Not implemented' }),
   isLoading: true,
   themeReady: false,
   logo: undefined,
-  setLogo: () => {},
+  setLogo: (_logo: string | undefined) => {},
   cabinetLogo: undefined,
+  cabinetColors: null,
   themeScope: 'all',
-  setThemeScope: () => {},
+  setThemeScope: (_scope: ThemeScope) => {},
   pptxColors: DEFAULT_COLORS,
   themeSource: 'cabinet',
-  setThemeSource: () => {},
+  setThemeSource: (_source: ThemeSource) => {},
 });
 
 export function useTheme(): ThemeContextValue {
   return useContext(ThemeContext);
-}
-
-/**
- * Applique les couleurs en CSS variables sur :root
- */
-function applyColorsToCSS(colors: ThemeColors): void {
-  const root = document.documentElement;
-  root.style.setProperty('--color-c1', colors.c1);
-  root.style.setProperty('--color-c2', colors.c2);
-  root.style.setProperty('--color-c3', colors.c3);
-  root.style.setProperty('--color-c4', colors.c4);
-  root.style.setProperty('--color-c5', colors.c5);
-  root.style.setProperty('--color-c6', colors.c6);
-  root.style.setProperty('--color-c7', colors.c7);
-  root.style.setProperty('--color-c8', colors.c8);
-  root.style.setProperty('--color-c9', colors.c9);
-  root.style.setProperty('--color-c10', colors.c10);
 }
 
 /**
@@ -187,18 +270,31 @@ interface ThemeProviderProps {
 export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElement {
   // ⚡ INIT SYNCHRONE : Lire le cache AVANT le premier render
   // Cela empêche le flash "default" si un cache existe
-  const [colorsState, setColorsState] = useState<ThemeColors>(DEFAULT_COLORS);
+  const themeBootstrap = getThemeBootstrap();
+  const [colorsState, setColorsState] = useState<ThemeColors>(() => themeBootstrap?.colors ?? DEFAULT_COLORS);
   const [logo, setLogo] = useState<string | undefined>(undefined);
   const [cabinetLogo, setCabinetLogo] = useState<string | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [themeReady, setThemeReady] = useState(false); // true when CSS vars applied
   const [themeScope, setThemeScope] = useState<ThemeScope>('all');
-  const [themeSource, setThemeSource] = useState<ThemeSource>('cabinet');
+  // Lire themeSource depuis localStorage pour persister la préférence user
+  const [themeSource, setThemeSource] = useState<ThemeSource>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('themeSource');
+      if (stored === 'cabinet' || stored === 'custom') return stored;
+    }
+    return 'cabinet';
+  });
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
+  // Couleurs cabinet stockées séparément (chargées 1x, read-only pour PPTX)
+  // Tri-état: undefined = pas encore chargé, null = pas de cabinet confirmé, ThemeColors = palette cabinet
+  const [cabinetColors, setCabinetColors] = useState<ThemeColors | null | undefined>(undefined);
+  // Thème Original depuis DB (pour users sans cabinet)
+  const [originalColors, setOriginalColors] = useState<ThemeColors | null>(null);
 
-  // Compute PPTX colors based on theme scope
-  // CRITICAL: Use centralized resolver to ensure PPTX never uses web colors when ui-only
-  const pptxColors: ThemeColors = resolvePptxColors(colorsState, themeScope);
+  // Compute PPTX colors - PRIORITÉ: cabinet > original (sans cabinet) > custom selon scope
+  // RÈGLE MÉTIER: PPTX = cabinet si dispo, sinon original ou custom selon scope
+  const pptxColors: ThemeColors = resolvePptxColors(colorsState, themeScope, cabinetColors, originalColors);
 
   // Load cabinet logo for user via RPC (contourne RLS)
   // Returns data URI (base64) for direct use in PPTX exports
@@ -245,7 +341,8 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   };
 
   // Load cabinet theme for user via RPC (contourne RLS)
-  const loadCabinetTheme = async (userId: string): Promise<ThemeColors> => {
+  // Retourne null si pas de cabinet, ThemeColors si palette existe
+  const loadCabinetTheme = async (userId: string): Promise<ThemeColors | null> => {
     try {
       // Utiliser RPC SECURITY DEFINER pour récupérer la palette sans RLS
       const { data: palette, error: rpcError } = await supabase
@@ -253,12 +350,14 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         
       if (rpcError) {
         if (DEBUG_THEME) console.warn('[ThemeProvider] RPC error:', rpcError);
-        return DEFAULT_COLORS;
+        // Erreur RPC = on considère qu'il n'y a pas de cabinet
+        return null;
       }
       
       if (!palette) {
-        if (DEBUG_THEME) console.warn('[ThemeProvider] No cabinet theme found for user:', userId);
-        return DEFAULT_COLORS;
+        if (DEBUG_THEME) console.info('[ThemeProvider] No cabinet theme found for user:', userId);
+        // PAS de cabinet = retourner null (pas DEFAULT_COLORS)
+        return null;
       }
       
       // Convertir palette DB vers format ThemeColors
@@ -279,45 +378,92 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       return cabinetColors;
     } catch (error) {
       console.error('[ThemeProvider] Error loading cabinet theme:', error);
-      return DEFAULT_COLORS;
+      // Erreur = on considère qu'il n'y a pas de cabinet
+      return null;
+    }
+  };
+
+  // Load original theme from DB (for users without cabinet)
+  const loadOriginalTheme = async (): Promise<ThemeColors | null> => {
+    try {
+      // Appel Edge Function authentifié pour récupérer le thème original
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] No session for original theme fetch');
+        return null;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin?action=get_original_theme`,
+        {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] Original theme fetch error:', response.status);
+        return null;
+      }
+
+      const data = await response.json();
+      if (!data.palette) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] No palette in original theme response');
+        return null;
+      }
+
+      const original: ThemeColors = {
+        c1: data.palette.c1 || DEFAULT_COLORS.c1,
+        c2: data.palette.c2 || DEFAULT_COLORS.c2,
+        c3: data.palette.c3 || DEFAULT_COLORS.c3,
+        c4: data.palette.c4 || DEFAULT_COLORS.c4,
+        c5: data.palette.c5 || DEFAULT_COLORS.c5,
+        c6: data.palette.c6 || DEFAULT_COLORS.c6,
+        c7: data.palette.c7 || DEFAULT_COLORS.c7,
+        c8: data.palette.c8 || DEFAULT_COLORS.c8,
+        c9: data.palette.c9 || DEFAULT_COLORS.c9,
+        c10: data.palette.c10 || DEFAULT_COLORS.c10,
+      };
+
+      if (DEBUG_THEME) console.info('[ThemeProvider] Original theme loaded from DB');
+      return original;
+    } catch (error) {
+      console.error('[ThemeProvider] Error loading original theme:', error);
+      return null;
     }
   };
 
   // Retry helper for cabinet theme with exponential backoff (first login timing issue)
+  // Retourne null si pas de cabinet, ThemeColors si palette existe
   const loadCabinetThemeWithRetry = async (
     userId: string,
     mountedRef: React.MutableRefObject<boolean>,
-    activeRequestIdRef: React.MutableRefObject<number>,
+    requestIdRef: React.MutableRefObject<number>,
     requestId: number
-  ): Promise<ThemeColors> => {
-    const delays = [500, 1500, 3000]; // Backoff: 500ms, 1.5s, 3s
-    
-    // Helper to check if colors are default fallback
-    const isDefaultFallback = (colors: ThemeColors): boolean => {
-      return Object.keys(DEFAULT_COLORS).every(
-        (key) => colors[key as keyof ThemeColors] === DEFAULT_COLORS[key as keyof ThemeColors]
-      );
-    };
+  ): Promise<ThemeColors | null> => {
+    const delays: number[] = []; // Retry disabled to avoid repeated RPCs per session
     
     for (let attempt = 0; attempt < delays.length + 1; attempt++) {
       // Abort if unmounted or request is stale (user changed)
-      if (!mountedRef.current || requestId !== activeRequestIdRef.current) {
+      if (!mountedRef.current || requestId !== requestIdRef.current) {
         if (DEBUG_THEME) console.info('[ThemeProvider] Cabinet retry aborted (stale request)');
-        return DEFAULT_COLORS;
+        return null;
       }
       
       const palette = await loadCabinetTheme(userId);
       
-      // Success: got a real cabinet theme (not fallback)
-      if (!isDefaultFallback(palette)) {
+      // Si on a une palette (pas null), c'est le cabinet
+      if (palette !== null) {
         if (DEBUG_THEME) console.info(`[ThemeProvider] Cabinet theme loaded on attempt ${attempt + 1}`);
         return palette;
       }
       
-      // Last attempt: accept fallback
+      // Last attempt: pas de cabinet = retourner null (pas fallback)
       if (attempt === delays.length) {
-        if (DEBUG_THEME) console.warn('[ThemeProvider] Cabinet theme fallback after max attempts');
-        return DEFAULT_COLORS;
+        if (DEBUG_THEME) console.info('[ThemeProvider] No cabinet theme confirmed after max attempts');
+        return null;
       }
       
       // Wait before next retry (but check if still valid)
@@ -325,16 +471,94 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       await new Promise(resolve => setTimeout(resolve, delays[attempt]));
     }
     
-    return DEFAULT_COLORS;
+    return null;
+  };
+
+  const ensureCabinetThemeFetch = (userId: string): Promise<ThemeColors | null> => {
+    if (cabinetThemeLoadedRef.current === userId && cabinetThemePromiseRef.current) {
+      return cabinetThemePromiseRef.current;
+    }
+
+    if (cabinetThemeLoadedRef.current === userId && !cabinetThemePromiseRef.current) {
+      // Si cabinetColors est undefined (pas encore chargé), on recharge
+      // Si cabinetColors est null (pas de cabinet confirmé), on retourne null
+      // Si cabinetColors est un objet, on le retourne
+      return Promise.resolve(cabinetColorsRef.current ?? null);
+    }
+
+    cabinetThemeLoadedRef.current = userId;
+    const requestId = ++cabinetThemeRequestIdRef.current;
+    const promise = (async () => {
+      const colors = await loadCabinetThemeWithRetry(userId, mountedRef, cabinetThemeRequestIdRef, requestId);
+      if (!mountedRef.current || requestId !== cabinetThemeRequestIdRef.current) {
+        return colors;
+      }
+
+      // 🚨 FIX: Gestion tri-état
+      if (colors === null) {
+        // Pas de cabinet confirmé: set null et PURGER le cache existant
+        setCabinetColors(null);
+        localStorage.removeItem(`ser1_cabinet_theme_cache_${userId}`);
+        if (DEBUG_THEME) console.info('[ThemeProvider] No cabinet confirmed, cache purged');
+      } else {
+        // Cabinet existe: sauvegarder dans state et cache
+        setCabinetColors(colors);
+        saveCabinetThemeToCache(colors, userId);
+      }
+
+      return colors;
+    })();
+
+    cabinetThemePromiseRef.current = promise;
+    return promise;
+  };
+
+  const ensureCabinetLogoFetch = (userId: string): Promise<string | undefined> => {
+    if (cabinetLogoLoadedRef.current === userId && cabinetLogoPromiseRef.current) {
+      return cabinetLogoPromiseRef.current;
+    }
+
+    if (cabinetLogoLoadedRef.current === userId && !cabinetLogoPromiseRef.current) {
+      return Promise.resolve(cabinetLogo);
+    }
+
+    cabinetLogoLoadedRef.current = userId;
+    const requestId = ++cabinetLogoRequestIdRef.current;
+    const promise = (async () => {
+      const logoUrl = await loadCabinetLogo(userId);
+      if (!mountedRef.current || requestId !== cabinetLogoRequestIdRef.current) {
+        return logoUrl;
+      }
+
+      setCabinetLogo(logoUrl);
+      saveCabinetLogoToCache(logoUrl ?? null, userId);
+      return logoUrl;
+    })();
+
+    cabinetLogoPromiseRef.current = promise;
+    return promise;
   };
 
   // 🚨 DIAGNOSTIC: Track hash and user ID to prevent unnecessary reapplications
   const lastAppliedHashRef = useRef<string>('');
   const lastAppliedUserIdRef = useRef<string>('');
+  const lastAppliedSourceRankRef = useRef<number>(0);
   const mountIdRef = useRef<string>(Date.now().toString());
   const cacheAppliedRef = useRef<boolean>(false);
   const mountedRef = useRef<boolean>(true);
   const activeRequestIdRef = useRef<number>(0);
+  const cabinetThemePromiseRef = useRef<Promise<ThemeColors | null> | null>(null);
+  const cabinetLogoPromiseRef = useRef<Promise<string | undefined> | null>(null);
+  const cabinetThemeLoadedRef = useRef<string | null>(null);
+  const cabinetLogoLoadedRef = useRef<string | null>(null);
+  const cabinetThemeRequestIdRef = useRef<number>(0);
+  const cabinetLogoRequestIdRef = useRef<number>(0);
+  const themeSourceRef = useRef<ThemeSource>(themeSource);
+  const cabinetColorsRef = useRef<ThemeColors | null | undefined>(cabinetColors);
+  const cabinetLogoRef = useRef<string | undefined>(cabinetLogo);
+  const ensureCabinetThemeFetchRef = useRef<((_userId: string) => Promise<ThemeColors | null>) | null>(null);
+  const ensureCabinetLogoFetchRef = useRef<((_userId: string) => Promise<string | undefined>) | null>(null);
+  const applyColorsToCSSWithGuardRef = useRef(applyColorsToCSSWithGuard);
 
   // Debug: Log mount/unmount
   if (DEBUG_THEME) console.info(`[ThemeProvider] MOUNTING - ID: ${mountIdRef.current}`);
@@ -342,19 +566,29 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   // Apply default immediately on mount
   const initialApplyDone = useRef(false);
   if (!initialApplyDone.current) {
-    applyColorsToCSSWithGuard(DEFAULT_COLORS, undefined, 'default-sync-init');
-    if (DEBUG_THEME) console.info('[ThemeProvider] Default theme applied on mount');
+    if (themeBootstrap?.colors) {
+      applyColorsToCSSWithGuard(themeBootstrap.colors, themeBootstrap.userId ?? undefined, 'bootstrap-cache');
+      if (DEBUG_THEME) console.info('[ThemeProvider] Bootstrap theme applied on mount');
+    } else {
+      applyColorsToCSSWithGuard(DEFAULT_COLORS, undefined, 'default-sync-init');
+      if (DEBUG_THEME) console.info('[ThemeProvider] Default theme applied on mount');
+    }
     initialApplyDone.current = true;
   }
 
   // Cleanup on unmount
   useEffect(() => {
     mountedRef.current = true;
+    const mountId = mountIdRef.current;
     return () => {
       mountedRef.current = false;
-      if (DEBUG_THEME) console.info(`[ThemeProvider] UNMOUNTING - ID: ${mountIdRef.current}`);
+      if (DEBUG_THEME) console.info(`[ThemeProvider] UNMOUNTING - ID: ${mountId}`);
     };
   }, []);
+
+  useEffect(() => {
+    themeSourceRef.current = themeSource;
+  }, [themeSource]);
 
   // 🚨 DIAGNOSTIC: Hash function to detect if colors actually changed
   function getThemeHash(colors: ThemeColors, userId?: string): string {
@@ -362,16 +596,45 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     return `${colorString}-${userId || 'anonymous'}`;
   }
 
-  // 🚨 DIAGNOSTIC: Enhanced applyColorsToCSS with change detection
+  // 🚨 DIAGNOSTIC: Enhanced applyColorsToCSS with change detection AND source ranking
+  // Ranking: cabinet(3) > original-db(2) > custom/ui_settings(1) > default/bootstrap(0)
   function applyColorsToCSSWithGuard(colors: ThemeColors, userId?: string, source: string = 'unknown'): void {
     const hash = getThemeHash(colors, userId);
     
+    // Source ranking pour empêcher qu'une source faible écrase une forte
+    const sourceRanks: Record<string, number> = {
+      'cabinet-cache': 3,
+      'cabinet-state': 3,
+      'cabinet-theme': 3,
+      'original-db': 2,
+      'ui_settings': 1,
+      'user_metadata (legacy)': 1,
+      'user_metadata (fallback)': 1,
+      'cache': 1,
+      'custom': 1,
+      'default': 0,
+      'default-sync-init': 0,
+      'bootstrap-cache': 0,
+      'signed-out': 0,
+      'error-fallback': 0,
+    };
+    const currentRank = sourceRanks[source] ?? 0;
+    const lastRank = lastAppliedSourceRankRef.current;
+    
+    // Si même hash, skip
     if (lastAppliedHashRef.current === hash) {
       if (DEBUG_THEME) console.info(`[ThemeProvider] SKIPPED - Same colors already applied (source: ${source})`);
       return;
     }
+    
+    // Si source actuelle a un rank inférieur à la dernière source, refuser l'application
+    // Exception: permettre la mise à jour si c'est le même user et une source différente
+    if (currentRank < lastRank && lastAppliedUserIdRef.current === (userId || '')) {
+      console.warn(`[ThemeProvider] BLOCKED - Source ${source}(rank ${currentRank}) tried to overwrite rank ${lastRank}`);
+      return;
+    }
 
-    if (DEBUG_THEME) console.info(`[ThemeProvider] APPLYING - Hash: ${hash.substring(0, 20)}... (source: ${source})`);
+    if (DEBUG_THEME) console.info(`[ThemeProvider] APPLYING - Hash: ${hash.substring(0, 20)}... (source: ${source}, rank: ${currentRank})`);
     
     const root = document.documentElement;
     root.style.setProperty('--color-c1', colors.c1);
@@ -387,6 +650,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
 
     lastAppliedHashRef.current = hash;
     lastAppliedUserIdRef.current = userId || '';
+    lastAppliedSourceRankRef.current = currentRank;
     
     // Mark theme as ready for rendering routes
     if (!themeReady) {
@@ -394,6 +658,12 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       if (DEBUG_THEME) console.info('[ThemeProvider] themeReady = true');
     }
   }
+
+  applyColorsToCSSWithGuardRef.current = applyColorsToCSSWithGuard;
+  ensureCabinetThemeFetchRef.current = ensureCabinetThemeFetch;
+  ensureCabinetLogoFetchRef.current = ensureCabinetLogoFetch;
+  cabinetColorsRef.current = cabinetColors;
+  cabinetLogoRef.current = cabinetLogo;
 
   // Watch auth state changes and load theme when user changes
   useEffect(() => {
@@ -405,9 +675,15 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         if (activeUserId) {
           clearThemeCacheForUser(activeUserId);
         }
+        cabinetThemePromiseRef.current = null;
+        cabinetLogoPromiseRef.current = null;
+        cabinetThemeLoadedRef.current = null;
+        cabinetLogoLoadedRef.current = null;
+        cabinetThemeRequestIdRef.current += 1;
+        cabinetLogoRequestIdRef.current += 1;
         setActiveUserId(null);
         setColorsState(DEFAULT_COLORS);
-        applyColorsToCSSWithGuard(DEFAULT_COLORS, undefined, 'signed-out');
+        applyColorsToCSSWithGuardRef.current(DEFAULT_COLORS, undefined, 'signed-out');
         setLogo(undefined);
         setCabinetLogo(undefined);
         setIsLoading(false);
@@ -437,7 +713,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     }
     
     const requestId = ++activeRequestIdRef.current;
-    if (DEBUG_THEME) console.info('[ThemeProvider] Loading theme for user:', activeUserId, 'request:', requestId);
+    if (DEBUG_THEME) console.info('[ThemeProvider] Loading theme for user:', activeUserId, 'request:', requestId, 'originalColors?', !!originalColors);
 
     async function loadTheme() {
       try {
@@ -447,39 +723,82 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
           return;
         }
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const cachedCabinetColors = getCabinetThemeFromCache(activeUserId);
+        const cachedCabinetLogo = getCabinetLogoFromCache(activeUserId);
+
+        // 🚨 FIX: Ne charger le cache que si cabinetColors n'est pas encore chargé (undefined)
+        // Si cabinetColors est null (pas de cabinet confirmé) ou un objet, ne pas écraser avec le cache
+        if (cachedCabinetColors && cabinetColorsRef.current === undefined) {
+          setCabinetColors(cachedCabinetColors);
+        }
+
+        if (cachedCabinetLogo !== undefined && cabinetLogoRef.current === undefined) {
+          setCabinetLogo(cachedCabinetLogo ?? undefined);
+        }
+
+        // 🚨 FIX: Respecter le tri-état:
+        // - cabinetColors === undefined : pas encore chargé, utiliser le cache si disponible
+        // - cabinetColors === null : pas de cabinet confirmé, ne PAS utiliser le cache
+        // - cabinetColors === ThemeColors : cabinet existe
+        const immediateCabinetColors = cabinetColorsRef.current === undefined 
+          ? cachedCabinetColors 
+          : cabinetColorsRef.current; // peut être null ou ThemeColors
         
+        // 🚨 FIX: Toujours charger originalColors s'ils ne sont pas encore chargés
+        let loadedOriginal = originalColors;
+        if (!originalColors) {
+          loadedOriginal = await loadOriginalTheme();
+          if (loadedOriginal) {
+            setOriginalColors(loadedOriginal);
+            if (DEBUG_THEME) console.log('[ThemeProvider] originalColors loaded:', loadedOriginal.c1);
+          }
+        }
+
+        // 🚨 FIX: Ne pas appliquer de CSS ici, attendre la décision finale après ensureCabinetThemeFetch
+        // (Le premier apply rapide avec le cache est OK mais doit être cohérent)
+        if (themeSource === 'cabinet' && immediateCabinetColors) {
+          // Seulement si on a un vrai cabinet (pas null)
+          setColorsState(immediateCabinetColors);
+          applyColorsToCSSWithGuardRef.current(immediateCabinetColors, activeUserId || undefined, cachedCabinetColors ? 'cabinet-cache' : 'cabinet-state');
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+
         if (!mountedRef.current || requestId !== activeRequestIdRef.current || !user) return;
         if (user.id !== activeUserId) return; // User changed during load
+
+        // Charger le cabinet (ou confirmer qu'il n'y en a pas)
+        const fetchedCabinetColors = await ensureCabinetThemeFetchRef.current?.(user.id);
+        void ensureCabinetLogoFetchRef.current?.(user.id);
 
         // Hiérarchie modifiée selon themeSource
         let finalColors = DEFAULT_COLORS;
         let source = 'default';
 
-        // Try cache first
-        const cachedColors = getThemeFromCache(user.id);
-        if (cachedColors && themeSource === 'custom') {
-          finalColors = cachedColors;
-          source = 'cache';
-          cacheAppliedRef.current = true;
-        }
-        // Si themeSource='cabinet', ignorer cache/ui_settings et charger thème cabinet
+        // Maintenant déterminer les couleurs UI selon themeSource
         if (themeSource === 'cabinet') {
-          if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
-          const cabinetColors = await loadCabinetThemeWithRetry(user.id, mountedRef, activeRequestIdRef, requestId);
-          if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
-          finalColors = cabinetColors;
-          source = 'cabinet-theme';
-          // Ne pas sauvegarder en cache pour permettre le switch custom/cabinet
-          
-          // Charger logo cabinet en parallèle
-          const logoUrl = await loadCabinetLogo(user.id);
-          if (mountedRef.current && requestId === activeRequestIdRef.current) {
-            setCabinetLogo(logoUrl);
+          // 🚨 FIX: Mode cabinet avec tri-état
+          // fetchedCabinetColors = ThemeColors si cabinet existe, null si pas de cabinet
+          // Si pas de cabinet (null), utiliser originalColors
+          if (fetchedCabinetColors) {
+            finalColors = fetchedCabinetColors;
+            source = 'cabinet-theme';
+          } else if (loadedOriginal) {
+            finalColors = loadedOriginal;
+            source = 'original-db';
+          } else {
+            finalColors = DEFAULT_COLORS;
+            source = 'default';
           }
+          if (DEBUG_THEME) console.log('[ThemeProvider] Cabinet mode - finalColors source:', source, 'c1:', finalColors.c1);
         } else {
           // themeSource='custom' : logique normale avec cache/ui_settings
-          if (!cachedColors) {
+          const cachedColors = getThemeFromCache(user.id);
+          if (cachedColors) {
+            finalColors = cachedColors;
+            source = 'cache';
+            cacheAppliedRef.current = true;
+          } else {
             // 1) Essayer ui_settings (nouveau système)
             try {
               const { data: uiSettings, error: uiError } = await supabase
@@ -502,7 +821,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
                 source = 'user_metadata (legacy)';
                 saveThemeToCache(finalColors, user.id);
               }
-            } catch (uiError) {
+            } catch {
               if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
               // 2) Fallback metadata (legacy admin)
               if (user.user_metadata?.theme_colors) {
@@ -516,8 +835,8 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
 
         if (mountedRef.current && requestId === activeRequestIdRef.current) {
           setColorsState(finalColors);
-          applyColorsToCSSWithGuard(finalColors, user.id, source);
-          if (DEBUG_THEME) console.info(`[ThemeProvider] Theme loaded: ${source}`);
+          applyColorsToCSSWithGuardRef.current(finalColors, user.id, source);
+          if (DEBUG_THEME) console.info(`[ThemeProvider] Theme loaded: ${source}`, 'c1:', finalColors.c1);
         }
 
         // Load logo from user_metadata
@@ -528,7 +847,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       } catch (error) {
         if (mountedRef.current && requestId === activeRequestIdRef.current) {
           console.error('[ThemeProvider] Error loading theme:', error);
-          applyColorsToCSSWithGuard(DEFAULT_COLORS, undefined, 'error-fallback');
+          applyColorsToCSSWithGuardRef.current(DEFAULT_COLORS, undefined, 'error-fallback');
         }
       } finally {
         if (mountedRef.current && requestId === activeRequestIdRef.current) {
@@ -538,12 +857,12 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     }
 
     loadTheme();
-  }, [activeUserId, themeSource]);
+  }, [activeUserId, themeSource, originalColors]);
 
   // Met à jour les couleurs et applique immédiatement
   const setColors = useCallback((newColors: ThemeColors) => {
     setColorsState(newColors);
-    applyColorsToCSSWithGuard(newColors, lastAppliedUserIdRef.current, 'setColors-manual');
+    applyColorsToCSSWithGuardRef.current(newColors, lastAppliedUserIdRef.current, 'setColors-manual');
   }, []);
 
   // Sauvegarde le thème dans ui_settings (nouveau système)
@@ -619,8 +938,57 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     loadThemeScope();
   }, []);
 
+  // Écouter les modifications du Thème Original pour recharger
+  useEffect(() => {
+    const handleOriginalThemeUpdated = async () => {
+      if (DEBUG_THEME) console.info('[ThemeProvider] Original theme updated event received, reloading...');
+      const loadedOriginal = await loadOriginalTheme();
+      if (loadedOriginal) {
+        setOriginalColors(loadedOriginal);
+        if (DEBUG_THEME) console.info('[ThemeProvider] Original theme reloaded after update');
+      }
+    };
+
+    window.addEventListener('ser1-original-theme-updated', handleOriginalThemeUpdated);
+    return () => {
+      window.removeEventListener('ser1-original-theme-updated', handleOriginalThemeUpdated);
+    };
+  }, []);
+
+  // 🚨 FIX: Écouter l'événement 'ser1-theme-updated' pour application immédiate après sauvegarde
+  useEffect(() => {
+    const handleThemeUpdated = (event: CustomEvent) => {
+      const { themeSource: updatedSource, colors } = event.detail || {};
+      
+      if (DEBUG_THEME) console.info('[ThemeProvider] Theme updated event received:', updatedSource);
+      
+      if (updatedSource === 'custom' && colors) {
+        // 🚨 FIX: Réinitialiser le rank pour permettre l'application du custom
+        // après une sauvegarde explicite par l'utilisateur
+        const prevRank = lastAppliedSourceRankRef.current;
+        if (prevRank > 1) {
+          // Si rank était > 1 (cabinet ou original-db), on le baisse temporairement
+          // pour permettre l'application du custom
+          lastAppliedSourceRankRef.current = 0;
+          if (DEBUG_THEME) console.info('[ThemeProvider] Rank reset for custom theme application');
+        }
+        
+        // Appliquer immédiatement les couleurs
+        setColorsState(colors);
+        applyColorsToCSSWithGuardRef.current(colors, lastAppliedUserIdRef.current, 'custom');
+        
+        if (DEBUG_THEME) console.info('[ThemeProvider] Custom theme applied immediately after save');
+      }
+    };
+
+    window.addEventListener('ser1-theme-updated', handleThemeUpdated as (_e: Event) => void);
+    return () => {
+      window.removeEventListener('ser1-theme-updated', handleThemeUpdated as (_e: Event) => void);
+    };
+  }, []);
+
   return (
-    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, isLoading, themeReady, logo, setLogo, cabinetLogo, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource }}>
+    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, isLoading, themeReady, logo, setLogo, cabinetLogo, cabinetColors, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource }}>
       {children}
     </ThemeContext.Provider>
   );

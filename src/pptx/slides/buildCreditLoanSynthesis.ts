@@ -12,10 +12,7 @@ import PptxGenJS from 'pptxgenjs';
 import type { CreditLoanSynthesisSlideSpec, PptxThemeRoles, ExportContext } from '../theme/types';
 import {
   SLIDE_SIZE,
-  TYPO,
   COORDS_CONTENT, 
-  COORDS_FOOTER,
-  addTextBox,
   addHeader,
   addFooter,
   addTextFr,
@@ -30,7 +27,6 @@ import type { BusinessIconName } from '../icons/addBusinessIcon';
 
 // Content zone boundaries (below subtitle, above footer)
 const CONTENT_TOP_Y = COORDS_CONTENT.content.y; // 2.3754
-const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
 
 const LAYOUT = {
   kpi: {

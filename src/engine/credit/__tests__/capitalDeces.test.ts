@@ -52,6 +52,23 @@ describe('Capital Décès Calculator', () => {
       expect(computeCapitalDecesPeriod(params, 95000)).toBe(95000);
       expect(computeCapitalDecesPeriod(params, 1000)).toBe(1000);
     });
+
+    it('quotité 50% en mode CI → capital décès = capital × 0.5', () => {
+      const params = { ...mockLoanParams, assurMode: 'CI' as const, quotite: 0.5 };
+      expect(computeCapitalDecesPeriod(params, 95000)).toBe(50000); // 100000 × 0.5
+    });
+
+    it('quotité 50% en mode CRD → capital décès = CRD × 0.5', () => {
+      const params = { ...mockLoanParams, assurMode: 'CRD' as const, quotite: 0.5 };
+      expect(computeCapitalDecesPeriod(params, 100000)).toBe(50000);
+      expect(computeCapitalDecesPeriod(params, 80000)).toBe(40000);
+    });
+
+    it('quotité non définie → défaut 100%', () => {
+      const params = { ...mockLoanParams, assurMode: 'CI' as const };
+      // Pas de quotite dans params
+      expect(computeCapitalDecesPeriod(params, 95000)).toBe(100000);
+    });
   });
 
   describe('computeCapitalDecesSchedule', () => {

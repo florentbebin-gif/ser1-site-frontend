@@ -7,7 +7,7 @@
 import PptxGenJS from 'pptxgenjs';
 import type { PptxTheme } from '../theme/pptxTheme';
 import { applyCoverLogo, DEFAULT_LOGO_PLACEMENT } from '../ops/applyCoverLogo';
-import { applyChapterImage, CHAPTER_IMAGE_PLACEMENT } from '../ops/applyChapterImage';
+import { applyChapterImage } from '../ops/applyChapterImage';
 import { addBusinessIcon, ICON_SIZES } from '../ops/addBusinessIcon';
 import { addTextFr } from '../designSystem/serenity';
 

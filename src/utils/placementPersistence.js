@@ -148,7 +148,7 @@ export async function loadPlacementStateFromFile() {
     let data;
     try {
       data = JSON.parse(text);
-    } catch (parseError) {
+    } catch {
       return { success: false, message: 'Le fichier est corrompu ou invalide.' };
     }
 

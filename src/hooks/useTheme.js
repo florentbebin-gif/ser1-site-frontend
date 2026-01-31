@@ -5,9 +5,6 @@
  * Ce hook créait des conflits de chargement multiples
  */
 
-import { useState, useEffect, useMemo } from 'react';
-import { supabase } from '../supabaseClient';
-
 // Thème par défaut (fallback) - couleurs SER1 d'origine
 const DEFAULT_THEME = {
   name: 'default',

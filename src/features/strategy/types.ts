@@ -2,7 +2,7 @@
  * Types pour la Stratégie Patrimoniale
  */
 
-import type { DossierAudit, ObjectifClient } from '../audit/types';
+import type { ObjectifClient } from '../audit/types';
 
 // Types de produits disponibles (MVP)
 export type ProduitType = 

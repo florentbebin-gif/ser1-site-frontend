@@ -20,7 +20,6 @@ export function calculateBaselineProjection(dossier: DossierAudit): Scenario {
   
   const totalActifs = dossier.actifs.reduce((sum, a) => sum + a.valeur, 0);
   const totalPassifs = dossier.passif.emprunts.reduce((sum, e) => sum + e.capitalRestantDu, 0);
-  const patrimoineInitial = totalActifs - totalPassifs;
 
   // Hypothèses baseline
   const tauxCroissancePatrimoine = 0.02; // 2% par an (inflation)

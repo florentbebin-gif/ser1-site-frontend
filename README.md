@@ -1,3 +1,151 @@
+Mise à jour : 2026-01-31 14:38 (Europe/Paris)
+POST-MORTEM — Thème Original SYS + Application immédiate custom
+
+Problème 1 (CRITIQUE): Le Thème Original SYS était écrasé par DEFAULT_COLORS après un flash correct.
+Cause: loadCabinetTheme() retournait DEFAULT_COLORS quand pas de cabinet → sauvegardé en cache → écrasait original-db.
+Fix: Tri-état cabinetColors (undefined/null/ThemeColors), loadCabinetTheme() retourne null si pas de cabinet, purge cache si null.
+
+Problème 2 (UX): Bouton "Enregistrer le thème" ne changeait pas l'UI sans F5.
+Cause: saveThemeToUiSettings() sauvegardait mais n'appliquait pas les CSS variables (pas d'update React state).
+Fix PROPRE: Event-driven — Settings.jsx dispatch 'ser1-theme-updated' après save, ThemeProvider écoute et applique immédiatement (avec reset rank pour bypass guard).
+
+Hiérarchie de priorité (source de vérité):
+  cabinet (rank 3) > custom/ui_settings (rank 1) > original-db (rank 2) > default (rank 0)
+Note: original-db rank 2 mais custom rank 1 — après save explicite, on reset rank pour permettre l'application custom.
+
+Fichiers: src/settings/ThemeProvider.tsx, src/pages/Settings.jsx
+Validation: lint 0 warning, build OK, test manuel: sans cabinet → original-db appliqué et stable; custom save → UI change immédiatement.
+
+---
+
+Mise à jour : 2026-01-31 12:07 (Europe/Paris)
+Thème Original éditable + Fallback sans cabinet (FINALISATION)
+RÈGLES MÉTIER (source de vérité):
+- R1 (Sans cabinet): themeSource=cabinet → UI/PPTX = Thème Original DB ; custom+scope=ui-only → UI=custom, PPTX=Thème Original ; custom+scope=all → UI/PPTX=custom
+- R2 (Avec cabinet): PPTX = cabinet TOUJOURS (couleurs + logo) ; UI = cabinet ou custom selon settings
+- R3 (/settings/comptes): "Aucun" = cabinet_id NULL ; "Thème Original" éditable (pas les autres système) et non supprimable
+TECHNIQUE:
+- Edge Function: action get_original_theme (auth Bearer requis) retourne {name, palette}
+- Déploiement: --workdir ./config (pas ./config/supabase) car source de vérité dans config/supabase/functions/admin/index.ts
+- ThemeProvider: loadOriginalTheme() au montage, fallback UI = originalColors ?? DEFAULT_COLORS
+- PPTX: resolvePptxColors() priorité cabinet > (scope=all ? custom : original)
+FILES: config/supabase/functions/admin/index.ts, src/settings/ThemeProvider.tsx, src/pptx/theme/resolvePptxColors.ts, src/pages/Sous-Settings/SettingsComptes.jsx
+VALIDATION: lint 0 warning, test 71 passed, build OK. Logs debug [DEBUG] supprimés.
+
+Mise à jour : 2026-01-31 09:56 (Europe/Paris)
+Thème Original DB + Logique No-Cabinet
+Problème : le Thème Original était hardcodé, et les users sans cabinet n'avaient pas de fallback cohérent entre UI et PPTX.
+Fix :
+- Thème Original éditable via /settings/comptes (non supprimable)
+- Edge Function : action get_original_theme (auth requise, non-admin) retournant {name, palette}
+- ThemeProvider : charge originalColors depuis DB, fallback UI = originalColors ?? DEFAULT_COLORS
+- resolvePptxColors : support themeScope (all/ui-only) + originalColors pour users sans cabinet
+- PPTX sans cabinet : custom si scope=all, Thème Original si scope=ui-only
+- Cleanup ESLint : suppression imports/variables non utilisés (0 warning)
+Fichiers : config/supabase/functions/admin/index.ts ; src/settings/ThemeProvider.tsx ; src/pptx/theme/resolvePptxColors.ts ; src/pages/Sous-Settings/SettingsComptes.jsx ; src/pages/Credit.jsx ; src/pages/Ir.jsx.
+Tests : npm run lint (0 warnings), npm test (71 passed), npm run build.
+E2E : sans cabinet + themeSource=cabinet → UI/PPTX = Thème Original ; sans cabinet + custom + scope=ui-only → UI custom, PPTX = Thème Original ; sans cabinet + custom + scope=all → UI/PPTX = custom ; avec cabinet → PPTX = cabinet (couleurs + logo).
+
+Mise à jour : 2026-01-31 01:25 (Europe/Paris)
+Roadmap #3 — PPTX: logo cabinet uniquement (admin), aucun logo user
+Problème : en UI custom, les exports PPTX pouvaient utiliser `user_metadata.cover_slide_url` au lieu du logo cabinet.
+Fix : `exportLogo = cabinetLogo || undefined` dans les exports IR et Crédit (suppression du fallback user logo).
+Fichiers : src/pages/Ir.jsx, src/pages/Credit.jsx.
+Tests : npm run lint (0 erreurs, 8 warnings), npm test (71 passed), npm run build.
+E2E : cabinet+custom OK ; cabinet OK ; sans cabinet = sans logo OK.
+
+Mise à jour : 2026-01-31 00:17 (Europe/Paris)
+Lot : ESLint warnings — Lot 4C1 (no-unused-vars)
+Fix : suppression imports/vars/fonctions inutilisées + renommage params en _arg.
+Fichiers : src/auth/AuthProvider.tsx ; src/components/TopBar.tsx ; src/components/ThemeCustomizer.jsx ; src/engine/placementEngine.js ; src/features/audit/AuditWizard.tsx ; src/features/audit/storage.ts ; src/features/strategy/calculations.ts ; src/features/strategy/types.ts ; src/hooks/usePlacementSettings.js ; src/hooks/useTheme.js ; src/pages/PlacementV2.jsx ; src/pages/Sous-Settings/SettingsComptes.jsx ; src/settings/ThemeProvider.tsx ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 0 warnings (0 errors).
+Impact : 26 warnings no-unused-vars résolus, aucun changement fonctionnel.
+
+Mise à jour : 2026-01-31 00:05 (Europe/Paris)
+Lot : ESLint warnings — Lot 4B2 (ThemeProvider micro)
+Fix : stabilisation via refs pour deps useEffect (auth subscription + loadTheme) sans boucles.
+Fichiers : src/settings/ThemeProvider.tsx ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 26 warnings (0 errors).
+Impact : warnings exhaustive-deps résolus sur les 2 useEffect ThemeProvider, aucun changement fonctionnel.
+
+Mise à jour : 2026-01-30 23:45 (Europe/Paris)
+Lot : ESLint warnings — Lot 4B1 (ThemeProvider micro)
+Fix : capture mountIdRef cleanup + stabilisation setColors (refs) pour exhaustive-deps.
+Fichiers : src/settings/ThemeProvider.tsx ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 28 warnings (0 errors).
+Impact : 2 warnings exhaustive-deps résolus (ThemeProvider), aucun changement fonctionnel.
+
+Mise à jour : 2026-01-30 22:50 (Europe/Paris)
+Lot : ESLint warnings — Lot 4A (react-hooks/exhaustive-deps)
+Fix : ajustement deps hooks + useCallback/hoist pour exhaustive-deps (hors ThemeProvider).
+Fichiers : src/features/audit/AuditWizard.tsx ; src/pages/Credit.jsx ; src/pages/Ir.jsx ; src/pages/Settings.jsx ; src/pages/Sous-Settings/SettingsComptes.jsx ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 30 warnings (0 errors).
+Impact : warnings exhaustive-deps corrigés dans le scope, aucun changement fonctionnel.
+
+Mise à jour : 2026-01-30 19:35 (Europe/Paris)
+Lot : ESLint warnings — Lot 3 (PPTX)
+Fix : suppressions/renommages d’arguments/imports/variables inutilisés (PPTX).
+Fichiers : src/pptx/creditPptx.ts ; src/pptx/irPptx.ts ; src/pptx/export/exportStudyDeck.ts ; src/pptx/ops/applyChapterImage.ts ; src/pptx/slides/buildChapter.ts ; src/pptx/slides/buildContent.ts ; src/pptx/slides/buildCover.ts ; src/pptx/slides/buildCreditAmortization.ts ; src/pptx/slides/buildCreditAnnexe.ts ; src/pptx/slides/buildCreditGlobalSynthesis.ts ; src/pptx/slides/buildCreditLoanSynthesis.ts ; src/pptx/slides/buildCreditSynthesis.ts ; src/pptx/slides/buildEnd.ts ; src/pptx/slides/buildIrAnnexe.ts ; src/pptx/slides/buildIrSynthesis.ts ; src/pptx/strategyPptx.ts ; src/pptx/structure/slideTypes.ts ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 40 warnings (0 errors).
+Impact : warnings réduits, aucun changement fonctionnel.
+
+Mise à jour : 2026-01-30 07:40 (Europe/Paris)
+Lot : ESLint warnings — Lot 2 (pages)
+Fix : suppressions/renommages d’arguments/imports/variables inutilisés (pages).
+Fichiers : src/App.jsx ; src/pages/Credit.jsx ; src/pages/Ir.jsx ; src/pages/Login.jsx ; src/pages/SetPassword.jsx ; src/pages/PlacementV2.jsx ; src/pages/Settings.jsx ; src/pages/Sous-Settings/SettingsComptes.jsx ; src/pages/Sous-Settings/SettingsFiscalites.jsx ; src/pages/Sous-Settings/SettingsImpots.jsx ; src/pages/Sous-Settings/SettingsPrelevements.jsx ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 70 warnings (0 errors).
+Impact : warnings réduits, aucun changement fonctionnel.
+
+Mise à jour : 2026-01-30 01:36 (Europe/Paris)
+Lot : ESLint warnings — Lot 1 (tests + utils)
+Fix : suppressions/renommages d’arguments/imports/variables inutilisés (tests + utils).
+Fichiers : src/components/__tests__/themes-and-auth.test.ts ; src/engine/__tests__/assurance.test.ts ; src/utils/tmiMetrics.test.js ; src/utils/fiscalSettingsCache.js ; src/utils/globalStorage.js ; src/utils/placementPersistence.js ; src/utils/xlsxBuilder.ts ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Lint : 114 warnings (0 errors).
+Impact : warnings réduits, aucun changement fonctionnel.
+
+Mise à jour : 2026-01-30 00:21 (Europe/Paris)
+Cause : règles .ir-grid/.ir-right chargées uniquement via Ir.jsx (lazy), absentes au F5 sur /sim/placement.
+Fix : ordre CSS / placement refresh dépendant de IR (import Ir.css dans PlacementV2.jsx).
+Fichiers : src/pages/PlacementV2.jsx ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Impact : layout IR chargé dès /sim/placement, colonne droite stable après F5.
+
+Mise à jour : 2026-01-29 23:57 (Europe/Paris)
+Cause : grille .ir-grid toujours en 2 colonnes, colonne droite hors viewport en largeur réduite.
+Fix : breakpoint placement → 1 colonne sous 1100px (synthèse visible).
+Fichiers : src/pages/Placement.css ; README.md.
+Tests : npm run lint ; npm test ; npm run build.
+Impact : synthèse visible après F5 (à droite ou sous la colonne gauche).
+
+Mise à jour : 2026-01-29 22:42 (Europe/Paris)
+Objectif : garder la synthèse comparative visible après refresh sur /sim/placement.
+Cause : rendu conditionnel (produit1 && produit2) alors que results est null tant que !hydrated || loading.
+Fix : carte “Synthèse comparative” toujours rendue + placeholders (chargement / aucune simulation / produits manquants).
+Fichiers : src/pages/PlacementV2.jsx ; src/pages/Placement.css.
+Tests : npm run lint ; npm test ; npm run build.
+Impact : layout 2 colonnes stable au F5, placeholder premium visible.
+
+Mise à jour : 2026-01-27 21:23 (Europe/Paris)
+Cause : collision CSS globale .icon-btn injectée par SettingsComptes.css (lazy /settings).
+Fix : scoping des styles .icon-btn sous .settings-comptes + ajout de la classe racine.
+Topbar : styles globaux .icon-btn (styles.css) inchangés, plus d’override.
+Fichiers : src/pages/Sous-Settings/SettingsComptes.jsx ; src/pages/Sous-Settings/SettingsComptes.css.
+Tests : npm run lint ; npm test ; npm run build (à exécuter).
+Impact : aucun changement UI hors settings, topbar stable après navigation.
+
+Dernière mise à jour : 2026-01-27 00:48 (Europe/Paris)
+Objectif : aligner le calcul des parts (parent isolé / alternée) avec l’oracle 10 cas + disclaimer conditionnel.
+Fichiers touchés : src/utils/irEngine.js, src/utils/irEngine.parts.test.js, src/pages/Ir.jsx
+Commandes : npm run lint ; npm run test ; npm run build
+Résultat attendu : les 10 cas oracle de parts sont OK, build/lint/test OK
+
 # SER1 — Audit Patrimonial Express + Stratégie Guidée
 
 ![CI](https://github.com/florentbebin-gif/ser1-site-frontend/actions/workflows/ci.yml/badge.svg)
@@ -129,6 +277,14 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
     2. `index.html` : variables CSS critiques inline avant `<script>`
     3. `main.jsx` : application synchrone des CSS vars avant `createRoot()`
   - **Validation** : refresh direct `/sim/placement` → pas de flash blanc, layout immédiat
+- **Symptôme** : Flash de thème au F5 (thème original visible 1 s, puis thème cabinet/custom)
+  - **Cause** : Le CSS `:root` dans `src/styles.css` écrase les variables après le bootstrap head, et `ThemeProvider` réapplique `DEFAULT_COLORS` au montage.
+  - **Solution** (anti‑FOUC) :
+    1. **Bootstrap head** (dans `index.html`) : script inline qui lit `localStorage` (cache thème/cabinet) et applique les CSS vars **avec `!important`** avant tout rendu.
+    2. **Flag global** : le script expose `window.__ser1ThemeBootstrap = { colors, userId, themeSource, hasCache }`.
+    3. **ThemeProvider** : au montage, si ce flag existe, il réutilise les couleurs du bootstrap au lieu de forcer `DEFAULT_COLORS`.
+    4. **main.jsx** : ne refait pas de bootstrap si le flag existe déjà.
+  - **Validation** : F5 sur `/settings` (thème cabinet ou custom) → **aucun flash visible**.
 
 ### Vercel / Node.js
 - **Symptôme** : Build Vercel utilise Node 24.x malgré Project Settings 22.x
@@ -162,6 +318,27 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 - **Validation** : `buildXlsxBlob` + `validateXlsxBlob` (refus d'un blob dont le header ZIP n'est pas `PK`).
 
 ## 📅 Release Notes — Janvier 2026
+
+### Audit & Refactoring (v1.0.3) - 25 Janvier
+- **Thème & PPTX** :
+  - **cabinetColors séparé** : Les couleurs cabinet sont chargées 1x au login et stockées séparément dans `ThemeProvider`. PPTX utilise toujours les couleurs cabinet (ou SER1 Classic si pas de cabinet).
+  - **themeSource persisté** : La préférence user (cabinet/custom) est lue depuis `localStorage` au démarrage.
+  - **resolvePptxColors simplifié** : Priorité cabinet → SER1 Classic, plus de dépendance à themeScope.
+- **ExportMenu unifié** :
+  - **Composant partagé** : `src/components/ExportMenu.tsx` remplace les menus inline dans IR, Credit, Placement.
+  - **Accessibilité** : click outside, Escape, aria-expanded, role="menu".
+- **UI/CSS** :
+  - **Selects thémés** : `var(--color-c7)` remplace les `#fff` hardcodés dans Placement.css.
+  - **Placement table** : Suppression du texte "Produit 1/2" redondant, seul le badge enveloppe reste.
+  - **Cards compactes** : SettingsComptes utilise des cards compactes avec icônes SVG (edit/delete) au hover.
+- **Credit - Quotité (préparation)** :
+  - **Interface LoanParams** : Ajout `quotite?: number` (0..1, défaut 1) dans `capitalDeces.ts`.
+  - **Calcul capital décès** : Applique quotité au capital décès (CI × quotité ou CRD × quotité).
+  - **Tests** : 3 nouveaux tests unitaires pour la quotité.
+  - **Note** : UI Credit.jsx et affichage PPTX non implémentés (prochaine itération).
+- **Signalements** :
+  - **Nouvelle page Settings** : `SettingsSignalements.jsx` intégrée dans SettingsShell (onglet "Signalements").
+  - **FAB supprimé** : `IssueReportButton` retiré de App.jsx, formulaire déplacé dans Settings.
 
 ### Stabilisation & Hardening (v1.0.2) - 24 Janvier
 - **UX/UI Stabilité** :

@@ -91,15 +91,6 @@ function formatDuree(mois: number): string {
   return `${annees} an${annees > 1 ? 's' : ''} ${moisReste} mois`;
 }
 
-function formatDate(dateStr: string): string {
-  // Convert "À partir de 01/2025" or date string to "01/2025"
-  if (dateStr.includes('/')) {
-    const match = dateStr.match(/(\d{2}\/\d{4})/);
-    return match ? match[1] : dateStr;
-  }
-  return dateStr;
-}
-
 /**
  * Lighten a hex color
  */

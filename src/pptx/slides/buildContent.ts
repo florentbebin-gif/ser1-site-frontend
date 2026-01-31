@@ -10,7 +10,6 @@ import type { ContentSlideSpec, ExportContext } from '../theme/types';
 import {
   COORDS_CONTENT,
   TYPO,
-  roleColor,
   addHeader,
   addFooter,
   addTextBox,

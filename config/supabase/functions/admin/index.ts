@@ -73,7 +73,7 @@ serve(async (req: Request) => {
   try {
     const supabase = getSupabaseServiceClient()
 
-    // Vérifier que l'utilisateur est admin
+    // Vérifier que l'utilisateur est authentifié
     const authHeader = req.headers.get('Authorization')
     const token = parseBearerToken(authHeader)
     if (!token) {
@@ -93,6 +93,38 @@ serve(async (req: Request) => {
 
     const adminUserId = user.id
 
+    // === ACTIONS AUTHENTIFIÉES (non-admin) ===
+    // Ces actions sont accessibles à tout utilisateur connecté
+
+    // Récupérer le thème original (pour les users sans cabinet)
+    if (actionFromQuery === 'get_original_theme') {
+      try {
+        const { data: theme, error } = await supabase
+          .from('themes')
+          .select('name, palette')
+          .eq('name', 'Thème Original')
+          .eq('is_system', true)
+          .single()
+
+        if (error || !theme) {
+          return new Response(JSON.stringify({ error: 'Original theme not found' }), {
+            status: 404,
+            headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+
+        return new Response(JSON.stringify({ name: theme.name, palette: theme.palette }), {
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      } catch (err) {
+        return new Response(JSON.stringify({ error: 'Failed to fetch original theme' }), {
+          status: 500,
+          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+    }
+
+    // Vérifier le rôle admin pour les actions sensibles
     const userRole = user.user_metadata?.role || user.app_metadata?.role || 'user'
     if (userRole !== 'admin') {
       return new Response(JSON.stringify({ error: 'Admin access required' }), {
@@ -815,16 +847,16 @@ serve(async (req: Request) => {
         })
       }
 
-      // Vérifier que le thème n'est pas système
+      // Vérifier que le thème n'est pas système (sauf "Thème Original" qui est modifiable)
       const { data: existingTheme, error: fetchError } = await supabase
         .from('themes')
-        .select('is_system')
+        .select('is_system, name')
         .eq('id', id)
         .single()
 
       if (fetchError) throw fetchError
 
-      if (existingTheme?.is_system) {
+      if (existingTheme?.is_system && existingTheme?.name !== 'Thème Original') {
         return new Response(JSON.stringify({ error: 'Cannot modify system theme' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
@@ -875,6 +907,9 @@ serve(async (req: Request) => {
         .single()
 
       if (error) throw error
+      
+      // Log temporaire pour diagnostic (sera retiré)
+      console.log(`[admin] update_theme success | rid=${requestId} | themeId=${id} | name=${data?.name} | rowsReturned=${data ? 1 : 0}`)
 
       return new Response(JSON.stringify({ theme: data }), {
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }

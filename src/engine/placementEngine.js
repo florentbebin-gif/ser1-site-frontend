@@ -78,40 +78,6 @@ const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 const round2 = (n) => Math.round(n * 100) / 100;
 
 /**
- * Calcule les DMTG (droits de mutation à titre gratuit) avec barème progressif
- * @param {number} assiette - Assiette taxable après abattement (par bénéficiaire)
- * @param {number} nbBeneficiaires - Nombre de bénéficiaires
- * @param {Array} dmtgScale - Barème progressif depuis les settings
- * @returns {number} Montant total des DMTG
- */
-function calculDMTG(assiette, nbBeneficiaires, dmtgScale) {
-  // Si pas de barème, utiliser un taux moyen de 20%
-  if (!dmtgScale || !Array.isArray(dmtgScale) || dmtgScale.length === 0) {
-    return assiette * 0.20;
-  }
-
-  // Assiette par bénéficiaire
-  const assietteParBenef = assiette / nbBeneficiaires;
-  let taxeParBenef = 0;
-
-  // Calcul progressif par tranche
-  for (const tranche of dmtgScale) {
-    const from = tranche.from || 0;
-    const to = tranche.to || Infinity;
-    const rate = (tranche.rate || 0) / 100;
-
-    if (assietteParBenef > from) {
-      const taxable = Math.min(assietteParBenef, to) - from;
-      if (taxable > 0) {
-        taxeParBenef += taxable * rate;
-      }
-    }
-  }
-
-  return taxeParBenef * nbBeneficiaires;
-}
-
-/**
  * Extrait les paramètres fiscaux depuis les settings Supabase
  * @param {Object} fiscalitySettings - Settings de /settings/fiscalites
  * @param {Object} psSettings - Settings de /settings/prelevements
@@ -313,7 +279,6 @@ export function simulateEpargne(product, client, fiscalParams, options = {}) {
   let cumulRevenusNetsPercus = 0;
   let cumulCompteEspece = 0;
   let plusValueLatenteCTO = 0;
-  let anneeDepuisDernierInvestissement = 0;
   let anneeDepuisDernierCycleDistrib = 0;
 
   const initialAmount = initial.montant ?? product.versementInitial ?? 0;
@@ -339,7 +304,6 @@ export function simulateEpargne(product, client, fiscalParams, options = {}) {
 
   for (let annee = 1; annee <= dureeEpargne; annee++) {
     const age = ageActuel + annee - 1;
-    anneeDepuisDernierInvestissement++;
 
     // Réinvestissement en capitalisation (coupon net de N-1)
     let reinvestCapiN = pendingReinvestCapi;
@@ -776,8 +740,8 @@ export function simulateLiquidation(epargneResult, liquidationParams, client, fi
   } = client;
 
   const { 
-    envelope, capitalAcquis, plusValueLatente, cumulVersements, perBancaire, dureeEpargne, 
-    fraisGestion = 0, tauxRevalorisation = 0.02, optionBaremeIR = false 
+    envelope, capitalAcquis, plusValueLatente, cumulVersements, dureeEpargne, 
+    tauxRevalorisation = 0.02, optionBaremeIR = false 
   } = epargneResult;
   const fp = fiscalParams;
 

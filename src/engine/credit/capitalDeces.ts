@@ -9,6 +9,7 @@ export interface LoanParams {
   capital: number;
   tauxAssur: number;  // taux annuel en % (ex: 0.30)
   assurMode: 'CI' | 'CRD';
+  quotite?: number;   // 0..1, défaut 1 (100%). Réduit capital décès et prime assurance
 }
 
 export interface ScheduleRow {
@@ -25,9 +26,9 @@ export interface ScheduleRow {
 /**
  * Calcule le capital décès pour une période donnée selon la règle métier
  * 
- * @param params - Paramètres du prêt
+ * @param params - Paramètres du prêt (inclut quotité optionnelle)
  * @param crdDebut - CRD début de période (row.crd + row.amort)
- * @returns Capital décès pour la période
+ * @returns Capital décès pour la période (ajusté par quotité)
  */
 export function computeCapitalDecesPeriod(
   params: LoanParams,
@@ -38,13 +39,16 @@ export function computeCapitalDecesPeriod(
     return 0;
   }
 
-  // Mode "Capital Initial" → constant = capital emprunté
+  // Quotité : défaut 1 (100%), appliquée au capital décès
+  const quotite = params.quotite ?? 1;
+
+  // Mode "Capital Initial" → constant = capital emprunté × quotité
   if (params.assurMode === 'CI') {
-    return params.capital;
+    return params.capital * quotite;
   }
 
-  // Mode "CRD" → suit le CRD début de période
-  return crdDebut;
+  // Mode "CRD" → suit le CRD début de période × quotité
+  return crdDebut * quotite;
 }
 
 /**

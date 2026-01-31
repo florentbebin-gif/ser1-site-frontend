@@ -19,8 +19,6 @@ import {
   SLIDE_SIZE,
   TYPO,
   COORDS_CONTENT,
-  COORDS_FOOTER,
-  addTextBox,
   addHeader,
   addFooter,
   addTextFr,
@@ -50,7 +48,6 @@ export interface CreditSynthesisData {
 // ============================================================================
 
 const CONTENT_TOP_Y = COORDS_CONTENT.content.y; // 2.3754
-const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
 
 // ============================================================================
 // LAYOUT CONSTANTS (inches) - PREMIUM DESIGN
@@ -102,13 +99,6 @@ const LAYOUT = {
     sectionEndY: CONTENT_TOP_Y + VERTICAL_SHIFT + 3.50, // 6.20
   },
 } as const;
-
-// Safety check: ensure nothing exceeds content zone
-const SAFETY_CHECK = {
-  lastElementEndY: LAYOUT.bar.sectionEndY,
-  footerStartY: CONTENT_BOTTOM_Y,
-  safetyMargin: CONTENT_BOTTOM_Y - LAYOUT.bar.sectionEndY, // Should be > 0.4"
-};
 
 // ============================================================================
 // HELPERS

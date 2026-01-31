@@ -174,7 +174,7 @@
   border-radius: 6px;
   padding: 0 8px;
   font-size: 13px;
-  background: #fff;
+  background: var(--color-c7);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -203,7 +203,7 @@
   border: 1px solid var(--color-c8);
   padding: 4px 6px;
   font-size: 13px;
-  background: #fff;
+  background: var(--color-c7);
   width: 100%;
   box-sizing: border-box;
 }
@@ -564,6 +564,12 @@
 /* Adjust grid proportions for placement page - more space for left panel */
 .placement-page .ir-grid {
   grid-template-columns: minmax(0, 2.6fr) minmax(0, 0.9fr); /* Élargir gauche, réduire droite */
+}
+
+@media (max-width: 1100px) {
+  .placement-page .ir-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .pl-card-big {
@@ -1089,7 +1095,7 @@
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   font-size: 13px;
-  background: #fff;
+  background: var(--color-c7);
   cursor: pointer;
   transition: border-color 0.2s;
 }
@@ -1364,6 +1370,17 @@
 /* Synthesis card - unified KPI display */
 .ir-synthesis-card {
   padding: 20px;
+}
+
+.pl-synthesis-placeholder {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px dashed var(--color-c8);
+  background: var(--color-c7);
+  color: var(--color-c9);
+  font-size: 12px;
+  text-align: center;
 }
 
 /* Comparaison ROI - 2 colonnes premium */

@@ -3,8 +3,6 @@
  * Export simple 2-3 slides
  */
 
-import type { ThemeColors } from '../settings/ThemeProvider';
-
 export interface CreditPptxData {
   capitalEmprunte: number;
   dureeAnnees: number;
@@ -16,12 +14,6 @@ export interface CreditPptxData {
   coutTotalAssurance: number;
   coutTotal: number;
   taeg?: number;
-}
-
-interface CreditPptxOptions {
-  data: CreditPptxData;
-  colors?: ThemeColors;
-  clientName?: string;
 }
 
 /**

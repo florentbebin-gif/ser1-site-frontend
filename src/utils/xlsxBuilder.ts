@@ -100,7 +100,7 @@ const buildStylesXml = (headerFill: string, sectionFill: string) => `<?xml versi
   </cellXfs>
 </styleSheet>`;
 
-const buildWorksheetXml = (sheet: XlsxSheet, sheetIndex: number) => {
+const buildWorksheetXml = (sheet: XlsxSheet, _sheetIndex: number) => {
   const rowsXml = sheet.rows
     .map((row, rowIndex) => {
       const rowNumber = rowIndex + 1;

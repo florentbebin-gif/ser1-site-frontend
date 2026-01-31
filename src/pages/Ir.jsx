@@ -1,16 +1,14 @@
 // src/pages/Ir.jsx
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import './Ir.css';
 import { onResetEvent, storageKeyFor } from '../utils/reset';
 import { toNumber } from '../utils/number';
-import { computeIrResult as computeIrResultEngine } from '../utils/irEngine.js';
+import { computeIrResult as computeIrResultEngine, computeAutoPartsWithChildren } from '../utils/irEngine.js';
 import { getFiscalSettings, addInvalidationListener } from '../utils/fiscalSettingsCache.js';
 import { useTheme } from '../settings/ThemeProvider';
-import { supabase } from '../supabaseClient';
+import { ExportMenu } from '../components/ExportMenu';
 
-const DEBUG_THEME = false; // Debug flag for theme logs
 // V4: PPTX/Excel imports moved to dynamic import() in export functions
-
 // ---- Helpers formats ----
 const fmt0 = (n) => (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
 const euro0 = (n) => `${fmt0(n)} €`;
@@ -20,6 +18,15 @@ const fmtPct = (n) =>
     maximumFractionDigits: 1,
   });
 const toNum = (v, def = 0) => toNumber(v, def);
+const DEFAULT_INCOMES = {
+  d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+  d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+  capital: {
+    withPs: 0,
+    withoutPs: 0,
+  },
+  fonciersFoyer: 0,
+};
 // pour afficher joliment les entrées monétaires
 const formatMoneyInput = (n) => {
   const v = Math.round(Number(n) || 0);
@@ -44,12 +51,10 @@ function computeAbattement10(base, cfg) {
 export default function Ir() {
   // Theme colors and logo from ThemeProvider
   // pptxColors respects the theme scope setting (SER1 classic if ui-only)
-  const { colors, logo, setLogo, cabinetLogo, themeSource, pptxColors } = useTheme();
+  const { colors, cabinetLogo, pptxColors } = useTheme();
 
   const [taxSettings, setTaxSettings] = useState(null);
   const [psSettings, setPsSettings] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   // Choix utilisateur
   const [yearKey, setYearKey] = useState('current'); // current = 2025, previous = 2024
@@ -61,18 +66,8 @@ export default function Ir() {
 // ex : [{ id: 1, mode: 'charge' | 'shared' }]
 
 
-  const DEFAULT_INCOMES = {
-  d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-  d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
-  capital: {
-    withPs: 0,
-    withoutPs: 0,
-  },
-    fonciersFoyer: 0,
-};
-
-const [incomes, setIncomes] = useState(DEFAULT_INCOMES);
-const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
+  const [incomes, setIncomes] = useState(DEFAULT_INCOMES);
+  const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
 
 
   // Mode de déduction des frais pour salaires / art.62
@@ -84,10 +79,8 @@ const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
 
   const [showDetails, setShowDetails] = useState(false);
 
-  // Export dropdown
-  const [exportOpen, setExportOpen] = useState(false);
+  // Export state
   const [exportLoading, setExportLoading] = useState(false);
-  const exportRef = useRef(null);
 
   // Persist dans sessionStorage
   const STORE_KEY = storageKeyFor('ir');
@@ -100,19 +93,12 @@ const [capitalMode, setCapitalMode] = useState('pfu'); // 'pfu' ou 'bareme'
     let mounted = true;
     async function load() {
       try {
-        setLoading(true);
-        setError('');
         const settings = await getFiscalSettings();
         if (!mounted) return;
         setTaxSettings(settings.tax);
         setPsSettings(settings.ps);
-        setLoading(false);
       } catch (e) {
         console.error('[IR] Erreur chargement settings:', e);
-        if (mounted) {
-          setError('Erreur lors du chargement des paramètres');
-          setLoading(false);
-        }
       }
     }
     load();
@@ -246,15 +232,6 @@ setCapitalMode('pfu');
     return off || (() => {});
   }, [STORE_KEY]);
 
-  // Fermeture menu export au clic extérieur
-  useEffect(() => {
-    const handler = (e) => {
-      if (!exportRef.current) return;
-      if (!exportRef.current.contains(e.target)) setExportOpen(false);
-    };
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
-  }, []);
 
   // Handlers de saisie
   const updateIncome = (who, field, value) => {
@@ -269,28 +246,11 @@ setCapitalMode('pfu');
   
 // ===== Calcul automatique du nombre de parts =====
 
-// Parts de base selon la situation familiale
+// Parts de base selon la situation familiale (sert de minimum après ajustement manuel)
 const baseParts = status === 'couple' ? 2 : 1;
 
-// Parts liées aux enfants
-const childrenParts = children.reduce((sum, child, idx) => {
-  const isFirstTwo = idx < 2;
-  if (child.mode === 'charge') {
-    return sum + (isFirstTwo ? 0.5 : 1);
-  }
-  if (child.mode === 'shared') {
-    return sum + (isFirstTwo ? 0.25 : 0.5);
-  }
-  return sum;
-}, 0);
-
-
-// Majoration parent isolé (case T simplifiée)
-const isolatedBonus =
-  status === 'single' && isIsolated ? 0.5 : 0;
-
-// Nombre de parts calculé automatiquement
-const computedParts = baseParts + childrenParts + isolatedBonus;
+// Source de vérité : calcule parts enfants + bonus parent isolé uniquement si ≥1 enfant en charge exclusive
+const computedParts = computeAutoPartsWithChildren({ status, isIsolated, children });
 
 // Ajustement manuel (par quart de part)
 const effectiveParts = Math.max(
@@ -359,9 +319,8 @@ const result = useMemo(
     credits,
     taxSettings,
     psSettings,
-    realMode,
-    realExpenses,
     capitalMode,
+    children,
   ]
 );
 
@@ -524,37 +483,14 @@ const yearLabel =
         import('../pptx/export/exportStudyDeck')
       ]);
 
-      // V3.3: Logo resolution based on themeSource
-      // Priority: cabinet logo > user logo > undefined
-      let exportLogo;
-      if (themeSource === 'cabinet') {
-        // Mode cabinet: priorité logo cabinet, fallback logo user
-        exportLogo = cabinetLogo || logo;
-      } else {
-        // Mode custom: logo user uniquement
-        exportLogo = logo;
-      }
+      // V3.4: Logo resolution - cabinet only, never user logo
+      const exportLogo = cabinetLogo || undefined;
       
       // TRACE: Log exact logo being used for debugging
       console.info('[IR Export] exportLogo resolved =', exportLogo 
         ? (exportLogo.startsWith('data:') ? `dataURI (${exportLogo.length} chars)` : exportLogo.substring(0, 80) + '...')
         : '(none)');
-      console.info('[IR Export] themeSource:', themeSource, '| cabinetLogo:', !!cabinetLogo, '| userLogo:', !!logo);
-      
-      // Fallback: reload from user_metadata if still undefined
-      if (!exportLogo) {
-        console.info('[IR Export] No logo in context, attempting reload from user_metadata...');
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user?.user_metadata?.cover_slide_url) {
-            exportLogo = user.user_metadata.cover_slide_url;
-            setLogo(exportLogo);
-            console.info('[IR Export] Logo reloaded from user_metadata');
-          }
-        } catch (logoError) {
-          console.warn('[IR Export] Failed to reload logo:', logoError);
-        }
-      }
+      console.info('[IR Export] cabinetLogo:', !!cabinetLogo);
 
       // Build IR data from current result
       const irData = {
@@ -596,42 +532,13 @@ const yearLabel =
       <div className="ir-header premium-header">
         <div className="ir-title premium-title">Simulateur d'impôt sur le revenu</div>
 
-        <div ref={exportRef} style={{ position: 'relative' }}>
-          <button
-            className="chip premium-btn"
-            onClick={() => setExportOpen(!exportOpen)}
-            disabled={exportLoading}
-            style={{ position: 'relative' }}
-          >
-            {exportLoading ? 'Génération...' : 'Exporter'}
-          </button>
-          {exportOpen && !exportLoading && (
-            <div role="menu" className="ir-export-menu">
-              <button
-                role="menuitem"
-                className="chip premium-btn"
-                style={{ width: '100%', justifyContent: 'flex-start' }}
-                onClick={() => {
-                  setExportOpen(false);
-                  exportExcel();
-                }}
-              >
-                Excel
-              </button>
-              <button
-                role="menuitem"
-                className="chip premium-btn"
-                style={{ width: '100%', justifyContent: 'flex-start' }}
-                onClick={() => {
-                  setExportOpen(false);
-                  exportPowerPoint();
-                }}
-              >
-                PowerPoint
-              </button>
-            </div>
-          )}
-        </div>
+        <ExportMenu
+          options={[
+            { label: 'Excel', onClick: exportExcel },
+            { label: 'PowerPoint', onClick: exportPowerPoint },
+          ]}
+          loading={exportLoading}
+        />
       </div>
 
       <div className="ir-grid premium-grid">
@@ -1484,6 +1391,13 @@ const yearLabel =
     <br />
     Ces situations peuvent nécessiter une analyse personnalisée.
   </p>
+  {isIsolated && (
+    <p>
+      Règle clé : tu dois choisir entre le calcul en "parts" (enfant à charge / alternée) et la
+      "déduction de pension alimentaire". Si tu déduis une pension pour un enfant, cet enfant ne
+      peut pas être compté à ta charge pour le quotient familial.
+    </p>
+  )}
 </div>
 
 

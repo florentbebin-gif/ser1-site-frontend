@@ -46,7 +46,7 @@ export function importDossierFromFile(file: File): Promise<DossierAudit> {
         data.dateModification = new Date().toISOString();
         
         resolve(data as DossierAudit);
-      } catch (error) {
+      } catch {
         reject(new Error('Impossible de lire le fichier. Vérifiez qu\'il s\'agit d\'un export audit valide.'));
       }
     };

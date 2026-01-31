@@ -10,7 +10,6 @@ import type { CoverSlideSpec, ExportContext } from '../theme/types';
 import {
   COORDS_COVER,
   TYPO,
-  roleColor,
   addBackground,
   addAccentLine,
   addCornerMarks,

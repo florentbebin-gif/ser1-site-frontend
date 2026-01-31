@@ -1,0 +1,46 @@
+/**
+ * ExportMenu - Styles partagés pour les menus d'export
+ * 
+ * Basé sur .ir-export-menu comme référence
+ */
+
+.export-menu-container {
+  position: relative;
+}
+
+.export-menu {
+  position: absolute;
+  right: 0;
+  margin-top: 6px;
+  min-width: 140px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.export-menu-item {
+  width: 100%;
+  justify-content: flex-start !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  text-align: left;
+  padding: 8px 12px !important;
+}
+
+.export-menu-item:hover:not(:disabled) {
+  background: var(--color-c4) !important;
+}
+
+.export-menu-item:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: -2px;
+}
+
+.export-menu-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

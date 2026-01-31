@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState, useContext } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 import { toNumber } from '../utils/number.js'
 import { useTheme } from '../settings/ThemeProvider'
-import { supabase } from '../supabaseClient'
+import { ExportMenu } from '../components/ExportMenu'
 
-const DEBUG_THEME = false; // Debug flag for theme logs
 // V4: PPTX/Excel imports moved to dynamic import() in export functions
 import { computeCapitalDecesSchedule, computeGlobalCapitalDecesSchedule } from '../engine/credit/capitalDeces';
 import './Credit.css'
@@ -222,7 +221,7 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
 export default function Credit(){
 
 /* ---- THEME ---- */
-const { colors: themeColors, logo, setLogo, cabinetLogo, themeSource, pptxColors } = useTheme()
+const { colors: themeColors, cabinetLogo, pptxColors } = useTheme()
 
 /* ---- ÉTATS ---- */
 const [startYM, setStartYM]         = useState(nowYearMonth()) // Date souscription prêt 1
@@ -238,7 +237,6 @@ const [mensuBase, setMensuBase]     = useState('')             // saisie mensu p
 // État "touched" pour tracker si l'utilisateur a interagi avec les champs
 const [touched, setTouched]         = useState({ capital: false, duree: false })
 
-const [rawTauxAss, setRawTauxAss] = useState('');
 const [rawTauxPlus, setRawTauxPlus] = useState({}); // par prêt id -> string
 const [rawTauxAssurPlus, setRawTauxAssurPlus] = useState({}); // par prêt id -> string pour taux assurance
 
@@ -249,7 +247,6 @@ const [rawTauxAssur, setRawTauxAssur] = useState(Number(tauxAssur).toFixed(2).re
 // Sync initial / reset
 useEffect(() => {
   setRawTaux((Number(taux).toFixed(2)).toString());
-  setRawTauxAss((Number(tauxAssur).toFixed(2)).toString());
 }, [taux, tauxAssur]);
  
   // prêts additionnels : + type & startYM
@@ -258,19 +255,8 @@ useEffect(() => {
   const [viewMode, setViewMode]       = useState('mensuel')      // 'mensuel' | 'annuel'
   const [lissageMode, setLissageMode] = useState('mensu')        // 'mensu' | 'duree'
 
-  // --- Dropdown Export + Loading state
-  const [exportOpen, setExportOpen] = useState(false)
+  // --- Export Loading state
   const [exportLoading, setExportLoading] = useState(false)
-  const exportRef = useRef(null)
-  useEffect(() => {
-    const onDocClick = (e) => {
-      if (!exportRef.current) return
-      if (exportRef.current.contains(e.target)) return
-      setExportOpen(false)
-    }
-    document.addEventListener('click', onDocClick)
-    return () => document.removeEventListener('click', onDocClick)
-  }, [])
 
   // --- Si plus de prêt 2/3, éteindre le lissage s'il était ON
   useEffect(() => {
@@ -311,7 +297,7 @@ useEffect(() => {
         startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode
       }))
     }catch{}
-  }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode])
+  }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode, STORE_KEY])
 
 // Reset global (ne réinitialise que les champs saisissables du simulateur CRÉDIT)
 useEffect(() => {
@@ -333,7 +319,6 @@ useEffect(() => {
     setPretsPlus([]);
 
     // champs "bruts" utilisés pour la saisie des taux
-    setRawTauxAss('');
     setRawTauxPlus({});
     setRawTauxAssurPlus({});
 
@@ -360,11 +345,6 @@ useEffect(() => {
   /* ---- Handlers bornés ---- */
   const onChangeCapital = (val) => setCapital(toNum(String(val).replace(/\D/g,'').slice(0,8)))
   const onChangeDuree   = (val) => setDuree(Math.max(1, toNum(String(val).replace(/\D/g,'').slice(0,3))))
-  const onChangeMensuBase = (val) => {
-    const clean = String(val).replace(/[^\d]/g,'').slice(0,8)
-    setMensuBase(clean ? Number(clean).toLocaleString('fr-FR') : '')
-  }
-
   /* ---- Taux mensuels & paramètres ---- */
   const rAn  = Math.max(0, Number(taux) || 0)/100
   const rAss = Math.max(0, Number(tauxAssur) || 0)/100
@@ -377,16 +357,6 @@ useEffect(() => {
     if (creditType === 'infine') return r === 0 ? 0 : capital * r
     return mensualiteAmortissable(capital, r, N)
   }, [creditType, capital, r, N])
-
-  /* ---- Variables manquantes pour éviter le crash ---- */
-  const mensuAssurance_base = useMemo(()=>{
-    const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null
-    return (assurMode === 'CI') ? assurFixe : 0 // Fallback simple pour éviter crash
-  }, [assurMode, capital, rAss])
-
-  const mensuTotal_base = useMemo(()=>{
-    return mensuHorsAssurance_base + mensuAssurance_base
-  }, [mensuHorsAssurance_base, mensuAssurance_base])
 
   const effectiveCapitalPret1 = useMemo(()=>{
     const hasOthers = pretsPlus.length > 0
@@ -490,7 +460,7 @@ useEffect(() => {
       return rowsWithDeces
 
   }, [
-    effectiveCapitalPret1, r, rA, N, assurMode, creditType,
+    effectiveCapitalPret1, r, rA, N, assurMode, creditType, tauxAssur,
     mensuBaseEffectivePret1, lisserPret1, autresRows, lissageMode, anyInfine
   ])
 
@@ -520,10 +490,10 @@ useEffect(() => {
     
     // Calcule l'échéancier global avec capitaux décès unifiés
     return computeGlobalCapitalDecesSchedule(allLoansParams, allSchedules);
-  }, [pret1Rows, autresRows, pretsPlus, N, assurMode, effectiveCapitalPret1, tauxAssur])
+  }, [pret1Rows, autresRows, pretsPlus, assurMode, effectiveCapitalPret1, tauxAssur])
 
   /* ---- Agrégation annuelle (si besoin) ---- */
-  function aggregateToYears(rows) {
+  const aggregateToYears = useCallback((rows) => {
     const map = new Map()
     rows.forEach((r, idx) => {
       const ym = addMonths(startYM, idx)
@@ -539,10 +509,10 @@ useEffect(() => {
       map.set(year, cur)
     })
     return Array.from(map.entries()).map(([year, v])=> ({ periode: year, ...v }))
-  }
-  function attachMonthLabels(rows){
-    return rows.map((r, idx)=> ({ periode: labelMonthFR(addMonths(startYM, idx)), ...r }))
-}
+  }, [startYM])
+  const attachMonthLabels = useCallback((rows) => (
+    rows.map((r, idx)=> ({ periode: labelMonthFR(addMonths(startYM, idx)), ...r }))
+  ), [startYM])
 
  // Agrège des rows (format {interet, assurance, amort, mensu, mensuTotal, crd}) par année
 function aggregateToYearsFromRows(rows, startYMBase) {
@@ -566,11 +536,11 @@ function aggregateToYearsFromRows(rows, startYMBase) {
 }
  
   const isAnnual = viewMode === 'annuel'
-  const aggregatedYears = useMemo(() => aggregateToYears(agrRows), [agrRows, startYM])
+  const aggregatedYears = useMemo(() => aggregateToYears(agrRows), [agrRows, aggregateToYears])
   const tableDisplay = useMemo(()=>{
     if (isAnnual) return aggregatedYears
     return attachMonthLabels(agrRows)
-  }, [aggregatedYears, agrRows, isAnnual, startYM])
+  }, [aggregatedYears, agrRows, isAnnual, attachMonthLabels])
 
   /* ---- Synthèse ---- */
   const mensualiteTotaleM1 = (pret1Rows[0]?.mensu || 0) + autresRows.reduce((s,arr)=> s + ((arr[0]?.mensu) || 0), 0)
@@ -584,8 +554,6 @@ function aggregateToYearsFromRows(rows, startYMBase) {
   const primeAssMensuelle = primeAssMensuellePret1 + primeAssMensuelleAutres
   const primeAssAff = isAnnual ? (firstYearAggregate?.assurance || 0) : primeAssMensuelle;
   
-  const coutInteretsPret1  = pret1Rows.reduce((s,l)=> s + (l.interet||0), 0)
-  const coutInteretsAgr    = agrRows.reduce((s,l)=> s + l.interet, 0)
   const pret1Interets      = pret1Rows.reduce((s,l)=> s + (l.interet   || 0), 0)
   const pret1Assurance     = pret1Rows.reduce((s,l)=> s + (l.assurance || 0), 0)
   
@@ -599,18 +567,6 @@ function aggregateToYearsFromRows(rows, startYMBase) {
   const coutTotalCredit = totalInterets + totalAssurance
 
   // Annuité max (hors assurance) pour la vue annuelle
-  const annuiteMaxSansAss = useMemo(()=>{
-    if (!isAnnual) return 0
-    return aggregatedYears.length ? Math.max(...aggregatedYears.map(a => a.mensu)) : 0
-  }, [aggregatedYears, isAnnual])
-
-  // === Synthèse des périodes (réactive aux dates)
-  // clé dédiée pour réagir aux changements de startYM des prêts 2/3
-  const datesKey = useMemo(
-    () => pretsPlus.map(p => p.startYM || '').join('|'),
-    [pretsPlus]
-  )
-
   // === Tableau des périodes (affiché s’il y a ≥1 prêt additionnel)
 const synthesePeriodes = useMemo(() => {
   if (pretsPlus.length === 0) return []
@@ -888,38 +844,14 @@ const synthesePeriodes = useMemo(() => {
         import('../pptx/export/exportStudyDeck')
       ]);
       
-      // Build PPTX colors from theme
-      // V3.3: Logo resolution based on themeSource
-      // Priority: cabinet logo > user logo > undefined
-      let exportLogo
-      if (themeSource === 'cabinet') {
-        // Mode cabinet: priorité logo cabinet, fallback logo user
-        exportLogo = cabinetLogo || logo
-      } else {
-        // Mode custom: logo user uniquement
-        exportLogo = logo
-      }
+      // V3.4: Logo resolution - cabinet only, never user logo
+      const exportLogo = cabinetLogo || undefined
       
       // TRACE: Log exact logo being used for debugging
       console.info('[Credit Export] exportLogo resolved =', exportLogo 
         ? (exportLogo.startsWith('data:') ? `dataURI (${exportLogo.length} chars)` : exportLogo.substring(0, 80) + '...')
         : '(none)')
-      console.info('[Credit Export] themeSource:', themeSource, '| cabinetLogo:', !!cabinetLogo, '| userLogo:', !!logo)
-      
-      // Fallback: reload from user_metadata if still undefined
-      if (!exportLogo) {
-        console.info('[Credit Export] No logo in context, attempting reload from user_metadata...')
-        try {
-          const { data: { user } } = await supabase.auth.getUser()
-          if (user?.user_metadata?.cover_slide_url) {
-            exportLogo = user.user_metadata.cover_slide_url
-            setLogo(exportLogo)
-            console.info('[Credit Export] Logo reloaded from user_metadata')
-          }
-        } catch (logoError) {
-          console.warn('[Credit Export] Failed to reload logo:', logoError)
-        }
-      }
+      console.info('[Credit Export] cabinetLogo:', !!cabinetLogo)
 
       // Build amortization rows for TOTAL (annual aggregation)
       const amortizationRowsTotal = aggregatedYears.map(row => ({
@@ -1075,23 +1007,13 @@ const synthesePeriodes = useMemo(() => {
             <button className={`chip premium-btn ${viewMode==='mensuel'?'active':''}`} onClick={()=> setViewMode('mensuel')}>Mensuel</button>
             <button className={`chip premium-btn ${viewMode==='annuel'?'active':''}`} onClick={()=> setViewMode('annuel')}>Annuel</button>
           </div>
-          <div ref={exportRef} style={{position:'relative'}}>
-            <button
-              className="chip premium-btn"
-              ref={exportRef}
-              onClick={() => setExportOpen(!exportOpen)}
-              disabled={exportLoading}
-              style={{ position: 'relative' }}
-            >
-              {exportLoading ? 'Génération...' : 'Exporter'}
-            </button>
-            {exportOpen && !exportLoading && (
-              <div role="menu" className="credit-export-menu">
-                <button role="menuitem" className="chip premium-btn" style={{width:'100%', justifyContent:'flex-start'}} onClick={()=>{ setExportOpen(false); exportExcel(); }}>Excel</button>
-                <button role="menuitem" className="chip premium-btn" style={{width:'100%', justifyContent:'flex-start'}} onClick={()=>{ setExportOpen(false); exportPowerPoint(); }}>PowerPoint</button>
-              </div>
-            )}
-          </div>
+          <ExportMenu
+            options={[
+              { label: 'Excel', onClick: exportExcel },
+              { label: 'PowerPoint', onClick: exportPowerPoint },
+            ]}
+            loading={exportLoading}
+          />
         </div>
       </div>
 

@@ -3,8 +3,6 @@
  * Export simple 2-3 slides
  */
 
-import type { ThemeColors } from '../settings/ThemeProvider';
-
 export interface IRPptxData {
   revenuNetImposable: number;
   nombreParts: number;
@@ -12,12 +10,6 @@ export interface IRPptxData {
   tmi: number;
   revenuParPart: number;
   detailTranches?: Array<{ tranche: string; montant: number; taux: number }>;
-}
-
-interface IRPptxOptions {
-  data: IRPptxData;
-  colors?: ThemeColors;
-  clientName?: string;
 }
 
 /**

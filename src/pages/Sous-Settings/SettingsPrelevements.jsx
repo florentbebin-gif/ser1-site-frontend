@@ -212,7 +212,6 @@ function numberOrEmpty(v) {
 
 export default function SettingsPrelevements() {
   const [user, setUser] = useState(null);
-  const [roleLabel, setRoleLabel] = useState('User');
   const [settings, setSettings] = useState(DEFAULT_PS_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -249,15 +248,6 @@ export default function SettingsPrelevements() {
         if (!mounted) return;
 
         setUser(currentUser);
-
-        if (currentUser) {
-          const meta = currentUser.user_metadata || {};
-          const admin =
-            (typeof meta.role === 'string' &&
-              meta.role.toLowerCase() === 'admin') ||
-            meta.is_admin === true;
-          setRoleLabel(admin ? 'Admin' : 'User');
-        }
 
         // 2. Récupérer les paramètres PS (table ps_settings, id = 1)
         const { data: rows, error: psErr } = await supabase

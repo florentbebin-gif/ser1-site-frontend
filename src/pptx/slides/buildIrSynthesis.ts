@@ -19,12 +19,9 @@ import {
   SLIDE_SIZE,
   TYPO,
   COORDS_CONTENT,
-  COORDS_FOOTER,
-  addTextBox,
   addHeader,
   addFooter,
   addTextFr,
-  roleColor,
 } from '../designSystem/serenity';
 import { getBusinessIconDataUri, type BusinessIconName } from '../../icons/business/businessIconLibrary';
 
@@ -79,17 +76,6 @@ const TMI_BRACKETS = [
  * All visual elements MUST have y >= CONTENT_TOP_Y
  */
 const CONTENT_TOP_Y = COORDS_CONTENT.content.y; // 2.3754
-
-/**
- * Content zone ends BEFORE the footer
- * All visual elements MUST have (y + h) <= CONTENT_BOTTOM_Y
- */
-const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15; // ~6.80
-
-/**
- * Available content height
- */
-const CONTENT_HEIGHT = CONTENT_BOTTOM_Y - CONTENT_TOP_Y; // ~4.42
 
 // ============================================================================
 // LAYOUT CONSTANTS (inches) - PREMIUM DESIGN V4
@@ -195,13 +181,6 @@ const TMI_WIDTHS = {
 
 // Total weight for normalization
 const TOTAL_WEIGHT = Object.values(TMI_WIDTHS).reduce((a, b) => a + b, 0);
-
-// Safety check: ensure nothing exceeds content zone
-const SAFETY_CHECK = {
-  lastElementEndY: LAYOUT.marginInfo.endY,
-  footerStartY: CONTENT_BOTTOM_Y,
-  safetyMargin: CONTENT_BOTTOM_Y - LAYOUT.marginInfo.endY, // Should be > 0.5"
-};
 
 // ============================================================================
 // HELPERS

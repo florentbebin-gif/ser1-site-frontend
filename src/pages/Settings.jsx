@@ -120,10 +120,9 @@ const COLOR_FIELDS = [
   { key: 'color10', label: 'Couleur 10' },
 ];
 
-export default function Settings({ isAdmin = false }) {
+export default function Settings() {
   const { colors, setColors, saveThemeToUiSettings, isLoading: themeLoading, logo, setLogo } = useTheme();
   const [user, setUser] = useState(null);
-  const [roleLabel, setRoleLabel] = useState('User');
   const [loading, setLoading] = useState(true);
 
   // Convertir le format ThemeProvider vers l'ancien format pour compatibilité
@@ -138,7 +137,7 @@ export default function Settings({ isAdmin = false }) {
   });
 
   // Synchroniser avec ThemeProvider
-  const { setColors: setColorsFromProvider, themeSource: providerThemeSource, setThemeSource: setProviderThemeSource } = useTheme();
+  const { themeSource: providerThemeSource, setThemeSource: setProviderThemeSource } = useTheme();
 
   useEffect(() => {
     localStorage.setItem('themeSource', themeSource);
@@ -157,8 +156,6 @@ export default function Settings({ isAdmin = false }) {
   // TODO: themeScope will be removed fully in V3.3 when PPTX is cabinet-governed
   // Default stable value for compatibility
   const themeScope = 'ui-only';
-
-  const [coverUrl, setCoverUrl] = useState('');
 
   // Convertir les couleurs du ThemeProvider vers l'ancien format
   useEffect(() => {
@@ -248,8 +245,6 @@ export default function Settings({ isAdmin = false }) {
             console.log('[Settings] role detected', { userId: u.id, isAdmin, role: meta.role });
           }
 
-          setRoleLabel(isAdmin ? 'Admin' : 'User');
-
           // TODO: Logo handling deprecated in V3.1 - cabinet logos now managed in admin
           // Kept for compatibility only
           if (meta.cover_slide_url && !logo) {
@@ -270,7 +265,7 @@ export default function Settings({ isAdmin = false }) {
       mounted = false;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, []);
+  }, [logo, setLogo]);
 
   /* ---------- Gestion des couleurs ---------- */
 
@@ -372,6 +367,27 @@ export default function Settings({ isAdmin = false }) {
       
       if (result.success) {
         setSaveMessage('Thème enregistré avec succès.');
+        
+        // 🚨 FIX: Appliquer immédiatement le thème sans rechargement
+        // Synchroniser avec ThemeProvider (déjà fait par syncThemeColors pendant l'édition,
+        // mais on s'assure que les couleurs finales sont bien appliquées)
+        const finalColors = {
+          c1: colorsLegacy.color1,
+          c2: colorsLegacy.color2,
+          c3: colorsLegacy.color3,
+          c4: colorsLegacy.color4,
+          c5: colorsLegacy.color5,
+          c6: colorsLegacy.color6,
+          c7: colorsLegacy.color7,
+          c8: colorsLegacy.color8,
+          c9: colorsLegacy.color9,
+          c10: colorsLegacy.color10,
+        };
+        
+        // Dispatcher un événement pour notifier ThemeProvider de forcer l'application
+        window.dispatchEvent(new CustomEvent('ser1-theme-updated', {
+          detail: { themeSource: 'custom', colors: finalColors }
+        }));
       } else {
         setSaveMessage("Erreur lors de l'enregistrement : " + result.error);
       }
@@ -399,15 +415,6 @@ export default function Settings({ isAdmin = false }) {
       syncThemeColors(theme.colors);
       setSaveMessage('');
     }
-  };
-
-  // TODO: Logo upload deprecated in V3.1 - use cabinet admin instead
-  const handleCoverFileChange = async (e) => {
-    setSaveMessage('Le téléchargement de logo est désormais géré depuis l\'administration des cabinets.');
-  };
-
-  const handleRemoveCover = async () => {
-    setSaveMessage('La suppression de logo est désormais gérée depuis l\'administration des cabinets.');
   };
 
   /* ---------- Rendu ---------- */

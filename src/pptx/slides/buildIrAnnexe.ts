@@ -13,15 +13,12 @@
 import PptxGenJS from 'pptxgenjs';
 import type { PptxThemeRoles, ExportContext } from '../theme/types';
 import {
-  SLIDE_SIZE,
   TYPO,
   COORDS_CONTENT,
   COORDS_FOOTER,
-  addTextBox,
   addHeader,
   addFooter,
   addTextFr,
-  roleColor,
 } from '../designSystem/serenity';
 
 // ============================================================================

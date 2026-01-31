@@ -23,7 +23,7 @@ export interface AuthState {
   authRevision: number;
   // Gardé pour compatibilité mais ne change plus automatiquement
   appAwakeRevision: number;
-  ensureSession: (reason?: string) => Promise<Session | null>;
+  ensureSession: (_reason?: string) => Promise<Session | null>;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -59,9 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   }, []);
 
   // ensureSession simplifié - juste récupérer la session actuelle
-  const ensureSession = useCallback(async (reason: string = 'unknown'): Promise<Session | null> => {
+  const ensureSession = useCallback(async (_reason: string = 'unknown'): Promise<Session | null> => {
     if (DEBUG_AUTH) {
-      console.log('[Auth] ensureSession', { reason });
+      console.log('[Auth] ensureSession', { _reason });
     }
 
     try {
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
       
       if (DEBUG_AUTH) {
         console.log('[Auth] ensureSession:result', {
-          reason,
+          _reason,
           hasSession: !!currentSession,
           expiresAt: currentSession?.expires_at,
         });
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
       return currentSession;
     } catch (e) {
       if (DEBUG_AUTH) {
-        console.warn('[Auth] ensureSession:error', { reason, message: (e as Error)?.message });
+        console.warn('[Auth] ensureSession:error', { _reason, message: (e as Error)?.message });
       }
       return null;
     }
