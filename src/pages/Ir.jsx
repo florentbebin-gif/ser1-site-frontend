@@ -6,7 +6,6 @@ import { toNumber } from '../utils/number';
 import { computeIrResult as computeIrResultEngine, computeAutoPartsWithChildren } from '../utils/irEngine.js';
 import { getFiscalSettings, addInvalidationListener } from '../utils/fiscalSettingsCache.js';
 import { useTheme } from '../settings/ThemeProvider';
-import { supabase } from '../supabaseClient';
 import { ExportMenu } from '../components/ExportMenu';
 
 // V4: PPTX/Excel imports moved to dynamic import() in export functions
@@ -52,7 +51,7 @@ function computeAbattement10(base, cfg) {
 export default function Ir() {
   // Theme colors and logo from ThemeProvider
   // pptxColors respects the theme scope setting (SER1 classic if ui-only)
-  const { colors, logo, setLogo, cabinetLogo, themeSource, pptxColors } = useTheme();
+  const { colors, cabinetLogo, pptxColors } = useTheme();
 
   const [taxSettings, setTaxSettings] = useState(null);
   const [psSettings, setPsSettings] = useState(null);

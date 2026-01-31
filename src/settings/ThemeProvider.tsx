@@ -288,10 +288,12 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
   // Couleurs cabinet stockées séparément (chargées 1x, read-only pour PPTX)
   const [cabinetColors, setCabinetColors] = useState<ThemeColors | null>(null);
+  // Thème Original depuis DB (pour users sans cabinet)
+  const [originalColors, setOriginalColors] = useState<ThemeColors | null>(null);
 
-  // Compute PPTX colors - TOUJOURS utiliser cabinetColors si disponible
-  // RÈGLE MÉTIER: PPTX = couleurs cabinet (ou SER1 Classic si pas de cabinet)
-  const pptxColors: ThemeColors = resolvePptxColors(colorsState, themeScope, cabinetColors);
+  // Compute PPTX colors - PRIORITÉ: cabinet > original (sans cabinet) > custom selon scope
+  // RÈGLE MÉTIER: PPTX = cabinet si dispo, sinon original ou custom selon scope
+  const pptxColors: ThemeColors = resolvePptxColors(colorsState, themeScope, cabinetColors, originalColors);
 
   // Load cabinet logo for user via RPC (contourne RLS)
   // Returns data URI (base64) for direct use in PPTX exports
@@ -373,6 +375,58 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     } catch (error) {
       console.error('[ThemeProvider] Error loading cabinet theme:', error);
       return DEFAULT_COLORS;
+    }
+  };
+
+  // Load original theme from DB (for users without cabinet)
+  const loadOriginalTheme = async (): Promise<ThemeColors | null> => {
+    try {
+      // Appel Edge Function authentifié pour récupérer le thème original
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] No session for original theme fetch');
+        return null;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin?action=get_original_theme`,
+        {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] Original theme fetch error:', response.status);
+        return null;
+      }
+
+      const data = await response.json();
+      if (!data.palette) {
+        if (DEBUG_THEME) console.warn('[ThemeProvider] No palette in original theme response');
+        return null;
+      }
+
+      const original: ThemeColors = {
+        c1: data.palette.c1 || DEFAULT_COLORS.c1,
+        c2: data.palette.c2 || DEFAULT_COLORS.c2,
+        c3: data.palette.c3 || DEFAULT_COLORS.c3,
+        c4: data.palette.c4 || DEFAULT_COLORS.c4,
+        c5: data.palette.c5 || DEFAULT_COLORS.c5,
+        c6: data.palette.c6 || DEFAULT_COLORS.c6,
+        c7: data.palette.c7 || DEFAULT_COLORS.c7,
+        c8: data.palette.c8 || DEFAULT_COLORS.c8,
+        c9: data.palette.c9 || DEFAULT_COLORS.c9,
+        c10: data.palette.c10 || DEFAULT_COLORS.c10,
+      };
+
+      if (DEBUG_THEME) console.info('[ThemeProvider] Original theme loaded from DB');
+      return original;
+    } catch (error) {
+      console.error('[ThemeProvider] Error loading original theme:', error);
+      return null;
     }
   };
 
@@ -658,14 +712,22 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         let finalColors = DEFAULT_COLORS;
         let source = 'default';
 
+        // Charger original theme (une seule fois par session)
+        if (!originalColors) {
+          const loadedOriginal = await loadOriginalTheme();
+          if (loadedOriginal) {
+            setOriginalColors(loadedOriginal);
+          }
+        }
+
         void ensureCabinetThemeFetchRef.current?.(user.id);
         void ensureCabinetLogoFetchRef.current?.(user.id);
 
         // Maintenant déterminer les couleurs UI selon themeSource
         if (themeSource === 'cabinet') {
-          // Mode cabinet: utiliser les couleurs cabinet pour l'UI
-          finalColors = immediateCabinetColors ?? DEFAULT_COLORS;
-          source = immediateCabinetColors ? (cachedCabinetColors ? 'cabinet-cache' : 'cabinet-state') : 'cabinet-default';
+          // Mode cabinet: utiliser les couleurs cabinet pour l'UI, ou original si pas de cabinet
+          finalColors = immediateCabinetColors ?? originalColors ?? DEFAULT_COLORS;
+          source = immediateCabinetColors ? (cachedCabinetColors ? 'cabinet-cache' : 'cabinet-state') : (originalColors ? 'original-db' : 'cabinet-default');
         } else {
           // themeSource='custom' : logique normale avec cache/ui_settings
           const cachedColors = getThemeFromCache(user.id);
@@ -732,7 +794,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     }
 
     loadTheme();
-  }, [activeUserId, themeSource]);
+  }, [activeUserId, themeSource, originalColors]);
 
   // Met à jour les couleurs et applique immédiatement
   const setColors = useCallback((newColors: ThemeColors) => {

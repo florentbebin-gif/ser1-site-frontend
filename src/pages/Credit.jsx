@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { onResetEvent, storageKeyFor } from '../utils/reset.js'
 import { toNumber } from '../utils/number.js'
 import { useTheme } from '../settings/ThemeProvider'
-import { supabase } from '../supabaseClient'
 import { ExportMenu } from '../components/ExportMenu'
 
 // V4: PPTX/Excel imports moved to dynamic import() in export functions
@@ -222,7 +221,7 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
 export default function Credit(){
 
 /* ---- THEME ---- */
-const { colors: themeColors, logo, setLogo, cabinetLogo, themeSource, pptxColors } = useTheme()
+const { colors: themeColors, cabinetLogo, pptxColors } = useTheme()
 
 /* ---- ÉTATS ---- */
 const [startYM, setStartYM]         = useState(nowYearMonth()) // Date souscription prêt 1

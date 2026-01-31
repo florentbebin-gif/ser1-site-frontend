@@ -916,11 +916,13 @@ export default function SettingsComptes() {
                   <div style={{ 
                     padding: 12, 
                     marginBottom: 16, 
-                    background: 'var(--color-c4)', 
+                    background: editingTheme?.name === 'Thème Original' ? 'var(--color-c3)' : 'var(--color-c4)', 
                     borderRadius: 6, 
                     fontSize: 13 
                   }}>
-                    Les thèmes système ne peuvent pas être modifiés.
+                    {editingTheme?.name === 'Thème Original' 
+                      ? 'Thème Original : modifiable mais ne peut pas être supprimé.'
+                      : 'Les thèmes système ne peuvent pas être modifiés.'}
                   </div>
                 )}
                 <div style={{ marginBottom: 16 }}>
@@ -930,7 +932,7 @@ export default function SettingsComptes() {
                     value={themeForm.name}
                     onChange={(e) => setThemeForm(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Ex: Bleu patrimonial"
-                    disabled={editingTheme?.is_system}
+                    disabled={editingTheme?.is_system && editingTheme?.name !== 'Thème Original'}
                     style={{
                       width: '100%',
                       padding: '10px 12px',
@@ -950,14 +952,14 @@ export default function SettingsComptes() {
                           type="color"
                           value={themeForm.palette?.[colorKey] || DEFAULT_PALETTE[colorKey]}
                           onChange={(e) => handleThemePaletteChange(colorKey, e.target.value)}
-                          disabled={editingTheme?.is_system}
+                          disabled={editingTheme?.is_system && editingTheme?.name !== 'Thème Original'}
                           style={{ width: 40, height: 32, border: 'none', cursor: 'pointer' }}
                         />
                         <input
                           type="text"
                           value={themeForm.palette?.[colorKey] || DEFAULT_PALETTE[colorKey]}
                           onChange={(e) => handleThemePaletteChange(colorKey, e.target.value)}
-                          disabled={editingTheme?.is_system}
+                          disabled={editingTheme?.is_system && editingTheme?.name !== 'Thème Original'}
                           style={{
                             width: '100%',
                             padding: '4px',
@@ -976,7 +978,7 @@ export default function SettingsComptes() {
               </div>
               <div className="report-modal-actions">
                 <button onClick={closeThemeModal}>Annuler</button>
-                {!editingTheme?.is_system && (
+                {!editingTheme?.is_system || editingTheme?.name === 'Thème Original' ? (
                   <button 
                     className="chip"
                     onClick={handleSaveTheme}
@@ -985,7 +987,7 @@ export default function SettingsComptes() {
                   >
                     {themeSaving ? 'Enregistrement...' : 'Enregistrer'}
                   </button>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
