@@ -1102,21 +1102,11 @@ export default function PlacementV2() {
   // Export Excel
   const exportExcel = useCallback(async () => {
     try {
-      console.info("[ExcelExport] Starting export");
-      
       // Vérifier qu'on a des résultats à exporter
       if (!results || !results.produit1) {
-        console.warn("[ExcelExport] No results available", { results, produit1: results?.produit1 });
         alert('Veuillez lancer une simulation avant d\'exporter.');
         return;
       }
-
-      console.info("[ExcelExport] Results validated", { 
-        hasProduit1: !!results.produit1,
-        hasProduit2: !!results.produit2,
-        epargneRows: results.produit1?.epargne?.rows?.length,
-        liquidationRows: results.produit1?.liquidation?.rows?.length
-      });
 
       // 0) Paramètres : hypothèses et configuration
       const headerParams = ['Champ', 'Valeur'];
@@ -1275,17 +1265,7 @@ export default function PlacementV2() {
         ['Net global', (produit1?.liquidation?.totalRetraits || 0) + (produit1?.transmission?.capitalTransmisNet || 0), (produit2?.liquidation?.totalRetraits || 0) + (produit2?.transmission?.capitalTransmisNet || 0)],
       ];
 
-      console.info("[ExcelExport] Data preparation", {
-        headerParamsLength: headerParams.length,
-        rowsParamsLength: rowsParams.length,
-        hasEpargneP1: !!sheetEpargneProduit1,
-        hasEpargneP2: !!sheetEpargneProduit2,
-        hasLiquidationP1: !!sheetLiquidationProduit1,
-        hasLiquidationP2: !!sheetLiquidationProduit2,
-      });
-
       // Construction XML
-      console.info("[ExcelExport] Building XML");
       const xml = `<?xml version="1.0"?>
         <?mso-application progid="Excel.Sheet"?>
         <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
@@ -1301,12 +1281,8 @@ export default function PlacementV2() {
           ${buildWorksheetXmlVertical('Synthèse', headerSynthese, rowsSynthese)}
         </Workbook>`;
 
-      console.info("[ExcelExport] XML built", { xmlLength: xml.length });
-
       try {
-        console.info("[ExcelExport] Starting download");
         await downloadExcel(xml, `SER1_Placement_${new Date().toISOString().slice(0, 10)}.xls`);
-        console.info("[ExcelExport] Download completed successfully");
       } catch (downloadErr) {
         console.error("[ExcelExport] Download failed", { 
           err: downloadErr, 

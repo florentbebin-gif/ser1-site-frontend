@@ -846,12 +846,6 @@ const synthesePeriodes = useMemo(() => {
       
       // V3.4: Logo resolution - cabinet only, never user logo
       const exportLogo = cabinetLogo || undefined
-      
-      // TRACE: Log exact logo being used for debugging
-      console.info('[Credit Export] exportLogo resolved =', exportLogo 
-        ? (exportLogo.startsWith('data:') ? `dataURI (${exportLogo.length} chars)` : exportLogo.substring(0, 80) + '...')
-        : '(none)')
-      console.info('[Credit Export] cabinetLogo:', !!cabinetLogo)
 
       // Build amortization rows for TOTAL (annual aggregation)
       const amortizationRowsTotal = aggregatedYears.map(row => ({

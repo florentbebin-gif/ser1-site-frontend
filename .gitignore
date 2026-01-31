@@ -83,3 +83,5 @@ supabase/.temp/
 
 # ESLint reports
 eslint-report.json
+theme_debug_inventory.txt
+console_logs_inventory.txt

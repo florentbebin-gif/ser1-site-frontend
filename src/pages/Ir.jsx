@@ -485,12 +485,6 @@ const yearLabel =
 
       // V3.4: Logo resolution - cabinet only, never user logo
       const exportLogo = cabinetLogo || undefined;
-      
-      // TRACE: Log exact logo being used for debugging
-      console.info('[IR Export] exportLogo resolved =', exportLogo 
-        ? (exportLogo.startsWith('data:') ? `dataURI (${exportLogo.length} chars)` : exportLogo.substring(0, 80) + '...')
-        : '(none)');
-      console.info('[IR Export] cabinetLogo:', !!cabinetLogo);
 
       // Build IR data from current result
       const irData = {
