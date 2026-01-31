@@ -975,15 +975,15 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         
         // Appliquer immédiatement les couleurs
         setColorsState(colors);
-        applyColorsToCSSWithGuard(colors, lastAppliedUserIdRef.current, 'custom');
+        applyColorsToCSSWithGuardRef.current(colors, lastAppliedUserIdRef.current, 'custom');
         
         if (DEBUG_THEME) console.info('[ThemeProvider] Custom theme applied immediately after save');
       }
     };
 
-    window.addEventListener('ser1-theme-updated', handleThemeUpdated as EventListener);
+    window.addEventListener('ser1-theme-updated', handleThemeUpdated as (_e: Event) => void);
     return () => {
-      window.removeEventListener('ser1-theme-updated', handleThemeUpdated as EventListener);
+      window.removeEventListener('ser1-theme-updated', handleThemeUpdated as (_e: Event) => void);
     };
   }, []);
 
