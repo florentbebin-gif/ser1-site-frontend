@@ -1,3 +1,11 @@
+Mise à jour : 2026-01-31 01:25 (Europe/Paris)
+Roadmap #3 — PPTX: logo cabinet uniquement (admin), aucun logo user
+Problème : en UI custom, les exports PPTX pouvaient utiliser `user_metadata.cover_slide_url` au lieu du logo cabinet.
+Fix : `exportLogo = cabinetLogo || undefined` dans les exports IR et Crédit (suppression du fallback user logo).
+Fichiers : src/pages/Ir.jsx, src/pages/Credit.jsx.
+Tests : npm run lint (0 erreurs, 8 warnings), npm test (71 passed), npm run build.
+E2E : cabinet+custom OK ; cabinet OK ; sans cabinet = sans logo OK.
+
 Mise à jour : 2026-01-31 00:17 (Europe/Paris)
 Lot : ESLint warnings — Lot 4C1 (no-unused-vars)
 Fix : suppression imports/vars/fonctions inutilisées + renommage params en _arg.

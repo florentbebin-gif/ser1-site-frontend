@@ -484,37 +484,14 @@ const yearLabel =
         import('../pptx/export/exportStudyDeck')
       ]);
 
-      // V3.3: Logo resolution based on themeSource
-      // Priority: cabinet logo > user logo > undefined
-      let exportLogo;
-      if (themeSource === 'cabinet') {
-        // Mode cabinet: priorité logo cabinet, fallback logo user
-        exportLogo = cabinetLogo || logo;
-      } else {
-        // Mode custom: logo user uniquement
-        exportLogo = logo;
-      }
+      // V3.4: Logo resolution - cabinet only, never user logo
+      const exportLogo = cabinetLogo || undefined;
       
       // TRACE: Log exact logo being used for debugging
       console.info('[IR Export] exportLogo resolved =', exportLogo 
         ? (exportLogo.startsWith('data:') ? `dataURI (${exportLogo.length} chars)` : exportLogo.substring(0, 80) + '...')
         : '(none)');
-      console.info('[IR Export] themeSource:', themeSource, '| cabinetLogo:', !!cabinetLogo, '| userLogo:', !!logo);
-      
-      // Fallback: reload from user_metadata if still undefined
-      if (!exportLogo) {
-        console.info('[IR Export] No logo in context, attempting reload from user_metadata...');
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user?.user_metadata?.cover_slide_url) {
-            exportLogo = user.user_metadata.cover_slide_url;
-            setLogo(exportLogo);
-            console.info('[IR Export] Logo reloaded from user_metadata');
-          }
-        } catch (logoError) {
-          console.warn('[IR Export] Failed to reload logo:', logoError);
-        }
-      }
+      console.info('[IR Export] cabinetLogo:', !!cabinetLogo);
 
       // Build IR data from current result
       const irData = {

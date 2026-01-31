@@ -845,38 +845,14 @@ const synthesePeriodes = useMemo(() => {
         import('../pptx/export/exportStudyDeck')
       ]);
       
-      // Build PPTX colors from theme
-      // V3.3: Logo resolution based on themeSource
-      // Priority: cabinet logo > user logo > undefined
-      let exportLogo
-      if (themeSource === 'cabinet') {
-        // Mode cabinet: priorité logo cabinet, fallback logo user
-        exportLogo = cabinetLogo || logo
-      } else {
-        // Mode custom: logo user uniquement
-        exportLogo = logo
-      }
+      // V3.4: Logo resolution - cabinet only, never user logo
+      const exportLogo = cabinetLogo || undefined
       
       // TRACE: Log exact logo being used for debugging
       console.info('[Credit Export] exportLogo resolved =', exportLogo 
         ? (exportLogo.startsWith('data:') ? `dataURI (${exportLogo.length} chars)` : exportLogo.substring(0, 80) + '...')
         : '(none)')
-      console.info('[Credit Export] themeSource:', themeSource, '| cabinetLogo:', !!cabinetLogo, '| userLogo:', !!logo)
-      
-      // Fallback: reload from user_metadata if still undefined
-      if (!exportLogo) {
-        console.info('[Credit Export] No logo in context, attempting reload from user_metadata...')
-        try {
-          const { data: { user } } = await supabase.auth.getUser()
-          if (user?.user_metadata?.cover_slide_url) {
-            exportLogo = user.user_metadata.cover_slide_url
-            setLogo(exportLogo)
-            console.info('[Credit Export] Logo reloaded from user_metadata')
-          }
-        } catch (logoError) {
-          console.warn('[Credit Export] Failed to reload logo:', logoError)
-        }
-      }
+      console.info('[Credit Export] cabinetLogo:', !!cabinetLogo)
 
       // Build amortization rows for TOTAL (annual aggregation)
       const amortizationRowsTotal = aggregatedYears.map(row => ({
