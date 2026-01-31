@@ -1,3 +1,37 @@
+Mise à jour : 2026-01-31 14:38 (Europe/Paris)
+POST-MORTEM — Thème Original SYS + Application immédiate custom
+
+Problème 1 (CRITIQUE): Le Thème Original SYS était écrasé par DEFAULT_COLORS après un flash correct.
+Cause: loadCabinetTheme() retournait DEFAULT_COLORS quand pas de cabinet → sauvegardé en cache → écrasait original-db.
+Fix: Tri-état cabinetColors (undefined/null/ThemeColors), loadCabinetTheme() retourne null si pas de cabinet, purge cache si null.
+
+Problème 2 (UX): Bouton "Enregistrer le thème" ne changeait pas l'UI sans F5.
+Cause: saveThemeToUiSettings() sauvegardait mais n'appliquait pas les CSS variables (pas d'update React state).
+Fix PROPRE: Event-driven — Settings.jsx dispatch 'ser1-theme-updated' après save, ThemeProvider écoute et applique immédiatement (avec reset rank pour bypass guard).
+
+Hiérarchie de priorité (source de vérité):
+  cabinet (rank 3) > custom/ui_settings (rank 1) > original-db (rank 2) > default (rank 0)
+Note: original-db rank 2 mais custom rank 1 — après save explicite, on reset rank pour permettre l'application custom.
+
+Fichiers: src/settings/ThemeProvider.tsx, src/pages/Settings.jsx
+Validation: lint 0 warning, build OK, test manuel: sans cabinet → original-db appliqué et stable; custom save → UI change immédiatement.
+
+---
+
+Mise à jour : 2026-01-31 12:07 (Europe/Paris)
+Thème Original éditable + Fallback sans cabinet (FINALISATION)
+RÈGLES MÉTIER (source de vérité):
+- R1 (Sans cabinet): themeSource=cabinet → UI/PPTX = Thème Original DB ; custom+scope=ui-only → UI=custom, PPTX=Thème Original ; custom+scope=all → UI/PPTX=custom
+- R2 (Avec cabinet): PPTX = cabinet TOUJOURS (couleurs + logo) ; UI = cabinet ou custom selon settings
+- R3 (/settings/comptes): "Aucun" = cabinet_id NULL ; "Thème Original" éditable (pas les autres système) et non supprimable
+TECHNIQUE:
+- Edge Function: action get_original_theme (auth Bearer requis) retourne {name, palette}
+- Déploiement: --workdir ./config (pas ./config/supabase) car source de vérité dans config/supabase/functions/admin/index.ts
+- ThemeProvider: loadOriginalTheme() au montage, fallback UI = originalColors ?? DEFAULT_COLORS
+- PPTX: resolvePptxColors() priorité cabinet > (scope=all ? custom : original)
+FILES: config/supabase/functions/admin/index.ts, src/settings/ThemeProvider.tsx, src/pptx/theme/resolvePptxColors.ts, src/pages/Sous-Settings/SettingsComptes.jsx
+VALIDATION: lint 0 warning, test 71 passed, build OK. Logs debug [DEBUG] supprimés.
+
 Mise à jour : 2026-01-31 09:56 (Europe/Paris)
 Thème Original DB + Logique No-Cabinet
 Problème : le Thème Original était hardcodé, et les users sans cabinet n'avaient pas de fallback cohérent entre UI et PPTX.
