@@ -1,13 +1,55 @@
 # SER1 — Audit Patrimonial Express + Stratégie Guidée
 
-**Dernière mise à jour : 2026-02-01 09:49 (Europe/Paris)**
+**Dernière mise à jour : 2026-02-01 11:40 (Europe/Paris)**
 
 Application web interne pour CGP : audit patrimonial, stratégie guidée, simulateurs IR/Placement/Crédit, exports PPTX/Excel.
 
 **Stack** : React 18 + Vite 5 + Supabase (Auth/DB/Storage/Edge Functions) + Vercel.  
-**Tests** : 68 unitaires (Vitest).  
+**Tests** : 71 unitaires (Vitest).  
 **Historique** : [docs/notes/changelog.md](docs/notes/changelog.md)  
 **Debug flags** : [docs/debug.md](docs/debug.md)
+
+---
+
+## Dernières évolutions (2026-02-01)
+
+### Refonte Signalements — Intégration dans Settings
+**Objectif** : Simplifier l'UX en regroupant les signalements dans l'onglet Généraux.
+
+| Avant | Après |
+|-------|-------|
+| Page séparée `/settings/signalements` | Bloc rétractable sous "Personnalisation avancée du thème" |
+| FAB/Modal sur simulateurs | Formulaire unique dans Settings |
+| `metadata` (bug DB) | `meta` (nom colonne correct) |
+| Couleurs hardcodées | Variables CSS uniquement |
+
+**Fichiers clés** :
+- `src/components/settings/SignalementsBlock.jsx` — Composant réutilisable
+- `src/constants/reportPages.js` — Centralisation des pages signalables
+- `src/pages/Settings.jsx` — Intégration du bloc rétractable
+
+### Refonte Navigation Settings — Source unique de vérité
+**Objectif** : Éviter les oublis lors de l'ajout de pages Settings.
+
+| Avant | Après |
+|-------|-------|
+| `SettingsNav.jsx` (fichier mort, non importé) | Supprimé |
+| `TABS` inline dans `SettingsShell.jsx` | `SETTINGS_ROUTES` dans `src/constants/settingsRoutes.js` |
+| Définition en 2 endroits | 1 seul endroit (config → nav + routing) |
+
+**Ajout page Settings** : Modifier uniquement `src/constants/settingsRoutes.js` :
+```javascript
+export const SETTINGS_ROUTES = [
+  // ... routes existantes
+  {
+    key: 'nouvellePage',
+    label: 'Nouvelle Page',
+    path: 'nouvelle-page',
+    component: SettingsNouvellePage,
+    adminOnly: true, // optionnel
+  },
+];
+```
 
 ---
 
@@ -151,7 +193,7 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 npm install
 npm run dev          # localhost:5173
 npm run build        # dist/
-npm run test         # 68 tests Vitest
+npm run test         # 71 tests Vitest
 npm run lint         # ESLint
 ```
 
