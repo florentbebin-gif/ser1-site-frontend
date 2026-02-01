@@ -521,7 +521,6 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const lastAppliedHashRef = useRef<string>('');
   const lastAppliedUserIdRef = useRef<string>('');
   const lastAppliedSourceRankRef = useRef<number>(0);
-  const mountIdRef = useRef<string>(Date.now().toString());
   const cacheAppliedRef = useRef<boolean>(false);
   const mountedRef = useRef<boolean>(true);
   const activeRequestIdRef = useRef<number>(0);
@@ -554,7 +553,6 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   // Cleanup on unmount
   useEffect(() => {
     mountedRef.current = true;
-    const _mountId = mountIdRef.current;
     return () => {
       mountedRef.current = false;
     };
