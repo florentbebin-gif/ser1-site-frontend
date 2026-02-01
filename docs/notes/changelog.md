@@ -5,6 +5,77 @@
 
 ---
 
+## 2026-02-01 — Refonte Signalements + Navigation Settings
+
+### 1. Signalements — Intégration dans Settings (Généraux)
+
+**Objectif** : Simplifier l'UX en regroupant les signalements dans l'onglet Généraux, supprimer la page séparée.
+
+| Aspect | Avant | Après |
+|--------|-------|-------|
+| **Emplacement** | Page `/settings/signalements` dédiée | Bloc rétractable sous "Personnalisation avancée du thème" |
+| **Déclencheur** | FAB/Modal sur `/IR`, `/Credit`, `/Placement` | Formulaire unique dans `/settings` |
+| **Bug DB** | `metadata` (colonne inexistante) | `meta` (nom correct) |
+| **CSS** | Couleurs hardcodées (#fee2e2, #dc2626...) | Variables CSS uniquement (`var(--color-c*)`) |
+| **Pages signalables** | Définies localement | Centralisées dans `src/constants/reportPages.js` |
+
+**Fichiers créés** :
+- `src/components/settings/SignalementsBlock.jsx` — Composant réutilisable (formulaire + liste)
+- `src/components/settings/SignalementsBlock.css` — Styles avec variables CSS uniquement
+- `src/constants/reportPages.js` — `REPORT_PAGE_OPTIONS` + helpers
+
+**Fichiers modifiés** :
+- `src/pages/Settings.jsx` — Intégration du bloc rétractable (`showSignalements` state)
+- `src/pages/SettingsShell.jsx` — Suppression de l'onglet Signalements
+
+**Fichiers supprimés** :
+- `src/pages/Sous-Settings/SettingsSignalements.jsx`
+- `src/pages/Sous-Settings/SettingsSignalements.css`
+- `src/components/IssueReportButton.jsx`
+- `src/components/IssueReport.css`
+
+### 2. Navigation Settings — Source unique de vérité
+
+**Objectif** : Éviter les "oublis" lors de l'ajout de pages Settings, supprimer le code mort.
+
+**Problème** : `SettingsNav.jsx` existait mais n'était importé nulle part (fichier orphelin). La navigation était définie en 2 endroits.
+
+**Solution** : Configuration centralisée `SETTINGS_ROUTES` dans `src/constants/settingsRoutes.js`.
+
+| Aspect | Avant | Après |
+|--------|-------|-------|
+| **Config** | `TABS` inline dans `SettingsShell.jsx` + `SETTINGS_TABS` orphelin | `SETTINGS_ROUTES` unique dans `src/constants/settingsRoutes.js` |
+| **Imports composants** | Statiques en haut de `SettingsShell.jsx` | Lazy loading dans la config |
+| **Permissions** | `adminOnly` dispersé | Centralisé avec `getVisibleSettingsRoutes()` |
+| **Ajout page** | Modifier 2+ fichiers | 1 seul endroit |
+
+**Helper functions** :
+- `getActiveSettingsKey(pathname)` — Détermine l'onglet actif depuis l'URL
+- `getVisibleSettingsRoutes(isAdmin)` — Filtre selon permissions
+- `getSettingsRouteByKey(key)` — Récupère une route par clé
+
+**Fichiers créés** :
+- `src/constants/settingsRoutes.js` — Config unique source de vérité
+
+**Fichiers modifiés** :
+- `src/pages/SettingsShell.jsx` — Utilise `SETTINGS_ROUTES` importés
+
+**Fichiers supprimés** :
+- `src/pages/SettingsNav.jsx` — Fichier mort (non importé)
+
+### 3. UserInfoBanner — Styles autonomes
+
+**Problème** : Le bandeau "Utilisateur / Statut / Mode" changeait de style (taille police, layout) selon la page ou le refresh.
+
+**Cause** : Dépendance à la classe CSS `settings-field-row` définie dans `SettingsImpots.css`, + héritage `fontSize` des parents variables.
+
+**Solution** : Styles inline explicites sur tous les éléments :
+- `display: 'flex'`
+- `alignItems: 'center'`
+- `fontSize: 14` (sur container + tous les enfants)
+
+---
+
 ## 2026-01-31 — Security Patch: RLS user_metadata → app_metadata
 
 ### Problème (CRITIQUE)
