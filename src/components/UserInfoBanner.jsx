@@ -15,6 +15,7 @@ export function UserInfoBanner() {
     <div className="settings-field-row" style={{ 
       display: 'flex',
       alignItems: 'center',
+      fontSize: 14,
       padding: '12px 16px', 
       background: 'var(--color-c7)', 
       borderRadius: 8, 
