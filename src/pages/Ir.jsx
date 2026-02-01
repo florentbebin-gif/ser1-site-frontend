@@ -1387,9 +1387,7 @@ const yearLabel =
   </p>
   {isIsolated && (
     <p>
-      Règle clé : tu dois choisir entre le calcul en "parts" (enfant à charge / alternée) et la
-      "déduction de pension alimentaire". Si tu déduis une pension pour un enfant, cet enfant ne
-      peut pas être compté à ta charge pour le quotient familial.
+      Règle clé : quotient familial (part pour enfant à charge) et déduction de pension alimentaire s'excluent : un même enfant ne peut bénéficier des deux mécanismes.
     </p>
   )}
 </div>
