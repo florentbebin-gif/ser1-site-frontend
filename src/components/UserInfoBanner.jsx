@@ -23,19 +23,19 @@ export function UserInfoBanner() {
       gap: 24, 
       marginBottom: 16 
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontWeight: 600, color: 'var(--color-c10)' }}>Utilisateur :</span>
-        <span style={{ color: 'var(--color-c10)' }}>{user?.email || 'Non connecté'}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
+        <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 14 }}>Utilisateur :</span>
+        <span style={{ color: 'var(--color-c10)', fontSize: 14 }}>{user?.email || 'Non connecté'}</span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontWeight: 600, color: 'var(--color-c10)' }}>Statut :</span>
-        <span style={{ color: 'var(--color-c10)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
+        <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 14 }}>Statut :</span>
+        <span style={{ color: 'var(--color-c10)', fontSize: 14 }}>
           {isAdmin ? 'Admin' : 'User'}
         </span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontWeight: 600, color: 'var(--color-c10)' }}>Mode :</span>
-        <span style={{ color: 'var(--color-c10)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
+        <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 14 }}>Mode :</span>
+        <span style={{ color: 'var(--color-c10)', fontSize: 14 }}>
           {modeLoading ? 'Chargement...' : (userMode === 'expert' ? 'Expert' : 'Simplifié')}
         </span>
       </div>
