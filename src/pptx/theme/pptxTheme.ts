@@ -90,7 +90,7 @@ export function applyThemeToSlide(slide: any, theme: PptxTheme): void {
   // - Background
   // - Textes par défaut
   // - Formes et lignes
-  
+  // eslint-disable-next-line no-console
   console.log('🎨 Applying theme to slide:', {
     bgMain: theme.bgMain,
     textMain: theme.textMain,

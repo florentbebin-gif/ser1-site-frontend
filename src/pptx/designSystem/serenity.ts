@@ -441,6 +441,7 @@ export function addHeader(
   
   // ========== C1: Debug mode logging and visual markers ==========
   if (DEBUG_LAYOUT_ZONES) {
+    // eslint-disable-next-line no-console
     console.log('[DEBUG HEADER]', {
       slideType: variant,
       titleOriginal: titleText,

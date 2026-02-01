@@ -45,16 +45,24 @@ export function mkRuleVersion(version: string, source: string, validated = false
  */
 export function trace(calcResult: CalcResult<unknown>): void {
   if (import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
     console.group(`[Engine] ${calcResult.name} (${calcResult.id})`);
-    console.log('Inputs:', calcResult.inputs);
-    console.log('Assumptions:', calcResult.assumptions);
-    console.log('Formula:', calcResult.formulaText);
-    console.log('Outputs:', calcResult.outputs);
-    console.log('Result:', calcResult.result);
-    console.log('Version:', calcResult.ruleVersion);
+    // eslint-disable-next-line no-console
+    console.debug('Inputs:', calcResult.inputs);
+    // eslint-disable-next-line no-console
+    console.debug('Assumptions:', calcResult.assumptions);
+    // eslint-disable-next-line no-console
+    console.debug('Formula:', calcResult.formulaText);
+    // eslint-disable-next-line no-console
+    console.debug('Outputs:', calcResult.outputs);
+    // eslint-disable-next-line no-console
+    console.debug('Result:', calcResult.result);
+    // eslint-disable-next-line no-console
+    console.debug('Version:', calcResult.ruleVersion);
     if (calcResult.warnings.length > 0) {
       console.warn('Warnings:', calcResult.warnings);
     }
+    // eslint-disable-next-line no-console
     console.groupEnd();
   }
 }

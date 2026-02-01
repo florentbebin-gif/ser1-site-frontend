@@ -292,7 +292,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
 
   // Load cabinet logo for user via RPC (contourne RLS)
   // Returns data URI (base64) for direct use in PPTX exports
-  const loadCabinetLogo = async (userId: string): Promise<string | undefined> => {
+  const loadCabinetLogo = async (_userId: string): Promise<string | undefined> => {
     try {
       // Utiliser RPC SECURITY DEFINER pour récupérer le storage_path sans RLS
       const { data: storagePath, error: rpcError } = await supabase
@@ -332,7 +332,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
 
   // Load cabinet theme for user via RPC (contourne RLS)
   // Retourne null si pas de cabinet, ThemeColors si palette existe
-  const loadCabinetTheme = async (userId: string): Promise<ThemeColors | null> => {
+  const loadCabinetTheme = async (_userId: string): Promise<ThemeColors | null> => {
     try {
       // Utiliser RPC SECURITY DEFINER pour récupérer la palette sans RLS
       const { data: palette, error: rpcError } = await supabase
@@ -554,7 +554,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   // Cleanup on unmount
   useEffect(() => {
     mountedRef.current = true;
-    const mountId = mountIdRef.current;
+    const _mountId = mountIdRef.current;
     return () => {
       mountedRef.current = false;
     };

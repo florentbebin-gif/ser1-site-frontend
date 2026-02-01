@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { DEBUG_AUTH } from '../../supabaseClient';
+import { isDebugEnabled } from '../../utils/debugFlags';
 import { useUserRole } from '../../auth/useUserRole';
 import { UserInfoBanner } from '../../components/UserInfoBanner';
 import { invokeAdmin } from '../../services/apiAdmin';
@@ -21,7 +22,7 @@ export default function SettingsComptes() {
   const [actionLoading, setActionLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const fetchUsersRequestIdRef = useRef(0);
-  const DEBUG_COMPTES_REFRESH = false;
+  const DEBUG_COMPTES_REFRESH = isDebugEnabled('comptes');
 
   // V2: Cabinets & Themes state
   const [cabinets, setCabinets] = useState([]);
@@ -58,7 +59,8 @@ export default function SettingsComptes() {
 
   const triggerRefresh = (reason = '') => {
     if (DEBUG_COMPTES_REFRESH) {
-      console.log('[SettingsComptes] triggerRefresh', reason);
+      // eslint-disable-next-line no-console
+      console.debug('[SettingsComptes] triggerRefresh', reason);
     }
     setRefreshKey((k) => k + 1);
   };
@@ -70,7 +72,8 @@ export default function SettingsComptes() {
       setError('');
 
       if (DEBUG_COMPTES_REFRESH) {
-        console.log('[SettingsComptes] fetchUsers:start', { reason, requestId });
+        // eslint-disable-next-line no-console
+        console.debug('[SettingsComptes] fetchUsers:start', { reason, requestId });
       }
 
       const { data, error: invokeError } = await invokeAdmin('list_users');
@@ -81,7 +84,8 @@ export default function SettingsComptes() {
       setUsers(data.users || []);
 
       if (DEBUG_COMPTES_REFRESH) {
-        console.log('[SettingsComptes] fetchUsers:success', {
+        // eslint-disable-next-line no-console
+        console.debug('[SettingsComptes] fetchUsers:success', {
           reason,
           requestId,
           usersCount: (data.users || []).length,
@@ -129,11 +133,17 @@ export default function SettingsComptes() {
 
   useEffect(() => {
     if (authLoading) {
-      if (DEBUG_AUTH || DEBUG_COMPTES_REFRESH) console.log('[SettingsComptes] authLoading → wait');
+      if (DEBUG_AUTH || DEBUG_COMPTES_REFRESH) {
+        // eslint-disable-next-line no-console
+        console.debug('[SettingsComptes] authLoading → wait');
+      }
       return;
     }
     if (!isAdmin) {
-      if (DEBUG_AUTH || DEBUG_COMPTES_REFRESH) console.log('[SettingsComptes] not admin → skip fetch');
+      if (DEBUG_AUTH || DEBUG_COMPTES_REFRESH) {
+        // eslint-disable-next-line no-console
+        console.debug('[SettingsComptes] not admin → skip fetch');
+      }
       return;
     }
     fetchUsers('effect');

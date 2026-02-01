@@ -1,15 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
+import { isDebugEnabled } from './utils/debugFlags'
 
 const url = import.meta.env.VITE_SUPABASE_URL
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Flag de debug pour tracer l'hydratation de session (optionnel)
-export const DEBUG_AUTH = false;
+// Debug auth activable via VITE_DEBUG_AUTH=1 ou localStorage SER1_DEBUG_AUTH=1
+const DEBUG_AUTH = isDebugEnabled('auth')
 
 if (DEBUG_AUTH) {
-  console.log('[Supabase] Init with URL:', url)
+  // eslint-disable-next-line no-console
+  console.debug('[Supabase] Init with URL:', url)
 }
 
+export { DEBUG_AUTH }
 export const supabase = createClient(url, key, {
   auth: {
     persistSession: true,

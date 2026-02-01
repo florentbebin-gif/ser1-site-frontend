@@ -209,7 +209,10 @@ export default function Settings() {
 
     async function loadUser() {
       try {
-        if (DEBUG_AUTH) console.log('[Settings] loadUser:start');
+        if (DEBUG_AUTH) {
+          // eslint-disable-next-line no-console
+          console.debug('[Settings] loadUser:start');
+        }
         // Timeout de 6s pour éviter le blocage infini
         timeoutId = setTimeout(() => {
           if (mounted) {
@@ -228,7 +231,10 @@ export default function Settings() {
         const u = data?.user || null;
         if (!mounted) return;
 
-        if (DEBUG_AUTH) console.log('[Settings] loadUser:success', { hasUser: !!u, userId: u?.id });
+        if (DEBUG_AUTH) {
+          // eslint-disable-next-line no-console
+          console.debug('[Settings] loadUser:success', { hasUser: !!u, userId: u?.id });
+        }
 
         setUser(u);
 
@@ -242,7 +248,8 @@ export default function Settings() {
             meta.is_admin === true;
 
           if (DEBUG_AUTH) {
-            console.log('[Settings] role detected', { userId: u.id, isAdmin, role: meta.role });
+            // eslint-disable-next-line no-console
+            console.debug('[Settings] role detected', { userId: u.id, isAdmin, role: meta.role });
           }
 
           // TODO: Logo handling deprecated in V3.1 - cabinet logos now managed in admin

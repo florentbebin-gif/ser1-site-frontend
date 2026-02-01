@@ -27,8 +27,9 @@ import type {
   LoanSummary,
   PaymentPeriod,
 } from '../theme/types';
+import { isDebugEnabled } from '../../utils/debugFlags';
 
-export const DEBUG_PPTX = false;
+const DEBUG_PPTX = isDebugEnabled('pptx');
 
 // ============================================================================
 // TYPES
@@ -163,11 +164,16 @@ export function buildCreditStudyDeck(
   const smoothingMode = creditData.smoothingMode;
   
   if (DEBUG_PPTX) {
-    console.log('[PPTX Credit] Building deck with:');
-    console.log('  Multi-loan:', isMultiLoan, '- Loans count:', loans.length);
-    console.log('  Total Capital:', totalCapital);
-    console.log('  Smoothing:', smoothingEnabled, smoothingMode);
-    console.log('  Logo URL:', logoUrl ? logoUrl.substring(0, 50) + '...' : '(none)');
+    // eslint-disable-next-line no-console
+    console.debug('[PPTX Credit] Building deck with:');
+    // eslint-disable-next-line no-console
+    console.debug('  Multi-loan:', isMultiLoan, '- Loans count:', loans.length);
+    // eslint-disable-next-line no-console
+    console.debug('  Total Capital:', totalCapital);
+    // eslint-disable-next-line no-console
+    console.debug('  Smoothing:', smoothingEnabled, smoothingMode);
+    // eslint-disable-next-line no-console
+    console.debug('  Logo URL:', logoUrl ? logoUrl.substring(0, 50) + '...' : '(none)');
   }
   
   // Format date
@@ -377,7 +383,8 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
   };
   
   if (DEBUG_PPTX) {
-    console.log('[PPTX Credit] Deck spec built:', {
+    // eslint-disable-next-line no-console
+    console.debug('[PPTX Credit] Deck spec built:', {
       coverTitle: spec.cover.title,
       coverSubtitle: spec.cover.subtitle,
       slidesCount: spec.slides.length,

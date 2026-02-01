@@ -57,7 +57,8 @@ export function applyChapterImage(
       h: placement.h,
     });
     
-    console.log(`✅ Chapter image applied: ${fileName}`);
+    // eslint-disable-next-line no-console
+    console.debug(`✅ Chapter image applied: ${fileName}`);
   } catch (error) {
     console.error(`❌ Failed to apply chapter image ${fileName}:`, error);
     
@@ -74,7 +75,8 @@ export function applyChapterImage(
       valign: 'middle',
     });
     
-    console.log(`⚠️ Used text fallback for chapter ${chapterIndex}`);
+    // eslint-disable-next-line no-console
+    console.debug(`⚠️ Used text fallback for chapter ${chapterIndex}`);
   }
 }
 
@@ -112,7 +114,8 @@ export function applyChapterImageWithPlacement(
       h: defaultPlacement.h,
     });
     
-    console.log(`✅ Chapter image applied with custom placement: ${fileName}`);
+    // eslint-disable-next-line no-console
+    console.debug(`✅ Chapter image applied with custom placement: ${fileName}`);
   } catch (error) {
     console.error(`❌ Failed to apply chapter image ${fileName}:`, error);
   }

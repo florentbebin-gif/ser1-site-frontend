@@ -38,6 +38,7 @@ export function logAbortError(error, context = '') {
   );
   
   if (isDebug) {
+    // eslint-disable-next-line no-console
     console.debug(`[ABORT_ERROR] Ignored${context ? ` in ${context}` : ''}`, {
       name: error.name,
       message: error.message,

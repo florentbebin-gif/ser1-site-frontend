@@ -28,7 +28,7 @@ export default [
     },
     rules: {
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      'no-console': 'off',
+      'no-console': ['error', { allow: ['warn', 'error'] }],
       'no-empty': ['error', { allowEmptyCatch: true }],
       'react/react-in-jsx-scope': 'off',
       'react/prop-types': 'off',
@@ -39,6 +39,12 @@ export default [
       react: {
         version: 'detect',
       },
+    },
+  },
+  {
+    files: ['**/*.test.{js,ts,jsx,tsx}'],
+    rules: {
+      'no-console': 'off',
     },
   },
   {

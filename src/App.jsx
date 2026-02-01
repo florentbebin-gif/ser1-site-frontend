@@ -167,16 +167,25 @@ export default function App() {
 
     // Initialisation robuste de la session
     async function initSession() {
-      if (DEBUG_AUTH) console.log('[App] initSession:start');
+      if (DEBUG_AUTH) {
+        // eslint-disable-next-line no-console
+        console.debug('[App] initSession:start');
+      }
       const { data: { session } } = await supabase.auth.getSession();
-      if (DEBUG_AUTH) console.log('[App] initSession:done', { hasSession: !!session, userId: session?.user?.id });
+      if (DEBUG_AUTH) {
+        // eslint-disable-next-line no-console
+        console.debug('[App] initSession:done', { hasSession: !!session, userId: session?.user?.id });
+      }
       setSession(session);
     }
     initSession();
 
     // Écoute les changements d'auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
-      if (DEBUG_AUTH) console.log('[App] onAuthStateChange', { event: _event, hasSession: !!s, userId: s?.user?.id });
+      if (DEBUG_AUTH) {
+        // eslint-disable-next-line no-console
+        console.debug('[App] onAuthStateChange', { event: _event, hasSession: !!s, userId: s?.user?.id });
+      }
       setSession(s);
     });
 

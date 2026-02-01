@@ -76,26 +76,29 @@ export function buildWorksheetXmlVertical(title, header, rows) {
 // Génère et télécharge un fichier Excel
 export async function downloadExcel(xml, filename) {
   try {
-    console.info("[ExcelExport] downloadExcel started", { filename, xmlLength: xml.length });
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.debug("[ExcelExport] downloadExcel started", { filename, xmlLength: xml.length });
+    }
     
     const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
-    console.info("[ExcelExport] Blob created", { size: blob.size, type: blob.type });
     
     const url = URL.createObjectURL(blob);
-    console.info("[ExcelExport] ObjectURL created", { url: url.substring(0, 50) + '...' });
     
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
-    console.info("[ExcelExport] Anchor element created and appended");
     
     a.click();
-    console.info("[ExcelExport] Click triggered");
     
     a.remove();
     URL.revokeObjectURL(url);
-    console.info("[ExcelExport] Cleanup completed");
+    
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.debug("[ExcelExport] downloadExcel completed", { filename });
+    }
     
   } catch (error) {
     console.error("[ExcelExport] downloadExcel error", { 

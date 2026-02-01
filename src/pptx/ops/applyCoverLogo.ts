@@ -52,6 +52,7 @@ export function applyCoverLogo(
       });
     }
     
+    // eslint-disable-next-line no-console
     console.log('✅ Logo applied to cover slide');
   } catch (error) {
     console.error('❌ Failed to apply logo:', error);
@@ -66,6 +67,7 @@ export function applyCoverLogo(
       h: placement.h * 0.5,
     });
     
+    // eslint-disable-next-line no-console
     console.log('⚠️ Used fallback icon for logo');
   }
 }

@@ -32,13 +32,19 @@ export function useUserRole(): UserRoleState {
 
     async function fetchRole() {
       try {
-        if (DEBUG_AUTH) console.log('[useUserRole] fetchRole:start');
+        if (DEBUG_AUTH) {
+          // eslint-disable-next-line no-console
+          console.debug('[useUserRole] fetchRole:start');
+        }
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!mounted) return;
 
         if (!user) {
-          if (DEBUG_AUTH) console.log('[useUserRole] fetchRole:no user');
+          if (DEBUG_AUTH) {
+            // eslint-disable-next-line no-console
+            console.debug('[useUserRole] fetchRole:no user');
+          }
           setState({
             role: null,
             user: null,
@@ -56,7 +62,8 @@ export function useUserRole(): UserRoleState {
         ) as 'admin' | 'user';
 
         if (DEBUG_AUTH) {
-          console.log('[useUserRole] fetchRole:success', {
+          // eslint-disable-next-line no-console
+          console.debug('[useUserRole] fetchRole:success', {
             userId: user.id,
             role,
             isAdmin: role === 'admin',

@@ -38,6 +38,7 @@ export function loadBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
   // TODO: Charger la structure depuis public/pptx/templates/serenity-base.pptx
   // Actuellement : reconstruction minimale
   console.warn('⚠️ Template loading not implemented - using minimal reconstruction');
+  // eslint-disable-next-line no-console
   console.log('📁 Template file: public/pptx/templates/serenity-base.pptx');
   
   return pptx;

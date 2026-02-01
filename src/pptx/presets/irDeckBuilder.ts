@@ -6,9 +6,10 @@
  */
 
 import type { StudyDeckSpec, ChapterSlideSpec, IrSynthesisSlideSpec, IrAnnexeSlideSpec } from '../theme/types';
+import { isDebugEnabled } from '../../utils/debugFlags';
 
-// Debug flag for development
-export const DEBUG_PPTX = false;
+// Debug flag for development (activable via VITE_DEBUG_PPTX=1 ou localStorage)
+const DEBUG_PPTX = isDebugEnabled('pptx');
 
 /**
  * IR Simulation Data (matches result from irEngine)
@@ -103,19 +104,24 @@ export function buildIrStudyDeck(
 ): StudyDeckSpec {
   // Debug logging
   if (DEBUG_PPTX) {
-    console.log('[PPTX IR] Building deck with:');
-    console.log('  Theme colors:', {
+    // eslint-disable-next-line no-console
+    console.debug('[PPTX IR] Building deck with:');
+    // eslint-disable-next-line no-console
+    console.debug('  Theme colors:', {
       bgMain: uiSettings.c1,
       accent: uiSettings.c6,
       textBody: uiSettings.c10,
     });
-    console.log('  IR Data:', {
+    // eslint-disable-next-line no-console
+    console.debug('  IR Data:', {
       taxableIncome: irData.taxableIncome,
       tmiRate: irData.tmiRate,
       totalTax: irData.totalTax,
     });
-    console.log('  Logo URL:', logoUrl || '(none)');
-    console.log('  Chapter images: ch-01.png, ch-03.png');
+    // eslint-disable-next-line no-console
+    console.debug('  Logo URL:', logoUrl || '(none)');
+    // eslint-disable-next-line no-console
+    console.debug('  Chapter images: ch-01.png, ch-03.png');
   }
   
   // Format date
@@ -210,7 +216,8 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
   };
   
   if (DEBUG_PPTX) {
-    console.log('[PPTX IR] Deck spec built:', {
+    // eslint-disable-next-line no-console
+    console.debug('[PPTX IR] Deck spec built:', {
       coverTitle: spec.cover.title,
       coverSubtitle: spec.cover.subtitle,
       slidesCount: spec.slides.length,

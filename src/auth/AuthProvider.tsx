@@ -45,7 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   // Mise à jour de l'état depuis une session
   const updateFromSession = useCallback((newSession: Session | null, source: string) => {
     if (DEBUG_AUTH) {
-      console.log('[Auth] updateFromSession', {
+      // eslint-disable-next-line no-console
+      console.debug('[Auth] updateFromSession', {
         source,
         hasSession: !!newSession,
         userId: newSession?.user?.id,
@@ -61,14 +62,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   // ensureSession simplifié - juste récupérer la session actuelle
   const ensureSession = useCallback(async (_reason: string = 'unknown'): Promise<Session | null> => {
     if (DEBUG_AUTH) {
-      console.log('[Auth] ensureSession', { _reason });
+      // eslint-disable-next-line no-console
+      console.debug('[Auth] ensureSession', { _reason });
     }
 
     try {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       
       if (DEBUG_AUTH) {
-        console.log('[Auth] ensureSession:result', {
+        // eslint-disable-next-line no-console
+        console.debug('[Auth] ensureSession:result', {
           _reason,
           hasSession: !!currentSession,
           expiresAt: currentSession?.expires_at,
@@ -116,7 +119,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
       if (!mounted) return;
 
       if (DEBUG_AUTH) {
-        console.log('[Auth] onAuthStateChange', {
+        // eslint-disable-next-line no-console
+        console.debug('[Auth] onAuthStateChange', {
           event,
           hasSession: !!newSession,
           userId: newSession?.user?.id,

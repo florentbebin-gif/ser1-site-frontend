@@ -44,6 +44,7 @@ export function addBusinessIcon(
       h: options.h,
     });
     
+    // eslint-disable-next-line no-console
     console.log(`✅ Business icon added: ${iconName}`);
   } catch (error) {
     console.error(`❌ Failed to add business icon ${iconName}:`, error);
@@ -60,6 +61,7 @@ export function addBusinessIcon(
       valign: 'middle',
     });
     
+    // eslint-disable-next-line no-console
     console.log(`⚠️ Used text fallback for icon ${iconName}`);
   }
 }
