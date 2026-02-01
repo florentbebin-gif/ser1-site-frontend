@@ -1,0 +1,224 @@
+/* SignalementsBlock - Styles avec variables CSS uniquement (sauf blanc) */
+
+.signalements-block {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.signalements-section {
+  padding: 20px;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  background: white; /* ← BLANC autorisé */
+}
+
+.signalements-section-title {
+  margin: 0 0 12px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-c10);
+}
+
+.signalements-intro {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: var(--color-c9);
+  line-height: 1.5;
+}
+
+.signalements-loading,
+.signalements-empty {
+  margin: 16px 0;
+  font-size: 14px;
+  color: var(--color-c9);
+  font-style: italic;
+}
+
+.signalements-error {
+  margin: 16px 0;
+  font-size: 14px;
+  color: var(--color-c1); /* Utilise la couleur primaire pour l'erreur */
+}
+
+/* Formulaire */
+.signalement-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.signalement-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.signalement-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-c10);
+}
+
+/* Inputs avec fond blanc comme demandé */
+.signalement-form input,
+.signalement-form select,
+.signalement-form textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  font-size: 14px;
+  background: white; /* ← BLANC autorisé */
+  color: var(--color-c10);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.signalement-form input:focus,
+.signalement-form select:focus,
+.signalement-form textarea:focus {
+  outline: none;
+  border-color: var(--color-c2);
+  box-shadow: 0 0 0 2px var(--color-c4);
+}
+
+.signalement-form input:disabled,
+.signalement-form select:disabled,
+.signalement-form textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-c7);
+}
+
+.signalement-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Alertes - Utilisation de variables neutres au lieu de couleurs hardcodées */
+.alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Erreur : utilise les variables du thème (neutre/primary) */
+.alert-error {
+  background: var(--color-c7);
+  border: 1px solid var(--color-c1);
+  color: var(--color-c1);
+}
+
+/* Succès : utilise les variables du thème (neutre/secondary) */
+.alert-success {
+  background: var(--color-c7);
+  border: 1px solid var(--color-c2);
+  color: var(--color-c2);
+}
+
+/* Bouton submit */
+.btn-submit {
+  align-self: flex-start;
+  padding: 10px 20px;
+  background: var(--color-c1);
+  color: white; /* ← BLANC autorisé (texte sur fond coloré) */
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-submit:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Liste des signalements */
+.reports-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-item {
+  padding: 12px 16px;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  background: white; /* ← BLANC autorisé */
+  transition: box-shadow 0.2s;
+}
+
+.report-item:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.report-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-c10);
+  flex: 1;
+}
+
+/* Status badges - utilisation des variables du thème */
+.report-status {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Nouveau - utilise la couleur primaire */
+.report-status.status-new {
+  background: var(--color-c7);
+  border: 1px solid var(--color-c1);
+  color: var(--color-c1);
+}
+
+/* En cours - utilise la couleur secondaire */
+.report-status.status-in_progress {
+  background: var(--color-c7);
+  border: 1px solid var(--color-c2);
+  color: var(--color-c2);
+}
+
+/* Résolu - utilise la couleur tertiaire */
+.report-status.status-resolved {
+  background: var(--color-c7);
+  border: 1px solid var(--color-c3);
+  color: var(--color-c5); /* Utilise c5 pour contraste */
+}
+
+/* Fermé - neutre */
+.report-status.status-closed {
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  color: var(--color-c9);
+}
+
+.report-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-c9);
+}
+
+.report-meta-separator {
+  color: var(--color-c8);
+}

@@ -1,36 +1,33 @@
 /**
- * SettingsSignalements - Page de signalement de problèmes intégrée aux Settings
+ * SignalementsBlock - Composant rétractable pour les signalements de problèmes
+ * Intégré dans Settings.jsx (onglet Généraux)
  * 
- * Remplace le FAB (IssueReportButton) par un formulaire dans les paramètres
+ * Fonctionnalités:
+ * - Formulaire de signalement de problèmes
+ * - Liste des 10 derniers signalements de l'utilisateur
+ * - Affichage rétractable (collapsible)
  */
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
-import { UserInfoBanner } from '../../components/UserInfoBanner';
-import './SettingsSignalements.css';
+import { REPORT_PAGE_OPTIONS, getPageLabel, getStatusLabel } from '../../constants/reportPages';
+import './SignalementsBlock.css';
 
-const PAGE_OPTIONS = [
-  { value: '', label: 'Sélectionner une page...' },
-  { value: 'ir', label: 'Simulateur IR' },
-  { value: 'credit', label: 'Simulateur Crédit' },
-  { value: 'placement', label: 'Simulateur Placement' },
-  { value: 'audit', label: 'Audit Patrimonial' },
-  { value: 'strategy', label: 'Stratégie' },
-  { value: 'settings', label: 'Paramètres' },
-  { value: 'other', label: 'Autre' },
-];
-
-export default function SettingsSignalements() {
+export default function SignalementsBlock() {
+  // État du formulaire
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [page, setPage] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
-  
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  // État de la liste
   const [reports, setReports] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
+  // Chargement initial des signalements
   useEffect(() => {
     loadMyReports();
   }, []);
@@ -38,12 +35,18 @@ export default function SettingsSignalements() {
   const loadMyReports = async () => {
     try {
       setLoadingReports(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      setLoadError('');
+
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) {
+        setLoadError('Vous devez être connecté pour voir vos signalements.');
+        return;
+      }
 
       const { data, error: fetchError } = await supabase
         .from('issue_reports')
-        .select('*')
+        .select('id, title, page, status, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(10);
@@ -51,7 +54,8 @@ export default function SettingsSignalements() {
       if (fetchError) throw fetchError;
       setReports(data || []);
     } catch (err) {
-      console.error('[SettingsSignalements] Error loading reports:', err);
+      console.error('[SignalementsBlock] Error loading reports:', err);
+      setLoadError('Erreur lors du chargement des signalements.');
     } finally {
       setLoadingReports(false);
     }
@@ -59,24 +63,26 @@ export default function SettingsSignalements() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!title.trim() || !page) {
-      setError('Veuillez remplir le titre et sélectionner une page.');
+      setSubmitError('Veuillez remplir le titre et sélectionner une page.');
       return;
     }
 
     setSubmitting(true);
-    setError('');
-    setSuccess(false);
+    setSubmitError('');
+    setSubmitSuccess(false);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
       if (!user) {
-        setError('Vous devez être connecté pour soumettre un signalement.');
+        setSubmitError('Vous devez être connecté pour soumettre un signalement.');
         return;
       }
 
-      const metadata = {
+      // CORRECTION: utiliser 'meta' et non 'metadata' (nom de colonne Supabase)
+      const meta = {
         userAgent: navigator.userAgent,
         url: window.location.href,
         timestamp: new Date().toISOString(),
@@ -88,24 +94,24 @@ export default function SettingsSignalements() {
         .insert({
           user_id: user.id,
           title: title.trim(),
-          description: description.trim(),
+          description: description.trim() || null,
           page,
-          metadata,
+          meta, // ← CORRECTION: 'meta' et non 'metadata'
           status: 'new',
         });
 
       if (insertError) throw insertError;
 
-      setSuccess(true);
+      setSubmitSuccess(true);
       setTitle('');
       setDescription('');
       setPage('');
       loadMyReports();
-      
-      setTimeout(() => setSuccess(false), 5000);
+
+      setTimeout(() => setSubmitSuccess(false), 5000);
     } catch (err) {
-      console.error('[SettingsSignalements] Submit error:', err);
-      setError('Erreur lors de l\'envoi du signalement. Veuillez réessayer.');
+      console.error('[SignalementsBlock] Submit error:', err);
+      setSubmitError(`Erreur lors de l'envoi: ${err.message || 'Veuillez réessayer.'}`);
     } finally {
       setSubmitting(false);
     }
@@ -121,38 +127,27 @@ export default function SettingsSignalements() {
     });
   };
 
-  const getStatusLabel = (status) => {
-    const labels = {
-      new: 'Nouveau',
-      in_progress: 'En cours',
-      resolved: 'Résolu',
-      closed: 'Fermé',
-    };
-    return labels[status] || status;
-  };
-
   return (
-    <div className="settings-signalements">
-      <UserInfoBanner />
-
+    <div className="signalements-block">
+      {/* Formulaire de signalement */}
       <div className="signalements-section">
-        <h3>Signaler un problème</h3>
+        <h4 className="signalements-section-title">Signaler un problème</h4>
         <p className="signalements-intro">
-          Vous avez rencontré un bug ou souhaitez suggérer une amélioration ? 
+          Vous avez rencontré un bug ou souhaitez suggérer une amélioration ?
           Décrivez le problème ci-dessous.
         </p>
 
         <form onSubmit={handleSubmit} className="signalement-form">
           <div className="form-group">
-            <label htmlFor="page">Page concernée *</label>
+            <label htmlFor="report-page">Page concernée *</label>
             <select
-              id="page"
+              id="report-page"
               value={page}
               onChange={(e) => setPage(e.target.value)}
               disabled={submitting}
               required
             >
-              {PAGE_OPTIONS.map((opt) => (
+              {REPORT_PAGE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
@@ -161,9 +156,9 @@ export default function SettingsSignalements() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="title">Titre *</label>
+            <label htmlFor="report-title">Titre *</label>
             <input
-              id="title"
+              id="report-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -175,19 +170,19 @@ export default function SettingsSignalements() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="description">Description</label>
+            <label htmlFor="report-description">Description</label>
             <textarea
-              id="description"
+              id="report-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Décrivez le problème en détail : étapes pour reproduire, comportement attendu vs observé..."
               disabled={submitting}
-              rows={5}
+              rows={4}
             />
           </div>
 
-          {error && <div className="alert error">{error}</div>}
-          {success && <div className="alert success">Signalement envoyé avec succès !</div>}
+          {submitError && <div className="alert alert-error">{submitError}</div>}
+          {submitSuccess && <div className="alert alert-success">Signalement envoyé avec succès !</div>}
 
           <button type="submit" disabled={submitting} className="btn-submit">
             {submitting ? 'Envoi...' : 'Envoyer le signalement'}
@@ -195,12 +190,16 @@ export default function SettingsSignalements() {
         </form>
       </div>
 
-      <div className="signalements-section" style={{ marginTop: 24 }}>
-        <h3>Mes signalements récents</h3>
+      {/* Liste des signalements */}
+      <div className="signalements-section">
+        <h4 className="signalements-section-title">Mes signalements récents</h4>
+
         {loadingReports ? (
-          <p className="loading-text">Chargement...</p>
+          <p className="signalements-loading">Chargement...</p>
+        ) : loadError ? (
+          <p className="signalements-error">{loadError}</p>
         ) : reports.length === 0 ? (
-          <p className="empty-text">Aucun signalement pour le moment.</p>
+          <p className="signalements-empty">Aucun signalement pour le moment.</p>
         ) : (
           <div className="reports-list">
             {reports.map((report) => (
@@ -212,8 +211,8 @@ export default function SettingsSignalements() {
                   </span>
                 </div>
                 <div className="report-meta">
-                  <span>{PAGE_OPTIONS.find(p => p.value === report.page)?.label || report.page}</span>
-                  <span>•</span>
+                  <span>{getPageLabel(report.page)}</span>
+                  <span className="report-meta-separator">•</span>
                   <span>{formatDate(report.created_at)}</span>
                 </div>
               </div>

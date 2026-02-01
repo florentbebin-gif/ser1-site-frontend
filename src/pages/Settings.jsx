@@ -3,6 +3,7 @@ import { supabase, DEBUG_AUTH } from '../supabaseClient';
 import { useTheme } from '../settings/ThemeProvider';
 import { UserInfoBanner } from '../components/UserInfoBanner';
 import { recalculatePaletteFromC1 } from '../utils/paletteGenerator';
+import SignalementsBlock from '../components/settings/SignalementsBlock';
 
 // Couleurs par défaut
 const DEFAULT_COLORS = {
@@ -149,6 +150,9 @@ export default function Settings() {
 
   // V3.1: Advanced colors visibility
   const [showAdvancedColors, setShowAdvancedColors] = useState(false);
+
+  // Signalements block visibility
+  const [showSignalements, setShowSignalements] = useState(false);
 
   // Legacy states (kept for compatibility)
   const [selectedTheme, setSelectedTheme] = useState('Personnalisé');
@@ -705,6 +709,38 @@ export default function Settings() {
               </>
             )}
 
+          </div>
+
+          {/* Signalements */}
+          <div>
+            <h3 style={{ marginBottom: 8 }}>Signalements</h3>
+            <p style={{ marginBottom: 12, fontSize: 14, color: 'var(--color-c9)' }}>
+              Signalez un problème ou suggérez une amélioration.
+            </p>
+
+            <div style={{ marginBottom: 16 }}>
+              <button
+                type="button"
+                onClick={() => setShowSignalements(!showSignalements)}
+                style={{
+                  padding: '8px 16px',
+                  border: '1px solid var(--color-c8)',
+                  borderRadius: '6px',
+                  backgroundColor: 'var(--color-c7)',
+                  color: 'var(--color-c10)',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <span>{showSignalements ? '▼' : '▶'}</span>
+                <span>Signalements</span>
+              </button>
+            </div>
+
+            {showSignalements && <SignalementsBlock />}
           </div>
         </div>
     </>

@@ -7,7 +7,6 @@ import SettingsFiscalites from './Sous-Settings/SettingsFiscalites';
 import SettingsBaseContrats from './Sous-Settings/SettingsBaseContrats';
 import SettingsTableMortalite from './Sous-Settings/SettingsTableMortalite';
 import SettingsComptes from './Sous-Settings/SettingsComptes';
-import SettingsSignalements from './Sous-Settings/SettingsSignalements';
 
 const TABS = [
   { key: 'general', label: 'Généraux', component: Settings },
@@ -17,7 +16,6 @@ const TABS = [
   { key: 'baseContrats', label: 'Base contrats', component: SettingsBaseContrats },
   { key: 'tableMortalite', label: 'Table de mortalité', component: SettingsTableMortalite },
   { key: 'comptes', label: 'Comptes', component: SettingsComptes, adminOnly: true },
-  { key: 'signalements', label: 'Signalements', component: SettingsSignalements },
 ];
 
 export default function SettingsShell() {
@@ -32,7 +30,6 @@ export default function SettingsShell() {
     if (path.includes('/settings/base-contrat')) return 'baseContrats';
     if (path.includes('/settings/table-mortalite')) return 'tableMortalite';
     if (path.includes('/settings/comptes')) return 'comptes';
-    if (path.includes('/settings/signalements')) return 'signalements';
     return 'general';
   }, []);
 
