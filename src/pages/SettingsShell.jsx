@@ -1,22 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { useUserRole } from '../auth/useUserRole';
-import Settings from './Settings';
-import SettingsImpots from './Sous-Settings/SettingsImpots';
-import SettingsPrelevements from './Sous-Settings/SettingsPrelevements';
-import SettingsFiscalites from './Sous-Settings/SettingsFiscalites';
-import SettingsBaseContrats from './Sous-Settings/SettingsBaseContrats';
-import SettingsTableMortalite from './Sous-Settings/SettingsTableMortalite';
-import SettingsComptes from './Sous-Settings/SettingsComptes';
-
-const TABS = [
-  { key: 'general', label: 'Généraux', component: Settings },
-  { key: 'impots', label: 'Impôts', component: SettingsImpots },
-  { key: 'prelevements', label: 'Prélèvements sociaux', component: SettingsPrelevements },
-  { key: 'fiscalites', label: 'Fiscalités contrats', component: SettingsFiscalites },
-  { key: 'baseContrats', label: 'Base contrats', component: SettingsBaseContrats },
-  { key: 'tableMortalite', label: 'Table de mortalité', component: SettingsTableMortalite },
-  { key: 'comptes', label: 'Comptes', component: SettingsComptes, adminOnly: true },
-];
+import {
+  SETTINGS_ROUTES,
+  getActiveSettingsKey,
+  getVisibleSettingsRoutes,
+} from '../constants/settingsRoutes';
 
 export default function SettingsShell() {
   const { isAdmin } = useUserRole();
@@ -24,25 +12,20 @@ export default function SettingsShell() {
   // Initialiser à partir de l'URL
   const initialTab = useMemo(() => {
     const path = (typeof window !== 'undefined' && window.location?.pathname) || '';
-    if (path.includes('/settings/impots')) return 'impots';
-    if (path.includes('/settings/prelevements')) return 'prelevements';
-    if (path.includes('/settings/fiscalites')) return 'fiscalites';
-    if (path.includes('/settings/base-contrat')) return 'baseContrats';
-    if (path.includes('/settings/table-mortalite')) return 'tableMortalite';
-    if (path.includes('/settings/comptes')) return 'comptes';
-    return 'general';
+    return getActiveSettingsKey(path);
   }, []);
 
   const [activeTab, setActiveTab] = useState(initialTab);
 
-  // Filtrer les onglets selon admin
+  // Routes visibles selon permissions
   const visibleTabs = useMemo(() => {
-    return TABS.filter((t) => !t.adminOnly || isAdmin);
+    return getVisibleSettingsRoutes(isAdmin);
   }, [isAdmin]);
 
+  // Composant actif à render
   const ActiveComponent = useMemo(() => {
-    const found = TABS.find((t) => t.key === activeTab);
-    return found ? found.component : Settings;
+    const found = SETTINGS_ROUTES.find((t) => t.key === activeTab);
+    return found ? found.component : SETTINGS_ROUTES[0].component;
   }, [activeTab]);
 
   return (
@@ -51,21 +34,25 @@ export default function SettingsShell() {
         <div className="section-title">Paramètres</div>
 
         <div className="settings-nav">
-          {visibleTabs.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              className={`settings-pill${activeTab === tab.key ? ' is-active' : ''}`}
-              onClick={() => {
-                setActiveTab(tab.key);
-                if (typeof window !== 'undefined') {
-                  window.history.replaceState({}, '', `/settings${tab.key === 'general' ? '' : `/${tab.key}`}`);
-                }
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {visibleTabs.map((tab) => {
+            const isActive = tab.key === activeTab;
+
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                className={`settings-pill${isActive ? ' is-active' : ''}`}
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  if (typeof window !== 'undefined') {
+                    window.history.replaceState({}, '', `/settings${tab.path ? `/${tab.path}` : ''}`);
+                  }
+                }}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         <div style={{ marginTop: 16 }}>
