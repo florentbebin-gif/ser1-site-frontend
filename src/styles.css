@@ -152,7 +152,7 @@ body {
 .pl-header-actions .chip,
 .ir-header .chip,
 .credit-header-actions .chip {
-  background: rgba(255, 255, 255, 0.30);
+  background: rgba(255, 255, 255, 0.60);
   border-radius: 8px; /* Surcharge du 999px global */
   /* Border et texte hérités du thème via .chip global */
 }
@@ -163,7 +163,7 @@ body {
 .pl-header-actions .chip:hover:not(:disabled),
 .ir-header .chip:hover:not(:disabled),
 .credit-header-actions .chip:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.75);
 }
 
 /* Active: opacité plus forte */
@@ -172,7 +172,7 @@ body {
 .pl-header-actions .chip:active:not(:disabled),
 .ir-header .chip:active:not(:disabled),
 .credit-header-actions .chip:active:not(:disabled) {
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.85);
 }
 
 /* Focus: mécanisme existant du projet (hérite des variables thème) */
@@ -191,7 +191,7 @@ body {
 .pl-header-actions .chip:disabled,
 .ir-header .chip:disabled,
 .credit-header-actions .chip:disabled {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.40);
   opacity: 0.6;
 }
 
