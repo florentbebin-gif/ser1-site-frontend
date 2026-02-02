@@ -9,6 +9,7 @@
  */
 
 import PptxGenJS from 'pptxgenjs';
+import { DEBUG_PPTX } from '../../utils/debugFlags';
 
 export interface BaseTemplateConfig {
   title: string;
@@ -38,8 +39,10 @@ export function loadBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
   // TODO: Charger la structure depuis public/pptx/templates/serenity-base.pptx
   // Actuellement : reconstruction minimale
   console.warn('⚠️ Template loading not implemented - using minimal reconstruction');
-  // eslint-disable-next-line no-console
-  console.log('📁 Template file: public/pptx/templates/serenity-base.pptx');
+  if (DEBUG_PPTX) {
+    // eslint-disable-next-line no-console
+    console.debug('📁 Template file: public/pptx/templates/serenity-base.pptx');
+  }
   
   return pptx;
 }
