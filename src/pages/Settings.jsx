@@ -156,10 +156,6 @@ export default function Settings() {
 
   // Legacy states (kept for compatibility)
   const [selectedTheme, setSelectedTheme] = useState('Personnalisé');
-  
-  // TODO: themeScope will be removed fully in V3.3 when PPTX is cabinet-governed
-  // Default stable value for compatibility
-  const themeScope = 'ui-only';
 
   // Convertir les couleurs du ThemeProvider vers l'ancien format
   useEffect(() => {
@@ -186,8 +182,6 @@ export default function Settings() {
       setSelectedTheme(matchingTheme ? matchingTheme.name : 'Personnalisé');
     }
   }, [colors, themeLoading]);
-
-  // NOTE: themeScope is now loaded by ThemeProvider, no need for local loading
 
   // Fonction pour synchroniser les couleurs avec ThemeProvider
   const syncThemeColors = (settingsColors) => {
@@ -357,9 +351,9 @@ export default function Settings() {
       setSavingColors(true);
       setSaveMessage('');
 
-      // Construire le nom du thème avec le scope
+      // Construire le nom du thème
       const themeName = selectedTheme === 'Personnalisé' 
-        ? `custom${themeScope === 'ui-only' ? '-ui-only' : ''}`
+        ? 'custom-ui-only'
         : selectedTheme;
 
       // Sauvegarder avec le nouveau système ui_settings
