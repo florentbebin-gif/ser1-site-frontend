@@ -12,6 +12,7 @@ export interface ExportOption {
   label: string;
   onClick: () => void;
   disabled?: boolean;
+  tooltip?: string;
 }
 
 interface ExportMenuProps {
@@ -87,6 +88,8 @@ export function ExportMenu({
               className="chip premium-btn export-menu-item"
               onClick={() => handleOptionClick(option)}
               disabled={option.disabled}
+              title={option.tooltip}
+              data-tooltip={option.tooltip}
             >
               {option.label}
             </button>

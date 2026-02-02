@@ -905,6 +905,7 @@ export default function PlacementV2() {
   const [state, setState] = useState(DEFAULT_STATE);
   const [modalOpen, setModalOpen] = useState(null); // null | 0 | 1
   const [actionInProgress, setActionInProgress] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const dmtgScale = taxSettings?.dmtg?.scale;
   const dmtgOptions = useMemo(() => buildDmtgOptions(dmtgScale), [dmtgScale]);
@@ -1101,6 +1102,7 @@ export default function PlacementV2() {
 
   // Export Excel
   const exportExcel = useCallback(async () => {
+    setExportLoading(true);
     try {
       // Vérifier qu'on a des résultats à exporter
       if (!results || !results.produit1) {
@@ -1290,6 +1292,8 @@ export default function PlacementV2() {
           stack: downloadErr?.stack 
         });
         alert('Erreur lors du téléchargement du fichier Excel.');
+      } finally {
+        setExportLoading(false);
       }
     } catch (e) {
       console.error("[ExcelExport] Export failed", { 
@@ -1298,6 +1302,7 @@ export default function PlacementV2() {
         stack: e?.stack 
       });
       alert('Impossible de générer le fichier Excel.');
+      setExportLoading(false);
     }
   }, [state, results]);
 
@@ -1548,7 +1553,9 @@ export default function PlacementV2() {
           <ExportMenu
             options={[
               { label: 'Excel', onClick: exportExcel, disabled: !results || !results.produit1 },
+              { label: 'PowerPoint', onClick: () => {}, disabled: true, tooltip: 'bientôt' },
             ]}
+            loading={exportLoading}
           />
         </div>
       </div>
