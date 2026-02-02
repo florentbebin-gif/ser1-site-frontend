@@ -153,6 +153,7 @@ body {
 .ir-header .chip,
 .credit-header-actions .chip {
   background: rgba(255, 255, 255, 0.40);
+  border-radius: 8px; /* Surcharge du 999px global */
   /* Border et texte hérités du thème via .chip global */
 }
 
