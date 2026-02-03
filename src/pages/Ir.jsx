@@ -51,7 +51,7 @@ function computeAbattement10(base, cfg) {
 export default function Ir() {
   // Theme colors and logo from ThemeProvider
   // pptxColors respects the theme scope setting (SER1 classic if ui-only)
-  const { colors, cabinetLogo, pptxColors } = useTheme();
+  const { colors, cabinetLogo, logoPlacement, pptxColors } = useTheme();
 
   const [taxSettings, setTaxSettings] = useState(null);
   const [psSettings, setPsSettings] = useState(null);
@@ -505,7 +505,7 @@ const yearLabel =
         location,
       };
 
-      const deck = buildIrStudyDeck(irData, pptxColors, exportLogo);
+      const deck = buildIrStudyDeck(irData, pptxColors, exportLogo, logoPlacement);
       const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
       const filename = `simulation-ir-${dateStr}.pptx`;
 

@@ -221,7 +221,7 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
 export default function Credit(){
 
 /* ---- THEME ---- */
-const { colors: themeColors, cabinetLogo, pptxColors } = useTheme()
+const { colors: themeColors, cabinetLogo, logoPlacement, pptxColors } = useTheme()
 
 /* ---- ÉTATS ---- */
 const [startYM, setStartYM]         = useState(nowYearMonth()) // Date souscription prêt 1
@@ -970,7 +970,7 @@ const synthesePeriodes = useMemo(() => {
       }
 
       // Build deck spec with logo from ThemeProvider
-      const deck = buildCreditStudyDeck(creditData, pptxColors, exportLogo)
+      const deck = buildCreditStudyDeck(creditData, pptxColors, exportLogo, logoPlacement)
 
       // Generate filename with date
       const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '')

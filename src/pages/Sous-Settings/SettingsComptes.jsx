@@ -927,12 +927,12 @@ export default function SettingsComptes() {
                         style={{
                           padding: '8px 12px',
                           fontSize: 12,
-                          border: `2px solid ${cabinetForm.logo_placement === pos.key ? 'var(--color-c2)' : 'var(--color-c8)'}`,
+                          border: `2px solid ${cabinetForm.logo_placement === pos.key ? 'var(--color-c4)' : 'var(--color-c8)'}`,
                           borderRadius: 6,
-                          background: cabinetForm.logo_placement === pos.key ? 'var(--color-c3)' : 'transparent',
+                          background: cabinetForm.logo_placement === pos.key ? 'var(--color-c4)' : 'transparent',
                           cursor: 'pointer',
                           textAlign: 'center',
-                          color: 'var(--color-c10)'
+                          color: cabinetForm.logo_placement === pos.key ? 'var(--color-c1)' : 'var(--color-c10)'
                         }}
                       >
                         {pos.label}
