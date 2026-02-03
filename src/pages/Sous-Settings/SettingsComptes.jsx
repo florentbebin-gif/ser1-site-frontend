@@ -33,7 +33,7 @@ export default function SettingsComptes() {
   // Cabinet Modal state
   const [showCabinetModal, setShowCabinetModal] = useState(false);
   const [editingCabinet, setEditingCabinet] = useState(null);
-  const [cabinetForm, setCabinetForm] = useState({ name: '', default_theme_id: '', logo_id: '' });
+  const [cabinetForm, setCabinetForm] = useState({ name: '', default_theme_id: '', logo_id: '', logo_placement: 'center-bottom' });
   const [cabinetSaving, setCabinetSaving] = useState(false);
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
@@ -158,7 +158,8 @@ export default function SettingsComptes() {
       setCabinetForm({
         name: cabinet.name || '',
         default_theme_id: cabinet.default_theme_id || '',
-        logo_id: cabinet.logo_id || ''
+        logo_id: cabinet.logo_id || '',
+        logo_placement: cabinet.logo_placement || 'center-bottom'
       });
       if (cabinet.logos?.storage_path) {
         setLogoPreview(getLogoPublicUrl(cabinet.logos.storage_path));
@@ -166,7 +167,7 @@ export default function SettingsComptes() {
         setLogoPreview(null);
       }
     } else {
-      setCabinetForm({ name: '', default_theme_id: '', logo_id: '' });
+      setCabinetForm({ name: '', default_theme_id: '', logo_id: '', logo_placement: 'center-bottom' });
       setLogoPreview(null);
     }
     setLogoFile(null);
@@ -176,7 +177,7 @@ export default function SettingsComptes() {
   const closeCabinetModal = () => {
     setShowCabinetModal(false);
     setEditingCabinet(null);
-    setCabinetForm({ name: '', default_theme_id: '', logo_id: '' });
+    setCabinetForm({ name: '', default_theme_id: '', logo_id: '', logo_placement: 'center-bottom' });
     setLogoFile(null);
     setLogoPreview(null);
   };
@@ -224,7 +225,8 @@ export default function SettingsComptes() {
           id: editingCabinet.id,
           name: cabinetForm.name.trim(),
           default_theme_id: cabinetForm.default_theme_id || null,
-          logo_id: logoId || null
+          logo_id: logoId || null,
+          logo_placement: cabinetForm.logo_placement || 'center-bottom'
         });
         if (invokeError) throw new Error(invokeError.message);
       } else {
@@ -906,6 +908,40 @@ export default function SettingsComptes() {
                     </div>
                   )}
                   {logoUploading && <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>Upload en cours...</p>}
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>Position du logo</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                    {[
+                      { key: 'top-left', label: 'Haut Gauche' },
+                      { key: 'center-top', label: 'Centre Haut' },
+                      { key: 'top-right', label: 'Haut Droite' },
+                      { key: 'bottom-left', label: 'Bas Gauche' },
+                      { key: 'center-bottom', label: 'Centre Bas' },
+                      { key: 'bottom-right', label: 'Bas Droite' },
+                    ].map((pos) => (
+                      <button
+                        key={pos.key}
+                        type="button"
+                        onClick={() => setCabinetForm(prev => ({ ...prev, logo_placement: pos.key }))}
+                        style={{
+                          padding: '8px 12px',
+                          fontSize: 12,
+                          border: `2px solid ${cabinetForm.logo_placement === pos.key ? 'var(--color-c2)' : 'var(--color-c8)'}`,
+                          borderRadius: 6,
+                          background: cabinetForm.logo_placement === pos.key ? 'var(--color-c3)' : 'transparent',
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          color: 'var(--color-c10)'
+                        }}
+                      >
+                        {pos.label}
+                      </button>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: 12, color: 'var(--color-c9)', marginTop: 8 }}>
+                    Le logo ne sera jamais positionné sur la zone titre de la slide.
+                  </p>
                 </div>
               </div>
               <div className="report-modal-actions">

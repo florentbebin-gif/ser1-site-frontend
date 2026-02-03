@@ -96,6 +96,17 @@ export type BusinessIconName =
   | 'percent';
 
 /**
+ * Logo Placement options for cover slide
+ */
+export type LogoPlacement =
+  | 'center-bottom'
+  | 'center-top'
+  | 'bottom-left'
+  | 'bottom-right'
+  | 'top-left'
+  | 'top-right';
+
+/**
  * Icon Placement specification
  */
 export type IconPlacement = {
@@ -115,6 +126,7 @@ export type CoverSlideSpec = {
   title: string;
   subtitle: string;
   logoUrl?: string;
+  logoPlacement?: LogoPlacement;
   leftMeta?: string;
   rightMeta?: string;
 };

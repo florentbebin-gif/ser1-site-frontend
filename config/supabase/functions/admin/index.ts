@@ -598,6 +598,7 @@ serve(async (req: Request) => {
           updated_at,
           default_theme_id,
           logo_id,
+          logo_placement,
           themes:default_theme_id(name, is_system),
           logos:logo_id(sha256, storage_path, mime, width, height, bytes)
         `)
@@ -655,11 +656,12 @@ serve(async (req: Request) => {
 
     // Mettre à jour un cabinet
     if (action === 'update_cabinet') {
-      const { id, name, default_theme_id, logo_id } = payload as { 
+      const { id, name, default_theme_id, logo_id, logo_placement } = payload as { 
         id?: string; 
         name?: string; 
         default_theme_id?: string | null;
         logo_id?: string | null;
+        logo_placement?: string | null;
       }
       
       if (!id) {
@@ -715,6 +717,13 @@ serve(async (req: Request) => {
           }
         }
         updateData.logo_id = logo_id
+      }
+
+      if (logo_placement !== undefined) {
+        const validPlacements = ['center-bottom', 'center-top', 'bottom-left', 'bottom-right', 'top-left', 'top-right']
+        if (logo_placement && validPlacements.includes(logo_placement)) {
+          updateData.logo_placement = logo_placement
+        }
       }
 
       const { data, error } = await supabase
