@@ -1,6 +1,6 @@
 # SER1 — Audit Patrimonial Express + Stratégie Guidée
 
-**Dernière mise à jour : 2026-02-01 11:40 (Europe/Paris)**
+**Dernière mise à jour : 2026-02-03 23:20 (Europe/Paris)**
 
 Application web interne pour CGP : audit patrimonial, stratégie guidée, simulateurs IR/Placement/Crédit, exports PPTX/Excel.
 
@@ -147,7 +147,7 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 - **Path** : `{cabinet_id}/{timestamp}-{hash}.{ext}`
 - **Déduplication** : SHA256 via RPC
 - **Chargement** : RPC → `storage.from('logos').download()` → base64 data-uri
-- **Export PPTX** : Ordre priorité `cabinetLogo` → `logo` → `user_metadata.cover_slide_url`
+- **Export PPTX** : Logo cabinet uniquement (via RPC `get_my_cabinet_logo`), pas de fallback `user_metadata` pour des raisons de sécurité
 
 ### 4.3 Checklist avant déploy
 - [ ] Migration RPC appliquée
@@ -175,7 +175,7 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 | END | `buildEnd.ts` | Disclaimer légal |
 
 ### 5.3 Règles immuables
-1. Pas d'hex codé en dur sauf blanc
+1. Pas d'hex codé en dur sauf : blanc (#FFFFFF), WARNING (#996600), overlay rgba(0,0,0,0.5)
 2. `resolvePptxColors()` source unique couleurs
 3. Données PPTX = même source que UI (pas de recalc)
 4. Pagination amortissement : max 14 lignes/slide

@@ -359,11 +359,299 @@ export type XlsxBuildOptions {
 
 ---
 
-## Fichier généré (mise à jour)
+## F) GOUVERNANCE & CONTRASTE — DÉCISION FINALE
+
+### Décision (Option B choisie)
+
+**Architecture : Tokens C1-C10 + 2 exceptions (blanc + warning hardcodé)**
+
+**Justification** :
+1. Thème user entièrement personnalisable → aucun token C1-C10 ne garantit un contraste lisible pour les états critiques
+2. Warning hardcodé (#996600) assure lisibilité universelle quelle que la palette du cabinet
+3. Blanc (#FFFFFF) reste l'exception unique pour les fonds élevés (cards, panels, texte sur fond sombre)
+4. Divergence UI/PPTX/Excel évitée : mêmes règles appliquées partout
+
+---
+
+### Comparaison Options A/B
+
+#### Option A : Strict C1-C10 (tokens seuls)
+
+| Avantages | Inconvénients |
+|-----------|---------------|
+| 100% cohérent avec le thème user | Warning peut devenir illisible si C6 clair |
+| Zero hardcode (sauf blanc) | Risque de contraste insuffisant sur thèmes clairs |
+| Simple à expliquer | Nécessite validation contraste à chaque changement de thème |
+
+**Risque** : Un cabinet avec C6 très clair (#E8DDD4) rend les warnings illisibles sur fond blanc.
+
+#### Option B : C1-C10 + 2 exceptions (blanc + warning) ⭐ Choisie
+
+| Avantages | Inconvénients |
+|-----------|---------------|
+| Warning toujours lisible | 2 hardcodes au lieu d'1 |
+| Contraste garanti pour les alertes | Nécessite documentation de l'exception |
+| Peut supporter n'importe quel thème user | — |
+
+**Risque** : Léger écart visuel si le thème a une dominante orange déjà proche du warning — mais lisibilité préservée.
+
+---
+
+### Mapping Sémantique Final
+
+| Sémantique | Source | Usage | UI | PPTX | Excel |
+|------------|--------|-------|----|------|-------|
+| `white` | **Exception** `#FFFFFF` | Fonds cards, texte sur fond sombre | ✓ | ✓ | ✓ |
+| `warning` | **Exception** `#996600` | Alertes, badges warning | ✓ | ✓ | ✓ |
+| `surface-page` | C7 | Fond page | ✓ | ✓ | — |
+| `surface-card` | white | Cards, panels, modals | ✓ | ✓ | — |
+| `surface-raised` | C4 | Surfaces surélevées | ✓ | ✓ | — |
+| `surface-overlay` | `rgba(0,0,0,0.5)` | Backdrop modals | ✓ | ✓ | — |
+| `text-primary` | C10 | Texte principal | ✓ | ✓ | ✓ |
+| `text-secondary` | C9 | Labels, texte muted | ✓ | ✓ | — |
+| `text-inverse` | white | Texte sur fond sombre | ✓ | ✓ | ✓ |
+| `border-default` | C8 | Bordures standards | ✓ | ✓ | — |
+| `border-strong` | C5 | Bordures accentuées | ✓ | ✓ | — |
+| `accent-line` | C6 | Lignes d'accent | ✓ | ✓ | — |
+| `success` | C3 | Succès, états positifs | ✓ | ✓ | — |
+| `danger` | C1 | Erreurs, alertes critiques | ✓ | ✓ | — |
+| `info` | C4 | Information | ✓ | ✓ | — |
+| `excel-header` | C2 | Header Excel | — | — | ✓ |
+| `excel-section` | C4 | Sections Excel | — | — | ✓ |
+
+---
+
+### Règles de Combinaison (Contraste)
+
+#### Tableau "Fond → Texte autorisé"
+
+| Fond | Couleur | Texte autorisé | Interdiction |
+|------|---------|----------------|--------------|
+| **Page** | C7 (#F5F3F0) | C10 (noir), C9 (gris) | ❌ WHITE — manque de contraste |
+| **Card/Panel** | WHITE | C10, C9, C1 | ❌ WHITE — invisible |
+| **Cover Slide** | C1 (#2B3E37) | WHITE uniquement | ❌ C10, C9 — manque de contraste |
+| **Header table** | C2 (#709B8B) | WHITE uniquement | ❌ C10 — manque de contraste |
+| **Alert warning** | #FFF7E6 | WARNING (#996600), C10 | ❌ C9 — manque de contraste |
+| **Alert danger** | C1 | WHITE | ❌ C10 — illisible |
+
+#### Tableau "Composant → Règles" (Extraits)
+
+| Composant | Fond | Texte | Règle contraste |
+|-----------|------|-------|-----------------|
+| Button primary | C2 | WHITE | Si C2 très clair → switch C10 |
+| Button secondary | C7 | C10 | Toujours OK |
+| Input focus | WHITE | C10 | Border C2 |
+| Badge warning | #FFF7E6 | WARNING | Hardcodé |
+| Table header | C2 | WHITE | Excel : même règle |
+| Modal overlay | rgba(0,0,0,0.5) | — | Seul rgba autorisé |
+
+---
+
+### Implémentation Minimale Proposée
+
+#### Module 1 : Semantic Colors (src/styles/semanticColors.ts)
+
+```typescript
+/**
+ * Couleurs sémantiques SER1 — Source de vérité
+ * 
+ * Architecture : C1-C10 + 2 exceptions (white, warning)
+ * Usage : UI + PPTX + Excel
+ */
+
+// Exceptions (hardcodées, justifiées)
+export const WHITE = '#FFFFFF' as const;
+export const WARNING = '#996600' as const; // Warning garanti lisible
+
+// Dérivations depuis ThemeColors (C1-C10)
+export interface SemanticColors {
+  // Surfaces
+  surfacePage: string;      // C7
+  surfaceCard: string;      // WHITE
+  surfaceRaised: string;    // C4
+  surfaceOverlay: string;   // rgba(0,0,0,0.5)
+  
+  // Textes
+  textPrimary: string;      // C10
+  textSecondary: string;    // C9
+  textInverse: string;      // WHITE
+  
+  // Bordures
+  borderDefault: string;    // C8
+  borderStrong: string;     // C5
+  
+  // Accents
+  accentLine: string;       // C6
+  
+  // États
+  success: string;          // C2 ou C3
+  danger: string;           // C1
+  warning: string;          // WARNING (hardcodé)
+  info: string;             // C4
+}
+
+// Helper : Générer les couleurs sémantiques depuis C1-C10
+export function getSemanticColors(theme: {
+  c1: string; c2: string; c3: string; c4: string;
+  c5: string; c6: string; c7: string; c8: string;
+  c9: string; c10: string;
+}): SemanticColors {
+  return {
+    surfacePage: theme.c7,
+    surfaceCard: WHITE,
+    surfaceRaised: theme.c4,
+    surfaceOverlay: 'rgba(0,0,0,0.5)',
+    textPrimary: theme.c10,
+    textSecondary: theme.c9,
+    textInverse: WHITE,
+    borderDefault: theme.c8,
+    borderStrong: theme.c5,
+    accentLine: theme.c6,
+    success: theme.c2,
+    danger: theme.c1,
+    warning: WARNING,
+    info: theme.c4,
+  };
+}
+
+// Helper : Choisir la couleur de texte selon le fond
+export function pickTextColorForBackground(
+  bgColor: string,
+  theme: { c10: string }
+): string {
+  const luminance = getRelativeLuminance(bgColor);
+  // Seuil 0.5 : au-dessus = fond clair → texte sombre
+  return luminance > 0.5 ? theme.c10 : WHITE;
+}
+
+// Helper interne : Calcul luminance relative (WCAG)
+function getRelativeLuminance(hexColor: string): number {
+  const hex = hexColor.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  
+  const toLinear = (c: number) => 
+    c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+```
+
+#### Module 2 : Excel Colors (src/utils/excelColors.ts)
+
+```typescript
+import { getSemanticColors, WHITE } from '../styles/semanticColors';
+
+// Mapping spécifique Excel depuis les couleurs sémantiques
+export function getExcelColors(theme: { c1: string; c2: string; c4: string; c7: string; c8: string; c10: string; }) {
+  const semantic = getSemanticColors({ ...theme, c3: theme.c2, c5: theme.c8, c6: theme.c8, c9: theme.c10 });
+  
+  return {
+    headerFill: theme.c2.replace('#', ''),      // Primary
+    headerText: WHITE.replace('#', ''),         // Blanc forcé
+    sectionFill: theme.c4.replace('#', ''),     // Light accent
+    sectionText: theme.c10.replace('#', ''),    // Noir
+    border: theme.c8.replace('#', ''),          // Border light
+    zebraOdd: theme.c7.replace('#', ''),        // Surface page
+    zebraEven: WHITE.replace('#', ''),          // Blanc
+    warningFill: 'FFF7E6',                      // Fond warning (hardcodé)
+    warningText: '996600',                      // Warning (hardcodé)
+  };
+}
+```
+
+#### Module 3 : PPTX Semantic (src/pptx/theme/semanticColors.ts)
+
+```typescript
+import { getSemanticColors as getBaseSemanticColors, WHITE, WARNING } from '../../styles/semanticColors';
+import type { ThemeColors } from '../../settings/ThemeProvider';
+
+// Version PPTX : retourne les couleurs sans # pour PptxGenJS
+export function getPptxSemanticColors(theme: ThemeColors) {
+  const base = getBaseSemanticColors(theme);
+  
+  return {
+    // Surfaces (sans #)
+    surfacePage: base.surfacePage.replace('#', ''),
+    surfaceCard: WHITE.replace('#', ''),
+    surfaceRaised: base.surfaceRaised.replace('#', ''),
+    surfaceOverlay: '000000', // PPTX utilise opacity séparée
+    
+    // Textes (sans #)
+    textPrimary: base.textPrimary.replace('#', ''),
+    textSecondary: base.textSecondary.replace('#', ''),
+    textInverse: WHITE.replace('#', ''),
+    
+    // Bordures (sans #)
+    borderDefault: base.borderDefault.replace('#', ''),
+    borderStrong: base.borderStrong.replace('#', ''),
+    
+    // Accents (sans #)
+    accentLine: base.accentLine.replace('#', ''),
+    
+    // États (sans #)
+    success: base.success.replace('#', ''),
+    danger: base.danger.replace('#', ''),
+    warning: WARNING.replace('#', ''),
+    info: base.info.replace('#', ''),
+    
+    // Raw pour références
+    white: WHITE.replace('#', ''),
+    warningRaw: WARNING,
+  };
+}
+
+// Helper PPTX : détermine texte clair ou sombre pour un fond
+export function getPptxTextForBackground(bgColor: string, theme: ThemeColors): string {
+  const hex = bgColor.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  // Luminance approximative (perceptuelle)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  
+  return luminance > 0.5 ? theme.c10.replace('#', '') : WHITE.replace('#', '');
+}
+```
+
+---
+
+### Checklist Validation Finale
+
+#### UI
+- [ ] Titres : C1 ou C10 — jamais sur fond clair sans contraste
+- [ ] Cards : fond WHITE — texte C10 ou C9
+- [ ] Tables : header C2/texte WHITE — rows C7/WHITE alternance
+- [ ] CTA : C2 fond — WHITE texte (ou C10 si C2 clair)
+- [ ] Modals : overlay rgba(0,0,0,0.5) — panel WHITE
+- [ ] Alerts : warning #996600 hardcodé — danger C1/white
+
+#### PPTX
+- [ ] Cover : fond C1 — texte WHITE
+- [ ] Titres slides : C10 sur fond WHITE
+- [ ] Tableaux : header C2/texte WHITE — rows C7/WHITE
+- [ ] Warnings : WARNING hardcodé
+
+#### Excel
+- [ ] Headers : C2 fill — WHITE texte (toujours)
+- [ ] Sections : C4 fill — C10 texte
+- [ ] Zebra : C7 / WHITE alternance
+- [ ] Alertes : warning hardcodé
+
+---
+
+### Références
+
+- [Détail complet gouvernance](./color-governance.md)
+- [Fichier source à créer : src/styles/semanticColors.ts](../src/styles/semanticColors.ts)
+- [Fichier source à créer : src/pptx/theme/semanticColors.ts](../src/pptx/theme/semanticColors.ts)
+
+---
+
+## Fichier généré (final)
+
 - Date : 2026-02-03
-- Commandes utilisées :
-  - `rg -n "C[1-9]|C10" src`
-  - `rg -n "#[0-9a-fA-F]{3,6}" src`
-  - `rg -n "rgba\(|hsl\(" src`
-  - `rg -n "pptxgen|PptxGenJS|addSlide|addText|addShape|resolvePptxColors" src`
-  - `rg -n "xlsx|exceljs|sheetjs|writeFile|headerFill|sectionFill" src`
+- Documents : `docs/color-audit.md` (complet), `docs/color-governance.md` (référence)
+- Implémentation proposée : 3 modules (`semanticColors.ts` ×2 + `excelColors.ts`)
