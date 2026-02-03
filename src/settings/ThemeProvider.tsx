@@ -309,9 +309,10 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         return {};
       }
       
-      // Handle both old format (string) and new format (object)
-      const storagePath = typeof result === 'string' ? result : result.storage_path;
-      const placement = typeof result === 'string' ? 'center-bottom' : result.placement;
+      // Handle both old format (string) and new format (array of objects from TABLE)
+      const row = Array.isArray(result) ? result[0] : result;
+      const storagePath = typeof row === 'string' ? row : row?.storage_path;
+      const placement = typeof row === 'string' ? 'center-bottom' : row?.placement;
       
       if (!storagePath) {
         return {};
