@@ -140,7 +140,7 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 ## 4. Supabase — RLS & Storage
 
 ### 4.1 RPC SECURITY DEFINER
-- `get_my_cabinet_logo()` → retourne `storage_path` logo cabinet
+- `get_my_cabinet_logo()` → retourne `{ storage_path, placement }` logo cabinet + position
 - `get_my_cabinet_theme_palette()` → retourne palette JSONB
 
 ### 4.2 Bucket logos
