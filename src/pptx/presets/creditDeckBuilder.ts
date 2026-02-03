@@ -144,12 +144,14 @@ function paginateByYearColumns(
  * @param creditData - Credit simulation results (multi-loan support)
  * @param uiSettings - Theme colors from ThemeProvider
  * @param logoUrl - Optional logo URL from user_metadata
+ * @param logoPlacement - Optional logo placement for cover slide
  * @param advisor - Optional advisor information
  */
 export function buildCreditStudyDeck(
   creditData: CreditData,
   uiSettings: UiSettingsForPptx,
   logoUrl?: string,
+  logoPlacement?: import('../theme/types').LogoPlacement,
   advisor?: AdvisorInfo
 ): StudyDeckSpec {
   // Determine if multi-loan scenario
@@ -366,6 +368,7 @@ export function buildCreditStudyDeck(
       title: 'Simulation Crédit Immobilier',
       subtitle: clientSubtitle,
       logoUrl,
+      logoPlacement,
       leftMeta: dateStr,
       rightMeta: advisorMeta,
     },

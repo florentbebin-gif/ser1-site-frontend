@@ -5,6 +5,43 @@
 
 ---
 
+## 2026-02-03 — Logo Placement PPTX + Corrections
+
+### 1. Position du logo sur les exports PPTX
+
+**Objectif** : Permettre aux utilisateurs de choisir la position du logo cabinet sur les slides de couverture PPTX.
+
+| Aspect | Avant | Après |
+|--------|-------|-------|
+| **Position** | Fixe (centre-bas) | 6 options : top-left, center-top, top-right, bottom-left, center-bottom, bottom-right |
+| **Stockage** | - | Colonne `logo_placement` sur table `cabinets` |
+| **RPC** | `get_my_cabinet_logo()` → `storage_path` | `get_my_cabinet_logo()` → `{ storage_path, placement }` |
+| **UI** | Upload logo uniquement | Upload + sélecteur de position dans modal Cabinet |
+
+**Migrations** :
+- `202602030001_add-logo-placement-to-cabinets.sql` — Ajoute colonne avec contrainte CHECK
+- `202602030002_update-rpc-get-my-cabinet-logo.sql` — Met à jour la RPC pour retourner placement
+
+**Fichiers modifiés** :
+- `src/settings/ThemeProvider.tsx` — Extrait `placement` de la RPC, gère format TABLE (array)
+- `src/pages/Sous-Settings/SettingsComptes.jsx` — UI sélecteur position + sauvegarde
+- `src/pptx/theme/types.ts` — Ajoute type `LogoPlacement` et champ `logoPlacement` dans `CoverSlideSpec`
+- `src/pptx/designSystem/serenity.ts` — Ajoute `calculateLogoPosition()` avec safe zone
+- `src/pptx/slides/buildCover.ts` — Utilise `calculateLogoPosition()` selon placement
+- `src/pptx/presets/irDeckBuilder.ts` — Passe `logoPlacement` au cover
+- `src/pptx/presets/creditDeckBuilder.ts` — Passe `logoPlacement` au cover
+- `src/pages/Ir.jsx` — Extrait `logoPlacement` de `useTheme()`, passe au builder
+- `src/pages/Credit.jsx` — Extrait `logoPlacement` de `useTheme()`, passe au builder
+- `config/supabase/functions/admin/index.ts` — Gère `logo_placement` dans `update_cabinet`
+
+### 2. Bug fix : Format retour RPC TABLE
+
+**Problème** : La nouvelle RPC `RETURNS TABLE(...)` retourne un **tableau** `[{row}]`, pas un objet direct. Le code faisait `result.storage_path` sur un array → `undefined` → logo absent.
+
+**Fix** : `ThemeProvider.tsx` extrait d'abord `row = result[0]` puis accède aux propriétés.
+
+---
+
 ## 2026-02-01 — Refonte Signalements + Navigation Settings
 
 ### 1. Signalements — Intégration dans Settings (Généraux)

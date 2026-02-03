@@ -94,12 +94,14 @@ export interface AdvisorInfo {
  * @param irData - IR simulation results
  * @param uiSettings - Theme colors from ThemeProvider
  * @param logoUrl - Optional logo URL from Supabase Storage
+ * @param logoPlacement - Optional logo placement for cover slide
  * @param advisor - Optional advisor information
  */
 export function buildIrStudyDeck(
   irData: IrData,
   uiSettings: UiSettingsForPptx,
   logoUrl?: string,
+  logoPlacement?: import('../theme/types').LogoPlacement,
   advisor?: AdvisorInfo
 ): StudyDeckSpec {
   // Debug logging
@@ -199,8 +201,9 @@ export function buildIrStudyDeck(
     cover: {
       type: 'cover',
       title: 'Simulation Impôt sur le Revenu',
-      subtitle: clientSubtitle, // NOM Prénom instead of foyer description
+      subtitle: clientSubtitle,
       logoUrl,
+      logoPlacement,
       leftMeta: dateStr,
       rightMeta: advisorMeta,
     },

@@ -14,6 +14,8 @@ import {
   addAccentLine,
   addCornerMarks,
   addTextBox,
+  calculateLogoPosition,
+  DEFAULT_LOGO_PLACEMENT,
 } from '../designSystem/serenity';
 
 /**
@@ -84,46 +86,33 @@ export function buildCover(
     const W0 = imgWidth / 96;
     const H0 = imgHeight / 96;
     
-    // Box dimensions
+    // Box dimensions (max allowed size)
     const boxW = COORDS_COVER.logo.w;
     const boxH = COORDS_COVER.logo.h;
     
-    // Check if logo fits without scaling
-    if (W0 <= boxW && H0 <= boxH) {
-      // No scaling needed - use original size
-      const centerX = COORDS_COVER.logo.x + (boxW - W0) / 2;
-      // Position logo with bottom aligned 1.5cm below slide center
-      const slideCenterY = 3.75; // Slide height / 2
-      const logoBottomY = slideCenterY - 0.5906; // 1.5cm = 0.5906 inches below center
-      const centerY = logoBottomY; // Y position for bottom alignment (bottom edge at this position)
-      
-      slide.addImage({
-        data: logoDataUri,
-        x: centerX,
-        y: centerY,
-        w: W0,
-        h: H0,
-      });
-    } else {
-      // Scale down proportionally
+    // Calculate final dimensions (scale down if needed)
+    let finalW = W0;
+    let finalH = H0;
+    
+    if (W0 > boxW || H0 > boxH) {
       const scale = Math.min(boxW / W0, boxH / H0);
-      const W = W0 * scale;
-      const H = H0 * scale;
-      
-      const centerX = COORDS_COVER.logo.x + (boxW - W) / 2;
-      // Position logo with bottom aligned 1.5cm below slide center
-      const slideCenterY = 3.75; // Slide height / 2
-      const logoBottomY = slideCenterY - 0.5906; // 1.5cm = 0.5906 inches below center
-      const centerY = logoBottomY; // Y position for bottom alignment (bottom edge at this position)
-      
-      slide.addImage({
-        data: logoDataUri,
-        x: centerX,
-        y: centerY,
-        w: W,
-        h: H,
-      });
+      finalW = W0 * scale;
+      finalH = H0 * scale;
     }
+    
+    // Get placement from spec or use default
+    const placement = spec.logoPlacement || DEFAULT_LOGO_PLACEMENT;
+    
+    // Calculate position based on placement option
+    const { x: logoX, y: logoY } = calculateLogoPosition(placement, finalW, finalH);
+    
+    slide.addImage({
+      data: logoDataUri,
+      x: logoX,
+      y: logoY,
+      w: finalW,
+      h: finalH,
+    });
   }
   
   // Title (ALL CAPS, centered)
