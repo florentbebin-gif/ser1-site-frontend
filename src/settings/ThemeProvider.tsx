@@ -209,7 +209,8 @@ interface ThemeContextValue {
   themeReady: boolean; // true when CSS variables are applied (safe to render routes)
   logo?: string;
   setLogo: (_logo: string | undefined) => void;
-  cabinetLogo?: string; // Logo cabinet (via RPC)
+  cabinetLogo?: string;
+  logoPlacement?: import('../pptx/theme/types').LogoPlacement;
   cabinetColors: ThemeColors | null | undefined; // Tri-état: undefined=not loaded, null=no cabinet, ThemeColors=cabinet palette
   themeScope: ThemeScope;
   setThemeScope: (_scope: ThemeScope) => void; // Allow Settings to update scope globally
@@ -227,6 +228,7 @@ const ThemeContext = createContext<ThemeContextValue>({
   logo: undefined,
   setLogo: (_logo: string | undefined) => {},
   cabinetLogo: undefined,
+  logoPlacement: 'center-bottom',
   cabinetColors: null,
   themeScope: 'all',
   setThemeScope: (_scope: ThemeScope) => {},
@@ -268,6 +270,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const [colorsState, setColorsState] = useState<ThemeColors>(() => themeBootstrap?.colors ?? DEFAULT_COLORS);
   const [logo, setLogo] = useState<string | undefined>(undefined);
   const [cabinetLogo, setCabinetLogo] = useState<string | undefined>(undefined);
+  const [logoPlacement, setLogoPlacement] = useState<import('../pptx/theme/types').LogoPlacement>('center-bottom');
   const [isLoading, setIsLoading] = useState(true);
   const [themeReady, setThemeReady] = useState(false); // true when CSS vars applied
   const [themeScope, setThemeScope] = useState<ThemeScope>('all');
@@ -292,18 +295,27 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
 
   // Load cabinet logo for user via RPC (contourne RLS)
   // Returns data URI (base64) for direct use in PPTX exports
-  const loadCabinetLogo = async (_userId: string): Promise<string | undefined> => {
+  const loadCabinetLogo = async (_userId: string): Promise<{ logo?: string; placement?: import('../pptx/theme/types').LogoPlacement }> => {
     try {
-      // Utiliser RPC SECURITY DEFINER pour récupérer le storage_path sans RLS
-      const { data: storagePath, error: rpcError } = await supabase
+      // Utiliser RPC SECURITY DEFINER pour récupérer le storage_path et placement sans RLS
+      const { data: result, error: rpcError } = await supabase
         .rpc('get_my_cabinet_logo');
         
       if (rpcError) {
-        return undefined;
+        return {};
       }
       
+      if (!result) {
+        return {};
+      }
+      
+      // Handle both old format (string) and new format (array of objects from TABLE)
+      const row = Array.isArray(result) ? result[0] : result;
+      const storagePath = typeof row === 'string' ? row : row?.storage_path;
+      const placement = typeof row === 'string' ? 'center-bottom' : row?.placement;
+      
       if (!storagePath) {
-        return undefined;
+        return {};
       }
       
       // Download blob from Storage (works with public AND private buckets)
@@ -312,7 +324,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         .download(storagePath);
       
       if (downloadError || !blob) {
-        return undefined;
+        return {};
       }
       
       // Convert blob to data URI for direct use in PPTX
@@ -323,10 +335,9 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         reader.readAsDataURL(blob);
       });
       
-      return dataUri;
+      return { logo: dataUri, placement: placement || 'center-bottom' };
     } catch (error) {
-      console.error('[ThemeProvider] Error loading cabinet logo:', error);
-      return undefined;
+      return {};
     }
   };
 
@@ -491,26 +502,29 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     return promise;
   };
 
-  const ensureCabinetLogoFetch = (userId: string): Promise<string | undefined> => {
+  const ensureCabinetLogoFetch = (userId: string): Promise<{ logo?: string; placement?: import('../pptx/theme/types').LogoPlacement }> => {
     if (cabinetLogoLoadedRef.current === userId && cabinetLogoPromiseRef.current) {
       return cabinetLogoPromiseRef.current;
     }
 
     if (cabinetLogoLoadedRef.current === userId && !cabinetLogoPromiseRef.current) {
-      return Promise.resolve(cabinetLogo);
+      return Promise.resolve({ logo: cabinetLogo, placement: logoPlacement });
     }
 
     cabinetLogoLoadedRef.current = userId;
     const requestId = ++cabinetLogoRequestIdRef.current;
     const promise = (async () => {
-      const logoUrl = await loadCabinetLogo(userId);
+      const result = await loadCabinetLogo(userId);
       if (!mountedRef.current || requestId !== cabinetLogoRequestIdRef.current) {
-        return logoUrl;
+        return result;
       }
 
-      setCabinetLogo(logoUrl);
-      saveCabinetLogoToCache(logoUrl ?? null, userId);
-      return logoUrl;
+      setCabinetLogo(result.logo);
+      if (result.placement) {
+        setLogoPlacement(result.placement);
+      }
+      saveCabinetLogoToCache(result.logo ?? null, userId);
+      return result;
     })();
 
     cabinetLogoPromiseRef.current = promise;
@@ -525,7 +539,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const mountedRef = useRef<boolean>(true);
   const activeRequestIdRef = useRef<number>(0);
   const cabinetThemePromiseRef = useRef<Promise<ThemeColors | null> | null>(null);
-  const cabinetLogoPromiseRef = useRef<Promise<string | undefined> | null>(null);
+  const cabinetLogoPromiseRef = useRef<Promise<{ logo?: string; placement?: import('../pptx/theme/types').LogoPlacement }> | null>(null);
   const cabinetThemeLoadedRef = useRef<string | null>(null);
   const cabinetLogoLoadedRef = useRef<string | null>(null);
   const cabinetThemeRequestIdRef = useRef<number>(0);
@@ -534,7 +548,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const cabinetColorsRef = useRef<ThemeColors | null | undefined>(cabinetColors);
   const cabinetLogoRef = useRef<string | undefined>(cabinetLogo);
   const ensureCabinetThemeFetchRef = useRef<((_userId: string) => Promise<ThemeColors | null>) | null>(null);
-  const ensureCabinetLogoFetchRef = useRef<((_userId: string) => Promise<string | undefined>) | null>(null);
+  const ensureCabinetLogoFetchRef = useRef<((_userId: string) => Promise<{ logo?: string; placement?: import('../pptx/theme/types').LogoPlacement }>) | null>(null);
   const applyColorsToCSSWithGuardRef = useRef(applyColorsToCSSWithGuard);
 
   // Debug: Log mount/unmount
@@ -943,7 +957,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, isLoading, themeReady, logo, setLogo, cabinetLogo, cabinetColors, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource }}>
+    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, isLoading, themeReady, logo, setLogo, cabinetLogo, logoPlacement, cabinetColors, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource }}>
       {children}
     </ThemeContext.Provider>
   );
