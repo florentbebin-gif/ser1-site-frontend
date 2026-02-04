@@ -232,6 +232,15 @@ localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true')
 - `ADMIN_COMPTES_ET_SIGNALMENTS.md` — Gestion admin
 - `CSS_COLOR_RULES.md` — Règles couleurs CSS
 
+### 🎨 Gouvernance Couleurs (CRITIQUE)
+
+| Document | Description | Usage |
+|----------|-------------|-------|
+| **[Gouvernance Couleurs](docs/color-governance.md)** | Règles complètes C1-C10, exceptions, contraste, mapping sémantique | **OBLIGATOIRE** avant toute modif couleur |
+| **[Audit Couleurs](docs/color-audit.md)** | Écarts actuels, TOP 15 incohérences, plan de migration | Référence pour clean-up |
+
+**⚠️ RÈGLE ABSOLUE** : Aucune couleur hardcodée sauf WHITE (#FFFFFF) et WARNING (#996600). Voir [gouvernance détaillée](docs/color-governance.md#exceptions-autorisées-liste-exhaustive).
+
 ---
 
 *README simplifié — voir [docs/notes/changelog.md](docs/notes/changelog.md) pour l'historique complet.*

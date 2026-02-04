@@ -635,10 +635,12 @@ export function getPptxTextForBackground(bgColor: string, theme: ThemeColors): s
 - [ ] Warnings : WARNING hardcodé
 
 #### Excel
-- [ ] Headers : C2 fill — WHITE texte (toujours)
-- [ ] Sections : C4 fill — C10 texte
-- [ ] Zebra : C7 / WHITE alternance
-- [ ] Alertes : warning hardcodé
+
+- [ ] **Headers** : C2 fill — texte calculé via `pickTextColorForBackground(C2)`
+- [ ] **Sections** : C4 fill — C10 texte
+- [ ] **Zebra** : C7 / WHITE alternance
+- [ ] **Alertes** : warning hardcodé
+- [ ] **Bordures** : C8 ou none
 
 ---
 
@@ -650,8 +652,238 @@ export function getPptxTextForBackground(bgColor: string, theme: ThemeColors): s
 
 ---
 
-## Fichier généré (final)
+## G) GAP ANALYSIS & PLAN DE MISE À JOUR
 
-- Date : 2026-02-03
-- Documents : `docs/color-audit.md` (complet), `docs/color-governance.md` (référence)
-- Implémentation proposée : 3 modules (`semanticColors.ts` ×2 + `excelColors.ts`)
+### Gap Analysis vs Gouvernance Cible
+
+| Token | Rôle cible (gouvernance) | Usage réel actuel | Écart | Priorité |
+|-------|-------------------------|-------------------|-------|----------|
+| **C1** | Brand dark (titres, fonds cover) | Titres OK, mais aussi fonds de cover | Léger : dual usage accepté avec `textOnMain` | P3 |
+| **C2** | Brand primary (CTA, liens, header Excel) | Liens OK, Excel fallback différent (`#2F4A6D`) | **Écart majeur** : Excel n'utilise pas C2 | P1 |
+| **C3** | Brand light (hover, success) | Sous-utilisé, pas de mapping sémantique clair | **Gap** : Créer token `success` | P2 |
+| **C4** | Brand faint (fonds actifs, info) | Fonds OK, info pas exploité | Léger : ajouter token `info` | P3 |
+| **C5** | Neutral medium (bordures fortes) | Bordures via `--beige` alias | **Gap** : C5 pas dans PPTX roles | P3 |
+| **C6** | Warm accent (séparateurs, lignes) | Bordures/table headers UI, accent lines PPTX | **Incohérence UI/PPTX** — OK sémantiquement | P3 |
+| **C7** | Surface page | Souvent remplacé par `#fff` hardcodé | **Écart majeur** : UI ne suit pas C7 | P1 |
+| **C8** | Border light | Bordures OK | Aucun | — |
+| **C9** | Text muted | Texte secondaire OK | Aucun | — |
+| **C10** | Text primary | Texte principal OK | Aucun | — |
+
+---
+
+### Tableau TOP 15 Incohérences
+
+| # | Problème | Impact | Où (fichiers:ligne) | Correction recommandée | Priorité |
+|---|----------|--------|---------------------|------------------------|----------|
+| 1 | **Excel fallback `#2F4A6D` ≠ C2** | Headers Excel incohérents avec thème UI | `xlsxBuilder.ts:40` | Supprimer fallback, forcer passage explicite de C2 | P0 |
+| 2 | **Cards UI utilisent `#fff` au lieu de C7** | Divergence UI/PPTX surfaces | `Credit.css:44`, `Home.css:20`, `Ir.css:32` | Créer token `surface-card` = WHITE, migrer progressivement | P1 |
+| 3 | **`#666666` hardcodé dans PPTX** | Disclaimer non thémable | `auditPptx.ts:368` | Remplacer par C9 (textBody) | P0 |
+| 4 | **`#222` hardcodé pour titres** | Titres non thémables | `Credit.css:29`, `Ir.css:24` | Remplacer par C10 (textMain) | P0 |
+| 5 | **`#2b3e37` hardcodé (brand)** | Titres brand non thémables | `Credit.css:21`, `Ir.css:17` | Remplacer par C1 (bgMain) | P0 |
+| 6 | **Shadows hardcodés rgba** | Non thémables, incohérents | `premium-shared.css:54,55,67`, `Placement.css` | Créer token `--shadow-sm/md/lg` dérivé de C10 | P1 |
+| 7 | **C3 sous-utilisé / pas de mapping success** | Token C3 inexploité | `styles.css:30` (alias uniquement) | Créer mapping sémantique `success → C3` | P1 |
+| 8 | **C5 non mappé dans PPTX roles** | Couleur C5 inexistante exports | — | Ajouter C5 aux rôles PPTX (accent2?) ou documenter exclusion | P2 |
+| 9 | **`DEFAULT_PPTX_THEME` hardcodé** | Fallback PPTX divergent | `pptxTheme.ts:54-60` | Remplacer par référence à `SER1_CLASSIC_COLORS` | P1 |
+| 10 | **4 sources de vérité C1-C10** | Risque de divergence | `theme.ts`, `ThemeProvider.tsx`, `styles.css`, `resolvePptxColors.ts` | Centraliser dans module unique exporté | P1 |
+| 11 | **Texte blanc hardcodé sur C2** | Si C2 clair → texte illisible | `SignalementsBlock.css:125` | Utiliser helper `pickTextColorForBackground(C2)` | P1 |
+| 12 | **Input background `#fff` hardcodé** | Incohérence avec thème | `premium-shared.css:183` | Remplacer par C7 ou surface-card | P2 |
+| 13 | **C7 utilisé comme texte (textOnMain)** | Ambiguïté rôle C7 | `resolvePptxColors.ts:79` | Documenter: C7 = surface, pas texte. Utiliser C10+C luminance | P2 |
+| 14 | **Pas de helper contraste PPTX** | Risque texte illisible selon thème | — | Implémenter `getPptxTextForBackground(bgColor)` | P1 |
+| 15 | **Excel section fallback `#E5EAF2`** | Couleur sections Excel non thémable | `xlsxBuilder.ts:182` | Supprimer fallback, mapper vers C4 | P0 |
+
+---
+
+### Risques identifiés
+
+| Risque | Sévérité | Description | Mitigation |
+|--------|----------|-------------|------------|
+| Thème user clair + C2 très clair | Haute | Header Excel avec texte blanc illisible | `pickTextColorForBackground()` helper |
+| C6 très clair dans certains cabinets | Moyenne | Accent lines PPTX peu visibles | Accepter — PPTX utilise aussi C1 |
+| C7 très proche de #fff | Faible | Différenciation surfaces difficile | Documenter usage C7 = surface-page uniquement |
+| Migration CSS massive | Moyenne | Risque de régression visuelle | Phase par phase, tests visuels |
+
+---
+
+### Plan de Mise à Jour (Priorisé P0/P1/P2)
+
+#### Phase 0 — Quick Wins (P0) — 1-2 jours
+
+| Tâche | Fichiers | Action | Validation |
+|-------|----------|--------|------------|
+| 0.1 | `xlsxBuilder.ts:40` | Supprimer fallback `#2F4A6D`, rendre headerFill obligatoire | Export Excel avec header coloré selon thème |
+| 0.2 | `xlsxBuilder.ts:182` | Supprimer fallback `#E5EAF2`, rendre sectionFill obligatoire | Sections Excel avec C4 |
+| 0.3 | `auditPptx.ts:368` | Remplacer `#666666` par `c9` | Disclaimer en C9 |
+| 0.4 | `Credit.css:29`, `Ir.css:24` | Remplacer `#222` par `var(--color-c10)` | Titres en C10 |
+| 0.5 | `Credit.css:21`, `Ir.css:17` | Remplacer `#2b3e37` par `var(--color-c1)` | Titres brand en C1 |
+
+**Livrable** : PR #0 — Nettoyage hardcodes visibles
+
+---
+
+#### Phase 1 — Fondations (P1) — 2-3 jours
+
+| Tâche | Fichiers | Action | Validation |
+|-------|----------|--------|------------|
+| 1.1 | Créer `src/styles/semanticColors.ts` | Module core avec `getSemanticColors()`, `WHITE`, `WARNING`, helpers contraste | Tests unitaires helpers |
+| 1.2 | Créer `src/pptx/theme/semanticColors.ts` | Version PPTX avec `getPptxSemanticColors()`, `getPptxTextForBackground()` | Tests PPTX contraste |
+| 1.3 | `src/styles.css` | Ajouter variables CSS sémantiques (`--surface-page`, `--text-primary`, etc.) | Variables présentes dans DOM |
+| 1.4 | `src/settings/theme.ts` | Centraliser DEFAULT_THEME, exporter pour tous les consommateurs | Un seul point de vérité |
+| 1.5 | `pptxTheme.ts:54-60` | Remplacer DEFAULT_PPTX_THEME par référence SER1_CLASSIC_COLORS | Fallback PPTX cohérent |
+
+**Livrable** : PR #1 — Infrastructure sémantique
+
+---
+
+#### Phase 2 — Composants Tokenisés (P1) — 3-4 jours
+
+| Tâche | Composant | Action | Validation |
+|-------|-----------|--------|------------|
+| 2.1 | `Button` | Standardiser variants: `primary` (C2), `secondary` (C7), `ghost`. Ajouter helper contraste | BTN primary lisible sur tous thèmes |
+| 2.2 | `Card` | Fond `surface-card` (WHITE), border `border-default` (C8) | Cards cohérentes UI/PPTX |
+| 2.3 | `Table` | Header C2/texte adaptatif, rows C7/WHITE zebra, borders C8 | Tables avec thème user |
+| 2.4 | `Badge` | Variants: `success` (C3), `warning` (WARNING), `danger` (C1), `info` (C4) | Badges thémables |
+| 2.5 | `Alert` | Variants avec tokens sémantiques + helper contraste | Alertes lisibles |
+
+**Livrable** : PR #2 — Bibliothèque de composants tokenisés
+
+---
+
+#### Phase 3 — Pages + PPTX (P1/P2) — 3-4 jours
+
+| Tâche | Pages/Slides | Action | Validation |
+|-------|--------------|--------|------------|
+| 3.1 | `Credit.css`, `Ir.css`, `Placement.css` | Migrer vers composants tokenisés, remplacer hardcodes | Pas de régression visuelle |
+| 3.2 | `Home.css` | Cards `status-card` → composant Card tokenisé | Cards utilisent surface-card |
+| 3.3 | `Login.css` | Alerts → composant Alert tokenisé | Alerts avec WARNING si besoin |
+| 3.4 | `buildCover.ts` | Utiliser `getPptxSemanticColors()` | Cover avec rôles sémantiques |
+| 3.5 | `buildIrSynthesis.ts`, `buildCreditSynthesis.ts` | Utiliser tokens sémantiques PPTX | Slides IR/Crédit cohérents |
+| 3.6 | `auditPptx.ts`, `strategyPptx.ts` | Remplacer variables locales `c1, c2...` par appel `getPptxSemanticColors()` | Pas de régression PPTX |
+
+**Livrable** : PR #3 — Migration pages et slides PPTX
+
+---
+
+#### Phase 4 — Excel + Validation (P0/P1) — 2-3 jours
+
+| Tâche | Fichiers | Action | Validation |
+|-------|----------|--------|------------|
+| 4.1 | `xlsxBuilder.ts` | Supprimer tous fallbacks hardcodés | Tests exports Excel échouent si couleurs manquantes |
+| 4.2 | Créer `getExcelColorsFromTheme()` | Mapper: C2→headerFill, C4→sectionFill, C10→texte | Helper testé |
+| 4.3 | Tous appelants `buildXlsxBlob` | Passer couleurs explicitement via helper | Excel avec thème user |
+| 4.4 | Tests visuels | Vérifier cohérence UI/PPTX/Excel sur 3 thèmes (dark, light, classic) | Validation manuelle |
+
+**Livrable** : PR #4 — Excel aligné + tests validation
+
+---
+
+### Stratégie de Gouvernance
+
+#### Où vit la vérité ?
+
+**Une seule source de vérité** : `src/settings/theme.ts`
+- `DEFAULT_THEME` exporté et réutilisé par :
+  - `ThemeProvider.tsx` (import, pas redéfinition)
+  - `styles.css` (variables CSS synchronisées au runtime)
+  - `resolvePptxColors.ts` (SER1_CLASSIC_COLORS importe DEFAULT_THEME)
+
+#### Comment éviter les régressions ?
+
+1. **Lint rule** : Interdire les hex hardcodés (sauf WHITE et WARNING)
+2. **Tests unitaires** : Vérifier que tous les exports (PPTX/Excel) utilisent les couleurs du thème
+3. **Visual regression tests** : Comparer screenshots avant/après sur 3 thèmes
+4. **Code review checklist** :
+   - [ ] Pas de `#RRGGBB` dans le code (sauf exceptions validées)
+   - [ ] Pas de `colors.cX` direct dans PPTX (utiliser rôles sémantiques)
+   - [ ] Helper contraste utilisé pour texte sur fond coloré
+
+---
+
+### Checklist Validation Post-Migration
+
+#### UI
+- [ ] Page Login : alerts avec WARNING hardcodé, autres tokens sémantiques
+- [ ] Page Home : cards avec `surface-card`, status avec C9/C1
+- [ ] Page Credit : titre C1, table header C2/texte WHITE, rows zebra C7/WHITE
+- [ ] Page IR : même structure que Credit
+- [ ] Page Placement : phases tabs avec C2 active, C9 inactive
+- [ ] Modals : overlay `rgba(0,0,0,0.5)`, panel `surface-card`
+
+#### PPTX
+- [ ] Cover : fond C1, texte WHITE, accent C6
+- [ ] Titres slides : C1 ou C10 selon fond
+- [ ] Tableaux : header C2/texte WHITE, rows C7/WHITE zebra
+- [ ] Encarts : fond C4, border C8, texte C10
+- [ ] Warnings : WARNING hardcodé
+
+#### Excel
+- [ ] Headers : C2 fill, WHITE texte
+- [ ] Sections : C4 fill, C10 texte
+- [ ] Zebra : C7 / WHITE alternance
+- [ ] Pas de fallback hardcodé
+
+---
+
+### Références
+
+- [Usage réel détaillé](./color-governance.md#annexe-a--usage-réel-des-tokens-c1c10-ui--pptx)
+- [Implémentation proposée section F](./color-audit.md#f-gouvernance--contraste--décision-finale)
+
+---
+
+*Gap Analysis & Plan de Migration — Version 2.0 — 2026-02-04*
+
+---
+
+## H) ANNEXE A — USAGE RÉEL DÉTAILLÉ DES TOKENS C1-C10
+
+Cette annexe détaille l'utilisation réelle des tokens C1-C10 dans l'UI et PPTX, avec les preuves fichier:ligne.
+
+### Source de vérité des tokens
+
+| Source | Fichier | Lignes | Valeurs C1-C10 |
+|--------|---------|--------|----------------|
+| `DEFAULT_THEME` | `src/settings/theme.ts` | 21-34 | C1:#2B3E37, C2:#709B8B, C3:#9FBDB2, C4:#CFDED8, C5:#788781, C6:#CEC1B6, C7:#F5F3F0, C8:#D9D9D9, C9:#7F7F7F, C10:#000000 |
+| `DEFAULT_COLORS` | `src/settings/ThemeProvider.tsx` | 175-186 | Mêmes valeurs |
+| Variables CSS | `src/styles.css` | 7-16 | Mêmes valeurs |
+| `SER1_CLASSIC_COLORS` | `src/pptx/theme/resolvePptxColors.ts` | 15-26 | Mêmes valeurs (fallback PPTX) |
+
+**Problème détecté** : Doublon de définition — 4 sources potentiellement divergentes.
+
+---
+
+### Tableau C1..C10 — usage réel (AUJOURD'HUI)
+
+| Token | Hex | UI : usages observés (catégories) | UI : preuves (fichier:ligne) | PPTX : usages observés | PPTX : preuves (fichier:ligne) | Incohérences / risques |
+|-------|-----|-----------------------------------|------------------------------|------------------------|------------------------------|------------------------|
+| **C1** | #2B3E37 | Titres H1/H2, headers de section, couvertures, borders-bottom forts, status-values, boutons primaires, erreurs | `premium-shared.css:13` (color: var(--color-c1)), `SignalementsBlock.css:42` (error color), `Placement.css:88` (tab active), `SettingsComptes.css:49` (btn bg) | bgMain (cover slide), textMain (titres), danger (erreurs), shadowBase | `auditPptx.ts:47` (cover bg c1), `auditPptx.ts:58` (slide background), `strategyPptx.ts:44` (cover), `resolvePptxColors.ts:75` (bgMain) | **Incohérence** : Utilisé tantôt pour fond (cover C1), tantôt pour texte (titres). Risque contraste si thème user a C1 très clair |
+| **C2** | #709B8B | Liens, hover states, focus inputs, accents visuels, badges admin, titres tableaux, boutons primaires | `premium-shared.css:83,154` (hover, btn-primary), `styles.css:136` (border focus), `Placement.css:83` (hover), `SettingsComptes.css:151` (badge admin), `SignalementsBlock.css:117` (alert-success) | accent (lignes décoratives), success states | `resolvePptxColors.ts:76` (accent), `getPptxThemeFromUiSettings.ts:158` (adaptive accent) | **Gap Excel** : Fallback `#2F4A6D` dans xlsxBuilder ≠ C2. Incohérence visuelle exports Excel |
+| **C3** | #9FBDB2 | Hover secondaire, états success, accents légers, focus doux, stepper active | `Placement.css:113` (step is-active border), `styles.css:30` (success-bg via alias) | Gradient TMI brackets (C4→C2), pas d'usage isolé direct | `buildIrSynthesis.ts` (gradient avec C4, C2) | **Sous-utilisé** : Pas de mapping sémantique `success` clair. Devrait être le token succès |
+| **C4** | #CFDED8 | Fonds actifs, surfaces surélevées, hover rows, sections info, zebra rows, alertes succès | `premium-shared.css:50,63,77` (premium-card, table), `SettingsFiscalites.css:17,31` (bg banner/table), `SignalementsBlock.css:189` (status-new bg) | bgAccent, info states, gradient TMI | `auditPptx.ts:49` (sous-titre cover c4), `strategyPptx.ts:46`, `resolvePptxColors.ts:84` (bgAccent) | **OK** : Usage cohérent "fond léger accent" UI et PPTX |
+| **C5** | #788781 | Bordures fortes, icônes secondaires, séparateurs accentués, stepper borders | `Credit.css:22` (border-bottom via --beige), `Ir.css:18` (border-bottom), `Placement.css:104` (step border) | Pas de mapping sémantique dédié dans PPTX roles | — | **Gap** : C5 présent dans CSS legacy (`--beige` alias) mais pas exploité dans PPTX roles |
+| **C6** | #CEC1B6 | Séparateurs chauds, lignes d'accent, borders doux, headers tableaux, accents décoratifs | `Credit.css:22` (border-bottom beige), `Ir.css:18` (border-bottom), `SettingsComptes.css:122` (table header bg), `Placement.css:149` (alert-warning bg) | accent (lignes décoratives, corner marks), footerAccent | `resolvePptxColors.ts:76` (accent), `types.ts:49,64` (accent, footerAccent), `buildCover.ts` (addAccentLine) | **Incohérence UI/PPTX** : UI utilise C6 pour bordures/table headers, PPTX pour accent lines. Sémantique différente mais OK |
+| **C7** | #F5F3F0 | Fond de page, backgrounds inputs, cards, bannières, KPIs, surfaces générales, formulaires | `premium-shared.css:50,63` (premium-card bg), `SettingsFiscalites.css:17` (banner bg), `SignalementsBlock.css:108,115` (alert bg), `Placement.css:105,178` (step bg, input bg) | textOnMain (texte sur C1), bgLight, surfaces | `auditPptx.ts:50` (var locale c7), `resolvePptxColors.ts:79` (textOnMain), `types.ts:40` (textOnMain) | **Incohérence majeure** : C7 théoriquement "surface page" mais souvent remplacé par `#fff` hardcodé en UI (Credit.css, Home.css, Ir.css) |
+| **C8** | #D9D9D9 | Bordures standards, inputs, dividers, séparateurs de section, table borders | `premium-shared.css:51,64,82,100` (borders), `SettingsFiscalites.css:10,38` (borders), `Placement.css:65` (tab border), `SignalementsBlock.css:109,116,152` (alert borders) | panelBorder, borderLight | `resolvePptxColors.ts:80,85` (panelBorder, borderLight), `types.ts:55` (panelBorder) | **OK** : Usage cohérent "border default" partout |
+| **C9** | #7F7F7F | Texte secondaire, labels, meta info, subtitles, chevrons, textes muted | `premium-shared.css:20,29,36,92` (subtitles, labels, table headers), `Placement.css:54,135,195` (subtitle, hint, unit), `Home.css:40` (status-label) | textBody (contenu secondaire) | `resolvePptxColors.ts:78` (textBody), `types.ts:46` (textBody) | **OK** : Usage cohérent "text muted" |
+| **C10** | #000000 | Texte principal, titres, labels forts, contenu dense, valeurs | `premium-shared.css:110` (table td), `SettingsComptes.css:11` (h2), `SettingsFiscalites.css:108` (block title), `SignalementsBlock.css:173` (report-title) | textMain (titres sur fond clair), textBody, footerOnLight | `auditPptx.ts:51` (var locale c10), `resolvePptxColors.ts:77` (textMain), `types.ts:43,61` (textMain, footerOnLight) | **OK** : Usage cohérent "text primary" |
+
+---
+
+### Tableau Couleurs Hardcodées (UI + PPTX)
+
+| Couleur | Contexte | Occurrences | Fichiers (lignes) | Remplacer par | Statut |
+|---------|----------|-------------|-------------------|---------------|--------|
+| `#FFFFFF` | Cards, panels, fonds élevés, texte sur fond sombre | ~50+ | `Credit.css:44`, `Home.css:20`, `Ir.css:32`, `SignalementsBlock.css:125,154` | `surface-card` (WHITE exception autorisée) | **Exception validée** |
+| `#996600` | Warning/alerte texte (audit PPTX) | 1 | `auditPptx.ts:310` | WARNING hardcodé | **Exception validée** |
+| `#666666` | Disclaimer texte (audit PPTX) | 1 | `auditPptx.ts:368` | C9 (textBody) | **À corriger** |
+| `#222` | Titres hardcodés | 2 | `Credit.css:29`, `Ir.css:24` | C10 (textMain) | **À corriger** |
+| `#2b3e37` | Titres brand hardcodés | 3 | `Credit.css:21`, `Ir.css:17` | C1 (bgMain) | **À corriger** |
+| `rgba(0,0,0,0.5)` | Overlays modals | 5 | `styles.css`, `Placement.css` | surface-overlay (rgba autorisé) | **Exception validée** |
+| `rgba(0,0,0,0.12)` | Shadows | 4 | `Credit.css`, `Ir.css`, `premium-shared.css:54` | shadowBase via token | **À tokeniser** |
+| `rgba(0,0,0,0.04-0.08)` | Shadows divers | 6+ | `premium-shared.css:55,67,150,154` | shadowBase dérivé | **À tokeniser** |
+| `#2F4A6D` | Fallback Excel header | 1 | `xlsxBuilder.ts:40` (fallback) | C2 (primary) | **À corriger** |
+| `#E5EAF2` | Fallback Excel section | 1 | `xlsxBuilder.ts:182` (fallback) | C4 (accent light) | **À corriger** |
+| `DEFAULT_PPTX_THEME` | Hardcodé PPTX fallback | 5 valeurs | `pptxTheme.ts:54-60` | SER1_CLASSIC_COLORS | **À corriger** |
+
+---
+
+*Annexe A — Version 2.1 — Preuves détaillées — Intégrée dans color-audit.md — 2026-02-04*
