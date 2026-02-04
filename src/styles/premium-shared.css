@@ -180,7 +180,7 @@
   border-radius: 6px;
   font-size: 13px;
   color: var(--color-c10);
-  background: #fff;
+  background: var(--color-surface, #FFFFFF);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -196,7 +196,7 @@
   border-radius: 6px;
   font-size: 13px;
   color: var(--color-c10);
-  background: #fff;
+  background: var(--color-surface, #FFFFFF);
   cursor: pointer;
   transition: border-color 0.2s;
 }

@@ -5,6 +5,8 @@
  * Toutes les couleurs viennent du thème utilisateur (settings)
  */
 
+import { DEFAULT_COLORS, type ThemeColors } from '../../settings/theme';
+
 // Interface pour le thème PPTX
 export interface PptxTheme {
   bgMain: string;      // Couleur de fond principale
@@ -15,19 +17,7 @@ export interface PptxTheme {
 }
 
 // Interface pour les settings utilisateur
-export interface UiSettings {
-  // Couleurs principales du thème SER1
-  c1: string;  // Couleur principale (texte, éléments importants)
-  c2: string;  // Couleur secondaire (accents, actions)
-  c3: string;  // Couleur tertiaire
-  c4: string;  // Couleur quaternaire
-  c5: string;  // Couleur cinquième
-  c6: string;  // Couleur sixième
-  c7: string;  // Background principal (conteneurs)
-  c8: string;  // Bordures et lignes
-  c9: string;  // Texte secondaire/muted
-  c10: string; // Texte principal
-}
+export interface UiSettings extends ThemeColors {}
 
 /**
  * Convertit les settings utilisateur en thème PPTX
@@ -47,16 +37,15 @@ export function getPptxThemeFromUiSettings(uiSettings: UiSettings): PptxTheme {
 }
 
 /**
- * Thème par défaut (valeurs Serenity si settings non définis)
- * NOTE: Ces valeurs devraient être stockées dans settings, pas hardcodées
- * En attendant, on utilise les couleurs du template original
+ * Thème par défaut (utilise DEFAULT_COLORS depuis src/settings/theme.ts)
+ * NOTE: Fallback uniquement, devrait utiliser les settings utilisateur
  */
 export const DEFAULT_PPTX_THEME: PptxTheme = {
-  bgMain: '#2B3F37',    // Vert foncé Serenity
-  textMain: '#FFFFFF',  // Blanc
-  accent: '#CEC1B6',    // Beige Serenity
-  line: '#CEC1B6',      // Beige Serenity
-  white: '#FFFFFF',     // Blanc
+  bgMain: DEFAULT_COLORS.c7,
+  textMain: DEFAULT_COLORS.c10,
+  accent: DEFAULT_COLORS.c6,
+  line: DEFAULT_COLORS.c8,
+  white: '#FFFFFF',     // Blanc (exception autorisée)
 };
 
 /**

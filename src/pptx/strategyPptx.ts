@@ -11,8 +11,8 @@
  */
 
 import PptxGenJS from 'pptxgenjs';
-import type { ThemeColors } from '../settings/ThemeProvider';
-import { DEFAULT_COLORS } from '../settings/ThemeProvider';
+import type { ThemeColors } from '../settings/theme';
+import { DEFAULT_COLORS } from '../settings/theme';
 import type { DossierAudit } from '../features/audit/types';
 import { OBJECTIFS_CLIENT_LABELS } from '../features/audit/types';
 import type { Strategie, ComparaisonScenarios } from '../features/strategy/types';
@@ -45,6 +45,7 @@ export async function generateStrategyPptx(options: StrategyPptxOptions): Promis
   const c2 = colors.c2.replace('#', '');
   const c4 = colors.c4.replace('#', '');
   const c7 = colors.c7.replace('#', '');
+  const c9 = colors.c9.replace('#', '');
   const c10 = colors.c10.replace('#', '');
 
   const clientName = `${dossier.situationFamiliale.mr.prenom} ${dossier.situationFamiliale.mr.nom}`.trim() || 'Client';
@@ -65,12 +66,12 @@ export async function generateStrategyPptx(options: StrategyPptxOptions): Promis
 
   slide1.addText('Recommandations et projections', {
     x: '10%', y: '58%', w: '80%', h: '8%',
-    fontSize: 18, color: 'AAAAAA', align: 'center', fontFace: 'Arial',
+    fontSize: 18, color: c9, align: 'center', fontFace: 'Arial',
   });
 
   slide1.addText(new Date().toLocaleDateString('fr-FR'), {
     x: '10%', y: '70%', w: '80%', h: '6%',
-    fontSize: 14, color: 'AAAAAA', align: 'center', fontFace: 'Arial',
+    fontSize: 14, color: c9, align: 'center', fontFace: 'Arial',
   });
 
   // ========== SLIDE 2 : SITUATION ACTUELLE (BASELINE) ==========
@@ -82,7 +83,7 @@ export async function generateStrategyPptx(options: StrategyPptxOptions): Promis
 
   slide2.addText('Sans intervention du CGP', {
     x: 0.5, y: 0.8, w: 9, h: 0.3,
-    fontSize: 14, color: '666666', fontFace: 'Arial', italic: true,
+    fontSize: 14, color: c9, fontFace: 'Arial', italic: true,
   });
 
   const baselineRows: string[][] = [
@@ -117,7 +118,7 @@ export async function generateStrategyPptx(options: StrategyPptxOptions): Promis
 
   slide2.addText(comparaison.baseline.hypotheses.map(h => `• ${h}`).join('\n'), {
     x: 0.5, y: 3.5, w: 9, h: 1.5,
-    fontSize: 11, color: '666666', fontFace: 'Arial',
+    fontSize: 11, color: c9, fontFace: 'Arial',
   });
 
   // ========== SLIDE 3 : PROJECTION STRATÉGIE ==========
@@ -233,7 +234,7 @@ export async function generateStrategyPptx(options: StrategyPptxOptions): Promis
 
   slide4.addText(gainsText.join('\n') || 'Stratégie à affiner selon les paramètres', {
     x: 0.5, y: 3.5, w: 9, h: 1,
-    fontSize: 14, color: '059669', fontFace: 'Arial',
+    fontSize: 14, color: c2, fontFace: 'Arial',
   });
 
   // ========== SLIDE 5 : CONCLUSION OBJECTIFS ==========
@@ -284,7 +285,7 @@ export async function generateStrategyPptx(options: StrategyPptxOptions): Promis
   } else {
     slide5.addText('Aucun objectif défini dans l\'audit.', {
       x: 0.5, y: 1, w: 9, h: 0.5,
-      fontSize: 14, color: '666666', fontFace: 'Arial', italic: true,
+      fontSize: 14, color: c9, fontFace: 'Arial', italic: true,
     });
   }
 
@@ -321,7 +322,7 @@ export async function generateStrategyPptx(options: StrategyPptxOptions): Promis
     'Ce document ne constitue pas un conseil personnalisé et ne se substitue pas à l\'analyse approfondie d\'un conseiller.',
     {
       x: 0.5, y: 4.3, w: 9, h: 1,
-      fontSize: 9, color: '666666', fontFace: 'Arial', italic: true,
+      fontSize: 9, color: c9, fontFace: 'Arial', italic: true,
     }
   );
 

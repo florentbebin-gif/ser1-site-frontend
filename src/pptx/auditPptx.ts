@@ -48,6 +48,7 @@ export async function generateAuditPptx(options: AuditPptxOptions): Promise<void
   const c2 = colors.c2.replace('#', '');
   const c4 = colors.c4.replace('#', '');
   const c7 = colors.c7.replace('#', '');
+  const c9 = colors.c9.replace('#', '');
   const c10 = colors.c10.replace('#', '');
 
   // Nom client
@@ -365,7 +366,7 @@ export async function generateAuditPptx(options: AuditPptxOptions): Promise<void
 
   slideG.addText('Ces pistes sont données à titre indicatif et ne constituent pas un conseil personnalisé.', {
     x: 0.5, y: 4.8, w: 9, h: 0.3,
-    fontSize: 10, color: '666666', fontFace: 'Arial', italic: true,
+    fontSize: 10, color: c9, fontFace: 'Arial', italic: true,
   });
 
   // Téléchargement

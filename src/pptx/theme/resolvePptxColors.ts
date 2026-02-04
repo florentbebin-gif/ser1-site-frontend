@@ -5,25 +5,13 @@
  * This ensures that PPTX exports NEVER use web theme colors when scope = 'ui-only'.
  */
 
-import type { ThemeColors } from '../../settings/ThemeProvider';
+import { DEFAULT_COLORS, type ThemeColors } from '../../settings/theme';
 
 /**
- * SER1 Classic colors - hardcoded fallback for ui-only mode
- * These are the original SER1 theme colors that should be used for PPTX
- * when user selects "Apply theme to UI only"
+ * SER1 Classic colors - fallback for ui-only mode
+ * Uses DEFAULT_COLORS from centralized theme settings
  */
-export const SER1_CLASSIC_COLORS: ThemeColors = {
-  c1: '#2B3E37', // Main color (dark green)
-  c2: '#709B8B', // Secondary (medium green)
-  c3: '#9FBDB2', // Accent (light green)
-  c4: '#CFDED8', // Light accent
-  c5: '#788781', // Neutral
-  c6: '#CEC1B6', // Beige accent
-  c7: '#F5F3F0', // Background light
-  c8: '#D9D9D9', // Border color (color 8 - panelBorder)
-  c9: '#7F7F7F', // Text muted
-  c10: '#000000', // Text main
-};
+export const SER1_CLASSIC_COLORS: ThemeColors = { ...DEFAULT_COLORS };
 
 /**
  * Resolve PPTX colors based on cabinet colors, theme scope, and original theme
@@ -62,8 +50,8 @@ export function resolvePptxColors(
     return originalColors;
   }
   
-  // Fallback ultime: SER1 Classic hardcodé
-  return SER1_CLASSIC_COLORS;
+  // Fallback ultime: DEFAULT_COLORS from centralized theme
+  return DEFAULT_COLORS;
 }
 
 /**
