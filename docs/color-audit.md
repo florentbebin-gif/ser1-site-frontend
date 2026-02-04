@@ -659,7 +659,7 @@ export function getPptxTextForBackground(bgColor: string, theme: ThemeColors): s
 | Token | Rôle cible (gouvernance) | Usage réel actuel | Écart | Priorité |
 |-------|-------------------------|-------------------|-------|----------|
 | **C1** | Brand dark (titres, fonds cover) | Titres OK, mais aussi fonds de cover | Léger : dual usage accepté avec `textOnMain` | P3 |
-| **C2** | Brand primary (CTA, liens, header Excel) | Liens OK, Excel fallback différent (`#2F4A6D`) | **Écart majeur** : Excel n'utilise pas C2 | P1 |
+| **C2** | Brand primary (CTA, liens, header Excel) | Liens OK, Excel utilise C2 avec `pickTextColorForBackground()` | **CORRIGÉ** : header texte calculé selon luminance C2 | P1 |
 | **C3** | Brand light (hover, success) | Sous-utilisé, pas de mapping sémantique clair | **Gap** : Créer token `success` | P2 |
 | **C4** | Brand faint (fonds actifs, info) | Fonds OK, info pas exploité | Léger : ajouter token `info` | P3 |
 | **C5** | Neutral medium (bordures fortes) | Bordures via `--beige` alias | **Gap** : C5 pas dans PPTX roles | P3 |
@@ -675,7 +675,7 @@ export function getPptxTextForBackground(bgColor: string, theme: ThemeColors): s
 
 | # | Problème | Impact | Où (fichiers:ligne) | Correction recommandée | Priorité |
 |---|----------|--------|---------------------|------------------------|----------|
-| 1 | **Excel fallback `#2F4A6D` ≠ C2** | Headers Excel incohérents avec thème UI | `xlsxBuilder.ts:40` | Supprimer fallback, forcer passage explicite de C2 | P0 |
+| 1 | **~~Excel fallback `#2F4A6D` ≠ C2~~** → **CORRIGÉ** | ~~Headers Excel incohérents~~ → Header texte calculé dynamiquement | `xlsxBuilder.ts:40-47` | `pickTextColorForBackground()` implémenté | **CORRIGÉ** |
 | 2 | **Cards UI utilisent `#fff` au lieu de C7** | Divergence UI/PPTX surfaces | `Credit.css:44`, `Home.css:20`, `Ir.css:32` | Créer token `surface-card` = WHITE, migrer progressivement | P1 |
 | 3 | **`#666666` hardcodé dans PPTX** | Disclaimer non thémable | `auditPptx.ts:368` | Remplacer par C9 (textBody) | P0 |
 | 4 | **`#222` hardcodé pour titres** | Titres non thémables | `Credit.css:29`, `Ir.css:24` | Remplacer par C10 (textMain) | P0 |
@@ -710,8 +710,8 @@ export function getPptxTextForBackground(bgColor: string, theme: ThemeColors): s
 
 | Tâche | Fichiers | Action | Validation |
 |-------|----------|--------|------------|
-| 0.1 | `xlsxBuilder.ts:40` | Supprimer fallback `#2F4A6D`, rendre headerFill obligatoire | Export Excel avec header coloré selon thème |
-| 0.2 | `xlsxBuilder.ts:182` | Supprimer fallback `#E5EAF2`, rendre sectionFill obligatoire | Sections Excel avec C4 |
+| 0.1 | `xlsxBuilder.ts:40-47` | ~~Supprimer fallback~~ → `pickTextColorForBackground()` **CORRIGÉ** | Header texte auto (noir/blanc selon C2) |
+| 0.2 | `xlsxBuilder.ts:181` | ~~Supprimer fallback~~ → `normalizeColor` sans fallback **CORRIGÉ** | Sections utilisent C4 explicite |
 | 0.3 | `auditPptx.ts:368` | Remplacer `#666666` par `c9` | Disclaimer en C9 |
 | 0.4 | `Credit.css:29`, `Ir.css:24` | Remplacer `#222` par `var(--color-c10)` | Titres en C10 |
 | 0.5 | `Credit.css:21`, `Ir.css:17` | Remplacer `#2b3e37` par `var(--color-c1)` | Titres brand en C1 |
@@ -856,7 +856,7 @@ Cette annexe détaille l'utilisation réelle des tokens C1-C10 dans l'UI et PPTX
 | Token | Hex | UI : usages observés (catégories) | UI : preuves (fichier:ligne) | PPTX : usages observés | PPTX : preuves (fichier:ligne) | Incohérences / risques |
 |-------|-----|-----------------------------------|------------------------------|------------------------|------------------------------|------------------------|
 | **C1** | #2B3E37 | Titres H1/H2, headers de section, couvertures, borders-bottom forts, status-values, boutons primaires, erreurs | `premium-shared.css:13` (color: var(--color-c1)), `SignalementsBlock.css:42` (error color), `Placement.css:88` (tab active), `SettingsComptes.css:49` (btn bg) | bgMain (cover slide), textMain (titres), danger (erreurs), shadowBase | `auditPptx.ts:47` (cover bg c1), `auditPptx.ts:58` (slide background), `strategyPptx.ts:44` (cover), `resolvePptxColors.ts:75` (bgMain) | **Incohérence** : Utilisé tantôt pour fond (cover C1), tantôt pour texte (titres). Risque contraste si thème user a C1 très clair |
-| **C2** | #709B8B | Liens, hover states, focus inputs, accents visuels, badges admin, titres tableaux, boutons primaires | `premium-shared.css:83,154` (hover, btn-primary), `styles.css:136` (border focus), `Placement.css:83` (hover), `SettingsComptes.css:151` (badge admin), `SignalementsBlock.css:117` (alert-success) | accent (lignes décoratives), success states | `resolvePptxColors.ts:76` (accent), `getPptxThemeFromUiSettings.ts:158` (adaptive accent) | **Gap Excel** : Fallback `#2F4A6D` dans xlsxBuilder ≠ C2. Incohérence visuelle exports Excel |
+| **C2** | #709B8B | Liens, hover states, focus inputs, accents visuels, badges admin, titres tableaux, boutons primaires | `premium-shared.css:83,154` (hover, btn-primary), `styles.css:136` (border focus), `Placement.css:83` (hover), `SettingsComptes.css:151` (badge admin), `SignalementsBlock.css:117` (alert-success) | accent (lignes décoratives), success states | `resolvePptxColors.ts:76` (accent), `getPptxThemeFromUiSettings.ts:158` (adaptive accent) | **CORRIGÉ** : `pickTextColorForBackground()` calcule le texte header Excel selon luminance C2 |
 | **C3** | #9FBDB2 | Hover secondaire, états success, accents légers, focus doux, stepper active | `Placement.css:113` (step is-active border), `styles.css:30` (success-bg via alias) | Gradient TMI brackets (C4→C2), pas d'usage isolé direct | `buildIrSynthesis.ts` (gradient avec C4, C2) | **Sous-utilisé** : Pas de mapping sémantique `success` clair. Devrait être le token succès |
 | **C4** | #CFDED8 | Fonds actifs, surfaces surélevées, hover rows, sections info, zebra rows, alertes succès | `premium-shared.css:50,63,77` (premium-card, table), `SettingsFiscalites.css:17,31` (bg banner/table), `SignalementsBlock.css:189` (status-new bg) | bgAccent, info states, gradient TMI | `auditPptx.ts:49` (sous-titre cover c4), `strategyPptx.ts:46`, `resolvePptxColors.ts:84` (bgAccent) | **OK** : Usage cohérent "fond léger accent" UI et PPTX |
 | **C5** | #788781 | Bordures fortes, icônes secondaires, séparateurs accentués, stepper borders | `Credit.css:22` (border-bottom via --beige), `Ir.css:18` (border-bottom), `Placement.css:104` (step border) | Pas de mapping sémantique dédié dans PPTX roles | — | **Gap** : C5 présent dans CSS legacy (`--beige` alias) mais pas exploité dans PPTX roles |

@@ -351,7 +351,7 @@ const pickTextColorForBackground = (bgColor: string): string => {
 
 | # | Problème | Impact | Où (fichiers:ligne) | Correction recommandée | Priorité |
 |---|----------|--------|---------------------|------------------------|----------|
-| 1 | **Excel fallback `#2F4A6D` ≠ C2** | Headers Excel incohérents avec thème UI | `xlsxBuilder.ts:40` | Supprimer fallback, forcer passage explicite de C2 | P0 |
+| 1 | **~~Excel fallback `#2F4A6D` ≠ C2~~** → **CORRIGÉ** | ~~Headers Excel incohérents~~ → Header texte calculé dynamiquement | `xlsxBuilder.ts:40-47` | `pickTextColorForBackground()` implémenté | **CORRIGÉ** |
 | 2 | **Cards UI utilisent `#fff` au lieu de C7** | Divergence UI/PPTX surfaces | `Credit.css:44`, `Home.css:20`, `Ir.css:32` | Créer token `surface-card` = WHITE, migrer progressivement | P1 |
 | 3 | **`#666666` hardcodé dans PPTX** | Disclaimer non thémable | `auditPptx.ts:368` | Remplacer par C9 (textBody) | P0 |
 | 4 | **`#222` hardcodé pour titres** | Titres non thémables | `Credit.css:29`, `Ir.css:24` | Remplacer par C10 (textMain) | P0 |
