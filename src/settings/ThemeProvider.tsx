@@ -12,7 +12,9 @@ import { supabase } from '../supabaseClient';
 import { resolvePptxColors } from '../pptx/theme/resolvePptxColors';
 import { DEFAULT_COLORS, type ThemeColors } from './theme';
 
-// Cache local pour les thèmes (performance) - ISOLÉ PAR USER
+// Re-export for backward compatibility
+export { DEFAULT_COLORS } from './theme';
+
 const THEME_CACHE_KEY_PREFIX = 'ser1_theme_cache_';
 const THEME_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 heures
 const CABINET_THEME_CACHE_KEY_PREFIX = 'ser1_cabinet_theme_cache_';
@@ -158,22 +160,6 @@ function clearThemeCacheForUser(userId: string | null): void {
     console.warn('[ThemeProvider] Cache clear error:', e);
   }
 }
-
-export interface ThemeColors {
-  c1: string;
-  c2: string;
-  c3: string;
-  c4: string;
-  c5: string;
-  c6: string;
-  c7: string;
-  c8: string;
-  c9: string;
-  c10: string;
-}
-
-// Re-export from theme.ts for backward compatibility
-export { DEFAULT_COLORS } from './theme';
 
 function getThemeBootstrap(): { colors: ThemeColors; userId?: string | null } | null {
   if (typeof window === 'undefined') return null;

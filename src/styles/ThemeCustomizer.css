@@ -3,7 +3,7 @@
    =========================================================== */
 
 .theme-customizer {
-  background: white;
+  background: var(--color-surface, #FFFFFF);
   border-radius: 12px;
   padding: 20px;
   border: 1px solid var(--color-border, #e0e0e0);
@@ -43,7 +43,7 @@
 
 .theme-badge.theme-custom {
   background: var(--color-secondary, #e8c547);
-  color: #5a4a00;
+  color: var(--color-c1);
 }
 
 .theme-badge.theme-default {
@@ -127,7 +127,7 @@
   padding: 12px;
   border: 1px solid var(--color-border, #e0e0e0);
   border-radius: 8px;
-  background: white;
+  background: var(--color-surface, #FFFFFF);
   cursor: pointer;
   transition: all 0.2s;
   font-size: 12px;
@@ -190,7 +190,7 @@
   border: 1px solid var(--color-border, #e0e0e0);
   border-radius: 6px;
   cursor: pointer;
-  background: white;
+  background: var(--color-surface, #FFFFFF);
 }
 
 .color-input input[type="text"] {
@@ -201,7 +201,7 @@
   border-radius: 6px;
   font-size: 12px;
   font-family: monospace;
-  background: white;
+  background: var(--color-surface, #FFFFFF);
   color: var(--color-text, #333);
 }
 
