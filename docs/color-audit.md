@@ -677,7 +677,7 @@ export function getPptxTextForBackground(bgColor: string, theme: ThemeColors): s
 |---|----------|--------|---------------------|------------------------|----------|
 | 1 | **~~Excel fallback `#2F4A6D` ≠ C2~~** → **CORRIGÉ** | ~~Headers Excel incohérents~~ → Header texte calculé dynamiquement | `xlsxBuilder.ts:40-47` | `pickTextColorForBackground()` implémenté | **CORRIGÉ** |
 | 2 | **Cards UI utilisent `#fff` au lieu de C7** | Divergence UI/PPTX surfaces | `Credit.css:44`, `Home.css:20`, `Ir.css:32` | Créer token `surface-card` = WHITE, migrer progressivement | P1 |
-| 3 | **`#666666` hardcodé dans PPTX** | Disclaimer non thémable | `auditPptx.ts:368` | Remplacer par C9 (textBody) | P0 |
+| 3 | **`#666666` hardcodé dans PPTX** | Disclaimer non thémable | `auditPptx.ts:368` | Remplacer par C9 (textBody) | **CORRIGÉ** |
 | 4 | **`#222` hardcodé pour titres** | Titres non thémables | `Credit.css:29`, `Ir.css:24` | Remplacer par C10 (textMain) | P0 |
 | 5 | **`#2b3e37` hardcodé (brand)** | Titres brand non thémables | `Credit.css:21`, `Ir.css:17` | Remplacer par C1 (bgMain) | P0 |
 | 6 | **Shadows hardcodés rgba** | Non thémables, incohérents | `premium-shared.css:54,55,67`, `Placement.css` | Créer token `--shadow-sm/md/lg` dérivé de C10 | P1 |
@@ -712,7 +712,7 @@ export function getPptxTextForBackground(bgColor: string, theme: ThemeColors): s
 |-------|----------|--------|------------|
 | 0.1 | `xlsxBuilder.ts:40-47` | ~~Supprimer fallback~~ → `pickTextColorForBackground()` **CORRIGÉ** | Header texte auto (noir/blanc selon C2) |
 | 0.2 | `xlsxBuilder.ts:181` | ~~Supprimer fallback~~ → `normalizeColor` sans fallback **CORRIGÉ** | Sections utilisent C4 explicite |
-| 0.3 | `auditPptx.ts:368` | Remplacer `#666666` par `c9` | Disclaimer en C9 |
+| 0.3 | `auditPptx.ts:368` | Remplacer `#666666` par `c9` **CORRIGÉ** | Disclaimer en C9 |
 | 0.4 | `Credit.css:29`, `Ir.css:24` | Remplacer `#222` par `var(--color-c10)` | Titres en C10 |
 | 0.5 | `Credit.css:21`, `Ir.css:17` | Remplacer `#2b3e37` par `var(--color-c1)` | Titres brand en C1 |
 
@@ -874,7 +874,7 @@ Cette annexe détaille l'utilisation réelle des tokens C1-C10 dans l'UI et PPTX
 |---------|----------|-------------|-------------------|---------------|--------|
 | `#FFFFFF` | Cards, panels, fonds élevés, texte sur fond sombre | ~50+ | `Credit.css:44`, `Home.css:20`, `Ir.css:32`, `SignalementsBlock.css:125,154` | `surface-card` (WHITE exception autorisée) | **Exception validée** |
 | `#996600` | Warning/alerte texte (audit PPTX) | 1 | `auditPptx.ts:310` | WARNING hardcodé | **Exception validée** |
-| `#666666` | Disclaimer texte (audit PPTX) | 1 | `auditPptx.ts:368` | C9 (textBody) | **À corriger** |
+| `#666666` | Disclaimer texte (audit PPTX) | 1 | `auditPptx.ts:368` | C9 (textBody) | **CORRIGÉ** |
 | `#222` | Titres hardcodés | 2 | `Credit.css:29`, `Ir.css:24` | C10 (textMain) | **À corriger** |
 | `#2b3e37` | Titres brand hardcodés | 3 | `Credit.css:21`, `Ir.css:17` | C1 (bgMain) | **À corriger** |
 | `rgba(0,0,0,0.5)` | Overlays modals | 5 | `styles.css`, `Placement.css` | surface-overlay (rgba autorisé) | **Exception validée** |
