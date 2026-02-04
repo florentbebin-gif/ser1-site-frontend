@@ -880,8 +880,8 @@ Cette annexe détaille l'utilisation réelle des tokens C1-C10 dans l'UI et PPTX
 | `rgba(0,0,0,0.5)` | Overlays modals | 5 | `styles.css`, `Placement.css` | surface-overlay (rgba autorisé) | **Exception validée** |
 | `rgba(0,0,0,0.12)` | Shadows | 4 | `Credit.css`, `Ir.css`, `premium-shared.css:54` | shadowBase via token | **À tokeniser** |
 | `rgba(0,0,0,0.04-0.08)` | Shadows divers | 6+ | `premium-shared.css:55,67,150,154` | shadowBase dérivé | **À tokeniser** |
-| `#2F4A6D` | Fallback Excel header | 1 | `xlsxBuilder.ts:40` (fallback) | C2 (primary) | **À corriger** |
-| `#E5EAF2` | Fallback Excel section | 1 | `xlsxBuilder.ts:182` (fallback) | C4 (accent light) | **À corriger** |
+| `#2F4A6D` | Fallback Excel header | SUPPRIMÉ | `xlsxBuilder.ts:40` (fallback supprimé) | C2 via `normalizeColor` sans fallback | **CORRIGÉ** |
+| `#E5EAF2` | Fallback Excel section | SUPPRIMÉ | `xlsxBuilder.ts:182` (fallback supprimé) | C4 via `normalizeColor` sans fallback | **CORRIGÉ** |
 | `DEFAULT_PPTX_THEME` | Hardcodé PPTX fallback | 5 valeurs | `pptxTheme.ts:54-60` | SER1_CLASSIC_COLORS | **À corriger** |
 
 ---

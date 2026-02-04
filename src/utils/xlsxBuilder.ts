@@ -37,7 +37,16 @@ const escapeXml = (value: string) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 
-const normalizeColor = (color?: string, fallback = '2F4A6D') =>
+const pickTextColorForBackground = (bgColor: string): string => {
+  const hex = bgColor.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? '000000' : 'FFFFFF';
+};
+
+const normalizeColor = (color?: string, fallback?: string) =>
   (color || fallback).replace('#', '').toUpperCase();
 
 const normalizeCell = (cell: XlsxCell | XlsxCellValue): XlsxCell => {
@@ -58,7 +67,7 @@ const columnLetter = (index: number) => {
   return s;
 };
 
-const buildStylesXml = (headerFill: string, sectionFill: string) => `<?xml version="1.0" encoding="UTF-8"?>
+const buildStylesXml = (headerFill: string, headerText: string, sectionFill: string) => `<?xml version="1.0" encoding="UTF-8"?>
 <styleSheet xmlns="${XMLNS_MAIN}">
   <numFmts count="2">
     <numFmt numFmtId="${NUMFMT_MONEY}" formatCode="#\\,##0 &quot;€&quot;"/>
@@ -66,7 +75,7 @@ const buildStylesXml = (headerFill: string, sectionFill: string) => `<?xml versi
   </numFmts>
   <fonts count="3">
     <font><sz val="10"/><name val="Arial"/></font>
-    <font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Arial"/></font>
+    <font><b/><sz val="10"/><color rgb="FF${headerText}"/><name val="Arial"/></font>
     <font><b/><sz val="10"/><name val="Arial"/></font>
   </fonts>
   <fills count="4">
@@ -178,7 +187,8 @@ const buildContentTypesXml = (sheetCount: number) => `<?xml version="1.0" encodi
 
 export async function buildXlsxBlob(options: XlsxBuildOptions): Promise<Blob> {
   const headerFill = normalizeColor(options.headerFill);
-  const sectionFill = normalizeColor(options.sectionFill, 'E5EAF2');
+  const headerText = pickTextColorForBackground(headerFill);
+  const sectionFill = normalizeColor(options.sectionFill);
   const zip = new JSZip();
 
   zip.file('[Content_Types].xml', buildContentTypesXml(options.sheets.length));
@@ -186,7 +196,7 @@ export async function buildXlsxBlob(options: XlsxBuildOptions): Promise<Blob> {
 
   const xl = zip.folder('xl');
   xl?.file('workbook.xml', buildWorkbookXml(options.sheets));
-  xl?.file('styles.xml', buildStylesXml(headerFill, sectionFill));
+  xl?.file('styles.xml', buildStylesXml(headerFill, headerText, sectionFill));
 
   const rels = xl?.folder('_rels');
   rels?.file('workbook.xml.rels', buildWorkbookRelsXml(options.sheets.length));

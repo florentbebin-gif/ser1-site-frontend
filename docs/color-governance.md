@@ -214,10 +214,10 @@ const pptxRoles = {
 ### Excel
 
 ```typescript
-// Mapping imposé avec helper de contraste
+// Mapping imposé avec helper de contraste (implémenté dans xlsxBuilder.ts)
 const excelColors = {
   headerFill: c2,      // Header = Primary
-  headerText: pickTextColorForBackground(c2),  // Calculé selon C2
+  headerText: pickTextColorForBackground(c2),  // Calculé selon C2 (noir ou blanc)
   sectionFill: c4,     // Sections = Accent light
   sectionText: c10,    // Texte noir (C4 toujours clair)
   border: c8,          // Bordures
@@ -227,12 +227,15 @@ const excelColors = {
   warningText: WARNING,
 };
 
-// Helper à implémenter dans xlsxBuilder.ts
-function getExcelHeaderTextColor(headerFill: string): string {
-  // Si C2 est clair (luminance > 0.5), utiliser C10 (noir)
-  // Sinon utiliser WHITE pour contraste
-  return pickTextColorForBackground(headerFill, '#000000', '#FFFFFF');
-}
+// Helper IMPLEMENTÉ dans xlsxBuilder.ts (lignes 40-47)
+const pickTextColorForBackground = (bgColor: string): string => {
+  const hex = bgColor.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? '000000' : 'FFFFFF';
+};
 ```
 
 ---
@@ -338,8 +341,8 @@ function getExcelHeaderTextColor(headerFill: string): string {
 | `rgba(0,0,0,0.5)` | Overlays modals | 5 | `styles.css`, `Placement.css` | surface-overlay (rgba autorisé) | **Exception validée** |
 | `rgba(0,0,0,0.12)` | Shadows | 4 | `Credit.css`, `Ir.css`, `premium-shared.css:54` | shadowBase via token | **À tokeniser** |
 | `rgba(0,0,0,0.04-0.08)` | Shadows divers | 6+ | `premium-shared.css:55,67,150,154` | shadowBase dérivé | **À tokeniser** |
-| `#2F4A6D` | Fallback Excel header | 1 | `xlsxBuilder.ts:40` (fallback) | C2 (primary) | **À corriger** |
-| `#E5EAF2` | Fallback Excel section | 1 | `xlsxBuilder.ts:182` (fallback) | C4 (accent light) | **À corriger** |
+| `#2F4A6D` | Fallback Excel header | SUPPRIMÉ | `xlsxBuilder.ts:40` (fallback supprimé) | C2 via `normalizeColor` sans fallback | **CORRIGÉ** |
+| `#E5EAF2` | Fallback Excel section | SUPPRIMÉ | `xlsxBuilder.ts:181` (fallback supprimé) | C4 via `normalizeColor` sans fallback | **CORRIGÉ** |
 | `DEFAULT_PPTX_THEME` | Hardcodé PPTX fallback | 5 valeurs | `pptxTheme.ts:54-60` | SER1_CLASSIC_COLORS | **À corriger** |
 
 ---
@@ -372,8 +375,8 @@ function getExcelHeaderTextColor(headerFill: string): string {
 
 | Tâche | Fichiers | Action | Validation |
 |-------|----------|--------|------------|
-| 0.1 | `xlsxBuilder.ts:40` | Supprimer fallback `#2F4A6D`, rendre headerFill obligatoire | Export Excel avec header coloré selon thème |
-| 0.2 | `xlsxBuilder.ts:182` | Supprimer fallback `#E5EAF2`, rendre sectionFill obligatoire | Sections Excel avec C4 |
+| 0.1 | `xlsxBuilder.ts:40` | ~~Supprimer fallback~~ `pickTextColorForBackground()` implémenté | **CORRIGÉ** — header texte calculé selon C2 |
+| 0.2 | `xlsxBuilder.ts:181` | ~~Supprimer fallback~~ `normalizeColor` sans fallback | **CORRIGÉ** — sections utilisent C4 explicite |
 | 0.3 | `auditPptx.ts:368` | Remplacer `#666666` par `c9` | Disclaimer en C9 |
 | 0.4 | `Credit.css:29`, `Ir.css:24` | Remplacer `#222` par `var(--color-c10)` | Titres en C10 |
 | 0.5 | `Credit.css:21`, `Ir.css:17` | Remplacer `#2b3e37` par `var(--color-c1)` | Titres brand en C1 |
