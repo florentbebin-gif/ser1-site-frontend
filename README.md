@@ -245,6 +245,7 @@ localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true')
 **⚠️ RÈGLES ABSOLUES** :
 1. Aucune couleur hardcodée sauf WHITE (#FFFFFF) et WARNING (#996600). Voir [gouvernance couleur](docs/design/color-governance.md).
 2. **INPUTS SUR FOND BLANC** obligatoirement pour la lisibilité. Voir [gouvernance UI](docs/design/ui-governance.md).
+3. **TOUS LES MESSAGES UTILISATEUR EN FRANÇAIS** : erreurs API, notifications, alerts, toasts, confirmations. Pas d'anglais dans l'interface.
 
 ---
 

@@ -77,7 +77,7 @@ serve(async (req: Request) => {
     const authHeader = req.headers.get('Authorization')
     const token = parseBearerToken(authHeader)
     if (!token) {
-      return new Response(JSON.stringify({ error: 'Missing bearer token' }), {
+      return new Response(JSON.stringify({ error: 'Token manquant' }), {
         status: 401,
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
@@ -85,7 +85,7 @@ serve(async (req: Request) => {
 
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid token' }), {
+      return new Response(JSON.stringify({ error: 'Token invalide' }), {
         status: 401,
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
@@ -127,7 +127,7 @@ serve(async (req: Request) => {
     // Vérifier le rôle admin pour les actions sensibles (app_metadata uniquement - sécurisé)
     const userRole = user.app_metadata?.role || 'user'
     if (userRole !== 'admin') {
-      return new Response(JSON.stringify({ error: 'Admin access required' }), {
+      return new Response(JSON.stringify({ error: 'Accès administrateur requis' }), {
         status: 403,
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
@@ -155,7 +155,7 @@ serve(async (req: Request) => {
     console.log(`[EDGE_REQ] rid=${requestId} method=${method} origin=${origin} hasAuth=${hasAuthHeader} action=${action} payloadKeys=${payloadKeys}`)
     
     if (!action) {
-      return new Response(JSON.stringify({ error: 'Missing action' }), {
+      return new Response(JSON.stringify({ error: 'Action manquante' }), {
         status: 400,
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
@@ -167,7 +167,7 @@ serve(async (req: Request) => {
       const role = payload.role as string | undefined
 
       if (!userId || !role) {
-        return new Response(JSON.stringify({ error: 'User ID and role required' }), {
+        return new Response(JSON.stringify({ error: 'ID utilisateur et rôle requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -175,7 +175,7 @@ serve(async (req: Request) => {
 
       const { data: existing, error: getError } = await supabase.auth.admin.getUserById(userId)
       if (getError || !existing?.user) {
-        return new Response(JSON.stringify({ error: 'User not found' }), {
+        return new Response(JSON.stringify({ error: 'Utilisateur non trouvé' }), {
           status: 404,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -275,7 +275,7 @@ serve(async (req: Request) => {
     if (action === 'create_user_invite') {
       const { email, cabinet_id } = payload
       if (!email) {
-        return new Response(JSON.stringify({ error: 'Email required' }), {
+        return new Response(JSON.stringify({ error: 'Email requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -316,7 +316,7 @@ serve(async (req: Request) => {
     if (action === 'delete_user') {
       const { userId } = payload
       if (!userId) {
-        return new Response(JSON.stringify({ error: 'User ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID utilisateur requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -334,7 +334,7 @@ serve(async (req: Request) => {
     if (action === 'reset_password') {
       let { userId, email } = payload as { userId?: string; email?: string }
       if (!userId) {
-        return new Response(JSON.stringify({ error: 'User ID and email required' }), {
+        return new Response(JSON.stringify({ error: 'ID utilisateur et email requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -342,7 +342,7 @@ serve(async (req: Request) => {
       if (!email) {
         const { data: existing, error: getError } = await supabase.auth.admin.getUserById(userId)
         if (getError || !existing?.user?.email) {
-          return new Response(JSON.stringify({ error: 'User email not found' }), {
+          return new Response(JSON.stringify({ error: 'Email utilisateur non trouvé' }), {
             status: 404,
             headers: { ...responseHeaders, 'Content-Type': 'application/json' }
           })
@@ -384,7 +384,7 @@ serve(async (req: Request) => {
       
       if (!userId) {
         console.log('[admin:list_issue_reports] Error: User ID required')
-        return new Response(JSON.stringify({ error: 'User ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID utilisateur requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -438,7 +438,7 @@ serve(async (req: Request) => {
     if (action === 'get_latest_issue_for_user') {
       const { userId } = payload
       if (!userId) {
-        return new Response(JSON.stringify({ error: 'User ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID utilisateur requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -462,7 +462,7 @@ serve(async (req: Request) => {
     if (action === 'mark_issue_read') {
       const { reportId } = payload
       if (!reportId) {
-        return new Response(JSON.stringify({ error: 'Report ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID signalement requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -484,7 +484,7 @@ serve(async (req: Request) => {
     if (action === 'mark_issue_unread' || action === 'mark_issue_report_unread') {
       const reportId = payload.reportId ?? payload.report_id
       if (!reportId) {
-        return new Response(JSON.stringify({ error: 'Report ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID signalement requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -506,7 +506,7 @@ serve(async (req: Request) => {
     if (action === 'delete_issue') {
       const { reportId } = payload
       if (!reportId) {
-        return new Response(JSON.stringify({ error: 'Report ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID signalement requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -528,7 +528,7 @@ serve(async (req: Request) => {
     if (action === 'delete_all_issues_for_user') {
       const { userId } = payload
       if (!userId) {
-        return new Response(JSON.stringify({ error: 'User ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID utilisateur requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -616,7 +616,7 @@ serve(async (req: Request) => {
       const { name, default_theme_id } = payload as { name?: string; default_theme_id?: string }
       
       if (!name || typeof name !== 'string' || name.trim().length === 0) {
-        return new Response(JSON.stringify({ error: 'Cabinet name required' }), {
+        return new Response(JSON.stringify({ error: 'Nom du cabinet requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -631,7 +631,7 @@ serve(async (req: Request) => {
           .single()
         
         if (themeError || !themeCheck) {
-          return new Response(JSON.stringify({ error: 'Invalid theme_id' }), {
+          return new Response(JSON.stringify({ error: 'Thème invalide' }), {
             status: 400,
             headers: { ...responseHeaders, 'Content-Type': 'application/json' }
           })
@@ -665,7 +665,7 @@ serve(async (req: Request) => {
       }
       
       if (!id) {
-        return new Response(JSON.stringify({ error: 'Cabinet ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID cabinet requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -675,7 +675,7 @@ serve(async (req: Request) => {
       
       if (name !== undefined) {
         if (!name || typeof name !== 'string' || name.trim().length === 0) {
-          return new Response(JSON.stringify({ error: 'Valid cabinet name required' }), {
+          return new Response(JSON.stringify({ error: 'Nom du cabinet valide requis' }), {
             status: 400,
             headers: { ...responseHeaders, 'Content-Type': 'application/json' }
           })
@@ -692,7 +692,7 @@ serve(async (req: Request) => {
             .single()
           
           if (themeError || !themeCheck) {
-            return new Response(JSON.stringify({ error: 'Invalid theme_id' }), {
+            return new Response(JSON.stringify({ error: 'Thème invalide' }), {
               status: 400,
               headers: { ...responseHeaders, 'Content-Type': 'application/json' }
             })
@@ -710,7 +710,7 @@ serve(async (req: Request) => {
             .single()
           
           if (logoError || !logoCheck) {
-            return new Response(JSON.stringify({ error: 'Invalid logo_id' }), {
+            return new Response(JSON.stringify({ error: 'Logo invalide' }), {
               status: 400,
               headers: { ...responseHeaders, 'Content-Type': 'application/json' }
             })
@@ -745,7 +745,7 @@ serve(async (req: Request) => {
       const { id } = payload as { id?: string }
       
       if (!id) {
-        return new Response(JSON.stringify({ error: 'Cabinet ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID cabinet requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -761,7 +761,7 @@ serve(async (req: Request) => {
 
       if ((assignedUsersCount ?? 0) > 0) {
         return new Response(JSON.stringify({ 
-          error: 'Cannot delete cabinet: users are still assigned to it',
+          error: 'Impossible de supprimer le cabinet : des utilisateurs y sont encore assignés',
           assigned_users: assignedUsersCount
         }), {
           status: 400,
@@ -801,14 +801,14 @@ serve(async (req: Request) => {
       const { name, palette } = payload as { name?: string; palette?: any }
       
       if (!name || typeof name !== 'string' || name.trim().length === 0) {
-        return new Response(JSON.stringify({ error: 'Theme name required' }), {
+        return new Response(JSON.stringify({ error: 'Nom du thème requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
       }
 
       if (!palette || typeof palette !== 'object') {
-        return new Response(JSON.stringify({ error: 'Palette object required' }), {
+        return new Response(JSON.stringify({ error: 'Objet palette requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -819,7 +819,7 @@ serve(async (req: Request) => {
       const missingColors = requiredColors.filter(color => !(color in palette))
       if (missingColors.length > 0) {
         return new Response(JSON.stringify({ 
-          error: 'Palette missing required colors', 
+          error: 'Palette incomplète : couleurs manquantes', 
           missing: missingColors 
         }), {
           status: 400,
@@ -853,7 +853,7 @@ serve(async (req: Request) => {
       }
       
       if (!id) {
-        return new Response(JSON.stringify({ error: 'Theme ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID thème requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -869,7 +869,7 @@ serve(async (req: Request) => {
       if (fetchError) throw fetchError
 
       if (existingTheme?.is_system && existingTheme?.name !== 'Thème Original') {
-        return new Response(JSON.stringify({ error: 'Cannot modify system theme' }), {
+        return new Response(JSON.stringify({ error: 'Impossible de modifier un thème système' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -879,7 +879,7 @@ serve(async (req: Request) => {
       
       if (name !== undefined) {
         if (!name || typeof name !== 'string' || name.trim().length === 0) {
-          return new Response(JSON.stringify({ error: 'Valid theme name required' }), {
+          return new Response(JSON.stringify({ error: 'Nom du thème valide requis' }), {
             status: 400,
             headers: { ...responseHeaders, 'Content-Type': 'application/json' }
           })
@@ -889,7 +889,7 @@ serve(async (req: Request) => {
 
       if (palette !== undefined) {
         if (!palette || typeof palette !== 'object') {
-          return new Response(JSON.stringify({ error: 'Palette object required' }), {
+          return new Response(JSON.stringify({ error: 'Objet palette requis' }), {
             status: 400,
             headers: { ...responseHeaders, 'Content-Type': 'application/json' }
           })
@@ -900,7 +900,7 @@ serve(async (req: Request) => {
         const missingColors = requiredColors.filter(color => !(color in palette))
         if (missingColors.length > 0) {
           return new Response(JSON.stringify({ 
-            error: 'Palette missing required colors', 
+            error: 'Palette incomplète : couleurs manquantes', 
             missing: missingColors 
           }), {
             status: 400,
@@ -933,7 +933,7 @@ serve(async (req: Request) => {
       const { id } = payload as { id?: string }
       
       if (!id) {
-        return new Response(JSON.stringify({ error: 'Theme ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID thème requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -949,7 +949,7 @@ serve(async (req: Request) => {
       if (fetchError) throw fetchError
 
       if (existingTheme?.is_system) {
-        return new Response(JSON.stringify({ error: 'Cannot delete system theme' }), {
+        return new Response(JSON.stringify({ error: 'Impossible de supprimer un thème système' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -965,7 +965,7 @@ serve(async (req: Request) => {
 
       if (cabinetsCount && cabinetsCount.length > 0) {
         return new Response(JSON.stringify({ 
-          error: 'Cannot delete theme: still assigned to cabinets',
+          error: 'Impossible de supprimer le thème : il est encore assigné à des cabinets',
           assigned_cabinets: cabinetsCount.length
         }), {
           status: 400,
@@ -993,7 +993,7 @@ serve(async (req: Request) => {
       }
       
       if (!user_id) {
-        return new Response(JSON.stringify({ error: 'User ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID utilisateur requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -1008,7 +1008,7 @@ serve(async (req: Request) => {
           .single()
         
         if (cabinetError || !cabinetCheck) {
-          return new Response(JSON.stringify({ error: 'Invalid cabinet_id' }), {
+          return new Response(JSON.stringify({ error: 'Cabinet invalide' }), {
             status: 400,
             headers: { ...responseHeaders, 'Content-Type': 'application/json' }
           })
@@ -1038,7 +1038,7 @@ serve(async (req: Request) => {
         const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(user_id)
         
         if (authError || !authUser.user) {
-          return new Response(JSON.stringify({ error: 'User not found' }), {
+          return new Response(JSON.stringify({ error: 'Utilisateur non trouvé' }), {
             status: 404,
             headers: { ...responseHeaders, 'Content-Type': 'application/json' }
           })
@@ -1079,7 +1079,7 @@ serve(async (req: Request) => {
       }
       
       if (!cabinet_id) {
-        return new Response(JSON.stringify({ error: 'Cabinet ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID cabinet requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -1094,7 +1094,7 @@ serve(async (req: Request) => {
           .single()
         
         if (themeError || !themeCheck) {
-          return new Response(JSON.stringify({ error: 'Invalid theme_id' }), {
+          return new Response(JSON.stringify({ error: 'Thème invalide' }), {
             status: 400,
             headers: { ...responseHeaders, 'Content-Type': 'application/json' }
           })
@@ -1120,7 +1120,7 @@ serve(async (req: Request) => {
       const { sha256 } = payload as { sha256?: string }
       
       if (!sha256 || typeof sha256 !== 'string') {
-        return new Response(JSON.stringify({ error: 'SHA256 hash required' }), {
+        return new Response(JSON.stringify({ error: 'Hash SHA256 requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -1159,14 +1159,14 @@ serve(async (req: Request) => {
       }
       
       if (!sha256 || !storage_path || !mime) {
-        return new Response(JSON.stringify({ error: 'sha256, storage_path, and mime required' }), {
+        return new Response(JSON.stringify({ error: 'sha256, storage_path et mime requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
       }
 
       if (typeof width !== 'number' || typeof height !== 'number' || typeof bytes !== 'number') {
-        return new Response(JSON.stringify({ error: 'width, height, and bytes must be numbers' }), {
+        return new Response(JSON.stringify({ error: 'width, height et bytes doivent être des nombres' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -1201,7 +1201,7 @@ serve(async (req: Request) => {
       }
       
       if (!cabinet_id) {
-        return new Response(JSON.stringify({ error: 'Cabinet ID required' }), {
+        return new Response(JSON.stringify({ error: 'ID cabinet requis' }), {
           status: 400,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
@@ -1216,7 +1216,7 @@ serve(async (req: Request) => {
           .single()
         
         if (logoError || !logoCheck) {
-          return new Response(JSON.stringify({ error: 'Invalid logo_id' }), {
+          return new Response(JSON.stringify({ error: 'Logo invalide' }), {
             status: 400,
             headers: { ...responseHeaders, 'Content-Type': 'application/json' }
           })
@@ -1253,7 +1253,7 @@ serve(async (req: Request) => {
 
     const duration = Date.now() - reqStart
     console.log(`[admin] END | rid=${requestId} | action=${action} | ${duration}ms | 400 invalid`)
-    return new Response(JSON.stringify({ error: 'Invalid action', requestId }), {
+    return new Response(JSON.stringify({ error: 'Action invalide', requestId }), {
       status: 400,
       headers: { ...responseHeaders, 'Content-Type': 'application/json' }
     })
@@ -1261,7 +1261,7 @@ serve(async (req: Request) => {
   } catch (error) {
     const duration = Date.now() - reqStart
     console.error(`[admin] ERROR | rid=${requestId} | ${duration}ms | 500`, error)
-    const message = error instanceof Error ? error.message : 'Internal server error'
+    const message = error instanceof Error ? error.message : 'Erreur interne du serveur'
     return new Response(JSON.stringify({ error: message, requestId }), {
       status: 500,
       headers: { ...responseHeaders, 'Content-Type': 'application/json' }
