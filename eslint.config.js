@@ -60,6 +60,8 @@ export default [
       'src/pptx/theme/semanticColors.ts',
       'src/pptx/theme/getPptxThemeFromUiSettings.ts',
       'src/utils/paletteGenerator.ts',
+      'src/pages/Settings.jsx', // Définitions des thèmes prédéfinis
+      'src/pptx/export/demoExport.ts', // Thème démo pour tests
     ],
     rules: {
       'ser1-colors/no-hardcoded-colors': 'off',

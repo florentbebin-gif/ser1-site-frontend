@@ -195,7 +195,7 @@ npm install
 npm run dev          # localhost:5173
 npm run build        # dist/
 npm run test         # 71 tests Vitest
-npm run lint         # ESLint
+npm run lint         # ESLint avec plugin ser1-colors (gouvernance couleurs)
 ```
 
 ---

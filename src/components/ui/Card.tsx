@@ -41,12 +41,12 @@ export const Card: React.FC<CardProps> = ({
     default: {
       backgroundColor: semantic['surface-card'],
       border: `1px solid ${semantic['border-default']}`,
-      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+      boxShadow: 'var(--shadow-sm)',
     },
     elevated: {
       backgroundColor: semantic['surface-raised'],
       border: `1px solid ${semantic['border-default']}`,
-      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+      boxShadow: 'var(--shadow-md)',
     },
     outlined: {
       backgroundColor: 'transparent',

@@ -1,3 +1,4 @@
+/* eslint-disable ser1-colors/no-hardcoded-colors */
 /**
  * Hook pour gérer les thèmes et couleurs personnalisées
  * 

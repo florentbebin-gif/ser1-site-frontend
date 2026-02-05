@@ -700,7 +700,7 @@ const yearLabel =
                       ) : (
                         <input
                           type="text"
-                          style={{ flex: 1, background: '#f3f3f3' }}
+                          style={{ flex: 1, background: 'var(--color-c7)' }}
                           readOnly
                           value={formatMoneyInput(abat10SalD1)}
                         />
@@ -737,7 +737,7 @@ const yearLabel =
                       ) : (
                         <input
                           type="text"
-                          style={{ flex: 1, background: '#f3f3f3' }}
+                          style={{ flex: 1, background: 'var(--color-c7)' }}
                           readOnly
                           value={formatMoneyInput(abat10SalD2)}
                         />
@@ -1049,7 +1049,7 @@ const yearLabel =
       type="text"
       readOnly
       value={effectiveParts.toFixed(2)}
-      style={{ background: '#f3f3f3' }}
+      style={{ background: 'var(--color-c7)' }}
     />
   </div>
 

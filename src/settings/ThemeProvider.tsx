@@ -324,7 +324,8 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       });
       
       return { logo: dataUri, placement: placement || 'center-bottom' };
-    } catch (error) {
+    } catch {
+      // Silently fail - logo loading is not critical
       return {};
     }
   };

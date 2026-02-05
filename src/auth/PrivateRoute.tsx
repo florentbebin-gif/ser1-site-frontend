@@ -25,7 +25,7 @@ export function PrivateRoute({ children }: PrivateRouteProps): React.ReactElemen
         alignItems: 'center',
         height: '100vh',
         fontSize: '1.2rem',
-        color: '#788781',
+        color: 'var(--color-c5)',
       }}>
         Chargement...
       </div>

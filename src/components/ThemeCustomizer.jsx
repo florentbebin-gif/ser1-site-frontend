@@ -1,6 +1,9 @@
+/* eslint-disable ser1-colors/no-hardcoded-colors */
 /**
  * Composant de personnalisation du thème
  * Permet aux utilisateurs de modifier les couleurs de l'interface
+ * 
+ * ⚠️ DÉSACTIVÉ - Utilise le hook useTheme obsolète
  */
 
 import React, { useState } from 'react';

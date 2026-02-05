@@ -4,19 +4,20 @@ import { useTheme } from '../settings/ThemeProvider';
 import { UserInfoBanner } from '../components/UserInfoBanner';
 import { recalculatePaletteFromC1 } from '../utils/paletteGenerator';
 import SignalementsBlock from '../components/settings/SignalementsBlock';
+import { DEFAULT_COLORS as DEFAULT_THEME_COLORS } from '../settings/theme';
 
-// Couleurs par défaut
+// Mapper les couleurs du format theme (c1-c10) vers le format legacy (color1-color10)
 const DEFAULT_COLORS = {
-  color1: '#2B3E37',
-  color2: '#709B8B',
-  color3: '#9FBDB2',
-  color4: '#CFDED8',
-  color5: '#788781',
-  color6: '#CEC1B6',
-  color7: '#F5F3F0',
-  color8: '#D9D9D9',
-  color9: '#7F7F7F',
-  color10: '#000000',
+  color1: DEFAULT_THEME_COLORS.c1,
+  color2: DEFAULT_THEME_COLORS.c2,
+  color3: DEFAULT_THEME_COLORS.c3,
+  color4: DEFAULT_THEME_COLORS.c4,
+  color5: DEFAULT_THEME_COLORS.c5,
+  color6: DEFAULT_THEME_COLORS.c6,
+  color7: DEFAULT_THEME_COLORS.c7,
+  color8: DEFAULT_THEME_COLORS.c8,
+  color9: DEFAULT_THEME_COLORS.c9,
+  color10: DEFAULT_THEME_COLORS.c10,
 };
 
 // Thèmes prédéfinis (objets immuables)
@@ -306,43 +307,6 @@ export default function Settings() {
     } else {
       // Synchronisation temps réel avec le nouveau thème
       syncThemeColors(newColors);
-    }
-  };
-
-  const handleColorTextChange = (key, value) => {
-    // l’utilisateur tape dans le champ texte
-    setColorText(prev => ({ ...prev, [key]: value }));
-    setSaveMessage('');
-  };
-
-  const handleColorTextBlur = (key) => {
-    const v = (colorText[key] || '').trim();
-    const hex = v.startsWith('#') ? v : `#${v}`;
-
-    // hex complet #RRGGBB
-    const isValid = /^#[0-9a-fA-F]{6}$/.test(hex);
-
-    if (isValid) {
-      const newColors = { ...colorsLegacy, [key]: hex };
-      setColorsLegacy(newColors);
-      setColorText(prev => ({ ...prev, [key]: hex.toUpperCase() }));
-      
-      // If changing c1 via text input, recalculate other colors automatically
-      if (key === 'color1' && themeSource === 'custom') {
-        const recalculated = recalculatePaletteFromC1(hex);
-        const finalColors = { ...newColors, ...recalculated };
-        setColorsLegacy(prev => ({ ...prev, ...recalculated }));
-        setColorText(prev => ({ ...prev, ...Object.fromEntries(
-          Object.entries(recalculated).map(([k, v]) => [k, v.toUpperCase()])
-        ) }));
-        syncThemeColors(finalColors);
-      } else {
-        // Synchronisation temps réel avec le nouveau thème
-        syncThemeColors(newColors);
-      }
-    } else {
-      // invalide → on revient à la couleur réelle
-      setColorText(prev => ({ ...prev, [key]: prev[key] || colorsLegacy[key] || '' }));
     }
   };
 

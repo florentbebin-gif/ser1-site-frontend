@@ -7,6 +7,7 @@ import { UserInfoBanner } from '../../components/UserInfoBanner';
 import { invokeAdmin } from '../../services/apiAdmin';
 import { uploadLogoWithDedup, getLogoPublicUrl } from '../../utils/logoUpload';
 import './SettingsComptes.css';
+import { DEFAULT_COLORS } from '../../settings/theme';
 
 export default function SettingsComptes() {
   const { isAdmin, isLoading: authLoading } = useUserRole();
@@ -52,10 +53,7 @@ export default function SettingsComptes() {
   const [userModalError, setUserModalError] = useState('');
   const [userModalSuccess, setUserModalSuccess] = useState('');
 
-  const DEFAULT_PALETTE = {
-    c1: '#2B3E37', c2: '#709B8B', c3: '#9FBDB2', c4: '#CFDED8', c5: '#788781',
-    c6: '#CEC1B6', c7: '#F5F3F0', c8: '#D9D9D9', c9: '#7F7F7F', c10: '#000000'
-  };
+  const DEFAULT_PALETTE = DEFAULT_COLORS;
 
   const triggerRefresh = (reason = '') => {
     if (DEBUG_COMPTES_REFRESH) {

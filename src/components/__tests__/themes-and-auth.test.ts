@@ -1,3 +1,4 @@
+/* eslint-disable ser1-colors/no-hardcoded-colors */
 /**
  * Tests unitaires pour les thèmes et la déconnexion
  * Valide le comportement UX des thèmes et la fonctionnalité de logout
