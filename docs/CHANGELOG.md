@@ -6,6 +6,45 @@
 
 ---
 
+## 2026-02-05 — Refonte UI Settings "Gestion Privée"
+
+### Objectif
+Aligner toutes les pages de configuration sur le Design System "Premium / Gestion Privée" avec les règles strictes de la Gouvernance UI et Couleurs.
+
+### Principes appliqués
+| Principe | Implémentation |
+|----------|----------------|
+| **Hiérarchie Profondeur** | Fond C7 → Cartes Blanc (Niveau 1) → Inputs Blancs |
+| **Inputs** | TOUJOURS `#FFFFFF` + border C8, focus C2 + ring C4 |
+| **Modales** | Panel `#FFFFFF` + overlay `rgba(0,0,0,0.5)` + shadow-lg |
+| **Badges** | Style "Pill" (`border-radius: 999px`) + outline design |
+| **Tableaux** | Header C7 + rows Blanc/C7 zebra + ombre subtile |
+
+### Fichiers modifiés
+
+#### Phase 1 — CSS Global (Inputs Blancs)
+- `src/pages/Sous-Settings/SettingsImpots.css` — Inputs blancs + focus ring
+- `src/pages/Sous-Settings/SettingsFiscalites.css` — Inputs blancs + focus ring
+- `src/pages/Sous-Settings/SettingsComptes.css` — Modales blanches, inputs blancs
+
+#### Phase 2 — SettingsComptes Premium
+- `src/pages/Sous-Settings/SettingsComptes.css` — Cards blanches, badges Pill, tableau premium
+- `src/pages/Sous-Settings/SettingsComptes.jsx` — SYS badge CSS class, cleanup inline styles
+
+#### Phase 3 — Hiérarchie Blocs Fiscaux
+- `src/pages/Sous-Settings/SettingsFiscalites.css` — `.income-tax-block` accent gauche, cards blanches
+- `src/pages/Sous-Settings/SettingsImpots.css` — `.income-tax-block` accent gauche C4
+
+#### Phase 4 — Finalisation
+- `src/pages/Sous-Settings/SettingsBaseContrats.jsx` — Placeholder premium card
+- `src/pages/Sous-Settings/SettingsTableMortalite.jsx` — Placeholder premium card
+
+### Documentation créée
+- `docs/design/ui-governance.md` — Standards "Gestion Privée" (Layout, Inputs, Typo, Composants)
+- README.md mis à jour avec liens vers UI Governance
+
+---
+
 ## 2026-02-03 — Logo Placement PPTX + Corrections
 
 ### 1. Position du logo sur les exports PPTX
