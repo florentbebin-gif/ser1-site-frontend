@@ -7,8 +7,7 @@ Organisation des scripts SQL pour Supabase.
 ```
 database/
 ├── setup/       # Configuration initiale (à exécuter UNE SEULE FOIS)
-├── migrations/  # Scripts reproductibles (source de vérité DB)
-└── fixes/       # Scripts one-shot (corrections ponctuelles)
+└── migrations/  # Scripts reproductibles (source de vérité DB)
 ```
 
 ## Ordre d'exécution recommandé
@@ -35,17 +34,7 @@ database/setup/supabase-setup.sql
 | 8 | `fix-storage-rls-policies.sql` | Correction policies Storage |
 | 9 | `rename-ser1-classique-to-theme-original.sql` | Renommage thème |
 
-### 3. Fixes (si nécessaire)
-
-Scripts one-shot pour corriger des problèmes spécifiques :
-
-| Fichier | Quand l'utiliser |
-|---------|------------------|
-| `fix-profiles.sql` | Réparation table profiles |
-| `fix-ui-settings-duplicates.sql` | Doublons ui_settings (v1) |
-| `fix-ui-settings-duplicates-v2.sql` | Doublons ui_settings (v2) |
-| `fix_issue_reports_table.sql` | Réparation issue_reports |
-| `check-ui-settings-rls.sql` | Diagnostic RLS ui_settings |
+> **Note** : Les scripts de correction ponctuelle (`fixes/`) ont été archivés. Les migrations contiennent désormais l'état correct de la base.
 
 ## ⚠️ Pièges connus
 
