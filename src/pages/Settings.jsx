@@ -57,7 +57,7 @@ const PREDEFINED_THEMES = Object.freeze([
   },
   {
     id: 'green-sustainable',
-    name: 'Vert investissement durable',
+    name: 'Vert durable',
     description: 'Vert profond pour l\'investissement durable',
     colors: Object.freeze({
       color1: '#22543d',
@@ -109,16 +109,16 @@ const PREDEFINED_THEMES = Object.freeze([
 ]);
 
 const COLOR_FIELDS = [
-  { key: 'color1', label: 'Couleur 1' },
-  { key: 'color2', label: 'Couleur 2' },
-  { key: 'color3', label: 'Couleur 3' },
-  { key: 'color4', label: 'Couleur 4' },
-  { key: 'color5', label: 'Couleur 5' },
-  { key: 'color6', label: 'Couleur 6' },
-  { key: 'color7', label: 'Couleur 7' },
-  { key: 'color8', label: 'Couleur 8' },
-  { key: 'color9', label: 'Couleur 9' },
-  { key: 'color10', label: 'Couleur 10' },
+  { key: 'color1', description: 'Couleur principale de l\'interface — titres, barre supérieure et éléments structurants' },
+  { key: 'color2', description: 'Couleur d\'accent et d\'interaction — boutons, liens, survol des éléments cliquables' },
+  { key: 'color3', description: 'Couleur de validation et états positifs — succès, confirmations, étapes actives' },
+  { key: 'color4', description: 'Fond d\'accent pour mettre en valeur — sections actives, lignes survolées, infos' },
+  { key: 'color5', description: 'Bordures et séparateurs accentués — pour structurer sans agresser' },
+  { key: 'color6', description: 'Touche chaude et élégante — lignes d\'accent décoratives, séparateurs raffinés' },
+  { key: 'color7', description: 'Fond général de l\'interface — l\'arrière-plan discret de l\'application' },
+  { key: 'color8', description: 'Bordures fines et légères — structure discrète des éléments' },
+  { key: 'color9', description: 'Texte secondaire et explications — labels, métadonnées, informations complémentaires' },
+  { key: 'color10', description: 'Texte principal et titres — le contraste maximum pour la lisibilité' },
 ];
 
 export default function Settings() {
@@ -137,6 +137,9 @@ export default function Settings() {
     return localStorage.getItem('themeSource') || 'cabinet';
   });
 
+  // V3.1: Advanced colors visibility
+  const [showAdvancedColors, setShowAdvancedColors] = useState(false);
+
   // Synchroniser avec ThemeProvider
   const { themeSource: providerThemeSource, setThemeSource: setProviderThemeSource } = useTheme();
 
@@ -148,16 +151,14 @@ export default function Settings() {
     }
   }, [themeSource, providerThemeSource, setProviderThemeSource]);
 
-  // V3.1: Advanced colors visibility
-  const [showAdvancedColors, setShowAdvancedColors] = useState(false);
-
   // Signalements block visibility
   const [showSignalements, setShowSignalements] = useState(false);
 
   // Legacy states (kept for compatibility)
   const [selectedTheme, setSelectedTheme] = useState('Personnalisé');
 
-  // Convertir les couleurs du ThemeProvider vers l'ancien format
+  // 🎨 V4.0: Use ThemeProvider for custom palette persistence
+  const { customPalette, selectedThemeRef, setSelectedThemeRef, saveCustomPalette } = useTheme();
   useEffect(() => {
     if (colors && !themeLoading) {
       const legacyColors = {
@@ -175,13 +176,20 @@ export default function Settings() {
       setColorsLegacy(legacyColors);
       setColorText(legacyColors);
       
-      // Détecter si c'est un thème prédéfini
-      const matchingTheme = PREDEFINED_THEMES.find(theme => 
-        Object.entries(theme.colors).every(([key, value]) => legacyColors[key] === value)
-      );
-      setSelectedTheme(matchingTheme ? matchingTheme.name : 'Personnalisé');
+      // 🎨 V4.0: Synchroniser selectedTheme avec selectedThemeRef
+      if (selectedThemeRef === 'custom') {
+        setSelectedTheme('Personnalisé');
+      } else if (selectedThemeRef === 'cabinet') {
+        setSelectedTheme('Cabinet');
+      } else if (selectedThemeRef === 'original') {
+        setSelectedTheme('Thème Original');
+      } else {
+        // Vérifier si c'est un thème prédéfini
+        const matchingTheme = PREDEFINED_THEMES.find(theme => theme.name === selectedThemeRef);
+        setSelectedTheme(matchingTheme ? matchingTheme.name : 'Personnalisé');
+      }
     }
-  }, [colors, themeLoading]);
+  }, [colors, themeLoading, selectedThemeRef]);
 
   // Fonction pour synchroniser les couleurs avec ThemeProvider
   const syncThemeColors = (settingsColors) => {
@@ -286,19 +294,15 @@ export default function Settings() {
     setColorText(prev => ({ ...prev, [key]: value.toUpperCase() }));
     setSaveMessage('');
     
-    // 🔄 UX: Si on modifie une couleur manuellement, basculer sur "Personnalisé"
-    if (selectedTheme !== 'Personnalisé') {
-      setSelectedTheme('Personnalisé');
-    }
-    
     // If changing c1, recalculate other colors automatically
     if (key === 'color1' && themeSource === 'custom') {
       const recalculated = recalculatePaletteFromC1(value);
-      setColorsLegacy(prev => ({ ...prev, ...recalculated }));
+      const finalColors = { ...newColors, ...recalculated };
+      setColorsLegacy(finalColors);
       setColorText(prev => ({ ...prev, ...Object.fromEntries(
         Object.entries(recalculated).map(([k, v]) => [k, v.toUpperCase()])
       ) }));
-      syncThemeColors({ ...newColors, ...recalculated });
+      syncThemeColors(finalColors);
     } else {
       // Synchronisation temps réel avec le nouveau thème
       syncThemeColors(newColors);
@@ -323,19 +327,15 @@ export default function Settings() {
       setColorsLegacy(newColors);
       setColorText(prev => ({ ...prev, [key]: hex.toUpperCase() }));
       
-      // 🔄 UX: Si on modifie une couleur manuellement, basculer sur "Personnalisé"
-      if (selectedTheme !== 'Personnalisé') {
-        setSelectedTheme('Personnalisé');
-      }
-      
       // If changing c1 via text input, recalculate other colors automatically
       if (key === 'color1' && themeSource === 'custom') {
         const recalculated = recalculatePaletteFromC1(hex);
+        const finalColors = { ...newColors, ...recalculated };
         setColorsLegacy(prev => ({ ...prev, ...recalculated }));
         setColorText(prev => ({ ...prev, ...Object.fromEntries(
           Object.entries(recalculated).map(([k, v]) => [k, v.toUpperCase()])
         ) }));
-        syncThemeColors({ ...newColors, ...recalculated });
+        syncThemeColors(finalColors);
       } else {
         // Synchronisation temps réel avec le nouveau thème
         syncThemeColors(newColors);
@@ -351,13 +351,8 @@ export default function Settings() {
       setSavingColors(true);
       setSaveMessage('');
 
-      // Construire le nom du thème
-      const themeName = selectedTheme === 'Personnalisé' 
-        ? 'custom-ui-only'
-        : selectedTheme;
-
-      // Sauvegarder avec le nouveau système ui_settings
-      const result = await saveThemeToUiSettings({
+      // 🎨 V4.0: Sauvegarder explicitement comme thème personnalisé
+      const result = await saveCustomPalette({
         c1: colorsLegacy.color1,
         c2: colorsLegacy.color2,
         c3: colorsLegacy.color3,
@@ -368,30 +363,26 @@ export default function Settings() {
         c8: colorsLegacy.color8,
         c9: colorsLegacy.color9,
         c10: colorsLegacy.color10,
-      }, themeName);
+      });
       
       if (result.success) {
-        setSaveMessage('Thème enregistré avec succès.');
+        setSaveMessage('Thème personnalisé enregistré avec succès.');
+        setSelectedTheme('Personnalisé');
         
-        // 🚨 FIX: Appliquer immédiatement le thème sans rechargement
-        // Synchroniser avec ThemeProvider (déjà fait par syncThemeColors pendant l'édition,
-        // mais on s'assure que les couleurs finales sont bien appliquées)
-        const finalColors = {
-          c1: colorsLegacy.color1,
-          c2: colorsLegacy.color2,
-          c3: colorsLegacy.color3,
-          c4: colorsLegacy.color4,
-          c5: colorsLegacy.color5,
-          c6: colorsLegacy.color6,
-          c7: colorsLegacy.color7,
-          c8: colorsLegacy.color8,
-          c9: colorsLegacy.color9,
-          c10: colorsLegacy.color10,
-        };
-        
-        // Dispatcher un événement pour notifier ThemeProvider de forcer l'application
+        // Dispatcher un événement pour notifier ThemeProvider
         window.dispatchEvent(new CustomEvent('ser1-theme-updated', {
-          detail: { themeSource: 'custom', colors: finalColors }
+          detail: { themeSource: 'custom', colors: {
+            c1: colorsLegacy.color1,
+            c2: colorsLegacy.color2,
+            c3: colorsLegacy.color3,
+            c4: colorsLegacy.color4,
+            c5: colorsLegacy.color5,
+            c6: colorsLegacy.color6,
+            c7: colorsLegacy.color7,
+            c8: colorsLegacy.color8,
+            c9: colorsLegacy.color9,
+            c10: colorsLegacy.color10,
+          }}
         }));
       } else {
         setSaveMessage("Erreur lors de l'enregistrement : " + result.error);
@@ -405,11 +396,32 @@ export default function Settings() {
   };
 
   // Gestionnaire de sélection de thème prédéfini
-  const handleThemeSelect = (themeName) => {
+  const handleThemeSelect = async (themeName) => {
     setSelectedTheme(themeName);
     
     if (themeName === 'Personnalisé') {
-      return; // Ne rien faire, l'utilisateur garde ses couleurs personnalisées
+      // 🎨 V4.0: Restaurer le thème personnalisé depuis ThemeProvider
+      if (customPalette) {
+        const legacyColors = {
+          color1: customPalette.c1,
+          color2: customPalette.c2,
+          color3: customPalette.c3,
+          color4: customPalette.c4,
+          color5: customPalette.c5,
+          color6: customPalette.c6,
+          color7: customPalette.c7,
+          color8: customPalette.c8,
+          color9: customPalette.c9,
+          color10: customPalette.c10,
+        };
+        setColorsLegacy(legacyColors);
+        setColorText(legacyColors);
+        syncThemeColors(legacyColors);
+      }
+      // Mettre à jour la référence
+      setSelectedThemeRef('custom');
+      await saveThemeToUiSettings(customPalette || colorsLegacy, 'custom');
+      return;
     }
     
     const theme = PREDEFINED_THEMES.find(t => t.name === themeName);
@@ -419,6 +431,10 @@ export default function Settings() {
       setColorText({ ...theme.colors });
       syncThemeColors(theme.colors);
       setSaveMessage('');
+      
+      // 🎨 V4.0: Sauvegarder la sélection SANS écraser custom_palette
+      setSelectedThemeRef(themeName);
+      await saveThemeToUiSettings(theme.colors, themeName);
     }
   };
 
@@ -448,294 +464,248 @@ export default function Settings() {
           <UserInfoBanner />
 
           {/* Personnalisation avancée du thème */}
-          <div>
-            <h3 style={{ marginBottom: 8 }}>Personnalisation avancée du thème</h3>
-            <p style={{ marginBottom: 12, fontSize: 14, color: 'var(--color-c9)' }}>
-              Personnalisez l'interface complète avec des thèmes prédéfinis ou des couleurs sur mesure.
-            </p>
+          <section className="settings-premium-card">
+            <header className="settings-premium-header">
+              <h2 className="settings-premium-title">Personnalisation avancée du thème</h2>
+              <p className="settings-premium-subtitle">
+                Adaptez l'interface à votre identité visuelle : couleurs de marque,
+                accents graphiques et ambiance générale.
+              </p>
+            </header>
 
-            {/* Thèmes prédéfinis */}
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ display: 'block', marginBottom: 8, fontWeight: 600, color: 'var(--color-c10)' }}>
-                Source du thème
-              </label>
-              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--color-c10)' }}>
+            <div className="settings-premium-divider" />
+
+            {/* Section Source du thème */}
+            <div className="settings-premium-section">
+              <h3 className="settings-section-title">Source du thème</h3>
+              <div className="settings-source-options">
+                <label className="settings-radio-option">
                   <input
                     type="radio"
                     name="themeSource"
                     value="cabinet"
                     checked={themeSource === 'cabinet'}
                     onChange={(e) => setThemeSource(e.target.value)}
-                    style={{ margin: 0 }}
                   />
-                  <span style={{ fontSize: '14px' }}>Thème du cabinet</span>
+                  <span>Thème du cabinet</span>
                 </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: 'var(--color-c10)' }}>
+                <label className="settings-radio-option">
                   <input
                     type="radio"
                     name="themeSource"
                     value="custom"
                     checked={themeSource === 'custom'}
                     onChange={(e) => setThemeSource(e.target.value)}
-                    style={{ margin: 0 }}
                   />
-                  <span style={{ fontSize: '14px' }}>Thème personnalisé</span>
+                  <span>Thème personnalisé</span>
                 </label>
               </div>
               {themeSource === 'custom' && (
-                <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <select
-                    value={selectedTheme}
-                    onChange={(e) => handleThemeSelect(e.target.value)}
-                    style={{
-                      flex: 1,
-                      maxWidth: '300px',
-                      padding: '8px 12px',
-                      border: '1px solid var(--color-c8)',
-                      borderRadius: '6px',
-                      fontSize: '14px',
-                      backgroundColor: 'var(--color-c7)',
-                      cursor: 'pointer',
-                      color: 'var(--color-c10)'
-                    }}
-                  >
-                    <option value="Personnalisé">Personnalisé</option>
+                <div style={{ marginTop: 20 }}>
+                  <div className="settings-theme-cards" style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                    gap: '20px',
+                    marginTop: '12px',
+                  }}>
+                    {/* Personnalisé card - only shown if custom palette exists */}
+                    {customPalette && (
+                      <div
+                        className={`settings-theme-card ${selectedTheme === 'Personnalisé' ? 'is-selected' : ''}`}
+                        onClick={() => handleThemeSelect('Personnalisé')}
+                      >
+                        <div className="settings-theme-preview">
+                          {Object.values(customPalette).slice(0, 5).map((color, i) => (
+                            <div
+                              key={i}
+                              className="settings-theme-preview-bar"
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                        </div>
+                        <div className="settings-theme-name">Mon thème</div>
+                      </div>
+                    )}
+
+                    {/* Predefined theme cards */}
                     {PREDEFINED_THEMES.map((theme) => (
-                      <option key={theme.name} value={theme.name}>
-                        {theme.name}
-                      </option>
+                      <div
+                        key={theme.name}
+                        className={`settings-theme-card ${selectedTheme === theme.name ? 'is-selected' : ''}`}
+                        onClick={() => handleThemeSelect(theme.name)}
+                      >
+                        <div className="settings-theme-preview">
+                          {Object.values(theme.colors).slice(0, 5).map((color, i) => (
+                            <div
+                              key={i}
+                              className="settings-theme-preview-bar"
+                              style={{ backgroundColor: color }}
+                            />
+                          ))}
+                        </div>
+                        <div className="settings-theme-name">{theme.name}</div>
+                      </div>
                     ))}
-                  </select>
-                  <button
-                    type="button"
-                    className="chip"
-                    onClick={handleSaveColors}
-                    disabled={savingColors || !user || themeSource === 'cabinet'}
-                    style={{ opacity: (user && themeSource !== 'cabinet') ? 1 : 0.5 }}
-                    title={
-                      !user 
-                        ? 'Utilisateur non connecté' 
-                        : themeSource === 'cabinet'
-                        ? 'Le thème cabinet est géré par l\'administrateur'
-                        : ''
-                    }
-                  >
-                    {savingColors ? 'Enregistrement…' : 'Enregistrer le thème'}
-                  </button>
+                  </div>
+
+                  <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                    <button
+                      type="button"
+                      className="settings-action-btn"
+                      onClick={handleSaveColors}
+                      disabled={savingColors || !user || themeSource === 'cabinet'}
+                      title={
+                        !user
+                          ? 'Utilisateur non connecté'
+                          : themeSource === 'cabinet'
+                          ? 'Le thème cabinet est géré par l\'administrateur'
+                          : 'Sauvegarder les couleurs actuelles comme thème personnalisé'
+                      }
+                    >
+                      {savingColors ? 'Enregistrement…' : 'Sauvegarder comme mon thème'}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
 
             {saveMessage && (
-              <div className="settings-success-message" style={{ 
-                fontSize: 14, 
-                marginTop: 12, 
-                padding: '12px 16px', 
-                background: saveMessage.includes('Erreur') ? 'var(--color-error-bg)' : 'var(--color-success-bg)', 
-                border: saveMessage.includes('Erreur') ? '1px solid var(--color-error-border)' : '1px solid var(--color-success-border)', 
-                borderRadius: 6, 
-                color: saveMessage.includes('Erreur') ? 'var(--color-error-text)' : 'var(--color-success-text)',
-                fontWeight: 500
-              }}>
-                {saveMessage}
+              <div className="settings-premium-section">
+                <div style={{
+                  padding: '12px 16px',
+                  background: saveMessage.includes('Erreur') ? 'var(--color-error-bg)' : 'var(--color-success-bg)',
+                  border: saveMessage.includes('Erreur') ? '1px solid var(--color-error-border)' : '1px solid var(--color-success-border)',
+                  borderRadius: 8,
+                  color: saveMessage.includes('Erreur') ? 'var(--color-error-text)' : 'var(--color-success-text)',
+                  fontWeight: 500,
+                  fontSize: 14
+                }}>
+                  {saveMessage}
+                </div>
               </div>
             )}
 
-
-            {/* Éditeur de couleurs */}
+            {/* Section Couleurs avancées */}
             {themeSource === 'custom' && (
-              <>
-                <div style={{ marginBottom: 16 }}>
-                  <button
-                    type="button"
-                    onClick={() => setShowAdvancedColors(!showAdvancedColors)}
-                    style={{
-                      padding: '8px 16px',
-                      border: '1px solid var(--color-c8)',
-                      borderRadius: '6px',
-                      backgroundColor: 'var(--color-c7)',
-                      color: 'var(--color-c10)',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <span>{showAdvancedColors ? '▼' : '▶'}</span>
-                    <span>Couleurs avancées</span>
-                  </button>
-                </div>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr',
-                    gap: 12,
-                    marginBottom: 16,
-                  }}
-                >
-                  {/* Always show color1 */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '8px 12px',
-                      borderRadius: 8,
-                      background: 'var(--color-c7)',
-                      border: '1px solid var(--color-c8)',
-                      minWidth: 0,
-                    }}
-                  >
-                    <span style={{ minWidth: 80, fontSize: 13, fontWeight: 500, color: 'var(--color-c10)', flexShrink: 0 }}>Couleur 1</span>
-                    
-                    <div
-                      style={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: '4px',
-                        backgroundColor: colorsLegacy.color1,
-                        border: '1px solid var(--color-c8)',
-                        flexShrink: 0,
-                      }}
-                    />
+              <div className="settings-premium-section">
+                <h3 className="settings-section-title">Couleurs de l'interface</h3>
+                <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: '0 0 12px 0', lineHeight: 1.4 }}>
+                  Modifiez la couleur principale (C1) pour adapter automatiquement toute la palette.
+                  Les autres couleurs se calculent intelligemment à partir de celle-ci.
+                </p>
 
-                    <input
-                      type="color"
-                      value={colorsLegacy.color1}
-                      onChange={(e) => handleColorChange('color1', e.target.value)}
-                      style={{
-                        width: 32,
-                        height: 32,
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        flexShrink: 0,
-                      }}
-                    />
-
-                    <input
-                      type="text"
-                      value={colorText.color1 || ''}
-                      onChange={(e) => handleColorTextChange('color1', e.target.value)}
-                      onBlur={() => handleColorTextBlur('color1')}
-                      placeholder="#RRGGBB"
-                      style={{
-                        flex: '1 1 auto',
-                        minWidth: 0,
-                        maxWidth: '140px',
-                        padding: '6px 8px',
-                        border: '1px solid var(--color-c8)',
-                        borderRadius: '4px',
-                        fontSize: '13px',
-                        fontFamily: 'monospace',
-                        backgroundColor: 'var(--color-c7)',
-                        color: 'var(--color-c10)',
-                      }}
-                    />
-                  </div>
-
-                  {/* Advanced colors */}
-                  {showAdvancedColors && COLOR_FIELDS.filter(({ key }) => key !== 'color1').map(({ key, label }) => (
-                    <div
-                      key={key}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '8px 12px',
-                        borderRadius: 8,
-                        background: 'var(--color-c7)',
-                        border: '1px solid var(--color-c8)',
-                        minWidth: 0,
-                      }}
-                    >
-                      <span style={{ minWidth: 80, fontSize: 13, fontWeight: 500, color: 'var(--color-c10)', flexShrink: 0 }}>{label}</span>
-                      
-                      <div
-                        style={{
-                          width: 20,
-                          height: 20,
-                          borderRadius: '4px',
-                          backgroundColor: colorsLegacy[key],
-                          border: '1px solid var(--color-c8)',
-                          flexShrink: 0,
-                        }}
-                      />
-
+                {/* Always show color1 */}
+                <div className="settings-colors-grid" style={{ marginBottom: 12 }}>
+                  <div className="settings-color-row">
+                    <div className="settings-color-info">
+                      <span className="settings-color-desc">{COLOR_FIELDS[0].description}</span>
+                    </div>
+                    <div className="settings-color-inputs">
                       <input
                         type="color"
-                        value={colorsLegacy[key]}
-                        onChange={(e) => handleColorChange(key, e.target.value)}
-                        style={{
-                          width: 32,
-                          height: 32,
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          flexShrink: 0,
-                        }}
+                        value={colorsLegacy.color1}
+                        onChange={(e) => handleColorChange('color1', e.target.value)}
+                        disabled={themeSource === 'cabinet'}
                       />
-
-                      <input
-                        type="text"
-                        value={colorText[key] || ''}
-                        onChange={(e) => handleColorTextChange(key, e.target.value)}
-                        onBlur={() => handleColorTextBlur(key)}
-                        placeholder="#RRGGBB"
-                        style={{
-                          flex: '1 1 auto',
-                          minWidth: 0,
-                          maxWidth: '140px',
-                          padding: '6px 8px',
-                          border: '1px solid var(--color-c8)',
-                          borderRadius: '4px',
-                          fontSize: '13px',
-                          fontFamily: 'monospace',
-                          backgroundColor: 'var(--color-c7)',
-                          color: 'var(--color-c10)',
-                        }}
-                      />
+                      <code className="settings-color-hex">{colorText.color1?.toUpperCase() || colorsLegacy.color1?.toUpperCase()}</code>
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </>
-            )}
 
-          </div>
+                {/* Button to show/hide advanced colors */}
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedColors(!showAdvancedColors)}
+                  style={{
+                    padding: '6px 12px',
+                    border: '1px solid var(--color-c8)',
+                    borderRadius: '4px',
+                    backgroundColor: 'var(--color-c7)',
+                    color: 'var(--color-c10)',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    marginBottom: showAdvancedColors ? 12 : 0
+                  }}
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ transform: showAdvancedColors ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}
+                  >
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                  <span>{showAdvancedColors ? 'Masquer les couleurs avancées' : 'Afficher les couleurs avancées'}</span>
+                </button>
+
+                {/* Advanced colors - only shown when expanded */}
+                {showAdvancedColors && (
+                  <div className="settings-colors-grid">
+                    {COLOR_FIELDS.slice(1).map(({ key, description }) => (
+                      <div key={key} className="settings-color-row">
+                        <div className="settings-color-info">
+                          <span className="settings-color-desc">{description}</span>
+                        </div>
+                        <div className="settings-color-inputs">
+                          <input
+                            type="color"
+                            value={colorsLegacy[key]}
+                            onChange={(e) => handleColorChange(key, e.target.value)}
+                            disabled={themeSource === 'cabinet'}
+                          />
+                          <code className="settings-color-hex">{colorText[key]?.toUpperCase() || colorsLegacy[key]?.toUpperCase()}</code>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
 
           {/* Signalements */}
-          <div>
-            <h3 style={{ marginBottom: 8 }}>Signalements</h3>
-            <p style={{ marginBottom: 12, fontSize: 14, color: 'var(--color-c9)' }}>
-              Signalez un problème ou suggérez une amélioration.
-            </p>
+          <section className="settings-premium-card settings-action-card">
+            <header className="settings-premium-header">
+              <div className="settings-action-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <div className="settings-action-text">
+                <h2 className="settings-premium-title">Assistance & Suggestions</h2>
+                <p className="settings-premium-subtitle">
+                  Une question ou une suggestion ? Notre équipe est à votre écoute.
+                </p>
+              </div>
+            </header>
 
-            <div style={{ marginBottom: 16 }}>
+            <div className="settings-action-footer">
               <button
                 type="button"
+                className="settings-action-btn"
                 onClick={() => setShowSignalements(!showSignalements)}
-                style={{
-                  padding: '8px 16px',
-                  border: '1px solid var(--color-c8)',
-                  borderRadius: '6px',
-                  backgroundColor: 'var(--color-c7)',
-                  color: 'var(--color-c10)',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
               >
-                <span>{showSignalements ? '▼' : '▶'}</span>
-                <span>Signalements</span>
+                <span>{showSignalements ? 'Fermer' : 'Nous contacter'}</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showSignalements ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}>
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
               </button>
             </div>
 
-            {showSignalements && <SignalementsBlock />}
-          </div>
+            {showSignalements && (
+              <div className="settings-action-content">
+                <SignalementsBlock />
+              </div>
+            )}
+          </section>
         </div>
     </>
   );

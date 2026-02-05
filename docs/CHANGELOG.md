@@ -1,7 +1,8 @@
 # Historique des évolutions — SER1
 
 > Ce fichier conserve l'historique détaillé des changements, post-mortems et évolutions techniques.
-> Pour la documentation opérationnelle, voir [README.md](../README.md).
+> Pour la documentation opérationnelle, voir [README.md](../../README.md).
+> Pour la gouvernance couleurs, voir [docs/design/color-governance.md](../design/color-governance.md).
 
 ---
 
@@ -248,5 +249,5 @@ Note: original-db rank 2 mais custom rank 1 — après save explicite, on reset 
 
 Pour l'historique complet antérieur, consulter le git log :
 ```bash
-git log --oneline --since="2025-01-01" --grep="fix\|feat\|chore" > docs/notes/full-git-history.txt
+git log --oneline --since="2025-01-01" --grep="fix\|feat\|chore" > docs/history/full-git-history.txt
 ```

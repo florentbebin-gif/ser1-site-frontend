@@ -1,5 +1,9 @@
 # Audit du Système de Couleurs SER1
 
+> ⚠️ **HISTORIQUE — NE PAS SUIVRE POUR NOUVEAU DEV**
+> Ce document est un snapshot d'audit daté. Les incohérences mentionnées ont été corrigées ou documentées dans la gouvernance actuelle.
+> **Source de vérité actuelle :** `docs/design/color-governance.md`
+
 ## Résumé (10 lignes)
 
 **Incohérences majeures détectées :**

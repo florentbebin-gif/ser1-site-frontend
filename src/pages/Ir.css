@@ -14,14 +14,14 @@
   margin-bottom: 16px;
   font-size: 18px;
   font-weight: 600;
-  color: #2b3e37;
-  border-bottom: 4px solid var(--beige);
+  color: var(--color-c1);
+  border-bottom: 4px solid var(--color-c6);
   padding-bottom: 8px;
 }
 .ir-title {
   font-size: 22px;
   font-weight: 700;
-  color: #222;
+  color: var(--color-c10);
 }
 
 .ir-export-menu {
@@ -29,10 +29,10 @@
   right: 0;
   margin-top: 6px;
   min-width: 180px;
-  background: #fff;
+  background: var(--color-c7);
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-md);
   padding: 6px;
   z-index: 20;
   display: flex;
@@ -89,14 +89,14 @@
   padding: 5px 8px;
   border-radius: 6px;
   border: 1px solid var(--color-c8);
-  background: #fff;
+  background: var(--color-c7);
 }
 
 /* Tableau de saisie */
 .ir-table-wrapper {
   border-radius: 10px;
   border: 1px solid var(--color-c8);
-  background: #fff;
+  background: var(--color-c7);
   padding: 10px;
 }
 
@@ -146,7 +146,7 @@
 .ir-tmi-card {
   border-radius: 10px;
   border: 1px solid var(--color-c8);
-  background: #fff;
+  background: var(--color-c7);
   padding: 10px 12px;
   font-size: 13px;
 }
@@ -215,7 +215,7 @@
   margin-top: 10px;
   border-radius: 10px;
   border: 1px solid var(--color-c8);
-  background: #ffffff;
+  background: var(--color-c7);
   padding: 10px 12px;
   font-size: 13px;
   display: flex;
@@ -230,7 +230,6 @@
 
 .ir-summary-row span:first-child {
   color: var(--color-c9);
-  color: #555;
 }
 
 .ir-summary-row span:last-child {
@@ -325,14 +324,14 @@
   padding: 5px 8px;
   border-radius: 6px;
   border: 1px solid var(--color-c8);
-  background: #fff;
+  background: var(--color-c7);
 }
 .ir-child-select {
   font-size: 13px;
   padding: 5px 8px;
   border-radius: 6px;
   border: 1px solid var(--color-c8);
-  background: #fff;
+  background: var(--color-c7);
 }
 .ir-parts-row {
   display: grid;

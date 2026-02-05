@@ -15,7 +15,7 @@ export default function StrategyPage() {
     return (
       <div className="audit-wizard" style={{ textAlign: 'center', padding: '60px 20px' }}>
         <h1>Aucun audit en cours</h1>
-        <p style={{ color: '#666', marginBottom: '24px' }}>
+        <p style={{ color: 'var(--color-c9)', marginBottom: '24px' }}>
           Veuillez d'abord compléter un audit patrimonial avant de construire une stratégie.
         </p>
         <Link to="/audit" className="chip" style={{ display: 'inline-block', textDecoration: 'none' }}>
