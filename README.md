@@ -1,13 +1,14 @@
 # SER1 — Audit Patrimonial Express + Stratégie Guidée
 
-**Dernière mise à jour : 2026-02-04 20:52 (Europe/Paris)**
+**Dernière mise à jour : 2026-02-05 (Europe/Paris)**
 
 Application web interne pour CGP : audit patrimonial, stratégie guidée, simulateurs IR/Placement/Crédit, exports PPTX/Excel.
 
 **Stack** : React 18 + Vite 5 + Supabase (Auth/DB/Storage/Edge Functions) + Vercel.  
 **Tests** : 71 unitaires (Vitest).  
-**Historique** : [docs/notes/changelog.md](docs/notes/changelog.md)  
-**Debug flags** : [docs/debug.md](docs/debug.md)
+**Historique** : [docs/CHANGELOG.md](docs/CHANGELOG.md)  
+**Debug flags** : [docs/runbook/debug.md](docs/runbook/debug.md)  
+**🎨 Couleurs** : [docs/design/color-governance.md](docs/design/color-governance.md) — *source de vérité unique (tokens C1-C10)*
 
 ---
 
@@ -228,7 +229,7 @@ localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true')
 
 ## 9. Liens documentation
 
-- [Historique détaillé](docs/notes/changelog.md) — post-mortems, évolutions
+- [Historique détaillé](docs/CHANGELOG.md) — post-mortems, évolutions
 - `ADMIN_COMPTES_ET_SIGNALMENTS.md` — Gestion admin
 - `CSS_COLOR_RULES.md` — Règles couleurs CSS
 
@@ -236,11 +237,11 @@ localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true')
 
 | Document | Description | Usage |
 |----------|-------------|-------|
-| **[Gouvernance Couleurs](docs/color-governance.md)** | Règles complètes C1-C10, exceptions, contraste, mapping sémantique | **OBLIGATOIRE** avant toute modif couleur |
-| **[Audit Couleurs](docs/color-audit.md)** | Écarts actuels, TOP 15 incohérences, plan de migration | Référence pour clean-up |
+| **[Gouvernance Couleurs](docs/design/color-governance.md)** | Règles complètes C1-C10, exceptions, contraste, mapping sémantique | **OBLIGATOIRE** avant toute modif couleur |
+| **[Audit Couleurs](docs/history/color-audit.md)** | Historique des écarts identifiés (archive) | Référence historique |
 
-**⚠️ RÈGLE ABSOLUE** : Aucune couleur hardcodée sauf WHITE (#FFFFFF) et WARNING (#996600). Voir [gouvernance détaillée](docs/color-governance.md#exceptions-autorisées-liste-exhaustive).
+**⚠️ RÈGLE ABSOLUE** : Aucune couleur hardcodée sauf WHITE (#FFFFFF) et WARNING (#996600). Voir [gouvernance détaillée](docs/design/color-governance.md#exceptions-autorisées-liste-exhaustive).
 
 ---
 
-*README simplifié — voir [docs/notes/changelog.md](docs/notes/changelog.md) pour l'historique complet.*
+*README simplifié — voir [docs/CHANGELOG.md](docs/CHANGELOG.md) pour l'historique complet.*

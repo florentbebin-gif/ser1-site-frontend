@@ -163,9 +163,9 @@
 }
 
 .alert.error {
-  background: #fff3f3; /* Fond rouge très clair standard */
-  border: 1px solid #ffd3d3;
-  color: #b00020;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  color: var(--color-error-text);
   padding: 8px 10px;
   border-radius: 8px;
   font-size: 14px;
@@ -173,9 +173,9 @@
 }
 
 .alert.success {
-  background: #f0f9f0; /* Fond vert très clair standard */
-  border: 1px solid var(--color-c1);
-  color: var(--color-c1);
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+  color: var(--color-success-text);
   padding: 8px 10px;
   border-radius: 8px;
   font-size: 14px;

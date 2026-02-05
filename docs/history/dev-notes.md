@@ -1,4 +1,9 @@
 # DEV NOTES - Vague 0 Baseline
+
+> ⚠️ **HISTORIQUE — NE PAS SUIVRE POUR NOUVEAU DEV**
+> Notes de développement de la phase initiale (Vague 0-3). Conservé pour référence.
+> **Documentation actuelle :** `README.md` et `docs/design/color-governance.md`
+
 **Date**: 2026-01-23  
 **Branche**: feat/cabinets-logos-themes  
 **Objectif**: Baseline reproductible avant chantier Cabinets + Logos + Thèmes  

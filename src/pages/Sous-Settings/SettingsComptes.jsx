@@ -1074,9 +1074,9 @@ export default function SettingsComptes() {
                 {userModalSuccess && (
                   <div style={{ 
                     padding: '12px', 
-                    background: '#d4edda', 
-                    border: '1px solid #c3e6cb', 
-                    color: '#155724', 
+                    background: 'var(--color-success-bg)', 
+                    border: '1px solid var(--color-success-border)', 
+                    color: 'var(--color-success-text)', 
                     borderRadius: 6, 
                     marginBottom: 16,
                     fontSize: 14
@@ -1098,7 +1098,7 @@ export default function SettingsComptes() {
                       border: '1px solid var(--color-c8)',
                       borderRadius: 6,
                       fontSize: 14,
-                      backgroundColor: '#FFFFFF'
+                      backgroundColor: 'var(--color-c7)'
                     }}
                   />
                 </div>
@@ -1114,7 +1114,7 @@ export default function SettingsComptes() {
                       border: '1px solid var(--color-c8)',
                       borderRadius: 6,
                       fontSize: 14,
-                      backgroundColor: '#FFFFFF',
+                      backgroundColor: 'var(--color-c7)',
                       cursor: 'pointer'
                     }}
                   >

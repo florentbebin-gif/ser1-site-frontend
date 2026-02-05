@@ -8,38 +8,38 @@
 }
 
 .signalements-section {
-  padding: 20px;
+  padding: 16px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: white; /* ← BLANC autorisé */
+  background: white;
 }
 
 .signalements-section-title {
-  margin: 0 0 12px 0;
-  font-size: 15px;
+  margin: 0 0 8px 0;
+  font-size: 13px;
   font-weight: 600;
   color: var(--color-c10);
 }
 
 .signalements-intro {
-  margin: 0 0 16px 0;
-  font-size: 14px;
+  margin: 0 0 12px 0;
+  font-size: 12px;
   color: var(--color-c9);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .signalements-loading,
 .signalements-empty {
-  margin: 16px 0;
-  font-size: 14px;
+  margin: 12px 0;
+  font-size: 12px;
   color: var(--color-c9);
   font-style: italic;
 }
 
 .signalements-error {
-  margin: 16px 0;
-  font-size: 14px;
-  color: var(--color-c1); /* Utilise la couleur primaire pour l'erreur */
+  margin: 12px 0;
+  font-size: 12px;
+  color: var(--color-c1);
 }
 
 /* Formulaire */
@@ -56,20 +56,21 @@
 }
 
 .signalement-form label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--color-c10);
 }
 
-/* Inputs avec fond blanc comme demandé */
+/* Inputs avec fond blanc */
 .signalement-form input,
 .signalement-form select,
 .signalement-form textarea {
-  padding: 10px 12px;
+  padding: 8px 12px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  font-size: 14px;
-  background: white; /* ← BLANC autorisé */
+  font-size: 13px;
+  font-family: inherit;
+  background: white;
   color: var(--color-c10);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -97,9 +98,9 @@
 
 /* Alertes - Utilisation de variables neutres au lieu de couleurs hardcodées */
 .alert {
-  padding: 12px 16px;
+  padding: 10px 14px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -120,12 +121,12 @@
 /* Bouton submit */
 .btn-submit {
   align-self: flex-start;
-  padding: 10px 20px;
+  padding: 8px 16px;
   background: var(--color-c1);
-  color: white; /* ← BLANC autorisé (texte sur fond coloré) */
+  color: white;
   border: none;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s;
@@ -148,10 +149,10 @@
 }
 
 .report-item {
-  padding: 12px 16px;
+  padding: 10px 14px;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  background: white; /* ← BLANC autorisé */
+  background: white;
   transition: box-shadow 0.2s;
 }
 
@@ -169,7 +170,7 @@
 
 .report-title {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 12px;
   color: var(--color-c10);
   flex: 1;
 }
@@ -215,7 +216,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-c9);
 }
 

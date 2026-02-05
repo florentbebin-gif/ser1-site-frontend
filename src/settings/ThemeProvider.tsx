@@ -181,24 +181,29 @@ interface ThemeContextValue {
   colors: ThemeColors;
   setColors: (_colors: ThemeColors) => void;
   saveThemeToUiSettings: (_colors: ThemeColors, _themeName?: string) => Promise<{ success: boolean; error?: string }>;
+  saveCustomPalette: (_colors: ThemeColors) => Promise<{ success: boolean; error?: string }>;
   isLoading: boolean;
-  themeReady: boolean; // true when CSS variables are applied (safe to render routes)
+  themeReady: boolean;
   logo?: string;
   setLogo: (_logo: string | undefined) => void;
   cabinetLogo?: string;
   logoPlacement?: import('../pptx/theme/types').LogoPlacement;
-  cabinetColors: ThemeColors | null | undefined; // Tri-état: undefined=not loaded, null=no cabinet, ThemeColors=cabinet palette
+  cabinetColors: ThemeColors | null | undefined;
   themeScope: ThemeScope;
-  setThemeScope: (_scope: ThemeScope) => void; // Allow Settings to update scope globally
-  pptxColors: ThemeColors; // Colors to use for PPTX (respects scope)
+  setThemeScope: (_scope: ThemeScope) => void;
+  pptxColors: ThemeColors;
   themeSource: ThemeSource;
   setThemeSource: (_source: ThemeSource) => void;
+  customPalette: ThemeColors | null;
+  selectedThemeRef: string;
+  setSelectedThemeRef: (_ref: string) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
   colors: DEFAULT_COLORS,
   setColors: (_colors: ThemeColors) => {},
   saveThemeToUiSettings: async (_colors: ThemeColors, _themeName?: string) => ({ success: false, error: 'Not implemented' }),
+  saveCustomPalette: async (_colors: ThemeColors) => ({ success: false, error: 'Not implemented' }),
   isLoading: true,
   themeReady: false,
   logo: undefined,
@@ -211,6 +216,9 @@ const ThemeContext = createContext<ThemeContextValue>({
   pptxColors: DEFAULT_COLORS,
   themeSource: 'cabinet',
   setThemeSource: (_source: ThemeSource) => {},
+  customPalette: null,
+  selectedThemeRef: 'cabinet',
+  setSelectedThemeRef: (_ref: string) => {},
 });
 
 export function useTheme(): ThemeContextValue {
@@ -264,6 +272,10 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const [cabinetColors, setCabinetColors] = useState<ThemeColors | null | undefined>(undefined);
   // Thème Original depuis DB (pour users sans cabinet)
   const [originalColors, setOriginalColors] = useState<ThemeColors | null>(null);
+  // 🎨 V4.0: Palette personnalisée persistée (séparée du thème sélectionné)
+  const [customPalette, setCustomPalette] = useState<ThemeColors | null>(null);
+  // Référence du thème actuellement sélectionné
+  const [selectedThemeRef, setSelectedThemeRef] = useState<string>('cabinet');
 
   // Compute PPTX colors - PRIORITÉ: cabinet > original (sans cabinet) > custom selon scope
   // RÈGLE MÉTIER: PPTX = cabinet si dispo, sinon original ou custom selon scope
@@ -661,7 +673,23 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     };
   }, [activeUserId]);
 
-  // Load theme when activeUserId or themeSource changes
+  function convertDbPaletteToThemeColors(palette: any): ThemeColors | null {
+  if (!palette) return null;
+  return {
+    c1: palette.c1 || DEFAULT_COLORS.c1,
+    c2: palette.c2 || DEFAULT_COLORS.c2,
+    c3: palette.c3 || DEFAULT_COLORS.c3,
+    c4: palette.c4 || DEFAULT_COLORS.c4,
+    c5: palette.c5 || DEFAULT_COLORS.c5,
+    c6: palette.c6 || DEFAULT_COLORS.c6,
+    c7: palette.c7 || DEFAULT_COLORS.c7,
+    c8: palette.c8 || DEFAULT_COLORS.c8,
+    c9: palette.c9 || DEFAULT_COLORS.c9,
+    c10: palette.c10 || DEFAULT_COLORS.c10,
+  };
+}
+
+// Load theme when activeUserId or themeSource changes
   useEffect(() => {
     if (!activeUserId) {
       setIsLoading(false);
@@ -751,21 +779,55 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
             source = 'cache';
             cacheAppliedRef.current = true;
           } else {
-            // 1) Essayer ui_settings (nouveau système)
+            // 1) Essayer ui_settings (nouveau système V4.0)
             try {
               const { data: uiSettings, error: uiError } = await supabase
                 .from('ui_settings')
-                .select('colors')
+                .select('colors, custom_palette, selected_theme_ref, active_palette')
                 .eq('user_id', user.id)
-                .order('updated_at', { ascending: false })
-                .limit(1)
                 .maybeSingle();
 
               if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
 
-              if (!uiError && uiSettings?.colors) {
-                finalColors = convertFromSettingsFormat(uiSettings.colors);
-                source = 'ui_settings';
+              if (!uiError && uiSettings) {
+                // 🎨 V4.0: Charger la palette personnalisée si présente
+                if (uiSettings.custom_palette) {
+                  const customColors = convertDbPaletteToThemeColors(uiSettings.custom_palette);
+                  if (customColors) {
+                    setCustomPalette(customColors);
+                  }
+                }
+                
+                // 🎨 V4.0: Charger la référence du thème sélectionné
+                if (uiSettings.selected_theme_ref) {
+                  setSelectedThemeRef(uiSettings.selected_theme_ref);
+                }
+                
+                // Déterminer les couleurs finales selon selected_theme_ref
+                const themeRef = uiSettings.selected_theme_ref || 'cabinet';
+                
+                if (themeRef === 'custom' && uiSettings.custom_palette) {
+                  // Utiliser la palette personnalisée
+                  finalColors = convertDbPaletteToThemeColors(uiSettings.custom_palette) || DEFAULT_COLORS;
+                  source = 'custom-palette';
+                } else if (themeRef === 'cabinet' && fetchedCabinetColors) {
+                  // Utiliser le thème du cabinet
+                  finalColors = fetchedCabinetColors;
+                  source = 'cabinet-theme';
+                } else if (themeRef === 'original' && loadedOriginal) {
+                  // Utiliser le thème original
+                  finalColors = loadedOriginal;
+                  source = 'original-db';
+                } else if (uiSettings.active_palette) {
+                  // Fallback sur active_palette (dénormalisé)
+                  finalColors = convertDbPaletteToThemeColors(uiSettings.active_palette) || DEFAULT_COLORS;
+                  source = 'active-palette';
+                } else if (uiSettings.colors) {
+                  // Fallback legacy sur colors
+                  finalColors = convertFromSettingsFormat(uiSettings.colors);
+                  source = 'ui_settings (legacy)';
+                }
+                
                 saveThemeToCache(finalColors, user.id);
               } else if (user.user_metadata?.theme_colors) {
                 // 2) Fallback metadata (legacy admin)
@@ -815,42 +877,86 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     applyColorsToCSSWithGuardRef.current(newColors, lastAppliedUserIdRef.current, 'setColors-manual');
   }, []);
 
-  // Sauvegarde le thème dans ui_settings (nouveau système)
-  const saveThemeToUiSettings = useCallback(async (colors: ThemeColors, themeName?: string): Promise<{ success: boolean; error?: string }> => {
+  // 🎨 V4.0: Sauvegarde explicite de la palette personnalisée
+  const saveCustomPalette = useCallback(async (colors: ThemeColors): Promise<{ success: boolean; error?: string }> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         return { success: false, error: 'User not authenticated' };
       }
 
-      // Format pour Supabase
-      const settingsColors = {
-        color1: colors.c1,
-        color2: colors.c2,
-        color3: colors.c3,
-        color4: colors.c4,
-        color5: colors.c5,
-        color6: colors.c6,
-        color7: colors.c7,
-        color8: colors.c8,
-        color9: colors.c9,
-        color10: colors.c10,
-      };
-
       const { error } = await supabase
         .from('ui_settings')
         .upsert({
           user_id: user.id,
-          theme_name: themeName || 'custom',
-          colors: settingsColors,
+          custom_palette: colors,
+          selected_theme_ref: 'custom',
+          active_palette: colors,
         }, {
           onConflict: 'user_id'
         });
 
       if (error) throw error;
 
-      // Également sauvegarder dans le cache local isolé par user
-      saveThemeToCache(colors, user.id, themeName);
+      // Mettre à jour le state local
+      setCustomPalette(colors);
+      setSelectedThemeRef('custom');
+      
+      // Sauvegarder dans le cache
+      saveThemeToCache(colors, user.id, 'custom');
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error saving custom palette:', error);
+      return { success: false, error: error.message };
+    }
+  }, []);
+
+  // Sauvegarde le thème dans ui_settings (nouveau système)
+  // V4.0: Met à jour selected_theme_ref sans écraser custom_palette
+  const saveThemeToUiSettings = useCallback(async (colors: ThemeColors, themeRef?: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        return { success: false, error: 'User not authenticated' };
+      }
+
+      // Déterminer la référence du thème
+      const ref = themeRef || 'custom';
+      
+      // Upsert: met à jour selected_theme_ref et active_palette
+      // Ne touche PAS à custom_palette (préservé)
+      const { error } = await supabase
+        .from('ui_settings')
+        .upsert({
+          user_id: user.id,
+          selected_theme_ref: ref,
+          active_palette: colors,
+          // Legacy: garder pour compatibilité
+          theme_name: ref,
+          colors: {
+            color1: colors.c1,
+            color2: colors.c2,
+            color3: colors.c3,
+            color4: colors.c4,
+            color5: colors.c5,
+            color6: colors.c6,
+            color7: colors.c7,
+            color8: colors.c8,
+            color9: colors.c9,
+            color10: colors.c10,
+          },
+        }, {
+          onConflict: 'user_id'
+        });
+
+      if (error) throw error;
+
+      // Mettre à jour le state local
+      setSelectedThemeRef(ref);
+      
+      // Sauvegarder dans le cache
+      saveThemeToCache(colors, user.id, ref);
 
       return { success: true };
     } catch (error: any) {
@@ -933,7 +1039,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, isLoading, themeReady, logo, setLogo, cabinetLogo, logoPlacement, cabinetColors, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource }}>
+    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, saveCustomPalette, isLoading, themeReady, logo, setLogo, cabinetLogo, logoPlacement, cabinetColors, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource, customPalette, selectedThemeRef, setSelectedThemeRef }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -1,5 +1,11 @@
 # Rapport de Revue - Gouvernance Couleurs SER1
 
+> ⚠️ **HISTORIQUE — NE PAS SUIVRE POUR NOUVEAU DEV**
+> Ce document est un rapport de revue daté. Les validations et références sont obsolètes.
+> **Source de vérité actuelle :** `docs/design/color-governance.md`
+
+---
+
 **Date de revue** : 2026-02-04 20:52  
 **Relecteur** : Tech Lead / Reviewer  
 **Branch** : `chore/color-governance-phases`  
