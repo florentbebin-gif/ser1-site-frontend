@@ -648,14 +648,7 @@ export default function SettingsComptes() {
                         <div className="admin-card-compact__name" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                           {theme.name}
                           {theme.is_system && (
-                            <span style={{ 
-                              fontSize: 9, 
-                              padding: '1px 4px', 
-                              background: 'var(--color-c2)', 
-                              color: 'white', 
-                              borderRadius: 3,
-                              fontWeight: 600
-                            }}>SYS</span>
+                            <span className="theme-badge-sys">SYS</span>
                           )}
                         </div>
                         <div className="admin-card-compact__palette">
@@ -756,7 +749,6 @@ export default function SettingsComptes() {
                               border: '1px solid var(--color-c8)',
                               borderRadius: 4,
                               fontSize: 12,
-                              backgroundColor: 'var(--color-c7)',
                               cursor: 'pointer',
                               minWidth: 120
                             }}
@@ -858,8 +850,7 @@ export default function SettingsComptes() {
                       padding: '10px 12px',
                       border: '1px solid var(--color-c8)',
                       borderRadius: 6,
-                      fontSize: 14,
-                      backgroundColor: 'var(--color-c7)'
+                      fontSize: 14
                     }}
                   >
                     <option value="">— Aucun thème —</option>
@@ -1095,8 +1086,7 @@ export default function SettingsComptes() {
                       padding: '10px 12px',
                       border: '1px solid var(--color-c8)',
                       borderRadius: 6,
-                      fontSize: 14,
-                      backgroundColor: 'var(--color-c7)'
+                      fontSize: 14
                     }}
                   />
                 </div>
@@ -1112,7 +1102,6 @@ export default function SettingsComptes() {
                       border: '1px solid var(--color-c8)',
                       borderRadius: 6,
                       fontSize: 14,
-                      backgroundColor: 'var(--color-c7)',
                       cursor: 'pointer'
                     }}
                   >

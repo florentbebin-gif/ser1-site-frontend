@@ -11,7 +11,11 @@
   padding: 16px;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
-  background: white;
+  background: var(--color-c7); /* Changement: blanc -> C7 pour réduire l'effet "trop blanc" */
+}
+
+.signalements-section:first-child {
+  border-left: 4px solid var(--color-c2); /* Accent de couleur C2 pour identifier la section signalement */
 }
 
 .signalements-section-title {

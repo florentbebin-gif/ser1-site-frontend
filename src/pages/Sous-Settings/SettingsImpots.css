@@ -51,7 +51,17 @@
   font-size: 13px;
   text-align: right;
   border: 1px solid var(--color-c8);
-  border-radius: 4px; /* arrondi comme les autres champs */
+  border-radius: 4px;
+  /* RÈGLE UI GOVERNANCE: Inputs TOUJOURS BLANCS */
+  background-color: #FFFFFF;
+  color: var(--color-c10);
+}
+
+/* Focus ring conforme UI Governance (C2 + C4) */
+.settings-table input:focus {
+  outline: none;
+  border-color: var(--color-c2);
+  box-shadow: 0 0 0 3px var(--color-c4);
 }
 
 /* Lignes "label + input + unité" (PFU, CEHR, IS, etc.) */
@@ -74,6 +84,16 @@
   border: 1px solid var(--color-c8);
   border-radius: 4px;
   text-align: right;
+  /* RÈGLE UI GOVERNANCE: Inputs TOUJOURS BLANCS */
+  background-color: #FFFFFF;
+  color: var(--color-c10);
+}
+
+/* Focus ring conforme UI Governance (C2 + C4) */
+.settings-field-row input:focus {
+  outline: none;
+  border-color: var(--color-c2);
+  box-shadow: 0 0 0 3px var(--color-c4);
 }
 
 .settings-field-row span {

@@ -8,7 +8,8 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 **Tests** : 71 unitaires (Vitest).  
 **Historique** : [docs/CHANGELOG.md](docs/CHANGELOG.md)  
 **Debug flags** : [docs/runbook/debug.md](docs/runbook/debug.md)  
-**🎨 Couleurs** : [docs/design/color-governance.md](docs/design/color-governance.md) — *source de vérité unique (tokens C1-C10)*
+**🎨 Couleurs** : [docs/design/color-governance.md](docs/design/color-governance.md) — *source de vérité unique (tokens C1-C10)*  
+**📐 UI Governance** : [docs/design/ui-governance.md](docs/design/ui-governance.md) — *Standards "Gestion Privée" (Layout, Inputs, Typo)*
 
 ---
 
@@ -233,14 +234,17 @@ localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true')
 - `ADMIN_COMPTES_ET_SIGNALMENTS.md` — Gestion admin
 - `CSS_COLOR_RULES.md` — Règles couleurs CSS
 
-### 🎨 Gouvernance Couleurs (CRITIQUE)
+### 🎨 Design System & Gouvernance
 
 | Document | Description | Usage |
 |----------|-------------|-------|
 | **[Gouvernance Couleurs](docs/design/color-governance.md)** | Règles complètes C1-C10, exceptions, contraste, mapping sémantique | **OBLIGATOIRE** avant toute modif couleur |
+| **[Gouvernance UI](docs/design/ui-governance.md)** | Standards Layout, Inputs, Typo, Composants "Premium" | **OBLIGATOIRE** pour toute nouvelle page |
 | **[Audit Couleurs](docs/history/color-audit.md)** | Historique des écarts identifiés (archive) | Référence historique |
 
-**⚠️ RÈGLE ABSOLUE** : Aucune couleur hardcodée sauf WHITE (#FFFFFF) et WARNING (#996600). Voir [gouvernance détaillée](docs/design/color-governance.md#exceptions-autorisées-liste-exhaustive).
+**⚠️ RÈGLES ABSOLUES** :
+1. Aucune couleur hardcodée sauf WHITE (#FFFFFF) et WARNING (#996600). Voir [gouvernance couleur](docs/design/color-governance.md).
+2. **INPUTS SUR FOND BLANC** obligatoirement pour la lisibilité. Voir [gouvernance UI](docs/design/ui-governance.md).
 
 ---
 

@@ -5,6 +5,9 @@ import { useUserMode } from '../services/userModeService';
 /**
  * Composant réutilisable pour le bandeau d'informations utilisateur
  * Affiche : Utilisateur, Statut, Mode
+ * 
+ * Design "Carte de présence" - élégance gestion privée
+ * Conforme gouvernance couleur : C4 (badges), C6 (ligne accent), C8 (séparateurs), C9 (labels), C10 (valeurs)
  */
 export function UserInfoBanner() {
   const { user } = useAuth();
@@ -12,33 +15,102 @@ export function UserInfoBanner() {
   const { mode: userMode, isLoading: modeLoading } = useUserMode();
 
   return (
-    <div className="settings-field-row" style={{ 
+    <div style={{ 
       display: 'flex',
       alignItems: 'center',
-      fontSize: 14,
-      padding: '12px 16px', 
-      background: 'var(--color-c7)', 
-      borderRadius: 8, 
-      border: '1px solid var(--color-c8)', 
-      gap: 24, 
-      marginBottom: 16 
+      justifyContent: 'flex-end',
+      marginLeft: 'auto',
+      gap: 12,
+      marginBottom: 24,
+      flexWrap: 'wrap'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-        <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 14 }}>Utilisateur :</span>
-        <span style={{ color: 'var(--color-c10)', fontSize: 14 }}>{user?.email || 'Non connecté'}</span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-        <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 14 }}>Statut :</span>
-        <span style={{ color: 'var(--color-c10)', fontSize: 14 }}>
-          {isAdmin ? 'Admin' : 'User'}
+      {/* Email - Pill Style */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        padding: '4px 12px',
+        border: '1px solid var(--color-c8)',
+        borderRadius: 99,
+        gap: 8,
+        background: 'transparent'
+      }}>
+        <span style={{ 
+          fontSize: 11, 
+          fontWeight: 500,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          color: 'var(--color-c9)'
+        }}>
+          Utilisateur
+        </span>
+        <span style={{ 
+          fontSize: 13, 
+          fontWeight: 600,
+          color: 'var(--color-c10)'
+        }}>
+          {user?.email || 'Non connecté'}
         </span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-        <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 14 }}>Mode :</span>
-        <span style={{ color: 'var(--color-c10)', fontSize: 14 }}>
-          {modeLoading ? 'Chargement...' : (userMode === 'expert' ? 'Expert' : 'Simplifié')}
-        </span>
+
+      {/* Badges Statut & Mode */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Badge Statut */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '4px 12px',
+          border: '1px solid var(--color-c8)',
+          borderRadius: 99,
+          gap: 8,
+          background: 'transparent'
+        }}>
+          <span style={{
+            fontSize: 11,
+            fontWeight: 500,
+            color: 'var(--color-c9)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }}>
+            Statut
+          </span>
+          <span style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--color-c10)'
+          }}>
+            {isAdmin ? 'Admin' : 'User'}
+          </span>
+        </div>
+
+        {/* Badge Mode */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '4px 12px',
+          border: '1px solid var(--color-c8)',
+          borderRadius: 99,
+          gap: 8,
+          background: 'transparent'
+        }}>
+          <span style={{
+            fontSize: 11,
+            fontWeight: 500,
+            color: 'var(--color-c9)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px'
+          }}>
+            Mode
+          </span>
+          <span style={{
+            fontSize: 13,
+            fontWeight: 600,
+            color: 'var(--color-c10)'
+          }}>
+            {modeLoading ? '...' : (userMode === 'expert' ? 'Expert' : 'Simplifié')}
+          </span>
+        </div>
       </div>
     </div>
   );
 }
+
