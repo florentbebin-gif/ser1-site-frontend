@@ -6,6 +6,25 @@
 
 ---
 
+## 2026-02-05 — Phase 1 Raffinements SettingsComptes
+
+### Objectif
+Affiner l'UX de la page SettingsComptes selon les standards Premium / Gestion Privée.
+
+### Changements
+| Élément | Avant | Après |
+|---------|-------|-------|
+| **Badge Signalements** | "X" + texte "Y non lu" redondant | Badge unique avec indicateur visuel (point) et tooltip complet |
+| **Badge SYS** | Risque de troncature par bouton édition | `flex-wrap: wrap` sur le conteneur de nom |
+| **Bouton Rafraîchir** | Texte "Rafraîchir" style inline | Bouton icône premium avec tooltip "Rafraîchir la liste" |
+| **Input fichier logo** | Input natif non-stylé | Bouton "Choisir une image..." + input caché + affichage nom fichier |
+
+### Fichiers modifiés
+- `src/pages/Sous-Settings/SettingsComptes.jsx` — Refinements UX (signalements, refresh, file input)
+- `src/pages/Sous-Settings/SettingsComptes.css` — Styles pour unread-dot, badge amélioré
+
+---
+
 ## 2026-02-05 — Refonte UI Settings "Gestion Privée"
 
 ### Objectif

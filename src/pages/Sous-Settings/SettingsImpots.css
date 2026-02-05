@@ -166,3 +166,72 @@
   width: 60px;
   text-align: right;
 }
+
+/* ===== ACCORDÉON (copié de SettingsFiscalites pour harmonisation) ===== */
+
+/* Accordéon sections */
+.fisc-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fisc-acc-item {
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  /* RÈGLE UI GOVERNANCE: Cards = Blanc (Niveau 1) */
+  background: #FFFFFF;
+  overflow: hidden;
+  /* Ombre subtile */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.15s ease;
+}
+
+.fisc-acc-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.fisc-acc-header {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.fisc-acc-header:hover {
+  background: var(--color-c7);
+}
+
+.fisc-acc-chevron {
+  font-size: 14px;
+  color: var(--color-c9);
+  padding-left: 10px;
+}
+
+.fisc-acc-body {
+  padding: 10px 16px 16px;
+}
+
+/* Titre produit (grand) */
+.fisc-product-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-c10);
+  margin: 0;
+}
+
+/* Titres de sections (compact) */
+.fisc-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 16px 0 8px;
+  color: var(--color-c10);
+}
+
+.fisc-section-title:first-child {
+  margin-top: 0;
+}

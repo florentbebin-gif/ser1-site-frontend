@@ -227,6 +227,16 @@
   background: rgba(var(--color-c2-rgb, 112, 155, 139), 0.12);
   color: var(--color-c2);
   border: 1px solid var(--color-c2);
+  gap: 6px;
+}
+
+/* Indicateur visuel non lu (petit point) */
+.unread-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--color-c2);
+  border-radius: 50%;
+  display: inline-block;
 }
 
 .actions {
