@@ -18,7 +18,6 @@ const SettingsImpots = lazy(() => import('../pages/Sous-Settings/SettingsImpots'
 const SettingsPrelevements = lazy(() => import('../pages/Sous-Settings/SettingsPrelevements'));
 const SettingsFiscalites = lazy(() => import('../pages/Sous-Settings/SettingsFiscalites'));
 const SettingsBaseContrats = lazy(() => import('../pages/Sous-Settings/SettingsBaseContrats'));
-const SettingsTableMortalite = lazy(() => import('../pages/Sous-Settings/SettingsTableMortalite'));
 const SettingsComptes = lazy(() => import('../pages/Sous-Settings/SettingsComptes'));
 
 /**
@@ -68,13 +67,6 @@ export const SETTINGS_ROUTES = [
     component: SettingsBaseContrats,
   },
   {
-    key: 'tableMortalite',
-    label: 'Table de mortalité',
-    path: 'table-mortalite',
-    urlPath: '/settings/table-mortalite',
-    component: SettingsTableMortalite,
-  },
-  {
     key: 'comptes',
     label: 'Comptes',
     path: 'comptes',
@@ -113,7 +105,6 @@ export const getActiveSettingsKey = (pathname) => {
   if (pathname.startsWith('/settings/prelevements')) return 'prelevements';
   if (pathname.startsWith('/settings/fiscalites')) return 'fiscalites';
   if (pathname.startsWith('/settings/base-contrat')) return 'baseContrats';
-  if (pathname.startsWith('/settings/table-mortalite')) return 'tableMortalite';
   if (pathname.startsWith('/settings/comptes')) return 'comptes';
   return 'general';
 };
