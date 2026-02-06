@@ -156,6 +156,7 @@ export default function SettingsImpots() {
   const [settings, setSettings] = useState(DEFAULT_TAX_SETTINGS);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [openSection, setOpenSection] = useState(null);
 
   const isAdmin =
     user &&
@@ -308,10 +309,16 @@ const updateField = (path, value) => {
       {/* Bandeau info */}
       <UserInfoBanner />
 
+        <div className="fisc-accordion">
 
                   {/* 1. Barème impôt sur le revenu */}
-        <section>
-          <h3>Barème de l’impôt sur le revenu</h3>
+<div className="fisc-acc-item">
+  <button type="button" className="fisc-acc-header" id="impots-header-bareme" aria-expanded={openSection === 'bareme'} aria-controls="impots-panel-bareme" onClick={() => setOpenSection(openSection === 'bareme' ? null : 'bareme')}>
+    <span className="fisc-product-title" style={{ margin: 0 }}>Barème de l’impôt sur le revenu</span>
+    <span className="fisc-acc-chevron">{openSection === 'bareme' ? '▾' : '▸'}</span>
+  </button>
+  {openSection === 'bareme' && (
+  <div className="fisc-acc-body" id="impots-panel-bareme" role="region" aria-labelledby="impots-header-bareme">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 8 }}>
             Barème progressif par tranches (taux et retraitement) pour le
             barème actuel et celui de l’année précédente.
@@ -977,10 +984,17 @@ const updateField = (path, value) => {
               </div>
             </div>
           </div>
-        </section>
+  </div>
+  )}
+</div>
 {/* Abattement DOM sur l'IR (barème) */}
-<section>
-  <h3>Abattement DOM sur l’IR (barème)</h3>
+<div className="fisc-acc-item">
+  <button type="button" className="fisc-acc-header" id="impots-header-dom" aria-expanded={openSection === 'dom'} aria-controls="impots-panel-dom" onClick={() => setOpenSection(openSection === 'dom' ? null : 'dom')}>
+    <span className="fisc-product-title" style={{ margin: 0 }}>Abattement DOM sur l’IR (barème)</span>
+    <span className="fisc-acc-chevron">{openSection === 'dom' ? '▾' : '▸'}</span>
+  </button>
+  {openSection === 'dom' && (
+  <div className="fisc-acc-body" id="impots-panel-dom" role="region" aria-labelledby="impots-header-dom">
   <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 8 }}>
     Appliqué sur l’impôt issu du barème <strong>après plafonnement du quotient familial</strong> et
     <strong> avant</strong> décote + réductions/crédits.
@@ -1143,12 +1157,19 @@ const updateField = (path, value) => {
       </table>
     </div>
   </div>
-</section>
+  </div>
+  )}
+</div>
 
 
           {/* 2. PFU */}
-          <section>
-  <h3>PFU (flat tax)</h3>
+          <div className="fisc-acc-item">
+  <button type="button" className="fisc-acc-header" id="impots-header-pfu" aria-expanded={openSection === 'pfu'} aria-controls="impots-panel-pfu" onClick={() => setOpenSection(openSection === 'pfu' ? null : 'pfu')}>
+    <span className="fisc-product-title" style={{ margin: 0 }}>PFU (flat tax)</span>
+    <span className="fisc-acc-chevron">{openSection === 'pfu' ? '▾' : '▸'}</span>
+  </button>
+  {openSection === 'pfu' && (
+  <div className="fisc-acc-body" id="impots-panel-pfu" role="region" aria-labelledby="impots-header-pfu">
 
   <div className="tax-two-cols">
     
@@ -1264,13 +1285,19 @@ const updateField = (path, value) => {
     </div>
 
   </div>
-</section>
+  </div>
+  )}
+</div>
 
 
           {/* 3. CEHR / CDHR */}
-          <section>
-            
-  <h3>CEHR / CDHR</h3>
+          <div className="fisc-acc-item">
+  <button type="button" className="fisc-acc-header" id="impots-header-cehr" aria-expanded={openSection === 'cehr'} aria-controls="impots-panel-cehr" onClick={() => setOpenSection(openSection === 'cehr' ? null : 'cehr')}>
+    <span className="fisc-product-title" style={{ margin: 0 }}>CEHR / CDHR</span>
+    <span className="fisc-acc-chevron">{openSection === 'cehr' ? '▾' : '▸'}</span>
+  </button>
+  {openSection === 'cehr' && (
+  <div className="fisc-acc-body" id="impots-panel-cehr" role="region" aria-labelledby="impots-header-cehr">
   <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
     Contribution exceptionnelle sur les hauts revenus (CEHR) et
     contribution différentielle (CDHR).
@@ -1479,12 +1506,19 @@ const updateField = (path, value) => {
       </div>
     </div>
   </div>
-</section>
+  </div>
+  )}
+</div>
 
 
           {/* 4. Impôt sur les sociétés */}
-          <section>
-  <h3>Impôt sur les sociétés</h3>
+          <div className="fisc-acc-item">
+  <button type="button" className="fisc-acc-header" id="impots-header-is" aria-expanded={openSection === 'is'} aria-controls="impots-panel-is" onClick={() => setOpenSection(openSection === 'is' ? null : 'is')}>
+    <span className="fisc-product-title" style={{ margin: 0 }}>Impôt sur les sociétés</span>
+    <span className="fisc-acc-chevron">{openSection === 'is' ? '▾' : '▸'}</span>
+  </button>
+  {openSection === 'is' && (
+  <div className="fisc-acc-body" id="impots-panel-is" role="region" aria-labelledby="impots-header-is">
 
   <div className="tax-two-cols">
     {/* 2025 */}
@@ -1595,11 +1629,18 @@ const updateField = (path, value) => {
       </div>
     </div>
   </div>
-</section>
+  </div>
+  )}
+</div>
 
 {/* Section DMTG - Droits de Mutation à Titre Gratuit */}
-<section>
-  <h3>Droits de Mutation à Titre Gratuit (DMTG) - Ligne directe</h3>
+<div className="fisc-acc-item">
+  <button type="button" className="fisc-acc-header" id="impots-header-dmtg" aria-expanded={openSection === 'dmtg'} aria-controls="impots-panel-dmtg" onClick={() => setOpenSection(openSection === 'dmtg' ? null : 'dmtg')}>
+    <span className="fisc-product-title" style={{ margin: 0 }}>Droits de Mutation à Titre Gratuit (DMTG) - Ligne directe</span>
+    <span className="fisc-acc-chevron">{openSection === 'dmtg' ? '▾' : '▸'}</span>
+  </button>
+  {openSection === 'dmtg' && (
+  <div className="fisc-acc-body" id="impots-panel-dmtg" role="region" aria-labelledby="impots-header-dmtg">
   <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 8 }}>
     Barème applicable aux successions et donations en ligne directe (parents → enfants).
     Utilisé par le simulateur de placement pour la phase de transmission.
@@ -1687,7 +1728,11 @@ const updateField = (path, value) => {
       </table>
     </div>
   </div>
-</section>
+  </div>
+  )}
+</div>
+
+        </div>{/* fin fisc-accordion */}
 
           {/* Bouton Enregistrer */}
           {isAdmin && (
