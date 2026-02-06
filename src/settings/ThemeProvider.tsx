@@ -13,7 +13,7 @@ import { resolvePptxColors } from '../pptx/theme/resolvePptxColors';
 import { DEFAULT_COLORS, type ThemeColors } from './theme';
 
 // Re-export for backward compatibility
-export { DEFAULT_COLORS } from './theme';
+export { DEFAULT_COLORS, type ThemeColors } from './theme';
 
 const THEME_CACHE_KEY_PREFIX = 'ser1_theme_cache_';
 const THEME_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 heures
