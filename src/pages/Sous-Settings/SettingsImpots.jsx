@@ -1452,113 +1452,63 @@ export default function SettingsImpots() {
   <div className="fisc-acc-body" id="impots-panel-is" role="region" aria-labelledby="impots-header-is">
 
   <div className="tax-two-cols">
-    {/* 2025 */}
-    <div>
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>
-        {incomeTax.currentYearLabel}
-      </div>
-      <div className="settings-field-row">
-        <label>Taux normal IS</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(corporateTax.current.normalRate)}
-          onChange={(e) =>
-            updateField(
-              ['corporateTax', 'current', 'normalRate'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>%</span>
-      </div>
-      <div className="settings-field-row">
-        <label>Taux réduit IS</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(corporateTax.current.reducedRate)}
-          onChange={(e) =>
-            updateField(
-              ['corporateTax', 'current', 'reducedRate'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>%</span>
-      </div>
-      <div className="settings-field-row">
-        <label>Seuil de bénéfice au taux réduit</label>
-        <input
-          type="number"
-          value={numberOrEmpty(corporateTax.current.reducedThreshold)}
-          onChange={(e) =>
-            updateField(
-              ['corporateTax', 'current', 'reducedThreshold'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>€</span>
-      </div>
-    </div>
+    <SettingsYearColumn yearLabel={incomeTax.currentYearLabel}>
+      <SettingsFieldRow
+        label="Taux normal IS"
+        path={['corporateTax', 'current', 'normalRate']}
+        value={corporateTax.current.normalRate}
+        onChange={updateField}
+        step="0.1"
+        unit="%"
+        disabled={!isAdmin}
+      />
+      <SettingsFieldRow
+        label="Taux réduit IS"
+        path={['corporateTax', 'current', 'reducedRate']}
+        value={corporateTax.current.reducedRate}
+        onChange={updateField}
+        step="0.1"
+        unit="%"
+        disabled={!isAdmin}
+      />
+      <SettingsFieldRow
+        label="Seuil de bénéfice au taux réduit"
+        path={['corporateTax', 'current', 'reducedThreshold']}
+        value={corporateTax.current.reducedThreshold}
+        onChange={updateField}
+        unit="€"
+        disabled={!isAdmin}
+      />
+    </SettingsYearColumn>
 
-    {/* 2024 – mêmes valeurs aujourd’hui */}
-    <div className="tax-two-cols-right">
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>
-        {incomeTax.previousYearLabel}
-      </div>
-      <div className="settings-field-row">
-        <label>Taux normal IS</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(corporateTax.previous.normalRate)}
-          onChange={(e) =>
-            updateField(
-              ['corporateTax', 'previous', 'normalRate'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>%</span>
-      </div>
-      <div className="settings-field-row">
-        <label>Taux réduit IS</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(corporateTax.previous.reducedRate)}
-          onChange={(e) =>
-            updateField(
-              ['corporateTax', 'previous', 'reducedRate'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>%</span>
-      </div>
-      <div className="settings-field-row">
-        <label>Seuil de bénéfice au taux réduit</label>
-        <input
-          type="number"
-          value={numberOrEmpty(corporateTax.previous.reducedThreshold)}
-          onChange={(e) =>
-            updateField(
-              ['corporateTax', 'previous', 'reducedThreshold'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>€</span>
-      </div>
-    </div>
+    <SettingsYearColumn yearLabel={incomeTax.previousYearLabel} isRight>
+      <SettingsFieldRow
+        label="Taux normal IS"
+        path={['corporateTax', 'previous', 'normalRate']}
+        value={corporateTax.previous.normalRate}
+        onChange={updateField}
+        step="0.1"
+        unit="%"
+        disabled={!isAdmin}
+      />
+      <SettingsFieldRow
+        label="Taux réduit IS"
+        path={['corporateTax', 'previous', 'reducedRate']}
+        value={corporateTax.previous.reducedRate}
+        onChange={updateField}
+        step="0.1"
+        unit="%"
+        disabled={!isAdmin}
+      />
+      <SettingsFieldRow
+        label="Seuil de bénéfice au taux réduit"
+        path={['corporateTax', 'previous', 'reducedThreshold']}
+        value={corporateTax.previous.reducedThreshold}
+        onChange={updateField}
+        unit="€"
+        disabled={!isAdmin}
+      />
+    </SettingsYearColumn>
   </div>
   </div>
   )}
