@@ -15,7 +15,7 @@ import {
   WARNING, 
   pickTextColorForBackground,
   type ThemeTokens 
-} from '../../styles/semanticColors';
+} from '@/styles/semanticColors';
 
 // Re-export for convenience
 export { WHITE, WARNING, pickTextColorForBackground };
