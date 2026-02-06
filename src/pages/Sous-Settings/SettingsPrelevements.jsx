@@ -3,6 +3,7 @@ import { supabase } from '../../supabaseClient';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '../../components/UserInfoBanner';
+import { numberOrEmpty, createFieldUpdater } from '../../utils/settingsHelpers.js';
 
 // ----------------------
 // Valeurs par défaut
@@ -206,10 +207,6 @@ const DEFAULT_PS_SETTINGS = {
 };
 
 
-function numberOrEmpty(v) {
-  return v === null || v === undefined || Number.isNaN(v) ? '' : String(v);
-}
-
 export default function SettingsPrelevements() {
   const [user, setUser] = useState(null);
   const [settings, setSettings] = useState(DEFAULT_PS_SETTINGS);
@@ -284,18 +281,7 @@ export default function SettingsPrelevements() {
   // ----------------------
   // Helpers de mise à jour
   // ----------------------
-  const updateField = (path, value) => {
-    setData((prev) => {
-      const copy = structuredClone(prev);
-      let obj = copy;
-      for (let i = 0; i < path.length - 1; i += 1) {
-        obj = obj[path[i]];
-      }
-      obj[path[path.length - 1]] = value;
-      return copy;
-    });
-    setMessage('');
-  };
+  const updateField = createFieldUpdater(setData, setMessage);
 
   const updateRetirementBracket = (yearKey, index, key, value) => {
     setData((prev) => {

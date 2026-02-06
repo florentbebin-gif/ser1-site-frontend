@@ -3,6 +3,7 @@ import { supabase } from '../../supabaseClient';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '../../components/UserInfoBanner';
+import { numberOrEmpty, createFieldUpdater } from '../../utils/settingsHelpers.js';
 
 // ----------------------
 // Valeurs par défaut
@@ -145,10 +146,6 @@ domAbatement: {
   },
 };
 
-function numberOrEmpty(v) {
-  return v === null || v === undefined || Number.isNaN(v) ? '' : String(v);
-}
-
 export default function SettingsImpots() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -256,22 +253,7 @@ export default function SettingsImpots() {
     setMessage('');
   };
 
-const updateField = (path, value) => {
-  setData((prev) => {
-    const clone = structuredClone(prev);
-    let obj = clone;
-
-    for (let i = 0; i < path.length - 1; i++) {
-      const k = path[i];
-      if (obj[k] === undefined || obj[k] === null) obj[k] = {};
-      obj = obj[k];
-    }
-
-    obj[path[path.length - 1]] = value;
-    return clone;
-  });
-  setMessage('');
-};
+  const updateField = createFieldUpdater(setData, setMessage);
 
   if (loading) {
     return <p>Chargement…</p>;
