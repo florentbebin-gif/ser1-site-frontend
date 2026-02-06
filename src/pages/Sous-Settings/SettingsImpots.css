@@ -216,14 +216,6 @@
   padding: 10px 16px 16px;
 }
 
-/* Titre produit (grand) */
-.fisc-product-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--color-c10);
-  margin: 0;
-}
-
 /* Titres de sections (compact) */
 .fisc-section-title {
   font-size: 14px;
