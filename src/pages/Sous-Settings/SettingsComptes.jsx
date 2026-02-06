@@ -748,7 +748,7 @@ export default function SettingsComptes() {
                       <th>Cabinet</th>
                       <th>Créé le</th>
                       <th>Dernière connexion</th>
-                      <th>Signalements</th>
+                      <th className="col-signalements">Signale-<br/>ments</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
