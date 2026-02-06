@@ -49,6 +49,7 @@
   box-sizing: border-box;
   padding: 3px 4px;
   font-size: 13px;
+  font-family: inherit;
   text-align: right;
   border: 1px solid var(--color-c8);
   border-radius: 4px;
@@ -93,6 +94,7 @@
   width: 120px;
   padding: 3px 4px;
   font-size: 13px;
+  font-family: inherit;
   border: 1px solid var(--color-c8);
   border-radius: 4px;
   text-align: right;
@@ -113,6 +115,18 @@
   text-align: left;
   font-size: 12px;
   color: var(--color-c9);
+}
+
+/* Variante texte : le label rétrécit, l'input prend l'espace restant */
+.settings-field-row--text label {
+  flex: 0 0 auto;
+}
+
+.settings-field-row--text input {
+  flex: 1;
+  width: auto;
+  min-width: 120px;
+  text-align: left;
 }
 
 /* Blocs */
@@ -185,6 +199,7 @@
   border-radius: 6px;
   border: 1px solid var(--color-c8);
   font-size: 13px;
+  font-family: inherit;
   /* RÈGLE UI GOVERNANCE: Inputs TOUJOURS BLANCS */
   background-color: #FFFFFF;
   color: var(--color-c10);
@@ -264,6 +279,7 @@
   box-sizing: border-box;
   padding: 6px 8px;
   font-size: 13px;
+  font-family: inherit;
   border: 1px solid var(--color-c8);
   border-radius: 8px;
   /* RÈGLE UI GOVERNANCE: Inputs TOUJOURS BLANCS */

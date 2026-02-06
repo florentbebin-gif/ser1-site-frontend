@@ -521,7 +521,7 @@ const handleSave = async () => {
                           <tr>
                             <th>Durée</th>
                             <th className="taux-col">IR %</th>
-                            <th>Option barème</th>
+                            <th style={{ textAlign: 'center' }}>Option barème</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -549,7 +549,7 @@ const handleSave = async () => {
                                 disabled={!isAdmin}
                               />
                             </td>
-                            <td style={{ textAlign: 'left' }}>
+                            <td style={{ textAlign: 'center' }}>
                               {av.retraitsCapital.depuis2017.moins8Ans.allowBaremeIR
                                 ? 'Oui'
                                 : 'Non'}
@@ -593,7 +593,7 @@ const handleSave = async () => {
                             <tr>
                               <th>Tranche</th>
                               <th className="taux-col">IR %</th>
-                              <th>Option barème</th>
+                              <th style={{ textAlign: 'center' }}>Option barème</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -622,7 +622,7 @@ const handleSave = async () => {
                                   disabled={!isAdmin}
                                 />
                               </td>
-                              <td style={{ textAlign: 'left' }}>
+                              <td style={{ textAlign: 'center' }}>
                                 {av.retraitsCapital.depuis2017.plus8Ans.allowBaremeIR
                                   ? 'Oui'
                                   : 'Non'}
@@ -653,7 +653,7 @@ const handleSave = async () => {
                                   disabled={!isAdmin}
                                 />
                               </td>
-                              <td style={{ textAlign: 'left' }}>
+                              <td style={{ textAlign: 'center' }}>
                                 {av.retraitsCapital.depuis2017.plus8Ans.allowBaremeIR
                                   ? 'Oui'
                                   : 'Non'}
@@ -675,7 +675,7 @@ const handleSave = async () => {
                           <tr>
                             <th>Durée</th>
                             <th className="taux-col">IR %</th>
-                            <th>Option barème</th>
+                            <th style={{ textAlign: 'center' }}>Option barème</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -703,7 +703,7 @@ const handleSave = async () => {
                                 disabled={!isAdmin}
                               />
                             </td>
-                            <td style={{ textAlign: 'left' }}>
+                            <td style={{ textAlign: 'center' }}>
                               {av.retraitsCapital.avant2017.moins4Ans.allowBaremeIR
                                 ? 'Oui'
                                 : 'Non'}
@@ -734,7 +734,7 @@ const handleSave = async () => {
                                 disabled={!isAdmin}
                               />
                             </td>
-                            <td style={{ textAlign: 'left' }}>
+                            <td style={{ textAlign: 'center' }}>
                               {av.retraitsCapital.avant2017.de4a8Ans.allowBaremeIR
                                 ? 'Oui'
                                 : 'Non'}
@@ -765,7 +765,7 @@ const handleSave = async () => {
                                 disabled={!isAdmin}
                               />
                             </td>
-                            <td style={{ textAlign: 'left' }}>
+                            <td style={{ textAlign: 'center' }}>
                               {av.retraitsCapital.avant2017.plus8Ans.allowBaremeIR
                                 ? 'Oui'
                                 : 'Non'}
@@ -1180,7 +1180,7 @@ const handleSave = async () => {
             updateField(['perIndividuel','sortieCapital','anticipation','accidentsDeLaVie','note'], e.target.value)
           }
           disabled={!isAdmin}
-          style={{ width: 720, textAlign: 'left' }}
+          style={{ width: '100%', boxSizing: 'border-box', textAlign: 'left', fontFamily: 'inherit', fontSize: 13 }}
         />
       </div>
     </section>

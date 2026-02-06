@@ -42,7 +42,7 @@ export default function SettingsFieldRow({
   const displayValue = type === 'number' ? numberOrEmpty(value) : value ?? '';
 
   return (
-    <div className="settings-field-row">
+    <div className={`settings-field-row${type === 'text' ? ' settings-field-row--text' : ''}`}>
       <label>{label}</label>
       <input
         type={type}
