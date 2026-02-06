@@ -13,6 +13,21 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 
 ---
 
+### Harmonisation typographique — Titres Settings
+**Objectif** : Uniformiser la taille et graisse des titres d'accordéons et sections sur toutes les pages Settings.
+
+| Élément | Avant | Après |
+|---------|-------|-------|
+| Titres accordéons (`.fisc-product-title`) | `font-weight: 800` | `font-weight: 500` (aligné sur "Personnalisation avancée du thème") |
+| Titres sections SettingsComptes (`h3`) | `font-size: 16px`, `font-weight: 600` | `font-size: 18px`, `font-weight: 500` |
+| Titres page SettingsComptes (`h2`) | `font-size: 20px`, `font-weight: 600` | `font-size: 18px`, `font-weight: 500` |
+
+**Référence** : `settings-premium-title` dans `styles.css` (ligne 633) — `font-size: 18px`, `font-weight: 500`.
+
+**Fichiers modifiés** :
+- `src/pages/Sous-Settings/SettingsFiscalites.css` — `.fisc-product-title`
+- `src/pages/Sous-Settings/SettingsComptes.css` — `h2`, `.invite-section h3`, `.users-section h3`
+
 ## Dernières évolutions (2026-02-06)
 
 ### Historique du PASS — Déplacement et dynamisation
