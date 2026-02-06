@@ -103,6 +103,51 @@ Pour les outils de calcul (IR, Crédit, Placement) :
 
 ---
 
+## 3bis. Pattern Premium — Settings Section Card
+
+> **Source de vérité** pour reproduire le pattern "carte premium" utilisé dans Settings.
+
+### A. Carte (`.settings-premium-card`)
+| Propriété | Valeur |
+|-----------|--------|
+| Background | `#FFFFFF` (Niveau 1) |
+| Border | `1px solid var(--color-c8)` |
+| Border-radius | `8px` |
+| Padding | `20px 24px` |
+| Margin-bottom | `20px` |
+
+### B. Titre (`.settings-premium-title`)
+| Propriété | Valeur |
+|-----------|--------|
+| Font-size | `18px` |
+| Font-weight | `500` (Medium) |
+| Color | `var(--color-c10)` |
+| Letter-spacing | `-0.01em` |
+| Margin | `0 0 6px 0` |
+
+### C. Sous-titre (`.settings-premium-subtitle`)
+| Propriété | Valeur |
+|-----------|--------|
+| Font-size | `13px` |
+| Color | `var(--color-c9)` |
+| Line-height | `1.5` |
+
+### D. Badge icône (`.settings-action-icon`)
+| Propriété | Valeur |
+|-----------|--------|
+| Dimensions | `32px × 32px` |
+| Background | `var(--color-c4)` |
+| Border-radius | `8px` |
+| Color (SVG stroke) | `var(--color-c2)` |
+| SVG interne | `16px × 16px`, `fill="none"`, `stroke="currentColor"`, `strokeWidth="1.5"` |
+
+### E. Composant réutilisable
+`src/components/settings/SettingsSectionCard.jsx` — Props : `title`, `subtitle?`, `icon` (SVG), `actions?` (ReactNode), `children`, `style?`.
+
+**Fichiers CSS** : `src/styles.css` (lignes 615-912) — Classes `.settings-premium-card`, `.settings-premium-header`, `.settings-premium-title`, `.settings-premium-subtitle`, `.settings-action-icon`, `.settings-action-text`.
+
+---
+
 ## 4. Checklist Qualité (Avant commit)
 - [ ] La page respire-t-elle ? (Pas de contenu tassé).
 - [ ] Les inputs sont-ils bien sur fond BLANC ?

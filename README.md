@@ -13,27 +13,24 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 
 ---
 
-### Harmonisation typographique — Titres Settings
-**Objectif** : Uniformiser la taille et graisse des titres d'accordéons et sections sur toutes les pages Settings.
+### Harmonisation typographique & Premium Cards — Settings
+**Objectif** : Uniformiser titres et sections Settings sur le pattern premium de `Settings.jsx`.
 
-**Token utilisé** : `.settings-premium-title` (défini dans `styles.css` ligne 633)
-- `font-size: 18px`
-- `font-weight: 500`
-- `color: var(--color-c10)`
-- Référence visuelle : titre "Personnalisation avancée du thème" dans `Settings.jsx`
+**Token titre** : `.settings-premium-title` (18px / 500 / c10 / letter-spacing -0.01em)
+**Composant carte** : `src/components/settings/SettingsSectionCard.jsx` — carte blanche + badge icône + titre + actions
+**Gouvernance** : Voir [docs/design/ui-governance.md §3bis](docs/design/ui-governance.md) pour les specs complètes.
 
 | Élément | Implémentation |
 |---------|----------------|
-| Titres accordéons (10 titres) | Classe `.settings-premium-title` sur les `<span>` titres |
-| Sections Comptes (3 titres) | Classe `.settings-premium-title` sur les `<h3>` |
+| Titres accordéons (14 titres) | Classe `.settings-premium-title` sur `<span>` |
+| Sections Comptes (3 sections) | Composant `SettingsSectionCard` (carte + icône + titre) |
 
-**Fichiers modifiés** :
+**Fichiers clés** :
+- `src/components/settings/SettingsSectionCard.jsx` — Composant réutilisable
+- `src/pages/Sous-Settings/SettingsComptes.jsx` — 3 sections premium cards
 - `src/pages/Sous-Settings/SettingsPrelevements.jsx` — 3 titres accordéons
 - `src/pages/Sous-Settings/SettingsImpots.jsx` — 6 titres accordéons
 - `src/pages/Sous-Settings/SettingsFiscalites.jsx` — 1 titre accordéon (loop)
-- `src/pages/Sous-Settings/SettingsComptes.jsx` — 3 titres sections
-- `src/pages/Sous-Settings/SettingsComptes.css` — Nettoyage (h2/h3 rétablis)
-- `src/pages/Sous-Settings/SettingsFiscalites.css` — Nettoyage (`.fisc-product-title` rétabli)
 
 ## Dernières évolutions (2026-02-06)
 

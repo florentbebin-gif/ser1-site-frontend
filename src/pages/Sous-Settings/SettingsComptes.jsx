@@ -6,6 +6,7 @@ import { useUserRole } from '../../auth/useUserRole';
 import { UserInfoBanner } from '../../components/UserInfoBanner';
 import { invokeAdmin } from '../../services/apiAdmin';
 import { uploadLogoWithDedup, getLogoPublicUrl } from '../../utils/logoUpload';
+import SettingsSectionCard from '../../components/settings/SettingsSectionCard';
 import './SettingsComptes.css';
 import { DEFAULT_COLORS } from '../../settings/theme';
 
@@ -563,9 +564,11 @@ export default function SettingsComptes() {
       ) : (
         <div className="admin-content">
             {/* V2: Section Cabinets */}
-            <div className="admin-section">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h3 className="settings-premium-title">Cabinets ({cabinets.length})</h3>
+            <SettingsSectionCard
+              title={`Cabinets (${cabinets.length})`}
+              subtitle="Gestion des cabinets et de leur thème associé."
+              icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
+              actions={
                 <button 
                   className="chip"
                   onClick={() => openCabinetModal()}
@@ -574,7 +577,8 @@ export default function SettingsComptes() {
                 >
                   + Nouveau cabinet
                 </button>
-              </div>
+              }
+            >
               {cabinetsLoading ? (
                 <p>Chargement des cabinets...</p>
               ) : cabinets.length === 0 ? (
@@ -619,12 +623,14 @@ export default function SettingsComptes() {
                   ))}
                 </div>
               )}
-            </div>
+            </SettingsSectionCard>
 
             {/* V2: Section Thèmes */}
-            <div className="admin-section" style={{ marginTop: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h3 className="settings-premium-title">Thèmes globaux ({themes.length})</h3>
+            <SettingsSectionCard
+              title={`Thèmes globaux (${themes.length})`}
+              subtitle="Palettes de couleurs appliquées aux cabinets."
+              icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.6 1.6 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>}
+              actions={
                 <button 
                   className="chip"
                   onClick={() => openThemeModal()}
@@ -633,7 +639,9 @@ export default function SettingsComptes() {
                 >
                   + Nouveau thème
                 </button>
-              </div>
+              }
+              style={{ marginTop: 20 }}
+            >
               {themesLoading ? (
                 <p>Chargement des thèmes...</p>
               ) : themes.length === 0 ? (
@@ -696,14 +704,15 @@ export default function SettingsComptes() {
                   ))}
                 </div>
               )}
-            </div>
-
+            </SettingsSectionCard>
 
             {/* Liste des utilisateurs */}
-            <div className="admin-section" style={{ marginTop: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h3 className="settings-premium-title">Utilisateurs ({users.length})</h3>
-                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <SettingsSectionCard
+              title={`Utilisateurs (${users.length})`}
+              subtitle="Comptes, rôles et affectation aux cabinets."
+              icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+              actions={
+                <>
                   <button 
                     className="chip"
                     onClick={() => setShowUserModal(true)}
@@ -726,8 +735,10 @@ export default function SettingsComptes() {
                       <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
                     </svg>
                   </button>
-                </div>
-              </div>
+                </>
+              }
+              style={{ marginTop: 20 }}
+            >
               <div className="users-table">
                 <table>
                   <thead>
@@ -821,7 +832,7 @@ export default function SettingsComptes() {
                   </tbody>
                 </table>
               </div>
-            </div>
+            </SettingsSectionCard>
           </div>
         )}
 
