@@ -163,7 +163,7 @@ function clearThemeCacheForUser(userId: string | null): void {
 
 function getThemeBootstrap(): { colors: ThemeColors; userId?: string | null } | null {
   if (typeof window === 'undefined') return null;
-  const bootstrap = (window as any).__ser1ThemeBootstrap;
+  const bootstrap = window.__ser1ThemeBootstrap;
   if (!bootstrap?.colors) return null;
   return {
     colors: bootstrap.colors as ThemeColors,
