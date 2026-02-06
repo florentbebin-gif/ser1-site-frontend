@@ -1530,21 +1530,14 @@ export default function SettingsImpots() {
   <div className="income-tax-col">
     <div className="income-tax-block">
       <div className="income-tax-block-title">Abattement</div>
-      <div className="settings-field-row">
-        <label>Abattement par enfant (ligne directe)</label>
-        <input
-          type="number"
-          value={numberOrEmpty(dmtg?.abattementLigneDirecte)}
-          onChange={(e) =>
-            updateField(
-              ['dmtg', 'abattementLigneDirecte'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>€</span>
-      </div>
+      <SettingsFieldRow
+        label="Abattement par enfant (ligne directe)"
+        path={['dmtg', 'abattementLigneDirecte']}
+        value={dmtg?.abattementLigneDirecte}
+        onChange={updateField}
+        unit="€"
+        disabled={!isAdmin}
+      />
     </div>
 
     <div className="income-tax-block">
