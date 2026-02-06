@@ -200,6 +200,7 @@
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
+  font-family: inherit;
 }
 
 .fisc-acc-header:hover {
