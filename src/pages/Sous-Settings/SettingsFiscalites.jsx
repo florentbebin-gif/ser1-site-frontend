@@ -430,7 +430,7 @@ const handleSave = async () => {
           aria-controls={`fisc-panel-${p.key}`}
           onClick={() => setOpenProductKey(isOpen ? null : p.key)}
         >
-          <span className="fisc-product-title" style={{ margin: 0 }}>
+          <span className="settings-premium-title" style={{ margin: 0 }}>
             {p.label}
           </span>
           <span className="fisc-acc-chevron">{isOpen ? '▾' : '▸'}</span>

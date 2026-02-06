@@ -384,7 +384,7 @@ export default function SettingsPrelevements() {
                 aria-controls="prelev-panel-patrimoine"
                 onClick={() => setOpenSection(openSection === 'patrimoine' ? null : 'patrimoine')}
               >
-                <span className="fisc-product-title" style={{ margin: 0 }}>
+                <span className="settings-premium-title" style={{ margin: 0 }}>
                   Prélèvements sociaux — patrimoine et capital
                 </span>
                 <span className="fisc-acc-chevron">{openSection === 'patrimoine' ? '▾' : '▸'}</span>
@@ -453,7 +453,7 @@ export default function SettingsPrelevements() {
                 aria-controls="prelev-panel-retraites"
                 onClick={() => setOpenSection(openSection === 'retraites' ? null : 'retraites')}
               >
-                <span className="fisc-product-title" style={{ margin: 0 }}>
+                <span className="settings-premium-title" style={{ margin: 0 }}>
                   Prélèvements sociaux — pensions de retraite
                 </span>
                 <span className="fisc-acc-chevron">{openSection === 'retraites' ? '▾' : '▸'}</span>
@@ -512,7 +512,7 @@ export default function SettingsPrelevements() {
                 aria-controls="prelev-panel-seuils"
                 onClick={() => setOpenSection(openSection === 'seuils' ? null : 'seuils')}
               >
-                <span className="fisc-product-title" style={{ margin: 0 }}>
+                <span className="settings-premium-title" style={{ margin: 0 }}>
                   Seuils de revenus pour la CSG, la CRDS et la CASA (RFR)
                 </span>
                 <span className="fisc-acc-chevron">{openSection === 'seuils' ? '▾' : '▸'}</span>

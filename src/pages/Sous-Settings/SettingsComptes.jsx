@@ -565,7 +565,7 @@ export default function SettingsComptes() {
             {/* V2: Section Cabinets */}
             <div className="admin-section">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h3>Cabinets ({cabinets.length})</h3>
+                <h3 className="settings-premium-title">Cabinets ({cabinets.length})</h3>
                 <button 
                   className="chip"
                   onClick={() => openCabinetModal()}
@@ -624,7 +624,7 @@ export default function SettingsComptes() {
             {/* V2: Section Thèmes */}
             <div className="admin-section" style={{ marginTop: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <h3>Thèmes globaux ({themes.length})</h3>
+                <h3 className="settings-premium-title">Thèmes globaux ({themes.length})</h3>
                 <button 
                   className="chip"
                   onClick={() => openThemeModal()}
@@ -702,7 +702,7 @@ export default function SettingsComptes() {
             {/* Liste des utilisateurs */}
             <div className="admin-section" style={{ marginTop: 24 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h3>Utilisateurs ({users.length})</h3>
+                <h3 className="settings-premium-title">Utilisateurs ({users.length})</h3>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                   <button 
                     className="chip"

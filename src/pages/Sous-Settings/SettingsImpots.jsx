@@ -299,7 +299,7 @@ export default function SettingsImpots() {
                   {/* 1. Barème impôt sur le revenu */}
 <div className="fisc-acc-item">
   <button type="button" className="fisc-acc-header" id="impots-header-bareme" aria-expanded={openSection === 'bareme'} aria-controls="impots-panel-bareme" onClick={() => setOpenSection(openSection === 'bareme' ? null : 'bareme')}>
-    <span className="fisc-product-title" style={{ margin: 0 }}>Barème de l’impôt sur le revenu</span>
+    <span className="settings-premium-title" style={{ margin: 0 }}>Barème de l’impôt sur le revenu</span>
     <span className="fisc-acc-chevron">{openSection === 'bareme' ? '▾' : '▸'}</span>
   </button>
   {openSection === 'bareme' && (
@@ -856,7 +856,7 @@ export default function SettingsImpots() {
 {/* Abattement DOM sur l'IR (barème) */}
 <div className="fisc-acc-item">
   <button type="button" className="fisc-acc-header" id="impots-header-dom" aria-expanded={openSection === 'dom'} aria-controls="impots-panel-dom" onClick={() => setOpenSection(openSection === 'dom' ? null : 'dom')}>
-    <span className="fisc-product-title" style={{ margin: 0 }}>Abattement DOM sur l’IR (barème)</span>
+    <span className="settings-premium-title" style={{ margin: 0 }}>Abattement DOM sur l’IR (barème)</span>
     <span className="fisc-acc-chevron">{openSection === 'dom' ? '▾' : '▸'}</span>
   </button>
   {openSection === 'dom' && (
@@ -914,7 +914,7 @@ export default function SettingsImpots() {
           {/* 2. PFU */}
           <div className="fisc-acc-item">
   <button type="button" className="fisc-acc-header" id="impots-header-pfu" aria-expanded={openSection === 'pfu'} aria-controls="impots-panel-pfu" onClick={() => setOpenSection(openSection === 'pfu' ? null : 'pfu')}>
-    <span className="fisc-product-title" style={{ margin: 0 }}>PFU (flat tax)</span>
+    <span className="settings-premium-title" style={{ margin: 0 }}>PFU (flat tax)</span>
     <span className="fisc-acc-chevron">{openSection === 'pfu' ? '▾' : '▸'}</span>
   </button>
   {openSection === 'pfu' && (
@@ -989,7 +989,7 @@ export default function SettingsImpots() {
           {/* 3. CEHR / CDHR */}
           <div className="fisc-acc-item">
   <button type="button" className="fisc-acc-header" id="impots-header-cehr" aria-expanded={openSection === 'cehr'} aria-controls="impots-panel-cehr" onClick={() => setOpenSection(openSection === 'cehr' ? null : 'cehr')}>
-    <span className="fisc-product-title" style={{ margin: 0 }}>CEHR / CDHR</span>
+    <span className="settings-premium-title" style={{ margin: 0 }}>CEHR / CDHR</span>
     <span className="fisc-acc-chevron">{openSection === 'cehr' ? '▾' : '▸'}</span>
   </button>
   {openSection === 'cehr' && (
@@ -1073,7 +1073,7 @@ export default function SettingsImpots() {
           {/* 4. Impôt sur les sociétés */}
           <div className="fisc-acc-item">
   <button type="button" className="fisc-acc-header" id="impots-header-is" aria-expanded={openSection === 'is'} aria-controls="impots-panel-is" onClick={() => setOpenSection(openSection === 'is' ? null : 'is')}>
-    <span className="fisc-product-title" style={{ margin: 0 }}>Impôt sur les sociétés</span>
+    <span className="settings-premium-title" style={{ margin: 0 }}>Impôt sur les sociétés</span>
     <span className="fisc-acc-chevron">{openSection === 'is' ? '▾' : '▸'}</span>
   </button>
   {openSection === 'is' && (
@@ -1145,7 +1145,7 @@ export default function SettingsImpots() {
 {/* Section DMTG - Droits de Mutation à Titre Gratuit */}
 <div className="fisc-acc-item">
   <button type="button" className="fisc-acc-header" id="impots-header-dmtg" aria-expanded={openSection === 'dmtg'} aria-controls="impots-panel-dmtg" onClick={() => setOpenSection(openSection === 'dmtg' ? null : 'dmtg')}>
-    <span className="fisc-product-title" style={{ margin: 0 }}>Droits de Mutation à Titre Gratuit (DMTG) - Ligne directe</span>
+    <span className="settings-premium-title" style={{ margin: 0 }}>Droits de Mutation à Titre Gratuit (DMTG) - Ligne directe</span>
     <span className="fisc-acc-chevron">{openSection === 'dmtg' ? '▾' : '▸'}</span>
   </button>
   {openSection === 'dmtg' && (

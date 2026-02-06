@@ -16,17 +16,24 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 ### Harmonisation typographique — Titres Settings
 **Objectif** : Uniformiser la taille et graisse des titres d'accordéons et sections sur toutes les pages Settings.
 
-| Élément | Avant | Après |
-|---------|-------|-------|
-| Titres accordéons (`.fisc-product-title`) | `font-weight: 800` | `font-weight: 500` (aligné sur "Personnalisation avancée du thème") |
-| Titres sections SettingsComptes (`h3`) | `font-size: 16px`, `font-weight: 600` | `font-size: 18px`, `font-weight: 500` |
-| Titres page SettingsComptes (`h2`) | `font-size: 20px`, `font-weight: 600` | `font-size: 18px`, `font-weight: 500` |
+**Token utilisé** : `.settings-premium-title` (défini dans `styles.css` ligne 633)
+- `font-size: 18px`
+- `font-weight: 500`
+- `color: var(--color-c10)`
+- Référence visuelle : titre "Personnalisation avancée du thème" dans `Settings.jsx`
 
-**Référence** : `settings-premium-title` dans `styles.css` (ligne 633) — `font-size: 18px`, `font-weight: 500`.
+| Élément | Implémentation |
+|---------|----------------|
+| Titres accordéons (10 titres) | Classe `.settings-premium-title` sur les `<span>` titres |
+| Sections Comptes (3 titres) | Classe `.settings-premium-title` sur les `<h3>` |
 
 **Fichiers modifiés** :
-- `src/pages/Sous-Settings/SettingsFiscalites.css` — `.fisc-product-title`
-- `src/pages/Sous-Settings/SettingsComptes.css` — `h2`, `.invite-section h3`, `.users-section h3`
+- `src/pages/Sous-Settings/SettingsPrelevements.jsx` — 3 titres accordéons
+- `src/pages/Sous-Settings/SettingsImpots.jsx` — 6 titres accordéons
+- `src/pages/Sous-Settings/SettingsFiscalites.jsx` — 1 titre accordéon (loop)
+- `src/pages/Sous-Settings/SettingsComptes.jsx` — 3 titres sections
+- `src/pages/Sous-Settings/SettingsComptes.css` — Nettoyage (h2/h3 rétablis)
+- `src/pages/Sous-Settings/SettingsFiscalites.css` — Nettoyage (`.fisc-product-title` rétabli)
 
 ## Dernières évolutions (2026-02-06)
 
