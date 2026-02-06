@@ -155,6 +155,8 @@
   /* Sentence case - pas de uppercase agressif */
   text-transform: none;
   letter-spacing: 0.3px;
+  /* Tous les en-têtes centrés */
+  text-align: center;
 }
 
 .users-table tbody tr:hover {
