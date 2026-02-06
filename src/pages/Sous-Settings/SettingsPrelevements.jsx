@@ -6,6 +6,7 @@ import { UserInfoBanner } from '../../components/UserInfoBanner';
 import { numberOrEmpty, createFieldUpdater } from '../../utils/settingsHelpers.js';
 import SettingsFieldRow from '../../components/settings/SettingsFieldRow';
 import SettingsYearColumn from '../../components/settings/SettingsYearColumn';
+import SettingsTable from '../../components/settings/SettingsTable';
 
 // ----------------------
 // Valeurs par défaut
@@ -458,351 +459,37 @@ export default function SettingsPrelevements() {
               </p>
 
 {/* On empile les deux tableaux : 2025 puis 2024 */}
-<div>
-  {/* Tableau 2025 (revenus 2024) */}
-  <div>
-    <div style={{ fontWeight: 600, marginBottom: 6 }}>
-      {labels.currentYearLabel}
+{(() => {
+  const retCols = [
+    { key: 'label', header: 'Tranche', type: 'display' },
+    { key: 'rfrMin1Part', header: 'RFR min (1 part)' },
+    { key: 'rfrMax1Part', header: 'RFR max (1 part)' },
+    { key: 'csgRate', header: 'CSG\u00a0%', step: '0.1' },
+    { key: 'crdsRate', header: 'CRDS\u00a0%', step: '0.1' },
+    { key: 'casaRate', header: 'CASA\u00a0%', step: '0.1' },
+    { key: 'maladieRate', header: 'Maladie\u00a0%', step: '0.1' },
+    { key: 'totalRate', header: 'Total\u00a0%', step: '0.1' },
+    { key: 'csgDeductibleRate', header: 'CSG déd.\u00a0%', step: '0.1' },
+  ];
+  return (
+    <div>
+      {[
+        { yearKey: 'current', label: labels.currentYearLabel, prefix: 'retCur' },
+        { yearKey: 'previous', label: labels.previousYearLabel, prefix: 'retPrev' },
+      ].map(({ yearKey, label, prefix }, i) => (
+        <div key={yearKey} style={i > 0 ? { marginTop: 24 } : undefined}>
+          <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
+          <SettingsTable
+            columns={retCols}
+            rows={retirement[yearKey].brackets.map((b, idx) => ({ ...b, _key: `${prefix}_${idx}` }))}
+            onCellChange={(idx, key, value) => updateRetirementBracket(yearKey, idx, key, value)}
+            disabled={!isAdmin}
+          />
+        </div>
+      ))}
     </div>
-
-    <table className="settings-table">
-      <thead>
-        <tr>
-          <th>Tranche</th>
-          <th>RFR min (1 part)</th>
-          <th>RFR max (1 part)</th>
-          <th>CSG&nbsp;%</th>
-          <th>CRDS&nbsp;%</th>
-          <th>CASA&nbsp;%</th>
-          <th>Maladie&nbsp;%</th>
-          <th>Total&nbsp;%</th>
-          <th>CSG déd.&nbsp;%</th>
-        </tr>
-      </thead>
-      <tbody>
-        {retirement.current.brackets.map((b, idx) => (
-          <tr key={`retCur_${idx}`}>
-            <td>{b.label}</td>
-            <td>
-              <input
-                type="number"
-                value={numberOrEmpty(b.rfrMin1Part)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'current',
-                    idx,
-                    'rfrMin1Part',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                value={numberOrEmpty(b.rfrMax1Part)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'current',
-                    idx,
-                    'rfrMax1Part',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(b.csgRate)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'current',
-                    idx,
-                    'csgRate',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(b.crdsRate)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'current',
-                    idx,
-                    'crdsRate',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(b.casaRate)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'current',
-                    idx,
-                    'casaRate',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(b.maladieRate)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'current',
-                    idx,
-                    'maladieRate',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(b.totalRate)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'current',
-                    idx,
-                    'totalRate',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(b.csgDeductibleRate)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'current',
-                    idx,
-                    'csgDeductibleRate',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-
-  {/* Tableau 2024 (revenus 2023) */}
-  <div style={{ marginTop: 24 }}>
-    <div style={{ fontWeight: 600, marginBottom: 6 }}>
-      {labels.previousYearLabel}
-    </div>
-
-    <table className="settings-table">
-      <thead>
-        <tr>
-          <th>Tranche</th>
-          <th>RFR min (1 part)</th>
-          <th>RFR max (1 part)</th>
-          <th>CSG&nbsp;%</th>
-          <th>CRDS&nbsp;%</th>
-          <th>CASA&nbsp;%</th>
-          <th>Maladie&nbsp;%</th>
-          <th>Total&nbsp;%</th>
-          <th>CSG déd.&nbsp;%</th>
-        </tr>
-      </thead>
-      <tbody>
-        {retirement.previous.brackets.map((b, idx) => (
-          <tr key={`retPrev_${idx}`}>
-            <td>{b.label}</td>
-            <td>
-              <input
-                type="number"
-                value={numberOrEmpty(b.rfrMin1Part)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'previous',
-                    idx,
-                    'rfrMin1Part',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                value={numberOrEmpty(b.rfrMax1Part)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'previous',
-                    idx,
-                    'rfrMax1Part',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(b.csgRate)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'previous',
-                    idx,
-                    'csgRate',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(b.crdsRate)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'previous',
-                    idx,
-                    'crdsRate',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(b.casaRate)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'previous',
-                    idx,
-                    'casaRate',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(b.maladieRate)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'previous',
-                    idx,
-                    'maladieRate',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(b.totalRate)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'previous',
-                    idx,
-                    'totalRate',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(b.csgDeductibleRate)}
-                onChange={(e) =>
-                  updateRetirementBracket(
-                    'previous',
-                    idx,
-                    'csgDeductibleRate',
-                    e.target.value === ''
-                      ? null
-                      : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-</div>
+  );
+})()}
               </div>
               )}
             </div>

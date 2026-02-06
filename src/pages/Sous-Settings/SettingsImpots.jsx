@@ -6,6 +6,7 @@ import { UserInfoBanner } from '../../components/UserInfoBanner';
 import { numberOrEmpty, createFieldUpdater } from '../../utils/settingsHelpers.js';
 import SettingsFieldRow from '../../components/settings/SettingsFieldRow';
 import SettingsYearColumn from '../../components/settings/SettingsYearColumn';
+import SettingsTable from '../../components/settings/SettingsTable';
 
 // ----------------------
 // Valeurs par défaut
@@ -327,75 +328,16 @@ export default function SettingsImpots() {
 
 
               {/* Tableau barème 2025 */}
-              <table className="settings-table">
-                <thead>
-                  <tr>
-                    <th>De</th>
-                    <th>À</th>
-                    <th className="taux-col">Taux&nbsp;%</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {incomeTax.scaleCurrent.map((row, idx) => (
-                    <tr key={idx}>
-                      <td>
-                        <input
-                          type="number"
-                          value={numberOrEmpty(row.from)}
-                          onChange={(e) =>
-                            updateIncomeScale(
-                              'scaleCurrent',
-                              idx,
-                              'from',
-                              e.target.value === ''
-                                ? null
-                                : Number(e.target.value)
-                            )
-                          }
-                          disabled={!isAdmin}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          value={numberOrEmpty(row.to)}
-                          onChange={(e) =>
-                            updateIncomeScale(
-                              'scaleCurrent',
-                              idx,
-                              'to',
-                              e.target.value === ''
-                                ? null
-                                : Number(e.target.value)
-                            )
-                          }
-                          disabled={!isAdmin}
-                        />
-                      </td>
-                        <td className="taux-col">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={numberOrEmpty(row.rate)}
-                          onChange={(e) =>
-                            updateIncomeScale(
-                            'scaleCurrent',
-                            idx,
-                            'rate',
-                            e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                            )
-                          }
-                        disabled={!isAdmin}
-                        />
-                      </td>
-
-                   </tr>
-                  ))}
-                </tbody>
-              </table>
+              <SettingsTable
+                columns={[
+                  { key: 'from', header: 'De' },
+                  { key: 'to', header: 'À' },
+                  { key: 'rate', header: 'Taux\u00a0%', step: '0.01', className: 'taux-col' },
+                ]}
+                rows={incomeTax.scaleCurrent}
+                onCellChange={(idx, key, value) => updateIncomeScale('scaleCurrent', idx, key, value)}
+                disabled={!isAdmin}
+              />
 
               {/* Blocs sous le barème 2025 */}
               <div className="income-tax-extra">
@@ -654,76 +596,16 @@ export default function SettingsImpots() {
 
 
               {/* Tableau barème 2024 */}
-              <table className="settings-table">
-                <thead>
-<tr>
-  <th>De</th>
-  <th>À</th>
-  <th className="taux-col">Taux&nbsp;%</th>
-</tr>
-
-                </thead>
-
-                <tbody>
-                  {incomeTax.scalePrevious.map((row, idx) => (
-                    <tr key={idx}>
-                      <td>
-                        <input
-                          type="number"
-                          value={numberOrEmpty(row.from)}
-                          onChange={(e) =>
-                            updateIncomeScale(
-                              'scalePrevious',
-                              idx,
-                              'from',
-                              e.target.value === ''
-                                ? null
-                                : Number(e.target.value)
-                            )
-                          }
-                          disabled={!isAdmin}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          value={numberOrEmpty(row.to)}
-                          onChange={(e) =>
-                            updateIncomeScale(
-                              'scalePrevious',
-                              idx,
-                              'to',
-                              e.target.value === ''
-                                ? null
-                                : Number(e.target.value)
-                            )
-                          }
-                          disabled={!isAdmin}
-                        />
-                      </td>
-                        <td className="taux-col">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={numberOrEmpty(row.rate)}
-                          onChange={(e) =>
-                            updateIncomeScale(
-                              'scalePrevious',
-                                idx,
-                                'rate',
-                                e.target.value === ''
-                                  ? null
-                                  : Number(e.target.value)
-                              )
-                            }
-                          disabled={!isAdmin}
-                        />
-                      </td>
-
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <SettingsTable
+                columns={[
+                  { key: 'from', header: 'De' },
+                  { key: 'to', header: 'À' },
+                  { key: 'rate', header: 'Taux\u00a0%', step: '0.01', className: 'taux-col' },
+                ]}
+                rows={incomeTax.scalePrevious}
+                onCellChange={(idx, key, value) => updateIncomeScale('scalePrevious', idx, key, value)}
+                disabled={!isAdmin}
+              />
 
               {/* Blocs sous le barème 2024 */}
               <div className="income-tax-extra">
@@ -984,163 +866,46 @@ export default function SettingsImpots() {
     <strong> avant</strong> décote + réductions/crédits.
   </p>
 
-  <div className="income-tax-columns">
-    {/* Colonne CURRENT */}
-    <div className="income-tax-col">
-      <div style={{ fontWeight: 700, marginBottom: 8 }}>
-        {incomeTax.currentYearLabel || 'Année N'}
+  {(() => {
+    const domZones = [
+      { _key: 'gmr', zone: 'Guadeloupe / Martinique / Réunion', zoneKey: 'gmr' },
+      { _key: 'guyane', zone: 'Guyane / Mayotte', zoneKey: 'guyane' },
+    ];
+    const domCols = [
+      { key: 'zone', header: 'Zone', type: 'display' },
+      { key: 'ratePercent', header: 'Taux %', className: 'taux-col' },
+      { key: 'cap', header: 'Plafond €' },
+    ];
+    return (
+      <div className="income-tax-columns">
+        {['current', 'previous'].map((period) => (
+          <div className="income-tax-col" key={period}>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>
+              {period === 'current'
+                ? (incomeTax.currentYearLabel || 'Année N')
+                : (incomeTax.previousYearLabel || 'Année N-1')}
+            </div>
+            <SettingsTable
+              columns={domCols}
+              rows={domZones.map((z) => ({
+                _key: z._key,
+                zone: z.zone,
+                ratePercent: incomeTax?.domAbatement?.[period]?.[z.zoneKey]?.ratePercent,
+                cap: incomeTax?.domAbatement?.[period]?.[z.zoneKey]?.cap,
+              }))}
+              onCellChange={(idx, key, value) =>
+                updateField(
+                  ['incomeTax', 'domAbatement', period, domZones[idx].zoneKey, key],
+                  value === null ? '' : value
+                )
+              }
+              disabled={!isAdmin}
+            />
+          </div>
+        ))}
       </div>
-
-      <table className="settings-table">
-        <thead>
-          <tr>
-            <th>Zone</th>
-            <th className="taux-col">Taux %</th>
-            <th>Plafond €</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Guadeloupe / Martinique / Réunion</td>
-            <td className="taux-col">
-              <input
-                type="number"
-                value={numberOrEmpty(incomeTax?.domAbatement?.current?.gmr?.ratePercent)}
-                onChange={(e) =>
-                  updateField(
-                    ['incomeTax', 'domAbatement', 'current', 'gmr', 'ratePercent'],
-                    e.target.value === '' ? '' : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                value={numberOrEmpty(incomeTax?.domAbatement?.current?.gmr?.cap)}
-                onChange={(e) =>
-                  updateField(
-                    ['incomeTax', 'domAbatement', 'current', 'gmr', 'cap'],
-                    e.target.value === '' ? '' : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-          </tr>
-
-          <tr>
-            <td>Guyane / Mayotte</td>
-            <td className="taux-col">
-              <input
-                type="number"
-                value={numberOrEmpty(incomeTax?.domAbatement?.current?.guyane?.ratePercent)}
-                onChange={(e) =>
-                  updateField(
-                    ['incomeTax', 'domAbatement', 'current', 'guyane', 'ratePercent'],
-                    e.target.value === '' ? '' : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                value={numberOrEmpty(incomeTax?.domAbatement?.current?.guyane?.cap)}
-                onChange={(e) =>
-                  updateField(
-                    ['incomeTax', 'domAbatement', 'current', 'guyane', 'cap'],
-                    e.target.value === '' ? '' : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    {/* Colonne PREVIOUS */}
-    <div className="income-tax-col">
-      <div style={{ fontWeight: 700, marginBottom: 8 }}>
-        {incomeTax.previousYearLabel || 'Année N-1'}
-      </div>
-
-      <table className="settings-table">
-        <thead>
-          <tr>
-            <th>Zone</th>
-            <th className="taux-col">Taux %</th>
-            <th>Plafond €</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Guadeloupe / Martinique / Réunion</td>
-            <td className="taux-col">
-              <input
-                type="number"
-                value={numberOrEmpty(incomeTax?.domAbatement?.previous?.gmr?.ratePercent)}
-                onChange={(e) =>
-                  updateField(
-                    ['incomeTax', 'domAbatement', 'previous', 'gmr', 'ratePercent'],
-                    e.target.value === '' ? '' : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                value={numberOrEmpty(incomeTax?.domAbatement?.previous?.gmr?.cap)}
-                onChange={(e) =>
-                  updateField(
-                    ['incomeTax', 'domAbatement', 'previous', 'gmr', 'cap'],
-                    e.target.value === '' ? '' : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-          </tr>
-
-          <tr>
-            <td>Guyane / Mayotte</td>
-            <td className="taux-col">
-              <input
-                type="number"
-                value={numberOrEmpty(incomeTax?.domAbatement?.previous?.guyane?.ratePercent)}
-                onChange={(e) =>
-                  updateField(
-                    ['incomeTax', 'domAbatement', 'previous', 'guyane', 'ratePercent'],
-                    e.target.value === '' ? '' : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-            <td>
-              <input
-                type="number"
-                value={numberOrEmpty(incomeTax?.domAbatement?.previous?.guyane?.cap)}
-                onChange={(e) =>
-                  updateField(
-                    ['incomeTax', 'domAbatement', 'previous', 'guyane', 'cap'],
-                    e.target.value === '' ? '' : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+    );
+  })()}
   </div>
   )}
 </div>
@@ -1235,207 +1000,70 @@ export default function SettingsImpots() {
   </p>
 
   <div className="tax-two-cols">
-    {/* Colonne 2025 */}
-    <div>
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>
-        {incomeTax.currentYearLabel}
-      </div>
+    {['current', 'previous'].map((period) => {
+      const yearLabel = period === 'current' ? incomeTax.currentYearLabel : incomeTax.previousYearLabel;
+      const cehrData = cehr[period];
+      const cdhrData = cdhr[period];
+      const suffix = period === 'current' ? '2025' : '2024';
+      return (
+        <SettingsYearColumn key={period} yearLabel={yearLabel} isRight={period === 'previous'}>
+          <strong>CEHR – personne seule</strong>
+          {cehrData.single.map((row, idx) => (
+            <SettingsFieldRow
+              key={`cehrS_${suffix}_${idx}`}
+              label={`De ${numberOrEmpty(row.from)} € à ${row.to ? `${row.to} €` : 'plus'}`}
+              path={['cehr', period, 'single', idx, 'rate']}
+              value={row.rate}
+              onChange={updateField}
+              step="0.1"
+              unit="%"
+              disabled={!isAdmin}
+            />
+          ))}
 
-      <strong>CEHR – personne seule</strong>
-      {cehr.current.single.map((row, idx) => (
-        <div className="settings-field-row" key={`cehrS_2025_${idx}`}>
-          <label>
-            De {numberOrEmpty(row.from)} € à{' '}
-            {row.to ? `${row.to} €` : 'plus'}
-          </label>
-          <input
-            type="number"
+          <strong>CEHR – couple</strong>
+          {cehrData.couple.map((row, idx) => (
+            <SettingsFieldRow
+              key={`cehrC_${suffix}_${idx}`}
+              label={`De ${numberOrEmpty(row.from)} € à ${row.to ? `${row.to} €` : 'plus'}`}
+              path={['cehr', period, 'couple', idx, 'rate']}
+              value={row.rate}
+              onChange={updateField}
+              step="0.1"
+              unit="%"
+              disabled={!isAdmin}
+            />
+          ))}
+
+          <strong>CDHR (taux minimal)</strong>
+          <SettingsFieldRow
+            label="Taux effectif minimal"
+            path={['cdhr', period, 'minEffectiveRate']}
+            value={cdhrData.minEffectiveRate}
+            onChange={updateField}
             step="0.1"
-            value={numberOrEmpty(row.rate)}
-            onChange={(e) =>
-              updateField(
-                ['cehr', 'current', 'single', idx, 'rate'],
-                e.target.value === '' ? null : Number(e.target.value)
-              )
-            }
+            unit="%"
             disabled={!isAdmin}
           />
-          <span>%</span>
-        </div>
-      ))}
-
-      <strong>CEHR – couple</strong>
-      {cehr.current.couple.map((row, idx) => (
-        <div className="settings-field-row" key={`cehrC_2025_${idx}`}>
-          <label>
-            De {numberOrEmpty(row.from)} € à{' '}
-            {row.to ? `${row.to} €` : 'plus'}
-          </label>
-          <input
-            type="number"
-            step="0.1"
-            value={numberOrEmpty(row.rate)}
-            onChange={(e) =>
-              updateField(
-                ['cehr', 'current', 'couple', idx, 'rate'],
-                e.target.value === '' ? null : Number(e.target.value)
-              )
-            }
+          <SettingsFieldRow
+            label="Seuil RFR personne seule"
+            path={['cdhr', period, 'thresholdSingle']}
+            value={cdhrData.thresholdSingle}
+            onChange={updateField}
+            unit="€"
             disabled={!isAdmin}
           />
-          <span>%</span>
-        </div>
-      ))}
-
-      <strong>CDHR (taux minimal)</strong>
-      <div className="settings-field-row">
-        <label>Taux effectif minimal</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(cdhr.current.minEffectiveRate)}
-          onChange={(e) =>
-            updateField(
-              ['cdhr', 'current', 'minEffectiveRate'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>%</span>
-      </div>
-      <div className="settings-field-row">
-        <label>Seuil RFR personne seule</label>
-        <input
-          type="number"
-          value={numberOrEmpty(cdhr.current.thresholdSingle)}
-          onChange={(e) =>
-            updateField(
-              ['cdhr', 'current', 'thresholdSingle'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>€</span>
-      </div>
-      <div className="settings-field-row">
-        <label>Seuil RFR couple</label>
-        <input
-          type="number"
-          value={numberOrEmpty(cdhr.current.thresholdCouple)}
-          onChange={(e) =>
-            updateField(
-              ['cdhr', 'current', 'thresholdCouple'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>€</span>
-      </div>
-    </div>
-
-    {/* Colonne 2024 – mêmes paramètres pour l’instant */}
-    <div className="tax-two-cols-right">
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>
-        {incomeTax.previousYearLabel}
-      </div>
-
-      <strong>CEHR – personne seule</strong>
-      {cehr.previous.single.map((row, idx) => (
-        <div className="settings-field-row" key={`cehrS_2024_${idx}`}>
-          <label>
-            De {numberOrEmpty(row.from)} € à{' '}
-            {row.to ? `${row.to} €` : 'plus'}
-          </label>
-          <input
-            type="number"
-            step="0.1"
-            value={numberOrEmpty(row.rate)}
-            onChange={(e) =>
-              updateField(
-                ['cehr', 'previous', 'single', idx, 'rate'],
-                e.target.value === '' ? null : Number(e.target.value)
-              )
-            }
+          <SettingsFieldRow
+            label="Seuil RFR couple"
+            path={['cdhr', period, 'thresholdCouple']}
+            value={cdhrData.thresholdCouple}
+            onChange={updateField}
+            unit="€"
             disabled={!isAdmin}
           />
-          <span>%</span>
-        </div>
-      ))}
-
-      <strong>CEHR – couple</strong>
-      {cehr.previous.couple.map((row, idx) => (
-        <div className="settings-field-row" key={`cehrC_2024_${idx}`}>
-          <label>
-            De {numberOrEmpty(row.from)} € à{' '}
-            {row.to ? `${row.to} €` : 'plus'}
-          </label>
-          <input
-            type="number"
-            step="0.1"
-            value={numberOrEmpty(row.rate)}
-            onChange={(e) =>
-              updateField(
-                ['cehr', 'previous', 'couple', idx, 'rate'],
-                e.target.value === '' ? null : Number(e.target.value)
-              )
-            }
-            disabled={!isAdmin}
-          />
-          <span>%</span>
-        </div>
-      ))}
-
-      <strong>CDHR (taux minimal)</strong>
-      <div className="settings-field-row">
-        <label>Taux effectif minimal</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(cdhr.previous.minEffectiveRate)}
-          onChange={(e) =>
-            updateField(
-              ['cdhr', 'previous', 'minEffectiveRate'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>%</span>
-      </div>
-      <div className="settings-field-row">
-        <label>Seuil RFR personne seule</label>
-        <input
-          type="number"
-          value={numberOrEmpty(cdhr.previous.thresholdSingle)}
-          onChange={(e) =>
-            updateField(
-              ['cdhr', 'previous', 'thresholdSingle'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>€</span>
-      </div>
-      <div className="settings-field-row">
-        <label>Seuil RFR couple</label>
-        <input
-          type="number"
-          value={numberOrEmpty(cdhr.previous.thresholdCouple)}
-          onChange={(e) =>
-            updateField(
-              ['cdhr', 'previous', 'thresholdCouple'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>€</span>
-      </div>
-    </div>
+        </SettingsYearColumn>
+      );
+    })}
   </div>
   </div>
   )}
@@ -1542,64 +1170,16 @@ export default function SettingsImpots() {
 
     <div className="income-tax-block">
       <div className="income-tax-block-title">Barème progressif</div>
-      <table className="settings-table">
-        <thead>
-          <tr>
-            <th>De (€)</th>
-            <th>À (€)</th>
-            <th className="taux-col">Taux %</th>
-          </tr>
-        </thead>
-        <tbody>
-          {dmtg?.scale?.map((row, idx) => (
-            <tr key={idx}>
-              <td>
-                <input
-                  type="number"
-                  value={numberOrEmpty(row.from)}
-                  onChange={(e) =>
-                    updateDmtgScale(
-                      idx,
-                      'from',
-                      e.target.value === '' ? null : Number(e.target.value)
-                    )
-                  }
-                  disabled={!isAdmin}
-                />
-              </td>
-              <td>
-                <input
-                  type="number"
-                  value={numberOrEmpty(row.to)}
-                  onChange={(e) =>
-                    updateDmtgScale(
-                      idx,
-                      'to',
-                      e.target.value === '' ? null : Number(e.target.value)
-                    )
-                  }
-                  disabled={!isAdmin}
-                />
-              </td>
-              <td className="taux-col">
-                <input
-                  type="number"
-                  step="0.1"
-                  value={numberOrEmpty(row.rate)}
-                  onChange={(e) =>
-                    updateDmtgScale(
-                      idx,
-                      'rate',
-                      e.target.value === '' ? null : Number(e.target.value)
-                    )
-                  }
-                  disabled={!isAdmin}
-                />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <SettingsTable
+        columns={[
+          { key: 'from', header: 'De (€)' },
+          { key: 'to', header: 'À (€)' },
+          { key: 'rate', header: 'Taux %', step: '0.1', className: 'taux-col' },
+        ]}
+        rows={dmtg?.scale || []}
+        onCellChange={(idx, key, value) => updateDmtgScale(idx, key, value)}
+        disabled={!isAdmin}
+      />
     </div>
   </div>
   </div>
