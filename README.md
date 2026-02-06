@@ -15,6 +15,21 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 
 ## Dernières évolutions (2026-02-06)
 
+### Historique du PASS — Déplacement et dynamisation
+**Objectif** : Rendre l'historique du PASS (8 dernières valeurs) dynamique et le déplacer de « Fiscalités contrats » vers « Paramètres sociaux ».
+
+| Avant | Après |
+|-------|-------|
+| Tableau statique dans `SettingsFiscalites.jsx` | Accordéon dynamique dans `SettingsPrelevements.jsx` (premier bloc) |
+| Données dans `fiscality_settings.data.passHistory` | Table dédiée `public.pass_history` |
+| Validation manuelle (ordre, 8 lignes) | Rollover automatique au 1er janvier via RPC `ensure_pass_history_current()` |
+
+**Fichiers clés** :
+- `database/migrations/202602060001_create_pass_history.sql` — Table, RLS, seed, trigger, RPC
+- `src/components/settings/PassHistoryAccordion.jsx` — Composant accordéon autonome (fetch + upsert)
+- `src/pages/Sous-Settings/SettingsPrelevements.jsx` — Intégration en première position
+- `src/pages/Sous-Settings/SettingsFiscalites.jsx` — Retrait du bloc PASS + validation associée
+
 ### Refactoring Settings — Composants génériques (Phase 1→3)
 **Objectif** : Réduire la complexité et la duplication des pages Settings (Prelevements, Impots, Fiscalites) sans régression fonctionnelle.
 

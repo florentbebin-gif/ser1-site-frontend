@@ -7,6 +7,7 @@ import { numberOrEmpty, createFieldUpdater } from '../../utils/settingsHelpers.j
 import SettingsFieldRow from '../../components/settings/SettingsFieldRow';
 import SettingsYearColumn from '../../components/settings/SettingsYearColumn';
 import SettingsTable from '../../components/settings/SettingsTable';
+import PassHistoryAccordion from '../../components/settings/PassHistoryAccordion';
 
 // ----------------------
 // Valeurs par défaut
@@ -365,6 +366,13 @@ export default function SettingsPrelevements() {
           }}
         >
             <div className="fisc-accordion">
+
+            {/* 0. Historique du PASS */}
+            <PassHistoryAccordion
+              isOpen={openSection === 'pass'}
+              onToggle={() => setOpenSection(openSection === 'pass' ? null : 'pass')}
+              isAdmin={isAdmin}
+            />
 
             {/* 1. PS patrimoine / capital */}
             <div className="fisc-acc-item">

@@ -13,17 +13,6 @@ import SettingsTable from '../../components/settings/SettingsTable';
 // (taux/abattements/seuils/dates) pour alimenter les simulateurs.
 // ------------------------------------------------------------
 const DEFAULT_FISCALITY_SETTINGS = {
-  passHistory: [
-    { year: 2019, amount: 40524 },
-    { year: 2020, amount: 41136 },
-    { year: 2021, amount: 41136 },
-    { year: 2022, amount: 41136 },
-    { year: 2023, amount: 43992 },
-    { year: 2024, amount: 46368 },
-    { year: 2025, amount: 47100 },
-    { year: 2026, amount: 48060 },
-  ],
-
   perIndividuel: {
     epargne: {
       // Références plafonds (tu feras le calcul dans les simulateurs)
@@ -280,7 +269,6 @@ const PRODUCTS = [
       user?.user_metadata?.is_admin === true);
 
   const av = settings.assuranceVie;
-  const passHistory = settings.passHistory || [];
   const per = settings.perIndividuel || DEFAULT_FISCALITY_SETTINGS.perIndividuel;
 
   // ---------------------------------------------
@@ -353,9 +341,6 @@ const PRODUCTS = [
                   DEFAULT_FISCALITY_SETTINGS.perIndividuel.rente.rvtoTaxableFractionByAgeAtFirstPayment,
               },
             },
-            passHistory: Array.isArray(db.passHistory)
-              ? db.passHistory
-              : DEFAULT_FISCALITY_SETTINGS.passHistory,
           }));
         } else if (err && err.code !== 'PGRST116') {
           console.error('Erreur chargement fiscality_settings :', err);
@@ -382,29 +367,6 @@ const PRODUCTS = [
 const handleSave = async () => {
   if (!isAdmin) return;
   
-  // -----------------------------
-  // Validation PASS (8 lignes + ordre)
-  // -----------------------------
-  const ph = (settings.passHistory || []).slice();
-
-  if (ph.length !== 8) {
-    setMessage("Historique PASS : il faut exactement 8 lignes.");
-    return;
-  }
-
-  for (let i = 0; i < ph.length; i++) {
-    if (!ph[i]?.year || !ph[i]?.amount) {
-      setMessage("Historique PASS : année et montant obligatoires sur chaque ligne.");
-      return;
-    }
-    if (i > 0 && Number(ph[i].year) <= Number(ph[i - 1].year)) {
-      setMessage(
-        "Historique PASS : l'ordre doit être du plus ancien au plus récent (années strictement croissantes)."
-      );
-      return;
-    }
-  }
-
   try {
     setSaving(true);
     setMessage('');
@@ -452,29 +414,6 @@ const handleSave = async () => {
     >
       {/* Bandeau info */}
       <UserInfoBanner />
-
-          <section>
-  <h4 className="fisc-section-title">Historique du PASS (8 dernières valeurs)</h4>
-
-  <div className="income-tax-block">
-    <div className="income-tax-block-title">Année & montant</div>
-
-    <SettingsTable
-      columns={[
-        { key: 'year', header: 'Année' },
-        { key: 'amount', header: 'PASS', className: 'taux-col' },
-      ]}
-      rows={passHistory}
-      onCellChange={(idx, key, value) => updateField(['passHistory', idx, key], value)}
-      disabled={!isAdmin}
-    />
-
-    <div style={{ fontSize: 12, color: 'var(--color-c9)', marginTop: 6 }}>
-      Ordre obligatoire : du plus ancien au plus récent (contrôle à l’enregistrement).
-    </div>
-  </div>
-</section>
-
 
 {/* Accordéon produits */}
 <div className="fisc-accordion">
