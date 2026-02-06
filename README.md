@@ -15,6 +15,25 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 
 ## Dernières évolutions (2026-02-06)
 
+### Refactoring Settings — Composants génériques (Phase 1→3)
+**Objectif** : Réduire la complexité et la duplication des pages Settings (Prelevements, Impots, Fiscalites) sans régression fonctionnelle.
+
+| Phase | Livrable | Lignes impactées |
+|-------|----------|------------------|
+| **Phase 1** | `settingsHelpers.js` — `numberOrEmpty`, `textOrEmpty`, `createFieldUpdater` | +50 |
+| **Phase 2** | `SettingsFieldRow.jsx` + `SettingsYearColumn.jsx` — Lignes formulaire génériques | -200 |
+| **Phase 3** | `SettingsTable.jsx` — Tableaux éditables pilotés par schéma | -890 |
+| **Fiscalites** | Application des composants aux sections AV + PER | -799 |
+
+**Résultat** : 5 856 → 4 729 lignes (-19%), 4 composants réutilisables créés.
+
+**Fichiers clés** :
+- `src/utils/settingsHelpers.js` — Helpers de mutation state
+- `src/components/settings/SettingsFieldRow.jsx` — Ligne label+input+unité
+- `src/components/settings/SettingsYearColumn.jsx` — Wrapper colonne année
+- `src/components/settings/SettingsTable.jsx` — Tableau éditable générique
+- `src/pages/Sous-Settings/SettingsFiscalites.jsx` — Utilisation intensive des composants
+
 ### Fix Edge Function `get_original_theme` — 404
 **Cause** : Mismatch nom hardcodé `'Thème Original'` dans le code vs `'Thème Origine'` en DB.
 **Fix** : Requête par `is_system=true` (marqueur stable) au lieu du nom hardcodé. Idem pour `update_theme`.
