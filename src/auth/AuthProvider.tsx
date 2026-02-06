@@ -90,14 +90,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   // Initialisation et écoute des changements d'état
   useEffect(() => {
     let mounted = true;
+    // Guard contre boucle signOut infinie (stale refresh token)
+    let signingOut = false;
+
+    // Nettoyage propre en cas de refresh token invalide
+    const handleInvalidRefreshToken = async (reason: string) => {
+      if (signingOut) return; // éviter boucle
+      signingOut = true;
+      console.warn(`[Auth] Refresh token invalide (${reason}) — déconnexion propre`);
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        // signOut peut échouer si le token est déjà invalide, on nettoie manuellement
+        localStorage.removeItem('sb-' + new URL(import.meta.env.VITE_SUPABASE_URL).hostname.split('.')[0] + '-auth-token');
+      }
+      if (mounted) {
+        updateFromSession(null, `invalidRefreshToken:${reason}`);
+      }
+      signingOut = false;
+    };
 
     // Récupérer la session initiale
     const initSession = async () => {
       try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
-        if (mounted) {
-          updateFromSession(initialSession, 'init');
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        if (!mounted) return;
+        // Détecter refresh token invalide dès l'init
+        if (error && /refresh.token/i.test(error.message)) {
+          await handleInvalidRefreshToken('init');
+          return;
         }
+        updateFromSession(initialSession, 'init');
       } catch (e) {
         if (DEBUG_AUTH) {
           console.warn('[Auth] init:error', { message: (e as Error)?.message });
@@ -125,6 +148,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
           hasSession: !!newSession,
           userId: newSession?.user?.id,
         });
+      }
+
+      // Détecter échec de refresh token : TOKEN_REFRESHED sans session = token invalide
+      if (event === 'TOKEN_REFRESHED' && !newSession) {
+        handleInvalidRefreshToken('TOKEN_REFRESHED:null');
+        return;
       }
 
       updateFromSession(newSession, `onAuthStateChange:${event}`);

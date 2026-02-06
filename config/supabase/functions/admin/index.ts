@@ -21,6 +21,27 @@ interface ReportAgg {
   latest_report_is_unread: boolean
 }
 
+interface ReportRow {
+  user_id: string
+  created_at: string
+  admin_read_at: string | null
+  id: string
+}
+
+interface ProfileRow {
+  id: string
+  cabinet_id: string | null
+}
+
+interface AuthUser {
+  id: string
+  email?: string
+  created_at?: string
+  last_sign_in_at?: string
+  user_metadata?: Record<string, unknown>
+  app_metadata?: Record<string, unknown>
+}
+
 function getSupabaseServiceClient(): SupabaseClient {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -97,26 +118,31 @@ serve(async (req: Request) => {
     // Ces actions sont accessibles à tout utilisateur connecté
 
     // Récupérer le thème original (pour les users sans cabinet)
+    // Recherche par is_system=true (marqueur stable) — compatible avec tout nom DB
     if (actionFromQuery === 'get_original_theme') {
       try {
         const { data: theme, error } = await supabase
           .from('themes')
           .select('name, palette')
-          .eq('name', 'Thème Original')
           .eq('is_system', true)
+          .limit(1)
           .single()
 
         if (error || !theme) {
+          console.warn(`[admin] get_original_theme: not found | rid=${requestId} | error=${error?.message ?? 'no data'}`)
           return new Response(JSON.stringify({ error: 'Original theme not found' }), {
             status: 404,
             headers: { ...responseHeaders, 'Content-Type': 'application/json' }
           })
         }
 
+        const duration = Date.now() - reqStart
+        console.log(`[admin] get_original_theme: found "${theme.name}" | rid=${requestId} | ${duration}ms`)
         return new Response(JSON.stringify({ name: theme.name, palette: theme.palette }), {
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
         })
       } catch (err) {
+        console.error(`[admin] get_original_theme: exception | rid=${requestId}`, err)
         return new Response(JSON.stringify({ error: 'Failed to fetch original theme' }), {
           status: 500,
           headers: { ...responseHeaders, 'Content-Type': 'application/json' }
@@ -212,7 +238,7 @@ serve(async (req: Request) => {
       }
 
       // Agréger les données par user
-      const reportStats = (reports ?? []).reduce<Record<string, ReportAgg>>((acc, report) => {
+      const reportStats = (reports ?? []).reduce<Record<string, ReportAgg>>((acc: Record<string, ReportAgg>, report: ReportRow) => {
         if (!acc[report.user_id]) {
           acc[report.user_id] = {
             total_reports: 0,
@@ -240,7 +266,7 @@ serve(async (req: Request) => {
       }, {})
 
       // Charger les cabinet_id pour tous les users
-      const userIds = users.users.map(u => u.id)
+      const userIds = users.users.map((u: AuthUser) => u.id)
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, cabinet_id')
@@ -250,9 +276,9 @@ serve(async (req: Request) => {
         console.log('[admin:list_users] profiles query error:', profilesError.message)
       }
 
-      const cabinetByUserId = new Map((profiles ?? []).map(p => [p.id, p.cabinet_id]))
+      const cabinetByUserId = new Map((profiles ?? []).map((p: ProfileRow) => [p.id, p.cabinet_id]))
 
-      const usersWithReports = users.users.map(user => ({
+      const usersWithReports = users.users.map((user: AuthUser) => ({
         id: user.id,
         email: user.email,
         created_at: user.created_at,
@@ -859,7 +885,7 @@ serve(async (req: Request) => {
         })
       }
 
-      // Vérifier que le thème n'est pas système (sauf "Thème Original" qui est modifiable)
+      // Vérifier que le thème existe — le thème système (is_system=true) est modifiable (palette uniquement)
       const { data: existingTheme, error: fetchError } = await supabase
         .from('themes')
         .select('is_system, name')
@@ -867,13 +893,6 @@ serve(async (req: Request) => {
         .single()
 
       if (fetchError) throw fetchError
-
-      if (existingTheme?.is_system && existingTheme?.name !== 'Thème Original') {
-        return new Response(JSON.stringify({ error: 'Impossible de modifier un thème système' }), {
-          status: 400,
-          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
-        })
-      }
 
       const updateData: any = {}
       
@@ -955,22 +974,22 @@ serve(async (req: Request) => {
         })
       }
 
-      // Vérifier qu'aucun cabinet n'utilise ce thème
-      const { data: cabinetsCount, error: countError } = await supabase
+      // Désassigner les cabinets qui utilisent ce thème (cohérent avec ON DELETE SET NULL du schéma)
+      const { data: assignedCabinets, error: countError } = await supabase
         .from('cabinets')
-        .select('id', { count: 'exact' })
+        .select('id')
         .eq('default_theme_id', id)
 
       if (countError) throw countError
 
-      if (cabinetsCount && cabinetsCount.length > 0) {
-        return new Response(JSON.stringify({ 
-          error: 'Impossible de supprimer le thème : il est encore assigné à des cabinets',
-          assigned_cabinets: cabinetsCount.length
-        }), {
-          status: 400,
-          headers: { ...responseHeaders, 'Content-Type': 'application/json' }
-        })
+      const unassignedCount = assignedCabinets?.length ?? 0
+      if (unassignedCount > 0) {
+        const { error: unassignError } = await supabase
+          .from('cabinets')
+          .update({ default_theme_id: null })
+          .eq('default_theme_id', id)
+        if (unassignError) throw unassignError
+        console.log(`[admin] delete_theme: unassigned ${unassignedCount} cabinet(s) from theme ${id}`)
       }
 
       const { error } = await supabase
@@ -980,7 +999,7 @@ serve(async (req: Request) => {
 
       if (error) throw error
 
-      return new Response(JSON.stringify({ success: true }), {
+      return new Response(JSON.stringify({ success: true, unassigned_cabinets: unassignedCount }), {
         headers: { ...responseHeaders, 'Content-Type': 'application/json' }
       })
     }

@@ -6,6 +6,55 @@
 
 ---
 
+## 2026-02-06 — Fixes Edge Function, Auth, Thèmes + Nettoyage duplicates
+
+### Contexte
+Trois bugs en production/staging : Edge Function 404 sur `get_original_theme`, Auth 400 `Invalid Refresh Token` en boucle, et `delete_theme` 400 quand un cabinet est assigné. Également des warnings ThemeProvider `BLOCKED` et des fichiers dupliqués dans le repo.
+
+### Fixes appliqués
+
+| Bug | Cause racine | Fix |
+|-----|-------------|-----|
+| **Edge Function 404** `get_original_theme` | Nom hardcodé `'Thème Original'` vs DB `'Thème Origine'` | Requête par `is_system=true` (marqueur stable) |
+| **Edge Function 404** `update_theme` | Même mismatch de nom | Suppression du check nom, le thème système est modifiable |
+| **Auth 400** `Invalid Refresh Token` | Aucun handler dans `AuthProvider` | Détection `TOKEN_REFRESHED` sans session → `signOut()` propre + guard anti-boucle |
+| **delete_theme 400** cabinet assigné | Edge Function bloquait malgré `ON DELETE SET NULL` en DB | Désassignation auto des cabinets avant suppression |
+| **ThemeProvider BLOCKED** warnings | `custom-palette` et `setColors-manual` absents de `sourceRanks` | Ajout avec rank 1 |
+| **SettingsComptes** checks hardcodés | `name === 'Thème Original'` dans 7 endroits | Remplacé par `is_system` flag |
+
+### Nettoyage duplicates
+
+| Supprimé | Raison |
+|----------|--------|
+| `public/pptx/icons/` (13 SVG) | Copies identiques de `src/icons/business/svg/`, non importées |
+| `src/pptx/ops/addBusinessIcon.ts` | Version legacy (types `any`) — unifié dans `src/pptx/icons/addBusinessIcon.ts` |
+| `supabase/functions/admin/` | Duplicate de `config/supabase/functions/admin/` (source de vérité README) |
+
+### Améliorations qualité
+
+| Changement | Détail |
+|------------|--------|
+| Types Edge Function | Interfaces `ReportRow`, `ProfileRow`, `AuthUser` (fix 5 implicit `any`) |
+| `tsconfig.json` local Deno | `config/supabase/functions/admin/tsconfig.json` — supprime erreurs IDE |
+| `tsconfig.json` root | Ajout `exclude: ["config/supabase", "supabase"]` |
+| ESLint plugin `ser1-colors` | Exception `rgba(0,0,0,*)` pour shadows/overlays (conforme §5.3) |
+| `addBusinessIcon.ts` unifié | Ajout `addBusinessIconDirect()` (API directe) + alias `ICON_SIZES` |
+
+### Fichiers modifiés
+- `config/supabase/functions/admin/index.ts` — get_original_theme, delete_theme, update_theme, types
+- `src/auth/AuthProvider.tsx` — handleInvalidRefreshToken
+- `src/settings/ThemeProvider.tsx` — sourceRanks complété
+- `src/pages/Sous-Settings/SettingsComptes.jsx` — is_system checks
+- `src/pptx/icons/addBusinessIcon.ts` — addBusinessIconDirect, ICON_SIZES
+- `src/pptx/structure/slideTypes.ts` — import migré vers icons/
+- `tools/eslint-plugin-ser1-colors/index.js` — exception rgba(0,0,0,*)
+- `tsconfig.json` — exclude ajouté
+
+### Déploiement
+Edge Function déployée via CLI : `npx supabase functions deploy admin --project-ref xnpbxrqkzgimiugqtago --workdir config`
+
+---
+
 ## 2026-02-05 — Phase 1 Raffinements SettingsComptes
 
 ### Objectif

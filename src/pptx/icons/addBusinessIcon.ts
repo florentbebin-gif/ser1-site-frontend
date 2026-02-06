@@ -113,8 +113,46 @@ export const ICON_SIZE_PRESETS = {
   xlarge: { w: 1.5, h: 1.5 },
 } as const;
 
+/**
+ * Add a business icon with a direct color string (no theme resolution)
+ * Backward-compatible API for callers that already have a resolved color.
+ */
+export function addBusinessIconDirect(
+  slide: PptxGenJS.Slide,
+  iconName: BusinessIconName,
+  options: { x: number | string; y: number | string; w: number; h: number; color?: string }
+): void {
+  try {
+    const iconDataUri = getBusinessIconDataUri(iconName, { color: options.color });
+    slide.addImage({
+      data: iconDataUri,
+      x: options.x as number,
+      y: options.y as number,
+      w: options.w,
+      h: options.h,
+    });
+  } catch (error) {
+    console.error(`[PPTX Icons] Failed to add icon ${iconName}:`, error);
+    addTextFr(slide, `[${iconName}]`, {
+      x: options.x as number,
+      y: options.y as number,
+      w: options.w,
+      h: options.h,
+      fontSize: 10,
+      color: options.color || 'FFFFFF',
+      align: 'center',
+      valign: 'middle',
+    });
+  }
+}
+
+/** Alias for backward compatibility */
+export const ICON_SIZES = ICON_SIZE_PRESETS;
+
 export default {
   addBusinessIconToSlide,
   addBusinessIconsToSlide,
+  addBusinessIconDirect,
   ICON_SIZE_PRESETS,
+  ICON_SIZES,
 };

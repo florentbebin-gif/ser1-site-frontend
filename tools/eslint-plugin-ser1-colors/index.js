@@ -79,12 +79,15 @@ const noHardcodedColors = {
         });
       }
 
-      // Check RGB colors
+      // Check RGB colors (allow black overlay/shadow: rgba(0,0,0,...) per README §5.3)
       if (RGB_COLOR_PATTERN.test(value)) {
-        context.report({
-          node,
-          messageId: 'noHardcodedRgb',
-        });
+        const isBlackOverlay = /rgba?\s*\(\s*0\s*,\s*0\s*,\s*0/.test(value);
+        if (!isBlackOverlay) {
+          context.report({
+            node,
+            messageId: 'noHardcodedRgb',
+          });
+        }
       }
 
       // Check HSL colors

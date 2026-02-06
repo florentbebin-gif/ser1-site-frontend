@@ -587,6 +587,8 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       'user_metadata (fallback)': 1,
       'cache': 1,
       'custom': 1,
+      'custom-palette': 1,
+      'setColors-manual': 1,
       'default': 0,
       'default-sync-init': 0,
       'bootstrap-cache': 0,

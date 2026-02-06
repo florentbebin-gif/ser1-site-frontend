@@ -1,6 +1,6 @@
 # SER1 — Audit Patrimonial Express + Stratégie Guidée
 
-**Dernière mise à jour : 2026-02-05 (Europe/Paris)**
+**Dernière mise à jour : 2026-02-06 (Europe/Paris)**
 
 Application web interne pour CGP : audit patrimonial, stratégie guidée, simulateurs IR/Placement/Crédit, exports PPTX/Excel.
 
@@ -13,7 +13,43 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 
 ---
 
-## Dernières évolutions (2026-02-01)
+## Dernières évolutions (2026-02-06)
+
+### Fix Edge Function `get_original_theme` — 404
+**Cause** : Mismatch nom hardcodé `'Thème Original'` dans le code vs `'Thème Origine'` en DB.
+**Fix** : Requête par `is_system=true` (marqueur stable) au lieu du nom hardcodé. Idem pour `update_theme`.
+
+### Fix Auth 400 — Invalid Refresh Token
+**Cause** : Aucun handler pour les refresh tokens invalides/expirés dans `AuthProvider`.
+**Fix** : Détection `TOKEN_REFRESHED` sans session + `getSession()` error → `signOut()` propre + clear storage. Guard anti-boucle.
+
+### Fix `delete_theme` — 400 cabinet assigné
+**Cause** : Edge Function bloquait la suppression si un cabinet référençait le thème, alors que le schéma DB a `ON DELETE SET NULL`.
+**Fix** : Désassignation automatique des cabinets (`default_theme_id = null`) avant suppression.
+
+### Fix ThemeProvider rank warnings
+**Cause** : `custom-palette` et `setColors-manual` absents de `sourceRanks` → rank 0 par défaut → bloqués.
+**Fix** : Ajout des deux sources avec rank 1 dans la map.
+
+### Nettoyage duplicates & typage
+- **Supprimé** : 13 SVG dead dans `public/pptx/icons/` (copies identiques de `src/icons/business/svg/`)
+- **Supprimé** : `src/pptx/ops/addBusinessIcon.ts` (version legacy) — unifié dans `src/pptx/icons/addBusinessIcon.ts`
+- **Supprimé** : `supabase/functions/admin/` (duplicate de `config/supabase/functions/admin/`)
+- **Ajouté** : Types `ReportRow`, `ProfileRow`, `AuthUser` dans Edge Function (fix 5 implicit `any`)
+- **Ajouté** : `tsconfig.json` local dans `config/supabase/functions/admin/` (supprime erreurs Deno IDE)
+- **Fix** : ESLint plugin `ser1-colors` — exception `rgba(0,0,0,*)` pour shadows/overlays (conforme §5.3)
+- **Fix** : `SettingsComptes.jsx` — remplacement de tous les checks `name === 'Thème Original'` par `is_system`
+
+**Fichiers clés** :
+- `config/supabase/functions/admin/index.ts` — Edge Function (get_original_theme, delete_theme, update_theme)
+- `src/auth/AuthProvider.tsx` — Gestion refresh token invalide
+- `src/settings/ThemeProvider.tsx` — sourceRanks complété
+- `src/pages/Sous-Settings/SettingsComptes.jsx` — Checks `is_system` au lieu de nom hardcodé
+- `src/pptx/icons/addBusinessIcon.ts` — Version unifiée (typée + API directe)
+
+---
+
+## Évolutions précédentes (2026-02-01)
 
 ### Refonte Signalements — Intégration dans Settings
 **Objectif** : Simplifier l'UX en regroupant les signalements dans l'onglet Généraux.
@@ -66,7 +102,8 @@ src/
   pptx/                 # Export Serenity (design system)
   utils/xlsxBuilder.ts  # Export Excel
 
-config/supabase/functions/admin/index.ts  # Edge Function admin (source de vérité)
+config/supabase/functions/admin/index.ts  # Edge Function admin (source de vérité unique)
+config/supabase/functions/admin/tsconfig.json  # TS config Deno (supprime erreurs IDE)
 api/admin.js           # Proxy Vercel (évite CORS)
 
 database/
@@ -124,12 +161,16 @@ database/
 ### 3.2 Edge Function admin
 **Code source unique** : `config/supabase/functions/admin/index.ts`
 
+> ⚠️ **Pas de duplicate** — le dossier `supabase/functions/admin/` a été supprimé. Seul `config/` fait foi.
+
 **Déploiement** :
 ```powershell
 npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 ```
 
 ⚠️ `--workdir config` obligatoire (pas `config/supabase`).
+
+**Thème système** : La requête `get_original_theme` utilise `is_system=true` (pas de nom hardcodé). Compatible avec tout nom DB.
 
 ### 3.3 Protection mots de passe (Security Advisor)
 **Leaked Password Protection** : Détection des mots de passe compromis via HaveIBeenPwned.org.
@@ -177,10 +218,11 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 | END | `buildEnd.ts` | Disclaimer légal |
 
 ### 5.3 Règles immuables
-1. Pas d'hex codé en dur sauf : blanc (#FFFFFF), WARNING (#996600), overlay rgba(0,0,0,0.5)
+1. Pas d'hex codé en dur sauf : blanc (#FFFFFF), WARNING (#996600), overlay/shadow `rgba(0,0,0,*)`
 2. `resolvePptxColors()` source unique couleurs
 3. Données PPTX = même source que UI (pas de recalc)
 4. Pagination amortissement : max 14 lignes/slide
+5. Icônes business : source unique `src/icons/business/svg/` + `businessIconLibrary.ts` (pas de copie dans `public/`)
 
 ---
 
@@ -216,12 +258,15 @@ localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true')
 
 ---
 
-## 8. Troubleshooting (5 cas)
+## 8. Troubleshooting (8 cas)
 
 | Symptôme | Cause | Fix |
 |----------|-------|-----|
 | RPC 404 `get_my_cabinet_logo` | Migration non appliquée | Appliquer `database/migrations/add-rpc-*.sql`, attendre 1-2min |
 | Edge Function 400 (HTML Cloudflare) | Header Host manquant | Vérifier proxy `api/admin.js` |
+| Edge Function 404 `get_original_theme` | Nom thème hardcodé vs DB | Fixé : requête par `is_system=true` |
+| Auth 400 `Invalid Refresh Token` | Token stale, pas de handler | Fixé : `AuthProvider` force signOut propre |
+| `delete_theme` 400 cabinet assigné | Edge Function bloquait | Fixé : désassignation auto avant suppression |
 | Flash thème au F5 | CSS `:root` écrase vars | Bootstrap head dans `index.html` + `ThemeProvider` vérifie `window.__ser1ThemeBootstrap` |
 | Build Vercel Node 24.x | `engines: ">=22"` trop permissif | Pin strict `"22.x"` dans `package.json` |
 | Logo PPTX manquant | Bucket `logos` non créé | Créer bucket + appliquer migrations |

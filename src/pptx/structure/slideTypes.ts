@@ -8,7 +8,7 @@ import PptxGenJS from 'pptxgenjs';
 import type { PptxTheme } from '../theme/pptxTheme';
 import { applyCoverLogo, DEFAULT_LOGO_PLACEMENT } from '../ops/applyCoverLogo';
 import { applyChapterImage } from '../ops/applyChapterImage';
-import { addBusinessIcon, ICON_SIZES } from '../ops/addBusinessIcon';
+import { addBusinessIconDirect, ICON_SIZES } from '../icons/addBusinessIcon';
 import { addTextFr } from '../designSystem/serenity';
 
 // Types de données pour chaque slide
@@ -174,7 +174,7 @@ export function buildSlideContent(
   // Icônes optionnelles
   if (data.showIcons && data.icons) {
     data.icons.forEach(icon => {
-      addBusinessIcon(slide, icon.name as any, {
+      addBusinessIconDirect(slide, icon.name as any, {
         x: icon.position.x,
         y: icon.position.y,
         w: ICON_SIZES.small.w,

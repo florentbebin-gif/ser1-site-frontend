@@ -20,5 +20,6 @@
     "types": ["vite/client", "vitest/globals"]
   },
   "include": ["src"],
+  "exclude": ["config/supabase", "supabase", "node_modules", "dist"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

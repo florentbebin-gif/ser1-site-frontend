@@ -312,12 +312,8 @@ export default function SettingsComptes() {
       setError('');
 
       if (editingTheme) {
-        // Autoriser modification uniquement pour Thème Original (pas les autres thèmes système)
-        if (editingTheme.is_system && editingTheme.name !== 'Thème Original') {
-          setError('Les thèmes système ne peuvent pas être modifiés.');
-          setThemeSaving(false);
-          return;
-        }
+        // Le thème système (is_system=true) est modifiable (palette uniquement)
+        // Pas de blocage ici — le backend gère la protection
         const { error: invokeError } = await invokeAdmin('update_theme', {
           id: editingTheme.id,
           name: themeForm.name.trim(),
@@ -325,8 +321,8 @@ export default function SettingsComptes() {
         });
         if (invokeError) throw new Error(invokeError.message);
         
-        // Invalider le cache originalColors dans ThemeProvider si c'était le Thème Original
-        if (editingTheme.name === 'Thème Original') {
+        // Invalider le cache originalColors dans ThemeProvider si c'était le thème système
+        if (editingTheme.is_system) {
           window.dispatchEvent(new CustomEvent('ser1-original-theme-updated'));
         }
       } else {
@@ -661,10 +657,10 @@ export default function SettingsComptes() {
                           ))}
                         </div>
                       </div>
-                      {/* Thème Original: Modifier autorisé, Supprimer interdit. Badge SYS dans les actions */}
-                      {(!theme.is_system || theme.name === 'Thème Original') && (
+                      {/* Thème système: Modifier autorisé, Supprimer interdit. Badge SYS dans les actions */}
+                      {(!theme.is_system || theme.is_system) && (
                         <div className="admin-card-compact__actions" style={{ alignItems: 'center' }}>
-                          {theme.is_system && theme.name === 'Thème Original' && (
+                          {theme.is_system && (
                             <span className="theme-badge-sys" style={{ marginRight: 4 }}>SYS</span>
                           )}
                           <button 
@@ -986,13 +982,11 @@ export default function SettingsComptes() {
                   <div style={{ 
                     padding: 12, 
                     marginBottom: 16, 
-                    background: editingTheme?.name === 'Thème Original' ? 'var(--color-c3)' : 'var(--color-c4)', 
+                    background: 'var(--color-c3)', 
                     borderRadius: 6, 
                     fontSize: 13 
                   }}>
-                    {editingTheme?.name === 'Thème Original' 
-                      ? 'Thème Original : modifiable mais ne peut pas être supprimé.'
-                      : 'Les thèmes système ne peuvent pas être modifiés.'}
+                    Thème système : modifiable mais ne peut pas être supprimé.
                   </div>
                 )}
                 <div style={{ marginBottom: 16 }}>
@@ -1002,7 +996,6 @@ export default function SettingsComptes() {
                     value={themeForm.name}
                     onChange={(e) => setThemeForm(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Ex: Bleu patrimonial"
-                    disabled={editingTheme?.is_system && editingTheme?.name !== 'Thème Original'}
                     style={{
                       width: '100%',
                       padding: '10px 12px',
@@ -1022,14 +1015,12 @@ export default function SettingsComptes() {
                           type="color"
                           value={themeForm.palette?.[colorKey] || DEFAULT_PALETTE[colorKey]}
                           onChange={(e) => handleThemePaletteChange(colorKey, e.target.value)}
-                          disabled={editingTheme?.is_system && editingTheme?.name !== 'Thème Original'}
                           style={{ width: 40, height: 32, border: 'none', cursor: 'pointer' }}
                         />
                         <input
                           type="text"
                           value={themeForm.palette?.[colorKey] || DEFAULT_PALETTE[colorKey]}
                           onChange={(e) => handleThemePaletteChange(colorKey, e.target.value)}
-                          disabled={editingTheme?.is_system && editingTheme?.name !== 'Thème Original'}
                           style={{
                             width: '100%',
                             padding: '4px',
@@ -1048,7 +1039,7 @@ export default function SettingsComptes() {
               </div>
               <div className="report-modal-actions">
                 <button onClick={closeThemeModal}>Annuler</button>
-                {!editingTheme?.is_system || editingTheme?.name === 'Thème Original' ? (
+                {!editingTheme?.is_system || editingTheme?.is_system ? (
                   <button 
                     className="chip"
                     onClick={handleSaveTheme}
