@@ -1,0 +1,14 @@
+# CODEOWNERS - Définition des propriétaires de code
+# Pour plus d'info : https://docs.github.com/fr/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Propriétaire par défaut pour tout le repo
+* @florentbebin
+
+# Edge Functions et config Supabase
+/config/supabase/ @florentbebin
+
+# Moteur de calcul fiscal (critique pour la conformité)
+/src/engine/ @florentbebin
+
+# Auth et sécurité
+/src/auth/ @florentbebin
