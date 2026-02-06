@@ -4,6 +4,8 @@ import './SettingsFiscalites.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '../../components/UserInfoBanner';
 import { numberOrEmpty, textOrEmpty, createFieldUpdater } from '../../utils/settingsHelpers.js';
+import SettingsFieldRow from '../../components/settings/SettingsFieldRow';
+import SettingsTable from '../../components/settings/SettingsTable';
 
 // ------------------------------------------------------------
 // Valeurs par défaut (Assurance-vie) — issues du tableau Excel PJ
@@ -457,41 +459,15 @@ const handleSave = async () => {
   <div className="income-tax-block">
     <div className="income-tax-block-title">Année & montant</div>
 
-    <table className="settings-table">
-      <thead>
-        <tr>
-          <th>Année</th>
-          <th className="taux-col">PASS</th>
-        </tr>
-      </thead>
-      <tbody>
-        {passHistory.map((row, idx) => (
-          <tr key={idx}>
-            <td style={{ textAlign: 'left' }}>
-              <input
-                type="number"
-                value={numberOrEmpty(row.year)}
-                onChange={(e) =>
-                  updateField(['passHistory', idx, 'year'], e.target.value === '' ? null : Number(e.target.value))
-                }
-                disabled={!isAdmin}
-                style={{ width: 110, textAlign: 'left' }}
-              />
-            </td>
-            <td className="taux-col">
-              <input
-                type="number"
-                value={numberOrEmpty(row.amount)}
-                onChange={(e) =>
-                  updateField(['passHistory', idx, 'amount'], e.target.value === '' ? null : Number(e.target.value))
-                }
-                disabled={!isAdmin}
-              />
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <SettingsTable
+      columns={[
+        { key: 'year', header: 'Année' },
+        { key: 'amount', header: 'PASS', className: 'taux-col' },
+      ]}
+      rows={passHistory}
+      onCellChange={(idx, key, value) => updateField(['passHistory', idx, key], value)}
+      disabled={!isAdmin}
+    />
 
     <div style={{ fontSize: 12, color: 'var(--color-c9)', marginTop: 6 }}>
       Ordre obligatoire : du plus ancien au plus récent (contrôle à l’enregistrement).
@@ -547,53 +523,23 @@ const handleSave = async () => {
                     <div className="income-tax-block-title">
                       Prélèvements sociaux pendant la capitalisation
                     </div>
-                    <div className="settings-field-row">
-                      <label>Taux de PS sur intérêts</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={numberOrEmpty(
-                          av.epargne.socialOnInterestsDuringAccumulation.psRatePercent
-                        )}
-                        onChange={(e) =>
-                          updateField(
-                            [
-                              'assuranceVie',
-                              'epargne',
-                              'socialOnInterestsDuringAccumulation',
-                              'psRatePercent',
-                            ],
-                            e.target.value === '' ? null : Number(e.target.value)
-                          )
-                        }
-                        disabled={!isAdmin}
-                      />
-                      <span>%</span>
-                    </div>
-
-                    <div className="settings-field-row">
-                      <label>Note</label>
-                      <input
-                        type="text"
-                        value={textOrEmpty(
-                          av.epargne.socialOnInterestsDuringAccumulation.note
-                        )}
-                        onChange={(e) =>
-                          updateField(
-                            [
-                              'assuranceVie',
-                              'epargne',
-                              'socialOnInterestsDuringAccumulation',
-                              'note',
-                            ],
-                            e.target.value
-                          )
-                        }
-                        disabled={!isAdmin}
-                        style={{ width: 520, textAlign: 'left' }}
-                      />
-                      <span />
-                    </div>
+                    <SettingsFieldRow
+                      label="Taux de PS sur intérêts"
+                      path={['assuranceVie', 'epargne', 'socialOnInterestsDuringAccumulation', 'psRatePercent']}
+                      value={av.epargne.socialOnInterestsDuringAccumulation.psRatePercent}
+                      onChange={updateField}
+                      step="0.1"
+                      unit="%"
+                      disabled={!isAdmin}
+                    />
+                    <SettingsFieldRow
+                      label="Note"
+                      path={['assuranceVie', 'epargne', 'socialOnInterestsDuringAccumulation', 'note']}
+                      value={av.epargne.socialOnInterestsDuringAccumulation.note}
+                      onChange={updateField}
+                      type="text"
+                      disabled={!isAdmin}
+                    />
                   </div>
                 </section>
 
@@ -613,22 +559,15 @@ const handleSave = async () => {
                       />
                       <span />
                     </div>
-                    <div className="settings-field-row">
-                      <label>Taux de PS (global)</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={numberOrEmpty(av.retraitsCapital.psRatePercent)}
-                        onChange={(e) =>
-                          updateField(
-                            ['assuranceVie', 'retraitsCapital', 'psRatePercent'],
-                            e.target.value === '' ? null : Number(e.target.value)
-                          )
-                        }
-                        disabled={!isAdmin}
-                      />
-                      <span>%</span>
-                    </div>
+                    <SettingsFieldRow
+                      label="Taux de PS (global)"
+                      path={['assuranceVie', 'retraitsCapital', 'psRatePercent']}
+                      value={av.retraitsCapital.psRatePercent}
+                      onChange={updateField}
+                      step="0.1"
+                      unit="%"
+                      disabled={!isAdmin}
+                    />
                   </div>
 
                   <div className="fisc-two-cols">
@@ -685,79 +624,30 @@ const handleSave = async () => {
                           {av.retraitsCapital.depuis2017.plus8Ans.label}
                         </div>
 
-                        <div className="settings-field-row">
-                          <label>Abattement annuel célibataire</label>
-                          <input
-                            type="number"
-                            value={numberOrEmpty(
-                              av.retraitsCapital.depuis2017.plus8Ans.abattementAnnuel.single
-                            )}
-                            onChange={(e) =>
-                              updateField(
-                                [
-                                  'assuranceVie',
-                                  'retraitsCapital',
-                                  'depuis2017',
-                                  'plus8Ans',
-                                  'abattementAnnuel',
-                                  'single',
-                                ],
-                                e.target.value === '' ? null : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                          <span>€</span>
-                        </div>
-
-                        <div className="settings-field-row">
-                          <label>Abattement annuel couple</label>
-                          <input
-                            type="number"
-                            value={numberOrEmpty(
-                              av.retraitsCapital.depuis2017.plus8Ans.abattementAnnuel.couple
-                            )}
-                            onChange={(e) =>
-                              updateField(
-                                [
-                                  'assuranceVie',
-                                  'retraitsCapital',
-                                  'depuis2017',
-                                  'plus8Ans',
-                                  'abattementAnnuel',
-                                  'couple',
-                                ],
-                                e.target.value === '' ? null : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                          <span>€</span>
-                        </div>
-
-                        <div className="settings-field-row">
-                          <label>Seuil de primes nettes</label>
-                          <input
-                            type="number"
-                            value={numberOrEmpty(
-                              av.retraitsCapital.depuis2017.plus8Ans.primesNettesSeuil
-                            )}
-                            onChange={(e) =>
-                              updateField(
-                                [
-                                  'assuranceVie',
-                                  'retraitsCapital',
-                                  'depuis2017',
-                                  'plus8Ans',
-                                  'primesNettesSeuil',
-                                ],
-                                e.target.value === '' ? null : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                          <span>€</span>
-                        </div>
+                        <SettingsFieldRow
+                          label="Abattement annuel célibataire"
+                          path={['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'abattementAnnuel', 'single']}
+                          value={av.retraitsCapital.depuis2017.plus8Ans.abattementAnnuel.single}
+                          onChange={updateField}
+                          unit="€"
+                          disabled={!isAdmin}
+                        />
+                        <SettingsFieldRow
+                          label="Abattement annuel couple"
+                          path={['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'abattementAnnuel', 'couple']}
+                          value={av.retraitsCapital.depuis2017.plus8Ans.abattementAnnuel.couple}
+                          onChange={updateField}
+                          unit="€"
+                          disabled={!isAdmin}
+                        />
+                        <SettingsFieldRow
+                          label="Seuil de primes nettes"
+                          path={['assuranceVie', 'retraitsCapital', 'depuis2017', 'plus8Ans', 'primesNettesSeuil']}
+                          value={av.retraitsCapital.depuis2017.plus8Ans.primesNettesSeuil}
+                          onChange={updateField}
+                          unit="€"
+                          disabled={!isAdmin}
+                        />
 
                         <table className="settings-table" style={{ marginTop: 8 }}>
                           <thead>
@@ -949,54 +839,22 @@ const handleSave = async () => {
                         <div className="income-tax-block-title">
                           Abattement annuel (si &gt; 8 ans)
                         </div>
-                        <div className="settings-field-row">
-                          <label>Célibataire</label>
-                          <input
-                            type="number"
-                            value={numberOrEmpty(
-                              av.retraitsCapital.avant2017.plus8Ans.abattementAnnuel.single
-                            )}
-                            onChange={(e) =>
-                              updateField(
-                                [
-                                  'assuranceVie',
-                                  'retraitsCapital',
-                                  'avant2017',
-                                  'plus8Ans',
-                                  'abattementAnnuel',
-                                  'single',
-                                ],
-                                e.target.value === '' ? null : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                          <span>€</span>
-                        </div>
-                        <div className="settings-field-row">
-                          <label>Couple</label>
-                          <input
-                            type="number"
-                            value={numberOrEmpty(
-                              av.retraitsCapital.avant2017.plus8Ans.abattementAnnuel.couple
-                            )}
-                            onChange={(e) =>
-                              updateField(
-                                [
-                                  'assuranceVie',
-                                  'retraitsCapital',
-                                  'avant2017',
-                                  'plus8Ans',
-                                  'abattementAnnuel',
-                                  'couple',
-                                ],
-                                e.target.value === '' ? null : Number(e.target.value)
-                              )
-                            }
-                            disabled={!isAdmin}
-                          />
-                          <span>€</span>
-                        </div>
+                        <SettingsFieldRow
+                          label="Célibataire"
+                          path={['assuranceVie', 'retraitsCapital', 'avant2017', 'plus8Ans', 'abattementAnnuel', 'single']}
+                          value={av.retraitsCapital.avant2017.plus8Ans.abattementAnnuel.single}
+                          onChange={updateField}
+                          unit="€"
+                          disabled={!isAdmin}
+                        />
+                        <SettingsFieldRow
+                          label="Couple"
+                          path={['assuranceVie', 'retraitsCapital', 'avant2017', 'plus8Ans', 'abattementAnnuel', 'couple']}
+                          value={av.retraitsCapital.avant2017.plus8Ans.abattementAnnuel.couple}
+                          onChange={updateField}
+                          unit="€"
+                          disabled={!isAdmin}
+                        />
                       </div>
                     </div>
                   </div>
@@ -1020,21 +878,14 @@ const handleSave = async () => {
                       <span />
                     </div>
 
-                    <div className="settings-field-row">
-                      <label>Âge pivot (primes)</label>
-                      <input
-                        type="number"
-                        value={numberOrEmpty(av.deces.agePivotPrimes)}
-                        onChange={(e) =>
-                          updateField(
-                            ['assuranceVie', 'deces', 'agePivotPrimes'],
-                            e.target.value === '' ? null : Number(e.target.value)
-                          )
-                        }
-                        disabled={!isAdmin}
-                      />
-                      <span>ans</span>
-                    </div>
+                    <SettingsFieldRow
+                      label="Âge pivot (primes)"
+                      path={['assuranceVie', 'deces', 'agePivotPrimes']}
+                      value={av.deces.agePivotPrimes}
+                      onChange={updateField}
+                      unit="ans"
+                      disabled={!isAdmin}
+                    />
                   </div>
 
                   <div className="fisc-two-cols">
@@ -1042,38 +893,23 @@ const handleSave = async () => {
                       <div className="fisc-col-title">
                         Primes versées avant {av.deces.contratApresDate}
                       </div>
-                      <div className="settings-field-row">
-                        <label>Taux</label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={numberOrEmpty(av.deces.primesAvant1998.taxRatePercent)}
-                          onChange={(e) =>
-                            updateField(
-                              ['assuranceVie', 'deces', 'primesAvant1998', 'taxRatePercent'],
-                              e.target.value === '' ? null : Number(e.target.value)
-                            )
-                          }
-                          disabled={!isAdmin}
-                        />
-                        <span>%</span>
-                      </div>
-                      <div className="settings-field-row">
-                        <label>Note</label>
-                        <input
-                          type="text"
-                          value={textOrEmpty(av.deces.primesAvant1998.note)}
-                          onChange={(e) =>
-                            updateField(
-                              ['assuranceVie', 'deces', 'primesAvant1998', 'note'],
-                              e.target.value
-                            )
-                          }
-                          disabled={!isAdmin}
-                          style={{ width: 520, textAlign: 'left' }}
-                        />
-                        <span />
-                      </div>
+                      <SettingsFieldRow
+                        label="Taux"
+                        path={['assuranceVie', 'deces', 'primesAvant1998', 'taxRatePercent']}
+                        value={av.deces.primesAvant1998.taxRatePercent}
+                        onChange={updateField}
+                        step="0.1"
+                        unit="%"
+                        disabled={!isAdmin}
+                      />
+                      <SettingsFieldRow
+                        label="Note"
+                        path={['assuranceVie', 'deces', 'primesAvant1998', 'note']}
+                        value={av.deces.primesAvant1998.note}
+                        onChange={updateField}
+                        type="text"
+                        disabled={!isAdmin}
+                      />
                     </div>
 
                     <div className="fisc-col fisc-col-right">
@@ -1081,77 +917,40 @@ const handleSave = async () => {
                         Primes versées à partir du {av.deces.contratApresDate} (par bénéficiaire)
                       </div>
 
-                      <div className="settings-field-row">
-                        <label>Abattement / bénéficiaire</label>
-                        <input
-                          type="number"
-                          value={numberOrEmpty(av.deces.primesApres1998.allowancePerBeneficiary)}
-                          onChange={(e) =>
-                            updateField(
-                              ['assuranceVie', 'deces', 'primesApres1998', 'allowancePerBeneficiary'],
-                              e.target.value === '' ? null : Number(e.target.value)
-                            )
-                          }
-                          disabled={!isAdmin}
-                        />
-                        <span>€</span>
-                      </div>
+                      <SettingsFieldRow
+                        label="Abattement / bénéficiaire"
+                        path={['assuranceVie', 'deces', 'primesApres1998', 'allowancePerBeneficiary']}
+                        value={av.deces.primesApres1998.allowancePerBeneficiary}
+                        onChange={updateField}
+                        unit="€"
+                        disabled={!isAdmin}
+                      />
 
-                      <table className="settings-table" style={{ marginTop: 8 }}>
-                        <thead>
-                          <tr>
-                            <th>Jusqu’à</th>
-                            <th className="taux-col">Taux %</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {av.deces.primesApres1998.brackets.map((b, idx) => (
-                            <tr key={idx}>
-                              <td style={{ textAlign: 'left' }}>
-                                {b.upTo === null ? 'Au-delà' : `${b.upTo.toLocaleString('fr-FR')} €`}
-                              </td>
-                              <td className="taux-col">
-                                <input
-                                  type="number"
-                                  step="0.1"
-                                  value={numberOrEmpty(b.ratePercent)}
-                                  onChange={(e) =>
-                                    updateField(
-                                      [
-                                        'assuranceVie',
-                                        'deces',
-                                        'primesApres1998',
-                                        'brackets',
-                                        idx,
-                                        'ratePercent',
-                                      ],
-                                      e.target.value === '' ? null : Number(e.target.value)
-                                    )
-                                  }
-                                  disabled={!isAdmin}
-                                />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                      <SettingsTable
+                        columns={[
+                          { key: 'upToLabel', header: "Jusqu'à", type: 'display' },
+                          { key: 'ratePercent', header: 'Taux %', step: '0.1', className: 'taux-col' },
+                        ]}
+                        rows={av.deces.primesApres1998.brackets.map((b) => ({
+                          ...b,
+                          _key: b.upTo === null ? 'beyond' : b.upTo,
+                          upToLabel: b.upTo === null ? 'Au-delà' : `${b.upTo.toLocaleString('fr-FR')} €`,
+                        }))}
+                        onCellChange={(idx, key, value) =>
+                          updateField(['assuranceVie', 'deces', 'primesApres1998', 'brackets', idx, key], value)
+                        }
+                        disabled={!isAdmin}
+                        style={{ marginTop: 8 }}
+                      />
 
-                      <div className="settings-field-row" style={{ marginTop: 6 }}>
-                        <label>Note</label>
-                        <input
-                          type="text"
-                          value={textOrEmpty(av.deces.primesApres1998.note)}
-                          onChange={(e) =>
-                            updateField(
-                              ['assuranceVie', 'deces', 'primesApres1998', 'note'],
-                              e.target.value
-                            )
-                          }
-                          disabled={!isAdmin}
-                          style={{ width: 520, textAlign: 'left' }}
-                        />
-                        <span />
-                      </div>
+                      <SettingsFieldRow
+                        label="Note"
+                        path={['assuranceVie', 'deces', 'primesApres1998', 'note']}
+                        value={av.deces.primesApres1998.note}
+                        onChange={updateField}
+                        type="text"
+                        disabled={!isAdmin}
+                      />
                     </div>
                   </div>
 
@@ -1159,21 +958,14 @@ const handleSave = async () => {
                     <div className="income-tax-block-title">
                       Primes versées après {av.deces.agePivotPrimes} ans (logique globale)
                     </div>
-                    <div className="settings-field-row">
-                      <label>Abattement global</label>
-                      <input
-                        type="number"
-                        value={numberOrEmpty(av.deces.apres70ans.globalAllowance)}
-                        onChange={(e) =>
-                          updateField(
-                            ['assuranceVie', 'deces', 'apres70ans', 'globalAllowance'],
-                            e.target.value === '' ? null : Number(e.target.value)
-                          )
-                        }
-                        disabled={!isAdmin}
-                      />
-                      <span>€</span>
-                    </div>
+                    <SettingsFieldRow
+                      label="Abattement global"
+                      path={['assuranceVie', 'deces', 'apres70ans', 'globalAllowance']}
+                      value={av.deces.apres70ans.globalAllowance}
+                      onChange={updateField}
+                      unit="€"
+                      disabled={!isAdmin}
+                    />
                     <div className="settings-field-row">
                       <label>Mode de taxation</label>
                       <input
@@ -1184,22 +976,14 @@ const handleSave = async () => {
                       />
                       <span />
                     </div>
-                    <div className="settings-field-row">
-                      <label>Note</label>
-                      <input
-                        type="text"
-                        value={textOrEmpty(av.deces.apres70ans.note)}
-                        onChange={(e) =>
-                          updateField(
-                            ['assuranceVie', 'deces', 'apres70ans', 'note'],
-                            e.target.value
-                          )
-                        }
-                        disabled={!isAdmin}
-                        style={{ width: 520, textAlign: 'left' }}
-                      />
-                      <span />
-                    </div>
+                    <SettingsFieldRow
+                      label="Note"
+                      path={['assuranceVie', 'deces', 'apres70ans', 'note']}
+                      value={av.deces.apres70ans.note}
+                      onChange={updateField}
+                      type="text"
+                      disabled={!isAdmin}
+                    />
                   </div>
                 </section>
 
@@ -1221,22 +1005,15 @@ const handleSave = async () => {
                       <span />
                     </div>
 
-                    <div className="settings-field-row">
-                      <label>Taux de PS</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={numberOrEmpty(av.rente.psRatePercent)}
-                        onChange={(e) =>
-                          updateField(
-                            ['assuranceVie', 'rente', 'psRatePercent'],
-                            e.target.value === '' ? null : Number(e.target.value)
-                          )
-                        }
-                        disabled={!isAdmin}
-                      />
-                      <span>%</span>
-                    </div>
+                    <SettingsFieldRow
+                      label="Taux de PS"
+                      path={['assuranceVie', 'rente', 'psRatePercent']}
+                      value={av.rente.psRatePercent}
+                      onChange={updateField}
+                      step="0.1"
+                      unit="%"
+                      disabled={!isAdmin}
+                    />
 
                     <div className="settings-field-row">
                       <label>IR</label>
@@ -1255,72 +1032,34 @@ const handleSave = async () => {
                       Fraction imposable (selon âge à la liquidation)
                     </div>
 
-                    <table className="settings-table">
-                      <thead>
-                        <tr>
-                          <th>Âge</th>
-                          <th className="taux-col">Fraction</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {av.rente.taxableFractionByAgeAtLiquidation.map((row, idx) => (
-                          <tr key={idx}>
-                            <td style={{ textAlign: 'left' }}>{row.label}</td>
-                            <td className="taux-col">
-                              <input
-                                type="number"
-                                step="0.01"
-                                value={numberOrEmpty(row.fraction)}
-                                onChange={(e) =>
-                                  updateField(
-                                    [
-                                      'assuranceVie',
-                                      'rente',
-                                      'taxableFractionByAgeAtLiquidation',
-                                      idx,
-                                      'fraction',
-                                    ],
-                                    e.target.value === '' ? null : Number(e.target.value)
-                                  )
-                                }
-                                disabled={!isAdmin}
-                              />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <SettingsTable
+                      columns={[
+                        { key: 'label', header: 'Âge', type: 'display' },
+                        { key: 'fraction', header: 'Fraction', step: '0.01', className: 'taux-col' },
+                      ]}
+                      rows={av.rente.taxableFractionByAgeAtLiquidation}
+                      onCellChange={(idx, key, value) =>
+                        updateField(['assuranceVie', 'rente', 'taxableFractionByAgeAtLiquidation', idx, key], value)
+                      }
+                      disabled={!isAdmin}
+                    />
 
-                    <div className="settings-field-row" style={{ marginTop: 6 }}>
-                      <label>Note PS</label>
-                      <input
-                        type="text"
-                        value={textOrEmpty(av.rente.notePs)}
-                        onChange={(e) =>
-                          updateField(['assuranceVie', 'rente', 'notePs'], e.target.value)
-                        }
-                        disabled={!isAdmin}
-                        style={{ width: 520, textAlign: 'left' }}
-                      />
-                      <span />
-                    </div>
-
-                    <div className="settings-field-row">
-                      <label>Note décès</label>
-                      <input
-                        type="text"
-                        value={textOrEmpty(av.rente.noteCapitalOnDeath)}
-                        onChange={(e) =>
-                          updateField(
-                            ['assuranceVie', 'rente', 'noteCapitalOnDeath'],
-                            e.target.value
-                          )
-                        }
-                        disabled={!isAdmin}
-                        style={{ width: 520, textAlign: 'left' }}
-                      />
-                      <span />
-                    </div>
+                    <SettingsFieldRow
+                      label="Note PS"
+                      path={['assuranceVie', 'rente', 'notePs']}
+                      value={av.rente.notePs}
+                      onChange={updateField}
+                      type="text"
+                      disabled={!isAdmin}
+                    />
+                    <SettingsFieldRow
+                      label="Note décès"
+                      path={['assuranceVie', 'rente', 'noteCapitalOnDeath']}
+                      value={av.rente.noteCapitalOnDeath}
+                      onChange={updateField}
+                      type="text"
+                      disabled={!isAdmin}
+                    />
                   </div>
                 </section>
 
@@ -1338,68 +1077,39 @@ const handleSave = async () => {
           <div className="income-tax-block">
             <div className="income-tax-block-title">Plafond 163 quatervicies</div>
 
-            <div className="settings-field-row">
-              <label>Taux</label>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(per.epargne.plafond163Quatervicies.ratePercent)}
-                onChange={(e) =>
-                  updateField(
-                    ['perIndividuel', 'epargne', 'plafond163Quatervicies', 'ratePercent'],
-                    e.target.value === '' ? null : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-              <span>%</span>
-            </div>
-
-            <div className="settings-field-row">
-              <label>Mini</label>
-              <input
-                type="number"
-                value={numberOrEmpty(per.epargne.plafond163Quatervicies.minPassMultiple)}
-                onChange={(e) =>
-                  updateField(
-                    ['perIndividuel', 'epargne', 'plafond163Quatervicies', 'minPassMultiple'],
-                    e.target.value === '' ? null : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-              <span>x PASS</span>
-            </div>
-
-            <div className="settings-field-row">
-              <label>Maxi</label>
-              <input
-                type="number"
-                value={numberOrEmpty(per.epargne.plafond163Quatervicies.maxPassMultiple)}
-                onChange={(e) =>
-                  updateField(
-                    ['perIndividuel', 'epargne', 'plafond163Quatervicies', 'maxPassMultiple'],
-                    e.target.value === '' ? null : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-              <span>x PASS</span>
-            </div>
-
-            <div className="settings-field-row">
-              <label>Note</label>
-              <input
-                type="text"
-                value={textOrEmpty(per.epargne.plafond163Quatervicies.note)}
-                onChange={(e) =>
-                  updateField(['perIndividuel', 'epargne', 'plafond163Quatervicies', 'note'], e.target.value)
-                }
-                disabled={!isAdmin}
-                style={{ width: 520, textAlign: 'left' }}
-              />
-              <span />
-            </div>
+            <SettingsFieldRow
+              label="Taux"
+              path={['perIndividuel', 'epargne', 'plafond163Quatervicies', 'ratePercent']}
+              value={per.epargne.plafond163Quatervicies.ratePercent}
+              onChange={updateField}
+              step="0.1"
+              unit="%"
+              disabled={!isAdmin}
+            />
+            <SettingsFieldRow
+              label="Mini"
+              path={['perIndividuel', 'epargne', 'plafond163Quatervicies', 'minPassMultiple']}
+              value={per.epargne.plafond163Quatervicies.minPassMultiple}
+              onChange={updateField}
+              unit="x PASS"
+              disabled={!isAdmin}
+            />
+            <SettingsFieldRow
+              label="Maxi"
+              path={['perIndividuel', 'epargne', 'plafond163Quatervicies', 'maxPassMultiple']}
+              value={per.epargne.plafond163Quatervicies.maxPassMultiple}
+              onChange={updateField}
+              unit="x PASS"
+              disabled={!isAdmin}
+            />
+            <SettingsFieldRow
+              label="Note"
+              path={['perIndividuel', 'epargne', 'plafond163Quatervicies', 'note']}
+              value={per.epargne.plafond163Quatervicies.note}
+              onChange={updateField}
+              type="text"
+              disabled={!isAdmin}
+            />
           </div>
         </div>
 
@@ -1407,99 +1117,56 @@ const handleSave = async () => {
           <div className="income-tax-block">
             <div className="income-tax-block-title">Plafond 154 bis (TNS)</div>
 
-            <div className="settings-field-row">
-              <label>Part 15% — taux</label>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(per.epargne.plafond154Bis.assiettePotentielle.part15.ratePercent)}
-                onChange={(e) =>
-                  updateField(
-                    ['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part15','ratePercent'],
-                    e.target.value === '' ? null : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-              <span>%</span>
-            </div>
-
-            <div className="settings-field-row">
-              <label>Part 15% — max</label>
-              <input
-                type="number"
-                value={numberOrEmpty(per.epargne.plafond154Bis.assiettePotentielle.part15.maxPassMultiple)}
-                onChange={(e) =>
-                  updateField(
-                    ['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part15','maxPassMultiple'],
-                    e.target.value === '' ? null : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-              <span>x PASS</span>
-            </div>
-
-            <div className="settings-field-row">
-              <label>Part 10% — taux</label>
-              <input
-                type="number"
-                step="0.1"
-                value={numberOrEmpty(per.epargne.plafond154Bis.assiettePotentielle.part10.ratePercent)}
-                onChange={(e) =>
-                  updateField(
-                    ['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part10','ratePercent'],
-                    e.target.value === '' ? null : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-              <span>%</span>
-            </div>
-
-            <div className="settings-field-row">
-              <label>Part 10% — mini</label>
-              <input
-                type="number"
-                value={numberOrEmpty(per.epargne.plafond154Bis.assiettePotentielle.part10.minPassMultiple)}
-                onChange={(e) =>
-                  updateField(
-                    ['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part10','minPassMultiple'],
-                    e.target.value === '' ? null : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-              <span>x PASS</span>
-            </div>
-
-            <div className="settings-field-row">
-              <label>Part 10% — max</label>
-              <input
-                type="number"
-                value={numberOrEmpty(per.epargne.plafond154Bis.assiettePotentielle.part10.maxPassMultiple)}
-                onChange={(e) =>
-                  updateField(
-                    ['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part10','maxPassMultiple'],
-                    e.target.value === '' ? null : Number(e.target.value)
-                  )
-                }
-                disabled={!isAdmin}
-              />
-              <span>x PASS</span>
-            </div>
-
-            <div className="settings-field-row">
-              <label>Note</label>
-              <input
-                type="text"
-                value={textOrEmpty(per.epargne.plafond154Bis.note)}
-                onChange={(e) => updateField(['perIndividuel','epargne','plafond154Bis','note'], e.target.value)}
-                disabled={!isAdmin}
-                style={{ width: 520, textAlign: 'left' }}
-              />
-              <span />
-            </div>
+            <SettingsFieldRow
+              label="Part 15% — taux"
+              path={['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part15','ratePercent']}
+              value={per.epargne.plafond154Bis.assiettePotentielle.part15.ratePercent}
+              onChange={updateField}
+              step="0.1"
+              unit="%"
+              disabled={!isAdmin}
+            />
+            <SettingsFieldRow
+              label="Part 15% — max"
+              path={['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part15','maxPassMultiple']}
+              value={per.epargne.plafond154Bis.assiettePotentielle.part15.maxPassMultiple}
+              onChange={updateField}
+              unit="x PASS"
+              disabled={!isAdmin}
+            />
+            <SettingsFieldRow
+              label="Part 10% — taux"
+              path={['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part10','ratePercent']}
+              value={per.epargne.plafond154Bis.assiettePotentielle.part10.ratePercent}
+              onChange={updateField}
+              step="0.1"
+              unit="%"
+              disabled={!isAdmin}
+            />
+            <SettingsFieldRow
+              label="Part 10% — mini"
+              path={['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part10','minPassMultiple']}
+              value={per.epargne.plafond154Bis.assiettePotentielle.part10.minPassMultiple}
+              onChange={updateField}
+              unit="x PASS"
+              disabled={!isAdmin}
+            />
+            <SettingsFieldRow
+              label="Part 10% — max"
+              path={['perIndividuel','epargne','plafond154Bis','assiettePotentielle','part10','maxPassMultiple']}
+              value={per.epargne.plafond154Bis.assiettePotentielle.part10.maxPassMultiple}
+              onChange={updateField}
+              unit="x PASS"
+              disabled={!isAdmin}
+            />
+            <SettingsFieldRow
+              label="Note"
+              path={['perIndividuel','epargne','plafond154Bis','note']}
+              value={per.epargne.plafond154Bis.note}
+              onChange={updateField}
+              type="text"
+              disabled={!isAdmin}
+            />
           </div>
         </div>
       </div>
@@ -1511,32 +1178,24 @@ const handleSave = async () => {
 
       <div className="income-tax-block">
         <div className="income-tax-block-title">PFU (référence)</div>
-        <div className="settings-field-row">
-          <label>IR PFU</label>
-          <input
-            type="number"
-            step="0.1"
-            value={numberOrEmpty(per.sortieCapital.pfu.irRatePercent)}
-            onChange={(e) =>
-              updateField(['perIndividuel','sortieCapital','pfu','irRatePercent'], e.target.value === '' ? null : Number(e.target.value))
-            }
-            disabled={!isAdmin}
-          />
-          <span>%</span>
-        </div>
-        <div className="settings-field-row">
-          <label>PS</label>
-          <input
-            type="number"
-            step="0.1"
-            value={numberOrEmpty(per.sortieCapital.pfu.psRatePercent)}
-            onChange={(e) =>
-              updateField(['perIndividuel','sortieCapital','pfu','psRatePercent'], e.target.value === '' ? null : Number(e.target.value))
-            }
-            disabled={!isAdmin}
-          />
-          <span>%</span>
-        </div>
+        <SettingsFieldRow
+          label="IR PFU"
+          path={['perIndividuel','sortieCapital','pfu','irRatePercent']}
+          value={per.sortieCapital.pfu.irRatePercent}
+          onChange={updateField}
+          step="0.1"
+          unit="%"
+          disabled={!isAdmin}
+        />
+        <SettingsFieldRow
+          label="PS"
+          path={['perIndividuel','sortieCapital','pfu','psRatePercent']}
+          value={per.sortieCapital.pfu.psRatePercent}
+          onChange={updateField}
+          step="0.1"
+          unit="%"
+          disabled={!isAdmin}
+        />
       </div>
 
       <div className="fisc-two-cols">
@@ -1595,75 +1254,50 @@ const handleSave = async () => {
         <div className="fisc-col">
           <div className="fisc-col-title">PER assurantiel</div>
 
-          <div className="settings-field-row">
-            <label>Abattement / bénéficiaire</label>
-            <input
-              type="number"
-              value={numberOrEmpty(per.deces.perAssurantiel.allowancePerBeneficiary)}
-              onChange={(e) =>
-                updateField(['perIndividuel','deces','perAssurantiel','allowancePerBeneficiary'], e.target.value === '' ? null : Number(e.target.value))
-              }
-              disabled={!isAdmin}
-            />
-            <span>€</span>
-          </div>
+          <SettingsFieldRow
+            label="Abattement / bénéficiaire"
+            path={['perIndividuel','deces','perAssurantiel','allowancePerBeneficiary']}
+            value={per.deces.perAssurantiel.allowancePerBeneficiary}
+            onChange={updateField}
+            unit="€"
+            disabled={!isAdmin}
+          />
+          <SettingsFieldRow
+            label='Seuil "présentation"'
+            path={['perIndividuel','deces','perAssurantiel','displayThresholdTotal']}
+            value={per.deces.perAssurantiel.displayThresholdTotal}
+            onChange={updateField}
+            unit="€"
+            disabled={!isAdmin}
+          />
 
-          <div className="settings-field-row">
-            <label>Seuil “présentation”</label>
-            <input
-              type="number"
-              value={numberOrEmpty(per.deces.perAssurantiel.displayThresholdTotal)}
-              onChange={(e) =>
-                updateField(['perIndividuel','deces','perAssurantiel','displayThresholdTotal'], e.target.value === '' ? null : Number(e.target.value))
-              }
-              disabled={!isAdmin}
-            />
-            <span>€</span>
-          </div>
-
-          <table className="settings-table" style={{ marginTop: 8 }}>
-            <thead>
-              <tr>
-                <th>Jusqu’à</th>
-                <th className="taux-col">Taux %</th>
-              </tr>
-            </thead>
-            <tbody>
-              {per.deces.perAssurantiel.rates.map((r, idx) => (
-                <tr key={idx}>
-                  <td style={{ textAlign: 'left' }}>
-                    {r.upToTotal === null ? 'Au-delà' : `${r.upToTotal.toLocaleString('fr-FR')} €`}
-                  </td>
-                  <td className="taux-col">
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={numberOrEmpty(r.ratePercent)}
-                      onChange={(e) =>
-                        updateField(['perIndividuel','deces','perAssurantiel','rates', idx, 'ratePercent'], e.target.value === '' ? null : Number(e.target.value))
-                      }
-                      disabled={!isAdmin}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <SettingsTable
+            columns={[
+              { key: 'upToLabel', header: "Jusqu'à", type: 'display' },
+              { key: 'ratePercent', header: 'Taux %', step: '0.01', className: 'taux-col' },
+            ]}
+            rows={per.deces.perAssurantiel.rates.map((r) => ({
+              ...r,
+              _key: r.upToTotal === null ? 'beyond' : r.upToTotal,
+              upToLabel: r.upToTotal === null ? 'Au-delà' : `${r.upToTotal.toLocaleString('fr-FR')} €`,
+            }))}
+            onCellChange={(idx, key, value) =>
+              updateField(['perIndividuel','deces','perAssurantiel','rates', idx, key], value)
+            }
+            disabled={!isAdmin}
+            style={{ marginTop: 8 }}
+          />
 
           <div className="income-tax-block" style={{ marginTop: 10 }}>
             <div className="income-tax-block-title">Primes après 70 ans</div>
-            <div className="settings-field-row">
-              <label>Abattement global</label>
-              <input
-                type="number"
-                value={numberOrEmpty(per.deces.perAssurantiel.apres70ans.globalAllowance)}
-                onChange={(e) =>
-                  updateField(['perIndividuel','deces','perAssurantiel','apres70ans','globalAllowance'], e.target.value === '' ? null : Number(e.target.value))
-                }
-                disabled={!isAdmin}
-              />
-              <span>€</span>
-            </div>
+            <SettingsFieldRow
+              label="Abattement global"
+              path={['perIndividuel','deces','perAssurantiel','apres70ans','globalAllowance']}
+              value={per.deces.perAssurantiel.apres70ans.globalAllowance}
+              onChange={updateField}
+              unit="€"
+              disabled={!isAdmin}
+            />
           </div>
         </div>
 
@@ -1698,22 +1332,15 @@ const handleSave = async () => {
           <span />
         </div>
 
-        <div className="settings-field-row">
-          <label>PS (CASA)</label>
-          <input
-            type="number"
-            step="0.01"
-            value={numberOrEmpty(per.rente.deduits.capitalQuotePart.psRatePercent)}
-            onChange={(e) =>
-              updateField(
-                ['perIndividuel', 'rente', 'deduits', 'capitalQuotePart', 'psRatePercent'],
-                e.target.value === '' ? null : Number(e.target.value)
-              )
-            }
-            disabled={!isAdmin}
-          />
-          <span>%</span>
-        </div>
+        <SettingsFieldRow
+          label="PS (CASA)"
+          path={['perIndividuel', 'rente', 'deduits', 'capitalQuotePart', 'psRatePercent']}
+          value={per.rente.deduits.capitalQuotePart.psRatePercent}
+          onChange={updateField}
+          step="0.01"
+          unit="%"
+          disabled={!isAdmin}
+        />
 
         <textarea
           className="settings-note"
@@ -1729,52 +1356,27 @@ const handleSave = async () => {
       <div className="income-tax-block" style={{ marginTop: 10 }}>
         <div className="income-tax-block-title">Quote-part intérêts — RVTO</div>
 
-        <div className="settings-field-row">
-          <label>PS</label>
-          <input
-            type="number"
-            step="0.1"
-            value={numberOrEmpty(per.rente.deduits.interestsQuotePart.psRatePercent)}
-            onChange={(e) =>
-              updateField(
-                ['perIndividuel', 'rente', 'deduits', 'interestsQuotePart', 'psRatePercent'],
-                e.target.value === '' ? null : Number(e.target.value)
-              )
-            }
-            disabled={!isAdmin}
-          />
-          <span>%</span>
-        </div>
+        <SettingsFieldRow
+          label="PS"
+          path={['perIndividuel', 'rente', 'deduits', 'interestsQuotePart', 'psRatePercent']}
+          value={per.rente.deduits.interestsQuotePart.psRatePercent}
+          onChange={updateField}
+          step="0.1"
+          unit="%"
+          disabled={!isAdmin}
+        />
 
-        <table className="settings-table">
-          <thead>
-            <tr>
-              <th>Âge 1er paiement</th>
-              <th className="taux-col">Fraction</th>
-            </tr>
-          </thead>
-          <tbody>
-            {per.rente.rvtoTaxableFractionByAgeAtFirstPayment.map((row, idx) => (
-              <tr key={idx}>
-                <td style={{ textAlign: 'left' }}>{row.label}</td>
-                <td className="taux-col">
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={numberOrEmpty(row.fraction)}
-                    onChange={(e) =>
-                      updateField(
-                        ['perIndividuel', 'rente', 'rvtoTaxableFractionByAgeAtFirstPayment', idx, 'fraction'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <SettingsTable
+          columns={[
+            { key: 'label', header: 'Âge 1er paiement', type: 'display' },
+            { key: 'fraction', header: 'Fraction', step: '0.01', className: 'taux-col' },
+          ]}
+          rows={per.rente.rvtoTaxableFractionByAgeAtFirstPayment}
+          onCellChange={(idx, key, value) =>
+            updateField(['perIndividuel', 'rente', 'rvtoTaxableFractionByAgeAtFirstPayment', idx, key], value)
+          }
+          disabled={!isAdmin}
+        />
 
         <textarea
           className="settings-note"
@@ -1795,52 +1397,27 @@ const handleSave = async () => {
       <div className="income-tax-block">
         <div className="income-tax-block-title">Rente (totalité) — RVTO</div>
 
-        <div className="settings-field-row">
-          <label>PS</label>
-          <input
-            type="number"
-            step="0.1"
-            value={numberOrEmpty(per.rente.nonDeduits.psRatePercent)}
-            onChange={(e) =>
-              updateField(
-                ['perIndividuel', 'rente', 'nonDeduits', 'psRatePercent'],
-                e.target.value === '' ? null : Number(e.target.value)
-              )
-            }
-            disabled={!isAdmin}
-          />
-          <span>%</span>
-        </div>
+        <SettingsFieldRow
+          label="PS"
+          path={['perIndividuel', 'rente', 'nonDeduits', 'psRatePercent']}
+          value={per.rente.nonDeduits.psRatePercent}
+          onChange={updateField}
+          step="0.1"
+          unit="%"
+          disabled={!isAdmin}
+        />
 
-        <table className="settings-table">
-          <thead>
-            <tr>
-              <th>Âge 1er paiement</th>
-              <th className="taux-col">Fraction</th>
-            </tr>
-          </thead>
-          <tbody>
-            {per.rente.rvtoTaxableFractionByAgeAtFirstPayment.map((row, idx) => (
-              <tr key={idx}>
-                <td style={{ textAlign: 'left' }}>{row.label}</td>
-                <td className="taux-col">
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={numberOrEmpty(row.fraction)}
-                    onChange={(e) =>
-                      updateField(
-                        ['perIndividuel', 'rente', 'rvtoTaxableFractionByAgeAtFirstPayment', idx, 'fraction'],
-                        e.target.value === '' ? null : Number(e.target.value)
-                      )
-                    }
-                    disabled={!isAdmin}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <SettingsTable
+          columns={[
+            { key: 'label', header: 'Âge 1er paiement', type: 'display' },
+            { key: 'fraction', header: 'Fraction', step: '0.01', className: 'taux-col' },
+          ]}
+          rows={per.rente.rvtoTaxableFractionByAgeAtFirstPayment}
+          onCellChange={(idx, key, value) =>
+            updateField(['perIndividuel', 'rente', 'rvtoTaxableFractionByAgeAtFirstPayment', idx, key], value)
+          }
+          disabled={!isAdmin}
+        />
 
         <textarea
           className="settings-note"
