@@ -217,6 +217,7 @@ export default function SettingsPrelevements() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [openSection, setOpenSection] = useState(null);
 
   const isAdmin =
     user &&
@@ -374,9 +375,25 @@ export default function SettingsPrelevements() {
             gap: 24,
           }}
         >
+            <div className="fisc-accordion">
+
             {/* 1. PS patrimoine / capital */}
-            <section>
-              <h3>Prélèvements sociaux — patrimoine et capital</h3>
+            <div className="fisc-acc-item">
+              <button
+                type="button"
+                className="fisc-acc-header"
+                id="prelev-header-patrimoine"
+                aria-expanded={openSection === 'patrimoine'}
+                aria-controls="prelev-panel-patrimoine"
+                onClick={() => setOpenSection(openSection === 'patrimoine' ? null : 'patrimoine')}
+              >
+                <span className="fisc-product-title" style={{ margin: 0 }}>
+                  Prélèvements sociaux — patrimoine et capital
+                </span>
+                <span className="fisc-acc-chevron">{openSection === 'patrimoine' ? '▾' : '▸'}</span>
+              </button>
+              {openSection === 'patrimoine' && (
+              <div className="fisc-acc-body" id="prelev-panel-patrimoine" role="region" aria-labelledby="prelev-header-patrimoine">
               <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
                 Taux globaux applicables aux revenus du patrimoine et de
                 placement (intérêts, dividendes, etc.).
@@ -477,13 +494,27 @@ export default function SettingsPrelevements() {
                   </div>
                 </div>
               </div>
-            </section>
+              </div>
+              )}
+            </div>
 
             {/* 2. PS retraites */}
-            <section>
-              <h3 style={{ marginTop: 24 }}>
-                Prélèvements sociaux — pensions de retraite - (Focus résidence en métropole)
-              </h3>
+            <div className="fisc-acc-item">
+              <button
+                type="button"
+                className="fisc-acc-header"
+                id="prelev-header-retraites"
+                aria-expanded={openSection === 'retraites'}
+                aria-controls="prelev-panel-retraites"
+                onClick={() => setOpenSection(openSection === 'retraites' ? null : 'retraites')}
+              >
+                <span className="fisc-product-title" style={{ margin: 0 }}>
+                  Prélèvements sociaux — pensions de retraite
+                </span>
+                <span className="fisc-acc-chevron">{openSection === 'retraites' ? '▾' : '▸'}</span>
+              </button>
+              {openSection === 'retraites' && (
+              <div className="fisc-acc-body" id="prelev-panel-retraites" role="region" aria-labelledby="prelev-header-retraites">
               <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
                 Barème des prélèvements sociaux sur les pensions de retraite
                 (RFR pour 1 part). Les montants sont ajustés en fonction des
@@ -836,14 +867,27 @@ export default function SettingsPrelevements() {
     </table>
   </div>
 </div>
-
-            </section>
+              </div>
+              )}
+            </div>
 
                         {/* 3. Seuils RFR pour CSG / CRDS / CASA */}
-            <section>
-              <h3 style={{ marginTop: 24 }}>
-                Seuils de revenus pour la CSG, la CRDS et la CASA (RFR)
-              </h3>
+            <div className="fisc-acc-item">
+              <button
+                type="button"
+                className="fisc-acc-header"
+                id="prelev-header-seuils"
+                aria-expanded={openSection === 'seuils'}
+                aria-controls="prelev-panel-seuils"
+                onClick={() => setOpenSection(openSection === 'seuils' ? null : 'seuils')}
+              >
+                <span className="fisc-product-title" style={{ margin: 0 }}>
+                  Seuils de revenus pour la CSG, la CRDS et la CASA (RFR)
+                </span>
+                <span className="fisc-acc-chevron">{openSection === 'seuils' ? '▾' : '▸'}</span>
+              </button>
+              {openSection === 'seuils' && (
+              <div className="fisc-acc-body" id="prelev-panel-seuils" role="region" aria-labelledby="prelev-header-seuils">
               <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 12 }}>
                 Seuils de revenu fiscal de référence (RFR) utilisés pour déterminer
                 l&apos;exonération ou l&apos;assujettissement aux taux réduit, médian
@@ -1758,7 +1802,11 @@ export default function SettingsPrelevements() {
                   </div>
                 </div>
               </div>
-            </section>
+              </div>
+              )}
+            </div>
+
+            </div>{/* fin fisc-accordion */}
 
             
             {/* Bouton de sauvegarde */}
