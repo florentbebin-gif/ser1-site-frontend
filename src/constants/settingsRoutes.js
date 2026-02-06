@@ -48,7 +48,7 @@ export const SETTINGS_ROUTES = [
   },
   {
     key: 'prelevements',
-    label: 'Prélèvements sociaux',
+    label: 'Paramètres sociaux',
     path: 'prelevements',
     urlPath: '/settings/prelevements',
     component: SettingsPrelevements,
