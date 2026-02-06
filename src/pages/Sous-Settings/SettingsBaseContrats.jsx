@@ -24,7 +24,7 @@ export default function SettingsBaseContrats() {
           color: 'var(--color-c10)',
           marginBottom: 12 
         }}>
-          Base contrats
+          Référentiel contrats
         </h2>
         <p style={{ 
           fontSize: 14, 

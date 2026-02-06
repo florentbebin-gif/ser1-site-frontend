@@ -61,7 +61,7 @@ export const SETTINGS_ROUTES = [
   },
   {
     key: 'baseContrats',
-    label: 'Base contrats',
+    label: 'Référentiel contrats',
     path: 'base-contrat',
     urlPath: '/settings/base-contrat',
     component: SettingsBaseContrats,
