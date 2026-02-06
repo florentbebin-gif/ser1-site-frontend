@@ -1,8 +1,24 @@
 export default async function handler(req, res) {
-  // CORS headers (same-origin in prod, but useful for local dev)
-  const origin = req.headers.origin || '*';
+  // === CORS: Whitelist strict pour production ===
+  const allowedOrigins = [
+    // Développement local
+    'http://localhost:5173',
+    'http://localhost:3000',
+    // Vercel previews et production (pattern match)
+    /^https:\/\/.*-ser1.*\.vercel\.app$/,
+    /^https:\/\/ser1-.*\.vercel\.app$/,
+  ];
+
+  const origin = req.headers.origin || '';
+  const isAllowed = allowedOrigins.some((allowed) =>
+    allowed instanceof RegExp ? allowed.test(origin) : allowed === origin
+  );
+
+  // Fallback: autoriser si pas d'origin (same-origin requests, health checks)
+  const corsOrigin = isAllowed ? origin : process.env.VERCEL_URL || '';
+
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Origin', corsOrigin || '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
