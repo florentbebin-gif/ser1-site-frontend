@@ -4,6 +4,8 @@ import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '../../components/UserInfoBanner';
 import { numberOrEmpty, createFieldUpdater } from '../../utils/settingsHelpers.js';
+import SettingsFieldRow from '../../components/settings/SettingsFieldRow';
+import SettingsYearColumn from '../../components/settings/SettingsYearColumn';
 
 // ----------------------
 // Valeurs par défaut
@@ -1154,118 +1156,65 @@ export default function SettingsImpots() {
   <div className="fisc-acc-body" id="impots-panel-pfu" role="region" aria-labelledby="impots-header-pfu">
 
   <div className="tax-two-cols">
-    
-     {/* Colonne 2025 (revenus 2024) */}
-    <div>
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>
-        {incomeTax.currentYearLabel}
-      </div>
-      <div className="settings-field-row">
-        <label>Part impôt sur le revenu</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(pfu.current.rateIR)}
-          onChange={(e) =>
-            updateField(
-              ['pfu', 'current', 'rateIR'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>%</span>
-      </div>
-      <div className="settings-field-row">
-        <label>Prélèvements sociaux</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(pfu.current.rateSocial)}
-          onChange={(e) =>
-            updateField(
-              ['pfu', 'current', 'rateSocial'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>%</span>
-      </div>
-      <div className="settings-field-row">
-        <label>Taux global PFU</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(pfu.current.rateTotal)}
-          onChange={(e) =>
-            updateField(
-              ['pfu', 'current', 'rateTotal'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>%</span>
-      </div>
-    </div>
+    <SettingsYearColumn yearLabel={incomeTax.currentYearLabel}>
+      <SettingsFieldRow
+        label="Part impôt sur le revenu"
+        path={['pfu', 'current', 'rateIR']}
+        value={pfu.current.rateIR}
+        onChange={updateField}
+        step="0.1"
+        unit="%"
+        disabled={!isAdmin}
+      />
+      <SettingsFieldRow
+        label="Prélèvements sociaux"
+        path={['pfu', 'current', 'rateSocial']}
+        value={pfu.current.rateSocial}
+        onChange={updateField}
+        step="0.1"
+        unit="%"
+        disabled={!isAdmin}
+      />
+      <SettingsFieldRow
+        label="Taux global PFU"
+        path={['pfu', 'current', 'rateTotal']}
+        value={pfu.current.rateTotal}
+        onChange={updateField}
+        step="0.1"
+        unit="%"
+        disabled={!isAdmin}
+      />
+    </SettingsYearColumn>
 
-
-       {/* Colonne 2024 (revenus 2023) */}
-    <div className="tax-two-cols-right">
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>
-        {incomeTax.previousYearLabel}
-      </div>
-      <div className="settings-field-row">
-        <label>Part impôt sur le revenu</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(pfu.previous.rateIR)}
-          onChange={(e) =>
-            updateField(
-              ['pfu', 'previous', 'rateIR'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>%</span>
-      </div>
-      <div className="settings-field-row">
-        <label>Prélèvements sociaux</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(pfu.previous.rateSocial)}
-          onChange={(e) =>
-            updateField(
-              ['pfu', 'previous', 'rateSocial'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>%</span>
-      </div>
-      <div className="settings-field-row">
-        <label>Taux global PFU</label>
-        <input
-          type="number"
-          step="0.1"
-          value={numberOrEmpty(pfu.previous.rateTotal)}
-          onChange={(e) =>
-            updateField(
-              ['pfu', 'previous', 'rateTotal'],
-              e.target.value === '' ? null : Number(e.target.value)
-            )
-          }
-          disabled={!isAdmin}
-        />
-        <span>%</span>
-      </div>
-    </div>
-
+    <SettingsYearColumn yearLabel={incomeTax.previousYearLabel} isRight>
+      <SettingsFieldRow
+        label="Part impôt sur le revenu"
+        path={['pfu', 'previous', 'rateIR']}
+        value={pfu.previous.rateIR}
+        onChange={updateField}
+        step="0.1"
+        unit="%"
+        disabled={!isAdmin}
+      />
+      <SettingsFieldRow
+        label="Prélèvements sociaux"
+        path={['pfu', 'previous', 'rateSocial']}
+        value={pfu.previous.rateSocial}
+        onChange={updateField}
+        step="0.1"
+        unit="%"
+        disabled={!isAdmin}
+      />
+      <SettingsFieldRow
+        label="Taux global PFU"
+        path={['pfu', 'previous', 'rateTotal']}
+        value={pfu.previous.rateTotal}
+        onChange={updateField}
+        step="0.1"
+        unit="%"
+        disabled={!isAdmin}
+      />
+    </SettingsYearColumn>
   </div>
   </div>
   )}

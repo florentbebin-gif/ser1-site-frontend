@@ -4,6 +4,8 @@ import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '../../components/UserInfoBanner';
 import { numberOrEmpty, createFieldUpdater } from '../../utils/settingsHelpers.js';
+import SettingsFieldRow from '../../components/settings/SettingsFieldRow';
+import SettingsYearColumn from '../../components/settings/SettingsYearColumn';
 
 // ----------------------
 // Valeurs par défaut
@@ -386,99 +388,47 @@ export default function SettingsPrelevements() {
               </p>
 
               <div className="tax-two-cols">
-                {/* Colonne 2025 */}
-                <div>
-                  <div style={{ fontWeight: 600, marginBottom: 6 }}>
-                    {labels.currentYearLabel}
-                  </div>
+                <SettingsYearColumn yearLabel={labels.currentYearLabel}>
+                  <SettingsFieldRow
+                    label="Taux global des prélèvements sociaux"
+                    path={['patrimony', 'current', 'totalRate']}
+                    value={patrimony.current.totalRate}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  <SettingsFieldRow
+                    label="CSG déductible (au barème)"
+                    path={['patrimony', 'current', 'csgDeductibleRate']}
+                    value={patrimony.current.csgDeductibleRate}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                </SettingsYearColumn>
 
-                  <div className="settings-field-row">
-                    <label>Taux global des prélèvements sociaux</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={numberOrEmpty(patrimony.current.totalRate)}
-                      onChange={(e) =>
-                        updateField(
-                          ['patrimony', 'current', 'totalRate'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>%</span>
-                  </div>
-
-                  <div className="settings-field-row">
-                    <label>CSG déductible (au barème)</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={numberOrEmpty(
-                        patrimony.current.csgDeductibleRate
-                      )}
-                      onChange={(e) =>
-                        updateField(
-                          ['patrimony', 'current', 'csgDeductibleRate'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>%</span>
-                  </div>
-                </div>
-
-                {/* Colonne 2024 */}
-                <div className="tax-two-cols-right">
-                  <div style={{ fontWeight: 600, marginBottom: 6 }}>
-                    {labels.previousYearLabel}
-                  </div>
-
-                  <div className="settings-field-row">
-                    <label>Taux global des prélèvements sociaux</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={numberOrEmpty(patrimony.previous.totalRate)}
-                      onChange={(e) =>
-                        updateField(
-                          ['patrimony', 'previous', 'totalRate'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>%</span>
-                  </div>
-
-                  <div className="settings-field-row">
-                    <label>CSG déductible (au barème)</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={numberOrEmpty(
-                        patrimony.previous.csgDeductibleRate
-                      )}
-                      onChange={(e) =>
-                        updateField(
-                          ['patrimony', 'previous', 'csgDeductibleRate'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>%</span>
-                  </div>
-                </div>
+                <SettingsYearColumn yearLabel={labels.previousYearLabel} isRight>
+                  <SettingsFieldRow
+                    label="Taux global des prélèvements sociaux"
+                    path={['patrimony', 'previous', 'totalRate']}
+                    value={patrimony.previous.totalRate}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                  <SettingsFieldRow
+                    label="CSG déductible (au barème)"
+                    path={['patrimony', 'previous', 'csgDeductibleRate']}
+                    value={patrimony.previous.csgDeductibleRate}
+                    onChange={updateField}
+                    step="0.1"
+                    unit="%"
+                    disabled={!isAdmin}
+                  />
+                </SettingsYearColumn>
               </div>
               </div>
               )}
