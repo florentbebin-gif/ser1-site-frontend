@@ -11,106 +11,6 @@
   color: var(--color-c10);
 }
 
-.invite-section,
-.users-section {
-  margin-bottom: 24px;
-  padding: 20px;
-  border: 1px solid var(--color-c8);
-  border-radius: 8px;
-  background: var(--color-c7);
-}
-
-.invite-section h3,
-.users-section h3 {
-  margin: 0 0 16px 0;
-  color: var(--color-c10);
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.invite-form {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.invite-form input {
-  flex: 1;
-  padding: 10px 12px;
-  border: 1px solid var(--color-c8);
-  border-radius: 6px;
-  font-size: 14px;
-  /* RÈGLE UI GOVERNANCE: Inputs TOUJOURS BLANCS */
-  background-color: #FFFFFF;
-  color: var(--color-c10);
-}
-
-/* Focus ring conforme UI Governance (C2 + C4) */
-.invite-form input:focus {
-  outline: none;
-  border-color: var(--color-c2);
-  box-shadow: 0 0 0 3px var(--color-c4);
-}
-
-.invite-form button,
-.users-actions button {
-  padding: 10px 20px;
-  background: var(--color-c1);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.invite-form button:hover,
-.users-actions button:hover {
-  background: var(--color-c2);
-}
-
-.invite-form button:disabled,
-.users-actions button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.users-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.users-header h3 {
-  margin: 0;
-}
-
-.users-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.reports-badge {
-  padding: 6px 12px;
-  background: var(--color-c7);
-  border: 1px solid var(--color-c8);
-  border-radius: 6px;
-  font-size: 13px;
-  color: var(--color-c10);
-  font-weight: 500;
-}
-
-.loading-admin {
-  padding: 12px 16px;
-  background: var(--color-c7);
-  border-radius: 6px;
-  font-size: 14px;
-  color: var(--color-c9);
-}
-
 .users-table {
   width: 100%;
   border-collapse: collapse;
@@ -254,39 +154,6 @@
   background: var(--color-c2);
   border-radius: 50%;
   display: inline-block;
-}
-
-.actions {
-  display: flex;
-  gap: 8px;
-}
-
-.actions button {
-  padding: 8px 14px;
-  border: 1px solid var(--color-c8);
-  border-radius: 6px;
-  background: var(--color-c7);
-  color: var(--color-c10);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.actions button:hover {
-  background: var(--color-c7);
-  border-color: var(--color-c2);
-}
-
-.actions button.danger {
-  border-color: var(--color-error-border);
-  color: var(--color-error-text);
-}
-
-.actions button.danger:hover {
-  background: var(--color-error-border);
-  color: white;
-  border-color: var(--color-error-border);
 }
 
 /* Colonne Actions spécifique à la table users - isolation stricte */
@@ -455,21 +322,6 @@
   font-size: 13px;
 }
 
-/* Styles pour la vue détaillée des signalements */
-.report-detail-view {
-  width: 100%;
-}
-
-.report-detail-content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.report-detail-header {
-  margin-bottom: 10px;
-}
-
 .report-detail-meta {
   display: flex;
   flex-wrap: wrap;
@@ -495,30 +347,6 @@
   color: var(--color-c9);
 }
 
-.report-detail-title h4 {
-  font-size: 18px;
-  margin: 0 0 16px 0;
-  color: var(--color-c10);
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--color-c8);
-}
-
-.report-detail-description h5 {
-  font-size: 16px;
-  margin: 0 0 12px 0;
-  color: var(--color-c10);
-}
-
-.report-description-content {
-  background: #FFFFFF;
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid var(--color-c8);
-  line-height: 1.6;
-  white-space: pre-wrap;
-  color: var(--color-c10);
-}
-
 .report-detail-metadata h5 {
   font-size: 16px;
   margin: 0 0 12px 0;
@@ -534,31 +362,6 @@
   color: var(--color-c10);
   max-height: 200px;
   overflow-y: auto;
-}
-
-.report-detail-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
-  justify-content: flex-end;
-}
-
-.report-detail-actions button {
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.report-detail-actions button:not(.danger) {
-  background: var(--color-c1);
-  color: white;
-  border: none;
-}
-
-.report-detail-actions button:not(.danger):hover {
-  background: var(--color-c2);
 }
 
 .report-modal-header button {
@@ -577,11 +380,6 @@
 
 .report-modal-header button:hover {
   background: var(--color-c5);
-}
-
-.view-details {
-  background-color: var(--color-c5) !important;
-  color: var(--color-c10) !important;
 }
 
 /* Compact admin cards */
