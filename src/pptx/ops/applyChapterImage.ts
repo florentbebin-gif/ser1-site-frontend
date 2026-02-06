@@ -127,8 +127,9 @@ export function applyChapterImageWithPlacement(
 export function isChapterImageAvailable(chapterIndex: number): boolean {
   if (chapterIndex < 1 || chapterIndex > 9) return false;
   
-  // TODO: Vérifier la présence réelle du fichier
+  // TODO(SER1-007): Vérifier la présence réelle du fichier
   // Pour l'instant, on suppose que les images sont disponibles
+  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
   return true;
 }
 

@@ -23,10 +23,11 @@ export interface BaseTemplateConfig {
  * @param config - Configuration du template
  * @returns Instance PptxGenJS pré-configurée
  * 
- * TODO: Implémenter le chargement réel du fichier PPTX
+ * TODO(SER1-001): Implémenter le chargement réel du fichier PPTX
  * - Rechercher une bibliothèque compatible avec PPTXGenJS
  * - Ou utiliser PPTXGenJS avec support de template (si disponible)
  * - Ou parser le PPTX et reconstruire les slides
+ * Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
  */
 export function loadBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
   const pptx = new PptxGenJS();
@@ -36,8 +37,9 @@ export function loadBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
   pptx.author = config.author;
   pptx.company = config.company;
   
-  // TODO: Charger la structure depuis public/pptx/templates/serenity-base.pptx
+  // TODO(SER1-002): Charger la structure depuis public/pptx/templates/serenity-base.pptx
   // Actuellement : reconstruction minimale
+  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
   console.warn('⚠️ Template loading not implemented - using minimal reconstruction');
   if (DEBUG_PPTX) {
     // eslint-disable-next-line no-console
@@ -65,14 +67,16 @@ export function reconstructBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
     margin: 0.5,
   });
   
-  // TODO: Définir les dimensions du slide (16:9)
+  // TODO(SER1-003): Définir les dimensions du slide (16:9)
   // Actuellement géré par PPTXGenJS automatiquement
+  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
   
-  // TODO: Ajouter les masters slides depuis le template
+  // TODO(SER1-004): Ajouter les masters slides depuis le template
   // - Cover slide master
   // - Chapter slide master  
   // - Content slide master
   // - End slide master
+  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
   
   return pptx;
 }
@@ -81,8 +85,9 @@ export function reconstructBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
  * Vérifie la disponibilité du template file
  */
 export function isTemplateAvailable(): boolean {
-  // TODO: Vérifier la présence du fichier template
+  // TODO(SER1-005): Vérifier la présence du fichier template
   // Pour l'instant, on suppose qu'il est disponible
+  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
   return true;
 }
 
