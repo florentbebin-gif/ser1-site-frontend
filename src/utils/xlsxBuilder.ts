@@ -47,7 +47,7 @@ const pickTextColorForBackground = (bgColor: string): string => {
 };
 
 const normalizeColor = (color?: string, fallback?: string) =>
-  (color || fallback).replace('#', '').toUpperCase();
+  (color || fallback || 'FFFFFF').replace('#', '').toUpperCase();
 
 const normalizeCell = (cell: XlsxCell | XlsxCellValue): XlsxCell => {
   if (cell && typeof cell === 'object' && Object.prototype.hasOwnProperty.call(cell, 'v')) {

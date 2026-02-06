@@ -9,7 +9,8 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 **Historique** : [docs/CHANGELOG.md](docs/CHANGELOG.md)  
 **Debug flags** : [docs/runbook/debug.md](docs/runbook/debug.md)  
 **🎨 Couleurs** : [docs/design/color-governance.md](docs/design/color-governance.md) — *source de vérité unique (tokens C1-C10)*  
-**📐 UI Governance** : [docs/design/ui-governance.md](docs/design/ui-governance.md) — *Standards "Gestion Privée" (Layout, Inputs, Typo)*
+**📐 UI Governance** : [docs/design/ui-governance.md](docs/design/ui-governance.md) — *Standards "Gestion Privée" (Layout, Inputs, Typo)*  
+**🛠️ Contribuer** : [CONTRIBUTING.md](CONTRIBUTING.md) — *Workflow Git, conventions, quality gates*
 
 ---
 
@@ -292,7 +293,18 @@ npm run dev          # localhost:5173
 npm run build        # dist/
 npm run test         # 71 tests Vitest
 npm run lint         # ESLint avec plugin ser1-colors (gouvernance couleurs)
+npm run typecheck    # TypeScript --noEmit (0 erreur obligatoire)
 ```
+
+### 6.3 Quality Gates (avant chaque commit/PR)
+Tous les checks doivent passer :
+```powershell
+npm run lint       # 0 erreur ESLint
+npm run typecheck  # 0 erreur TypeScript
+npm test           # 71 tests passent
+npm run build      # Build Vite OK
+```
+> ⚠️ La CI bloque les PR si un gate échoue. Voir [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
