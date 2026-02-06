@@ -530,6 +530,9 @@ const handleSave = async () => {
         <button
           type="button"
           className="fisc-acc-header"
+          id={`fisc-header-${p.key}`}
+          aria-expanded={isOpen}
+          aria-controls={`fisc-panel-${p.key}`}
           onClick={() => setOpenProductKey(isOpen ? null : p.key)}
         >
           <span className="fisc-product-title" style={{ margin: 0 }}>
@@ -539,7 +542,7 @@ const handleSave = async () => {
         </button>
 
         {isOpen && (
-          <div className="fisc-acc-body">
+          <div className="fisc-acc-body" id={`fisc-panel-${p.key}`} role="region" aria-labelledby={`fisc-header-${p.key}`}>
             {p.key === 'assuranceVie' && (
               <>
                 {/* 1) Phase d'épargne */}
