@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from 'vite'
+import path from 'path'
 
 // Debug flag for proxy logs (set to true for troubleshooting /api/admin)
 const DEBUG_PROXY = false;
@@ -22,6 +23,11 @@ export default defineConfig(({ mode }) => {
       // the component renders on direct refresh, causing layout issues.
       // Trade-off: slightly larger initial CSS bundle, but 100% style stability.
       cssCodeSplit: false,
+    },
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
     },
     server: {
       host: 'localhost',

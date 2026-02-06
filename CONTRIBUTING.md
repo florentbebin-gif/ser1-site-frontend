@@ -32,7 +32,9 @@ git push origin feature/nom-clair
 - **Logique métier** → `src/engine/` uniquement
 - **UI / State** → `src/pages/` ou `src/features/`
 - **Pas de calcul fiscal dans les composants React**
-- Imports : chemins relatifs préférés aux alias `@/`
+- **Imports** :
+  - **`@/`** pour les imports cross-module / cross-feature (ex: `@/utils/`, `@/components/`)
+  - **Chemins relatifs** (`./`, `../`) OK pour les imports locaux (même dossier ou sous-dossier)
 
 ### TypeScript
 - Types importés depuis les **modules sources**, pas depuis les Providers
