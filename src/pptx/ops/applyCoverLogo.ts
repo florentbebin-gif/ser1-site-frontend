@@ -52,8 +52,7 @@ export function applyCoverLogo(
       });
     }
     
-    // eslint-disable-next-line no-console
-    console.log('✅ Logo applied to cover slide');
+    // Logo successfully applied (no console.log in production - use debugFlags.ts if needed)
   } catch (error) {
     console.error('❌ Failed to apply logo:', error);
     
@@ -67,8 +66,7 @@ export function applyCoverLogo(
       h: placement.h * 0.5,
     });
     
-    // eslint-disable-next-line no-console
-    console.log('⚠️ Used fallback icon for logo');
+    // Fallback applied silently (no console.log in production)
   }
 }
 
@@ -112,8 +110,9 @@ export async function prepareLogoForInjection(logoUrl: string): Promise<string> 
     return logoUrl;
   }
   
-  // TODO: Charger l'image depuis l'URL et convertir en data URI
+  // TODO(SER1-006): Charger l'image depuis l'URL et convertir en data URI
   // Pour l'instant, on retourne l'URL directe
+  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
   return logoUrl;
 }
 

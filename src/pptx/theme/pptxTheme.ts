@@ -75,17 +75,10 @@ export function formatColorForPptx(color: string): string {
  * @param theme - Thème à appliquer
  */
 export function applyThemeToSlide(slide: any, theme: PptxTheme): void {
-  // TODO: Appliquer les couleurs du thème au slide
-  // - Background
-  // - Textes par défaut
-  // - Formes et lignes
-  // eslint-disable-next-line no-console
-  console.log('🎨 Applying theme to slide:', {
-    bgMain: theme.bgMain,
-    textMain: theme.textMain,
-    accent: theme.accent,
-    line: theme.line
-  });
+  // Theme application is handled by individual slide builders
+  // No direct console logging - use DEBUG_PPTX flag in debugFlags.ts if needed
+  void slide;
+  void theme;
 }
 
 export default {
