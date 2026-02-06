@@ -112,7 +112,7 @@ export default function PassHistoryAccordion({ isOpen, onToggle, isAdmin }) {
         aria-controls="prelev-panel-pass"
         onClick={onToggle}
       >
-        <span className="fisc-product-title" style={{ margin: 0 }}>
+        <span className="settings-premium-title" style={{ margin: 0 }}>
           Historique du PASS (8 valeurs)
         </span>
         <span className="fisc-acc-chevron">{isOpen ? '▾' : '▸'}</span>
