@@ -74,6 +74,7 @@ Ce fichier liste les TODOs du code qui ont été créés comme issues GitHub pou
 - **Détails** : Cabinet logos now managed in admin. Ce code est kept for compatibility only et doit être retiré.
 - **Priorité** : Low
 - **Effort estimé** : XS (1-2 heures)
+- **Statut** : ✅ **RÉSOLU** - Code deprecated supprimé dans la PR #25
 
 ---
 
