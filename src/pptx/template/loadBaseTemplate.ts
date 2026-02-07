@@ -37,7 +37,7 @@ export function loadBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
   pptx.author = config.author;
   pptx.company = config.company;
   
-  // TODO(SER1-002): Charger la structure depuis public/pptx/templates/serenity-base.pptx
+  // TODO(#18): Charger la structure depuis public/pptx/templates/serenity-base.pptx
   // Actuellement : reconstruction minimale
   // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
   console.warn('⚠️ Template loading not implemented - using minimal reconstruction');
@@ -67,11 +67,11 @@ export function reconstructBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
     margin: 0.5,
   });
   
-  // TODO(SER1-003): Définir les dimensions du slide (16:9)
+  // TODO(#19): Définir les dimensions du slide (16:9)
   // Actuellement géré par PPTXGenJS automatiquement
   // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
   
-  // TODO(SER1-004): Ajouter les masters slides depuis le template
+  // TODO(#20): Ajouter les masters slides depuis le template
   // - Cover slide master
   // - Chapter slide master  
   // - Content slide master
@@ -85,7 +85,7 @@ export function reconstructBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
  * Vérifie la disponibilité du template file
  */
 export function isTemplateAvailable(): boolean {
-  // TODO(SER1-005): Vérifier la présence du fichier template
+  // TODO(#21): Vérifier la présence du fichier template
   // Pour l'instant, on suppose qu'il est disponible
   // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
   return true;

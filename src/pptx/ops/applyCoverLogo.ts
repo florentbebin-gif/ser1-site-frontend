@@ -110,7 +110,7 @@ export async function prepareLogoForInjection(logoUrl: string): Promise<string> 
     return logoUrl;
   }
   
-  // TODO(SER1-006): Charger l'image depuis l'URL et convertir en data URI
+  // TODO(#22): Charger l'image depuis l'URL et convertir en data URI
   // Pour l'instant, on retourne l'URL directe
   // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
   return logoUrl;

@@ -83,7 +83,7 @@ function calculateDMTG(baseImposable: number, lien: LienParente): number {
   if (baseImposable <= 0) return 0;
 
   // Pour simplification MVP, on utilise le barème ligne directe
-  // TODO(SER1-008): Ajouter les barèmes spécifiques (frères/sœurs, etc.)
+  // TODO(#24): Ajouter les barèmes spécifiques (frères/sœurs, etc.)
   // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
   let droits = 0;
   
