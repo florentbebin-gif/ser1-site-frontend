@@ -23,7 +23,7 @@ export interface BaseTemplateConfig {
  * @param config - Configuration du template
  * @returns Instance PptxGenJS pré-configurée
  * 
- * TODO(SER1-001): Implémenter le chargement réel du fichier PPTX
+ * TODO(#17): Implémenter le chargement réel du fichier PPTX
  * - Rechercher une bibliothèque compatible avec PPTXGenJS
  * - Ou utiliser PPTXGenJS avec support de template (si disponible)
  * - Ou parser le PPTX et reconstruire les slides
