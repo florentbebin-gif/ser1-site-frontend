@@ -2,6 +2,16 @@
 
 Ce fichier liste les TODOs du code qui ont été créés comme issues GitHub pour le traçage.
 
+## Issue #17 : Implémenter le chargement réel du template PPTX
+- **Fichier** : `src/pptx/template/loadBaseTemplate.ts:26`
+- **Description** : Implémenter le chargement réel du fichier PPTX
+- **Détails** :
+  - Rechercher une bibliothèque compatible avec PPTXGenJS
+  - Ou utiliser PPTXGenJS avec support de template (si disponible)
+  - Ou parser le PPTX et reconstruire les slides
+- **Priorité** : Medium
+- **Effort estimé** : L (1-2 semaines)
+
 ## Issue #18 : Charger la structure depuis public/pptx/templates/serenity-base.pptx
 - **Fichier** : `src/pptx/template/loadBaseTemplate.ts:40`
 - **Description** : Charger la structure du template depuis le fichier PPTX
@@ -69,4 +79,4 @@ Ce fichier liste les TODOs du code qui ont été créés comme issues GitHub pou
 
 ## Statut
 
-✅ **Toutes les issues ont été créées et les TODOs dans le code ont été mis à jour avec les références #18-#25.**
+✅ **Toutes les issues ont été créées et les TODOs dans le code ont été mis à jour avec les références #17-#25.**
