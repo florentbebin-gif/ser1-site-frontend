@@ -7,6 +7,9 @@
 
 import type { PptxTheme } from '../theme/pptxTheme';
 import { addTextFr } from '../designSystem/serenity';
+import { isDebugEnabled } from '../../utils/debugFlags';
+
+const DEBUG_PPTX = isDebugEnabled('pptx');
 
 export interface ChapterImageOptions {
   chapterIndex: number;  // 1-9 (correspond à ch-01.png ... ch-09.png)
@@ -57,8 +60,10 @@ export function applyChapterImage(
       h: placement.h,
     });
     
-    // eslint-disable-next-line no-console
-    console.debug(`✅ Chapter image applied: ${fileName}`);
+    if (DEBUG_PPTX) {
+      // eslint-disable-next-line no-console
+      console.debug(`✅ Chapter image applied: ${fileName}`);
+    }
   } catch (error) {
     console.error(`❌ Failed to apply chapter image ${fileName}:`, error);
     
@@ -75,8 +80,10 @@ export function applyChapterImage(
       valign: 'middle',
     });
     
-    // eslint-disable-next-line no-console
-    console.debug(`⚠️ Used text fallback for chapter ${chapterIndex}`);
+    if (DEBUG_PPTX) {
+      // eslint-disable-next-line no-console
+      console.debug(`⚠️ Used text fallback for chapter ${chapterIndex}`);
+    }
   }
 }
 
@@ -114,8 +121,10 @@ export function applyChapterImageWithPlacement(
       h: defaultPlacement.h,
     });
     
-    // eslint-disable-next-line no-console
-    console.debug(`✅ Chapter image applied with custom placement: ${fileName}`);
+    if (DEBUG_PPTX) {
+      // eslint-disable-next-line no-console
+      console.debug(`✅ Chapter image applied with custom placement: ${fileName}`);
+    }
   } catch (error) {
     console.error(`❌ Failed to apply chapter image ${fileName}:`, error);
   }
