@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { isDebugEnabled } from './utils/debugFlags'
 
 const url = import.meta.env.VITE_SUPABASE_URL
@@ -15,19 +15,16 @@ if (DEBUG_AUTH) {
 }
 
 // Mock minimal client to prevent crashes if config is missing
-const mockSupabase = {
+// Typed as any to avoid union type issues with SupabaseClient
+const mockSupabase: any = {
   auth: {
     getSession: async () => ({ data: { session: null }, error: null }),
+    getUser: async () => ({ data: { user: null }, error: null }),
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
     signOut: async () => {},
   },
-  from: () => ({
-    select: () => ({ data: [], error: null }),
-    insert: () => ({ data: [], error: null }),
-    update: () => ({ data: [], error: null }),
-    delete: () => ({ data: [], error: null }),
-    upsert: () => ({ data: [], error: null }),
-  }),
+  from: () => createMockQueryBuilder(),
+  rpc: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
   functions: {
     invoke: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
   },
@@ -35,12 +32,39 @@ const mockSupabase = {
     from: () => ({
         getPublicUrl: () => ({ data: { publicUrl: '' } }),
         upload: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
+        download: async () => ({ data: null, error: { message: 'Supabase not configured' } }),
     })
   }
 }
 
+// Query builder mock chainable pour les requêtes Supabase
+function createMockQueryBuilder(): any {
+  const mockArrayResult = { data: [], error: null };
+  const mockObjectResult = { data: null, error: null };
+  
+  const builder: any = {
+    // Chain methods
+    select: () => builder,
+    insert: () => builder,
+    update: () => builder,
+    delete: () => builder,
+    upsert: () => builder,
+    eq: () => builder,
+    order: () => builder,
+    limit: () => builder,
+    // Terminal methods returning promises
+    maybeSingle: () => Promise.resolve(mockObjectResult),
+    single: () => Promise.resolve(mockObjectResult),
+  };
+  
+  // Support for await on chains (e.g., insert().select())
+  builder.then = (onFulfilled: any) => Promise.resolve(mockArrayResult).then(onFulfilled);
+  
+  return builder;
+}
+
 export { DEBUG_AUTH }
-export const supabase = isSupabaseConfigured
+export const supabase: SupabaseClient = isSupabaseConfigured
   ? createClient(url, key, {
       auth: {
         persistSession: true,
