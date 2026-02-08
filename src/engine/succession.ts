@@ -7,19 +7,20 @@
 
 import { mkResult, mkRuleVersion, addValidationWarning } from './helpers';
 import type { CalcResult, Warning } from './types';
-import { ABATTEMENT_ENFANT, BAREME_DMTG_LIGNE_DIRECTE } from './civil';
+import { DEFAULT_DMTG } from './civil';
+import type { DmtgSettings, DmtgScaleItem } from './civil';
 
 // Abattement conjoint survivant (exonération totale)
 export const EXONERATION_CONJOINT = true;
 
-// Abattement entre frères et sœurs
-export const ABATTEMENT_FRERE_SOEUR = 15_932;
+// @deprecated Utiliser dmtgSettings.frereSoeur.abattement
+export const ABATTEMENT_FRERE_SOEUR = DEFAULT_DMTG.frereSoeur.abattement;
 
-// Abattement neveux/nièces
-export const ABATTEMENT_NEVEU_NIECE = 7_967;
+// @deprecated Utiliser dmtgSettings.neveuNiece.abattement
+export const ABATTEMENT_NEVEU_NIECE = DEFAULT_DMTG.neveuNiece.abattement;
 
-// Abattement par défaut (autres)
-export const ABATTEMENT_DEFAUT = 1_594;
+// @deprecated Utiliser dmtgSettings.autre.abattement
+export const ABATTEMENT_DEFAUT = DEFAULT_DMTG.autre.abattement;
 
 export type LienParente = 
   | 'conjoint'
@@ -38,6 +39,7 @@ export interface SuccessionInput {
   actifNetSuccession: number;
   heritiers: HeritiersInput[];
   assuranceVieHorsSuccession?: number;
+  dmtgSettings?: DmtgSettings;
 }
 
 export interface HeritierResult {
@@ -59,38 +61,53 @@ export interface SuccessionResult {
 /**
  * Retourne l'abattement applicable selon le lien de parenté
  */
-export function getAbattement(lien: LienParente): number {
+export function getAbattement(lien: LienParente, dmtg: DmtgSettings = DEFAULT_DMTG): number {
   switch (lien) {
     case 'conjoint':
       return Infinity; // Exonération totale
     case 'enfant':
     case 'petit_enfant':
-      return ABATTEMENT_ENFANT;
+      return dmtg.ligneDirecte.abattement;
     case 'frere_soeur':
-      return ABATTEMENT_FRERE_SOEUR;
+      return dmtg.frereSoeur.abattement;
     case 'neveu_niece':
-      return ABATTEMENT_NEVEU_NIECE;
+      return dmtg.neveuNiece.abattement;
     default:
-      return ABATTEMENT_DEFAUT;
+      return dmtg.autre.abattement;
   }
 }
 
 /**
- * Calcule les droits de succession pour une part donnée (ligne directe)
+ * Retourne le barème applicable selon le lien de parenté
  */
-function calculateDMTG(baseImposable: number, lien: LienParente): number {
+function getScaleForLien(lien: LienParente, dmtg: DmtgSettings): DmtgScaleItem[] {
+  switch (lien) {
+    case 'enfant':
+    case 'petit_enfant':
+      return dmtg.ligneDirecte.scale;
+    case 'frere_soeur':
+      return dmtg.frereSoeur.scale;
+    case 'neveu_niece':
+      return dmtg.neveuNiece.scale;
+    default:
+      return dmtg.autre.scale;
+  }
+}
+
+/**
+ * Calcule les droits de succession pour une part donnée selon le lien de parenté
+ */
+function calculateDMTG(baseImposable: number, lien: LienParente, dmtg: DmtgSettings = DEFAULT_DMTG): number {
   if (lien === 'conjoint') return 0; // Exonéré
   if (baseImposable <= 0) return 0;
 
-  // Pour simplification MVP, on utilise le barème ligne directe
-  // TODO(#24): Ajouter les barèmes spécifiques (frères/sœurs, etc.)
-  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
+  const scale = getScaleForLien(lien, dmtg);
   let droits = 0;
-  
-  for (const tranche of BAREME_DMTG_LIGNE_DIRECTE) {
-    if (baseImposable > tranche.min) {
-      const base = Math.min(baseImposable, tranche.max) - tranche.min;
-      droits += base * (tranche.taux / 100);
+
+  for (const tranche of scale) {
+    if (baseImposable > tranche.from) {
+      const base = Math.min(baseImposable, tranche.to ?? Infinity) - tranche.from;
+      droits += base * (tranche.rate / 100);
     }
   }
 
@@ -102,14 +119,15 @@ function calculateDMTG(baseImposable: number, lien: LienParente): number {
  */
 export function calculateSuccession(input: SuccessionInput): CalcResult<SuccessionResult> {
   let warnings: Warning[] = [];
+  const dmtg = input.dmtgSettings ?? DEFAULT_DMTG;
   
   const detailHeritiers: HeritierResult[] = [];
   let totalDroits = 0;
 
   for (const heritier of input.heritiers) {
-    const abattement = getAbattement(heritier.lien);
+    const abattement = getAbattement(heritier.lien, dmtg);
     const baseImposable = Math.max(0, heritier.partSuccession - abattement);
-    const droits = calculateDMTG(baseImposable, heritier.lien);
+    const droits = calculateDMTG(baseImposable, heritier.lien, dmtg);
     const tauxMoyen = heritier.partSuccession > 0 
       ? (droits / heritier.partSuccession) * 100 
       : 0;
@@ -130,17 +148,6 @@ export function calculateSuccession(input: SuccessionInput): CalcResult<Successi
     ? (totalDroits / input.actifNetSuccession) * 100
     : 0;
 
-  // Ajouter warning si barème simplifié utilisé pour non ligne directe
-  const hasNonLigneDirecte = input.heritiers.some(h => 
-    ['frere_soeur', 'neveu_niece', 'autre'].includes(h.lien)
-  );
-  if (hasNonLigneDirecte) {
-    warnings = addValidationWarning(
-      warnings, 
-      'BAREME_SIMPLIFIE', 
-      'Barème ligne directe utilisé pour estimation. Barèmes spécifiques non implémentés.'
-    );
-  }
 
   return mkResult({
     id: 'succession-calculation',
@@ -153,7 +160,7 @@ export function calculateSuccession(input: SuccessionInput): CalcResult<Successi
       {
         id: 'abattement_enfant',
         label: 'Abattement par enfant',
-        value: ABATTEMENT_ENFANT,
+        value: dmtg.ligneDirecte.abattement,
         source: 'CGI Art. 779',
         editable: true,
       },
@@ -177,7 +184,7 @@ export function calculateSuccession(input: SuccessionInput): CalcResult<Successi
       tauxMoyenGlobal: Math.round(tauxMoyenGlobal * 100) / 100,
     },
     ruleVersion: mkRuleVersion('2024.1', 'CGI Art. 777, 779, 796-0 bis', true),
-    sourceNote: 'Barème DMTG 2024 - Estimation simplifiée',
+    sourceNote: 'Barème DMTG 2024 - Barèmes par lien de parenté',
     warnings,
   });
 }

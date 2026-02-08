@@ -70,6 +70,39 @@ export const DEFAULT_TAX_SETTINGS = {
     current: { minEffectiveRate: 20, thresholdSingle: 250000, thresholdCouple: 500000 },
     previous: { minEffectiveRate: 20, thresholdSingle: 250000, thresholdCouple: 500000 },
   },
+  dmtg: {
+    ligneDirecte: {
+      abattement: 100000,
+      scale: [
+        { from: 0, to: 8072, rate: 5 },
+        { from: 8072, to: 12109, rate: 10 },
+        { from: 12109, to: 15932, rate: 15 },
+        { from: 15932, to: 552324, rate: 20 },
+        { from: 552324, to: 902838, rate: 30 },
+        { from: 902838, to: 1805677, rate: 40 },
+        { from: 1805677, to: null, rate: 45 },
+      ],
+    },
+    frereSoeur: {
+      abattement: 15932,
+      scale: [
+        { from: 0, to: 24430, rate: 35 },
+        { from: 24430, to: null, rate: 45 },
+      ],
+    },
+    neveuNiece: {
+      abattement: 7967,
+      scale: [
+        { from: 0, to: null, rate: 55 },
+      ],
+    },
+    autre: {
+      abattement: 1594,
+      scale: [
+        { from: 0, to: null, rate: 60 },
+      ],
+    },
+  },
 };
 
 export const DEFAULT_PS_SETTINGS = {

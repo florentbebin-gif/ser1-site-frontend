@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { calculateSuccession, calculatePredecesSenarios, getAbattement } from '../succession';
-import { ABATTEMENT_ENFANT } from '../civil';
+import { ABATTEMENT_ENFANT, DEFAULT_DMTG } from '../civil';
 
 describe('Succession Module', () => {
   describe('getAbattement', () => {
@@ -69,14 +69,16 @@ describe('Succession Module', () => {
       expect(result.result.detailHeritiers[0].baseImposable).toBe(0);
     });
 
-    it('ajoute un warning pour les liens non ligne directe', () => {
+    it('calcule les droits pour neveu/nièce avec barème spécifique (55%)', () => {
       const result = calculateSuccession({
         actifNetSuccession: 100000,
         heritiers: [{ lien: 'neveu_niece', partSuccession: 100000 }],
       });
 
-      expect(result.warnings.length).toBeGreaterThan(0);
-      expect(result.warnings[0].code).toContain('BAREME_SIMPLIFIE');
+      // 100000 - 7967 abattement = 92033 imposable à 55%
+      const expected = Math.round(92033 * 0.55);
+      expect(result.result.totalDroits).toBe(expected);
+      expect(result.result.detailHeritiers[0].abattement).toBe(7967);
     });
   });
 
@@ -136,6 +138,69 @@ describe('Succession Module', () => {
 
       // Sans enfant, pas de droits calculés (transmission au conjoint exonérée)
       expect(result.result.scenarioMrDecede.droitsSuccession).toBe(0);
+    });
+  });
+
+  describe('Barèmes DMTG par catégorie', () => {
+    it('applique le barème frère/sœur (35% puis 45%)', () => {
+      const result = calculateSuccession({
+        actifNetSuccession: 100000,
+        heritiers: [{ lien: 'frere_soeur', partSuccession: 100000 }],
+      });
+
+      // 100000 - 15932 abattement = 84068 imposable
+      // 0-24430 à 35% = 8550.50
+      // 24430-84068 à 45% = 26837.10
+      // Total ≈ 35388
+      expect(result.result.totalDroits).toBeGreaterThan(0);
+      expect(result.result.detailHeritiers[0].abattement).toBe(15932);
+      const baseImposable = 100000 - 15932;
+      const tranche1 = 24430 * 0.35;
+      const tranche2 = (baseImposable - 24430) * 0.45;
+      expect(result.result.totalDroits).toBe(Math.round(tranche1 + tranche2));
+    });
+
+    it('applique le barème autre/non-parent (60%)', () => {
+      const result = calculateSuccession({
+        actifNetSuccession: 50000,
+        heritiers: [{ lien: 'autre', partSuccession: 50000 }],
+      });
+
+      // 50000 - 1594 abattement = 48406 imposable à 60%
+      const expected = Math.round(48406 * 0.60);
+      expect(result.result.totalDroits).toBe(expected);
+      expect(result.result.detailHeritiers[0].abattement).toBe(1594);
+    });
+
+    it('accepte des dmtgSettings personnalisés', () => {
+      const customDmtg = {
+        ...DEFAULT_DMTG,
+        ligneDirecte: {
+          abattement: 200000,
+          scale: [{ from: 0, to: null, rate: 10 }],
+        },
+      };
+
+      const result = calculateSuccession({
+        actifNetSuccession: 300000,
+        heritiers: [{ lien: 'enfant', partSuccession: 300000 }],
+        dmtgSettings: customDmtg,
+      });
+
+      // 300000 - 200000 custom abattement = 100000 à 10%
+      expect(result.result.totalDroits).toBe(10000);
+      expect(result.result.detailHeritiers[0].abattement).toBe(200000);
+    });
+
+    it('utilise les valeurs par défaut si dmtgSettings non fourni', () => {
+      const result = calculateSuccession({
+        actifNetSuccession: 200000,
+        heritiers: [{ lien: 'enfant', partSuccession: 200000 }],
+      });
+
+      // Doit utiliser DEFAULT_DMTG.ligneDirecte
+      expect(result.result.detailHeritiers[0].abattement).toBe(DEFAULT_DMTG.ligneDirecte.abattement);
+      expect(result.result.totalDroits).toBeGreaterThan(0);
     });
   });
 });

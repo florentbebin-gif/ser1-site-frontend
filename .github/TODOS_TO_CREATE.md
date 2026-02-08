@@ -70,6 +70,7 @@ Ce fichier liste les TODOs du code qui ont été créés comme issues GitHub pou
   - Non-parents
 - **Priorité** : High (impact métier)
 - **Effort estimé** : M (3-5 jours)
+- **Statut** : ✅ **RÉSOLU** - Barèmes DMTG complets (ligne directe, frères/sœurs, neveux/nièces, autres) + référentiel admin dans /settings/impots
 
 ## Issue #25 : Logo handling dans Settings.jsx (deprecated)
 - **Fichier** : `src/pages/Settings.jsx:262`
