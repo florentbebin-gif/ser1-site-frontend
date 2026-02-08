@@ -19,6 +19,7 @@ interface ThemeColors {
 }
 
 declare global {
+  // eslint-disable-next-line no-unused-vars
   interface Window {
     /** Bootstrap thème injecté avant le rendu React pour éviter le FOUC */
     __ser1ThemeBootstrap?: {

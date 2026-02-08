@@ -10,9 +10,9 @@ export default function AppErrorFallback({ error, type = 'config' }) {
       alignItems: 'center',
       justifyContent: 'center',
       height: '100vh',
-      backgroundColor: '#F5F3F0', // var(--color-c7)
+      backgroundColor: 'var(--color-c7)', // Fond page C7
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-      color: '#2B3E37', // var(--color-c1)
+      color: 'var(--color-c1)', // Texte principal C1
       textAlign: 'center',
       padding: '20px'
     }}>
@@ -32,7 +32,7 @@ export default function AppErrorFallback({ error, type = 'config' }) {
           fontSize: '24px', 
           fontWeight: '600', 
           marginBottom: '16px',
-          color: '#2B3E37'
+          color: 'var(--color-c1)'
         }}>
           {isConfigError ? 'Configuration Requise' : 'Application Indisponible'}
         </h1>
@@ -40,7 +40,7 @@ export default function AppErrorFallback({ error, type = 'config' }) {
         <p style={{ 
           fontSize: '16px', 
           lineHeight: '1.5', 
-          color: '#7F7F7F', // var(--color-c9)
+          color: 'var(--color-c9)', // Texte secondaire C9
           marginBottom: '24px'
         }}>
           {isConfigError 
@@ -51,11 +51,11 @@ export default function AppErrorFallback({ error, type = 'config' }) {
 
         {error && (
           <pre style={{
-            backgroundColor: '#F5F3F0',
+            backgroundColor: 'var(--color-c7)', // Fond code C7
             padding: '12px',
             borderRadius: '6px',
             fontSize: '12px',
-            color: '#D32F2F',
+            color: 'var(--color-c1)', // Danger/erreur = C1 selon gouvernance
             overflowX: 'auto',
             marginBottom: '24px',
             textAlign: 'left'
@@ -67,7 +67,7 @@ export default function AppErrorFallback({ error, type = 'config' }) {
         <button 
           onClick={() => window.location.reload()}
           style={{
-            backgroundColor: '#709B8B', // var(--color-c2)
+            backgroundColor: 'var(--color-c2)', // CTA C2
             color: '#FFFFFF',
             border: 'none',
             padding: '10px 20px',
@@ -82,7 +82,7 @@ export default function AppErrorFallback({ error, type = 'config' }) {
         </button>
       </div>
       
-      <div style={{ marginTop: '32px', fontSize: '12px', color: '#7F7F7F' }}>
+      <div style={{ marginTop: '32px', fontSize: '12px', color: 'var(--color-c9)' }}>
         SER1 &bull; Gestion Privée
       </div>
     </div>
