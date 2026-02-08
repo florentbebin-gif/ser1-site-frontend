@@ -15,7 +15,7 @@ export function CollapsibleTable({ title, rows, columns, renderRow }) {
         {open ? '▼' : '▶'} {title} ({rows.length} années)
       </button>
       {open && (
-        <table className="ir-table pl-detail-table">
+        <table className="pl-ir-table pl-detail-table">
           <thead>
             <tr>
               {columns.map((c, i) => <th key={i}>{c}</th>)}

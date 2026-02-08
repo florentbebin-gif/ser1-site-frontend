@@ -55,6 +55,30 @@ git push origin feature/nom-clair
 - `console.log/info/debug` : **interdit** sauf derrière flag `DEBUG_*`
 - En prod : aucun log sensible (pas de données utilisateur)
 
+### CSS Governance
+- **Interdiction** : Un fichier CSS d'une page ne doit jamais importer un CSS d'une autre page
+- **Pattern correct** : 
+  - Styles partagés → `src/styles/` (variables CSS, utilitaires)
+  - Styles page-spécifiques → `src/pages/PageName.css` uniquement
+- **Exemple de correction** : `PlacementV2.jsx` importait `Ir.css` → styles migrés vers `Placement.css` avec préfixe `pl-ir-*`
+
+### Imports (règles détaillées)
+- **Alias `@/`** : Toujours privilégié pour les imports cross-module
+  ```javascript
+  // ✅ Correct
+  import { Button } from '@/components/Button';
+  import { debugLog } from '@/utils/debugFlags';
+  
+  // ❌ Incorrect
+  import { Button } from '../../../components/Button';
+  ```
+- **Chemins relatifs** : Uniquement pour imports locaux (même dossier ou sous-dossier)
+  ```javascript
+  // ✅ Correct - import local
+  import { helper } from './utils';
+  import { Input } from '../components/Input';
+  ```
+
 ## PR Checklist
 
 - [ ] `npm run lint` passe

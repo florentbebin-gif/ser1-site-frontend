@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { DEBUG_AUTH } from '../../supabaseClient';
-import { isDebugEnabled } from '../../utils/debugFlags';
-import { useUserRole } from '../../auth/useUserRole';
-import { UserInfoBanner } from '../../components/UserInfoBanner';
-import { invokeAdmin } from '../../services/apiAdmin';
-import { uploadLogoWithDedup, getLogoPublicUrl } from '../../utils/logoUpload';
-import SettingsSectionCard from '../../components/settings/SettingsSectionCard';
+import { DEBUG_AUTH } from '@/supabaseClient';
+import { isDebugEnabled } from '@/utils/debugFlags';
+import { useUserRole } from '@/auth/useUserRole';
+import { UserInfoBanner } from '@/components/UserInfoBanner';
+import { invokeAdmin } from '@/services/apiAdmin';
+import { uploadLogoWithDedup, getLogoPublicUrl } from '@/utils/logoUpload';
+import SettingsSectionCard from '@/components/settings/SettingsSectionCard';
 import './SettingsComptes.css';
-import { DEFAULT_COLORS } from '../../settings/theme';
+import { DEFAULT_COLORS } from '@/settings/theme';
 
 export default function SettingsComptes() {
   const { isAdmin, isLoading: authLoading } = useUserRole();

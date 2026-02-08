@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { supabase } from '@/supabaseClient';
 import './SettingsImpots.css';
-import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
-import { UserInfoBanner } from '../../components/UserInfoBanner';
-import { numberOrEmpty, createFieldUpdater } from '../../utils/settingsHelpers.js';
-import SettingsFieldRow from '../../components/settings/SettingsFieldRow';
-import SettingsYearColumn from '../../components/settings/SettingsYearColumn';
-import SettingsTable from '../../components/settings/SettingsTable';
-import PassHistoryAccordion from '../../components/settings/PassHistoryAccordion';
+import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.js';
+import { UserInfoBanner } from '@/components/UserInfoBanner';
+import { numberOrEmpty, createFieldUpdater } from '@/utils/settingsHelpers.js';
+import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
+import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
+import SettingsTable from '@/components/settings/SettingsTable';
+import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
 
 // ----------------------
 // Valeurs par défaut

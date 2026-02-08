@@ -37,6 +37,13 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Check no console.* in production
+        run: |
+          ! grep -r "console\.(log|debug|info|trace)" src/ \
+            --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" \
+            | grep -v "__tests__" | grep -v ".test." | grep -v "debugFlags" \
+            | grep -v "eslint-disable" | grep -v "import.meta.env.DEV"
+
       - name: TypeScript check
         run: npm run typecheck
 

@@ -846,13 +846,19 @@ export function validateNoOverflow(
   const bottomEdge = rect.y + rect.h;
   
   if (rect.x < 0 || rect.y < 0) {
-    console.warn(`[Layout Contract] ${context}: Negative position detected (x:${rect.x}, y:${rect.y})`);
+    if (import.meta.env.DEV) {
+      console.warn(`[Layout Contract] ${context}: Negative position detected (x:${rect.x}, y:${rect.y})`);
+    }
   }
   if (rightEdge > SLIDE_SIZE.width) {
-    console.warn(`[Layout Contract] ${context}: Right edge overflow (${rightEdge} > ${SLIDE_SIZE.width})`);
+    if (import.meta.env.DEV) {
+      console.warn(`[Layout Contract] ${context}: Right edge overflow (${rightEdge} > ${SLIDE_SIZE.width})`);
+    }
   }
   if (bottomEdge > SLIDE_SIZE.height) {
-    console.warn(`[Layout Contract] ${context}: Bottom edge overflow (${bottomEdge} > ${SLIDE_SIZE.height})`);
+    if (import.meta.env.DEV) {
+      console.warn(`[Layout Contract] ${context}: Bottom edge overflow (${bottomEdge} > ${SLIDE_SIZE.height})`);
+    }
   }
 }
 

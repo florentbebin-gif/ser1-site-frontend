@@ -22,7 +22,6 @@ import {
   simulateComplete,
   compareProducts,
 } from '../engine/placementEngine.js';
-import './Ir.css';
 import './Placement.css';
 import { normalizeVersementConfig } from '../utils/versementConfig.js';
 import { onResetEvent, storageKeyFor } from '../utils/reset.js';
@@ -362,9 +361,9 @@ export default function PlacementV2() {
   // Loading / Error (placés après les hooks pour respecter les Rules of Hooks)
   if (error) {
     return (
-      <div className="ir-panel placement-page">
-        <div className="ir-header">
-          <div className="ir-title">Erreur</div>
+      <div className="pl-panel placement-page">
+        <div className="pl-ir-header">
+          <div className="pl-ir-title">Erreur</div>
           <div className="pl-error">{error}</div>
         </div>
       </div>
@@ -372,11 +371,11 @@ export default function PlacementV2() {
   };
 
   return (
-    <div className="ir-panel placement-page premium-page">
+    <div className="pl-panel placement-page premium-page">
       {/* Header */}
-      <div className="ir-header pl-header premium-header">
+      <div className="pl-ir-header pl-header premium-header">
         <div className="pl-header-main">
-          <div className="ir-title premium-title">Comparer deux placements</div>
+          <div className="pl-ir-title premium-title">Comparer deux placements</div>
           <div className="pl-subtitle premium-subtitle">
             Épargne → Liquidation → Transmission
           </div>
@@ -408,11 +407,11 @@ export default function PlacementV2() {
         ))}
       </div>
 
-      <div className="ir-grid">
+      <div className="pl-ir-grid">
         {/* LEFT PANEL */}
-        <div className="ir-left">
+        <div className="pl-ir-left">
           {/* Paramètres client */}
-          <div className="ir-table-wrapper premium-card premium-section">
+          <div className="pl-ir-table-wrapper premium-card premium-section">
             <div className="pl-section-title premium-section-title">Profil client</div>
             <div className="pl-topgrid premium-grid-4">
               <InputNumber
@@ -449,9 +448,9 @@ export default function PlacementV2() {
 
           {/* Phase Épargne */}
           {state.step === 'epargne' && (
-            <div className="ir-table-wrapper premium-card premium-section">
+            <div className="pl-ir-table-wrapper premium-card premium-section">
               <div className="pl-section-title premium-section-title">Phase d'épargne</div>
-              <table className="ir-table pl-table premium-table">
+              <table className="pl-ir-table pl-table premium-table">
                 <thead>
                   <tr>
                     <th></th>
@@ -592,9 +591,9 @@ export default function PlacementV2() {
 
           {/* Phase Liquidation */}
           {state.step === 'liquidation' && (
-            <div className="ir-table-wrapper premium-card premium-section">
+            <div className="pl-ir-table-wrapper premium-card premium-section">
               <div className="pl-section-title premium-section-title">Phase de liquidation</div>
-              <table className="ir-table pl-table premium-table">
+              <table className="pl-ir-table pl-table premium-table">
                 <tbody>
                   <tr>
                     <td>Stratégie de retraits</td>
@@ -834,9 +833,9 @@ export default function PlacementV2() {
           {/* Phase Transmission */}
           {state.step === 'transmission' && (
             <>
-            <div className="ir-table-wrapper premium-card premium-section">
+            <div className="pl-ir-table-wrapper premium-card premium-section">
               <div className="pl-section-title premium-section-title">Transmission</div>
-              <table className="ir-table pl-table premium-table">
+              <table className="pl-ir-table pl-table premium-table">
                 <tbody>
                   <tr>
                     <td>Âge au décès (simulation)</td>
@@ -938,7 +937,7 @@ export default function PlacementV2() {
 
               {/* Tableau détaillé des droits de succession */}
               <div className="pl-section-title premium-section-title" style={{ marginTop: 24 }}>Détail des droits de succession</div>
-              <table className="ir-table pl-table premium-table pl-table--transmission-compact">
+              <table className="pl-ir-table pl-detail-table">
                 <thead>
                   <tr>
                     <th>Produit</th>
@@ -1004,8 +1003,8 @@ export default function PlacementV2() {
         </div>
 
         {/* RIGHT PANEL - Synthèse unifiée */}
-        <div className="ir-right">
-          <div className="ir-synthesis-card premium-card">
+        <div className="pl-ir-right">
+          <div className="pl-ir-synthesis-card premium-card">
             <div className="pl-card-title premium-section-title">Synthèse comparative</div>
 
             {loading ? (
