@@ -22,10 +22,10 @@ Transformer SER1 en codebase "production-grade" avec :
 
 | Issue | Description | Effort | Livrable |
 |-------|-------------|--------|----------|
-| #25 | Remove deprecated logo handling in Settings.jsx | XS (1h) | PR cleanup |
 | #21 | Vérifier présence fichier template | XS (2h) | Check + tests |
 | #23 | Vérifier images chapitre | XS (2h) | Validation fichiers |
 | #19 | Définir dimensions slides explicites | XS (2h) | Config PPTXGenJS |
+| #25 | ~~Remove deprecated logo handling in Settings.jsx~~ | ~~XS (1h)~~ | ✅ **RÉSOLU** |
 
 **Objectif** : Nettoyer les TODOs XS, atteindre 21/25
 

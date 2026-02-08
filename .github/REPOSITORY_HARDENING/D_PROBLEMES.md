@@ -65,6 +65,7 @@
 - **Impact** : Code de compatibilité V3.1 encore présent
 - **Risque** : Dette technique - code mort
 - **Effort** : XS (1 heure)
+- **Statut** : ✅ **RÉSOLU** - Supprimé dans PR #25
 
 ---
 
