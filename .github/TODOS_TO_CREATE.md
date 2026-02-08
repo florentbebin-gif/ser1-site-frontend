@@ -25,6 +25,7 @@ Ce fichier liste les TODOs du code qui ont été créés comme issues GitHub pou
 - **Détails** : Actuellement géré par PPTXGenJS automatiquement. Devrait être explicite pour cohérence.
 - **Priorité** : Low
 - **Effort estimé** : XS (1-2 heures)
+- **Statut** : ✅ **RÉSOLU** - Layout 16:9 explicitement défini avec `pptx.layout = 'LAYOUT_16x9'`
 
 ## Issue #20 : Ajouter les masters slides depuis le template
 - **Fichier** : `src/pptx/template/loadBaseTemplate.ts:74`
@@ -43,6 +44,7 @@ Ce fichier liste les TODOs du code qui ont été créés comme issues GitHub pou
 - **Détails** : Actuellement retourne toujours `true`. Devrait vérifier `public/pptx/templates/serenity-base.pptx`
 - **Priorité** : Low
 - **Effort estimé** : XS (1-2 heures)
+- **Statut** : ✅ **RÉSOLU** - `isTemplateAvailable()` utilise fetch HEAD pour vérifier la présence du fichier
 
 ## Issue #22 : Charger l'image logo depuis l'URL et convertir en data URI
 - **Fichier** : `src/pptx/ops/applyCoverLogo.ts:113`
@@ -57,6 +59,7 @@ Ce fichier liste les TODOs du code qui ont été créés comme issues GitHub pou
 - **Détails** : Actuellement retourne `true` pour les index 1-9. Devrait vérifier `public/pptx/chapters/chapter-{index}.jpg`
 - **Priorité** : Low
 - **Effort estimé** : XS (1-2 heures)
+- **Statut** : ✅ **RÉSOLU** - `isChapterImageAvailable()` utilise fetch HEAD pour vérifier la présence des fichiers
 
 ## Issue #24 : Ajouter les barèmes spécifiques DMTG
 - **Fichier** : `src/engine/succession.ts:86`
