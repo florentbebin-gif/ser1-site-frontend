@@ -214,6 +214,7 @@ export type LoanSummary = {
   dureeMois: number;
   tauxNominal: number;
   tauxAssurance: number;
+  quotite?: number;  // 0..1, défaut 1 (100%). Quotité assurée
   creditType: 'amortissable' | 'infine';
   assuranceMode: 'CI' | 'CRD';
   mensualiteHorsAssurance: number;

@@ -34,11 +34,11 @@ L'interface se construit par superposition de plans pour créer de la profondeur
 ### A. Champs de Saisie (Inputs) — RÈGLE CRITIQUE ⚠️
 Pour garantir une affordance maximale (l'utilisateur doit savoir où cliquer), les champs de saisie doivent se détacher visuellement du fond.
 
-*   **Fond** : **TOUJOURS BLANC (`#FFFFFF`)**. Même sur fond `C7`.
+*   **Fond** : **TOUJOURS BLANC (`#FFFFFF`)**. Même sur fond `C7`. Ne jamais utiliser `var(--color-c7)` ou `transparent` comme fond d'un champ de saisie.
 *   **Bordure** : `1px solid var(--color-c8)`.
 *   **Focus** : Bordure `var(--color-c2)` + Ombre portée légère `var(--color-c4)`.
 *   **Radius** : `6px` ou `8px`.
-*   **Typographie** : `var(--color-c10)`.
+*   **Typographie** : `color: var(--color-c10)` ; `font-family: inherit` (hérite de la page, jamais la police système par défaut du navigateur) ; `font-size: 13px` (cohérent avec les labels et le corps de page).
 
 ```css
 /* Standard Input Style */
@@ -46,6 +46,8 @@ input, select, textarea {
   background-color: #FFFFFF; /* OBLIGATOIRE */
   border: 1px solid var(--color-c8);
   color: var(--color-c10);
+  font-family: inherit;      /* OBLIGATOIRE — cohérence typographique */
+  font-size: 13px;           /* OBLIGATOIRE — aligné sur les labels */
   border-radius: 6px;
   padding: 8px 12px;
 }

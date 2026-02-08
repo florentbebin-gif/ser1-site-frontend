@@ -144,8 +144,15 @@
   margin-bottom: var(--credit-gap);
 }
 
+.credit-params-grid--3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px 16px;
+}
+
 @media (max-width: 600px) {
-  .credit-params-grid {
+  .credit-params-grid,
+  .credit-params-grid--3 {
     grid-template-columns: 1fr;
   }
 }
@@ -183,7 +190,8 @@
   border-radius: 6px;
   border: 1px solid var(--color-c8);
   text-align: right;
-  background: var(--color-c7);
+  background: #FFFFFF;
+  font-family: inherit;
   font-size: 13px;
 }
 
@@ -205,7 +213,8 @@
   padding: 4px 8px;
   border-radius: 6px;
   border: 1px solid var(--color-c8);
-  background: var(--color-c7);
+  background: #FFFFFF;
+  font-family: inherit;
   font-size: 13px;
 }
 
@@ -217,10 +226,11 @@
 
 /* Card de synthèse / résultats */
 .credit-summary-card {
-  background: linear-gradient(135deg, var(--color-c7) 0%, var(--color-c7) 100%);
+  background: #FFFFFF;
   border: 1px solid var(--color-c8);
   border-radius: 10px;
   padding: 16px;
+  box-shadow: var(--shadow-md);
 }
 
 .credit-summary-title {

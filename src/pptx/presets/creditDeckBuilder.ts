@@ -65,6 +65,7 @@ export interface CreditData {
   dureeMois: number;
   tauxNominal: number;
   tauxAssurance: number;
+  quotite?: number;  // 0..1, défaut 1 (100%). Quotité assurée prêt principal
   mensualiteHorsAssurance: number;
   mensualiteTotale: number;
   creditType: 'amortissable' | 'infine';

@@ -232,6 +232,7 @@ const [capital, setCapital]         = useState(300000)
 const [duree, setDuree]             = useState(240)
 const [taux, setTaux]               = useState(3.50)
 const [tauxAssur, setTauxAssur]     = useState(0.30)
+const [quotite, setQuotite]         = useState(100)            // quotité assurée prêt 1 (en %)
 const [mensuBase, setMensuBase]     = useState('')             // saisie mensu prêt 1
 
 // État "touched" pour tracker si l'utilisateur a interagi avec les champs
@@ -239,10 +240,12 @@ const [touched, setTouched]         = useState({ capital: false, duree: false })
 
 const [rawTauxPlus, setRawTauxPlus] = useState({}); // par prêt id -> string
 const [rawTauxAssurPlus, setRawTauxAssurPlus] = useState({}); // par prêt id -> string pour taux assurance
+const [rawQuotitePlus, setRawQuotitePlus] = useState({}); // par prêt id -> string pour quotité
 
 //  version normalisée dès l’affichage
 const [rawTaux, setRawTaux] = useState(Number(taux).toFixed(2).replace('.', ','));
 const [rawTauxAssur, setRawTauxAssur] = useState(Number(tauxAssur).toFixed(2).replace('.', ','));
+const [rawQuotite, setRawQuotite] = useState(String(quotite));
 
 // Sync initial / reset
 useEffect(() => {
@@ -279,6 +282,7 @@ useEffect(() => {
           setDuree(s.duree ?? 240)
           setTaux(s.taux ?? 3.5)
           setTauxAssur(s.tauxAssur ?? 0.3)
+          setQuotite(s.quotite ?? 100)
           setMensuBase(s.mensuBase ?? '')
           setPretsPlus(Array.isArray(s.pretsPlus) ? s.pretsPlus : [])
           setLisserPret1(!!s.lisserPret1)
@@ -294,10 +298,10 @@ useEffect(() => {
     if(!hydrated) return
     try{
       sessionStorage.setItem(STORE_KEY, JSON.stringify({
-        startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode
+        startYM, assurMode, creditType, capital, duree, taux, tauxAssur, quotite, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode
       }))
     }catch{}
-  }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode, STORE_KEY])
+  }, [hydrated, startYM, assurMode, creditType, capital, duree, taux, tauxAssur, quotite, mensuBase, pretsPlus, lisserPret1, viewMode, lissageMode, STORE_KEY])
 
 // Reset global (ne réinitialise que les champs saisissables du simulateur CRÉDIT)
 useEffect(() => {
@@ -313,6 +317,7 @@ useEffect(() => {
     setDuree(0);
     setTaux(0);
     setTauxAssur(0);
+    setQuotite(100);
     setMensuBase('');
 
     // prêts additionnels : on efface tout
@@ -321,6 +326,7 @@ useEffect(() => {
     // champs "bruts" utilisés pour la saisie des taux
     setRawTauxPlus({});
     setRawTauxAssurPlus({});
+    setRawQuotitePlus({});
 
     // Réinitialiser l'état touched
     setTouched({ capital: false, duree: false });
@@ -398,7 +404,8 @@ useEffect(() => {
       const loanParams = {
         capital: C,
         tauxAssur: pTauxAssur,
-        assurMode: pAssurMode
+        assurMode: pAssurMode,
+        quotite: (p.quotite ?? 100) / 100
       };
       const rowsWithDeces = computeCapitalDecesSchedule(loanParams, baseRows);
       
@@ -453,14 +460,15 @@ useEffect(() => {
       const loanParams = {
         capital: effectiveCapitalPret1,
         tauxAssur: tauxAssur, // Déjà en % annuel
-        assurMode: assurMode
+        assurMode: assurMode,
+        quotite: quotite / 100
       };
       const rowsWithDeces = computeCapitalDecesSchedule(loanParams, rows);
       
       return rowsWithDeces
 
   }, [
-    effectiveCapitalPret1, r, rA, N, assurMode, creditType, tauxAssur,
+    effectiveCapitalPret1, r, rA, N, assurMode, creditType, tauxAssur, quotite,
     mensuBaseEffectivePret1, lisserPret1, autresRows, lissageMode, anyInfine
   ])
 
@@ -476,12 +484,14 @@ useEffect(() => {
       {
         capital: effectiveCapitalPret1,
         tauxAssur: tauxAssur,
-        assurMode: assurMode
+        assurMode: assurMode,
+        quotite: quotite / 100
       },
       ...pretsPlus.map(p => ({
         capital: Math.max(0, toNum(p.capital)),
         tauxAssur: Math.max(0, Number(p.tauxAssur) || 0),
-        assurMode: p.assurMode || 'CRD'
+        assurMode: p.assurMode || 'CRD',
+        quotite: (p.quotite ?? 100) / 100
       }))
     ];
     
@@ -490,7 +500,7 @@ useEffect(() => {
     
     // Calcule l'échéancier global avec capitaux décès unifiés
     return computeGlobalCapitalDecesSchedule(allLoansParams, allSchedules);
-  }, [pret1Rows, autresRows, pretsPlus, assurMode, effectiveCapitalPret1, tauxAssur])
+  }, [pret1Rows, autresRows, pretsPlus, assurMode, effectiveCapitalPret1, tauxAssur, quotite])
 
   /* ---- Agrégation annuelle (si besoin) ---- */
   const aggregateToYears = useCallback((rows) => {
@@ -502,7 +512,7 @@ useEffect(() => {
       cur.interet    += r.interet
       cur.assurance  += r.assurance
       cur.amort      += r.amort
-      cur.assuranceDeces = r.assuranceDeces ?? cur.assuranceDeces ?? null
+      if (cur.assuranceDeces === null) cur.assuranceDeces = r.assuranceDeces ?? null
       cur.mensu      += r.mensu
       cur.mensuTotal += r.mensuTotal
       cur.crd         = r.crd
@@ -527,9 +537,9 @@ function aggregateToYearsFromRows(rows, startYMBase) {
     acc.amort      += r.amort || 0;
     acc.mensu      += r.mensu || 0;
     acc.mensuTotal += r.mensuTotal || 0;
-    // on prend le dernier CRD / capital décès de l'année
+    // on prend le dernier CRD de l'année, mais le premier capital décès (début d'année)
     acc.crd         = r.crd || acc.crd || 0;
-    acc.assuranceDeces = r.assuranceDeces ?? acc.assuranceDeces ?? null;
+    if (acc.assuranceDeces === null) acc.assuranceDeces = r.assuranceDeces ?? null;
     map.set(year, acc);
   });
   return Array.from(map.entries()).map(([periode, v]) => ({ periode, ...v }));
@@ -640,7 +650,7 @@ const synthesePeriodes = useMemo(() => {
     setPretsPlus(arr => [...arr, {
       id: rid(), capital: 100000, duree: 120, taux: 2.50,
       startYM, type: creditType,
-      tauxAssur: 0, assurMode: 'CRD'  // Assurance désactivée par défaut (zéro régression)
+      tauxAssur: 0, assurMode: 'CRD', quotite: 100  // Assurance désactivée par défaut (zéro régression)
     }])
   }
   const updatePret = (id, patch) => setPretsPlus(arr => arr.map(p => p.id === id ? ({ ...p, ...patch }) : p))
@@ -704,6 +714,7 @@ const synthesePeriodes = useMemo(() => {
       rowsParams.push([cell('Mensualité totale estimée', 'sText'), cell(Math.round(mensuHorsAssurance_base + primeAssMensuelle), 'sMoney')]);
       rowsParams.push([cell("Mode de l’assurance (Prêt 1)", 'sText'), cell(assurMode === 'CI' ? 'Capital initial' : 'Capital restant dû', 'sText')]);
       rowsParams.push([cell('Taux annuel (assurance) — Prêt 1', 'sText'), cell((Number(tauxAssur) || 0) / 100, 'sPercent')]);
+      rowsParams.push([cell('Quotité assurée — Prêt 1', 'sText'), cell(quotite / 100, 'sPercent')]);
       rowsParams.push([cell('Vue', 'sText'), cell(isAnnual ? 'Vue annuelle' : 'Vue mensuelle', 'sText')]);
       rowsParams.push([cell('Lissage prêt 1', 'sText'), cell(lisserPret1 ? (lissageMode === 'mensu' ? 'Mensualité constante' : 'Durée constante') : 'Aucun', 'sText')]);
 
@@ -719,6 +730,7 @@ const synthesePeriodes = useMemo(() => {
         rowsParams.push([cell(`Prêt ${k} - Taux annuel (crédit)`, 'sText'), cell((Number(p.taux || 0) || 0) / 100, 'sPercent')]);
         rowsParams.push([cell(`Prêt ${k} - Taux annuel (assurance)`, 'sText'), cell((Number(p.tauxAssur || 0) || 0) / 100, 'sPercent')]);
         rowsParams.push([cell(`Prêt ${k} - Mode assurance`, 'sText'), cell(pAssurMode === 'CI' ? 'Capital initial' : 'Capital restant dû', 'sText')]);
+        rowsParams.push([cell(`Prêt ${k} - Quotité assurée`, 'sText'), cell((p.quotite ?? 100) / 100, 'sPercent')]);
         rowsParams.push([cell(`Prêt ${k} - Date de souscription`, 'sText'), cell(p.startYM ? labelMonthFR(p.startYM) : '', 'sText')]);
       });
 
@@ -884,6 +896,7 @@ const synthesePeriodes = useMemo(() => {
           dureeMois: N,
           tauxNominal: taux,
           tauxAssurance: tauxAssur,
+          quotite: quotite / 100,
           creditType: creditType,
           assuranceMode: assurMode,
           mensualiteHorsAssurance: mensuHorsAssurance_base,
@@ -903,6 +916,7 @@ const synthesePeriodes = useMemo(() => {
             dureeMois: toNum(p.duree),
             tauxNominal: Number(p.taux) || 0,
             tauxAssurance: Number(p.tauxAssur) || 0,
+            quotite: (p.quotite ?? 100) / 100,
             creditType: p.type || creditType,
             assuranceMode: p.assurMode || 'CRD',
             mensualiteHorsAssurance: pRows[0]?.mensu || 0,
@@ -961,6 +975,7 @@ const synthesePeriodes = useMemo(() => {
         dureeMois: maxDureeMois,
         tauxNominal: taux,
         tauxAssurance: tauxAssur,
+        quotite: quotite / 100,
         mensualiteHorsAssurance: mensuHorsAssurance_base,
         mensualiteTotale: mensuHorsAssurance_base + primeAssMensuelle,
         creditType: creditType,
@@ -1087,7 +1102,7 @@ const synthesePeriodes = useMemo(() => {
 
           <div className="credit-section premium-section">
             <div className="credit-section-title premium-section-title">Assurance emprunteur</div>
-            <div className="credit-params-grid premium-grid-2">
+            <div className="credit-params-grid--3 premium-grid-3">
               <div className="credit-field premium-field">
                 <label>Mode de calcul</label>
                 <div className="credit-input premium-input">
@@ -1117,7 +1132,24 @@ const synthesePeriodes = useMemo(() => {
                   <span className="credit-input__unit premium-unit">%</span>
                 </div>
               </div>
-                                        </div>
+              <div className="credit-field premium-field">
+                <label>Quotité assurée</label>
+                <div className="credit-input premium-input">
+                  <input type="text" inputMode="numeric" className="credit-input__field premium-input" value={rawQuotite}
+                    onChange={e => {
+                      const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 3);
+                      setRawQuotite(raw);
+                    }}
+                    onBlur={() => {
+                      const num = Math.min(100, Math.max(0, toNum(rawQuotite)));
+                      setQuotite(num);
+                      setRawQuotite(String(num));
+                    }}
+                  />
+                  <span className="credit-input__unit premium-unit">%</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1194,6 +1226,7 @@ const synthesePeriodes = useMemo(() => {
                   <th className="text-right">Taux</th>
                   <th className="text-right">Taux (ass.)</th>
                   <th>Mode</th>
+                  <th className="text-right">Quotité</th>
                   <th className="text-right">Mensualité</th>
                   <th>Date</th>
                   <th></th>
@@ -1241,6 +1274,23 @@ const synthesePeriodes = useMemo(() => {
                           <option value="CI">CI</option>
                           <option value="CRD">CRD</option>
                         </select>
+                      </td>
+                      <td className="text-right">
+                        <input type="text" inputMode="numeric" className="credit-input__field"
+                          value={rawQuotitePlus[p.id] ?? String(p.quotite ?? 100)}
+                          onChange={e => {
+                            const raw = e.target.value.replace(/[^0-9]/g, '').slice(0, 3);
+                            setRawQuotitePlus(m => ({ ...m, [p.id]: raw }));
+                            updatePret(p.id, { quotite: Math.min(100, Math.max(0, toNum(raw))) });
+                          }}
+                          onBlur={() => {
+                            const num = Math.min(100, Math.max(0, toNum(rawQuotitePlus[p.id] ?? String(p.quotite ?? 100))));
+                            updatePret(p.id, { quotite: num });
+                            setRawQuotitePlus(m => ({ ...m, [p.id]: String(num) }));
+                          }}
+                          style={{height:28, width:50}}
+                          placeholder="100"
+                        />
                       </td>
                       <td className="text-right font-semibold">{euro0(mensu)}</td>
                       <td className="text-center">
