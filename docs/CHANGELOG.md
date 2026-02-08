@@ -6,6 +6,50 @@
 
 ---
 
+## 2026-02-08 — Refactoring Phase 3 : PlacementV2.jsx → architecture modulaire
+
+### Objectif
+Réduire la complexité de `PlacementV2.jsx` (2 286 lignes) en extrayant ses responsabilités dans des modules dédiés.
+
+### Modules créés
+
+| Fichier | Contenu | Lignes |
+|---------|---------|--------|
+| `src/pages/placement/utils/formatters.js` | `fmt`, `euro`, `shortEuro`, `formatPercent`, `formatDmtgRange`, helpers PS | 41 |
+| `src/pages/placement/utils/normalizers.js` | Constants `DEFAULT_*`, `normalizeProduct`, `normalizeLoadedState`, `buildPersistedState`, `buildDmtgOptions` | 157 |
+| `src/pages/placement/components/inputs.jsx` | `InputEuro`, `InputPct`, `InputNumber`, `Select`, `Toggle` | 175 |
+| `src/pages/placement/components/tables.jsx` | `CollapsibleTable`, `AllocationSlider` | 97 |
+| `src/pages/placement/components/VersementConfigModal.jsx` | Modal paramétrage versements (initial, annuel, ponctuels) | 330 |
+| `src/pages/placement/utils/placementExcelExport.js` | `buildPlacementExcelXml`, `exportPlacementExcel` | 196 |
+| `src/pages/placement/utils/tableHelpers.jsx` | Colonnes, filtrage, renderers épargne/liquidation | 195 |
+
+### Résultat
+- **PlacementV2.jsx** : 2 286 → 1 047 lignes (**-54 %**, rôle orchestrateur)
+- 16 imports inutilisés nettoyés
+- tsc ✅ | eslint ✅ | vitest 83/83 ✅
+
+---
+
+## 2026-02-08 — Refactoring Phase 2 : ThemeProvider.tsx → modules
+
+### Objectif
+Réduire la complexité de `ThemeProvider.tsx` en extrayant types, cache, RPC et CSS sync.
+
+### Modules créés
+
+| Fichier | Contenu |
+|---------|---------|
+| `src/settings/theme/types.ts` | Interfaces `ThemeCache`, `ThemeScope`, `ThemeSource`, `ThemeContextValue`, etc. |
+| `src/settings/theme/hooks/useThemeCache.ts` | Fonctions cache localStorage (user, cabinet, logo, bootstrap) |
+| `src/settings/theme/hooks/useCabinetTheme.ts` | RPC Supabase : `loadCabinetTheme`, `loadCabinetLogo`, `loadOriginalTheme` |
+| `src/settings/theme/hooks/useThemeSync.ts` | `SOURCE_RANKS`, `getThemeHash`, `applyColorsToCSS` |
+
+### Résultat
+- ThemeProvider.tsx conservé comme orchestrateur avec imports propres
+- tsc ✅ | eslint ✅ | vitest ✅
+
+---
+
 ## 2026-02-08 — Fix TypeScript : Conversion supabaseClient.js → supabaseClient.ts
 
 ### Contexte
