@@ -36,6 +36,11 @@ git push origin feature/nom-clair
   - **`@/`** pour les imports cross-module / cross-feature (ex: `@/utils/`, `@/components/`)
   - **Chemins relatifs** (`./`, `../`) OK pour les imports locaux (même dossier ou sous-dossier)
 
+### Sécurité
+- **Auth** : Ne JAMAIS utiliser `user_metadata` pour les décisions d'autorisation (rôles, permissions). Utiliser `app_metadata` uniquement.
+  - Voir [docs/technical/security-user-metadata-guidelines.md](docs/technical/security-user-metadata-guidelines.md)
+- **Logging** : Aucun log de données sensibles en production.
+
 ### TypeScript
 - Types importés depuis les **modules sources**, pas depuis les Providers
 - Exemple : `import { ThemeColors } from './theme'` ✓  

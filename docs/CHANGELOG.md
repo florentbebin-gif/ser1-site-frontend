@@ -6,6 +6,41 @@
 
 ---
 
+## 2026-02-08 — Fix TypeScript : Conversion supabaseClient.js → supabaseClient.ts
+
+### Contexte
+CI échouait sur `npm run typecheck` avec 15 erreurs TS2339/TS1320. Le mock Supabase (fallback quand config manquante) était mal typé, causant des unions de types conflictuelles avec `SupabaseClient`.
+
+### Erreurs corrigées
+
+| Fichier | Erreur | Cause |
+|---------|--------|-------|
+| `src/auth/useUserRole.ts:39,107` | `Property 'getUser' does not exist` | Mock auth manquait `getUser()` |
+| `src/services/userModeService.ts:15` | `Property 'eq' does not exist` | Query builder mock non chainable |
+| `src/settings/ThemeProvider.tsx:290,339,749,790...` | `Property 'rpc'/'download'/'getUser'/'eq' does not exist` | Mock incomplet |
+| `src/settings/ThemeProvider.tsx:891` | `TS1320: await operand must not contain callable 'then'` | `.then()` sur le mock interférait avec `await` |
+
+### Fix appliqué
+
+**Conversion `src/supabaseClient.js` → `src/supabaseClient.ts`**
+
+| Changement | Détail |
+|------------|--------|
+| **Typage explicite** | `export const supabase: SupabaseClient` + mock typé `any` |
+| **Méthodes ajoutées** | `auth.getUser`, `rpc`, `storage.download`, query builder chainable (`eq`, `order`, `limit`, `maybeSingle`, `single`) |
+| **Résultats** | `single()`/`maybeSingle()` retournent `{ data: null, error: null }` (objet) ; `insert()`/`upsert()` chainables et awaitables |
+
+### Fichiers modifiés
+- `src/supabaseClient.ts` (créé) — Version TypeScript typée
+- `src/supabaseClient.js` (supprimé) — Remplacé par la version TS
+
+### Vérification
+```bash
+npm run typecheck  # ✅ 0 erreur
+```
+
+---
+
 ## 2026-02-06 — Fixes Edge Function, Auth, Thèmes + Nettoyage duplicates
 
 ### Contexte

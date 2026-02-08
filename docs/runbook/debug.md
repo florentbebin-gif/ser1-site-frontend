@@ -52,7 +52,7 @@ localStorage.removeItem('SER1_DEBUG_AUTH');        // Désactiver
 
 | Flag | Variable env | localStorage | Effet | Fichiers concernés |
 |------|--------------|--------------|-------|-------------------|
-| `auth` | `VITE_DEBUG_AUTH` | `SER1_DEBUG_AUTH` | Logs auth (session, refresh, erreurs) | `supabaseClient.js`, `AuthProvider.tsx`, `App.jsx`, `useUserRole.ts`, `Settings.jsx` |
+| `auth` | `VITE_DEBUG_AUTH` | `SER1_DEBUG_AUTH` | Logs auth (session, refresh, erreurs) | `supabaseClient.ts`, `AuthProvider.tsx`, `App.jsx`, `useUserRole.ts`, `Settings.jsx` |
 | `pptx` | `VITE_DEBUG_PPTX` | `SER1_DEBUG_PPTX` | Logs export PPTX (deck building) | `creditDeckBuilder.ts`, `irDeckBuilder.ts` |
 | `comptes` | `VITE_DEBUG_COMPTES` | `SER1_DEBUG_COMPTES` | Logs refresh comptes admin | `SettingsComptes.jsx` |
 | `admin` | `VITE_DEBUG_ADMIN` | `SER1_DEBUG_ADMIN` | Logs admin/fetch | `isAbortError.js` |

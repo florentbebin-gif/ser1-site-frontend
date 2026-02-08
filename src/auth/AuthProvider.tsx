@@ -2,7 +2,7 @@
  * AuthProvider - Version simplifiée
  * 
  * Principe : faire confiance à Supabase pour gérer les sessions.
- * - autoRefreshToken: true dans supabaseClient.js gère le refresh automatique
+ * - autoRefreshToken: true dans supabaseClient.ts gère le refresh automatique
  * - onAuthStateChange écoute les changements d'état
  * - Pas de listeners focus/visibility qui causent des déconnexions
  * - Pas de refresh manuel agressif

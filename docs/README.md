@@ -26,9 +26,9 @@ docs/
 
 | Document | Description | Usage |
 |----------|-------------|-------|
-| **[color-governance.md](design/color-governance.md)** | Tokens C1-C10, 2 exceptions (#FFFFFF, #996600), mapping sémantique, règles contraste | **OBLIGATOIRE** avant toute modif couleur |
+| **[Gouvernance UI](docs/design/ui-governance.md)** | Standards Layout, Inputs, Typo, Composants "Premium" | **OBLIGATOIRE** pour toute nouvelle page |
 
-**⚠️ Règle absolue** : Aucune couleur hardcodée sauf `WHITE (#FFFFFF)` et `WARNING (#996600)`. Tout le reste passe par les tokens C1-C10 ou `getSemanticColors()`.
+**⚠️ RÈGLES ABSOLUES** : Aucune couleur hardcodée sauf `WHITE (#FFFFFF)` et `WARNING (#996600)`. Tout le reste passe par les tokens C1-C10 ou `getSemanticColors()`.
 
 ---
 
