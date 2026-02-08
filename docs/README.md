@@ -17,7 +17,7 @@ docs/
 ├── CHANGELOG.md                 # 📜 Historique détaillé des évolutions
 ├── adr/                         # Architecture Decision Records
 │   └── ADR-001-pptx-template-strategy.md
-└── technical/                   # Guides techniques
+├── technical/                   # Guides techniques
     ├── admin/                   # Documentation page admin
     ├── api/                     # Documentation API
     │   └── admin-function.md    # Référence Edge Function admin
@@ -25,6 +25,10 @@ docs/
     │   └── edge-functions-diagnostics.md
     └── security/
         └── security-user-metadata-guidelines.md
+└── theme/                       # 🎨 Système de thème
+    ├── architecture.md          # Architecture ThemeProvider, sources, hiérarchie
+    ├── cabinet-themes.md        # Thèmes cabinet, cache, invalidation
+    └── troubleshooting.md      # Debug et résolution des problèmes de thème
 ```
 
 ---
@@ -35,6 +39,14 @@ docs/
 |----------|-------------|-------|
 | **[Gouvernance Couleurs](design/color-governance.md)** | Règles complètes C1-C10, exceptions, contraste | **OBLIGATOIRE** avant toute modif couleur |
 | **[Gouvernance UI](design/ui-governance.md)** | Standards Layout, Inputs, Typo, Composants "Premium" | **OBLIGATOIRE** pour toute nouvelle page |
+
+## 🎨 Système de Thème
+
+| Document | Description | Usage |
+|----------|-------------|-------|
+| **[Architecture Thème](theme/architecture.md)** | ThemeProvider, sources, hiérarchie des couleurs | **OBLIGATOIRE** pour comprendre le système |
+| **[Thèmes Cabinet](theme/cabinet-themes.md)** | Cache, invalidation, changement de cabinet | **OBLIGATOIRE** pour debug thème cabinet |
+| **[Troubleshooting Thème](theme/troubleshooting.md)** | Debug et résolution des problèmes de thème | **OBLIGATOIRE** pour résoudre les bugs |
 
 **⚠️ RÈGLES ABSOLUES** : Aucune couleur hardcodée sauf `WHITE (#FFFFFF)` et `WARNING (#996600)`. Tout le reste passe par les tokens C1-C10 ou `getSemanticColors()`.
 
