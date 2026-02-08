@@ -47,24 +47,28 @@
 - **Impact** : Dimensions gérées par défaut par PPTXGenJS
 - **Risque** : Faible - comportement actuel stable
 - **Effort** : XS (1-2 heures)
+- **Statut** : ✅ **RÉSOLU** - Layout 16:9 explicitement défini
 
 ### PROB-006 : Vérification fichiers template (Issue #21)
 - **Fichier** : `src/pptx/template/loadBaseTemplate.ts:88`
 - **Impact** : Fonction retourne toujours `true`
 - **Risque** : Faible - fichier toujours présent dans le build
 - **Effort** : XS (1-2 heures)
+- **Statut** : ✅ **RÉSOLU** - `isTemplateAvailable()` utilise fetch HEAD
 
 ### PROB-007 : Vérification images chapitre (Issue #23)
 - **Fichier** : `src/pptx/ops/applyChapterImage.ts:130`
 - **Impact** : Pas de validation réelle des fichiers images
 - **Risque** : Faible - images statiques dans public/
 - **Effort** : XS (1-2 heures)
+- **Statut** : ✅ **RÉSOLU** - `isChapterImageAvailable()` utilise fetch HEAD
 
 ### PROB-008 : Code deprecated Settings.jsx (Issue #25)
 - **Fichier** : `src/pages/Settings.jsx:262`
 - **Impact** : Code de compatibilité V3.1 encore présent
 - **Risque** : Dette technique - code mort
 - **Effort** : XS (1 heure)
+- **Statut** : ✅ **RÉSOLU** - Supprimé dans PR #25
 
 ---
 

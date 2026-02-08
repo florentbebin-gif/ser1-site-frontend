@@ -123,14 +123,23 @@ export function applyChapterImageWithPlacement(
 
 /**
  * Vérifie la disponibilité d'une image de chapitre
+ * 
+ * @param chapterIndex - Index du chapitre (1-9)
+ * @returns Promise<boolean> - true si l'image existe
  */
-export function isChapterImageAvailable(chapterIndex: number): boolean {
+export async function isChapterImageAvailable(chapterIndex: number): Promise<boolean> {
   if (chapterIndex < 1 || chapterIndex > 9) return false;
   
-  // TODO(#23): Vérifier la présence réelle du fichier
-  // Pour l'instant, on suppose que les images sont disponibles
-  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
-  return true;
+  const fileName = `ch-${chapterIndex.toString().padStart(2, '0')}.png`;
+  const imagePath = `/pptx/chapters/${fileName}`;
+  
+  try {
+    const response = await fetch(imagePath, { method: 'HEAD' });
+    return response.ok;
+  } catch {
+    // En cas d'erreur réseau, on suppose que l'image n'est pas disponible
+    return false;
+  }
 }
 
 /**
