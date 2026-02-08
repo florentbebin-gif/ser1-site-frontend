@@ -11,6 +11,7 @@ Ce fichier liste les TODOs du code qui ont été créés comme issues GitHub pou
   - Ou parser le PPTX et reconstruire les slides
 - **Priorité** : Medium
 - **Effort estimé** : L (1-2 semaines)
+- **Statut** : ✅ **RÉSOLU** — Spike POC réalisé (8/8 tests). Décision ADR-001 : template codé PptxGenJS retenu. Voir `docs/adr/ADR-001-pptx-template-strategy.md`
 
 ## Issue #18 : Charger la structure depuis public/pptx/templates/serenity-base.pptx
 - **Fichier** : `src/pptx/template/loadBaseTemplate.ts:40`
@@ -18,6 +19,7 @@ Ce fichier liste les TODOs du code qui ont été créés comme issues GitHub pou
 - **Détails** : Actuellement reconstruction minimale. Le template file est à `public/pptx/templates/serenity-base.pptx`
 - **Priorité** : Medium
 - **Effort estimé** : M (3-5 jours)
+- **Statut** : ✅ **RÉSOLU** — ADR-001 décide : pas de template natif. `defineSlideMasters()` remplace le besoin d'un fichier .pptx
 
 ## Issue #19 : Définir les dimensions du slide (16:9)
 - **Fichier** : `src/pptx/template/loadBaseTemplate.ts:70`
@@ -37,6 +39,7 @@ Ce fichier liste les TODOs du code qui ont été créés comme issues GitHub pou
   - End slide master
 - **Priorité** : Medium
 - **Effort estimé** : M (3-5 jours)
+- **Statut** : ✅ **RÉSOLU** — 4 masters définis via `defineSlideMasters()` (SERENITY_COVER, CHAPTER, CONTENT, END). 10 builders refactorisés pour utiliser `masterName`
 
 ## Issue #21 : Vérifier la présence réelle du fichier template
 - **Fichier** : `src/pptx/template/loadBaseTemplate.ts:88`
@@ -52,6 +55,7 @@ Ce fichier liste les TODOs du code qui ont été créés comme issues GitHub pou
 - **Détails** : Actuellement retourne l'URL directe. Pour plus de fiabilité (CORS, disponibilité), convertir en data URI.
 - **Priorité** : Medium
 - **Effort estimé** : S (1 jour)
+- **Statut** : ✅ **RÉSOLU** — `prepareLogoForInjection()` implémenté avec import dynamique de `loadLogoDataUriSafe`
 
 ## Issue #23 : Vérifier la présence réelle des images de chapitre
 - **Fichier** : `src/pptx/ops/applyChapterImage.ts:130`

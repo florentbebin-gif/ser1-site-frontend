@@ -1,6 +1,6 @@
 # E) Plan d'Amélioration & Roadmap - SER1 Repository
 
-> Version : 2026-02-07  
+> Version : 2026-02-08  
 > Horizon : Q1 2026 (Février - Mars - Avril)  
 > Objectif : Passer de 20/25 (80%) à 24/25 (96%)
 
@@ -46,37 +46,25 @@ Transformer SER1 en codebase "production-grade" avec :
 
 ---
 
-### Mars : Export PPTX Professionnel (Issues #17, #18, #20)
+### ~~Février : Export PPTX Professionnel (Issues #17, #18, #20, #22)~~ ✅ **RÉSOLU**
 
-#### Sprint 1 : Solution Template PPTX (#17, #18)
+#### ~~Sprint 1 : Logo Data URI (#22)~~ ✅
 
-**Options à évaluer** :
-1. **pptx-template** (lib externe) - Recherche solution
-2. **pptxgenjs/plugins** - Vérifier support template
-3. **Parser XML** - Solution custom lourde
+**Livré** : `prepareLogoForInjection()` avec import dynamique de `loadLogoDataUriSafe`
 
-**Décision requise** : Architecture review
+#### ~~Sprint 2 : Masters Slides (#20)~~ ✅
 
-**Livrables** :
-- POC chargement template
-- Benchmark solutions
-- Architecture Decision Record (ADR)
+**Livré** :
+- 4 masters définis via `defineSlideMasters()` (COVER, CHAPTER, CONTENT, END)
+- 10 builders refactorisés pour utiliser `masterName`
+- Zéro régression visuelle
 
-#### Sprint 2 : Masters Slides (#20)
+#### ~~Sprint 3 : Spike Template Natif (#17, #18)~~ ✅
 
-**Dépendance** : Issue #17 résolue
-
-```
-Masters à créer :
-├── Cover slide (titre + logo)
-├── Chapter slide (transition chapitres)
-├── Content slide (contenu texte/charts)
-└── End slide (conclusion + contact)
-```
-
-**Livrables** :
-- `src/pptx/masters/` module
-- Template `serenity-base.pptx` validé
+**Livré** :
+- POC `analyzePptxStructure.ts` — 8/8 tests passent
+- ADR-001 : Template codé PptxGenJS retenu (template natif rejeté)
+- Voir `docs/adr/ADR-001-pptx-template-strategy.md`
 
 ---
 
@@ -133,11 +121,11 @@ FÉVRIER 2026
 ├── S3-4 : #24 (Barèmes DMTG - CRITIQUE)
 └── S5 : Code review + Release notes
 
-MARS 2026
-├── S1-2 : POC Template PPTX (#17, #18)
-├── S3 : Masters slides (#20)
-├── S4 : Logo data URI (#22)
-└── S5 : Stabilisation + Tests E2E setup
+MARS 2026 (avance sur planning — #17/#18/#20/#22 résolus en février)
+├── S1 : Tests coverage + E2E setup
+├── S2 : Refactor large files
+├── S3-4 : Nouveaux simulateurs PPTX
+└── S5 : Stabilisation
 
 AVRIL 2026
 ├── S1 : Tests coverage + E2E
@@ -173,7 +161,7 @@ AVRIL 2026
 
 | Risque | Probabilité | Impact | Mitigation |
 |--------|-------------|--------|------------|
-| Issue #17 (PPTX) complexe | Élevée | Forte | Timebox à 2 semaines, fallback reconstruction |
+| ~~Issue #17 (PPTX) complexe~~ | ~~Élevée~~ | ~~Forte~~ | ✅ Résolu — ADR-001 : template codé retenu |
 | Expertise fiscale manquante | Moyenne | Forte | Externaliser validation barèmes |
 | Refactor large files cassant | Moyenne | Moyenne | Tests E2E avant refactoring |
 | Dépendance Vite/Supabase | Faible | Forte | Garder versions LTS |
@@ -183,11 +171,12 @@ AVRIL 2026
 ## 🎯 Prochaine Session
 
 **Date suggérée** : Semaine du 10 Février 2026  
-**Scope** : Phase 1 (XS cleanup) + début Phase 2 (#24 barèmes)  
-**Durée estimée** : 2-3 jours  
+**Scope** : Phase 3 (Tests, Refactoring, Nouveaux simulateurs)  
+**Durée estimée** : 1-2 semaines  
 **Livrables attendus** :
-- PR #25, #21, #23, #19 merged
-- Début implémentation #24 (structure + barème frères/sœurs)
+- Tests E2E Playwright setup
+- Refactor ThemeProvider.tsx
+- Nouveau simulateur PPTX (Placement ou Succession)
 
 ---
 
