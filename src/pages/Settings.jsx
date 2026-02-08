@@ -359,26 +359,39 @@ export default function Settings() {
     
     if (themeName === 'Personnalisé') {
       // 🎨 V4.0: Restaurer le thème personnalisé depuis ThemeProvider
-      if (customPalette) {
-        const legacyColors = {
-          color1: customPalette.c1,
-          color2: customPalette.c2,
-          color3: customPalette.c3,
-          color4: customPalette.c4,
-          color5: customPalette.c5,
-          color6: customPalette.c6,
-          color7: customPalette.c7,
-          color8: customPalette.c8,
-          color9: customPalette.c9,
-          color10: customPalette.c10,
-        };
-        setColorsLegacy(legacyColors);
-        setColorText(legacyColors);
-        syncThemeColors(legacyColors);
-      }
+      // ou utiliser les couleurs actuelles comme base si pas de customPalette
+      const basePalette = customPalette || {
+        c1: colorsLegacy.color1 ?? DEFAULT_COLORS.c1,
+        c2: colorsLegacy.color2 ?? DEFAULT_COLORS.c2,
+        c3: colorsLegacy.color3 ?? DEFAULT_COLORS.c3,
+        c4: colorsLegacy.color4 ?? DEFAULT_COLORS.c4,
+        c5: colorsLegacy.color5 ?? DEFAULT_COLORS.c5,
+        c6: colorsLegacy.color6 ?? DEFAULT_COLORS.c6,
+        c7: colorsLegacy.color7 ?? DEFAULT_COLORS.c7,
+        c8: colorsLegacy.color8 ?? DEFAULT_COLORS.c8,
+        c9: colorsLegacy.color9 ?? DEFAULT_COLORS.c9,
+        c10: colorsLegacy.color10 ?? DEFAULT_COLORS.c10,
+      };
+      
+      const legacyColors = {
+        color1: basePalette.c1,
+        color2: basePalette.c2,
+        color3: basePalette.c3,
+        color4: basePalette.c4,
+        color5: basePalette.c5,
+        color6: basePalette.c6,
+        color7: basePalette.c7,
+        color8: basePalette.c8,
+        color9: basePalette.c9,
+        color10: basePalette.c10,
+      };
+      setColorsLegacy(legacyColors);
+      setColorText(legacyColors);
+      syncThemeColors(legacyColors);
+      
       // Mettre à jour la référence
       setSelectedThemeRef('custom');
-      await saveThemeToUiSettings(customPalette || colorsLegacy, 'custom');
+      await saveThemeToUiSettings(basePalette, 'custom');
       return;
     }
     
@@ -572,11 +585,11 @@ export default function Settings() {
                     <div className="settings-color-inputs">
                       <input
                         type="color"
-                        value={colorsLegacy.color1}
+                        value={colorsLegacy.color1 ?? '#000000'}
                         onChange={(e) => handleColorChange('color1', e.target.value)}
                         disabled={themeSource === 'cabinet'}
                       />
-                      <code className="settings-color-hex">{colorText.color1?.toUpperCase() || colorsLegacy.color1?.toUpperCase()}</code>
+                      <code className="settings-color-hex">{(colorText.color1 ?? colorsLegacy.color1 ?? '#000000').toUpperCase()}</code>
                     </div>
                   </div>
                 </div>
@@ -626,11 +639,11 @@ export default function Settings() {
                         <div className="settings-color-inputs">
                           <input
                             type="color"
-                            value={colorsLegacy[key]}
+                            value={colorsLegacy[key] ?? '#000000'}
                             onChange={(e) => handleColorChange(key, e.target.value)}
                             disabled={themeSource === 'cabinet'}
                           />
-                          <code className="settings-color-hex">{colorText[key]?.toUpperCase() || colorsLegacy[key]?.toUpperCase()}</code>
+                          <code className="settings-color-hex">{(colorText[key] ?? colorsLegacy[key] ?? '#000000').toUpperCase()}</code>
                         </div>
                       </div>
                     ))}
