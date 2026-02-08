@@ -17,7 +17,8 @@
     "icons:build": "node tools/scripts/normalize-business-icons.mjs",
     "test:e2e": "npx playwright test",
     "test:e2e:ui": "npx playwright test --ui",
-    "test:e2e:report": "npx playwright show-report"
+    "test:e2e:report": "npx playwright show-report",
+    "prepare": "husky"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.42.0",
@@ -38,9 +39,17 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "supabase": "^2.74.5",
     "typescript": "^5.9.3",
     "vite": "^5.2.0",
     "vitest": "^4.0.16"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "tsc --noEmit --skipLibCheck"
+    ]
   }
 }
