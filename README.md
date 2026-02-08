@@ -281,13 +281,38 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 
 ---
 
-## 6. Commandes & Développement
+## 6. Dépendances & Sécurité
 
-### 6.1 Prérequis
+### 6.1 Gestion des warnings npm
+**Problème** : Dépendances transitives dépréciées (`inflight@1.0.6`, `glob@7.2.3`) avec vulnérabilités sécurité.
+
+**Solution** : Overrides npm dans `package.json` :
+```json
+{
+  "overrides": {
+    "glob": "13.0.1"
+  }
+}
+```
+
+**Impact** : Élimine les warnings de sécurité et fuites mémoire dans le build Vercel.
+
+### 6.2 Scripts d'analyse
+```powershell
+npm run check:circular  # Détection dépendances circulaires (madge)
+npm run check:unused    # Rapport dépendances inutilisées (depcheck)
+npm run analyze         # Visualisation bundle (vite-bundle-visualizer)
+```
+
+---
+
+## 7. Commandes & Développement
+
+### 7.1 Prérequis
 - Node.js 22.x (`.nvmrc` + `package.json > engines`)
 - Variables `.env.local` : `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 
-### 6.2 Scripts
+### 7.2 Scripts
 ```powershell
 npm install
 npm run dev          # localhost:5173
@@ -297,7 +322,7 @@ npm run lint         # ESLint avec plugin ser1-colors (gouvernance couleurs)
 npm run typecheck    # TypeScript --noEmit (0 erreur obligatoire)
 ```
 
-### 6.3 Quality Gates (avant chaque commit/PR)
+### 7.3 Quality Gates (avant chaque commit/PR)
 Tous les checks doivent passer :
 ```powershell
 npm run check      # Tous les checks (lint + typecheck + test + build)
@@ -307,7 +332,7 @@ npm test           # Tests unitaires
 npm run build      # Build Vite
 ```
 
-**Nouveaux scripts d'analyse (optionnels) :**
+**Scripts d'analyse (optionnels) :**
 ```powershell
 npm run check:circular  # Détection dépendances circulaires (madge)
 npm run check:unused    # Rapport dépendances inutilisées (depcheck)
@@ -318,13 +343,13 @@ npm run test:e2e        # Tests E2E Playwright (smoke tests)
 
 ---
 
-## 7. Debug & Logs
+## 8. Debug & Logs
 
-### 7.1 Politique console
+### 8.1 Politique console
 - `console.error/warn` : erreurs réelles uniquement
 - `console.log/info/debug/trace` : **interdits** sauf derrière flag explicite
 
-### 7.2 Flags DEBUG (localStorage)
+### 8.2 Flags DEBUG (localStorage)
 ```javascript
 localStorage.setItem('DEBUG_AUTH', 'true')
 localStorage.setItem('DEBUG_PPTX', 'true')
@@ -333,7 +358,7 @@ localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true')
 
 ---
 
-## 8. Troubleshooting (8 cas)
+## 9. Troubleshooting (9 cas)
 
 | Symptôme | Cause | Fix |
 |----------|-------|-----|
@@ -345,10 +370,11 @@ localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true')
 | Flash thème au F5 | CSS `:root` écrase vars | Bootstrap head dans `index.html` + `ThemeProvider` vérifie `window.__ser1ThemeBootstrap` |
 | Build Vercel Node 24.x | `engines: ">=22"` trop permissif | Pin strict `"22.x"` dans `package.json` |
 | Logo PPTX manquant | Bucket `logos` non créé | Créer bucket + appliquer migrations |
+| npm warnings inflight/glob | Dépendances transitives dépréciées | Overrides npm dans `package.json` (glob@13.0.1) |
 
 ---
 
-## 9. Liens documentation
+## 10. Liens documentation
 
 - [Historique détaillé](docs/CHANGELOG.md) — post-mortems, évolutions
 - `ADMIN_COMPTES_ET_SIGNALMENTS.md` — Gestion admin

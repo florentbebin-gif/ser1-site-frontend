@@ -6,6 +6,30 @@
 
 ---
 
+## 2026-02-08 — Sécurité : Correction warnings npm (inflight/glob)
+
+### Problème
+Warnings de sécurité dans le build Vercel :
+- `inflight@1.0.6` : Fuites mémoire, plus maintenu
+- `glob@7.2.3` : Vulnérabilités de sécurité publiques
+
+### Solution appliquée
+| Action | Détail |
+|--------|--------|
+| **Override npm** | Ajout de `"overrides": { "glob": "13.0.1" }` dans `package.json` |
+| **Impact** | Élimine inflight (dépendance transitive) et met glob à jour |
+| **Validation** | `npm run check:circular` fonctionne, build sans warnings |
+
+### Fichiers modifiés
+- `package.json` - Ajout section overrides
+- `package-lock.json` - Régénéré avec dépendances mises à jour
+
+### Documentation
+- README.md mis à jour avec section "Dépendances & Sécurité"
+- Entrée ajoutée au troubleshooting
+
+---
+
 ## 2026-02-08 — Refactor Codebase Cleanup Plan : Quality Gates & Standards
 
 ### Objectif
