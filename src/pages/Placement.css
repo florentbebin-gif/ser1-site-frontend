@@ -1811,3 +1811,108 @@
     font-size: 8px;
   }
 }
+
+/* ===========================================================
+   STYLES MIGRÉS DE Ir.css - Élimine dépendance croisée
+   Ces classes étaient importées depuis Ir.css, maintenant 
+   autonomes dans Placement.css
+   =========================================================== */
+
+/* Panel principal */
+.pl-panel {
+  max-width: 1100px;
+  margin: 16px auto;
+  padding: 16px;
+}
+
+/* Header */
+.pl-ir-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-c1);
+  border-bottom: 4px solid var(--color-c6);
+  padding-bottom: 8px;
+}
+
+.pl-ir-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-c10);
+}
+
+/* Grid layout */
+.pl-ir-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1.3fr);
+  gap: 20px;
+}
+
+.pl-ir-left,
+.pl-ir-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Table wrapper */
+.pl-ir-table-wrapper {
+  border-radius: 10px;
+  border: 1px solid var(--color-c8);
+  background: var(--color-c7);
+  padding: 10px;
+}
+
+/* Table */
+.pl-ir-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.pl-ir-table thead {
+  background: var(--color-c7);
+}
+
+.pl-ir-table th,
+.pl-ir-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+.pl-ir-table th {
+  text-align: center;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.pl-ir-table td:first-child {
+  font-weight: 500;
+}
+
+.pl-ir-table input[type='number'],
+.pl-ir-table input[type='text'] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--color-c8);
+  text-align: right;
+}
+
+/* Synthesis card */
+.pl-ir-synthesis-card {
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--color-c8);
+  background: var(--color-c7);
+  padding: 10px 12px;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
