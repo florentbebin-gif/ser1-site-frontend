@@ -157,17 +157,6 @@ AVRIL 2026
 
 ---
 
-## 🚧 Risques & Mitigations
-
-| Risque | Probabilité | Impact | Mitigation |
-|--------|-------------|--------|------------|
-| ~~Issue #17 (PPTX) complexe~~ | ~~Élevée~~ | ~~Forte~~ | ✅ Résolu — ADR-001 : template codé retenu |
-| Expertise fiscale manquante | Moyenne | Forte | Externaliser validation barèmes |
-| Refactor large files cassant | Moyenne | Moyenne | Tests E2E avant refactoring |
-| Dépendance Vite/Supabase | Faible | Forte | Garder versions LTS |
-
----
-
 ## 🎯 Prochaine Session
 
 **Date suggérée** : Semaine du 10 Février 2026  

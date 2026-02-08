@@ -21,6 +21,7 @@
 - **Risque** : UX - Exports PPTX de qualité insuffisante
 - **Effort** : L (1-2 semaines)
 - **Blocage** : PPTXGenJS ne supporte pas nativement l'ouverture de fichiers PPTX
+- **Statut** : ✅ **RÉSOLU**
 
 ---
 
@@ -32,12 +33,14 @@
 - **Risque** : Fiabilité - Logos manquants dans les exports
 - **Effort** : S (1 jour)
 - **Solution** : Convertir en base64 au moment de l'upload ou du cache
+- **Statut** : ✅ **RÉSOLU** — `prepareLogoForInjection()` implémenté
 
 ### PROB-004 : Masters slides manquants (Issue #20)
 - **Fichier** : `src/pptx/template/loadBaseTemplate.ts:74`
 - **Impact** : Pas de master slides définies dans les exports PPTX
 - **Risque** : UX - Formatage inconsistent des slides
 - **Effort** : M (3-5 jours)
+- **Statut** : ✅ **RÉSOLU** — 4 masters définis + 10 builders refactorisés
 
 ---
 
@@ -98,25 +101,30 @@
 
 | Domaine | Critiques | Majeurs | Mineurs | Total |
 |---------|-----------|---------|---------|-------|
-| Métier/Fiscal | 2 | 0 | 0 | 2 |
-| PPTX/Export | 0 | 2 | 3 | 5 |
-| UI/Compatibilité | 0 | 0 | 2 | 2 |
+| Métier/Fiscal | 0 | 0 | 0 | 0 |
+| PPTX/Export | 0 | 0 | 0 | 0 |
+| UI/Compatibilité | 0 | 0 | 0 | 0 |
+
+**Tous les problèmes identifiés ont été résolus.** ✅
 
 ---
 
 ## Recommandations de Priorisation
 
-### Sprint 1 (Semaine prochaine)
-1. ~~**PROB-008** (#25) - Nettoyage Settings.jsx~~ ✅ **RÉSOLU**
+### ✅ Tous les problèmes critiques et majeurs ont été résolus
 
-### Sprint 2 (Mois prochain)
-2. **PROB-001** (#24) - Barèmes DMTG (validation métier nécessaire)
-3. **PROB-002** (#17) - Template PPTX natif (recherche solution)
+| Problème | Statut | Détails |
+|----------|--------|---------|
+| PROB-001 (#24) | ✅ RÉSOLU | Barèmes DMTG complets |
+| PROB-002 (#17) | ✅ RÉSOLU | Spike POC + ADR-001 |
+| PROB-003 (#22) | ✅ RÉSOLU | Logo data URI |
+| PROB-004 (#20) | ✅ RÉSOLU | Masters slides |
+| PROB-005 à 008 | ✅ RÉSOLUS | XS cleanup |
 
-### Backlog
-- ~~PROB-005, 006, 007 (XS - résolus)~~ ✅ **RÉSOLUS**
-- **PROB-003** (#22) - Logo data URI (1 jour)
-- **PROB-004** (#20) - Masters slides (3-5 jours)
+### Prochaines étapes suggérées
+1. **Tests E2E** — Setup Playwright (5 scénarios critiques)
+2. **Refactoring** — `ThemeProvider.tsx` (~970 lignes → <300 lignes)
+3. **Nouveaux simulateurs** — Placement ou Succession en PPTX
 
 ---
 

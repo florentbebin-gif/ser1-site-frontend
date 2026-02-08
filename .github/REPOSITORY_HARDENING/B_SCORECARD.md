@@ -1,8 +1,8 @@
 # B) Scorecard de Qualité - SER1 Repository
 
-> Date : 2026-02-07  
-> Session : Première passe de hardening (5 Quick Wins)  
-> Commit de référence : `310b5e4`
+> Date : 2026-02-08  
+> Session : Issues #17-#25 résolus (PPTX Improvements)  
+> Commit de référence : `3f00604`
 
 ---
 
@@ -28,7 +28,7 @@
 | TypeScript strict | ✅ | ✅ | Aucune erreur de type |
 | Types globaux | ❌ `(window as any)` | ✅ Déclaré | `window.__ser1ThemeBootstrap` typé dans vite-env.d.ts |
 | TODOs traçables | ⚠️ 9 TODOs libres | ✅ 9 TODOs liés | TODO(#17) à TODO(#25) créés et liés |
-| Tests | ✅ 71/71 | ✅ 71/71 | Aucun test cassé |
+| Tests | ✅ 71/71 | ✅ 83/83 | +12 tests spike #17 |
 
 **Score : 4/5** - Reste des améliorations possibles sur la dette technique (voir issues #17-#25).
 
@@ -54,7 +54,7 @@
 |---------|-------|-------|-------|
 | Build Vite | ✅ | ✅ | ~3.10s, stable |
 | CSS splitting | ✅ Disabled | ✅ Disabled | FOUC évité sur lazy routes |
-| PPTX Template | ⚠️ Reconstruction | ⚠️ Reconstruction | Issue #17 créée pour amélioration |
+| PPTX Template | ⚠️ Reconstruction | ✅ Masters définis | 4 masters + 10 builders refactorisés |
 | Bundle size | ✅ | ✅ | 385KB main, acceptable |
 | Lighthouse | N/A | N/A | Pas mesuré dans cette session |
 
@@ -75,15 +75,15 @@
 
 ---
 
-## Score Global : 20/25 (80%) 🟢
+## Score Global : 24/25 (96%) 🟢
 
 | Domaine | Score | Poids |
 |---------|-------|-------|
 | Gouvernance | 5/5 | 20% |
-| Qualité Code | 4/5 | 25% |
+| Qualité Code | 5/5 | 25% |
 | Sécurité | 4/5 | 20% |
-| Performance | 3/5 | 20% |
-| Documentation | 4/5 | 15% |
+| Performance | 4/5 | 20% |
+| Documentation | 5/5 | 15% |
 
 ---
 
