@@ -13,6 +13,7 @@
 - **Risque** : Métier - Données fiscales erronées pour les clients
 - **Effort** : M (3-5 jours)
 - **Dépendances** : Nécessite validation métier des barèmes exacts
+- **Statut** : ✅ **RÉSOLU** - Barèmes complets par lien de parenté + référentiel admin modifiable
 
 ### PROB-002 : Chargement PPTX par reconstruction (Issue #17)
 - **Fichier** : `src/pptx/template/loadBaseTemplate.ts:26`

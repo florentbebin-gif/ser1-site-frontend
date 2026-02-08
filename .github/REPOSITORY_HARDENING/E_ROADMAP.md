@@ -33,26 +33,16 @@ Transformer SER1 en codebase "production-grade" avec :
 
 ## Phase 2 : Fonctionnalités Critiques (Février-Mars 2026)
 
-### Semaine 3-4 : Barèmes DMTG (Issue #24) 🔴
+### ~~Semaine 3-4 : Barèmes DMTG (Issue #24)~~ ✅ **RÉSOLU**
 
 **Impact** : Calculs fiscaux corrects pour tous les cas de succession
 
-```
-Tâches :
-├── Rechercher barème frères/sœurs (documentation fiscale)
-├── Implémenter barème collatéraux
-├── Implémenter barème non-parents
-├── Tests unitaires sur chaque barème
-├── Validation métier avec expert fiscal
-└── Mise à jour documentation
-```
-
 **Livrables** :
-- `src/engine/succession.ts` complété
-- Tests : `src/engine/__tests__/succession-baremes.test.ts`
-- Doc : Barèmes dans README.md
-
-**Effort** : M (3-5 jours)
+- `src/engine/civil.ts` — Types `DmtgSettings` + `DEFAULT_DMTG` (4 catégories)
+- `src/engine/succession.ts` — `calculateDMTG()` multi-barèmes par lien de parenté
+- `src/pages/Sous-Settings/SettingsImpots.jsx` — Référentiel admin modifiable (4 sous-sections)
+- `src/utils/fiscalSettingsCache.js` — Defaults DMTG synchronisés
+- Tests : 16 tests dont 4 nouveaux barèmes DMTG
 
 ---
 

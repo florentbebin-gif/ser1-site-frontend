@@ -100,19 +100,71 @@ export const REGIMES_MATRIMONIAUX: Record<RegimeMatrimonial, RegimeInfo> = {
   },
 };
 
+// --- Types DMTG ---
+export interface DmtgScaleItem {
+  from: number;
+  to: number | null;
+  rate: number;
+}
+
+export interface DmtgCategory {
+  abattement: number;
+  scale: DmtgScaleItem[];
+}
+
+export interface DmtgSettings {
+  ligneDirecte: DmtgCategory;
+  frereSoeur: DmtgCategory;
+  neveuNiece: DmtgCategory;
+  autre: DmtgCategory;
+}
+
+// --- Barèmes DMTG par défaut (2024) ---
+export const DEFAULT_DMTG: DmtgSettings = {
+  ligneDirecte: {
+    abattement: 100_000,
+    scale: [
+      { from: 0, to: 8_072, rate: 5 },
+      { from: 8_072, to: 12_109, rate: 10 },
+      { from: 12_109, to: 15_932, rate: 15 },
+      { from: 15_932, to: 552_324, rate: 20 },
+      { from: 552_324, to: 902_838, rate: 30 },
+      { from: 902_838, to: 1_805_677, rate: 40 },
+      { from: 1_805_677, to: null, rate: 45 },
+    ],
+  },
+  frereSoeur: {
+    abattement: 15_932,
+    scale: [
+      { from: 0, to: 24_430, rate: 35 },
+      { from: 24_430, to: null, rate: 45 },
+    ],
+  },
+  neveuNiece: {
+    abattement: 7_967,
+    scale: [
+      { from: 0, to: null, rate: 55 },
+    ],
+  },
+  autre: {
+    abattement: 1_594,
+    scale: [
+      { from: 0, to: null, rate: 60 },
+    ],
+  },
+};
+
 // Abattements transmission (enfants) - Version 2024
-export const ABATTEMENT_ENFANT = 100_000; // €
+// @deprecated Utiliser DEFAULT_DMTG.ligneDirecte.abattement
+export const ABATTEMENT_ENFANT = DEFAULT_DMTG.ligneDirecte.abattement;
 
 // Barème DMTG ligne directe (2024)
-export const BAREME_DMTG_LIGNE_DIRECTE = [
-  { min: 0, max: 8_072, taux: 5 },
-  { min: 8_072, max: 12_109, taux: 10 },
-  { min: 12_109, max: 15_932, taux: 15 },
-  { min: 15_932, max: 552_324, taux: 20 },
-  { min: 552_324, max: 902_838, taux: 30 },
-  { min: 902_838, max: 1_805_677, taux: 40 },
-  { min: 1_805_677, max: Infinity, taux: 45 },
-];
+// @deprecated Utiliser DEFAULT_DMTG.ligneDirecte.scale
+export const BAREME_DMTG_LIGNE_DIRECTE = DEFAULT_DMTG.ligneDirecte.scale.map(s => ({
+  min: s.from,
+  max: s.to ?? Infinity,
+  taux: s.rate,
+}));
 
 export interface CivilSituationInput {
   regime: RegimeMatrimonial;

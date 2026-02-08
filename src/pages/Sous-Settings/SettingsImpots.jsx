@@ -136,18 +136,73 @@ domAbatement: {
     },
   },
   dmtg: {
-    abattementLigneDirecte: 100000,
-    scale: [
-      { from: 0, to: 8072, rate: 5 },
-      { from: 8072, to: 12109, rate: 10 },
-      { from: 12109, to: 15932, rate: 15 },
-      { from: 15932, to: 552324, rate: 20 },
-      { from: 552324, to: 902838, rate: 30 },
-      { from: 902838, to: 1805677, rate: 40 },
-      { from: 1805677, to: null, rate: 45 },
-    ],
+    ligneDirecte: {
+      abattement: 100000,
+      scale: [
+        { from: 0, to: 8072, rate: 5 },
+        { from: 8072, to: 12109, rate: 10 },
+        { from: 12109, to: 15932, rate: 15 },
+        { from: 15932, to: 552324, rate: 20 },
+        { from: 552324, to: 902838, rate: 30 },
+        { from: 902838, to: 1805677, rate: 40 },
+        { from: 1805677, to: null, rate: 45 },
+      ],
+    },
+    frereSoeur: {
+      abattement: 15932,
+      scale: [
+        { from: 0, to: 24430, rate: 35 },
+        { from: 24430, to: null, rate: 45 },
+      ],
+    },
+    neveuNiece: {
+      abattement: 7967,
+      scale: [
+        { from: 0, to: null, rate: 55 },
+      ],
+    },
+    autre: {
+      abattement: 1594,
+      scale: [
+        { from: 0, to: null, rate: 60 },
+      ],
+    },
   },
 };
+
+// Migration des anciennes données DMTG vers la nouvelle structure multi-catégories
+function migrateDmtgData(data) {
+  if (!data?.dmtg) return data;
+
+  const hasOldStructure = data.dmtg.abattementLigneDirecte !== undefined;
+  const hasNewStructure = data.dmtg.ligneDirecte !== undefined;
+
+  if (hasOldStructure && !hasNewStructure) {
+    return {
+      ...data,
+      dmtg: {
+        ligneDirecte: {
+          abattement: data.dmtg.abattementLigneDirecte,
+          scale: data.dmtg.scale,
+        },
+        frereSoeur: DEFAULT_TAX_SETTINGS.dmtg.frereSoeur,
+        neveuNiece: DEFAULT_TAX_SETTINGS.dmtg.neveuNiece,
+        autre: DEFAULT_TAX_SETTINGS.dmtg.autre,
+      },
+    };
+  }
+
+  // Fusion avec défauts pour les catégories manquantes
+  return {
+    ...data,
+    dmtg: {
+      ligneDirecte: data.dmtg.ligneDirecte || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte,
+      frereSoeur: data.dmtg.frereSoeur || DEFAULT_TAX_SETTINGS.dmtg.frereSoeur,
+      neveuNiece: data.dmtg.neveuNiece || DEFAULT_TAX_SETTINGS.dmtg.neveuNiece,
+      autre: data.dmtg.autre || DEFAULT_TAX_SETTINGS.dmtg.autre,
+    },
+  };
+}
 
 export default function SettingsImpots() {
   const [user, setUser] = useState(null);
@@ -189,9 +244,10 @@ export default function SettingsImpots() {
           .eq('id', 1);
 
         if (!taxErr && rows && rows.length > 0 && rows[0].data) {
+          const migratedData = migrateDmtgData(rows[0].data);
           setSettings((prev) => ({
             ...prev,
-            ...rows[0].data,
+            ...migratedData,
           }));
         } else if (taxErr && taxErr.code !== 'PGRST116') {
           console.error('Erreur chargement tax_settings :', taxErr);
@@ -268,16 +324,40 @@ export default function SettingsImpots() {
 
   const { incomeTax, pfu, cehr, cdhr, corporateTax, dmtg } = settings;
 
-  const updateDmtgScale = (index, key, value) => {
-    setData((prev) => ({
-      ...prev,
-      dmtg: {
-        ...prev.dmtg,
-        scale: prev.dmtg.scale.map((row, i) =>
-          i === index ? { ...row, [key]: value } : row
-        ),
-      },
-    }));
+  const updateDmtgCategory = (categoryKey, field, value) => {
+    setData((prev) => {
+      const category = prev.dmtg?.[categoryKey];
+      if (!category) return prev;
+
+      // Mise à jour du barème (tableau)
+      if (field === 'scale' && typeof value === 'object' && 'idx' in value) {
+        const { idx, key, value: cellValue } = value;
+        return {
+          ...prev,
+          dmtg: {
+            ...prev.dmtg,
+            [categoryKey]: {
+              ...category,
+              scale: category.scale.map((row, i) =>
+                i === idx ? { ...row, [key]: cellValue } : row
+              ),
+            },
+          },
+        };
+      }
+
+      // Mise à jour simple (abattement)
+      return {
+        ...prev,
+        dmtg: {
+          ...prev.dmtg,
+          [categoryKey]: {
+            ...category,
+            [field]: value,
+          },
+        },
+      };
+    });
     setMessage('');
   };
 
@@ -1145,43 +1225,59 @@ export default function SettingsImpots() {
 {/* Section DMTG - Droits de Mutation à Titre Gratuit */}
 <div className="fisc-acc-item">
   <button type="button" className="fisc-acc-header" id="impots-header-dmtg" aria-expanded={openSection === 'dmtg'} aria-controls="impots-panel-dmtg" onClick={() => setOpenSection(openSection === 'dmtg' ? null : 'dmtg')}>
-    <span className="settings-premium-title" style={{ margin: 0 }}>Droits de Mutation à Titre Gratuit (DMTG) - Ligne directe</span>
+    <span className="settings-premium-title" style={{ margin: 0 }}>Droits de Mutation à Titre Gratuit (DMTG)</span>
     <span className="fisc-acc-chevron">{openSection === 'dmtg' ? '▾' : '▸'}</span>
   </button>
   {openSection === 'dmtg' && (
   <div className="fisc-acc-body" id="impots-panel-dmtg" role="region" aria-labelledby="impots-header-dmtg">
-  <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 8 }}>
-    Barème applicable aux successions et donations en ligne directe (parents → enfants).
-    Utilisé par le simulateur de placement pour la phase de transmission.
+  <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
+    Barèmes applicables aux successions et donations selon le lien de parenté.
+    Utilisés par le simulateur de placement pour la phase de transmission.
   </p>
 
-  <div className="income-tax-col">
-    <div className="income-tax-block">
-      <div className="income-tax-block-title">Abattement</div>
-      <SettingsFieldRow
-        label="Abattement par enfant (ligne directe)"
-        path={['dmtg', 'abattementLigneDirecte']}
-        value={dmtg?.abattementLigneDirecte}
-        onChange={updateField}
-        unit="€"
-        disabled={!isAdmin}
-      />
-    </div>
-
-    <div className="income-tax-block">
-      <div className="income-tax-block-title">Barème progressif</div>
-      <SettingsTable
-        columns={[
-          { key: 'from', header: 'De (€)' },
-          { key: 'to', header: 'À (€)' },
-          { key: 'rate', header: 'Taux %', step: '0.1', className: 'taux-col' },
-        ]}
-        rows={dmtg?.scale || []}
-        onCellChange={(idx, key, value) => updateDmtgScale(idx, key, value)}
-        disabled={!isAdmin}
-      />
-    </div>
-  </div>
+  {[
+    { key: 'ligneDirecte', title: 'Ligne directe (enfants, petits-enfants)', labelAbattement: 'Abattement par enfant' },
+    { key: 'frereSoeur', title: 'Frères et sœurs', labelAbattement: 'Abattement frère/sœur' },
+    { key: 'neveuNiece', title: 'Neveux et nièces', labelAbattement: 'Abattement neveu/nièce' },
+    { key: 'autre', title: 'Autres (non-parents)', labelAbattement: 'Abattement par défaut' },
+  ].map(({ key, title, labelAbattement }) => {
+    const catData = dmtg?.[key];
+    if (!catData) return null;
+    return (
+      <div key={key} className="income-tax-block" style={{ marginBottom: 24 }}>
+        <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+          {title}
+        </div>
+        <div style={{ paddingLeft: 8 }}>
+          <div className="settings-field-row" style={{ marginBottom: 12 }}>
+            <label>{labelAbattement}</label>
+            <input
+              type="number"
+              value={numberOrEmpty(catData.abattement)}
+              onChange={(e) =>
+                updateDmtgCategory(key, 'abattement',
+                  e.target.value === '' ? null : Number(e.target.value))
+              }
+              disabled={!isAdmin}
+            />
+            <span>€</span>
+          </div>
+          <SettingsTable
+            columns={[
+              { key: 'from', header: 'De (€)' },
+              { key: 'to', header: 'À (€)' },
+              { key: 'rate', header: 'Taux %', step: '0.1', className: 'taux-col' },
+            ]}
+            rows={catData.scale || []}
+            onCellChange={(idx, colKey, value) =>
+              updateDmtgCategory(key, 'scale', { idx, key: colKey, value })
+            }
+            disabled={!isAdmin}
+          />
+        </div>
+      </div>
+    );
+  })}
   </div>
   )}
 </div>
