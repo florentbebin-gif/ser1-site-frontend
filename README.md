@@ -1,11 +1,11 @@
 # SER1 — Audit Patrimonial Express + Stratégie Guidée
 
-**Dernière mise à jour : 2026-02-06 (Europe/Paris)**
+**Dernière mise à jour : 2026-02-08 (Europe/Paris)**
 
 Application web interne pour CGP : audit patrimonial, stratégie guidée, simulateurs IR/Placement/Crédit, exports PPTX/Excel.
 
 **Stack** : React 18 + Vite 5 + Supabase (Auth/DB/Storage/Edge Functions) + Vercel.  
-**Tests** : 71 unitaires (Vitest).  
+**Tests** : 83 unitaires (Vitest) + 8 smoke tests (Playwright).  
 **Historique** : [docs/CHANGELOG.md](docs/CHANGELOG.md)  
 **Roadmap** : [.github/REPOSITORY_HARDENING/E_ROADMAP.md](.github/REPOSITORY_HARDENING/E_ROADMAP.md)
 **Debug flags** : [docs/runbook/debug.md](docs/runbook/debug.md)  

@@ -6,6 +6,52 @@
 
 ---
 
+## 2026-02-08 — Refactor Codebase Cleanup Plan : Quality Gates & Standards
+
+### Objectif
+Réduire la dette technique et standardiser les conventions pour améliorer la maintenabilité.
+
+### Changements appliqués
+
+| Type | Changement | Impact |
+|------|------------|--------|
+| **Console logs** | 3 `console.debug` conditionnés avec `DEBUG_PPTX` + 3 `console.warn` avec `import.meta.env.DEV` | Production propre |
+| **CI** | Step anti-console.* non protégés dans `.github/workflows/ci.yml` | Bloque les régressions |
+| **Pre-commit** | Husky + lint-staged (ESLint auto-fix) | Quality gates automatisés |
+| **CSS cross-import** | `PlacementV2.jsx` n'importe plus `Ir.css`, styles migrés vers `Placement.css` | Autonomie CSS |
+| **Imports** | 30 imports relatifs → alias `@/` dans 4 fichiers Settings | Cohérence |
+| **Documentation** | Règles CSS & imports ajoutées à `CONTRIBUTING.md` | Conventions documentées |
+| **Tests** | 6 smoke tests Playwright pour pages figées (Home, Login, IR, Credit, Placement, Settings) | Protection régressions |
+| **Helpers API** | `src/utils/settingsApi.ts` avec `loadSettings`, `saveSettings`, `getCurrentUser`, `mergeWithDefaults` | Amorce refactor Settings |
+
+### Fichiers modifiés
+- `src/pptx/ops/applyChapterImage.ts` - Console logs protégés
+- `src/pptx/designSystem/serenity.ts` - Console logs protégés  
+- `.github/workflows/ci.yml` - Step anti-console
+- `.husky/pre-commit`, `package.json` - Pre-commit hooks
+- `src/pages/PlacementV2.jsx` - Suppression import `Ir.css`
+- `src/pages/Placement.css` - Styles partagés avec préfixe `pl-ir-*`
+- `src/pages/Sous-Settings/*.jsx` - 30 imports standardisés
+- `CONTRIBUTING.md` - Règles CSS & imports
+- `tests/e2e/smoke.spec.ts` - Smoke tests
+- `src/utils/settingsApi.ts` - Helpers API Settings
+
+### Validation
+```bash
+npm run lint          # ✅ 0 erreur
+npm run typecheck     # ✅ 0 erreur  
+npm test              # ✅ 83 tests + 8 smoke tests
+npm run build         # ✅ Build OK
+```
+
+### Quality Gates activés
+- **Pre-commit** : ESLint auto-fix sur chaque commit
+- **CI** : Bloque les `console.*` non protégés
+- **Tests** : Smoke tests pour pages stables
+- **Documentation** : Règles imports/CSS dans CONTRIBUTING.md
+
+---
+
 ## 2026-02-08 — Refactoring Phase 3 : PlacementV2.jsx → architecture modulaire
 
 ### Objectif
