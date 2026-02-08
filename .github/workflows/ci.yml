@@ -37,6 +37,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Run npm run check
+        run: npm run check
+
       - name: Check no console.* in production
         run: |
           ! grep -r "console\.(log|debug|info|trace)" src/ \
