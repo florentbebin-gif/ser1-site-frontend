@@ -69,20 +69,32 @@ function getUserIdFromAuthStorage() {
   return null
 }
 
+import AppErrorFallback from './components/AppErrorFallback'
+
 // Apply IMMEDIATELY - before any async work
 applyThemeBootstrap()
 
 // On attend que Supabase ait fini son travail avant de monter React
-waitInitialSession().then(() => {
-  createRoot(document.getElementById('root')).render(
-    <React.StrictMode>
-      <BrowserRouter>
-        <AuthProvider>
-          <ThemeProvider>
-            <App />
-          </ThemeProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </React.StrictMode>
-  )
-})
+waitInitialSession()
+  .then(() => {
+    createRoot(document.getElementById('root')).render(
+      <React.StrictMode>
+        <BrowserRouter>
+          <AuthProvider>
+            <ThemeProvider>
+              <App />
+            </ThemeProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </React.StrictMode>
+    )
+  })
+  .catch((error) => {
+    // Cas critique : Supabase mal configuré ou inaccessible au boot
+    console.error('[Fatal] App initialization failed:', error)
+    createRoot(document.getElementById('root')).render(
+      <React.StrictMode>
+        <AppErrorFallback error={error} type="config" />
+      </React.StrictMode>
+    )
+  })
