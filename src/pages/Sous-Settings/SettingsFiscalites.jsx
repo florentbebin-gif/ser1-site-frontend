@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { supabase } from '@/supabaseClient';
 import './SettingsFiscalites.css';
-import { invalidate, broadcastInvalidation } from '../../utils/fiscalSettingsCache.js';
-import { UserInfoBanner } from '../../components/UserInfoBanner';
-import { numberOrEmpty, textOrEmpty, createFieldUpdater } from '../../utils/settingsHelpers.js';
-import SettingsFieldRow from '../../components/settings/SettingsFieldRow';
-import SettingsTable from '../../components/settings/SettingsTable';
+import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.js';
+import { UserInfoBanner } from '@/components/UserInfoBanner';
+import { numberOrEmpty, textOrEmpty, createFieldUpdater } from '@/utils/settingsHelpers.js';
+import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
+import SettingsTable from '@/components/settings/SettingsTable';
 
 // ------------------------------------------------------------
 // Valeurs par défaut (Assurance-vie) — issues du tableau Excel PJ
