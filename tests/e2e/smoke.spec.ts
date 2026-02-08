@@ -13,13 +13,14 @@ test.describe('Smoke Tests — Pages figées', () => {
   test.beforeEach(async ({ page }) => {
     page.on('console', (msg) => {
       if (msg.type() === 'error') {
-        // eslint-disable-next-line no-console
+        /* eslint-disable no-console */
         console.log(`[Browser Console Error] ${msg.text()}`);
       }
     });
     
     page.on('pageerror', (error) => {
-      // eslint-disable-next-line no-console
+       
+      // eslint-disable no-console
       console.log(`[Browser Page Error] ${error.message}`);
     });
   });
@@ -34,6 +35,7 @@ test.describe('Smoke Tests — Pages figées', () => {
     // Vérifie pas d'erreurs console
     const consoleErrors: string[] = [];
     page.on('console', (msg) => {
+       
       if (msg.type() === 'error') consoleErrors.push(msg.text());
     });
     await page.waitForLoadState('networkidle');
