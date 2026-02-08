@@ -96,9 +96,12 @@ export function isValidLogoUrl(logoUrl: string): boolean {
 }
 
 /**
- * Prépare le logo pour l'injection
- * - Convertit si nécessaire
- * - Valide le format
+ * Prépare le logo pour l'injection PPTX
+ * - Si URL Supabase : charge via loadLogoDataUri et convertit en data URI
+ * - Si data URI : retourne directement
+ * 
+ * Note : Le chargement depuis URL utilise une approche Image+Canvas pour
+ * bypasser les restrictions CORS de Supabase Storage.
  */
 export async function prepareLogoForInjection(logoUrl: string): Promise<string> {
   if (!isValidLogoUrl(logoUrl)) {
@@ -110,10 +113,15 @@ export async function prepareLogoForInjection(logoUrl: string): Promise<string> 
     return logoUrl;
   }
   
-  // TODO(#22): Charger l'image depuis l'URL et convertir en data URI
-  // Pour l'instant, on retourne l'URL directe
-  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
-  return logoUrl;
+  // Charger depuis URL et convertir en data URI
+  const { loadLogoDataUriSafe } = await import('../logo/loadLogoDataUri');
+  const dataUri = await loadLogoDataUriSafe(logoUrl);
+  
+  if (!dataUri) {
+    throw new Error(`Failed to load logo from URL: ${logoUrl}`);
+  }
+  
+  return dataUri;
 }
 
 export default {
