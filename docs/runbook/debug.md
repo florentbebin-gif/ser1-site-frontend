@@ -148,3 +148,79 @@ npm run build
 | Helper debugFlags | ✅ Créé et intégré |
 | Checklist debug flags | ✅ Documentée |
 | Documentation | ✅ À jour |
+
+---
+
+## CI/CD E2E Debugging
+
+Guide de configuration et debug des tests E2E sur GitHub Actions.
+
+### Configuration des secrets GitHub Actions
+
+**Requis pour les tests E2E :**
+1. Allez dans **Settings → Secrets and variables → Actions**
+2. Cliquez **New repository secret** pour chaque variable :
+
+| Secret | Description | Source |
+|--------|-------------|--------|
+| `VITE_SUPABASE_URL` | URL Supabase du projet | `.env.local` |
+| `VITE_SUPABASE_ANON_KEY` | Clé anonyme Supabase | `.env.local` |
+| `E2E_EMAIL` | Email compte de test | Créer un compte dédié |
+| `E2E_PASSWORD` | Mot de passe compte de test | Idem |
+
+### Relancer un workflow E2E
+
+**Option 1 : Push sur main (déclenchement auto)**
+```bash
+git commit --allow-empty -m "chore: trigger E2E rerun"
+git push
+```
+
+**Option 2 : Re-run depuis l'interface GitHub**
+1. Allez dans **Actions → E2E Tests**
+2. Sélectionnez le run échoué
+3. Cliquez **Re-run jobs** (bouton en haut à droite)
+4. Choisissez **Re-run failed jobs** ou **Re-run all jobs**
+
+### Télécharger et analyser les traces
+
+**1. Download des artifacts (si le workflow a échoué)**
+- Les artifacts sont uploadés avec `if: always()` (même en cas d'échec)
+- Cliquez sur le run → Section **Artifacts** → Téléchargez `playwright-report`
+
+**2. Ouvrir le rapport HTML**
+```bash
+# Dézipper l'artifact
+unzip playwright-report.zip -d playwright-report/
+
+# Lancer le serveur de rapport
+npx playwright show-report playwright-report/
+# ou
+npx playwright show-report playwright-report/playwright-report/
+```
+
+**3. Ouvrir les traces (trace.zip)**
+Les traces sont dans `test-results/` et permettent de voir :
+- Screenshots écran par écran
+- Actions Playwright chronologiques
+- Network logs
+- Console logs
+
+```bash
+# Ouvrir une trace spécifique
+npx playwright show-trace test-results/auth-login-fails/trace.zip
+```
+
+**Ou visuellement :**
+1. Ouvrez `playwright-report/index.html` dans le navigateur
+2. Cliquez sur un test échoué
+3. La trace s'ouvre avec timeline, screenshots, et DOM
+
+### Diagnostic rapide des erreurs communes
+
+| Erreur | Cause probable | Fix |
+|--------|---------------|-----|
+| `VITE_SUPABASE_URL missing` | Secrets non configurés | Ajouter les 4 secrets GitHub |
+| `login-* selectors not found` | Auth échoue (pas de compte) | Vérifier E2E_EMAIL / E2E_PASSWORD |
+| `net::ERR_CONNECTION_REFUSED` | Le serveur preview ne démarre pas | Vérifier le build passe d'abord |
+| `timeout exceeded` | Serveur lent ou crash | Augmenter timeout dans playwright.config.ts |
