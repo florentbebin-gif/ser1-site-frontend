@@ -4,8 +4,8 @@
  * Fonctions pures qui transforment state + results en XML Excel.
  */
 
-import { ENVELOPE_LABELS } from '../../../engine/placementEngine.js';
-import { buildWorksheetXmlVertical, downloadExcel } from '../../../utils/exportExcel.js';
+import { ENVELOPE_LABELS } from '@/engine/placementEngine.js';
+import { buildWorksheetXmlVertical, downloadExcel } from '@/utils/exportExcel.js';
 import {
   formatPsApplicability, formatPsNote,
   getPsAssietteNumeric, getPsTauxNumeric, getPsMontantNumeric,

@@ -3,8 +3,8 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { normalizeVersementConfig } from '../../../utils/versementConfig.js';
-import { ENVELOPE_LABELS } from '../../../engine/placementEngine.js';
+import { normalizeVersementConfig } from '@/utils/versementConfig.js';
+import { ENVELOPE_LABELS } from '@/engine/placementEngine.js';
 import { InputEuro, InputPct, InputNumber } from './inputs.jsx';
 import { AllocationSlider } from './tables.jsx';
 
