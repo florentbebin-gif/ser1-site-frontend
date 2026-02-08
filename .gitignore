@@ -88,3 +88,9 @@ console_logs_inventory.txt
 
 # Audit temporaires
 _audit/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+blob-report/
