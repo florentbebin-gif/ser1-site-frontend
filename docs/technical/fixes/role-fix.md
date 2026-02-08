@@ -1,6 +1,16 @@
 # Fix définitif du rôle admin dans SER1
 
-## Problème identifié
+> **Statut** : ✅ Terminé — Solution intégrée dans `useUserRole.ts`
+
+## Résumé
+Le hook `useUserRole.ts` lit maintenant depuis `public.profiles` en priorité avec fallback sur `user_metadata`.
+
+## Changement clé
+- `src/auth/useUserRole.ts` : lecture `profiles` table + fallback
+
+---
+
+## Problème identifié (historique)
 
 L’application lit le rôle depuis `user_metadata` au lieu de `public.profiles`. Vous avez mis `role = 'admin'` dans `profiles`, mais le front ne regarde pas cette table.
 
