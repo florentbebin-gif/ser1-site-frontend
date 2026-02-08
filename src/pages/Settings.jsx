@@ -258,13 +258,6 @@ export default function Settings() {
             // eslint-disable-next-line no-console
             console.debug('[Settings] role detected', { userId: u.id, isAdmin, role: meta.role });
           }
-
-          // TODO(#25): Logo handling deprecated in V3.1 - cabinet logos now managed in admin
-          // Kept for compatibility only - should be removed
-          // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
-          if (meta.cover_slide_url && !logo) {
-            setLogo(meta.cover_slide_url);
-          }
         }
       } catch (e) {
         console.error(e);
