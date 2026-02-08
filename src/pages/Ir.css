@@ -272,7 +272,7 @@
 
 /* Erreur */
 .ir-error {
-  color: #b00020; /* Rouge erreur standard */
+  color: var(--color-c1); /* Danger - utilise C1 selon gouvernance couleurs */
   font-size: 13px;
 }
 

@@ -266,11 +266,11 @@
   margin-top: 2px;
 }
 
-/* Warnings */
+/* Warnings - utilisation des tokens sémantiques */
 .credit-warnings {
-  background: #fff7e6;
-  border: 1px solid #e5c07b;
-  color: #7a5a00;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c6);
+  color: var(--color-c1);
   padding: 10px 14px;
   border-radius: 8px;
   margin-bottom: 12px;
