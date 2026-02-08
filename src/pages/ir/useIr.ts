@@ -80,7 +80,7 @@ export interface UseIrReturn {
   psPatrimonyRate: number;
   
   // Handlers
-  updateIncome: (who: string, field: string, value: number) => void;
+  updateIncome: (_who: string, _field: string, _value: number) => void;
   reset: () => void;
   hydrated: boolean;
 }
@@ -232,12 +232,12 @@ export function useIr(): UseIrReturn {
   }, [STORE_KEY, reset]);
 
   // Handlers
-  const updateIncome = useCallback((who: string, field: string, value: number) => {
+  const updateIncome = useCallback((_who: string, _field: string, _value: number) => {
     setIncomes((prev: any) => ({
       ...prev,
-      [who]: {
-        ...prev[who],
-        [field]: toNum(value, 0),
+      [_who]: {
+        ...prev[_who],
+        [_field]: toNum(_value, 0),
       },
     }));
   }, []);
