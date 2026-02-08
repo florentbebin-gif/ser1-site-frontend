@@ -1,10 +1,18 @@
 ﻿/**
- * PlacementV2.jsx - Simulateur de placement refondu
- * 
- * Architecture :
- * - Moteur de calcul découplé (placementEngine.js)
- * - Settings-driven (hook usePlacementSettings)
- * - 3 phases : Épargne → Liquidation → Transmission
+ * PlacementV2.jsx — Orchestrateur du simulateur de placement
+ *
+ * Architecture modulaire :
+ * - Moteur de calcul        → engine/placementEngine.js
+ * - Settings-driven         → hooks/usePlacementSettings.js
+ * - Formatters              → placement/utils/formatters.js
+ * - Normalizers & constants → placement/utils/normalizers.js
+ * - Input components        → placement/components/inputs.jsx
+ * - Table components        → placement/components/tables.jsx
+ * - VersementConfigModal    → placement/components/VersementConfigModal.jsx
+ * - Excel export            → placement/utils/placementExcelExport.js
+ * - Table helpers           → placement/utils/tableHelpers.jsx
+ *
+ * 3 phases : Épargne → Liquidation → Transmission
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
