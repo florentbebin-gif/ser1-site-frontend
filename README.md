@@ -300,10 +300,19 @@ npm run typecheck    # TypeScript --noEmit (0 erreur obligatoire)
 ### 6.3 Quality Gates (avant chaque commit/PR)
 Tous les checks doivent passer :
 ```powershell
-npm run lint       # 0 erreur ESLint
-npm run typecheck  # 0 erreur TypeScript
-npm test           # 71 tests passent
-npm run build      # Build Vite OK
+npm run check      # Tous les checks (lint + typecheck + test + build)
+npm run lint       # ESLint uniquement
+npm run typecheck  # TypeScript uniquement
+npm test           # Tests unitaires
+npm run build      # Build Vite
+```
+
+**Nouveaux scripts d'analyse (optionnels) :**
+```powershell
+npm run check:circular  # Détection dépendances circulaires (madge)
+npm run check:unused    # Rapport dépendances inutilisées (depcheck)
+npm run analyze         # Visualisation bundle (vite-bundle-visualizer)
+npm run test:e2e        # Tests E2E Playwright (smoke tests)
 ```
 > ⚠️ La CI bloque les PR si un gate échoue. Voir [CONTRIBUTING.md](CONTRIBUTING.md).
 

@@ -9,12 +9,20 @@ git pull
 git checkout -b feature/nom-clair
 
 # 2. Quality Gates (obligatoires avant commit)
-npm run lint      # ESLint - 0 erreur
-npm run typecheck # TypeScript - 0 erreur
-npm test          # 71 tests passent
-npm run build     # Build Vite OK
+npm run check      # Tous les checks (lint + typecheck + test + build)
+# ou individuellement :
+npm run lint       # ESLint - 0 erreur
+npm run typecheck  # TypeScript - 0 erreur
+npm test           # 83 tests passent
+npm run build      # Build Vite OK
 
-# 3. Commit et push
+# 3. Analyses optionnelles
+npm run check:circular  # Détection dépendances circulaires
+npm run check:unused    # Rapport dépendances inutilisées
+npm run analyze         # Visualisation bundle
+npm run test:e2e        # Tests E2E Playwright
+
+# 4. Commit et push
 git add .
 git commit -m "feat: description claire"
 git push origin feature/nom-clair
@@ -81,9 +89,12 @@ git push origin feature/nom-clair
 
 ## PR Checklist
 
+- [ ] `npm run check` passe (tous les checks)
 - [ ] `npm run lint` passe
 - [ ] `npm run typecheck` passe (0 erreur)
-- [ ] `npm test` passe
+- [ ] `npm test` passe (83 tests)
 - [ ] `npm run build` passe
 - [ ] Pas de `console.log` ajouté
 - [ ] TODO/FIXME ont un identifiant
+- [ ] Imports `@/` utilisés pour cross-module
+- [ ] Pas d'import CSS croisé entre pages

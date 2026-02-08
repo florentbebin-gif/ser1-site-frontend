@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserInfoBanner } from '../../components/UserInfoBanner';
+import { UserInfoBanner } from '@/components/UserInfoBanner';
 import './SettingsBaseContrats.css';
 
 export default function SettingsBaseContrats() {

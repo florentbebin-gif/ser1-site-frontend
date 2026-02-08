@@ -2,7 +2,7 @@
  * Placement Normalizers & Constants — Valeurs par défaut et fonctions de normalisation
  */
 
-import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from '../../../utils/versementConfig.js';
+import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from '@/utils/versementConfig.js';
 import { formatPercent, formatDmtgRange } from './formatters.js';
 
 // ─── Constants ───────────────────────────────────────────────────────

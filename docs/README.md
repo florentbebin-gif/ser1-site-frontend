@@ -10,28 +10,31 @@ Index de la documentation technique.
 docs/
 ├── README.md                    # Ce fichier
 ├── design/
-│   └── color-governance.md      # 🎨 Source unique : tokens C1-C10, exceptions, contraste
+│   ├── color-governance.md      # 🎨 Source unique : tokens C1-C10, exceptions, contraste
+│   └── ui-governance.md         # 📐 Standards Layout, Inputs, Typo, Composants "Premium"
 ├── runbook/
 │   └── debug.md                 # 🔧 Flags de debug, politique console
-├── history/                     # 📜 Archives (historique, post-mortems)
-│   └── (archives nettoyées)     # Voir git log pour l'historique complet
+├── CHANGELOG.md                 # 📜 Historique détaillé des évolutions
+├── adr/                         # Architecture Decision Records
+│   └── ADR-001-pptx-template-strategy.md
 └── technical/                   # Guides techniques
     ├── admin/                   # Documentation page admin
     ├── api/                     # Documentation API
     │   └── admin-function.md    # Référence Edge Function admin
-    ├── fixes/                   # Corrections récentes (1 fichier restant)
-    ├── placement-architecture.md  # 🏗️ Architecture modulaire PlacementV2
-    └── sql/                     # 🔧 Scripts SQL de maintenance
-        └── fix-ui-settings-duplicates.sql
+    ├── diagnostics/             # Guides diagnostics
+    │   └── edge-functions-diagnostics.md
+    └── security/
+        └── security-user-metadata-guidelines.md
 ```
 
 ---
 
-## 🎨 Gouvernance Couleurs (Source de Vérité)
+## 🎨 Gouvernance Design System
 
 | Document | Description | Usage |
 |----------|-------------|-------|
-| **[Gouvernance UI](docs/design/ui-governance.md)** | Standards Layout, Inputs, Typo, Composants "Premium" | **OBLIGATOIRE** pour toute nouvelle page |
+| **[Gouvernance Couleurs](design/color-governance.md)** | Règles complètes C1-C10, exceptions, contraste | **OBLIGATOIRE** avant toute modif couleur |
+| **[Gouvernance UI](design/ui-governance.md)** | Standards Layout, Inputs, Typo, Composants "Premium" | **OBLIGATOIRE** pour toute nouvelle page |
 
 **⚠️ RÈGLES ABSOLUES** : Aucune couleur hardcodée sauf `WHITE (#FFFFFF)` et `WARNING (#996600)`. Tout le reste passe par les tokens C1-C10 ou `getSemanticColors()`.
 
@@ -41,7 +44,8 @@ docs/
 
 | Document | Description |
 |----------|-------------|
-| **[Architecture Placement](technical/placement-architecture.md)** | Modularisation de `PlacementV2.jsx` (Phase 3) — 7 modules, réduction 54% |
+| **[ADR-001](adr/ADR-001-pptx-template-strategy.md)** | Stratégie PPTX : template codé vs natif |
+| **[Security Guidelines](technical/security/security-user-metadata-guidelines.md)** | Règles sécurité : app_metadata vs user_metadata |
 
 ---
 
@@ -51,32 +55,30 @@ docs/
 |----------|-------------|
 | [debug.md](runbook/debug.md) | Flags DEBUG, politique console, helpers debugFlags |
 | [README principal](../README.md) | Troubleshooting, commandes, architecture |
+| [CHANGELOG.md](CHANGELOG.md) | Historique détaillé des évolutions et fixes |
 
 ---
 
-## 🐛 Diagnostics & Corrections
+## 🐛 Diagnostics & Sécurité
 
 ### Diagnostics
 | Document | Description |
 |----------|-------------|
 | [technical/diagnostics/edge-functions-diagnostics.md](technical/diagnostics/edge-functions-diagnostics.md) | Debug Edge Functions Supabase |
 
-### Fixes (Historique — voir CHANGELOG.md pour le détail)
-| Document | Problème résolu |
-|----------|-----------------|
-| [technical/fixes/role-fix.md](technical/fixes/role-fix.md) | Gestion des rôles admin (guide dépannage) |
-
-> **Note** : Les autres corrections (theme flash, settings focus, TMI, etc.) sont documentées dans [CHANGELOG.md](../CHANGELOG.md). Les scripts SQL sont dans `technical/sql/`.
+### Sécurité
+| Document | Description |
+|----------|-------------|
+| [technical/security/security-user-metadata-guidelines.md](technical/security/security-user-metadata-guidelines.md) | Guidelines app_metadata vs user_metadata |
 
 ---
 
-## 📜 Historique (Archives)
-
-Les archives historiques ont été nettoyées. Voir `git log` ou `docs/CHANGELOG.md` pour l'historique complet.
+## 📜 Historique & ADRs
 
 | Document | Statut | Description |
 |----------|--------|-------------|
-| [CHANGELOG.md](../CHANGELOG.md) | Actif | Journal des releases et évolutions |
+| [CHANGELOG.md](CHANGELOG.md) | Actif | Journal des releases et évolutions |
+| [ADR-001](adr/ADR-001-pptx-template-strategy.md) | Actif | Architecture Decision Record PPTX |
 
 ---
 
@@ -84,6 +86,7 @@ Les archives historiques ont été nettoyées. Voir `git log` ou `docs/CHANGELOG
 
 - **design/** : Règles et gouvernance (active)
 - **runbook/** : Guides opérationnels (active)
-- **technical/** : Guides techniques par thème
-- **history/** : Archives, historiques, post-mortems
+- **technical/** : Guides techniques par thème (admin, api, diagnostics, security)
+- **adr/** : Architecture Decision Records
+- **CHANGELOG.md** : Historique détaillé des évolutions
 - Les fichiers `.xlsx` et `.pptx` sont ignorés par git (voir `.gitignore`)
