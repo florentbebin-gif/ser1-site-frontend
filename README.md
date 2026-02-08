@@ -153,6 +153,7 @@ src/
   main.jsx              # Bootstrap React + CSS vars
   App.jsx               # Routes lazy + gating
   settings/ThemeProvider.tsx    # Thème, RPC logos cabinet
+  settings/theme.ts     # SOURCE DE VÉRITÉ C1-C10 (DEFAULT_COLORS)
   pages/                # PlacementV2, Credit, Ir, Settings
   pptx/                 # Export Serenity (design system)
   utils/xlsxBuilder.ts  # Export Excel
@@ -165,6 +166,15 @@ database/
   setup/supabase-setup.sql      # Setup initial
   migrations/                   # RPC, tables, RLS
 ```
+
+### Source de vérité unique pour le thème
+
+**`src/settings/theme.ts`** contient `DEFAULT_COLORS` - la source de vérité unique pour les tokens C1-C10 :
+- Consommé par `ThemeProvider.tsx` (injection CSS variables)
+- Consommé par `resolvePptxColors.ts` (thème PPTX)
+- Fallback CSS dans `styles.css` (lignes 14-23) - synchronisé avec DEFAULT_COLORS
+
+**Règle**: Toute modification des couleurs par défaut doit passer par `src/settings/theme.ts`.
 
 ---
 
