@@ -62,14 +62,14 @@
 
 ---
 
-## 5. Documentation (4/5) ✅
+## 5. Documentation (4/5) 
 
 | Critère | Avant | Après | Notes |
 |---------|-------|-------|-------|
-| README.md | ✅ Complet | ✅ Complet | Architecture, setup, debugging |
-| TODOS_TO_CREATE.md | ❌ | ✅ Créé | 9 issues documentées (#17-#25) |
-| Inline docs | ✅ | ✅ | JSDoc présente sur fonctions critiques |
-| Configs documentées | ✅ | ✅ | vite.config.ts, tsconfig.json commentés |
+| README.md | Existant | Existant | Documenté et à jour |
+| TODOS_TO_CREATE.md |  | Archivé | Issues traitées, fichier supprimé |
+| Inline docs |  |  | JSDoc présente sur fonctions critiques |
+| Configs documentées |  |  | vite.config.ts, tsconfig.json commentés |
 
 **Score : 4/5** - Documentation exhaustive en place.
 

@@ -7,6 +7,7 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 **Stack** : React 18 + Vite 5 + Supabase (Auth/DB/Storage/Edge Functions) + Vercel.  
 **Tests** : 71 unitaires (Vitest).  
 **Historique** : [docs/CHANGELOG.md](docs/CHANGELOG.md)  
+**Roadmap** : [.github/REPOSITORY_HARDENING/E_ROADMAP.md](.github/REPOSITORY_HARDENING/E_ROADMAP.md)
 **Debug flags** : [docs/runbook/debug.md](docs/runbook/debug.md)  
 **🎨 Couleurs** : [docs/design/color-governance.md](docs/design/color-governance.md) — *source de vérité unique (tokens C1-C10)*  
 **📐 UI Governance** : [docs/design/ui-governance.md](docs/design/ui-governance.md) — *Standards "Gestion Privée" (Layout, Inputs, Typo)*  
