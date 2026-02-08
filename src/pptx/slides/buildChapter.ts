@@ -17,6 +17,7 @@ import {
   addTextBox,
   addHeader,
 } from '../designSystem/serenity';
+import { MASTER_NAMES } from '../template/loadBaseTemplate';
 
 /**
  * Build a chapter slide
@@ -42,11 +43,8 @@ export function buildChapter(
   chapterImageDataUri: string,
   slideIndex: number
 ): void {
-  const slide = pptx.addSlide();
+  const slide = pptx.addSlide({ masterName: MASTER_NAMES.CHAPTER });
   const { theme } = ctx;
-  
-  // Background: white (default, but explicit for clarity)
-  slide.background = { color: 'FFFFFF' };
   
   // STEP 1: Panel with shadow and border (color 8 = panelBorder)
   // Shadow: premium outer shadow (24% opacity, 23.3pt blur, 14.3pt distance, 74°)

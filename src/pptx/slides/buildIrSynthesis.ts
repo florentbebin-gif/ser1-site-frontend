@@ -24,6 +24,7 @@ import {
   addTextFr,
 } from '../designSystem/serenity';
 import { getBusinessIconDataUri, type BusinessIconName } from '../../icons/business/businessIconLibrary';
+import { MASTER_NAMES } from '../template/loadBaseTemplate';
 
 // ============================================================================
 // TYPES
@@ -396,10 +397,7 @@ export function buildIrSynthesis(
   ctx: ExportContext,
   slideIndex: number
 ): void {
-  const slide = pptx.addSlide();
-  
-  // White background
-  slide.background = { color: 'FFFFFF' };
+  const slide = pptx.addSlide({ masterName: MASTER_NAMES.CONTENT });
   
   const slideWidth = SLIDE_SIZE.width;
   const barWidth = slideWidth - LAYOUT.bar.marginX * 2;

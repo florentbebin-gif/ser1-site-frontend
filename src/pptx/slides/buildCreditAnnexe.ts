@@ -17,6 +17,7 @@
 
 import PptxGenJS from 'pptxgenjs';
 import type { PptxThemeRoles, ExportContext, CreditAnnexeSlideSpec } from '../theme/types';
+import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {
   TYPO,
   COORDS_CONTENT,
@@ -204,10 +205,7 @@ export function buildCreditAnnexe(
   ctx: ExportContext,
   slideIndex: number
 ): void {
-  const slide = pptx.addSlide();
-  
-  // White background
-  slide.background = { color: 'FFFFFF' };
+  const slide = pptx.addSlide({ masterName: MASTER_NAMES.CONTENT });
   
   // ========== STANDARD HEADER (centralized) ==========
   addHeader(slide, 'Annexe : Détail de votre crédit', 'Explication des modalités de remboursement', theme, 'content');

@@ -14,6 +14,7 @@
 
 import PptxGenJS from 'pptxgenjs';
 import type { CreditGlobalSynthesisSlideSpec, PptxThemeRoles, ExportContext } from '../theme/types';
+import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {
   SLIDE_SIZE,
   TYPO,
@@ -114,10 +115,7 @@ export function buildCreditGlobalSynthesis(
   ctx: ExportContext,
   slideIndex: number
 ): void {
-  const slide = pptx.addSlide();
-  
-  // White background
-  slide.background = { color: 'FFFFFF' };
+  const slide = pptx.addSlide({ masterName: MASTER_NAMES.CONTENT });
   
   // ========== STANDARD HEADER ==========
   addHeader(slide, 'Synthèse globale de votre financement', 'Vue d\'ensemble de votre montage multi-prêts', theme, 'content');

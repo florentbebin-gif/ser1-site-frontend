@@ -10,13 +10,13 @@ import type { CoverSlideSpec, ExportContext } from '../theme/types';
 import {
   COORDS_COVER,
   TYPO,
-  addBackground,
   addAccentLine,
   addCornerMarks,
   addTextBox,
   calculateLogoPosition,
   DEFAULT_LOGO_PLACEMENT,
 } from '../designSystem/serenity';
+import { MASTER_NAMES } from '../template/loadBaseTemplate';
 
 /**
  * Build a cover slide
@@ -32,11 +32,8 @@ export function buildCover(
   ctx: ExportContext,
   logoDataUri?: string
 ): void {
-  const slide = pptx.addSlide();
+  const slide = pptx.addSlide({ masterName: MASTER_NAMES.COVER });
   const { theme } = ctx;
-  
-  // Background: theme.bgMain (color1)
-  addBackground(slide, theme.bgMain);
   
   // Logo (if provided)
   if (logoDataUri) {

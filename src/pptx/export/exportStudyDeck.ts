@@ -32,6 +32,7 @@ import { buildCreditLoanSynthesis } from '../slides/buildCreditLoanSynthesis';
 import { buildCreditAnnexe } from '../slides/buildCreditAnnexe';
 import { buildCreditAmortization } from '../slides/buildCreditAmortization';
 import { injectThemeColors } from '../theme/themeBuilder';
+import { defineSlideMasters } from '../template/loadBaseTemplate';
 
 /**
  * Default footer disclaimer (verbatim as specified)
@@ -150,16 +151,16 @@ export async function exportStudyDeck(
     height: 7.5,
   });
   
-  // Set theme colors (available in PowerPoint color picker)
-  // PptxGenJS allows defining theme colors that appear in the presentation
+  // Define slide masters (COVER, CHAPTER, CONTENT, END)
+  // Masters provide backgrounds; builders add dynamic content
+  defineSlideMasters(pptx, theme);
+  
+  // Set theme fonts
   try {
-    // Define custom theme with all 10 colors + French language for proofing
-    // These will be available in PowerPoint's theme color palette
     pptx.theme = {
       headFontFace: 'Arial',
       bodyFontFace: 'Arial',
     };
-    // Note: French proofing language is set per-text via lang: 'fr-FR' in addText options
   } catch (e) {
     // Theme definition is optional, continue if not supported
     console.warn('[PPTX Export] Theme colors not fully supported:', e);

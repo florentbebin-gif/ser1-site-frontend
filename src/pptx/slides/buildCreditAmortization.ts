@@ -20,6 +20,7 @@
 
 import PptxGenJS from 'pptxgenjs';
 import type { PptxThemeRoles, ExportContext, CreditAmortizationRow } from '../theme/types';
+import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {
   TYPO,
   COORDS_CONTENT,
@@ -174,8 +175,7 @@ export function buildCreditAmortization(
   ctx: ExportContext,
   slideIndex: number
 ): void {
-  const slide = pptx.addSlide();
-  slide.background = { color: 'FFFFFF' };
+  const slide = pptx.addSlide({ masterName: MASTER_NAMES.CONTENT });
   
   // Handle both new and legacy data formats
   let allRows: CreditAmortizationRow[];

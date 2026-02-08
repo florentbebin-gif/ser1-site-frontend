@@ -1,14 +1,20 @@
 /**
  * Chargement du template PowerPoint de base
  * 
- * NOTE IMPORTANTE : PPTXGenJS ne supporte pas nativement l'ouverture de fichiers PPTX existants.
- * Cette fonction est une préparation pour une future implémentation.
+ * Stratégie "Conservateur+" : Template codé via PptxGenJS defineSlideMaster().
+ * Les masters définissent les backgrounds et éléments statiques.
+ * Les builders ajoutent le contenu dynamique (texte, données, footer avec slideIndex).
  * 
- * Stratégie actuelle : Reconstruction minimale du template
- * Stratégie future : Utiliser une bibliothèque compatible ou PPTXGenJS avec support de template
+ * Masters définis :
+ * - SERENITY_COVER   : Fond bgMain (color1) — slide de couverture
+ * - SERENITY_CHAPTER : Fond blanc — slides de chapitre
+ * - SERENITY_CONTENT : Fond blanc — slides de contenu/synthèse
+ * - SERENITY_END     : Fond bgMain (color1) — slide de fin/mentions légales
  */
 
 import PptxGenJS from 'pptxgenjs';
+import type { PptxThemeRoles } from '../theme/types';
+import { SLIDE_SIZE } from '../designSystem/serenity';
 import { DEBUG_PPTX } from '../../utils/debugFlags';
 
 export interface BaseTemplateConfig {
@@ -18,16 +24,26 @@ export interface BaseTemplateConfig {
 }
 
 /**
+ * Noms des slide masters Serenity
+ * Utilisés par les builders via pptx.addSlide({ masterName })
+ */
+export const MASTER_NAMES = {
+  COVER: 'SERENITY_COVER',
+  CHAPTER: 'SERENITY_CHAPTER',
+  CONTENT: 'SERENITY_CONTENT',
+  END: 'SERENITY_END',
+} as const;
+
+export type MasterName = typeof MASTER_NAMES[keyof typeof MASTER_NAMES];
+
+/**
  * Charge le template de base depuis le fichier PPTX
  * 
  * @param config - Configuration du template
  * @returns Instance PptxGenJS pré-configurée
  * 
- * TODO(#17): Implémenter le chargement réel du fichier PPTX
- * - Rechercher une bibliothèque compatible avec PPTXGenJS
- * - Ou utiliser PPTXGenJS avec support de template (si disponible)
- * - Ou parser le PPTX et reconstruire les slides
- * Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
+ * TODO(#17): Spike timeboxé pour évaluer le chargement réel d'un fichier PPTX.
+ * Voir ADR-001 pour la décision architecture.
  */
 export function loadBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
   const pptx = new PptxGenJS();
@@ -37,46 +53,72 @@ export function loadBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
   pptx.author = config.author;
   pptx.company = config.company;
   
-  // TODO(#18): Charger la structure depuis public/pptx/templates/serenity-base.pptx
-  // Actuellement : reconstruction minimale
-  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
-  console.warn('⚠️ Template loading not implemented - using minimal reconstruction');
   if (DEBUG_PPTX) {
     // eslint-disable-next-line no-console
-    console.debug('📁 Template file: public/pptx/templates/serenity-base.pptx');
+    console.debug('[PPTX] loadBaseTemplate: using coded template (Conservateur+ strategy)');
   }
   
   return pptx;
 }
 
 /**
- * Alternative : Reconstruction minimale du template
- * Recrée les éléments de base du template Serenity
+ * Définit les 4 slide masters Serenity sur une instance PptxGenJS.
+ * 
+ * Chaque master fournit :
+ * - Background (couleur de fond)
+ * - Margin (marge par défaut)
+ * 
+ * Les éléments dynamiques (footer, header, contenu) restent dans les builders
+ * car ils dépendent du slideIndex et des données.
+ * 
+ * @param pptx - Instance PptxGenJS
+ * @param theme - Thème PPTX résolu (pour bgMain)
+ */
+export function defineSlideMasters(pptx: PptxGenJS, theme: PptxThemeRoles): void {
+  // COVER : fond sombre (bgMain = color1)
+  pptx.defineSlideMaster({
+    title: MASTER_NAMES.COVER,
+    background: { color: theme.bgMain.replace('#', '') },
+    margin: 0,
+  });
+  
+  // CHAPTER : fond blanc (panel + image ajoutés par le builder)
+  pptx.defineSlideMaster({
+    title: MASTER_NAMES.CHAPTER,
+    background: { color: 'FFFFFF' },
+    margin: 0,
+  });
+  
+  // CONTENT : fond blanc (utilisé par content, synthesis, annexe, amortization)
+  pptx.defineSlideMaster({
+    title: MASTER_NAMES.CONTENT,
+    background: { color: 'FFFFFF' },
+    margin: 0,
+  });
+  
+  // END : fond sombre (bgMain = color1)
+  pptx.defineSlideMaster({
+    title: MASTER_NAMES.END,
+    background: { color: theme.bgMain.replace('#', '') },
+    margin: 0,
+  });
+  
+  if (DEBUG_PPTX) {
+    // eslint-disable-next-line no-console
+    console.debug('[PPTX] defineSlideMasters: 4 masters defined (COVER, CHAPTER, CONTENT, END)');
+  }
+}
+
+/**
+ * @deprecated Utilisez defineSlideMasters() à la place.
+ * Conservé pour compatibilité arrière.
  */
 export function reconstructBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
   const pptx = new PptxGenJS();
-  
-  // Configuration
   pptx.title = config.title;
   pptx.author = config.author;
   pptx.company = config.company;
-  
-  // Définir les tailles de slide (standard 16:9 - 10 x 5.625 inches)
-  pptx.defineSlideMaster({
-    title: 'SERENITY_MASTER',
-    margin: 0.5,
-  });
-  
-  // Dimensions explicites 16:9 (issue #19)
-  pptx.layout = 'LAYOUT_16x9';
-  
-  // TODO(#20): Ajouter les masters slides depuis le template
-  // - Cover slide master
-  // - Chapter slide master  
-  // - Content slide master
-  // - End slide master
-  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
-  
+  pptx.layout = SLIDE_SIZE.layout;
   return pptx;
 }
 
@@ -108,6 +150,8 @@ export async function isTemplateAvailable(): Promise<boolean> {
 
 export default {
   loadBaseTemplate,
+  defineSlideMasters,
   reconstructBaseTemplate,
-  isTemplateAvailable
+  isTemplateAvailable,
+  MASTER_NAMES,
 };

@@ -15,6 +15,7 @@ import {
   addTextBox,
 } from '../designSystem/serenity';
 import { addBusinessIconsToSlide } from '../icons/addBusinessIcon';
+import { MASTER_NAMES } from '../template/loadBaseTemplate';
 
 /**
  * Build a content slide
@@ -30,11 +31,8 @@ export function buildContent(
   ctx: ExportContext,
   slideIndex: number
 ): void {
-  const slide = pptx.addSlide();
+  const slide = pptx.addSlide({ masterName: MASTER_NAMES.CONTENT });
   const { theme } = ctx;
-  
-  // Background: white
-  slide.background = { color: 'FFFFFF' };
   
   // Add header (title + accent line + subtitle) with text-based positioning
   addHeader(slide, spec.title, spec.subtitle, theme, 'content');

@@ -10,6 +10,7 @@
 
 import PptxGenJS from 'pptxgenjs';
 import type { CreditLoanSynthesisSlideSpec, PptxThemeRoles, ExportContext } from '../theme/types';
+import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {
   SLIDE_SIZE,
   COORDS_CONTENT, 
@@ -84,10 +85,7 @@ export function buildCreditLoanSynthesis(
   ctx: ExportContext,
   slideIndex: number
 ): void {
-  const slide = pptx.addSlide();
-  
-  // White background
-  slide.background = { color: 'FFFFFF' };
+  const slide = pptx.addSlide({ masterName: MASTER_NAMES.CONTENT });
   
   // ========== STANDARD HEADER (centralized) ==========
   

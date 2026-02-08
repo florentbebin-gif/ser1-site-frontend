@@ -13,8 +13,8 @@ import {
   addCornerMarks,
   addFooter,
   addTextBox,
-  addBackground,
 } from '../designSystem/serenity';
+import { MASTER_NAMES } from '../template/loadBaseTemplate';
 
 /**
  * Build an end/legal slide
@@ -30,11 +30,8 @@ export function buildEnd(
   ctx: ExportContext,
   slideIndex: number
 ): void {
-  const slide = pptx.addSlide();
+  const slide = pptx.addSlide({ masterName: MASTER_NAMES.END });
   const { theme } = ctx;
-  
-  // Background: color1 (bgMain) instead of white
-  addBackground(slide, theme.bgMain);
   
   // Legal text block - centered horizontally and vertically
   // textOnMain is white if bgMain is dark, black if bgMain is light
