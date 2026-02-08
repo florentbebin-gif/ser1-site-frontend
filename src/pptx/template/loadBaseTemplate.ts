@@ -61,15 +61,14 @@ export function reconstructBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
   pptx.author = config.author;
   pptx.company = config.company;
   
-  // Définir les tailles de slide (standard 16:9)
+  // Définir les tailles de slide (standard 16:9 - 10 x 5.625 inches)
   pptx.defineSlideMaster({
     title: 'SERENITY_MASTER',
     margin: 0.5,
   });
   
-  // TODO(#19): Définir les dimensions du slide (16:9)
-  // Actuellement géré par PPTXGenJS automatiquement
-  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
+  // Dimensions explicites 16:9 (issue #19)
+  pptx.layout = 'LAYOUT_16x9';
   
   // TODO(#20): Ajouter les masters slides depuis le template
   // - Cover slide master
@@ -83,12 +82,28 @@ export function reconstructBaseTemplate(config: BaseTemplateConfig): PptxGenJS {
 
 /**
  * Vérifie la disponibilité du template file
+ * 
+ * @returns Promise<boolean> - true si le fichier template existe
  */
-export function isTemplateAvailable(): boolean {
-  // TODO(#21): Vérifier la présence du fichier template
-  // Pour l'instant, on suppose qu'il est disponible
-  // Voir .github/TODOS_TO_CREATE.md pour créer l'issue GitHub
-  return true;
+export async function isTemplateAvailable(): Promise<boolean> {
+  try {
+    const response = await fetch('/pptx/templates/serenity-base.pptx', { method: 'HEAD' });
+    const available = response.ok;
+    
+    if (DEBUG_PPTX) {
+      // eslint-disable-next-line no-console
+      console.debug(`📁 Template check: ${available ? 'found' : 'not found'}`);
+    }
+    
+    return available;
+  } catch {
+    // En cas d'erreur réseau, on suppose que le fichier n'est pas disponible
+    if (DEBUG_PPTX) {
+      // eslint-disable-next-line no-console
+      console.debug('📁 Template check: error (assuming not available)');
+    }
+    return false;
+  }
 }
 
 export default {
