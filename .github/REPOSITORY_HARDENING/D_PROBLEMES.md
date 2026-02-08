@@ -106,15 +106,16 @@
 ## Recommandations de Priorisation
 
 ### Sprint 1 (Semaine prochaine)
-1. **PROB-003** (#22) - Logo data URI (quick win, 1 jour)
-2. **PROB-008** (#25) - Nettoyage Settings.jsx (1 heure)
+1. ~~**PROB-008** (#25) - Nettoyage Settings.jsx~~ ✅ **RÉSOLU**
 
 ### Sprint 2 (Mois prochain)
-3. **PROB-001** (#24) - Barèmes DMTG (validation métier nécessaire)
-4. **PROB-002** (#17) - Template PPTX natif (recherche solution)
+2. **PROB-001** (#24) - Barèmes DMTG (validation métier nécessaire)
+3. **PROB-002** (#17) - Template PPTX natif (recherche solution)
 
 ### Backlog
-- PROB-005, 006, 007 (XS - peu d'impact)
+- ~~PROB-005, 006, 007 (XS - résolus)~~ ✅ **RÉSOLUS**
+- **PROB-003** (#22) - Logo data URI (1 jour)
+- **PROB-004** (#20) - Masters slides (3-5 jours)
 
 ---
 
