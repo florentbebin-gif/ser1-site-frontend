@@ -18,32 +18,32 @@ export default function Home(){
   }, []);
 
   return (
-    <div className="home-layout">
+    <div className="home-layout" data-testid="home-layout">
       {/* Carte statut dossier */}
-      <aside className="status-card">
+      <aside className="status-card" data-testid="home-status-card">
         <div className="status-row">
           <span className="status-label">Dossier chargé</span>
-          <span className="status-value status-value--filename">{loadedFilename || '—'}</span>
+          <span className="status-value status-value--filename" data-testid="home-loaded-filename">{loadedFilename || '—'}</span>
         </div>
-        <div className="status-disclaimer">
+        <div className="status-disclaimer" data-testid="home-status-disclaimer">
           Les données seront effacées à la fermeture du navigateur ou de l'onglet.
         </div>
       </aside>
 
       {/* Carte mode utilisateur */}
-      <aside className="mode-card">
+      <aside className="mode-card" data-testid="home-mode-card">
         <ModeToggle />
       </aside>
 
       {/* Contenu principal */}
-      <main className="home-main">
+      <main className="home-main" data-testid="home-main">
         {/* Bloc principal — AUDIT & STRATÉGIE */}
-        <section className="home-hero">
-          <h1 className="hero-title">AUDIT & STRATÉGIE</h1>
-          <p className="hero-subtitle">
+        <section className="home-hero" data-testid="home-hero-section">
+          <h1 className="hero-title" data-testid="home-hero-title">AUDIT & STRATÉGIE</h1>
+          <p className="hero-subtitle" data-testid="home-hero-subtitle">
             Analyser la situation patrimoniale, puis la projeter et définir une nouvelle stratégie adaptée.
           </p>
-          <Link to="/audit" className="hero-tile">
+          <Link to="/audit" className="hero-tile" data-testid="home-audit-link">
             <div className="hero-tile-content">
               <div className="hero-tile-icon"><IconStrategy /></div>
               <div className="hero-tile-text">
@@ -58,16 +58,16 @@ export default function Home(){
         <div className="home-divider" />
 
         {/* Bloc secondaire — SIMULATEURS */}
-        <section className="home-tools">
-          <h2 className="tools-title">SIMULATEURS</h2>
+        <section className="home-tools" data-testid="home-tools-section">
+          <h2 className="tools-title" data-testid="home-tools-title">SIMULATEURS</h2>
           <div className="tools-card">
-            <div className="tools-grid">
-              <ToolTile to="/potentiel" icon={<IconGauge/>} title="Potentiel retraite" />
-              <ToolTile to="/sim/credit" icon={<IconPercent/>} title="Crédit" />
-              <ToolTile to="/transfert" icon={<IconTransfer/>} title="Transfert PER" />
-              <ToolTile to="/sim/ir" icon={<IconCalc/>} title="Impôt sur le revenu" />
-              <ToolTile to="/sim/placement" icon={<IconChart/>} title="Placement" />
-              <ToolTile to="/prevoyance" icon={<IconShield/>} title="Prévoyance" />
+            <div className="tools-grid" data-testid="home-tools-grid">
+              <ToolTile to="/potentiel" icon={<IconGauge/>} title="Potentiel retraite" testId="home-tool-potentiel" />
+              <ToolTile to="/sim/credit" icon={<IconPercent/>} title="Crédit" testId="home-tool-credit" />
+              <ToolTile to="/transfert" icon={<IconTransfer/>} title="Transfert PER" testId="home-tool-transfert" />
+              <ToolTile to="/sim/ir" icon={<IconCalc/>} title="Impôt sur le revenu" testId="home-tool-ir" />
+              <ToolTile to="/sim/placement" icon={<IconChart/>} title="Placement" testId="home-tool-placement" />
+              <ToolTile to="/prevoyance" icon={<IconShield/>} title="Prévoyance" testId="home-tool-prevoyance" />
             </div>
           </div>
         </section>
@@ -76,9 +76,9 @@ export default function Home(){
   );
 }
 
-function ToolTile({to, icon, title}){
+function ToolTile({to, icon, title, testId}){
   return (
-    <Link to={to} className="tool-tile">
+    <Link to={to} className="tool-tile" data-testid={testId}>
       <div className="tool-tile-content">
         <div className="tool-tile-icon">{icon}</div>
         <div className="tool-tile-title">{title}</div>

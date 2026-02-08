@@ -522,9 +522,9 @@ const yearLabel =
   // ...
 
   return (
-    <div className="ir-panel premium-page">
-      <div className="ir-header premium-header">
-        <div className="ir-title premium-title">Simulateur d'impôt sur le revenu</div>
+    <div className="ir-panel premium-page" data-testid="ir-page">
+      <div className="ir-header premium-header" data-testid="ir-header">
+        <div className="ir-title premium-title" data-testid="ir-title">Simulateur d'impôt sur le revenu</div>
 
         <ExportMenu
           options={[
@@ -535,7 +535,7 @@ const yearLabel =
         />
       </div>
 
-      <div className="ir-grid premium-grid">
+      <div className="ir-grid premium-grid" data-testid="ir-grid">
         {/* Bloc de gauche : saisie */}
         {/* ... */}
         <div className="ir-left premium-section">
@@ -557,11 +557,12 @@ const yearLabel =
                 </select>
               </div>
 
-              <div className="ir-field premium-field">
+              <div className="ir-field premium-field" data-testid="ir-situation-field">
                 <label>Situation familiale</label>
                 <select
                   className="premium-select"
                   value={status}
+                  data-testid="ir-situation-select"
                   onChange={(e) => {
                     const newStatus = e.target.value;
                     setStatus(newStatus);
@@ -614,13 +615,14 @@ const yearLabel =
                 </tr>
               </thead>
               <tbody>
-                <tr>
+                <tr data-testid="ir-salary-row">
                   <td>Traitements et salaires</td>
                   <td>
                     <input
                       type="text"
                       inputMode="numeric"
                       placeholder="0 €"
+                      data-testid="ir-salary-d1-input"
                       value={formatMoneyInput(incomes.d1.salaries)}
                       onChange={(e) => {
                         const raw = e.target.value.replace(/[^\d]/g, '');
@@ -633,6 +635,7 @@ const yearLabel =
                       type="text"
                       inputMode="numeric"
                       placeholder="0 €"
+                      data-testid="ir-salary-d2-input"
                       value={formatMoneyInput(incomes.d2.salaries)}
                       onChange={(e) => {
                         const raw = e.target.value.replace(/[^\d]/g, '');
@@ -1070,10 +1073,10 @@ const yearLabel =
 </div>
 
 
-          <div className="ir-tmi-card">
-            <div className="ir-tmi-header">Estimation IR</div>
+          <div className="ir-tmi-card" data-testid="ir-results-card">
+            <div className="ir-tmi-header" data-testid="ir-results-header">Estimation IR</div>
 
-            <div className="ir-tmi-bar">
+            <div className="ir-tmi-bar" data-testid="ir-tmi-bar">
               {tmiScale.map((br, idx) => {
                 const rate = Number(br.rate) || 0;
                 const isActive = rate === (result?.tmiRate || 0);
@@ -1090,16 +1093,16 @@ const yearLabel =
               })}
             </div>
 
-            <div className="ir-tmi-rows">
-              <div className="ir-tmi-row">
+            <div className="ir-tmi-rows" data-testid="ir-tmi-rows">
+              <div className="ir-tmi-row" data-testid="ir-tmi-row">
                 <span>TMI</span>
-                <span>
+                <span data-testid="ir-tmi-value">
                   {result ? `${result.tmiRate || 0} %` : '-'}
                 </span>
               </div>
-              <div className="ir-tmi-row">
+              <div className="ir-tmi-row" data-testid="ir-irnet-row">
                 <span>Impôt sur le revenu</span>
-                <span>
+                <span data-testid="ir-irnet-value">
                   {result ? euro0(result.irNet || 0) : '-'}
                 </span>
               </div>

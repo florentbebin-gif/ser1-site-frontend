@@ -68,19 +68,20 @@ export function ExportMenu({
   };
 
   return (
-    <div ref={containerRef} className="export-menu-container">
+    <div ref={containerRef} className="export-menu-container" data-testid="export-menu-container">
       <button
         className="chip premium-btn"
         onClick={() => setIsOpen(!isOpen)}
         disabled={loading}
         aria-haspopup="menu"
         aria-expanded={isOpen}
+        data-testid="export-menu-button"
       >
         {loading ? loadingLabel : buttonLabel}
       </button>
       
       {isOpen && !loading && (
-        <div role="menu" className="export-menu">
+        <div role="menu" className="export-menu" data-testid="export-menu-dropdown">
           {options.map((option, index) => (
             <button
               key={index}
@@ -90,6 +91,7 @@ export function ExportMenu({
               disabled={option.disabled}
               title={option.tooltip}
               data-tooltip={option.tooltip}
+              data-testid={`export-option-${option.label.toLowerCase().replace(/\s+/g, '-')}`}
             >
               {option.label}
             </button>

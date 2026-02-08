@@ -38,23 +38,24 @@ export default function Login({ onLogin }) {
       <div className="login-bg" />
       <div className="login-overlay" />
       <div className="login-grid">
-        <div className="login-title">
-          <h1 className="login-brand">SER1</h1>
-          <div className="login-sub">Simulateur épargne retraite</div>
+        <div className="login-title" data-testid="login-brand-container">
+          <h1 className="login-brand" data-testid="login-brand">SER1</h1>
+          <div className="login-sub" data-testid="login-subtitle">Simulateur épargne retraite</div>
         </div>
-        <div className="login-card">
-          <h2 className="card-title">Connexion</h2>
-          {error && <div className="alert error">{error}</div>}
+        <div className="login-card" data-testid="login-card">
+          <h2 className="card-title" data-testid="login-title">Connexion</h2>
+          {error && <div className="alert error" data-testid="login-error">{error}</div>}
           {resetSent && (
-            <div className="alert success">
+            <div className="alert success" data-testid="login-reset-sent">
               Si votre adresse e-mail existe, un lien vous a été envoyé.<br />
               <small style={{ opacity: 0.8 }}>Cliquez sur le lien dans l'email pour définir votre mot de passe.</small>
             </div>
           )}
-          <form className="form-grid" onSubmit={handleLogin}>
+          <form className="form-grid" onSubmit={handleLogin} data-testid="login-form">
             <label>Email</label>
             <input
               type="email"
+              data-testid="login-email-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -62,19 +63,20 @@ export default function Login({ onLogin }) {
             <label>Mot de passe</label>
             <input
               type="password"
+              data-testid="login-password-input"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            <button className="btn" type="submit" disabled={loading}>
+            <button className="btn" type="submit" disabled={loading} data-testid="login-submit-button">
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
           <div className="login-links">
-            <button className="btn-link" onClick={handleForgot}>
+            <button className="btn-link" onClick={handleForgot} data-testid="login-forgot-button">
               Mot de passe oublié ?
             </button>
-            <div className="login-hint">
+            <div className="login-hint" data-testid="login-hint">
               Première connexion ? Utilisez «&nbsp;Mot de passe oublié&nbsp;» pour définir votre mot de passe.
             </div>
           </div>

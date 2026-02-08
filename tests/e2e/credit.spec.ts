@@ -26,28 +26,26 @@ test.describe('Credit Simulator', () => {
     await page.waitForLoadState('networkidle');
 
     // Credit page should show loan input fields
-    await expect(page.locator('input').first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('credit-capital-input')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('credit-page')).toBeVisible();
   });
 
   test('saisie prêt et affichage tableau amortissement', async ({ page }) => {
     await page.goto(ROUTES.credit);
     await page.waitForLoadState('networkidle');
 
-    // Look for capital/montant input and fill it
-    const capitalInput = page.locator('input').first();
-    if (await capitalInput.isVisible()) {
-      await capitalInput.fill('200000');
-    }
+    // Fill capital input
+    await page.getByTestId('credit-capital-input').fill('200000');
 
-    // The page should display computed results with euro formatting
-    await expect(page.locator('text=€')).toBeVisible({ timeout: 15_000 });
+    // The page should display computed results
+    await expect(page.getByTestId('credit-summary-card')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('credit-cout-total-value')).toContainText('€');
   });
 
   test('le bouton export est présent', async ({ page }) => {
     await page.goto(ROUTES.credit);
     await page.waitForLoadState('networkidle');
 
-    const exportBtn = page.locator('text=Export').or(page.locator('[class*="export"]'));
-    await expect(exportBtn.first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('export-menu-button')).toBeVisible({ timeout: 10_000 });
   });
 });

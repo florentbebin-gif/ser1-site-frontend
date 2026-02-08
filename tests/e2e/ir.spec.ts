@@ -29,7 +29,8 @@ test.describe('IR Simulator', () => {
     await page.waitForLoadState('networkidle');
 
     // The IR page should show situation familiale controls
-    await expect(page.locator('text=Situation familiale')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('ir-situation-select')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('ir-page')).toBeVisible();
   });
 
   test('saisie revenus et calcul IR', async ({ page }) => {
@@ -37,14 +38,11 @@ test.describe('IR Simulator', () => {
     await page.waitForLoadState('networkidle');
 
     // Fill salary for declarant 1
-    const salaryInput = page.locator('input').first();
-    if (await salaryInput.isVisible()) {
-      await salaryInput.fill('45000');
-    }
+    await page.getByTestId('ir-salary-d1-input').fill('45000');
 
     // The page should compute and display a result
-    // Look for any euro-formatted result on the page
-    await expect(page.locator('text=€')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('ir-results-card')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('ir-irnet-value')).toContainText('€');
   });
 
   test('le bouton export est présent', async ({ page }) => {
@@ -52,7 +50,6 @@ test.describe('IR Simulator', () => {
     await page.waitForLoadState('networkidle');
 
     // ExportMenu component should be rendered
-    const exportBtn = page.locator('text=Export').or(page.locator('[class*="export"]'));
-    await expect(exportBtn.first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId('export-menu-button')).toBeVisible({ timeout: 10_000 });
   });
 });

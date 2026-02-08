@@ -992,14 +992,14 @@ const synthesePeriodes = useMemo(() => {
   const canShowLissageChips = lisserPret1 && !anyInfine && pretsPlus.length > 0
 
   return (
-    <div className="credit-page premium-page sim-credit">
+    <div className="credit-page premium-page sim-credit" data-testid="credit-page">
       {/* HEADER */}
-      <div className="credit-header premium-header">
-        <span className="credit-title premium-title">Simulateur de crédit</span>
-        <div className="credit-actions">
-          <div className="credit-view-toggle">
-            <button className={`chip premium-btn ${viewMode==='mensuel'?'active':''}`} onClick={()=> setViewMode('mensuel')}>Mensuel</button>
-            <button className={`chip premium-btn ${viewMode==='annuel'?'active':''}`} onClick={()=> setViewMode('annuel')}>Annuel</button>
+      <div className="credit-header premium-header" data-testid="credit-header">
+        <span className="credit-title premium-title" data-testid="credit-title">Simulateur de crédit</span>
+        <div className="credit-actions" data-testid="credit-actions">
+          <div className="credit-view-toggle" data-testid="credit-view-toggle">
+            <button className={`chip premium-btn ${viewMode==='mensuel'?'active':''}`} onClick={()=> setViewMode('mensuel')} data-testid="credit-view-mensuel">Mensuel</button>
+            <button className={`chip premium-btn ${viewMode==='annuel'?'active':''}`} onClick={()=> setViewMode('annuel')} data-testid="credit-view-annuel">Annuel</button>
           </div>
           <ExportMenu
             options={[
@@ -1040,24 +1040,24 @@ const synthesePeriodes = useMemo(() => {
                   <input type="month" className="credit-input__field premium-input" value={startYM} onChange={e=> setStartYM(e.target.value)}/>
                 </div>
               </div>
-              <div className="credit-field premium-field">
+              <div className="credit-field premium-field" data-testid="credit-capital-field">
                 <label>Montant emprunté</label>
                 <div className="credit-input premium-input">
-                  <input type="text" inputMode="numeric" className="credit-input__field premium-input" value={fmt0(effectiveCapitalPret1)} onChange={e=> onChangeCapital(e.target.value)} onBlur={()=> setTouched(t => ({...t, capital: true}))}/>
+                  <input type="text" inputMode="numeric" className="credit-input__field premium-input" data-testid="credit-capital-input" value={fmt0(effectiveCapitalPret1)} onChange={e=> onChangeCapital(e.target.value)} onBlur={()=> setTouched(t => ({...t, capital: true}))}/>
                   <span className="credit-input__unit premium-unit">€</span>
                 </div>
               </div>
-              <div className="credit-field premium-field">
+              <div className="credit-field premium-field" data-testid="credit-duree-field">
                 <label>Durée</label>
                 <div className="credit-input premium-input">
-                  <input type="text" inputMode="numeric" className="credit-input__field premium-input" value={String(duree)} onChange={e=> onChangeDuree(e.target.value)} onBlur={()=> setTouched(t => ({...t, duree: true}))}/>
+                  <input type="text" inputMode="numeric" className="credit-input__field premium-input" data-testid="credit-duree-input" value={String(duree)} onChange={e=> onChangeDuree(e.target.value)} onBlur={()=> setTouched(t => ({...t, duree: true}))}/>
                   <span className="credit-input__unit premium-unit">mois</span>
                 </div>
               </div>
-              <div className="credit-field premium-field">
+              <div className="credit-field premium-field" data-testid="credit-taux-field">
                 <label>Taux annuel (crédit)</label>
                 <div className="credit-input premium-input">
-                  <input type="text" inputMode="decimal" className="credit-input__field premium-input" value={rawTaux}
+                  <input type="text" inputMode="decimal" className="credit-input__field premium-input" data-testid="credit-taux-input" value={rawTaux}
                     onChange={e => {
                       let raw = e.target.value.replace(',', '.');
                       raw = raw.replace(/[^0-9.]/g, '');
@@ -1123,29 +1123,29 @@ const synthesePeriodes = useMemo(() => {
 
         {/* COLONNE DROITE : Synthèse */}
         <div className="credit-right premium-right">
-          <div className="credit-summary-card premium-summary-card">
-            <div className="credit-summary-title premium-summary-title">Synthèse du prêt</div>
-            <div className="credit-kpi-grid premium-kpi-grid">
-              <div className="credit-kpi premium-kpi">
-                <div className="credit-kpi-value premium-kpi-value">{euro0(montantPrincipalAff)}</div>
+          <div className="credit-summary-card premium-summary-card" data-testid="credit-summary-card">
+            <div className="credit-summary-title premium-summary-title" data-testid="credit-summary-title">Synthèse du prêt</div>
+            <div className="credit-kpi-grid premium-kpi-grid" data-testid="credit-kpi-grid">
+              <div className="credit-kpi premium-kpi" data-testid="credit-kpi-mensualite">
+                <div className="credit-kpi-value premium-kpi-value" data-testid="credit-mensualite-value">{euro0(montantPrincipalAff)}</div>
                 <div className="credit-kpi-label premium-kpi-label">{isAnnual ? 'Annuité' : 'Mensualité'} (hors ass.)</div>
               </div>
-              <div className="credit-kpi premium-kpi">
-                <div className="credit-kpi-value premium-kpi-value">{euro0(primeAssAff)}</div>
+              <div className="credit-kpi premium-kpi" data-testid="credit-kpi-assurance">
+                <div className="credit-kpi-value premium-kpi-value" data-testid="credit-assurance-value">{euro0(primeAssAff)}</div>
                 <div className="credit-kpi-label premium-kpi-label">Assurance / {isAnnual ? 'an' : 'mois'}</div>
               </div>
             </div>
-            <div className="credit-summary-row premium-summary-row">
+            <div className="credit-summary-row premium-summary-row" data-testid="credit-total-interets-row">
               <span className="credit-summary-label premium-summary-label">Coût total des intérêts</span>
-              <span className="credit-summary-value premium-summary-value">{euro0(totalInterets)}</span>
+              <span className="credit-summary-value premium-summary-value" data-testid="credit-total-interets-value">{euro0(totalInterets)}</span>
             </div>
-            <div className="credit-summary-row">
+            <div className="credit-summary-row" data-testid="credit-total-assurance-row">
               <span className="credit-summary-label">Coût total assurance</span>
-              <span className="credit-summary-value">{euro0(totalAssurance)}</span>
+              <span className="credit-summary-value" data-testid="credit-total-assurance-value">{euro0(totalAssurance)}</span>
             </div>
-            <div className="credit-summary-row">
+            <div className="credit-summary-row" data-testid="credit-cout-total-row">
               <span className="credit-summary-label">Coût total du crédit</span>
-              <span className="credit-summary-value credit-summary-value--highlight">{euro0(coutTotalCredit)}</span>
+              <span className="credit-summary-value credit-summary-value--highlight" data-testid="credit-cout-total-value">{euro0(coutTotalCredit)}</span>
             </div>
             {lisserPret1 && (
               <div className="credit-summary-row">

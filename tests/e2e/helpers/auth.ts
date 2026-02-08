@@ -51,9 +51,9 @@ export async function loginWithCredentials(
   password: string,
 ): Promise<void> {
   await page.goto('/login');
-  await page.locator('input[type="email"]').fill(email);
-  await page.locator('input[type="password"]').fill(password);
-  await page.getByRole('button', { name: 'Se connecter' }).click();
+  await page.getByTestId('login-email-input').fill(email);
+  await page.getByTestId('login-password-input').fill(password);
+  await page.getByTestId('login-submit-button').click();
   // Wait for redirect to home
   await page.waitForURL('/', { timeout: 10_000 });
 }
