@@ -3,7 +3,14 @@
 
 /* Variables globales */
 :root {
-  /* Couleurs du thème (synchronisées avec ThemeProvider) */
+  /*
+   * COULEURS DE FALLBACK (anti-FOUC)
+   * Ces valeurs sont les valeurs par défaut initiales avant que ThemeProvider
+   * n'injecte les couleurs dynamiques. Elles DOIVENT rester synchronisées avec
+   * DEFAULT_COLORS dans src/settings/theme.ts (source de vérité).
+   * 
+   * Source de vérité : src/settings/theme.ts → DEFAULT_COLORS
+   */
   --color-c1: #2B3E37;
   --color-c2: #709B8B;
   --color-c3: #9FBDB2;
