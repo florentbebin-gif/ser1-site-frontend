@@ -37,9 +37,6 @@ export async function injectMockSession(page: Page): Promise<void> {
 
     // Set the E2E bypass flag
     (window as any).__SER1_E2E = true;
-
-    // Inject the fake session with the expected key format
-    localStorage.setItem('sb-localhost-auth-token', JSON.stringify(session));
   }, fakeSession);
 }
 

@@ -52,6 +52,19 @@ export default [
       'no-console': 'off',
     },
   },
+  {
+    files: ['tests/e2e/**/*.{js,ts,jsx,tsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+    rules: {
+      'no-console': 'off',
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    },
+  },
   // Source of truth files - colors are defined here
   {
     files: [
