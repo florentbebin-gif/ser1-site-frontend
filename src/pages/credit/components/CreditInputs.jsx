@@ -80,6 +80,7 @@ export function InputEuro({
   disabled = false, 
   hint,
   testId,
+  dataTestId,
   onBlur,
 }) {
   const fmt = (n) => (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
@@ -90,7 +91,7 @@ export function InputEuro({
   };
 
   return (
-    <div style={fieldContainerStyle} data-testid={testId}>
+    <div style={fieldContainerStyle} data-testid={dataTestId || testId}>
       {label && <label style={labelStyle}>{label}</label>}
       <div style={inputWrapperStyle}>
         <input

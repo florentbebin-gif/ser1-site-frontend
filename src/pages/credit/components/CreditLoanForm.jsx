@@ -55,7 +55,7 @@ export function CreditLoanForm({
           value={pretData.capital}
           onChange={(v) => onPatch({ capital: v })}
           testId={`credit-pret${pretNum}-capital`}
-          data-testid={pretNum === 0 ? 'credit-capital-input' : undefined}
+          dataTestId={pretNum === 0 ? 'credit-capital-input' : undefined}
         />
         <InputNumber
           label="Durée"
