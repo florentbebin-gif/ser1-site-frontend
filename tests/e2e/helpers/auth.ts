@@ -7,7 +7,7 @@ import { type Page } from '@playwright/test';
  * This avoids needing real credentials in CI.
  */
 export async function injectMockSession(page: Page): Promise<void> {
-  const supabaseUrl = 'http://localhost:54321'; // placeholder
+  const _supabaseUrl = 'http://localhost:54321'; // placeholder
 
   const fakeSession = {
     access_token: 'e2e-fake-access-token',
@@ -30,7 +30,7 @@ export async function injectMockSession(page: Page): Promise<void> {
 
   // Supabase JS v2 stores session under a key derived from the project URL.
   // We inject into every possible key pattern so AuthProvider picks it up.
-  await page.addInitScript((session) => {
+  await page.addInitScript((_session) => {
     const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-'));
     // Clear any existing Supabase auth keys
     keys.forEach(k => localStorage.removeItem(k));
