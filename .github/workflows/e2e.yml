@@ -22,6 +22,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check repository context
+        run: |
+          echo "🔍 Event: ${{ github.event_name }}"
+          echo "🔍 Head repo: ${{ github.event.pull_request.head.repo.full_name }}"
+          echo "🔍 Base repo: ${{ github.repository }}"
+          echo "🔍 E2E_EMAIL present: ${{ secrets.E2E_EMAIL != '' }}"
+          echo "🔍 E2E_PASSWORD present: ${{ secrets.E2E_PASSWORD != '' }}"
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            echo "🔄 PR from fork detected - secrets may not be available"
+          else
+            echo "🔐 Internal PR or push - full secrets available"
+          fi
+
       - name: Validate environment
         run: |
           if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ]; then
@@ -47,6 +60,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
+        timeout-minutes: 10
         run: npx playwright test
         env:
           CI: true
