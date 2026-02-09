@@ -42,6 +42,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }): React
   // Gardé pour compatibilité mais fixé à 0 - ne déclenche plus de rechargements
   const [appAwakeRevision] = useState(0);
 
+  // Check for E2E mock session
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).__SER1_E2E) {
+      // Try to restore session from localStorage for E2E tests
+      const storedSession = localStorage.getItem('sb-localhost-auth-token');
+      if (storedSession) {
+        try {
+          const parsed = JSON.parse(storedSession);
+          // Create a minimal session-like object
+          const mockSession = {
+            access_token: parsed.access_token,
+            refresh_token: parsed.refresh_token,
+            expires_in: parsed.expires_in,
+            expires_at: parsed.expires_at,
+            user: parsed.user,
+          } as Session;
+          
+          setSession(mockSession);
+          setUser(parsed.user);
+          setAuthReady(true);
+          setAuthRevision(1);
+          return;
+        } catch (e) {
+          console.warn('Failed to parse E2E mock session:', e);
+        }
+      }
+    }
+  }, []);
+
   // Mise à jour de l'état depuis une session
   const updateFromSession = useCallback((newSession: Session | null, source: string) => {
     if (DEBUG_AUTH) {

@@ -1,24 +1,17 @@
 import { test, expect } from '@playwright/test';
-import { loginWithCredentials } from './helpers/auth';
+import { injectMockSession } from './helpers/auth';
 import { ROUTES } from './helpers/fixtures';
 
 /**
  * Credit Simulator E2E tests.
  *
- * Requires real Supabase credentials:
- *   E2E_EMAIL / E2E_PASSWORD
+ * Uses mock session to avoid needing real credentials in CI.
  */
-const E2E_EMAIL = process.env.E2E_EMAIL;
-const E2E_PASSWORD = process.env.E2E_PASSWORD;
-const hasCredentials = !!(E2E_EMAIL && E2E_PASSWORD);
-
 test.describe('Credit Simulator', () => {
-  test.skip(!hasCredentials, 'E2E_EMAIL / E2E_PASSWORD not set — skipping authenticated tests');
+  test.use({ storageState: { cookies: [], origins: [] } });
 
   test.beforeEach(async ({ page }) => {
-    if (hasCredentials) {
-      await loginWithCredentials(page, E2E_EMAIL!, E2E_PASSWORD!);
-    }
+    await injectMockSession(page);
   });
 
   test('charge la page Crédit et affiche le formulaire', async ({ page }) => {

@@ -91,7 +91,7 @@ export function InputEuro({
   };
 
   return (
-    <div style={fieldContainerStyle} data-testid={dataTestId || testId}>
+    <div style={fieldContainerStyle}>
       {label && <label style={labelStyle}>{label}</label>}
       <div style={inputWrapperStyle}>
         <input
@@ -100,6 +100,7 @@ export function InputEuro({
           disabled={disabled}
           value={fmt(value)}
           onChange={handleChange}
+          data-testid={dataTestId || testId}
           style={{
             ...inputBaseStyle,
             ...(disabled ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
