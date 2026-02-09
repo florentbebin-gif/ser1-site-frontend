@@ -50,12 +50,6 @@ jobs:
             echo "⚠️ Warning: E2E_PASSWORD secret not set - authenticated tests will be skipped"
           fi
 
-      - name: Build application
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-        run: npm run build
-
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
