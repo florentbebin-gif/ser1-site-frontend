@@ -12,7 +12,7 @@ import { saveGlobalState, loadGlobalStateWithDialog } from './utils/globalStorag
 
 // V4: Lazy load heavy pages to reduce initial bundle size
 const Placement = lazy(() => import('./pages/PlacementV2'));
-const Credit = lazy(() => import('./pages/Credit'));
+const Credit = lazy(() => import('./pages/credit/Credit'));
 const Ir = lazy(() => import('./pages/Ir'));
 const AuditWizard = lazy(() => import('./features/audit').then(m => ({ default: m.AuditWizard })));
 const StrategyPage = lazy(() => import('./pages/StrategyPage'));

@@ -1,0 +1,579 @@
+/* ========================================
+   CreditV2 — Design Premium CGP
+   Palette : C1-C10 (color-governance.md)
+   Specs   : ui-governance.md
+   ======================================== */
+
+/* ----------------------------------------
+   PAGE LAYOUT
+   ---------------------------------------- */
+.cv2-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+.cv2-grid {
+  display: grid;
+  grid-template-columns: 1.85fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+  align-items: start;
+}
+
+/* ----------------------------------------
+   HEADER
+   ---------------------------------------- */
+.cv2-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--color-c8);
+}
+
+.cv2-header__title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--color-c1);
+  margin: 0;
+}
+
+.cv2-header__subtitle {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-c9);
+  margin-top: 4px;
+}
+
+.cv2-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ----------------------------------------
+   PILL TOGGLE (Mensuel/Annuel)
+   ---------------------------------------- */
+.cv2-pill-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cv2-pill-toggle__btn {
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  background: #FFFFFF;
+  color: var(--color-c9);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cv2-pill-toggle__btn:first-child {
+  border-right: 1px solid var(--color-c8);
+}
+
+.cv2-pill-toggle__btn:hover:not(.is-active) {
+  background: var(--color-c7);
+  color: var(--color-c10);
+}
+
+.cv2-pill-toggle__btn.is-active {
+  background: var(--color-c2);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* ----------------------------------------
+   TABS (Prêt 1 / Prêt 2 / Prêt 3)
+   ---------------------------------------- */
+.cv2-tabs {
+  margin-bottom: 20px;
+}
+
+.cv2-tabs__list {
+  display: flex;
+  gap: 2px;
+  border-bottom: 2px solid var(--color-c8);
+}
+
+.cv2-tabs__tab {
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-c9);
+  cursor: pointer;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cv2-tabs__tab:hover:not(.is-disabled) {
+  color: var(--color-c2);
+  background-color: var(--color-c7);
+}
+
+.cv2-tabs__tab.is-active {
+  color: var(--color-c1);
+  font-weight: 600;
+  border-bottom-color: var(--color-c2);
+}
+
+.cv2-tabs__tab.is-active:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.cv2-tabs__tab.is-addable {
+  color: var(--color-c9);
+  opacity: 0.7;
+}
+
+.cv2-tabs__tab.is-addable:hover {
+  opacity: 1;
+  color: var(--color-c2);
+}
+
+.cv2-tabs__tab.is-disabled {
+  color: var(--color-c8);
+  cursor: default;
+}
+
+.cv2-tabs__add-icon {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* ----------------------------------------
+   CARDS
+   ---------------------------------------- */
+.cv2-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.cv2-card + .cv2-card {
+  margin-top: 20px;
+}
+
+.cv2-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-c1);
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+/* ----------------------------------------
+   LOAN FORM
+   ---------------------------------------- */
+.cv2-loan-form__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 20px;
+}
+
+.cv2-loan-form__section {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-c8);
+}
+
+.cv2-loan-form__section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-c9);
+  margin-bottom: 12px;
+}
+
+.cv2-loan-form__footer {
+  grid-column: 1 / -1;
+  margin-top: 16px;
+  text-align: right;
+}
+
+/* ----------------------------------------
+   BUTTONS
+   ---------------------------------------- */
+.cv2-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--color-c8);
+  background: var(--color-c7);
+  color: var(--color-c1);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cv2-btn:hover:not(:disabled) {
+  border-color: var(--color-c2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.cv2-btn--danger {
+  color: var(--color-c1);
+  border-color: var(--color-c1);
+  background: #FFFFFF;
+}
+
+.cv2-btn--danger:hover:not(:disabled) {
+  background: var(--color-c7);
+  border-color: var(--color-c1);
+}
+
+/* ----------------------------------------
+   LISSAGE PANEL
+   ---------------------------------------- */
+.cv2-lissage {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cv2-lissage__hint {
+  font-size: 12px;
+  color: var(--color-c9);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.cv2-lissage__pills {
+  display: flex;
+  gap: 8px;
+}
+
+.cv2-lissage__pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-c8);
+  background: #FFFFFF;
+  color: var(--color-c10);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cv2-lissage__pill:hover:not(.is-active) {
+  background: var(--color-c7);
+  border-color: var(--color-c3);
+}
+
+.cv2-lissage__pill.is-active {
+  background: var(--color-c2);
+  border-color: var(--color-c2);
+  color: #FFFFFF;
+}
+
+/* ----------------------------------------
+   SUMMARY CARD (sticky droite)
+   ---------------------------------------- */
+.cv2-summary {
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  position: sticky;
+  top: 80px;
+}
+
+.cv2-summary__title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+  margin-bottom: 16px;
+}
+
+.cv2-summary__kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cv2-summary__kpi {
+  text-align: center;
+  padding: 12px;
+  background: var(--color-c7);
+  border-radius: 8px;
+}
+
+.cv2-summary__kpi-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-c10);
+  font-variant-numeric: tabular-nums;
+}
+
+.cv2-summary__kpi-value--accent {
+  color: var(--color-c2);
+}
+
+.cv2-summary__kpi-label {
+  font-size: 11px;
+  color: var(--color-c9);
+  margin-top: 4px;
+}
+
+.cv2-summary__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.cv2-summary__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+.cv2-summary__row--total {
+  border-bottom: none;
+  padding-top: 12px;
+}
+
+.cv2-summary__row-label {
+  font-size: 13px;
+  color: var(--color-c9);
+}
+
+.cv2-summary__row-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-c10);
+  font-variant-numeric: tabular-nums;
+}
+
+.cv2-summary__row-value--highlight {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-c2);
+}
+
+.cv2-summary__lissage-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 0 0;
+  margin-top: 8px;
+  border-top: 1px solid var(--color-c6);
+}
+
+/* ----------------------------------------
+   TABLES (Premium — sans bordures vert.)
+   ---------------------------------------- */
+.cv2-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cv2-table__th {
+  padding: 12px 10px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+  background: var(--color-c7);
+  border-bottom: 2px solid var(--color-c8);
+}
+
+.cv2-table__th--right {
+  text-align: right;
+}
+
+.cv2-table__row {
+  border-bottom: 1px solid var(--color-c8);
+  transition: background-color 0.15s;
+}
+
+.cv2-table__row:hover {
+  background-color: var(--color-c7);
+}
+
+.cv2-table__td {
+  padding: 10px;
+  color: var(--color-c10);
+  vertical-align: middle;
+  font-variant-numeric: tabular-nums;
+}
+
+.cv2-table__td--right {
+  text-align: right;
+}
+
+.cv2-table__td--bold {
+  font-weight: 600;
+}
+
+/* ----------------------------------------
+   SCHEDULE (Échéancier wrapper)
+   ---------------------------------------- */
+.cv2-schedule,
+.cv2-periods {
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  margin-bottom: 24px;
+}
+
+.cv2-schedule__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.cv2-schedule__title,
+.cv2-periods__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-c1);
+  margin: 0 0 16px 0;
+}
+
+.cv2-schedule__title {
+  margin: 0;
+}
+
+.cv2-schedule__toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  background: var(--color-c7);
+  color: var(--color-c9);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cv2-schedule__toggle:hover {
+  color: var(--color-c2);
+  border-color: var(--color-c2);
+}
+
+.cv2-schedule__chevron {
+  transition: transform 0.2s;
+}
+
+.cv2-schedule__chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.cv2-schedule__scroll,
+.cv2-periods__scroll {
+  overflow-x: auto;
+}
+
+/* ----------------------------------------
+   HYPOTHÈSES
+   ---------------------------------------- */
+.cv2-hypotheses {
+  margin-top: 32px;
+  padding: 20px 24px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+}
+
+.cv2-hypotheses__title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-c9);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 12px;
+}
+
+.cv2-hypotheses ul {
+  margin: 0;
+  padding: 0 0 0 16px;
+}
+
+.cv2-hypotheses li {
+  font-size: 12px;
+  color: var(--color-c9);
+  line-height: 1.6;
+}
+
+/* ----------------------------------------
+   RESPONSIVE
+   ---------------------------------------- */
+@media (max-width: 900px) {
+  .cv2-page {
+    padding: 24px 16px 48px;
+  }
+
+  .cv2-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cv2-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cv2-summary {
+    position: static;
+  }
+
+  .cv2-loan-form__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .cv2-header__title {
+    font-size: 18px;
+  }
+
+  .cv2-tabs__tab {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .cv2-summary__kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cv2-summary__kpi-value {
+    font-size: 16px;
+  }
+}
