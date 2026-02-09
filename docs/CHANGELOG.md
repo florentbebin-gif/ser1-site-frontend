@@ -6,6 +6,68 @@
 
 ---
 
+## 2026-02-10 — V5 Theme Architecture : Modèle Déterministe 3 États
+
+### Problème résolu
+Le thème ne persistait pas correctement multi-poste : le choix entre `cabinet`/`preset`/`custom` était stocké uniquement en `localStorage`, donc perdu sur un poste froid. De plus, la sémantique de `selected_theme_ref` était ambiguë (technique vs nom UI).
+
+### Solution : Modèle déterministe à 3 états
+
+| Aspect | Avant (V4) | Après (V5) |
+|--------|-----------|-----------|
+| **Source de vérité** | `localStorage.themeSource` + `ui_settings.selected_theme_ref` | `ui_settings.theme_mode` (DB uniquement) |
+| **États** | `'cabinet'` vs `'custom'` ambigu | `'cabinet'` \| `'preset'` \| `'my'` |
+| **Preset actif** | Encodé dans `selected_theme_ref` (nom UI) | Colonne dédiée `preset_id` (id stable) |
+| **Palette perso** | `custom_palette` (risque d'écrasement) | `my_palette` (jamais écrasé par un preset) |
+| **Anti-flash** | localStorage comme source de vérité | localStorage uniquement comme miroir |
+
+### Migration DB
+- **Fichier** : `database/migrations/202602100001_add_theme_mode.sql`
+- **Colonnes ajoutées** : `theme_mode`, `preset_id`, `my_palette`
+- **Data migration** : Copie `custom_palette` → `my_palette`, dérivation `theme_mode` depuis `selected_theme_ref`
+- **Backward compat** : Lecture fallback des anciennes colonnes pour users non migrés
+
+### API V5 (ThemeProvider)
+
+| Fonction | Usage |
+|----------|-------|
+| `applyThemeMode(mode, presetId?)` | Persiste mode + applique immédiatement |
+| `saveMyPalette(colors)` | Sauvegarde `my_palette` (uniquement quand `themeMode='my'`) |
+| `themeMode` | `'cabinet'` \| `'preset'` \| `'my'` |
+| `presetId` | ID du preset actif (ex: `'gold-elite'`) |
+| `myPalette` | Palette perso sauvegardée (ne change jamais sauf action utilisateur explicite) |
+
+### Règles métier déterministes
+1. **Clic preset** → `theme_mode='preset'` + `preset_id=id` + **NE TOUCHE PAS** `my_palette`
+2. **Clic cabinet** → `theme_mode='cabinet'` + applique immédiatement
+3. **Clic "Mon thème"** → `theme_mode='my'` + applique `my_palette`
+4. **"Enregistrer"** → écrit `my_palette` **uniquement** si `themeMode='my'`
+5. **Tile "Mon thème"** → visible dès que `myPalette` existe (même si preset actif)
+
+### Tests validés (T1-T6)
+| Test | Description | Résultat |
+|------|-------------|----------|
+| T1 | Preset appliqué + persisté après déco/reco | ✅ |
+| T2 | Cabinet immédiat + persisté après F5/déco-reco | ✅ |
+| T3 | `my_palette` protégé (pas écrasé par preset) | ✅ |
+| T4 | Retour "Mon thème" restaure palette perso | ✅ |
+| T5 | Bouton "Enregistrer" absent en mode preset/cabinet | ✅ |
+| T6 | Multi-poste (Poste A→B) : même thème affiché | ✅ |
+
+### Fichiers créés
+- `src/settings/presets.ts` — Source unique des presets (`PRESET_THEMES`, `PRESET_MAP`, `resolvePresetColors()`)
+- `database/migrations/202602100001_add_theme_mode.sql`
+
+### Fichiers modifiés
+- `src/settings/theme/types.ts` — `ThemeMode` type + nouvelle interface `ThemeContextValue`
+- `src/settings/ThemeProvider.tsx` — `loadTheme()` avec switch déterministe, `applyThemeMode()`, `saveMyPalette()`
+- `src/pages/Settings.jsx` — 4 handlers déterministes, UI conditionnelle sur `themeMode`
+
+### Fichiers supprimés
+- `docs/diag-theme-multiposte.md` — Diagnostic obsolète (problème résolu)
+
+---
+
 ## 2026-02-09 — Refactoring Simulateur Crédit : Architecture Premium (CreditV2)
 
 ### Objectif

@@ -34,13 +34,14 @@ export interface CabinetLogoCache {
 export type ThemeScope = 'all' | 'ui-only';
 export type ThemeSource = 'cabinet' | 'custom';
 
+/** V5: Modèle déterministe à 3 états */
+export type ThemeMode = 'cabinet' | 'preset' | 'my';
+
 // ─── Context value ───────────────────────────────────────────────────
 
 export interface ThemeContextValue {
   colors: ThemeColors;
   setColors: (_colors: ThemeColors) => void;
-  saveThemeToUiSettings: (_colors: ThemeColors, _themeName?: string) => Promise<{ success: boolean; error?: string }>;
-  saveCustomPalette: (_colors: ThemeColors) => Promise<{ success: boolean; error?: string }>;
   isLoading: boolean;
   themeReady: boolean;
   logo?: string;
@@ -51,11 +52,20 @@ export interface ThemeContextValue {
   themeScope: ThemeScope;
   setThemeScope: (_scope: ThemeScope) => void;
   pptxColors: ThemeColors;
+  // V5: modèle déterministe
+  themeMode: ThemeMode;
+  presetId: string | null;
+  myPalette: ThemeColors | null;
+  applyThemeMode: (_mode: ThemeMode, _presetId?: string) => Promise<{ success: boolean; error?: string }>;
+  saveMyPalette: (_colors: ThemeColors) => Promise<{ success: boolean; error?: string }>;
+  // Compat legacy (dérivés)
   themeSource: ThemeSource;
   setThemeSource: (_source: ThemeSource) => void;
   customPalette: ThemeColors | null;
   selectedThemeRef: string;
   setSelectedThemeRef: (_ref: string) => void;
+  saveThemeToUiSettings: (_colors: ThemeColors, _themeName?: string) => Promise<{ success: boolean; error?: string }>;
+  saveCustomPalette: (_colors: ThemeColors) => Promise<{ success: boolean; error?: string }>;
 }
 
 // ─── Provider props ──────────────────────────────────────────────────

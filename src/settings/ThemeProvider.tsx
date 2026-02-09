@@ -11,16 +11,14 @@ import React, { createContext, useContext, useEffect, useState, useRef, useCallb
 import { supabase } from '../supabaseClient';
 import { resolvePptxColors } from '../pptx/theme/resolvePptxColors';
 import { DEFAULT_COLORS, type ThemeColors } from './theme';
-import type { ThemeContextValue, ThemeProviderProps, ThemeScope, ThemeSource } from './theme/types';
+import type { ThemeContextValue, ThemeProviderProps, ThemeScope, ThemeSource, ThemeMode } from './theme/types';
+import { resolvePresetColors } from './presets';
+import { getThemeBootstrap } from './theme/hooks/useThemeCache';
 import {
-  getThemeFromCache,
   saveThemeToCache,
   clearThemeCacheForUser,
-  getCabinetThemeFromCache,
   saveCabinetThemeToCache,
-  getCabinetLogoFromCache,
   saveCabinetLogoToCache,
-  getThemeBootstrap,
   CABINET_THEME_CACHE_KEY_PREFIX,
 } from './theme/hooks/useThemeCache';
 import {
@@ -39,8 +37,6 @@ export type { ThemeScope, ThemeSource } from './theme/types';
 const ThemeContext = createContext<ThemeContextValue>({
   colors: DEFAULT_COLORS,
   setColors: (_colors: ThemeColors) => {},
-  saveThemeToUiSettings: async (_colors: ThemeColors, _themeName?: string) => ({ success: false, error: 'Not implemented' }),
-  saveCustomPalette: async (_colors: ThemeColors) => ({ success: false, error: 'Not implemented' }),
   isLoading: true,
   themeReady: false,
   logo: undefined,
@@ -51,11 +47,20 @@ const ThemeContext = createContext<ThemeContextValue>({
   themeScope: 'all',
   setThemeScope: (_scope: ThemeScope) => {},
   pptxColors: DEFAULT_COLORS,
+  // V5
+  themeMode: 'cabinet',
+  presetId: null,
+  myPalette: null,
+  applyThemeMode: async () => ({ success: false, error: 'Not implemented' }),
+  saveMyPalette: async () => ({ success: false, error: 'Not implemented' }),
+  // Compat legacy
   themeSource: 'cabinet',
   setThemeSource: (_source: ThemeSource) => {},
   customPalette: null,
   selectedThemeRef: 'cabinet',
   setSelectedThemeRef: (_ref: string) => {},
+  saveThemeToUiSettings: async () => ({ success: false, error: 'Not implemented' }),
+  saveCustomPalette: async () => ({ success: false, error: 'Not implemented' }),
 });
 
 export function useTheme(): ThemeContextValue {
@@ -87,9 +92,12 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const [cabinetColors, setCabinetColors] = useState<ThemeColors | null | undefined>(undefined);
   // Thème Original depuis DB (pour users sans cabinet)
   const [originalColors, setOriginalColors] = useState<ThemeColors | null>(null);
-  // 🎨 V4.0: Palette personnalisée persistée (séparée du thème sélectionné)
+  // V5: Modèle déterministe à 3 états
+  const [themeMode, setThemeMode] = useState<ThemeMode>('cabinet');
+  const [presetId, setPresetId] = useState<string | null>(null);
+  const [myPalette, setMyPalette] = useState<ThemeColors | null>(null);
+  // Compat legacy (dérivés)
   const [customPalette, setCustomPalette] = useState<ThemeColors | null>(null);
-  // Référence du thème actuellement sélectionné
   const [selectedThemeRef, setSelectedThemeRef] = useState<string>('cabinet');
 
   // Compute PPTX colors - PRIORITÉ: cabinet > original (sans cabinet) > custom selon scope
@@ -167,7 +175,6 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const lastAppliedHashRef = useRef<string>('');
   const lastAppliedUserIdRef = useRef<string>('');
   const lastAppliedSourceRankRef = useRef<number>(0);
-  const cacheAppliedRef = useRef<boolean>(false);
   const mountedRef = useRef<boolean>(true);
   const activeRequestIdRef = useRef<number>(0);
   const cabinetThemePromiseRef = useRef<Promise<ThemeColors | null> | null>(null);
@@ -177,6 +184,8 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const cabinetThemeRequestIdRef = useRef<number>(0);
   const cabinetLogoRequestIdRef = useRef<number>(0);
   const themeSourceRef = useRef<ThemeSource>(themeSource);
+  const themeModeRef = useRef<ThemeMode>(themeMode);
+  const myPaletteRef = useRef<ThemeColors | null>(myPalette);
   const cabinetColorsRef = useRef<ThemeColors | null | undefined>(cabinetColors);
   const cabinetLogoRef = useRef<string | undefined>(cabinetLogo);
   const ensureCabinetThemeFetchRef = useRef<((_userId: string) => Promise<ThemeColors | null>) | null>(null);
@@ -204,9 +213,9 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     };
   }, []);
 
-  useEffect(() => {
-    themeSourceRef.current = themeSource;
-  }, [themeSource]);
+  useEffect(() => { themeSourceRef.current = themeSource; }, [themeSource]);
+  useEffect(() => { themeModeRef.current = themeMode; }, [themeMode]);
+  useEffect(() => { myPaletteRef.current = myPalette; }, [myPalette]);
 
   // 🚨 DIAGNOSTIC: Enhanced applyColorsToCSS with change detection AND source ranking
   // Ranking: cabinet(3) > original-db(2) > custom/ui_settings(1) > default/bootstrap(0)
@@ -282,7 +291,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     };
   }, [activeUserId]);
 
-// Load theme when activeUserId or themeSource changes
+// V5: Load theme — single deterministic switch on theme_mode
   useEffect(() => {
     if (!activeUserId) {
       setIsLoading(false);
@@ -293,159 +302,143 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
 
     async function loadTheme() {
       try {
-        // Guard: abort if request is stale
-        if (!mountedRef.current || requestId !== activeRequestIdRef.current) {
-          return;
+        if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
+
+        // ─── 1. AUTH
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!mountedRef.current || requestId !== activeRequestIdRef.current || !user) return;
+        if (user.id !== activeUserId) return;
+
+        // ─── 2. Lire ui_settings (colonnes V5 + anciennes pour fallback)
+        let uiSettings: {
+          theme_mode?: string;
+          preset_id?: string;
+          my_palette?: any;
+          selected_theme_ref?: string;
+          custom_palette?: any;
+          active_palette?: any;
+          colors?: any;
+        } | null = null;
+
+        try {
+          const { data, error } = await supabase
+            .from('ui_settings')
+            .select('theme_mode, preset_id, my_palette, selected_theme_ref, custom_palette, active_palette, colors')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          if (!error) uiSettings = data;
+        } catch (e) {
+          console.warn('[ThemeProvider] Failed to load ui_settings:', e);
         }
 
-        const cachedCabinetColors = getCabinetThemeFromCache(activeUserId);
-        const cachedCabinetLogo = getCabinetLogoFromCache(activeUserId);
+        if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
 
-        // 🚨 FIX: Ne charger le cache que si cabinetColors n'est pas encore chargé (undefined)
-        // Si cabinetColors est null (pas de cabinet confirmé) ou un objet, ne pas écraser avec le cache
-        if (cachedCabinetColors && cabinetColorsRef.current === undefined) {
-          setCabinetColors(cachedCabinetColors);
+        // ─── 3. Déterminer mode (V5 → fallback anciennes colonnes)
+        let mode: ThemeMode;
+        let pId: string | null = null;
+
+        if (uiSettings?.theme_mode && ['cabinet', 'preset', 'my'].includes(uiSettings.theme_mode)) {
+          mode = uiSettings.theme_mode as ThemeMode;
+          pId = uiSettings.preset_id || null;
+        } else {
+          // Fallback: dériver depuis selected_theme_ref (compat V4)
+          const ref = uiSettings?.selected_theme_ref || 'cabinet';
+          mode = ref === 'cabinet' ? 'cabinet' : 'my';
         }
 
-        if (cachedCabinetLogo !== undefined && cabinetLogoRef.current === undefined) {
-          setCabinetLogo(cachedCabinetLogo ?? undefined);
+        // ─── 4. Charger my_palette en mémoire (toujours, pour tile "Mon thème")
+        const rawMyPalette = uiSettings?.my_palette || uiSettings?.custom_palette;
+        if (rawMyPalette) {
+          const mp = convertDbPaletteToThemeColors(rawMyPalette);
+          if (mp) {
+            setMyPalette(mp);
+            setCustomPalette(mp); // compat legacy
+          }
         }
 
-        // 🚨 FIX: Respecter le tri-état:
-        // - cabinetColors === undefined : pas encore chargé, utiliser le cache si disponible
-        // - cabinetColors === null : pas de cabinet confirmé, ne PAS utiliser le cache
-        // - cabinetColors === ThemeColors : cabinet existe
-        const immediateCabinetColors = cabinetColorsRef.current === undefined 
-          ? cachedCabinetColors 
-          : cabinetColorsRef.current; // peut être null ou ThemeColors
-        
-        // 🚨 FIX: Toujours charger originalColors s'ils ne sont pas encore chargés
+        // ─── 5. Charger données complémentaires
         let loadedOriginal = originalColors;
         if (!originalColors) {
           loadedOriginal = await loadOriginalTheme();
-          if (loadedOriginal) {
-            setOriginalColors(loadedOriginal);
-          }
+          if (loadedOriginal) setOriginalColors(loadedOriginal);
         }
 
-        // 🚨 FIX: Ne pas appliquer de CSS ici, attendre la décision finale après ensureCabinetThemeFetch
-        // (Le premier apply rapide avec le cache est OK mais doit être cohérent)
-        if (themeSource === 'cabinet' && immediateCabinetColors) {
-          // Seulement si on a un vrai cabinet (pas null)
-          setColorsState(immediateCabinetColors);
-          applyColorsToCSSWithGuardRef.current(immediateCabinetColors, activeUserId || undefined, cachedCabinetColors ? 'cabinet-cache' : 'cabinet-state');
-        }
-
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!mountedRef.current || requestId !== activeRequestIdRef.current || !user) return;
-        if (user.id !== activeUserId) return; // User changed during load
-
-        // Charger le cabinet (ou confirmer qu'il n'y en a pas)
-        const fetchedCabinetColors = await ensureCabinetThemeFetchRef.current?.(user.id);
+        // Toujours charger cabinet (pour PPTX même si mode != cabinet)
+        const fetchedCab = await ensureCabinetThemeFetchRef.current?.(user.id) ?? null;
         void ensureCabinetLogoFetchRef.current?.(user.id);
 
-        // Hiérarchie modifiée selon themeSource
+        if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
+
+        // ─── 6. Résoudre couleurs finales — SWITCH DÉTERMINISTE
         let finalColors = DEFAULT_COLORS;
         let source = 'default';
 
-        // Maintenant déterminer les couleurs UI selon themeSource
-        if (themeSource === 'cabinet') {
-          // 🚨 FIX: Mode cabinet avec tri-état
-          // fetchedCabinetColors = ThemeColors si cabinet existe, null si pas de cabinet
-          // Si pas de cabinet (null), utiliser originalColors
-          if (fetchedCabinetColors) {
-            finalColors = fetchedCabinetColors;
-            source = 'cabinet-theme';
-          } else if (loadedOriginal) {
-            finalColors = loadedOriginal;
-            source = 'original-db';
-          } else {
-            finalColors = DEFAULT_COLORS;
-            source = 'default';
-          }
-        } else {
-          // themeSource='custom' : logique normale avec cache/ui_settings
-          const cachedColors = getThemeFromCache(user.id);
-          if (cachedColors) {
-            finalColors = cachedColors;
-            source = 'cache';
-            cacheAppliedRef.current = true;
-          } else {
-            // 1) Essayer ui_settings (nouveau système V4.0)
-            try {
-              const { data: uiSettings, error: uiError } = await supabase
-                .from('ui_settings')
-                .select('colors, custom_palette, selected_theme_ref, active_palette')
-                .eq('user_id', user.id)
-                .maybeSingle();
+        switch (mode) {
+          case 'cabinet':
+            if (fetchedCab) {
+              finalColors = fetchedCab;
+              source = 'cabinet-theme';
+            } else if (loadedOriginal) {
+              finalColors = loadedOriginal;
+              source = 'original-db';
+            }
+            break;
 
-              if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
-
-              if (!uiError && uiSettings) {
-                // 🎨 V4.0: Charger la palette personnalisée si présente
-                if (uiSettings.custom_palette) {
-                  const customColors = convertDbPaletteToThemeColors(uiSettings.custom_palette);
-                  if (customColors) {
-                    setCustomPalette(customColors);
-                  }
-                }
-                
-                // 🎨 V4.0: Charger la référence du thème sélectionné
-                if (uiSettings.selected_theme_ref) {
-                  setSelectedThemeRef(uiSettings.selected_theme_ref);
-                }
-                
-                // Déterminer les couleurs finales selon selected_theme_ref
-                const themeRef = uiSettings.selected_theme_ref || 'cabinet';
-                
-                if (themeRef === 'custom' && uiSettings.custom_palette) {
-                  // Utiliser la palette personnalisée
-                  finalColors = convertDbPaletteToThemeColors(uiSettings.custom_palette) || DEFAULT_COLORS;
-                  source = 'custom-palette';
-                } else if (themeRef === 'cabinet' && fetchedCabinetColors) {
-                  // Utiliser le thème du cabinet
-                  finalColors = fetchedCabinetColors;
-                  source = 'cabinet-theme';
-                } else if (themeRef === 'original' && loadedOriginal) {
-                  // Utiliser le thème original
-                  finalColors = loadedOriginal;
-                  source = 'original-db';
-                } else if (uiSettings.active_palette) {
-                  // Fallback sur active_palette (dénormalisé)
-                  finalColors = convertDbPaletteToThemeColors(uiSettings.active_palette) || DEFAULT_COLORS;
-                  source = 'active-palette';
-                } else if (uiSettings.colors) {
-                  // Fallback legacy sur colors
-                  finalColors = convertFromSettingsFormat(uiSettings.colors);
-                  source = 'ui_settings (legacy)';
-                }
-                
-                saveThemeToCache(finalColors, user.id);
-              } else if (user.user_metadata?.theme_colors) {
-                // 2) Fallback metadata (legacy admin)
-                finalColors = convertFromSettingsFormat(user.user_metadata.theme_colors);
-                source = 'user_metadata (legacy)';
-                saveThemeToCache(finalColors, user.id);
-              }
-            } catch {
-              if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
-              // 2) Fallback metadata (legacy admin)
-              if (user.user_metadata?.theme_colors) {
-                finalColors = convertFromSettingsFormat(user.user_metadata.theme_colors);
-                source = 'user_metadata (fallback)';
-                saveThemeToCache(finalColors, user.id);
+          case 'preset':
+            if (pId) {
+              const presetColors = resolvePresetColors(pId);
+              if (presetColors) {
+                finalColors = presetColors;
+                source = 'preset';
               }
             }
+            // Fallback: active_palette si preset inconnu
+            if (source === 'default' && uiSettings?.active_palette) {
+              const ap = convertDbPaletteToThemeColors(uiSettings.active_palette);
+              if (ap) { finalColors = ap; source = 'active-palette-fallback'; }
+            }
+            break;
+
+          case 'my': {
+            const mp = rawMyPalette ? convertDbPaletteToThemeColors(rawMyPalette) : null;
+            if (mp) {
+              finalColors = mp;
+              source = 'my-palette';
+            } else if (uiSettings?.active_palette) {
+              // Fallback V4
+              const ap = convertDbPaletteToThemeColors(uiSettings.active_palette);
+              if (ap) { finalColors = ap; source = 'active-palette-legacy'; }
+            } else if (uiSettings?.colors) {
+              finalColors = convertFromSettingsFormat(uiSettings.colors);
+              source = 'ui_settings-legacy';
+            } else if (user.user_metadata?.theme_colors) {
+              finalColors = convertFromSettingsFormat(user.user_metadata.theme_colors);
+              source = 'user_metadata-legacy';
+            }
+            break;
           }
         }
+
+        // ─── 7. Mettre à jour state V5
+        setThemeMode(mode);
+        setPresetId(pId);
+        // Compat legacy
+        const derivedSource: ThemeSource = mode === 'cabinet' ? 'cabinet' : 'custom';
+        setSelectedThemeRef(mode === 'cabinet' ? 'cabinet' : 'custom');
+        if (themeSourceRef.current !== derivedSource) setThemeSource(derivedSource);
+        localStorage.setItem('themeSource', derivedSource);
+
+        // ─── 8. Application finale (reset guard pour éviter blocage)
+        lastAppliedSourceRankRef.current = 0;
+        lastAppliedHashRef.current = '';
 
         if (mountedRef.current && requestId === activeRequestIdRef.current) {
           setColorsState(finalColors);
           applyColorsToCSSWithGuardRef.current(finalColors, user.id, source);
+          saveThemeToCache(finalColors, user.id, derivedSource);
         }
 
-        // Load logo from user_metadata
+        // Logo
         if (user.user_metadata?.cover_slide_url && mountedRef.current) {
           setLogo(user.user_metadata.cover_slide_url);
         }
@@ -462,7 +455,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     }
 
     loadTheme();
-  }, [activeUserId, themeSource, originalColors]);
+  }, [activeUserId, originalColors]);
 
   // Met à jour les couleurs et applique immédiatement
   const setColors = useCallback((newColors: ThemeColors) => {
@@ -470,93 +463,147 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     applyColorsToCSSWithGuardRef.current(newColors, lastAppliedUserIdRef.current, 'setColors-manual');
   }, []);
 
-  // 🎨 V4.0: Sauvegarde explicite de la palette personnalisée
-  const saveCustomPalette = useCallback(async (colors: ThemeColors): Promise<{ success: boolean; error?: string }> => {
+  // ═══════════════════════════════════════════════════════════════════
+  // V5: applyThemeMode — persiste mode + applique immédiatement
+  // ═══════════════════════════════════════════════════════════════════
+  const applyThemeMode = useCallback(async (mode: ThemeMode, pId?: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { success: false, error: 'User not authenticated' };
+      if (!user) return { success: false, error: 'User not authenticated' };
+
+      // Résoudre les couleurs à appliquer
+      let colorsToApply: ThemeColors;
+
+      if (mode === 'cabinet') {
+        const cab = cabinetColorsRef.current;
+        if (cab) {
+          colorsToApply = cab;
+        } else {
+          const fetched = await ensureCabinetThemeFetchRef.current?.(user.id);
+          colorsToApply = fetched || DEFAULT_COLORS;
+        }
+      } else if (mode === 'preset' && pId) {
+        colorsToApply = resolvePresetColors(pId) || DEFAULT_COLORS;
+      } else if (mode === 'my') {
+        colorsToApply = myPaletteRef.current || DEFAULT_COLORS;
+      } else {
+        return { success: false, error: 'Invalid mode' };
       }
 
+      // Écriture DB (V5 + compat legacy)
       const { error } = await supabase
         .from('ui_settings')
         .upsert({
           user_id: user.id,
-          custom_palette: colors,
-          selected_theme_ref: 'custom',
-          active_palette: colors,
-        }, {
-          onConflict: 'user_id'
-        });
-
-      if (error) throw error;
-
-      // Mettre à jour le state local
-      setCustomPalette(colors);
-      setSelectedThemeRef('custom');
-      
-      // Sauvegarder dans le cache
-      saveThemeToCache(colors, user.id, 'custom');
-
-      return { success: true };
-    } catch (error: any) {
-      console.error('Error saving custom palette:', error);
-      return { success: false, error: error.message };
-    }
-  }, []);
-
-  // Sauvegarde le thème dans ui_settings (nouveau système)
-  // V4.0: Met à jour selected_theme_ref sans écraser custom_palette
-  const saveThemeToUiSettings = useCallback(async (colors: ThemeColors, themeRef?: string): Promise<{ success: boolean; error?: string }> => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        return { success: false, error: 'User not authenticated' };
-      }
-
-      // Déterminer la référence du thème
-      const ref = themeRef || 'custom';
-      
-      // Upsert: met à jour selected_theme_ref et active_palette
-      // Ne touche PAS à custom_palette (préservé)
-      const { error } = await supabase
-        .from('ui_settings')
-        .upsert({
-          user_id: user.id,
-          selected_theme_ref: ref,
-          active_palette: colors,
-          // Legacy: garder pour compatibilité
-          theme_name: ref,
+          // V5
+          theme_mode: mode,
+          preset_id: mode === 'preset' ? (pId || null) : null,
+          active_palette: colorsToApply,
+          // Compat legacy
+          selected_theme_ref: mode === 'cabinet' ? 'cabinet' : 'custom',
           colors: {
-            color1: colors.c1,
-            color2: colors.c2,
-            color3: colors.c3,
-            color4: colors.c4,
-            color5: colors.c5,
-            color6: colors.c6,
-            color7: colors.c7,
-            color8: colors.c8,
-            color9: colors.c9,
-            color10: colors.c10,
+            color1: colorsToApply.c1, color2: colorsToApply.c2, color3: colorsToApply.c3,
+            color4: colorsToApply.c4, color5: colorsToApply.c5, color6: colorsToApply.c6,
+            color7: colorsToApply.c7, color8: colorsToApply.c8, color9: colorsToApply.c9,
+            color10: colorsToApply.c10,
           },
-        }, {
-          onConflict: 'user_id'
-        });
+        }, { onConflict: 'user_id' });
 
       if (error) throw error;
 
-      // Mettre à jour le state local
-      setSelectedThemeRef(ref);
-      
-      // Sauvegarder dans le cache
-      saveThemeToCache(colors, user.id, ref);
+      // State V5
+      setThemeMode(mode);
+      setPresetId(mode === 'preset' ? (pId || null) : null);
+      // Compat legacy
+      const derivedSource: ThemeSource = mode === 'cabinet' ? 'cabinet' : 'custom';
+      setThemeSource(derivedSource);
+      setSelectedThemeRef(mode === 'cabinet' ? 'cabinet' : 'custom');
+      localStorage.setItem('themeSource', derivedSource);
+
+      // Appliquer immédiatement
+      lastAppliedSourceRankRef.current = 0;
+      lastAppliedHashRef.current = '';
+      setColorsState(colorsToApply);
+      applyColorsToCSSWithGuardRef.current(colorsToApply, user.id, `apply-${mode}`);
+      saveThemeToCache(colorsToApply, user.id, derivedSource);
 
       return { success: true };
     } catch (error: any) {
-      console.error('Error saving theme to ui_settings:', error);
+      console.error('[ThemeProvider] applyThemeMode error:', error);
       return { success: false, error: error.message };
     }
   }, []);
+
+  // ═══════════════════════════════════════════════════════════════════
+  // V5: saveMyPalette — écrit my_palette SANS changer theme_mode
+  //     Si déjà en mode 'my', applique aussi immédiatement
+  // ═══════════════════════════════════════════════════════════════════
+  const saveMyPalette = useCallback(async (colors: ThemeColors): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { success: false, error: 'User not authenticated' };
+
+      const isMyMode = themeModeRef.current === 'my';
+
+      const upsertData: Record<string, any> = {
+        user_id: user.id,
+        my_palette: colors,
+        custom_palette: colors, // compat legacy
+      };
+
+      // Si mode = 'my', aussi activer et appliquer
+      if (isMyMode) {
+        upsertData.theme_mode = 'my';
+        upsertData.active_palette = colors;
+        upsertData.selected_theme_ref = 'custom';
+      }
+
+      const { error } = await supabase
+        .from('ui_settings')
+        .upsert(upsertData, { onConflict: 'user_id' });
+
+      if (error) throw error;
+
+      // State
+      setMyPalette(colors);
+      setCustomPalette(colors); // compat
+
+      // Si mode = 'my', appliquer immédiatement
+      if (isMyMode) {
+        lastAppliedSourceRankRef.current = 0;
+        lastAppliedHashRef.current = '';
+        setColorsState(colors);
+        applyColorsToCSSWithGuardRef.current(colors, user.id, 'save-my-palette');
+        saveThemeToCache(colors, user.id, 'custom');
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('[ThemeProvider] saveMyPalette error:', error);
+      return { success: false, error: error.message };
+    }
+  }, []);
+
+  // ═══════════════════════════════════════════════════════════════════
+  // Legacy wrappers (compat Settings.jsx V4)
+  // ═══════════════════════════════════════════════════════════════════
+  const saveCustomPalette = useCallback(async (colors: ThemeColors): Promise<{ success: boolean; error?: string }> => {
+    // Délègue à saveMyPalette + force mode 'my'
+    const result = await saveMyPalette(colors);
+    if (result.success) {
+      await applyThemeMode('my');
+    }
+    return result;
+  }, [saveMyPalette, applyThemeMode]);
+
+  const saveThemeToUiSettings = useCallback(async (colors: ThemeColors, themeRef?: string): Promise<{ success: boolean; error?: string }> => {
+    // Délègue à applyThemeMode
+    if (themeRef === 'cabinet') {
+      return applyThemeMode('cabinet');
+    }
+    // Sinon c'est un apply de couleurs custom/preset — utiliser applyThemeMode('my')
+    return applyThemeMode('my');
+  }, [applyThemeMode]);
 
   // Load theme scope from ui_settings
   useEffect(() => {
@@ -632,7 +679,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ colors: colorsState, setColors, saveThemeToUiSettings, saveCustomPalette, isLoading, themeReady, logo, setLogo, cabinetLogo, logoPlacement, cabinetColors, themeScope, setThemeScope, pptxColors, themeSource, setThemeSource, customPalette, selectedThemeRef, setSelectedThemeRef }}>
+    <ThemeContext.Provider value={{ colors: colorsState, setColors, isLoading, themeReady, logo, setLogo, cabinetLogo, logoPlacement, cabinetColors, themeScope, setThemeScope, pptxColors, themeMode, presetId, myPalette, applyThemeMode, saveMyPalette, themeSource, setThemeSource, customPalette, selectedThemeRef, setSelectedThemeRef, saveThemeToUiSettings, saveCustomPalette }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -4,35 +4,71 @@
 
 Le système de thème SER1 gère les couleurs de l'interface et des exports PPTX à travers une hiérarchie de sources avec priorisation et caching.
 
-## Architecture
+> **V5 (2026-02-10)** : Modèle déterministe à 3 états (`cabinet` | `preset` | `my`). Voir [CHANGELOG.md](../CHANGELOG.md) pour l'historique.
+
+## Architecture V5
 
 ### Fichiers Principaux
 
 | Fichier | Rôle |
 |---------|------|
 | `src/settings/theme.ts` | **Source unique** des couleurs par défaut (DEFAULT_COLORS) |
-| `src/settings/ThemeProvider.tsx` | Context React, gestion des sources, application CSS |
+| `src/settings/ThemeProvider.tsx` | Context React, gestion des modes, application CSS |
+| `src/settings/presets.ts` | **Source unique** des thèmes prédéfinis (PRESET_THEMES) |
+| `src/settings/theme/types.ts` | Types TypeScript (ThemeMode, ThemeContextValue, etc.) |
 | `src/settings/theme/hooks/useCabinetTheme.ts` | Chargement des thèmes cabinet depuis Supabase |
 | `src/settings/theme/hooks/useThemeCache.ts` | Cache localStorage avec TTL |
-| `src/settings/theme/types.ts` | Types TypeScript du système |
 
-### Flux de Chargement
+### Modèle Déterministe 3 États (V5)
+
+| Mode | Description | DB Column | Usage |
+|------|-------------|-----------|-------|
+| `cabinet` | Thème du cabinet assigné | `theme_mode='cabinet'` | PPTX toujours, UI si sélectionné |
+| `preset` | Thème prédéfini | `theme_mode='preset'` + `preset_id` | UI preset, `my_palette` préservé |
+| `my` | Palette personnalisée | `theme_mode='my'` + `my_palette` | Palette perso de l'utilisateur |
+
+### Flux de Chargement V5
 
 ```
 AuthProvider (login/session change)
   ↓
-ThemeProvider useEffect
+ThemeProvider useEffect (loadTheme)
   ↓
-ensureCabinetThemeFetch(userId)
+Lire ui_settings (theme_mode, preset_id, my_palette)
   ↓
-useCabinetTheme() → RPC get_my_cabinet_theme_palette()
+Switch déterministe :
+  ├─ cabinet → RPC get_my_cabinet_theme_palette() → fallback original
+  ├─ preset  → resolvePresetColors(preset_id) → fallback active_palette
+  └─ my      → my_palette → fallback custom_palette (legacy)
   ↓
 Cache localStorage (24h TTL)
   ↓
-setCabinetColors() + applyColorsToCSSWithGuard()
+applyColorsToCSSWithGuard()
 ```
 
-## Hiérarchie des Sources (par priorité)
+### API V5
+
+```typescript
+// Dans un composant
+const { 
+  themeMode,      // 'cabinet' | 'preset' | 'my'
+  presetId,       // ex: 'gold-elite' | null
+  myPalette,      // ThemeColors | null
+  applyThemeMode, // (mode, presetId?) => Promise
+  saveMyPalette,  // (colors) => Promise
+} = useTheme();
+
+// Appliquer un preset
+await applyThemeMode('preset', 'gold-elite');
+
+// Appliquer le cabinet
+await applyThemeMode('cabinet');
+
+// Sauvegarder ma palette (uniquement si themeMode='my')
+await saveMyPalette(colors);
+```
+
+## Hiérarchie des Sources (Legacy V4 - gardée pour compat)
 
 | Source | Rank | Description | Cas d'usage |
 |--------|------|-------------|-------------|
@@ -54,9 +90,11 @@ Le système utilise un tri-état pour `cabinetColors` :
 
 | Cache | Clé | TTL | Usage |
 |-------|-----|-----|-------|
-| User theme | `ser1_theme_cache_{userId}` | 24h | Thème personnalisé |
+| User theme | `ser1_theme_cache_{userId}` | 24h | Thème actif (dernier mode appliqué) |
 | Cabinet theme | `ser1_cabinet_theme_cache_{userId}` | 24h | Thème du cabinet |
 | Cabinet logo | `ser1_cabinet_logo_cache_{userId}` | 24h | Logo du cabinet |
+
+> **Règle** : Le cache est un **miroir** (anti-flash), pas une source de vérité. La DB (`theme_mode`) fait foi.
 
 ### Invalidation
 
@@ -65,54 +103,53 @@ Le cache est invalidé automatiquement après 24h ou manuellement lors de :
 - Modification du thème personnalisé
 - Réinitialisation du cache
 
-## Application CSS
+## Règles Métier V5
 
-Les couleurs sont appliquées via CSS variables :
-```css
-:root {
-  --color-c1: #1a73e8;
-  --color-c2: #4285f4;
-  /* ... */
-}
-```
+### 1. Séparation "Appliqué" vs "Sauvegardé"
+- **Appliqué** : `theme_mode` + `preset_id` + `active_palette` (dénormalisé)
+- **Sauvegardé** : `my_palette` (uniquement quand l'utilisateur édite son thème)
 
-La fonction `applyColorsToCSSWithGuard()` garantit que seules les valeurs valides sont appliquées.
+### 2. Protection de `my_palette`
+- Cliquer un preset **NE TOUCHE JAMAIS** `my_palette`
+- "Enregistrer Mon thème" **UNIQUEMENT** si `themeMode='my'`
 
-## PPTX Integration
+### 3. Tile "Mon thème"
+- Visible dès que `my_palette` existe (même si un preset est actif)
+- Preview basée sur `my_palette`, pas sur les couleurs actives
 
-Les exports PPTX utilisent `resolvePptxColors()` pour :
-- Mapper les couleurs UI vers les couleurs PPTX
-- Gérer les cas de fallback
-- Maintenir la cohérence visuelle
+### 4. Backward Compatibility
+- Lecture fallback : `custom_palette` → `my_palette`
+- `selected_theme_ref='cabinet'` → `theme_mode='cabinet'`
+- `selected_theme_ref='custom'` → `theme_mode='my'`
+
+## Migration
+
+Pour migrer de l'ancien système V4 :
+1. Exécuter `database/migrations/202602100001_add_theme_mode.sql`
+2. Le code lit automatiquement les anciennes colonnes en fallback
+3. Les écritures se font dans les nouvelles colonnes
 
 ## Debug
 
 ### Flags de Debug
 
 ```javascript
-// Dans DevTools
-localStorage.setItem('debug', 'theme:*');
-localStorage.setItem('debug', 'auth:*');
+// Activer les logs
+tlocalStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true');
 ```
 
-### Logs Clés
+### État du ThemeProvider
 
 ```javascript
-console.log('[ThemeProvider] Loading cabinet theme:', { userId, cabinetColors });
-console.log('[ThemeProvider] Cache hit:', getCabinetThemeFromCache(userId));
+// Dans DevTools
+const { themeMode, presetId, myPalette } = useTheme();
+console.log({ themeMode, presetId, myPalette });
 ```
 
 ## Bonnes Pratiques
 
 1. **Jamais de couleurs hardcodées** sauf `WHITE` et `WARNING`
-2. **Utiliser `useTheme()` hook** pour accéder aux couleurs
+2. **Utiliser `useTheme()` hook** pour accéder aux couleurs ET au mode
 3. **Vérifier le tri-état** avant d'utiliser `cabinetColors`
-4. **Invalider le cache** après modification admin
+4. **Ne pas utiliser localStorage comme source de vérité** (seulement comme miroir)
 5. **Utiliser les tokens sémantiques** via `getSemanticColors()`
-
-## Migration
-
-Pour migrer de l'ancien système :
-1. Remplacer les couleurs hardcodées par `colors.c1`, `colors.c2`, etc.
-2. Utiliser le hook `useTheme()` au lieu des imports directs
-3. Gérer les états de chargement avec `isLoading`

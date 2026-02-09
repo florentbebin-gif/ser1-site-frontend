@@ -5,6 +5,7 @@ import { UserInfoBanner } from '../components/UserInfoBanner';
 import { recalculatePaletteFromC1 } from '../utils/paletteGenerator';
 import SignalementsBlock from '../components/settings/SignalementsBlock';
 import { DEFAULT_COLORS as DEFAULT_THEME_COLORS } from '../settings/theme';
+import { PRESET_THEMES } from '../settings/presets';
 
 // Mapper les couleurs du format theme (c1-c10) vers le format legacy (color1-color10)
 const DEFAULT_COLORS = {
@@ -20,94 +21,18 @@ const DEFAULT_COLORS = {
   color10: DEFAULT_THEME_COLORS.c10,
 };
 
-// Thèmes prédéfinis (objets immuables)
-const PREDEFINED_THEMES = Object.freeze([
-  {
-    id: 'ser1-classic',
-    name: 'Thème Original',
-    description: 'Thème original élégant et professionnel',
-    colors: Object.freeze({
-      color1: '#2B3E37',
-      color2: '#709B8B',
-      color3: '#9FBDB2',
-      color4: '#CFDED8',
-      color5: '#788781',
-      color6: '#CEC1B6',
-      color7: '#F5F3F0',
-      color8: '#D9D9D9',
-      color9: '#7F7F7F',
-      color10: '#000000',
-    })
+// Dériver le format legacy (color1-color10) depuis les presets partagés
+const PREDEFINED_THEMES = PRESET_THEMES.map(t => ({
+  id: t.id,
+  name: t.name,
+  description: t.description,
+  colors: {
+    color1: t.colors.c1, color2: t.colors.c2, color3: t.colors.c3,
+    color4: t.colors.c4, color5: t.colors.c5, color6: t.colors.c6,
+    color7: t.colors.c7, color8: t.colors.c8, color9: t.colors.c9,
+    color10: t.colors.c10,
   },
-  {
-    id: 'blue-patrimonial',
-    name: 'Bleu patrimonial',
-    description: 'Bleu sobre pour la gestion de patrimoine',
-    colors: Object.freeze({
-      color1: '#1e3a5f',
-      color2: '#2c5282',
-      color3: '#3182ce',
-      color4: '#bee3f8',
-      color5: '#4a5568',
-      color6: '#e2e8f0',
-      color7: '#f7fafc',
-      color8: '#cbd5e0',
-      color9: '#718096',
-      color10: '#1a202c',
-    })
-  },
-  {
-    id: 'green-sustainable',
-    name: 'Vert durable',
-    description: 'Vert profond pour l\'investissement durable',
-    colors: Object.freeze({
-      color1: '#22543d',
-      color2: '#2f855a',
-      color3: '#48bb78',
-      color4: '#c6f6d5',
-      color5: '#4a5568',
-      color6: '#e2e8f0',
-      color7: '#f7fafc',
-      color8: '#cbd5e0',
-      color9: '#718096',
-      color10: '#1a202c',
-    })
-  },
-  {
-    id: 'grey-modern',
-    name: 'Gris moderne',
-    description: 'Gris minimaliste et épuré',
-    colors: Object.freeze({
-      color1: '#2d3748',
-      color2: '#4a5568',
-      color3: '#718096',
-      color4: '#e2e8f0',
-      color5: '#4a5568',
-      color6: '#edf2f7',
-      color7: '#f7fafc',
-      color8: '#cbd5e0',
-      color9: '#718096',
-      color10: '#1a202c',
-    })
-  },
-  {
-    id: 'gold-elite',
-    name: 'Or élite',
-    description: 'Or subtil et noir pour le patrimoine haut de gamme',
-    colors: Object.freeze({
-      color1: '#4a3426',      // Brun profond (remplace jaune flashy)
-      color2: '#8b6914',      // Or patiné
-      color3: '#b8860b',      // Or doux
-      color4: '#f4e4c1',      // Crème délicat
-      color5: '#4a5568',      // Gris neutre
-      color6: '#e8e3d3',      // Beige subtil
-      color7: '#faf8f3',      // Fond très clair
-      color8: '#d4c4a0',      // Or en bordure
-      color9: '#6b5d54',      // Texte secondaire
-      color10: '#1a1a1a',     // Texte principal (noir doux)
-    })
-  }
-]);
+}));
 
 const COLOR_FIELDS = [
   { key: 'color1', description: 'Couleur principale de l\'interface — titres, barre supérieure et éléments structurants' },
@@ -123,91 +48,58 @@ const COLOR_FIELDS = [
 ];
 
 export default function Settings() {
-  const { colors, setColors, saveThemeToUiSettings, isLoading: themeLoading, logo, setLogo } = useTheme();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Convertir le format ThemeProvider vers l'ancien format pour compatibilité
+  // Format legacy (color1-color10) pour les inputs couleur
   const [colorsLegacy, setColorsLegacy] = useState(DEFAULT_COLORS);
   const [colorText, setColorText] = useState(DEFAULT_COLORS);
   const [savingColors, setSavingColors] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   
-  // V3.1: Theme source state (cabinet vs custom) - synchronisé avec ThemeProvider
-  const [themeSource, setThemeSource] = useState(() => {
-    return localStorage.getItem('themeSource') || 'cabinet';
-  });
-
-  // V3.1: Advanced colors visibility
-  const [showAdvancedColors, setShowAdvancedColors] = useState(false);
-
-  // Synchroniser avec ThemeProvider
-  const { themeSource: providerThemeSource, setThemeSource: setProviderThemeSource } = useTheme();
-
-  useEffect(() => {
-    localStorage.setItem('themeSource', themeSource);
-    // Synchroniser avec ThemeProvider
-    if (providerThemeSource !== themeSource) {
-      setProviderThemeSource?.(themeSource);
-    }
-  }, [themeSource, providerThemeSource, setProviderThemeSource]);
+  // V5: useTheme — source de vérité unique
+  const { 
+    colors, 
+    setColors, 
+    isLoading: themeLoading, 
+    logo, 
+    setLogo,
+    // V5 API
+    themeMode,
+    presetId,
+    myPalette,
+    applyThemeMode,
+    saveMyPalette,
+  } = useTheme();
 
   // Signalements block visibility
   const [showSignalements, setShowSignalements] = useState(false);
+  
+  // Advanced colors visibility
+  const [showAdvancedColors, setShowAdvancedColors] = useState(false);
 
-  // Legacy states (kept for compatibility)
-  const [selectedTheme, setSelectedTheme] = useState('Personnalisé');
-
-  // 🎨 V4.0: Use ThemeProvider for custom palette persistence
-  const { customPalette, selectedThemeRef, setSelectedThemeRef, saveCustomPalette } = useTheme();
+  // V5: Synchroniser colorsLegacy depuis Provider quand les couleurs changent
   useEffect(() => {
     if (colors && !themeLoading) {
       const legacyColors = {
-        color1: colors.c1,
-        color2: colors.c2,
-        color3: colors.c3,
-        color4: colors.c4,
-        color5: colors.c5,
-        color6: colors.c6,
-        color7: colors.c7,
-        color8: colors.c8,
-        color9: colors.c9,
+        color1: colors.c1, color2: colors.c2, color3: colors.c3,
+        color4: colors.c4, color5: colors.c5, color6: colors.c6,
+        color7: colors.c7, color8: colors.c8, color9: colors.c9,
         color10: colors.c10,
       };
       setColorsLegacy(legacyColors);
       setColorText(legacyColors);
-      
-      // 🎨 V4.0: Synchroniser selectedTheme avec selectedThemeRef
-      if (selectedThemeRef === 'custom') {
-        setSelectedTheme('Personnalisé');
-      } else if (selectedThemeRef === 'cabinet') {
-        setSelectedTheme('Cabinet');
-      } else if (selectedThemeRef === 'original') {
-        setSelectedTheme('Thème Original');
-      } else {
-        // Vérifier si c'est un thème prédéfini
-        const matchingTheme = PREDEFINED_THEMES.find(theme => theme.name === selectedThemeRef);
-        setSelectedTheme(matchingTheme ? matchingTheme.name : 'Personnalisé');
-      }
     }
-  }, [colors, themeLoading, selectedThemeRef]);
+  }, [colors, themeLoading]);
 
-  // Fonction pour synchroniser les couleurs avec ThemeProvider
+  // Fonction pour synchroniser les couleurs avec ThemeProvider (preview live)
   const syncThemeColors = (settingsColors) => {
-    const themeColors = {
-      c1: settingsColors.color1,
-      c2: settingsColors.color2,
-      c3: settingsColors.color3,
-      c4: settingsColors.color4,
-      c5: settingsColors.color5,
-      c6: settingsColors.color6,
-      c7: settingsColors.color7,
-      c8: settingsColors.color8,
-      c9: settingsColors.color9,
+    setColors({
+      c1: settingsColors.color1, c2: settingsColors.color2, c3: settingsColors.color3,
+      c4: settingsColors.color4, c5: settingsColors.color5, c6: settingsColors.color6,
+      c7: settingsColors.color7, c8: settingsColors.color8, c9: settingsColors.color9,
       c10: settingsColors.color10,
-    };
-    
-    setColors(themeColors);
+    });
   };
 
   useEffect(() => {
@@ -275,22 +167,19 @@ export default function Settings() {
     };
   }, [logo, setLogo]);
 
-  /* ---------- Gestion des couleurs ---------- */
+  /* ══════════ V5: Handlers déterministes ══════════ */
 
   const handleColorChange = (key, value) => {
-    // Bloquer l'édition en mode cabinet
-    if (themeSource === 'cabinet') {
-      return;
-    }
+    // Bloquer l'édition sauf en mode 'my'
+    if (themeMode !== 'my') return;
     
-    // l'utilisateur clique sur un swatch de couleur
     const newColors = { ...colorsLegacy, [key]: value };
     setColorsLegacy(newColors);
     setColorText(prev => ({ ...prev, [key]: value.toUpperCase() }));
     setSaveMessage('');
     
     // If changing c1, recalculate other colors automatically
-    if (key === 'color1' && themeSource === 'custom') {
+    if (key === 'color1') {
       const recalculated = recalculatePaletteFromC1(value);
       const finalColors = { ...newColors, ...recalculated };
       setColorsLegacy(finalColors);
@@ -299,49 +188,45 @@ export default function Settings() {
       ) }));
       syncThemeColors(finalColors);
     } else {
-      // Synchronisation temps réel avec le nouveau thème
       syncThemeColors(newColors);
     }
   };
 
-  const handleSaveColors = async () => {
+  // V5: Clic sur un preset → applique + persiste theme_mode='preset'
+  const handlePresetSelect = async (presetTheme) => {
+    setSaveMessage('');
+    await applyThemeMode('preset', presetTheme.id);
+  };
+
+  // V5: Clic sur "Mon thème" → applique + persiste theme_mode='my'
+  const handleMyThemeSelect = async () => {
+    setSaveMessage('');
+    await applyThemeMode('my');
+  };
+
+  // V5: "Enregistrer Mon thème" → écrit my_palette + passe en mode 'my'
+  const handleSaveMyPalette = async () => {
     try {
       setSavingColors(true);
       setSaveMessage('');
 
-      // 🎨 V4.0: Sauvegarder explicitement comme thème personnalisé
-      const result = await saveCustomPalette({
-        c1: colorsLegacy.color1,
-        c2: colorsLegacy.color2,
-        c3: colorsLegacy.color3,
-        c4: colorsLegacy.color4,
-        c5: colorsLegacy.color5,
-        c6: colorsLegacy.color6,
-        c7: colorsLegacy.color7,
-        c8: colorsLegacy.color8,
-        c9: colorsLegacy.color9,
+      // Protéger: ne sauvegarder que si mode = 'my' (l'utilisateur édite sa palette)
+      if (themeMode !== 'my') {
+        setSaveMessage('Passez sur "Mon thème" pour modifier et enregistrer votre palette.');
+        return;
+      }
+
+      const paletteToSave = {
+        c1: colorsLegacy.color1, c2: colorsLegacy.color2, c3: colorsLegacy.color3,
+        c4: colorsLegacy.color4, c5: colorsLegacy.color5, c6: colorsLegacy.color6,
+        c7: colorsLegacy.color7, c8: colorsLegacy.color8, c9: colorsLegacy.color9,
         c10: colorsLegacy.color10,
-      });
-      
+      };
+
+      const result = await saveMyPalette(paletteToSave);
+
       if (result.success) {
         setSaveMessage('Thème personnalisé enregistré avec succès.');
-        setSelectedTheme('Personnalisé');
-        
-        // Dispatcher un événement pour notifier ThemeProvider
-        window.dispatchEvent(new CustomEvent('ser1-theme-updated', {
-          detail: { themeSource: 'custom', colors: {
-            c1: colorsLegacy.color1,
-            c2: colorsLegacy.color2,
-            c3: colorsLegacy.color3,
-            c4: colorsLegacy.color4,
-            c5: colorsLegacy.color5,
-            c6: colorsLegacy.color6,
-            c7: colorsLegacy.color7,
-            c8: colorsLegacy.color8,
-            c9: colorsLegacy.color9,
-            c10: colorsLegacy.color10,
-          }}
-        }));
       } else {
         setSaveMessage("Erreur lors de l'enregistrement : " + result.error);
       }
@@ -350,62 +235,6 @@ export default function Settings() {
       setSaveMessage("Erreur lors de l'enregistrement.");
     } finally {
       setSavingColors(false);
-    }
-  };
-
-  // Gestionnaire de sélection de thème prédéfini
-  const handleThemeSelect = async (themeName) => {
-    setSelectedTheme(themeName);
-    
-    if (themeName === 'Personnalisé') {
-      // 🎨 V4.0: Restaurer le thème personnalisé depuis ThemeProvider
-      // ou utiliser les couleurs actuelles comme base si pas de customPalette
-      const basePalette = customPalette || {
-        c1: colorsLegacy.color1 ?? DEFAULT_COLORS.c1,
-        c2: colorsLegacy.color2 ?? DEFAULT_COLORS.c2,
-        c3: colorsLegacy.color3 ?? DEFAULT_COLORS.c3,
-        c4: colorsLegacy.color4 ?? DEFAULT_COLORS.c4,
-        c5: colorsLegacy.color5 ?? DEFAULT_COLORS.c5,
-        c6: colorsLegacy.color6 ?? DEFAULT_COLORS.c6,
-        c7: colorsLegacy.color7 ?? DEFAULT_COLORS.c7,
-        c8: colorsLegacy.color8 ?? DEFAULT_COLORS.c8,
-        c9: colorsLegacy.color9 ?? DEFAULT_COLORS.c9,
-        c10: colorsLegacy.color10 ?? DEFAULT_COLORS.c10,
-      };
-      
-      const legacyColors = {
-        color1: basePalette.c1,
-        color2: basePalette.c2,
-        color3: basePalette.c3,
-        color4: basePalette.c4,
-        color5: basePalette.c5,
-        color6: basePalette.c6,
-        color7: basePalette.c7,
-        color8: basePalette.c8,
-        color9: basePalette.c9,
-        color10: basePalette.c10,
-      };
-      setColorsLegacy(legacyColors);
-      setColorText(legacyColors);
-      syncThemeColors(legacyColors);
-      
-      // Mettre à jour la référence
-      setSelectedThemeRef('custom');
-      await saveThemeToUiSettings(basePalette, 'custom');
-      return;
-    }
-    
-    const theme = PREDEFINED_THEMES.find(t => t.name === themeName);
-    if (theme) {
-      // 🔄 UX: Appliquer les couleurs du preset (copie immuable)
-      setColorsLegacy({ ...theme.colors });
-      setColorText({ ...theme.colors });
-      syncThemeColors(theme.colors);
-      setSaveMessage('');
-      
-      // 🎨 V4.0: Sauvegarder la sélection SANS écraser custom_palette
-      setSelectedThemeRef(themeName);
-      await saveThemeToUiSettings(theme.colors, themeName);
     }
   };
 
@@ -457,7 +286,7 @@ export default function Settings() {
 
             <div className="settings-premium-divider" />
 
-            {/* Section Source du thème */}
+            {/* V5: Section Source du thème */}
             <div className="settings-premium-section">
               <h3 className="settings-section-title">Source du thème</h3>
               <div className="settings-source-options">
@@ -466,8 +295,8 @@ export default function Settings() {
                     type="radio"
                     name="themeSource"
                     value="cabinet"
-                    checked={themeSource === 'cabinet'}
-                    onChange={(e) => setThemeSource(e.target.value)}
+                    checked={themeMode === 'cabinet'}
+                    onChange={() => applyThemeMode('cabinet')}
                   />
                   <span>Thème du cabinet</span>
                 </label>
@@ -476,13 +305,20 @@ export default function Settings() {
                     type="radio"
                     name="themeSource"
                     value="custom"
-                    checked={themeSource === 'custom'}
-                    onChange={(e) => setThemeSource(e.target.value)}
+                    checked={themeMode !== 'cabinet'}
+                    onChange={() => {
+                      // Passer en mode perso: appliquer "Mon thème" si existant, sinon premier preset
+                      if (myPalette) {
+                        applyThemeMode('my');
+                      } else {
+                        applyThemeMode('preset', PRESET_THEMES[0].id);
+                      }
+                    }}
                   />
                   <span>Thème personnalisé</span>
                 </label>
               </div>
-              {themeSource === 'custom' && (
+              {themeMode !== 'cabinet' && (
                 <div style={{ marginTop: 20 }}>
                   <div className="settings-theme-cards" style={{
                     display: 'grid',
@@ -490,14 +326,14 @@ export default function Settings() {
                     gap: '20px',
                     marginTop: '12px',
                   }}>
-                    {/* Personnalisé card - only shown if custom palette exists */}
-                    {customPalette && (
+                    {/* V5: Tile "Mon thème" visible dès que myPalette existe */}
+                    {myPalette && (
                       <div
-                        className={`settings-theme-card ${selectedTheme === 'Personnalisé' ? 'is-selected' : ''}`}
-                        onClick={() => handleThemeSelect('Personnalisé')}
+                        className={`settings-theme-card ${themeMode === 'my' ? 'is-selected' : ''}`}
+                        onClick={handleMyThemeSelect}
                       >
                         <div className="settings-theme-preview">
-                          {Object.values(customPalette).slice(0, 5).map((color, i) => (
+                          {Object.values(myPalette).slice(0, 5).map((color, i) => (
                             <div
                               key={i}
                               className="settings-theme-preview-bar"
@@ -509,12 +345,12 @@ export default function Settings() {
                       </div>
                     )}
 
-                    {/* Predefined theme cards */}
+                    {/* V5: Preset cards */}
                     {PREDEFINED_THEMES.map((theme) => (
                       <div
-                        key={theme.name}
-                        className={`settings-theme-card ${selectedTheme === theme.name ? 'is-selected' : ''}`}
-                        onClick={() => handleThemeSelect(theme.name)}
+                        key={theme.id}
+                        className={`settings-theme-card ${themeMode === 'preset' && presetId === theme.id ? 'is-selected' : ''}`}
+                        onClick={() => handlePresetSelect(theme)}
                       >
                         <div className="settings-theme-preview">
                           {Object.values(theme.colors).slice(0, 5).map((color, i) => (
@@ -530,23 +366,20 @@ export default function Settings() {
                     ))}
                   </div>
 
-                  <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-                    <button
-                      type="button"
-                      className="settings-action-btn"
-                      onClick={handleSaveColors}
-                      disabled={savingColors || !user || themeSource === 'cabinet'}
-                      title={
-                        !user
-                          ? 'Utilisateur non connecté'
-                          : themeSource === 'cabinet'
-                          ? 'Le thème cabinet est géré par l\'administrateur'
-                          : 'Sauvegarder les couleurs actuelles comme thème personnalisé'
-                      }
-                    >
-                      {savingColors ? 'Enregistrement…' : 'Sauvegarder comme mon thème'}
-                    </button>
-                  </div>
+                  {/* V5: Bouton "Enregistrer" uniquement en mode 'my' */}
+                  {themeMode === 'my' && (
+                    <div style={{ marginTop: 20, display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+                      <button
+                        type="button"
+                        className="settings-action-btn"
+                        onClick={handleSaveMyPalette}
+                        disabled={savingColors || !user}
+                        title="Enregistrer votre palette personnalisée"
+                      >
+                        {savingColors ? 'Enregistrement…' : 'Enregistrer mon thème'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -567,8 +400,8 @@ export default function Settings() {
               </div>
             )}
 
-            {/* Section Couleurs avancées */}
-            {themeSource === 'custom' && (
+            {/* V5: Section Couleurs — uniquement en mode 'my' */}
+            {themeMode === 'my' && (
               <div className="settings-premium-section">
                 <h3 className="settings-section-title">Couleurs de l'interface</h3>
                 <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: '0 0 12px 0', lineHeight: 1.4 }}>
@@ -587,7 +420,6 @@ export default function Settings() {
                         type="color"
                         value={colorsLegacy.color1 ?? '#000000'}
                         onChange={(e) => handleColorChange('color1', e.target.value)}
-                        disabled={themeSource === 'cabinet'}
                       />
                       <code className="settings-color-hex">{(colorText.color1 ?? colorsLegacy.color1 ?? '#000000').toUpperCase()}</code>
                     </div>
@@ -641,7 +473,6 @@ export default function Settings() {
                             type="color"
                             value={colorsLegacy[key] ?? '#000000'}
                             onChange={(e) => handleColorChange(key, e.target.value)}
-                            disabled={themeSource === 'cabinet'}
                           />
                           <code className="settings-color-hex">{(colorText[key] ?? colorsLegacy[key] ?? '#000000').toUpperCase()}</code>
                         </div>
