@@ -1,6 +1,6 @@
 # SER1 — Audit Patrimonial Express + Stratégie Guidée
 
-**Dernière mise à jour : 2026-02-08 (Europe/Paris)**
+**Dernière mise à jour : 2026-02-09 (Europe/Paris)**
 
 Application web interne pour CGP : audit patrimonial, stratégie guidée, simulateurs IR/Placement/Crédit, exports PPTX/Excel.
 
@@ -34,7 +34,48 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 - `src/pages/Sous-Settings/SettingsImpots.jsx` — 6 titres accordéons
 - `src/pages/Sous-Settings/SettingsFiscalites.jsx` — 1 titre accordéon (loop)
 
-## Dernières évolutions (2026-02-06)
+## Dernières évolutions (2026-02-09)
+
+### Refactoring Simulateur Crédit — Architecture Premium
+**Objectif** : Moderniser le simulateur de crédit avec l'architecture modulaire "Premium" (même pattern que PlacementV2 et Settings).
+
+| Aspect | Avant (legacy) | Après (CreditV2) |
+|--------|----------------|------------------|
+| **Architecture** | Monolithique `Credit.jsx` (1495 lignes) | Modulaire : components/hooks/utils |
+| **State** | 15+ useState individuels | State centralisé `pret1/pret2/pret3` + helpers |
+| **Calculs** | Inline dans le composant | Hook dédié `useCreditCalculations` |
+| **Exports** | Inline dans le composant | Hook dédié `useCreditExports` |
+| **Style** | CSS legacy `Credit.css` | CSS BEM `CreditV2.css` (palette C1-C10) |
+| **UI** | Layout legacy | Grid premium 2-colonnes, sticky summary |
+
+**Architecture créée** :
+```
+src/pages/credit/
+├── Credit.jsx                 # Orchestrateur (369 lignes)
+├── components/
+│   ├── CreditHeader.jsx         # Header + toggle Mensuel/Annuel
+│   ├── CreditLoanTabs.jsx       # Onglets Prêt 1/2/3
+│   ├── CreditLoanForm.jsx       # Formulaire réutilisable
+│   ├── CreditSummaryCard.jsx    # Carte synthèse sticky
+│   ├── CreditScheduleTable.jsx  # Échéancier (agrégation annuelle)
+│   ├── CreditPeriodsTable.jsx   # Répartition par période
+│   ├── CreditInputs.jsx         # Inputs premium (Euro, %, mois)
+│   └── CreditV2.css             # 580 lignes CSS C1-C10
+├── hooks/
+│   ├── useCreditCalculations.js # Calculs échéanciers + lissage
+│   └── useCreditExports.js      # Excel + PPTX
+└── utils/
+    ├── creditNormalizers.js     # State + migration legacy
+    └── creditFormatters.js      # Formatters + parsers
+```
+
+**Fichiers supprimés** :
+- `src/pages/Credit.jsx` (legacy, 1495 lignes)
+- `src/pages/Credit.css` (legacy)
+
+**Parité fonctionnelle** : 16/16 features (prêts multiples, lissage, exports, reset, E2E IDs)
+
+**Migration** : `normalizeLoadedState()` migre automatiquement l'ancien format `sessionStorage`.
 
 ### Historique du PASS — Déplacement et dynamisation
 **Objectif** : Rendre l'historique du PASS (8 dernières valeurs) dynamique et le déplacer de « Fiscalités contrats » vers « Paramètres sociaux ».

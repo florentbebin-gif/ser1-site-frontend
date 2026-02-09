@@ -6,6 +6,59 @@
 
 ---
 
+## 2026-02-09 — Refactoring Simulateur Crédit : Architecture Premium (CreditV2)
+
+### Objectif
+Moderniser le simulateur de crédit avec l'architecture modulaire "Premium", alignée sur PlacementV2 et Settings.
+
+### Architecture avant/après
+
+| Aspect | Avant (legacy) | Après (CreditV2) |
+|--------|----------------|------------------|
+| **Structure** | Monolithique `Credit.jsx` (1495 lignes) | Modulaire : `components/`, `hooks/`, `utils/` |
+| **State** | 15+ `useState` individuels | State centralisé `pret1/pret2/pret3` + helpers `setPret1/2/3` |
+| **Calculs** | Inline dans composant | Hook dédié `useCreditCalculations.js` |
+| **Exports** | Inline Excel/PPTX | Hook dédié `useCreditExports.js` |
+| **Style** | CSS legacy `Credit.css` | CSS BEM `CreditV2.css` (palette C1-C10) |
+| **UI** | Layout legacy | Grid premium 2-colonnes, sticky summary card |
+
+### Modules créés
+
+| Fichier | Contenu | Lignes |
+|---------|---------|--------|
+| `src/pages/credit/Credit.jsx` | Orchestrateur (ex-CreditV2.jsx) | 369 |
+| `src/pages/credit/components/CreditHeader.jsx` | Header + toggle Mensuel/Annuel + Export | 57 |
+| `src/pages/credit/components/CreditLoanTabs.jsx` | Onglets Prêt 1/2/3 (addable/disabled) | 59 |
+| `src/pages/credit/components/CreditLoanForm.jsx` | Formulaire prêt (réutilisable) | 134 |
+| `src/pages/credit/components/CreditSummaryCard.jsx` | Carte synthèse sticky | 82 |
+| `src/pages/credit/components/CreditScheduleTable.jsx` | Échéancier + agrégation annuelle | 123 |
+| `src/pages/credit/components/CreditPeriodsTable.jsx` | Répartition par période | 44 |
+| `src/pages/credit/components/CreditInputs.jsx` | Inputs premium (Euro, %, mois) | 396 |
+| `src/pages/credit/components/CreditV2.css` | Styles BEM palette C1-C10 | 580 |
+| `src/pages/credit/hooks/useCreditCalculations.js` | Calculs échéanciers + lissage | 480 |
+| `src/pages/credit/hooks/useCreditExports.js` | Exports Excel + PPTX | 318 |
+| `src/pages/credit/utils/creditNormalizers.js` | State + migration legacy | 231 |
+| `src/pages/credit/utils/creditFormatters.js` | Formatters + parsers | 89 |
+
+### Résultat
+- **Credit.jsx** : 1 495 → 369 lignes (**-75%**, rôle orchestrateur)
+- Parité fonctionnelle : 16/16 features (prêts multiples, lissage, exports, reset, E2E IDs)
+- Lint : 0 erreur | TypeScript : 0 erreur | Tests E2E : compatibles
+
+### Fichiers supprimés
+- `src/pages/Credit.jsx` (legacy, 1495 lignes)
+- `src/pages/Credit.css` (legacy)
+
+### Migration
+`normalizeLoadedState()` dans `creditNormalizers.js` migre automatiquement l'ancien format `sessionStorage` (champs plats `capital`, `duree`, `taux`...) vers le nouveau format structuré (`pret1`, `pret2`, `pret3`).
+
+### Bug fixes intégrés
+- `parseTaux()` retourne désormais un `number` (pas une string formatée) — fixe la régression valeur d'origine
+- `setPret1()` synchronise `state.startYM`, `state.assurMode`, `state.creditType` quand modifiés via le formulaire
+- `InputPct` utilise un state local pendant l'édition (pas de `onChange={() => {}}` gelé)
+
+---
+
 ## 2026-02-08 — Sécurité : Correction warnings npm (inflight/glob)
 
 ### Problème
