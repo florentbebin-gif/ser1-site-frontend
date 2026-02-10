@@ -15,6 +15,7 @@
  */
 
 import { supabase } from '../supabaseClient';
+import { migrateV1toV2 } from './fiscalitySettingsMigrator';
 
 // --- Valeurs par défaut (fallback si Supabase ne répond pas) ---
 export const DEFAULT_TAX_SETTINGS = {
@@ -193,7 +194,7 @@ function hydrateFromStorage() {
     if (payload && typeof payload === 'object' && payload.timestamp) {
       cache.tax = payload.tax;
       cache.ps = payload.ps;
-      cache.fiscality = payload.fiscality;
+      cache.fiscality = payload.fiscality ? migrateV1toV2(payload.fiscality) : payload.fiscality;
       cache.timestamp = payload.timestamp;
       return true;
     }
@@ -228,7 +229,9 @@ async function fetchFromSupabase(kind) {
         throw new Error('Invalid kind');
       }
       if (!res.error && res.data && res.data.data) {
-        cache[kind] = res.data.data;
+        cache[kind] = kind === 'fiscality'
+          ? migrateV1toV2(res.data.data)
+          : res.data.data;
         cache.timestamp = Date.now();
         persistCache();
       } else {
