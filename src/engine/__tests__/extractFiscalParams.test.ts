@@ -38,6 +38,7 @@ describe('extractFiscalParams — golden snapshot', () => {
   });
 
   it('returns defaults when both inputs are null', () => {
+    // @ts-expect-error testing null guard on JS function
     const result = extractFiscalParams(null, null);
     expect(result).toEqual(EXPECTED_SNAPSHOT);
   });

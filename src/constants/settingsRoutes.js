@@ -17,7 +17,7 @@ const Settings = lazy(() => import('../pages/Settings'));
 const SettingsImpots = lazy(() => import('../pages/Sous-Settings/SettingsImpots'));
 const SettingsPrelevements = lazy(() => import('../pages/Sous-Settings/SettingsPrelevements'));
 const SettingsFiscalites = lazy(() => import('../pages/Sous-Settings/SettingsFiscalites'));
-const SettingsBaseContrats = lazy(() => import('../pages/Sous-Settings/SettingsBaseContrats'));
+const SettingsBaseContrats = lazy(() => import('../pages/Sous-Settings/ProductCatalog'));
 const SettingsComptes = lazy(() => import('../pages/Sous-Settings/SettingsComptes'));
 
 /**
