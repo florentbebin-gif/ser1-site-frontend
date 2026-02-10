@@ -27,14 +27,25 @@ export interface OfficialSource {
 // ---------------------------------------------------------------------------
 // Product catalogue entry
 // ---------------------------------------------------------------------------
-export type ProductCategory = 'PP' | 'PM';
+export type ProductHolders = 'PP' | 'PM' | 'PP+PM';
+export type ProductNature =
+  | 'Assurance'
+  | 'Bancaire'
+  | 'Titres'
+  | 'Immobilier'
+  | 'D\u00e9fiscalisation'
+  | 'Autres';
 
 export interface Product {
-  key: string;             // stable key, e.g. "assuranceVie"
+  key: string;             // stable slug, e.g. "assuranceVie" — immutable after creation
   label: string;           // display label, e.g. "Assurance-vie"
-  category: ProductCategory;
+  holders: ProductHolders; // PP = personne physique, PM = personne morale
+  nature: ProductNature;   // catégorie fonctionnelle
   isActive: boolean;
   sortOrder: number;
+  closedDate?: string;     // ISO date — set when product is closed
+  /** @deprecated kept for backward compat with existing data */
+  category?: 'PP' | 'PM';
 }
 
 // ---------------------------------------------------------------------------

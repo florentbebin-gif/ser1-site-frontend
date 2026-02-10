@@ -26,10 +26,10 @@ import type {
 // Default product catalogue
 // ---------------------------------------------------------------------------
 const DEFAULT_PRODUCTS: Product[] = [
-  { key: 'assuranceVie', label: 'Assurance-vie', category: 'PP', isActive: true, sortOrder: 1 },
-  { key: 'perIndividuel', label: 'PER Individuel', category: 'PP', isActive: true, sortOrder: 2 },
-  { key: 'cto', label: 'Compte-titres ordinaire', category: 'PP', isActive: true, sortOrder: 3 },
-  { key: 'pea', label: "Plan d'Épargne en Actions", category: 'PP', isActive: true, sortOrder: 4 },
+  { key: 'assuranceVie', label: 'Assurance-vie', holders: 'PP', nature: 'Assurance', isActive: true, sortOrder: 1 },
+  { key: 'perIndividuel', label: 'PER Individuel', holders: 'PP', nature: 'Assurance', isActive: true, sortOrder: 2 },
+  { key: 'cto', label: 'Compte-titres ordinaire', holders: 'PP+PM', nature: 'Titres', isActive: true, sortOrder: 3 },
+  { key: 'pea', label: "Plan d'\u00c9pargne en Actions", holders: 'PP', nature: 'Titres', isActive: true, sortOrder: 4 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -57,9 +57,10 @@ export function migrateV1toV2(data: unknown): FiscalitySettingsV2 {
 
   const obj = data as Record<string, unknown>;
 
-  // Already V2 — pass through
+  // Already V2 — normalize products then pass through
   if (obj.schemaVersion === 2) {
-    return data as FiscalitySettingsV2;
+    const v2 = data as FiscalitySettingsV2;
+    return { ...v2, products: v2.products.map(normalizeProduct) };
   }
 
   const v1 = data as FiscalitySettingsV1;
@@ -151,6 +152,14 @@ function getByPath(obj: unknown, path: string): unknown {
     current = (current as Record<string, unknown>)[part];
   }
   return current;
+}
+
+/** Normalize a product: migrate old `category` → `holders`, add default `nature` if missing. */
+function normalizeProduct(p: Product): Product {
+  const raw = p as Product & { category?: string };
+  const holders = p.holders ?? (raw.category === 'PM' ? 'PM' : raw.category === 'PP' ? 'PP' : 'PP');
+  const nature = p.nature ?? 'Autres';
+  return { ...p, holders: holders as Product['holders'], nature: nature as Product['nature'] };
 }
 
 function buildEmptyV2(): FiscalitySettingsV2 {
