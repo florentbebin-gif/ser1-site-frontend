@@ -1,14 +1,29 @@
 # Guide de test Edge Function admin
 
+## Accès et Déploiement
+
+### Prérequis
+- **Supabase CLI** installée localement (`supabase --version`)
+- **Docker Desktop** en cours d'exécution pour tests locaux
+- **Projet lié** : `supabase link --project-ref xnpbxrqkzgimiugqtago`
+
+### Déploiement
+```bash
+# Déployer depuis le dossier config (obligatoire)
+npx supabase functions deploy admin --project-ref xnpbxrqkzgimiugqtago --workdir config
+
+# Vérifier le déploiement
+supabase functions list
+```
+
 ## Test via Dashboard Supabase
 
-1. **Déployer la fonction** :
-   ```bash
-   npx supabase functions deploy admin
-   ```
+1. **Accéder au Dashboard** :
+   - https://supabase.com/dashboard
+   - Projet "SER1-Simulator" (xnpbxrqkzgimiugqtago)
+   - Section Functions → admin
 
-2. **Tester dans Dashboard** :
-   - Aller dans Supabase Dashboard > Functions > admin
+2. **Tester dans l'interface** :
    - Cliquer sur "Test"
    - Headers : `Authorization: Bearer VOTRE_JETON_ADMIN`
    - Body :
@@ -21,6 +36,21 @@
 3. **Vérifier les logs** :
    - Dashboard > Functions > Logs
    - Chercher les messages : `Method: POST, Action: list_users, Body vide: false`
+
+## Test via CLI locale
+
+```bash
+# Test depuis le dossier racine
+supabase functions invoke admin --project-ref xnpbxrqkzgimiugqtago --workdir config \
+  --data '{"action": "ping_public"}'
+
+# Test avec authentification admin
+supabase functions invoke admin --project-ref xnpbxrqkzgimiugqtago --workdir config \
+  --data '{"action": "list_users"}' \
+  --headers '{
+    "Authorization": "Bearer VOTRE_JETON_ADMIN"
+  }'
+```
 
 ## Test via l'application
 

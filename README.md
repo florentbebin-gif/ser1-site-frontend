@@ -1,6 +1,6 @@
 # SER1 — Audit Patrimonial Express + Stratégie Guidée
 
-**Dernière mise à jour : 2026-02-09 (Europe/Paris)**
+**Dernière mise à jour : 2026-02-10 (Europe/Paris)**
 
 Application web interne pour CGP : audit patrimonial, stratégie guidée, simulateurs IR/Placement/Crédit, exports PPTX/Excel.
 
@@ -18,6 +18,11 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 ## 🌍 Environnement Local
 
 ### Configuration requise
+**Prérequis système** :
+- Node.js 22.x (`.nvmrc` + `package.json > engines`)
+- Docker Desktop (recommandé pour développement local Supabase)
+
+**Variables d'environnement** :
 Copier `.env.example` vers `.env.local` et configurer :
 
 ```bash
@@ -29,6 +34,12 @@ VITE_SUPABASE_ANON_KEY=votre-clé-anonyme
 E2E_EMAIL=votre-email-test@exemple.com
 E2E_PASSWORD=votre-mot-de-passe-test
 ```
+
+**Accès Supabase** :
+- **Dashboard** : https://supabase.com/dashboard (interface web)
+- **CLI** : `supabase --version` (v2.72.7+ installé)
+- **Projet lié** : `SER1-Simulator` (West EU/Paris)
+- **Référence** : `xnpbxrqkzgimiugqtago`
 
 ### Lancement local
 ```bash
@@ -51,6 +62,55 @@ E2E_EMAIL="test@example.com" E2E_PASSWORD="password123" npm run test:e2e
 - **Vite dev** : `npm run dev` → console et logs détaillés
 - **Playwright** : `npm run test:e2e:ui` → interface debug
 - **Build** : `npm run build` → erreurs de compilation visibles
+
+---
+
+## 🛠️ Gestion Supabase
+
+### Commandes CLI essentielles
+```bash
+# Vérifier la connexion et les projets
+supabase projects list
+supabase status
+
+# Synchroniser le schéma distant
+supabase db remote commit --linked    # Pull schema depuis distant
+supabase migration list               # Voir l'historique des migrations
+
+# Développement local (Docker requis)
+supabase start                       # Démarrer services locaux
+supabase db reset                    # Reset base locale avec migrations
+supabase stop                        # Arrêter services locaux
+```
+
+### Structure des tables principales
+| Table | Usage | Champs clés |
+|-------|-------|-------------|
+| `profiles` | Utilisateurs et rôles | `id`, `email`, `role`, `cabinet_id` |
+| `cabinets` | Cabinets médicaux | `id`, `name`, `default_theme_id`, `logo_id` |
+| `themes` | Thèmes de personnalisation | `id`, `name`, `palette`, `is_system` |
+| `ui_settings` | Préférences utilisateur (V5) | `theme_mode`, `preset_id`, `my_palette` |
+| `logos` | Stockage des logos | `id`, `sha256`, `storage_path`, `mime` |
+| `issue_reports` | Rapports de problèmes | `user_id`, `page`, `title`, `status` |
+
+### Architecture V5 des thèmes
+Le système utilise 3 modes avec priorité :
+- **`cabinet`** : Thème du cabinet de l'utilisateur
+- **`preset`** : Thème prédéfini (ex: `gold-elite`)  
+- **`my`** : Palette personnalisée utilisateur
+
+**Fichiers clés** :
+- `src/settings/presets.ts` — Définition des presets
+- `src/settings/ThemeProvider.tsx` — Logique de résolution
+- `src/pages/Settings.jsx` — Interface de sélection
+
+### Dépannage Supabase
+| Problème | Solution |
+|----------|----------|
+| Docker non trouvé | Installer Docker Desktop (AMD64) |
+| API key invalide | Régénérer depuis dashboard Supabase |
+| Migration manquante | `supabase db remote commit --linked` |
+| CLI non reconnue | Redémarrer terminal après installation |
 
 ---
 
@@ -400,6 +460,7 @@ npm run analyze         # Visualisation bundle (vite-bundle-visualizer)
 
 ### 7.1 Prérequis
 - Node.js 22.x (`.nvmrc` + `package.json > engines`)
+- Docker Desktop (AMD64) pour développement local Supabase
 - Variables `.env.local` : `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
 
 ### 7.2 Scripts
@@ -461,6 +522,9 @@ localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true')
 | Build Vercel Node 24.x | `engines: ">=22"` trop permissif | Pin strict `"22.x"` dans `package.json` |
 | Logo PPTX manquant | Bucket `logos` non créé | Créer bucket + appliquer migrations |
 | npm warnings inflight/glob | Dépendances transitives dépréciées | Overrides npm dans `package.json` (glob@13.0.1) |
+| **Supabase CLI non reconnu** | Installation récente | Redémarrer terminal ou vérifier PATH |
+| **Docker Desktop requis** | Développement local | Installer Docker Desktop (AMD64) et démarrer |
+| **API key invalide** | Clé expirée/régénérée | Régénérer depuis dashboard Supabase et mettre à jour `.env.local` |
 
 ---
 

@@ -2,6 +2,21 @@
 
 Organisation des scripts SQL pour Supabase.
 
+## Accès à la base de données
+
+### Méthodes d'accès
+| Méthode | Usage | Commande |
+|--------|-------|----------|
+| **Dashboard** | Interface web | https://supabase.com/dashboard → Project → SQL Editor |
+| **CLI** | Développement local | `supabase db shell --linked` (Docker requis) |
+| **Migration** | Synchronisation | `supabase db remote commit --linked` |
+
+### Projet SER1
+- **Nom** : SER1-Simulator  
+- **Référence** : `xnpbxrqkzgimiugqtago`
+- **Région** : West EU (Paris)
+- **CLI liée** : `supabase projects list` doit montrer le projet
+
 ## Structure
 
 ```
@@ -35,6 +50,23 @@ database/setup/supabase-setup.sql
 | 9 | `rename-ser1-classique-to-theme-original.sql` | Renommage thème |
 
 > **Note** : Les scripts de correction ponctuelle (`fixes/`) ont été archivés. Les migrations contiennent désormais l'état correct de la base.
+
+## Commandes CLI essentielles
+
+```bash
+# Vérifier la connexion au projet
+supabase projects list
+supabase status
+
+# Synchroniser le schéma distant vers local
+supabase db remote commit --linked
+supabase migration list
+
+# Développement local (Docker requis)
+supabase start
+supabase db reset
+supabase stop
+```
 
 ## ⚠️ Pièges connus
 

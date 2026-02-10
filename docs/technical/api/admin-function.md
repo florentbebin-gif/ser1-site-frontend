@@ -3,11 +3,20 @@
 > **Source** : `config/supabase/functions/admin/index.ts`
 > **Version** : `2026-01-23-v1` (`ADMIN_VERSION`)
 > **Runtime** : Deno (Supabase Edge Functions)
+> **Accès** : Dashboard Supabase + CLI locale + API REST
 
 ## Vue d'ensemble
 
 Point d'entrée unique pour toutes les opérations back-end de SER1.
 L'action est transmise soit via le query-string `?action=…`, soit dans le body JSON `{ "action": "…" }`.
+
+### Accès à la fonction
+
+| Méthode | URL | Usage |
+|--------|-----|-------|
+| **Dashboard** | Supabase Dashboard → Functions → admin | Interface web de test |
+| **CLI** | `supabase functions invoke admin` | Développement local |
+| **API** | `https://PROJECT_REF.supabase.co/functions/v1/admin` | Production |
 
 ### Authentification
 

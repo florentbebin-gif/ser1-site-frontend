@@ -6,6 +6,23 @@ Le système de thème SER1 gère les couleurs de l'interface et des exports PPTX
 
 > **V5 (2026-02-10)** : Modèle déterministe à 3 états (`cabinet` | `preset` | `my`). Voir [CHANGELOG.md](../CHANGELOG.md) pour l'historique.
 
+## Accès aux données de thème
+
+### Méthodes d'accès aux thèmes
+| Source | Usage | Commande |
+|--------|-------|----------|
+| **Dashboard** | Voir/éditer les thèmes | https://supabase.com/dashboard → Project → Table Editor → themes |
+| **CLI** | Inspecter les données | `supabase db shell --linked` → `SELECT * FROM themes;` |
+| **RPC** | Charger les thèmes cabinet | `get_my_cabinet_theme_palette()` |
+| **Application** | Interface utilisateur | `/settings/comptes` |
+
+### Tables principales
+| Table | Usage | Champs V5 |
+|-------|-------|-----------|
+| `themes` | Thèmes système et custom | `id`, `name`, `palette`, `is_system` |
+| `ui_settings` | Préférences utilisateur | `theme_mode`, `preset_id`, `my_palette` |
+| `cabinets` | Configuration cabinets | `default_theme_id`, `logo_id` |
+
 ## Architecture V5
 
 ### Fichiers Principaux
@@ -128,6 +145,15 @@ Pour migrer de l'ancien système V4 :
 1. Exécuter `database/migrations/202602100001_add_theme_mode.sql`
 2. Le code lit automatiquement les anciennes colonnes en fallback
 3. Les écritures se font dans les nouvelles colonnes
+
+### Vérification post-migration
+```bash
+# Vérifier que les colonnes V5 existent
+supabase db shell --linked -c "\d ui_settings"
+
+# Vérifier les données
+supabase db shell --linked -c "SELECT theme_mode, preset_id, my_palette FROM ui_settings LIMIT 5;"
+```
 
 ## Debug
 

@@ -1,5 +1,24 @@
 # Troubleshooting Thème
 
+## Accès et Debug
+
+### Outils de diagnostic
+| Outil | Usage | Commande |
+|-------|-------|----------|
+| **Dashboard Supabase** | Vérifier tables/ui_settings | https://supabase.com/dashboard → Project → Table Editor |
+| **CLI** | Inspecter la base locale | `supabase db shell --linked` |
+| **Browser DevTools** | Inspecter les CSS variables | `document.documentElement.style.getPropertyValue('--color-c1')` |
+
+### Flags de Debug
+
+```javascript
+// Activer les logs de thème
+localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true');
+
+// Activer les logs d'auth
+localStorage.setItem('DEBUG_AUTH', 'true');
+```
+
 ## Problèmes Courants
 
 ### 1. Input Controlled → Uncontrolled
