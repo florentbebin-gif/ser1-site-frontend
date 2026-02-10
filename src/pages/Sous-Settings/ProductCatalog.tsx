@@ -21,58 +21,107 @@ import type {
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const NATURE_OPTIONS: ProductNature[] = ['Assurance', 'Bancaire', 'Titres', 'Immobilier', 'D\u00e9fiscalisation', 'Autres'];
+const NATURE_OPTIONS: ProductNature[] = ['Assurance', 'Bancaire', 'Titres', 'Immobilier', 'Défiscalisation', 'Autres'];
 const HOLDERS_OPTIONS: ProductHolders[] = ['PP', 'PM', 'PP+PM'];
 const HOLDERS_LABEL: Record<string, string> = { PP: 'Pers. physique', PM: 'Pers. morale', 'PP+PM': 'PP + PM' };
 
-const REF_HINT = 'Valeur r\u00e9f\u00e9renc\u00e9e depuis Param\u00e8tres imp\u00f4ts ou Param\u00e8tres sociaux';
+const REF_HINT = 'Valeur référencée depuis Paramètres impôts ou Paramètres sociaux';
 
 const FIELD_LABELS: Record<string, string> = {
   retraitsCapital: 'Retraits / rachats',
-  psRatePercent: 'Taux pr\u00e9l\u00e8vements sociaux (%)',
+  psRatePercent: 'Taux prélèvements sociaux (%)',
   irRatePercent: 'Taux IR forfaitaire (%)',
-  irRateOverThresholdPercent: 'Taux IR au-del\u00e0 du seuil (%)',
+  irRateOverThresholdPercent: 'Taux IR au-delà du seuil (%)',
   avant2017: 'Versements avant le 27/09/2017',
   depuis2017: 'Versements depuis le 27/09/2017',
   moins8Ans: 'Contrat de moins de 8 ans',
   plus8Ans: 'Contrat de 8 ans et plus',
-  abattementSingle: 'Abattement (c\u00e9libataire)',
+  abattementSingle: 'Abattement (célibataire)',
   abattementCouple: 'Abattement (couple)',
-  seuilPrimes: 'Seuil de primes vers\u00e9es',
+  seuilPrimes: 'Seuil de primes versées',
   tauxSousSeuil: 'Taux sous le seuil (%)',
   tauxSurSeuil: 'Taux au-dessus du seuil (%)',
-  successionArt990I: 'Succession \u2014 Art. 990 I',
-  successionArt757B: 'Succession \u2014 Art. 757 B',
+  successionArt990I: 'Succession — Art. 990 I',
+  successionArt757B: 'Succession — Art. 757 B',
   abattement: 'Abattement',
   tranche1Taux: 'Taux tranche 1 (%)',
   tranche1Plafond: 'Plafond tranche 1',
   tranche2Taux: 'Taux tranche 2 (%)',
-  epargne: 'Phase d\'\u00e9pargne',
+  epargne: "Phase d'épargne",
   sortieCapital: 'Sortie en capital',
-  pfu: 'Pr\u00e9l\u00e8vement forfaitaire unique (PFU)',
-  bareme: 'Bar\u00e8me progressif',
+  pfu: 'Prélèvement forfaitaire unique (PFU)',
+  bareme: 'Barème progressif',
   rente: 'Sortie en rente',
-  deces: 'D\u00e9c\u00e8s',
-  deduits: 'Versements d\u00e9duits',
-  nonDeduits: 'Versements non d\u00e9duits',
+  deces: 'Décès',
+  deduits: 'Versements déduits',
+  nonDeduits: 'Versements non déduits',
   capitalQuotePart: 'Quote-part capital',
-  interestsQuotePart: 'Quote-part int\u00e9r\u00eats',
-  rvtoTaxableFractionByAgeAtFirstPayment: 'Fraction imposable par \u00e2ge (RVTO)',
-  ancienneteMinAns: 'Anciennet\u00e9 minimale (ann\u00e9es)',
-  exonerationIRApresAnciennete: 'Exon\u00e9ration IR apr\u00e8s anciennet\u00e9',
+  interestsQuotePart: 'Quote-part intérêts',
+  rvtoTaxableFractionByAgeAtFirstPayment: 'Fraction imposable par âge (RVTO)',
+  ancienneteMinAns: 'Ancienneté minimale (années)',
+  exonerationIRApresAnciennete: 'Exonération IR après ancienneté',
   abattementPercent: 'Abattement (%)',
   dividendesAbattementPercent: 'Abattement dividendes (%)',
   rateSocial: 'Taux social (%)',
   rateIR: 'Taux IR (%)',
   from: 'De',
-  to: '\u00c0',
+  to: 'À',
   rate: 'Taux',
-  age: '\u00c2ge',
+  age: 'Âge',
   fraction: 'Fraction',
+  effectiveDate: "Date d'entrée en vigueur",
+  closedDate: 'Date de clôture',
+  holders: 'Détenteurs',
+  nature: 'Nature',
+  isActive: 'Actif',
+  sortOrder: "Ordre d'affichage",
+  globalAllowance: 'Abattement global',
+  allowancePerBeneficiary: 'Abattement par bénéficiaire',
+  agePivotPrimes: 'Âge pivot des primes',
+  primesApres1998: 'Primes versées après 1998',
+  primesApres70ans: 'Primes versées après 70 ans',
+  primesAvant70ans: 'Primes versées avant 70 ans',
+  upTo: "Jusqu'à",
+  ratePercent: 'Taux (%)',
+  brackets: 'Tranches',
+  single: 'Célibataire',
+  couple: 'Couple',
+  note: 'Note',
+  url: 'URL',
+  label: 'Libellé',
+  key: 'Clé technique',
 };
 
+const HUMANIZE_FR: Record<string, string> = {
+  allowance: 'abattement',
+  rate: 'taux',
+  beneficiary: 'bénéficiaire',
+  threshold: 'seuil',
+  percent: '%',
+  bracket: 'tranche',
+  capital: 'capital',
+  income: 'revenu',
+  tax: 'impôt',
+  social: 'social',
+  death: 'décès',
+  age: 'âge',
+  date: 'date',
+  primes: 'primes',
+};
+
+function humanizeKey(key: string): string {
+  const words = key
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[_-]/g, ' ')
+    .toLowerCase()
+    .split(' ');
+  const translated = words.map((w) => HUMANIZE_FR[w] || w);
+  const result = translated.join(' ');
+  return result.charAt(0).toUpperCase() + result.slice(1);
+}
+
 function labelFor(key: string): string {
-  return FIELD_LABELS[key] || key;
+  return FIELD_LABELS[key] || humanizeKey(key);
 }
 
 const EMPTY_PRODUCT: Omit<Product, 'sortOrder'> = {
@@ -125,8 +174,8 @@ function RulesTree({
         if (Array.isArray(value)) {
           return (
             <div key={pathKey} style={{ marginTop: 8, marginBottom: 4 }}>
-              <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, paddingLeft: depth * 12 }}>
-                {labelFor(key)}
+              <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4, paddingLeft: depth * 12 }} title={`clé : ${key}`}>
+                {labelFor(key)} <span style={{ fontSize: 10, color: 'var(--color-c9)' }}>({key})</span>
               </div>
               <RulesArrayTable
                 rows={value}
@@ -145,8 +194,9 @@ function RulesTree({
               <div
                 className={depth === 0 ? 'fisc-section-title' : ''}
                 style={depth > 0 ? { fontWeight: 600, fontSize: 13, marginBottom: 2, paddingLeft: depth * 12 } : undefined}
+                title={`clé : ${key}`}
               >
-                {labelFor(key)}
+                {labelFor(key)} <span style={{ fontSize: 10, color: 'var(--color-c9)' }}>({key})</span>
               </div>
               <div style={{ paddingLeft: depth > 0 ? 12 : 0 }}>
                 <RulesTree
@@ -165,7 +215,7 @@ function RulesTree({
         if (isRef(value)) {
           return (
             <div key={pathKey} className="settings-field-row" style={{ paddingLeft: depth * 12 }}>
-              <label style={{ flex: '1 1 auto', fontSize: 13 }}>{labelFor(key)}</label>
+              <label style={{ flex: '1 1 auto', fontSize: 13 }} title={`clé : ${key}`}>{labelFor(key)}</label>
               <span
                 title={REF_HINT}
                 style={{
@@ -191,7 +241,7 @@ function RulesTree({
         if (isBool) {
           return (
             <div key={pathKey} className="settings-field-row" style={{ paddingLeft: depth * 12 }}>
-              <label style={{ flex: '1 1 auto', fontSize: 13 }}>{labelFor(key)}</label>
+              <label style={{ flex: '1 1 auto', fontSize: 13 }} title={`clé : ${key}`}>{labelFor(key)}</label>
               <select
                 value={value ? 'true' : 'false'}
                 onChange={(e) => onChange(currentPath, e.target.value === 'true')}
@@ -215,7 +265,7 @@ function RulesTree({
         return (
           <SettingsFieldRow
             key={pathKey}
-            label={labelFor(key)}
+            label={FIELD_LABELS[key] ? `${labelFor(key)}` : `${labelFor(key)} (${key})`}
             path={currentPath}
             value={value}
             onChange={onChange}
@@ -290,7 +340,7 @@ function RulesArrayTable({
               }}
               style={{ padding: '4px 12px', fontSize: 12, border: '1px solid var(--color-c8)', borderRadius: 4, background: '#FFFFFF', color: 'var(--color-c9)', cursor: 'pointer' }}
             >
-              Supprimer la derni\u00e8re ligne
+              Supprimer la dernière ligne
             </button>
           )}
         </div>
@@ -357,7 +407,7 @@ function SourcesSection({
           style={{ marginBottom: 8, borderLeftColor: 'var(--color-c9)', position: 'relative' }}
         >
           <SettingsFieldRow
-            label="Libell\u00e9"
+            label="Libellé"
             path={['rulesetsByKey', productKey, 'sources', String(idx), 'label']}
             value={src.label}
             onChange={onChange}
@@ -495,7 +545,7 @@ export default function ProductCatalog() {
   const handleAddProduct = () => {
     if (!settings || !productForm.key || !productForm.label) return;
     const exists = settings.products.some((p) => p.key === productForm.key);
-    if (exists) { setMessage('Erreur : cette cl\u00e9 existe d\u00e9j\u00e0.'); return; }
+    if (exists) { setMessage('Erreur : cette clé existe déjà.'); return; }
     const maxSort = settings.products.reduce((m, p) => Math.max(m, p.sortOrder), 0);
     const newProduct: Product = { ...productForm, sortOrder: maxSort + 1 } as Product;
     const newRuleset: Ruleset = { effectiveDate: new Date().toISOString().slice(0, 10), rules: {}, sources: [] };
@@ -573,7 +623,7 @@ export default function ProductCatalog() {
         console.error(error);
         setMessage("Erreur lors de l'enregistrement.");
       } else {
-        setMessage('R\u00e9f\u00e9rentiel contrats enregistr\u00e9.');
+        setMessage('Référentiel contrats enregistré.');
         invalidate('fiscality');
         broadcastInvalidation('fiscality');
       }
@@ -586,9 +636,9 @@ export default function ProductCatalog() {
   };
 
   // ───────── Render ─────────
-  if (loading) return <p>Chargement\u2026</p>;
-  if (!user) return <p>Vous devez \u00eatre connect\u00e9 pour voir cette page.</p>;
-  if (!settings) return <p>Aucune donn\u00e9e.</p>;
+  if (loading) return <p>Chargement…</p>;
+  if (!user) return <p>Vous devez être connecté pour voir cette page.</p>;
+  if (!settings) return <p>Aucune donnée.</p>;
 
   const products = settings.products || [];
   const rulesets = settings.rulesetsByKey || {};
@@ -685,14 +735,14 @@ export default function ProductCatalog() {
                         onClick={() => setClosingProduct(product)}
                         style={{ padding: '4px 12px', fontSize: 12, color: 'var(--color-c9)' }}
                       >
-                        Cl\u00f4turer
+                        Clôturer
                       </button>
                     </div>
                   )}
 
                   {/* Effective date field */}
                   <SettingsFieldRow
-                    label="Date d'entr\u00e9e en vigueur"
+                    label="Date d'entrée en vigueur"
                     path={['rulesetsByKey', product.key, 'effectiveDate']}
                     value={ruleset?.effectiveDate || ''}
                     onChange={updateField}
@@ -710,7 +760,7 @@ export default function ProductCatalog() {
                     />
                   ) : (
                     <p style={{ fontSize: 13, color: 'var(--color-c9)', fontStyle: 'italic', marginTop: 8 }}>
-                      Aucune r\u00e8gle d\u00e9finie pour ce produit.
+                      Aucune règle définie pour ce produit.
                     </p>
                   )}
 
@@ -728,10 +778,10 @@ export default function ProductCatalog() {
         })}
       </div>
 
-      {/* Produits cl\u00f4tur\u00e9s */}
+      {/* Produits clôturés */}
       {closedProducts.length > 0 && (
         <div style={{ marginTop: 12 }}>
-          <div className="fisc-section-title" style={{ color: 'var(--color-c9)' }}>Produits cl\u00f4tur\u00e9s</div>
+          <div className="fisc-section-title" style={{ color: 'var(--color-c9)' }}>Produits clôturés</div>
           <div className="fisc-accordion">
             {closedProducts.map((product) => (
               <div key={product.key} className="fisc-acc-item" style={{ opacity: 0.6 }}>
@@ -746,7 +796,7 @@ export default function ProductCatalog() {
                     <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>({product.key})</span>
                     {product.closedDate && (
                       <span style={{ fontSize: 11, color: 'var(--color-c9)', fontStyle: 'italic' }}>
-                        Cl\u00f4tur\u00e9 le {product.closedDate}
+                        Clôturé le {product.closedDate}
                       </span>
                     )}
                   </div>
@@ -765,7 +815,7 @@ export default function ProductCatalog() {
           onClick={handleSave}
           disabled={saving}
         >
-          {saving ? 'Enregistrement\u2026' : 'Enregistrer les param\u00e8tres'}
+          {saving ? 'Enregistrement…' : 'Enregistrer les paramètres'}
         </button>
       )}
       {message && (
@@ -798,7 +848,7 @@ export default function ProductCatalog() {
             <div className="report-modal-content">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13 }}>Cl\u00e9 unique (slug) *</label>
+                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13 }}>Clé unique (slug) *</label>
                   <input
                     type="text"
                     value={productForm.key}
@@ -806,10 +856,10 @@ export default function ProductCatalog() {
                     placeholder="ex : sciOpci"
                     style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', fontSize: 13, border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}
                   />
-                  <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>Non modifiable apr\u00e8s cr\u00e9ation</span>
+                  <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>Non modifiable après création</span>
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13 }}>Libell\u00e9 *</label>
+                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13 }}>Libellé *</label>
                   <input
                     type="text"
                     value={productForm.label}
@@ -819,7 +869,7 @@ export default function ProductCatalog() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13 }}>D\u00e9tenteurs</label>
+                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13 }}>Détenteurs</label>
                   <select
                     value={productForm.holders}
                     onChange={(e) => setProductForm({ ...productForm, holders: e.target.value as ProductHolders })}
@@ -848,7 +898,7 @@ export default function ProductCatalog() {
                 disabled={!productForm.key || !productForm.label}
                 style={{ padding: '8px 20px', fontWeight: 600 }}
               >
-                Cr\u00e9er le produit
+                Créer le produit
               </button>
             </div>
           </div>
@@ -860,17 +910,17 @@ export default function ProductCatalog() {
         <div className="report-modal-overlay" onClick={() => setEditingProduct(null)}>
           <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
             <div className="report-modal-header">
-              <h3>Modifier \u00ab {editingProduct.label} \u00bb</h3>
+              <h3>Modifier « {editingProduct.label} »</h3>
               <button className="report-modal-close" onClick={() => setEditingProduct(null)}>&#x2715;</button>
             </div>
             <div className="report-modal-content">
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13, color: 'var(--color-c9)' }}>Cl\u00e9</label>
+                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13, color: 'var(--color-c9)' }}>Clé</label>
                   <input type="text" value={editingProduct.key} disabled style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', fontSize: 13, border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: 'var(--color-c7)', color: 'var(--color-c9)' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13 }}>Libell\u00e9 *</label>
+                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13 }}>Libellé *</label>
                   <input
                     type="text"
                     value={productForm.label}
@@ -879,7 +929,7 @@ export default function ProductCatalog() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13 }}>D\u00e9tenteurs</label>
+                  <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13 }}>Détenteurs</label>
                   <select
                     value={productForm.holders}
                     onChange={(e) => setProductForm({ ...productForm, holders: e.target.value as ProductHolders })}
@@ -920,15 +970,15 @@ export default function ProductCatalog() {
         <div className="report-modal-overlay" onClick={() => setNewVersionProduct(null)}>
           <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 420 }}>
             <div className="report-modal-header">
-              <h3>Nouvelle version \u2014 {newVersionProduct.label}</h3>
+              <h3>Nouvelle version — {newVersionProduct.label}</h3>
               <button className="report-modal-close" onClick={() => setNewVersionProduct(null)}>&#x2715;</button>
             </div>
             <div className="report-modal-content">
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 12px' }}>
-                Les r\u00e8gles actuelles seront copi\u00e9es dans la nouvelle version.
+                Les règles actuelles seront copiées dans la nouvelle version.
                 Vous pourrez ensuite les modifier.
               </p>
-              <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13 }}>Date d'entr\u00e9e en vigueur *</label>
+              <label style={{ display: 'block', marginBottom: 4, fontWeight: 600, fontSize: 13 }}>Date d'entrée en vigueur *</label>
               <input
                 type="date"
                 value={newVersionDate}
@@ -944,31 +994,31 @@ export default function ProductCatalog() {
                 disabled={!newVersionDate}
                 style={{ padding: '8px 20px', fontWeight: 600 }}
               >
-                Cr\u00e9er la version
+                Créer la version
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal : Cl\u00f4turer un produit */}
+      {/* Modal : Clôturer un produit */}
       {closingProduct && (
         <div className="report-modal-overlay" onClick={() => setClosingProduct(null)}>
           <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 420 }}>
             <div className="report-modal-header">
-              <h3>Cl\u00f4turer \u00ab {closingProduct.label} \u00bb</h3>
+              <h3>Clôturer « {closingProduct.label} »</h3>
               <button className="report-modal-close" onClick={() => setClosingProduct(null)}>&#x2715;</button>
             </div>
             <div className="report-modal-content">
               <p style={{ fontSize: 13, margin: '0 0 8px' }}>
-                Le produit sera marqu\u00e9 comme inactif et n'appara\u00eetra plus dans la liste principale.
-                Cette action est r\u00e9versible (r\u00e9activation manuelle possible).
+                Le produit sera marqué comme inactif et n'apparaîtra plus dans la liste principale.
+                Cette action est réversible (réactivation manuelle possible).
               </p>
               <p style={{ fontSize: 13, fontWeight: 600, margin: '0 0 4px' }}>
                 Produit : {closingProduct.label} ({closingProduct.key})
               </p>
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: 0 }}>
-                Date de cl\u00f4ture : {new Date().toISOString().slice(0, 10)}
+                Date de clôture : {new Date().toISOString().slice(0, 10)}
               </p>
             </div>
             <div className="report-modal-actions">
@@ -978,7 +1028,7 @@ export default function ProductCatalog() {
                 onClick={handleCloseProduct}
                 style={{ padding: '8px 20px', fontWeight: 600 }}
               >
-                Confirmer la cl\u00f4ture
+                Confirmer la clôture
               </button>
             </div>
           </div>
