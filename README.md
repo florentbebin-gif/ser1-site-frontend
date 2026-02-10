@@ -15,6 +15,45 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 
 ---
 
+## 🌍 Environnement Local
+
+### Configuration requise
+Copier `.env.example` vers `.env.local` et configurer :
+
+```bash
+# Variables Supabase (obligatoires)
+VITE_SUPABASE_URL=https://votre-projet.supabase.co
+VITE_SUPABASE_ANON_KEY=votre-clé-anonyme
+
+# Credentials E2E (optionnel, pour tests authentifiés)
+E2E_EMAIL=votre-email-test@exemple.com
+E2E_PASSWORD=votre-mot-de-passe-test
+```
+
+### Lancement local
+```bash
+npm install          # Install dependencies
+npm run dev          # Serveur développement (http://localhost:5173)
+npm run build        # Build production
+npm run preview      # Preview build (http://localhost:4173)
+```
+
+### Tests E2E locaux
+```bash
+# Sans authentification (tests smoke uniquement)
+npm run test:e2e
+
+# Avec authentification (credentials dans .env.local)
+E2E_EMAIL="test@example.com" E2E_PASSWORD="password123" npm run test:e2e
+```
+
+### Debug
+- **Vite dev** : `npm run dev` → console et logs détaillés
+- **Playwright** : `npm run test:e2e:ui` → interface debug
+- **Build** : `npm run build` → erreurs de compilation visibles
+
+---
+
 ### Harmonisation typographique & Premium Cards — Settings
 **Objectif** : Uniformiser titres et sections Settings sur le pattern premium de `Settings.jsx`.
 
