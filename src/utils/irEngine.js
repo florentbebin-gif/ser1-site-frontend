@@ -1,4 +1,5 @@
 import { computeTmiMetrics } from './tmiMetrics.js';
+import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../constants/settingsDefaults';
 
 function computeAbattement10(base, cfg) {
   if (!cfg || base <= 0) return 0;
@@ -196,99 +197,8 @@ function computeCDHR(config, assiette, irRetenu, pfuIr, cehr, isCouple, personsA
   };
 }
 
-export const DEFAULT_TAX_SETTINGS = {
-  incomeTax: {
-    currentYearLabel: '2025 (revenus 2024)',
-    previousYearLabel: '2024 (revenus 2023)',
-    scaleCurrent: [
-      { from: 0, to: 11497, rate: 0 },
-      { from: 11498, to: 29315, rate: 11 },
-      { from: 29316, to: 83823, rate: 30 },
-      { from: 83824, to: 180294, rate: 41 },
-      { from: 180295, to: null, rate: 45 },
-    ],
-    scalePrevious: [
-      { from: 0, to: 11294, rate: 0 },
-      { from: 11295, to: 28797, rate: 11 },
-      { from: 28798, to: 82341, rate: 30 },
-      { from: 82342, to: 177106, rate: 41 },
-      { from: 177107, to: null, rate: 45 },
-    ],
-    quotientFamily: {
-      current: { plafondPartSup: 1791, plafondParentIsoléDeuxPremièresParts: 4224 },
-      previous: { plafondPartSup: 1791, plafondParentIsoléDeuxPremièresParts: 4224 },
-    },
-    decote: {
-      current: {
-        triggerSingle: 1964,
-        triggerCouple: 3248,
-        amountSingle: 889,
-        amountCouple: 1470,
-        ratePercent: 45.25,
-      },
-      previous: {
-        triggerSingle: 1964,
-        triggerCouple: 3248,
-        amountSingle: 889,
-        amountCouple: 1470,
-        ratePercent: 45.25,
-      },
-    },
-    abat10: {
-      current: { plafond: 14426, plancher: 504 },
-      previous: { plafond: 14171, plancher: 495 },
-      retireesCurrent: { plafond: 4399, plancher: 450 },
-      retireesPrevious: { plafond: 4321, plancher: 442 },
-    },
-    domAbatement: {
-      current: {
-        gmr: { ratePercent: 30, cap: 2450 },
-        guyane: { ratePercent: 40, cap: 4050 },
-      },
-      previous: {
-        gmr: { ratePercent: 30, cap: 2450 },
-        guyane: { ratePercent: 40, cap: 4050 },
-      },
-    },
-  },
-  pfu: {
-    current: { rateIR: 12.8, rateSocial: 17.2, rateTotal: 30.0 },
-    previous: { rateIR: 12.8, rateSocial: 17.2, rateTotal: 30.0 },
-  },
-  cehr: {
-    current: {
-      single: [
-        { from: 250000, to: 500000, rate: 3 },
-        { from: 500000, to: null, rate: 4 },
-      ],
-      couple: [
-        { from: 500000, to: 1000000, rate: 3 },
-        { from: 1000000, to: null, rate: 4 },
-      ],
-    },
-    previous: {
-      single: [
-        { from: 250000, to: 500000, rate: 3 },
-        { from: 500000, to: null, rate: 4 },
-      ],
-      couple: [
-        { from: 500000, to: 1000000, rate: 3 },
-        { from: 1000000, to: null, rate: 4 },
-      ],
-    },
-  },
-  cdhr: {
-    current: { minEffectiveRate: 20, thresholdSingle: 250000, thresholdCouple: 500000 },
-    previous: { minEffectiveRate: 20, thresholdSingle: 250000, thresholdCouple: 500000 },
-  },
-};
-
-export const DEFAULT_PS_SETTINGS = {
-  patrimony: {
-    current: { totalRate: 17.2, csgDeductibleRate: 6.8 },
-    previous: { totalRate: 17.2, csgDeductibleRate: 6.8 },
-  },
-};
+// Re-export pour les consommateurs historiques (importé depuis settingsDefaults)
+export { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS };
 
 // Règle parent isolé (case T) :
 // - Enfants à charge comptés avant les enfants en alternée pour les 2 premiers rangs.

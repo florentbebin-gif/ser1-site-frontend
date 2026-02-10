@@ -16,137 +16,14 @@
 
 import { supabase } from '../supabaseClient';
 import { migrateV1toV2 } from './fiscalitySettingsMigrator';
+import {
+  DEFAULT_TAX_SETTINGS,
+  DEFAULT_PS_SETTINGS,
+  DEFAULT_FISCALITY_SETTINGS,
+} from '../constants/settingsDefaults';
 
-// --- Valeurs par défaut (fallback si Supabase ne répond pas) ---
-export const DEFAULT_TAX_SETTINGS = {
-  incomeTax: {
-    currentYearLabel: '2025 (revenus 2024)',
-    previousYearLabel: '2024 (revenus 2023)',
-    scaleCurrent: [
-      { from: 0, to: 11497, rate: 0 },
-      { from: 11498, to: 29315, rate: 11 },
-      { from: 29316, to: 83823, rate: 30 },
-      { from: 83824, to: 180294, rate: 41 },
-      { from: 180295, to: null, rate: 45 },
-    ],
-    scalePrevious: [
-      { from: 0, to: 11294, rate: 0 },
-      { from: 11295, to: 28797, rate: 11 },
-      { from: 28798, to: 82341, rate: 30 },
-      { from: 82342, to: 177106, rate: 41 },
-      { from: 177107, to: null, rate: 45 },
-    ],
-    quotientFamily: {
-      current: { plafondPartSup: 1791, plafondParentIsoléDeuxPremièresParts: 4224 },
-      previous: { plafondPartSup: 1791, plafondParentIsoléDeuxPremièresParts: 4224 },
-    },
-    decote: {
-      current: { triggerSingle: 1964, triggerCouple: 3248, amountSingle: 889, amountCouple: 1470, ratePercent: 45.25 },
-      previous: { triggerSingle: 1964, triggerCouple: 3248, amountSingle: 889, amountCouple: 1470, ratePercent: 45.25 },
-    },
-    abat10: {
-      current: { plafond: 14426, plancher: 504 },
-      previous: { plafond: 14171, plancher: 495 },
-    },
-    domAbatement: {
-      current: { gmr: { ratePercent: 30, cap: 2450 }, guyane: { ratePercent: 40, cap: 4050 } },
-      previous: { gmr: { ratePercent: 30, cap: 2450 }, guyane: { ratePercent: 40, cap: 4050 } },
-    },
-  },
-  pfu: {
-    current: { rateIR: 12.8, rateSocial: 17.2, rateTotal: 30.0 },
-    previous: { rateIR: 12.8, rateSocial: 17.2, rateTotal: 30.0 },
-  },
-  cehr: {
-    current: {
-      single: [{ from: 250000, to: 500000, rate: 3 }, { from: 500000, to: null, rate: 4 }],
-      couple: [{ from: 500000, to: 1000000, rate: 3 }, { from: 1000000, to: null, rate: 4 }],
-    },
-    previous: {
-      single: [{ from: 250000, to: 500000, rate: 3 }, { from: 500000, to: null, rate: 4 }],
-      couple: [{ from: 500000, to: 1000000, rate: 3 }, { from: 1000000, to: null, rate: 4 }],
-    },
-  },
-  cdhr: {
-    current: { minEffectiveRate: 20, thresholdSingle: 250000, thresholdCouple: 500000 },
-    previous: { minEffectiveRate: 20, thresholdSingle: 250000, thresholdCouple: 500000 },
-  },
-  dmtg: {
-    ligneDirecte: {
-      abattement: 100000,
-      scale: [
-        { from: 0, to: 8072, rate: 5 },
-        { from: 8072, to: 12109, rate: 10 },
-        { from: 12109, to: 15932, rate: 15 },
-        { from: 15932, to: 552324, rate: 20 },
-        { from: 552324, to: 902838, rate: 30 },
-        { from: 902838, to: 1805677, rate: 40 },
-        { from: 1805677, to: null, rate: 45 },
-      ],
-    },
-    frereSoeur: {
-      abattement: 15932,
-      scale: [
-        { from: 0, to: 24430, rate: 35 },
-        { from: 24430, to: null, rate: 45 },
-      ],
-    },
-    neveuNiece: {
-      abattement: 7967,
-      scale: [
-        { from: 0, to: null, rate: 55 },
-      ],
-    },
-    autre: {
-      abattement: 1594,
-      scale: [
-        { from: 0, to: null, rate: 60 },
-      ],
-    },
-  },
-};
-
-export const DEFAULT_PS_SETTINGS = {
-  patrimony: {
-    current: { totalRate: 17.2, csgDeductibleRate: 6.8 },
-    previous: { totalRate: 17.2, csgDeductibleRate: 6.8 },
-  },
-};
-
-export const DEFAULT_FISCALITY_SETTINGS = {
-  assuranceVie: {
-    retraitsCapital: {
-      psRatePercent: 17.2,
-      depuis2017: {
-        moins8Ans: { irRatePercent: 12.8 },
-        plus8Ans: {
-          abattementAnnuel: { single: 4600, couple: 9200 },
-          primesNettesSeuil: 150000,
-          irRateUnderThresholdPercent: 7.5,
-          irRateOverThresholdPercent: 12.8,
-        },
-      },
-    },
-    deces: {
-      primesApres1998: {
-        allowancePerBeneficiary: 152500,
-        brackets: [
-          { upTo: 852500, ratePercent: 20 },
-          { upTo: null, ratePercent: 31.25 },
-        ],
-      },
-      apres70ans: { globalAllowance: 30500 },
-    },
-  },
-  perIndividuel: {
-    sortieCapital: {
-      pfu: { irRatePercent: 12.8, psRatePercent: 17.2 },
-    },
-  },
-  dividendes: {
-    abattementBaremePercent: 40,
-  },
-};
+// Re-export pour les consommateurs historiques
+export { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS, DEFAULT_FISCALITY_SETTINGS };
 
 // --- Cache singleton ---
 const CACHE_KEY = 'ser1:fiscalSettingsCache';
