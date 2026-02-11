@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.js';
 import { migrateV1toV2 } from '@/utils/fiscalitySettingsMigrator';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
-import { numberOrEmpty, createFieldUpdater } from '@/utils/settingsHelpers.js';
+import { createFieldUpdater } from '@/utils/settingsHelpers.js';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 import SettingsTable from '@/components/settings/SettingsTable';
 import './SettingsFiscalites.css';
@@ -158,7 +158,7 @@ function RulesTree({
 }: {
   obj: Record<string, unknown>;
   pathPrefix: string[];
-  onChange: (path: string[], value: unknown) => void;
+  onChange: (_path: string[], _value: unknown) => void;
   disabled: boolean;
   depth?: number;
 }) {
@@ -288,7 +288,7 @@ function RulesArrayTable({
 }: {
   rows: unknown[];
   parentPath: string[];
-  onChange: (path: string[], value: unknown) => void;
+  onChange: (_path: string[], _value: unknown) => void;
   disabled: boolean;
 }) {
   if (!rows.length) return <p style={{ fontSize: 12, color: 'var(--color-c9)' }}>Aucun élément</p>;
@@ -361,7 +361,7 @@ function SourcesSection({
 }: {
   sources: OfficialSource[];
   productKey: string;
-  onChange: (path: string[], value: unknown) => void;
+  onChange: (_path: string[], _value: unknown) => void;
   disabled: boolean;
 }) {
   if (!disabled && sources.length === 0) {
@@ -533,12 +533,9 @@ export default function ProductCatalog() {
   }, []);
 
   // ───────── Helpers ─────────
-  const updateField = useCallback(
-    createFieldUpdater(
-      setSettings as unknown as React.Dispatch<React.SetStateAction<Record<string, unknown>>>,
-      setMessage,
-    ),
-    [],
+  const updateField = createFieldUpdater(
+    setSettings as unknown as React.Dispatch<React.SetStateAction<Record<string, unknown>>>,
+    setMessage,
   );
 
   // ───────── CRUD handlers ─────────
