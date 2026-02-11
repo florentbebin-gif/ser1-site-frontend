@@ -5,7 +5,8 @@
  * Gère: dropdown state, click outside, Escape key, aria-expanded, role="menu"
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
+import { SessionGuardContext } from '../App';
 import './ExportMenu.css';
 
 export interface ExportOption {
@@ -28,6 +29,7 @@ export function ExportMenu({
   loadingLabel = 'Génération...',
   buttonLabel = 'Exporter',
 }: ExportMenuProps): React.ReactElement {
+  const { canExport } = useContext(SessionGuardContext);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -72,7 +74,8 @@ export function ExportMenu({
       <button
         className="chip premium-btn"
         onClick={() => setIsOpen(!isOpen)}
-        disabled={loading}
+        disabled={loading || !canExport}
+        title={!canExport ? 'Session expirée — export indisponible' : undefined}
         aria-haspopup="menu"
         aria-expanded={isOpen}
         data-testid="export-menu-button"

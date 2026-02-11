@@ -20,9 +20,8 @@ Organisation des scripts SQL pour Supabase.
 ## Structure
 
 ```
-database/
-├── setup/       # Configuration initiale (à exécuter UNE SEULE FOIS)
-└── migrations/  # Scripts reproductibles (source de vérité DB)
+supabase/migrations/   # ⭐ SOURCE DE VÉRITÉ — toutes les migrations
+database/setup/        # Configuration initiale (UNE SEULE FOIS)
 ```
 
 ## Ordre d'exécution recommandé
@@ -35,21 +34,19 @@ database/
 database/setup/supabase-setup.sql
 ```
 
-### 2. Migrations (dans l'ordre)
+### 2. Migrations
 
-| # | Fichier | Description |
-|---|---------|-------------|
-| 1 | `create-cabinets-themes-logos.sql` | Tables cabinets, themes, logos + fonction `is_admin()` |
-| 2 | `create-logos-bucket.sql` | Bucket Storage `logos` + policies RLS |
-| 3 | `create-ui-settings.sql` | Table ui_settings |
-| 4 | `create_issue_reports_table.sql` | Table signalements |
-| 5 | `add-rpc-get-my-cabinet-logo.sql` | RPC SECURITY DEFINER pour logos |
-| 6 | `add-rpc-get-my-cabinet-theme.sql` | RPC SECURITY DEFINER pour thèmes |
-| 7 | `add-user-mode.sql` | Mode utilisateur |
-| 8 | `fix-storage-rls-policies.sql` | Correction policies Storage |
-| 9 | `rename-ser1-classique-to-theme-original.sql` | Renommage thème |
+> **Source de vérité** : `supabase/migrations/`
 
-> **Note** : Les scripts de correction ponctuelle (`fixes/`) ont été archivés. Les migrations contiennent désormais l'état correct de la base.
+| # | Fichier (supabase/migrations/) | Description |
+|---|-------------------------------|-------------|
+| 1 | `20260210214352_remote_commit.sql` | Snapshot complet du schéma |
+| 2 | `20260211000100_harmonize_rls_tax_ps_is_admin.sql` | RLS admin fix |
+| 3 | `20260211001000_create_base_contrat_settings.sql` | Table base_contrat |
+| 4 | `20260211100100_p0_02_rls_profiles_per_cabinet.sql` | RLS profiles multi-tenant |
+| 5 | `20260211100200_p0_01_disable_self_signup.sql` | Self-signup désactivé (reminder) |
+
+> **Note** : L'historique des migrations legacy est disponible via `git log`.
 
 ## Commandes CLI essentielles
 
