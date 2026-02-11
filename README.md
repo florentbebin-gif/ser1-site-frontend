@@ -5,9 +5,9 @@
 Application web interne pour CGP : audit patrimonial, stratégie guidée, simulateurs IR/Placement/Crédit, exports PPTX/Excel.
 
 **Stack** : React 18 + Vite 5 + Supabase (Auth/DB/Storage/Edge Functions) + Vercel.  
-**Tests** : 83 unitaires (Vitest) + 8 smoke tests (Playwright).  
+**Tests** : exécutés via `npm run test` / `npm run check` (voir CI / sortie console).  
 **Historique** : [docs/CHANGELOG.md](docs/CHANGELOG.md)  
-**Roadmap** : [.github/REPOSITORY_HARDENING/E_ROADMAP.md](.github/REPOSITORY_HARDENING/E_ROADMAP.md)
+**Roadmap** : [docs/ROADMAP_SAAS_V1.md](docs/ROADMAP_SAAS_V1.md)
 **Debug flags** : [docs/runbook/debug.md](docs/runbook/debug.md)  
 **🎨 Couleurs** : [docs/design/color-governance.md](docs/design/color-governance.md) — *source de vérité unique (tokens C1-C10)*  
 **📐 UI Governance** : [docs/design/ui-governance.md](docs/design/ui-governance.md) — *Standards "Gestion Privée" (Layout, Inputs, Typo)*  
@@ -362,9 +362,7 @@ config/supabase/functions/admin/index.ts  # Edge Function admin (source de véri
 config/supabase/functions/admin/tsconfig.json  # TS config Deno (supprime erreurs IDE)
 api/admin.js           # Proxy Vercel (évite CORS)
 
-database/
-  setup/supabase-setup.sql      # Setup initial
-  migrations/                   # RPC, tables, RLS
+supabase/migrations/         # Source unique : migrations versionnées (SQL)
 ```
 
 ### Source de vérité unique pour le thème
@@ -529,7 +527,7 @@ npm run analyze         # Visualisation bundle (vite-bundle-visualizer)
 npm install
 npm run dev          # localhost:5173
 npm run build        # dist/
-npm run test         # 71 tests Vitest
+npm run test         # Tests unitaires Vitest (voir sortie console)
 npm run lint         # ESLint avec plugin ser1-colors (gouvernance couleurs)
 npm run typecheck    # TypeScript --noEmit (0 erreur obligatoire)
 ```

@@ -119,12 +119,28 @@ export interface BaseContratProduct {
 }
 
 // ---------------------------------------------------------------------------
+// Product Test (Gate P0-10) — Imported JSON test cases
+// ---------------------------------------------------------------------------
+
+export interface ProductTest {
+  id: string;
+  productId: string;
+  description: string;
+  input: Record<string, unknown>;
+  expectedOutput: Record<string, unknown>;
+  importedAt: string;
+  importedBy: string;
+}
+
+// ---------------------------------------------------------------------------
 // Top-level schema stored in base_contrat_settings.data
 // ---------------------------------------------------------------------------
 
 export interface BaseContratSettings {
   schemaVersion: 1;
   products: BaseContratProduct[];
+  /** Gate P0-10: imported tests — publication blocked if empty */
+  tests?: ProductTest[];
 }
 
 // ---------------------------------------------------------------------------
