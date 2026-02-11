@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/supabaseClient';
+import { useUserRole } from '@/auth/useUserRole';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
@@ -16,19 +17,13 @@ import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
 
 
 export default function SettingsPrelevements() {
-  const [user, setUser] = useState(null);
+  const { isAdmin } = useUserRole();
   const [settings, setSettings] = useState(DEFAULT_PS_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [openSection, setOpenSection] = useState(null);
-
-  const isAdmin =
-    user &&
-    ((typeof user?.user_metadata?.role === 'string' &&
-      user.user_metadata.role.toLowerCase() === 'admin') ||
-      user?.user_metadata?.is_admin === true);
 
   // ----------------------
   // Chargement initial
@@ -42,20 +37,9 @@ export default function SettingsPrelevements() {
         setError('');
         setMessage('');
 
-        // 1. Récupérer l'utilisateur connecté
-        const { data: userData, error: userErr } = await supabase.auth.getUser();
-        if (userErr) {
-          console.error('Erreur user:', userErr);
-          if (mounted) setLoading(false);
-          return;
-        }
-
-        const currentUser = userData?.user || null;
         if (!mounted) return;
 
-        setUser(currentUser);
-
-        // 2. Récupérer les paramètres PS (table ps_settings, id = 1)
+        // Récupérer les paramètres PS (table ps_settings, id = 1)
         const { data: rows, error: psErr } = await supabase
           .from('ps_settings')
           .select('data')
@@ -155,10 +139,6 @@ export default function SettingsPrelevements() {
 
       {loading ? (
         <div style={{ marginTop: 24 }}>Chargement des paramètres…</div>
-      ) : !user ? (
-        <div style={{ marginTop: 24 }}>
-          Vous devez être connecté pour voir cette page.
-        </div>
       ) : (
         <div
           style={{

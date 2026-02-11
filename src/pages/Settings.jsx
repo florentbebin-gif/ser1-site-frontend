@@ -137,19 +137,12 @@ export default function Settings() {
 
         setUser(u);
 
-        if (u) {
-          const meta = u.user_metadata || {};
-
-          // rôle Admin / User
-          const isAdmin =
-            (typeof meta.role === 'string' &&
-              meta.role.toLowerCase() === 'admin') ||
-            meta.is_admin === true;
-
-          if (DEBUG_AUTH) {
-            // eslint-disable-next-line no-console
-            console.debug('[Settings] role detected', { userId: u.id, isAdmin, role: meta.role });
-          }
+        if (u && DEBUG_AUTH) {
+          // SÉCURITÉ : app_metadata uniquement pour l'autorisation.
+          // user_metadata.role n'est PLUS lu ici (risque élévation privilèges).
+          const role = u.app_metadata?.role || 'user';
+          // eslint-disable-next-line no-console
+          console.debug('[Settings] role detected', { userId: u.id, role });
         }
       } catch (e) {
         console.error(e);

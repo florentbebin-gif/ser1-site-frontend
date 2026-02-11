@@ -30,7 +30,8 @@ const AuthContext = createContext<AuthState | null>(null);
 
 function computeRole(user: User | null): AuthRole {
   if (!user) return null;
-  const role = (user.user_metadata?.role || user.app_metadata?.role || 'user') as string;
+  // SÉCURITÉ : app_metadata uniquement (non modifiable par l'utilisateur)
+  const role = (user.app_metadata?.role || 'user') as string;
   return role === 'admin' ? 'admin' : 'user';
 }
 

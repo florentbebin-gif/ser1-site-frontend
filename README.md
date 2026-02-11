@@ -395,8 +395,9 @@ database/
 | Couche | Vérification |
 |--------|--------------|
 | RLS DB | `public.is_admin()` lit `app_metadata` uniquement |
-| Edge Function | `user.app_metadata?.role` uniquement (ligne 128) |
-| Frontend | `useUserRole()` lit `session.user.app_metadata.role` |
+| Edge Function | `user.app_metadata?.role` uniquement (ligne 154) |
+| Frontend | `useUserRole()` + `AuthProvider.computeRole()` lisent `app_metadata.role` uniquement |
+| Pages Settings | Toutes utilisent `useUserRole()` (pas d'inline check `user_metadata`) |
 
 > ⚠️ `user_metadata` est **désactivé pour l'autorisation** — modifiable par l'utilisateur (risque élévation privilèges). Voir [docs/technical/security-user-metadata-guidelines.md](docs/technical/security-user-metadata-guidelines.md).
 

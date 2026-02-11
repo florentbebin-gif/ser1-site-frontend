@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/supabaseClient';
+import { useUserRole } from '@/auth/useUserRole';
 import './SettingsFiscalites.css';
 import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
@@ -13,7 +14,7 @@ import SettingsTable from '@/components/settings/SettingsTable';
 import { DEFAULT_FISCALITY_SETTINGS } from '@/constants/settingsDefaults';
 
 export default function SettingsFiscalites() {
-  const [user, setUser] = useState(null);
+  const { isAdmin } = useUserRole();
   const [settings, setSettings] = useState(DEFAULT_FISCALITY_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -30,11 +31,6 @@ const PRODUCTS = [
   { key: 'pea', label: 'Plan d\'épargne en actions (PEA)' },
 ];
 
-  const isAdmin =
-    user &&
-    ((typeof user?.user_metadata?.role === 'string' &&
-      user.user_metadata.role.toLowerCase() === 'admin') ||
-      user?.user_metadata?.is_admin === true);
 
   const av = settings.assuranceVie;
   const per = settings.perIndividuel || DEFAULT_FISCALITY_SETTINGS.perIndividuel;
@@ -47,17 +43,7 @@ const PRODUCTS = [
 
     async function load() {
       try {
-        const { data: userData, error: userErr } = await supabase.auth.getUser();
-        if (userErr) {
-          console.error('Erreur user:', userErr);
-          if (mounted) setLoading(false);
-          return;
-        }
-
-        const u = userData?.user || null;
         if (!mounted) return;
-
-        setUser(u);
 
         // Charge la ligne id=1
         const { data: rows, error: err } = await supabase
@@ -166,9 +152,7 @@ const handleSave = async () => {
     return <p>Chargement...</p>;
   }
 
-  if (!user) {
-    return <p>Vous devez être connecté pour voir cette page.</p>;
-  }
+  // Auth check handled by PrivateRoute / SettingsShell
 
   return (
     <div

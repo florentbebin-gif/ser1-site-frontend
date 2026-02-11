@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/supabaseClient';
+import { useUserRole } from '@/auth/useUserRole';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
@@ -48,7 +49,7 @@ function migrateDmtgData(data) {
 }
 
 export default function SettingsImpots() {
-  const [user, setUser] = useState(null);
+  const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(true);
 
   const [settings, setSettings] = useState(DEFAULT_TAX_SETTINGS);
@@ -56,29 +57,13 @@ export default function SettingsImpots() {
   const [message, setMessage] = useState('');
   const [openSection, setOpenSection] = useState(null);
 
-  const isAdmin =
-    user &&
-    ((typeof user?.user_metadata?.role === 'string' &&
-      user.user_metadata.role.toLowerCase() === 'admin') ||
-      user?.user_metadata?.is_admin === true);
-
   // Chargement user + paramètres depuis la table tax_settings
   useEffect(() => {
     let mounted = true;
 
     async function load() {
       try {
-        const { data: userData, error: userErr } = await supabase.auth.getUser();
-        if (userErr) {
-          console.error('Erreur user:', userErr);
-          if (mounted) setLoading(false);
-          return;
-        }
-
-        const u = userData?.user || null;
         if (!mounted) return;
-
-        setUser(u);
 
         // Charge la ligne id=1 si elle existe
         const { data: rows, error: taxErr } = await supabase
@@ -161,9 +146,7 @@ export default function SettingsImpots() {
     return <p>Chargement…</p>;
   }
 
-  if (!user) {
-    return <p>Aucun utilisateur connecté.</p>;
-  }
+  // Auth check handled by PrivateRoute / SettingsShell
 
   const { incomeTax, pfu, cehr, cdhr, corporateTax, dmtg } = settings;
 
