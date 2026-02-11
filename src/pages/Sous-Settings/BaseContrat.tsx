@@ -2,7 +2,7 @@
  * BaseContrat — Référentiel contrats V3
  *
  * Page /settings/base-contrat.
- * Remplace ProductCatalog.tsx (conservé intact pour rollback).
+ * Remplace ProductCatalog.tsx (archivé dans legacy/ProductCatalog.tsx pour rollback).
  *
  * Layout: accordion par produit → 3 colonnes (constitution / sortie / décès).
  * Versioning: rulesets[] trié effectiveDate DESC. rulesets[0] = éditable.
@@ -503,8 +503,11 @@ export default function BaseContrat() {
                   </span>
                 )}
                 <span style={chipStyle(
-                  product.confidenceLevel === 'confirmed' ? 'var(--color-c3)' : 'var(--color-c8)',
-                  product.confidenceLevel === 'confirmed' ? '#FFFFFF' : 'var(--color-c10)',
+                  product.confidenceLevel === 'confirmed' ? 'var(--color-c3)'
+                    : product.confidenceLevel === 'toVerify' ? 'var(--color-c6)'
+                    : 'var(--color-c8)',
+                  product.confidenceLevel === 'confirmed' ? '#FFFFFF'
+                    : 'var(--color-c10)',
                 )}>
                   {CONFIDENCE_ICONS[product.confidenceLevel]} {CONFIDENCE_LABELS[product.confidenceLevel]}
                 </span>
@@ -525,7 +528,7 @@ export default function BaseContrat() {
                       >
                         {product.rulesets.map((rs, i) => (
                           <option key={i} value={i}>
-                            {rs.effectiveDate}{i === 0 ? ' (active)' : ''}
+                            {rs.effectiveDate}{i === 0 ? ` (${MISC_LABELS.activeVersion})` : ''}
                           </option>
                         ))}
                       </select>
@@ -557,7 +560,7 @@ export default function BaseContrat() {
                       ))}
                     </div>
                   ) : (
-                    <p style={{ fontSize: 13, color: 'var(--color-c9)', fontStyle: 'italic' }}>Aucune version définie.</p>
+                    <p style={{ fontSize: 13, color: 'var(--color-c9)', fontStyle: 'italic' }}>Aucune version définie pour ce produit.</p>
                   )}
                 </div>
               )}

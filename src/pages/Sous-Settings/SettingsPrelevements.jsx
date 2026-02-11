@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
-import './SettingsImpots.css';
+import './SettingsShared.css';
 import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { numberOrEmpty, createFieldUpdater } from '@/utils/settingsHelpers.js';
@@ -132,7 +132,7 @@ export default function SettingsPrelevements() {
 
       {/* Messages */}
       {error && (
-        <div style={{ color: 'var(--color-error-text)', background: 'var(--color-error-bg)', border: '1px solid var(--color-error-border)', padding: '12px 16px', borderRadius: 6, marginTop: 12, fontSize: 14 }}>
+        <div className="settings-feedback-message settings-feedback-message--error" style={{ marginTop: 12 }}>
           {error}
         </div>
       )}
@@ -1228,26 +1228,17 @@ export default function SettingsPrelevements() {
             {isAdmin && (
               <button
                 type="button"
-                className="chip"
+                className="chip settings-save-btn"
                 onClick={handleSave}
                 disabled={saving}
               >
                 {saving
-                  ? 'Enregistrement...'
+                  ? 'Enregistrement…'
                   : 'Enregistrer les paramètres'}
               </button>
             )}
             {message && (
-              <div className="settings-success-message" style={{ 
-                fontSize: 14, 
-                marginTop: 12, 
-                padding: '12px 16px', 
-                background: message.includes('Erreur') ? 'var(--color-error-bg)' : 'var(--color-success-bg)', 
-                border: message.includes('Erreur') ? '1px solid var(--color-error-border)' : '1px solid var(--color-success-border)', 
-                borderRadius: 6, 
-                color: message.includes('Erreur') ? 'var(--color-error-text)' : 'var(--color-success-text)',
-                fontWeight: 500
-              }}>
+              <div className={`settings-feedback-message ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}>
                 {message}
               </div>
             )}

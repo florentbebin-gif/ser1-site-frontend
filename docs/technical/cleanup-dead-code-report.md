@@ -150,3 +150,29 @@ npx vite build      : ✓ built in ~3s
 - **Tests impactés** : 0
 - **Breaking changes** : 0
 
+---
+
+## 11. Phase 2 — Settings cleanup + premium (11 février 2026 — chore/settings-cleanup-premium)
+
+### Actions
+
+| Fichier | Action | Preuve | Risque |
+|---------|--------|--------|--------|
+| `ProductCatalog.tsx` | Déplacé → `legacy/ProductCatalog.tsx` | 0 imports actifs, rollback uniquement | Aucun |
+| `SettingsImpots.css` | CSS partagé extrait vers `SettingsShared.css` | Classes partagées avec SettingsPrelevements | Aucun |
+| `SettingsPrelevements.jsx` | Import `SettingsImpots.css` → `SettingsShared.css` | Couplage CSS corrigé | Aucun |
+| `SettingsImpots.jsx` | Ajout import `SettingsShared.css`, messages → CSS classes | Inline styles réduits | Aucun |
+| `BaseContrat.tsx` | Microcopy FR, confidence badges polish | Cohérence UX | Aucun |
+
+### Nouveau fichier
+
+- `src/pages/Sous-Settings/SettingsShared.css` — ~195 lignes, classes partagées (accordion, field-row, table, feedback messages, save button)
+
+### Final checks
+
+```
+npx tsc --noEmit    : ✓ 0 erreurs
+npx vitest run      : ✓ 142 tests passed
+npx vite build      : ✓ built in ~3s
+```
+

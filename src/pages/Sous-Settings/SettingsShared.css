@@ -1,0 +1,218 @@
+/* ===== CSS partagé entre SettingsImpots & SettingsPrelevements ===== */
+/* Source de vérité : extraite de SettingsImpots.css pour éviter le couplage. */
+
+/* Largeur max de la carte paramètres */
+.settings-page .section-card {
+  max-width: 1050px;
+}
+
+/* Séparation douce entre sections */
+.settings-page .section-card section {
+  margin-top: 18px;
+  padding-top: 6px;
+  border-top: 1px solid var(--color-c8);
+}
+
+/* Bandeau utilisateur */
+.tax-user-banner {
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--color-c7);
+  border: 1px solid var(--color-c8);
+  font-size: 13px;
+}
+
+/* Tableaux de barème */
+.settings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.settings-table thead {
+  background: var(--color-c7);
+}
+
+.settings-table th,
+.settings-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--color-c8);
+  text-align: right;
+}
+
+.settings-table th:first-child,
+.settings-table td:first-child {
+  text-align: left;
+}
+
+/* Champs dans les tableaux */
+.settings-table input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 3px 4px;
+  font-size: 13px;
+  text-align: right;
+  border: 1px solid var(--color-c8);
+  border-radius: 4px;
+  /* RÈGLE UI GOVERNANCE: Inputs TOUJOURS BLANCS */
+  background-color: #FFFFFF;
+  color: var(--color-c10);
+}
+
+/* Focus ring conforme UI Governance (C2 + C4) */
+.settings-table input:focus {
+  outline: none;
+  border-color: var(--color-c2);
+  box-shadow: 0 0 0 3px var(--color-c4);
+}
+
+/* Lignes "label + input + unité" (PFU, CEHR, IS, etc.) */
+.settings-field-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0;
+  font-size: 13px;
+}
+
+.settings-field-row label {
+  flex: 1 1 auto;
+}
+
+.settings-field-row input {
+  width: 90px;
+  padding: 3px 4px;
+  font-size: 13px;
+  border: 1px solid var(--color-c8);
+  border-radius: 4px;
+  text-align: right;
+  /* RÈGLE UI GOVERNANCE: Inputs TOUJOURS BLANCS */
+  background-color: #FFFFFF;
+  color: var(--color-c10);
+}
+
+/* Focus ring conforme UI Governance (C2 + C4) */
+.settings-field-row input:focus {
+  outline: none;
+  border-color: var(--color-c2);
+  box-shadow: 0 0 0 3px var(--color-c4);
+}
+
+.settings-field-row span {
+  min-width: 26px;
+  text-align: left;
+  font-size: 12px;
+  color: var(--color-c9);
+}
+
+/* Colonnes 2025 / 2024 pour PFU, CEHR, IS, PS */
+.tax-two-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: flex-start;
+  margin-top: 8px;
+}
+
+.tax-two-cols-right {
+  border-left: 1px solid var(--color-c8);
+  padding-left: 24px;
+}
+
+/* ===== ACCORDÉON (classes partagées Settings) ===== */
+
+.fisc-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fisc-acc-item {
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  /* RÈGLE UI GOVERNANCE: Cards = Blanc (Niveau 1) */
+  background: #FFFFFF;
+  overflow: hidden;
+  /* Ombre subtile */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.15s ease;
+}
+
+.fisc-acc-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.fisc-acc-header {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.fisc-acc-header:hover {
+  background: var(--color-c7);
+}
+
+.fisc-acc-chevron {
+  font-size: 14px;
+  color: var(--color-c9);
+  padding-left: 10px;
+}
+
+.fisc-acc-body {
+  padding: 10px 16px 16px;
+}
+
+/* Titres de sections (compact) */
+.fisc-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 16px 0 8px;
+  color: var(--color-c10);
+}
+
+.fisc-section-title:first-child {
+  margin-top: 0;
+}
+
+/* ===== Messages feedback (save/error/success) ===== */
+
+.settings-feedback-message {
+  font-size: 14px;
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.settings-feedback-message--success {
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+  color: var(--color-success-text);
+}
+
+.settings-feedback-message--error {
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  color: var(--color-error-text);
+}
+
+/* ===== Bouton de sauvegarde premium ===== */
+
+.settings-save-btn {
+  padding: 10px 28px;
+  font-weight: 600;
+  font-size: 14px;
+  align-self: flex-start;
+}
+
+.settings-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
