@@ -258,6 +258,10 @@ export default function BaseContrat() {
   const [deletingProduct, setDeletingProduct] = useState<BaseContratProduct | null>(null);
   const [deleteConfirmSlug, setDeleteConfirmSlug] = useState('');
 
+  // P0-10: Test import UI state
+  const [showImportTestModal, setShowImportTestModal] = useState(false);
+  const [importTestJson, setImportTestJson] = useState('');
+
   // Add/Edit form state
   const [formId, setFormId] = useState('');
   const [formLabel, setFormLabel] = useState('');
@@ -423,6 +427,16 @@ export default function BaseContrat() {
   async function handleSave() {
     if (!isAdmin || !settings) return;
 
+    // P0-10 Gate: publication bloquée si aucun test importé
+    const importedTests = settings.tests ?? [];
+    if (importedTests.length === 0) {
+      setMessage(
+        '⚠ Publication impossible : aucun cas de test importé. ' +
+        'Importez au moins un fichier JSON de test (même 1 seul) via le bouton "Importer un test" avant de sauvegarder.'
+      );
+      return;
+    }
+
     // P0-04b Gate: publication bloquée si aucun produit actif n'a de règles testables
     const activeWithRules = (settings.products ?? []).filter(
       (p) =>
@@ -443,6 +457,40 @@ export default function BaseContrat() {
     }
 
     await save(settings);
+  }
+
+  // P0-10: Import test handler
+  function handleImportTest() {
+    if (!importTestJson.trim()) {
+      setMessage('Collez un JSON de test valide.');
+      return;
+    }
+    try {
+      const parsed = JSON.parse(importTestJson);
+      // Validation minimale : doit avoir input et expectedOutput
+      if (!parsed.input || !parsed.expectedOutput) {
+        setMessage('JSON invalide : doit contenir "input" et "expectedOutput".');
+        return;
+      }
+      const newTest = {
+        id: crypto.randomUUID(),
+        productId: parsed.productId || 'general',
+        description: parsed.description || 'Test importé',
+        input: parsed.input,
+        expectedOutput: parsed.expectedOutput,
+        importedAt: new Date().toISOString(),
+        importedBy: 'admin', // Simplifié pour MVP
+      };
+      updateSettings((prev) => ({
+        ...prev,
+        tests: [...(prev.tests ?? []), newTest],
+      }));
+      setShowImportTestModal(false);
+      setImportTestJson('');
+      setMessage(`✓ Test importé : ${newTest.description}`);
+    } catch (e) {
+      setMessage('JSON invalide : ' + (e instanceof Error ? e.message : 'erreur de parsing'));
+    }
   }
 
   function resetForm() {
@@ -481,11 +529,14 @@ export default function BaseContrat() {
           </p>
         </div>
 
-        {/* CTA Add */}
+        {/* CTA Admin */}
         {isAdmin && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
             <button className="chip" onClick={() => { resetForm(); setShowAddModal(true); }} style={{ padding: '8px 20px', fontWeight: 600 }}>
               + {ACTION_LABELS.addProduct}
+            </button>
+            <button className="chip" onClick={() => setShowImportTestModal(true)} style={{ padding: '8px 20px', fontWeight: 600 }}>
+              📥 Importer un test JSON
             </button>
           </div>
         )}
@@ -637,6 +688,49 @@ export default function BaseContrat() {
           <p style={{ fontSize: 13, color: 'var(--color-c9)', fontStyle: 'italic' }}>{message}</p>
         )}
       </div>
+
+      {/* ──── Modal: Importer un test ──── */}
+      {showImportTestModal && (
+        <div className="report-modal-overlay" onClick={() => setShowImportTestModal(false)}>
+          <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 600 }}>
+            <div className="report-modal-header">
+              <h3>Importer un cas de test JSON (P0-10 Gate)</h3>
+              <button className="report-modal-close" onClick={() => setShowImportTestModal(false)}>&#x2715;</button>
+            </div>
+            <div className="report-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: 0 }}>
+                <strong>Obligatoire avant publication :</strong> Importez au moins 1 cas de test JSON.
+                Le bouton "Enregistrer" sera bloqué tant qu'aucun test n'est importé.
+              </p>
+              <label style={{ fontSize: 13, fontWeight: 600 }}>JSON du test :</label>
+              <textarea
+                value={importTestJson}
+                onChange={(e) => setImportTestJson(e.target.value)}
+                placeholder={`{\n  "description": "Test assurance vie - rachat partiel",\n  "productId": "assuranceVie",\n  "input": { "capital": 100000, "duree": 8 },\n  "expectedOutput": { "tmi": 30, "impot": 7500 }\n}`}
+                style={{
+                  fontSize: 12,
+                  fontFamily: 'monospace',
+                  padding: '12px',
+                  borderRadius: 6,
+                  border: '1px solid var(--color-c8)',
+                  backgroundColor: '#FFFFFF',
+                  minHeight: 200,
+                  resize: 'vertical',
+                }}
+              />
+              <div style={{ fontSize: 11, color: 'var(--color-c9)' }}>
+                Format attendu : {"{ \"input\": {...}, \"expectedOutput\": {...}, \"description\": \"...\" }"}
+              </div>
+            </div>
+            <div className="report-modal-actions">
+              <button onClick={() => setShowImportTestModal(false)}>Annuler</button>
+              <button className="chip" onClick={handleImportTest} disabled={!importTestJson.trim()} style={{ padding: '8px 20px', fontWeight: 600 }}>
+                Valider l'import
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ──── Modal: Ajouter un produit ──── */}
       {showAddModal && (
