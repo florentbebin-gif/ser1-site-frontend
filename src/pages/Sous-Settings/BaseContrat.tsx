@@ -8,7 +8,7 @@
  * Versioning: rulesets[] trié effectiveDate DESC. rulesets[0] = éditable.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
 import { useBaseContratSettings } from '@/hooks/useBaseContratSettings';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
@@ -35,6 +35,7 @@ import type {
 import { EMPTY_PRODUCT, EMPTY_RULESET } from '@/types/baseContratSettings';
 import { buildTemplateRuleset, TEMPLATE_KEYS, TEMPLATE_LABELS } from '@/constants/baseContratTemplates';
 import type { TemplateKey } from '@/constants/baseContratTemplates';
+import { validateProductSlug, slugifyLabelToCamelCase, suggestAlternativeSlug, normalizeLabel } from '@/utils/slug';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -261,6 +262,17 @@ export default function BaseContrat() {
   const [formEnvelope, setFormEnvelope] = useState('');
   const [formTemplate, setFormTemplate] = useState('');
   const [newVersionDate, setNewVersionDate] = useState('');
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+
+  // Slug validation (live)
+  const existingIds = useMemo(() => (settings?.products ?? []).map((p) => p.id), [settings]);
+  const slugValidation = useMemo(() => validateProductSlug(formId, existingIds), [formId, existingIds]);
+  const slugSuggestion = useMemo(() => {
+    if (!formId || !slugValidation.ok) return null;
+    const isDuplicate = slugValidation.errors.some((e) => e.includes('existe déjà'));
+    if (isDuplicate) return suggestAlternativeSlug(formId, existingIds);
+    return null;
+  }, [formId, slugValidation, existingIds]);
 
   if (loading) return <p>Chargement…</p>;
   if (!settings) return <p>Aucune donnée.</p>;
@@ -313,8 +325,8 @@ export default function BaseContrat() {
 
   function handleAddProduct() {
     if (!formId || !formLabel) return;
-    const exists = products.some((p) => p.id === formId);
-    if (exists) { setMessage('Erreur : cet identifiant existe déjà.'); return; }
+    const validation = validateProductSlug(formId, existingIds);
+    if (!validation.ok) { setMessage(validation.errors.join(' ')); return; }
     const maxSort = products.reduce((m, p) => Math.max(m, p.sortOrder), 0);
     const today = new Date().toISOString().slice(0, 10);
     const initialRuleset = formTemplate && TEMPLATE_KEYS.includes(formTemplate as TemplateKey)
@@ -391,6 +403,7 @@ export default function BaseContrat() {
     setFormHolders('PP');
     setFormEnvelope('');
     setFormTemplate('');
+    setSlugManuallyEdited(false);
   }
 
   function openEditModal(p: BaseContratProduct) {
@@ -563,12 +576,51 @@ export default function BaseContrat() {
               <button className="report-modal-close" onClick={() => setShowAddModal(false)}>&#x2715;</button>
             </div>
             <div className="report-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productId} *</label>
-              <input value={formId} onChange={(e) => setFormId(e.target.value)} placeholder="ex : assuranceVie" style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }} />
-              <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>{FORM_LABELS.productIdHint}</span>
-
               <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productLabel} *</label>
-              <input value={formLabel} onChange={(e) => setFormLabel(e.target.value)} placeholder="Assurance-vie" style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }} />
+              <input
+                value={formLabel}
+                onChange={(e) => {
+                  const normalized = normalizeLabel(e.target.value);
+                  setFormLabel(normalized);
+                  if (!slugManuallyEdited) {
+                    setFormId(slugifyLabelToCamelCase(normalized));
+                  }
+                }}
+                placeholder="Assurance-vie"
+                style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}
+              />
+
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productId} *</label>
+              <input
+                value={formId}
+                onChange={(e) => { setFormId(e.target.value); setSlugManuallyEdited(true); }}
+                placeholder="ex : assuranceVie"
+                style={{
+                  fontSize: 13, padding: '8px 10px', borderRadius: 6, backgroundColor: '#FFFFFF',
+                  border: `1px solid ${formId ? (slugValidation.ok ? 'var(--color-c3)' : 'var(--color-c1)') : 'var(--color-c8)'}`,
+                }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                {formId ? (
+                  slugValidation.ok
+                    ? <span style={{ fontSize: 11, color: 'var(--color-c3)', fontWeight: 600 }}>&#x2713; Slug valide</span>
+                    : <span style={{ fontSize: 11, color: 'var(--color-c1)' }}>{slugValidation.errors[0]}</span>
+                ) : (
+                  <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>{FORM_LABELS.productIdHint}</span>
+                )}
+                <span style={{ fontSize: 10, color: 'var(--color-c9)', whiteSpace: 'nowrap' }}>{formId.length}/40</span>
+              </div>
+              {slugSuggestion && (
+                <div style={{ fontSize: 11, color: 'var(--color-c9)' }}>
+                  Suggestion : <button type="button" onClick={() => setFormId(slugSuggestion)} style={{ fontSize: 11, color: 'var(--color-c2)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>{slugSuggestion}</button>
+                </div>
+              )}
+              <div style={{ background: 'var(--color-c7)', borderRadius: 6, padding: '8px 12px', fontSize: 11, color: 'var(--color-c9)', lineHeight: 1.6 }}>
+                <strong style={{ color: 'var(--color-c10)' }}>R&#232;gles slug</strong><br />
+                &#x2022; camelCase, commence par une minuscule<br />
+                &#x2022; Lettres (a-z, A-Z) et chiffres uniquement, 3 &#224; 40 car.<br />
+                &#x2022; Ex : <code>assuranceVie</code>, <code>perIndividuel</code>, <code>scpiPinel</code>
+              </div>
 
               <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productFamily}</label>
               <select value={formFamily} onChange={(e) => setFormFamily(e.target.value as ProductFamily)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}>
@@ -588,7 +640,7 @@ export default function BaseContrat() {
             </div>
             <div className="report-modal-actions">
               <button onClick={() => setShowAddModal(false)}>{ACTION_LABELS.cancel}</button>
-              <button className="chip" onClick={handleAddProduct} disabled={!formId || !formLabel} style={{ padding: '8px 20px', fontWeight: 600 }}>
+              <button className="chip" onClick={handleAddProduct} disabled={!formId || !formLabel || !slugValidation.ok} style={{ padding: '8px 20px', fontWeight: 600 }}>
                 {ACTION_LABELS.create}
               </button>
             </div>
