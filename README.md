@@ -247,6 +247,29 @@ src/pages/credit/
 - `src/components/settings/SettingsTable.jsx` — Tableau éditable générique
 - `src/pages/Sous-Settings/SettingsFiscalites.jsx` — Utilisation intensive des composants
 
+### Référentiel contrats V3 — `base_contrat_settings`
+**Objectif** : Page `/settings/base-contrat` = catalogue administrable des produits d'investissement (AV, CTO, PEA, PER) avec règles fiscales versionnées par phase (constitution, sortie, décès).
+
+| Composant | Fichier |
+|-----------|---------|
+| **Types** | `src/types/baseContratSettings.ts` |
+| **Cache dédié** | `src/utils/baseContratSettingsCache.ts` (TTL 24h, localStorage, event `ser1:base-contrat-updated`) |
+| **Hook** | `src/hooks/useBaseContratSettings.ts` |
+| **Page UI** | `src/pages/Sous-Settings/BaseContrat.tsx` |
+| **Labels FR** | `src/constants/baseContratLabels.ts` |
+| **Templates** | `src/constants/baseContratTemplates.ts` (AV/CTO/PEA/PER) |
+| **Adapter** | `src/utils/baseContratAdapter.ts` — `extractFromBaseContrat()` |
+| **Migration** | `supabase/migrations/20260211001000_create_base_contrat_settings.sql` |
+
+**Conventions** :
+- **$ref** : format `$ref:tax_settings.pfu.current.rateIR` (snake_case table, camelCase path)
+- **Versioning** : `product.rulesets[]` trié `effectiveDate` DESC ; `rulesets[0]` = version active (éditable), anciennes en lecture seule
+- **Feature flag** : `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=false` (OFF par défaut). Quand ON, `usePlacementSettings` utilise `extractFromBaseContrat()` au lieu de `extractFiscalParams()`
+- **Golden snapshot** : `extractFromBaseContrat.test.ts` vérifie les mêmes 16 valeurs que `extractFiscalParams.test.ts`
+- **AV décès tranche 2** : 31.25 % (aligné fixtures, pas 35 % de settingsDefaults)
+
+> Voir `docs/design/base-contrat-spec.md` pour la spécification complète.
+
 ### Fix Edge Function `get_original_theme` — 404
 **Cause** : Mismatch nom hardcodé `'Thème Original'` dans le code vs `'Thème Origine'` en DB.
 **Fix** : Requête par `is_system=true` (marqueur stable) au lieu du nom hardcodé. Idem pour `update_theme`.
@@ -395,8 +418,9 @@ database/
 | Couche | Vérification |
 |--------|--------------|
 | RLS DB | `public.is_admin()` lit `app_metadata` uniquement |
-| Edge Function | `user.app_metadata?.role` uniquement (ligne 128) |
-| Frontend | `useUserRole()` lit `session.user.app_metadata.role` |
+| Edge Function | `user.app_metadata?.role` uniquement (ligne 154) |
+| Frontend | `useUserRole()` + `AuthProvider.computeRole()` lisent `app_metadata.role` uniquement |
+| Pages Settings | Toutes utilisent `useUserRole()` (pas d'inline check `user_metadata`) |
 
 > ⚠️ `user_metadata` est **désactivé pour l'autorisation** — modifiable par l'utilisateur (risque élévation privilèges). Voir [docs/technical/security-user-metadata-guidelines.md](docs/technical/security-user-metadata-guidelines.md).
 

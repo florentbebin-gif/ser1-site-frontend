@@ -1,8 +1,11 @@
 /**
  * Hook pour récupérer le rôle de l'utilisateur connecté
  * 
- * Le rôle est lu depuis la table public.profiles (colonne role).
- * Si absent, fallback sur user_metadata pour compatibilité.
+ * SÉCURITÉ : le rôle est lu depuis app_metadata.role UNIQUEMENT.
+ * user_metadata est modifiable par l'utilisateur et ne doit JAMAIS
+ * servir pour l'autorisation (risque d'élévation de privilèges).
+ * Voir docs/technical/security-user-metadata-guidelines.md
+ *
  * Par défaut, un utilisateur est "user". Seuls les admins ont role="admin".
  */
 
@@ -54,9 +57,8 @@ export function useUserRole(): UserRoleState {
           return;
         }
 
-        // Utiliser uniquement user_metadata comme source de vérité
+        // SÉCURITÉ : app_metadata uniquement (non modifiable par l'utilisateur)
         const role = (
-          user.user_metadata?.role || 
           user.app_metadata?.role || 
           'user'
         ) as 'admin' | 'user';
@@ -107,7 +109,7 @@ export async function checkIsAdmin(): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
   
-  // Utiliser uniquement user_metadata comme source de vérité
-  const role = user.user_metadata?.role || user.app_metadata?.role || 'user';
+  // SÉCURITÉ : app_metadata uniquement (non modifiable par l'utilisateur)
+  const role = user.app_metadata?.role || 'user';
   return role === 'admin';
 }

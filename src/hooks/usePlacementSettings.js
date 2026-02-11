@@ -15,6 +15,10 @@ import {
   DEFAULT_PS_SETTINGS,
   DEFAULT_FISCALITY_SETTINGS,
 } from '../constants/settingsDefaults';
+import { extractFromBaseContrat } from '../utils/baseContratAdapter';
+import { getBaseContratSettings, addBaseContratListener } from '../utils/baseContratSettingsCache';
+
+const USE_BASE_CONTRAT = import.meta.env.VITE_USE_BASE_CONTRAT_FOR_PLACEMENT === 'true';
 
 
 const DEFAULT_TMI_OPTIONS = [
@@ -61,6 +65,7 @@ export function usePlacementSettings() {
   const [fiscalitySettings, setFiscalitySettings] = useState(DEFAULT_FISCALITY_SETTINGS);
   const [psSettings, setPsSettings] = useState(DEFAULT_PS_SETTINGS);
   const [taxSettings, setTaxSettings] = useState(DEFAULT_TAX_SETTINGS);
+  const [baseContratSettings, setBaseContratSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -76,6 +81,13 @@ export function usePlacementSettings() {
         setFiscalitySettings(settings.fiscality);
         setPsSettings(settings.ps);
         setTaxSettings(settings.tax);
+
+        // Feature flag: load base_contrat only when enabled
+        if (USE_BASE_CONTRAT) {
+          const bc = await getBaseContratSettings();
+          if (mounted) setBaseContratSettings(bc);
+        }
+
         setLoading(false);
       } catch (e) {
         if (mounted) {
@@ -104,16 +116,28 @@ export function usePlacementSettings() {
     return remove;
   }, []);
 
+  // Feature flag: listen for base_contrat invalidation
+  useEffect(() => {
+    if (!USE_BASE_CONTRAT) return;
+    const remove = addBaseContratListener(() => {
+      getBaseContratSettings({ force: true }).then(setBaseContratSettings);
+    });
+    return remove;
+  }, []);
+
   // Extraire les paramètres normalisés pour le moteur de calcul
   const fiscalParams = useMemo(() => {
-    const params = extractFiscalParams(fiscalitySettings, psSettings);
+    // Feature flag: use base_contrat adapter when enabled
+    const params = (USE_BASE_CONTRAT && baseContratSettings)
+      ? extractFromBaseContrat(baseContratSettings, taxSettings, psSettings)
+      : extractFiscalParams(fiscalitySettings, psSettings);
     // Ajouter les paramètres DMTG depuis tax_settings
     const dmtg = taxSettings?.dmtg || DEFAULT_TAX_SETTINGS.dmtg;
     const dmtgLD = dmtg.ligneDirecte || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte;
     params.dmtgAbattementLigneDirecte = dmtgLD.abattement || dmtg.abattementLigneDirecte || 100000;
     params.dmtgScale = dmtgLD.scale || dmtg.scale || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale;
     return params;
-  }, [fiscalitySettings, psSettings, taxSettings]);
+  }, [fiscalitySettings, psSettings, taxSettings, baseContratSettings]);
 
   // Extraire le barème IR pour calculer la TMI
   const baremIR = useMemo(() => {
