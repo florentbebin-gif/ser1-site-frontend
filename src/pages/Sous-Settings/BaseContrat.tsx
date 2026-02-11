@@ -33,6 +33,8 @@ import type {
   ProductFamily,
 } from '@/types/baseContratSettings';
 import { EMPTY_PRODUCT, EMPTY_RULESET } from '@/types/baseContratSettings';
+import { buildTemplateRuleset, TEMPLATE_KEYS, TEMPLATE_LABELS } from '@/constants/baseContratTemplates';
+import type { TemplateKey } from '@/constants/baseContratTemplates';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -314,6 +316,10 @@ export default function BaseContrat() {
     const exists = products.some((p) => p.id === formId);
     if (exists) { setMessage('Erreur : cet identifiant existe déjà.'); return; }
     const maxSort = products.reduce((m, p) => Math.max(m, p.sortOrder), 0);
+    const today = new Date().toISOString().slice(0, 10);
+    const initialRuleset = formTemplate && TEMPLATE_KEYS.includes(formTemplate as TemplateKey)
+      ? buildTemplateRuleset(formTemplate as TemplateKey, today)
+      : { ...EMPTY_RULESET, effectiveDate: today };
     const newProduct: BaseContratProduct = {
       ...EMPTY_PRODUCT,
       id: formId,
@@ -323,7 +329,7 @@ export default function BaseContrat() {
       envelopeType: formEnvelope || formId,
       templateKey: formTemplate || null,
       sortOrder: maxSort + 1,
-      rulesets: [{ ...EMPTY_RULESET, effectiveDate: new Date().toISOString().slice(0, 10) }],
+      rulesets: [initialRuleset],
     };
     updateSettings((prev) => ({ ...prev, products: [...prev.products, newProduct] }));
     setShowAddModal(false);
@@ -577,10 +583,7 @@ export default function BaseContrat() {
               <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.templateKey}</label>
               <select value={formTemplate} onChange={(e) => setFormTemplate(e.target.value)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}>
                 <option value="">{FORM_LABELS.templateNone}</option>
-                <option value="assurance-vie">Assurance-vie</option>
-                <option value="cto">CTO</option>
-                <option value="pea">PEA</option>
-                <option value="per-individuel-assurance">PER individuel (assurance)</option>
+                {TEMPLATE_KEYS.map((k) => <option key={k} value={k}>{TEMPLATE_LABELS[k]}</option>)}
               </select>
             </div>
             <div className="report-modal-actions">
