@@ -80,6 +80,8 @@ export const ACTION_LABELS = {
   editProduct: 'Modifier le produit',
   newVersion: 'Nouvelle version',
   closeProduct: 'Clôturer le produit',
+  reactivateProduct: 'Réactiver',
+  deleteProduct: 'Supprimer définitivement',
   save: 'Enregistrer les paramètres',
   saving: 'Enregistrement…',
   cancel: 'Annuler',
@@ -103,6 +105,13 @@ export const FORM_LABELS = {
   templateKey: 'Template de pré-remplissage',
   templateNone: 'Aucun (vide)',
   confirmClose: 'Êtes-vous sûr de vouloir clôturer ce produit ? Il ne sera plus affiché dans le catalogue actif.',
+  confirmReactivate: 'Réactiver ce produit ? Il sera de nouveau affiché dans le catalogue actif.',
+  confirmDeleteTitle: 'Suppression définitive',
+  confirmDeleteWarning: 'Cette action est irréversible. Le produit et toutes ses versions seront supprimés.',
+  confirmDeleteTypeSlug: (slug: string) => `Pour confirmer, tapez « ${slug} » ci-dessous :`,
+  confidenceLevel: 'Niveau de confiance',
+  confidencePlaceholder: '— Choisir —',
+  confidenceHint: 'Choisis « Confirmé » uniquement si les sources ont été vérifiées.',
 };
 
 // ---------------------------------------------------------------------------
