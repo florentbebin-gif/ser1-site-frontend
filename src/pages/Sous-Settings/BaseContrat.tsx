@@ -253,6 +253,9 @@ export default function BaseContrat() {
   const [editingProduct, setEditingProduct] = useState<BaseContratProduct | null>(null);
   const [closingProduct, setClosingProduct] = useState<BaseContratProduct | null>(null);
   const [newVersionProduct, setNewVersionProduct] = useState<BaseContratProduct | null>(null);
+  const [reactivatingProduct, setReactivatingProduct] = useState<BaseContratProduct | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<BaseContratProduct | null>(null);
+  const [deleteConfirmSlug, setDeleteConfirmSlug] = useState('');
 
   // Add/Edit form state
   const [formId, setFormId] = useState('');
@@ -373,6 +376,29 @@ export default function BaseContrat() {
       ),
     }));
     setClosingProduct(null);
+  }
+
+  function handleReactivateProduct() {
+    if (!reactivatingProduct) return;
+    updateSettings((prev) => ({
+      ...prev,
+      products: prev.products.map((p) =>
+        p.id === reactivatingProduct.id
+          ? { ...p, isActive: true, closedDate: null }
+          : p,
+      ),
+    }));
+    setReactivatingProduct(null);
+  }
+
+  function handleDeleteProduct() {
+    if (!deletingProduct || deleteConfirmSlug !== deletingProduct.id) return;
+    updateSettings((prev) => ({
+      ...prev,
+      products: prev.products.filter((p) => p.id !== deletingProduct.id),
+    }));
+    setDeletingProduct(null);
+    setDeleteConfirmSlug('');
   }
 
   function handleNewVersion() {
@@ -541,8 +567,25 @@ export default function BaseContrat() {
               {MISC_LABELS.closedProducts} ({closedProducts.length})
             </summary>
             {closedProducts.map((p) => (
-              <div key={p.id} style={{ padding: '8px 0', fontSize: 13, color: 'var(--color-c9)' }}>
-                {p.label} ({p.id}) — clôturé le {p.closedDate}
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', fontSize: 13, color: 'var(--color-c9)' }}>
+                <span>{p.label} ({p.id}) — clôturé le {p.closedDate}</span>
+                {isAdmin && (
+                  <>
+                    <button
+                      className="chip"
+                      onClick={() => setReactivatingProduct(p)}
+                      style={{ padding: '2px 10px', fontSize: 11 }}
+                    >
+                      {ACTION_LABELS.reactivateProduct}
+                    </button>
+                    <button
+                      onClick={() => { setDeletingProduct(p); setDeleteConfirmSlug(''); }}
+                      style={{ padding: '2px 10px', fontSize: 11, background: 'none', border: '1px solid var(--color-c1)', color: 'var(--color-c1)', borderRadius: 6, cursor: 'pointer' }}
+                    >
+                      {ACTION_LABELS.deleteProduct}
+                    </button>
+                  </>
+                )}
               </div>
             ))}
           </details>
@@ -720,6 +763,72 @@ export default function BaseContrat() {
             <div className="report-modal-actions">
               <button onClick={() => setClosingProduct(null)}>{ACTION_LABELS.cancel}</button>
               <button className="chip" onClick={handleCloseProduct} style={{ padding: '8px 20px', fontWeight: 600 }}>{ACTION_LABELS.confirm}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ──── Modal: Réactiver ──── */}
+      {reactivatingProduct && (
+        <div className="report-modal-overlay" onClick={() => setReactivatingProduct(null)}>
+          <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 420 }}>
+            <div className="report-modal-header">
+              <h3>{ACTION_LABELS.reactivateProduct} — {reactivatingProduct.label}</h3>
+              <button className="report-modal-close" onClick={() => setReactivatingProduct(null)}>&#x2715;</button>
+            </div>
+            <div className="report-modal-content">
+              <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>{FORM_LABELS.confirmReactivate}</p>
+            </div>
+            <div className="report-modal-actions">
+              <button onClick={() => setReactivatingProduct(null)}>{ACTION_LABELS.cancel}</button>
+              <button className="chip" onClick={handleReactivateProduct} style={{ padding: '8px 20px', fontWeight: 600 }}>{ACTION_LABELS.confirm}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ──── Modal: Supprimer définitivement ──── */}
+      {deletingProduct && (
+        <div className="report-modal-overlay" onClick={() => { setDeletingProduct(null); setDeleteConfirmSlug(''); }}>
+          <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 420 }}>
+            <div className="report-modal-header">
+              <h3 style={{ color: 'var(--color-c1)' }}>{FORM_LABELS.confirmDeleteTitle}</h3>
+              <button className="report-modal-close" onClick={() => { setDeletingProduct(null); setDeleteConfirmSlug(''); }}>&#x2715;</button>
+            </div>
+            <div className="report-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <p style={{ fontSize: 13, color: 'var(--color-c1)', fontWeight: 600, margin: 0 }}>
+                {FORM_LABELS.confirmDeleteWarning}
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: 0 }}>
+                {deletingProduct.label} (<code>{deletingProduct.id}</code>) — {deletingProduct.rulesets.length} version{deletingProduct.rulesets.length > 1 ? 's' : ''}
+              </p>
+              <label style={{ fontSize: 13, fontWeight: 600 }}>
+                {FORM_LABELS.confirmDeleteTypeSlug(deletingProduct.id)}
+              </label>
+              <input
+                value={deleteConfirmSlug}
+                onChange={(e) => setDeleteConfirmSlug(e.target.value)}
+                placeholder={deletingProduct.id}
+                autoComplete="off"
+                style={{
+                  fontSize: 13, padding: '8px 10px', borderRadius: 6, backgroundColor: '#FFFFFF',
+                  border: `1px solid ${deleteConfirmSlug === deletingProduct.id ? 'var(--color-c1)' : 'var(--color-c8)'}`,
+                }}
+              />
+            </div>
+            <div className="report-modal-actions">
+              <button onClick={() => { setDeletingProduct(null); setDeleteConfirmSlug(''); }}>{ACTION_LABELS.cancel}</button>
+              <button
+                onClick={handleDeleteProduct}
+                disabled={deleteConfirmSlug !== deletingProduct.id}
+                style={{
+                  padding: '8px 20px', fontWeight: 600, borderRadius: 6, cursor: 'pointer',
+                  backgroundColor: deleteConfirmSlug === deletingProduct.id ? 'var(--color-c1)' : 'var(--color-c8)',
+                  color: '#FFFFFF', border: 'none',
+                }}
+              >
+                {ACTION_LABELS.deleteProduct}
+              </button>
             </div>
           </div>
         </div>
