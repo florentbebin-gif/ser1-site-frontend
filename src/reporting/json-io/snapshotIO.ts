@@ -35,6 +35,7 @@ const SIM_STORAGE_MAP: Record<string, string> = {
   ir: 'ser1:sim:ir',
   strategy: 'ser1:sim:strategy',
   audit: 'ser1_audit_draft',
+  per: 'ser1:sim:per',
 };
 
 // ---------------------------------------------------------------------------

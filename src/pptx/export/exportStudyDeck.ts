@@ -18,7 +18,8 @@ import type {
   CreditLoanSynthesisSlideSpec,
   CreditAnnexeSlideSpec,
   CreditAmortizationSlideSpec,
-  SuccessionSynthesisSlideSpec
+  SuccessionSynthesisSlideSpec,
+  PerSynthesisSlideSpec
 } from '../theme/types';
 import { SLIDE_SIZE } from '../designSystem/serenity';
 import { getPptxThemeFromUiSettings } from '../theme/getPptxThemeFromUiSettings';
@@ -33,6 +34,7 @@ import { buildCreditLoanSynthesis } from '../slides/buildCreditLoanSynthesis';
 import { buildCreditAnnexe } from '../slides/buildCreditAnnexe';
 import { buildCreditAmortization } from '../slides/buildCreditAmortization';
 import { buildSuccessionSynthesis } from '../slides/buildSuccessionSynthesis';
+import { buildPerSynthesis } from '../slides/buildPerSynthesis';
 import { injectThemeColors } from '../theme/themeBuilder';
 import { defineSlideMasters } from '../template/loadBaseTemplate';
 
@@ -271,6 +273,9 @@ export async function exportStudyDeck(
     } else if (slideSpec.type === 'succession-synthesis') {
       // Succession Synthesis slide (P1-02)
       buildSuccessionSynthesis(pptx, slideSpec as SuccessionSynthesisSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'per-synthesis') {
+      // PER Synthesis slide (P1-03)
+      buildPerSynthesis(pptx, slideSpec as PerSynthesisSlideSpec, ctx, slideIndex);
     }
     
     slideIndex++;

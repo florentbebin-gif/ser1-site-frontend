@@ -2,8 +2,9 @@
  * Tests for snapshot migrations + Zod validation (P1-01)
  *
  * Covers:
- * - v1 snapshot → migrated to v2 → valid
- * - v2 snapshot → no migration needed → valid
+ * - v1 snapshot → migrated to v3 → valid
+ * - v2 snapshot → migrated to v3 → valid
+ * - v3 snapshot → no migration needed → valid
  * - Invalid snapshot → clear error
  * - Future version → clear error
  * - Missing fields → clear error
@@ -56,18 +57,38 @@ const V2_SNAPSHOT = {
   },
 };
 
+const V3_SNAPSHOT = {
+  app: 'SER1',
+  kind: 'snapshot',
+  version: 3,
+  meta: {
+    savedAt: '2026-02-11T12:00:00.000Z',
+    appVersion: '3',
+  },
+  payload: {
+    sims: {
+      placement: { capital: 300000 },
+      credit: null,
+      ir: null,
+      strategy: null,
+      audit: null,
+      per: { versementAnnuel: 5000 },
+    },
+  },
+};
+
 // ---------------------------------------------------------------------------
 // Migration tests
 // ---------------------------------------------------------------------------
 
 describe('snapshotMigrations', () => {
-  it('migrates v1 → v2 successfully', () => {
+  it('migrates v1 → v3 successfully (2 steps)', () => {
     const result = migrateSnapshot(V1_SNAPSHOT as Record<string, unknown>);
 
     expect(result.migratedFrom).toBe(1);
     expect(result.migratedTo).toBe(CURRENT_SNAPSHOT_VERSION);
-    expect(result.steps).toBe(1);
-    expect(result.data.version).toBe(2);
+    expect(result.steps).toBe(2);
+    expect(result.data.version).toBe(3);
 
     // Should have appVersion added
     const meta = result.data.meta as Record<string, unknown>;
@@ -83,15 +104,30 @@ describe('snapshotMigrations', () => {
     expect(sims.credit).toBeNull();
     expect(sims.strategy).toBeNull();
     expect(sims.audit).toBeNull();
+    expect(sims.per).toBeNull();
   });
 
-  it('v2 snapshot requires no migration', () => {
+  it('migrates v2 → v3 successfully (adds per)', () => {
     const result = migrateSnapshot(V2_SNAPSHOT as Record<string, unknown>);
 
     expect(result.migratedFrom).toBe(2);
-    expect(result.migratedTo).toBe(2);
+    expect(result.migratedTo).toBe(CURRENT_SNAPSHOT_VERSION);
+    expect(result.steps).toBe(1);
+    expect(result.data.version).toBe(3);
+
+    const payload = result.data.payload as Record<string, unknown>;
+    const sims = payload.sims as Record<string, unknown>;
+    expect(sims.per).toBeNull();
+    expect(sims.placement).toEqual({ capital: 200000 });
+  });
+
+  it('v3 snapshot requires no migration', () => {
+    const result = migrateSnapshot(V3_SNAPSHOT as Record<string, unknown>);
+
+    expect(result.migratedFrom).toBe(3);
+    expect(result.migratedTo).toBe(3);
     expect(result.steps).toBe(0);
-    expect(result.data).toEqual(V2_SNAPSHOT);
+    expect(result.data).toEqual(V3_SNAPSHOT);
   });
 
   it('rejects future version with clear message', () => {
@@ -121,8 +157,8 @@ describe('snapshotMigrations', () => {
 // ---------------------------------------------------------------------------
 
 describe('SnapshotV2Schema (Zod)', () => {
-  it('validates a correct v2 snapshot', () => {
-    const result = SnapshotV2Schema.safeParse(V2_SNAPSHOT);
+  it('validates a correct v3 snapshot', () => {
+    const result = SnapshotV2Schema.safeParse(V3_SNAPSHOT);
     expect(result.success).toBe(true);
   });
 
@@ -203,7 +239,7 @@ describe('Full pipeline: v1 load → migrate → validate', () => {
 
     // 2. Migrate
     const migrated = migrateSnapshot(v1Minimal as Record<string, unknown>);
-    expect(migrated.steps).toBe(1);
+    expect(migrated.steps).toBe(2);
 
     // 3. Strict validate
     const strict = SnapshotV2Schema.safeParse(migrated.data);
@@ -216,6 +252,7 @@ describe('Full pipeline: v1 load → migrate → validate', () => {
       expect(strict.data.payload.sims.ir).toBeNull();
       expect(strict.data.payload.sims.strategy).toBeNull();
       expect(strict.data.payload.sims.audit).toBeNull();
+      expect(strict.data.payload.sims.per).toBeNull();
     }
   });
 });

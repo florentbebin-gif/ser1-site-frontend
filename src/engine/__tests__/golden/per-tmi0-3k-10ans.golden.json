@@ -1,0 +1,20 @@
+{
+  "description": "PER TMI 0% — 3000€/an, 10 ans, pas d'avantage fiscal",
+  "module": "per",
+  "function": "calculatePER",
+  "input": {
+    "versementAnnuel": 3000,
+    "dureeAnnees": 10,
+    "tmi": 0,
+    "rendementAnnuel": 2,
+    "fraisGestion": 0.5
+  },
+  "expected": {
+    "result.totalVersements": 30000,
+    "result.capitalTerme__gt": 30000,
+    "result.economieImpotAnnuelle": 0,
+    "result.economieImpotTotale": 0,
+    "result.gainNet__gt": 0,
+    "result.renteMensuelleEstimee__gt": 0
+  }
+}

@@ -24,3 +24,4 @@ export * from './civil';
 export * from './tax';
 export * from './succession';
 export * from './credit/capitalDeces';
+export * from './per';

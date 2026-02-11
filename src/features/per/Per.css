@@ -1,0 +1,191 @@
+/* PER Simulator — Local styles (P1-03) */
+
+.per-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.per-page h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-c10);
+  margin-bottom: 1.5rem;
+}
+
+.per-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.per-card h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-c10);
+  margin-bottom: 1rem;
+}
+
+.per-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.per-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.per-field label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-c9);
+}
+
+.per-field input,
+.per-field select {
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-c10);
+}
+
+.per-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.per-btn {
+  padding: 0.55rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.per-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.per-btn--primary {
+  background: var(--color-c1);
+  color: #FFFFFF;
+}
+
+.per-btn--secondary {
+  background: var(--color-c7);
+  color: var(--color-c10);
+  border: 1px solid var(--color-c8);
+}
+
+.per-btn--accent {
+  background: var(--color-c6);
+  color: #FFFFFF;
+}
+
+/* Results */
+.per-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.per-kpi {
+  background: var(--color-c7);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.per-kpi-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-c9);
+  margin-bottom: 0.35rem;
+}
+
+.per-kpi-value {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-c10);
+}
+
+/* Sortie comparée */
+.per-sortie-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.per-sortie-table th {
+  background: var(--color-c1);
+  color: #FFFFFF;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 500;
+}
+
+.per-sortie-table td {
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--color-c8);
+  color: var(--color-c10);
+}
+
+.per-sortie-table td.text-right,
+.per-sortie-table th.text-right {
+  text-align: right;
+}
+
+/* Warnings */
+.per-warnings {
+  margin-top: 0.75rem;
+}
+
+.per-warning {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.35rem;
+}
+
+.per-warning--info {
+  background: #E8F4FD;
+  color: #1565C0;
+}
+
+.per-warning--warning {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.per-warning--error {
+  background: #FFEBEE;
+  color: #C62828;
+}
+
+/* Export buttons */
+.per-export-bar {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.per-session-msg {
+  color: var(--color-c6);
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}

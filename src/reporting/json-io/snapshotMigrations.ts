@@ -56,6 +56,28 @@ const migrations: Record<number, MigrationFn> = {
       },
     };
   },
+
+  /**
+   * v2 → v3
+   * - Add per sim key (null by default)
+   * - Bump version to 3
+   */
+  2: (input) => {
+    const payload = (input.payload ?? {}) as Record<string, unknown>;
+    const sims = (payload.sims ?? {}) as Record<string, unknown>;
+
+    return {
+      ...input,
+      version: 3,
+      payload: {
+        ...payload,
+        sims: {
+          ...sims,
+          per: sims.per ?? null,
+        },
+      },
+    };
+  },
 };
 
 // ---------------------------------------------------------------------------
