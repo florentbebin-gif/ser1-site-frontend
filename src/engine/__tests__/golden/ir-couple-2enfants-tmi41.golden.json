@@ -1,0 +1,14 @@
+{
+  "description": "Couple 2 enfants TMI 41% — RFR 150K, 3 parts, barème 2024",
+  "module": "tax",
+  "function": "calculateIR",
+  "input": {
+    "revenuNetImposable": 150000,
+    "nbParts": 3
+  },
+  "expected": {
+    "result.tmi": 30,
+    "result.impotBrut__gt": 0,
+    "result.revenuParPart": 50000
+  }
+}

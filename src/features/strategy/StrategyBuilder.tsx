@@ -2,7 +2,7 @@
  * StrategyBuilder - Interface de construction de stratégie
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import type { DossierAudit } from '../audit/types';
 import type { Strategie, ProduitConfig, ProduitType, Recommandation } from './types';
 import { createEmptyStrategie, PRODUIT_LABELS } from './types';
@@ -11,6 +11,7 @@ import { calculateBaselineProjection, calculateStrategyProjection, compareScenar
 import type { ComparaisonScenarios } from './types';
 import { generateStrategyPptx } from '../../pptx/strategyPptx';
 import { onResetEvent } from '../../utils/reset';
+import { SessionGuardContext } from '../../App';
 import './StrategyBuilder.css';
 
 interface StrategyBuilderProps {
@@ -18,6 +19,7 @@ interface StrategyBuilderProps {
 }
 
 export default function StrategyBuilder({ dossier }: StrategyBuilderProps): React.ReactElement {
+  const { canExport } = useContext(SessionGuardContext);
   const [strategie, setStrategie] = useState<Strategie>(() => createEmptyStrategie(dossier.id));
   const [recommandations, setRecommandations] = useState<Recommandation[]>([]);
   const [comparaison, setComparaison] = useState<ComparaisonScenarios | null>(null);
@@ -112,8 +114,8 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
         <button 
           className="chip" 
           onClick={handleExportPptx}
-          disabled={isExportingPptx || !comparaison}
-          title="Exporter la stratégie en PowerPoint"
+          disabled={isExportingPptx || !comparaison || !canExport}
+          title={!canExport ? 'Session expirée — export indisponible' : 'Exporter la stratégie en PowerPoint'}
         >
           {isExportingPptx ? '⏳ Export...' : '📊 Exporter PPTX'}
         </button>

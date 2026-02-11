@@ -9,6 +9,9 @@ import ForgotPassword from './pages/ForgotPassword';
 import SetPassword from './pages/SetPassword';
 import { triggerPageReset, triggerGlobalReset } from './utils/reset';
 import { saveGlobalState, loadGlobalStateWithDialog } from './utils/globalStorage';
+import { useSessionTTL } from './hooks/useSessionTTL';
+import { useExportGuard } from './hooks/useExportGuard';
+import { SessionExpiredBanner } from './components/ui/SessionExpiredBanner';
 
 // V4: Lazy load heavy pages to reduce initial bundle size
 const Placement = lazy(() => import('./pages/PlacementV2'));
@@ -146,10 +149,23 @@ const IconSettings = ({ className }) => (
   </svg>
 );
 
+// React context to expose session/export guard to child components
+export const SessionGuardContext = React.createContext({
+  sessionExpired: false,
+  canExport: true,
+  trackBlobUrl: (_url) => {},
+  resetInactivity: () => {},
+});
+
 export default function App() {
   const [session, setSession] = useState(null);
   const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
+
+  // P0-06: Session TTL (heartbeat 30s, grâce 3min, inactivité 1h)
+  const { sessionExpired, minutesRemaining, warningVisible, resetInactivity } = useSessionTTL();
+  // P0-09: Export guard (disable exports when session expired)
+  const { canExport, trackBlobUrl } = useExportGuard(sessionExpired);
 
   useEffect(() => {
     // Nettoyer les anciennes clés localStorage (migration vers sessionStorage)
@@ -269,8 +285,20 @@ const getContextLabel = (pathname) => {
 };
 const contextLabel = getContextLabel(path);
 
+  const sessionGuardValue = React.useMemo(() => ({
+    sessionExpired, canExport, trackBlobUrl, resetInactivity,
+  }), [sessionExpired, canExport, trackBlobUrl, resetInactivity]);
+
   return (
-    <>
+    <SessionGuardContext.Provider value={sessionGuardValue}>
+      {/* P0-06: Session TTL banners */}
+      <SessionExpiredBanner
+        visible={warningVisible && !sessionExpired}
+        minutesRemaining={minutesRemaining}
+        isWarning
+      />
+      <SessionExpiredBanner visible={sessionExpired} />
+
       {/* Notification toast */}
       {notification && (
         <div className={`ser1-notification ser1-notification--${notification.type}`}>
@@ -456,6 +484,6 @@ const contextLabel = getContextLabel(path);
         <Route path="/credit" element={<Navigate to="/sim/credit" replace />} />
       </Routes>
 
-    </>
+    </SessionGuardContext.Provider>
   );
 }

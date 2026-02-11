@@ -2,7 +2,7 @@
  * BaseContrat — Référentiel contrats V3
  *
  * Page /settings/base-contrat.
- * Remplace ProductCatalog.tsx (archivé dans legacy/ProductCatalog.tsx pour rollback).
+ * Remplace ProductCatalog.tsx (historique disponible via git).
  *
  * Layout: accordion par produit → 3 colonnes (constitution / sortie / décès).
  * Versioning: rulesets[] trié effectiveDate DESC. rulesets[0] = éditable.
@@ -422,6 +422,26 @@ export default function BaseContrat() {
 
   async function handleSave() {
     if (!isAdmin || !settings) return;
+
+    // P0-04b Gate: publication bloquée si aucun produit actif n'a de règles testables
+    const activeWithRules = (settings.products ?? []).filter(
+      (p) =>
+        p.isActive &&
+        p.rulesets.length > 0 &&
+        p.rulesets.some((rs) =>
+          Object.values(rs.phases).some(
+            (phase) => phase.applicable && phase.blocks.length > 0
+          )
+        )
+    );
+    if (activeWithRules.length === 0) {
+      setMessage(
+        '⚠ Publication impossible : aucun produit actif ne contient de règles configurées. ' +
+        'Ajoutez au moins un produit avec des blocs de règles avant de sauvegarder.'
+      );
+      return;
+    }
+
     await save(settings);
   }
 

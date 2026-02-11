@@ -1,0 +1,13 @@
+{
+  "description": "CEHR célibataire RFI 500K — seuil exact tranche 3%",
+  "module": "tax",
+  "function": "calculateCEHR",
+  "input": {
+    "rfi": 500000,
+    "isCouple": false
+  },
+  "expected": {
+    "result.montantCEHR": 7500,
+    "result.isRedevable": true
+  }
+}

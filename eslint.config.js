@@ -75,6 +75,7 @@ export default [
       'src/utils/paletteGenerator.ts',
       'src/pages/Settings.jsx', // Définitions des thèmes prédéfinis
       'src/pptx/export/demoExport.ts', // Thème démo pour tests
+      'src/components/ui/SessionExpiredBanner.tsx', // Fallback colors (session expired = no theme)
     ],
     rules: {
       'ser1-colors/no-hardcoded-colors': 'off',

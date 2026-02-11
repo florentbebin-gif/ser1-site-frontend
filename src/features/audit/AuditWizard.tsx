@@ -2,7 +2,7 @@
  * AuditWizard - Wizard multi-étapes pour l'audit patrimonial
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useContext } from 'react';
 import type { DossierAudit, ObjectifClient } from './types';
 import { createEmptyDossier, OBJECTIFS_CLIENT_LABELS } from './types';
 import {
@@ -16,6 +16,7 @@ import {
 import { generateAuditPptx } from '../../pptx/auditPptx';
 import { useTheme } from '../../settings/ThemeProvider';
 import { onResetEvent } from '../../utils/reset';
+import { SessionGuardContext } from '../../App';
 import './AuditWizard.css';
 
 // Événements globaux pour Save/Load depuis la Topbar
@@ -36,6 +37,7 @@ type StepId = typeof STEPS[number]['id'];
 
 export default function AuditWizard(): React.ReactElement {
   const { colors } = useTheme();
+  const { canExport } = useContext(SessionGuardContext);
   const [dossier, setDossier] = useState<DossierAudit>(() => {
     const draft = loadDraftFromSession();
     return draft || createEmptyDossier();
@@ -170,6 +172,8 @@ export default function AuditWizard(): React.ReactElement {
             aria-haspopup="menu"
             aria-expanded={exportMenuOpen}
             onClick={() => setExportMenuOpen(v => !v)}
+            disabled={!canExport}
+            title={!canExport ? 'Session expirée — export indisponible' : undefined}
           >
             Exporter ▾
           </button>

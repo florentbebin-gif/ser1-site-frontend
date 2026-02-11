@@ -1,0 +1,13 @@
+{
+  "description": "Célibataire TMI 45% — RFR 500K, 1 part, barème 2024",
+  "module": "tax",
+  "function": "calculateIR",
+  "input": {
+    "revenuNetImposable": 500000,
+    "nbParts": 1
+  },
+  "expected": {
+    "result.tmi": 45,
+    "result.impotBrut__gt": 100000
+  }
+}
