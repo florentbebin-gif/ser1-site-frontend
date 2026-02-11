@@ -109,6 +109,9 @@ export const FORM_LABELS = {
   confirmDeleteTitle: 'Suppression définitive',
   confirmDeleteWarning: 'Cette action est irréversible. Le produit et toutes ses versions seront supprimés.',
   confirmDeleteTypeSlug: (slug: string) => `Pour confirmer, tapez « ${slug} » ci-dessous :`,
+  confidenceLevel: 'Niveau de confiance',
+  confidencePlaceholder: '— Choisir —',
+  confidenceHint: 'Choisis « Confirmé » uniquement si les sources ont été vérifiées.',
 };
 
 // ---------------------------------------------------------------------------

@@ -31,6 +31,7 @@ import type {
   FieldDef,
   Holders,
   ProductFamily,
+  ConfidenceLevel,
 } from '@/types/baseContratSettings';
 import { EMPTY_PRODUCT, EMPTY_RULESET } from '@/types/baseContratSettings';
 import { buildTemplateRuleset, TEMPLATE_KEYS, TEMPLATE_LABELS } from '@/constants/baseContratTemplates';
@@ -264,6 +265,7 @@ export default function BaseContrat() {
   const [formHolders, setFormHolders] = useState<Holders>('PP');
   const [formEnvelope, setFormEnvelope] = useState('');
   const [formTemplate, setFormTemplate] = useState('');
+  const [formConfidence, setFormConfidence] = useState<ConfidenceLevel | ''>('');
   const [newVersionDate, setNewVersionDate] = useState('');
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
@@ -327,7 +329,7 @@ export default function BaseContrat() {
   }
 
   function handleAddProduct() {
-    if (!formId || !formLabel) return;
+    if (!formId || !formLabel || !formConfidence) return;
     const validation = validateProductSlug(formId, existingIds);
     if (!validation.ok) { setMessage(validation.errors.join(' ')); return; }
     const maxSort = products.reduce((m, p) => Math.max(m, p.sortOrder), 0);
@@ -343,6 +345,7 @@ export default function BaseContrat() {
       holders: formHolders,
       envelopeType: formEnvelope || formId,
       templateKey: formTemplate || null,
+      confidenceLevel: formConfidence,
       sortOrder: maxSort + 1,
       rulesets: [initialRuleset],
     };
@@ -357,7 +360,7 @@ export default function BaseContrat() {
       ...prev,
       products: prev.products.map((p) =>
         p.id === editingProduct.id
-          ? { ...p, label: formLabel, family: formFamily, holders: formHolders }
+          ? { ...p, label: formLabel, family: formFamily, holders: formHolders, confidenceLevel: formConfidence as ConfidenceLevel }
           : p,
       ),
     }));
@@ -429,6 +432,7 @@ export default function BaseContrat() {
     setFormHolders('PP');
     setFormEnvelope('');
     setFormTemplate('');
+    setFormConfidence('');
     setSlugManuallyEdited(false);
   }
 
@@ -436,6 +440,7 @@ export default function BaseContrat() {
     setFormLabel(p.label);
     setFormFamily(p.family);
     setFormHolders(p.holders);
+    setFormConfidence(p.confidenceLevel);
     setEditingProduct(p);
   }
 
@@ -675,6 +680,19 @@ export default function BaseContrat() {
                 {HOLDERS_OPTIONS.map((h) => <option key={h} value={h}>{HOLDERS_LABELS[h]}</option>)}
               </select>
 
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.confidenceLevel} *</label>
+              <select
+                value={formConfidence}
+                onChange={(e) => setFormConfidence(e.target.value as ConfidenceLevel)}
+                style={{ fontSize: 13, padding: '8px 10px', border: `1px solid ${formConfidence ? 'var(--color-c8)' : 'var(--color-c1)'}`, borderRadius: 6, backgroundColor: '#FFFFFF' }}
+              >
+                <option value="">{FORM_LABELS.confidencePlaceholder}</option>
+                <option value="confirmed">{CONFIDENCE_ICONS.confirmed} {CONFIDENCE_LABELS.confirmed}</option>
+                <option value="provisional">{CONFIDENCE_ICONS.provisional} {CONFIDENCE_LABELS.provisional}</option>
+                <option value="toVerify">{CONFIDENCE_ICONS.toVerify} {CONFIDENCE_LABELS.toVerify}</option>
+              </select>
+              <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>{FORM_LABELS.confidenceHint}</span>
+
               <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.templateKey}</label>
               <select value={formTemplate} onChange={(e) => setFormTemplate(e.target.value)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}>
                 <option value="">{FORM_LABELS.templateNone}</option>
@@ -683,7 +701,7 @@ export default function BaseContrat() {
             </div>
             <div className="report-modal-actions">
               <button onClick={() => setShowAddModal(false)}>{ACTION_LABELS.cancel}</button>
-              <button className="chip" onClick={handleAddProduct} disabled={!formId || !formLabel || !slugValidation.ok} style={{ padding: '8px 20px', fontWeight: 600 }}>
+              <button className="chip" onClick={handleAddProduct} disabled={!formId || !formLabel || !formConfidence || !slugValidation.ok} style={{ padding: '8px 20px', fontWeight: 600 }}>
                 {ACTION_LABELS.create}
               </button>
             </div>
@@ -712,6 +730,18 @@ export default function BaseContrat() {
               <select value={formHolders} onChange={(e) => setFormHolders(e.target.value as Holders)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}>
                 {HOLDERS_OPTIONS.map((h) => <option key={h} value={h}>{HOLDERS_LABELS[h]}</option>)}
               </select>
+
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.confidenceLevel}</label>
+              <select
+                value={formConfidence}
+                onChange={(e) => setFormConfidence(e.target.value as ConfidenceLevel)}
+                style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}
+              >
+                <option value="confirmed">{CONFIDENCE_ICONS.confirmed} {CONFIDENCE_LABELS.confirmed}</option>
+                <option value="provisional">{CONFIDENCE_ICONS.provisional} {CONFIDENCE_LABELS.provisional}</option>
+                <option value="toVerify">{CONFIDENCE_ICONS.toVerify} {CONFIDENCE_LABELS.toVerify}</option>
+              </select>
+              <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>{FORM_LABELS.confidenceHint}</span>
             </div>
             <div className="report-modal-actions">
               <button onClick={() => setEditingProduct(null)}>{ACTION_LABELS.cancel}</button>
