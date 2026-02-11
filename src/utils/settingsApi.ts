@@ -2,7 +2,7 @@
  * Helpers API pour les pages Settings
  * 
  * Centralise les appels Supabase pour les opérations CRUD sur les paramètres.
- * Réduit la duplication dans les composants Settings (Fiscalites, Impots, Prelevements).
+ * Réduit la duplication dans les composants Settings (Impots, Prelevements, BaseContrat).
  */
 
 import { supabase } from '../supabaseClient';

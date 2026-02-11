@@ -21,6 +21,13 @@ export default function SettingsShell() {
   const scrollRef = useRef(null);
   const tabRefs = useRef({});
 
+  // Redirect legacy /settings/fiscalites → /settings/base-contrat
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.pathname.startsWith('/settings/fiscalites')) {
+      window.history.replaceState({}, '', '/settings/base-contrat');
+    }
+  }, []);
+
   // Synchroniser l'onglet actif avec l'URL lors du Back/Forward
   useEffect(() => {
     const handlePopState = () => {

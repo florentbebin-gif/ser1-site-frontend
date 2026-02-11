@@ -16,7 +16,6 @@ import { lazy } from 'react';
 const Settings = lazy(() => import('../pages/Settings'));
 const SettingsImpots = lazy(() => import('../pages/Sous-Settings/SettingsImpots'));
 const SettingsPrelevements = lazy(() => import('../pages/Sous-Settings/SettingsPrelevements'));
-const SettingsFiscalites = lazy(() => import('../pages/Sous-Settings/SettingsFiscalites'));
 const SettingsBaseContrats = lazy(() => import('../pages/Sous-Settings/BaseContrat'));
 const SettingsComptes = lazy(() => import('../pages/Sous-Settings/SettingsComptes'));
 
@@ -51,13 +50,6 @@ export const SETTINGS_ROUTES = [
     path: 'prelevements',
     urlPath: '/settings/prelevements',
     component: SettingsPrelevements,
-  },
-  {
-    key: 'fiscalites',
-    label: 'Fiscalités contrats',
-    path: 'fiscalites',
-    urlPath: '/settings/fiscalites',
-    component: SettingsFiscalites,
   },
   {
     key: 'baseContrats',
@@ -103,7 +95,7 @@ export const getSettingsRouteByPath = (path) => {
 export const getActiveSettingsKey = (pathname) => {
   if (pathname.startsWith('/settings/impots')) return 'impots';
   if (pathname.startsWith('/settings/prelevements')) return 'prelevements';
-  if (pathname.startsWith('/settings/fiscalites')) return 'fiscalites';
+  if (pathname.startsWith('/settings/fiscalites')) return 'baseContrats'; // legacy redirect
   if (pathname.startsWith('/settings/base-contrat')) return 'baseContrats';
   if (pathname.startsWith('/settings/comptes')) return 'comptes';
   return 'general';

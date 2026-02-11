@@ -2,7 +2,7 @@
  * placementEngine.js - Moteur de calcul pour le simulateur de placement
  * 
  * Architecture settings-driven : tous les paramètres fiscaux proviennent
- * des settings Supabase (/settings/fiscalites, /settings/prelevements, /settings/impots)
+ * des settings Supabase (/settings/base-contrat, /settings/prelevements, /settings/impots)
  * 
  * Phases : Épargne → Liquidation → Décès/Transmission
  */
@@ -79,7 +79,7 @@ const round2 = (n) => Math.round(n * 100) / 100;
 
 /**
  * Extrait les paramètres fiscaux depuis les settings Supabase
- * @param {Object} fiscalitySettings - Settings de /settings/fiscalites
+ * @param {Object} fiscalitySettings - Settings de /settings/base-contrat (legacy: fiscality_settings)
  * @param {Object} psSettings - Settings de /settings/prelevements
  * @returns {Object} Paramètres normalisés
  */
