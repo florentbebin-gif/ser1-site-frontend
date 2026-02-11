@@ -15,6 +15,7 @@ Le **Product Catalog V3** (`/settings/base-contrat`) remplace V2 avec :
 - Templates pré-remplissage (AV/CTO/PEA/PER)
 - Adaptateur `extractFromBaseContrat()` pour le simulateur Placement
 - Feature flag `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT`
+- Slug validation et cycle de vie (clôturer / réactiver / supprimer) → voir [`base-contrat-spec.md` §10-11](design/base-contrat-spec.md)
 
 ## Architecture V3 (base_contrat_settings)
 

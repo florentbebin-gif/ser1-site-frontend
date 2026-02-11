@@ -170,3 +170,82 @@ supabase/migrations/20260211001000_create_base_contrat_settings.sql
 - Admin uniquement pour écriture (RLS `public.is_admin()`)
 - Frontend : `useUserRole()` lit `app_metadata.role` uniquement (COMMIT 1 de cette branche)
 - `user_metadata` n'est **jamais** utilisé pour l'autorisation
+
+## 10. Slug produit (identifiant technique)
+
+Fichier : `src/utils/slug.ts`
+
+### Format
+
+- **camelCase** uniquement : lettres (`a-z`, `A-Z`) et chiffres (`0-9`)
+- Commence par une **lettre minuscule**
+- Longueur : **3 à 40** caractères
+- Pas d'espace, tiret, underscore, accent ni ponctuation
+
+### Mots réservés
+
+`admin`, `settings`, `baseContrat`, `baseContratSettings`, `fiscalites`, `fiscalitySettings`, `taxSettings`, `psSettings`, `products`, `rulesets`, `templates`, `test`, `null`, `undefined`, `default`, `system`, `api`, `auth`, `login`, `logout`
+
+### Unicité
+
+Case-insensitive : `assuranceVie` et `assurancevie` sont considérés comme identiques.
+
+### UX modal "Ajouter un produit"
+
+1. Le champ **Nom du produit** est saisi en premier
+2. Le slug est **auto-généré** en camelCase depuis le nom (via `slugifyLabelToCamelCase`)
+3. L'admin peut modifier manuellement le slug (le flag `slugManuallyEdited` empêche l'écrasement)
+4. **Validation live** : bordure verte (valide) / rouge (erreur) + message d'erreur + compteur `/40`
+5. Si le slug est un doublon, une **suggestion** alternative est proposée (suffixe numérique)
+6. **Guide inline** : encart rappelant les règles camelCase
+7. Le bouton **Créer** est **bloqué** tant que le slug est invalide
+
+### Fonctions exportées
+
+| Fonction | Usage |
+|----------|-------|
+| `validateProductSlug(slug, existingIds)` | Retourne `{ ok, errors[] }` |
+| `slugifyLabelToCamelCase(label)` | Convertit un label FR en camelCase |
+| `suggestAlternativeSlug(base, existingIds)` | Propose `base2`, `base3`, … |
+| `normalizeLabel(label)` | Trim + collapse espaces |
+
+Tests : `src/utils/__tests__/slug.test.ts` — 41 tests unitaires.
+
+## 11. Cycle de vie des produits
+
+### États
+
+```
+  Actif ──► Clôturé ──► Supprimé (hard delete)
+              │
+              └──► Réactivé → Actif
+```
+
+### Clôturer
+
+- Bouton "Clôturer" dans la barre admin de chaque produit actif
+- Confirmation simple (modal)
+- Met `isActive = false`, `closedDate = today`
+- Le produit passe dans la section "Produits clôturés" (repliée par défaut)
+
+### Réactiver
+
+- Bouton "Réactiver" dans la section "Produits clôturés" (admin only)
+- Confirmation simple (modal)
+- Met `isActive = true`, `closedDate = null`
+- Le produit revient dans la liste active
+
+### Supprimer définitivement
+
+- Bouton "Supprimer définitivement" dans la section "Produits clôturés" (admin only)
+- **Confirmation renforcée** : l'admin doit taper le slug exact du produit pour confirmer
+- **Hard delete** : le produit est retiré du tableau `products[]`
+- Irréversible (l'historique Supabase conserve les versions précédentes du JSON)
+
+### Choix hard delete vs soft delete
+
+Hard delete retenu car :
+- Le JSON est versionné dans Supabase (chaque save = nouvelle version de la row)
+- Pas de FK externe vers les produits
+- Pas de champ `deletedAt` à polluer le schéma
+- La confirmation par saisie du slug protège contre les erreurs
