@@ -10,6 +10,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { extractFiscalParams } from '../engine/placementEngine';
 import { getFiscalSettings, addInvalidationListener } from '../utils/fiscalSettingsCache.js';
+import {
+  DEFAULT_TAX_SETTINGS,
+  DEFAULT_PS_SETTINGS,
+  DEFAULT_FISCALITY_SETTINGS,
+} from '../constants/settingsDefaults';
 
 
 const DEFAULT_TMI_OPTIONS = [
@@ -20,72 +25,6 @@ const DEFAULT_TMI_OPTIONS = [
   { value: 0.45, label: '45 %' },
   { value: 0.50, label: '50 %' },
 ];
-
-// Valeurs par défaut si Supabase ne répond pas (importées depuis fiscalSettingsCache.js pour éviter la duplication)
-const DEFAULT_FISCALITY_SETTINGS = {
-  assuranceVie: {
-    retraitsCapital: {
-      psRatePercent: 17.2,
-      depuis2017: {
-        moins8Ans: { irRatePercent: 12.8 },
-        plus8Ans: {
-          abattementAnnuel: { single: 4600, couple: 9200 },
-          primesNettesSeuil: 150000,
-          irRateUnderThresholdPercent: 7.5,
-          irRateOverThresholdPercent: 12.8,
-        },
-      },
-    },
-    deces: {
-      primesApres1998: {
-        allowancePerBeneficiary: 152500,
-        brackets: [
-          { upTo: 852500, ratePercent: 20 },
-          { upTo: null, ratePercent: 31.25 },
-        ],
-      },
-      apres70ans: { globalAllowance: 30500 },
-    },
-  },
-  perIndividuel: {
-    sortieCapital: {
-      pfu: { irRatePercent: 12.8, psRatePercent: 17.2 },
-    },
-  },
-  dividendes: {
-    abattementBaremePercent: 40,
-  },
-};
-
-const DEFAULT_PS_SETTINGS = {
-  patrimony: {
-    current: { totalRate: 17.2, csgDeductibleRate: 6.8 },
-  },
-};
-
-const DEFAULT_TAX_SETTINGS = {
-  incomeTax: {
-    scaleCurrent: [
-      { from: 0, to: 11294, rate: 0 },
-      { from: 11295, to: 28797, rate: 11 },
-      { from: 28798, to: 82341, rate: 30 },
-      { from: 82342, to: 177106, rate: 41 },
-      { from: 177107, to: null, rate: 45 },
-    ],
-  },
-  dmtg: {
-    abattementLigneDirecte: 100000,
-    scale: [
-      { from: 0, to: 8072, rate: 5 },
-      { from: 8072, to: 12109, rate: 10 },
-      { from: 12109, to: 15932, rate: 15 },
-      { from: 15932, to: 552324, rate: 20 },
-      { from: 552324, to: 902838, rate: 30 },
-      { from: 902838, to: 1805677, rate: 40 },
-      { from: 1805677, to: null, rate: 45 },
-    ],
-  },
-};
 
 function buildTmiOptionsFromBareme(bareme) {
   const effectiveBareme = Array.isArray(bareme) && bareme.length
@@ -170,8 +109,9 @@ export function usePlacementSettings() {
     const params = extractFiscalParams(fiscalitySettings, psSettings);
     // Ajouter les paramètres DMTG depuis tax_settings
     const dmtg = taxSettings?.dmtg || DEFAULT_TAX_SETTINGS.dmtg;
-    params.dmtgAbattementLigneDirecte = dmtg.abattementLigneDirecte || 100000;
-    params.dmtgScale = dmtg.scale || DEFAULT_TAX_SETTINGS.dmtg.scale;
+    const dmtgLD = dmtg.ligneDirecte || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte;
+    params.dmtgAbattementLigneDirecte = dmtgLD.abattement || dmtg.abattementLigneDirecte || 100000;
+    params.dmtgScale = dmtgLD.scale || dmtg.scale || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale;
     return params;
   }, [fiscalitySettings, psSettings, taxSettings]);
 

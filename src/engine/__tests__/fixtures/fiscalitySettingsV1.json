@@ -1,0 +1,34 @@
+{
+  "assuranceVie": {
+    "retraitsCapital": {
+      "psRatePercent": 17.2,
+      "depuis2017": {
+        "moins8Ans": { "irRatePercent": 12.8 },
+        "plus8Ans": {
+          "abattementAnnuel": { "single": 4600, "couple": 9200 },
+          "primesNettesSeuil": 150000,
+          "irRateUnderThresholdPercent": 7.5,
+          "irRateOverThresholdPercent": 12.8
+        }
+      }
+    },
+    "deces": {
+      "primesApres1998": {
+        "allowancePerBeneficiary": 152500,
+        "brackets": [
+          { "upTo": 852500, "ratePercent": 20 },
+          { "upTo": null, "ratePercent": 31.25 }
+        ]
+      },
+      "apres70ans": { "globalAllowance": 30500 }
+    }
+  },
+  "perIndividuel": {
+    "sortieCapital": {
+      "pfu": { "irRatePercent": 12.8, "psRatePercent": 17.2 }
+    }
+  },
+  "dividendes": {
+    "abattementBaremePercent": 40
+  }
+}

@@ -133,6 +133,43 @@ Le système utilise 3 modes avec priorité :
 - `src/pages/Sous-Settings/SettingsImpots.jsx` — 6 titres accordéons
 - `src/pages/Sous-Settings/SettingsFiscalites.jsx` — 1 titre accordéon (loop)
 
+## Dernières évolutions (2026-02-11)
+
+### Migration RLS — Alignement `is_admin()` sur `tax_settings` & `ps_settings`
+**Objectif** : Harmoniser la sécurité RLS sur les trois tables de paramètres fiscaux.
+
+| Table | Avant | Après |
+|-------|-------|-------|
+| `tax_settings` | Policy `profiles.role = 'admin'` | `public.is_admin()` (comme `fiscality_settings`) |
+| `ps_settings` | Policy `profiles.role = 'admin'` | `public.is_admin()` (comme `fiscality_settings`) |
+| `fiscality_settings` | Déjà `public.is_admin()` | Inchangé |
+
+**Migration** : `supabase/migrations/20260211000100_harmonize_rls_tax_ps_is_admin.sql` — versionnée et appliquée en production.
+
+### Référentiel Produits — `/settings/base-contrat`
+**Nouveau** : Interface d'administration du catalogue de produits d'investissement.
+
+| Fonction | Admin |
+|----------|-------|
+| Ajouter un produit | Clé, libellé, détenteurs (PP/PM/PP+PM), nature |
+| Éditer | Modification métadonnées |
+| Nouvelle version | Date d'entrée en vigueur + copie des règles |
+| Clôturer | Date de clôture, déplacement section "Clôturés" |
+| Enregistrer | Upsert global `fiscality_settings` id=1 |
+
+**Documentation** : [docs/fiscality-product-catalog.md](docs/fiscality-product-catalog.md)
+
+### Centralisation des Defaults — `src/constants/settingsDefaults.ts`
+**Source unique de vérité** pour les valeurs par défaut des trois domaines :
+
+- `DEFAULT_TAX_SETTINGS` — barème IR 2024/2025, PFU, CEHR, CDHR, IS, DMTG
+- `DEFAULT_PS_SETTINGS` — PS patrimoine, PS retraites, seuils RFR
+- `DEFAULT_FISCALITY_SETTINGS` — assuranceVie (V1), perIndividuel (V1)
+
+**Impact** : Suppression de ~700 lignes de duplication dans `fiscalSettingsCache.js`, `irEngine.js`, `usePlacementSettings.js`, `SettingsImpots.jsx`, `SettingsPrelevements.jsx`, `SettingsFiscalites.jsx`.
+
+---
+
 ## Dernières évolutions (2026-02-09)
 
 ### Refactoring Simulateur Crédit — Architecture Premium
