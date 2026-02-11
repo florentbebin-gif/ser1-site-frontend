@@ -2,9 +2,85 @@
 
 ## Vue d'ensemble
 
-Le **Product Catalog** (`/settings/base-contrat`) est l'interface d'administration du référentiel des produits d'investissement et de leurs règles fiscales. Il stocke ses données dans la table Supabase `fiscality_settings` (colonne `data`, format V2).
+Deux versions coexistent temporairement :
 
-## Architecture
+| Version | Table | Page | État |
+|---------|-------|------|------|
+| **V2** | `fiscality_settings` | `ProductCatalog.tsx` (archivé) | Legacy — conservé pour rollback |
+| **V3** | `base_contrat_settings` | `BaseContrat.tsx` | **Actif** — référentiel contrats |
+
+Le **Product Catalog V3** (`/settings/base-contrat`) remplace V2 avec :
+- Modèle "phase" (constitution / sortie / décès) au lieu d'arbre libre
+- Versioning par `rulesets[]` au lieu de `rulesetsByKey` singleton
+- Templates pré-remplissage (AV/CTO/PEA/PER)
+- Adaptateur `extractFromBaseContrat()` pour le simulateur Placement
+- Feature flag `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT`
+
+## Architecture V3 (base_contrat_settings)
+
+```
+base_contrat_settings.data (V3)
+├── schemaVersion: 1
+└── products[]
+    ├── id, label, family, envelopeType, holders
+    ├── rulesets[]                    ← versioning array
+    │   ├── effectiveDate (ISO)
+    │   ├── phases: { constitution, sortie, deces }
+    │   │   └── blocks[]
+    │   │       ├── blockId, blockKind, uiTitle, audience
+    │   │       └── payload: { fieldKey: FieldDef }
+    │   └── sources[]
+    └── ...
+
+FieldDef = { type: 'number'|'boolean'|'enum'|'ref'|'brackets', value, unit?, calc?, options? }
+```
+
+## Convention `$ref` (repo-wide)
+
+Format : `$ref:tax_settings.pfu.current.rateIR`
+
+- Table : `tax_settings` ou `ps_settings` (snake_case, nom exact table Supabase)
+- Chemin : camelCase, points comme séparateurs
+- Résolu à la lecture (hydratation) — jamais stocké en dur dans V3
+
+## Fichiers clés V3
+
+| Fichier | Rôle |
+|---|---|
+| `src/types/baseContratSettings.ts` | Types TypeScript (Phase, Block, FieldDef, VersionedRuleset…) |
+| `src/utils/baseContratSettingsCache.ts` | Cache dédié (TTL 24h, localStorage, event d'invalidation) |
+| `src/hooks/useBaseContratSettings.ts` | Hook React load/save/invalidate |
+| `src/pages/Sous-Settings/BaseContrat.tsx` | UI principale (accordéon 3 colonnes, modals CRUD) |
+| `src/constants/baseContratLabels.ts` | Dictionnaire FR (phases, labels, tooltips) |
+| `src/constants/baseContratTemplates.ts` | Templates AV/CTO/PEA/PER avec valeurs fixtures |
+| `src/utils/baseContratAdapter.ts` | `extractFromBaseContrat()` → 16 params identiques à V1 |
+| `src/engine/__tests__/extractFromBaseContrat.test.ts` | Golden snapshot (mêmes valeurs que `extractFiscalParams.test.ts`) |
+| `supabase/migrations/20260211001000_create_base_contrat_settings.sql` | Migration SQL (table, RLS, trigger, seed) |
+
+## Migration V2 → V3 (manuelle)
+
+La V2 (`fiscality_settings`) reste en place. Pour migrer un produit V2 vers V3 :
+1. Créer le produit dans BaseContrat (V3) avec le template correspondant
+2. Recopier manuellement les valeurs non-ref (les `$ref` sont identiques)
+3. Clôturer l'ancien produit V2 si besoin
+
+## Feature flag
+
+```env
+VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=false  # Défaut : legacy V1/V2
+```
+
+- `false` : `usePlacementSettings` utilise `extractFiscalParams()` (fiscality V1)
+- `true` : utilise `extractFromBaseContrat()` (base_contrat V3)
+
+DoD pour activation :
+- Golden snapshot tests verts
+- Validation manuelle sur staging
+- Backup fiscality_settings avant switch
+
+## Architecture V2 (legacy — fiscality_settings)
+
+> **Conservé pour rollback uniquement.** La route `/settings/base-contrat` pointe désormais sur `BaseContrat.tsx`.
 
 ```
 fiscality_settings.data (V2)
@@ -17,7 +93,7 @@ fiscality_settings.data (V2)
 │   ├── closedDate?         ← date de clôture (si inactif)
 │   └── sortOrder           ← ordre d'affichage
 │
-└── rulesetsByKey{}         ← règles par produit
+└── rulesetsByKey{}         ← règles par produit (singleton par clé)
     └── [productKey]
         ├── effectiveDate   ← date d'entrée en vigueur
         ├── rules{}         ← arbre de règles (taux, abattements, seuils…)
@@ -28,32 +104,15 @@ fiscality_settings.data (V2)
             └── note
 ```
 
-## Fichiers clés
-
-| Fichier | Rôle |
-|---|---|
-| `src/constants/settingsDefaults.ts` | Source unique des valeurs par défaut (tax/ps/fiscality) |
-| `src/types/fiscalitySettings.ts` | Types TypeScript (Product, Ruleset, FiscalitySettingsV2…) |
-| `src/utils/fiscalitySettingsMigrator.ts` | Migration V1→V2, DEFAULT_PRODUCTS, normalisation |
-| `src/pages/Sous-Settings/ProductCatalog.tsx` | UI principale du catalogue (CRUD + accordion + save) |
-| `src/pages/Sous-Settings/SettingsFiscalites.jsx` | UI legacy V1 (assuranceVie / perIndividuel) |
-| `src/utils/fiscalSettingsCache.js` | Cache singleton + invalidation (re-exporte les defaults) |
-
-## Labels et clés techniques
+### Labels et clés techniques V2
 
 Les clés JSON ne sont **jamais renommées** dans les données. L'affichage utilise :
 
-1. **`FIELD_LABELS`** — mapping explicite clé→libellé français (ex: `psRatePercent` → "Taux prélèvements sociaux (%)")
-2. **`humanizeKey()`** — fallback pour les clés non mappées : convertit camelCase/snake_case en mots français lisibles via le dictionnaire `HUMANIZE_FR`
-3. **Sub-text `(key)`** — la clé technique est toujours visible en gris à côté du libellé pour la traçabilité
+1. **`FIELD_LABELS`** — mapping explicite clé→libellé français
+2. **`humanizeKey()`** — fallback camelCase/snake_case → mots français
+3. **Sub-text `(key)`** — la clé technique est visible en gris
 
-## Références croisées (`$ref`)
-
-Les taux PFU et PS dans les rulesets V2 utilisent la notation `$ref:tax_settings.pfu` / `$ref:ps_settings.patrimony` pour éviter la duplication. Ces valeurs sont affichées en lecture seule avec un tooltip explicatif.
-
-**Règle absolue** : PFU/PS ne sont jamais dupliqués inline dans fiscality V2 — toujours via `$ref`.
-
-## CRUD Admin
+### CRUD Admin V2
 
 | Action | Modale | Effet |
 |---|---|---|
@@ -65,15 +124,16 @@ Les taux PFU et PS dans les rulesets V2 utilisent la notation `$ref:tax_settings
 
 ## RLS (Row-Level Security)
 
-Les trois tables de paramètres utilisent le même mécanisme :
+Les quatre tables de paramètres utilisent le même mécanisme :
 
 | Table | Lecture | Écriture |
 |---|---|---|
 | `tax_settings` | `auth.role() = 'authenticated'` | `public.is_admin()` |
 | `ps_settings` | `auth.role() = 'authenticated'` | `public.is_admin()` |
 | `fiscality_settings` | `auth.role() = 'authenticated'` | `public.is_admin()` |
+| `base_contrat_settings` | `auth.role() = 'authenticated'` | `public.is_admin()` |
 
-`is_admin()` vérifie `app_metadata.role = 'admin'` dans le JWT (pas `user_metadata`, pas la table `profiles`).
+`is_admin()` vérifie `app_metadata.role = 'admin'` dans le JWT (pas `user_metadata`).
 
 ## Centralisation des defaults
 
