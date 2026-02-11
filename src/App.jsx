@@ -18,6 +18,7 @@ const Placement = lazy(() => import('./pages/PlacementV2'));
 const Credit = lazy(() => import('./pages/credit/Credit'));
 const Ir = lazy(() => import('./pages/Ir'));
 const AuditWizard = lazy(() => import('./features/audit').then(m => ({ default: m.AuditWizard })));
+const SuccessionSimulator = lazy(() => import('./features/succession').then(m => ({ default: m.SuccessionSimulator })));
 const StrategyPage = lazy(() => import('./pages/StrategyPage'));
 const SettingsShell = lazy(() => import('./pages/SettingsShell'));
 
@@ -279,6 +280,7 @@ const getContextLabel = (pathname) => {
   if (pathname === '/sim/ir') return 'Impôt';
   if (pathname === '/sim/placement') return 'Placement';
   if (pathname === '/sim/credit') return 'Crédit';
+  if (pathname === '/sim/succession') return 'Succession';
   if (pathname.startsWith('/settings')) return 'Paramètres';
   if (pathname === '/strategy') return 'Stratégie';
   return null;
@@ -464,6 +466,11 @@ const contextLabel = getContextLabel(path);
         <Route path="/sim/credit" element={
           <PrivateRoute>
             <LazyRoute><Credit /></LazyRoute>
+          </PrivateRoute>
+        } />
+        <Route path="/sim/succession" element={
+          <PrivateRoute>
+            <LazyRoute><SuccessionSimulator /></LazyRoute>
           </PrivateRoute>
         } />
         <Route path="/sim/ir" element={

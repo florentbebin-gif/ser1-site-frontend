@@ -1,0 +1,187 @@
+/* Succession Simulator — Local styles (P1-02) */
+
+.succession-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.succession-page h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-c10);
+  margin-bottom: 1.5rem;
+}
+
+.succession-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.succession-card h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-c10);
+  margin-bottom: 1rem;
+}
+
+.succession-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.succession-field label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-c9);
+}
+
+.succession-field input,
+.succession-field select {
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-c10);
+}
+
+.succession-heritier-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.succession-heritier-row .succession-field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.succession-heritier-row button.succession-btn-remove {
+  flex-shrink: 0;
+  padding: 0.45rem 0.65rem;
+  background: none;
+  border: 1px solid var(--color-c8);
+  border-radius: 6px;
+  color: var(--color-c9);
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-bottom: 0;
+}
+
+.succession-heritier-row button.succession-btn-remove:hover {
+  border-color: var(--color-c6);
+  color: var(--color-c6);
+}
+
+.succession-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.succession-btn {
+  padding: 0.55rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.succession-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.succession-btn--primary {
+  background: var(--color-c1);
+  color: #FFFFFF;
+}
+
+.succession-btn--secondary {
+  background: var(--color-c7);
+  color: var(--color-c10);
+  border: 1px solid var(--color-c8);
+}
+
+.succession-btn--accent {
+  background: var(--color-c6);
+  color: #FFFFFF;
+}
+
+/* Results */
+.succession-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.succession-kpi {
+  background: var(--color-c7);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.succession-kpi-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-c9);
+  margin-bottom: 0.35rem;
+}
+
+.succession-kpi-value {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-c10);
+}
+
+/* Héritiers result table */
+.succession-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.succession-table th {
+  background: var(--color-c1);
+  color: #FFFFFF;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 500;
+}
+
+.succession-table td {
+  padding: 0.45rem 0.75rem;
+  border-bottom: 1px solid var(--color-c8);
+  color: var(--color-c10);
+}
+
+.succession-table td.text-right,
+.succession-table th.text-right {
+  text-align: right;
+}
+
+/* Export buttons */
+.succession-export-bar {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.succession-session-msg {
+  color: var(--color-c6);
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}

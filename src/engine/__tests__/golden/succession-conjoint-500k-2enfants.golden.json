@@ -1,0 +1,22 @@
+{
+  "description": "Conjoint survivant 500K, 2 enfants — conjoint exonéré, enfants taxés",
+  "module": "succession",
+  "function": "calculateSuccession",
+  "input": {
+    "actifNetSuccession": 500000,
+    "heritiers": [
+      { "lien": "conjoint", "partSuccession": 250000 },
+      { "lien": "enfant", "partSuccession": 125000 },
+      { "lien": "enfant", "partSuccession": 125000 }
+    ]
+  },
+  "expected": {
+    "result.totalDroits__gt": 0,
+    "result.detailHeritiers.0.droits": 0,
+    "result.detailHeritiers.1.abattement": 100000,
+    "result.detailHeritiers.2.abattement": 100000,
+    "result.detailHeritiers.1.baseImposable": 25000,
+    "result.detailHeritiers.2.baseImposable": 25000,
+    "result.tauxMoyenGlobal__gt": 0
+  }
+}

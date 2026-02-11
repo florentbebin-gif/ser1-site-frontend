@@ -198,6 +198,24 @@ export type IrAnnexeSlideSpec = {
 };
 
 /**
+ * Succession Synthesis Slide Specification (P1-02)
+ */
+export type SuccessionSynthesisSlideSpec = {
+  type: 'succession-synthesis';
+  actifNetSuccession: number;
+  totalDroits: number;
+  tauxMoyenGlobal: number;
+  heritiers: Array<{
+    lien: string;
+    partBrute: number;
+    abattement: number;
+    baseImposable: number;
+    droits: number;
+    tauxMoyen: number;
+  }>;
+};
+
+/**
  * End/Legal Slide Specification
  */
 export type EndSlideSpec = {
@@ -365,6 +383,7 @@ export type StudyDeckSpec = {
     | CreditLoanSynthesisSlideSpec
     | CreditAnnexeSlideSpec
     | CreditAmortizationSlideSpec
+    | SuccessionSynthesisSlideSpec
   >;
   end: EndSlideSpec;
 };

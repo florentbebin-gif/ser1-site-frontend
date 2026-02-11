@@ -1,0 +1,17 @@
+{
+  "description": "Frères/sœurs 200K — abattement 15932, barème 35%/45%",
+  "module": "succession",
+  "function": "calculateSuccession",
+  "input": {
+    "actifNetSuccession": 200000,
+    "heritiers": [
+      { "lien": "frere_soeur", "partSuccession": 200000 }
+    ]
+  },
+  "expected": {
+    "result.totalDroits__gt": 0,
+    "result.detailHeritiers.0.abattement": 15932,
+    "result.detailHeritiers.0.baseImposable": 184068,
+    "result.tauxMoyenGlobal__gt": 30
+  }
+}

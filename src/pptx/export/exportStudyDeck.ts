@@ -17,7 +17,8 @@ import type {
   CreditGlobalSynthesisSlideSpec,
   CreditLoanSynthesisSlideSpec,
   CreditAnnexeSlideSpec,
-  CreditAmortizationSlideSpec
+  CreditAmortizationSlideSpec,
+  SuccessionSynthesisSlideSpec
 } from '../theme/types';
 import { SLIDE_SIZE } from '../designSystem/serenity';
 import { getPptxThemeFromUiSettings } from '../theme/getPptxThemeFromUiSettings';
@@ -31,6 +32,7 @@ import { buildCreditGlobalSynthesis } from '../slides/buildCreditGlobalSynthesis
 import { buildCreditLoanSynthesis } from '../slides/buildCreditLoanSynthesis';
 import { buildCreditAnnexe } from '../slides/buildCreditAnnexe';
 import { buildCreditAmortization } from '../slides/buildCreditAmortization';
+import { buildSuccessionSynthesis } from '../slides/buildSuccessionSynthesis';
 import { injectThemeColors } from '../theme/themeBuilder';
 import { defineSlideMasters } from '../template/loadBaseTemplate';
 
@@ -266,6 +268,9 @@ export async function exportStudyDeck(
         pageIndex: amortSpec.pageIndex,
         totalPages: amortSpec.totalPages,
       }, ctx.theme, ctx, slideIndex);
+    } else if (slideSpec.type === 'succession-synthesis') {
+      // Succession Synthesis slide (P1-02)
+      buildSuccessionSynthesis(pptx, slideSpec as SuccessionSynthesisSlideSpec, ctx, slideIndex);
     }
     
     slideIndex++;

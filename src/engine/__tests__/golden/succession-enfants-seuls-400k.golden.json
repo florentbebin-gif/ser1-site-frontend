@@ -1,0 +1,19 @@
+{
+  "description": "2 enfants seuls 400K — 200K chacun, abattement 100K, base 100K",
+  "module": "succession",
+  "function": "calculateSuccession",
+  "input": {
+    "actifNetSuccession": 400000,
+    "heritiers": [
+      { "lien": "enfant", "partSuccession": 200000 },
+      { "lien": "enfant", "partSuccession": 200000 }
+    ]
+  },
+  "expected": {
+    "result.totalDroits__gt": 0,
+    "result.detailHeritiers.0.abattement": 100000,
+    "result.detailHeritiers.0.baseImposable": 100000,
+    "result.detailHeritiers.1.baseImposable": 100000,
+    "result.tauxMoyenGlobal__gt": 0
+  }
+}
