@@ -131,7 +131,7 @@ Le système utilise 3 modes avec priorité :
 - `src/pages/Sous-Settings/SettingsComptes.jsx` — 3 sections premium cards
 - `src/pages/Sous-Settings/SettingsPrelevements.jsx` — 3 titres accordéons
 - `src/pages/Sous-Settings/SettingsImpots.jsx` — 6 titres accordéons
-- `src/pages/Sous-Settings/SettingsFiscalites.jsx` — 1 titre accordéon (loop)
+- `src/pages/Sous-Settings/SettingsShared.css` — CSS partagé (accordion, field-row, table, feedback)
 
 ## Dernières évolutions (2026-02-11)
 

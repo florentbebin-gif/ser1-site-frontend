@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
+import './SettingsShared.css';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
@@ -1114,7 +1115,7 @@ export default function SettingsImpots() {
           {isAdmin && (
             <button
               type="button"
-              className="chip"
+              className="chip settings-save-btn"
               onClick={handleSave}
               disabled={saving}
             >
@@ -1125,16 +1126,9 @@ export default function SettingsImpots() {
           )}
 
       {message && (
-        <div className="settings-success-message" style={{ 
-          fontSize: 14, 
-          marginTop: 12, 
-          padding: '12px 16px', 
-          background: 'var(--color-success-bg)', 
-          border: '1px solid var(--color-success-border)', 
-          borderRadius: 6, 
-          color: 'var(--color-success-text)',
-          fontWeight: 500
-        }}>{message}</div>
+        <div className={`settings-feedback-message ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}>
+          {message}
+        </div>
       )}
     </div>
   );

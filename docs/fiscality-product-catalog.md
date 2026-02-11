@@ -6,7 +6,7 @@ Deux versions coexistent temporairement :
 
 | Version | Table | Page | État |
 |---------|-------|------|------|
-| **V2** | `fiscality_settings` | `ProductCatalog.tsx` (archivé) | Legacy — conservé pour rollback |
+| **V2** | `fiscality_settings` | `legacy/ProductCatalog.tsx` (archivé) | Legacy — conservé pour rollback |
 | **V3** | `base_contrat_settings` | `BaseContrat.tsx` | **Actif** — référentiel contrats |
 
 Le **Product Catalog V3** (`/settings/base-contrat`) remplace V2 avec :
