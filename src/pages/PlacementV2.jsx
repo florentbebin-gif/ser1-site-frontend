@@ -825,7 +825,7 @@ export default function PlacementV2() {
                 </div>
               )}
               <div className="pl-hint">
-                <a href="/settings/fiscalites-contrats" style={{ color: 'var(--color-c2)', fontSize: 11 }}>Consulter la fiscalité des contrats →</a>
+                <a href="/settings/base-contrat" style={{ color: 'var(--color-c2)', fontSize: 11 }}>Consulter la fiscalité des contrats →</a>
               </div>
             </div>
           )}
