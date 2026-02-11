@@ -7,8 +7,6 @@ import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/utils/settingsHelpers.js';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 import SettingsTable from '@/components/settings/SettingsTable';
-import './SettingsFiscalites.css';
-
 import type {
   FiscalitySettingsV2,
   Product,
