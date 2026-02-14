@@ -85,16 +85,28 @@ export default function SettingsImpots() {
           console.error('Erreur chargement tax_settings :', taxErr);
         }
 
-        const baseContratSettings = await getBaseContratSettings();
-        if (mounted) {
-          setPublicationGate(evaluatePublicationGate({ tests: baseContratSettings?.tests }));
+        try {
+          const baseContratSettings = await getBaseContratSettings();
+          if (mounted) {
+            const testsSourceAvailable = baseContratSettings !== null;
+            setPublicationGate(
+              evaluatePublicationGate({
+                tests: baseContratSettings?.tests,
+                testsSourceAvailable,
+              }),
+            );
+          }
+        } catch {
+          if (mounted) {
+            setPublicationGate(evaluatePublicationGate({ tests: [], testsSourceAvailable: false }));
+          }
         }
 
         if (mounted) setLoading(false);
       } catch (e) {
         console.error(e);
         if (mounted) {
-          setPublicationGate(evaluatePublicationGate({ tests: [] }));
+          setPublicationGate(evaluatePublicationGate({ tests: [], testsSourceAvailable: false }));
         }
         if (mounted) setLoading(false);
       }

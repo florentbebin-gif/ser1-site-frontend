@@ -57,16 +57,28 @@ export default function SettingsPrelevements() {
           console.error('Erreur chargement ps_settings :', psErr);
         }
 
-        const baseContratSettings = await getBaseContratSettings();
-        if (mounted) {
-          setPublicationGate(evaluatePublicationGate({ tests: baseContratSettings?.tests }));
+        try {
+          const baseContratSettings = await getBaseContratSettings();
+          if (mounted) {
+            const testsSourceAvailable = baseContratSettings !== null;
+            setPublicationGate(
+              evaluatePublicationGate({
+                tests: baseContratSettings?.tests,
+                testsSourceAvailable,
+              }),
+            );
+          }
+        } catch {
+          if (mounted) {
+            setPublicationGate(evaluatePublicationGate({ tests: [], testsSourceAvailable: false }));
+          }
         }
 
         if (mounted) setLoading(false);
       } catch (e) {
         console.error(e);
         if (mounted) {
-          setPublicationGate(evaluatePublicationGate({ tests: [] }));
+          setPublicationGate(evaluatePublicationGate({ tests: [], testsSourceAvailable: false }));
         }
         if (mounted) setLoading(false);
       }

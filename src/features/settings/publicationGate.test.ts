@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { evaluatePublicationGate, P0_10_BLOCK_MESSAGE } from './publicationGate';
+import {
+  evaluatePublicationGate,
+  P0_10_BLOCK_MESSAGE,
+  P0_10_UNAVAILABLE_MESSAGE,
+} from './publicationGate';
 
 describe('evaluatePublicationGate', () => {
   it('blocks publication when no tests are imported', () => {
@@ -14,5 +18,12 @@ describe('evaluatePublicationGate', () => {
 
     expect(result.blocked).toBe(false);
     expect(result.blockMessage).toBeNull();
+  });
+
+  it('blocks publication with explicit unavailable message when tests source is unavailable', () => {
+    const result = evaluatePublicationGate({ testsSourceAvailable: false });
+
+    expect(result.blocked).toBe(true);
+    expect(result.blockMessage).toBe(P0_10_UNAVAILABLE_MESSAGE);
   });
 });
