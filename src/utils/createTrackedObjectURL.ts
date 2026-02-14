@@ -8,9 +8,31 @@
 type TrackBlobUrlHandler = (_url: string) => void;
 
 let trackBlobUrlHandler: TrackBlobUrlHandler | null = null;
+const trackedUrls = new Set<string>();
 
 export function setTrackBlobUrlHandler(handler: TrackBlobUrlHandler | null): void {
   trackBlobUrlHandler = handler;
+}
+
+export function registerTrackedObjectURL(url: string): void {
+  trackedUrls.add(url);
+}
+
+export function revokeAllTrackedObjectURLs(): void {
+  if (typeof URL === 'undefined' || typeof URL.revokeObjectURL !== 'function') {
+    trackedUrls.clear();
+    return;
+  }
+
+  trackedUrls.forEach((url) => {
+    try {
+      URL.revokeObjectURL(url);
+    } catch {
+      // ignore
+    }
+  });
+
+  trackedUrls.clear();
 }
 
 export function createTrackedObjectURL(blob: Blob): string {
@@ -19,6 +41,7 @@ export function createTrackedObjectURL(blob: Blob): string {
   }
 
   const url = URL.createObjectURL(blob);
+  registerTrackedObjectURL(url);
 
   if (trackBlobUrlHandler) {
     try {

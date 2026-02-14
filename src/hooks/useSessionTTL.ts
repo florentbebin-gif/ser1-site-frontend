@@ -18,6 +18,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { debugLog } from '../utils/debugFlags';
+import { revokeAllTrackedObjectURLs } from '../utils/createTrackedObjectURL';
 
 // ---------- Config ----------
 
@@ -82,16 +83,8 @@ export function useSessionTTL(): SessionTTLState {
       // sessionStorage peut ne pas être dispo
     }
 
-    // 2. Révocation Blob URLs (stockées dans window.__ser1BlobUrls si existant)
-    try {
-      const blobUrls = (window as unknown as Record<string, string[]>).__ser1BlobUrls;
-      if (Array.isArray(blobUrls)) {
-        blobUrls.forEach((url) => URL.revokeObjectURL(url));
-        (window as unknown as Record<string, string[]>).__ser1BlobUrls = [];
-      }
-    } catch {
-      // pas critique
-    }
+    // 2. Révocation Blob URLs trackées
+    revokeAllTrackedObjectURLs();
 
     // 3. SignOut Supabase
     try {
