@@ -9,12 +9,9 @@ import { describe, it, expect } from 'vitest';
 import { buildSuccessionStudyDeck } from '../../../pptx/presets/successionDeckBuilder';
 import { exportSuccessionXlsx } from '../successionXlsx';
 import { calculateSuccession } from '../../../engine/succession';
+import { DEFAULT_COLORS } from '../../../settings/theme';
 
-const THEME_COLORS = {
-  c1: '#1B3A35', c2: '#2D5A50', c3: '#3D7A6B', c4: '#4D9A86',
-  c5: '#5DBAA1', c6: '#996600', c7: '#F5F0EB', c8: '#D4CFC8',
-  c9: '#6B6560', c10: '#2B2520',
-};
+const THEME_COLORS = DEFAULT_COLORS;
 
 describe('Succession PPTX Export', () => {
   it('builds a valid deck spec without crash', () => {

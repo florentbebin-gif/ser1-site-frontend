@@ -8,6 +8,7 @@
 import { buildXlsxBlob, downloadXlsx } from '../../utils/xlsxBuilder';
 import type { XlsxSheet, XlsxCell } from '../../utils/xlsxBuilder';
 import type { SuccessionResult, HeritierResult, LienParente } from '../../engine/succession';
+import { DEFAULT_COLORS } from '../../settings/theme';
 
 const LIEN_LABELS: Record<LienParente, string> = {
   conjoint: 'Conjoint survivant',
@@ -116,7 +117,7 @@ export async function exportSuccessionXlsx(
   input: SuccessionXlsxInput,
   result: SuccessionResult,
   themeColor?: string,
-  filename = 'Simulation-Succession',
+  _filename = 'Simulation-Succession',
 ): Promise<Blob> {
   const sheets: XlsxSheet[] = [
     buildInputsSheet(input),
@@ -128,7 +129,7 @@ export async function exportSuccessionXlsx(
   const blob = await buildXlsxBlob({
     sheets,
     headerFill: themeColor,
-    sectionFill: '#F0F0F0',
+    sectionFill: DEFAULT_COLORS.c8,
   });
 
   return blob;

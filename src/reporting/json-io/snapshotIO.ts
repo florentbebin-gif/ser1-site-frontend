@@ -78,8 +78,8 @@ function generateFilename(): string {
 
 // File System Access API types (not yet in lib.dom.d.ts)
 type FSWindow = Window & {
-  showSaveFilePicker?: (...args: unknown[]) => Promise<FileSystemFileHandle>;
-  showOpenFilePicker?: (...args: unknown[]) => Promise<FileSystemFileHandle[]>;
+  showSaveFilePicker?: (..._args: unknown[]) => Promise<FileSystemFileHandle>;
+  showOpenFilePicker?: (..._args: unknown[]) => Promise<FileSystemFileHandle[]>;
 };
 
 function hasFileSystemAccess(): boolean {

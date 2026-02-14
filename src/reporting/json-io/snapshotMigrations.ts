@@ -17,7 +17,7 @@ import { CURRENT_SNAPSHOT_VERSION, SNAPSHOT_APP, SNAPSHOT_KIND } from './snapsho
 // Migration type
 // ---------------------------------------------------------------------------
 
-type MigrationFn = (input: Record<string, unknown>) => Record<string, unknown>;
+type MigrationFn = (_input: Record<string, unknown>) => Record<string, unknown>;
 
 // ---------------------------------------------------------------------------
 // Registry: version N → function that upgrades to N+1

@@ -27,7 +27,7 @@ export interface PerFormState {
 export interface PerCalcHook {
   form: PerFormState;
   result: CalcResult<PerResult> | null;
-  setField: <K extends keyof PerFormState>(field: K, value: PerFormState[K]) => void;
+  setField: <K extends keyof PerFormState>(_field: K, _value: PerFormState[K]) => void;
   compute: () => void;
   reset: () => void;
   hasResult: boolean;

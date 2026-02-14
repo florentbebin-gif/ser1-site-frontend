@@ -8,6 +8,7 @@
 import { buildXlsxBlob, downloadXlsx } from '../../utils/xlsxBuilder';
 import type { XlsxSheet, XlsxCell } from '../../utils/xlsxBuilder';
 import type { PerResult, PerProjectionRow } from '../../engine/per';
+import { DEFAULT_COLORS } from '../../settings/theme';
 
 function h(text: string): XlsxCell { return { v: text, style: 'sHeader' }; }
 function sec(text: string): XlsxCell { return { v: text, style: 'sSection' }; }
@@ -110,7 +111,7 @@ export async function exportPerXlsx(
   input: PerXlsxInput,
   result: PerResult,
   themeColor?: string,
-  filename = 'Simulation-PER',
+  _filename = 'Simulation-PER',
 ): Promise<Blob> {
   const sheets: XlsxSheet[] = [
     buildInputsSheet(input),
@@ -122,7 +123,7 @@ export async function exportPerXlsx(
   const blob = await buildXlsxBlob({
     sheets,
     headerFill: themeColor,
-    sectionFill: '#F0F0F0',
+    sectionFill: DEFAULT_COLORS.c8,
   });
 
   return blob;

@@ -19,9 +19,6 @@ const TMI_OPTIONS = [0, 11, 30, 41, 45];
 const fmt = (v: number): string =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
 
-const fmtPct = (v: number): string =>
-  new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) + ' %';
-
 export default function PerSimulator() {
   const {
     form, result, setField, compute, reset, hasResult,
