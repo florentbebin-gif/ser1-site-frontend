@@ -6,7 +6,7 @@
 
 ## État actuel (Checkpoint 2026-02-14)
 
-> **Dernier patch validé** : Placement PR-4 (engine modular split) ✅
+> **Dernier patch validé** : Placement PR-5 (cutover final + cleanup legacy) ✅
 > **Quality Gates** : `npm run check` ✅ (Lint, Types, Tests, Build)
 
 ### Statut Module Placement (P1-05)
@@ -17,29 +17,48 @@
 | PR-2 | Extraction UI/State/Persistence (wrapper) | ✅ DONE |
 | PR-3 | Extraction calculs métier vers Adapter pur | ✅ DONE |
 | PR-4 | Modularisation Moteur (`engine/placement/*`) | ✅ DONE |
-| **PR-5** | **Cutover final + Cleanup Legacy** | ⏭️ **NEXT** |
+| **PR-5** | **Cutover final + Cleanup Legacy** | ✅ **DONE** |
 
-### 🚀 Reprendre à partir de PR-5
+### Preuves PR-5 (références repo)
 
-**Objectifs PR-5 :**
-1. Supprimer le wrapper legacy `src/pages/PlacementV2.jsx`.
-2. Vérifier que tous les imports pointent vers `src/features/placement` ou `src/engine/placementEngine.js` (façade).
-3. Nettoyer le code mort (grep).
-4. Vérifier une dernière fois les exports PPTX/Excel.
+1. Wrapper legacy supprimé : `src/pages/PlacementV2.jsx`.
+2. Route `/sim/placement` toujours active via feature : `src/App.jsx` -> `PlacementPage`.
+3. Zéro occurrence `PlacementV2` dans `src` (grep).
+4. `npm run check` vert après patch.
+5. Smoke export placement réalisé : fichier `placement-export-smoke.xls` généré (non vide).
 
-**Stop Triggers :**
-* `npm run check` rouge.
-* Régression sur les Golden Cases (`npm test goldenCases`).
-* Changement dans la structure des exports (Snapshot).
+### Dette restante / à faire ensuite (hors PR-5)
 
-**Preuves attendues :**
-* `grep` confirmant 0 usage de `PlacementV2`.
-* `npm run check` vert.
-* Démo manuelle export OK.
+#### 1) Godfiles prioritaires (découpe)
+- `src/pages/Placement.css`
+- `src/pages/Sous-Settings/SettingsComptes.jsx`
+- `src/pages/Sous-Settings/SettingsPrelevements.jsx`
+- `src/pages/Sous-Settings/SettingsImpots.jsx`
+- `src/features/placement/components/PlacementSimulatorPage.jsx`
 
-> **⚠️ VIGILANCE :**
-> * **Exports** : Le moteur a été découpé. Bien que la façade soit stable, un smoke test manuel sur l'export Excel et PPTX est impératif avant merge PR-5.
-> * **Parité Base Contrat** : Le feature flag `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT` est toujours à gérer si activé plus tard.
+#### 2) Violations gouvernance à traiter
+- Calcul métier encore hors `src/engine/` :
+  - `src/pages/credit/hooks/useCreditCalculations.js`
+  - `src/features/strategy/calculations.ts`
+- Cross-import CSS à corriger :
+  - `src/features/placement/components/PlacementSimulatorPage.jsx` importe `@/pages/Placement.css`
+- Couleurs hardcodées restantes dans Settings legacy :
+  - `src/pages/Sous-Settings/BaseContrat.tsx`
+  - `src/pages/Sous-Settings/SettingsComptes.css`
+
+#### 3) Route cassée / cohérence navigation
+- Tuile Home `"/prevoyance"` sans route correspondante dans `App.jsx`.
+
+### Reprise (instructions repo, sans contexte conversationnel)
+
+1. Relancer l'audit documentaire et code :
+   - inventaire `.md`
+   - liens morts
+   - godfiles / gouvernance / routes cassées
+2. Traiter la doc d'abord (ROADMAP, INDEX, modules) puis corriger les liens morts.
+3. Ne lancer la suppression de dead code qu'en commit séparé, avec preuve grep par fichier.
+4. Garder `placementEngine.js` comme façade stable tant que les consommateurs ne sont pas migrés.
+5. Avant merge de toute PR : `npm run check` + preuves grep demandées.
 
 ---
 

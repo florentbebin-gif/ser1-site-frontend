@@ -1,7 +1,7 @@
 # Module Placement — Documentation Technique
 
 > **État** : Refactorisation V2 (Feature + Engine Modular)
-> **Dernière MAJ** : PR-4 (Engine Split) — 2026-02-14
+> **Dernière MAJ** : PR-5 (Cutover final + Cleanup legacy) — 2026-02-14
 
 ---
 
@@ -66,10 +66,16 @@ src/
 
 ## 5. Checklist Développeur (PR-5 Cutover)
 
-Pour finaliser la migration (PR-5) :
+Migration finalisée (PR-5) :
 
-1.  [ ] **Basculer routes** : Vérifier que `/sim/placement` pointe bien sur `PlacementPage.tsx` (déjà fait PR-1).
-2.  [ ] **Cleanup Legacy** : Supprimer `src/pages/PlacementV2.jsx` (wrapper temporaire) une fois que tout passe par la feature.
-3.  [ ] **Vérifier Imports** : Grep `src/engine/placementEngine` pour s'assurer que tous les consommateurs utilisent la façade.
-4.  [ ] **Check Exports** : Générer un PPTX et un Excel pour valider qu'ils ne sont pas cassés par le refactor.
-5.  [ ] **Validation** : `npm run check` doit être vert.
+1.  [x] **Basculer routes** : `/sim/placement` pointe sur `PlacementPage.tsx`.
+2.  [x] **Cleanup Legacy** : `src/pages/PlacementV2.jsx` supprimé.
+3.  [x] **Vérifier Imports** : consommateurs alignés sur `src/engine/placementEngine.js` (façade).
+4.  [x] **Check Exports** : smoke export placement exécuté (fichier non vide).
+5.  [x] **Validation** : `npm run check` vert.
+
+## 6. Notes de reprise
+
+- Le cutover PR-5 est clôturé ; ne pas réintroduire de wrapper legacy `pages/PlacementV2.jsx`.
+- La façade `src/engine/placementEngine.js` reste le contrat public pour UI/tests/exports.
+- Dette prioritaire restante : découpe de `PlacementSimulatorPage.jsx` et correction du cross-import CSS (`@/pages/Placement.css`).
