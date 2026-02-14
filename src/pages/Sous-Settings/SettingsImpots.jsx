@@ -9,6 +9,8 @@ import { numberOrEmpty, createFieldUpdater } from '@/utils/settingsHelpers.js';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsTable from '@/components/settings/SettingsTable';
+import { getBaseContratSettings } from '@/utils/baseContratSettingsCache';
+import { evaluatePublicationGate } from '@/features/settings/publicationGate';
 
 // ----------------------
 // Valeurs par défaut — source unique : src/constants/settingsDefaults.ts
@@ -57,6 +59,7 @@ export default function SettingsImpots() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [openSection, setOpenSection] = useState(null);
+  const [publicationGate, setPublicationGate] = useState(() => evaluatePublicationGate({ tests: [] }));
 
   // Chargement user + paramètres depuis la table tax_settings
   useEffect(() => {
@@ -82,9 +85,17 @@ export default function SettingsImpots() {
           console.error('Erreur chargement tax_settings :', taxErr);
         }
 
+        const baseContratSettings = await getBaseContratSettings();
+        if (mounted) {
+          setPublicationGate(evaluatePublicationGate({ tests: baseContratSettings?.tests }));
+        }
+
         if (mounted) setLoading(false);
       } catch (e) {
         console.error(e);
+        if (mounted) {
+          setPublicationGate(evaluatePublicationGate({ tests: [] }));
+        }
         if (mounted) setLoading(false);
       }
     }
@@ -98,6 +109,11 @@ export default function SettingsImpots() {
   // Sauvegarde
   const handleSave = async () => {
     if (!isAdmin) return;
+
+    if (publicationGate.blocked) {
+      setMessage(publicationGate.blockMessage ?? 'Publication impossible.');
+      return;
+    }
     
     try {
       setSaving(true);
@@ -1117,13 +1133,25 @@ export default function SettingsImpots() {
               type="button"
               className="chip settings-save-btn"
               onClick={handleSave}
-              disabled={saving}
+              disabled={saving || publicationGate.blocked}
             >
               {saving
                 ? 'Enregistrement…'
                 : 'Enregistrer les paramètres impôts'}
             </button>
           )}
+
+      {publicationGate.blocked && publicationGate.blockMessage && (
+        <div className="settings-feedback-message settings-feedback-message--error">
+          {publicationGate.blockMessage}
+        </div>
+      )}
+
+      {!publicationGate.blocked && publicationGate.warningMessage && (
+        <div className="settings-feedback-message">
+          {publicationGate.warningMessage}
+        </div>
+      )}
 
       {message && (
         <div className={`settings-feedback-message ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}>

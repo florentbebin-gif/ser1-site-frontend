@@ -9,6 +9,8 @@ import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsTable from '@/components/settings/SettingsTable';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
+import { getBaseContratSettings } from '@/utils/baseContratSettingsCache';
+import { evaluatePublicationGate } from '@/features/settings/publicationGate';
 
 // ----------------------
 // Valeurs par défaut — source unique : src/constants/settingsDefaults.ts
@@ -24,6 +26,7 @@ export default function SettingsPrelevements() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [openSection, setOpenSection] = useState(null);
+  const [publicationGate, setPublicationGate] = useState(() => evaluatePublicationGate({ tests: [] }));
 
   // ----------------------
   // Chargement initial
@@ -54,9 +57,17 @@ export default function SettingsPrelevements() {
           console.error('Erreur chargement ps_settings :', psErr);
         }
 
+        const baseContratSettings = await getBaseContratSettings();
+        if (mounted) {
+          setPublicationGate(evaluatePublicationGate({ tests: baseContratSettings?.tests }));
+        }
+
         if (mounted) setLoading(false);
       } catch (e) {
         console.error(e);
+        if (mounted) {
+          setPublicationGate(evaluatePublicationGate({ tests: [] }));
+        }
         if (mounted) setLoading(false);
       }
     }
@@ -90,6 +101,12 @@ export default function SettingsPrelevements() {
   // ----------------------
   const handleSave = async () => {
     if (!isAdmin) return;  // on ne fait rien si pas admin
+
+    if (publicationGate.blocked) {
+      setError(publicationGate.blockMessage ?? 'Publication impossible.');
+      return;
+    }
+
     try {
       setSaving(true);
       setError('');
@@ -1230,13 +1247,26 @@ export default function SettingsPrelevements() {
                 type="button"
                 className="chip settings-save-btn"
                 onClick={handleSave}
-                disabled={saving}
+                disabled={saving || publicationGate.blocked}
               >
                 {saving
                   ? 'Enregistrement…'
                   : 'Enregistrer les paramètres'}
               </button>
             )}
+
+            {publicationGate.blocked && publicationGate.blockMessage && (
+              <div className="settings-feedback-message settings-feedback-message--error">
+                {publicationGate.blockMessage}
+              </div>
+            )}
+
+            {!publicationGate.blocked && publicationGate.warningMessage && (
+              <div className="settings-feedback-message">
+                {publicationGate.warningMessage}
+              </div>
+            )}
+
             {message && (
               <div className={`settings-feedback-message ${message.includes('Erreur') ? 'settings-feedback-message--error' : 'settings-feedback-message--success'}`}>
                 {message}

@@ -37,6 +37,7 @@ import { EMPTY_PRODUCT, EMPTY_RULESET } from '@/types/baseContratSettings';
 import { buildTemplateRuleset, TEMPLATE_KEYS, TEMPLATE_LABELS } from '@/constants/baseContratTemplates';
 import type { TemplateKey } from '@/constants/baseContratTemplates';
 import { validateProductSlug, slugifyLabelToCamelCase, suggestAlternativeSlug, normalizeLabel } from '@/utils/slug';
+import { evaluatePublicationGate } from '@/features/settings/publicationGate';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -283,6 +284,11 @@ export default function BaseContrat() {
     return null;
   }, [formId, slugValidation, existingIds]);
 
+  const publicationGate = useMemo(
+    () => evaluatePublicationGate({ tests: settings?.tests }),
+    [settings?.tests],
+  );
+
   if (loading) return <p>Chargement…</p>;
   if (!settings) return <p>Aucune donnée.</p>;
 
@@ -427,13 +433,8 @@ export default function BaseContrat() {
   async function handleSave() {
     if (!isAdmin || !settings) return;
 
-    // P0-10 Gate: publication bloquée si aucun test importé
-    const importedTests = settings.tests ?? [];
-    if (importedTests.length === 0) {
-      setMessage(
-        '⚠ Publication impossible : aucun cas de test importé. ' +
-        'Importez au moins un fichier JSON de test (même 1 seul) via le bouton "Importer un test" avant de sauvegarder.'
-      );
+    if (publicationGate.blocked) {
+      setMessage(publicationGate.blockMessage ?? 'Publication impossible.');
       return;
     }
 
@@ -676,11 +677,19 @@ export default function BaseContrat() {
             type="button"
             className="chip"
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || publicationGate.blocked}
             style={{ padding: '10px 28px', fontWeight: 600, alignSelf: 'flex-end' }}
           >
             {saving ? ACTION_LABELS.saving : ACTION_LABELS.save}
           </button>
+        )}
+
+        {publicationGate.blocked && publicationGate.blockMessage && (
+          <p style={{ fontSize: 13, color: 'var(--color-c1)', fontStyle: 'italic' }}>{publicationGate.blockMessage}</p>
+        )}
+
+        {!publicationGate.blocked && publicationGate.warningMessage && (
+          <p style={{ fontSize: 13, color: 'var(--color-c9)', fontStyle: 'italic' }}>{publicationGate.warningMessage}</p>
         )}
 
         {/* Message */}
