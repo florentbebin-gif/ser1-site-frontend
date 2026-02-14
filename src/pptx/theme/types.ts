@@ -216,6 +216,22 @@ export type SuccessionSynthesisSlideSpec = {
 };
 
 /**
+ * PER Synthesis Slide Specification (P1-03)
+ */
+export type PerSynthesisSlideSpec = {
+  type: 'per-synthesis';
+  versementAnnuel: number;
+  dureeAnnees: number;
+  tmi: number;
+  capitalTerme: number;
+  economieImpotTotale: number;
+  renteAnnuelleEstimee: number;
+  renteMensuelleEstimee: number;
+  capitalNetSortie: number;
+  tauxRendementInterne: number;
+};
+
+/**
  * End/Legal Slide Specification
  */
 export type EndSlideSpec = {
@@ -384,6 +400,7 @@ export type StudyDeckSpec = {
     | CreditAnnexeSlideSpec
     | CreditAmortizationSlideSpec
     | SuccessionSynthesisSlideSpec
+    | PerSynthesisSlideSpec
   >;
   end: EndSlideSpec;
 };

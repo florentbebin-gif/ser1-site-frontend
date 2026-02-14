@@ -17,7 +17,7 @@ import { CURRENT_SNAPSHOT_VERSION, SNAPSHOT_APP, SNAPSHOT_KIND } from './snapsho
 // Migration type
 // ---------------------------------------------------------------------------
 
-type MigrationFn = (input: Record<string, unknown>) => Record<string, unknown>;
+type MigrationFn = (_input: Record<string, unknown>) => Record<string, unknown>;
 
 // ---------------------------------------------------------------------------
 // Registry: version N → function that upgrades to N+1
@@ -52,6 +52,28 @@ const migrations: Record<number, MigrationFn> = {
           ir: sims.ir ?? null,
           strategy: sims.strategy ?? null,
           audit: sims.audit ?? null,
+        },
+      },
+    };
+  },
+
+  /**
+   * v2 → v3
+   * - Add per sim key (null by default)
+   * - Bump version to 3
+   */
+  2: (input) => {
+    const payload = (input.payload ?? {}) as Record<string, unknown>;
+    const sims = (payload.sims ?? {}) as Record<string, unknown>;
+
+    return {
+      ...input,
+      version: 3,
+      payload: {
+        ...payload,
+        sims: {
+          ...sims,
+          per: sims.per ?? null,
         },
       },
     };

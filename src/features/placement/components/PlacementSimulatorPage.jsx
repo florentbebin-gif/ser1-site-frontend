@@ -1,5 +1,5 @@
 ﻿/**
- * PlacementV2.jsx — Orchestrateur du simulateur de placement
+ * PlacementSimulatorPage.jsx — Orchestrateur du simulateur de placement
  *
  * Architecture modulaire :
  * - Moteur de calcul        → engine/placementEngine.js
@@ -16,92 +16,43 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { usePlacementSettings } from '../hooks/usePlacementSettings.js';
+import { usePlacementSettings } from '@/hooks/usePlacementSettings.js';
 import {
   ENVELOPE_LABELS,
   simulateComplete,
   compareProducts,
-} from '../engine/placementEngine.js';
-import './Placement.css';
-import { normalizeVersementConfig } from '../utils/versementConfig.js';
-import { onResetEvent, storageKeyFor } from '../utils/reset.js';
-import { PLACEMENT_SAVE_EVENT, PLACEMENT_LOAD_EVENT } from '../utils/placementEvents.js';
-import { savePlacementState, loadPlacementStateFromFile } from '../utils/placementPersistence.js';
-import { TimelineBar } from '../components/TimelineBar.jsx';
-import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '../utils/transmissionDisclaimer.js';
-import { ExportMenu } from '../components/ExportMenu';
-import { euro, shortEuro, formatPsMontant } from './placement/utils/formatters.js';
+} from '@/engine/placementEngine.js';
+import '@/pages/Placement.css';
+import { normalizeVersementConfig } from '@/utils/versementConfig.js';
+import { onResetEvent, storageKeyFor } from '@/utils/reset.js';
+import { PLACEMENT_SAVE_EVENT, PLACEMENT_LOAD_EVENT } from '@/utils/placementEvents.js';
+import { savePlacementState, loadPlacementStateFromFile } from '@/utils/placementPersistence.js';
+import { TimelineBar } from '@/components/TimelineBar.jsx';
+import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '@/utils/transmissionDisclaimer.js';
+import { ExportMenu } from '@/components/ExportMenu';
+import { toEngineProduct } from '../adapters/toEngineProduct.js';
+import { euro, shortEuro, formatPsMontant } from '@/pages/placement/utils/formatters.js';
 import {
   DEFAULT_STATE, DEFAULT_DMTG_RATE, BENEFICIARY_OPTIONS,
   normalizeLoadedState, buildPersistedState,
   getRendementLiquidation, buildDmtgOptions, buildCustomDmtgOption,
   withReinvestCumul,
-} from './placement/utils/normalizers.js';
+} from '@/pages/placement/utils/normalizers.js';
 
-import { InputEuro, InputPct, InputNumber, Select, Toggle } from './placement/components/inputs.jsx';
-import { CollapsibleTable } from './placement/components/tables.jsx';
-import { VersementConfigModal } from './placement/components/VersementConfigModal.jsx';
-import { exportPlacementExcel } from './placement/utils/placementExcelExport.js';
+import { InputEuro, InputPct, InputNumber, Select, Toggle } from '@/pages/placement/components/inputs.jsx';
+import { CollapsibleTable } from '@/pages/placement/components/tables.jsx';
+import { VersementConfigModal } from '@/pages/placement/components/VersementConfigModal.jsx';
+import { exportPlacementExcel } from '@/pages/placement/utils/placementExcelExport.js';
 import {
   getRelevantColumnsEpargne, buildColumns, getBaseColumnsForProduct,
   getRelevantColumns, renderEpargneRow,
-} from './placement/utils/tableHelpers.jsx';
+} from '@/pages/placement/utils/tableHelpers.jsx';
 
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
-// Fonction de transformation versementConfig → format moteur
-// Gère la ventilation % entre capitalisation et distribution
-function buildEngineProduct(product) {
-  const { versementConfig, envelope, dureeEpargne, perBancaire, optionBaremeIR, fraisGestion } = product;
-  const normalizedConfig = normalizeVersementConfig(versementConfig);
-  const { initial, annuel, ponctuels, capitalisation, distribution } = normalizedConfig;
-  
-  // Calcul du rendement moyen pondéré selon la ventilation
-  const pctCapi = (initial.pctCapitalisation || 0) / 100;
-  const pctDistrib = (initial.pctDistribution || 0) / 100;
-  
-  // Rendement = moyenne pondérée des deux allocations (utilise les paramètres globaux)
-  const rendementCapi = capitalisation.rendementAnnuel || 0;
-  const rendementDistrib = distribution.tauxDistribution || 0;
-  const rendementMoyen = pctCapi * rendementCapi + pctDistrib * rendementDistrib;
-  
-  // Taux de revalorisation (uniquement si distribution)
-  const tauxRevalo = pctDistrib > 0 ? distribution.rendementAnnuel || 0 : 0;
-  
-  return {
-    envelope,
-    dureeEpargne,
-    perBancaire,
-    optionBaremeIR,
-    fraisGestion,
-    // Versements
-    versementInitial: initial.montant,
-    versementAnnuel: annuel.montant,
-    fraisEntree: initial.fraisEntree,
-    // Rendement pondéré (pour compatibilité)
-    rendement: rendementMoyen,
-    tauxRevalorisation: tauxRevalo,
-    // Options distribution (si part distribution > 0)
-    delaiJouissance: pctDistrib > 0 ? (distribution.delaiJouissance || 0) : 0,
-    dureeProduit: pctDistrib > 0 ? distribution.dureeProduit : null,
-    strategieCompteEspece: pctDistrib > 0 ? distribution.strategie : 'reinvestir_capi',
-    reinvestirVersAuTerme: distribution.reinvestirVersAuTerme || 'capitalisation',
-    // Ventilation pour info
-    pctCapitalisation: initial.pctCapitalisation,
-    pctDistribution: initial.pctDistribution,
-    // Configuration détaillée pour calculs futurs
-    versementConfig,
-    // Versements ponctuels
-    versementsPonctuels: ponctuels,
-    // Options PER
-    garantieBonneFin: annuel.garantieBonneFin,
-    exonerationCotisations: annuel.exonerationCotisations,
-  };
-}
-
-export default function PlacementV2() {
+export default function PlacementSimulatorPage() {
   const STORE_KEY = storageKeyFor('placement');
   const { fiscalParams, loading, error, tmiOptions, taxSettings, psSettings } = usePlacementSettings();
 
@@ -238,8 +189,8 @@ export default function PlacementV2() {
     const fpWithDmtg = { ...fiscalParams, dmtgTauxChoisi: state.transmission.dmtgTaux };
 
     // Transformer les produits vers le format moteur
-    const engineProduct1 = buildEngineProduct(state.products[0]);
-    const engineProduct2 = buildEngineProduct(state.products[1]);
+    const engineProduct1 = toEngineProduct(state.products[0]);
+    const engineProduct2 = toEngineProduct(state.products[1]);
 
     const liquidationParams1 = {
       ...state.liquidation,
@@ -1106,7 +1057,7 @@ export default function PlacementV2() {
               setVersementConfig(modalOpen, config);
               setModalOpen(null);
             } catch (error) {
-              console.error('[PlacementV2] Error in onSave handler:', error);
+              console.error('[Placement] Error in onSave handler:', error);
             }
           }}
           onClose={() => setModalOpen(null)}

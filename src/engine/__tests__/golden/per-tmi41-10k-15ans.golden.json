@@ -1,0 +1,20 @@
+{
+  "description": "PER TMI 41% — 10000€/an, 15 ans, rendement 4%, frais 1%",
+  "module": "per",
+  "function": "calculatePER",
+  "input": {
+    "versementAnnuel": 10000,
+    "dureeAnnees": 15,
+    "tmi": 41,
+    "rendementAnnuel": 4,
+    "fraisGestion": 1
+  },
+  "expected": {
+    "result.totalVersements": 150000,
+    "result.capitalTerme__gt": 150000,
+    "result.economieImpotAnnuelle": 4100,
+    "result.economieImpotTotale": 61500,
+    "result.capitalNetSortie__gt": 0,
+    "result.tauxRendementInterne__gt": 0
+  }
+}

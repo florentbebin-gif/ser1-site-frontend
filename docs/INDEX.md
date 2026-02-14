@@ -43,6 +43,29 @@
 | [runbook/debug.md](runbook/debug.md) | Flags DEBUG, politique console |
 | [technical/diagnostics/edge-functions-diagnostics.md](technical/diagnostics/edge-functions-diagnostics.md) | Debug Edge Functions Supabase |
 
+## Reporting & JSON snapshots
+
+| Document | Description |
+|----------|-------------|
+| [ROADMAP_SAAS_V1.md](ROADMAP_SAAS_V1.md) | État d'avancement des snapshots `.ser1`, quality gates et plan de reprise |
+| [README.md](../README.md) | Références opérationnelles (exports, commandes, troubleshooting) |
+
+## Modules métier
+
+| Document | Description |
+|----------|-------------|
+| [features/ir.md](features/ir.md) | Module IR : architecture feature/engine, flow, gouvernance et tests |
+| [features/placement.md](features/placement.md) | Module Placement : architecture, flow, gouvernance et tests |
+
+## Sources de vérité (résumé)
+
+- **Roadmap produit/tech** : `docs/ROADMAP_SAAS_V1.md`
+- **Gouvernance UI/Couleurs** : `docs/design/ui-governance.md`, `docs/design/color-governance.md`
+- **Module IR** : `docs/features/ir.md`
+- **Module Placement** : `docs/features/placement.md`
+- **JSON local (.ser1) / reporting** : `src/reporting/json-io/` (code) + sections roadmap correspondantes
+- **Exports PPTX/Excel** : `src/pptx/` et `src/utils/xlsxBuilder.ts` (code) + ADR/roadmap
+
 ## Architecture Decision Records
 
 | Document | Description |

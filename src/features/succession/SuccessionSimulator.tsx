@@ -37,7 +37,7 @@ export default function SuccessionSimulator() {
   } = useSuccessionCalc();
 
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
-  const { sessionExpired, canExport, trackBlobUrl } = useContext(SessionGuardContext);
+  const { sessionExpired, canExport } = useContext(SessionGuardContext);
 
   const handleExportPptx = useCallback(async () => {
     if (!result || !canExport) return;

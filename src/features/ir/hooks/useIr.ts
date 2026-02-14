@@ -5,10 +5,16 @@
  */
 
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { onResetEvent, storageKeyFor } from '../../utils/reset';
-import { toNumber } from '../../utils/number';
-import { computeIrResult, computeAutoPartsWithChildren } from '../../utils/irEngine.js';
-import { getFiscalSettings, addInvalidationListener } from '../../utils/fiscalSettingsCache.js';
+import { onResetEvent, storageKeyFor } from '../../../utils/reset';
+import { toNumber } from '../../../utils/number';
+import { computeIrResult } from '../../../utils/irEngine.js';
+import { getFiscalSettings, addInvalidationListener } from '../../../utils/fiscalSettingsCache.js';
+import {
+  computeAbattement10,
+  computeEffectiveParts,
+  computeExtraDeductions,
+  countPersonsACharge,
+} from '../../../engine/ir/adjustments.js';
 
 // Helpers formats
 const toNum = (v: any, def = 0) => toNumber(v, def);
@@ -19,18 +25,6 @@ const DEFAULT_INCOMES = {
   capital: { withPs: 0, withoutPs: 0 },
   fonciersFoyer: 0,
 };
-
-// Abattement 10 % avec plafond / plancher
-function computeAbattement10(base: number, cfg: any): number {
-  if (!cfg || base <= 0) return 0;
-  const plafond = Number(cfg.plafond) || 0;
-  const plancher = Number(cfg.plancher) || 0;
-
-  let val = base * 0.1;
-  if (plafond > 0) val = Math.min(val, plafond);
-  if (plancher > 0) val = Math.max(val, plancher);
-  return val;
-}
 
 export interface UseIrReturn {
   // Settings
@@ -243,12 +237,12 @@ export function useIr(): UseIrReturn {
   }, []);
 
   // Calculs
-  const baseParts = status === 'couple' ? 2 : 1;
-  const computedParts = computeAutoPartsWithChildren({ status, isIsolated, children: children as any });
-  const effectiveParts = Math.max(
-    baseParts,
-    Math.round((computedParts + (Number(parts) || 0)) * 4) / 4
-  );
+  const { baseParts, computedParts, effectiveParts } = computeEffectiveParts({
+    status,
+    isIsolated,
+    children,
+    manualParts: parts,
+  });
 
   const abat10CfgRoot = taxSettings?.incomeTax?.abat10 || {};
   const abat10SalCfg = yearKey === 'current' ? abat10CfgRoot.current : abat10CfgRoot.previous;
@@ -257,15 +251,13 @@ export function useIr(): UseIrReturn {
   const abat10SalD1 = computeAbattement10(baseSalD1, abat10SalCfg);
   const abat10SalD2 = computeAbattement10(baseSalD2, abat10SalCfg);
 
-  const extraDeductions =
-    (realMode.d1 === 'reels' ? realExpenses.d1 || 0 : realMode.d1 === 'abat10' ? abat10SalD1 : 0) +
-    (status === 'couple'
-      ? realMode.d2 === 'reels'
-        ? realExpenses.d2 || 0
-        : realMode.d2 === 'abat10'
-        ? abat10SalD2
-        : 0
-      : 0);
+  const extraDeductions = computeExtraDeductions({
+    status,
+    realMode,
+    realExpenses,
+    abat10SalD1,
+    abat10SalD2,
+  });
 
   const result = useMemo(
     () =>
@@ -281,9 +273,7 @@ export function useIr(): UseIrReturn {
         taxSettings,
         psSettings,
         capitalMode,
-        personsAChargeCount: Array.isArray(children)
-          ? children.filter((c: any) => c && (c.mode === 'charge' || c.mode === 'shared')).length
-          : 0,
+        personsAChargeCount: countPersonsACharge(children as any),
       }),
     [
       yearKey, status, isIsolated, effectiveParts, location, incomes,

@@ -1,0 +1,20 @@
+{
+  "description": "PER TMI 30% — 5000€/an, 20 ans, rendement 3%, frais 0.8%",
+  "module": "per",
+  "function": "calculatePER",
+  "input": {
+    "versementAnnuel": 5000,
+    "dureeAnnees": 20,
+    "tmi": 30,
+    "rendementAnnuel": 3,
+    "fraisGestion": 0.8
+  },
+  "expected": {
+    "result.totalVersements": 100000,
+    "result.capitalTerme__gt": 100000,
+    "result.economieImpotAnnuelle": 1500,
+    "result.economieImpotTotale": 30000,
+    "result.renteAnnuelleEstimee__gt": 0,
+    "result.tauxRendementInterne__gt": 0
+  }
+}

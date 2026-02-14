@@ -17,8 +17,11 @@ import {
 } from '../constants/settingsDefaults';
 import { extractFromBaseContrat } from '../utils/baseContratAdapter';
 import { getBaseContratSettings, addBaseContratListener } from '../utils/baseContratSettingsCache';
+import { resolvePlacementBaseContratFlag } from './placementFeatureFlag';
 
-const USE_BASE_CONTRAT = import.meta.env.VITE_USE_BASE_CONTRAT_FOR_PLACEMENT === 'true';
+const USE_BASE_CONTRAT = resolvePlacementBaseContratFlag(
+  import.meta.env.VITE_USE_BASE_CONTRAT_FOR_PLACEMENT,
+);
 
 
 const DEFAULT_TMI_OPTIONS = [

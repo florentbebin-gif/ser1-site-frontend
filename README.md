@@ -264,7 +264,7 @@ src/pages/credit/
 **Conventions** :
 - **$ref** : format `$ref:tax_settings.pfu.current.rateIR` (snake_case table, camelCase path)
 - **Versioning** : `product.rulesets[]` trié `effectiveDate` DESC ; `rulesets[0]` = version active (éditable), anciennes en lecture seule
-- **Feature flag** : `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=false` (OFF par défaut). Quand ON, `usePlacementSettings` utilise `extractFromBaseContrat()` au lieu de `extractFiscalParams()`
+- **Feature flag** : `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=true` (ON par défaut, fallback ON si variable absente). Mettre explicitement `false` pour forcer le legacy `extractFiscalParams()`
 - **Golden snapshot** : `extractFromBaseContrat.test.ts` vérifie les mêmes 16 valeurs que `extractFiscalParams.test.ts`
 - **AV décès tranche 2** : 31.25 % (aligné fixtures, pas 35 % de settingsDefaults)
 
@@ -599,7 +599,7 @@ localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true')
 |----------|-------------|-------|
 | **[Gouvernance Couleurs](docs/design/color-governance.md)** | Règles complètes C1-C10, exceptions, contraste, mapping sémantique | **OBLIGATOIRE** avant toute modif couleur |
 | **[Gouvernance UI](docs/design/ui-governance.md)** | Standards Layout, Inputs, Typo, Composants "Premium" | **OBLIGATOIRE** pour toute nouvelle page |
-| **[Audit Couleurs](docs/history/color-audit.md)** | Historique des écarts identifiés (archive) | Référence historique |
+| **[Audit Couleurs](docs/design/color-governance.md)** | Historique des écarts identifiés et plan de remédiation (section annexe) | Référence historique |
 
 **⚠️ RÈGLES ABSOLUES** :
 1. Aucune couleur hardcodée sauf WHITE (#FFFFFF) et WARNING (#996600). Voir [gouvernance couleur](docs/design/color-governance.md).

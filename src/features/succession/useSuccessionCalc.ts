@@ -29,10 +29,10 @@ export interface SuccessionFormState {
 export interface SuccessionCalcHook {
   form: SuccessionFormState;
   result: CalcResult<SuccessionResult> | null;
-  setActifNet: (v: number) => void;
-  addHeritier: (lien: LienParente) => void;
-  removeHeritier: (id: string) => void;
-  updateHeritier: (id: string, field: keyof HeritierRow, value: string | number) => void;
+  setActifNet: (_v: number) => void;
+  addHeritier: (_lien: LienParente) => void;
+  removeHeritier: (_id: string) => void;
+  updateHeritier: (_id: string, _field: keyof HeritierRow, _value: string | number) => void;
   distributeEqually: () => void;
   compute: () => void;
   reset: () => void;

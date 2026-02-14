@@ -4,8 +4,8 @@
  * Defines the canonical structure of a snapshot file with strict
  * validation. Each schema version is immutable once released.
  *
- * Current version: 2
- * Migration path: v1 → v2 (see snapshotMigrations.ts)
+ * Current version: 3
+ * Migration path: v1 → v2 → v3 (see snapshotMigrations.ts)
  */
 
 import { z } from 'zod';
@@ -16,7 +16,7 @@ import { z } from 'zod';
 
 export const SNAPSHOT_APP = 'SER1' as const;
 export const SNAPSHOT_KIND = 'snapshot' as const;
-export const CURRENT_SNAPSHOT_VERSION = 2;
+export const CURRENT_SNAPSHOT_VERSION = 3;
 
 // ---------------------------------------------------------------------------
 // Sim data schemas (payload.sims.*)
@@ -41,19 +41,23 @@ export const SnapshotSimsSchema = z.object({
   ir: SimDataSchema.optional().default(null),
   strategy: SimDataSchema.optional().default(null),
   audit: SimDataSchema.optional().default(null),
+  per: SimDataSchema.optional().default(null),
 });
 
 export const SnapshotPayloadSchema = z.object({
   sims: SnapshotSimsSchema,
 });
 
-export const SnapshotV2Schema = z.object({
+export const SnapshotV3Schema = z.object({
   app: z.literal(SNAPSHOT_APP),
   kind: z.literal(SNAPSHOT_KIND),
   version: z.literal(CURRENT_SNAPSHOT_VERSION),
   meta: SnapshotMetaSchema,
   payload: SnapshotPayloadSchema,
 });
+
+// Backward-compatible alias
+export const SnapshotV2Schema = SnapshotV3Schema;
 
 // ---------------------------------------------------------------------------
 // Loose schema for initial parsing (accepts any version)
@@ -71,7 +75,8 @@ export const SnapshotEnvelopeSchema = z.object({
 // Inferred types
 // ---------------------------------------------------------------------------
 
-export type SnapshotV2 = z.infer<typeof SnapshotV2Schema>;
+export type SnapshotV3 = z.infer<typeof SnapshotV3Schema>;
+export type SnapshotV2 = SnapshotV3;
 export type SnapshotEnvelope = z.infer<typeof SnapshotEnvelopeSchema>;
 export type SnapshotMeta = z.infer<typeof SnapshotMetaSchema>;
 export type SnapshotSims = z.infer<typeof SnapshotSimsSchema>;
