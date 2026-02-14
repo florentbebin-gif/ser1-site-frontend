@@ -11,6 +11,7 @@ import { triggerPageReset, triggerGlobalReset } from './utils/reset';
 import { saveGlobalState, loadGlobalStateWithDialog } from './utils/globalStorage';
 import { useSessionTTL } from './hooks/useSessionTTL';
 import { useExportGuard } from './hooks/useExportGuard';
+import { setTrackBlobUrlHandler } from './utils/createTrackedObjectURL';
 import { SessionExpiredBanner } from './components/ui/SessionExpiredBanner';
 
 // V4: Lazy load heavy pages to reduce initial bundle size
@@ -169,6 +170,12 @@ export default function App() {
   const { sessionExpired, minutesRemaining, warningVisible, resetInactivity } = useSessionTTL();
   // P0-09: Export guard (disable exports when session expired)
   const { canExport, trackBlobUrl } = useExportGuard(sessionExpired);
+
+  // Inject tracker early for all non-React export utilities.
+  useEffect(() => {
+    setTrackBlobUrlHandler(trackBlobUrl);
+    return () => setTrackBlobUrlHandler(null);
+  }, [trackBlobUrl]);
 
   useEffect(() => {
     // Nettoyer les anciennes clés localStorage (migration vers sessionStorage)
