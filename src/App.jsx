@@ -20,6 +20,7 @@ const Ir = lazy(() => import('./pages/Ir'));
 const AuditWizard = lazy(() => import('./features/audit').then(m => ({ default: m.AuditWizard })));
 const SuccessionSimulator = lazy(() => import('./features/succession').then(m => ({ default: m.SuccessionSimulator })));
 const PerSimulator = lazy(() => import('./features/per').then(m => ({ default: m.PerSimulator })));
+const UpcomingSimulatorPage = lazy(() => import('./pages/UpcomingSimulatorPage'));
 const StrategyPage = lazy(() => import('./pages/StrategyPage'));
 const SettingsShell = lazy(() => import('./pages/SettingsShell'));
 
@@ -276,13 +277,13 @@ const isIrRoute = path === '/sim/ir';
 const getContextLabel = (pathname) => {
   if (pathname === '/') return 'Accueil';
   if (pathname === '/audit') return 'Audit';
-  if (pathname === '/potentiel') return 'Potentiel';
-  if (pathname === '/transfert') return 'Transfert';
   if (pathname === '/sim/ir') return 'Impôt';
   if (pathname === '/sim/placement') return 'Placement';
   if (pathname === '/sim/credit') return 'Crédit';
   if (pathname === '/sim/succession') return 'Succession';
   if (pathname === '/sim/per') return 'PER';
+  if (pathname === '/sim/epargne-salariale') return 'Epargne salariale';
+  if (pathname === '/sim/tresorerie-societe') return 'Trésorerie société';
   if (pathname.startsWith('/settings')) return 'Paramètres';
   if (pathname === '/strategy') return 'Stratégie';
   return null;
@@ -478,6 +479,26 @@ const contextLabel = getContextLabel(path);
         <Route path="/sim/per" element={
           <PrivateRoute>
             <LazyRoute><PerSimulator /></LazyRoute>
+          </PrivateRoute>
+        } />
+        <Route path="/sim/epargne-salariale" element={
+          <PrivateRoute>
+            <LazyRoute>
+              <UpcomingSimulatorPage
+                title="Epargne salariale"
+                subtitle="Ce simulateur premium sera bientôt disponible."
+              />
+            </LazyRoute>
+          </PrivateRoute>
+        } />
+        <Route path="/sim/tresorerie-societe" element={
+          <PrivateRoute>
+            <LazyRoute>
+              <UpcomingSimulatorPage
+                title="Trésorerie société"
+                subtitle="Ce simulateur premium sera bientôt disponible."
+              />
+            </LazyRoute>
           </PrivateRoute>
         } />
         <Route path="/sim/ir" element={

@@ -62,11 +62,13 @@ export default function Home(){
           <h2 className="tools-title" data-testid="home-tools-title">SIMULATEURS</h2>
           <div className="tools-card">
             <div className="tools-grid" data-testid="home-tools-grid">
-              <ToolTile to="/potentiel" icon={<IconGauge/>} title="Potentiel retraite" testId="home-tool-potentiel" />
+              <ToolTile to="/sim/per" icon={<IconGauge/>} title="Epargne retraite" testId="home-tool-epargne-retraite" />
               <ToolTile to="/sim/credit" icon={<IconPercent/>} title="Crédit" testId="home-tool-credit" />
-              <ToolTile to="/transfert" icon={<IconTransfer/>} title="Transfert PER" testId="home-tool-transfert" />
+              <ToolTile to="/sim/succession" icon={<IconTransfer/>} title="Droits de succession" testId="home-tool-droits-succession" />
               <ToolTile to="/sim/ir" icon={<IconCalc/>} title="Impôt sur le revenu" testId="home-tool-ir" />
-              <ToolTile to="/sim/placement" icon={<IconChart/>} title="Placement" testId="home-tool-placement" />
+              <ToolTile to="/sim/placement" icon={<IconChart/>} title="Epargne" testId="home-tool-epargne" />
+              <ToolTile to="/sim/epargne-salariale" icon={<IconWallet/>} title="Epargne salariale" testId="home-tool-epargne-salariale" />
+              <ToolTile to="/sim/tresorerie-societe" icon={<IconBuilding/>} title="Trésorerie société" testId="home-tool-tresorerie-societe" />
               <ToolTile to="/prevoyance" icon={<IconShield/>} title="Prévoyance" testId="home-tool-prevoyance" />
             </div>
           </div>
@@ -95,6 +97,8 @@ function IconStrategy(){ return (<svg width="28" height="28" viewBox="0 0 24 24"
 function IconChevron(){ return (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>)}
 function IconGauge(){ return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M12 13l3-3"/><path d="M20 14A8 8 0 1 0 4 14"/></svg>)}
 function IconTransfer(){ return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M7 10l-3 3 3 3"/><path d="M17 14l3-3-3-3"/><path d="M4 13h16"/></svg>)}
+function IconWallet(){ return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M16 12h4"/><circle cx="16" cy="12" r="1"/></svg>)}
+function IconBuilding(){ return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 10h.01M12 10h.01M15 10h.01M9 14h.01M12 14h.01M15 14h.01"/></svg>)}
 function IconPercent(){ return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><line x1="6" y1="18" x2="18" y2="6"/></svg>)}
 function IconCalc(){ return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h8"/></svg>)}
 function IconShield(){ return (<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>)}
