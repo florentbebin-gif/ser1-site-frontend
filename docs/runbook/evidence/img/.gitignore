@@ -1,0 +1,9 @@
+# Keep placeholder only; require explicit force-add for screenshots
+*
+!.gitignore
+!.gitkeep
+
+# Explicit image extensions (kept for clarity)
+*.png
+*.jpg
+*.jpeg
