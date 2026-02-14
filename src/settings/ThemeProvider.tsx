@@ -30,6 +30,10 @@ import {
   loadCabinetThemeWithRetry,
 } from './theme/hooks/useCabinetTheme';
 import { SOURCE_RANKS, getThemeHash, applyColorsToCSS } from './theme/hooks/useThemeSync';
+import {
+  readThemeSourceFromStorage,
+  writeThemeSourceToStorage,
+} from './theme/themeSourceStorage';
 
 // Re-export for backward compatibility
 export { DEFAULT_COLORS, type ThemeColors } from './theme';
@@ -68,32 +72,7 @@ export function useTheme(): ThemeContextValue {
   return useContext(ThemeContext);
 }
 
-const THEME_SOURCE_LEGACY_KEY = 'themeSource';
-const THEME_SOURCE_DEFAULT_BRANDING_KEY = 'cabinet:none';
-
-function getThemeSourceStorageKey(cabinetBrandingKey: string | null): string {
-  return `themeSource:${cabinetBrandingKey ?? THEME_SOURCE_DEFAULT_BRANDING_KEY}`;
-}
-
-function readThemeSourceFromStorage(cabinetBrandingKey: string | null): ThemeSource {
-  if (typeof window === 'undefined') return 'cabinet';
-
-  const scoped = localStorage.getItem(getThemeSourceStorageKey(cabinetBrandingKey));
-  if (scoped === 'cabinet' || scoped === 'custom') return scoped;
-
-  if (!cabinetBrandingKey) {
-    const legacy = localStorage.getItem(THEME_SOURCE_LEGACY_KEY);
-    if (legacy === 'cabinet' || legacy === 'custom') return legacy;
-  }
-
-  return 'cabinet';
-}
-
-function writeThemeSourceToStorage(cabinetBrandingKey: string | null, source: ThemeSource): void {
-  if (typeof window === 'undefined') return;
-  // Gouvernance P0-03: themeSource doit être scindé par cabinet pour éviter les fuites cross-tenant.
-  localStorage.setItem(getThemeSourceStorageKey(cabinetBrandingKey), source);
-}
+const CABINET_BRANDING_KEY_BY_USER_PREFIX = 'ser1_cabinet_branding_key_';
 
 export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElement {
   // ⚡ INIT SYNCHRONE : Lire le cache AVANT le premier render
@@ -367,6 +346,14 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         const brandingKey = await loadCabinetBrandingKey(user.id);
         if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
         setCabinetBrandingKey(brandingKey);
+        if (typeof window !== 'undefined') {
+          const storageKey = `${CABINET_BRANDING_KEY_BY_USER_PREFIX}${user.id}`;
+          if (brandingKey) {
+            localStorage.setItem(storageKey, brandingKey);
+          } else {
+            localStorage.removeItem(storageKey);
+          }
+        }
 
         // ─── 3. Déterminer mode (V5 → fallback anciennes colonnes)
         let mode: ThemeMode;
