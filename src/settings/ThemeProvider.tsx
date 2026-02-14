@@ -24,11 +24,16 @@ import {
 import {
   convertFromSettingsFormat,
   convertDbPaletteToThemeColors,
+  loadCabinetBrandingKey,
   loadCabinetLogo,
   loadOriginalTheme,
   loadCabinetThemeWithRetry,
 } from './theme/hooks/useCabinetTheme';
 import { SOURCE_RANKS, getThemeHash, applyColorsToCSS } from './theme/hooks/useThemeSync';
+import {
+  readThemeSourceFromStorage,
+  writeThemeSourceToStorage,
+} from './theme/themeSourceStorage';
 
 // Re-export for backward compatibility
 export { DEFAULT_COLORS, type ThemeColors } from './theme';
@@ -67,6 +72,8 @@ export function useTheme(): ThemeContextValue {
   return useContext(ThemeContext);
 }
 
+const CABINET_BRANDING_KEY_BY_USER_PREFIX = 'ser1_cabinet_branding_key_';
+
 export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElement {
   // ⚡ INIT SYNCHRONE : Lire le cache AVANT le premier render
   // Cela empêche le flash "default" si un cache existe
@@ -78,14 +85,8 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const [isLoading, setIsLoading] = useState(true);
   const [themeReady, setThemeReady] = useState(false); // true when CSS vars applied
   const [themeScope, setThemeScope] = useState<ThemeScope>('all');
-  // Lire themeSource depuis localStorage pour persister la préférence user
-  const [themeSource, setThemeSource] = useState<ThemeSource>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('themeSource');
-      if (stored === 'cabinet' || stored === 'custom') return stored;
-    }
-    return 'cabinet';
-  });
+  const [cabinetBrandingKey, setCabinetBrandingKey] = useState<string | null>(null);
+  const [themeSource, setThemeSource] = useState<ThemeSource>(() => readThemeSourceFromStorage(null));
   const [activeUserId, setActiveUserId] = useState<string | null>(null);
   // Couleurs cabinet stockées séparément (chargées 1x, read-only pour PPTX)
   // Tri-état: undefined = pas encore chargé, null = pas de cabinet confirmé, ThemeColors = palette cabinet
@@ -104,19 +105,21 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   // RÈGLE MÉTIER: PPTX = cabinet si dispo, sinon original ou custom selon scope
   const pptxColors: ThemeColors = resolvePptxColors(colorsState, themeScope, cabinetColors, originalColors);
 
-  const ensureCabinetThemeFetch = (userId: string): Promise<ThemeColors | null> => {
-    if (cabinetThemeLoadedRef.current === userId && cabinetThemePromiseRef.current) {
+  const ensureCabinetThemeFetch = (userId: string, brandingKey: string | null): Promise<ThemeColors | null> => {
+    const loadKey = `${userId}::${brandingKey ?? 'cabinet:none'}`;
+
+    if (cabinetThemeLoadedRef.current === loadKey && cabinetThemePromiseRef.current) {
       return cabinetThemePromiseRef.current;
     }
 
-    if (cabinetThemeLoadedRef.current === userId && !cabinetThemePromiseRef.current) {
+    if (cabinetThemeLoadedRef.current === loadKey && !cabinetThemePromiseRef.current) {
       // Si cabinetColors est undefined (pas encore chargé), on recharge
       // Si cabinetColors est null (pas de cabinet confirmé), on retourne null
       // Si cabinetColors est un objet, on le retourne
       return Promise.resolve(cabinetColorsRef.current ?? null);
     }
 
-    cabinetThemeLoadedRef.current = userId;
+    cabinetThemeLoadedRef.current = loadKey;
     const requestId = ++cabinetThemeRequestIdRef.current;
     const promise = (async () => {
       const colors = await loadCabinetThemeWithRetry(userId, mountedRef, cabinetThemeRequestIdRef, requestId);
@@ -128,11 +131,13 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       if (colors === null) {
         // Pas de cabinet confirmé: set null et PURGER le cache existant
         setCabinetColors(null);
-        localStorage.removeItem(`${CABINET_THEME_CACHE_KEY_PREFIX}${userId}`);
+        if (brandingKey) {
+          localStorage.removeItem(`${CABINET_THEME_CACHE_KEY_PREFIX}${brandingKey}`);
+        }
       } else {
         // Cabinet existe: sauvegarder dans state et cache
         setCabinetColors(colors);
-        saveCabinetThemeToCache(colors, userId);
+        saveCabinetThemeToCache(colors, brandingKey);
       }
 
       return colors;
@@ -142,16 +147,18 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
     return promise;
   };
 
-  const ensureCabinetLogoFetch = (userId: string): Promise<{ logo?: string; placement?: import('../pptx/theme/types').LogoPlacement }> => {
-    if (cabinetLogoLoadedRef.current === userId && cabinetLogoPromiseRef.current) {
+  const ensureCabinetLogoFetch = (userId: string, brandingKey: string | null): Promise<{ logo?: string; placement?: import('../pptx/theme/types').LogoPlacement }> => {
+    const loadKey = `${userId}::${brandingKey ?? 'cabinet:none'}`;
+
+    if (cabinetLogoLoadedRef.current === loadKey && cabinetLogoPromiseRef.current) {
       return cabinetLogoPromiseRef.current;
     }
 
-    if (cabinetLogoLoadedRef.current === userId && !cabinetLogoPromiseRef.current) {
+    if (cabinetLogoLoadedRef.current === loadKey && !cabinetLogoPromiseRef.current) {
       return Promise.resolve({ logo: cabinetLogo, placement: logoPlacement });
     }
 
-    cabinetLogoLoadedRef.current = userId;
+    cabinetLogoLoadedRef.current = loadKey;
     const requestId = ++cabinetLogoRequestIdRef.current;
     const promise = (async () => {
       const result = await loadCabinetLogo(userId);
@@ -163,7 +170,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       if (result.placement) {
         setLogoPlacement(result.placement);
       }
-      saveCabinetLogoToCache(result.logo ?? null, userId);
+      saveCabinetLogoToCache(result.logo ?? null, brandingKey);
       return result;
     })();
 
@@ -188,8 +195,9 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   const myPaletteRef = useRef<ThemeColors | null>(myPalette);
   const cabinetColorsRef = useRef<ThemeColors | null | undefined>(cabinetColors);
   const cabinetLogoRef = useRef<string | undefined>(cabinetLogo);
-  const ensureCabinetThemeFetchRef = useRef<((_userId: string) => Promise<ThemeColors | null>) | null>(null);
-  const ensureCabinetLogoFetchRef = useRef<((_userId: string) => Promise<{ logo?: string; placement?: import('../pptx/theme/types').LogoPlacement }>) | null>(null);
+  const cabinetBrandingKeyRef = useRef<string | null>(cabinetBrandingKey);
+  const ensureCabinetThemeFetchRef = useRef<((_userId: string, _brandingKey: string | null) => Promise<ThemeColors | null>) | null>(null);
+  const ensureCabinetLogoFetchRef = useRef<((_userId: string, _brandingKey: string | null) => Promise<{ logo?: string; placement?: import('../pptx/theme/types').LogoPlacement }>) | null>(null);
   const applyColorsToCSSWithGuardRef = useRef(applyColorsToCSSWithGuard);
 
   // Debug: Log mount/unmount
@@ -216,6 +224,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
   useEffect(() => { themeSourceRef.current = themeSource; }, [themeSource]);
   useEffect(() => { themeModeRef.current = themeMode; }, [themeMode]);
   useEffect(() => { myPaletteRef.current = myPalette; }, [myPalette]);
+  useEffect(() => { cabinetBrandingKeyRef.current = cabinetBrandingKey; }, [cabinetBrandingKey]);
 
   // 🚨 DIAGNOSTIC: Enhanced applyColorsToCSS with change detection AND source ranking
   // Ranking: cabinet(3) > original-db(2) > custom/ui_settings(1) > default/bootstrap(0)
@@ -272,6 +281,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         setActiveUserId(null);
         setColorsState(DEFAULT_COLORS);
         applyColorsToCSSWithGuardRef.current(DEFAULT_COLORS, undefined, 'signed-out');
+        setCabinetBrandingKey(null);
         setLogo(undefined);
         setCabinetLogo(undefined);
         setIsLoading(false);
@@ -333,6 +343,18 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
 
         if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
 
+        const brandingKey = await loadCabinetBrandingKey(user.id);
+        if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
+        setCabinetBrandingKey(brandingKey);
+        if (typeof window !== 'undefined') {
+          const storageKey = `${CABINET_BRANDING_KEY_BY_USER_PREFIX}${user.id}`;
+          if (brandingKey) {
+            localStorage.setItem(storageKey, brandingKey);
+          } else {
+            localStorage.removeItem(storageKey);
+          }
+        }
+
         // ─── 3. Déterminer mode (V5 → fallback anciennes colonnes)
         let mode: ThemeMode;
         let pId: string | null = null;
@@ -364,8 +386,8 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         }
 
         // Toujours charger cabinet (pour PPTX même si mode != cabinet)
-        const fetchedCab = await ensureCabinetThemeFetchRef.current?.(user.id) ?? null;
-        void ensureCabinetLogoFetchRef.current?.(user.id);
+        const fetchedCab = await ensureCabinetThemeFetchRef.current?.(user.id, brandingKey) ?? null;
+        void ensureCabinetLogoFetchRef.current?.(user.id, brandingKey);
 
         if (!mountedRef.current || requestId !== activeRequestIdRef.current) return;
 
@@ -426,7 +448,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         const derivedSource: ThemeSource = mode === 'cabinet' ? 'cabinet' : 'custom';
         setSelectedThemeRef(mode === 'cabinet' ? 'cabinet' : 'custom');
         if (themeSourceRef.current !== derivedSource) setThemeSource(derivedSource);
-        localStorage.setItem('themeSource', derivedSource);
+        writeThemeSourceToStorage(brandingKey, derivedSource);
 
         // ─── 8. Application finale (reset guard pour éviter blocage)
         lastAppliedSourceRankRef.current = 0;
@@ -479,7 +501,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
         if (cab) {
           colorsToApply = cab;
         } else {
-          const fetched = await ensureCabinetThemeFetchRef.current?.(user.id);
+          const fetched = await ensureCabinetThemeFetchRef.current?.(user.id, cabinetBrandingKeyRef.current ?? null);
           colorsToApply = fetched || DEFAULT_COLORS;
         }
       } else if (mode === 'preset' && pId) {
@@ -518,7 +540,7 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
       const derivedSource: ThemeSource = mode === 'cabinet' ? 'cabinet' : 'custom';
       setThemeSource(derivedSource);
       setSelectedThemeRef(mode === 'cabinet' ? 'cabinet' : 'custom');
-      localStorage.setItem('themeSource', derivedSource);
+      writeThemeSourceToStorage(cabinetBrandingKeyRef.current ?? null, derivedSource);
 
       // Appliquer immédiatement
       lastAppliedSourceRankRef.current = 0;
@@ -690,17 +712,17 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
  * Les couleurs PPTX sont sans le # prefix
  */
 export function useThemeForPptx(): Record<string, string> {
-  const { colors } = useTheme();
+  const { pptxColors } = useTheme();
   return {
-    c1: colors.c1.replace('#', ''),
-    c2: colors.c2.replace('#', ''),
-    c3: colors.c3.replace('#', ''),
-    c4: colors.c4.replace('#', ''),
-    c5: colors.c5.replace('#', ''),
-    c6: colors.c6.replace('#', ''),
-    c7: colors.c7.replace('#', ''),
-    c8: colors.c8.replace('#', ''),
-    c9: colors.c9.replace('#', ''),
-    c10: colors.c10.replace('#', ''),
+    c1: pptxColors.c1.replace('#', ''),
+    c2: pptxColors.c2.replace('#', ''),
+    c3: pptxColors.c3.replace('#', ''),
+    c4: pptxColors.c4.replace('#', ''),
+    c5: pptxColors.c5.replace('#', ''),
+    c6: pptxColors.c6.replace('#', ''),
+    c7: pptxColors.c7.replace('#', ''),
+    c8: pptxColors.c8.replace('#', ''),
+    c9: pptxColors.c9.replace('#', ''),
+    c10: pptxColors.c10.replace('#', ''),
   };
 }

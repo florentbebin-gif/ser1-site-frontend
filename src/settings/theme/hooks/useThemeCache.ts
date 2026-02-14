@@ -22,6 +22,10 @@ export const CABINET_CACHE_TTL = THEME_CACHE_TTL;
 
 export const CABINET_LOGO_EMPTY = '__none__';
 
+// Gouvernance P0-03:
+// Les caches branding cabinet DOIVENT être keyés par cabinetBrandingKey (cabinet:<id>)
+// pour éviter toute fuite cross-tenant lors de switch d'utilisateurs.
+
 // ─── User theme cache ────────────────────────────────────────────────
 
 export function getThemeFromCache(userId: string | null): ThemeColors | null {
@@ -76,11 +80,11 @@ export function clearThemeCacheForUser(userId: string | null): void {
 
 // ─── Cabinet theme cache ─────────────────────────────────────────────
 
-export function getCabinetThemeFromCache(userId: string | null): ThemeColors | null {
-  if (!userId) return null;
+export function getCabinetThemeFromCache(cabinetBrandingKey: string | null): ThemeColors | null {
+  if (!cabinetBrandingKey) return null;
 
   try {
-    const cacheKey = `${CABINET_THEME_CACHE_KEY_PREFIX}${userId}`;
+    const cacheKey = `${CABINET_THEME_CACHE_KEY_PREFIX}${cabinetBrandingKey}`;
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       const cache: CabinetThemeCache = JSON.parse(cached);
@@ -97,11 +101,11 @@ export function getCabinetThemeFromCache(userId: string | null): ThemeColors | n
   return null;
 }
 
-export function saveCabinetThemeToCache(colors: ThemeColors, userId: string | null): void {
-  if (!userId) return;
+export function saveCabinetThemeToCache(colors: ThemeColors, cabinetBrandingKey: string | null): void {
+  if (!cabinetBrandingKey) return;
 
   try {
-    const cacheKey = `${CABINET_THEME_CACHE_KEY_PREFIX}${userId}`;
+    const cacheKey = `${CABINET_THEME_CACHE_KEY_PREFIX}${cabinetBrandingKey}`;
     const cache: CabinetThemeCache = {
       colors,
       timestamp: Date.now()
@@ -114,11 +118,11 @@ export function saveCabinetThemeToCache(colors: ThemeColors, userId: string | nu
 
 // ─── Cabinet logo cache ──────────────────────────────────────────────
 
-export function getCabinetLogoFromCache(userId: string | null): string | null | undefined {
-  if (!userId) return undefined;
+export function getCabinetLogoFromCache(cabinetBrandingKey: string | null): string | null | undefined {
+  if (!cabinetBrandingKey) return undefined;
 
   try {
-    const cacheKey = `${CABINET_LOGO_CACHE_KEY_PREFIX}${userId}`;
+    const cacheKey = `${CABINET_LOGO_CACHE_KEY_PREFIX}${cabinetBrandingKey}`;
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       const cache: CabinetLogoCache = JSON.parse(cached);
@@ -135,11 +139,11 @@ export function getCabinetLogoFromCache(userId: string | null): string | null | 
   return undefined;
 }
 
-export function saveCabinetLogoToCache(logo: string | undefined | null, userId: string | null): void {
-  if (!userId) return;
+export function saveCabinetLogoToCache(logo: string | undefined | null, cabinetBrandingKey: string | null): void {
+  if (!cabinetBrandingKey) return;
 
   try {
-    const cacheKey = `${CABINET_LOGO_CACHE_KEY_PREFIX}${userId}`;
+    const cacheKey = `${CABINET_LOGO_CACHE_KEY_PREFIX}${cabinetBrandingKey}`;
     const cache: CabinetLogoCache = {
       logo: logo ? logo : CABINET_LOGO_EMPTY,
       timestamp: Date.now()

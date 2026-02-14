@@ -10,6 +10,7 @@ import './styles/premium-shared.css'
 
 const THEME_CACHE_KEY_PREFIX = 'ser1_theme_cache_'
 const CABINET_THEME_CACHE_KEY_PREFIX = 'ser1_cabinet_theme_cache_'
+const CABINET_BRANDING_KEY_BY_USER_PREFIX = 'ser1_cabinet_branding_key_'
 
 // 🚨 CRITICAL: Apply CSS variables BEFORE React renders anything
 // This prevents FOUC on refresh by using localStorage cache only (no RPC)
@@ -18,10 +19,14 @@ function applyThemeBootstrap() {
     return
   }
   const root = document.documentElement
-  const themeSource = localStorage.getItem('themeSource') === 'custom' ? 'custom' : 'cabinet'
   const userId = getUserIdFromAuthStorage()
-  const cachedColors = userId
-    ? readCachedColors(themeSource === 'cabinet' ? CABINET_THEME_CACHE_KEY_PREFIX : THEME_CACHE_KEY_PREFIX, userId)
+  const cabinetBrandingKey = userId ? getCabinetBrandingKeyFromStorage(userId) : null
+  const themeSourceKey = `themeSource:${cabinetBrandingKey || 'cabinet:none'}`
+  const themeSource = localStorage.getItem(themeSourceKey) === 'custom' ? 'custom' : 'cabinet'
+  const cacheScopeKey = themeSource === 'cabinet' ? cabinetBrandingKey : userId
+  const cachePrefix = themeSource === 'cabinet' ? CABINET_THEME_CACHE_KEY_PREFIX : THEME_CACHE_KEY_PREFIX
+  const cachedColors = cacheScopeKey
+    ? readCachedColors(cachePrefix, cacheScopeKey)
     : null
   const colors = cachedColors || DEFAULT_COLORS
   applyCSSVariables(root, colors)
@@ -40,13 +45,21 @@ function applyCSSVariables(root, colors) {
   root.style.setProperty('--color-c10', colors.c10)
 }
 
-function readCachedColors(prefix, userId) {
+function readCachedColors(prefix, scopeKey) {
   try {
-    const raw = localStorage.getItem(`${prefix}${userId}`)
+    const raw = localStorage.getItem(`${prefix}${scopeKey}`)
     if (!raw) return null
     const parsed = JSON.parse(raw)
     if (!parsed || typeof parsed !== 'object' || !parsed.colors) return null
     return { ...DEFAULT_COLORS, ...parsed.colors }
+  } catch {
+    return null
+  }
+}
+
+function getCabinetBrandingKeyFromStorage(userId) {
+  try {
+    return localStorage.getItem(`${CABINET_BRANDING_KEY_BY_USER_PREFIX}${userId}`)
   } catch {
     return null
   }
