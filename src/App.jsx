@@ -172,6 +172,7 @@ export default function App() {
   const { canExport, trackBlobUrl } = useExportGuard(sessionExpired);
 
   // Inject tracker early for all non-React export utilities.
+  // Exports are triggered only after user actions, so this effect runs early enough.
   useEffect(() => {
     setTrackBlobUrlHandler(trackBlobUrl);
     return () => setTrackBlobUrlHandler(null);
