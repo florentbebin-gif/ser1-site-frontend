@@ -1,13 +1,14 @@
 # ROADMAP SaaS V1 — SER1 "Gestion Privée Premium"
 
 > **Date** : 2026-02-11  
-> **Branche** : `feature/roadmap-saas-v1`  
-> **Statut** : DRAFT — docs-only, aucun code modifié
+> **Branche de référence** : `main`  
+> **Statut** : Working draft réaligné au repo (docs-only)
 
 ## État actuel (Checkpoint 2026-02-14)
 
-> **Dernier patch validé** : Placement PR-5 (cutover final + cleanup legacy) ✅
+> **HEAD** : `2fb185ff8d620ec48dc4809d9c0358f4a6a7847c`
 > **Quality Gates** : `npm run check` ✅ (Lint, Types, Tests, Build)
+> **DONE confirmés (code-level)** : P1-05, P0-04, P0-06 (TTL), P0-09 (download policy), P0-10 (gate tests admin), P0-08 (ser1-colors en `error`)
 
 ### Statut Module Placement (P1-05)
 
@@ -33,7 +34,6 @@
 - `src/pages/Sous-Settings/SettingsComptes.jsx`
 - `src/pages/Sous-Settings/SettingsPrelevements.jsx`
 - `src/pages/Sous-Settings/SettingsImpots.jsx`
-- `src/features/placement/components/PlacementSimulatorPage.jsx`
 
 #### 2) Violations gouvernance à traiter
 - Calcul métier encore hors `src/engine/` :
@@ -263,7 +263,7 @@ Actions : `ping_public`, `list_users`, `create_user`, `update_role`, `delete_use
 | 3 | Auth login+MDP + invitation admin (pas de self-signup) | 🟡 Partiel | Supabase Auth + Edge Function `create_user`. **Manque** : workflow invitation complet (email template, onboarding), blocage self-signup explicite |
 | 4 | Simulateur IR | ✅ Présent | `pages/Ir.jsx`, `utils/irEngine.js`, `pptx/slides/buildIrSynthesis.ts` |
 | 5 | Simulateur Crédit | ✅ Présent | `pages/credit/` (architecture modulaire CreditV2), PPTX + Excel |
-| 6 | Simulateur Placement | ✅ Présent | `pages/PlacementV2.jsx`, `engine/placementEngine.js`, `pptx/export/exportStudyDeck.ts` |
+| 6 | Simulateur Placement | ✅ Présent | Route `/sim/placement` → `src/features/placement/PlacementPage.tsx` ; UI `src/features/placement/components/PlacementSimulatorPage.jsx` ; export `pptx/export/exportStudyDeck.ts` |
 | 7 | Simulateur Succession | 🟡 Partiel | `engine/succession.ts` (DMTG). **Manque** : UI dédiée, export PPTX/Excel |
 | 8 | Simulateur Épargne retraite | 🔴 Absent | À concevoir |
 | 9 | Simulateur Prévoyance | 🔴 Absent | `engine/credit/capitalDeces.ts` existe (base) |
@@ -276,10 +276,10 @@ Actions : `ping_public`, `list_users`, `create_user`, `update_role`, `delete_use
 | 16 | Admin wizard fiscalité | ✅ Présent | `SettingsImpots`, `SettingsPrelevements`, `BaseContrat` — versioning rulesets |
 | 17 | Catalogue produits (lifecycle actif/inactif) | ✅ Présent | `BaseContrat.tsx` V3 — CRUD, clôture/réactivation (lifecycle produit). Versioning sur les **règles** (`rulesets[]`), pas sur l'entité produit |
 | 18 | JSON local versionné | 🟡 Partiel | `globalStorage.js` (v1). **Manque** : migration auto v1→vN, validation Zod |
-| 19 | Sessions TTL pro (heartbeat + grâce 2-5 min + 1 h) | 🔴 Absent | Pas de heartbeat, pas de TTL 1h, pas d'UX expiration, pas de purge |
-| 20 | Politique de téléchargement (exports session-only) | 🔴 Absent | Exports générés côté client (blob). Pas de refus après expiration session, pas de purge |
+| 19 | Sessions TTL pro (heartbeat + grâce 2-5 min + 1 h) | ✅ DONE (code-level) | `src/hooks/useSessionTTL.ts` + intégration `src/App.jsx`. **Preuve E2E timeout à compléter** |
+| 20 | Politique de téléchargement (exports session-only) | ✅ DONE (code-level) | `src/hooks/useExportGuard.ts` + intégration `src/App.jsx`. **Preuve E2E dédiée à compléter** |
 | 21 | Observabilité zéro PII + zéro métriques métier | 🟡 Partiel | ESLint `no-console`, debug flags, pg_notify. **Manque** : interdiction explicite métriques métier, logs serveur structurés |
-| 22 | Gate tests admin (publication règles) | 🔴 Absent | Wizard admin permet de publier des règles sans aucun test. Aucun gate |
+| 22 | Gate tests admin (publication règles) | ✅ DONE (code-level) | Gate factorisé `src/features/settings/publicationGate.ts` + tests `publicationGate.test.ts` + usages UI settings. **Preuve E2E publication à compléter** |
 | 23 | MFA phase 2 (TOTP + recovery codes) | 🔴 Absent | Supabase Auth supporte MFA/TOTP. Non implémenté |
 | 24 | Scanner local | 🔴 Absent | Phase 4 |
 
@@ -296,11 +296,11 @@ Actions : `ping_public`, `list_users`, `create_user`, `update_role`, `delete_use
 | R3 | 4 sources C1-C10 divergentes | Incohérence visuelle | Centraliser dans `theme.ts` |
 | R4 | Exports PPTX fragiles | Régression visuelle silencieuse | Snapshots sur golden cases |
 | R5 | Moteur fiscal non testé exhaustivement | Calculs erronés | Golden cases JSON |
-| R6 | Pas de session TTL | Sessions zombie | Heartbeat + invalidation |
+| R6 | Preuve E2E TTL incomplète | Régression TTL non détectée en bout-en-bout | Ajouter scénario E2E timeout (warning + expiry + purge) |
 | R7 | JSON snapshot v1 sans migration | Données perdues | Migration auto |
 | R8 | Dual-track migrations | Confusion | Unifier sous `supabase/migrations/` |
-| R9 | Pas de politique téléchargement | Exports PPTX/Excel accessibles après expiration session | MVP : bouton disabled + révocation Blob URLs + purge `sessionStorage` + UX message |
-| R10 | Pas de gate tests admin | Règles fiscales publiées sans validation | Gate : publication impossible si 0 test exécuté |
+| R9 | Preuve E2E download policy incomplète | Régression export session expirée non détectée | Ajouter E2E export disabled + révocation Blob URLs |
+| R10 | Preuve E2E gate tests admin incomplète | Régression publication sans test non détectée | Ajouter E2E publication bloquée si 0 test |
 
 ### Triggers STOP (toute PR bloquée si)
 
@@ -320,7 +320,7 @@ Actions : `ping_public`, `list_users`, `create_user`, `update_role`, `delete_use
 
 | Gate | Existant | À ajouter |
 |------|----------|-----------|
-| Lint + ser1-colors | ✅ (`warn`) | Passer en `error` après cleanup P0 |
+| Lint + ser1-colors | ✅ (`error`) | Maintenir exceptions test strictement justifiées |
 | TypeScript strict | ✅ | — |
 | Tests unitaires | ✅ 83 | +50 golden cases (IR, succession, crédit, placement) |
 | Build | ✅ | — |
@@ -328,8 +328,8 @@ Actions : `ping_public`, `list_users`, `create_user`, `update_role`, `delete_use
 | Circular deps | ⚠️ Manuel | Ajouter en CI |
 | **Snapshot exports** | 🔴 | PPTX/Excel hash structure sur 3-5 golden cases |
 | **Audit couleurs CI** | ⚠️ Manuel | Intégrer `audit-colors.mjs` en CI |
-| **Gate tests admin** | 🔴 | Wizard admin règles : bloquer publication si 0 test importé/exécuté |
-| **Download policy** | 🔴 | Refuser génération exports si session expirée (`sessionStorage` vidé) |
+| **Gate tests admin** | ✅ (code-level) | Ajouter preuve E2E publication bloquée |
+| **Download policy** | ✅ (code-level) | Ajouter preuve E2E session expirée |
 
 ### 7.2 Golden cases (corpus minimal)
 
@@ -592,8 +592,8 @@ src/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | Corpus golden cases (IR, succession, crédit) + infrastructure snapshot |
-| Fichiers | `src/engine/__tests__/golden/`, `tests/snapshots/`, `vitest.config.ts` |
+| Scope | Corpus golden cases (IR, succession, crédit) + infrastructure snapshot. **Plan initial vs repo réel** : golden cases déjà présents ; snapshots export à finaliser |
+| Fichiers | Existant: `src/engine/__tests__/golden/` ; TODO explicite: créer `tests/snapshots/` (ou chemin alternatif documenté) puis brancher CI (`vitest.config.ts`/pipeline) |
 | Validation | `npm run check` + `npm test` (nouveaux tests passent) |
 | Risque | Faible — ajout de tests uniquement |
 | Rollback | Supprimer fichiers de tests |
@@ -602,8 +602,8 @@ src/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` |
-| Fichiers | `src/engine/ir/baremeIr.ts`, `decoteIr.ts`, `quotientFamilial.ts`, `index.ts` + re-export dans `utils/irEngine.js` |
+| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/`. **Plan initial TS non matérialisé à date** |
+| Fichiers | Existant: `src/engine/ir/adjustments.js`, `src/engine/ir/__tests__/adjustments.test.ts` ; TODO explicite: créer les nouveaux modules cibles (TS ou JS à trancher) + re-export dans `utils/irEngine.js` |
 | Validation | `npm run check` + golden cases IR + E2E IR |
 | Risque | Moyen — imports à mettre à jour |
 | Rollback | Restaurer `irEngine.js` original |
@@ -612,8 +612,8 @@ src/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | Split `src/engine/placementEngine.js` par enveloppe |
-| Fichiers | `src/engine/placement/av.ts`, `per.ts`, `pea.ts`, `cto.ts`, `index.ts` |
+| Scope | Split `src/engine/placementEngine.js` par enveloppe. **Plan initial TS partiellement divergent avec implémentation réelle JS** |
+| Fichiers | Existant: `src/engine/placement/index.js`, `epargne.js`, `liquidation.js`, `transmission.js`, `compare.js`, `simulateComplete.js`, `fiscalParams.js`, `shared.js` ; TODO explicite: décider si migration TS cible est maintenue |
 | Validation | `npm run check` + golden cases placement + E2E |
 | Risque | **Haut** — 50KB, nombreux consommateurs |
 | Rollback | Restaurer original |
@@ -632,7 +632,7 @@ src/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | Heartbeat + inactivité 1h + UX expiration |
+| Scope | Heartbeat + inactivité 1h + UX expiration (**implémenté code-level ; reste la preuve E2E timeout dédiée**) |
 | Fichiers | `src/hooks/useSessionTTL.ts`, `src/auth/AuthProvider.tsx`, `src/App.jsx` |
 | Validation | `npm run check` + E2E timeout |
 | Risque | Moyen |
@@ -652,7 +652,7 @@ src/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | `pages/PlacementV2.jsx` → `features/placement/` |
+| Scope | Cutover `sim/placement` vers `features/placement/` déjà en place ; legacy `pages/PlacementV2.jsx` supprimé |
 | Validation | `npm run check` + golden cases + E2E + snapshot export |
 | Risque | **Haut** |
 
