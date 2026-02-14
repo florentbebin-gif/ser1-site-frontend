@@ -725,17 +725,17 @@ export function ThemeProvider({ children }: ThemeProviderProps): React.ReactElem
  * Les couleurs PPTX sont sans le # prefix
  */
 export function useThemeForPptx(): Record<string, string> {
-  const { colors } = useTheme();
+  const { pptxColors } = useTheme();
   return {
-    c1: colors.c1.replace('#', ''),
-    c2: colors.c2.replace('#', ''),
-    c3: colors.c3.replace('#', ''),
-    c4: colors.c4.replace('#', ''),
-    c5: colors.c5.replace('#', ''),
-    c6: colors.c6.replace('#', ''),
-    c7: colors.c7.replace('#', ''),
-    c8: colors.c8.replace('#', ''),
-    c9: colors.c9.replace('#', ''),
-    c10: colors.c10.replace('#', ''),
+    c1: pptxColors.c1.replace('#', ''),
+    c2: pptxColors.c2.replace('#', ''),
+    c3: pptxColors.c3.replace('#', ''),
+    c4: pptxColors.c4.replace('#', ''),
+    c5: pptxColors.c5.replace('#', ''),
+    c6: pptxColors.c6.replace('#', ''),
+    c7: pptxColors.c7.replace('#', ''),
+    c8: pptxColors.c8.replace('#', ''),
+    c9: pptxColors.c9.replace('#', ''),
+    c10: pptxColors.c10.replace('#', ''),
   };
 }
