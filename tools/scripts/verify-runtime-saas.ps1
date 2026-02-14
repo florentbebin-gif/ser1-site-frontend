@@ -6,8 +6,9 @@ param(
   [string]$ProjectRef = '',
   [switch]$SkipSignupProbe,
   [switch]$PolicyOnly,
+  [switch]$ShowPolicyDefs,
   [string]$ProbeEmail = ("ser1-signup-probe+{0}@example.com" -f ([DateTimeOffset]::UtcNow.ToUnixTimeSeconds())),
-  [string]$ProbePassword = "Ser1Probe!234abc"
+  [string]$SignupDisabledPattern = 'Signups not allowed|signup_disabled|signups disabled'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -46,6 +47,8 @@ $summary = [ordered]@{
   P0_02 = 'UNKNOWN'
 }
 
+$probePassword = 'Ser1Probe!234abc'
+
 Write-Section "B3 Runtime Verification (read-only)"
 
 if (-not $SkipSignupProbe -and -not $PolicyOnly) {
@@ -56,7 +59,7 @@ if (-not $SkipSignupProbe -and -not $PolicyOnly) {
     $signupUri = "$($SupabaseUrl.TrimEnd('/'))/auth/v1/signup"
     $payload = @{
       email = $ProbeEmail
-      password = $ProbePassword
+      password = $probePassword
     } | ConvertTo-Json
 
     $status = 0
@@ -88,24 +91,31 @@ if (-not $SkipSignupProbe -and -not $PolicyOnly) {
       }
     }
 
-    if ($body -match 'Signups not allowed|signup_disabled|signups disabled') {
+    if ($body -match $SignupDisabledPattern) {
       $summary.P0_01 = 'PASS'
+      Write-Result "P0_01_DECISION" "PASS(body-explicit-signups-disabled)"
     } elseif ($status -in 200, 201) {
       $summary.P0_01 = 'FAIL'
+      Write-Result "P0_01_DECISION" "FAIL(signup-http-success)"
     } elseif (-not [string]::IsNullOrWhiteSpace($SupabaseAccessToken) -and -not [string]::IsNullOrWhiteSpace($ProjectRef)) {
       try {
         $authConfig = Invoke-RestMethod -Method Get -Uri "https://api.supabase.com/v1/projects/$ProjectRef/config/auth" -Headers @{ Authorization = "Bearer $SupabaseAccessToken" }
+        Write-Result "AUTH_CONFIG_SOURCE" "GET /v1/projects/$ProjectRef/config/auth"
         Write-Result "AUTH_DISABLE_SIGNUP" ([string]$authConfig.disable_signup)
         if ($authConfig.disable_signup -eq $true) {
           $summary.P0_01 = 'PASS'
+          Write-Result "P0_01_DECISION" "PASS(auth-config-disable_signup=true)"
         } else {
-          $summary.P0_01 = 'FAIL'
+          $summary.P0_01 = 'UNKNOWN'
+          Write-Result "P0_01_DECISION" "UNKNOWN(auth-config-disable_signup=false-and-no-explicit-body-proof)"
         }
       } catch {
         $summary.P0_01 = 'UNKNOWN'
+        Write-Result "P0_01_DECISION" "UNKNOWN(auth-config-unreachable)"
       }
     } else {
       $summary.P0_01 = 'UNKNOWN'
+      Write-Result "P0_01_DECISION" "UNKNOWN(no-explicit-body-proof-and-no-auth-config-proof)"
     }
 
     Write-Result "SIGNUP_STATUS" "$status"
@@ -122,6 +132,9 @@ if (-not [string]::IsNullOrWhiteSpace($SupabaseDbUrl)) {
   try {
     $policyCount = psql "$SupabaseDbUrl" -t -A -c "select count(*) from pg_policies where tablename='profiles';"
     $policyNames = psql "$SupabaseDbUrl" -t -A -c "select policyname from pg_policies where tablename='profiles' order by policyname;"
+    if ($ShowPolicyDefs) {
+      $policyDefsRaw = psql "$SupabaseDbUrl" -t -A -F "|" -c "select policyname, coalesce(qual, ''), coalesce(with_check, '') from pg_policies where tablename='profiles' order by policyname;"
+    }
     $rlsValue = psql "$SupabaseDbUrl" -t -A -c "select relrowsecurity::text from pg_class where relname='profiles';"
 
     $policyCountInt = [int]($policyCount.Trim())
@@ -130,8 +143,23 @@ if (-not [string]::IsNullOrWhiteSpace($SupabaseDbUrl)) {
     Write-Result "PROFILES_POLICIES_COUNT" "$policyCountInt"
     Write-Result "PROFILES_RLS" ($rlsValue.Trim())
     Write-Result "PROFILES_POLICY_NAMES" (($policyNames -split "\r?\n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) -join ',')
+    if ($ShowPolicyDefs) {
+      $policyDefLines = @($policyDefsRaw -split "\r?\n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+      $containsCabinetId = $false
+      foreach ($line in $policyDefLines) {
+        $parts = $line -split '\|', 3
+        $pName = $parts[0]
+        $pQual = if ($parts.Length -gt 1) { $parts[1] } else { '' }
+        $pCheck = if ($parts.Length -gt 2) { $parts[2] } else { '' }
+        if (($pQual -match 'cabinet_id') -or ($pCheck -match 'cabinet_id')) {
+          $containsCabinetId = $true
+        }
+        Write-Result "POLICY_DEF" ("{0} | qual={1} | with_check={2}" -f $pName, $pQual, $pCheck)
+      }
+      Write-Result "POLICIES_INCLUDE_CABINET_ID" ([string]$containsCabinetId)
+    }
 
-    if ($policyCountInt -gt 0 -and $rlsEnabled) {
+    if ($policyCountInt -gt 0 -and $rlsEnabled -and ((-not $ShowPolicyDefs) -or $containsCabinetId)) {
       $summary.P0_02 = 'PASS'
     } else {
       $summary.P0_02 = 'FAIL'
@@ -144,6 +172,9 @@ if (-not [string]::IsNullOrWhiteSpace($SupabaseDbUrl)) {
   try {
     $policyCountResp = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select count(*) as c from pg_policies where tablename='profiles';"
     $policyNamesResp = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select policyname from pg_policies where tablename='profiles' order by policyname;"
+    if ($ShowPolicyDefs) {
+      $policyDefsResp = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select policyname, coalesce(qual, '') as qual, coalesce(with_check, '') as with_check from pg_policies where tablename='profiles' order by policyname;"
+    }
     $rlsResp = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select relrowsecurity::text as rls from pg_class where relname='profiles';"
 
     $policyCountInt = [int]$policyCountResp.c
@@ -154,8 +185,20 @@ if (-not [string]::IsNullOrWhiteSpace($SupabaseDbUrl)) {
     Write-Result "PROFILES_POLICIES_COUNT" "$policyCountInt"
     Write-Result "PROFILES_RLS" $rlsValue
     Write-Result "PROFILES_POLICY_NAMES" (($policyNamesResp | ForEach-Object { $_.policyname }) -join ',')
+    if ($ShowPolicyDefs) {
+      $containsCabinetId = $false
+      foreach ($row in $policyDefsResp) {
+        $q = [string]$row.qual
+        $w = [string]$row.with_check
+        if (($q -match 'cabinet_id') -or ($w -match 'cabinet_id')) {
+          $containsCabinetId = $true
+        }
+        Write-Result "POLICY_DEF" ("{0} | qual={1} | with_check={2}" -f $row.policyname, $q, $w)
+      }
+      Write-Result "POLICIES_INCLUDE_CABINET_ID" ([string]$containsCabinetId)
+    }
 
-    if ($policyCountInt -gt 0 -and $rlsEnabled) {
+    if ($policyCountInt -gt 0 -and $rlsEnabled -and ((-not $ShowPolicyDefs) -or $containsCabinetId)) {
       $summary.P0_02 = 'PASS'
     } else {
       $summary.P0_02 = 'FAIL'

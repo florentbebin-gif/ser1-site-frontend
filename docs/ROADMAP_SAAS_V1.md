@@ -467,6 +467,14 @@ src/
 | P0-09 | Politique de téléchargement MVP client-side : bouton export **disabled** si session expirée, révocation Blob URLs, purge `sessionStorage`, message UX "session expirée" | Faible |
 | P0-10 | Gate tests admin : wizard règles fiscales/produits → publication **bloquée si 0 test** importé et exécuté. Le système demande explicitement un corpus de tests | Moyen |
 
+> Statut exécution runtime (2026-02-14) :
+> - **P0-01 DONE (runtime proven)** via B3 sur `xnpbxrqkzgimiugqtago`.
+>   - Commande: `powershell -ExecutionPolicy Bypass -File tools/scripts/verify-runtime-saas.ps1 -SupabaseUrl "https://xnpbxrqkzgimiugqtago.supabase.co" -SupabaseAnonKey <anon> -ProjectRef "xnpbxrqkzgimiugqtago"`
+>   - Preuve: `AUTH_CONFIG_SOURCE=GET /v1/projects/xnpbxrqkzgimiugqtago/config/auth`, `AUTH_DISABLE_SIGNUP=True`, `P0_01_DECISION=PASS(auth-config-disable_signup=true)`, `SIGNUP_STATUS=422`, `P0_01=PASS`.
+> - **P0-02 DONE (runtime proven)** via B3 policy check.
+>   - Commande: `powershell -ExecutionPolicy Bypass -File tools/scripts/verify-runtime-saas.ps1 -PolicyOnly -ProjectRef "xnpbxrqkzgimiugqtago" -ShowPolicyDefs`
+>   - Preuve: `PROFILES_POLICIES_COUNT=5`, `PROFILES_RLS=true`, `POLICIES_INCLUDE_CABINET_ID=True`, `P0_02=PASS`.
+
 ### Phase 1 — MVP Simulateurs + JSON (6-8 semaines)
 
 **Objectif** : Premiers simulateurs complets + sauvegarde locale robuste.
