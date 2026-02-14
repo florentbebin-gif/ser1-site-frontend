@@ -599,7 +599,7 @@ localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true')
 |----------|-------------|-------|
 | **[Gouvernance Couleurs](docs/design/color-governance.md)** | Règles complètes C1-C10, exceptions, contraste, mapping sémantique | **OBLIGATOIRE** avant toute modif couleur |
 | **[Gouvernance UI](docs/design/ui-governance.md)** | Standards Layout, Inputs, Typo, Composants "Premium" | **OBLIGATOIRE** pour toute nouvelle page |
-| **[Audit Couleurs](docs/history/color-audit.md)** | Historique des écarts identifiés (archive) | Référence historique |
+| **[Audit Couleurs](docs/design/color-governance.md)** | Historique des écarts identifiés et plan de remédiation (section annexe) | Référence historique |
 
 **⚠️ RÈGLES ABSOLUES** :
 1. Aucune couleur hardcodée sauf WHITE (#FFFFFF) et WARNING (#996600). Voir [gouvernance couleur](docs/design/color-governance.md).

@@ -1,8 +1,8 @@
 # Historique des évolutions — SER1
 
 > Ce fichier conserve l'historique détaillé des changements, post-mortems et évolutions techniques.
-> Pour la documentation opérationnelle, voir [README.md](../../README.md).
-> Pour la gouvernance couleurs, voir [docs/design/color-governance.md](../design/color-governance.md).
+> Pour la documentation opérationnelle, voir [README.md](../README.md).
+> Pour la gouvernance couleurs, voir [docs/design/color-governance.md](./design/color-governance.md).
 
 ---
 
