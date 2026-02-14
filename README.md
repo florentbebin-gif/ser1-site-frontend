@@ -264,7 +264,7 @@ src/pages/credit/
 **Conventions** :
 - **$ref** : format `$ref:tax_settings.pfu.current.rateIR` (snake_case table, camelCase path)
 - **Versioning** : `product.rulesets[]` trié `effectiveDate` DESC ; `rulesets[0]` = version active (éditable), anciennes en lecture seule
-- **Feature flag** : `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=false` (OFF par défaut). Quand ON, `usePlacementSettings` utilise `extractFromBaseContrat()` au lieu de `extractFiscalParams()`
+- **Feature flag** : `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=true` (ON par défaut, fallback ON si variable absente). Mettre explicitement `false` pour forcer le legacy `extractFiscalParams()`
 - **Golden snapshot** : `extractFromBaseContrat.test.ts` vérifie les mêmes 16 valeurs que `extractFiscalParams.test.ts`
 - **AV décès tranche 2** : 31.25 % (aligné fixtures, pas 35 % de settingsDefaults)
 
