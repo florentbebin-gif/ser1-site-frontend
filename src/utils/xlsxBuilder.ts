@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { createTrackedObjectURL } from './createTrackedObjectURL';
+import { fingerprintXlsxExport } from './exportFingerprint';
 
 export type XlsxCellValue = string | number | boolean | null | undefined;
 export type XlsxCell = { v: XlsxCellValue; style?: string };
@@ -55,6 +56,42 @@ const normalizeCell = (cell: XlsxCell | XlsxCellValue): XlsxCell => {
     return cell as XlsxCell;
   }
   return { v: cell as XlsxCellValue };
+};
+
+const normalizeCellValueForFingerprint = (value: XlsxCellValue): string | number | boolean | null => {
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
+  return null;
+};
+
+const buildSheetFingerprintSummary = (sheet: XlsxSheet) => {
+  const rowCount = sheet.rows.length;
+  const colCount = sheet.rows.reduce((max, row) => Math.max(max, row.length), 0);
+  const candidateRows = [0, 1, Math.floor(rowCount / 2), rowCount - 2, rowCount - 1]
+    .filter((index) => index >= 0 && index < rowCount);
+  const uniqueRows = Array.from(new Set(candidateRows));
+
+  const keyCells: Array<{ ref: string; value: string | number | boolean | null; style: string | null }> = [];
+  for (const rowIndex of uniqueRows) {
+    const row = sheet.rows[rowIndex] || [];
+    const maxCols = Math.min(row.length, 10);
+    for (let colIndex = 0; colIndex < maxCols; colIndex += 1) {
+      const normalized = normalizeCell(row[colIndex]);
+      keyCells.push({
+        ref: `${rowIndex + 1}:${colIndex + 1}`,
+        value: normalizeCellValueForFingerprint(normalized.v),
+        style: normalized.style ?? null,
+      });
+      if (keyCells.length >= 50) break;
+    }
+    if (keyCells.length >= 50) break;
+  }
+
+  return {
+    name: sheet.name,
+    rowCount,
+    colCount,
+    keyCells,
+  };
 };
 
 const columnLetter = (index: number) => {
@@ -190,6 +227,24 @@ export async function buildXlsxBlob(options: XlsxBuildOptions): Promise<Blob> {
   const headerFill = normalizeColor(options.headerFill);
   const headerText = pickTextColorForBackground(headerFill);
   const sectionFill = normalizeColor(options.sectionFill);
+
+  const manifest = {
+    kind: 'xlsx-ooxml',
+    sheetCount: options.sheets.length,
+    sheets: options.sheets.map((sheet) => buildSheetFingerprintSummary(sheet)),
+    headerFill,
+    sectionFill,
+  };
+  const fingerprint = fingerprintXlsxExport(manifest);
+  if (import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
+    console.info('[ExportFingerprint][XLSX]', {
+      fingerprint,
+      sheetCount: manifest.sheetCount,
+      sheetNames: manifest.sheets.map((sheet) => sheet.name),
+    });
+  }
+
   const zip = new JSZip();
 
   zip.file('[Content_Types].xml', buildContentTypesXml(options.sheets.length));
