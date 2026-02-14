@@ -501,6 +501,16 @@ const contextLabel = getContextLabel(path);
             </LazyRoute>
           </PrivateRoute>
         } />
+        <Route path="/sim/prevoyance" element={
+          <PrivateRoute>
+            <LazyRoute>
+              <UpcomingSimulatorPage
+                title="Prévoyance"
+                subtitle="Ce simulateur premium sera bientôt disponible."
+              />
+            </LazyRoute>
+          </PrivateRoute>
+        } />
         <Route path="/sim/ir" element={
           <PrivateRoute>
             <LazyRoute><Ir /></LazyRoute>
@@ -517,6 +527,7 @@ const contextLabel = getContextLabel(path);
         {/* Redirections de compatibilité */}
         <Route path="/placement" element={<Navigate to="/sim/placement" replace />}/>
         <Route path="/credit" element={<Navigate to="/sim/credit" replace />} />
+        <Route path="/prevoyance" element={<Navigate to="/sim/prevoyance" replace />} />
       </Routes>
 
     </SessionGuardContext.Provider>

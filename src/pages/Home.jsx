@@ -69,7 +69,7 @@ export default function Home(){
               <ToolTile to="/sim/placement" icon={<IconChart/>} title="Epargne" testId="home-tool-epargne" />
               <ToolTile to="/sim/epargne-salariale" icon={<IconWallet/>} title="Epargne salariale" testId="home-tool-epargne-salariale" />
               <ToolTile to="/sim/tresorerie-societe" icon={<IconBuilding/>} title="Trésorerie société" testId="home-tool-tresorerie-societe" />
-              <ToolTile to="/prevoyance" icon={<IconShield/>} title="Prévoyance" testId="home-tool-prevoyance" />
+              <ToolTile to="/sim/prevoyance" icon={<IconShield/>} title="Prévoyance" testId="home-tool-prevoyance" />
             </div>
           </div>
         </section>
