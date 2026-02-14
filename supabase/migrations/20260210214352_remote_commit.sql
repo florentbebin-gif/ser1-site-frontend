@@ -1288,6 +1288,10 @@ CREATE TRIGGER update_ui_settings_updated_at BEFORE UPDATE ON public.ui_settings
 
 CREATE TRIGGER tr_handle_new_auth_user AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_auth_user();
 
+-- Local compatibility note:
+-- Supabase Storage internal schema can differ across CLI/stack versions
+-- (e.g. storage.prefixes may be absent while storage.objects exists).
+-- These guards are idempotent and defensive only: no business-rule change.
 do $$
 begin
   if to_regclass('storage.objects') is not null then
