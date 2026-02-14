@@ -204,7 +204,7 @@ describe('Logout - Déconnexion', () => {
   it('doit déconnecter l\'utilisateur et rediriger vers login', async () => {
     supabaseMock.auth.signOut.mockResolvedValue({});
 
-    // Simuler handleLogout (logique extraite de TopBar.tsx)
+    // Simuler handleLogout (logique de déconnexion)
     const handleLogout = async () => {
       try {
         // Déconnexion Supabase
