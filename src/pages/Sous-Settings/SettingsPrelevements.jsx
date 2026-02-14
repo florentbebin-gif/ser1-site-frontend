@@ -9,7 +9,10 @@ import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsTable from '@/components/settings/SettingsTable';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
-import { getBaseContratSettings } from '@/utils/baseContratSettingsCache';
+import {
+  getBaseContratSettings,
+  isBaseContratSettingsSourceAvailable,
+} from '@/utils/baseContratSettingsCache';
 import { evaluatePublicationGate } from '@/features/settings/publicationGate';
 
 // ----------------------
@@ -57,16 +60,30 @@ export default function SettingsPrelevements() {
           console.error('Erreur chargement ps_settings :', psErr);
         }
 
-        const baseContratSettings = await getBaseContratSettings();
-        if (mounted) {
-          setPublicationGate(evaluatePublicationGate({ tests: baseContratSettings?.tests }));
+        try {
+          const [baseContratSettings, testsSourceAvailable] = await Promise.all([
+            getBaseContratSettings(),
+            isBaseContratSettingsSourceAvailable(),
+          ]);
+          if (mounted) {
+            setPublicationGate(
+              evaluatePublicationGate({
+                tests: baseContratSettings?.tests,
+                testsSourceAvailable,
+              }),
+            );
+          }
+        } catch {
+          if (mounted) {
+            setPublicationGate(evaluatePublicationGate({ tests: [], testsSourceAvailable: false }));
+          }
         }
 
         if (mounted) setLoading(false);
       } catch (e) {
         console.error(e);
         if (mounted) {
-          setPublicationGate(evaluatePublicationGate({ tests: [] }));
+          setPublicationGate(evaluatePublicationGate({ tests: [], testsSourceAvailable: false }));
         }
         if (mounted) setLoading(false);
       }

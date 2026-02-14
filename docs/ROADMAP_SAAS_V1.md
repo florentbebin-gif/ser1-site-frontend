@@ -474,6 +474,10 @@ src/
 > - **P0-02 DONE (runtime proven)** via B3 policy check.
 >   - Commande: `powershell -ExecutionPolicy Bypass -File tools/scripts/verify-runtime-saas.ps1 -PolicyOnly -ProjectRef "xnpbxrqkzgimiugqtago" -ShowPolicyDefs`
 >   - Preuve: `PROFILES_POLICIES_COUNT=5`, `PROFILES_RLS=true`, `POLICIES_INCLUDE_CABINET_ID=True`, `P0_02=PASS`.
+> - **P0-10 DONE (v1)** gate publication unifié sur les 3 écrans admin de publication (`BaseContrat`, `Impôts`, `Prélèvements`).
+>   - Implémentation: `src/features/settings/publicationGate.ts` (gate partagé + messages blocage/warning + mode fail-safe `testsSourceAvailable=false`).
+>   - Test: `src/features/settings/publicationGate.test.ts` (`tests=[] => blocked=true`, `tests=[..] => blocked=false`, source indisponible => blocage explicite).
+>   - Intégration UI: boutons Save désactivés si gate bloquant + message visible (non silencieux) sur `/settings/base-contrat`, `/settings/impots`, `/settings/prelevements`.
 
 ### Phase 1 — MVP Simulateurs + JSON (6-8 semaines)
 

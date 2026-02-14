@@ -9,7 +9,10 @@ import { numberOrEmpty, createFieldUpdater } from '@/utils/settingsHelpers.js';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsTable from '@/components/settings/SettingsTable';
-import { getBaseContratSettings } from '@/utils/baseContratSettingsCache';
+import {
+  getBaseContratSettings,
+  isBaseContratSettingsSourceAvailable,
+} from '@/utils/baseContratSettingsCache';
 import { evaluatePublicationGate } from '@/features/settings/publicationGate';
 
 // ----------------------
@@ -85,16 +88,30 @@ export default function SettingsImpots() {
           console.error('Erreur chargement tax_settings :', taxErr);
         }
 
-        const baseContratSettings = await getBaseContratSettings();
-        if (mounted) {
-          setPublicationGate(evaluatePublicationGate({ tests: baseContratSettings?.tests }));
+        try {
+          const [baseContratSettings, testsSourceAvailable] = await Promise.all([
+            getBaseContratSettings(),
+            isBaseContratSettingsSourceAvailable(),
+          ]);
+          if (mounted) {
+            setPublicationGate(
+              evaluatePublicationGate({
+                tests: baseContratSettings?.tests,
+                testsSourceAvailable,
+              }),
+            );
+          }
+        } catch {
+          if (mounted) {
+            setPublicationGate(evaluatePublicationGate({ tests: [], testsSourceAvailable: false }));
+          }
         }
 
         if (mounted) setLoading(false);
       } catch (e) {
         console.error(e);
         if (mounted) {
-          setPublicationGate(evaluatePublicationGate({ tests: [] }));
+          setPublicationGate(evaluatePublicationGate({ tests: [], testsSourceAvailable: false }));
         }
         if (mounted) setLoading(false);
       }

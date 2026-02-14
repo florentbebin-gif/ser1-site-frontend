@@ -119,6 +119,29 @@ export async function getBaseContratSettings(
   return fetchFromSupabase();
 }
 
+export async function isBaseContratSettingsSourceAvailable(): Promise<boolean> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), SUPABASE_TIMEOUT);
+
+  try {
+    const { error } = await supabase
+      .from('base_contrat_settings')
+      .select('id')
+      .limit(1)
+      .abortSignal(controller.signal);
+
+    if (error) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export async function saveBaseContratSettings(
   data: BaseContratSettings,
 ): Promise<{ error: string | null }> {
