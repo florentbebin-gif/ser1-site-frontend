@@ -497,10 +497,15 @@ src/
 | P1-02 | Simulateur Succession : UI + export PPTX/Excel | Moyen |
 | P1-03 | Simulateur Épargne retraite (PER) : UI + engine + export | Moyen |
 | P1-04 | Refactor IR : pattern CreditV2 (components/hooks/utils) | **Haut** |
-| P1-05 | Refactor Placement : pattern CreditV2 | **Haut** |
+| P1-05 | Refactor Placement : pattern CreditV2 (shell + controller + panels + CSS local) | **Haut** |
 | P1-06 | Feature flag `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT` → ON | Moyen |
 
-> Statut exécution (2026-02-14) : **P1-04 DONE** avec preuves de non-régression (fichiers IR < 500 lignes, smoke tests export IR PPTX/Excel, `npm run check` vert).
+> Statut exécution (2026-02-14) :
+> - **P1-04 DONE** avec preuves de non-régression (fichiers IR < 500 lignes, smoke tests export IR PPTX/Excel, `npm run check` vert).
+> - **P1-05 DONE** (refactor placement carry-over) avec preuves :
+>   - `src/features/placement/components/PlacementSimulatorPage.jsx` < 500 lignes (150).
+>   - `grep -R "@/pages/Placement.css" -n src` = 0 (cross-import supprimé).
+>   - `npm run check` vert après découpe shell/controller/panels et migration CSS locale.
 
 ### Phase 2 — Analyse Patrimoniale + Simulateurs (6-8 semaines)
 
@@ -563,7 +568,7 @@ src/
 | P1-02 | Simulateur Succession UI | Haute | Moyen | `pages/`, `engine/succession` | UI + export PPTX/Excel |
 | P1-03 | Simulateur Épargne retraite | Haute | Moyen | `pages/`, `engine/` | UI + engine + export |
 | P1-04 | Refactor IR (CreditV2 pattern) | Haute | **Haut** | `pages/Ir.jsx` → `features/ir/` | <500 lignes par fichier |
-| P1-05 | Refactor Placement (CreditV2) | Haute | **Haut** | `pages/PlacementV2` → `features/placement/` | <500 lignes par fichier |
+| P1-05 | Refactor Placement (CreditV2) | Haute | **Haut** | `pages/PlacementV2` → `features/placement/` | `PlacementSimulatorPage.jsx` = 150 lignes, cross-import CSS = 0, `npm run check` vert |
 | P1-06 | Feature flag base_contrat ON | Moyenne | Moyen | `hooks/usePlacementSettings` | Mêmes résultats que `extractFiscalParams` |
 | P2-01 | Rapport PPTX audit complet | **Critique** | Moyen | `pptx/`, `features/audit` | PPTX patrimoine complet |
 | P2-02 | Simulateur Épargne comparaison | Haute | Faible | `pages/`, `engine/` | UI + export |

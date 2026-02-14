@@ -11,6 +11,11 @@ Ce document décrit l'organisation réelle du module Placement après le cutover
 - `src/features/placement/PlacementPage.tsx`
 - `src/features/placement/index.ts`
 - `src/features/placement/components/PlacementSimulatorPage.jsx`
+- `src/features/placement/components/usePlacementSimulatorController.js`
+- `src/features/placement/components/PlacementToolbar.jsx`
+- `src/features/placement/components/PlacementInputsPanel.jsx`
+- `src/features/placement/components/PlacementResultsPanel.jsx`
+- `src/features/placement/components/PlacementSimulator.css`
 - `src/features/placement/adapters/toEngineProduct.js`
 - `src/features/placement/__tests__/toEngineProduct.test.ts`
 
@@ -19,7 +24,8 @@ Ce document décrit l'organisation réelle du module Placement après le cutover
 - `src/pages/placement/components/inputs.jsx`
 - `src/pages/placement/components/tables.jsx`
 - `src/pages/placement/components/VersementConfigModal.jsx`
-- `src/pages/Placement.css` (importé depuis la feature via `@/pages/Placement.css`)
+
+> Note P1-05 : le cross-import CSS `@/pages/Placement.css` est supprimé. Le simulateur feature utilise désormais `src/features/placement/components/PlacementSimulator.css`.
 
 ### Engine Placement (métier pur)
 
@@ -45,7 +51,7 @@ Ce document décrit l'organisation réelle du module Placement après le cutover
 - **Zéro calcul métier dans React** : toute règle fiscale/projection doit vivre dans `src/engine/placement/*`.
 - **Façade publique stable** : ne pas casser les signatures exportées par `src/engine/placementEngine.js`.
 - **Fichiers < 500 lignes** : découper l'orchestrateur UI avant nouvelle croissance significative.
-- **Dette connue** : cross-import CSS `@/pages/Placement.css` à résorber pendant le refactor P1-05.
+- **Controller + panels** : conserver la séparation `shell UI` / `controller orchestration` / `panels présentation` pour limiter les régressions.
 
 ## Ajouter un champ / une règle
 
@@ -75,4 +81,4 @@ Ce document décrit l'organisation réelle du module Placement après le cutover
 
 - Le wrapper legacy `src/pages/PlacementV2.jsx` est supprimé et ne doit pas être réintroduit.
 - Le point d'entrée officiel reste `src/features/placement/PlacementPage.tsx`.
-- Priorité technique restante : découpe de `PlacementSimulatorPage.jsx` + suppression du cross-import CSS legacy.
+- `PlacementSimulatorPage.jsx` est maintenu sous 500 lignes (150 après P1-05).
