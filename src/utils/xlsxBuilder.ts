@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+import { createTrackedObjectURL } from './createTrackedObjectURL';
 
 export type XlsxCellValue = string | number | boolean | null | undefined;
 export type XlsxCell = { v: XlsxCellValue; style?: string };
@@ -219,7 +220,7 @@ export async function validateXlsxBlob(blob: Blob): Promise<boolean> {
 
 export function downloadXlsx(blob: Blob, filename: string): void {
   const safeName = filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`;
-  const url = URL.createObjectURL(blob);
+  const url = createTrackedObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.download = safeName;

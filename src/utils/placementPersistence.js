@@ -1,3 +1,5 @@
+import { createTrackedObjectURL } from './createTrackedObjectURL';
+
 const FILE_VERSION = 1;
 const FILE_APP = 'SER1';
 const FILE_KIND = 'placement';
@@ -16,7 +18,7 @@ function hasFileSystemAccess() {
 
 async function fallbackDownload(json, filename) {
   const blob = new Blob([json], { type: MIME_TYPE });
-  const url = URL.createObjectURL(blob);
+  const url = createTrackedObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;

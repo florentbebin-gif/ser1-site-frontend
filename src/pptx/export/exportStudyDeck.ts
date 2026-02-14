@@ -37,6 +37,7 @@ import { buildSuccessionSynthesis } from '../slides/buildSuccessionSynthesis';
 import { buildPerSynthesis } from '../slides/buildPerSynthesis';
 import { injectThemeColors } from '../theme/themeBuilder';
 import { defineSlideMasters } from '../template/loadBaseTemplate';
+import { createTrackedObjectURL } from '../../utils/createTrackedObjectURL';
 
 /**
  * Default footer disclaimer (verbatim as specified)
@@ -302,7 +303,7 @@ export async function exportStudyDeck(
  * @param filename - Output filename (should end with .pptx)
  */
 export function downloadPptx(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
+  const url = createTrackedObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.download = filename.endsWith('.pptx') ? filename : `${filename}.pptx`;

@@ -6,6 +6,7 @@
  */
 
 import type { DossierAudit } from './types';
+import { createTrackedObjectURL } from '../../utils/createTrackedObjectURL';
 
 const SESSION_STORAGE_KEY = 'ser1_audit_draft';
 
@@ -15,7 +16,7 @@ const SESSION_STORAGE_KEY = 'ser1_audit_draft';
 export function exportDossierToFile(dossier: DossierAudit, filename?: string): void {
   const data = JSON.stringify(dossier, null, 2);
   const blob = new Blob([data], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
+  const url = createTrackedObjectURL(blob);
   
   const link = document.createElement('a');
   link.href = url;
