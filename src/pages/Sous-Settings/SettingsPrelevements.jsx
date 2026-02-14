@@ -9,7 +9,10 @@ import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsTable from '@/components/settings/SettingsTable';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
-import { getBaseContratSettings } from '@/utils/baseContratSettingsCache';
+import {
+  getBaseContratSettings,
+  isBaseContratSettingsSourceAvailable,
+} from '@/utils/baseContratSettingsCache';
 import { evaluatePublicationGate } from '@/features/settings/publicationGate';
 
 // ----------------------
@@ -58,9 +61,11 @@ export default function SettingsPrelevements() {
         }
 
         try {
-          const baseContratSettings = await getBaseContratSettings();
+          const [baseContratSettings, testsSourceAvailable] = await Promise.all([
+            getBaseContratSettings(),
+            isBaseContratSettingsSourceAvailable(),
+          ]);
           if (mounted) {
-            const testsSourceAvailable = baseContratSettings !== null;
             setPublicationGate(
               evaluatePublicationGate({
                 tests: baseContratSettings?.tests,
