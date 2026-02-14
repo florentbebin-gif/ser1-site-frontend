@@ -30,7 +30,6 @@
 ### Dette restante / à faire ensuite (hors PR-5)
 
 #### 1) Godfiles prioritaires (découpe)
-- `src/pages/Placement.css`
 - `src/pages/Sous-Settings/SettingsComptes.jsx`
 - `src/pages/Sous-Settings/SettingsPrelevements.jsx`
 - `src/pages/Sous-Settings/SettingsImpots.jsx`
@@ -40,14 +39,14 @@
 - Calcul métier encore hors `src/engine/` :
   - `src/pages/credit/hooks/useCreditCalculations.js`
   - `src/features/strategy/calculations.ts`
-- Cross-import CSS à corriger :
-  - `src/features/placement/components/PlacementSimulatorPage.jsx` importe `@/pages/Placement.css`
+- CSS legacy à traiter :
+  - `src/pages/Placement.css` removed (PR2) — styles migrated to `src/features/placement/components/PlacementSimulator.css`
 - Couleurs hardcodées restantes dans Settings legacy :
   - `src/pages/Sous-Settings/BaseContrat.tsx`
   - `src/pages/Sous-Settings/SettingsComptes.css`
 
 #### 3) Route cassée / cohérence navigation
-- Tuile Home `"/prevoyance"` sans route correspondante dans `App.jsx`.
+- Navigation prévoyance cohérente : Home pointe vers `"/sim/prevoyance"` et `"/prevoyance"` redirige vers `"/sim/prevoyance"` dans `App.jsx`.
 
 ### Reprise (instructions repo, sans contexte conversationnel)
 
@@ -441,9 +440,7 @@ src/
 | Admin check DB | `public.is_admin()` | Toutes policies RLS |
 | Admin check frontend | `useUserRole()` → `app_metadata.role` | Pages admin |
 | Presets thème | `src/settings/presets.ts` | ThemeProvider, Settings |
-| JSON snapshot | `SNAPSHOT_VERSIO
-> N `* dans (IR)** `glol✅).
-> * **P1-05 (Placement)**N POGRESS🏗️ (R-1 à R-4 vaidéesEngie odulaisé.Rest PR-5Cuto
+| JSON snapshot | `src/utils/globalStorage.js` | Save/load `.ser1` + version de snapshot |
 | Design system PPTX | `src/pptx/designSystem/serenity.ts` | Tous slide builders |
 
 ---
@@ -504,7 +501,7 @@ src/
 > - **P1-04 DONE** avec preuves de non-régression (fichiers IR < 500 lignes, smoke tests export IR PPTX/Excel, `npm run check` vert).
 > - **P1-05 DONE** (refactor placement carry-over) avec preuves :
 >   - `src/features/placement/components/PlacementSimulatorPage.jsx` < 500 lignes (150).
->   - `grep -R "@/pages/Placement.css" -n src` = 0 (cross-import supprimé).
+>   - `grep -R "@/pages/Placement.css" -n src` = 0 ; `src/pages/Placement.css` removed (PR2) — styles migrated to `src/features/placement/components/PlacementSimulator.css`.
 >   - `npm run check` vert après découpe shell/controller/panels et migration CSS locale.
 
 ### Phase 2 — Analyse Patrimoniale + Simulateurs (6-8 semaines)

@@ -25,7 +25,7 @@ Ce document décrit l'organisation réelle du module Placement après le cutover
 - `src/pages/placement/components/tables.jsx`
 - `src/pages/placement/components/VersementConfigModal.jsx`
 
-> Note P1-05 : le cross-import CSS `@/pages/Placement.css` est supprimé. Le simulateur feature utilise désormais `src/features/placement/components/PlacementSimulator.css`.
+> Note P1-05/PR2 : `src/pages/Placement.css` removed (PR2) — styles migrated to `src/features/placement/components/PlacementSimulator.css`.
 
 ### Engine Placement (métier pur)
 

@@ -590,8 +590,8 @@ localStorage.setItem('DEBUG_THEME_BOOTSTRAP', 'true')
 ## 10. Liens documentation
 
 - [Historique détaillé](docs/CHANGELOG.md) — post-mortems, évolutions
-- `ADMIN_COMPTES_ET_SIGNALMENTS.md` — Gestion admin
-- `CSS_COLOR_RULES.md` — Règles couleurs CSS
+- [Sécurité admin & rôles](docs/technical/security-user-metadata-guidelines.md) — Référentiel autorisation
+- [Gouvernance couleurs CSS](docs/design/color-governance.md) — Règles couleurs CSS
 
 ### 🎨 Design System & Gouvernance
 

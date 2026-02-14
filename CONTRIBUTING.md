@@ -68,7 +68,7 @@ git push origin feature/nom-clair
 - **Pattern correct** : 
   - Styles partagés → `src/styles/` (variables CSS, utilitaires)
   - Styles page-spécifiques → `src/pages/PageName.css` uniquement
-- **Exemple de correction** : `PlacementV2.jsx` importait `Ir.css` → styles migrés vers `Placement.css` avec préfixe `pl-ir-*`
+- **Exemple de correction** : `PlacementV2.jsx` importait `Ir.css` ; `src/pages/Placement.css` removed (PR2) — styles migrated to `src/features/placement/components/PlacementSimulator.css`
 
 ### Imports (règles détaillées)
 - **Alias `@/`** : Toujours privilégié pour les imports cross-module
