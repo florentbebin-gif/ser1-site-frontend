@@ -48,6 +48,23 @@ export function convertDbPaletteToThemeColors(palette: any): ThemeColors | null 
   };
 }
 
+export async function loadCabinetBrandingKey(userId: string): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('cabinet_id')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) return null;
+    const cabinetId = data?.cabinet_id;
+    if (!cabinetId) return null;
+    return `cabinet:${cabinetId}`;
+  } catch {
+    return null;
+  }
+}
+
 // ─── RPC: Cabinet Logo ───────────────────────────────────────────────
 
 /**
