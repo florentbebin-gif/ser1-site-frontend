@@ -1,81 +1,78 @@
-# Module Placement — Documentation Technique
+# Module Placement — Source de vérité technique
 
-> **État** : Refactorisation V2 (Feature + Engine Modular)
-> **Dernière MAJ** : PR-5 (Cutover final + Cleanup legacy) — 2026-02-14
+## Scope
 
----
+Ce document décrit l'organisation réelle du module Placement après le cutover vers `src/features/placement/`, avec séparation explicite entre code feature et héritage legacy encore utilisé.
 
-## 1. Architecture
+## Arborescence (paths exacts)
 
-Le module Placement suit l'architecture **CreditV2** (separation of concerns stricte).
+### Feature UI/state/adapters
 
-```
-src/
-├── features/placement/           # UI & Adapters (React)
-│   ├── adapters/                 # Transformation données React -> Engine
-│   │   └── toEngineProduct.js    # Adapter pur (Input -> EngineProduct)
-│   ├── components/               # Composants UI découpés
-│   │   ├── inputs/               # Sous-formulaires
-│   │   ├── tables/               # Tableaux de résultats
-│   │   ├── PlacementSimulatorPage.jsx  # Orchestrateur UI
-│   │   └── VersementConfigModal.jsx
-│   ├── index.ts                  # Point d'entrée feature
-│   └── PlacementPage.tsx         # Lazy loading wrapper
-│
-├── engine/placement/             # Moteur de calcul pur (Zéro React)
-│   ├── epargne.js                # Calcul phase épargne
-│   ├── liquidation.js            # Calcul phase retraits
-│   ├── transmission.js           # Calcul succession (DMTG)
-│   ├── fiscalParams.js           # Normalisation settings fiscaux
-│   ├── compare.js                # Comparateur
-│   ├── simulateComplete.js       # Orchestrateur engine
-│   └── shared.js                 # Constantes & Utils
-│
-└── engine/placementEngine.js     # FAÇADE STABLE (Legacy compat)
-    # Ré-exporte uniquement les fonctions publiques du dossier placement/
-```
+- `src/features/placement/PlacementPage.tsx`
+- `src/features/placement/index.ts`
+- `src/features/placement/components/PlacementSimulatorPage.jsx`
+- `src/features/placement/adapters/toEngineProduct.js`
+- `src/features/placement/__tests__/toEngineProduct.test.ts`
 
-## 2. Flux de données (Data Flow)
+### Legacy encore consommé par la feature
 
-1.  **UI (React)** : `PlacementSimulatorPage` gère le state (inputs utilisateur).
-2.  **Adapter** : `toEngineProduct.js` transforme le state React + `versementConfig` en objet produit standardisé pour le moteur.
-3.  **Engine** : `placementEngine.js` (façade) -> `simulateComplete` exécute les calculs (Epargne -> Liquidation -> Transmission).
-4.  **Display** : L'UI affiche les résultats retournés par le moteur.
-5.  **Export** : Les builders PPTX/Excel consomment les mêmes objets résultats via la façade.
+- `src/pages/placement/components/inputs.jsx`
+- `src/pages/placement/components/tables.jsx`
+- `src/pages/placement/components/VersementConfigModal.jsx`
+- `src/pages/Placement.css` (importé depuis la feature via `@/pages/Placement.css`)
 
-## 3. Gouvernance
+### Engine Placement (métier pur)
 
-*   **Zéro calcul métier dans React** : Tout calcul fiscal ou projection doit être dans `src/engine/placement/`.
-*   **Façade stable** : `src/engine/placementEngine.js` ne doit pas changer de signature. C'est le contrat pour les exports et l'UI.
-*   **Fichiers < 500 lignes** : Les modules engine sont découpés par responsabilité (Epargne, Liquidation, etc.).
-*   **Tests obligatoires** : Toute modification moteur nécessite une validation par Golden Cases.
+- `src/engine/placement/epargne.js`
+- `src/engine/placement/liquidation.js`
+- `src/engine/placement/transmission.js`
+- `src/engine/placement/fiscalParams.js`
+- `src/engine/placement/compare.js`
+- `src/engine/placement/simulateComplete.js`
+- `src/engine/placement/shared.js`
+- `src/engine/placementEngine.js` (façade stable)
 
-## 4. Tests & Validation
+## Flow fonctionnel
 
-### Unitaires & Parité
-*   `src/features/placement/__tests__/toEngineProduct.test.ts` : Vérifie que la transformation React -> Engine est fidèle à l'ancien code inline (parity check).
-*   `src/engine/__tests__/extractFiscalParams.test.ts` : Vérifie la récupération des règles fiscales.
+1. **UI** : route `/sim/placement` -> `PlacementPage` -> `PlacementSimulatorPage`.
+2. **Saisie** : formulaires et tableaux (partiellement legacy) alimentent le state orchestrateur.
+3. **Adapter** : `toEngineProduct.js` convertit les données UI vers le contrat moteur.
+4. **Moteur** : appel via la façade `src/engine/placementEngine.js` (`simulateComplete`, `compareProducts`, etc.).
+5. **Exports** : Excel/PPTX consomment les résultats de simulation issus du même contrat.
 
-### Golden Cases (Non-régression globale)
-*   `src/engine/__tests__/goldenCases.test.ts` : Exécute des scénarios complets (inputs JSON -> outputs snapshot).
-*   **Commande** : `npm test src/engine/__tests__/goldenCases.test.ts`
+## Gouvernance Placement (obligatoire)
 
-### Smoke Tests Exports
-*   Vérifier manuellement `/sim/placement` -> Export Excel / PPTX.
-*   (Automatisé en partie via `npm run check` sur la structure).
+- **Zéro calcul métier dans React** : toute règle fiscale/projection doit vivre dans `src/engine/placement/*`.
+- **Façade publique stable** : ne pas casser les signatures exportées par `src/engine/placementEngine.js`.
+- **Fichiers < 500 lignes** : découper l'orchestrateur UI avant nouvelle croissance significative.
+- **Dette connue** : cross-import CSS `@/pages/Placement.css` à résorber pendant le refactor P1-05.
 
-## 5. Checklist Développeur (PR-5 Cutover)
+## Ajouter un champ / une règle
 
-Migration finalisée (PR-5) :
+### Ajouter un champ UI
 
-1.  [x] **Basculer routes** : `/sim/placement` pointe sur `PlacementPage.tsx`.
-2.  [x] **Cleanup Legacy** : `src/pages/PlacementV2.jsx` supprimé.
-3.  [x] **Vérifier Imports** : consommateurs alignés sur `src/engine/placementEngine.js` (façade).
-4.  [x] **Check Exports** : smoke export placement exécuté (fichier non vide).
-5.  [x] **Validation** : `npm run check` vert.
+1. Ajouter l'input côté UI (feature ou legacy encore branché selon la zone concernée).
+2. Étendre le state de `PlacementSimulatorPage.jsx`.
+3. Mapper le nouveau champ dans `src/features/placement/adapters/toEngineProduct.js`.
+4. Vérifier que les vues résultats et exports (Excel/PPTX) restent cohérents.
+5. Mettre à jour/ajouter test adapter (`toEngineProduct.test.ts`) si le contrat change.
 
-## 6. Notes de reprise
+### Ajouter une règle métier
 
-- Le cutover PR-5 est clôturé ; ne pas réintroduire de wrapper legacy `pages/PlacementV2.jsx`.
-- La façade `src/engine/placementEngine.js` reste le contrat public pour UI/tests/exports.
-- Dette prioritaire restante : découpe de `PlacementSimulatorPage.jsx` et correction du cross-import CSS (`@/pages/Placement.css`).
+1. Implémenter la règle dans `src/engine/placement/*` (jamais inline dans React).
+2. Propager via la façade `src/engine/placementEngine.js` si la fonction publique évolue.
+3. Vérifier l'impact sur exports et libellés de résultats.
+4. Ajouter/adapter tests moteur et golden cases.
+
+## Tests & validation
+
+- `npm run check`
+- Golden cases : `npx vitest run src/engine/__tests__/goldenCases.test.ts`
+- Test ciblé adapter : `npx vitest run src/features/placement/__tests__/toEngineProduct.test.ts`
+- Smoke manuel : `/sim/placement` -> calcul + exports (Excel/PPTX)
+
+## Notes de reprise
+
+- Le wrapper legacy `src/pages/PlacementV2.jsx` est supprimé et ne doit pas être réintroduit.
+- Le point d'entrée officiel reste `src/features/placement/PlacementPage.tsx`.
+- Priorité technique restante : découpe de `PlacementSimulatorPage.jsx` + suppression du cross-import CSS legacy.

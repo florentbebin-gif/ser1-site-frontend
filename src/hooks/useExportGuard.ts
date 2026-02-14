@@ -12,7 +12,8 @@
  *   <button disabled={!canExport} onClick={handleExport}>Exporter</button>
  */
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
+import { registerTrackedObjectURL, revokeAllTrackedObjectURLs } from '../utils/createTrackedObjectURL';
 
 export interface ExportGuardState {
   /** false si la session est expirée — désactiver les boutons export */
@@ -24,24 +25,12 @@ export interface ExportGuardState {
 }
 
 export function useExportGuard(sessionExpired: boolean): ExportGuardState {
-  const blobUrlsRef = useRef<string[]>([]);
-
   const trackBlobUrl = useCallback((url: string) => {
-    blobUrlsRef.current.push(url);
-    // Exposer sur window pour que useSessionTTL puisse les révoquer
-    (window as unknown as Record<string, string[]>).__ser1BlobUrls = blobUrlsRef.current;
+    registerTrackedObjectURL(url);
   }, []);
 
   const revokeAllBlobs = useCallback(() => {
-    blobUrlsRef.current.forEach((blobUrl) => {
-      try {
-        URL.revokeObjectURL(blobUrl);
-      } catch {
-        // ignore
-      }
-    });
-    blobUrlsRef.current = [];
-    (window as unknown as Record<string, string[]>).__ser1BlobUrls = [];
+    revokeAllTrackedObjectURLs();
   }, []);
 
   // Auto-révoquer quand la session expire

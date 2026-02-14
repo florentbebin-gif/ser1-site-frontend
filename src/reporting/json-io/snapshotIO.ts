@@ -17,6 +17,7 @@ import {
 } from './snapshotSchema';
 import type { SnapshotV2, SnapshotSims } from './snapshotSchema';
 import { migrateSnapshot } from './snapshotMigrations';
+import { createTrackedObjectURL } from '../../utils/createTrackedObjectURL';
 
 // ---------------------------------------------------------------------------
 // Events & keys (backward-compatible with globalStorage.js)
@@ -188,7 +189,7 @@ export async function saveGlobalState(): Promise<SaveResult> {
       }
     } else {
       // Fallback for Firefox, Safari
-      const url = URL.createObjectURL(blob);
+      const url = createTrackedObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.download = generateFilename();

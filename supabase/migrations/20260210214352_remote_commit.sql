@@ -1288,15 +1288,24 @@ CREATE TRIGGER update_ui_settings_updated_at BEFORE UPDATE ON public.ui_settings
 
 CREATE TRIGGER tr_handle_new_auth_user AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION public.handle_new_auth_user();
 
-drop trigger if exists "objects_delete_delete_prefix" on "storage"."objects";
+-- Local compatibility note:
+-- Supabase Storage internal schema can differ across CLI/stack versions
+-- (e.g. storage.prefixes may be absent while storage.objects exists).
+-- These guards are idempotent and defensive only: no business-rule change.
+do $$
+begin
+  if to_regclass('storage.objects') is not null then
+    execute 'drop trigger if exists "objects_delete_delete_prefix" on "storage"."objects"';
+    execute 'drop trigger if exists "objects_insert_create_prefix" on "storage"."objects"';
+    execute 'drop trigger if exists "objects_update_create_prefix" on "storage"."objects"';
+  end if;
 
-drop trigger if exists "objects_insert_create_prefix" on "storage"."objects";
-
-drop trigger if exists "objects_update_create_prefix" on "storage"."objects";
-
-drop trigger if exists "prefixes_create_hierarchy" on "storage"."prefixes";
-
-drop trigger if exists "prefixes_delete_hierarchy" on "storage"."prefixes";
+  if to_regclass('storage.prefixes') is not null then
+    execute 'drop trigger if exists "prefixes_create_hierarchy" on "storage"."prefixes"';
+    execute 'drop trigger if exists "prefixes_delete_hierarchy" on "storage"."prefixes"';
+  end if;
+end
+$$;
 
 
   create policy "Admins can delete logos"
@@ -1362,8 +1371,20 @@ using ((bucket_id = 'logos'::text));
 using ((bucket_id = 'covers'::text));
 
 
-CREATE TRIGGER protect_buckets_delete BEFORE DELETE ON storage.buckets FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete();
+do $$
+begin
+  if to_regclass('storage.buckets') is not null and not exists (
+    select 1 from pg_trigger where tgname = 'protect_buckets_delete'
+  ) then
+    execute 'CREATE TRIGGER protect_buckets_delete BEFORE DELETE ON storage.buckets FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete()';
+  end if;
 
-CREATE TRIGGER protect_objects_delete BEFORE DELETE ON storage.objects FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete();
+  if to_regclass('storage.objects') is not null and not exists (
+    select 1 from pg_trigger where tgname = 'protect_objects_delete'
+  ) then
+    execute 'CREATE TRIGGER protect_objects_delete BEFORE DELETE ON storage.objects FOR EACH STATEMENT EXECUTE FUNCTION storage.protect_delete()';
+  end if;
+end
+$$;
 
 

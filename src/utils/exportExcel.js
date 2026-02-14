@@ -1,4 +1,5 @@
 // Utilitaires d'export Excel réutilisables (inspirés de Credit.jsx)
+import { createTrackedObjectURL } from './createTrackedObjectURL';
 
 // Transpose un array-of-arrays (pour les échéanciers : périodes en colonnes)
 export function transpose(aoa) {
@@ -83,7 +84,7 @@ export async function downloadExcel(xml, filename) {
     
     const blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
     
-    const url = URL.createObjectURL(blob);
+    const url = createTrackedObjectURL(blob);
     
     const a = document.createElement('a');
     a.href = url;

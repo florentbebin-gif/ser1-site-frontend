@@ -11,6 +11,7 @@ import { triggerPageReset, triggerGlobalReset } from './utils/reset';
 import { saveGlobalState, loadGlobalStateWithDialog } from './utils/globalStorage';
 import { useSessionTTL } from './hooks/useSessionTTL';
 import { useExportGuard } from './hooks/useExportGuard';
+import { setTrackBlobUrlHandler } from './utils/createTrackedObjectURL';
 import { SessionExpiredBanner } from './components/ui/SessionExpiredBanner';
 
 // V4: Lazy load heavy pages to reduce initial bundle size
@@ -169,6 +170,13 @@ export default function App() {
   const { sessionExpired, minutesRemaining, warningVisible, resetInactivity } = useSessionTTL();
   // P0-09: Export guard (disable exports when session expired)
   const { canExport, trackBlobUrl } = useExportGuard(sessionExpired);
+
+  // Inject tracker early for all non-React export utilities.
+  // Exports are triggered only after user actions, so this effect runs early enough.
+  useEffect(() => {
+    setTrackBlobUrlHandler(trackBlobUrl);
+    return () => setTrackBlobUrlHandler(null);
+  }, [trackBlobUrl]);
 
   useEffect(() => {
     // Nettoyer les anciennes clés localStorage (migration vers sessionStorage)
@@ -501,6 +509,16 @@ const contextLabel = getContextLabel(path);
             </LazyRoute>
           </PrivateRoute>
         } />
+        <Route path="/sim/prevoyance" element={
+          <PrivateRoute>
+            <LazyRoute>
+              <UpcomingSimulatorPage
+                title="Prévoyance"
+                subtitle="Ce simulateur premium sera bientôt disponible."
+              />
+            </LazyRoute>
+          </PrivateRoute>
+        } />
         <Route path="/sim/ir" element={
           <PrivateRoute>
             <LazyRoute><Ir /></LazyRoute>
@@ -517,6 +535,7 @@ const contextLabel = getContextLabel(path);
         {/* Redirections de compatibilité */}
         <Route path="/placement" element={<Navigate to="/sim/placement" replace />}/>
         <Route path="/credit" element={<Navigate to="/sim/credit" replace />} />
+        <Route path="/prevoyance" element={<Navigate to="/sim/prevoyance" replace />} />
       </Routes>
 
     </SessionGuardContext.Provider>
