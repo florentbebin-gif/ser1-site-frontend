@@ -43,6 +43,13 @@
 | [runbook/debug.md](runbook/debug.md) | Flags DEBUG, politique console |
 | [technical/diagnostics/edge-functions-diagnostics.md](technical/diagnostics/edge-functions-diagnostics.md) | Debug Edge Functions Supabase |
 
+## Modules métier
+
+| Document | Description |
+|----------|-------------|
+| [features/ir.md](features/ir.md) | Module IR : architecture feature/engine, flow, gouvernance et tests |
+| [features/placement.md](features/placement.md) | Module Placement : architecture, flow, gouvernance et tests |
+
 ## Architecture Decision Records
 
 | Document | Description |

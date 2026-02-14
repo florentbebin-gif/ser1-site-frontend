@@ -14,9 +14,9 @@ import { useExportGuard } from './hooks/useExportGuard';
 import { SessionExpiredBanner } from './components/ui/SessionExpiredBanner';
 
 // V4: Lazy load heavy pages to reduce initial bundle size
-const Placement = lazy(() => import('./pages/PlacementV2'));
+const Placement = lazy(() => import('./features/placement').then(m => ({ default: m.PlacementPage })));
 const Credit = lazy(() => import('./pages/credit/Credit'));
-const Ir = lazy(() => import('./pages/Ir'));
+const Ir = lazy(() => import('./features/ir').then(m => ({ default: m.IrPage })));
 const AuditWizard = lazy(() => import('./features/audit').then(m => ({ default: m.AuditWizard })));
 const SuccessionSimulator = lazy(() => import('./features/succession').then(m => ({ default: m.SuccessionSimulator })));
 const PerSimulator = lazy(() => import('./features/per').then(m => ({ default: m.PerSimulator })));

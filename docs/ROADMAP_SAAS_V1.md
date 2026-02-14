@@ -4,6 +4,43 @@
 > **Branche** : `feature/roadmap-saas-v1`  
 > **Statut** : DRAFT — docs-only, aucun code modifié
 
+## État actuel (Checkpoint 2026-02-14)
+
+> **Dernier patch validé** : Placement PR-4 (engine modular split) ✅
+> **Quality Gates** : `npm run check` ✅ (Lint, Types, Tests, Build)
+
+### Statut Module Placement (P1-05)
+
+| PR | Description | Statut |
+|---|---|---|
+| PR-1 | Scaffold feature + proxy legacy | ✅ DONE |
+| PR-2 | Extraction UI/State/Persistence (wrapper) | ✅ DONE |
+| PR-3 | Extraction calculs métier vers Adapter pur | ✅ DONE |
+| PR-4 | Modularisation Moteur (`engine/placement/*`) | ✅ DONE |
+| **PR-5** | **Cutover final + Cleanup Legacy** | ⏭️ **NEXT** |
+
+### 🚀 Reprendre à partir de PR-5
+
+**Objectifs PR-5 :**
+1. Supprimer le wrapper legacy `src/pages/PlacementV2.jsx`.
+2. Vérifier que tous les imports pointent vers `src/features/placement` ou `src/engine/placementEngine.js` (façade).
+3. Nettoyer le code mort (grep).
+4. Vérifier une dernière fois les exports PPTX/Excel.
+
+**Stop Triggers :**
+* `npm run check` rouge.
+* Régression sur les Golden Cases (`npm test goldenCases`).
+* Changement dans la structure des exports (Snapshot).
+
+**Preuves attendues :**
+* `grep` confirmant 0 usage de `PlacementV2`.
+* `npm run check` vert.
+* Démo manuelle export OK.
+
+> **⚠️ VIGILANCE :**
+> * **Exports** : Le moteur a été découpé. Bien que la façade soit stable, un smoke test manuel sur l'export Excel et PPTX est impératif avant merge PR-5.
+> * **Parité Base Contrat** : Le feature flag `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT` est toujours à gérer si activé plus tard.
+
 ---
 
 ## 1. Contexte & objectifs
@@ -385,7 +422,9 @@ src/
 | Admin check DB | `public.is_admin()` | Toutes policies RLS |
 | Admin check frontend | `useUserRole()` → `app_metadata.role` | Pages admin |
 | Presets thème | `src/settings/presets.ts` | ThemeProvider, Settings |
-| JSON snapshot | `SNAPSHOT_VERSION` dans `globalStorage.js` | save/load |
+| JSON snapshot | `SNAPSHOT_VERSIO
+> N `* dans (IR)** `glol✅).
+> * **P1-05 (Placement)**N POGRESS🏗️ (R-1 à R-4 vaidéesEngie odulaisé.Rest PR-5Cuto
 | Design system PPTX | `src/pptx/designSystem/serenity.ts` | Tous slide builders |
 
 ---
@@ -421,6 +460,8 @@ src/
 | P1-04 | Refactor IR : pattern CreditV2 (components/hooks/utils) | **Haut** |
 | P1-05 | Refactor Placement : pattern CreditV2 | **Haut** |
 | P1-06 | Feature flag `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT` → ON | Moyen |
+
+> Statut exécution (2026-02-14) : **P1-04 DONE** avec preuves de non-régression (fichiers IR < 500 lignes, smoke tests export IR PPTX/Excel, `npm run check` vert).
 
 ### Phase 2 — Analyse Patrimoniale + Simulateurs (6-8 semaines)
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Snapshot baseline test for extractFiscalParams.
  *
  * This golden snapshot captures the exact output of extractFiscalParams()
@@ -31,14 +31,13 @@ const EXPECTED_SNAPSHOT = {
   dividendesAbattementPercent: 0.40,
 };
 
-describe('extractFiscalParams — golden snapshot', () => {
+describe('extractFiscalParams â€” golden snapshot', () => {
   it('returns the expected params from V1 fixtures', () => {
     const result = extractFiscalParams(fiscalityV1, psV1);
     expect(result).toEqual(EXPECTED_SNAPSHOT);
   });
 
   it('returns defaults when both inputs are null', () => {
-    // @ts-expect-error testing null guard on JS function
     const result = extractFiscalParams(null, null);
     expect(result).toEqual(EXPECTED_SNAPSHOT);
   });
