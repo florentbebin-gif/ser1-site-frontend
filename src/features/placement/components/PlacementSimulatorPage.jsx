@@ -1,5 +1,5 @@
 ﻿/**
- * PlacementV2.jsx — Orchestrateur du simulateur de placement
+ * PlacementSimulatorPage.jsx — Orchestrateur du simulateur de placement
  *
  * Architecture modulaire :
  * - Moteur de calcul        → engine/placementEngine.js
@@ -52,7 +52,7 @@ import {
 // MAIN COMPONENT
 // ============================================================================
 
-export default function PlacementV2() {
+export default function PlacementSimulatorPage() {
   const STORE_KEY = storageKeyFor('placement');
   const { fiscalParams, loading, error, tmiOptions, taxSettings, psSettings } = usePlacementSettings();
 
@@ -1057,7 +1057,7 @@ export default function PlacementV2() {
               setVersementConfig(modalOpen, config);
               setModalOpen(null);
             } catch (error) {
-              console.error('[PlacementV2] Error in onSave handler:', error);
+              console.error('[Placement] Error in onSave handler:', error);
             }
           }}
           onClose={() => setModalOpen(null)}

@@ -2,7 +2,7 @@
  * CreditHeader.jsx - Header premium du simulateur de crédit
  * 
  * Affiche le titre, sous-titre, switch Mensuel/Annuel (pill) et bouton Export.
- * Inspiré du pattern premium-header (Home.jsx / PlacementV2.jsx).
+ * Inspiré du pattern premium-header (Home.jsx / simulateur Placement).
  */
 
 import React from 'react';

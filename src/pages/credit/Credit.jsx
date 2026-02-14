@@ -1,7 +1,7 @@
 /**
  * CreditV2.jsx — Orchestrateur du simulateur de crédit (Phase 1)
  *
- * Architecture modulaire inspirée de PlacementV2 :
+ * Architecture modulaire inspirée du simulateur Placement :
  * - State centralisé        → utils/creditNormalizers.js
  * - Calculs                 → hooks/useCreditCalculations.js
  * - Composants UI           → components/Credit*.jsx
