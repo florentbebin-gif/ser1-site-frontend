@@ -20,21 +20,13 @@ Organisation des scripts SQL pour Supabase.
 ## Structure
 
 ```
-supabase/migrations/   # ⭐ SOURCE DE VÉRITÉ — toutes les migrations
-database/setup/        # Configuration initiale (UNE SEULE FOIS)
+supabase/migrations/                 # ⭐ SOURCE DE VÉRITÉ — toutes les migrations
+docs/_legacy/database/setup/         # Scripts setup historiques (deprecated, lecture seule)
 ```
 
 ## Ordre d'exécution recommandé
 
-### 1. Setup initial (nouveau projet)
-
-```sql
--- Exécuter dans Supabase SQL Editor
--- 1. Schema de base
-database/setup/supabase-setup.sql
-```
-
-### 2. Migrations
+### 1. Migrations
 
 > **Source de vérité** : `supabase/migrations/`
 
@@ -47,6 +39,15 @@ database/setup/supabase-setup.sql
 | 5 | `20260211100200_p0_01_disable_self_signup.sql` | Self-signup désactivé (reminder) |
 
 > **Note** : L'historique des migrations legacy est disponible via `git log`.
+
+### 2. Archives legacy (lecture seule)
+
+Les anciens scripts de setup ont été archivés dans:
+
+- `docs/_legacy/database/setup/supabase-setup.sql`
+- `docs/_legacy/database/setup/admin_setup.sql`
+
+Ils ne doivent plus être rejoués comme source active de migration.
 
 ## Commandes CLI essentielles
 
