@@ -1,3 +1,4 @@
+/* eslint-disable ser1-colors/no-hardcoded-colors -- Explicit hex fixtures are required here to prove A/B palette isolation deterministically. */
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   getCabinetLogoFromCache,

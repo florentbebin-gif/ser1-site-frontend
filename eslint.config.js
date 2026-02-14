@@ -36,9 +36,9 @@ export default [
       'react/prop-types': 'off',
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
-      // Color governance rules (warn during migration, upgrade to error after cleanup)
-      'ser1-colors/no-hardcoded-colors': 'warn',
-      'ser1-colors/use-semantic-colors': 'warn',
+      // Color governance rules (strict mode)
+      'ser1-colors/no-hardcoded-colors': 'error',
+      'ser1-colors/use-semantic-colors': 'error',
     },
     settings: {
       react: {

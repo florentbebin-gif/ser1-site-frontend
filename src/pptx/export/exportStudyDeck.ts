@@ -38,12 +38,80 @@ import { buildPerSynthesis } from '../slides/buildPerSynthesis';
 import { injectThemeColors } from '../theme/themeBuilder';
 import { defineSlideMasters } from '../template/loadBaseTemplate';
 import { createTrackedObjectURL } from '../../utils/createTrackedObjectURL';
+import {
+  fingerprintPptxExport,
+  hashStringForFingerprint,
+  normalizeFilenameForFingerprint,
+} from '../../utils/exportFingerprint';
 
 /**
  * Default footer disclaimer (verbatim as specified)
  */
 const DEFAULT_DISCLAIMER = 
   "Document non contractuel établi en fonction des dispositions fiscales ou sociales en vigueur à la date des présentes";
+
+const PPTX_KEY_FIELD_PATTERN = /title|subtitle|label|name|total|net|tmi|rate|capital|montant|tax|duree|mensualite|cout|actif|droits|versement|rente|parts|status|location|year|periode|index|count|value/i;
+
+function isPrimitive(value: unknown): value is string | number | boolean {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+}
+
+function pickSlideKeyFields(slide: Record<string, unknown>): Record<string, unknown> {
+  const picked: Record<string, unknown> = { type: slide.type ?? 'unknown' };
+  let remaining = 24;
+
+  for (const key of Object.keys(slide).sort((left, right) => left.localeCompare(right))) {
+    if (key === 'type' || remaining <= 0) continue;
+    if (!PPTX_KEY_FIELD_PATTERN.test(key)) continue;
+    const value = slide[key];
+    if (isPrimitive(value)) {
+      picked[key] = value;
+      remaining -= 1;
+      continue;
+    }
+    if (Array.isArray(value)) {
+      const compact = value.filter((item) => isPrimitive(item)).slice(0, 3);
+      if (compact.length > 0) {
+        picked[key] = compact;
+        remaining -= 1;
+      }
+    }
+  }
+
+  return picked;
+}
+
+function buildPptxFingerprintManifest(
+  spec: StudyDeckSpec,
+  uiSettings: UiSettingsInput,
+  filename: string,
+  options: ExportOptions,
+) {
+  const normalizedPalette = Object.keys(uiSettings)
+    .sort((left, right) => left.localeCompare(right))
+    .reduce<Record<string, string>>((accumulator, key) => {
+      const value = uiSettings[key as keyof UiSettingsInput];
+      accumulator[key] = String(value).replace('#', '').toUpperCase();
+      return accumulator;
+    }, {});
+
+  return {
+    filename: normalizeFilenameForFingerprint(filename),
+    cover: {
+      title: spec.cover?.title,
+      subtitle: spec.cover?.subtitle,
+    },
+    options: {
+      locale: options.locale || 'fr-FR',
+      showSlideNumbers: options.showSlideNumbers !== false,
+    },
+    slidesCount: spec.slides.length,
+    slideTypes: spec.slides.map((slide) => slide.type),
+    slides: spec.slides.map((slide) => pickSlideKeyFields(slide as Record<string, unknown>)),
+    palette: normalizedPalette,
+    logoHash: hashStringForFingerprint(spec.cover?.logoUrl),
+  };
+}
 
 /**
  * UI Settings shape (matches ThemeProvider format)
@@ -327,6 +395,17 @@ export async function exportAndDownloadStudyDeck(
   filename: string,
   options: ExportOptions = {}
 ): Promise<void> {
+  const manifest = buildPptxFingerprintManifest(spec, uiSettings, filename, options);
+  const fingerprint = fingerprintPptxExport(manifest);
+  if (import.meta.env.DEV) {
+    // eslint-disable-next-line no-console
+    console.info('[ExportFingerprint][PPTX]', {
+      fingerprint,
+      filename: manifest.filename,
+      slidesCount: manifest.slidesCount,
+    });
+  }
+
   const blob = await exportStudyDeck(spec, uiSettings, options);
   downloadPptx(blob, filename);
 }

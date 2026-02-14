@@ -459,7 +459,7 @@ src/
 | P0-01 | Auth : workflow invitation admin (email template, onboarding, **blocage self-signup**) | Moyen |
 | P0-02 | Multi-tenant : RLS `profiles` filtrée par `cabinet_id` + RLS `cabinets` per-admin. **Les tables settings restent GLOBALES** (conforme à l'exigence : règles partagées SaaS) | Moyen |
 | P0-03 | Validation isolation branding (logo + palette per-cabinet) | Faible |
-| P0-04 | Golden cases JSON (IR, succession, crédit) + snapshots exports | Faible |
+| P0-04 | Exports traçables : fingerprint déterministe (PPTX + Excel) + preuves unitaires | Faible |
 | P0-05 | Découpe god files critiques (`irEngine.js`, `placementEngine.js`) | Moyen |
 | P0-06 | Sessions TTL pro : heartbeat 30 s, grâce **2-5 min** (perte heartbeat : réseau/tab hidden — PAS conservation après fermeture onglet), coupure **1 h inactivité** (reset : saisie, navigation, clic CTA), purge `sessionStorage`, UX "session expire dans X min" | Moyen |
 | P0-07 | Unifier migrations (`database/` + `supabase/`) | Faible |
@@ -478,6 +478,14 @@ src/
 >   - Implémentation: `src/features/settings/publicationGate.ts` (gate partagé + messages blocage/warning + mode fail-safe `testsSourceAvailable=false`).
 >   - Test: `src/features/settings/publicationGate.test.ts` (`tests=[] => blocked=true`, `tests=[..] => blocked=false`, source indisponible => blocage explicite).
 >   - Intégration UI: boutons Save désactivés si gate bloquant + message visible (non silencieux) sur `/settings/base-contrat`, `/settings/impots`, `/settings/prelevements`.
+> - **P0-04 DONE** fingerprint exports déterministe (PPTX + XLSX + XLS legacy) via `d60b260`.
+>   - Implémentation: `src/utils/exportFingerprint.ts` + branchement central `src/pptx/export/exportStudyDeck.ts`, `src/utils/xlsxBuilder.ts`, `src/utils/exportExcel.js`.
+>   - Preuve tests: `src/utils/exportFingerprint.test.ts` (même manifest => même hash, variation champ clé => hash différent).
+>   - Exemple fingerprint (dev): `PPTX=10257885bcb868e0`, `XLSX=6ef5fec7658c652a`.
+> - **P0-08 DONE** gouvernance couleurs en mode strict via `d18ee3a`.
+>   - Changement: `eslint.config.js` (`ser1-colors/no-hardcoded-colors` et `ser1-colors/use-semantic-colors` passés en `error`).
+>   - Preuve: `npm run lint` = 0 erreur.
+>   - Note: exception ciblée et documentée sur `src/settings/theme/hooks/brandingIsolation.test.ts` (fixtures hex explicites nécessaires pour prouver l'isolation A/B, sans impact UI/runtime).
 
 ### Phase 1 — MVP Simulateurs + JSON (6-8 semaines)
 
@@ -544,11 +552,11 @@ src/
 | P0-01 | Auth invitation admin (blocage self-signup) | Haute | Moyen | `auth/`, Edge Function | Email envoyé, user créé avec rôle correct, self-signup désactivé |
 | P0-02 | Multi-tenant RLS profiles par cabinet | Haute | Moyen | `database/`, `supabase/` | Admin cabinet ne voit que ses propres users ; **tables settings restent GLOBALES** |
 | P0-03 | Validation branding isolation | Moyenne | Faible | ThemeProvider, PPTX | Logo + palette correctement injectés per-cabinet |
-| P0-04 | Golden cases + snapshots | **Critique** | Faible | `engine/__tests__/`, `tests/snapshots/` | CI bloque si divergence |
+| P0-04 | Fingerprint exports déterministe (PPTX + Excel) | **Critique** | Faible | `utils/exportFingerprint`, `pptx/export/`, `utils/xlsxBuilder.ts`, `utils/exportExcel.js` | Même manifest => même hash ; variation clé => hash différent |
 | P0-05 | Découpe god files engine | Haute | Moyen | `engine/`, `utils/` | Fichiers <500 lignes, zéro régression |
 | P0-06 | Sessions TTL pro (heartbeat 30s, grâce 2-5 min perte heartbeat, 1h inactivité) | Haute | Moyen | `auth/`, `App.jsx`, `hooks/` | Heartbeat 30s, grâce 2-5 min (réseau/tab hidden), déco après 1h inactivité (reset: saisie/nav/CTA), purge sessionStorage, UX message |
 | P0-07 | Unifier migrations | Moyenne | Faible | `database/`, `supabase/` | Un seul répertoire, convention OK |
-| P0-08 | ser1-colors → error | Moyenne | Faible | `eslint.config.js` | Zéro hardcode non autorisé |
+| P0-08 | ser1-colors → error | Moyenne | Faible | `eslint.config.js` | `npm run lint` = 0 erreur ; exceptions test justifiées uniquement |
 | P0-09 | Politique téléchargement MVP client-side | Haute | Faible | Composants export, `hooks/` | Bouton disabled si session expirée, Blob URLs révoquées, purge `sessionStorage`, UX message |
 | P0-10 | Gate tests admin (règles fiscales) | Haute | Moyen | `Sous-Settings/`, `BaseContrat.tsx` | Publication bloquée si 0 test ; UI demande corpus |
 | P1-01 | JSON versioning + Zod | Haute | Moyen | `utils/globalStorage.js` | Load ancien fichier → migration auto |
