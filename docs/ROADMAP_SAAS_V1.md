@@ -6,7 +6,7 @@
 
 ## État actuel (Checkpoint 2026-02-15)
 
-> **HEAD** : `57a7e51281aabd1bc71ea12608105666db5db93d`
+> **HEAD** : `59a34d7`
 > **Quality Gates** : `npm run check` ✅ (Lint, Types, Tests, Build)
 > **DONE confirmés (code-level)** : P1-05, P0-04, P0-06 (TTL), P0-09 (download policy), P0-10 (gate tests admin), P0-08 (ser1-colors en `error`)
 
@@ -20,6 +20,7 @@
 - #71 docs(roadmap): sync merged statuses (snapshots + IR split)
 - #73 docs(roadmap): mark done items after merges
 - #74 refactor(ir): batch extract effectiveParts + domAbatement + decote
+- #75 PR-02c: XLSX snapshot foundation (commit `405a0d9`)
 
 ### Statut Module Placement (P1-05)
 
@@ -481,6 +482,8 @@ src/
 | P0-09 | Politique de téléchargement MVP client-side : bouton export **disabled** si session expirée, révocation Blob URLs, purge `sessionStorage`, message UX "session expirée" | Faible |
 | P0-10 | Gate tests admin : wizard règles fiscales/produits → publication **bloquée si 0 test** importé et exécuté. Le système demande explicitement un corpus de tests | Moyen |
 
+**Reste Phase 0 (3 étapes / 10)** : **P0-03**, **P0-05** (finir IR split + split `placementEngine.js`), **P0-07**.
+
 > Statut exécution runtime (2026-02-14) :
 > - **P0-01 DONE (runtime proven)** via B3 sur `xnpbxrqkzgimiugqtago`.
 >   - Commande: `powershell -ExecutionPolicy Bypass -File tools/scripts/verify-runtime-saas.ps1 -SupabaseUrl "https://xnpbxrqkzgimiugqtago.supabase.co" -SupabaseAnonKey <anon> -ProjectRef "xnpbxrqkzgimiugqtago"`
@@ -501,6 +504,7 @@ src/
 >   - Preuve: `npm run lint` = 0 erreur.
 >   - Note: exception ciblée et documentée sur `src/settings/theme/hooks/brandingIsolation.test.ts` (fixtures hex explicites nécessaires pour prouver l'isolation A/B, sans impact UI/runtime).
 > - **P0-05 PARTIAL DONE (IR split / PR-03)** : helpers IR extraits vers `src/engine/ir/` (`parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`) ; `src/utils/irEngine.js` ≈ **308 lignes**.
+>   - **Pending (PR-03 batch #2, cette PR)** : extraire `capital`, `quotientFamily`, `socialContributions` ; `src/utils/irEngine.js` ≈ **263 lignes**.
 >   - **Reste** : prochains helpers IR + split `placementEngine.js`.
 > - **Sécurité — guardrails secrets / `.env*`** : garde-fous repo/CI en place (blocage `.env*` + patterns sensibles).
 
@@ -516,6 +520,8 @@ src/
 | P1-04 | Refactor IR : pattern CreditV2 (components/hooks/utils) | **Haut** |
 | P1-05 | Refactor Placement : pattern CreditV2 (shell + controller + panels + CSS local) | **Haut** |
 | P1-06 | Feature flag `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT` → ON | Moyen |
+
+**Reste Phase 1 (4 étapes / 6)** : **P1-01**, **P1-02**, **P1-03**, **P1-06**.
 
 > Statut exécution (2026-02-14) :
 > - **P1-04 DONE** avec preuves de non-régression (fichiers IR < 500 lignes, smoke tests export IR PPTX/Excel, `npm run check` vert).
@@ -618,7 +624,7 @@ src/
 | Risque | Faible — ajout de tests uniquement |
 | Rollback | Supprimer fichiers de tests |
 
-**PR-02c (en cours, non mergé)** : 1er snapshot XLSX (foundation) + stabilité sur 2 runs.
+✅ **PR-02c DONE (MERGED)** : 1er snapshot XLSX (foundation) + stabilité sur 2 runs. (PR #75, commit `405a0d9`)
 
 **Next action (après PR-02c)** : 3e snapshot IR PPTX.
 
@@ -626,7 +632,7 @@ src/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` (JS). ✅ **MERGED** : `parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`. `irEngine.js` ≈ **308 lignes** (PR #66, #68, #69, #70, #72, #74) |
+| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` (JS). ✅ **MERGED** : `parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`. `irEngine.js` ≈ **308 lignes** (PR #66, #68, #69, #70, #72, #74). **Pending (batch #2, cette PR)** : `capital`, `quotientFamily`, `socialContributions` ; `irEngine.js` ≈ **263 lignes**. |
 | Fichiers | Ajout: `src/engine/ir/{parts.js, progressiveTax.js, cehr.js, cdhr.js, abattement10.js, effectiveParts.js, domAbatement.js, decote.js}` ; existant: `src/engine/ir/adjustments.js` ; modif: `src/utils/irEngine.js` (imports + suppression impls) |
 | Validation | `npm run check` + golden cases IR + E2E IR |
 | Risque | Moyen — imports à mettre à jour |
