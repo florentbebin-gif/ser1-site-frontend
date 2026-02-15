@@ -326,7 +326,8 @@ Actions : `ping_public`, `list_users`, `create_user`, `update_role`, `delete_use
 | Build | ✅ | — |
 | E2E Playwright | ✅ 8 | +10 scénarios (multi-tenant, exports, settings) |
 | Circular deps | ⚠️ Manuel | Ajouter en CI |
-| **Snapshot exports** | 🔴 | PPTX/Excel hash structure sur 3-5 golden cases |
+| Secrets guardrails (`.env*`, patterns) | ✅ | Maintenir guard CI + hooks (éviter secrets commit) |
+| **Snapshot exports** | � Foundation (Vitest + normalisation + 2 snapshots IR PPTX spec) | Étendre: 3-5 golden cases + 1er snapshot XLSX + hash structure |
 | **Audit couleurs CI** | ⚠️ Manuel | Intégrer `audit-colors.mjs` en CI |
 | **Gate tests admin** | ✅ (code-level) | Ajouter preuve E2E publication bloquée |
 | **Download policy** | ✅ (code-level) | Ajouter preuve E2E session expirée |
@@ -343,15 +344,20 @@ Actions : `ping_public`, `list_users`, `create_user`, `update_role`, `delete_use
 
 ### 7.3 Snapshots exports
 
-Pour chaque simulateur avec export : créer 2-3 golden cases JSON → générer PPTX/Excel → extraire structure (nombre slides, titres) → stocker hash SHA256. CI compare le hash.
+État actuel : foundation snapshots en place (Vitest) + normalisation des champs instables + **2 snapshots IR PPTX spec** stables.
 
 ```
 tests/snapshots/
-├── ir-golden-1.input.json
-├── ir-golden-1.pptx.snapshot
-├── credit-golden-1.input.json
-└── credit-golden-1.pptx.snapshot
+├── README.md
+├── normalize.ts
+├── ir-pptx-spec.test.ts
+├── ir-pptx-spec-case2.test.ts
+└── __snapshots__/
+    ├── ir-pptx-spec.test.ts.snap
+    └── ir-pptx-spec-case2.test.ts.snap
 ```
+
+**Next action** : ajouter **1er snapshot XLSX** (structure/fingerprint) ou **3e cas** snapshot IR PPTX.
 
 ### 7.4 Points d'arrêt par type de PR
 
@@ -483,6 +489,9 @@ src/
 >   - Changement: `eslint.config.js` (`ser1-colors/no-hardcoded-colors` et `ser1-colors/use-semantic-colors` passés en `error`).
 >   - Preuve: `npm run lint` = 0 erreur.
 >   - Note: exception ciblée et documentée sur `src/settings/theme/hooks/brandingIsolation.test.ts` (fixtures hex explicites nécessaires pour prouver l'isolation A/B, sans impact UI/runtime).
+> - **P0-05 PARTIAL DONE (IR split / PR-03)** : helpers IR extraits vers `src/engine/ir/` (`parts`, `progressiveTax`, `cehr`, `cdhr`) ; `src/utils/irEngine.js` ≈ **350 lignes**.
+>   - **Reste** : prochains helpers IR + split `placementEngine.js`.
+> - **Sécurité — guardrails secrets / `.env*`** : garde-fous repo/CI en place (blocage `.env*` + patterns sensibles).
 
 ### Phase 1 — MVP Simulateurs + JSON (6-8 semaines)
 
@@ -592,21 +601,25 @@ src/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | Corpus golden cases (IR, succession, crédit) + infrastructure snapshot. ✅ Foundation créée + 1 snapshot IR PPTX stable (déterministe, no secrets). |
+| Scope | Corpus golden cases (IR, succession, crédit) + infrastructure snapshot. ✅ Foundation créée + **2 snapshots IR PPTX spec** stables (déterministes, `normalizeForSnapshot`, no secrets). |
 | Fichiers | Existant: `src/engine/__tests__/golden/` ; ajouté: `tests/snapshots/` + `vitest.config.ts` + normalisation snapshot |
 | Validation | `npm run check` + `npm test` (nouveaux tests passent) |
 | Risque | Faible — ajout de tests uniquement |
 | Rollback | Supprimer fichiers de tests |
 
+**Next action** : PR-02c — 3e snapshot IR PPTX **ou** 1er snapshot XLSX.
+
 ### PR-03 : Découpe irEngine.js → engine/ir/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/`. **Plan initial TS non matérialisé à date** |
-| Fichiers | Existant: `src/engine/ir/adjustments.js`, `src/engine/ir/__tests__/adjustments.test.ts` ; TODO explicite: créer les nouveaux modules cibles (TS ou JS à trancher) + re-export dans `utils/irEngine.js` |
+| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` (JS). ✅ Extractions mergées : `parts`, `progressiveTax`, `cehr`, `cdhr`. `irEngine.js` ≈ **350 lignes** |
+| Fichiers | Ajout: `src/engine/ir/{parts.js, progressiveTax.js, cehr.js, cdhr.js}` ; existant: `src/engine/ir/adjustments.js` ; modif: `src/utils/irEngine.js` (imports + suppression impls) |
 | Validation | `npm run check` + golden cases IR + E2E IR |
 | Risque | Moyen — imports à mettre à jour |
 | Rollback | Restaurer `irEngine.js` original |
+
+**Next action** : PR-03 extraction #5 — extraire le prochain helper pur (ex: `computeAbattement10`) vers `src/engine/ir/`.
 
 ### PR-04 : Découpe placementEngine.js → engine/placement/
 
@@ -744,7 +757,10 @@ src/engine/__tests__/goldenCases.test.ts   # Test runner vérifie chaque fixture
 
 tests/snapshots/
 ├── README.md                              # Convention + mode d'emploi
-└── (vide — rempli par PR suivantes quand exports sont testés)
+├── normalize.ts                           # Normalisation déterministe pour snapshots
+├── ir-pptx-spec.test.ts                   # Snapshot IR PPTX (cas #1)
+├── ir-pptx-spec-case2.test.ts             # Snapshot IR PPTX (cas #2)
+└── __snapshots__/                         # Snapshots Vitest
 ```
 
 **Commande de validation** :
