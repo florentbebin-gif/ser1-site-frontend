@@ -8,10 +8,10 @@
 
 ## 0) Metadata
 
-- Date/time (CET): `2026-02-15 09:50`
+- Date/time (CET): `2026-02-15 10:05`
 - Operator: `Cascade`
-- Branch: `pr-b4-runtime-evidence-cli`
-- Repo HEAD: `f66e705`
+- Branch: `pr-b4b-p0-01-invite-no-spam`
+- Repo HEAD: `506e25b`
 - Supabase project ref: `xnpbxrqkzgimiugqtago`
 - Evidence files:
   - this file: `docs/runbook/evidence/2026-02-14-pr-b-runtime.md`
@@ -28,7 +28,7 @@
 # commande
 git branch --show-current
 # output
-pr-b4-runtime-evidence-cli
+pr-b4b-p0-01-invite-no-spam
 ```
 
 ```powershell
@@ -100,6 +100,29 @@ Resultat: `PASS`
 3. `Appel Edge Function /functions/v1/admin avec action=create_user_invite (sans afficher token).`
 4. `Résultat runtime: HTTP 500 email rate limit exceeded.`
 
+### PR-B4b (no-spam) — voie officielle GoTrue Admin API (sans email)
+
+Objectif: créer un user via endpoint officiel `POST /auth/v1/admin/users` (service_role) avec `email_confirm=true`.
+
+Résultat:
+- ✅ user créé (HTTP 200)
+- ✅ pas de rate limit email (pas d'invite)
+- ⚠️ `public.profiles.cabinet_id` reste `NULL` (pas de projection automatique du cabinet)
+
+```powershell
+# commande (résumé; service_role récupérée via Management API et non affichée)
+POST https://xnpbxrqkzgimiugqtago.supabase.co/auth/v1/admin/users
+body: { email: "b4b-user-<ts>@test.local", email_confirm: true, user_metadata: { source: "pr-b4b-cli", cabinet_id: "<cabinet_uuid>" } }
+
+# output (redacted)
+{
+  "status": 200,
+  "user_id": "f3e993bf-4db0-424f-b7e9-c2355c8bca3a",
+  "email": "b4b-user-1771146130@test.local",
+  "cabinet_id_used": "56ac87f7-17b1-4667-9b27-8ecd97aedf7a"
+}
+```
+
 ### Commande/Output (si applicable)
 
 ```powershell
@@ -135,10 +158,40 @@ Résultat attendu:
 
 Résultat observé: `0 row` (aucun user invité créé)
 
+PR-B4b — vérifs DB post-création (cloud SQL API):
+
+```sql
+select id, email, email_confirmed_at, created_at
+from auth.users
+where email = 'b4b-user-1771146130@test.local';
+
+select id, email, role, cabinet_id, created_at
+from public.profiles
+where email = 'b4b-user-1771146130@test.local';
+```
+
+Output (extraits):
+- `auth.users.email_confirmed_at` non-null ✅
+- `public.profiles.role = 'user'` ✅
+- `public.profiles.cabinet_id = NULL` ❌
+
+Preuve mécanisme projection cabinet_id (triggers profiles):
+
+```sql
+select tgname, pg_get_triggerdef(t.oid) as def
+from pg_trigger t
+join pg_class c on c.oid=t.tgrelid
+join pg_namespace n on n.oid=c.relnamespace
+where n.nspname='public' and c.relname='profiles' and not t.tgisinternal
+order by tgname;
+```
+
+Output: `set_profiles_updated_at` uniquement (pas de trigger de projection cabinet).
+
 ## 2.3 Verdict P0-01
 
 - Disable signup OFF prouvé: `PASS`
-- Invite runtime prouvée: `FAIL (email rate limit exceeded)`
+- Invite runtime prouvée: `FAIL (création officielle OK, mais projection cabinet_id absente)`
 - Conclusion P0-01: `FAIL`
 
 ---

@@ -65,6 +65,66 @@ order by created_at desc;
 -- (0 rows) on both queries
 -- P0_01_INVITE=FAIL (runtime blocked by email rate limit)
 
+-- ==============================
+-- PR-B4b: P0-01 no-spam attempt
+-- ==============================
+-- Goal: official GoTrue Admin API path WITHOUT sending invite emails.
+-- Endpoint: POST https://xnpbxrqkzgimiugqtago.supabase.co/auth/v1/admin/users
+-- Auth: service_role key retrieved via Management API (not printed)
+-- Notes:
+-- - Password used for API call is NOT written in this file (per policy).
+
+-- HTTP proof (redacted):
+-- {
+--   "status": 200,
+--   "user_id": "f3e993bf-4db0-424f-b7e9-c2355c8bca3a",
+--   "email": "b4b-user-1771146130@test.local",
+--   "cabinet_id_used": "56ac87f7-17b1-4667-9b27-8ecd97aedf7a"
+-- }
+
+-- Verify user exists in auth.users
+select id, email, email_confirmed_at, created_at
+from auth.users
+where email = 'b4b-user-1771146130@test.local';
+
+-- Verify projection in public.profiles
+select id, email, role, cabinet_id, created_at
+from public.profiles
+where email = 'b4b-user-1771146130@test.local';
+
+-- Observed:
+-- - auth.users.email_confirmed_at is NOT NULL (email_confirm=true) ✅
+-- - public.profiles.role='user' ✅
+-- - public.profiles.cabinet_id is NULL ❌
+
+-- Prove there is no projection trigger that would set cabinet_id
+select tgname, pg_get_triggerdef(t.oid) as def
+from pg_trigger t
+join pg_class c on c.oid=t.tgrelid
+join pg_namespace n on n.oid=c.relnamespace
+where n.nspname='public' and c.relname='profiles' and not t.tgisinternal
+order by tgname;
+
+-- Output:
+-- tgname=set_profiles_updated_at (only)
+-- P0_01_INVITE_NO_SPAM=FAIL (official creation OK, but profiles cabinet_id not set)
+
+-- Cleanup proof: DELETE created user via Admin API
+-- Additional run (capturing explicit DELETE status):
+-- {
+--   "create_status": 200,
+--   "created_user_id": "7c2898b9-890b-44ac-9782-d41b7a01141c",
+--   "created_email": "b4b-user-1771146313-b@test.local",
+--   "delete_status": 200
+-- }
+
+-- Verify deletion (counts)
+-- {
+--   "email": "b4b-user-1771146313-b@test.local",
+--   "auth_users_count": 0,
+--   "profiles_count": 0
+-- }
+
 -- [Optional] Verify invited user profile projection
 -- Replace placeholder values before execution.
 select id, email, role, cabinet_id
