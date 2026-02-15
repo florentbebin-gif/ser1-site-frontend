@@ -4,6 +4,8 @@
 -- Execution date (CET): 2026-02-14
 -- Branch: pr-b2-runtime-evidence-results
 -- Project ref: xnpbxrqkzgimiugqtago
+-- Additional SQL runtime check (CET): 2026-02-15
+-- Execution mode: docker exec -i supabase_db_SER1 psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "<SQL>"
 
 -- =====================
 -- P0-01: invite evidence
@@ -56,22 +58,49 @@ order by policyname;
 -- P0_02=PASS
 
 -- 2) Dataset sanity checks (replace placeholders)
-select id, name
-from public.cabinets
-where name in ('{{cab_a}}', '{{cab_b}}');
+-- 2a) UUID lookup prerequisite for RLS A/B simulation
+-- SQL executed:
+-- select id, email from auth.users where email in ('{{admin_a_email}}', '{{admin_b_email}}');
+-- Output:
+--  id | email
+-- ----+-------
+-- (0 rows)
 
-select id, email, role, cabinet_id
-from public.profiles
-where email in ('{{admin_a_email}}', '{{admin_b_email}}')
-order by email;
+-- 2b) Dataset sanity checks
+-- SQL executed:
+-- select id, name from public.cabinets order by name;
+-- Output:
+--  id | name
+-- ----+------
+-- (0 rows)
+
+-- SQL executed:
+-- select id, email, role, cabinet_id from public.profiles where role='admin' order by email;
+-- Output:
+--  id | email | role | cabinet_id
+-- ----+-------+------+------------
+-- (0 rows)
 
 -- 3) Isolation checks
 -- Preferred: run the same query in two distinct authenticated sessions (Admin A then Admin B)
 -- and archive outputs separately in markdown evidence.
--- Runtime status for this execution: NOT EXECUTED (no two admin sessions available)
-select id, email, role, cabinet_id
-from public.profiles
-order by email;
+-- Runtime status for this execution: NOT EXECUTED (no auth.users UUIDs + no admin A/B dataset in local DB)
+-- Expected simulation query to run once admin_a/admin_b UUIDs are available:
+-- begin;
+-- set local role authenticated;
+-- select set_config('request.jwt.claim.sub','<admin_uuid>', true);
+-- select set_config('request.jwt.claim.role','authenticated', true);
+-- select email, role, cabinet_id from public.profiles order by email;
+-- rollback;
+
+-- 4) Local schema guard checks executed successfully via container
+-- SQL executed:
+-- select relrowsecurity from pg_class where relname='profiles';
+-- Output:
+--  relrowsecurity
+-- ----------------
+--  t
+-- (1 row)
 
 -- Notes:
 -- - Do not paste service_role keys or bearer tokens in this file.
