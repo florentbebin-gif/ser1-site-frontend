@@ -25,6 +25,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: "Guard: forbid committed env files"
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+
+          # Allowed template
+          allow='.env.example'
+
+          # Fail if any .env* file exists in the repo root checkout (except .env.example)
+          for f in .env .env.*; do
+            if [[ "$f" == "$allow" ]]; then
+              continue
+            fi
+            if [[ -f "$f" ]]; then
+              echo "ERROR: forbidden env file present in repo checkout: $f" >&2
+              echo "Use .env.local locally (gitignored) and keep only .env.example in the repo." >&2
+              exit 1
+            fi
+          done
+
+          # Fail if any forbidden env file is tracked by git
+          tracked_env_files=$(git ls-files -- '.env' '.env.*' | grep -v '^\.env\.example$' || true)
+          if [[ -n "$tracked_env_files" ]]; then
+            echo "ERROR: forbidden env file(s) tracked by git:" >&2
+            echo "$tracked_env_files" >&2
+            exit 1
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
