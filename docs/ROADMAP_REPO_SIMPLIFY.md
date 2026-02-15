@@ -27,14 +27,16 @@ description: Repo simplification roadmap (temp)
   - Commit: `619a911`
 
 ### PR-01 — Outputs / caches (dist/, playwright-report/, test-results/, .vercel/, etc.)
-- [ ] Inventaire: tracké vs généré (preuves: `git ls-files`, `git status`)
-- [ ] Purge du tracké inutile (si présent)
-- [ ] `.gitignore` aligné
-- [ ] `npm run check` ✅
+- [x] Inventaire: tracké vs généré (preuves: `git ls-files`, `git status`)
+- [x] Purge du tracké inutile (si présent)
+- [x] `.gitignore` aligné
+- [x] `npm run check` ✅
+  - Commit: `7ef155c`
 
 ### PR-02 — docs/
 - [ ] Inventaire docs (doublons, archives, liens)
 - [ ] Micro-cleanup safe (déplacements/renames/suppressions) + liens mis à jour
+  - [x] Supprimer `docs/INDEX.md` (non référencé, redondant avec README)
 - [ ] `npm run check` ✅
 
 ### PR-03 — public/
