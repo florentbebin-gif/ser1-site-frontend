@@ -509,7 +509,7 @@ src/
 >   - Preuve: `npm run lint` = 0 erreur.
 >   - Note: exception ciblée et documentée sur `src/settings/theme/hooks/brandingIsolation.test.ts` (fixtures hex explicites nécessaires pour prouver l'isolation A/B, sans impact UI/runtime).
 > - **P0-09 DONE** (PR #42, merge `e326fa4`) politique téléchargement (exports disabled si session expirée, purge + UX).
-> - **P0-05 IN PROGRESS** (PR #74 merge `57a7e51` + PR #76 merge `6e4e6be`) : IR split → helpers extraits vers `src/engine/ir/` (`parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`, `capital`, `quotientFamily`, `socialContributions`) ; `src/utils/irEngine.js` ≈ **263 lignes**.
+> - **P0-05 IN PROGRESS** (PR #74 merge `57a7e51` + PR #76 merge `6e4e6be`) : IR split → helpers extraits vers `src/engine/ir/` (`parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`, `capital`, `quotientFamily`, `socialContributions`). **Pending (cette PR)** : extraire `computeIrFromExcelCase` vers `src/engine/ir/excelCase.js` ; `src/utils/irEngine.js` ≈ **213 lignes**.
 >   - **Reste** : prochains helpers IR + split `placementEngine.js`.
 > - **Sécurité — guardrails secrets / `.env*`** : garde-fous repo/CI en place (blocage `.env*` + patterns sensibles).
 
@@ -642,13 +642,13 @@ src/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` (JS). ✅ **MERGED** : `parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote` (PR #66, #68, #69, #70, #72, #74) + `capital`, `quotientFamily`, `socialContributions` (PR #76). `irEngine.js` ≈ **263 lignes**. |
+| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` (JS). ✅ **MERGED** : `parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote` (PR #66, #68, #69, #70, #72, #74) + `capital`, `quotientFamily`, `socialContributions` (PR #76). **Pending (cette PR)** : `excelCase` (`computeIrFromExcelCase`). `irEngine.js` ≈ **213 lignes**. |
 | Fichiers | Ajout: `src/engine/ir/{parts.js, progressiveTax.js, cehr.js, cdhr.js, abattement10.js, effectiveParts.js, domAbatement.js, decote.js}` ; existant: `src/engine/ir/adjustments.js` ; modif: `src/utils/irEngine.js` (imports + suppression impls) |
 | Validation | `npm run check` + golden cases IR + E2E IR |
 | Risque | Moyen — imports à mettre à jour |
 | Rollback | Restaurer `irEngine.js` original |
 
-**Next action** : PR-03 extraction #6 — extraire le prochain helper pur (ex: `computeIrFromExcelCase` helpers) vers `src/engine/ir/`.
+**Next action** : PR-03 extraction #6 — extraire `computeIrFromExcelCase` vers `src/engine/ir/excelCase.js`.
 
 ### PR-04 : Découpe placementEngine.js → engine/placement/
 
