@@ -6,7 +6,7 @@
 
 ## État actuel (Checkpoint 2026-02-15)
 
-> **HEAD** : `59a34d7`
+> **HEAD** : `37f5a5e`
 > **Quality Gates** : `npm run check` ✅ (Lint, Types, Tests, Build)
 > **DONE confirmés (code-level)** : P1-05, P0-04, P0-06 (TTL), P0-09 (download policy), P0-10 (gate tests admin), P0-08 (ser1-colors en `error`)
 
@@ -20,7 +20,9 @@
 - #71 docs(roadmap): sync merged statuses (snapshots + IR split)
 - #73 docs(roadmap): mark done items after merges
 - #74 refactor(ir): batch extract effectiveParts + domAbatement + decote
-- #75 PR-02c: XLSX snapshot foundation (commit `405a0d9`)
+- #75 PR-02c: XLSX snapshot foundation (merge `59a34d7`, commit `405a0d9`)
+- #76 PR-03 batch #2: extract capital/QF/PS helpers (merge `6e4e6be`, commit `340c9de`)
+- #77 PR-02d: XLSX snapshot case #2 (merge `37f5a5e`, commit `dd84a3c`)
 
 ### Statut Module Placement (P1-05)
 
@@ -482,29 +484,32 @@ src/
 | P0-09 | Politique de téléchargement MVP client-side : bouton export **disabled** si session expirée, révocation Blob URLs, purge `sessionStorage`, message UX "session expirée" | Faible |
 | P0-10 | Gate tests admin : wizard règles fiscales/produits → publication **bloquée si 0 test** importé et exécuté. Le système demande explicitement un corpus de tests | Moyen |
 
-**Reste Phase 0 (3 étapes / 10)** : **P0-03**, **P0-05** (finir IR split + split `placementEngine.js`), **P0-07**.
+**Reste Phase 0 : 1 item** — **P0-05** (finir IR split + split `placementEngine.js`).
 
 > Statut exécution runtime (2026-02-14) :
-> - **P0-01 DONE (runtime proven)** via B3 sur `xnpbxrqkzgimiugqtago`.
+> - **P0-01 DONE (runtime proven)** (PR #60, merge `8cafc3e`) via B3 sur `xnpbxrqkzgimiugqtago`.
 >   - Commande: `powershell -ExecutionPolicy Bypass -File tools/scripts/verify-runtime-saas.ps1 -SupabaseUrl "https://xnpbxrqkzgimiugqtago.supabase.co" -SupabaseAnonKey <anon> -ProjectRef "xnpbxrqkzgimiugqtago"`
 >   - Preuve: `AUTH_CONFIG_SOURCE=GET /v1/projects/xnpbxrqkzgimiugqtago/config/auth`, `AUTH_DISABLE_SIGNUP=True`, `P0_01_DECISION=PASS(auth-config-disable_signup=true)`, `SIGNUP_STATUS=422`, `P0_01=PASS`.
-> - **P0-02 DONE (runtime proven)** via B3 policy check.
+> - **P0-02 DONE (runtime proven)** (PR #57, merge `e9f9eb6`) via B3 policy check.
 >   - Commande: `powershell -ExecutionPolicy Bypass -File tools/scripts/verify-runtime-saas.ps1 -PolicyOnly -ProjectRef "xnpbxrqkzgimiugqtago" -ShowPolicyDefs`
 >   - Preuve: `PROFILES_POLICIES_COUNT=5`, `PROFILES_RLS=true`, `POLICIES_INCLUDE_CABINET_ID=True`, `P0_02=PASS`.
-> - **P0-10 DONE (v1)** gate publication unifié sur les 3 écrans admin de publication (`BaseContrat`, `Impôts`, `Prélèvements`).
+> - **P0-03 DONE** (PR #49, merge `c703ce2`) branding isolation (logo + palette per-cabinet).
+> - **P0-10 DONE (v1)** (PR #48, merge `0130d0c`) gate publication unifié sur les 3 écrans admin de publication (`BaseContrat`, `Impôts`, `Prélèvements`).
 >   - Implémentation: `src/features/settings/publicationGate.ts` (gate partagé + messages blocage/warning + mode fail-safe `testsSourceAvailable=false`).
 >   - Test: `src/features/settings/publicationGate.test.ts` (`tests=[] => blocked=true`, `tests=[..] => blocked=false`, source indisponible => blocage explicite).
 >   - Intégration UI: boutons Save désactivés si gate bloquant + message visible (non silencieux) sur `/settings/base-contrat`, `/settings/impots`, `/settings/prelevements`.
-> - **P0-04 DONE** fingerprint exports déterministe (PPTX + XLSX + XLS legacy) via `d60b260`.
+> - **P0-04 DONE** (PR #50, merge `3c6cc28`) fingerprint exports déterministe (PPTX + XLSX + XLS legacy) (key commit `d60b260`).
 >   - Implémentation: `src/utils/exportFingerprint.ts` + branchement central `src/pptx/export/exportStudyDeck.ts`, `src/utils/xlsxBuilder.ts`, `src/utils/exportExcel.js`.
 >   - Preuve tests: `src/utils/exportFingerprint.test.ts` (même manifest => même hash, variation champ clé => hash différent).
 >   - Exemple fingerprint (dev): `PPTX=10257885bcb868e0`, `XLSX=6ef5fec7658c652a`.
-> - **P0-08 DONE** gouvernance couleurs en mode strict via `d18ee3a`.
+> - **P0-06 DONE** (PR #42, merge `e326fa4`) sessions TTL pro (heartbeat 30s, grâce, inactivité 1h, purge sessionStorage, UX expiration).
+> - **P0-07 DONE** (PR #42, merge `e326fa4`) migrations unifiées (`database/` + `supabase/`).
+> - **P0-08 DONE** (PR #50, merge `3c6cc28`) gouvernance couleurs en mode strict (key commit `d18ee3a`).
 >   - Changement: `eslint.config.js` (`ser1-colors/no-hardcoded-colors` et `ser1-colors/use-semantic-colors` passés en `error`).
 >   - Preuve: `npm run lint` = 0 erreur.
 >   - Note: exception ciblée et documentée sur `src/settings/theme/hooks/brandingIsolation.test.ts` (fixtures hex explicites nécessaires pour prouver l'isolation A/B, sans impact UI/runtime).
-> - **P0-05 PARTIAL DONE (IR split / PR-03)** : helpers IR extraits vers `src/engine/ir/` (`parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`) ; `src/utils/irEngine.js` ≈ **308 lignes**.
->   - **Pending (PR-03 batch #2, cette PR)** : extraire `capital`, `quotientFamily`, `socialContributions` ; `src/utils/irEngine.js` ≈ **263 lignes**.
+> - **P0-09 DONE** (PR #42, merge `e326fa4`) politique téléchargement (exports disabled si session expirée, purge + UX).
+> - **P0-05 IN PROGRESS** (PR #74 merge `57a7e51` + PR #76 merge `6e4e6be`) : IR split → helpers extraits vers `src/engine/ir/` (`parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`, `capital`, `quotientFamily`, `socialContributions`) ; `src/utils/irEngine.js` ≈ **263 lignes**.
 >   - **Reste** : prochains helpers IR + split `placementEngine.js`.
 > - **Sécurité — guardrails secrets / `.env*`** : garde-fous repo/CI en place (blocage `.env*` + patterns sensibles).
 
@@ -521,11 +526,14 @@ src/
 | P1-05 | Refactor Placement : pattern CreditV2 (shell + controller + panels + CSS local) | **Haut** |
 | P1-06 | Feature flag `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT` → ON | Moyen |
 
-**Reste Phase 1 (4 étapes / 6)** : **P1-01**, **P1-02**, **P1-03**, **P1-06**.
+**Reste Phase 1 : 2 items** — **P1-04**, **P1-06**.
 
 > Statut exécution (2026-02-14) :
-> - **P1-04 DONE** avec preuves de non-régression (fichiers IR < 500 lignes, smoke tests export IR PPTX/Excel, `npm run check` vert).
-> - **P1-05 DONE** (refactor placement carry-over) avec preuves :
+> - **P1-01 DONE** (PR #44, merge `9e58015`) JSON snapshot versioning + migrations + Zod.
+> - **P1-02 DONE** (PR #45, merge `5424b07`) Succession simulator MVP + exports.
+> - **P1-03 DONE** (PR #46, merge `fb5124e`) PER simulator MVP.
+> - **P1-04 TODO** : pas de PR/commit unique identifié dans l'historique (ne pas marquer DONE sans preuve PR+SHA).
+> - **P1-05 DONE** (PR #51, merge `ff270c5`) refactor placement (pattern CreditV2) avec preuves :
 >   - `src/features/placement/components/PlacementSimulatorPage.jsx` < 500 lignes (150).
 >   - `grep -R "@/pages/Placement.css" -n src` = 0 ; `src/pages/Placement.css` removed (PR2) — styles migrated to `src/features/placement/components/PlacementSimulator.css`.
 >   - `npm run check` vert après découpe shell/controller/panels et migration CSS locale.
@@ -626,7 +634,7 @@ src/
 
 ✅ **PR-02c DONE (MERGED)** : 1er snapshot XLSX (foundation) + stabilité sur 2 runs. (PR #75, commit `405a0d9`)
 
-**PR-02d (en cours, non mergé)** : 2e snapshot XLSX (case #2) + stabilité sur 2 runs.
+✅ **PR-02d DONE (MERGED)** : 2e snapshot XLSX (case #2) + stabilité sur 2 runs. (PR #77, commit `dd84a3c`)
 
 **Next action (après PR-02d)** : 3e snapshot IR PPTX.
 
@@ -634,7 +642,7 @@ src/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` (JS). ✅ **MERGED** : `parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`. `irEngine.js` ≈ **308 lignes** (PR #66, #68, #69, #70, #72, #74). **Pending (batch #2, cette PR)** : `capital`, `quotientFamily`, `socialContributions` ; `irEngine.js` ≈ **263 lignes**. |
+| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` (JS). ✅ **MERGED** : `parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote` (PR #66, #68, #69, #70, #72, #74) + `capital`, `quotientFamily`, `socialContributions` (PR #76). `irEngine.js` ≈ **263 lignes**. |
 | Fichiers | Ajout: `src/engine/ir/{parts.js, progressiveTax.js, cehr.js, cdhr.js, abattement10.js, effectiveParts.js, domAbatement.js, decote.js}` ; existant: `src/engine/ir/adjustments.js` ; modif: `src/utils/irEngine.js` (imports + suppression impls) |
 | Validation | `npm run check` + golden cases IR + E2E IR |
 | Risque | Moyen — imports à mettre à jour |
