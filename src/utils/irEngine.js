@@ -1,5 +1,6 @@
 import { computeTmiMetrics } from './tmiMetrics.js';
 import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../constants/settingsDefaults';
+import { computeAutoPartsWithChildren } from '../engine/ir/parts.js';
 
 function computeAbattement10(base, cfg) {
   if (!cfg || base <= 0) return 0;
@@ -200,48 +201,8 @@ function computeCDHR(config, assiette, irRetenu, pfuIr, cehr, isCouple, personsA
 // Re-export pour les consommateurs historiques (importé depuis settingsDefaults)
 export { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS };
 
-// Règle parent isolé (case T) :
-// - Enfants à charge comptés avant les enfants en alternée pour les 2 premiers rangs.
-// - Bonus parent isolé = 0,5 si au moins un enfant est à charge.
-// - Si uniquement alternée : bonus = 0,25 par enfant alternée (plafonné à 0,5).
-export function computeAutoPartsWithChildren({ status, isIsolated, children = [] }) {
-  const baseParts = status === 'couple' ? 2 : 1;
-
-  const chargeCount = children.filter((child) => child && child.mode === 'charge').length;
-  const sharedCount = children.filter((child) => child && child.mode === 'shared').length;
-
-  let childrenParts = 0;
-  let remainingFirstSlots = 2;
-
-  const chargeFirstSlots = Math.min(chargeCount, remainingFirstSlots);
-  childrenParts += chargeFirstSlots * 0.5;
-  remainingFirstSlots -= chargeFirstSlots;
-
-  const chargeBeyond = chargeCount - chargeFirstSlots;
-  if (chargeBeyond > 0) {
-    childrenParts += chargeBeyond * 1;
-  }
-
-  const sharedFirstSlots = Math.min(sharedCount, remainingFirstSlots);
-  childrenParts += sharedFirstSlots * 0.25;
-  remainingFirstSlots -= sharedFirstSlots;
-
-  const sharedBeyond = sharedCount - sharedFirstSlots;
-  if (sharedBeyond > 0) {
-    childrenParts += sharedBeyond * 0.5;
-  }
-
-  let isolatedBonus = 0;
-  if (status === 'single' && isIsolated) {
-    if (chargeCount > 0) {
-      isolatedBonus = 0.5;
-    } else if (sharedCount > 0) {
-      isolatedBonus = Math.min(0.5, sharedCount * 0.25);
-    }
-  }
-
-  return baseParts + childrenParts + isolatedBonus;
-}
+// Back-compat export (moved to engine/ir/parts.js)
+export { computeAutoPartsWithChildren };
 
 // Fallback simplifié quand seul le nombre d'enfants est connu (Excel case).
 // Hypothèse : enfants comptés en garde exclusive; bonus parent isolé seulement si >=1 enfant.
