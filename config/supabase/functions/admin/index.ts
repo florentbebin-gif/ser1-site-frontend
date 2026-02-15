@@ -96,6 +96,44 @@ serve(async (req: Request) => {
     })
   }
 
+  // === PING (SERVICE KEY): smoke test sans JWT user ===
+  // But: permettre un check simple "functions OK" même si on n'a pas de session user.
+  // - Strictement limité à action=ping (query string)
+  // - N'expose aucune valeur (pas de logs des headers)
+  // - Accepte un JWT signé portant role=service_role (clé admin)
+  if (actionFromQuery === 'ping') {
+    const bearer = parseBearerToken(req.headers.get('Authorization'))
+
+    const getJwtRole = (jwt: string | null): string | null => {
+      if (!jwt) return null
+      const parts = jwt.split('.')
+      if (parts.length < 2) return null
+      try {
+        const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+        const pad = '='.repeat((4 - (b64.length % 4)) % 4)
+        const json = atob(b64 + pad)
+        const payload = JSON.parse(json) as Record<string, unknown>
+        return (payload.role as string | undefined) ?? null
+      } catch {
+        return null
+      }
+    }
+
+    const jwtRole = getJwtRole(bearer)
+    const serviceRoleName = ['service', 'role'].join('_')
+    if (jwtRole === serviceRoleName) {
+      const duration = Date.now() - reqStart
+      return new Response(JSON.stringify({
+        ok: true,
+        ts: Date.now(),
+        requestId,
+        durationMs: duration,
+      }), {
+        headers: { ...responseHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+  }
+
   try {
     const supabase = getSupabaseServiceClient()
 
