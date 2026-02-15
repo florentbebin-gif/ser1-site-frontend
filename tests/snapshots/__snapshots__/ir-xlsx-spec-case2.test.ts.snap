@@ -1,0 +1,95 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`snapshots/ir: XLSX workbook spec (case #2) > buildXlsxBlob() stays stable (structure) 1`] = `
+{
+  "files": [
+    "[Content_Types].xml",
+    "_rels/",
+    "_rels/.rels",
+    "xl/",
+    "xl/_rels/",
+    "xl/_rels/workbook.xml.rels",
+    "xl/styles.xml",
+    "xl/workbook.xml",
+    "xl/worksheets/",
+    "xl/worksheets/sheet1.xml",
+    "xl/worksheets/sheet2.xml",
+    "xl/worksheets/sheet3.xml",
+    "xl/worksheets/sheet4.xml",
+  ],
+  "styles": {
+    "cellXfCount": 8,
+    "fillCount": 4,
+    "fontCount": 3,
+    "numFmtCount": 2,
+  },
+  "workbook": {
+    "sheetCount": 4,
+    "sheetNames": [
+      "Paramètres",
+      "Synthèse impôts",
+      "Détails calculs",
+      "Notes",
+    ],
+  },
+  "worksheets": [
+    {
+      "cellCount": 6,
+      "firstCellRefs": [
+        "A1",
+        "B1",
+        "A2",
+        "B2",
+        "A3",
+        "B3",
+      ],
+      "path": "xl/worksheets/sheet1.xml",
+      "rowCount": 3,
+    },
+    {
+      "cellCount": 8,
+      "firstCellRefs": [
+        "A1",
+        "B1",
+        "A2",
+        "B2",
+        "A3",
+        "B3",
+        "A4",
+        "B4",
+      ],
+      "path": "xl/worksheets/sheet2.xml",
+      "rowCount": 4,
+    },
+    {
+      "cellCount": 12,
+      "firstCellRefs": [
+        "A1",
+        "B1",
+        "C1",
+        "D1",
+        "A2",
+        "B2",
+        "C2",
+        "D2",
+        "A3",
+        "B3",
+        "C3",
+        "D3",
+      ],
+      "path": "xl/worksheets/sheet3.xml",
+      "rowCount": 3,
+    },
+    {
+      "cellCount": 3,
+      "firstCellRefs": [
+        "A1",
+        "A2",
+        "A3",
+      ],
+      "path": "xl/worksheets/sheet4.xml",
+      "rowCount": 3,
+    },
+  ],
+}
+`;
