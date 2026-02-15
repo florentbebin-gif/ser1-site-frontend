@@ -8,7 +8,7 @@
 
 > **HEAD** : `eac0da5`
 > **Quality Gates** : `npm run check` ✅ (Lint, Types, Tests, Build)
-> **DONE confirmés (code-level)** : P1-05, P0-04, **P0-05**, P0-06 (TTL), P0-09 (download policy), P0-10 (gate tests admin), P0-08 (ser1-colors en `error`)
+> **DONE confirmés (code-level)** : **P1-04**, P1-05, P0-04, **P0-05**, P0-06 (TTL), P0-09 (download policy), P0-10 (gate tests admin), P0-08 (ser1-colors en `error`)
 
 ### PR mergées depuis le dernier checkpoint
 
@@ -528,20 +528,19 @@ src/
 | P1-05 | Refactor Placement : pattern CreditV2 (shell + controller + panels + CSS local) | **Haut** |
 | P1-06 | Feature flag `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT` → ON | Moyen |
 
-**Reste Phase 1 : 1 item** — **P1-04**.
+**Reste Phase 1 : 0 item** — Phase 1 complète.
 
 > Statut exécution (2026-02-14) :
-> - **P1-01 DONE** (PR #44, merge `9e58015`) JSON snapshot versioning + migrations + Zod.
+> - **P1-01 DONE** (PR #44, merge `9e58015`) JSON snapshot versioning + migrations auto + Zod.
 > - **P1-02 DONE** (PR #45, merge `5424b07`) Succession simulator MVP + exports.
 > - **P1-03 DONE** (PR #46, merge `fb5124e`) PER simulator MVP.
-> - **P1-04 TODO (à clarifier)** : refactor simulateur IR vers le pattern **CreditV2** (même approche que Placement) — `src/pages/Ir.jsx` → `src/features/ir/` (shell/controller/panels + CSS local) + règle `< 500 lignes / fichier`.
->   - Pourquoi encore TODO : pas de preuve **PR + merge SHA** identifiée dans l'historique ; ne pas marquer DONE sans trace.
->   - Next action pour fermer : soit identifier la PR existante (si déjà fait), soit créer une PR dédiée P1-04 avec preuves (`npm run check` vert + smoke exports IR + non-régression golden cases IR).
+> - **P1-04 DONE** : simulateur IR en pattern CreditV2 via `src/features/ir/` (entry `IrPage.tsx` ~13, hook `hooks/useIr.ts` ~342, composants `components/*` < 500).
+>   - Preuve merge: PR #46 (merge `fb5124e`, key commit `f2ac8cf`).
 > - **P1-05 DONE** (PR #51, merge `ff270c5`) refactor placement (pattern CreditV2) avec preuves :
 >   - `src/features/placement/components/PlacementSimulatorPage.jsx` < 500 lignes (150).
 >   - `grep -R "@/pages/Placement.css" -n src` = 0 ; `src/pages/Placement.css` removed (PR2) — styles migrated to `src/features/placement/components/PlacementSimulator.css`.
 >   - `npm run check` vert après découpe shell/controller/panels et migration CSS locale.
-> - **P1-06 DONE** : flag Placement en **ON par défaut** (env absent => ON), OFF possible via `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=false` (debug/rollback). (PR #46, merge `fb5124e`, key commit `cf82906`)
+> - **P1-06 DONE** : `.env.example` documente `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=true` (env absent => ON), OFF possible via `false` (debug/rollback). (PR #80, merge `eac0da5`)
 
 ### Phase 2 — Analyse Patrimoniale + Simulateurs (6-8 semaines)
 
@@ -603,7 +602,7 @@ src/
 | P1-01 | JSON versioning + Zod | Haute | Moyen | `utils/globalStorage.js` | Load ancien fichier → migration auto |
 | P1-02 | Simulateur Succession UI | Haute | Moyen | `pages/`, `engine/succession` | UI + export PPTX/Excel |
 | P1-03 | Simulateur Épargne retraite | Haute | Moyen | `pages/`, `engine/` | UI + engine + export |
-| P1-04 | Refactor IR (CreditV2 pattern) | Haute | **Haut** | `pages/Ir.jsx` → `features/ir/` | <500 lignes par fichier |
+| P1-04 | Refactor IR (CreditV2 pattern) | Haute | **Haut** | `src/features/ir/` | <500 lignes par fichier |
 | P1-05 | Refactor Placement (CreditV2) | Haute | **Haut** | `pages/PlacementV2` → `features/placement/` | `PlacementSimulatorPage.jsx` = 150 lignes, cross-import CSS = 0, `npm run check` vert |
 | P1-06 | Feature flag base_contrat ON | Moyenne | Moyen | `hooks/usePlacementSettings` | Mêmes résultats que `extractFiscalParams` |
 | P2-01 | Rapport PPTX audit complet | **Critique** | Moyen | `pptx/`, `features/audit` | PPTX patrimoine complet |
@@ -689,11 +688,11 @@ src/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | `pages/Ir.jsx` → `features/ir/` (components, hooks, utils, index) |
-| Fichiers | `src/features/ir/**`, `src/App.jsx` (import update) |
-| Validation | `npm run check` + golden cases + E2E IR + snapshot export |
-| Risque | **Haut** — 50KB, export PPTX dépendant |
-| Rollback | Restaurer `pages/Ir.jsx` |
+| Scope | ✅ **Déjà fait** : IR en `src/features/ir/` (pattern CreditV2). Voir P1-04 DONE. |
+| Preuve | PR #46 (merge `fb5124e`, key commit `f2ac8cf`) |
+| Validation | `npm run check` vert ; exports IR couverts par tests (`src/features/ir/__tests__/irExport.test.ts`) |
+| Risque | Faible — doc de statut uniquement |
+| Rollback | `git revert` |
 
 ### PR-08 : Refactor Placement (pattern CreditV2)
 
