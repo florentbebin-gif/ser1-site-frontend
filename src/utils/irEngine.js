@@ -8,6 +8,9 @@ import { computeAbattement10 } from '../engine/ir/abattement10.js';
 import { computeEffectiveParts } from '../engine/ir/effectiveParts.js';
 import { computeDomAbatementAmount } from '../engine/ir/domAbatement.js';
 import { computeDecote } from '../engine/ir/decote.js';
+import { computeCapitalBases, computePfuIr } from '../engine/ir/capital.js';
+import { computeQuotientFamilyCapping } from '../engine/ir/quotientFamily.js';
+import { computeSocialContributions } from '../engine/ir/socialContributions.js';
 
 // Re-export pour les consommateurs historiques (importé depuis settingsDefaults)
 export { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS };
@@ -73,18 +76,13 @@ export function computeIrResult({
 
   const capWithPs = incomes.capital?.withPs || 0;
   const capWithoutPs = incomes.capital?.withoutPs || 0;
-  const capTotal = capWithPs + capWithoutPs;
-
   const modeCap = capitalMode || 'pfu';
 
-  let capitalBaseBareme = 0;
-  let capitalBasePfu = 0;
-
-  if (modeCap === 'bareme') {
-    capitalBaseBareme = capTotal * 0.6;
-  } else {
-    capitalBasePfu = capTotal;
-  }
+  const { capitalBaseBareme, capitalBasePfu } = computeCapitalBases({
+    capWithPs,
+    capWithoutPs,
+    modeCap,
+  });
 
   const baseRevenusBareme =
     totalIncomeD1 +
@@ -103,53 +101,27 @@ export function computeIrResult({
   const { taxPerPart } = computeProgressiveTax(scale, taxablePerPart);
 
   const irBrutFoyerSansPlafond = taxPerPart * partsNb;
-  let irBrutFoyer = irBrutFoyerSansPlafond;
+  const {
+    irBeforeQfBase,
+    qfAdvantage,
+    irAfterQf,
+    qfIsCapped,
+    basePartsForQf,
+    extraParts,
+    extraHalfParts,
+    plafondPartSup,
+    plafondParentIso2,
+  } = computeQuotientFamilyCapping({
+    scale,
+    taxableIncome,
+    partsNb,
+    isCouple,
+    isIsolated,
+    qfYearCfg,
+    irSansPlafond: irBrutFoyerSansPlafond,
+  });
 
-  let irBeforeQfBase = irBrutFoyerSansPlafond;
-  let qfAdvantage = 0;
-  let irAfterQf = irBrutFoyerSansPlafond;
-
-  const basePartsForQf = isCouple ? 2 : 1;
-  const extraParts = Math.max(0, partsNb - basePartsForQf);
-  const extraHalfParts = extraParts * 2;
-
-  const plafondPartSup = Number(qfYearCfg.plafondPartSup || 0);
-  const plafondParentIso2 = Number(qfYearCfg.plafondParentIsoléDeuxPremièresParts || 0);
-
-  let maxAvantage = 0;
-  let qfIsCapped = false;
-
-  if (taxableIncome > 0 && extraHalfParts > 0 && plafondPartSup > 0) {
-    const taxablePerPartBase = basePartsForQf > 0 ? taxableIncome / basePartsForQf : taxableIncome;
-    const { taxPerPart: taxPerPartBase } = computeProgressiveTax(scale, taxablePerPartBase);
-    const irBase = taxPerPartBase * basePartsForQf;
-    irBeforeQfBase = irBase;
-
-    const avantageBrut = Math.max(0, irBase - irBrutFoyerSansPlafond);
-
-    const isSingle = !isCouple;
-
-    if (!isIsolated || !isSingle || plafondParentIso2 <= 0) {
-      maxAvantage = extraParts * 2 * plafondPartSup;
-    } else {
-      if (partsNb <= 2) {
-        maxAvantage = (partsNb - 1) * plafondParentIso2;
-      } else {
-        maxAvantage = plafondParentIso2 + (partsNb - 2) * 2 * plafondPartSup;
-      }
-    }
-
-    const avantageRetenu = Math.min(avantageBrut, maxAvantage);
-    qfIsCapped = avantageBrut > maxAvantage;
-
-    qfAdvantage = avantageRetenu;
-    irBrutFoyer = irBase - avantageRetenu;
-    irAfterQf = irBrutFoyer;
-  } else {
-    irBeforeQfBase = irBrutFoyerSansPlafond;
-    qfAdvantage = 0;
-    irAfterQf = irBrutFoyerSansPlafond;
-  }
+  let irBrutFoyer = irAfterQf;
 
   const domAbatementAmount = computeDomAbatementAmount({
     location,
@@ -164,12 +136,7 @@ export function computeIrResult({
 
   const irNet = Math.max(0, irBrutFoyer - creditsTotal - decote);
 
-  let pfuIr = 0;
-  if (capitalBasePfu > 0) {
-    const pfuCfg = taxSettings.pfu && taxSettings.pfu[yearKey] ? taxSettings.pfu[yearKey] : null;
-    const pfuRateIR = pfuCfg ? Number(pfuCfg.rateIR) || 12.8 : 12.8;
-    pfuIr = capitalBasePfu * (pfuRateIR / 100);
-  }
+  const pfuIr = computePfuIr({ capitalBasePfu, yearKey, taxSettings });
 
   const rfr = taxableIncome + capitalBasePfu;
 
@@ -185,23 +152,11 @@ export function computeIrResult({
     personsAChargeCount
   );
 
-  let psRateTotal = 0;
-  let psFoncier = 0;
-  let psDividends = 0;
-  let psTotal = 0;
-
-  if (patrimonyCfg) {
-    psRateTotal = Number(patrimonyCfg.totalRate) || 0;
-
-    const fonciersBase = incomes.fonciersFoyer || 0;
-    psFoncier = fonciersBase * (psRateTotal / 100);
-
-    if (capWithPs > 0) {
-      psDividends = capWithPs * (psRateTotal / 100);
-    }
-
-    psTotal = psFoncier + psDividends;
-  }
+  const { psFoncier, psDividends, psTotal } = computeSocialContributions({
+    patrimonyCfg,
+    fonciersBase: incomes.fonciersFoyer || 0,
+    capWithPs,
+  });
 
   const tmiMetrics = computeTmiMetrics(taxableIncome, {
     scale,
