@@ -500,6 +500,7 @@ src/
 >   - Note: exception ciblée et documentée sur `src/settings/theme/hooks/brandingIsolation.test.ts` (fixtures hex explicites nécessaires pour prouver l'isolation A/B, sans impact UI/runtime).
 > - **P0-05 PARTIAL DONE (IR split / PR-03)** : helpers IR extraits vers `src/engine/ir/` (`parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`) ; `src/utils/irEngine.js` ≈ **340 lignes**.
 >   - **Reste** : prochains helpers IR + split `placementEngine.js`.
+>   - **En cours (batch PR, non mergé)** : extraction `computeEffectiveParts` + factorisation `domAbatement` + `decote` → `src/engine/ir/` ; `irEngine.js` ≈ **308 lignes** sur branche.
 > - **Sécurité — guardrails secrets / `.env*`** : garde-fous repo/CI en place (blocage `.env*` + patterns sensibles).
 
 ### Phase 1 — MVP Simulateurs + JSON (6-8 semaines)
@@ -623,12 +624,12 @@ src/
 | Aspect | Détail |
 |--------|--------|
 | Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` (JS). ✅ **MERGED** : `parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`. `irEngine.js` ≈ **340 lignes** (PR #66, #68, #69, #70, #72) |
-| Fichiers | Ajout: `src/engine/ir/{parts.js, progressiveTax.js, cehr.js, cdhr.js, abattement10.js}` ; existant: `src/engine/ir/adjustments.js` ; modif: `src/utils/irEngine.js` (imports + suppression impls) |
+| Fichiers | Ajout: `src/engine/ir/{parts.js, progressiveTax.js, cehr.js, cdhr.js, abattement10.js}` ; existant: `src/engine/ir/adjustments.js` ; modif: `src/utils/irEngine.js` (imports + suppression impls). **En cours (batch PR, non mergé)** : `effectiveParts.js`, `domAbatement.js`, `decote.js` |
 | Validation | `npm run check` + golden cases IR + E2E IR |
 | Risque | Moyen — imports à mettre à jour |
 | Rollback | Restaurer `irEngine.js` original |
 
-**Next action** : PR-03 extraction #6 — extraire le prochain helper pur (ex: `computeEffectiveParts`) vers `src/engine/ir/`.
+**Next action** : PR-03 extraction #6 — extraire le prochain helper pur (ex: `computeEffectiveParts`) vers `src/engine/ir/` (⚠️ en cours via batch PR).
 
 ### PR-04 : Découpe placementEngine.js → engine/placement/
 
