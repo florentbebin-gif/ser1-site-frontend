@@ -469,78 +469,21 @@ src/
 
 ## 9. Roadmap Phase 0 → 4
 
-### Phase 0 — Foundations (4-6 semaines)
+### Phase 0 — Foundations (DONE) — archivée
 
-**Objectif** : Poser les bases SaaS sans casser l'existant.
+✅ Phase 0 est terminée. Le contenu complet (table + preuves PR/SHA + notes runtime) est archivé dans :
 
-| ID | Livrable | Risque |
-|----|----------|--------|
-| P0-01 | Auth : workflow invitation admin (email template, onboarding, **blocage self-signup**) | Moyen |
-| P0-02 | Multi-tenant : RLS `profiles` filtrée par `cabinet_id` + RLS `cabinets` per-admin. **Les tables settings restent GLOBALES** (conforme à l'exigence : règles partagées SaaS) | Moyen |
-| P0-03 | Validation isolation branding (logo + palette per-cabinet) | Faible |
-| P0-04 | Exports traçables : fingerprint déterministe (PPTX + Excel) + preuves unitaires | Faible |
-| P0-05 | Découpe god files critiques (`irEngine.js`, `placementEngine.js`) | Moyen |
-| P0-06 | Sessions TTL pro : heartbeat 30 s, grâce **2-5 min** (perte heartbeat : réseau/tab hidden — PAS conservation après fermeture onglet), coupure **1 h inactivité** (reset : saisie, navigation, clic CTA), purge `sessionStorage`, UX "session expire dans X min" | Moyen |
-| P0-07 | Unifier migrations (`database/` + `supabase/`) | Faible |
-| P0-08 | ESLint `ser1-colors` → `error` + cleanup hardcodes | Faible |
-| P0-09 | Politique de téléchargement MVP client-side : bouton export **disabled** si session expirée, révocation Blob URLs, purge `sessionStorage`, message UX "session expirée" | Faible |
-| P0-10 | Gate tests admin : wizard règles fiscales/produits → publication **bloquée si 0 test** importé et exécuté. Le système demande explicitement un corpus de tests | Moyen |
+- `docs/ARCHIVE.md#phase-0--foundations-done`
 
-**Reste Phase 0 : 0 item** — Phase 0 complète.
+Résumé (high level) : auth invite/self-signup, RLS multi-tenant, sessions TTL, exports fingerprint, gouvernance migrations, couleurs strictes, download policy, gate publication tests admin, découpe engines IR/Placement.
 
-> Statut exécution runtime (2026-02-14) :
-> - **P0-01 DONE (runtime proven)** (PR #60, merge `8cafc3e`) via B3 sur `xnpbxrqkzgimiugqtago`.
->   - Commande: `powershell -ExecutionPolicy Bypass -File tools/scripts/verify-runtime-saas.ps1 -SupabaseUrl "https://xnpbxrqkzgimiugqtago.supabase.co" -SupabaseAnonKey <anon> -ProjectRef "xnpbxrqkzgimiugqtago"`
->   - Preuve: `AUTH_CONFIG_SOURCE=GET /v1/projects/xnpbxrqkzgimiugqtago/config/auth`, `AUTH_DISABLE_SIGNUP=True`, `P0_01_DECISION=PASS(auth-config-disable_signup=true)`, `SIGNUP_STATUS=422`, `P0_01=PASS`.
-> - **P0-02 DONE (runtime proven)** (PR #57, merge `e9f9eb6`) via B3 policy check.
->   - Commande: `powershell -ExecutionPolicy Bypass -File tools/scripts/verify-runtime-saas.ps1 -PolicyOnly -ProjectRef "xnpbxrqkzgimiugqtago" -ShowPolicyDefs`
->   - Preuve: `PROFILES_POLICIES_COUNT=5`, `PROFILES_RLS=true`, `POLICIES_INCLUDE_CABINET_ID=True`, `P0_02=PASS`.
-> - **P0-03 DONE** (PR #49, merge `c703ce2`) branding isolation (logo + palette per-cabinet).
-> - **P0-10 DONE (v1)** (PR #48, merge `0130d0c`) gate publication unifié sur les 3 écrans admin de publication (`BaseContrat`, `Impôts`, `Prélèvements`).
->   - Implémentation: `src/features/settings/publicationGate.ts` (gate partagé + messages blocage/warning + mode fail-safe `testsSourceAvailable=false`).
->   - Test: `src/features/settings/publicationGate.test.ts` (`tests=[] => blocked=true`, `tests=[..] => blocked=false`, source indisponible => blocage explicite).
->   - Intégration UI: boutons Save désactivés si gate bloquant + message visible (non silencieux) sur `/settings/base-contrat`, `/settings/impots`, `/settings/prelevements`.
-> - **P0-04 DONE** (PR #50, merge `3c6cc28`) fingerprint exports déterministe (PPTX + XLSX + XLS legacy) (key commit `d60b260`).
->   - Implémentation: `src/utils/exportFingerprint.ts` + branchement central `src/pptx/export/exportStudyDeck.ts`, `src/utils/xlsxBuilder.ts`, `src/utils/exportExcel.js`.
->   - Preuve tests: `src/utils/exportFingerprint.test.ts` (même manifest => même hash, variation champ clé => hash différent).
->   - Exemple fingerprint (dev): `PPTX=10257885bcb868e0`, `XLSX=6ef5fec7658c652a`.
-> - **P0-06 DONE** (PR #42, merge `e326fa4`) sessions TTL pro (heartbeat 30s, grâce, inactivité 1h, purge sessionStorage, UX expiration).
-> - **P0-07 DONE** (PR #42, merge `e326fa4`) migrations unifiées (`database/` + `supabase/`).
-> - **P0-08 DONE** (PR #50, merge `3c6cc28`) gouvernance couleurs en mode strict (key commit `d18ee3a`).
->   - Changement: `eslint.config.js` (`ser1-colors/no-hardcoded-colors` et `ser1-colors/use-semantic-colors` passés en `error`).
->   - Preuve: `npm run lint` = 0 erreur.
->   - Note: exception ciblée et documentée sur `src/settings/theme/hooks/brandingIsolation.test.ts` (fixtures hex explicites nécessaires pour prouver l'isolation A/B, sans impact UI/runtime).
-> - **P0-09 DONE** (PR #42, merge `e326fa4`) politique téléchargement (exports disabled si session expirée, purge + UX).
-> - **P0-05 DONE** (IR split) : helpers IR extraits vers `src/engine/ir/` (`parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`, `capital`, `quotientFamily`, `socialContributions`, `excelCase`). `src/utils/irEngine.js` ≈ **213 lignes**.
->   - Preuves merges: PR #66 (`d8be201`), #68 (`e4383ff`), #69 (`100d056`), #70 (`6bbf64a`), #72 (`a763d7b`), #74 (`57a7e51`), #76 (`6e4e6be`), #79 (`7fda4a7`).
-> - **Sécurité — guardrails secrets / `.env*`** : garde-fous repo/CI en place (blocage `.env*` + patterns sensibles).
+### Phase 1 — MVP Simulateurs + JSON (DONE) — archivée
 
-### Phase 1 — MVP Simulateurs + JSON (6-8 semaines)
+✅ Phase 1 est terminée. Le contenu complet (table + preuves PR/SHA + notes) est archivé dans :
 
-**Objectif** : Premiers simulateurs complets + sauvegarde locale robuste.
+- `docs/ARCHIVE.md#phase-1--mvp-simulateurs--json-done`
 
-| ID | Livrable | Risque |
-|----|----------|--------|
-| P1-01 | JSON local : schema versioning + migrations auto + Zod | Moyen |
-| P1-02 | Simulateur Succession : UI + export PPTX/Excel | Moyen |
-| P1-03 | Simulateur Épargne retraite (PER) : UI + engine + export | Moyen |
-| P1-04 | Refactor IR : pattern CreditV2 (components/hooks/utils) | **Haut** |
-| P1-05 | Refactor Placement : pattern CreditV2 (shell + controller + panels + CSS local) | **Haut** |
-| P1-06 | Feature flag `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT` → ON | Moyen |
-
-**Reste Phase 1 : 0 item** — Phase 1 complète.
-
-> Statut exécution (2026-02-14) :
-> - **P1-01 DONE** (PR #44, merge `9e58015`) JSON snapshot versioning + migrations auto + Zod.
-> - **P1-02 DONE** (PR #45, merge `5424b07`) Succession simulator MVP + exports.
-> - **P1-03 DONE** (PR #46, merge `fb5124e`) PER simulator MVP.
-> - **P1-04 DONE** : simulateur IR en pattern CreditV2 via `src/features/ir/` (entry `IrPage.tsx` ~13, hook `hooks/useIr.ts` ~342, composants `components/*` < 500).
->   - Preuve merge: PR #46 (merge `fb5124e`, key commit `f2ac8cf`).
-> - **P1-05 DONE** (PR #51, merge `ff270c5`) refactor placement (pattern CreditV2) avec preuves :
->   - `src/features/placement/components/PlacementSimulatorPage.jsx` < 500 lignes (150).
->   - `grep -R "@/pages/Placement.css" -n src` = 0 ; `src/pages/Placement.css` removed (PR2) — styles migrated to `src/features/placement/components/PlacementSimulator.css`.
->   - `npm run check` vert après découpe shell/controller/panels et migration CSS locale.
-> - **P1-06 DONE** : `.env.example` documente `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=true` (env absent => ON), OFF possible via `false` (debug/rollback). (PR #80, merge `eac0da5`)
+Résumé (high level) : JSON snapshots+migrations, simulateurs Succession/PER, refactor IR/Placement (CreditV2), flag placement base-contrat ON par défaut.
 
 ### Phase 2 — Analyse Patrimoniale + Simulateurs (6-8 semaines)
 

@@ -1,18 +1,5 @@
-# Legacy SQL setup (archived)
+# Stub — déplacé vers l'archive unique
 
-Ce dossier contient des scripts SQL historiques déplacés depuis `database/setup/`.
+Ce contenu a été **consolidé** dans l'archive unique :
 
-## Statut
-
-- **Deprecated**: ne pas utiliser comme source active de migration.
-- **Lecture seule**: conservé pour audit/historique.
-
-## Source active
-
-Utiliser uniquement:
-
-- `supabase/migrations/`
-
-Référence gouvernance:
-
-- `docs/technical/db-migrations-governance.md`
+- `docs/ARCHIVE.md#legacy-sql-setup`

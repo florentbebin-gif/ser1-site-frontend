@@ -8,6 +8,7 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 **Tests** : exécutés via `npm run test` / `npm run check` (voir CI / sortie console).  
 **Historique** : [docs/CHANGELOG.md](docs/CHANGELOG.md)  
 **Roadmap** : [docs/ROADMAP_SAAS_V1.md](docs/ROADMAP_SAAS_V1.md)
+**Archive (unique)** : [docs/ARCHIVE.md](docs/ARCHIVE.md) — *phases clôturées + legacy + runbooks/evidence (ne pas créer d'autres fichiers d'archive)*
 **Debug flags** : [docs/runbook/debug.md](docs/runbook/debug.md)  
 **🎨 Couleurs** : [docs/design/color-governance.md](docs/design/color-governance.md) — *source de vérité unique (tokens C1-C10)*  
 **📐 UI Governance** : [docs/design/ui-governance.md](docs/design/ui-governance.md) — *Standards "Gestion Privée" (Layout, Inputs, Typo)*  
