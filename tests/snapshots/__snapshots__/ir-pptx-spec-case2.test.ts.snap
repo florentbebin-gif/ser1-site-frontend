@@ -1,0 +1,112 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`snapshots/ir: PPTX deck spec (case #2) > buildIrStudyDeck() stays stable for a single / no-children case (sanitized) 1`] = `
+{
+  "cover": {
+    "leftMeta": "<DATE>",
+    "logoPlacement": undefined,
+    "logoUrl": undefined,
+    "rightMeta": "NOM Prénom",
+    "subtitle": "NOM Prénom",
+    "title": "Simulation Impôt sur le Revenu",
+    "type": "cover",
+  },
+  "end": {
+    "legalText": "Document établi à titre strictement indicatif et dépourvu de valeur contractuelle. Il a été élaboré sur la base des dispositions légales et réglementaires en vigueur à la date de sa remise, lesquelles sont susceptibles d'évoluer.
+
+Les informations qu'il contient sont strictement confidentielles et destinées exclusivement aux personnes expressément autorisées.
+
+Toute reproduction, représentation, diffusion ou rediffusion, totale ou partielle, sur quelque support ou par quelque procédé que ce soit, ainsi que toute vente, revente, retransmission ou mise à disposition de tiers, est strictement encadrée. Le non-respect de ces dispositions est susceptible de constituer une contrefaçon engageant la responsabilité civile et pénale de son auteur, conformément aux articles L335-1 à L335-10 du Code de la propriété intellectuelle.",
+    "type": "end",
+  },
+  "slides": [
+    {
+      "body": "Vous souhaitez connaître le montant de votre impôt et comprendre les mécanismes de calcul qui s'appliquent à votre situation.",
+      "chapterImageIndex": 1,
+      "subtitle": "Estimation de votre impôt sur le revenu",
+      "title": "Objectifs et contexte",
+      "type": "chapter",
+    },
+    {
+      "bracketsDetails": [
+        {
+          "base": 11294,
+          "label": "0% jusqu'à 11 294 €",
+          "rate": 0,
+          "tax": 0,
+        },
+        {
+          "base": 17503,
+          "label": "11% de 11 294 à 28 797 €",
+          "rate": 11,
+          "tax": 1925.33,
+        },
+        {
+          "base": 13203,
+          "label": "30% de 28 797 à 42 000 €",
+          "rate": 30,
+          "tax": 3960.9,
+        },
+      ],
+      "income1": 42000,
+      "income2": 0,
+      "irNet": 2100,
+      "isCouple": false,
+      "partsNb": 1,
+      "taxableIncome": 42000,
+      "taxablePerPart": 42000,
+      "tmiBaseGlobal": undefined,
+      "tmiMarginGlobal": undefined,
+      "tmiRate": 11,
+      "type": "ir-synthesis",
+    },
+    {
+      "body": "Retrouvez ci-après le détail des calculs appliqués à votre situation fiscale.",
+      "chapterImageIndex": 3,
+      "subtitle": "Informations complémentaires",
+      "title": "Annexes",
+      "type": "chapter",
+    },
+    {
+      "bracketsDetails": [
+        {
+          "base": 11294,
+          "label": "0% jusqu'à 11 294 €",
+          "rate": 0,
+          "tax": 0,
+        },
+        {
+          "base": 17503,
+          "label": "11% de 11 294 à 28 797 €",
+          "rate": 11,
+          "tax": 1925.33,
+        },
+        {
+          "base": 13203,
+          "label": "30% de 28 797 à 42 000 €",
+          "rate": 30,
+          "tax": 3960.9,
+        },
+      ],
+      "cdhr": 0,
+      "cehr": 0,
+      "childrenCount": 0,
+      "creditsTotal": undefined,
+      "decote": undefined,
+      "irNet": 2100,
+      "isCouple": false,
+      "partsNb": 1,
+      "pfuIr": 0,
+      "psDividends": 550,
+      "psFoncier": 900,
+      "psTotal": 1450,
+      "qfAdvantage": undefined,
+      "taxableIncome": 42000,
+      "taxablePerPart": 42000,
+      "tmiRate": 11,
+      "totalTax": 3550,
+      "type": "ir-annexe",
+    },
+  ],
+}
+`;
