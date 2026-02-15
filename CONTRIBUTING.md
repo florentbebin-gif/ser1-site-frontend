@@ -16,6 +16,10 @@ npm run typecheck  # TypeScript - 0 erreur
 npm test           # 83 tests passent
 npm run build      # Build Vite OK
 
+# 2bis. Guardrail sécurité (avant PR / merge)
+# - Ne loggue pas de contenus sensibles (uniquement PASS/FAIL + fichiers)
+powershell -ExecutionPolicy Bypass -File .\tools\scripts\pre-merge-check.ps1
+
 # 3. Analyses optionnelles
 npm run check:circular  # Détection dépendances circulaires
 npm run check:unused    # Rapport dépendances inutilisées
@@ -48,6 +52,8 @@ git push origin feature/nom-clair
 - **Auth** : Ne JAMAIS utiliser `user_metadata` pour les décisions d'autorisation (rôles, permissions). Utiliser `app_metadata` uniquement.
   - Voir [docs/technical/security-user-metadata-guidelines.md](docs/technical/security-user-metadata-guidelines.md)
 - **Logging** : Aucun log de données sensibles en production.
+- **Runbooks / Evidence** : Interdit de committer des outputs runtime bruts (SQL, logs, dumps HTTP).
+  - Utiliser uniquement des templates `*.example` + redactions.
 
 ### TypeScript
 - Types importés depuis les **modules sources**, pas depuis les Providers

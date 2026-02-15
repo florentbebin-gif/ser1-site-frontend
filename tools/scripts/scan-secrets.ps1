@@ -5,16 +5,16 @@
 # Purpose: Detect hardcoded Supabase URLs, project refs, or API keys before commit
 # =============================================================================
 
-Write-Host "🔍 Scanning for hardcoded secrets..." -ForegroundColor Cyan
+Write-Host "[scan-secrets] Scanning for hardcoded secrets..." -ForegroundColor Cyan
 Write-Host ""
 
 $patterns = @(
-    @{ Name = "Supabase project ref"; Pattern = "xnpbxrqkzgimiugqtago" },
-    @{ Name = "Supabase URL hardcoded"; Pattern = "\.supabase\.co(?!/functions)" },
+    @{ Name = "Supabase project ref"; Pattern = 'xnpbxrqkzgimiugqtago' },
+    @{ Name = "Supabase URL hardcoded"; Pattern = '\.supabase\.co(?!/functions)' },
     # JWTs typically look like 3 base64url-ish segments separated by dots.
     # Intentionally avoid embedding specific prefixes.
-    @{ Name = "JWT-like token pattern"; Pattern = "[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}" },
-    @{ Name = "Vercel deployment URL"; Pattern = "ser1.*\.vercel\.app" }
+    @{ Name = "JWT-like token pattern"; Pattern = '[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}' },
+    @{ Name = "Vercel deployment URL"; Pattern = 'ser1.*\.vercel\.app' }
 )
 
 $excludeDirs = @("node_modules", "dist", ".git", ".vercel", "supabase\.temp")
@@ -31,20 +31,20 @@ foreach ($p in $patterns) {
     
     if ($matches) {
         $hasIssues = $true
-        Write-Host "  ❌ Found $($matches.Count) match(es):" -ForegroundColor Red
+        Write-Host "  [FAIL] Found $($matches.Count) match(es):" -ForegroundColor Red
         $matches | ForEach-Object {
             Write-Host "     $($_.Path):$($_.LineNumber)" -ForegroundColor Gray
         }
     } else {
-        Write-Host "  ✅ Clean" -ForegroundColor Green
+        Write-Host "  [PASS] Clean" -ForegroundColor Green
     }
 }
 
 Write-Host ""
 if ($hasIssues) {
-    Write-Host "⚠️  Issues found! Review and fix before committing." -ForegroundColor Red
+    Write-Host "[scan-secrets] Issues found! Review and fix before committing." -ForegroundColor Red
     exit 1
 } else {
-    Write-Host "✅ No hardcoded secrets detected." -ForegroundColor Green
+    Write-Host "[scan-secrets] No hardcoded secrets detected." -ForegroundColor Green
     exit 0
 }

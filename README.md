@@ -65,7 +65,18 @@ E2E_EMAIL="test@example.com" E2E_PASSWORD="password123" npm run test:e2e
 
 ---
 
-## 🛠️ Gestion Supabase
+## � Sécurité (rappel)
+
+- **Interdit** : committer des outputs runtime bruts (SQL logs, dumps HTTP, logs copiés-collés).
+- **Autorisé** : templates `*.example` + redactions (status codes, compteurs, PASS/FAIL).
+- Avant PR/merge :
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File .\tools\scripts\pre-merge-check.ps1
+  ```
+
+---
+
+## �🛠️ Gestion Supabase
 
 ### Commandes CLI essentielles
 ```bash
