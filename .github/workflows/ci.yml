@@ -25,6 +25,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: "Guard: forbid .env in repo"
+        run: |
+          if test -f .env; then
+            echo "ERROR: .env file present in repository checkout (forbidden). Use .env.local instead." >&2
+            exit 1
+          fi
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "ERROR: .env is tracked by git (forbidden)." >&2
+            exit 1
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
