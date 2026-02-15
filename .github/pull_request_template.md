@@ -9,13 +9,13 @@
 ## Quality Gates (obligatoires)
 - [ ] `npm run lint` passe (0 erreur ESLint)
 - [ ] `npm run typecheck` passe (0 erreur TypeScript)
-- [ ] `npm test` passe (71 tests Vitest)
+- [ ] `npm test` passe (Vitest)
 - [ ] `npm run build` passe (build Vite OK)
 
 ## Documentation
 - [ ] Pas de changement utilisateur visible
 - [ ] README mis à jour (si nouveau feature)
-- [ ] CONTRIBUTING mis à jour (si nouvelle convention)
+- [ ] `.github/CONTRIBUTING.md` mis à jour (si nouvelle convention)
 - [ ] Changelog mis à jour (si breaking change ou feature majeure)
 
 ## Breaking Changes
