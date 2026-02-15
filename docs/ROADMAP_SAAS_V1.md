@@ -592,8 +592,8 @@ src/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | Corpus golden cases (IR, succession, crédit) + infrastructure snapshot. **Plan initial vs repo réel** : golden cases déjà présents ; snapshots export à finaliser |
-| Fichiers | Existant: `src/engine/__tests__/golden/` ; TODO explicite: créer `tests/snapshots/` (ou chemin alternatif documenté) puis brancher CI (`vitest.config.ts`/pipeline) |
+| Scope | Corpus golden cases (IR, succession, crédit) + infrastructure snapshot. ✅ Foundation créée + 1 snapshot IR PPTX stable (déterministe, no secrets). |
+| Fichiers | Existant: `src/engine/__tests__/golden/` ; ajouté: `tests/snapshots/` + `vitest.config.ts` + normalisation snapshot |
 | Validation | `npm run check` + `npm test` (nouveaux tests passent) |
 | Risque | Faible — ajout de tests uniquement |
 | Rollback | Supprimer fichiers de tests |
