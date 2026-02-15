@@ -8,10 +8,10 @@
 
 ## 0) Metadata
 
-- Date/time (CET): `2026-02-14 21:59`
+- Date/time (CET): `2026-02-15 09:30`
 - Operator: `Cascade`
-- Branch: `pr-b2-runtime-evidence-results`
-- Repo HEAD: `e287b58`
+- Branch: `pr-b3-runtime-evidence-sessions`
+- Repo HEAD: `e9f9eb6`
 - Supabase project ref: `xnpbxrqkzgimiugqtago`
 - Evidence files:
   - this file: `docs/runbook/evidence/2026-02-14-pr-b-runtime.md`
@@ -28,14 +28,14 @@
 # commande
 git branch --show-current
 # output
-main
+pr-b3-runtime-evidence-sessions
 ```
 
 ```powershell
 # commande
 git status --porcelain
 # output
-(no output)
+M docs/runbook/evidence/2026-02-14-pr-b-runtime.sql
 ```
 
 ```powershell
@@ -174,8 +174,26 @@ Output synthèse:
 
 ### Méthode utilisée
 - [ ] UI/session réelle (recommandée)
-- [ ] SQL claims simulés
-- [x] Non exécuté (bloqué: 2 sessions admin runtime non disponibles)
+- [x] SQL claims simulés (tentative locale)
+- [x] Non exécuté complètement (bloqué: dataset local vide)
+
+Commande de simulation SQL locale (container Postgres):
+
+```sql
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','<UUID_ADMIN>', true);
+select set_config('request.jwt.claim.role','authenticated', true);
+select email, role, cabinet_id from public.profiles order by email;
+rollback;
+```
+
+Préconditions vérifiées en local:
+- `auth.users`: `0 row`
+- `public.profiles` (admins): `0 row`
+- `public.cabinets`: `0 row`
+
+Conclusion: simulation RLS A/B non probante en local sans UUID admin ni dataset A/B.
 
 ### Evidence A
 - Action: `N/A`
@@ -204,11 +222,11 @@ Conclusion P0-02: `FAIL (preuve isolation A/B manquante)`
 | P0-01 disable_signup | `PASS` | `AUTH_DISABLE_SIGNUP=True` (API management) |
 | P0-01 invite | `UNKNOWN` | `SIGNUP_PROBE=UNKNOWN (missing SUPABASE_URL or SUPABASE_ANON_KEY)` |
 | P0-02 policies profiles | `PASS` | `2026-02-14-pr-b-runtime.sql` |
-| P0-02 isolation A/B | `UNKNOWN` | `N/A (2 sessions admin runtime non exécutées)` |
+| P0-02 isolation A/B | `UNKNOWN` | `SQL local possible via docker exec/psql mais dataset local vide (0 row)` |
 
 Gaps restants (si FAIL):
 - `Preuve runtime invitation admin absente (UI/JWT admin non fournis).`
-- `Preuve isolation A/B absente (2 sessions admin non exécutées).`
+- `Preuve isolation A/B absente sur dataset réel (local SQL OK mais DB locale vide).`
 
 Décision:
 - [ ] PR-B READY
