@@ -526,17 +526,20 @@ src/
 | P1-05 | Refactor Placement : pattern CreditV2 (shell + controller + panels + CSS local) | **Haut** |
 | P1-06 | Feature flag `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT` → ON | Moyen |
 
-**Reste Phase 1 : 2 items** — **P1-04**, **P1-06**.
+**Reste Phase 1 : 1 item** — **P1-04**.
 
 > Statut exécution (2026-02-14) :
 > - **P1-01 DONE** (PR #44, merge `9e58015`) JSON snapshot versioning + migrations + Zod.
 > - **P1-02 DONE** (PR #45, merge `5424b07`) Succession simulator MVP + exports.
 > - **P1-03 DONE** (PR #46, merge `fb5124e`) PER simulator MVP.
-> - **P1-04 TODO** : pas de PR/commit unique identifié dans l'historique (ne pas marquer DONE sans preuve PR+SHA).
+> - **P1-04 TODO (à clarifier)** : refactor simulateur IR vers le pattern **CreditV2** (même approche que Placement) — `src/pages/Ir.jsx` → `src/features/ir/` (shell/controller/panels + CSS local) + règle `< 500 lignes / fichier`.
+>   - Pourquoi encore TODO : pas de preuve **PR + merge SHA** identifiée dans l'historique ; ne pas marquer DONE sans trace.
+>   - Next action pour fermer : soit identifier la PR existante (si déjà fait), soit créer une PR dédiée P1-04 avec preuves (`npm run check` vert + smoke exports IR + non-régression golden cases IR).
 > - **P1-05 DONE** (PR #51, merge `ff270c5`) refactor placement (pattern CreditV2) avec preuves :
 >   - `src/features/placement/components/PlacementSimulatorPage.jsx` < 500 lignes (150).
 >   - `grep -R "@/pages/Placement.css" -n src` = 0 ; `src/pages/Placement.css` removed (PR2) — styles migrated to `src/features/placement/components/PlacementSimulator.css`.
 >   - `npm run check` vert après découpe shell/controller/panels et migration CSS locale.
+> - **P1-06 DONE** : flag Placement en **ON par défaut** (env absent => ON), OFF possible via `VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=false` (debug/rollback). (PR #46, merge `fb5124e`, key commit `cf82906`)
 
 ### Phase 2 — Analyse Patrimoniale + Simulateurs (6-8 semaines)
 

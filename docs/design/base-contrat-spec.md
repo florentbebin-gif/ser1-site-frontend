@@ -133,11 +133,11 @@ av757BAbattement, peaAncienneteMin, dividendesAbattementPercent
 ### Feature flag
 
 ```env
-VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=false
+VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=true  # Défaut : ON (et ON si variable absente)
 ```
 
-- `false` (défaut) : `usePlacementSettings` utilise `extractFiscalParams()` — zéro changement de comportement
 - `true` : charge `base_contrat_settings` et utilise `extractFromBaseContrat()`
+- `false` : force `extractFiscalParams()` (legacy) pour debug/rollback
 
 ### Tests
 

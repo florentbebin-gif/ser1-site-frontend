@@ -68,11 +68,11 @@ La V2 (`fiscality_settings`) reste en place. Pour migrer un produit V2 vers V3 :
 ## Feature flag
 
 ```env
-VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=false  # Défaut : legacy V1/V2
+VITE_USE_BASE_CONTRAT_FOR_PLACEMENT=true  # Défaut : ON (et ON si variable absente)
 ```
 
-- `false` : `usePlacementSettings` utilise `extractFiscalParams()` (fiscality V1)
-- `true` : utilise `extractFromBaseContrat()` (base_contrat V3)
+- `true` : `usePlacementSettings` charge `base_contrat_settings` et utilise `extractFromBaseContrat()` (V3)
+- `false` : force le legacy `extractFiscalParams()` (fiscality V1) pour debug/rollback
 
 DoD pour activation :
 - Golden snapshot tests verts
