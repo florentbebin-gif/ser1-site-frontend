@@ -782,5 +782,3 @@ npm run check && npm test -- --run
 | `docs/design/color-governance.md` | Gouvernance couleurs |
 | `docs/design/ui-governance.md` | Gouvernance UI premium |
 | `docs/technical/security-user-metadata-guidelines.md` | Sécurité auth |
-| `.github/REPOSITORY_HARDENING/E_ROADMAP.md` | Roadmap hardening existante |
-| `.github/REPOSITORY_HARDENING/B_SCORECARD.md` | Scorecard qualité (24/25) |
