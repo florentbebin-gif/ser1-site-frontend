@@ -4,17 +4,7 @@ import { computeAutoPartsWithChildren } from '../engine/ir/parts.js';
 import { computeProgressiveTax } from '../engine/ir/progressiveTax.js';
 import { computeCEHR } from '../engine/ir/cehr.js';
 import { computeCDHR } from '../engine/ir/cdhr.js';
-
-function computeAbattement10(base, cfg) {
-  if (!cfg || base <= 0) return 0;
-  const plafond = Number(cfg.plafond) || 0;
-  const plancher = Number(cfg.plancher) || 0;
-
-  let val = base * 0.1;
-  if (plafond > 0) val = Math.min(val, plafond);
-  if (plancher > 0) val = Math.max(val, plancher);
-  return val;
-}
+import { computeAbattement10 } from '../engine/ir/abattement10.js';
 
 // Re-export pour les consommateurs historiques (importé depuis settingsDefaults)
 export { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS };
