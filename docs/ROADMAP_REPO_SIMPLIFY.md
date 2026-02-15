@@ -34,15 +34,17 @@ description: Repo simplification roadmap (temp)
   - Commit: `7ef155c`
 
 ### PR-02 — docs/
-- [ ] Inventaire docs (doublons, archives, liens)
-- [ ] Micro-cleanup safe (déplacements/renames/suppressions) + liens mis à jour
+- [x] Inventaire docs (doublons, archives, liens)
+- [x] Micro-cleanup safe (déplacements/renames/suppressions) + liens mis à jour
   - [x] Supprimer `docs/INDEX.md` (non référencé, redondant avec README)
-- [ ] `npm run check` ✅
+- [x] `npm run check` ✅
+  - Commit: `bf80fff`
 
 ### PR-03 — public/
-- [ ] Inventaire assets (doublons, legacy, génération)
-- [ ] Nettoyage safe + vérif build
-- [ ] `npm run check` ✅
+- [x] Inventaire assets (doublons, legacy, génération)
+- [x] Nettoyage safe + vérif build
+- [x] Supprimer `public/supabase-realtime-worker.js` (aucune référence dans src/vite/index)
+- [x] `npm run check` ✅
 
 ### PR-04+ — src/ (page-first)
 - [ ] Appliquer progressivement l’orga **page-first** :
