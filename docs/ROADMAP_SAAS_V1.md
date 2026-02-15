@@ -125,7 +125,7 @@ Exports : PptxGenJS + JSZip. Tests : 83 Vitest + 8 Playwright E2E.
 - Typographie : Sentence case, graisse 500-600
 - Messages utilisateur **en français**
 
-### 2.3 CSS — `CONTRIBUTING.md`
+### 2.3 CSS — `.github/CONTRIBUTING.md`
 
 - Import CSS croisé entre pages **interdit**
 - Styles partagés → `src/styles/` ou `SettingsShared.css`
@@ -142,7 +142,7 @@ Exports : PptxGenJS + JSZip. Tests : 83 Vitest + 8 Playwright E2E.
 - RLS : `public.is_admin()` lit `app_metadata` du JWT
 - CORS whitelist (localhost + Vercel)
 
-### 2.6 Conventions — `CONTRIBUTING.md`
+### 2.6 Conventions — `.github/CONTRIBUTING.md`
 
 - Nouveau code : TSX obligatoire ; Composants PascalCase ; Utils camelCase
 - Logique métier → `src/engine/` uniquement (pas dans React)

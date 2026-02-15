@@ -12,7 +12,7 @@ Application web interne pour CGP : audit patrimonial, stratégie guidée, simula
 **Debug flags** : [docs/runbook/debug.md](docs/runbook/debug.md)  
 **🎨 Couleurs** : [docs/design/color-governance.md](docs/design/color-governance.md) — *source de vérité unique (tokens C1-C10)*  
 **📐 UI Governance** : [docs/design/ui-governance.md](docs/design/ui-governance.md) — *Standards "Gestion Privée" (Layout, Inputs, Typo)*  
-**🛠️ Contribuer** : [CONTRIBUTING.md](CONTRIBUTING.md) — *Workflow Git, conventions, quality gates*
+**🛠️ Contribuer** : [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) — *Workflow Git, conventions, quality gates*
 
 ---
 
@@ -561,7 +561,7 @@ npm run check:unused    # Rapport dépendances inutilisées (depcheck)
 npm run analyze         # Visualisation bundle (vite-bundle-visualizer)
 npm run test:e2e        # Tests E2E Playwright (smoke tests)
 ```
-> ⚠️ La CI bloque les PR si un gate échoue. Voir [CONTRIBUTING.md](CONTRIBUTING.md).
+> ⚠️ La CI bloque les PR si un gate échoue. Voir [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ---
 
