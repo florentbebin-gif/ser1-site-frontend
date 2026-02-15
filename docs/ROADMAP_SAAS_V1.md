@@ -6,9 +6,9 @@
 
 ## État actuel (Checkpoint 2026-02-15)
 
-> **HEAD** : `37f5a5e`
+> **HEAD** : `eac0da5`
 > **Quality Gates** : `npm run check` ✅ (Lint, Types, Tests, Build)
-> **DONE confirmés (code-level)** : P1-05, P0-04, P0-06 (TTL), P0-09 (download policy), P0-10 (gate tests admin), P0-08 (ser1-colors en `error`)
+> **DONE confirmés (code-level)** : P1-05, P0-04, **P0-05**, P0-06 (TTL), P0-09 (download policy), P0-10 (gate tests admin), P0-08 (ser1-colors en `error`)
 
 ### PR mergées depuis le dernier checkpoint
 
@@ -23,6 +23,8 @@
 - #75 PR-02c: XLSX snapshot foundation (merge `59a34d7`, commit `405a0d9`)
 - #76 PR-03 batch #2: extract capital/QF/PS helpers (merge `6e4e6be`, commit `340c9de`)
 - #77 PR-02d: XLSX snapshot case #2 (merge `37f5a5e`, commit `dd84a3c`)
+- #79 P0-05: extract excelCase helper (merge `7fda4a7`)
+- #80 P1-06: default ON placement base-contrat flag (merge `eac0da5`)
 
 ### Statut Module Placement (P1-05)
 
@@ -484,7 +486,7 @@ src/
 | P0-09 | Politique de téléchargement MVP client-side : bouton export **disabled** si session expirée, révocation Blob URLs, purge `sessionStorage`, message UX "session expirée" | Faible |
 | P0-10 | Gate tests admin : wizard règles fiscales/produits → publication **bloquée si 0 test** importé et exécuté. Le système demande explicitement un corpus de tests | Moyen |
 
-**Reste Phase 0 : 1 item** — **P0-05** (finir IR split + split `placementEngine.js`).
+**Reste Phase 0 : 0 item** — Phase 0 complète.
 
 > Statut exécution runtime (2026-02-14) :
 > - **P0-01 DONE (runtime proven)** (PR #60, merge `8cafc3e`) via B3 sur `xnpbxrqkzgimiugqtago`.
@@ -509,8 +511,8 @@ src/
 >   - Preuve: `npm run lint` = 0 erreur.
 >   - Note: exception ciblée et documentée sur `src/settings/theme/hooks/brandingIsolation.test.ts` (fixtures hex explicites nécessaires pour prouver l'isolation A/B, sans impact UI/runtime).
 > - **P0-09 DONE** (PR #42, merge `e326fa4`) politique téléchargement (exports disabled si session expirée, purge + UX).
-> - **P0-05 IN PROGRESS** (PR #74 merge `57a7e51` + PR #76 merge `6e4e6be`) : IR split → helpers extraits vers `src/engine/ir/` (`parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`, `capital`, `quotientFamily`, `socialContributions`). **Pending (cette PR)** : extraire `computeIrFromExcelCase` vers `src/engine/ir/excelCase.js` ; `src/utils/irEngine.js` ≈ **213 lignes**.
->   - **Reste** : prochains helpers IR + split `placementEngine.js`.
+> - **P0-05 DONE** (IR split) : helpers IR extraits vers `src/engine/ir/` (`parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`, `capital`, `quotientFamily`, `socialContributions`, `excelCase`). `src/utils/irEngine.js` ≈ **213 lignes**.
+>   - Preuves merges: PR #66 (`d8be201`), #68 (`e4383ff`), #69 (`100d056`), #70 (`6bbf64a`), #72 (`a763d7b`), #74 (`57a7e51`), #76 (`6e4e6be`), #79 (`7fda4a7`).
 > - **Sécurité — guardrails secrets / `.env*`** : garde-fous repo/CI en place (blocage `.env*` + patterns sensibles).
 
 ### Phase 1 — MVP Simulateurs + JSON (6-8 semaines)
@@ -645,13 +647,13 @@ src/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` (JS). ✅ **MERGED** : `parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote` (PR #66, #68, #69, #70, #72, #74) + `capital`, `quotientFamily`, `socialContributions` (PR #76). **Pending (cette PR)** : `excelCase` (`computeIrFromExcelCase`). `irEngine.js` ≈ **213 lignes**. |
+| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` (JS). ✅ **MERGED** : `parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote` (PR #66, #68, #69, #70, #72, #74) + `capital`, `quotientFamily`, `socialContributions` (PR #76) + `excelCase` (`computeIrFromExcelCase`) (PR #79). `irEngine.js` ≈ **213 lignes**. |
 | Fichiers | Ajout: `src/engine/ir/{parts.js, progressiveTax.js, cehr.js, cdhr.js, abattement10.js, effectiveParts.js, domAbatement.js, decote.js}` ; existant: `src/engine/ir/adjustments.js` ; modif: `src/utils/irEngine.js` (imports + suppression impls) |
 | Validation | `npm run check` + golden cases IR + E2E IR |
 | Risque | Moyen — imports à mettre à jour |
 | Rollback | Restaurer `irEngine.js` original |
 
-**Next action** : PR-03 extraction #6 — extraire `computeIrFromExcelCase` vers `src/engine/ir/excelCase.js`.
+**Next action** : PR-04 — traiter le reste de P0-05 côté Placement si nécessaire (split/cleanup des derniers consumers de `placementEngine.js`).
 
 ### PR-04 : Découpe placementEngine.js → engine/placement/
 
