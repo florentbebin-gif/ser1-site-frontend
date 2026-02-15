@@ -5,6 +5,9 @@ import { computeProgressiveTax } from '../engine/ir/progressiveTax.js';
 import { computeCEHR } from '../engine/ir/cehr.js';
 import { computeCDHR } from '../engine/ir/cdhr.js';
 import { computeAbattement10 } from '../engine/ir/abattement10.js';
+import { computeEffectiveParts } from '../engine/ir/effectiveParts.js';
+import { computeDomAbatementAmount } from '../engine/ir/domAbatement.js';
+import { computeDecote } from '../engine/ir/decote.js';
 
 // Re-export pour les consommateurs historiques (importé depuis settingsDefaults)
 export { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS };
@@ -12,23 +15,8 @@ export { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS };
 // Back-compat export (moved to engine/ir/parts.js)
 export { computeAutoPartsWithChildren };
 
-// Fallback simplifié quand seul le nombre d'enfants est connu (Excel case).
-// Hypothèse : enfants comptés en garde exclusive; bonus parent isolé seulement si >=1 enfant.
-export function computeEffectiveParts({ status, isIsolated, childrenCount }) {
-  const baseParts = status === 'couple' ? 2 : 1;
-
-  const childrenParts = Array.from({ length: Math.max(0, childrenCount) }).reduce(
-    (sum, _, idx) => sum + (idx < 2 ? 0.5 : 1),
-    0
-  );
-
-  const hasChild = Math.max(0, childrenCount) > 0;
-  const isolatedBonus = status === 'single' && isIsolated && hasChild ? 0.5 : 0;
-
-  const computedParts = baseParts + childrenParts + isolatedBonus;
-
-  return Math.max(baseParts, Math.round(computedParts * 4) / 4);
-}
+// Back-compat export (moved to engine/ir/effectiveParts.js)
+export { computeEffectiveParts };
 
 export function computeIrResult({
   yearKey,
@@ -163,36 +151,16 @@ export function computeIrResult({
     irAfterQf = irBrutFoyerSansPlafond;
   }
 
-  let domAbatementAmount = 0;
-
-  const domCfgRoot = incomeTaxCfg.domAbatement || {};
-  const domYearCfg = yearKey === 'current' ? domCfgRoot.current || {} : domCfgRoot.previous || {};
-
-  if (location === 'gmr' || location === 'guyane') {
-    const domCfg = location === 'gmr' ? domYearCfg.gmr : domYearCfg.guyane;
-
-    const ratePercent = Number(domCfg?.ratePercent || 0);
-    const cap = Number(domCfg?.cap || 0);
-
-    if (ratePercent > 0) {
-      const raw = irAfterQf * (ratePercent / 100);
-      domAbatementAmount = cap > 0 ? Math.min(raw, cap) : raw;
-      domAbatementAmount = Math.max(0, domAbatementAmount);
-    }
-  }
+  const domAbatementAmount = computeDomAbatementAmount({
+    location,
+    yearKey,
+    domAbatementCfgRoot: incomeTaxCfg.domAbatement,
+    irAfterQf,
+  });
 
   irBrutFoyer = Math.max(0, irAfterQf - domAbatementAmount);
 
-  let decote = 0;
-  const decoteTrigger = isCouple ? Number(decoteYearCfg.triggerCouple || 0) : Number(decoteYearCfg.triggerSingle || 0);
-  const decoteAmount = isCouple ? Number(decoteYearCfg.amountCouple || 0) : Number(decoteYearCfg.amountSingle || 0);
-  const decoteRate = Number(decoteYearCfg.ratePercent || 0);
-
-  if (decoteTrigger > 0 && decoteAmount > 0 && irBrutFoyer <= decoteTrigger) {
-    const raw = decoteAmount - (decoteRate / 100) * irBrutFoyer;
-    if (raw > 0) decote = raw;
-  }
-  if (decote > irBrutFoyer) decote = irBrutFoyer;
+  const decote = computeDecote({ isCouple, decoteYearCfg, irBrutFoyer });
 
   const irNet = Math.max(0, irBrutFoyer - creditsTotal - decote);
 
