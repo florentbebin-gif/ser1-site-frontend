@@ -13,7 +13,7 @@
 | CODEOWNERS | ❌ Absent | ✅ Créé | @florentbebin propriétaire par défaut |
 | Issue Templates | ❌ Absents | ✅ 3 templates | Bug, Feature, Technical Debt |
 | PR Template | ✅ Existant | ✅ Existant | Aucun changement nécessaire |
-| CONTRIBUTING.md | ✅ Existant | ✅ Existant | Règles TODO(#issue) et no-console respectées |
+| .github/CONTRIBUTING.md | ✅ Existant | ✅ Existant | Règles TODO(#issue) et no-console respectées |
 | README.md | ✅ Existant | ✅ Existant | Documenté et à jour |
 
 **Score : 5/5** - Gouvernance complète en place.

@@ -171,7 +171,7 @@ Réduire la dette technique et standardiser les conventions pour améliorer la m
 - `src/pages/PlacementV2.jsx` - Suppression import `Ir.css`
 - `src/pages/Placement.css` - removed (PR2) — styles migrated to `src/features/placement/components/PlacementSimulator.css`
 - `src/pages/Sous-Settings/*.jsx` - 30 imports standardisés
-- `CONTRIBUTING.md` - Règles CSS & imports
+- `.github/CONTRIBUTING.md` - Règles CSS & imports
 - `tests/e2e/smoke.spec.ts` - Smoke tests
 - `src/utils/settingsApi.ts` - Helpers API Settings (legacy, supprimé ensuite en cleanup PR2)
 
