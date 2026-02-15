@@ -1,0 +1,52 @@
+-- PR-B runtime evidence (TEMPLATE)
+-- File: docs/runbook/evidence/2026-02-14-pr-b-runtime.sql.example
+-- Policy: NEVER commit tokens, API keys, passwords, secrets, or raw HTTP headers.
+-- Create a local copy named 2026-02-14-pr-b-runtime.sql (ignored by git) to log real outputs.
+
+-- =====================
+-- P0-01: disable_signup
+-- =====================
+-- Query examples (paste outputs locally only):
+-- (no secrets required)
+-- Note: disable_signup is proven via Management API config, not via SQL.
+
+-- =====================
+-- P0-01: invite / create user
+-- =====================
+-- Verify user exists in auth.users
+-- select id, email, email_confirmed_at, created_at
+-- from auth.users
+-- where email = '<email>';
+
+-- Verify projection in public.profiles
+-- select id, email, role, cabinet_id, created_at
+-- from public.profiles
+-- where email = '<email>';
+
+-- (Optional) check triggers on public.profiles
+-- select tgname, pg_get_triggerdef(t.oid) as def
+-- from pg_trigger t
+-- join pg_class c on c.oid=t.tgrelid
+-- join pg_namespace n on n.oid=c.relnamespace
+-- where n.nspname='public' and c.relname='profiles' and not t.tgisinternal
+-- order by tgname;
+
+-- =====================
+-- P0-02: policies
+-- =====================
+-- List active policies on public.profiles
+-- select schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
+-- from pg_policies
+-- where schemaname='public' and tablename='profiles'
+-- order by policyname;
+
+-- =====================
+-- P0-02: isolation (claims simulation)
+-- =====================
+-- Run locally only; do not commit real UUIDs or outputs.
+-- begin;
+-- set local role authenticated;
+-- select set_config('request.jwt.claim.sub', '<uuid>', true);
+-- select set_config('request.jwt.claim.role', 'authenticated', true);
+-- select email, role, cabinet_id from public.profiles order by email;
+-- rollback;

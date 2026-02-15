@@ -1,0 +1,20 @@
+# Evidence folder policy
+# - Never commit SQL execution logs or raw outputs (may contain secrets)
+# - Commit only templates (*.example) and markdown (sanitized)
+
+# Local SQL logs (real executions)
+*.sql
+!*.sql.example
+
+# Any screenshots / evidence artifacts must be force-added explicitly
+img/*
+!img/.gitignore
+!img/.gitkeep
+
+# Temporary outputs
+*.log
+*.out
+*.tmp
+*.json
+*.jsonl
+*.txt

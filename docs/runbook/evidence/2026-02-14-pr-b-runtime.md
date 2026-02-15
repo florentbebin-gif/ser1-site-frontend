@@ -15,7 +15,7 @@
 - Supabase project ref: `xnpbxrqkzgimiugqtago`
 - Evidence files:
   - this file: `docs/runbook/evidence/2026-02-14-pr-b-runtime.md`
-  - SQL log: `docs/runbook/evidence/2026-02-14-pr-b-runtime.sql`
+  - SQL log template: `docs/runbook/evidence/2026-02-14-pr-b-runtime.sql.example`
   - screenshots: `docs/runbook/evidence/img/`
 
 ---
@@ -73,10 +73,12 @@ True
 Preuve exécutée:
 
 ```powershell
-# commande
+# commande (token non affiché; ne jamais committer de headers HTTP)
+# 1) Appel Management API: GET /v1/projects/<project_ref>/config/auth
+# 2) Extraction de disable_signup
+
 $ref='xnpbxrqkzgimiugqtago'
-$headers=@{ Authorization = "Bearer $env:SUPABASE_ACCESS_TOKEN" }
-$resp=Invoke-RestMethod -Method Get -Uri "https://api.supabase.com/v1/projects/$ref/config/auth" -Headers $headers
+$resp=Invoke-RestMethod -Method Get -Uri "https://api.supabase.com/v1/projects/$ref/config/auth" -Headers <redacted>
 [pscustomobject]@{ project_ref=$ref; disable_signup=$resp.disable_signup } | ConvertTo-Json
 # output
 {
@@ -102,7 +104,7 @@ Resultat: `PASS`
 
 ### PR-B4b (no-spam) — voie officielle GoTrue Admin API (sans email)
 
-Objectif: créer un user via endpoint officiel `POST /auth/v1/admin/users` (service_role) avec `email_confirm=true`.
+Objectif: créer un user via endpoint officiel `POST /auth/v1/admin/users` (clé admin récupérée via Management API, non affichée) avec `email_confirm=true`.
 
 Résultat:
 - ✅ user créé (HTTP 200)
@@ -110,16 +112,16 @@ Résultat:
 - ⚠️ `public.profiles.cabinet_id` reste `NULL` (pas de projection automatique du cabinet)
 
 ```powershell
-# commande (résumé; service_role récupérée via Management API et non affichée)
+# commande (résumé; clé admin récupérée via Management API et non affichée)
 POST https://xnpbxrqkzgimiugqtago.supabase.co/auth/v1/admin/users
 body: { email: "b4b-user-<ts>@test.local", email_confirm: true, user_metadata: { source: "pr-b4b-cli", cabinet_id: "<cabinet_uuid>" } }
 
 # output (redacted)
 {
   "status": 200,
-  "user_id": "f3e993bf-4db0-424f-b7e9-c2355c8bca3a",
-  "email": "b4b-user-1771146130@test.local",
-  "cabinet_id_used": "56ac87f7-17b1-4667-9b27-8ecd97aedf7a"
+  "user_id": "<redacted>",
+  "email": "b4b-user-<redacted>@test.local",
+  "cabinet_id_used": "<redacted>"
 }
 ```
 
@@ -163,11 +165,11 @@ PR-B4b — vérifs DB post-création (cloud SQL API):
 ```sql
 select id, email, email_confirmed_at, created_at
 from auth.users
-where email = 'b4b-user-1771146130@test.local';
+where email = 'b4b-user-<redacted>@test.local';
 
 select id, email, role, cabinet_id, created_at
 from public.profiles
-where email = 'b4b-user-1771146130@test.local';
+where email = 'b4b-user-<redacted>@test.local';
 ```
 
 Output (extraits):
@@ -220,13 +222,13 @@ where schemaname='public' and tablename='profiles'
 order by policyname;
 ```
 
-Output: voir `2026-02-14-pr-b-runtime.sql`
+Output: voir `2026-02-14-pr-b-runtime.sql.example` (template; les sorties réelles ne doivent pas être commitées)
 
 Commande exécutée (SQL API cloud avec token management):
 
 ```powershell
 $body=@{ query = "select policyname, cmd, qual, with_check from pg_policies where schemaname='public' and tablename='profiles' order by policyname;" } | ConvertTo-Json
-$resp=Invoke-RestMethod -Method Post -Uri "https://api.supabase.com/v1/projects/xnpbxrqkzgimiugqtago/database/query" -Headers $headers -Body $body
+$resp=Invoke-RestMethod -Method Post -Uri "https://api.supabase.com/v1/projects/xnpbxrqkzgimiugqtago/database/query" -Headers <redacted> -Body $body
 ```
 
 Output synthèse:
@@ -247,7 +249,7 @@ Commande de simulation SQL cloud (claims A puis B):
 ```sql
 begin;
 set local role authenticated;
-select set_config('request.jwt.claim.sub','c3d59b7d-022b-49a3-afcb-128f36925604', true);
+select set_config('request.jwt.claim.sub','<redacted-uuid>', true);
 select set_config('request.jwt.claim.role','authenticated', true);
 select email, role, cabinet_id from public.profiles where email like 'b4-admin-%@test.local' order by email;
 rollback;
@@ -260,12 +262,12 @@ Préconditions vérifiées cloud:
 
 ### Evidence A
 - Action: `claims sub=admin_a + role=authenticated`
-- Output/Screenshot: `{"email":"b4-admin-a-1771145192@test.local","role":"admin","cabinet_id":"56ac87f7-17b1-4667-9b27-8ecd97aedf7a"}`
+- Output/Screenshot: `{"email":"b4-admin-a-<redacted>@test.local","role":"admin","cabinet_id":"<redacted>"}`
 - Résultat: `PASS`
 
 ### Evidence B
 - Action: `claims sub=admin_b + role=authenticated`
-- Output/Screenshot: `{"email":"b4-admin-b-1771145192@test.local","role":"admin","cabinet_id":"57cdb648-b43b-4a80-bc40-724975470e2c"}`
+- Output/Screenshot: `{"email":"b4-admin-b-<redacted>@test.local","role":"admin","cabinet_id":"<redacted>"}`
 - Résultat: `PASS`
 
 ### Cross-check

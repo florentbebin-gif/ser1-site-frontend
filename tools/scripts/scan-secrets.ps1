@@ -11,7 +11,9 @@ Write-Host ""
 $patterns = @(
     @{ Name = "Supabase project ref"; Pattern = "xnpbxrqkzgimiugqtago" },
     @{ Name = "Supabase URL hardcoded"; Pattern = "\.supabase\.co(?!/functions)" },
-    @{ Name = "JWT/API key pattern"; Pattern = "eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}" },
+    # JWTs typically look like 3 base64url-ish segments separated by dots.
+    # Intentionally avoid embedding specific prefixes.
+    @{ Name = "JWT-like token pattern"; Pattern = "[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}" },
     @{ Name = "Vercel deployment URL"; Pattern = "ser1.*\.vercel\.app" }
 )
 
