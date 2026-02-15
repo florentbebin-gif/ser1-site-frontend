@@ -1,4 +1,0 @@
--- STUB — déplacé vers l'archive unique
---
--- Ce script legacy a été consolidé dans:
--- docs/ARCHIVE.md#legacy-sql-setup
