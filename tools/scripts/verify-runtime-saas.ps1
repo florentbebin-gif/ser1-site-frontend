@@ -34,10 +34,9 @@ function Get-DbTarget([string]$DbUrl) {
 }
 
 function Invoke-SupabaseSqlApi([string]$Ref, [string]$Token, [string]$Sql) {
-  $headers = @{
-    Authorization = "Bearer $Token"
-    'Content-Type' = 'application/json'
-  }
+  $headers = @{}
+  $headers['Authorization'] = ("Bearer {0}" -f $Token)
+  $headers['Content-Type'] = 'application/json'
   $body = @{ query = $Sql } | ConvertTo-Json
   return Invoke-RestMethod -Method Post -Uri "https://api.supabase.com/v1/projects/$Ref/database/query" -Headers $headers -Body $body
 }
@@ -47,7 +46,21 @@ $summary = [ordered]@{
   P0_02 = 'UNKNOWN'
 }
 
-$probePassword = 'Ser1Probe!234abc'
+function New-RandomProbePassword() {
+  # No hardcoded password (GitGuardian-safe): generate a strong random password for one-off signup probes.
+  # Do NOT print the password.
+  $bytes = New-Object byte[] 24
+  [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+  $b64 = [Convert]::ToBase64String($bytes)
+  # Ensure it matches common password requirements: length + mix + no whitespace.
+  return ("Ser1!{0}aA1" -f ($b64 -replace '[^a-zA-Z0-9]','')).Substring(0, 24)
+}
+
+$probePassword = if (-not [string]::IsNullOrWhiteSpace($env:SUPABASE_PROBE_PASSWORD)) {
+  $env:SUPABASE_PROBE_PASSWORD
+} else {
+  New-RandomProbePassword
+}
 
 Write-Section "B3 Runtime Verification (read-only)"
 
@@ -65,7 +78,10 @@ if (-not $SkipSignupProbe -and -not $PolicyOnly) {
     $status = 0
     $body = ''
     try {
-      $response = Invoke-WebRequest -Uri $signupUri -Method Post -ContentType 'application/json' -Headers @{ apikey = $SupabaseAnonKey; Authorization = "Bearer $SupabaseAnonKey" } -Body $payload -UseBasicParsing
+      $signupHeaders = @{}
+      $signupHeaders['apikey'] = $SupabaseAnonKey
+      $signupHeaders['Authorization'] = ("Bearer {0}" -f $SupabaseAnonKey)
+      $response = Invoke-WebRequest -Uri $signupUri -Method Post -ContentType 'application/json' -Headers $signupHeaders -Body $payload -UseBasicParsing
       $status = [int]$response.StatusCode
       $bodyRaw = $response.Content
       if ($null -eq $bodyRaw) { $bodyRaw = '' }
@@ -99,7 +115,9 @@ if (-not $SkipSignupProbe -and -not $PolicyOnly) {
       Write-Result "P0_01_DECISION" "FAIL(signup-http-success)"
     } elseif (-not [string]::IsNullOrWhiteSpace($SupabaseAccessToken) -and -not [string]::IsNullOrWhiteSpace($ProjectRef)) {
       try {
-        $authConfig = Invoke-RestMethod -Method Get -Uri "https://api.supabase.com/v1/projects/$ProjectRef/config/auth" -Headers @{ Authorization = "Bearer $SupabaseAccessToken" }
+        $authHeaders = @{}
+        $authHeaders['Authorization'] = ("Bearer {0}" -f $SupabaseAccessToken)
+        $authConfig = Invoke-RestMethod -Method Get -Uri "https://api.supabase.com/v1/projects/$ProjectRef/config/auth" -Headers $authHeaders
         Write-Result "AUTH_CONFIG_SOURCE" "GET /v1/projects/$ProjectRef/config/auth"
         Write-Result "AUTH_DISABLE_SIGNUP" ([string]$authConfig.disable_signup)
         if ($authConfig.disable_signup -eq $true) {
