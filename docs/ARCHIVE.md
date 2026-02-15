@@ -104,7 +104,7 @@
 
 ### PR-B Runtime Evidence — 2026-02-14
 
-- **Source** : `docs/runbook/evidence/2026-02-14-pr-b-runtime.md`
+- **Source (ancien emplacement — supprimé)** : `docs/runbook/evidence/2026-02-14-pr-b-runtime.md`
 - **Archivé le** : 2026-02-15
 - **Références** : (preuve interne; voir metadata dans le document)
 
@@ -418,7 +418,7 @@ Décision:
 
 ### Legacy SQL setup
 
-- **Source** : `docs/_legacy/database/setup/*`
+- **Source (ancien emplacement — supprimé)** : `docs/_legacy/database/setup/*`
 - **Archivé le** : 2026-02-15
 - **Références** : P0-07 governance (`docs/technical/db-migrations-governance.md`)
 
