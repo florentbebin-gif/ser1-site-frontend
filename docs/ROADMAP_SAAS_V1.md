@@ -626,7 +626,9 @@ src/
 
 ✅ **PR-02c DONE (MERGED)** : 1er snapshot XLSX (foundation) + stabilité sur 2 runs. (PR #75, commit `405a0d9`)
 
-**Next action (après PR-02c)** : 3e snapshot IR PPTX.
+**PR-02d (en cours, non mergé)** : 2e snapshot XLSX (case #2) + stabilité sur 2 runs.
+
+**Next action (après PR-02d)** : 3e snapshot IR PPTX.
 
 ### PR-03 : Découpe irEngine.js → engine/ir/
 
