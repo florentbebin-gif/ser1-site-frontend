@@ -11,10 +11,9 @@ Unifier la source de vérité des migrations SQL pour éviter les divergences en
 
 ## Statut de l'historique legacy
 
-Les scripts `database/setup/*` sont archivés en lecture seule dans:
+Les scripts `database/setup/*` (historique) sont archivés en lecture seule dans l'archive unique:
 
-- `docs/_legacy/database/setup/admin_setup.sql`
-- `docs/_legacy/database/setup/supabase-setup.sql`
+- `docs/ARCHIVE.md#legacy-sql-setup`
 
 Ces fichiers ne doivent plus être exécutés comme source active de migration.
 

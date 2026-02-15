@@ -21,7 +21,7 @@ Organisation des scripts SQL pour Supabase.
 
 ```
 supabase/migrations/                 # ⭐ SOURCE DE VÉRITÉ — toutes les migrations
-docs/_legacy/database/setup/         # Scripts setup historiques (deprecated, lecture seule)
+docs/ARCHIVE.md                      # Archive unique (legacy / preuves)
 ```
 
 ## Ordre d'exécution recommandé
@@ -42,10 +42,9 @@ docs/_legacy/database/setup/         # Scripts setup historiques (deprecated, le
 
 ### 2. Archives legacy (lecture seule)
 
-Les anciens scripts de setup ont été archivés dans:
+Les anciens scripts de setup ont été archivés dans l'archive unique:
 
-- `docs/_legacy/database/setup/supabase-setup.sql`
-- `docs/_legacy/database/setup/admin_setup.sql`
+- `docs/ARCHIVE.md#legacy-sql-setup`
 
 Ils ne doivent plus être rejoués comme source active de migration.
 

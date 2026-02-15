@@ -2,11 +2,14 @@
 
 > Point d'entrée unique. Voir aussi [ROADMAP_SAAS_V1.md](ROADMAP_SAAS_V1.md) (produit/tech).
 
+> **Archive** : tout contenu déprécié / legacy / preuves historiques doit être centralisé dans **[ARCHIVE.md](ARCHIVE.md)**.
+
 ## Produit & Roadmap
 
 | Document | Description |
 |----------|-------------|
 | [ROADMAP_SAAS_V1.md](ROADMAP_SAAS_V1.md) | Roadmap SaaS complète (phases 0-4, gouvernance, architecture) |
+| [ARCHIVE.md](ARCHIVE.md) | Archive unique (registre) : phases clôturées + legacy + runbooks/evidence |
 | [fiscality-product-catalog.md](fiscality-product-catalog.md) | Catalogue produits fiscaux |
 | [CHANGELOG.md](CHANGELOG.md) | Journal des releases |
 
