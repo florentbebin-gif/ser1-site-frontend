@@ -28,6 +28,9 @@
 
 Les flags de debug permettent d'activer des logs détaillés pour le développement et le diagnostic.
 
+Note env : `.env` n'est pas utilisé ; copier `.env.example` → `.env.local` (local uniquement, gitignored).
+Garder seulement `.env.example` dans le repo (aucun secret committé).
+
 ### Comment activer (sans modifier le code)
 
 **Option 1 : Variable d'environnement (recommandée)**

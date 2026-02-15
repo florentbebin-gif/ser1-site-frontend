@@ -1,4 +1,4 @@
-import { computeAutoPartsWithChildren } from '../../utils/irEngine.js';
+import { computeAutoPartsWithChildren } from './parts.js';
 
 export function computeAbattement10(base, cfg) {
   if (!cfg || base <= 0) return 0;
