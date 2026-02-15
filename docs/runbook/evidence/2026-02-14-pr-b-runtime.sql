@@ -4,6 +4,9 @@
 -- Execution date (CET): 2026-02-14
 -- Branch: pr-b2-runtime-evidence-results
 -- Project ref: xnpbxrqkzgimiugqtago
+-- PR-B4 execution date (CET): 2026-02-15
+-- PR-B4 branch: pr-b4-runtime-evidence-cli
+-- PR-B4 mode: 100% CLI cloud via Supabase Management API + Auth/Functions REST
 -- Additional SQL runtime check (CET): 2026-02-15
 -- Execution mode: docker exec -i supabase_db_SER1 psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c "<SQL>"
 
@@ -19,12 +22,48 @@
 -- Output:
 -- AUTH_DISABLE_SIGNUP=True
 
+-- PR-B4 command executed (PowerShell):
+-- $ref='xnpbxrqkzgimiugqtago'
+-- $headers=@{ Authorization = "Bearer $env:SUPABASE_ACCESS_TOKEN" }
+-- $resp=Invoke-RestMethod -Method Get -Uri "https://api.supabase.com/v1/projects/$ref/config/auth" -Headers $headers
+-- [pscustomobject]@{ project_ref=$ref; disable_signup=$resp.disable_signup } | ConvertTo-Json
+-- Output:
+-- {
+--   "project_ref": "xnpbxrqkzgimiugqtago",
+--   "disable_signup": true
+-- }
+
 -- 1) Signup/invite probe output from runtime script (without URL/anon vars)
 -- Command executed:
 -- powershell -ExecutionPolicy Bypass -File .\tools\scripts\verify-runtime-saas.ps1 -ShowPolicyDefs
 -- Output excerpt:
 -- SIGNUP_PROBE=UNKNOWN (missing SUPABASE_URL or SUPABASE_ANON_KEY)
 -- P0_01=UNKNOWN
+
+-- PR-B4 invitation attempt via Edge Function admin (CLI only)
+-- Command outline:
+-- 1) Login via /auth/v1/token with E2E_EMAIL/E2E_PASSWORD (from .env.local)
+-- 2) POST /functions/v1/admin with body {"action":"create_user_invite","email":"b4-invite-<ts>@test.local","cabinet_id":"<cabinet_id>"}
+-- Output:
+-- {
+--   "status": 500,
+--   "body": "{\"error\":\"email rate limit exceeded\",\"requestId\":\"<redacted-request-id>\"}"
+-- }
+
+-- Invite projection checks (no invited row created)
+select id, email, created_at
+from auth.users
+where email like 'b4-invite-%@test.local'
+order by created_at desc;
+
+select id, email, role, cabinet_id
+from public.profiles
+where email like 'b4-invite-%@test.local'
+order by created_at desc;
+
+-- Output:
+-- (0 rows) on both queries
+-- P0_01_INVITE=FAIL (runtime blocked by email rate limit)
 
 -- [Optional] Verify invited user profile projection
 -- Replace placeholder values before execution.
@@ -58,6 +97,35 @@ order by policyname;
 -- P0_02=PASS
 
 -- 2) Dataset sanity checks (replace placeholders)
+-- PR-B4 dataset creation (cloud SQL API)
+-- Generated test set:
+-- cab_a_name=B4_CAB_A_1771145192
+-- cab_b_name=B4_CAB_B_1771145192
+-- admin_a_email=b4-admin-a-1771145192@test.local
+-- admin_b_email=b4-admin-b-1771145192@test.local
+-- Output:
+-- {
+--   "cab_a_id": "56ac87f7-17b1-4667-9b27-8ecd97aedf7a",
+--   "cab_a_name": "B4_CAB_A_1771145192",
+--   "cab_b_id": "57cdb648-b43b-4a80-bc40-724975470e2c",
+--   "cab_b_name": "B4_CAB_B_1771145192",
+--   "admin_a_id": "c3d59b7d-022b-49a3-afcb-128f36925604",
+--   "admin_a_email": "b4-admin-a-1771145192@test.local",
+--   "admin_b_id": "58a9aafc-deff-432b-9552-bef591a925ea",
+--   "admin_b_email": "b4-admin-b-1771145192@test.local"
+-- }
+
+-- Dataset verification:
+select u.id,u.email,u.raw_app_meta_data->>'role' as app_role,p.role as profile_role,p.cabinet_id
+from auth.users u
+join public.profiles p on p.id=u.id
+where u.email in ('b4-admin-a-1771145192@test.local','b4-admin-b-1771145192@test.local')
+order by u.email;
+
+-- Output:
+-- b4-admin-a-1771145192@test.local -> app_role=admin, profile_role=admin, cabinet_id=56ac87f7-17b1-4667-9b27-8ecd97aedf7a
+-- b4-admin-b-1771145192@test.local -> app_role=admin, profile_role=admin, cabinet_id=57cdb648-b43b-4a80-bc40-724975470e2c
+
 -- 2a) UUID lookup prerequisite for RLS A/B simulation
 -- SQL executed:
 -- select id, email from auth.users where email in ('{{admin_a_email}}', '{{admin_b_email}}');
@@ -92,6 +160,35 @@ order by policyname;
 -- select set_config('request.jwt.claim.role','authenticated', true);
 -- select email, role, cabinet_id from public.profiles order by email;
 -- rollback;
+
+-- PR-B4 isolation checks executed (cloud SQL API)
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'c3d59b7d-022b-49a3-afcb-128f36925604', true) as sub_set;
+select set_config('request.jwt.claim.role', 'authenticated', true) as role_set;
+select email, role, cabinet_id from public.profiles where email like 'b4-admin-%@test.local' order by email;
+rollback;
+
+begin;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '58a9aafc-deff-432b-9552-bef591a925ea', true) as sub_set;
+select set_config('request.jwt.claim.role', 'authenticated', true) as role_set;
+select email, role, cabinet_id from public.profiles where email like 'b4-admin-%@test.local' order by email;
+rollback;
+
+-- Output A:
+-- {
+--   "email": "b4-admin-a-1771145192@test.local",
+--   "role": "admin",
+--   "cabinet_id": "56ac87f7-17b1-4667-9b27-8ecd97aedf7a"
+-- }
+-- Output B:
+-- {
+--   "email": "b4-admin-b-1771145192@test.local",
+--   "role": "admin",
+--   "cabinet_id": "57cdb648-b43b-4a80-bc40-724975470e2c"
+-- }
+-- P0_02_ISOLATION=PASS (A does not see B, B does not see A)
 
 -- 4) Local schema guard checks executed successfully via container
 -- SQL executed:

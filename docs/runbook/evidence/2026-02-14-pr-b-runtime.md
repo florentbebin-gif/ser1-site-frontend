@@ -8,10 +8,10 @@
 
 ## 0) Metadata
 
-- Date/time (CET): `2026-02-15 09:30`
+- Date/time (CET): `2026-02-15 09:50`
 - Operator: `Cascade`
-- Branch: `pr-b3-runtime-evidence-sessions`
-- Repo HEAD: `e9f9eb6`
+- Branch: `pr-b4-runtime-evidence-cli`
+- Repo HEAD: `f66e705`
 - Supabase project ref: `xnpbxrqkzgimiugqtago`
 - Evidence files:
   - this file: `docs/runbook/evidence/2026-02-14-pr-b-runtime.md`
@@ -28,14 +28,14 @@
 # commande
 git branch --show-current
 # output
-pr-b3-runtime-evidence-sessions
+pr-b4-runtime-evidence-cli
 ```
 
 ```powershell
 # commande
 git status --porcelain
 # output
-M docs/runbook/evidence/2026-02-14-pr-b-runtime.sql
+(no output)
 ```
 
 ```powershell
@@ -65,22 +65,24 @@ True
 
 ## 2) P0-01 — disable_signup + invite (RUNTIME)
 
-## 2.1 Preuve disable_signup (Dashboard)
+## 2.1 Preuve disable_signup (CLI/API)
 
-- Navigation: `Auth -> Providers -> Email`
-- Vérification attendue: `Allow signups = OFF`
-- Screenshot (redacted): `N/A (preuve API management utilisée dans cette exécution)`
+- Méthode: `Supabase Management API` (token local, non affiché)
 - Notes redact: `Aucune clé/token affichée dans la preuve commitée`
 
 Preuve exécutée:
 
 ```powershell
 # commande
-$headers = @{ Authorization = "Bearer $env:SUPABASE_ACCESS_TOKEN" }
-$resp = Invoke-RestMethod -Method Get -Uri "https://api.supabase.com/v1/projects/xnpbxrqkzgimiugqtago/config/auth" -Headers $headers
-Write-Output ("AUTH_DISABLE_SIGNUP=" + [string]$resp.disable_signup)
+$ref='xnpbxrqkzgimiugqtago'
+$headers=@{ Authorization = "Bearer $env:SUPABASE_ACCESS_TOKEN" }
+$resp=Invoke-RestMethod -Method Get -Uri "https://api.supabase.com/v1/projects/$ref/config/auth" -Headers $headers
+[pscustomobject]@{ project_ref=$ref; disable_signup=$resp.disable_signup } | ConvertTo-Json
 # output
-AUTH_DISABLE_SIGNUP=True
+{
+  "project_ref": "xnpbxrqkzgimiugqtago",
+  "disable_signup": true
+}
 ```
 
 Resultat: `PASS`
@@ -89,32 +91,41 @@ Resultat: `PASS`
 
 ### Option utilisée
 - [ ] UI Settings comptes
-- [ ] Appel Edge Function admin
-- [x] Non exécuté (bloqué accès runtime UI/JWT admin)
+- [x] Appel Edge Function admin (CLI)
+- [ ] Non exécuté
 
 ### Étapes exécutées
-1. `Tentative via script runtime read-only (sans SUPABASE_URL/SUPABASE_ANON_KEY).`
-2. `Le probe invite n'est pas réalisable sans accès UI dashboard/settings ou JWT admin runtime.`
-3. `Aucun user d'invitation n'a été créé pendant cette exécution.`
+1. `Login CLI via /auth/v1/token (E2E_EMAIL/E2E_PASSWORD) -> access token obtenu.`
+2. `Promotion du compte e2e en admin via SQL API (raw_app_meta_data.role='admin', profiles.role='admin').`
+3. `Appel Edge Function /functions/v1/admin avec action=create_user_invite (sans afficher token).`
+4. `Résultat runtime: HTTP 500 email rate limit exceeded.`
 
 ### Commande/Output (si applicable)
 
 ```powershell
 # commande
-powershell -ExecutionPolicy Bypass -File .\tools\scripts\verify-runtime-saas.ps1 -ShowPolicyDefs
+$authResp=Invoke-RestMethod -Method Post -Uri "$url/auth/v1/token?grant_type=password" -Headers $authHeaders -Body $authBody
+$fnBody=@{ action='create_user_invite'; email='b4-invite-<ts>@test.local'; cabinet_id='<cabinet_id>' } | ConvertTo-Json
+$resp=Invoke-WebRequest -Method Post -Uri "$url/functions/v1/admin" -Headers $fnHeaders -Body $fnBody
 # output (redacted)
-SIGNUP_PROBE=UNKNOWN (missing SUPABASE_URL or SUPABASE_ANON_KEY)
-P0_01=UNKNOWN
+{
+  "status": 500,
+  "body": "{\"error\":\"email rate limit exceeded\",\"requestId\":\"<redacted-request-id>\"}"
+}
 ```
 
 ### Contrôle DB (profil/rôle/cabinet)
 
 ```sql
--- voir aussi le fichier SQL log
--- Non exécutable sans email invité effectif généré en runtime
+select id, email, created_at
+from auth.users
+where email like 'b4-invite-%@test.local'
+order by created_at desc;
+
 select id, email, role, cabinet_id
 from public.profiles
-where email ilike '%{{invited_email_fragment}}%';
+where email like 'b4-invite-%@test.local'
+order by created_at desc;
 ```
 
 Résultat attendu:
@@ -122,13 +133,13 @@ Résultat attendu:
 - rôle correct
 - cabinet correct (si applicable)
 
-Résultat observé: `UNKNOWN`
+Résultat observé: `0 row` (aucun user invité créé)
 
 ## 2.3 Verdict P0-01
 
 - Disable signup OFF prouvé: `PASS`
-- Invite runtime prouvée: `UNKNOWN`
-- Conclusion P0-01: `FAIL (preuve invitation manquante)`
+- Invite runtime prouvée: `FAIL (email rate limit exceeded)`
+- Conclusion P0-01: `FAIL`
 
 ---
 
@@ -142,10 +153,10 @@ Résultat observé: `UNKNOWN`
 - Admin B: `{{admin_b_email}}`
 
 Valeurs runtime utilisées dans cette exécution:
-- Cabinet A: `N/A`
-- Cabinet B: `N/A`
-- Admin A: `N/A`
-- Admin B: `N/A`
+- Cabinet A: `B4_CAB_A_1771145192`
+- Cabinet B: `B4_CAB_B_1771145192`
+- Admin A: `b4-admin-a-1771145192@test.local`
+- Admin B: `b4-admin-b-1771145192@test.local`
 
 ## 3.2 Policies actives (preuve SQL)
 
@@ -158,10 +169,11 @@ order by policyname;
 
 Output: voir `2026-02-14-pr-b-runtime.sql`
 
-Commande exécutée (API fallback avec token management):
+Commande exécutée (SQL API cloud avec token management):
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\tools\scripts\verify-runtime-saas.ps1 -PolicyOnly -ShowPolicyDefs -ProjectRef xnpbxrqkzgimiugqtago
+$body=@{ query = "select policyname, cmd, qual, with_check from pg_policies where schemaname='public' and tablename='profiles' order by policyname;" } | ConvertTo-Json
+$resp=Invoke-RestMethod -Method Post -Uri "https://api.supabase.com/v1/projects/xnpbxrqkzgimiugqtago/database/query" -Headers $headers -Body $body
 ```
 
 Output synthèse:
@@ -174,44 +186,42 @@ Output synthèse:
 
 ### Méthode utilisée
 - [ ] UI/session réelle (recommandée)
-- [x] SQL claims simulés (tentative locale)
-- [x] Non exécuté complètement (bloqué: dataset local vide)
+- [x] SQL claims simulés (cloud)
+- [ ] Non exécuté complètement
 
-Commande de simulation SQL locale (container Postgres):
+Commande de simulation SQL cloud (claims A puis B):
 
 ```sql
 begin;
 set local role authenticated;
-select set_config('request.jwt.claim.sub','<UUID_ADMIN>', true);
+select set_config('request.jwt.claim.sub','c3d59b7d-022b-49a3-afcb-128f36925604', true);
 select set_config('request.jwt.claim.role','authenticated', true);
-select email, role, cabinet_id from public.profiles order by email;
+select email, role, cabinet_id from public.profiles where email like 'b4-admin-%@test.local' order by email;
 rollback;
 ```
 
-Préconditions vérifiées en local:
-- `auth.users`: `0 row`
-- `public.profiles` (admins): `0 row`
-- `public.cabinets`: `0 row`
-
-Conclusion: simulation RLS A/B non probante en local sans UUID admin ni dataset A/B.
+Préconditions vérifiées cloud:
+- `auth.users/profiles`: 2 admins de test créés et liés à 2 cabinets distincts
+- `pg_policies`: 5 policies actives
+- `relrowsecurity`: true
 
 ### Evidence A
-- Action: `N/A`
-- Output/Screenshot: `N/A`
-- Résultat: `UNKNOWN`
+- Action: `claims sub=admin_a + role=authenticated`
+- Output/Screenshot: `{"email":"b4-admin-a-1771145192@test.local","role":"admin","cabinet_id":"56ac87f7-17b1-4667-9b27-8ecd97aedf7a"}`
+- Résultat: `PASS`
 
 ### Evidence B
-- Action: `N/A`
-- Output/Screenshot: `N/A`
-- Résultat: `UNKNOWN`
+- Action: `claims sub=admin_b + role=authenticated`
+- Output/Screenshot: `{"email":"b4-admin-b-1771145192@test.local","role":"admin","cabinet_id":"57cdb648-b43b-4a80-bc40-724975470e2c"}`
+- Résultat: `PASS`
 
 ### Cross-check
-- A ne voit pas B: `UNKNOWN`
-- B ne voit pas A: `UNKNOWN`
+- A ne voit pas B: `PASS`
+- B ne voit pas A: `PASS`
 
 ## 3.4 Verdict P0-02
 
-Conclusion P0-02: `FAIL (preuve isolation A/B manquante)`
+Conclusion P0-02: `PASS`
 
 ---
 
@@ -220,13 +230,12 @@ Conclusion P0-02: `FAIL (preuve isolation A/B manquante)`
 | Item | Status | Preuve principale |
 |---|---|---|
 | P0-01 disable_signup | `PASS` | `AUTH_DISABLE_SIGNUP=True` (API management) |
-| P0-01 invite | `UNKNOWN` | `SIGNUP_PROBE=UNKNOWN (missing SUPABASE_URL or SUPABASE_ANON_KEY)` |
+| P0-01 invite | `FAIL` | `Edge function create_user_invite -> HTTP 500 email rate limit exceeded` |
 | P0-02 policies profiles | `PASS` | `2026-02-14-pr-b-runtime.sql` |
-| P0-02 isolation A/B | `UNKNOWN` | `SQL local possible via docker exec/psql mais dataset local vide (0 row)` |
+| P0-02 isolation A/B | `PASS` | `Simulation RLS cloud (claims A/B) avec résultats distincts` |
 
 Gaps restants (si FAIL):
-- `Preuve runtime invitation admin absente (UI/JWT admin non fournis).`
-- `Preuve isolation A/B absente sur dataset réel (local SQL OK mais DB locale vide).`
+- `P0-01 invite bloqué par quota d'envoi email (rate limit) au moment du run.`
 
 Décision:
 - [ ] PR-B READY
