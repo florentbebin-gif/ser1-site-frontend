@@ -6,7 +6,7 @@
 
 ## État actuel (Checkpoint 2026-02-15)
 
-> **HEAD** : `a763d7b070cdc5f0477d4cc60c1ee1b147f70761`
+> **HEAD** : `57a7e51281aabd1bc71ea12608105666db5db93d`
 > **Quality Gates** : `npm run check` ✅ (Lint, Types, Tests, Build)
 > **DONE confirmés (code-level)** : P1-05, P0-04, P0-06 (TTL), P0-09 (download policy), P0-10 (gate tests admin), P0-08 (ser1-colors en `error`)
 
@@ -18,6 +18,8 @@
 - #67 PR-02b: add second IR PPTX snapshot case
 - #66/#68/#69/#70/#72 PR-03 split IR helpers (`parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`)
 - #71 docs(roadmap): sync merged statuses (snapshots + IR split)
+- #73 docs(roadmap): mark done items after merges
+- #74 refactor(ir): batch extract effectiveParts + domAbatement + decote
 
 ### Statut Module Placement (P1-05)
 
@@ -498,9 +500,8 @@ src/
 >   - Changement: `eslint.config.js` (`ser1-colors/no-hardcoded-colors` et `ser1-colors/use-semantic-colors` passés en `error`).
 >   - Preuve: `npm run lint` = 0 erreur.
 >   - Note: exception ciblée et documentée sur `src/settings/theme/hooks/brandingIsolation.test.ts` (fixtures hex explicites nécessaires pour prouver l'isolation A/B, sans impact UI/runtime).
-> - **P0-05 PARTIAL DONE (IR split / PR-03)** : helpers IR extraits vers `src/engine/ir/` (`parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`) ; `src/utils/irEngine.js` ≈ **340 lignes**.
+> - **P0-05 PARTIAL DONE (IR split / PR-03)** : helpers IR extraits vers `src/engine/ir/` (`parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`) ; `src/utils/irEngine.js` ≈ **308 lignes**.
 >   - **Reste** : prochains helpers IR + split `placementEngine.js`.
->   - **En cours (batch PR, non mergé)** : extraction `computeEffectiveParts` + factorisation `domAbatement` + `decote` → `src/engine/ir/` ; `irEngine.js` ≈ **308 lignes** sur branche.
 > - **Sécurité — guardrails secrets / `.env*`** : garde-fous repo/CI en place (blocage `.env*` + patterns sensibles).
 
 ### Phase 1 — MVP Simulateurs + JSON (6-8 semaines)
@@ -617,19 +618,21 @@ src/
 | Risque | Faible — ajout de tests uniquement |
 | Rollback | Supprimer fichiers de tests |
 
-**Next action** : PR-02c — 3e snapshot IR PPTX **ou** 1er snapshot XLSX.
+**PR-02c (en cours, non mergé)** : 1er snapshot XLSX (foundation) + stabilité sur 2 runs.
+
+**Next action (après PR-02c)** : 3e snapshot IR PPTX.
 
 ### PR-03 : Découpe irEngine.js → engine/ir/
 
 | Aspect | Détail |
 |--------|--------|
-| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` (JS). ✅ **MERGED** : `parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`. `irEngine.js` ≈ **340 lignes** (PR #66, #68, #69, #70, #72) |
-| Fichiers | Ajout: `src/engine/ir/{parts.js, progressiveTax.js, cehr.js, cdhr.js, abattement10.js}` ; existant: `src/engine/ir/adjustments.js` ; modif: `src/utils/irEngine.js` (imports + suppression impls). **En cours (batch PR, non mergé)** : `effectiveParts.js`, `domAbatement.js`, `decote.js` |
+| Scope | Split `src/utils/irEngine.js` en modules `src/engine/ir/` (JS). ✅ **MERGED** : `parts`, `progressiveTax`, `cehr`, `cdhr`, `abattement10`, `effectiveParts`, `domAbatement`, `decote`. `irEngine.js` ≈ **308 lignes** (PR #66, #68, #69, #70, #72, #74) |
+| Fichiers | Ajout: `src/engine/ir/{parts.js, progressiveTax.js, cehr.js, cdhr.js, abattement10.js, effectiveParts.js, domAbatement.js, decote.js}` ; existant: `src/engine/ir/adjustments.js` ; modif: `src/utils/irEngine.js` (imports + suppression impls) |
 | Validation | `npm run check` + golden cases IR + E2E IR |
 | Risque | Moyen — imports à mettre à jour |
 | Rollback | Restaurer `irEngine.js` original |
 
-**Next action** : PR-03 extraction #6 — extraire le prochain helper pur (ex: `computeEffectiveParts`) vers `src/engine/ir/` (⚠️ en cours via batch PR).
+**Next action** : PR-03 extraction #6 — extraire le prochain helper pur (ex: `computeIrFromExcelCase` helpers) vers `src/engine/ir/`.
 
 ### PR-04 : Découpe placementEngine.js → engine/placement/
 
