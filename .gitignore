@@ -42,6 +42,7 @@ logs/
 outputs/
 tmp/
 temp/
+.tmp/
 
 # Local tools / refs (do not commit)
 .windsurf/
