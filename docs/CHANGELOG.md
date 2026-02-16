@@ -292,20 +292,20 @@ Trois bugs en production/staging : Edge Function 404 sur `get_original_theme`, A
 |----------|--------|
 | `public/pptx/icons/` (13 SVG) | Copies identiques de `src/icons/business/svg/`, non importées |
 | `src/pptx/ops/addBusinessIcon.ts` | Version legacy (types `any`) — unifié dans `src/pptx/icons/addBusinessIcon.ts` |
-| `supabase/functions/admin/` | Duplicate de `config/supabase/functions/admin/` (source de vérité README) |
+| Ancien emplacement Edge Function (legacy workdir) | Remplacé par `supabase/functions/admin/` |
 
 ### Améliorations qualité
 
 | Changement | Détail |
 |------------|--------|
 | Types Edge Function | Interfaces `ReportRow`, `ProfileRow`, `AuthUser` (fix 5 implicit `any`) |
-| `tsconfig.json` local Deno | `config/supabase/functions/admin/tsconfig.json` — supprime erreurs IDE |
-| `tsconfig.json` root | Ajout `exclude: ["config/supabase", "supabase"]` |
+| `tsconfig.json` local Deno | `supabase/functions/admin/tsconfig.json` — supprime erreurs IDE |
+| `tsconfig.json` root | Ajout `exclude: ["supabase"]` |
 | ESLint plugin `ser1-colors` | Exception `rgba(0,0,0,*)` pour shadows/overlays (conforme §5.3) |
 | `addBusinessIcon.ts` unifié | Ajout `addBusinessIconDirect()` (API directe) + alias `ICON_SIZES` |
 
 ### Fichiers modifiés
-- `config/supabase/functions/admin/index.ts` — get_original_theme, delete_theme, update_theme, types
+- `supabase/functions/admin/index.ts` — get_original_theme, delete_theme, update_theme, types
 - `src/auth/AuthProvider.tsx` — handleInvalidRefreshToken
 - `src/settings/ThemeProvider.tsx` — sourceRanks complété
 - `src/pages/Sous-Settings/SettingsComptes.jsx` — is_system checks
@@ -315,7 +315,7 @@ Trois bugs en production/staging : Edge Function 404 sur `get_original_theme`, A
 - `tsconfig.json` — exclude ajouté
 
 ### Déploiement
-Edge Function déployée via CLI : `npx supabase functions deploy admin --project-ref xnpbxrqkzgimiugqtago --workdir config`
+Edge Function déployée via CLI : `npx supabase functions deploy admin --project-ref xnpbxrqkzgimiugqtago`
 
 ---
 
@@ -404,7 +404,7 @@ Aligner toutes les pages de configuration sur le Design System "Premium / Gestio
 - `src/pptx/presets/creditDeckBuilder.ts` — Passe `logoPlacement` au cover
 - `src/pages/Ir.jsx` — Extrait `logoPlacement` de `useTheme()`, passe au builder
 - `src/pages/Credit.jsx` — Extrait `logoPlacement` de `useTheme()`, passe au builder
-- `config/supabase/functions/admin/index.ts` — Gère `logo_placement` dans `update_cabinet`
+- `supabase/functions/admin/index.ts` — Gère `logo_placement` dans `update_cabinet`
 
 ### 2. Bug fix : Format retour RPC TABLE
 
@@ -501,7 +501,7 @@ Les RLS policies et Edge Function utilisaient `auth.user_metadata` pour vérifie
 
 ### Fichiers modifiés
 - `database/migrations/202601312200_security_rls_no_user_metadata.sql`
-- `config/supabase/functions/admin/index.ts`
+- `supabase/functions/admin/index.ts`
 - `docs/technical/security-user-metadata-guidelines.md` (nouveau)
 
 ### Résultat Security Advisor
@@ -541,11 +541,11 @@ Note: original-db rank 2 mais custom rank 1 — après save explicite, on reset 
 
 ### TECHNIQUE
 - Edge Function: action `get_original_theme` (auth Bearer requis) retourne `{name, palette}`
-- Déploiement: `--workdir ./config` (pas `./config/supabase`) car source de vérité dans `config/supabase/functions/admin/index.ts`
+- Déploiement: depuis la racine Supabase (`supabase/config.toml` + `supabase/functions/*`) car source de vérité dans `supabase/functions/admin/index.ts`
 - `ThemeProvider`: `loadOriginalTheme()` au montage, fallback UI = `originalColors ?? DEFAULT_COLORS`
 - PPTX: `resolvePptxColors()` priorité cabinet > (scope=all ? custom : original)
 
-**Fichiers** : `config/supabase/functions/admin/index.ts`, `src/settings/ThemeProvider.tsx`, `src/pptx/theme/resolvePptxColors.ts`, `src/pages/Sous-Settings/SettingsComptes.jsx`
+**Fichiers** : `supabase/functions/admin/index.ts`, `src/settings/ThemeProvider.tsx`, `src/pptx/theme/resolvePptxColors.ts`, `src/pages/Sous-Settings/SettingsComptes.jsx`
 
 ---
 

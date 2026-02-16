@@ -303,14 +303,14 @@ src/pages/credit/
 ### Nettoyage duplicates & typage
 - **Supprimé** : 13 SVG dead dans `public/pptx/icons/` (copies identiques de `src/icons/business/svg/`)
 - **Supprimé** : `src/pptx/ops/addBusinessIcon.ts` (version legacy) — unifié dans `src/pptx/icons/addBusinessIcon.ts`
-- **Supprimé** : `supabase/functions/admin/` (duplicate de `config/supabase/functions/admin/`)
+- **Supprimé** : ancien emplacement Edge Function (legacy workdir) — remplacé par `supabase/functions/admin/`
 - **Ajouté** : Types `ReportRow`, `ProfileRow`, `AuthUser` dans Edge Function (fix 5 implicit `any`)
-- **Ajouté** : `tsconfig.json` local dans `config/supabase/functions/admin/` (supprime erreurs Deno IDE)
+- **Ajouté** : `tsconfig.json` local dans `supabase/functions/admin/` (supprime erreurs Deno IDE)
 - **Fix** : ESLint plugin `ser1-colors` — exception `rgba(0,0,0,*)` pour shadows/overlays (conforme §5.3)
 - **Fix** : `SettingsComptes.jsx` — remplacement de tous les checks `name === 'Thème Original'` par `is_system`
 
 **Fichiers clés** :
-- `config/supabase/functions/admin/index.ts` — Edge Function (get_original_theme, delete_theme, update_theme)
+- `supabase/functions/admin/index.ts` — Edge Function (get_original_theme, delete_theme, update_theme)
 - `src/auth/AuthProvider.tsx` — Gestion refresh token invalide
 - `src/settings/ThemeProvider.tsx` — sourceRanks complété
 - `src/pages/Sous-Settings/SettingsComptes.jsx` — Checks `is_system` au lieu de nom hardcodé

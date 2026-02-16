@@ -2,12 +2,12 @@
 
 > ⚠️ **Fichier temporaire** (à supprimer dans la **dernière PR** du chantier).
 >
-> Objectif: migrer de `config/supabase/` vers l’organisation Supabase standard:
+> Objectif: migrer de l’organisation Supabase **legacy (workdir dédié)** vers l’organisation Supabase standard:
 >
 > - `supabase/config.toml`
 > - `supabase/functions/*`
 > - `supabase/migrations/*` (déjà OK)
-> - suppression de `config/supabase/`
+> - suppression de l’arbre legacy (workdir dédié)
 >
 > Contraintes: **zéro régression** (après chaque micro-commit: `npm run check` ✅) + Supabase CLI **2.75.0**.
 
@@ -32,43 +32,43 @@
 
 ## PHASE 1 — Analyse (preuve avant action)
 
-### 1) Inventaire des deux arbres (état actuel)
+### 1) Inventaire des deux arbres (état initial)
 
-#### `config/supabase/` (source actuelle config + functions)
-- `config/supabase/config.toml`
+#### Legacy workdir (source initiale config + functions)
+- `config.toml` (dans le workdir legacy)
   - `project_id = "SER1"`
   - section `[functions.admin]`:
     - `verify_jwt = true`
     - `import_map = "./functions/admin/deno.json"`
     - `entrypoint = "./functions/admin/index.ts"`
-- `config/supabase/functions/admin/`
+- `functions/admin/`
   - `index.ts` (Edge Function)
   - `cors.ts`, `cors_test.ts`
   - `deno.json`, `tsconfig.json`, `.npmrc`
 
-#### `supabase/` (source actuelle migrations)
+#### `supabase/` (source initiale migrations)
 - `supabase/migrations/*` ✅ (canon DB)
 - `supabase/.temp/` (artefacts CLI) — doit rester gitignored
 - **Absents** aujourd’hui:
   - `supabase/config.toml`
   - `supabase/functions/*`
 
-✅ **Source de vérité actuelle**:
+✅ **Source de vérité initiale**:
 - Migrations: `supabase/migrations/`
-- Config Supabase + edge functions: `config/supabase/`
+- Config Supabase + edge functions: legacy workdir
 
 ### 1bis) Artefacts trackés à vérifier
 
 À valider en git (attendu: aucun `.temp` tracké; pas de `supabase/config.toml` ni `supabase/functions/*` pour l’instant).
 
-### 2) Références à `--workdir config` / `config/supabase`
+### 2) Références à l’ancien workdir / flags de workdir
 
-**Références `--workdir config` (docs)**:
+**Références à l’ancien flag de workdir (docs)**:
 - `README.md`
 - `docs/technical/admin/edge-functions-testing.md`
 - `docs/CHANGELOG.md`
 
-**Références `config/supabase` (docs)**:
+**Références à l’ancien workdir (docs)**:
 - `README.md` (plusieurs sections: “source de vérité” et paths)
 - `docs/technical/api/admin-function.md`
 - `docs/ROADMAP_SAAS_V1.md`
@@ -81,16 +81,13 @@
 1. **Chemins relatifs dans `config.toml`**
    - Bonne nouvelle: les chemins `./functions/admin/*` resteront identiques si on copie `config.toml` vers `supabase/config.toml` et qu’on déplace `functions/` sous `supabase/`.
 2. **Docs divergentes vs config réelle**
-   - `docs/technical/admin/cors-setup.md` mentionne `supabase/config.toml` (et `verify_jwt=false`), mais **le fichier n’existe pas** actuellement et `config/supabase/config.toml` a `verify_jwt=true`.
+   - `docs/technical/admin/cors-setup.md` mentionne `supabase/config.toml` (et `verify_jwt=false`), mais le config TOML initial vivait dans le workdir legacy et avait `verify_jwt=true`.
    - Risque: confusion et procédures locales incohérentes.
 3. **Root Supabase unique**
-   - Après migration, la CLI doit fonctionner sans `--workdir config`.
-   - Risque: CI/docs/scripts qui continuent d’utiliser `--workdir config`.
+   - Après migration, la CLI doit fonctionner depuis la racine, sans flag de workdir.
+   - Risque: CI/docs/scripts qui continuent d’utiliser l’ancien flag de workdir.
 4. **Ignore `.temp`**
-   - Déjà présent dans `.gitignore`:
-     - `supabase/.temp/`
-     - `config/supabase/.temp/`
-   - Après suppression de `config/supabase/`, on gardera `supabase/.temp/`.
+   - Déjà présent dans `.gitignore`: `supabase/.temp/`
 5. **Deno tooling VSCode**
    - `.vscode/settings.json` est déjà configuré pour `supabase/functions` → **ça deviendra correct** après PR1.
 
@@ -108,13 +105,13 @@
 **Objectif**: rendre `supabase/` autonome (config + functions) tout en gardant le legacy en place.
 
 **Changes (attendus)**:
-- [x] Créer `supabase/config.toml` (copie adaptée depuis `config/supabase/config.toml`)
-- [x] Déplacer `config/supabase/functions/*` → `supabase/functions/*` (au minimum `admin/`)
+- [x] Créer `supabase/config.toml` (copie adaptée depuis le workdir legacy)
+- [x] Déplacer `functions/*` (depuis le workdir legacy) → `supabase/functions/*` (au minimum `admin/`)
 - [ ] Vérifier `supabase/config.toml`:
   - [ ] `[functions.admin].import_map = "./functions/admin/deno.json"`
   - [ ] `[functions.admin].entrypoint = "./functions/admin/index.ts"`
 - [ ] Garder/compléter `.gitignore` pour `supabase/.temp/`
-- [ ] Mettre à jour docs pour ne plus dépendre de `--workdir config` (minimum: README + doc de test functions)
+- [ ] Mettre à jour docs pour ne plus dépendre d’un flag de workdir (minimum: README + doc de test functions)
 
 **DoD PR1**:
 - [x] `npm run check` ✅
@@ -128,16 +125,16 @@ Notes exécution (local Windows):
 
 ### PR2 — Remove legacy config workdir
 
-**Objectif**: supprimer `config/supabase/` et nettoyer toutes les références.
+**Objectif**: supprimer l’arbre legacy (workdir dédié) et nettoyer toutes les références.
 
 **Changes (attendus)**:
-- [ ] Supprimer `config/supabase/`
-- [ ] Docs: plus aucun `config/supabase` / `--workdir config`
-- [ ] `.gitignore`: retirer l’entrée `config/supabase/.temp/` (optionnel, mais propre)
+- [ ] Supprimer l’arbre legacy (workdir dédié)
+- [ ] Docs: plus aucune référence à l’ancien workdir / ancien flag de workdir
+- [ ] `.gitignore`: reste focalisé sur `supabase/.temp/` (+ autres artefacts supabase)
 
 **DoD PR2**:
-- [ ] `rg -n "(--workdir config|config/supabase)" .` → 0 résultat
-- [ ] `git ls-files | rg "config/supabase"` → 0 résultat
+- [ ] `rg -n "(workdir config|legacy workdir)" .` → 0 résultat
+- [ ] `git ls-files | rg "config"` → pas de réintroduction d’un workdir legacy
 - [ ] `npm run check` ✅
 - [ ] `supabase start` / `supabase functions serve admin` / `supabase stop` ✅
 

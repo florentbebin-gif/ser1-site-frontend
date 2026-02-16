@@ -5,7 +5,7 @@
 * @florentbebin
 
 # Edge Functions et config Supabase
-/config/supabase/ @florentbebin
+/supabase/ @florentbebin
 
 # Moteur de calcul fiscal (critique pour la conformité)
 /src/engine/ @florentbebin
