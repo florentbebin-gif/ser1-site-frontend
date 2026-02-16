@@ -108,7 +108,7 @@
 **Objectif**: rendre `supabase/` autonome (config + functions) tout en gardant le legacy en place.
 
 **Changes (attendus)**:
-- [ ] Créer `supabase/config.toml` (copie adaptée depuis `config/supabase/config.toml`)
+- [x] Créer `supabase/config.toml` (copie adaptée depuis `config/supabase/config.toml`)
 - [ ] Déplacer `config/supabase/functions/*` → `supabase/functions/*` (au minimum `admin/`)
 - [ ] Vérifier `supabase/config.toml`:
   - [ ] `[functions.admin].import_map = "./functions/admin/deno.json"`
