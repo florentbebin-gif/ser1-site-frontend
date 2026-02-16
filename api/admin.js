@@ -1,9 +1,19 @@
+/* eslint-env node */
+/* global process */
+/* eslint-disable no-console */
+
 export default async function handler(req, res) {
   // === CORS: Whitelist strict pour production ===
   const allowedOrigins = [
     // Développement local
     'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
     'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+    'http://127.0.0.1:5175',
+    'http://127.0.0.1:3000',
     // Vercel previews et production (pattern match)
     /^https:\/\/.*-ser1.*\.vercel\.app$/,
     /^https:\/\/ser1-.*\.vercel\.app$/,
@@ -14,16 +24,25 @@ export default async function handler(req, res) {
     allowed instanceof RegExp ? allowed.test(origin) : allowed === origin
   );
 
-  // Fallback: autoriser si pas d'origin (same-origin requests, health checks)
-  const corsOrigin = isAllowed ? origin : process.env.VERCEL_URL || '';
+  // IMPORTANT: ne JAMAIS renvoyer `*` avec credentials=true (bloqué par les navigateurs)
+  // On ne renvoie les headers CORS que si l'origin est explicitement autorisée.
+  const corsOrigin = isAllowed ? origin : '';
 
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', corsOrigin || '*');
+  // Ensure caches/CDN keep per-origin variants.
+  res.setHeader('Vary', 'Origin');
+
+  if (corsOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, apikey, x-client-info'
+    'Content-Type, Authorization, apikey, x-client-info, x-request-id'
   );
+
+  // Permet au front de lire les headers de diagnostic.
+  res.setHeader('Access-Control-Expose-Headers', 'x-proxy-version, x-admin-version, x-request-id');
 
   // === VERSION HEADER (diagnostic) ===
   res.setHeader('x-proxy-version', '2026-01-20-v1');
@@ -76,9 +95,17 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         'Authorization': req.headers.authorization || '',
         'apikey': apikey,
+        // Optional: allow frontend (or scripts) to correlate logs with the Edge Function.
+        ...(req.headers['x-request-id'] ? { 'x-request-id': req.headers['x-request-id'] } : {}),
       },
       body: bodyToSend,
     });
+
+    // Forward upstream diagnostics (useful to correlate issues without exposing secrets)
+    const upstreamRequestId = response.headers.get('x-request-id');
+    const upstreamAdminVersion = response.headers.get('x-admin-version');
+    if (upstreamRequestId) res.setHeader('x-request-id', upstreamRequestId);
+    if (upstreamAdminVersion) res.setHeader('x-admin-version', upstreamAdminVersion);
 
     const contentType = response.headers.get('content-type') || '';
     const data = await response.text();
@@ -90,7 +117,7 @@ export default async function handler(req, res) {
     if (contentType.includes('application/json')) {
       try {
         return res.json(JSON.parse(data));
-      } catch (e) {
+      } catch (_e) {
         return res.send(data);
       }
     } else {
