@@ -9,10 +9,10 @@ Confirmer si les erreurs CORS/perte d'autorisation sur `/functions/v1/admin` pro
 - Instrumentation ajoutée:
   - **Front**: `[ADMIN_CALL]` logs incluant `rid`, origine, présence token, session absente.
   - **Edge**: `[EDGE_REQ]` logs + headers CORS dynamiques + actions `ping`, `echo`.
-  - **supabase/config.toml**: `verify_jwt = false` (TEMPORAIRE) pour isoler les erreurs CORS vs auth.
+  - **supabase/config.toml**: optionnellement `verify_jwt = false` (TEMPORAIRE) pour isoler les erreurs CORS vs auth.
 
 ## Procédure TEMPORAIRE (à revert après test)
-1. **Désactiver verify_jwt** localement (déjà fait dans `supabase/config.toml`).<br>
+1. **Désactiver verify_jwt** localement (temporaire) dans `supabase/config.toml`.<br>
    - Comment revert? remettre `verify_jwt = true` et redéployer `supabase functions deploy admin`.
 2. **Déployer la fonction**: `npx supabase functions deploy admin`.
 3. **Tester ping/echo**:

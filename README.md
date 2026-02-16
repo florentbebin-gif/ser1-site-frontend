@@ -95,7 +95,11 @@ supabase db reset                    # Reset base locale avec migrations
 supabase stop                        # Arrêter services locaux
 ```
 
-> Note: le seed Supabase (`db.seed`) est volontairement désactivé tant qu'aucun `seed.sql` minimal n'est défini dans le workdir `config`.
+> Note: le seed Supabase (`db.seed`) est volontairement désactivé tant qu'aucun `seed.sql` minimal n'est défini.
+
+> Windows: `supabase functions serve <name>` peut rester en process.
+> - Stop recommandé: **Ctrl+C** dans le terminal.
+> - Dernier recours: `taskkill` (si le terminal est bloqué).
 
 ### Structure des tables principales
 | Table | Usage | Champs clés |
@@ -473,7 +477,7 @@ npx supabase functions deploy admin --project-ref PROJECT_REF
 ### 4.3 Checklist avant déploy
 - [ ] Migration RPC appliquée
 - [ ] Bucket `logos` créé
-- [ ] Edge Function déployée (sans `--workdir`)
+- [ ] Edge Function déployée (sans flag de workdir)
 - [ ] Env vars Vercel : `SUPABASE_URL` + `SUPABASE_ANON_KEY`
 
 ---
