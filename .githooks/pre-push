@@ -1,6 +1,7 @@
 #!/bin/sh
 #
 # pre-push hook - blocks direct pushes to main/master branches
+# Allows branch deletions from main/master (for GitHub Desktop cleanup)
 #
 # Override: ALLOW_PUSH_MAIN=1 git push ...
 #
@@ -8,40 +9,27 @@
 # Get current local branch
 branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null || echo "")
 
-# Check if pushing from main/master locally
-if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
-    if [ "$ALLOW_PUSH_MAIN" != "1" ]; then
-        echo ""
-        echo "❌ PUSH REFUSÉ: Tentative de push depuis la branche '$branch'"
-        echo ""
-        echo "   Le push direct sur main/master est interdit."
-        echo ""
-        echo "   Solution :"
-        echo "   1. Crée une branche feature : git checkout -b feature/ma-modif"
-        echo "   2. Commit tes changements"
-        echo "   3. Push la branche : git push -u origin feature/ma-modif"
-        echo "   4. Ouvre une PR sur GitHub"
-        echo ""
-        echo "   Override temporaire (urgence uniquement) :"
-        echo "   ALLOW_PUSH_MAIN=1 git push ..."
-        echo ""
-        exit 1
-    fi
-fi
+# Read all refs being pushed into a temp file for analysis
+tmpfile=$(mktemp)
+trap "rm -f $tmpfile" EXIT
 
-# Read stdin for refs being pushed (format: local_ref local_sha remote_ref remote_sha)
 while read -r local_ref local_sha remote_ref remote_sha; do
-    # Check if pushing to main/master on remote
+    echo "$local_ref $local_sha $remote_ref $remote_sha" >> "$tmpfile"
+done
+
+# Check if pushing to main/master on remote (always block unless override)
+while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+    [ -z "$local_ref" ] && continue
     case "$remote_ref" in
         *"/main"|*"/master")
             if [ "$ALLOW_PUSH_MAIN" != "1" ]; then
                 echo ""
-                echo "❌ PUSH REFUSÉ: Tentative de push vers '$remote_ref'"
+                echo "PUSH REFUSE: Tentative de push vers '$remote_ref'"
                 echo ""
                 echo "   Le push direct sur main/master est interdit."
                 echo ""
                 echo "   Solution :"
-                echo "   1. Crée une branche feature : git checkout -b feature/ma-modif"
+                echo "   1. Cree une branche feature : git checkout -b feature/ma-modif"
                 echo "   2. Commit tes changements"
                 echo "   3. Push la branche : git push -u origin feature/ma-modif"
                 echo "   4. Ouvre une PR sur GitHub"
@@ -53,6 +41,60 @@ while read -r local_ref local_sha remote_ref remote_sha; do
             fi
             ;;
     esac
-done
+done < "$tmpfile"
+
+# If pushing from main/master locally, check if it's only branch deletions
+if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+    if [ "$ALLOW_PUSH_MAIN" != "1" ]; then
+        # Analyze all refs - are they ALL deletions?
+        all_deletions=true
+        has_forbidden_deletion=false
+        
+        while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+            [ -z "$local_ref" ] && continue
+            
+            # Check if this is a deletion (40 zeros)
+            if [ "$local_sha" != "0000000000000000000000000000000000000000" ]; then
+                # Not a deletion - it's a regular push
+                all_deletions=false
+            fi
+            
+            # Check if deletion targets main/master
+            case "$remote_ref" in
+                *"/main"|*"/master")
+                    if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
+                        has_forbidden_deletion=true
+                    fi
+                    ;;
+            esac
+        done < "$tmpfile"
+        
+        # If not all deletions, or trying to delete main/master, block
+        if [ "$all_deletions" != "true" ] || [ "$has_forbidden_deletion" = "true" ]; then
+            echo ""
+            echo "PUSH REFUSE: Tentative de push depuis la branche '$branch'"
+            echo ""
+            echo "   Le push direct sur main/master est interdit."
+            echo ""
+            echo "   Solution :"
+            echo "   1. Cree une branche feature : git checkout -b feature/ma-modif"
+            echo "   2. Commit tes changements"
+            echo "   3. Push la branche : git push -u origin feature/ma-modif"
+            echo "   4. Ouvre une PR sur GitHub"
+            echo ""
+            echo "   Note pour suppression de branche :"
+            echo "   La suppression d'une branche distante depuis main est autorisee"
+            echo "   (ex: GitHub Desktop 'Delete branch' ou git push origin --delete branche)"
+            echo ""
+            echo "   Override temporaire (urgence uniquement) :"
+            echo "   ALLOW_PUSH_MAIN=1 git push ..."
+            echo ""
+            exit 1
+        fi
+        
+        # All refs are deletions and none target main/master - allow
+        exit 0
+    fi
+fi
 
 exit 0
