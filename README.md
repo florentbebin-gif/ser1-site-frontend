@@ -372,8 +372,8 @@ src/
   pptx/                 # Export Serenity (design system)
   utils/xlsxBuilder.ts  # Export Excel
 
-config/supabase/functions/admin/index.ts  # Edge Function admin (source de vérité unique)
-config/supabase/functions/admin/tsconfig.json  # TS config Deno (supprime erreurs IDE)
+supabase/functions/admin/index.ts  # Edge Function admin (source de vérité unique)
+supabase/functions/admin/tsconfig.json  # TS config Deno (supprime erreurs IDE)
 api/admin.js           # Proxy Vercel (évite CORS)
 
 supabase/migrations/         # Source unique : migrations versionnées (SQL)
@@ -437,16 +437,16 @@ supabase/migrations/         # Source unique : migrations versionnées (SQL)
 > ⚠️ `user_metadata` est **désactivé pour l'autorisation** — modifiable par l'utilisateur (risque élévation privilèges). Voir [docs/technical/security-user-metadata-guidelines.md](docs/technical/security-user-metadata-guidelines.md).
 
 ### 3.2 Edge Function admin
-**Code source unique** : `config/supabase/functions/admin/index.ts`
+**Code source unique** : `supabase/functions/admin/index.ts`
 
-> ⚠️ **Pas de duplicate** — le dossier `supabase/functions/admin/` a été supprimé. Seul `config/` fait foi.
+> ⚠️ **Pas de duplicate** — le dossier `supabase/functions/admin/` est la **source de vérité** (organisation standard). Aucun autre emplacement ne doit exister.
 
 **Déploiement** :
 ```powershell
-npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
+npx supabase functions deploy admin --project-ref PROJECT_REF
 ```
 
-⚠️ `--workdir config` obligatoire (pas `config/supabase`).
+⚠️ Déployer depuis la racine (organisation standard Supabase: `supabase/config.toml` + `supabase/functions/*`).
 
 **Thème système** : La requête `get_original_theme` utilise `is_system=true` (pas de nom hardcodé). Compatible avec tout nom DB.
 
@@ -473,7 +473,7 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 ### 4.3 Checklist avant déploy
 - [ ] Migration RPC appliquée
 - [ ] Bucket `logos` créé
-- [ ] Edge Function déployée avec `--workdir config`
+- [ ] Edge Function déployée (sans `--workdir`)
 - [ ] Env vars Vercel : `SUPABASE_URL` + `SUPABASE_ANON_KEY`
 
 ---

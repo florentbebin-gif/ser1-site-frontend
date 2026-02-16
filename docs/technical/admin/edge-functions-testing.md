@@ -9,8 +9,8 @@
 
 ### Déploiement
 ```bash
-# Déployer depuis le dossier config (obligatoire)
-npx supabase functions deploy admin --project-ref xnpbxrqkzgimiugqtago --workdir config
+# Déployer depuis la racine (organisation standard Supabase)
+npx supabase functions deploy admin --project-ref xnpbxrqkzgimiugqtago
 
 # Vérifier le déploiement
 supabase functions list
@@ -41,11 +41,11 @@ supabase functions list
 
 ```bash
 # Test depuis le dossier racine
-supabase functions invoke admin --project-ref xnpbxrqkzgimiugqtago --workdir config \
+supabase functions invoke admin --project-ref xnpbxrqkzgimiugqtago \
   --data '{"action": "ping_public"}'
 
 # Test avec authentification admin
-supabase functions invoke admin --project-ref xnpbxrqkzgimiugqtago --workdir config \
+supabase functions invoke admin --project-ref xnpbxrqkzgimiugqtago \
   --data '{"action": "list_users"}' \
   --headers '{
     "Authorization": "Bearer VOTRE_JETON_ADMIN"

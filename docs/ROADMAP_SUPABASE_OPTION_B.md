@@ -117,10 +117,14 @@
 - [ ] Mettre à jour docs pour ne plus dépendre de `--workdir config` (minimum: README + doc de test functions)
 
 **DoD PR1**:
-- [ ] `npm run check` ✅
-- [ ] `supabase start` (sans `--workdir`) ✅
-- [ ] `supabase functions serve admin` (sans `--workdir`) ✅
-- [ ] `supabase stop` ✅
+- [x] `npm run check` ✅
+- [x] `supabase start` (sans `--workdir`) ✅
+- [x] `supabase functions serve admin` (sans `--workdir`) ✅
+- [x] `supabase stop` ✅
+
+Notes exécution (local Windows):
+- `supabase start` affiche un warning Analytics Windows (Docker daemon tcp://localhost:2375). Non bloquant.
+- Premier `supabase start` a échoué sur conflit de container `supabase_vector_SER1` (container déjà existant). `supabase stop` puis `supabase start` a résolu.
 
 ### PR2 — Remove legacy config workdir
 
