@@ -569,7 +569,13 @@ npm run test:e2e        # Tests E2E Playwright (smoke tests)
 
 **Installation** (une fois par clone) :
 ```powershell
-pwsh scripts/install-githooks.ps1
+powershell -ExecutionPolicy Bypass -File scripts/install-githooks.ps1
+```
+
+**Vérification** :
+```powershell
+git config --get core.hooksPath
+# → .githooks
 ```
 
 **Fonctionnement** :
@@ -579,6 +585,11 @@ pwsh scripts/install-githooks.ps1
 **Override temporaire** (urgence uniquement) :
 ```powershell
 ALLOW_PUSH_MAIN=1 git push origin main
+```
+
+**Désinstallation** :
+```powershell
+git config --unset core.hooksPath
 ```
 
 ---
