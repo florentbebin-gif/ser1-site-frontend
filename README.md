@@ -565,9 +565,9 @@ npm run test:e2e        # Tests E2E Playwright (smoke tests)
 ```
 > ⚠️ La CI bloque les PR si un gate échoue. Voir [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
-### 7.4 Githooks (anti-push main)
+### 7.4 Githooks et scripts de workflow
 
-**Installation** (une fois par clone) :
+**Installation githooks** (une fois par clone) :
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/install-githooks.ps1
 ```
@@ -590,6 +590,11 @@ ALLOW_PUSH_MAIN=1 git push origin main
 **Désinstallation** :
 ```powershell
 git config --unset core.hooksPath
+```
+
+**Pre-merge check** (avant merge manuel) :
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/pre-merge-check.ps1
 ```
 
 ---
