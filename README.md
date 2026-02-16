@@ -565,6 +565,33 @@ npm run test:e2e        # Tests E2E Playwright (smoke tests)
 ```
 > ⚠️ La CI bloque les PR si un gate échoue. Voir [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
+### 7.4 Githooks (anti-push main)
+
+**Installation** (une fois par clone) :
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/install-githooks.ps1
+```
+
+**Vérification** :
+```powershell
+git config --get core.hooksPath
+# → .githooks
+```
+
+**Fonctionnement** :
+- Bloque le push direct depuis ou vers `main`/`master`
+- Message clair avec instructions pour créer une branche + PR
+
+**Override temporaire** (urgence uniquement) :
+```powershell
+ALLOW_PUSH_MAIN=1 git push origin main
+```
+
+**Désinstallation** :
+```powershell
+git config --unset core.hooksPath
+```
+
 ---
 
 ## 8. Debug & Logs
