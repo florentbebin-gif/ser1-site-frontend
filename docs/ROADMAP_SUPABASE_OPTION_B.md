@@ -133,7 +133,7 @@ Notes exécution (local Windows):
 - [ ] `.gitignore`: reste focalisé sur `supabase/.temp/` (+ autres artefacts supabase)
 
 **DoD PR2**:
-- [ ] `rg -n "(workdir config|legacy workdir)" .` → 0 résultat
+- [ ] `rg -n "legacy workdir" .` → 0 résultat
 - [ ] `git ls-files | rg "config"` → pas de réintroduction d’un workdir legacy
 - [ ] `npm run check` ✅
 - [ ] `supabase start` / `supabase functions serve admin` / `supabase stop` ✅
