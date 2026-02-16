@@ -1,29 +1,26 @@
-## Summary
-<!-- 1-2 lignes sur le changement -->
+## Description
+<!-- 1–2 lignes : objectif du changement -->
 
-## Changes
+## Changements
 <!-- Liste concise des fichiers/modules impactés -->
 - 
 - 
 
-## Quality Gates (obligatoires)
-- [ ] `npm run lint` passe (0 erreur ESLint)
-- [ ] `npm run typecheck` passe (0 erreur TypeScript)
-- [ ] `npm test` passe (Vitest)
-- [ ] `npm run build` passe (build Vite OK)
+## Fonctionnalités
+<!-- Si pertinent : ce que ça apporte / ce que ça change -->
+- 
 
-## Documentation
-- [ ] Pas de changement utilisateur visible
-- [ ] README mis à jour (si nouveau feature)
-- [ ] `.github/CONTRIBUTING.md` mis à jour (si nouvelle convention)
-- [ ] Changelog mis à jour (si breaking change ou feature majeure)
+## Tests effectués
+- [ ] `npm run lint` passe
+- [ ] `npm run typecheck` passe
+- [ ] `npm test` passe
+- [ ] `npm run build` passe
+- [ ] `npm run check` passe (si utilisé comme agrégat)
 
-## Breaking Changes
-- [ ] Non
-- [ ] Oui (décrire ci-dessous + migration path)
+## Notes
+<!-- Points importants, risques, limites, rollback si besoin -->
 
-## Screenshots / Démo
-<!-- Si changement UI significatif -->
-
-## Notes pour le reviewer
-<!-- Points à vérifier en priorité -->
+## Checklist
+- [ ] Pas de push direct sur `main` 
+- [ ] Pas de fichiers temporaires ajoutés à la racine
+- [ ] Documentation mise à jour si nécessaire
