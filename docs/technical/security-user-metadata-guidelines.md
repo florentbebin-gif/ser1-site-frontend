@@ -87,7 +87,7 @@ Run this grep to detect potential security regressions:
 
 ```bash
 # Search for dangerous patterns: user_metadata used with role/authorization
-cd config/supabase/functions
+cd supabase/functions
 rg "user_metadata.*role" --type ts
 
 # In SQL files
@@ -98,7 +98,7 @@ If any matches are found for authorization patterns, they must be reviewed immed
 
 ## Files Affected by Security Patch (2026-01-31)
 
-- `config/supabase/functions/admin/index.ts` - Line 128 (security check now uses app_metadata only)
+- `supabase/functions/admin/index.ts` - Line 128 (security check now uses app_metadata only)
 - `database/migrations/202601312200_security_rls_no_user_metadata.sql` - Migration hardening RLS
 - `public.is_admin()` function - Now checks app_metadata only
 

@@ -80,7 +80,7 @@ __pycache__/
 
 # Supabase CLI local artifacts
 supabase/.temp/
-config/supabase/.temp/
+supabase/.branches/
 
 # ESLint reports
 eslint-report.json

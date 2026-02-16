@@ -79,7 +79,7 @@ Les fichiers trouvés sont dans `bmad-method/`, qui est un **template méthodolo
 
 ### Analyse du code Edge Function
 
-**Fichier:** `config/supabase/functions/admin/index.ts`
+**Fichier:** `supabase/functions/admin/index.ts`
 
 #### Chemins d'exécution identifiés
 
@@ -269,7 +269,7 @@ $env:Path += ";$env:USERPROFILE\.deno\bin"
 
 | Fichier | Modification |
 |---------|--------------|
-| `config/supabase/functions/admin/index.ts` | +`ping_public`, +logs corrélés, +`x-request-id` |
+| `supabase/functions/admin/index.ts` | +`ping_public`, +logs corrélés, +`x-request-id` |
 | `src/pages/Sous-Settings/SettingsComptes.jsx` | +`x-request-id` header, +logs corrélés |
 
 ---

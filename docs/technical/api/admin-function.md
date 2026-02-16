@@ -1,6 +1,6 @@
 # Edge Function `admin` — Référence API
 
-> **Source** : `config/supabase/functions/admin/index.ts`
+> **Source** : `supabase/functions/admin/index.ts`
 > **Version** : `2026-01-23-v1` (`ADMIN_VERSION`)
 > **Runtime** : Deno (Supabase Edge Functions)
 > **Accès** : Dashboard Supabase + CLI locale + API REST

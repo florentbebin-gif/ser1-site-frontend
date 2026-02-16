@@ -225,7 +225,7 @@ Exports : PptxGenJS + JSZip. Tests : 83 Vitest + 8 Playwright E2E.
 
 **Export Excel** : Simulateur → `xlsxBuilder.ts` (JSZip OOXML, `pickTextColorForBackground()` pour contraste)
 
-**Admin Edge Function** : Frontend → `/api/admin` (Vercel proxy) → `config/supabase/functions/admin/index.ts` (service role, actions CRUD users/themes)
+**Admin Edge Function** : Frontend → `/api/admin` (Vercel proxy) → `supabase/functions/admin/index.ts` (service role, actions CRUD users/themes)
 
 **JSON local** : `globalStorage.js` — `sessionStorage` → snapshot JSON `.ser1` (version 1) via File System Access API
 
@@ -252,7 +252,7 @@ Exports : PptxGenJS + JSZip. Tests : 83 Vitest + 8 Playwright E2E.
 
 `is_admin()`, `is_admin(uid)`, `get_my_cabinet_logo()`, `get_my_cabinet_theme_palette()`, `handle_new_auth_user()`, `set_issue_report_user_id()`, `set_updated_at()`, `ensure_pass_history_current()`, `bump_settings_version()`, `get_settings_version()`, `sync_settings_data_*` (tax/ps/fiscality), `update_custom_palette_timestamp()`
 
-#### Edge Function : `admin` (config/supabase/functions/admin/index.ts)
+#### Edge Function : `admin` (supabase/functions/admin/index.ts)
 
 Actions : `ping_public`, `list_users`, `create_user`, `update_role`, `delete_user`, `get_original_theme`, `update_theme`, `delete_theme`
 
@@ -778,7 +778,7 @@ npm run check && npm test -- --run
 | `src/utils/xlsxBuilder.ts` | Builder Excel OOXML natif |
 | `src/features/audit/types.ts` | Types patrimoniaux complets |
 | `src/features/strategy/types.ts` | Types stratégie + recommandations |
-| `config/supabase/functions/admin/index.ts` | Edge Function admin |
+| `supabase/functions/admin/index.ts` | Edge Function admin |
 | `docs/design/color-governance.md` | Gouvernance couleurs |
 | `docs/design/ui-governance.md` | Gouvernance UI premium |
 | `docs/technical/security-user-metadata-guidelines.md` | Sécurité auth |

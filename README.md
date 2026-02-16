@@ -95,7 +95,11 @@ supabase db reset                    # Reset base locale avec migrations
 supabase stop                        # Arrêter services locaux
 ```
 
-> Note: le seed Supabase (`db.seed`) est volontairement désactivé tant qu'aucun `seed.sql` minimal n'est défini dans le workdir `config`.
+> Note: le seed Supabase (`db.seed`) est volontairement désactivé tant qu'aucun `seed.sql` minimal n'est défini.
+
+> Windows: `supabase functions serve <name>` peut rester en process.
+> - Stop recommandé: **Ctrl+C** dans le terminal.
+> - Dernier recours: `taskkill` (si le terminal est bloqué).
 
 ### Structure des tables principales
 | Table | Usage | Champs clés |
@@ -303,14 +307,14 @@ src/pages/credit/
 ### Nettoyage duplicates & typage
 - **Supprimé** : 13 SVG dead dans `public/pptx/icons/` (copies identiques de `src/icons/business/svg/`)
 - **Supprimé** : `src/pptx/ops/addBusinessIcon.ts` (version legacy) — unifié dans `src/pptx/icons/addBusinessIcon.ts`
-- **Supprimé** : `supabase/functions/admin/` (duplicate de `config/supabase/functions/admin/`)
+- **Supprimé** : ancien emplacement Edge Function (legacy workdir) — remplacé par `supabase/functions/admin/`
 - **Ajouté** : Types `ReportRow`, `ProfileRow`, `AuthUser` dans Edge Function (fix 5 implicit `any`)
-- **Ajouté** : `tsconfig.json` local dans `config/supabase/functions/admin/` (supprime erreurs Deno IDE)
+- **Ajouté** : `tsconfig.json` local dans `supabase/functions/admin/` (supprime erreurs Deno IDE)
 - **Fix** : ESLint plugin `ser1-colors` — exception `rgba(0,0,0,*)` pour shadows/overlays (conforme §5.3)
 - **Fix** : `SettingsComptes.jsx` — remplacement de tous les checks `name === 'Thème Original'` par `is_system`
 
 **Fichiers clés** :
-- `config/supabase/functions/admin/index.ts` — Edge Function (get_original_theme, delete_theme, update_theme)
+- `supabase/functions/admin/index.ts` — Edge Function (get_original_theme, delete_theme, update_theme)
 - `src/auth/AuthProvider.tsx` — Gestion refresh token invalide
 - `src/settings/ThemeProvider.tsx` — sourceRanks complété
 - `src/pages/Sous-Settings/SettingsComptes.jsx` — Checks `is_system` au lieu de nom hardcodé
@@ -372,8 +376,8 @@ src/
   pptx/                 # Export Serenity (design system)
   utils/xlsxBuilder.ts  # Export Excel
 
-config/supabase/functions/admin/index.ts  # Edge Function admin (source de vérité unique)
-config/supabase/functions/admin/tsconfig.json  # TS config Deno (supprime erreurs IDE)
+supabase/functions/admin/index.ts  # Edge Function admin (source de vérité unique)
+supabase/functions/admin/tsconfig.json  # TS config Deno (supprime erreurs IDE)
 api/admin.js           # Proxy Vercel (évite CORS)
 
 supabase/migrations/         # Source unique : migrations versionnées (SQL)
@@ -437,16 +441,16 @@ supabase/migrations/         # Source unique : migrations versionnées (SQL)
 > ⚠️ `user_metadata` est **désactivé pour l'autorisation** — modifiable par l'utilisateur (risque élévation privilèges). Voir [docs/technical/security-user-metadata-guidelines.md](docs/technical/security-user-metadata-guidelines.md).
 
 ### 3.2 Edge Function admin
-**Code source unique** : `config/supabase/functions/admin/index.ts`
+**Code source unique** : `supabase/functions/admin/index.ts`
 
-> ⚠️ **Pas de duplicate** — le dossier `supabase/functions/admin/` a été supprimé. Seul `config/` fait foi.
+> ⚠️ **Pas de duplicate** — le dossier `supabase/functions/admin/` est la **source de vérité** (organisation standard). Aucun autre emplacement ne doit exister.
 
 **Déploiement** :
 ```powershell
-npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
+npx supabase functions deploy admin --project-ref PROJECT_REF
 ```
 
-⚠️ `--workdir config` obligatoire (pas `config/supabase`).
+⚠️ Déployer depuis la racine (organisation standard Supabase: `supabase/config.toml` + `supabase/functions/*`).
 
 **Thème système** : La requête `get_original_theme` utilise `is_system=true` (pas de nom hardcodé). Compatible avec tout nom DB.
 
@@ -473,7 +477,7 @@ npx supabase functions deploy admin --project-ref PROJECT_REF --workdir config
 ### 4.3 Checklist avant déploy
 - [ ] Migration RPC appliquée
 - [ ] Bucket `logos` créé
-- [ ] Edge Function déployée avec `--workdir config`
+- [ ] Edge Function déployée (sans flag de workdir)
 - [ ] Env vars Vercel : `SUPABASE_URL` + `SUPABASE_ANON_KEY`
 
 ---
