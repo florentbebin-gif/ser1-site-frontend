@@ -38,7 +38,7 @@ E2E_PASSWORD=votre-mot-de-passe-test
 
 **Accès Supabase** :
 - **Dashboard** : https://supabase.com/dashboard (interface web)
-- **CLI** : `supabase --version` (v2.72.7+ installé)
+- **CLI** : `supabase --version` (>= 2.75.0)
 - **Projet lié** : `SER1-Simulator` (West EU/Paris)
 - **Référence** : `xnpbxrqkzgimiugqtago`
 
@@ -94,6 +94,8 @@ supabase start                       # Démarrer services locaux
 supabase db reset                    # Reset base locale avec migrations
 supabase stop                        # Arrêter services locaux
 ```
+
+> Note: le seed Supabase (`db.seed`) est volontairement désactivé tant qu'aucun `seed.sql` minimal n'est défini dans le workdir `config`.
 
 ### Structure des tables principales
 | Table | Usage | Champs clés |
