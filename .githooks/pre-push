@@ -1,0 +1,58 @@
+#!/bin/sh
+#
+# pre-push hook - blocks direct pushes to main/master branches
+#
+# Override: ALLOW_PUSH_MAIN=1 git push ...
+#
+
+# Get current local branch
+branch=$(git symbolic-ref --quiet --short HEAD 2>/dev/null || echo "")
+
+# Check if pushing from main/master locally
+if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+    if [ "$ALLOW_PUSH_MAIN" != "1" ]; then
+        echo ""
+        echo "❌ PUSH REFUSÉ: Tentative de push depuis la branche '$branch'"
+        echo ""
+        echo "   Le push direct sur main/master est interdit."
+        echo ""
+        echo "   Solution :"
+        echo "   1. Crée une branche feature : git checkout -b feature/ma-modif"
+        echo "   2. Commit tes changements"
+        echo "   3. Push la branche : git push -u origin feature/ma-modif"
+        echo "   4. Ouvre une PR sur GitHub"
+        echo ""
+        echo "   Override temporaire (urgence uniquement) :"
+        echo "   ALLOW_PUSH_MAIN=1 git push ..."
+        echo ""
+        exit 1
+    fi
+fi
+
+# Read stdin for refs being pushed (format: local_ref local_sha remote_ref remote_sha)
+while read -r local_ref local_sha remote_ref remote_sha; do
+    # Check if pushing to main/master on remote
+    case "$remote_ref" in
+        *"/main"|*"/master")
+            if [ "$ALLOW_PUSH_MAIN" != "1" ]; then
+                echo ""
+                echo "❌ PUSH REFUSÉ: Tentative de push vers '$remote_ref'"
+                echo ""
+                echo "   Le push direct sur main/master est interdit."
+                echo ""
+                echo "   Solution :"
+                echo "   1. Crée une branche feature : git checkout -b feature/ma-modif"
+                echo "   2. Commit tes changements"
+                echo "   3. Push la branche : git push -u origin feature/ma-modif"
+                echo "   4. Ouvre une PR sur GitHub"
+                echo ""
+                echo "   Override temporaire (urgence uniquement) :"
+                echo "   ALLOW_PUSH_MAIN=1 git push ..."
+                echo ""
+                exit 1
+            fi
+            ;;
+    esac
+done
+
+exit 0
