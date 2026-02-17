@@ -17,6 +17,7 @@ Dev qui doit intervenir sur une feature, un export, un thème, ou Supabase.
 - [Supabase: données, RLS, edge functions](#supabase-données-rls-edge-functions)
 - [Thème & branding](#thème--branding)
 - [Exports (PPTX/Excel)](#exports-pptxexcel)
+- [Publication (admin) : gate de sécurité](#publication-admin--gate-de-sécurité)
 - [Références](#références)
 
 ---
@@ -67,6 +68,13 @@ Conventions clés :
 - SQL helper : `public.is_admin()`.
 - Interdit : policies basées sur `user_metadata`.
 
+Tables repères (haut niveau) :
+- `profiles` (multi-tenant) : `cabinet_id`.
+- `cabinets` (tenant) : `default_theme_id`, `logo_id`.
+- `themes` : presets/système.
+- `ui_settings` : préférences user (`theme_mode`, `preset_id`, `my_palette`).
+- Settings GLOBAUX : `tax_settings`, `ps_settings`, `fiscality_settings`, `base_contrat_settings`.
+
 ### Edge Function `admin`
 - Source : `supabase/functions/admin/index.ts`.
 - Contrat action : query `?action=...` ou body `{ action: "..." }`.
@@ -83,6 +91,17 @@ Conventions clés :
 
 Règles fonctionnelles : voir `docs/GOUVERNANCE.md`.
 
+### Thème V5 (3 modes)
+Source de vérité : DB (`ui_settings`).
+
+- `cabinet` : branding du cabinet
+- `preset` : `preset_id`
+- `my` : `my_palette`
+
+Invariants (à ne pas casser) :
+- Un preset ne modifie jamais `my_palette`.
+- `localStorage` sert uniquement d'anti-flash (miroir), pas de source de vérité.
+
 ---
 
 ## Exports (PPTX/Excel)
@@ -96,6 +115,18 @@ Règles fonctionnelles : voir `docs/GOUVERNANCE.md`.
 
 ### Traçabilité exports
 - Fingerprint : `src/utils/exportFingerprint.ts`.
+
+Objectif : hasher un manifest déterministe (pas le binaire) pour limiter les variations non métier.
+
+---
+
+## Publication (admin) : gate de sécurité
+
+"Publication" = action admin qui persiste des règles métier utilisées par les simulateurs.
+
+Règle : **interdire la publication** s'il n'existe pas au moins un test "validé" (fail-safe).
+
+Source : `src/features/settings/publicationGate.ts` (utilisé par les pages Settings).
 
 ---
 

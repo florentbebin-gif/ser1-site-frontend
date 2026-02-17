@@ -4,7 +4,7 @@
  * SÉCURITÉ : le rôle est lu depuis app_metadata.role UNIQUEMENT.
  * user_metadata est modifiable par l'utilisateur et ne doit JAMAIS
  * servir pour l'autorisation (risque d'élévation de privilèges).
- * Voir docs/technical/security-user-metadata-guidelines.md
+ * Voir docs/GOUVERNANCE.md
  *
  * Par défaut, un utilisateur est "user". Seuls les admins ont role="admin".
  */

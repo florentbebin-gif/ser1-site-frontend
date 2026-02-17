@@ -14,6 +14,7 @@ Toute personne qui touche : CSS/UI, exports, thème, Settings.
 - [Règles UI premium](#règles-ui-premium)
 - [Gouvernance couleurs (C1–C10)](#gouvernance-couleurs-c1c10)
 - [Système de thème V5 (3 modes)](#système-de-thème-v5-3-modes)
+- [Sécurité & observabilité (règles)](#sécurité--observabilité-règles)
 - [Anti-patterns](#anti-patterns)
 - [Références code](#références-code)
 
@@ -40,6 +41,10 @@ Principes : épuré, lisible, respirant.
 - Buttons : primary = C2 + texte contrasté ; secondary = fond clair + border C8.
 - Tables : zebra `C7/WHITE`, borders C8, padding confortable.
 
+### Modales
+- Overlay : `rgba(0,0,0,0.5)` (seul rgba autorisé).
+- Panel : `#FFFFFF`, centré, `shadow` subtil.
+
 ---
 
 ## Gouvernance couleurs (C1–C10)
@@ -64,6 +69,11 @@ Principes : épuré, lisible, respirant.
 - Pas de texte blanc sur fond C7.
 - Headers “colorés” (ex: Excel header) : couleur de texte **calculée** selon le fond (helper existant côté Excel).
 
+### États sémantiques (rappel)
+- `danger` : utiliser C1 (pas de rouge hardcodé).
+- `warning` : WARNING (`#996600`) obligatoire.
+- `success/info` : dérivés de C2–C4 selon contexte.
+
 ---
 
 ## Système de thème V5 (3 modes)
@@ -83,11 +93,24 @@ Le theming doit rester **déterministe** et persistant en DB.
 
 ---
 
+## Sécurité & observabilité (règles)
+
+### Autorisation
+- Interdit : utiliser `user_metadata` pour des décisions d'autorisation.
+- Autorisé : `app_metadata.role` uniquement (frontend + edge + RLS).
+
+### Logs
+- Zéro PII (email, nom, montants, RFR, patrimoine, etc.).
+- Zéro métriques métier (compteurs de simulations, montants calculés, types produits utilisés).
+- En prod : `console.log/debug/info/trace` interdits (ESLint).
+
+---
+
 ## Anti-patterns
 - Calcul métier fiscal dans React (doit aller dans `src/engine/`).
 - Import CSS cross-page (styles partagés → `src/styles/`).
 - Couleurs hardcodées hors exceptions.
-- Logs en prod via `console.log/debug/info/trace` (bloqué par ESLint).
+- Logs en prod via `console.log/debug/info/trace` (bloqué ESLint).
 - Autorisation basée sur `user_metadata`.
 
 ---

@@ -2,7 +2,7 @@
  * ESLint Plugin - Color Governance
  * 
  * Règles pour interdire les couleurs hardcodées (sauf WHITE #FFFFFF et WARNING #996600)
- * Conforme à la gouvernance SER1 documentée dans docs/color-governance.md
+ * Conforme à la gouvernance SER1 documentée dans docs/GOUVERNANCE.md
  */
 
 /**

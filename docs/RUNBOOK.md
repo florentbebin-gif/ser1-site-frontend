@@ -25,6 +25,8 @@ Dev qui doit dépanner vite, ou exécuter un parcours local/CI.
 - Check complet :
   - `npm run check` (lint + typecheck + tests + build)
 
+En CI, c'est le gate principal.
+
 ---
 
 ## Dev local (frontend)
@@ -38,6 +40,17 @@ Le repo n’utilise pas `.env` :
 - Copier `.env.example` → `.env.local` (local uniquement, gitignored)
 - Ne jamais committer de secrets.
 
+Variables attendues :
+
+```bash
+VITE_SUPABASE_URL=https://<project>.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon_key>
+
+# Optionnel (Playwright E2E)
+E2E_EMAIL=<email>
+E2E_PASSWORD=<password>
+```
+
 ---
 
 ## Debug flags & console policy
@@ -46,8 +59,17 @@ Le repo n’utilise pas `.env` :
 - Interdit en prod : `console.log/debug/info/trace` (bloqué ESLint).
 
 ### Activer des logs
-- Via `.env.local` : `VITE_DEBUG_AUTH=1`, `VITE_DEBUG_PPTX=1`, ...
-- Via `localStorage` : `SER1_DEBUG_AUTH=1`, `SER1_DEBUG_PPTX=1`, ...
+- Via `.env.local` (recommandé) :
+  - `VITE_DEBUG_AUTH=1`
+  - `VITE_DEBUG_PPTX=1`
+  - `VITE_DEBUG_COMPTES=1`
+
+- Via `localStorage` (runtime) :
+  - `SER1_DEBUG_AUTH=1`
+  - `SER1_DEBUG_PPTX=1`
+  - `SER1_DEBUG_COMPTES=1`
+  - `SER1_DEBUG_ADMIN=1`
+  - `SER1_DEBUG_ADMIN_FETCH=1`
 
 Référence code : `src/utils/debugFlags.ts`.
 
@@ -63,6 +85,12 @@ supabase db reset
 supabase migration list
 ```
 
+Synchroniser le schéma distant (si besoin) :
+
+```bash
+supabase db remote commit --linked
+```
+
 ---
 
 ## Edge Function admin
@@ -75,7 +103,21 @@ npx supabase functions deploy admin --project-ref <ref>
 - Public : `ping_public`
 - Auth/admin : via Dashboard Functions ou `supabase functions invoke admin`.
 
+Exemples :
+
+```bash
+# Public (pas de token)
+supabase functions invoke admin --data '{"action":"ping_public"}'
+
+# Admin (token requis)
+supabase functions invoke admin \
+  --data '{"action":"list_users"}' \
+  --headers '{"Authorization":"Bearer <JWT_ADMIN>"}'
+```
+
 Contrat API : `supabase/functions/admin/index.ts`.
+
+Notes CORS : en prod, l'app passe par un proxy Vercel (`api/admin.js`).
 
 ---
 
@@ -93,6 +135,13 @@ Symptôme : erreur CORS ou requêtes invisibles côté logs Supabase.
 ### RLS / rôle admin
 - Vérifier que l’autorisation utilise `app_metadata.role`.
 - Interdit : checks `user_metadata`.
+
+Check rapide (régression sécurité) :
+
+```bash
+rg "user_metadata.*role" supabase/functions --type ts
+rg "user_metadata" supabase/migrations --type sql
+```
 
 ---
 
