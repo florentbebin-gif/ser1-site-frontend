@@ -79,6 +79,10 @@ Référence code : `src/utils/debugFlags.ts`.
 Source de vérité migrations : `supabase/migrations/`.
 
 Parcours safe (si Supabase CLI configurée) :
+
+> ⚠️ **Danger zone**: `supabase db reset` est destructif (purge totale) et interdit sans demande explicite.  
+> Préférer `supabase start` + migrations ciblées si l'objectif ne nécessite pas un reset complet.
+
 ```bash
 supabase start
 supabase db reset
