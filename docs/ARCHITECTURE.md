@@ -110,6 +110,26 @@ Invariants (à ne pas casser) :
 - Design system : `src/pptx/designSystem/serenity.ts`.
 - Slides : `src/pptx/slides/`.
 
+Assets statiques (images) :
+- Chapitres PPTX : `public/pptx/chapters/ch-01.png` .. `ch-09.png` (bibliothèque).
+- Conserver la nomenclature à 2 chiffres et le format PNG.
+- Objectif : préserver la qualité de rendu PPTX (ratio/coins/anti-artefacts).
+
+Budgets (guideline, non bloquant) :
+- Cible : <= 1.2 Mo / image ; alerte : > 1.6 Mo / image
+- Cible : <= 9 Mo total ; alerte : > 12 Mo total
+
+Vérification (PowerShell) :
+
+```powershell
+Get-ChildItem public\pptx\chapters\ch-*.png -File |
+  Sort-Object Length -Descending |
+  Select-Object Name,Length
+
+(Get-ChildItem public\pptx\chapters\ch-*.png -File |
+  Measure-Object -Property Length -Sum).Sum
+```
+
 ### Excel
 - Builder OOXML : `src/utils/xlsxBuilder.ts`.
 
