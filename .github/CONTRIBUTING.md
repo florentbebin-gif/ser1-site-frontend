@@ -50,7 +50,7 @@ git push origin feature/nom-clair
 
 ### Sécurité
 - **Auth** : Ne JAMAIS utiliser `user_metadata` pour les décisions d'autorisation (rôles, permissions). Utiliser `app_metadata` uniquement.
-  - Voir [docs/technical/security-user-metadata-guidelines.md](docs/technical/security-user-metadata-guidelines.md)
+  - Voir [docs/GOUVERNANCE.md](docs/GOUVERNANCE.md)
 - **Logging** : Aucun log de données sensibles en production.
 - **Runbooks / Evidence** : Interdit de committer des outputs runtime bruts (SQL, logs, dumps HTTP).
   - Utiliser uniquement des templates `*.example` + redactions.

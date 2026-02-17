@@ -6,7 +6,7 @@
  * si une approche "template natif" est viable vs "template codé".
  * 
  * Résultat : Ce fichier documente les findings du spike.
- * La décision finale est dans docs/adr/ADR-001-pptx-template-strategy.md
+ * Référence architecture exports : docs/ARCHITECTURE.md
  * 
  * Dépendance : JSZip (déjà utilisé par themeBuilder.ts)
  */

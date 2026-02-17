@@ -21,7 +21,7 @@ Organisation des scripts SQL pour Supabase.
 
 ```
 supabase/migrations/                 # ⭐ SOURCE DE VÉRITÉ — toutes les migrations
-docs/ARCHIVE.md                      # Archive unique (legacy / preuves)
+docs/RUNBOOK.md                      # Parcours local Supabase (start/reset/migration list)
 ```
 
 ## Ordre d'exécution recommandé
@@ -42,11 +42,10 @@ docs/ARCHIVE.md                      # Archive unique (legacy / preuves)
 
 ### 2. Archives legacy (lecture seule)
 
-Les anciens scripts de setup ont été archivés dans l'archive unique:
+L'historique / legacy est récupérable via Git (pas d'archive documentaire dédiée).
 
-- `docs/ARCHIVE.md#legacy-sql-setup`
-
-Ils ne doivent plus être rejoués comme source active de migration.
+- Voir `docs/ARCHITECTURE.md` (conventions Supabase/RLS)
+- Voir `docs/RUNBOOK.md` (commandes)
 
 ## Commandes CLI essentielles
 
