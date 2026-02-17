@@ -6,9 +6,9 @@ import {
   computeEffectiveParts,
   DEFAULT_PS_SETTINGS,
   DEFAULT_TAX_SETTINGS,
-} from '../src/utils/irEngine.js';
+} from '../../src/utils/irEngine.js';
 
-import { computeTmiMetrics } from '../src/utils/tmiMetrics.js';
+import { computeTmiMetrics } from '../../src/utils/tmiMetrics.js';
 
 const SOURCE_CSV = 'validation_results.csv';
 const OUTPUT_DIR = 'outputs';
