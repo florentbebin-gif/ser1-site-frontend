@@ -153,6 +153,47 @@ Ce que ça change (cible) :
 - Risques : moyen/haut (surface large + logique métier/UI) ; refacto strangler en étapes.
 - DoD : `rg "@/pages/placement" src/features/placement` ne retourne plus rien (ou seulement un module `legacy` explicitement documenté pendant la transition).
 
+**P1-01c — Doc routes : alignement APP_ROUTES → documentation (pré-requis T5/T6)**
+- Objectif : corriger la table des routes dans cette doc pour refléter 100% d'APP_ROUTES.
+- Scope : `docs/ROADMAP.md` (ce ticket) + table canon dans `docs/ARCHITECTURE.md`.
+- Dépendances : T1 (routes centralisées).
+- Risques : faibles (doc only).
+- DoD : la table canon des routes est complète et exacte (100% issue d'APP_ROUTES) ; les routes manquantes sont ajoutées (`/sim/epargne-salariale`, `/sim/tresorerie-societe`, `/sim/prevoyance`, redirects legacy).
+
+**P1-01d — Doc cleanup : critères de suppression legacy / spike / raw (pré-requis T5/T6)**
+- Objectif : définir les critères mesurables pour supprimer ces dossiers temporaires.
+- Scope : `docs/ARCHITECTURE.md` (conventions ajoutées), `docs/ROADMAP.md` (critères).
+- Dépendances : T4 (placement legacy), P1-01e (audit spikes/raw).
+- Risques : faibles (doc only).
+- DoD mesurable :
+  - `rg "features/placement/legacy" src --type tsx --type ts` → **vide** (0 import runtime)
+  - `find src -type d \( -name "__spike__" -o -name "_raw" \)` → **vide** (après futur T6)
+
+**P1-01x — Debt registry & exit criteria (pré-requis avant T5/T6)**
+- Objectif : documenter les dettes existantes + leur critère de suppression + commande de vérif, décider lesquelles traiter dans T6.
+- Scope : `docs/ROADMAP.md` (ce bloc) + `docs/ARCHITECTURE.md` (table détaillée).
+- Dépendances : P1-01d (doc cleanup).
+- Risques : faibles (doc only).
+- DoD global :
+  - un registre de dettes existe dans la doc (sans nouveau fichier)
+  - chaque dette a : description / impact / owner / exit criteria / commandes de vérif
+  - une section "ne pas aggraver la dette" (règles simples) est ajoutée
+  - la roadmap reflète que T5/T6 dépendent de ce prérequis
+
+**Dettes identifiées :**
+
+| Dette | Type | Où | Pourquoi | Règle | Exit criteria | Vérification |
+|-------|------|-----|----------|-------|---------------|--------------|
+| A | compat | `src/features/placement/legacy/` | Transition pour découpler features de l'ancien `pages/placement` | Pas de nouvelle feature dans legacy/ | `rg "features/placement/legacy" src` → 0 + npm run check PASS | `rg "features/placement/legacy" src --type tsx --type ts` |
+| B | hygiène | `src/pptx/template/__spike__/` | Prototypes / essais PPTX | **NON-RUNTIME** — pas d'imports détectés | **MOVE** → `tools/pptx/template-spike/` | `find src -type d -name "__spike__"` → 0 |
+| C | hygiène | `src/icons/business/_raw/` | Sources brutes SVG | **NON-RUNTIME** — pas d'imports détectés | **MOVE** → `tools/icons/business-raw/` | `find src -type d -name "_raw"` → 0 |
+| D | compat | `src/engine/*.ts` | `@deprecated` constants (ABATTEMENT_*, generate*Pptx) | Ne pas ajouter de nouveaux `@deprecated` | Migration vers nouveaux APIs | `rg "@deprecated" src/engine` (maintenir ou réduire) |
+
+**Règles "ne pas aggraver la dette" :**
+- Pas de nouveaux imports vers `legacy/`
+- Pas de nouveaux fichiers dans `__spike__` ou `_raw`
+- Tout nouveau code va dans `features/*`, `components/`, `hooks/`, etc.
+
 **P1-02 — Repo hygiene scan & delete unused (pré-requis)**
 - Objectif : appliquer la règle "Si ça ne sert plus = on supprime.", scanner et supprimer les fichiers inutiles (avec preuves).
 - Scope : repo complet (src/, tools/, docs/, racine).
@@ -164,25 +205,24 @@ Ce que ça change (cible) :
   - `npm run check` passe
   - toute suppression est revertible (PRs petites)
 
-**T5 — Settings : unifier l'architecture de navigation + pages**
-- Scope : `src/constants/settingsRoutes.js`, `src/pages/SettingsShell.jsx`, `src/pages/Sous-Settings/*`, `src/features/settings/*`, `src/components/settings/*`.
-- Dépendances : P1-01b (layout) si on veut intégrer navigation dans layout.
-- Risques : moyen (routes internes + permissions adminOnly).
-- DoD : `settingsRoutes` reste la source unique ; les pages settings sont sous un dossier standard (à terme `src/pages/settings/*`) et la logique partagée est sous `features/components`.
-
 **T6 — Audit puis cleanup `__spike__` et `_raw`**
 - Scope : `src/pptx/template/__spike__/`, `src/icons/business/_raw/`.
-- Dépendances : audit d'usages obligatoire (voir P1-01e).
-- Livrable audit : `docs/audit-spikes-raw.md` avec liste des imports + décisions.
-- Risques : faible→moyen (si des tests/exports les référencent).
-- DoD : audit validé + aucun dossier `__spike__` ou `_raw` ne vit sous `src/` (ou explicitement documenté si conservé temporairement).
+- Dépendances : P1-01d (doc cleanup) — audit réalisé en PR1.
+- Livrable audit : **consigné dans `docs/ARCHITECTURE.md`** → section **Debt registry (legacy / spike / raw) + Exit criteria** (lignes 87-94).
+- Décision : **MOVE** (non-runtime, pas d'imports détectés)
+  - `src/pptx/template/__spike__/` → `tools/pptx/template-spike/`
+  - `src/icons/business/_raw/` → `tools/icons/business-raw/`
+- Risques : faible (pas de runtime impact).
+- DoD : audit documenté + aucun dossier `__spike__` ou `_raw` sous `src/`.
 
 ##### Critères d'acceptation (DoD global) — Checklist vérifiable
 
 | # | Critère | Commande de vérif. | Résultat attendu |
 |---|---------|-------------------|------------------|
-| 1 | Pages listables depuis source unique | `rg "Route.*element.*lazy" src/App.jsx` | Retourne routes avec mapping vers modules (pas de duplication inline) |
+| 1 | Routes listables depuis source unique | `rg -n "path:" src/routes/appRoutes.ts` | Retourne la liste des routes APP_ROUTES (pas de duplication inline) |
 | 2 | Pas d'import features → pages | `rg "from.*@/pages/" src/features/ -l` | **Vide** (ou uniquement fichiers marqués `legacy.*`) |
+| 2b | Doc routes alignée APP_ROUTES | Comparer `src/routes/appRoutes.ts` vs table canon | Table canon = 100% APP_ROUTES (incluant `/sim/epargne-salariale`, `/sim/tresorerie-societe`, `/sim/prevoyance`, redirects legacy) |
+| 2c | P1-01c : Pas de dépendance inverse features → pages | `rg "from.*@/pages/" src/features/placement/ -l` | **Vide** (ou uniquement fichiers marqués `legacy.*`) |
 | 3 | App.jsx minimal (pas de topbar/icons inline) | `rg "IconHome|IconSave|IconFolder|IconTrash|IconLogout|IconSettings" src/App.jsx` | **Vide** (icônes importées depuis module externe) |
 | 4 | Pas de `__spike__`/`_raw` en prod | `find src -type d \( -name "__spike__" -o -name "_raw" \)` | **Vide** (ou chemins explicitement exemptés dans doc d'audit) |
 | 5 | Settings unifié (routes source unique) | `rg "settingsRoutes|SETTINGS_ROUTES" src/pages/SettingsShell.jsx` | Retourne au moins 1 match (utilisation de la constante centralisée) |
@@ -190,18 +230,20 @@ Ce que ça change (cible) :
 ##### Comment vérifier (commandes + résultats attendus)
 
 ```bash
-# 1. Lister les routes déclarées dans App.jsx (source unique attendue)
-rg -n "path=.*element.*lazy" src/App.jsx
-# Résultat attendu : liste des routes avec leur composant lazy-loaded
+# 1. Lister les routes déclarées (source unique attendue)
+rg -n "path:" src/routes/appRoutes.ts
+# Résultat attendu : liste des routes (APP_ROUTES)
+
+# 1b. Lister les redirects legacy
+rg -n "kind: 'redirect'" src/routes/appRoutes.ts
+# Résultat attendu : routes legacy (/placement, /credit, /prevoyance)
+
+# 1c. Vérifier que App.jsx consomme APP_ROUTES (pas de duplication)
+rg -n "APP_ROUTES\\.map" src/App.jsx
 
 # 2. Détecter les imports cross features → pages (doit être vide à terme)
 rg -n "from.*@/pages/" src/features/ -l
-# Résultat actuel (baseline) : 
-# src/features/placement/components/usePlacementSimulatorController.js
-# src/features/placement/components/PlacementSimulatorPage.jsx
-# src/features/placement/components/PlacementInputsPanel.jsx
-# src/features/placement/components/PlacementResultsPanel.jsx
-# Résultat attendu post-T4 : (aucune sortie)
+# Résultat attendu : (aucune sortie)
 
 # 3. Vérifier la présence d'icônes inline dans App.jsx (doit être vide à terme)
 rg -n "const Icon" src/App.jsx
