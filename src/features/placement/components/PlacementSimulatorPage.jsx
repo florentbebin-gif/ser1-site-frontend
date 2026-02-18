@@ -17,8 +17,8 @@
 
 import React from 'react';
 import './PlacementSimulator.css';
-import { VersementConfigModal } from '@/pages/placement/components/VersementConfigModal.jsx';
-import { renderEpargneRow } from '@/pages/placement/utils/tableHelpers.jsx';
+import { VersementConfigModal } from '../legacy/VersementConfigModal.jsx';
+import { renderEpargneRow } from '../legacy/tableHelpers.jsx';
 import { PlacementToolbar } from './PlacementToolbar.jsx';
 import { PlacementInputsPanel } from './PlacementInputsPanel.jsx';
 import { PlacementResultsPanel } from './PlacementResultsPanel.jsx';

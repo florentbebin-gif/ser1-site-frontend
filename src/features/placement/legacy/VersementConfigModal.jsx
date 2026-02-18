@@ -3,6 +3,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import './VersementConfigModal.css';
 import { normalizeVersementConfig } from '@/utils/versementConfig.js';
 import { ENVELOPE_LABELS } from '@/engine/placementEngine.js';
 import { InputEuro, InputPct, InputNumber } from './inputs.jsx';

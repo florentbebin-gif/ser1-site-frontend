@@ -3,7 +3,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { fmt } from '../utils/formatters.js';
+import { fmt } from './formatters.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
