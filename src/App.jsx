@@ -1,29 +1,15 @@
-import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
+import React, { useEffect, useState, useCallback, Suspense } from 'react';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { supabase, DEBUG_AUTH } from './supabaseClient';
 import { PrivateRoute } from './auth';
 import { useTheme } from './settings/ThemeProvider';
-import Login from './pages/Login';
-import Home from './pages/Home';
-import ForgotPassword from './pages/ForgotPassword';
-import SetPassword from './pages/SetPassword';
+import { APP_ROUTES } from './routes/appRoutes';
 import { triggerPageReset, triggerGlobalReset } from './utils/reset';
 import { saveGlobalState, loadGlobalStateWithDialog } from './utils/globalStorage';
 import { useSessionTTL } from './hooks/useSessionTTL';
 import { useExportGuard } from './hooks/useExportGuard';
 import { setTrackBlobUrlHandler } from './utils/createTrackedObjectURL';
 import { SessionExpiredBanner } from './components/ui/SessionExpiredBanner';
-
-// V4: Lazy load heavy pages to reduce initial bundle size
-const Placement = lazy(() => import('./features/placement').then(m => ({ default: m.PlacementPage })));
-const Credit = lazy(() => import('./pages/credit/Credit'));
-const Ir = lazy(() => import('./features/ir').then(m => ({ default: m.IrPage })));
-const AuditWizard = lazy(() => import('./features/audit').then(m => ({ default: m.AuditWizard })));
-const SuccessionSimulator = lazy(() => import('./features/succession').then(m => ({ default: m.SuccessionSimulator })));
-const PerSimulator = lazy(() => import('./features/per').then(m => ({ default: m.PerSimulator })));
-const UpcomingSimulatorPage = lazy(() => import('./pages/UpcomingSimulatorPage'));
-const StrategyPage = lazy(() => import('./pages/StrategyPage'));
-const SettingsShell = lazy(() => import('./pages/SettingsShell'));
 
 // Fallback UI for lazy-loaded routes
 const PageLoader = () => (
@@ -302,6 +288,43 @@ const contextLabel = getContextLabel(path);
     sessionExpired, canExport, trackBlobUrl, resetInactivity,
   }), [sessionExpired, canExport, trackBlobUrl, resetInactivity]);
 
+  const renderRouteEntry = (entry) => {
+    if (entry.kind === 'redirect') {
+      return (
+        <Route
+          key={entry.path}
+          path={entry.path}
+          element={<Navigate to={entry.to} replace={entry.replace !== false} />}
+        />
+      );
+    }
+
+    const Component = entry.component;
+
+    // Exception minimale : Login a besoin de navigate() dans son callback onLogin.
+    // On garde la config déclarative dans APP_ROUTES (onLoginNavigateTo) et on injecte ici.
+    const mergedProps = {
+      ...(entry.props || {}),
+      ...(entry.onLoginNavigateTo
+        ? { onLogin: () => navigate(entry.onLoginNavigateTo) }
+        : null),
+    };
+
+    const element = <Component {...mergedProps} />;
+    const maybeLazy = entry.lazy ? <LazyRoute>{element}</LazyRoute> : element;
+    const maybePrivate = entry.access === 'private'
+      ? <PrivateRoute>{maybeLazy}</PrivateRoute>
+      : maybeLazy;
+
+    return (
+      <Route
+        key={entry.path}
+        path={entry.path}
+        element={maybePrivate}
+      />
+    );
+  };
+
   return (
     <SessionGuardContext.Provider value={sessionGuardValue}>
       {/* P0-06: Session TTL banners */}
@@ -447,95 +470,7 @@ const contextLabel = getContextLabel(path);
       </div>
 
       <Routes>
-        {/* Routes publiques */}
-        <Route path="/login" element={<Login onLogin={() => navigate('/')} />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/set-password" element={<SetPassword />} />
-        <Route path="/reset-password" element={<SetPassword />} />
-
-        {/* Routes protégées */}
-        <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
-        
-        {/* Audit patrimonial - Lazy loaded */}
-        <Route path="/audit" element={
-          <PrivateRoute>
-            <LazyRoute><AuditWizard /></LazyRoute>
-          </PrivateRoute>
-        } />
-        <Route path="/strategy" element={
-          <PrivateRoute>
-            <LazyRoute><StrategyPage /></LazyRoute>
-          </PrivateRoute>
-        } />
-
-        {/* Simulateurs - Lazy loaded */}
-        <Route path="/sim/placement" element={
-          <PrivateRoute>
-            <LazyRoute><Placement /></LazyRoute>
-          </PrivateRoute>
-        } />
-        <Route path="/sim/credit" element={
-          <PrivateRoute>
-            <LazyRoute><Credit /></LazyRoute>
-          </PrivateRoute>
-        } />
-        <Route path="/sim/succession" element={
-          <PrivateRoute>
-            <LazyRoute><SuccessionSimulator /></LazyRoute>
-          </PrivateRoute>
-        } />
-        <Route path="/sim/per" element={
-          <PrivateRoute>
-            <LazyRoute><PerSimulator /></LazyRoute>
-          </PrivateRoute>
-        } />
-        <Route path="/sim/epargne-salariale" element={
-          <PrivateRoute>
-            <LazyRoute>
-              <UpcomingSimulatorPage
-                title="Epargne salariale"
-                subtitle="Ce simulateur premium sera bientôt disponible."
-              />
-            </LazyRoute>
-          </PrivateRoute>
-        } />
-        <Route path="/sim/tresorerie-societe" element={
-          <PrivateRoute>
-            <LazyRoute>
-              <UpcomingSimulatorPage
-                title="Trésorerie société"
-                subtitle="Ce simulateur premium sera bientôt disponible."
-              />
-            </LazyRoute>
-          </PrivateRoute>
-        } />
-        <Route path="/sim/prevoyance" element={
-          <PrivateRoute>
-            <LazyRoute>
-              <UpcomingSimulatorPage
-                title="Prévoyance"
-                subtitle="Ce simulateur premium sera bientôt disponible."
-              />
-            </LazyRoute>
-          </PrivateRoute>
-        } />
-        <Route path="/sim/ir" element={
-          <PrivateRoute>
-            <LazyRoute><Ir /></LazyRoute>
-          </PrivateRoute>
-        } />
-
-        {/* Paramètres (protégés) - Shell unique avec onglets internes - Lazy loaded */}
-        <Route path="/settings/*" element={
-          <PrivateRoute>
-            <LazyRoute><SettingsShell /></LazyRoute>
-          </PrivateRoute>
-        } />
-
-        {/* Redirections de compatibilité */}
-        <Route path="/placement" element={<Navigate to="/sim/placement" replace />}/>
-        <Route path="/credit" element={<Navigate to="/sim/credit" replace />} />
-        <Route path="/prevoyance" element={<Navigate to="/sim/prevoyance" replace />} />
+        {APP_ROUTES.map(renderRouteEntry)}
       </Routes>
 
     </SessionGuardContext.Provider>
