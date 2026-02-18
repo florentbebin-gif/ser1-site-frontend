@@ -155,10 +155,12 @@ Ce que ça change (cible) :
 
 **P1-01c — Doc routes : alignement APP_ROUTES → documentation (pré-requis T5/T6)**
 - Objectif : corriger la table des routes dans cette doc pour refléter 100% d'APP_ROUTES.
-- Scope : `docs/ROADMAP.md` (cette section) + table des routes.
+- Scope : `docs/ROADMAP.md` (ce ticket) + table canon dans `docs/ARCHITECTURE.md`.
 - Dépendances : T1 (routes centralisées).
 - Risques : faibles (doc only).
-- DoD : la table des routes est complète et exacte (100% issue d'APP_ROUTES) ; les routes manquantes sont ajoutées (`/sim/epargne-salariale`, `/sim/tresorerie-societe`, `/sim/prevoyance`, redirects legacy).
+- DoD : la table canon des routes est complète et exacte (100% issue d'APP_ROUTES) ; les routes manquantes sont ajoutées (`/sim/epargne-salariale`, `/sim/tresorerie-societe`, `/sim/prevoyance`, redirects legacy).
+
+Référence canon : voir `docs/ARCHITECTURE.md` → section **Routing** → **Routes Map (actuel)**.
 
 **P1-01d — Doc cleanup : critères de suppression legacy / spike / raw (pré-requis T5/T6)**
 - Objectif : définir les critères mesurables pour supprimer ces dossiers temporaires.
@@ -211,9 +213,9 @@ Ce que ça change (cible) :
 
 | # | Critère | Commande de vérif. | Résultat attendu |
 |---|---------|-------------------|------------------|
-| 1 | Pages listables depuis source unique | `rg "Route.*element.*lazy" src/App.jsx` | Retourne routes avec mapping vers modules (pas de duplication inline) |
+| 1 | Routes listables depuis source unique | `rg -n "path:" src/routes/appRoutes.ts` | Retourne la liste des routes APP_ROUTES (pas de duplication inline) |
 | 2 | Pas d'import features → pages | `rg "from.*@/pages/" src/features/ -l` | **Vide** (ou uniquement fichiers marqués `legacy.*`) |
-| 2b | Doc routes alignée APP_ROUTES | Lecture de `src/routes/appRoutes.ts` vs table doc | Table doc = 100% APP_ROUTES (incluant `/sim/epargne-salariale`, `/sim/tresorerie-societe`, `/sim/prevoyance`, redirects) |
+| 2b | Doc routes alignée APP_ROUTES | Comparer `src/routes/appRoutes.ts` vs table canon | Table canon = 100% APP_ROUTES (incluant `/sim/epargne-salariale`, `/sim/tresorerie-societe`, `/sim/prevoyance`, redirects) |
 | 2c | P1-01c : Pas de dépendance inverse features → pages | `rg "from.*@/pages/" src/features/placement/ -l` | **Vide** (ou uniquement fichiers marqués `legacy.*`) |
 | 3 | App.jsx minimal (pas de topbar/icons inline) | `rg "IconHome|IconSave|IconFolder|IconTrash|IconLogout|IconSettings" src/App.jsx` | **Vide** (icônes importées depuis module externe) |
 | 4 | Pas de `__spike__`/`_raw` en prod | `find src -type d \( -name "__spike__" -o -name "_raw" \)` | **Vide** (ou chemins explicitement exemptés dans doc d'audit) |
@@ -222,18 +224,20 @@ Ce que ça change (cible) :
 ##### Comment vérifier (commandes + résultats attendus)
 
 ```bash
-# 1. Lister les routes déclarées dans App.jsx (source unique attendue)
-rg -n "path=.*element.*lazy" src/App.jsx
-# Résultat attendu : liste des routes avec leur composant lazy-loaded
+# 1. Lister les routes déclarées (source unique attendue)
+rg -n "path:" src/routes/appRoutes.ts
+# Résultat attendu : liste des routes (APP_ROUTES)
+
+# 1b. Lister les redirects legacy
+rg -n "kind: 'redirect'" src/routes/appRoutes.ts
+# Résultat attendu : routes legacy (/placement, /credit, /prevoyance)
+
+# 1c. Vérifier que App.jsx consomme APP_ROUTES (pas de duplication)
+rg -n "APP_ROUTES\\.map" src/App.jsx
 
 # 2. Détecter les imports cross features → pages (doit être vide à terme)
 rg -n "from.*@/pages/" src/features/ -l
-# Résultat actuel (baseline) : 
-# src/features/placement/components/usePlacementSimulatorController.js
-# src/features/placement/components/PlacementSimulatorPage.jsx
-# src/features/placement/components/PlacementInputsPanel.jsx
-# src/features/placement/components/PlacementResultsPanel.jsx
-# Résultat attendu post-T4 : (aucune sortie)
+# Résultat attendu : (aucune sortie)
 
 # 3. Vérifier la présence d'icônes inline dans App.jsx (doit être vide à terme)
 rg -n "const Icon" src/App.jsx
