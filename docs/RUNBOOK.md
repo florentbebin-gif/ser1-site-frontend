@@ -149,6 +149,35 @@ rg "user_metadata" supabase/migrations --type sql
 
 ---
 
+## Repo hygiene — Delete unused
+
+**Règle** : Si ça ne sert plus = on supprime.
+
+### Ce qu'on considère "sert"
+
+- runtime (`src/**` import/usage)
+- build/CI (scripts, `.github`, `package.json`)
+- tests/fixtures
+- documentation référentielle
+
+### Process
+
+1. **Preuve** : prouver 0 usage (rg/find)
+2. **PR** : petite PR ciblée
+3. **Validation** : `npm run check` passe
+4. **Merge** → sinon **revert**
+
+### Interdits
+
+- Pas de dossiers `archive/`, `backup/`, `old/`, `__spike__`, `_raw` "pour plus tard"
+- Pas de "parking" durable (même dans `tools/`) sans preuve d'utilité
+
+### Rollback
+
+- `git revert <sha>` annule la PR en 1 commande
+
+---
+
 Voir aussi :
 - `docs/ARCHITECTURE.md` (cartographie)
 - `docs/GOUVERNANCE.md` (règles UI/couleurs/thème)
