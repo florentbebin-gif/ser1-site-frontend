@@ -160,8 +160,6 @@ Ce que ça change (cible) :
 - Risques : faibles (doc only).
 - DoD : la table canon des routes est complète et exacte (100% issue d'APP_ROUTES) ; les routes manquantes sont ajoutées (`/sim/epargne-salariale`, `/sim/tresorerie-societe`, `/sim/prevoyance`, redirects legacy).
 
-Référence canon : voir `docs/ARCHITECTURE.md` → section **Routing** → **Routes Map (actuel)**.
-
 **P1-01d — Doc cleanup : critères de suppression legacy / spike / raw (pré-requis T5/T6)**
 - Objectif : définir les critères mesurables pour supprimer ces dossiers temporaires.
 - Scope : `docs/ARCHITECTURE.md` (conventions ajoutées), `docs/ROADMAP.md` (critères).
@@ -187,8 +185,8 @@ Référence canon : voir `docs/ARCHITECTURE.md` → section **Routing** → **Ro
 | Dette | Type | Où | Pourquoi | Règle | Exit criteria | Vérification |
 |-------|------|-----|----------|-------|---------------|--------------|
 | A | compat | `src/features/placement/legacy/` | Transition pour découpler features de l'ancien `pages/placement` | Pas de nouvelle feature dans legacy/ | `rg "features/placement/legacy" src` → 0 + npm run check PASS | `rg "features/placement/legacy" src --type tsx --type ts` |
-| B | hygiène | `src/pptx/template/__spike__/` | Prototypes / essais PPTX | Audit usages avant suppression | Decision keep/move/delete, si non-runtime → hors src/ | `find src -type d -name "__spike__"` → 0 |
-| C | hygiène | `src/icons/business/_raw/` | Sources brutes SVG | Audit usages avant suppression | Decision keep/move/delete, si non-runtime → hors src/ | `find src -type d -name "_raw"` → 0 |
+| B | hygiène | `src/pptx/template/__spike__/` | Prototypes / essais PPTX | **NON-RUNTIME** — pas d'imports détectés | **MOVE** → `tools/pptx/template-spike/` | `find src -type d -name "__spike__"` → 0 |
+| C | hygiène | `src/icons/business/_raw/` | Sources brutes SVG | **NON-RUNTIME** — pas d'imports détectés | **MOVE** → `tools/icons/business-raw/` | `find src -type d -name "_raw"` → 0 |
 | D | compat | `src/engine/*.ts` | `@deprecated` constants (ABATTEMENT_*, generate*Pptx) | Ne pas ajouter de nouveaux `@deprecated` | Migration vers nouveaux APIs | `rg "@deprecated" src/engine` (maintenir ou réduire) |
 
 **Règles "ne pas aggraver la dette" :**
@@ -196,11 +194,16 @@ Référence canon : voir `docs/ARCHITECTURE.md` → section **Routing** → **Ro
 - Pas de nouveaux fichiers dans `__spike__` ou `_raw`
 - Tout nouveau code va dans `features/*`, `components/`, `hooks/`, etc.
 
-**T5 — Settings : unifier l'architecture de navigation + pages**
-- Scope : `src/constants/settingsRoutes.js`, `src/pages/SettingsShell.jsx`, `src/pages/Sous-Settings/*`, `src/features/settings/*`, `src/components/settings/*`.
-- Dépendances : P1-01b (layout) si on veut intégrer navigation dans layout.
-- Risques : moyen (routes internes + permissions adminOnly).
-- DoD : `settingsRoutes` reste la source unique ; les pages settings sont sous un dossier standard (à terme `src/pages/settings/*`) et la logique partagée est sous `features/components`.
+**P1-02 — Repo hygiene scan & delete unused (pré-requis)**
+- Objectif : appliquer la règle "Si ça ne sert plus = on supprime.", scanner et supprimer les fichiers inutiles (avec preuves).
+- Scope : repo complet (src/, tools/, docs/, racine).
+- Dépendances : T6 (cleanup spike/raw).
+- Risques : faible (PRs petites, revert simple).
+- DoD :
+  - règle documentée dans `docs/RUNBOOK.md` → section **Repo hygiene — Delete unused**
+  - pas de dossiers "archive/backup/old/spike/raw" non justifiés sous `src/`
+  - `npm run check` passe
+  - toute suppression est revertible (PRs petites)
 
 **T6 — Audit puis cleanup `__spike__` et `_raw`**
 - Scope : `src/pptx/template/__spike__/`, `src/icons/business/_raw/`.
