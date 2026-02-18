@@ -455,9 +455,7 @@ const contextLabel = getContextLabel(path);
         </div>
       </div>
 
-      <Routes>
-        {APP_ROUTES.map(renderRouteEntry)}
-      </Routes>
+      {React.createElement(Routes, null, APP_ROUTES.map(renderRouteEntry))}
 
     </SessionGuardContext.Provider>
   );
