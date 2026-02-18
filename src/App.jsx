@@ -231,27 +231,33 @@ const contextLabel = getContextLabel(path);
   return (
     <SessionGuardContext.Provider value={sessionGuardValue}>
       <AppLayout
-        warningVisible={warningVisible}
-        sessionExpired={sessionExpired}
-        minutesRemaining={minutesRemaining}
-        notification={notification}
-        session={session}
-        isRecoveryMode={isRecoveryMode}
-        path={path}
-        contextLabel={contextLabel}
-        isSimRoute={isSimRoute}
-        isSettingsRoute={isSettingsRoute}
-        isAuditRoute={isAuditRoute}
-        isStrategyRoute={isStrategyRoute}
-        isPlacementRoute={isPlacementRoute}
-        isCreditRoute={isCreditRoute}
-        isIrRoute={isIrRoute}
-        onNavigate={navigate}
-        onLogout={handleLogout}
-        onGlobalSave={handleGlobalSave}
-        onGlobalLoad={handleGlobalLoad}
-        onGlobalReset={handleGlobalReset}
-        onPageReset={triggerPageReset}
+        layoutState={{
+          warningVisible,
+          sessionExpired,
+          minutesRemaining,
+          notification,
+          session,
+          isRecoveryMode,
+          path,
+          contextLabel,
+        }}
+        routeFlags={{
+          isSimRoute,
+          isSettingsRoute,
+          isAuditRoute,
+          isStrategyRoute,
+          isPlacementRoute,
+          isCreditRoute,
+          isIrRoute,
+        }}
+        actions={{
+          onNavigate: navigate,
+          onLogout: handleLogout,
+          onGlobalSave: handleGlobalSave,
+          onGlobalLoad: handleGlobalLoad,
+          onGlobalReset: handleGlobalReset,
+          onPageReset: triggerPageReset,
+        }}
       >
         <Routes>
           {APP_ROUTES.map(renderRouteEntry)}
