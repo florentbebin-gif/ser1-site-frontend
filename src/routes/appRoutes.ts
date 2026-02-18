@@ -1,5 +1,5 @@
-import React, { lazy } from 'react';
-import type { ComponentType, LazyExoticComponent, ReactElement } from 'react';
+import { lazy } from 'react';
+import type { ComponentType, LazyExoticComponent } from 'react';
 
 import Login from '../pages/Login';
 import Home from '../pages/Home';
@@ -7,10 +7,6 @@ import ForgotPassword from '../pages/ForgotPassword';
 import SetPassword from '../pages/SetPassword';
 
 export type RouteComponent = ComponentType<any> | LazyExoticComponent<ComponentType<any>>;
-
-export type AppRouteContext = {
-  navigate: (to: string) => void;
-};
 
 export type AppRouteEntry =
   | {
@@ -20,7 +16,11 @@ export type AppRouteEntry =
       component: RouteComponent;
       lazy?: boolean;
       props?: Record<string, unknown>;
-      render?: (ctx: AppRouteContext) => ReactElement;
+      /**
+       * Exception minimale : Login (publique) déclenche une navigation après login.
+       * Le callback est injecté côté App.jsx (qui a accès à useNavigate()).
+       */
+      onLoginNavigateTo?: string;
     }
   | {
       kind: 'redirect';
@@ -47,7 +47,7 @@ export const APP_ROUTES: AppRouteEntry[] = [
     access: 'public',
     path: '/login',
     component: Login,
-    render: ({ navigate }) => React.createElement(Login, { onLogin: () => navigate('/') }),
+    onLoginNavigateTo: '/',
   },
   { kind: 'route', access: 'public', path: '/forgot-password', component: ForgotPassword },
   { kind: 'route', access: 'public', path: '/set-password', component: SetPassword },

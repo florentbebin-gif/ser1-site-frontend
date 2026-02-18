@@ -290,25 +290,39 @@ const contextLabel = getContextLabel(path);
 
   const renderRouteEntry = (entry) => {
     if (entry.kind === 'redirect') {
-      return React.createElement(Route, {
-        key: entry.path,
-        path: entry.path,
-        element: <Navigate to={entry.to} replace={entry.replace !== false} />,
-      });
+      return (
+        <Route
+          key={entry.path}
+          path={entry.path}
+          element={<Navigate to={entry.to} replace={entry.replace !== false} />}
+        />
+      );
     }
 
     const Component = entry.component;
-    const element = entry.render
-      ? entry.render({ navigate })
-      : <Component {...(entry.props || {})} />;
-    const maybeLazy = entry.lazy ? <LazyRoute>{element}</LazyRoute> : element;
-    const maybePrivate = entry.access === 'private' ? <PrivateRoute>{maybeLazy}</PrivateRoute> : maybeLazy;
 
-    return React.createElement(Route, {
-      key: entry.path,
-      path: entry.path,
-      element: maybePrivate,
-    });
+    // Exception minimale : Login a besoin de navigate() dans son callback onLogin.
+    // On garde la config déclarative dans APP_ROUTES (onLoginNavigateTo) et on injecte ici.
+    const mergedProps = {
+      ...(entry.props || {}),
+      ...(entry.onLoginNavigateTo
+        ? { onLogin: () => navigate(entry.onLoginNavigateTo) }
+        : null),
+    };
+
+    const element = <Component {...mergedProps} />;
+    const maybeLazy = entry.lazy ? <LazyRoute>{element}</LazyRoute> : element;
+    const maybePrivate = entry.access === 'private'
+      ? <PrivateRoute>{maybeLazy}</PrivateRoute>
+      : maybeLazy;
+
+    return (
+      <Route
+        key={entry.path}
+        path={entry.path}
+        element={maybePrivate}
+      />
+    );
   };
 
   return (
@@ -455,7 +469,9 @@ const contextLabel = getContextLabel(path);
         </div>
       </div>
 
-      {React.createElement(Routes, null, APP_ROUTES.map(renderRouteEntry))}
+      <Routes>
+        {APP_ROUTES.map(renderRouteEntry)}
+      </Routes>
 
     </SessionGuardContext.Provider>
   );
