@@ -153,6 +153,17 @@ Ce que ça change (cible) :
 - Risques : moyen/haut (surface large + logique métier/UI) ; refacto strangler en étapes.
 - DoD : `rg "@/pages/placement" src/features/placement` ne retourne plus rien (ou seulement un module `legacy` explicitement documenté pendant la transition).
 
+**P1-02 — Repo hygiene scan & delete unused (pré-requis)**
+- Objectif : appliquer la règle "Si ça ne sert plus = on supprime.", scanner et supprimer les fichiers inutiles (avec preuves).
+- Scope : repo complet (src/, tools/, docs/, racine).
+- Dépendances : T6 (cleanup spike/raw).
+- Risques : faible (PRs petites, revert simple).
+- DoD :
+  - règle documentée dans `docs/RUNBOOK.md` → section **Repo hygiene — Delete unused**
+  - pas de dossiers "archive/backup/old/spike/raw" non justifiés sous `src/`
+  - `npm run check` passe
+  - toute suppression est revertible (PRs petites)
+
 **T5 — Settings : unifier l'architecture de navigation + pages**
 - Scope : `src/constants/settingsRoutes.js`, `src/pages/SettingsShell.jsx`, `src/pages/Sous-Settings/*`, `src/features/settings/*`, `src/components/settings/*`.
 - Dépendances : P1-01b (layout) si on veut intégrer navigation dans layout.
