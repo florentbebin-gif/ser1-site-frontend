@@ -89,8 +89,8 @@ find src -type d \( -name "__spike__" -o -name "_raw" \)
 | Dette | Type | Où | Pourquoi | Règle | Exit criteria | Vérification |
 |-------|------|-----|----------|-------|---------------|--------------|
 | A | compat | `src/features/placement/legacy/` | Transition pour découpler features de l'ancien `pages/placement` | Pas de nouvelle feature dans legacy/ | `rg "features/placement/legacy" src` → 0 + npm run check PASS | `rg "features/placement/legacy" src --type tsx --type ts` |
-| B | hygiène | `src/pptx/template/__spike__/` | Prototypes / essais PPTX | Audit usages avant suppression | Decision keep/move/delete, si non-runtime → hors src/ | `find src -type d -name "__spike__"` → 0 |
-| C | hygiène | `src/icons/business/_raw/` | Sources brutes SVG | Audit usages avant suppression | Decision keep/move/delete, si non-runtime → hors src/ | `find src -type d -name "_raw"` → 0 |
+| B | hygiène | `src/pptx/template/__spike__/` | Prototypes / essais PPTX | **NON-RUNTIME** — pas d'imports détectés | **MOVE** → `tools/pptx/template-spike/` | `find src -type d -name "__spike__"` → 0 |
+| C | hygiène | `src/icons/business/_raw/` | Sources brutes SVG | **NON-RUNTIME** — pas d'imports détectés | **MOVE** → `tools/icons/business-raw/` | `find src -type d -name "_raw"` → 0 |
 | D | compat | `src/engine/*.ts` | `@deprecated` constants (ABATTEMENT_*, generate*Pptx) | Ne pas ajouter de nouveaux `@deprecated` | Migration vers nouveaux APIs | `rg "@deprecated" src/engine` (maintenir ou réduire) |
 
 **Règles "ne pas aggraver la dette" :**

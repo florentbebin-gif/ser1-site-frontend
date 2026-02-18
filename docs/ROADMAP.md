@@ -204,10 +204,13 @@ Référence canon : voir `docs/ARCHITECTURE.md` → section **Routing** → **Ro
 
 **T6 — Audit puis cleanup `__spike__` et `_raw`**
 - Scope : `src/pptx/template/__spike__/`, `src/icons/business/_raw/`.
-- Dépendances : audit d'usages obligatoire (voir P1-01e).
-- Livrable audit : `docs/audit-spikes-raw.md` avec liste des imports + décisions.
-- Risques : faible→moyen (si des tests/exports les référencent).
-- DoD : audit validé + aucun dossier `__spike__` ou `_raw` ne vit sous `src/` (ou explicitement documenté si conservé temporairement).
+- Dépendances : P1-01d (doc cleanup) — audit réalisé en PR1.
+- Livrable audit : **consigné dans `docs/ARCHITECTURE.md`** → section **Debt registry (legacy / spike / raw) + Exit criteria** (lignes 87-94).
+- Décision : **MOVE** (non-runtime, pas d'imports détectés)
+  - `src/pptx/template/__spike__/` → `tools/pptx/template-spike/`
+  - `src/icons/business/_raw/` → `tools/icons/business-raw/`
+- Risques : faible (pas de runtime impact).
+- DoD : audit documenté + aucun dossier `__spike__` ou `_raw` sous `src/`.
 
 ##### Critères d'acceptation (DoD global) — Checklist vérifiable
 
