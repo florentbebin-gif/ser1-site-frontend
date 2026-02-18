@@ -47,15 +47,16 @@ Conventions clés :
 
 ## Points d’entrée & flux
 ### Routing
-- `src/App.jsx` : routes principales (source de vérité actuelle).
+- `src/routes/appRoutes.ts` (APP_ROUTES) : source de vérité des routes.
+- `src/App.jsx` : rendu JSX des routes via `APP_ROUTES.map()`.
 
 #### Routes Map (actuel)
 
 Source (preuves) :
-- Déclarations `lazy(...)` : `src/App.jsx` @src/App.jsx#17-27
-- Déclarations `<Route ...>` : `src/App.jsx` @src/App.jsx#449-538
+- Définitions des routes : `src/routes/appRoutes.ts` @src/routes/appRoutes.ts
+- Déclarations `lazy(...)` : `src/routes/appRoutes.ts` @src/routes/appRoutes.ts#32-42
+- Rendu `<Route ...>` : `src/App.jsx` @src/App.jsx#472-474
 
-> Cible (roadmap) : déplacer la liste des routes dans un module dédié (ex: `src/routes/APP_ROUTES`) afin de pouvoir générer/maintenir une table route → page depuis une seule source, et alléger `App.jsx`. Voir `docs/ROADMAP.md` (P1-01).
 
 | Route | Accès | Composant (runtime) | Fichier / provenance |
 |------|-------|----------------------|----------------------|
@@ -82,14 +83,17 @@ Source (preuves) :
 Vérification (commandes) :
 
 ```bash
-# Liste des routes (Route + path)
-rg -n "<Route" src/App.jsx
+# Liste des routes (paths)
+rg -n "path: '" src/routes/appRoutes.ts
 
 # Liste des déclarations lazy
-rg -n "lazy\(" src/App.jsx
+rg -n "lazy(" src/routes/appRoutes.ts
 
-# Liste des path= (sanity)
-rg -n "path=\"" src/App.jsx
+# Liste des routes avec access
+rg -n "access:" src/routes/appRoutes.ts
+
+# Rendu JSX dans App.jsx
+rg -n "APP_ROUTES.map" src/App.jsx
 ```
 
 ### Bootstrap auth → thème

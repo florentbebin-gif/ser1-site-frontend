@@ -61,7 +61,7 @@ npm run check:unused
 
 ## Repere "ou changer quoi" (code)
 
-- Routing : `src/App.jsx`
+- Routing : `src/routes/appRoutes.ts` (APP_ROUTES) + rendu dans `src/App.jsx`
 - Auth : `src/auth/`
 - Theme : `src/settings/ThemeProvider.tsx`, `src/settings/presets.ts`
 - Engine (metier pur) : `src/engine/`
