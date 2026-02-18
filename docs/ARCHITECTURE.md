@@ -47,7 +47,50 @@ Conventions clés :
 
 ## Points d’entrée & flux
 ### Routing
-- `src/App.jsx` : routes principales.
+- `src/App.jsx` : routes principales (source de vérité actuelle).
+
+#### Routes Map (actuel)
+
+Source (preuves) :
+- Déclarations `lazy(...)` : `src/App.jsx` @src/App.jsx#17-27
+- Déclarations `<Route ...>` : `src/App.jsx` @src/App.jsx#449-538
+
+> Cible (roadmap) : déplacer la liste des routes dans un module dédié (ex: `src/routes/APP_ROUTES`) afin de pouvoir générer/maintenir une table route → page depuis une seule source, et alléger `App.jsx`. Voir `docs/ROADMAP.md` (P1-01).
+
+| Route | Accès | Composant (runtime) | Fichier / provenance |
+|------|-------|----------------------|----------------------|
+| `/login` | public | `Login` | `src/pages/Login.jsx` (import direct) |
+| `/forgot-password` | public | `ForgotPassword` | `src/pages/ForgotPassword.jsx` (import direct) |
+| `/set-password` | public | `SetPassword` | `src/pages/SetPassword.jsx` (import direct) |
+| `/reset-password` | public | `SetPassword` | `src/pages/SetPassword.jsx` (import direct) |
+| `/` | privé | `Home` | `src/pages/Home.jsx` (import direct) |
+| `/audit` | privé + lazy | `AuditWizard` | `src/features/audit` (lazy → `AuditWizard`) |
+| `/strategy` | privé + lazy | `StrategyPage` | `src/pages/StrategyPage.jsx` (lazy) |
+| `/sim/placement` | privé + lazy | `Placement` | `src/features/placement` (lazy → `PlacementPage`) |
+| `/sim/credit` | privé + lazy | `Credit` | `src/pages/credit/Credit.jsx` (lazy) |
+| `/sim/succession` | privé + lazy | `SuccessionSimulator` | `src/features/succession` (lazy → `SuccessionSimulator`) |
+| `/sim/per` | privé + lazy | `PerSimulator` | `src/features/per` (lazy → `PerSimulator`) |
+| `/sim/epargne-salariale` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.jsx` (lazy) |
+| `/sim/tresorerie-societe` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.jsx` (lazy) |
+| `/sim/prevoyance` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.jsx` (lazy) |
+| `/sim/ir` | privé + lazy | `Ir` | `src/features/ir` (lazy → `IrPage`) |
+| `/settings/*` | privé + lazy | `SettingsShell` | `src/pages/SettingsShell.jsx` (lazy) |
+| `/placement` | redirect | `Navigate` → `/sim/placement` | compat legacy |
+| `/credit` | redirect | `Navigate` → `/sim/credit` | compat legacy |
+| `/prevoyance` | redirect | `Navigate` → `/sim/prevoyance` | compat legacy |
+
+Vérification (commandes) :
+
+```bash
+# Liste des routes (Route + path)
+rg -n "<Route" src/App.jsx
+
+# Liste des déclarations lazy
+rg -n "lazy\(" src/App.jsx
+
+# Liste des path= (sanity)
+rg -n "path=\"" src/App.jsx
+```
 
 ### Bootstrap auth → thème
 - `src/main.jsx` → `AuthProvider` → `ThemeProvider` → `App`.
