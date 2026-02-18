@@ -237,7 +237,7 @@ Candidats :
 
 ## Références code
 Entrées clés :
-- Routing : `src/App.jsx`
+- Routing : `src/routes/appRoutes.ts` (APP_ROUTES) + rendu dans `src/App.jsx`
 - Auth : `src/auth/AuthProvider.tsx`
 - Thème V5 : `src/settings/ThemeProvider.tsx`, `src/settings/presets.ts`
 - Tokens couleurs : `src/settings/theme.ts`, `src/styles.css`
