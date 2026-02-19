@@ -19,6 +19,7 @@ export function PhaseColumn({
   showDetails = false,
   onFieldChange,
   onApplicableChange,
+  onConfigureRules,
 }: {
   phaseKey: string;
   phase: Phase;
@@ -26,6 +27,7 @@ export function PhaseColumn({
   showDetails?: boolean;
   onFieldChange: (_blockId: string, _fieldKey: string, _value: unknown) => void;
   onApplicableChange?: (_applicable: boolean) => void;
+  onConfigureRules?: () => void;
 }) {
   if (!phase.applicable) {
     return (
@@ -69,7 +71,19 @@ export function PhaseColumn({
         )}
       </div>
       {phase.blocks.length === 0 ? (
-        <p style={{ fontSize: 12, color: 'var(--color-c9)', fontStyle: 'italic' }}>{MISC_LABELS.noBlocks}</p>
+        <div>
+          <p style={{ fontSize: 12, color: 'var(--color-c9)', fontStyle: 'italic', marginBottom: 8 }}>{MISC_LABELS.noBlocks}</p>
+          {!disabled && onConfigureRules && (
+            <button
+              type="button"
+              onClick={onConfigureRules}
+              data-testid={`configure-rules-${phaseKey}`}
+              style={{ fontSize: 12, padding: '6px 14px', borderRadius: 6, border: '1px solid var(--color-c3)', background: 'none', color: 'var(--color-c3)', cursor: 'pointer', fontWeight: 600 }}
+            >
+              + Configurer les règles
+            </button>
+          )}
+        </div>
       ) : (
         phase.blocks.map((block: Block) => (
           <div

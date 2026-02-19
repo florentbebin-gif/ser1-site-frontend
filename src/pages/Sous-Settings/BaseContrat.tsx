@@ -44,6 +44,7 @@ import type {
 } from '@/types/baseContratSettings';
 import { EMPTY_PRODUCT, EMPTY_RULESET } from '@/types/baseContratSettings';
 import { buildTemplateRuleset, TEMPLATE_KEYS, TEMPLATE_LABELS } from '@/constants/baseContratTemplates';
+import { ConfigureRulesModal } from './base-contrat/modals/ConfigureRulesModal';
 import type { TemplateKey } from '@/constants/baseContratTemplates';
 import { validateProductSlug, slugifyLabelToCamelCase, suggestAlternativeSlug, normalizeLabel } from '@/utils/slug';
 import { evaluatePublicationGate } from '@/features/settings/publicationGate';
@@ -88,6 +89,9 @@ export default function BaseContrat() {
   // Delete version state
   const [deletingVersionProduct, setDeletingVersionProduct] = useState<BaseContratProduct | null>(null);
   const [deletingVersionIdx, setDeletingVersionIdx] = useState<number | null>(null);
+
+  // P1-03g: Configure rules modal state
+  const [configureRulesTarget, setConfigureRulesTarget] = useState<{ productId: string; rulesetIdx: number; phaseKey: 'constitution' | 'sortie' | 'deces' } | null>(null);
 
   // Navigation / search / filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -206,6 +210,42 @@ export default function BaseContrat() {
               phases: {
                 ...rs.phases,
                 [phaseKey]: { ...rs.phases[phaseKey as keyof typeof rs.phases], applicable },
+              },
+            };
+          }),
+        };
+      }),
+    }));
+    // Auto-open configure rules modal when activating an empty phase
+    if (applicable) {
+      const product = settings?.products.find((p) => p.id === productId);
+      const rs = product?.rulesets[rulesetIdx];
+      const phase = rs?.phases[phaseKey as keyof typeof rs.phases];
+      if (phase && phase.blocks.length === 0) {
+        setConfigureRulesTarget({ productId, rulesetIdx, phaseKey: phaseKey as 'constitution' | 'sortie' | 'deces' });
+      }
+    }
+  }
+
+  function handleConfigureRulesSave(
+    productId: string,
+    rulesetIdx: number,
+    phaseKey: 'constitution' | 'sortie' | 'deces',
+    newBlocks: import('@/types/baseContratSettings').Block[],
+  ) {
+    updateSettings((prev) => ({
+      ...prev,
+      products: prev.products.map((p) => {
+        if (p.id !== productId) return p;
+        return {
+          ...p,
+          rulesets: p.rulesets.map((rs, ri) => {
+            if (ri !== rulesetIdx) return rs;
+            return {
+              ...rs,
+              phases: {
+                ...rs.phases,
+                [phaseKey]: { ...rs.phases[phaseKey], applicable: true, blocks: [...rs.phases[phaseKey].blocks, ...newBlocks] },
               },
             };
           }),
@@ -719,6 +759,10 @@ export default function BaseContrat() {
                                       ? (applicable) => handlePhaseApplicableChange(product.id, vIdx, pk, applicable)
                                       : undefined
                                     }
+                                    onConfigureRules={isAdmin && isEditableVersion
+                                      ? () => setConfigureRulesTarget({ productId: product.id, rulesetIdx: vIdx, phaseKey: pk })
+                                      : undefined
+                                    }
                                   />
                                 ))}
                               </div>
@@ -849,6 +893,26 @@ export default function BaseContrat() {
           </div>
         </div>
       )}
+
+      {/* ──── Modal: Configurer les règles (P1-03g) ──── */}
+      {configureRulesTarget && (() => {
+        const tgt = configureRulesTarget;
+        const product = products.find((p) => p.id === tgt.productId);
+        const ruleset = product?.rulesets[tgt.rulesetIdx];
+        if (!product || !ruleset) return null;
+        return (
+          <ConfigureRulesModal
+            product={product}
+            ruleset={ruleset}
+            initialPhase={tgt.phaseKey}
+            onClose={() => setConfigureRulesTarget(null)}
+            onSave={(phaseKey, newBlocks) => {
+              handleConfigureRulesSave(tgt.productId, tgt.rulesetIdx, phaseKey, newBlocks);
+              setConfigureRulesTarget(null);
+            }}
+          />
+        );
+      })()}
 
       {/* ──── Modal: Ajouter un produit ──── */}
       {showAddModal && (
