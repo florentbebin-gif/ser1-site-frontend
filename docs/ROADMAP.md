@@ -185,8 +185,8 @@ Ce que ça change (cible) :
 | Dette | Type | Où | Pourquoi | Règle | Exit criteria | Vérification |
 |-------|------|-----|----------|-------|---------------|--------------|
 | A | compat | `src/features/placement/legacy/` | Transition pour découpler features de l'ancien `pages/placement` | Pas de nouvelle feature dans legacy/ | `rg "features/placement/legacy" src` → 0 + npm run check PASS | `rg "features/placement/legacy" src --type tsx --type ts` |
-| B | hygiène | `src/pptx/template/__spike__/` | Prototypes / essais PPTX | **NON-RUNTIME** — pas d'imports détectés | **MOVE** → `tools/pptx/template-spike/` | `find src -type d -name "__spike__"` → 0 |
-| C | hygiène | `src/icons/business/_raw/` | Sources brutes SVG | **NON-RUNTIME** — pas d'imports détectés | **MOVE** → `tools/icons/business-raw/` | `find src -type d -name "_raw"` → 0 |
+| B | hygiène | `src/pptx/template/__spike__/` | Prototypes / essais PPTX | **RESOLVED** — deleted (0 usage) | **DELETE** | `find src -type d -name "__spike__"` → 0 |
+| C | hygiène | `src/icons/business/_raw/` | Sources brutes SVG | **RESOLVED** — deleted (0 usage) | **DELETE** | `find src -type d -name "_raw"` → 0 |
 | D | compat | `src/engine/*.ts` | `@deprecated` constants (ABATTEMENT_*, generate*Pptx) | Ne pas ajouter de nouveaux `@deprecated` | Migration vers nouveaux APIs | `rg "@deprecated" src/engine` (maintenir ou réduire) |
 
 **Règles "ne pas aggraver la dette" :**
@@ -194,7 +194,7 @@ Ce que ça change (cible) :
 - Pas de nouveaux fichiers dans `__spike__` ou `_raw`
 - Tout nouveau code va dans `features/*`, `components/`, `hooks/`, etc.
 
-**P1-02 — Repo hygiene scan & delete unused (pré-requis)**
+**P1-02 — Repo hygiene scan & delete unused (DONE)**
 - Objectif : appliquer la règle "Si ça ne sert plus = on supprime.", scanner et supprimer les fichiers inutiles (avec preuves).
 - Scope : repo complet (src/, tools/, docs/, racine).
 - Dépendances : T6 (cleanup spike/raw).
@@ -205,13 +205,11 @@ Ce que ça change (cible) :
   - `npm run check` passe
   - toute suppression est revertible (PRs petites)
 
-**T6 — Audit puis cleanup `__spike__` et `_raw`**
+**T6 — Audit puis cleanup `__spike__` et `_raw` (DONE)**
 - Scope : `src/pptx/template/__spike__/`, `src/icons/business/_raw/`.
 - Dépendances : P1-01d (doc cleanup) — audit réalisé en PR1.
 - Livrable audit : **consigné dans `docs/ARCHITECTURE.md`** → section **Debt registry (legacy / spike / raw) + Exit criteria** (lignes 87-94).
-- Décision : **MOVE** (non-runtime, pas d'imports détectés)
-  - `src/pptx/template/__spike__/` → `tools/pptx/template-spike/`
-  - `src/icons/business/_raw/` → `tools/icons/business-raw/`
+- Décision : **DELETE** (non-runtime, 0 usage)
 - Risques : faible (pas de runtime impact).
 - DoD : audit documenté + aucun dossier `__spike__` ou `_raw` sous `src/`.
 
@@ -251,10 +249,7 @@ rg -n "const Icon" src/App.jsx
 
 # 4. Lister les dossiers spike/raw dans src/
 find src -type d \( -name "__spike__" -o -name "_raw" \)
-# Résultat actuel (baseline) :
-# src/pptx/template/__spike__/
-# src/icons/business/_raw/
-# Résultat attendu post-T6 : (aucune sortie)
+# Résultat attendu : (aucune sortie)
 
 # 5. Vérifier l'utilisation centralisée des routes settings
 grep -n "SETTINGS_ROUTES\|settingsRoutes" src/constants/settingsRoutes.js src/pages/SettingsShell.jsx
