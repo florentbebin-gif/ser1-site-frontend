@@ -8,7 +8,7 @@
  */
 
 import { supabase } from '../supabaseClient';
-import type { BaseContratSettings } from '../types/baseContratSettings';
+import type { BaseContratSettings, BaseContratProduct } from '../types/baseContratSettings';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -19,7 +19,42 @@ const LS_KEY = 'ser1:baseContratSettingsCache';
 const SUPABASE_TIMEOUT = 8_000; // ms
 const EVENT_NAME = 'ser1:base-contrat-updated';
 
-const EMPTY_DATA: BaseContratSettings = { schemaVersion: 1, products: [] };
+const EMPTY_DATA: BaseContratSettings = { schemaVersion: 2, products: [] };
+
+// ---------------------------------------------------------------------------
+// Migration lazy V1 → V2
+// Pattern identique à migrateV1toV2 dans fiscalSettingsCache.js
+// ---------------------------------------------------------------------------
+
+function familyToGrandeFamille(family: string): BaseContratProduct['grandeFamille'] {
+  const map: Record<string, BaseContratProduct['grandeFamille']> = {
+    'Assurance': 'Assurance',
+    'Bancaire': 'Épargne bancaire',
+    'Titres': 'Titres vifs',
+    'Immobilier': 'Immobilier direct',
+    'Défiscalisation': 'Dispositifs fiscaux immo',
+    'Autres': 'Non coté/PE',
+  };
+  return map[family] ?? 'Non coté/PE';
+}
+
+function migrateBaseContratV1toV2(data: BaseContratSettings): BaseContratSettings {
+  if (data.schemaVersion === 2) return data;
+  return {
+    ...data,
+    schemaVersion: 2,
+    products: data.products.map((p) => ({
+      ...p,
+      grandeFamille: p.grandeFamille ?? familyToGrandeFamille(p.family ?? 'Autres'),
+      nature: p.nature ?? 'Contrat / compte / enveloppe',
+      detensiblePP: p.detensiblePP ?? (p.holders === 'PP' || p.holders === 'PP+PM'),
+      eligiblePM: p.eligiblePM ?? (p.holders === 'PM' || p.holders === 'PP+PM' ? 'oui' : 'non'),
+      eligiblePMPrecision: p.eligiblePMPrecision ?? null,
+      souscriptionOuverte: p.souscriptionOuverte ?? (p.open2026 ? 'oui' : 'non'),
+      commentaireQualification: p.commentaireQualification ?? null,
+    })),
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Singleton
@@ -88,10 +123,10 @@ async function fetchFromSupabase(): Promise<BaseContratSettings> {
     const raw = rows?.[0]?.data;
     if (!raw || typeof raw !== 'object') return EMPTY_DATA;
 
-    const result = raw as BaseContratSettings;
-    cache = { data: result, timestamp: Date.now() };
+    const migrated = migrateBaseContratV1toV2(raw as BaseContratSettings);
+    cache = { data: migrated, timestamp: Date.now() };
     persistCache();
-    return result;
+    return migrated;
   } catch (err) {
     if ((err as Error)?.name === 'AbortError') {
       console.warn('[baseContratCache] fetch timeout');

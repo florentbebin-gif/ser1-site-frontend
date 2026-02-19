@@ -149,6 +149,68 @@ rg "user_metadata" supabase/migrations --type sql
 
 ---
 
+## Mise à jour annuelle des règles fiscales
+
+Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence technique requise — chaque étape est indépendante.
+
+### Étape 1 — Mettre à jour les paramètres Impôts
+
+1. Aller sur `/settings/impots`.
+2. Vérifier et corriger : barème IR, PFU, CEHR, droits de succession (DMTG).
+3. Enregistrer.
+
+### Étape 2 — Mettre à jour les Prélèvements sociaux
+
+1. Aller sur `/settings/prelevements`.
+2. Vérifier et corriger : taux PS patrimoine (17,2 %), tranches retraite.
+3. Enregistrer.
+
+### Étape 3 — Vérifier les produits "À vérifier"
+
+1. Aller sur `/settings/base-contrat`.
+2. Filtrer les produits marqués "À vérifier" (badge orange).
+3. Pour chaque produit : consulter les sources officielles (BOFiP, CGI…), corriger les règles si besoin, passer le niveau de confiance à "Confirmé".
+
+### Étape 4 — Ajouter au moins un cas de test
+
+1. Sur `/settings/base-contrat`, cliquer "Ajouter un cas de test".
+2. Choisir un produit, décrire la situation (capital, durée…) et le résultat attendu (imposition, PS…).
+3. Valider. Le cas de test est enregistré avec les règles.
+
+> Sans cas de test, un avertissement s'affiche. L'enregistrement reste possible, mais il est recommandé d'avoir au moins 1 test avant de considérer les règles comme publiées.
+
+### Étape 5 — Enregistrer
+
+1. Cliquer "Enregistrer" en bas de la page.
+2. Vérifier le message de confirmation.
+
+---
+
+## Initialiser le catalogue Base-Contrat
+
+### Quand l'utiliser
+
+- **Première mise en service** : le catalogue est vide, aucun produit n'a encore été saisi.
+- **Après une réinitialisation** : si le catalogue a été vidé accidentellement.
+
+### Ce que ça fait
+
+- **Initialiser le catalogue** (bouton visible si le catalogue est vide) : charge l'ensemble des produits du fichier de référence (`src/constants/base-contrat/catalogue.seed.v1.json`). Chaque produit est créé avec ses métadonnées (grande famille, nature, PP/PM, souscription 2026) mais **sans règles fiscales** — les règles sont à compléter produit par produit.
+- **Compléter le catalogue** (bouton visible si le catalogue contient déjà des produits) : ajoute uniquement les produits **absents** du catalogue actuel. **N'écrase jamais** un produit existant ni ses règles.
+
+### Fichier catalogue (base de travail)
+
+- Emplacement : `src/constants/base-contrat/catalogue.seed.v1.json`
+- Contenu : ~78 produits couvrant les 13 grandes familles (Assurance, Épargne bancaire, Titres vifs, Fonds/OPC, Immobilier direct, Immobilier indirect, Crypto-actifs, Non coté/PE, Produits structurés, Créances/Droits, Dispositifs fiscaux immo, Métaux précieux, Retraite & épargne salariale).
+- Ce fichier est une **base de travail** : il peut être amendé et complété au fil du temps. Toute modification doit passer par une PR (fichier versionné dans le repo).
+
+### Précautions
+
+- L'initialisation ne remplace pas la vérification des règles fiscales : les produits chargés depuis le seed ont le niveau de confiance "À vérifier" par défaut.
+- Après initialisation, suivre la procédure "Mise à jour annuelle" pour compléter et valider les règles.
+
+---
+
 ## Repo hygiene — Delete unused
 
 **Règle** : Si ça ne sert plus = on supprime.

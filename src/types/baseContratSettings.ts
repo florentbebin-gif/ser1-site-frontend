@@ -4,6 +4,9 @@
  * Convention : camelCase partout (aligné avec le repo).
  * $ref format : "$ref:tax_settings.pfu.current.rateIR" (format repo existant).
  * Versioning : product.rulesets[] trié effectiveDate DESC ; rulesets[0] = version active.
+ *
+ * schemaVersion 1 → 2 : ajout métadonnées obligatoires (grandeFamille, nature, detensiblePP,
+ * eligiblePM, souscriptionOuverte). Migration lazy dans getBaseContratSettings().
  */
 
 // ---------------------------------------------------------------------------
@@ -17,6 +20,34 @@ export type ProductFamily =
   | 'Immobilier'
   | 'Défiscalisation'
   | 'Autres';
+
+/** V2 — 13 grandes familles métier */
+export type GrandeFamille =
+  | 'Assurance'
+  | 'Épargne bancaire'
+  | 'Titres vifs'
+  | 'Fonds/OPC'
+  | 'Immobilier direct'
+  | 'Immobilier indirect'
+  | 'Crypto-actifs'
+  | 'Non coté/PE'
+  | 'Produits structurés'
+  | 'Créances/Droits'
+  | 'Dispositifs fiscaux immo'
+  | 'Métaux précieux'
+  | 'Retraite & épargne salariale';
+
+/** V2 — Nature du produit */
+export type ProductNature =
+  | 'Actif / instrument'
+  | 'Contrat / compte / enveloppe'
+  | 'Dispositif fiscal immobilier';
+
+/** V2 — Éligibilité personnes morales */
+export type EligiblePM = 'oui' | 'non' | 'parException';
+
+/** V2 — Souscription ouverte en 2026 */
+export type SouscriptionOuverte = 'oui' | 'non' | 'na';
 
 export type Holders = 'PP' | 'PM' | 'PP+PM';
 
@@ -103,10 +134,30 @@ export interface VersionedRuleset {
 export interface BaseContratProduct {
   id: string;
   label: string;
+
+  // ── Métadonnées V2 (obligatoires à la création) ──
+  grandeFamille: GrandeFamille;
+  nature: ProductNature;
+  /** Détenable en direct par une personne physique */
+  detensiblePP: boolean;
+  /** Éligibilité personnes morales */
+  eligiblePM: EligiblePM;
+  /** Obligatoire si eligiblePM === 'parException' */
+  eligiblePMPrecision: string | null;
+  /** Souscription ouverte en 2026 */
+  souscriptionOuverte: SouscriptionOuverte;
+  /** Commentaire libre de qualification (optionnel) */
+  commentaireQualification: string | null;
+
+  // ── Champs legacy conservés pour compatibilité baseContratAdapter.ts ──
+  /** @deprecated V1 — dérivé de grandeFamille. Conserver pour l'adapter. */
   family: ProductFamily;
-  envelopeType: string;
+  /** @deprecated V1 — dérivé de detensiblePP + eligiblePM. Conserver pour l'adapter. */
   holders: Holders;
+  /** @deprecated V1 — dérivé de souscriptionOuverte. Conserver pour l'adapter. */
   open2026: boolean;
+
+  envelopeType: string;
   sortOrder: number;
   isActive: boolean;
   closedDate: string | null;
@@ -137,7 +188,8 @@ export interface ProductTest {
 // ---------------------------------------------------------------------------
 
 export interface BaseContratSettings {
-  schemaVersion: 1;
+  /** 1 = V1 (legacy), 2 = V2 (métadonnées obligatoires). Migration lazy dans getBaseContratSettings(). */
+  schemaVersion: 1 | 2;
   products: BaseContratProduct[];
   /** Gate P0-10: imported tests — publication blocked if empty */
   tests?: ProductTest[];
@@ -168,6 +220,15 @@ export const EMPTY_RULESET: VersionedRuleset = {
 export const EMPTY_PRODUCT: Omit<BaseContratProduct, 'sortOrder'> = {
   id: '',
   label: '',
+  // V2 métadonnées
+  grandeFamille: 'Assurance',
+  nature: 'Contrat / compte / enveloppe',
+  detensiblePP: true,
+  eligiblePM: 'non',
+  eligiblePMPrecision: null,
+  souscriptionOuverte: 'oui',
+  commentaireQualification: null,
+  // Legacy
   family: 'Autres',
   envelopeType: '',
   holders: 'PP',

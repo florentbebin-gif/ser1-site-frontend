@@ -33,14 +33,26 @@ const EXPECTED_SNAPSHOT = {
   dividendesAbattementPercent: 0.40,
 };
 
+const V2_DEFAULTS = {
+  grandeFamille: 'Assurance' as const,
+  nature: 'Contrat / compte / enveloppe' as const,
+  detensiblePP: true,
+  eligiblePM: 'non' as const,
+  eligiblePMPrecision: null,
+  souscriptionOuverte: 'oui' as const,
+  commentaireQualification: null,
+};
+
 function buildTestSettings(): BaseContratSettings {
   const date = '2025-01-01';
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     products: [
       {
+        ...V2_DEFAULTS,
         id: 'assuranceVie',
         label: 'Assurance-vie',
+        grandeFamille: 'Assurance',
         family: 'Assurance',
         envelopeType: 'assurance-vie',
         holders: 'PP',
@@ -55,8 +67,10 @@ function buildTestSettings(): BaseContratSettings {
         rulesets: [buildTemplateRuleset('assurance-vie', date)],
       },
       {
+        ...V2_DEFAULTS,
         id: 'cto',
         label: 'CTO',
+        grandeFamille: 'Titres vifs',
         family: 'Titres',
         envelopeType: 'cto',
         holders: 'PP',
@@ -71,8 +85,10 @@ function buildTestSettings(): BaseContratSettings {
         rulesets: [buildTemplateRuleset('cto', date)],
       },
       {
+        ...V2_DEFAULTS,
         id: 'pea',
         label: 'PEA',
+        grandeFamille: 'Titres vifs',
         family: 'Titres',
         envelopeType: 'pea',
         holders: 'PP',
@@ -87,8 +103,10 @@ function buildTestSettings(): BaseContratSettings {
         rulesets: [buildTemplateRuleset('pea', date)],
       },
       {
+        ...V2_DEFAULTS,
         id: 'perIndividuel',
         label: 'PER individuel',
+        grandeFamille: 'Retraite & épargne salariale',
         family: 'Assurance',
         envelopeType: 'per-individuel-assurance',
         holders: 'PP',

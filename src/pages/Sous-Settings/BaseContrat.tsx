@@ -14,14 +14,19 @@ import { useBaseContratSettings } from '@/hooks/useBaseContratSettings';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import {
   PHASE_LABELS,
-  HOLDERS_LABELS,
   CONFIDENCE_LABELS,
   CONFIDENCE_ICONS,
   ACTION_LABELS,
   FORM_LABELS,
   MISC_LABELS,
-  FAMILY_OPTIONS,
+  GRANDE_FAMILLE_OPTIONS,
+  NATURE_OPTIONS,
+  ELIGIBLE_PM_LABELS,
+  ELIGIBLE_PM_OPTIONS,
+  SOUSCRIPTION_OUVERTE_LABELS,
+  SOUSCRIPTION_OUVERTE_OPTIONS,
 } from '@/constants/baseContratLabels';
+import { SEED_PRODUCTS, mergeSeedIntoProducts } from '@/constants/baseContratSeed';
 import type {
   BaseContratProduct,
   BaseContratSettings,
@@ -29,9 +34,11 @@ import type {
   Phase,
   Block,
   FieldDef,
-  Holders,
-  ProductFamily,
   ConfidenceLevel,
+  GrandeFamille,
+  ProductNature,
+  EligiblePM,
+  SouscriptionOuverte,
 } from '@/types/baseContratSettings';
 import { EMPTY_PRODUCT, EMPTY_RULESET } from '@/types/baseContratSettings';
 import { buildTemplateRuleset, TEMPLATE_KEYS, TEMPLATE_LABELS } from '@/constants/baseContratTemplates';
@@ -44,8 +51,6 @@ import { evaluatePublicationGate } from '@/features/settings/publicationGate';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PHASE_KEYS = ['constitution', 'sortie', 'deces'] as const;
-
-const HOLDERS_OPTIONS: Holders[] = ['PP', 'PM', 'PP+PM'];
 
 function chipStyle(bg: string, fg: string): React.CSSProperties {
   return { fontSize: 11, padding: '2px 8px', borderRadius: 4, background: bg, color: fg, fontWeight: 600, lineHeight: '18px' };
@@ -263,12 +268,20 @@ export default function BaseContrat() {
   const [showImportTestModal, setShowImportTestModal] = useState(false);
   const [importTestJson, setImportTestJson] = useState('');
 
+  // Delete version state
+  const [deletingVersionProduct, setDeletingVersionProduct] = useState<BaseContratProduct | null>(null);
+  const [deletingVersionIdx, setDeletingVersionIdx] = useState<number | null>(null);
+
   // Add/Edit form state
   const [formId, setFormId] = useState('');
   const [formLabel, setFormLabel] = useState('');
-  const [formFamily, setFormFamily] = useState<ProductFamily>('Autres');
-  const [formHolders, setFormHolders] = useState<Holders>('PP');
-  const [formEnvelope, setFormEnvelope] = useState('');
+  const [formGrandeFamille, setFormGrandeFamille] = useState<GrandeFamille>('Assurance');
+  const [formNature, setFormNature] = useState<ProductNature>('Contrat / compte / enveloppe');
+  const [formDetensiblePP, setFormDetensiblePP] = useState(true);
+  const [formEligiblePM, setFormEligiblePM] = useState<EligiblePM>('non');
+  const [formEligiblePMPrecision, setFormEligiblePMPrecision] = useState('');
+  const [formSouscriptionOuverte, setFormSouscriptionOuverte] = useState<SouscriptionOuverte>('oui');
+  const [formCommentaire, setFormCommentaire] = useState('');
   const [formTemplate, setFormTemplate] = useState('');
   const [formConfidence, setFormConfidence] = useState<ConfidenceLevel | ''>('');
   const [newVersionDate, setNewVersionDate] = useState('');
@@ -340,6 +353,10 @@ export default function BaseContrat() {
 
   function handleAddProduct() {
     if (!formId || !formLabel || !formConfidence) return;
+    if (formEligiblePM === 'parException' && !formEligiblePMPrecision.trim()) {
+      setMessage('Précisez les conditions d’éligibilité PM (champ obligatoire si « Par exception »).');
+      return;
+    }
     const validation = validateProductSlug(formId, existingIds);
     if (!validation.ok) { setMessage(validation.errors.join(' ')); return; }
     const maxSort = products.reduce((m, p) => Math.max(m, p.sortOrder), 0);
@@ -347,13 +364,25 @@ export default function BaseContrat() {
     const initialRuleset = formTemplate && TEMPLATE_KEYS.includes(formTemplate as TemplateKey)
       ? buildTemplateRuleset(formTemplate as TemplateKey, today)
       : { ...EMPTY_RULESET, effectiveDate: today };
+    // Dériver les champs legacy depuis les métadonnées V2
+    const holdersLegacy = formDetensiblePP && (formEligiblePM === 'oui' || formEligiblePM === 'parException')
+      ? 'PP+PM' : !formDetensiblePP && (formEligiblePM === 'oui' || formEligiblePM === 'parException')
+      ? 'PM' : 'PP';
     const newProduct: BaseContratProduct = {
       ...EMPTY_PRODUCT,
       id: formId,
       label: formLabel,
-      family: formFamily,
-      holders: formHolders,
-      envelopeType: formEnvelope || formId,
+      grandeFamille: formGrandeFamille,
+      nature: formNature,
+      detensiblePP: formDetensiblePP,
+      eligiblePM: formEligiblePM,
+      eligiblePMPrecision: formEligiblePM === 'parException' ? formEligiblePMPrecision.trim() : null,
+      souscriptionOuverte: formSouscriptionOuverte,
+      commentaireQualification: formCommentaire.trim() || null,
+      family: 'Autres',
+      holders: holdersLegacy as BaseContratProduct['holders'],
+      envelopeType: formId,
+      open2026: formSouscriptionOuverte === 'oui',
       templateKey: formTemplate || null,
       confidenceLevel: formConfidence,
       sortOrder: maxSort + 1,
@@ -366,11 +395,31 @@ export default function BaseContrat() {
 
   function handleEditProduct() {
     if (!editingProduct) return;
+    if (formEligiblePM === 'parException' && !formEligiblePMPrecision.trim()) {
+      setMessage('Précisez les conditions d’éligibilité PM (champ obligatoire si « Par exception »).');
+      return;
+    }
+    const holdersLegacy = formDetensiblePP && (formEligiblePM === 'oui' || formEligiblePM === 'parException')
+      ? 'PP+PM' : !formDetensiblePP && (formEligiblePM === 'oui' || formEligiblePM === 'parException')
+      ? 'PM' : 'PP';
     updateSettings((prev) => ({
       ...prev,
       products: prev.products.map((p) =>
         p.id === editingProduct.id
-          ? { ...p, label: formLabel, family: formFamily, holders: formHolders, confidenceLevel: formConfidence as ConfidenceLevel }
+          ? {
+              ...p,
+              label: formLabel,
+              grandeFamille: formGrandeFamille,
+              nature: formNature,
+              detensiblePP: formDetensiblePP,
+              eligiblePM: formEligiblePM,
+              eligiblePMPrecision: formEligiblePM === 'parException' ? formEligiblePMPrecision.trim() : null,
+              souscriptionOuverte: formSouscriptionOuverte,
+              commentaireQualification: formCommentaire.trim() || null,
+              confidenceLevel: formConfidence as ConfidenceLevel,
+              holders: holdersLegacy as BaseContratProduct['holders'],
+              open2026: formSouscriptionOuverte === 'oui',
+            }
           : p,
       ),
     }));
@@ -405,13 +454,58 @@ export default function BaseContrat() {
   }
 
   function handleDeleteProduct() {
-    if (!deletingProduct || deleteConfirmSlug !== deletingProduct.id) return;
+    if (!deletingProduct || deleteConfirmSlug !== 'SUPPRIMER') return;
     updateSettings((prev) => ({
       ...prev,
       products: prev.products.filter((p) => p.id !== deletingProduct.id),
     }));
     setDeletingProduct(null);
     setDeleteConfirmSlug('');
+  }
+
+  function handleDeleteVersion() {
+    if (!deletingVersionProduct || deletingVersionIdx === null) return;
+    if (deletingVersionIdx === 0) {
+      setMessage(FORM_LABELS.confirmDeleteVersionActive);
+      setDeletingVersionProduct(null);
+      setDeletingVersionIdx(null);
+      return;
+    }
+    updateSettings((prev) => ({
+      ...prev,
+      products: prev.products.map((p) => {
+        if (p.id !== deletingVersionProduct.id) return p;
+        const newRulesets = p.rulesets.filter((_, i) => i !== deletingVersionIdx);
+        return { ...p, rulesets: newRulesets };
+      }),
+    }));
+    // Clamp selectedVersionIdx to 0 after deletion
+    setSelectedVersionIdx((prev) => ({ ...prev, [deletingVersionProduct.id]: 0 }));
+    setDeletingVersionProduct(null);
+    setDeletingVersionIdx(null);
+  }
+
+  function handleInitCatalogue() {
+    if (!isAdmin) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const withDates = SEED_PRODUCTS.map((p) => ({
+      ...p,
+      rulesets: [{ ...EMPTY_RULESET, effectiveDate: today }],
+    }));
+    updateSettings((prev) => ({ ...prev, products: withDates }));
+    setMessage(`Catalogue initialisé : ${withDates.length} produits chargés.`);
+  }
+
+  function handleCompleteCatalogue() {
+    if (!isAdmin) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const existing = settings?.products ?? [];
+    const merged = mergeSeedIntoProducts(existing).map((p) =>
+      p.rulesets.length === 0 ? { ...p, rulesets: [{ ...EMPTY_RULESET, effectiveDate: today }] } : p
+    );
+    const added = merged.length - existing.length;
+    updateSettings((prev) => ({ ...prev, products: merged }));
+    setMessage(added > 0 ? MISC_LABELS.completeCatalogueResult(added) : MISC_LABELS.completeCatalogueUpToDate);
   }
 
   function handleNewVersion() {
@@ -432,31 +526,6 @@ export default function BaseContrat() {
 
   async function handleSave() {
     if (!isAdmin || !settings) return;
-
-    if (publicationGate.blocked) {
-      setMessage(publicationGate.blockMessage ?? 'Publication impossible.');
-      return;
-    }
-
-    // P0-04b Gate: publication bloquée si aucun produit actif n'a de règles testables
-    const activeWithRules = (settings.products ?? []).filter(
-      (p) =>
-        p.isActive &&
-        p.rulesets.length > 0 &&
-        p.rulesets.some((rs) =>
-          Object.values(rs.phases).some(
-            (phase) => phase.applicable && phase.blocks.length > 0
-          )
-        )
-    );
-    if (activeWithRules.length === 0) {
-      setMessage(
-        '⚠ Publication impossible : aucun produit actif ne contient de règles configurées. ' +
-        'Ajoutez au moins un produit avec des blocs de règles avant de sauvegarder.'
-      );
-      return;
-    }
-
     await save(settings);
   }
 
@@ -497,9 +566,13 @@ export default function BaseContrat() {
   function resetForm() {
     setFormId('');
     setFormLabel('');
-    setFormFamily('Autres');
-    setFormHolders('PP');
-    setFormEnvelope('');
+    setFormGrandeFamille('Assurance');
+    setFormNature('Contrat / compte / enveloppe');
+    setFormDetensiblePP(true);
+    setFormEligiblePM('non');
+    setFormEligiblePMPrecision('');
+    setFormSouscriptionOuverte('oui');
+    setFormCommentaire('');
     setFormTemplate('');
     setFormConfidence('');
     setSlugManuallyEdited(false);
@@ -507,8 +580,13 @@ export default function BaseContrat() {
 
   function openEditModal(p: BaseContratProduct) {
     setFormLabel(p.label);
-    setFormFamily(p.family);
-    setFormHolders(p.holders);
+    setFormGrandeFamille(p.grandeFamille ?? 'Assurance');
+    setFormNature(p.nature ?? 'Contrat / compte / enveloppe');
+    setFormDetensiblePP(p.detensiblePP ?? true);
+    setFormEligiblePM(p.eligiblePM ?? 'non');
+    setFormEligiblePMPrecision(p.eligiblePMPrecision ?? '');
+    setFormSouscriptionOuverte(p.souscriptionOuverte ?? 'oui');
+    setFormCommentaire(p.commentaireQualification ?? '');
     setFormConfidence(p.confidenceLevel);
     setEditingProduct(p);
   }
@@ -532,12 +610,22 @@ export default function BaseContrat() {
 
         {/* CTA Admin */}
         {isAdmin && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
+            {products.length === 0 && (
+              <button className="chip" onClick={handleInitCatalogue} style={{ padding: '8px 20px', fontWeight: 600 }} title={MISC_LABELS.initCatalogueHint}>
+                {ACTION_LABELS.initCatalogue}
+              </button>
+            )}
+            {products.length > 0 && (
+              <button className="chip" onClick={handleCompleteCatalogue} style={{ padding: '8px 20px', fontWeight: 600 }} title={MISC_LABELS.completeCatalogueHint}>
+                {ACTION_LABELS.completeCatalogue}
+              </button>
+            )}
             <button className="chip" onClick={() => { resetForm(); setShowAddModal(true); }} style={{ padding: '8px 20px', fontWeight: 600 }}>
               + {ACTION_LABELS.addProduct}
             </button>
             <button className="chip" onClick={() => setShowImportTestModal(true)} style={{ padding: '8px 20px', fontWeight: 600 }}>
-              📥 Importer un test JSON
+              Importer un cas de test
             </button>
           </div>
         )}
@@ -565,8 +653,11 @@ export default function BaseContrat() {
                 onClick={() => setOpenProductId(isOpen ? null : product.id)}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 20px', cursor: 'pointer', flexWrap: 'wrap' }}
               >
-                <span style={chipStyle('var(--color-c3)', '#FFFFFF')}>{product.holders}</span>
-                <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.family}</span>
+                <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.grandeFamille ?? product.family}</span>
+                {product.detensiblePP !== undefined
+                  ? <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.detensiblePP ? 'PP direct' : 'Sans détention directe'}</span>
+                  : <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.holders}</span>
+                }
                 <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 15 }}>{product.label}</span>
                 <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>({product.id})</span>
                 {ruleset && (
@@ -611,6 +702,15 @@ export default function BaseContrat() {
                       <>
                         <button className="chip" onClick={() => openEditModal(product)} style={{ padding: '4px 12px', fontSize: 12 }}>{ACTION_LABELS.editProduct}</button>
                         <button className="chip" onClick={() => { setNewVersionProduct(product); setNewVersionDate(''); }} style={{ padding: '4px 12px', fontSize: 12 }}>{ACTION_LABELS.newVersion}</button>
+                        {product.rulesets.length > 1 && vIdx > 0 && (
+                          <button
+                            className="chip"
+                            onClick={() => { setDeletingVersionProduct(product); setDeletingVersionIdx(vIdx); }}
+                            style={{ padding: '4px 12px', fontSize: 12, color: 'var(--color-c1)', borderColor: 'var(--color-c1)' }}
+                          >
+                            {ACTION_LABELS.deleteVersion}
+                          </button>
+                        )}
                         <button className="chip" onClick={() => setClosingProduct(product)} style={{ padding: '4px 12px', fontSize: 12 }}>{ACTION_LABELS.closeProduct}</button>
                       </>
                     )}
@@ -671,25 +771,28 @@ export default function BaseContrat() {
           </details>
         )}
 
-        {/* Save */}
+        {/* Save — toujours actif (gate = warning non-bloquant) */}
         {isAdmin && (
           <button
             type="button"
             className="chip"
             onClick={handleSave}
-            disabled={saving || publicationGate.blocked}
+            disabled={saving}
             style={{ padding: '10px 28px', fontWeight: 600, alignSelf: 'flex-end' }}
           >
             {saving ? ACTION_LABELS.saving : ACTION_LABELS.save}
           </button>
         )}
 
-        {publicationGate.blocked && publicationGate.blockMessage && (
-          <p style={{ fontSize: 13, color: 'var(--color-c1)', fontStyle: 'italic' }}>{publicationGate.blockMessage}</p>
-        )}
-
-        {!publicationGate.blocked && publicationGate.warningMessage && (
-          <p style={{ fontSize: 13, color: 'var(--color-c9)', fontStyle: 'italic' }}>{publicationGate.warningMessage}</p>
+        {/* Gate warnings (non-bloquants) */}
+        {isAdmin && publicationGate.blocked && (
+          <div style={{ background: 'var(--color-c7)', border: '1px solid var(--color-c8)', borderRadius: 8, padding: '12px 16px', fontSize: 13, color: 'var(--color-c9)' }}>
+            <p style={{ margin: '0 0 8px', fontWeight: 600, color: 'var(--color-c10)' }}>⚠️ {MISC_LABELS.gateWarningNoTests}</p>
+            <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 600 }}>{MISC_LABELS.gateTestGuideTitle}</p>
+            <ol style={{ margin: 0, paddingLeft: 20, fontSize: 12, lineHeight: 1.7 }}>
+              {MISC_LABELS.gateTestGuideSteps.map((step, i) => <li key={i}>{step}</li>)}
+            </ol>
+          </div>
         )}
 
         {/* Message */}
@@ -796,15 +899,65 @@ export default function BaseContrat() {
                 &#x2022; Ex : <code>assuranceVie</code>, <code>perIndividuel</code>, <code>scpiPinel</code>
               </div>
 
-              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productFamily}</label>
-              <select value={formFamily} onChange={(e) => setFormFamily(e.target.value as ProductFamily)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}>
-                {FAMILY_OPTIONS.map((f) => <option key={f} value={f}>{f}</option>)}
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productGrandeFamille} *</label>
+              <select value={formGrandeFamille} onChange={(e) => setFormGrandeFamille(e.target.value as GrandeFamille)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}>
+                {GRANDE_FAMILLE_OPTIONS.map((f) => <option key={f} value={f}>{f}</option>)}
               </select>
 
-              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productHolders}</label>
-              <select value={formHolders} onChange={(e) => setFormHolders(e.target.value as Holders)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}>
-                {HOLDERS_OPTIONS.map((h) => <option key={h} value={h}>{HOLDERS_LABELS[h]}</option>)}
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productNature} *</label>
+              <select value={formNature} onChange={(e) => setFormNature(e.target.value as ProductNature)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}>
+                {NATURE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
+
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productDetensiblePP} *</label>
+              <div style={{ display: 'flex', gap: 16 }}>
+                {[true, false].map((v) => (
+                  <label key={String(v)} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                    <input type="radio" name="detensiblePP" checked={formDetensiblePP === v} onChange={() => setFormDetensiblePP(v)} />
+                    {v ? 'Oui' : 'Non'}
+                  </label>
+                ))}
+              </div>
+
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productEligiblePM} *</label>
+              <div style={{ display: 'flex', gap: 16 }}>
+                {ELIGIBLE_PM_OPTIONS.map((v) => (
+                  <label key={v} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                    <input type="radio" name="eligiblePM" checked={formEligiblePM === v} onChange={() => setFormEligiblePM(v)} />
+                    {ELIGIBLE_PM_LABELS[v]}
+                  </label>
+                ))}
+              </div>
+              {formEligiblePM === 'parException' && (
+                <>
+                  <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productEligiblePMPrecision} *</label>
+                  <input
+                    value={formEligiblePMPrecision}
+                    onChange={(e) => setFormEligiblePMPrecision(e.target.value)}
+                    placeholder={FORM_LABELS.productEligiblePMPrecisionHint}
+                    style={{ fontSize: 13, padding: '8px 10px', border: `1px solid ${formEligiblePMPrecision.trim() ? 'var(--color-c8)' : 'var(--color-c1)'}`, borderRadius: 6, backgroundColor: '#FFFFFF' }}
+                  />
+                </>
+              )}
+
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productSouscriptionOuverte} *</label>
+              <div style={{ display: 'flex', gap: 16 }}>
+                {SOUSCRIPTION_OUVERTE_OPTIONS.map((v) => (
+                  <label key={v} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                    <input type="radio" name="souscriptionOuverte" checked={formSouscriptionOuverte === v} onChange={() => setFormSouscriptionOuverte(v)} />
+                    {SOUSCRIPTION_OUVERTE_LABELS[v]}
+                  </label>
+                ))}
+              </div>
+
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productCommentaire}</label>
+              <textarea
+                value={formCommentaire}
+                onChange={(e) => setFormCommentaire(e.target.value)}
+                placeholder={FORM_LABELS.productCommentaireHint}
+                rows={2}
+                style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF', resize: 'vertical' }}
+              />
 
               <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.confidenceLevel} *</label>
               <select
@@ -847,15 +1000,65 @@ export default function BaseContrat() {
               <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productLabel}</label>
               <input value={formLabel} onChange={(e) => setFormLabel(e.target.value)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }} />
 
-              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productFamily}</label>
-              <select value={formFamily} onChange={(e) => setFormFamily(e.target.value as ProductFamily)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}>
-                {FAMILY_OPTIONS.map((f) => <option key={f} value={f}>{f}</option>)}
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productGrandeFamille}</label>
+              <select value={formGrandeFamille} onChange={(e) => setFormGrandeFamille(e.target.value as GrandeFamille)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}>
+                {GRANDE_FAMILLE_OPTIONS.map((f) => <option key={f} value={f}>{f}</option>)}
               </select>
 
-              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productHolders}</label>
-              <select value={formHolders} onChange={(e) => setFormHolders(e.target.value as Holders)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}>
-                {HOLDERS_OPTIONS.map((h) => <option key={h} value={h}>{HOLDERS_LABELS[h]}</option>)}
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productNature}</label>
+              <select value={formNature} onChange={(e) => setFormNature(e.target.value as ProductNature)} style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}>
+                {NATURE_OPTIONS.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
+
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productDetensiblePP}</label>
+              <div style={{ display: 'flex', gap: 16 }}>
+                {[true, false].map((v) => (
+                  <label key={String(v)} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                    <input type="radio" name="editDetensiblePP" checked={formDetensiblePP === v} onChange={() => setFormDetensiblePP(v)} />
+                    {v ? 'Oui' : 'Non'}
+                  </label>
+                ))}
+              </div>
+
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productEligiblePM}</label>
+              <div style={{ display: 'flex', gap: 16 }}>
+                {ELIGIBLE_PM_OPTIONS.map((v) => (
+                  <label key={v} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                    <input type="radio" name="editEligiblePM" checked={formEligiblePM === v} onChange={() => setFormEligiblePM(v)} />
+                    {ELIGIBLE_PM_LABELS[v]}
+                  </label>
+                ))}
+              </div>
+              {formEligiblePM === 'parException' && (
+                <>
+                  <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productEligiblePMPrecision} *</label>
+                  <input
+                    value={formEligiblePMPrecision}
+                    onChange={(e) => setFormEligiblePMPrecision(e.target.value)}
+                    placeholder={FORM_LABELS.productEligiblePMPrecisionHint}
+                    style={{ fontSize: 13, padding: '8px 10px', border: `1px solid ${formEligiblePMPrecision.trim() ? 'var(--color-c8)' : 'var(--color-c1)'}`, borderRadius: 6, backgroundColor: '#FFFFFF' }}
+                  />
+                </>
+              )}
+
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productSouscriptionOuverte}</label>
+              <div style={{ display: 'flex', gap: 16 }}>
+                {SOUSCRIPTION_OUVERTE_OPTIONS.map((v) => (
+                  <label key={v} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+                    <input type="radio" name="editSouscriptionOuverte" checked={formSouscriptionOuverte === v} onChange={() => setFormSouscriptionOuverte(v)} />
+                    {SOUSCRIPTION_OUVERTE_LABELS[v]}
+                  </label>
+                ))}
+              </div>
+
+              <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productCommentaire}</label>
+              <textarea
+                value={formCommentaire}
+                onChange={(e) => setFormCommentaire(e.target.value)}
+                placeholder={FORM_LABELS.productCommentaireHint}
+                rows={2}
+                style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF', resize: 'vertical' }}
+              />
 
               <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.confidenceLevel}</label>
               <select
@@ -872,6 +1075,36 @@ export default function BaseContrat() {
             <div className="report-modal-actions">
               <button onClick={() => setEditingProduct(null)}>{ACTION_LABELS.cancel}</button>
               <button className="chip" onClick={handleEditProduct} style={{ padding: '8px 20px', fontWeight: 600 }}>{ACTION_LABELS.confirm}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ──── Modal: Supprimer une version ──── */}
+      {deletingVersionProduct && deletingVersionIdx !== null && (
+        <div className="report-modal-overlay" onClick={() => { setDeletingVersionProduct(null); setDeletingVersionIdx(null); }}>
+          <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 420 }}>
+            <div className="report-modal-header">
+              <h3 style={{ color: 'var(--color-c1)' }}>{ACTION_LABELS.deleteVersion}</h3>
+              <button className="report-modal-close" onClick={() => { setDeletingVersionProduct(null); setDeletingVersionIdx(null); }}>&#x2715;</button>
+            </div>
+            <div className="report-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <p style={{ fontSize: 13, color: 'var(--color-c1)', fontWeight: 600, margin: 0 }}>
+                {FORM_LABELS.confirmDeleteVersion}
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: 0 }}>
+                {deletingVersionProduct.label} — version du {deletingVersionProduct.rulesets[deletingVersionIdx]?.effectiveDate}
+              </p>
+            </div>
+            <div className="report-modal-actions">
+              <button onClick={() => { setDeletingVersionProduct(null); setDeletingVersionIdx(null); }}>{ACTION_LABELS.cancel}</button>
+              <button
+                className="chip"
+                onClick={handleDeleteVersion}
+                style={{ padding: '8px 20px', fontWeight: 600, background: 'var(--color-c1)', color: '#FFFFFF' }}
+              >
+                {ACTION_LABELS.delete}
+              </button>
             </div>
           </div>
         </div>
@@ -959,16 +1192,16 @@ export default function BaseContrat() {
                 {deletingProduct.label} (<code>{deletingProduct.id}</code>) — {deletingProduct.rulesets.length} version{deletingProduct.rulesets.length > 1 ? 's' : ''}
               </p>
               <label style={{ fontSize: 13, fontWeight: 600 }}>
-                {FORM_LABELS.confirmDeleteTypeSlug(deletingProduct.id)}
+                {FORM_LABELS.confirmDeleteTypeSUPPRIMER}
               </label>
               <input
                 value={deleteConfirmSlug}
                 onChange={(e) => setDeleteConfirmSlug(e.target.value)}
-                placeholder={deletingProduct.id}
+                placeholder="SUPPRIMER"
                 autoComplete="off"
                 style={{
                   fontSize: 13, padding: '8px 10px', borderRadius: 6, backgroundColor: '#FFFFFF',
-                  border: `1px solid ${deleteConfirmSlug === deletingProduct.id ? 'var(--color-c1)' : 'var(--color-c8)'}`,
+                  border: `1px solid ${deleteConfirmSlug === 'SUPPRIMER' ? 'var(--color-c1)' : 'var(--color-c8)'}`,
                 }}
               />
             </div>
@@ -976,10 +1209,10 @@ export default function BaseContrat() {
               <button onClick={() => { setDeletingProduct(null); setDeleteConfirmSlug(''); }}>{ACTION_LABELS.cancel}</button>
               <button
                 onClick={handleDeleteProduct}
-                disabled={deleteConfirmSlug !== deletingProduct.id}
+                disabled={deleteConfirmSlug !== 'SUPPRIMER'}
                 style={{
                   padding: '8px 20px', fontWeight: 600, borderRadius: 6, cursor: 'pointer',
-                  backgroundColor: deleteConfirmSlug === deletingProduct.id ? 'var(--color-c1)' : 'var(--color-c8)',
+                  backgroundColor: deleteConfirmSlug === 'SUPPRIMER' ? 'var(--color-c1)' : 'var(--color-c8)',
                   color: '#FFFFFF', border: 'none',
                 }}
               >
