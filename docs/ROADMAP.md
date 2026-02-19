@@ -339,11 +339,61 @@ Découpage proposé :
 - **DoD** : `humanizeFieldKey('irRatePercent')` → `'Taux IR (PFU)'` ; `formatRefLabel('$ref:...')` → jamais `$ref:` dans le label ; `npm run check` PASS.
 - **Tests** : `src/engine/__tests__/fieldLabels.test.ts` (humanize + formatRef + DoD 0 $ref).
 
+##### P1-03g — Configuration guidée des règles produit (modal "Configurer les règles")
+
+Problème actuel : activer une phase via le toggle "Sans objet" laisse la phase vide ("Aucun bloc défini"). L'admin n'a pas de cadre pour saisir des règles de manière homogène.
+
+**Étape A — Catalogue de blocs réutilisables** (`src/constants/base-contrat/blockTemplates.ts`)
+
+Référentiel de `BlockTemplate` issu de l'audit AV/CTO/PEA/PER :
+
+| `templateId` | Libellé FR | Phases | Grandes familles |
+|---|---|---|---|
+| `pfu-sortie` | PFU (flat tax) | Sortie | Assurance, Titres vifs, Retraite |
+| `ps-sortie` | Prélèvements sociaux | Sortie | Assurance, Épargne bancaire, Retraite |
+| `art-990I-deces` | Art. 990 I — primes avant 70 ans | Décès | Assurance, Retraite |
+| `art-757B-deces` | Art. 757 B — primes après 70 ans | Décès | Assurance, Retraite |
+| `abattements-av-8ans` | Rachats ≥ 8 ans (abattements AV) | Sortie | Assurance |
+| `rachats-pre2017` | Rachats versements avant 2017 | Sortie | Assurance |
+| `deductibilite-per` | Déductibilité versements PER | Constitution | Retraite & épargne salariale |
+| `rente-rvto` | Sortie en rente (RVTO) | Sortie | Retraite & épargne salariale |
+| `anciennete-exoneration` | Exonération après ancienneté | Sortie | Assurance, Retraite |
+| `note-libre` | Note informative (texte libre) | toutes | toutes |
+
+- DoD : `BLOCK_TEMPLATES.length ≥ 9` ; `BLOCKS_BY_FAMILLE` couvre au moins 5 `GrandeFamille`.
+
+**Étape B — Audit des 78 produits seed** (`src/constants/base-contrat/catalogue.seed.v1.json`)
+
+Pour chaque grande famille : identifier les blocs standards attendus par phase, les champs paramétrables, les champs `$ref` automatiques.
+
+- Livrable : commentaires `// suggestedFor` enrichis dans `blockTemplates.ts` + table récapitulative dans `docs/ARCHITECTURE.md`.
+- DoD : table couvre ≥ 8 grandes familles.
+
+**Étape C — Modal "Configurer les règles"** (`src/pages/Sous-Settings/base-contrat/modals/ConfigureRulesModal.tsx`)
+
+Parcours guidé en 3 étapes (aucun JSON / aucune clé interne visible) :
+
+1. **Choisir la phase** — état actuel affiché (vide / N blocs / Sans objet)
+2. **Sélectionner les blocs** — liste filtrée par `grandeFamille` du produit, aperçu des champs
+3. **Compléter les champs** — labels FR, valeurs auto en lecture seule (badge ★ + lien ↗ Ouvrir), note libre optionnelle
+
+- DoD : sur LEP (Épargne bancaire), en < 2 minutes, un admin produit ≥ 1 bloc Constitution + ≥ 1 bloc Sortie, sans jargon technique, sans JSON.
+- DoD check : `npm run check` PASS ; tests Playwright : `e2e/configure-rules.spec.ts` (parcours complet sur produit test).
+
+---
+
 ##### Découpage SettingsImpots.jsx + SettingsPrelevements.jsx (P2)
 
 - Même pattern : shell orchestrateur + sous-composants par section.
 - DoD : aucun fichier Settings > 500 lignes ; `npm run check` passe.
 - Dépendance : P1-01d (normalisation Settings) doit être terminé avant.
+
+##### Gate /settings/impots + /settings/prelevements allégé (P2)
+
+Même logique que Base-Contrat : enregistrement toujours possible, le gate devient warning non-bloquant + guide contextuel.
+
+- Scope : `SettingsImpots.jsx` + `SettingsPrelevements.jsx` — remplacer les blocages par des warnings + bouton "Enregistrer quand même".
+- DoD : save sans remplir tous les champs obligatoires → sauvegarde OK + warning visible (pas d'erreur fatale).
 
 **T6 — Audit puis cleanup `__spike__` et `_raw` (DONE)**
 - Scope : `src/pptx/template/__spike__/`, `src/icons/business/_raw/`.
