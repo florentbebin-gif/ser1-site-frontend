@@ -7,11 +7,18 @@
  *  3. Compléter les champs (labels FR, valeurs auto en lecture seule)
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { BaseContratProduct, VersionedRuleset, Block, FieldDef } from '@/types/baseContratSettings';
 import { PHASE_LABELS } from '@/constants/baseContratLabels';
 import { BLOCK_TEMPLATES, getTemplatesForContext } from '@/constants/base-contrat/blockTemplates';
 import { humanizeFieldKey, formatRefLabel } from '@/constants/base-contrat/fieldLabels.fr';
+import {
+  countBlocksByTemplateId,
+  getNextBlockIndex,
+  getNextSortOrder,
+  getExistingTemplateIds,
+  canAddTemplate,
+} from '../utils/configureRules';
 
 type PhaseKey = 'constitution' | 'sortie' | 'deces';
 const PHASE_KEYS: PhaseKey[] = ['constitution', 'sortie', 'deces'];
@@ -104,6 +111,9 @@ export function ConfigureRulesModal({ product, ruleset, initialPhase, onClose, o
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [blockDrafts, setBlockDrafts] = useState<Record<string, Block>>({});
 
+  // Phase actuelle (pour anti-doublon)
+  const currentPhase = selectedPhase ? ruleset.phases[selectedPhase] : null;
+
   // ── Step 1 ──
   function handlePhaseSelect(pk: PhaseKey) {
     setSelectedPhase(pk);
@@ -117,19 +127,48 @@ export function ConfigureRulesModal({ product, ruleset, initialPhase, onClose, o
     ? getTemplatesForContext(product.grandeFamille, selectedPhase)
     : [];
 
-  // note-libre always available as escape hatch; avoid duplicate if already in list
+  // note-libre toujours dispo en escape hatch (si pas déjà listée)
   const noteFreeAlreadyListed = availableTemplates.some((t) => t.templateId === 'note-libre');
   const noteFreeTemplate = BLOCK_TEMPLATES.find((t) => t.templateId === 'note-libre')!;
   const allTemplates = noteFreeAlreadyListed ? availableTemplates : [...availableTemplates, noteFreeTemplate];
 
+  // Anti-doublon : templateIds déjà présents dans la phase
+  const existingTemplateIds = useMemo(
+    () => getExistingTemplateIds(currentPhase?.blocks ?? []),
+    [currentPhase],
+  );
+
+  // Compter les notes libres existantes (pour affichage informatif)
+  const noteFreeCount = currentPhase ? countBlocksByTemplateId(currentPhase.blocks, 'note-libre') : 0;
+
   function handleTemplateToggle(templateId: string) {
+    // Anti-doublon : 1 seul bloc par templateId par phase (y compris note-libre)
+    const alreadyInPhase = !canAddTemplate(currentPhase?.blocks ?? [], templateId);
+    if (alreadyInPhase) return;
+
     if (selectedIds.includes(templateId)) {
       setSelectedIds((prev) => prev.filter((id) => id !== templateId));
       setBlockDrafts((prev) => { const next = { ...prev }; delete next[templateId]; return next; });
     } else {
       const tmpl = BLOCK_TEMPLATES.find((t) => t.templateId === templateId);
-      if (!tmpl) return;
-      const block: Block = { blockId: `${templateId}-${Date.now()}`, ...JSON.parse(JSON.stringify(tmpl.defaultBlock)) };
+      if (!tmpl || !selectedPhase) return;
+
+      // blockId déterministe : {templateId}__{phaseKey}__{index}
+      const index = getNextBlockIndex(currentPhase?.blocks ?? [], tmpl.templateId, selectedPhase);
+      const blockId = `${tmpl.templateId}__${selectedPhase}__${index}`;
+      const sortOrder = getNextSortOrder(currentPhase?.blocks ?? []);
+
+      const payload = JSON.parse(JSON.stringify(tmpl.defaultBlock.payload));
+      const block: Block = {
+        blockId,
+        blockKind: tmpl.defaultBlock.blockKind,
+        uiTitle: tmpl.defaultBlock.uiTitle,
+        audience: tmpl.defaultBlock.audience,
+        payload,
+        notes: tmpl.defaultBlock.notes,
+        dependencies: tmpl.defaultBlock.dependencies,
+        sortOrder,
+      };
       setSelectedIds((prev) => [...prev, templateId]);
       setBlockDrafts((prev) => ({ ...prev, [templateId]: block }));
     }
@@ -227,14 +266,38 @@ export function ConfigureRulesModal({ product, ruleset, initialPhase, onClose, o
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {allTemplates.map((tmpl) => {
                 const checked = selectedIds.includes(tmpl.templateId);
+                const isDisabled = existingTemplateIds.has(tmpl.templateId);
                 return (
                   <label key={tmpl.templateId}
-                    style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', padding: '10px 14px', borderRadius: 8, border: `1px solid ${checked ? 'var(--color-c3)' : 'var(--color-c8)'}`, background: checked ? 'rgba(0,0,0,0.03)' : 'var(--color-c7)' }}
+                    style={{
+                      display: 'flex', alignItems: 'flex-start', gap: 10,
+                      padding: '10px 14px', borderRadius: 8,
+                      border: `1px solid ${checked ? 'var(--color-c3)' : 'var(--color-c8)'}`,
+                      background: isDisabled ? 'var(--color-c8)' : checked ? 'rgba(0,0,0,0.03)' : 'var(--color-c7)',
+                      opacity: isDisabled ? 0.65 : 1,
+                      cursor: isDisabled ? 'not-allowed' : 'pointer',
+                    }}
                   >
-                    <input type="checkbox" checked={checked} onChange={() => handleTemplateToggle(tmpl.templateId)} style={{ marginTop: 3, flexShrink: 0 }} />
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-c10)' }}>{tmpl.uiTitle}</div>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={isDisabled}
+                      onChange={() => handleTemplateToggle(tmpl.templateId)}
+                      style={{ marginTop: 3, flexShrink: 0 }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-c10)' }}>
+                        {tmpl.uiTitle}
+                        {isDisabled && (
+                          <span style={{ fontSize: 11, color: 'var(--color-c9)', marginLeft: 8, fontStyle: 'italic' }}>(Déjà ajouté)</span>
+                        )}
+                      </div>
                       <div style={{ fontSize: 12, color: 'var(--color-c9)', marginTop: 2 }}>{tmpl.description}</div>
+                      {tmpl.templateId === 'note-libre' && noteFreeCount > 0 && (
+                        <div style={{ fontSize: 11, color: 'var(--color-c3)', marginTop: 2 }}>
+                          {noteFreeCount} note{noteFreeCount > 1 ? 's' : ''} déjà présente{noteFreeCount > 1 ? 's' : ''} dans cette phase
+                        </div>
+                      )}
                     </div>
                   </label>
                 );

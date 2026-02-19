@@ -41,6 +41,8 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Taux forfaitaires IR et PS appliqués aux plus-values et revenus mobiliers. Valeurs lues depuis les Paramètres Impôts.',
     suggestedPhases: ['sortie'],
     suggestedFor: ['Assurance', 'Titres vifs', 'Retraite & épargne salariale', 'Non coté/PE', 'Produits structurés'],
+    // Note : 'Épargne bancaire' exclu volontairement — les produits réglementés (LEP, Livret A, LDDS)
+    // peuvent être exonérés d'IR. MVP : utiliser note-libre pour décrire le régime applicable.
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'PFU (flat tax)',

@@ -100,6 +100,8 @@ export interface Block {
   payload: Record<string, FieldDef>;
   dependencies?: string[];
   notes?: string | null;
+  /** Ordre d'affichage dans la phase. Incrémental à la création (P1-03g). */
+  sortOrder?: number;
 }
 
 // ---------------------------------------------------------------------------
