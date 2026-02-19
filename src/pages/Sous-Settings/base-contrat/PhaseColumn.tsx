@@ -16,12 +16,14 @@ export function PhaseColumn({
   phaseKey,
   phase,
   disabled,
+  showDetails = false,
   onFieldChange,
   onApplicableChange,
 }: {
   phaseKey: string;
   phase: Phase;
   disabled: boolean;
+  showDetails?: boolean;
   onFieldChange: (_blockId: string, _fieldKey: string, _value: unknown) => void;
   onApplicableChange?: (_applicable: boolean) => void;
 }) {
@@ -92,6 +94,7 @@ export function PhaseColumn({
                 fieldKey={fKey}
                 def={fDef}
                 disabled={disabled}
+                showDetails={showDetails}
                 onChange={(k, v) => onFieldChange(block.blockId, k, v)}
               />
             ))}

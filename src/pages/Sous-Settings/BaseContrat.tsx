@@ -95,6 +95,7 @@ export default function BaseContrat() {
   const [filterPPPM, setFilterPPPM] = useState<string>('');
   const [filterStatus, setFilterStatus] = useState<'actif' | 'cloture' | ''>('');
   const [openFamilyId, setOpenFamilyId] = useState<string | null>(null);
+  const [showDetails, setShowDetails] = useState(false);
 
   // Add/Edit form state
   const [formId, setFormId] = useState('');
@@ -572,6 +573,24 @@ export default function BaseContrat() {
                 Réinitialiser
               </button>
             )}
+            <span style={{ width: 1, height: 24, background: 'var(--color-c8)', alignSelf: 'center' }} />
+            <button
+              type="button"
+              onClick={() => setShowDetails((v) => !v)}
+              title={showDetails ? 'Masquer les détails techniques (clés internes, $ref)' : 'Afficher les détails techniques pour diagnostic'}
+              style={{
+                fontSize: 12,
+                padding: '7px 12px',
+                borderRadius: 6,
+                border: `1px solid ${showDetails ? 'var(--color-c3)' : 'var(--color-c8)'}`,
+                background: showDetails ? 'var(--color-c3)' : 'none',
+                color: showDetails ? '#FFFFFF' : 'var(--color-c9)',
+                cursor: 'pointer',
+                fontWeight: showDetails ? 600 : 400,
+              }}
+            >
+              {showDetails ? '⚙ Mode détaillé' : '⚙ Afficher les détails'}
+            </button>
           </div>
         )}
 
@@ -695,6 +714,7 @@ export default function BaseContrat() {
                                     onFieldChange={(blockId, fieldKey, value) =>
                                       handleFieldChange(product.id, vIdx, blockId, fieldKey, value)
                                     }
+                                    showDetails={showDetails}
                                     onApplicableChange={isAdmin && isEditableVersion
                                       ? (applicable) => handlePhaseApplicableChange(product.id, vIdx, pk, applicable)
                                       : undefined

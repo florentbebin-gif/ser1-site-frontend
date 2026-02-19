@@ -239,6 +239,43 @@ Une phase "Sans objet" s'affiche avec un chip grisé "Sans objet" — aucune rè
 
 ---
 
+## Comprendre les valeurs automatiques (Paramètres Impôts / Prélèvements sociaux)
+
+Certains champs dans les fiches produit affichent **"Valeur automatique"** au lieu d'un nombre fixe. Ces valeurs sont lues dynamiquement depuis les paramètres globaux du cabinet.
+
+### Références connues
+
+| Référence interne | Libellé affiché | Source |
+|---|---|---|
+| `$ref:tax_settings.pfu.current.rateIR` | Taux IR — PFU (flat tax) | Paramètres Impôts |
+| `$ref:tax_settings.pfu.current.rateSocial` | Taux PS — PFU | Paramètres Impôts |
+| `$ref:ps_settings.patrimony.current.totalRate` | Taux PS — Patrimoine (taux global) | Paramètres Prélèvements sociaux |
+
+### Modifier une valeur automatique
+
+Ces valeurs **ne sont pas modifiables dans la fiche produit** — elles sont administrées dans :
+- `/settings/impots` → Paramètres Impôts (PFU, barème IR…)
+- `/settings/prelevements` → Paramètres Prélèvements sociaux (PS patrimoine…)
+
+Un lien **"↗ Ouvrir"** est affiché à côté de chaque valeur automatique pour y accéder directement.
+
+---
+
+## Afficher les détails techniques (pour diagnostic)
+
+En mode normal, la fiche produit affiche uniquement des libellés métier en français. Pour le diagnostic ou la vérification des données brutes :
+
+1. Ouvrir `/settings/base-contrat`.
+2. Dans la barre de filtres, cliquer **"⚙ Afficher les détails"**.
+3. En mode Détails activé :
+   - Les clés internes (`irRatePercent`, `abattementParBeneficiaire`…) sont affichées entre crochets `[...]` à côté du libellé.
+   - Les références brutes (`$ref:tax_settings.pfu.current.rateIR`) sont affichées sous le libellé lisible.
+4. Cliquer à nouveau sur **"⚙ Mode détaillé"** pour revenir au mode normal.
+
+> Ce mode est non-destructif : il n'affecte pas les données, uniquement l'affichage.
+
+---
+
 ## Repo hygiene — Delete unused
 
 **Règle** : Si ça ne sert plus = on supprime.

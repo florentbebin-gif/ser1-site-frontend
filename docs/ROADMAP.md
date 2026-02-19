@@ -329,6 +329,16 @@ Découpage proposé :
 
 - DoD : `wc -l src/pages/Sous-Settings/BaseContrat.tsx` < 200 ; `npm run check` passe.
 
+##### Lisibilité des champs & références dans Base-Contrat (P1 — feat/base-contrat-ux-nav)
+
+- **Objectif** : 0 camelCase visible / 0 `$ref:` visible en mode normal dans la fiche produit.
+- **Livrables** :
+  - `src/constants/base-contrat/fieldLabels.fr.ts` — `FIELD_LABELS_FR` + `humanizeFieldKey()` + `formatRefLabel()`
+  - `FieldRenderer.tsx` — labels FR, refs lisibles, badge "★ Simulateurs" (remplace "Calc."), mode Détails
+  - Toggle "⚙ Afficher les détails" dans la barre de filtres (clés internes + `$ref:` bruts visibles en mode ON)
+- **DoD** : `humanizeFieldKey('irRatePercent')` → `'Taux IR (PFU)'` ; `formatRefLabel('$ref:...')` → jamais `$ref:` dans le label ; `npm run check` PASS.
+- **Tests** : `src/engine/__tests__/fieldLabels.test.ts` (humanize + formatRef + DoD 0 $ref).
+
 ##### Découpage SettingsImpots.jsx + SettingsPrelevements.jsx (P2)
 
 - Même pattern : shell orchestrateur + sous-composants par section.

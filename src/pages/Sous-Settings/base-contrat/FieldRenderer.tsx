@@ -1,31 +1,89 @@
 /**
  * FieldRenderer — rendu d'un champ FieldDef dans un bloc de phase.
  * Extrait de BaseContrat.tsx (refactor godfile — PR feat/base-contrat-ux-nav).
+ *
+ * UX premium :
+ *  - Labels métier FR (FIELD_LABELS_FR + humanizeFieldKey) — 0 camelCase visible
+ *  - Références $ref → libellé lisible + source (formatRefLabel) — 0 $ref: visible
+ *  - Badge "Utilisé par les simulateurs" (remplace "Calc.")
+ *  - Mode Détails (showDetails=true) : affiche clé interne + $ref brut
  */
 
 import React from 'react';
 import type { FieldDef } from '@/types/baseContratSettings';
+import { humanizeFieldKey, formatRefLabel } from '@/constants/base-contrat/fieldLabels.fr';
 
 function chipStyle(bg: string, fg: string): React.CSSProperties {
   return { fontSize: 11, padding: '2px 8px', borderRadius: 4, background: bg, color: fg, fontWeight: 600, lineHeight: '18px' };
 }
 
-const CALC_BADGE = 'Calc.';
-const REF_TOOLTIP = 'Valeur issue des paramètres Impôts / Prélèvements sociaux';
+const CALC_TOOLTIP = 'Cette valeur est utilisée dans les calculs (IR, placements, prévoyance…)';
+const CALC_LABEL = '★ Simulateurs';
+
+/** Badge "Utilisé par les simulateurs" — remplace l'ancien badge "Calc." ambigu */
+function CalcBadge() {
+  return (
+    <span
+      title={CALC_TOOLTIP}
+      style={{ ...chipStyle('var(--color-c3)', '#FFFFFF'), marginLeft: 4, cursor: 'help' }}
+    >
+      {CALC_LABEL}
+    </span>
+  );
+}
+
+/** Affiche la clé interne en mode Détails */
+function InternalKeyHint({ fieldKey }: { fieldKey: string }) {
+  return (
+    <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--color-c9)', fontFamily: 'monospace', opacity: 0.7 }}>
+      [{fieldKey}]
+    </span>
+  );
+}
+
+/** Rendu d'une valeur $ref en mode normal : libellé + source + lien optionnel */
+function RefValueDisplay({ refStr, showDetails }: { refStr: string; showDetails: boolean }) {
+  const meta = formatRefLabel(refStr);
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+      <span style={{ fontSize: 12, color: 'var(--color-c9)', fontStyle: 'italic' }}>
+        Valeur automatique —{' '}
+        <strong style={{ color: 'var(--color-c10)' }}>{meta.label}</strong>
+      </span>
+      <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>({meta.source})</span>
+      {meta.settingsRoute && (
+        <a
+          href={meta.settingsRoute}
+          style={{ fontSize: 11, color: 'var(--color-c3)', textDecoration: 'underline' }}
+          title={`Ouvrir ${meta.source}`}
+        >
+          ↗ Ouvrir
+        </a>
+      )}
+      {showDetails && (
+        <span style={{ fontSize: 10, color: 'var(--color-c9)', fontFamily: 'monospace', opacity: 0.7 }}>
+          {refStr}
+        </span>
+      )}
+    </div>
+  );
+}
 
 export function FieldRenderer({
   fieldKey,
   def,
   disabled,
+  showDetails = false,
   onChange,
 }: {
   fieldKey: string;
   def: FieldDef;
   disabled: boolean;
+  showDetails?: boolean;
   onChange: (_key: string, _value: unknown) => void;
 }) {
   const isRef = def.type === 'ref';
-  const label = fieldKey;
+  const label = humanizeFieldKey(fieldKey);
 
   if (def.type === 'boolean') {
     return (
@@ -33,12 +91,12 @@ export function FieldRenderer({
         <input
           type="checkbox"
           checked={!!def.value}
-          disabled={disabled || isRef}
+          disabled={disabled}
           onChange={(e) => onChange(fieldKey, e.target.checked)}
         />
         <span style={{ fontSize: 13, color: 'var(--color-c10)' }}>{label}</span>
-        {def.calc && <span style={chipStyle('var(--color-c3)', '#FFFFFF')}>{CALC_BADGE}</span>}
-        {isRef && <span title={REF_TOOLTIP} style={{ fontSize: 11, color: 'var(--color-c9)', fontStyle: 'italic', cursor: 'help' }}>↗ ref</span>}
+        {def.calc && <CalcBadge />}
+        {showDetails && <InternalKeyHint fieldKey={fieldKey} />}
       </div>
     );
   }
@@ -47,7 +105,9 @@ export function FieldRenderer({
     return (
       <div style={{ marginBottom: 6 }}>
         <label style={{ display: 'block', fontSize: 12, color: 'var(--color-c9)', marginBottom: 2 }}>
-          {label} {def.calc && <span style={chipStyle('var(--color-c3)', '#FFFFFF')}>{CALC_BADGE}</span>}
+          {label}
+          {def.calc && <CalcBadge />}
+          {showDetails && <InternalKeyHint fieldKey={fieldKey} />}
         </label>
         <select
           value={String(def.value ?? '')}
@@ -65,7 +125,9 @@ export function FieldRenderer({
     return (
       <div style={{ marginBottom: 6 }}>
         <label style={{ display: 'block', fontSize: 12, color: 'var(--color-c9)', marginBottom: 4 }}>
-          {label} {def.calc && <span style={chipStyle('var(--color-c3)', '#FFFFFF')}>{CALC_BADGE}</span>}
+          {label}
+          {def.calc && <CalcBadge />}
+          {showDetails && <InternalKeyHint fieldKey={fieldKey} />}
         </label>
         <table style={{ fontSize: 12, borderCollapse: 'collapse', width: '100%' }}>
           <thead>
@@ -102,23 +164,37 @@ export function FieldRenderer({
     );
   }
 
-  // Default: number / string / ref
-  const displayValue = isRef ? String(def.value ?? '') : (def.value ?? '');
+  // Champ $ref : affichage lisible (jamais la chaîne brute en mode normal)
+  if (isRef) {
+    return (
+      <div style={{ marginBottom: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+          <span style={{ fontSize: 12, color: 'var(--color-c9)' }}>{label}</span>
+          {def.unit && <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>({def.unit})</span>}
+          {def.calc && <CalcBadge />}
+          {showDetails && <InternalKeyHint fieldKey={fieldKey} />}
+        </div>
+        <RefValueDisplay refStr={String(def.value ?? '')} showDetails={showDetails} />
+      </div>
+    );
+  }
+
+  // Default: number / string
   return (
     <div style={{ marginBottom: 6 }}>
       <label style={{ display: 'block', fontSize: 12, color: 'var(--color-c9)', marginBottom: 2 }}>
         {label}
         {def.unit && <span style={{ marginLeft: 4, fontSize: 11 }}>({def.unit})</span>}
-        {def.calc && <span style={{ ...chipStyle('var(--color-c3)', '#FFFFFF'), marginLeft: 4 }}>{CALC_BADGE}</span>}
-        {isRef && <span title={REF_TOOLTIP} style={{ marginLeft: 4, fontSize: 11, color: 'var(--color-c9)', fontStyle: 'italic', cursor: 'help' }}>↗ ref</span>}
+        {def.calc && <CalcBadge />}
+        {showDetails && <InternalKeyHint fieldKey={fieldKey} />}
       </label>
       <input
         type={def.type === 'number' ? 'number' : 'text'}
-        value={String(displayValue)}
-        disabled={disabled || isRef}
+        value={String(def.value ?? '')}
+        disabled={disabled}
         step={def.type === 'number' ? '0.01' : undefined}
         onChange={(e) => onChange(fieldKey, def.type === 'number' ? Number(e.target.value) : e.target.value)}
-        style={{ width: '100%', boxSizing: 'border-box', fontSize: 13, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: isRef ? 'var(--color-c8)' : '#FFFFFF', fontStyle: isRef ? 'italic' : 'normal' }}
+        style={{ width: '100%', boxSizing: 'border-box', fontSize: 13, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#FFFFFF' }}
       />
     </div>
   );
