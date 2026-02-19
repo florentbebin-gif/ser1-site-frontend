@@ -276,6 +276,65 @@ En mode normal, la fiche produit affiche uniquement des libellés métier en fra
 
 ---
 
+## Configurer les règles d'un produit seed
+
+Quand un produit est créé depuis le catalogue seed (ex : LEP, Livret A, SCPI…), ses phases peuvent être vides ou marquées "Sans objet". Cette section explique comment les configurer via le modal guidé.
+
+### Prérequis
+
+- Être connecté en tant qu'administrateur.
+- La fonctionnalité est disponible depuis `/settings/base-contrat`.
+
+### Ouvrir le modal de configuration
+
+1. Ouvrir l'accordéon du produit à configurer.
+2. Sur la phase souhaitée (Constitution, Sortie, Décès), cliquer sur le bouton **"Configurer les règles"** (visible si la phase est vide ou "Sans objet").
+
+> Si la phase est "Sans objet", la basculer d'abord sur "Applicable" via le toggle de phase (cf. section *Marquer une phase "Sans objet"*), puis cliquer sur "Configurer les règles".
+
+### Étape 1 — Choisir la phase
+
+Le modal affiche les 3 phases avec leur état actuel :
+- **Vide** — phase applicable mais aucun bloc défini
+- **N blocs** — déjà configurée
+- **Sans objet** — non applicable pour ce produit
+
+Sélectionner la phase à configurer.
+
+### Étape 2 — Sélectionner les blocs de règles
+
+Une liste de blocs est proposée, filtrée selon la **Grande famille** du produit (ex : "Épargne bancaire" → blocs PS, note libre). Chaque bloc affiche :
+- Son titre en français
+- Un aperçu des champs qu'il contient
+- Une description contextuelle
+
+Cocher les blocs pertinents. Il est possible d'en sélectionner plusieurs.
+
+> **Blocs fréquents par famille :**
+> - Assurance-vie / PER (Assurance) → PFU, PS, Art. 990 I, Art. 757 B
+> - CTO / Titres vifs → PFU, note succession
+> - PEA → Exonération ancienneté, PS
+> - Livret réglementé (Épargne bancaire) → PS sur intérêts, note informative
+> - PER (Retraite & épargne salariale) → Déductibilité versements, rente RVTO
+
+### Étape 3 — Compléter les champs
+
+Pour chaque bloc sélectionné, les champs apparaissent avec :
+- **Labels en français** (aucune clé technique visible)
+- **Valeurs automatiques** (badge ★) affichées en lecture seule, lues depuis Paramètres Impôts ou Prélèvements sociaux
+- **Champs éditables** : saisir la valeur numérique ou cocher l'option
+- **Note complémentaire** (optionnelle) : texte libre affiché sous le bloc
+
+### Enregistrer
+
+Cliquer sur **"Enregistrer"** dans le modal. La phase est immédiatement mise à jour dans la fiche produit. Cliquer ensuite sur **"Enregistrer"** en bas de page pour persister en base.
+
+### Modifier un bloc existant
+
+Pour modifier un bloc déjà en place : cliquer directement sur le champ dans la fiche produit (si non publié), ou créer une nouvelle version du produit via **"Nouvelle version / Dupliquer"**.
+
+---
+
 ## Repo hygiene — Delete unused
 
 **Règle** : Si ça ne sert plus = on supprime.
