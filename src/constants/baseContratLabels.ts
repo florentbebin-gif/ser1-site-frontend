@@ -214,4 +214,10 @@ export const MISC_LABELS = {
   sectionReferences: 'Références officielles',
   detensiblePPOui: 'Oui — détenable en direct',
   detensiblePPNon: 'Non',
+  // Toggle Sans objet par phase
+  phaseMarkNotApplicable: 'Sans objet',
+  phaseMarkApplicable: 'Activer',
+  phaseNotApplicableHint: 'Cette phase ne s\'applique pas à ce produit (ex : pas de rachat, pas de transmission). Cliquez « Activer » pour configurer des règles.',
+  phaseApplicableToggleHint: 'Activer cette phase pour configurer des règles fiscales',
+  phaseNotApplicableToggleHint: 'Marquer cette phase comme Sans objet (réversible)',
 };
