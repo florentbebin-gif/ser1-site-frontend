@@ -1,0 +1,1104 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-02-19",
+  "products": [
+    {
+      "id": "assurance_dependance",
+      "label": "Assurance dépendance",
+      "family": "Assurance",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "exception",
+      "pmEligibilityNote": "Plutôt PP ; détention PM rare selon assureur/montage.",
+      "open2026": "oui",
+      "qualificationComment": "Contrat couvrant le risque dépendance (rente/capital).",
+      "references": [
+        "Service-Public (assurances — principes généraux)"
+      ]
+    },
+    {
+      "id": "assurance_emprunteur",
+      "label": "Assurance emprunteur",
+      "family": "Assurance",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Contrat adossé à un crédit (décès/PTIA/ITT/IPP…).",
+      "references": [
+        "Service-Public (assurance emprunteur — cadre général)"
+      ]
+    },
+    {
+      "id": "assurance_obseques",
+      "label": "Assurance obsèques",
+      "family": "Assurance",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Contrat finançant/organisant les obsèques (prévoyance).",
+      "references": [
+        "Service-Public (assurances — cadre général)"
+      ]
+    },
+    {
+      "id": "assurance_vie",
+      "label": "Assurance-vie",
+      "family": "Assurance",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "exception",
+      "pmEligibilityNote": "Selon assureur/contrat ; généralement PP.",
+      "open2026": "oui",
+      "qualificationComment": "Enveloppe d’épargne/assurance (UC, etc.).",
+      "references": [
+        "Service-Public — Assurance-vie"
+      ],
+      "templateKey": "insurance_life_savings"
+    },
+    {
+      "id": "contrat_capitalisation",
+      "label": "Contrat de capitalisation",
+      "family": "Assurance",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Enveloppe proche de l’AV, utile en ingénierie patrimoniale/PM selon contrats.",
+      "references": [
+        "Documentation patrimoniale (à corroborer selon assureur)"
+      ],
+      "templateKey": "capitalisation_contract"
+    },
+    {
+      "id": "prevoyance_individuelle",
+      "label": "Prévoyance individuelle (arrêt de travail / invalidité / décès)",
+      "family": "Assurance",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "exception",
+      "pmEligibilityNote": "Côté entreprise, l’équivalent est souvent collectif ; cas PM à qualifier.",
+      "open2026": "oui",
+      "qualificationComment": "Contrat de protection (prestations ITT/invalidité/décès selon garanties).",
+      "references": [
+        "Service-Public (assurances — cadre général)"
+      ],
+      "templateKey": "insurance_risk_generic"
+    },
+    {
+      "id": "bitcoin_btc",
+      "label": "Bitcoin (BTC)",
+      "family": "Crypto-actifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Actif numérique ; volatilité élevée, risques de conservation.",
+      "references": [
+        "AMF — Crypto-actifs (repères/FAQ)"
+      ],
+      "templateKey": "crypto_asset"
+    },
+    {
+      "id": "ether_eth",
+      "label": "Ether (ETH)",
+      "family": "Crypto-actifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Actif numérique ; mêmes vigilances (custody, volatilité).",
+      "references": [
+        "AMF — Crypto-actifs (repères/FAQ)"
+      ],
+      "templateKey": "crypto_asset"
+    },
+    {
+      "id": "nft",
+      "label": "NFT",
+      "family": "Crypto-actifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Jeton non fongible ; marché risqué/illiquide.",
+      "references": [
+        "AMF — Crypto-actifs (repères)"
+      ],
+      "templateKey": "crypto_asset"
+    },
+    {
+      "id": "stablecoins",
+      "label": "Stablecoins",
+      "family": "Crypto-actifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Jetons visant une stabilité ; risques de contrepartie/structure.",
+      "references": [
+        "AMF — Crypto-actifs (repères)"
+      ],
+      "templateKey": "crypto_asset"
+    },
+    {
+      "id": "tokens_autres",
+      "label": "Tokens (autres crypto-actifs)",
+      "family": "Crypto-actifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Tokens utilitaires/sécurité selon cas ; qualifier traitement et risques.",
+      "references": [
+        "AMF — Crypto-actifs (repères)"
+      ],
+      "templateKey": "crypto_asset"
+    },
+    {
+      "id": "compte_courant_associe",
+      "label": "Compte courant d’associé (créance)",
+      "family": "Créances / Droits",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Créance de l’associé sur la société ; clauses possibles de blocage/subordination.",
+      "references": [
+        "Références juridiques/contractuelles (au cas par cas)"
+      ],
+      "templateKey": "claim_right"
+    },
+    {
+      "id": "pret_entre_particuliers",
+      "label": "Prêt entre particuliers (reconnaissance de dette)",
+      "family": "Créances / Droits",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "exception",
+      "pmEligibilityNote": "Détention PM possible selon montage ; à qualifier.",
+      "open2026": "na",
+      "qualificationComment": "Créance détenue en direct ; risque de défaut, formalisation nécessaire.",
+      "references": [
+        "Références contractuelles (au cas par cas)"
+      ],
+      "templateKey": "claim_right"
+    },
+    {
+      "id": "usufruit_nue_propriete",
+      "label": "Usufruit / nue-propriété (droits patrimoniaux)",
+      "family": "Créances / Droits",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Démembrement : mécanisme/droit réel portant sur un actif (titres, immo…).",
+      "references": [
+        "Annexe mécanisme (démembrement)"
+      ],
+      "templateKey": "claim_right"
+    },
+    {
+      "id": "censi_bouvard",
+      "label": "Censi-Bouvard (LMNP “réduction”)",
+      "family": "Dispositifs fiscaux immobiliers",
+      "kind": "dispositif_fiscal_immobilier",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "non",
+      "qualificationComment": "Réduction IR (résidences services) ; acquisitions nouvelles fermées depuis 31/12/2022.",
+      "references": [
+        "BOFiP — Censi-Bouvard (jusqu’au 31/12/2022)"
+      ],
+      "templateKey": "tax_overlay_real_estate"
+    },
+    {
+      "id": "denormandie",
+      "label": "Denormandie (ancien à rénover)",
+      "family": "Dispositifs fiscaux immobiliers",
+      "kind": "dispositif_fiscal_immobilier",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Réduction IR si acquisition + travaux (≥ 25%) en zones éligibles ; fin à confirmer (doctrine vs SP).",
+      "references": [
+        "Service-Public — Denormandie",
+        "BOFiP — Denormandie (à vérifier)"
+      ],
+      "templateKey": "tax_overlay_real_estate"
+    },
+    {
+      "id": "duflot",
+      "label": "Duflot",
+      "family": "Dispositifs fiscaux immobiliers",
+      "kind": "dispositif_fiscal_immobilier",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "non",
+      "qualificationComment": "Réduction IR pour investissements 01/2013 à 08/2014 ; effets possibles si engagements en cours.",
+      "references": [
+        "Service-Public — Pinel/Duflot (périodes)"
+      ],
+      "templateKey": "tax_overlay_real_estate"
+    },
+    {
+      "id": "loc_avantages",
+      "label": "Loc’Avantages (convention Anah)",
+      "family": "Dispositifs fiscaux immobiliers",
+      "kind": "dispositif_fiscal_immobilier",
+      "ppDirectHoldable": true,
+      "pmEligibility": "exception",
+      "pmEligibilityNote": "Éligible aussi à certaines PM non IS ; à qualifier.",
+      "open2026": "oui",
+      "qualificationComment": "Réduction IR via conventionnement Anah ; sollicitable jusqu’au 31/12/2027.",
+      "references": [
+        "Service-Public — Loc’Avantages",
+        "BOFiP — Loc’Avantages"
+      ],
+      "templateKey": "tax_overlay_real_estate"
+    },
+    {
+      "id": "louer_abordable_cosse",
+      "label": "Louer abordable (Cosse) — déduction",
+      "family": "Dispositifs fiscaux immobiliers",
+      "kind": "dispositif_fiscal_immobilier",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "non",
+      "qualificationComment": "Déduction revenus fonciers via convention Anah ; fermé (convention avant 01/03/2022) mais effets possibles.",
+      "references": [
+        "Service-Public — Louer abordable (date limite)"
+      ],
+      "templateKey": "tax_overlay_real_estate"
+    },
+    {
+      "id": "malraux",
+      "label": "Malraux",
+      "family": "Dispositifs fiscaux immobiliers",
+      "kind": "dispositif_fiscal_immobilier",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Réduction IR sur travaux en secteurs protégés ; dispositif technique.",
+      "references": [
+        "BOFiP — Malraux"
+      ],
+      "templateKey": "tax_overlay_real_estate"
+    },
+    {
+      "id": "monuments_historiques",
+      "label": "Monuments historiques",
+      "family": "Dispositifs fiscaux immobiliers",
+      "kind": "dispositif_fiscal_immobilier",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Régime spécifique (déductions charges/travaux) ; très technique.",
+      "references": [
+        "Service-Public — Monuments historiques"
+      ],
+      "templateKey": "tax_overlay_real_estate"
+    },
+    {
+      "id": "pinel_pinel_plus",
+      "label": "Pinel / Pinel+",
+      "family": "Dispositifs fiscaux immobiliers",
+      "kind": "dispositif_fiscal_immobilier",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "non",
+      "qualificationComment": "Réduction IR pour investissements jusqu’au 31/12/2024 ; fermé aux nouveaux investissements depuis 01/01/2025.",
+      "references": [
+        "Service-Public — Pinel/Duflot (fin Pinel)"
+      ],
+      "templateKey": "tax_overlay_real_estate"
+    },
+    {
+      "id": "relance_logement_jeanbrun",
+      "label": "Relance logement (dit “Jeanbrun”)",
+      "family": "Dispositifs fiscaux immobiliers",
+      "kind": "dispositif_fiscal_immobilier",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Dispositif annoncé 2026 : amortissement/déductions sur logement locatif (neuf/ancien avec travaux).",
+      "references": [
+        "Ministère Transition écologique — Relance logement (28/01/2026)"
+      ],
+      "templateKey": "tax_overlay_real_estate"
+    },
+    {
+      "id": "scellier",
+      "label": "Scellier",
+      "family": "Dispositifs fiscaux immobiliers",
+      "kind": "dispositif_fiscal_immobilier",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "non",
+      "qualificationComment": "Dispositif ancien (investissements 2009–2012 + prorogations) ; effets possibles selon dossiers.",
+      "references": [
+        "BOFiP — Scellier"
+      ],
+      "templateKey": "tax_overlay_real_estate"
+    },
+    {
+      "id": "cat_compte_a_terme",
+      "label": "Compte à terme / dépôt à terme (CAT)",
+      "family": "Épargne bancaire",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Dépôt rémunéré bloqué sur une durée ; conditions (taux/pénalités).",
+      "references": [
+        "Service-Public — Compte à terme"
+      ],
+      "templateKey": "bank_account"
+    },
+    {
+      "id": "compte_courant_depot",
+      "label": "Compte courant (compte de dépôt)",
+      "family": "Épargne bancaire",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Compte bancaire de base (dépôt/flux), PP ou PM.",
+      "references": [
+        "Service-Public (compte bancaire)"
+      ],
+      "templateKey": "bank_account"
+    },
+    {
+      "id": "csl_compte_sur_livret",
+      "label": "Compte sur livret (CSL)",
+      "family": "Épargne bancaire",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Livret non réglementé (taux libre banque), sans avantage fiscal spécifique.",
+      "references": [
+        "Économie.gouv — Produits d’épargne"
+      ],
+      "templateKey": "bank_account"
+    },
+    {
+      "id": "cel",
+      "label": "CEL (Compte épargne logement)",
+      "family": "Épargne bancaire",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Produit réglementé d’épargne logement avec droits à prêt (selon date d’ouverture).",
+      "references": [
+        "Service-Public — CEL"
+      ],
+      "templateKey": "bank_account"
+    },
+    {
+      "id": "ldds",
+      "label": "LDDS",
+      "family": "Épargne bancaire",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Livret réglementé réservé aux personnes physiques.",
+      "references": [
+        "Service-Public — LDDS"
+      ],
+      "templateKey": "regulated_savings"
+    },
+    {
+      "id": "lep",
+      "label": "LEP",
+      "family": "Épargne bancaire",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Livret réglementé sous conditions de revenus (PP uniquement).",
+      "references": [
+        "Service-Public — LEP"
+      ],
+      "templateKey": "regulated_savings"
+    },
+    {
+      "id": "livret_a",
+      "label": "Livret A",
+      "family": "Épargne bancaire",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "exception",
+      "pmEligibilityNote": "Exceptions possibles (organismes/structures) selon réglementation.",
+      "open2026": "oui",
+      "qualificationComment": "Livret réglementé (PP en principe) ; plafond et règles réglementaires.",
+      "references": [
+        "Service-Public — Livret A"
+      ],
+      "templateKey": "regulated_savings"
+    },
+    {
+      "id": "livret_jeune",
+      "label": "Livret Jeune",
+      "family": "Épargne bancaire",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Livret réglementé réservé aux jeunes (conditions d’âge).",
+      "references": [
+        "Service-Public — Livret Jeune"
+      ],
+      "templateKey": "regulated_savings"
+    },
+    {
+      "id": "pel",
+      "label": "PEL (Plan épargne logement)",
+      "family": "Épargne bancaire",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Épargne logement (épargne + droits à prêt), conditions selon date d’ouverture.",
+      "references": [
+        "Service-Public — PEL"
+      ],
+      "templateKey": "bank_account"
+    },
+    {
+      "id": "peac",
+      "label": "PEAC (Plan d’épargne avenir climat)",
+      "family": "Épargne bancaire",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Plan d’épargne dédié ; modalités selon textes et offres en vigueur.",
+      "references": [
+        "Service-Public — Plan d’épargne avenir climat"
+      ],
+      "templateKey": "regulated_savings"
+    },
+    {
+      "id": "etf",
+      "label": "ETF (fonds indiciels cotés)",
+      "family": "Fonds / OPC",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Part de fonds coté répliquant un indice ; logeable selon enveloppe.",
+      "references": [
+        "AMF — OPC/OPCVM (repères)"
+      ],
+      "templateKey": "fund_opc"
+    },
+    {
+      "id": "fcp",
+      "label": "FCP (fonds commun de placement)",
+      "family": "Fonds / OPC",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Copropriété de valeurs mobilières gérée par une société de gestion.",
+      "references": [
+        "AMF — OPC/OPCVM (repères)"
+      ],
+      "templateKey": "fund_opc"
+    },
+    {
+      "id": "fcpr",
+      "label": "FCPR (fonds commun de placement à risques)",
+      "family": "Fonds / OPC",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Fonds de capital-investissement (non coté majoritaire) ; illiquidité/risque.",
+      "references": [
+        "AMF — FIA/OPC (repères)"
+      ],
+      "templateKey": "fund_opc"
+    },
+    {
+      "id": "fcpe",
+      "label": "FCPE (épargne salariale)",
+      "family": "Fonds / OPC",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "exception",
+      "pmEligibilityNote": "Principalement via plan entreprise (PEE/PERCOL).",
+      "open2026": "oui",
+      "qualificationComment": "Fonds dédié à l’épargne salariale ; en direct hors plan, cas atypique.",
+      "references": [
+        "Service-Public — Épargne salariale"
+      ],
+      "templateKey": "employee_savings_fund"
+    },
+    {
+      "id": "fcpi",
+      "label": "FCPI",
+      "family": "Fonds / OPC",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Fonds orienté innovation ; règles fiscales selon millésime.",
+      "references": [
+        "Service-Public — IR-PME (logique dispositifs)"
+      ],
+      "templateKey": "fund_opc"
+    },
+    {
+      "id": "fip",
+      "label": "FIP",
+      "family": "Fonds / OPC",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Fonds d’investissement de proximité ; règles fiscales selon millésime.",
+      "references": [
+        "Service-Public — IR-PME (logique dispositifs)"
+      ],
+      "templateKey": "fund_opc"
+    },
+    {
+      "id": "opci_grand_public",
+      "label": "OPCI grand public",
+      "family": "Fonds / OPC",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "OPC immobilier ; détention en direct ou via assurance-vie selon offres.",
+      "references": [
+        "AMF — OPCI grand public"
+      ],
+      "templateKey": "fund_opc"
+    },
+    {
+      "id": "opcvm",
+      "label": "OPCVM",
+      "family": "Fonds / OPC",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Catégorie réglementée de fonds (actions, oblig, monétaires…).",
+      "references": [
+        "AMF — OPC/OPCVM (repères)"
+      ],
+      "templateKey": "fund_opc"
+    },
+    {
+      "id": "sicav",
+      "label": "SICAV",
+      "family": "Fonds / OPC",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Société d’investissement à capital variable ; porteur = actionnaire.",
+      "references": [
+        "AMF — OPC/OPCVM (repères)"
+      ],
+      "templateKey": "fund_opc"
+    },
+    {
+      "id": "immobilier_appartement_maison",
+      "label": "Appartement / maison (résidence principale, secondaire, locatif)",
+      "family": "Immobilier direct",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Immobilier direct ; pleine propriété ou démembrement possible.",
+      "references": [
+        "Service-Public (achat/vente logement)"
+      ],
+      "templateKey": "real_estate_direct"
+    },
+    {
+      "id": "immobilier_garage_parking",
+      "label": "Garage / parking / lot annexe",
+      "family": "Immobilier direct",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Immobilier direct ; fiscalité selon régime (foncier/BIC, etc.).",
+      "references": [
+        "Service-Public (repères logement)"
+      ],
+      "templateKey": "real_estate_direct"
+    },
+    {
+      "id": "immobilier_terrain",
+      "label": "Terrain (constructible / non constructible)",
+      "family": "Immobilier direct",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Terrain ; fiscalité à la cession variable (PV immobilières, etc.).",
+      "references": [
+        "Service-Public (repères logement)"
+      ],
+      "templateKey": "real_estate_direct"
+    },
+    {
+      "id": "gfa",
+      "label": "GFA (Groupement foncier agricole)",
+      "family": "Immobilier indirect (pierre-papier & foncier)",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Parts de foncier agricole ; illiquidité/valorisation à surveiller.",
+      "references": [
+        "Sources fiscales/AMF selon montage (à sourcer)"
+      ],
+      "templateKey": "real_estate_indirect"
+    },
+    {
+      "id": "gfv",
+      "label": "GFV (Groupement foncier viticole)",
+      "family": "Immobilier indirect (pierre-papier & foncier)",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Parts de foncier viticole ; illiquidité et risques agricoles.",
+      "references": [
+        "Sources fiscales/AMF selon montage (à sourcer)"
+      ],
+      "templateKey": "real_estate_indirect"
+    },
+    {
+      "id": "groupement_forestier",
+      "label": "Groupement forestier (GF / GFF)",
+      "family": "Immobilier indirect (pierre-papier & foncier)",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Parts de groupement forestier ; règles fiscales spécifiques à vérifier.",
+      "references": [
+        "Sources fiscales (à sourcer)"
+      ],
+      "templateKey": "real_estate_indirect"
+    },
+    {
+      "id": "parts_scpi",
+      "label": "Parts de SCPI",
+      "family": "Immobilier indirect (pierre-papier & foncier)",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "SCPI (AMF) : revenus + valeur des parts ; illiquidité relative et frais.",
+      "references": [
+        "AMF — SCPI (repères)"
+      ],
+      "templateKey": "scpi"
+    },
+    {
+      "id": "argent_physique",
+      "label": "Argent physique (lingots/pièces)",
+      "family": "Métaux précieux",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Détention matérielle ; stockage/assurance, fiscalité à la revente à qualifier.",
+      "references": [
+        "Économie.gouv (repères fiscalité métaux)"
+      ],
+      "templateKey": "precious_metals"
+    },
+    {
+      "id": "or_physique",
+      "label": "Or physique (lingots/pièces)",
+      "family": "Métaux précieux",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Détention matérielle ; vigilance stockage et liquidité selon formes.",
+      "references": [
+        "Économie.gouv (repères fiscalité métaux)"
+      ],
+      "templateKey": "precious_metals"
+    },
+    {
+      "id": "platine_palladium",
+      "label": "Platine / palladium physiques",
+      "family": "Métaux précieux",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Métaux précieux (marché plus étroit) ; attention liquidité.",
+      "references": [
+        "Économie.gouv (repères actifs)"
+      ],
+      "templateKey": "precious_metals"
+    },
+    {
+      "id": "actions_non_cotees",
+      "label": "Actions non cotées (parts/actions de société)",
+      "family": "Non coté / Private Equity",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Titres non cotés ; clauses/pactes, valorisation et liquidité.",
+      "references": [
+        "Références juridiques (au cas par cas)"
+      ],
+      "templateKey": "private_equity"
+    },
+    {
+      "id": "crowdfunding",
+      "label": "Crowdfunding (actions/obligations via plateforme)",
+      "family": "Non coté / Private Equity",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Souscription via plateformes ; risque perte totale/illiquidité, vérifier statut plateforme.",
+      "references": [
+        "AMF — Financement participatif (repères)"
+      ],
+      "templateKey": "private_equity"
+    },
+    {
+      "id": "obligations_non_cotees",
+      "label": "Obligations non cotées (PME, club deals)",
+      "family": "Non coté / Private Equity",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Titres de créance non cotés ; risque émetteur, clauses de remboursement.",
+      "references": [
+        "AMF (repères produits/risques)"
+      ],
+      "templateKey": "private_debt"
+    },
+    {
+      "id": "sofica",
+      "label": "SOFICA",
+      "family": "Non coté / Private Equity",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Fonds cinéma/audiovisuel ; avantage fiscal selon millésime.",
+      "references": [
+        "Service-Public (dispositifs IR — SOFICA)"
+      ],
+      "templateKey": "tax_incentive_fund"
+    },
+    {
+      "id": "ir_pme_madelin",
+      "label": "Souscription au capital de PME (IR-PME / “Madelin”)",
+      "family": "Non coté / Private Equity",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Achat de titres de PME ; peut ouvrir droit à réduction IR selon conditions.",
+      "references": [
+        "Service-Public — IR-PME"
+      ],
+      "templateKey": "tax_incentive_equity"
+    },
+    {
+      "id": "autocall",
+      "label": "Autocall (note structurée)",
+      "family": "Produits structurés",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Produit à scénario ; risque de perte en capital selon sous-jacent/barrières.",
+      "references": [
+        "AMF — Produits structurés (repères)"
+      ],
+      "templateKey": "structured_products"
+    },
+    {
+      "id": "certificats",
+      "label": "Certificats (bonus, discount, turbo, etc.)",
+      "family": "Produits structurés",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Produits listés hétérogènes ; risques spécifiques (levier/barrières/émetteur).",
+      "references": [
+        "AMF — Produits structurés (repères)"
+      ],
+      "templateKey": "structured_products"
+    },
+    {
+      "id": "emtn_notes",
+      "label": "EMTN / Notes (titres de créance structurés)",
+      "family": "Produits structurés",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Titres de créance émis par une banque ; risque émetteur + structure.",
+      "references": [
+        "AMF — Produits structurés (repères)"
+      ],
+      "templateKey": "structured_products"
+    },
+    {
+      "id": "warrants_options",
+      "label": "Warrants / options listées",
+      "family": "Produits structurés",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Dérivés listés ; risque de perte rapide, effet de levier.",
+      "references": [
+        "AMF — Produits à risque / structurés (repères)"
+      ],
+      "templateKey": "structured_products"
+    },
+    {
+      "id": "article_83",
+      "label": "Article 83 (anciens contrats “retraite entreprise”)",
+      "family": "Retraite & épargne salariale",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "non",
+      "qualificationComment": "Ancien dispositif remplacé par PERO ; contrats existants persistent.",
+      "references": [
+        "Service-Public — PER (transition/anciens produits)"
+      ],
+      "templateKey": "retirement_company"
+    },
+    {
+      "id": "madelin_retraite_ancien",
+      "label": "Madelin retraite (ancien)",
+      "family": "Retraite & épargne salariale",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "non",
+      "qualificationComment": "Ancien cadre TNS remplacé par PER ; contrats existants possibles.",
+      "references": [
+        "Service-Public — PER (transition/anciens produits)"
+      ],
+      "templateKey": "retirement_individual"
+    },
+    {
+      "id": "pee",
+      "label": "PEE (Plan d’épargne entreprise)",
+      "family": "Retraite & épargne salariale",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Plan d’épargne salariale : titulaire = salarié ; plan mis en place par l’entreprise.",
+      "references": [
+        "Service-Public — Épargne salariale"
+      ],
+      "templateKey": "employee_savings_plan"
+    },
+    {
+      "id": "per_perin",
+      "label": "PER (Plan d’épargne retraite – PERIN)",
+      "family": "Retraite & épargne salariale",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Enveloppe retraite individuelle (bancaire ou assurantielle) ; sortie capital/rente selon compartiments.",
+      "references": [
+        "Service-Public — PER"
+      ],
+      "templateKey": "retirement_individual"
+    },
+    {
+      "id": "percol",
+      "label": "PERCOL (PER collectif)",
+      "family": "Retraite & épargne salariale",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Plan retraite d’entreprise collectif (remplace PERCO).",
+      "references": [
+        "Service-Public — PER (entreprise)"
+      ],
+      "templateKey": "retirement_company"
+    },
+    {
+      "id": "perco_ancien",
+      "label": "PERCO (ancien)",
+      "family": "Retraite & épargne salariale",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "non",
+      "qualificationComment": "Ancien plan d’entreprise remplacé par PERCOL ; plans existants peuvent continuer.",
+      "references": [
+        "Service-Public — PER (transition)"
+      ],
+      "templateKey": "retirement_company"
+    },
+    {
+      "id": "pero",
+      "label": "PERO (PER obligatoire)",
+      "family": "Retraite & épargne salariale",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Plan retraite d’entreprise obligatoire (succède à Article 83).",
+      "references": [
+        "Service-Public — PER (compartiments/entreprise)"
+      ],
+      "templateKey": "retirement_company"
+    },
+    {
+      "id": "perp_ancien",
+      "label": "PERP (ancien)",
+      "family": "Retraite & épargne salariale",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "non",
+      "qualificationComment": "Ancien PERP remplacé par PER ; encore détenu si souscrit avant réforme.",
+      "references": [
+        "Service-Public — PER (transition/anciens produits)"
+      ],
+      "templateKey": "retirement_individual"
+    },
+    {
+      "id": "actions_cotees",
+      "label": "Actions (cotées)",
+      "family": "Titres vifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Titres de sociétés cotées ; détention via intermédiaire (CTO/PEA).",
+      "references": [
+        "AMF — Instruments financiers (repères)"
+      ],
+      "templateKey": "listed_securities"
+    },
+    {
+      "id": "actions_preference",
+      "label": "Actions de préférence",
+      "family": "Titres vifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Actions avec droits spécifiques (dividende prioritaire, etc.).",
+      "references": [
+        "AMF — Instruments financiers (repères)"
+      ],
+      "templateKey": "listed_securities"
+    },
+    {
+      "id": "oat_obligations_etat",
+      "label": "Bons / OAT / obligations d’État",
+      "family": "Titres vifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Titres souverains ; risque de taux/valeur, liquidité souvent élevée.",
+      "references": [
+        "AMF — Instruments financiers (repères)"
+      ],
+      "templateKey": "listed_securities"
+    },
+    {
+      "id": "obligations_corporate",
+      "label": "Obligations (corporate)",
+      "family": "Titres vifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Obligations d’entreprises ; risque émetteur + risque de taux.",
+      "references": [
+        "AMF — Instruments financiers (repères)"
+      ],
+      "templateKey": "listed_securities"
+    },
+    {
+      "id": "obligations_convertibles",
+      "label": "Obligations convertibles",
+      "family": "Titres vifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Obligation convertible en actions ; profil hybride.",
+      "references": [
+        "AMF — Instruments financiers (repères)"
+      ],
+      "templateKey": "listed_securities"
+    },
+    {
+      "id": "parts_sociales_cooperatives",
+      "label": "Parts sociales (banques mutualistes / coopératives)",
+      "family": "Titres vifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Titres non cotés/peu liquides ; conditions propres à l’émetteur.",
+      "references": [
+        "Références émetteurs + droit coopératif (à qualifier)"
+      ],
+      "templateKey": "listed_securities"
+    },
+    {
+      "id": "titres_participatifs",
+      "label": "Titres participatifs",
+      "family": "Titres vifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Instrument hybride (dette long terme + rémunération liée aux résultats).",
+      "references": [
+        "AMF — Instruments financiers (repères)"
+      ],
+      "templateKey": "listed_securities"
+    },
+    {
+      "id": "droits_bsa_dps",
+      "label": "Droits / BSA / DPS (instruments d’augmentation de capital)",
+      "family": "Titres vifs",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Droits attachés aux actions ; temporalité courte.",
+      "references": [
+        "AMF — Instruments financiers (repères)"
+      ],
+      "templateKey": "listed_securities"
+    }
+  ]
+}
