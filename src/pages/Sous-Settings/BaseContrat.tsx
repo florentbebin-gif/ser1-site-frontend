@@ -180,24 +180,55 @@ function PhaseColumn({
   phase,
   disabled,
   onFieldChange,
+  onApplicableChange,
 }: {
   phaseKey: string;
   phase: Phase;
   disabled: boolean;
   onFieldChange: (_blockId: string, _fieldKey: string, _value: unknown) => void;
+  onApplicableChange?: (_applicable: boolean) => void;
 }) {
   if (!phase.applicable) {
     return (
       <div style={{ flex: 1, minWidth: 240 }}>
         <h4 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-c10)', marginBottom: 8 }}>{PHASE_LABELS[phaseKey]}</h4>
-        <span style={chipStyle('var(--color-c8)', 'var(--color-c9)')}>{MISC_LABELS.phaseNotApplicable}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={chipStyle('var(--color-c8)', 'var(--color-c9)')}>{MISC_LABELS.phaseNotApplicable}</span>
+          {!disabled && onApplicableChange && (
+            <button
+              type="button"
+              onClick={() => onApplicableChange(true)}
+              title={MISC_LABELS.phaseApplicableToggleHint}
+              style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, border: '1px solid var(--color-c8)', background: 'none', color: 'var(--color-c9)', cursor: 'pointer' }}
+            >
+              {MISC_LABELS.phaseMarkApplicable}
+            </button>
+          )}
+        </div>
+        {!disabled && (
+          <p style={{ fontSize: 11, color: 'var(--color-c9)', fontStyle: 'italic', marginTop: 6 }}>
+            {MISC_LABELS.phaseNotApplicableHint}
+          </p>
+        )}
       </div>
     );
   }
 
   return (
     <div style={{ flex: 1, minWidth: 240 }}>
-      <h4 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-c10)', marginBottom: 8 }}>{PHASE_LABELS[phaseKey]}</h4>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+        <h4 style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-c10)', margin: 0 }}>{PHASE_LABELS[phaseKey]}</h4>
+        {!disabled && onApplicableChange && (
+          <button
+            type="button"
+            onClick={() => onApplicableChange(false)}
+            title={MISC_LABELS.phaseNotApplicableToggleHint}
+            style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, border: '1px solid var(--color-c8)', background: 'none', color: 'var(--color-c9)', cursor: 'pointer' }}
+          >
+            {MISC_LABELS.phaseMarkNotApplicable}
+          </button>
+        )}
+      </div>
       {phase.blocks.length === 0 ? (
         <p style={{ fontSize: 12, color: 'var(--color-c9)', fontStyle: 'italic' }}>{MISC_LABELS.noBlocks}</p>
       ) : (
@@ -272,6 +303,13 @@ export default function BaseContrat() {
   const [deletingVersionProduct, setDeletingVersionProduct] = useState<BaseContratProduct | null>(null);
   const [deletingVersionIdx, setDeletingVersionIdx] = useState<number | null>(null);
 
+  // Navigation / search / filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterFamille, setFilterFamille] = useState<string>('');
+  const [filterPPPM, setFilterPPPM] = useState<string>('');
+  const [filterStatus, setFilterStatus] = useState<'actif' | 'cloture' | ''>('');
+  const [openFamilyId, setOpenFamilyId] = useState<string | null>(null);
+
   // Add/Edit form state
   const [formId, setFormId] = useState('');
   const [formLabel, setFormLabel] = useState('');
@@ -302,18 +340,91 @@ export default function BaseContrat() {
     [settings?.tests],
   );
 
+  // ─── Derived lists (hooks must be before early returns) ───
+  const allActiveProducts = useMemo(
+    () => (settings?.products ?? []).filter((p) => p.isActive).sort((a, b) => a.sortOrder - b.sortOrder),
+    [settings?.products],
+  );
+  const allClosedProducts = useMemo(
+    () => (settings?.products ?? []).filter((p) => !p.isActive),
+    [settings?.products],
+  );
+
+  const activeProducts = useMemo(() => {
+    return allActiveProducts.filter((p) => {
+      if (searchQuery && !p.label.toLowerCase().includes(searchQuery.toLowerCase()) && !p.id.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (filterFamille && p.grandeFamille !== filterFamille) return false;
+      if (filterPPPM === 'pp' && !p.detensiblePP) return false;
+      if (filterPPPM === 'pm' && p.eligiblePM === 'non') return false;
+      if (filterStatus === 'cloture') return false;
+      return true;
+    });
+  }, [allActiveProducts, searchQuery, filterFamille, filterPPPM, filterStatus]);
+
+  const closedProducts = useMemo(() => {
+    if (filterStatus === 'actif') return [];
+    return allClosedProducts.filter((p) => {
+      if (searchQuery && !p.label.toLowerCase().includes(searchQuery.toLowerCase()) && !p.id.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (filterFamille && p.grandeFamille !== filterFamille) return false;
+      if (filterPPPM === 'pp' && !p.detensiblePP) return false;
+      if (filterPPPM === 'pm' && p.eligiblePM === 'non') return false;
+      return true;
+    });
+  }, [allClosedProducts, searchQuery, filterFamille, filterPPPM, filterStatus]);
+
+  const groupedByFamily = useMemo(() => {
+    const map = new Map<string, BaseContratProduct[]>();
+    for (const gf of GRANDE_FAMILLE_OPTIONS) {
+      const inGroup = activeProducts.filter((p) => p.grandeFamille === gf);
+      if (inGroup.length > 0) map.set(gf, inGroup);
+    }
+    const unclassified = activeProducts.filter((p) => !GRANDE_FAMILLE_OPTIONS.includes(p.grandeFamille as never));
+    if (unclassified.length > 0) map.set('Autres', unclassified);
+    return map;
+  }, [activeProducts]);
+
+  const closedByFamily = useMemo(() => {
+    const map = new Map<string, BaseContratProduct[]>();
+    for (const p of closedProducts) {
+      const gf = p.grandeFamille ?? 'Autres';
+      if (!map.has(gf)) map.set(gf, []);
+      map.get(gf)!.push(p);
+    }
+    return map;
+  }, [closedProducts]);
+
   if (loading) return <p>Chargement…</p>;
   if (!settings) return <p>Aucune donnée.</p>;
 
   const products = settings.products ?? [];
-  const activeProducts = products.filter((p) => p.isActive).sort((a, b) => a.sortOrder - b.sortOrder);
-  const closedProducts = products.filter((p) => !p.isActive);
 
   // ─── Mutations (local state, persisted on Save) ───
 
   function updateSettings(fn: (_prev: BaseContratSettings) => BaseContratSettings) {
     setSettings((prev) => (prev ? fn(prev) : prev));
     setMessage('');
+  }
+
+  function handlePhaseApplicableChange(productId: string, rulesetIdx: number, phaseKey: string, applicable: boolean) {
+    updateSettings((prev) => ({
+      ...prev,
+      products: prev.products.map((p) => {
+        if (p.id !== productId) return p;
+        return {
+          ...p,
+          rulesets: p.rulesets.map((rs, ri) => {
+            if (ri !== rulesetIdx) return rs;
+            return {
+              ...rs,
+              phases: {
+                ...rs.phases,
+                [phaseKey]: { ...rs.phases[phaseKey as keyof typeof rs.phases], applicable },
+              },
+            };
+          }),
+        };
+      }),
+    }));
   }
 
   function handleFieldChange(productId: string, rulesetIdx: number, blockId: string, fieldKey: string, value: unknown) {
@@ -630,8 +741,56 @@ export default function BaseContrat() {
           </div>
         )}
 
+        {/* ── Barre recherche + filtres ── */}
+        {products.length > 0 && (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Rechercher un produit…"
+              style={{ flex: '1 1 200px', fontSize: 13, padding: '7px 12px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#FFFFFF' }}
+            />
+            <select
+              value={filterFamille}
+              onChange={(e) => setFilterFamille(e.target.value)}
+              style={{ fontSize: 12, padding: '7px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#FFFFFF' }}
+            >
+              <option value="">Toutes les familles</option>
+              {GRANDE_FAMILLE_OPTIONS.map((gf) => <option key={gf} value={gf}>{gf}</option>)}
+            </select>
+            <select
+              value={filterPPPM}
+              onChange={(e) => setFilterPPPM(e.target.value)}
+              style={{ fontSize: 12, padding: '7px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#FFFFFF' }}
+            >
+              <option value="">PP + PM</option>
+              <option value="pp">PP direct</option>
+              <option value="pm">Éligible PM</option>
+            </select>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as 'actif' | 'cloture' | '')}
+              style={{ fontSize: 12, padding: '7px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#FFFFFF' }}
+            >
+              <option value="">Actifs + clôturés</option>
+              <option value="actif">Actifs seulement</option>
+              <option value="cloture">Clôturés seulement</option>
+            </select>
+            {(searchQuery || filterFamille || filterPPPM || filterStatus) && (
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(''); setFilterFamille(''); setFilterPPPM(''); setFilterStatus(''); }}
+                style={{ fontSize: 12, padding: '7px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', background: 'none', color: 'var(--color-c9)', cursor: 'pointer' }}
+              >
+                Réinitialiser
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Empty state */}
-        {activeProducts.length === 0 && (
+        {allActiveProducts.length === 0 && (
           <div className="settings-premium-card" style={{ padding: '32px 24px', textAlign: 'center' }}>
             <p style={{ color: 'var(--color-c9)', fontSize: 14, margin: 0 }}>
               {isAdmin ? MISC_LABELS.noProductsAdmin : MISC_LABELS.noProducts}
@@ -639,100 +798,153 @@ export default function BaseContrat() {
           </div>
         )}
 
-        {/* Product accordions */}
-        {activeProducts.map((product) => {
-          const isOpen = openProductId === product.id;
-          const vIdx = selectedVersionIdx[product.id] ?? 0;
-          const ruleset = product.rulesets[vIdx];
-          const isEditableVersion = vIdx === 0;
+        {/* Résultat vide après filtres */}
+        {allActiveProducts.length > 0 && activeProducts.length === 0 && closedProducts.length === 0 && (
+          <p style={{ fontSize: 13, color: 'var(--color-c9)', fontStyle: 'italic', textAlign: 'center' }}>Aucun produit ne correspond aux filtres.</p>
+        )}
 
+        {/* ── Groupes par Grande famille ── */}
+        {Array.from(groupedByFamily.entries()).map(([famille, familyProducts]) => {
+          const isFamilyOpen = openFamilyId === famille;
+          const closedInFamily = closedByFamily.get(famille) ?? [];
           return (
-            <div key={product.id} className="settings-premium-card" style={{ padding: 0, overflow: 'hidden' }}>
-              {/* Accordion header */}
+            <div key={famille} className="settings-premium-card" style={{ padding: 0, overflow: 'hidden' }}>
+              {/* Family header */}
               <div
-                onClick={() => setOpenProductId(isOpen ? null : product.id)}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 20px', cursor: 'pointer', flexWrap: 'wrap' }}
+                onClick={() => setOpenFamilyId(isFamilyOpen ? null : famille)}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px', cursor: 'pointer', background: 'var(--color-c7)', borderBottom: isFamilyOpen ? '1px solid var(--color-c8)' : 'none' }}
               >
-                <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.grandeFamille ?? product.family}</span>
-                {product.detensiblePP !== undefined
-                  ? <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.detensiblePP ? 'PP direct' : 'Sans détention directe'}</span>
-                  : <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.holders}</span>
-                }
-                <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 15 }}>{product.label}</span>
-                <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>({product.id})</span>
-                {ruleset && (
-                  <span style={{ fontSize: 11, color: 'var(--color-c9)', fontStyle: 'italic' }}>
-                    {MISC_LABELS.activeVersion} : {ruleset.effectiveDate}
-                  </span>
+                <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--color-c10)' }}>{famille}</span>
+                <span style={chipStyle('var(--color-c8)', 'var(--color-c9)')}>{familyProducts.length} actif{familyProducts.length > 1 ? 's' : ''}</span>
+                {closedInFamily.length > 0 && (
+                  <span style={chipStyle('var(--color-c8)', 'var(--color-c9)')}>{closedInFamily.length} clôturé{closedInFamily.length > 1 ? 's' : ''}</span>
                 )}
-                <span style={chipStyle(
-                  product.confidenceLevel === 'confirmed' ? 'var(--color-c3)'
-                    : product.confidenceLevel === 'toVerify' ? 'var(--color-c6)'
-                    : 'var(--color-c8)',
-                  product.confidenceLevel === 'confirmed' ? '#FFFFFF'
-                    : 'var(--color-c10)',
-                )}>
-                  {CONFIDENCE_ICONS[product.confidenceLevel]} {CONFIDENCE_LABELS[product.confidenceLevel]}
-                </span>
-                <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--color-c9)' }}>{isOpen ? '▲' : '▼'}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--color-c9)' }}>{isFamilyOpen ? '▲' : '▼'}</span>
               </div>
 
-              {/* Accordion body */}
-              {isOpen && (
-                <div style={{ padding: '0 20px 20px', borderTop: '1px solid var(--color-c8)' }}>
-                  {/* Admin bar + version selector */}
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 12, marginBottom: 16 }}>
-                    {/* Version selector */}
-                    {product.rulesets.length > 1 && (
-                      <select
-                        value={vIdx}
-                        onChange={(e) => setSelectedVersionIdx((prev) => ({ ...prev, [product.id]: Number(e.target.value) }))}
-                        style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#FFFFFF' }}
-                      >
-                        {product.rulesets.map((rs, i) => (
-                          <option key={i} value={i}>
-                            {rs.effectiveDate}{i === 0 ? ` (${MISC_LABELS.activeVersion})` : ''}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                    <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>{MISC_LABELS.versionCount(product.rulesets.length)}</span>
+              {isFamilyOpen && (
+                <div style={{ padding: '8px 0' }}>
+                  {/* Active products in family */}
+                  {familyProducts.map((product) => {
+                    const isOpen = openProductId === product.id;
+                    const vIdx = selectedVersionIdx[product.id] ?? 0;
+                    const ruleset = product.rulesets[vIdx];
+                    const isEditableVersion = vIdx === 0;
 
-                    {isAdmin && (
-                      <>
-                        <button className="chip" onClick={() => openEditModal(product)} style={{ padding: '4px 12px', fontSize: 12 }}>{ACTION_LABELS.editProduct}</button>
-                        <button className="chip" onClick={() => { setNewVersionProduct(product); setNewVersionDate(''); }} style={{ padding: '4px 12px', fontSize: 12 }}>{ACTION_LABELS.newVersion}</button>
-                        {product.rulesets.length > 1 && vIdx > 0 && (
-                          <button
-                            className="chip"
-                            onClick={() => { setDeletingVersionProduct(product); setDeletingVersionIdx(vIdx); }}
-                            style={{ padding: '4px 12px', fontSize: 12, color: 'var(--color-c1)', borderColor: 'var(--color-c1)' }}
-                          >
-                            {ACTION_LABELS.deleteVersion}
-                          </button>
-                        )}
-                        <button className="chip" onClick={() => setClosingProduct(product)} style={{ padding: '4px 12px', fontSize: 12 }}>{ACTION_LABELS.closeProduct}</button>
-                      </>
-                    )}
-                  </div>
-
-                  {/* 3-column phases */}
-                  {ruleset ? (
-                    <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-                      {PHASE_KEYS.map((pk) => (
-                        <PhaseColumn
-                          key={pk}
-                          phaseKey={pk}
-                          phase={ruleset.phases[pk]}
-                          disabled={!isAdmin || !isEditableVersion}
-                          onFieldChange={(blockId, fieldKey, value) =>
-                            handleFieldChange(product.id, vIdx, blockId, fieldKey, value)
+                    return (
+                      <div key={product.id} style={{ borderTop: '1px solid var(--color-c8)' }}>
+                        {/* Product header */}
+                        <div
+                          onClick={() => setOpenProductId(isOpen ? null : product.id)}
+                          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 20px', cursor: 'pointer', flexWrap: 'wrap' }}
+                        >
+                          {product.detensiblePP !== undefined
+                            ? <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.detensiblePP ? 'PP direct' : 'Sans détention directe'}</span>
+                            : <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.holders}</span>
                           }
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <p style={{ fontSize: 13, color: 'var(--color-c9)', fontStyle: 'italic' }}>Aucune version définie pour ce produit.</p>
+                          {product.eligiblePM !== 'non' && (
+                            <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.eligiblePM === 'oui' ? 'PM' : 'PM/exception'}</span>
+                          )}
+                          <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 14 }}>{product.label}</span>
+                          <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>({product.id})</span>
+                          {ruleset && (
+                            <span style={{ fontSize: 11, color: 'var(--color-c9)', fontStyle: 'italic' }}>
+                              {MISC_LABELS.activeVersion} : {ruleset.effectiveDate}
+                            </span>
+                          )}
+                          <span style={chipStyle(
+                            product.confidenceLevel === 'confirmed' ? 'var(--color-c3)'
+                              : product.confidenceLevel === 'toVerify' ? 'var(--color-c6)'
+                              : 'var(--color-c8)',
+                            product.confidenceLevel === 'confirmed' ? '#FFFFFF' : 'var(--color-c10)',
+                          )}>
+                            {CONFIDENCE_ICONS[product.confidenceLevel]} {CONFIDENCE_LABELS[product.confidenceLevel]}
+                          </span>
+                          <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--color-c9)' }}>{isOpen ? '▲' : '▼'}</span>
+                        </div>
+
+                        {/* Product body */}
+                        {isOpen && (
+                          <div style={{ padding: '0 20px 20px', borderTop: '1px solid var(--color-c8)' }}>
+                            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 12, marginBottom: 16 }}>
+                              {product.rulesets.length > 1 && (
+                                <select
+                                  value={vIdx}
+                                  onChange={(e) => setSelectedVersionIdx((prev) => ({ ...prev, [product.id]: Number(e.target.value) }))}
+                                  style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#FFFFFF' }}
+                                >
+                                  {product.rulesets.map((rs, i) => (
+                                    <option key={i} value={i}>
+                                      {rs.effectiveDate}{i === 0 ? ` (${MISC_LABELS.activeVersion})` : ''}
+                                    </option>
+                                  ))}
+                                </select>
+                              )}
+                              <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>{MISC_LABELS.versionCount(product.rulesets.length)}</span>
+                              {isAdmin && (
+                                <>
+                                  <button className="chip" onClick={() => openEditModal(product)} style={{ padding: '4px 12px', fontSize: 12 }}>{ACTION_LABELS.editProduct}</button>
+                                  <button className="chip" onClick={() => { setNewVersionProduct(product); setNewVersionDate(''); }} style={{ padding: '4px 12px', fontSize: 12 }}>{ACTION_LABELS.newVersion}</button>
+                                  {product.rulesets.length > 1 && vIdx > 0 && (
+                                    <button
+                                      className="chip"
+                                      onClick={() => { setDeletingVersionProduct(product); setDeletingVersionIdx(vIdx); }}
+                                      style={{ padding: '4px 12px', fontSize: 12, color: 'var(--color-c1)', borderColor: 'var(--color-c1)' }}
+                                    >
+                                      {ACTION_LABELS.deleteVersion}
+                                    </button>
+                                  )}
+                                  <button className="chip" onClick={() => setClosingProduct(product)} style={{ padding: '4px 12px', fontSize: 12 }}>{ACTION_LABELS.closeProduct}</button>
+                                </>
+                              )}
+                            </div>
+                            {ruleset ? (
+                              <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+                                {PHASE_KEYS.map((pk) => (
+                                  <PhaseColumn
+                                    key={pk}
+                                    phaseKey={pk}
+                                    phase={ruleset.phases[pk]}
+                                    disabled={!isAdmin || !isEditableVersion}
+                                    onFieldChange={(blockId, fieldKey, value) =>
+                                      handleFieldChange(product.id, vIdx, blockId, fieldKey, value)
+                                    }
+                                    onApplicableChange={isAdmin && isEditableVersion
+                                      ? (applicable) => handlePhaseApplicableChange(product.id, vIdx, pk, applicable)
+                                      : undefined
+                                    }
+                                  />
+                                ))}
+                              </div>
+                            ) : (
+                              <p style={{ fontSize: 13, color: 'var(--color-c9)', fontStyle: 'italic' }}>Aucune version définie pour ce produit.</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* Clôturés dans cette famille */}
+                  {closedInFamily.length > 0 && (
+                    <details style={{ borderTop: '1px solid var(--color-c8)', padding: '8px 20px' }}>
+                      <summary style={{ cursor: 'pointer', fontSize: 12, color: 'var(--color-c9)', fontWeight: 600, listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span>▸</span> {MISC_LABELS.closedProducts} ({closedInFamily.length})
+                      </summary>
+                      <div style={{ marginTop: 8 }}>
+                        {closedInFamily.map((p) => (
+                          <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', fontSize: 13, color: 'var(--color-c9)' }}>
+                            <span>{p.label} ({p.id}) — clôturé le {p.closedDate}</span>
+                            {isAdmin && (
+                              <>
+                                <button className="chip" onClick={() => setReactivatingProduct(p)} style={{ padding: '2px 10px', fontSize: 11 }}>{ACTION_LABELS.reactivateProduct}</button>
+                                <button onClick={() => { setDeletingProduct(p); setDeleteConfirmSlug(''); }} style={{ padding: '2px 10px', fontSize: 11, background: 'none', border: '1px solid var(--color-c1)', color: 'var(--color-c1)', borderRadius: 6, cursor: 'pointer' }}>{ACTION_LABELS.deleteProduct}</button>
+                              </>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </details>
                   )}
                 </div>
               )}
@@ -740,35 +952,23 @@ export default function BaseContrat() {
           );
         })}
 
-        {/* Closed products */}
-        {closedProducts.length > 0 && (
-          <details style={{ marginTop: 8 }}>
-            <summary style={{ cursor: 'pointer', fontSize: 13, color: 'var(--color-c9)', fontWeight: 600 }}>
-              {MISC_LABELS.closedProducts} ({closedProducts.length})
-            </summary>
+        {/* Clôturés hors familles actives (filtre cloture seulement) */}
+        {filterStatus === 'cloture' && closedProducts.length > 0 && groupedByFamily.size === 0 && (
+          <div className="settings-premium-card" style={{ padding: '12px 20px' }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-c9)', margin: '0 0 8px' }}>{MISC_LABELS.closedProducts} ({closedProducts.length})</p>
             {closedProducts.map((p) => (
-              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', fontSize: 13, color: 'var(--color-c9)' }}>
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', fontSize: 13, color: 'var(--color-c9)' }}>
+                <span style={chipStyle('var(--color-c8)', 'var(--color-c9)')}>{p.grandeFamille ?? p.family}</span>
                 <span>{p.label} ({p.id}) — clôturé le {p.closedDate}</span>
                 {isAdmin && (
                   <>
-                    <button
-                      className="chip"
-                      onClick={() => setReactivatingProduct(p)}
-                      style={{ padding: '2px 10px', fontSize: 11 }}
-                    >
-                      {ACTION_LABELS.reactivateProduct}
-                    </button>
-                    <button
-                      onClick={() => { setDeletingProduct(p); setDeleteConfirmSlug(''); }}
-                      style={{ padding: '2px 10px', fontSize: 11, background: 'none', border: '1px solid var(--color-c1)', color: 'var(--color-c1)', borderRadius: 6, cursor: 'pointer' }}
-                    >
-                      {ACTION_LABELS.deleteProduct}
-                    </button>
+                    <button className="chip" onClick={() => setReactivatingProduct(p)} style={{ padding: '2px 10px', fontSize: 11 }}>{ACTION_LABELS.reactivateProduct}</button>
+                    <button onClick={() => { setDeletingProduct(p); setDeleteConfirmSlug(''); }} style={{ padding: '2px 10px', fontSize: 11, background: 'none', border: '1px solid var(--color-c1)', color: 'var(--color-c1)', borderRadius: 6, cursor: 'pointer' }}>{ACTION_LABELS.deleteProduct}</button>
                   </>
                 )}
               </div>
             ))}
-          </details>
+          </div>
         )}
 
         {/* Save — toujours actif (gate = warning non-bloquant) */}

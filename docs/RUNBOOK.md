@@ -211,6 +211,34 @@ Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence tec
 
 ---
 
+## Marquer une phase "Sans objet" (Constitution / Sortie / Décès)
+
+### Quand l'utiliser
+
+Certains produits n'ont pas de règles fiscales pour une ou plusieurs phases de vie :
+- **Constitution** : pas applicable pour un actif déjà détenu (ex : immo direct hérité).
+- **Sortie / Rachat** : pas de rachat possible (ex : contrat de prévoyance pure, FCPE bloqué).
+- **Décès / Transmission** : pas de clause bénéficiaire ou de régime spécifique (ex : compte courant simple).
+
+### Comment faire (admin)
+
+1. Ouvrir la fiche produit (accordéon) sur `/settings/base-contrat`.
+2. S'assurer d'être sur la **version active** (version 0, sélecteur en haut de fiche).
+3. Sur la colonne de la phase concernée :
+   - Si la phase est déjà active : cliquer le bouton **"Sans objet"** à droite du titre de la phase.
+   - Si la phase est déjà "Sans objet" : cliquer **"Activer"** pour la rouvrir et configurer des règles.
+4. Cliquer **"Enregistrer"** en bas de page pour persister le changement.
+
+### Ce qui est stocké
+
+Le champ `phase.applicable` (booléen) est basculé dans le JSONB `base_contrat_settings.data`. La modification est **réversible** à tout moment.
+
+### Affichage côté utilisateur
+
+Une phase "Sans objet" s'affiche avec un chip grisé "Sans objet" — aucune règle fiscale n'est présentée pour cette phase sur ce produit.
+
+---
+
 ## Repo hygiene — Delete unused
 
 **Règle** : Si ça ne sert plus = on supprime.
