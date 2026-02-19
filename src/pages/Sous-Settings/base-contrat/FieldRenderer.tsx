@@ -18,14 +18,14 @@ function chipStyle(bg: string, fg: string): React.CSSProperties {
 }
 
 const CALC_TOOLTIP = 'Cette valeur est utilisée dans les calculs (IR, placements, prévoyance…)';
-const CALC_LABEL = '★ Simulateurs';
+const CALC_LABEL = '★';
 
-/** Badge "Utilisé par les simulateurs" — remplace l'ancien badge "Calc." ambigu */
+/** Étoile inline — indique que la valeur est utilisée dans les calculs */
 function CalcBadge() {
   return (
     <span
       title={CALC_TOOLTIP}
-      style={{ ...chipStyle('var(--color-c3)', '#FFFFFF'), marginLeft: 4, cursor: 'help' }}
+      style={{ marginLeft: 3, fontSize: 11, color: 'var(--color-c3)', cursor: 'help', userSelect: 'none' }}
     >
       {CALC_LABEL}
     </span>
