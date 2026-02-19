@@ -379,6 +379,8 @@ Parcours guidé en 3 étapes (aucun JSON / aucune clé interne visible) :
 
 - DoD : sur LEP (Épargne bancaire), en < 2 minutes, un admin produit ≥ 1 bloc Constitution + ≥ 1 bloc Sortie, sans jargon technique, sans JSON.
 - DoD check : `npm run check` PASS ; tests Playwright : `e2e/configure-rules.spec.ts` (parcours complet sur produit test).
+- DoD données : `blockId` déterministe (`{templateId}__{phaseKey}__{index}`, pas de `Date.now`) ; `sortOrder` incrémental ; anti-doublon (1 seul bloc par `templateId` par phase, y compris `note-libre`) ; tests unitaires dans `configureRules.test.ts`.
+- **Règle métier MVP — Épargne bancaire** : le bloc `pfu-sortie` n'est pas suggéré pour `Épargne bancaire` (produits réglementés LEP/Livret A/LDDS potentiellement exonérés d'IR). MVP = `note-libre` uniquement. Un template dédié "Épargne réglementée / exonération" sera créé en Étape B.
 
 ---
 

@@ -314,7 +314,7 @@ Cocher les blocs pertinents. Il est possible d'en sélectionner plusieurs.
 > - Assurance-vie / PER (Assurance) → PFU, PS, Art. 990 I, Art. 757 B
 > - CTO / Titres vifs → PFU, note succession
 > - PEA → Exonération ancienneté, PS
-> - Livret réglementé (Épargne bancaire) → PS sur intérêts, note informative
+> - Livret réglementé (Épargne bancaire) → **note informative uniquement** (MVP) — les produits réglementés (LEP, Livret A, LDDS) peuvent être exonérés d'IR ; le bloc PFU n'est pas proposé par défaut pour éviter une erreur métier. Décrire le régime via une note libre jusqu'à la création d'un template "Épargne réglementée / exonération".
 > - PER (Retraite & épargne salariale) → Déductibilité versements, rente RVTO
 
 ### Étape 3 — Compléter les champs
