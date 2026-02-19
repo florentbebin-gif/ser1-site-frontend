@@ -72,9 +72,10 @@ Conventions clés :
 **Audit + cleanup (T6)** :
 1. Lister les imports/usages réels :
    ```bash
-   rg "__spike__" src --type tsx --type ts
-   rg "_raw" src --type tsx --type ts
+   rg -n "(/|\\\\)__spike__(/|\\\\)" src --type tsx --type ts
+   rg -n "(/|\\\\)_raw(/|\\\\)" src --type tsx --type ts
    ```
+   Note : `_rawText` est une variable (ex: `apiAdmin.js`), sans lien avec le dossier `_raw/`.
 2. Décision par fichier : `delete` (obsolète), ou `inline` (intégrer au code prod).
 3. Après audit, supprimer de `src/` (ou intégrer au code prod si utile).
 
