@@ -277,6 +277,10 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
       notes: 'LEP, Livret A, LDDS : exonération totale IR + PS. Plafonds réglementaires. LEP soumis à conditions de revenus.',
     },
   },
+  // ---------------------------------------------------------------------------
+  // Étape C2 — Templates contextuels (sous-régime explicite requis)
+  // (epargne-bancaire-imposable livré PR#117 — marqué C2 pour traçabilité)
+  // ---------------------------------------------------------------------------
   {
     templateId: 'epargne-bancaire-imposable',
     uiTitle: 'Épargne bancaire imposable',
@@ -297,6 +301,90 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
         declarationRevenusAnnuelle: { type: 'boolean', value: true, calc: true },
       },
       notes: 'CAT/CSL : IR au barème (défaut) ou option PFU. PS sur intérêts. Prélèvement forfaitaire non libératoire, à déclarer.',
+    },
+  },
+  // ---------------------------------------------------------------------------
+  // Étape C1 — Templates sans ambiguïté de sous-régime
+  // ---------------------------------------------------------------------------
+  {
+    templateId: 'taxe-forfaitaire-metaux',
+    uiTitle: 'Taxe forfaitaire — Métaux précieux',
+    description: 'Cession de métaux précieux : taxe forfaitaire 11,5 % sur le prix de cession (or, argent, platine) ou option PV mobilières sur justificatif d\'acquisition.',
+    suggestedPhases: ['sortie'],
+    suggestedFor: ['Métaux précieux'],
+    // Régime sans ambiguïté : taxe forfaitaire par défaut, option PV mobilières sur justificatif.
+    // Pas de dépendance enveloppe. CGI art. 150 VI.
+    defaultBlock: {
+      blockKind: 'data',
+      uiTitle: 'Taxe forfaitaire — Métaux précieux',
+      audience: 'PP',
+      payload: {
+        taxeForfaitaireRatePercent: { type: 'number', value: 11.5, unit: '%', calc: true },
+        optionPVMobilieres: { type: 'boolean', value: false, calc: true },
+        justificatifAcquisitionRequis: { type: 'boolean', value: true, calc: true },
+        seuilExonerationEuro: { type: 'number', value: 5000, unit: '€', calc: true },
+      },
+      notes: '⚠️ Valeurs par défaut = base de travail. À vérifier selon millésime fiscal / BOFiP / CGI. Taxe forfaitaire 11,5 % sur prix de cession (CGI art. 150 VI). Option PV mobilières possible sur justificatif d\'acquisition. Seuil exonération 5 000 €.',
+    },
+  },
+  {
+    templateId: 'crypto-pfu-150vhbis',
+    uiTitle: 'Crypto-actifs — Art. 150 VH bis',
+    description: 'Cessions d\'actifs numériques : 30 % flat (12,8 % IR + 17,2 % PS) sur plus-values nettes annuelles. Seuil d\'exonération 305 € de cessions/an.',
+    suggestedPhases: ['sortie'],
+    suggestedFor: ['Crypto-actifs'],
+    // Régime spécifique art. 150 VH bis — distinct du PFU standard mobilier.
+    // Pas de dépendance enveloppe. Option barème IR possible depuis 2023.
+    defaultBlock: {
+      blockKind: 'data',
+      uiTitle: 'Crypto-actifs — Flat tax art. 150 VH bis',
+      audience: 'PP',
+      payload: {
+        irRateFlatPercent: { type: 'number', value: 12.8, unit: '%', calc: true },
+        psRatePercent: { type: 'ref', value: REF_PFU_PS, unit: '%', calc: true },
+        totalFlatTaxPercent: { type: 'number', value: 30, unit: '%', calc: true },
+        seuilExonerationCessionsEuro: { type: 'number', value: 305, unit: '€', calc: true },
+        optionBaremeIRDepuis2023: { type: 'boolean', value: false, calc: true },
+        methodePrixAcquisitionMoyen: { type: 'boolean', value: true, calc: true },
+      },
+      notes: '⚠️ Valeurs par défaut = base de travail. À vérifier selon millésime fiscal / BOFiP / CGI. Art. 150 VH bis : 30 % flat sur PV nettes annuelles. Seuil 305 € de cessions totales/an. Option barème IR possible (depuis 2023). Réf. CGI art. 150 VH bis.',
+    },
+  },
+  // ---------------------------------------------------------------------------
+  // Étape C2 — Templates contextuels (sous-régime explicite requis)
+  // ---------------------------------------------------------------------------
+  {
+    templateId: 'avantage-ir-dispositif',
+    uiTitle: 'Avantage fiscal IR — Dispositif',
+    description: 'Avantage fiscal sur l\'impôt sur le revenu (réduction ou déduction) lié à un investissement : IR-PME, SOFICA, Pinel, Malraux, Monuments Historiques, Denormandie. Le régime dépend du dispositif choisi.',
+    suggestedPhases: ['constitution'],
+    suggestedFor: ['Non coté/PE', 'Dispositifs fiscaux immo'],
+    // ⚠️ Template contextuel : le taux, le plafond, la durée et la NATURE (réduction vs déduction) varient selon le dispositif.
+    // L'admin DOIT sélectionner le dispositif ET la nature d'avantage explicitement — pas de règle implicite.
+    defaultBlock: {
+      blockKind: 'data',
+      uiTitle: 'Avantage fiscal IR — Dispositif',
+      audience: 'PP',
+      payload: {
+        avantageNature: {
+          type: 'enum',
+          value: 'reduction',
+          options: ['reduction', 'deduction'],
+          calc: true,
+        },
+        dispositifType: {
+          type: 'enum',
+          value: 'ir_pme',
+          options: ['ir_pme', 'sofica', 'pinel', 'malraux', 'monuments_historiques', 'loc_avantages', 'denormandie'],
+          calc: true,
+        },
+        tauxAvantagePercent: { type: 'number', value: 18, unit: '%', calc: true },
+        plafondInvestissementEuro: { type: 'number', value: 50000, unit: '€', calc: true },
+        dureeEngagementAns: { type: 'number', value: 5, unit: 'ans', calc: true },
+        plafonnementGlobalNichesEuro: { type: 'number', value: 10000, unit: '€', calc: true },
+        reportableAnneesN: { type: 'number', value: 4, unit: 'ans', calc: true },
+      },
+      notes: '⚠️ Valeurs par défaut = base de travail. À vérifier selon millésime fiscal / BOFiP / CGI. Le régime dépend du dispositif choisi (taux, plafond, durée, nature réduction/déduction). Sélectionner explicitement. Plafonnement global niches 10 000 € (sauf Malraux/MH). Réf. : CGI art. 199 terdecies-0 A (IR-PME), 199 undecies C (SOFICA), 199 novovicies (Pinel), etc.',
     },
   },
   {
