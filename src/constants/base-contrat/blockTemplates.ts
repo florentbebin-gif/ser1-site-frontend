@@ -59,7 +59,9 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Prélèvements sociaux',
     description: 'Taux global PS sur revenus du patrimoine. Valeur lue depuis les Paramètres Prélèvements sociaux.',
     suggestedPhases: ['constitution', 'sortie'],
-    suggestedFor: ['Assurance', 'Épargne bancaire', 'Retraite & épargne salariale', 'Immobilier direct', 'Immobilier indirect'],
+    suggestedFor: ['Assurance', 'Retraite & épargne salariale', 'Immobilier direct', 'Immobilier indirect'],
+    // Note : 'Épargne bancaire' exclu — les PS sur intérêts dépendent du régime (exonération totale
+    // pour LEP/Livret A/LDDS, imposition partielle pour CAT/CSL). MVP : note-libre uniquement.
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Prélèvements sociaux',

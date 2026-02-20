@@ -350,7 +350,7 @@ Référentiel de `BlockTemplate` issu de l'audit AV/CTO/PEA/PER :
 | `templateId` | Libellé FR | Phases | Grandes familles |
 |---|---|---|---|
 | `pfu-sortie` | PFU (flat tax) | Sortie | Assurance, Titres vifs, Retraite |
-| `ps-sortie` | Prélèvements sociaux | Sortie | Assurance, Épargne bancaire, Retraite |
+| `ps-sortie` | Prélèvements sociaux | Constitution, Sortie | Assurance, Retraite & épargne salariale, Immobilier |
 | `art-990I-deces` | Art. 990 I — primes avant 70 ans | Décès | Assurance, Retraite |
 | `art-757B-deces` | Art. 757 B — primes après 70 ans | Décès | Assurance, Retraite |
 | `abattements-av-8ans` | Rachats ≥ 8 ans (abattements AV) | Sortie | Assurance |
@@ -380,7 +380,12 @@ Parcours guidé en 3 étapes (aucun JSON / aucune clé interne visible) :
 - DoD : sur LEP (Épargne bancaire), en < 2 minutes, un admin produit ≥ 1 bloc Constitution + ≥ 1 bloc Sortie, sans jargon technique, sans JSON.
 - DoD check : `npm run check` PASS ; tests Playwright : `e2e/configure-rules.spec.ts` (parcours complet sur produit test).
 - DoD données : `blockId` déterministe (`{templateId}__{phaseKey}__{index}`, pas de `Date.now`) ; `sortOrder` incrémental ; anti-doublon (1 seul bloc par `templateId` par phase, y compris `note-libre`) ; tests unitaires dans `configureRules.test.ts`.
-- **Règle métier MVP — Épargne bancaire** : le bloc `pfu-sortie` n'est pas suggéré pour `Épargne bancaire` (produits réglementés LEP/Livret A/LDDS potentiellement exonérés d'IR). MVP = `note-libre` uniquement. Un template dédié "Épargne réglementée / exonération" sera créé en Étape B.
+- **Règle métier MVP — Épargne bancaire** : ni `pfu-sortie` ni `ps-sortie` ne sont suggérés pour `Épargne bancaire`. Les produits réglementés (LEP, Livret A, LDDS) sont exonérés d'IR **et** de PS ; les produits imposables (CAT, CSL) ont un régime différent. MVP conservateur = `note-libre` uniquement. Deux templates dédiés seront créés en Étape B (voir TODO ci-dessous).
+
+> **TODO Étape B — Templates Épargne bancaire manquants :**
+> - `epargne-reglementee-exoneration` : LEP, Livret A, LDDS — exonération totale IR + PS (champs : plafond réglementaire, taux d'intérêt réglementé, référence légale)
+> - `epargne-bancaire-imposable` : CAT, CSL, comptes à terme — IR au barème ou PFU + PS sur intérêts (champs : taux IR, taux PS, option barème)
+> Ces deux templates couvrent les deux cas réels et évitent de forcer une règle générique fausse.
 
 ---
 
