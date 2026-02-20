@@ -31,7 +31,7 @@ export interface BlockTemplate {
 }
 
 // ---------------------------------------------------------------------------
-// Catalogue MVP (10 templates)
+// Catalogue MVP (10 templates) — enrichi Étape B (audit 78 produits seed)
 // ---------------------------------------------------------------------------
 
 export const BLOCK_TEMPLATES: BlockTemplate[] = [
@@ -40,9 +40,13 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'PFU — Flat tax (IR + PS)',
     description: 'Taux forfaitaires IR et PS appliqués aux plus-values et revenus mobiliers. Valeurs lues depuis les Paramètres Impôts.',
     suggestedPhases: ['sortie'],
-    suggestedFor: ['Assurance', 'Titres vifs', 'Retraite & épargne salariale', 'Non coté/PE', 'Produits structurés'],
-    // Note : 'Épargne bancaire' exclu volontairement — les produits réglementés (LEP, Livret A, LDDS)
-    // peuvent être exonérés d'IR. MVP : utiliser note-libre pour décrire le régime applicable.
+    suggestedFor: [
+      'Assurance', 'Titres vifs', 'Fonds/OPC', 'Retraite & épargne salariale',
+      'Non coté/PE', 'Produits structurés', 'Immobilier indirect',
+    ],
+    // Note : 'Épargne bancaire' exclu — MVP note-libre (voir ROADMAP TODO templates dédiés).
+    // 'Crypto-actifs' exclu — régime spécifique art. 150 VH bis (template dédié à créer).
+    // 'Immobilier direct' exclu — PV immobilières (abattements durée, template dédié à créer).
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'PFU (flat tax)',
@@ -59,9 +63,13 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Prélèvements sociaux',
     description: 'Taux global PS sur revenus du patrimoine. Valeur lue depuis les Paramètres Prélèvements sociaux.',
     suggestedPhases: ['constitution', 'sortie'],
-    suggestedFor: ['Assurance', 'Retraite & épargne salariale', 'Immobilier direct', 'Immobilier indirect'],
-    // Note : 'Épargne bancaire' exclu — les PS sur intérêts dépendent du régime (exonération totale
-    // pour LEP/Livret A/LDDS, imposition partielle pour CAT/CSL). MVP : note-libre uniquement.
+    suggestedFor: [
+      'Assurance', 'Retraite & épargne salariale', 'Immobilier direct', 'Immobilier indirect',
+      'Titres vifs', 'Fonds/OPC', 'Non coté/PE', 'Produits structurés',
+    ],
+    // Note : 'Épargne bancaire' exclu — MVP note-libre (exonération totale LEP/Livret A/LDDS vs imposable CAT/CSL).
+    // 'Crypto-actifs' exclu — régime spécifique art. 150 VH bis.
+    // 'Immobilier direct' inclus car PS dus sur PV immo (même si IR exonéré RP).
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Prélèvements sociaux',
@@ -78,6 +86,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Abattement par bénéficiaire (152 500 €) puis barème 20 % / 31,25 %. Applicable aux contrats d\'assurance-vie et PER assurantiel.',
     suggestedPhases: ['deces'],
     suggestedFor: ['Assurance', 'Retraite & épargne salariale'],
+    // Applicable uniquement aux contrats d'assurance (AV, capitalisation, PER assurantiel).
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Art. 990 I — Primes avant 70 ans',
@@ -103,6 +112,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Abattement global de 30 500 € puis taxation aux DMTG selon le lien de parenté.',
     suggestedPhases: ['deces'],
     suggestedFor: ['Assurance', 'Retraite & épargne salariale'],
+    // Applicable uniquement aux contrats d'assurance (AV, capitalisation, PER assurantiel).
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Art. 757 B — Primes après 70 ans',
@@ -180,6 +190,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Fraction imposable de la rente selon l\'âge au 1er versement : 70 % (< 50 ans) → 30 % (≥ 70 ans).',
     suggestedPhases: ['sortie'],
     suggestedFor: ['Retraite & épargne salariale', 'Assurance'],
+    // RVTO applicable aux PER (bancaire/assurantiel) et aux contrats AV avec option rente.
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Sortie en rente viagère (RVTO)',
@@ -198,7 +209,8 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Exonération après ancienneté',
     description: 'Exonération IR après un seuil d\'ancienneté (ex : 5 ans pour PEA). PS restent dus.',
     suggestedPhases: ['sortie'],
-    suggestedFor: ['Assurance', 'Retraite & épargne salariale', 'Titres vifs'],
+    suggestedFor: ['Assurance', 'Retraite & épargne salariale', 'Titres vifs', 'Fonds/OPC'],
+    // PEA (Titres vifs / Fonds/OPC) : exonération IR après 5 ans, PS restent dus.
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Exonération après ancienneté',
