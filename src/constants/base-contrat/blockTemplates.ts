@@ -21,6 +21,15 @@ const REF_PS_PATRIMOINE = '$ref:ps_settings.patrimony.current.totalRate';
 // Type
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Disclaimer — suggestedFor = aide UX, pas validation fiscale
+// ---------------------------------------------------------------------------
+// Les tableaux suggestedFor sont des suggestions d'interface pour guider l'admin.
+// Ils ne présument pas du régime fiscal applicable qui dépend du contexte
+// (enveloppe, date de souscription, option du client, etc.).
+// En cas de doute ou de sous-régimes multiples, privilégier note-libre + templates dédiés.
+// ---------------------------------------------------------------------------
+
 export interface BlockTemplate {
   templateId: string;
   uiTitle: string;
@@ -31,7 +40,7 @@ export interface BlockTemplate {
 }
 
 // ---------------------------------------------------------------------------
-// Catalogue MVP (10 templates)
+// Catalogue MVP (10 templates) — enrichi Étape B (audit 78 produits seed)
 // ---------------------------------------------------------------------------
 
 export const BLOCK_TEMPLATES: BlockTemplate[] = [
@@ -40,9 +49,13 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'PFU — Flat tax (IR + PS)',
     description: 'Taux forfaitaires IR et PS appliqués aux plus-values et revenus mobiliers. Valeurs lues depuis les Paramètres Impôts.',
     suggestedPhases: ['sortie'],
-    suggestedFor: ['Assurance', 'Titres vifs', 'Retraite & épargne salariale', 'Non coté/PE', 'Produits structurés'],
-    // Note : 'Épargne bancaire' exclu volontairement — les produits réglementés (LEP, Livret A, LDDS)
-    // peuvent être exonérés d'IR. MVP : utiliser note-libre pour décrire le régime applicable.
+    suggestedFor: [
+      'Assurance', 'Titres vifs', 'Fonds/OPC', 'Retraite & épargne salariale',
+      'Non coté/PE', 'Produits structurés', 'Immobilier indirect',
+    ],
+    // Note : 'Épargne bancaire' exclu — MVP note-libre (voir ROADMAP TODO templates dédiés).
+    // 'Crypto-actifs' exclu — régime spécifique art. 150 VH bis (template dédié à créer).
+    // 'Immobilier direct' exclu — PV immobilières (abattements durée, template dédié à créer).
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'PFU (flat tax)',
@@ -59,9 +72,13 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Prélèvements sociaux',
     description: 'Taux global PS sur revenus du patrimoine. Valeur lue depuis les Paramètres Prélèvements sociaux.',
     suggestedPhases: ['constitution', 'sortie'],
-    suggestedFor: ['Assurance', 'Retraite & épargne salariale', 'Immobilier direct', 'Immobilier indirect'],
-    // Note : 'Épargne bancaire' exclu — les PS sur intérêts dépendent du régime (exonération totale
-    // pour LEP/Livret A/LDDS, imposition partielle pour CAT/CSL). MVP : note-libre uniquement.
+    suggestedFor: [
+      'Assurance', 'Retraite & épargne salariale', 'Immobilier direct', 'Immobilier indirect',
+      'Titres vifs', 'Fonds/OPC', 'Non coté/PE', 'Produits structurés',
+    ],
+    // Note : 'Épargne bancaire' exclu — MVP note-libre (exonération totale LEP/Livret A/LDDS vs imposable CAT/CSL).
+    // 'Crypto-actifs' exclu — régime spécifique art. 150 VH bis.
+    // 'Immobilier direct' inclus car PS dus sur PV immo (même si IR exonéré RP).
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Prélèvements sociaux',
@@ -78,6 +95,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Abattement par bénéficiaire (152 500 €) puis barème 20 % / 31,25 %. Applicable aux contrats d\'assurance-vie et PER assurantiel.',
     suggestedPhases: ['deces'],
     suggestedFor: ['Assurance', 'Retraite & épargne salariale'],
+    // Applicable uniquement aux contrats d'assurance (AV, capitalisation, PER assurantiel).
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Art. 990 I — Primes avant 70 ans',
@@ -103,6 +121,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Abattement global de 30 500 € puis taxation aux DMTG selon le lien de parenté.',
     suggestedPhases: ['deces'],
     suggestedFor: ['Assurance', 'Retraite & épargne salariale'],
+    // Applicable uniquement aux contrats d'assurance (AV, capitalisation, PER assurantiel).
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Art. 757 B — Primes après 70 ans',
@@ -180,6 +199,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Fraction imposable de la rente selon l\'âge au 1er versement : 70 % (< 50 ans) → 30 % (≥ 70 ans).',
     suggestedPhases: ['sortie'],
     suggestedFor: ['Retraite & épargne salariale', 'Assurance'],
+    // RVTO applicable aux PER (bancaire/assurantiel) et aux contrats AV avec option rente.
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Sortie en rente viagère (RVTO)',
@@ -198,7 +218,11 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Exonération après ancienneté',
     description: 'Exonération IR après un seuil d\'ancienneté (ex : 5 ans pour PEA). PS restent dus.',
     suggestedPhases: ['sortie'],
-    suggestedFor: ['Assurance', 'Retraite & épargne salariale', 'Titres vifs'],
+    suggestedFor: [
+      'Assurance', 'Retraite & épargne salariale', 'Titres vifs', 'Fonds/OPC',
+      'Immobilier direct', 'Immobilier indirect', 'Non coté/PE', 'Produits structurés',
+    ],
+    // PEA (Titres vifs / Fonds/OPC) : exonération IR après 5 ans, PS restent dus.
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Exonération après ancienneté',
@@ -207,6 +231,72 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
         ancienneteMinAns: { type: 'number', value: 5, unit: 'ans', calc: true },
         exonerationIRApresAnciennete: { type: 'boolean', value: true, calc: true },
       },
+      notes: 'Exonération IR après un seuil d\'ancienneté (ex : 5 ans pour PEA). PS restent dus.',
+    },
+  },
+  {
+    templateId: 'pv-immobiliere',
+    uiTitle: 'Plus-values immobilières',
+    description: 'Abattements durée pour PV immobilières : 22 ans (IR), 30 ans (PS). Exonération résidence principale (RP) selon conditions.',
+    suggestedPhases: ['sortie'],
+    suggestedFor: ['Immobilier direct'],
+    defaultBlock: {
+      blockKind: 'data',
+      uiTitle: 'Plus-values immobilières',
+      audience: 'PP',
+      payload: {
+        abattementIrMaxYears: { type: 'number', value: 22, unit: 'ans', calc: true },
+        abattementIrFullExoYears: { type: 'number', value: 22, unit: 'ans', calc: true },
+        abattementPsMaxYears: { type: 'number', value: 30, unit: 'ans', calc: true },
+        abattementPsFullExoYears: { type: 'number', value: 30, unit: 'ans', calc: true },
+        exonerationRpConditions: { type: 'enum', value: 'rp_principale', options: ['rp_principale', 'rp_exceptionnelle', 'non'], calc: true },
+        surtaxePvImmobiliere: { type: 'boolean', value: false, calc: true },
+      },
+      notes: 'Abattements durée : IR exonéré après 22 ans, PS exonérés après 30 ans. Exonération RP si conditions remplies.',
+    },
+  },
+  {
+    templateId: 'epargne-reglementee-exoneration',
+    uiTitle: 'Épargne réglementée — exonération totale',
+    description: 'Produits d\'épargne réglementée exonérés d\'IR et de PS : LEP, Livret A, LDDS. Plafonds et taux réglementés.',
+    suggestedPhases: ['constitution', 'sortie'],
+    suggestedFor: ['Épargne bancaire'],
+    defaultBlock: {
+      blockKind: 'data',
+      uiTitle: 'Épargne réglementée exonérée',
+      audience: 'PP',
+      payload: {
+        produitReglementeType: { type: 'enum', value: 'livret_a', options: ['livret_a', 'lep', 'ldds'], calc: true },
+        plafondReglementaireEuro: { type: 'number', value: 22950, unit: '€', calc: true },
+        tauxInteretReglementePercent: { type: 'number', value: 3.0, unit: '%', calc: true },
+        exonerationIR: { type: 'boolean', value: true, calc: true },
+        exonerationPS: { type: 'boolean', value: true, calc: true },
+        conditionsLEPRevenus: { type: 'boolean', value: false, calc: true },
+        referenceLegale: { type: 'string', value: 'CGI art. 163 bis A (Livret A), art. 157 (LEP), art. 163 bis B (LDDS)', calc: false },
+      },
+      notes: 'LEP, Livret A, LDDS : exonération totale IR + PS. Plafonds réglementaires. LEP soumis à conditions de revenus.',
+    },
+  },
+  {
+    templateId: 'epargne-bancaire-imposable',
+    uiTitle: 'Épargne bancaire imposable',
+    description: 'Produits bancaires imposables : CAT, CSL, comptes à terme. IR au barème progressif ou option PFU + PS sur intérêts.',
+    suggestedPhases: ['sortie'],
+    suggestedFor: ['Épargne bancaire'],
+    defaultBlock: {
+      blockKind: 'data',
+      uiTitle: 'Épargne bancaire imposable',
+      audience: 'PP',
+      payload: {
+        produitImposableType: { type: 'enum', value: 'cat', options: ['cat', 'csl', 'compte_terme'], calc: true },
+        irOption: { type: 'enum', value: 'bareme', options: ['bareme', 'pfu'], calc: true },
+        irRateBaremePercent: { type: 'number', value: 30, unit: '%', calc: true },
+        irRatePFUPercent: { type: 'ref', value: REF_PFU_IR, unit: '%', calc: true },
+        psRateInteretsPercent: { type: 'ref', value: REF_PS_PATRIMOINE, unit: '%', calc: true },
+        prelevementForfaitaireNonLibératoire: { type: 'boolean', value: false, calc: true },
+        declarationRevenusAnnuelle: { type: 'boolean', value: true, calc: true },
+      },
+      notes: 'CAT/CSL : IR au barème (défaut) ou option PFU. PS sur intérêts. Prélèvement forfaitaire non libératoire, à déclarer.',
     },
   },
   {

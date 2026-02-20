@@ -257,6 +257,55 @@ Source : `src/features/settings/publicationGate.ts` (utilisé par les pages Sett
 
 ---
 
+## Base-Contrat — Catalogue de blocs (P1-03g)
+
+Source : `src/constants/base-contrat/blockTemplates.ts` (10 templates MVP).
+Audit : `src/constants/base-contrat/catalogue.seed.v1.json` (78 produits, 13 grandes familles).
+
+### Table récap — GrandeFamille → Blocs suggérés par phase
+
+| Grande famille | Produits seed (exemples) | Constitution | Sortie | Décès | Blocs MVP disponibles |
+|---|---|---|---|---|---|
+| **Assurance** | AV, PER assurantiel, Capitalisation, Prévoyance | `ps-sortie` | `pfu-sortie`, `ps-sortie`, `abattements-av-8ans`, `rachats-pre2017`, `anciennete-exoneration`, `rente-rvto` | `art-990I-deces`, `art-757B-deces` | ✅ Couvert |
+| **Retraite & épargne salariale** | PER PERIN, PERCOL, PERO, PEE, Art.83, PERP | `deductibilite-per`, `ps-sortie` | `pfu-sortie`, `ps-sortie`, `rente-rvto`, `anciennete-exoneration` | `art-990I-deces`, `art-757B-deces` | ✅ Couvert |
+| **Titres vifs** | Actions cotées, Obligations, OAT, BSA/DPS | — | `pfu-sortie`, `ps-sortie`, `anciennete-exoneration` | `note-libre` | ✅ Couvert |
+| **Fonds / OPC** | ETF, OPCVM, SICAV, FCP, FCPI, FIP, OPCI | — | `pfu-sortie`, `ps-sortie`, `anciennete-exoneration` | `note-libre` | ✅ Couvert |
+| **Immobilier direct** | Appartement, Terrain, Garage | — | `ps-sortie`, `note-libre` | `note-libre` | ⚠️ Partiel — manque `pv-immobiliere` |
+| **Immobilier indirect** | SCPI, GFA, GFV, Groupement forestier | — | `pfu-sortie`, `ps-sortie`, `note-libre` | `note-libre` | ✅ Couvert (revenus fonciers) |
+| **Épargne bancaire** | LEP, Livret A, LDDS, CAT, CSL, PEL, CEL | — | `note-libre` | `note-libre` | ⚠️ MVP conservateur — manque `epargne-reglementee-exoneration` + `epargne-bancaire-imposable` |
+| **Non coté / PE** | Actions non cotées, Crowdfunding, SOFICA, IR-PME | — | `pfu-sortie`, `ps-sortie`, `note-libre` | `note-libre` | ⚠️ Partiel — manque `reduction-ir-dispositif` (IR-PME/SOFICA) |
+| **Produits structurés** | Autocall, EMTN, Certificats, Warrants | — | `pfu-sortie`, `ps-sortie`, `note-libre` | `note-libre` | ✅ Couvert |
+| **Crypto-actifs** | BTC, ETH, NFT, Stablecoins, Tokens | — | `note-libre` | `note-libre` | ⚠️ MVP note-libre — manque `crypto-pfu-150vhbis` (art. 150 VH bis) |
+| **Dispositifs fiscaux immo** | Pinel, Malraux, Denormandie, Loc'Avantages, MH | `note-libre` | `note-libre` | `note-libre` | ⚠️ MVP note-libre — manque `reduction-ir-dispositif` |
+| **Métaux précieux** | Or, Argent, Platine physiques | — | `note-libre` | `note-libre` | ⚠️ MVP note-libre — manque `taxe-forfaitaire-metaux` (11,5 % ou PV mob.) |
+| **Créances / Droits** | CCA, Prêt particuliers, Usufruit/NP | — | `note-libre` | `note-libre` | ℹ️ Cas par cas — note-libre suffisant MVP |
+
+> **⚠️ Important** : `suggestedFor` est une **aide UX**, pas une validation fiscale. Le régime réel dépend du contexte (enveloppe, date de souscription, option du client, etc.). En cas de sous-régimes multiples ou de doute, privilégier `note-libre` ou créer un template dédié.
+
+### Blocs manquants à créer (Étape B TODO)
+
+| `templateId` à créer | Familles cibles | Phases | Raison |
+|---|---|---|---|
+| `epargne-reglementee-exoneration` | Épargne bancaire | Sortie | LEP/Livret A/LDDS : exonération totale IR + PS (plafond, taux réglementé) |
+| `epargne-bancaire-imposable` | Épargne bancaire | Sortie | CAT/CSL : IR barème ou PFU + PS sur intérêts |
+| `pv-immobiliere` | Immobilier direct | Sortie | Plus-values immo : abattements durée (22 ans IR, 30 ans PS), exonération RP |
+| `crypto-pfu-150vhbis` | Crypto-actifs | Sortie | Art. 150 VH bis : 30 % flat, seuil 305 €, cessions actifs numériques |
+| `reduction-ir-dispositif` | Non coté/PE, Dispositifs fiscaux immo | Constitution | Réduction IR (IR-PME, SOFICA, Pinel, Malraux…) : taux %, plafond €, durée |
+| `taxe-forfaitaire-metaux` | Métaux précieux | Sortie | Taxe forfaitaire 11,5 % (or/argent) ou PV mobilières selon option |
+
+### Vérification
+
+```bash
+# Nombre de templates
+rg "templateId:" src/constants/base-contrat/blockTemplates.ts | wc -l
+# → 10 (MVP)
+
+# Familles couvertes par au moins 1 template non-note-libre
+rg "suggestedFor" src/constants/base-contrat/blockTemplates.ts
+```
+
+---
+
 ## Références
 - Gouvernance UI/couleurs/thème : `docs/GOUVERNANCE.md`
 - Runbook debug + edge + migrations : `docs/RUNBOOK.md`
