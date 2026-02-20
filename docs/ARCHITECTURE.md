@@ -280,6 +280,8 @@ Audit : `src/constants/base-contrat/catalogue.seed.v1.json` (78 produits, 13 gra
 | **Métaux précieux** | Or, Argent, Platine physiques | — | `note-libre` | `note-libre` | ⚠️ MVP note-libre — manque `taxe-forfaitaire-metaux` (11,5 % ou PV mob.) |
 | **Créances / Droits** | CCA, Prêt particuliers, Usufruit/NP | — | `note-libre` | `note-libre` | ℹ️ Cas par cas — note-libre suffisant MVP |
 
+> **⚠️ Important** : `suggestedFor` est une **aide UX**, pas une validation fiscale. Le régime réel dépend du contexte (enveloppe, date de souscription, option du client, etc.). En cas de sous-régimes multiples ou de doute, privilégier `note-libre` ou créer un template dédié.
+
 ### Blocs manquants à créer (Étape B TODO)
 
 | `templateId` à créer | Familles cibles | Phases | Raison |

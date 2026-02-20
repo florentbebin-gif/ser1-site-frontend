@@ -21,6 +21,15 @@ const REF_PS_PATRIMOINE = '$ref:ps_settings.patrimony.current.totalRate';
 // Type
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Disclaimer — suggestedFor = aide UX, pas validation fiscale
+// ---------------------------------------------------------------------------
+// Les tableaux suggestedFor sont des suggestions d'interface pour guider l'admin.
+// Ils ne présument pas du régime fiscal applicable qui dépend du contexte
+// (enveloppe, date de souscription, option du client, etc.).
+// En cas de doute ou de sous-régimes multiples, privilégier note-libre + templates dédiés.
+// ---------------------------------------------------------------------------
+
 export interface BlockTemplate {
   templateId: string;
   uiTitle: string;
@@ -209,7 +218,10 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Exonération après ancienneté',
     description: 'Exonération IR après un seuil d\'ancienneté (ex : 5 ans pour PEA). PS restent dus.',
     suggestedPhases: ['sortie'],
-    suggestedFor: ['Assurance', 'Retraite & épargne salariale', 'Titres vifs', 'Fonds/OPC'],
+    suggestedFor: [
+      'Assurance', 'Retraite & épargne salariale', 'Titres vifs', 'Fonds/OPC',
+      'Immobilier direct', 'Immobilier indirect', 'Non coté/PE', 'Produits structurés',
+    ],
     // PEA (Titres vifs / Fonds/OPC) : exonération IR après 5 ans, PS restent dus.
     defaultBlock: {
       blockKind: 'data',
@@ -219,6 +231,28 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
         ancienneteMinAns: { type: 'number', value: 5, unit: 'ans', calc: true },
         exonerationIRApresAnciennete: { type: 'boolean', value: true, calc: true },
       },
+      notes: 'Exonération IR après un seuil d\'ancienneté (ex : 5 ans pour PEA). PS restent dus.',
+    },
+  },
+  {
+    templateId: 'pv-immobiliere',
+    uiTitle: 'Plus-values immobilières',
+    description: 'Abattements durée pour PV immobilières : 22 ans (IR), 30 ans (PS). Exonération résidence principale (RP) selon conditions.',
+    suggestedPhases: ['sortie'],
+    suggestedFor: ['Immobilier direct'],
+    defaultBlock: {
+      blockKind: 'data',
+      uiTitle: 'Plus-values immobilières',
+      audience: 'PP',
+      payload: {
+        abattementIrMaxYears: { type: 'number', value: 22, unit: 'ans', calc: true },
+        abattementIrFullExoYears: { type: 'number', value: 22, unit: 'ans', calc: true },
+        abattementPsMaxYears: { type: 'number', value: 30, unit: 'ans', calc: true },
+        abattementPsFullExoYears: { type: 'number', value: 30, unit: 'ans', calc: true },
+        exonerationRpConditions: { type: 'enum', value: 'rp_principale', options: ['rp_principale', 'rp_exceptionnelle', 'non'], calc: true },
+        surtaxePvImmobiliere: { type: 'boolean', value: false, calc: true },
+      },
+      notes: 'Abattements durée : IR exonéré après 22 ans, PS exonérés après 30 ans. Exonération RP si conditions remplies.',
     },
   },
   {

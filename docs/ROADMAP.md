@@ -362,30 +362,28 @@ Référentiel de `BlockTemplate` issu de l'audit AV/CTO/PEA/PER :
 
 - DoD : `BLOCK_TEMPLATES.length ≥ 9` ; `BLOCKS_BY_FAMILLE` couvre au moins 5 `GrandeFamille`.
 
-**Étape B — Audit des 78 produits seed** (`src/constants/base-contrat/catalogue.seed.v1.json`)
+**Étape B — Audit des 78 produits seed** (`src/constants/base-contrat/catalogue.seed.v1.json`) **— DONE**
 
 Pour chaque grande famille : identifier les blocs standards attendus par phase, les champs paramétrables, les champs `$ref` automatiques.
 
 - Livrable : commentaires `// suggestedFor` enrichis dans `blockTemplates.ts` + table récapitulative dans `docs/ARCHITECTURE.md`.
-- DoD : table couvre ≥ 8 grandes familles.
+- DoD : table couvre ≥ 8 grandes familles (13 familles couvertes).
+- Commit : `d838e47` feat(base-contrat): Etape B audit 78 produits seed
 
-**Étape C — Modal "Configurer les règles"** (`src/pages/Sous-Settings/base-contrat/modals/ConfigureRulesModal.tsx`)
+**Étape C — Création des 6 templates manquants (post-audit)**
 
-Parcours guidé en 3 étapes (aucun JSON / aucune clé interne visible) :
+Les templates suivants ont été identifiés comme manquants lors de l'audit Étape B. Priorité et DoD :
 
-1. **Choisir la phase** — état actuel affiché (vide / N blocs / Sans objet)
-2. **Sélectionner les blocs** — liste filtrée par `grandeFamille` du produit, aperçu des champs
-3. **Compléter les champs** — labels FR, valeurs auto en lecture seule (badge ★ + lien ↗ Ouvrir), note libre optionnelle
+| Priorité | `templateId` | Famille cible | Justification métier | DoD |
+|---|---|---|---|---|
+| **P1** | `pv-immobiliere` | Immobilier direct | Plus-values immobilières : abattements durée (22 ans IR, 30 ans PS), exonération RP. Cas très fréquent. | Template + suggestedFor mis à jour + test unitaire |
+| **P1** | `epargne-reglementee-exoneration` | Épargne bancaire | LEP/Livret A/LDDS : exonération totale IR + PS (plafond réglementaire, taux). MVP conservateur actuel = note-libre. | Template + suggestedFor mis à jour |
+| **P2** | `epargne-bancaire-imposable` | Épargne bancaire | CAT/CSL : IR barème ou PFU + PS sur intérêts. Complémentaire au P1. | Template + suggestedFor mis à jour |
+| **P2** | `crypto-pfu-150vhbis` | Crypto-actifs | Art. 150 VH bis : 30 % flat, seuil 305 € cessions/an. Régime spécifique ≠ PFU standard. | Template + suggestedFor mis à jour |
+| **P3** | `reduction-ir-dispositif` | Non coté/PE + Dispositifs fiscaux immo | Réduction IR (IR-PME, SOFICA, Pinel, Malraux…) : taux %, plafond €, durée. | Template + suggestedFor mis à jour |
+| **P3** | `taxe-forfaitaire-metaux` | Métaux précieux | Taxe forfaitaire 11,5 % (or/argent) ou PV mobilières selon option. | Template + suggestedFor mis à jour |
 
-- DoD : sur LEP (Épargne bancaire), en < 2 minutes, un admin produit ≥ 1 bloc Constitution + ≥ 1 bloc Sortie, sans jargon technique, sans JSON.
-- DoD check : `npm run check` PASS ; tests Playwright : `e2e/configure-rules.spec.ts` (parcours complet sur produit test).
-- DoD données : `blockId` déterministe (`{templateId}__{phaseKey}__{index}`, pas de `Date.now`) ; `sortOrder` incrémental ; anti-doublon (1 seul bloc par `templateId` par phase, y compris `note-libre`) ; tests unitaires dans `configureRules.test.ts`.
-- **Règle métier MVP — Épargne bancaire** : ni `pfu-sortie` ni `ps-sortie` ne sont suggérés pour `Épargne bancaire`. Les produits réglementés (LEP, Livret A, LDDS) sont exonérés d'IR **et** de PS ; les produits imposables (CAT, CSL) ont un régime différent. MVP conservateur = `note-libre` uniquement. Deux templates dédiés seront créés en Étape B (voir TODO ci-dessous).
-
-> **TODO Étape B — Templates Épargne bancaire manquants :**
-> - `epargne-reglementee-exoneration` : LEP, Livret A, LDDS — exonération totale IR + PS (champs : plafond réglementaire, taux d'intérêt réglementé, référence légale)
-> - `epargne-bancaire-imposable` : CAT, CSL, comptes à terme — IR au barème ou PFU + PS sur intérêts (champs : taux IR, taux PS, option barème)
-> Ces deux templates couvrent les deux cas réels et évitent de forcer une règle générique fausse.
+- DoD global : `BLOCK_TEMPLATES.length ≥ 16` ; `npm run check` PASS ; table `ARCHITECTURE.md` mise à jour (P2/P3 → ✅ Couvert).
 
 ---
 
