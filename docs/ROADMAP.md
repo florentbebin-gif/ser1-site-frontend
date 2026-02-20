@@ -372,18 +372,27 @@ Pour chaque grande famille : identifier les blocs standards attendus par phase, 
 
 **Étape C — Création des 6 templates manquants (post-audit)**
 
-Les templates suivants ont été identifiés comme manquants lors de l'audit Étape B. Priorité et DoD :
+Deux catégories selon l'ambiguïté du sous-régime fiscal :
 
-| Priorité | `templateId` | Famille cible | Justification métier | DoD |
-|---|---|---|---|---|
-| **P1** | `pv-immobiliere` | Immobilier direct | Plus-values immobilières : abattements durée (22 ans IR, 30 ans PS), exonération RP. Cas très fréquent. | Template + suggestedFor mis à jour + test unitaire |
-| **P1** | `epargne-reglementee-exoneration` | Épargne bancaire | LEP/Livret A/LDDS : exonération totale IR + PS (plafond réglementaire, taux). MVP conservateur actuel = note-libre. | Template + suggestedFor mis à jour |
-| **P2** | `epargne-bancaire-imposable` | Épargne bancaire | CAT/CSL : IR barème ou PFU + PS sur intérêts. Complémentaire au P1. | Template + suggestedFor mis à jour |
-| **P2** | `crypto-pfu-150vhbis` | Crypto-actifs | Art. 150 VH bis : 30 % flat, seuil 305 € cessions/an. Régime spécifique ≠ PFU standard. | Template + suggestedFor mis à jour |
-| **P3** | `reduction-ir-dispositif` | Non coté/PE + Dispositifs fiscaux immo | Réduction IR (IR-PME, SOFICA, Pinel, Malraux…) : taux %, plafond €, durée. | Template + suggestedFor mis à jour |
-| **P3** | `taxe-forfaitaire-metaux` | Métaux précieux | Taxe forfaitaire 11,5 % (or/argent) ou PV mobilières selon option. | Template + suggestedFor mis à jour |
+**C1 — Sans ambiguïté** (régime unique, pas de dépendance enveloppe) — **DONE PR#118** :
 
-- DoD global : `BLOCK_TEMPLATES.length ≥ 16` ; `npm run check` PASS ; table `ARCHITECTURE.md` mise à jour (P2/P3 → ✅ Couvert).
+| `templateId` | Famille cible | Référence légale | Statut |
+|---|---|---|---|
+| `pv-immobiliere` | Immobilier direct | CGI art. 150 U — abattements 22 ans IR / 30 ans PS | ✅ PR#117 |
+| `epargne-reglementee-exoneration` | Épargne bancaire | CGI art. 157 (LEP), 163 bis A (Livret A), 163 bis B (LDDS) | ✅ PR#117 |
+| `taxe-forfaitaire-metaux` | Métaux précieux | CGI art. 150 VI — 11,5 % sur prix cession | ✅ PR#118 |
+| `crypto-pfu-150vhbis` | Crypto-actifs | CGI art. 150 VH bis — 30 % flat, seuil 305 € | ✅ PR#118 |
+
+**C2 — Contextuels** (sous-régime dépend du produit/option — champ de sélection explicite obligatoire) — **DONE PR#118** :
+
+> ⚠️ Ces templates exposent un champ de sélection de sous-régime explicite. L'admin DOIT choisir le dispositif — aucune règle implicite appliquée.
+
+| `templateId` | Famille cible | Sous-régimes couverts | Statut |
+|---|---|---|---|
+| `epargne-bancaire-imposable` | Épargne bancaire | `bareme` / `pfu` (champ `irOption`) | ✅ PR#117 |
+| `avantage-ir-dispositif` | Non coté/PE + Dispositifs fiscaux immo | `reduction`/`deduction` (champ `avantageNature`) + `ir_pme`, `sofica`, `pinel`, `malraux`, `monuments_historiques`, `loc_avantages`, `denormandie` (champ `dispositifType`) | ✅ PR#118 |
+
+- DoD global : `BLOCK_TEMPLATES.length = 15` (hors `note-libre`) ; `npm run check` PASS ; table `ARCHITECTURE.md` mise à jour (C1/C2 → ✅ Couvert).
 
 ---
 

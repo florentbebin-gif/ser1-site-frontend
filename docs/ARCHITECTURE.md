@@ -282,23 +282,32 @@ Audit : `src/constants/base-contrat/catalogue.seed.v1.json` (78 produits, 13 gra
 
 > **⚠️ Important** : `suggestedFor` est une **aide UX**, pas une validation fiscale. Le régime réel dépend du contexte (enveloppe, date de souscription, option du client, etc.). En cas de sous-régimes multiples ou de doute, privilégier `note-libre` ou créer un template dédié.
 
-### Blocs manquants à créer (Étape B TODO)
+### Étape C — Templates créés (C1 sans ambiguïté / C2 contextuels)
 
-| `templateId` à créer | Familles cibles | Phases | Raison |
-|---|---|---|---|
-| `epargne-reglementee-exoneration` | Épargne bancaire | Sortie | LEP/Livret A/LDDS : exonération totale IR + PS (plafond, taux réglementé) |
-| `epargne-bancaire-imposable` | Épargne bancaire | Sortie | CAT/CSL : IR barème ou PFU + PS sur intérêts |
-| `pv-immobiliere` | Immobilier direct | Sortie | Plus-values immo : abattements durée (22 ans IR, 30 ans PS), exonération RP |
-| `crypto-pfu-150vhbis` | Crypto-actifs | Sortie | Art. 150 VH bis : 30 % flat, seuil 305 €, cessions actifs numériques |
-| `reduction-ir-dispositif` | Non coté/PE, Dispositifs fiscaux immo | Constitution | Réduction IR (IR-PME, SOFICA, Pinel, Malraux…) : taux %, plafond €, durée |
-| `taxe-forfaitaire-metaux` | Métaux précieux | Sortie | Taxe forfaitaire 11,5 % (or/argent) ou PV mobilières selon option |
+**C1 — Sans ambiguïté de sous-régime** (régime unique, pas de dépendance enveloppe) :
+
+| `templateId` | Familles cibles | Phase | Statut | Référence légale |
+|---|---|---|---|---|
+| `pv-immobiliere` | Immobilier direct | Sortie | ✅ PR#117 | CGI art. 150 U — abattements 22 ans IR / 30 ans PS |
+| `epargne-reglementee-exoneration` | Épargne bancaire | Constitution/Sortie | ✅ PR#117 | CGI art. 157 (LEP), 163 bis A (Livret A), 163 bis B (LDDS) |
+| `taxe-forfaitaire-metaux` | Métaux précieux | Sortie | ✅ PR#118 | CGI art. 150 VI — 11,5 % sur prix cession |
+| `crypto-pfu-150vhbis` | Crypto-actifs | Sortie | ✅ PR#118 | CGI art. 150 VH bis — 30 % flat, seuil 305 € |
+
+**C2 — Contextuels** (sous-régime dépend du produit/option — champ `dispositifType` ou `irOption` obligatoire) :
+
+> Ces templates exposent un champ de sélection de sous-régime explicite. L'admin DOIT choisir le dispositif — aucune règle implicite appliquée.
+
+| `templateId` | Familles cibles | Phase | Statut | Sous-régimes couverts |
+|---|---|---|---|---|
+| `epargne-bancaire-imposable` | Épargne bancaire | Sortie | ✅ PR#117 | `bareme` / `pfu` (champ `irOption`) |
+| `avantage-ir-dispositif` | Non coté/PE + Dispositifs fiscaux immo | Constitution | ✅ PR#118 | `reduction`/`deduction` (champ `avantageNature`) + `ir_pme`, `sofica`, `pinel`, `malraux`, `monuments_historiques`, `loc_avantages`, `denormandie` (champ `dispositifType`) |
 
 ### Vérification
 
 ```bash
-# Nombre de templates
-rg "templateId:" src/constants/base-contrat/blockTemplates.ts | wc -l
-# → 10 (MVP)
+# Nombre de templates (hors interface BlockTemplate)
+rg "templateId: '" src/constants/base-contrat/blockTemplates.ts | wc -l
+# → 15 (10 MVP + 5 Étape C)
 
 # Familles couvertes par au moins 1 template non-note-libre
 rg "suggestedFor" src/constants/base-contrat/blockTemplates.ts
