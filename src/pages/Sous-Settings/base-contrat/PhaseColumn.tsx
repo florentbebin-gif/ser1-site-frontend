@@ -85,11 +85,11 @@ export function PhaseColumn({
           )}
         </div>
       ) : (
-        phase.blocks.map((block: Block) => (
+        [...phase.blocks].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)).map((block: Block) => (
           <div
             key={block.blockId}
             style={{
-              background: '#FFFFFF',
+              background: 'var(--color-c7)',
               border: '1px solid var(--color-c8)',
               borderRadius: 8,
               padding: '12px 14px',
