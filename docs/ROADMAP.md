@@ -194,228 +194,44 @@ Ce que ça change (cible) :
 - Pas de nouveaux fichiers dans `__spike__` ou `_raw`
 - Tout nouveau code va dans `features/*`, `components/`, `hooks/`, etc.
 
-**P1-02 — Repo hygiene scan & delete unused (DONE)**
-- Objectif : appliquer la règle "Si ça ne sert plus = on supprime.", scanner et supprimer les fichiers inutiles (avec preuves).
-- Scope : repo complet (src/, tools/, docs/, racine).
-- Dépendances : T6 (cleanup spike/raw).
-- Risques : faible (PRs petites, revert simple).
-- DoD :
-  - règle documentée dans `docs/RUNBOOK.md` → section **Repo hygiene — Delete unused**
-  - pas de dossiers "archive/backup/old/spike/raw" non justifiés sous `src/`
-  - `npm run check` passe
-  - toute suppression est revertible (PRs petites)
+✅ **P1-02 & P1-03 (Fondations V2 & Hygiène)** : Déjà réalisés (Mise en place de la structure de base, nettoyage des dossiers spikes/raw).
 
 ---
 
-#### P1-03 — Base-Contrat V2 : Catalogue produits + métadonnées obligatoires + seed + cycle de vie
+#### P1-04 — Base-Contrat V3 : Expérience Admin Premium & Source de Vérité Universelle
 
-Objectif : faire du référentiel contrats (`/settings/base-contrat`) une **source de vérité opérationnelle** pour les calculateurs actuels (Placement, IR) et futurs (Succession, Épargne salariale, Prévoyance), administrable par le super-admin sans compétence technique.
+**Objectif** : Faire du catalogue des enveloppes l'unique source de vérité pour tous les simulateurs (IR, Placements), administrable par un utilisateur métier (zéro jargon informatique).
 
-##### Contexte & état actuel (preuves repo)
+##### 1. UX "No-Tech" et Mode Détaillé
+- Les identifiants techniques (slugs, `$ref`, versions) sont strictement masqués en mode normal.
+- Le vocabulaire est premium et métier ("Enveloppe", "Modèle de référence", "Règles", "Cas pratique").
+- Un mode "⚙ Afficher les détails" reste disponible pour le diagnostic technique admin.
+- **DoD (Preuve)** : Aucun jargon technique visible dans l'UI (revue visuelle + captures).
 
-| Fichier | Rôle | État |
-|---------|------|------|
-| `supabase/migrations/20260211001000_create_base_contrat_settings.sql` | Table `base_contrat_settings` (blob JSONB, id=1, RLS `is_admin()`) | ✅ En place |
-| `src/types/baseContratSettings.ts` | Types TS V1 (`BaseContratProduct`, `VersionedRuleset`, `Phase`, `Block`) | ✅ En place — V2 à venir |
-| `src/pages/Sous-Settings/BaseContrat.tsx` | Page UI (~1 000 lignes) | ✅ Fonctionnel — godfile (voir dette ci-dessous) |
-| `src/utils/baseContratSettingsCache.ts` | Cache singleton TTL 24h + localStorage + event bus | ✅ En place |
-| `src/hooks/useBaseContratSettings.ts` | Hook load/save/reload/listener | ✅ En place |
-| `src/utils/baseContratAdapter.ts` | Extracteur 16 params fiscaux → calculateurs | ✅ En place — IDs hard-codés (à corriger P1-03c) |
-| `src/constants/baseContratLabels.ts` | Labels FR UI | ✅ En place — à enrichir |
-| `src/constants/baseContratTemplates.ts` | 4 templates pré-remplis (AV, CTO, PEA, PER) | ✅ En place — à compléter |
-| `src/features/settings/publicationGate.ts` | Gate publication (bloque si 0 tests) | ✅ En place — comportement à ajuster |
-| `src/constants/base-contrat/catalogue.seed.v1.json` | Catalogue ~78 produits (base de travail versionnée) | 🔜 Commit dédié |
-| `src/constants/baseContratSeed.ts` | Transformateur seed JSON → `BaseContratProduct[]` | 🔜 Commit dédié |
+##### 2. Cohérence des Gates de Validation
+- La logique d'avertissement est strictement identique entre `/settings/impots`, `/settings/prelevements` et `/settings/base-contrat`.
+- La sauvegarde n'est jamais bloquée techniquement, mais l'absence de tests génère un avertissement clair orientant vers l'ajout d'un cas pratique.
+- **DoD (Preuve)** : Revue visuelle confirmant l'utilisation d'une bannière d'avertissement harmonisée et non bloquante sur les 3 pages.
 
-##### P1-03a — Schéma V2 : métadonnées obligatoires (structurant)
+##### 3. Assistant de Tests "1-Clic" (Verrouillage de Référence)
+- Fini l'import de tests au format JSON. L'admin décrit un cas pratique via un mini-formulaire métier.
+- Le système calcule automatiquement le résultat via le moteur réel et affiche un **résumé lisible du calcul** avant validation.
+- L'admin valide via un bouton "Marquer comme référence" avec la mention : *"Ce cas servira de contrôle lors des prochaines mises à jour."*
+- Ce test "fige" une référence qui peut être désactivée sans être supprimée.
+- **DoD (Preuve)** : Démonstration UI (captures/vidéo) du flux de création de test sans exposition de schéma de données, incluant la prévisualisation du calcul.
 
-Nouveaux champs obligatoires dans `BaseContratProduct` :
+##### 4. Source de Vérité Universelle (Comportements configurables)
+- Objectif : Comportements configurables sans toucher au code.
+- Les IDs internes stables sont conservés en base (invisibles dans l'UI).
+- L'UI propose un mapping métier ("Ce produit se comporte comme...").
+- L'adaptateur dynamique déduit le traitement fiscal sans ID codé en dur dans le front.
+- **DoD (Preuve)** : Les simulateurs fonctionnent via le paramétrage UI. Le code (ex: `baseContratAdapter.ts`) n'a plus d'ID métier en dur.
 
-| Champ | Type | Libellé UI FR | Obligatoire |
-|-------|------|---------------|-------------|
-| `grandeFamille` | `GrandeFamille` (13 valeurs) | Grande famille | ✅ |
-| `nature` | `ProductNature` (3 valeurs) | Nature du produit | ✅ |
-| `detensiblePP` | `boolean` | Détenable en direct (PP) | ✅ |
-| `eligiblePM` | `'oui'\|'non'\|'parException'` | Éligible personnes morales | ✅ |
-| `eligiblePMPrecision` | `string\|null` | Précision PM | Si `parException` |
-| `souscriptionOuverte` | `'oui'\|'non'\|'na'` | Souscription ouverte en 2026 | ✅ |
-| `commentaireQualification` | `string\|null` | Commentaire de qualification | ❌ |
-
-Migration lazy V1→V2 dans `getBaseContratSettings()` (pattern identique à `migrateV1toV2` dans `fiscalSettingsCache.js`). Pas de migration SQL — le blob évolue en place.
-
-- DoD : `schemaVersion: 2` dans le blob après premier save ; `npm run typecheck` passe.
-
-##### P1-03b — Seed catalogue versionné (structurant)
-
-- Fichier source : `src/constants/base-contrat/catalogue.seed.v1.json` (~78 produits, base de travail).
-- Transformateur : `src/constants/baseContratSeed.ts` → `SeedProduct[]` → `BaseContratProduct[]`.
-- Actions admin non-destructives :
-  - **Initialiser le catalogue** : visible si `products.length === 0` — charge tous les produits du seed.
-  - **Compléter le catalogue** : visible si `products.length > 0` — ajoute uniquement les produits absents (filtre par `id`), n'écrase rien.
-- DoD : un admin peut peupler le catalogue en 1 clic sans saisie manuelle ; les produits existants ne sont jamais écrasés.
-
-##### P1-03c — Cycle de vie produit (structurant)
-
-- **Clôturer** : `isActive: false`, `closedDate: today` — produit masqué des listes actives, récupérable.
-- **Rouvrir** : `isActive: true`, `closedDate: null`.
-- **Supprimer définitivement** : uniquement sur produit clôturé, confirmation par saisie du mot `SUPPRIMER` (pas du slug technique).
-- Section "Produits clôturés" dans la liste avec actions Rouvrir / Supprimer définitivement.
-- DoD : les 3 actions fonctionnent ; la suppression est irréversible et confirmée explicitement.
-
-##### P1-03d — Gestion des versions (rulesets)
-
-- **Dupliquer une version** : crée une copie avec nouvelle `effectiveDate` (rebrand de "Nouvelle version").
-- **Supprimer une version** : possible uniquement si `vIdx > 0` (version non active) ET `rulesets.length > 1` ; confirmation simple.
-- Règle de sécurité : `rulesets[0]` (version active) ne peut pas être supprimée tant qu'elle est la seule ou qu'elle est sélectionnée comme active.
-- DoD : impossible de se retrouver avec 0 rulesets sur un produit actif.
-
-##### P1-03e — Gate save vs publish (ajustement)
-
-- **Enregistrer** : toujours autorisé (suppression du blocage dur actuel).
-- **Avertissement** : affiché si 0 tests importés ou si aucun produit actif n'a de règles configurées — non bloquant.
-- **Publier** (futur) : bloqué si gate échoue — séparation save/publish à implémenter en P2.
-- Guide contextuel "Comment ajouter un cas de test" affiché sous l'avertissement.
-- DoD : `handleSave()` ne retourne plus jamais `early` à cause du gate ; le warning est visible mais non bloquant.
-
-##### P1-03f — Branchement calculateurs (structurant)
-
-- Wirer `extractFromBaseContrat()` dans Placement + IR + PER.
-- Résoudre les IDs produit dynamiquement dans `baseContratAdapter.ts` (supprimer les 3 IDs hard-codés : `assuranceVie`, `cto`, `pea`).
-- DoD : `rg "extractFromBaseContrat" src/features` → ≥ 3 matches (placement, ir, per).
-
-##### Critères d'acceptation globaux P1-03
-
-| # | Critère | Commande | Résultat attendu |
-|---|---------|----------|------------------|
-| 1 | Schema V2 en place | `rg "schemaVersion.*2" src/types/baseContratSettings.ts` | ≥ 1 match |
-| 2 | Migration lazy | `rg "migrateBaseContrat" src/utils/baseContratSettingsCache.ts` | ≥ 1 match |
-| 3 | Seed non-destructif | Test manuel : Compléter avec produits existants → 0 écrasement | OK |
-| 4 | Gate save non-bloquant | Test manuel : save sans tests → sauvegarde OK + warning visible | OK |
-| 5 | Adapter dynamique | `rg "assuranceVie.*hard" src/utils/baseContratAdapter.ts` | **Vide** |
-| 6 | npm run check | `npm run check` | PASS |
-
----
-
-#### Dette technique — Découpage des godfiles Settings
-
-> Règle repo (cf. `docs/ARCHITECTURE.md`) : **fichiers > 500 lignes = dette à découper**.
-
-| Fichier | Lignes actuelles | Priorité | Jalon |
-|---------|-----------------|----------|-------|
-| `src/pages/Sous-Settings/BaseContrat.tsx` | ~1 000 (croissant avec P1-03) | **P1** (en parallèle de P1-03) | Avant fin P1-03 |
-| `src/pages/Sous-Settings/SettingsImpots.jsx` | ~1 180 | P2 | Début P2 |
-| `src/pages/Sous-Settings/SettingsPrelevements.jsx` | ~1 290 | P2 | Début P2 |
-
-##### Découpage BaseContrat.tsx (P1 — priorité haute)
-
-Cible : aucun fichier dans le dossier `Sous-Settings/base-contrat/` > 300 lignes.
-
-Découpage proposé :
-
-| Nouveau fichier | Contenu extrait |
-|---|---|
-| `BaseContrat.tsx` (shell) | Orchestration, state global, save/gate — < 150 lignes |
-| `ProductList.tsx` | Accordéon liste produits actifs + clôturés |
-| `ProductCard.tsx` | Corps d'un produit ouvert (phases + version selector) |
-| `PhaseColumn.tsx` | Colonne Constitution / Sortie / Décès |
-| `ProductMetadataSection.tsx` | Section "Informations produit" (métadonnées V2) |
-| `modals/AddProductModal.tsx` | Modal ajout produit |
-| `modals/EditProductModal.tsx` | Modal modification |
-| `modals/NewVersionModal.tsx` | Modal nouvelle version / duplication |
-| `modals/DeleteVersionModal.tsx` | Modal suppression version |
-| `modals/CloseProductModal.tsx` | Modal clôture |
-| `modals/DeleteProductModal.tsx` | Modal suppression définitive (confirmation SUPPRIMER) |
-| `modals/ImportTestModal.tsx` | Modal import cas de test |
-
-- DoD : `wc -l src/pages/Sous-Settings/BaseContrat.tsx` < 200 ; `npm run check` passe.
-
-##### Lisibilité des champs & références dans Base-Contrat (P1 — feat/base-contrat-ux-nav)
-
-- **Objectif** : 0 camelCase visible / 0 `$ref:` visible en mode normal dans la fiche produit.
-- **Livrables** :
-  - `src/constants/base-contrat/fieldLabels.fr.ts` — `FIELD_LABELS_FR` + `humanizeFieldKey()` + `formatRefLabel()`
-  - `FieldRenderer.tsx` — labels FR, refs lisibles, badge "★ Simulateurs" (remplace "Calc."), mode Détails
-  - Toggle "⚙ Afficher les détails" dans la barre de filtres (clés internes + `$ref:` bruts visibles en mode ON)
-- **DoD** : `humanizeFieldKey('irRatePercent')` → `'Taux IR (PFU)'` ; `formatRefLabel('$ref:...')` → jamais `$ref:` dans le label ; `npm run check` PASS.
-- **Tests** : `src/engine/__tests__/fieldLabels.test.ts` (humanize + formatRef + DoD 0 $ref).
-
-##### P1-03g — Configuration guidée des règles produit (modal "Configurer les règles")
-
-Problème actuel : activer une phase via le toggle "Sans objet" laisse la phase vide ("Aucun bloc défini"). L'admin n'a pas de cadre pour saisir des règles de manière homogène.
-
-**Étape A — Catalogue de blocs réutilisables** (`src/constants/base-contrat/blockTemplates.ts`)
-
-Référentiel de `BlockTemplate` issu de l'audit AV/CTO/PEA/PER :
-
-| `templateId` | Libellé FR | Phases | Grandes familles |
-|---|---|---|---|
-| `pfu-sortie` | PFU (flat tax) | Sortie | Assurance, Titres vifs, Retraite |
-| `ps-sortie` | Prélèvements sociaux | Constitution, Sortie | Assurance, Retraite & épargne salariale, Immobilier |
-| `art-990I-deces` | Art. 990 I — primes avant 70 ans | Décès | Assurance, Retraite |
-| `art-757B-deces` | Art. 757 B — primes après 70 ans | Décès | Assurance, Retraite |
-| `abattements-av-8ans` | Rachats ≥ 8 ans (abattements AV) | Sortie | Assurance |
-| `rachats-pre2017` | Rachats versements avant 2017 | Sortie | Assurance |
-| `deductibilite-per` | Déductibilité versements PER | Constitution | Retraite & épargne salariale |
-| `rente-rvto` | Sortie en rente (RVTO) | Sortie | Retraite & épargne salariale |
-| `anciennete-exoneration` | Exonération après ancienneté | Sortie | Assurance, Retraite |
-| `note-libre` | Note informative (texte libre) | toutes | toutes |
-
-- DoD : `BLOCK_TEMPLATES.length ≥ 9` ; `BLOCKS_BY_FAMILLE` couvre au moins 5 `GrandeFamille`.
-
-**Étape B — Audit des 78 produits seed** (`src/constants/base-contrat/catalogue.seed.v1.json`) **— DONE**
-
-Pour chaque grande famille : identifier les blocs standards attendus par phase, les champs paramétrables, les champs `$ref` automatiques.
-
-- Livrable : commentaires `// suggestedFor` enrichis dans `blockTemplates.ts` + table récapitulative dans `docs/ARCHITECTURE.md`.
-- DoD : table couvre ≥ 8 grandes familles (13 familles couvertes).
-- Commit : `d838e47` feat(base-contrat): Etape B audit 78 produits seed
-
-**Étape C — Création des 6 templates manquants (post-audit)**
-
-Deux catégories selon l'ambiguïté du sous-régime fiscal :
-
-**C1 — Sans ambiguïté** (régime unique, pas de dépendance enveloppe) — **DONE PR#118** :
-
-| `templateId` | Famille cible | Référence légale | Statut |
-|---|---|---|---|
-| `pv-immobiliere` | Immobilier direct | CGI art. 150 U — abattements 22 ans IR / 30 ans PS | ✅ PR#117 |
-| `epargne-reglementee-exoneration` | Épargne bancaire | CGI art. 157 (LEP), 163 bis A (Livret A), 163 bis B (LDDS) | ✅ PR#117 |
-| `taxe-forfaitaire-metaux` | Métaux précieux | CGI art. 150 VI — 11,5 % sur prix cession | ✅ PR#118 |
-| `crypto-pfu-150vhbis` | Crypto-actifs | CGI art. 150 VH bis — 30 % flat, seuil 305 € | ✅ PR#118 |
-
-**C2 — Contextuels** (sous-régime dépend du produit/option — champ de sélection explicite obligatoire) — **DONE PR#118** :
-
-> ⚠️ Ces templates exposent un champ de sélection de sous-régime explicite. L'admin DOIT choisir le dispositif — aucune règle implicite appliquée.
-
-| `templateId` | Famille cible | Sous-régimes couverts | Statut |
-|---|---|---|---|
-| `epargne-bancaire-imposable` | Épargne bancaire | `bareme` / `pfu` (champ `irOption`) | ✅ PR#117 |
-| `avantage-ir-dispositif` | Non coté/PE + Dispositifs fiscaux immo | `reduction`/`deduction` (champ `avantageNature`) + `ir_pme`, `sofica`, `pinel`, `malraux`, `monuments_historiques`, `loc_avantages`, `denormandie` (champ `dispositifType`) | ✅ PR#118 |
-
-- DoD global : `BLOCK_TEMPLATES.length = 15` (hors `note-libre`) ; `npm run check` PASS ; table `ARCHITECTURE.md` mise à jour (C1/C2 → ✅ Couvert).
-
----
-
-##### Découpage SettingsImpots.jsx + SettingsPrelevements.jsx (P2) — **DONE**
-
-- Même pattern : shell orchestrateur + sous-composants par section.
-- DoD : aucun fichier Settings > 500 lignes (sauf fichiers de data pure très répétitifs) ; `npm run check` passe.
-- Dépendance : P1-01d (normalisation Settings) doit être terminé avant.
-
-##### Gate /settings/impots + /settings/prelevements allégé (P2-A) — **DONE**
-
-Même logique que Base-Contrat : enregistrement toujours possible, le gate devient warning non-bloquant + guide contextuel.
-
-- Scope : `SettingsImpots.jsx` + `SettingsPrelevements.jsx` — remplacer les blocages par des warnings + bouton "Enregistrer quand même".
-- DoD : save sans remplir tous les champs obligatoires → sauvegarde OK + warning visible (pas d'erreur fatale).
-
-**T6 — Audit puis cleanup `__spike__` et `_raw` (DONE)**
-- Scope : `src/pptx/template/__spike__/`, `src/icons/business/_raw/`.
-- Dépendances : P1-01d (doc cleanup) — audit réalisé en PR1.
-- Livrable audit : **consigné dans `docs/ARCHITECTURE.md`** → section **Debt registry (legacy / spike / raw) + Exit criteria** (lignes 87-94).
-- Décision : **DELETE** (non-runtime, 0 usage)
-- Risques : faible (pas de runtime impact).
-- DoD : audit documenté + aucun dossier `__spike__` ou `_raw` sous `src/`.
+##### Séquence d'exécution (PRs)
+- **PR 0 : Découpage technique (Dette)** : Extraction des composants de `BaseContrat.tsx` (< 300 lignes). Zéro changement UX.
+- **PR 1 : UX Métier & Gates** : Vocabulaire premium, masquage des IDs (mode détaillé), harmonisation de la bannière sur les 3 pages Settings.
+- **PR 2 : Assistant de Test "1-Clic"** : Suppression de l'import JSON, création du flux de test métier avec prévisualisation et "Marquer comme référence".
+- **PR 3 : Adaptateur Générique** : Remplacement des IDs hardcodés par une résolution dynamique selon la configuration de l'enveloppe.
 
 ##### Critères d'acceptation (DoD global) — Checklist vérifiable
 
