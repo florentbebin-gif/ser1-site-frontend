@@ -9,13 +9,11 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { FieldRenderer } from './base-contrat/FieldRenderer';
 import { PhaseColumn } from './base-contrat/PhaseColumn';
 import { useUserRole } from '@/auth/useUserRole';
 import { useBaseContratSettings } from '@/hooks/useBaseContratSettings';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import {
-  PHASE_LABELS,
   CONFIDENCE_LABELS,
   CONFIDENCE_ICONS,
   ACTION_LABELS,
@@ -33,9 +31,7 @@ import type {
   BaseContratProduct,
   BaseContratSettings,
   VersionedRuleset,
-  Phase,
   Block,
-  FieldDef,
   ConfidenceLevel,
   GrandeFamille,
   ProductNature,

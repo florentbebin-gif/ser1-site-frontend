@@ -13,10 +13,6 @@ import React from 'react';
 import type { FieldDef } from '@/types/baseContratSettings';
 import { humanizeFieldKey, formatRefLabel } from '@/constants/base-contrat/fieldLabels.fr';
 
-function chipStyle(bg: string, fg: string): React.CSSProperties {
-  return { fontSize: 11, padding: '2px 8px', borderRadius: 4, background: bg, color: fg, fontWeight: 600, lineHeight: '18px' };
-}
-
 const CALC_TOOLTIP = 'Cette valeur est utilisée dans les calculs (IR, placements, prévoyance…)';
 const CALC_LABEL = '★';
 
