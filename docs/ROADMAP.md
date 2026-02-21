@@ -233,6 +233,34 @@ Ce que ça change (cible) :
 - **PR 2 : Assistant de Test "1-Clic"** : Suppression de l'import JSON, création du flux de test métier avec prévisualisation et "Marquer comme référence".
 - **PR 3 : Adaptateur Générique** : Remplacement des IDs hardcodés par une résolution dynamique selon la configuration de l'enveloppe.
 
+#### P1-05 — Catalogue Patrimonial & Règles Exhaustives (Base Parfaite)
+
+**Objectif** : Structurer une taxonomie parfaite des actifs (quoi), des supports (où) et des surcouches (fiscalité), et s'assurer que **toutes les règles** sont modélisées et testées. On vise l'exhaustivité, implémentée par étapes.
+
+##### 1. Taxonomie et Nettoyage du Catalogue
+- **Nouveau modèle relationnel** : 
+  - **Enveloppes / Supports** (ex: Assurance-vie, PEA, CTO, PER)
+  - **Actifs patrimoniaux** (ex: Actions cotées, Fonds EUR, Immo locatif)
+  - **Surcouches fiscales** (ex: Pinel, Malraux — rattachées à un actif immo)
+  - **Protections** (ex: Prévoyance décès/invalidité)
+- **Suppression des structurés** : Les produits structurés (Autocall, Certificats, EMTN) sont retirés du catalogue des actifs sélectionnables en direct. Ils sont traités comme des éléments internes aux CTO/AV.
+- **Affinement Métier** : Séparation de "Résidence Principale" (exonérée) et "Immobilier Locatif". Distinction entre PER Bancaire (compte-titres) et PER Assurantiel.
+
+##### 2. Modèle de Règles & Blocs Exhaustifs
+- **Blocs paramétrables (Zéro texte libre pour le calcul)** : Abattements pour durée de détention (Immo), PFU vs Barème progressif, Art. 990I / 757B (avec seuils d'âge), Rente viagère (RVTO).
+- **Matrice de couverture 100%** : Chaque actif/enveloppe du catalogue doit avoir des blocs assignés pour ses 3 phases de vie (Constitution, Détention/Sortie, Transmission).
+
+##### 3. Stratégie de Validation Anti-Régression
+- **Cas pratiques obligatoires** : Un actif ne peut être publié sans un cas pratique validé ("Marqué comme référence") par l'admin métier.
+
+##### Séquence d'exécution (PRs)
+- **PR 1 : Nettoyage & Refonte Taxonomie** : Séparation Enveloppes vs Actifs dans la BDD. Purge des produits structurés. Affinement des résidences et des PER.
+- **PR 2 : Moteur de Blocs Immo & Surcouches** : Création des blocs de calcul pour l'immobilier (abattements, plus-values, régimes fonciers) et dispositifs (Pinel, Denormandie).
+- **PR 3 : Moteur de Blocs Financiers & Retraite** : Création des blocs de calcul pour titres, enveloppes fiscales (PEA) et succession (990I/757B).
+- **PR 4 : Couverture Exhaustive 100%** : Paramétrage complet de tous les éléments du catalogue avec les blocs créés.
+- **PR 5 : UI de Sélection Utilisateur** : Adaptation du front pour une sélection "en entonnoir" (Choix de l'Enveloppe ➔ Choix de l'Actif ➔ Application d'une Surcouche).
+- **PR 6 : Cleanup Définitif (Suppression Seed)** : Suppression de `src/constants/base-contrat/catalogue.seed.v1.json` une fois la base migrée et testée. Preuve : `rg "catalogue.seed"` est vide.
+
 ##### Critères d'acceptation (DoD global) — Checklist vérifiable
 
 | # | Critère | Commande de vérif. | Résultat attendu |
