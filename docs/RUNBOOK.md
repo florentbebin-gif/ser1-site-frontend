@@ -335,6 +335,23 @@ Pour modifier un bloc déjà en place : cliquer directement sur le champ dans la
 
 ---
 
+## Gate de publication (Settings)
+
+Les pages `/settings/impots` et `/settings/prelevements` utilisent un mécanisme de vérification (Gate) avant d'enregistrer les paramètres.
+
+**Règle actuelle (v1 allégée)** :
+L'enregistrement est **toujours possible**, même si aucun test d'import n'a été validé. 
+Le système affiche un avertissement non-bloquant (warning jaune) pour inciter l'administrateur à vérifier ses paramètres.
+
+**Comment résoudre l'avertissement ?**
+Pour faire disparaître le warning, le système attend qu'au moins un test soit présent et au statut "PASS" :
+1. Allez sur un simulateur (ex: `/sim/ir`).
+2. Exportez un tableur Excel.
+3. Modifiez manuellement le tableur pour y inclure un cas de test validé.
+4. Importez ce tableur via le menu développeur (bouton "Test").
+
+---
+
 ## Repo hygiene — Delete unused
 
 **Règle** : Si ça ne sert plus = on supprime.

@@ -402,7 +402,7 @@ Deux catégories selon l'ambiguïté du sous-régime fiscal :
 - DoD : aucun fichier Settings > 500 lignes ; `npm run check` passe.
 - Dépendance : P1-01d (normalisation Settings) doit être terminé avant.
 
-##### Gate /settings/impots + /settings/prelevements allégé (P2)
+##### Gate /settings/impots + /settings/prelevements allégé (P2-A) — **DONE**
 
 Même logique que Base-Contrat : enregistrement toujours possible, le gate devient warning non-bloquant + guide contextuel.
 
