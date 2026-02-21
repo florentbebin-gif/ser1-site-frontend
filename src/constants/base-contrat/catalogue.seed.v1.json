@@ -821,62 +821,6 @@
       "templateKey": "tax_incentive_equity"
     },
     {
-      "id": "autocall",
-      "label": "Autocall (note structurée)",
-      "family": "Produits structurés",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Produit à scénario ; risque de perte en capital selon sous-jacent/barrières.",
-      "references": [
-        "AMF — Produits structurés (repères)"
-      ],
-      "templateKey": "structured_products"
-    },
-    {
-      "id": "certificats",
-      "label": "Certificats (bonus, discount, turbo, etc.)",
-      "family": "Produits structurés",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Produits listés hétérogènes ; risques spécifiques (levier/barrières/émetteur).",
-      "references": [
-        "AMF — Produits structurés (repères)"
-      ],
-      "templateKey": "structured_products"
-    },
-    {
-      "id": "emtn_notes",
-      "label": "EMTN / Notes (titres de créance structurés)",
-      "family": "Produits structurés",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Titres de créance émis par une banque ; risque émetteur + structure.",
-      "references": [
-        "AMF — Produits structurés (repères)"
-      ],
-      "templateKey": "structured_products"
-    },
-    {
-      "id": "warrants_options",
-      "label": "Warrants / options listées",
-      "family": "Produits structurés",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Dérivés listés ; risque de perte rapide, effet de levier.",
-      "references": [
-        "AMF — Produits à risque / structurés (repères)"
-      ],
-      "templateKey": "structured_products"
-    },
-    {
       "id": "article_83",
       "label": "Article 83 (anciens contrats “retraite entreprise”)",
       "family": "Retraite & épargne salariale",

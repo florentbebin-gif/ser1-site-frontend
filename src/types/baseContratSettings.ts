@@ -7,6 +7,10 @@
  *
  * schemaVersion 1 → 2 : ajout métadonnées obligatoires (grandeFamille, nature, detensiblePP,
  * eligiblePM, souscriptionOuverte). Migration lazy dans getBaseContratSettings().
+ *
+ * schemaVersion 2 → 3 : passage à la taxonomie relationnelle SaaS.
+ * Remplacement de nature par catalogKind, detensiblePP par directHoldable, eligiblePM par corporateHoldable.
+ * Ajout de allowedWrappers.
  */
 
 // ---------------------------------------------------------------------------
@@ -21,7 +25,7 @@ export type ProductFamily =
   | 'Défiscalisation'
   | 'Autres';
 
-/** V2 — 13 grandes familles métier */
+/** V2/V3 — 13 grandes familles métier */
 export type GrandeFamille =
   | 'Assurance'
   | 'Épargne bancaire'
@@ -37,16 +41,24 @@ export type GrandeFamille =
   | 'Métaux précieux'
   | 'Retraite & épargne salariale';
 
-/** V2 — Nature du produit */
+/** V2 — Nature du produit (deprecated en V3, remplacé par CatalogKind) */
 export type ProductNature =
   | 'Actif / instrument'
   | 'Contrat / compte / enveloppe'
   | 'Dispositif fiscal immobilier';
 
-/** V2 — Éligibilité personnes morales */
+/** V3 — Taxonomie relationnelle (5 catégories strictes) */
+export type CatalogKind =
+  | 'wrapper'      // Enveloppes/Supports fiscaux (Assurance-vie, PEA, CTO)
+  | 'asset'        // Actifs détenables en direct (Immo locatif, Titres vifs)
+  | 'liability'    // Passif/Dettes (Crédit amortissable, in fine)
+  | 'tax_overlay'  // Surcouches fiscales (Pinel, Malraux)
+  | 'protection';  // Prévoyance/Assurances calculables
+
+/** V2 — Éligibilité personnes morales (deprecated en V3, remplacé par corporateHoldable) */
 export type EligiblePM = 'oui' | 'non' | 'parException';
 
-/** V2 — Souscription ouverte en 2026 */
+/** V2/V3 — Souscription ouverte en 2026 */
 export type SouscriptionOuverte = 'oui' | 'non' | 'na';
 
 export type Holders = 'PP' | 'PM' | 'PP+PM';
@@ -137,21 +149,31 @@ export interface BaseContratProduct {
   id: string;
   label: string;
 
-  // ── Métadonnées V2 (obligatoires à la création) ──
+  // ── Métadonnées V3 (Obligatoires) ──
   grandeFamille: GrandeFamille;
-  nature: ProductNature;
-  /** Détenable en direct par une personne physique */
-  detensiblePP: boolean;
-  /** Éligibilité personnes morales */
-  eligiblePM: EligiblePM;
-  /** Obligatoire si eligiblePM === 'parException' */
-  eligiblePMPrecision: string | null;
+  /** Taxonomie stricte (remplace nature) */
+  catalogKind: CatalogKind;
+  /** Détenable en direct par une personne physique (remplace detensiblePP) */
+  directHoldable: boolean;
+  /** Détenable par une personne morale (remplace eligiblePM) */
+  corporateHoldable: boolean;
+  /** Enveloppes autorisées si ce n'est pas un wrapper. Vide = direct uniquement. */
+  allowedWrappers: string[];
+
   /** Souscription ouverte en 2026 */
   souscriptionOuverte: SouscriptionOuverte;
+  /** Obligatoire si corporateHoldable === true par exception (legacy) */
+  eligiblePMPrecision: string | null;
   /** Commentaire libre de qualification (optionnel) */
   commentaireQualification: string | null;
 
-  // ── Champs legacy conservés pour compatibilité baseContratAdapter.ts ──
+  // ── Champs legacy conservés pour compatibilité (V1/V2) ──
+  /** @deprecated V2 — remplacé par catalogKind. Conserver pour la migration. */
+  nature?: ProductNature;
+  /** @deprecated V2 — remplacé par directHoldable. Conserver pour la migration. */
+  detensiblePP?: boolean;
+  /** @deprecated V2 — remplacé par corporateHoldable. Conserver pour la migration. */
+  eligiblePM?: EligiblePM;
   /** @deprecated V1 — dérivé de grandeFamille. Conserver pour l'adapter. */
   family: ProductFamily;
   /** @deprecated V1 — dérivé de detensiblePP + eligiblePM. Conserver pour l'adapter. */
@@ -190,8 +212,8 @@ export interface ProductTest {
 // ---------------------------------------------------------------------------
 
 export interface BaseContratSettings {
-  /** 1 = V1 (legacy), 2 = V2 (métadonnées obligatoires). Migration lazy dans getBaseContratSettings(). */
-  schemaVersion: 1 | 2;
+  /** 1 = V1 (legacy), 2 = V2, 3 = V3 (Taxonomie relationnelle). Migration lazy dans getBaseContratSettings(). */
+  schemaVersion: 1 | 2 | 3;
   products: BaseContratProduct[];
   /** Gate P0-10: imported tests — publication blocked if empty */
   tests?: ProductTest[];
@@ -222,11 +244,12 @@ export const EMPTY_RULESET: VersionedRuleset = {
 export const EMPTY_PRODUCT: Omit<BaseContratProduct, 'sortOrder'> = {
   id: '',
   label: '',
-  // V2 métadonnées
+  // V3 métadonnées
   grandeFamille: 'Assurance',
-  nature: 'Contrat / compte / enveloppe',
-  detensiblePP: true,
-  eligiblePM: 'non',
+  catalogKind: 'wrapper',
+  directHoldable: true,
+  corporateHoldable: false,
+  allowedWrappers: [],
   eligiblePMPrecision: null,
   souscriptionOuverte: 'oui',
   commentaireQualification: null,
