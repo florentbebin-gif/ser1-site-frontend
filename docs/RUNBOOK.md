@@ -186,7 +186,7 @@ Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence tec
 
 ---
 
-## Initialiser le catalogue Base-Contrat
+## Initialiser le catalogue Base-Contrat V3
 
 ### Quand l'utiliser
 
@@ -195,18 +195,16 @@ Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence tec
 
 ### Ce que ça fait
 
-- **Initialiser le catalogue** (bouton visible si le catalogue est vide) : charge l'ensemble des produits du fichier de référence (`src/constants/base-contrat/catalogue.seed.v1.json`). Chaque produit est créé avec ses métadonnées (grande famille, nature, PP/PM, souscription 2026) mais **sans règles fiscales** — les règles sont à compléter produit par produit.
+- **Initialiser le catalogue V3** (bouton visible si le catalogue est vide) : charge l'ensemble des produits selon la taxonomie V3 (5 catalogKind : wrapper, asset, liability, tax_overlay, protection). Chaque produit est créé avec ses métadonnées (catalogKind, directHoldable, corporateHoldable, allowedWrappers) mais **sans règles fiscales** — les règles sont à compléter produit par produit.
 - **Compléter le catalogue** (bouton visible si le catalogue contient déjà des produits) : ajoute uniquement les produits **absents** du catalogue actuel. **N'écrase jamais** un produit existant ni ses règles.
 
-### Fichier catalogue (base de travail)
+### Source de vérité (post-migration)
 
-- Emplacement : `src/constants/base-contrat/catalogue.seed.v1.json`
-- Contenu : ~78 produits couvrant les 13 grandes familles (Assurance, Épargne bancaire, Titres vifs, Fonds/OPC, Immobilier direct, Immobilier indirect, Crypto-actifs, Non coté/PE, Produits structurés, Créances/Droits, Dispositifs fiscaux immo, Métaux précieux, Retraite & épargne salariale).
-- Ce fichier est une **base de travail** : il peut être amendé et complété au fil du temps. Toute modification doit passer par une PR (fichier versionné dans le repo).
+Après P1-05 PR7, le catalogue est entièrement géré en base Supabase. Le fichier `src/constants/base-contrat/catalogue.seed.v1.json` est supprimé.
 
 ### Précautions
 
-- L'initialisation ne remplace pas la vérification des règles fiscales : les produits chargés depuis le seed ont le niveau de confiance "À vérifier" par défaut.
+- L'initialisation ne remplace pas la vérification des règles fiscales : les produits chargés ont le niveau de confiance "À vérifier" par défaut.
 - Après initialisation, suivre la procédure "Mise à jour annuelle" pour compléter et valider les règles.
 
 ---
@@ -276,6 +274,39 @@ En mode normal, la fiche produit affiche uniquement des libellés métier en fra
 
 ---
 
+## Configurer les protections (calculables)
+
+Les protections ne sont plus des notes libres : elles impactent la trésorerie, les revenus imposables et la succession.
+
+### Types de protections
+
+| Type | Phases applicables | Impact calculable |
+|------|-------------------|-------------------|
+| **Prévoyance individuelle** | Constitution, Sortie, Décès | Primes déductibles (Madelin), Rentes imposables, Capital exonéré |
+| **Assurance emprunteur** | Décès | Capital décès (hors succession ou soumis à 990I) |
+
+### Comment configurer
+
+1. Ouvrir la fiche protection sur `/settings/base-contrat`.
+2. **Phase Constitution** : Ajouter le bloc "Primes prévoyance"
+   - `montantPrime` : montant annuel des primes
+   - `deductibleMadelin` : cocher si déductible du BNC
+3. **Phase Sortie** : Ajouter le bloc "Rentes invalidité"
+   - `renteMensuelle` : montant perçu en cas d'ITT
+   - `imposableIR` : cocher si les rentes sont imposables
+4. **Phase Décès** : Ajouter le bloc "Capital décès prévoyance"
+   - `capitalAssure` : montant garanti
+   - `soumisArticle990I` : cocher si soumis aux droits de succession
+
+### Vérification
+
+Après configuration, le simulateur succession intégrera :
+- Le capital décès dans l'actif net (ou hors si exonéré)
+- Les rentes comme revenus de remplacement
+- Les primes comme charges déductibles
+
+---
+
 ## Configurer les règles d'un produit seed
 
 Quand un produit est créé depuis le catalogue seed (ex : LEP, Livret A, SCPI…), ses phases peuvent être vides ou marquées "Sans objet". Cette section explique comment les configurer via le modal guidé.
@@ -337,18 +368,30 @@ Pour modifier un bloc déjà en place : cliquer directement sur le champ dans la
 
 ## Gate de publication (Settings)
 
-Les pages `/settings/impots` et `/settings/prelevements` utilisent un mécanisme de vérification (Gate) avant d'enregistrer les paramètres.
+Les pages `/settings/impots`, `/settings/prelevements` et `/settings/base-contrat` utilisent un mécanisme de vérification (Gate) avant d'enregistrer les paramètres.
 
-**Règle actuelle (v1 allégée)** :
-L'enregistrement est **toujours possible**, même si aucun test d'import n'a été validé. 
-Le système affiche un avertissement non-bloquant (warning jaune) pour inciter l'administrateur à vérifier ses paramètres.
+### Distinction "Enregistrer" vs "Publier"
 
-**Comment résoudre l'avertissement ?**
-Pour faire disparaître le warning, le système attend qu'au moins un test soit présent et au statut "PASS" :
-1. Allez sur un simulateur (ex: `/sim/ir`).
-2. Exportez un tableur Excel.
-3. Modifiez manuellement le tableur pour y inclure un cas de test validé.
-4. Importez ce tableur via le menu développeur (bouton "Test").
+- **Enregistrer** : Sauvegarde locale non bloquante. Un avertissement (jaune) s'affiche si les tests sont insuffisants, mais l'enregistrement reste possible.
+- **Publier** : Action bloquante qui rend les règles actives pour les simulateurs. Exige au moins un cas de test validé ("Marqué comme référence").
+
+### Règle actuelle (P1-04)
+
+**Enregistrement** : Toujours possible avec warning si aucun test validé.
+**Publication** : Bloquée si :
+- Aucun cas de test "Marqué comme référence" n'existe
+- Un test existant échoue lors du rejeu automatique
+
+### Comment résoudre un blocage ?
+
+Pour publier des règles :
+1. Allez sur `/settings/base-contrat`.
+2. Pour le produit concerné, cliquez "Ajouter un cas de test".
+3. Décrivez une situation réelle (ex: "AV 100 000 €, 8 ans, rachat partiel 20 000 €").
+4. Cliquez "Marquer comme référence" après validation du calcul.
+5. Retournez publier les règles.
+
+> Le gate garantit que les simulateurs utilisent toujours des règles vérifiées par au moins un cas pratique.
 
 ---
 
