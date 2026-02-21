@@ -237,202 +237,61 @@ Ce que ça change (cible) :
 
 #### P1-05 — Catalogue Patrimonial & Règles Exhaustives (Base Parfaite)
 
-**Objectif** : Transformer le catalogue plat actuel (78 entrées, 3 `kind`) en une **taxonomie relationnelle** (Enveloppes → Actifs → Surcouches), et garantir que **100 % des produits** disposent de règles calculables et testées pour les 3 phases de vie (Constitution, Sortie, Transmission). On vise l'exhaustivité, implémentée par étapes cohérentes.
+**Objectif** : Passer d'un catalogue plat "fourre-tout" à une **taxonomie relationnelle SaaS** (Wrappers ↔ Assets ↔ Tax Overlays ↔ Passif), nettoyer les produits non pertinents en direct (structurés), et garantir 100 % de couverture de règles (y compris les Protections calculables). Implémentation via `schemaVersion: 3`.
 
 **Pré-requis** : P1-04 terminé (adapter générique, UX no-tech, tests 1-clic).
 
-##### 1. Diagnostic du catalogue actuel (preuves repo)
+##### 1. Refonte du Modèle de Données (`schemaVersion: 3`)
+- **Nouveau typage `BaseContratProductV3`** :
+  - `catalogKind`: `'wrapper' | 'asset' | 'tax_overlay' | 'protection' | 'liability'`.
+  - `directHoldable`: `boolean` (remplace `detensiblePP`).
+  - `corporateHoldable`: `boolean` (remplace `eligiblePM`).
+  - `allowedWrappers`: `string[]` (Ex: Un actif 'Actions' a `['cto', 'pea']`).
+- **Migration automatique** : Fonction `migrateV2ToV3` exécutée au chargement si version antérieure.
 
-| # | Problème | Preuve |
-|---|----------|--------|
-| D1 | **Catalogue plat sans relations** : 78 produits avec `kind` à 3 valeurs (`contrat_compte_enveloppe`, `actif_instrument`, `dispositif_fiscal_immobilier`) mais aucun lien entre enveloppes et actifs logeables. | `catalogue.seed.v1.json` — aucun champ `logeableDans` ni `parentEnvelopeId`. |
-| D2 | **IDs adapter ≠ IDs seed** : L'adapter cherche `'assuranceVie'`, `'pea'`, `'cto'` (camelCase). Le seed définit `assurance_vie` (snake_case). `pea`/`cto` absents du seed. | `baseContratAdapter.ts:142` → `findProduct(…, 'assuranceVie')` ; seed → `"id": "assurance_vie"`. |
-| D3 | **Enveloppes manquantes** : PEA, PEA-PME, CTO absents du catalogue. L'adapter les attend mais ils n'existent pas. | `rg '"id": "pea"' catalogue.seed.v1.json` → 0 résultat. |
-| D4 | **Templates pré-remplis : 4 seulement** sur 78 produits. AV, CTO, PEA, PER-indiv-assurance. 74 produits démarrent avec `EMPTY_RULESET`. | `baseContratTemplates.ts` — `TEMPLATE_KEYS` = 4 entrées. |
-| D5 | **blockTemplates : 15 blocs, couverture partielle**. Manquent : DMTG droit commun, revenus fonciers, BIC meublé, déficit foncier, IFI, PV non coté, exonération RP, épargne salariale (abondement), PER déblocage anticipé. | `rg "dmtg\|foncier\|meuble\|lmnp\|ifi" blockTemplates.ts` → 0 résultat pertinent. |
-| D6 | **Immobilier trop agrégé** : `immobilier_appartement_maison` regroupe RP (exonérée), RS (PV durée), locatif nu (foncier), meublé (BIC) — 4 régimes fiscaux radicalement différents. | `catalogue.seed.v1.json:614` — 1 seul produit pour 4 régimes. |
-| D7 | **PER non distingué bancaire vs assurantiel** : `per_perin` unique. PER bancaire (succession DMTG) ≠ PER assurantiel (990I/757B). | `catalogue.seed.v1.json:922` — 1 seul produit `per_perin`. |
-| D8 | **Produits structurés sélectionnables** : 4 entrées (autocall, certificats, emtn_notes, warrants_options) devraient être retirées du catalogue (logés dans CTO/AV). | `catalogue.seed.v1.json:824-878` — family "Produits structurés". |
-| D9 | **templateKey orpheline** : Le seed a ~20 valeurs `templateKey` distinctes (ex: `insurance_life_savings`) déconnectées des templates de `baseContratTemplates.ts` (ex: `assurance-vie`). Deux systèmes parallèles. | `baseContratSeed.ts:151` passe `raw.templateKey` ; `baseContratTemplates.ts:340` définit des clés différentes. |
+##### 2. Taxonomie Cible (5 Familles)
 
-##### 2. Taxonomie cible (4 niveaux)
+1. **`wrapper` (Enveloppes/Contenants fiscaux)** : Assurance-vie, PEA, CTO, PER, PEE, SCI.
+2. **`asset` (Actifs détenables en direct)** : Immo locatif, Résidence principale, Titres vifs, Liquidités, SCPI.
+   - *Règle stricte* : Suppression totale des produits structurés (Autocall, Certificats) du catalogue global. Ils sont absorbés par les règles de leur wrapper (CTO/AV).
+3. **`liability` (Passif/Dettes)** : Crédit amortissable, Crédit in fine, Lombard. (Crucial pour calcul IFI / Succession).
+4. **`tax_overlay` (Surcouches Immo)** : Pinel, Malraux, Déficit foncier (applicables sur `asset` Immo locatif).
+5. **`protection` (Prévoyance/Emprunteur)** : *Deviennent calculables*.
 
-**Niveau 1 — Enveloppes / Supports** (kind: `enveloppe`) — "Où est logé l'actif ?"
+##### 3. Blocs de Règles Manquants (Couverture 100%)
 
-| Catégorie | Produits | Label UI |
-|-----------|----------|----------|
-| Assurance | Assurance-vie, Contrat de capitalisation | « Assurance-vie », « Capitalisation » |
-| Épargne actions | **PEA** (à créer), **PEA-PME** (à créer) | « PEA », « PEA-PME » |
-| Compte-titres | **CTO** (à créer) | « Compte-titres (CTO) » |
-| Retraite individuelle | **PER assurantiel** (scinder), **PER bancaire** (scinder) | « PER assurance », « PER compte-titres » |
-| Retraite entreprise | PERCOL, PERO, Article 83, PERCO (ancien), PERP (ancien), Madelin retraite | Labels existants |
-| Épargne salariale | PEE | « PEE » |
-| Épargne réglementée | Livret A, LDDS, LEP, Livret Jeune, PEAC | Labels existants |
-| Épargne logement | PEL, CEL | Labels existants |
-| Bancaire imposable | CAT, CSL, Compte courant | Labels existants |
+| templateId | Phase | Description (Calcul) |
+|------------|-------|----------------------|
+| `dmtg-droit-commun` | décès | Barème successoral (DMTG) selon lien de parenté (Gap transversal majeur). |
+| `revenus-fonciers-nu` | sortie | Immo : Micro-foncier vs réel (charges + déficit foncier). |
+| `bic-meuble-lmnp` | sortie | Immo : Micro-BIC vs réel (amortissements). |
+| `passif-deductibilite` | sortie/décès | Dettes : Déductibilité IFI et passif successoral. |
+| `primes-prevoyance` | constitution | Protections : Primes versées (déductibles Madelin oui/non). |
+| `rentes-invalidite` | sortie | Protections : Rente versée en cas d'ITT (imposabilité IR). |
+| `capital-deces-prevoyance` | décès | Protections : Capital décès (Exonéré vs art. 990I). |
 
-**Niveau 2 — Actifs / Instruments** (kind: `actif`) — "Quel type d'actif ?"
+##### 4. Séquence d'exécution (PRs, max 7)
 
-| Catégorie | Produits |
-|-----------|----------|
-| Titres cotés | Actions, Actions de préférence, OAT, Obligations corporate, Obligations convertibles, Parts sociales coopératives, Titres participatifs, Droits/BSA/DPS |
-| Fonds / OPC | ETF, OPCVM, SICAV, FCP, FCPR, FCPI, FIP, OPCI |
-| Fonds épargne salariale | FCPE |
-| Immobilier direct | **Résidence principale** (scinder), **Résidence secondaire** (scinder), **Immobilier locatif nu** (scinder), **Immobilier meublé LMNP/LMP** (scinder), Terrain, Garage/parking |
-| Immobilier indirect | SCPI, GFA, GFV, GFF |
-| Crypto-actifs | Bitcoin, Ether, Stablecoins, Tokens, NFT |
-| Métaux précieux | Or physique, Argent physique, Platine/palladium |
-| Non coté / PE | Actions non cotées, Obligations non cotées, Crowdfunding, SOFICA, IR-PME (Madelin) |
-| Créances / Droits | Compte courant d'associé, Prêt entre particuliers, Usufruit/nue-propriété |
+- **PR 0 : Anti-Godfile (Dette tech)** : Découpage obligatoire de `src/pages/Sous-Settings/BaseContrat.tsx` (1300 lignes) en sous-composants propres (List, Modal, PhaseColumn).
+- **PR 1 : Modèle V3 & Migration** : Implémentation `schemaVersion: 3`, `catalogKind`, et `migrateV2ToV3`.
+- **PR 2 : Nettoyage Catalogue & Taxonomie** : Purge des structurés du seed. Ajout des Wrappers manquants (PEA, CTO) et des Passifs (Crédits).
+- **PR 3 : Adaptateur Générique** : Résolution des wrappers via metadata, suppression des IDs hardcodés dans `baseContratAdapter.ts`.
+- **PR 4 : Blocs DMTG & Passif** : Création du bloc `dmtg-droit-commun` (assigné à tous les wrappers hors assurance) et des blocs de dettes.
+- **PR 5 : Blocs Immobilier & Protections calculables** : Création des blocs foncier/BIC et des blocs Prévoyance (primes, rentes, capital).
+- **PR 6 : UI Sélection Entonnoir** : Frontend métier (Choix Enveloppe ➔ Choix Actif ➔ Surcouche). Les relations `allowedWrappers` sont appliquées.
+- **PR 7 : Tests 1-clic 100% & Cleanup Seed** : Suppression du fichier `catalogue.seed.v1.json` une fois tout migré en DB avec un cas de test par produit.
 
-**Niveau 3 — Surcouches fiscales immobilières** (kind: `surcouche_fiscale`) — applicable uniquement à un actif immobilier
-
-| Produit | Ouvert 2026 |
-|---------|-------------|
-| Pinel / Pinel+ | Non |
-| Denormandie | Oui |
-| Malraux | Oui |
-| Monuments historiques | Oui |
-| Loc'Avantages | Oui |
-| Censi-Bouvard | Non |
-| Scellier | Non |
-| Duflot | Non |
-| Louer abordable (Cosse) | Non |
-| Relance logement (Jeanbrun) | Oui |
-
-**Niveau 4 — Protections / Assurances de personnes** (kind: `protection`) — pas de règles fiscales calculées, blocs note uniquement
-
-| Produit |
-|---------|
-| Assurance emprunteur |
-| Prévoyance individuelle (ITT/invalidité/décès) |
-| Assurance dépendance |
-| Assurance obsèques |
-
-**Flux UI cible** (sélection en entonnoir) :
-1. Choix de l'enveloppe ("Où est logé l'actif ?") → filtre les actifs logeables
-2. Choix de l'actif ("Quel type d'actif ?") → affiche les règles combinées enveloppe + actif
-3. (Optionnel, si actif immobilier) Application d'une surcouche fiscale
-
-##### 3. Blocs de règles manquants à créer
-
-| templateId cible | Phase | Familles | Description |
-|------------------|-------|----------|-------------|
-| `dmtg-droit-commun` | décès | Tous sauf Assurance | Barème DMTG selon lien de parenté (abattements + tranches). Gap transversal le plus critique. |
-| `revenus-fonciers-nu` | sortie | Immobilier direct | Micro-foncier (≤ 15 000 €) vs réel (charges déductibles + déficit foncier imputable). |
-| `bic-meuble-lmnp` | sortie | Immobilier direct | Micro-BIC (50 %) vs réel (amortissements). Distinction LMNP / LMP. |
-| `exoneration-rp` | sortie | Immobilier direct | Exonération totale PV si résidence principale au jour de la cession. |
-| `ifi-fraction-immobiliere` | constitution | Immo direct, Immo indirect, Assurance | Fraction immobilière taxable IFI (seuil 1,3 M€, barème progressif). |
-| `pv-titres-non-cotes` | sortie | Non coté/PE | Abattement renforcé durée détention dirigeants (art. 150-0 D ter CGI). |
-| `epargne-salariale-abondement` | constitution | Retraite & épargne salariale | Abondement employeur (plafonds PASS), déblocage anticipé PEE. |
-| `per-deblocage-anticipe` | sortie | Retraite & épargne salariale | Cas de déblocage anticipé PER (achat RP, etc.) — fiscalité selon compartiment. |
-| `droits-succession-pre1991` | décès | Assurance | Contrats souscrits avant 20/11/1991 (exonération totale). Complément 990I/757B. |
-
-##### 4. Matrice de couverture cible (100 %)
-
-Chaque cellule = au moins 1 bloc paramétrable assigné. ✅ = template existant, ❌ = à créer.
-
-| Famille | Constitution | Sortie | Transmission | Existants | Gaps |
-|---------|-------------|--------|--------------|-----------|------|
-| **Assurance (AV, Capi)** | versements, PS fonds € | rachats post/pré-2017, abattements 8 ans, PS, PFU | 990I, 757B | ✅ complets | pré-1991 |
-| **Épargne réglementée** | exo totale | exo totale | **DMTG** | ✅ sortie | ❌ DMTG |
-| **Bancaire imposable** | — | PFU/barème + PS | **DMTG** | ✅ sortie | ❌ DMTG |
-| **PEA / PEA-PME** | — | ancienneté 5 ans + PS | clôture succession | ✅ sortie | ❌ DMTG |
-| **CTO** | — | PFU + dividendes | **DMTG** | ✅ sortie | ❌ DMTG |
-| **PER assurantiel** | déductibilité | capital PFU, rente RVTO | 990I, 757B | ✅ | ❌ déblocage anticipé |
-| **PER bancaire** | déductibilité | capital PFU, rente RVTO | **DMTG** | partiel | ❌ DMTG, déblocage |
-| **PEE / PERCOL** | **abondement** | PFU/exo | **DMTG** | ❌ | ❌ tout |
-| **Immo RP** | — | **exo RP** | **DMTG** | ❌ | ❌ exo RP, DMTG |
-| **Immo locatif nu** | — | PV immo + **revenus fonciers** | **DMTG** | PV immo ✅ | ❌ foncier, DMTG |
-| **Immo meublé** | — | PV immo + **BIC meublé** | **DMTG** | PV immo ✅ | ❌ BIC, DMTG |
-| **Immo indirect (SCPI…)** | — | PFU/revenus fonciers | **DMTG** | PFU ✅ | ❌ foncier, DMTG |
-| **Crypto-actifs** | — | 150 VH bis | **DMTG** | ✅ | ❌ DMTG |
-| **Métaux précieux** | — | taxe forfaitaire | **DMTG** | ✅ | ❌ DMTG |
-| **Non coté / PE** | avantage IR | PFU + **PV non coté** | **DMTG** | partiel | ❌ PV non coté, DMTG |
-| **Surcouches fiscales immo** | avantage IR | PV immo | — | partiel | — |
-| **Créances / Droits** | — | note libre | **DMTG** | note ✅ | ❌ DMTG |
-| **Protections** | — | — | — | note ✅ | — |
-
-**Gap majeur transversal** : le bloc `dmtg-droit-commun` manque pour TOUTES les familles hors assurance.
-
-##### 5. Stratégie de validation anti-régression
-
-1. **Cas pratiques obligatoires** : Un produit ne peut passer à `confidenceLevel: 'confirmed'` sans au moins 1 cas pratique validé ("Marqué comme référence") par l'admin métier (flux P1-04 PR 2).
-2. **Rejouer automatiquement** : Après chaque modification de règles, les cas pratiques existants sont recalculés. Si un résultat diverge → alerte bloquante avant publication.
-3. **Couverture minimale** : Au moins 1 cas pratique par famille × phase applicable avant publication globale.
-
-##### Séquence d'exécution (PRs)
-
-**PR 1 — Refonte Taxonomie & Enveloppes manquantes**
-- Scope : Ajout CTO, PEA, PEA-PME au catalogue. Scission PER bancaire / PER assurantiel. Scission immobilier (RP / RS / locatif nu / meublé). Retrait des 4 structurés du sélectionnable (`isActive: false` ou flag `selectable: false`).
-- Fichiers : `catalogue.seed.v1.json`, `baseContratSeed.ts`, `baseContratLabels.ts`, `baseContratSettings.ts` (ajout kind `enveloppe` / `actif` / `surcouche_fiscale` / `protection`).
-- DoD :
-  - Le catalogue reflète la taxonomie 4 niveaux.
-  - `rg '"kind": "enveloppe"' catalogue.seed` retourne les enveloppes attendues.
-  - Les structurés ne sont plus sélectionnables (revue visuelle).
-  - `npm run check` passe.
-
-**PR 2 — Adapter générique (suppression IDs hardcodés)**
-- Scope : `baseContratAdapter.ts` résout dynamiquement via `templateKey` ou metadata produit (plus d'ID en dur). Unification des 2 systèmes templateKey (seed vs templates).
-- Dépendance : P1-04 PR 3 + PR 1 ci-dessus (IDs stables).
-- DoD :
-  - `rg "'assuranceVie'\|'pea'\|'cto'" src/utils/baseContratAdapter.ts` → **vide**.
-  - Tests snapshot `extractFromBaseContrat()` identiques (golden cases).
-  - `npm run check` passe.
-
-**PR 3 — Bloc DMTG droit commun + exonération RP**
-- Scope : Création templates `dmtg-droit-commun` et `exoneration-rp` dans `blockTemplates.ts`. Assignation DMTG à tous les produits hors assurance.
-- DoD :
-  - Tout produit hors famille Assurance a un bloc décès.
-  - L'immobilier RP a un bloc exo sortie.
-  - `rg "dmtg-droit-commun" blockTemplates.ts` retourne le template.
-
-**PR 4 — Blocs immobilier (foncier / meublé / IFI)**
-- Scope : Création templates `revenus-fonciers-nu`, `bic-meuble-lmnp`, `ifi-fraction-immobiliere` dans `blockTemplates.ts`.
-- DoD :
-  - Les 4 sous-types immobilier ont des blocs sortie complets.
-  - Immobilier + SCPI ont un bloc constitution IFI.
-
-**PR 5 — Blocs retraite & épargne salariale + PV non coté**
-- Scope : Création templates `epargne-salariale-abondement`, `per-deblocage-anticipe`, `pv-titres-non-cotes`, `droits-succession-pre1991`.
-- DoD :
-  - PEE/PERCOL ont des blocs constitution + sortie.
-  - Matrice de couverture 100 % (toutes les cellules de la matrice §4 ont au moins 1 bloc).
-
-**PR 6 — UI sélection en entonnoir**
-- Scope : Adaptation du front pour le flux Enveloppe → Actif → Surcouche (si immo). L'admin et l'utilisateur final voient la même taxonomie, pas de jargon.
-- DoD :
-  - Revue visuelle : le flux de sélection respecte l'entonnoir.
-  - Aucun produit structuré visible en sélection directe.
-  - Aucun `kind` technique visible dans l'UI.
-
-**PR 7 — Couverture tests 100 % & Cleanup seed**
-- Scope : Au moins 1 cas pratique validé par famille × phase applicable. Suppression du seed JSON si tous les produits sont migrés en base Supabase.
-- DoD :
-  - `rg "catalogue.seed" src/ --type ts --type tsx` → **vide** (aucun import runtime).
-  - Matrice de tests : au moins 1 cas pratique "marqué comme référence" par ligne de la matrice §4.
-  - `npm run check` passe.
-
-##### Fichiers à supprimer à terme
+##### 5. Fichiers à supprimer à terme
 
 | Fichier | PR de suppression | Preuve de suppression safe |
 |---------|-------------------|----------------------------|
 | `src/constants/base-contrat/catalogue.seed.v1.json` | PR 7 | `rg "catalogue.seed" src/` → vide |
-| `src/constants/baseContratSeed.ts` | PR 7 | `rg "baseContratSeed\|SEED_PRODUCTS\|mergeSeedIntoProducts" src/` → vide |
+| `src/constants/baseContratSeed.ts` | PR 7 | `rg "baseContratSeed" src/` → vide |
 
-##### DoD global P1-05
-
-| # | Critère | Commande de vérif. | Résultat attendu |
-|---|---------|-------------------|------------------|
-| 1 | Taxonomie 4 niveaux en place | `rg '"kind":' catalogue.seed` | 4 valeurs distinctes : `enveloppe`, `actif`, `surcouche_fiscale`, `protection` |
-| 2 | Enveloppes CTO/PEA/PEA-PME créées | `rg '"id": "(cto\|pea\|pea_pme)"' catalogue.seed` | 3 matches |
-| 3 | PER scindé bancaire/assurantiel | `rg '"id": "per_' catalogue.seed` | Au moins `per_assurantiel` et `per_bancaire` |
-| 4 | Structurés non sélectionnables | Revue UI — aucun structuré dans la liste de sélection | 0 structuré visible |
-| 5 | Adapter sans ID hardcodé | `rg "'assuranceVie'\|'pea'\|'cto'" baseContratAdapter.ts` | **Vide** |
-| 6 | DMTG droit commun existe | `rg "dmtg-droit-commun" blockTemplates.ts` | 1+ match |
-| 7 | Matrice couverture 100 % | Audit blocs : chaque famille × phase applicable a ≥ 1 bloc | 0 cellule vide |
-| 8 | Seed supprimé | `rg "catalogue.seed" src/` | **Vide** |
-| 9 | Tests cas pratiques | Au moins 1 cas "marqué comme référence" par famille × phase | Couverture ≥ 18 familles |
+##### 6. Manques hors catalogue (à prévoir dans l'analyse patrimoniale globale)
+- Démembrement de propriété (Nue-propriété / Usufruit transversal).
+- Régimes matrimoniaux (Communauté vs Séparation).
+- Gestion fine des SCI et Holding (à l'IS).
 
 ##### Critères d'acceptation (DoD global) — Checklist vérifiable
 
