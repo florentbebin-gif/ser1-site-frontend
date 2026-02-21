@@ -17,6 +17,8 @@ Dev/Tech lead + PM/owner du produit.
   - [P0 — Foundations](#p0--foundations)
   - [P1 — MVP simulateurs + JSON](#p1--mvp-simulateurs--json)
     - [P1-01 — Organisation de src/ & identifiabilité des pages](#p1-01--organisation-de-src--identifiabilite-des-pages)
+    - [P1-04 — Base-Contrat V3 : Expérience Admin Premium](#p1-04--base-contrat-v3--expérience-admin-premium--source-de-vérité-universelle)
+    - [P1-05 — Catalogue Patrimonial & Règles Exhaustives](#p1-05--catalogue-patrimonial--règles-exhaustives-base-parfaite)
   - [P2 — Analyse patrimoniale + nouveaux simulateurs](#p2--analyse-patrimoniale--nouveaux-simulateurs)
   - [P3 — Stratégie automatique + société fine](#p3--stratégie-automatique--société-fine)
 - [Références code](#références-code)
@@ -194,228 +196,243 @@ Ce que ça change (cible) :
 - Pas de nouveaux fichiers dans `__spike__` ou `_raw`
 - Tout nouveau code va dans `features/*`, `components/`, `hooks/`, etc.
 
-**P1-02 — Repo hygiene scan & delete unused (DONE)**
-- Objectif : appliquer la règle "Si ça ne sert plus = on supprime.", scanner et supprimer les fichiers inutiles (avec preuves).
-- Scope : repo complet (src/, tools/, docs/, racine).
-- Dépendances : T6 (cleanup spike/raw).
-- Risques : faible (PRs petites, revert simple).
+✅ **P1-02 & P1-03 (Fondations V2 & Hygiène)** : Déjà réalisés (Mise en place de la structure de base, nettoyage des dossiers spikes/raw).
+
+---
+
+#### P1-04 — Base-Contrat V3 : Expérience Admin Premium & Source de Vérité Universelle
+
+**Objectif** : Faire du catalogue des enveloppes l'unique source de vérité pour tous les simulateurs (IR, Placements), administrable par un utilisateur métier (zéro jargon informatique).
+
+##### 1. UX "No-Tech" et Mode Détaillé
+- Les identifiants techniques (slugs, `$ref`, versions) sont strictement masqués en mode normal.
+- Le vocabulaire est premium et métier ("Enveloppe", "Modèle de référence", "Règles", "Cas pratique").
+- Un mode "⚙ Afficher les détails" reste disponible pour le diagnostic technique admin.
+- **DoD (Preuve)** : Aucun jargon technique visible dans l'UI (revue visuelle + captures).
+
+##### 2. Cohérence des Gates de Validation
+- La logique d'avertissement est strictement identique entre `/settings/impots`, `/settings/prelevements` et `/settings/base-contrat`.
+- La sauvegarde n'est jamais bloquée techniquement, mais l'absence de tests génère un avertissement clair orientant vers l'ajout d'un cas pratique.
+- **DoD (Preuve)** : Revue visuelle confirmant l'utilisation d'une bannière d'avertissement harmonisée et non bloquante sur les 3 pages.
+
+##### 3. Assistant de Tests "1-Clic" (Verrouillage de Référence)
+- Fini l'import de tests au format JSON. L'admin décrit un cas pratique via un mini-formulaire métier.
+- Le système calcule automatiquement le résultat via le moteur réel et affiche un **résumé lisible du calcul** avant validation.
+- L'admin valide via un bouton "Marquer comme référence" avec la mention : *"Ce cas servira de contrôle lors des prochaines mises à jour."*
+- Ce test "fige" une référence qui peut être désactivée sans être supprimée.
+- **DoD (Preuve)** : Démonstration UI (captures/vidéo) du flux de création de test sans exposition de schéma de données, incluant la prévisualisation du calcul.
+
+##### 4. Source de Vérité Universelle (Comportements configurables)
+- Objectif : Comportements configurables sans toucher au code.
+- Les IDs internes stables sont conservés en base (invisibles dans l'UI).
+- L'UI propose un mapping métier ("Ce produit se comporte comme...").
+- L'adaptateur dynamique déduit le traitement fiscal sans ID codé en dur dans le front.
+- **DoD (Preuve)** : Les simulateurs fonctionnent via le paramétrage UI. Le code (ex: `baseContratAdapter.ts`) n'a plus d'ID métier en dur.
+
+##### Séquence d'exécution (PRs)
+- **PR 0 : Découpage technique (Dette)** : Extraction des composants de `BaseContrat.tsx` (< 300 lignes). Zéro changement UX.
+- **PR 1 : UX Métier & Gates** : Vocabulaire premium, masquage des IDs (mode détaillé), harmonisation de la bannière sur les 3 pages Settings.
+- **PR 2 : Assistant de Test "1-Clic"** : Suppression de l'import JSON, création du flux de test métier avec prévisualisation et "Marquer comme référence".
+- **PR 3 : Adaptateur Générique** : Remplacement des IDs hardcodés par une résolution dynamique selon la configuration de l'enveloppe.
+
+#### P1-05 — Catalogue Patrimonial & Règles Exhaustives (Base Parfaite)
+
+**Objectif** : Transformer le catalogue plat actuel (78 entrées, 3 `kind`) en une **taxonomie relationnelle** (Enveloppes → Actifs → Surcouches), et garantir que **100 % des produits** disposent de règles calculables et testées pour les 3 phases de vie (Constitution, Sortie, Transmission). On vise l'exhaustivité, implémentée par étapes cohérentes.
+
+**Pré-requis** : P1-04 terminé (adapter générique, UX no-tech, tests 1-clic).
+
+##### 1. Diagnostic du catalogue actuel (preuves repo)
+
+| # | Problème | Preuve |
+|---|----------|--------|
+| D1 | **Catalogue plat sans relations** : 78 produits avec `kind` à 3 valeurs (`contrat_compte_enveloppe`, `actif_instrument`, `dispositif_fiscal_immobilier`) mais aucun lien entre enveloppes et actifs logeables. | `catalogue.seed.v1.json` — aucun champ `logeableDans` ni `parentEnvelopeId`. |
+| D2 | **IDs adapter ≠ IDs seed** : L'adapter cherche `'assuranceVie'`, `'pea'`, `'cto'` (camelCase). Le seed définit `assurance_vie` (snake_case). `pea`/`cto` absents du seed. | `baseContratAdapter.ts:142` → `findProduct(…, 'assuranceVie')` ; seed → `"id": "assurance_vie"`. |
+| D3 | **Enveloppes manquantes** : PEA, PEA-PME, CTO absents du catalogue. L'adapter les attend mais ils n'existent pas. | `rg '"id": "pea"' catalogue.seed.v1.json` → 0 résultat. |
+| D4 | **Templates pré-remplis : 4 seulement** sur 78 produits. AV, CTO, PEA, PER-indiv-assurance. 74 produits démarrent avec `EMPTY_RULESET`. | `baseContratTemplates.ts` — `TEMPLATE_KEYS` = 4 entrées. |
+| D5 | **blockTemplates : 15 blocs, couverture partielle**. Manquent : DMTG droit commun, revenus fonciers, BIC meublé, déficit foncier, IFI, PV non coté, exonération RP, épargne salariale (abondement), PER déblocage anticipé. | `rg "dmtg\|foncier\|meuble\|lmnp\|ifi" blockTemplates.ts` → 0 résultat pertinent. |
+| D6 | **Immobilier trop agrégé** : `immobilier_appartement_maison` regroupe RP (exonérée), RS (PV durée), locatif nu (foncier), meublé (BIC) — 4 régimes fiscaux radicalement différents. | `catalogue.seed.v1.json:614` — 1 seul produit pour 4 régimes. |
+| D7 | **PER non distingué bancaire vs assurantiel** : `per_perin` unique. PER bancaire (succession DMTG) ≠ PER assurantiel (990I/757B). | `catalogue.seed.v1.json:922` — 1 seul produit `per_perin`. |
+| D8 | **Produits structurés sélectionnables** : 4 entrées (autocall, certificats, emtn_notes, warrants_options) devraient être retirées du catalogue (logés dans CTO/AV). | `catalogue.seed.v1.json:824-878` — family "Produits structurés". |
+| D9 | **templateKey orpheline** : Le seed a ~20 valeurs `templateKey` distinctes (ex: `insurance_life_savings`) déconnectées des templates de `baseContratTemplates.ts` (ex: `assurance-vie`). Deux systèmes parallèles. | `baseContratSeed.ts:151` passe `raw.templateKey` ; `baseContratTemplates.ts:340` définit des clés différentes. |
+
+##### 2. Taxonomie cible (4 niveaux)
+
+**Niveau 1 — Enveloppes / Supports** (kind: `enveloppe`) — "Où est logé l'actif ?"
+
+| Catégorie | Produits | Label UI |
+|-----------|----------|----------|
+| Assurance | Assurance-vie, Contrat de capitalisation | « Assurance-vie », « Capitalisation » |
+| Épargne actions | **PEA** (à créer), **PEA-PME** (à créer) | « PEA », « PEA-PME » |
+| Compte-titres | **CTO** (à créer) | « Compte-titres (CTO) » |
+| Retraite individuelle | **PER assurantiel** (scinder), **PER bancaire** (scinder) | « PER assurance », « PER compte-titres » |
+| Retraite entreprise | PERCOL, PERO, Article 83, PERCO (ancien), PERP (ancien), Madelin retraite | Labels existants |
+| Épargne salariale | PEE | « PEE » |
+| Épargne réglementée | Livret A, LDDS, LEP, Livret Jeune, PEAC | Labels existants |
+| Épargne logement | PEL, CEL | Labels existants |
+| Bancaire imposable | CAT, CSL, Compte courant | Labels existants |
+
+**Niveau 2 — Actifs / Instruments** (kind: `actif`) — "Quel type d'actif ?"
+
+| Catégorie | Produits |
+|-----------|----------|
+| Titres cotés | Actions, Actions de préférence, OAT, Obligations corporate, Obligations convertibles, Parts sociales coopératives, Titres participatifs, Droits/BSA/DPS |
+| Fonds / OPC | ETF, OPCVM, SICAV, FCP, FCPR, FCPI, FIP, OPCI |
+| Fonds épargne salariale | FCPE |
+| Immobilier direct | **Résidence principale** (scinder), **Résidence secondaire** (scinder), **Immobilier locatif nu** (scinder), **Immobilier meublé LMNP/LMP** (scinder), Terrain, Garage/parking |
+| Immobilier indirect | SCPI, GFA, GFV, GFF |
+| Crypto-actifs | Bitcoin, Ether, Stablecoins, Tokens, NFT |
+| Métaux précieux | Or physique, Argent physique, Platine/palladium |
+| Non coté / PE | Actions non cotées, Obligations non cotées, Crowdfunding, SOFICA, IR-PME (Madelin) |
+| Créances / Droits | Compte courant d'associé, Prêt entre particuliers, Usufruit/nue-propriété |
+
+**Niveau 3 — Surcouches fiscales immobilières** (kind: `surcouche_fiscale`) — applicable uniquement à un actif immobilier
+
+| Produit | Ouvert 2026 |
+|---------|-------------|
+| Pinel / Pinel+ | Non |
+| Denormandie | Oui |
+| Malraux | Oui |
+| Monuments historiques | Oui |
+| Loc'Avantages | Oui |
+| Censi-Bouvard | Non |
+| Scellier | Non |
+| Duflot | Non |
+| Louer abordable (Cosse) | Non |
+| Relance logement (Jeanbrun) | Oui |
+
+**Niveau 4 — Protections / Assurances de personnes** (kind: `protection`) — pas de règles fiscales calculées, blocs note uniquement
+
+| Produit |
+|---------|
+| Assurance emprunteur |
+| Prévoyance individuelle (ITT/invalidité/décès) |
+| Assurance dépendance |
+| Assurance obsèques |
+
+**Flux UI cible** (sélection en entonnoir) :
+1. Choix de l'enveloppe ("Où est logé l'actif ?") → filtre les actifs logeables
+2. Choix de l'actif ("Quel type d'actif ?") → affiche les règles combinées enveloppe + actif
+3. (Optionnel, si actif immobilier) Application d'une surcouche fiscale
+
+##### 3. Blocs de règles manquants à créer
+
+| templateId cible | Phase | Familles | Description |
+|------------------|-------|----------|-------------|
+| `dmtg-droit-commun` | décès | Tous sauf Assurance | Barème DMTG selon lien de parenté (abattements + tranches). Gap transversal le plus critique. |
+| `revenus-fonciers-nu` | sortie | Immobilier direct | Micro-foncier (≤ 15 000 €) vs réel (charges déductibles + déficit foncier imputable). |
+| `bic-meuble-lmnp` | sortie | Immobilier direct | Micro-BIC (50 %) vs réel (amortissements). Distinction LMNP / LMP. |
+| `exoneration-rp` | sortie | Immobilier direct | Exonération totale PV si résidence principale au jour de la cession. |
+| `ifi-fraction-immobiliere` | constitution | Immo direct, Immo indirect, Assurance | Fraction immobilière taxable IFI (seuil 1,3 M€, barème progressif). |
+| `pv-titres-non-cotes` | sortie | Non coté/PE | Abattement renforcé durée détention dirigeants (art. 150-0 D ter CGI). |
+| `epargne-salariale-abondement` | constitution | Retraite & épargne salariale | Abondement employeur (plafonds PASS), déblocage anticipé PEE. |
+| `per-deblocage-anticipe` | sortie | Retraite & épargne salariale | Cas de déblocage anticipé PER (achat RP, etc.) — fiscalité selon compartiment. |
+| `droits-succession-pre1991` | décès | Assurance | Contrats souscrits avant 20/11/1991 (exonération totale). Complément 990I/757B. |
+
+##### 4. Matrice de couverture cible (100 %)
+
+Chaque cellule = au moins 1 bloc paramétrable assigné. ✅ = template existant, ❌ = à créer.
+
+| Famille | Constitution | Sortie | Transmission | Existants | Gaps |
+|---------|-------------|--------|--------------|-----------|------|
+| **Assurance (AV, Capi)** | versements, PS fonds € | rachats post/pré-2017, abattements 8 ans, PS, PFU | 990I, 757B | ✅ complets | pré-1991 |
+| **Épargne réglementée** | exo totale | exo totale | **DMTG** | ✅ sortie | ❌ DMTG |
+| **Bancaire imposable** | — | PFU/barème + PS | **DMTG** | ✅ sortie | ❌ DMTG |
+| **PEA / PEA-PME** | — | ancienneté 5 ans + PS | clôture succession | ✅ sortie | ❌ DMTG |
+| **CTO** | — | PFU + dividendes | **DMTG** | ✅ sortie | ❌ DMTG |
+| **PER assurantiel** | déductibilité | capital PFU, rente RVTO | 990I, 757B | ✅ | ❌ déblocage anticipé |
+| **PER bancaire** | déductibilité | capital PFU, rente RVTO | **DMTG** | partiel | ❌ DMTG, déblocage |
+| **PEE / PERCOL** | **abondement** | PFU/exo | **DMTG** | ❌ | ❌ tout |
+| **Immo RP** | — | **exo RP** | **DMTG** | ❌ | ❌ exo RP, DMTG |
+| **Immo locatif nu** | — | PV immo + **revenus fonciers** | **DMTG** | PV immo ✅ | ❌ foncier, DMTG |
+| **Immo meublé** | — | PV immo + **BIC meublé** | **DMTG** | PV immo ✅ | ❌ BIC, DMTG |
+| **Immo indirect (SCPI…)** | — | PFU/revenus fonciers | **DMTG** | PFU ✅ | ❌ foncier, DMTG |
+| **Crypto-actifs** | — | 150 VH bis | **DMTG** | ✅ | ❌ DMTG |
+| **Métaux précieux** | — | taxe forfaitaire | **DMTG** | ✅ | ❌ DMTG |
+| **Non coté / PE** | avantage IR | PFU + **PV non coté** | **DMTG** | partiel | ❌ PV non coté, DMTG |
+| **Surcouches fiscales immo** | avantage IR | PV immo | — | partiel | — |
+| **Créances / Droits** | — | note libre | **DMTG** | note ✅ | ❌ DMTG |
+| **Protections** | — | — | — | note ✅ | — |
+
+**Gap majeur transversal** : le bloc `dmtg-droit-commun` manque pour TOUTES les familles hors assurance.
+
+##### 5. Stratégie de validation anti-régression
+
+1. **Cas pratiques obligatoires** : Un produit ne peut passer à `confidenceLevel: 'confirmed'` sans au moins 1 cas pratique validé ("Marqué comme référence") par l'admin métier (flux P1-04 PR 2).
+2. **Rejouer automatiquement** : Après chaque modification de règles, les cas pratiques existants sont recalculés. Si un résultat diverge → alerte bloquante avant publication.
+3. **Couverture minimale** : Au moins 1 cas pratique par famille × phase applicable avant publication globale.
+
+##### Séquence d'exécution (PRs)
+
+**PR 1 — Refonte Taxonomie & Enveloppes manquantes**
+- Scope : Ajout CTO, PEA, PEA-PME au catalogue. Scission PER bancaire / PER assurantiel. Scission immobilier (RP / RS / locatif nu / meublé). Retrait des 4 structurés du sélectionnable (`isActive: false` ou flag `selectable: false`).
+- Fichiers : `catalogue.seed.v1.json`, `baseContratSeed.ts`, `baseContratLabels.ts`, `baseContratSettings.ts` (ajout kind `enveloppe` / `actif` / `surcouche_fiscale` / `protection`).
 - DoD :
-  - règle documentée dans `docs/RUNBOOK.md` → section **Repo hygiene — Delete unused**
-  - pas de dossiers "archive/backup/old/spike/raw" non justifiés sous `src/`
-  - `npm run check` passe
-  - toute suppression est revertible (PRs petites)
+  - Le catalogue reflète la taxonomie 4 niveaux.
+  - `rg '"kind": "enveloppe"' catalogue.seed` retourne les enveloppes attendues.
+  - Les structurés ne sont plus sélectionnables (revue visuelle).
+  - `npm run check` passe.
 
----
+**PR 2 — Adapter générique (suppression IDs hardcodés)**
+- Scope : `baseContratAdapter.ts` résout dynamiquement via `templateKey` ou metadata produit (plus d'ID en dur). Unification des 2 systèmes templateKey (seed vs templates).
+- Dépendance : P1-04 PR 3 + PR 1 ci-dessus (IDs stables).
+- DoD :
+  - `rg "'assuranceVie'\|'pea'\|'cto'" src/utils/baseContratAdapter.ts` → **vide**.
+  - Tests snapshot `extractFromBaseContrat()` identiques (golden cases).
+  - `npm run check` passe.
 
-#### P1-03 — Base-Contrat V2 : Catalogue produits + métadonnées obligatoires + seed + cycle de vie
+**PR 3 — Bloc DMTG droit commun + exonération RP**
+- Scope : Création templates `dmtg-droit-commun` et `exoneration-rp` dans `blockTemplates.ts`. Assignation DMTG à tous les produits hors assurance.
+- DoD :
+  - Tout produit hors famille Assurance a un bloc décès.
+  - L'immobilier RP a un bloc exo sortie.
+  - `rg "dmtg-droit-commun" blockTemplates.ts` retourne le template.
 
-Objectif : faire du référentiel contrats (`/settings/base-contrat`) une **source de vérité opérationnelle** pour les calculateurs actuels (Placement, IR) et futurs (Succession, Épargne salariale, Prévoyance), administrable par le super-admin sans compétence technique.
+**PR 4 — Blocs immobilier (foncier / meublé / IFI)**
+- Scope : Création templates `revenus-fonciers-nu`, `bic-meuble-lmnp`, `ifi-fraction-immobiliere` dans `blockTemplates.ts`.
+- DoD :
+  - Les 4 sous-types immobilier ont des blocs sortie complets.
+  - Immobilier + SCPI ont un bloc constitution IFI.
 
-##### Contexte & état actuel (preuves repo)
+**PR 5 — Blocs retraite & épargne salariale + PV non coté**
+- Scope : Création templates `epargne-salariale-abondement`, `per-deblocage-anticipe`, `pv-titres-non-cotes`, `droits-succession-pre1991`.
+- DoD :
+  - PEE/PERCOL ont des blocs constitution + sortie.
+  - Matrice de couverture 100 % (toutes les cellules de la matrice §4 ont au moins 1 bloc).
 
-| Fichier | Rôle | État |
-|---------|------|------|
-| `supabase/migrations/20260211001000_create_base_contrat_settings.sql` | Table `base_contrat_settings` (blob JSONB, id=1, RLS `is_admin()`) | ✅ En place |
-| `src/types/baseContratSettings.ts` | Types TS V1 (`BaseContratProduct`, `VersionedRuleset`, `Phase`, `Block`) | ✅ En place — V2 à venir |
-| `src/pages/Sous-Settings/BaseContrat.tsx` | Page UI (~1 000 lignes) | ✅ Fonctionnel — godfile (voir dette ci-dessous) |
-| `src/utils/baseContratSettingsCache.ts` | Cache singleton TTL 24h + localStorage + event bus | ✅ En place |
-| `src/hooks/useBaseContratSettings.ts` | Hook load/save/reload/listener | ✅ En place |
-| `src/utils/baseContratAdapter.ts` | Extracteur 16 params fiscaux → calculateurs | ✅ En place — IDs hard-codés (à corriger P1-03c) |
-| `src/constants/baseContratLabels.ts` | Labels FR UI | ✅ En place — à enrichir |
-| `src/constants/baseContratTemplates.ts` | 4 templates pré-remplis (AV, CTO, PEA, PER) | ✅ En place — à compléter |
-| `src/features/settings/publicationGate.ts` | Gate publication (bloque si 0 tests) | ✅ En place — comportement à ajuster |
-| `src/constants/base-contrat/catalogue.seed.v1.json` | Catalogue ~78 produits (base de travail versionnée) | 🔜 Commit dédié |
-| `src/constants/baseContratSeed.ts` | Transformateur seed JSON → `BaseContratProduct[]` | 🔜 Commit dédié |
+**PR 6 — UI sélection en entonnoir**
+- Scope : Adaptation du front pour le flux Enveloppe → Actif → Surcouche (si immo). L'admin et l'utilisateur final voient la même taxonomie, pas de jargon.
+- DoD :
+  - Revue visuelle : le flux de sélection respecte l'entonnoir.
+  - Aucun produit structuré visible en sélection directe.
+  - Aucun `kind` technique visible dans l'UI.
 
-##### P1-03a — Schéma V2 : métadonnées obligatoires (structurant)
+**PR 7 — Couverture tests 100 % & Cleanup seed**
+- Scope : Au moins 1 cas pratique validé par famille × phase applicable. Suppression du seed JSON si tous les produits sont migrés en base Supabase.
+- DoD :
+  - `rg "catalogue.seed" src/ --type ts --type tsx` → **vide** (aucun import runtime).
+  - Matrice de tests : au moins 1 cas pratique "marqué comme référence" par ligne de la matrice §4.
+  - `npm run check` passe.
 
-Nouveaux champs obligatoires dans `BaseContratProduct` :
+##### Fichiers à supprimer à terme
 
-| Champ | Type | Libellé UI FR | Obligatoire |
-|-------|------|---------------|-------------|
-| `grandeFamille` | `GrandeFamille` (13 valeurs) | Grande famille | ✅ |
-| `nature` | `ProductNature` (3 valeurs) | Nature du produit | ✅ |
-| `detensiblePP` | `boolean` | Détenable en direct (PP) | ✅ |
-| `eligiblePM` | `'oui'\|'non'\|'parException'` | Éligible personnes morales | ✅ |
-| `eligiblePMPrecision` | `string\|null` | Précision PM | Si `parException` |
-| `souscriptionOuverte` | `'oui'\|'non'\|'na'` | Souscription ouverte en 2026 | ✅ |
-| `commentaireQualification` | `string\|null` | Commentaire de qualification | ❌ |
+| Fichier | PR de suppression | Preuve de suppression safe |
+|---------|-------------------|----------------------------|
+| `src/constants/base-contrat/catalogue.seed.v1.json` | PR 7 | `rg "catalogue.seed" src/` → vide |
+| `src/constants/baseContratSeed.ts` | PR 7 | `rg "baseContratSeed\|SEED_PRODUCTS\|mergeSeedIntoProducts" src/` → vide |
 
-Migration lazy V1→V2 dans `getBaseContratSettings()` (pattern identique à `migrateV1toV2` dans `fiscalSettingsCache.js`). Pas de migration SQL — le blob évolue en place.
+##### DoD global P1-05
 
-- DoD : `schemaVersion: 2` dans le blob après premier save ; `npm run typecheck` passe.
-
-##### P1-03b — Seed catalogue versionné (structurant)
-
-- Fichier source : `src/constants/base-contrat/catalogue.seed.v1.json` (~78 produits, base de travail).
-- Transformateur : `src/constants/baseContratSeed.ts` → `SeedProduct[]` → `BaseContratProduct[]`.
-- Actions admin non-destructives :
-  - **Initialiser le catalogue** : visible si `products.length === 0` — charge tous les produits du seed.
-  - **Compléter le catalogue** : visible si `products.length > 0` — ajoute uniquement les produits absents (filtre par `id`), n'écrase rien.
-- DoD : un admin peut peupler le catalogue en 1 clic sans saisie manuelle ; les produits existants ne sont jamais écrasés.
-
-##### P1-03c — Cycle de vie produit (structurant)
-
-- **Clôturer** : `isActive: false`, `closedDate: today` — produit masqué des listes actives, récupérable.
-- **Rouvrir** : `isActive: true`, `closedDate: null`.
-- **Supprimer définitivement** : uniquement sur produit clôturé, confirmation par saisie du mot `SUPPRIMER` (pas du slug technique).
-- Section "Produits clôturés" dans la liste avec actions Rouvrir / Supprimer définitivement.
-- DoD : les 3 actions fonctionnent ; la suppression est irréversible et confirmée explicitement.
-
-##### P1-03d — Gestion des versions (rulesets)
-
-- **Dupliquer une version** : crée une copie avec nouvelle `effectiveDate` (rebrand de "Nouvelle version").
-- **Supprimer une version** : possible uniquement si `vIdx > 0` (version non active) ET `rulesets.length > 1` ; confirmation simple.
-- Règle de sécurité : `rulesets[0]` (version active) ne peut pas être supprimée tant qu'elle est la seule ou qu'elle est sélectionnée comme active.
-- DoD : impossible de se retrouver avec 0 rulesets sur un produit actif.
-
-##### P1-03e — Gate save vs publish (ajustement)
-
-- **Enregistrer** : toujours autorisé (suppression du blocage dur actuel).
-- **Avertissement** : affiché si 0 tests importés ou si aucun produit actif n'a de règles configurées — non bloquant.
-- **Publier** (futur) : bloqué si gate échoue — séparation save/publish à implémenter en P2.
-- Guide contextuel "Comment ajouter un cas de test" affiché sous l'avertissement.
-- DoD : `handleSave()` ne retourne plus jamais `early` à cause du gate ; le warning est visible mais non bloquant.
-
-##### P1-03f — Branchement calculateurs (structurant)
-
-- Wirer `extractFromBaseContrat()` dans Placement + IR + PER.
-- Résoudre les IDs produit dynamiquement dans `baseContratAdapter.ts` (supprimer les 3 IDs hard-codés : `assuranceVie`, `cto`, `pea`).
-- DoD : `rg "extractFromBaseContrat" src/features` → ≥ 3 matches (placement, ir, per).
-
-##### Critères d'acceptation globaux P1-03
-
-| # | Critère | Commande | Résultat attendu |
-|---|---------|----------|------------------|
-| 1 | Schema V2 en place | `rg "schemaVersion.*2" src/types/baseContratSettings.ts` | ≥ 1 match |
-| 2 | Migration lazy | `rg "migrateBaseContrat" src/utils/baseContratSettingsCache.ts` | ≥ 1 match |
-| 3 | Seed non-destructif | Test manuel : Compléter avec produits existants → 0 écrasement | OK |
-| 4 | Gate save non-bloquant | Test manuel : save sans tests → sauvegarde OK + warning visible | OK |
-| 5 | Adapter dynamique | `rg "assuranceVie.*hard" src/utils/baseContratAdapter.ts` | **Vide** |
-| 6 | npm run check | `npm run check` | PASS |
-
----
-
-#### Dette technique — Découpage des godfiles Settings
-
-> Règle repo (cf. `docs/ARCHITECTURE.md`) : **fichiers > 500 lignes = dette à découper**.
-
-| Fichier | Lignes actuelles | Priorité | Jalon |
-|---------|-----------------|----------|-------|
-| `src/pages/Sous-Settings/BaseContrat.tsx` | ~1 000 (croissant avec P1-03) | **P1** (en parallèle de P1-03) | Avant fin P1-03 |
-| `src/pages/Sous-Settings/SettingsImpots.jsx` | ~1 180 | P2 | Début P2 |
-| `src/pages/Sous-Settings/SettingsPrelevements.jsx` | ~1 290 | P2 | Début P2 |
-
-##### Découpage BaseContrat.tsx (P1 — priorité haute)
-
-Cible : aucun fichier dans le dossier `Sous-Settings/base-contrat/` > 300 lignes.
-
-Découpage proposé :
-
-| Nouveau fichier | Contenu extrait |
-|---|---|
-| `BaseContrat.tsx` (shell) | Orchestration, state global, save/gate — < 150 lignes |
-| `ProductList.tsx` | Accordéon liste produits actifs + clôturés |
-| `ProductCard.tsx` | Corps d'un produit ouvert (phases + version selector) |
-| `PhaseColumn.tsx` | Colonne Constitution / Sortie / Décès |
-| `ProductMetadataSection.tsx` | Section "Informations produit" (métadonnées V2) |
-| `modals/AddProductModal.tsx` | Modal ajout produit |
-| `modals/EditProductModal.tsx` | Modal modification |
-| `modals/NewVersionModal.tsx` | Modal nouvelle version / duplication |
-| `modals/DeleteVersionModal.tsx` | Modal suppression version |
-| `modals/CloseProductModal.tsx` | Modal clôture |
-| `modals/DeleteProductModal.tsx` | Modal suppression définitive (confirmation SUPPRIMER) |
-| `modals/ImportTestModal.tsx` | Modal import cas de test |
-
-- DoD : `wc -l src/pages/Sous-Settings/BaseContrat.tsx` < 200 ; `npm run check` passe.
-
-##### Lisibilité des champs & références dans Base-Contrat (P1 — feat/base-contrat-ux-nav)
-
-- **Objectif** : 0 camelCase visible / 0 `$ref:` visible en mode normal dans la fiche produit.
-- **Livrables** :
-  - `src/constants/base-contrat/fieldLabels.fr.ts` — `FIELD_LABELS_FR` + `humanizeFieldKey()` + `formatRefLabel()`
-  - `FieldRenderer.tsx` — labels FR, refs lisibles, badge "★ Simulateurs" (remplace "Calc."), mode Détails
-  - Toggle "⚙ Afficher les détails" dans la barre de filtres (clés internes + `$ref:` bruts visibles en mode ON)
-- **DoD** : `humanizeFieldKey('irRatePercent')` → `'Taux IR (PFU)'` ; `formatRefLabel('$ref:...')` → jamais `$ref:` dans le label ; `npm run check` PASS.
-- **Tests** : `src/engine/__tests__/fieldLabels.test.ts` (humanize + formatRef + DoD 0 $ref).
-
-##### P1-03g — Configuration guidée des règles produit (modal "Configurer les règles")
-
-Problème actuel : activer une phase via le toggle "Sans objet" laisse la phase vide ("Aucun bloc défini"). L'admin n'a pas de cadre pour saisir des règles de manière homogène.
-
-**Étape A — Catalogue de blocs réutilisables** (`src/constants/base-contrat/blockTemplates.ts`)
-
-Référentiel de `BlockTemplate` issu de l'audit AV/CTO/PEA/PER :
-
-| `templateId` | Libellé FR | Phases | Grandes familles |
-|---|---|---|---|
-| `pfu-sortie` | PFU (flat tax) | Sortie | Assurance, Titres vifs, Retraite |
-| `ps-sortie` | Prélèvements sociaux | Constitution, Sortie | Assurance, Retraite & épargne salariale, Immobilier |
-| `art-990I-deces` | Art. 990 I — primes avant 70 ans | Décès | Assurance, Retraite |
-| `art-757B-deces` | Art. 757 B — primes après 70 ans | Décès | Assurance, Retraite |
-| `abattements-av-8ans` | Rachats ≥ 8 ans (abattements AV) | Sortie | Assurance |
-| `rachats-pre2017` | Rachats versements avant 2017 | Sortie | Assurance |
-| `deductibilite-per` | Déductibilité versements PER | Constitution | Retraite & épargne salariale |
-| `rente-rvto` | Sortie en rente (RVTO) | Sortie | Retraite & épargne salariale |
-| `anciennete-exoneration` | Exonération après ancienneté | Sortie | Assurance, Retraite |
-| `note-libre` | Note informative (texte libre) | toutes | toutes |
-
-- DoD : `BLOCK_TEMPLATES.length ≥ 9` ; `BLOCKS_BY_FAMILLE` couvre au moins 5 `GrandeFamille`.
-
-**Étape B — Audit des 78 produits seed** (`src/constants/base-contrat/catalogue.seed.v1.json`) **— DONE**
-
-Pour chaque grande famille : identifier les blocs standards attendus par phase, les champs paramétrables, les champs `$ref` automatiques.
-
-- Livrable : commentaires `// suggestedFor` enrichis dans `blockTemplates.ts` + table récapitulative dans `docs/ARCHITECTURE.md`.
-- DoD : table couvre ≥ 8 grandes familles (13 familles couvertes).
-- Commit : `d838e47` feat(base-contrat): Etape B audit 78 produits seed
-
-**Étape C — Création des 6 templates manquants (post-audit)**
-
-Deux catégories selon l'ambiguïté du sous-régime fiscal :
-
-**C1 — Sans ambiguïté** (régime unique, pas de dépendance enveloppe) — **DONE PR#118** :
-
-| `templateId` | Famille cible | Référence légale | Statut |
-|---|---|---|---|
-| `pv-immobiliere` | Immobilier direct | CGI art. 150 U — abattements 22 ans IR / 30 ans PS | ✅ PR#117 |
-| `epargne-reglementee-exoneration` | Épargne bancaire | CGI art. 157 (LEP), 163 bis A (Livret A), 163 bis B (LDDS) | ✅ PR#117 |
-| `taxe-forfaitaire-metaux` | Métaux précieux | CGI art. 150 VI — 11,5 % sur prix cession | ✅ PR#118 |
-| `crypto-pfu-150vhbis` | Crypto-actifs | CGI art. 150 VH bis — 30 % flat, seuil 305 € | ✅ PR#118 |
-
-**C2 — Contextuels** (sous-régime dépend du produit/option — champ de sélection explicite obligatoire) — **DONE PR#118** :
-
-> ⚠️ Ces templates exposent un champ de sélection de sous-régime explicite. L'admin DOIT choisir le dispositif — aucune règle implicite appliquée.
-
-| `templateId` | Famille cible | Sous-régimes couverts | Statut |
-|---|---|---|---|
-| `epargne-bancaire-imposable` | Épargne bancaire | `bareme` / `pfu` (champ `irOption`) | ✅ PR#117 |
-| `avantage-ir-dispositif` | Non coté/PE + Dispositifs fiscaux immo | `reduction`/`deduction` (champ `avantageNature`) + `ir_pme`, `sofica`, `pinel`, `malraux`, `monuments_historiques`, `loc_avantages`, `denormandie` (champ `dispositifType`) | ✅ PR#118 |
-
-- DoD global : `BLOCK_TEMPLATES.length = 15` (hors `note-libre`) ; `npm run check` PASS ; table `ARCHITECTURE.md` mise à jour (C1/C2 → ✅ Couvert).
-
----
-
-##### Découpage SettingsImpots.jsx + SettingsPrelevements.jsx (P2) — **DONE**
-
-- Même pattern : shell orchestrateur + sous-composants par section.
-- DoD : aucun fichier Settings > 500 lignes (sauf fichiers de data pure très répétitifs) ; `npm run check` passe.
-- Dépendance : P1-01d (normalisation Settings) doit être terminé avant.
-
-##### Gate /settings/impots + /settings/prelevements allégé (P2-A) — **DONE**
-
-Même logique que Base-Contrat : enregistrement toujours possible, le gate devient warning non-bloquant + guide contextuel.
-
-- Scope : `SettingsImpots.jsx` + `SettingsPrelevements.jsx` — remplacer les blocages par des warnings + bouton "Enregistrer quand même".
-- DoD : save sans remplir tous les champs obligatoires → sauvegarde OK + warning visible (pas d'erreur fatale).
-
-**T6 — Audit puis cleanup `__spike__` et `_raw` (DONE)**
-- Scope : `src/pptx/template/__spike__/`, `src/icons/business/_raw/`.
-- Dépendances : P1-01d (doc cleanup) — audit réalisé en PR1.
-- Livrable audit : **consigné dans `docs/ARCHITECTURE.md`** → section **Debt registry (legacy / spike / raw) + Exit criteria** (lignes 87-94).
-- Décision : **DELETE** (non-runtime, 0 usage)
-- Risques : faible (pas de runtime impact).
-- DoD : audit documenté + aucun dossier `__spike__` ou `_raw` sous `src/`.
+| # | Critère | Commande de vérif. | Résultat attendu |
+|---|---------|-------------------|------------------|
+| 1 | Taxonomie 4 niveaux en place | `rg '"kind":' catalogue.seed` | 4 valeurs distinctes : `enveloppe`, `actif`, `surcouche_fiscale`, `protection` |
+| 2 | Enveloppes CTO/PEA/PEA-PME créées | `rg '"id": "(cto\|pea\|pea_pme)"' catalogue.seed` | 3 matches |
+| 3 | PER scindé bancaire/assurantiel | `rg '"id": "per_' catalogue.seed` | Au moins `per_assurantiel` et `per_bancaire` |
+| 4 | Structurés non sélectionnables | Revue UI — aucun structuré dans la liste de sélection | 0 structuré visible |
+| 5 | Adapter sans ID hardcodé | `rg "'assuranceVie'\|'pea'\|'cto'" baseContratAdapter.ts` | **Vide** |
+| 6 | DMTG droit commun existe | `rg "dmtg-droit-commun" blockTemplates.ts` | 1+ match |
+| 7 | Matrice couverture 100 % | Audit blocs : chaque famille × phase applicable a ≥ 1 bloc | 0 cellule vide |
+| 8 | Seed supprimé | `rg "catalogue.seed" src/` | **Vide** |
+| 9 | Tests cas pratiques | Au moins 1 cas "marqué comme référence" par famille × phase | Couverture ≥ 18 familles |
 
 ##### Critères d'acceptation (DoD global) — Checklist vérifiable
 
@@ -504,8 +521,10 @@ Entrées clés :
   - Hook : `src/hooks/useBaseContratSettings.ts`
   - Adapter (→ calculateurs) : `src/utils/baseContratAdapter.ts`
   - Seed catalogue : `src/constants/base-contrat/catalogue.seed.v1.json`
-  - Labels FR : `src/constants/baseContratLabels.ts`
-  - Templates pré-remplis : `src/constants/baseContratTemplates.ts`
+  - Block templates (blocs réutilisables) : `src/constants/base-contrat/blockTemplates.ts`
+  - Field labels FR : `src/constants/base-contrat/fieldLabels.fr.ts`
+  - Labels FR (UI) : `src/constants/baseContratLabels.ts`
+  - Templates pré-remplis (AV/CTO/PEA/PER) : `src/constants/baseContratTemplates.ts`
 
 Voir aussi :
 - `docs/GOUVERNANCE.md` (règles UI/couleurs/thème)
