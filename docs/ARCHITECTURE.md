@@ -257,60 +257,43 @@ Source : `src/features/settings/publicationGate.ts` (utilisé par les pages Sett
 
 ---
 
-## Base-Contrat — Catalogue de blocs (P1-03g)
+## Base-Contrat — Catalogue Patrimonial V3 (P1-05)
 
-Source : `src/constants/base-contrat/blockTemplates.ts` (10 templates MVP).
-Audit : `src/constants/base-contrat/catalogue.seed.v1.json` (78 produits, 13 grandes familles).
+Source : `src/types/baseContratSettings.ts` (schemaVersion: 3) → `src/constants/base-contrat/catalogue.seed.v1.json` (legacy, à supprimer).
 
-### Table récap — GrandeFamille → Blocs suggérés par phase
+### Taxonomie V3 (5 catalogKind)
 
-| Grande famille | Produits seed (exemples) | Constitution | Sortie | Décès | Blocs MVP disponibles |
-|---|---|---|---|---|---|
-| **Assurance** | AV, PER assurantiel, Capitalisation, Prévoyance | `ps-sortie` | `pfu-sortie`, `ps-sortie`, `abattements-av-8ans`, `rachats-pre2017`, `anciennete-exoneration`, `rente-rvto` | `art-990I-deces`, `art-757B-deces` | ✅ Couvert |
-| **Retraite & épargne salariale** | PER PERIN, PERCOL, PERO, PEE, Art.83, PERP | `deductibilite-per`, `ps-sortie` | `pfu-sortie`, `ps-sortie`, `rente-rvto`, `anciennete-exoneration` | `art-990I-deces`, `art-757B-deces` | ✅ Couvert |
-| **Titres vifs** | Actions cotées, Obligations, OAT, BSA/DPS | — | `pfu-sortie`, `ps-sortie`, `anciennete-exoneration` | `note-libre` | ✅ Couvert |
-| **Fonds / OPC** | ETF, OPCVM, SICAV, FCP, FCPI, FIP, OPCI | — | `pfu-sortie`, `ps-sortie`, `anciennete-exoneration` | `note-libre` | ✅ Couvert |
-| **Immobilier direct** | Appartement, Terrain, Garage | — | `ps-sortie`, `note-libre` | `note-libre` | ⚠️ Partiel — manque `pv-immobiliere` |
-| **Immobilier indirect** | SCPI, GFA, GFV, Groupement forestier | — | `pfu-sortie`, `ps-sortie`, `note-libre` | `note-libre` | ✅ Couvert (revenus fonciers) |
-| **Épargne bancaire** | LEP, Livret A, LDDS, CAT, CSL, PEL, CEL | — | `note-libre` | `note-libre` | ⚠️ MVP conservateur — manque `epargne-reglementee-exoneration` + `epargne-bancaire-imposable` |
-| **Non coté / PE** | Actions non cotées, Crowdfunding, SOFICA, IR-PME | — | `pfu-sortie`, `ps-sortie`, `note-libre` | `note-libre` | ⚠️ Partiel — manque `reduction-ir-dispositif` (IR-PME/SOFICA) |
-| **Produits structurés** | Autocall, EMTN, Certificats, Warrants | — | `pfu-sortie`, `ps-sortie`, `note-libre` | `note-libre` | ✅ Couvert |
-| **Crypto-actifs** | BTC, ETH, NFT, Stablecoins, Tokens | — | `note-libre` | `note-libre` | ⚠️ MVP note-libre — manque `crypto-pfu-150vhbis` (art. 150 VH bis) |
-| **Dispositifs fiscaux immo** | Pinel, Malraux, Denormandie, Loc'Avantages, MH | `note-libre` | `note-libre` | `note-libre` | ⚠️ MVP note-libre — manque `reduction-ir-dispositif` |
-| **Métaux précieux** | Or, Argent, Platine physiques | — | `note-libre` | `note-libre` | ⚠️ MVP note-libre — manque `taxe-forfaitaire-metaux` (11,5 % ou PV mob.) |
-| **Créances / Droits** | CCA, Prêt particuliers, Usufruit/NP | — | `note-libre` | `note-libre` | ℹ️ Cas par cas — note-libre suffisant MVP |
+| catalogKind | Description | Exemples |
+|-------------|-------------|----------|
+| **wrapper** | Enveloppes/Supports fiscaux (où l'actif est logé) | Assurance-vie, PEA, CTO, PER, PEE, SCI |
+| **asset** | Actifs détenables en direct (quoi) | Immo locatif, Résidence principale, Titres vifs, SCPI, Liquidités |
+| **liability** | Passif/Dettes (crucial pour actif net) | Crédit amortissable, Prêt in fine, Lombard |
+| **tax_overlay** | Surcouches fiscales (applicables sur un asset) | Pinel, Malraux, Déficit foncier |
+| **protection** | Prévoyance/Assurances (calculables) | Prévoyance individuelle, Assurance emprunteur |
 
-> **⚠️ Important** : `suggestedFor` est une **aide UX**, pas une validation fiscale. Le régime réel dépend du contexte (enveloppe, date de souscription, option du client, etc.). En cas de sous-régimes multiples ou de doute, privilégier `note-libre` ou créer un template dédié.
+### Règle clé : suppression des produits structurés
+Les produits structurés (Autocall, Certificats, EMTN) ne sont **pas** des actifs sélectionnables. Ils sont absorbés par les règles de leur wrapper (CTO/AV).
 
-### Étape C — Templates créés (C1 sans ambiguïté / C2 contextuels)
+### Blocs de règles par catalogKind
 
-**C1 — Sans ambiguïté de sous-régime** (régime unique, pas de dépendance enveloppe) :
-
-| `templateId` | Familles cibles | Phase | Statut | Référence légale |
-|---|---|---|---|---|
-| `pv-immobiliere` | Immobilier direct | Sortie | ✅ PR#117 | CGI art. 150 U — abattements 22 ans IR / 30 ans PS |
-| `epargne-reglementee-exoneration` | Épargne bancaire | Constitution/Sortie | ✅ PR#117 | CGI art. 157 (LEP), 163 bis A (Livret A), 163 bis B (LDDS) |
-| `taxe-forfaitaire-metaux` | Métaux précieux | Sortie | ✅ PR#118 | CGI art. 150 VI — 11,5 % sur prix cession |
-| `crypto-pfu-150vhbis` | Crypto-actifs | Sortie | ✅ PR#118 | CGI art. 150 VH bis — 30 % flat, seuil 305 € |
-
-**C2 — Contextuels** (sous-régime dépend du produit/option — champ `dispositifType` ou `irOption` obligatoire) :
-
-> Ces templates exposent un champ de sélection de sous-régime explicite. L'admin DOIT choisir le dispositif — aucune règle implicite appliquée.
-
-| `templateId` | Familles cibles | Phase | Statut | Sous-régimes couverts |
-|---|---|---|---|---|
-| `epargne-bancaire-imposable` | Épargne bancaire | Sortie | ✅ PR#117 | `bareme` / `pfu` (champ `irOption`) |
-| `avantage-ir-dispositif` | Non coté/PE + Dispositifs fiscaux immo | Constitution | ✅ PR#118 | `reduction`/`deduction` (champ `avantageNature`) + `ir_pme`, `sofica`, `pinel`, `malraux`, `monuments_historiques`, `loc_avantages`, `denormandie` (champ `dispositifType`) |
+| catalogKind | Blocs disponibles (exemples) |
+|-------------|-----------------------------|
+| **wrapper** | DMTG droit commun, PS fonds €, PFU, Art. 990I/757B |
+| **asset** | PV immobilières, Revenus fonciers, BIC meublé, IFI |
+| **liability** | Déductibilité IFI, Passif successoral |
+| **tax_overlay** | Réduction IR dispositif, Déficit foncier reportable |
+| **protection** | Primes déductibles, Rentes invalidité, Capital décès |
 
 ### Vérification
 
 ```bash
-# Nombre de templates (hors interface BlockTemplate)
-rg "templateId: '" src/constants/base-contrat/blockTemplates.ts | wc -l
-# → 15 (10 MVP + 5 Étape C)
+# Nombre de catalogKind (schemaVersion: 3)
+rg "catalogKind:" src/types/baseContratSettings.ts | wc -l
+# → 5 (wrapper, asset, liability, tax_overlay, protection)
 
-# Familles couvertes par au moins 1 template non-note-libre
-rg "suggestedFor" src/constants/base-contrat/blockTemplates.ts
+# Absence de produits structurés dans le catalogue
+rg "Produits structurés" src/constants/base-contrat/catalogue.seed.v1.json
+# → 0 (après suppression PR 2)
 ```
 
 ---

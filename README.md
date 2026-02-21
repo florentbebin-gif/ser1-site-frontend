@@ -69,7 +69,7 @@ npm run check:unused
 - Exports : `src/pptx/`, `src/utils/xlsxBuilder.ts`, `src/utils/exportFingerprint.ts`
 - Edge Function admin : `supabase/functions/admin/index.ts`
 - Migrations : `supabase/migrations/`
-- **Referentiel contrats (Base-Contrat)** : source de verite du catalogue produits et des regles fiscales par phase (Constitution / Sortie / Deces), consommee par les calculateurs Placement, IR, et futurs (Succession, Epargne salariale, Prevoyance). Voir `docs/ROADMAP.md` section P1-03 et `src/constants/base-contrat/catalogue.seed.v1.json`.
+- **Referentiel contrats (Base-Contrat)** : source de verite du catalogue produits et des regles fiscales par phase (Constitution / Sortie / Deces), consommee par les calculateurs Placement, IR, et futurs (Succession, Epargne salariale, Prevoyance). Voir `docs/ROADMAP.md` sections P1-04 (Base-Contrat V3) et P1-05 (Catalogue Patrimonial V3).
 
 ## Contribution
 
