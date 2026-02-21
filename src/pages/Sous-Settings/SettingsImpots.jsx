@@ -1150,7 +1150,7 @@ export default function SettingsImpots() {
               type="button"
               className="chip settings-save-btn"
               onClick={handleSave}
-              disabled={saving || publicationGate.blocked}
+              disabled={saving}
             >
               {saving
                 ? 'Enregistrement…'
@@ -1159,13 +1159,15 @@ export default function SettingsImpots() {
           )}
 
       {publicationGate.blocked && publicationGate.blockMessage && (
-        <div className="settings-feedback-message settings-feedback-message--error">
-          {publicationGate.blockMessage}
+        <div className="settings-feedback-message settings-feedback-message--warning">
+          <strong>⚠ Enregistrement possible, mais attention :</strong><br/>
+          {publicationGate.blockMessage.replace('⚠ Publication impossible :', '')}<br/>
+          <em>(Pour ajouter un test : exportez un tableur depuis un simulateur, modifiez-le et importez-le via le menu développeur)</em>
         </div>
       )}
 
       {!publicationGate.blocked && publicationGate.warningMessage && (
-        <div className="settings-feedback-message">
+        <div className="settings-feedback-message settings-feedback-message--warning">
           {publicationGate.warningMessage}
         </div>
       )}
