@@ -251,7 +251,7 @@ Objectif : hasher un manifest déterministe (pas le binaire) pour limiter les va
 
 "Publication" = action admin qui persiste des règles métier utilisées par les simulateurs.
 
-Règle : **interdire la publication** s'il n'existe pas au moins un test "validé" (fail-safe).
+Règle actuelle : **Avertissement non bloquant** s'il n'existe pas au moins un test "validé". La publication stricte sera imposée en fin de projet.
 
 Source : `src/features/settings/publicationGate.ts` (utilisé par les pages Settings).
 
@@ -270,9 +270,6 @@ Source : `src/types/baseContratSettings.ts` (schemaVersion: 3) → `src/constant
 | **liability** | Passif/Dettes (crucial pour actif net) | Crédit amortissable, Prêt in fine, Lombard |
 | **tax_overlay** | Surcouches fiscales (applicables sur un asset) | Pinel, Malraux, Déficit foncier |
 | **protection** | Prévoyance/Assurances (calculables) | Prévoyance individuelle, Assurance emprunteur |
-
-### Règle clé : suppression des produits structurés
-Les produits structurés (Autocall, Certificats, EMTN) ne sont **pas** des actifs sélectionnables. Ils sont absorbés par les règles de leur wrapper (CTO/AV).
 
 ### Blocs de règles par catalogKind
 

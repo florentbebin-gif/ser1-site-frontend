@@ -63,7 +63,7 @@ Livrables typiques :
 - RLS multi-tenant : isolation minimale par cabinet (au moins `profiles`).
 - Sessions TTL + policy de téléchargement (exports session-only).
 - Gouvernance couleurs/UI + anti-regressions (lint, conventions).
-- Gate publication des règles/settings admin (tests requis avant publication).
+- Gate publication des règles/settings admin (tests requint publication).
 
 > Liens : voir aussi [Références code](#références-code) pour Routing, Auth, Thème V5.
 
@@ -196,8 +196,6 @@ Ce que ça change (cible) :
 - Pas de nouveaux fichiers dans `__spike__` ou `_raw`
 - Tout nouveau code va dans `features/*`, `components/`, `hooks/`, etc.
 
-✅ **P1-02 & P1-03 (Fondations V2 & Hygiène)** : Déjà réalisés (Mise en place de la structure de base, nettoyage des dossiers spikes/raw).
-
 ---
 
 #### P1-04 — Base-Contrat V3 : Expérience Admin Premium & Source de Vérité Universelle
@@ -253,7 +251,7 @@ Ce que ça change (cible) :
 
 1. **`wrapper` (Enveloppes/Contenants fiscaux)** : Assurance-vie, PEA, CTO, PER, PEE, SCI.
 2. **`asset` (Actifs détenables en direct)** : Immo locatif, Résidence principale, Titres vifs, Liquidités, SCPI.
-   - *Règle stricte* : Suppression totale des produits structurés (Autocall, Certificats) du catalogue global. Ils sont absorbés par les règles de leur wrapper (CTO/AV).
+   - *Règle stricte* : Le catalogue patrimonial contient uniquement des actifs détenables directement. Les produits structurés ne sont pas listés.
 3. **`liability` (Passif/Dettes)** : Crédit amortissable, Crédit in fine, Lombard. (Crucial pour calcul IFI / Succession).
 4. **`tax_overlay` (Surcouches Immo)** : Pinel, Malraux, Déficit foncier (applicables sur `asset` Immo locatif).
 5. **`protection` (Prévoyance/Emprunteur)** : *Deviennent calculables*.
@@ -274,7 +272,7 @@ Ce que ça change (cible) :
 
 - **PR 0 : Anti-Godfile (Dette tech)** : Découpage obligatoire de `src/pages/Sous-Settings/BaseContrat.tsx` (1300 lignes) en sous-composants propres (List, Modal, PhaseColumn).
 - **PR 1 : Modèle V3 & Migration** : Implémentation `schemaVersion: 3`, `catalogKind`, et `migrateV2ToV3`.
-- **PR 2 : Nettoyage Catalogue & Taxonomie** : Purge des structurés du seed. Ajout des Wrappers manquants (PEA, CTO) et des Passifs (Crédits).
+- **PR 2 : Nettoyage Catalogue & Taxonomie** : Purge des produits obsolètes du seed. Ajout des Wrappers manquants (PEA, CTO) et des Passifs (Crédits).
 - **PR 3 : Adaptateur Générique** : Résolution des wrappers via metadata, suppression des IDs hardcodés dans `baseContratAdapter.ts`.
 - **PR 4 : Blocs DMTG & Passif** : Création du bloc `dmtg-droit-commun` (assigné à tous les wrappers hors assurance) et des blocs de dettes.
 - **PR 5 : Blocs Immobilier & Protections calculables** : Création des blocs foncier/BIC et des blocs Prévoyance (primes, rentes, capital).
@@ -304,37 +302,6 @@ Ce que ça change (cible) :
 | 3 | App.jsx minimal (pas de topbar/icons inline) | `rg "IconHome|IconSave|IconFolder|IconTrash|IconLogout|IconSettings" src/App.jsx` | **Vide** (icônes importées depuis module externe) |
 | 4 | Pas de `__spike__`/`_raw` en prod | `find src -type d \( -name "__spike__" -o -name "_raw" \)` | **Vide** (ou chemins explicitement exemptés dans doc d'audit) |
 | 5 | Settings unifié (routes source unique) | `rg "settingsRoutes|SETTINGS_ROUTES" src/pages/SettingsShell.jsx` | Retourne au moins 1 match (utilisation de la constante centralisée) |
-
-##### Comment vérifier (commandes + résultats attendus)
-
-```bash
-# 1. Lister les routes déclarées (source unique attendue)
-rg -n "path:" src/routes/appRoutes.ts
-# Résultat attendu : liste des routes (APP_ROUTES)
-
-# 1b. Lister les redirects legacy
-rg -n "kind: 'redirect'" src/routes/appRoutes.ts
-# Résultat attendu : routes legacy (/placement, /credit, /prevoyance)
-
-# 1c. Vérifier que App.jsx consomme APP_ROUTES (pas de duplication)
-rg -n "APP_ROUTES\\.map" src/App.jsx
-
-# 2. Détecter les imports cross features → pages (doit être vide à terme)
-rg -n "from.*@/pages/" src/features/ -l
-# Résultat attendu : (aucune sortie)
-
-# 3. Vérifier la présence d'icônes inline dans App.jsx (doit être vide à terme)
-rg -n "const Icon" src/App.jsx
-# Résultat attendu post-T3 : (aucune sortie)
-
-# 4. Lister les dossiers spike/raw dans src/
-find src -type d \( -name "__spike__" -o -name "_raw" \)
-# Résultat attendu : (aucune sortie)
-
-# 5. Vérifier l'utilisation centralisée des routes settings
-grep -n "SETTINGS_ROUTES\|settingsRoutes" src/constants/settingsRoutes.js src/pages/SettingsShell.jsx
-# Résultat attendu : matches dans les deux fichiers (source unique utilisée)
-```
 
 Livrables typiques (suite P1) :
 - JSON `.ser1` versionné + migrations automatiques + validation.

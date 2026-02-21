@@ -373,18 +373,16 @@ Les pages `/settings/impots`, `/settings/prelevements` et `/settings/base-contra
 ### Distinction "Enregistrer" vs "Publier"
 
 - **Enregistrer** : Sauvegarde locale non bloquante. Un avertissement (jaune) s'affiche si les tests sont insuffisants, mais l'enregistrement reste possible.
-- **Publier** : Action bloquante qui rend les règles actives pour les simulateurs. Exige au moins un cas de test validé ("Marqué comme référence").
+- **Publier** : Action non bloquante pour l'instant (la publication forcée est autorisée). Un avertissement recommande d'ajouter un cas pratique. Le blocage strict ("Publier bloqué si pas de tests") sera mis en place en fin de projet.
 
 ### Règle actuelle (P1-04)
 
-**Enregistrement** : Toujours possible avec warning si aucun test validé.
-**Publication** : Bloquée si :
-- Aucun cas de test "Marqué comme référence" n'existe
-- Un test existant échoue lors du rejeu automatique
+- **Enregistrement** : Action non bloquante. Toujours possible avec avertissement si aucun test validé.
+- **Publication** : Action non bloquante pour l'instant. L'action reste possible avec un avertissement de recommandation. Le blocage définitif est repoussé en fin de projet.
 
-### Comment résoudre un blocage ?
+### Comment retirer l'avertissement de publication ?
 
-Pour publier des règles :
+Pour valider et publier des règles proprement :
 1. Allez sur `/settings/base-contrat`.
 2. Pour le produit concerné, cliquez "Ajouter un cas de test".
 3. Décrivez une situation réelle (ex: "AV 100 000 €, 8 ans, rachat partiel 20 000 €").
@@ -417,6 +415,41 @@ Pour publier des règles :
 
 - Pas de dossiers `archive/`, `backup/`, `old/`, `__spike__`, `_raw` "pour plus tard"
 - Pas de "parking" durable (même dans `tools/`) sans preuve d'utilité
+
+---
+
+## Vérifications (commandes)
+
+Commandes utiles pour vérifier l'hygiène du code et l'organisation (conformité SaaS).
+
+```bash
+# 1. Lister les routes déclarées (source unique attendue)
+rg -n "path:" src/routes/appRoutes.ts
+# Résultat attendu : liste des routes (APP_ROUTES)
+
+# 1b. Lister les redirects legacy
+rg -n "kind: 'redirect'" src/routes/appRoutes.ts
+# Résultat attendu : routes legacy (/placement, /credit, /prevoyance)
+
+# 1c. Vérifier que App.jsx consomme APP_ROUTES (pas de duplication)
+rg -n "APP_ROUTES\\.map" src/App.jsx
+
+# 2. Détecter les imports cross features → pages (doit être vide à terme)
+rg -n "from.*@/pages/" src/features/ -l
+# Résultat attendu : (aucune sortie)
+
+# 3. Vérifier la présence d'icônes inline dans App.jsx (doit être vide à terme)
+rg -n "const Icon" src/App.jsx
+# Résultat attendu post-T3 : (aucune sortie)
+
+# 4. Lister les dossiers spike/raw dans src/ (interdits en prod)
+find src -type d \( -name "__spike__" -o -name "_raw" \)
+# Résultat attendu : (aucune sortie)
+
+# 5. Vérifier l'utilisation centralisée des routes settings
+grep -n "SETTINGS_ROUTES\|settingsRoutes" src/constants/settingsRoutes.js src/pages/SettingsShell.jsx
+# Résultat attendu : matches dans les deux fichiers (source unique utilisée)
+```
 
 ### Rollback
 
