@@ -41,6 +41,12 @@ const V2_DEFAULTS = {
   eligiblePMPrecision: null,
   souscriptionOuverte: 'oui' as const,
   commentaireQualification: null,
+
+  // V3 required fields (kept even when schemaVersion=2 for compatibility tests)
+  catalogKind: 'wrapper' as const,
+  directHoldable: true,
+  corporateHoldable: false,
+  allowedWrappers: [],
 };
 
 function buildTestSettings(): BaseContratSettings {

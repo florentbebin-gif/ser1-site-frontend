@@ -21,6 +21,7 @@
 
 import type {
   BaseContratProduct,
+  CatalogKind,
   GrandeFamille,
   ProductNature,
   EligiblePM,
@@ -113,6 +114,16 @@ function kindToNature(kind: string): ProductNature {
   return map[kind] ?? 'Contrat / compte / enveloppe';
 }
 
+/** Mapping kind source → catalogKind V3 */
+function kindToCatalogKind(kind: string): CatalogKind {
+  const map: Record<string, CatalogKind> = {
+    'actif_instrument': 'asset',
+    'contrat_compte_enveloppe': 'wrapper',
+    'dispositif_fiscal_immobilier': 'tax_overlay',
+  };
+  return map[kind] ?? 'wrapper';
+}
+
 /** Mapping pmEligibility source → eligiblePM V2 */
 function toEligiblePM(pm: string): EligiblePM {
   if (pm === 'exception') return 'parException';
@@ -135,12 +146,24 @@ function toProduct(raw: RawSeedProduct, index: number): BaseContratProduct {
   const today = new Date().toISOString().slice(0, 10);
   const grandeFamille = familyToGrandeFamille(raw.family);
   const nature = kindToNature(raw.kind);
+  const catalogKind = kindToCatalogKind(raw.kind);
   const eligiblePM = toEligiblePM(raw.pmEligibility);
   const souscriptionOuverte = (raw.open2026 as SouscriptionOuverte) ?? 'oui';
+
+  const directHoldable = raw.ppDirectHoldable;
+  const corporateHoldable = eligiblePM === 'oui' || eligiblePM === 'parException';
 
   return {
     id: raw.id,
     label: raw.label,
+
+    // V3 (champs requis)
+    catalogKind,
+    directHoldable,
+    corporateHoldable,
+    allowedWrappers: [],
+
+    // V2 (conservé pour compat + migration)
     grandeFamille,
     nature,
     detensiblePP: raw.ppDirectHoldable,

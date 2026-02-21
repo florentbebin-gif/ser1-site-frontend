@@ -98,40 +98,96 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     // Applicable uniquement aux contrats d'assurance (AV, capitalisation, PER assurantiel).
     defaultBlock: {
       blockKind: 'data',
-      uiTitle: 'Art. 990 I — Primes avant 70 ans',
+      uiTitle: 'Art. 990 I (décès)',
       audience: 'PP',
       payload: {
         abattementParBeneficiaire: { type: 'number', value: 152500, unit: '€', calc: true },
-        brackets: {
-          type: 'brackets',
-          value: [
-            { upTo: 852500, ratePercent: 20 },
-            { upTo: null, ratePercent: 31.25 },
-          ],
-          calc: true,
-        },
+        tranche1Taux: { type: 'number', value: 20, unit: '%', calc: true },
+        tranche1Plafond: { type: 'number', value: 700000, unit: '€', calc: true },
+        tranche2Taux: { type: 'number', value: 31.25, unit: '%', calc: true },
       },
-      dependencies: ['primes versées avant 70 ans'],
-      notes: 'Barème par bénéficiaire (CGI art. 990 I).',
     },
   },
   {
     templateId: 'art-757B-deces',
     uiTitle: 'Art. 757 B — Primes après 70 ans',
-    description: 'Abattement global de 30 500 € puis taxation aux DMTG selon le lien de parenté.',
+    description: 'Abattement global (30 500 €) puis barème des droits de succession selon lien de parenté.',
     suggestedPhases: ['deces'],
     suggestedFor: ['Assurance', 'Retraite & épargne salariale'],
-    // Applicable uniquement aux contrats d'assurance (AV, capitalisation, PER assurantiel).
     defaultBlock: {
       blockKind: 'data',
-      uiTitle: 'Art. 757 B — Primes après 70 ans',
+      uiTitle: 'Art. 757 B (décès)',
       audience: 'PP',
       payload: {
         abattementGlobal: { type: 'number', value: 30500, unit: '€', calc: true },
-        taxationMode: { type: 'enum', value: 'dmtg', options: ['dmtg', 'exonere'], calc: true },
+        integrationSuccession: { type: 'boolean', value: true, calc: true },
       },
-      dependencies: ['primes versées après 70 ans'],
-      notes: 'Au-delà de 30 500 € (global), taxation aux DMTG.',
+      notes: 'S\'applique uniquement aux primes versées, les intérêts générés sont exonérés.',
+    },
+  },
+  {
+    templateId: 'dmtg-droit-commun',
+    uiTitle: 'DMTG — Droits de succession (Droit commun)',
+    description: 'Intégration à l\'actif successoral et application du barème des droits de mutation à titre gratuit (DMTG) selon le lien de parenté.',
+    suggestedPhases: ['deces'],
+    suggestedFor: ['Épargne bancaire', 'Titres vifs', 'Fonds/OPC', 'Immobilier direct', 'Immobilier indirect', 'Crypto-actifs', 'Non coté/PE', 'Créances/Droits', 'Métaux précieux', 'Retraite & épargne salariale'],
+    defaultBlock: {
+      blockKind: 'data',
+      uiTitle: 'Droits de succession (droit commun)',
+      audience: 'PP',
+      payload: {
+        integrationSuccession: { type: 'boolean', value: true, calc: true },
+      },
+    },
+  },
+  {
+    templateId: 'primes-prevoyance',
+    uiTitle: 'Primes prévoyance (Madelin)',
+    description: 'Règles de déductibilité des primes versées pour les contrats de prévoyance (Loi Madelin).',
+    suggestedPhases: ['constitution'],
+    suggestedFor: ['Assurance'],
+    defaultBlock: {
+      blockKind: 'data',
+      uiTitle: 'Primes (déductibilité)',
+      audience: 'PP',
+      payload: {
+        deductibleMadelin: { type: 'boolean', value: true, calc: true },
+        plafondPass: { type: 'number', value: 3.75, unit: '% PASS', calc: true },
+        plafondBenefice: { type: 'number', value: 9, unit: '% BNC/BIC', calc: true },
+        plafondMax: { type: 'number', value: 3, unit: 'PASS', calc: true },
+      },
+    },
+  },
+  {
+    templateId: 'rentes-invalidite',
+    uiTitle: 'Rentes et indemnités (ITT / Invalidité)',
+    description: 'Imposition des prestations perçues en cas de sinistre (imposables si primes déduites).',
+    suggestedPhases: ['sortie'],
+    suggestedFor: ['Assurance'],
+    defaultBlock: {
+      blockKind: 'data',
+      uiTitle: 'Rentes / ITT (fiscalité)',
+      audience: 'PP',
+      payload: {
+        imposableIR: { type: 'boolean', value: true, calc: true },
+        categorieRevenus: { type: 'enum', value: 'Pensions et Rentes', options: ['Pensions et Rentes', 'BNC/BIC', 'Traitements et Salaires'], calc: true },
+      },
+    },
+  },
+  {
+    templateId: 'capital-deces-prevoyance',
+    uiTitle: 'Capital décès prévoyance',
+    description: 'Exonération totale du capital décès, ou soumission exceptionnelle à l\'article 990I (rare).',
+    suggestedPhases: ['deces'],
+    suggestedFor: ['Assurance'],
+    defaultBlock: {
+      blockKind: 'data',
+      uiTitle: 'Capital décès (Transmission)',
+      audience: 'PP',
+      payload: {
+        exonerationTotale: { type: 'boolean', value: true, calc: true },
+        soumisArticle990I: { type: 'boolean', value: false, calc: true },
+      },
     },
   },
   {

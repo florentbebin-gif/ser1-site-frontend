@@ -39,7 +39,7 @@ function familyToGrandeFamille(family: string): BaseContratProduct['grandeFamill
 }
 
 function migrateBaseContratV1toV2(data: BaseContratSettings): BaseContratSettings {
-  if (data.schemaVersion === 2) return data;
+  if (data.schemaVersion === 2 || data.schemaVersion === 3) return data;
   return {
     ...data,
     schemaVersion: 2,
@@ -53,6 +53,53 @@ function migrateBaseContratV1toV2(data: BaseContratSettings): BaseContratSetting
       souscriptionOuverte: p.souscriptionOuverte ?? (p.open2026 ? 'oui' : 'non'),
       commentaireQualification: p.commentaireQualification ?? null,
     })),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Migration lazy V2 → V3 (Taxonomie relationnelle)
+// ---------------------------------------------------------------------------
+
+function migrateBaseContratV2toV3(data: BaseContratSettings): BaseContratSettings {
+  if (data.schemaVersion === 3) return data;
+  
+  // Si on vient de V1, on passe d'abord par V2
+  const v2Data = data.schemaVersion === 1 ? migrateBaseContratV1toV2(data) : data;
+  
+  return {
+    ...v2Data,
+    schemaVersion: 3,
+    products: v2Data.products.map((p) => {
+      // 1. Mapping nature -> catalogKind
+      let catalogKind: BaseContratProduct['catalogKind'] = 'wrapper';
+      if (p.nature === 'Dispositif fiscal immobilier') {
+        catalogKind = 'tax_overlay';
+      } else if (p.nature === 'Actif / instrument') {
+        catalogKind = 'asset';
+      }
+      
+      // Cas particulier : protections (qui étaient souvent en 'Contrat')
+      if (p.grandeFamille === 'Assurance' && (p.label.toLowerCase().includes('prévoyance') || p.label.toLowerCase().includes('emprunteur'))) {
+        catalogKind = 'protection';
+      }
+      
+      // 2. Mapping detensiblePP/eligiblePM -> directHoldable/corporateHoldable
+      const directHoldable = p.detensiblePP ?? true;
+      const corporateHoldable = p.eligiblePM === 'oui' || p.eligiblePM === 'parException';
+      
+      // 3. Initialisation allowedWrappers
+      // Si c'est un asset détenable en direct, il peut être 'direct'.
+      // Les relations exactes (ex: SCPI -> AV) seront affinées par l'admin.
+      const allowedWrappers: string[] = [];
+      
+      return {
+        ...p,
+        catalogKind,
+        directHoldable,
+        corporateHoldable,
+        allowedWrappers,
+      };
+    }),
   };
 }
 
@@ -123,7 +170,7 @@ async function fetchFromSupabase(): Promise<BaseContratSettings> {
     const raw = rows?.[0]?.data;
     if (!raw || typeof raw !== 'object') return EMPTY_DATA;
 
-    const migrated = migrateBaseContratV1toV2(raw as BaseContratSettings);
+    const migrated = migrateBaseContratV2toV3(raw as BaseContratSettings);
     cache = { data: migrated, timestamp: Date.now() };
     persistCache();
     return migrated;
