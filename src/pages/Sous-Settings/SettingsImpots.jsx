@@ -5,20 +5,22 @@ import './SettingsShared.css';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
-import { numberOrEmpty, createFieldUpdater } from '@/utils/settingsHelpers.js';
-import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
-import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
-import SettingsTable from '@/components/settings/SettingsTable';
+import { createFieldUpdater } from '@/utils/settingsHelpers.js';
 import {
   getBaseContratSettings,
   isBaseContratSettingsSourceAvailable,
 } from '@/utils/baseContratSettingsCache';
 import { evaluatePublicationGate } from '@/features/settings/publicationGate';
 
-// ----------------------
-// Valeurs par défaut — source unique : src/constants/settingsDefaults.ts
-// ----------------------
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+
+// Import des sous-composants
+import ImpotsBaremeSection from './Impots/ImpotsBaremeSection';
+import ImpotsAbattementDomSection from './Impots/ImpotsAbattementDomSection';
+import ImpotsPfuSection from './Impots/ImpotsPfuSection';
+import ImpotsCehrSection from './Impots/ImpotsCehrSection';
+import ImpotsISSection from './Impots/ImpotsISSection';
+import ImpotsDmtgSection from './Impots/ImpotsDmtgSection';
 
 // Migration des anciennes données DMTG vers la nouvelle structure multi-catégories
 function migrateDmtgData(data) {
@@ -234,935 +236,86 @@ export default function SettingsImpots() {
       {/* Bandeau info */}
       <UserInfoBanner />
 
-        <div className="fisc-accordion">
+      <div className="fisc-accordion">
+        {/* 1. Barème impôt sur le revenu */}
+        <ImpotsBaremeSection
+          incomeTax={incomeTax}
+          updateField={updateField}
+          updateIncomeScale={updateIncomeScale}
+          isAdmin={isAdmin}
+          openSection={openSection}
+          setOpenSection={setOpenSection}
+        />
 
-                  {/* 1. Barème impôt sur le revenu */}
-<div className="fisc-acc-item">
-  <button type="button" className="fisc-acc-header" id="impots-header-bareme" aria-expanded={openSection === 'bareme'} aria-controls="impots-panel-bareme" onClick={() => setOpenSection(openSection === 'bareme' ? null : 'bareme')}>
-    <span className="settings-premium-title" style={{ margin: 0 }}>Barème de l’impôt sur le revenu</span>
-    <span className="fisc-acc-chevron">{openSection === 'bareme' ? '▾' : '▸'}</span>
-  </button>
-  {openSection === 'bareme' && (
-  <div className="fisc-acc-body" id="impots-panel-bareme" role="region" aria-labelledby="impots-header-bareme">
-          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 8 }}>
-            Barème progressif par tranches (taux et retraitement) pour le
-            barème actuel et celui de l’année précédente.
-          </p>
+        {/* Abattement DOM sur l'IR (barème) */}
+        <ImpotsAbattementDomSection
+          incomeTax={incomeTax}
+          updateField={updateField}
+          isAdmin={isAdmin}
+          openSection={openSection}
+          setOpenSection={setOpenSection}
+        />
 
-          <div className="income-tax-columns">
-            {/* Colonne 2025 / revenus 2024 */}
-            <div className="income-tax-col">
-<div className="settings-field-row" style={{ marginBottom: 10 }}>
-  <label style={{ fontWeight: 600 }}>Barème</label>
-  <input
-    type="text"
-    value={incomeTax.currentYearLabel || ''}
-    onChange={(e) =>
-      updateField(['incomeTax', 'currentYearLabel'], e.target.value)
-    }
-    disabled={!isAdmin}
-    style={{ width: 220, textAlign: 'left' }}
-    placeholder="Ex: 2026 (revenus 2025)"
-  />
-</div>
+        {/* 2. PFU */}
+        <ImpotsPfuSection
+          pfu={pfu}
+          incomeTax={incomeTax}
+          updateField={updateField}
+          isAdmin={isAdmin}
+          openSection={openSection}
+          setOpenSection={setOpenSection}
+        />
 
+        {/* 3. CEHR / CDHR */}
+        <ImpotsCehrSection
+          cehr={cehr}
+          cdhr={cdhr}
+          incomeTax={incomeTax}
+          updateField={updateField}
+          isAdmin={isAdmin}
+          openSection={openSection}
+          setOpenSection={setOpenSection}
+        />
 
-              {/* Tableau barème 2025 */}
-              <SettingsTable
-                columns={[
-                  { key: 'from', header: 'De' },
-                  { key: 'to', header: 'À' },
-                  { key: 'rate', header: 'Taux\u00a0%', step: '0.01', className: 'taux-col' },
-                ]}
-                rows={incomeTax.scaleCurrent}
-                onCellChange={(idx, key, value) => updateIncomeScale('scaleCurrent', idx, key, value)}
-                disabled={!isAdmin}
-              />
+        {/* 4. Impôt sur les sociétés */}
+        <ImpotsISSection
+          corporateTax={corporateTax}
+          incomeTax={incomeTax}
+          updateField={updateField}
+          isAdmin={isAdmin}
+          openSection={openSection}
+          setOpenSection={setOpenSection}
+        />
 
-              {/* Blocs sous le barème 2025 */}
-              <div className="income-tax-extra">
-{/* 1. Plafond du quotient familial */}
-<div className="income-tax-block">
-  <div className="income-tax-block-title">
-    Plafond du quotient familial
-  </div>
-  <div className="settings-field-row">
-    <label>Par 1/2 part supplémentaire</label>
-    <input
-      type="number"
-      value={numberOrEmpty(
-        incomeTax.quotientFamily.current.plafondPartSup
+        {/* Section DMTG - Droits de Mutation à Titre Gratuit */}
+        <ImpotsDmtgSection
+          dmtg={dmtg}
+          updateDmtgCategory={updateDmtgCategory}
+          isAdmin={isAdmin}
+          openSection={openSection}
+          setOpenSection={setOpenSection}
+        />
+      </div>{/* fin fisc-accordion */}
+
+      {/* Bouton Enregistrer */}
+      {isAdmin && (
+        <button
+          type="button"
+          className="chip settings-save-btn"
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving
+            ? 'Enregistrement…'
+            : 'Enregistrer les paramètres impôts'}
+        </button>
       )}
-      onChange={(e) =>
-        updateField(
-          ['incomeTax', 'quotientFamily', 'current', 'plafondPartSup'],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>€</span>
-  </div>
-  <div className="settings-field-row">
-    <label>Parent isolé (2 premières parts)</label>
-    <input
-      type="number"
-      value={numberOrEmpty(
-        incomeTax.quotientFamily.current
-          .plafondParentIsoléDeuxPremièresParts
-      )}
-      onChange={(e) =>
-        updateField(
-          [
-            'incomeTax',
-            'quotientFamily',
-            'current',
-            'plafondParentIsoléDeuxPremièresParts',
-          ],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>€</span>
-  </div>
-</div>
-
-
-{/* 2. Décote */}
-<div className="income-tax-block">
-  <div className="income-tax-block-title">Décote</div>
-  <div className="settings-field-row">
-    <label>Déclenchement célibataire</label>
-    <input
-      type="number"
-      value={numberOrEmpty(incomeTax.decote.current.triggerSingle)}
-      onChange={(e) =>
-        updateField(
-          ['incomeTax', 'decote', 'current', 'triggerSingle'],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>€</span>
-  </div>
-  <div className="settings-field-row">
-    <label>Déclenchement couple</label>
-    <input
-      type="number"
-      value={numberOrEmpty(incomeTax.decote.current.triggerCouple)}
-      onChange={(e) =>
-        updateField(
-          ['incomeTax', 'decote', 'current', 'triggerCouple'],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>€</span>
-  </div>
-  <div className="settings-field-row">
-    <label>Montant célibataire</label>
-    <input
-      type="number"
-      value={numberOrEmpty(incomeTax.decote.current.amountSingle)}
-      onChange={(e) =>
-        updateField(
-          ['incomeTax', 'decote', 'current', 'amountSingle'],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>€</span>
-  </div>
-  <div className="settings-field-row">
-    <label>Montant couple</label>
-    <input
-      type="number"
-      value={numberOrEmpty(incomeTax.decote.current.amountCouple)}
-      onChange={(e) =>
-        updateField(
-          ['incomeTax', 'decote', 'current', 'amountCouple'],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>€</span>
-  </div>
-  <div className="settings-field-row">
-    <label>Taux de la décote</label>
-    <input
-      type="number"
-      step="0.01"
-      value={numberOrEmpty(incomeTax.decote.current.ratePercent)}
-      onChange={(e) =>
-        updateField(
-          ['incomeTax', 'decote', 'current', 'ratePercent'],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>%</span>
-  </div>
-</div>
-
-
-                {/* 3. Abattement 10 % */}
-                <div className="income-tax-block">
-                  <div className="income-tax-block-title">
-                    Abattement 10&nbsp;%
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Plafond</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(incomeTax.abat10.current.plafond)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'abat10', 'current', 'plafond'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Plancher</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(incomeTax.abat10.current.plancher)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'abat10', 'current', 'plancher'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                </div>
-
-                {/* 4. Abattement 10 % pensions retraite */}
-                <div className="income-tax-block">
-                  <div className="income-tax-block-title">
-                    Abattement 10&nbsp;% pensions retraite
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Plafond</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(
-                        incomeTax.abat10.retireesCurrent.plafond
-                      )}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'abat10', 'retireesCurrent', 'plafond'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Plancher</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(
-                        incomeTax.abat10.retireesCurrent.plancher
-                      )}
-                      onChange={(e) =>
-                        updateField(
-                          [
-                            'incomeTax',
-                            'abat10',
-                            'retireesCurrent',
-                            'plancher',
-                          ],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Colonne 2024 / revenus 2023 */}
-            <div className="income-tax-col income-tax-col-right">
-<div className="settings-field-row" style={{ marginBottom: 10 }}>
-  <label style={{ fontWeight: 600 }}>Barème</label>
-  <input
-    type="text"
-    value={incomeTax.previousYearLabel || ''}
-    onChange={(e) =>
-      updateField(['incomeTax', 'previousYearLabel'], e.target.value)
-    }
-    disabled={!isAdmin}
-    style={{ width: 220, textAlign: 'left' }}
-    placeholder="Ex: 2025 (revenus 2024)"
-  />
-</div>
-
-
-              {/* Tableau barème 2024 */}
-              <SettingsTable
-                columns={[
-                  { key: 'from', header: 'De' },
-                  { key: 'to', header: 'À' },
-                  { key: 'rate', header: 'Taux\u00a0%', step: '0.01', className: 'taux-col' },
-                ]}
-                rows={incomeTax.scalePrevious}
-                onCellChange={(idx, key, value) => updateIncomeScale('scalePrevious', idx, key, value)}
-                disabled={!isAdmin}
-              />
-
-              {/* Blocs sous le barème 2024 */}
-              <div className="income-tax-extra">
-{/* 1. Plafond du quotient familial */}
-<div className="income-tax-block">
-  <div className="income-tax-block-title">
-    Plafond du quotient familial
-  </div>
-  <div className="settings-field-row">
-    <label>Par 1/2 part supplémentaire</label>
-    <input
-      type="number"
-      value={numberOrEmpty(
-        incomeTax.quotientFamily.previous.plafondPartSup
-      )}
-      onChange={(e) =>
-        updateField(
-          ['incomeTax', 'quotientFamily', 'previous', 'plafondPartSup'],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>€</span>
-  </div>
-  <div className="settings-field-row">
-    <label>Parent isolé (2 premières parts)</label>
-    <input
-      type="number"
-      value={numberOrEmpty(
-        incomeTax.quotientFamily.previous
-          .plafondParentIsoléDeuxPremièresParts
-      )}
-      onChange={(e) =>
-        updateField(
-          [
-            'incomeTax',
-            'quotientFamily',
-            'previous',
-            'plafondParentIsoléDeuxPremièresParts',
-          ],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>€</span>
-  </div>
-</div>
-
-                {/* 2. Décote */}
-<div className="income-tax-block">
-  <div className="income-tax-block-title">Décote</div>
-  <div className="settings-field-row">
-    <label>Déclenchement célibataire</label>
-    <input
-      type="number"
-      value={numberOrEmpty(incomeTax.decote.previous.triggerSingle)}
-      onChange={(e) =>
-        updateField(
-          ['incomeTax', 'decote', 'previous', 'triggerSingle'],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>€</span>
-  </div>
-  <div className="settings-field-row">
-    <label>Déclenchement couple</label>
-    <input
-      type="number"
-      value={numberOrEmpty(incomeTax.decote.previous.triggerCouple)}
-      onChange={(e) =>
-        updateField(
-          ['incomeTax', 'decote', 'previous', 'triggerCouple'],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>€</span>
-  </div>
-  <div className="settings-field-row">
-    <label>Montant célibataire</label>
-    <input
-      type="number"
-      value={numberOrEmpty(incomeTax.decote.previous.amountSingle)}
-      onChange={(e) =>
-        updateField(
-          ['incomeTax', 'decote', 'previous', 'amountSingle'],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>€</span>
-  </div>
-  <div className="settings-field-row">
-    <label>Montant couple</label>
-    <input
-      type="number"
-      value={numberOrEmpty(incomeTax.decote.previous.amountCouple)}
-      onChange={(e) =>
-        updateField(
-          ['incomeTax', 'decote', 'previous', 'amountCouple'],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>€</span>
-  </div>
-  <div className="settings-field-row">
-    <label>Taux de la décote</label>
-    <input
-      type="number"
-      step="0.01"
-      value={numberOrEmpty(incomeTax.decote.previous.ratePercent)}
-      onChange={(e) =>
-        updateField(
-          ['incomeTax', 'decote', 'previous', 'ratePercent'],
-          e.target.value === ''
-            ? null
-            : Number(e.target.value)
-        )
-      }
-      disabled={!isAdmin}
-    />
-    <span>%</span>
-  </div>
-</div>
-
-
-                {/* 3. Abattement 10 % */}
-                <div className="income-tax-block">
-                  <div className="income-tax-block-title">
-                    Abattement 10&nbsp;%
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Plafond</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(incomeTax.abat10.previous.plafond)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'abat10', 'previous', 'plafond'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Plancher</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(incomeTax.abat10.previous.plancher)}
-                      onChange={(e) =>
-                        updateField(
-                          ['incomeTax', 'abat10', 'previous', 'plancher'],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                </div>
-
-                {/* 4. Abattement 10 % pensions retraite */}
-                <div className="income-tax-block">
-                  <div className="income-tax-block-title">
-                    Abattement 10&nbsp;% pensions retraite
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Plafond</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(
-                        incomeTax.abat10.retireesPrevious.plafond
-                      )}
-                      onChange={(e) =>
-                        updateField(
-                          [
-                            'incomeTax',
-                            'abat10',
-                            'retireesPrevious',
-                            'plafond',
-                          ],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                  <div className="settings-field-row">
-                    <label>Plancher</label>
-                    <input
-                      type="number"
-                      value={numberOrEmpty(
-                        incomeTax.abat10.retireesPrevious.plancher
-                      )}
-                      onChange={(e) =>
-                        updateField(
-                          [
-                            'incomeTax',
-                            'abat10',
-                            'retireesPrevious',
-                            'plancher',
-                          ],
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value)
-                        )
-                      }
-                      disabled={!isAdmin}
-                    />
-                    <span>€</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-  </div>
-  )}
-</div>
-{/* Abattement DOM sur l'IR (barème) */}
-<div className="fisc-acc-item">
-  <button type="button" className="fisc-acc-header" id="impots-header-dom" aria-expanded={openSection === 'dom'} aria-controls="impots-panel-dom" onClick={() => setOpenSection(openSection === 'dom' ? null : 'dom')}>
-    <span className="settings-premium-title" style={{ margin: 0 }}>Abattement DOM sur l’IR (barème)</span>
-    <span className="fisc-acc-chevron">{openSection === 'dom' ? '▾' : '▸'}</span>
-  </button>
-  {openSection === 'dom' && (
-  <div className="fisc-acc-body" id="impots-panel-dom" role="region" aria-labelledby="impots-header-dom">
-  <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 8 }}>
-    Appliqué sur l’impôt issu du barème <strong>après plafonnement du quotient familial</strong> et
-    <strong> avant</strong> décote + réductions/crédits.
-  </p>
-
-  {(() => {
-    const domZones = [
-      { _key: 'gmr', zone: 'Guadeloupe / Martinique / Réunion', zoneKey: 'gmr' },
-      { _key: 'guyane', zone: 'Guyane / Mayotte', zoneKey: 'guyane' },
-    ];
-    const domCols = [
-      { key: 'zone', header: 'Zone', type: 'display' },
-      { key: 'ratePercent', header: 'Taux %', className: 'taux-col' },
-      { key: 'cap', header: 'Plafond €' },
-    ];
-    return (
-      <div className="income-tax-columns">
-        {['current', 'previous'].map((period) => (
-          <div className="income-tax-col" key={period}>
-            <div style={{ fontWeight: 700, marginBottom: 8 }}>
-              {period === 'current'
-                ? (incomeTax.currentYearLabel || 'Année N')
-                : (incomeTax.previousYearLabel || 'Année N-1')}
-            </div>
-            <SettingsTable
-              columns={domCols}
-              rows={domZones.map((z) => ({
-                _key: z._key,
-                zone: z.zone,
-                ratePercent: incomeTax?.domAbatement?.[period]?.[z.zoneKey]?.ratePercent,
-                cap: incomeTax?.domAbatement?.[period]?.[z.zoneKey]?.cap,
-              }))}
-              onCellChange={(idx, key, value) =>
-                updateField(
-                  ['incomeTax', 'domAbatement', period, domZones[idx].zoneKey, key],
-                  value === null ? '' : value
-                )
-              }
-              disabled={!isAdmin}
-            />
-          </div>
-        ))}
-      </div>
-    );
-  })()}
-  </div>
-  )}
-</div>
-
-
-          {/* 2. PFU */}
-          <div className="fisc-acc-item">
-  <button type="button" className="fisc-acc-header" id="impots-header-pfu" aria-expanded={openSection === 'pfu'} aria-controls="impots-panel-pfu" onClick={() => setOpenSection(openSection === 'pfu' ? null : 'pfu')}>
-    <span className="settings-premium-title" style={{ margin: 0 }}>PFU (flat tax)</span>
-    <span className="fisc-acc-chevron">{openSection === 'pfu' ? '▾' : '▸'}</span>
-  </button>
-  {openSection === 'pfu' && (
-  <div className="fisc-acc-body" id="impots-panel-pfu" role="region" aria-labelledby="impots-header-pfu">
-
-  <div className="tax-two-cols">
-    <SettingsYearColumn yearLabel={incomeTax.currentYearLabel}>
-      <SettingsFieldRow
-        label="Part impôt sur le revenu"
-        path={['pfu', 'current', 'rateIR']}
-        value={pfu.current.rateIR}
-        onChange={updateField}
-        step="0.1"
-        unit="%"
-        disabled={!isAdmin}
-      />
-      <SettingsFieldRow
-        label="Prélèvements sociaux"
-        path={['pfu', 'current', 'rateSocial']}
-        value={pfu.current.rateSocial}
-        onChange={updateField}
-        step="0.1"
-        unit="%"
-        disabled={!isAdmin}
-      />
-      <SettingsFieldRow
-        label="Taux global PFU"
-        path={['pfu', 'current', 'rateTotal']}
-        value={pfu.current.rateTotal}
-        onChange={updateField}
-        step="0.1"
-        unit="%"
-        disabled={!isAdmin}
-      />
-    </SettingsYearColumn>
-
-    <SettingsYearColumn yearLabel={incomeTax.previousYearLabel} isRight>
-      <SettingsFieldRow
-        label="Part impôt sur le revenu"
-        path={['pfu', 'previous', 'rateIR']}
-        value={pfu.previous.rateIR}
-        onChange={updateField}
-        step="0.1"
-        unit="%"
-        disabled={!isAdmin}
-      />
-      <SettingsFieldRow
-        label="Prélèvements sociaux"
-        path={['pfu', 'previous', 'rateSocial']}
-        value={pfu.previous.rateSocial}
-        onChange={updateField}
-        step="0.1"
-        unit="%"
-        disabled={!isAdmin}
-      />
-      <SettingsFieldRow
-        label="Taux global PFU"
-        path={['pfu', 'previous', 'rateTotal']}
-        value={pfu.previous.rateTotal}
-        onChange={updateField}
-        step="0.1"
-        unit="%"
-        disabled={!isAdmin}
-      />
-    </SettingsYearColumn>
-  </div>
-  </div>
-  )}
-</div>
-
-
-          {/* 3. CEHR / CDHR */}
-          <div className="fisc-acc-item">
-  <button type="button" className="fisc-acc-header" id="impots-header-cehr" aria-expanded={openSection === 'cehr'} aria-controls="impots-panel-cehr" onClick={() => setOpenSection(openSection === 'cehr' ? null : 'cehr')}>
-    <span className="settings-premium-title" style={{ margin: 0 }}>CEHR / CDHR</span>
-    <span className="fisc-acc-chevron">{openSection === 'cehr' ? '▾' : '▸'}</span>
-  </button>
-  {openSection === 'cehr' && (
-  <div className="fisc-acc-body" id="impots-panel-cehr" role="region" aria-labelledby="impots-header-cehr">
-  <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
-    Contribution exceptionnelle sur les hauts revenus (CEHR) et
-    contribution différentielle (CDHR).
-  </p>
-
-  <div className="tax-two-cols">
-    {['current', 'previous'].map((period) => {
-      const yearLabel = period === 'current' ? incomeTax.currentYearLabel : incomeTax.previousYearLabel;
-      const cehrData = cehr[period];
-      const cdhrData = cdhr[period];
-      const suffix = period === 'current' ? '2025' : '2024';
-      return (
-        <SettingsYearColumn key={period} yearLabel={yearLabel} isRight={period === 'previous'}>
-          <strong>CEHR – personne seule</strong>
-          {cehrData.single.map((row, idx) => (
-            <SettingsFieldRow
-              key={`cehrS_${suffix}_${idx}`}
-              label={`De ${numberOrEmpty(row.from)} € à ${row.to ? `${row.to} €` : 'plus'}`}
-              path={['cehr', period, 'single', idx, 'rate']}
-              value={row.rate}
-              onChange={updateField}
-              step="0.1"
-              unit="%"
-              disabled={!isAdmin}
-            />
-          ))}
-
-          <strong>CEHR – couple</strong>
-          {cehrData.couple.map((row, idx) => (
-            <SettingsFieldRow
-              key={`cehrC_${suffix}_${idx}`}
-              label={`De ${numberOrEmpty(row.from)} € à ${row.to ? `${row.to} €` : 'plus'}`}
-              path={['cehr', period, 'couple', idx, 'rate']}
-              value={row.rate}
-              onChange={updateField}
-              step="0.1"
-              unit="%"
-              disabled={!isAdmin}
-            />
-          ))}
-
-          <strong>CDHR (taux minimal)</strong>
-          <SettingsFieldRow
-            label="Taux effectif minimal"
-            path={['cdhr', period, 'minEffectiveRate']}
-            value={cdhrData.minEffectiveRate}
-            onChange={updateField}
-            step="0.1"
-            unit="%"
-            disabled={!isAdmin}
-          />
-          <SettingsFieldRow
-            label="Seuil RFR personne seule"
-            path={['cdhr', period, 'thresholdSingle']}
-            value={cdhrData.thresholdSingle}
-            onChange={updateField}
-            unit="€"
-            disabled={!isAdmin}
-          />
-          <SettingsFieldRow
-            label="Seuil RFR couple"
-            path={['cdhr', period, 'thresholdCouple']}
-            value={cdhrData.thresholdCouple}
-            onChange={updateField}
-            unit="€"
-            disabled={!isAdmin}
-          />
-        </SettingsYearColumn>
-      );
-    })}
-  </div>
-  </div>
-  )}
-</div>
-
-
-          {/* 4. Impôt sur les sociétés */}
-          <div className="fisc-acc-item">
-  <button type="button" className="fisc-acc-header" id="impots-header-is" aria-expanded={openSection === 'is'} aria-controls="impots-panel-is" onClick={() => setOpenSection(openSection === 'is' ? null : 'is')}>
-    <span className="settings-premium-title" style={{ margin: 0 }}>Impôt sur les sociétés</span>
-    <span className="fisc-acc-chevron">{openSection === 'is' ? '▾' : '▸'}</span>
-  </button>
-  {openSection === 'is' && (
-  <div className="fisc-acc-body" id="impots-panel-is" role="region" aria-labelledby="impots-header-is">
-
-  <div className="tax-two-cols">
-    <SettingsYearColumn yearLabel={incomeTax.currentYearLabel}>
-      <SettingsFieldRow
-        label="Taux normal IS"
-        path={['corporateTax', 'current', 'normalRate']}
-        value={corporateTax.current.normalRate}
-        onChange={updateField}
-        step="0.1"
-        unit="%"
-        disabled={!isAdmin}
-      />
-      <SettingsFieldRow
-        label="Taux réduit IS"
-        path={['corporateTax', 'current', 'reducedRate']}
-        value={corporateTax.current.reducedRate}
-        onChange={updateField}
-        step="0.1"
-        unit="%"
-        disabled={!isAdmin}
-      />
-      <SettingsFieldRow
-        label="Seuil de bénéfice au taux réduit"
-        path={['corporateTax', 'current', 'reducedThreshold']}
-        value={corporateTax.current.reducedThreshold}
-        onChange={updateField}
-        unit="€"
-        disabled={!isAdmin}
-      />
-    </SettingsYearColumn>
-
-    <SettingsYearColumn yearLabel={incomeTax.previousYearLabel} isRight>
-      <SettingsFieldRow
-        label="Taux normal IS"
-        path={['corporateTax', 'previous', 'normalRate']}
-        value={corporateTax.previous.normalRate}
-        onChange={updateField}
-        step="0.1"
-        unit="%"
-        disabled={!isAdmin}
-      />
-      <SettingsFieldRow
-        label="Taux réduit IS"
-        path={['corporateTax', 'previous', 'reducedRate']}
-        value={corporateTax.previous.reducedRate}
-        onChange={updateField}
-        step="0.1"
-        unit="%"
-        disabled={!isAdmin}
-      />
-      <SettingsFieldRow
-        label="Seuil de bénéfice au taux réduit"
-        path={['corporateTax', 'previous', 'reducedThreshold']}
-        value={corporateTax.previous.reducedThreshold}
-        onChange={updateField}
-        unit="€"
-        disabled={!isAdmin}
-      />
-    </SettingsYearColumn>
-  </div>
-  </div>
-  )}
-</div>
-
-{/* Section DMTG - Droits de Mutation à Titre Gratuit */}
-<div className="fisc-acc-item">
-  <button type="button" className="fisc-acc-header" id="impots-header-dmtg" aria-expanded={openSection === 'dmtg'} aria-controls="impots-panel-dmtg" onClick={() => setOpenSection(openSection === 'dmtg' ? null : 'dmtg')}>
-    <span className="settings-premium-title" style={{ margin: 0 }}>Droits de Mutation à Titre Gratuit (DMTG)</span>
-    <span className="fisc-acc-chevron">{openSection === 'dmtg' ? '▾' : '▸'}</span>
-  </button>
-  {openSection === 'dmtg' && (
-  <div className="fisc-acc-body" id="impots-panel-dmtg" role="region" aria-labelledby="impots-header-dmtg">
-  <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-    Barèmes applicables aux successions et donations selon le lien de parenté.
-    Utilisés par le simulateur de placement pour la phase de transmission.
-  </p>
-
-  {[
-    { key: 'ligneDirecte', title: 'Ligne directe (enfants, petits-enfants)', labelAbattement: 'Abattement par enfant' },
-    { key: 'frereSoeur', title: 'Frères et sœurs', labelAbattement: 'Abattement frère/sœur' },
-    { key: 'neveuNiece', title: 'Neveux et nièces', labelAbattement: 'Abattement neveu/nièce' },
-    { key: 'autre', title: 'Autres (non-parents)', labelAbattement: 'Abattement par défaut' },
-  ].map(({ key, title, labelAbattement }) => {
-    const catData = dmtg?.[key];
-    if (!catData) return null;
-    return (
-      <div key={key} className="income-tax-block" style={{ marginBottom: 24 }}>
-        <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
-          {title}
-        </div>
-        <div style={{ paddingLeft: 8 }}>
-          <div className="settings-field-row" style={{ marginBottom: 12 }}>
-            <label>{labelAbattement}</label>
-            <input
-              type="number"
-              value={numberOrEmpty(catData.abattement)}
-              onChange={(e) =>
-                updateDmtgCategory(key, 'abattement',
-                  e.target.value === '' ? null : Number(e.target.value))
-              }
-              disabled={!isAdmin}
-            />
-            <span>€</span>
-          </div>
-          <SettingsTable
-            columns={[
-              { key: 'from', header: 'De (€)' },
-              { key: 'to', header: 'À (€)' },
-              { key: 'rate', header: 'Taux %', step: '0.1', className: 'taux-col' },
-            ]}
-            rows={catData.scale || []}
-            onCellChange={(idx, colKey, value) =>
-              updateDmtgCategory(key, 'scale', { idx, key: colKey, value })
-            }
-            disabled={!isAdmin}
-          />
-        </div>
-      </div>
-    );
-  })}
-  </div>
-  )}
-</div>
-
-        </div>{/* fin fisc-accordion */}
-
-          {/* Bouton Enregistrer */}
-          {isAdmin && (
-            <button
-              type="button"
-              className="chip settings-save-btn"
-              onClick={handleSave}
-              disabled={saving}
-            >
-              {saving
-                ? 'Enregistrement…'
-                : 'Enregistrer les paramètres impôts'}
-            </button>
-          )}
 
       {publicationGate.blocked && publicationGate.blockMessage && (
         <div className="settings-feedback-message settings-feedback-message--warning">
           <strong>⚠ Enregistrement possible, mais attention :</strong><br/>
           {publicationGate.blockMessage.replace('⚠ Publication impossible :', '')}<br/>
-          <em>(Pour ajouter un test : exportez un tableur depuis un simulateur, modifiez-le et importez-le via le menu développeur)</em>
+          <em>(Pour ajouter un test : ajoutez au moins un cas de test validé depuis la page Base-Contrat via le bouton « Configurer les règles » puis « Ajouter un test »)</em>
         </div>
       )}
 
