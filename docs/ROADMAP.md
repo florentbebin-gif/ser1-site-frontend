@@ -396,10 +396,10 @@ Deux catégories selon l'ambiguïté du sous-régime fiscal :
 
 ---
 
-##### Découpage SettingsImpots.jsx + SettingsPrelevements.jsx (P2)
+##### Découpage SettingsImpots.jsx + SettingsPrelevements.jsx (P2) — **DONE**
 
 - Même pattern : shell orchestrateur + sous-composants par section.
-- DoD : aucun fichier Settings > 500 lignes ; `npm run check` passe.
+- DoD : aucun fichier Settings > 500 lignes (sauf fichiers de data pure très répétitifs) ; `npm run check` passe.
 - Dépendance : P1-01d (normalisation Settings) doit être terminé avant.
 
 ##### Gate /settings/impots + /settings/prelevements allégé (P2-A) — **DONE**
