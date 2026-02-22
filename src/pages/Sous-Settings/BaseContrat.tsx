@@ -412,18 +412,21 @@ export default function BaseContrat() {
     setDeletingVersionIdx(null);
   }
 
-  function handleInitCatalogue() {
+  async function handleInitCatalogue() {
     if (!isAdmin) return;
     const today = new Date().toISOString().slice(0, 10);
     const withDates = SEED_PRODUCTS.map((p) => ({
       ...p,
       rulesets: [{ ...EMPTY_RULESET, effectiveDate: today }],
     }));
-    updateSettings((prev) => ({ ...prev, products: withDates }));
-    setMessage(`Catalogue initialisé : ${withDates.length} produits chargés.`);
+    const data: BaseContratSettings = { schemaVersion: 5, products: withDates };
+    const ok = await save(data);
+    if (ok) {
+      setMessage(`Catalogue initialisé : ${withDates.length} produits chargés.`);
+    }
   }
 
-  function handleCompleteCatalogue() {
+  async function handleCompleteCatalogue() {
     if (!isAdmin) return;
     const today = new Date().toISOString().slice(0, 10);
     const existing = settings?.products ?? [];
@@ -431,8 +434,11 @@ export default function BaseContrat() {
       p.rulesets.length === 0 ? { ...p, rulesets: [{ ...EMPTY_RULESET, effectiveDate: today }] } : p
     );
     const added = merged.length - existing.length;
-    updateSettings((prev) => ({ ...prev, products: merged }));
-    setMessage(added > 0 ? MISC_LABELS.completeCatalogueResult(added) : MISC_LABELS.completeCatalogueUpToDate);
+    const data: BaseContratSettings = { ...settings!, products: merged };
+    const ok = await save(data);
+    if (ok) {
+      setMessage(added > 0 ? MISC_LABELS.completeCatalogueResult(added) : MISC_LABELS.completeCatalogueUpToDate);
+    }
   }
 
   async function handleSyncCatalogue() {
