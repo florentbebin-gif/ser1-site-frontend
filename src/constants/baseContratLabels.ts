@@ -32,8 +32,8 @@ export const FAMILY_OPTIONS = Object.keys(FAMILY_LABELS);
 export const GRANDE_FAMILLE_OPTIONS = [
   'Assurance',
   'Épargne bancaire',
-  'Titres vifs',
-  'Fonds/OPC',
+  'Valeurs mobilières',
+  'Comptes-titres',
   'Immobilier direct',
   'Immobilier indirect',
   'Non coté/PE',
@@ -131,7 +131,6 @@ export const ACTION_LABELS = {
   reactivateProduct: 'Rouvrir',
   deleteProduct: 'Supprimer définitivement',
   initCatalogue: 'Initialiser le catalogue',
-  completeCatalogue: 'Compléter le catalogue',
   syncCatalogue: 'Synchroniser le catalogue',
   save: 'Enregistrer',
   saving: 'Enregistrement…',
@@ -194,9 +193,6 @@ export const MISC_LABELS = {
   versionCount: (n: number) => `${n} version${n > 1 ? 's' : ''}`,
   // Seed
   initCatalogueHint: 'Charge les produits de référence depuis le fichier catalogue. Les règles fiscales seront à compléter produit par produit.',
-  completeCatalogueHint: 'Ajoute les produits manquants sans modifier les produits existants.',
-  completeCatalogueResult: (n: number) => `${n} produit${n > 1 ? 's' : ''} ajouté${n > 1 ? 's' : ''}.`,
-  completeCatalogueUpToDate: 'Le catalogue est déjà à jour.',
   syncCatalogueHint: 'Purge les entrées obsolètes, applique les regroupements (OPC, groupements fonciers, crypto) et le split PP/PM, puis sauvegarde.',
   syncCatalogueResult: (n: number) => `Catalogue synchronisé : ${n} produit${n > 1 ? 's' : ''} après nettoyage.`,
   // Gate

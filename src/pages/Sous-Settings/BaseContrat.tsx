@@ -26,7 +26,7 @@ import {
   SOUSCRIPTION_OUVERTE_LABELS,
   SOUSCRIPTION_OUVERTE_OPTIONS,
 } from '@/constants/baseContratLabels';
-import { SEED_PRODUCTS, mergeSeedIntoProducts, syncProductsWithSeed } from '@/constants/baseContratSeed';
+import { SEED_PRODUCTS, syncProductsWithSeed } from '@/constants/baseContratSeed';
 import type {
   BaseContratProduct,
   BaseContratSettings,
@@ -426,21 +426,6 @@ export default function BaseContrat() {
     }
   }
 
-  async function handleCompleteCatalogue() {
-    if (!isAdmin) return;
-    const today = new Date().toISOString().slice(0, 10);
-    const existing = settings?.products ?? [];
-    const merged = mergeSeedIntoProducts(existing).map((p) =>
-      p.rulesets.length === 0 ? { ...p, rulesets: [{ ...EMPTY_RULESET, effectiveDate: today }] } : p
-    );
-    const added = merged.length - existing.length;
-    const data: BaseContratSettings = { ...settings!, products: merged };
-    const ok = await save(data);
-    if (ok) {
-      setMessage(added > 0 ? MISC_LABELS.completeCatalogueResult(added) : MISC_LABELS.completeCatalogueUpToDate);
-    }
-  }
-
   async function handleSyncCatalogue() {
     if (!isAdmin || !settings) return;
     // 1) Apply migration chain (for pre-V5 data: legacy IDs, assimilations)
@@ -564,11 +549,6 @@ export default function BaseContrat() {
             {products.length === 0 && (
               <button className="chip" onClick={handleInitCatalogue} style={{ padding: '8px 20px', fontWeight: 600 }} title={MISC_LABELS.initCatalogueHint}>
                 {ACTION_LABELS.initCatalogue}
-              </button>
-            )}
-            {products.length > 0 && (
-              <button className="chip" onClick={handleCompleteCatalogue} style={{ padding: '8px 20px', fontWeight: 600 }} title={MISC_LABELS.completeCatalogueHint}>
-                {ACTION_LABELS.completeCatalogue}
               </button>
             )}
             {products.length > 0 && (

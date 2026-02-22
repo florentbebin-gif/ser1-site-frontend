@@ -56,6 +56,12 @@ const GF_FORESTIER_LEGACY_ID = 'groupement_forestier';
 // V5: Products to purge (obsolete or non-directly-subscribable)
 const PRODUCTS_TO_PURGE = new Set(['opc_opcvm', 'fcpe', 'groupement_foncier']);
 
+// V5: Legacy grandeFamille remap (renamed families)
+const LEGACY_GRANDE_FAMILLE_REMAP: Record<string, string> = {
+  'Titres vifs': 'Valeurs mobilières',
+  'Fonds/OPC': 'Valeurs mobilières',
+};
+
 // ---------------------------------------------------------------------------
 // Migration lazy V1 → V2
 // Pattern identique à migrateV1toV2 dans fiscalSettingsCache.js
@@ -65,7 +71,7 @@ function familyToGrandeFamille(family: string): BaseContratProduct['grandeFamill
   const map: Record<string, BaseContratProduct['grandeFamille']> = {
     'Assurance': 'Assurance',
     'Bancaire': 'Épargne bancaire',
-    'Titres': 'Titres vifs',
+    'Titres': 'Valeurs mobilières',
     'Immobilier': 'Immobilier direct',
     'Défiscalisation': 'Dispositifs fiscaux immo',
     'Crypto-actifs': 'Autres',
@@ -355,6 +361,13 @@ function migrateBaseContratV4toV5(data: BaseContratSettings): BaseContratSetting
 
   // 5c) Purge known obsolete products
   products = products.filter((p) => !PRODUCTS_TO_PURGE.has(p.id));
+
+  // 5d) Remap legacy grandeFamille names
+  products = products.map((p) => {
+    const gf = p.grandeFamille as string;
+    const remapped = LEGACY_GRANDE_FAMILLE_REMAP[gf];
+    return remapped ? { ...p, grandeFamille: remapped as BaseContratProduct['grandeFamille'] } : p;
+  });
 
   // 6) PP/PM split
   products = products.flatMap(splitProductPPPM);

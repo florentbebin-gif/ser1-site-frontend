@@ -454,7 +454,7 @@
     {
       "id": "fcpr",
       "label": "FCPR (fonds commun de placement à risques)",
-      "family": "Fonds / OPC",
+      "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -468,7 +468,7 @@
     {
       "id": "fcpi",
       "label": "FCPI",
-      "family": "Fonds / OPC",
+      "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -482,7 +482,7 @@
     {
       "id": "fip",
       "label": "FIP",
-      "family": "Fonds / OPC",
+      "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -496,7 +496,7 @@
     {
       "id": "opci_grand_public",
       "label": "OPCI grand public",
-      "family": "Fonds / OPC",
+      "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -527,7 +527,7 @@
       "family": "Immobilier direct",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
-      "pmEligibility": "oui",
+      "pmEligibility": "non",
       "open2026": "na",
       "qualificationComment": "Immobilier non occupé à titre principal ; plus-value imposable avec abattements pour durée de détention.",
       "references": [
@@ -878,7 +878,7 @@
     {
       "id": "cto",
       "label": "Compte-titres ordinaire (CTO)",
-      "family": "Titres vifs",
+      "family": "Comptes-titres",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -892,7 +892,7 @@
     {
       "id": "pea",
       "label": "PEA (Plan d'épargne en actions)",
-      "family": "Titres vifs",
+      "family": "Comptes-titres",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -906,7 +906,7 @@
     {
       "id": "pea_pme",
       "label": "PEA-PME",
-      "family": "Titres vifs",
+      "family": "Comptes-titres",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -920,7 +920,7 @@
     {
       "id": "actions_cotees",
       "label": "Actions (cotées)",
-      "family": "Titres vifs",
+      "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -934,7 +934,7 @@
     {
       "id": "actions_preference",
       "label": "Actions de préférence",
-      "family": "Titres vifs",
+      "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -948,7 +948,7 @@
     {
       "id": "oat_obligations_etat",
       "label": "Bons / OAT / obligations d’État",
-      "family": "Titres vifs",
+      "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -962,7 +962,7 @@
     {
       "id": "obligations_corporate",
       "label": "Obligations (corporate)",
-      "family": "Titres vifs",
+      "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -976,7 +976,7 @@
     {
       "id": "obligations_convertibles",
       "label": "Obligations convertibles",
-      "family": "Titres vifs",
+      "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -990,7 +990,7 @@
     {
       "id": "parts_sociales_cooperatives",
       "label": "Parts sociales (banques mutualistes / coopératives)",
-      "family": "Titres vifs",
+      "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -1004,7 +1004,7 @@
     {
       "id": "titres_participatifs",
       "label": "Titres participatifs",
-      "family": "Titres vifs",
+      "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -1018,7 +1018,7 @@
     {
       "id": "droits_bsa_dps",
       "label": "Droits / BSA / DPS (instruments d’augmentation de capital)",
-      "family": "Titres vifs",
+      "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",

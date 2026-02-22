@@ -9,12 +9,12 @@
  *   open2026 (string "oui"/"non"/"na"), qualificationComment, references (string[])
  *
  * Usage :
- *   import { SEED_PRODUCTS, mergeSeedIntoProducts } from '@/constants/baseContratSeed';
+ *   import { SEED_PRODUCTS, syncProductsWithSeed } from '@/constants/baseContratSeed';
  *
- * Règle non-destructive :
+ * Règle :
  *   - "Initialiser" : utiliser SEED_PRODUCTS directement si products.length === 0
- *   - "Compléter"   : utiliser mergeSeedIntoProducts(existingProducts) pour ajouter
- *                     uniquement les produits absents (filtre par id)
+ *   - "Synchroniser" : utiliser syncProductsWithSeed(existingProducts) pour remplacer
+ *                      la liste complète en préservant les rulesets utilisateur
  *
  * ⚠️  Ne jamais importer ce fichier dans un composant non-admin.
  */
@@ -72,13 +72,13 @@ function familyToGrandeFamille(family: string): GrandeFamille {
     'Créances / Droits': 'Créances/Droits',
     'Dispositifs fiscaux immobiliers': 'Dispositifs fiscaux immo',
     'Épargne bancaire': 'Épargne bancaire',
-    'Fonds / OPC': 'Fonds/OPC',
+    'Valeurs mobilières': 'Valeurs mobilières',
+    'Comptes-titres': 'Comptes-titres',
     'Immobilier direct': 'Immobilier direct',
     'Immobilier indirect (pierre-papier & foncier)': 'Immobilier indirect',
     'Métaux précieux': 'Autres',
     'Non coté / Private Equity': 'Non coté/PE',
     'Retraite & épargne salariale': 'Retraite & épargne salariale',
-    'Titres vifs': 'Titres vifs',
     'Autres': 'Autres',
   };
   return map[family] ?? 'Non coté/PE';
@@ -89,8 +89,8 @@ function grandeFamilleToFamilyLegacy(gf: GrandeFamille): BaseContratProduct['fam
   const map: Record<GrandeFamille, BaseContratProduct['family']> = {
     'Assurance': 'Assurance',
     'Épargne bancaire': 'Bancaire',
-    'Titres vifs': 'Titres',
-    'Fonds/OPC': 'Titres',
+    'Valeurs mobilières': 'Titres',
+    'Comptes-titres': 'Titres',
     'Immobilier direct': 'Immobilier',
     'Immobilier indirect': 'Immobilier',
     'Non coté/PE': 'Autres',
@@ -242,22 +242,6 @@ function splitPPPM(products: BaseContratProduct[]): BaseContratProduct[] {
 
 /** Liste complète des produits du seed, prêts à être insérés dans base_contrat_settings. */
 export const SEED_PRODUCTS: BaseContratProduct[] = splitPPPM(catalogue.products.map(toProduct));
-
-/**
- * Fusionne le seed avec les produits existants.
- * N'écrase jamais un produit existant.
- * Retourne un nouveau tableau avec les produits manquants ajoutés à la fin.
- */
-export function mergeSeedIntoProducts(
-  existing: BaseContratProduct[],
-): BaseContratProduct[] {
-  const existingIds = new Set(existing.map((p) => p.id));
-  const maxSort = existing.reduce((m, p) => Math.max(m, p.sortOrder), 0);
-  const missing = SEED_PRODUCTS
-    .filter((p) => !existingIds.has(p.id))
-    .map((p, i) => ({ ...p, sortOrder: maxSort + i + 1 }));
-  return [...existing, ...missing];
-}
 
 /**
  * Synchronise le catalogue avec le seed canonique.

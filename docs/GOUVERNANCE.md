@@ -106,6 +106,59 @@ Le theming doit rester **déterministe** et persistant en DB.
 
 ---
 
+## Catalogue patrimonial — règles métier
+
+### Contexte & trajectoire
+Le client du CGP est une **personne physique** qui souhaite des conseils sur :
+- son patrimoine personnel (PP),
+- ou l'entreprise qu'il détient (PM).
+
+L'application vise à devenir un SaaS de gestion de patrimoine pour CGP, permettant simulations et analyse patrimoniale. Chaque produit du catalogue doit être qualifié selon ce prisme.
+
+### Règle de regroupement des produits (3 phases fiscales)
+On peut regrouper des produits **uniquement** si les 3 phases fiscales sont identiques :
+1. **Constitution** — taxation des revenus (intérêts, dividendes, loyers…)
+2. **Sortie / Rachat** — fiscalité de la cession ou du rachat
+3. **Décès / Transmission** — fiscalité successorale (DMTG, exonérations…)
+
+Ces 3 phases correspondent dans les blocs produit aux clés `constitution`, `sortie`, `deces`.
+
+> Exemple : on ne regroupe PAS les GFA/GFV et les GFF car l'exonération DMTG relève d'articles différents (art. 793 bis vs art. 793 1° 3° CGI).
+
+### Taxonomie des familles (grandeFamille)
+| Famille | Contenu | Type |
+|---------|---------|------|
+| Assurance | AV, capitalisation, prévoyance, homme clé, obsèques | Wrappers / protections |
+| Épargne bancaire | Livrets, PEL, CEL, CAT, CSL, PEAC | Wrappers (comptes) |
+| Comptes-titres | CTO, PEA, PEA-PME | Wrappers (enveloppes titres) |
+| Valeurs mobilières | Actions, obligations, OAT, FCPR, FCPI, FIP, OPCI, parts sociales, titres participatifs, droits/BSA | Actifs détenus en direct |
+| Immobilier direct | RP, RS, locatif nu/meublé, garages, terrains | Actifs |
+| Immobilier indirect | SCPI, GFA/GFV, GFF | Actifs (pierre-papier) |
+| Non coté/PE | Actions non cotées, crowdfunding, obligations non cotées, SOFICA, IR-PME | Actifs |
+| Créances/Droits | Compte courant associé, prêt entre particuliers, usufruit/nue-propriété | Actifs |
+| Dispositifs fiscaux immo | Pinel, Malraux, MH, Scellier, Denormandie… | Overlays fiscaux |
+| Retraite & épargne salariale | PER, PEE, PERCOL, PERCO, Art. 83/39, Madelin, PERP | Wrappers |
+| Autres | Métaux précieux, crypto-actifs, tontine | Actifs divers |
+
+### Règles de holdability (PP / PM)
+- **Résidence secondaire** : PP-only (une PM qui détient un immeuble = locatif, pas « résidence »).
+- **Épargne réglementée** (Livret A, LDDS, LEP, Livret Jeune, PEL, CEL) : PP-only.
+- **PEA / PEA-PME / PERIN** : PP-only.
+- Les produits PP+PM sont **splittés** en deux lignes (PP et Entreprise) dans le catalogue V5.
+
+### Produits non directement souscriptibles (exclus du catalogue)
+- OPC / OPCVM / SICAV / FCP / ETF → sous-jacents de CTO/PEA, pas de souscription directe.
+- FCPE → sous-jacent de PEE/PERCOL.
+
+### Problèmes identifiés (page BaseContrat)
+- **Sync additive** : le bouton « Compléter » (`mergeSeedIntoProducts`) n'ajoute que les produits manquants — ne met pas à jour les métadonnées ni ne supprime les obsolètes. Corrigé par `syncProductsWithSeed` (bouton « Synchroniser »).
+- **Rulesets vides** : les blocs fiscaux (Constitution/Sortie/Décès) sont des squelettes vides pour la majorité des produits. Les templates existent mais ne sont pas encore assignés par produit.
+- **handleCompleteCatalogue** : utilise encore `mergeSeedIntoProducts` (additive). À remplacer ou supprimer au profit de `syncProductsWithSeed`.
+- **Pas de confirmation avant sync** : le bouton « Synchroniser » écrase sans confirmation. Ajouter un dialog de confirmation.
+- **Produits personnalisés perdus après sync** : `syncProductsWithSeed` ne garde que les produits du seed. Les produits ajoutés manuellement par l'admin sont supprimés.
+
+---
+
 ## Anti-patterns
 - Calcul métier fiscal dans React (doit aller dans `src/engine/`).
 - Import CSS cross-page (styles partagés → `src/styles/`).
