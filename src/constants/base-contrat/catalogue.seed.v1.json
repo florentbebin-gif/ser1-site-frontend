@@ -429,7 +429,7 @@
       "family": "Épargne bancaire",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
-      "pmEligibility": "oui",
+      "pmEligibility": "non",
       "open2026": "oui",
       "qualificationComment": "Épargne logement (épargne + droits à prêt), conditions selon date d’ouverture.",
       "references": [

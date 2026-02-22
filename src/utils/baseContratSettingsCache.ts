@@ -327,24 +327,31 @@ function migrateBaseContratV4toV5(data: BaseContratSettings): BaseContratSetting
   // 2) Remap legacy IDs
   products = products.map(remapLegacyId);
 
-  // 3) OPC assimilation
+  // 3) Crypto assimilation (legacy DB may have individual crypto products)
+  const cryptoDetails = products.filter((p) => DETAILED_CRYPTO_IDS.has(p.id));
+  products = products.filter((p) => !DETAILED_CRYPTO_IDS.has(p.id));
+  if (!products.some((p) => p.id === 'crypto_actifs') && cryptoDetails.length > 0) {
+    products.push(buildMergedCryptoProduct(cryptoDetails[0]));
+  }
+
+  // 4) OPC assimilation
   const opcDetails = products.filter((p) => OPC_ASSIMILATION_IDS.has(p.id));
   products = products.filter((p) => !OPC_ASSIMILATION_IDS.has(p.id));
   if (!products.some((p) => p.id === 'opc_opcvm') && opcDetails.length > 0) {
     products.push(buildMergedOpcProduct(opcDetails[0]));
   }
 
-  // 4) Groupement foncier assimilation
+  // 5) Groupement foncier assimilation
   const gfDetails = products.filter((p) => GROUPEMENT_FONCIER_IDS.has(p.id));
   products = products.filter((p) => !GROUPEMENT_FONCIER_IDS.has(p.id));
   if (!products.some((p) => p.id === 'groupement_foncier') && gfDetails.length > 0) {
     products.push(buildMergedGroupementFoncierProduct(gfDetails[0]));
   }
 
-  // 5) PP/PM split
+  // 6) PP/PM split
   products = products.flatMap(splitProductPPPM);
 
-  // 6) Dedupe + re-sort
+  // 7) Dedupe + re-sort
   products = products
     .filter((p, idx, arr) => arr.findIndex((x) => x.id === p.id) === idx)
     .map((p, i) => ({ ...p, sortOrder: i + 1 }));

@@ -271,6 +271,20 @@ describe('Catalogue seed — entrées clés', () => {
     expect(p.kind).toBe('contrat_compte_enveloppe');
     expect(p.pmEligibility).toBe('non');
   });
+
+  it('PEL is PP-only (personnes physiques)', () => {
+    const p = products.find((pr) => pr.id === 'pel')!;
+    expect(p.pmEligibility).toBe('non');
+    expect(p.ppDirectHoldable).toBe(true);
+  });
+
+  it('PERIN products are in Retraite & épargne salariale (not Assurance)', () => {
+    const perIds = ['perin_assurance', 'perin_bancaire'];
+    for (const id of perIds) {
+      const p = products.find((pr) => pr.id === id)!;
+      expect(p.family, `${id} should be in Retraite`).toBe('Retraite & épargne salariale');
+    }
+  });
 });
 
 describe('Catalogue seed — PP/PM cohérence', () => {
@@ -289,8 +303,8 @@ describe('Catalogue seed — PP/PM cohérence', () => {
     }
   });
 
-  it('regulated savings (LEP, LDDS, Livret Jeune) are PP-only', () => {
-    const ppOnly = ['lep', 'ldds', 'livret_jeune'];
+  it('regulated savings (LEP, LDDS, Livret Jeune, PEL) are PP-only', () => {
+    const ppOnly = ['lep', 'ldds', 'livret_jeune', 'pel'];
     for (const id of ppOnly) {
       const p = products.find((pr) => pr.id === id)!;
       expect(p.pmEligibility, `${id} should be PP-only`).toBe('non');

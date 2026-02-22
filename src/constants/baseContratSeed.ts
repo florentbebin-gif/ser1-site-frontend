@@ -96,7 +96,7 @@ function grandeFamilleToFamilyLegacy(gf: GrandeFamille): BaseContratProduct['fam
     'Non coté/PE': 'Autres',
     'Créances/Droits': 'Autres',
     'Dispositifs fiscaux immo': 'Défiscalisation',
-    'Retraite & épargne salariale': 'Assurance',
+    'Retraite & épargne salariale': 'Autres',
     'Autres': 'Autres',
   };
   return map[gf] ?? 'Autres';

@@ -138,6 +138,53 @@ describe('migrateBaseContratSettingsToLatest (V3 → V5 full chain)', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
+  it('V5: crypto assimilation — legacy BTC/Stablecoins/Tokens → 1 crypto_actifs', () => {
+    const v3: BaseContratSettings = {
+      schemaVersion: 3,
+      products: [
+        makeProduct({ id: 'bitcoin_btc', label: 'Bitcoin (BTC)', sortOrder: 1, grandeFamille: 'Autres', catalogKind: 'asset', directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+        makeProduct({ id: 'ether_eth', label: 'Ether (ETH)', sortOrder: 2, grandeFamille: 'Autres', catalogKind: 'asset', directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+        makeProduct({ id: 'stablecoins', label: 'Stablecoins', sortOrder: 3, grandeFamille: 'Autres', catalogKind: 'asset', directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+        makeProduct({ id: 'tokens_autres', label: 'Tokens divers', sortOrder: 4, grandeFamille: 'Autres', catalogKind: 'asset', directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+        makeProduct({ id: 'nft', label: 'NFT', sortOrder: 5, grandeFamille: 'Autres', catalogKind: 'asset', directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+        // Keep a non-crypto product to verify it's untouched
+        makeProduct({ id: 'livret_a', label: 'Livret A', sortOrder: 6 }),
+      ],
+    };
+
+    const migrated = migrateBaseContratSettingsToLatest(v3);
+    const ids = migrated.products.map((p) => p.id);
+
+    // All individual crypto products removed
+    expect(ids).not.toContain('bitcoin_btc');
+    expect(ids).not.toContain('ether_eth');
+    expect(ids).not.toContain('stablecoins');
+    expect(ids).not.toContain('tokens_autres');
+    expect(ids).not.toContain('nft');
+
+    // Single crypto_actifs created (PP+PM → split)
+    expect(ids).toContain('crypto_actifs_pp');
+    expect(ids).toContain('crypto_actifs_pm');
+    expect(ids).not.toContain('crypto_actifs');
+
+    // Non-crypto product untouched
+    expect(ids).toContain('livret_a');
+
+    // Verify crypto product properties
+    const cryptoPP = migrated.products.find((p) => p.id === 'crypto_actifs_pp')!;
+    expect(cryptoPP.grandeFamille).toBe('Autres');
+    expect(cryptoPP.catalogKind).toBe('asset');
+    expect(cryptoPP.directHoldable).toBe(true);
+    expect(cryptoPP.corporateHoldable).toBe(false);
+
+    const cryptoPM = migrated.products.find((p) => p.id === 'crypto_actifs_pm')!;
+    expect(cryptoPM.directHoldable).toBe(false);
+    expect(cryptoPM.corporateHoldable).toBe(true);
+
+    // No duplicates
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
   it('is idempotent', () => {
     const v3: BaseContratSettings = {
       schemaVersion: 3,
