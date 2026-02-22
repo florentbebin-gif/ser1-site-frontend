@@ -15,7 +15,7 @@
 
 import { describe, it, expect } from 'vitest';
 import rawCatalogue from './catalogue.seed.v1.json';
-import { SEED_PRODUCTS, mergeSeedIntoProducts } from '../baseContratSeed';
+import { SEED_PRODUCTS } from '../baseContratSeed';
 
 interface RawProduct {
   id: string;
@@ -213,6 +213,11 @@ describe('Catalogue seed — split immobilier', () => {
     const rp = products.find((p) => p.id === 'residence_principale')!;
     expect(rp.pmEligibility).toBe('non');
   });
+
+  it('residence_secondaire is PP-only (PM = locatif, not résidence)', () => {
+    const rs = products.find((p) => p.id === 'residence_secondaire')!;
+    expect(rs.pmEligibility).toBe('non');
+  });
 });
 
 describe('Catalogue seed — entrées clés', () => {
@@ -231,6 +236,30 @@ describe('Catalogue seed — entrées clés', () => {
     'assurance_homme_cle',
   ])('%s exists', (id) => {
     expect(ids).toContain(id);
+  });
+
+  it('CTO/PEA/PEA-PME are wrappers in Comptes-titres family', () => {
+    for (const id of ['cto', 'pea', 'pea_pme']) {
+      const p = products.find((pr) => pr.id === id)!;
+      expect(p.family, `${id} should be in Comptes-titres`).toBe('Comptes-titres');
+      expect(p.kind, `${id} should be wrapper`).toBe('contrat_compte_enveloppe');
+    }
+  });
+
+  it('no product uses legacy families "Titres vifs" or "Fonds / OPC"', () => {
+    const legacy = products.filter((p) => p.family === 'Titres vifs' || p.family === 'Fonds / OPC');
+    expect(legacy).toHaveLength(0);
+  });
+
+  it('Valeurs mobilières contains actions, obligations, and funds (FCPR/FCPI/FIP/OPCI)', () => {
+    const vm = products.filter((p) => p.family === 'Valeurs mobilières');
+    const vmIds = vm.map((p) => p.id);
+    expect(vmIds).toContain('actions_cotees');
+    expect(vmIds).toContain('obligations_corporate');
+    expect(vmIds).toContain('fcpr');
+    expect(vmIds).toContain('fcpi');
+    expect(vmIds).toContain('fip');
+    expect(vmIds).toContain('opci_grand_public');
   });
 
   it('tontine is PP+PM in Autres', () => {
@@ -360,24 +389,6 @@ describe('SEED_PRODUCTS — PP/PM split (Point 5)', () => {
   it('every product is either PP-only or PM-only (no mixed)', () => {
     const mixed = SEED_PRODUCTS.filter((p) => p.directHoldable && p.corporateHoldable);
     expect(mixed).toHaveLength(0);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Point 7 — mergeSeedIntoProducts
-// ---------------------------------------------------------------------------
-
-describe('mergeSeedIntoProducts (Point 7)', () => {
-  it('adds missing products without overwriting existing ones', () => {
-    const existing = [SEED_PRODUCTS[0]]; // Keep first product
-    const merged = mergeSeedIntoProducts(existing);
-    expect(merged.length).toBe(SEED_PRODUCTS.length);
-    expect(merged[0].id).toBe(existing[0].id);
-  });
-
-  it('returns same count when all products exist', () => {
-    const merged = mergeSeedIntoProducts([...SEED_PRODUCTS]);
-    expect(merged.length).toBe(SEED_PRODUCTS.length);
   });
 });
 

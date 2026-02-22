@@ -34,8 +34,8 @@ export type ProductFamily =
 export type GrandeFamille =
   | 'Assurance'
   | 'Épargne bancaire'
-  | 'Titres vifs'
-  | 'Fonds/OPC'
+  | 'Valeurs mobilières'
+  | 'Comptes-titres'
   | 'Immobilier direct'
   | 'Immobilier indirect'
   | 'Non coté/PE'

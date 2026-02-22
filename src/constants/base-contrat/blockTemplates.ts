@@ -50,9 +50,9 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Taux forfaitaires IR et PS appliqués aux plus-values et revenus mobiliers. Valeurs lues depuis les Paramètres Impôts.',
     suggestedPhases: ['sortie'],
     suggestedFor: [
-      'Titres vifs', 'Fonds/OPC', 'Non coté/PE', 'Créances/Droits',
+      'Valeurs mobilières', 'Non coté/PE', 'Créances/Droits',
       'Dispositifs fiscaux immo', 'Retraite & épargne salariale',
-      'Non coté/PE', 'Immobilier indirect',
+      'Immobilier indirect',
     ],
     // Note : 'Épargne bancaire' exclu — MVP note-libre (voir ROADMAP TODO templates dédiés).
     // Crypto (régime art. 150 VH bis) — template dédié : `crypto-pfu-150vhbis`.
@@ -75,7 +75,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     suggestedPhases: ['constitution', 'sortie'],
     suggestedFor: [
       'Assurance', 'Immobilier direct', 'Immobilier indirect',
-      'Titres vifs', 'Fonds/OPC', 'Non coté/PE',
+      'Valeurs mobilières', 'Non coté/PE',
     ],
     // Note : 'Épargne bancaire' exclu — MVP note-libre (exonération totale LEP/Livret A/LDDS vs imposable CAT/CSL).
     // Crypto (régime art. 150 VH bis) — template dédié.
@@ -131,7 +131,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'DMTG — Droits de succession (Droit commun)',
     description: 'Intégration à l\'actif successoral et application du barème des droits de mutation à titre gratuit (DMTG) selon le lien de parenté.',
     suggestedPhases: ['deces'],
-    suggestedFor: ['Épargne bancaire', 'Titres vifs', 'Fonds/OPC', 'Immobilier direct', 'Immobilier indirect', 'Non coté/PE', 'Créances/Droits', 'Retraite & épargne salariale', 'Autres'],
+    suggestedFor: ['Épargne bancaire', 'Valeurs mobilières', 'Comptes-titres', 'Immobilier direct', 'Immobilier indirect', 'Non coté/PE', 'Créances/Droits', 'Retraite & épargne salariale', 'Autres'],
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Droits de succession (droit commun)',
@@ -283,10 +283,10 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Exonération IR après un seuil d\'ancienneté (ex : 5 ans pour PEA). PS restent dus.',
     suggestedPhases: ['sortie'],
     suggestedFor: [
-      'Assurance', 'Retraite & épargne salariale', 'Titres vifs', 'Fonds/OPC',
+      'Assurance', 'Retraite & épargne salariale', 'Valeurs mobilières', 'Comptes-titres',
       'Immobilier direct', 'Immobilier indirect', 'Non coté/PE',
     ],
-    // PEA (Titres vifs / Fonds/OPC) : exonération IR après 5 ans, PS restent dus.
+    // PEA/CTO (Comptes-titres) : exonération IR après 5 ans (PEA), PS restent dus.
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Exonération après ancienneté',
@@ -457,7 +457,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Bloc libre (texte) si aucun template ne correspond au cas. À privilégier en MVP quand le régime est ambigu ou multiple.',
     suggestedPhases: ['constitution', 'sortie', 'deces'],
     suggestedFor: [
-      'Assurance', 'Épargne bancaire', 'Titres vifs', 'Fonds/OPC', 'Immobilier direct',
+      'Assurance', 'Épargne bancaire', 'Valeurs mobilières', 'Comptes-titres', 'Immobilier direct',
       'Immobilier indirect', 'Non coté/PE',
       'Créances/Droits', 'Dispositifs fiscaux immo', 'Retraite & épargne salariale', 'Autres',
     ],
