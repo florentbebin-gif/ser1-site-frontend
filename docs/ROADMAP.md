@@ -237,7 +237,7 @@ Ce que ça change (cible) :
 
 **Objectif** : Passer d'un catalogue plat "fourre-tout" à une **taxonomie relationnelle SaaS** (Wrappers ↔ Assets ↔ Tax Overlays ↔ Passif), nettoyer les produits non pertinents en direct (structurés), et garantir 100 % de couverture de règles (y compris les Protections calculables).
 
-Implémentation via `schemaVersion: 3` (taxonomie) + migrations correctives `schemaVersion: 4` (cleanup catalogue : purge structurés résiduels DB, fusion métaux précieux, split prévoyance).
+Implémentation via `schemaVersion: 3` (taxonomie) + `schemaVersion: 4` (cleanup : purge structurés, fusion métaux/crypto, split prévoyance) + `schemaVersion: 5` (rules : zéro exception PM, assimilation OPC/groupements fonciers, split PP/PM, remap legacy IDs).
 
 **Pré-requis** : P1-04 terminé (adapter générique, UX no-tech, tests 1-clic).
 
@@ -261,8 +261,18 @@ Implémentation via `schemaVersion: 3` (taxonomie) + migrations correctives `sch
 ##### 2b. Gouvernance catalogue — assimilation (règle métier)
 
 - **Si les règles fiscales sont identiques, on n'ajoute pas de sous-catégories** : on crée un seul produit "assimilé".
-- Exemple : **Crypto-actifs** (BTC/ETH/NFT/stablecoins/etc. → 1 entrée) ; **Métaux précieux** (or/argent/platine → 1 entrée).
-- Les produits assimilés sont rangés dans **`Autres`** (bucket unique pour ce qui ne rentre pas ailleurs).
+- Exemples appliqués :
+  - **Crypto-actifs** (BTC/ETH/NFT/stablecoins → `crypto_actifs`) ;
+  - **Métaux précieux** (or/argent/platine → `metaux_precieux`) ;
+  - **OPC / OPCVM** (OPCVM+SICAV+FCP+ETF → `opc_opcvm`, fiscalité PFU identique) ;
+  - **Groupements fonciers** (GFA+GFV+GF/GFF → `groupement_foncier`).
+- FCPR/FCPI/FIP/FCPE/OPCI ont des régimes distincts et restent séparés.
+
+##### 2c. Règles V5 — PP/PM split & zéro exception
+
+- **`eligiblePM`** : uniquement `'oui'` ou `'non'` (ancienne valeur `'parException'` supprimée).
+- **Split PP/PM** : tout produit PP+PM est scindé en `<id>_pp` + `<id>_pm` (exclusivité PP-only ou PM-only).
+- **Remap legacy** : `immobilier_appartement_maison` → `residence_principale`, `per_perin` → `perin_assurance`.
 
 ##### 3. Blocs de Règles Manquants (Couverture 100%)
 

@@ -394,7 +394,7 @@ Pour valider et publier des règles proprement :
 
 ---
 
-## Catalogue : principes
+## Catalogue : principes (schemaVersion 5)
 
 ### Règle d'assimilation
 
@@ -403,16 +403,31 @@ Pour valider et publier des règles proprement :
 Exemples appliqués :
 - **Crypto-actifs** : BTC, ETH, NFT, stablecoins → un seul `crypto_actifs` (art. 150 VH bis identique).
 - **Métaux précieux** : or, argent, platine → un seul `metaux_precieux` (taxe forfaitaire ou PV identique).
+- **OPC / OPCVM** : OPCVM + SICAV + FCP + ETF → un seul `opc_opcvm` (fiscalité PFU identique). FCPR/FCPI/FIP/FCPE/OPCI ont des régimes distincts et restent séparés.
+- **Groupements fonciers** : GFA + GFV + GF/GFF → un seul `groupement_foncier` (fiscalité identique).
 - **Assurance croisée associés (PP)** : assimilable à `prevoyance_individuelle_deces` (même régime fiscal).
 
-Candidats identifiés (audit fév. 2026, à confirmer) :
-- **Fonds / OPC** : OPCVM + SICAV + FCP + ETF ont la même fiscalité PFU → fusion possible en un seul entry "OPC". FCPR/FCPI/FIP/FCPE/OPCI ont des régimes distincts et restent séparés.
-- **Prévoyance Madelin TNS** : cotisations déductibles BNC/BIC (≠ prévoyance individuelle classique) → entry dédiée possible si le périmètre TNS est confirmé.
+### Zéro exception PM (Point 6)
+
+**`eligiblePM` n’accepte que `'oui'` ou `'non'`.**  
+L’ancienne valeur `'parException'` est supprimée. La migration V4→V5 convertit automatiquement les exceptions en `'non'`.
+
+### Split PP / PM (Point 5)
+
+**Tout produit détenable à la fois par PP et PM est scindé en deux entrées** : `<id>_pp` (PP) et `<id>_pm` (Entreprise).  
+Cela garantit que chaque produit est exclusivement PP-only ou PM-only.  
+La migration V4→V5 et le seed (`SEED_PRODUCTS`) appliquent ce split automatiquement.
+
+### Remap IDs legacy (Point 3)
+
+La migration V4→V5 remappe les IDs obsolètes :
+- `immobilier_appartement_maison` → `residence_principale`
+- `per_perin` → `perin_assurance`
 
 ### Produits PM-only
 
 Certains produits ne sont détenables que par une personne morale :
-- `assurance_homme_cle` : souscription obligatoirement par l'entreprise (BOFiP BOI-BIC-CHG-40-20-20).
+- `assurance_homme_cle` : souscription obligatoirement par l’entreprise (BOFiP BOI-BIC-CHG-40-20-20).
 
 ### Produits exclus du catalogue
 
@@ -426,11 +441,12 @@ Le catalogue ne contient **que** les produits détenables directement (PP ou PM)
 ### Vérification (commandes)
 
 ```bash
-# Zéro structuré
-node -e "const d=require('./src/constants/base-contrat/catalogue.seed.v1.json');const s=['autocall','emtn','certificat','turbo','warrant','structur'];const h=d.products.filter(p=>s.some(k=>(p.id+' '+p.label).toLowerCase().includes(k)));console.log(h.length?'FAIL':'PASS: zero structured')"
-
-# Tests seed
+# Tests seed + PP/PM split + migration V5
 npx vitest run src/constants/base-contrat/catalogue.seed.test.ts
+npx vitest run src/utils/__tests__/baseContratSettingsCache.test.ts
+
+# Check complet
+npm run check
 ```
 
 ---
