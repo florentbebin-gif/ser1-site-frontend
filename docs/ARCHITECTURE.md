@@ -257,9 +257,15 @@ Source : `src/features/settings/publicationGate.ts` (utilisé par les pages Sett
 
 ---
 
-## Base-Contrat — Catalogue Patrimonial V3 (P1-05)
+## Base-Contrat — Catalogue Patrimonial V3 + Cleanup V4 (P1-05)
 
-Source : `src/types/baseContratSettings.ts` (schemaVersion: 3) → `src/constants/base-contrat/catalogue.seed.v1.json` (legacy, à supprimer).
+Source : `src/types/baseContratSettings.ts` (schemaVersion: 3 = taxonomie) + `schemaVersion: 4` (migrations correctives/cleanup) → `src/constants/base-contrat/catalogue.seed.v1.json` (legacy, à supprimer).
+
+### Gouvernance catalogue — assimilation
+
+- Si les règles fiscales sont identiques : **pas de sous-catégories** (assimilation).
+- Exemples : crypto-actifs (BTC/ETH/NFT/...) → 1 produit ; métaux précieux (or/argent/platine/...) → 1 produit.
+- Ces produits assimilés sont rangés dans **GrandeFamille = `Autres`**.
 
 ### Taxonomie V3 (5 catalogKind)
 
@@ -291,6 +297,10 @@ rg "catalogKind:" src/types/baseContratSettings.ts | wc -l
 # Absence de produits structurés dans le catalogue
 rg "Produits structurés" src/constants/base-contrat/catalogue.seed.v1.json
 # → 0 (après suppression PR 2)
+
+# Assimilation crypto/métaux (pas de sous-catégories)
+rg "bitcoin_btc|ether_eth|nft|stablecoins|tokens_autres" src/constants/base-contrat/catalogue.seed.v1.json
+# → 0
 ```
 
 ---

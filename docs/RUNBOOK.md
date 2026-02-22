@@ -18,6 +18,7 @@ Dev qui doit dépanner vite, ou exécuter un parcours local/CI.
 - [Supabase local + migrations](#supabase-local--migrations)
 - [Edge Function admin](#edge-function-admin)
 - [Troubleshooting rapide](#troubleshooting-rapide)
+- [Catalogue : principes](#catalogue--principes)
 
 ---
 
@@ -390,6 +391,47 @@ Pour valider et publier des règles proprement :
 5. Retournez publier les règles.
 
 > Le gate garantit que les simulateurs utilisent toujours des règles vérifiées par au moins un cas pratique.
+
+---
+
+## Catalogue : principes
+
+### Règle d'assimilation
+
+**Si les règles fiscales sont identiques, on ne crée pas de sous-catégories : un seul produit générique suffit.**
+
+Exemples appliqués :
+- **Crypto-actifs** : BTC, ETH, NFT, stablecoins → un seul `crypto_actifs` (art. 150 VH bis identique).
+- **Métaux précieux** : or, argent, platine → un seul `metaux_precieux` (taxe forfaitaire ou PV identique).
+- **Assurance croisée associés (PP)** : assimilable à `prevoyance_individuelle_deces` (même régime fiscal).
+
+Candidats identifiés (audit fév. 2026, à confirmer) :
+- **Fonds / OPC** : OPCVM + SICAV + FCP + ETF ont la même fiscalité PFU → fusion possible en un seul entry "OPC". FCPR/FCPI/FIP/FCPE/OPCI ont des régimes distincts et restent séparés.
+- **Prévoyance Madelin TNS** : cotisations déductibles BNC/BIC (≠ prévoyance individuelle classique) → entry dédiée possible si le périmètre TNS est confirmé.
+
+### Produits PM-only
+
+Certains produits ne sont détenables que par une personne morale :
+- `assurance_homme_cle` : souscription obligatoirement par l'entreprise (BOFiP BOI-BIC-CHG-40-20-20).
+
+### Produits exclus du catalogue
+
+Le catalogue ne contient **que** les produits détenables directement (PP ou PM). Sont exclus :
+- Produits structurés (autocall, EMTN, certificats, warrants…) — passent par un support.
+- Fonds euro, UC internes, PPB — internes aux enveloppes.
+- Modes de détention (SCI, viager) — ce sont des véhicules, pas des actifs.
+- Structures juridiques (GIE) — pas des produits patrimoniaux.
+- Crédits (lombard, in fine, hypothécaire) — passif, hors périmètre actifs.
+
+### Vérification (commandes)
+
+```bash
+# Zéro structuré
+node -e "const d=require('./src/constants/base-contrat/catalogue.seed.v1.json');const s=['autocall','emtn','certificat','turbo','warrant','structur'];const h=d.products.filter(p=>s.some(k=>(p.id+' '+p.label).toLowerCase().includes(k)));console.log(h.length?'FAIL':'PASS: zero structured')"
+
+# Tests seed
+npx vitest run src/constants/base-contrat/catalogue.seed.test.ts
+```
 
 ---
 

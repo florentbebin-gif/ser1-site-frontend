@@ -50,11 +50,12 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Taux forfaitaires IR et PS appliqués aux plus-values et revenus mobiliers. Valeurs lues depuis les Paramètres Impôts.',
     suggestedPhases: ['sortie'],
     suggestedFor: [
-      'Assurance', 'Titres vifs', 'Fonds/OPC', 'Retraite & épargne salariale',
+      'Titres vifs', 'Fonds/OPC', 'Non coté/PE', 'Créances/Droits',
+      'Dispositifs fiscaux immo', 'Retraite & épargne salariale',
       'Non coté/PE', 'Immobilier indirect',
     ],
     // Note : 'Épargne bancaire' exclu — MVP note-libre (voir ROADMAP TODO templates dédiés).
-    // 'Crypto-actifs' exclu — régime spécifique art. 150 VH bis (template dédié à créer).
+    // Crypto (régime art. 150 VH bis) — template dédié : `crypto-pfu-150vhbis`.
     // 'Immobilier direct' exclu — PV immobilières (abattements durée, template dédié à créer).
     defaultBlock: {
       blockKind: 'data',
@@ -73,11 +74,11 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Taux global PS sur revenus du patrimoine. Valeur lue depuis les Paramètres Prélèvements sociaux.',
     suggestedPhases: ['constitution', 'sortie'],
     suggestedFor: [
-      'Assurance', 'Retraite & épargne salariale', 'Immobilier direct', 'Immobilier indirect',
+      'Assurance', 'Immobilier direct', 'Immobilier indirect',
       'Titres vifs', 'Fonds/OPC', 'Non coté/PE',
     ],
     // Note : 'Épargne bancaire' exclu — MVP note-libre (exonération totale LEP/Livret A/LDDS vs imposable CAT/CSL).
-    // 'Crypto-actifs' exclu — régime spécifique art. 150 VH bis.
+    // Crypto (régime art. 150 VH bis) — template dédié.
     // 'Immobilier direct' inclus car PS dus sur PV immo (même si IR exonéré RP).
     defaultBlock: {
       blockKind: 'data',
@@ -130,7 +131,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'DMTG — Droits de succession (Droit commun)',
     description: 'Intégration à l\'actif successoral et application du barème des droits de mutation à titre gratuit (DMTG) selon le lien de parenté.',
     suggestedPhases: ['deces'],
-    suggestedFor: ['Épargne bancaire', 'Titres vifs', 'Fonds/OPC', 'Immobilier direct', 'Immobilier indirect', 'Crypto-actifs', 'Non coté/PE', 'Créances/Droits', 'Métaux précieux', 'Retraite & épargne salariale'],
+    suggestedFor: ['Épargne bancaire', 'Titres vifs', 'Fonds/OPC', 'Immobilier direct', 'Immobilier indirect', 'Non coté/PE', 'Créances/Droits', 'Retraite & épargne salariale', 'Autres'],
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Droits de succession (droit commun)',
@@ -169,9 +170,13 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
       uiTitle: 'Rentes / ITT (fiscalité)',
       audience: 'PP',
       payload: {
+        prestationMensuelle: { type: 'number', value: 0, unit: '€/mois', calc: true },
+        franchiseJours: { type: 'number', value: 0, unit: 'jours', calc: true },
+        dureeMaxMois: { type: 'number', value: 0, unit: 'mois', calc: true },
         imposableIR: { type: 'boolean', value: true, calc: true },
         categorieRevenus: { type: 'enum', value: 'Pensions et Rentes', options: ['Pensions et Rentes', 'BNC/BIC', 'Traitements et Salaires'], calc: true },
       },
+      notes: 'À préciser selon garanties (ITT/IPP/PTIA), franchises, durée d’indemnisation, et déductibilité des primes.',
     },
   },
   {
@@ -185,9 +190,12 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
       uiTitle: 'Capital décès (Transmission)',
       audience: 'PP',
       payload: {
+        capitalDeces: { type: 'number', value: 0, unit: '€', calc: true },
+        nombreBeneficiaires: { type: 'number', value: 1, unit: 'pers.', calc: true },
         exonerationTotale: { type: 'boolean', value: true, calc: true },
         soumisArticle990I: { type: 'boolean', value: false, calc: true },
       },
+      notes: 'En pratique, de nombreux capitaux décès de prévoyance sont hors succession. À qualifier selon contrat et situation.',
     },
   },
   {
@@ -367,7 +375,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Taxe forfaitaire — Métaux précieux',
     description: 'Cession de métaux précieux : taxe forfaitaire 11,5 % sur le prix de cession (or, argent, platine) ou option PV mobilières sur justificatif d\'acquisition.',
     suggestedPhases: ['sortie'],
-    suggestedFor: ['Métaux précieux'],
+    suggestedFor: ['Autres'],
     // Régime sans ambiguïté : taxe forfaitaire par défaut, option PV mobilières sur justificatif.
     // Pas de dépendance enveloppe. CGI art. 150 VI.
     defaultBlock: {
@@ -388,7 +396,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Crypto-actifs — Art. 150 VH bis',
     description: 'Cessions d\'actifs numériques : 30 % flat (12,8 % IR + 17,2 % PS) sur plus-values nettes annuelles. Seuil d\'exonération 305 € de cessions/an.',
     suggestedPhases: ['sortie'],
-    suggestedFor: ['Crypto-actifs'],
+    suggestedFor: ['Autres'],
     // Régime spécifique art. 150 VH bis — distinct du PFU standard mobilier.
     // Pas de dépendance enveloppe. Option barème IR possible depuis 2023.
     defaultBlock: {
@@ -445,13 +453,13 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
   },
   {
     templateId: 'note-libre',
-    uiTitle: 'Note informative (texte libre)',
-    description: 'Bloc de texte sans champ calculé — pour des règles descriptives, des précisions réglementaires ou des cas non paramétrables.',
+    uiTitle: 'Note libre (escape hatch)',
+    description: 'Bloc libre (texte) si aucun template ne correspond au cas. À privilégier en MVP quand le régime est ambigu ou multiple.',
     suggestedPhases: ['constitution', 'sortie', 'deces'],
     suggestedFor: [
       'Assurance', 'Épargne bancaire', 'Titres vifs', 'Fonds/OPC', 'Immobilier direct',
-      'Immobilier indirect', 'Crypto-actifs', 'Non coté/PE',
-      'Créances/Droits', 'Dispositifs fiscaux immo', 'Métaux précieux', 'Retraite & épargne salariale',
+      'Immobilier indirect', 'Non coté/PE',
+      'Créances/Droits', 'Dispositifs fiscaux immo', 'Retraite & épargne salariale', 'Autres',
     ],
     defaultBlock: {
       blockKind: 'note',

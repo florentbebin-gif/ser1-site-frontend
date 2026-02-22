@@ -68,17 +68,18 @@ interface RawCatalogue {
 function familyToGrandeFamille(family: string): GrandeFamille {
   const map: Record<string, GrandeFamille> = {
     'Assurance': 'Assurance',
-    'Crypto-actifs': 'Crypto-actifs',
+    'Crypto-actifs': 'Autres',
     'Créances / Droits': 'Créances/Droits',
     'Dispositifs fiscaux immobiliers': 'Dispositifs fiscaux immo',
     'Épargne bancaire': 'Épargne bancaire',
     'Fonds / OPC': 'Fonds/OPC',
     'Immobilier direct': 'Immobilier direct',
     'Immobilier indirect (pierre-papier & foncier)': 'Immobilier indirect',
-    'Métaux précieux': 'Métaux précieux',
+    'Métaux précieux': 'Autres',
     'Non coté / Private Equity': 'Non coté/PE',
     'Retraite & épargne salariale': 'Retraite & épargne salariale',
     'Titres vifs': 'Titres vifs',
+    'Autres': 'Autres',
   };
   return map[family] ?? 'Non coté/PE';
 }
@@ -92,12 +93,11 @@ function grandeFamilleToFamilyLegacy(gf: GrandeFamille): BaseContratProduct['fam
     'Fonds/OPC': 'Titres',
     'Immobilier direct': 'Immobilier',
     'Immobilier indirect': 'Immobilier',
-    'Crypto-actifs': 'Autres',
     'Non coté/PE': 'Autres',
     'Créances/Droits': 'Autres',
     'Dispositifs fiscaux immo': 'Défiscalisation',
-    'Métaux précieux': 'Autres',
     'Retraite & épargne salariale': 'Assurance',
+    'Autres': 'Autres',
   };
   return map[gf] ?? 'Autres';
 }
@@ -144,7 +144,14 @@ function toProduct(raw: RawSeedProduct, index: number): BaseContratProduct {
   const today = new Date().toISOString().slice(0, 10);
   const grandeFamille = familyToGrandeFamille(raw.family);
   const nature = kindToNature(raw.kind);
-  const catalogKind = kindToCatalogKind(raw.kind);
+  let catalogKind = kindToCatalogKind(raw.kind);
+  // Alignement avec la taxonomie V3 : certaines assurances sont des "protections" calculables.
+  if (
+    grandeFamille === 'Assurance' &&
+    /pr[ée]voyance|emprunteur|homme[- ]cl[ée]/i.test(raw.label)
+  ) {
+    catalogKind = 'protection';
+  }
   const eligiblePM = toEligiblePM(raw.pmEligibility);
   const souscriptionOuverte = (raw.open2026 as SouscriptionOuverte) ?? 'oui';
 

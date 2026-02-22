@@ -19,7 +19,26 @@ const LS_KEY = 'ser1:baseContratSettingsCache';
 const SUPABASE_TIMEOUT = 8_000; // ms
 const EVENT_NAME = 'ser1:base-contrat-updated';
 
-const EMPTY_DATA: BaseContratSettings = { schemaVersion: 2, products: [] };
+const EMPTY_DATA: BaseContratSettings = { schemaVersion: 4, products: [] };
+
+const LATEST_SCHEMA_VERSION: BaseContratSettings['schemaVersion'] = 4;
+
+const STRUCTURED_TERMS_RE = new RegExp(['autocall', 'emtn', 'certificat', 'turbo', 'warrant'].join('|'), 'i');
+
+// Matches: "note structur(ée)" / "produit(s) structur(é)" after accent normalization.
+// Accepts common separators: space, underscore, dash.
+// Intentionally avoids generic "structure" matches (too broad).
+const STRUCTURED_STRUCTUR_PHRASE_RE = /(note|produit)s?[\s_-]+structur/i;
+
+// Catch explicit "structuré/structurée/structurés/structurées" (accented) without
+// matching generic "structure".
+const STRUCTURED_WORD_RAW_RE = /structur(é|ée|és|ées)\b/i;
+
+const DETAILED_PRECIOUS_METALS_IDS = new Set(['argent_physique', 'or_physique', 'platine_palladium']);
+
+const DETAILED_CRYPTO_IDS = new Set(['bitcoin_btc', 'ether_eth', 'nft', 'stablecoins', 'tokens_autres']);
+
+const LEGACY_GRANDE_FAMILLES_TO_AUTRES = new Set(['Crypto-actifs', 'Métaux précieux']);
 
 // ---------------------------------------------------------------------------
 // Migration lazy V1 → V2
@@ -33,13 +52,184 @@ function familyToGrandeFamille(family: string): BaseContratProduct['grandeFamill
     'Titres': 'Titres vifs',
     'Immobilier': 'Immobilier direct',
     'Défiscalisation': 'Dispositifs fiscaux immo',
-    'Autres': 'Non coté/PE',
+    'Crypto-actifs': 'Autres',
+    'Métaux précieux': 'Autres',
+    'Autres': 'Autres',
   };
   return map[family] ?? 'Non coté/PE';
 }
 
+function normalizeForMatch(input: string): string {
+  return input
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function isStructuredLikeProduct(p: BaseContratProduct): boolean {
+  const raw = `${p.id ?? ''} ${p.label ?? ''}`;
+  const hay = normalizeForMatch(raw);
+  return (
+    STRUCTURED_TERMS_RE.test(hay) ||
+    STRUCTURED_STRUCTUR_PHRASE_RE.test(hay) ||
+    STRUCTURED_WORD_RAW_RE.test(raw)
+  );
+}
+
+function buildMergedPreciousMetalsProduct(base: BaseContratProduct): BaseContratProduct {
+  return {
+    ...base,
+    id: 'metaux_precieux',
+    label: 'Métaux précieux',
+    envelopeType: 'metaux_precieux',
+    // On garde les métadonnées cohérentes avec un actif détenable.
+    grandeFamille: 'Autres',
+    catalogKind: 'asset',
+    // Legacy (V1/V2) : classer en "Autres" côté family.
+    family: 'Autres',
+    // Optionnel : commentaire neutre (pas de fiscalité différenciée à ce stade).
+    commentaireQualification:
+      base.commentaireQualification ??
+      'Métaux précieux détenus en direct (or/argent/platine…). Fiscalité à qualifier selon modalité de détention et régime choisi.',
+  };
+}
+
+function buildMergedCryptoProduct(base: BaseContratProduct): BaseContratProduct {
+  return {
+    ...base,
+    id: 'crypto_actifs',
+    label: 'Crypto-actifs',
+    envelopeType: 'crypto_actifs',
+    grandeFamille: 'Autres',
+    catalogKind: 'asset',
+    family: 'Autres',
+    templateKey: base.templateKey ?? 'crypto_asset',
+    commentaireQualification:
+      base.commentaireQualification ??
+      'Actifs numériques (crypto-actifs) — fiscalité spécifique art. 150 VH bis. Assimilation : pas de sous-catégories si règles identiques.',
+  };
+}
+
+function normalizeGrandeFamille(p: BaseContratProduct): BaseContratProduct {
+  // Le type GrandeFamille n'inclut plus ces valeurs legacy, mais elles peuvent exister en DB.
+  const gf = p.grandeFamille as unknown as string;
+  if (LEGACY_GRANDE_FAMILLES_TO_AUTRES.has(gf)) return { ...p, grandeFamille: 'Autres' };
+  return p;
+}
+
+function buildSplitPrevoyanceProduct(
+  base: BaseContratProduct,
+  nextId: string,
+  nextLabel: string,
+): BaseContratProduct {
+  return {
+    ...base,
+    id: nextId,
+    label: nextLabel,
+    envelopeType: nextId,
+    grandeFamille: 'Assurance',
+    catalogKind: 'protection',
+  };
+}
+
+function migrateBaseContratV3toV4(data: BaseContratSettings): BaseContratSettings {
+  if (data.schemaVersion === 4) return data;
+
+  // Assure V3 en amont (V1/V2 → V3)
+  const v3 = migrateBaseContratV2toV3(data);
+
+  // 1) Supprimer les produits structurés résiduels (DB historique)
+  const withoutStructured = v3.products
+    .filter((p) => !isStructuredLikeProduct(p))
+    .map(normalizeGrandeFamille);
+
+  // 2) Métaux précieux : collapse des sous-produits en un seul produit
+  const detailedMetals = withoutStructured.filter((p) => DETAILED_PRECIOUS_METALS_IDS.has(p.id));
+  let products = withoutStructured.filter((p) => !DETAILED_PRECIOUS_METALS_IDS.has(p.id));
+
+  const hasMergedMetals = products.some((p) => p.id === 'metaux_precieux');
+  if (!hasMergedMetals && detailedMetals.length > 0) {
+    const base = [...detailedMetals].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))[0];
+    const merged = buildMergedPreciousMetalsProduct(base);
+    products = [...products, merged].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  }
+
+  // 2b) Crypto-actifs : collapse des sous-produits en un seul produit
+  const detailedCrypto = products.filter((p) => DETAILED_CRYPTO_IDS.has(p.id));
+  products = products.filter((p) => !DETAILED_CRYPTO_IDS.has(p.id));
+
+  const hasMergedCrypto = products.some((p) => p.id === 'crypto_actifs');
+  if (!hasMergedCrypto && detailedCrypto.length > 0) {
+    const base = [...detailedCrypto].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))[0];
+    const merged = buildMergedCryptoProduct(base);
+    products = [...products, merged].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  }
+
+  // 3) Prévoyance : split obligatoire (décès vs ITT/invalidité)
+  const prev = products.find((p) => p.id === 'prevoyance_individuelle');
+  if (prev) {
+    products = products.filter((p) => p.id !== 'prevoyance_individuelle');
+
+    const hasA = products.some((p) => p.id === 'prevoyance_individuelle_deces');
+    const hasB = products.some((p) => p.id === 'prevoyance_individuelle_itt_invalidite');
+
+    const prevSort = typeof prev.sortOrder === 'number' ? prev.sortOrder : null;
+
+    const toAdd: BaseContratProduct[] = [];
+    if (!hasA) {
+      const splitA = buildSplitPrevoyanceProduct(prev, 'prevoyance_individuelle_deces', 'Prévoyance individuelle décès');
+      if (prevSort !== null) splitA.sortOrder = prevSort;
+      toAdd.push(splitA);
+    }
+    if (!hasB) {
+      const splitB = buildSplitPrevoyanceProduct(
+        prev,
+        'prevoyance_individuelle_itt_invalidite',
+        'Prévoyance individuelle arrêt de travail / invalidité',
+      );
+      if (prevSort !== null) splitB.sortOrder = prevSort + 1;
+      toAdd.push(splitB);
+    }
+
+    // Si on remplace 1 produit legacy par 2 nouveaux, on décale les suivants pour
+    // garder des sortOrder entiers et éviter les collisions.
+    if (!hasA && !hasB && prevSort !== null) {
+      products = products.map((p) => {
+        if (typeof p.sortOrder !== 'number') return p;
+        if (p.sortOrder > prevSort) return { ...p, sortOrder: p.sortOrder + 1 };
+        return p;
+      });
+    }
+
+    if (toAdd.length > 0) {
+      products = [...products, ...toAdd].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    }
+  }
+
+  // 4) Dedupe (sécurité) — on conserve l'ordre existant (sortOrder) :
+  // migration minimale, sans réordonner arbitrairement le catalogue admin.
+  products = [...products]
+    .sort((a, b) => {
+      const sa = typeof a.sortOrder === 'number' ? a.sortOrder : Number.POSITIVE_INFINITY;
+      const sb = typeof b.sortOrder === 'number' ? b.sortOrder : Number.POSITIVE_INFINITY;
+      return sa - sb;
+    })
+    .filter((p, idx, arr) => arr.findIndex((x) => x.id === p.id) === idx);
+
+  return {
+    ...v3,
+    schemaVersion: LATEST_SCHEMA_VERSION,
+    products,
+  };
+}
+
+/** Exportée pour tests unitaires (pure function). */
+export function migrateBaseContratSettingsToLatest(data: BaseContratSettings): BaseContratSettings {
+  return migrateBaseContratV3toV4(data);
+}
+
 function migrateBaseContratV1toV2(data: BaseContratSettings): BaseContratSettings {
-  if (data.schemaVersion === 2 || data.schemaVersion === 3) return data;
+  if (data.schemaVersion === 2 || data.schemaVersion === 3 || data.schemaVersion === 4) return data;
   return {
     ...data,
     schemaVersion: 2,
@@ -61,7 +251,7 @@ function migrateBaseContratV1toV2(data: BaseContratSettings): BaseContratSetting
 // ---------------------------------------------------------------------------
 
 function migrateBaseContratV2toV3(data: BaseContratSettings): BaseContratSettings {
-  if (data.schemaVersion === 3) return data;
+  if (data.schemaVersion === 3 || data.schemaVersion === 4) return data;
   
   // Si on vient de V1, on passe d'abord par V2
   const v2Data = data.schemaVersion === 1 ? migrateBaseContratV1toV2(data) : data;
@@ -133,7 +323,10 @@ function restoreCache(): void {
     if (!raw) return;
     const parsed = JSON.parse(raw);
     if (parsed?.data && typeof parsed.timestamp === 'number') {
-      cache = { data: parsed.data, timestamp: parsed.timestamp };
+      const migrated = migrateBaseContratV3toV4(parsed.data as BaseContratSettings);
+      cache = { data: migrated, timestamp: parsed.timestamp };
+      // Ré-écrit en localStorage pour éviter l'anti-flash avec anciennes données.
+      persistCache();
     }
   } catch {
     /* corrupted data — ignore */
@@ -170,7 +363,7 @@ async function fetchFromSupabase(): Promise<BaseContratSettings> {
     const raw = rows?.[0]?.data;
     if (!raw || typeof raw !== 'object') return EMPTY_DATA;
 
-    const migrated = migrateBaseContratV2toV3(raw as BaseContratSettings);
+    const migrated = migrateBaseContratV3toV4(raw as BaseContratSettings);
     cache = { data: migrated, timestamp: Date.now() };
     persistCache();
     return migrated;

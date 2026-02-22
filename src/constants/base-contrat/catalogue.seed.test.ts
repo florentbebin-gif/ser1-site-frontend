@@ -76,12 +76,63 @@ describe('Catalogue seed — zéro produit structuré', () => {
   });
 
   it('no product contains structured synonyms (autocall, EMTN, certificat, turbo, warrant)', () => {
-    const synonyms = ['autocall', 'emtn', 'certificat', 'turbo', 'warrant'];
+    const synonyms = ['autocall', 'emtn', 'certificat', 'turbo', 'warrant', 'note structur'];
     const invalidProducts = products.filter((p) => {
       const searchStr = `${p.id} ${p.label} ${p.qualificationComment || ''}`.toLowerCase();
       return synonyms.some((syn) => searchStr.includes(syn));
     });
     expect(invalidProducts).toHaveLength(0);
+  });
+});
+
+describe('Catalogue seed — métaux précieux (simplifié)', () => {
+  it('detailed precious metals do NOT exist (collapsed into metaux_precieux)', () => {
+    expect(ids).not.toContain('argent_physique');
+    expect(ids).not.toContain('or_physique');
+    expect(ids).not.toContain('platine_palladium');
+  });
+
+  it('metaux_precieux exists', () => {
+    expect(ids).toContain('metaux_precieux');
+  });
+
+  it('metaux_precieux is in family "Autres" (assimilation)', () => {
+    const p = products.find((pr) => pr.id === 'metaux_precieux')!;
+    expect(p.family).toBe('Autres');
+  });
+});
+
+describe('Catalogue seed — crypto-actifs (assimilation: zéro sous-catégories)', () => {
+  it('detailed crypto products do NOT exist (collapsed into crypto_actifs)', () => {
+    expect(ids).not.toContain('bitcoin_btc');
+    expect(ids).not.toContain('ether_eth');
+    expect(ids).not.toContain('nft');
+    expect(ids).not.toContain('stablecoins');
+    expect(ids).not.toContain('tokens_autres');
+  });
+
+  it('crypto_actifs exists and is in family "Autres"', () => {
+    expect(ids).toContain('crypto_actifs');
+    const p = products.find((pr) => pr.id === 'crypto_actifs')!;
+    expect(p.family).toBe('Autres');
+  });
+});
+
+describe('Catalogue seed — gouvernance familles (pas de buckets dédiés crypto/métaux)', () => {
+  it('no product uses legacy families "Crypto-actifs" or "Métaux précieux"', () => {
+    const invalid = products.filter((p) => p.family === 'Crypto-actifs' || p.family === 'Métaux précieux');
+    expect(invalid).toHaveLength(0);
+  });
+});
+
+describe('Catalogue seed — prévoyance (split obligatoire)', () => {
+  it('prevoyance_individuelle does NOT exist (replaced by split)', () => {
+    expect(ids).not.toContain('prevoyance_individuelle');
+  });
+
+  it('split prevoyance products exist', () => {
+    expect(ids).toContain('prevoyance_individuelle_deces');
+    expect(ids).toContain('prevoyance_individuelle_itt_invalidite');
   });
 });
 
@@ -138,8 +189,25 @@ describe('Catalogue seed — entrées clés', () => {
     'cto',
     'pea',
     'pea_pme',
+    'tontine',
+    'assurance_homme_cle',
   ])('%s exists', (id) => {
     expect(ids).toContain(id);
+  });
+
+  it('tontine is PP+PM in Autres', () => {
+    const p = products.find((pr) => pr.id === 'tontine')!;
+    expect(p.family).toBe('Autres');
+    expect(p.kind).toBe('contrat_compte_enveloppe');
+    expect(p.ppDirectHoldable).toBe(true);
+    expect(p.pmEligibility).toBe('oui');
+  });
+
+  it('assurance_homme_cle is PM-only protection', () => {
+    const p = products.find((pr) => pr.id === 'assurance_homme_cle')!;
+    expect(p.family).toBe('Assurance');
+    expect(p.ppDirectHoldable).toBe(false);
+    expect(p.pmEligibility).toBe('oui');
   });
 
   it('PERIN assurance is PP-only wrapper', () => {
@@ -183,9 +251,19 @@ describe('Catalogue seed — entrées clés', () => {
 });
 
 describe('Catalogue seed — PP/PM cohérence', () => {
-  it('all products are PP-holdable (directHoldable = true)', () => {
+  /** PM-only products (PP cannot subscribe directly) */
+  const PM_ONLY_IDS = ['assurance_homme_cle'];
+
+  it('all products except PM-only are PP-holdable', () => {
     const nonPP = products.filter((p) => !p.ppDirectHoldable);
-    expect(nonPP.map((p) => p.id)).toEqual([]);
+    expect(nonPP.map((p) => p.id).sort()).toEqual([...PM_ONLY_IDS].sort());
+  });
+
+  it('PM-only products have pmEligibility oui', () => {
+    for (const id of PM_ONLY_IDS) {
+      const p = products.find((pr) => pr.id === id)!;
+      expect(p.pmEligibility, `${id} should be PM-eligible`).toBe('oui');
+    }
   });
 
   it('regulated savings (LEP, LDDS, Livret Jeune) are PP-only', () => {
