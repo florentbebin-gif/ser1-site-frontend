@@ -58,10 +58,9 @@ export const NATURE_OPTIONS = [
 export const ELIGIBLE_PM_LABELS: Record<string, string> = {
   oui: 'Oui',
   non: 'Non',
-  parException: 'Par exception',
 };
 
-export const ELIGIBLE_PM_OPTIONS = ['oui', 'non', 'parException'] as const;
+export const ELIGIBLE_PM_OPTIONS = ['oui', 'non'] as const;
 
 // ---------------------------------------------------------------------------
 // Souscription ouverte (V2)
@@ -133,6 +132,7 @@ export const ACTION_LABELS = {
   deleteProduct: 'Supprimer définitivement',
   initCatalogue: 'Initialiser le catalogue',
   completeCatalogue: 'Compléter le catalogue',
+  syncCatalogue: 'Synchroniser le catalogue',
   save: 'Enregistrer',
   saving: 'Enregistrement…',
   cancel: 'Annuler',
@@ -197,6 +197,8 @@ export const MISC_LABELS = {
   completeCatalogueHint: 'Ajoute les produits manquants sans modifier les produits existants.',
   completeCatalogueResult: (n: number) => `${n} produit${n > 1 ? 's' : ''} ajouté${n > 1 ? 's' : ''}.`,
   completeCatalogueUpToDate: 'Le catalogue est déjà à jour.',
+  syncCatalogueHint: 'Purge les entrées obsolètes, applique les regroupements (OPC, groupements fonciers, crypto) et le split PP/PM, puis sauvegarde.',
+  syncCatalogueResult: (n: number) => `Catalogue synchronisé : ${n} produit${n > 1 ? 's' : ''} après nettoyage.`,
   // Gate
   gateWarningNoTests: 'Aucun cas de test enregistré. Ajoutez au moins un test avant de considérer les règles comme publiées.',
   gateWarningNoRules: 'Aucun produit actif ne contient de règles configurées.',

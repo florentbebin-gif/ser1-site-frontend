@@ -19,9 +19,9 @@ const LS_KEY = 'ser1:baseContratSettingsCache';
 const SUPABASE_TIMEOUT = 8_000; // ms
 const EVENT_NAME = 'ser1:base-contrat-updated';
 
-const EMPTY_DATA: BaseContratSettings = { schemaVersion: 4, products: [] };
+const EMPTY_DATA: BaseContratSettings = { schemaVersion: 5, products: [] };
 
-const LATEST_SCHEMA_VERSION: BaseContratSettings['schemaVersion'] = 4;
+const LATEST_SCHEMA_VERSION: BaseContratSettings['schemaVersion'] = 5;
 
 const STRUCTURED_TERMS_RE = new RegExp(['autocall', 'emtn', 'certificat', 'turbo', 'warrant'].join('|'), 'i');
 
@@ -39,6 +39,18 @@ const DETAILED_PRECIOUS_METALS_IDS = new Set(['argent_physique', 'or_physique', 
 const DETAILED_CRYPTO_IDS = new Set(['bitcoin_btc', 'ether_eth', 'nft', 'stablecoins', 'tokens_autres']);
 
 const LEGACY_GRANDE_FAMILLES_TO_AUTRES = new Set(['Crypto-actifs', 'Métaux précieux']);
+
+// V5: Legacy IDs to remap (Point 3)
+const LEGACY_ID_REMAP: Record<string, string> = {
+  'immobilier_appartement_maison': 'residence_principale',
+  'per_perin': 'perin_assurance',
+};
+
+// V5: OPC assimilation (Point 2) — merge into opc_opcvm
+const OPC_ASSIMILATION_IDS = new Set(['etf', 'fcp', 'opcvm', 'sicav']);
+
+// V5: Groupement foncier assimilation (Point 2) — merge into groupement_foncier
+const GROUPEMENT_FONCIER_IDS = new Set(['gfa', 'gfv', 'groupement_forestier']);
 
 // ---------------------------------------------------------------------------
 // Migration lazy V1 → V2
@@ -133,7 +145,7 @@ function buildSplitPrevoyanceProduct(
 }
 
 function migrateBaseContratV3toV4(data: BaseContratSettings): BaseContratSettings {
-  if (data.schemaVersion === 4) return data;
+  if (data.schemaVersion === 4 || (data.schemaVersion as number) === 5) return data;
 
   // Assure V3 en amont (V1/V2 → V3)
   const v3 = migrateBaseContratV2toV3(data);
@@ -218,18 +230,142 @@ function migrateBaseContratV3toV4(data: BaseContratSettings): BaseContratSetting
 
   return {
     ...v3,
-    schemaVersion: LATEST_SCHEMA_VERSION,
+    schemaVersion: 4 as BaseContratSettings['schemaVersion'],
     products,
   };
 }
 
+// ---------------------------------------------------------------------------
+// Migration lazy V4 → V5 (Rules: no exception, assimilation, PP/PM split)
+// ---------------------------------------------------------------------------
+
+function removeExceptions(p: BaseContratProduct): BaseContratProduct {
+  const epm = p.eligiblePM as string;
+  if (epm === 'parException') {
+    return {
+      ...p,
+      eligiblePM: 'non',
+      corporateHoldable: false,
+      holders: p.directHoldable ? 'PP' : 'PP',
+      eligiblePMPrecision: null,
+    };
+  }
+  return p;
+}
+
+function remapLegacyId(p: BaseContratProduct): BaseContratProduct {
+  const newId = LEGACY_ID_REMAP[p.id];
+  if (newId) return { ...p, id: newId, envelopeType: newId };
+  return p;
+}
+
+function buildMergedOpcProduct(base: BaseContratProduct): BaseContratProduct {
+  return {
+    ...base,
+    id: 'opc_opcvm',
+    label: 'OPC / OPCVM (SICAV, FCP, ETF)',
+    envelopeType: 'opc_opcvm',
+    grandeFamille: 'Fonds/OPC',
+    catalogKind: 'asset',
+    family: 'Titres',
+    templateKey: base.templateKey ?? 'fund_opc',
+    commentaireQualification:
+      'Organismes de placement collectif (OPCVM, SICAV, FCP, ETF). Assimilation : fiscalit\u00e9 PFU identique \u2192 un seul produit.',
+  };
+}
+
+function buildMergedGroupementFoncierProduct(base: BaseContratProduct): BaseContratProduct {
+  return {
+    ...base,
+    id: 'groupement_foncier',
+    label: 'Groupements fonciers (GFA / GFV / GF / GFF)',
+    envelopeType: 'groupement_foncier',
+    grandeFamille: 'Immobilier indirect',
+    catalogKind: 'asset',
+    family: 'Immobilier',
+    templateKey: base.templateKey ?? 'real_estate_indirect',
+    commentaireQualification:
+      'Parts de groupements fonciers (agricole, viticole, forestier). Assimilation : fiscalit\u00e9 identique.',
+  };
+}
+
+function splitProductPPPM(p: BaseContratProduct): BaseContratProduct[] {
+  if (!p.directHoldable || !p.corporateHoldable) return [p];
+  return [
+    {
+      ...p,
+      id: `${p.id}_pp`,
+      label: `${p.label} (PP)`,
+      envelopeType: `${p.id}_pp`,
+      directHoldable: true,
+      corporateHoldable: false,
+      eligiblePM: 'non' as const,
+      holders: 'PP' as const,
+      eligiblePMPrecision: null,
+    },
+    {
+      ...p,
+      id: `${p.id}_pm`,
+      label: `${p.label} (Entreprise)`,
+      envelopeType: `${p.id}_pm`,
+      directHoldable: false,
+      corporateHoldable: true,
+      eligiblePM: 'oui' as const,
+      holders: 'PM' as const,
+    },
+  ];
+}
+
+function migrateBaseContratV4toV5(data: BaseContratSettings): BaseContratSettings {
+  if ((data.schemaVersion as number) === 5) return data;
+
+  const v4 = migrateBaseContratV3toV4(data);
+
+  // 1) Remove parException
+  let products = v4.products.map(removeExceptions);
+
+  // 2) Remap legacy IDs
+  products = products.map(remapLegacyId);
+
+  // 3) Crypto assimilation (legacy DB may have individual crypto products)
+  const cryptoDetails = products.filter((p) => DETAILED_CRYPTO_IDS.has(p.id));
+  products = products.filter((p) => !DETAILED_CRYPTO_IDS.has(p.id));
+  if (!products.some((p) => p.id === 'crypto_actifs') && cryptoDetails.length > 0) {
+    products.push(buildMergedCryptoProduct(cryptoDetails[0]));
+  }
+
+  // 4) OPC assimilation
+  const opcDetails = products.filter((p) => OPC_ASSIMILATION_IDS.has(p.id));
+  products = products.filter((p) => !OPC_ASSIMILATION_IDS.has(p.id));
+  if (!products.some((p) => p.id === 'opc_opcvm') && opcDetails.length > 0) {
+    products.push(buildMergedOpcProduct(opcDetails[0]));
+  }
+
+  // 5) Groupement foncier assimilation
+  const gfDetails = products.filter((p) => GROUPEMENT_FONCIER_IDS.has(p.id));
+  products = products.filter((p) => !GROUPEMENT_FONCIER_IDS.has(p.id));
+  if (!products.some((p) => p.id === 'groupement_foncier') && gfDetails.length > 0) {
+    products.push(buildMergedGroupementFoncierProduct(gfDetails[0]));
+  }
+
+  // 6) PP/PM split
+  products = products.flatMap(splitProductPPPM);
+
+  // 7) Dedupe + re-sort
+  products = products
+    .filter((p, idx, arr) => arr.findIndex((x) => x.id === p.id) === idx)
+    .map((p, i) => ({ ...p, sortOrder: i + 1 }));
+
+  return { ...v4, schemaVersion: LATEST_SCHEMA_VERSION, products };
+}
+
 /** Exportée pour tests unitaires (pure function). */
 export function migrateBaseContratSettingsToLatest(data: BaseContratSettings): BaseContratSettings {
-  return migrateBaseContratV3toV4(data);
+  return migrateBaseContratV4toV5(data);
 }
 
 function migrateBaseContratV1toV2(data: BaseContratSettings): BaseContratSettings {
-  if (data.schemaVersion === 2 || data.schemaVersion === 3 || data.schemaVersion === 4) return data;
+  if (data.schemaVersion === 2 || data.schemaVersion === 3 || data.schemaVersion === 4 || (data.schemaVersion as number) === 5) return data;
   return {
     ...data,
     schemaVersion: 2,
@@ -251,7 +387,7 @@ function migrateBaseContratV1toV2(data: BaseContratSettings): BaseContratSetting
 // ---------------------------------------------------------------------------
 
 function migrateBaseContratV2toV3(data: BaseContratSettings): BaseContratSettings {
-  if (data.schemaVersion === 3 || data.schemaVersion === 4) return data;
+  if (data.schemaVersion === 3 || data.schemaVersion === 4 || (data.schemaVersion as number) === 5) return data;
   
   // Si on vient de V1, on passe d'abord par V2
   const v2Data = data.schemaVersion === 1 ? migrateBaseContratV1toV2(data) : data;
@@ -275,7 +411,7 @@ function migrateBaseContratV2toV3(data: BaseContratSettings): BaseContratSetting
       
       // 2. Mapping detensiblePP/eligiblePM -> directHoldable/corporateHoldable
       const directHoldable = p.detensiblePP ?? true;
-      const corporateHoldable = p.eligiblePM === 'oui' || p.eligiblePM === 'parException';
+      const corporateHoldable = p.eligiblePM === 'oui' || (p.eligiblePM as string) === 'parException';
       
       // 3. Initialisation allowedWrappers
       // Si c'est un asset détenable en direct, il peut être 'direct'.
@@ -323,7 +459,7 @@ function restoreCache(): void {
     if (!raw) return;
     const parsed = JSON.parse(raw);
     if (parsed?.data && typeof parsed.timestamp === 'number') {
-      const migrated = migrateBaseContratV3toV4(parsed.data as BaseContratSettings);
+      const migrated = migrateBaseContratV4toV5(parsed.data as BaseContratSettings);
       cache = { data: migrated, timestamp: parsed.timestamp };
       // Ré-écrit en localStorage pour éviter l'anti-flash avec anciennes données.
       persistCache();
@@ -363,7 +499,7 @@ async function fetchFromSupabase(): Promise<BaseContratSettings> {
     const raw = rows?.[0]?.data;
     if (!raw || typeof raw !== 'object') return EMPTY_DATA;
 
-    const migrated = migrateBaseContratV3toV4(raw as BaseContratSettings);
+    const migrated = migrateBaseContratV4toV5(raw as BaseContratSettings);
     cache = { data: migrated, timestamp: Date.now() };
     persistCache();
     return migrated;

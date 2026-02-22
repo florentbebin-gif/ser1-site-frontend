@@ -44,6 +44,7 @@ import { ConfigureRulesModal } from './base-contrat/modals/ConfigureRulesModal';
 import type { TemplateKey } from '@/constants/baseContratTemplates';
 import { validateProductSlug, slugifyLabelToCamelCase, suggestAlternativeSlug, normalizeLabel } from '@/utils/slug';
 import { evaluatePublicationGate } from '@/features/settings/publicationGate';
+import { migrateBaseContratSettingsToLatest } from '@/utils/baseContratSettingsCache';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -287,10 +288,6 @@ export default function BaseContrat() {
 
   function handleAddProduct() {
     if (!formId || !formLabel || !formConfidence) return;
-    if (formEligiblePM === 'parException' && !formEligiblePMPrecision.trim()) {
-      setMessage('Précisez les conditions d’éligibilité PM (champ obligatoire si « Par exception »).');
-      return;
-    }
     const validation = validateProductSlug(formId, existingIds);
     if (!validation.ok) { setMessage(validation.errors.join(' ')); return; }
     const maxSort = products.reduce((m, p) => Math.max(m, p.sortOrder), 0);
@@ -299,8 +296,8 @@ export default function BaseContrat() {
       ? buildTemplateRuleset(formTemplate as TemplateKey, today)
       : { ...EMPTY_RULESET, effectiveDate: today };
     // Dériver les champs legacy depuis les métadonnées V2
-    const holdersLegacy = formDetensiblePP && (formEligiblePM === 'oui' || formEligiblePM === 'parException')
-      ? 'PP+PM' : !formDetensiblePP && (formEligiblePM === 'oui' || formEligiblePM === 'parException')
+    const holdersLegacy = formDetensiblePP && formEligiblePM === 'oui'
+      ? 'PP+PM' : !formDetensiblePP && formEligiblePM === 'oui'
       ? 'PM' : 'PP';
     const newProduct: BaseContratProduct = {
       ...EMPTY_PRODUCT,
@@ -310,7 +307,7 @@ export default function BaseContrat() {
       nature: formNature,
       detensiblePP: formDetensiblePP,
       eligiblePM: formEligiblePM,
-      eligiblePMPrecision: formEligiblePM === 'parException' ? formEligiblePMPrecision.trim() : null,
+      eligiblePMPrecision: null,
       souscriptionOuverte: formSouscriptionOuverte,
       commentaireQualification: formCommentaire.trim() || null,
       family: 'Autres',
@@ -329,12 +326,8 @@ export default function BaseContrat() {
 
   function handleEditProduct() {
     if (!editingProduct) return;
-    if (formEligiblePM === 'parException' && !formEligiblePMPrecision.trim()) {
-      setMessage('Précisez les conditions d’éligibilité PM (champ obligatoire si « Par exception »).');
-      return;
-    }
-    const holdersLegacy = formDetensiblePP && (formEligiblePM === 'oui' || formEligiblePM === 'parException')
-      ? 'PP+PM' : !formDetensiblePP && (formEligiblePM === 'oui' || formEligiblePM === 'parException')
+    const holdersLegacy = formDetensiblePP && formEligiblePM === 'oui'
+      ? 'PP+PM' : !formDetensiblePP && formEligiblePM === 'oui'
       ? 'PM' : 'PP';
     updateSettings((prev) => ({
       ...prev,
@@ -347,7 +340,7 @@ export default function BaseContrat() {
               nature: formNature,
               detensiblePP: formDetensiblePP,
               eligiblePM: formEligiblePM,
-              eligiblePMPrecision: formEligiblePM === 'parException' ? formEligiblePMPrecision.trim() : null,
+              eligiblePMPrecision: null,
               souscriptionOuverte: formSouscriptionOuverte,
               commentaireQualification: formCommentaire.trim() || null,
               confidenceLevel: formConfidence as ConfidenceLevel,
@@ -419,18 +412,21 @@ export default function BaseContrat() {
     setDeletingVersionIdx(null);
   }
 
-  function handleInitCatalogue() {
+  async function handleInitCatalogue() {
     if (!isAdmin) return;
     const today = new Date().toISOString().slice(0, 10);
     const withDates = SEED_PRODUCTS.map((p) => ({
       ...p,
       rulesets: [{ ...EMPTY_RULESET, effectiveDate: today }],
     }));
-    updateSettings((prev) => ({ ...prev, products: withDates }));
-    setMessage(`Catalogue initialisé : ${withDates.length} produits chargés.`);
+    const data: BaseContratSettings = { schemaVersion: 5, products: withDates };
+    const ok = await save(data);
+    if (ok) {
+      setMessage(`Catalogue initialisé : ${withDates.length} produits chargés.`);
+    }
   }
 
-  function handleCompleteCatalogue() {
+  async function handleCompleteCatalogue() {
     if (!isAdmin) return;
     const today = new Date().toISOString().slice(0, 10);
     const existing = settings?.products ?? [];
@@ -438,8 +434,28 @@ export default function BaseContrat() {
       p.rulesets.length === 0 ? { ...p, rulesets: [{ ...EMPTY_RULESET, effectiveDate: today }] } : p
     );
     const added = merged.length - existing.length;
-    updateSettings((prev) => ({ ...prev, products: merged }));
-    setMessage(added > 0 ? MISC_LABELS.completeCatalogueResult(added) : MISC_LABELS.completeCatalogueUpToDate);
+    const data: BaseContratSettings = { ...settings!, products: merged };
+    const ok = await save(data);
+    if (ok) {
+      setMessage(added > 0 ? MISC_LABELS.completeCatalogueResult(added) : MISC_LABELS.completeCatalogueUpToDate);
+    }
+  }
+
+  async function handleSyncCatalogue() {
+    if (!isAdmin || !settings) return;
+    // 1) Apply full migration chain (purges structured, assimilates OPC/GF/crypto, splits PP/PM)
+    const migrated = migrateBaseContratSettingsToLatest(settings);
+    // 2) Merge with seed to add any missing products
+    const today = new Date().toISOString().slice(0, 10);
+    const merged = mergeSeedIntoProducts(migrated.products).map((p) =>
+      p.rulesets.length === 0 ? { ...p, rulesets: [{ ...EMPTY_RULESET, effectiveDate: today }] } : p
+    );
+    const synced: BaseContratSettings = { ...migrated, products: merged };
+    // 3) Save to Supabase
+    const ok = await save(synced);
+    if (ok) {
+      setMessage(MISC_LABELS.syncCatalogueResult(synced.products.length));
+    }
   }
 
   function handleNewVersion() {
@@ -553,6 +569,11 @@ export default function BaseContrat() {
             {products.length > 0 && (
               <button className="chip" onClick={handleCompleteCatalogue} style={{ padding: '8px 20px', fontWeight: 600 }} title={MISC_LABELS.completeCatalogueHint}>
                 {ACTION_LABELS.completeCatalogue}
+              </button>
+            )}
+            {products.length > 0 && (
+              <button className="chip" onClick={handleSyncCatalogue} style={{ padding: '8px 20px', fontWeight: 600 }} title={MISC_LABELS.syncCatalogueHint}>
+                {ACTION_LABELS.syncCatalogue}
               </button>
             )}
             <button className="chip" onClick={() => { resetForm(); setShowAddModal(true); }} style={{ padding: '8px 20px', fontWeight: 600 }}>
@@ -679,13 +700,6 @@ export default function BaseContrat() {
                           onClick={() => setOpenProductId(isOpen ? null : product.id)}
                           style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 20px', cursor: 'pointer', flexWrap: 'wrap' }}
                         >
-                          {product.detensiblePP !== undefined
-                            ? <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.detensiblePP ? 'PP direct' : 'Sans détention directe'}</span>
-                            : <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.holders}</span>
-                          }
-                          {product.eligiblePM !== 'non' && (
-                            <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>{product.eligiblePM === 'oui' ? 'PM' : 'PM/exception'}</span>
-                          )}
                           <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 14 }}>{product.label}</span>
                           <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>({product.id})</span>
                           {ruleset && (
@@ -994,18 +1008,6 @@ export default function BaseContrat() {
                   </label>
                 ))}
               </div>
-              {formEligiblePM === 'parException' && (
-                <>
-                  <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productEligiblePMPrecision} *</label>
-                  <input
-                    value={formEligiblePMPrecision}
-                    onChange={(e) => setFormEligiblePMPrecision(e.target.value)}
-                    placeholder={FORM_LABELS.productEligiblePMPrecisionHint}
-                    style={{ fontSize: 13, padding: '8px 10px', border: `1px solid ${formEligiblePMPrecision.trim() ? 'var(--color-c8)' : 'var(--color-c1)'}`, borderRadius: 6, backgroundColor: '#FFFFFF' }}
-                  />
-                </>
-              )}
-
               <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productSouscriptionOuverte} *</label>
               <div style={{ display: 'flex', gap: 16 }}>
                 {SOUSCRIPTION_OUVERTE_OPTIONS.map((v) => (
@@ -1095,18 +1097,6 @@ export default function BaseContrat() {
                   </label>
                 ))}
               </div>
-              {formEligiblePM === 'parException' && (
-                <>
-                  <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productEligiblePMPrecision} *</label>
-                  <input
-                    value={formEligiblePMPrecision}
-                    onChange={(e) => setFormEligiblePMPrecision(e.target.value)}
-                    placeholder={FORM_LABELS.productEligiblePMPrecisionHint}
-                    style={{ fontSize: 13, padding: '8px 10px', border: `1px solid ${formEligiblePMPrecision.trim() ? 'var(--color-c8)' : 'var(--color-c1)'}`, borderRadius: 6, backgroundColor: '#FFFFFF' }}
-                  />
-                </>
-              )}
-
               <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productSouscriptionOuverte}</label>
               <div style={{ display: 'flex', gap: 16 }}>
                 {SOUSCRIPTION_OUVERTE_OPTIONS.map((v) => (

@@ -40,32 +40,39 @@ function makeProduct(partial: Partial<BaseContratProduct> & { id: string; label:
   return base;
 }
 
-describe('migrateBaseContratSettingsToLatest (V3 → V4 cleanup)', () => {
-  it('removes structured-like products, collapses metals + crypto (assimilation), and splits prevoyance', () => {
+describe('migrateBaseContratSettingsToLatest (V3 → V5 full chain)', () => {
+  it('applies V4 cleanup (structured, metals, crypto, prevoyance) + V5 rules (exceptions, assimilation, split)', () => {
     const v3: BaseContratSettings = {
       schemaVersion: 3,
       products: [
-        makeProduct({ id: 'cto', label: 'Compte-titres ordinaire (CTO)', sortOrder: 1 }),
+        // PP+PM product (will be split in V5)
+        makeProduct({ id: 'cto', label: 'Compte-titres ordinaire (CTO)', sortOrder: 1, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
 
-        // Structured residues (must be removed)
+        // Structured residues (removed in V4)
         makeProduct({ id: 'autocall_foo', label: 'Autocall 2023', sortOrder: 2 }),
-        makeProduct({ id: 'note_structuree_bar', label: 'Note structurée 2024', sortOrder: 3 }),
-        makeProduct({ id: 'emtn_x', label: 'EMTN', sortOrder: 4 }),
 
-        // Precious metals (must be collapsed)
-        makeProduct({ id: 'or_physique', label: 'Or physique', grandeFamille: 'Métaux précieux' as never, catalogKind: 'asset', sortOrder: 5 }),
-        makeProduct({ id: 'argent_physique', label: 'Argent physique', grandeFamille: 'Métaux précieux' as never, catalogKind: 'asset', sortOrder: 6 }),
-        makeProduct({ id: 'platine_palladium', label: 'Platine / palladium physiques', grandeFamille: 'Métaux précieux' as never, catalogKind: 'asset', sortOrder: 7 }),
+        // Precious metals (collapsed in V4)
+        makeProduct({ id: 'or_physique', label: 'Or physique', grandeFamille: 'Métaux précieux' as never, catalogKind: 'asset', sortOrder: 5, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+        makeProduct({ id: 'argent_physique', label: 'Argent physique', grandeFamille: 'Métaux précieux' as never, catalogKind: 'asset', sortOrder: 6, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
 
-        // Crypto sub-categories (must be collapsed)
-        makeProduct({ id: 'bitcoin_btc', label: 'Bitcoin (BTC)', grandeFamille: 'Crypto-actifs' as never, catalogKind: 'asset', sortOrder: 10 }),
-        makeProduct({ id: 'ether_eth', label: 'Ether (ETH)', grandeFamille: 'Crypto-actifs' as never, catalogKind: 'asset', sortOrder: 11 }),
-        makeProduct({ id: 'nft', label: 'NFT', grandeFamille: 'Crypto-actifs' as never, catalogKind: 'asset', sortOrder: 12 }),
+        // Exception product (converted to non in V5)
+        makeProduct({ id: 'livret_a', label: 'Livret A', eligiblePM: 'parException' as never, corporateHoldable: true, sortOrder: 9 }),
 
-        // Prevoyance legacy (must be split)
+        // OPC products (assimilated in V5)
+        makeProduct({ id: 'opcvm', label: 'OPCVM', sortOrder: 10, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+        makeProduct({ id: 'sicav', label: 'SICAV', sortOrder: 11, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+
+        // Groupement foncier (assimilated in V5)
+        makeProduct({ id: 'gfa', label: 'GFA', sortOrder: 12, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM', grandeFamille: 'Immobilier indirect' }),
+        makeProduct({ id: 'gfv', label: 'GFV', sortOrder: 13, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM', grandeFamille: 'Immobilier indirect' }),
+
+        // Legacy ID (remapped in V5)
+        makeProduct({ id: 'immobilier_appartement_maison', label: 'Appartement / maison', sortOrder: 14 }),
+
+        // Prevoyance legacy (split in V4)
         makeProduct({
           id: 'prevoyance_individuelle',
-          label: 'Prévoyance individuelle (arrêt de travail / invalidité / décès)',
+          label: 'Prévoyance individuelle',
           grandeFamille: 'Assurance',
           catalogKind: 'protection',
           sortOrder: 8,
@@ -75,42 +82,104 @@ describe('migrateBaseContratSettingsToLatest (V3 → V4 cleanup)', () => {
 
     const migrated = migrateBaseContratSettingsToLatest(v3);
 
-    expect(migrated.schemaVersion).toBe(4);
+    expect(migrated.schemaVersion).toBe(5);
 
     const ids = migrated.products.map((p) => p.id);
 
-    // Structured cleanup
+    // V4: Structured cleanup
     expect(ids).not.toContain('autocall_foo');
-    expect(ids).not.toContain('note_structuree_bar');
-    expect(ids).not.toContain('emtn_x');
 
-    // Precious metals collapse
+    // V4: Precious metals collapse + V5: PP/PM split
     expect(ids).not.toContain('or_physique');
     expect(ids).not.toContain('argent_physique');
-    expect(ids).not.toContain('platine_palladium');
-    expect(ids).toContain('metaux_precieux');
+    // metaux_precieux was PP+PM → split to _pp/_pm
+    expect(ids).toContain('metaux_precieux_pp');
+    expect(ids).toContain('metaux_precieux_pm');
 
-    const metals = migrated.products.find((p) => p.id === 'metaux_precieux');
-    expect(metals?.grandeFamille).toBe('Autres');
+    // V5: Exception removal
+    const livretA = migrated.products.find((p) => p.id === 'livret_a');
+    expect(livretA).toBeDefined();
+    expect(livretA!.eligiblePM).toBe('non');
+    expect(livretA!.corporateHoldable).toBe(false);
 
-    // Crypto collapse
-    expect(ids).not.toContain('bitcoin_btc');
-    expect(ids).not.toContain('ether_eth');
-    expect(ids).not.toContain('nft');
-    expect(ids).toContain('crypto_actifs');
+    // V5: OPC assimilation + PP/PM split
+    expect(ids).not.toContain('opcvm');
+    expect(ids).not.toContain('sicav');
+    expect(ids).toContain('opc_opcvm_pp');
+    expect(ids).toContain('opc_opcvm_pm');
 
-    const crypto = migrated.products.find((p) => p.id === 'crypto_actifs');
-    expect(crypto?.grandeFamille).toBe('Autres');
+    // V5: Groupement foncier assimilation + PP/PM split
+    expect(ids).not.toContain('gfa');
+    expect(ids).not.toContain('gfv');
+    expect(ids).toContain('groupement_foncier_pp');
+    expect(ids).toContain('groupement_foncier_pm');
 
-    // Prevoyance split
+    // V5: Legacy ID remap
+    expect(ids).not.toContain('immobilier_appartement_maison');
+    expect(ids).toContain('residence_principale');
+
+    // V4: Prevoyance split (PP-only → not split again)
     expect(ids).not.toContain('prevoyance_individuelle');
     expect(ids).toContain('prevoyance_individuelle_deces');
     expect(ids).toContain('prevoyance_individuelle_itt_invalidite');
 
-    const prevDeces = migrated.products.find((p) => p.id === 'prevoyance_individuelle_deces');
-    const prevItt = migrated.products.find((p) => p.id === 'prevoyance_individuelle_itt_invalidite');
-    expect(prevDeces?.sortOrder).toBe(8);
-    expect(prevItt?.sortOrder).toBe(9);
+    // V5: CTO PP+PM → split
+    expect(ids).not.toContain('cto');
+    expect(ids).toContain('cto_pp');
+    expect(ids).toContain('cto_pm');
+    const ctoPP = migrated.products.find((p) => p.id === 'cto_pp');
+    const ctoPM = migrated.products.find((p) => p.id === 'cto_pm');
+    expect(ctoPP!.directHoldable).toBe(true);
+    expect(ctoPP!.corporateHoldable).toBe(false);
+    expect(ctoPM!.directHoldable).toBe(false);
+    expect(ctoPM!.corporateHoldable).toBe(true);
+
+    // No duplicates
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('V5: crypto assimilation — legacy BTC/Stablecoins/Tokens → 1 crypto_actifs', () => {
+    const v3: BaseContratSettings = {
+      schemaVersion: 3,
+      products: [
+        makeProduct({ id: 'bitcoin_btc', label: 'Bitcoin (BTC)', sortOrder: 1, grandeFamille: 'Autres', catalogKind: 'asset', directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+        makeProduct({ id: 'ether_eth', label: 'Ether (ETH)', sortOrder: 2, grandeFamille: 'Autres', catalogKind: 'asset', directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+        makeProduct({ id: 'stablecoins', label: 'Stablecoins', sortOrder: 3, grandeFamille: 'Autres', catalogKind: 'asset', directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+        makeProduct({ id: 'tokens_autres', label: 'Tokens divers', sortOrder: 4, grandeFamille: 'Autres', catalogKind: 'asset', directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+        makeProduct({ id: 'nft', label: 'NFT', sortOrder: 5, grandeFamille: 'Autres', catalogKind: 'asset', directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
+        // Keep a non-crypto product to verify it's untouched
+        makeProduct({ id: 'livret_a', label: 'Livret A', sortOrder: 6 }),
+      ],
+    };
+
+    const migrated = migrateBaseContratSettingsToLatest(v3);
+    const ids = migrated.products.map((p) => p.id);
+
+    // All individual crypto products removed
+    expect(ids).not.toContain('bitcoin_btc');
+    expect(ids).not.toContain('ether_eth');
+    expect(ids).not.toContain('stablecoins');
+    expect(ids).not.toContain('tokens_autres');
+    expect(ids).not.toContain('nft');
+
+    // Single crypto_actifs created (PP+PM → split)
+    expect(ids).toContain('crypto_actifs_pp');
+    expect(ids).toContain('crypto_actifs_pm');
+    expect(ids).not.toContain('crypto_actifs');
+
+    // Non-crypto product untouched
+    expect(ids).toContain('livret_a');
+
+    // Verify crypto product properties
+    const cryptoPP = migrated.products.find((p) => p.id === 'crypto_actifs_pp')!;
+    expect(cryptoPP.grandeFamille).toBe('Autres');
+    expect(cryptoPP.catalogKind).toBe('asset');
+    expect(cryptoPP.directHoldable).toBe(true);
+    expect(cryptoPP.corporateHoldable).toBe(false);
+
+    const cryptoPM = migrated.products.find((p) => p.id === 'crypto_actifs_pm')!;
+    expect(cryptoPM.directHoldable).toBe(false);
+    expect(cryptoPM.corporateHoldable).toBe(true);
 
     // No duplicates
     expect(new Set(ids).size).toBe(ids.length);
@@ -121,7 +190,7 @@ describe('migrateBaseContratSettingsToLatest (V3 → V4 cleanup)', () => {
       schemaVersion: 3,
       products: [
         makeProduct({ id: 'autocall_foo', label: 'Autocall 2023', sortOrder: 1 }),
-        makeProduct({ id: 'cto', label: 'Compte-titres ordinaire (CTO)', sortOrder: 2 }),
+        makeProduct({ id: 'cto', label: 'CTO', sortOrder: 2, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
       ],
     };
 
