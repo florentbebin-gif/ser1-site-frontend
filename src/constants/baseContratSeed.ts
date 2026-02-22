@@ -148,7 +148,7 @@ function toProduct(raw: RawSeedProduct, index: number): BaseContratProduct {
   // Alignement avec la taxonomie V3 : certaines assurances sont des "protections" calculables.
   if (
     grandeFamille === 'Assurance' &&
-    /pr[ée]voyance|emprunteur/i.test(raw.label)
+    /pr[ée]voyance|emprunteur|homme[- ]cl[ée]/i.test(raw.label)
   ) {
     catalogKind = 'protection';
   }

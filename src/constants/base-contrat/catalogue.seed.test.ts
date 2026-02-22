@@ -189,8 +189,25 @@ describe('Catalogue seed — entrées clés', () => {
     'cto',
     'pea',
     'pea_pme',
+    'tontine',
+    'assurance_homme_cle',
   ])('%s exists', (id) => {
     expect(ids).toContain(id);
+  });
+
+  it('tontine is PP+PM in Autres', () => {
+    const p = products.find((pr) => pr.id === 'tontine')!;
+    expect(p.family).toBe('Autres');
+    expect(p.kind).toBe('contrat_compte_enveloppe');
+    expect(p.ppDirectHoldable).toBe(true);
+    expect(p.pmEligibility).toBe('oui');
+  });
+
+  it('assurance_homme_cle is PM-only protection', () => {
+    const p = products.find((pr) => pr.id === 'assurance_homme_cle')!;
+    expect(p.family).toBe('Assurance');
+    expect(p.ppDirectHoldable).toBe(false);
+    expect(p.pmEligibility).toBe('oui');
   });
 
   it('PERIN assurance is PP-only wrapper', () => {
@@ -234,9 +251,19 @@ describe('Catalogue seed — entrées clés', () => {
 });
 
 describe('Catalogue seed — PP/PM cohérence', () => {
-  it('all products are PP-holdable (directHoldable = true)', () => {
+  /** PM-only products (PP cannot subscribe directly) */
+  const PM_ONLY_IDS = ['assurance_homme_cle'];
+
+  it('all products except PM-only are PP-holdable', () => {
     const nonPP = products.filter((p) => !p.ppDirectHoldable);
-    expect(nonPP.map((p) => p.id)).toEqual([]);
+    expect(nonPP.map((p) => p.id).sort()).toEqual([...PM_ONLY_IDS].sort());
+  });
+
+  it('PM-only products have pmEligibility oui', () => {
+    for (const id of PM_ONLY_IDS) {
+      const p = products.find((pr) => pr.id === id)!;
+      expect(p.pmEligibility, `${id} should be PM-eligible`).toBe('oui');
+    }
   });
 
   it('regulated savings (LEP, LDDS, Livret Jeune) are PP-only', () => {
