@@ -169,9 +169,13 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
       uiTitle: 'Rentes / ITT (fiscalité)',
       audience: 'PP',
       payload: {
+        prestationMensuelle: { type: 'number', value: 0, unit: '€/mois', calc: true },
+        franchiseJours: { type: 'number', value: 0, unit: 'jours', calc: true },
+        dureeMaxMois: { type: 'number', value: 0, unit: 'mois', calc: true },
         imposableIR: { type: 'boolean', value: true, calc: true },
         categorieRevenus: { type: 'enum', value: 'Pensions et Rentes', options: ['Pensions et Rentes', 'BNC/BIC', 'Traitements et Salaires'], calc: true },
       },
+      notes: 'À préciser selon garanties (ITT/IPP/PTIA), franchises, durée d’indemnisation, et déductibilité des primes.',
     },
   },
   {
@@ -185,9 +189,12 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
       uiTitle: 'Capital décès (Transmission)',
       audience: 'PP',
       payload: {
+        capitalDeces: { type: 'number', value: 0, unit: '€', calc: true },
+        nombreBeneficiaires: { type: 'number', value: 1, unit: 'pers.', calc: true },
         exonerationTotale: { type: 'boolean', value: true, calc: true },
         soumisArticle990I: { type: 'boolean', value: false, calc: true },
       },
+      notes: 'En pratique, de nombreux capitaux décès de prévoyance sont hors succession. À qualifier selon contrat et situation.',
     },
   },
   {

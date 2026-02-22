@@ -59,6 +59,13 @@ export const FIELD_LABELS_FR: Record<string, string> = {
   plafond163QuaterviciesRatePercent: 'Plafond déductibilité (% revenus)',
   plafond163QuaterviciesMinPassMultiple: 'Plafond min (× PASS)',
   plafond163QuaterviciesMaxPassMultiple: 'Plafond max (× PASS)',
+
+  // ── Prévoyance (protections calculables) ────────────────────────────────
+  capitalDeces: 'Capital décès',
+  nombreBeneficiaires: 'Nombre de bénéficiaires',
+  prestationMensuelle: 'Prestation mensuelle',
+  franchiseJours: 'Franchise',
+  dureeMaxMois: 'Durée maximale d’indemnisation',
 };
 
 // ---------------------------------------------------------------------------
