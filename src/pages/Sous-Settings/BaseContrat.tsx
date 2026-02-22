@@ -26,7 +26,7 @@ import {
   SOUSCRIPTION_OUVERTE_LABELS,
   SOUSCRIPTION_OUVERTE_OPTIONS,
 } from '@/constants/baseContratLabels';
-import { SEED_PRODUCTS, mergeSeedIntoProducts } from '@/constants/baseContratSeed';
+import { SEED_PRODUCTS, mergeSeedIntoProducts, syncProductsWithSeed } from '@/constants/baseContratSeed';
 import type {
   BaseContratProduct,
   BaseContratSettings,
@@ -443,18 +443,18 @@ export default function BaseContrat() {
 
   async function handleSyncCatalogue() {
     if (!isAdmin || !settings) return;
-    // 1) Apply full migration chain (purges structured, assimilates OPC/GF/crypto, splits PP/PM)
+    // 1) Apply migration chain (for pre-V5 data: legacy IDs, assimilations)
     const migrated = migrateBaseContratSettingsToLatest(settings);
-    // 2) Merge with seed to add any missing products
+    // 2) Replace full product list from canonical seed, preserving user rulesets
     const today = new Date().toISOString().slice(0, 10);
-    const merged = mergeSeedIntoProducts(migrated.products).map((p) =>
+    const synced = syncProductsWithSeed(migrated.products).map((p) =>
       p.rulesets.length === 0 ? { ...p, rulesets: [{ ...EMPTY_RULESET, effectiveDate: today }] } : p
     );
-    const synced: BaseContratSettings = { ...migrated, products: merged };
+    const data: BaseContratSettings = { schemaVersion: 5, products: synced };
     // 3) Save to Supabase
-    const ok = await save(synced);
+    const ok = await save(data);
     if (ok) {
-      setMessage(MISC_LABELS.syncCatalogueResult(synced.products.length));
+      setMessage(MISC_LABELS.syncCatalogueResult(data.products.length));
     }
   }
 
@@ -700,6 +700,12 @@ export default function BaseContrat() {
                           onClick={() => setOpenProductId(isOpen ? null : product.id)}
                           style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 20px', cursor: 'pointer', flexWrap: 'wrap' }}
                         >
+                          {product.directHoldable && !product.corporateHoldable && (
+                            <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>PP direct</span>
+                          )}
+                          {!product.directHoldable && product.corporateHoldable && (
+                            <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>Entreprise</span>
+                          )}
                           <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 14 }}>{product.label}</span>
                           <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>({product.id})</span>
                           {ruleset && (

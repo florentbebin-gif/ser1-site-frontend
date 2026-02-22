@@ -46,11 +46,15 @@ const LEGACY_ID_REMAP: Record<string, string> = {
   'per_perin': 'perin_assurance',
 };
 
-// V5: OPC assimilation (Point 2) — merge into opc_opcvm
+// V5: OPC legacy IDs to purge (underlying assets, not directly subscribable)
 const OPC_ASSIMILATION_IDS = new Set(['etf', 'fcp', 'opcvm', 'sicav']);
 
-// V5: Groupement foncier assimilation (Point 2) — merge into groupement_foncier
-const GROUPEMENT_FONCIER_IDS = new Set(['gfa', 'gfv', 'groupement_forestier']);
+// V5: Groupement foncier — split by succession regime
+const GF_AGRI_VITI_IDS = new Set(['gfa', 'gfv']);
+const GF_FORESTIER_LEGACY_ID = 'groupement_forestier';
+
+// V5: Products to purge (obsolete or non-directly-subscribable)
+const PRODUCTS_TO_PURGE = new Set(['opc_opcvm', 'fcpe', 'groupement_foncier']);
 
 // ---------------------------------------------------------------------------
 // Migration lazy V1 → V2
@@ -259,33 +263,33 @@ function remapLegacyId(p: BaseContratProduct): BaseContratProduct {
   return p;
 }
 
-function buildMergedOpcProduct(base: BaseContratProduct): BaseContratProduct {
+function buildMergedGFAgriVitiProduct(base: BaseContratProduct): BaseContratProduct {
   return {
     ...base,
-    id: 'opc_opcvm',
-    label: 'OPC / OPCVM (SICAV, FCP, ETF)',
-    envelopeType: 'opc_opcvm',
-    grandeFamille: 'Fonds/OPC',
-    catalogKind: 'asset',
-    family: 'Titres',
-    templateKey: base.templateKey ?? 'fund_opc',
-    commentaireQualification:
-      'Organismes de placement collectif (OPCVM, SICAV, FCP, ETF). Assimilation : fiscalit\u00e9 PFU identique \u2192 un seul produit.',
-  };
-}
-
-function buildMergedGroupementFoncierProduct(base: BaseContratProduct): BaseContratProduct {
-  return {
-    ...base,
-    id: 'groupement_foncier',
-    label: 'Groupements fonciers (GFA / GFV / GF / GFF)',
-    envelopeType: 'groupement_foncier',
+    id: 'groupement_foncier_agri_viti',
+    label: 'Groupement foncier agricole / viticole (GFA / GFV)',
+    envelopeType: 'groupement_foncier_agri_viti',
     grandeFamille: 'Immobilier indirect',
     catalogKind: 'asset',
     family: 'Immobilier',
     templateKey: base.templateKey ?? 'real_estate_indirect',
     commentaireQualification:
-      'Parts de groupements fonciers (agricole, viticole, forestier). Assimilation : fiscalit\u00e9 identique.',
+      'Parts de GFA/GFV. Revenus fonciers, PV immobilières, exonération partielle DMTG art. 793 bis CGI (75 %/50 %, bail long terme ≥ 18 ans).',
+  };
+}
+
+function renameGFForestier(p: BaseContratProduct): BaseContratProduct {
+  return {
+    ...p,
+    id: 'groupement_foncier_forestier',
+    label: 'Groupement forestier (GFF / GF)',
+    envelopeType: 'groupement_foncier_forestier',
+    grandeFamille: 'Immobilier indirect',
+    catalogKind: 'asset',
+    family: 'Immobilier',
+    templateKey: p.templateKey ?? 'real_estate_indirect',
+    commentaireQualification:
+      'Parts de groupements forestiers. Revenus forestiers, PV immobilières, exonération DMTG art. 793 1° 3° CGI (75 %, gestion durable).',
   };
 }
 
@@ -334,19 +338,23 @@ function migrateBaseContratV4toV5(data: BaseContratSettings): BaseContratSetting
     products.push(buildMergedCryptoProduct(cryptoDetails[0]));
   }
 
-  // 4) OPC assimilation
-  const opcDetails = products.filter((p) => OPC_ASSIMILATION_IDS.has(p.id));
+  // 4) OPC purge (underlying assets, not directly subscribable by PP/PM)
   products = products.filter((p) => !OPC_ASSIMILATION_IDS.has(p.id));
-  if (!products.some((p) => p.id === 'opc_opcvm') && opcDetails.length > 0) {
-    products.push(buildMergedOpcProduct(opcDetails[0]));
+
+  // 5a) GF agri/viti assimilation → groupement_foncier_agri_viti
+  const gfAgriDetails = products.filter((p) => GF_AGRI_VITI_IDS.has(p.id));
+  products = products.filter((p) => !GF_AGRI_VITI_IDS.has(p.id));
+  if (!products.some((p) => p.id === 'groupement_foncier_agri_viti') && gfAgriDetails.length > 0) {
+    products.push(buildMergedGFAgriVitiProduct(gfAgriDetails[0]));
   }
 
-  // 5) Groupement foncier assimilation
-  const gfDetails = products.filter((p) => GROUPEMENT_FONCIER_IDS.has(p.id));
-  products = products.filter((p) => !GROUPEMENT_FONCIER_IDS.has(p.id));
-  if (!products.some((p) => p.id === 'groupement_foncier') && gfDetails.length > 0) {
-    products.push(buildMergedGroupementFoncierProduct(gfDetails[0]));
-  }
+  // 5b) GF forestier rename
+  products = products.map((p) =>
+    p.id === GF_FORESTIER_LEGACY_ID ? renameGFForestier(p) : p
+  );
+
+  // 5c) Purge known obsolete products
+  products = products.filter((p) => !PRODUCTS_TO_PURGE.has(p.id));
 
   // 6) PP/PM split
   products = products.flatMap(splitProductPPPM);

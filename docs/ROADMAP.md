@@ -338,6 +338,13 @@ Candidats :
 - Observabilité serveur technique (zéro PII, zéro métriques métier).
 - MFA (TOTP) pour comptes sensibles.
 
+#### Catalogue — items différés (identifiés PR fix/catalogue-corrections-v5b)
+- **Assurance-vie PP-only** : vérifier si `assurance_vie` doit rester PP-only ou devenir PP+PM (contrat de capitalisation couvre le PM).
+- **OPCI en direct vs via AV** : clarifier si `opci_grand_public` doit rester dans le seed (détention directe possible mais rare).
+- **Rulesets per-product** : implémenter les blocs fiscaux (Constitution/Sortie/Décès) par produit — actuellement squelette vide.
+- **Fiches succession GFA/GFV vs GFF** : documenter les différences art. 793 bis vs art. 793 1° 3° CGI dans les blocs produit.
+- **Migration V6** : si nécessaire, ajouter une migration V6 pour corriger automatiquement les données V5 stale (actuellement corrigé par le bouton « Synchroniser »).
+
 ### P3 — Stratégie automatique + société fine
 Objectif : recommandations auto + modèle société/holding plus fin.
 

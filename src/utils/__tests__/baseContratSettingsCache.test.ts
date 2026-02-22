@@ -62,9 +62,12 @@ describe('migrateBaseContratSettingsToLatest (V3 → V5 full chain)', () => {
         makeProduct({ id: 'opcvm', label: 'OPCVM', sortOrder: 10, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
         makeProduct({ id: 'sicav', label: 'SICAV', sortOrder: 11, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM' }),
 
-        // Groupement foncier (assimilated in V5)
+        // Groupement foncier agri/viti (assimilated in V5)
         makeProduct({ id: 'gfa', label: 'GFA', sortOrder: 12, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM', grandeFamille: 'Immobilier indirect' }),
         makeProduct({ id: 'gfv', label: 'GFV', sortOrder: 13, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM', grandeFamille: 'Immobilier indirect' }),
+
+        // Groupement forestier (renamed in V5)
+        makeProduct({ id: 'groupement_forestier', label: 'Groupement forestier', sortOrder: 15, directHoldable: true, corporateHoldable: true, eligiblePM: 'oui', holders: 'PP+PM', grandeFamille: 'Immobilier indirect' }),
 
         // Legacy ID (remapped in V5)
         makeProduct({ id: 'immobilier_appartement_maison', label: 'Appartement / maison', sortOrder: 14 }),
@@ -102,17 +105,23 @@ describe('migrateBaseContratSettingsToLatest (V3 → V5 full chain)', () => {
     expect(livretA!.eligiblePM).toBe('non');
     expect(livretA!.corporateHoldable).toBe(false);
 
-    // V5: OPC assimilation + PP/PM split
+    // V5: OPC purge (not directly subscribable)
     expect(ids).not.toContain('opcvm');
     expect(ids).not.toContain('sicav');
-    expect(ids).toContain('opc_opcvm_pp');
-    expect(ids).toContain('opc_opcvm_pm');
+    expect(ids).not.toContain('opc_opcvm');
+    expect(ids).not.toContain('opc_opcvm_pp');
+    expect(ids).not.toContain('opc_opcvm_pm');
 
-    // V5: Groupement foncier assimilation + PP/PM split
+    // V5: GF agri/viti assimilation + PP/PM split
     expect(ids).not.toContain('gfa');
     expect(ids).not.toContain('gfv');
-    expect(ids).toContain('groupement_foncier_pp');
-    expect(ids).toContain('groupement_foncier_pm');
+    expect(ids).toContain('groupement_foncier_agri_viti_pp');
+    expect(ids).toContain('groupement_foncier_agri_viti_pm');
+
+    // V5: GF forestier rename + PP/PM split
+    expect(ids).not.toContain('groupement_forestier');
+    expect(ids).toContain('groupement_foncier_forestier_pp');
+    expect(ids).toContain('groupement_foncier_forestier_pm');
 
     // V5: Legacy ID remap
     expect(ids).not.toContain('immobilier_appartement_maison');

@@ -359,7 +359,7 @@
       "family": "Épargne bancaire",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
-      "pmEligibility": "oui",
+      "pmEligibility": "non",
       "open2026": "oui",
       "qualificationComment": "Produit réglementé d’épargne logement avec droits à prêt (selon date d’ouverture).",
       "references": [
@@ -452,20 +452,6 @@
       "templateKey": "regulated_savings"
     },
     {
-      "id": "opc_opcvm",
-      "label": "OPC / OPCVM (SICAV, FCP, ETF)",
-      "family": "Fonds / OPC",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Organismes de placement collectif (OPCVM, SICAV, FCP, ETF). Assimilation : fiscalité PFU identique → un seul produit.",
-      "references": [
-        "AMF — OPC/OPCVM (repères)"
-      ],
-      "templateKey": "fund_opc"
-    },
-    {
       "id": "fcpr",
       "label": "FCPR (fonds commun de placement à risques)",
       "family": "Fonds / OPC",
@@ -478,20 +464,6 @@
         "AMF — FIA/OPC (repères)"
       ],
       "templateKey": "fund_opc"
-    },
-    {
-      "id": "fcpe",
-      "label": "FCPE (épargne salariale)",
-      "family": "Fonds / OPC",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "non",
-      "open2026": "oui",
-      "qualificationComment": "Fonds dédié à l’épargne salariale ; en direct hors plan, cas atypique.",
-      "references": [
-        "Service-Public — Épargne salariale"
-      ],
-      "templateKey": "employee_savings_fund"
     },
     {
       "id": "fcpi",
@@ -620,16 +592,30 @@
       "templateKey": "real_estate_direct"
     },
     {
-      "id": "groupement_foncier",
-      "label": "Groupements fonciers (GFA / GFV / GF / GFF)",
+      "id": "groupement_foncier_agri_viti",
+      "label": "Groupement foncier agricole / viticole (GFA / GFV)",
       "family": "Immobilier indirect (pierre-papier & foncier)",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
       "open2026": "na",
-      "qualificationComment": "Parts de groupements fonciers (agricole, viticole, forestier). Assimilation : fiscalité identique (revenus fonciers, PV, DMTG avec exonération partielle Monichon) → un seul produit.",
+      "qualificationComment": "Parts de GFA/GFV. Revenus fonciers, PV immobilières, exonération partielle DMTG art. 793 bis CGI (75 % jusqu'au seuil puis 50 %, bail long terme ≥ 18 ans).",
       "references": [
-        "Sources fiscales/AMF selon montage (à sourcer)"
+        "BOFiP — Art. 793 bis CGI (exonération DMTG GFA/GFV)"
+      ],
+      "templateKey": "real_estate_indirect"
+    },
+    {
+      "id": "groupement_foncier_forestier",
+      "label": "Groupement forestier (GFF / GF)",
+      "family": "Immobilier indirect (pierre-papier & foncier)",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Parts de groupements forestiers. Revenus forestiers (régime spécifique), PV immobilières, exonération DMTG art. 793 1° 3° CGI (75 % sous conditions de gestion durable — régime distinct des GFA/GFV).",
+      "references": [
+        "BOFiP — Art. 793 1° 3° CGI (exonération DMTG groupements forestiers)"
       ],
       "templateKey": "real_estate_indirect"
     },

@@ -259,5 +259,29 @@ export function mergeSeedIntoProducts(
   return [...existing, ...missing];
 }
 
+/**
+ * Synchronise le catalogue avec le seed canonique.
+ * Remplace la liste complète des produits par le seed,
+ * en préservant les rulesets configurés par l'utilisateur
+ * (match par ID).
+ *
+ * Effets : ajoute les nouveaux produits, supprime les obsolètes,
+ * met à jour les métadonnées (label, famille, holdability, etc.).
+ */
+export function syncProductsWithSeed(
+  existing: BaseContratProduct[],
+): BaseContratProduct[] {
+  const existingRulesets = new Map<string, BaseContratProduct['rulesets']>();
+  for (const p of existing) {
+    if (p.rulesets && p.rulesets.length > 0) {
+      existingRulesets.set(p.id, p.rulesets);
+    }
+  }
+  return SEED_PRODUCTS.map((seedProduct) => {
+    const rulesets = existingRulesets.get(seedProduct.id) ?? seedProduct.rulesets;
+    return { ...seedProduct, rulesets };
+  });
+}
+
 /** Nombre de produits dans le seed (utile pour l'UI). */
 export const SEED_PRODUCT_COUNT = SEED_PRODUCTS.length;
