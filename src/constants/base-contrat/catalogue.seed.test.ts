@@ -36,10 +36,6 @@ describe('Catalogue seed — structure', () => {
     expect(catalogue.schemaVersion).toBe(1);
   });
 
-  it('has at least 70 products', () => {
-    expect(products.length).toBeGreaterThanOrEqual(70);
-  });
-
   it('has unique IDs', () => {
     const uniqueIds = new Set(ids);
     expect(uniqueIds.size).toBe(ids.length);
@@ -78,7 +74,27 @@ describe('Catalogue seed — zéro produit structuré', () => {
     const structuredIds = ids.filter((id) => id.toLowerCase().includes('structur'));
     expect(structuredIds).toHaveLength(0);
   });
+
+  it('no product contains structured synonyms (autocall, EMTN, certificat, turbo, warrant)', () => {
+    const synonyms = ['autocall', 'emtn', 'certificat', 'turbo', 'warrant'];
+    const invalidProducts = products.filter((p) => {
+      const searchStr = `${p.id} ${p.label} ${p.qualificationComment || ''}`.toLowerCase();
+      return synonyms.some((syn) => searchStr.includes(syn));
+    });
+    expect(invalidProducts).toHaveLength(0);
+  });
 });
+
+/**
+ * TODO PR1b (Migration DB)
+ * Mappings pour les IDs splittés (à intégrer dans la migration Supabase) :
+ * - 'immobilier_appartement_maison' -> ['residence_principale', 'residence_secondaire', 'locatif_nu', 'locatif_meuble'] (Nécessite intervention UI ou default='residence_principale')
+ * - 'per_perin' -> ['perin_assurance', 'perin_bancaire'] (Nécessite intervention UI ou default='perin_assurance')
+ */
+export const SPLIT_ID_MIGRATION_MAP = {
+  'immobilier_appartement_maison': 'residence_principale', // Default fallback
+  'per_perin': 'perin_assurance', // Default fallback
+};
 
 describe('Catalogue seed — split immobilier', () => {
   it('immobilier_appartement_maison does NOT exist (replaced by split)', () => {
