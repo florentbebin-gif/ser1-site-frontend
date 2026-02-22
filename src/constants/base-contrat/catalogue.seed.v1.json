@@ -749,9 +749,10 @@
       "pmEligibility": "oui",
       "pmEligibilityNote": "PM souscriptrice avec assuré dirigeant ; fiscalité phase épargne = contrat de capitalisation PM (art. 238 septies E CGI).",
       "open2026": "oui",
-      "qualificationComment": "Association tontinière (Le Conservateur). Blocage 10-25 ans, pas de rachat. PP : PFL 7,5 % après 10 ans ou IR + abattement 4 600/9 200 €. Art. 757 B en succession.",
+      "qualificationComment": "Association tontinière (Le Conservateur). Blocage 10-25 ans, pas de rachat. Fiscalité à qualifier selon souscripteur (PP/PM) et modalités contractuelles ; pour les PM, rattachement actuariel (art. 238 septies E CGI).",
       "references": [
         "Haussmann Patrimoine — Tontine (fiscalité PP & PM)",
+        "Légifrance — CGI art. 238 septies E (rattachement actuariel)",
         "Le Conservateur — La Tontine (produit)",
         "Fiscaloo — Tontine : définition, modalités et fiscalité"
       ],
