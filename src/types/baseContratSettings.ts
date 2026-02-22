@@ -11,6 +11,8 @@
  * schemaVersion 2 → 3 : passage à la taxonomie relationnelle SaaS.
  * Remplacement de nature par catalogKind, detensiblePP par directHoldable, eligiblePM par corporateHoldable.
  * Ajout de allowedWrappers.
+ *
+ * schemaVersion 3 → 4 : nettoyage/migrations correctives (suppression structurés résiduels DB, simplifications catalogue).
  */
 
 // ---------------------------------------------------------------------------
@@ -211,8 +213,8 @@ export interface ProductTest {
 // ---------------------------------------------------------------------------
 
 export interface BaseContratSettings {
-  /** 1 = V1 (legacy), 2 = V2, 3 = V3 (Taxonomie relationnelle). Migration lazy dans getBaseContratSettings(). */
-  schemaVersion: 1 | 2 | 3;
+  /** 1 = V1 (legacy), 2 = V2, 3 = V3, 4 = V4 (cleanup). Migration lazy dans getBaseContratSettings(). */
+  schemaVersion: 1 | 2 | 3 | 4;
   products: BaseContratProduct[];
   /** Gate P0-10: imported tests — publication blocked if empty */
   tests?: ProductTest[];

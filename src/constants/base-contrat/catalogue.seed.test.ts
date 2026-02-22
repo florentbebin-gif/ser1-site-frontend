@@ -76,12 +76,35 @@ describe('Catalogue seed — zéro produit structuré', () => {
   });
 
   it('no product contains structured synonyms (autocall, EMTN, certificat, turbo, warrant)', () => {
-    const synonyms = ['autocall', 'emtn', 'certificat', 'turbo', 'warrant'];
+    const synonyms = ['autocall', 'emtn', 'certificat', 'turbo', 'warrant', 'note structur'];
     const invalidProducts = products.filter((p) => {
       const searchStr = `${p.id} ${p.label} ${p.qualificationComment || ''}`.toLowerCase();
       return synonyms.some((syn) => searchStr.includes(syn));
     });
     expect(invalidProducts).toHaveLength(0);
+  });
+});
+
+describe('Catalogue seed — métaux précieux (simplifié)', () => {
+  it('detailed precious metals do NOT exist (collapsed into metaux_precieux)', () => {
+    expect(ids).not.toContain('argent_physique');
+    expect(ids).not.toContain('or_physique');
+    expect(ids).not.toContain('platine_palladium');
+  });
+
+  it('metaux_precieux exists', () => {
+    expect(ids).toContain('metaux_precieux');
+  });
+});
+
+describe('Catalogue seed — prévoyance (split obligatoire)', () => {
+  it('prevoyance_individuelle does NOT exist (replaced by split)', () => {
+    expect(ids).not.toContain('prevoyance_individuelle');
+  });
+
+  it('split prevoyance products exist', () => {
+    expect(ids).toContain('prevoyance_individuelle_deces');
+    expect(ids).toContain('prevoyance_individuelle_itt_invalidite');
   });
 });
 

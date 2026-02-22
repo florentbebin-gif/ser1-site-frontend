@@ -144,7 +144,14 @@ function toProduct(raw: RawSeedProduct, index: number): BaseContratProduct {
   const today = new Date().toISOString().slice(0, 10);
   const grandeFamille = familyToGrandeFamille(raw.family);
   const nature = kindToNature(raw.kind);
-  const catalogKind = kindToCatalogKind(raw.kind);
+  let catalogKind = kindToCatalogKind(raw.kind);
+  // Alignement avec la taxonomie V3 : certaines assurances sont des "protections" calculables.
+  if (
+    grandeFamille === 'Assurance' &&
+    /pr[ée]voyance|emprunteur/i.test(raw.label)
+  ) {
+    catalogKind = 'protection';
+  }
   const eligiblePM = toEligiblePM(raw.pmEligibility);
   const souscriptionOuverte = (raw.open2026 as SouscriptionOuverte) ?? 'oui';
 

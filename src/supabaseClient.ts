@@ -4,6 +4,8 @@ import { isDebugEnabled } from './utils/debugFlags'
 const url = import.meta.env.VITE_SUPABASE_URL
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+const isBrowser = typeof window !== 'undefined'
+
 // Debug auth activable via VITE_DEBUG_AUTH=1 ou localStorage SER1_DEBUG_AUTH=1
 const DEBUG_AUTH = isDebugEnabled('auth')
 
@@ -67,8 +69,10 @@ export { DEBUG_AUTH }
 export const supabase: SupabaseClient = isSupabaseConfigured
   ? createClient(url, key, {
       auth: {
-        persistSession: true,
-        storage: window.localStorage,
+        // In Node/test/SSR, window/localStorage don't exist.
+        // We disable session persistence in that environment.
+        persistSession: isBrowser,
+        storage: isBrowser ? window.localStorage : undefined,
         detectSessionInUrl: false,
         autoRefreshToken: true,
       },
