@@ -611,16 +611,59 @@
       "templateKey": "fund_opc"
     },
     {
-      "id": "immobilier_appartement_maison",
-      "label": "Appartement / maison (résidence principale, secondaire, locatif)",
+      "id": "residence_principale",
+      "label": "Résidence principale",
+      "family": "Immobilier direct",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "exception",
+      "pmEligibilityNote": "Détention PM (SCI) possible mais perd l'exonération PV résidence principale.",
+      "open2026": "na",
+      "qualificationComment": "Immobilier occupé à titre principal ; exonération de plus-value à la revente (sous conditions).",
+      "references": [
+        "Service-Public  Exonération plus-value résidence principale"
+      ],
+      "templateKey": "real_estate_direct"
+    },
+    {
+      "id": "residence_secondaire",
+      "label": "Résidence secondaire",
       "family": "Immobilier direct",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
       "open2026": "na",
-      "qualificationComment": "Immobilier direct ; pleine propriété ou démembrement possible.",
+      "qualificationComment": "Immobilier non occupé à titre principal ; plus-value imposable avec abattements pour durée de détention.",
       "references": [
         "Service-Public (achat/vente logement)"
+      ],
+      "templateKey": "real_estate_direct"
+    },
+    {
+      "id": "locatif_nu",
+      "label": "Immobilier locatif nu (revenus fonciers)",
+      "family": "Immobilier direct",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Location nue : revenus imposés aux revenus fonciers (micro-foncier ou réel). Déficit foncier imputable.",
+      "references": [
+        "Service-Public  Revenus fonciers"
+      ],
+      "templateKey": "real_estate_direct"
+    },
+    {
+      "id": "locatif_meuble",
+      "label": "Immobilier locatif meublé (LMNP / LMP)",
+      "family": "Immobilier direct",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "na",
+      "qualificationComment": "Location meublée : revenus imposés aux BIC (micro-BIC ou réel). Amortissements possibles. Statut LMNP ou LMP selon seuils.",
+      "references": [
+        "Service-Public  Location meublée (LMNP/LMP)"
       ],
       "templateKey": "real_estate_direct"
     },
@@ -835,6 +878,20 @@
       "templateKey": "retirement_company"
     },
     {
+      "id": "article_39",
+      "label": "Article 39 (retraite supplémentaire à prestations définies)",
+      "family": "Retraite & épargne salariale",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "non",
+      "qualificationComment": "Régime de retraite supplémentaire d'entreprise à prestations définies ; fermé aux nouvelles adhésions (ordonnances 2019), droits acquis persistent.",
+      "references": [
+        "Service-Public  Retraite supplémentaire (art. 39 CGI)"
+      ],
+      "templateKey": "retirement_company"
+    },
+    {
       "id": "madelin_retraite_ancien",
       "label": "Madelin retraite (ancien)",
       "family": "Retraite & épargne salariale",
@@ -863,16 +920,30 @@
       "templateKey": "employee_savings_plan"
     },
     {
-      "id": "per_perin",
-      "label": "PER (Plan d’épargne retraite – PERIN)",
+      "id": "perin_assurance",
+      "label": "PERIN assurantiel (PER individuel  assurance)",
       "family": "Retraite & épargne salariale",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
       "open2026": "oui",
-      "qualificationComment": "Enveloppe retraite individuelle (bancaire ou assurantielle) ; sortie capital/rente selon compartiments.",
+      "qualificationComment": "Enveloppe retraite individuelle sous forme de contrat d'assurance ; régime fiscal décès art. 990 I / 757 B.",
       "references": [
-        "Service-Public — PER"
+        "Service-Public  PER"
+      ],
+      "templateKey": "retirement_individual"
+    },
+    {
+      "id": "perin_bancaire",
+      "label": "PERIN bancaire (PER individuel  compte-titres)",
+      "family": "Retraite & épargne salariale",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Enveloppe retraite individuelle sous forme de compte-titres ; régime fiscal décès = droit commun (DMTG).",
+      "references": [
+        "Service-Public  PER"
       ],
       "templateKey": "retirement_individual"
     },
@@ -931,6 +1002,48 @@
         "Service-Public — PER (transition/anciens produits)"
       ],
       "templateKey": "retirement_individual"
+    },
+    {
+      "id": "cto",
+      "label": "Compte-titres ordinaire (CTO)",
+      "family": "Titres vifs",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "oui",
+      "open2026": "oui",
+      "qualificationComment": "Enveloppe d'investissement sans avantage fiscal spécifique ; détention de titres vifs, fonds, obligations.",
+      "references": [
+        "Service-Public  Compte-titres"
+      ],
+      "templateKey": "securities_account"
+    },
+    {
+      "id": "pea",
+      "label": "PEA (Plan d'épargne en actions)",
+      "family": "Titres vifs",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Enveloppe fiscale actions (plafond 150 000 €) ; exonération IR après 5 ans, PS dus.",
+      "references": [
+        "Service-Public  PEA"
+      ],
+      "templateKey": "securities_account"
+    },
+    {
+      "id": "pea_pme",
+      "label": "PEA-PME",
+      "family": "Titres vifs",
+      "kind": "contrat_compte_enveloppe",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "oui",
+      "qualificationComment": "Enveloppe dédiée aux PME/ETI (plafond 225 000 €) ; mêmes avantages fiscaux que le PEA après 5 ans.",
+      "references": [
+        "Service-Public  PEA-PME"
+      ],
+      "templateKey": "securities_account"
     },
     {
       "id": "actions_cotees",

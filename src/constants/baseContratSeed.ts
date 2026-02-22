@@ -77,7 +77,6 @@ function familyToGrandeFamille(family: string): GrandeFamille {
     'Immobilier indirect (pierre-papier & foncier)': 'Immobilier indirect',
     'Métaux précieux': 'Métaux précieux',
     'Non coté / Private Equity': 'Non coté/PE',
-    'Produits structurés': 'Produits structurés',
     'Retraite & épargne salariale': 'Retraite & épargne salariale',
     'Titres vifs': 'Titres vifs',
   };
@@ -95,7 +94,6 @@ function grandeFamilleToFamilyLegacy(gf: GrandeFamille): BaseContratProduct['fam
     'Immobilier indirect': 'Immobilier',
     'Crypto-actifs': 'Autres',
     'Non coté/PE': 'Autres',
-    'Produits structurés': 'Autres',
     'Créances/Droits': 'Autres',
     'Dispositifs fiscaux immo': 'Défiscalisation',
     'Métaux précieux': 'Autres',
