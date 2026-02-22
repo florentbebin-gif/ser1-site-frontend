@@ -25,7 +25,7 @@ export type ProductFamily =
   | 'Défiscalisation'
   | 'Autres';
 
-/** V2/V3 — 13 grandes familles métier */
+/** V2/V3 — 12 grandes familles métier */
 export type GrandeFamille =
   | 'Assurance'
   | 'Épargne bancaire'
@@ -35,7 +35,6 @@ export type GrandeFamille =
   | 'Immobilier indirect'
   | 'Crypto-actifs'
   | 'Non coté/PE'
-  | 'Produits structurés'
   | 'Créances/Droits'
   | 'Dispositifs fiscaux immo'
   | 'Métaux précieux'

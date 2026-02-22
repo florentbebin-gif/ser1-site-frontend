@@ -51,7 +51,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     suggestedPhases: ['sortie'],
     suggestedFor: [
       'Assurance', 'Titres vifs', 'Fonds/OPC', 'Retraite & épargne salariale',
-      'Non coté/PE', 'Produits structurés', 'Immobilier indirect',
+      'Non coté/PE', 'Immobilier indirect',
     ],
     // Note : 'Épargne bancaire' exclu — MVP note-libre (voir ROADMAP TODO templates dédiés).
     // 'Crypto-actifs' exclu — régime spécifique art. 150 VH bis (template dédié à créer).
@@ -74,7 +74,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     suggestedPhases: ['constitution', 'sortie'],
     suggestedFor: [
       'Assurance', 'Retraite & épargne salariale', 'Immobilier direct', 'Immobilier indirect',
-      'Titres vifs', 'Fonds/OPC', 'Non coté/PE', 'Produits structurés',
+      'Titres vifs', 'Fonds/OPC', 'Non coté/PE',
     ],
     // Note : 'Épargne bancaire' exclu — MVP note-libre (exonération totale LEP/Livret A/LDDS vs imposable CAT/CSL).
     // 'Crypto-actifs' exclu — régime spécifique art. 150 VH bis.
@@ -276,7 +276,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     suggestedPhases: ['sortie'],
     suggestedFor: [
       'Assurance', 'Retraite & épargne salariale', 'Titres vifs', 'Fonds/OPC',
-      'Immobilier direct', 'Immobilier indirect', 'Non coté/PE', 'Produits structurés',
+      'Immobilier direct', 'Immobilier indirect', 'Non coté/PE',
     ],
     // PEA (Titres vifs / Fonds/OPC) : exonération IR après 5 ans, PS restent dus.
     defaultBlock: {
@@ -450,7 +450,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     suggestedPhases: ['constitution', 'sortie', 'deces'],
     suggestedFor: [
       'Assurance', 'Épargne bancaire', 'Titres vifs', 'Fonds/OPC', 'Immobilier direct',
-      'Immobilier indirect', 'Crypto-actifs', 'Non coté/PE', 'Produits structurés',
+      'Immobilier indirect', 'Crypto-actifs', 'Non coté/PE',
       'Créances/Droits', 'Dispositifs fiscaux immo', 'Métaux précieux', 'Retraite & épargne salariale',
     ],
     defaultBlock: {

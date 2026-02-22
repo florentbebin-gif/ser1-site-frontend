@@ -38,7 +38,6 @@ export const GRANDE_FAMILLE_OPTIONS = [
   'Immobilier indirect',
   'Crypto-actifs',
   'Non coté/PE',
-  'Produits structurés',
   'Créances/Droits',
   'Dispositifs fiscaux immo',
   'Métaux précieux',
