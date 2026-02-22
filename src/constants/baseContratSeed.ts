@@ -124,15 +124,14 @@ function kindToCatalogKind(kind: string): CatalogKind {
 
 /** Mapping pmEligibility source → eligiblePM V2 */
 function toEligiblePM(pm: string): EligiblePM {
-  if (pm === 'exception') return 'parException';
   if (pm === 'oui') return 'oui';
   return 'non';
 }
 
 /** Dérive holders legacy depuis detensiblePP + eligiblePM */
 function toHolders(pp: boolean, pm: EligiblePM): BaseContratProduct['holders'] {
-  if (pp && (pm === 'oui' || pm === 'parException')) return 'PP+PM';
-  if (!pp && (pm === 'oui' || pm === 'parException')) return 'PM';
+  if (pp && pm === 'oui') return 'PP+PM';
+  if (!pp && pm === 'oui') return 'PM';
   return 'PP';
 }
 
@@ -156,7 +155,7 @@ function toProduct(raw: RawSeedProduct, index: number): BaseContratProduct {
   const souscriptionOuverte = (raw.open2026 as SouscriptionOuverte) ?? 'oui';
 
   const directHoldable = raw.ppDirectHoldable;
-  const corporateHoldable = eligiblePM === 'oui' || eligiblePM === 'parException';
+  const corporateHoldable = eligiblePM === 'oui';
 
   return {
     id: raw.id,
@@ -173,7 +172,7 @@ function toProduct(raw: RawSeedProduct, index: number): BaseContratProduct {
     nature,
     detensiblePP: raw.ppDirectHoldable,
     eligiblePM,
-    eligiblePMPrecision: eligiblePM === 'parException' ? (raw.pmEligibilityNote ?? null) : null,
+    eligiblePMPrecision: raw.pmEligibilityNote ?? null,
     souscriptionOuverte,
     commentaireQualification: raw.qualificationComment ?? null,
     templateKey: raw.templateKey ?? null,
@@ -202,8 +201,47 @@ function toProduct(raw: RawSeedProduct, index: number): BaseContratProduct {
 
 const catalogue = rawCatalogue as unknown as RawCatalogue;
 
+// ---------------------------------------------------------------------------
+// Point 5 — Split PP/PM : si directHoldable && corporateHoldable, créer 2 produits
+// ---------------------------------------------------------------------------
+
+function splitPPPM(products: BaseContratProduct[]): BaseContratProduct[] {
+  const result: BaseContratProduct[] = [];
+  for (const p of products) {
+    if (p.directHoldable && p.corporateHoldable) {
+      // PP variant
+      result.push({
+        ...p,
+        id: `${p.id}_pp`,
+        label: `${p.label} (PP)`,
+        envelopeType: `${p.id}_pp`,
+        directHoldable: true,
+        corporateHoldable: false,
+        eligiblePM: 'non',
+        holders: 'PP',
+        eligiblePMPrecision: null,
+      });
+      // PM variant
+      result.push({
+        ...p,
+        id: `${p.id}_pm`,
+        label: `${p.label} (Entreprise)`,
+        envelopeType: `${p.id}_pm`,
+        directHoldable: false,
+        corporateHoldable: true,
+        eligiblePM: 'oui',
+        holders: 'PM',
+      });
+    } else {
+      result.push(p);
+    }
+  }
+  // Re-assign sortOrder
+  return result.map((p, i) => ({ ...p, sortOrder: i + 1 }));
+}
+
 /** Liste complète des produits du seed, prêts à être insérés dans base_contrat_settings. */
-export const SEED_PRODUCTS: BaseContratProduct[] = catalogue.products.map(toProduct);
+export const SEED_PRODUCTS: BaseContratProduct[] = splitPPPM(catalogue.products.map(toProduct));
 
 /**
  * Fusionne le seed avec les produits existants.

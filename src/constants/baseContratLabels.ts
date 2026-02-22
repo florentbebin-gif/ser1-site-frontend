@@ -58,10 +58,9 @@ export const NATURE_OPTIONS = [
 export const ELIGIBLE_PM_LABELS: Record<string, string> = {
   oui: 'Oui',
   non: 'Non',
-  parException: 'Par exception',
 };
 
-export const ELIGIBLE_PM_OPTIONS = ['oui', 'non', 'parException'] as const;
+export const ELIGIBLE_PM_OPTIONS = ['oui', 'non'] as const;
 
 // ---------------------------------------------------------------------------
 // Souscription ouverte (V2)

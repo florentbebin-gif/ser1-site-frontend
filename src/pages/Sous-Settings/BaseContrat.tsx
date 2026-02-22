@@ -287,10 +287,6 @@ export default function BaseContrat() {
 
   function handleAddProduct() {
     if (!formId || !formLabel || !formConfidence) return;
-    if (formEligiblePM === 'parException' && !formEligiblePMPrecision.trim()) {
-      setMessage('Précisez les conditions d’éligibilité PM (champ obligatoire si « Par exception »).');
-      return;
-    }
     const validation = validateProductSlug(formId, existingIds);
     if (!validation.ok) { setMessage(validation.errors.join(' ')); return; }
     const maxSort = products.reduce((m, p) => Math.max(m, p.sortOrder), 0);
@@ -299,8 +295,8 @@ export default function BaseContrat() {
       ? buildTemplateRuleset(formTemplate as TemplateKey, today)
       : { ...EMPTY_RULESET, effectiveDate: today };
     // Dériver les champs legacy depuis les métadonnées V2
-    const holdersLegacy = formDetensiblePP && (formEligiblePM === 'oui' || formEligiblePM === 'parException')
-      ? 'PP+PM' : !formDetensiblePP && (formEligiblePM === 'oui' || formEligiblePM === 'parException')
+    const holdersLegacy = formDetensiblePP && formEligiblePM === 'oui'
+      ? 'PP+PM' : !formDetensiblePP && formEligiblePM === 'oui'
       ? 'PM' : 'PP';
     const newProduct: BaseContratProduct = {
       ...EMPTY_PRODUCT,
@@ -310,7 +306,7 @@ export default function BaseContrat() {
       nature: formNature,
       detensiblePP: formDetensiblePP,
       eligiblePM: formEligiblePM,
-      eligiblePMPrecision: formEligiblePM === 'parException' ? formEligiblePMPrecision.trim() : null,
+      eligiblePMPrecision: null,
       souscriptionOuverte: formSouscriptionOuverte,
       commentaireQualification: formCommentaire.trim() || null,
       family: 'Autres',
@@ -329,12 +325,8 @@ export default function BaseContrat() {
 
   function handleEditProduct() {
     if (!editingProduct) return;
-    if (formEligiblePM === 'parException' && !formEligiblePMPrecision.trim()) {
-      setMessage('Précisez les conditions d’éligibilité PM (champ obligatoire si « Par exception »).');
-      return;
-    }
-    const holdersLegacy = formDetensiblePP && (formEligiblePM === 'oui' || formEligiblePM === 'parException')
-      ? 'PP+PM' : !formDetensiblePP && (formEligiblePM === 'oui' || formEligiblePM === 'parException')
+    const holdersLegacy = formDetensiblePP && formEligiblePM === 'oui'
+      ? 'PP+PM' : !formDetensiblePP && formEligiblePM === 'oui'
       ? 'PM' : 'PP';
     updateSettings((prev) => ({
       ...prev,
@@ -347,7 +339,7 @@ export default function BaseContrat() {
               nature: formNature,
               detensiblePP: formDetensiblePP,
               eligiblePM: formEligiblePM,
-              eligiblePMPrecision: formEligiblePM === 'parException' ? formEligiblePMPrecision.trim() : null,
+              eligiblePMPrecision: null,
               souscriptionOuverte: formSouscriptionOuverte,
               commentaireQualification: formCommentaire.trim() || null,
               confidenceLevel: formConfidence as ConfidenceLevel,
@@ -994,18 +986,6 @@ export default function BaseContrat() {
                   </label>
                 ))}
               </div>
-              {formEligiblePM === 'parException' && (
-                <>
-                  <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productEligiblePMPrecision} *</label>
-                  <input
-                    value={formEligiblePMPrecision}
-                    onChange={(e) => setFormEligiblePMPrecision(e.target.value)}
-                    placeholder={FORM_LABELS.productEligiblePMPrecisionHint}
-                    style={{ fontSize: 13, padding: '8px 10px', border: `1px solid ${formEligiblePMPrecision.trim() ? 'var(--color-c8)' : 'var(--color-c1)'}`, borderRadius: 6, backgroundColor: '#FFFFFF' }}
-                  />
-                </>
-              )}
-
               <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productSouscriptionOuverte} *</label>
               <div style={{ display: 'flex', gap: 16 }}>
                 {SOUSCRIPTION_OUVERTE_OPTIONS.map((v) => (
@@ -1095,18 +1075,6 @@ export default function BaseContrat() {
                   </label>
                 ))}
               </div>
-              {formEligiblePM === 'parException' && (
-                <>
-                  <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productEligiblePMPrecision} *</label>
-                  <input
-                    value={formEligiblePMPrecision}
-                    onChange={(e) => setFormEligiblePMPrecision(e.target.value)}
-                    placeholder={FORM_LABELS.productEligiblePMPrecisionHint}
-                    style={{ fontSize: 13, padding: '8px 10px', border: `1px solid ${formEligiblePMPrecision.trim() ? 'var(--color-c8)' : 'var(--color-c1)'}`, borderRadius: 6, backgroundColor: '#FFFFFF' }}
-                  />
-                </>
-              )}
-
               <label style={{ fontSize: 13, fontWeight: 600 }}>{FORM_LABELS.productSouscriptionOuverte}</label>
               <div style={{ display: 'flex', gap: 16 }}>
                 {SOUSCRIPTION_OUVERTE_OPTIONS.map((v) => (

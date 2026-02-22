@@ -1,17 +1,21 @@
 /**
- * catalogue.seed.test.ts — Validation du catalogue patrimonial (P1-05).
+ * catalogue.seed.test.ts — Validation du catalogue patrimonial (P1-05 PR1b).
  *
  * Garanties :
  *  - Zéro produit structuré
+ *  - Zéro exception PM (Point 6)
  *  - IDs uniques
  *  - Champs obligatoires présents
+ *  - Assimilation OPC + groupements fonciers (Point 2)
  *  - Split immobilier correct
- *  - Entrées clés présentes (PERIN bancaire, Article 39, CTO, PEA, PEA-PME)
- *  - PP/PM cohérent
+ *  - Entrées clés présentes
+ *  - PP/PM cohérent + split PP/PM (Point 5)
+ *  - Pas de doublons sémantiques (Point 4)
  */
 
 import { describe, it, expect } from 'vitest';
 import rawCatalogue from './catalogue.seed.v1.json';
+import { SEED_PRODUCTS, mergeSeedIntoProducts } from '../baseContratSeed';
 
 interface RawProduct {
   id: string;
@@ -50,15 +54,13 @@ describe('Catalogue seed — champs obligatoires', () => {
     expect(p.family).toBeTruthy();
     expect(['actif_instrument', 'contrat_compte_enveloppe', 'dispositif_fiscal_immobilier']).toContain(p.kind);
     expect(typeof p.ppDirectHoldable).toBe('boolean');
-    expect(['oui', 'non', 'exception']).toContain(p.pmEligibility);
+    expect(['oui', 'non']).toContain(p.pmEligibility);
     expect(['oui', 'non', 'na']).toContain(p.open2026);
   });
 
-  it('pmEligibilityNote is present when pmEligibility is exception', () => {
+  it('no product has pmEligibility "exception" (Point 6)', () => {
     const exceptions = products.filter((p) => p.pmEligibility === 'exception');
-    for (const p of exceptions) {
-      expect(p.pmEligibilityNote, `${p.id} missing pmEligibilityNote`).toBeTruthy();
-    }
+    expect(exceptions).toHaveLength(0);
   });
 });
 
@@ -125,6 +127,33 @@ describe('Catalogue seed — gouvernance familles (pas de buckets dédiés crypt
   });
 });
 
+describe('Catalogue seed — OPC assimilation (Point 2)', () => {
+  it('detailed OPC products do NOT exist (collapsed into opc_opcvm)', () => {
+    expect(ids).not.toContain('etf');
+    expect(ids).not.toContain('fcp');
+    expect(ids).not.toContain('opcvm');
+    expect(ids).not.toContain('sicav');
+  });
+
+  it('opc_opcvm exists and is in family "Fonds / OPC"', () => {
+    expect(ids).toContain('opc_opcvm');
+    const p = products.find((pr) => pr.id === 'opc_opcvm')!;
+    expect(p.family).toBe('Fonds / OPC');
+  });
+});
+
+describe('Catalogue seed — groupements fonciers assimilation (Point 2)', () => {
+  it('detailed groupement products do NOT exist (collapsed into groupement_foncier)', () => {
+    expect(ids).not.toContain('gfa');
+    expect(ids).not.toContain('gfv');
+    expect(ids).not.toContain('groupement_forestier');
+  });
+
+  it('groupement_foncier exists', () => {
+    expect(ids).toContain('groupement_foncier');
+  });
+});
+
 describe('Catalogue seed — prévoyance (split obligatoire)', () => {
   it('prevoyance_individuelle does NOT exist (replaced by split)', () => {
     expect(ids).not.toContain('prevoyance_individuelle');
@@ -136,15 +165,10 @@ describe('Catalogue seed — prévoyance (split obligatoire)', () => {
   });
 });
 
-/**
- * TODO PR1b (Migration DB)
- * Mappings pour les IDs splittés (à intégrer dans la migration Supabase) :
- * - 'immobilier_appartement_maison' -> ['residence_principale', 'residence_secondaire', 'locatif_nu', 'locatif_meuble'] (Nécessite intervention UI ou default='residence_principale')
- * - 'per_perin' -> ['perin_assurance', 'perin_bancaire'] (Nécessite intervention UI ou default='perin_assurance')
- */
+/** Legacy ID remap — now handled by V4→V5 migration in baseContratSettingsCache.ts */
 export const SPLIT_ID_MIGRATION_MAP = {
-  'immobilier_appartement_maison': 'residence_principale', // Default fallback
-  'per_perin': 'perin_assurance', // Default fallback
+  'immobilier_appartement_maison': 'residence_principale',
+  'per_perin': 'perin_assurance',
 };
 
 describe('Catalogue seed — split immobilier', () => {
@@ -170,10 +194,9 @@ describe('Catalogue seed — split immobilier', () => {
     }
   });
 
-  it('residence_principale has PM exception (SCI perd exonération PV)', () => {
+  it('residence_principale is PP-only (Point 6: no exception)', () => {
     const rp = products.find((p) => p.id === 'residence_principale')!;
-    expect(rp.pmEligibility).toBe('exception');
-    expect(rp.pmEligibilityNote).toBeTruthy();
+    expect(rp.pmEligibility).toBe('non');
   });
 });
 
@@ -271,6 +294,76 @@ describe('Catalogue seed — PP/PM cohérence', () => {
     for (const id of ppOnly) {
       const p = products.find((pr) => pr.id === id)!;
       expect(p.pmEligibility, `${id} should be PP-only`).toBe('non');
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Point 5 — PP/PM split (via SEED_PRODUCTS transform)
+// ---------------------------------------------------------------------------
+
+describe('SEED_PRODUCTS — PP/PM split (Point 5)', () => {
+  const seedIds = SEED_PRODUCTS.map((p) => p.id);
+
+  it('PP+PM raw products are split into _pp and _pm variants', () => {
+    // CTO is PP+PM in raw seed → must become cto_pp + cto_pm
+    expect(seedIds).toContain('cto_pp');
+    expect(seedIds).toContain('cto_pm');
+    expect(seedIds).not.toContain('cto');
+  });
+
+  it('PP-only products are NOT split', () => {
+    // PEA is PP-only → stays as pea
+    expect(seedIds).toContain('pea');
+    expect(seedIds).not.toContain('pea_pp');
+  });
+
+  it('PM-only products are NOT split', () => {
+    // assurance_homme_cle is PM-only → stays as-is
+    expect(seedIds).toContain('assurance_homme_cle');
+    expect(seedIds).not.toContain('assurance_homme_cle_pp');
+  });
+
+  it('all SEED_PRODUCTS have unique IDs', () => {
+    expect(new Set(seedIds).size).toBe(seedIds.length);
+  });
+
+  it('every product is either PP-only or PM-only (no mixed)', () => {
+    const mixed = SEED_PRODUCTS.filter((p) => p.directHoldable && p.corporateHoldable);
+    expect(mixed).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Point 7 — mergeSeedIntoProducts
+// ---------------------------------------------------------------------------
+
+describe('mergeSeedIntoProducts (Point 7)', () => {
+  it('adds missing products without overwriting existing ones', () => {
+    const existing = [SEED_PRODUCTS[0]]; // Keep first product
+    const merged = mergeSeedIntoProducts(existing);
+    expect(merged.length).toBe(SEED_PRODUCTS.length);
+    expect(merged[0].id).toBe(existing[0].id);
+  });
+
+  it('returns same count when all products exist', () => {
+    const merged = mergeSeedIntoProducts([...SEED_PRODUCTS]);
+    expect(merged.length).toBe(SEED_PRODUCTS.length);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Point 4 — No semantic duplicates
+// ---------------------------------------------------------------------------
+
+describe('Catalogue seed — no duplicates (Point 4)', () => {
+  it('no product ID appears in more than one family', () => {
+    const idFamilyMap = new Map<string, string>();
+    for (const p of products) {
+      if (idFamilyMap.has(p.id)) {
+        expect.fail(`Duplicate product ${p.id} found in families: ${idFamilyMap.get(p.id)} and ${p.family}`);
+      }
+      idFamilyMap.set(p.id, p.family);
     }
   });
 });

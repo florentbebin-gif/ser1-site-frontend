@@ -13,6 +13,9 @@
  * Ajout de allowedWrappers.
  *
  * schemaVersion 3 → 4 : nettoyage/migrations correctives (suppression structurés résiduels DB, simplifications catalogue).
+ *
+ * schemaVersion 4 → 5 : suppression exceptions PM, assimilation OPC/groupements fonciers,
+ * split PP/PM (2 produits si accessible aux deux), remap legacy IDs.
  */
 
 // ---------------------------------------------------------------------------
@@ -56,7 +59,7 @@ export type CatalogKind =
   | 'protection';  // Prévoyance/Assurances calculables
 
 /** V2 — Éligibilité personnes morales (deprecated en V3, remplacé par corporateHoldable) */
-export type EligiblePM = 'oui' | 'non' | 'parException';
+export type EligiblePM = 'oui' | 'non';
 
 /** V2/V3 — Souscription ouverte en 2026 */
 export type SouscriptionOuverte = 'oui' | 'non' | 'na';
@@ -212,8 +215,8 @@ export interface ProductTest {
 // ---------------------------------------------------------------------------
 
 export interface BaseContratSettings {
-  /** 1 = V1 (legacy), 2 = V2, 3 = V3, 4 = V4 (cleanup). Migration lazy dans getBaseContratSettings(). */
-  schemaVersion: 1 | 2 | 3 | 4;
+  /** 1 = V1 (legacy), 2 = V2, 3 = V3, 4 = V4 (cleanup), 5 = V5 (rules). Migration lazy dans getBaseContratSettings(). */
+  schemaVersion: 1 | 2 | 3 | 4 | 5;
   products: BaseContratProduct[];
   /** Gate P0-10: imported tests — publication blocked if empty */
   tests?: ProductTest[];

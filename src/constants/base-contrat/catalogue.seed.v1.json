@@ -8,8 +8,7 @@
       "family": "Assurance",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
-      "pmEligibility": "exception",
-      "pmEligibilityNote": "Plutôt PP ; détention PM rare selon assureur/montage.",
+      "pmEligibility": "non",
       "open2026": "oui",
       "qualificationComment": "Contrat couvrant le risque dépendance (rente/capital).",
       "references": [
@@ -48,8 +47,7 @@
       "family": "Assurance",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
-      "pmEligibility": "exception",
-      "pmEligibilityNote": "Selon assureur/contrat ; généralement PP.",
+      "pmEligibility": "non",
       "open2026": "oui",
       "qualificationComment": "Enveloppe d’épargne/assurance (UC, etc.).",
       "references": [
@@ -77,8 +75,7 @@
       "family": "Assurance",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
-      "pmEligibility": "exception",
-      "pmEligibilityNote": "Côté entreprise, l’équivalent est souvent collectif ; cas PM à qualifier.",
+      "pmEligibility": "non",
       "open2026": "oui",
       "qualificationComment": "Contrat de protection : capital et/ou rente en cas de décès (garanties à qualifier).",
       "references": [
@@ -92,8 +89,7 @@
       "family": "Assurance",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
-      "pmEligibility": "exception",
-      "pmEligibilityNote": "Côté entreprise, l’équivalent est souvent collectif ; cas PM à qualifier.",
+      "pmEligibility": "non",
       "open2026": "oui",
       "qualificationComment": "Contrat de protection : prestations ITT/invalidité (franchises, durées, exclusions à qualifier).",
       "references": [
@@ -151,8 +147,7 @@
       "family": "Créances / Droits",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
-      "pmEligibility": "exception",
-      "pmEligibilityNote": "Détention PM possible selon montage ; à qualifier.",
+      "pmEligibility": "non",
       "open2026": "na",
       "qualificationComment": "Créance détenue en direct ; risque de défaut, formalisation nécessaire.",
       "references": [
@@ -223,8 +218,7 @@
       "family": "Dispositifs fiscaux immobiliers",
       "kind": "dispositif_fiscal_immobilier",
       "ppDirectHoldable": true,
-      "pmEligibility": "exception",
-      "pmEligibilityNote": "Éligible aussi à certaines PM non IS ; à qualifier.",
+      "pmEligibility": "non",
       "open2026": "oui",
       "qualificationComment": "Réduction IR via conventionnement Anah ; sollicitable jusqu’au 31/12/2027.",
       "references": [
@@ -407,8 +401,7 @@
       "family": "Épargne bancaire",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
-      "pmEligibility": "exception",
-      "pmEligibilityNote": "Exceptions possibles (organismes/structures) selon réglementation.",
+      "pmEligibility": "non",
       "open2026": "oui",
       "qualificationComment": "Livret réglementé (PP en principe) ; plafond et règles réglementaires.",
       "references": [
@@ -459,28 +452,14 @@
       "templateKey": "regulated_savings"
     },
     {
-      "id": "etf",
-      "label": "ETF (fonds indiciels cotés)",
+      "id": "opc_opcvm",
+      "label": "OPC / OPCVM (SICAV, FCP, ETF)",
       "family": "Fonds / OPC",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
       "open2026": "na",
-      "qualificationComment": "Part de fonds coté répliquant un indice ; logeable selon enveloppe.",
-      "references": [
-        "AMF — OPC/OPCVM (repères)"
-      ],
-      "templateKey": "fund_opc"
-    },
-    {
-      "id": "fcp",
-      "label": "FCP (fonds commun de placement)",
-      "family": "Fonds / OPC",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Copropriété de valeurs mobilières gérée par une société de gestion.",
+      "qualificationComment": "Organismes de placement collectif (OPCVM, SICAV, FCP, ETF). Assimilation : fiscalité PFU identique → un seul produit.",
       "references": [
         "AMF — OPC/OPCVM (repères)"
       ],
@@ -506,8 +485,7 @@
       "family": "Fonds / OPC",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
-      "pmEligibility": "exception",
-      "pmEligibilityNote": "Principalement via plan entreprise (PEE/PERCOL).",
+      "pmEligibility": "non",
       "open2026": "oui",
       "qualificationComment": "Fonds dédié à l’épargne salariale ; en direct hors plan, cas atypique.",
       "references": [
@@ -558,41 +536,12 @@
       "templateKey": "fund_opc"
     },
     {
-      "id": "opcvm",
-      "label": "OPCVM",
-      "family": "Fonds / OPC",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Catégorie réglementée de fonds (actions, oblig, monétaires…).",
-      "references": [
-        "AMF — OPC/OPCVM (repères)"
-      ],
-      "templateKey": "fund_opc"
-    },
-    {
-      "id": "sicav",
-      "label": "SICAV",
-      "family": "Fonds / OPC",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Société d’investissement à capital variable ; porteur = actionnaire.",
-      "references": [
-        "AMF — OPC/OPCVM (repères)"
-      ],
-      "templateKey": "fund_opc"
-    },
-    {
       "id": "residence_principale",
       "label": "Résidence principale",
       "family": "Immobilier direct",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
-      "pmEligibility": "exception",
-      "pmEligibilityNote": "Détention PM (SCI) possible mais perd l'exonération PV résidence principale.",
+      "pmEligibility": "non",
       "open2026": "na",
       "qualificationComment": "Immobilier occupé à titre principal ; exonération de plus-value à la revente (sous conditions).",
       "references": [
@@ -671,44 +620,16 @@
       "templateKey": "real_estate_direct"
     },
     {
-      "id": "gfa",
-      "label": "GFA (Groupement foncier agricole)",
+      "id": "groupement_foncier",
+      "label": "Groupements fonciers (GFA / GFV / GF / GFF)",
       "family": "Immobilier indirect (pierre-papier & foncier)",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
       "open2026": "na",
-      "qualificationComment": "Parts de foncier agricole ; illiquidité/valorisation à surveiller.",
+      "qualificationComment": "Parts de groupements fonciers (agricole, viticole, forestier). Assimilation : fiscalité identique (revenus fonciers, PV, DMTG avec exonération partielle Monichon) → un seul produit.",
       "references": [
         "Sources fiscales/AMF selon montage (à sourcer)"
-      ],
-      "templateKey": "real_estate_indirect"
-    },
-    {
-      "id": "gfv",
-      "label": "GFV (Groupement foncier viticole)",
-      "family": "Immobilier indirect (pierre-papier & foncier)",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Parts de foncier viticole ; illiquidité et risques agricoles.",
-      "references": [
-        "Sources fiscales/AMF selon montage (à sourcer)"
-      ],
-      "templateKey": "real_estate_indirect"
-    },
-    {
-      "id": "groupement_forestier",
-      "label": "Groupement forestier (GF / GFF)",
-      "family": "Immobilier indirect (pierre-papier & foncier)",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Parts de groupement forestier ; règles fiscales spécifiques à vérifier.",
-      "references": [
-        "Sources fiscales (à sourcer)"
       ],
       "templateKey": "real_estate_indirect"
     },
