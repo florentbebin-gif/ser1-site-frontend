@@ -32,15 +32,15 @@ export type ProductFamily =
 
 /** V2/V3 — 12 grandes familles métier */
 export type GrandeFamille =
-  | 'Assurance'
+  | 'Épargne Assurance'
+  | 'Assurance prévoyance'
   | 'Épargne bancaire'
   | 'Valeurs mobilières'
-  | 'Comptes-titres'
   | 'Immobilier direct'
   | 'Immobilier indirect'
   | 'Non coté/PE'
   | 'Créances/Droits'
-  | 'Dispositifs fiscaux immo'
+  | 'Dispositifs fiscaux immobilier'
   | 'Retraite & épargne salariale'
   | 'Autres';
 
@@ -248,7 +248,7 @@ export const EMPTY_PRODUCT: Omit<BaseContratProduct, 'sortOrder'> = {
   id: '',
   label: '',
   // V3 métadonnées
-  grandeFamille: 'Assurance',
+  grandeFamille: 'Épargne Assurance',
   catalogKind: 'wrapper',
   directHoldable: true,
   corporateHoldable: false,

@@ -101,7 +101,7 @@ export default function BaseContrat() {
   // Add/Edit form state
   const [formId, setFormId] = useState('');
   const [formLabel, setFormLabel] = useState('');
-  const [formGrandeFamille, setFormGrandeFamille] = useState<GrandeFamille>('Assurance');
+  const [formGrandeFamille, setFormGrandeFamille] = useState<GrandeFamille>('Épargne Assurance');
   const [formNature, setFormNature] = useState<ProductNature>('Contrat / compte / enveloppe');
   const [formDetensiblePP, setFormDetensiblePP] = useState(true);
   const [formEligiblePM, setFormEligiblePM] = useState<EligiblePM>('non');
@@ -501,7 +501,7 @@ export default function BaseContrat() {
   function resetForm() {
     setFormId('');
     setFormLabel('');
-    setFormGrandeFamille('Assurance');
+    setFormGrandeFamille('Épargne Assurance');
     setFormNature('Contrat / compte / enveloppe');
     setFormDetensiblePP(true);
     setFormEligiblePM('non');
@@ -684,7 +684,7 @@ export default function BaseContrat() {
                             <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>PP direct</span>
                           )}
                           {!product.directHoldable && product.corporateHoldable && (
-                            <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>Entreprise</span>
+                            <span style={chipStyle('var(--color-c8)', 'var(--color-c10)')}>PM</span>
                           )}
                           <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 14 }}>{product.label}</span>
                           <span style={{ fontSize: 11, color: 'var(--color-c9)' }}>({product.id})</span>

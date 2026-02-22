@@ -342,8 +342,9 @@ Candidats :
 - **Rulesets per-product** : implémenter les blocs fiscaux (Constitution/Sortie/Décès) par produit — actuellement squelette vide.
 - **Fiches succession GFA/GFV vs GFF** : documenter les différences art. 793 bis vs art. 793 1° 3° CGI dans les blocs produit.
 - **Confirmation dialog sync** : ajouter un dialog de confirmation avant « Synchroniser le catalogue » (écrase les produits personnalisés).
-- **Supprimer `handleCompleteCatalogue`** : remplacé par `syncProductsWithSeed` — supprimer le bouton « Compléter » et `mergeSeedIntoProducts` (dead code).
-- **Migration V6** : si nécessaire, ajouter une migration V6 pour corriger automatiquement les données V5 stale.
+- **Migration label (Entreprise) → (PM)** : les données DB avec suffixe « (Entreprise) » seront corrigées au prochain sync ; envisager migration active si besoin.
+- ~~**Supprimer `handleCompleteCatalogue`**~~ : ✅ fait (V5c).
+- ~~**Familles restructurées**~~ : ✅ fait (V5c+V5d — Épargne Assurance / Assurance prévoyance / Épargne bancaire / Dispositifs fiscaux immobilier / split LMNP-LMP / obligations retirées).
 
 ### P3 — Stratégie automatique + société fine
 Objectif : recommandations auto + modèle société/holding plus fin.

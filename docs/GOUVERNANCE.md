@@ -128,34 +128,35 @@ Ces 3 phases correspondent dans les blocs produit aux clés `constitution`, `sor
 ### Taxonomie des familles (grandeFamille)
 | Famille | Contenu | Type |
 |---------|---------|------|
-| Assurance | AV, capitalisation, prévoyance, homme clé, obsèques | Wrappers / protections |
-| Épargne bancaire | Livrets, PEL, CEL, CAT, CSL, PEAC | Wrappers (comptes) |
-| Comptes-titres | CTO, PEA, PEA-PME | Wrappers (enveloppes titres) |
-| Valeurs mobilières | Actions, obligations, OAT, FCPR, FCPI, FIP, OPCI, parts sociales, titres participatifs, droits/BSA | Actifs détenus en direct |
-| Immobilier direct | RP, RS, locatif nu/meublé, garages, terrains | Actifs |
+| Épargne Assurance | AV, contrat de capitalisation | Wrappers (épargne) |
+| Assurance prévoyance | Prévoyance décès, ITT/invalidité, dépendance, emprunteur, obsèques, homme-clé | Protections |
+| Épargne bancaire | Livrets, PEL, CEL, CAT, CSL, PEAC, CTO, PEA, PEA-PME | Wrappers (comptes/enveloppes) |
+| Valeurs mobilières | Actions, FCPR, FCPI, FIP, OPCI, parts sociales, titres participatifs, BSA/DPS | Actifs détenus en direct |
+| Immobilier direct | RP, RS, locatif nu, LMNP, LMP, garages, terrains | Actifs |
 | Immobilier indirect | SCPI, GFA/GFV, GFF | Actifs (pierre-papier) |
 | Non coté/PE | Actions non cotées, crowdfunding, obligations non cotées, SOFICA, IR-PME | Actifs |
 | Créances/Droits | Compte courant associé, prêt entre particuliers, usufruit/nue-propriété | Actifs |
-| Dispositifs fiscaux immo | Pinel, Malraux, MH, Scellier, Denormandie… | Overlays fiscaux |
+| Dispositifs fiscaux immobilier | Pinel, Malraux, MH, Scellier, Denormandie… | Overlays fiscaux |
 | Retraite & épargne salariale | PER, PEE, PERCOL, PERCO, Art. 83/39, Madelin, PERP | Wrappers |
 | Autres | Métaux précieux, crypto-actifs, tontine | Actifs divers |
 
 ### Règles de holdability (PP / PM)
 - **Résidence secondaire** : PP-only (une PM qui détient un immeuble = locatif, pas « résidence »).
+- **LMNP / LMP** : PP-only (statut personne physique ; exceptions société à l’IR non gérées).
 - **Épargne réglementée** (Livret A, LDDS, LEP, Livret Jeune, PEL, CEL) : PP-only.
 - **PEA / PEA-PME / PERIN** : PP-only.
-- Les produits PP+PM sont **splittés** en deux lignes (PP et Entreprise) dans le catalogue V5.
+- **Obligations** (OAT, corporate, convertibles) : retirées du catalogue (détention uniquement via CTO/PEA).
+- Les produits PP+PM sont **splittés** en deux lignes (PP et PM) dans le catalogue V5.
 
 ### Produits non directement souscriptibles (exclus du catalogue)
 - OPC / OPCVM / SICAV / FCP / ETF → sous-jacents de CTO/PEA, pas de souscription directe.
 - FCPE → sous-jacent de PEE/PERCOL.
 
 ### Problèmes identifiés (page BaseContrat)
-- **Sync additive** : le bouton « Compléter » (`mergeSeedIntoProducts`) n'ajoute que les produits manquants — ne met pas à jour les métadonnées ni ne supprime les obsolètes. Corrigé par `syncProductsWithSeed` (bouton « Synchroniser »).
 - **Rulesets vides** : les blocs fiscaux (Constitution/Sortie/Décès) sont des squelettes vides pour la majorité des produits. Les templates existent mais ne sont pas encore assignés par produit.
-- **handleCompleteCatalogue** : utilise encore `mergeSeedIntoProducts` (additive). À remplacer ou supprimer au profit de `syncProductsWithSeed`.
 - **Pas de confirmation avant sync** : le bouton « Synchroniser » écrase sans confirmation. Ajouter un dialog de confirmation.
 - **Produits personnalisés perdus après sync** : `syncProductsWithSeed` ne garde que les produits du seed. Les produits ajoutés manuellement par l'admin sont supprimés.
+- **Migration label (Entreprise) → (PM)** : les données DB existantes avec le suffixe « (Entreprise) » ne sont pas encore retouchées par la migration V5 (les labels seront mis à jour au prochain sync).
 
 ---
 

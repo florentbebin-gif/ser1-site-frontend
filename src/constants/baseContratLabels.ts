@@ -30,15 +30,15 @@ export const FAMILY_OPTIONS = Object.keys(FAMILY_LABELS);
 // Grande famille (V2)
 // ---------------------------------------------------------------------------
 export const GRANDE_FAMILLE_OPTIONS = [
-  'Assurance',
+  'Épargne Assurance',
+  'Assurance prévoyance',
   'Épargne bancaire',
   'Valeurs mobilières',
-  'Comptes-titres',
   'Immobilier direct',
   'Immobilier indirect',
   'Non coté/PE',
   'Créances/Droits',
-  'Dispositifs fiscaux immo',
+  'Dispositifs fiscaux immobilier',
   'Retraite & épargne salariale',
   'Autres',
 ] as const;

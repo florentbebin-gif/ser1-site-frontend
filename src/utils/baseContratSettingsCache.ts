@@ -44,6 +44,7 @@ const LEGACY_GRANDE_FAMILLES_TO_AUTRES = new Set(['Crypto-actifs', 'Métaux pré
 const LEGACY_ID_REMAP: Record<string, string> = {
   'immobilier_appartement_maison': 'residence_principale',
   'per_perin': 'perin_assurance',
+  'locatif_meuble': 'locatif_meuble_lmnp',
 };
 
 // V5: OPC legacy IDs to purge (underlying assets, not directly subscribable)
@@ -54,12 +55,22 @@ const GF_AGRI_VITI_IDS = new Set(['gfa', 'gfv']);
 const GF_FORESTIER_LEGACY_ID = 'groupement_forestier';
 
 // V5: Products to purge (obsolete or non-directly-subscribable)
-const PRODUCTS_TO_PURGE = new Set(['opc_opcvm', 'fcpe', 'groupement_foncier']);
+const PRODUCTS_TO_PURGE = new Set([
+  'opc_opcvm', 'fcpe', 'groupement_foncier',
+  'oat_obligations_etat', 'obligations_corporate', 'obligations_convertibles',
+  'oat_obligations_etat_pp', 'oat_obligations_etat_pm',
+  'obligations_corporate_pp', 'obligations_corporate_pm',
+  'obligations_convertibles_pp', 'obligations_convertibles_pm',
+  'locatif_meuble_pp', 'locatif_meuble_pm',
+]);
 
 // V5: Legacy grandeFamille remap (renamed families)
 const LEGACY_GRANDE_FAMILLE_REMAP: Record<string, string> = {
   'Titres vifs': 'Valeurs mobilières',
   'Fonds/OPC': 'Valeurs mobilières',
+  'Comptes-titres': 'Épargne bancaire',
+  'Assurance': 'Épargne Assurance',
+  'Dispositifs fiscaux immo': 'Dispositifs fiscaux immobilier',
 };
 
 // ---------------------------------------------------------------------------
@@ -69,11 +80,11 @@ const LEGACY_GRANDE_FAMILLE_REMAP: Record<string, string> = {
 
 function familyToGrandeFamille(family: string): BaseContratProduct['grandeFamille'] {
   const map: Record<string, BaseContratProduct['grandeFamille']> = {
-    'Assurance': 'Assurance',
+    'Assurance': 'Épargne Assurance',
     'Bancaire': 'Épargne bancaire',
     'Titres': 'Valeurs mobilières',
     'Immobilier': 'Immobilier direct',
-    'Défiscalisation': 'Dispositifs fiscaux immo',
+    'Défiscalisation': 'Dispositifs fiscaux immobilier',
     'Crypto-actifs': 'Autres',
     'Métaux précieux': 'Autres',
     'Autres': 'Autres',
@@ -149,7 +160,7 @@ function buildSplitPrevoyanceProduct(
     id: nextId,
     label: nextLabel,
     envelopeType: nextId,
-    grandeFamille: 'Assurance',
+    grandeFamille: 'Assurance prévoyance',
     catalogKind: 'protection',
   };
 }
@@ -316,7 +327,7 @@ function splitProductPPPM(p: BaseContratProduct): BaseContratProduct[] {
     {
       ...p,
       id: `${p.id}_pm`,
-      label: `${p.label} (Entreprise)`,
+      label: `${p.label} (PM)`,
       envelopeType: `${p.id}_pm`,
       directHoldable: false,
       corporateHoldable: true,
@@ -426,7 +437,7 @@ function migrateBaseContratV2toV3(data: BaseContratSettings): BaseContratSetting
       }
       
       // Cas particulier : protections (qui étaient souvent en 'Contrat')
-      if (p.grandeFamille === 'Assurance' && (p.label.toLowerCase().includes('prévoyance') || p.label.toLowerCase().includes('emprunteur'))) {
+      if ((p.grandeFamille === 'Assurance prévoyance' || (p.grandeFamille as string) === 'Assurance') && (p.label.toLowerCase().includes('prévoyance') || p.label.toLowerCase().includes('emprunteur'))) {
         catalogKind = 'protection';
       }
       
