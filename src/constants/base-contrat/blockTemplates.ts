@@ -51,7 +51,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     suggestedPhases: ['sortie'],
     suggestedFor: [
       'Valeurs mobilières', 'Non coté/PE', 'Créances/Droits',
-      'Dispositifs fiscaux immo', 'Retraite & épargne salariale',
+      'Dispositifs fiscaux immobilier', 'Retraite & épargne salariale',
       'Immobilier indirect',
     ],
     // Note : 'Épargne bancaire' exclu — MVP note-libre (voir ROADMAP TODO templates dédiés).
@@ -74,7 +74,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Taux global PS sur revenus du patrimoine. Valeur lue depuis les Paramètres Prélèvements sociaux.',
     suggestedPhases: ['constitution', 'sortie'],
     suggestedFor: [
-      'Assurance', 'Immobilier direct', 'Immobilier indirect',
+      'Épargne Assurance', 'Assurance prévoyance', 'Immobilier direct', 'Immobilier indirect',
       'Valeurs mobilières', 'Non coté/PE',
     ],
     // Note : 'Épargne bancaire' exclu — MVP note-libre (exonération totale LEP/Livret A/LDDS vs imposable CAT/CSL).
@@ -95,7 +95,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Art. 990 I — Primes avant 70 ans',
     description: 'Abattement par bénéficiaire (152 500 €) puis barème 20 % / 31,25 %. Applicable aux contrats d\'assurance-vie et PER assurantiel.',
     suggestedPhases: ['deces'],
-    suggestedFor: ['Assurance', 'Retraite & épargne salariale'],
+    suggestedFor: ['Épargne Assurance', 'Retraite & épargne salariale'],
     // Applicable uniquement aux contrats d'assurance (AV, capitalisation, PER assurantiel).
     defaultBlock: {
       blockKind: 'data',
@@ -114,7 +114,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Art. 757 B — Primes après 70 ans',
     description: 'Abattement global (30 500 €) puis barème des droits de succession selon lien de parenté.',
     suggestedPhases: ['deces'],
-    suggestedFor: ['Assurance', 'Retraite & épargne salariale'],
+    suggestedFor: ['Épargne Assurance', 'Retraite & épargne salariale'],
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Art. 757 B (décès)',
@@ -131,7 +131,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'DMTG — Droits de succession (Droit commun)',
     description: 'Intégration à l\'actif successoral et application du barème des droits de mutation à titre gratuit (DMTG) selon le lien de parenté.',
     suggestedPhases: ['deces'],
-    suggestedFor: ['Épargne bancaire', 'Valeurs mobilières', 'Comptes-titres', 'Immobilier direct', 'Immobilier indirect', 'Non coté/PE', 'Créances/Droits', 'Retraite & épargne salariale', 'Autres'],
+    suggestedFor: ['Épargne bancaire', 'Valeurs mobilières', 'Immobilier direct', 'Immobilier indirect', 'Non coté/PE', 'Créances/Droits', 'Retraite & épargne salariale', 'Autres'],
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Droits de succession (droit commun)',
@@ -146,7 +146,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Primes prévoyance (Madelin)',
     description: 'Règles de déductibilité des primes versées pour les contrats de prévoyance (Loi Madelin).',
     suggestedPhases: ['constitution'],
-    suggestedFor: ['Assurance'],
+    suggestedFor: ['Assurance prévoyance'],
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Primes (déductibilité)',
@@ -164,7 +164,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Rentes et indemnités (ITT / Invalidité)',
     description: 'Imposition des prestations perçues en cas de sinistre (imposables si primes déduites).',
     suggestedPhases: ['sortie'],
-    suggestedFor: ['Assurance'],
+    suggestedFor: ['Assurance prévoyance'],
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Rentes / ITT (fiscalité)',
@@ -184,7 +184,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Capital décès prévoyance',
     description: 'Exonération totale du capital décès, ou soumission exceptionnelle à l\'article 990I (rare).',
     suggestedPhases: ['deces'],
-    suggestedFor: ['Assurance'],
+    suggestedFor: ['Assurance prévoyance'],
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Capital décès (Transmission)',
@@ -203,7 +203,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Rachats ≥ 8 ans — abattements AV',
     description: 'Abattements annuels (4 600 € / 9 200 €), seuil 150 000 €, taux réduit 7,5 % sous le seuil.',
     suggestedPhases: ['sortie'],
-    suggestedFor: ['Assurance'],
+    suggestedFor: ['Épargne Assurance'],
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Rachats — versements depuis 27/09/2017, ≥ 8 ans',
@@ -224,7 +224,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Rachats — versements avant 2017',
     description: 'Taux dérogatoires selon l\'ancienneté du versement (35 % / 15 % / 7,5 %) pour les primes versées avant le 27/09/2017.',
     suggestedPhases: ['sortie'],
-    suggestedFor: ['Assurance'],
+    suggestedFor: ['Épargne Assurance'],
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Rachats — versements avant 27/09/2017',
@@ -262,7 +262,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Sortie en rente viagère (RVTO)',
     description: 'Fraction imposable de la rente selon l\'âge au 1er versement : 70 % (< 50 ans) → 30 % (≥ 70 ans).',
     suggestedPhases: ['sortie'],
-    suggestedFor: ['Retraite & épargne salariale', 'Assurance'],
+    suggestedFor: ['Retraite & épargne salariale', 'Épargne Assurance'],
     // RVTO applicable aux PER (bancaire/assurantiel) et aux contrats AV avec option rente.
     defaultBlock: {
       blockKind: 'data',
@@ -283,10 +283,10 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Exonération IR après un seuil d\'ancienneté (ex : 5 ans pour PEA). PS restent dus.',
     suggestedPhases: ['sortie'],
     suggestedFor: [
-      'Assurance', 'Retraite & épargne salariale', 'Valeurs mobilières', 'Comptes-titres',
+      'Épargne Assurance', 'Retraite & épargne salariale', 'Valeurs mobilières', 'Épargne bancaire',
       'Immobilier direct', 'Immobilier indirect', 'Non coté/PE',
     ],
-    // PEA/CTO (Comptes-titres) : exonération IR après 5 ans (PEA), PS restent dus.
+    // PEA/CTO (Épargne bancaire) : exonération IR après 5 ans (PEA), PS restent dus.
     defaultBlock: {
       blockKind: 'data',
       uiTitle: 'Exonération après ancienneté',
@@ -422,7 +422,7 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     uiTitle: 'Avantage fiscal IR — Dispositif',
     description: 'Avantage fiscal sur l\'impôt sur le revenu (réduction ou déduction) lié à un investissement : IR-PME, SOFICA, Pinel, Malraux, Monuments Historiques, Denormandie. Le régime dépend du dispositif choisi.',
     suggestedPhases: ['constitution'],
-    suggestedFor: ['Non coté/PE', 'Dispositifs fiscaux immo'],
+    suggestedFor: ['Non coté/PE', 'Dispositifs fiscaux immobilier'],
     // ⚠️ Template contextuel : le taux, le plafond, la durée et la NATURE (réduction vs déduction) varient selon le dispositif.
     // L'admin DOIT sélectionner le dispositif ET la nature d'avantage explicitement — pas de règle implicite.
     defaultBlock: {
@@ -457,9 +457,9 @@ export const BLOCK_TEMPLATES: BlockTemplate[] = [
     description: 'Bloc libre (texte) si aucun template ne correspond au cas. À privilégier en MVP quand le régime est ambigu ou multiple.',
     suggestedPhases: ['constitution', 'sortie', 'deces'],
     suggestedFor: [
-      'Assurance', 'Épargne bancaire', 'Valeurs mobilières', 'Comptes-titres', 'Immobilier direct',
+      'Épargne Assurance', 'Assurance prévoyance', 'Épargne bancaire', 'Valeurs mobilières', 'Immobilier direct',
       'Immobilier indirect', 'Non coté/PE',
-      'Créances/Droits', 'Dispositifs fiscaux immo', 'Retraite & épargne salariale', 'Autres',
+      'Créances/Droits', 'Dispositifs fiscaux immobilier', 'Retraite & épargne salariale', 'Autres',
     ],
     defaultBlock: {
       blockKind: 'note',

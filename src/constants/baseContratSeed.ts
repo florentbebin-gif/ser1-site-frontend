@@ -67,13 +67,13 @@ interface RawCatalogue {
 /** Mapping family source → grandeFamille V2 */
 function familyToGrandeFamille(family: string): GrandeFamille {
   const map: Record<string, GrandeFamille> = {
-    'Assurance': 'Assurance',
+    'Épargne Assurance': 'Épargne Assurance',
+    'Assurance prévoyance': 'Assurance prévoyance',
     'Crypto-actifs': 'Autres',
     'Créances / Droits': 'Créances/Droits',
-    'Dispositifs fiscaux immobiliers': 'Dispositifs fiscaux immo',
+    'Dispositifs fiscaux immobilier': 'Dispositifs fiscaux immobilier',
     'Épargne bancaire': 'Épargne bancaire',
     'Valeurs mobilières': 'Valeurs mobilières',
-    'Comptes-titres': 'Comptes-titres',
     'Immobilier direct': 'Immobilier direct',
     'Immobilier indirect (pierre-papier & foncier)': 'Immobilier indirect',
     'Métaux précieux': 'Autres',
@@ -87,15 +87,15 @@ function familyToGrandeFamille(family: string): GrandeFamille {
 /** Mapping grandeFamille → family legacy (pour baseContratAdapter.ts) */
 function grandeFamilleToFamilyLegacy(gf: GrandeFamille): BaseContratProduct['family'] {
   const map: Record<GrandeFamille, BaseContratProduct['family']> = {
-    'Assurance': 'Assurance',
+    'Épargne Assurance': 'Assurance',
+    'Assurance prévoyance': 'Assurance',
     'Épargne bancaire': 'Bancaire',
     'Valeurs mobilières': 'Titres',
-    'Comptes-titres': 'Titres',
     'Immobilier direct': 'Immobilier',
     'Immobilier indirect': 'Immobilier',
     'Non coté/PE': 'Autres',
     'Créances/Droits': 'Autres',
-    'Dispositifs fiscaux immo': 'Défiscalisation',
+    'Dispositifs fiscaux immobilier': 'Défiscalisation',
     'Retraite & épargne salariale': 'Autres',
     'Autres': 'Autres',
   };
@@ -146,8 +146,8 @@ function toProduct(raw: RawSeedProduct, index: number): BaseContratProduct {
   let catalogKind = kindToCatalogKind(raw.kind);
   // Alignement avec la taxonomie V3 : certaines assurances sont des "protections" calculables.
   if (
-    grandeFamille === 'Assurance' &&
-    /pr[ée]voyance|emprunteur|homme[- ]cl[ée]/i.test(raw.label)
+    grandeFamille === 'Assurance prévoyance' &&
+    /pr[ée]voyance|emprunteur|homme[- ]cl[ée]|d[ée]pendance|obs[èe]ques/i.test(raw.label)
   ) {
     catalogKind = 'protection';
   }
@@ -225,7 +225,7 @@ function splitPPPM(products: BaseContratProduct[]): BaseContratProduct[] {
       result.push({
         ...p,
         id: `${p.id}_pm`,
-        label: `${p.label} (Entreprise)`,
+        label: `${p.label} (PM)`,
         envelopeType: `${p.id}_pm`,
         directHoldable: false,
         corporateHoldable: true,

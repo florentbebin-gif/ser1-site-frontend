@@ -34,7 +34,7 @@ const EXPECTED_SNAPSHOT = {
 };
 
 const V2_DEFAULTS = {
-  grandeFamille: 'Assurance' as const,
+  grandeFamille: 'Épargne Assurance' as const,
   nature: 'Contrat / compte / enveloppe' as const,
   detensiblePP: true,
   eligiblePM: 'non' as const,
@@ -58,7 +58,7 @@ function buildTestSettings(): BaseContratSettings {
         ...V2_DEFAULTS,
         id: 'assuranceVie',
         label: 'Assurance-vie',
-        grandeFamille: 'Assurance',
+        grandeFamille: 'Épargne Assurance',
         family: 'Assurance',
         envelopeType: 'assurance-vie',
         holders: 'PP',
@@ -76,7 +76,7 @@ function buildTestSettings(): BaseContratSettings {
         ...V2_DEFAULTS,
         id: 'cto',
         label: 'CTO',
-        grandeFamille: 'Comptes-titres',
+        grandeFamille: 'Épargne bancaire',
         family: 'Titres',
         envelopeType: 'cto',
         holders: 'PP',
@@ -94,7 +94,7 @@ function buildTestSettings(): BaseContratSettings {
         ...V2_DEFAULTS,
         id: 'pea',
         label: 'PEA',
-        grandeFamille: 'Comptes-titres',
+        grandeFamille: 'Épargne bancaire',
         family: 'Titres',
         envelopeType: 'pea',
         holders: 'PP',

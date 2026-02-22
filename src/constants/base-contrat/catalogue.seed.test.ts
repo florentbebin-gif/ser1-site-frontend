@@ -195,13 +195,25 @@ describe('Catalogue seed — split immobilier', () => {
     'residence_principale',
     'residence_secondaire',
     'locatif_nu',
-    'locatif_meuble',
+    'locatif_meuble_lmnp',
+    'locatif_meuble_lmp',
   ])('%s exists', (id) => {
     expect(ids).toContain(id);
   });
 
+  it('locatif_meuble does NOT exist (replaced by LMNP/LMP split)', () => {
+    expect(ids).not.toContain('locatif_meuble');
+  });
+
+  it('LMNP and LMP are PP-only (no PM)', () => {
+    for (const id of ['locatif_meuble_lmnp', 'locatif_meuble_lmp']) {
+      const p = products.find((pr) => pr.id === id)!;
+      expect(p.pmEligibility, `${id} should be PP-only`).toBe('non');
+    }
+  });
+
   it('all split immo entries are Immobilier direct + actif_instrument', () => {
-    const splitIds = ['residence_principale', 'residence_secondaire', 'locatif_nu', 'locatif_meuble'];
+    const splitIds = ['residence_principale', 'residence_secondaire', 'locatif_nu', 'locatif_meuble_lmnp', 'locatif_meuble_lmp'];
     for (const id of splitIds) {
       const p = products.find((pr) => pr.id === id)!;
       expect(p.family).toBe('Immobilier direct');
@@ -238,28 +250,61 @@ describe('Catalogue seed — entrées clés', () => {
     expect(ids).toContain(id);
   });
 
-  it('CTO/PEA/PEA-PME are wrappers in Comptes-titres family', () => {
+  it('CTO/PEA/PEA-PME are wrappers in Épargne bancaire family', () => {
     for (const id of ['cto', 'pea', 'pea_pme']) {
       const p = products.find((pr) => pr.id === id)!;
-      expect(p.family, `${id} should be in Comptes-titres`).toBe('Comptes-titres');
+      expect(p.family, `${id} should be in Épargne bancaire`).toBe('Épargne bancaire');
       expect(p.kind, `${id} should be wrapper`).toBe('contrat_compte_enveloppe');
     }
   });
 
-  it('no product uses legacy families "Titres vifs" or "Fonds / OPC"', () => {
-    const legacy = products.filter((p) => p.family === 'Titres vifs' || p.family === 'Fonds / OPC');
+  it('no product uses legacy families', () => {
+    const legacy = products.filter((p) =>
+      ['Titres vifs', 'Fonds / OPC', 'Comptes-titres', 'Assurance', 'Dispositifs fiscaux immobiliers'].includes(p.family)
+    );
     expect(legacy).toHaveLength(0);
   });
 
-  it('Valeurs mobilières contains actions, obligations, and funds (FCPR/FCPI/FIP/OPCI)', () => {
+  it('obligations removed from catalogue (not held directly)', () => {
+    for (const id of ['oat_obligations_etat', 'obligations_corporate', 'obligations_convertibles']) {
+      expect(ids, `${id} should not exist`).not.toContain(id);
+    }
+  });
+
+  it('Valeurs mobilières contains actions and funds (FCPR/FCPI/FIP/OPCI)', () => {
     const vm = products.filter((p) => p.family === 'Valeurs mobilières');
     const vmIds = vm.map((p) => p.id);
     expect(vmIds).toContain('actions_cotees');
-    expect(vmIds).toContain('obligations_corporate');
     expect(vmIds).toContain('fcpr');
     expect(vmIds).toContain('fcpi');
     expect(vmIds).toContain('fip');
     expect(vmIds).toContain('opci_grand_public');
+  });
+
+  it('Épargne Assurance contains AV and capitalisation only', () => {
+    const ea = products.filter((p) => p.family === 'Épargne Assurance');
+    const eaIds = ea.map((p) => p.id);
+    expect(eaIds).toContain('assurance_vie');
+    expect(eaIds).toContain('contrat_capitalisation');
+    expect(eaIds).toHaveLength(2);
+  });
+
+  it('Assurance prévoyance contains protection products', () => {
+    const ap = products.filter((p) => p.family === 'Assurance prévoyance');
+    const apIds = ap.map((p) => p.id);
+    expect(apIds).toContain('prevoyance_individuelle_deces');
+    expect(apIds).toContain('prevoyance_individuelle_itt_invalidite');
+    expect(apIds).toContain('assurance_dependance');
+    expect(apIds).toContain('assurance_emprunteur');
+    expect(apIds).toContain('assurance_obseques');
+    expect(apIds).toContain('assurance_homme_cle');
+  });
+
+  it('Dispositifs fiscaux use "immobilier" (not "immo")', () => {
+    const dfImmo = products.filter((p) => p.family === 'Dispositifs fiscaux immobilier');
+    expect(dfImmo.length).toBeGreaterThan(0);
+    const dfOld = products.filter((p) => p.family === 'Dispositifs fiscaux immo');
+    expect(dfOld).toHaveLength(0);
   });
 
   it('tontine is PP+PM in Autres', () => {
@@ -272,7 +317,7 @@ describe('Catalogue seed — entrées clés', () => {
 
   it('assurance_homme_cle is PM-only protection', () => {
     const p = products.find((pr) => pr.id === 'assurance_homme_cle')!;
-    expect(p.family).toBe('Assurance');
+    expect(p.family).toBe('Assurance prévoyance');
     expect(p.ppDirectHoldable).toBe(false);
     expect(p.pmEligibility).toBe('oui');
   });

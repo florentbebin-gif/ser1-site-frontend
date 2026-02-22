@@ -76,7 +76,7 @@ describe('migrateBaseContratSettingsToLatest (V3 → V5 full chain)', () => {
         makeProduct({
           id: 'prevoyance_individuelle',
           label: 'Prévoyance individuelle',
-          grandeFamille: 'Assurance',
+          grandeFamille: 'Assurance prévoyance',
           catalogKind: 'protection',
           sortOrder: 8,
         }),

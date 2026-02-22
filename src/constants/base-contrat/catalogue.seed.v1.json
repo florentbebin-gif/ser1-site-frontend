@@ -5,7 +5,7 @@
     {
       "id": "assurance_dependance",
       "label": "Assurance dépendance",
-      "family": "Assurance",
+      "family": "Assurance prévoyance",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -18,7 +18,7 @@
     {
       "id": "assurance_emprunteur",
       "label": "Assurance emprunteur",
-      "family": "Assurance",
+      "family": "Assurance prévoyance",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -31,7 +31,7 @@
     {
       "id": "assurance_obseques",
       "label": "Assurance obsèques",
-      "family": "Assurance",
+      "family": "Assurance prévoyance",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -44,7 +44,7 @@
     {
       "id": "assurance_vie",
       "label": "Assurance-vie",
-      "family": "Assurance",
+      "family": "Épargne Assurance",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -58,7 +58,7 @@
     {
       "id": "contrat_capitalisation",
       "label": "Contrat de capitalisation",
-      "family": "Assurance",
+      "family": "Épargne Assurance",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -72,7 +72,7 @@
     {
       "id": "prevoyance_individuelle_deces",
       "label": "Prévoyance individuelle décès",
-      "family": "Assurance",
+      "family": "Assurance prévoyance",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -86,7 +86,7 @@
     {
       "id": "prevoyance_individuelle_itt_invalidite",
       "label": "Prévoyance individuelle arrêt de travail / invalidité",
-      "family": "Assurance",
+      "family": "Assurance prévoyance",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -100,7 +100,7 @@
     {
       "id": "assurance_homme_cle",
       "label": "Assurance homme-clé",
-      "family": "Assurance",
+      "family": "Assurance prévoyance",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": false,
       "pmEligibility": "oui",
@@ -172,7 +172,7 @@
     {
       "id": "censi_bouvard",
       "label": "Censi-Bouvard (LMNP “réduction”)",
-      "family": "Dispositifs fiscaux immobiliers",
+      "family": "Dispositifs fiscaux immobilier",
       "kind": "dispositif_fiscal_immobilier",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -186,7 +186,7 @@
     {
       "id": "denormandie",
       "label": "Denormandie (ancien à rénover)",
-      "family": "Dispositifs fiscaux immobiliers",
+      "family": "Dispositifs fiscaux immobilier",
       "kind": "dispositif_fiscal_immobilier",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -201,7 +201,7 @@
     {
       "id": "duflot",
       "label": "Duflot",
-      "family": "Dispositifs fiscaux immobiliers",
+      "family": "Dispositifs fiscaux immobilier",
       "kind": "dispositif_fiscal_immobilier",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -215,7 +215,7 @@
     {
       "id": "loc_avantages",
       "label": "Loc’Avantages (convention Anah)",
-      "family": "Dispositifs fiscaux immobiliers",
+      "family": "Dispositifs fiscaux immobilier",
       "kind": "dispositif_fiscal_immobilier",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -230,7 +230,7 @@
     {
       "id": "louer_abordable_cosse",
       "label": "Louer abordable (Cosse) — déduction",
-      "family": "Dispositifs fiscaux immobiliers",
+      "family": "Dispositifs fiscaux immobilier",
       "kind": "dispositif_fiscal_immobilier",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -244,7 +244,7 @@
     {
       "id": "malraux",
       "label": "Malraux",
-      "family": "Dispositifs fiscaux immobiliers",
+      "family": "Dispositifs fiscaux immobilier",
       "kind": "dispositif_fiscal_immobilier",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -258,7 +258,7 @@
     {
       "id": "monuments_historiques",
       "label": "Monuments historiques",
-      "family": "Dispositifs fiscaux immobiliers",
+      "family": "Dispositifs fiscaux immobilier",
       "kind": "dispositif_fiscal_immobilier",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -272,7 +272,7 @@
     {
       "id": "pinel_pinel_plus",
       "label": "Pinel / Pinel+",
-      "family": "Dispositifs fiscaux immobiliers",
+      "family": "Dispositifs fiscaux immobilier",
       "kind": "dispositif_fiscal_immobilier",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -286,7 +286,7 @@
     {
       "id": "relance_logement_jeanbrun",
       "label": "Relance logement (dit “Jeanbrun”)",
-      "family": "Dispositifs fiscaux immobiliers",
+      "family": "Dispositifs fiscaux immobilier",
       "kind": "dispositif_fiscal_immobilier",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -300,7 +300,7 @@
     {
       "id": "scellier",
       "label": "Scellier",
-      "family": "Dispositifs fiscaux immobiliers",
+      "family": "Dispositifs fiscaux immobilier",
       "kind": "dispositif_fiscal_immobilier",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -550,16 +550,30 @@
       "templateKey": "real_estate_direct"
     },
     {
-      "id": "locatif_meuble",
-      "label": "Immobilier locatif meublé (LMNP / LMP)",
+      "id": "locatif_meuble_lmnp",
+      "label": "Immobilier locatif meublé (LMNP)",
       "family": "Immobilier direct",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
-      "pmEligibility": "oui",
+      "pmEligibility": "non",
       "open2026": "na",
-      "qualificationComment": "Location meublée : revenus imposés aux BIC (micro-BIC ou réel). Amortissements possibles. Statut LMNP ou LMP selon seuils.",
+      "qualificationComment": "Location meublée non professionnelle : revenus BIC (micro-BIC ou réel). Amortissements possibles au réel. Seuils LMNP : recettes < 23 000 €/an ou < 50 % des revenus du foyer.",
       "references": [
-        "Service-Public  Location meublée (LMNP/LMP)"
+        "Service-Public  Location meublée (LMNP)"
+      ],
+      "templateKey": "real_estate_direct"
+    },
+    {
+      "id": "locatif_meuble_lmp",
+      "label": "Immobilier locatif meublé (LMP)",
+      "family": "Immobilier direct",
+      "kind": "actif_instrument",
+      "ppDirectHoldable": true,
+      "pmEligibility": "non",
+      "open2026": "na",
+      "qualificationComment": "Location meublée professionnelle : revenus BIC, charges sociales (cotisations SSI). Exonération PV possible après 5 ans d’activité (art. 151 septies CGI). Seuils LMP : recettes ≥ 23 000 €/an ET > 50 % des revenus du foyer.",
+      "references": [
+        "Service-Public  Location meublée (LMP)"
       ],
       "templateKey": "real_estate_direct"
     },
@@ -878,7 +892,7 @@
     {
       "id": "cto",
       "label": "Compte-titres ordinaire (CTO)",
-      "family": "Comptes-titres",
+      "family": "Épargne bancaire",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
@@ -892,7 +906,7 @@
     {
       "id": "pea",
       "label": "PEA (Plan d'épargne en actions)",
-      "family": "Comptes-titres",
+      "family": "Épargne bancaire",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -906,7 +920,7 @@
     {
       "id": "pea_pme",
       "label": "PEA-PME",
-      "family": "Comptes-titres",
+      "family": "Épargne bancaire",
       "kind": "contrat_compte_enveloppe",
       "ppDirectHoldable": true,
       "pmEligibility": "non",
@@ -946,48 +960,6 @@
       "templateKey": "listed_securities"
     },
     {
-      "id": "oat_obligations_etat",
-      "label": "Bons / OAT / obligations d’État",
-      "family": "Valeurs mobilières",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Titres souverains ; risque de taux/valeur, liquidité souvent élevée.",
-      "references": [
-        "AMF — Instruments financiers (repères)"
-      ],
-      "templateKey": "listed_securities"
-    },
-    {
-      "id": "obligations_corporate",
-      "label": "Obligations (corporate)",
-      "family": "Valeurs mobilières",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Obligations d’entreprises ; risque émetteur + risque de taux.",
-      "references": [
-        "AMF — Instruments financiers (repères)"
-      ],
-      "templateKey": "listed_securities"
-    },
-    {
-      "id": "obligations_convertibles",
-      "label": "Obligations convertibles",
-      "family": "Valeurs mobilières",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Obligation convertible en actions ; profil hybride.",
-      "references": [
-        "AMF — Instruments financiers (repères)"
-      ],
-      "templateKey": "listed_securities"
-    },
-    {
       "id": "parts_sociales_cooperatives",
       "label": "Parts sociales (banques mutualistes / coopératives)",
       "family": "Valeurs mobilières",
@@ -1017,7 +989,7 @@
     },
     {
       "id": "droits_bsa_dps",
-      "label": "Droits / BSA / DPS (instruments d’augmentation de capital)",
+      "label": "Bon de souscription d'actions / Droits / Droit préférentiel de souscription (DPS)",
       "family": "Valeurs mobilières",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
