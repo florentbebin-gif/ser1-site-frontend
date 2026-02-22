@@ -127,30 +127,45 @@ describe('Catalogue seed — gouvernance familles (pas de buckets dédiés crypt
   });
 });
 
-describe('Catalogue seed — OPC assimilation (Point 2)', () => {
-  it('detailed OPC products do NOT exist (collapsed into opc_opcvm)', () => {
+describe('Catalogue seed — OPC / underlying assets removed (not directly subscribable)', () => {
+  it('OPC/SICAV/FCP/ETF do NOT exist (underlying of CTO/PEA)', () => {
     expect(ids).not.toContain('etf');
     expect(ids).not.toContain('fcp');
     expect(ids).not.toContain('opcvm');
     expect(ids).not.toContain('sicav');
+    expect(ids).not.toContain('opc_opcvm');
   });
 
-  it('opc_opcvm exists and is in family "Fonds / OPC"', () => {
-    expect(ids).toContain('opc_opcvm');
-    const p = products.find((pr) => pr.id === 'opc_opcvm')!;
-    expect(p.family).toBe('Fonds / OPC');
+  it('FCPE does NOT exist (underlying of PEE/PERCOL)', () => {
+    expect(ids).not.toContain('fcpe');
+  });
+
+  it('directly subscribable funds remain (FCPR, FCPI, FIP, OPCI)', () => {
+    expect(ids).toContain('fcpr');
+    expect(ids).toContain('fcpi');
+    expect(ids).toContain('fip');
+    expect(ids).toContain('opci_grand_public');
   });
 });
 
-describe('Catalogue seed — groupements fonciers assimilation (Point 2)', () => {
-  it('detailed groupement products do NOT exist (collapsed into groupement_foncier)', () => {
+describe('Catalogue seed — groupements fonciers (split by succession regime)', () => {
+  it('legacy detailed IDs do NOT exist', () => {
     expect(ids).not.toContain('gfa');
     expect(ids).not.toContain('gfv');
     expect(ids).not.toContain('groupement_forestier');
+    expect(ids).not.toContain('groupement_foncier');
   });
 
-  it('groupement_foncier exists', () => {
-    expect(ids).toContain('groupement_foncier');
+  it('GFA/GFV split exists (art. 793 bis)', () => {
+    expect(ids).toContain('groupement_foncier_agri_viti');
+    const p = products.find((pr) => pr.id === 'groupement_foncier_agri_viti')!;
+    expect(p.family).toBe('Immobilier indirect (pierre-papier & foncier)');
+  });
+
+  it('GFF split exists (art. 793 1° 3°)', () => {
+    expect(ids).toContain('groupement_foncier_forestier');
+    const p = products.find((pr) => pr.id === 'groupement_foncier_forestier')!;
+    expect(p.family).toBe('Immobilier indirect (pierre-papier & foncier)');
   });
 });
 
@@ -303,8 +318,8 @@ describe('Catalogue seed — PP/PM cohérence', () => {
     }
   });
 
-  it('regulated savings (LEP, LDDS, Livret Jeune, PEL) are PP-only', () => {
-    const ppOnly = ['lep', 'ldds', 'livret_jeune', 'pel'];
+  it('regulated savings (LEP, LDDS, Livret Jeune, PEL, CEL) are PP-only', () => {
+    const ppOnly = ['lep', 'ldds', 'livret_jeune', 'pel', 'cel'];
     for (const id of ppOnly) {
       const p = products.find((pr) => pr.id === id)!;
       expect(p.pmEligibility, `${id} should be PP-only`).toBe('non');
