@@ -36,12 +36,11 @@ export const GRANDE_FAMILLE_OPTIONS = [
   'Fonds/OPC',
   'Immobilier direct',
   'Immobilier indirect',
-  'Crypto-actifs',
   'Non coté/PE',
   'Créances/Droits',
   'Dispositifs fiscaux immo',
-  'Métaux précieux',
   'Retraite & épargne salariale',
+  'Autres',
 ] as const;
 
 // ---------------------------------------------------------------------------

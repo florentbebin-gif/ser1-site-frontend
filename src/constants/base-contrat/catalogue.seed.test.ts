@@ -95,6 +95,34 @@ describe('Catalogue seed — métaux précieux (simplifié)', () => {
   it('metaux_precieux exists', () => {
     expect(ids).toContain('metaux_precieux');
   });
+
+  it('metaux_precieux is in family "Autres" (assimilation)', () => {
+    const p = products.find((pr) => pr.id === 'metaux_precieux')!;
+    expect(p.family).toBe('Autres');
+  });
+});
+
+describe('Catalogue seed — crypto-actifs (assimilation: zéro sous-catégories)', () => {
+  it('detailed crypto products do NOT exist (collapsed into crypto_actifs)', () => {
+    expect(ids).not.toContain('bitcoin_btc');
+    expect(ids).not.toContain('ether_eth');
+    expect(ids).not.toContain('nft');
+    expect(ids).not.toContain('stablecoins');
+    expect(ids).not.toContain('tokens_autres');
+  });
+
+  it('crypto_actifs exists and is in family "Autres"', () => {
+    expect(ids).toContain('crypto_actifs');
+    const p = products.find((pr) => pr.id === 'crypto_actifs')!;
+    expect(p.family).toBe('Autres');
+  });
+});
+
+describe('Catalogue seed — gouvernance familles (pas de buckets dédiés crypto/métaux)', () => {
+  it('no product uses legacy families "Crypto-actifs" or "Métaux précieux"', () => {
+    const invalid = products.filter((p) => p.family === 'Crypto-actifs' || p.family === 'Métaux précieux');
+    expect(invalid).toHaveLength(0);
+  });
 });
 
 describe('Catalogue seed — prévoyance (split obligatoire)', () => {

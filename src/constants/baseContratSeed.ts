@@ -68,17 +68,18 @@ interface RawCatalogue {
 function familyToGrandeFamille(family: string): GrandeFamille {
   const map: Record<string, GrandeFamille> = {
     'Assurance': 'Assurance',
-    'Crypto-actifs': 'Crypto-actifs',
+    'Crypto-actifs': 'Autres',
     'Créances / Droits': 'Créances/Droits',
     'Dispositifs fiscaux immobiliers': 'Dispositifs fiscaux immo',
     'Épargne bancaire': 'Épargne bancaire',
     'Fonds / OPC': 'Fonds/OPC',
     'Immobilier direct': 'Immobilier direct',
     'Immobilier indirect (pierre-papier & foncier)': 'Immobilier indirect',
-    'Métaux précieux': 'Métaux précieux',
+    'Métaux précieux': 'Autres',
     'Non coté / Private Equity': 'Non coté/PE',
     'Retraite & épargne salariale': 'Retraite & épargne salariale',
     'Titres vifs': 'Titres vifs',
+    'Autres': 'Autres',
   };
   return map[family] ?? 'Non coté/PE';
 }
@@ -92,12 +93,11 @@ function grandeFamilleToFamilyLegacy(gf: GrandeFamille): BaseContratProduct['fam
     'Fonds/OPC': 'Titres',
     'Immobilier direct': 'Immobilier',
     'Immobilier indirect': 'Immobilier',
-    'Crypto-actifs': 'Autres',
     'Non coté/PE': 'Autres',
     'Créances/Droits': 'Autres',
     'Dispositifs fiscaux immo': 'Défiscalisation',
-    'Métaux précieux': 'Autres',
     'Retraite & épargne salariale': 'Assurance',
+    'Autres': 'Autres',
   };
   return map[gf] ?? 'Autres';
 }

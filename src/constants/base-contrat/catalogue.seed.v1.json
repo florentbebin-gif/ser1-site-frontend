@@ -102,72 +102,16 @@
       "templateKey": "insurance_risk_generic"
     },
     {
-      "id": "bitcoin_btc",
-      "label": "Bitcoin (BTC)",
-      "family": "Crypto-actifs",
+      "id": "crypto_actifs",
+      "label": "Crypto-actifs",
+      "family": "Autres",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",
       "open2026": "na",
-      "qualificationComment": "Actif numérique ; volatilité élevée, risques de conservation.",
+      "qualificationComment": "Actifs numériques (crypto-actifs) — fiscalité spécifique art. 150 VH bis. Assimilation : pas de sous-catégories si règles identiques.",
       "references": [
         "AMF — Crypto-actifs (repères/FAQ)"
-      ],
-      "templateKey": "crypto_asset"
-    },
-    {
-      "id": "ether_eth",
-      "label": "Ether (ETH)",
-      "family": "Crypto-actifs",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Actif numérique ; mêmes vigilances (custody, volatilité).",
-      "references": [
-        "AMF — Crypto-actifs (repères/FAQ)"
-      ],
-      "templateKey": "crypto_asset"
-    },
-    {
-      "id": "nft",
-      "label": "NFT",
-      "family": "Crypto-actifs",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Jeton non fongible ; marché risqué/illiquide.",
-      "references": [
-        "AMF — Crypto-actifs (repères)"
-      ],
-      "templateKey": "crypto_asset"
-    },
-    {
-      "id": "stablecoins",
-      "label": "Stablecoins",
-      "family": "Crypto-actifs",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Jetons visant une stabilité ; risques de contrepartie/structure.",
-      "references": [
-        "AMF — Crypto-actifs (repères)"
-      ],
-      "templateKey": "crypto_asset"
-    },
-    {
-      "id": "tokens_autres",
-      "label": "Tokens (autres crypto-actifs)",
-      "family": "Crypto-actifs",
-      "kind": "actif_instrument",
-      "ppDirectHoldable": true,
-      "pmEligibility": "oui",
-      "open2026": "na",
-      "qualificationComment": "Tokens utilitaires/sécurité selon cas ; qualifier traitement et risques.",
-      "references": [
-        "AMF — Crypto-actifs (repères)"
       ],
       "templateKey": "crypto_asset"
     },
@@ -769,7 +713,7 @@
     {
       "id": "metaux_precieux",
       "label": "Métaux précieux",
-      "family": "Métaux précieux",
+      "family": "Autres",
       "kind": "actif_instrument",
       "ppDirectHoldable": true,
       "pmEligibility": "oui",

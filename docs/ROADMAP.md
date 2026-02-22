@@ -235,7 +235,9 @@ Ce que ça change (cible) :
 
 #### P1-05 — Catalogue Patrimonial & Règles Exhaustives (Base Parfaite)
 
-**Objectif** : Passer d'un catalogue plat "fourre-tout" à une **taxonomie relationnelle SaaS** (Wrappers ↔ Assets ↔ Tax Overlays ↔ Passif), nettoyer les produits non pertinents en direct (structurés), et garantir 100 % de couverture de règles (y compris les Protections calculables). Implémentation via `schemaVersion: 3`.
+**Objectif** : Passer d'un catalogue plat "fourre-tout" à une **taxonomie relationnelle SaaS** (Wrappers ↔ Assets ↔ Tax Overlays ↔ Passif), nettoyer les produits non pertinents en direct (structurés), et garantir 100 % de couverture de règles (y compris les Protections calculables).
+
+Implémentation via `schemaVersion: 3` (taxonomie) + migrations correctives `schemaVersion: 4` (cleanup catalogue : purge structurés résiduels DB, fusion métaux précieux, split prévoyance).
 
 **Pré-requis** : P1-04 terminé (adapter générique, UX no-tech, tests 1-clic).
 
@@ -255,6 +257,12 @@ Ce que ça change (cible) :
 3. **`liability` (Passif/Dettes)** : Crédit amortissable, Crédit in fine, Lombard. (Crucial pour calcul IFI / Succession).
 4. **`tax_overlay` (Surcouches Immo)** : Pinel, Malraux, Déficit foncier (applicables sur `asset` Immo locatif).
 5. **`protection` (Prévoyance/Emprunteur)** : *Deviennent calculables*.
+
+##### 2b. Gouvernance catalogue — assimilation (règle métier)
+
+- **Si les règles fiscales sont identiques, on n'ajoute pas de sous-catégories** : on crée un seul produit "assimilé".
+- Exemple : **Crypto-actifs** (BTC/ETH/NFT/stablecoins/etc. → 1 entrée) ; **Métaux précieux** (or/argent/platine → 1 entrée).
+- Les produits assimilés sont rangés dans **`Autres`** (bucket unique pour ce qui ne rentre pas ailleurs).
 
 ##### 3. Blocs de Règles Manquants (Couverture 100%)
 

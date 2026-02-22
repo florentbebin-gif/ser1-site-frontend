@@ -41,7 +41,7 @@ function makeProduct(partial: Partial<BaseContratProduct> & { id: string; label:
 }
 
 describe('migrateBaseContratSettingsToLatest (V3 → V4 cleanup)', () => {
-  it('removes structured-like products, collapses precious metals, and splits prevoyance', () => {
+  it('removes structured-like products, collapses metals + crypto (assimilation), and splits prevoyance', () => {
     const v3: BaseContratSettings = {
       schemaVersion: 3,
       products: [
@@ -53,9 +53,14 @@ describe('migrateBaseContratSettingsToLatest (V3 → V4 cleanup)', () => {
         makeProduct({ id: 'emtn_x', label: 'EMTN', sortOrder: 4 }),
 
         // Precious metals (must be collapsed)
-        makeProduct({ id: 'or_physique', label: 'Or physique', grandeFamille: 'Métaux précieux', catalogKind: 'asset', sortOrder: 5 }),
-        makeProduct({ id: 'argent_physique', label: 'Argent physique', grandeFamille: 'Métaux précieux', catalogKind: 'asset', sortOrder: 6 }),
-        makeProduct({ id: 'platine_palladium', label: 'Platine / palladium physiques', grandeFamille: 'Métaux précieux', catalogKind: 'asset', sortOrder: 7 }),
+        makeProduct({ id: 'or_physique', label: 'Or physique', grandeFamille: 'Métaux précieux' as never, catalogKind: 'asset', sortOrder: 5 }),
+        makeProduct({ id: 'argent_physique', label: 'Argent physique', grandeFamille: 'Métaux précieux' as never, catalogKind: 'asset', sortOrder: 6 }),
+        makeProduct({ id: 'platine_palladium', label: 'Platine / palladium physiques', grandeFamille: 'Métaux précieux' as never, catalogKind: 'asset', sortOrder: 7 }),
+
+        // Crypto sub-categories (must be collapsed)
+        makeProduct({ id: 'bitcoin_btc', label: 'Bitcoin (BTC)', grandeFamille: 'Crypto-actifs' as never, catalogKind: 'asset', sortOrder: 10 }),
+        makeProduct({ id: 'ether_eth', label: 'Ether (ETH)', grandeFamille: 'Crypto-actifs' as never, catalogKind: 'asset', sortOrder: 11 }),
+        makeProduct({ id: 'nft', label: 'NFT', grandeFamille: 'Crypto-actifs' as never, catalogKind: 'asset', sortOrder: 12 }),
 
         // Prevoyance legacy (must be split)
         makeProduct({
@@ -85,10 +90,27 @@ describe('migrateBaseContratSettingsToLatest (V3 → V4 cleanup)', () => {
     expect(ids).not.toContain('platine_palladium');
     expect(ids).toContain('metaux_precieux');
 
+    const metals = migrated.products.find((p) => p.id === 'metaux_precieux');
+    expect(metals?.grandeFamille).toBe('Autres');
+
+    // Crypto collapse
+    expect(ids).not.toContain('bitcoin_btc');
+    expect(ids).not.toContain('ether_eth');
+    expect(ids).not.toContain('nft');
+    expect(ids).toContain('crypto_actifs');
+
+    const crypto = migrated.products.find((p) => p.id === 'crypto_actifs');
+    expect(crypto?.grandeFamille).toBe('Autres');
+
     // Prevoyance split
     expect(ids).not.toContain('prevoyance_individuelle');
     expect(ids).toContain('prevoyance_individuelle_deces');
     expect(ids).toContain('prevoyance_individuelle_itt_invalidite');
+
+    const prevDeces = migrated.products.find((p) => p.id === 'prevoyance_individuelle_deces');
+    const prevItt = migrated.products.find((p) => p.id === 'prevoyance_individuelle_itt_invalidite');
+    expect(prevDeces?.sortOrder).toBe(8);
+    expect(prevItt?.sortOrder).toBe(9);
 
     // No duplicates
     expect(new Set(ids).size).toBe(ids.length);

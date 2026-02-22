@@ -35,12 +35,11 @@ export type GrandeFamille =
   | 'Fonds/OPC'
   | 'Immobilier direct'
   | 'Immobilier indirect'
-  | 'Crypto-actifs'
   | 'Non coté/PE'
   | 'Créances/Droits'
   | 'Dispositifs fiscaux immo'
-  | 'Métaux précieux'
-  | 'Retraite & épargne salariale';
+  | 'Retraite & épargne salariale'
+  | 'Autres';
 
 /** V2 — Nature du produit (deprecated en V3, remplacé par CatalogKind) */
 export type ProductNature =

@@ -36,6 +36,10 @@ const STRUCTURED_WORD_RAW_RE = /structur(é|ée|és|ées)\b/i;
 
 const DETAILED_PRECIOUS_METALS_IDS = new Set(['argent_physique', 'or_physique', 'platine_palladium']);
 
+const DETAILED_CRYPTO_IDS = new Set(['bitcoin_btc', 'ether_eth', 'nft', 'stablecoins', 'tokens_autres']);
+
+const LEGACY_GRANDE_FAMILLES_TO_AUTRES = new Set(['Crypto-actifs', 'Métaux précieux']);
+
 // ---------------------------------------------------------------------------
 // Migration lazy V1 → V2
 // Pattern identique à migrateV1toV2 dans fiscalSettingsCache.js
@@ -48,7 +52,9 @@ function familyToGrandeFamille(family: string): BaseContratProduct['grandeFamill
     'Titres': 'Titres vifs',
     'Immobilier': 'Immobilier direct',
     'Défiscalisation': 'Dispositifs fiscaux immo',
-    'Autres': 'Non coté/PE',
+    'Crypto-actifs': 'Autres',
+    'Métaux précieux': 'Autres',
+    'Autres': 'Autres',
   };
   return map[family] ?? 'Non coté/PE';
 }
@@ -77,7 +83,7 @@ function buildMergedPreciousMetalsProduct(base: BaseContratProduct): BaseContrat
     label: 'Métaux précieux',
     envelopeType: 'metaux_precieux',
     // On garde les métadonnées cohérentes avec un actif détenable.
-    grandeFamille: 'Métaux précieux',
+    grandeFamille: 'Autres',
     catalogKind: 'asset',
     // Legacy (V1/V2) : classer en "Autres" côté family.
     family: 'Autres',
@@ -86,6 +92,29 @@ function buildMergedPreciousMetalsProduct(base: BaseContratProduct): BaseContrat
       base.commentaireQualification ??
       'Métaux précieux détenus en direct (or/argent/platine…). Fiscalité à qualifier selon modalité de détention et régime choisi.',
   };
+}
+
+function buildMergedCryptoProduct(base: BaseContratProduct): BaseContratProduct {
+  return {
+    ...base,
+    id: 'crypto_actifs',
+    label: 'Crypto-actifs',
+    envelopeType: 'crypto_actifs',
+    grandeFamille: 'Autres',
+    catalogKind: 'asset',
+    family: 'Autres',
+    templateKey: base.templateKey ?? 'crypto_asset',
+    commentaireQualification:
+      base.commentaireQualification ??
+      'Actifs numériques (crypto-actifs) — fiscalité spécifique art. 150 VH bis. Assimilation : pas de sous-catégories si règles identiques.',
+  };
+}
+
+function normalizeGrandeFamille(p: BaseContratProduct): BaseContratProduct {
+  // Le type GrandeFamille n'inclut plus ces valeurs legacy, mais elles peuvent exister en DB.
+  const gf = p.grandeFamille as unknown as string;
+  if (LEGACY_GRANDE_FAMILLES_TO_AUTRES.has(gf)) return { ...p, grandeFamille: 'Autres' };
+  return p;
 }
 
 function buildSplitPrevoyanceProduct(
@@ -110,7 +139,9 @@ function migrateBaseContratV3toV4(data: BaseContratSettings): BaseContratSetting
   const v3 = migrateBaseContratV2toV3(data);
 
   // 1) Supprimer les produits structurés résiduels (DB historique)
-  const withoutStructured = v3.products.filter((p) => !isStructuredLikeProduct(p));
+  const withoutStructured = v3.products
+    .filter((p) => !isStructuredLikeProduct(p))
+    .map(normalizeGrandeFamille);
 
   // 2) Métaux précieux : collapse des sous-produits en un seul produit
   const detailedMetals = withoutStructured.filter((p) => DETAILED_PRECIOUS_METALS_IDS.has(p.id));
@@ -123,6 +154,17 @@ function migrateBaseContratV3toV4(data: BaseContratSettings): BaseContratSetting
     products = [...products, merged].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   }
 
+  // 2b) Crypto-actifs : collapse des sous-produits en un seul produit
+  const detailedCrypto = products.filter((p) => DETAILED_CRYPTO_IDS.has(p.id));
+  products = products.filter((p) => !DETAILED_CRYPTO_IDS.has(p.id));
+
+  const hasMergedCrypto = products.some((p) => p.id === 'crypto_actifs');
+  if (!hasMergedCrypto && detailedCrypto.length > 0) {
+    const base = [...detailedCrypto].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))[0];
+    const merged = buildMergedCryptoProduct(base);
+    products = [...products, merged].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  }
+
   // 3) Prévoyance : split obligatoire (décès vs ITT/invalidité)
   const prev = products.find((p) => p.id === 'prevoyance_individuelle');
   if (prev) {
@@ -131,10 +173,12 @@ function migrateBaseContratV3toV4(data: BaseContratSettings): BaseContratSetting
     const hasA = products.some((p) => p.id === 'prevoyance_individuelle_deces');
     const hasB = products.some((p) => p.id === 'prevoyance_individuelle_itt_invalidite');
 
+    const prevSort = typeof prev.sortOrder === 'number' ? prev.sortOrder : null;
+
     const toAdd: BaseContratProduct[] = [];
     if (!hasA) {
       const splitA = buildSplitPrevoyanceProduct(prev, 'prevoyance_individuelle_deces', 'Prévoyance individuelle décès');
-      splitA.sortOrder = prev.sortOrder;
+      if (prevSort !== null) splitA.sortOrder = prevSort;
       toAdd.push(splitA);
     }
     if (!hasB) {
@@ -143,8 +187,18 @@ function migrateBaseContratV3toV4(data: BaseContratSettings): BaseContratSetting
         'prevoyance_individuelle_itt_invalidite',
         'Prévoyance individuelle arrêt de travail / invalidité',
       );
-      splitB.sortOrder = prev.sortOrder + 0.1;
+      if (prevSort !== null) splitB.sortOrder = prevSort + 1;
       toAdd.push(splitB);
+    }
+
+    // Si on remplace 1 produit legacy par 2 nouveaux, on décale les suivants pour
+    // garder des sortOrder entiers et éviter les collisions.
+    if (!hasA && !hasB && prevSort !== null) {
+      products = products.map((p) => {
+        if (typeof p.sortOrder !== 'number') return p;
+        if (p.sortOrder > prevSort) return { ...p, sortOrder: p.sortOrder + 1 };
+        return p;
+      });
     }
 
     if (toAdd.length > 0) {
@@ -152,10 +206,14 @@ function migrateBaseContratV3toV4(data: BaseContratSettings): BaseContratSetting
     }
   }
 
-  // 4) Réassigner sortOrder en int pour éviter des flottants et stabiliser l'UI.
-  products = products
-    .map((p, idx) => ({ ...p, sortOrder: idx + 1 }))
-    // Sécurité : pas de doublons après migration.
+  // 4) Dedupe (sécurité) — on conserve l'ordre existant (sortOrder) :
+  // migration minimale, sans réordonner arbitrairement le catalogue admin.
+  products = [...products]
+    .sort((a, b) => {
+      const sa = typeof a.sortOrder === 'number' ? a.sortOrder : Number.POSITIVE_INFINITY;
+      const sb = typeof b.sortOrder === 'number' ? b.sortOrder : Number.POSITIVE_INFINITY;
+      return sa - sb;
+    })
     .filter((p, idx, arr) => arr.findIndex((x) => x.id === p.id) === idx);
 
   return {
