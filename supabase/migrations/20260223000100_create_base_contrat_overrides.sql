@@ -39,27 +39,13 @@ CREATE POLICY "overrides_select_authenticated"
   TO authenticated
   USING (true);
 
--- Écriture : admin uniquement (is_admin flag sur le profil)
+-- Écriture : admin uniquement (public.is_admin() — même pattern que base_contrat_settings)
 CREATE POLICY "overrides_write_admin"
   ON public.base_contrat_overrides
   FOR ALL
   TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM public.profiles
-      WHERE profiles.id = auth.uid()
-        AND profiles.is_admin = true
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1
-      FROM public.profiles
-      WHERE profiles.id = auth.uid()
-        AND profiles.is_admin = true
-    )
-  );
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
 
 -- ── Grants ───────────────────────────────────────────────────────────────────
 
