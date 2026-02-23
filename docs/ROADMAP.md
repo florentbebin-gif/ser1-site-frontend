@@ -200,117 +200,35 @@ Ce que ça change (cible) :
 
 #### P1-04 — Base-Contrat V3 : Expérience Admin Premium & Source de Vérité Universelle
 
-**Objectif** : Faire du catalogue des enveloppes l'unique source de vérité pour tous les simulateurs (IR, Placements), administrable par un utilisateur métier (zéro jargon informatique).
+**Objectif** : Nettoyer le legacy et pivoter vers un catalogue hardcodé fiable avec overrides admin.
 
-##### 1. UX "No-Tech" et Mode Détaillé
-- Les identifiants techniques (slugs, `$ref`, versions) sont strictement masqués en mode normal.
-- Le vocabulaire est premium et métier ("Enveloppe", "Modèle de référence", "Règles", "Cas pratique").
-- Un mode "⚙ Afficher les détails" reste disponible pour le diagnostic technique admin.
-- **DoD (Preuve)** : Aucun jargon technique visible dans l'UI (revue visuelle + captures).
-
-##### 2. Cohérence des Gates de Validation
-- La logique d'avertissement est strictement identique entre `/settings/impots`, `/settings/prelevements` et `/settings/base-contrat`.
-- La sauvegarde n'est jamais bloquée techniquement, mais l'absence de tests génère un avertissement clair orientant vers l'ajout d'un cas pratique.
-- **DoD (Preuve)** : Revue visuelle confirmant l'utilisation d'une bannière d'avertissement harmonisée et non bloquante sur les 3 pages.
-
-##### 3. Assistant de Tests "1-Clic" (Verrouillage de Référence)
-- Fini l'import de tests au format JSON. L'admin décrit un cas pratique via un mini-formulaire métier.
-- Le système calcule automatiquement le résultat via le moteur réel et affiche un **résumé lisible du calcul** avant validation.
-- L'admin valide via un bouton "Marquer comme référence" avec la mention : *"Ce cas servira de contrôle lors des prochaines mises à jour."*
-- Ce test "fige" une référence qui peut être désactivée sans être supprimée.
-- **DoD (Preuve)** : Démonstration UI (captures/vidéo) du flux de création de test sans exposition de schéma de données, incluant la prévisualisation du calcul.
-
-##### 4. Source de Vérité Universelle (Comportements configurables)
-- Objectif : Comportements configurables sans toucher au code.
-- Les IDs internes stables sont conservés en base (invisibles dans l'UI).
-- L'UI propose un mapping métier ("Ce produit se comporte comme...").
-- L'adaptateur dynamique déduit le traitement fiscal sans ID codé en dur dans le front.
-- **DoD (Preuve)** : Le référentiel Base-Contrat n'utilise plus de seed legacy (catalogue hardcodé + overrides).
-
-##### Séquence d'exécution (PRs)
-- **PR 0 : Découpage technique (Dette)** : Extraction des composants de `BaseContrat.tsx` (< 300 lignes). Zéro changement UX.
-- **PR 1 : UX Métier & Gates** : Vocabulaire premium, masquage des IDs (mode détaillé), harmonisation de la bannière sur les 3 pages Settings.
-- **PR 2 : Assistant de Test "1-Clic"** : Suppression de l'import JSON, création du flux de test métier avec prévisualisation et "Marquer comme référence".
-- **PR 3 : Adaptateur Générique** : Remplacement des IDs hardcodés par une résolution dynamique selon la configuration de l'enveloppe.
+##### État du Pivot (PR1, PR2, PR3) 
+- **PR1** : Création du catalogue hardcodé (`src/domain/base-contrat/catalog.ts`) et de l'infrastructure `base_contrat_overrides` (Supabase).
+- **PR2** : Refonte de l'UI `/settings/base-contrat` en read-only (3 colonnes : Constitution, Sortie, Décès), toggle PP/PM, et modal de clôture admin.
+- **PR3** : Nettoyage massif (suppression seed JSON, cache legacy, hooks, adaptateurs, migration SQL, rules editor).
 
 #### P1-05 — Catalogue Patrimonial & Règles Exhaustives (Base Parfaite)
 
-**Objectif** : Passer d'un catalogue plat "fourre-tout" à une **taxonomie relationnelle SaaS** (Wrappers ↔ Assets ↔ Tax Overlays ↔ Passif), nettoyer les produits non pertinents en direct (structurés), et garantir 100 % de couverture de règles (y compris les Protections calculables).
+**Objectif** : Implémenter les règles fiscales exhaustives pour chaque famille de produits, avec des tests "golden" et une UX premium sans jargon.
 
-Implémentation via `schemaVersion: 3` (taxonomie) + `schemaVersion: 4` (cleanup : purge structurés, fusion métaux/crypto, split prévoyance) + `schemaVersion: 5` (rules : zéro exception PM, assimilation OPC/groupements fonciers, split PP/PM, remap legacy IDs).
+##### Étapes Restantes
+- **Implémentation des Règles Fiscales** : Définir et coder en dur les règles fiscales (IR, PS, DMTG) pour toutes les grandes familles de produits, de la Constitution au Décès.
+- **Golden Tests** : Mettre en place des cas de test de référence (Golden Cases) pour chaque produit dans l'engine (`src/engine/__tests__/goldenCases.test.ts`), garantissant la non-régression.
+- **UX Premium** : S'assurer que les libellés utilisés dans toute l'application (IR, Placement, Succession) sont des termes métier clairs, sans IDs techniques ni jargon de développeur.
 
-**Pré-requis** : P1-04 terminé (adapter générique, UX no-tech, tests 1-clic).
-
-##### 1. Refonte du Modèle de Données (`schemaVersion: 3`)
-- **Nouveau typage `BaseContratProductV3`** :
-  - `catalogKind`: `'wrapper' | 'asset' | 'tax_overlay' | 'protection' | 'liability'`.
-  - `directHoldable`: `boolean` (remplace `detensiblePP`).
-  - `corporateHoldable`: `boolean` (remplace `eligiblePM`).
-  - `allowedWrappers`: `string[]` (Ex: Un actif 'Actions' a `['cto', 'pea']`).
-- **Migration automatique** : Fonction `migrateV2ToV3` exécutée au chargement si version antérieure.
-
-##### 2. Taxonomie Cible (5 Familles)
-
-1. **`wrapper` (Enveloppes/Contenants fiscaux)** : Assurance-vie, PEA, CTO, PER, PEE, SCI.
-2. **`asset` (Actifs détenables en direct)** : Immo locatif, Résidence principale, Titres vifs, Liquidités, SCPI.
-   - *Règle stricte* : Le catalogue patrimonial contient uniquement des actifs détenables directement. Les produits structurés ne sont pas listés.
-3. **`liability` (Passif/Dettes)** : Crédit amortissable, Crédit in fine, Lombard. (Crucial pour calcul IFI / Succession).
-4. **`tax_overlay` (Surcouches Immo)** : Pinel, Malraux, Déficit foncier (applicables sur `asset` Immo locatif).
-5. **`protection` (Prévoyance/Emprunteur)** : *Deviennent calculables*.
-
-##### 2b. Gouvernance catalogue — assimilation (règle métier)
-
-- **Si les règles fiscales sont identiques, on n'ajoute pas de sous-catégories** : on crée un seul produit "assimilé".
-- Exemples appliqués :
-  - **Crypto-actifs** (BTC/ETH/NFT/stablecoins → `crypto_actifs`) ;
-  - **Métaux précieux** (or/argent/platine → `metaux_precieux`) ;
-  - **OPC / OPCVM** (OPCVM+SICAV+FCP+ETF → `opc_opcvm`, fiscalité PFU identique) ;
-  - **Groupements fonciers** (GFA+GFV+GF/GFF → `groupement_foncier`).
-- FCPR/FCPI/FIP/FCPE/OPCI ont des régimes distincts et restent séparés.
-
-##### 2c. Règles V5 — PP/PM split & zéro exception
-
-- **`eligiblePM`** : uniquement `'oui'` ou `'non'` (ancienne valeur `'parException'` supprimée).
-- **Split PP/PM** : tout produit PP+PM est scindé en `<id>_pp` + `<id>_pm` (exclusivité PP-only ou PM-only).
-- **Remap legacy** : `immobilier_appartement_maison` → `residence_principale`, `per_perin` → `perin_assurance`.
-
-##### 3. Blocs de Règles Manquants (Couverture 100%)
-
-| templateId | Phase | Description (Calcul) |
-|------------|-------|----------------------|
-| `dmtg-droit-commun` | décès | Barème successoral (DMTG) selon lien de parenté (Gap transversal majeur). |
-| `revenus-fonciers-nu` | sortie | Immo : Micro-foncier vs réel (charges + déficit foncier). |
-| `bic-meuble-lmnp` | sortie | Immo : Micro-BIC vs réel (amortissements). |
-| `passif-deductibilite` | sortie/décès | Dettes : Déductibilité IFI et passif successoral. |
-| `primes-prevoyance` | constitution | Protections : Primes versées (déductibles Madelin oui/non). |
-| `rentes-invalidite` | sortie | Protections : Rente versée en cas d'ITT (imposabilité IR). |
-| `capital-deces-prevoyance` | décès | Protections : Capital décès (Exonéré vs art. 990I). |
-
-##### 4. Séquence d'exécution (PRs, max 7)
-
-- **PR 0 : Anti-Godfile (Dette tech)** : Découpage obligatoire de `src/pages/Sous-Settings/BaseContrat.tsx` (1300 lignes) en sous-composants propres (List, Modal, PhaseColumn).
-- **PR 1 : Modèle V3 & Migration** : Implémentation `schemaVersion: 3`, `catalogKind`, et `migrateV2ToV3`.
-- **PR 2 : Nettoyage Catalogue & Taxonomie** : Purge des produits obsolètes du seed. Ajout des Wrappers manquants (PEA, CTO) et des Passifs (Crédits).
-- **PR 3 : Adaptateur Générique** : Résolution des wrappers via metadata, suppression des IDs hardcodés.
-- **PR 4 : Blocs DMTG & Passif** : Création du bloc `dmtg-droit-commun` (assigné à tous les wrappers hors assurance) et des blocs de dettes.
-- **PR 5 : Blocs Immobilier & Protections calculables** : Création des blocs foncier/BIC et des blocs Prévoyance (primes, rentes, capital).
-- **PR 6 : UI Sélection Entonnoir** : Frontend métier (Choix Enveloppe ➔ Choix Actif ➔ Surcouche). Les relations `allowedWrappers` sont appliquées.
-- **PR 7 : Tests 1-clic 100%** : Un cas de test par produit.
-
-##### 5. Fichiers à supprimer à terme
+##### Fichiers supprimés (Cleanup PR3)
 
 | Fichier | PR de suppression | Preuve de suppression safe |
 |---------|-------------------|----------------------------|
-| `src/constants/base-contrat/catalogue.seed.v1.json` | ✅ PR3 | `rg "catalogue\.seed" src/` → vide |
-| `src/constants/baseContratSeed.ts` | ✅ PR3 | `rg "baseContratSeed" src/` → vide |
+| `src/constants/base-contrat/catalogue.seed.v1.json` | PR3 | `rg "catalogue\.seed" src/` → vide |
+| `src/constants/baseContratSeed.ts` | PR3 | `rg "baseContratSeed" src/` → vide |
 
-##### 6. Manques hors catalogue (à prévoir dans l'analyse patrimoniale globale)
+##### Manques hors catalogue (à prévoir dans l'analyse patrimoniale globale)
 - Démembrement de propriété (Nue-propriété / Usufruit transversal).
 - Régimes matrimoniaux (Communauté vs Séparation).
 - Gestion fine des SCI et Holding (à l'IS).
 
 ##### Critères d'acceptation (DoD global) — Checklist vérifiable
-
 | # | Critère | Commande de vérif. | Résultat attendu |
 |---|---------|-------------------|------------------|
 | 1 | Routes listables depuis source unique | `rg -n "path:" src/routes/appRoutes.ts` | Retourne la liste des routes APP_ROUTES (pas de duplication inline) |
