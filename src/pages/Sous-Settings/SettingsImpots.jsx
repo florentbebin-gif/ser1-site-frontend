@@ -6,11 +6,6 @@ import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.js';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/utils/settingsHelpers.js';
-import {
-  getBaseContratSettings,
-  isBaseContratSettingsSourceAvailable,
-} from '@/utils/baseContratSettingsCache';
-import { evaluatePublicationGate } from '@/features/settings/publicationGate';
 
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 
@@ -64,7 +59,6 @@ export default function SettingsImpots() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [openSection, setOpenSection] = useState(null);
-  const [publicationGate, setPublicationGate] = useState(() => evaluatePublicationGate({ tests: [] }));
 
   // Chargement user + paramètres depuis la table tax_settings
   useEffect(() => {
@@ -90,31 +84,9 @@ export default function SettingsImpots() {
           console.error('Erreur chargement tax_settings :', taxErr);
         }
 
-        try {
-          const [baseContratSettings, testsSourceAvailable] = await Promise.all([
-            getBaseContratSettings(),
-            isBaseContratSettingsSourceAvailable(),
-          ]);
-          if (mounted) {
-            setPublicationGate(
-              evaluatePublicationGate({
-                tests: baseContratSettings?.tests,
-                testsSourceAvailable,
-              }),
-            );
-          }
-        } catch {
-          if (mounted) {
-            setPublicationGate(evaluatePublicationGate({ tests: [], testsSourceAvailable: false }));
-          }
-        }
-
         if (mounted) setLoading(false);
       } catch (e) {
         console.error(e);
-        if (mounted) {
-          setPublicationGate(evaluatePublicationGate({ tests: [], testsSourceAvailable: false }));
-        }
         if (mounted) setLoading(false);
       }
     }
@@ -128,11 +100,6 @@ export default function SettingsImpots() {
   // Sauvegarde
   const handleSave = async () => {
     if (!isAdmin) return;
-
-    if (publicationGate.blocked) {
-      setMessage(publicationGate.blockMessage ?? 'Publication impossible.');
-      return;
-    }
     
     try {
       setSaving(true);
@@ -309,20 +276,6 @@ export default function SettingsImpots() {
             ? 'Enregistrement…'
             : 'Enregistrer les paramètres impôts'}
         </button>
-      )}
-
-      {publicationGate.blocked && publicationGate.blockMessage && (
-        <div className="settings-feedback-message settings-feedback-message--warning">
-          <strong>⚠ Enregistrement possible, mais attention :</strong><br/>
-          {publicationGate.blockMessage.replace('⚠ Publication impossible :', '')}<br/>
-          <em>(Pour ajouter un test : ajoutez au moins un cas de test validé depuis la page Base-Contrat via le bouton « Configurer les règles » puis « Ajouter un test »)</em>
-        </div>
-      )}
-
-      {!publicationGate.blocked && publicationGate.warningMessage && (
-        <div className="settings-feedback-message settings-feedback-message--warning">
-          {publicationGate.warningMessage}
-        </div>
       )}
 
       {message && (
