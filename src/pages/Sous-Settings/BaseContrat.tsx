@@ -55,7 +55,7 @@ function PhaseCell({ label, applicable }: { label: string; applicable: boolean }
     <div style={{ flex: 1, minWidth: 160 }}>
       <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-c9)', marginBottom: 4 }}>{label}</div>
       {applicable
-        ? <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c3)', color: '#fff', fontWeight: 600 }}>Applicable</span>
+        ? <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c3)', color: 'var(--color-c7)', fontWeight: 600 }}>Applicable</span>
         : <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c8)', color: 'var(--color-c9)', fontWeight: 600 }}>Sans objet</span>
       }
     </div>
@@ -107,7 +107,7 @@ function OverrideModal({
             type="date"
             value={closedDate}
             onChange={(e) => setClosedDate(e.target.value)}
-            style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}
+            style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: 'var(--color-c7)' }}
           />
           <label style={{ fontSize: 13, fontWeight: 600 }}>Note admin <span style={{ fontWeight: 400, color: 'var(--color-c9)' }}>(optionnel)</span></label>
           <textarea
@@ -115,7 +115,7 @@ function OverrideModal({
             onChange={(e) => setNote(e.target.value)}
             rows={2}
             placeholder="Ex : Dispositif supprimé par la loi de finances 2025"
-            style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF', resize: 'vertical' }}
+            style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: 'var(--color-c7)', resize: 'vertical' }}
           />
         </div>
         <div className="report-modal-actions">
@@ -229,7 +229,7 @@ export default function BaseContrat() {
                     fontSize: 13,
                     fontWeight: togglePPPM === v ? 600 : 400,
                     background: togglePPPM === v ? 'var(--color-c3)' : 'transparent',
-                    color: togglePPPM === v ? '#fff' : 'var(--color-c9)',
+                    color: togglePPPM === v ? 'var(--color-c7)' : 'var(--color-c9)',
                     border: 'none',
                     cursor: 'pointer',
                   }}
@@ -248,12 +248,12 @@ export default function BaseContrat() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Rechercher un produit"
-            style={{ flex: '1 1 200px', fontSize: 13, padding: '7px 12px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#FFFFFF' }}
+            style={{ flex: '1 1 200px', fontSize: 13, padding: '7px 12px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: 'var(--color-c7)' }}
           />
           <select
             value={filterFamille}
             onChange={(e) => setFilterFamille(e.target.value)}
-            style={{ fontSize: 12, padding: '7px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#FFFFFF' }}
+            style={{ fontSize: 12, padding: '7px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: 'var(--color-c7)' }}
           >
             <option value="">Toutes les familles</option>
             {GRANDE_FAMILLE_OPTIONS.map((gf) => <option key={gf} value={gf}>{gf}</option>)}
