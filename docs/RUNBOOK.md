@@ -186,6 +186,32 @@ Les changements sont stockés dans la table Supabase `base_contrat_overrides` (c
 
 ---
 
+## Base-Contrat — Process Dev (Ajout / Modification)
+
+Le référentiel est 100% hardcodé dans `src/domain/base-contrat/`. Toute modification du catalogue ou des règles passe par une PR.
+
+### Règle d'or (UX Premium)
+Toujours utiliser des **libellés métier clairs**. Aucun jargon technique ni ID ne doit être visible par l'utilisateur final.
+
+### 1. Ajouter un produit
+1. Ouvrir `src/domain/base-contrat/catalog.ts`.
+2. Ajouter une entrée dans le tableau `CATALOG` dans la bonne `GrandeFamille`.
+3. Renseigner `id`, `label` (métier), `grandeFamille`, `catalogKind`, `ppEligible`, `pmEligible`.
+4. Si le produit partage les mêmes règles qu'un autre (ex: crypto = autres), l'assimiler sans créer de sous-catégorie fiscale inutile.
+5. Lancer `npm run check`.
+
+### 2. Ajouter/modifier une règle fiscale (3 colonnes)
+1. Identifier la phase impactée : **Constitution**, **Sortie/Rachat**, ou **Décès/Transmission**.
+2. Modifier ou créer la fonction de calcul dans `src/engine/` (ex: `src/engine/tax.ts`, `src/engine/succession.ts`).
+3. S'assurer que le calcul utilise les paramètres globaux (tax_settings, ps_settings) et non des valeurs en dur.
+
+### 3. Ajouter/mettre à jour les tests (Golden Tests)
+1. Ouvrir `src/engine/__tests__/goldenCases.test.ts` (ou le fichier de test lié au domaine).
+2. Ajouter un cas de test documenté avec des entrées déterministes et les sorties attendues calculées manuellement.
+3. Lancer `npm test` et `npm run check` pour garantir l'absence de régression.
+
+---
+
 ## Repo hygiene — Delete unused
 
 **Règle** : Si ça ne sert plus = on supprime.

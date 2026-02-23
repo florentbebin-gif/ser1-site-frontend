@@ -247,9 +247,12 @@ Objectif : hasher un manifest déterministe (pas le binaire) pour limiter les va
 
 ---
 
-## Base-Contrat — Catalogue Patrimonial V3 + Cleanup V4 (P1-05)
+## Base-Contrat — Référentiel Patrimonial (Pivot Hardcodé)
 
-Pivot actuel : catalogue hardcodé (`src/domain/base-contrat/catalog.ts`) + overrides Supabase (`base_contrat_overrides`).
+Source de vérité : `src/domain/base-contrat/` (catalogue + règles).
+Overlays admin : table `base_contrat_overrides` (clôture/réouverture + date + note).
+
+UI : `/settings/base-contrat` est une vue read-only à 3 colonnes (Constitution / Sortie-Rachat / Décès-Transmission), avec toggle Particulier/Entreprise.
 
 ### Gouvernance catalogue — assimilation
 
@@ -257,7 +260,7 @@ Pivot actuel : catalogue hardcodé (`src/domain/base-contrat/catalog.ts`) + over
 - Exemples : crypto-actifs (BTC/ETH/NFT/...) → 1 produit ; métaux précieux (or/argent/platine/...) → 1 produit.
 - Ces produits assimilés sont rangés dans **GrandeFamille = `Autres`**.
 
-### Taxonomie V3 (5 catalogKind)
+### Taxonomie (5 catalogKind)
 
 | catalogKind | Description | Exemples |
 |-------------|-------------|----------|
