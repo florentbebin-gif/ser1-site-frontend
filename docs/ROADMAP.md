@@ -93,8 +93,8 @@ Ce que ça change (cible) :
    - Preuve : `src/App.jsx` (routes + topbar + icônes SVG) ; voir en particulier la cohabitation `Routes/Route` + `topbar` + `Icon*`.
 2. **Dépendance inverse** (feature → pages) sur Placement : des composants de `src/features/placement/*` importent des utilitaires/composants sous `src/pages/placement/*`.
    - Preuve : imports dans `src/features/placement/components/*` vers `@/pages/placement/...`.
-3. **Pages Settings dispersées** : les routes settings pointent vers `src/pages/Sous-Settings/*` via `src/constants/settingsRoutes.js`, tandis que du "shared" settings existe aussi sous `src/components/settings/*` et une logique "feature" sous `src/features/settings/*`.
-   - Preuve : `src/constants/settingsRoutes.js` importe `../pages/Sous-Settings/*` ; `src/components/settings/` et `src/features/settings/publicationGate.ts` existent et sont consommés par `pages/Sous-Settings/*`.
+3. **Pages Settings dispersées** : les routes settings pointent vers `src/pages/Sous-Settings/*` via `src/constants/settingsRoutes.js`, tandis que du "shared" settings existe aussi sous `src/components/settings/*`.
+   - Preuve : `src/constants/settingsRoutes.js` importe `../pages/Sous-Settings/*` ; `src/components/settings/` existe.
 4. **Présence de dossiers non-prod dans `src/`** : `src/pptx/template/__spike__/` et `src/icons/business/_raw/` sont présents dans `src/`.
    - Preuve : arborescence `src/pptx/template/__spike__/` et `src/icons/business/_raw/`.
 
@@ -225,7 +225,7 @@ Ce que ça change (cible) :
 - Les IDs internes stables sont conservés en base (invisibles dans l'UI).
 - L'UI propose un mapping métier ("Ce produit se comporte comme...").
 - L'adaptateur dynamique déduit le traitement fiscal sans ID codé en dur dans le front.
-- **DoD (Preuve)** : Les simulateurs fonctionnent via le paramétrage UI. Le code (ex: `baseContratAdapter.ts`) n'a plus d'ID métier en dur.
+- **DoD (Preuve)** : Le référentiel Base-Contrat n'utilise plus de seed legacy (catalogue hardcodé + overrides).
 
 ##### Séquence d'exécution (PRs)
 - **PR 0 : Découpage technique (Dette)** : Extraction des composants de `BaseContrat.tsx` (< 300 lignes). Zéro changement UX.
@@ -291,18 +291,18 @@ Implémentation via `schemaVersion: 3` (taxonomie) + `schemaVersion: 4` (cleanup
 - **PR 0 : Anti-Godfile (Dette tech)** : Découpage obligatoire de `src/pages/Sous-Settings/BaseContrat.tsx` (1300 lignes) en sous-composants propres (List, Modal, PhaseColumn).
 - **PR 1 : Modèle V3 & Migration** : Implémentation `schemaVersion: 3`, `catalogKind`, et `migrateV2ToV3`.
 - **PR 2 : Nettoyage Catalogue & Taxonomie** : Purge des produits obsolètes du seed. Ajout des Wrappers manquants (PEA, CTO) et des Passifs (Crédits).
-- **PR 3 : Adaptateur Générique** : Résolution des wrappers via metadata, suppression des IDs hardcodés dans `baseContratAdapter.ts`.
+- **PR 3 : Adaptateur Générique** : Résolution des wrappers via metadata, suppression des IDs hardcodés.
 - **PR 4 : Blocs DMTG & Passif** : Création du bloc `dmtg-droit-commun` (assigné à tous les wrappers hors assurance) et des blocs de dettes.
 - **PR 5 : Blocs Immobilier & Protections calculables** : Création des blocs foncier/BIC et des blocs Prévoyance (primes, rentes, capital).
 - **PR 6 : UI Sélection Entonnoir** : Frontend métier (Choix Enveloppe ➔ Choix Actif ➔ Surcouche). Les relations `allowedWrappers` sont appliquées.
-- **PR 7 : Tests 1-clic 100% & Cleanup Seed** : Suppression du fichier `catalogue.seed.v1.json` une fois tout migré en DB avec un cas de test par produit.
+- **PR 7 : Tests 1-clic 100%** : Un cas de test par produit.
 
 ##### 5. Fichiers à supprimer à terme
 
 | Fichier | PR de suppression | Preuve de suppression safe |
 |---------|-------------------|----------------------------|
-| `src/constants/base-contrat/catalogue.seed.v1.json` | PR 7 | `rg "catalogue.seed" src/` → vide |
-| `src/constants/baseContratSeed.ts` | PR 7 | `rg "baseContratSeed" src/` → vide |
+| `src/constants/base-contrat/catalogue.seed.v1.json` | ✅ PR3 | `rg "catalogue\.seed" src/` → vide |
+| `src/constants/baseContratSeed.ts` | ✅ PR3 | `rg "baseContratSeed" src/` → vide |
 
 ##### 6. Manques hors catalogue (à prévoir dans l'analyse patrimoniale globale)
 - Démembrement de propriété (Nue-propriété / Usufruit transversal).
@@ -367,16 +367,12 @@ Entrées clés :
 - Exports : `src/pptx/`, `src/utils/xlsxBuilder.ts`, `src/utils/exportFingerprint.ts`
 - Supabase Edge Function : `supabase/functions/admin/index.ts`
 - Migrations : `supabase/migrations/`
-- **Base-Contrat (source de vérité calculateurs)** :
-  - Types : `src/types/baseContratSettings.ts`
-  - Cache : `src/utils/baseContratSettingsCache.ts`
-  - Hook : `src/hooks/useBaseContratSettings.ts`
-  - Adapter (→ calculateurs) : `src/utils/baseContratAdapter.ts`
-  - Seed catalogue : `src/constants/base-contrat/catalogue.seed.v1.json`
-  - Block templates (blocs réutilisables) : `src/constants/base-contrat/blockTemplates.ts`
-  - Field labels FR : `src/constants/base-contrat/fieldLabels.fr.ts`
+- **Base-Contrat (référentiel contrats)** :
+  - Catalogue hardcodé : `src/domain/base-contrat/catalog.ts`
+  - Overrides (clôture / note) : `src/domain/base-contrat/overrides.ts`
+  - Cache overrides (Supabase) : `src/utils/baseContratOverridesCache.ts`
+  - UI (read-only) : `src/pages/Sous-Settings/BaseContrat.tsx`
   - Labels FR (UI) : `src/constants/baseContratLabels.ts`
-  - Templates pré-remplis (AV/CTO/PEA/PER) : `src/constants/baseContratTemplates.ts`
 
 Voir aussi :
 - `docs/GOUVERNANCE.md` (règles UI/couleurs/thème)
