@@ -6,11 +6,6 @@ import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.j
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/utils/settingsHelpers.js';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
-import {
-  getBaseContratSettings,
-  isBaseContratSettingsSourceAvailable,
-} from '@/utils/baseContratSettingsCache';
-import { evaluatePublicationGate } from '@/features/settings/publicationGate';
 
 import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
 
@@ -27,7 +22,6 @@ export default function SettingsPrelevements() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [openSection, setOpenSection] = useState(null);
-  const [publicationGate, setPublicationGate] = useState(() => evaluatePublicationGate({ tests: [] }));
 
   // ----------------------
   // Chargement initial
@@ -58,31 +52,9 @@ export default function SettingsPrelevements() {
           console.error('Erreur chargement ps_settings :', psErr);
         }
 
-        try {
-          const [baseContratSettings, testsSourceAvailable] = await Promise.all([
-            getBaseContratSettings(),
-            isBaseContratSettingsSourceAvailable(),
-          ]);
-          if (mounted) {
-            setPublicationGate(
-              evaluatePublicationGate({
-                tests: baseContratSettings?.tests,
-                testsSourceAvailable,
-              }),
-            );
-          }
-        } catch {
-          if (mounted) {
-            setPublicationGate(evaluatePublicationGate({ tests: [], testsSourceAvailable: false }));
-          }
-        }
-
         if (mounted) setLoading(false);
       } catch (e) {
         console.error(e);
-        if (mounted) {
-          setPublicationGate(evaluatePublicationGate({ tests: [], testsSourceAvailable: false }));
-        }
         if (mounted) setLoading(false);
       }
     }
@@ -116,11 +88,6 @@ export default function SettingsPrelevements() {
   // ----------------------
   const handleSave = async () => {
     if (!isAdmin) return;  // on ne fait rien si pas admin
-
-    if (publicationGate.blocked) {
-      setError(publicationGate.blockMessage ?? 'Publication impossible.');
-      return;
-    }
 
     try {
       setSaving(true);
@@ -232,20 +199,6 @@ export default function SettingsPrelevements() {
                 ? 'Enregistrement…'
                 : 'Enregistrer les paramètres'}
             </button>
-          )}
-
-          {publicationGate.blocked && publicationGate.blockMessage && (
-            <div className="settings-feedback-message settings-feedback-message--warning">
-              <strong>⚠ Enregistrement possible, mais attention :</strong><br/>
-              {publicationGate.blockMessage.replace('⚠ Publication impossible :', '')}<br/>
-              <em>(Pour ajouter un test : ajoutez au moins un cas de test validé depuis la page Base-Contrat via le bouton « Configurer les règles » puis « Ajouter un test »)</em>
-            </div>
-          )}
-
-          {!publicationGate.blocked && publicationGate.warningMessage && (
-            <div className="settings-feedback-message settings-feedback-message--warning">
-              {publicationGate.warningMessage}
-            </div>
           )}
 
           {message && (

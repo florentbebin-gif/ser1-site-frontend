@@ -6,32 +6,8 @@
  */
 
 export type {
-  ProductFamily,
-  GrandeFamille,
-  ProductNature,
   CatalogKind,
-  EligiblePM,
-  SouscriptionOuverte,
-  Holders,
-  ConfidenceLevel,
-  BlockKind,
-  FieldType,
-  OfficialSource,
-  FieldDef,
-  Block,
-  Phase,
-  Phases,
-  VersionedRuleset,
-  BaseContratProduct,
-  ProductTest,
-  BaseContratSettings,
-} from './types';
-
-export {
-  EMPTY_PHASE,
-  EMPTY_PHASES,
-  EMPTY_RULESET,
-  EMPTY_PRODUCT,
+  GrandeFamille,
 } from './types';
 
 export type { CatalogProduct } from './catalog';

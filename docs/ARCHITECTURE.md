@@ -17,7 +17,6 @@ Dev qui doit intervenir sur une feature, un export, un thème, ou Supabase.
 - [Supabase: données, RLS, edge functions](#supabase-données-rls-edge-functions)
 - [Thème & branding](#thème--branding)
 - [Exports (PPTX/Excel)](#exports-pptxexcel)
-- [Publication (admin) : gate de sécurité](#publication-admin--gate-de-sécurité)
 - [Références](#références)
 
 ---
@@ -180,7 +179,8 @@ Tables repères (haut niveau) :
 - `cabinets` (tenant) : `default_theme_id`, `logo_id`.
 - `themes` : presets/système.
 - `ui_settings` : préférences user (`theme_mode`, `preset_id`, `my_palette`).
-- Settings GLOBAUX : `tax_settings`, `ps_settings`, `fiscality_settings`, `base_contrat_settings`.
+- Settings GLOBAUX : `tax_settings`, `ps_settings`, `fiscality_settings`.
+- Référentiel contrats (Base-Contrat) : `base_contrat_overrides`.
 
 ### Edge Function `admin`
 - Source : `supabase/functions/admin/index.ts`.
@@ -247,19 +247,9 @@ Objectif : hasher un manifest déterministe (pas le binaire) pour limiter les va
 
 ---
 
-## Publication (admin) : gate de sécurité
-
-"Publication" = action admin qui persiste des règles métier utilisées par les simulateurs.
-
-Règle actuelle : **Avertissement non bloquant** s'il n'existe pas au moins un test "validé". La publication stricte sera imposée en fin de projet.
-
-Source : `src/features/settings/publicationGate.ts` (utilisé par les pages Settings).
-
----
-
 ## Base-Contrat — Catalogue Patrimonial V3 + Cleanup V4 (P1-05)
 
-Source : `src/types/baseContratSettings.ts` (schemaVersion: 3 = taxonomie) + `schemaVersion: 4` (migrations correctives/cleanup) → `src/constants/base-contrat/catalogue.seed.v1.json` (legacy, à supprimer).
+Pivot actuel : catalogue hardcodé (`src/domain/base-contrat/catalog.ts`) + overrides Supabase (`base_contrat_overrides`).
 
 ### Gouvernance catalogue — assimilation
 
@@ -290,17 +280,13 @@ Source : `src/types/baseContratSettings.ts` (schemaVersion: 3 = taxonomie) + `sc
 ### Vérification
 
 ```bash
-# Nombre de catalogKind (schemaVersion: 3)
-rg "catalogKind:" src/types/baseContratSettings.ts | wc -l
-# → 5 (wrapper, asset, liability, tax_overlay, protection)
+# Nombre de catalogKind (pivot)
+rg "export type CatalogKind" src/domain/base-contrat/types.ts
+# → 1
 
-# Absence de produits structurés dans le catalogue
-rg "Produits structurés" src/constants/base-contrat/catalogue.seed.v1.json
-# → 0 (après suppression PR 2)
-
-# Assimilation crypto/métaux (pas de sous-catégories)
-rg "bitcoin_btc|ether_eth|nft|stablecoins|tokens_autres" src/constants/base-contrat/catalogue.seed.v1.json
-# → 0
+# Catalogue hardcodé (périmètre)
+rg "export const CATALOG" src/domain/base-contrat/catalog.ts
+# → 1
 ```
 
 ---

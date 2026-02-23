@@ -107,7 +107,7 @@ function OverrideModal({
             type="date"
             value={closedDate}
             onChange={(e) => setClosedDate(e.target.value)}
-            style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF' }}
+            style={{ fontFamily: 'inherit', fontSize: 13, padding: '3px 4px', border: '1px solid var(--color-c8)', borderRadius: 4, backgroundColor: '#fff' }}
           />
           <label style={{ fontSize: 13, fontWeight: 600 }}>Note admin <span style={{ fontWeight: 400, color: 'var(--color-c9)' }}>(optionnel)</span></label>
           <textarea
@@ -115,7 +115,7 @@ function OverrideModal({
             onChange={(e) => setNote(e.target.value)}
             rows={2}
             placeholder="Ex : Dispositif supprimé par la loi de finances 2025"
-            style={{ fontSize: 13, padding: '8px 10px', border: '1px solid var(--color-c8)', borderRadius: 6, backgroundColor: '#FFFFFF', resize: 'vertical' }}
+            style={{ fontFamily: 'inherit', fontSize: 13, padding: '3px 4px', border: '1px solid var(--color-c8)', borderRadius: 4, backgroundColor: '#fff', resize: 'vertical' }}
           />
         </div>
         <div className="report-modal-actions">
@@ -248,12 +248,12 @@ export default function BaseContrat() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Rechercher un produit"
-            style={{ flex: '1 1 200px', fontSize: 13, padding: '7px 12px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#FFFFFF' }}
+            style={{ fontFamily: 'inherit', flex: '1 1 200px', fontSize: 13, padding: '7px 12px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#fff' }}
           />
           <select
             value={filterFamille}
             onChange={(e) => setFilterFamille(e.target.value)}
-            style={{ fontSize: 12, padding: '7px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#FFFFFF' }}
+            style={{ fontFamily: 'inherit', fontSize: 12, padding: '7px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#fff' }}
           >
             <option value="">Toutes les familles</option>
             {GRANDE_FAMILLE_OPTIONS.map((gf) => <option key={gf} value={gf}>{gf}</option>)}

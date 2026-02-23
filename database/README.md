@@ -34,9 +34,9 @@ docs/RUNBOOK.md                      # Parcours local Supabase (start/reset/migr
 |---|-------------------------------|-------------|
 | 1 | `20260210214352_remote_commit.sql` | Snapshot complet du schéma |
 | 2 | `20260211000100_harmonize_rls_tax_ps_is_admin.sql` | RLS admin fix |
-| 3 | `20260211001000_create_base_contrat_settings.sql` | Table base_contrat |
-| 4 | `20260211100100_p0_02_rls_profiles_per_cabinet.sql` | RLS profiles multi-tenant |
-| 5 | `20260211100200_p0_01_disable_self_signup.sql` | Self-signup désactivé (reminder) |
+| 3 | `20260211100100_p0_02_rls_profiles_per_cabinet.sql` | RLS profiles multi-tenant |
+| 4 | `20260211100200_p0_01_disable_self_signup.sql` | Self-signup désactivé (reminder) |
+| 5 | `20260223000100_create_base_contrat_overrides.sql` | Table base_contrat_overrides |
 
 > **Note** : L'historique des migrations legacy est disponible via `git log`.
 
