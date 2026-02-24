@@ -36,7 +36,7 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
     ],
     deces: [
       {
-        title: 'Fin de vie / événements de sortie de la personne morale',
+        title: 'Fin de vie / sortie de la PM',
         bullets: [
           'En cas de dissolution, liquidation ou cession d’activité, le traitement est effectué dans les opérations de clôture de la personne morale.',
           'La valorisation retenue à la clôture détermine l’assiette fiscale finale selon le régime applicable.',
@@ -317,8 +317,8 @@ const COMPTE_COURANT_ASSOCIE: ProductRules = {
     {
       title: 'Nature juridique',
       bullets: [
-        'Prêt consenti par un associé à sa société (créance sur la société).',
-        'Intérêts déductibles pour la société dans la limite du taux plafond légal.',
+        'Prêt consenti par un associé à l\'entité dans laquelle il détient des droits (créance de compte courant d\'associé).',
+        'Intérêts déductibles pour l\'entité débitrice dans la limite du taux plafond légal.',
       ],
       tags: ['pret_associe', 'interet_deductible_societe'],
       confidence: 'elevee',
@@ -341,7 +341,7 @@ const COMPTE_COURANT_ASSOCIE: ProductRules = {
       bullets: [
         'La créance (solde du CCA) intègre la succession à sa valeur nominale.',
         'DMTG selon le barème légal.',
-        'Risque de dépréciation si la société est en difficulté : valeur à estimer avec prudence.',
+        'Risque de dépréciation si l\'entité débitrice est en difficulté : valeur à estimer avec prudence.',
       ],
       tags: ['dmtg_classique', 'valeur_nominale'],
       confidence: 'elevee',

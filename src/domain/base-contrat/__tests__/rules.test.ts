@@ -267,6 +267,84 @@ describe('confidence policy — sources ont des URLs https valides', () => {
 // ─────────────────────────────────────────────────────────────
 
 describe('strings interdites — PR6 fiabilisation', () => {
+  it('audience PM — couverture pmEligible (3 phases non vides + contenu PM safe)', () => {
+    const PM_FORBIDDEN_PATTERNS: RegExp[] = [
+      /décès/i,
+      /deces/i,
+      /ne\s+d[eé]c[eè]de\s+pas/i,
+      /succession/i,
+      /990\s*I/i,
+      /757\s*B/i,
+      /usufruitier au décès/i,
+      /au jour du décès/i,
+      /\bDMTG\b/i,
+    ];
+
+    for (const product of CATALOG.filter((p) => p.pmEligible)) {
+      const rules = getRules(product.id, 'pm');
+      expect(rules.constitution.length, `constitution vide en PM pour ${product.id}`).toBeGreaterThanOrEqual(1);
+      expect(rules.sortie.length, `sortie vide en PM pour ${product.id}`).toBeGreaterThanOrEqual(1);
+      expect(rules.deces.length, `fin de vie vide en PM pour ${product.id}`).toBeGreaterThanOrEqual(1);
+
+      const pmDeathTexts = rules.deces.flatMap((b) => [b.title, ...b.bullets]).join(' ');
+      expect(
+        /dissolution|liquidation|cession|clôture|cloture|cessation/i.test(pmDeathTexts),
+        `Phase fin de vie PM sans événement de sortie explicite pour ${product.id}`,
+      ).toBe(true);
+      expect(
+        /r[eé]sultat|fiscal|imposition|assiette|IS|IR|boni|mali/i.test(pmDeathTexts),
+        `Phase fin de vie PM sans traitement fiscal/résultat explicite pour ${product.id}`,
+      ).toBe(true);
+
+      const allTexts = [
+        ...rules.constitution.flatMap((b) => [b.title, ...b.bullets]),
+        ...rules.sortie.flatMap((b) => [b.title, ...b.bullets]),
+        ...rules.deces.flatMap((b) => [b.title, ...b.bullets]),
+      ];
+
+      for (const text of allTexts) {
+        for (const pattern of PM_FORBIDDEN_PATTERNS) {
+          expect(
+            pattern.test(text),
+            `Pattern interdit ${pattern} trouvé en PM pour ${product.id}: "${text}"`,
+          ).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('audience routing — produits PP+PM retournent des règles distinctes', () => {
+    for (const product of CATALOG.filter((p) => p.ppEligible && p.pmEligible)) {
+      const ppRules = getRules(product.id, 'pp');
+      const pmRules = getRules(product.id, 'pm');
+
+      expect(
+        JSON.stringify(ppRules) !== JSON.stringify(pmRules),
+        `Routing audience non différencié pour ${product.id}`,
+      ).toBe(true);
+    }
+  });
+
+  it('audience PM — phase 3 standardisée sur produits PM éligibles', () => {
+    const PM_PHASE_3_TITLE = 'Fin de vie / sortie de la PM';
+
+    for (const product of CATALOG.filter((p) => p.pmEligible)) {
+      const rules = getRules(product.id, 'pm');
+
+      expect(
+        rules.deces.length,
+        `Phase 3 vide en PM pour ${product.id}`,
+      ).toBeGreaterThanOrEqual(1);
+
+      for (const block of rules.deces) {
+        expect(
+          block.title,
+          `Titre phase 3 PM non standardisé pour ${product.id}: "${block.title}"`,
+        ).toBe(PM_PHASE_3_TITLE);
+      }
+    }
+  });
+
   it('prevoyance_deces (PP) — pas de "2,5 % du PASS" dans constitution', () => {
     const rules = getRules('prevoyance_individuelle_deces', 'pp');
     const allBullets = rules.constitution.flatMap((b) => b.bullets);
@@ -310,6 +388,7 @@ describe('strings interdites — PR6 fiabilisation', () => {
     const PM_FORBIDDEN_PATTERNS: RegExp[] = [
       /décès/i,
       /deces/i,
+      /ne\s+d[eé]c[eè]de\s+pas/i,
       /succession/i,
       /990\s*I/i,
       /757\s*B/i,
@@ -338,12 +417,16 @@ describe('strings interdites — PR6 fiabilisation', () => {
   });
 
   it('audience PP — pas de vocabulaire PM/IS sur produits sensibles', () => {
-    const PP_SENSITIVE_IDS = ['parts_scpi', 'contrat_capitalisation'];
+    const PP_SENSITIVE_IDS = CATALOG
+      .filter((p) => p.ppEligible && p.pmEligible)
+      .map((p) => p.id);
+
     const PP_FORBIDDEN_PM_PATTERNS: RegExp[] = [
       /\bIS\b/i,
       /impôt sur les sociétés/i,
       /personne morale/i,
       /société/i,
+      /sortie de la PM/i,
       /\bPM\b/,
     ];
 

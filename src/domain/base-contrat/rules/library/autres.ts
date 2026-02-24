@@ -33,7 +33,7 @@ function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRul
     ],
     deces: [
       {
-        title: 'Fin de vie / événements de sortie de la personne morale',
+        title: 'Fin de vie / sortie de la PM',
         bullets: [
           'En cas de dissolution, liquidation ou cession d’activité, le traitement est effectué dans les opérations de clôture de la personne morale.',
           'La valorisation retenue à la clôture détermine l’assiette fiscale finale selon le régime applicable.',

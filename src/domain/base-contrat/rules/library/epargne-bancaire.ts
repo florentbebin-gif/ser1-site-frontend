@@ -103,7 +103,7 @@ const CTO_PM: ProductRules = {
   sortie: CTO.sortie,
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, les titres sont intégrés aux opérations de clôture de la personne morale.',
         'Le résultat fiscal des cessions est déterminé selon le régime d’imposition (IS/IR) et les écritures de clôture applicables.',
@@ -331,7 +331,7 @@ const CAT_CSL_PM: ProductRules = {
   sortie: CAT_CSL.sortie,
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, les soldes sont intégrés aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de clôture dépend du régime d’imposition (IS/IR) et de la qualification comptable des flux.',

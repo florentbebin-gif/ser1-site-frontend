@@ -71,7 +71,7 @@ const PARTS_SCPI_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'En cas de dissolution, liquidation ou cession d\'activité, les parts de SCPI sont intégrées aux opérations de clôture de la personne morale.',
         'Le résultat de cession ou de liquidation est traité selon le régime fiscal de la personne morale.',
@@ -163,7 +163,7 @@ const LOCATIF_NU_PM: ProductRules = {
   sortie: LOCATIF_NU.sortie,
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, le bien est intégré aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de sortie dépend du régime d’imposition (IS/IR) et des écritures de clôture applicables.',
@@ -304,7 +304,7 @@ const IMMO_AUTRE_PM: ProductRules = {
   sortie: IMMO_AUTRE.sortie,
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, le bien est intégré aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de sortie dépend du régime d’imposition (IS/IR) et de la nature comptable du bien.',
@@ -401,7 +401,7 @@ const GROUPEMENT_FONCIER_AGRI_VITI_PM: ProductRules = {
   sortie: GROUPEMENT_FONCIER_AGRI_VITI.sortie,
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, les parts sont intégrées aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de sortie est déterminé selon le régime d’imposition et la valorisation retenue à la clôture.',
@@ -461,7 +461,7 @@ const GROUPEMENT_FONCIER_FORESTIER_PM: ProductRules = {
   sortie: GROUPEMENT_FONCIER_FORESTIER.sortie,
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'En cas de dissolution, liquidation ou cession d’activité, les parts sont intégrées aux opérations de clôture de la personne morale.',
         'Le traitement fiscal de sortie est déterminé selon le régime d’imposition et la valorisation retenue à la clôture.',

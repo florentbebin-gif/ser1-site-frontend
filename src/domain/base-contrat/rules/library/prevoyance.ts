@@ -229,7 +229,7 @@ const ASSURANCE_EMPRUNTEUR_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Fin de vie / événement de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'Le capital est versé à l\'établissement prêteur : extinction de la dette de la société lors du sinistre couvert.',
         'En cas de dissolution, liquidation ou cessation d\'activité, le traitement comptable du remboursement peut générer un résultat exceptionnel imposable à l\'IS ou à l\'IR.',
@@ -267,7 +267,7 @@ const ASSURANCE_HOMME_CLE: ProductRules = {
   ],
   deces: [
     {
-      title: 'Fin de vie / événement déclencheur couvert (personne morale)',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'Le capital est versé à l\'entreprise (bénéficiaire) et intégré dans le résultat imposable de l\'exercice (produit exceptionnel, art. 38 CGI).',
         'Fiscalité : IS ou IR selon le régime de l\'entreprise.',
