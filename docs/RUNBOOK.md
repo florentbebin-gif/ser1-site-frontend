@@ -224,6 +224,27 @@ Le **moteur de calcul** (simulateurs) reste dans `src/engine/`.
 2. Ajouter une `ProductRules` avec title + bullets métier.
 3. Lancer `npm run check` — le test de coverage se met à jour automatiquement.
 
+#### Standard de qualité des règles (confidence policy)
+
+Chaque `RuleBlock` doit obligatoirement avoir un champ `confidence` : `'elevee'`, `'moyenne'`, ou `'faible'`.
+
+| Confidence | Signification | Obligations |
+|---|---|---|
+| `elevee` | Règle fiable, sourcée, stable | Aucune obligation supplémentaire |
+| `moyenne` | Règle correcte mais dépend de paramètres client | Au moins 1 bullet « À confirmer selon … » + `dependencies` non vide |
+| `faible` | Règle incertaine ou en attente de validation | Idem `moyenne` + `sources` obligatoire |
+
+**Champs optionnels** :
+- `sources` : max 2 entrées `{ label, url }` pointant vers BOFiP, Légifrance ou doctrine fiable (URLs `https://`).
+- `dependencies` : max 6 courtes phrases décrivant les paramètres dont dépend la règle.
+
+**Règles d'écriture** :
+- Ne jamais affirmer sans source officielle. Si la source manque → `confidence: 'moyenne'` minimum.
+- Préférer les sources officielles : BOFiP > Légifrance > doctrine professionnelle.
+- Les `tags` sont techniques (moteur futur) et jamais affichés en UI.
+- Les `confidence`, `sources`, `dependencies` sont internes et non affichés en UI.
+- Les tests (`rules.test.ts`) vérifient automatiquement le respect de cette policy.
+
 ### 3. Ajouter/mettre à jour les tests (Golden Tests)
 1. Ouvrir `src/engine/__tests__/goldenCases.test.ts` (ou le fichier de test lié au domaine).
 2. Ajouter un cas de test documenté avec des entrées déterministes et les sorties attendues calculées manuellement.
