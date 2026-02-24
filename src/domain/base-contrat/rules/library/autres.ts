@@ -7,6 +7,44 @@
 
 import type { ProductRules, Audience } from '../types';
 
+function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRules {
+  return {
+    constitution: [
+      {
+        title: `Détention (${subject})`,
+        bullets: [
+          'Le produit est détenu par la personne morale selon sa nature juridique et comptable.',
+          'Le traitement fiscal courant suit le régime d’imposition (IS/IR) et les règles comptables applicables.',
+        ],
+        tags: ['pm', 'detention', ...tags],
+        confidence: 'elevee',
+      },
+    ],
+    sortie: [
+      {
+        title: 'Cession / réalisation',
+        bullets: [
+          'Le résultat de cession ou de réalisation est intégré au résultat fiscal de la personne morale.',
+          'Les modalités de calcul dépendent des écritures de clôture et de la documentation comptable.',
+        ],
+        tags: ['resultat_fiscal', 'cession_pm', ...tags],
+        confidence: 'elevee',
+      },
+    ],
+    deces: [
+      {
+        title: 'Fin de vie / événements de sortie de la personne morale',
+        bullets: [
+          'En cas de dissolution, liquidation ou cession d’activité, le traitement est effectué dans les opérations de clôture de la personne morale.',
+          'La valorisation retenue à la clôture détermine l’assiette fiscale finale selon le régime applicable.',
+        ],
+        tags: ['fin_vie_pm', 'cloture_pm', ...tags],
+        confidence: 'elevee',
+      },
+    ],
+  };
+}
+
 const TONTINE: ProductRules = {
   constitution: [
     {
@@ -145,15 +183,15 @@ const METAUX_PRECIEUX: ProductRules = {
 
 export function getAutresRules(
   productId: string,
-  _audience: Audience,
+  audience: Audience,
 ): ProductRules | undefined {
   switch (productId) {
     case 'tontine':
-      return TONTINE;
+      return audience === 'pm' ? buildPmLifecycleRules('mécanisme tontinier', ['tontine']) : TONTINE;
     case 'crypto_actifs':
-      return CRYPTO_ACTIFS;
+      return audience === 'pm' ? buildPmLifecycleRules('crypto-actifs', ['crypto']) : CRYPTO_ACTIFS;
     case 'metaux_precieux':
-      return METAUX_PRECIEUX;
+      return audience === 'pm' ? buildPmLifecycleRules('métaux précieux', ['metaux_precieux']) : METAUX_PRECIEUX;
     default:
       return undefined;
   }

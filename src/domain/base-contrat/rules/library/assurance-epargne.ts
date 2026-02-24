@@ -44,6 +44,18 @@ const ASSURANCE_VIE_PP: ProductRules = {
       tags: ['abattement_4600_9200', 'seuil_150k', 'taux_7_5', 'art_125_0_a_cgi'],
       confidence: 'elevee',
     },
+    {
+      title: 'Anciens contrats — régimes antérieurs à 1997',
+      bullets: [
+        'Primes versées avant le 26 septembre 1997 sur des contrats ouverts avant cette date : gains susceptibles d\'être exonérés d\'IR (art. 125-0 A CGI — régimes I et I bis).',
+        'Plusieurs régimes transitoires coexistent selon la date d\'ouverture du contrat et la date de versement de chaque prime.',
+        'À confirmer selon l\'historique complet du contrat et les dates précises de versement.',
+      ],
+      tags: ['anciens_contrats', 'regime_transitoire', 'art_125_0_a_cgi'],
+      confidence: 'moyenne',
+      sources: [{ label: 'Art. 125-0 A CGI — BOFiP RPPM-RCM-10-10-80', url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630' }],
+      dependencies: ['date d\'ouverture du contrat', 'dates de versement des primes antérieures au 26/09/1997'],
+    },
   ],
   deces: [
     {
@@ -85,35 +97,25 @@ const CONTRAT_CAPITALISATION: ProductRules = {
       title: 'Versements',
       bullets: [
         'Versements libres ou programmés, sans plafond légal.',
-        'Accessible aux personnes physiques et aux personnes morales (sociétés, SCI, holding…).',
+        'Accessible aux personnes physiques.',
         'Mêmes supports qu\'un contrat d\'assurance-vie : fonds euros et unités de compte.',
       ],
-      tags: ['pm_eligible', 'supports_fe_uc'],
+      tags: ['pp_eligible', 'supports_fe_uc'],
       confidence: 'elevee',
     },
   ],
   sortie: [
     {
-      title: 'Particulier — même fiscalité que l\'assurance-vie',
+      title: 'Fiscalité des gains — même régime que l\'assurance-vie',
       bullets: [
         'Seule la part de gains est imposable (pas le capital remboursé).',
-        'Avant 8 ans : PFU 30 % (ou option barème IR).',
-        'Après 8 ans : abattement annuel 4 600 € / 9 200 € et taux réduit (7,5 % ou 12,8 % selon le total des primes).',
-        'Prélèvements sociaux : 17,2 % dans tous les cas.',
+        'Avant 8 ans : PFU 30 % (12,8 % IR + 17,2 % prélèvements sociaux), ou option barème IR.',
+        'Après 8 ans : abattement annuel 4 600 € (personne seule) / 9 200 € (couple). Taux IR 7,5 % si total primes < 150 000 €, sinon 12,8 %.',
+        'Prélèvements sociaux : 17,2 % dans tous les cas (après abattement).',
       ],
-      tags: ['pfu_30', 'abattement_4600_9200'],
+      tags: ['pfu_30', 'abattement_4600_9200', 'seuil_150k'],
       confidence: 'elevee',
-    },
-    {
-      title: 'Personne morale (IS)',
-      bullets: [
-        'Les gains sont intégrés au résultat fiscal soumis à l\'IS (25 %, ou 15 % pour les PME jusqu\'à 42 500 € de bénéfice).',
-        'Outil de gestion de trésorerie longue durée pour les entreprises.',
-        'À confirmer selon le régime fiscal (IS ou IR) et la durée de détention du contrat.',
-      ],
-      tags: ['is_25', 'is_15_pme', 'pm_eligible'],
-      confidence: 'moyenne',
-      dependencies: ['régime IS ou IR de la société', 'durée de détention du contrat'],
+      sources: [{ label: 'Art. 125-0 A CGI', url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630' }],
     },
   ],
   deces: [
@@ -171,12 +173,12 @@ const CONTRAT_CAPITALISATION_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Sans objet (Personne Morale)',
+      title: 'Fin de vie / événements de sortie de la personne morale',
       bullets: [
-        'Une personne morale ne décède pas. Le contrat n\'est pas dénoué par le décès du dirigeant ou des associés.',
-        'En cas de dissolution ou liquidation de la société, le contrat entre dans le boni de liquidation.',
+        'Le contrat suit la continuité de la personne morale tant qu\'elle est en activité.',
+        'En cas de dissolution, liquidation ou cession d\'activité, le contrat entre dans les opérations de clôture (boni/mali de liquidation selon la situation).',
       ],
-      tags: ['pm_no_deces', 'liquidation'],
+      tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
       confidence: 'elevee',
     },
   ],

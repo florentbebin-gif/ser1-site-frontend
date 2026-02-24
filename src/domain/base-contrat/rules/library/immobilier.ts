@@ -39,10 +39,44 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
       bullets: [
         'Le bien intègre la succession à sa valeur vénale au jour du décès.',
         'Droits de mutation à titre gratuit (DMTG) selon le barème et le lien de parenté.',
-        'Abattement de 100 000 € par enfant (renouvelable tous 15 ans).',
-        'L\'abattement IFI de 30 % n\'est pas applicable aux DMTG.',
       ],
-      tags: ['dmtg_classique', 'abattement_100k_enfant'],
+      tags: ['dmtg_classique'],
+      confidence: 'elevee',
+    },
+  ],
+};
+
+const PARTS_SCPI_PM: ProductRules = {
+  constitution: [
+    {
+      title: 'Souscription et revenus (personne morale)',
+      bullets: [
+        'Souscription de parts de SCPI par la personne morale, en direct ou via financement.',
+        'Les revenus distribués sont intégrés au résultat fiscal de la personne morale (IS/IR selon régime).',
+      ],
+      tags: ['scpi_pm', 'resultat_fiscal'],
+      confidence: 'elevee',
+    },
+  ],
+  sortie: [
+    {
+      title: 'Cession des parts',
+      bullets: [
+        'La plus-value de cession est intégrée au résultat fiscal de la personne morale selon son régime d\'imposition.',
+        'Le traitement comptable et fiscal dépend des modalités de détention et de clôture des comptes.',
+      ],
+      tags: ['cession_parts', 'resultat_fiscal', 'traitement_comptable'],
+      confidence: 'elevee',
+    },
+  ],
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d\'activité, les parts de SCPI sont intégrées aux opérations de clôture de la personne morale.',
+        'Le résultat de cession ou de liquidation est traité selon le régime fiscal de la personne morale.',
+      ],
+      tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
       confidence: 'elevee',
     },
   ],
@@ -78,7 +112,6 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
       bullets: [
         'Le bien intègre la succession à sa valeur vénale.',
         'DMTG selon le barème et le lien de parenté.',
-        'Abattement 100 000 € par enfant renouvelable tous 15 ans.',
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
@@ -118,9 +151,24 @@ const LOCATIF_NU: ProductRules = {
       bullets: [
         'Le bien intègre la succession à sa valeur vénale.',
         'DMTG selon le barème et le lien de parenté.',
-        'Abattement 100 000 € par enfant renouvelable tous 15 ans.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
+    },
+  ],
+};
+
+const LOCATIF_NU_PM: ProductRules = {
+  constitution: LOCATIF_NU.constitution,
+  sortie: LOCATIF_NU.sortie,
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d’activité, le bien est intégré aux opérations de clôture de la personne morale.',
+        'Le traitement fiscal de sortie dépend du régime d’imposition (IS/IR) et des écritures de clôture applicables.',
+      ],
+      tags: ['fin_vie_pm', 'cloture_pm', 'sortie_immobiliere_pm'],
       confidence: 'elevee',
     },
   ],
@@ -163,7 +211,6 @@ const LOCATIF_MEUBLE_LMNP: ProductRules = {
       bullets: [
         'Le bien intègre la succession à sa valeur vénale.',
         'DMTG selon le barème et le lien de parenté.',
-        'Abattement 100 000 € par enfant renouvelable tous 15 ans.',
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
@@ -208,7 +255,6 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
       bullets: [
         'Le bien intègre la succession à sa valeur vénale.',
         'DMTG selon le barème et le lien de parenté.',
-        'Abattement 100 000 € par enfant renouvelable tous 15 ans.',
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
@@ -253,16 +299,31 @@ const IMMO_AUTRE: ProductRules = {
   ],
 };
 
-const PARTS_SCPI: ProductRules = {
+const IMMO_AUTRE_PM: ProductRules = {
+  constitution: IMMO_AUTRE.constitution,
+  sortie: IMMO_AUTRE.sortie,
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d’activité, le bien est intégré aux opérations de clôture de la personne morale.',
+        'Le traitement fiscal de sortie dépend du régime d’imposition (IS/IR) et de la nature comptable du bien.',
+      ],
+      tags: ['fin_vie_pm', 'cloture_pm', 'sortie_immobiliere_pm'],
+      confidence: 'elevee',
+    },
+  ],
+};
+
+const PARTS_SCPI_PP: ProductRules = {
   constitution: [
     {
       title: 'Souscription et revenus',
       bullets: [
         'Souscription directe ou via emprunt (les intérêts sont déductibles des revenus fonciers).',
-        'Revenus distribués (loyers) imposés en revenus fonciers (PP) : micro-foncier ou régime réel.',
-        'Accessible aux personnes morales (PM) : revenus intégrés au résultat fiscal soumis à l\'IS.',
+        'Revenus distribués (loyers) imposés en revenus fonciers : micro-foncier ou régime réel.',
       ],
-      tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel', 'pm_eligible'],
+      tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel'],
       confidence: 'elevee',
     },
   ],
@@ -270,11 +331,10 @@ const PARTS_SCPI: ProductRules = {
     {
       title: 'Plus-value de cession',
       bullets: [
-        'Régime des plus-values immobilières des particuliers (PP) : IR 19 % + PS 17,2 %.',
+        'Régime des plus-values immobilières des particuliers : IR 19 % + PS 17,2 %.',
         'Abattements progressifs selon la durée de détention (exonération IR après 22 ans, PS après 30 ans).',
-        'Personnes morales (PM) : plus-value intégrée au résultat soumis à l\'IS.',
       ],
-      tags: ['pv_immo', 'abattement_detention', 'pm_is'],
+      tags: ['pv_immo', 'abattement_detention'],
       confidence: 'elevee',
     },
   ],
@@ -284,7 +344,6 @@ const PARTS_SCPI: ProductRules = {
       bullets: [
         'Les parts entrent dans la succession à leur valeur de réalisation au jour du décès.',
         'DMTG selon le barème et le lien de parenté.',
-        'Abattement 100 000 € par enfant renouvelable tous 15 ans.',
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
@@ -292,29 +351,28 @@ const PARTS_SCPI: ProductRules = {
   ],
 };
 
-const GROUPEMENT_FONCIER: ProductRules = {
+const GROUPEMENT_FONCIER_AGRI_VITI: ProductRules = {
   constitution: [
     {
-      title: 'Souscription de parts',
+      title: 'Souscription de parts (GFA / GFV)',
       bullets: [
-        'Revenus forestiers ou agricoles imposés selon le régime du groupement (BNC, micro, réel).',
-        'Potentiel d\'exonération partielle d\'IFI sur les parts (sous conditions de gestion).',
-        'Avantage Pacte Dutreil possible pour les GFA/GFV sous conditions strictes.',
-        'À confirmer selon le visa préfectoral et les statuts du groupement foncier (GFF, GFA, GFV).',
+        'Revenus agricoles (GFA) ou viticoles (GFV) imposés dans la catégorie des bénéfices agricoles (BA).',
+        'Exonération partielle d\'IFI sur les parts sous conditions de gestion (statuts + engagement de location).',
+        'À confirmer selon le visa préfectoral et les statuts du groupement.',
       ],
-      tags: ['revenu_agricole_forestier', 'ifi_exoneration_partielle', 'pacte_dutreil'],
+      tags: ['benefices_agricoles', 'ifi_exoneration_partielle'],
       confidence: 'moyenne',
-      sources: [{ label: 'Art. 793 CGI — GFA/GFV', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310362' }],
-      dependencies: ['type de groupement (GFF, GFA, GFV)', 'visa préfectoral et statuts'],
+      sources: [{ label: 'Art. 793 bis CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310364' }],
+      dependencies: ['visa préfectoral', 'statuts du GFA/GFV', 'mise en valeur active'],
     },
   ],
   sortie: [
     {
       title: 'Cession de parts',
       bullets: [
-        'Régime des plus-values des particuliers ou des professionnels selon le statut.',
+        'Régime des plus-values des particuliers : IR 19 % + PS 17,2 %.',
         'Abattements pour durée de détention applicables.',
-        'À confirmer selon le statut du cédant (particulier vs professionnel) et la durée de détention des parts.',
+        'À confirmer selon le statut du cédant et la durée de détention.',
       ],
       tags: ['pv_parts', 'abattement_detention'],
       confidence: 'moyenne',
@@ -323,25 +381,100 @@ const GROUPEMENT_FONCIER: ProductRules = {
   ],
   deces: [
     {
-      title: 'Transmission — Pacte Dutreil possible',
+      title: 'Transmission — régime art. 793 bis CGI',
       bullets: [
-        'Les parts entrent dans la succession à leur valeur au jour du décès.',
-        'Exonération de 75 % des DMTG (art. 793 CGI) si les biens sont donnés à bail long terme (≥ 18 ans) et les parts détenues depuis plus de 2 ans.',
-        'Au-delà de 600 000 € par bénéficiaire (seuil relevé par LF 2025 art. 70), l\'exonération est réduite à 50 % (art. 793 bis CGI) — sous condition de conservation 5 ans.',
-        'DMTG classiques si aucun bail long terme ou engagement de conservation.',
-        'À confirmer selon l\'existence d\'un bail long terme et le respect des conditions de détention minimale.',
+        'Exonération de 75 % des DMTG (art. 793 bis CGI) si les biens sont donnés à bail long terme (≥ 18 ans) et les parts détenues depuis plus de 2 ans.',
+        'Au-delà de 600 000 € par bénéficiaire (seuil relevé par LF 2025 art. 70) : exonération réduite à 50 %.',
+        'DMTG classiques si aucun bail long terme ou engagement de conservation non respecté.',
+        'À confirmer selon l\'existence du bail long terme et le respect des conditions de conservation (5 ans).',
       ],
-      tags: ['dmtg_classique', 'pacte_dutreil', 'exoneration_75'],
+      tags: ['dmtg_classique', 'art_793_bis', 'exoneration_75'],
+      confidence: 'moyenne',
+      sources: [{ label: 'Art. 793 bis CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310364' }],
+      dependencies: ['bail long terme ≥ 18 ans', 'engagement de conservation 5 ans', 'seuil 600 000 € (LF 2025 art. 70)'],
+    },
+  ],
+};
+
+const GROUPEMENT_FONCIER_AGRI_VITI_PM: ProductRules = {
+  constitution: GROUPEMENT_FONCIER_AGRI_VITI.constitution,
+  sortie: GROUPEMENT_FONCIER_AGRI_VITI.sortie,
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d’activité, les parts sont intégrées aux opérations de clôture de la personne morale.',
+        'Le traitement fiscal de sortie est déterminé selon le régime d’imposition et la valorisation retenue à la clôture.',
+      ],
+      tags: ['fin_vie_pm', 'cloture_pm', 'parts_groupement_pm'],
+      confidence: 'elevee',
+    },
+  ],
+};
+
+const GROUPEMENT_FONCIER_FORESTIER: ProductRules = {
+  constitution: [
+    {
+      title: 'Souscription de parts (GFF)',
+      bullets: [
+        'Revenus forestiers imposés dans la catégorie des bénéfices agricoles (BA) ou forfait forestier selon le cas.',
+        'Exonération partielle d\'IFI possible si les forêts font l\'objet d\'un Plan Simple de Gestion (PSG) agréé.',
+        'À confirmer selon le PSG et les statuts du groupement.',
+      ],
+      tags: ['benefices_agricoles', 'ifi_exoneration_partielle', 'psg'],
       confidence: 'moyenne',
       sources: [{ label: 'Art. 793 CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310362' }],
-      dependencies: ['engagement de conservation (bail long terme ≥ 18 ans)', 'seuil de 600 000 € (LF 2025)'],
+      dependencies: ['PSG agréé', 'statuts du GFF'],
+    },
+  ],
+  sortie: [
+    {
+      title: 'Cession de parts',
+      bullets: [
+        'Régime des plus-values des particuliers : IR 19 % + PS 17,2 %.',
+        'Abattements pour durée de détention applicables.',
+        'À confirmer selon le statut du cédant et la durée de détention.',
+      ],
+      tags: ['pv_parts', 'abattement_detention'],
+      confidence: 'moyenne',
+      dependencies: ['statut du cédant (particulier vs professionnel)'],
+    },
+  ],
+  deces: [
+    {
+      title: 'Transmission — régime art. 793 CGI (forêts)',
+      bullets: [
+        'Exonération de 75 % des DMTG (art. 793 CGI — Loi Sérot) si les forêts sont couvertes par un Plan Simple de Gestion agréé (PSG) et engagement de conservation.',
+        'Contrairement au régime GFA, pas de plafond monétaire sur l\'exonération si les conditions PSG sont remplies.',
+        'À confirmer selon l\'existence du PSG agréé, la durée et les conditions de conservation appliquées.',
+      ],
+      tags: ['dmtg_classique', 'art_793_cgi', 'exoneration_75', 'psg'],
+      confidence: 'moyenne',
+      sources: [{ label: 'Art. 793 CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310362' }],
+      dependencies: ['PSG agréé', 'engagement de conservation', 'durée de détention des parts'],
+    },
+  ],
+};
+
+const GROUPEMENT_FONCIER_FORESTIER_PM: ProductRules = {
+  constitution: GROUPEMENT_FONCIER_FORESTIER.constitution,
+  sortie: GROUPEMENT_FONCIER_FORESTIER.sortie,
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d’activité, les parts sont intégrées aux opérations de clôture de la personne morale.',
+        'Le traitement fiscal de sortie est déterminé selon le régime d’imposition et la valorisation retenue à la clôture.',
+      ],
+      tags: ['fin_vie_pm', 'cloture_pm', 'parts_groupement_pm'],
+      confidence: 'elevee',
     },
   ],
 };
 
 export function getImmobilierRules(
   productId: string,
-  _audience: Audience,
+  audience: Audience,
 ): ProductRules | undefined {
   switch (productId) {
     case 'residence_principale':
@@ -349,19 +482,20 @@ export function getImmobilierRules(
     case 'residence_secondaire':
       return RESIDENCE_SECONDAIRE;
     case 'locatif_nu':
-      return LOCATIF_NU;
+      return audience === 'pm' ? LOCATIF_NU_PM : LOCATIF_NU;
     case 'locatif_meuble_lmnp':
       return LOCATIF_MEUBLE_LMNP;
     case 'locatif_meuble_lmp':
       return LOCATIF_MEUBLE_LMP;
     case 'immobilier_garage_parking':
     case 'immobilier_terrain':
-      return IMMO_AUTRE;
+      return audience === 'pm' ? IMMO_AUTRE_PM : IMMO_AUTRE;
     case 'parts_scpi':
-      return PARTS_SCPI;
+      return audience === 'pm' ? PARTS_SCPI_PM : PARTS_SCPI_PP;
     case 'groupement_foncier_agri_viti':
+      return audience === 'pm' ? GROUPEMENT_FONCIER_AGRI_VITI_PM : GROUPEMENT_FONCIER_AGRI_VITI;
     case 'groupement_foncier_forestier':
-      return GROUPEMENT_FONCIER;
+      return audience === 'pm' ? GROUPEMENT_FONCIER_FORESTIER_PM : GROUPEMENT_FONCIER_FORESTIER;
     default:
       return undefined;
   }
