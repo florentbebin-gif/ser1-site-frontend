@@ -202,19 +202,24 @@ Ce que ça change (cible) :
 
 **Objectif** : Nettoyer le legacy et pivoter vers un catalogue hardcodé fiable avec overrides admin.
 
-##### État du Pivot (PR1, PR2, PR3) 
+##### État du Pivot (PR1–PR5) ✅
 - **PR1** : Création du catalogue hardcodé (`src/domain/base-contrat/catalog.ts`) et de l'infrastructure `base_contrat_overrides` (Supabase).
 - **PR2** : Refonte de l'UI `/settings/base-contrat` en read-only (3 colonnes : Constitution, Sortie, Décès), toggle PP/PM, et modal de clôture admin.
 - **PR3** : Nettoyage massif (suppression seed JSON, cache legacy, hooks, adaptateurs, migration SQL, rules editor).
+- **PR4** : Alignement documentation (ARCHITECTURE, RUNBOOK, ROADMAP) + standard process dev Base-Contrat.
+- **PR5** : Règles fiscales hardcodées 3 colonnes — 71 produits (Constitution / Sortie / Décès). Quality system : champs `confidence`, `sources`, `dependencies` sur tous les `RuleBlock`. Corrections sourcées sur 6 produits complexes (LMNP art. 84 LF2025, Art. 39 L137-11-1 CSS, Capi PM 238 septies E, GFA 793 bis 600k LF2025, Tontine, Homme-clé). 520 tests verts.
 
 #### P1-05 — Catalogue Patrimonial & Règles Exhaustives (Base Parfaite)
 
 **Objectif** : Implémenter les règles fiscales exhaustives pour chaque famille de produits, avec des tests "golden" et une UX premium sans jargon.
 
-##### Étapes Restantes
-- **Implémentation des Règles Fiscales** : Définir et coder en dur les règles fiscales (IR, PS, DMTG) pour toutes les grandes familles de produits, de la Constitution au Décès.
-- **Golden Tests** : Mettre en place des cas de test de référence (Golden Cases) pour chaque produit dans l'engine (`src/engine/__tests__/goldenCases.test.ts`), garantissant la non-régression.
-- **UX Premium** : S'assurer que les libellés utilisés dans toute l'application (IR, Placement, Succession) sont des termes métier clairs, sans IDs techniques ni jargon de développeur.
+**État actuel** : PR5 livrée. Socle « rules engine » opérationnel — 71 produits avec 3 colonnes de règles fiscales dans l'UI. Un audit qualité approfondi sur 6 produits complexes a corrigé des erreurs factuelles et ajouté un système de confiance (`confidence`/`sources`/`dependencies`).
+
+**Ce qui reste** (planifié PR6–PR8) :
+- **Fiabilisation rédactionnelle** (~15 produits) : anciens contrats AV, capitalisation PP/PM mixée, prévoyance individuelle, Art. 83/Madelin/PERIN/PERO, GFA vs GFF — voir PR6.
+- **PP/PM split** : 28 produits ont `ppEligible: true` **et** `pmEligible: true` dans `catalog.ts` (ex : `contrat_capitalisation`, `cto`, `article_83`, `pero`) — les règles affichées ne distinguent pas le point de vue PP vs PM — voir PR7.
+- **Wiring simulateurs** : `getRules` uniquement consommé par `src/pages/Sous-Settings/BaseContrat.tsx`. Aucun import dans `src/features/` ni `src/engine/` — voir PR8.
+- **Golden tests** : `src/engine/__tests__/goldenCases.test.ts` n'existe pas encore — voir PR8.
 
 ##### Fichiers supprimés (Cleanup PR3)
 
@@ -246,6 +251,112 @@ Livrables typiques (suite P1) :
 
 > Liens : voir [Exports](#références-code), [Features](#références-code).
 
+---
+
+## 🚧 Prochaines PRs (PR6–PR8)
+
+> Branche de travail cible : convention `fix/p1-05-*` (existante).
+> Priorité recommandée : PR6 → PR7 → PR8.
+
+---
+
+### Standards rédactionnels PP/PM (règle transversale)
+
+> **Cette règle s’applique à toutes les corrections de règles (PR6 et au-delà).**
+
+- **Côté PM** : se placer *à l'intérieur de l’entreprise*. Seules les règles de la société comptent (IS/IR entreprise, déductibilité des charges, traitement comptable). Pas de règles PP.
+- **Décès/Transmission PM** : couvrir aussi **dissolution/liquidation** (traitement fiscal du boni, rachat de parts).
+- **Max 6 bullets par bloc**, langage professionnel, aucun jargon dev.
+- **Blocs `moyenne`/`faible`** : toujours une phrase « À confirmer selon… » + `dependencies` renseigné.
+- **Sources** : BOFiP (référence §) ou Légifrance (article) pour toute affirmation précise.
+
+---
+
+### PR6 — Fiabilisation fiscale & rédaction premium
+
+**Objectif** : corriger les règles inexactes ou incomplètes identifiées lors de l’audit. Fichiers concernés : `src/domain/base-contrat/rules/library/*.ts` uniquement.
+
+#### Épargne Assurance (`assurance-epargne.ts`)
+- [ ] **Assurance-vie — anciens contrats** (antérieurs au 27/09/2017) : règles distinctes sortie (prélèvement libératoire 7,5 % après 8 ans). Ajouter en `dependencies` ou bullet spécifique.
+- [ ] **Capitalisation PP** : retirer les mentions de règles PM (IS, 238 septies E) du bloc PP. Règle PP = même traitement que l’AV PP (PFU 30 % ou barème + abattements 4 600/9 200 €).
+
+#### Prévoyance (`prevoyance.ts`)
+- [ ] **Assurance emprunteur PM** — Décès : ajouter que l’indemnié versée à la société constitue un **bénéfice exceptionnel IS ou IR** selon le régime de la société.
+- [ ] **Homme-clé** — Décès : retirer le bullet visible « À confirmer… seuls les contrats indemnitaires… » de l’UI (garder uniquement dans `dependencies`).
+- [ ] **Prévoyance individuelle décès PP** — Constitution : retirer mention « TNS Madelin 2,5 % PASS + 7,5 %… » (plafond global prévoyance, pas spécifique décès).
+- [ ] **Prévoyance individuelle décès PP** — Décès/Transmission : ajouter que **la prime de la dernière année** entre dans l’assiette 990 I ou 757 B selon l’âge au décès.
+- [ ] **Prévoyance individuelle ITT/invalidité PP** — Constitution : vérifier si les IJ rentrent dans l’assiette de cotisations sociales pour un TNS en arrêt de travail. Si oui, l’indiquer avec source CSS.
+- [ ] **Prévoyance individuelle ITT/invalidité PP** — Décès/Transmission : retirer les infos décès (couvertes par le produit décès distinct).
+
+#### Immobilier direct (`immobilier.ts`)
+- [ ] **Résidence principale — Succession** : supprimer les bullets trop génériques (« 100 000 € par enfant… », « IFI 30 % non applicable aux DMTG… » — preuve : `immobilier.ts` lignes 40–45).
+- [ ] **Audit bullets « génériques »** : repasser tous les produits immobilier pour supprimer les bullets « abattement 100k, barème DMTG… » qui ne sont pas spécifiques au produit.
+- [ ] **GFA/GFV vs GFF** : clarifier ou distinguer `groupement_foncier_agri_viti` vs `groupement_foncier_forestier` (deux produits avec règles quasi-identiques — preuve : `immobilier.ts`).
+
+#### Retraite & Épargne salariale (`retraite.ts`)
+- [ ] **Article 83 (anciens contrats)** : retirer la mention « Article 39… » (hors sujet). Revoir les règles spécifiques Art. 83 (cotisations déductibles dans la limite de 8 % de la rémunération brute plafonée à 8 PASS).
+- [ ] **Madelin retraite ancien** : ajouter références **art. 154 bis** et **art. 154 bis-0 A** CGI. Retirer mention « 20 % PERP » (hors sujet).
+- [ ] **PERIN assurantiel** : ajouter références **art. 154 bis** et **art. 154 bis-0 A** CGI.
+- [ ] **PERO** : corriger les règles Art. 39 incorrectes. Documenter la différence vs Art. 83 ancien (forfait social 16 % — à confirmer, source CSS requise).
+- [ ] **Produits manquants PM** : créer des blocs pour `ppv_prime_partage_valeur`, `interessement`, `participation` (uniquement pour PM, côté entreprise).
+
+**DoD PR6** :
+- `npm run check` vert (tests ≥ 520).
+- Chaque correction a une preuve BOFiP/Légifrance dans `sources[]`.
+- Aucun bloc ne dépasse 6 bullets.
+- `rg "Article 39" src/domain/base-contrat/rules/library/retraite.ts` → plus dans le bloc Art. 83.
+- `rg "TNS Madelin 2,5" src/domain/base-contrat/rules/library/prevoyance.ts` → vide.
+
+---
+
+### PR7 — PP/PM split catalogue + conformité UI
+
+**Objectif** : séparer les règles PP et PM pour les produits qui admettent les deux audiences.
+
+**Constat** (preuve repo) : `rg "pmEligible: true" src/domain/base-contrat/catalog.ts -B6 | rg "id:"` retourne 28 produits avec les deux flags `ppEligible: true` et `pmEligible: true` simultanément (dont `contrat_capitalisation` ligne 98–99, `cto` ligne 199–200, `article_83` ligne 228–229, `pero` ligne 300–301, `usufruit_nue_propriete` ligne 654–655, et de nombreux produits valeurs mobiliers et immobilier).
+
+**Plan** :
+- [ ] Décider de la stratégie : (a) règles conditionnelles PP/PM dans les library files (pattern déjà utilisé pour `CONTRAT_CAPITALISATION_PP` vs `CONTRAT_CAPITALISATION_PM` dans `assurance-epargne.ts`), ou (b) produits dupliqués PP/PM dans `catalog.ts`.
+- [ ] Appliquer la stratégie choisie sur les 28 produits concernés.
+- [ ] Migration label « (Entreprise) » → « (PM) » : vérifier si des données DB portent encore l’ancien suffixe — si oui, migration SQL.
+
+**DoD PR7** :
+- Pour chaque produit `ppEligible+pmEligible`, des règles distinctes PP et PM existent (ou identité documentée explicitement).
+- `npm run check` vert.
+
+---
+
+### PR8 — Wiring simulateurs (FiscalProfile) + golden tests
+
+**Objectif** : brancher les règles fiscales dans les simulateurs et ajouter des golden tests de non-régression.
+
+**Constat** (preuve repo) : `rg "getRules|domain/base-contrat/rules" src/features src/engine -l` → **aucun fichier**. Les règles ne sont consommées que par `src/pages/Sous-Settings/BaseContrat.tsx` (affichage UI settings).
+
+**Plan** :
+- [ ] Définir l’interface `FiscalProfile` (sous-ensemble de `RuleBlock` utile pour les calculs).
+- [ ] Brancher dans `src/features/placement/` : afficher un résumé fiscal du produit sélectionné.
+- [ ] Créer `src/engine/__tests__/goldenCases.test.ts` : cas de référence par produit.
+
+**DoD PR8** :
+- `rg "getRulesForProduct" src/features` → au moins 1 match.
+- `src/engine/__tests__/goldenCases.test.ts` existe et passe.
+- `npm run check` vert.
+
+---
+
+### Item transversal — RLS overrides : clarifier la politique de lecture
+
+**Constat** (preuve — migration `20260223000100_create_base_contrat_overrides.sql`) :
+- SELECT : policy `"overrides_select_authenticated"` → `TO authenticated USING (true)` — lecture ouverte à tous les utilisateurs connectés.
+- Write : policy `"overrides_write_admin"` → `public.is_admin()` — écriture admin-only ✅.
+- `GRANT INSERT, UPDATE, DELETE TO authenticated` — le GRANT technique est large mais la policy RLS protège l’écriture.
+
+**Question ouverte** : la lecture (statut « clôturé » / note admin) doit-elle être réservée aux admins ?
+- [ ] **Si admin-only** : remplacer la policy SELECT par `USING (public.is_admin())`.
+- [ ] **Si read-for-all-auth** (recommandé pour afficher le statut « clôturé » à tous les utilisateurs du cabinet) : documenter la décision dans le RUNBOOK.
+
+---
+
 ### P2 — Analyse patrimoniale + nouveaux simulateurs
 Objectif : enrichir l’analyse (audit) et ajouter des simulateurs utiles.
 
@@ -256,13 +367,18 @@ Candidats :
 - Observabilité serveur technique (zéro PII, zéro métriques métier).
 - MFA (TOTP) pour comptes sensibles.
 
-#### Catalogue — items différés
-- **Rulesets per-product** : implémenter les blocs fiscaux (Constitution/Sortie/Décès) par produit — actuellement squelette vide.
-- **Fiches succession GFA/GFV vs GFF** : documenter les différences art. 793 bis vs art. 793 1° 3° CGI dans les blocs produit.
-- **Confirmation dialog sync** : ajouter un dialog de confirmation avant « Synchroniser le catalogue » (écrase les produits personnalisés).
-- **Migration label (Entreprise) → (PM)** : les données DB avec suffixe « (Entreprise) » seront corrigées au prochain sync ; envisager migration active si besoin.
-- ~~**Supprimer `handleCompleteCatalogue`**~~ : ✅ fait (V5c).
-- ~~**Familles restructurées**~~ : ✅ fait (V5c+V5d — Épargne Assurance / Assurance prévoyance / Épargne bancaire / Dispositifs fiscaux immobilier / split LMNP-LMP / obligations retirées).
+#### Catalogue — état des items
+
+✅ **Terminé** :
+- ~~Rulesets per-product~~ : fait (PR5 — 71 produits, 3 colonnes, quality system).
+- ~~Familles restructurées~~ : fait (PR3/V5c+V5d — split LMNP-LMP, obligations retirées, etc.).
+- ~~Supprimer `handleCompleteCatalogue`~~ : fait (PR3/V5c).
+- ~~Confirmation dialog sync~~ : sans objet — catalogue hardcodé, pas de synchronisation admin.
+
+⏳ **En attente** (voir PR6–PR7) :
+- **Fiches GFA/GFV vs GFF** : vérifier la différence fiscale entre `groupement_foncier_agri_viti` (art. 793 bis CGI) et `groupement_foncier_forestier` (art. 793 1°/3° CGI). Si différence réelle → blocs distincts dans `immobilier.ts` ; si identique → fusionner avec mention des deux régimes.
+- **Produits manquants PM** : PPV (prime de partage de la valeur), intéressement, participation — afficher uniquement pour PM (côté entreprise) — voir PR6.
+- **Migration label « (Entreprise) » → « (PM) »** : vérifier si des données DB portent encore l'ancien suffixe — décision en PR7.
 
 ### P3 — Stratégie automatique + société fine
 Objectif : recommandations auto + modèle société/holding plus fin.
@@ -291,6 +407,7 @@ Entrées clés :
   - Cache overrides (Supabase) : `src/utils/baseContratOverridesCache.ts`
   - UI (read-only) : `src/pages/Sous-Settings/BaseContrat.tsx`
   - Labels FR (UI) : `src/constants/baseContratLabels.ts`
+  - Règles fiscales : `src/domain/base-contrat/rules/` (8 library files, types, index)
 
 Voir aussi :
 - `docs/GOUVERNANCE.md` (règles UI/couleurs/thème)
