@@ -46,6 +46,42 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
   ],
 };
 
+const PARTS_SCPI_PM: ProductRules = {
+  constitution: [
+    {
+      title: 'Souscription et revenus (personne morale)',
+      bullets: [
+        'Souscription de parts de SCPI par la personne morale, en direct ou via financement.',
+        'Les revenus distribués sont intégrés au résultat fiscal de la personne morale (IS/IR selon régime).',
+      ],
+      tags: ['scpi_pm', 'resultat_fiscal'],
+      confidence: 'elevee',
+    },
+  ],
+  sortie: [
+    {
+      title: 'Cession des parts',
+      bullets: [
+        'La plus-value de cession est intégrée au résultat fiscal de la personne morale selon son régime d\'imposition.',
+        'Le traitement comptable et fiscal dépend des modalités de détention et de clôture des comptes.',
+      ],
+      tags: ['cession_parts', 'resultat_fiscal', 'traitement_comptable'],
+      confidence: 'elevee',
+    },
+  ],
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d\'activité, les parts de SCPI sont intégrées aux opérations de clôture de la personne morale.',
+        'Le résultat de cession ou de liquidation est traité selon le régime fiscal de la personne morale.',
+      ],
+      tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
+      confidence: 'elevee',
+    },
+  ],
+};
+
 const RESIDENCE_SECONDAIRE: ProductRules = {
   constitution: [
     {
@@ -117,6 +153,22 @@ const LOCATIF_NU: ProductRules = {
         'DMTG selon le barème et le lien de parenté.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
+    },
+  ],
+};
+
+const LOCATIF_NU_PM: ProductRules = {
+  constitution: LOCATIF_NU.constitution,
+  sortie: LOCATIF_NU.sortie,
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d’activité, le bien est intégré aux opérations de clôture de la personne morale.',
+        'Le traitement fiscal de sortie dépend du régime d’imposition (IS/IR) et des écritures de clôture applicables.',
+      ],
+      tags: ['fin_vie_pm', 'cloture_pm', 'sortie_immobiliere_pm'],
       confidence: 'elevee',
     },
   ],
@@ -247,16 +299,31 @@ const IMMO_AUTRE: ProductRules = {
   ],
 };
 
-const PARTS_SCPI: ProductRules = {
+const IMMO_AUTRE_PM: ProductRules = {
+  constitution: IMMO_AUTRE.constitution,
+  sortie: IMMO_AUTRE.sortie,
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d’activité, le bien est intégré aux opérations de clôture de la personne morale.',
+        'Le traitement fiscal de sortie dépend du régime d’imposition (IS/IR) et de la nature comptable du bien.',
+      ],
+      tags: ['fin_vie_pm', 'cloture_pm', 'sortie_immobiliere_pm'],
+      confidence: 'elevee',
+    },
+  ],
+};
+
+const PARTS_SCPI_PP: ProductRules = {
   constitution: [
     {
       title: 'Souscription et revenus',
       bullets: [
         'Souscription directe ou via emprunt (les intérêts sont déductibles des revenus fonciers).',
-        'Revenus distribués (loyers) imposés en revenus fonciers (PP) : micro-foncier ou régime réel.',
-        'Accessible aux personnes morales (PM) : revenus intégrés au résultat fiscal soumis à l\'IS.',
+        'Revenus distribués (loyers) imposés en revenus fonciers : micro-foncier ou régime réel.',
       ],
-      tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel', 'pm_eligible'],
+      tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel'],
       confidence: 'elevee',
     },
   ],
@@ -264,11 +331,10 @@ const PARTS_SCPI: ProductRules = {
     {
       title: 'Plus-value de cession',
       bullets: [
-        'Régime des plus-values immobilières des particuliers (PP) : IR 19 % + PS 17,2 %.',
+        'Régime des plus-values immobilières des particuliers : IR 19 % + PS 17,2 %.',
         'Abattements progressifs selon la durée de détention (exonération IR après 22 ans, PS après 30 ans).',
-        'Personnes morales (PM) : plus-value intégrée au résultat soumis à l\'IS.',
       ],
-      tags: ['pv_immo', 'abattement_detention', 'pm_is'],
+      tags: ['pv_immo', 'abattement_detention'],
       confidence: 'elevee',
     },
   ],
@@ -330,6 +396,22 @@ const GROUPEMENT_FONCIER_AGRI_VITI: ProductRules = {
   ],
 };
 
+const GROUPEMENT_FONCIER_AGRI_VITI_PM: ProductRules = {
+  constitution: GROUPEMENT_FONCIER_AGRI_VITI.constitution,
+  sortie: GROUPEMENT_FONCIER_AGRI_VITI.sortie,
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d’activité, les parts sont intégrées aux opérations de clôture de la personne morale.',
+        'Le traitement fiscal de sortie est déterminé selon le régime d’imposition et la valorisation retenue à la clôture.',
+      ],
+      tags: ['fin_vie_pm', 'cloture_pm', 'parts_groupement_pm'],
+      confidence: 'elevee',
+    },
+  ],
+};
+
 const GROUPEMENT_FONCIER_FORESTIER: ProductRules = {
   constitution: [
     {
@@ -374,9 +456,25 @@ const GROUPEMENT_FONCIER_FORESTIER: ProductRules = {
   ],
 };
 
+const GROUPEMENT_FONCIER_FORESTIER_PM: ProductRules = {
+  constitution: GROUPEMENT_FONCIER_FORESTIER.constitution,
+  sortie: GROUPEMENT_FONCIER_FORESTIER.sortie,
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d’activité, les parts sont intégrées aux opérations de clôture de la personne morale.',
+        'Le traitement fiscal de sortie est déterminé selon le régime d’imposition et la valorisation retenue à la clôture.',
+      ],
+      tags: ['fin_vie_pm', 'cloture_pm', 'parts_groupement_pm'],
+      confidence: 'elevee',
+    },
+  ],
+};
+
 export function getImmobilierRules(
   productId: string,
-  _audience: Audience,
+  audience: Audience,
 ): ProductRules | undefined {
   switch (productId) {
     case 'residence_principale':
@@ -384,20 +482,20 @@ export function getImmobilierRules(
     case 'residence_secondaire':
       return RESIDENCE_SECONDAIRE;
     case 'locatif_nu':
-      return LOCATIF_NU;
+      return audience === 'pm' ? LOCATIF_NU_PM : LOCATIF_NU;
     case 'locatif_meuble_lmnp':
       return LOCATIF_MEUBLE_LMNP;
     case 'locatif_meuble_lmp':
       return LOCATIF_MEUBLE_LMP;
     case 'immobilier_garage_parking':
     case 'immobilier_terrain':
-      return IMMO_AUTRE;
+      return audience === 'pm' ? IMMO_AUTRE_PM : IMMO_AUTRE;
     case 'parts_scpi':
-      return PARTS_SCPI;
+      return audience === 'pm' ? PARTS_SCPI_PM : PARTS_SCPI_PP;
     case 'groupement_foncier_agri_viti':
-      return GROUPEMENT_FONCIER_AGRI_VITI;
+      return audience === 'pm' ? GROUPEMENT_FONCIER_AGRI_VITI_PM : GROUPEMENT_FONCIER_AGRI_VITI;
     case 'groupement_foncier_forestier':
-      return GROUPEMENT_FONCIER_FORESTIER;
+      return audience === 'pm' ? GROUPEMENT_FONCIER_FORESTIER_PM : GROUPEMENT_FONCIER_FORESTIER;
     default:
       return undefined;
   }

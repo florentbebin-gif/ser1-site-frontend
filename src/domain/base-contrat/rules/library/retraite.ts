@@ -91,6 +91,48 @@ const PERIN_ASSURANCE: ProductRules = {
   ],
 };
 
+const EPARGNE_SALARIALE_PEE_PM: ProductRules = {
+  constitution: [
+    {
+      title: 'Dispositifs collectifs d\'épargne salariale',
+      bullets: [
+        'Mise en place par accord collectif (participation, intéressement, abondement, versements volontaires selon le plan).',
+        'Les versements de l\'entreprise sont traités en charges déductibles du résultat (IS/IR) sous conditions légales.',
+        'À confirmer selon l\'accord collectif, l\'effectif et les plafonds applicables.',
+      ],
+      tags: ['epargne_salariale', 'accord_collectif', 'charges_deductibles'],
+      confidence: 'moyenne',
+      dependencies: ['accord collectif en vigueur', 'effectif de l\'entreprise', 'plafonds légaux applicables'],
+    },
+  ],
+  sortie: [
+    {
+      title: 'Disponibilité des avoirs',
+      bullets: [
+        'Les modalités de sortie dépendent du plan (PEE/PERCOL/PERCO), des clauses d\'accord et des cas de déblocage anticipé autorisés.',
+        'Les flux financiers et sociaux sont appréciés au niveau de l\'entreprise et des bénéficiaires selon la nature des versements.',
+        'À confirmer selon l\'accord applicable et l\'année de versement.',
+      ],
+      tags: ['modalites_sortie', 'deblocage_anticipe', 'accord_collectif'],
+      confidence: 'moyenne',
+      dependencies: ['type de plan', 'accord collectif applicable', 'année de versement'],
+    },
+  ],
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession de l\'activité, les dispositifs d\'épargne salariale sont clôturés ou transférés selon les accords en vigueur.',
+        'Le traitement social, fiscal et comptable des engagements restants est arrêté à la date de cessation de la personne morale.',
+        'À confirmer selon les modalités de liquidation, de transfert des engagements et le régime fiscal de l\'entreprise.',
+      ],
+      tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
+      confidence: 'moyenne',
+      dependencies: ['modalités de dissolution ou liquidation', 'accord collectif en vigueur', 'régime fiscal de l\'entreprise'],
+    },
+  ],
+};
+
 const PERIN_BANCAIRE: ProductRules = {
   constitution: [
     {
@@ -136,7 +178,7 @@ const PERIN_BANCAIRE: ProductRules = {
   ],
 };
 
-const EPARGNE_SALARIALE_PEE: ProductRules = {
+const EPARGNE_SALARIALE_PEE_PP: ProductRules = {
   constitution: [
     {
       title: 'Versements',
@@ -182,7 +224,7 @@ const EPARGNE_SALARIALE_PEE: ProductRules = {
   ],
 };
 
-const ARTICLE_83: ProductRules = {
+const ARTICLE_83_PP: ProductRules = {
   constitution: [
     {
       title: 'Cotisations (anciens contrats — fermés à la souscription depuis PACTE 2019)',
@@ -217,12 +259,97 @@ const ARTICLE_83: ProductRules = {
       title: 'Réversion',
       bullets: [
         'Rente de réversion au conjoint si prévue par le contrat collectif.',
-        'Capital résiduel éventuel intègre la succession (DMTG classiques).',
-        'À confirmer selon la clause de réversion et le régime applicable.',
+        'Le traitement du capital résiduel dépend des stipulations contractuelles applicables au bénéficiaire.',
+        'À confirmer selon la clause de réversion et les stipulations du contrat.',
       ],
-      tags: ['reversion', 'dmtg_classique'],
+      tags: ['reversion', 'capital_residuel'],
       confidence: 'moyenne',
       dependencies: ['clause de réversion prévue au contrat collectif'],
+    },
+  ],
+};
+
+const ARTICLE_83_PM: ProductRules = {
+  constitution: [
+    {
+      title: 'Cotisations (PM)',
+      bullets: [
+        'Cotisations patronales et salariales définies par accord collectif.',
+        'Cotisations patronales déductibles du résultat imposable de l\'entreprise (IS ou IR).',
+        'À confirmer selon les conditions de l\'accord et la catégorie de salariés couverte.',
+      ],
+      tags: ['cotisations_patronales', 'cotisations_salariales', 'accord_collectif'],
+      confidence: 'moyenne',
+      sources: [{ label: 'Art. 83 CGI (ancien)', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302860' }],
+      dependencies: ['accord collectif applicable', 'catégorie de salariés couverte'],
+    },
+  ],
+  sortie: [
+    {
+      title: 'Sortie des engagements',
+      bullets: [
+        'Les flux sont traités selon l\'accord collectif et les modalités de sortie (rente, transfert, liquidation des droits).',
+        'Le traitement social et fiscal dépend de la structure des cotisations et des régimes applicables.',
+        'À confirmer selon les clauses d\'accord, les transferts opérés et la période concernée.',
+      ],
+      tags: ['sortie_engagements', 'accord_collectif', 'traitement_social_fiscal'],
+      confidence: 'moyenne',
+      dependencies: ['clauses de l\'accord collectif', 'modalités de sortie', 'période concernée'],
+    },
+  ],
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession de l\'entreprise, les engagements Article 83 sont soldés ou transférés selon le cadre conventionnel.',
+        'Le traitement comptable et fiscal est apprécié à la clôture de la personne morale selon le régime IS/IR.',
+        'À confirmer selon les modalités de liquidation et les obligations prévues par l\'accord collectif.',
+      ],
+      tags: ['fin_vie_pm', 'liquidation', 'cession_entreprise'],
+      confidence: 'moyenne',
+      dependencies: ['modalités de dissolution ou liquidation', 'clauses de transfert des engagements', 'régime fiscal IS/IR'],
+    },
+  ],
+};
+
+const ARTICLE_39_PP: ProductRules = {
+  constitution: [
+    {
+      title: 'Cotisations (prestations définies)',
+      bullets: [
+        'Dispositif collectif de retraite supplémentaire à prestations définies, encadré par le règlement du régime.',
+        'Les droits du bénéficiaire dépendent de la formule applicable (historique vs post-2019).',
+        'À confirmer selon les clauses du règlement et la date d\'acquisition des droits.',
+      ],
+      tags: ['prestations_definies', 'reglement_regime'],
+      confidence: 'moyenne',
+      dependencies: ['règlement du régime', 'date d\'acquisition des droits'],
+    },
+  ],
+  sortie: [
+    {
+      title: 'Sortie en rente',
+      bullets: [
+        'Sortie en rente viagère selon le règlement du régime.',
+        'Imposition de la rente selon les règles applicables au bénéficiaire.',
+        'À confirmer selon le montant de rente et les prélèvements en vigueur.',
+      ],
+      tags: ['rente_viagere', 'fiscalite_beneficiaire'],
+      confidence: 'moyenne',
+      dependencies: ['montant de rente', 'règles fiscales et sociales en vigueur'],
+    },
+  ],
+  deces: [
+    {
+      title: 'Réversion',
+      bullets: [
+        'Réversion possible selon les clauses du régime.',
+        'Le traitement des droits résiduels dépend des stipulations contractuelles.',
+        'À confirmer selon la clause de réversion et le règlement applicable.',
+      ],
+      tags: ['reversion', 'droits_residuels'],
+      confidence: 'moyenne',
+      dependencies: ['clause de réversion', 'règlement du régime'],
     },
   ],
 };
@@ -260,15 +387,58 @@ const ARTICLE_39_PM: ProductRules = {
   ],
   deces: [
     {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession de l\'entreprise, les engagements de retraite supplémentaire sont soldés selon le règlement du régime.',
+        'Le traitement comptable et fiscal des engagements restants est arrêté à la clôture de la personne morale.',
+        'À confirmer selon la formule du régime, les clauses de transfert et le régime fiscal IS/IR.',
+      ],
+      tags: ['fin_vie_pm', 'liquidation', 'cession_entreprise'],
+      confidence: 'moyenne',
+      dependencies: ['formule du régime appliquée', 'clauses de transfert des engagements', 'régime fiscal IS/IR'],
+    },
+  ],
+};
+
+const PERO_PP: ProductRules = {
+  constitution: [
+    {
+      title: 'Cotisations obligatoires (PERO)',
+      bullets: [
+        'Dispositif collectif issu de la loi PACTE 2019, encadré par accord collectif.',
+        'Cotisations obligatoires selon la catégorie de salariés visée.',
+        'À confirmer selon l\'accord collectif et les paramètres du régime.',
+      ],
+      tags: ['pero', 'accord_collectif', 'cotisations_obligatoires'],
+      confidence: 'moyenne',
+      sources: [{ label: 'Loi PACTE 2019 — PERO', url: 'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000038496102' }],
+      dependencies: ['accord collectif applicable', 'catégorie de salariés couverte'],
+    },
+  ],
+  sortie: [
+    {
+      title: 'Sortie à la retraite',
+      bullets: [
+        'Sortie en capital ou en rente selon le compartiment et les options du régime.',
+        'Fiscalité dépendante de la nature des versements et du mode de sortie.',
+        'À confirmer selon le compartiment concerné et les règles en vigueur à la date de sortie.',
+      ],
+      tags: ['sortie_capital', 'sortie_rente', 'compartiment'],
+      confidence: 'moyenne',
+      dependencies: ['compartiment concerné', 'mode de sortie choisi', 'règles fiscales en vigueur'],
+    },
+  ],
+  deces: [
+    {
       title: 'Réversion',
       bullets: [
-        'Rente de réversion possible au profit du conjoint survivant si prévue au règlement.',
-        'Capital résiduel éventuel intègre la succession (DMTG classiques).',
-        'À confirmer selon la clause de réversion et le régime applicable.',
+        'Réversion éventuelle selon les clauses du régime collectif.',
+        'Le traitement des droits résiduels dépend des stipulations contractuelles.',
+        'À confirmer selon les clauses de réversion prévues au régime.',
       ],
-      tags: ['reversion', 'dmtg_classique'],
+      tags: ['reversion', 'droits_residuels'],
       confidence: 'moyenne',
-      dependencies: ['clause de réversion prévue au règlement'],
+      dependencies: ['clauses de réversion du régime collectif'],
     },
   ],
 };
@@ -305,15 +475,15 @@ const PERO_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Réversion',
+      title: 'Fin de vie / événements de sortie de la personne morale',
       bullets: [
-        'Rente de réversion au conjoint si prévue par l\'accord collectif.',
-        'Capital résiduel éventuel intègre la succession (DMTG classiques).',
-        'À confirmer selon les dispositions de l\'accord et le régime applicable.',
+        'En cas de dissolution, liquidation ou cession de l\'entreprise, les engagements PERO sont soldés ou transférés selon l\'accord collectif.',
+        'Le traitement social, comptable et fiscal est arrêté lors de la clôture de la personne morale.',
+        'À confirmer selon les dispositions de l\'accord collectif et les modalités de liquidation.',
       ],
-      tags: ['reversion', 'dmtg_classique'],
+      tags: ['fin_vie_pm', 'liquidation', 'cession_entreprise'],
       confidence: 'moyenne',
-      dependencies: ['clause de réversion prévue à l\'accord'],
+      dependencies: ['dispositions de l\'accord collectif', 'modalités de dissolution ou liquidation'],
     },
   ],
 };
@@ -338,7 +508,7 @@ const PPV_INTERESSEMENT_PARTICIPATION_PM: ProductRules = {
     {
       title: 'Imposition des sommes reçues par le salarié',
       bullets: [
-        'PPV : exonérée d\'IR pour les salariés dont la rémunération est < 3 SMIC (loi 2023 — à confirmer selon l\'année de versement).',
+        'PPV : exonérée d\'IR pour les salariés dont la rémunération est < 3 SMIC (loi 2023 — À confirmer selon l\'année de versement).',
         'Intéressement / Participation bloqués sur PEE ou PER : exonérés d\'IR dans les plafonds légaux.',
         'Disponibles immédiatement (sans blocage) : imposables à l\'IR + PS 17,2 %.',
       ],
@@ -349,12 +519,15 @@ const PPV_INTERESSEMENT_PARTICIPATION_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Sans objet direct',
+      title: 'Fin de vie / événements de sortie de la personne morale',
       bullets: [
-        'Ces dispositifs n\'ont pas de règles fiscales spécifiques au décès. Les sommes bloquées (PEE/PER) intègrent la succession selon les règles du plan concerné.',
+        'En cas de dissolution, liquidation ou cession d\'activité, les dispositifs sont clôturés ou transférés selon les accords collectifs en vigueur.',
+        'Le traitement social et fiscal des sommes en cours est régularisé à la date de clôture de la personne morale.',
+        'À confirmer selon les accords collectifs et les modalités de liquidation retenues.',
       ],
-      tags: ['succession_selon_plan'],
-      confidence: 'elevee',
+      tags: ['fin_vie_pm', 'liquidation', 'accord_collectif'],
+      confidence: 'moyenne',
+      dependencies: ['accord collectif applicable', 'modalités de dissolution ou liquidation'],
     },
   ],
 };
@@ -367,7 +540,7 @@ const PERP_MADELIN_ANCIEN: ProductRules = {
         'Ces produits ne sont plus ouverts à la souscription depuis la loi PACTE (2019).',
         'Les contrats existants continuent à fonctionner et peuvent être transférés vers un PER.',
         'PERP : déductibilité dans la limite du disponible épargne retraite (art. 163 quatervicies CGI ancien).',
-        'Madelin retraite (TNS) : déductibilité art. 154 bis CGI / 154 bis OA CGI — à confirmer selon les articles exacts applicables.',
+        'Madelin retraite (TNS) : déductibilité selon l\'Article 154 bis CGI et l\'Article 154 bis-0 A — À confirmer selon les articles exacts applicables.',
       ],
       tags: ['ferme_souscription', 'transfert_per', 'deductible_ir', 'art_154_bis'],
       confidence: 'elevee',
@@ -411,13 +584,13 @@ export function getRetraiteRules(
     case 'pee':
     case 'percol':
     case 'perco_ancien':
-      return EPARGNE_SALARIALE_PEE;
+      return audience === 'pm' ? EPARGNE_SALARIALE_PEE_PM : EPARGNE_SALARIALE_PEE_PP;
     case 'article_83':
-      return ARTICLE_83;
+      return audience === 'pm' ? ARTICLE_83_PM : ARTICLE_83_PP;
     case 'article_39':
-      return ARTICLE_39_PM;
+      return audience === 'pm' ? ARTICLE_39_PM : ARTICLE_39_PP;
     case 'pero':
-      return PERO_PM;
+      return audience === 'pm' ? PERO_PM : PERO_PP;
     case 'ppv_prime_partage_valeur':
     case 'interessement':
     case 'participation':

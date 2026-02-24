@@ -229,15 +229,15 @@ const ASSURANCE_EMPRUNTEUR_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Décès du débiteur assuré',
+      title: 'Fin de vie / événement de sortie de la personne morale',
       bullets: [
-        'Le capital est versé à l\'établissement prêteur : extinction de la dette de la société.',
-        'Traitement comptable : le remboursement de l\'emprunt par l\'assureur peut générer un bénéfice exceptionnel imposable à l\'IS ou à l\'IR selon le régime de la société.',
-        'À confirmer selon le traitement comptable retenu et le régime fiscal de la société.',
+        'Le capital est versé à l\'établissement prêteur : extinction de la dette de la société lors du sinistre couvert.',
+        'En cas de dissolution, liquidation ou cessation d\'activité, le traitement comptable du remboursement peut générer un résultat exceptionnel imposable à l\'IS ou à l\'IR.',
+        'À confirmer selon le traitement comptable retenu, le régime fiscal et les modalités de clôture de la société.',
       ],
       tags: ['remboursement_pret', 'benefice_exceptionnel', 'is_ir'],
       confidence: 'moyenne',
-      dependencies: ['régime fiscal de la société (IS ou IR)', 'traitement comptable du sinistre'],
+      dependencies: ['régime fiscal de la société (IS ou IR)', 'traitement comptable du sinistre', 'modalités de clôture de la société'],
     },
   ],
 };
@@ -267,16 +267,17 @@ const ASSURANCE_HOMME_CLE: ProductRules = {
   ],
   deces: [
     {
-      title: 'Capital versé à l\'entreprise',
+      title: 'Fin de vie / événement déclencheur couvert (personne morale)',
       bullets: [
         'Le capital est versé à l\'entreprise (bénéficiaire) et intégré dans le résultat imposable de l\'exercice (produit exceptionnel, art. 38 CGI).',
         'Fiscalité : IS ou IR selon le régime de l\'entreprise.',
-        'À confirmer selon le type de contrat (indemnitaire ou forfaitaire) et l\'exercice de réalisation du sinistre.',
+        'En cas de liquidation ou cession de l\'entreprise, le traitement des flux suit les règles de clôture et le régime fiscal de la personne morale.',
+        'À confirmer selon le type de contrat (indemnitaire ou forfaitaire), l\'exercice de réalisation du sinistre et les modalités de sortie de la personne morale.',
       ],
-      tags: ['capital_entreprise', 'produit_exceptionnel', 'is_ir'],
+      tags: ['capital_entreprise', 'produit_exceptionnel', 'is_ir', 'fin_vie_pm'],
       confidence: 'moyenne',
       sources: [{ label: 'BOI-BIC-CHG-40-20-20 §100', url: 'https://bofip.impots.gouv.fr/bofip/803-PGP.html/identifiant=BOI-BIC-CHG-40-20-20-20130408' }],
-      dependencies: ['type de contrat (indemnitaire vs forfaitaire) : seul le contrat indemnitaire ouvre droit à la déductibilité des primes', 'exercice de réalisation du sinistre'],
+      dependencies: ['type de contrat (indemnitaire vs forfaitaire) : seul le contrat indemnitaire ouvre droit à la déductibilité des primes', 'exercice de réalisation du sinistre', 'modalités de sortie de la personne morale'],
     },
   ],
 };

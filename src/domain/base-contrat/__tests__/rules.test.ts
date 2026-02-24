@@ -305,4 +305,90 @@ describe('strings interdites — PR6 fiabilisation', () => {
       ).not.toContain('238 septies E');
     }
   });
+
+  it('audience PM — vocabulaire décès/succession/990I/757B interdit', () => {
+    const PM_FORBIDDEN_PATTERNS: RegExp[] = [
+      /décès/i,
+      /deces/i,
+      /succession/i,
+      /990\s*I/i,
+      /757\s*B/i,
+      /usufruitier au décès/i,
+      /au jour du décès/i,
+      /\bDMTG\b/i,
+    ];
+
+    for (const product of CATALOG.filter((p) => p.pmEligible)) {
+      const rules = getRules(product.id, 'pm');
+      const texts = [
+        ...rules.constitution.flatMap((b) => [b.title, ...b.bullets]),
+        ...rules.sortie.flatMap((b) => [b.title, ...b.bullets]),
+        ...rules.deces.flatMap((b) => [b.title, ...b.bullets]),
+      ];
+
+      for (const text of texts) {
+        for (const pattern of PM_FORBIDDEN_PATTERNS) {
+          expect(
+            pattern.test(text),
+            `Pattern interdit ${pattern} trouvé en PM pour ${product.id}: "${text}"`,
+          ).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('audience PP — pas de vocabulaire PM/IS sur produits sensibles', () => {
+    const PP_SENSITIVE_IDS = ['parts_scpi', 'contrat_capitalisation'];
+    const PP_FORBIDDEN_PM_PATTERNS: RegExp[] = [
+      /\bIS\b/i,
+      /impôt sur les sociétés/i,
+      /personne morale/i,
+      /société/i,
+      /\bPM\b/,
+    ];
+
+    for (const productId of PP_SENSITIVE_IDS) {
+      const rules = getRules(productId, 'pp');
+      const texts = [
+        ...rules.constitution.flatMap((b) => [b.title, ...b.bullets]),
+        ...rules.sortie.flatMap((b) => [b.title, ...b.bullets]),
+        ...rules.deces.flatMap((b) => [b.title, ...b.bullets]),
+      ];
+
+      for (const text of texts) {
+        for (const pattern of PP_FORBIDDEN_PM_PATTERNS) {
+          expect(
+            pattern.test(text),
+            `Pattern PM interdit ${pattern} trouvé en PP pour ${productId}: "${text}"`,
+          ).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('orthographe exacte — "Article 154 bis-0 A"', () => {
+    const auds: Array<'pp' | 'pm'> = ['pp', 'pm'];
+    const texts: string[] = [];
+
+    for (const audience of auds) {
+      const rules = getRules('madelin_retraite_ancien', audience);
+      texts.push(
+        ...rules.constitution.flatMap((b) => [b.title, ...b.bullets]),
+        ...rules.sortie.flatMap((b) => [b.title, ...b.bullets]),
+        ...rules.deces.flatMap((b) => [b.title, ...b.bullets]),
+      );
+    }
+
+    expect(
+      texts.some((t) => t.includes('Article 154 bis-0 A')),
+      'La mention exacte "Article 154 bis-0 A" est absente des règles concernées',
+    ).toBe(true);
+
+    for (const text of texts) {
+      expect(
+        /154 bis OA/i.test(text),
+        `Orthographe interdite détectée: "${text}"`,
+      ).toBe(false);
+    }
+  });
 });

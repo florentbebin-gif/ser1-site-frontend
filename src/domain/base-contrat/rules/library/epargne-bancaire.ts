@@ -98,6 +98,22 @@ const CTO: ProductRules = {
   ],
 };
 
+const CTO_PM: ProductRules = {
+  constitution: CTO.constitution,
+  sortie: CTO.sortie,
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d’activité, les titres sont intégrés aux opérations de clôture de la personne morale.',
+        'Le résultat fiscal des cessions est déterminé selon le régime d’imposition (IS/IR) et les écritures de clôture applicables.',
+      ],
+      tags: ['fin_vie_pm', 'cloture_pm', 'resultat_fiscal_titres'],
+      confidence: 'elevee',
+    },
+  ],
+};
+
 const PEA: ProductRules = {
   constitution: [
     {
@@ -310,9 +326,25 @@ const CAT_CSL: ProductRules = {
   ],
 };
 
+const CAT_CSL_PM: ProductRules = {
+  constitution: CAT_CSL.constitution,
+  sortie: CAT_CSL.sortie,
+  deces: [
+    {
+      title: 'Fin de vie / événements de sortie de la personne morale',
+      bullets: [
+        'En cas de dissolution, liquidation ou cession d’activité, les soldes sont intégrés aux opérations de clôture de la personne morale.',
+        'Le traitement fiscal de clôture dépend du régime d’imposition (IS/IR) et de la qualification comptable des flux.',
+      ],
+      tags: ['fin_vie_pm', 'cloture_pm', 'traitement_fiscal_cloture'],
+      confidence: 'elevee',
+    },
+  ],
+};
+
 export function getEpargneBancaireRules(
   productId: string,
-  _audience: Audience,
+  audience: Audience,
 ): ProductRules | undefined {
   switch (productId) {
     case 'livret_a':
@@ -322,7 +354,7 @@ export function getEpargneBancaireRules(
     case 'peac':
       return LIVRETS_REGLEMENTES;
     case 'cto':
-      return CTO;
+      return audience === 'pm' ? CTO_PM : CTO;
     case 'pea':
       return PEA;
     case 'pea_pme':
@@ -334,7 +366,7 @@ export function getEpargneBancaireRules(
     case 'cat_compte_a_terme':
     case 'csl_compte_sur_livret':
     case 'compte_courant_depot':
-      return CAT_CSL;
+      return audience === 'pm' ? CAT_CSL_PM : CAT_CSL;
     default:
       return undefined;
   }

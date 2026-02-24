@@ -41,7 +41,9 @@ const RESOLVERS: Array<(_id: string, _audience: Audience) => ProductRules | unde
 export function getRules(productId: string, audience: Audience): ProductRules {
   for (const resolver of RESOLVERS) {
     const rules = resolver(productId, audience);
-    if (rules) return rules;
+    if (rules) {
+      return rules;
+    }
   }
   return {
     constitution: [],

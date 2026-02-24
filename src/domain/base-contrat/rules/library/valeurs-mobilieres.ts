@@ -10,6 +10,44 @@
 
 import type { ProductRules, Audience } from '../types';
 
+function buildPmLifecycleRules(subject: string, tags: string[] = []): ProductRules {
+  return {
+    constitution: [
+      {
+        title: `Détention et comptabilisation (${subject})`,
+        bullets: [
+          'Le produit est détenu par la personne morale et comptabilisé selon sa nature (titres, parts, créances ou droits).',
+          'Le traitement fiscal courant suit le régime d’imposition de la personne morale (IS/IR) et les règles comptables applicables.',
+        ],
+        tags: ['pm', 'comptabilisation', ...tags],
+        confidence: 'elevee',
+      },
+    ],
+    sortie: [
+      {
+        title: 'Cession / encaissement',
+        bullets: [
+          'Le résultat de cession, remboursement ou encaissement est intégré au résultat fiscal de la personne morale.',
+          'Les modalités de calcul dépendent du mode de détention, des écritures de clôture et de la documentation comptable.',
+        ],
+        tags: ['resultat_fiscal', 'cession_pm', ...tags],
+        confidence: 'elevee',
+      },
+    ],
+    deces: [
+      {
+        title: 'Fin de vie / événements de sortie de la personne morale',
+        bullets: [
+          'En cas de dissolution, liquidation ou cession d’activité, le traitement est effectué dans les opérations de clôture de la personne morale.',
+          'La valorisation retenue à la clôture détermine l’assiette fiscale finale selon le régime applicable.',
+        ],
+        tags: ['fin_vie_pm', 'cloture_pm', ...tags],
+        confidence: 'elevee',
+      },
+    ],
+  };
+}
+
 const ACTIONS_COTEES: ProductRules = {
   constitution: [
     {
@@ -395,7 +433,7 @@ const USUFRUIT_NUE_PROPRIETE: ProductRules = {
 
 export function getValeursMobilieresRules(
   productId: string,
-  _audience: Audience,
+  audience: Audience,
 ): ProductRules | undefined {
   switch (productId) {
     case 'actions_cotees':
@@ -403,28 +441,28 @@ export function getValeursMobilieresRules(
     case 'parts_sociales_cooperatives':
     case 'titres_participatifs':
     case 'droits_bsa_dps':
-      return ACTIONS_COTEES;
+      return audience === 'pm' ? buildPmLifecycleRules('titres financiers', ['titres_financiers']) : ACTIONS_COTEES;
     case 'fcpr':
     case 'fcpi':
     case 'fip':
     case 'opci_grand_public':
-      return FONDS_OPC;
+      return audience === 'pm' ? buildPmLifecycleRules('parts de fonds', ['fonds']) : FONDS_OPC;
     case 'actions_non_cotees':
-      return ACTIONS_NON_COTEES;
+      return audience === 'pm' ? buildPmLifecycleRules('titres non cotés', ['non_cote']) : ACTIONS_NON_COTEES;
     case 'sofica':
-      return SOFICA;
+      return audience === 'pm' ? buildPmLifecycleRules('parts SOFICA', ['sofica']) : SOFICA;
     case 'ir_pme_madelin':
-      return IR_PME_MADELIN;
+      return audience === 'pm' ? buildPmLifecycleRules('titres de PME', ['ir_pme']) : IR_PME_MADELIN;
     case 'crowdfunding':
-      return CROWDFUNDING;
+      return audience === 'pm' ? buildPmLifecycleRules('titres de financement participatif', ['crowdfunding']) : CROWDFUNDING;
     case 'obligations_non_cotees':
-      return OBLIGATIONS_NON_COTEES;
+      return audience === 'pm' ? buildPmLifecycleRules('obligations non cotées', ['obligations']) : OBLIGATIONS_NON_COTEES;
     case 'compte_courant_associe':
-      return COMPTE_COURANT_ASSOCIE;
+      return audience === 'pm' ? buildPmLifecycleRules('créances en compte courant d’associé', ['cca']) : COMPTE_COURANT_ASSOCIE;
     case 'pret_entre_particuliers':
-      return PRET_PARTICULIERS;
+      return audience === 'pm' ? buildPmLifecycleRules('créances de prêt', ['creances']) : PRET_PARTICULIERS;
     case 'usufruit_nue_propriete':
-      return USUFRUIT_NUE_PROPRIETE;
+      return audience === 'pm' ? buildPmLifecycleRules('droits démembrés', ['demembrement']) : USUFRUIT_NUE_PROPRIETE;
     default:
       return undefined;
   }

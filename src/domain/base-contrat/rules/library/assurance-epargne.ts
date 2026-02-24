@@ -97,10 +97,10 @@ const CONTRAT_CAPITALISATION: ProductRules = {
       title: 'Versements',
       bullets: [
         'Versements libres ou programmés, sans plafond légal.',
-        'Accessible aux personnes physiques et aux personnes morales (sociétés, SCI, holding…).',
+        'Accessible aux personnes physiques.',
         'Mêmes supports qu\'un contrat d\'assurance-vie : fonds euros et unités de compte.',
       ],
-      tags: ['pm_eligible', 'supports_fe_uc'],
+      tags: ['pp_eligible', 'supports_fe_uc'],
       confidence: 'elevee',
     },
   ],
@@ -173,12 +173,12 @@ const CONTRAT_CAPITALISATION_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Sans objet (Personne Morale)',
+      title: 'Fin de vie / événements de sortie de la personne morale',
       bullets: [
-        'Une personne morale ne décède pas. Le contrat n\'est pas dénoué par le décès du dirigeant ou des associés.',
-        'En cas de dissolution ou liquidation de la société, le contrat entre dans le boni de liquidation.',
+        'Le contrat suit la continuité de la personne morale tant qu\'elle est en activité.',
+        'En cas de dissolution, liquidation ou cession d\'activité, le contrat entre dans les opérations de clôture (boni/mali de liquidation selon la situation).',
       ],
-      tags: ['pm_no_deces', 'liquidation'],
+      tags: ['fin_vie_pm', 'liquidation', 'cession_activite'],
       confidence: 'elevee',
     },
   ],
