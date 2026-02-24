@@ -201,9 +201,49 @@ Toujours utiliser des **libellés métier clairs**. Aucun jargon technique ni ID
 5. Lancer `npm run check`.
 
 ### 2. Ajouter/modifier une règle fiscale (3 colonnes)
-1. Identifier la phase impactée : **Constitution**, **Sortie/Rachat**, ou **Décès/Transmission**.
-2. Modifier ou créer la fonction de calcul dans `src/engine/` (ex: `src/engine/tax.ts`, `src/engine/succession.ts`).
-3. S'assurer que le calcul utilise les paramètres globaux (tax_settings, ps_settings) et non des valeurs en dur.
+
+Le **référentiel lisible** des règles fiscales est dans `src/domain/base-contrat/rules/` (PR5).  
+Le **moteur de calcul** (simulateurs) reste dans `src/engine/`.
+
+#### Modifier une règle existante
+1. Identifier le produit et la phase impactée : **Constitution**, **Sortie/Rachat**, ou **Décès/Transmission**.
+2. Ouvrir le fichier de bibliothèque correspondant dans `src/domain/base-contrat/rules/library/` :
+   - `assurance-epargne.ts` — Assurance-vie, Contrat de capitalisation
+   - `epargne-bancaire.ts` — Livrets, CTO, PEA, PEA-PME, PEL, CEL, CAT
+   - `retraite.ts` — PER (assurantiel/bancaire), PEE, PERCOL, Article 83/39…
+   - `immobilier.ts` — Résidence principale, locatif nu/meublé, SCPI, groupements
+   - `prevoyance.ts` — Prévoyance décès, ITT/invalidité, dépendance, emprunteur, homme-clé
+   - `valeurs-mobilieres.ts` — Actions, fonds (FCPR/FCPI/FIP), PE, créances, usufruit
+   - `fiscaux-immobilier.ts` — Pinel, Malraux, Monuments historiques, Denormandie…
+   - `autres.ts` — Tontine, Crypto-actifs, Métaux précieux
+3. Modifier le tableau `bullets` (texte métier, jamais de jargon technique ni d'ID).
+4. Lancer `npm run check`.
+
+#### Ajouter des règles
+1. Créer ou ouvrir le fichier de bibliothèque de la famille dans `src/domain/base-contrat/rules/library/` ou créer une entrée dans le `switch` du fichier concerné.
+2. Ajouter une `ProductRules` avec title + bullets métier.
+3. Lancer `npm run check` — le test de coverage se met à jour automatiquement.
+
+#### Standard de qualité des règles (confidence policy)
+
+Chaque `RuleBlock` doit obligatoirement avoir un champ `confidence` : `'elevee'`, `'moyenne'`, ou `'faible'`.
+
+| Confidence | Signification | Obligations |
+|---|---|---|
+| `elevee` | Règle fiable, sourcée, stable | Aucune obligation supplémentaire |
+| `moyenne` | Règle correcte mais dépend de paramètres client | Au moins 1 bullet « À confirmer selon … » + `dependencies` non vide |
+| `faible` | Règle incertaine ou en attente de validation | Idem `moyenne` + `sources` obligatoire |
+
+**Champs optionnels** :
+- `sources` : max 2 entrées `{ label, url }` pointant vers BOFiP, Légifrance ou doctrine fiable (URLs `https://`).
+- `dependencies` : max 6 courtes phrases décrivant les paramètres dont dépend la règle.
+
+**Règles d'écriture** :
+- Ne jamais affirmer sans source officielle. Si la source manque → `confidence: 'moyenne'` minimum.
+- Préférer les sources officielles : BOFiP > Légifrance > doctrine professionnelle.
+- Les `tags` sont techniques (moteur futur) et jamais affichés en UI.
+- Les `confidence`, `sources`, `dependencies` sont internes et non affichés en UI.
+- Les tests (`rules.test.ts`) vérifient automatiquement le respect de cette policy.
 
 ### 3. Ajouter/mettre à jour les tests (Golden Tests)
 1. Ouvrir `src/engine/__tests__/goldenCases.test.ts` (ou le fichier de test lié au domaine).

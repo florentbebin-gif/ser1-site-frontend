@@ -1,8 +1,9 @@
-﻿/**
- * BaseContrat  Référentiel contrats (pivot hybride PR2)
+/**
+ * BaseContrat  Référentiel contrats (pivot hybride — PR5)
  *
  * Page /settings/base-contrat.
  * Catalogue hardcodé (domain/base-contrat/catalog.ts) + overrides Supabase.
+ * Règles fiscales hardcodées (domain/base-contrat/rules/).
  * UI read-only : seule action admin = clôturer / rouvrir un produit avec date.
  */
 
@@ -13,15 +14,17 @@ import { CATALOG } from '@/domain/base-contrat/catalog';
 import type { CatalogProduct } from '@/domain/base-contrat/catalog';
 import { isProductClosed } from '@/domain/base-contrat/overrides';
 import type { BaseContratOverride, OverrideMap } from '@/domain/base-contrat/overrides';
+import { getRules } from '@/domain/base-contrat/rules/index';
+import type { ProductRules, RuleBlock, Audience } from '@/domain/base-contrat/rules/index';
 import {
   getBaseContratOverrides,
   upsertBaseContratOverride,
 } from '@/utils/baseContratOverridesCache';
 import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from '@/constants/baseContratLabels';
 
-// 
+// ─────────────────────────────────────────────────────────────
 // Hook: overrides
-// 
+// ─────────────────────────────────────────────────────────────
 
 function useOverrides() {
   const [overrides, setOverrides] = useState<OverrideMap>({});
@@ -46,25 +49,115 @@ function useOverrides() {
   return { overrides, loading, reload };
 }
 
-// 
+// ─────────────────────────────────────────────────────────────
 // Sub-components
-// 
+// ─────────────────────────────────────────────────────────────
 
-function PhaseCell({ label, applicable }: { label: string; applicable: boolean }) {
+function RuleBlockCard({ block }: { block: RuleBlock }) {
   return (
-    <div style={{ flex: 1, minWidth: 160 }}>
-      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-c9)', marginBottom: 4 }}>{label}</div>
-      {applicable
-        ? <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c3)', color: '#fff', fontWeight: 600 }}>Applicable</span>
-        : <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c8)', color: 'var(--color-c9)', fontWeight: 600 }}>Sans objet</span>
+    <div style={{
+      background: 'var(--color-c7)',
+      border: '1px solid var(--color-c8)',
+      borderRadius: 8,
+      padding: '12px 14px',
+      marginBottom: 8,
+    }}>
+      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-c10)', marginBottom: 6 }}>
+        {block.title}
+      </div>
+      <ul style={{ margin: 0, paddingLeft: 16 }}>
+        {block.bullets.map((bullet, i) => (
+          <li key={i} style={{ fontSize: 12, color: 'var(--color-c9)', marginBottom: 3, lineHeight: 1.5 }}>
+            {bullet}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function EmptyRuleCard() {
+  return (
+    <div style={{
+      background: 'var(--color-c7)',
+      border: '1px dashed var(--color-c8)',
+      borderRadius: 8,
+      padding: '12px 14px',
+      marginBottom: 8,
+    }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-c9)', fontStyle: 'italic' }}>
+        Aucune règle renseignée
+      </div>
+      <div style={{ fontSize: 11, color: 'var(--color-c9)', marginTop: 4 }}>
+        Ce produit ne possède pas de règles fiscales spécifiques pour cette phase.
+      </div>
+    </div>
+  );
+}
+
+function PhaseColumn({
+  phaseKey,
+  blocks,
+}: {
+  phaseKey: 'constitution' | 'sortie' | 'deces';
+  blocks: RuleBlock[];
+}) {
+  const colorMap: Record<typeof phaseKey, string> = {
+    constitution: 'var(--color-c3)',
+    sortie: 'var(--color-c2)',
+    deces: 'var(--color-c1)',
+  };
+
+  return (
+    <div style={{ flex: '1 1 0', minWidth: 180 }}>
+      <div style={{
+        fontSize: 11,
+        fontWeight: 700,
+        color: colorMap[phaseKey],
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        marginBottom: 10,
+        paddingBottom: 6,
+        borderBottom: `2px solid ${colorMap[phaseKey]}`,
+      }}>
+        {PHASE_LABELS[phaseKey]}
+      </div>
+      {blocks.length === 0
+        ? <EmptyRuleCard />
+        : blocks.map((block, i) => <RuleBlockCard key={i} block={block} />)
       }
     </div>
   );
 }
 
-// 
+function RulesPanel({ rules, closed }: { rules: ProductRules; closed: boolean }) {
+  return (
+    <div style={{
+      padding: '14px 20px 16px',
+      borderTop: '1px solid var(--color-c8)',
+      opacity: closed ? 0.55 : 1,
+    }}>
+      <div style={{
+        display: 'flex',
+        gap: 16,
+        alignItems: 'flex-start',
+        flexWrap: 'wrap',
+      }}>
+        {(['constitution', 'sortie', 'deces'] as const).map((pk) => (
+          <PhaseColumn
+            key={pk}
+            phaseKey={pk}
+            blocks={rules[pk]}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // Modal: Clôturer / Rouvrir
-// 
+// ─────────────────────────────────────────────────────────────
 
 function OverrideModal({
   product,
@@ -96,7 +189,7 @@ function OverrideModal({
     <div className="report-modal-overlay" onClick={onClose}>
       <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 440 }}>
         <div className="report-modal-header">
-          <h3>{isClosed ? 'Rouvrir' : 'Clôturer'}  {product.label}</h3>
+          <h3>{isClosed ? 'Rouvrir' : 'Clôturer'} — {product.label}</h3>
           <button className="report-modal-close" onClick={onClose}>&#x2715;</button>
         </div>
         <div className="report-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -126,7 +219,7 @@ function OverrideModal({
             disabled={saving}
             style={{ padding: '8px 20px', fontWeight: 600 }}
           >
-            {saving ? 'Enregistrement' : 'Enregistrer'}
+            {saving ? 'Enregistrement…' : 'Enregistrer'}
           </button>
         </div>
       </div>
@@ -134,26 +227,24 @@ function OverrideModal({
   );
 }
 
-// 
+// ─────────────────────────────────────────────────────────────
 // Main component
-// 
+// ─────────────────────────────────────────────────────────────
 
 export default function BaseContrat() {
   const { isAdmin } = useUserRole();
   const { overrides, loading, reload } = useOverrides();
 
-  // UI state
   const [openProductId, setOpenProductId] = useState<string | null>(null);
   const [openFamilyId, setOpenFamilyId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterFamille, setFilterFamille] = useState('');
-  const [togglePPPM, setTogglePPPM] = useState<'pp' | 'pm'>('pp');
+  const [togglePPPM, setTogglePPPM] = useState<Audience>('pp');
   const [overrideTarget, setOverrideTarget] = useState<CatalogProduct | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
 
   const today = new Date().toISOString().slice(0, 10);
 
-  // Derived lists
   const filteredCatalog = useMemo(() => {
     return CATALOG.filter((p) => {
       if (togglePPPM === 'pp' && !p.ppEligible) return false;
@@ -198,7 +289,7 @@ export default function BaseContrat() {
     }
   }
 
-  if (loading) return <p style={{ padding: 24, color: 'var(--color-c9)' }}>Chargement</p>;
+  if (loading) return <p style={{ padding: 24, color: 'var(--color-c9)' }}>Chargement…</p>;
 
   return (
     <div style={{ marginTop: 16 }}>
@@ -206,7 +297,7 @@ export default function BaseContrat() {
 
       <div style={{ fontSize: 15, marginTop: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        {/*  Header  */}
+        {/* ── Header ── */}
         <div className="settings-premium-card" style={{ padding: '20px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <div style={{ flex: 1 }}>
@@ -214,7 +305,7 @@ export default function BaseContrat() {
                 Référentiel contrats
               </h2>
               <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--color-c9)' }}>
-                {CATALOG.length} produits  {activeCount} ouverts  {closedCount} clôturés
+                {CATALOG.length} produits · {activeCount} ouverts · {closedCount} clôturés
               </p>
             </div>
             {/* Toggle PP / Entreprise */}
@@ -241,7 +332,7 @@ export default function BaseContrat() {
           </div>
         </div>
 
-        {/*  Filtres  */}
+        {/* ── Filtres ── */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           <input
             type="search"
@@ -269,14 +360,14 @@ export default function BaseContrat() {
           )}
         </div>
 
-        {/*  Empty state  */}
+        {/* ── Empty state ── */}
         {groupedByFamily.size === 0 && (
           <div className="settings-premium-card" style={{ padding: '32px 24px', textAlign: 'center' }}>
             <p style={{ color: 'var(--color-c9)', fontSize: 14, margin: 0 }}>Aucun produit ne correspond aux filtres.</p>
           </div>
         )}
 
-        {/*  Groupes par famille  */}
+        {/* ── Groupes par famille ── */}
         {Array.from(groupedByFamily.entries()).map(([famille, familyProducts]) => {
           const isFamilyOpen = openFamilyId === famille;
           const closedInFamily = familyProducts.filter((p) => isProductClosed(p.id, overrides, today)).length;
@@ -299,7 +390,7 @@ export default function BaseContrat() {
                     {closedInFamily} clôturé{closedInFamily > 1 ? 's' : ''}
                   </span>
                 )}
-                <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--color-c9)' }}>{isFamilyOpen ? '' : ''}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--color-c9)' }}>{isFamilyOpen ? '▴' : '▾'}</span>
               </div>
 
               {isFamilyOpen && (
@@ -308,6 +399,7 @@ export default function BaseContrat() {
                     const isOpen = openProductId === product.id;
                     const closed = isProductClosed(product.id, overrides, today);
                     const override = overrides[product.id];
+                    const rules = getRules(product.id, togglePPPM);
 
                     return (
                       <div key={product.id} style={{ borderTop: '1px solid var(--color-c8)' }}>
@@ -330,6 +422,11 @@ export default function BaseContrat() {
                           {product.pmEligible && !product.ppEligible && (
                             <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c8)', color: 'var(--color-c9)', fontWeight: 600 }}>PM</span>
                           )}
+                          {rules.constitution.length === 0 && rules.sortie.length === 0 && rules.deces.length === 0 && (
+                            <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c6)', color: 'var(--color-c10)', fontStyle: 'italic' }}>
+                              Aucune règle
+                            </span>
+                          )}
                           {closed && (
                             <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c6)', color: 'var(--color-c10)', fontWeight: 600 }}>
                               Clôturé {override?.closed_date ? `le ${override.closed_date}` : ''}
@@ -344,33 +441,19 @@ export default function BaseContrat() {
                               {closed ? 'Rouvrir' : 'Clôturer'}
                             </button>
                           )}
-                          {!isAdmin && <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--color-c9)' }}>{isOpen ? '' : ''}</span>}
+                          {!isAdmin && <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--color-c9)' }}>{isOpen ? '▴' : '▾'}</span>}
                         </div>
 
-                        {/* Product body  3 colonnes */}
+                        {/* Product body — 3 colonnes règles fiscales */}
                         {isOpen && (
-                          <div style={{ padding: '0 20px 16px', borderTop: '1px solid var(--color-c8)' }}>
+                          <>
                             {override?.note_admin && (
-                              <p style={{ fontSize: 12, color: 'var(--color-c9)', fontStyle: 'italic', margin: '10px 0 12px' }}>
+                              <p style={{ fontSize: 12, color: 'var(--color-c9)', fontStyle: 'italic', margin: '0 20px 0', padding: '8px 0 0' }}>
                                 Note : {override.note_admin}
                               </p>
                             )}
-                            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 12 }}>
-                              {(['constitution', 'sortie', 'deces'] as const).map((pk) => (
-                                <PhaseCell
-                                  key={pk}
-                                  label={PHASE_LABELS[pk]}
-                                  applicable={!closed}
-                                />
-                              ))}
-                            </div>
-                            <div style={{ marginTop: 10, fontSize: 11, color: 'var(--color-c9)' }}>
-                              Famille : <strong>{product.grandeFamille}</strong>
-                              {'  '}
-                              Type : <strong>{product.catalogKind}</strong>
-                              {product.templateKey && <>{'  '}Modèle : <strong>{product.templateKey}</strong></>}
-                            </div>
-                          </div>
+                            <RulesPanel rules={rules} closed={closed} />
+                          </>
                         )}
                       </div>
                     );
@@ -387,7 +470,7 @@ export default function BaseContrat() {
         )}
       </div>
 
-      {/*  Modal: Clôturer / Rouvrir  */}
+      {/* Modal: Clôturer / Rouvrir */}
       {overrideTarget && (
         <OverrideModal
           product={overrideTarget}

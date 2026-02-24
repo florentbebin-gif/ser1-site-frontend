@@ -15,3 +15,6 @@ export { CATALOG, CATALOG_BY_ID, getCatalogProduct } from './catalog';
 
 export type { BaseContratOverride, OverrideMap } from './overrides';
 export { isProductClosed } from './overrides';
+
+export type { ProductRules, RuleBlock, Audience } from './rules/index';
+export { getRules, getRulesForProduct, hasSocleRules } from './rules/index';
