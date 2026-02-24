@@ -295,8 +295,8 @@ Livrables typiques (suite P1) :
 
 #### Retraite & Épargne salariale (`retraite.ts`)
 - [ ] **Article 83 (anciens contrats)** : retirer la mention « Article 39… » (hors sujet). Revoir les règles spécifiques Art. 83 (cotisations déductibles dans la limite de 8 % de la rémunération brute plafonée à 8 PASS).
-- [ ] **Madelin retraite ancien** : ajouter références **art. 154 bis** et **art. 154 bis-0 A** CGI. Retirer mention « 20 % PERP » (hors sujet).
-- [ ] **PERIN assurantiel** : ajouter références **art. 154 bis** et **art. 154 bis-0 A** CGI.
+- [ ] **Madelin retraite ancien** : ajouter références **art. 154 bis / 154 bis OA (à confirmer + source attendue)** CGI. Retirer mention « 20 % PERP » (hors sujet).
+- [ ] **PERIN assurantiel** : ajouter références **art. 154 bis / 154 bis OA (à confirmer + source attendue)** CGI.
 - [ ] **PERO** : corriger les règles Art. 39 incorrectes. Documenter la différence vs Art. 83 ancien (forfait social 16 % — à confirmer, source CSS requise).
 - [ ] **Produits manquants PM** : créer des blocs pour `ppv_prime_partage_valeur`, `interessement`, `participation` (uniquement pour PM, côté entreprise).
 
@@ -313,11 +313,11 @@ Livrables typiques (suite P1) :
 
 **Objectif** : séparer les règles PP et PM pour les produits qui admettent les deux audiences.
 
-**Constat** (preuve repo) : `rg "pmEligible: true" src/domain/base-contrat/catalog.ts -B6 | rg "id:"` retourne 28 produits avec les deux flags `ppEligible: true` et `pmEligible: true` simultanément (dont `contrat_capitalisation` ligne 98–99, `cto` ligne 199–200, `article_83` ligne 228–229, `pero` ligne 300–301, `usufruit_nue_propriete` ligne 654–655, et de nombreux produits valeurs mobiliers et immobilier).
+**Constat** (preuve repo) : `rg "pmEligible: true" src/domain/base-contrat/catalog.ts -B6 | rg "id:"` retourne 38 produits avec les deux flags `ppEligible: true` et `pmEligible: true` simultanément (dont `contrat_capitalisation` ligne 98–99, `cto` ligne 199–200, `article_83` ligne 228–229, `pero` ligne 300–301, `usufruit_nue_propriete` ligne 654–655, et de nombreux produits valeurs mobiliers et immobilier).
 
 **Plan** :
 - [ ] Décider de la stratégie : (a) règles conditionnelles PP/PM dans les library files (pattern déjà utilisé pour `CONTRAT_CAPITALISATION_PP` vs `CONTRAT_CAPITALISATION_PM` dans `assurance-epargne.ts`), ou (b) produits dupliqués PP/PM dans `catalog.ts`.
-- [ ] Appliquer la stratégie choisie sur les 28 produits concernés.
+- [ ] Appliquer la stratégie choisie sur les 38 produits concernés.
 - [ ] Migration label « (Entreprise) » → « (PM) » : vérifier si des données DB portent encore l’ancien suffixe — si oui, migration SQL.
 
 **DoD PR7** :
@@ -354,6 +354,14 @@ Livrables typiques (suite P1) :
 **Question ouverte** : la lecture (statut « clôturé » / note admin) doit-elle être réservée aux admins ?
 - [ ] **Si admin-only** : remplacer la policy SELECT par `USING (public.is_admin())`.
 - [ ] **Si read-for-all-auth** (recommandé pour afficher le statut « clôturé » à tous les utilisateurs du cabinet) : documenter la décision dans le RUNBOOK.
+
+---
+
+### Item transversal — Tests E2E Playwright obsolètes
+
+**Constat** : des tests E2E Playwright (ex: `tests/e2e/configure-rules.spec.ts`) testent encore l'ancienne UI admin (éditeurs JSON, modales de règles) qui a été totalement supprimée lors de PR3.
+- [ ] Identifier et supprimer les fichiers E2E obsolètes dans `tests/e2e/`.
+- [ ] Vérifier que la CI GitHub Actions (si existante) ne fail pas sur ces anciens tests.
 
 ---
 
