@@ -21,7 +21,7 @@ import { getValeursMobilieresRules } from './library/valeurs-mobilieres';
 import { getAutresRules } from './library/autres';
 import { getFiscauxImmobilierRules } from './library/fiscaux-immobilier';
 
-export type { ProductRules, RuleBlock, Audience } from './types';
+export type { ProductRules, RuleBlock, Audience, Confidence, RuleSource } from './types';
 
 const RESOLVERS: Array<(_id: string, _audience: Audience) => ProductRules | undefined> = [
   getAssuranceEpargneRules,

@@ -18,6 +18,7 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
         'Exonération partielle d\'IFI : abattement de 30 % sur la valeur de la résidence principale.',
       ],
       tags: ['dmto', 'ifi_abattement_30'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -29,6 +30,7 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
         'L\'exonération s\'applique quelle que soit la durée de détention.',
       ],
       tags: ['exoneration_totale', 'residence_principale_vente'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -41,6 +43,7 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
         'L\'abattement IFI de 30 % n\'est pas applicable aux DMTG.',
       ],
       tags: ['dmtg_classique', 'abattement_100k_enfant'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -54,6 +57,7 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
         'Intégration à l\'assiette IFI à sa valeur vénale.',
       ],
       tags: ['dmto', 'ifi'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -65,6 +69,7 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
         'Surtaxe de 2 % à 6 % si la plus-value nette imposable dépasse 50 000 €.',
       ],
       tags: ['pv_immo', 'abattement_detention', 'surtaxe'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -76,6 +81,7 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
         'Abattement 100 000 € par enfant renouvelable tous 15 ans.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -91,6 +97,7 @@ const LOCATIF_NU: ProductRules = {
         'Déficit foncier déductible du revenu global dans la limite de 10 700 €/an (20 200 € pour les travaux de rénovation énergétique d\'ampleur).',
       ],
       tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel', 'deficit_foncier'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -102,6 +109,7 @@ const LOCATIF_NU: ProductRules = {
         'Surtaxe de 2 % à 6 % si la plus-value nette dépasse 50 000 €.',
       ],
       tags: ['pv_immo', 'abattement_detention', 'surtaxe'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -113,6 +121,7 @@ const LOCATIF_NU: ProductRules = {
         'Abattement 100 000 € par enfant renouvelable tous 15 ans.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -129,6 +138,8 @@ const LOCATIF_MEUBLE_LMNP: ProductRules = {
         'À confirmer selon l\'inscription éventuelle au registre du commerce et des sociétés (RCS).',
       ],
       tags: ['bic', 'micro_bic', 'amortissements', 'lmnp'],
+      confidence: 'moyenne',
+      dependencies: ['inscription RCS', 'seuil de recettes annuelles'],
     },
   ],
   sortie: [
@@ -136,11 +147,14 @@ const LOCATIF_MEUBLE_LMNP: ProductRules = {
       title: 'Plus-value de cession',
       bullets: [
         'Régime des plus-values des particuliers : IR 19 % + PS 17,2 %.',
-        'Avantage distinctif LMNP : les amortissements passés ne sont pas réintégrés dans la plus-value imposable.',
-        'Abattements progressifs selon la durée de détention (exonération IR après 22 ans, PS après 30 ans).',
-        'À confirmer selon le basculement éventuel en statut LMP au cours de la détention.',
+        'Depuis la loi de finances 2025 (art. 24) : les amortissements déduits sont réintégrés dans le calcul de la plus-value imposable (art. 150 VB CGI modifié).',
+        'Abattements progressifs selon la durée de détention restent applicables (exonération IR après 22 ans, PS après 30 ans).',
+        'À confirmer selon la date de cession (les cessions antérieures à la LF 2025 restent sous l\'ancien régime sans réintégration).',
       ],
-      tags: ['pv_immo', 'no_reintegration_amortissements', 'abattement_detention'],
+      tags: ['pv_immo', 'lmnp_pv', 'abattement_detention'],
+      confidence: 'moyenne',
+      sources: [{ label: 'Art. 24 LF 2025 — réintégration amortissements', url: 'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000051199510' }],
+      dependencies: ['date de cession (avant/après LF 2025)', 'basculement éventuel en LMP'],
     },
   ],
   deces: [
@@ -152,6 +166,7 @@ const LOCATIF_MEUBLE_LMNP: ProductRules = {
         'Abattement 100 000 € par enfant renouvelable tous 15 ans.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -167,6 +182,8 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
         'À confirmer selon l\'affiliation sociale spécifique du loueur (SSI, régime général).',
       ],
       tags: ['bic_professionnel', 'lmp', 'cotisations_sociales'],
+      confidence: 'moyenne',
+      dependencies: ['affiliation sociale (SSI ou régime général)', 'seuil de recettes annuelles'],
     },
   ],
   sortie: [
@@ -180,6 +197,9 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
         'À confirmer selon le chiffre d\'affaires précis des exercices N-1 et N-2 (Art. 151 septies du CGI).',
       ],
       tags: ['pv_pro', 'court_terme', 'long_terme', 'exoneration_recettes'],
+      confidence: 'moyenne',
+      sources: [{ label: 'Art. 151 septies CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908282' }],
+      dependencies: ['chiffre d’affaires N-1 et N-2', 'durée d’activité LMP'],
     },
   ],
   deces: [
@@ -191,6 +211,7 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
         'Abattement 100 000 € par enfant renouvelable tous 15 ans.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -204,6 +225,7 @@ const IMMO_AUTRE: ProductRules = {
         'Intégration à l\'assiette IFI selon la nature et l\'utilisation.',
       ],
       tags: ['dmto', 'ifi'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -215,6 +237,7 @@ const IMMO_AUTRE: ProductRules = {
         'Exonération totale d\'IR après 22 ans, de PS après 30 ans.',
       ],
       tags: ['pv_immo', 'abattement_detention'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -225,6 +248,7 @@ const IMMO_AUTRE: ProductRules = {
         'DMTG selon le barème et le lien de parenté.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -239,6 +263,7 @@ const PARTS_SCPI: ProductRules = {
         'Accessible aux personnes morales (PM) : revenus intégrés au résultat fiscal soumis à l\'IS.',
       ],
       tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel', 'pm_eligible'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -250,6 +275,7 @@ const PARTS_SCPI: ProductRules = {
         'Personnes morales (PM) : plus-value intégrée au résultat soumis à l\'IS.',
       ],
       tags: ['pv_immo', 'abattement_detention', 'pm_is'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -261,6 +287,7 @@ const PARTS_SCPI: ProductRules = {
         'Abattement 100 000 € par enfant renouvelable tous 15 ans.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -276,6 +303,9 @@ const GROUPEMENT_FONCIER: ProductRules = {
         'À confirmer selon le visa préfectoral et les statuts du groupement foncier (GFF, GFA, GFV).',
       ],
       tags: ['revenu_agricole_forestier', 'ifi_exoneration_partielle', 'pacte_dutreil'],
+      confidence: 'moyenne',
+      sources: [{ label: 'Art. 793 CGI — GFA/GFV', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310362' }],
+      dependencies: ['type de groupement (GFF, GFA, GFV)', 'visa préfectoral et statuts'],
     },
   ],
   sortie: [
@@ -284,8 +314,11 @@ const GROUPEMENT_FONCIER: ProductRules = {
       bullets: [
         'Régime des plus-values des particuliers ou des professionnels selon le statut.',
         'Abattements pour durée de détention applicables.',
+        'À confirmer selon le statut du cédant (particulier vs professionnel) et la durée de détention des parts.',
       ],
       tags: ['pv_parts', 'abattement_detention'],
+      confidence: 'moyenne',
+      dependencies: ['statut du cédant (particulier vs professionnel)'],
     },
   ],
   deces: [
@@ -293,10 +326,15 @@ const GROUPEMENT_FONCIER: ProductRules = {
       title: 'Transmission — Pacte Dutreil possible',
       bullets: [
         'Les parts entrent dans la succession à leur valeur au jour du décès.',
-        'Pacte Dutreil agricole/forestier : exonération de 75 % des DMTG sous conditions d\'engagement de conservation.',
-        'DMTG classiques si aucun engagement Dutreil.',
+        'Exonération de 75 % des DMTG (art. 793 CGI) si les biens sont donnés à bail long terme (≥ 18 ans) et les parts détenues depuis plus de 2 ans.',
+        'Au-delà de 300 000 € par bénéficiaire, l\'exonération est réduite à 50 % (art. 793 bis CGI).',
+        'DMTG classiques si aucun bail long terme ou engagement de conservation.',
+        'À confirmer selon l\'existence d\'un bail long terme et le respect des conditions de détention minimale.',
       ],
       tags: ['dmtg_classique', 'pacte_dutreil', 'exoneration_75'],
+      confidence: 'moyenne',
+      sources: [{ label: 'Art. 793 CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310362' }],
+      dependencies: ['engagement de conservation (bail long terme ≥ 18 ans)', 'seuil de 300 000 €'],
     },
   ],
 };

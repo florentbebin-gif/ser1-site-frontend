@@ -18,6 +18,8 @@ const TONTINE: ProductRules = {
         'À confirmer selon les statuts de l\'association tontinière (frais de gestion et modalités de répartition).',
       ],
       tags: ['tontine', 'terme_fixe', 'no_rachat'],
+      confidence: 'moyenne',
+      dependencies: ['statuts de l\'association tontinière', 'frais de gestion et modalités de répartition'],
     },
   ],
   sortie: [
@@ -27,8 +29,12 @@ const TONTINE: ProductRules = {
         'Versement de la capitalisation aux membres survivants à la date d\'échéance.',
         'Gains imposables : régime des produits de placement à revenu fixe — PFU 30 % (12,8 % IR + 17,2 % PS).',
         'Base imposable : valeur de répartition reçue moins les cotisations versées.',
+        'À confirmer selon la nature exacte du contrat tontinier (association tontinière d\'assurance vs clause tontinière immobilière).',
       ],
       tags: ['pfu_30', 'base_imposable'],
+      confidence: 'moyenne',
+      sources: [{ label: 'Art. 125-0 A CGI', url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630' }],
+      dependencies: ['nature du contrat tontinier (assurance vs clause immobilière)'],
     },
   ],
   deces: [
@@ -41,6 +47,8 @@ const TONTINE: ProductRules = {
         'À confirmer selon la présence ou non d\'une assurance-décès complémentaire souscrite en parallèle.',
       ],
       tags: ['no_succession_tontine', 'alea_viager', 'capital_deces_adosse'],
+      confidence: 'moyenne',
+      dependencies: ['présence d\'une assurance-décès complémentaire'],
     },
   ],
 };
@@ -55,6 +63,7 @@ const CRYPTO_ACTIFS: ProductRules = {
         'Pas de plafond légal d\'investissement.',
       ],
       tags: ['crypto', 'prix_de_revient'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -67,6 +76,8 @@ const CRYPTO_ACTIFS: ProductRules = {
         'Option pour le barème progressif de l\'IR possible.',
       ],
       tags: ['pfu_30', 'fait_generateur_cession', 'option_bareme'],
+      confidence: 'elevee',
+      sources: [{ label: 'Art. 150 VH bis CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612225' }],
     },
     {
       title: 'Activité habituelle',
@@ -75,6 +86,7 @@ const CRYPTO_ACTIFS: ProductRules = {
         'Staking et revenus passifs : imposés à l\'IR à la valeur de marché au moment de la réception.',
       ],
       tags: ['bnc_professionnel', 'staking'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -86,6 +98,7 @@ const CRYPTO_ACTIFS: ProductRules = {
         'Attention : l\'accès aux wallets et aux clés privées doit être anticipé (clause testamentaire ou mandat).',
       ],
       tags: ['dmtg_classique', 'acces_wallet'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -100,6 +113,7 @@ const METAUX_PRECIEUX: ProductRules = {
         'Conservation physique ou via un dépositaire (coffre bancaire).',
       ],
       tags: ['tva_argent', 'exoneration_tva_or', 'or_placement'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -111,6 +125,8 @@ const METAUX_PRECIEUX: ProductRules = {
         'Le choix du régime le plus favorable est effectué lors de la déclaration de cession.',
       ],
       tags: ['taxe_forfaitaire_11', 'pv_reelle', 'abattement_detention_22_ans'],
+      confidence: 'elevee',
+      sources: [{ label: 'Art. 150 VI CGI — métaux précieux', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302728' }],
     },
   ],
   deces: [
@@ -122,6 +138,7 @@ const METAUX_PRECIEUX: ProductRules = {
         'La valorisation doit être attestée (cours de l\'or/argent à la date du décès).',
       ],
       tags: ['dmtg_classique', 'valeur_marche'],
+      confidence: 'elevee',
     },
   ],
 };

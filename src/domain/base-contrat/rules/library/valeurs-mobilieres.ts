@@ -19,6 +19,7 @@ const ACTIONS_COTEES: ProductRules = {
         'Frais d\'acquisition (courtage) non déductibles fiscalement (régime PFU).',
       ],
       tags: ['cto', 'pea_eligible'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -31,6 +32,7 @@ const ACTIONS_COTEES: ProductRules = {
         'Compensation des moins-values sur les plus-values de l\'année et des 10 années suivantes.',
       ],
       tags: ['pfu_30', 'dividendes', 'abattement_40', 'compensation_mv'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -42,6 +44,7 @@ const ACTIONS_COTEES: ProductRules = {
         'DMTG selon le barème et le lien de parenté, après abattements légaux.',
       ],
       tags: ['purge_pv', 'dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -56,6 +59,7 @@ const FONDS_OPC: ProductRules = {
         'Engagement de blocage des fonds pendant la durée requise (généralement 5 à 10 ans).',
       ],
       tags: ['reduction_ir', 'blocage', 'fcpi_fip'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -67,6 +71,7 @@ const FONDS_OPC: ProductRules = {
         'Compensation des moins-values sur les 10 années suivantes.',
       ],
       tags: ['pfu_30', 'exoneration_fcpr', 'compensation_mv'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -77,6 +82,7 @@ const FONDS_OPC: ProductRules = {
         'DMTG selon le barème et le lien de parenté.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -90,6 +96,7 @@ const ACTIONS_NON_COTEES: ProductRules = {
         'Souscription au capital : éventuellement éligible à la réduction IR-PME (18 % ou 25 % selon l\'entreprise).',
       ],
       tags: ['ir_pme', 'non_cote'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -101,6 +108,7 @@ const ACTIONS_NON_COTEES: ProductRules = {
         'Abattement renforcé possible pour dirigeants partant en retraite (sous conditions).',
       ],
       tags: ['pfu_30', 'abattement_dirigeant_retraite'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -112,6 +120,7 @@ const ACTIONS_NON_COTEES: ProductRules = {
         'Abattements légaux classiques en l\'absence de Pacte Dutreil.',
       ],
       tags: ['pacte_dutreil', 'art_787_b_cgi', 'dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -126,6 +135,7 @@ const SOFICA: ProductRules = {
         'Engagement de conservation des parts pendant au moins 5 ans.',
       ],
       tags: ['reduction_ir', 'plafond_18k', 'sofica'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -136,6 +146,7 @@ const SOFICA: ProductRules = {
         'Moins-values non imputables sur d\'autres plus-values de cession de valeurs mobilières.',
       ],
       tags: ['pfu_30', 'mv_non_imputables'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -146,6 +157,7 @@ const SOFICA: ProductRules = {
         'DMTG selon le barème et le lien de parenté.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -160,6 +172,7 @@ const IR_PME_MADELIN: ProductRules = {
         'Conditions : PME de moins de 7 ans, secteurs éligibles, engagement de conservation 5 ans minimum.',
       ],
       tags: ['reduction_ir_18_25', 'plafond_50k', 'engagement_5_ans'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -171,6 +184,7 @@ const IR_PME_MADELIN: ProductRules = {
         'Reprise de la réduction d\'IR si cession avant 5 ans (hors cas de force majeure).',
       ],
       tags: ['pfu_30', 'reprise_reduction'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -182,6 +196,7 @@ const IR_PME_MADELIN: ProductRules = {
         'Pacte Dutreil possible si les conditions d\'engagement sont remplies.',
       ],
       tags: ['dmtg_classique', 'pacte_dutreil'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -195,6 +210,7 @@ const CROWDFUNDING: ProductRules = {
         'Risque de perte en capital important (PME non cotées).',
       ],
       tags: ['financement_participatif', 'risque_capital'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -206,6 +222,7 @@ const CROWDFUNDING: ProductRules = {
         'Pertes déductibles des gains de même nature (dans la limite des règles du PFU).',
       ],
       tags: ['pfu_30'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -216,6 +233,7 @@ const CROWDFUNDING: ProductRules = {
         'DMTG selon le barème et le lien de parenté.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -229,6 +247,7 @@ const OBLIGATIONS_NON_COTEES: ProductRules = {
         'Pas de plafond légal. Risque de crédit élevé.',
       ],
       tags: ['gre_a_gre', 'risque_credit'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -239,6 +258,7 @@ const OBLIGATIONS_NON_COTEES: ProductRules = {
         'Plus-values de cession : PFU 30 %.',
       ],
       tags: ['pfu_30'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -249,6 +269,7 @@ const OBLIGATIONS_NON_COTEES: ProductRules = {
         'DMTG selon le barème légal.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -262,6 +283,7 @@ const COMPTE_COURANT_ASSOCIE: ProductRules = {
         'Intérêts déductibles pour la société dans la limite du taux plafond légal.',
       ],
       tags: ['pret_associe', 'interet_deductible_societe'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -272,6 +294,7 @@ const COMPTE_COURANT_ASSOCIE: ProductRules = {
         'Intérêts perçus : imposables à l\'IR selon le PFU 30 % (ou option barème).',
       ],
       tags: ['pfu_30', 'interet_imposable'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -283,6 +306,7 @@ const COMPTE_COURANT_ASSOCIE: ProductRules = {
         'Risque de dépréciation si la société est en difficulté : valeur à estimer avec prudence.',
       ],
       tags: ['dmtg_classique', 'valeur_nominale'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -296,6 +320,7 @@ const PRET_PARTICULIERS: ProductRules = {
         'Déclaration obligatoire à l\'administration fiscale si montant > 5 000 €.',
       ],
       tags: ['reconnaissance_dette', 'declaration_fiscale'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -306,6 +331,7 @@ const PRET_PARTICULIERS: ProductRules = {
         'Intérêts éventuels : imposables à l\'IR selon le PFU 30 %.',
       ],
       tags: ['pfu_30', 'interet_imposable'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -316,6 +342,7 @@ const PRET_PARTICULIERS: ProductRules = {
         'DMTG selon le barème légal et le lien de parenté.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -330,7 +357,10 @@ const USUFRUIT_NUE_PROPRIETE: ProductRules = {
         'Donation de la nue-propriété : DMTG calculés sur la seule valeur de la nue-propriété.',
         'À confirmer selon l\'origine du démembrement (légal type succession, ou conventionnel type donation/cession).',
       ],
-      tags: ['demembrement', 'art_669_cgi', 'barème_fiscal_usufruit'],
+      tags: ['demembrement', 'art_669_cgi', 'bareme_fiscal_usufruit'],
+      confidence: 'moyenne',
+      sources: [{ label: 'Art. 669 CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310228' }],
+      dependencies: ['origine du démembrement (légal vs conventionnel)', 'âge de l\'usufruitier'],
     },
   ],
   sortie: [
@@ -340,8 +370,11 @@ const USUFRUIT_NUE_PROPRIETE: ProductRules = {
         'Les loyers ou revenus reviennent à l\'usufruitier (imposition en revenus fonciers ou BIC).',
         'Cession de la pleine propriété : PV partagée entre usufruitier et nu-propriétaire selon les droits respectifs.',
         'Réunion de l\'usufruit et de la nue-propriété (extinction de l\'usufruit) : sans taxation pour le nu-propriétaire.',
+        'À confirmer selon la répartition conventionnelle des droits entre usufruitier et nu-propriétaire.',
       ],
       tags: ['revenus_usufruitier', 'pv_demembrement', 'reunion'],
+      confidence: 'moyenne',
+      dependencies: ['répartition des droits usufruitier/nu-propriétaire'],
     },
   ],
   deces: [
@@ -354,6 +387,8 @@ const USUFRUIT_NUE_PROPRIETE: ProductRules = {
         'À confirmer selon la présence éventuelle d\'une clause de réversion d\'usufruit.',
       ],
       tags: ['reunion_usufruit', 'no_dmtg_reunion', 'optimisation_transmission'],
+      confidence: 'moyenne',
+      dependencies: ['clause de réversion d\'usufruit éventuelle'],
     },
   ],
 };

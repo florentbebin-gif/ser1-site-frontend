@@ -18,6 +18,7 @@ const PREVOYANCE_DECES: ProductRules = {
         'Contrat de risque pur : aucune valeur de rachat, aucune épargne constituée.',
       ],
       tags: ['primes_non_deductibles', 'madelin_tns', 'risque_pur'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -28,6 +29,7 @@ const PREVOYANCE_DECES: ProductRules = {
         'À l\'échéance du contrat : arrêt sans restitution des primes.',
       ],
       tags: ['no_rachat'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -40,6 +42,7 @@ const PREVOYANCE_DECES: ProductRules = {
         'Exonération totale si les primes sont considérées comme "normales" au regard du patrimoine (contrats courants).',
       ],
       tags: ['art_990_i_cgi', 'art_757_b_cgi', 'hors_succession', 'abattement_152500'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -54,6 +57,7 @@ const PREVOYANCE_ITT: ProductRules = {
         'Pas de valeur de rachat : contrat de risque pur.',
       ],
       tags: ['primes_non_deductibles', 'madelin_tns', 'risque_pur'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -65,6 +69,7 @@ const PREVOYANCE_ITT: ProductRules = {
         'Régime applicable : traitements et salaires ou BNC selon le statut du bénéficiaire.',
       ],
       tags: ['ij_exonerees', 'ij_imposables', 'madelin_tns'],
+      confidence: 'elevee',
     },
     {
       title: 'Rente d\'invalidité',
@@ -73,6 +78,7 @@ const PREVOYANCE_ITT: ProductRules = {
         'Âge < 50 ans : 70 % imposable. Entre 50 et 59 ans : 50 %. Entre 60 et 69 ans : 40 %. À partir de 70 ans : 30 %.',
       ],
       tags: ['rente_titre_onereux', 'fraction_imposable_age'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -83,6 +89,7 @@ const PREVOYANCE_ITT: ProductRules = {
         'Mêmes règles que la prévoyance décès : art. 990 I (avant 70 ans) ou art. 757 B (après 70 ans).',
       ],
       tags: ['art_990_i_cgi', 'art_757_b_cgi'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -97,6 +104,7 @@ const ASSURANCE_DEPENDANCE: ProductRules = {
         'Possibilité de déduction via le crédit d\'impôt pour l\'emploi à domicile si la dépendance est déjà avérée.',
       ],
       tags: ['primes_non_deductibles', 'risque_pur'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -107,6 +115,7 @@ const ASSURANCE_DEPENDANCE: ProductRules = {
         'Régime similaire aux rentes viagères à titre onéreux si primes déduites.',
       ],
       tags: ['rente_dependance', 'exoneration_conditionnelle'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -117,6 +126,7 @@ const ASSURANCE_DEPENDANCE: ProductRules = {
         'Les primes ne sont pas récupérées en cas de décès sans sinistre.',
       ],
       tags: ['no_capital_deces'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -130,6 +140,7 @@ const ASSURANCE_OBSEQUES: ProductRules = {
         'Primes versées non déductibles de l\'IR.',
       ],
       tags: ['primes_non_deductibles'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -137,6 +148,7 @@ const ASSURANCE_OBSEQUES: ProductRules = {
       title: 'Sans objet',
       bullets: ['Contrat activé uniquement au décès, pas de sortie anticipée.'],
       tags: ['no_rachat'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -148,6 +160,7 @@ const ASSURANCE_OBSEQUES: ProductRules = {
         'Au-delà des frais réels, l\'excédent peut être soumis aux DMTG.',
       ],
       tags: ['exoneration_frais_obseques', 'dmtg_excedent'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -162,6 +175,7 @@ const ASSURANCE_EMPRUNTEUR: ProductRules = {
         'Contrat de risque pur adossé à un prêt immobilier ou professionnel.',
       ],
       tags: ['primes_non_deductibles', 'deductible_revenus_fonciers'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -172,6 +186,7 @@ const ASSURANCE_EMPRUNTEUR: ProductRules = {
         'IJ invalidité éventuelles : mêmes règles que la prévoyance ITT.',
       ],
       tags: ['capital_banque', 'ij_iti'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -183,6 +198,7 @@ const ASSURANCE_EMPRUNTEUR: ProductRules = {
         'Pas de droits de succession sur le capital versé directement à la banque.',
       ],
       tags: ['remboursement_pret', 'no_dmtg_capital'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -197,6 +213,9 @@ const ASSURANCE_HOMME_CLE: ProductRules = {
         'À confirmer selon les statuts de l\'entreprise et l\'importance réelle de l\'homme-clé pour son activité.',
       ],
       tags: ['primes_deductibles_entreprise', 'pm_uniquement'],
+      confidence: 'moyenne',
+      sources: [{ label: 'BOI-BIC-CHG-40-20-20 §100', url: 'https://bofip.impots.gouv.fr/bofip/803-PGP.html/identifiant=BOI-BIC-CHG-40-20-20-20130408' }],
+      dependencies: ['qualification effective homme-clé', 'caractère indemnitaire du contrat'],
     },
   ],
   sortie: [
@@ -204,18 +223,21 @@ const ASSURANCE_HOMME_CLE: ProductRules = {
       title: 'Sans objet — risque pur',
       bullets: ['Contrat de risque pur : pas de valeur de rachat hors sinistre.'],
       tags: ['no_rachat'],
+      confidence: 'elevee',
     },
   ],
   deces: [
     {
       title: 'Capital versé à l\'entreprise',
       bullets: [
-        'Le capital est versé à l\'entreprise (bénéficiaire) et intégré dans le résultat imposable (produit exceptionnel).',
+        'Le capital est versé à l\'entreprise (bénéficiaire) et intégré dans le résultat imposable de l\'exercice (produit exceptionnel, art. 38 CGI).',
         'Fiscalité : IS ou IR selon le régime de l\'entreprise.',
-        'Possibilité d\'étaler l\'imposition de ce profit exceptionnel sur 5 ans (année du décès et les 4 années suivantes).',
-        'À confirmer selon la clôture de l\'exercice et l\'option d\'étalement choisie par l\'entreprise.',
+        'À confirmer selon le type de contrat : seuls les contrats indemnitaires (indemnité calculée sur la perte réelle) ouvrent droit à la déductibilité des primes ; les contrats forfaitaires en sont exclus.',
       ],
       tags: ['capital_entreprise', 'produit_exceptionnel', 'is_ir'],
+      confidence: 'moyenne',
+      sources: [{ label: 'BOI-BIC-CHG-40-20-20 §100', url: 'https://bofip.impots.gouv.fr/bofip/803-PGP.html/identifiant=BOI-BIC-CHG-40-20-20-20130408' }],
+      dependencies: ['type de contrat (indemnitaire vs forfaitaire)', 'exercice de réalisation du sinistre'],
     },
   ],
 };

@@ -18,6 +18,7 @@ const PERIN_ASSURANCE: ProductRules = {
         'Abondement employeur et transferts depuis d\'anciens produits (PERP, Madelin, PERCO…) possibles.',
       ],
       tags: ['deductible_ir', 'plafond_per', 'pass'],
+      confidence: 'elevee',
     },
     {
       title: 'Compartiments de versements',
@@ -27,6 +28,7 @@ const PERIN_ASSURANCE: ProductRules = {
         'Compartiment 3 : versements obligatoires / abondement employeur.',
       ],
       tags: ['compartiment_1', 'compartiment_2', 'compartiment_3'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -38,6 +40,8 @@ const PERIN_ASSURANCE: ProductRules = {
         'Rente : soumise au barème IR avec abattement de 10 % (régime rentes viagères à titre gratuit).',
       ],
       tags: ['sortie_capital', 'sortie_rente', 'bareme_ir', 'ps_17_2'],
+      confidence: 'elevee',
+      sources: [{ label: 'Loi PACTE 2019 — PER', url: 'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000038496102' }],
     },
     {
       title: 'Sortie à la retraite — Compartiment non déductible',
@@ -46,6 +50,7 @@ const PERIN_ASSURANCE: ProductRules = {
         'Rente : régime des rentes viagères à titre onéreux (fraction imposable selon l\'âge au premier versement).',
       ],
       tags: ['exoneration_capital', 'rente_titre_onereux'],
+      confidence: 'elevee',
     },
     {
       title: 'Déblocage anticipé autorisé',
@@ -57,6 +62,7 @@ const PERIN_ASSURANCE: ProductRules = {
         'Acquisition de la résidence principale.',
       ],
       tags: ['deblocage_anticipe', 'residence_principale'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -68,6 +74,7 @@ const PERIN_ASSURANCE: ProductRules = {
         'Capital hors succession pour les bénéficiaires désignés.',
       ],
       tags: ['art_990_i_cgi', 'abattement_152500', 'hors_succession'],
+      confidence: 'elevee',
     },
     {
       title: 'Après 70 ans',
@@ -77,6 +84,7 @@ const PERIN_ASSURANCE: ProductRules = {
         'Gains capitalisés exonérés de droits.',
       ],
       tags: ['art_757_b_cgi', 'abattement_30500'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -90,6 +98,7 @@ const PERIN_BANCAIRE: ProductRules = {
         'Supports : fonds diversifiés (pas de fonds euros garanti, contrairement à la version assurantielle).',
       ],
       tags: ['deductible_ir', 'plafond_per'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -100,6 +109,7 @@ const PERIN_BANCAIRE: ProductRules = {
         'Fiscalité identique au PERIN assurantiel selon le compartiment de versement.',
       ],
       tags: ['sortie_capital', 'sortie_rente'],
+      confidence: 'elevee',
     },
     {
       title: 'Déblocage anticipé autorisé',
@@ -107,6 +117,7 @@ const PERIN_BANCAIRE: ProductRules = {
         'Mêmes cas de déblocage que le PERIN assurantiel.',
       ],
       tags: ['deblocage_anticipe'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -118,6 +129,7 @@ const PERIN_BANCAIRE: ProductRules = {
         'Abattements légaux classiques applicables (100 000 € par enfant…).',
       ],
       tags: ['dmtg_classique', 'succession_active'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -132,6 +144,7 @@ const EPARGNE_SALARIALE_PEE: ProductRules = {
         'Intéressement et participation affectés au PEE : exonérés d\'IR dans la limite des plafonds légaux.',
       ],
       tags: ['participation', 'interessement', 'abondement', 'plafond_25pct'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -142,6 +155,7 @@ const EPARGNE_SALARIALE_PEE: ProductRules = {
         'Déblocage anticipé : achat résidence principale, mariage/PACS, naissance, divorce, invalidité, décès, départ de l\'entreprise, liquidation judiciaire.',
       ],
       tags: ['blocage_5_ans', 'deblocage_anticipe'],
+      confidence: 'elevee',
     },
     {
       title: 'Après 5 ans',
@@ -150,6 +164,7 @@ const EPARGNE_SALARIALE_PEE: ProductRules = {
         'Prélèvements sociaux (17,2 %) dus sur les gains.',
       ],
       tags: ['exoneration_ir', 'ps_17_2'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -160,6 +175,7 @@ const EPARGNE_SALARIALE_PEE: ProductRules = {
         'Les sommes intègrent la succession ; droits de mutation applicables.',
       ],
       tags: ['deblocage_deces', 'dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -169,24 +185,31 @@ const RETRAITE_ENTREPRISE_GENERIQUE: ProductRules = {
     {
       title: 'Versements (Contrat à cotisations définies ou article 39)',
       bullets: [
-        'Cotisations employeur et/ou salarié selon les modalités du contrat collectif.',
-        'Déductibilité des cotisations patronales dans les limites légales.',
-        'Les droits sont liés à la présence dans l\'entreprise (pour les contrats à droits conditionnels - Article 39).',
-        'À confirmer selon les plafonds de déductibilité applicables au prorata du PASS.',
+        'Article 39 (prestations définies) : cotisations exclusivement patronales, le salarié ne cotise pas.',
+        'Article 83 / PERO (cotisations définies) : cotisations employeur et salarié possibles.',
+        'Cotisations patronales déductibles du résultat imposable de l\'entreprise.',
+        'Nouvelle formule (ordonnance 2019-697) : droits acquis conservés même en cas de départ ; limités à 3 % du salaire/an, plafonné à 30 points cumulés.',
+        'À confirmer selon le type de régime (ancienne formule avec condition de présence vs nouvelle formule post-2019).',
       ],
       tags: ['cotisations_patronales', 'cotisations_salariales'],
+      confidence: 'moyenne',
+      sources: [{ label: 'Ordonnance 2019-697 — Art. 39', url: 'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000038724818' }],
+      dependencies: ['type de régime (ancienne vs nouvelle formule)', 'catégorie de salariés bénéficiaires'],
     },
   ],
   sortie: [
     {
       title: 'Sortie à la retraite',
       bullets: [
-        'Sortie obligatoire en rente viagère pour les contrats à prestations définies (Article 39).',
-        'Sortie en capital possible pour les contrats à cotisations définies (Article 83 transformé en PERO).',
-        'Rente imposable à l\'IR (après abattement de 10 %) + Prélèvements sociaux.',
-        'À confirmer selon le régime spécifique de sortie et l\'option d\'imposition choisie.',
+        'Article 39 : sortie obligatoire en rente viagère (pas de sortie en capital).',
+        'Article 83 / PERO : sortie en capital ou rente possible (depuis la loi PACTE).',
+        'Rente imposable à l\'IR (après abattement de 10 %) + CSG 8,3 % + CRDS 0,5 % + CASA 0,3 % + cotisation maladie 1 %.',
+        'Contribution sociale spécifique sur les rentes art. 39 : 7 % (part 0-400 €/mois) à 21 % (part > 24 000 €/mois).',
+        'À confirmer selon le régime spécifique de sortie et l\'ancienneté des droits.',
       ],
       tags: ['rente_obligatoire', 'bareme_ir', 'abattement_10'],
+      confidence: 'moyenne',
+      dependencies: ['type de régime (art. 39 vs art. 83/PERO)', 'montant de la rente mensuelle'],
     },
   ],
   deces: [
@@ -196,8 +219,11 @@ const RETRAITE_ENTREPRISE_GENERIQUE: ProductRules = {
         'Rente de réversion possible au profit du conjoint survivant (si prévue au contrat).',
         'Capital résiduel éventuel intègre la succession.',
         'Droits de mutation selon barème et lien de parenté.',
+        'À confirmer selon la clause de réversion prévue au contrat et le régime applicable.',
       ],
       tags: ['reversion', 'dmtg_classique'],
+      confidence: 'moyenne',
+      dependencies: ['clause de réversion prévue au contrat'],
     },
   ],
 };
@@ -212,6 +238,7 @@ const PERP_MADELIN_ANCIEN: ProductRules = {
         'Déductibilité des cotisations de l\'IR dans la limite du disponible épargne retraite.',
       ],
       tags: ['ferme_souscription', 'transfert_per', 'deductible_ir'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -223,6 +250,7 @@ const PERP_MADELIN_ANCIEN: ProductRules = {
         'Transfert vers un PER possible pour bénéficier de la sortie en capital totale.',
       ],
       tags: ['rente_viagere', 'transfert_per', 'abattement_10'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -233,6 +261,7 @@ const PERP_MADELIN_ANCIEN: ProductRules = {
         'Capital résiduel intègre la succession classique.',
       ],
       tags: ['reversion', 'dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };

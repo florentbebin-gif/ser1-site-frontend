@@ -19,6 +19,7 @@ const LIVRETS_REGLEMENTES: ProductRules = {
         'PEAC : plafond de 22 950 €. Réservé aux moins de 21 ans.',
       ],
       tags: ['plafond_reglemente', 'resident_fiscal'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -30,6 +31,8 @@ const LIVRETS_REGLEMENTES: ProductRules = {
         'Retraits à tout moment sans contrainte fiscale.',
       ],
       tags: ['exoneration_ir', 'exoneration_ps'],
+      confidence: 'elevee',
+      sources: [{ label: 'Art. 157-7° CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006307751' }],
     },
   ],
   deces: [
@@ -41,6 +44,7 @@ const LIVRETS_REGLEMENTES: ProductRules = {
         'Abattements légaux classiques (100 000 € par enfant, renouvelables tous 15 ans).',
       ],
       tags: ['dmtg_classique', 'succession_active'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -55,6 +59,7 @@ const CTO: ProductRules = {
         'Plusieurs CTO possibles par personne.',
       ],
       tags: ['no_plafond', 'pp_pm_eligible'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -66,6 +71,8 @@ const CTO: ProductRules = {
         'Compensation des moins-values sur les plus-values de l\'année et des 10 années suivantes.',
       ],
       tags: ['pfu_30', 'compensation_mv', 'option_bareme'],
+      confidence: 'elevee',
+      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
     {
       title: 'Dividendes et revenus',
@@ -74,6 +81,7 @@ const CTO: ProductRules = {
         'Intérêts obligataires : PFU 30 %.',
       ],
       tags: ['dividendes', 'abattement_40', 'pfu_30'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -85,6 +93,7 @@ const CTO: ProductRules = {
         'Droits de mutation selon le barème et le lien de parenté, après abattements légaux.',
       ],
       tags: ['purge_pv', 'dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -99,6 +108,7 @@ const PEA: ProductRules = {
         'Un seul PEA par personne physique.',
       ],
       tags: ['plafond_150k', 'actions_europeennes', 'pp_uniquement'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -109,6 +119,7 @@ const PEA: ProductRules = {
         'Plus-value soumise au PFU 30 % (12,8 % IR + 17,2 % PS).',
       ],
       tags: ['cloture_avant_5_ans', 'pfu_30'],
+      confidence: 'elevee',
     },
     {
       title: 'Après 5 ans',
@@ -119,6 +130,8 @@ const PEA: ProductRules = {
         'Conversion en rente viagère exonérée d\'IR après 5 ans.',
       ],
       tags: ['exoneration_ir', 'ps_17_2', 'rente_viagere'],
+      confidence: 'elevee',
+      sources: [{ label: 'Art. 150-0 A II-2 CGI — PEA', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908358' }],
     },
   ],
   deces: [
@@ -131,6 +144,7 @@ const PEA: ProductRules = {
         'Titres entrent dans la succession ; droits de mutation selon le barème légal.',
       ],
       tags: ['cloture_deces', 'exoneration_ir_5_ans', 'dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -145,6 +159,7 @@ const PEA_PME: ProductRules = {
         'Un seul PEA-PME par personne physique.',
       ],
       tags: ['plafond_75k', 'pme_eti_europeennes', 'pp_uniquement'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -155,6 +170,7 @@ const PEA_PME: ProductRules = {
         'Plus-value soumise au PFU 30 %.',
       ],
       tags: ['cloture_avant_5_ans', 'pfu_30'],
+      confidence: 'elevee',
     },
     {
       title: 'Après 5 ans',
@@ -164,6 +180,7 @@ const PEA_PME: ProductRules = {
         'Retraits partiels sans clôture possibles.',
       ],
       tags: ['exoneration_ir', 'ps_17_2'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -175,6 +192,7 @@ const PEA_PME: ProductRules = {
         'Droits de mutation sur les titres selon le barème légal.',
       ],
       tags: ['cloture_deces', 'exoneration_ir_5_ans', 'dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -189,6 +207,7 @@ const PEL: ProductRules = {
         'Taux d\'intérêt garanti fixé à l\'ouverture (taux réglementé).',
       ],
       tags: ['plafond_61200', 'taux_garanti'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -201,6 +220,7 @@ const PEL: ProductRules = {
         'Prime d\'État supprimée pour les PEL ouverts depuis 2018.',
       ],
       tags: ['pfu_30', 'ps_annuels', 'regime_transitoire'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -211,6 +231,7 @@ const PEL: ProductRules = {
         'Droits de mutation applicables selon le barème légal.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -225,6 +246,7 @@ const CEL: ProductRules = {
         'Taux d\'intérêt réglementé (0,75 % en 2024).',
       ],
       tags: ['plafond_15300', 'taux_reglemente'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -235,6 +257,7 @@ const CEL: ProductRules = {
         'Option possible pour le barème progressif de l\'IR.',
       ],
       tags: ['pfu_30'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -245,6 +268,7 @@ const CEL: ProductRules = {
         'Droits de mutation applicables selon le barème légal.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -259,6 +283,7 @@ const CAT_CSL: ProductRules = {
         'Rémunération librement négociée (taux du marché).',
       ],
       tags: ['no_plafond', 'pp_pm_eligible'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -269,6 +294,7 @@ const CAT_CSL: ProductRules = {
         'Option possible pour le barème progressif de l\'IR.',
       ],
       tags: ['pfu_30', 'option_bareme'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -279,6 +305,7 @@ const CAT_CSL: ProductRules = {
         'Droits de mutation applicables selon le barème légal.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };

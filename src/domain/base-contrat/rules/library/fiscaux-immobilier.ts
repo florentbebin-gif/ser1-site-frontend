@@ -19,6 +19,7 @@ const PINEL_PINEL_PLUS: ProductRules = {
         'Dispositif clôturé : plus d\'acquisition éligible depuis le 1er janvier 2025.',
       ],
       tags: ['reduction_ir', 'plafond_300k', 'ferme_2025'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -30,6 +31,7 @@ const PINEL_PINEL_PLUS: ProductRules = {
         'Reprise de la réduction d\'IR si le bien est vendu avant la fin de l\'engagement.',
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_reduction'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -41,6 +43,7 @@ const PINEL_PINEL_PLUS: ProductRules = {
         'DMTG selon le barème légal.',
       ],
       tags: ['dmtg_classique', 'transmission_engagement'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -56,6 +59,8 @@ const DENORMANDIE: ProductRules = {
         'À confirmer selon la nature exacte des travaux (amélioration de la performance énergétique ou modernisation).',
       ],
       tags: ['reduction_ir', 'renovation', 'plafond_300k'],
+      confidence: 'moyenne',
+      dependencies: ['nature exacte des travaux', 'commune éligible'],
     },
   ],
   sortie: [
@@ -67,6 +72,7 @@ const DENORMANDIE: ProductRules = {
         'Reprise de la réduction d\'IR si cession avant la fin de l\'engagement.',
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_reduction'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -76,6 +82,7 @@ const DENORMANDIE: ProductRules = {
         'Bien intègre la succession à sa valeur vénale. DMTG selon le barème légal.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -92,6 +99,8 @@ const MALRAUX: ProductRules = {
         'À confirmer selon l\'obtention de l\'Autorisation Spéciale de Travaux (AST) validée par l\'Architecte des Bâtiments de France.',
       ],
       tags: ['reduction_ir', 'hors_plafond_niches', 'patrimoine_historique'],
+      confidence: 'moyenne',
+      dependencies: ['obtention AST validée par ABF', 'localisation en SPR avec PSMV ou PVAP'],
     },
   ],
   sortie: [
@@ -102,6 +111,7 @@ const MALRAUX: ProductRules = {
         'Abattements pour durée de détention applicables.',
       ],
       tags: ['pv_immo', 'abattement_detention'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -111,6 +121,7 @@ const MALRAUX: ProductRules = {
         'Bien intègre la succession à sa valeur vénale. DMTG selon le barème légal.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -126,6 +137,7 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
         'Pas d\'obligation de location (dérogation pour les propriétaires occupants).',
       ],
       tags: ['deduction_revenu_global', 'hors_plafond_niches', 'monument_classe'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -136,6 +148,7 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
         'Abattements pour durée de détention applicables.',
       ],
       tags: ['pv_immo', 'abattement_detention'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -146,6 +159,7 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
         'Sans convention : intégration dans la succession à la valeur vénale, DMTG classiques.',
       ],
       tags: ['exoneration_dmtg_convention', 'dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
@@ -160,6 +174,7 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
         'Consulter les textes en vigueur pour les règles détaillées de chaque dispositif.',
       ],
       tags: ['dispositif_fiscal_immo'],
+      confidence: 'elevee',
     },
   ],
   sortie: [
@@ -171,6 +186,7 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
         'Reprise de l\'avantage fiscal si cession avant la fin de l\'engagement.',
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_avantage'],
+      confidence: 'elevee',
     },
   ],
   deces: [
@@ -181,6 +197,7 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
         'DMTG selon le barème légal et le lien de parenté.',
       ],
       tags: ['dmtg_classique'],
+      confidence: 'elevee',
     },
   ],
 };
