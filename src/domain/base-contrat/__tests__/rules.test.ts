@@ -4,11 +4,13 @@
  * 1. Tous les produits du catalogue retournent des règles non-nulles.
  * 2. Pas de jargon dev dans les strings UI (title/bullets).
  * 3. Coverage : 100% de produits avec règles réelles.
+ * 4. Confidence policy : chaque bloc a confidence, politique d'écriture respectée.
  */
 
 import { describe, it, expect } from 'vitest';
 import { CATALOG } from '../catalog';
 import { getRules, hasSocleRules } from '../rules/index';
+import type { RuleBlock } from '../rules/types';
 
 const AUDIENCES = ['pp', 'pm'] as const;
 
@@ -163,6 +165,99 @@ describe('getRules — id inconnu', () => {
       expect(rules.constitution.length).toBe(0);
       expect(rules.sortie.length).toBe(0);
       expect(rules.deces.length).toBe(0);
+    });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// 7. Confidence policy — tous les blocs ont un niveau de confiance valide
+// ─────────────────────────────────────────────────────────────
+
+const VALID_CONFIDENCE = ['elevee', 'moyenne', 'faible'];
+
+function allBlocks(productId: string): RuleBlock[] {
+  const pp = getRules(productId, 'pp');
+  const pm = getRules(productId, 'pm');
+  return [
+    ...pp.constitution, ...pp.sortie, ...pp.deces,
+    ...pm.constitution, ...pm.sortie, ...pm.deces,
+  ];
+}
+
+describe('confidence policy — chaque bloc a une confiance valide', () => {
+  for (const product of CATALOG) {
+    it(`${product.id} — confidence présente et valide`, () => {
+      const blocks = allBlocks(product.id);
+      for (const block of blocks) {
+        expect(
+          VALID_CONFIDENCE.includes(block.confidence),
+          `Confidence invalide "${block.confidence}" dans ${product.id} / "${block.title}"`,
+        ).toBe(true);
+      }
+    });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// 8. Confidence policy — blocs moyenne/faible doivent avoir "À confirmer"
+// ─────────────────────────────────────────────────────────────
+
+describe('confidence policy — moyenne/faible → "À confirmer" dans au moins 1 bullet', () => {
+  for (const product of CATALOG) {
+    it(`${product.id} — prudence rédactionnelle`, () => {
+      const blocks = allBlocks(product.id);
+      for (const block of blocks) {
+        if (block.confidence === 'moyenne' || block.confidence === 'faible') {
+          const hasConfirmer = block.bullets.some((b) => b.includes('À confirmer'));
+          expect(
+            hasConfirmer,
+            `Bloc "${block.title}" (${product.id}) confidence=${block.confidence} sans "À confirmer" dans les bullets`,
+          ).toBe(true);
+        }
+      }
+    });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// 9. Confidence policy — moyenne/faible doivent avoir dependencies
+// ─────────────────────────────────────────────────────────────
+
+describe('confidence policy — moyenne/faible → dependencies non vides', () => {
+  for (const product of CATALOG) {
+    it(`${product.id} — dependencies présentes`, () => {
+      const blocks = allBlocks(product.id);
+      for (const block of blocks) {
+        if (block.confidence === 'moyenne' || block.confidence === 'faible') {
+          expect(
+            Array.isArray(block.dependencies) && block.dependencies.length > 0,
+            `Bloc "${block.title}" (${product.id}) confidence=${block.confidence} sans dependencies`,
+          ).toBe(true);
+        }
+      }
+    });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
+// 10. Sources — URLs valides https://
+// ─────────────────────────────────────────────────────────────
+
+describe('confidence policy — sources ont des URLs https valides', () => {
+  for (const product of CATALOG) {
+    it(`${product.id} — sources URLs`, () => {
+      const blocks = allBlocks(product.id);
+      for (const block of blocks) {
+        if (block.sources) {
+          for (const src of block.sources) {
+            expect(src.label.length, `Source sans label dans ${product.id}`).toBeGreaterThan(0);
+            expect(
+              src.url.startsWith('https://'),
+              `URL invalide "${src.url}" dans ${product.id} / "${block.title}"`,
+            ).toBe(true);
+          }
+        }
+      }
     });
   }
 });
