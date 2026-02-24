@@ -120,7 +120,7 @@ const EPARGNE_SALARIALE_PEE_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'En cas de dissolution, liquidation ou cession de l\'activité, les dispositifs d\'épargne salariale sont clôturés ou transférés selon les accords en vigueur.',
         'Le traitement social, fiscal et comptable des engagements restants est arrêté à la date de cessation de la personne morale.',
@@ -230,7 +230,7 @@ const ARTICLE_83_PP: ProductRules = {
       title: 'Cotisations (anciens contrats — fermés à la souscription depuis PACTE 2019)',
       bullets: [
         'Cotisations patronales et salariales définies par l\'accord collectif.',
-        'Cotisations patronales déductibles du résultat imposable de l\'entreprise (IS ou IR).',
+        'Cotisations patronales déductibles du résultat imposable de l\'employeur selon le régime fiscal applicable.',
         'Plafond de déduction salarié : 8 % de la rémunération annuelle brute plafonnée à 8 PASS.',
         'À confirmer selon les conditions de l\'accord et la date d\'ouverture du contrat.',
       ],
@@ -299,7 +299,7 @@ const ARTICLE_83_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'En cas de dissolution, liquidation ou cession de l\'entreprise, les engagements Article 83 sont soldés ou transférés selon le cadre conventionnel.',
         'Le traitement comptable et fiscal est apprécié à la clôture de la personne morale selon le régime IS/IR.',
@@ -387,7 +387,7 @@ const ARTICLE_39_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'En cas de dissolution, liquidation ou cession de l\'entreprise, les engagements de retraite supplémentaire sont soldés selon le règlement du régime.',
         'Le traitement comptable et fiscal des engagements restants est arrêté à la clôture de la personne morale.',
@@ -475,7 +475,7 @@ const PERO_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'En cas de dissolution, liquidation ou cession de l\'entreprise, les engagements PERO sont soldés ou transférés selon l\'accord collectif.',
         'Le traitement social, comptable et fiscal est arrêté lors de la clôture de la personne morale.',
@@ -519,7 +519,7 @@ const PPV_INTERESSEMENT_PARTICIPATION_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'En cas de dissolution, liquidation ou cession d\'activité, les dispositifs sont clôturés ou transférés selon les accords collectifs en vigueur.',
         'Le traitement social et fiscal des sommes en cours est régularisé à la date de clôture de la personne morale.',

@@ -173,7 +173,7 @@ const CONTRAT_CAPITALISATION_PM: ProductRules = {
   ],
   deces: [
     {
-      title: 'Fin de vie / événements de sortie de la personne morale',
+      title: 'Fin de vie / sortie de la PM',
       bullets: [
         'Le contrat suit la continuité de la personne morale tant qu\'elle est en activité.',
         'En cas de dissolution, liquidation ou cession d\'activité, le contrat entre dans les opérations de clôture (boni/mali de liquidation selon la situation).',
