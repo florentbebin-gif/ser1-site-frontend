@@ -17,8 +17,6 @@ export interface ProductRules {
   constitution: RuleBlock[];
   sortie: RuleBlock[];
   deces: RuleBlock[];
-  /** true = règles réelles non encore disponibles pour ce produit */
-  isPlaceholder?: boolean;
 }
 
 export type Audience = 'pp' | 'pm';

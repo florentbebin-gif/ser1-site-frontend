@@ -219,12 +219,10 @@ Le **moteur de calcul** (simulateurs) reste dans `src/engine/`.
 3. Modifier le tableau `bullets` (texte métier, jamais de jargon technique ni d'ID).
 4. Lancer `npm run check`.
 
-#### Ajouter des règles pour un produit encore en placeholder
-1. Identifier le produit dans la liste "À compléter" (filtre disponible dans `/settings/base-contrat`).
-2. Ouvrir le fichier de bibliothèque de la famille ou créer une entrée dans le `switch` du fichier concerné.
-3. Remplacer le `PLACEHOLDER_RULES` par une `ProductRules` avec title + bullets métier.
-4. Retirer le `case` du placeholder et vérifier que `hasSocleRules(productId)` retourne `true`.
-5. Lancer `npm run check` — le test de coverage se met à jour automatiquement.
+#### Ajouter des règles
+1. Créer ou ouvrir le fichier de bibliothèque de la famille dans `src/domain/base-contrat/rules/library/` ou créer une entrée dans le `switch` du fichier concerné.
+2. Ajouter une `ProductRules` avec title + bullets métier.
+3. Lancer `npm run check` — le test de coverage se met à jour automatiquement.
 
 ### 3. Ajouter/mettre à jour les tests (Golden Tests)
 1. Ouvrir `src/engine/__tests__/goldenCases.test.ts` (ou le fichier de test lié au domaine).

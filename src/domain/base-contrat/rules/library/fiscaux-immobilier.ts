@@ -53,6 +53,7 @@ const DENORMANDIE: ProductRules = {
         'Réduction d\'IR de 12 %, 18 % ou 21 % selon la durée d\'engagement (6, 9 ou 12 ans).',
         'Conditions : bien situé dans une commune éligible, travaux de rénovation ≥ 25 % du coût total d\'opération.',
         'Plafond identique au Pinel : 300 000 €/an et 5 500 €/m².',
+        'À confirmer selon la nature exacte des travaux (amélioration de la performance énergétique ou modernisation).',
       ],
       tags: ['reduction_ir', 'renovation', 'plafond_300k'],
     },
@@ -84,10 +85,11 @@ const MALRAUX: ProductRules = {
     {
       title: 'Réduction d\'IR — Restauration de patrimoine',
       bullets: [
-        'Réduction d\'IR de 30 % des travaux (ZPPAUP/AVAP) ou 22 % (autres zones protégées).',
+        'Réduction d\'IR de 30 % des travaux (Site Patrimonial Remarquable avec PSMV) ou 22 % (SPR avec PVAP).',
         'Plafond des travaux retenus : 400 000 € sur 4 années consécutives.',
         'Pas de plafonnement des niches fiscales (dérogation pour les monuments).',
         'Engagement de location : 9 ans à compter de l\'achèvement des travaux.',
+        'À confirmer selon l\'obtention de l\'Autorisation Spéciale de Travaux (AST) validée par l\'Architecte des Bâtiments de France.',
       ],
       tags: ['reduction_ir', 'hors_plafond_niches', 'patrimoine_historique'],
     },

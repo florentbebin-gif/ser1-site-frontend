@@ -6,7 +6,7 @@
  * Exports publics :
  *   getRules(productId, audience) → ProductRules  (jamais null/undefined)
  *   getRulesForProduct(product, audience) → ProductRules
- *   hasSocleRules(productId) → boolean  (false = placeholder)
+ *   hasSocleRules(productId) → boolean  (false = pas de règles)
  */
 
 import type { Audience, ProductRules } from './types';
@@ -20,7 +20,6 @@ import { getPrevoyanceRules } from './library/prevoyance';
 import { getValeursMobilieresRules } from './library/valeurs-mobilieres';
 import { getAutresRules } from './library/autres';
 import { getFiscauxImmobilierRules } from './library/fiscaux-immobilier';
-import { PLACEHOLDER_RULES } from './library/placeholder';
 
 export type { ProductRules, RuleBlock, Audience } from './types';
 
@@ -37,14 +36,18 @@ const RESOLVERS: Array<(_id: string, _audience: Audience) => ProductRules | unde
 
 /**
  * Retourne les règles fiscales pour un produit donné et une audience.
- * Garantit toujours un résultat non-null (PLACEHOLDER_RULES en dernier recours).
+ * Garantit toujours un résultat non-null. S'il n'y a pas de règles, retourne un objet vide mais bien formé.
  */
 export function getRules(productId: string, audience: Audience): ProductRules {
   for (const resolver of RESOLVERS) {
     const rules = resolver(productId, audience);
     if (rules) return rules;
   }
-  return PLACEHOLDER_RULES;
+  return {
+    constitution: [],
+    sortie: [],
+    deces: [],
+  };
 }
 
 /**
@@ -58,12 +61,12 @@ export function getRulesForProduct(
 }
 
 /**
- * true = le produit dispose de règles réelles (non placeholder).
+ * true = le produit dispose de règles réelles.
  */
 export function hasSocleRules(productId: string): boolean {
   for (const resolve of RESOLVERS) {
     const rules = resolve(productId, 'pp') ?? resolve(productId, 'pm');
-    if (rules && !rules.isPlaceholder) return true;
+    if (rules) return true;
   }
   return false;
 }

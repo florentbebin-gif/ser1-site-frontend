@@ -125,15 +125,51 @@ const CONTRAT_CAPITALISATION: ProductRules = {
   ],
 };
 
+const CONTRAT_CAPITALISATION_PM: ProductRules = {
+  constitution: [
+    {
+      title: 'Versements (Personne Morale)',
+      bullets: [
+        'Accessible aux personnes morales (sociétés patrimoniales, SCI à l\'IS, holding…).',
+        'Versements libres ou programmés, sans plafond légal.',
+        'À confirmer selon les statuts de la société : l\'objet social doit autoriser ce type de placement.',
+      ],
+      tags: ['pm_eligible', 'supports_fe_uc'],
+    },
+  ],
+  sortie: [
+    {
+      title: 'Fiscalité des gains (IS)',
+      bullets: [
+        'Imposition forfaitaire annuelle : les gains latents sont taxés chaque année selon un taux de rendement forfaitaire (TME), même sans rachat.',
+        'Lors d\'un rachat : imposition de la plus-value réelle, avec déduction des gains latents déjà taxés.',
+        'Les gains nets sont intégrés au résultat fiscal soumis à l\'IS (25 %, ou 15 % pour les PME sous conditions).',
+        'À confirmer selon la clôture de l\'exercice comptable et la valeur de rachat à cette date.',
+      ],
+      tags: ['is_25', 'is_15_pme', 'taxation_forfaitaire_annuelle', 'tme'],
+    },
+  ],
+  deces: [
+    {
+      title: 'Sans objet (Personne Morale)',
+      bullets: [
+        'Une personne morale ne décède pas. Le contrat n\'est pas dénoué par le décès du dirigeant ou des associés.',
+        'En cas de dissolution ou liquidation de la société, le contrat entre dans le boni de liquidation.',
+      ],
+      tags: ['pm_no_deces', 'liquidation'],
+    },
+  ],
+};
+
 export function getAssuranceEpargneRules(
   productId: string,
-  _audience: Audience,
+  audience: Audience,
 ): ProductRules | undefined {
   switch (productId) {
     case 'assurance_vie':
       return ASSURANCE_VIE_PP;
     case 'contrat_capitalisation':
-      return CONTRAT_CAPITALISATION;
+      return audience === 'pm' ? CONTRAT_CAPITALISATION_PM : CONTRAT_CAPITALISATION;
     default:
       return undefined;
   }

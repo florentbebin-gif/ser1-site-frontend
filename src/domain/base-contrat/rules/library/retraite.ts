@@ -167,11 +167,12 @@ const EPARGNE_SALARIALE_PEE: ProductRules = {
 const RETRAITE_ENTREPRISE_GENERIQUE: ProductRules = {
   constitution: [
     {
-      title: 'Versements',
+      title: 'Versements (Contrat à cotisations définies ou article 39)',
       bullets: [
         'Cotisations employeur et/ou salarié selon les modalités du contrat collectif.',
         'Déductibilité des cotisations patronales dans les limites légales.',
-        'Les droits sont liés à la présence dans l\'entreprise (pour les contrats à droits conditionnels).',
+        'Les droits sont liés à la présence dans l\'entreprise (pour les contrats à droits conditionnels - Article 39).',
+        'À confirmer selon les plafonds de déductibilité applicables au prorata du PASS.',
       ],
       tags: ['cotisations_patronales', 'cotisations_salariales'],
     },
@@ -180,9 +181,10 @@ const RETRAITE_ENTREPRISE_GENERIQUE: ProductRules = {
     {
       title: 'Sortie à la retraite',
       bullets: [
-        'Sortie obligatoire en rente viagère pour les contrats à prestations définies (art. 39).',
-        'Sortie en capital possible pour les contrats à cotisations définies (art. 83 transformé en PERO).',
-        'Rente imposable à l\'IR (après abattement de 10 %) + PS.',
+        'Sortie obligatoire en rente viagère pour les contrats à prestations définies (Article 39).',
+        'Sortie en capital possible pour les contrats à cotisations définies (Article 83 transformé en PERO).',
+        'Rente imposable à l\'IR (après abattement de 10 %) + Prélèvements sociaux.',
+        'À confirmer selon le régime spécifique de sortie et l\'option d\'imposition choisie.',
       ],
       tags: ['rente_obligatoire', 'bareme_ir', 'abattement_10'],
     },

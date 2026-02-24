@@ -3,7 +3,7 @@
  *
  * 1. Tous les produits du catalogue retournent des règles non-nulles.
  * 2. Pas de jargon dev dans les strings UI (title/bullets).
- * 3. Coverage : snapshot des produits encore en placeholder.
+ * 3. Coverage : 100% de produits avec règles réelles.
  */
 
 import { describe, it, expect } from 'vitest';
@@ -94,30 +94,13 @@ describe('getRules — pas de jargon technique dans title/bullets', () => {
 });
 
 // ─────────────────────────────────────────────────────────────
-// 3. Coverage — produits avec règles réelles vs placeholders
+// 3. Coverage — produits avec règles réelles
 // ─────────────────────────────────────────────────────────────
 
 describe('hasSocleRules — coverage report', () => {
-  it('au moins 60 % des produits ont des règles réelles', () => {
+  it('100 % des produits ont des règles réelles', () => {
     const withRules = CATALOG.filter((p) => hasSocleRules(p.id));
-    const ratio = withRules.length / CATALOG.length;
-    expect(ratio).toBeGreaterThanOrEqual(0.60);
-  });
-
-  it('snapshot : liste des produits encore en placeholder (pour roadmap P1-05)', () => {
-    const placeholders = CATALOG
-      .filter((p) => !hasSocleRules(p.id))
-      .map((p) => p.id);
-
-    // Ce test documente les produits restants — pas un échec si la liste change,
-    // mais un indicateur de progression pour P1-05.
-    console.info(
-      `[PR5 Coverage] Produits avec règles réelles : ${CATALOG.length - placeholders.length}/${CATALOG.length}`,
-      '\nPlaceholders restants :',
-      placeholders,
-    );
-    // Le test passe toujours : son rôle est documentaire.
-    expect(Array.isArray(placeholders)).toBe(true);
+    expect(withRules.length).toBe(CATALOG.length);
   });
 });
 
@@ -149,8 +132,8 @@ describe('socle PR5 — produits clés avec règles réelles', () => {
   ];
 
   for (const id of SOCLE_IDS) {
-    it(`${id} — règles réelles (non placeholder)`, () => {
-      expect(hasSocleRules(id), `${id} est encore en placeholder`).toBe(true);
+    it(`${id} — règles réelles (non vide)`, () => {
+      expect(hasSocleRules(id), `${id} n'a pas de règles`).toBe(true);
     });
   }
 });
@@ -163,7 +146,7 @@ describe('getRules — audience PM sur produits PP-only', () => {
   it('assurance_vie (PP only) — getRules(pm) retourne quand même des règles (fallback)', () => {
     const rules = getRules('assurance_vie', 'pm');
     expect(rules).toBeDefined();
-    // Peut être placeholder ou les règles PP (fallback) — toujours rendable
+    // Peut être les règles spécifiques PM ou les règles PP (fallback) — toujours rendable
     expect(rules.constitution.length).toBeGreaterThanOrEqual(1);
   });
 });
@@ -174,10 +157,12 @@ describe('getRules — audience PM sur produits PP-only', () => {
 
 describe('getRules — id inconnu', () => {
   for (const audience of AUDIENCES) {
-    it(`getRules("produit_inexistant", "${audience}") → placeholder sans crash`, () => {
+    it(`getRules("produit_inexistant", "${audience}") → objet vide sans crash`, () => {
       const rules = getRules('produit_inexistant', audience);
       expect(rules).toBeDefined();
-      expect(rules.isPlaceholder).toBe(true);
+      expect(rules.constitution.length).toBe(0);
+      expect(rules.sortie.length).toBe(0);
+      expect(rules.deces.length).toBe(0);
     });
   }
 });

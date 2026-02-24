@@ -194,6 +194,7 @@ const ASSURANCE_HOMME_CLE: ProductRules = {
       bullets: [
         'Cotisations payées par l\'entreprise : déductibles du résultat imposable (IS ou IR).',
         'Contrat souscrit par l\'entreprise sur la tête d\'une personne clé (dirigeant, associé…).',
+        'À confirmer selon les statuts de l\'entreprise et l\'importance réelle de l\'homme-clé pour son activité.',
       ],
       tags: ['primes_deductibles_entreprise', 'pm_uniquement'],
     },
@@ -211,7 +212,8 @@ const ASSURANCE_HOMME_CLE: ProductRules = {
       bullets: [
         'Le capital est versé à l\'entreprise (bénéficiaire) et intégré dans le résultat imposable (produit exceptionnel).',
         'Fiscalité : IS ou IR selon le régime de l\'entreprise.',
-        'Objectif : compenser la perte financière liée au décès de la personne clé.',
+        'Possibilité d\'étaler l\'imposition de ce profit exceptionnel sur 5 ans (année du décès et les 4 années suivantes).',
+        'À confirmer selon la clôture de l\'exercice et l\'option d\'étalement choisie par l\'entreprise.',
       ],
       tags: ['capital_entreprise', 'produit_exceptionnel', 'is_ir'],
     },

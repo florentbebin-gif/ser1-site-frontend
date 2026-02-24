@@ -14,7 +14,7 @@ import { CATALOG } from '@/domain/base-contrat/catalog';
 import type { CatalogProduct } from '@/domain/base-contrat/catalog';
 import { isProductClosed } from '@/domain/base-contrat/overrides';
 import type { BaseContratOverride, OverrideMap } from '@/domain/base-contrat/overrides';
-import { getRules, hasSocleRules } from '@/domain/base-contrat/rules/index';
+import { getRules } from '@/domain/base-contrat/rules/index';
 import type { ProductRules, RuleBlock, Audience } from '@/domain/base-contrat/rules/index';
 import {
   getBaseContratOverrides,
@@ -76,7 +76,7 @@ function RuleBlockCard({ block }: { block: RuleBlock }) {
   );
 }
 
-function PlaceholderCard() {
+function EmptyRuleCard() {
   return (
     <div style={{
       background: 'var(--color-c7)',
@@ -86,10 +86,10 @@ function PlaceholderCard() {
       marginBottom: 8,
     }}>
       <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-c9)', fontStyle: 'italic' }}>
-        Règles à compléter
+        Aucune règle renseignée
       </div>
       <div style={{ fontSize: 11, color: 'var(--color-c9)', marginTop: 4 }}>
-        Les règles fiscales détaillées seront disponibles dans une prochaine mise à jour.
+        Ce produit ne possède pas de règles fiscales spécifiques pour cette phase.
       </div>
     </div>
   );
@@ -98,11 +98,9 @@ function PlaceholderCard() {
 function PhaseColumn({
   phaseKey,
   blocks,
-  isPlaceholder,
 }: {
   phaseKey: 'constitution' | 'sortie' | 'deces';
   blocks: RuleBlock[];
-  isPlaceholder: boolean;
 }) {
   const colorMap: Record<typeof phaseKey, string> = {
     constitution: 'var(--color-c3)',
@@ -124,8 +122,8 @@ function PhaseColumn({
       }}>
         {PHASE_LABELS[phaseKey]}
       </div>
-      {isPlaceholder
-        ? <PlaceholderCard />
+      {blocks.length === 0
+        ? <EmptyRuleCard />
         : blocks.map((block, i) => <RuleBlockCard key={i} block={block} />)
       }
     </div>
@@ -150,7 +148,6 @@ function RulesPanel({ rules, closed }: { rules: ProductRules; closed: boolean })
             key={pk}
             phaseKey={pk}
             blocks={rules[pk]}
-            isPlaceholder={!!rules.isPlaceholder}
           />
         ))}
       </div>
@@ -242,7 +239,6 @@ export default function BaseContrat() {
   const [openFamilyId, setOpenFamilyId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterFamille, setFilterFamille] = useState('');
-  const [filterIncomplete, setFilterIncomplete] = useState(false);
   const [togglePPPM, setTogglePPPM] = useState<Audience>('pp');
   const [overrideTarget, setOverrideTarget] = useState<CatalogProduct | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
@@ -254,14 +250,13 @@ export default function BaseContrat() {
       if (togglePPPM === 'pp' && !p.ppEligible) return false;
       if (togglePPPM === 'pm' && !p.pmEligible) return false;
       if (filterFamille && p.grandeFamille !== filterFamille) return false;
-      if (filterIncomplete && hasSocleRules(p.id)) return false;
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         if (!p.label.toLowerCase().includes(q)) return false;
       }
       return true;
     });
-  }, [togglePPPM, filterFamille, filterIncomplete, searchQuery]);
+  }, [togglePPPM, filterFamille, searchQuery]);
 
   const groupedByFamily = useMemo(() => {
     const map = new Map<string, CatalogProduct[]>();
@@ -281,10 +276,6 @@ export default function BaseContrat() {
     [overrides, today],
   );
   const closedCount = CATALOG.length - activeCount;
-  const incompleteCount = useMemo(
-    () => CATALOG.filter((p) => !hasSocleRules(p.id)).length,
-    [],
-  );
 
   async function handleSaveOverride(
     data: Pick<BaseContratOverride, 'product_id' | 'closed_date' | 'note_admin'>,
@@ -315,11 +306,6 @@ export default function BaseContrat() {
               </h2>
               <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--color-c9)' }}>
                 {CATALOG.length} produits · {activeCount} ouverts · {closedCount} clôturés
-                {incompleteCount > 0 && (
-                  <span style={{ marginLeft: 8, color: 'var(--color-c1)', fontStyle: 'italic' }}>
-                    · {incompleteCount} règles à compléter
-                  </span>
-                )}
               </p>
             </div>
             {/* Toggle PP / Entreprise */}
@@ -363,19 +349,10 @@ export default function BaseContrat() {
             <option value="">Toutes les familles</option>
             {GRANDE_FAMILLE_OPTIONS.map((gf) => <option key={gf} value={gf}>{gf}</option>)}
           </select>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--color-c9)', cursor: 'pointer', padding: '7px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', background: filterIncomplete ? 'var(--color-c6)' : 'transparent' }}>
-            <input
-              type="checkbox"
-              checked={filterIncomplete}
-              onChange={(e) => setFilterIncomplete(e.target.checked)}
-              style={{ cursor: 'pointer' }}
-            />
-            Règles à compléter uniquement
-          </label>
-          {(searchQuery || filterFamille || filterIncomplete) && (
+          {(searchQuery || filterFamille) && (
             <button
               type="button"
-              onClick={() => { setSearchQuery(''); setFilterFamille(''); setFilterIncomplete(false); }}
+              onClick={() => { setSearchQuery(''); setFilterFamille(''); }}
               style={{ fontSize: 12, padding: '7px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', background: 'none', color: 'var(--color-c9)', cursor: 'pointer' }}
             >
               Réinitialiser
@@ -445,9 +422,9 @@ export default function BaseContrat() {
                           {product.pmEligible && !product.ppEligible && (
                             <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c8)', color: 'var(--color-c9)', fontWeight: 600 }}>PM</span>
                           )}
-                          {rules.isPlaceholder && (
+                          {rules.constitution.length === 0 && rules.sortie.length === 0 && rules.deces.length === 0 && (
                             <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c6)', color: 'var(--color-c10)', fontStyle: 'italic' }}>
-                              À compléter
+                              Aucune règle
                             </span>
                           )}
                           {closed && (
