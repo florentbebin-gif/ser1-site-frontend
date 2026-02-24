@@ -14,10 +14,9 @@ const PREVOYANCE_DECES: ProductRules = {
       title: 'Cotisations',
       bullets: [
         'Primes non déductibles de l\'IR pour un contrat individuel souscrit à titre personnel.',
-        'Travailleurs non-salariés (TNS) : cotisations Madelin déductibles dans les plafonds prévoyance (2,5 % du PASS + 7,5 % de la rémunération jusqu\'à 8 PASS).',
         'Contrat de risque pur : aucune valeur de rachat, aucune épargne constituée.',
       ],
-      tags: ['primes_non_deductibles', 'madelin_tns', 'risque_pur'],
+      tags: ['primes_non_deductibles', 'risque_pur'],
       confidence: 'elevee',
     },
   ],
@@ -37,12 +36,13 @@ const PREVOYANCE_DECES: ProductRules = {
       title: 'Capital versé aux bénéficiaires',
       bullets: [
         'Capital décès versé hors succession aux bénéficiaires désignés.',
-        'Primes versées avant 70 ans (art. 990 I CGI) : abattement de 152 500 € par bénéficiaire.',
-        'Primes versées après 70 ans (art. 757 B CGI) : abattement global de 30 500 €.',
-        'Exonération totale si les primes sont considérées comme "normales" au regard du patrimoine (contrats courants).',
+        'Avant 70 ans (art. 990 I CGI) : abattement de 152 500 € par bénéficiaire ; au-delà : 20 % puis 31,25 %.',
+        'Après 70 ans (art. 757 B CGI) : abattement global de 30 500 € partaé entre tous les bénéficiaires.',
+        'Contrat de risque pur : c\'est la prime de la dernière année d\'assurance (et non l\'ensemble des primes versées) qui constitue l\'assiette imposable pour l\'art. 990 I ou 757 B.',
       ],
       tags: ['art_990_i_cgi', 'art_757_b_cgi', 'hors_succession', 'abattement_152500'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 990 I CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905' }, { label: 'Art. 757 B CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006307539' }],
     },
   ],
 };
@@ -56,7 +56,7 @@ const PREVOYANCE_ITT: ProductRules = {
         'TNS (Madelin) : cotisations déductibles dans les plafonds prévoyance.',
         'Pas de valeur de rachat : contrat de risque pur.',
       ],
-      tags: ['primes_non_deductibles', 'madelin_tns', 'risque_pur'],
+      tags: ['primes_non_deductibles', 'risque_pur'],
       confidence: 'elevee',
     },
   ],
@@ -67,9 +67,11 @@ const PREVOYANCE_ITT: ProductRules = {
         'IJ exonérées d\'IR si les primes ont été payées personnellement (sans déduction).',
         'IJ imposables à l\'IR si les primes ont été déduites (Madelin, contrat collectif employeur).',
         'Régime applicable : traitements et salaires ou BNC selon le statut du bénéficiaire.',
+        'TNS en arrêt de travail : les IJ versées par un contrat de prévoyance privée ne sont généralement pas soumises aux cotisations sociales obligatoires. À confirmer selon le régime d\'affiliation (SSI / régime général) et le montant des IJ.',
       ],
       tags: ['ij_exonerees', 'ij_imposables', 'madelin_tns'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      dependencies: ['régime d\'affiliation TNS (SSI ou régime général)', 'source BOSS/URSSAF à confirmer'],
     },
     {
       title: 'Rente d\'invalidité',
@@ -83,12 +85,11 @@ const PREVOYANCE_ITT: ProductRules = {
   ],
   deces: [
     {
-      title: 'Capital décès éventuel',
+      title: 'Sans objet — couverture décès distincte',
       bullets: [
-        'Certains contrats ITT prévoient un capital décès garanti.',
-        'Mêmes règles que la prévoyance décès : art. 990 I (avant 70 ans) ou art. 757 B (après 70 ans).',
+        'Ce produit couvre l\'incapacité de travail (ITT) et l\'invalidité. La couverture décès relève d\'un produit dédié (prévoyance décès).',
       ],
-      tags: ['art_990_i_cgi', 'art_757_b_cgi'],
+      tags: ['no_capital_deces'],
       confidence: 'elevee',
     },
   ],
@@ -165,7 +166,7 @@ const ASSURANCE_OBSEQUES: ProductRules = {
   ],
 };
 
-const ASSURANCE_EMPRUNTEUR: ProductRules = {
+const ASSURANCE_EMPRUNTEUR_PP: ProductRules = {
   constitution: [
     {
       title: 'Cotisations',
@@ -203,6 +204,44 @@ const ASSURANCE_EMPRUNTEUR: ProductRules = {
   ],
 };
 
+const ASSURANCE_EMPRUNTEUR_PM: ProductRules = {
+  constitution: [
+    {
+      title: 'Cotisations (société)',
+      bullets: [
+        'Primes payées par la société : déductibles du résultat imposable (IS ou IR) si adossées à un prêt professionnel.',
+        'Contrat de risque pur adossé à un prêt professionnel (immobilier ou d\'exploitation).',
+      ],
+      tags: ['primes_deductibles_entreprise'],
+      confidence: 'elevee',
+    },
+  ],
+  sortie: [
+    {
+      title: 'En cas de sinistre',
+      bullets: [
+        'Capital versé à la banque : extinction partielle ou totale de la dette du prêt — enregistrement comptable en produit exceptionnel et charge (remboursement emprunt).',
+        'IJ invalidité éventuelles : intégrées au résultat imposable de la société (IS ou IR).',
+      ],
+      tags: ['capital_banque', 'produit_exceptionnel'],
+      confidence: 'elevee',
+    },
+  ],
+  deces: [
+    {
+      title: 'Décès du débiteur assuré',
+      bullets: [
+        'Le capital est versé à l\'établissement prêteur : extinction de la dette de la société.',
+        'Traitement comptable : le remboursement de l\'emprunt par l\'assureur peut générer un bénéfice exceptionnel imposable à l\'IS ou à l\'IR selon le régime de la société.',
+        'À confirmer selon le traitement comptable retenu et le régime fiscal de la société.',
+      ],
+      tags: ['remboursement_pret', 'benefice_exceptionnel', 'is_ir'],
+      confidence: 'moyenne',
+      dependencies: ['régime fiscal de la société (IS ou IR)', 'traitement comptable du sinistre'],
+    },
+  ],
+};
+
 const ASSURANCE_HOMME_CLE: ProductRules = {
   constitution: [
     {
@@ -232,12 +271,12 @@ const ASSURANCE_HOMME_CLE: ProductRules = {
       bullets: [
         'Le capital est versé à l\'entreprise (bénéficiaire) et intégré dans le résultat imposable de l\'exercice (produit exceptionnel, art. 38 CGI).',
         'Fiscalité : IS ou IR selon le régime de l\'entreprise.',
-        'À confirmer selon le type de contrat : seuls les contrats indemnitaires (indemnité calculée sur la perte réelle) ouvrent droit à la déductibilité des primes ; les contrats forfaitaires en sont exclus.',
+        'À confirmer selon le type de contrat (indemnitaire ou forfaitaire) et l\'exercice de réalisation du sinistre.',
       ],
       tags: ['capital_entreprise', 'produit_exceptionnel', 'is_ir'],
       confidence: 'moyenne',
       sources: [{ label: 'BOI-BIC-CHG-40-20-20 §100', url: 'https://bofip.impots.gouv.fr/bofip/803-PGP.html/identifiant=BOI-BIC-CHG-40-20-20-20130408' }],
-      dependencies: ['type de contrat (indemnitaire vs forfaitaire)', 'exercice de réalisation du sinistre'],
+      dependencies: ['type de contrat (indemnitaire vs forfaitaire) : seul le contrat indemnitaire ouvre droit à la déductibilité des primes', 'exercice de réalisation du sinistre'],
     },
   ],
 };
@@ -256,7 +295,7 @@ export function getPrevoyanceRules(
     case 'assurance_obseques':
       return ASSURANCE_OBSEQUES;
     case 'assurance_emprunteur':
-      return ASSURANCE_EMPRUNTEUR;
+      return audience === 'pm' ? ASSURANCE_EMPRUNTEUR_PM : ASSURANCE_EMPRUNTEUR_PP;
     case 'assurance_homme_cle':
       return audience === 'pm' ? ASSURANCE_HOMME_CLE : undefined;
     default:

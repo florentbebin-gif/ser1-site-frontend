@@ -261,3 +261,48 @@ describe('confidence policy — sources ont des URLs https valides', () => {
     });
   }
 });
+
+// ─────────────────────────────────────────────────────────────
+// 11. Strings interdites — PR6 qualité rédactionnelle
+// ─────────────────────────────────────────────────────────────
+
+describe('strings interdites — PR6 fiabilisation', () => {
+  it('prevoyance_deces (PP) — pas de "2,5 % du PASS" dans constitution', () => {
+    const rules = getRules('prevoyance_individuelle_deces', 'pp');
+    const allBullets = rules.constitution.flatMap((b) => b.bullets);
+    for (const bullet of allBullets) {
+      expect(
+        bullet,
+        'Bullet interdit : "2,5 % du PASS" détecté dans prevoyance_deces constitution',
+      ).not.toContain('2,5 % du PASS');
+    }
+  });
+
+  it('article_83 — pas de mention "Article 39" dans les bullets', () => {
+    const pp = getRules('article_83', 'pp');
+    const pm = getRules('article_83', 'pm');
+    const allBullets = [
+      ...pp.constitution, ...pp.sortie, ...pp.deces,
+      ...pm.constitution, ...pm.sortie, ...pm.deces,
+    ].flatMap((b) => b.bullets);
+    for (const bullet of allBullets) {
+      expect(
+        bullet,
+        'Bullet interdit : "Article 39" détecté dans article_83',
+      ).not.toMatch(/[Aa]rticle 39/);
+    }
+  });
+
+  it('contrat_capitalisation (PP) — pas de "238 septies E" dans les bullets', () => {
+    const rules = getRules('contrat_capitalisation', 'pp');
+    const allBullets = [
+      ...rules.constitution, ...rules.sortie, ...rules.deces,
+    ].flatMap((b) => b.bullets);
+    for (const bullet of allBullets) {
+      expect(
+        bullet,
+        'Bullet interdit : "238 septies E" visible côté PP dans contrat_capitalisation',
+      ).not.toContain('238 septies E');
+    }
+  });
+});
