@@ -204,7 +204,7 @@ const RETRAITE_ENTREPRISE_GENERIQUE: ProductRules = {
         'Article 39 : sortie obligatoire en rente viagère (pas de sortie en capital).',
         'Article 83 / PERO : sortie en capital ou rente possible (depuis la loi PACTE).',
         'Rente imposable à l\'IR (après abattement de 10 %) + CSG 8,3 % + CRDS 0,5 % + CASA 0,3 % + cotisation maladie 1 %.',
-        'Contribution sociale spécifique sur les rentes art. 39 : 7 % (part 0-400 €/mois) à 21 % (part > 24 000 €/mois).',
+        'Contribution sociale spécifique sur les rentes art. 39 (L137-11-1 CSS) : 7 % (part > 500 €), 14 % (part > 1 000 €), 21 % (part > 24 000 €/mois).',
         'À confirmer selon le régime spécifique de sortie et l\'ancienneté des droits.',
       ],
       tags: ['rente_obligatoire', 'bareme_ir', 'abattement_10'],
