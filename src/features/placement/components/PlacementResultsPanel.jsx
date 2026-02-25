@@ -1,8 +1,18 @@
 import React from 'react';
 import { TimelineBar } from '@/components/TimelineBar.jsx';
 import { shortEuro } from '../legacy/formatters.js';
+import { useFiscalProfile } from '../hooks/useFiscalProfile.ts';
+import { FiscalSummaryPanel } from './FiscalSummaryPanel.tsx';
 
 export function PlacementResultsPanel({ loading, hydrated, results, state }) {
+  const fiscalProfile1 = useFiscalProfile({
+    envelope: state.products[0]?.envelope ?? 'AV',
+    perBancaire: state.products[0]?.perBancaire ?? false,
+  });
+  const fiscalProfile2 = useFiscalProfile({
+    envelope: state.products[1]?.envelope ?? 'AV',
+    perBancaire: state.products[1]?.perBancaire ?? false,
+  });
   const { produit1, produit2 } = results || { produit1: null, produit2: null };
 
   return (
@@ -90,6 +100,11 @@ export function PlacementResultsPanel({ loading, hydrated, results, state }) {
           </>
         )}
       </div>
+
+      <FiscalSummaryPanel
+        fiscalProfile1={fiscalProfile1}
+        fiscalProfile2={fiscalProfile2}
+      />
     </div>
   );
 }
