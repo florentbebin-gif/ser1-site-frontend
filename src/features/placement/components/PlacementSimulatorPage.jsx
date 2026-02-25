@@ -1,4 +1,4 @@
-﻿/**
+/**
  * PlacementSimulatorPage.jsx — Orchestrateur du simulateur de placement
  *
  * Architecture modulaire :
