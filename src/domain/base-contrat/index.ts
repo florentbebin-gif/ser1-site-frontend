@@ -18,3 +18,10 @@ export { isProductClosed } from './overrides';
 
 export type { ProductRules, RuleBlock, Audience } from './rules/index';
 export { getRules, getRulesForProduct, hasSocleRules } from './rules/index';
+
+export type { EnvelopeCode, FiscalProfile } from './rules/index';
+export {
+  getEnvelopeCatalogId,
+  buildFiscalProfile,
+  emptyFiscalProfile,
+} from './rules/index';

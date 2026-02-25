@@ -23,6 +23,12 @@ import { getAutresRules } from './library/autres';
 import { getFiscauxImmobilierRules } from './library/fiscaux-immobilier';
 
 export type { ProductRules, RuleBlock, Audience, Confidence, RuleSource } from './types';
+export type { EnvelopeCode, FiscalProfile } from './fiscalProfile';
+export {
+  getEnvelopeCatalogId,
+  buildFiscalProfile,
+  emptyFiscalProfile,
+} from './fiscalProfile';
 
 const RESOLVERS: Array<(_id: string, _audience: Audience) => ProductRules | undefined> = [
   getAssuranceEpargneRules,
