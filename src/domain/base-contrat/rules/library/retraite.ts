@@ -53,6 +53,7 @@ const PERIN_ASSURANCE: ProductRules = {
       ],
       tags: ['exoneration_capital', 'rente_titre_onereux'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 158-6 CGI — rentes viagères à titre onéreux', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033810417' }],
     },
     {
       title: 'Déblocage anticipé autorisé',
@@ -77,6 +78,7 @@ const PERIN_ASSURANCE: ProductRules = {
       ],
       tags: ['art_990_i_cgi', 'abattement_152500', 'hors_succession'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 990 I CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905' }],
     },
     {
       title: 'Après 70 ans',
@@ -87,6 +89,7 @@ const PERIN_ASSURANCE: ProductRules = {
       ],
       tags: ['art_757_b_cgi', 'abattement_30500'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 757 B CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310172' }],
     },
   ],
 };
@@ -174,6 +177,7 @@ const PERIN_BANCAIRE: ProductRules = {
       ],
       tags: ['dmtg_classique', 'succession_active'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -189,6 +193,7 @@ const EPARGNE_SALARIALE_PEE_PP: ProductRules = {
       ],
       tags: ['participation', 'interessement', 'abondement', 'plafond_25pct'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. L3332-10 Code du travail — PEE versements', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006902719' }],
     },
   ],
   sortie: [
@@ -209,6 +214,7 @@ const EPARGNE_SALARIALE_PEE_PP: ProductRules = {
       ],
       tags: ['exoneration_ir', 'ps_17_2'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. L3332-25 Code du travail — PEE sortie', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006902745' }],
     },
   ],
   deces: [
@@ -557,6 +563,7 @@ const PERP_MADELIN_ANCIEN: ProductRules = {
       ],
       tags: ['rente_viagere', 'transfert_per', 'abattement_10'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 163 quatervicies CGI — PERP/Madelin sortie rente', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302851' }],
     },
   ],
   deces: [

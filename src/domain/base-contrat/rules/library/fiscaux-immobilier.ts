@@ -20,6 +20,7 @@ const PINEL_PINEL_PLUS: ProductRules = {
       ],
       tags: ['reduction_ir', 'plafond_300k', 'ferme_2025'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 199 novovicies CGI — Pinel', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049481248' }],
     },
   ],
   sortie: [
@@ -32,6 +33,7 @@ const PINEL_PINEL_PLUS: ProductRules = {
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_reduction'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' }],
     },
   ],
   deces: [
@@ -44,6 +46,7 @@ const PINEL_PINEL_PLUS: ProductRules = {
       ],
       tags: ['dmtg_classique', 'transmission_engagement'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F14198' }],
     },
   ],
 };
@@ -60,6 +63,7 @@ const DENORMANDIE: ProductRules = {
       ],
       tags: ['reduction_ir', 'renovation', 'plafond_300k'],
       confidence: 'moyenne',
+      sources: [{ label: 'Art. 199 novovicies CGI — Denormandie', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000049481248' }],
       dependencies: ['nature exacte des travaux', 'commune éligible'],
     },
   ],
@@ -73,6 +77,7 @@ const DENORMANDIE: ProductRules = {
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_reduction'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' }],
     },
   ],
   deces: [
@@ -83,6 +88,7 @@ const DENORMANDIE: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F14198' }],
     },
   ],
 };
@@ -122,6 +128,7 @@ const MALRAUX: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F14198' }],
     },
   ],
 };
@@ -160,6 +167,7 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
       ],
       tags: ['exoneration_dmtg_convention', 'dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 795 A CGI — exonération DMTG monuments historiques', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006309968' }],
     },
   ],
 };
@@ -187,6 +195,7 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
       ],
       tags: ['pv_immo', 'abattement_detention', 'reprise_avantage'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' }],
     },
   ],
   deces: [
@@ -198,6 +207,7 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F14198' }],
     },
   ],
 };

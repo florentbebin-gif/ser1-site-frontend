@@ -71,6 +71,7 @@ const ACTIONS_COTEES: ProductRules = {
       ],
       tags: ['pfu_30', 'dividendes', 'abattement_40', 'compensation_mv'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 200 A CGI — PFU + Art. 158-3 CGI — abattement 40%', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
   ],
   deces: [
@@ -83,6 +84,7 @@ const ACTIONS_COTEES: ProductRules = {
       ],
       tags: ['purge_pv', 'dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -93,11 +95,14 @@ const FONDS_OPC: ProductRules = {
       title: 'Souscription',
       bullets: [
         'Souscription de parts ou actions de fonds (FCPR, FCPI, FIP, OPCI…).',
-        'FCPI/FIP : réduction d\'IR de 18 % (ou 25 % si label "vert") sur les versements, sous conditions et plafonds.',
+        'FCPI/FIP : réduction d\'IR sur les versements (taux variable selon millésime et label — à confirmer selon le fonds souscrit).',
         'Engagement de blocage des fonds pendant la durée requise (généralement 5 à 10 ans).',
+        'À confirmer : taux de réduction applicable et plafond annuel en vigueur lors de la souscription.',
       ],
       tags: ['reduction_ir', 'blocage', 'fcpi_fip'],
-      confidence: 'elevee',
+      confidence: 'moyenne',
+      sources: [{ label: 'Art. 199 terdecies-0 A CGI — FCPI/FIP', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044975826' }],
+      dependencies: ['millesime et label du fonds', 'taux de réduction en vigueur lors de la souscription'],
     },
   ],
   sortie: [
@@ -110,6 +115,7 @@ const FONDS_OPC: ProductRules = {
       ],
       tags: ['pfu_30', 'exoneration_fcpr', 'compensation_mv'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
   ],
   deces: [
@@ -121,6 +127,7 @@ const FONDS_OPC: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -135,6 +142,7 @@ const ACTIONS_NON_COTEES: ProductRules = {
       ],
       tags: ['ir_pme', 'non_cote'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 199 terdecies-0 A CGI — IR-PME', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044975826' }],
     },
   ],
   sortie: [
@@ -147,6 +155,7 @@ const ACTIONS_NON_COTEES: ProductRules = {
       ],
       tags: ['pfu_30', 'abattement_dirigeant_retraite'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
   ],
   deces: [
@@ -159,6 +168,7 @@ const ACTIONS_NON_COTEES: ProductRules = {
       ],
       tags: ['pacte_dutreil', 'art_787_b_cgi', 'dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 787 B CGI — Pacte Dutreil', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043663071' }],
     },
   ],
 };
@@ -174,6 +184,7 @@ const SOFICA: ProductRules = {
       ],
       tags: ['reduction_ir', 'plafond_18k', 'sofica'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 163 bis G CGI — SOFICA', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038614158' }],
     },
   ],
   sortie: [
@@ -185,6 +196,7 @@ const SOFICA: ProductRules = {
       ],
       tags: ['pfu_30', 'mv_non_imputables'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
   ],
   deces: [
@@ -196,6 +208,7 @@ const SOFICA: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -211,6 +224,7 @@ const IR_PME_MADELIN: ProductRules = {
       ],
       tags: ['reduction_ir_18_25', 'plafond_50k', 'engagement_5_ans'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 199 terdecies-0 A CGI — IR-PME', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000044975826' }],
     },
   ],
   sortie: [
@@ -223,6 +237,7 @@ const IR_PME_MADELIN: ProductRules = {
       ],
       tags: ['pfu_30', 'reprise_reduction'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
   ],
   deces: [
@@ -235,6 +250,7 @@ const IR_PME_MADELIN: ProductRules = {
       ],
       tags: ['dmtg_classique', 'pacte_dutreil'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 787 B CGI — Pacte Dutreil + Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043663071' }],
     },
   ],
 };
@@ -261,6 +277,7 @@ const CROWDFUNDING: ProductRules = {
       ],
       tags: ['pfu_30'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
   ],
   deces: [
@@ -272,6 +289,7 @@ const CROWDFUNDING: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -297,6 +315,7 @@ const OBLIGATIONS_NON_COTEES: ProductRules = {
       ],
       tags: ['pfu_30'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
   ],
   deces: [
@@ -308,6 +327,7 @@ const OBLIGATIONS_NON_COTEES: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -333,6 +353,7 @@ const COMPTE_COURANT_ASSOCIE: ProductRules = {
       ],
       tags: ['pfu_30', 'interet_imposable'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
   ],
   deces: [
@@ -345,6 +366,7 @@ const COMPTE_COURANT_ASSOCIE: ProductRules = {
       ],
       tags: ['dmtg_classique', 'valeur_nominale'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -359,6 +381,7 @@ const PRET_PARTICULIERS: ProductRules = {
       ],
       tags: ['reconnaissance_dette', 'declaration_fiscale'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 242 ter CGI — déclaration prêt > 5 000 €', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006312267' }],
     },
   ],
   sortie: [
@@ -370,6 +393,7 @@ const PRET_PARTICULIERS: ProductRules = {
       ],
       tags: ['pfu_30', 'interet_imposable'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 200 A CGI — PFU', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036428122' }],
     },
   ],
   deces: [
@@ -381,6 +405,7 @@ const PRET_PARTICULIERS: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };

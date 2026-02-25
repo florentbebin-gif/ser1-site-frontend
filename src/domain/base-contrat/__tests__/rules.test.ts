@@ -254,6 +254,7 @@ describe('confidence policy — moyenne/faible → dependencies non vides', () =
 // ─────────────────────────────────────────────────────────────
 // 10. Sources — URLs valides https://
 // ─────────────────────────────────────────────────────────────
+// (Section 12 below enforces official domains for sensitive claims)
 
 describe('confidence policy — sources ont des URLs https valides', () => {
   for (const product of CATALOG) {
@@ -454,6 +455,60 @@ describe('strings interdites — PR6 fiabilisation', () => {
             pattern.test(text),
             `Pattern PM interdit ${pattern} trouvé en PP pour ${productId}: "${text}"`,
           ).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('garde-fou sources officielles — claims sensibles exigent une source officielle ou reformulation prudente', () => {
+    const SENSITIVE_PATTERNS: RegExp[] = [
+      /\b\d+([,.]\d+)?\s?%/,
+      /\b\d[\d\s]*€/,
+      /\bArticle\b/i,
+      /\bCGI\b/,
+      /\bCSS\b/,
+      /BOI-/,
+      /\bBOSS\b/i,
+      /\bURSSAF\b/i,
+      /\bDMTG\b/i,
+      /\b990\s*I\b/i,
+      /\b757\s*B\b/i,
+    ];
+
+    const OFFICIAL_DOMAINS = [
+      'legifrance.gouv.fr',
+      'bofip.impots.gouv.fr',
+      'boss.gouv.fr',
+      'impots.gouv.fr',
+      'service-public.fr',
+      'urssaf.fr',
+    ];
+
+    function hasSensitiveClaim(texts: string[]): boolean {
+      return texts.some((t) => SENSITIVE_PATTERNS.some((p) => p.test(t)));
+    }
+
+    function hasOfficialSource(block: RuleBlock): boolean {
+      if (!block.sources || block.sources.length === 0) return false;
+      return block.sources.some((src) =>
+        OFFICIAL_DOMAINS.some((domain) => src.url.includes(domain)),
+      );
+    }
+
+    function isPrudentlyReformulated(block: RuleBlock): boolean {
+      return block.bullets.some((b) => b.includes('À confirmer'));
+    }
+
+    for (const product of CATALOG) {
+      const blocks = allBlocks(product.id);
+      for (const block of blocks) {
+        const texts = [block.title, ...block.bullets];
+        if (hasSensitiveClaim(texts)) {
+          const ok = hasOfficialSource(block) || isPrudentlyReformulated(block);
+          expect(
+            ok,
+            `Bloc "${block.title}" (${product.id}) contient un claim sensible (taux/montant/article) sans source officielle ni reformulation prudente "À confirmer"`,
+          ).toBe(true);
         }
       }
     }

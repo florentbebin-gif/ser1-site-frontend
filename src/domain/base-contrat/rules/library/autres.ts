@@ -137,6 +137,7 @@ const CRYPTO_ACTIFS: ProductRules = {
       ],
       tags: ['dmtg_classique', 'acces_wallet'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -177,6 +178,7 @@ const METAUX_PRECIEUX: ProductRules = {
       ],
       tags: ['dmtg_classique', 'valeur_marche'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
