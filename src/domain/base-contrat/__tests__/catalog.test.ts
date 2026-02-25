@@ -78,17 +78,17 @@ describe('CATALOG_BY_ID', () => {
 
 describe('Produits clés — présence et valeurs', () => {
   const cases: Array<{ id: string; ppEligible: boolean; pmEligible: boolean; catalogKind: string }> = [
-    { id: 'assurance_vie',        ppEligible: true,  pmEligible: false, catalogKind: 'wrapper' },
-    { id: 'cto_pp',               ppEligible: true,  pmEligible: false, catalogKind: 'wrapper' },
-    { id: 'cto_pm',               ppEligible: false, pmEligible: true,  catalogKind: 'wrapper' },
-    { id: 'pea',                  ppEligible: true,  pmEligible: false, catalogKind: 'wrapper' },
-    { id: 'perin_assurance',      ppEligible: true,  pmEligible: false, catalogKind: 'wrapper' },
-    { id: 'assurance_homme_cle',  ppEligible: false, pmEligible: true,  catalogKind: 'protection' },
-    { id: 'pinel_pinel_plus',     ppEligible: true,  pmEligible: false, catalogKind: 'tax_overlay' },
-    { id: 'parts_scpi_pp',        ppEligible: true,  pmEligible: false, catalogKind: 'asset' },
-    { id: 'parts_scpi_pm',        ppEligible: false, pmEligible: true,  catalogKind: 'asset' },
-    { id: 'crypto_actifs_pp',     ppEligible: true,  pmEligible: false, catalogKind: 'asset' },
-    { id: 'crypto_actifs_pm',     ppEligible: false, pmEligible: true,  catalogKind: 'asset' },
+    { id: 'assurance_vie', ppEligible: true, pmEligible: false, catalogKind: 'wrapper' },
+    { id: 'cto_pp', ppEligible: true, pmEligible: false, catalogKind: 'wrapper' },
+    { id: 'cto_pm', ppEligible: false, pmEligible: true, catalogKind: 'wrapper' },
+    { id: 'pea', ppEligible: true, pmEligible: false, catalogKind: 'wrapper' },
+    { id: 'perin_assurance', ppEligible: true, pmEligible: false, catalogKind: 'wrapper' },
+    { id: 'assurance_homme_cle', ppEligible: false, pmEligible: true, catalogKind: 'protection' },
+    { id: 'pinel_pinel_plus', ppEligible: true, pmEligible: false, catalogKind: 'tax_overlay' },
+    { id: 'parts_scpi_pp', ppEligible: true, pmEligible: false, catalogKind: 'asset' },
+    { id: 'parts_scpi_pm', ppEligible: false, pmEligible: true, catalogKind: 'asset' },
+    { id: 'crypto_actifs_pp', ppEligible: true, pmEligible: false, catalogKind: 'asset' },
+    { id: 'crypto_actifs_pm', ppEligible: false, pmEligible: true, catalogKind: 'asset' },
     { id: 'compte_courant_associe_pp', ppEligible: true,  pmEligible: false, catalogKind: 'liability' },
     { id: 'compte_courant_associe_pm', ppEligible: false, pmEligible: true,  catalogKind: 'liability' },
   ];
