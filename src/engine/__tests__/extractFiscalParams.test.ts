@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Snapshot baseline test for extractFiscalParams.
  *
  * This golden snapshot captures the exact output of extractFiscalParams()
