@@ -42,6 +42,11 @@ describe('CATALOG — cohérence structurelle', () => {
     }
   });
 
+  it('aucun produit ne doit être dual-eligible (ppEligible && pmEligible)', () => {
+    const dualEligible = CATALOG.filter((p) => p.ppEligible && p.pmEligible).map((p) => p.id);
+    expect(dualEligible, `Produits dual-eligible détectés: ${dualEligible.join(', ')}`).toHaveLength(0);
+  });
+
   it('templateKey est string ou null', () => {
     for (const p of CATALOG) {
       expect(
@@ -74,14 +79,18 @@ describe('CATALOG_BY_ID', () => {
 describe('Produits clés — présence et valeurs', () => {
   const cases: Array<{ id: string; ppEligible: boolean; pmEligible: boolean; catalogKind: string }> = [
     { id: 'assurance_vie',        ppEligible: true,  pmEligible: false, catalogKind: 'wrapper' },
-    { id: 'cto',                  ppEligible: true,  pmEligible: true,  catalogKind: 'wrapper' },
+    { id: 'cto_pp',               ppEligible: true,  pmEligible: false, catalogKind: 'wrapper' },
+    { id: 'cto_pm',               ppEligible: false, pmEligible: true,  catalogKind: 'wrapper' },
     { id: 'pea',                  ppEligible: true,  pmEligible: false, catalogKind: 'wrapper' },
     { id: 'perin_assurance',      ppEligible: true,  pmEligible: false, catalogKind: 'wrapper' },
     { id: 'assurance_homme_cle',  ppEligible: false, pmEligible: true,  catalogKind: 'protection' },
     { id: 'pinel_pinel_plus',     ppEligible: true,  pmEligible: false, catalogKind: 'tax_overlay' },
-    { id: 'parts_scpi',           ppEligible: true,  pmEligible: true,  catalogKind: 'asset' },
-    { id: 'crypto_actifs',        ppEligible: true,  pmEligible: true,  catalogKind: 'asset' },
-    { id: 'compte_courant_associe', ppEligible: true, pmEligible: true, catalogKind: 'liability' },
+    { id: 'parts_scpi_pp',        ppEligible: true,  pmEligible: false, catalogKind: 'asset' },
+    { id: 'parts_scpi_pm',        ppEligible: false, pmEligible: true,  catalogKind: 'asset' },
+    { id: 'crypto_actifs_pp',     ppEligible: true,  pmEligible: false, catalogKind: 'asset' },
+    { id: 'crypto_actifs_pm',     ppEligible: false, pmEligible: true,  catalogKind: 'asset' },
+    { id: 'compte_courant_associe_pp', ppEligible: true,  pmEligible: false, catalogKind: 'liability' },
+    { id: 'compte_courant_associe_pm', ppEligible: false, pmEligible: true,  catalogKind: 'liability' },
   ];
 
   for (const { id, ppEligible, pmEligible, catalogKind } of cases) {
@@ -120,7 +129,7 @@ describe('isProductClosed', () => {
   });
 
   it('retourne false si le produit n\'a pas d\'override', () => {
-    expect(isProductClosed('cto', overrides, '2026-01-01')).toBe(false);
+    expect(isProductClosed('cto_pp', overrides, '2026-01-01')).toBe(false);
   });
 
   it('retourne false si closed_date > asOf (fermeture future)', () => {

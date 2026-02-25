@@ -191,6 +191,10 @@ export function getAssuranceEpargneRules(
   switch (productId) {
     case 'assurance_vie':
       return ASSURANCE_VIE_PP;
+    case 'contrat_capitalisation_pp':
+      return CONTRAT_CAPITALISATION;
+    case 'contrat_capitalisation_pm':
+      return CONTRAT_CAPITALISATION_PM;
     case 'contrat_capitalisation':
       return audience === 'pm' ? CONTRAT_CAPITALISATION_PM : CONTRAT_CAPITALISATION;
     default:

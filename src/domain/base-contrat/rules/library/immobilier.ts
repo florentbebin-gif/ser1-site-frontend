@@ -481,19 +481,41 @@ export function getImmobilierRules(
       return RESIDENCE_PRINCIPALE;
     case 'residence_secondaire':
       return RESIDENCE_SECONDAIRE;
+    case 'locatif_nu_pp':
+      return LOCATIF_NU;
+    case 'locatif_nu_pm':
+      return LOCATIF_NU_PM;
     case 'locatif_nu':
       return audience === 'pm' ? LOCATIF_NU_PM : LOCATIF_NU;
     case 'locatif_meuble_lmnp':
       return LOCATIF_MEUBLE_LMNP;
     case 'locatif_meuble_lmp':
       return LOCATIF_MEUBLE_LMP;
+    case 'immobilier_garage_parking_pp':
+    case 'immobilier_terrain_pp':
+      return IMMO_AUTRE;
+    case 'immobilier_garage_parking_pm':
+    case 'immobilier_terrain_pm':
+      return IMMO_AUTRE_PM;
     case 'immobilier_garage_parking':
     case 'immobilier_terrain':
       return audience === 'pm' ? IMMO_AUTRE_PM : IMMO_AUTRE;
+    case 'parts_scpi_pp':
+      return PARTS_SCPI_PP;
+    case 'parts_scpi_pm':
+      return PARTS_SCPI_PM;
     case 'parts_scpi':
       return audience === 'pm' ? PARTS_SCPI_PM : PARTS_SCPI_PP;
+    case 'groupement_foncier_agri_viti_pp':
+      return GROUPEMENT_FONCIER_AGRI_VITI;
+    case 'groupement_foncier_agri_viti_pm':
+      return GROUPEMENT_FONCIER_AGRI_VITI_PM;
     case 'groupement_foncier_agri_viti':
       return audience === 'pm' ? GROUPEMENT_FONCIER_AGRI_VITI_PM : GROUPEMENT_FONCIER_AGRI_VITI;
+    case 'groupement_foncier_forestier_pp':
+      return GROUPEMENT_FONCIER_FORESTIER;
+    case 'groupement_foncier_forestier_pm':
+      return GROUPEMENT_FONCIER_FORESTIER_PM;
     case 'groupement_foncier_forestier':
       return audience === 'pm' ? GROUPEMENT_FONCIER_FORESTIER_PM : GROUPEMENT_FONCIER_FORESTIER;
     default:

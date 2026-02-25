@@ -186,10 +186,22 @@ export function getAutresRules(
   audience: Audience,
 ): ProductRules | undefined {
   switch (productId) {
+    case 'tontine_pp':
+      return TONTINE;
+    case 'tontine_pm':
+      return buildPmLifecycleRules('mécanisme tontinier', ['tontine']);
     case 'tontine':
       return audience === 'pm' ? buildPmLifecycleRules('mécanisme tontinier', ['tontine']) : TONTINE;
+    case 'crypto_actifs_pp':
+      return CRYPTO_ACTIFS;
+    case 'crypto_actifs_pm':
+      return buildPmLifecycleRules('crypto-actifs', ['crypto']);
     case 'crypto_actifs':
       return audience === 'pm' ? buildPmLifecycleRules('crypto-actifs', ['crypto']) : CRYPTO_ACTIFS;
+    case 'metaux_precieux_pp':
+      return METAUX_PRECIEUX;
+    case 'metaux_precieux_pm':
+      return buildPmLifecycleRules('métaux précieux', ['metaux_precieux']);
     case 'metaux_precieux':
       return audience === 'pm' ? buildPmLifecycleRules('métaux précieux', ['metaux_precieux']) : METAUX_PRECIEUX;
     default:

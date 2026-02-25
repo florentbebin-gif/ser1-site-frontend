@@ -436,29 +436,79 @@ export function getValeursMobilieresRules(
   audience: Audience,
 ): ProductRules | undefined {
   switch (productId) {
+    case 'actions_cotees_pp':
+    case 'actions_preference_pp':
+    case 'parts_sociales_cooperatives_pp':
+    case 'titres_participatifs_pp':
+    case 'droits_bsa_dps_pp':
+      return ACTIONS_COTEES;
+    case 'actions_cotees_pm':
+    case 'actions_preference_pm':
+    case 'parts_sociales_cooperatives_pm':
+    case 'titres_participatifs_pm':
+    case 'droits_bsa_dps_pm':
+      return buildPmLifecycleRules('titres financiers', ['titres_financiers']);
     case 'actions_cotees':
     case 'actions_preference':
     case 'parts_sociales_cooperatives':
     case 'titres_participatifs':
     case 'droits_bsa_dps':
       return audience === 'pm' ? buildPmLifecycleRules('titres financiers', ['titres_financiers']) : ACTIONS_COTEES;
+    case 'fcpr_pp':
+    case 'fcpi_pp':
+    case 'fip_pp':
+    case 'opci_grand_public_pp':
+      return FONDS_OPC;
+    case 'fcpr_pm':
+    case 'fcpi_pm':
+    case 'fip_pm':
+    case 'opci_grand_public_pm':
+      return buildPmLifecycleRules('parts de fonds', ['fonds']);
     case 'fcpr':
     case 'fcpi':
     case 'fip':
     case 'opci_grand_public':
       return audience === 'pm' ? buildPmLifecycleRules('parts de fonds', ['fonds']) : FONDS_OPC;
+    case 'actions_non_cotees_pp':
+      return ACTIONS_NON_COTEES;
+    case 'actions_non_cotees_pm':
+      return buildPmLifecycleRules('titres non cotés', ['non_cote']);
     case 'actions_non_cotees':
       return audience === 'pm' ? buildPmLifecycleRules('titres non cotés', ['non_cote']) : ACTIONS_NON_COTEES;
+    case 'sofica_pp':
+      return SOFICA;
+    case 'sofica_pm':
+      return buildPmLifecycleRules('parts SOFICA', ['sofica']);
     case 'sofica':
       return audience === 'pm' ? buildPmLifecycleRules('parts SOFICA', ['sofica']) : SOFICA;
+    case 'ir_pme_madelin_pp':
+      return IR_PME_MADELIN;
+    case 'ir_pme_madelin_pm':
+      return buildPmLifecycleRules('titres de PME', ['ir_pme']);
     case 'ir_pme_madelin':
       return audience === 'pm' ? buildPmLifecycleRules('titres de PME', ['ir_pme']) : IR_PME_MADELIN;
+    case 'crowdfunding_pp':
+      return CROWDFUNDING;
+    case 'crowdfunding_pm':
+      return buildPmLifecycleRules('titres de financement participatif', ['crowdfunding']);
     case 'crowdfunding':
       return audience === 'pm' ? buildPmLifecycleRules('titres de financement participatif', ['crowdfunding']) : CROWDFUNDING;
+    case 'obligations_non_cotees_pp':
+      return OBLIGATIONS_NON_COTEES;
+    case 'obligations_non_cotees_pm':
+      return buildPmLifecycleRules('obligations non cotées', ['obligations']);
     case 'obligations_non_cotees':
       return audience === 'pm' ? buildPmLifecycleRules('obligations non cotées', ['obligations']) : OBLIGATIONS_NON_COTEES;
+    case 'compte_courant_associe_pp':
+      return COMPTE_COURANT_ASSOCIE;
+    case 'compte_courant_associe_pm':
+      return buildPmLifecycleRules('créances en compte courant d’associé', ['cca']);
     case 'compte_courant_associe':
       return audience === 'pm' ? buildPmLifecycleRules('créances en compte courant d’associé', ['cca']) : COMPTE_COURANT_ASSOCIE;
+    case 'usufruit_nue_propriete_pp':
+      return USUFRUIT_NUE_PROPRIETE;
+    case 'usufruit_nue_propriete_pm':
+      return buildPmLifecycleRules('droits démembrés', ['demembrement']);
     case 'pret_entre_particuliers':
       return audience === 'pm' ? buildPmLifecycleRules('créances de prêt', ['creances']) : PRET_PARTICULIERS;
     case 'usufruit_nue_propriete':

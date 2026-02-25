@@ -416,12 +416,6 @@ export default function BaseContrat() {
                           }}
                         >
                           <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 14 }}>{product.label}</span>
-                          {product.ppEligible && !product.pmEligible && (
-                            <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c8)', color: 'var(--color-c9)', fontWeight: 600 }}>PP</span>
-                          )}
-                          {product.pmEligible && !product.ppEligible && (
-                            <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c8)', color: 'var(--color-c9)', fontWeight: 600 }}>PM</span>
-                          )}
                           {rules.constitution.length === 0 && rules.sortie.length === 0 && rules.deces.length === 0 && (
                             <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c6)', color: 'var(--color-c10)', fontStyle: 'italic' }}>
                               Aucune règle

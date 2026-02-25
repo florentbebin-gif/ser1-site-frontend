@@ -7,8 +7,8 @@
  * 4. Confidence policy : chaque bloc a confidence, politique d'écriture respectée.
  */
 
-import { describe, it, expect } from 'vitest';
-import { CATALOG } from '../catalog';
+import { describe, it, expect, vi } from 'vitest';
+import { CATALOG, CATALOG_PP_PM_SPLIT_MAP } from '../catalog';
 import { getRules, hasSocleRules } from '../rules/index';
 import type { RuleBlock } from '../rules/types';
 
@@ -104,6 +104,18 @@ describe('hasSocleRules — coverage report', () => {
     const withRules = CATALOG.filter((p) => hasSocleRules(p.id));
     expect(withRules.length).toBe(CATALOG.length);
   });
+
+  it('legacy split id — warning explicite en dev', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    getRules('cto', 'pp');
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Legacy productId "cto" is deprecated.'),
+    );
+
+    warnSpy.mockRestore();
+  });
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -113,24 +125,24 @@ describe('hasSocleRules — coverage report', () => {
 describe('socle PR5 — produits clés avec règles réelles', () => {
   const SOCLE_IDS = [
     'assurance_vie',
-    'contrat_capitalisation',
-    'cto',
+    'contrat_capitalisation_pp',
+    'cto_pp',
     'pea',
     'pea_pme',
     'perin_assurance',
     'perin_bancaire',
     'residence_principale',
-    'locatif_nu',
+    'locatif_nu_pp',
     'locatif_meuble_lmnp',
-    'parts_scpi',
-    'tontine',
+    'parts_scpi_pp',
+    'tontine_pp',
     'prevoyance_individuelle_deces',
     'prevoyance_individuelle_itt_invalidite',
     'livret_a',
     'ldds',
     'lep',
-    'crypto_actifs',
-    'metaux_precieux',
+    'crypto_actifs_pp',
+    'metaux_precieux_pp',
   ];
 
   for (const id of SOCLE_IDS) {
@@ -314,13 +326,13 @@ describe('strings interdites — PR6 fiabilisation', () => {
   });
 
   it('audience routing — produits PP+PM retournent des règles distinctes', () => {
-    for (const product of CATALOG.filter((p) => p.ppEligible && p.pmEligible)) {
-      const ppRules = getRules(product.id, 'pp');
-      const pmRules = getRules(product.id, 'pm');
+    for (const split of Object.values(CATALOG_PP_PM_SPLIT_MAP)) {
+      const ppRules = getRules(split.ppId, 'pp');
+      const pmRules = getRules(split.pmId, 'pm');
 
       expect(
         JSON.stringify(ppRules) !== JSON.stringify(pmRules),
-        `Routing audience non différencié pour ${product.id}`,
+        `Routing audience non différencié pour ${split.ppId} / ${split.pmId}`,
       ).toBe(true);
     }
   });
@@ -357,8 +369,8 @@ describe('strings interdites — PR6 fiabilisation', () => {
   });
 
   it('article_83 — pas de mention "Article 39" dans les bullets', () => {
-    const pp = getRules('article_83', 'pp');
-    const pm = getRules('article_83', 'pm');
+    const pp = getRules('article_83_pp', 'pp');
+    const pm = getRules('article_83_pm', 'pm');
     const allBullets = [
       ...pp.constitution, ...pp.sortie, ...pp.deces,
       ...pm.constitution, ...pm.sortie, ...pm.deces,
@@ -372,7 +384,7 @@ describe('strings interdites — PR6 fiabilisation', () => {
   });
 
   it('contrat_capitalisation (PP) — pas de "238 septies E" dans les bullets', () => {
-    const rules = getRules('contrat_capitalisation', 'pp');
+    const rules = getRules('contrat_capitalisation_pp', 'pp');
     const allBullets = [
       ...rules.constitution, ...rules.sortie, ...rules.deces,
     ].flatMap((b) => b.bullets);
@@ -417,9 +429,7 @@ describe('strings interdites — PR6 fiabilisation', () => {
   });
 
   it('audience PP — pas de vocabulaire PM/IS sur produits sensibles', () => {
-    const PP_SENSITIVE_IDS = CATALOG
-      .filter((p) => p.ppEligible && p.pmEligible)
-      .map((p) => p.id);
+    const PP_SENSITIVE_IDS = Object.values(CATALOG_PP_PM_SPLIT_MAP).map((split) => split.ppId);
 
     const PP_FORBIDDEN_PM_PATTERNS: RegExp[] = [
       /\bIS\b/i,

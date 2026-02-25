@@ -295,6 +295,10 @@ export function getPrevoyanceRules(
       return ASSURANCE_DEPENDANCE;
     case 'assurance_obseques':
       return ASSURANCE_OBSEQUES;
+    case 'assurance_emprunteur_pp':
+      return ASSURANCE_EMPRUNTEUR_PP;
+    case 'assurance_emprunteur_pm':
+      return ASSURANCE_EMPRUNTEUR_PM;
     case 'assurance_emprunteur':
       return audience === 'pm' ? ASSURANCE_EMPRUNTEUR_PM : ASSURANCE_EMPRUNTEUR_PP;
     case 'assurance_homme_cle':
