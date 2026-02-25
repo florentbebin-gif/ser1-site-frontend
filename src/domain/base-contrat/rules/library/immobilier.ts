@@ -19,6 +19,7 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
       ],
       tags: ['dmto', 'ifi_abattement_30'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 885 S CGI — IFI abattement résidence principale', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000036454733' }],
     },
   ],
   sortie: [
@@ -42,6 +43,7 @@ const RESIDENCE_PRINCIPALE: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -92,6 +94,7 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
       ],
       tags: ['dmto', 'ifi'],
       confidence: 'elevee',
+      sources: [{ label: 'Service-public.fr — Droits de mutation immobilier', url: 'https://www.service-public.fr/particuliers/vosdroits/F35830' }],
     },
   ],
   sortie: [
@@ -104,6 +107,7 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
       ],
       tags: ['pv_immo', 'abattement_detention', 'surtaxe'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' }],
     },
   ],
   deces: [
@@ -115,6 +119,7 @@ const RESIDENCE_SECONDAIRE: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -131,6 +136,7 @@ const LOCATIF_NU: ProductRules = {
       ],
       tags: ['revenus_fonciers', 'micro_foncier', 'regime_reel', 'deficit_foncier'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 28 CGI — revenus fonciers', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302449' }],
     },
   ],
   sortie: [
@@ -143,6 +149,9 @@ const LOCATIF_NU: ProductRules = {
       ],
       tags: ['pv_immo', 'abattement_detention', 'surtaxe'],
       confidence: 'elevee',
+      sources: [
+        { label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' },
+      ],
     },
   ],
   deces: [
@@ -154,6 +163,7 @@ const LOCATIF_NU: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -214,6 +224,7 @@ const LOCATIF_MEUBLE_LMNP: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -246,7 +257,7 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
       tags: ['pv_pro', 'court_terme', 'long_terme', 'exoneration_recettes'],
       confidence: 'moyenne',
       sources: [{ label: 'Art. 151 septies CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000042908282' }],
-      dependencies: ['chiffre d’affaires N-1 et N-2', 'durée d’activité LMP'],
+      dependencies: ['chiffre d\'affaires N-1 et N-2', 'durée d\'activité LMP'],
     },
   ],
   deces: [
@@ -258,6 +269,8 @@ const LOCATIF_MEUBLE_LMP: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
+      dependencies: ['statut du défunt (LMP ou non)'],
     },
   ],
 };
@@ -284,6 +297,7 @@ const IMMO_AUTRE: ProductRules = {
       ],
       tags: ['pv_immo', 'abattement_detention'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' }],
     },
   ],
   deces: [
@@ -295,6 +309,7 @@ const IMMO_AUTRE: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };
@@ -336,6 +351,7 @@ const PARTS_SCPI_PP: ProductRules = {
       ],
       tags: ['pv_immo', 'abattement_detention'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 150 U CGI — plus-values immobilières', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000043655826' }],
     },
   ],
   deces: [
@@ -347,6 +363,7 @@ const PARTS_SCPI_PP: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 779 CGI — abattements DMTG', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000047678018' }],
     },
   ],
 };

@@ -43,6 +43,7 @@ const ASSURANCE_VIE_PP: ProductRules = {
       ],
       tags: ['abattement_4600_9200', 'seuil_150k', 'taux_7_5', 'art_125_0_a_cgi'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 125-0 A CGI — BOFiP RPPM-RCM-10-10-80', url: 'https://bofip.impots.gouv.fr/bofip/2279-PGP.html/identifiant=BOI-RPPM-RCM-10-10-80-20220630' }],
     },
     {
       title: 'Anciens contrats — régimes antérieurs à 1997',
@@ -87,6 +88,7 @@ const ASSURANCE_VIE_PP: ProductRules = {
       ],
       tags: ['art_757_b_cgi', 'abattement_30500'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 757 B CGI', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310172' }],
     },
   ],
 };
@@ -128,6 +130,7 @@ const CONTRAT_CAPITALISATION: ProductRules = {
       ],
       tags: ['dmtg_classique', 'succession_active'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 990 I CGI (inapplicable au contrat de capitalisation)', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000038612905' }],
     },
     {
       title: 'Avantages de transmissibilité',

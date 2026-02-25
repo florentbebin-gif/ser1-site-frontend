@@ -81,6 +81,7 @@ const PREVOYANCE_ITT: ProductRules = {
       ],
       tags: ['rente_titre_onereux', 'fraction_imposable_age'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 158-6 CGI — rentes viagères à titre onéreux', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033810417' }],
     },
   ],
   deces: [
@@ -162,6 +163,7 @@ const ASSURANCE_OBSEQUES: ProductRules = {
       ],
       tags: ['exoneration_frais_obseques', 'dmtg_excedent'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 796-0 bis CGI — exonération frais funéraires', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006310479' }],
     },
   ],
 };
