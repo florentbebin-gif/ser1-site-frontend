@@ -353,6 +353,10 @@ export function getEpargneBancaireRules(
     case 'livret_jeune':
     case 'peac':
       return LIVRETS_REGLEMENTES;
+    case 'cto_pp':
+      return CTO;
+    case 'cto_pm':
+      return CTO_PM;
     case 'cto':
       return audience === 'pm' ? CTO_PM : CTO;
     case 'pea':
@@ -363,6 +367,14 @@ export function getEpargneBancaireRules(
       return PEL;
     case 'cel':
       return CEL;
+    case 'cat_compte_a_terme_pp':
+    case 'csl_compte_sur_livret_pp':
+    case 'compte_courant_depot_pp':
+      return CAT_CSL;
+    case 'cat_compte_a_terme_pm':
+    case 'csl_compte_sur_livret_pm':
+    case 'compte_courant_depot_pm':
+      return CAT_CSL_PM;
     case 'cat_compte_a_terme':
     case 'csl_compte_sur_livret':
     case 'compte_courant_depot':
