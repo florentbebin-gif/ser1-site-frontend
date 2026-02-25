@@ -82,6 +82,9 @@ __pycache__/
 supabase/.temp/
 supabase/.branches/
 
+# Claude Code local session config (permissions machine-specific)
+.claude/settings.local.json
+
 # ESLint reports
 eslint-report.json
 theme_debug_inventory.txt
