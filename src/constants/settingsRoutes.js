@@ -14,10 +14,10 @@ import { lazy } from 'react';
 
 // Lazy loading des composants Settings pour performance
 const Settings = lazy(() => import('../pages/Settings'));
-const SettingsImpots = lazy(() => import('../pages/Sous-Settings/SettingsImpots'));
-const SettingsPrelevements = lazy(() => import('../pages/Sous-Settings/SettingsPrelevements'));
-const SettingsBaseContrats = lazy(() => import('../pages/Sous-Settings/BaseContrat'));
-const SettingsComptes = lazy(() => import('../pages/Sous-Settings/SettingsComptes'));
+const SettingsImpots = lazy(() => import('../pages/settings/SettingsImpots'));
+const SettingsPrelevements = lazy(() => import('../pages/settings/SettingsPrelevements'));
+const SettingsBaseContrats = lazy(() => import('../pages/settings/BaseContrat'));
+const SettingsComptes = lazy(() => import('../pages/settings/SettingsComptes'));
 
 /**
  * Routes Settings - Ordre = ordre d'affichage dans la nav

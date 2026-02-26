@@ -3,7 +3,7 @@ import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { supabase, DEBUG_AUTH } from './supabaseClient';
 import { PrivateRoute } from './auth';
 import { useTheme } from './settings/ThemeProvider';
-import { APP_ROUTES } from './routes/appRoutes';
+import { APP_ROUTES, getRouteMetadata } from './routes/appRoutes';
 import { triggerPageReset, triggerGlobalReset } from './utils/reset';
 import { saveGlobalState, loadGlobalStateWithDialog } from './utils/globalStorage';
 import { useSessionTTL } from './hooks/useSessionTTL';
@@ -162,30 +162,7 @@ export default function App() {
 
 const isRecoveryMode = window.location.hash.includes('type=recovery');
 const path = window.location.pathname;
-const isSimRoute = path.startsWith('/sim') || path === '/audit' || path === '/strategy';
-const isSettingsRoute = path.startsWith('/settings');
-const isAuditRoute = path === '/audit';
-const isStrategyRoute = path === '/strategy';
-const isPlacementRoute = path === '/sim/placement';
-const isCreditRoute = path === '/sim/credit';
-const isIrRoute = path === '/sim/ir';
-
-// Mapping route → libellé contexte (breadcrumb passive)
-const getContextLabel = (pathname) => {
-  if (pathname === '/') return 'Accueil';
-  if (pathname === '/audit') return 'Audit';
-  if (pathname === '/sim/ir') return 'Impôt';
-  if (pathname === '/sim/placement') return 'Placement';
-  if (pathname === '/sim/credit') return 'Crédit';
-  if (pathname === '/sim/succession') return 'Succession';
-  if (pathname === '/sim/per') return 'PER';
-  if (pathname === '/sim/epargne-salariale') return 'Epargne salariale';
-  if (pathname === '/sim/tresorerie-societe') return 'Trésorerie société';
-  if (pathname.startsWith('/settings')) return 'Paramètres';
-  if (pathname === '/strategy') return 'Stratégie';
-  return null;
-};
-const contextLabel = getContextLabel(path);
+const routeMeta = getRouteMetadata(path);
 
   const sessionGuardValue = React.useMemo(() => ({
     sessionExpired, canExport, trackBlobUrl, resetInactivity,
@@ -239,17 +216,8 @@ const contextLabel = getContextLabel(path);
           session,
           isRecoveryMode,
           path,
-          contextLabel,
         }}
-        routeFlags={{
-          isSimRoute,
-          isSettingsRoute,
-          isAuditRoute,
-          isStrategyRoute,
-          isPlacementRoute,
-          isCreditRoute,
-          isIrRoute,
-        }}
+        routeMeta={routeMeta}
         actions={{
           onNavigate: navigate,
           onLogout: handleLogout,
