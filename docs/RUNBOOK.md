@@ -184,6 +184,14 @@ La page `/settings/base-contrat` affiche un **catalogue hardcodé** et permet un
 
 Les changements sont stockés dans la table Supabase `base_contrat_overrides` (clé = `product_id`).
 
+### RLS — politique de lecture (décision)
+
+- **SELECT** : réservé aux admins (`USING public.is_admin()`).
+- **INSERT / UPDATE / DELETE** : admin uniquement (inchangé).
+
+Justification : `note_admin` et `closed_date` sont des données internes admin. Les CGP non-admin n'affichent pas ces overrides dans l'UI.
+Policy active : `overrides_select_admin` (migration `20260226000100_rls_overrides_admin_only.sql`).
+
 ---
 
 ## Base-Contrat — Process Dev (Ajout / Modification)
