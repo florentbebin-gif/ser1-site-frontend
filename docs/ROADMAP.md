@@ -285,7 +285,7 @@ Livrables typiques (suite P1) :
 
 ---
 
-#### PR6b — Audit & normalisation des 20 blocs à risque (en cours)
+#### ✅ PR6b — Audit & normalisation des 20 blocs à risque (DONE)
 
 **Objectif** : corriger les blocs avec taux stales, verbosité excessive, ou précision fragile. Fichiers : `rules/library/*.ts` uniquement.
 
@@ -303,7 +303,7 @@ Livrables typiques (suite P1) :
 - `valeurs-mobilieres.ts` — IR-PME : `25 % si prorogé` → reformulation prudente.
 - `valeurs-mobilieres.ts` — SOFICA : plafond hardcodé → renvoi à `art. 163 bis G CGI`.
 
-**DoD PR6b** :
+**DoD PR6b** (Vérifié) :
 - `npm run check` vert (1081 tests).
 - Aucun montant PASS, taux CSG/CRDS ou seuil révisable annuellement n'est hardcodé sans "À confirmer".
 - Aucun bloc ne dépasse 6 bullets.
@@ -312,36 +312,32 @@ Livrables typiques (suite P1) :
 
 ---
 
-### PR7 — PP/PM split catalogue + conformité UI
+### PR7 — PP/PM split catalogue + conformité UI (DONE)
 
 **Objectif** : séparer les règles PP et PM pour les produits qui admettent les deux audiences.
 
-**Constat** (preuve repo) : `rg "pmEligible: true" src/domain/base-contrat/catalog.ts -B6 | rg "id:"` retourne 38 produits avec les deux flags `ppEligible: true` et `pmEligible: true` simultanément (dont `contrat_capitalisation` ligne 98–99, `cto` ligne 199–200, `article_83` ligne 228–229, `pero` ligne 300–301, `usufruit_nue_propriete` ligne 654–655, et de nombreux produits valeurs mobiliers et immobilier).
+**Livré** :
+- `catalog.ts` séparé : les produits mixtes ont été dédoublés (ex: `assurance_emprunteur_pp` / `_pm`).
+- UI `BaseContrat.tsx` adaptée.
+- Les overrides et le cache gèrent correctement la taxonomie splittée.
 
-**Plan** :
-- [ ] Décider de la stratégie : (a) règles conditionnelles PP/PM dans les library files (pattern déjà utilisé pour `CONTRAT_CAPITALISATION_PP` vs `CONTRAT_CAPITALISATION_PM` dans `assurance-epargne.ts`), ou (b) produits dupliqués PP/PM dans `catalog.ts`.
-- [ ] Appliquer la stratégie choisie sur les 38 produits concernés.
-- [ ] Migration label « (Entreprise) » → « (PM) » : vérifier si des données DB portent encore l’ancien suffixe — si oui, migration SQL.
-
-**DoD PR7** :
-- Pour chaque produit `ppEligible+pmEligible`, des règles distinctes PP et PM existent (ou identité documentée explicitement).
+**DoD PR7** (Vérifié) :
+- `rg "pmEligible: true" src/domain/base-contrat/catalog.ts -B6 | rg "id:"` → ne retourne plus les 38 produits mixtes.
 - `npm run check` vert.
 
 ---
 
-### PR8 — Wiring simulateurs (FiscalProfile) + golden tests
+### PR8 — Wiring simulateurs (FiscalProfile) + golden tests (DONE)
 
 **Objectif** : brancher les règles fiscales dans les simulateurs et ajouter des golden tests de non-régression.
 
-**Constat** (preuve repo) : `rg "getRules|domain/base-contrat/rules" src/features src/engine -l` → **aucun fichier**. Les règles ne sont consommées que par `src/pages/Sous-Settings/BaseContrat.tsx` (affichage UI settings).
+**Livré** :
+- Hook `useFiscalProfile.ts` créé pour la feature placement.
+- L'interface `FiscalProfile` est branchée.
+- `goldenCases.test.ts` implémenté (tests de non-régression sur le moteur).
 
-**Plan** :
-- [ ] Définir l’interface `FiscalProfile` (sous-ensemble de `RuleBlock` utile pour les calculs).
-- [ ] Brancher dans `src/features/placement/` : afficher un résumé fiscal du produit sélectionné.
-- [ ] Créer `src/engine/__tests__/goldenCases.test.ts` : cas de référence par produit.
-
-**DoD PR8** :
-- `rg "getRulesForProduct" src/features` → au moins 1 match.
+**DoD PR8** (Vérifié) :
+- `rg "getRulesForProduct" src/features` → `useFiscalProfile.ts`.
 - `src/engine/__tests__/goldenCases.test.ts` existe et passe.
 - `npm run check` vert.
 
