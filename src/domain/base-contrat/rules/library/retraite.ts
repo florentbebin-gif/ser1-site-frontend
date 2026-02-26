@@ -173,7 +173,7 @@ const PERIN_BANCAIRE: ProductRules = {
       bullets: [
         'Contrairement au PERIN assurantiel, le PERIN bancaire intègre la succession classique.',
         'Pas d\'avantage hors-succession : droits de mutation selon le barème et le lien de parenté.',
-        'Abattements légaux classiques applicables (100 000 € par enfant…).',
+        'Abattements légaux classiques selon le lien de parenté (art. 779 CGI).',
       ],
       tags: ['dmtg_classique', 'succession_active'],
       confidence: 'elevee',
@@ -367,7 +367,7 @@ const ARTICLE_39_PM: ProductRules = {
       bullets: [
         'Cotisations exclusivement patronales : le salarié ne cotise pas.',
         'Cotisations déductibles du résultat imposable de l\'entreprise (IS ou IR).',
-        'Ordonnance 2019-697 (nouvelle formule) : droits acquis conservés en cas de départ ; limités à 3 % du salaire/an, plafonnés à 30 points cumulés.',
+        'Ordonnance 2019-697 (nouvelle formule) : droits acquis conservés en cas de départ, avec plafonnement annuel et cumulé — À confirmer selon les paramètres exacts du régime.',
         'À confirmer selon la formule applicable (ancienne avec condition de présence vs nouvelle post-2019).',
       ],
       tags: ['cotisations_patronales', 'prestations_definies'],
@@ -499,9 +499,9 @@ const PPV_INTERESSEMENT_PARTICIPATION_PM: ProductRules = {
     {
       title: 'Mise en place (PM uniquement — dispositifs employeur)',
       bullets: [
-        'PPV (Prime de Partage de la Valeur) : plafond d\'exonération de cotisations sociales 3 000 € / 6 000 € selon accord d\'intéressement — loi du 29 novembre 2023.',
-        'Intéressement : accord collectif nécessaire, plafonné à 20 % de la masse salariale brute. Déductible du résultat imposable de l\'entreprise (IS ou IR).',
-        'Participation : obligatoire > 50 salariés. Formule légale (RSP). Déductible du résultat.',
+        'PPV (Prime de Partage de la Valeur) : exonération de cotisations sociales dans les plafonds légaux selon accord d\'intéressement (loi 2023 — À confirmer selon l\'exercice de versement).',
+        'Intéressement : accord collectif nécessaire, plafonné selon la masse salariale brute. Déductible du résultat imposable (IS ou IR) — À confirmer selon les plafonds en vigueur.',
+        'Participation : obligatoire au-delà d\'un seuil d\'effectif. Formule légale (RSP). Déductible du résultat — À confirmer selon l\'effectif et l\'accord.',
         'À confirmer selon l\'effectif, l\'accord et les exercices concernés.',
       ],
       tags: ['ppv', 'interessement', 'participation', 'pm_uniquement', 'deductible_is_ir'],
