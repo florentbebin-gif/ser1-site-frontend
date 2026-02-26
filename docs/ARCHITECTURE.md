@@ -33,7 +33,7 @@ Dev qui doit intervenir sur une feature, un export, un thème, ou Supabase.
 Repères (domain-first) :
 - `src/engine/` : calculs métier purs (zéro React).
 - `src/features/` : features UI (state, composants, handlers export).
-- `src/pages/` : shells/pages legacy ou orchestrateurs (en cours de découpe).
+- `src/pages/` : shells légers (Home, Login, SettingsShell) + `pages/settings/*` (sous-pages settings).
 - `src/settings/` : thème, presets, ThemeProvider.
 - `src/pptx/` : pipeline PPTX (design system + slides + export).
 - `supabase/` : edge functions + migrations.
@@ -109,8 +109,9 @@ find src -type d \( -name "__spike__" -o -name "_raw" \)
 
 ## Points d’entrée & flux
 ### Routing
-- `src/routes/appRoutes.ts` (APP_ROUTES) : source de vérité des routes.
-- `src/App.jsx` : rendu JSX des routes via `APP_ROUTES.map()`.
+- `src/routes/appRoutes.ts` (APP_ROUTES) : source de vérité des routes + metadata topbar (`contextLabel`, `topbar`).
+- `src/App.jsx` : rendu JSX des routes via `APP_ROUTES.map()`. Résolution topbar via `getRouteMetadata(pathname)`.
+- `src/components/layout/AppLayout.jsx` : topbar data-driven (reçoit `routeMeta`, plus de flags hardcodés).
 
 #### Routes Map (actuel)
 
@@ -130,7 +131,7 @@ Source (preuves) :
 | `/audit` | privé + lazy | `AuditWizard` | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) |
 | `/strategy` | privé + lazy | `StrategyPage` | `src/pages/StrategyPage.jsx` (lazy) |
 | `/sim/placement` | privé + lazy | `Placement` | `src/features/placement/PlacementPage.tsx` (exporté via `src/features/placement/index.ts`) |
-| `/sim/credit` | privé + lazy | `Credit` | `src/pages/credit/Credit.jsx` (lazy) |
+| `/sim/credit` | privé + lazy | `Credit` | `src/features/credit/Credit.jsx` (exporté via `src/features/credit/index.ts`) |
 | `/sim/succession` | privé + lazy | `SuccessionSimulator` | `src/features/succession/SuccessionSimulator.tsx` (exporté via `src/features/succession/index.ts`) |
 | `/sim/per` | privé + lazy | `PerSimulator` | `src/features/per/PerSimulator.tsx` (exporté via `src/features/per/index.ts`) |
 | `/sim/epargne-salariale` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.jsx` (lazy) |
@@ -160,7 +161,7 @@ rg -n "APP_ROUTES\\.map" src/App.jsx
 
 ### Settings (admin)
 - Navigation settings : `src/constants/settingsRoutes.js` (source unique).
-- Pages : `src/pages/Sous-Settings/*`.
+- Pages : `src/pages/settings/*`.
 
 ---
 

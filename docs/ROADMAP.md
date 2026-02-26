@@ -72,84 +72,27 @@ Livrables typiques :
 ### P1 — MVP simulateurs + JSON
 Objectif : simulateurs robustes + sauvegarde locale versionnée.
 
-#### P1-01 — Organisation de src/ & identifiabilité des pages
-Objectif : rendre le front **lisible, modulaire et SaaS-maintainable** en stabilisant une convention claire :
+#### P1-01 — Organisation de src/ & identifiabilité des pages ✅
 
-- `src/pages/*` = **entrypoints de routes** (shells minces, orchestration, wiring) ;
-- `src/features/*` = **UI + state par domaine** (placement/ir/audit/...) ;
-- `src/engine/*` = métier pur (déjà OK) ;
-- tout "legacy" consommé par une feature est **explicite** (pas caché dans `pages/`).
+Objectif : rendre le front **lisible, modulaire et SaaS-maintainable**.
 
-Pourquoi maintenant : le repo accélère sur des invariants SaaS (RLS, [Thème V5](#références-code), [Exports](#références-code) premium, settings admin). Sans une arbo stable, chaque PR augmente la dette (onboarding difficile, risques de régressions). Ce chantier s'inscrit en **strangler refactor** : migration incrémentale, page par page.
+**Livré :**
+- **Routing centralisé** : `src/routes/appRoutes.ts` (APP_ROUTES) — source unique, metadata déclarative (`contextLabel`, `topbar`).
+- **AppLayout extrait** : `src/components/layout/AppLayout.jsx` — topbar data-driven via `routeMeta`, plus de flags hardcodés.
+- **Icônes extraites** : `src/icons/ui/*.tsx` (6 composants), seul consommateur = AppLayout.
+- **App.jsx minimal** : ~250 lignes, session + routing + bootstrap. Aucun markup topbar, aucune icône inline, aucun flag route hardcodé.
+- **Features→Pages = 0** : `rg "from.*@/pages/" src/features/` → vide.
+- **Credit migré** : `src/features/credit/` (ex `pages/credit/`).
+- **Settings normalisé** : `src/pages/settings/` (ex `pages/Sous-Settings/`).
+- **Spikes/raw supprimés** : `__spike__` et `_raw` n'existent plus dans `src/`.
 
-Ce que ça change (cible) :
-- pages identifiables et listables depuis une **source unique** de routes (voir [Routing](#références-code)) ;
-- `src/features/*` ne dépend plus de `src/pages/*` (ou alors dépendance temporaire explicitée) ;
-- `src/App.jsx` redevient un entrypoint minimal (routing + bootstrap) : layout, icons, et logique transversale sortent en modules dédiés ;
-- aucun dossier "spike"/"raw assets" non nécessaire dans `src/`.
+**Dette résiduelle (placement/legacy)** :
+Le dossier `src/features/placement/legacy/` contient 8 fichiers encore consommés par 11 imports internes à la feature placement (formatters, normalizers, tables, VersementConfigModal). C'est une **dette assumée** — le code est isolé dans la feature, pas de dépendance cross-feature.
 
-##### Constats vérifiés (preuves repo)
-1. **Routing déclaré dans un fichier très chargé** : `src/App.jsx` contient à la fois routing, auth/session, topbar/layout, notifications et icônes inline (544 lignes).
-   - Preuve : `src/App.jsx` (routes + topbar + icônes SVG) ; voir en particulier la cohabitation `Routes/Route` + `topbar` + `Icon*`.
-2. **Dépendance inverse** (feature → pages) sur Placement : des composants de `src/features/placement/*` importent des utilitaires/composants sous `src/pages/placement/*`.
-   - Preuve : imports dans `src/features/placement/components/*` vers `@/pages/placement/...`.
-3. **Pages Settings dispersées** : les routes settings pointent vers `src/pages/Sous-Settings/*` via `src/constants/settingsRoutes.js`, tandis que du "shared" settings existe aussi sous `src/components/settings/*`.
-   - Preuve : `src/constants/settingsRoutes.js` importe `../pages/Sous-Settings/*` ; `src/components/settings/` existe.
-
-##### Jalons (quick wins → structurants)
-
-###### P1-01a — Conventions + documentation (quick win)
-- Convention cible `pages` vs `features` vs `shared` + exemples.
-- Règle : pas de code réutilisable nouveau dans `pages/` ; si exception, marquer `legacy`/`temporary`.
-
-###### P1-01b — Routing & AppLayout minimal (structurant)
-- Extraire la déclaration des routes de `src/App.jsx` vers un module dédié.
-- Introduire un `AppLayout` (topbar, actions, notifications) isolé.
-- Extraire les icônes inline en un dossier dédié (`src/components/icons/*` ou `src/icons/app/*`).
-
-###### P1-01c — Stabiliser Placement : isoler le legacy (structurant)
-- Objectif : `src/features/placement/*` devient autonome et ne dépend plus de `src/pages/placement/*`.
-- Déplacer le legacy consommé (utils/components) vers un emplacement explicite :
-  - `src/features/placement/legacy/*` (si uniquement placement), ou
-  - `src/shared/placement/*` (si réutilisé par d'autres domaines).
-
-###### P1-01d — Normalisation Settings (structurant)
-- Clarifier la cible :
-  - `src/pages/settings/*` (entrypoints) + `src/features/settings/*` (logique UI) + `src/components/settings/*` (UI shared).
-- Option (quand prêt) : migrer `src/pages/Sous-Settings/*` → `src/pages/settings/*`.
-
-##### Tâches actionnables (tickets / futures PR)
-
-**T1 — Cartographier les pages depuis les routes (DoD = "pages listables")**
-- Scope : `src/App.jsx` (lecture) + création future d'un module `src/routes/*`.
-- Dépendances : aucune.
-- Risques : faibles (doc + extraction mécanique).
-- DoD : une liste route → page/feature est maintenue depuis une seule source (module routes) ; `App.jsx` ne contient plus de duplication.
-
-**T2 — Extraire `AppLayout` + actions topbar**
-- Scope : `src/App.jsx` (topbar/actions/notifications/context label) → `src/components/layout/AppLayout.*`.
-- Dépendances : T1.
-- Risques : moyen (layout + comportements dépendants du pathname/session).
-- DoD : `src/App.jsx` ne contient plus de markup topbar ni d'icônes inline ; les actions restent identiques (smoke manuel).
-
-**T3 — Extraire les icônes inline en dossier dédié**
-- Scope : `src/App.jsx` icônes `Icon*` → `src/components/icons/*` (ou `src/icons/app/*`).
-- Dépendances : T2 (idéalement) mais peut être indépendant.
-- Risques : faibles (déplacement code pur).
-- DoD : icônes partagées importées ; `App.jsx` ne définit plus `IconHome/IconSave/...`.
-
-**T4 — Placement : supprimer la dépendance `features/placement` → `pages/placement`**
-- Scope : `src/features/placement/**` et `src/pages/placement/**`.
-- Dépendances : P1-01a + P1-01b.
-- Risques : moyen/haut (surface large + logique métier/UI) ; refacto strangler en étapes.
-- DoD : `rg "@/pages/placement" src/features/placement` ne retourne plus rien (ou seulement un module `legacy` explicitement documenté pendant la transition).
-
-**Dettes identifiées :**
-
-| Dette | Type | Où | Pourquoi | Règle | Exit criteria | Vérification |
-|-------|------|-----|----------|-------|---------------|--------------|
-| A | compat | `src/features/placement/legacy/` | Transition pour découpler features de l'ancien `pages/placement` | Pas de nouvelle feature dans legacy/ | `rg "features/placement/legacy" src` → 0 + npm run check PASS | `rg "features/placement/legacy" src --type tsx --type ts` |
-| D | compat | `src/engine/*.ts` | `@deprecated` constants (ABATTEMENT_*, generate*Pptx) | Ne pas ajouter de nouveaux `@deprecated` | Migration vers nouveaux APIs | `rg "@deprecated" src/engine` (maintenir ou réduire) |
+| Dette | Type | Où | Règle | Exit criteria | Vérification |
+|-------|------|-----|-------|---------------|--------------|
+| A | compat | `src/features/placement/legacy/` | Pas de nouvelle feature dans legacy/ | Refactorer les 11 imports internes | `rg "legacy/" src/features/placement/ -l` → vide |
+| D | compat | `src/engine/*.ts` | Ne pas ajouter de nouveaux `@deprecated` | Migration vers nouveaux APIs | `rg "@deprecated" src/engine` (maintenir ou réduire) |
 
 **Règles "ne pas aggraver la dette" :**
 - Pas de nouveaux imports vers `legacy/`
@@ -234,7 +177,8 @@ Candidats :
 
 ## Références code
 Entrées clés :
-- Routing : `src/routes/appRoutes.ts` (APP_ROUTES) + rendu dans `src/App.jsx`
+- Routing : `src/routes/appRoutes.ts` (APP_ROUTES + `getRouteMetadata()`) + rendu dans `src/App.jsx`
+- Layout : `src/components/layout/AppLayout.jsx` (topbar data-driven via `routeMeta`)
 - Auth : `src/auth/AuthProvider.tsx`
 - Thème V5 : `src/settings/ThemeProvider.tsx`, `src/settings/presets.ts`
 - Tokens couleurs : `src/settings/theme.ts`, `src/styles.css`
@@ -247,7 +191,7 @@ Entrées clés :
   - Catalogue hardcodé : `src/domain/base-contrat/catalog.ts`
   - Overrides (clôture / note) : `src/domain/base-contrat/overrides.ts`
   - Cache overrides (Supabase) : `src/utils/baseContratOverridesCache.ts`
-  - UI (read-only) : `src/pages/Sous-Settings/BaseContrat.tsx`
+  - UI (read-only) : `src/pages/settings/BaseContrat.tsx`
   - Labels FR (UI) : `src/constants/baseContratLabels.ts`
   - Règles fiscales : `src/domain/base-contrat/rules/` (8 library files, types, index)
 

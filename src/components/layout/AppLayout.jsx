@@ -12,7 +12,7 @@ import {
 
 export function AppLayout({
   layoutState,
-  routeFlags,
+  routeMeta,
   actions,
   children,
 }) {
@@ -24,18 +24,15 @@ export function AppLayout({
     session,
     isRecoveryMode,
     path,
-    contextLabel,
   } = layoutState;
 
   const {
-    isSimRoute,
-    isSettingsRoute,
-    isAuditRoute,
-    isStrategyRoute,
-    isPlacementRoute,
-    isCreditRoute,
-    isIrRoute,
-  } = routeFlags;
+    contextLabel,
+    showHome,
+    showSaveLoad,
+    showGlobalReset,
+    resetKey,
+  } = routeMeta;
 
   const {
     onNavigate,
@@ -73,10 +70,10 @@ export function AppLayout({
           {session && !isRecoveryMode && (
             <>
               {/* HOME */}
-              {(isSimRoute || isSettingsRoute) && (
+              {showHome && (
                 <button
                   className="chip icon-btn"
-                  onClick={() => onNavigate('/')} 
+                  onClick={() => onNavigate('/')}
                   title="Retour à l'accueil"
                 >
                   <IconHome className="icon" />
@@ -84,7 +81,7 @@ export function AppLayout({
               )}
 
               {/* SAVE */}
-              {(isSimRoute || path === '/') && (
+              {showSaveLoad && (
                 <button
                   className={path === '/' ? 'chip icon-btn with-label' : 'chip icon-btn'}
                   onClick={onGlobalSave}
@@ -96,7 +93,7 @@ export function AppLayout({
               )}
 
               {/* CHARGER */}
-              {(isSimRoute || path === '/') && (
+              {showSaveLoad && (
                 <button
                   className={path === '/' ? 'chip icon-btn with-label' : 'chip icon-btn'}
                   onClick={onGlobalLoad}
@@ -108,7 +105,7 @@ export function AppLayout({
               )}
 
               {/* RESET GLOBAL — uniquement sur la page d'accueil */}
-              {path === '/' && (
+              {showGlobalReset && (
                 <button
                   className="chip icon-btn with-label"
                   onClick={onGlobalReset}
@@ -119,52 +116,12 @@ export function AppLayout({
                 </button>
               )}
 
-              {/* RESET Placement */}
-              {isPlacementRoute && (
+              {/* RESET page-specific (data-driven) */}
+              {resetKey && (
                 <button
                   className="chip icon-btn"
-                  onClick={() => onPageReset('placement')}
+                  onClick={() => onPageReset(resetKey)}
                   title="Réinitialiser la simulation"
-                >
-                  <IconTrash className="icon" />
-                </button>
-              )}
-              {/* RESET Crédit */}
-              {isCreditRoute && (
-                <button
-                  className="chip icon-btn"
-                  onClick={() => onPageReset('credit')}
-                  title="Réinitialiser la simulation"
-                >
-                  <IconTrash className="icon" />
-                </button>
-              )}
-              {/* RESET IR */}
-              {isIrRoute && (
-                <button
-                  className="chip icon-btn"
-                  onClick={() => onPageReset('ir')}
-                  title="Réinitialiser la simulation IR"
-                >
-                  <IconTrash className="icon" />
-                </button>
-              )}
-              {/* RESET Audit */}
-              {isAuditRoute && (
-                <button
-                  className="chip icon-btn"
-                  onClick={() => onPageReset('audit')}
-                  title="Réinitialiser l'audit"
-                >
-                  <IconTrash className="icon" />
-                </button>
-              )}
-              {/* RESET Strategie */}
-              {isStrategyRoute && (
-                <button
-                  className="chip icon-btn"
-                  onClick={() => onPageReset('strategy')}
-                  title="Réinitialiser la stratégie"
                 >
                   <IconTrash className="icon" />
                 </button>
