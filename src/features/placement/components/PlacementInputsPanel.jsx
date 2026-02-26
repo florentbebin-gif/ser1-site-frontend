@@ -3,11 +3,11 @@ import {
   ENVELOPE_LABELS,
 } from '@/engine/placementEngine.js';
 import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '@/utils/transmissionDisclaimer.js';
-import { euro, shortEuro, formatPsMontant } from '../legacy/formatters.js';
-import { BENEFICIARY_OPTIONS, getRendementLiquidation } from '../legacy/normalizers.js';
-import { InputEuro, InputPct, InputNumber, Select, Toggle } from '../legacy/inputs.jsx';
-import { CollapsibleTable } from '../legacy/tables.jsx';
-import { buildColumns, getRelevantColumns } from '../legacy/tableHelpers.jsx';
+import { euro, shortEuro, formatPsMontant } from '../utils/formatters.js';
+import { BENEFICIARY_OPTIONS, getRendementLiquidation } from '../utils/normalizers.js';
+import { InputEuro, InputPct, InputNumber, Select, Toggle } from './inputs.jsx';
+import { CollapsibleTable } from './tables.jsx';
+import { buildColumns, getRelevantColumns } from '../utils/tableHelpers.jsx';
 
 export function PlacementInputsPanel({
   state,

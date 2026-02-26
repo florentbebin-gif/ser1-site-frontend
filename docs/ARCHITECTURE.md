@@ -44,22 +44,15 @@ Conventions clés :
 
 ### Conventions — Legacy / Spike / Raw
 
-#### `legacy/`
-**Pourquoi** : pendant la refonte `pages/` → `features/`, du code est temporairement isolé dans un dossier `legacy/` au sein de la feature. C'est une **dette assumée** pour permettre le **strangler refactor** incrémental.
+#### `legacy/` (convention historique — ✅ résolu)
+Le dossier `legacy/` servait à isoler du code pendant la refonte `pages/` → `features/` (strangler refactor incrémental).
 
-**Règles d'usage** :
-- **Pas de nouvelles features** dans `legacy/` — seul le code existant y vit.
-- Tout nouveau code va dans `features/*` (ou `components/`, `hooks/`, etc.).
-- Le dossier `legacy/` doit **diminuer** avec le temps, jamais croître.
+**Statut** : le dernier dossier legacy (`src/features/placement/legacy/`) a été éliminé. Les 8 fichiers ont été promus dans `utils/`, `components/`, `export/` au sein de la feature placement.
 
-**Critères de suppression** :
-1. Plus aucun import runtime vers le dossier legacy :
-   ```bash
-   rg "features/placement/legacy" src --type tsx --type ts
-   # → doit retourner vide
-   ```
-2. Le code utile est promu (refactorisé) vers la feature ou un module partagé.
-3. `npm run check` passe sans erreur.
+**Vérification** :
+```bash
+rg "legacy/" src/features/ # → doit retourner vide
+```
 
 #### `__spike__` / `_raw`
 **Pourquoi** : dossiers de travail temporaire (prototypes, assets bruts) non destinés à la prod.
@@ -90,18 +83,17 @@ find src -type d \( -name "__spike__" -o -name "_raw" \)
 
 | Dette | Type | Où | Pourquoi | Règle | Exit criteria | Vérification |
 |-------|------|-----|----------|-------|---------------|--------------|
-| A | compat | `src/features/placement/legacy/` | Transition pour découpler features de l'ancien `pages/placement` | Pas de nouvelle feature dans legacy/ | `rg "features/placement/legacy" src` → 0 + npm run check PASS | `rg "features/placement/legacy" src --type tsx --type ts` |
 | D | compat | `src/engine/*.ts` | `@deprecated` constants (ABATTEMENT_*, generate*Pptx) | Ne pas ajouter de nouveaux `@deprecated` | Migration vers nouveaux APIs | `rg "@deprecated" src/engine` (maintenir ou réduire) |
 
-**Resolved (deleted) :**
+**Resolved :**
 
 | Dette | Type | Où | Pourquoi | Décision | Vérification |
 |-------|------|-----|----------|----------|--------------|
+| A | compat | `src/features/placement/legacy/` | Strangler refactor pages→features | **PROMU** — fichiers déplacés dans utils/, components/, export/ | `rg "legacy/" src/features/` → 0 |
 | B | hygiène | `src/pptx/template/__spike__/` | Prototypes / essais PPTX | **DELETE** (0 usage) | `find src -type d -name "__spike__"` → 0 |
 | C | hygiène | `src/icons/business/_raw/` | Sources brutes SVG | **DELETE** (0 usage) | `find src -type d -name "_raw"` → 0 |
 
 **Règles "ne pas aggraver la dette" :**
-- Pas de nouveaux imports vers `legacy/`
 - Pas de nouveaux fichiers dans `__spike__` ou `_raw`
 - Tout nouveau code va dans `features/*`, `components/`, `hooks/`, etc.
 
