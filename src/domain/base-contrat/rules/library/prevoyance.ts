@@ -54,7 +54,7 @@ const PREVOYANCE_ITT: ProductRules = {
       title: 'Cotisations',
       bullets: [
         'Primes non déductibles de l\'IR pour un contrat individuel souscrit à titre personnel.',
-        'TNS (Madelin) : cotisations déductibles dans les plafonds prévoyance.',
+        'TNS (Madelin) : cotisations déductibles dans les plafonds prévoyance (art. 154 bis CGI — À confirmer selon les plafonds en vigueur).',
         'Pas de valeur de rachat : contrat de risque pur.',
       ],
       tags: ['primes_non_deductibles', 'risque_pur'],
