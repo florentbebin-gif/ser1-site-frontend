@@ -1,6 +1,6 @@
 import React from 'react';
 import { TimelineBar } from '@/components/TimelineBar.jsx';
-import { shortEuro } from '../legacy/formatters.js';
+import { shortEuro } from '../utils/formatters.js';
 
 export function PlacementResultsPanel({ loading, hydrated, results, state }) {
   const { produit1, produit2 } = results || { produit1: null, produit2: null };

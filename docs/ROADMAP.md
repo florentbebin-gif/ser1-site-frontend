@@ -86,16 +86,16 @@ Objectif : rendre le front **lisible, modulaire et SaaS-maintainable**.
 - **Settings normalisé** : `src/pages/settings/` (ex `pages/Sous-Settings/`).
 - **Spikes/raw supprimés** : `__spike__` et `_raw` n'existent plus dans `src/`.
 
-**Dette résiduelle (placement/legacy)** :
-Le dossier `src/features/placement/legacy/` contient 8 fichiers encore consommés par 11 imports internes à la feature placement (formatters, normalizers, tables, VersementConfigModal). C'est une **dette assumée** — le code est isolé dans la feature, pas de dépendance cross-feature.
+**Placement legacy/ éliminé** : les 8 fichiers de `src/features/placement/legacy/` ont été promus dans `utils/`, `components/`, `export/` au sein de la feature. `rg "legacy/" src/features/placement/` → vide. Debt A = **résolu**.
+
+**Dette résiduelle** :
 
 | Dette | Type | Où | Règle | Exit criteria | Vérification |
 |-------|------|-----|-------|---------------|--------------|
-| A | compat | `src/features/placement/legacy/` | Pas de nouvelle feature dans legacy/ | Refactorer les 11 imports internes | `rg "legacy/" src/features/placement/ -l` → vide |
+| ~~A~~ | ~~compat~~ | ~~`src/features/placement/legacy/`~~ | — | — | ✅ Résolu — fichiers promus, dossier supprimé |
 | D | compat | `src/engine/*.ts` | Ne pas ajouter de nouveaux `@deprecated` | Migration vers nouveaux APIs | `rg "@deprecated" src/engine` (maintenir ou réduire) |
 
 **Règles "ne pas aggraver la dette" :**
-- Pas de nouveaux imports vers `legacy/`
 - Tout nouveau code va dans `features/*`, `components/`, `hooks/`, etc.
 
 ---

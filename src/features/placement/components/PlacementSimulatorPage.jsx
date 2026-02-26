@@ -9,7 +9,7 @@
  * - Input components        → placement/components/inputs.jsx
  * - Table components        → placement/components/tables.jsx
  * - VersementConfigModal    → placement/components/VersementConfigModal.jsx
- * - Excel export            → placement/utils/placementExcelExport.js
+ * - Excel export            → placement/export/placementExcelExport.js
  * - Table helpers           → placement/utils/tableHelpers.jsx
  *
  * 3 phases : Épargne → Liquidation → Transmission
@@ -17,8 +17,8 @@
 
 import React from 'react';
 import './PlacementSimulator.css';
-import { VersementConfigModal } from '../legacy/VersementConfigModal.jsx';
-import { renderEpargneRow } from '../legacy/tableHelpers.jsx';
+import { VersementConfigModal } from './VersementConfigModal.jsx';
+import { renderEpargneRow } from '../utils/tableHelpers.jsx';
 import { PlacementToolbar } from './PlacementToolbar.jsx';
 import { PlacementInputsPanel } from './PlacementInputsPanel.jsx';
 import { PlacementResultsPanel } from './PlacementResultsPanel.jsx';
