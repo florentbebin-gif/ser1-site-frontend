@@ -14,7 +14,7 @@ const PERIN_ASSURANCE: ProductRules = {
       title: 'Versements et déductibilité',
       bullets: [
         'Versements volontaires libres ou programmés (pas de plafond légal spécifique).',
-        'Déductibilité de l\'IR dans la limite du disponible épargne retraite : environ 10 % des revenus professionnels N-1, plafonné à 8 PASS (≈ 35 194 € pour 2024).',
+        'Déductibilité de l\'IR dans la limite du disponible épargne retraite : environ 10 % des revenus professionnels N-1, plafonné à 8 PASS (montant révisé chaque année — À confirmer selon l\'avis d\'imposition N-1).',
         'TNS : déductibilité également couverte par l\'art. 154 bis CGI (Madelin) pour les versements dans le compartiment Madelin du PER.',
         'Abondement employeur et transferts depuis d\'anciens produits (PERP, Madelin, PERCO…) possibles.',
       ],
@@ -251,12 +251,12 @@ const ARTICLE_83_PP: ProductRules = {
       title: 'Sortie à la retraite',
       bullets: [
         'Sortie en rente viagère principalement ; capital possible via transfert vers PER (loi PACTE 2019).',
-        'Rente imposable à l\'IR (abattement 10 %) + CSG 8,3 % + CRDS 0,5 % + CASA 0,3 %.',
+        'Rente imposable à l\'IR (abattement 10 %) + prélèvements sociaux sur rentes (À confirmer selon les taux CSS en vigueur).',
         'À confirmer selon les conditions du contrat et l\'option de transfert vers PER.',
       ],
       tags: ['rente_viagere', 'bareme_ir', 'abattement_10'],
       confidence: 'moyenne',
-      sources: [{ label: 'Loi PACTE 2019 — transfert vers PER', url: 'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000038496102' }],
+      sources: [{ label: 'Loi PACTE 2019 — transfert vers PER', url: 'https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000038496102' }, { label: 'Art. L136-1 CSS — CSG sur rentes', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006742737' }],
       dependencies: ['conditions de l\'accord collectif', 'option de transfert vers PER exercée'],
     },
   ],
@@ -381,8 +381,8 @@ const ARTICLE_39_PM: ProductRules = {
       title: 'Sortie obligatoire en rente',
       bullets: [
         'Sortie uniquement en rente viagère — pas de capital possible.',
-        'Rente imposable à l\'IR (abattement 10 %) + CSG 8,3 % + CRDS 0,5 % + CASA 0,3 %.',
-        'Contribution sociale sur rentes élevées (L137-11-1 CSS) : 7 % sur la part > 500 €/mois, 14 % > 1 000 €/mois, 21 % > 24 000 €/mois.',
+        'Rente imposable à l\'IR (abattement 10 %) + prélèvements sociaux sur rentes (À confirmer selon les taux CSS en vigueur).',
+        'Contribution sociale sur rentes élevées (L137-11-1 CSS) : taux progressifs selon le montant mensuel — À confirmer selon la rente exacte.',
         'À confirmer selon le montant exact de la rente mensuelle.',
       ],
       tags: ['rente_obligatoire', 'bareme_ir', 'abattement_10', 'contribution_l137_11_1'],
@@ -456,7 +456,7 @@ const PERO_PM: ProductRules = {
       bullets: [
         'Cotisations patronales et salariales obligatoires définies par accord collectif.',
         'Cotisations patronales déductibles du résultat imposable de l\'entreprise (IS ou IR).',
-        'Forfait social sur les cotisations patronales : 0 % si < 50 salariés, 16 % entre 50 et 250 salariés, 20 % au-delà. À confirmer selon les seuils exacts (source CSS).',
+        'Forfait social sur les cotisations patronales : taux variable selon l\'effectif de l\'entreprise — À confirmer selon les seuils CSS en vigueur.',
       ],
       tags: ['cotisations_patronales', 'cotisations_salariales', 'forfait_social'],
       confidence: 'moyenne',
@@ -469,7 +469,7 @@ const PERO_PM: ProductRules = {
       title: 'Sortie à la retraite',
       bullets: [
         'Sortie en capital ou en rente au choix (différent de l\'Art. 39 : la sortie en capital est possible).',
-        'Rente imposable à l\'IR (abattement 10 %) + CSG 8,3 % + CRDS 0,5 % + CASA 0,3 %.',
+        'Rente imposable à l\'IR (abattement 10 %) + prélèvements sociaux sur rentes (À confirmer selon les taux CSS en vigueur).',
         'Capital : partie obligatoire soumise au barème IR + PS 17,2 % sur les gains.',
         'À confirmer selon le compartiment et les conditions de l\'accord collectif.',
       ],
@@ -557,7 +557,7 @@ const PERP_MADELIN_ANCIEN: ProductRules = {
     {
       title: 'Sortie à la retraite',
       bullets: [
-        'Sortie principalement en rente viagère (capital limité à 20 % pour le PERP).',
+        'Sortie principalement en rente viagère pour le PERP (option capital partielle possible, limitée par les conditions contractuelles).',
         'Rente imposable à l\'IR (régime rentes viagères à titre gratuit, abattement 10 %).',
         'Transfert vers un PER possible pour bénéficier de la sortie en capital totale.',
       ],
