@@ -274,38 +274,41 @@ Livrables typiques (suite P1) :
 
 ### PR6 — Fiabilisation fiscale & rédaction premium
 
-**Objectif** : corriger les règles inexactes ou incomplètes identifiées lors de l’audit. Fichiers concernés : `src/domain/base-contrat/rules/library/*.ts` uniquement.
+#### PR6a — Sources officielles + garde-fou (DONE)
 
-#### Épargne Assurance (`assurance-epargne.ts`)
-- [ ] **Assurance-vie — anciens contrats** (antérieurs au 27/09/2017) : règles distinctes sortie (prélèvement libératoire 7,5 % après 8 ans). Ajouter en `dependencies` ou bullet spécifique.
-- [ ] **Capitalisation PP** : retirer les mentions de règles PM (IS, 238 septies E) du bloc PP. Règle PP = même traitement que l’AV PP (PFU 30 % ou barème + abattements 4 600/9 200 €).
+**Objectif** : sourcer toutes les affirmations sensibles (taux, montants, articles CGI/DMTG) avec des URLs officielles ou reformuler en version prudente. Ajouter un garde-fou CI.
 
-#### Prévoyance (`prevoyance.ts`)
-- [ ] **Assurance emprunteur PM** — Décès : ajouter que l’indemnié versée à la société constitue un **bénéfice exceptionnel IS ou IR** selon le régime de la société.
-- [ ] **Homme-clé** — Décès : retirer le bullet visible « À confirmer… seuls les contrats indemnitaires… » de l’UI (garder uniquement dans `dependencies`).
-- [ ] **Prévoyance individuelle décès PP** — Constitution : retirer mention « TNS Madelin 2,5 % PASS + 7,5 %… » (plafond global prévoyance, pas spécifique décès).
-- [ ] **Prévoyance individuelle décès PP** — Décès/Transmission : ajouter que **la prime de la dernière année** entre dans l’assiette 990 I ou 757 B selon l’âge au décès.
-- [ ] **Prévoyance individuelle ITT/invalidité PP** — Constitution : vérifier si les IJ rentrent dans l’assiette de cotisations sociales pour un TNS en arrêt de travail. Si oui, l’indiquer avec source CSS.
-- [ ] **Prévoyance individuelle ITT/invalidité PP** — Décès/Transmission : retirer les infos décès (couvertes par le produit décès distinct).
+**Livré** :
+- Tous les blocs sensibles de 9 library files sourcés (`legifrance`, `service-public`, `bofip`, `boss`, `urssaf`).
+- Garde-fou `rules.test.ts` : détecte automatiquement tout nouveau bloc avec chiffre/article non sourcé.
+- `npm run check` : 1081/1081 tests .
 
-#### Immobilier direct (`immobilier.ts`)
-- [ ] **Résidence principale — Succession** : supprimer les bullets trop génériques (« 100 000 € par enfant… », « IFI 30 % non applicable aux DMTG… » — preuve : `immobilier.ts` lignes 40–45).
-- [ ] **Audit bullets « génériques »** : repasser tous les produits immobilier pour supprimer les bullets « abattement 100k, barème DMTG… » qui ne sont pas spécifiques au produit.
-- [ ] **GFA/GFV vs GFF** : clarifier ou distinguer `groupement_foncier_agri_viti` vs `groupement_foncier_forestier` (deux produits avec règles quasi-identiques — preuve : `immobilier.ts`).
+---
 
-#### Retraite & Épargne salariale (`retraite.ts`)
-- [ ] **Article 83 (anciens contrats)** : retirer la mention « Article 39… » (hors sujet). Revoir les règles spécifiques Art. 83 (cotisations déductibles dans la limite de 8 % de la rémunération brute plafonée à 8 PASS).
-- [ ] **Madelin retraite ancien** : ajouter références **art. 154 bis / 154 bis OA (à confirmer + source attendue)** CGI. Retirer mention « 20 % PERP » (hors sujet).
-- [ ] **PERIN assurantiel** : ajouter références **art. 154 bis / 154 bis OA (à confirmer + source attendue)** CGI.
-- [ ] **PERO** : corriger les règles Art. 39 incorrectes. Documenter la différence vs Art. 83 ancien (forfait social 16 % — à confirmer, source CSS requise).
-- [ ] **Produits manquants PM** : créer des blocs pour `ppv_prime_partage_valeur`, `interessement`, `participation` (uniquement pour PM, côté entreprise).
+#### PR6b — Audit & normalisation des 20 blocs à risque (en cours)
 
-**DoD PR6** :
-- `npm run check` vert (tests ≥ 520).
-- Chaque correction a une preuve BOFiP/Légifrance dans `sources[]`.
+**Objectif** : corriger les blocs avec taux stales, verbosité excessive, ou précision fragile. Fichiers : `rules/library/*.ts` uniquement.
+
+**Top corrections** :
+- `retraite.ts` — PERIN PASS : montant annuel `35 194 €` → prudent (révisé chaque année).
+- `retraite.ts` — Art. 83 / Art. 39 / PERO sortie : `CSG 8,3 % + CRDS 0,5 % + CASA 0,3 %` → source CSS + reformulation prudente.
+- `retraite.ts` — PERO PM constitution : taux forfait social `0/16/20 %` hardcodés → prudent.
+- `retraite.ts` — PERP sortie : `capital limité à 20 %` → reformulation contractuelle.
+- `prevoyance.ts` — PREVOYANCE_DECES deces : `prime de la dernière année` → prudent + `confidence: 'moyenne'`.
+- `prevoyance.ts` — ITT IJ : 4 bullets → 3 bullets + source BOSS + `À confirmer`.
+- `prevoyance.ts` — Emprunteur PM / Homme-clé : allégés + source `art. 38 CGI`.
+- `fiscaux-immobilier.ts` — Malraux : source `art. 199 tervicies CGI` ajoutée.
+- `fiscaux-immobilier.ts` — Monuments historiques : source `art. 156 bis CGI` ajoutée.
+- `immobilier.ts` — LMNP constitution : seuils stales retirés + prudent. LMP : source URSSAF cotisations.
+- `valeurs-mobilieres.ts` — IR-PME : `25 % si prorogé` → reformulation prudente.
+- `valeurs-mobilieres.ts` — SOFICA : plafond hardcodé → renvoi à `art. 163 bis G CGI`.
+
+**DoD PR6b** :
+- `npm run check` vert (1081 tests).
+- Aucun montant PASS, taux CSG/CRDS ou seuil révisable annuellement n'est hardcodé sans "À confirmer".
 - Aucun bloc ne dépasse 6 bullets.
-- `rg "Article 39" src/domain/base-contrat/rules/library/retraite.ts` → plus dans le bloc Art. 83.
-- `rg "TNS Madelin 2,5" src/domain/base-contrat/rules/library/prevoyance.ts` → vide.
+- `rg "35 194" src/domain/base-contrat/rules/library/` → vide.
+- `rg "8,3 %" src/domain/base-contrat/rules/library/` → vide.
 
 ---
 
@@ -362,6 +365,31 @@ Livrables typiques (suite P1) :
 **Constat** : des tests E2E Playwright (ex: `tests/e2e/configure-rules.spec.ts`) testent encore l'ancienne UI admin (éditeurs JSON, modales de règles) qui a été totalement supprimée lors de PR3.
 - [ ] Identifier et supprimer les fichiers E2E obsolètes dans `tests/e2e/`.
 - [ ] Vérifier que la CI GitHub Actions (si existante) ne fail pas sur ces anciens tests.
+
+---
+
+### Item transversal — 📌 Taux vivants / `reference_rates` (simulateurs)
+
+**Pourquoi** : les simulateurs (IR, placement, prévoyance, crédit) nécessitent des taux et performances à jour (PASS, barèmes IR, taux PS, plafonds réglementaires). Coder ces valeurs en dur dans les rules statiques crée une dette croissante : chaque exercice nécessite un patch manuel, et les oublis produisent des résultats silencieusement faux.
+
+**Principe** : **séparer les rules statiques (règles de droit) des taux vivants (valeurs révisables annuellement)**.
+- Les `rules/library/*.ts` ne doivent **jamais** contenir de valeur numériquement révisable (PASS, seuils micro-BIC, taux PS, forfait social…) sans "À confirmer".
+- Les taux vivants sont stockés dans une table Supabase dédiée `reference_rates` (ou équivalent) avec date de mise à jour et source.
+
+**Architecture cible** :
+- [ ] Table `reference_rates` : `{ key, value, label, source_url, last_updated_at, valid_from, valid_until }`.
+- [ ] Edge Function `rates-refresh` (cron daily ou hebdomadaire) : fetch depuis les sources officielles (URSSAF, legifrance, service-public) + upsert avec horodatage.
+- [ ] Alerte automatique si `last_updated_at` > 90 jours ou si le fetch échoue (webhook ou notification admin).
+- [ ] Affichage `last_updated_at` dans l'UI simulateur (transparence).
+- [ ] Les `rules/library/*.ts` référencent uniquement la *clé* du taux (ex: `PASS_N`, `TAUX_PS`, `SEUIL_MICRO_BIC`) — jamais la valeur brute.
+
+**DoD** :
+- `rg "35 194\|77 700\|23 000\|8,3 %\|17,2 %" src/domain/base-contrat/rules/library/` → vide (valeurs migrées ou prudent).
+- Table `reference_rates` créée avec migration SQL + RLS (lecture authentifiée, écriture admin).
+- Edge function `rates-refresh` déployée + test smoke.
+- Alerte sur stale data documentée dans `docs/RUNBOOK.md`.
+
+> ⚠️ **Règle immédiate** : d'ici la migration, tout nouveau taux révisable ajouté dans les rules **doit** être accompagné de "À confirmer" et d'une source officielle. Le garde-fou `rules.test.ts` l'impose.
 
 ---
 

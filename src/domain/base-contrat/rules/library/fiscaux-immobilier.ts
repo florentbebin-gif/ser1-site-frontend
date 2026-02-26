@@ -13,8 +13,8 @@ const PINEL_PINEL_PLUS: ProductRules = {
     {
       title: 'Réduction d\'IR (dispositif clôturé au 31/12/2024)',
       bullets: [
-        'Pinel classique : réduction d\'IR de 9 %, 12 % ou 14 % du prix selon l\'engagement de location (6, 9 ou 12 ans).',
-        'Pinel+ (Super Pinel) : réduction de 12 %, 18 % ou 21 % si critères de qualité et de localisation renforcés.',
+        'Pinel classique : réduction d\'IR selon la durée d\'engagement de location (6, 9 ou 12 ans).',
+        'Pinel+ : taux de réduction majorés si critères de qualité et de localisation renforcés.',
         'Plafond d\'investissement : 300 000 €/an et 5 500 €/m².',
         'Dispositif clôturé : plus d\'acquisition éligible depuis le 1er janvier 2025.',
       ],
@@ -98,14 +98,14 @@ const MALRAUX: ProductRules = {
     {
       title: 'Réduction d\'IR — Restauration de patrimoine',
       bullets: [
-        'Réduction d\'IR de 30 % des travaux (Site Patrimonial Remarquable avec PSMV) ou 22 % (SPR avec PVAP).',
-        'Plafond des travaux retenus : 400 000 € sur 4 années consécutives.',
-        'Pas de plafonnement des niches fiscales (dérogation pour les monuments).',
-        'Engagement de location : 9 ans à compter de l\'achèvement des travaux.',
-        'À confirmer selon l\'obtention de l\'Autorisation Spéciale de Travaux (AST) validée par l\'Architecte des Bâtiments de France.',
+        'Réduction d\'IR de 30 % (SPR avec PSMV) ou 22 % (SPR avec PVAP) des dépenses de travaux.',
+        'Plafond des travaux retenus : 400 000 € sur 4 années consécutives. Hors plafonnement global des niches fiscales.',
+        'Engagement de location de 9 ans à compter de l\'achèvement.',
+        'À confirmer selon l\'obtention de l\'AST validée par l\'ABF et la localisation en SPR.',
       ],
       tags: ['reduction_ir', 'hors_plafond_niches', 'patrimoine_historique'],
       confidence: 'moyenne',
+      sources: [{ label: 'Art. 199 tervicies CGI — Malraux', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000037991558' }],
       dependencies: ['obtention AST validée par ABF', 'localisation en SPR avec PSMV ou PVAP'],
     },
   ],
@@ -138,13 +138,13 @@ const MONUMENTS_HISTORIQUES: ProductRules = {
     {
       title: 'Déduction des charges — Régime de faveur',
       bullets: [
-        'Les charges foncières (travaux, entretien) sont déductibles du revenu global sans limite.',
-        'Avantage hors plafonnement des niches fiscales.',
+        'Les charges foncières (travaux, entretien) sont déductibles du revenu global, hors plafonnement des niches fiscales.',
         'Applicable aux immeubles classés ou inscrits à l\'inventaire des monuments historiques.',
-        'Pas d\'obligation de location (dérogation pour les propriétaires occupants).',
+        'Dérogation pour les propriétaires occupants (pas d\'obligation de location).',
       ],
       tags: ['deduction_revenu_global', 'hors_plafond_niches', 'monument_classe'],
       confidence: 'elevee',
+      sources: [{ label: 'Art. 156 bis CGI — Monuments historiques', url: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006302398' }],
     },
   ],
   sortie: [

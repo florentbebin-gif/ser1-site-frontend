@@ -178,8 +178,8 @@ const SOFICA: ProductRules = {
     {
       title: 'Souscription',
       bullets: [
-        'Réduction d\'IR de 30 % à 48 % des sommes investies (selon affectation de la SOFICA).',
-        'Plafond annuel de souscription : 18 000 € maximum (ou 25 % du revenu net global si inférieur).',
+        'Réduction d\'IR selon le taux d\'affectation de la SOFICA (30 % à 48 % selon les investissements réalisés).',
+        'Plafond annuel de souscription plafonné (montant et modalités définis à l\'art. 163 bis G CGI — À confirmer).',
         'Engagement de conservation des parts pendant au moins 5 ans.',
       ],
       tags: ['reduction_ir', 'plafond_18k', 'sofica'],
@@ -218,7 +218,7 @@ const IR_PME_MADELIN: ProductRules = {
     {
       title: 'Souscription au capital de PME',
       bullets: [
-        'Réduction d\'IR de 18 % (ou 25 % si prorogé) sur les versements effectués.',
+        'Réduction d\'IR de 18 % sur les versements effectués (taux majoré possible si prorogation législative — À confirmer selon la loi de finances en vigueur).',
         'Plafond annuel : 50 000 € pour une personne seule, 100 000 € pour un couple.',
         'Conditions : PME de moins de 7 ans, secteurs éligibles, engagement de conservation 5 ans minimum.',
       ],
