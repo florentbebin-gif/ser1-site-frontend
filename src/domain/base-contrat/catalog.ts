@@ -311,6 +311,15 @@ export const CATALOG: CatalogProduct[] = [
     templateKey: 'employee_savings_plan',
   },
   {
+    id: 'ppv_prime_partage_valeur',
+    label: 'Prime de Partage de la Valeur (PPV)',
+    grandeFamille: 'Retraite & épargne salariale',
+    catalogKind: 'wrapper',
+    ppEligible: false,
+    pmEligible: true,
+    templateKey: 'employee_savings_plan',
+  },
+  {
     id: 'perin_assurance',
     label: 'PERIN assurantiel (PER individuel assurance)',
     grandeFamille: 'Retraite & épargne salariale',

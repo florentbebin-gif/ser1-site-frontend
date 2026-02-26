@@ -7,8 +7,8 @@ Donner la trajectoire produit vers un **SaaS SER1** (phases, priorités, Definit
 Dev/Tech lead + PM/owner du produit.
 
 ## Ce que ce doc couvre / ne couvre pas
-- ✅ Couvre : phases P0→P3, objectifs, DoD, "what’s next", références code.
-- ❌ Ne couvre pas : preuves d’exécution, changelog, détails d’implémentation (voir `docs/ARCHITECTURE.md` / `docs/RUNBOOK.md`).
+- ✅ Couvre : phases P0→P3, objectifs, DoD, "what's next", références code.
+- ❌ Ne couvre pas : preuves d'exécution, changelog, détails d'implémentation (voir `docs/ARCHITECTURE.md` / `docs/RUNBOOK.md`).
 
 ## Sommaire
 - [Vision produit](#vision-produit)
@@ -26,10 +26,10 @@ Dev/Tech lead + PM/owner du produit.
 ---
 
 ## Vision produit
-SER1 vise un outil **plus simple qu’un progiciel patrimonial** mais **très précis** sur les calculs et **premium** sur les exports (PPTX/Excel), destiné aux CGP/cabinets.
+SER1 vise un outil **plus simple qu'un progiciel patrimonial** mais **très précis** sur les calculs et **premium** sur les exports (PPTX/Excel), destiné aux CGP/cabinets.
 
 Cibles produit stables (à respecter) :
-- **Multi-tenant “cabinets”** : branding (logo + palette) isolé par cabinet.
+- **Multi-tenant "cabinets"** : branding (logo + palette) isolé par cabinet.
 - **Règles fiscales + catalogue produits = GLOBAUX** (administrés par le **super-admin SaaS**).
 - **Zéro stockage dossier client côté serveur** : saisie en session + export, sauvegarde locale `.ser1`.
 - **Exports premium** : PPTX (PptxGenJS + design system) + Excel (OOXML natif).
@@ -38,7 +38,7 @@ Cibles produit stables (à respecter) :
 ---
 
 ## Definition of Done (SaaS-ready)
-Une phase/livrable est considérée “DONE” quand :
+Une phase/livrable est considérée "DONE" quand :
 1. **Sécurité**
    - RLS activé + policies cohérentes (utiliser `public.is_admin()` ; jamais `user_metadata`).
    - Self-signup désactivé, onboarding via invitation/admin.
@@ -95,8 +95,6 @@ Ce que ça change (cible) :
    - Preuve : imports dans `src/features/placement/components/*` vers `@/pages/placement/...`.
 3. **Pages Settings dispersées** : les routes settings pointent vers `src/pages/Sous-Settings/*` via `src/constants/settingsRoutes.js`, tandis que du "shared" settings existe aussi sous `src/components/settings/*`.
    - Preuve : `src/constants/settingsRoutes.js` importe `../pages/Sous-Settings/*` ; `src/components/settings/` existe.
-4. **Présence de dossiers non-prod dans `src/`** : `src/pptx/template/__spike__/` et `src/icons/business/_raw/` sont présents dans `src/`.
-   - Preuve : arborescence `src/pptx/template/__spike__/` et `src/icons/business/_raw/`.
 
 ##### Jalons (quick wins → structurants)
 
@@ -119,15 +117,6 @@ Ce que ça change (cible) :
 - Clarifier la cible :
   - `src/pages/settings/*` (entrypoints) + `src/features/settings/*` (logique UI) + `src/components/settings/*` (UI shared).
 - Option (quand prêt) : migrer `src/pages/Sous-Settings/*` → `src/pages/settings/*`.
-
-###### P1-01e — Cleanup spikes/raw (quick win + hygiene)
-- **Audit obligatoire** avant tout déplacement/suppression : produire une liste des imports/usages réels (tests, exports, edge functions) des dossiers concernés.
-- Livrable d'audit : document `docs/audit-spikes-raw.md` (ou section dans RUNBOOK) listant :
-  - chemins audités (`src/pptx/template/__spike__/`, `src/icons/business/_raw/`)
-  - fichiers référençant ces chemins (rg results)
-  - décision par fichier : `keep` (déplacer vers `tools/`) / `delete` (obsolète) / `inline` (intégrer au code prod)
-- **Interdiction** de supprimer/déplacer sans audit préalable.
-- Post-audit : sortir `__spike__` et `_raw` hors de `src/` (vers `tools/`, `docs/`, ou suppression) selon décision d'audit.
 
 ##### Tâches actionnables (tickets / futures PR)
 
@@ -155,216 +144,48 @@ Ce que ça change (cible) :
 - Risques : moyen/haut (surface large + logique métier/UI) ; refacto strangler en étapes.
 - DoD : `rg "@/pages/placement" src/features/placement` ne retourne plus rien (ou seulement un module `legacy` explicitement documenté pendant la transition).
 
-**P1-01c — Doc routes : alignement APP_ROUTES → documentation (pré-requis T5/T6)**
-- Objectif : corriger la table des routes dans cette doc pour refléter 100% d'APP_ROUTES.
-- Scope : `docs/ROADMAP.md` (ce ticket) + table canon dans `docs/ARCHITECTURE.md`.
-- Dépendances : T1 (routes centralisées).
-- Risques : faibles (doc only).
-- DoD : la table canon des routes est complète et exacte (100% issue d'APP_ROUTES) ; les routes manquantes sont ajoutées (`/sim/epargne-salariale`, `/sim/tresorerie-societe`, `/sim/prevoyance`, redirects legacy).
-
-**P1-01d — Doc cleanup : critères de suppression legacy / spike / raw (pré-requis T5/T6)**
-- Objectif : définir les critères mesurables pour supprimer ces dossiers temporaires.
-- Scope : `docs/ARCHITECTURE.md` (conventions ajoutées), `docs/ROADMAP.md` (critères).
-- Dépendances : T4 (placement legacy), P1-01e (audit spikes/raw).
-- Risques : faibles (doc only).
-- DoD mesurable :
-  - `rg "features/placement/legacy" src --type tsx --type ts` → **vide** (0 import runtime)
-  - `find src -type d \( -name "__spike__" -o -name "_raw" \)` → **vide** (après futur T6)
-
-**P1-01x — Debt registry & exit criteria (pré-requis avant T5/T6)**
-- Objectif : documenter les dettes existantes + leur critère de suppression + commande de vérif, décider lesquelles traiter dans T6.
-- Scope : `docs/ROADMAP.md` (ce bloc) + `docs/ARCHITECTURE.md` (table détaillée).
-- Dépendances : P1-01d (doc cleanup).
-- Risques : faibles (doc only).
-- DoD global :
-  - un registre de dettes existe dans la doc (sans nouveau fichier)
-  - chaque dette a : description / impact / owner / exit criteria / commandes de vérif
-  - une section "ne pas aggraver la dette" (règles simples) est ajoutée
-  - la roadmap reflète que T5/T6 dépendent de ce prérequis
-
 **Dettes identifiées :**
 
 | Dette | Type | Où | Pourquoi | Règle | Exit criteria | Vérification |
 |-------|------|-----|----------|-------|---------------|--------------|
 | A | compat | `src/features/placement/legacy/` | Transition pour découpler features de l'ancien `pages/placement` | Pas de nouvelle feature dans legacy/ | `rg "features/placement/legacy" src` → 0 + npm run check PASS | `rg "features/placement/legacy" src --type tsx --type ts` |
-| B | hygiène | `src/pptx/template/__spike__/` | Prototypes / essais PPTX | **RESOLVED** — deleted (0 usage) | **DELETE** | `find src -type d -name "__spike__"` → 0 |
-| C | hygiène | `src/icons/business/_raw/` | Sources brutes SVG | **RESOLVED** — deleted (0 usage) | **DELETE** | `find src -type d -name "_raw"` → 0 |
 | D | compat | `src/engine/*.ts` | `@deprecated` constants (ABATTEMENT_*, generate*Pptx) | Ne pas ajouter de nouveaux `@deprecated` | Migration vers nouveaux APIs | `rg "@deprecated" src/engine` (maintenir ou réduire) |
 
 **Règles "ne pas aggraver la dette" :**
 - Pas de nouveaux imports vers `legacy/`
-- Pas de nouveaux fichiers dans `__spike__` ou `_raw`
 - Tout nouveau code va dans `features/*`, `components/`, `hooks/`, etc.
 
 ---
 
-#### P1-04 — Base-Contrat V3 : Expérience Admin Premium & Source de Vérité Universelle
+#### P1-04 — Base-Contrat V3 : Expérience Admin Premium & Source de Vérité Universelle ✅
 
-**Objectif** : Nettoyer le legacy et pivoter vers un catalogue hardcodé fiable avec overrides admin.
+**Livré (PR1–PR8)** :
+- PR1–PR3 : Catalogue hardcodé, UI read-only, nettoyage legacy.
+- PR4 : Alignement documentation.
+- PR5 : 71 produits, 3 colonnes, quality system (`confidence`/`sources`/`dependencies`). 520 tests.
+- PR6a/6b : Sources officielles + garde-fou CI. Audit & normalisation 20 blocs à risque.
+- PR7 : PP/PM split catalogue (produits mixtes dédoublés).
+- PR8 : Wiring simulateurs (`useFiscalProfile`) + golden tests.
 
-##### État du Pivot (PR1–PR5) ✅
-- **PR1** : Création du catalogue hardcodé (`src/domain/base-contrat/catalog.ts`) et de l'infrastructure `base_contrat_overrides` (Supabase).
-- **PR2** : Refonte de l'UI `/settings/base-contrat` en read-only (3 colonnes : Constitution, Sortie, Décès), toggle PP/PM, et modal de clôture admin.
-- **PR3** : Nettoyage massif (suppression seed JSON, cache legacy, hooks, adaptateurs, migration SQL, rules editor).
-- **PR4** : Alignement documentation (ARCHITECTURE, RUNBOOK, ROADMAP) + standard process dev Base-Contrat.
-- **PR5** : Règles fiscales hardcodées 3 colonnes — 71 produits (Constitution / Sortie / Décès). Quality system : champs `confidence`, `sources`, `dependencies` sur tous les `RuleBlock`. Corrections sourcées sur 6 produits complexes (LMNP art. 84 LF2025, Art. 39 L137-11-1 CSS, Capi PM 238 septies E, GFA 793 bis 600k LF2025, Tontine, Homme-clé). 520 tests verts.
+---
 
-#### P1-05 — Catalogue Patrimonial & Règles Exhaustives (Base Parfaite)
+#### P1-05 — Catalogue Patrimonial & Règles Exhaustives (Base Parfaite) ✅
 
-**Objectif** : Implémenter les règles fiscales exhaustives pour chaque famille de produits, avec des tests "golden" et une UX premium sans jargon.
-
-**État actuel** : PR5 livrée. Socle « rules engine » opérationnel — 71 produits avec 3 colonnes de règles fiscales dans l'UI. Un audit qualité approfondi sur 6 produits complexes a corrigé des erreurs factuelles et ajouté un système de confiance (`confidence`/`sources`/`dependencies`).
-
-**Ce qui reste** (planifié PR6–PR8) :
-- **Fiabilisation rédactionnelle** (~15 produits) : anciens contrats AV, capitalisation PP/PM mixée, prévoyance individuelle, Art. 83/Madelin/PERIN/PERO, GFA vs GFF — voir PR6.
-- **PP/PM split** : 28 produits ont `ppEligible: true` **et** `pmEligible: true` dans `catalog.ts` (ex : `contrat_capitalisation`, `cto`, `article_83`, `pero`) — les règles affichées ne distinguent pas le point de vue PP vs PM — voir PR7.
-- **Wiring simulateurs** : `getRules` uniquement consommé par `src/pages/Sous-Settings/BaseContrat.tsx`. Aucun import dans `src/features/` ni `src/engine/` — voir PR8.
-- **Golden tests** : `src/engine/__tests__/goldenCases.test.ts` n'existe pas encore — voir PR8.
-
-##### Fichiers supprimés (Cleanup PR3)
-
-| Fichier | PR de suppression | Preuve de suppression safe |
-|---------|-------------------|----------------------------|
-| `src/constants/base-contrat/catalogue.seed.v1.json` | PR3 | `rg "catalogue\.seed" src/` → vide |
-| `src/constants/baseContratSeed.ts` | PR3 | `rg "baseContratSeed" src/` → vide |
+**Livré** :
+- 71 produits avec règles fiscales 3 colonnes.
+- GFA/GFV et GFF : règles distinctes (`art. 793 bis` vs `art. 793 CGI`, régimes différents).
+- PPV (`ppv_prime_partage_valeur`), Intéressement, Participation : catalogue PM complet.
+- RLS `base_contrat_overrides` : lecture restreinte aux admins (voir RUNBOOK).
+- Tests E2E obsolètes supprimés (`configure-rules.spec.ts`).
 
 ##### Manques hors catalogue (à prévoir dans l'analyse patrimoniale globale)
 - Démembrement de propriété (Nue-propriété / Usufruit transversal).
 - Régimes matrimoniaux (Communauté vs Séparation).
 - Gestion fine des SCI et Holding (à l'IS).
 
-##### Critères d'acceptation (DoD global) — Checklist vérifiable
-| # | Critère | Commande de vérif. | Résultat attendu |
-|---|---------|-------------------|------------------|
-| 1 | Routes listables depuis source unique | `rg -n "path:" src/routes/appRoutes.ts` | Retourne la liste des routes APP_ROUTES (pas de duplication inline) |
-| 2 | Pas d'import features → pages | `rg "from.*@/pages/" src/features/ -l` | **Vide** (ou uniquement fichiers marqués `legacy.*`) |
-| 2b | Doc routes alignée APP_ROUTES | Comparer `src/routes/appRoutes.ts` vs table canon | Table canon = 100% APP_ROUTES (incluant `/sim/epargne-salariale`, `/sim/tresorerie-societe`, `/sim/prevoyance`, redirects legacy) |
-| 2c | P1-01c : Pas de dépendance inverse features → pages | `rg "from.*@/pages/" src/features/placement/ -l` | **Vide** (ou uniquement fichiers marqués `legacy.*`) |
-| 3 | App.jsx minimal (pas de topbar/icons inline) | `rg "IconHome|IconSave|IconFolder|IconTrash|IconLogout|IconSettings" src/App.jsx` | **Vide** (icônes importées depuis module externe) |
-| 4 | Pas de `__spike__`/`_raw` en prod | `find src -type d \( -name "__spike__" -o -name "_raw" \)` | **Vide** (ou chemins explicitement exemptés dans doc d'audit) |
-| 5 | Settings unifié (routes source unique) | `rg "settingsRoutes|SETTINGS_ROUTES" src/pages/SettingsShell.jsx` | Retourne au moins 1 match (utilisation de la constante centralisée) |
-
-Livrables typiques (suite P1) :
-- JSON `.ser1` versionné + migrations automatiques + validation.
-- Simulateurs (IR/Crédit/Placement) "modulaires" (pattern feature).
-- Golden cases / snapshots exports (PPTX/XLSX) pour éviter les régressions.
-
-> Liens : voir [Exports](#références-code), [Features](#références-code).
-
 ---
 
-## 🚧 Prochaines PRs (PR6–PR8)
-
-> Branche de travail cible : convention `fix/p1-05-*` (existante).
-> Priorité recommandée : PR6 → PR7 → PR8.
-
----
-
-### Standards rédactionnels PP/PM (règle transversale)
-
-> **Cette règle s’applique à toutes les corrections de règles (PR6 et au-delà).**
-
-- **Côté PM** : se placer *à l'intérieur de l’entreprise*. Seules les règles de la société comptent (IS/IR entreprise, déductibilité des charges, traitement comptable). Pas de règles PP.
-- **Décès/Transmission PM** : couvrir aussi **dissolution/liquidation** (traitement fiscal du boni, rachat de parts).
-- **Max 6 bullets par bloc**, langage professionnel, aucun jargon dev.
-- **Blocs `moyenne`/`faible`** : toujours une phrase « À confirmer selon… » + `dependencies` renseigné.
-- **Sources** : BOFiP (référence §) ou Légifrance (article) pour toute affirmation précise.
-
----
-
-### PR6 — Fiabilisation fiscale & rédaction premium
-
-#### PR6a — Sources officielles + garde-fou (DONE)
-
-**Objectif** : sourcer toutes les affirmations sensibles (taux, montants, articles CGI/DMTG) avec des URLs officielles ou reformuler en version prudente. Ajouter un garde-fou CI.
-
-**Livré** :
-- Tous les blocs sensibles de 9 library files sourcés (`legifrance`, `service-public`, `bofip`, `boss`, `urssaf`).
-- Garde-fou `rules.test.ts` : détecte automatiquement tout nouveau bloc avec chiffre/article non sourcé.
-- `npm run check` : 1081/1081 tests .
-
----
-
-#### ✅ PR6b — Audit & normalisation des 20 blocs à risque (DONE)
-
-**Objectif** : corriger les blocs avec taux stales, verbosité excessive, ou précision fragile. Fichiers : `rules/library/*.ts` uniquement.
-
-**Top corrections** :
-- `retraite.ts` — PERIN PASS : montant annuel `35 194 €` → prudent (révisé chaque année).
-- `retraite.ts` — Art. 83 / Art. 39 / PERO sortie : `CSG 8,3 % + CRDS 0,5 % + CASA 0,3 %` → source CSS + reformulation prudente.
-- `retraite.ts` — PERO PM constitution : taux forfait social `0/16/20 %` hardcodés → prudent.
-- `retraite.ts` — PERP sortie : `capital limité à 20 %` → reformulation contractuelle.
-- `prevoyance.ts` — PREVOYANCE_DECES deces : `prime de la dernière année` → prudent + `confidence: 'moyenne'`.
-- `prevoyance.ts` — ITT IJ : 4 bullets → 3 bullets + source BOSS + `À confirmer`.
-- `prevoyance.ts` — Emprunteur PM / Homme-clé : allégés + source `art. 38 CGI`.
-- `fiscaux-immobilier.ts` — Malraux : source `art. 199 tervicies CGI` ajoutée.
-- `fiscaux-immobilier.ts` — Monuments historiques : source `art. 156 bis CGI` ajoutée.
-- `immobilier.ts` — LMNP constitution : seuils stales retirés + prudent. LMP : source URSSAF cotisations.
-- `valeurs-mobilieres.ts` — IR-PME : `25 % si prorogé` → reformulation prudente.
-- `valeurs-mobilieres.ts` — SOFICA : plafond hardcodé → renvoi à `art. 163 bis G CGI`.
-
-**DoD PR6b** (Vérifié) :
-- `npm run check` vert (1081 tests).
-- Aucun montant PASS, taux CSG/CRDS ou seuil révisable annuellement n'est hardcodé sans "À confirmer".
-- Aucun bloc ne dépasse 6 bullets.
-- `rg "35 194" src/domain/base-contrat/rules/library/` → vide.
-- `rg "8,3 %" src/domain/base-contrat/rules/library/` → vide.
-
----
-
-### PR7 — PP/PM split catalogue + conformité UI (DONE)
-
-**Objectif** : séparer les règles PP et PM pour les produits qui admettent les deux audiences.
-
-**Livré** :
-- `catalog.ts` séparé : les produits mixtes ont été dédoublés (ex: `assurance_emprunteur_pp` / `_pm`).
-- UI `BaseContrat.tsx` adaptée.
-- Les overrides et le cache gèrent correctement la taxonomie splittée.
-
-**DoD PR7** (Vérifié) :
-- `rg "pmEligible: true" src/domain/base-contrat/catalog.ts -B6 | rg "id:"` → ne retourne plus les 38 produits mixtes.
-- `npm run check` vert.
-
----
-
-### PR8 — Wiring simulateurs (FiscalProfile) + golden tests (DONE)
-
-**Objectif** : brancher les règles fiscales dans les simulateurs et ajouter des golden tests de non-régression.
-
-**Livré** :
-- Hook `useFiscalProfile.ts` créé pour la feature placement.
-- L'interface `FiscalProfile` est branchée.
-- `goldenCases.test.ts` implémenté (tests de non-régression sur le moteur).
-
-**DoD PR8** (Vérifié) :
-- `rg "getRulesForProduct" src/features` → `useFiscalProfile.ts`.
-- `src/engine/__tests__/goldenCases.test.ts` existe et passe.
-- `npm run check` vert.
-
----
-
-### Item transversal — RLS overrides : clarifier la politique de lecture
-
-**Constat** (preuve — migration `20260223000100_create_base_contrat_overrides.sql`) :
-- SELECT : policy `"overrides_select_authenticated"` → `TO authenticated USING (true)` — lecture ouverte à tous les utilisateurs connectés.
-- Write : policy `"overrides_write_admin"` → `public.is_admin()` — écriture admin-only ✅.
-- `GRANT INSERT, UPDATE, DELETE TO authenticated` — le GRANT technique est large mais la policy RLS protège l’écriture.
-
-**Question ouverte** : la lecture (statut « clôturé » / note admin) doit-elle être réservée aux admins ?
-- [ ] **Si admin-only** : remplacer la policy SELECT par `USING (public.is_admin())`.
-- [ ] **Si read-for-all-auth** (recommandé pour afficher le statut « clôturé » à tous les utilisateurs du cabinet) : documenter la décision dans le RUNBOOK.
-
----
-
-### Item transversal — Tests E2E Playwright obsolètes
-
-**Constat** : des tests E2E Playwright (ex: `tests/e2e/configure-rules.spec.ts`) testent encore l'ancienne UI admin (éditeurs JSON, modales de règles) qui a été totalement supprimée lors de PR3.
-- [ ] Identifier et supprimer les fichiers E2E obsolètes dans `tests/e2e/`.
-- [ ] Vérifier que la CI GitHub Actions (si existante) ne fail pas sur ces anciens tests.
-
----
-
-### Item transversal — 📌 Taux vivants / `reference_rates` (simulateurs)
+## 🚧 Item transversal — 📌 Taux vivants / `reference_rates` (simulateurs)
 
 **Pourquoi** : les simulateurs (IR, placement, prévoyance, crédit) nécessitent des taux et performances à jour (PASS, barèmes IR, taux PS, plafonds réglementaires). Coder ces valeurs en dur dans les rules statiques crée une dette croissante : chaque exercice nécessite un patch manuel, et les oublis produisent des résultats silencieusement faux.
 
@@ -390,7 +211,7 @@ Livrables typiques (suite P1) :
 ---
 
 ### P2 — Analyse patrimoniale + nouveaux simulateurs
-Objectif : enrichir l’analyse (audit) et ajouter des simulateurs utiles.
+Objectif : enrichir l'analyse (audit) et ajouter des simulateurs utiles.
 
 Candidats :
 - Rapport PPTX audit complet (civil, actifs, passifs, fiscalité).
@@ -399,18 +220,7 @@ Candidats :
 - Observabilité serveur technique (zéro PII, zéro métriques métier).
 - MFA (TOTP) pour comptes sensibles.
 
-#### Catalogue — état des items
-
-✅ **Terminé** :
-- ~~Rulesets per-product~~ : fait (PR5 — 71 produits, 3 colonnes, quality system).
-- ~~Familles restructurées~~ : fait (PR3/V5c+V5d — split LMNP-LMP, obligations retirées, etc.).
-- ~~Supprimer `handleCompleteCatalogue`~~ : fait (PR3/V5c).
-- ~~Confirmation dialog sync~~ : sans objet — catalogue hardcodé, pas de synchronisation admin.
-
-⏳ **En attente** (voir PR6–PR7) :
-- **Fiches GFA/GFV vs GFF** : vérifier la différence fiscale entre `groupement_foncier_agri_viti` (art. 793 bis CGI) et `groupement_foncier_forestier` (art. 793 1°/3° CGI). Si différence réelle → blocs distincts dans `immobilier.ts` ; si identique → fusionner avec mention des deux régimes.
-- **Produits manquants PM** : PPV (prime de partage de la valeur), intéressement, participation — afficher uniquement pour PM (côté entreprise) — voir PR6.
-- **Migration label « (Entreprise) » → « (PM) »** : vérifier si des données DB portent encore l'ancien suffixe — décision en PR7.
+---
 
 ### P3 — Stratégie automatique + société fine
 Objectif : recommandations auto + modèle société/holding plus fin.
@@ -443,5 +253,5 @@ Entrées clés :
 
 Voir aussi :
 - `docs/GOUVERNANCE.md` (règles UI/couleurs/thème)
-- `docs/ARCHITECTURE.md` (carto + “où changer quoi”)
+- `docs/ARCHITECTURE.md` (carto + "où changer quoi")
 - `docs/RUNBOOK.md` (diagnostics + opérations)
