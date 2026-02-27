@@ -12,6 +12,7 @@ import { exportSuccessionPptx } from '../../pptx/exports/successionExport';
 import { exportAndDownloadSuccessionXlsx } from './successionXlsx';
 import { useTheme } from '../../settings/ThemeProvider';
 import { SessionGuardContext } from '../../App';
+import { useFiscalContext } from '../../hooks/useFiscalContext';
 import type { LienParente } from '../../engine/succession';
 import './Succession.css';
 
@@ -31,6 +32,10 @@ const fmtPct = (v: number): string =>
   new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) + ' %';
 
 export default function SuccessionSimulator() {
+  // Mode strict : attend Supabase avant d'afficher le simulateur (PR-01)
+  // Le branchement du calcul sur dmtgSettings sera fait en PR-03
+  const { loading: settingsLoading } = useFiscalContext({ strict: true });
+
   const {
     form, result, setActifNet, addHeritier, removeHeritier,
     updateHeritier, distributeEqually, compute, reset, hasResult,
@@ -65,6 +70,17 @@ export default function SuccessionSimulator() {
       pptxColors.c1,
     );
   }, [result, canExport, form, pptxColors]);
+
+  if (settingsLoading) {
+    return (
+      <div className="succession-page">
+        <h1>Simulateur Succession</h1>
+        <div className="succession-settings-loading" data-testid="succession-settings-loading">
+          Chargement des paramètres fiscaux…
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="succession-page">

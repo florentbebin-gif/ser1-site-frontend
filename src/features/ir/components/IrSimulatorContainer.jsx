@@ -3,7 +3,7 @@ import './IrSimulator.css';
 import { onResetEvent, storageKeyFor } from '../../../utils/reset';
 import { toNumber } from '../../../utils/number';
 import { computeIrResult as computeIrResultEngine } from '../../../utils/irEngine.js';
-import { getFiscalSettings, addInvalidationListener } from '../../../utils/fiscalSettingsCache.js';
+import { useFiscalContext } from '../../../hooks/useFiscalContext';
 import { useTheme } from '../../../settings/ThemeProvider';
 import { ExportMenu } from '../../../components/ExportMenu';
 import {
@@ -43,8 +43,10 @@ const formatMoneyInput = (n) => {
 export default function IrSimulatorContainer() {
   const { colors, cabinetLogo, logoPlacement, pptxColors } = useTheme();
 
-  const [taxSettings, setTaxSettings] = useState(null);
-  const [psSettings, setPsSettings] = useState(null);
+  // Mode strict : n'affiche pas de résultat avant que Supabase ait répondu
+  const { fiscalContext, loading: settingsLoading } = useFiscalContext({ strict: true });
+  const taxSettings = fiscalContext._raw_tax;
+  const psSettings = fiscalContext._raw_ps;
 
   const [yearKey, setYearKey] = useState('current');
   const [status, setStatus] = useState('couple');
@@ -66,36 +68,6 @@ export default function IrSimulatorContainer() {
 
   const STORE_KEY = storageKeyFor('ir');
   const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-    async function load() {
-      try {
-        const settings = await getFiscalSettings();
-        if (!mounted) return;
-        setTaxSettings(settings.tax);
-        setPsSettings(settings.ps);
-      } catch (e) {
-        console.error('[IR] Erreur chargement settings:', e);
-      }
-    }
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    const remove = addInvalidationListener((kind) => {
-      if (kind === 'tax' || kind === 'ps') {
-        getFiscalSettings({ force: true }).then((settings) => {
-          setTaxSettings(settings.tax);
-          setPsSettings(settings.ps);
-        });
-      }
-    });
-    return remove;
-  }, []);
 
   useEffect(() => {
     try {
@@ -296,6 +268,21 @@ export default function IrSimulatorContainer() {
     pptxColors,
     setExportLoading,
   });
+
+  if (settingsLoading) {
+    return (
+      <div className="ir-panel premium-page" data-testid="ir-page">
+        <div className="ir-header premium-header" data-testid="ir-header">
+          <div className="ir-title premium-title" data-testid="ir-title">
+            Simulateur d'impôt sur le revenu
+          </div>
+        </div>
+        <div className="ir-settings-loading" data-testid="ir-settings-loading">
+          Chargement des paramètres fiscaux…
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="ir-panel premium-page" data-testid="ir-page">
