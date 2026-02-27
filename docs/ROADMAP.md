@@ -44,22 +44,22 @@ Une PR / un lot est “DONE” quand :
 Rendre SER1 “professionnel” : **tous les simulateurs** consomment les mêmes paramètres, sans duplication et avec traçabilité.
 
 ### Constat technique (preuves à garder en tête)
-- **Succession n’est pas branché** sur les paramètres :  
-  `src/features/succession/useSuccessionCalc.ts` ne passe pas `dmtgSettings` à `calculateSuccession`.  
+- **DMTG dupliqué (à corriger en PR-02)** :
+  `src/constants/settingsDefaults.ts` contient `DEFAULT_TAX_SETTINGS.dmtg`
+  et `src/engine/civil.ts` contient `DEFAULT_DMTG` — deux sources incompatibles.
+
+- **Succession n’est pas branché (à corriger en PR-03)** :
+  `src/features/succession/useSuccessionCalc.ts` ne passe pas `dmtgSettings` à `calculateSuccession`.
   Le moteur attend déjà `dmtgSettings?: DmtgSettings` dans `src/engine/succession.ts`.
 
-- **DMTG dupliqué** :  
-  `src/constants/settingsDefaults.ts` contient `DEFAULT_TAX_SETTINGS.dmtg`  
-  et `src/engine/civil.ts` contient `DEFAULT_DMTG`.
-
-- **Chargement “stale-while-revalidate” peut calculer sur défauts** :  
+- **Chargement “stale-while-revalidate” peut calculer sur défauts (adressé par PR-01)** :
   `src/utils/fiscalSettingsCache.js` retourne immédiatement defaults/cache et lance fetch en arrière-plan.
 
-- **Placement a un mauvais chemin DMTG** :  
+- **Placement a un mauvais chemin DMTG (à corriger en PR-05)** :
   `src/features/placement/components/usePlacementSimulatorController.js` lit `taxSettings?.dmtg?.scale` alors que le DMTG est structuré par catégories (`ligneDirecte.scale`).
 
-- **Stratégie IR a un barème en dur** :  
-  `src/features/strategy/calculations.ts` utilise `src/engine/tax.ts` (`BAREME_IR_2024`).
+- **Stratégie IR a un barème en dur (à corriger en PR-06)** :
+  `src/features/strategy/calculations.ts` utilise `src/engine/tax.ts` (`BAREME_IR_2024`) au lieu des paramètres admin.
 
 ---
 
@@ -97,7 +97,8 @@ Créer un mécanisme standard : **un seul point d’entrée** pour obtenir les p
 ### Travaux
 - Ajouter une API de chargement **fiable** (ex : `getFiscalSettings({ wait: true })` ou `loadFiscalSettingsStrict()`).
 - Ajouter un hook unifié : `useFiscalContext()` (retourne `fiscalContext`, `loading`, `error`, `versions`).
-- Mettre à jour les simulateurs qui doivent être exacts au 1er rendu (au moins IR & Succession) pour attendre le dossier fiscal.
+- Appliquer le mode strict **seulement aux simulateurs critiques** : IR et Succession (pas à tous les écrans pour éviter spinners excessifs).
+- Les autres pages gardent le comportement `stale-while-revalidate` (cache immédiat + refresh async).
 
 ### Fichiers
 - Modifier : `src/utils/fiscalSettingsCache.js`
@@ -113,39 +114,15 @@ Créer un mécanisme standard : **un seul point d’entrée** pour obtenir les p
 
 ---
 
-## PR-P1-06-02 — Brancher Succession sur les paramètres admin (et enlever le décoratif)
+## PR-P1-06-02 — Supprimer la duplication DMTG (source unique)
 
 ### Objectif
-Le simulateur Succession doit utiliser les paramètres (DMTG) **issus du dossier fiscal**, pas `DEFAULT_DMTG`.
-
-### Travaux
-- Charger `tax_settings` via `useFiscalContext()`.
-- Passer `dmtgSettings` au moteur : `calculateSuccession({ ..., dmtgSettings })`.
-- Afficher dans l’UI (optionnel mais utile) la version/empreinte du dossier fiscal utilisé.
-
-### Fichiers
-- Modifier : `src/features/succession/useSuccessionCalc.ts`
-- Modifier (si besoin) : `src/features/succession/SuccessionSimulator.tsx`
-- Moteur déjà prêt : `src/engine/succession.ts`
-
-### DoD
-- Changer un abattement DMTG côté admin → recalcul Succession reflète le changement.
-- Aucun appel implicite à `DEFAULT_DMTG` depuis l’UI.
-
-### Preuves attendues
-- Diff montrant que `dmtgSettings` est passé à `calculateSuccession`.
-- Exemple : abattement enfant modifié dans settings → résultat succession change.
-
----
-
-## PR-P1-06-03 — Supprimer la duplication DMTG (source unique)
-
-### Objectif
-Un seul endroit pour les valeurs par défaut DMTG, pour éviter divergences.
+Un seul endroit pour les valeurs par défaut DMTG, pour éviter divergences et instabilité lors du branchement Succession.
 
 ### Travaux
 - Remplacer `DEFAULT_DMTG` (moteur) par une importation depuis `settingsDefaults.ts` **ou** déplacer le défaut DMTG dans un module partagé unique.
 - Supprimer/neutraliser les constantes `@deprecated` qui dupliquent encore des valeurs (ou les faire pointer vers la source unique).
+- Vérifier que le moteur Succession utilise la source unique en cas d’absence de paramètres.
 
 ### Fichiers
 - Modifier : `src/engine/civil.ts`
@@ -162,25 +139,59 @@ Un seul endroit pour les valeurs par défaut DMTG, pour éviter divergences.
 
 ---
 
-## PR-P1-06-04 — Nouvelle page `/settings/dmtg-succession` (admin + lecture)
+## PR-P1-06-03 — Brancher Succession sur les paramètres admin
 
 ### Objectif
-Créer la page premium qui centralise transmission : DMTG successions/donations + assurance-vie décès + référentiel civil (lecture seule).
+Le simulateur Succession doit utiliser les paramètres (DMTG) **issus du dossier fiscal**, pas les fallbacks.
+
+### Travaux
+- Charger `tax_settings` via `useFiscalContext()`.
+- Passer `dmtgSettings` au moteur : `calculateSuccession({ ..., dmtgSettings })`.
+- Afficher dans l’UI (optionnel mais utile) la version/empreinte du dossier fiscal utilisé.
+
+### Fichiers
+- Modifier : `src/features/succession/useSuccessionCalc.ts`
+- Modifier (si besoin) : `src/features/succession/SuccessionSimulator.tsx`
+- Moteur déjà prêt : `src/engine/succession.ts`
+
+### DoD
+- Changer un abattement DMTG côté admin → recalcul Succession reflète le changement.
+- Aucun appel implicite au fallback depuis l’UI.
+
+### Preuves attendues
+- Diff montrant que `dmtgSettings` est passé à `calculateSuccession`.
+- Exemple : abattement enfant modifié dans settings → résultat succession change.
+
+---
+
+## PR-P1-06-04 — Nouvelle page `/settings/dmtg-succession` + validation
+
+### Objectif
+Créer la page premium qui centralise transmission : DMTG successions/donations + assurance-vie décès + référentiel civil (lecture seule). **Avec validation stricte** pour prévenir les erreurs de saisie (172 au lieu de 17,2).
 
 ### Organisation UI (simple, pro)
-1) **DMTG : Barèmes** (ligne directe, frère/soeur, neveu/nièce, autres)  
-2) **Succession : abattements & exonérations** (dont conditions frère/soeur)  
-3) **Donation : abattements + rappel fiscal** (+ don familial 790 G)  
-4) **Assurance-vie décès** (990 I / 757 B)  
-5) **Réserve / quotité / droits du conjoint** (lecture seule)  
+1) **DMTG : Barèmes** (ligne directe, frère/soeur, neveu/nièce, autres)
+2) **Succession : abattements & exonérations** (dont conditions frère/soeur)
+3) **Donation : abattements + rappel fiscal** (+ don familial 790 G)
+4) **Assurance-vie décès** (990 I / 757 B)
+5) **Réserve / quotité / droits du conjoint** (lecture seule)
 6) **Régimes matrimoniaux & PACS** (lecture seule + impact sur actif successoral dans le simulateur)
 
 ### Données (sans créer de table supplémentaire)
 - DMTG + donation : extension structurée de `tax_settings.data.dmtg` (ou sous-blocs dédiés)
 - AV décès : `fiscality_settings` (déjà géré par le cache)
+- **Migration Supabase** : si nécessaire, ajouter colonnes/champs JSON manquants à `tax_settings` pour donation + rappel fiscal
+
+### Validation (anti-erreurs silencieuses)
+- **Taux en %** : entre 0 et 100 (message : "Le taux doit être entre 0 et 100")
+- **Abattements** : positifs, raisonnables (ex : < 1 million pour abattement enfant)
+- **Tranches DMTG** : ordonnées, pas de chevauchement (message : "Tranche suivante doit commencer après la précédente")
+- **Bloquer la sauvegarde** si un champ est invalide
+- Messages clairs et contextuels pour chaque champ
 
 ### Fichiers
 - Nouveau : `src/pages/settings/SettingsDmtgSuccession.jsx` (+ CSS)
+- Nouveau (recommandé) : `src/pages/settings/validators/dmtgValidators.js` (réutilisable par autres pages)
 - Modifier : `src/constants/settingsRoutes.js` (ajout route)
 - Modifier : `src/utils/fiscalSettingsCache.js` (déjà charge tax/ps/fiscality : vérifier invalidations)
 - Modifier : `src/pages/settings/SettingsShell.jsx` (si nécessaire selon structure)
@@ -188,12 +199,14 @@ Créer la page premium qui centralise transmission : DMTG successions/donations 
 
 ### DoD
 - Page accessible depuis Settings.
-- Admin peut modifier + sauvegarder.
+- Admin peut modifier + sauvegarder **uniquement si validation réussit**.
 - Les simulateurs impactés recalculent après invalidation.
+- Une saisie manifestement incohérente ne peut pas être sauvegardée (ex : 172 au lieu de 17,2).
 
 ### Preuves attendues
 - Route présente dans `settingsRoutes.js`.
-- Sauvegarde → appel `invalidate('tax')` / `invalidate('fiscality')` + broadcast.
+- Test manuel : saisir 172 dans un champ taux → message d'erreur + bouton save désactivé.
+- Sauvegarde valide → appel `invalidate('tax')` / `invalidate('fiscality')` + broadcast.
 - UI cohérente avec style Settings existant.
 
 ---
@@ -244,25 +257,29 @@ Le simulateur Placement doit utiliser le barème DMTG réel (au moins ligne dire
 
 ---
 
-## PR-P1-06-07 — Validation admin (anti-erreurs silencieuses)
+## PR-P1-06-07 — Validation harmonisée sur Impots & Prélèvements
 
 ### Objectif
-Empêcher les incohérences de saisie qui peuvent engager la responsabilité (outil pro).
+Étendre la validation anti-erreurs ajoutée dans PR-04 aux pages Impots et Prélèvements pour **cohérence globale**.
 
-### Travaux (minimum utile)
-- Contrôler : taux en %, bornes raisonnables, tranches ordonnées, pas de négatif.
-- Messages clairs (“Le taux doit être entre 0 et 100”, “Tranche suivante doit commencer après la précédente”…).
-- Bloquer la sauvegarde si incohérent.
+### Travaux
+- Réutiliser le module `dmtgValidators.js` (créé en PR-04) ou créer `settingsValidators.js` modulaire.
+- Ajouter validation sur `SettingsImpots.jsx` : taux IR/PFU entre 0–100, tranches ordonnées.
+- Ajouter validation sur `SettingsPrelevements.jsx` : taux PS entre 0–100, cohérence des seuils.
+- Tester les cas limites sur chaque page.
 
 ### Fichiers
-- Pages settings : `src/pages/settings/SettingsImpots.jsx`, `SettingsPrelevements.jsx`, nouvelle `SettingsDmtgSuccession.jsx`
+- Modifier : `src/pages/settings/SettingsImpots.jsx`
+- Modifier : `src/pages/settings/SettingsPrelevements.jsx`
+- Réutiliser/étendre : `src/pages/settings/validators/dmtgValidators.js`
 
 ### DoD
-- Une saisie manifestement incohérente ne peut pas être sauvegardée.
+- Toutes les pages Settings appliquent le même pattern de validation.
+- Une saisie incohérente ne peut pas être sauvegardée sur aucune page.
 
 ### Preuves attendues
-- Cas de test manuel documenté : saisie 172 → message d’erreur.
-- Diff montrant un validateur central (si possible) réutilisé par plusieurs pages.
+- Cas manuels : 172 sur Impots → erreur, 200 sur Prélèvements → erreur.
+- Diff montrant réutilisation du validateur central.
 
 ---
 
@@ -296,23 +313,29 @@ Si un dossier `.ser1` est rouvert après mise à jour des paramètres, l’utili
 ## PR-P1-06-09 — Tests & garde-fous “source unique”
 
 ### Objectif
-Éviter que de nouveaux chiffres révisables reviennent en dur dans le code.
+Empêcher que de nouveaux chiffres révisables reviennent en dur dans le code après les PRs précédentes.
 
 ### Travaux
-- Ajouter un test “grep” (ou équivalent) sur des patterns de chiffres sensibles (PS 17.2, seuils DMTG…) dans des zones interdites.
-- Ajouter 3–5 “cas référence” (golden) pour :
-  - Succession (1–2 cas simples)
-  - Stratégie vs IR (cohérence)
-  - Placement DMTG (option list)
+- **Test “grep” en CI** : ajouter une vérification qui interdit certaines valeurs clés (ex : `17.2`, `100000`, `15932`) en dehors des modules autorisés (`settingsDefaults.ts`, `civil.ts`, constantes de settings).
+  - Exemple : `grep -r “17\.2” src/ --exclude-dir=__tests__ | grep -v settingsDefaults | grep -v civil` → doit être vide
+  - Intégrer dans `npm run check` ou un step CI dédié
+- **Tests golden (cas référence)** : ajouter 3–5 snapshots de calculs exacts :
+  - Succession : héritage simple (conjoint + 2 enfants) avec DMTG connus
+  - Stratégie vs IR : même revenu/parts → résultats identiques
+  - Placement DMTG : changement abattement → options changent
 
 ### Fichiers
-- Tests engine existants : `src/engine/__tests__/...`
-- (Nouveau) test de garde : à placer dans l’endroit déjà prévu pour ce type de check.
+- Modifier : `package.json` ou script CI (ajouter règle grep)
+- Nouveau/modifier : `src/engine/__tests__/goldenTests.spec.js` (ou intégrer dans tests existants)
+- Tests : `src/features/succession/__tests__/`, `src/features/strategy/__tests__/`
 
 ### DoD
 - CI empêche les régressions “chiffre en dur” sur zones critiques.
+- Les cas golden capturent le comportement attendu post-P1.
 
----
+### Preuves attendues
+- CI failure si quelqu’un ajoute `100000` hors des zones autorisées.
+- Snapshots testé : succession avec 2 enfants, stratégie cohérence IR.
 
 # P2 — Analyse patrimoniale + nouveaux simulateurs (après P1)
 Objectif : élargir les usages, sans perdre la rigueur “dossier fiscal”.
