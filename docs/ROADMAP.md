@@ -142,6 +142,30 @@ Un seul endroit pour les valeurs par défaut DMTG, pour éviter divergences et i
 
 ---
 
+## PR-P1-06-05 — Fix Placement : DMTG options branchées correctement
+
+### Objectif
+Le simulateur Placement doit utiliser le barème DMTG réel (au moins ligne directe) pour proposer les options.
+
+### Travaux
+- **Respecter la règle PR-01** : Placement lit uniquement `fiscalContext` (pas `taxSettings`).
+- Corriger la lecture DMTG pour utiliser une clé normalisée (ex : `fiscalContext.dmtgScaleLigneDirecte`)
+  ou un objet moteur prêt à l'emploi (ex : `fiscalContext.dmtgSettings.ligneDirecte.scale`).
+- Ajouter un test simple (ou un guard) : si pas de scale, fallback explicite + warning.
+
+### Fichiers
+- Modifier : `src/features/placement/components/usePlacementSimulatorController.js` 
+
+### DoD
+- Les options DMTG affichées reflètent la configuration admin.
+- Pas de "undefined scale" silencieux.
+
+### Preuves attendues
+- Diff du chemin corrigé.
+- Test manuel : changer tranche → options/valeurs changent.
+
+---
+
 ## PR-P1-06-03 — Brancher Succession sur les paramètres admin
 
 ### Objectif
@@ -152,19 +176,23 @@ Le simulateur Succession doit utiliser les paramètres (DMTG) **issus du dossier
 - Récupérer un objet `dmtgSettings` **complet au format moteur** depuis `fiscalContext` (ex : `fiscalContext.dmtgSettings`).
 - Passer `dmtgSettings` au moteur : `calculateSuccession({ ..., dmtgSettings })`.
 - Afficher dans l'UI (optionnel mais utile) la version/empreinte du dossier fiscal utilisé.
+- **Invalider le cache** des paramètres (`tax_settings` et `fiscality_settings`) après une mise à jour admin pour garantir la cohérence des résultats.
 
 ### Fichiers
 - Modifier : `src/features/succession/useSuccessionCalc.ts`
 - Modifier (si besoin) : `src/features/succession/SuccessionSimulator.tsx`
 - Moteur déjà prêt : `src/engine/succession.ts`
+- Modifier : `src/utils/fiscalSettingsCache.js` (ajouter invalidation)
 
 ### DoD
 - Changer un abattement DMTG côté admin → recalcul Succession reflète le changement.
 - Aucun appel implicite au fallback depuis l’UI.
+- Cache invalidé après mise à jour admin.
 
 ### Preuves attendues
 - Diff montrant que `dmtgSettings` est passé à `calculateSuccession`.
 - Exemple : abattement enfant modifié dans settings → résultat succession change.
+- Exemple : mise à jour admin → cache invalidé.
 
 ---
 
@@ -207,6 +235,7 @@ Créer la page premium qui centralise transmission : DMTG successions/donations 
 - Page accessible depuis Settings.
 - Admin peut modifier + sauvegarder **uniquement si validation réussit**.
 - Les simulateurs impactés recalculent après invalidation.
+- Sauvegarde valide → invalider **les 2 tables** (`tax` et `fiscality`) + `broadcastInvalidation` pour chacune (sinon certains écrans resteront sur l'ancien cache).
 - Une saisie manifestement incohérente ne peut pas être sauvegardée (ex : 172 au lieu de 17,2).
 
 ### Preuves attendues
@@ -214,30 +243,6 @@ Créer la page premium qui centralise transmission : DMTG successions/donations 
 - Test manuel : saisir 172 dans un champ taux → message d'erreur + bouton save désactivé.
 - Sauvegarde valide → appel `invalidate('tax')` / `invalidate('fiscality')` + broadcast.
 - UI cohérente avec style Settings existant.
-
----
-
-## PR-P1-06-05 — Fix Placement : DMTG options branchées correctement
-
-### Objectif
-Le simulateur Placement doit utiliser le barème DMTG réel (au moins ligne directe) pour proposer les options.
-
-### Travaux
-- **Respecter la règle PR-01** : Placement lit uniquement `fiscalContext` (pas `taxSettings`).
-- Corriger la lecture DMTG pour utiliser une clé normalisée (ex : `fiscalContext.dmtgScaleLigneDirecte`)
-  ou un objet moteur prêt à l'emploi (ex : `fiscalContext.dmtgSettings.ligneDirecte.scale`).
-- Ajouter un test simple (ou un guard) : si pas de scale, fallback explicite + warning.
-
-### Fichiers
-- Modifier : `src/features/placement/components/usePlacementSimulatorController.js`
-
-### DoD
-- Les options DMTG affichées reflètent la configuration admin.
-- Pas de “undefined scale” silencieux.
-
-### Preuves attendues
-- Diff du chemin corrigé.
-- Test manuel : changer tranche → options/valeurs changent.
 
 ---
 
@@ -297,11 +302,13 @@ Le simulateur Placement doit utiliser le barème DMTG réel (au moins ligne dire
 Si un dossier `.ser1` est rouvert après mise à jour des paramètres, l’utilisateur comprend pourquoi le résultat change, ou peut recalculer “avec les paramètres de l’époque”.
 
 ### Travaux
-- Évoluer le schéma snapshot (nouvelle version) pour stocker :
-  - `tax_settings.version`/`updated_at` (ou empreinte hash du JSON)
-  - `ps_settings.version`/`updated_at`
-  - `fiscality_settings.version`/`updated_at`
-- À l’ouverture d’un `.ser1`, si versions différentes : afficher un avertissement simple (“les paramètres fiscaux ont été mis à jour depuis la sauvegarde”).
+- Évoluer le schéma snapshot (nouvelle version) pour stocker l'identité exacte des paramètres utilisés :
+  - `tax_settings.updated_at` + **empreinte (hash)** de `tax_settings.data` 
+  - `ps_settings.updated_at` + **empreinte (hash)** de `ps_settings.data` 
+  - `fiscality_settings.updated_at` + **empreinte (hash)** de `fiscality_settings.data` 
+- **Ne pas dépendre uniquement de `version`** tant qu'elle n'est pas incrémentée automatiquement (sinon elle risque de rester à `1`).
+  - Optionnel : ajouter un trigger Supabase qui **incrémente `version`** à chaque update si on veut l'utiliser.
+- À l'ouverture d'un `.ser1`, si une empreinte/`updated_at` diffère : afficher un avertissement simple ("les paramètres fiscaux ont été mis à jour depuis la sauvegarde").
 
 ### Fichiers
 - Modifier : `src/reporting/json-io/snapshotSchema.ts` (bump version)
@@ -309,12 +316,13 @@ Si un dossier `.ser1` est rouvert après mise à jour des paramètres, l’utili
 - Modifier : modules de sauvegarde/chargement des sims (placement/IR/strategy…)
 
 ### DoD
-- Un `.ser1` conserve l’identité des paramètres utilisés.
+- Un `.ser1` conserve l'identité des paramètres utilisés (empreintes + dates).
 - Alerte visible si mismatch.
 
 ### Preuves attendues
-- Snapshot vX → vX+1 (à confirmer) validé, migration OK.
-- Exemple : sauver → changer settings → rouvrir → warning affiché.
+- Snapshot vX → vX+1 validé, migration OK.
+- Exemple : sauver → changer un paramètre (tax/ps/fiscality) → rouvrir → warning affiché.
+- Exemple : le `.ser1` sauvegardé contient bien **les empreintes** (3 hashes) + `updated_at`.
 
 ---
 
