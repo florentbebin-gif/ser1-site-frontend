@@ -119,6 +119,14 @@ Créer un mécanisme standard : **un seul point d’entrée** pour obtenir les p
 
 ## PR-P1-06-02 — Supprimer la duplication DMTG (source unique)
 
+✅ DONE — PR #156 — 2026-02-28
+
+**Preuves :**
+- `DEFAULT_DMTG` n'est plus un objet littéral : `export const DEFAULT_DMTG: DmtgSettings = DEFAULT_TAX_SETTINGS.dmtg;`
+- `rg "export const DEFAULT_DMTG" src` → 1 seul résultat (`civil.ts:124`), aucun doublon
+- Un seul fichier modifié (`src/engine/civil.ts`) : −34 lignes (objet littéral supprimé) +3 lignes (import + référence)
+- `npm run check` vert : lint ✓ · typecheck ✓ · 1088 tests ✓ · build ✓
+
 ### Objectif
 Un seul endroit pour les valeurs par défaut DMTG, pour éviter divergences et instabilité lors du branchement Succession.
 
