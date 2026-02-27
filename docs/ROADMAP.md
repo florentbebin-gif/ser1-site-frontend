@@ -176,23 +176,20 @@ Le simulateur Succession doit utiliser les paramètres (DMTG) **issus du dossier
 - Récupérer un objet `dmtgSettings` **complet au format moteur** depuis `fiscalContext` (ex : `fiscalContext.dmtgSettings`).
 - Passer `dmtgSettings` au moteur : `calculateSuccession({ ..., dmtgSettings })`.
 - Afficher dans l'UI (optionnel mais utile) la version/empreinte du dossier fiscal utilisé.
-- **Invalider le cache** des paramètres (`tax_settings` et `fiscality_settings`) après une mise à jour admin pour garantir la cohérence des résultats.
+- Le recalcul après mise à jour admin est déclenché par l'invalidation/broadcast côté pages Settings (cf PR-04) : Succession doit se recalculer dès que `fiscalContext` change.
 
 ### Fichiers
-- Modifier : `src/features/succession/useSuccessionCalc.ts`
-- Modifier (si besoin) : `src/features/succession/SuccessionSimulator.tsx`
+- Modifier : `src/features/succession/useSuccessionCalc.ts` 
+- Modifier (si besoin) : `src/features/succession/SuccessionSimulator.tsx` 
 - Moteur déjà prêt : `src/engine/succession.ts`
-- Modifier : `src/utils/fiscalSettingsCache.js` (ajouter invalidation)
 
 ### DoD
 - Changer un abattement DMTG côté admin → recalcul Succession reflète le changement.
-- Aucun appel implicite au fallback depuis l’UI.
-- Cache invalidé après mise à jour admin.
+- Aucun appel implicite au fallback depuis l'UI.
 
 ### Preuves attendues
 - Diff montrant que `dmtgSettings` est passé à `calculateSuccession`.
 - Exemple : abattement enfant modifié dans settings → résultat succession change.
-- Exemple : mise à jour admin → cache invalidé.
 
 ---
 
@@ -337,7 +334,9 @@ Empêcher que de nouveaux chiffres révisables reviennent en dur dans le code ap
   - **Fichiers autorisés** (exemple) :
     - `src/constants/settingsDefaults.ts` 
     - `src/**/__tests__/**` (tests)
-  - **Fichiers interdits** : `src/engine/**`, `src/features/**`, `src/pages/**` (hors settings) — toute apparition déclenche un échec CI.
+  - **Portée du contrôle (recommandé)** :
+    - Interdire ces valeurs dans `src/engine/**` et `src/features/**` (là où un chiffre en dur fausse un calcul).
+    - Optionnel : étendre à `src/pages/**` **sauf** `src/pages/settings/**` si on veut éviter des valeurs chiffrées en texte/validation qui n'impactent pas le moteur.
   - Implémentation simple : script Node (`scripts/check-no-hardcoded-fiscal-values.mjs`) exécuté dans CI et via `npm run check`.
 - **Tests golden (cas référence)** : ajouter 3–5 snapshots de calculs exacts :
   - Succession : héritage simple (conjoint + 2 enfants) avec DMTG connus
