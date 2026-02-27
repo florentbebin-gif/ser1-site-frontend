@@ -91,6 +91,14 @@ Rendre SER1 “professionnel” : **tous les simulateurs** consomment les mêmes
 
 ## PR-P1-06-01 — “Dossier fiscal” : chargement fiable + API unique
 
+✅ DONE — PR #155 — 2026-02-28
+
+**Preuves :**
+- Hook `src/hooks/useFiscalContext.ts` créé : expose `fiscalContext` normalisé (clés stables), `loading`, `error`, `meta`
+- Mode strict branché sur IR (`IrSimulatorContainer.jsx`) et Succession (`SuccessionSimulator.tsx`) — spinners avant calcul si Supabase non répondu
+- `src/utils/fiscalSettingsCache.js` enrichi de `loadFiscalSettingsStrict()` (mode wait Supabase)
+- `npm run check` vert au merge : lint ✓ · typecheck ✓ · 1088 tests ✓ · build ✓
+
 ### Objectif
 Créer un mécanisme standard : **un seul point d’entrée** pour obtenir les paramètres, avec un mode “strict” (attendre Supabase au 1er chargement).
 
@@ -151,6 +159,13 @@ Un seul endroit pour les valeurs par défaut DMTG, pour éviter divergences et i
 ---
 
 ## PR-P1-06-05 — Fix Placement : DMTG options branchées correctement
+
+✅ DONE — PR #157 — 2026-02-28
+
+**Preuves :**
+- `src/features/placement/components/usePlacementSimulatorController.js` : remplace `taxSettings?.dmtg?.scale` par `fiscalContext?.dmtgScaleLigneDirecte` (via `useFiscalContext({ strict: false })`)
+- `rg "taxSettings\?\.dmtg\?\.scale" src` → 0 résultats
+- `npm run check` vert : lint ✓ · typecheck ✓ · 1088 tests ✓ · build ✓
 
 ### Objectif
 Le simulateur Placement doit utiliser le barème DMTG réel (au moins ligne directe) pour proposer les options.
