@@ -148,9 +148,10 @@ Un seul endroit pour les valeurs par défaut DMTG, pour éviter divergences et i
 Le simulateur Succession doit utiliser les paramètres (DMTG) **issus du dossier fiscal**, pas les fallbacks.
 
 ### Travaux
-- Charger `tax_settings` via `useFiscalContext()`.
+- Charger le **dossier fiscal normalisé** via `useFiscalContext()`.
+- Récupérer un objet `dmtgSettings` **complet au format moteur** depuis `fiscalContext` (ex : `fiscalContext.dmtgSettings`).
 - Passer `dmtgSettings` au moteur : `calculateSuccession({ ..., dmtgSettings })`.
-- Afficher dans l’UI (optionnel mais utile) la version/empreinte du dossier fiscal utilisé.
+- Afficher dans l'UI (optionnel mais utile) la version/empreinte du dossier fiscal utilisé.
 
 ### Fichiers
 - Modifier : `src/features/succession/useSuccessionCalc.ts`
@@ -222,7 +223,9 @@ Créer la page premium qui centralise transmission : DMTG successions/donations 
 Le simulateur Placement doit utiliser le barème DMTG réel (au moins ligne directe) pour proposer les options.
 
 ### Travaux
-- Corriger `taxSettings?.dmtg?.scale` → `taxSettings?.dmtg?.ligneDirecte?.scale` (ou via `fiscalParams.dmtgScale` déjà normalisé).
+- **Respecter la règle PR-01** : Placement lit uniquement `fiscalContext` (pas `taxSettings`).
+- Corriger la lecture DMTG pour utiliser une clé normalisée (ex : `fiscalContext.dmtgScaleLigneDirecte`)
+  ou un objet moteur prêt à l'emploi (ex : `fiscalContext.dmtgSettings.ligneDirecte.scale`).
 - Ajouter un test simple (ou un guard) : si pas de scale, fallback explicite + warning.
 
 ### Fichiers
@@ -310,7 +313,7 @@ Si un dossier `.ser1` est rouvert après mise à jour des paramètres, l’utili
 - Alerte visible si mismatch.
 
 ### Preuves attendues
-- Snapshot v4 (ou +1) validé, migration OK.
+- Snapshot vX → vX+1 (à confirmer) validé, migration OK.
 - Exemple : sauver → changer settings → rouvrir → warning affiché.
 
 ---
@@ -325,14 +328,12 @@ Empêcher que de nouveaux chiffres révisables reviennent en dur dans le code ap
   - Définir une petite liste de valeurs sensibles (ex : `17.2`, `100000`, `15932`) et **interdire leur présence** en dehors d'une liste de fichiers autorisés.
   - **Fichiers autorisés** (exemple) :
     - `src/constants/settingsDefaults.ts` 
-    - (si conservé) un unique module de defaults civil/transmission
     - `src/**/__tests__/**` (tests)
   - **Fichiers interdits** : `src/engine/**`, `src/features/**`, `src/pages/**` (hors settings) — toute apparition déclenche un échec CI.
   - Implémentation simple : script Node (`scripts/check-no-hardcoded-fiscal-values.mjs`) exécuté dans CI et via `npm run check`.
 - **Tests golden (cas référence)** : ajouter 3–5 snapshots de calculs exacts :
   - Succession : héritage simple (conjoint + 2 enfants) avec DMTG connus
   - Stratégie vs IR : même revenu/parts → résultats identiques
-  - Placement DMTG : changement abattement → options changent
 
 ### Fichiers
 - Modifier : `package.json` ou script CI (ajouter règle grep)
