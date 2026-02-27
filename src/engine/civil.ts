@@ -7,6 +7,7 @@
 
 import { mkResult, mkRuleVersion } from './helpers';
 import type { CalcResult } from './types';
+import { DEFAULT_TAX_SETTINGS } from '../constants/settingsDefaults';
 
 // Types pour la situation civile
 export type RegimeMatrimonial = 
@@ -119,40 +120,8 @@ export interface DmtgSettings {
   autre: DmtgCategory;
 }
 
-// --- Barèmes DMTG par défaut (2024) ---
-export const DEFAULT_DMTG: DmtgSettings = {
-  ligneDirecte: {
-    abattement: 100_000,
-    scale: [
-      { from: 0, to: 8_072, rate: 5 },
-      { from: 8_072, to: 12_109, rate: 10 },
-      { from: 12_109, to: 15_932, rate: 15 },
-      { from: 15_932, to: 552_324, rate: 20 },
-      { from: 552_324, to: 902_838, rate: 30 },
-      { from: 902_838, to: 1_805_677, rate: 40 },
-      { from: 1_805_677, to: null, rate: 45 },
-    ],
-  },
-  frereSoeur: {
-    abattement: 15_932,
-    scale: [
-      { from: 0, to: 24_430, rate: 35 },
-      { from: 24_430, to: null, rate: 45 },
-    ],
-  },
-  neveuNiece: {
-    abattement: 7_967,
-    scale: [
-      { from: 0, to: null, rate: 55 },
-    ],
-  },
-  autre: {
-    abattement: 1_594,
-    scale: [
-      { from: 0, to: null, rate: 60 },
-    ],
-  },
-};
+// --- Barèmes DMTG par défaut — source unique : DEFAULT_TAX_SETTINGS.dmtg ---
+export const DEFAULT_DMTG: DmtgSettings = DEFAULT_TAX_SETTINGS.dmtg;
 
 // Abattements transmission (enfants) - Version 2024
 // @deprecated Utiliser DEFAULT_DMTG.ligneDirecte.abattement
