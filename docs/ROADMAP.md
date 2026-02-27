@@ -97,6 +97,9 @@ Créer un mécanisme standard : **un seul point d’entrée** pour obtenir les p
 ### Travaux
 - Ajouter une API de chargement **fiable** (ex : `getFiscalSettings({ wait: true })` ou `loadFiscalSettingsStrict()`).
 - Ajouter un hook unifié : `useFiscalContext()` (retourne `fiscalContext`, `loading`, `error`, `versions`).
+- **Normaliser le dossier fiscal** : `useFiscalContext()` doit exposer un objet **stable** (mêmes clés partout) pour empêcher les lectures directes divergentes (`taxSettings.dmtg.scale` vs `taxSettings.dmtg.ligneDirecte.scale`).
+  - Exemple de clés normalisées : `dmtgScaleLigneDirecte`, `dmtgAbattementEnfant`, `psRate`, `pfuRate`, etc.
+  - Règle : les simulateurs lisent **uniquement** `fiscalContext` (jamais les tables brutes).
 - Appliquer le mode strict **seulement aux simulateurs critiques** : IR et Succession (pas à tous les écrans pour éviter spinners excessifs).
 - Les autres pages gardent le comportement `stale-while-revalidate` (cache immédiat + refresh async).
 
@@ -180,7 +183,9 @@ Créer la page premium qui centralise transmission : DMTG successions/donations 
 ### Données (sans créer de table supplémentaire)
 - DMTG + donation : extension structurée de `tax_settings.data.dmtg` (ou sous-blocs dédiés)
 - AV décès : `fiscality_settings` (déjà géré par le cache)
-- **Migration Supabase** : si nécessaire, ajouter colonnes/champs JSON manquants à `tax_settings` pour donation + rappel fiscal
+- **Backfill / compatibilité** : comme `tax_settings.data` est du JSON, on enrichit la structure **sans modifier le schéma SQL**.
+  - À la lecture : merge `DEFAULT_TAX_SETTINGS` + données DB (pour obtenir un objet complet)
+  - Si la structure change : migration logicielle (versionner + transformer) ; migration SQL uniquement si on modifie réellement la table
 
 ### Validation (anti-erreurs silencieuses)
 - **Taux en %** : entre 0 et 100 (message : "Le taux doit être entre 0 et 100")
@@ -310,15 +315,20 @@ Si un dossier `.ser1` est rouvert après mise à jour des paramètres, l’utili
 
 ---
 
-## PR-P1-06-09 — Tests & garde-fous “source unique”
+## PR-P1-06-09 — Tests & garde-fous "source unique"
 
 ### Objectif
 Empêcher que de nouveaux chiffres révisables reviennent en dur dans le code après les PRs précédentes.
 
 ### Travaux
-- **Test “grep” en CI** : ajouter une vérification qui interdit certaines valeurs clés (ex : `17.2`, `100000`, `15932`) en dehors des modules autorisés (`settingsDefaults.ts`, `civil.ts`, constantes de settings).
-  - Exemple : `grep -r “17\.2” src/ --exclude-dir=__tests__ | grep -v settingsDefaults | grep -v civil` → doit être vide
-  - Intégrer dans `npm run check` ou un step CI dédié
+- **Garde-fou CI "valeurs fiscales en dur"** (liste autorisée) :
+  - Définir une petite liste de valeurs sensibles (ex : `17.2`, `100000`, `15932`) et **interdire leur présence** en dehors d'une liste de fichiers autorisés.
+  - **Fichiers autorisés** (exemple) :
+    - `src/constants/settingsDefaults.ts` 
+    - (si conservé) un unique module de defaults civil/transmission
+    - `src/**/__tests__/**` (tests)
+  - **Fichiers interdits** : `src/engine/**`, `src/features/**`, `src/pages/**` (hors settings) — toute apparition déclenche un échec CI.
+  - Implémentation simple : script Node (`scripts/check-no-hardcoded-fiscal-values.mjs`) exécuté dans CI et via `npm run check`.
 - **Tests golden (cas référence)** : ajouter 3–5 snapshots de calculs exacts :
   - Succession : héritage simple (conjoint + 2 enfants) avec DMTG connus
   - Stratégie vs IR : même revenu/parts → résultats identiques
@@ -330,11 +340,11 @@ Empêcher que de nouveaux chiffres révisables reviennent en dur dans le code ap
 - Tests : `src/features/succession/__tests__/`, `src/features/strategy/__tests__/`
 
 ### DoD
-- CI empêche les régressions “chiffre en dur” sur zones critiques.
+- CI empêche les régressions "chiffre en dur" sur zones critiques.
 - Les cas golden capturent le comportement attendu post-P1.
 
 ### Preuves attendues
-- CI failure si quelqu’un ajoute `100000` hors des zones autorisées.
+- CI failure si quelqu'un ajoute `100000` hors des zones autorisées.
 - Snapshots testé : succession avec 2 enfants, stratégie cohérence IR.
 
 # P2 — Analyse patrimoniale + nouveaux simulateurs (après P1)
