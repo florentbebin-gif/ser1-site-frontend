@@ -287,6 +287,159 @@ rg "export const CATALOG" src/domain/base-contrat/catalog.ts
 
 ---
 
+## Taux vivants & Settings fiscaux
+
+### Définition
+
+**Taux vivants** = valeurs numériques fiscales **révisables annuellement** (barèmes, taux, abattements, plafonds réglementaires), par opposition aux **règles structurelles** (principes codifiés dans le Code civil, modifiables uniquement par loi ordinaire distincte du PLF).
+
+**Principe cardinal** : les `rules/library/*.ts` ne doivent **jamais** contenir de valeur numériquement révisable sans commentaire `// À confirmer` et référence légale. Les taux vivants doivent vivre dans Supabase, pas dans le code.
+
+---
+
+### Pages settings existantes
+
+| Route | Composant | Table Supabase | Périmètre |
+|-------|-----------|----------------|-----------|
+| `/settings` | `Settings` | — | Généraux (placeholder) |
+| `/settings/impots` | `SettingsImpots` | `tax_settings` | Barème IR (2 ans), PFU, CEHR/CDHR, IS, DMTG successions |
+| `/settings/prelevements` | `SettingsPrelevements` | `ps_settings` | PS patrimoine, cotisations retraite, seuils RFR (CSG/CRDS/CASA) |
+| `/settings/base-contrat` | `BaseContrat` | `base_contrat_overrides` | Référentiel produits (read-only 3 colonnes + toggles admin) |
+| `/settings/comptes` | `SettingsComptes` | `profiles` | Comptes utilisateurs par cabinet (admin only) |
+
+Source unique des routes : `src/constants/settingsRoutes.js`.
+Shell de navigation : `src/pages/SettingsShell.jsx` (rendu dynamique des onglets, filtre `adminOnly`).
+
+**À venir** : `/settings/dmtg-succession` (Paramètres DMTG & Succession) — voir ROADMAP P1-06.
+
+---
+
+### Tables Supabase (singletons, `id = 1`)
+
+| Table | Périmètre | RLS lecture | RLS écriture |
+|-------|-----------|-------------|--------------|
+| `tax_settings` | IR barème (N et N-1), PFU taux IR+PS, CEHR/CDHR, IS, DMTG barèmes+abattements | Auth | Admin |
+| `ps_settings` | PS patrimoine (17,2 %), cotisations retraite par tranche, seuils RFR (1/2/3 parts) | Auth | Admin |
+| `fiscality_settings` | Règles par enveloppe (AV, PER, PEA, CTO, dividendes…) — taux, abattements, seuils | Auth | Admin |
+| `base_contrat_settings` | Config catalogue (réservé usage futur) | Auth | Admin |
+| `base_contrat_overrides` | Clôture/réouverture produit + note admin (uuid per product) | Admin | Admin |
+
+Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
+
+---
+
+### Flux complet : Supabase → Engine
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ SUPABASE (3 singletons id=1)                             │
+│  tax_settings · ps_settings · fiscality_settings         │
+└──────────────────────────┬───────────────────────────────┘
+          RLS: auth READ / admin WRITE
+          Admin save → supabase.upsert({id:1, data})
+                     → invalidate(kind) + broadcastInvalidation(kind)
+                                              │ CustomEvent
+┌──────────────────────────▼───────────────────────────────┐
+│ fiscalSettingsCache.js  (src/utils/)                     │
+│  · Stale-while-revalidate : retour immédiat cache/défauts│
+│  · Fetch Supabase en arrière-plan (non-bloquant)         │
+│  · TTL 24 h · localStorage (anti-flash cold start)       │
+│  · Timeout Supabase 8 s (fallback défauts si KO)         │
+│  · addInvalidationListener() : écoute les invalidations  │
+└──────────────────────────┬───────────────────────────────┘
+                           │ getFiscalSettings({force})
+┌──────────────────────────▼───────────────────────────────┐
+│ usePlacementSettings.js  (src/hooks/)                    │
+│  · Monte les 3 tables · écoute les invalidations         │
+│  · Appelle extractFiscalParams(fiscality, ps)            │
+│  · Dérive tmiOptions depuis barème IR                    │
+│  → fiscalParams (34 valeurs numériques normalisées)      │
+└──────────────────────────┬───────────────────────────────┘
+                           │ fiscalParams
+┌──────────────────────────▼───────────────────────────────┐
+│ Engine  (src/engine/)                                    │
+│  · Zéro React · Zéro side effects · Déterministe        │
+│  · simulateEpargne · calculFiscaliteRetrait              │
+│  · calculateSuccession · simulateLiquidation …           │
+└──────────────────────────────────────────────────────────┘
+```
+
+**extractFiscalParams()** (`src/engine/placement/fiscalParams.js`) : mappe le JSONB des tables → objet normalisé de 34 valeurs. Fallback sur `DEFAULT_FISCAL_PARAMS` (`src/engine/placement/shared.js`) si clé manquante ou invalide.
+
+---
+
+### Classification : taux vivants vs règles structurelles
+
+#### Taux vivants (Supabase, modifiables admin, susceptibles de changer à chaque PLF)
+
+| Catégorie | Paramètres | Table | Référence légale |
+|-----------|-----------|-------|-----------------|
+| **IR** | Barème 5 tranches (seuils + taux), abattement DOM | `tax_settings` | Art. 197 CGI |
+| **PFU** | Taux IR 12,8 % + Taux PS 17,2 % = 30 % | `tax_settings` | Art. 200 A CGI |
+| **CEHR/CDHR** | Seuils (500 k€, 1 M€) + taux (3 %, 4 %) | `tax_settings` | Art. 223 sexies CGI |
+| **IS** | Taux réduit 15 % (seuil 42 500 €), taux normal 25 % | `tax_settings` | Art. 219 CGI |
+| **DMTG successions** | Barèmes par lien de parenté + abattements (100 k€, 15 932 €…) | `tax_settings` | Art. 777 & 779 CGI |
+| **DMTG donations** | Abattements spécifiques donation (31 865 €, 80 724 €…) | *(P1-06 — à créer)* | Art. 779, 790 E/F/G CGI |
+| **Assurance-vie** | Abattement 990I (152 500 €), taux 20 %/31,25 %, abattement 757B (30 500 €) | `fiscality_settings` | Art. 990 I & 757 B CGI |
+| **PS patrimoine** | 17,2 % (CSG 9,2 % + CRDS 0,5 % + PS 7,5 %) | `ps_settings` | Art. L136-6 CSS |
+| **Seuils RFR** | Par nombre de parts (CSG taux réduit, CRDS exo) | `ps_settings` | Art. L136-8 CSS |
+| **PASS** | Non encore dans settings — valeur annuelle URSSAF | *(reference_rates — futur)* | Art. D612-5 CSS |
+
+#### Règles structurelles (logique moteur, Code civil ou loi ordinaire)
+
+| Règle | Source | Stabilité |
+|-------|--------|-----------|
+| Réserve héréditaire (1/2, 2/3, 3/4 selon nbre d'enfants) | Art. 912-913 Code civil | Très stable |
+| Exonération conjoint survivant (succession) | Art. 796-0 bis CGI (loi TEPA 2007) | Stable |
+| Exonération partenaire PACS (succession) | Art. 796-0 ter CGI | Stable |
+| Délai de rappel fiscal : 15 ans | Art. 784 CGI | Stable (était 10 ans avant 2012) |
+| Assurance-vie hors succession (primes < 70 ans) | Art. L132-12 Code assurances + 990 I CGI | Stable (principe) |
+| Représentation successorale (enfant prédécédé) | Art. 751 Code civil | Très stable |
+| Rapport civil (sans limite de temps) | Art. 843 Code civil | Stable |
+| Régimes matrimoniaux (définitions actif successoral) | Art. 1400, 1536, 1526, 1569 Code civil | Très stable |
+| Usufruit légal conjoint survivant | Art. 757 Code civil | Stable |
+| Barème nue-propriété / usufruit | Art. 669 CGI | Modifiable PLF |
+
+---
+
+### Architecture cible — `reference_rates`
+
+> Voir détail dans `docs/ROADMAP.md` (§ Item transversal — Taux vivants).
+
+Objectif : remplacer les constantes hardcodées dans `settingsDefaults.ts` par une table Supabase `reference_rates` :
+
+```sql
+CREATE TABLE reference_rates (
+  key          TEXT PRIMARY KEY,      -- ex: 'PASS_N', 'TAUX_PS', 'SEUIL_MICRO_BIC'
+  value        NUMERIC NOT NULL,
+  label        TEXT,
+  source_url   TEXT,
+  last_updated_at TIMESTAMPTZ,
+  valid_from   DATE,
+  valid_until  DATE
+);
+```
+
+Edge Function `rates-refresh` (cron hebdomadaire) : fetch URSSAF / legifrance / service-public → upsert horodaté.
+
+---
+
+### Fichiers clés
+
+| Rôle | Fichier |
+|------|---------|
+| Source des routes settings | `src/constants/settingsRoutes.js` |
+| Valeurs par défaut 3 tables | `src/constants/settingsDefaults.ts` |
+| Shell settings (nav + rendu) | `src/pages/SettingsShell.jsx` |
+| Pages settings | `src/pages/settings/` |
+| Cache + fetch Supabase | `src/utils/fiscalSettingsCache.js` |
+| Hook simulateur placement | `src/hooks/usePlacementSettings.js` |
+| Extraction params normalisés | `src/engine/placement/fiscalParams.js` |
+| Params par défaut (34 valeurs) | `src/engine/placement/shared.js` (`DEFAULT_FISCAL_PARAMS`) |
+| Profil fiscal par enveloppe | `src/features/placement/hooks/useFiscalProfile.ts` |
+
+---
+
 ## Références
 - Gouvernance UI/couleurs/thème : `docs/GOUVERNANCE.md`
 - Runbook debug + edge + migrations : `docs/RUNBOOK.md`
