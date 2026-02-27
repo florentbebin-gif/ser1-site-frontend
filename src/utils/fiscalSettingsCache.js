@@ -151,10 +151,53 @@ export async function getFiscalSettings({ force = false } = {}) {
     fetchFromSupabase(kind);
   });
   // On n'attend pas: on retourne immédiatement cache/defaults
-  // Si tu veux attendre, décommente la ligne suivante :
-  // await Promise.allSettled(promises);
 
   return result;
+}
+
+/**
+ * loadFiscalSettingsStrict — Mode strict : attend que Supabase répond avant de retourner.
+ *
+ * Si le cache localStorage est valide (< TTL), retourne immédiatement depuis le cache
+ * (pas besoin de refetch). Sinon, attend le fetch Supabase (avec timeout).
+ *
+ * À utiliser uniquement pour les simulateurs critiques (IR, Succession).
+ *
+ * @returns {{ tax, ps, fiscality, fromCache: boolean, error: string|null }}
+ */
+export async function loadFiscalSettingsStrict() {
+  // Hydrate depuis localStorage au premier appel
+  if (!cache.timestamp) hydrateFromStorage();
+
+  // Si toutes les données sont en cache valide, pas besoin d'attendre
+  const allCached = ['tax', 'ps', 'fiscality'].every((k) => isCacheValid(k));
+  if (allCached) {
+    return {
+      tax: cache.tax,
+      ps: cache.ps,
+      fiscality: cache.fiscality,
+      fromCache: true,
+      error: null,
+    };
+  }
+
+  // Attendre les fetchs Supabase pour les kinds manquants
+  let fetchError = null;
+  try {
+    await Promise.allSettled(
+      ['tax', 'ps', 'fiscality'].map((kind) => fetchFromSupabase(kind))
+    );
+  } catch (e) {
+    fetchError = e?.message || 'Erreur chargement Supabase';
+  }
+
+  return {
+    tax: isCacheValid('tax') ? cache.tax : DEFAULT_TAX_SETTINGS,
+    ps: isCacheValid('ps') ? cache.ps : DEFAULT_PS_SETTINGS,
+    fiscality: isCacheValid('fiscality') ? cache.fiscality : DEFAULT_FISCALITY_SETTINGS,
+    fromCache: false,
+    error: fetchError,
+  };
 }
 
 export async function invalidate(kind) {
