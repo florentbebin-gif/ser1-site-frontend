@@ -306,11 +306,10 @@ rg "export const CATALOG" src/domain/base-contrat/catalog.ts
 | `/settings/prelevements` | `SettingsPrelevements` | `ps_settings` | PS patrimoine, cotisations retraite, seuils RFR (CSG/CRDS/CASA) |
 | `/settings/base-contrat` | `BaseContrat` | `base_contrat_overrides` | Référentiel produits (read-only 3 colonnes + toggles admin) |
 | `/settings/comptes` | `SettingsComptes` | `profiles` | Comptes utilisateurs par cabinet (admin only) |
+| `/settings/dmtg-succession` | `SettingsDmtgSuccession` | `tax_settings`, `fiscality_settings` | Barèmes DMTG successions + abattements (livré PR #159) |
 
 Source unique des routes : `src/constants/settingsRoutes.js`.
 Shell de navigation : `src/pages/SettingsShell.jsx` (rendu dynamique des onglets, filtre `adminOnly`).
-
-**À venir** : `/settings/dmtg-succession` (Paramètres DMTG & Succession) — voir ROADMAP P1-06.
 
 ---
 
@@ -368,6 +367,61 @@ Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
 
 ---
 
+### Dossier fiscal unifié — `useFiscalContext`
+
+**Point d'entrée unique** : `src/hooks/useFiscalContext.ts`
+
+Tous les simulateurs consomment les paramètres fiscaux via ce hook. Il expose un `fiscalContext` aux clés stables, indépendamment de la structure Supabase.
+
+#### Deux modes
+
+| Mode | Usage | Comportement |
+|------|-------|--------------|
+| `strict: true` | IR, Succession | Attend Supabase avant de retourner — bloque sur un écran de chargement si Supabase est lent |
+| `strict: false` (défaut) | Placement, Stratégie | Stale-while-revalidate — retourne cache/défauts immédiatement, rafraîchit en arrière-plan |
+
+#### Clés normalisées exposées
+
+```ts
+fiscalContext.irScaleCurrent          // barème IR année courante
+fiscalContext.irScalePrevious         // barème IR année précédente
+fiscalContext.pfuRateIR               // taux IR PFU (ex: 12.8)
+fiscalContext.psRateGlobal            // taux PS patrimoine (ex: 17.2)
+fiscalContext.dmtgScaleLigneDirecte   // barème DMTG ligne directe
+fiscalContext.dmtgAbattementEnfant    // abattement ligne directe (ex: 100 000)
+fiscalContext.dmtgSettings            // objet DMTG complet { ligneDirecte, frereSoeur, neveuNiece, autre }
+fiscalContext._raw_tax                // brut tax_settings (usage exceptionnel)
+fiscalContext._raw_ps                 // brut ps_settings
+fiscalContext._raw_fiscality          // brut fiscality_settings
+```
+
+#### Invalidation
+
+L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → événement `ser1:fiscal-settings-updated` → tous les `useFiscalContext` actifs se rafraîchissent.
+
+---
+
+### Identité fiscale & snapshot v4 — `FiscalIdentity`
+
+**Objectif** : détecter si les paramètres fiscaux ont changé entre la sauvegarde d'un dossier `.ser1` et son rechargement ultérieur.
+
+**Mécanisme** (PR #162) :
+
+1. Au démarrage de l'app (`App.jsx`), `fingerprintSettingsData()` calcule un hash SHA-256 des 3 tables.
+2. Ce fingerprint (`FiscalIdentity`) est stocké dans chaque `.ser1` sauvegardé (snapshot schéma v4).
+3. Au chargement d'un `.ser1`, le fingerprint sauvegardé est comparé au fingerprint courant.
+4. En cas de mismatch → notification "Attention : les paramètres fiscaux ont été mis à jour depuis la sauvegarde."
+
+**Fichiers** :
+
+| Rôle | Fichier |
+|------|---------|
+| Calcul du fingerprint | `src/utils/fiscalSettingsCache.js` (`fingerprintSettingsData`) |
+| Comparaison au chargement | `src/App.jsx` (lignes 169–183) |
+| Migration snapshot v3→v4 | `src/features/ser1/snapshotMigrations.ts` |
+
+---
+
 ### Classification : taux vivants vs règles structurelles
 
 #### Taux vivants (Supabase, modifiables admin, susceptibles de changer à chaque PLF)
@@ -379,7 +433,7 @@ Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
 | **CEHR/CDHR** | Seuils (500 k€, 1 M€) + taux (3 %, 4 %) | `tax_settings` | Art. 223 sexies CGI |
 | **IS** | Taux réduit 15 % (seuil 42 500 €), taux normal 25 % | `tax_settings` | Art. 219 CGI |
 | **DMTG successions** | Barèmes par lien de parenté + abattements (100 k€, 15 932 €…) | `tax_settings` | Art. 777 & 779 CGI |
-| **DMTG donations** | Abattements spécifiques donation (31 865 €, 80 724 €…) | *(P1-06 — à créer)* | Art. 779, 790 E/F/G CGI |
+| **DMTG donations** | Abattements spécifiques donation (31 865 €, 80 724 €…) | *(non implémenté — futur PLF)* | Art. 779, 790 E/F/G CGI |
 | **Assurance-vie** | Abattement 990I (152 500 €), taux 20 %/31,25 %, abattement 757B (30 500 €) | `fiscality_settings` | Art. 990 I & 757 B CGI |
 | **PS patrimoine** | 17,2 % (CSG 9,2 % + CRDS 0,5 % + PS 7,5 %) | `ps_settings` | Art. L136-6 CSS |
 | **Seuils RFR** | Par nombre de parts (CSG taux réduit, CRDS exo) | `ps_settings` | Art. L136-8 CSS |
@@ -433,10 +487,12 @@ Edge Function `rates-refresh` (cron hebdomadaire) : fetch URSSAF / legifrance / 
 | Shell settings (nav + rendu) | `src/pages/SettingsShell.jsx` |
 | Pages settings | `src/pages/settings/` |
 | Cache + fetch Supabase | `src/utils/fiscalSettingsCache.js` |
+| **Hook unifié dossier fiscal** | **`src/hooks/useFiscalContext.ts`** |
 | Hook simulateur placement | `src/hooks/usePlacementSettings.js` |
 | Extraction params normalisés | `src/engine/placement/fiscalParams.js` |
 | Params par défaut (34 valeurs) | `src/engine/placement/shared.js` (`DEFAULT_FISCAL_PARAMS`) |
 | Profil fiscal par enveloppe | `src/features/placement/hooks/useFiscalProfile.ts` |
+| Migration snapshot (v4 + identity) | `src/features/ser1/snapshotMigrations.ts` |
 
 ---
 

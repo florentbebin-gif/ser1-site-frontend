@@ -24,9 +24,29 @@ Dev qui doit dépanner vite, ou exécuter un parcours local/CI.
 
 ## Checks du repo
 - Check complet :
-  - `npm run check` (lint + typecheck + tests + build)
+  - `npm run check` (lint + **check:fiscal-hardcode** + typecheck + tests + build)
 
 En CI, c'est le gate principal.
+
+### Sous-step : `check:fiscal-hardcode`
+
+Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
+
+**Ce que ça vérifie** : absence de valeurs fiscales révisables en dur dans `src/engine/` et `src/features/` (hors tests). Les valeurs surveillées sont celles de `FORBIDDEN_VALUES` dans `scripts/check-no-hardcoded-fiscal-values.mjs` :
+
+| Valeur | Label |
+|--------|-------|
+| `17.2` | Taux PS patrimoine |
+| `100000` | Abattement enfant DMTG (ligne directe) |
+| `15932` | Abattement frère/sœur DMTG |
+
+**Seul fichier autorisé** à contenir ces valeurs : `src/constants/settingsDefaults.ts`.
+
+**Si la garde échoue** (violation détectée) : déplacer la valeur en dur vers `settingsDefaults.ts` et la consommer via `DEFAULT_TAX_SETTINGS` ou `useFiscalContext`.
+
+**Si une valeur légale change au PLF** (ex: abattement 100 000 € → 120 000 €) :
+1. Mettre à jour la valeur dans `settingsDefaults.ts` (défaut code) ET dans Supabase via `/settings/impots`.
+2. Si le pattern `FORBIDDEN_VALUES` dans `check-no-hardcoded-fiscal-values.mjs` référence l'ancienne valeur, mettre à jour le pattern pour correspondre à la nouvelle valeur légale.
 
 ---
 
@@ -123,6 +143,37 @@ supabase functions invoke admin \
 Contrat API : `supabase/functions/admin/index.ts`.
 
 Notes CORS : en prod, l'app passe par un proxy Vercel (`api/admin.js`).
+
+---
+
+## Identité fiscale — warning mismatch au chargement d'un .ser1
+
+### Comportement attendu
+
+Au chargement d'un fichier `.ser1` sauvegardé avec le schéma v4, l'app compare le fingerprint fiscal stocké dans le fichier avec les paramètres fiscaux courants (Supabase). Si les paramètres ont changé entre la sauvegarde et le chargement, une notification apparaît :
+
+> "Attention : les paramètres fiscaux ont été mis à jour depuis la sauvegarde. Les résultats peuvent changer."
+
+### Causes possibles
+
+- Un admin a modifié les barèmes IR, PS ou les règles par enveloppe entre la sauvegarde du dossier et son rechargement.
+- Le dossier a été créé sur un environnement (ex: prod) et rechargé sur un autre (staging avec paramètres différents).
+- Le dossier est antérieur au schéma v4 (snapshot v1/v2/v3) : pas de fingerprint → pas de warning même si les paramètres diffèrent.
+
+### Que faire
+
+1. **Warning seul (notification)** → les résultats affichés sont calculés avec les paramètres fiscaux courants (post-update). Recalculer et re-sauvegarder le dossier pour remettre en cohérence l'identité fiscale stockée.
+2. **Vérifier les paramètres courants** : `/settings/impots` et `/settings/prelevements`.
+3. **Si recalcul impossible** (dossier archivé) : noter la date de sauvegarde et les paramètres fiscaux en vigueur à cette date pour toute comparaison.
+
+### Debug
+
+```bash
+# Vérifier le schéma du snapshot stocké dans un .ser1 (JSON)
+# Les fichiers .ser1 sont du JSON : ouvrir avec un éditeur et chercher "fiscalIdentity"
+# Exemple de structure v4 attendue :
+# { "schemaVersion": 4, "fiscalIdentity": { "tax": { "hash": "...", "updatedAt": "..." }, ... } }
+```
 
 ---
 
