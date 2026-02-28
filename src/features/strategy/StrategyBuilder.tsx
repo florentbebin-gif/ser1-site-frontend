@@ -8,6 +8,7 @@ import type { Strategie, ProduitConfig, ProduitType, Recommandation } from './ty
 import { createEmptyStrategie, PRODUIT_LABELS } from './types';
 import { generateRecommendations } from './recommendations';
 import { calculateBaselineProjection, calculateStrategyProjection, compareScenarios } from './calculations';
+import { useFiscalContext } from '../../hooks/useFiscalContext';
 import type { ComparaisonScenarios } from './types';
 import { generateStrategyPptx } from '../../pptx/strategyPptx';
 import { onResetEvent } from '../../utils/reset';
@@ -20,6 +21,7 @@ interface StrategyBuilderProps {
 
 export default function StrategyBuilder({ dossier }: StrategyBuilderProps): React.ReactElement {
   const { canExport } = useContext(SessionGuardContext);
+  const { fiscalContext } = useFiscalContext();
   const [strategie, setStrategie] = useState<Strategie>(() => createEmptyStrategie(dossier.id));
   const [recommandations, setRecommandations] = useState<Recommandation[]>([]);
   const [comparaison, setComparaison] = useState<ComparaisonScenarios | null>(null);
@@ -33,13 +35,13 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
     setStrategie(prev => ({ ...prev, recommandations: recos }));
   }, [dossier]);
 
-  // Calcul des projections quand les produits changent
+  // Calcul des projections quand les produits ou les paramètres fiscaux changent
   useEffect(() => {
-    const baseline = calculateBaselineProjection(dossier);
-    const strategieProj = calculateStrategyProjection(dossier, strategie.produitsSelectionnes);
+    const baseline = calculateBaselineProjection(dossier, fiscalContext);
+    const strategieProj = calculateStrategyProjection(dossier, strategie.produitsSelectionnes, fiscalContext);
     const comp = compareScenarios(baseline, strategieProj);
     setComparaison(comp);
-  }, [dossier, strategie.produitsSelectionnes]);
+  }, [dossier, strategie.produitsSelectionnes, fiscalContext]);
 
   // Écoute de l'événement reset depuis la topbar
   useEffect(() => {

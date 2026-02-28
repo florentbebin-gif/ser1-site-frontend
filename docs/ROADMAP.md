@@ -285,6 +285,13 @@ Créer la page premium qui centralise transmission : DMTG successions/donations 
 
 ## PR-P1-06-06 — Aligner Stratégie sur les mêmes paramètres IR que /sim/ir
 
+✅ DONE — PR #160 — 2026-02-28
+
+**Preuves :**
+- `calculations.ts` n’importe plus `engine/tax` : `rg "from ‘../../engine/tax’" src/features/strategy` → 0 résultat
+- Stratégie lit `fiscalContext.irScaleCurrent` via `computeIR()` + fallback `DEFAULT_TAX_SETTINGS` ; `StrategyBuilder.tsx` appelle `useFiscalContext()` (stale) et passe `fiscalContext` aux projections
+- `npm run check` vert : lint ✓ · typecheck ✓ · 1088 tests ✓ · build ✓
+
 ### Objectif
 Éviter 2 calculs IR différents selon l’écran.
 
