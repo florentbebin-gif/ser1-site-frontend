@@ -48,8 +48,9 @@ export function CreditScheduleTable({
   startYM,
   isAnnual,
   title,
+  defaultCollapsed = false,
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
   const displayRows = useMemo(() => {
     if (!rows || rows.length === 0) return [];

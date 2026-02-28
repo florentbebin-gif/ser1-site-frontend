@@ -8,9 +8,10 @@
  * - Formatters              → utils/creditFormatters.js
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { onResetEvent, storageKeyFor } from '../../utils/reset.js';
 import { useTheme } from '../../settings/ThemeProvider';
+import { useUserMode } from '../../services/userModeService';
 import { 
   DEFAULT_STATE, 
   normalizeLoadedState, 
@@ -70,6 +71,12 @@ export default function CreditV2() {
   const { colors: themeColors, cabinetLogo, logoPlacement, pptxColors } = useTheme();
 
   // -------------------------------------------------------------------------
+  // MODE UTILISATEUR
+  // -------------------------------------------------------------------------
+  const { mode, isLoading: modeLoading } = useUserMode();
+  const isExpert = mode === 'expert';
+
+  // -------------------------------------------------------------------------
   // STATE
   // -------------------------------------------------------------------------
   const [state, setState] = useState(DEFAULT_STATE);
@@ -77,6 +84,16 @@ export default function CreditV2() {
   const [rawValues, setRawValues] = useState({});
   const [exportLoading, setExportLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [hypothesesOpen, setHypothesesOpen] = useState(false);
+
+  // Synchronise l'accordéon hypothèses avec le mode (une seule fois à la résolution du mode)
+  const modeResolvedRef = useRef(false);
+  useEffect(() => {
+    if (!modeLoading && !modeResolvedRef.current) {
+      modeResolvedRef.current = true;
+      setHypothesesOpen(isExpert);
+    }
+  }, [modeLoading, isExpert]);
 
   const STORE_KEY = storageKeyFor('credit');
 
@@ -237,6 +254,7 @@ export default function CreditV2() {
         onViewModeChange={(v) => setGlobal({ viewMode: v })}
         exportOptions={exportOptions}
         exportLoading={exportLoading}
+        isExpert={isExpert}
       />
 
       {/* GRID : SAISIE (gauche) + SYNTHÈSE (droite) */}
@@ -250,6 +268,7 @@ export default function CreditV2() {
             hasPret3={!!state.pret3}
             onAddPret2={addPret2}
             onAddPret3={addPret3}
+            isExpert={isExpert}
           />
 
           <div className="premium-card">
@@ -264,8 +283,23 @@ export default function CreditV2() {
               onPatch={activeLoan.set}
               onRemove={activeLoan.remove}
               formatTauxRaw={formatTauxRaw}
+              isExpert={isExpert}
             />
           </div>
+
+          {/* LIEN DISCRET AJOUT PRÊT 2 (mode simplifié uniquement) */}
+          {!isExpert && !state.pret2 && (
+            <div className="cv2-loan-add-link">
+              <button
+                type="button"
+                className="cv2-loan-add-link__btn"
+                onClick={addPret2}
+                data-testid="credit-add-pret2-simple"
+              >
+                + Ajouter un 2ème prêt
+              </button>
+            </div>
+          )}
 
           {/* LISSAGE (si prêts additionnels) */}
           {calc.hasPretsAdditionnels && (
@@ -325,6 +359,7 @@ export default function CreditV2() {
         rows={calc.agrRows}
         startYM={state.startYM}
         isAnnual={isAnnual}
+        defaultCollapsed={!isExpert}
       />
 
       {/* DÉTAIL PAR PRÊT (si prêts multiples) */}
@@ -335,6 +370,7 @@ export default function CreditV2() {
             startYM={state.startYM}
             isAnnual={isAnnual}
             title="Détail — Prêt 1"
+            defaultCollapsed={!isExpert}
           />
           {calc.pret2Rows.length > 0 && (
             <CreditScheduleTable
@@ -342,6 +378,7 @@ export default function CreditV2() {
               startYM={state.startYM}
               isAnnual={isAnnual}
               title="Détail — Prêt 2"
+              defaultCollapsed={!isExpert}
             />
           )}
           {calc.pret3Rows.length > 0 && (
@@ -350,20 +387,39 @@ export default function CreditV2() {
               startYM={state.startYM}
               isAnnual={isAnnual}
               title="Détail — Prêt 3"
+              defaultCollapsed={!isExpert}
             />
           )}
         </>
       )}
 
-      {/* HYPOTHÈSES */}
+      {/* HYPOTHÈSES — accordéon (ouvert par défaut en expert, fermé en simplifié) */}
       <div className="cv2-hypotheses">
-        <div className="cv2-hypotheses__title">Hypothèses et limites</div>
-        <ul>
-          <li>Les résultats sont indicatifs et ne constituent pas une offre de prêt.</li>
-          <li>Le calcul suppose un taux fixe sur toute la durée du prêt.</li>
-          <li>L'assurance emprunteur est calculée selon le mode sélectionné (capital initial ou restant dû) pour chaque prêt.</li>
-          <li>Les frais de dossier, de garantie et de notaire ne sont pas inclus dans ce simulateur.</li>
-        </ul>
+        <button
+          type="button"
+          className="cv2-hypotheses__toggle"
+          onClick={() => setHypothesesOpen(o => !o)}
+          aria-expanded={hypothesesOpen}
+          data-testid="credit-hypotheses-toggle"
+        >
+          <span className="cv2-hypotheses__title">Hypothèses et limites</span>
+          <svg
+            width="12" height="12" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            className={`cv2-hypotheses__chevron${hypothesesOpen ? ' is-open' : ''}`}
+            aria-hidden="true"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+        {hypothesesOpen && (
+          <ul>
+            <li>Les résultats sont indicatifs et ne constituent pas une offre de prêt.</li>
+            <li>Le calcul suppose un taux fixe sur toute la durée du prêt.</li>
+            <li>L'assurance emprunteur est calculée selon le mode sélectionné (capital initial ou restant dû) pour chaque prêt.</li>
+            <li>Les frais de dossier, de garantie et de notaire ne sont pas inclus dans ce simulateur.</li>
+          </ul>
+        )}
       </div>
     </div>
   );

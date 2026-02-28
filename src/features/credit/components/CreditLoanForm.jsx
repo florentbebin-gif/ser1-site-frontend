@@ -1,15 +1,17 @@
 /**
  * CreditLoanForm.jsx - Formulaire de saisie d'un prêt (réutilisable)
- * 
+ *
  * Accepte les données d'un prêt et ses callbacks de mutation.
  * Utilisé pour Prêt 1, 2 et 3 de manière identique.
+ *
+ * PR2: Prop isExpert → progressive disclosure (type, date, assurance avancée)
  */
 
 import React from 'react';
-import { 
-  InputEuro, 
-  InputPct, 
-  InputNumber, 
+import {
+  InputEuro,
+  InputPct,
+  InputNumber,
   InputMonth,
   Select,
 } from './CreditInputs.jsx';
@@ -26,6 +28,7 @@ export function CreditLoanForm({
   onPatch,
   onRemove,
   formatTauxRaw,
+  isExpert = true,
 }) {
   if (!pretData) return null;
 
@@ -34,22 +37,28 @@ export function CreditLoanForm({
   return (
     <div className="cv2-loan-form" data-testid={`credit-form-pret${pretNum}`}>
       <div className="cv2-loan-form__grid">
-        <Select
-          label="Type de crédit"
-          value={pretData.type || globalCreditType}
-          onChange={(v) => onPatch({ type: v })}
-          options={[
-            { value: 'amortissable', label: 'Amortissable' },
-            { value: 'infine', label: 'In fine' },
-          ]}
-          testId={`credit-pret${pretNum}-type`}
-        />
-        <InputMonth
-          label="Date de souscription"
-          value={pretData.startYM || globalStartYM}
-          onChange={(v) => onPatch({ startYM: v })}
-          testId={`credit-pret${pretNum}-start`}
-        />
+        {/* Expert uniquement : type de crédit */}
+        {isExpert && (
+          <Select
+            label="Type de crédit"
+            value={pretData.type || globalCreditType}
+            onChange={(v) => onPatch({ type: v })}
+            options={[
+              { value: 'amortissable', label: 'Amortissable' },
+              { value: 'infine', label: 'In fine' },
+            ]}
+            testId={`credit-pret${pretNum}-type`}
+          />
+        )}
+        {/* Expert uniquement : date de souscription */}
+        {isExpert && (
+          <InputMonth
+            label="Date de souscription"
+            value={pretData.startYM || globalStartYM}
+            onChange={(v) => onPatch({ startYM: v })}
+            testId={`credit-pret${pretNum}-start`}
+          />
+        )}
         <InputEuro
           label="Montant emprunté"
           value={pretData.capital}
@@ -88,31 +97,37 @@ export function CreditLoanForm({
       <div className="cv2-loan-form__section" data-testid={pretNum === 0 ? 'credit-assurance-section' : undefined}>
         <div className="cv2-loan-form__section-title">Assurance emprunteur</div>
         <div className="cv2-loan-form__grid">
-          <Select
-            label="Mode de calcul"
-            value={pretData.assurMode || globalAssurMode}
-            onChange={(v) => onPatch({ assurMode: v })}
-            options={[
-              { value: 'CI', label: 'Sur capital initial' },
-              { value: 'CRD', label: 'Sur capital restant dû' },
-            ]}
-            testId={`credit-pret${pretNum}-assurmode`}
-          />
+          {/* Expert uniquement : mode de calcul assurance */}
+          {isExpert && (
+            <Select
+              label="Mode de calcul"
+              value={pretData.assurMode || globalAssurMode}
+              onChange={(v) => onPatch({ assurMode: v })}
+              options={[
+                { value: 'CI', label: 'Sur capital initial' },
+                { value: 'CRD', label: 'Sur capital restant dû' },
+              ]}
+              testId={`credit-pret${pretNum}-assurmode`}
+            />
+          )}
           <InputPct
             label="Taux annuel (assurance)"
             rawValue={raw.tauxAssur || formatTauxRaw(pretData.tauxAssur)}
             onBlur={(v) => onPatch({ tauxAssur: v })}
             testId={`credit-pret${pretNum}-tauxassur`}
           />
-          <InputNumber
-            label="Quotité assurée"
-            value={pretData.quotite}
-            onChange={(v) => onPatch({ quotite: v })}
-            unit="%"
-            min={0}
-            max={100}
-            testId={`credit-pret${pretNum}-quotite`}
-          />
+          {/* Expert uniquement : quotité */}
+          {isExpert && (
+            <InputNumber
+              label="Quotité assurée"
+              value={pretData.quotite}
+              onChange={(v) => onPatch({ quotite: v })}
+              unit="%"
+              min={0}
+              max={100}
+              testId={`credit-pret${pretNum}-quotite`}
+            />
+          )}
         </div>
       </div>
 

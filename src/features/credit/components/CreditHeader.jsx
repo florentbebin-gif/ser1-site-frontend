@@ -1,11 +1,14 @@
 /**
  * CreditHeader.jsx - Header premium du simulateur de crédit
- * 
+ *
  * Affiche le titre, sous-titre, switch Mensuel/Annuel (pill) et bouton Export.
  * Inspiré du pattern premium-header (Home.jsx / simulateur Placement).
+ *
+ * PR2: Prop isExpert → chip mode discret affiché dans le header.
  */
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ExportMenu } from '../../../components/ExportMenu';
 import './CreditV2.css';
 
@@ -14,6 +17,7 @@ export function CreditHeader({
   onViewModeChange,
   exportOptions,
   exportLoading,
+  isExpert = true,
 }) {
   return (
     <div className="premium-header" data-testid="credit-header">
@@ -24,6 +28,15 @@ export function CreditHeader({
         <p className="premium-subtitle">
           Simulez les mensualités et le coût global du financement.
         </p>
+        {/* Chip mode : discret, lien vers Home pour changer le mode */}
+        <Link
+          to="/"
+          className={`cv2-mode-chip${isExpert ? ' cv2-mode-chip--expert' : ''}`}
+          data-testid="credit-mode-chip"
+          title="Changer le mode depuis la page d'accueil"
+        >
+          {isExpert ? '⚡ Mode expert' : 'Mode simplifié'}
+        </Link>
       </div>
       <div className="sim-header__actions" data-testid="credit-actions">
         <div className="cv2-pill-toggle" data-testid="credit-view-toggle">
