@@ -9,10 +9,12 @@ export {
   SNAPSHOT_APP,
   SNAPSHOT_KIND,
   CURRENT_SNAPSHOT_VERSION,
+  SnapshotV4Schema,
   SnapshotV2Schema,
   SnapshotEnvelopeSchema,
+  FiscalIdentitySchema,
 } from './snapshotSchema';
-export type { SnapshotV2, SnapshotEnvelope, SnapshotMeta, SnapshotSims } from './snapshotSchema';
+export type { SnapshotV4, SnapshotV2, SnapshotEnvelope, SnapshotMeta, SnapshotSims, FiscalIdentity } from './snapshotSchema';
 
 // Migrations
 export { migrateSnapshot } from './snapshotMigrations';

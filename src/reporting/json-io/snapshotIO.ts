@@ -15,7 +15,7 @@ import {
   SnapshotEnvelopeSchema,
   SnapshotV2Schema,
 } from './snapshotSchema';
-import type { SnapshotV2, SnapshotSims } from './snapshotSchema';
+import type { SnapshotV2, SnapshotSims, FiscalIdentity } from './snapshotSchema';
 import { migrateSnapshot } from './snapshotMigrations';
 import { createTrackedObjectURL } from '../../utils/createTrackedObjectURL';
 
@@ -56,7 +56,7 @@ function collectSimulatorStates(): SnapshotSims {
   return sims as SnapshotSims;
 }
 
-function buildSnapshot(): SnapshotV2 {
+function buildSnapshot(fiscalIdentity?: FiscalIdentity): SnapshotV2 {
   return {
     app: SNAPSHOT_APP,
     kind: SNAPSHOT_KIND,
@@ -64,6 +64,7 @@ function buildSnapshot(): SnapshotV2 {
     meta: {
       savedAt: new Date().toISOString(),
       appVersion: CURRENT_SNAPSHOT_VERSION.toString(),
+      fiscal: fiscalIdentity ?? null,
     },
     payload: {
       sims: collectSimulatorStates(),
@@ -148,15 +149,20 @@ export interface LoadResult {
   requiresReload?: boolean;
   migrated?: boolean;
   migratedFrom?: number;
+  /** Fiscal identity stored in the loaded file (null for old files without meta.fiscal) */
+  loadedFiscalIdentity?: FiscalIdentity;
 }
+
+// Re-export type for downstream consumers
+export type { FiscalIdentity } from './snapshotSchema';
 
 // ---------------------------------------------------------------------------
 // SAVE
 // ---------------------------------------------------------------------------
 
-export async function saveGlobalState(): Promise<SaveResult> {
+export async function saveGlobalState(options?: { fiscalIdentity?: FiscalIdentity }): Promise<SaveResult> {
   try {
-    const snapshot = buildSnapshot();
+    const snapshot = buildSnapshot(options?.fiscalIdentity);
     const jsonContent = JSON.stringify(snapshot, null, 2);
     const blob = new Blob([jsonContent], { type: 'application/json' });
 
@@ -294,7 +300,10 @@ export function loadGlobalState(file: File): Promise<LoadResult> {
           return;
         }
 
-        // 6. Track loaded file
+        // 6. Extract fiscal identity stored in the file
+        const loadedFiscalIdentity = strictResult.data.meta?.fiscal ?? null;
+
+        // 7. Track loaded file
         try {
           sessionStorage.setItem('ser1:loadedFilename', file.name);
           sessionStorage.setItem(SNAPSHOT_LAST_LOADED_KEY, file.name);
@@ -320,6 +329,7 @@ export function loadGlobalState(file: File): Promise<LoadResult> {
           filename: file.name,
           migrated: wasMigrated,
           migratedFrom: wasMigrated ? migrationResult.migratedFrom : undefined,
+          loadedFiscalIdentity,
         });
       } catch (error) {
         console.error('[SER1] Erreur de chargement:', error);

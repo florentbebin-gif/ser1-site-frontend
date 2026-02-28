@@ -78,6 +78,24 @@ const migrations: Record<number, MigrationFn> = {
       },
     };
   },
+
+  /**
+   * v3 → v4
+   * - Initialize meta.fiscal to null (no identity recorded in old files)
+   * - Bump version to 4
+   */
+  3: (input) => {
+    const meta = (input.meta ?? {}) as Record<string, unknown>;
+
+    return {
+      ...input,
+      version: 4,
+      meta: {
+        ...meta,
+        fiscal: meta.fiscal ?? null,
+      },
+    };
+  },
 };
 
 // ---------------------------------------------------------------------------

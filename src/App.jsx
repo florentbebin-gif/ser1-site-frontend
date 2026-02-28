@@ -6,6 +6,8 @@ import { useTheme } from './settings/ThemeProvider';
 import { APP_ROUTES, getRouteMetadata } from './routes/appRoutes';
 import { triggerPageReset, triggerGlobalReset } from './utils/reset';
 import { saveGlobalState, loadGlobalStateWithDialog } from './utils/globalStorage';
+import { useFiscalContext } from './hooks/useFiscalContext';
+import { fingerprintSettingsData } from './utils/exportFingerprint';
 import { useSessionTTL } from './hooks/useSessionTTL';
 import { useExportGuard } from './hooks/useExportGuard';
 import { setTrackBlobUrlHandler } from './utils/createTrackedObjectURL';
@@ -54,6 +56,25 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
+
+  // Dossier fiscal (mode stale) — pour construire l'identité fiscale lors des sauvegardes
+  const { fiscalContext, meta: fiscalMeta } = useFiscalContext();
+
+  // Identité fiscale : hashes stables + updated_at pour les 3 tables
+  const fiscalIdentity = React.useMemo(() => ({
+    tax: {
+      updatedAt: fiscalMeta.taxUpdatedAt,
+      hash: fingerprintSettingsData(fiscalContext._raw_tax),
+    },
+    ps: {
+      updatedAt: fiscalMeta.psUpdatedAt,
+      hash: fingerprintSettingsData(fiscalContext._raw_ps),
+    },
+    fiscality: {
+      updatedAt: fiscalMeta.fiscalityUpdatedAt,
+      hash: fingerprintSettingsData(fiscalContext._raw_fiscality),
+    },
+  }), [fiscalContext, fiscalMeta]);
 
   // P0-06: Session TTL (heartbeat 30s, grâce 3min, inactivité 1h)
   const { sessionExpired, minutesRemaining, warningVisible, resetInactivity } = useSessionTTL();
@@ -121,32 +142,49 @@ export default function App() {
     setTimeout(() => setNotification(null), 4000);
   }, []);
 
-  // Sauvegarde globale
+  // Sauvegarde globale (injecte l'identité fiscale courante dans le .ser1)
   const handleGlobalSave = useCallback(async () => {
-    const result = await saveGlobalState();
-    
+    const result = await saveGlobalState({ fiscalIdentity });
+
     if (result.cancelled) return;
-    
+
     if (result.success) {
       showNotification(result.message, 'success');
     } else if (result.message) {
       showNotification(result.message, 'error');
     }
-  }, [showNotification]);
+  }, [showNotification, fiscalIdentity]);
 
-  // Chargement global
+  // Chargement global (compare l'identité fiscale sauvegardée à celle en cours)
   const handleGlobalLoad = useCallback(async () => {
     const result = await loadGlobalStateWithDialog();
-    
+
     if (result.cancelled) return;
-    
+
     if (result.success) {
       showNotification(result.message, 'success');
       navigate('/');
+
+      // Avertissement si les paramètres fiscaux ont changé depuis la sauvegarde
+      const loaded = result.loadedFiscalIdentity;
+      if (loaded && loaded.tax && loaded.ps && loaded.fiscality) {
+        const mismatch =
+          (loaded.tax.hash != null && loaded.tax.hash !== fiscalIdentity.tax.hash) ||
+          (loaded.ps.hash != null && loaded.ps.hash !== fiscalIdentity.ps.hash) ||
+          (loaded.fiscality.hash != null && loaded.fiscality.hash !== fiscalIdentity.fiscality.hash);
+        if (mismatch) {
+          setTimeout(() => {
+            showNotification(
+              'Attention : les paramètres fiscaux ont été mis à jour depuis la sauvegarde. Les résultats peuvent changer.',
+              'info',
+            );
+          }, 4500);
+        }
+      }
     } else if (result.message) {
       showNotification(result.message, 'error');
     }
-  }, [navigate, showNotification]);
+  }, [navigate, showNotification, fiscalIdentity]);
 
   // Reset global avec confirmation
   const handleGlobalReset = useCallback(() => {

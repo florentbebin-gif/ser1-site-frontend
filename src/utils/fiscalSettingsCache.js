@@ -36,6 +36,8 @@ let cache = {
   fiscality: null,
   timestamp: 0,
   inflight: { tax: null, ps: null, fiscality: null },
+  // updated_at values from Supabase rows (ISO strings or null)
+  meta: { taxUpdatedAt: null, psUpdatedAt: null, fiscalityUpdatedAt: null },
 };
 
 function createTimeoutPromise(ms) {
@@ -56,6 +58,7 @@ function persistCache() {
       ps: cache.ps,
       fiscality: cache.fiscality,
       timestamp: cache.timestamp,
+      meta: cache.meta,
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(payload));
   } catch {
@@ -73,6 +76,7 @@ function hydrateFromStorage() {
       cache.ps = payload.ps;
       cache.fiscality = payload.fiscality ? migrateV1toV2(payload.fiscality) : payload.fiscality;
       cache.timestamp = payload.timestamp;
+      cache.meta = payload.meta ?? { taxUpdatedAt: null, psUpdatedAt: null, fiscalityUpdatedAt: null };
       return true;
     }
   } catch {
@@ -89,17 +93,17 @@ async function fetchFromSupabase(kind) {
       let res;
       if (kind === 'tax') {
         res = await Promise.race([
-          supabase.from('tax_settings').select('data').eq('id', 1).maybeSingle(),
+          supabase.from('tax_settings').select('data, updated_at').eq('id', 1).maybeSingle(),
           createTimeoutPromise(SUPABASE_TIMEOUT),
         ]);
       } else if (kind === 'ps') {
         res = await Promise.race([
-          supabase.from('ps_settings').select('data').eq('id', 1).maybeSingle(),
+          supabase.from('ps_settings').select('data, updated_at').eq('id', 1).maybeSingle(),
           createTimeoutPromise(SUPABASE_TIMEOUT),
         ]);
       } else if (kind === 'fiscality') {
         res = await Promise.race([
-          supabase.from('fiscality_settings').select('data').eq('id', 1).maybeSingle(),
+          supabase.from('fiscality_settings').select('data, updated_at').eq('id', 1).maybeSingle(),
           createTimeoutPromise(SUPABASE_TIMEOUT),
         ]);
       } else {
@@ -109,6 +113,11 @@ async function fetchFromSupabase(kind) {
         cache[kind] = kind === 'fiscality'
           ? migrateV1toV2(res.data.data)
           : res.data.data;
+        // Persist updated_at from Supabase row
+        const updatedAt = res.data.updated_at ?? null;
+        if (kind === 'tax') cache.meta.taxUpdatedAt = updatedAt;
+        else if (kind === 'ps') cache.meta.psUpdatedAt = updatedAt;
+        else if (kind === 'fiscality') cache.meta.fiscalityUpdatedAt = updatedAt;
         cache.timestamp = Date.now();
         persistCache();
       } else {
@@ -135,6 +144,7 @@ export async function getFiscalSettings({ force = false } = {}) {
     fiscality: DEFAULT_FISCALITY_SETTINGS,
     loading: false,
     error: null,
+    meta: { ...cache.meta },
   };
 
   // Retourner cache si valide et pas de force
@@ -163,7 +173,7 @@ export async function getFiscalSettings({ force = false } = {}) {
  *
  * À utiliser uniquement pour les simulateurs critiques (IR, Succession).
  *
- * @returns {{ tax, ps, fiscality, fromCache: boolean, error: string|null }}
+ * @returns {{ tax, ps, fiscality, fromCache: boolean, error: string|null, meta: { taxUpdatedAt: string|null, psUpdatedAt: string|null, fiscalityUpdatedAt: string|null } }}
  */
 export async function loadFiscalSettingsStrict() {
   // Hydrate depuis localStorage au premier appel
@@ -178,6 +188,7 @@ export async function loadFiscalSettingsStrict() {
       fiscality: cache.fiscality,
       fromCache: true,
       error: null,
+      meta: { ...cache.meta },
     };
   }
 
@@ -197,6 +208,7 @@ export async function loadFiscalSettingsStrict() {
     fiscality: isCacheValid('fiscality') ? cache.fiscality : DEFAULT_FISCALITY_SETTINGS,
     fromCache: false,
     error: fetchError,
+    meta: { ...cache.meta },
   };
 }
 

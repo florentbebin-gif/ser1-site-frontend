@@ -63,3 +63,12 @@ export function fingerprintXlsxExport(input: ExportMeta): string {
   const serialized = stableSerialize({ kind: 'xlsx', input });
   return fnv1a64(serialized);
 }
+
+/**
+ * Compute a stable hash of any settings data object (tax, ps, fiscality).
+ * Keys are sorted and undefined values removed before hashing — guarantees
+ * the same hash regardless of key insertion order or extra undefined fields.
+ */
+export function fingerprintSettingsData(input: unknown): string {
+  return fnv1a64(stableSerialize(input));
+}

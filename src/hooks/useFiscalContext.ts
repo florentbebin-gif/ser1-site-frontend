@@ -28,6 +28,12 @@ interface FiscalContextMeta {
   fromCache: boolean;
   /** Timestamp de la dernière mise à jour connue (ms epoch, 0 si inconnu) */
   updatedAt: number;
+  /** updated_at Supabase pour tax_settings (ISO string ou null) */
+  taxUpdatedAt: string | null;
+  /** updated_at Supabase pour ps_settings (ISO string ou null) */
+  psUpdatedAt: string | null;
+  /** updated_at Supabase pour fiscality_settings (ISO string ou null) */
+  fiscalityUpdatedAt: string | null;
 }
 
 /**
@@ -161,12 +167,24 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
   const [fiscalContext, setFiscalContext] = useState<FiscalContext>(DEFAULT_FISCAL_CONTEXT);
   const [loading, setLoading] = useState<boolean>(strict);
   const [error, setError] = useState<string | null>(null);
-  const [meta, setMeta] = useState<FiscalContextMeta>({ fromCache: false, updatedAt: 0 });
+  const [meta, setMeta] = useState<FiscalContextMeta>({
+    fromCache: false,
+    updatedAt: 0,
+    taxUpdatedAt: null,
+    psUpdatedAt: null,
+    fiscalityUpdatedAt: null,
+  });
 
   const applySettings = useCallback(
-    (tax: any, ps: any, fiscality: any, fromCache = false) => {
+    (tax: any, ps: any, fiscality: any, fromCache = false, settingsMeta?: any) => {
       setFiscalContext(buildFiscalContext(tax, ps, fiscality));
-      setMeta({ fromCache, updatedAt: Date.now() });
+      setMeta({
+        fromCache,
+        updatedAt: Date.now(),
+        taxUpdatedAt: settingsMeta?.taxUpdatedAt ?? null,
+        psUpdatedAt: settingsMeta?.psUpdatedAt ?? null,
+        fiscalityUpdatedAt: settingsMeta?.fiscalityUpdatedAt ?? null,
+      });
     },
     [],
   );
@@ -182,13 +200,13 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
           setError(null);
           const result = await loadFiscalSettingsStrict();
           if (!mounted) return;
-          applySettings(result.tax, result.ps, result.fiscality, result.fromCache);
+          applySettings(result.tax, result.ps, result.fiscality, result.fromCache, result.meta);
           if (result.error) setError(result.error);
         } else {
           // Mode stale : retourne immédiatement cache/defaults
           const result = await getFiscalSettings();
           if (!mounted) return;
-          applySettings(result.tax, result.ps, result.fiscality, false);
+          applySettings(result.tax, result.ps, result.fiscality, false, result.meta);
         }
       } catch (e: any) {
         if (!mounted) return;
@@ -209,10 +227,10 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
         try {
           if (strict) {
             const result = await loadFiscalSettingsStrict();
-            applySettings(result.tax, result.ps, result.fiscality, result.fromCache);
+            applySettings(result.tax, result.ps, result.fiscality, result.fromCache, result.meta);
           } else {
             const result = await getFiscalSettings({ force: true });
-            applySettings(result.tax, result.ps, result.fiscality, false);
+            applySettings(result.tax, result.ps, result.fiscality, false, result.meta);
           }
         } catch (e: any) {
           setError(e?.message ?? 'Erreur rechargement paramètres');
