@@ -70,7 +70,23 @@
 .cv2-tabs__list {
   display: flex;
   gap: 2px;
-  border-bottom: 2px solid var(--color-c8);
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.cv2-tabs__list::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    var(--color-c8) 0%,
+    var(--color-c8) 85%,
+    transparent 100%
+  );
 }
 
 .cv2-tabs__tab {
@@ -158,6 +174,37 @@
   gap: 16px 20px;
 }
 
+.cv2-loan-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cv2-loan-card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.cv2-loan-card__subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-c9);
+  line-height: 1.45;
+}
+
+.cv2-loan-card__divider {
+  margin: 14px 0 18px;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    var(--color-c8) 0%,
+    var(--color-c8) 75%,
+    transparent 100%
+  );
+}
+
 .cv2-loan-form__section {
   grid-column: 1 / -1;
   margin-top: 8px;
@@ -168,8 +215,9 @@
 .cv2-loan-form__section-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-c9);
+  color: var(--color-c1);
   margin-bottom: 12px;
+  letter-spacing: 0.2px;
 }
 
 .cv2-loan-form__footer {
@@ -274,7 +322,6 @@
 .cv2-summary__kpi-value--main {
   font-size: 24px;
   font-weight: 700;
-  color: var(--color-c2);
   font-variant-numeric: tabular-nums;
 }
 
@@ -293,6 +340,10 @@
   grid-column: 1 / -1;
 }
 
+.cv2-summary__kpi-grid:not(.cv2-summary__kpi-grid--full) .cv2-summary__kpi--main {
+  grid-column: auto;
+}
+
 .cv2-summary__kpi {
   text-align: center;
   padding: 12px;
@@ -307,6 +358,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+.cv2-summary__kpi-value--accent {
+  color: var(--color-c2);
+}
+
+.cv2-summary__kpi-value--main,
 .cv2-summary__kpi-value--accent {
   color: var(--color-c2);
 }
@@ -481,7 +537,6 @@
 .cv2-mode-chip {
   display: inline-flex;
   align-items: center;
-  margin-top: 8px;
   padding: 3px 10px;
   border-radius: 999px;
   border: 1px solid var(--color-c8);
@@ -511,19 +566,24 @@
    CONTROLS ROW (toggle + tabs entre header et grid)
    ---------------------------------------- */
 .cv2-controls-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1.85fr 1fr;
+  gap: 24px;
+  align-items: end;
   margin-bottom: 16px;
 }
 
 .cv2-controls-row__left {
-  flex: 1;
+  min-width: 0;
 }
 
 .cv2-controls-row__right {
   display: flex;
   justify-content: flex-end;
+}
+
+.cv2-mode-row {
+  margin: 10px 0 14px;
 }
 
 /* ----------------------------------------
@@ -681,6 +741,20 @@
 @media (max-width: 900px) {
   /* .cv2-page et .cv2-header → gérés par sim-page (SimulatorShell.css)
      et premium-header (premium-shared.css) */
+
+  .cv2-mode-row {
+    margin: 8px 0 12px;
+  }
+
+  .cv2-controls-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .cv2-controls-row__right {
+    justify-content: flex-start;
+  }
 
   .cv2-grid {
     grid-template-columns: 1fr;

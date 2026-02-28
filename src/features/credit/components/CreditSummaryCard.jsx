@@ -1,10 +1,5 @@
 /**
  * CreditSummaryCard.jsx - Carte synthèse sticky (colonne droite)
- *
- * Affiche les KPIs principaux : mensualité, assurance, coûts totaux.
- * Style premium card avec position sticky.
- *
- * PR2: Ajout KPI "Mensualité totale avec assurance" (chiffre le plus attendu CGP)
  */
 
 import React from 'react';
@@ -32,7 +27,6 @@ export function CreditSummaryCard({
     <aside className="cv2-summary" data-testid="credit-summary-card">
       <div className="cv2-summary__title">Synthèse du prêt</div>
 
-      {/* KPIs principaux : mensualité hors ass. + assurance/mois (expert seulement) */}
       <div className={`cv2-summary__kpi-grid${!isExpert ? ' cv2-summary__kpi-grid--full' : ''}`}>
         <div className="cv2-summary__kpi cv2-summary__kpi--main">
           <div className="cv2-summary__kpi-value cv2-summary__kpi-value--main" data-testid="credit-mensu-totale-avec-ass">
@@ -54,7 +48,6 @@ export function CreditSummaryCard({
         )}
       </div>
 
-      {/* Détail coûts */}
       <div className="cv2-summary__rows">
         <div className="cv2-summary__row">
           <span className="cv2-summary__row-label">Coût total des intérêts</span>
@@ -74,7 +67,6 @@ export function CreditSummaryCard({
         </div>
       </div>
 
-      {/* Info lissage */}
       {lisserPret1 && diffDureesMois !== 0 && (
         <div className="cv2-summary__lissage-info">
           <span className="cv2-summary__row-label">Différence de durée</span>
