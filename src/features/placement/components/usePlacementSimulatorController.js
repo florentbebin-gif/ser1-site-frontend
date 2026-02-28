@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePlacementSettings } from '@/hooks/usePlacementSettings.js';
+import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { simulateComplete, compareProducts } from '@/engine/placementEngine.js';
 import { normalizeVersementConfig } from '@/utils/versementConfig.js';
 import { onResetEvent, storageKeyFor } from '@/utils/reset.js';
@@ -21,7 +22,8 @@ import { getRelevantColumnsEpargne, getBaseColumnsForProduct } from '../utils/ta
 
 export function usePlacementSimulatorController() {
   const storeKey = storageKeyFor('placement');
-  const { fiscalParams, loading, error, tmiOptions, taxSettings, psSettings } = usePlacementSettings();
+  const { fiscalParams, loading, error, tmiOptions, psSettings } = usePlacementSettings();
+  const { fiscalContext } = useFiscalContext({ strict: false });
 
   const [hydrated, setHydrated] = useState(false);
   const [state, setState] = useState(DEFAULT_STATE);
@@ -30,7 +32,7 @@ export function usePlacementSimulatorController() {
   const [exportLoading, setExportLoading] = useState(false);
   const [showAllColumns, setShowAllColumns] = useState(false);
 
-  const dmtgScale = taxSettings?.dmtg?.scale;
+  const dmtgScale = fiscalContext?.dmtgScaleLigneDirecte;
   const dmtgOptions = useMemo(() => buildDmtgOptions(dmtgScale), [dmtgScale]);
   const dmtgDefaultRate = dmtgOptions[0]?.value ?? DEFAULT_DMTG_RATE;
 
