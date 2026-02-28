@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
 import './SettingsShared.css';
@@ -8,6 +8,10 @@ import { createFieldUpdater } from '@/utils/settingsHelpers.js';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
 
 import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
+import {
+  validatePrelevementsSettings,
+  isValid,
+} from './validators/dmtgValidators';
 
 // Import des sous-composants
 import PrelevementsPatrimoineSection from './Prelevements/PrelevementsPatrimoineSection';
@@ -84,10 +88,16 @@ export default function SettingsPrelevements() {
   };
 
   // ----------------------
+  // Validation
+  // ----------------------
+  const psErrors = useMemo(() => validatePrelevementsSettings(settings), [settings]);
+  const hasErrors = !isValid(psErrors);
+
+  // ----------------------
   // Sauvegarde
   // ----------------------
   const handleSave = async () => {
-    if (!isAdmin) return;  // on ne fait rien si pas admin
+    if (!isAdmin || hasErrors) return;
 
     try {
       setSaving(true);
@@ -187,17 +197,32 @@ export default function SettingsPrelevements() {
             />
           </div>{/* fin fisc-accordion */}
 
+          {/* Résumé des erreurs de validation */}
+          {hasErrors && (
+            <div className="settings-feedback-message settings-feedback-message--error">
+              <strong>Erreurs de validation ({Object.keys(psErrors).length}) — corrigez avant de sauvegarder :</strong>
+              <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 13 }}>
+                {Object.entries(psErrors).map(([key, msg]) => (
+                  <li key={key}>{key} : {msg}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Bouton de sauvegarde */}
           {isAdmin && (
             <button
               type="button"
               className="chip settings-save-btn"
               onClick={handleSave}
-              disabled={saving}
+              disabled={saving || hasErrors}
+              title={hasErrors ? 'Corrigez les erreurs avant de sauvegarder' : ''}
             >
               {saving
                 ? 'Enregistrement…'
-                : 'Enregistrer les paramètres'}
+                : hasErrors
+                  ? 'Erreurs de validation'
+                  : 'Enregistrer les paramètres'}
             </button>
           )}
 

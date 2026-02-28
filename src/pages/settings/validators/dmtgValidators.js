@@ -188,3 +188,101 @@ export function validateAvDeces(avDeces) {
 export function isValid(...errorObjects) {
   return errorObjects.every(e => Object.keys(e).length === 0);
 }
+
+/**
+ * Valide les paramètres impôts (incomeTax + pfu + cehr + cdhr + corporateTax).
+ * @param {Object} settings - contenu de tax_settings (sans dmtg)
+ * @returns {Object} errors par chemin
+ */
+export function validateImpotsSettings(settings) {
+  const errors = {};
+  const { incomeTax, pfu, cehr, cdhr, corporateTax } = settings || {};
+
+  // Barèmes IR (scaleCurrent, scalePrevious) — tranches ordonnées + taux 0-100
+  for (const period of ['scaleCurrent', 'scalePrevious']) {
+    const scaleErrors = validateScaleOrdered(incomeTax?.[period] || []);
+    for (const se of scaleErrors) {
+      errors[`incomeTax.${period}[${se.index}].${se.field}`] = se.message;
+    }
+  }
+
+  // Décote ratePercent
+  for (const period of ['current', 'previous']) {
+    const rateErr = validatePercent(incomeTax?.decote?.[period]?.ratePercent);
+    if (rateErr) errors[`incomeTax.decote.${period}.ratePercent`] = rateErr;
+  }
+
+  // Abattement DOM ratePercent
+  for (const period of ['current', 'previous']) {
+    for (const zone of ['gmr', 'guyane']) {
+      const rateErr = validatePercent(incomeTax?.domAbatement?.[period]?.[zone]?.ratePercent);
+      if (rateErr) errors[`incomeTax.domAbatement.${period}.${zone}.ratePercent`] = rateErr;
+    }
+  }
+
+  // PFU taux
+  for (const period of ['current', 'previous']) {
+    for (const key of ['rateIR', 'rateSocial', 'rateTotal']) {
+      const rateErr = validatePercent(pfu?.[period]?.[key]);
+      if (rateErr) errors[`pfu.${period}.${key}`] = rateErr;
+    }
+  }
+
+  // CEHR taux (traitées comme barèmes simples — rate en %)
+  for (const period of ['current', 'previous']) {
+    for (const group of ['single', 'couple']) {
+      const rows = cehr?.[period]?.[group] || [];
+      for (let i = 0; i < rows.length; i++) {
+        const rateErr = validatePercent(rows[i].rate);
+        if (rateErr) errors[`cehr.${period}.${group}[${i}].rate`] = rateErr;
+      }
+    }
+  }
+
+  // CDHR taux minimal
+  for (const period of ['current', 'previous']) {
+    const rateErr = validatePercent(cdhr?.[period]?.minEffectiveRate);
+    if (rateErr) errors[`cdhr.${period}.minEffectiveRate`] = rateErr;
+  }
+
+  // Impôt sur les sociétés taux
+  for (const period of ['current', 'previous']) {
+    for (const key of ['normalRate', 'reducedRate']) {
+      const rateErr = validatePercent(corporateTax?.[period]?.[key]);
+      if (rateErr) errors[`corporateTax.${period}.${key}`] = rateErr;
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Valide les paramètres prélèvements sociaux (patrimony + retirement).
+ * @param {Object} settings - contenu de ps_settings
+ * @returns {Object} errors par chemin
+ */
+export function validatePrelevementsSettings(settings) {
+  const errors = {};
+  const { patrimony, retirement } = settings || {};
+
+  // PS patrimoine : taux en %
+  for (const period of ['current', 'previous']) {
+    for (const key of ['totalRate', 'csgDeductibleRate']) {
+      const rateErr = validatePercent(patrimony?.[period]?.[key]);
+      if (rateErr) errors[`patrimony.${period}.${key}`] = rateErr;
+    }
+  }
+
+  // PS retraites : taux par tranche en %
+  for (const period of ['current', 'previous']) {
+    const brackets = retirement?.[period]?.brackets || [];
+    for (let i = 0; i < brackets.length; i++) {
+      for (const key of ['csgRate', 'crdsRate', 'casaRate', 'maladieRate', 'totalRate', 'csgDeductibleRate']) {
+        const rateErr = validatePercent(brackets[i][key]);
+        if (rateErr) errors[`retirement.${period}.brackets[${i}].${key}`] = rateErr;
+      }
+    }
+  }
+
+  return errors;
+}

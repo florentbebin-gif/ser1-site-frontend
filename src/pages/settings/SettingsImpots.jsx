@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
 import './SettingsShared.css';
@@ -8,6 +8,11 @@ import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/utils/settingsHelpers.js';
 
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import {
+  validateImpotsSettings,
+  validateDmtg,
+  isValid,
+} from './validators/dmtgValidators';
 
 // Import des sous-composants
 import ImpotsBaremeSection from './Impots/ImpotsBaremeSection';
@@ -97,10 +102,15 @@ export default function SettingsImpots() {
     };
   }, []);
 
+  // Validation
+  const impotsErrors = useMemo(() => validateImpotsSettings(settings), [settings]);
+  const dmtgErrors = useMemo(() => validateDmtg(settings.dmtg), [settings.dmtg]);
+  const hasErrors = !isValid(impotsErrors, dmtgErrors);
+
   // Sauvegarde
   const handleSave = async () => {
-    if (!isAdmin) return;
-    
+    if (!isAdmin || hasErrors) return;
+
     try {
       setSaving(true);
       setMessage('');
@@ -264,17 +274,32 @@ export default function SettingsImpots() {
         />
       </div>{/* fin fisc-accordion */}
 
+      {/* Résumé des erreurs de validation */}
+      {hasErrors && (
+        <div className="settings-feedback-message settings-feedback-message--error">
+          <strong>Erreurs de validation ({Object.keys(impotsErrors).length + Object.keys(dmtgErrors).length}) — corrigez avant de sauvegarder :</strong>
+          <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 13 }}>
+            {Object.entries({ ...impotsErrors, ...dmtgErrors }).map(([key, msg]) => (
+              <li key={key}>{key} : {msg}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Bouton Enregistrer */}
       {isAdmin && (
         <button
           type="button"
           className="chip settings-save-btn"
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || hasErrors}
+          title={hasErrors ? 'Corrigez les erreurs avant de sauvegarder' : ''}
         >
           {saving
             ? 'Enregistrement…'
-            : 'Enregistrer les paramètres impôts'}
+            : hasErrors
+              ? 'Erreurs de validation'
+              : 'Enregistrer les paramètres impôts'}
         </button>
       )}
 
