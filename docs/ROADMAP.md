@@ -224,6 +224,17 @@ Le simulateur Succession doit utiliser les paramètres (DMTG) **issus du dossier
 
 ## PR-P1-06-04 — Nouvelle page `/settings/dmtg-succession` + validation
 
+✅ DONE — PR #159 — 2026-02-28
+
+**Preuves :**
+- Route ajoutée dans `src/constants/settingsRoutes.js` : key `dmtgSuccession`, path `dmtg-succession`, lazy import `SettingsDmtgSuccession`
+- `getActiveSettingsKey()` mis à jour pour `/settings/dmtg-succession`
+- Nouvelle page `src/pages/settings/SettingsDmtgSuccession.jsx` : 5 sections accordéon (DMTG barèmes, Donation/rappel fiscal, AV décès 990 I/757 B, Réserve héréditaire lecture seule, Régimes matrimoniaux lecture seule)
+- Validation stricte via `src/pages/settings/validators/dmtgValidators.js` : taux 0-100, abattements positifs/raisonnables, tranches ordonnées sans chevauchement
+- Bouton save désactivé + message "Erreurs de validation" si champ invalide (ex: 172 dans un taux)
+- Save déclenche `invalidate('tax') + broadcastInvalidation('tax')` ET `invalidate('fiscality') + broadcastInvalidation('fiscality')`
+- `npm run check` vert : lint ✓ · typecheck ✓ · 1088 tests ✓ · build ✓
+
 ### Objectif
 Créer la page premium qui centralise transmission : DMTG successions/donations + assurance-vie décès + référentiel civil (lecture seule). **Avec validation stricte** pour prévenir les erreurs de saisie (172 au lieu de 17,2).
 

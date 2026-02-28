@@ -18,6 +18,7 @@ const SettingsImpots = lazy(() => import('../pages/settings/SettingsImpots'));
 const SettingsPrelevements = lazy(() => import('../pages/settings/SettingsPrelevements'));
 const SettingsBaseContrats = lazy(() => import('../pages/settings/BaseContrat'));
 const SettingsComptes = lazy(() => import('../pages/settings/SettingsComptes'));
+const SettingsDmtgSuccession = lazy(() => import('../pages/settings/SettingsDmtgSuccession'));
 
 /**
  * Routes Settings - Ordre = ordre d'affichage dans la nav
@@ -59,6 +60,13 @@ export const SETTINGS_ROUTES = [
     component: SettingsBaseContrats,
   },
   {
+    key: 'dmtgSuccession',
+    label: 'DMTG & Succession',
+    path: 'dmtg-succession',
+    urlPath: '/settings/dmtg-succession',
+    component: SettingsDmtgSuccession,
+  },
+  {
     key: 'comptes',
     label: 'Comptes',
     path: 'comptes',
@@ -97,6 +105,7 @@ export const getActiveSettingsKey = (pathname) => {
   if (pathname.startsWith('/settings/prelevements')) return 'prelevements';
   if (pathname.startsWith('/settings/fiscalites')) return 'baseContrats'; // legacy redirect
   if (pathname.startsWith('/settings/base-contrat')) return 'baseContrats';
+  if (pathname.startsWith('/settings/dmtg-succession')) return 'dmtgSuccession';
   if (pathname.startsWith('/settings/comptes')) return 'comptes';
   return 'general';
 };
