@@ -352,6 +352,16 @@ Créer la page premium qui centralise transmission : DMTG successions/donations 
 
 ## PR-P1-06-08 — Traçabilité dans les fichiers `.ser1` (stabilité des résultats)
 
+✅ DONE — PR #162 — 2026-02-28
+
+**Preuves :**
+- `CURRENT_SNAPSHOT_VERSION = 4` dans `snapshotSchema.ts` ; migration v3→v4 présente (`snapshotMigrations.ts`)
+- `fiscalSettingsCache.js` : `select('data, updated_at')` sur les 3 tables ; `cache.meta` persisté en localStorage
+- `.ser1` sauvegardé contient `meta.fiscal` : 3 entrées `{ updatedAt, hash }` (hash FNV-1a stable via `fingerprintSettingsData`)
+- `App.jsx` : détecte le mismatch de hash au chargement → notification "Attention : les paramètres fiscaux ont été mis à jour depuis la sauvegarde. Les résultats peuvent changer."
+- Compatibilité : v1/v2/v3 migrent automatiquement vers v4 (`meta.fiscal = null` pour les anciens fichiers)
+- `npm run check` vert : lint ✓ · typecheck ✓ · 1095 tests ✓ · build ✓
+
 ### Objectif
 Si un dossier `.ser1` est rouvert après mise à jour des paramètres, l’utilisateur comprend pourquoi le résultat change, ou peut recalculer “avec les paramètres de l’époque”.
 
