@@ -107,11 +107,9 @@
 
 .cv2-tabs__tab.is-addable {
   color: var(--color-c9);
-  opacity: 0.7;
 }
 
 .cv2-tabs__tab.is-addable:hover {
-  opacity: 1;
   color: var(--color-c2);
 }
 
@@ -120,10 +118,24 @@
   cursor: default;
 }
 
-.cv2-tabs__add-icon {
-  font-size: 16px;
-  font-weight: 600;
+.cv2-tabs__add-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-c8);
+  color: var(--color-c9);
+  font-size: 14px;
+  font-weight: 700;
   line-height: 1;
+  transition: background 0.2s, color 0.2s;
+}
+
+.cv2-tabs__tab.is-addable:hover .cv2-tabs__add-badge {
+  background: var(--color-c2);
+  color: #FFFFFF;
 }
 
 /* ----------------------------------------
@@ -339,7 +351,7 @@
   align-items: baseline;
   padding: 10px 0 0;
   margin-top: 8px;
-  border-top: 1px solid var(--color-c6);
+  border-top: 1px solid var(--color-c8);
 }
 
 /* ----------------------------------------
@@ -560,6 +572,80 @@
 }
 
 /* ----------------------------------------
+   FOCUS-VISIBLE (accessibilité clavier)
+   ---------------------------------------- */
+.cv2-tabs__tab:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.cv2-pill-toggle__btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: -2px;
+}
+
+.cv2-btn:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.cv2-lissage__pill:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+.cv2-schedule__toggle:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 2px;
+}
+
+/* ----------------------------------------
+   SKELETON LOADING
+   ---------------------------------------- */
+@keyframes cv2-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.cv2-skeleton {
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--color-c7) 25%,
+    var(--color-c8) 50%,
+    var(--color-c7) 75%
+  );
+  background-size: 800px 100%;
+  animation: cv2-shimmer 1.4s infinite linear;
+}
+
+.cv2-skeleton--title {
+  height: 24px;
+  width: 260px;
+  margin-bottom: 8px;
+}
+
+.cv2-skeleton--subtitle {
+  height: 14px;
+  width: 320px;
+  margin-bottom: 32px;
+}
+
+.cv2-skeleton-grid {
+  display: grid;
+  grid-template-columns: 1.85fr 1fr;
+  gap: 24px;
+}
+
+.cv2-skeleton--card {
+  height: 320px;
+}
+
+.cv2-skeleton--card-sm {
+  height: 220px;
+}
+
+/* ----------------------------------------
    RESPONSIVE
    ---------------------------------------- */
 @media (max-width: 900px) {
@@ -570,11 +656,20 @@
     grid-template-columns: 1fr;
   }
 
+  /* Summary au-dessus du formulaire sur mobile */
+  .cv2-grid > div:last-child {
+    order: -1;
+  }
+
   .cv2-summary {
     position: static;
   }
 
   .cv2-loan-form__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cv2-skeleton-grid {
     grid-template-columns: 1fr;
   }
 }

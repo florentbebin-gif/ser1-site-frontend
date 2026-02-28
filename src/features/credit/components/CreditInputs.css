@@ -63,6 +63,16 @@
   text-align: left;
 }
 
+/* État d'erreur (bordure C1 — governance, pas de rouge hardcodé) */
+.ci-input--error {
+  border-color: var(--color-c1);
+}
+
+.ci-input--error:focus-visible {
+  border-color: var(--color-c1);
+  box-shadow: 0 0 0 3px var(--color-c4);
+}
+
 /* ----------------------------------------
    UNIT (€, %, mois…)
    ---------------------------------------- */
@@ -81,6 +91,15 @@
   color: var(--color-c9);
   margin-top: 2px;
   font-style: italic;
+}
+
+/* ----------------------------------------
+   ERROR MESSAGE
+   ---------------------------------------- */
+.ci-error {
+  font-size: 11px;
+  color: var(--color-c1);
+  margin-top: 2px;
 }
 
 /* ----------------------------------------
@@ -110,6 +129,10 @@
 .ci-select:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.ci-select--error {
+  border-color: var(--color-c1);
 }
 
 /* ----------------------------------------

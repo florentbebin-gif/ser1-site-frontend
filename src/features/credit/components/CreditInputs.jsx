@@ -25,6 +25,7 @@ export function InputEuro({
   onChange,
   disabled = false,
   hint,
+  error,
   testId,
   dataTestId,
   onBlur,
@@ -47,12 +48,14 @@ export function InputEuro({
           value={fmt(value)}
           onChange={handleChange}
           data-testid={dataTestId || testId}
-          className="ci-input"
+          aria-invalid={!!error}
+          className={`ci-input${error ? ' ci-input--error' : ''}`}
           onBlur={onBlur}
         />
         <span className="ci-unit">€</span>
       </div>
-      {hint && <span className="ci-hint">{hint}</span>}
+      {error && <span className="ci-error" role="alert">{error}</span>}
+      {!error && hint && <span className="ci-hint">{hint}</span>}
     </div>
   );
 }
@@ -67,6 +70,7 @@ export function InputPct({
   onBlur,
   disabled = false,
   hint,
+  error,
   testId,
   placeholder = "0,00",
 }) {
@@ -101,11 +105,13 @@ export function InputPct({
           onChange={handleChange}
           onFocus={() => setFocused(true)}
           onBlur={handleBlur}
-          className="ci-input"
+          aria-invalid={!!error}
+          className={`ci-input${error ? ' ci-input--error' : ''}`}
         />
         <span className="ci-unit">%</span>
       </div>
-      {hint && <span className="ci-hint">{hint}</span>}
+      {error && <span className="ci-error" role="alert">{error}</span>}
+      {!error && hint && <span className="ci-hint">{hint}</span>}
     </div>
   );
 }
@@ -123,6 +129,7 @@ export function InputNumber({
   max = 999,
   disabled = false,
   hint,
+  error,
   testId,
   onBlur,
 }) {
@@ -142,12 +149,14 @@ export function InputNumber({
           disabled={disabled}
           value={String(value || 0)}
           onChange={handleChange}
-          className="ci-input"
+          aria-invalid={!!error}
+          className={`ci-input${error ? ' ci-input--error' : ''}`}
           onBlur={onBlur}
         />
         {unit && <span className="ci-unit">{unit}</span>}
       </div>
-      {hint && <span className="ci-hint">{hint}</span>}
+      {error && <span className="ci-error" role="alert">{error}</span>}
+      {!error && hint && <span className="ci-hint">{hint}</span>}
     </div>
   );
 }
@@ -162,6 +171,7 @@ export function InputMonth({
   onChange,
   disabled = false,
   hint,
+  error,
   testId,
 }) {
   return (
@@ -172,9 +182,11 @@ export function InputMonth({
         disabled={disabled}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="ci-input ci-input--left"
+        aria-invalid={!!error}
+        className={`ci-input ci-input--left${error ? ' ci-input--error' : ''}`}
       />
-      {hint && <span className="ci-hint">{hint}</span>}
+      {error && <span className="ci-error" role="alert">{error}</span>}
+      {!error && hint && <span className="ci-hint">{hint}</span>}
     </div>
   );
 }
@@ -190,6 +202,7 @@ export function Select({
   options = [],
   disabled = false,
   hint,
+  error,
   testId,
 }) {
   return (
@@ -199,7 +212,8 @@ export function Select({
         disabled={disabled}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="ci-select"
+        aria-invalid={!!error}
+        className={`ci-select${error ? ' ci-select--error' : ''}`}
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -207,7 +221,8 @@ export function Select({
           </option>
         ))}
       </select>
-      {hint && <span className="ci-hint">{hint}</span>}
+      {error && <span className="ci-error" role="alert">{error}</span>}
+      {!error && hint && <span className="ci-hint">{hint}</span>}
     </div>
   );
 }
