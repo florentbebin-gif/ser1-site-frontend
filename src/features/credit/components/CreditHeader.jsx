@@ -1,10 +1,10 @@
 /**
  * CreditHeader.jsx - Header premium du simulateur de crédit
  *
- * Affiche le titre, sous-titre, switch Mensuel/Annuel (pill) et bouton Export.
- * Inspiré du pattern premium-header (Home.jsx / simulateur Placement).
+ * Affiche le titre, sous-titre, chip mode et bouton Export.
+ * Le toggle Mensuel/Annuel est positionné dans la ligne de contrôles (Credit.jsx).
  *
- * PR2: Prop isExpert → chip mode discret affiché dans le header.
+ * Polish: border-bottom C6, chip mode sans icône, style expert identique au standard.
  */
 
 import React from 'react';
@@ -13,14 +13,12 @@ import { ExportMenu } from '../../../components/ExportMenu';
 import './CreditV2.css';
 
 export function CreditHeader({
-  viewMode,
-  onViewModeChange,
   exportOptions,
   exportLoading,
   isExpert = true,
 }) {
   return (
-    <div className="premium-header" data-testid="credit-header">
+    <div className="premium-header cv2-header--credit" data-testid="credit-header">
       <div>
         <h1 className="premium-title" data-testid="credit-title">
           Simulateur de crédit
@@ -31,30 +29,14 @@ export function CreditHeader({
         {/* Chip mode : discret, lien vers Home pour changer le mode */}
         <Link
           to="/"
-          className={`cv2-mode-chip${isExpert ? ' cv2-mode-chip--expert' : ''}`}
+          className="cv2-mode-chip"
           data-testid="credit-mode-chip"
           title="Changer le mode depuis la page d'accueil"
         >
-          {isExpert ? '⚡ Mode expert' : 'Mode simplifié'}
+          {isExpert ? 'Mode expert' : 'Mode simplifié'}
         </Link>
       </div>
       <div className="sim-header__actions" data-testid="credit-actions">
-        <div className="cv2-pill-toggle" data-testid="credit-view-toggle">
-          <button
-            className={`cv2-pill-toggle__btn ${viewMode === 'mensuel' ? 'is-active' : ''}`}
-            onClick={() => onViewModeChange('mensuel')}
-            data-testid="credit-view-mensuel"
-          >
-            Mensuel
-          </button>
-          <button
-            className={`cv2-pill-toggle__btn ${viewMode === 'annuel' ? 'is-active' : ''}`}
-            onClick={() => onViewModeChange('annuel')}
-            data-testid="credit-view-annuel"
-          >
-            Annuel
-          </button>
-        </div>
         <ExportMenu
           options={exportOptions}
           loading={exportLoading}

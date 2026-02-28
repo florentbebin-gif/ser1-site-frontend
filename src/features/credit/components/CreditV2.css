@@ -35,7 +35,7 @@
 }
 
 .cv2-pill-toggle__btn {
-  padding: 7px 14px;
+  padding: 10px 18px;
   font-size: 13px;
   font-weight: 500;
   border: none;
@@ -285,6 +285,14 @@
   margin-bottom: 16px;
 }
 
+.cv2-summary__kpi-grid--full {
+  grid-template-columns: 1fr;
+}
+
+.cv2-summary__kpi--main {
+  grid-column: 1 / -1;
+}
+
 .cv2-summary__kpi {
   text-align: center;
   padding: 12px;
@@ -490,10 +498,32 @@
   color: var(--color-c1);
 }
 
-.cv2-mode-chip--expert {
-  border-color: var(--color-c3);
-  color: var(--color-c2);
-  background: var(--color-c6);
+/* .cv2-mode-chip--expert supprimé : style expert = identique au chip standard (discret) */
+
+/* ----------------------------------------
+   HEADER CRÉDIT — border-bottom C6
+   ---------------------------------------- */
+.cv2-header--credit {
+  border-bottom-color: var(--color-c6);
+}
+
+/* ----------------------------------------
+   CONTROLS ROW (toggle + tabs entre header et grid)
+   ---------------------------------------- */
+.cv2-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.cv2-controls-row__left {
+  flex: 1;
+}
+
+.cv2-controls-row__right {
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* ----------------------------------------

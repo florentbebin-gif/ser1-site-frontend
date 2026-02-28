@@ -15,6 +15,7 @@ export function CreditSummaryCard({
   synthese,
   isAnnual,
   lisserPret1,
+  isExpert = true,
 }) {
   const {
     mensualiteTotaleM1,
@@ -26,40 +27,31 @@ export function CreditSummaryCard({
   } = synthese;
 
   const factor = isAnnual ? 12 : 1;
-  const mensualiteTotaleAvecAss = (mensualiteTotaleM1 + primeAssMensuelle) * factor;
 
   return (
     <aside className="cv2-summary" data-testid="credit-summary-card">
       <div className="cv2-summary__title">Synthèse du prêt</div>
 
-      {/* KPI PRINCIPAL : mensualité totale avec assurance */}
-      <div className="cv2-summary__kpi-main" data-testid="credit-mensu-totale-avec-ass">
-        <div className="cv2-summary__kpi-value cv2-summary__kpi-value--main">
-          {euro0(mensualiteTotaleAvecAss)}
-        </div>
-        <div className="cv2-summary__kpi-label">
-          {isAnnual ? 'Annuité totale' : 'Mensualité totale'} (avec ass.)
-        </div>
-      </div>
-
-      {/* KPIs secondaires */}
-      <div className="cv2-summary__kpi-grid">
-        <div className="cv2-summary__kpi">
-          <div className="cv2-summary__kpi-value cv2-summary__kpi-value--accent">
+      {/* KPIs principaux : mensualité hors ass. + assurance/mois (expert seulement) */}
+      <div className={`cv2-summary__kpi-grid${!isExpert ? ' cv2-summary__kpi-grid--full' : ''}`}>
+        <div className="cv2-summary__kpi cv2-summary__kpi--main">
+          <div className="cv2-summary__kpi-value cv2-summary__kpi-value--main" data-testid="credit-mensu-totale-avec-ass">
             {euro0(mensualiteTotaleM1 * factor)}
           </div>
           <div className="cv2-summary__kpi-label">
             {isAnnual ? 'Annuité' : 'Mensualité'} (hors ass.)
           </div>
         </div>
-        <div className="cv2-summary__kpi">
-          <div className="cv2-summary__kpi-value cv2-summary__kpi-value--accent">
-            {euro0(primeAssMensuelle * factor)}
+        {isExpert && (
+          <div className="cv2-summary__kpi">
+            <div className="cv2-summary__kpi-value cv2-summary__kpi-value--accent">
+              {euro0(primeAssMensuelle * factor)}
+            </div>
+            <div className="cv2-summary__kpi-label">
+              Assurance / {isAnnual ? 'an' : 'mois'}
+            </div>
           </div>
-          <div className="cv2-summary__kpi-label">
-            Assurance / {isAnnual ? 'an' : 'mois'}
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Détail coûts */}
@@ -68,10 +60,12 @@ export function CreditSummaryCard({
           <span className="cv2-summary__row-label">Coût total des intérêts</span>
           <span className="cv2-summary__row-value">{euro0(totalInterets)}</span>
         </div>
-        <div className="cv2-summary__row">
-          <span className="cv2-summary__row-label">Coût total assurance</span>
-          <span className="cv2-summary__row-value">{euro0(totalAssurance)}</span>
-        </div>
+        {isExpert && (
+          <div className="cv2-summary__row">
+            <span className="cv2-summary__row-label">Coût total assurance</span>
+            <span className="cv2-summary__row-value">{euro0(totalAssurance)}</span>
+          </div>
+        )}
         <div className="cv2-summary__row cv2-summary__row--total">
           <span className="cv2-summary__row-label">Coût total du crédit</span>
           <span className="cv2-summary__row-value cv2-summary__row-value--highlight" data-testid="credit-cout-total-value">

@@ -49,6 +49,7 @@ export function CreditScheduleTable({
   isAnnual,
   title,
   defaultCollapsed = false,
+  hideInsurance = false,
 }) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
@@ -90,13 +91,17 @@ export function CreditScheduleTable({
               <tr>
                 <th className="cv2-table__th">Période</th>
                 <th className="cv2-table__th cv2-table__th--right">Intérêts</th>
-                <th className="cv2-table__th cv2-table__th--right">Assurance</th>
+                {!hideInsurance && (
+                  <th className="cv2-table__th cv2-table__th--right">Assurance</th>
+                )}
                 <th className="cv2-table__th cv2-table__th--right">Amort.</th>
                 <th className="cv2-table__th cv2-table__th--right">
                   {isAnnual ? 'Annuité' : 'Mensualité'}
                 </th>
                 <th className="cv2-table__th cv2-table__th--right">CRD</th>
-                <th className="cv2-table__th cv2-table__th--right">Capital décès</th>
+                {!hideInsurance && (
+                  <th className="cv2-table__th cv2-table__th--right">Capital décès</th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -104,15 +109,19 @@ export function CreditScheduleTable({
                 <tr key={i} className="cv2-table__row">
                   <td className="cv2-table__td">{isAnnual ? row.year : row.period}</td>
                   <td className="cv2-table__td cv2-table__td--right">{euro0(row.interet ?? 0)}</td>
-                  <td className="cv2-table__td cv2-table__td--right">{euro0(row.assurance ?? 0)}</td>
+                  {!hideInsurance && (
+                    <td className="cv2-table__td cv2-table__td--right">{euro0(row.assurance ?? 0)}</td>
+                  )}
                   <td className="cv2-table__td cv2-table__td--right">{euro0(row.amort ?? 0)}</td>
                   <td className="cv2-table__td cv2-table__td--right cv2-table__td--bold">
                     {euro0(row.mensuTotal ?? 0)}
                   </td>
                   <td className="cv2-table__td cv2-table__td--right">{euro0(row.crd ?? 0)}</td>
-                  <td className="cv2-table__td cv2-table__td--right">
-                    {row.assuranceDeces ? euro0(row.assuranceDeces) : '—'}
-                  </td>
+                  {!hideInsurance && (
+                    <td className="cv2-table__td cv2-table__td--right">
+                      {row.assuranceDeces ? euro0(row.assuranceDeces) : '—'}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

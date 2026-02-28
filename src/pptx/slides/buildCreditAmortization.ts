@@ -62,6 +62,13 @@ const LOAN_ROW_LABELS = [
   'CRD fin de période',
 ];
 
+/**
+ * Returns true if all assurance values across all rows are 0 (simplifié mode)
+ */
+function hasNoAssurance(rows: CreditAmortizationRow[]): boolean {
+  return rows.every(r => !r.assurance || r.assurance === 0);
+}
+
 // ============================================================================
 // HELPERS
 // ============================================================================
@@ -206,8 +213,12 @@ export function buildCreditAmortization(
   const isMultiLoan = loanGroups.size > 1;
   const numLoans = loanGroups.size;
   
-  // Calculate total rows: header + global(5) + per-loan(4 each)
-  const totalDataRows = isMultiLoan ? (5 + numLoans * 4) : 5;
+  const noAssurance = hasNoAssurance(allRows);
+
+  // Calculate total rows: header + global(4 or 5) + per-loan(3 or 4 each)
+  const globalRows = noAssurance ? 4 : 5;
+  const loanRowsCount = noAssurance ? 3 : 4;
+  const totalDataRows = isMultiLoan ? (globalRows + numLoans * loanRowsCount) : globalRows;
   
   // Compact styling to fit all rows
   // Available height: ~4.3" for content
@@ -318,8 +329,10 @@ export function buildCreditAmortization(
   
   tableRows.push(buildRow(GLOBAL_ROW_LABELS[0], globalAnnuite, 'FFFFFF', true, baseFontSize));
   tableRows.push(buildRow(GLOBAL_ROW_LABELS[1], globalInteret, altRowColor, false, smallFontSize));
-  tableRows.push(buildRow(GLOBAL_ROW_LABELS[2], globalAssurance, 'FFFFFF', false, smallFontSize));
-  tableRows.push(buildRow(GLOBAL_ROW_LABELS[3], globalAmort, altRowColor, false, smallFontSize));
+  if (!noAssurance) {
+    tableRows.push(buildRow(GLOBAL_ROW_LABELS[2], globalAssurance, 'FFFFFF', false, smallFontSize));
+  }
+  tableRows.push(buildRow(GLOBAL_ROW_LABELS[3], globalAmort, noAssurance ? 'FFFFFF' : altRowColor, false, smallFontSize));
   tableRows.push(buildRow(GLOBAL_ROW_LABELS[4], globalCrd, crdFill, true, baseFontSize));
   
   // ===== PER-LOAN SECTIONS (only for multi-loan) =====
@@ -336,10 +349,12 @@ export function buildCreditAmortization(
       const amortValues = yearsForPage.map(y => loanYearMap.has(y) ? euro(loanYearMap.get(y)!.amort) : '—');
       const crdValues = yearsForPage.map(y => loanYearMap.has(y) ? euro(loanYearMap.get(y)!.crd) : '—');
       
-      // 4 rows per loan with gray background
+      // 3 or 4 rows per loan with gray background (skip assurance if noAssurance)
       const loanLabel = `Prêt N°${loanIdx} ${LOAN_ROW_LABELS[0]}`;
       tableRows.push(buildRow(loanLabel, annuiteValues, loanSectionFill, true, smallFontSize));
-      tableRows.push(buildRow(LOAN_ROW_LABELS[1], assuranceValues, loanSectionFill, false, smallFontSize));
+      if (!noAssurance) {
+        tableRows.push(buildRow(LOAN_ROW_LABELS[1], assuranceValues, loanSectionFill, false, smallFontSize));
+      }
       tableRows.push(buildRow(LOAN_ROW_LABELS[2], amortValues, loanSectionFill, false, smallFontSize));
       tableRows.push(buildRow(LOAN_ROW_LABELS[3], crdValues, loanSectionFill, false, smallFontSize));
     });
