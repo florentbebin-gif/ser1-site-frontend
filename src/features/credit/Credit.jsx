@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { onResetEvent, storageKeyFor } from '../../utils/reset.js';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../services/userModeService';
@@ -271,10 +272,20 @@ export default function CreditV2() {
       <CreditHeader
         exportOptions={exportOptions}
         exportLoading={exportLoading}
-        isExpert={isExpert}
       />
 
       {/* LIGNE DE CONTRÔLES : tabs (gauche, expert) + toggle Mensuel/Annuel (droite) */}
+      <div className="cv2-mode-row">
+        <Link
+          to="/"
+          className="cv2-mode-chip"
+          data-testid="credit-mode-chip"
+          title="Changer le mode depuis la page d'accueil"
+        >
+          {isExpert ? 'Mode expert' : 'Mode simplifié'}
+        </Link>
+      </div>
+
       <div className="cv2-controls-row">
         <div className="cv2-controls-row__left">
           {/* Tabs prêts : expert uniquement ou si prêts additionnels déjà créés */}
@@ -313,19 +324,30 @@ export default function CreditV2() {
         {/* COLONNE GAUCHE */}
         <div>
           <div className="premium-card">
-            <CreditLoanForm
-              pretNum={activeTab}
-              pretData={activeLoan.data}
-              rawValues={activeLoan.raw}
-              globalStartYM={state.startYM}
-              globalAssurMode={state.assurMode}
-              globalCreditType={state.creditType}
-              mensualiteHorsAssurance={activeLoan.mensu}
-              onPatch={activeLoan.set}
-              onRemove={activeLoan.remove}
-              formatTauxRaw={formatTauxRaw}
-              isExpert={isExpert}
-            />
+            <div className="cv2-loan-card">
+              <header className="cv2-loan-card__header">
+                <h2 className="cv2-loan-card__title">Paramètres du prêt</h2>
+                <p className="cv2-loan-card__subtitle">
+                  Renseignez les données du financement pour estimer mensualités et coût global.
+                </p>
+              </header>
+              <div className="cv2-loan-card__divider" />
+              <div className="cv2-loan-card__body">
+                <CreditLoanForm
+                  pretNum={activeTab}
+                  pretData={activeLoan.data}
+                  rawValues={activeLoan.raw}
+                  globalStartYM={state.startYM}
+                  globalAssurMode={state.assurMode}
+                  globalCreditType={state.creditType}
+                  mensualiteHorsAssurance={activeLoan.mensu}
+                  onPatch={activeLoan.set}
+                  onRemove={activeLoan.remove}
+                  formatTauxRaw={formatTauxRaw}
+                  isExpert={isExpert}
+                />
+              </div>
+            </div>
           </div>
 
           {/* Pas de lien discret ajout prêt en mode simplifié (item 5) */}
