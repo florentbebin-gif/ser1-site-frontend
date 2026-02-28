@@ -8,14 +8,35 @@
 
 import type { DossierAudit } from '../audit/types';
 import type { ProduitConfig, Projection, Scenario, ComparaisonScenarios } from './types';
-import { calculateIR } from '../../engine/tax';
+import { computeProgressiveTax } from '../../engine/ir/progressiveTax.js';
+import { DEFAULT_TAX_SETTINGS } from '../../constants/settingsDefaults';
+import type { FiscalContext } from '../../hooks/useFiscalContext';
 
 const HORIZON_ANNEES = 10; // Projection sur 10 ans par défaut
 
 /**
+ * Calcule l'impôt sur le revenu à partir du barème fiscal normalisé (fiscalContext)
+ * ou du barème par défaut si fiscalContext n'est pas fourni.
+ */
+function computeIR(
+  revenuImposable: number,
+  nbParts: number,
+  fiscalContext?: FiscalContext | null,
+): number {
+  const scale = fiscalContext?.irScaleCurrent ?? DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent;
+  if (nbParts <= 0) return 0;
+  const taxablePerPart = Math.max(0, revenuImposable) / nbParts;
+  const { taxPerPart } = computeProgressiveTax(scale, taxablePerPart);
+  return Math.round(taxPerPart * nbParts);
+}
+
+/**
  * Calcule la projection baseline (sans intervention)
  */
-export function calculateBaselineProjection(dossier: DossierAudit): Scenario {
+export function calculateBaselineProjection(
+  dossier: DossierAudit,
+  fiscalContext?: FiscalContext | null,
+): Scenario {
   const projections: Projection[] = [];
   
   const totalActifs = dossier.actifs.reduce((sum, a) => sum + a.valeur, 0);
@@ -30,11 +51,8 @@ export function calculateBaselineProjection(dossier: DossierAudit): Scenario {
     const passifs = totalPassifs * Math.pow(0.95, annee); // Remboursement progressif
     const patrimoineTotal = actifs - passifs;
 
-    // Calcul IR (simplifié, revenu constant)
-    const irResult = calculateIR({
-      revenuNetImposable: revenuAnnuel,
-      nbParts: dossier.situationFiscale.nombreParts,
-    });
+    // Calcul IR à partir du barème fiscalContext (ou défaut)
+    const impotRevenu = computeIR(revenuAnnuel, dossier.situationFiscale.nombreParts, fiscalContext);
 
     projections.push({
       annee,
@@ -42,7 +60,7 @@ export function calculateBaselineProjection(dossier: DossierAudit): Scenario {
       actifs,
       passifs,
       revenusAnnuels: revenuAnnuel,
-      impotRevenu: irResult.result.impotBrut,
+      impotRevenu,
       ifi: dossier.situationFiscale.ifi,
     });
   }
@@ -65,7 +83,8 @@ export function calculateBaselineProjection(dossier: DossierAudit): Scenario {
  */
 export function calculateStrategyProjection(
   dossier: DossierAudit,
-  produits: ProduitConfig[]
+  produits: ProduitConfig[],
+  fiscalContext?: FiscalContext | null,
 ): Scenario {
   const projections: Projection[] = [];
   
@@ -100,12 +119,9 @@ export function calculateStrategyProjection(
 
     const patrimoineTotal = actifs - passifs;
 
-    // Calcul IR avec déduction PER
+    // Calcul IR avec déduction PER, à partir du barème fiscalContext (ou défaut)
     const revenuImposable = Math.max(0, revenuAnnuel - versementsPER);
-    const irResult = calculateIR({
-      revenuNetImposable: revenuImposable,
-      nbParts: dossier.situationFiscale.nombreParts,
-    });
+    const impotRevenu = computeIR(revenuImposable, dossier.situationFiscale.nombreParts, fiscalContext);
 
     projections.push({
       annee,
@@ -113,7 +129,7 @@ export function calculateStrategyProjection(
       actifs,
       passifs,
       revenusAnnuels: revenuAnnuel,
-      impotRevenu: irResult.result.impotBrut,
+      impotRevenu,
       ifi: dossier.situationFiscale.ifi,
     });
   }
