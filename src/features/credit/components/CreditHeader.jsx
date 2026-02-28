@@ -16,16 +16,16 @@ export function CreditHeader({
   exportLoading,
 }) {
   return (
-    <div className="cv2-header" data-testid="credit-header">
-      <div className="cv2-header__left">
-        <h1 className="cv2-header__title" data-testid="credit-title">
+    <div className="premium-header" data-testid="credit-header">
+      <div>
+        <h1 className="premium-title" data-testid="credit-title">
           Simulateur de crédit
         </h1>
-        <p className="cv2-header__subtitle">
+        <p className="premium-subtitle">
           Simulez les mensualités et le coût global du financement.
         </p>
       </div>
-      <div className="cv2-header__actions" data-testid="credit-actions">
+      <div className="sim-header__actions" data-testid="credit-actions">
         <div className="cv2-pill-toggle" data-testid="credit-view-toggle">
           <button
             className={`cv2-pill-toggle__btn ${viewMode === 'mensuel' ? 'is-active' : ''}`}

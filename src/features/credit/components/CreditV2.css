@@ -7,11 +7,7 @@
 /* ----------------------------------------
    PAGE LAYOUT
    ---------------------------------------- */
-.cv2-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 32px 24px 64px;
-}
+/* .cv2-page supprimé → remplacé par .sim-page (SimulatorShell.css) */
 
 .cv2-grid {
   display: grid;
@@ -24,37 +20,8 @@
 /* ----------------------------------------
    HEADER
    ---------------------------------------- */
-.cv2-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 32px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid var(--color-c8);
-}
-
-.cv2-header__title {
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: var(--color-c1);
-  margin: 0;
-}
-
-.cv2-header__subtitle {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--color-c9);
-  margin-top: 4px;
-}
-
-.cv2-header__actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
+/* .cv2-header* supprimés → remplacés par .premium-header / .premium-title /
+   .premium-subtitle / .sim-header__actions (SimulatorShell.css + premium-shared.css) */
 
 /* ----------------------------------------
    PILL TOGGLE (Mensuel/Annuel)
@@ -162,25 +129,12 @@
 /* ----------------------------------------
    CARDS
    ---------------------------------------- */
-.cv2-card {
-  background: #FFFFFF;
-  border: 1px solid var(--color-c8);
-  border-radius: 12px;
-  padding: 20px 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-}
+/* .cv2-card supprimé → remplacé par .premium-card (premium-shared.css)
+   .cv2-card__title supprimé → remplacé par .sim-section-title (SimulatorShell.css) */
 
-.cv2-card + .cv2-card {
+/* Espacement entre cards adjacentes (spécifique Crédit) */
+.premium-card + .premium-card {
   margin-top: 20px;
-}
-
-.cv2-card__title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-c1);
-  margin-bottom: 16px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--color-c8);
 }
 
 /* ----------------------------------------
@@ -215,25 +169,8 @@
 /* ----------------------------------------
    BUTTONS
    ---------------------------------------- */
-.cv2-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  border: 1px solid var(--color-c8);
-  background: var(--color-c7);
-  color: var(--color-c1);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.cv2-btn:hover:not(:disabled) {
-  border-color: var(--color-c2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
+/* .cv2-btn remplacé par .premium-btn (premium-shared.css) ;
+   seul .cv2-btn--danger subsiste pour la couleur "danger" (C1) */
 
 .cv2-btn--danger {
   color: var(--color-c1);
@@ -537,14 +474,8 @@
    RESPONSIVE
    ---------------------------------------- */
 @media (max-width: 900px) {
-  .cv2-page {
-    padding: 24px 16px 48px;
-  }
-
-  .cv2-header {
-    flex-direction: column;
-    gap: 16px;
-  }
+  /* .cv2-page et .cv2-header → gérés par sim-page (SimulatorShell.css)
+     et premium-header (premium-shared.css) */
 
   .cv2-grid {
     grid-template-columns: 1fr;
@@ -560,7 +491,8 @@
 }
 
 @media (max-width: 600px) {
-  .cv2-header__title {
+  /* .premium-title override pour mobile Crédit */
+  .premium-title {
     font-size: 18px;
   }
 
