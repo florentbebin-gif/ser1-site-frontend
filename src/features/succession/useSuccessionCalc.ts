@@ -13,6 +13,7 @@ import {
   type LienParente,
   type HeritiersInput,
 } from '../../engine/succession';
+import type { DmtgSettings } from '../../engine/civil';
 import type { CalcResult } from '../../engine/types';
 
 export interface HeritierRow {
@@ -51,7 +52,11 @@ const DEFAULT_FORM: SuccessionFormState = {
   ],
 };
 
-export function useSuccessionCalc(): SuccessionCalcHook {
+interface UseSuccessionCalcOptions {
+  dmtgSettings?: DmtgSettings;
+}
+
+export function useSuccessionCalc({ dmtgSettings }: UseSuccessionCalcOptions = {}): SuccessionCalcHook {
   const [form, setForm] = useState<SuccessionFormState>({ ...DEFAULT_FORM, heritiers: [...DEFAULT_FORM.heritiers] });
   const [result, setResult] = useState<CalcResult<SuccessionResult> | null>(null);
 
@@ -101,10 +106,11 @@ export function useSuccessionCalc(): SuccessionCalcHook {
         lien: h.lien,
         partSuccession: h.partSuccession,
       })),
+      ...(dmtgSettings ? { dmtgSettings } : {}),
     };
     const calcResult = calculateSuccession(engineInput);
     setResult(calcResult);
-  }, [form]);
+  }, [form, dmtgSettings]);
 
   const reset = useCallback(() => {
     nextId = 1;

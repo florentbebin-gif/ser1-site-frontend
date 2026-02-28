@@ -33,13 +33,12 @@ const fmtPct = (v: number): string =>
 
 export default function SuccessionSimulator() {
   // Mode strict : attend Supabase avant d'afficher le simulateur (PR-01)
-  // Le branchement du calcul sur dmtgSettings sera fait en PR-03
-  const { loading: settingsLoading } = useFiscalContext({ strict: true });
+  const { loading: settingsLoading, fiscalContext } = useFiscalContext({ strict: true });
 
   const {
     form, result, setActifNet, addHeritier, removeHeritier,
     updateHeritier, distributeEqually, compute, reset, hasResult,
-  } = useSuccessionCalc();
+  } = useSuccessionCalc({ dmtgSettings: fiscalContext.dmtgSettings });
 
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const { sessionExpired, canExport } = useContext(SessionGuardContext);
