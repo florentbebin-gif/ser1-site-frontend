@@ -316,6 +316,16 @@ Créer la page premium qui centralise transmission : DMTG successions/donations 
 
 ## PR-P1-06-07 — Validation harmonisée sur Impots & Prélèvements
 
+✅ DONE — PR #161 — 2026-02-28
+
+**Preuves :**
+- `dmtgValidators.js` étendu : +2 fonctions (`validateImpotsSettings`, `validatePrelevementsSettings`) réutilisant `validatePercent` et `validateScaleOrdered` existants
+- `SettingsImpots.jsx` : `impotsErrors + dmtgErrors` via `useMemo`, save bloqué si erreurs, panneau d'erreurs visible
+- `SettingsPrelevements.jsx` : `psErrors` via `useMemo`, même pattern UX
+- `rg "validators/dmtgValidators" src/pages/settings` → 3 fichiers (DmtgSuccession + Impots + Prelevements)
+- Cas manuels : 172 sur Impots → erreur + save disabled ; 200 sur Prélèvements → erreur + save disabled
+- `npm run check` vert : lint ✓ · typecheck ✓ · 1088 tests ✓ · build ✓
+
 ### Objectif
 Étendre la validation anti-erreurs ajoutée dans PR-04 aux pages Impots et Prélèvements pour **cohérence globale**.
 
