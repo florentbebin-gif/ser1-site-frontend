@@ -1,0 +1,26 @@
+{
+  "description": "Cas référence post-P1 : conjoint + 2 enfants 600k — droits exacts barème 2025 ligne directe",
+  "module": "succession",
+  "function": "calculateSuccession",
+  "input": {
+    "actifNetSuccession": 600000,
+    "heritiers": [
+      { "lien": "conjoint", "partSuccession": 300000 },
+      { "lien": "enfant",   "partSuccession": 150000 },
+      { "lien": "enfant",   "partSuccession": 150000 }
+    ]
+  },
+  "expected": {
+    "result.totalDroits":                    16388,
+    "result.detailHeritiers.0.droits":           0,
+    "result.detailHeritiers.0.abattement":  300000,
+    "result.detailHeritiers.0.baseImposable":    0,
+    "result.detailHeritiers.1.droits":        8194,
+    "result.detailHeritiers.1.abattement":  100000,
+    "result.detailHeritiers.1.baseImposable": 50000,
+    "result.detailHeritiers.2.droits":        8194,
+    "result.detailHeritiers.2.abattement":  100000,
+    "result.detailHeritiers.2.baseImposable": 50000,
+    "result.tauxMoyenGlobal":                 2.73
+  }
+}

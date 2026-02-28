@@ -15,6 +15,7 @@ import {
   computeExtraDeductions,
   countPersonsACharge,
 } from '../../../engine/ir/adjustments.js';
+import { DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
 
 // Helpers formats
 const toNum = (v: any, def = 0) => toNumber(v, def);
@@ -292,7 +293,7 @@ export function useIr(): UseIrReturn {
       : taxSettings?.incomeTax?.scalePrevious || [];
 
   const pfuRateIR = toNum(taxSettings?.pfu?.[yearKey]?.rateIR, 12.8);
-  const psPatrimonyRate = toNum(psSettings?.patrimony?.[yearKey]?.totalRate, 17.2);
+  const psPatrimonyRate = toNum(psSettings?.patrimony?.[yearKey]?.totalRate, DEFAULT_PS_SETTINGS.patrimony.current.totalRate);
 
   return {
     taxSettings,

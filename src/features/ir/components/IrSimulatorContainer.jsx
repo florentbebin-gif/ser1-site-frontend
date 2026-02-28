@@ -4,6 +4,7 @@ import { onResetEvent, storageKeyFor } from '../../../utils/reset';
 import { toNumber } from '../../../utils/number';
 import { computeIrResult as computeIrResultEngine } from '../../../utils/irEngine.js';
 import { useFiscalContext } from '../../../hooks/useFiscalContext';
+import { DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
 import { useTheme } from '../../../settings/ThemeProvider';
 import { ExportMenu } from '../../../components/ExportMenu';
 import {
@@ -247,7 +248,7 @@ export default function IrSimulatorContainer() {
   const tmiScale = yearKey === 'current' ? taxSettings?.incomeTax?.scaleCurrent || [] : taxSettings?.incomeTax?.scalePrevious || [];
 
   const pfuRateIR = toNum(taxSettings?.pfu?.[yearKey]?.rateIR, 12.8);
-  const psPatrimonyRate = toNum(psSettings?.patrimony?.[yearKey]?.totalRate, 17.2);
+  const psPatrimonyRate = toNum(psSettings?.patrimony?.[yearKey]?.totalRate, DEFAULT_PS_SETTINGS.patrimony.current.totalRate);
 
   const { exportExcel, exportPowerPoint } = useIrExportHandlers({
     result,

@@ -2,6 +2,7 @@ import React from 'react';
 import {
   ENVELOPE_LABELS,
 } from '@/engine/placementEngine.js';
+import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
 import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '@/utils/transmissionDisclaimer.js';
 import { euro, shortEuro, formatPsMontant } from '../utils/formatters.js';
 import { BENEFICIARY_OPTIONS, getRendementLiquidation } from '../utils/normalizers.js';
@@ -625,7 +626,7 @@ export function PlacementInputsPanel({
             </p>
             <strong>Hypothèses PS décès :</strong>
             <p>
-              Assurance-vie & PER simulés à 100 % en unités de compte (pas de fonds €). Les PS au décès sont appliqués au taux de {psSettings?.patrimony?.current?.totalRate ?? 17.2}% (<a href="/settings/prelevements" className="pl-transmission-info-card__link">paramétrable</a>), puis les montants nets alimentent les DMTG.
+              Assurance-vie & PER simulés à 100 % en unités de compte (pas de fonds €). Les PS au décès sont appliqués au taux de {psSettings?.patrimony?.current?.totalRate ?? DEFAULT_PS_SETTINGS.patrimony.current.totalRate}% (<a href="/settings/prelevements" className="pl-transmission-info-card__link">paramétrable</a>), puis les montants nets alimentent les DMTG.
             </p>
             <p className="pl-transmission-info-card__note">
               La détermination de l’assiette taxable au prélèvement 990&nbsp;I s’effectue après imputation des PS dus sur les produits du contrat, prélevés par l’assureur au décès (BOI-TCAS-AUT-60).

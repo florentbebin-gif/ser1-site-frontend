@@ -392,6 +392,17 @@ Si un dossier `.ser1` est rouvert après mise à jour des paramètres, l’utili
 
 ## PR-P1-06-09 — Tests & garde-fous "source unique"
 
+✅ DONE — PR #163 — 2026-02-28
+
+**Preuves :**
+- Script `scripts/check-no-hardcoded-fiscal-values.mjs` créé : interdit `17.2`, `100000`, `15932` dans `src/engine/**` et `src/features/**` (hors `__tests__` et `settingsDefaults.ts`)
+- Intégré dans `npm run check` via `check:fiscal-hardcode` (exécuté avant typecheck)
+- CI failure prouvée : injection `const TEST_ABAT = 100000;` dans `succession.ts` → exit(1) avec message clair fichier + ligne + valeur
+- 3 fallbacks `17.2` en dur préexistants corrigés (`useIr.ts`, `IrSimulatorContainer.jsx`, `PlacementInputsPanel.jsx`) → remplacés par `DEFAULT_PS_SETTINGS.patrimony.current.totalRate`
+- Golden case exact ajouté : `succession-reference-conjoint-2enfants-600k.golden.json` — conjoint (300k exonéré) + 2 enfants (150k chacun) → droits exacts 8194€/enfant, total 16388€, barème ligne directe 2025
+- Tests cohérence IR ajoutés dans `src/features/strategy/__tests__/calculations.test.ts` : baseline == stratégie sans produits, valeur de référence 6913€ (revenu 80k, 2,5 parts), assertion barème scaleCurrent 5 tranches 0%→45%
+- `npm run check` vert : lint ✓ · fiscal-hardcode ✓ · typecheck ✓ · 1110 tests ✓ · build ✓
+
 ### Objectif
 Empêcher que de nouveaux chiffres révisables reviennent en dur dans le code après les PRs précédentes.
 
