@@ -4,8 +4,8 @@
  * Defines the canonical structure of a snapshot file with strict
  * validation. Each schema version is immutable once released.
  *
- * Current version: 3
- * Migration path: v1 → v2 → v3 (see snapshotMigrations.ts)
+ * Current version: 4
+ * Migration path: v1 → v2 → v3 → v4 (see snapshotMigrations.ts)
  */
 
 import { z } from 'zod';
@@ -16,7 +16,7 @@ import { z } from 'zod';
 
 export const SNAPSHOT_APP = 'SER1' as const;
 export const SNAPSHOT_KIND = 'snapshot' as const;
-export const CURRENT_SNAPSHOT_VERSION = 3;
+export const CURRENT_SNAPSHOT_VERSION = 4;
 
 // ---------------------------------------------------------------------------
 // Sim data schemas (payload.sims.*)
@@ -27,12 +27,30 @@ export const CURRENT_SNAPSHOT_VERSION = 3;
 const SimDataSchema = z.record(z.string(), z.unknown()).nullable();
 
 // ---------------------------------------------------------------------------
-// V2 Schema (current) — canonical structure
+// Fiscal identity sub-schema (v4+)
+// Stores the identity (updated_at + hash) of each settings table at save time.
+// Allows detecting when parameters changed between save and reload.
+// ---------------------------------------------------------------------------
+
+const FiscalSettingEntrySchema = z.object({
+  updatedAt: z.string().nullable().optional(),
+  hash: z.string().nullable().optional(),
+});
+
+export const FiscalIdentitySchema = z.object({
+  tax: FiscalSettingEntrySchema.optional(),
+  ps: FiscalSettingEntrySchema.optional(),
+  fiscality: FiscalSettingEntrySchema.optional(),
+}).nullable().optional();
+
+// ---------------------------------------------------------------------------
+// V4 Schema (current) — canonical structure
 // ---------------------------------------------------------------------------
 
 export const SnapshotMetaSchema = z.object({
   savedAt: z.string(),
   appVersion: z.string().optional(),
+  fiscal: FiscalIdentitySchema,
 });
 
 export const SnapshotSimsSchema = z.object({
@@ -48,7 +66,7 @@ export const SnapshotPayloadSchema = z.object({
   sims: SnapshotSimsSchema,
 });
 
-export const SnapshotV3Schema = z.object({
+export const SnapshotV4Schema = z.object({
   app: z.literal(SNAPSHOT_APP),
   kind: z.literal(SNAPSHOT_KIND),
   version: z.literal(CURRENT_SNAPSHOT_VERSION),
@@ -56,8 +74,9 @@ export const SnapshotV3Schema = z.object({
   payload: SnapshotPayloadSchema,
 });
 
-// Backward-compatible alias
-export const SnapshotV2Schema = SnapshotV3Schema;
+// Backward-compatible aliases
+export const SnapshotV3Schema = SnapshotV4Schema;
+export const SnapshotV2Schema = SnapshotV4Schema;
 
 // ---------------------------------------------------------------------------
 // Loose schema for initial parsing (accepts any version)
@@ -75,8 +94,10 @@ export const SnapshotEnvelopeSchema = z.object({
 // Inferred types
 // ---------------------------------------------------------------------------
 
-export type SnapshotV3 = z.infer<typeof SnapshotV3Schema>;
-export type SnapshotV2 = SnapshotV3;
+export type SnapshotV4 = z.infer<typeof SnapshotV4Schema>;
+export type SnapshotV3 = SnapshotV4;
+export type SnapshotV2 = SnapshotV4;
 export type SnapshotEnvelope = z.infer<typeof SnapshotEnvelopeSchema>;
 export type SnapshotMeta = z.infer<typeof SnapshotMetaSchema>;
 export type SnapshotSims = z.infer<typeof SnapshotSimsSchema>;
+export type FiscalIdentity = z.infer<typeof FiscalIdentitySchema>;
