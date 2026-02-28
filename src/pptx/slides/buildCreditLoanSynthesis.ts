@@ -208,8 +208,11 @@ export function buildCreditLoanSynthesis(
     });
   }
   
-  // Legend
-  addTextFr(slide, `Intérêts : ${formatEuro(data.coutTotalInterets)}  |  Assurance : ${formatEuro(data.coutTotalAssurance)}`, {
+  // Legend — assurance conditionnelle
+  const legendText = data.coutTotalAssurance > 0
+    ? `Intérêts : ${formatEuro(data.coutTotalInterets)}  |  Assurance : ${formatEuro(data.coutTotalAssurance)}`
+    : `Intérêts : ${formatEuro(data.coutTotalInterets)}`;
+  addTextFr(slide, legendText, {
     x: LAYOUT.visualBar.marginX,
     y: barY + 0.48,
     w: barW,
@@ -263,8 +266,11 @@ export function buildCreditLoanSynthesis(
   
   const detailsY = LAYOUT.details.topY;
   const assurModeLabel = data.assuranceMode === 'CI' ? 'Capital initial' : 'Capital restant dû';
-  
-  addTextFr(slide, `Assurance : ${formatPct(data.tauxAssurance)} (${assurModeLabel})  |  Mensualité hors assurance : ${formatEuro(data.mensualiteHorsAssurance)}`, {
+  const detailText = data.tauxAssurance > 0
+    ? `Assurance : ${formatPct(data.tauxAssurance)} (${assurModeLabel})  |  Mensualité hors assurance : ${formatEuro(data.mensualiteHorsAssurance)}`
+    : `Mensualité : ${formatEuro(data.mensualiteHorsAssurance)}`;
+
+  addTextFr(slide, detailText, {
     x: 0,
     y: detailsY,
     w: SLIDE_SIZE.width,

@@ -93,12 +93,11 @@ export function CreditLoanForm({
         )}
       </div>
 
-      {/* Bloc Assurance */}
-      <div className="cv2-loan-form__section" data-testid={pretNum === 0 ? 'credit-assurance-section' : undefined}>
-        <div className="cv2-loan-form__section-title">Assurance emprunteur</div>
-        <div className="cv2-loan-form__grid">
-          {/* Expert uniquement : mode de calcul assurance */}
-          {isExpert && (
+      {/* Bloc Assurance — masqué en mode simplifié (item 4) */}
+      {isExpert && (
+        <div className="cv2-loan-form__section" data-testid={pretNum === 0 ? 'credit-assurance-section' : undefined}>
+          <div className="cv2-loan-form__section-title">Assurance emprunteur</div>
+          <div className="cv2-loan-form__grid">
             <Select
               label="Mode de calcul"
               value={pretData.assurMode || globalAssurMode}
@@ -109,15 +108,12 @@ export function CreditLoanForm({
               ]}
               testId={`credit-pret${pretNum}-assurmode`}
             />
-          )}
-          <InputPct
-            label="Taux annuel (assurance)"
-            rawValue={raw.tauxAssur || formatTauxRaw(pretData.tauxAssur)}
-            onBlur={(v) => onPatch({ tauxAssur: v })}
-            testId={`credit-pret${pretNum}-tauxassur`}
-          />
-          {/* Expert uniquement : quotité */}
-          {isExpert && (
+            <InputPct
+              label="Taux annuel (assurance)"
+              rawValue={raw.tauxAssur || formatTauxRaw(pretData.tauxAssur)}
+              onBlur={(v) => onPatch({ tauxAssur: v })}
+              testId={`credit-pret${pretNum}-tauxassur`}
+            />
             <InputNumber
               label="Quotité assurée"
               value={pretData.quotite}
@@ -127,9 +123,9 @@ export function CreditLoanForm({
               max={100}
               testId={`credit-pret${pretNum}-quotite`}
             />
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Bouton suppression (Prêt 2 et 3 uniquement) */}
       {onRemove && (

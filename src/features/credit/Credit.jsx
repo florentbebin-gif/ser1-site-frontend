@@ -202,15 +202,21 @@ export default function CreditV2() {
   }, [activeTab]);
 
   // -------------------------------------------------------------------------
-  // CALCULS
+  // CALCULS (state dérivé pour le mode simplifié : assurance = 0)
   // -------------------------------------------------------------------------
-  const calc = useCreditCalculations(state, state.startYM);
+  const stateForCalc = isExpert ? state : {
+    ...state,
+    pret1: { ...state.pret1, tauxAssur: 0 },
+    pret2: state.pret2 ? { ...state.pret2, tauxAssur: 0 } : null,
+    pret3: state.pret3 ? { ...state.pret3, tauxAssur: 0 } : null,
+  };
+  const calc = useCreditCalculations(stateForCalc, stateForCalc.startYM);
 
   // -------------------------------------------------------------------------
   // EXPORTS
   // -------------------------------------------------------------------------
   const { exportExcel, exportPowerPoint } = useCreditExports({
-    state,
+    state: stateForCalc,
     calc,
     themeColors,
     cabinetLogo,
@@ -261,19 +267,17 @@ export default function CreditV2() {
 
   return (
     <div className="sim-page" data-testid="credit-page">
-      {/* HEADER */}
+      {/* HEADER (sans toggle — déplacé dans la ligne de contrôles) */}
       <CreditHeader
-        viewMode={state.viewMode}
-        onViewModeChange={(v) => setGlobal({ viewMode: v })}
         exportOptions={exportOptions}
         exportLoading={exportLoading}
         isExpert={isExpert}
       />
 
-      {/* GRID : SAISIE (gauche) + SYNTHÈSE (droite) */}
-      <div className="cv2-grid">
-        {/* COLONNE GAUCHE */}
-        <div>
+      {/* LIGNE DE CONTRÔLES : tabs (gauche, expert) + toggle Mensuel/Annuel (droite) */}
+      <div className="cv2-controls-row">
+        <div className="cv2-controls-row__left">
+          {/* Tabs prêts : expert uniquement ou si prêts additionnels déjà créés */}
           <CreditLoanTabs
             activeTab={activeTab}
             onChangeTab={setActiveTab}
@@ -283,7 +287,31 @@ export default function CreditV2() {
             onAddPret3={addPret3}
             isExpert={isExpert}
           />
+        </div>
+        <div className="cv2-controls-row__right">
+          <div className="cv2-pill-toggle" data-testid="credit-view-toggle">
+            <button
+              className={`cv2-pill-toggle__btn ${state.viewMode === 'mensuel' ? 'is-active' : ''}`}
+              onClick={() => setGlobal({ viewMode: 'mensuel' })}
+              data-testid="credit-view-mensuel"
+            >
+              Mensuel
+            </button>
+            <button
+              className={`cv2-pill-toggle__btn ${state.viewMode === 'annuel' ? 'is-active' : ''}`}
+              onClick={() => setGlobal({ viewMode: 'annuel' })}
+              data-testid="credit-view-annuel"
+            >
+              Annuel
+            </button>
+          </div>
+        </div>
+      </div>
 
+      {/* GRID : SAISIE (gauche) + SYNTHÈSE (droite) — alignés en haut */}
+      <div className="cv2-grid">
+        {/* COLONNE GAUCHE */}
+        <div>
           <div className="premium-card">
             <CreditLoanForm
               pretNum={activeTab}
@@ -300,19 +328,7 @@ export default function CreditV2() {
             />
           </div>
 
-          {/* LIEN DISCRET AJOUT PRÊT 2 (mode simplifié uniquement) */}
-          {!isExpert && !state.pret2 && (
-            <div className="cv2-loan-add-link">
-              <button
-                type="button"
-                className="cv2-loan-add-link__btn"
-                onClick={addPret2}
-                data-testid="credit-add-pret2-simple"
-              >
-                + Ajouter un 2ème prêt
-              </button>
-            </div>
-          )}
+          {/* Pas de lien discret ajout prêt en mode simplifié (item 5) */}
 
           {/* LISSAGE (si prêts additionnels) */}
           {calc.hasPretsAdditionnels && (
@@ -351,12 +367,13 @@ export default function CreditV2() {
           )}
         </div>
 
-        {/* COLONNE DROITE */}
+        {/* COLONNE DROITE — synthèse alignée avec le formulaire */}
         <div>
           <CreditSummaryCard
             synthese={calc.synthese}
             isAnnual={isAnnual}
             lisserPret1={state.lisserPret1}
+            isExpert={isExpert}
           />
         </div>
       </div>
@@ -367,12 +384,13 @@ export default function CreditV2() {
         hasPret3={!!state.pret3}
       />
 
-      {/* ÉCHÉANCIER GLOBAL */}
+      {/* ÉCHÉANCIER GLOBAL — toujours fermé par défaut (item 3) */}
       <CreditScheduleTable
         rows={calc.agrRows}
         startYM={state.startYM}
         isAnnual={isAnnual}
-        defaultCollapsed={!isExpert}
+        defaultCollapsed={true}
+        hideInsurance={!isExpert}
       />
 
       {/* DÉTAIL PAR PRÊT (si prêts multiples) */}
@@ -383,7 +401,8 @@ export default function CreditV2() {
             startYM={state.startYM}
             isAnnual={isAnnual}
             title="Détail — Prêt 1"
-            defaultCollapsed={!isExpert}
+            defaultCollapsed={true}
+            hideInsurance={!isExpert}
           />
           {calc.pret2Rows.length > 0 && (
             <CreditScheduleTable
@@ -391,7 +410,8 @@ export default function CreditV2() {
               startYM={state.startYM}
               isAnnual={isAnnual}
               title="Détail — Prêt 2"
-              defaultCollapsed={!isExpert}
+              defaultCollapsed={true}
+              hideInsurance={!isExpert}
             />
           )}
           {calc.pret3Rows.length > 0 && (
@@ -400,7 +420,8 @@ export default function CreditV2() {
               startYM={state.startYM}
               isAnnual={isAnnual}
               title="Détail — Prêt 3"
-              defaultCollapsed={!isExpert}
+              defaultCollapsed={true}
+              hideInsurance={!isExpert}
             />
           )}
         </>

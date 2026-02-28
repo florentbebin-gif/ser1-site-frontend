@@ -267,28 +267,30 @@ export function buildCreditGlobalSynthesis(
       segX += segW;
     });
     
-    // ========== INSURANCE HISTOGRAM BARS (1 bar per year over total duration) ==========
-    const tickY = barY + LAYOUT.timeline.barHeight + 0.08;
-    const tickGap = 0.015;
-    const tickCount = totalYears;
-    const tickW = (timelineW - (tickCount - 1) * tickGap) / tickCount;
-    
-    const assuranceDecesByYear = data.assuranceDecesByYear || [];
-    
-    for (let t = 0; t < tickCount; t++) {
-      const tickX = LAYOUT.timeline.marginX + t * (tickW + tickGap);
+    // ========== INSURANCE HISTOGRAM BARS — skipped when assurance = 0 ==========
+    if (data.coutTotalAssurance > 0) {
+      const tickY = barY + LAYOUT.timeline.barHeight + 0.08;
+      const tickGap = 0.015;
+      const tickCount = totalYears;
+      const tickW = (timelineW - (tickCount - 1) * tickGap) / tickCount;
       
-      // Gray tick bar
-      slide.addShape('rect', {
-        x: tickX, y: tickY, w: tickW, h: LAYOUT.timeline.tickHeight,
-        fill: { color: roleColor(theme, 'panelBorder') },
-      });
+      const assuranceDecesByYear = data.assuranceDecesByYear || [];
       
-      const assuranceValue = assuranceDecesByYear[t] ?? 0;
-      addTextFr(slide, formatEuroShort(assuranceValue), {
-        x: tickX, y: tickY + LAYOUT.timeline.tickHeight + 0.02, w: tickW, h: 0.12,
-        fontSize: 5, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
-      });
+      for (let t = 0; t < tickCount; t++) {
+        const tickX = LAYOUT.timeline.marginX + t * (tickW + tickGap);
+        
+        // Gray tick bar
+        slide.addShape('rect', {
+          x: tickX, y: tickY, w: tickW, h: LAYOUT.timeline.tickHeight,
+          fill: { color: roleColor(theme, 'panelBorder') },
+        });
+        
+        const assuranceValue = assuranceDecesByYear[t] ?? 0;
+        addTextFr(slide, formatEuroShort(assuranceValue), {
+          x: tickX, y: tickY + LAYOUT.timeline.tickHeight + 0.02, w: tickW, h: 0.12,
+          fontSize: 5, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
+        });
+      }
     }
   }
   
@@ -307,7 +309,7 @@ export function buildCreditGlobalSynthesis(
   const bottomItems = [
     { icon: 'buildings' as BusinessIconName, label: 'Total remboursé :', value: formatEuro(totalRembourse) },
     ...(data.smoothingEnabled ? [{ icon: 'checklist' as BusinessIconName, label: smoothingLabel, value: '' }] : []),
-    { icon: 'balance' as BusinessIconName, label: 'Coût assurance décès :', value: formatEuro(coutAssuranceDeces) },
+    ...(data.coutTotalAssurance > 0 ? [{ icon: 'balance' as BusinessIconName, label: 'Coût assurance décès :', value: formatEuro(coutAssuranceDeces) }] : []),
   ];
   
   const bottomItemW = bottomW / Math.max(bottomItems.length, 1);

@@ -201,7 +201,9 @@ export function buildCreditSynthesis(
       icon: 'cheque',
       label: 'Mensualité totale',
       value: euro(data.mensualiteTotale),
-      subValue: `dont ${euro(data.mensualiteTotale - data.mensualiteHorsAssurance)} assurance`,
+      subValue: data.coutTotalAssurance > 0
+        ? `dont ${euro(data.mensualiteTotale - data.mensualiteHorsAssurance)} assurance`
+        : undefined,
     },
     {
       icon: 'percent',
@@ -301,8 +303,10 @@ export function buildCreditSynthesis(
     valign: 'middle',
   });
   
-  // Breakdown under hero (intérêts + assurance)
-  const breakdownText = `(${euro(data.coutTotalInterets)} intérêts + ${euro(data.coutTotalAssurance)} assurance)`;
+  // Breakdown under hero (intérêts + assurance) — assurance conditionnelle si > 0
+  const breakdownText = data.coutTotalAssurance > 0
+    ? `(${euro(data.coutTotalInterets)} intérêts + ${euro(data.coutTotalAssurance)} assurance)`
+    : `(${euro(data.coutTotalInterets)} intérêts)`;
   addTextFr(slide, breakdownText, {
     x: LAYOUT.marginX,
     y: LAYOUT.hero.y + LAYOUT.hero.labelHeight + LAYOUT.hero.valueHeight,
