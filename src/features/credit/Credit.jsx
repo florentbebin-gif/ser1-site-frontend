@@ -228,7 +228,20 @@ export default function CreditV2() {
   // RENDU
   // -------------------------------------------------------------------------
   if (!hydrated) {
-    return <div className="sim-page">Chargement…</div>;
+    return (
+      <div className="sim-page cv2-skeleton-page" data-testid="credit-loading">
+        <div className="cv2-skeleton cv2-skeleton--title" />
+        <div className="cv2-skeleton cv2-skeleton--subtitle" />
+        <div className="cv2-skeleton-grid">
+          <div>
+            <div className="cv2-skeleton cv2-skeleton--card" />
+          </div>
+          <div>
+            <div className="cv2-skeleton cv2-skeleton--card-sm" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const isAnnual = state.viewMode === 'annuel';

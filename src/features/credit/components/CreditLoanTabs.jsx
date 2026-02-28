@@ -76,7 +76,7 @@ export function CreditLoanTabs({
               data-testid={`credit-tab-${tab.idx}`}
             >
               {tab.label}
-              {tab.addable && <span className="cv2-tabs__add-icon">+</span>}
+              {tab.addable && <span className="cv2-tabs__add-badge" aria-hidden="true">+</span>}
             </button>
           );
         })}
