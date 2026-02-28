@@ -191,6 +191,12 @@ Le simulateur Placement doit utiliser le barème DMTG réel (au moins ligne dire
 
 ## PR-P1-06-03 — Brancher Succession sur les paramètres admin
 
+✅ DONE — PR #158 — 2026-02-28
+
+- `useSuccessionCalc.ts` : accepte `{ dmtgSettings?: DmtgSettings }` et le passe à `calculateSuccession`
+- `SuccessionSimulator.tsx` : destructure `fiscalContext` depuis `useFiscalContext({ strict: true })` et passe `fiscalContext.dmtgSettings` au hook
+- `rg "DEFAULT_DMTG" src/features/succession` → 0 résultat côté UI ; `npm run check` vert (1088 tests)
+
 ### Objectif
 Le simulateur Succession doit utiliser les paramètres (DMTG) **issus du dossier fiscal**, pas les fallbacks.
 
