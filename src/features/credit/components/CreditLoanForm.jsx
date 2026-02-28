@@ -121,7 +121,7 @@ export function CreditLoanForm({
         <div className="cv2-loan-form__footer">
           <button
             type="button"
-            className="cv2-btn cv2-btn--danger"
+            className="premium-btn cv2-btn--danger"
             onClick={onRemove}
             data-testid={`credit-pret${pretNum}-remove`}
           >

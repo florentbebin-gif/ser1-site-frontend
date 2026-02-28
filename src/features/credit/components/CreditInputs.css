@@ -1,0 +1,166 @@
+/* ========================================
+   CreditInputs — Styles des composants de saisie
+   Remplace les objets style inline de CreditInputs.jsx
+   Palette : C1-C10 (governance.md)
+   ======================================== */
+
+/* ----------------------------------------
+   FIELD WRAPPER
+   ---------------------------------------- */
+.ci-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ci-field-row {
+  display: flex;
+  align-items: center;
+}
+
+/* ----------------------------------------
+   LABEL
+   ---------------------------------------- */
+.ci-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-c9);
+  margin-bottom: 4px;
+}
+
+/* ----------------------------------------
+   INPUT
+   ---------------------------------------- */
+.ci-input {
+  height: 32px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-c8);
+  text-align: right;
+  background-color: #FFFFFF;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-c10);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.ci-input:focus-visible {
+  border-color: var(--color-c2);
+  box-shadow: 0 0 0 3px var(--color-c4);
+}
+
+.ci-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Variante alignée à gauche (pour InputMonth) */
+.ci-input--left {
+  text-align: left;
+}
+
+/* ----------------------------------------
+   UNIT (€, %, mois…)
+   ---------------------------------------- */
+.ci-unit {
+  font-size: 13px;
+  color: var(--color-c9);
+  min-width: 24px;
+  margin-left: 6px;
+}
+
+/* ----------------------------------------
+   HINT
+   ---------------------------------------- */
+.ci-hint {
+  font-size: 11px;
+  color: var(--color-c9);
+  margin-top: 2px;
+  font-style: italic;
+}
+
+/* ----------------------------------------
+   SELECT
+   ---------------------------------------- */
+.ci-select {
+  height: 32px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--color-c8);
+  background-color: #FFFFFF;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-c10);
+  cursor: pointer;
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+.ci-select:focus-visible {
+  border-color: var(--color-c2);
+  box-shadow: 0 0 0 3px var(--color-c4);
+}
+
+.ci-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------
+   TOGGLE (Switch binaire)
+   ---------------------------------------- */
+.ci-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ci-toggle__switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-c8);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  padding: 0;
+}
+
+.ci-toggle__switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Actif : C4 (référence Home — ModeToggle) */
+.ci-toggle__switch.is-active {
+  background: var(--color-c4);
+}
+
+.ci-toggle__knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+  pointer-events: none;
+}
+
+.ci-toggle__switch.is-active .ci-toggle__knob {
+  transform: translateX(20px);
+}
+
+.ci-toggle__label {
+  font-size: 13px;
+  color: var(--color-c10);
+}

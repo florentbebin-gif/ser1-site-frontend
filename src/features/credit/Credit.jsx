@@ -29,6 +29,8 @@ import { CreditScheduleTable } from './components/CreditScheduleTable.jsx';
 import { CreditPeriodsTable } from './components/CreditPeriodsTable.jsx';
 import { Toggle } from './components/CreditInputs.jsx';
 import './components/CreditV2.css';
+import '../../styles/premium-shared.css';
+import '../../components/simulator/SimulatorShell.css';
 
 // ============================================================================
 // HELPERS
@@ -209,7 +211,7 @@ export default function CreditV2() {
   // RENDU
   // -------------------------------------------------------------------------
   if (!hydrated) {
-    return <div className="cv2-page">Chargement…</div>;
+    return <div className="sim-page">Chargement…</div>;
   }
 
   const isAnnual = state.viewMode === 'annuel';
@@ -228,7 +230,7 @@ export default function CreditV2() {
   const activeLoan = pretLookup[activeTab];
 
   return (
-    <div className="cv2-page" data-testid="credit-page">
+    <div className="sim-page" data-testid="credit-page">
       {/* HEADER */}
       <CreditHeader
         viewMode={state.viewMode}
@@ -250,7 +252,7 @@ export default function CreditV2() {
             onAddPret3={addPret3}
           />
 
-          <div className="cv2-card">
+          <div className="premium-card">
             <CreditLoanForm
               pretNum={activeTab}
               pretData={activeLoan.data}
@@ -267,8 +269,8 @@ export default function CreditV2() {
 
           {/* LISSAGE (si prêts additionnels) */}
           {calc.hasPretsAdditionnels && (
-            <div className="cv2-card">
-              <div className="cv2-card__title">Options de lissage</div>
+            <div className="premium-card">
+              <div className="sim-section-title">Options de lissage</div>
               <div className="cv2-lissage">
                 <Toggle
                   checked={state.lisserPret1}
