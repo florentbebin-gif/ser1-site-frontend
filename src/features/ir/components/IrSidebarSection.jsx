@@ -194,6 +194,7 @@ export function IrSidebarSection({
       <button
         type="button"
         className="chip"
+        aria-expanded={showDetails}
         onClick={() => setShowDetails((v) => !v)}
         style={{ marginTop: 12 }}
       >
