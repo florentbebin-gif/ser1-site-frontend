@@ -108,7 +108,7 @@ export function IrSidebarSection({
         </div>
       </div>
 
-      <div className="ir-tmi-card" data-testid="ir-results-card">
+      <div className="ir-tmi-card premium-card" data-testid="ir-results-card">
         <div className="ir-tmi-header" data-testid="ir-results-header">
           Estimation IR
         </div>
@@ -146,7 +146,7 @@ export function IrSidebarSection({
       </div>
 
       {result && (
-        <div className="ir-summary-card">
+        <div className="ir-summary-card premium-card">
           <div className="ir-summary-row">
             <span>Revenu imposable du foyer</span>
             <span>{euro0(result.taxableIncome)}</span>
