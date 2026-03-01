@@ -49,11 +49,19 @@
   align-items: start;
 }
 
-.ir-left,
+.ir-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Colonne synthèse : sticky sur desktop (GOUVERNANCE.md §1 recommandé) */
 .ir-right {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  position: sticky;
+  top: 80px;
 }
 
 /* Champs du bandeau haut */
@@ -72,6 +80,7 @@
   /* Synthèse (colonne droite) au-dessus du formulaire sur mobile */
   .ir-grid > .ir-right {
     order: -1;
+    position: static;
   }
 
   .ir-top-row {
@@ -104,12 +113,14 @@
   background: var(--color-c7);
 }
 
-/* Tableau de saisie */
+/* Carte guidage (hero saisie) — liseré gauche C3 (GOUVERNANCE.md §3 + §8) */
+.premium-card--guide {
+  border-left: 3px solid var(--color-c3);
+}
+
+/* Tableau de saisie — fond/border/radius/padding viennent de .premium-card (JSX) */
 .ir-table-wrapper {
-  border-radius: 10px;
-  border: 1px solid var(--color-c8);
-  background: var(--color-c7);
-  padding: 10px;
+  overflow: hidden;
 }
 
 .ir-table {
@@ -154,12 +165,8 @@
   color: var(--color-c1);
 }
 
-/* Carte TMI */
+/* Carte TMI — fond/border/radius/padding/shadow viennent de .premium-card (JSX) */
 .ir-tmi-card {
-  border-radius: 10px;
-  border: 1px solid var(--color-c8);
-  background: var(--color-c7);
-  padding: 10px 12px;
   font-size: 13px;
 }
 
@@ -222,13 +229,8 @@
   display: none;
 }
 
-/* Carte synthèse */
+/* Carte synthèse — fond/border/radius/padding/shadow viennent de .premium-card (JSX) */
 .ir-summary-card {
-  margin-top: 10px;
-  border-radius: 10px;
-  border: 1px solid var(--color-c8);
-  background: var(--color-c7);
-  padding: 10px 12px;
   font-size: 13px;
   display: flex;
   flex-direction: column;

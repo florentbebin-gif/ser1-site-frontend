@@ -32,7 +32,7 @@ export function IrFormSection({
 }) {
   return (
     <div className="ir-left premium-section">
-      <div className="ir-table-wrapper premium-card premium-section">
+      <div className="ir-table-wrapper premium-card premium-card--guide">
         <div className="ir-top-row">
           <div className="ir-field premium-field">
             <label>Barème</label>
@@ -79,7 +79,7 @@ export function IrFormSection({
         </div>
       </div>
 
-      <div className="ir-table-wrapper">
+      <div className="ir-table-wrapper premium-card">
         <table className={`ir-table ${status === 'single' ? 'ir-table-single' : ''}`} aria-label="Revenus imposables">
           <colgroup>
             <col style={{ width: '40%' }} />
