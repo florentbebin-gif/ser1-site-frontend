@@ -9,6 +9,7 @@ import { uploadLogoWithDedup, getLogoPublicUrl } from '@/utils/logoUpload';
 import SettingsSectionCard from '@/components/settings/SettingsSectionCard';
 import './SettingsComptes.css';
 import { DEFAULT_COLORS } from '@/settings/theme';
+import { COLOR_USAGE_GUIDELINES } from '@/constants/colorUsageGuidelines';
 
 export default function SettingsComptes() {
   const { isAdmin, isLoading: authLoading } = useUserRole();
@@ -55,6 +56,11 @@ export default function SettingsComptes() {
   const [userModalSuccess, setUserModalSuccess] = useState('');
 
   const DEFAULT_PALETTE = DEFAULT_COLORS;
+  const THEME_COLOR_FIELDS = COLOR_USAGE_GUIDELINES.map(({ themeKey, token, usage }) => ({
+    key: themeKey,
+    token,
+    help: usage,
+  }));
 
   const triggerRefresh = (reason = '') => {
     if (DEBUG_COMPTES_REFRESH) {
@@ -1018,33 +1024,51 @@ export default function SettingsComptes() {
                 </div>
                 <div style={{ marginBottom: 16 }}>
                   <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>Palette (10 couleurs)</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
-                    {['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10'].map(colorKey => (
-                      <div key={colorKey} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <span style={{ fontSize: 11, color: 'var(--color-c9)', marginBottom: 4 }}>{colorKey.toUpperCase()}</span>
-                        <input
-                          type="color"
-                          value={themeForm.palette?.[colorKey] || DEFAULT_PALETTE[colorKey]}
-                          onChange={(e) => handleThemePaletteChange(colorKey, e.target.value)}
-                          style={{ width: 40, height: 32, border: 'none', cursor: 'pointer' }}
-                        />
-                        <input
-                          type="text"
-                          value={themeForm.palette?.[colorKey] || DEFAULT_PALETTE[colorKey]}
-                          onChange={(e) => handleThemePaletteChange(colorKey, e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '4px',
-                            border: '1px solid var(--color-c8)',
-                            borderRadius: 4,
-                            fontSize: 10,
-                            fontFamily: 'monospace',
-                            textAlign: 'center',
-                            marginTop: 4
-                          }}
-                        />
-                      </div>
-                    ))}
+                  <p className="theme-palette-help">
+                    Survolez C1 a C10 pour voir la norme d usage.
+                  </p>
+                  <div className="theme-palette-grid">
+                    {THEME_COLOR_FIELDS.map(({ key, token, help }) => {
+                      const tooltipId = `theme-color-help-${key}`;
+                      const colorValue = themeForm.palette?.[key] || DEFAULT_PALETTE[key];
+                      return (
+                        <div key={key} className="theme-palette-item">
+                          <span className="theme-palette-token-wrap">
+                            <span
+                              className="theme-palette-token"
+                              tabIndex={0}
+                              aria-describedby={tooltipId}
+                            >
+                              {token}
+                            </span>
+                            <span id={tooltipId} role="tooltip" className="theme-palette-tooltip">
+                              {help}
+                            </span>
+                          </span>
+                          <input
+                            type="color"
+                            value={colorValue}
+                            onChange={(e) => handleThemePaletteChange(key, e.target.value)}
+                            style={{ width: 40, height: 32, border: 'none', cursor: 'pointer' }}
+                          />
+                          <input
+                            type="text"
+                            value={colorValue}
+                            onChange={(e) => handleThemePaletteChange(key, e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: '4px',
+                              border: '1px solid var(--color-c8)',
+                              borderRadius: 4,
+                              fontSize: 10,
+                              fontFamily: 'monospace',
+                              textAlign: 'center',
+                              marginTop: 4
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
