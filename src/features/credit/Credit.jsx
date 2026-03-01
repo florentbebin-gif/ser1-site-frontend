@@ -442,8 +442,13 @@ export default function CreditV2() {
                   checked={state.lisserPret1}
                   onChange={(v) => setGlobal({ lisserPret1: v })}
                   label="Lisser le prêt 1"
-                  disabled={calc.anyInfine}
+                  disabled={calc.pret1IsInfine}
                 />
+                {state.lisserPret1 && calc.autresIsInfine.some(Boolean) && (
+                  <p className="cv2-lissage__hint cv2-lissage__hint--info">
+                    Un prêt in fine comporte une échéance finale de capital&nbsp;: elle n'est pas lissable et reste visible dans l'échéancier.
+                  </p>
+                )}
                 {state.lisserPret1 && (
                   <div className="cv2-lissage__pills">
                     <button
@@ -461,9 +466,9 @@ export default function CreditV2() {
                   </div>
                 )}
               </div>
-              {calc.anyInfine && (
+              {calc.pret1IsInfine && (
                 <p className="cv2-lissage__hint">
-                  Le lissage est indisponible si un prêt est en In fine.
+                  Le lissage est indisponible pour un prêt 1 en In fine.
                 </p>
               )}
             </div>

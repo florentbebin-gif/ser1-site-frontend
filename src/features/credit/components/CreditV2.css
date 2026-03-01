@@ -339,6 +339,11 @@
   font-style: italic;
 }
 
+.cv2-lissage__hint--info {
+  color: var(--color-c3);
+  font-style: normal;
+}
+
 .cv2-lissage__pills {
   display: flex;
   gap: 8px;

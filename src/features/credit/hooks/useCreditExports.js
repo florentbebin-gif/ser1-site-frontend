@@ -240,8 +240,13 @@ export function useCreditExports({
         quotite: p1Params.quotite,
         creditType: p1.type || state.creditType,
         assuranceMode: p1.assurMode || state.assurMode,
-        mensualiteHorsAssurance: calc.mensuBasePret1,
-        mensualiteTotale: calc.mensuBasePret1 + (calc.pret1Rows[0]?.assurance || 0),
+        // Quand le lissage est actif, on utilise la mensualité effective (lissée) du prêt 1
+        mensualiteHorsAssurance: (state.lisserPret1 && calc.hasPretsAdditionnels)
+          ? (calc.pret1Rows[0]?.mensu ?? calc.mensuBasePret1)
+          : calc.mensuBasePret1,
+        mensualiteTotale: (state.lisserPret1 && calc.hasPretsAdditionnels)
+          ? (calc.pret1Rows[0]?.mensuTotal ?? (calc.mensuBasePret1 + (calc.pret1Rows[0]?.assurance || 0)))
+          : calc.mensuBasePret1 + (calc.pret1Rows[0]?.assurance || 0),
         coutInterets: pret1Interets,
         coutAssurance: pret1Assurance,
         amortizationRows: amortizationRowsPret1,
