@@ -330,6 +330,7 @@ export default function IrSimulatorContainer() {
           setYearKey={setYearKey}
           status={status}
           setStatus={setStatus}
+          isIsolated={isIsolated}
           setIsIsolated={setIsIsolated}
           setIncomes={setIncomes}
           setParts={setParts}
@@ -358,9 +359,6 @@ export default function IrSimulatorContainer() {
         <IrSidebarSection
           location={location}
           setLocation={setLocation}
-          status={status}
-          isIsolated={isIsolated}
-          setIsIsolated={setIsIsolated}
           children={children}
           setChildren={setChildren}
           effectiveParts={effectiveParts}

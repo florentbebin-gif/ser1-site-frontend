@@ -6,6 +6,7 @@ export function IrFormSection({
   setYearKey,
   status,
   setStatus,
+  isIsolated,
   setIsIsolated,
   setIncomes,
   setParts,
@@ -75,6 +76,17 @@ export function IrFormSection({
               <option value="single">Célibataire / Veuf / Divorcé</option>
               <option value="couple">Marié / Pacsé</option>
             </select>
+            {status === 'single' && (
+              <label className="ir-checkbox-label">
+                <input
+                  type="checkbox"
+                  className="ir-checkbox"
+                  checked={isIsolated}
+                  onChange={(e) => setIsIsolated(e.target.checked)}
+                />
+                Parent isolé
+              </label>
+            )}
           </div>
         </div>
       </div>

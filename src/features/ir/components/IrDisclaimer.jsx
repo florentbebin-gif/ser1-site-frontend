@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 export function IrDisclaimer({ isIsolated }) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div className="ir-hypotheses">

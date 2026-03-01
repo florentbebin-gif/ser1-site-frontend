@@ -3,9 +3,6 @@ import React from 'react';
 export function IrSidebarSection({
   location,
   setLocation,
-  status,
-  isIsolated,
-  setIsIsolated,
   children,
   setChildren,
   effectiveParts,
@@ -28,21 +25,6 @@ export function IrSidebarSection({
         </select>
       </div>
 
-      {status === 'single' && (
-        <div className="ir-field">
-          <label>Situation familiale particulière</label>
-          <label style={{ fontSize: 12 }}>
-            <input
-              type="checkbox"
-              checked={isIsolated}
-              onChange={(e) => setIsIsolated(e.target.checked)}
-              style={{ marginRight: 6 }}
-            />
-            Parent isolé
-          </label>
-        </div>
-      )}
-
       <button
         type="button"
         className="chip"
@@ -51,42 +33,34 @@ export function IrSidebarSection({
         + Ajouter un enfant
       </button>
 
-      {children.map((child, idx) => (
-        <div
-          key={child.id}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            fontSize: 13,
-            marginTop: 4,
-          }}
-        >
-          <strong>Enfant {idx + 1}</strong>
+      <div className="ir-children-grid">
+        {children.map((child, idx) => (
+          <div key={child.id} className="ir-child-item">
+            <strong>Enfant {idx + 1}</strong>
 
-          <select
-            className="ir-child-select"
-            value={child.mode}
-            onChange={(e) =>
-              setChildren((list) =>
-                list.map((c) => (c.id === child.id ? { ...c, mode: e.target.value } : c)),
-              )
-            }
-          >
-            <option value="charge">À charge</option>
-            <option value="shared">Garde alternée</option>
-          </select>
+            <select
+              className="ir-child-select"
+              value={child.mode}
+              onChange={(e) =>
+                setChildren((list) =>
+                  list.map((c) => (c.id === child.id ? { ...c, mode: e.target.value } : c)),
+                )
+              }
+            >
+              <option value="charge">À charge</option>
+              <option value="shared">Garde alternée</option>
+            </select>
 
-          <button
-            type="button"
-            className="chip"
-            style={{ padding: '2px 6px', fontSize: 12 }}
-            onClick={() => setChildren((list) => list.filter((c) => c.id !== child.id))}
-          >
-            −
-          </button>
-        </div>
-      ))}
+            <button
+              type="button"
+              className="chip ir-child-remove"
+              onClick={() => setChildren((list) => list.filter((c) => c.id !== child.id))}
+            >
+              −
+            </button>
+          </div>
+        ))}
+      </div>
 
       <div className="ir-parts-row">
         <div className="ir-field">
