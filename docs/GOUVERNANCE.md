@@ -210,14 +210,18 @@ Principes : épuré, lisible, respirant.
 - Accordéons utilisés sur `/sim/credit` :
   - Échéanciers (`Afficher/Masquer`) via bouton `cv2-schedule__toggle`.
   - Hypothèses/limites via `cv2-hypotheses__toggle`.
+- Accordéons utilisés sur `/sim/ir` :
+  - Détail du calcul via bouton `.ir-detail-toggle` (adjacent à `.ir-detail-accordion`, hors grid).
+  - Hypothèses/limites via `.ir-hypotheses__toggle` (composant `IrDisclaimer`).
 - Style minimum :
   - conteneur `#FFFFFF` (tables) ou `C7` (bloc hypothèses),
   - border `1px solid C8`,
   - radius `12px`,
   - chevron animé (rotation 180° open).
+- Toggle détail (hors card) : `border 1px solid C8`, `bg C7`, `radius 6px`, `12px`, hover `C2`.
 - État initial :
-  - échéanciers : fermés par défaut,
-  - hypothèses : ouvert en expert, fermé en simplifié.
+  - échéanciers / détail calcul : fermés par défaut,
+  - hypothèses : ouvert par défaut (fermer en mode simplifié quand le mode sera fonctionnel).
 
 #### Recommandé
 - Garder un wording d'action explicite (`Afficher`/`Masquer`), pas uniquement une icône.

@@ -16,8 +16,6 @@ export function IrSidebarSection({
   euro0,
   fmtPct,
   pfuRateIR,
-  showDetails,
-  setShowDetails,
 }) {
   return (
     <div className="ir-right">
@@ -193,15 +191,6 @@ export function IrSidebarSection({
         </div>
       )}
 
-      <button
-        type="button"
-        className="chip"
-        aria-expanded={showDetails}
-        onClick={() => setShowDetails((v) => !v)}
-        style={{ marginTop: 12 }}
-      >
-        {showDetails ? 'Masquer le détail du calcul' : 'Afficher le détail du calcul'}
-      </button>
     </div>
   );
 }
