@@ -33,6 +33,13 @@ export function CreditLoanForm({
 
   const raw = rawValues || {};
 
+  // Guidage séquentiel : premier champ non saisi (capital → duree → taux)
+  const guideField =
+    (pretData.capital || 0) === 0 ? 'capital' :
+    (pretData.duree || 0) === 0 ? 'duree' :
+    (pretData.taux || 0) === 0 ? 'taux' :
+    null;
+
   return (
     <div className="cv2-loan-form" data-testid={`credit-form-pret${pretNum}`}>
       <div className="cv2-loan-form__grid">
@@ -64,6 +71,7 @@ export function CreditLoanForm({
           onChange={(v) => onPatch({ capital: v })}
           testId={`credit-pret${pretNum}-capital`}
           dataTestId={pretNum === 0 ? 'credit-capital-input' : undefined}
+          highlight={guideField === 'capital'}
         />
         <InputNumber
           label="Durée"
@@ -73,12 +81,14 @@ export function CreditLoanForm({
           min={1}
           max={600}
           testId={`credit-pret${pretNum}-duree`}
+          highlight={guideField === 'duree'}
         />
         <InputPct
           label="Taux annuel (crédit)"
           rawValue={raw.taux || formatTauxRaw(pretData.taux)}
           onBlur={(v) => onPatch({ taux: v })}
           testId={`credit-pret${pretNum}-taux`}
+          highlight={guideField === 'taux'}
         />
         {mensualiteHorsAssurance !== undefined && (
           <InputEuro

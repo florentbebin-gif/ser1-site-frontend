@@ -73,6 +73,11 @@
   box-shadow: 0 0 0 3px var(--color-c4);
 }
 
+/* Guide séquentiel onboarding : premier champ non saisi */
+.ci-input--guide {
+  background-color: color-mix(in srgb, var(--color-c1) 5%, #FFFFFF);
+}
+
 /* ----------------------------------------
    UNIT (€, %, mois…)
    ---------------------------------------- */

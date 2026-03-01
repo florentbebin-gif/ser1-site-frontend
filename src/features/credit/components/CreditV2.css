@@ -489,11 +489,11 @@
 }
 
 /* ----------------------------------------
-   GUIDAGE VISUEL ONBOARDING (capital = 0)
+   GUIDAGE VISUEL ONBOARDING — permanent
    ---------------------------------------- */
-/* Lisèré C6 à gauche + gradient C1 très subtil sur le header */
+/* Lisèré C3 à gauche + gradient C1 très subtil sur le header */
 .premium-card--guide {
-  border-left: 3px solid var(--color-c6);
+  border-left: 3px solid var(--color-c3);
 }
 
 .premium-card--guide .cv2-loan-card__header {
