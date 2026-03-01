@@ -117,10 +117,12 @@ export function CreditSummaryCard({
 
       {/* Lignes de coût */}
       <div className="cv2-summary__rows">
-        <div className="cv2-summary__row">
-          <span className="cv2-summary__row-label">Coût total des intérêts</span>
-          <span className="cv2-summary__row-value">{euro0(totalInterets)}</span>
-        </div>
+        {isExpert && (
+          <div className="cv2-summary__row">
+            <span className="cv2-summary__row-label">Coût total des intérêts</span>
+            <span className="cv2-summary__row-value">{euro0(totalInterets)}</span>
+          </div>
+        )}
         {isExpert && (
           <div className="cv2-summary__row">
             <span className="cv2-summary__row-label">Coût total assurance</span>
