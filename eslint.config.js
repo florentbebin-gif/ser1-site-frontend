@@ -70,7 +70,6 @@ export default [
     files: [
       'src/settings/theme.ts',
       'src/styles/semanticColors.ts',
-      'src/pptx/theme/semanticColors.ts',
       'src/pptx/theme/getPptxThemeFromUiSettings.ts',
       'src/utils/paletteGenerator.ts',
       'src/pages/Settings.jsx', // Définitions des thèmes prédéfinis
