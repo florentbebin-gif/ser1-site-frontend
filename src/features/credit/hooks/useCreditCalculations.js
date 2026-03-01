@@ -92,15 +92,21 @@ function scheduleInFine({ capital, r, rAss, N, assurMode, mensuOverride }) {
 // LISSAGE
 // ============================================================================
 
-function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
+function scheduleLisseePret1({ pret1, autresPretsRows, autresIsInfine, cibleMensuTotale }) {
   const { capital, r, rAss, N, assurMode, type } = pret1;
   const rows = [];
   let crd = Math.max(0, capital);
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null;
   const EPS = 1e-8;
 
+  // Pour un prêt in fine parmi les autres : exclure le ballon (capital) du budget récurrent.
+  // On n'utilise que intérêts + assurance, i.e. mensuTotal - amort.
   const mensuAutresAt = (m) =>
-    autresPretsRows.reduce((s, arr) => s + ((arr[m - 1]?.mensuTotal) || 0), 0);
+    autresPretsRows.reduce((s, arr, i) => {
+      const row = arr[m - 1];
+      if (!row) return s;
+      return s + (autresIsInfine[i] ? (row.mensuTotal - row.amort) : row.mensuTotal);
+    }, 0);
 
   for (let m = 1; m <= N; m++) {
     if (crd <= EPS) break;
@@ -129,14 +135,19 @@ function scheduleLisseePret1({ pret1, autresPretsRows, cibleMensuTotale }) {
   return rows;
 }
 
-function scheduleLisseePret1Duration({ basePret1, autresPretsRows, totalConst }) {
+function scheduleLisseePret1Duration({ basePret1, autresPretsRows, autresIsInfine, totalConst }) {
   const { capital, r, rAss, N, assurMode } = basePret1;
   const rows = [];
   let crd = Math.max(0, capital);
   const assurFixe = (assurMode === 'CI') ? (capital * rAss) : null;
   const EPS = 1e-8;
 
-  const sumAutres = (m) => autresPretsRows.reduce((s, arr) => s + ((arr[m - 1]?.mensuTotal) || 0), 0);
+  const sumAutres = (m) =>
+    autresPretsRows.reduce((s, arr, i) => {
+      const row = arr[m - 1];
+      if (!row) return s;
+      return s + (autresIsInfine[i] ? (row.mensuTotal - row.amort) : row.mensuTotal);
+    }, 0);
 
   for (let m = 1; m <= N; m++) {
     if (crd <= EPS) break;
@@ -164,7 +175,7 @@ function scheduleLisseePret1Duration({ basePret1, autresPretsRows, totalConst })
   return rows;
 }
 
-function totalConstantForDuration({ basePret1, autresPretsRows }) {
+function totalConstantForDuration({ basePret1, autresPretsRows, autresIsInfine }) {
   const { capital: B0, r, N } = basePret1;
   const pow = Math.pow(1 + r, N);
 
@@ -174,7 +185,11 @@ function totalConstantForDuration({ basePret1, autresPretsRows }) {
   for (let t = 1; t <= N; t++) {
     const a = Math.pow(1 + r, N - t);
     A += a;
-    const autres = autresPretsRows.reduce((s, arr) => s + ((arr[t - 1]?.mensuTotal) || 0), 0);
+    const autres = autresPretsRows.reduce((s, arr, i) => {
+      const row = arr[t - 1];
+      if (!row) return s;
+      return s + (autresIsInfine[i] ? (row.mensuTotal - row.amort) : row.mensuTotal);
+    }, 0);
     B += autres * a;
   }
   return (B0 * pow + B) / A;
@@ -315,12 +330,15 @@ export function useCreditCalculations(state, globalStartYM) {
   // -------------------------------------------------------------------------
   // DÉTECTION IN FINE
   // -------------------------------------------------------------------------
-  const anyInfine = useMemo(() => {
-    const pret1IsInfine = pret1Params.type === 'infine';
-    const pret2IsInfine = state.pret2?.type === 'infine';
-    const pret3IsInfine = state.pret3?.type === 'infine';
-    return pret1IsInfine || pret2IsInfine || pret3IsInfine;
-  }, [pret1Params.type, state.pret2?.type, state.pret3?.type]);
+  const pret1IsInfine = pret1Params.type === 'infine';
+
+  const autresIsInfine = useMemo(
+    () => autresParams.map((p) => p.type === 'infine'),
+    [autresParams],
+  );
+
+  // Conservé pour compatibilité (utilisé dans Credit.jsx hint)
+  const anyInfine = pret1IsInfine || autresIsInfine.some(Boolean);
 
   // -------------------------------------------------------------------------
   // ÉCHÉANCIER PRÊT 1 (AVEC LISSAGE)
@@ -330,17 +348,19 @@ export function useCreditCalculations(state, globalStartYM) {
     const basePret1 = { capital, r, rAss, N, assurMode, type };
 
     let rows;
-    if (!state.lisserPret1 || anyInfine || autresRows.length === 0) {
+    // Le lissage est bloqué uniquement si pret1 lui-même est in fine (ballon non lissable)
+    if (!state.lisserPret1 || pret1IsInfine || autresRows.length === 0) {
       rows = (type === 'infine')
         ? scheduleInFine({ ...basePret1, mensuOverride: mensuBasePret1 })
         : scheduleAmortissable({ ...basePret1, mensuOverride: mensuBasePret1 });
     } else if (state.lissageMode === 'mensu') {
+      // Pour la cible initiale (mois 1) : les in fine n'ont pas encore de ballon → mensuTotal correct
       const mensuAutresM1 = autresRows.reduce((s, arr) => s + ((arr[0]?.mensuTotal) || 0), 0);
       const cible = mensuBasePret1 + mensuAutresM1;
-      rows = scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, cibleMensuTotale: cible });
+      rows = scheduleLisseePret1({ pret1: basePret1, autresPretsRows: autresRows, autresIsInfine, cibleMensuTotale: cible });
     } else {
-      const T = totalConstantForDuration({ basePret1, autresPretsRows: autresRows });
-      rows = scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, totalConst: T });
+      const T = totalConstantForDuration({ basePret1, autresPretsRows: autresRows, autresIsInfine });
+      rows = scheduleLisseePret1Duration({ basePret1, autresPretsRows: autresRows, autresIsInfine, totalConst: T });
     }
 
     const loanParams = {
@@ -350,7 +370,7 @@ export function useCreditCalculations(state, globalStartYM) {
       quotite: pret1Params.quotite,
     };
     return computeCapitalDecesSchedule(loanParams, rows);
-  }, [pret1Params, mensuBasePret1, state.lisserPret1, state.lissageMode, anyInfine, autresRows]);
+  }, [pret1Params, mensuBasePret1, state.lisserPret1, state.lissageMode, pret1IsInfine, autresIsInfine, autresRows]);
 
   // -------------------------------------------------------------------------
   // DURÉES
@@ -471,6 +491,8 @@ export function useCreditCalculations(state, globalStartYM) {
     
     // Flags
     anyInfine,
+    pret1IsInfine,
+    autresIsInfine,
     hasPretsAdditionnels: autresParams.length > 0,
     
     // Synthèses
