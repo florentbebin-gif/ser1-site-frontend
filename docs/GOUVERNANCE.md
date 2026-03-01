@@ -136,21 +136,27 @@ Principes : épuré, lisible, respirant.
 
 ### 5) Inputs, menus déroulants et priorités de remplissage
 #### Obligatoire
-- Inputs simulateur (pattern `/sim/credit`) :
-  - `height: 32px`, `font-size: 13px`, alignement des valeurs à droite.
+- Inputs simulateur (pattern `/sim/*`) :
+  - `height: 32px`, `font-size: 13px`, `color: C10`.
   - Fond off-white : `color-mix(in srgb, C8 18%, #FFFFFF)`.
-  - Base visuelle : `border-bottom` transparent, hover `C8`, focus `C2`.
+  - Base visuelle : `border-bottom: 1px solid transparent`, hover `C8`, focus `C2`.
+  - Alignement des valeurs : à droite pour les montants/pourcentages.
+- Selects natifs simulateur : même fond off-white + border-bottom (pas de select natif navigateur brut).
+- Inputs en lecture seule : fond `C7` (override inline acceptable).
 - États :
   - Erreur : `border-bottom: C1` + message `11px`.
   - Guide séquentiel : fond `color-mix(C1 8%, white)` sur le premier champ non saisi.
-- Priorité de saisie (onboarding) :
-  1. `Montant emprunté`
-  2. `Durée`
-  3. `Taux annuel (crédit)`
-- Select custom :
+- Select custom (optionnel) :
   - Trigger identique visuellement à un input,
   - dropdown `#FFFFFF`, border `C8`, shadow premium,
   - option hover : mélange `C3`.
+- **Implémentation** : chaque feature définit ses règles CSS locales (préfixe feature) en
+  suivant ce pattern. Ne pas importer `CreditInputs.css` cross-feature — utiliser
+  `src/styles/` pour les tokens partagés (anti-pattern §14).
+- Priorité de saisie crédit (onboarding) :
+  1. `Montant emprunté`
+  2. `Durée`
+  3. `Taux annuel (crédit)`
 
 #### Recommandé
 - Conserver le format `%` avec normalisation au blur (`0,00`).
