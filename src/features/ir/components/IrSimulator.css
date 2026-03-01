@@ -1,21 +1,29 @@
 /* src/features/ir/components/IrSimulator.css */
 
 .ir-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
+  /* Layout colonne : titre → ligne sous-titre + actions (pattern premium-header) */
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  /* Espacements alignés baseline /sim/* */
   margin-bottom: 16px;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-c1);
-  border-bottom: 4px solid var(--color-c6);
   padding-bottom: 8px;
+  /* Barre normée : 2px C8 (surcharge la règle premium-header) */
+  border-bottom-width: 2px;
+  border-bottom-color: var(--color-c8);
 }
-.ir-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--color-c10);
+
+/* Ligne sous-titre + actions (ExportMenu à droite) */
+.ir-header__subtitle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.ir-header__subtitle-row .premium-subtitle {
+  flex: 1;
+  min-width: 0;
 }
 
 .ir-export-menu {

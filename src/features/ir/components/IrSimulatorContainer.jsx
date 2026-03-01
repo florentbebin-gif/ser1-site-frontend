@@ -276,9 +276,12 @@ export default function IrSimulatorContainer() {
     return (
       <div className="sim-page" data-testid="ir-page">
         <div className="ir-header premium-header" data-testid="ir-header">
-          <div className="ir-title premium-title" data-testid="ir-title">
+          <h1 className="premium-title" data-testid="ir-title">
             Simulateur d'impôt sur le revenu
-          </div>
+          </h1>
+          <p className="premium-subtitle">
+            Estimez votre impôt sur le revenu et vos prélèvements sociaux.
+          </p>
         </div>
         <div className="ir-settings-loading" data-testid="ir-settings-loading">
           Chargement des paramètres fiscaux…
@@ -290,17 +293,23 @@ export default function IrSimulatorContainer() {
   return (
     <div className="sim-page" data-testid="ir-page">
       <div className="ir-header premium-header" data-testid="ir-header">
-        <div className="ir-title premium-title" data-testid="ir-title">
+        <h1 className="premium-title" data-testid="ir-title">
           Simulateur d'impôt sur le revenu
+        </h1>
+        <div className="ir-header__subtitle-row">
+          <p className="premium-subtitle">
+            Estimez votre impôt sur le revenu et vos prélèvements sociaux.
+          </p>
+          <div className="sim-header__actions">
+            <ExportMenu
+              options={[
+                { label: 'Excel', onClick: exportExcel },
+                { label: 'PowerPoint', onClick: exportPowerPoint },
+              ]}
+              loading={exportLoading}
+            />
+          </div>
         </div>
-
-        <ExportMenu
-          options={[
-            { label: 'Excel', onClick: exportExcel },
-            { label: 'PowerPoint', onClick: exportPowerPoint },
-          ]}
-          loading={exportLoading}
-        />
       </div>
 
       <div className="ir-grid" data-testid="ir-grid">
