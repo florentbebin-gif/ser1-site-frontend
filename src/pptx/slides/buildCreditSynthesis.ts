@@ -19,7 +19,6 @@ import {
   SLIDE_SIZE,
   TYPO,
   COORDS_CONTENT,
-  COORDS_FOOTER,
   addHeader,
   addFooter,
   addTextFr,
@@ -476,31 +475,6 @@ export function buildCreditSynthesis(
       });
     });
   }
-
-  // ========== SECTION 5: Bottom row — Total remboursé + Coût assurance décès ==========
-  const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15;
-  const bottomY    = CONTENT_BOTTOM_Y - 0.42;
-  const iconSize   = 0.22;
-  const bottomW    = slideWidth - 2 * LAYOUT.bar.marginX;
-  const bottomItems: Array<{ icon: BusinessIconName; label: string; value: string }> = [
-    { icon: 'buildings', label: 'Total remboursé :', value: euro(totalRembourse) },
-    ...(data.coutTotalAssurance > 0
-      ? [{ icon: 'balance' as BusinessIconName, label: 'Coût assurance décès :', value: euro(data.coutTotalAssurance) }]
-      : []),
-  ];
-  const bottomItemW = bottomW / Math.max(bottomItems.length, 1);
-
-  bottomItems.forEach((item, idx) => {
-    const itemX = LAYOUT.bar.marginX + idx * bottomItemW;
-    addBusinessIconToSlide(slide, item.icon, {
-      x: itemX + bottomItemW / 2 - iconSize / 2,
-      y: bottomY, w: iconSize, h: iconSize,
-    }, theme, 'textBody');
-    addTextFr(slide, `${item.label} ${item.value}`, {
-      x: itemX, y: bottomY + iconSize + 0.03, w: bottomItemW, h: 0.13,
-      fontSize: 9, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
-    });
-  });
 
   // ========== STANDARD FOOTER (from design system) ==========
   addFooter(slide, ctx, slideIndex, 'onLight');

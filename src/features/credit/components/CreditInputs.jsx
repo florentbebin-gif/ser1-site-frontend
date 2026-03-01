@@ -11,7 +11,7 @@
  * Zéro inline style, zéro Object.assign sur e.target.style
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { parseCapital, parseTaux, formatTauxInput } from '../utils/creditFormatters.js';
 import './CreditInputs.css';
 
@@ -195,7 +195,7 @@ export function InputMonth({
 }
 
 // ============================================================================
-// SELECT
+// SELECT (custom — dropdown entièrement stylisé, sans native browser UI)
 // ============================================================================
 
 export function Select({
@@ -208,22 +208,91 @@ export function Select({
   error,
   testId,
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  // Fermer au clic extérieur
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleMouseDown = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleMouseDown);
+    return () => document.removeEventListener('mousedown', handleMouseDown);
+  }, [isOpen]);
+
+  const selectedOption = options.find((o) => o.value === value);
+
+  const handleKeyDown = (e) => {
+    if (disabled) return;
+    const idx = options.findIndex((o) => o.value === value);
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setIsOpen((prev) => !prev);
+    } else if (e.key === 'Escape') {
+      setIsOpen(false);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!isOpen) { setIsOpen(true); return; }
+      if (idx < options.length - 1) onChange(options[idx + 1].value);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (idx > 0) onChange(options[idx - 1].value);
+    }
+  };
+
   return (
     <div className="ci-field" data-testid={testId}>
       {label && <label className="ci-label">{label}</label>}
-      <select
-        disabled={disabled}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        aria-invalid={!!error}
-        className={`ci-select${error ? ' ci-select--error' : ''}`}
-      >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
+      <div ref={containerRef} className={`ci-select-wrapper${isOpen ? ' is-open' : ''}`}>
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => setIsOpen((prev) => !prev)}
+          onKeyDown={handleKeyDown}
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+          aria-invalid={!!error}
+          className={`ci-select-trigger${error ? ' ci-select-trigger--error' : ''}`}
+        >
+          <span className="ci-select-trigger__value">
+            {selectedOption?.label ?? ''}
+          </span>
+          <svg
+            className="ci-select-trigger__arrow"
+            width="10" height="6" viewBox="0 0 10 6"
+            aria-hidden="true"
+          >
+            <path
+              d="M1 1l4 4 4-4"
+              stroke="currentColor" strokeWidth="1.5"
+              fill="none" strokeLinecap="round"
+            />
+          </svg>
+        </button>
+
+        {isOpen && (
+          <ul role="listbox" className="ci-select-dropdown">
+            {options.map((opt) => (
+              <li
+                key={opt.value}
+                role="option"
+                aria-selected={opt.value === value}
+                className={`ci-select-option${opt.value === value ? ' is-selected' : ''}`}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+              >
+                {opt.label}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
       {error && <span className="ci-error" role="alert">{error}</span>}
       {!error && hint && <span className="ci-hint">{hint}</span>}
     </div>

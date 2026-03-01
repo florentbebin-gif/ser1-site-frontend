@@ -12,7 +12,7 @@ const DONUT_CX = 34;
 const DONUT_CY = 34;
 const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_R; // ≈ 169.6
 
-function SummaryDonut({ capital, interets }) {
+export function SummaryDonut({ capital, interets, capitalColor = 'var(--color-c2)' }) {
   const total = capital + interets;
 
   if (total <= 0) {
@@ -39,10 +39,10 @@ function SummaryDonut({ capital, interets }) {
       {/* Fond anneau */}
       <circle cx={DONUT_CX} cy={DONUT_CY} r={DONUT_R}
         fill="none" stroke="var(--color-c8)" strokeWidth="9" />
-      {/* Segment Capital — C2 */}
+      {/* Segment Capital */}
       <circle cx={DONUT_CX} cy={DONUT_CY} r={DONUT_R}
         fill="none"
-        stroke="var(--color-c2)"
+        stroke={capitalColor}
         strokeWidth="9"
         strokeDasharray={`${capitalLen} ${DONUT_CIRCUMFERENCE}`}
         strokeDashoffset="0"
@@ -145,6 +145,8 @@ export function CreditSummaryCard({
 
       {/* Bloc lissage */}
       {lisserPret1 && (diffDureesMois !== 0 || lissageCoutDelta !== 0) && (
+        <>
+          <div className="cv2-loan-card__divider cv2-loan-card__divider--tight" />
         <div className="cv2-summary__lissage-info">
           {diffDureesMois !== 0 && (
             <div className="cv2-summary__row">
@@ -167,6 +169,7 @@ export function CreditSummaryCard({
             </div>
           )}
         </div>
+        </>
       )}
     </aside>
   );

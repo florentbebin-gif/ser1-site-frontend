@@ -89,7 +89,7 @@ export function ExportMenu({
             <button
               key={index}
               role="menuitem"
-              className="chip premium-btn export-menu-item"
+              className="export-menu-item"
               onClick={() => handleOptionClick(option)}
               disabled={option.disabled}
               title={option.tooltip}
