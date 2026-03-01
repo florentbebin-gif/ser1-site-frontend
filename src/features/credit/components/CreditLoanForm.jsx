@@ -24,7 +24,6 @@ export function CreditLoanForm({
   globalStartYM,
   globalAssurMode,
   globalCreditType,
-  mensualiteHorsAssurance,
   onPatch,
   formatTauxRaw,
   isExpert = true,
@@ -90,16 +89,6 @@ export function CreditLoanForm({
           testId={`credit-pret${pretNum}-taux`}
           highlight={guideField === 'taux'}
         />
-        {mensualiteHorsAssurance !== undefined && (
-          <InputEuro
-            label="Mensualité"
-            value={Math.round(mensualiteHorsAssurance)}
-            onChange={() => {}}
-            disabled
-            hint="Hors assurance"
-            testId={`credit-pret${pretNum}-mensu`}
-          />
-        )}
       </div>
 
       {/* Bloc Assurance — masqué en mode simplifié (item 4) */}

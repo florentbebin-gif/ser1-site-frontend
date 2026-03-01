@@ -26,7 +26,7 @@ import { euro0 } from './utils/creditFormatters.js';
 import { CreditHeader } from './components/CreditHeader.jsx';
 import { CreditLoanTabs } from './components/CreditLoanTabs.jsx';
 import { CreditLoanForm } from './components/CreditLoanForm.jsx';
-import { CreditSummaryCard } from './components/CreditSummaryCard.jsx';
+import { CreditSummaryCard, SummaryDonut } from './components/CreditSummaryCard.jsx';
 import { CreditScheduleTable } from './components/CreditScheduleTable.jsx';
 import { CreditPeriodsTable } from './components/CreditPeriodsTable.jsx';
 import { Toggle } from './components/CreditInputs.jsx';
@@ -416,7 +416,7 @@ export default function CreditV2() {
                   globalStartYM={state.startYM}
                   globalAssurMode={state.assurMode}
                   globalCreditType={state.creditType}
-                  mensualiteHorsAssurance={activeLoan.mensu}
+
                   onPatch={activeLoan.set}
                   formatTauxRaw={formatTauxRaw}
                   isExpert={isExpert}
@@ -485,18 +485,43 @@ export default function CreditV2() {
             lissageCoutDelta={isExpert && activeTab === 0 ? lissageCoutDelta : 0}
           />
 
-          {/* Bloc mensualité globale — affiché uniquement en multi-prêts */}
+          {/* Bloc synthèse globale — affiché uniquement en multi-prêts */}
           {calc.hasPretsAdditionnels && (
             <div className="cv2-total-mensu">
-              <div className="cv2-summary__kpi-label-small">Mensualité totale hors ass.</div>
-              <div className="cv2-total-mensu__value">
-                {euro0(calc.synthese.mensualiteTotaleM1)}
-              </div>
-              {isExpert && calc.synthese.primeAssMensuelle > 0 && (
-                <div className="cv2-summary__kpi-assurance">
-                  + {euro0(calc.synthese.primeAssMensuelle)} /mois ass.
+              {/* Titre + séparateur */}
+              <div className="cv2-summary__title">Synthèse des prêts</div>
+              <div className="cv2-loan-card__divider cv2-loan-card__divider--tight" />
+
+              {/* KPI principal + donut côte à côte */}
+              <div className="cv2-summary__kpi-zone">
+                <div>
+                  <div className="cv2-summary__kpi-label-small">
+                    {isAnnual ? 'Annuité totale hors ass.' : 'Mensualité totale hors ass.'}
+                  </div>
+                  <div className="cv2-total-mensu__value">
+                    {euro0(calc.synthese.mensualiteTotaleM1 * (isAnnual ? 12 : 1))}
+                  </div>
+                  {isExpert && calc.synthese.primeAssMensuelle > 0 && (
+                    <div className="cv2-summary__kpi-assurance">
+                      + {euro0(calc.synthese.primeAssMensuelle * (isAnnual ? 12 : 1))} {isAnnual ? '/an' : '/mois'} ass.
+                    </div>
+                  )}
                 </div>
-              )}
+                <SummaryDonut
+                  capital={calc.synthese.capitalEmprunte}
+                  interets={calc.synthese.totalInterets}
+                  capitalColor="var(--color-c5)"
+                />
+              </div>
+
+              {/* Séparateur + Coût total */}
+              <div className="cv2-summary__divider" />
+              <div className="cv2-summary__row cv2-summary__row--total">
+                <span className="cv2-summary__row-label">Coût total des crédits</span>
+                <span className="cv2-summary__row-value cv2-summary__row-value--highlight">
+                  {euro0(calc.synthese.coutTotalCredit)}
+                </span>
+              </div>
             </div>
           )}
         </div>
