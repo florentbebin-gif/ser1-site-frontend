@@ -140,8 +140,8 @@ Principes : épuré, lisible, respirant.
   - `height: 32px`, `font-size: 13px`, `color: C10`.
   - Fond off-white : `color-mix(in srgb, C8 18%, #FFFFFF)`.
   - Base visuelle : `border-bottom: 1px solid transparent`, hover `C8`, focus `C2`.
-  - Alignement des valeurs : à droite pour les montants/pourcentages.
-- Selects natifs simulateur : même fond off-white + border-bottom (pas de select natif navigateur brut).
+  - Alignement texte : `text-align: right` sur **tous** les inputs et selects de `/sim/*`, y compris les selects de navigation (Barème, Situation familiale, Résidence, etc.).
+- Selects natifs simulateur : même fond off-white + border-bottom + `text-align: right` (pas de select natif navigateur brut).
 - Inputs en lecture seule : fond `C7` (override inline acceptable).
 - États :
   - Erreur : `border-bottom: C1` + message `11px`.
@@ -227,7 +227,7 @@ Principes : épuré, lisible, respirant.
 - Toggle détail (hors card) : `border 1px solid C8`, `bg C7`, `radius 6px`, `12px`, hover `C2`.
 - État initial :
   - échéanciers / détail calcul : fermés par défaut,
-  - hypothèses : ouvert par défaut (fermer en mode simplifié quand le mode sera fonctionnel).
+  - hypothèses : fermé par défaut (ouverture manuelle).
 
 #### Recommandé
 - Garder un wording d'action explicite (`Afficher`/`Masquer`), pas uniquement une icône.

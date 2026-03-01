@@ -114,6 +114,7 @@
   font-family: inherit;
   font-size: 13px;
   color: var(--color-c10);
+  text-align: right;
   transition: border-color 0.2s;
   outline: none;
 }
@@ -454,6 +455,7 @@
   font-family: inherit;
   font-size: 13px;
   color: var(--color-c10);
+  text-align: right;
   transition: border-color 0.2s;
   outline: none;
   cursor: pointer;
@@ -468,6 +470,42 @@
 .ir-child-select:focus-visible {
   border-bottom-color: var(--color-c2);
 }
+/* Grille enfants 2 par ligne (GOUVERNANCE.md item-4) */
+.ir-children-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.ir-child-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.ir-child-remove {
+  padding: 2px 6px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+/* Checkbox "Parent isolé" — accent vert C2 (GOUVERNANCE.md §5) */
+.ir-checkbox {
+  accent-color: var(--color-c2);
+  cursor: pointer;
+}
+
+.ir-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-c9);
+  cursor: pointer;
+  margin-top: 6px;
+}
+
 .ir-parts-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
