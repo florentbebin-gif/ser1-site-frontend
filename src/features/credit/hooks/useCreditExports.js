@@ -54,13 +54,6 @@ const toNum = (v) => {
   return isNaN(n) ? 0 : n;
 };
 
-// point 6 — nombre de mois entre deux YYYY-MM
-function monthsDiffYM(ym1, ym2) {
-  if (!ym1 || !ym2) return 0;
-  const [y1, m1] = ym1.split('-').map(Number);
-  const [y2, m2] = ym2.split('-').map(Number);
-  return (y2 - y1) * 12 + (m2 - m1);
-}
 
 // ============================================================================
 // HOOK
@@ -288,7 +281,7 @@ export function useCreditExports({
 
       const paymentPeriods = calc.synthesePeriodes.map(p => ({
         label: p.from, mensualitePret1: p.p1, mensualitePret2: p.p2, mensualitePret3: p.p3, total: p.p1 + p.p2 + p.p3,
-        monthIndex: p.startYM ? monthsDiffYM(startYM, p.startYM) : 0, // point 6 — décalage depuis startYM global
+        monthIndex: p.monthIndex ?? 0,
       }));
 
       const assuranceDecesByYear = aggregatedYears.map((row) => row?.assuranceDeces ?? 0);

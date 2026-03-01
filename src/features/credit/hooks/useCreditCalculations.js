@@ -445,7 +445,7 @@ export function useCreditCalculations(state, globalStartYM) {
       const p1 = pret1Rows[t]?.mensu || 0;
       const p2 = autresRows[0]?.[t]?.mensu || 0;
       const p3 = autresRows[1]?.[t]?.mensu || 0;
-      return { from: `À partir de ${labelMonthFR(ym)}`, p1, p2, p3 };
+      return { from: `À partir de ${labelMonthFR(ym)}`, p1, p2, p3, monthIndex: t };
     });
 
     // Déduplication
