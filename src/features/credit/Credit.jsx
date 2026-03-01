@@ -75,7 +75,10 @@ export default function CreditV2() {
   // MODE UTILISATEUR
   // -------------------------------------------------------------------------
   const { mode, isLoading: modeLoading } = useUserMode();
-  const isExpert = mode === 'expert';
+  // Override local du mode (sans modifier le mode global de l'app)
+  const [localMode, setLocalMode] = useState(null);
+  const isExpert = (localMode ?? mode) === 'expert';
+  const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
 
   // -------------------------------------------------------------------------
   // STATE
@@ -331,6 +334,7 @@ export default function CreditV2() {
         exportOptions={exportOptions}
         exportLoading={exportLoading}
         isExpert={isExpert}
+        onToggleMode={toggleMode}
       />
 
       {/* LIGNE DE CONTRÔLES : tabs (gauche, expert) + toggle Mensuel/Annuel (droite) */}

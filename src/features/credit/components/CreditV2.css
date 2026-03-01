@@ -279,14 +279,10 @@
 }
 
 .cv2-loan-card__divider {
-  margin: 14px 0 18px;
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    var(--color-c8) 0%,
-    var(--color-c8) 75%,
-    transparent 100%
-  );
+  margin: 14px auto 18px;
+  height: 2px;
+  max-width: 200px;
+  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
 }
 
 /* Variante compacte : moins de marge, pour la card lissage */
@@ -313,7 +309,7 @@
 .cv2-lissage-card .cv2-lissage-title {
   border-bottom: none;
   padding-bottom: 0;
-  margin-bottom: 0;
+  margin-bottom: 14px; /* aligne l'espacement avec cv2-summary__title */
 }
 
 .cv2-loan-form__section-title {
@@ -481,11 +477,12 @@
   color: var(--color-c9);
 }
 
-/* Séparateur entre KPI et lignes de coût */
+/* Séparateur entre KPI et lignes de coût — gradient symétrique (style settings) */
 .cv2-summary__divider {
-  height: 1px;
-  background: var(--color-c8);
-  margin-bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
+  max-width: 200px;
+  margin: 4px auto 8px;
 }
 
 /* Lignes de coût */
@@ -752,6 +749,8 @@
   padding: 8px 16px !important;  /* align sur settings-action-btn (8px 16px) */
   border-radius: 6px !important;
   font-size: 13px !important;
+  line-height: 1 !important;  /* aligne la hauteur avec le bouton Exporter (<button>) */
+  cursor: pointer;
 }
 
 /* point 3 — padding-top réduit pour la page Crédit uniquement */
