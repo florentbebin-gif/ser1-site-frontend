@@ -12,6 +12,7 @@ Toute personne qui touche : CSS/UI, exports, thème, Settings.
 
 ## Sommaire
 - [Règles UI premium](#règles-ui-premium)
+- [Norme des pages `/sim/*` (baseline `/sim/credit`)](#norme-des-pages-sim-baseline-simcredit)
 - [Gouvernance couleurs (C1–C10)](#gouvernance-couleurs-c1c10)
 - [Système de thème V5 (3 modes)](#système-de-thème-v5-3-modes)
 - [Sécurité & observabilité (règles)](#sécurité--observabilité-règles)
@@ -33,9 +34,9 @@ Principes : épuré, lisible, respirant.
 - Messages utilisateur : **français**.
 
 ### Inputs (règle critique)
-- **Fond TOUJOURS blanc** : `background-color: #FFFFFF`.
-- Border : `1px solid var(--color-c8)`.
-- Focus : `border-color: var(--color-c2)` + ring `var(--color-c4)`.
+- Pattern standard (forms génériques) : fond `#FFFFFF`, border `1px solid var(--color-c8)`.
+- Pattern simulateur `/sim/*` (baseline `/sim/credit`) : fond léger teinté (off-white), border-bottom uniquement, focus `var(--color-c2)`.
+- Dans les 2 cas, couleurs non hardcodées (hors exceptions globales) et lisibilité prioritaire.
 
 ### Composants (guidelines)
 - Buttons : primary = C2 + texte contrasté ; secondary = fond clair + border C8.
@@ -44,6 +45,249 @@ Principes : épuré, lisible, respirant.
 ### Modales
 - Overlay : `rgba(0,0,0,0.5)` (seul rgba autorisé).
 - Panel : `#FFFFFF`, centré, `shadow` subtil.
+
+---
+
+## Norme des pages `/sim/*` (baseline `/sim/credit`)
+### Source de vérité & périmètre
+- Baseline obligatoire : `src/features/credit/Credit.jsx` + `src/features/credit/components/CreditV2.css`.
+- Layout partagé : `src/components/simulator/SimulatorShell.css`.
+- Styles premium partagés : `src/styles/premium-shared.css`.
+- Inputs/select/toggle : `src/features/credit/components/CreditInputs.jsx` + `CreditInputs.css`.
+- Cette norme s'applique aux futures pages `/sim/*` sauf exception explicitée en PR.
+
+### 1) Gabarit global page (largeurs, colonnes, structure)
+#### Obligatoire
+- Conteneur principal : `.sim-page` (`max-width: 1200px; margin: 0 auto; padding: 32px 24px 64px`).
+- Exception locale `/sim/credit` : `padding-top: 20px` via `.sim-page.cv2-page`.
+- Grille desktop : `grid-template-columns: 1.85fr 1fr; gap: 24px`.
+- Même ratio pour la ligne de contrôles (tabs à gauche, toggle de vue à droite).
+- Structure minimale :
+  1. Header (`h1` + sous-titre + actions)
+  2. Ligne de contrôles
+  3. Grille gauche/droite
+  4. Blocs de détail (tables, accordéons, hypothèses)
+
+#### Recommandé
+- Colonne droite sticky pour les blocs de synthèse (`position: sticky; top: 80px`) sur desktop.
+- Sur mobile (`max-width: 900px`), passer en mono-colonne, désactiver sticky.
+
+#### Interdit
+- Introduire un troisième rail visuel persistant sur desktop.
+- Utiliser des largeurs fixes en px pour les colonnes principales.
+
+### 2) Header, titres et barre sous titre
+#### Obligatoire
+- Header premium : `premium-header` + variante simulateur.
+- Titre : `premium-title` (`22px`, `600`, `var(--color-c1)`).
+- Sous-titre : `premium-subtitle` (`12px`, `var(--color-c9)`).
+- Barre sous header : `border-bottom`.
+  - Base partagée : `2px solid var(--color-c8)`.
+  - `/sim/credit` : surcharge `3px` avec `var(--color-c6)`.
+- Espacements header `/sim/credit` :
+  - `padding-bottom: 8px`
+  - `margin-bottom: 16px`
+  - `gap: 6px` entre titre et ligne sous-titre/actions.
+
+#### Recommandé
+- Conserver la ligne sous-titre/actions en `justify-content: space-between`.
+- Garder les actions regroupées à droite dans un container unique.
+
+#### Interdit
+- Mettre les actions Export / Mode sous la grille principale.
+- Utiliser une barre décorative hardcodée hors tokens.
+
+### 3) Cartes, bordures, ombres, organisation interne
+#### Obligatoire
+- Cartes de base : `premium-card` (`border: 1px solid C8`, `radius: 12px`, `padding: 20px 24px`, `shadow: 0 2px 12px rgba(0,0,0,0.04)`).
+- Carte de guidage (hero de saisie) : `premium-card--guide` avec liseré gauche `3px solid C3`.
+- Structure interne d'un bloc de saisie :
+  1. Titre (`15px`, `600`, C1) + icône
+  2. Sous-titre (`12px`, C9)
+  3. Séparateur dégradé
+  4. Corps formulaire
+- Carte synthèse droite : bordure gauche accentuée (`3px`, C3 ou C5 selon bloc), gradient d'entête subtil autorisé.
+
+#### Recommandé
+- Espacement entre cartes adjacentes : `20px`.
+- Utiliser `font-variant-numeric: tabular-nums` pour toutes les valeurs chiffrées.
+
+#### Interdit
+- Ombres fortes/opacités élevées hors pattern premium.
+- Bordures verticales internes dans les tableaux de synthèse.
+
+### 4) Barres de séparation (estompées vs solides)
+#### Obligatoire
+- Séparateur estompé principal (`cv2-loan-card__divider`) :
+  - `height: 2px`, `max-width: 200px`,
+  - `linear-gradient(90deg, transparent, C8, transparent)`.
+- Variante compacte pour zones denses : marge réduite (`--tight`).
+- Séparateur solide (`border-bottom: 1px solid C8`) réservé aux titres de section standards.
+- Barre de fond sous liste d'onglets : `2px` en dégradé C8->transparent.
+
+#### Règle d'usage
+- Estompé : transitions visuelles dans une même card (titre vers contenu, KPI vers détails).
+- Solide : structuration stricte d'une section autonome.
+
+#### Interdit
+- Doubler deux séparateurs consécutifs (dégradé + bordure solide) sans suppression explicite.
+
+### 5) Inputs, menus déroulants et priorités de remplissage
+#### Obligatoire
+- Inputs simulateur (pattern `/sim/credit`) :
+  - `height: 32px`, `font-size: 13px`, alignement des valeurs à droite.
+  - Fond off-white : `color-mix(in srgb, C8 18%, #FFFFFF)`.
+  - Base visuelle : `border-bottom` transparent, hover `C8`, focus `C2`.
+- États :
+  - Erreur : `border-bottom: C1` + message `11px`.
+  - Guide séquentiel : fond `color-mix(C1 8%, white)` sur le premier champ non saisi.
+- Priorité de saisie (onboarding) :
+  1. `Montant emprunté`
+  2. `Durée`
+  3. `Taux annuel (crédit)`
+- Select custom :
+  - Trigger identique visuellement à un input,
+  - dropdown `#FFFFFF`, border `C8`, shadow premium,
+  - option hover : mélange `C3`.
+
+#### Recommandé
+- Conserver le format `%` avec normalisation au blur (`0,00`).
+- Utiliser les unités visuelles (`€`, `%`, `mois`) en suffixe léger (`C9`).
+
+#### Interdit
+- Revenir aux styles natifs navigateur pour les selects dans `/sim/*`.
+- Couleurs d'erreur hardcodées hors C1.
+
+### 6) Boutons Exporter et mode simplifié/expert
+#### Obligatoire
+- Position : dans la zone actions du header, à droite du sous-titre.
+- Ordre `/sim/credit` : bouton mode puis `ExportMenu`.
+- Taille harmonisée :
+  - mode : `padding 8px 16px`, `font-size 13px`, `radius 6px`
+  - export trigger : `padding 8px 16px`, `radius 6px`.
+- Dropdown export : ancré à droite du bouton, `min-width: 140px`, `z-index: 1000`.
+
+#### Interdit
+- Déplacer export en bas de page.
+- Ajouter des CTA primaires concurrents dans la même ligne sans justification produit.
+
+### 7) Onglets (ajout/retrait) et comportement
+#### Obligatoire
+- Pattern onglets prêt :
+  - `Prêt 1` toujours présent,
+  - `Prêt 2/3` ajoutables selon règles métier,
+  - indicateur actif via bordure basse (`2px`) en `C3`.
+- Bouton suppression onglet (`×`) hors bouton principal (HTML valide).
+- États visuels :
+  - hover : texte `C2`, fond `C7`
+  - actif : texte `C1`, `font-weight: 600`
+  - disabled : texte `C8`.
+
+#### Recommandé
+- Conserver le badge `+` circulaire (`18x18`) pour matérialiser l'ajout.
+- Garder la logique d'apparition progressive des onglets (progressive disclosure).
+
+#### Interdit
+- Autoriser la suppression de l'onglet primaire.
+- Utiliser un style d'onglets "pill" pour `/sim/*` tant que la baseline est underline.
+
+### 8) Cartes hero
+#### État actuel (baseline)
+- Composant hero dédié : **Non défini actuellement**.
+- Équivalent utilisé dans `/sim/credit` : `premium-card--guide` (liseré C3 + header avec léger gradient C1).
+
+#### Règle
+- Utiliser ce pattern "guide" pour la carte d'entrée principale d'un simulateur.
+- Si un vrai composant hero est créé, il doit rester compatible avec:
+  - bordure premium (`C8`),
+  - accent gauche (`C3`),
+  - fond majoritairement neutre (pas de bloc saturé).
+
+### 9) Accordéons (styles et usages)
+#### Obligatoire
+- Accordéons utilisés sur `/sim/credit` :
+  - Échéanciers (`Afficher/Masquer`) via bouton `cv2-schedule__toggle`.
+  - Hypothèses/limites via `cv2-hypotheses__toggle`.
+- Style minimum :
+  - conteneur `#FFFFFF` (tables) ou `C7` (bloc hypothèses),
+  - border `1px solid C8`,
+  - radius `12px`,
+  - chevron animé (rotation 180° open).
+- État initial :
+  - échéanciers : fermés par défaut,
+  - hypothèses : ouvert en expert, fermé en simplifié.
+
+#### Recommandé
+- Garder un wording d'action explicite (`Afficher`/`Masquer`), pas uniquement une icône.
+
+#### Interdit
+- Accordéon sans attribut `aria-expanded`.
+
+### 10) Code couleur complet (mapping)
+#### Obligatoire
+- Tokens uniques `--color-c1..--color-c10` (source: `src/settings/theme.ts` + `src/styles.css`).
+- Valeurs par défaut SER1 Classic :
+  - C1 `#2B3E37`
+  - C2 `#709B8B`
+  - C3 `#9FBDB2`
+  - C4 `#CFDED8`
+  - C5 `#788781`
+  - C6 `#CEC1B6`
+  - C7 `#F5F3F0`
+  - C8 `#D9D9D9`
+  - C9 `#7F7F7F`
+  - C10 `#000000`
+- Usage `/sim/credit` à reproduire :
+  - C1 : titres, valeurs clés, emphase finale.
+  - C2 : états interactifs actifs (pill active, focus visible).
+  - C3 : marqueur actif/tab + liseré guide principal.
+  - C4 : fonds d'accent doux (icône section, switch actif).
+  - C5 : liseré secondaire (synthèse globale multi-prêts).
+  - C6 : accent chaud (barre header crédit, segment donut intérêts).
+  - C7 : fonds neutres/hovers légers.
+  - C8 : bordures, séparateurs, bases de champs.
+  - C9 : texte secondaire/métadonnées.
+  - C10 : texte principal.
+
+### 11) Responsive et accessibilité
+#### Obligatoire
+- Breakpoint `900px` :
+  - page en 1 colonne,
+  - colonne synthèse au-dessus du formulaire,
+  - sticky désactivé.
+- Breakpoint `600px` :
+  - titre ramené à `18px`,
+  - tabs compactés.
+- Focus clavier visible sur onglets, boutons toggle, pills, actions export.
+
+#### Interdit
+- Supprimer `:focus-visible` sans alternative.
+
+### 12) À faire / À éviter (exemples)
+#### À faire
+- Réutiliser `sim-page` + `premium-header` + grille `1.85fr/1fr`.
+- Placer `Mode` + `Exporter` dans le header, côté droit.
+- Utiliser séparateurs dégradés pour les transitions à l'intérieur des cards.
+- Implémenter les champs numériques avec alignement à droite et unités suffixées.
+
+#### À éviter
+- Réintroduire des couleurs hex ad hoc pour les états UI.
+- Mixer plusieurs styles d'inputs dans la même page `/sim/*`.
+- Changer la hiérarchie visuelle (synthèse clé noyée sous les tableaux).
+
+### 13) Cas d'exception
+- Si un simulateur impose un layout non sticky ou mono-colonne desktop (ex. contraintes métier fortes), documenter:
+  - raison produit,
+  - impact UX,
+  - capture avant/après.
+- Si une valeur n'est pas définie dans les sources CSS/JS citées ci-dessus: documenter explicitement `Non défini actuellement`.
+
+### 14) Comment étendre sans casser la norme
+1. Partir de `SimulatorShell.css` + `premium-shared.css`.
+2. Créer un CSS feature local (ex: `FeatureX.css`) avec préfixe propre.
+3. Garder les tokens C1..C10; ne pas créer de palette parallèle.
+4. Ajouter les variantes (tabs, hero, accordéon) par composition de classes avant surcharge.
+5. Documenter toute dérogation dans cette section + preuve code.
 
 ---
 
@@ -176,6 +420,8 @@ Ces 3 phases correspondent dans les blocs produit aux clés `constitution`, `sor
 ## Références code
 - Tokens & defaults : `src/settings/theme.ts`, `src/styles.css`
 - ThemeProvider V5 : `src/settings/ThemeProvider.tsx`, `src/settings/presets.ts`, `src/settings/theme/types.ts`
-- UI premium classes : `src/styles.css` + composants Settings (`src/components/settings/SettingsSectionCard.jsx`)
+- UI premium shared : `src/components/simulator/SimulatorShell.css`, `src/styles/premium-shared.css`
+- Baseline `/sim/credit` : `src/features/credit/Credit.jsx`, `src/features/credit/components/CreditV2.css`
+- Inputs simulateur : `src/features/credit/components/CreditInputs.jsx`, `src/features/credit/components/CreditInputs.css`
 - ESLint couleurs : `tools/eslint-plugin-ser1-colors/`
 
