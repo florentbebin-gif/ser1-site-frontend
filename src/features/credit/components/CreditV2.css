@@ -488,6 +488,27 @@
   color: var(--color-c2);
 }
 
+/* ----------------------------------------
+   GUIDAGE VISUEL ONBOARDING (capital = 0)
+   ---------------------------------------- */
+/* Lisèré C6 à gauche + gradient C1 très subtil sur le header */
+.premium-card--guide {
+  border-left: 3px solid var(--color-c6);
+}
+
+.premium-card--guide .cv2-loan-card__header {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-c1) 5%, transparent) 0%,
+    transparent 65%
+  );
+  border-radius: 10px 10px 0 0;
+  margin: -20px -24px 0;
+  padding: 20px 24px 0;
+}
+
+/* ---------------------------------------- */
+
 .cv2-summary__lissage-info {
   display: flex;
   flex-direction: column;
