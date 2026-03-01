@@ -82,8 +82,8 @@ Principes : épuré, lisible, respirant.
 - Titre : `premium-title` (`22px`, `600`, `var(--color-c1)`).
 - Sous-titre : `premium-subtitle` (`12px`, `var(--color-c9)`).
 - Barre sous header : `border-bottom`.
-  - Base partagée : `2px solid var(--color-c8)`.
-  - `/sim/credit` : surcharge `3px` avec `var(--color-c6)`.
+  - Norme `/sim/*` : `3px solid var(--color-c6)` (validé sur `/sim/credit` et `/sim/ir`).
+  - Autres surfaces (hors `/sim/*`) : `2px solid var(--color-c8)`.
 - Espacements header `/sim/credit` :
   - `padding-bottom: 8px`
   - `margin-bottom: 16px`
@@ -106,7 +106,9 @@ Principes : épuré, lisible, respirant.
   2. Sous-titre (`12px`, C9)
   3. Séparateur dégradé
   4. Corps formulaire
-- Carte synthèse droite : bordure gauche accentuée (`3px`, C3 ou C5 selon bloc), gradient d'entête subtil autorisé.
+- Carte synthèse droite (principale) : `border-left: 3px solid C3`.
+- Carte synthèse droite (secondaire / multi-blocs) : `border-left: 3px solid C5`.
+- Gradient d'entête subtil (`linear-gradient` C1 5%→transparent) autorisé sur la carte principale.
 
 #### Recommandé
 - Espacement entre cartes adjacentes : `20px`.

@@ -46,6 +46,9 @@ const formatMoneyInput = (n) => {
 export default function IrSimulatorContainer() {
   const { colors, cabinetLogo, logoPlacement, pptxColors } = useTheme();
 
+  const [isExpert, setIsExpert] = useState(false);
+  const toggleMode = () => setIsExpert((v) => !v);
+
   // Mode strict : n'affiche pas de résultat avant que Supabase ait répondu
   const { fiscalContext, loading: settingsLoading } = useFiscalContext({ strict: true });
   const taxSettings = fiscalContext._raw_tax;
@@ -301,6 +304,14 @@ export default function IrSimulatorContainer() {
             Estimez votre impôt sur le revenu et vos prélèvements sociaux.
           </p>
           <div className="sim-header__actions">
+            <button
+              className="chip premium-btn ir-mode-btn"
+              data-testid="ir-mode-btn"
+              onClick={toggleMode}
+              title={isExpert ? 'Passer en mode simplifié' : 'Passer en mode expert'}
+            >
+              {isExpert ? 'Mode expert' : 'Mode simplifié'}
+            </button>
             <ExportMenu
               options={[
                 { label: 'Excel', onClick: exportExcel },

@@ -112,6 +112,7 @@ export function IrSidebarSection({
         <div className="ir-tmi-header" data-testid="ir-results-header">
           Estimation IR
         </div>
+        <div className="ir-card-divider" />
 
         <div className="ir-tmi-bar" data-testid="ir-tmi-bar">
           {tmiScale.map((br, idx) => {
@@ -184,6 +185,7 @@ export function IrSidebarSection({
             <span>PS sur dividendes</span>
             <span>{euro0(result.psDividends || 0)}</span>
           </div>
+          <div className="ir-card-divider" />
           <div className="ir-summary-row">
             <span>Imposition totale</span>
             <span>{euro0(result.totalTax || 0)}</span>
