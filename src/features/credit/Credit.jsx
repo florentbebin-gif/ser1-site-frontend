@@ -204,16 +204,18 @@ export default function CreditV2() {
 
   // -------------------------------------------------------------------------
   // POINT 5 — simplifié : supprimer pret2/pret3 résiduels (switch expert→simplifié)
+  // Guard: attendre que le mode soit résolu (modeLoading=false) avant d'agir,
+  // sinon on efface pret2/3 pendant le temps de chargement alors que isExpert=false
   // -------------------------------------------------------------------------
   useEffect(() => {
-    if (!hydrated || isExpert) return;
+    if (!hydrated || modeLoading || isExpert) return;
     if (state.pret2 || state.pret3) {
       setState(s => ({ ...s, pret2: null, pret3: null, lisserPret1: false }));
       setRawValues(({ pret2: _a, pret3: _b, ...rest }) => rest);
       if (activeTab >= 1) setActiveTab(0);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, isExpert]);
+  }, [hydrated, modeLoading, isExpert]);
 
   // -------------------------------------------------------------------------
   // CALCULS (state dérivé pour le mode simplifié : assurance = 0, pret2/3 ignorés)
@@ -246,11 +248,11 @@ export default function CreditV2() {
       };
     };
     return [
-      make(calc.pret1Rows, calc.synthese?.diffDureesMois ?? 0),
+      make(calc.pret1Rows, calc.diffDureesMois ?? 0),
       make(calc.pret2Rows),
       make(calc.pret3Rows),
     ];
-  }, [calc.pret1Rows, calc.pret2Rows, calc.pret3Rows, calc.synthese]);
+  }, [calc.pret1Rows, calc.pret2Rows, calc.pret3Rows, calc.diffDureesMois]);
 
   // Coût ou économie du lissage sur prêt 1 (intérêts lissés - intérêts base)
   const lissageCoutDelta = useMemo(() => {
@@ -320,6 +322,9 @@ export default function CreditV2() {
   ];
   const activeLoan = pretLookup[activeTab];
 
+  // Guide visuel — carte formulaire mise en avant quand le capital du prêt actif est vide
+  const isCardEmpty = (activeLoan.data?.capital || 0) === 0;
+
   return (
     <div className="sim-page cv2-page" data-testid="credit-page">
       {/* HEADER (sans toggle — déplacé dans la ligne de contrôles) */}
@@ -379,7 +384,7 @@ export default function CreditV2() {
       <div className={`cv2-grid${!isExpert ? ' cv2-grid--simple' : ''}`}>
         {/* COLONNE GAUCHE */}
         <div>
-          <div className="premium-card">
+          <div className={`premium-card${isCardEmpty ? ' premium-card--guide' : ''}`}>
             <div className="cv2-loan-card">
               <header className="cv2-loan-card__header">
                 <h2 className="cv2-loan-card__title">

@@ -12,10 +12,10 @@ import { nowYearMonth } from './creditFormatters.js';
 // ============================================================================
 
 export const DEFAULT_PRET = {
-  capital: 300000,
-  duree: 240,
-  taux: 3.50,
-  tauxAssur: 0.30,
+  capital: 0,
+  duree: 0,
+  taux: 0,
+  tauxAssur: 0,
   quotite: 100,
   type: 'amortissable',
   startYM: null, // hérite de global.startYM si null
