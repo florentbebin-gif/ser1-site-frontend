@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import '../../../components/simulator/SimulatorShell.css';
+import '../../../styles/premium-shared.css';
 import './IrSimulator.css';
 import { onResetEvent, storageKeyFor } from '../../../utils/reset';
 import { toNumber } from '../../../utils/number';
@@ -272,7 +274,7 @@ export default function IrSimulatorContainer() {
 
   if (settingsLoading) {
     return (
-      <div className="ir-panel premium-page" data-testid="ir-page">
+      <div className="sim-page" data-testid="ir-page">
         <div className="ir-header premium-header" data-testid="ir-header">
           <div className="ir-title premium-title" data-testid="ir-title">
             Simulateur d'impôt sur le revenu
@@ -286,7 +288,7 @@ export default function IrSimulatorContainer() {
   }
 
   return (
-    <div className="ir-panel premium-page" data-testid="ir-page">
+    <div className="sim-page" data-testid="ir-page">
       <div className="ir-header premium-header" data-testid="ir-header">
         <div className="ir-title premium-title" data-testid="ir-title">
           Simulateur d'impôt sur le revenu
@@ -301,7 +303,7 @@ export default function IrSimulatorContainer() {
         />
       </div>
 
-      <div className="ir-grid premium-grid" data-testid="ir-grid">
+      <div className="ir-grid" data-testid="ir-grid">
         <IrFormSection
           taxSettings={taxSettings}
           yearKey={yearKey}
