@@ -168,7 +168,8 @@
   display: inline-flex;
   align-items: center;
   position: relative;
-  margin-bottom: -2px; /* point 1 PR2 — chevauche la ligne C8 du ::after */
+  z-index: 1; /* au-dessus du ::after du list : la ligne C8 ne recouvre plus la border-bottom C3 */
+  margin-bottom: -2px; /* chevauche la ligne C8 du ::after */
 }
 
 .cv2-tabs__tab-remove {
