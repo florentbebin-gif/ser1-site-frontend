@@ -286,8 +286,8 @@ export default function CreditV2() {
   });
 
   const exportOptions = [
-    { label: 'Excel', onClick: exportExcel },
     { label: 'PowerPoint', onClick: exportPowerPoint },
+    { label: 'Excel', onClick: exportExcel },
   ];
 
   // -------------------------------------------------------------------------

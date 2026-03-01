@@ -87,32 +87,32 @@ export function CreditSummaryCard({
   return (
     <aside className="cv2-summary" data-testid="credit-summary-card">
 
-      {/* Header : titre à gauche, donut à droite */}
-      <div className="cv2-summary__header-row">
-        <div className="cv2-summary__title">{loanLabel || 'Synthèse du prêt'}</div>
-        <SummaryDonut capital={capitalEmprunte} interets={totalInterets} />
-      </div>
+      {/* Titre seul — sans donut */}
+      <div className="cv2-summary__title">{loanLabel || 'Synthèse du prêt'}</div>
 
-      {/* Séparateur dégradé sous le header (même barre que la carte paramètres) */}
+      {/* Séparateur dégradé (même barre que la carte paramètres) */}
       <div className="cv2-loan-card__divider" />
 
-      {/* KPI principal — typographique, sans fond */}
+      {/* KPI principal + donut côte à côte */}
       <div className="cv2-summary__kpi-zone">
-        <div className="cv2-summary__kpi-label-small">{kpiLabel}</div>
-        <div
-          className="cv2-summary__kpi-main-value"
-          data-testid="credit-mensu-totale-avec-ass"
-        >
-          {euro0(mensualiteTotaleM1 * factor)}
-        </div>
-        {isExpert && primeAssMensuelle > 0 && (
-          <div className="cv2-summary__kpi-assurance">
-            + {euro0(primeAssMensuelle * factor)} {assLabel} ass.
+        <div>
+          <div className="cv2-summary__kpi-label-small">{kpiLabel}</div>
+          <div
+            className="cv2-summary__kpi-main-value"
+            data-testid="credit-mensu-totale-avec-ass"
+          >
+            {euro0(mensualiteTotaleM1 * factor)}
           </div>
-        )}
-        {!isExpert && (
-          <div className="cv2-summary__badge">Hors assurance</div>
-        )}
+          {isExpert && primeAssMensuelle > 0 && (
+            <div className="cv2-summary__kpi-assurance">
+              + {euro0(primeAssMensuelle * factor)} {assLabel} ass.
+            </div>
+          )}
+          {!isExpert && (
+            <div className="cv2-summary__badge">Hors assurance</div>
+          )}
+        </div>
+        <SummaryDonut capital={capitalEmprunte} interets={totalInterets} />
       </div>
 
       {/* Séparateur */}
