@@ -43,6 +43,8 @@ export interface CreditSynthesisData {
   coutTotalCredit: number;   // intérêts + assurance
   creditType: 'amortissable' | 'infine';
   assuranceMode: 'CI' | 'CRD';
+  startYM?: string;              // YYYY-MM — date de début du prêt
+  assuranceDecesByYear?: number[]; // capital décès par année (mode expert uniquement)
 }
 
 // ============================================================================
@@ -154,6 +156,27 @@ function getRelativeLuminance(hexColor: string): number {
 function getTextColorForBackground(bgColor: string, theme: PptxThemeRoles): string {
   const luminance = getRelativeLuminance(bgColor);
   return luminance < 0.4 ? 'FFFFFF' : theme.textMain.replace('#', '');
+}
+
+/** Convertit "YYYY-MM" (ou Date) en "MM/YYYY" */
+function ymToDisplay(ym: string | undefined): string {
+  const d = ym ? new Date(ym + '-01') : new Date();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  return `${m}/${d.getFullYear()}`;
+}
+
+/** Calcule la date de fin à partir de la date de début + durée en mois */
+function ymEnd(startYM: string | undefined, dureeMois: number): string {
+  const d = startYM ? new Date(startYM + '-01') : new Date();
+  d.setMonth(d.getMonth() + dureeMois);
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  return `${m}/${d.getFullYear()}`;
+}
+
+/** Formate un montant en K€ si > 1000, sinon en € */
+function fmtEuroShort(n: number): string {
+  if (n >= 1000) return `${Math.round(n / 1000)} K€`;
+  return `${Math.round(n)} €`;
 }
 
 // ============================================================================
@@ -273,8 +296,24 @@ export function buildCreditSynthesis(
     }
   });
   
+  // ========== DATES DÉBUT / FIN (sous les KPIs, dans le gap) ==========
+  const dateDebut = ymToDisplay(data.startYM);
+  const dateFin = ymEnd(data.startYM, data.dureeMois);
+  addTextFr(slide, `${dateDebut}  \u2192  ${dateFin}`, {
+    x: LAYOUT.marginX,
+    y: LAYOUT.kpi.sectionEndY + 0.04,
+    w: LAYOUT.contentWidth,
+    h: 0.18,
+    fontSize: 9,
+    fontFace: TYPO.fontFace,
+    color: theme.textBody.replace('#', ''),
+    italic: true,
+    align: 'center',
+    valign: 'middle',
+  });
+
   // ========== SECTION 2: HERO - Coût total du crédit ==========
-  
+
   // Hero label
   addTextFr(slide, 'Coût total de votre crédit', {
     x: LAYOUT.marginX,
@@ -415,6 +454,69 @@ export function buildCreditSynthesis(
     valign: 'middle',
   });
   
+  // ========== SECTION 4: Capitaux décès (mode expert uniquement) ==========
+  // N'affiche que si au moins une valeur > 0 (simple mode → tableau vide → skip)
+  if (data.assuranceDecesByYear && data.assuranceDecesByYear.some(v => v > 0)) {
+    const histYears = data.assuranceDecesByYear;
+    const histLabelY = LAYOUT.bar.sectionEndY + 0.04;
+    const histBarTopY  = LAYOUT.bar.sectionEndY + 0.22;
+    const maxHistH     = 0.28;   // hauteur max d'une barre
+    const histZoneX    = LAYOUT.bar.marginX;
+    const histZoneW    = slideWidth - LAYOUT.bar.marginX * 2;
+
+    const maxVal = Math.max(...histYears);
+    const barW   = histZoneW / histYears.length;
+    const barGap = Math.min(0.025, barW * 0.2);
+    const effBarW = Math.max(barW - barGap, 0.02);
+
+    // Étiquette
+    addTextFr(slide, 'Capitaux décès assurés par année', {
+      x: LAYOUT.marginX,
+      y: histLabelY,
+      w: LAYOUT.contentWidth,
+      h: 0.16,
+      fontSize: 8,
+      fontFace: TYPO.fontFace,
+      color: theme.textBody.replace('#', ''),
+      italic: true,
+      align: 'center',
+      valign: 'middle',
+    });
+
+    // Barres
+    const assuranceColor = getBarColor('assurance', theme);
+    histYears.forEach((val, i) => {
+      if (val <= 0) return;
+      const barH = (val / maxVal) * maxHistH;
+      const barX = histZoneX + i * barW;
+      const barY = histBarTopY + maxHistH - barH; // base commune en bas
+      slide.addShape('rect', {
+        x: barX,
+        y: barY,
+        w: effBarW,
+        h: barH,
+        fill: { color: assuranceColor },
+        line: { color: assuranceColor, width: 0 },
+      });
+    });
+
+    // Min / Max en italique sous le graphe
+    const positiveVals = histYears.filter(v => v > 0);
+    const minVal = Math.min(...positiveVals);
+    addTextFr(slide, `Min : ${fmtEuroShort(minVal)}  —  Max : ${fmtEuroShort(maxVal)}`, {
+      x: LAYOUT.marginX,
+      y: histBarTopY + maxHistH + 0.03,
+      w: LAYOUT.contentWidth,
+      h: 0.12,
+      fontSize: 7,
+      fontFace: TYPO.fontFace,
+      color: theme.textBody.replace('#', ''),
+      italic: true,
+      align: 'center',
+      valign: 'top',
+    });
+  }
+
   // ========== STANDARD FOOTER (from design system) ==========
   addFooter(slide, ctx, slideIndex, 'onLight');
 }

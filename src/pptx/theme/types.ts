@@ -327,6 +327,8 @@ export type CreditSynthesisSlideSpec = {
   coutTotalCredit: number;   // intérêts + assurance
   creditType: 'amortissable' | 'infine';
   assuranceMode: 'CI' | 'CRD';
+  startYM?: string;              // YYYY-MM — date de début du prêt
+  assuranceDecesByYear?: number[]; // capital décès par année (mode expert)
 };
 
 /**
