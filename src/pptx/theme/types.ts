@@ -256,6 +256,8 @@ export type LoanSummary = {
   coutInterets: number;
   coutAssurance: number;
   amortizationRows?: CreditAmortizationRow[];
+  startYM?: string;   // point 6 — date de début du prêt (YYYY-MM)
+  dateEffet?: string; // point 8 — date d'effet lisible pour slide per-loan
 };
 
 /**
@@ -267,6 +269,7 @@ export type PaymentPeriod = {
   mensualitePret2: number;
   mensualitePret3: number;
   total: number;
+  monthIndex?: number; // point 6 — mois de début de cette période depuis startYM global
 };
 
 /**
@@ -284,6 +287,7 @@ export type CreditGlobalSynthesisSlideSpec = {
   paymentPeriods: PaymentPeriod[];
   smoothingEnabled: boolean;
   smoothingMode?: 'mensu' | 'duree';
+  startYM?: string; // point 6 — date de début réelle du prêt 1 (YYYY-MM)
 };
 
 /**
@@ -303,6 +307,7 @@ export type CreditLoanSynthesisSlideSpec = {
   coutTotalCredit: number;
   creditType: 'amortissable' | 'infine';
   assuranceMode: 'CI' | 'CRD';
+  dateEffet?: string; // point 8 — date d'effet lisible (ex: "mars 2025")
 };
 
 /**

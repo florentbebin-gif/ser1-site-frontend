@@ -11,6 +11,7 @@ export function CreditSummaryCard({
   isAnnual,
   lisserPret1,
   isExpert = true,
+  loanLabel,
 }) {
   const {
     mensualiteTotaleM1,
@@ -25,7 +26,7 @@ export function CreditSummaryCard({
 
   return (
     <aside className="cv2-summary" data-testid="credit-summary-card">
-      <div className="cv2-summary__title">Synthèse du prêt</div>
+      <div className="cv2-summary__title">{loanLabel || 'Synthèse du prêt'}</div>
 
       <div className={`cv2-summary__kpi-grid${!isExpert ? ' cv2-summary__kpi-grid--full' : ''}`}>
         <div className="cv2-summary__kpi cv2-summary__kpi--main">

@@ -17,6 +17,16 @@
   align-items: start;
 }
 
+/* point 4 — simplifié : synthèse droite même hauteur que paramètres */
+.cv2-grid--simple {
+  align-items: stretch;
+}
+
+.cv2-grid--simple .cv2-summary {
+  height: 100%;
+  box-sizing: border-box;
+}
+
 /* ----------------------------------------
    HEADER
    ---------------------------------------- */
@@ -98,7 +108,6 @@
   font-weight: 400;
   color: var(--color-c9);
   cursor: pointer;
-  margin-bottom: -2px;
   transition: color 0.2s, border-color 0.2s;
   display: flex;
   align-items: center;
@@ -113,7 +122,7 @@
 .cv2-tabs__tab.is-active {
   color: var(--color-c1);
   font-weight: 600;
-  border-bottom-color: var(--color-c2);
+  border-bottom-color: var(--color-c3); /* point 8 — indicateur actif C3 */
 }
 
 .cv2-tabs__tab.is-active:focus-visible {
@@ -154,6 +163,52 @@
   color: #FFFFFF;
 }
 
+/* point 9 — wrapper tab + bouton × (sibling HTML valide) */
+.cv2-tabs__tab-wrapper {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: -2px; /* point 1 PR2 — chevauche la ligne C8 du ::after */
+}
+
+.cv2-tabs__tab-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--color-c9);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  padding: 0;
+  margin-left: -8px; /* recouvre légèrement le padding-right du tab */
+  margin-right: 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.cv2-tabs__tab-wrapper:hover .cv2-tabs__tab-remove,
+.cv2-tabs__tab-wrapper:focus-within .cv2-tabs__tab-remove {
+  opacity: 1;
+}
+
+.cv2-tabs__tab-remove:hover {
+  background: var(--color-c8);
+  color: var(--color-c1);
+}
+
+.cv2-tabs__tab-remove:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 1px;
+  opacity: 1;
+}
+
 /* ----------------------------------------
    CARDS
    ---------------------------------------- */
@@ -185,6 +240,29 @@
   font-size: 15px;
   font-weight: 600;
   color: var(--color-c1);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* point 2 PR2 — icône "paramètres du prêt" avec fond coloré (style Settings) */
+.cv2-loan-card__icon-wrapper {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-c4);
+  border-radius: 8px;
+  color: var(--color-c2);
+  flex-shrink: 0;
+}
+
+.cv2-loan-card__icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: inherit;
 }
 
 .cv2-loan-card__subtitle {
@@ -560,6 +638,14 @@
    ---------------------------------------- */
 .cv2-header--credit {
   border-bottom-color: var(--color-c6);
+  border-bottom-width: 3px;    /* point 2 — barre plus épaisse */
+  padding-bottom: 8px;         /* point 1 — barre plus proche du sous-titre */
+  margin-bottom: 16px;         /* point 7 — blocs remontent */
+}
+
+/* point 3 — padding-top réduit pour la page Crédit uniquement */
+.sim-page.cv2-page {
+  padding-top: 20px;
 }
 
 /* ----------------------------------------
@@ -570,7 +656,7 @@
   grid-template-columns: 1.85fr 1fr;
   gap: 24px;
   align-items: end;
-  margin-bottom: 16px;
+  margin-bottom: 10px; /* point 3 & 7 — blocs remontent */
 }
 
 .cv2-controls-row__left {
@@ -583,7 +669,7 @@
 }
 
 .cv2-mode-row {
-  margin: 10px 0 14px;
+  margin: 6px 0 8px; /* point 3 — chip remonte */
 }
 
 /* ----------------------------------------
@@ -741,6 +827,15 @@
 @media (max-width: 900px) {
   /* .cv2-page et .cv2-header → gérés par sim-page (SimulatorShell.css)
      et premium-header (premium-shared.css) */
+
+  /* point 4 — ne pas étirer en mobile (sticky déjà retiré) */
+  .cv2-grid--simple {
+    align-items: start;
+  }
+
+  .cv2-grid--simple .cv2-summary {
+    height: auto;
+  }
 
   .cv2-mode-row {
     margin: 8px 0 12px;
