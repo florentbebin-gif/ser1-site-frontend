@@ -307,6 +307,8 @@ export function buildCreditStudyDeck(
       coutTotalCredit: loan.coutInterets + loan.coutAssurance,
       creditType: loan.creditType,
       assuranceMode: loan.assuranceMode,
+      startYM: creditData.startYM,
+      assuranceDecesByYear: creditData.assuranceDecesByYear,
     });
   }
   
