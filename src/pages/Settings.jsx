@@ -6,6 +6,7 @@ import { recalculatePaletteFromC1 } from '../utils/paletteGenerator';
 import SignalementsBlock from '../components/settings/SignalementsBlock';
 import { DEFAULT_COLORS as DEFAULT_THEME_COLORS } from '../settings/theme';
 import { PRESET_THEMES } from '../settings/presets';
+import { COLOR_USAGE_GUIDELINES } from '../constants/colorUsageGuidelines';
 
 // Mapper les couleurs du format theme (c1-c10) vers le format legacy (color1-color10)
 const DEFAULT_COLORS = {
@@ -34,18 +35,10 @@ const PREDEFINED_THEMES = PRESET_THEMES.map(t => ({
   },
 }));
 
-const COLOR_FIELDS = [
-  { key: 'color1', description: 'Couleur principale de l\'interface — titres, barre supérieure et éléments structurants' },
-  { key: 'color2', description: 'Couleur d\'accent et d\'interaction — boutons, liens, survol des éléments cliquables' },
-  { key: 'color3', description: 'Couleur de validation et états positifs — succès, confirmations, étapes actives' },
-  { key: 'color4', description: 'Fond d\'accent pour mettre en valeur — sections actives, lignes survolées, infos' },
-  { key: 'color5', description: 'Bordures et séparateurs accentués — pour structurer sans agresser' },
-  { key: 'color6', description: 'Touche chaude et élégante — lignes d\'accent décoratives, séparateurs raffinés' },
-  { key: 'color7', description: 'Fond général de l\'interface — l\'arrière-plan discret de l\'application' },
-  { key: 'color8', description: 'Bordures fines et légères — structure discrète des éléments' },
-  { key: 'color9', description: 'Texte secondaire et explications — labels, métadonnées, informations complémentaires' },
-  { key: 'color10', description: 'Texte principal et titres — le contraste maximum pour la lisibilité' },
-];
+const COLOR_FIELDS = COLOR_USAGE_GUIDELINES.map(({ legacyKey, usage }) => ({
+  key: legacyKey,
+  description: usage,
+}));
 
 export default function Settings() {
   const [user, setUser] = useState(null);
@@ -516,3 +509,4 @@ export default function Settings() {
     </>
   );
 }
+

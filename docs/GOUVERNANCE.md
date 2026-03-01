@@ -48,31 +48,35 @@ Principes : épuré, lisible, respirant.
 ---
 
 ## Gouvernance couleurs (C1–C10)
-### Règle
+### Regle
 - Utiliser uniquement les tokens `C1..C10` via variables CSS `--color-c1..--color-c10`.
-- **Hardcode interdit** sauf exceptions listées ci-dessous.
+- Hardcode interdit sauf exceptions listees ci-dessous.
 
-### Tokens par défaut (rôle)
-- C1 : brand dark (fonds/titres selon contexte)
-- C2 : primary / CTA
-- C7 : surface page
-- C8 : border
-- C9 : text muted
-- C10 : text primary
+### Norme d usage (UI)
+- C1 : Titres, top bar, elements structurants et actions danger.
+- C2 : Actions primaires, liens, CTA et etats interactifs forts.
+- C3 : Etat actif ou positif visible (onglet actif, validation, repere).
+- C4 : Fond d accent doux pour focus ring, survol leger et zone active.
+- C5 : Separation renforcee pour liseres secondaires et blocs de synthese.
+- C6 : Accent chaud decoratif pour signatures visuelles non interactives.
+- C7 : Fond global et surfaces neutres de l interface.
+- C8 : Bordures standard, separateurs fins, contours d inputs et tableaux.
+- C9 : Texte secondaire (labels, aides, metadonnees, micro-copie).
+- C10 : Texte principal et valeurs a forte lisibilite.
 
-### Exceptions autorisées (liste exhaustive)
-- `#FFFFFF` (WHITE) : fond raised (cards/panels) et texte sur fonds très sombres.
-- `#996600` (WARNING) : warning hardcodé (le thème user peut rendre tout autre token illisible).
-- `rgba(0,0,0,0.5)` : overlay modale (seul rgba autorisé).
+### Exceptions autorisees (liste exhaustive)
+- `#FFFFFF` (WHITE) : fond raised (cards/panels) et texte sur fonds tres sombres.
+- `#996600` (WARNING) : warning hardcode (le theme user peut rendre tout autre token illisible).
+- `rgba(0,0,0,0.5)` : overlay modale (seul rgba autorise).
 
 ### Contraste
 - Pas de texte blanc sur fond C7.
-- Headers “colorés” (ex: Excel header) : couleur de texte **calculée** selon le fond (helper existant côté Excel).
+- Headers colores (ex: Excel header) : couleur de texte calculee selon le fond (helper existant cote Excel).
 
-### États sémantiques (rappel)
-- `danger` : utiliser C1 (pas de rouge hardcodé).
+### Etats semantiques (rappel)
+- `danger` : utiliser C1 (pas de rouge hardcode).
 - `warning` : WARNING (`#996600`) obligatoire.
-- `success/info` : dérivés de C2–C4 selon contexte.
+- `success/info` : derives de C2-C4 selon contexte.
 
 ---
 
@@ -174,3 +178,4 @@ Ces 3 phases correspondent dans les blocs produit aux clés `constitution`, `sor
 - ThemeProvider V5 : `src/settings/ThemeProvider.tsx`, `src/settings/presets.ts`, `src/settings/theme/types.ts`
 - UI premium classes : `src/styles.css` + composants Settings (`src/components/settings/SettingsSectionCard.jsx`)
 - ESLint couleurs : `tools/eslint-plugin-ser1-colors/`
+
