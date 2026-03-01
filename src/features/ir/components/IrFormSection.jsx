@@ -338,7 +338,7 @@ export function IrFormSection({
             <tr>
               <td>Option d&apos;imposition des RCM</td>
               <td colSpan={2}>
-                <select value={capitalMode} onChange={(e) => setCapitalMode(e.target.value)} style={{ width: '100%' }}>
+                <select value={capitalMode} onChange={(e) => setCapitalMode(e.target.value)}>
                   <option value="pfu">PFU {fmtPct(pfuRateIR)} %</option>
                   <option value="bareme">Barème de l&apos;IR (abattement 40 %)</option>
                 </select>
