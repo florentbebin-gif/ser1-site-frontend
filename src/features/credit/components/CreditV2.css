@@ -422,21 +422,13 @@
   );
 }
 
-/* Header row : titre (gauche) + donut (droite) */
-.cv2-summary__header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 14px;
-}
-
 .cv2-summary__title {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--color-c9);
-  padding-top: 4px; /* alignement optique avec le donut */
+  margin-bottom: 14px;
 }
 
 /* Donut SVG */
@@ -444,8 +436,11 @@
   flex-shrink: 0;
 }
 
-/* KPI zone — typographique, sans fond coloré */
+/* KPI zone — montant à gauche, donut à droite */
 .cv2-summary__kpi-zone {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 4px 0 14px;
 }
 
@@ -504,7 +499,7 @@
   justify-content: space-between;
   align-items: baseline;
   padding: 10px 0;
-  border-bottom: 1px solid var(--color-c8);
+  border-bottom: none;
 }
 
 .cv2-summary__row--total {
@@ -575,7 +570,7 @@
   border-radius: 12px;
   background: #FFFFFF;
   border: 1px solid var(--color-c8);
-  border-left: 3px solid var(--color-c6);
+  border-left: 3px solid var(--color-c5);
   box-shadow: 0 6px 28px rgba(0, 0, 0, 0.07);
 }
 
@@ -730,9 +725,17 @@
    ---------------------------------------- */
 .cv2-header--credit {
   border-bottom-color: var(--color-c6);
-  border-bottom-width: 3px;    /* point 2 — barre plus épaisse */
-  padding-bottom: 8px;         /* point 1 — barre plus proche du sous-titre */
-  margin-bottom: 16px;         /* point 7 — blocs remontent */
+  border-bottom-width: 3px;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  flex-direction: column;      /* titre seul sur ligne 1, subtitle+actions sur ligne 2 */
+  gap: 4px;
+}
+
+.cv2-header__subtitle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 /* point 3 — padding-top réduit pour la page Crédit uniquement */

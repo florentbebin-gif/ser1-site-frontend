@@ -19,9 +19,11 @@ import {
   SLIDE_SIZE,
   TYPO,
   COORDS_CONTENT,
+  COORDS_FOOTER,
   addHeader,
   addFooter,
   addTextFr,
+  roleColor,
 } from '../designSystem/serenity';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import { addBusinessIconToSlide } from '../icons/addBusinessIcon';
@@ -437,85 +439,68 @@ export function buildCreditSynthesis(
     });
   }
   
-  // Legend below bar
-  const legendY = LAYOUT.bar.legendY;
-  const legendCenterX = slideWidth / 2;
-  
-  addTextFr(slide, `Total remboursé : ${euro(totalRembourse)}`, {
-    x: legendCenterX - 2,
-    y: legendY,
-    w: 4,
-    h: LAYOUT.bar.legendHeight,
-    fontSize: 11,
-    fontFace: TYPO.fontFace,
-    color: theme.textMain.replace('#', ''),
-    bold: true,
-    align: 'center',
-    valign: 'middle',
-  });
-  
-  // ========== SECTION 4: Capitaux décès (mode expert uniquement) ==========
+  // ========== SECTION 4: Capitaux décès — style tick compact (mode expert uniquement) ==========
   // N'affiche que si au moins une valeur > 0 (simple mode → tableau vide → skip)
   if (data.assuranceDecesByYear && data.assuranceDecesByYear.some(v => v > 0)) {
     const histYears = data.assuranceDecesByYear;
-    const histLabelY = LAYOUT.bar.sectionEndY + 0.04;
-    const histBarTopY  = LAYOUT.bar.sectionEndY + 0.22;
-    const maxHistH     = 0.28;   // hauteur max d'une barre
-    const histZoneX    = LAYOUT.bar.marginX;
-    const histZoneW    = slideWidth - LAYOUT.bar.marginX * 2;
+    // Démarre juste après la barre (fin barre = LAYOUT.bar.y + LAYOUT.bar.height)
+    const histStartY = LAYOUT.bar.y + LAYOUT.bar.height + 0.04; // ~5.92
+    const histZoneX  = LAYOUT.bar.marginX;
+    const histZoneW  = slideWidth - LAYOUT.bar.marginX * 2;
+    const tickCount  = histYears.length;
+    const tickGap    = 0.008;
+    const tickW      = (histZoneW - (tickCount - 1) * tickGap) / Math.max(tickCount, 1);
+    const tickH      = 0.18;
+    const panelColor = roleColor(theme, 'panelBorder');
+    const bodyColor  = roleColor(theme, 'textBody');
 
-    const maxVal = Math.max(...histYears);
-    const barW   = histZoneW / histYears.length;
-    const barGap = Math.min(0.025, barW * 0.2);
-    const effBarW = Math.max(barW - barGap, 0.02);
-
-    // Étiquette
-    addTextFr(slide, 'Capitaux décès assurés par année', {
-      x: LAYOUT.marginX,
-      y: histLabelY,
-      w: LAYOUT.contentWidth,
-      h: 0.16,
-      fontSize: 8,
-      fontFace: TYPO.fontFace,
-      color: theme.textBody.replace('#', ''),
-      italic: true,
-      align: 'center',
-      valign: 'middle',
+    // Label gauche au-dessus
+    addTextFr(slide, 'Capital décès assuré (par an)', {
+      x: LAYOUT.bar.marginX, y: histStartY,
+      w: LAYOUT.contentWidth, h: 0.14,
+      fontSize: 7, italic: true, color: bodyColor,
+      fontFace: TYPO.fontFace, align: 'left', valign: 'middle',
     });
 
-    // Barres
-    const assuranceColor = getBarColor('assurance', theme);
+    // Tick bars + valeurs en dessous
     histYears.forEach((val, i) => {
-      if (val <= 0) return;
-      const barH = (val / maxVal) * maxHistH;
-      const barX = histZoneX + i * barW;
-      const barY = histBarTopY + maxHistH - barH; // base commune en bas
+      const tickX = histZoneX + i * (tickW + tickGap);
       slide.addShape('rect', {
-        x: barX,
-        y: barY,
-        w: effBarW,
-        h: barH,
-        fill: { color: assuranceColor },
-        line: { color: assuranceColor, width: 0 },
+        x: tickX, y: histStartY + 0.16, w: tickW, h: tickH,
+        fill: { color: panelColor },
+        line: { color: panelColor, width: 0 },
+      });
+      addTextFr(slide, fmtEuroShort(val > 0 ? val : 0), {
+        x: tickX, y: histStartY + 0.16 + tickH + 0.02, w: tickW, h: 0.10,
+        fontSize: 5, color: bodyColor, fontFace: TYPO.fontFace, align: 'center',
       });
     });
-
-    // Min / Max en italique sous le graphe
-    const positiveVals = histYears.filter(v => v > 0);
-    const minVal = Math.min(...positiveVals);
-    addTextFr(slide, `Min : ${fmtEuroShort(minVal)}  —  Max : ${fmtEuroShort(maxVal)}`, {
-      x: LAYOUT.marginX,
-      y: histBarTopY + maxHistH + 0.03,
-      w: LAYOUT.contentWidth,
-      h: 0.12,
-      fontSize: 7,
-      fontFace: TYPO.fontFace,
-      color: theme.textBody.replace('#', ''),
-      italic: true,
-      align: 'center',
-      valign: 'top',
-    });
   }
+
+  // ========== SECTION 5: Bottom row — Total remboursé + Coût assurance décès ==========
+  const CONTENT_BOTTOM_Y = COORDS_FOOTER.date.y - 0.15;
+  const bottomY    = CONTENT_BOTTOM_Y - 0.42;
+  const iconSize   = 0.22;
+  const bottomW    = slideWidth - 2 * LAYOUT.bar.marginX;
+  const bottomItems: Array<{ icon: BusinessIconName; label: string; value: string }> = [
+    { icon: 'buildings', label: 'Total remboursé :', value: euro(totalRembourse) },
+    ...(data.coutTotalAssurance > 0
+      ? [{ icon: 'balance' as BusinessIconName, label: 'Coût assurance décès :', value: euro(data.coutTotalAssurance) }]
+      : []),
+  ];
+  const bottomItemW = bottomW / Math.max(bottomItems.length, 1);
+
+  bottomItems.forEach((item, idx) => {
+    const itemX = LAYOUT.bar.marginX + idx * bottomItemW;
+    addBusinessIconToSlide(slide, item.icon, {
+      x: itemX + bottomItemW / 2 - iconSize / 2,
+      y: bottomY, w: iconSize, h: iconSize,
+    }, theme, 'textBody');
+    addTextFr(slide, `${item.label} ${item.value}`, {
+      x: itemX, y: bottomY + iconSize + 0.03, w: bottomItemW, h: 0.13,
+      fontSize: 9, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: 'center',
+    });
+  });
 
   // ========== STANDARD FOOTER (from design system) ==========
   addFooter(slide, ctx, slideIndex, 'onLight');

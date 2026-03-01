@@ -8,6 +8,11 @@
   position: relative;
 }
 
+/* Trigger blanc — surpasse premium-btn (background: var(--color-c7)) */
+.export-menu-container > button {
+  background: #FFFFFF;
+}
+
 .export-menu {
   position: absolute;
   right: 0;
