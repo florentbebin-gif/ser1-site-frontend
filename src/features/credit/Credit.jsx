@@ -23,6 +23,7 @@ import {
 } from './utils/creditNormalizers.js';
 import { useCreditCalculations } from './hooks/useCreditCalculations.js';
 import { useCreditExports } from './hooks/useCreditExports.js';
+import { euro0 } from './utils/creditFormatters.js';
 import { CreditHeader } from './components/CreditHeader.jsx';
 import { CreditLoanTabs } from './components/CreditLoanTabs.jsx';
 import { CreditLoanForm } from './components/CreditLoanForm.jsx';
@@ -435,8 +436,9 @@ export default function CreditV2() {
 
           {/* LISSAGE (si prêts additionnels) */}
           {calc.hasPretsAdditionnels && (
-            <div className="premium-card">
-              <div className="sim-section-title">Options de lissage</div>
+            <div className="premium-card cv2-lissage-card">
+              <div className="sim-section-title cv2-lissage-title">Options de lissage</div>
+              <div className="cv2-loan-card__divider cv2-loan-card__divider--tight" />
               <div className="cv2-lissage">
                 <Toggle
                   checked={state.lisserPret1}
@@ -489,6 +491,21 @@ export default function CreditV2() {
             }
             lissageCoutDelta={isExpert && activeTab === 0 ? lissageCoutDelta : 0}
           />
+
+          {/* Bloc mensualité globale — affiché uniquement en multi-prêts */}
+          {calc.hasPretsAdditionnels && (
+            <div className="cv2-total-mensu">
+              <div className="cv2-summary__kpi-label-small">Mensualité totale hors ass.</div>
+              <div className="cv2-total-mensu__value">
+                {euro0(calc.synthese.mensualiteTotaleM1)}
+              </div>
+              {isExpert && calc.synthese.primeAssMensuelle > 0 && (
+                <div className="cv2-summary__kpi-assurance">
+                  + {euro0(calc.synthese.primeAssMensuelle)} /mois ass.
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
