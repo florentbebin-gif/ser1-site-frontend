@@ -279,7 +279,7 @@
 }
 
 .cv2-loan-card__divider {
-  margin: 14px auto 18px;
+  margin: 14px 0 18px;
   height: 2px;
   max-width: 200px;
   background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
@@ -482,7 +482,7 @@
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
   max-width: 200px;
-  margin: 4px auto 8px;
+  margin: 4px 0 8px;
 }
 
 /* Lignes de coût */
