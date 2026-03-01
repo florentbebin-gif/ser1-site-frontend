@@ -29,6 +29,7 @@ export function InputEuro({
   testId,
   dataTestId,
   onBlur,
+  highlight = false,
 }) {
   const fmt = (n) => (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
 
@@ -49,7 +50,7 @@ export function InputEuro({
           onChange={handleChange}
           data-testid={dataTestId || testId}
           aria-invalid={!!error}
-          className={`ci-input${error ? ' ci-input--error' : ''}`}
+          className={`ci-input${error ? ' ci-input--error' : ''}${highlight ? ' ci-input--guide' : ''}`}
           onBlur={onBlur}
         />
         <span className="ci-unit">€</span>
@@ -73,6 +74,7 @@ export function InputPct({
   error,
   testId,
   placeholder = "0,00",
+  highlight = false,
 }) {
   const [local, setLocal] = useState(rawValue || '');
   const [focused, setFocused] = useState(false);
@@ -106,7 +108,7 @@ export function InputPct({
           onFocus={() => setFocused(true)}
           onBlur={handleBlur}
           aria-invalid={!!error}
-          className={`ci-input${error ? ' ci-input--error' : ''}`}
+          className={`ci-input${error ? ' ci-input--error' : ''}${highlight ? ' ci-input--guide' : ''}`}
         />
         <span className="ci-unit">%</span>
       </div>
@@ -132,6 +134,7 @@ export function InputNumber({
   error,
   testId,
   onBlur,
+  highlight = false,
 }) {
   const handleChange = (e) => {
     const raw = e.target.value.replace(/\D/g, '').slice(0, 3);
@@ -150,7 +153,7 @@ export function InputNumber({
           value={String(value || 0)}
           onChange={handleChange}
           aria-invalid={!!error}
-          className={`ci-input${error ? ' ci-input--error' : ''}`}
+          className={`ci-input${error ? ' ci-input--error' : ''}${highlight ? ' ci-input--guide' : ''}`}
           onBlur={onBlur}
         />
         {unit && <span className="ci-unit">{unit}</span>}

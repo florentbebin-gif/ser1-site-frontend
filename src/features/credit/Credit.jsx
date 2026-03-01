@@ -322,9 +322,6 @@ export default function CreditV2() {
   ];
   const activeLoan = pretLookup[activeTab];
 
-  // Guide visuel — carte formulaire mise en avant quand le capital du prêt actif est vide
-  const isCardEmpty = (activeLoan.data?.capital || 0) === 0;
-
   return (
     <div className="sim-page cv2-page" data-testid="credit-page">
       {/* HEADER (sans toggle — déplacé dans la ligne de contrôles) */}
@@ -384,7 +381,7 @@ export default function CreditV2() {
       <div className={`cv2-grid${!isExpert ? ' cv2-grid--simple' : ''}`}>
         {/* COLONNE GAUCHE */}
         <div>
-          <div className={`premium-card${isCardEmpty ? ' premium-card--guide' : ''}`}>
+          <div className="premium-card premium-card--guide">
             <div className="cv2-loan-card">
               <header className="cv2-loan-card__header">
                 <h2 className="cv2-loan-card__title">
