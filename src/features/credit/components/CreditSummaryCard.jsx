@@ -12,6 +12,7 @@ export function CreditSummaryCard({
   lisserPret1,
   isExpert = true,
   loanLabel,
+  lissageCoutDelta = 0,
 }) {
   const {
     mensualiteTotaleM1,
@@ -68,12 +69,28 @@ export function CreditSummaryCard({
         </div>
       </div>
 
-      {lisserPret1 && diffDureesMois !== 0 && (
+      {lisserPret1 && (diffDureesMois !== 0 || lissageCoutDelta !== 0) && (
         <div className="cv2-summary__lissage-info">
-          <span className="cv2-summary__row-label">Différence de durée</span>
-          <span className="cv2-summary__row-value">
-            {diffDureesMois > 0 ? '+' : ''}{diffDureesMois} mois
-          </span>
+          {diffDureesMois !== 0 && (
+            <div className="cv2-summary__row">
+              <span className="cv2-summary__row-label">
+                {diffDureesMois > 0 ? 'Durée allongée' : 'Durée réduite'}
+              </span>
+              <span className="cv2-summary__row-value">
+                {diffDureesMois > 0 ? '+' : ''}{diffDureesMois} mois
+              </span>
+            </div>
+          )}
+          {lissageCoutDelta !== 0 && (
+            <div className="cv2-summary__row">
+              <span className="cv2-summary__row-label">
+                {lissageCoutDelta > 0 ? 'Coût supplémentaire' : 'Économie du lissage'}
+              </span>
+              <span className="cv2-summary__row-value">
+                {euro0(Math.abs(lissageCoutDelta))}
+              </span>
+            </div>
+          )}
         </div>
       )}
     </aside>
