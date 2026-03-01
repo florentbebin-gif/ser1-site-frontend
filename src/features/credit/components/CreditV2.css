@@ -732,7 +732,7 @@
   gap: 4px;
 }
 
-.cv2-header__subtitle-row {
+.cv2-header__title-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
