@@ -230,7 +230,7 @@ export default function CreditV2() {
   // SYNTHÈSE PAR PRÊT (point 4 PR2 — card s'actualise par tab actif)
   // -------------------------------------------------------------------------
   const perLoanSyntheses = useMemo(() => {
-    const make = (rows) => {
+    const make = (rows, diffDureesMois = 0) => {
       if (!rows?.length) return null;
       const validRows = rows.filter(r => r);
       if (!validRows.length) return null;
@@ -242,11 +242,26 @@ export default function CreditV2() {
         totalInterets,
         totalAssurance,
         coutTotalCredit: totalInterets + totalAssurance,
-        diffDureesMois: 0,
+        diffDureesMois,
       };
     };
-    return [make(calc.pret1Rows), make(calc.pret2Rows), make(calc.pret3Rows)];
-  }, [calc.pret1Rows, calc.pret2Rows, calc.pret3Rows]);
+    return [
+      make(calc.pret1Rows, calc.synthese?.diffDureesMois ?? 0),
+      make(calc.pret2Rows),
+      make(calc.pret3Rows),
+    ];
+  }, [calc.pret1Rows, calc.pret2Rows, calc.pret3Rows, calc.synthese]);
+
+  // Coût ou économie du lissage sur prêt 1 (intérêts lissés - intérêts base)
+  const lissageCoutDelta = useMemo(() => {
+    if (!state.lisserPret1 || !calc.hasPretsAdditionnels) return 0;
+    if (!calc.mensuBasePret1 || !calc.dureeBaseMois) return 0;
+    const lissedInterets = (calc.pret1Rows || [])
+      .filter(r => r)
+      .reduce((s, r) => s + (r.interet || 0), 0);
+    const baseInterets = calc.mensuBasePret1 * calc.dureeBaseMois - (state.pret1?.capital || 0);
+    return Math.round(lissedInterets - baseInterets);
+  }, [calc.pret1Rows, calc.mensuBasePret1, calc.dureeBaseMois, state.pret1?.capital, state.lisserPret1, calc.hasPretsAdditionnels]);
 
   const activeSynthese = (isExpert && calc.hasPretsAdditionnels)
     ? (perLoanSyntheses[activeTab] || calc.synthese)
@@ -463,6 +478,7 @@ export default function CreditV2() {
                 ? `Synthèse du prêt ${activeTab + 1}`
                 : undefined
             }
+            lissageCoutDelta={isExpert && activeTab === 0 ? lissageCoutDelta : 0}
           />
         </div>
       </div>
