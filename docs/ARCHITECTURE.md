@@ -191,6 +191,16 @@ Tables repères (haut niveau) :
 
 Règles fonctionnelles : voir `docs/GOUVERNANCE.md`.
 
+### Standard UI des simulateurs `/sim/*`
+Source normative : section **"Norme des pages `/sim/*` (baseline `/sim/credit`)"** dans `docs/GOUVERNANCE.md`.
+
+Implémentation de référence :
+- Orchestrateur : `src/features/credit/Credit.jsx`
+- Styles de page simulateur : `src/components/simulator/SimulatorShell.css`
+- Styles premium partagés : `src/styles/premium-shared.css`
+- Styles spécifiques crédit : `src/features/credit/components/CreditV2.css`
+- Inputs/select/toggle : `src/features/credit/components/CreditInputs.jsx` + `CreditInputs.css`
+
 ### Thème V5 (3 modes)
 Source de vérité : DB (`ui_settings`).
 
