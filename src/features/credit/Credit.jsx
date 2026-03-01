@@ -238,12 +238,14 @@ export default function CreditV2() {
       if (!validRows.length) return null;
       const totalInterets = validRows.reduce((s, r) => s + (r.interet || 0), 0);
       const totalAssurance = validRows.reduce((s, r) => s + (r.assurance || 0), 0);
+      const capitalEmprunte = validRows.reduce((s, r) => s + (r.amort || 0), 0);
       return {
         mensualiteTotaleM1: validRows[0].mensu || 0,
         primeAssMensuelle: validRows[0].assurance || 0,
         totalInterets,
         totalAssurance,
         coutTotalCredit: totalInterets + totalAssurance,
+        capitalEmprunte,
         diffDureesMois,
       };
     };

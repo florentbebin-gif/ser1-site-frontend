@@ -403,12 +403,17 @@ export function useCreditCalculations(state, globalStartYM) {
     const primeAssMensuelleAutres = autresRows.reduce((s, arr) => s + ((arr[0]?.assurance) || 0), 0);
     const primeAssMensuelle = primeAssMensuellePret1 + primeAssMensuelleAutres;
 
+    const capitalEmprunte =
+      pret1Rows.reduce((s, l) => s + (l.amort || 0), 0) +
+      autresRows.reduce((total, arr) => total + arr.reduce((s, row) => s + ((row?.amort) || 0), 0), 0);
+
     return {
       totalInterets,
       totalAssurance,
       coutTotalCredit,
       mensualiteTotaleM1,
       primeAssMensuelle,
+      capitalEmprunte,
       diffDureesMois,
     };
   }, [pret1Rows, autresRows, diffDureesMois]);
