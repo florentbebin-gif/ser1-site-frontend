@@ -22,8 +22,13 @@
   align-items: stretch;
 }
 
-.cv2-grid--simple .cv2-summary {
-  height: 100%;
+.cv2-grid--simple .cv2-right-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.cv2-grid--simple .cv2-right-col .cv2-summary {
+  flex: 1;
   box-sizing: border-box;
 }
 
@@ -303,8 +308,9 @@
   margin-top: 0;
 }
 
-/* Supprime le border-bottom du titre "Options de lissage" — remplacé par le divider dégradé */
-.cv2-lissage-title {
+/* Supprime le border-bottom du titre "Options de lissage" — remplacé par le divider dégradé.
+   Spécificité double-classe pour surpasser .sim-section-title de SimulatorShell.css (chargé après) */
+.cv2-lissage-card .cv2-lissage-title {
   border-bottom: none;
   padding-bottom: 0;
   margin-bottom: 0;
@@ -394,6 +400,12 @@
 /* ----------------------------------------
    SUMMARY CARD (sticky droite)
    ---------------------------------------- */
+/* Wrapper sticky colonne droite — solidarise summary + total-mensu */
+.cv2-right-col {
+  position: sticky;
+  top: 80px;
+}
+
 .cv2-summary {
   background: #FFFFFF;
   border: 1px solid var(--color-c8);
@@ -402,8 +414,6 @@
   padding: 20px 24px;
   /* Lift premium : ombre plus douce mais plus large */
   box-shadow: 0 6px 28px rgba(0, 0, 0, 0.07);
-  position: sticky;
-  top: 80px;
   /* Gradient header très subtil sur les 20% supérieurs */
   background-image: linear-gradient(
     to bottom,
@@ -561,10 +571,12 @@
    ---------------------------------------- */
 .cv2-total-mensu {
   margin-top: 12px;
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: var(--color-c7, #f8f9fa);
+  padding: 20px 24px;
+  border-radius: 12px;
+  background: #FFFFFF;
   border: 1px solid var(--color-c8);
+  border-left: 3px solid var(--color-c6);
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.07);
 }
 
 .cv2-total-mensu__value {
@@ -913,8 +925,12 @@
     align-items: start;
   }
 
-  .cv2-grid--simple .cv2-summary {
-    height: auto;
+  .cv2-grid--simple .cv2-right-col {
+    display: block;
+  }
+
+  .cv2-grid--simple .cv2-right-col .cv2-summary {
+    flex: none;
   }
 
   .cv2-mode-row {
@@ -940,7 +956,8 @@
     order: -1;
   }
 
-  .cv2-summary {
+  /* Le wrapper sticky devient statique sur mobile */
+  .cv2-right-col {
     position: static;
   }
 

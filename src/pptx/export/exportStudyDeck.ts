@@ -317,6 +317,8 @@ export async function exportStudyDeck(
         coutTotalCredit: creditSynthSpec.coutTotalCredit,
         creditType: creditSynthSpec.creditType,
         assuranceMode: creditSynthSpec.assuranceMode,
+        startYM: creditSynthSpec.startYM,
+        assuranceDecesByYear: creditSynthSpec.assuranceDecesByYear,
       }, ctx.theme, ctx, slideIndex);
     } else if (slideSpec.type === 'credit-global-synthesis') {
       // Credit Global Synthesis slide (multi-loan overview)
