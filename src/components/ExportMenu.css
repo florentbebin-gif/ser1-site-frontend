@@ -8,9 +8,11 @@
   position: relative;
 }
 
-/* Trigger blanc — surpasse premium-btn (background: var(--color-c7)) */
+/* Trigger blanc + hauteur alignée sur settings-action-btn (8px 16px) */
 .export-menu-container > button {
   background: #FFFFFF;
+  padding: 8px 16px;
+  border-radius: 6px;
 }
 
 .export-menu {
