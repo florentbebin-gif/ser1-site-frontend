@@ -15,13 +15,10 @@ export function CreditHeader({
 }) {
   return (
     <div className="premium-header cv2-header--credit" data-testid="credit-header">
-      <h1 className="premium-title" data-testid="credit-title">
-        Simulateur de crédit
-      </h1>
-      <div className="cv2-header__subtitle-row">
-        <p className="premium-subtitle">
-          Simulez les mensualités et le coût global du financement.
-        </p>
+      <div className="cv2-header__title-row">
+        <h1 className="premium-title" data-testid="credit-title">
+          Simulateur de crédit
+        </h1>
         <div className="sim-header__actions" data-testid="credit-actions">
           <ExportMenu
             options={exportOptions}
@@ -29,6 +26,9 @@ export function CreditHeader({
           />
         </div>
       </div>
+      <p className="premium-subtitle">
+        Simulez les mensualités et le coût global du financement.
+      </p>
     </div>
   );
 }
