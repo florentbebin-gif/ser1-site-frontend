@@ -160,11 +160,12 @@ body {
    Source de vérité unique pour boutons header
    ======================================== */
 
-/* Scoping: topbar global + actions + page headers */
+/* Scoping: topbar global + actions + page headers
+   Note: .ir-header .chip retiré — le header IR a un fond neutre,
+   les chips y utilisent le fond blanc opaque du .chip global (#FFFFFF). */
 .topbar .chip,
 .top-actions .chip,
 .pl-header-actions .chip,
-.ir-header .chip,
 .credit-header-actions .chip {
   background: rgba(255, 255, 255, 0.60);
   border-radius: 8px; /* Surcharge du 999px global */
@@ -175,7 +176,6 @@ body {
 .topbar .chip:hover:not(:disabled),
 .top-actions .chip:hover:not(:disabled),
 .pl-header-actions .chip:hover:not(:disabled),
-.ir-header .chip:hover:not(:disabled),
 .credit-header-actions .chip:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.75);
 }
@@ -184,7 +184,6 @@ body {
 .topbar .chip:active:not(:disabled),
 .top-actions .chip:active:not(:disabled),
 .pl-header-actions .chip:active:not(:disabled),
-.ir-header .chip:active:not(:disabled),
 .credit-header-actions .chip:active:not(:disabled) {
   background: rgba(255, 255, 255, 0.85);
 }
@@ -193,7 +192,6 @@ body {
 .topbar .chip:focus-visible,
 .top-actions .chip:focus-visible,
 .pl-header-actions .chip:focus-visible,
-.ir-header .chip:focus-visible,
 .credit-header-actions .chip:focus-visible {
   outline: 2px solid var(--color-c2);
   outline-offset: 2px;
@@ -203,7 +201,6 @@ body {
 .topbar .chip:disabled,
 .top-actions .chip:disabled,
 .pl-header-actions .chip:disabled,
-.ir-header .chip:disabled,
 .credit-header-actions .chip:disabled {
   background: rgba(255, 255, 255, 0.40);
   opacity: 0.6;
