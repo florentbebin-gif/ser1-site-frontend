@@ -446,11 +446,6 @@ export default function CreditV2() {
                   label="Lisser le prêt 1"
                   disabled={calc.pret1IsInfine}
                 />
-                {state.lisserPret1 && calc.autresIsInfine.some(Boolean) && (
-                  <p className="cv2-lissage__hint cv2-lissage__hint--info">
-                    Un prêt in fine comporte une échéance finale de capital&nbsp;: elle n'est pas lissable et reste visible dans l'échéancier.
-                  </p>
-                )}
                 {state.lisserPret1 && (
                   <div className="cv2-lissage__pills">
                     <button
@@ -473,12 +468,17 @@ export default function CreditV2() {
                   Le lissage est indisponible pour un prêt 1 en In fine.
                 </p>
               )}
+              {state.lisserPret1 && calc.autresIsInfine.some(Boolean) && (
+                <p className="cv2-lissage__hint">
+                  Un prêt in fine comporte une échéance finale de capital&nbsp;: elle n'est pas lissable et reste visible dans l'échéancier.
+                </p>
+              )}
             </div>
           )}
         </div>
 
-        {/* COLONNE DROITE — synthèse alignée avec le formulaire */}
-        <div>
+        {/* COLONNE DROITE — wrapper sticky commun (summary + total-mensu solidaires) */}
+        <div className="cv2-right-col">
           <CreditSummaryCard
             synthese={activeSynthese}
             isAnnual={isAnnual}

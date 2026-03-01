@@ -93,6 +93,9 @@ export function CreditSummaryCard({
         <SummaryDonut capital={capitalEmprunte} interets={totalInterets} />
       </div>
 
+      {/* Séparateur dégradé sous le header (même barre que la carte paramètres) */}
+      <div className="cv2-loan-card__divider" />
+
       {/* KPI principal — typographique, sans fond */}
       <div className="cv2-summary__kpi-zone">
         <div className="cv2-summary__kpi-label-small">{kpiLabel}</div>
