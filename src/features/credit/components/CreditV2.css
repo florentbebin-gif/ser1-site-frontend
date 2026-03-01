@@ -284,11 +284,30 @@
   );
 }
 
+/* Variante compacte : moins de marge, pour la card lissage */
+.cv2-loan-card__divider--tight {
+  margin: 0 0 14px;
+}
+
 .cv2-loan-form__section {
   grid-column: 1 / -1;
   margin-top: 8px;
   padding-top: 16px;
   border-top: 1px solid var(--color-c8);
+}
+
+/* Quand précédé d'un cv2-loan-card__divider : pas de double barre */
+.cv2-loan-form__section--no-border {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+/* Supprime le border-bottom du titre "Options de lissage" — remplacé par le divider dégradé */
+.cv2-lissage-title {
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 
 .cv2-loan-form__section-title {
@@ -535,6 +554,26 @@
 .cv2-summary__lissage-info .cv2-summary__row {
   border-bottom: none;
   padding: 0;
+}
+
+/* ----------------------------------------
+   BLOC MENSUALITÉ TOTALE (multi-prêts, sous CreditSummaryCard)
+   ---------------------------------------- */
+.cv2-total-mensu {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--color-c7, #f8f9fa);
+  border: 1px solid var(--color-c8);
+}
+
+.cv2-total-mensu__value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  margin: 4px 0;
 }
 
 /* ----------------------------------------

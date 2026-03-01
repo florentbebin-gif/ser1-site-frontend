@@ -104,8 +104,10 @@ export function CreditLoanForm({
 
       {/* Bloc Assurance — masqué en mode simplifié (item 4) */}
       {isExpert && (
-        <div className="cv2-loan-form__section" data-testid={pretNum === 0 ? 'credit-assurance-section' : undefined}>
-          <div className="cv2-loan-form__section-title">Assurance emprunteur</div>
+        <>
+          <div className="cv2-loan-card__divider" />
+          <div className="cv2-loan-form__section cv2-loan-form__section--no-border" data-testid={pretNum === 0 ? 'credit-assurance-section' : undefined}>
+            <div className="cv2-loan-form__section-title">Assurance emprunteur</div>
           <div className="cv2-loan-form__grid">
             <Select
               label="Mode de calcul"
@@ -133,7 +135,8 @@ export function CreditLoanForm({
               testId={`credit-pret${pretNum}-quotite`}
             />
           </div>
-        </div>
+          </div>
+        </>
       )}
 
     </div>
