@@ -20,6 +20,8 @@ export function CreditLoanTabs({
   hasPret3,
   onAddPret2,
   onAddPret3,
+  onRemovePret2,
+  onRemovePret3,
   isExpert = true,
 }) {
   // Simplifié sans prêts additionnels : pas de tabs à afficher
@@ -55,29 +57,46 @@ export function CreditLoanTabs({
 
           const isActive = activeTab === tab.idx;
 
+          /* point 9 — wrapper pour placer le bouton × hors du <button> tab (HTML valide) */
+          const showRemove = tab.available && tab.idx > 0 && isExpert;
+
           return (
-            <button
-              key={tab.idx}
-              type="button"
-              className={[
-                'cv2-tabs__tab',
-                isActive && 'is-active',
-                tab.addable && 'is-addable',
-                !tab.available && !tab.addable && 'is-disabled',
-              ].filter(Boolean).join(' ')}
-              aria-current={isActive ? 'page' : undefined}
-              onClick={() => {
-                if (tab.available) {
-                  onChangeTab(tab.idx);
-                } else if (tab.addable) {
-                  tab.idx === 1 ? onAddPret2() : onAddPret3();
-                }
-              }}
-              data-testid={`credit-tab-${tab.idx}`}
-            >
-              {tab.label}
-              {tab.addable && <span className="cv2-tabs__add-badge" aria-hidden="true">+</span>}
-            </button>
+            <div key={tab.idx} className="cv2-tabs__tab-wrapper">
+              <button
+                type="button"
+                className={[
+                  'cv2-tabs__tab',
+                  isActive && 'is-active',
+                  tab.addable && 'is-addable',
+                  !tab.available && !tab.addable && 'is-disabled',
+                ].filter(Boolean).join(' ')}
+                aria-current={isActive ? 'page' : undefined}
+                onClick={() => {
+                  if (tab.available) {
+                    onChangeTab(tab.idx);
+                  } else if (tab.addable) {
+                    tab.idx === 1 ? onAddPret2() : onAddPret3();
+                  }
+                }}
+                data-testid={`credit-tab-${tab.idx}`}
+              >
+                {tab.label}
+                {tab.addable && <span className="cv2-tabs__add-badge" aria-hidden="true">+</span>}
+              </button>
+              {showRemove && (
+                <button
+                  type="button"
+                  className="cv2-tabs__tab-remove"
+                  aria-label={`Supprimer ${tab.label}`}
+                  data-testid={`credit-tab-remove-${tab.idx}`}
+                  onClick={() => {
+                    tab.idx === 1 ? onRemovePret2?.() : onRemovePret3?.();
+                  }}
+                >
+                  ×
+                </button>
+              )}
+            </div>
           );
         })}
       </div>

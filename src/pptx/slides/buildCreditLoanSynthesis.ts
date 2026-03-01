@@ -266,9 +266,11 @@ export function buildCreditLoanSynthesis(
   
   const detailsY = LAYOUT.details.topY;
   const assurModeLabel = data.assuranceMode === 'CI' ? 'Capital initial' : 'Capital restant dû';
-  const detailText = data.tauxAssurance > 0
+  const assurPart = data.tauxAssurance > 0
     ? `Assurance : ${formatPct(data.tauxAssurance)} (${assurModeLabel})  |  Mensualité hors assurance : ${formatEuro(data.mensualiteHorsAssurance)}`
     : `Mensualité : ${formatEuro(data.mensualiteHorsAssurance)}`;
+  const dateEffetPart = data.dateEffet ? `  |  Date d'effet : ${data.dateEffet}` : ''; // point 8
+  const detailText = assurPart + dateEffetPart;
 
   addTextFr(slide, detailText, {
     x: 0,

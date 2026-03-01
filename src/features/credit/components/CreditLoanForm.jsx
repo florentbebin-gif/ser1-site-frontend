@@ -26,7 +26,6 @@ export function CreditLoanForm({
   globalCreditType,
   mensualiteHorsAssurance,
   onPatch,
-  onRemove,
   formatTauxRaw,
   isExpert = true,
 }) {
@@ -127,19 +126,6 @@ export function CreditLoanForm({
         </div>
       )}
 
-      {/* Bouton suppression (Prêt 2 et 3 uniquement) */}
-      {onRemove && (
-        <div className="cv2-loan-form__footer">
-          <button
-            type="button"
-            className="premium-btn cv2-btn--danger"
-            onClick={onRemove}
-            data-testid={`credit-pret${pretNum}-remove`}
-          >
-            Supprimer ce prêt
-          </button>
-        </div>
-      )}
     </div>
   );
 }

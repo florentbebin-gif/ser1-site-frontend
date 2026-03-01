@@ -42,6 +42,7 @@ export interface CreditData {
   // Global totals
   totalCapital?: number;
   maxDureeMois?: number;
+  startYM?: string;  // point 6 — date de début réelle pour labels timeline PPTX
   coutTotalInterets: number;
   coutTotalAssurance: number;
   coutTotalCredit: number;
@@ -256,6 +257,7 @@ export function buildCreditStudyDeck(
       paymentPeriods,
       smoothingEnabled,
       smoothingMode,
+      startYM: creditData.startYM, // point 6 — pour labels de dates timeline
     });
     
     // Per-loan synthesis slides
@@ -274,6 +276,7 @@ export function buildCreditStudyDeck(
         coutTotalCredit: loan.coutInterets + loan.coutAssurance,
         creditType: loan.creditType,
         assuranceMode: loan.assuranceMode,
+        dateEffet: loan.dateEffet, // point 8 — date d'effet du prêt
       });
     });
   } else {

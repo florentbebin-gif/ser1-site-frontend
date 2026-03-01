@@ -8,7 +8,7 @@
  * - Formatters              → utils/creditFormatters.js
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { onResetEvent, storageKeyFor } from '../../utils/reset.js';
 import { useTheme } from '../../settings/ThemeProvider';
@@ -203,15 +203,54 @@ export default function CreditV2() {
   }, [activeTab]);
 
   // -------------------------------------------------------------------------
-  // CALCULS (state dérivé pour le mode simplifié : assurance = 0)
+  // POINT 5 — simplifié : supprimer pret2/pret3 résiduels (switch expert→simplifié)
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    if (!hydrated || isExpert) return;
+    if (state.pret2 || state.pret3) {
+      setState(s => ({ ...s, pret2: null, pret3: null, lisserPret1: false }));
+      setRawValues(({ pret2: _a, pret3: _b, ...rest }) => rest);
+      if (activeTab >= 1) setActiveTab(0);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, isExpert]);
+
+  // -------------------------------------------------------------------------
+  // CALCULS (state dérivé pour le mode simplifié : assurance = 0, pret2/3 ignorés)
   // -------------------------------------------------------------------------
   const stateForCalc = isExpert ? state : {
     ...state,
     pret1: { ...state.pret1, tauxAssur: 0 },
-    pret2: state.pret2 ? { ...state.pret2, tauxAssur: 0 } : null,
-    pret3: state.pret3 ? { ...state.pret3, tauxAssur: 0 } : null,
+    pret2: null, /* point 5 — jamais de pret2/3 en simplifié */
+    pret3: null,
   };
   const calc = useCreditCalculations(stateForCalc, stateForCalc.startYM);
+
+  // -------------------------------------------------------------------------
+  // SYNTHÈSE PAR PRÊT (point 4 PR2 — card s'actualise par tab actif)
+  // -------------------------------------------------------------------------
+  const perLoanSyntheses = useMemo(() => {
+    const make = (rows) => {
+      if (!rows?.length) return null;
+      const validRows = rows.filter(r => r);
+      if (!validRows.length) return null;
+      const totalInterets = validRows.reduce((s, r) => s + (r.interet || 0), 0);
+      const totalAssurance = validRows.reduce((s, r) => s + (r.assurance || 0), 0);
+      return {
+        mensualiteTotaleM1: validRows[0].mensu || 0,
+        primeAssMensuelle: validRows[0].assurance || 0,
+        totalInterets,
+        totalAssurance,
+        coutTotalCredit: totalInterets + totalAssurance,
+        diffDureesMois: 0,
+      };
+    };
+    return [make(calc.pret1Rows), make(calc.pret2Rows), make(calc.pret3Rows)];
+  }, [calc.pret1Rows, calc.pret2Rows, calc.pret3Rows]);
+
+  const activeSynthese = (isExpert && calc.hasPretsAdditionnels)
+    ? (perLoanSyntheses[activeTab] || calc.synthese)
+    : calc.synthese;
 
   // -------------------------------------------------------------------------
   // EXPORTS
@@ -260,14 +299,14 @@ export default function CreditV2() {
   const mensuPret3 = calc.pret3Rows[0]?.mensu || 0;
 
   const pretLookup = [
-    { data: state.pret1, raw: rawValues.pret1, set: setPret1, remove: null, mensu: mensuPret1 },
-    { data: state.pret2, raw: rawValues.pret2, set: setPret2, remove: removePret2, mensu: mensuPret2 },
-    { data: state.pret3, raw: rawValues.pret3, set: setPret3, remove: removePret3, mensu: mensuPret3 },
+    { data: state.pret1, raw: rawValues.pret1, set: setPret1, mensu: mensuPret1 },
+    { data: state.pret2, raw: rawValues.pret2, set: setPret2, mensu: mensuPret2 },
+    { data: state.pret3, raw: rawValues.pret3, set: setPret3, mensu: mensuPret3 },
   ];
   const activeLoan = pretLookup[activeTab];
 
   return (
-    <div className="sim-page" data-testid="credit-page">
+    <div className="sim-page cv2-page" data-testid="credit-page">
       {/* HEADER (sans toggle — déplacé dans la ligne de contrôles) */}
       <CreditHeader
         exportOptions={exportOptions}
@@ -296,6 +335,8 @@ export default function CreditV2() {
             hasPret3={!!state.pret3}
             onAddPret2={addPret2}
             onAddPret3={addPret3}
+            onRemovePret2={removePret2}
+            onRemovePret3={removePret3}
             isExpert={isExpert}
           />
         </div>
@@ -319,14 +360,36 @@ export default function CreditV2() {
         </div>
       </div>
 
-      {/* GRID : SAISIE (gauche) + SYNTHÈSE (droite) — alignés en haut */}
-      <div className="cv2-grid">
+      {/* GRID : SAISIE (gauche) + SYNTHÈSE (droite) */}
+      <div className={`cv2-grid${!isExpert ? ' cv2-grid--simple' : ''}`}>
         {/* COLONNE GAUCHE */}
         <div>
           <div className="premium-card">
             <div className="cv2-loan-card">
               <header className="cv2-loan-card__header">
-                <h2 className="cv2-loan-card__title">Paramètres du prêt</h2>
+                <h2 className="cv2-loan-card__title">
+                  {/* point 2 PR2 — icône avec fond coloré (style Settings) */}
+                  <span className="cv2-loan-card__icon-wrapper">
+                    <svg
+                      className="cv2-loan-card__icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <line x1="4" y1="6" x2="20" y2="6" />
+                      <line x1="4" y1="12" x2="20" y2="12" />
+                      <line x1="4" y1="18" x2="20" y2="18" />
+                      <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none" />
+                      <circle cx="15" cy="12" r="2" fill="currentColor" stroke="none" />
+                      <circle cx="9" cy="18" r="2" fill="currentColor" stroke="none" />
+                    </svg>
+                  </span>
+                  Paramètres du prêt
+                </h2>
                 <p className="cv2-loan-card__subtitle">
                   Renseignez les données du financement pour estimer mensualités et coût global.
                 </p>
@@ -342,7 +405,6 @@ export default function CreditV2() {
                   globalCreditType={state.creditType}
                   mensualiteHorsAssurance={activeLoan.mensu}
                   onPatch={activeLoan.set}
-                  onRemove={activeLoan.remove}
                   formatTauxRaw={formatTauxRaw}
                   isExpert={isExpert}
                 />
@@ -392,10 +454,15 @@ export default function CreditV2() {
         {/* COLONNE DROITE — synthèse alignée avec le formulaire */}
         <div>
           <CreditSummaryCard
-            synthese={calc.synthese}
+            synthese={activeSynthese}
             isAnnual={isAnnual}
             lisserPret1={state.lisserPret1}
             isExpert={isExpert}
+            loanLabel={
+              isExpert && calc.hasPretsAdditionnels
+                ? `Synthèse du prêt ${activeTab + 1}`
+                : undefined
+            }
           />
         </div>
       </div>

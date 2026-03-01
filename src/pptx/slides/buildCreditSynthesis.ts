@@ -23,8 +23,9 @@ import {
   addFooter,
   addTextFr,
 } from '../designSystem/serenity';
-import { getBusinessIconDataUri, type BusinessIconName } from '../../icons/business/businessIconLibrary';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
+import { addBusinessIconToSlide } from '../icons/addBusinessIcon';
+import type { BusinessIconName } from '../icons/addBusinessIcon';
 
 // ============================================================================
 // TYPES
@@ -220,15 +221,13 @@ export function buildCreditSynthesis(
     const colX = kpiStartX + idx * (LAYOUT.kpi.colWidth + LAYOUT.kpi.colSpacing);
     const centerX = colX + LAYOUT.kpi.colWidth / 2;
     
-    // Icon (color5, centered)
-    const iconDataUri = getBusinessIconDataUri(kpi.icon, { color: theme.colors.color5 });
-    slide.addImage({
-      data: iconDataUri,
+    // Icon (accent role — aligned with multi-loan slides)
+    addBusinessIconToSlide(slide, kpi.icon, {
       x: centerX - LAYOUT.kpi.iconSize / 2,
       y: LAYOUT.kpi.iconY,
       w: LAYOUT.kpi.iconSize,
       h: LAYOUT.kpi.iconSize,
-    });
+    }, theme, 'accent');
     
     // Label (sentence case, gray)
     addTextFr(slide, kpi.label, {

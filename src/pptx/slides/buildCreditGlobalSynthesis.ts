@@ -179,66 +179,69 @@ export function buildCreditGlobalSynthesis(
   if (periods.length > 0) {
     const segmentCount = Math.min(periods.length, 3); // Support up to 3 segments
     const barY = timelineY + 0.22;
-    
-    // Calculate segment durations from loan end dates (sorted by duration ASC)
-    // Each period corresponds to when a loan ends
-    const sortedLoans = [...data.loans].sort((a, b) => a.dureeMois - b.dureeMois);
-    const breakpoints = [0, ...sortedLoans.map(l => l.dureeMois)]; // [0, dur1, dur2, dur3]
-    
+
+    // point 6 — Compute segment durations from paymentPeriods[].monthIndex (correct date offsets)
+    // Breakpoints: [0, monthIndex[1], monthIndex[2], maxDureeMois]
+    const sortedPeriods = [...periods].sort((a, b) => (a.monthIndex ?? 0) - (b.monthIndex ?? 0));
+    const breakpoints: number[] = [0];
+    for (let i = 1; i < segmentCount; i++) {
+      breakpoints.push(sortedPeriods[i]?.monthIndex ?? 0);
+    }
+    breakpoints.push(data.maxDureeMois);
+
     // Segment durations = differences between consecutive breakpoints
     const segmentDurations: number[] = [];
     for (let i = 0; i < segmentCount; i++) {
-      const start = breakpoints[i] || 0;
-      const end = breakpoints[i + 1] || data.maxDureeMois;
-      segmentDurations.push(Math.max(0, end - start));
+      segmentDurations.push(Math.max(1, breakpoints[i + 1] - breakpoints[i]));
     }
-    
-    // Ensure we cover full duration
-    const computedTotal = segmentDurations.reduce((a, b) => a + b, 0);
-    if (computedTotal < data.maxDureeMois && segmentDurations.length > 0) {
-      segmentDurations[segmentDurations.length - 1] += (data.maxDureeMois - computedTotal);
-    }
-    
+
     const totalDuration = segmentDurations.reduce((a, b) => a + b, 0) || data.maxDureeMois;
     const segmentWidths = segmentDurations.map(d => (d / totalDuration) * timelineW);
-    
+
     // 3-color palette from theme (dark -> medium -> light)
     const segmentColors = [
       roleColor(theme, 'bgMain'),
       lightenColor(roleColor(theme, 'bgMain'), 0.25),
       lightenColor(roleColor(theme, 'bgMain'), 0.50),
     ];
-    
+
     // Text colors: white for dark segments, textMain for light
     const textColors = ['FFFFFF', 'FFFFFF', roleColor(theme, 'textMain')];
-    
-    // Date labels ABOVE the bars (compact format on single line)
-    const startYear = new Date().getFullYear();
-    let cumulativeYears = 0;
+
+    // point 6 — Date labels from real startYM (not new Date().getFullYear())
+    const parseYM = (ym: string | undefined): { y: number; m: number } => {
+      if (!ym) return { y: new Date().getFullYear(), m: 1 };
+      const [y, m] = ym.split('-').map(Number);
+      return { y, m };
+    };
+    const ymFromOffset = (startY: number, startM: number, offsetMonths: number): string => {
+      const d = new Date(startY, startM - 1 + offsetMonths, 1);
+      return `${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+    };
+    const { y: startY, m: startM } = parseYM(data.startYM);
+
     const datePositions: { label: string; x: number; align: 'left' | 'center' | 'right' }[] = [];
-    
     // Start date
-    datePositions.push({ label: `01/${startYear}`, x: LAYOUT.timeline.marginX, align: 'left' });
-    
-    // Intermediate dates
+    datePositions.push({ label: ymFromOffset(startY, startM, 0), x: LAYOUT.timeline.marginX, align: 'left' });
+
+    // Intermediate dates (at period transitions)
     let xOffset = 0;
     for (let i = 0; i < segmentCount - 1; i++) {
       xOffset += segmentWidths[i];
-      cumulativeYears += Math.floor(segmentDurations[i] / 12);
-      datePositions.push({ 
-        label: `01/${startYear + cumulativeYears}`, 
-        x: LAYOUT.timeline.marginX + xOffset - 0.35, 
-        align: 'center' 
+      const offsetMonths = breakpoints[i + 1];
+      datePositions.push({
+        label: ymFromOffset(startY, startM, offsetMonths),
+        x: LAYOUT.timeline.marginX + xOffset - 0.35,
+        align: 'center'
       });
     }
-    
     // End date
-    datePositions.push({ 
-      label: `01/${startYear + totalYears}`, 
-      x: LAYOUT.timeline.marginX + timelineW - 0.7, 
-      align: 'right' 
+    datePositions.push({
+      label: ymFromOffset(startY, startM, data.maxDureeMois),
+      x: LAYOUT.timeline.marginX + timelineW - 0.7,
+      align: 'right'
     });
-    
+
     // Draw date labels (wider zones to prevent wrapping)
     datePositions.forEach(dp => {
       addTextFr(slide, dp.label, {
@@ -246,27 +249,27 @@ export function buildCreditGlobalSynthesis(
         fontSize: 8, color: roleColor(theme, 'textBody'), fontFace: TYPO.fontFace, align: dp.align,
       });
     });
-    
+
     // Draw colored segments
     let segX = LAYOUT.timeline.marginX;
-    periods.slice(0, 3).forEach((period, idx) => {
+    sortedPeriods.slice(0, 3).forEach((period, idx) => {
       const segW = segmentWidths[idx];
       const segColor = segmentColors[idx];
       const txtColor = textColors[idx];
-      
+
       slide.addShape('rect', {
         x: segX, y: barY, w: segW, h: LAYOUT.timeline.barHeight,
         fill: { color: segColor },
       });
-      
+
       addTextFr(slide, formatEuro(period.total) + '/mois', {
         x: segX, y: barY + 0.08, w: segW, h: 0.24,
         fontSize: 11, bold: true, color: txtColor, fontFace: TYPO.fontFace, align: 'center',
       });
-      
+
       segX += segW;
     });
-    
+
     // ========== INSURANCE HISTOGRAM BARS — skipped when assurance = 0 ==========
     if (data.coutTotalAssurance > 0) {
       const tickY = barY + LAYOUT.timeline.barHeight + 0.08;

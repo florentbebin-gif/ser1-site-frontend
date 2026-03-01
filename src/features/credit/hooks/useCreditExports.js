@@ -18,14 +18,15 @@ function aggregateToYearsFromRows(rows, startYMBase) {
     if (!r) return;
     const ym = addMonths(startYMBase, idx);
     const year = ym.split('-')[0];
-    const acc = map.get(year) || { interet: 0, assurance: 0, amort: 0, mensu: 0, mensuTotal: 0, crd: 0, assuranceDeces: null };
+    const acc = map.get(year) || { interet: 0, assurance: 0, amort: 0, mensu: 0, mensuTotal: 0, crd: 0, assuranceDeces: 0 };
     acc.interet += r.interet || 0;
     acc.assurance += r.assurance || 0;
     acc.amort += r.amort || 0;
     acc.mensu += r.mensu || 0;
     acc.mensuTotal += r.mensuTotal || 0;
     acc.crd = r.crd || acc.crd || 0;
-    if (acc.assuranceDeces === null) acc.assuranceDeces = r.assuranceDeces ?? null;
+    // point 7 — max par année (capital décès décroît : premier mois = max en CI, mais on prend le max pour robustesse)
+    acc.assuranceDeces = Math.max(acc.assuranceDeces ?? 0, r.assuranceDeces ?? 0);
     map.set(year, acc);
   });
   return Array.from(map.entries()).map(([periode, v]) => ({ periode, ...v }));
@@ -52,6 +53,14 @@ const toNum = (v) => {
   const n = parseFloat(v);
   return isNaN(n) ? 0 : n;
 };
+
+// point 6 — nombre de mois entre deux YYYY-MM
+function monthsDiffYM(ym1, ym2) {
+  if (!ym1 || !ym2) return 0;
+  const [y1, m1] = ym1.split('-').map(Number);
+  const [y2, m2] = ym2.split('-').map(Number);
+  return (y2 - y1) * 12 + (m2 - m1);
+}
 
 // ============================================================================
 // HOOK
@@ -243,6 +252,8 @@ export function useCreditExports({
         coutInterets: pret1Interets,
         coutAssurance: pret1Assurance,
         amortizationRows: amortizationRowsPret1,
+        startYM: startYM, // point 6
+        dateEffet: startYM ? labelMonthFR(startYM) : undefined, // point 8
       }];
 
       // Pret2 & Pret3
@@ -252,6 +263,7 @@ export function useCreditExports({
         const pAgg = aggregateToYearsFromRows(pRows, startYM);
         const pInterets = pRows.reduce((s, row) => s + ((row?.interet) || 0), 0);
         const pAssurance = pRows.reduce((s, row) => s + ((row?.assurance) || 0), 0);
+        const pretStartYM = pret.startYM || startYM;
         loans.push({
           index: idx + 2,
           capital: toNum(pret.capital),
@@ -261,19 +273,22 @@ export function useCreditExports({
           quotite: (pret.quotite ?? 100) / 100,
           creditType: pret.type || state.creditType,
           assuranceMode: pret.assurMode || state.assurMode || 'CRD',
-          mensualiteHorsAssurance: rows[0]?.mensu || 0,
-          mensualiteTotale: rows[0]?.mensuTotal || 0,
+          mensualiteHorsAssurance: rows.find(r => r)?.mensu || 0, // point 9 — rows[0] est null si prêt différé
+          mensualiteTotale: rows.find(r => r)?.mensuTotal || 0,
           coutInterets: pInterets,
           coutAssurance: pAssurance,
           amortizationRows: pAgg.map(row => ({
             periode: row.periode, interet: row.interet, assurance: row.assurance,
             amort: row.amort, annuite: row.mensu, annuiteTotale: row.mensuTotal, crd: row.crd,
           })),
+          startYM: pretStartYM, // point 6
+          dateEffet: pretStartYM ? labelMonthFR(pretStartYM) : undefined, // point 8
         });
       });
 
       const paymentPeriods = calc.synthesePeriodes.map(p => ({
         label: p.from, mensualitePret1: p.p1, mensualitePret2: p.p2, mensualitePret3: p.p3, total: p.p1 + p.p2 + p.p3,
+        monthIndex: p.startYM ? monthsDiffYM(startYM, p.startYM) : 0, // point 6 — décalage depuis startYM global
       }));
 
       const assuranceDecesByYear = aggregatedYears.map((row) => row?.assuranceDeces ?? 0);
@@ -281,6 +296,7 @@ export function useCreditExports({
       const creditData = {
         totalCapital,
         maxDureeMois,
+        startYM, // point 6 — pour les labels de dates dans la timeline PPTX
         coutTotalInterets: calc.synthese.totalInterets,
         coutTotalAssurance: calc.synthese.totalAssurance,
         coutTotalCredit: calc.synthese.coutTotalCredit,
