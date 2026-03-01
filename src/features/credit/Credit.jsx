@@ -9,7 +9,6 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { onResetEvent, storageKeyFor } from '../../utils/reset.js';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../services/userModeService';
@@ -331,20 +330,10 @@ export default function CreditV2() {
       <CreditHeader
         exportOptions={exportOptions}
         exportLoading={exportLoading}
+        isExpert={isExpert}
       />
 
       {/* LIGNE DE CONTRÔLES : tabs (gauche, expert) + toggle Mensuel/Annuel (droite) */}
-      <div className="cv2-mode-row">
-        <Link
-          to="/"
-          className="cv2-mode-chip"
-          data-testid="credit-mode-chip"
-          title="Changer le mode depuis la page d'accueil"
-        >
-          {isExpert ? 'Mode expert' : 'Mode simplifié'}
-        </Link>
-      </div>
-
       <div className="cv2-controls-row">
         <div className="cv2-controls-row__left">
           {/* Tabs prêts : expert uniquement ou si prêts additionnels déjà créés */}
