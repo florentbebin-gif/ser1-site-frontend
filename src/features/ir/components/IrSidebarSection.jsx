@@ -1,4 +1,5 @@
 import React from 'react';
+import { IrSelect } from './IrSelect';
 
 export function IrSidebarSection({
   location,
@@ -18,11 +19,15 @@ export function IrSidebarSection({
     <div className="ir-right">
       <div className="ir-field">
         <label>Résidence</label>
-        <select value={location} onChange={(e) => setLocation(e.target.value)}>
-          <option value="metropole">Métropole</option>
-          <option value="gmr">Guadeloupe / Martinique / Réunion</option>
-          <option value="guyane">Guyane / Mayotte</option>
-        </select>
+        <IrSelect
+          value={location}
+          onChange={setLocation}
+          options={[
+            { value: 'metropole', label: 'Métropole' },
+            { value: 'gmr', label: 'Guadeloupe / Martinique / Réunion' },
+            { value: 'guyane', label: 'Guyane / Mayotte' },
+          ]}
+        />
       </div>
 
       <button
@@ -38,18 +43,18 @@ export function IrSidebarSection({
           <div key={child.id} className="ir-child-item">
             <strong>Enfant {idx + 1}</strong>
 
-            <select
-              className="ir-child-select"
+            <IrSelect
               value={child.mode}
-              onChange={(e) =>
+              onChange={(v) =>
                 setChildren((list) =>
-                  list.map((c) => (c.id === child.id ? { ...c, mode: e.target.value } : c)),
+                  list.map((c) => (c.id === child.id ? { ...c, mode: v } : c)),
                 )
               }
-            >
-              <option value="charge">À charge</option>
-              <option value="shared">Garde alternée</option>
-            </select>
+              options={[
+                { value: 'charge', label: 'À charge' },
+                { value: 'shared', label: 'Garde alternée' },
+              ]}
+            />
 
             <button
               type="button"
