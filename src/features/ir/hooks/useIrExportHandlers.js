@@ -146,6 +146,15 @@ export function useIrExportHandlers({
       ]);
 
       const exportLogo = cabinetLogo || undefined;
+      const activityIncomeD1 =
+        (incomes?.d1?.salaries || 0) +
+        (incomes?.d1?.associes62 || 0) +
+        (incomes?.d1?.bic || 0);
+      const activityIncomeD2 = status === 'couple'
+        ? (incomes?.d2?.salaries || 0) +
+          (incomes?.d2?.associes62 || 0) +
+          (incomes?.d2?.bic || 0)
+        : 0;
 
       const irData = {
         taxableIncome: result.taxableIncome || 0,
@@ -160,6 +169,8 @@ export function useIrExportHandlers({
         psTotal: result.psTotal || 0,
         totalTax: result.totalTax || 0,
         bracketsDetails: result.bracketsDetails || [],
+        income1: activityIncomeD1,
+        income2: activityIncomeD2,
         yearLabel,
         status,
         location,
@@ -179,6 +190,7 @@ export function useIrExportHandlers({
   }, [
     result,
     effectiveParts,
+    incomes,
     yearLabel,
     status,
     location,
