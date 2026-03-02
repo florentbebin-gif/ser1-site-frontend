@@ -247,6 +247,10 @@
   margin: 14px 0 18px;
 }
 
+.ir-card-divider--tight {
+  margin: 8px 0 10px;
+}
+
 /* Bouton mode expert/simplifié — taille harmonisée avec Exporter (GOUVERNANCE.md §6) */
 .ir-mode-btn {
   white-space: nowrap;
@@ -349,6 +353,32 @@
 .ir-summary-row span:last-child {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.ir-summary-total-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0 6px;
+}
+
+.ir-summary-total-hero__label {
+  font-size: 11px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--color-c9) 60%, var(--color-c10));
+  margin-bottom: 6px;
+}
+
+.ir-summary-total-hero__value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.ir-summary-donut {
+  flex-shrink: 0;
 }
 
 /* Détail */
@@ -655,6 +685,15 @@
 @media (max-width: 600px) {
   .premium-title {
     font-size: 18px;
+  }
+
+  .ir-summary-donut {
+    width: 48px;
+    height: 48px;
+  }
+
+  .ir-summary-total-hero__value {
+    font-size: 24px;
   }
 }
 

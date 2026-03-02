@@ -1,6 +1,83 @@
 import React from 'react';
 import { IrSelect } from './IrSelect';
 
+const DONUT_R = 27;
+const DONUT_CX = 34;
+const DONUT_CY = 34;
+const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_R;
+
+function IrTaxDonut({ revenus, imposition }) {
+  const safeRevenus = Math.max(0, Number(revenus) || 0);
+  const safeImposition = Math.max(0, Number(imposition) || 0);
+  const total = safeRevenus + safeImposition;
+
+  if (total <= 0) {
+    return (
+      <svg
+        width="68"
+        height="68"
+        viewBox="0 0 68 68"
+        className="ir-summary-donut"
+        aria-hidden="true"
+      >
+        <circle
+          cx={DONUT_CX}
+          cy={DONUT_CY}
+          r={DONUT_R}
+          fill="none"
+          stroke="var(--color-c8)"
+          strokeWidth="9"
+        />
+      </svg>
+    );
+  }
+
+  const revenusLen = (safeRevenus / total) * DONUT_CIRCUMFERENCE;
+  const impositionLen = DONUT_CIRCUMFERENCE - revenusLen;
+
+  return (
+    <svg
+      width="68"
+      height="68"
+      viewBox="0 0 68 68"
+      className="ir-summary-donut"
+      aria-hidden="true"
+      style={{ transform: 'rotate(-90deg)' }}
+    >
+      <circle
+        cx={DONUT_CX}
+        cy={DONUT_CY}
+        r={DONUT_R}
+        fill="none"
+        stroke="var(--color-c8)"
+        strokeWidth="9"
+      />
+      <circle
+        cx={DONUT_CX}
+        cy={DONUT_CY}
+        r={DONUT_R}
+        fill="none"
+        stroke="var(--color-c5)"
+        strokeWidth="9"
+        strokeDasharray={`${revenusLen} ${DONUT_CIRCUMFERENCE}`}
+        strokeDashoffset="0"
+        strokeLinecap="butt"
+      />
+      <circle
+        cx={DONUT_CX}
+        cy={DONUT_CY}
+        r={DONUT_R}
+        fill="none"
+        stroke="var(--color-c6)"
+        strokeWidth="9"
+        strokeDasharray={`${impositionLen} ${DONUT_CIRCUMFERENCE}`}
+        strokeDashoffset={`${-revenusLen}`}
+        strokeLinecap="butt"
+      />
+    </svg>
+  );
+}
+
 export function IrSidebarSection({
   yearKey,
   setYearKey,
@@ -152,10 +229,16 @@ export function IrSidebarSection({
               <span>{euro0(result.psDividends || 0)}</span>
             </div>
           )}
-          <div className="ir-card-divider" />
-          <div className="ir-summary-row">
-            <span>Imposition totale</span>
-            <span>{euro0(result.totalTax || 0)}</span>
+          <div className="ir-card-divider ir-card-divider--tight" />
+          <div className="ir-summary-total-hero">
+            <div>
+              <div className="ir-summary-total-hero__label">Imposition totale</div>
+              <div className="ir-summary-total-hero__value">{euro0(result.totalTax || 0)}</div>
+            </div>
+            <IrTaxDonut
+              revenus={result.totalIncome || 0}
+              imposition={result.totalTax || 0}
+            />
           </div>
         </div>
       )}
