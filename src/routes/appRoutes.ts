@@ -145,7 +145,7 @@ export const APP_ROUTES: AppRouteEntry[] = [
     component: SuccessionSimulator,
     lazy: true,
     contextLabel: 'Succession',
-    topbar: SIM_TOPBAR,
+    topbar: { ...SIM_TOPBAR, resetKey: 'succession' },
   },
   {
     kind: 'route',
