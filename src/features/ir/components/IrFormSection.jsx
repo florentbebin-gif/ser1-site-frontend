@@ -129,7 +129,7 @@ export function IrFormSection({
         </div>
       </div>
 
-      <div className="ir-table-wrapper premium-card">
+      <div className="ir-table-wrapper premium-card premium-card--guide">
         <div className="ir-income-card__header">
           <div className="ir-income-card__title">
             <div className="ir-section-icon-wrapper ir-section-icon-wrapper--card">
@@ -140,7 +140,7 @@ export function IrFormSection({
                 <line x1="12" y1="3" x2="12" y2="21" />
               </svg>
             </div>
-            <span className="ir-income-card__title-text">Revenus imposables</span>
+            Revenus imposables
           </div>
           <p className="ir-income-card__subtitle">Renseignez vos sources de revenus par catégorie pour affiner le calcul</p>
         </div>
@@ -276,14 +276,6 @@ export function IrFormSection({
             </tr>
             {/* ── Divider ── */}
             <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
-            {/* ── Section : BIC · BNC · BA — Autres ── */}
-            <tr className="ir-section-header">
-              <td colSpan={3}>
-                <div className="ir-section-header__content">
-                  <span className="ir-section-title">BIC · BNC · BA — Autres revenus</span>
-                </div>
-              </td>
-            </tr>
             <tr>
               <td>BIC&#8209;BNC&#8209;BA imposables</td>
               <td>
