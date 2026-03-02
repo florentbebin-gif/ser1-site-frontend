@@ -1,4 +1,5 @@
 import React from 'react';
+import { IrSelect } from './IrSelect';
 
 export function IrFormSection({
   taxSettings,
@@ -38,22 +39,23 @@ export function IrFormSection({
         <div className="ir-top-row">
           <div className="ir-field premium-field">
             <label>Barème</label>
-            <select className="premium-select" value={yearKey} onChange={(e) => setYearKey(e.target.value)}>
-              <option value="current">{taxSettings?.incomeTax?.currentYearLabel || 'Année N'}</option>
-              <option value="previous">{taxSettings?.incomeTax?.previousYearLabel || 'Année N-1'}</option>
-            </select>
+            <IrSelect
+              value={yearKey}
+              onChange={setYearKey}
+              options={[
+                { value: 'current', label: taxSettings?.incomeTax?.currentYearLabel || 'Année N' },
+                { value: 'previous', label: taxSettings?.incomeTax?.previousYearLabel || 'Année N-1' },
+              ]}
+            />
           </div>
 
           <div className="ir-field premium-field" data-testid="ir-situation-field">
             <label>Situation familiale</label>
-            <select
-              className="premium-select"
+            <IrSelect
               value={status}
-              data-testid="ir-situation-select"
-              onChange={(e) => {
-                const newStatus = e.target.value;
+              testId="ir-situation-select"
+              onChange={(newStatus) => {
                 setStatus(newStatus);
-
                 if (newStatus === 'couple') {
                   setIsIsolated(false);
                 } else {
@@ -73,10 +75,11 @@ export function IrFormSection({
                 }
                 setParts(0);
               }}
-            >
-              <option value="single">Célibataire / Veuf / Divorcé</option>
-              <option value="couple">Marié / Pacsé</option>
-            </select>
+              options={[
+                { value: 'single', label: 'Célibataire / Veuf / Divorcé' },
+                { value: 'couple', label: 'Marié / Pacsé' },
+              ]}
+            />
             {status === 'single' && (
               <label className="ir-checkbox-label">
                 <input
@@ -167,10 +170,15 @@ export function IrFormSection({
               <td>Frais réels ou abattement 10&nbsp;%</td>
               <td>
                 <div style={{ display: 'flex', gap: 4 }}>
-                  <select style={{ flex: 1 }} value={realMode.d1} onChange={(e) => setRealModeState((m) => ({ ...m, d1: e.target.value }))}>
-                    <option value="reels">FR</option>
-                    <option value="abat10">10%</option>
-                  </select>
+                  <IrSelect
+                    style={{ flex: 1 }}
+                    value={realMode.d1}
+                    onChange={(v) => setRealModeState((m) => ({ ...m, d1: v }))}
+                    options={[
+                      { value: 'reels', label: 'FR' },
+                      { value: 'abat10', label: '10%' },
+                    ]}
+                  />
                   {realMode.d1 === 'reels' ? (
                     <input
                       type="text"
@@ -190,10 +198,15 @@ export function IrFormSection({
               </td>
               <td>
                 <div style={{ display: 'flex', gap: 4 }}>
-                  <select style={{ flex: 1 }} value={realMode.d2} onChange={(e) => setRealModeState((m) => ({ ...m, d2: e.target.value }))}>
-                    <option value="reels">FR</option>
-                    <option value="abat10">10%</option>
-                  </select>
+                  <IrSelect
+                    style={{ flex: 1 }}
+                    value={realMode.d2}
+                    onChange={(v) => setRealModeState((m) => ({ ...m, d2: v }))}
+                    options={[
+                      { value: 'reels', label: 'FR' },
+                      { value: 'abat10', label: '10%' },
+                    ]}
+                  />
                   {realMode.d2 === 'reels' ? (
                     <input
                       type="text"
@@ -353,10 +366,14 @@ export function IrFormSection({
                 <tr>
                   <td>Option d&apos;imposition des RCM</td>
                   <td colSpan={2}>
-                    <select value={capitalMode} onChange={(e) => setCapitalMode(e.target.value)}>
-                      <option value="pfu">PFU {fmtPct(pfuRateIR)} %</option>
-                      <option value="bareme">Barème de l&apos;IR (abattement 40 %)</option>
-                    </select>
+                    <IrSelect
+                      value={capitalMode}
+                      onChange={setCapitalMode}
+                      options={[
+                        { value: 'pfu', label: `PFU ${fmtPct(pfuRateIR)} %` },
+                        { value: 'bareme', label: "Barème de l'IR (abattement 40 %)" },
+                      ]}
+                    />
                   </td>
                 </tr>
 
