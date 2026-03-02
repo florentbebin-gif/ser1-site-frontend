@@ -83,11 +83,21 @@ export function IrFormSection({
 
           {/* Colonne droite : Gestion des enfants */}
           <div className="ir-children-zone">
-            <span className="ir-children-zone__label">Enfants</span>
+            <button
+              type="button"
+              className="ir-child-add-btn"
+              onClick={() => setChildren((c) => [...c, { id: Date.now(), mode: 'charge' }])}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Ajouter un enfant
+            </button>
             <div className="ir-children-list">
               {children.map((child, idx) => (
                 <div key={child.id} className="ir-child-row">
-                  <span className="ir-child-row__label">Enfant {idx + 1}</span>
+                  <span className="ir-child-row__label">E{idx + 1}</span>
                   <IrSelect
                     style={{ flex: 1 }}
                     value={child.mode}
@@ -115,17 +125,6 @@ export function IrFormSection({
                 </div>
               ))}
             </div>
-            <button
-              type="button"
-              className="ir-child-add-btn"
-              onClick={() => setChildren((c) => [...c, { id: Date.now(), mode: 'charge' }])}
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Ajouter un enfant
-            </button>
           </div>
         </div>
       </div>
@@ -159,20 +158,6 @@ export function IrFormSection({
             </tr>
           </thead>
           <tbody>
-            {/* ── Section : Revenus d’activité ── */}
-            <tr className="ir-section-header">
-              <td colSpan={3}>
-                <div className="ir-section-header__content">
-                  <div className="ir-section-icon-wrapper">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <rect x="2" y="7" width="20" height="14" rx="2" />
-                      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-                    </svg>
-                  </div>
-                  <span className="ir-section-title">Revenus d’activité</span>
-                </div>
-              </td>
-            </tr>
             <tr data-testid="ir-salary-row">
               <td>Traitements et salaires</td>
               <td>
@@ -294,13 +279,6 @@ export function IrFormSection({
             <tr className="ir-section-header">
               <td colSpan={3}>
                 <div className="ir-section-header__content">
-                  <div className="ir-section-icon-wrapper">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <line x1="12" y1="20" x2="12" y2="10" />
-                      <line x1="18" y1="20" x2="18" y2="4" />
-                      <line x1="6" y1="20" x2="6" y2="16" />
-                    </svg>
-                  </div>
                   <span className="ir-section-title">BIC · BNC · BA — Autres revenus</span>
                 </div>
               </td>
@@ -361,20 +339,6 @@ export function IrFormSection({
             </tr>
             {/* ── Divider ── */}
             <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
-            {/* ── Section : Pensions & Retraites ── */}
-            <tr className="ir-section-header">
-              <td colSpan={3}>
-                <div className="ir-section-header__content">
-                  <div className="ir-section-icon-wrapper">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                  </div>
-                  <span className="ir-section-title">Pensions & Retraites</span>
-                </div>
-              </td>
-            </tr>
             <tr>
               <td>Pensions, retraites et rentes</td>
               <td>
@@ -411,20 +375,6 @@ export function IrFormSection({
 
             {/* ── Divider ── */}
             <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
-            {/* ── Section : Revenus fonciers ── */}
-            <tr className="ir-section-header">
-              <td colSpan={3}>
-                <div className="ir-section-header__content">
-                  <div className="ir-section-icon-wrapper">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                      <polyline points="9 22 9 12 15 12 15 22" />
-                    </svg>
-                  </div>
-                  <span className="ir-section-title">Revenus fonciers</span>
-                </div>
-              </td>
-            </tr>
             <tr>
               <td>Revenus fonciers nets</td>
               <td colSpan={2}>
@@ -446,20 +396,6 @@ export function IrFormSection({
               <>
                 {/* ── Divider ── */}
                 <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
-                {/* ── Section : Revenus du capital ── */}
-                <tr className="ir-section-header">
-                  <td colSpan={3}>
-                    <div className="ir-section-header__content">
-                      <div className="ir-section-icon-wrapper">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                          <polyline points="17 6 23 6 23 12" />
-                        </svg>
-                      </div>
-                      <span className="ir-section-title">Revenus du capital</span>
-                    </div>
-                  </td>
-                </tr>
                 <tr>
                   <td>RCM soumis aux PS à {fmtPct(psPatrimonyRate)} %</td>
                   <td colSpan={2}>
@@ -511,19 +447,6 @@ export function IrFormSection({
                 <tr className="ir-section-header">
                   <td colSpan={3}>
                     <div className="ir-section-header__content">
-                      <div className="ir-section-icon-wrapper">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <line x1="4" y1="21" x2="4" y2="14" />
-                          <line x1="4" y1="10" x2="4" y2="3" />
-                          <line x1="12" y1="21" x2="12" y2="12" />
-                          <line x1="12" y1="8" x2="12" y2="3" />
-                          <line x1="20" y1="21" x2="20" y2="16" />
-                          <line x1="20" y1="12" x2="20" y2="3" />
-                          <line x1="1" y1="14" x2="7" y2="14" />
-                          <line x1="9" y1="8" x2="15" y2="8" />
-                          <line x1="17" y1="16" x2="23" y2="16" />
-                        </svg>
-                      </div>
                       <span className="ir-section-title">Ajustements</span>
                     </div>
                   </td>
