@@ -22,18 +22,30 @@ export interface HeritierRow {
   partSuccession: number;
 }
 
+export interface PersistedHeritierRow {
+  lien: LienParente;
+  partSuccession: number;
+}
+
 export interface SuccessionFormState {
   actifNetSuccession: number;
   heritiers: HeritierRow[];
 }
 
+export interface PersistedSuccessionForm {
+  actifNetSuccession: number;
+  heritiers: PersistedHeritierRow[];
+}
+
 export interface SuccessionCalcHook {
   form: SuccessionFormState;
   result: CalcResult<SuccessionResult> | null;
+  persistedForm: PersistedSuccessionForm;
   setActifNet: (_v: number) => void;
   addHeritier: (_lien: LienParente) => void;
   removeHeritier: (_id: string) => void;
   updateHeritier: (_id: string, _field: keyof HeritierRow, _value: string | number) => void;
+  hydrateForm: (_form: PersistedSuccessionForm) => void;
   distributeEqually: () => void;
   compute: () => void;
   reset: () => void;
@@ -45,19 +57,49 @@ function genId(): string {
   return `h-${nextId++}`;
 }
 
-const DEFAULT_FORM: SuccessionFormState = {
-  actifNetSuccession: 0,
-  heritiers: [
-    { id: genId(), lien: 'enfant', partSuccession: 0 },
-  ],
-};
+function createDefaultPersistedForm(): PersistedSuccessionForm {
+  return {
+    actifNetSuccession: 0,
+    heritiers: [{ lien: 'enfant', partSuccession: 0 }],
+  };
+}
+
+function normalizePersistedForm(input: PersistedSuccessionForm): PersistedSuccessionForm {
+  const actifNetSuccession = Number.isFinite(input.actifNetSuccession)
+    ? Math.max(0, input.actifNetSuccession)
+    : 0;
+  const safeHeirs = Array.isArray(input.heritiers) ? input.heritiers : [];
+  const heritiers = safeHeirs
+    .map((h) => ({
+      lien: h.lien,
+      partSuccession: Number.isFinite(h.partSuccession) ? Math.max(0, h.partSuccession) : 0,
+    }))
+    .filter((h) => h.lien);
+
+  return {
+    actifNetSuccession,
+    heritiers: heritiers.length > 0 ? heritiers : [{ lien: 'enfant', partSuccession: 0 }],
+  };
+}
+
+function buildFormFromPersisted(input: PersistedSuccessionForm): SuccessionFormState {
+  const normalized = normalizePersistedForm(input);
+  return {
+    actifNetSuccession: normalized.actifNetSuccession,
+    heritiers: normalized.heritiers.map((h) => ({
+      id: genId(),
+      lien: h.lien,
+      partSuccession: h.partSuccession,
+    })),
+  };
+}
 
 interface UseSuccessionCalcOptions {
   dmtgSettings?: DmtgSettings;
 }
 
 export function useSuccessionCalc({ dmtgSettings }: UseSuccessionCalcOptions = {}): SuccessionCalcHook {
-  const [form, setForm] = useState<SuccessionFormState>({ ...DEFAULT_FORM, heritiers: [...DEFAULT_FORM.heritiers] });
+  const [form, setForm] = useState<SuccessionFormState>(() => buildFormFromPersisted(createDefaultPersistedForm()));
   const [result, setResult] = useState<CalcResult<SuccessionResult> | null>(null);
 
   const setActifNet = useCallback((v: number) => {
@@ -87,6 +129,11 @@ export function useSuccessionCalc({ dmtgSettings }: UseSuccessionCalcOptions = {
     }));
   }, []);
 
+  const hydrateForm = useCallback((persisted: PersistedSuccessionForm) => {
+    setForm(buildFormFromPersisted(persisted));
+    setResult(null);
+  }, []);
+
   const distributeEqually = useCallback(() => {
     setForm((prev) => {
       const count = prev.heritiers.length;
@@ -100,9 +147,13 @@ export function useSuccessionCalc({ dmtgSettings }: UseSuccessionCalcOptions = {
   }, []);
 
   const compute = useCallback(() => {
-    const engineInput: SuccessionInput = {
+    const normalizedForm = normalizePersistedForm({
       actifNetSuccession: form.actifNetSuccession,
-      heritiers: form.heritiers.map((h): HeritiersInput => ({
+      heritiers: form.heritiers.map((h) => ({ lien: h.lien, partSuccession: h.partSuccession })),
+    });
+    const engineInput: SuccessionInput = {
+      actifNetSuccession: normalizedForm.actifNetSuccession,
+      heritiers: normalizedForm.heritiers.map((h): HeritiersInput => ({
         lien: h.lien,
         partSuccession: h.partSuccession,
       })),
@@ -114,19 +165,31 @@ export function useSuccessionCalc({ dmtgSettings }: UseSuccessionCalcOptions = {
 
   const reset = useCallback(() => {
     nextId = 1;
-    setForm({ ...DEFAULT_FORM, heritiers: [{ id: genId(), lien: 'enfant', partSuccession: 0 }] });
+    setForm(buildFormFromPersisted(createDefaultPersistedForm()));
     setResult(null);
   }, []);
 
   const hasResult = useMemo(() => result !== null, [result]);
+  const persistedForm = useMemo<PersistedSuccessionForm>(
+    () => ({
+      actifNetSuccession: Number.isFinite(form.actifNetSuccession) ? Math.max(0, form.actifNetSuccession) : 0,
+      heritiers: form.heritiers.map((h) => ({
+        lien: h.lien,
+        partSuccession: Number.isFinite(h.partSuccession) ? Math.max(0, h.partSuccession) : 0,
+      })),
+    }),
+    [form],
+  );
 
   return {
     form,
     result,
+    persistedForm,
     setActifNet,
     addHeritier,
     removeHeritier,
     updateHeritier,
+    hydrateForm,
     distributeEqually,
     compute,
     reset,

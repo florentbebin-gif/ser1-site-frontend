@@ -14,11 +14,20 @@ import { useTheme } from '../../settings/ThemeProvider';
 import { SessionGuardContext } from '../../App';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
 import { ExportMenu } from '../../components/ExportMenu';
-import { onResetEvent } from '../../utils/reset';
+import { REGIMES_MATRIMONIAUX } from '../../engine/civil';
+import { onResetEvent, storageKeyFor } from '../../utils/reset';
 import type { LienParente } from '../../engine/succession';
+import {
+  buildSuccessionDraftPayload,
+  DEFAULT_SUCCESSION_CIVIL_CONTEXT,
+  parseSuccessionDraftPayload,
+  type SituationMatrimoniale,
+} from './successionDraft';
 import '../../components/simulator/SimulatorShell.css';
 import '../../styles/premium-shared.css';
 import './Succession.css';
+
+const STORE_KEY = storageKeyFor('succession');
 
 const LIEN_OPTIONS: { value: LienParente; label: string }[] = [
   { value: 'conjoint', label: 'Conjoint' },
@@ -35,11 +44,20 @@ const fmt = (v: number): string =>
 const fmtPct = (v: number): string =>
   new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) + ' %';
 
+const SITUATION_OPTIONS: { value: SituationMatrimoniale; label: string }[] = [
+  { value: 'celibataire', label: 'Célibataire' },
+  { value: 'marie', label: 'Marié(e)' },
+  { value: 'pacse', label: 'Pacsé(e)' },
+  { value: 'concubinage', label: 'Union libre (concubinage)' },
+  { value: 'divorce', label: 'Divorcé(e)' },
+  { value: 'veuf', label: 'Veuf / veuve' },
+];
+
 export default function SuccessionSimulator() {
   const { loading: settingsLoading, fiscalContext } = useFiscalContext({ strict: true });
   const {
-    form, result, setActifNet, addHeritier, removeHeritier,
-    updateHeritier, distributeEqually, compute, reset, hasResult,
+    form, persistedForm, result, setActifNet, addHeritier, removeHeritier,
+    updateHeritier, hydrateForm, distributeEqually, compute, reset, hasResult,
   } = useSuccessionCalc({ dmtgSettings: fiscalContext.dmtgSettings });
 
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
@@ -47,16 +65,68 @@ export default function SuccessionSimulator() {
   const [exportLoading, setExportLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [hypothesesOpen, setHypothesesOpen] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+  const [civilContext, setCivilContext] = useState(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
+
+  const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
+    setCivilContext((prev) => ({
+      situationMatrimoniale,
+      regimeMatrimonial: situationMatrimoniale === 'marie'
+        ? (prev.regimeMatrimonial ?? 'communaute_legale')
+        : null,
+      pacsConvention: situationMatrimoniale === 'pacse'
+        ? prev.pacsConvention
+        : DEFAULT_SUCCESSION_CIVIL_CONTEXT.pacsConvention,
+    }));
+  }, []);
+
+  const handleReset = useCallback(() => {
+    reset();
+    setCivilContext(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
+    setShowDetails(false);
+    setHypothesesOpen(false);
+    try {
+      sessionStorage.removeItem(STORE_KEY);
+    } catch {
+      // ignore
+    }
+  }, [reset]);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(STORE_KEY);
+      if (raw) {
+        const parsed = parseSuccessionDraftPayload(raw);
+        if (parsed) {
+          hydrateForm(parsed.form);
+          setCivilContext(parsed.civil);
+        }
+      }
+    } catch {
+      // ignore
+    }
+    setHydrated(true);
+  }, [hydrateForm]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      sessionStorage.setItem(
+        STORE_KEY,
+        JSON.stringify(buildSuccessionDraftPayload(persistedForm, civilContext)),
+      );
+    } catch {
+      // ignore
+    }
+  }, [hydrated, persistedForm, civilContext]);
 
   useEffect(() => {
     const off = onResetEvent?.(({ simId }: { simId?: string }) => {
       if (simId && simId !== 'succession') return;
-      reset();
-      setShowDetails(false);
-      setHypothesesOpen(false);
+      handleReset();
     });
     return off || (() => {});
-  }, [reset]);
+  }, [handleReset]);
 
   const handleExportPptx = useCallback(async () => {
     if (!result || !canExport) return;
@@ -146,6 +216,66 @@ export default function SuccessionSimulator() {
 
       <div className="sc-grid">
         <div className="sc-left">
+          <div className="premium-card sc-card">
+            <header className="sc-card__header">
+              <h2 className="sc-card__title">Contexte familial</h2>
+              <p className="sc-card__subtitle">Prépare les scénarios civils avancés tout en gardant un calcul simple.</p>
+            </header>
+            <div className="sc-card__divider" />
+            <div className="sc-civil-grid">
+              <div className="sc-field">
+                <label>Situation familiale</label>
+                <select
+                  value={civilContext.situationMatrimoniale}
+                  onChange={(e) => handleSituationChange(e.target.value as SituationMatrimoniale)}
+                >
+                  {SITUATION_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {civilContext.situationMatrimoniale === 'marie' && (
+                <div className="sc-field">
+                  <label>Régime matrimonial</label>
+                  <select
+                    value={civilContext.regimeMatrimonial ?? 'communaute_legale'}
+                    onChange={(e) =>
+                      setCivilContext((prev) => ({
+                        ...prev,
+                        regimeMatrimonial: e.target.value as keyof typeof REGIMES_MATRIMONIAUX,
+                      }))}
+                  >
+                    {Object.values(REGIMES_MATRIMONIAUX).map((regime) => (
+                      <option key={regime.id} value={regime.id}>{regime.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {civilContext.situationMatrimoniale === 'pacse' && (
+                <div className="sc-field">
+                  <label>Convention PACS</label>
+                  <select
+                    value={civilContext.pacsConvention}
+                    onChange={(e) =>
+                      setCivilContext((prev) => ({
+                        ...prev,
+                        pacsConvention: e.target.value as 'separation' | 'indivision',
+                      }))}
+                  >
+                    <option value="separation">Séparation de biens (défaut)</option>
+                    <option value="indivision">Indivision conventionnelle</option>
+                  </select>
+                </div>
+              )}
+            </div>
+            <p className="sc-hint">
+              Ces paramètres n&apos;impactent pas encore le calcul actuel.
+              Ils seront utilisés dans les étapes suivantes de la refonte.
+            </p>
+          </div>
+
           <div className="premium-card sc-card sc-card--guide">
             <header className="sc-card__header">
               <h2 className="sc-card__title">Patrimoine transmis</h2>
@@ -241,7 +371,7 @@ export default function SuccessionSimulator() {
             <button
               type="button"
               className="premium-btn sc-btn sc-btn--secondary"
-              onClick={reset}
+              onClick={handleReset}
             >
               Réinitialiser
             </button>
