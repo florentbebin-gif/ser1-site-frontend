@@ -398,6 +398,7 @@ export function buildIrSynthesis(
   slideIndex: number
 ): void {
   const slide = pptx.addSlide({ masterName: MASTER_NAMES.CONTENT });
+  const safeTaxablePerPart = Number.isFinite(data.taxablePerPart) ? data.taxablePerPart : 0;
   
   const slideWidth = SLIDE_SIZE.width;
   const barWidth = slideWidth - LAYOUT.bar.marginX * 2;
@@ -561,7 +562,7 @@ export function buildIrSynthesis(
     
     // Calculate intelligent cursor position based on tmiBaseGlobal/tmiMarginGlobal (same source as displayed values)
     const positionRatio = getCursorPositionInBracket(
-      data.taxablePerPart, 
+      safeTaxablePerPart,
       data.tmiRate,
       data.tmiBaseGlobal,
       data.tmiMarginGlobal
@@ -583,25 +584,22 @@ export function buildIrSynthesis(
   
   // ========== SECTION 3: CALLOUT - SECONDARY INFO ==========
   // "Montant des revenus dans cette TMI : X €" - uses tmiBaseGlobal from IR card, or fallback to calculated value
-  if (data.tmiRate > 0) {
-    // Use tmiBaseGlobal if available, otherwise calculate from bracket
-    const amountInTmi = (data.tmiBaseGlobal !== undefined && data.tmiBaseGlobal !== null) 
-      ? data.tmiBaseGlobal 
-      : getAmountInCurrentBracket(data.taxablePerPart, data.tmiRate, data.partsNb);
-    
-    addTextFr(slide, `Montant des revenus dans cette TMI : ${euro(amountInTmi)}`, {
-      x: LAYOUT.marginX,
-      y: LAYOUT.callout.y,
-      w: LAYOUT.contentWidth,
-      h: LAYOUT.callout.height,
-      fontSize: 10,
-      fontFace: TYPO.fontFace,
-      color: theme.textBody.replace('#', ''),
-      italic: true,
-      align: 'center',
-      valign: 'middle',
-    });
-  }
+  const amountInTmi = (data.tmiBaseGlobal !== undefined && data.tmiBaseGlobal !== null)
+    ? data.tmiBaseGlobal
+    : getAmountInCurrentBracket(safeTaxablePerPart, data.tmiRate, data.partsNb);
+
+  addTextFr(slide, `Montant des revenus dans cette TMI : ${euro(amountInTmi)}`, {
+    x: LAYOUT.marginX,
+    y: LAYOUT.callout.y,
+    w: LAYOUT.contentWidth,
+    h: LAYOUT.callout.height,
+    fontSize: 10,
+    fontFace: TYPO.fontFace,
+    color: theme.textBody.replace('#', ''),
+    italic: true,
+    align: 'center',
+    valign: 'middle',
+  });
   
   // ========== SECTION 4: HERO - TAX RESULT ==========
   // THE main information - IMPOSSIBLE TO MISS
@@ -644,27 +642,24 @@ export function buildIrSynthesis(
   
   // ========== SECTION 5: MARGIN INFO - TERTIARY ==========
   // "Marge avant changement de TMI : X €" - uses tmiMarginGlobal from IR card, or fallback to calculated value
-  const nextTmiInfo = calculateMarginToNextTmi(data.taxablePerPart, data.tmiRate);
-  
-  // Use tmiMarginGlobal if available, otherwise calculate
+  const nextTmiInfo = calculateMarginToNextTmi(safeTaxablePerPart, data.tmiRate);
   const marginValue = (data.tmiMarginGlobal !== undefined && data.tmiMarginGlobal !== null)
     ? data.tmiMarginGlobal
     : (nextTmiInfo ? nextTmiInfo.margin * data.partsNb : null);
-  
-  if (marginValue !== null && marginValue > 0) {
-    addTextFr(slide, `Marge avant changement de TMI : ${euro(marginValue)}`, {
-      x: LAYOUT.marginX,
-      y: LAYOUT.marginInfo.y,
-      w: LAYOUT.contentWidth,
-      h: LAYOUT.marginInfo.height,
-      fontSize: 10,
-      fontFace: TYPO.fontFace,
-      color: theme.textBody.replace('#', ''),
-      italic: true,
-      align: 'center',
-      valign: 'middle',
-    });
-  }
+  const marginText = marginValue !== null ? euro(marginValue) : '—';
+
+  addTextFr(slide, `Marge avant changement de TMI : ${marginText}`, {
+    x: LAYOUT.marginX,
+    y: LAYOUT.marginInfo.y,
+    w: LAYOUT.contentWidth,
+    h: LAYOUT.marginInfo.height,
+    fontSize: 10,
+    fontFace: TYPO.fontFace,
+    color: theme.textBody.replace('#', ''),
+    italic: true,
+    align: 'center',
+    valign: 'middle',
+  });
   
   // ========== STANDARD FOOTER (from design system) ==========
   addFooter(slide, ctx, slideIndex, 'onLight');

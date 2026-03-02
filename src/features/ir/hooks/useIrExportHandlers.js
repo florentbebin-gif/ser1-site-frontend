@@ -159,6 +159,7 @@ export function useIrExportHandlers({
       const irData = {
         taxableIncome: result.taxableIncome || 0,
         partsNb: result.partsNb || effectiveParts,
+        taxablePerPart: result.taxablePerPart || 0,
         tmiRate: result.tmiRate || 0,
         irNet: result.irNet || 0,
         pfuIr: result.pfuIr || 0,
@@ -169,6 +170,8 @@ export function useIrExportHandlers({
         psTotal: result.psTotal || 0,
         totalTax: result.totalTax || 0,
         bracketsDetails: result.bracketsDetails || [],
+        tmiBaseGlobal: result.tmiBaseGlobal,
+        tmiMarginGlobal: result.tmiMarginGlobal,
         income1: activityIncomeD1,
         income2: activityIncomeD2,
         yearLabel,
