@@ -30,6 +30,7 @@ export function IrFormSection({
   setCredits,
   abat10PensionsFoyer,
   euro0,
+  isExpert,
 }) {
   return (
     <div className="ir-left premium-section">
@@ -316,80 +317,84 @@ export function IrFormSection({
               </td>
             </tr>
 
-            <tr>
-              <td>RCM soumis aux PS à {fmtPct(psPatrimonyRate)} %</td>
-              <td colSpan={2}>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  value={formatMoneyInput(incomes.capital.withPs)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    updateIncome('capital', 'withPs', raw === '' ? 0 : Number(raw));
-                  }}
-                />
-              </td>
-            </tr>
+            {isExpert && (
+              <>
+                <tr>
+                  <td>RCM soumis aux PS à {fmtPct(psPatrimonyRate)} %</td>
+                  <td colSpan={2}>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.capital.withPs)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('capital', 'withPs', raw === '' ? 0 : Number(raw));
+                      }}
+                    />
+                  </td>
+                </tr>
 
-            <tr>
-              <td>RCM non soumis aux PS à {fmtPct(psPatrimonyRate)} %</td>
-              <td colSpan={2}>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  value={formatMoneyInput(incomes.capital.withoutPs)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    updateIncome('capital', 'withoutPs', raw === '' ? 0 : Number(raw));
-                  }}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Option d&apos;imposition des RCM</td>
-              <td colSpan={2}>
-                <select value={capitalMode} onChange={(e) => setCapitalMode(e.target.value)}>
-                  <option value="pfu">PFU {fmtPct(pfuRateIR)} %</option>
-                  <option value="bareme">Barème de l&apos;IR (abattement 40 %)</option>
-                </select>
-              </td>
-            </tr>
+                <tr>
+                  <td>RCM non soumis aux PS à {fmtPct(psPatrimonyRate)} %</td>
+                  <td colSpan={2}>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.capital.withoutPs)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('capital', 'withoutPs', raw === '' ? 0 : Number(raw));
+                      }}
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td>Option d&apos;imposition des RCM</td>
+                  <td colSpan={2}>
+                    <select value={capitalMode} onChange={(e) => setCapitalMode(e.target.value)}>
+                      <option value="pfu">PFU {fmtPct(pfuRateIR)} %</option>
+                      <option value="bareme">Barème de l&apos;IR (abattement 40 %)</option>
+                    </select>
+                  </td>
+                </tr>
 
-            <tr className="ir-row-title">
-              <td colSpan={3}>Ajustements</td>
-            </tr>
-            <tr>
-              <td>Déductions (pensions alimentaires, etc.)</td>
-              <td colSpan={2}>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  value={formatMoneyInput(deductions)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    setDeductions(raw === '' ? 0 : Number(raw));
-                  }}
-                />
-              </td>
-            </tr>
-            <tr>
-              <td>Réductions / crédits d&apos;impôt</td>
-              <td colSpan={2}>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  value={formatMoneyInput(credits)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    setCredits(raw === '' ? 0 : Number(raw));
-                  }}
-                />
-              </td>
-            </tr>
+                <tr className="ir-row-title">
+                  <td colSpan={3}>Ajustements</td>
+                </tr>
+                <tr>
+                  <td>Déductions (pensions alimentaires, etc.)</td>
+                  <td colSpan={2}>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(deductions)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        setDeductions(raw === '' ? 0 : Number(raw));
+                      }}
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <td>Réductions / crédits d&apos;impôt</td>
+                  <td colSpan={2}>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(credits)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        setCredits(raw === '' ? 0 : Number(raw));
+                      }}
+                    />
+                  </td>
+                </tr>
+              </>
+            )}
           </tbody>
         </table>
       </div>
