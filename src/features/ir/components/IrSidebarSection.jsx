@@ -44,6 +44,7 @@ export function IrSidebarSection({
         </div>
       </div>
 
+      <div className="ir-results-sticky">
       <div className="ir-tmi-card premium-card" data-testid="ir-results-card">
         <div className="ir-tmi-header" data-testid="ir-results-header">
           <div className="ir-section-icon-wrapper">
@@ -159,6 +160,7 @@ export function IrSidebarSection({
           </div>
         </div>
       )}
+      </div>
 
     </div>
   );
