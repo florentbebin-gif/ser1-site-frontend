@@ -6,7 +6,7 @@
  * - Aucun changement de formule métier
  */
 
-import React, { useContext, useCallback, useEffect, useState } from 'react';
+import React, { useContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSuccessionCalc } from './useSuccessionCalc';
 import { exportSuccessionPptx } from '../../pptx/exports/successionExport';
 import { exportAndDownloadSuccessionXlsx } from './successionXlsx';
@@ -23,6 +23,7 @@ import {
   parseSuccessionDraftPayload,
   type SituationMatrimoniale,
 } from './successionDraft';
+import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import '../../components/simulator/SimulatorShell.css';
 import '../../styles/premium-shared.css';
 import './Succession.css';
@@ -55,10 +56,14 @@ const SITUATION_OPTIONS: { value: SituationMatrimoniale; label: string }[] = [
 
 export default function SuccessionSimulator() {
   const { loading: settingsLoading, fiscalContext } = useFiscalContext({ strict: true });
+  const fiscalSnapshot = useMemo(
+    () => buildSuccessionFiscalSnapshot(fiscalContext),
+    [fiscalContext],
+  );
   const {
     form, persistedForm, result, setActifNet, addHeritier, removeHeritier,
     updateHeritier, hydrateForm, distributeEqually, compute, reset, hasResult,
-  } = useSuccessionCalc({ dmtgSettings: fiscalContext.dmtgSettings });
+  } = useSuccessionCalc({ dmtgSettings: fiscalSnapshot.dmtgSettings });
 
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const { sessionExpired, canExport } = useContext(SessionGuardContext);
@@ -488,6 +493,12 @@ export default function SuccessionSimulator() {
         {hypothesesOpen && (
           <ul>
             <li>Barèmes DMTG et abattements appliqués depuis les paramètres de l&apos;application.</li>
+            <li>
+              Paramètres transmis au module:
+              rappel fiscal donations {fiscalSnapshot.donation.rappelFiscalAnnees} ans,
+              AV décès 990 I {fmt(fiscalSnapshot.avDeces.primesApres1998.allowancePerBeneficiary)} / bénéficiaire,
+              AV décès après {fiscalSnapshot.avDeces.agePivotPrimes} ans {fmt(fiscalSnapshot.avDeces.apres70ans.globalAllowance)} (global).
+            </li>
             <li>Le calcul repose sur les parts de succession saisies pour chaque héritier.</li>
             <li>Les donations antérieures, libéralités complexes et avantages matrimoniaux ne sont pas encore intégrés dans ce module.</li>
             <li>Résultat indicatif, à confirmer par une analyse patrimoniale et notariale.</li>
