@@ -159,6 +159,8 @@ export function IrFormSection({
             </tr>
           </thead>
           <tbody>
+            {/* ── Divider sous Declarant 1 ── */}
+            <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
             <tr data-testid="ir-salary-row">
               <td>Traitements et salaires</td>
               <td>
@@ -436,7 +438,7 @@ export function IrFormSection({
 
                 {/* ── Divider ── */}
                 <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
-                <tr>
+                <tr className="ir-row-title">
                   <td>Déductions (pensions alimentaires, etc.)</td>
                   <td colSpan={2}>
                     <input
@@ -451,7 +453,7 @@ export function IrFormSection({
                     />
                   </td>
                 </tr>
-                <tr>
+                <tr className="ir-row-title">
                   <td>Réductions / crédits d&apos;impôt</td>
                   <td colSpan={2}>
                     <input
