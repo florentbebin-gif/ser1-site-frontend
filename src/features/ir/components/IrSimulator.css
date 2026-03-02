@@ -183,7 +183,7 @@
 }
 
 .ir-table thead {
-  background: var(--color-c7);
+  background: transparent;
 }
 
 .ir-table th,
@@ -231,7 +231,7 @@
 }
 
 .ir-row-title td {
-  background: var(--color-c7);
+  background: transparent;
   font-weight: 600;
   color: var(--color-c1);
 }
@@ -761,14 +761,19 @@
   gap: 8px;
   font-size: 15px;
   font-weight: 600;
+  color: var(--color-c1);
 }
 
-.ir-income-card__title-text {
-  background: linear-gradient(to right, var(--color-c2), var(--color-c3));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+/* Fond dégradé sur le header de la carte Revenus (même patron que Credit) */
+.premium-card--guide .ir-income-card__header {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-c1) 5%, transparent) 0%,
+    transparent 65%
+  );
+  border-radius: 10px 10px 0 0;
+  margin: -20px -24px 0;
+  padding: 20px 24px 0;
 }
 
 .ir-income-card__subtitle {
