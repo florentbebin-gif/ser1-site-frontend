@@ -12,6 +12,7 @@ export function IrSidebarSection({
   euro0,
   fmtPct,
   pfuRateIR,
+  isExpert,
 }) {
   return (
     <div className="ir-right">
@@ -101,10 +102,12 @@ export function IrSidebarSection({
 
       {result && (
         <div className="ir-summary-card premium-card">
-          <div className="ir-summary-row">
-            <span>Revenu imposable du foyer</span>
-            <span>{euro0(result.taxableIncome)}</span>
-          </div>
+          {isExpert && (
+            <div className="ir-summary-row">
+              <span>Revenu imposable du foyer</span>
+              <span>{euro0(result.taxableIncome)}</span>
+            </div>
+          )}
           <div className="ir-summary-row">
             <span>Nombre de parts</span>
             <span className="ir-parts-stepper">
@@ -123,10 +126,12 @@ export function IrSidebarSection({
               >▲</button>
             </span>
           </div>
-          <div className="ir-summary-row">
-            <span>Revenu par part</span>
-            <span>{euro0(result.taxablePerPart)}</span>
-          </div>
+          {isExpert && (
+            <div className="ir-summary-row">
+              <span>Revenu par part</span>
+              <span>{euro0(result.taxablePerPart)}</span>
+            </div>
+          )}
 
           <div className="ir-summary-row">
             <span>Impôt sur le revenu</span>
@@ -136,22 +141,28 @@ export function IrSidebarSection({
             <span>PFU {fmtPct(pfuRateIR)} %</span>
             <span>{euro0(result.pfuIr || 0)}</span>
           </div>
-          <div className="ir-summary-row">
-            <span>CEHR</span>
-            <span>{euro0(result.cehr || 0)}</span>
-          </div>
-          <div className="ir-summary-row">
-            <span>CDHR</span>
-            <span>{euro0(result.cdhr || 0)}</span>
-          </div>
+          {isExpert && (
+            <>
+              <div className="ir-summary-row">
+                <span>CEHR</span>
+                <span>{euro0(result.cehr || 0)}</span>
+              </div>
+              <div className="ir-summary-row">
+                <span>CDHR</span>
+                <span>{euro0(result.cdhr || 0)}</span>
+              </div>
+            </>
+          )}
           <div className="ir-summary-row">
             <span>PS sur les revenus fonciers</span>
             <span>{euro0(result.psFoncier || 0)}</span>
           </div>
-          <div className="ir-summary-row">
-            <span>PS sur dividendes</span>
-            <span>{euro0(result.psDividends || 0)}</span>
-          </div>
+          {isExpert && (
+            <div className="ir-summary-row">
+              <span>PS sur dividendes</span>
+              <span>{euro0(result.psDividends || 0)}</span>
+            </div>
+          )}
           <div className="ir-card-divider" />
           <div className="ir-summary-row">
             <span>Imposition totale</span>

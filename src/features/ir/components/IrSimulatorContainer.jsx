@@ -354,6 +354,7 @@ export default function IrSimulatorContainer() {
           setCredits={setCredits}
           abat10PensionsFoyer={abat10PensionsFoyer}
           euro0={euro0}
+          isExpert={isExpert}
         />
 
         <IrSidebarSection
@@ -368,6 +369,7 @@ export default function IrSimulatorContainer() {
           euro0={euro0}
           fmtPct={fmtPct}
           pfuRateIR={pfuRateIR}
+          isExpert={isExpert}
         />
       </div>
 
