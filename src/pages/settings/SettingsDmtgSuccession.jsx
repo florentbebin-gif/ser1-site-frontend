@@ -76,6 +76,155 @@ const DROITS_CONJOINT = [
   { situation: 'Enfants non communs', droits: '1/4 en PP uniquement' },
 ];
 
+const SITUATIONS_FAMILIALES_SUCCESSION = [
+  {
+    id: 'celibataire',
+    label: 'Célibataire',
+    cadre: 'Aucun régime matrimonial',
+    incidence: 'Pas de droits successoraux automatiques pour un partenaire non marié.',
+  },
+  {
+    id: 'marie',
+    label: 'Marié(e)',
+    cadre: 'Régime matrimonial (légal ou conventionnel)',
+    incidence: 'Liquidation du régime avant partage successoral.',
+  },
+  {
+    id: 'pacse',
+    label: 'Pacsé(e)',
+    cadre: 'Séparation de biens par défaut ; indivision conventionnelle possible',
+    incidence: 'Pas de vocation successorale légale sans testament ; exonération fiscale spécifique si successible.',
+  },
+  {
+    id: 'union_libre',
+    label: 'Union libre (concubinage)',
+    cadre: 'Aucun régime matrimonial',
+    incidence: 'Pas de vocation successorale légale ; transmission seulement via libéralité.',
+  },
+  {
+    id: 'divorce',
+    label: 'Divorcé(e)',
+    cadre: 'Régime matrimonial dissous',
+    incidence: 'Ex-conjoint sans droits successoraux légaux.',
+  },
+  {
+    id: 'veuf',
+    label: 'Veuf / veuve',
+    cadre: 'Succession antérieure ouverte',
+    incidence: 'Nécessite vérifier les droits déjà recueillis et remploi des biens.',
+  },
+];
+
+const LIBERALITES_REFERENCE = [
+  {
+    id: 'donation_simple',
+    family: 'Donations entre vifs',
+    label: 'Donation simple (pleine propriété)',
+    definition: 'Transmission immédiate et irrévocable d\'un bien au donataire.',
+    impact: 'Peut être rapportable à la succession et potentiellement réductible en cas d\'atteinte à la réserve.',
+    minimumFields: ['Date de l\'acte', 'Donateur / donataire', 'Valeur retenue', 'Bien transmis', 'Hors part successorale (oui/non)'],
+    legalRefs: 'C. civ. art. 894, 843, 920',
+  },
+  {
+    id: 'donation_reserve_usufruit',
+    family: 'Donations entre vifs',
+    label: 'Donation avec réserve d\'usufruit',
+    definition: 'Le donateur conserve l\'usufruit et transmet la nue-propriété.',
+    impact: 'Réduit l\'assiette transmise immédiatement ; à réintégrer civillement selon règles de rapport/réduction.',
+    minimumFields: ['Date', 'Valorisation usufruit/nue-propriété', 'Âge de l\'usufruitier', 'Bien donné'],
+    legalRefs: 'C. civ. art. 894, 578, 843, 922',
+  },
+  {
+    id: 'donation_partage',
+    family: 'Donations entre vifs',
+    label: 'Donation-partage',
+    definition: 'Donation avec répartition organisée entre héritiers présomptifs.',
+    impact: 'Fige en principe les valeurs au jour de l\'acte pour les biens allotis, utile pour limiter les conflits de rapport.',
+    minimumFields: ['Date', 'Bénéficiaires', 'Lots attribués', 'Valeur par lot', 'Soulte éventuelle'],
+    legalRefs: 'C. civ. art. 1075, 1078',
+  },
+  {
+    id: 'donation_graduelle_residuelle',
+    family: 'Donations entre vifs',
+    label: 'Donation graduelle / résiduelle',
+    definition: 'Transmission en deux temps avec charge de conserver (graduelle) ou de transmettre le reliquat (résiduelle).',
+    impact: 'Organise la transmission intergénérationnelle ; nécessite un suivi précis des charges et du reliquat.',
+    minimumFields: ['Date', 'Premier gratifié', 'Second gratifié', 'Biens concernés', 'Nature de la charge'],
+    legalRefs: 'C. civ. art. 1048, 1057',
+  },
+  {
+    id: 'legs_universel',
+    family: 'Dispositions testamentaires',
+    label: 'Legs universel',
+    definition: 'Le testateur lègue l\'universalité de ses biens.',
+    impact: 'S\'exécute dans la limite de la réserve héréditaire et peut être réduit si la quotité disponible est dépassée.',
+    minimumFields: ['Type de testament', 'Date', 'Légataire', 'Clause de quotité / cantonnement'],
+    legalRefs: 'C. civ. art. 1002, 1003, 912, 913, 920',
+  },
+  {
+    id: 'legs_titre_universel',
+    family: 'Dispositions testamentaires',
+    label: 'Legs à titre universel',
+    definition: 'Le testateur lègue une quote-part (ex. moitié) ou une catégorie de biens.',
+    impact: 'S\'impute sur la quotité disponible ; contrôle de réduction nécessaire en présence d\'héritiers réservataires.',
+    minimumFields: ['Type de testament', 'Quote-part / catégorie léguée', 'Légataire', 'Date'],
+    legalRefs: 'C. civ. art. 1002, 1010, 912, 920',
+  },
+  {
+    id: 'legs_particulier',
+    family: 'Dispositions testamentaires',
+    label: 'Legs particulier',
+    definition: 'Le testateur lègue un ou plusieurs biens déterminés.',
+    impact: 'Priorité d\'analyse sur valorisation du bien légué et respect de la réserve des héritiers.',
+    minimumFields: ['Type de testament', 'Bien légué', 'Valeur estimée', 'Légataire', 'Date'],
+    legalRefs: 'C. civ. art. 1002, 1010, 912, 920',
+  },
+  {
+    id: 'donation_entre_epoux',
+    family: 'Donation entre époux',
+    label: 'Donation au dernier vivant',
+    definition: 'Libéralité entre époux visant à étendre les droits du conjoint survivant.',
+    impact: 'Augmente les options civiles du conjoint survivant, sous réserve des droits réservataires des descendants.',
+    minimumFields: ['Date de l\'acte', 'Époux donateur', 'Étendue des options (usufruit/pleine propriété)', 'Présence d\'enfants non communs'],
+    legalRefs: 'C. civ. art. 1094-1',
+  },
+];
+
+const AVANTAGES_MATRIMONIAUX_REFERENCE = [
+  {
+    id: 'preciput',
+    label: 'Clause de préciput',
+    definition: 'Autorise le conjoint survivant à prélever certains biens communs avant partage.',
+    impact: 'Améliore la protection du conjoint sans passer par une libéralité successorale classique.',
+    minimumFields: ['Date du contrat de mariage ou avenant', 'Biens/somme concernés', 'Valeur estimée', 'Condition d\'application au décès'],
+    legalRefs: 'C. civ. art. 1515 à 1519',
+  },
+  {
+    id: 'parts_inegales',
+    label: 'Stipulation de parts inégales',
+    definition: 'Prévoit une répartition conventionnelle de la communauté différente du 50/50.',
+    impact: 'Modifie la masse revenant à chaque époux avant l\'ouverture de la succession.',
+    minimumFields: ['Quote-part convenue par époux', 'Date du contrat', 'Base de calcul (actif et dettes)', 'Eventuelles limites prévues'],
+    legalRefs: 'C. civ. art. 1520 à 1525',
+  },
+  {
+    id: 'attribution_integrale',
+    label: 'Attribution intégrale de la communauté',
+    definition: 'Attribue au survivant la totalité de la communauté en cas de décès.',
+    impact: 'Retarde en pratique la transmission aux enfants au second décès ; effet majeur sur la liquidité successorale du premier décès.',
+    minimumFields: ['Existence de la clause (oui/non)', 'Date du contrat', 'Perimètre des biens communs', 'Présence d\'enfants non communs'],
+    legalRefs: 'C. civ. art. 1524 et 1525',
+  },
+  {
+    id: 'usufruit_part_prededece',
+    label: 'Usufruit conventionnel sur la part du prédécédé',
+    definition: 'Accorde au survivant, en plus de sa moitié, l\'usufruit de la part du prédécédé.',
+    impact: 'Renforce les droits d\'usage et de revenus du survivant avant partage définitif en nue-propriété.',
+    minimumFields: ['Existence de la clause', 'Biens concernés', 'Valeur usufruit / nue-propriété', 'Regles de contribution aux dettes'],
+    legalRefs: 'C. civ. art. 1524, al. 2',
+  },
+];
+
 export default function SettingsDmtgSuccession() {
   const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(true);
@@ -298,6 +447,18 @@ export default function SettingsDmtgSuccession() {
 
         {/* 5. Régimes matrimoniaux & PACS (lecture seule) */}
         <RegimesSection
+          openSection={openSection}
+          setOpenSection={setOpenSection}
+        />
+
+        {/* 6. Libéralités (référentiel métier - lecture seule) */}
+        <LiberalitesSection
+          openSection={openSection}
+          setOpenSection={setOpenSection}
+        />
+
+        {/* 7. Avantages matrimoniaux (référentiel métier - lecture seule) */}
+        <AvantagesMatrimoniauxSection
           openSection={openSection}
           setOpenSection={setOpenSection}
         />
@@ -687,9 +848,33 @@ function RegimesSection({ openSection, setOpenSection }) {
       {openSection === 'regimes' && (
         <div className="fisc-acc-body">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Référentiel des régimes matrimoniaux — lecture seule.
-            Impact sur l'actif successoral dans le simulateur.
+            Référentiel civil utilisé par la simulation successorale (lecture seule).
+            Les situations familiales et les régimes matrimoniaux sont distingués.
           </p>
+
+          <div className="income-tax-block" style={{ marginBottom: 12 }}>
+            <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+              Situations familiales
+            </div>
+            <table className="settings-table" style={{ marginTop: 8 }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left' }}>Situation</th>
+                  <th style={{ textAlign: 'left' }}>Cadre juridique</th>
+                  <th style={{ textAlign: 'left' }}>Incidence successorale</th>
+                </tr>
+              </thead>
+              <tbody>
+                {SITUATIONS_FAMILIALES_SUCCESSION.map((situation) => (
+                  <tr key={situation.id}>
+                    <td style={{ textAlign: 'left' }}>{situation.label}</td>
+                    <td style={{ textAlign: 'left' }}>{situation.cadre}</td>
+                    <td style={{ textAlign: 'left' }}>{situation.incidence}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {regimes.map((r) => (
             <div
@@ -703,6 +888,11 @@ function RegimesSection({ openSection, setOpenSection }) {
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 8px 0' }}>
                 {r.description}
               </p>
+              {r.id === 'communaute_meubles_acquets' && (
+                <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: '0 0 8px 0' }}>
+                  Régime historique conservé pour audit d'anciens contrats.
+                </p>
+              )}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13 }}>
                 <div>
                   <strong style={{ color: 'var(--color-c1)' }}>Avantages</strong>
@@ -728,6 +918,133 @@ function RegimesSection({ openSection, setOpenSection }) {
               Par défaut : séparation de biens. Option : indivision des acquêts.
               Le partenaire pacsé est exonéré de droits de succession (loi TEPA 2007).
             </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LiberalitesSection({ openSection, setOpenSection }) {
+  return (
+    <div className="fisc-acc-item">
+      <button
+        type="button"
+        className="fisc-acc-header"
+        aria-expanded={openSection === 'liberalites'}
+        onClick={() => setOpenSection(openSection === 'liberalites' ? null : 'liberalites')}
+      >
+        <span className="settings-premium-title" style={{ margin: 0 }}>
+          Libéralités
+        </span>
+        <span className="fisc-acc-chevron">
+          {openSection === 'liberalites' ? '▾' : '▸'}
+        </span>
+      </button>
+
+      {openSection === 'liberalites' && (
+        <div className="fisc-acc-body">
+          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
+            Référentiel patrimonial pour qualifier les libéralités utiles à la simulation.
+            Les éléments ci-dessous sont informatifs et n'ajoutent pas de calcul automatique à ce stade.
+          </p>
+
+          {LIBERALITES_REFERENCE.map((item) => (
+            <div key={item.id} className="income-tax-block" style={{ marginBottom: 12 }}>
+              <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+                {item.label}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--color-c9)', marginBottom: 6 }}>
+                {item.family}
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
+                <strong style={{ color: 'var(--color-c1)' }}>Définition :</strong> {item.definition}
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
+                <strong style={{ color: 'var(--color-c1)' }}>Impact patrimonial :</strong> {item.impact}
+              </p>
+              <div style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 6 }}>
+                <strong style={{ color: 'var(--color-c1)' }}>Champs minimaux :</strong>
+                <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
+                  {item.minimumFields.map((field) => <li key={field}>{field}</li>)}
+                </ul>
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: 0 }}>
+                Références: {item.legalRefs}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AvantagesMatrimoniauxSection({ openSection, setOpenSection }) {
+  return (
+    <div className="fisc-acc-item">
+      <button
+        type="button"
+        className="fisc-acc-header"
+        aria-expanded={openSection === 'avantagesMatrimoniaux'}
+        onClick={() => setOpenSection(openSection === 'avantagesMatrimoniaux' ? null : 'avantagesMatrimoniaux')}
+      >
+        <span className="settings-premium-title" style={{ margin: 0 }}>
+          Avantages matrimoniaux
+        </span>
+        <span className="fisc-acc-chevron">
+          {openSection === 'avantagesMatrimoniaux' ? '▾' : '▸'}
+        </span>
+      </button>
+
+      {openSection === 'avantagesMatrimoniaux' && (
+        <div className="fisc-acc-body">
+          <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
+            Clauses de contrat de mariage influençant la liquidation civile avant calcul des droits de succession.
+            Ces éléments doivent être qualifiés avant tout calcul DMTG.
+          </p>
+
+          {AVANTAGES_MATRIMONIAUX_REFERENCE.map((item) => (
+            <div key={item.id} className="income-tax-block" style={{ marginBottom: 12 }}>
+              <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+                {item.label}
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
+                <strong style={{ color: 'var(--color-c1)' }}>Définition :</strong> {item.definition}
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
+                <strong style={{ color: 'var(--color-c1)' }}>Impact patrimonial :</strong> {item.impact}
+              </p>
+              <div style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 6 }}>
+                <strong style={{ color: 'var(--color-c1)' }}>Champs minimaux :</strong>
+                <ul style={{ margin: '4px 0 0', paddingLeft: 18 }}>
+                  {item.minimumFields.map((field) => <li key={field}>{field}</li>)}
+                </ul>
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: 0 }}>
+                Références: {item.legalRefs}
+              </p>
+            </div>
+          ))}
+
+          <div className="income-tax-block" style={{ marginTop: 4 }}>
+            <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+              Vigilances juridiques
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--color-c9)', fontSize: 13 }}>
+              <li style={{ marginBottom: 4 }}>
+                Les avantages matrimoniaux ne sont en principe pas qualifiés de donations.
+                Références : C. civ. art. 1516, 1525, 1527.
+              </li>
+              <li style={{ marginBottom: 4 }}>
+                En présence d&apos;enfants non communs, l&apos;excédent au-delà de la quotité entre époux peut être réduit.
+                Références : C. civ. art. 1527 et 1094-1.
+              </li>
+              <li>
+                En cas de divorce, les avantages à effet différé sont révoqués de plein droit sauf volonté contraire.
+                Référence : C. civ. art. 265 (version en vigueur depuis le 2 juin 2024).
+              </li>
+            </ul>
           </div>
         </div>
       )}
