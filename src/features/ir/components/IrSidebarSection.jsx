@@ -7,7 +7,6 @@ export function IrSidebarSection({
   taxSettings,
   location,
   setLocation,
-  parts,
   setParts,
   tmiScale,
   result,

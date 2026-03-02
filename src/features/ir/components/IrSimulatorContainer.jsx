@@ -367,7 +367,6 @@ export default function IrSimulatorContainer() {
           setLocation={setLocation}
           children={children}
           setChildren={setChildren}
-          parts={parts}
           setParts={setParts}
           tmiScale={tmiScale}
           result={result}
