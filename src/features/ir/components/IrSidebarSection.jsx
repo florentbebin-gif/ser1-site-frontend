@@ -46,6 +46,13 @@ export function IrSidebarSection({
 
       <div className="ir-tmi-card premium-card" data-testid="ir-results-card">
         <div className="ir-tmi-header" data-testid="ir-results-header">
+          <div className="ir-section-icon-wrapper">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="12" y1="20" x2="12" y2="10" />
+              <line x1="18" y1="20" x2="18" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="16" />
+            </svg>
+          </div>
           Estimation IR
         </div>
         <div className="ir-card-divider" />
