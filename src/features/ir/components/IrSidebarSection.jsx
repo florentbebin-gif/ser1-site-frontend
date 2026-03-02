@@ -5,7 +5,6 @@ export function IrSidebarSection({
   setLocation,
   children,
   setChildren,
-  effectiveParts,
   parts,
   setParts,
   tmiScale,
@@ -62,24 +61,6 @@ export function IrSidebarSection({
         ))}
       </div>
 
-      <div className="ir-parts-row">
-        <div className="ir-field">
-          <label>Nombre de parts (calculé)</label>
-          <input type="text" readOnly value={effectiveParts.toFixed(2)} style={{ background: 'var(--color-c7)' }} />
-        </div>
-
-        <div className="ir-field">
-          <label>Ajustement de parts</label>
-          <input
-            type="number"
-            step="0.25"
-            value={parts}
-            onChange={(e) => setParts(Math.round(Number(e.target.value || 0) * 4) / 4)}
-            title="Ajustement manuel"
-          />
-        </div>
-      </div>
-
       <div className="ir-tmi-card premium-card" data-testid="ir-results-card">
         <div className="ir-tmi-header" data-testid="ir-results-header">
           Estimation IR
@@ -126,7 +107,21 @@ export function IrSidebarSection({
           </div>
           <div className="ir-summary-row">
             <span>Nombre de parts</span>
-            <span>{result.partsNb}</span>
+            <span className="ir-parts-stepper">
+              <button
+                type="button"
+                className="ir-parts-btn"
+                onClick={() => setParts((p) => Math.round((p - 0.25) * 4) / 4)}
+                aria-label="Diminuer les parts"
+              >▼</button>
+              {result.partsNb}
+              <button
+                type="button"
+                className="ir-parts-btn"
+                onClick={() => setParts((p) => Math.round((p + 0.25) * 4) / 4)}
+                aria-label="Augmenter les parts"
+              >▲</button>
+            </span>
           </div>
           <div className="ir-summary-row">
             <span>Revenu par part</span>
