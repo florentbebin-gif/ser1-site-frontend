@@ -140,8 +140,9 @@ export function IrFormSection({
                 <line x1="12" y1="3" x2="12" y2="21" />
               </svg>
             </div>
-            Revenus imposables
+            <span className="ir-income-card__title-text">Revenus imposables</span>
           </div>
+          <p className="ir-income-card__subtitle">Renseignez vos sources de revenus par catégorie pour affiner le calcul</p>
         </div>
         <div className="ir-card-divider" />
         <table className={`ir-table ${status === 'single' ? 'ir-table-single' : ''}`} aria-label="Revenus imposables">
@@ -240,7 +241,7 @@ export function IrFormSection({
                       }}
                     />
                   ) : (
-                    <input type="text" style={{ flex: 1, background: 'var(--color-c7)' }} readOnly value={formatMoneyInput(abat10SalD1)} />
+                    <input type="text" style={{ flex: 1, background: '#FFFFFF' }} readOnly value={formatMoneyInput(abat10SalD1)} />
                   )}
                 </div>
               </td>
@@ -268,7 +269,7 @@ export function IrFormSection({
                       }}
                     />
                   ) : (
-                    <input type="text" style={{ flex: 1, background: 'var(--color-c7)' }} readOnly value={formatMoneyInput(abat10SalD2)} />
+                    <input type="text" style={{ flex: 1, background: '#FFFFFF' }} readOnly value={formatMoneyInput(abat10SalD2)} />
                   )}
                 </div>
               </td>
@@ -443,14 +444,6 @@ export function IrFormSection({
 
                 {/* ── Divider ── */}
                 <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
-                {/* ── Section : Ajustements ── */}
-                <tr className="ir-section-header">
-                  <td colSpan={3}>
-                    <div className="ir-section-header__content">
-                      <span className="ir-section-title">Ajustements</span>
-                    </div>
-                  </td>
-                </tr>
                 <tr>
                   <td>Déductions (pensions alimentaires, etc.)</td>
                   <td colSpan={2}>

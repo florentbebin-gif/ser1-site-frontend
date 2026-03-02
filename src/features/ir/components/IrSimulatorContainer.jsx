@@ -223,9 +223,11 @@ export default function IrSimulatorContainer() {
         isIsolated,
         parts: effectiveParts,
         location,
-        incomes,
-        deductions: deductions + extraDeductions,
-        credits,
+        incomes: isExpert
+          ? incomes
+          : { ...incomes, capital: { withPs: 0, withoutPs: 0 } },
+        deductions: (isExpert ? deductions : 0) + extraDeductions,
+        credits: isExpert ? credits : 0,
         taxSettings,
         psSettings,
         capitalMode,
@@ -238,6 +240,7 @@ export default function IrSimulatorContainer() {
       effectiveParts,
       location,
       incomes,
+      isExpert,
       deductions,
       extraDeductions,
       credits,

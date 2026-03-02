@@ -62,14 +62,21 @@
   align-self: stretch;
 }
 
-/* Contrôles (Barème + Résidence) sticky — cartes résultats scrollent (GOUVERNANCE.md §1) */
+/* Contrôles (Barème + Résidence) — défilent avec la page */
 .ir-controls-sticky {
-  position: sticky;
-  top: 80px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px 12px;
   align-items: end;
+}
+
+/* Cartes résultats (TMI + résumé) — restées figées au scroll */
+.ir-results-sticky {
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 /* Champs du bandeau haut */
@@ -99,8 +106,11 @@
   }
 
   .ir-controls-sticky {
-    position: static;
     grid-template-columns: 1fr 1fr;
+  }
+
+  .ir-results-sticky {
+    position: static;
   }
 }
 
@@ -173,15 +183,7 @@
 }
 
 .ir-table thead {
-  background: transparent;
-}
-
-.ir-table thead tr {
-  background: linear-gradient(to right, color-mix(in srgb, var(--color-c4) 35%, #FFFFFF), #FFFFFF 80%);
-}
-
-.ir-table thead th {
-  background: transparent;
+  background: var(--color-c7);
 }
 
 .ir-table th,
@@ -229,7 +231,7 @@
 }
 
 .ir-row-title td {
-  background: linear-gradient(to right, color-mix(in srgb, var(--color-c4) 35%, #FFFFFF), #FFFFFF 80%);
+  background: var(--color-c7);
   font-weight: 600;
   color: var(--color-c1);
 }
@@ -748,8 +750,8 @@
 /* ─── Bloc Revenus : carte header + sections — Step 5 ─── */
 .ir-income-card__header {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
   margin-bottom: 10px;
 }
 
@@ -759,7 +761,21 @@
   gap: 8px;
   font-size: 15px;
   font-weight: 600;
-  color: var(--color-c1);
+}
+
+.ir-income-card__title-text {
+  background: linear-gradient(to right, var(--color-c2), var(--color-c3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+.ir-income-card__subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-c9);
+  line-height: 1.45;
 }
 
 /* Icon wrapper section tableau (22×22) */
