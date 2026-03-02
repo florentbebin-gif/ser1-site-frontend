@@ -217,14 +217,14 @@ Principes : épuré, lisible, respirant.
   - Échéanciers (`Afficher/Masquer`) via bouton `cv2-schedule__toggle`.
   - Hypothèses/limites via `cv2-hypotheses__toggle`.
 - Accordéons utilisés sur `/sim/ir` :
-  - Détail du calcul via bouton `.ir-detail-toggle` (adjacent à `.ir-detail-accordion`, hors grid).
+  - Détail du calcul via `.ir-detail-card.premium-card` (pleine largeur, hors grid, visible uniquement si résultat calculé) — header `.ir-detail-header` avec titre `.ir-detail-title` à gauche, bouton `.ir-detail-toggle` à droite ; miroir du pattern `cv2-schedule`.
   - Hypothèses/limites via `.ir-hypotheses__toggle` (composant `IrDisclaimer`).
 - Style minimum :
   - conteneur `#FFFFFF` (tables) ou `C7` (bloc hypothèses),
   - border `1px solid C8`,
   - radius `12px`,
   - chevron animé (rotation 180° open).
-- Toggle détail (hors card) : `border 1px solid C8`, `bg C7`, `radius 6px`, `12px`, hover `C2`.
+- Toggle détail (dans card, header droite) : même style que `cv2-schedule__toggle` — `border 1px solid C8`, `bg C7`, `radius 6px`, `12px`, hover `C2`.
 - État initial :
   - échéanciers / détail calcul : fermés par défaut,
   - hypothèses : fermé par défaut (ouverture manuelle).

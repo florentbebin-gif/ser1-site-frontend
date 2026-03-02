@@ -405,11 +405,26 @@
   line-height: 1.6;
 }
 
-/* Accordéon "Détail du calcul" — bouton toggle stylisé (GOUVERNANCE.md §9) */
-.ir-detail-accordion {
+/* Accordéon "Détail du calcul" — pattern Échéancier (GOUVERNANCE.md §9) */
+/* Card pleine largeur, visible uniquement si résultat calculé */
+.ir-detail-card {
   margin-top: 8px;
 }
 
+.ir-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ir-detail-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-c1);
+  margin: 0;
+}
+
+/* Toggle "Afficher / Masquer" — miroir cv2-schedule__toggle */
 .ir-detail-toggle {
   display: flex;
   align-items: center;
