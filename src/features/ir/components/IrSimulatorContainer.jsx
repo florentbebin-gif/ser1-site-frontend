@@ -372,32 +372,38 @@ export default function IrSimulatorContainer() {
         />
       </div>
 
-      <div className="ir-detail-accordion">
-        <button
-          type="button"
-          className="ir-detail-toggle"
-          aria-expanded={showDetails}
-          onClick={() => setShowDetails((v) => !v)}
-          data-testid="ir-detail-toggle"
-        >
-          <span>{showDetails ? 'Masquer le détail du calcul' : 'Afficher le détail du calcul'}</span>
-          <svg
-            width="12" height="12" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            className={`ir-detail-chevron${showDetails ? ' is-open' : ''}`}
-            aria-hidden="true"
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-        <IrDetailsSection
-          showDetails={showDetails}
-          result={result}
-          euro0={euro0}
-          fmtPct={fmtPct}
-          pfuRateIR={pfuRateIR}
-        />
-      </div>
+      {result && (
+        <div className="ir-detail-card premium-card" data-testid="ir-detail-accordion">
+          <div className="ir-detail-header">
+            <h3 className="ir-detail-title">Détail du calcul</h3>
+            <button
+              type="button"
+              className="ir-detail-toggle"
+              aria-expanded={showDetails}
+              onClick={() => setShowDetails((v) => !v)}
+              data-testid="ir-detail-toggle"
+            >
+              {showDetails ? 'Masquer' : 'Afficher'}
+              <svg
+                width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                className={`ir-detail-chevron${showDetails ? ' is-open' : ''}`}
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          </div>
+          {showDetails && (
+            <IrDetailsSection
+              result={result}
+              euro0={euro0}
+              fmtPct={fmtPct}
+              pfuRateIR={pfuRateIR}
+            />
+          )}
+        </div>
+      )}
 
       <IrDisclaimer isIsolated={isIsolated} />
     </div>

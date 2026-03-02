@@ -1,7 +1,7 @@
 import React from 'react';
 
-export function IrDetailsSection({ showDetails, result, euro0, fmtPct, pfuRateIR }) {
-  if (!(showDetails && result)) return null;
+export function IrDetailsSection({ result, euro0, fmtPct, pfuRateIR }) {
+  if (!result) return null;
 
   return (
     <div className="ir-details">
