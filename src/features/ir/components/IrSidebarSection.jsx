@@ -2,10 +2,11 @@ import React from 'react';
 import { IrSelect } from './IrSelect';
 
 export function IrSidebarSection({
+  yearKey,
+  setYearKey,
+  taxSettings,
   location,
   setLocation,
-  children,
-  setChildren,
   parts,
   setParts,
   tmiScale,
@@ -17,54 +18,30 @@ export function IrSidebarSection({
 }) {
   return (
     <div className="ir-right">
-      <div className="ir-field">
-        <label>Résidence</label>
-        <IrSelect
-          value={location}
-          onChange={setLocation}
-          options={[
-            { value: 'metropole', label: 'Métropole' },
-            { value: 'gmr', label: 'Guadeloupe / Martinique / Réunion' },
-            { value: 'guyane', label: 'Guyane / Mayotte' },
-          ]}
-        />
-      </div>
-
-      <button
-        type="button"
-        className="chip"
-        onClick={() => setChildren((c) => [...c, { id: Date.now(), mode: 'charge' }])}
-      >
-        + Ajouter un enfant
-      </button>
-
-      <div className="ir-children-grid">
-        {children.map((child, idx) => (
-          <div key={child.id} className="ir-child-item">
-            <strong>Enfant {idx + 1}</strong>
-
-            <IrSelect
-              value={child.mode}
-              onChange={(v) =>
-                setChildren((list) =>
-                  list.map((c) => (c.id === child.id ? { ...c, mode: v } : c)),
-                )
-              }
-              options={[
-                { value: 'charge', label: 'À charge' },
-                { value: 'shared', label: 'Garde alternée' },
-              ]}
-            />
-
-            <button
-              type="button"
-              className="chip ir-child-remove"
-              onClick={() => setChildren((list) => list.filter((c) => c.id !== child.id))}
-            >
-              −
-            </button>
-          </div>
-        ))}
+      <div className="ir-controls-sticky">
+        <div className="ir-field">
+          <label>Barème</label>
+          <IrSelect
+            value={yearKey}
+            onChange={setYearKey}
+            options={[
+              { value: 'current', label: taxSettings?.incomeTax?.currentYearLabel || 'Année N' },
+              { value: 'previous', label: taxSettings?.incomeTax?.previousYearLabel || 'Année N-1' },
+            ]}
+          />
+        </div>
+        <div className="ir-field">
+          <label>Résidence</label>
+          <IrSelect
+            value={location}
+            onChange={setLocation}
+            options={[
+              { value: 'metropole', label: 'Métropole' },
+              { value: 'gmr', label: 'Guadeloupe / Martinique / Réunion' },
+              { value: 'guyane', label: 'Guyane / Mayotte' },
+            ]}
+          />
+        </div>
       </div>
 
       <div className="ir-tmi-card premium-card" data-testid="ir-results-card">

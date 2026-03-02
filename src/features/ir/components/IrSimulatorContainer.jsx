@@ -325,9 +325,6 @@ export default function IrSimulatorContainer() {
 
       <div className="ir-grid" data-testid="ir-grid">
         <IrFormSection
-          taxSettings={taxSettings}
-          yearKey={yearKey}
-          setYearKey={setYearKey}
           status={status}
           setStatus={setStatus}
           isIsolated={isIsolated}
@@ -355,9 +352,14 @@ export default function IrSimulatorContainer() {
           abat10PensionsFoyer={abat10PensionsFoyer}
           euro0={euro0}
           isExpert={isExpert}
+          children={children}
+          setChildren={setChildren}
         />
 
         <IrSidebarSection
+          yearKey={yearKey}
+          setYearKey={setYearKey}
+          taxSettings={taxSettings}
           location={location}
           setLocation={setLocation}
           children={children}
