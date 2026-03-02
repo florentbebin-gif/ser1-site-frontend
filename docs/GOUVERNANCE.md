@@ -70,6 +70,7 @@ Principes : épuré, lisible, respirant.
 
 #### Recommandé
 - Colonne droite sticky pour les blocs de synthèse (`position: sticky; top: 80px`) sur desktop.
+- **Variante `/sim/ir`** : les contrôles (Barème, Résidence) sont non-sticky et défilent avec la page ; les cartes de résultats sont enveloppées dans un wrapper `.ir-results-sticky` sticky. Justification : quand l'utilisateur remplit une longue colonne gauche, les chiffres clés restent visibles en permanence.
 - Sur mobile (`max-width: 900px`), passer en mono-colonne, désactiver sticky.
 
 #### Interdit
@@ -142,7 +143,8 @@ Principes : épuré, lisible, respirant.
   - Base visuelle : `border-bottom: 1px solid transparent`, hover `C8`, focus `C2`.
   - Alignement texte : `text-align: right` sur **tous** les inputs et selects de `/sim/*`, y compris les selects de navigation (Barème, Situation familiale, Résidence, etc.).
 - Selects natifs simulateur : même fond off-white + border-bottom + `text-align: right` (pas de select natif navigateur brut).
-- Inputs en lecture seule : fond `C7` (override inline acceptable).
+- Inputs en lecture seule passifs (valeur calculée non modifiable) : fond `C7` (override inline acceptable).
+- Inputs inactifs conditionnels (ex. : champ désactivé par un select de mode) : fond `#FFFFFF` pour signaler visuellement l'inactivité — exception listée aux couleurs hardcodées.
 - États :
   - Erreur : `border-bottom: C1` + message `11px`.
   - Guide séquentiel : fond `color-mix(C1 8%, white)` sur le premier champ non saisi.
@@ -200,16 +202,26 @@ Principes : épuré, lisible, respirant.
 - Utiliser un style d'onglets "pill" pour `/sim/*` tant que la baseline est underline.
 
 ### 8) Cartes hero
-#### État actuel (baseline)
-- Composant hero dédié : **Non défini actuellement**.
-- Équivalent utilisé dans `/sim/credit` : `premium-card--guide` (liseré C3 + header avec léger gradient C1).
+#### Patron canonique (validé sur `/sim/credit` et `/sim/ir`)
+- Classe obligatoire : `premium-card premium-card--guide`.
+- Liseré gauche : `border-left: 3px solid C3`.
+- Header avec fond dégradé subtil (pas le texte) :
+  ```css
+  .premium-card--guide .{feature}-card__header {
+    background: linear-gradient(135deg, color-mix(in srgb, C1 5%, transparent) 0%, transparent 65%);
+    border-radius: 10px 10px 0 0;
+    margin: -20px -24px 0;
+    padding: 20px 24px 0;
+  }
+  ```
+  Les marges négatives compensent le `padding: 20px 24px` de la card, étendant le fond jusqu'aux bords.
+- Structure interne : icône (28×28, fond C4, stroke C2) + titre (15px/600/C1) + sous-titre (12px/C9) + séparateur dégradé.
+- Corps : table groupée ou grille de champs selon la complexité du simulateur.
 
 #### Règle
-- Utiliser ce pattern "guide" pour la carte d'entrée principale d'un simulateur.
-- Si un vrai composant hero est créé, il doit rester compatible avec:
-  - bordure premium (`C8`),
-  - accent gauche (`C3`),
-  - fond majoritairement neutre (pas de bloc saturé).
+- Ce pattern est la carte d'entrée principale de chaque simulateur.
+- Ne pas utiliser de couleur saturée pour le fond (dégradé subtil uniquement).
+- Si un vrai composant hero est créé, il doit rester compatible avec : bordure C8, accent gauche C3, fond majoritairement neutre.
 
 ### 9) Accordéons (styles et usages)
 #### Obligatoire
@@ -300,6 +312,28 @@ Principes : épuré, lisible, respirant.
 3. Garder les tokens C1..C10; ne pas créer de palette parallèle.
 4. Ajouter les variantes (tabs, hero, accordéon) par composition de classes avant surcharge.
 5. Documenter toute dérogation dans cette section + preuve code.
+
+### 15) Tableaux de saisie groupés (pattern `/sim/ir`)
+
+Quand un simulateur utilise une `<table>` à l'intérieur d'une `premium-card--guide` (structure plus complexe qu'une grille de champs) :
+
+#### Obligatoire
+- **Séparateur immédiatement sous le `<thead>`** : première ligne du `<tbody>` = `<tr class="ir-divider-row">` (divider estompé pleine largeur), pour séparer visuellement les en-têtes de colonnes des données.
+- **Séparateurs entre groupes** : `<tr class="ir-divider-row"><td colSpan={n}><div class="ir-divider-row__inner" /></td></tr>` — gradient `linear-gradient(90deg, transparent, C8, transparent)`, hauteur 1px.
+- **Labels de sous-section** (`ir-row-title`) :
+  - `font-weight: 600`
+  - `color: C9` sur le premier `td` (libellé)
+  - `background: transparent`
+  - Utilisé pour : « Frais réels ou abattement 10 % », « Abattement 10 % pensions (foyer) », « Déductions », « Réductions / crédits d'impôt ».
+- **Inputs inactifs conditionnels** : quand une ligne combine un select de mode + un input conditionnel (actif/inactif selon le mode), l'input en lecture seule prend `background: #FFFFFF` pour signaler l'inactivité (voir §5).
+
+#### Mode simplifié / expert
+- Les champs masqués en mode simplifié (`isExpert = false`) doivent être **exclus du moteur de calcul** (pas seulement masqués visuellement).
+- Pattern : passer `0` ou valeur neutre pour les paramètres masqués dans l'appel au moteur fiscal.
+
+#### Recommandé
+- Garder 3 colonnes max (label / Déclarant 1 / Déclarant 2).
+- Utiliser `colSpan` pour les champs foyer (partagés entre déclarants).
 
 ---
 

@@ -233,7 +233,10 @@
 .ir-row-title td {
   background: transparent;
   font-weight: 600;
-  color: var(--color-c1);
+}
+
+.ir-row-title td:first-child {
+  color: var(--color-c9);
 }
 
 /* Séparateur estompé dans les cartes de synthèse (GOUVERNANCE.md §4) */
