@@ -138,14 +138,17 @@ function orderLabel(order: 'epoux1' | 'epoux2'): string {
     : 'Époux 2 décède en premier';
 }
 
-function buildPredecesSheet(chronologie?: SuccessionChronologieXlsxData): XlsxSheet {
+function buildPredecesSheet(
+  chronologie?: SuccessionChronologieXlsxData,
+  sheetName = 'Prédécès',
+): XlsxSheet {
   const rows: Array<Array<XlsxCell | string | number>> = [
     [h('Indicateur'), h('Valeur')],
   ];
 
   if (!chronologie) {
     rows.push(['Module de chaînage', 'Donnée non transmise à l’export']);
-    return { name: 'Prédécès', rows, columnWidths: [42, 35] };
+    return { name: sheetName, rows, columnWidths: [42, 35] };
   }
 
   rows.push(['Ordre simulé', orderLabel(chronologie.order)]);
@@ -182,23 +185,28 @@ function buildPredecesSheet(chronologie?: SuccessionChronologieXlsxData): XlsxSh
     });
   }
 
-  return { name: 'Prédécès', rows, columnWidths: [42, 35] };
+  return { name: sheetName, rows, columnWidths: [42, 35] };
 }
 
 export async function exportSuccessionXlsx(
   input: SuccessionXlsxInput,
-  result: SuccessionResult,
+  result?: SuccessionResult | null,
   themeColor?: string,
   _filename = 'Simulation-Succession',
   chronologie?: SuccessionChronologieXlsxData,
 ): Promise<Blob> {
-  const sheets: XlsxSheet[] = [
-    buildInputsSheet(input),
-    buildResultsSheet(result),
-    buildDetailsSheet(result.detailHeritiers),
-    buildPredecesSheet(chronologie),
-    buildHypothesesSheet(),
-  ];
+  const sheets: XlsxSheet[] = result
+    ? [
+      buildInputsSheet(input),
+      buildResultsSheet(result),
+      buildDetailsSheet(result.detailHeritiers),
+      buildPredecesSheet(chronologie),
+      buildHypothesesSheet(),
+    ]
+    : [
+      buildPredecesSheet(chronologie, 'Chronologie'),
+      buildHypothesesSheet(),
+    ];
 
   const blob = await buildXlsxBlob({
     sheets,
@@ -211,7 +219,7 @@ export async function exportSuccessionXlsx(
 
 export async function exportAndDownloadSuccessionXlsx(
   input: SuccessionXlsxInput,
-  result: SuccessionResult,
+  result?: SuccessionResult | null,
   themeColor?: string,
   filename = 'Simulation-Succession',
   chronologie?: SuccessionChronologieXlsxData,
