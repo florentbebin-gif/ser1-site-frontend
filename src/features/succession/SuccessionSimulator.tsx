@@ -21,9 +21,11 @@ import {
   buildSuccessionDraftPayload,
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+  DEFAULT_SUCCESSION_ENFANTS_CONTEXT,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   parseSuccessionDraftPayload,
+  type SuccessionEnfant,
   type SituationMatrimoniale,
 } from './successionDraft';
 import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
@@ -71,6 +73,16 @@ const OUI_NON_OPTIONS = [
   { value: 'oui', label: 'Oui' },
 ];
 
+const ENFANT_RATTACHEMENT_OPTIONS = [
+  { value: 'commun', label: 'Enfant commun' },
+  { value: 'epoux1', label: "Enfant de l'époux 1" },
+  { value: 'epoux2', label: "Enfant de l'époux 2" },
+];
+
+function createEnfantId(): string {
+  return `enf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export default function SuccessionSimulator() {
   const { loading: settingsLoading, fiscalContext } = useFiscalContext({ strict: true });
   const fiscalSnapshot = useMemo(
@@ -93,18 +105,36 @@ export default function SuccessionSimulator() {
   const [liquidationContext, setLiquidationContext] = useState(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
   const [devolutionContext, setDevolutionContext] = useState(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
   const [patrimonialContext, setPatrimonialContext] = useState(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
+  const [enfantsContext, setEnfantsContext] = useState<SuccessionEnfant[]>(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
+
+  const nbEnfants = enfantsContext.length;
+  const nbEnfantsNonCommuns = useMemo(
+    () => enfantsContext.filter((enfant) => enfant.rattachement !== 'commun').length,
+    [enfantsContext],
+  );
 
   const predecesAnalysis = useMemo(
-    () => buildSuccessionPredecesAnalysis(civilContext, liquidationContext, fiscalSnapshot.dmtgSettings),
-    [civilContext, liquidationContext, fiscalSnapshot.dmtgSettings],
+    () => buildSuccessionPredecesAnalysis(
+      civilContext,
+      { ...liquidationContext, nbEnfants },
+      fiscalSnapshot.dmtgSettings,
+    ),
+    [civilContext, liquidationContext, nbEnfants, fiscalSnapshot.dmtgSettings],
   );
   const devolutionAnalysis = useMemo(
-    () => buildSuccessionDevolutionAnalysis(civilContext, liquidationContext.nbEnfants, devolutionContext),
-    [civilContext, liquidationContext.nbEnfants, devolutionContext],
+    () => buildSuccessionDevolutionAnalysis(
+      civilContext,
+      nbEnfants,
+      {
+        ...devolutionContext,
+        nbEnfantsNonCommuns,
+      },
+    ),
+    [civilContext, nbEnfants, devolutionContext, nbEnfantsNonCommuns],
   );
   const patrimonialAnalysis = useMemo(
-    () => buildSuccessionPatrimonialAnalysis(civilContext, form.actifNetSuccession, liquidationContext.nbEnfants, patrimonialContext),
-    [civilContext, form.actifNetSuccession, liquidationContext.nbEnfants, patrimonialContext],
+    () => buildSuccessionPatrimonialAnalysis(civilContext, form.actifNetSuccession, nbEnfants, patrimonialContext),
+    [civilContext, form.actifNetSuccession, nbEnfants, patrimonialContext],
   );
 
   const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
@@ -125,6 +155,7 @@ export default function SuccessionSimulator() {
     setLiquidationContext(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
     setDevolutionContext(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
     setPatrimonialContext(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
+    setEnfantsContext(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
     setShowDetails(false);
     setHypothesesOpen(false);
     try {
@@ -135,28 +166,51 @@ export default function SuccessionSimulator() {
   }, [reset]);
 
   const setLiquidationField = useCallback(
-    (field: 'actifEpoux1' | 'actifEpoux2' | 'actifCommun' | 'nbEnfants', value: number) => {
+    (field: 'actifEpoux1' | 'actifEpoux2' | 'actifCommun', value: number) => {
       setLiquidationContext((prev) => ({
         ...prev,
-        [field]: field === 'nbEnfants'
-          ? Math.max(0, Math.floor(value || 0))
-          : Math.max(0, value || 0),
+        [field]: Math.max(0, value || 0),
       }));
     },
     [],
   );
 
   const setDevolutionField = useCallback(
-    (field: 'nbEnfantsNonCommuns' | 'testamentActif', value: number | boolean) => {
+    (field: 'testamentActif', value: boolean) => {
       setDevolutionContext((prev) => ({
         ...prev,
-        [field]: field === 'nbEnfantsNonCommuns'
-          ? Math.max(0, Math.floor(Number(value) || 0))
-          : Boolean(value),
+        [field]: Boolean(value),
       }));
     },
     [],
   );
+
+  const addEnfant = useCallback(() => {
+    setEnfantsContext((prev) => ([
+      ...prev,
+      { id: createEnfantId(), rattachement: 'commun' },
+    ]));
+  }, []);
+
+  const updateEnfantPrenom = useCallback((id: string, prenom: string) => {
+    setEnfantsContext((prev) => prev.map((enfant) => (
+      enfant.id === id
+        ? { ...enfant, prenom: prenom.trim().length > 0 ? prenom : undefined }
+        : enfant
+    )));
+  }, []);
+
+  const updateEnfantRattachement = useCallback((id: string, rattachement: 'commun' | 'epoux1' | 'epoux2') => {
+    setEnfantsContext((prev) => prev.map((enfant) => (
+      enfant.id === id
+        ? { ...enfant, rattachement }
+        : enfant
+    )));
+  }, []);
+
+  const removeEnfant = useCallback((id: string) => {
+    setEnfantsContext((prev) => prev.filter((enfant) => enfant.id !== id));
+  }, []);
 
   const setPatrimonialField = useCallback(
     (
@@ -190,6 +244,7 @@ export default function SuccessionSimulator() {
           setLiquidationContext(parsed.liquidation);
           setDevolutionContext(parsed.devolution);
           setPatrimonialContext(parsed.patrimonial);
+          setEnfantsContext(parsed.enfants);
         }
       }
     } catch {
@@ -208,15 +263,19 @@ export default function SuccessionSimulator() {
             persistedForm,
             civilContext,
             liquidationContext,
-            devolutionContext,
+            {
+              ...devolutionContext,
+              nbEnfantsNonCommuns,
+            },
             patrimonialContext,
+            enfantsContext,
           ),
         ),
       );
     } catch {
       // ignore
     }
-  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext]);
+  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, nbEnfantsNonCommuns, enfantsContext]);
 
   useEffect(() => {
     const off = onResetEvent?.(({ simId }: { simId?: string }) => {
@@ -327,48 +386,92 @@ export default function SuccessionSimulator() {
               <p className="sc-card__subtitle">Prépare les scénarios civils avancés tout en gardant un calcul simple.</p>
             </header>
             <div className="sc-card__divider" />
-            <div className="sc-civil-grid">
-              <div className="sc-field">
-                <label>Situation familiale</label>
-                <ScSelect
-                  value={civilContext.situationMatrimoniale}
-                  onChange={(value) => handleSituationChange(value as SituationMatrimoniale)}
-                  options={SITUATION_OPTIONS}
-                />
+            <div className="sc-context-grid">
+              <div className="sc-civil-grid">
+                <div className="sc-field">
+                  <label>Situation familiale</label>
+                  <ScSelect
+                    value={civilContext.situationMatrimoniale}
+                    onChange={(value) => handleSituationChange(value as SituationMatrimoniale)}
+                    options={SITUATION_OPTIONS}
+                  />
+                </div>
+
+                {civilContext.situationMatrimoniale === 'marie' && (
+                  <div className="sc-field">
+                    <label>Régime matrimonial</label>
+                    <ScSelect
+                      value={civilContext.regimeMatrimonial ?? 'communaute_legale'}
+                      onChange={(value) =>
+                        setCivilContext((prev) => ({
+                          ...prev,
+                          regimeMatrimonial: value as keyof typeof REGIMES_MATRIMONIAUX,
+                        }))}
+                      options={Object.values(REGIMES_MATRIMONIAUX).map((regime) => ({
+                        value: regime.id,
+                        label: regime.label,
+                      }))}
+                    />
+                  </div>
+                )}
+
+                {civilContext.situationMatrimoniale === 'pacse' && (
+                  <div className="sc-field">
+                    <label>Convention PACS</label>
+                    <ScSelect
+                      value={civilContext.pacsConvention}
+                      onChange={(value) =>
+                        setCivilContext((prev) => ({
+                          ...prev,
+                          pacsConvention: value as 'separation' | 'indivision',
+                        }))}
+                      options={PACS_CONVENTION_OPTIONS}
+                    />
+                  </div>
+                )}
               </div>
 
-              {civilContext.situationMatrimoniale === 'marie' && (
-                <div className="sc-field">
-                  <label>Régime matrimonial</label>
-                  <ScSelect
-                    value={civilContext.regimeMatrimonial ?? 'communaute_legale'}
-                    onChange={(value) =>
-                      setCivilContext((prev) => ({
-                        ...prev,
-                        regimeMatrimonial: value as keyof typeof REGIMES_MATRIMONIAUX,
-                      }))}
-                    options={Object.values(REGIMES_MATRIMONIAUX).map((regime) => ({
-                      value: regime.id,
-                      label: regime.label,
-                    }))}
-                  />
-                </div>
-              )}
-
-              {civilContext.situationMatrimoniale === 'pacse' && (
-                <div className="sc-field">
-                  <label>Convention PACS</label>
-                  <ScSelect
-                    value={civilContext.pacsConvention}
-                    onChange={(value) =>
-                      setCivilContext((prev) => ({
-                        ...prev,
-                        pacsConvention: value as 'separation' | 'indivision',
-                      }))}
-                    options={PACS_CONVENTION_OPTIONS}
-                  />
-                </div>
-              )}
+              <div className="sc-children-zone">
+                <button
+                  type="button"
+                  className="sc-child-add-btn"
+                  onClick={addEnfant}
+                >
+                  + Ajouter un enfant
+                </button>
+                {enfantsContext.length === 0 ? (
+                  <p className="sc-hint sc-hint--compact">Aucun enfant déclaré pour l&apos;instant.</p>
+                ) : (
+                  <div className="sc-children-list">
+                    {enfantsContext.map((enfant, idx) => (
+                      <div key={enfant.id} className="sc-child-row">
+                        <span className="sc-child-row__label">E{idx + 1}</span>
+                        <input
+                          type="text"
+                          className="sc-child-name"
+                          value={enfant.prenom ?? ''}
+                          onChange={(e) => updateEnfantPrenom(enfant.id, e.target.value)}
+                          placeholder="Prénom (optionnel)"
+                        />
+                        <ScSelect
+                          className="sc-child-select"
+                          value={enfant.rattachement}
+                          onChange={(value) => updateEnfantRattachement(enfant.id, value as 'commun' | 'epoux1' | 'epoux2')}
+                          options={ENFANT_RATTACHEMENT_OPTIONS}
+                        />
+                        <button
+                          type="button"
+                          className="sc-child-remove-btn"
+                          onClick={() => removeEnfant(enfant.id)}
+                          aria-label={`Supprimer enfant ${idx + 1}`}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -414,17 +517,8 @@ export default function SuccessionSimulator() {
                       placeholder="Montant"
                     />
                   </div>
-                  <div className="sc-field">
-                    <label>Nombre d&apos;enfants</label>
-                    <input
-                      type="number"
-                      min={0}
-                      step={1}
-                      value={liquidationContext.nbEnfants}
-                      onChange={(e) => setLiquidationField('nbEnfants', Number(e.target.value) || 0)}
-                    />
-                  </div>
                 </div>
+                <p className="sc-hint">Enfants pris en compte automatiquement: {nbEnfants}</p>
 
                 {predecesAnalysis.regimeLabel && (
                   <p className="sc-hint">
@@ -483,16 +577,6 @@ export default function SuccessionSimulator() {
 
             <div className="sc-civil-grid">
               <div className="sc-field">
-                <label>Enfants non communs</label>
-                <input
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={devolutionContext.nbEnfantsNonCommuns}
-                  onChange={(e) => setDevolutionField('nbEnfantsNonCommuns', Number(e.target.value) || 0)}
-                />
-              </div>
-              <div className="sc-field">
                 <label>Testament actif</label>
                 <ScSelect
                   value={devolutionContext.testamentActif ? 'oui' : 'non'}
@@ -500,6 +584,10 @@ export default function SuccessionSimulator() {
                   options={OUI_NON_OPTIONS}
                 />
               </div>
+            </div>
+            <div className="sc-summary-row sc-summary-row--reserve">
+              <span>Enfants non communs (auto)</span>
+              <strong>{nbEnfantsNonCommuns}</strong>
             </div>
 
             {devolutionAnalysis.reserve ? (
