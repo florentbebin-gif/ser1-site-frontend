@@ -8,6 +8,7 @@ import { computeIrResult as computeIrResultEngine } from '../../../utils/irEngin
 import { useFiscalContext } from '../../../hooks/useFiscalContext';
 import { DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
 import { useTheme } from '../../../settings/ThemeProvider';
+import { useUserMode } from '../../../services/userModeService';
 import { ExportMenu } from '../../../components/ExportMenu';
 import {
   computeAbattement10,
@@ -47,8 +48,10 @@ const formatMoneyInput = (n) => {
 export default function IrSimulatorContainer() {
   const { colors, cabinetLogo, logoPlacement, pptxColors } = useTheme();
 
-  const [isExpert, setIsExpert] = useState(false);
-  const toggleMode = () => setIsExpert((v) => !v);
+  const { mode } = useUserMode();
+  const [localMode, setLocalMode] = useState(null);
+  const isExpert = (localMode ?? mode) === 'expert';
+  const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
 
   // Mode strict : n'affiche pas de résultat avant que Supabase ait répondu
   const { fiscalContext, loading: settingsLoading } = useFiscalContext({ strict: true });

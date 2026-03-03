@@ -62,12 +62,12 @@ export default function Home(){
           <h2 className="tools-title" data-testid="home-tools-title">SIMULATEURS</h2>
           <div className="tools-card">
             <div className="tools-grid" data-testid="home-tools-grid">
-              <ToolTile to="/sim/per" icon={<IconGauge/>} title="Epargne retraite" testId="home-tool-epargne-retraite" />
-              <ToolTile to="/sim/credit" icon={<IconPercent/>} title="Crédit" testId="home-tool-credit" />
-              <ToolTile to="/sim/succession" icon={<IconTransfer/>} title="Droits de succession" testId="home-tool-droits-succession" />
-              <ToolTile to="/sim/ir" icon={<IconCalc/>} title="Impôt sur le revenu" testId="home-tool-ir" />
               <ToolTile to="/sim/placement" icon={<IconChart/>} title="Epargne" testId="home-tool-epargne" />
+              <ToolTile to="/sim/ir" icon={<IconCalc/>} title="Impôt sur le revenu" testId="home-tool-ir" />
+              <ToolTile to="/sim/per" icon={<IconGauge/>} title="Epargne retraite" testId="home-tool-epargne-retraite" />
+              <ToolTile to="/sim/succession" icon={<IconTransfer/>} title="Droits de succession" testId="home-tool-droits-succession" />
               <ToolTile to="/sim/epargne-salariale" icon={<IconWallet/>} title="Epargne salariale" testId="home-tool-epargne-salariale" />
+              <ToolTile to="/sim/credit" icon={<IconPercent/>} title="Crédit" testId="home-tool-credit" />
               <ToolTile to="/sim/tresorerie-societe" icon={<IconBuilding/>} title="Trésorerie société" testId="home-tool-tresorerie-societe" />
               <ToolTile to="/sim/prevoyance" icon={<IconShield/>} title="Prévoyance" testId="home-tool-prevoyance" />
             </div>

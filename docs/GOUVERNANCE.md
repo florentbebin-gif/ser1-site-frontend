@@ -176,10 +176,20 @@ Principes : épuré, lisible, respirant.
   - mode : `padding 8px 16px`, `font-size 13px`, `radius 6px`
   - export trigger : `padding 8px 16px`, `radius 6px`.
 - Dropdown export : ancré à droite du bouton, `min-width: 140px`, `z-index: 1000`.
+- Source de vérité du mode : `ui_settings.mode` via `useUserMode` (piloté depuis Home).
+- Le mode de Home doit être appliqué par défaut sur toute nouvelle page `/sim/*`.
+- Si un toggle local est nécessaire dans une page simulateur, il doit être un override non persistant (session de la page uniquement), sans écrire dans `ui_settings`.
+- Pattern de référence (baseline `/sim/credit`) :
+  - `const { mode } = useUserMode()`
+  - `const [localMode, setLocalMode] = useState(null)`
+  - `const isExpert = (localMode ?? mode) === 'expert'`
+  - `onClick` toggle local : `setLocalMode(isExpert ? 'simplifie' : 'expert')`
 
 #### Interdit
 - Déplacer export en bas de page.
 - Ajouter des CTA primaires concurrents dans la même ligne sans justification produit.
+- Initialiser un simulateur avec un `useState(false)` / `useState(true)` isolé pour le mode (cela ignore Home).
+- Persister un changement de mode depuis une page `/sim/*` dans `ui_settings` si l'intention est un simple override local.
 
 ### 7) Onglets (ajout/retrait) et comportement
 #### Obligatoire

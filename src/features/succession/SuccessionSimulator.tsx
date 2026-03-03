@@ -11,6 +11,7 @@ import { useSuccessionCalc } from './useSuccessionCalc';
 import { exportSuccessionPptx } from '../../pptx/exports/successionExport';
 import { exportAndDownloadSuccessionXlsx } from './successionXlsx';
 import { useTheme } from '../../settings/ThemeProvider';
+import { useUserMode } from '../../services/userModeService';
 import { SessionGuardContext } from '../../App';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
 import { ExportMenu } from '../../components/ExportMenu';
@@ -117,10 +118,12 @@ export default function SuccessionSimulator() {
   } = useSuccessionCalc({ dmtgSettings: fiscalSnapshot.dmtgSettings });
 
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
+  const { mode } = useUserMode();
   const { sessionExpired, canExport } = useContext(SessionGuardContext);
   const [exportLoading, setExportLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [isExpert, setIsExpert] = useState(false);
+  const [localMode, setLocalMode] = useState<null | 'expert' | 'simplifie'>(null);
+  const isExpert = (localMode ?? mode) === 'expert';
   const [hypothesesOpen, setHypothesesOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [civilContext, setCivilContext] = useState(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
@@ -576,7 +579,7 @@ export default function SuccessionSimulator() {
           <div className="sim-header__actions">
             <button
               className="chip premium-btn sc-mode-btn"
-              onClick={() => setIsExpert((v) => !v)}
+              onClick={() => setLocalMode(isExpert ? 'simplifie' : 'expert')}
               title={isExpert ? 'Passer en mode simplifié' : 'Passer en mode expert'}
             >
               {isExpert ? 'Mode expert' : 'Mode simplifié'}
