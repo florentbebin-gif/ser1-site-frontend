@@ -30,6 +30,7 @@ import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
+import { ScSelect } from './components/ScSelect';
 import '../../components/simulator/SimulatorShell.css';
 import '../../styles/premium-shared.css';
 import './Succession.css';
@@ -60,6 +61,16 @@ const SITUATION_OPTIONS: { value: SituationMatrimoniale; label: string }[] = [
   { value: 'veuf', label: 'Veuf / veuve' },
 ];
 
+const PACS_CONVENTION_OPTIONS = [
+  { value: 'separation', label: 'Séparation de biens (défaut)' },
+  { value: 'indivision', label: 'Indivision conventionnelle' },
+];
+
+const OUI_NON_OPTIONS = [
+  { value: 'non', label: 'Non' },
+  { value: 'oui', label: 'Oui' },
+];
+
 export default function SuccessionSimulator() {
   const { loading: settingsLoading, fiscalContext } = useFiscalContext({ strict: true });
   const fiscalSnapshot = useMemo(
@@ -75,6 +86,7 @@ export default function SuccessionSimulator() {
   const { sessionExpired, canExport } = useContext(SessionGuardContext);
   const [exportLoading, setExportLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [isExpert, setIsExpert] = useState(false);
   const [hypothesesOpen, setHypothesesOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [civilContext, setCivilContext] = useState(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
@@ -289,6 +301,13 @@ export default function SuccessionSimulator() {
             Estimez les droits de succession à partir de l&apos;actif net et de la répartition entre héritiers.
           </p>
           <div className="sim-header__actions">
+            <button
+              className="chip premium-btn sc-mode-btn"
+              onClick={() => setIsExpert((v) => !v)}
+              title={isExpert ? 'Passer en mode simplifié' : 'Passer en mode expert'}
+            >
+              {isExpert ? 'Mode expert' : 'Mode simplifié'}
+            </button>
             <ExportMenu options={exportOptions} loading={exportLoading} />
           </div>
         </div>
@@ -311,54 +330,46 @@ export default function SuccessionSimulator() {
             <div className="sc-civil-grid">
               <div className="sc-field">
                 <label>Situation familiale</label>
-                <select
+                <ScSelect
                   value={civilContext.situationMatrimoniale}
-                  onChange={(e) => handleSituationChange(e.target.value as SituationMatrimoniale)}
-                >
-                  {SITUATION_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
+                  onChange={(value) => handleSituationChange(value as SituationMatrimoniale)}
+                  options={SITUATION_OPTIONS}
+                />
               </div>
 
               {civilContext.situationMatrimoniale === 'marie' && (
                 <div className="sc-field">
                   <label>Régime matrimonial</label>
-                  <select
+                  <ScSelect
                     value={civilContext.regimeMatrimonial ?? 'communaute_legale'}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setCivilContext((prev) => ({
                         ...prev,
-                        regimeMatrimonial: e.target.value as keyof typeof REGIMES_MATRIMONIAUX,
+                        regimeMatrimonial: value as keyof typeof REGIMES_MATRIMONIAUX,
                       }))}
-                  >
-                    {Object.values(REGIMES_MATRIMONIAUX).map((regime) => (
-                      <option key={regime.id} value={regime.id}>{regime.label}</option>
-                    ))}
-                  </select>
+                    options={Object.values(REGIMES_MATRIMONIAUX).map((regime) => ({
+                      value: regime.id,
+                      label: regime.label,
+                    }))}
+                  />
                 </div>
               )}
 
               {civilContext.situationMatrimoniale === 'pacse' && (
                 <div className="sc-field">
                   <label>Convention PACS</label>
-                  <select
+                  <ScSelect
                     value={civilContext.pacsConvention}
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setCivilContext((prev) => ({
                         ...prev,
-                        pacsConvention: e.target.value as 'separation' | 'indivision',
+                        pacsConvention: value as 'separation' | 'indivision',
                       }))}
-                  >
-                    <option value="separation">Séparation de biens (défaut)</option>
-                    <option value="indivision">Indivision conventionnelle</option>
-                  </select>
+                    options={PACS_CONVENTION_OPTIONS}
+                  />
                 </div>
               )}
             </div>
-            <p className="sc-hint">
-              Ces paramètres impactent le module de prédécès ci-dessous, sans modifier le calcul principal des droits.
-            </p>
           </div>
 
           <div className="premium-card sc-card">
@@ -460,6 +471,7 @@ export default function SuccessionSimulator() {
             )}
           </div>
 
+          {isExpert && (
           <div className="premium-card sc-card">
             <header className="sc-card__header">
               <h2 className="sc-card__title">Dévolution légale simplifiée</h2>
@@ -482,13 +494,11 @@ export default function SuccessionSimulator() {
               </div>
               <div className="sc-field">
                 <label>Testament actif</label>
-                <select
+                <ScSelect
                   value={devolutionContext.testamentActif ? 'oui' : 'non'}
-                  onChange={(e) => setDevolutionField('testamentActif', e.target.value === 'oui')}
-                >
-                  <option value="non">Non</option>
-                  <option value="oui">Oui</option>
-                </select>
+                  onChange={(value) => setDevolutionField('testamentActif', value === 'oui')}
+                  options={OUI_NON_OPTIONS}
+                />
               </div>
             </div>
 
@@ -526,7 +536,9 @@ export default function SuccessionSimulator() {
               </ul>
             )}
           </div>
+          )}
 
+          {isExpert && (
           <div className="premium-card sc-card">
             <header className="sc-card__header">
               <h2 className="sc-card__title">Libéralités & avantages matrimoniaux (simplifié)</h2>
@@ -569,13 +581,11 @@ export default function SuccessionSimulator() {
               </div>
               <div className="sc-field">
                 <label>Donation entre époux</label>
-                <select
+                <ScSelect
                   value={patrimonialContext.donationEntreEpouxActive ? 'oui' : 'non'}
-                  onChange={(e) => setPatrimonialField('donationEntreEpouxActive', e.target.value === 'oui')}
-                >
-                  <option value="non">Non</option>
-                  <option value="oui">Oui</option>
-                </select>
+                  onChange={(value) => setPatrimonialField('donationEntreEpouxActive', value === 'oui')}
+                  options={OUI_NON_OPTIONS}
+                />
               </div>
               <div className="sc-field">
                 <label>Clause de préciput (€)</label>
@@ -589,13 +599,11 @@ export default function SuccessionSimulator() {
               </div>
               <div className="sc-field">
                 <label>Attribution intégrale</label>
-                <select
+                <ScSelect
                   value={patrimonialContext.attributionIntegrale ? 'oui' : 'non'}
-                  onChange={(e) => setPatrimonialField('attributionIntegrale', e.target.value === 'oui')}
-                >
-                  <option value="non">Non</option>
-                  <option value="oui">Oui</option>
-                </select>
+                  onChange={(value) => setPatrimonialField('attributionIntegrale', value === 'oui')}
+                  options={OUI_NON_OPTIONS}
+                />
               </div>
             </div>
 
@@ -626,6 +634,7 @@ export default function SuccessionSimulator() {
               </ul>
             )}
           </div>
+          )}
 
           <div className="premium-card sc-card sc-card--guide">
             <header className="sc-card__header">
@@ -658,14 +667,11 @@ export default function SuccessionSimulator() {
                 <div key={h.id} className="sc-heir-row">
                   <div className="sc-field">
                     <label>Lien de parenté</label>
-                    <select
+                    <ScSelect
                       value={h.lien}
-                      onChange={(e) => updateHeritier(h.id, 'lien', e.target.value as LienParente)}
-                    >
-                      {LIEN_OPTIONS.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
-                    </select>
+                      onChange={(value) => updateHeritier(h.id, 'lien', value as LienParente)}
+                      options={LIEN_OPTIONS}
+                    />
                   </div>
                   <div className="sc-field">
                     <label>Part succession (€)</label>
