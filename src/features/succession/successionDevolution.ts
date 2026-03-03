@@ -1,16 +1,13 @@
 import {
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   type SuccessionCivilContext,
+  type SuccessionDevolutionContext,
 } from './successionDraft';
-
-export interface SuccessionDevolutionContext {
-  nbEnfantsNonCommuns: number;
-  testamentActif: boolean;
-}
 
 export interface SuccessionDevolutionLine {
   heritier: string;
   droits: string;
+  montantEstime: number | null;
 }
 
 export interface SuccessionReserveInfo {
@@ -19,6 +16,7 @@ export interface SuccessionReserveInfo {
 }
 
 export interface SuccessionDevolutionAnalysis {
+  masseReference: number;
   nbEnfantsTotal: number;
   nbEnfantsNonCommuns: number;
   reserve: SuccessionReserveInfo | null;
@@ -32,11 +30,24 @@ function asChildrenCount(input: unknown, fallback = 0): number {
   return Math.max(0, Math.floor(num));
 }
 
+function asAmount(input: unknown, fallback = 0): number {
+  const num = Number(input);
+  if (!Number.isFinite(num)) return fallback;
+  return Math.max(0, num);
+}
+
 function getReserveInfo(nbEnfants: number): SuccessionReserveInfo | null {
   if (nbEnfants <= 0) return null;
   if (nbEnfants === 1) return { reserve: '1/2', quotiteDisponible: '1/2' };
   if (nbEnfants === 2) return { reserve: '2/3', quotiteDisponible: '1/3' };
   return { reserve: '3/4', quotiteDisponible: '1/4' };
+}
+
+function getQuotiteDisponibleRatio(nbEnfants: number): number {
+  if (nbEnfants <= 0) return 1;
+  if (nbEnfants === 1) return 0.5;
+  if (nbEnfants === 2) return 1 / 3;
+  return 0.25;
 }
 
 function getDescendantsLine(nbEnfantsTotal: number, availablePct: number): string {
@@ -45,16 +56,83 @@ function getDescendantsLine(nbEnfantsTotal: number, availablePct: number): strin
   return `${availablePct.toFixed(0)}% en pleine propriété (${perChild.toFixed(2)}% par enfant)`;
 }
 
+function addTestamentLines(
+  lines: SuccessionDevolutionLine[],
+  warnings: string[],
+  context: SuccessionDevolutionContext,
+  nbEnfantsTotal: number,
+  masseReference: number,
+  legsParticuliersMontant: number,
+): void {
+  if (!context.testamentActif) return;
+
+  warnings.push('Testament actif: valider les clauses exactes et leur articulation avec la réserve héréditaire.');
+
+  if (!context.typeDispositionTestamentaire) {
+    warnings.push('Testament actif sans type de disposition: précisez le mécanisme testamentaire.');
+    return;
+  }
+
+  const quotiteDisponible = masseReference * getQuotiteDisponibleRatio(nbEnfantsTotal);
+  const plafondTestament = nbEnfantsTotal > 0 ? quotiteDisponible : masseReference;
+
+  if (context.typeDispositionTestamentaire === 'legs_universel') {
+    lines.push({
+      heritier: 'Légataire universel (testament)',
+      droits: nbEnfantsTotal > 0
+        ? 'Vocation limitée à la quotité disponible'
+        : 'Vocation potentiellement intégrale (hors droits spéciaux)',
+      montantEstime: plafondTestament,
+    });
+    return;
+  }
+
+  if (context.typeDispositionTestamentaire === 'legs_titre_universel') {
+    const ratio = Math.min(100, Math.max(0, context.quotePartLegsTitreUniverselPct)) / 100;
+    if (ratio <= 0) {
+      warnings.push('Quote-part de legs a titre universel nulle: renseignez un pourcentage pertinent.');
+    }
+    lines.push({
+      heritier: 'Légataire à titre universel',
+      droits: `${Math.round(ratio * 100)}% de la quotité disponible`,
+      montantEstime: plafondTestament * ratio,
+    });
+    return;
+  }
+
+  const montantLegsParticuliers = Math.max(0, legsParticuliersMontant);
+  if (montantLegsParticuliers <= 0) {
+    warnings.push('Legs particuliers sélectionnés sans montant: renseignez la valeur des biens légués.');
+  }
+  lines.push({
+    heritier: 'Bénéficiaire de legs particuliers',
+    droits: 'Transmission de biens ou de montants déterminés',
+    montantEstime: montantLegsParticuliers,
+  });
+
+  if (nbEnfantsTotal > 0 && montantLegsParticuliers > plafondTestament) {
+    warnings.push('Legs particuliers supérieurs à la quotité disponible: risque de réduction civile.');
+  }
+}
+
 export function buildSuccessionDevolutionAnalysis(
   civil: SuccessionCivilContext,
   nbEnfantsTotalInput: number,
   contextInput: Partial<SuccessionDevolutionContext> | undefined,
+  masseReferenceInput: number,
+  legsParticuliersInput = 0,
 ): SuccessionDevolutionAnalysis {
   const nbEnfantsTotal = asChildrenCount(nbEnfantsTotalInput, 0);
+  const masseReference = asAmount(masseReferenceInput, 0);
   const warnings: string[] = [];
 
+  const context: SuccessionDevolutionContext = {
+    ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+    ...contextInput,
+  };
+
   const nbEnfantsNonCommunsRaw = asChildrenCount(
-    contextInput?.nbEnfantsNonCommuns,
+    context.nbEnfantsNonCommuns,
     DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.nbEnfantsNonCommuns,
   );
   const nbEnfantsNonCommuns = Math.min(nbEnfantsNonCommunsRaw, nbEnfantsTotal);
@@ -63,92 +141,127 @@ export function buildSuccessionDevolutionAnalysis(
     warnings.push('Enfants non communs plafonnés au nombre total d’enfants.');
   }
 
-  const testamentActif = contextInput?.testamentActif === true;
   const lines: SuccessionDevolutionLine[] = [];
   const reserve = getReserveInfo(nbEnfantsTotal);
 
   if (civil.situationMatrimoniale === 'marie') {
     if (nbEnfantsTotal > 0) {
       if (nbEnfantsNonCommuns > 0) {
-        lines.push({ heritier: 'Conjoint survivant', droits: '1/4 en pleine propriété' });
+        lines.push({
+          heritier: 'Conjoint survivant',
+          droits: '1/4 en pleine propriété',
+          montantEstime: masseReference * 0.25,
+        });
         lines.push({
           heritier: 'Descendants',
           droits: getDescendantsLine(nbEnfantsTotal, 75),
+          montantEstime: masseReference * 0.75,
         });
       } else {
         lines.push({
           heritier: 'Option A - Conjoint survivant',
           droits: '1/4 en pleine propriété',
+          montantEstime: masseReference * 0.25,
         });
         lines.push({
           heritier: 'Option A - Descendants',
           droits: getDescendantsLine(nbEnfantsTotal, 75),
+          montantEstime: masseReference * 0.75,
         });
         lines.push({
           heritier: 'Option B - Conjoint survivant',
           droits: 'Usufruit de la totalité',
+          montantEstime: masseReference,
         });
         lines.push({
           heritier: 'Option B - Descendants',
           droits: 'Nue-propriété de la totalité',
+          montantEstime: masseReference,
         });
+        warnings.push('Option usufruit: montant indicatif affiché en équivalent pleine propriété.');
       }
     } else {
-      lines.push({
-        heritier: 'Conjoint survivant',
-        droits: 'Droits variables selon ascendants/collatéraux (non détaillés ici)',
-      });
-      warnings.push('Dévolution sans descendants non modélisée finement (ascendants/collatéraux exclus).');
+      if (context.ascendantsSurvivants) {
+        lines.push({
+          heritier: 'Conjoint survivant',
+          droits: 'Droits dépendants du nombre d’ascendants privilégiés (non modélisé finement)',
+          montantEstime: null,
+        });
+        lines.push({
+          heritier: 'Ascendants survivants',
+          droits: 'Droits à préciser selon la configuration familiale',
+          montantEstime: null,
+        });
+      } else {
+        lines.push({
+          heritier: 'Conjoint survivant',
+          droits: 'Droits à préciser selon collatéraux privilégiés (non modélisé finement)',
+          montantEstime: null,
+        });
+      }
+      warnings.push('Dévolution sans descendants: modélisation simplifiée, analyse notariale requise.');
     }
   } else if (civil.situationMatrimoniale === 'pacse') {
     warnings.push('PACS: pas de vocation successorale légale automatique sans testament.');
-    if (testamentActif) {
+    if (context.testamentActif) {
       lines.push({
         heritier: 'Partenaire pacsé',
         droits: 'Possible selon testament, dans la limite de la quotité disponible',
+        montantEstime: nbEnfantsTotal > 0 ? masseReference * getQuotiteDisponibleRatio(nbEnfantsTotal) : masseReference,
       });
     } else {
-      lines.push({ heritier: 'Partenaire pacsé', droits: 'Aucun droit successoral légal' });
+      lines.push({ heritier: 'Partenaire pacsé', droits: 'Aucun droit successoral légal', montantEstime: 0 });
     }
     if (nbEnfantsTotal > 0) {
-      lines.push({ heritier: 'Descendants', droits: getDescendantsLine(nbEnfantsTotal, 100) });
+      lines.push({
+        heritier: 'Descendants',
+        droits: getDescendantsLine(nbEnfantsTotal, 100),
+        montantEstime: masseReference,
+      });
     } else {
       warnings.push('Dévolution sans descendants non modélisée finement (ascendants/collatéraux exclus).');
     }
   } else if (civil.situationMatrimoniale === 'concubinage') {
     warnings.push('Concubinage: pas de vocation successorale légale du concubin.');
-    if (testamentActif) {
+    if (context.testamentActif) {
       lines.push({
         heritier: 'Concubin',
-        droits: 'Possible selon testament, dans la limite de la quotité disponible',
+        droits: 'Possible selon testament, fiscalité potentiellement majorée',
+        montantEstime: nbEnfantsTotal > 0 ? masseReference * getQuotiteDisponibleRatio(nbEnfantsTotal) : masseReference,
       });
     } else {
-      lines.push({ heritier: 'Concubin', droits: 'Aucun droit successoral légal' });
+      lines.push({ heritier: 'Concubin', droits: 'Aucun droit successoral légal', montantEstime: 0 });
     }
     if (nbEnfantsTotal > 0) {
-      lines.push({ heritier: 'Descendants', droits: getDescendantsLine(nbEnfantsTotal, 100) });
+      lines.push({
+        heritier: 'Descendants',
+        droits: getDescendantsLine(nbEnfantsTotal, 100),
+        montantEstime: masseReference,
+      });
     } else {
       warnings.push('Dévolution sans descendants non modélisée finement (ascendants/collatéraux exclus).');
     }
   } else {
     if (nbEnfantsTotal > 0) {
-      lines.push({ heritier: 'Descendants', droits: getDescendantsLine(nbEnfantsTotal, 100) });
+      lines.push({
+        heritier: 'Descendants',
+        droits: getDescendantsLine(nbEnfantsTotal, 100),
+        montantEstime: masseReference,
+      });
     } else {
       lines.push({
-        heritier: 'Ordres successoraux',
-        droits: 'Ascendants/collatéraux non détaillés dans ce module simplifié',
+        heritier: 'Héritiers légaux',
+        droits: 'Ordres successoraux non détaillés dans ce module',
+        montantEstime: null,
       });
-      warnings.push('Dévolution sans descendants non modélisée finement (ascendants/collatéraux exclus).');
+      warnings.push('Ordres successoraux hors descendants non modélisés finement.');
     }
   }
 
-  if (testamentActif && nbEnfantsTotal > 0) {
-    warnings.push('Testament actif: contrôle réserve héréditaire et quotité disponible requis.');
-  }
-
-  warnings.push('Module simplifié: représentation, renonciation et cantonnement non modélisés.');
+  addTestamentLines(lines, warnings, context, nbEnfantsTotal, masseReference, asAmount(legsParticuliersInput, 0));
 
   return {
+    masseReference,
     nbEnfantsTotal,
     nbEnfantsNonCommuns,
     reserve,

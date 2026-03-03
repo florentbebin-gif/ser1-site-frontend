@@ -21,6 +21,12 @@ function getQuotiteDisponibleRatio(nbEnfants: number): number {
   return 0.25;
 }
 
+function donationEntreEpouxOptionLabel(option: SuccessionPatrimonialContext['donationEntreEpouxOption']): string {
+  if (option === 'usufruit_total') return 'usufruit total';
+  if (option === 'pleine_propriete_quotite') return 'pleine propriété (quotité disponible)';
+  return 'option mixte';
+}
+
 export function buildSuccessionPatrimonialAnalysis(
   civil: SuccessionCivilContext,
   actifNetSuccessionInput: number,
@@ -48,7 +54,7 @@ export function buildSuccessionPatrimonialAnalysis(
 
   if (patrimonial.donationEntreEpouxActive) {
     if (civil.situationMatrimoniale === 'marie') {
-      warnings.push('Donation entre époux active: vérifier les options du conjoint survivant et les droits réservataires.');
+      warnings.push(`Donation entre époux active (${donationEntreEpouxOptionLabel(patrimonial.donationEntreEpouxOption)}): vérifier les options du conjoint survivant et les droits réservataires.`);
     } else {
       warnings.push('Donation entre époux active incohérente hors mariage (donnée conservée à titre indicatif).');
     }
