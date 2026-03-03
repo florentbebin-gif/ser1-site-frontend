@@ -17,6 +17,7 @@ function makePatrimonial(overrides: Partial<SuccessionPatrimonialContext>): Succ
     donationsHorsPart: 0,
     legsParticuliers: 0,
     donationEntreEpouxActive: false,
+    donationEntreEpouxOption: 'usufruit_total',
     preciputMontant: 0,
     attributionIntegrale: false,
     ...overrides,
@@ -55,11 +56,26 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
       1,
       makePatrimonial({
         donationEntreEpouxActive: true,
+        donationEntreEpouxOption: 'pleine_propriete_quotite',
         preciputMontant: 30000,
         attributionIntegrale: true,
       }),
     );
 
     expect(analysis.warnings.some((w) => w.includes('hors mariage'))).toBe(true);
+  });
+
+  it('affiche une alerte explicite sur l’option de donation entre époux', () => {
+    const analysis = buildSuccessionPatrimonialAnalysis(
+      makeCivil({ situationMatrimoniale: 'marie' }),
+      500000,
+      2,
+      makePatrimonial({
+        donationEntreEpouxActive: true,
+        donationEntreEpouxOption: 'mixte',
+      }),
+    );
+
+    expect(analysis.warnings.some((w) => w.includes('option mixte'))).toBe(true);
   });
 });

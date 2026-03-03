@@ -33,12 +33,16 @@ describe('successionDraft', () => {
       {
         nbEnfantsNonCommuns: 1,
         testamentActif: true,
+        typeDispositionTestamentaire: 'legs_titre_universel',
+        quotePartLegsTitreUniverselPct: 60,
+        ascendantsSurvivants: false,
       },
       {
         donationsRapportables: 30000,
         donationsHorsPart: 15000,
         legsParticuliers: 10000,
         donationEntreEpouxActive: true,
+        donationEntreEpouxOption: 'mixte',
         preciputMontant: 12000,
         attributionIntegrale: false,
       },
@@ -57,8 +61,11 @@ describe('successionDraft', () => {
     expect(parsed?.liquidation.actifCommun).toBe(150000);
     expect(parsed?.devolution.nbEnfantsNonCommuns).toBe(1);
     expect(parsed?.devolution.testamentActif).toBe(true);
+    expect(parsed?.devolution.typeDispositionTestamentaire).toBe('legs_titre_universel');
+    expect(parsed?.devolution.quotePartLegsTitreUniverselPct).toBe(60);
     expect(parsed?.patrimonial.donationsRapportables).toBe(30000);
     expect(parsed?.patrimonial.donationEntreEpouxActive).toBe(true);
+    expect(parsed?.patrimonial.donationEntreEpouxOption).toBe('mixte');
     expect(parsed?.enfants).toHaveLength(2);
     expect(parsed?.enfants[0]).toEqual({ id: 'E1', prenom: 'Alice', rattachement: 'commun' });
   });
@@ -114,6 +121,7 @@ describe('successionDraft', () => {
         donationsHorsPart: 0,
         legsParticuliers: 0,
         donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'usufruit_total',
         preciputMontant: 0,
         attributionIntegrale: false,
       },
@@ -124,5 +132,38 @@ describe('successionDraft', () => {
     expect(parsed?.enfants).toHaveLength(3);
     expect(parsed?.enfants.filter((e) => e.rattachement === 'commun')).toHaveLength(1);
     expect(parsed?.enfants.filter((e) => e.rattachement !== 'commun')).toHaveLength(2);
+    expect(parsed?.devolution.typeDispositionTestamentaire).toBeNull();
+    expect(parsed?.devolution.quotePartLegsTitreUniverselPct).toBe(50);
+    expect(parsed?.patrimonial.donationEntreEpouxOption).toBe('usufruit_total');
+  });
+
+  it('définit une disposition testamentaire par défaut quand testament actif en legacy', () => {
+    const raw = JSON.stringify({
+      version: 4,
+      form: {
+        actifNetSuccession: 180000,
+        heritiers: [{ lien: 'enfant', partSuccession: 180000 }],
+      },
+      civil: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_legale',
+        pacsConvention: 'separation',
+      },
+      liquidation: {
+        actifEpoux1: 120000,
+        actifEpoux2: 60000,
+        actifCommun: 0,
+        nbEnfants: 1,
+      },
+      devolution: {
+        nbEnfantsNonCommuns: 0,
+        testamentActif: true,
+      },
+    });
+
+    const parsed = parseSuccessionDraftPayload(raw);
+    expect(parsed).not.toBeNull();
+    expect(parsed?.devolution.testamentActif).toBe(true);
+    expect(parsed?.devolution.typeDispositionTestamentaire).toBe('legs_universel');
   });
 });

@@ -11,6 +11,14 @@ export type SituationMatrimoniale =
   | 'veuf';
 
 export type PacsConvention = 'separation' | 'indivision';
+export type SuccessionDispositionTestamentaire =
+  | 'legs_universel'
+  | 'legs_titre_universel'
+  | 'legs_particulier';
+export type SuccessionDonationEntreEpouxOption =
+  | 'usufruit_total'
+  | 'pleine_propriete_quotite'
+  | 'mixte';
 
 export interface SuccessionCivilContext {
   situationMatrimoniale: SituationMatrimoniale;
@@ -28,6 +36,9 @@ export interface SuccessionLiquidationContext {
 export interface SuccessionDevolutionContext {
   nbEnfantsNonCommuns: number;
   testamentActif: boolean;
+  typeDispositionTestamentaire: SuccessionDispositionTestamentaire | null;
+  quotePartLegsTitreUniverselPct: number;
+  ascendantsSurvivants: boolean;
 }
 
 export interface SuccessionPatrimonialContext {
@@ -35,6 +46,7 @@ export interface SuccessionPatrimonialContext {
   donationsHorsPart: number;
   legsParticuliers: number;
   donationEntreEpouxActive: boolean;
+  donationEntreEpouxOption: SuccessionDonationEntreEpouxOption;
   preciputMontant: number;
   attributionIntegrale: boolean;
 }
@@ -47,8 +59,8 @@ export interface SuccessionEnfant {
   rattachement: SuccessionEnfantRattachement;
 }
 
-interface SuccessionDraftPayloadV5 {
-  version: 5;
+interface SuccessionDraftPayloadV6 {
+  version: 6;
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
   liquidation: SuccessionLiquidationContext;
@@ -73,6 +85,9 @@ export const DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT: SuccessionLiquidationContex
 export const DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT: SuccessionDevolutionContext = {
   nbEnfantsNonCommuns: 0,
   testamentActif: false,
+  typeDispositionTestamentaire: null,
+  quotePartLegsTitreUniverselPct: 50,
+  ascendantsSurvivants: false,
 };
 
 export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContext = {
@@ -80,6 +95,7 @@ export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContex
   donationsHorsPart: 0,
   legsParticuliers: 0,
   donationEntreEpouxActive: false,
+  donationEntreEpouxOption: 'usufruit_total',
   preciputMontant: 0,
   attributionIntegrale: false,
 };
@@ -112,6 +128,18 @@ function isPacsConvention(v: unknown): v is PacsConvention {
   return v === 'separation' || v === 'indivision';
 }
 
+function isDispositionTestamentaire(v: unknown): v is SuccessionDispositionTestamentaire {
+  return v === 'legs_universel'
+    || v === 'legs_titre_universel'
+    || v === 'legs_particulier';
+}
+
+function isDonationEntreEpouxOption(v: unknown): v is SuccessionDonationEntreEpouxOption {
+  return v === 'usufruit_total'
+    || v === 'pleine_propriete_quotite'
+    || v === 'mixte';
+}
+
 function isRegimeMatrimonial(v: unknown): v is RegimeMatrimonial {
   return v === 'communaute_legale'
     || v === 'communaute_universelle'
@@ -131,9 +159,9 @@ export function buildSuccessionDraftPayload(
   devolution: SuccessionDevolutionContext,
   patrimonial: SuccessionPatrimonialContext,
   enfants: SuccessionEnfant[],
-): SuccessionDraftPayloadV5 {
+): SuccessionDraftPayloadV6 {
   return {
-    version: 5,
+    version: 6,
     form,
     civil,
     liquidation,
@@ -153,6 +181,12 @@ function asChildrenCount(v: unknown, fallback: number): number {
   const count = Number(v);
   if (!Number.isFinite(count)) return fallback;
   return Math.max(0, Math.floor(count));
+}
+
+function asPercent(v: unknown, fallback: number): number {
+  const pct = Number(v);
+  if (!Number.isFinite(pct)) return fallback;
+  return Math.min(100, Math.max(0, pct));
 }
 
 function asBoolean(v: unknown, fallback: boolean): boolean {
@@ -202,7 +236,12 @@ export function parseSuccessionDraftPayload(raw: string): {
     const parsed = JSON.parse(raw) as unknown;
     if (
       !isObject(parsed)
-      || (parsed.version !== 1 && parsed.version !== 2 && parsed.version !== 3 && parsed.version !== 4 && parsed.version !== 5)
+      || (parsed.version !== 1
+        && parsed.version !== 2
+        && parsed.version !== 3
+        && parsed.version !== 4
+        && parsed.version !== 5
+        && parsed.version !== 6)
     ) return null;
     const payload = parsed as Record<string, unknown>;
 
@@ -244,18 +283,34 @@ export function parseSuccessionDraftPayload(raw: string): {
       nbEnfants: asChildrenCount(liquidationRaw.nbEnfants, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.nbEnfants),
     };
 
-    const devolutionRaw = (payload.version === 3 || payload.version === 4 || payload.version === 5) && isObject(payload.devolution)
+    const devolutionRaw = (payload.version === 3 || payload.version === 4 || payload.version === 5 || payload.version === 6) && isObject(payload.devolution)
       ? payload.devolution
       : {};
+    const testamentActif = asBoolean(
+      devolutionRaw.testamentActif,
+      DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentActif,
+    );
+    const parsedDisposition = isDispositionTestamentaire(devolutionRaw.typeDispositionTestamentaire)
+      ? devolutionRaw.typeDispositionTestamentaire
+      : DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.typeDispositionTestamentaire;
     const devolution: SuccessionDevolutionContext = {
       nbEnfantsNonCommuns: asChildrenCount(
         devolutionRaw.nbEnfantsNonCommuns,
         DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.nbEnfantsNonCommuns,
       ),
-      testamentActif: asBoolean(devolutionRaw.testamentActif, DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentActif),
+      testamentActif,
+      typeDispositionTestamentaire: testamentActif ? (parsedDisposition ?? 'legs_universel') : null,
+      quotePartLegsTitreUniverselPct: asPercent(
+        devolutionRaw.quotePartLegsTitreUniverselPct,
+        DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.quotePartLegsTitreUniverselPct,
+      ),
+      ascendantsSurvivants: asBoolean(
+        devolutionRaw.ascendantsSurvivants,
+        DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivants,
+      ),
     };
 
-    const patrimonialRaw = (payload.version === 4 || payload.version === 5) && isObject(payload.patrimonial)
+    const patrimonialRaw = (payload.version === 4 || payload.version === 5 || payload.version === 6) && isObject(payload.patrimonial)
       ? payload.patrimonial
       : {};
     const patrimonial: SuccessionPatrimonialContext = {
@@ -275,6 +330,9 @@ export function parseSuccessionDraftPayload(raw: string): {
         patrimonialRaw.donationEntreEpouxActive,
         DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxActive,
       ),
+      donationEntreEpouxOption: isDonationEntreEpouxOption(patrimonialRaw.donationEntreEpouxOption)
+        ? patrimonialRaw.donationEntreEpouxOption
+        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxOption,
       preciputMontant: asAmount(
         patrimonialRaw.preciputMontant,
         DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,
@@ -285,7 +343,9 @@ export function parseSuccessionDraftPayload(raw: string): {
       ),
     };
 
-    const enfantsRaw = payload.version === 5 && Array.isArray(payload.enfants) ? payload.enfants : null;
+    const enfantsRaw = (payload.version === 5 || payload.version === 6) && Array.isArray(payload.enfants)
+      ? payload.enfants
+      : null;
     const enfants = enfantsRaw
       ? enfantsRaw
         .filter((item): item is Record<string, unknown> => isObject(item))
