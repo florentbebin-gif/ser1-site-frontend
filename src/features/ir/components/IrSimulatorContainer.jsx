@@ -171,7 +171,7 @@ export default function IrSimulatorContainer() {
       setRealMode({ d1: 'abat10', d2: 'abat10' });
       setRealExpenses({ d1: 0, d2: 0 });
       setCapitalMode('pfu');
-      setIncomeFilters({ ...DEFAULT_INCOME_FILTERS });
+      setIncomeFilters({ tns: false, pension: false, foncier: false });
 
       try {
         sessionStorage.removeItem(STORE_KEY);
