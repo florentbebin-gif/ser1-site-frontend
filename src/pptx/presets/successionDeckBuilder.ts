@@ -100,11 +100,17 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
   ];
 
   if (data.applicable && data.step1 && data.step2) {
-    lines.push(`• Étape 1 (${data.firstDecedeLabel}) - masse ${fmt(data.step1.actifTransmis)}, droits descendants ${fmt(data.step1.droitsEnfants)}`);
-    lines.push(`• Étape 2 (${data.secondDecedeLabel}) - masse ${fmt(data.step2.actifTransmis)}, droits descendants ${fmt(data.step2.droitsEnfants)}`);
+    lines.push(
+      `• Étape 1 (${data.firstDecedeLabel}) - masse ${fmt(data.step1.actifTransmis)}, ` +
+      `part conjoint ${fmt(data.step1.partConjoint)}, droits descendants ${fmt(data.step1.droitsEnfants)}`,
+    );
+    lines.push(
+      `• Étape 2 (${data.secondDecedeLabel}) - masse ${fmt(data.step2.actifTransmis)}, ` +
+      `part descendants ${fmt(data.step2.partEnfants)}, droits descendants ${fmt(data.step2.droitsEnfants)}`,
+    );
     lines.push(`• Total cumulé des droits (2 décès): ${fmt(data.totalDroits)}`);
     if (typeof data.totalDroitsOrdreInverse === 'number') {
-      lines.push(`• Total ordre inverse: ${fmt(data.totalDroitsOrdreInverse)}`);
+      lines.push(`• Ordre inverse: ${fmt(data.totalDroitsOrdreInverse)}`);
     }
   } else {
     lines.push('• Chronologie non applicable à la situation saisie (hors couple marié/pacsé ou données incomplètes)');
