@@ -3,6 +3,7 @@ import {
   buildSuccessionDraftPayload,
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+  DEFAULT_SUCCESSION_ENFANTS_CONTEXT,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   parseSuccessionDraftPayload,
@@ -41,6 +42,10 @@ describe('successionDraft', () => {
         preciputMontant: 12000,
         attributionIntegrale: false,
       },
+      [
+        { id: 'E1', prenom: 'Alice', rattachement: 'commun' },
+        { id: 'E2', prenom: 'Bastien', rattachement: 'epoux1' },
+      ],
     );
 
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
@@ -54,6 +59,8 @@ describe('successionDraft', () => {
     expect(parsed?.devolution.testamentActif).toBe(true);
     expect(parsed?.patrimonial.donationsRapportables).toBe(30000);
     expect(parsed?.patrimonial.donationEntreEpouxActive).toBe(true);
+    expect(parsed?.enfants).toHaveLength(2);
+    expect(parsed?.enfants[0]).toEqual({ id: 'E1', prenom: 'Alice', rattachement: 'commun' });
   });
 
   it('retourne null sur JSON invalide', () => {
@@ -77,5 +84,45 @@ describe('successionDraft', () => {
     expect(parsed?.liquidation).toEqual(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
     expect(parsed?.devolution).toEqual(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
     expect(parsed?.patrimonial).toEqual(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
+    expect(parsed?.enfants).toEqual(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
+  });
+
+  it('migre un draft v4 en enfants typés (v5)', () => {
+    const raw = JSON.stringify({
+      version: 4,
+      form: {
+        actifNetSuccession: 250000,
+        heritiers: [{ lien: 'enfant', partSuccession: 250000 }],
+      },
+      civil: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_legale',
+        pacsConvention: 'separation',
+      },
+      liquidation: {
+        actifEpoux1: 100000,
+        actifEpoux2: 100000,
+        actifCommun: 50000,
+        nbEnfants: 3,
+      },
+      devolution: {
+        nbEnfantsNonCommuns: 2,
+        testamentActif: false,
+      },
+      patrimonial: {
+        donationsRapportables: 0,
+        donationsHorsPart: 0,
+        legsParticuliers: 0,
+        donationEntreEpouxActive: false,
+        preciputMontant: 0,
+        attributionIntegrale: false,
+      },
+    });
+
+    const parsed = parseSuccessionDraftPayload(raw);
+    expect(parsed).not.toBeNull();
+    expect(parsed?.enfants).toHaveLength(3);
+    expect(parsed?.enfants.filter((e) => e.rattachement === 'commun')).toHaveLength(1);
+    expect(parsed?.enfants.filter((e) => e.rattachement !== 'commun')).toHaveLength(2);
   });
 });

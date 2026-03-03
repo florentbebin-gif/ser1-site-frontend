@@ -39,13 +39,22 @@ export interface SuccessionPatrimonialContext {
   attributionIntegrale: boolean;
 }
 
-interface SuccessionDraftPayloadV4 {
-  version: 4;
+export type SuccessionEnfantRattachement = 'commun' | 'epoux1' | 'epoux2';
+
+export interface SuccessionEnfant {
+  id: string;
+  prenom?: string;
+  rattachement: SuccessionEnfantRattachement;
+}
+
+interface SuccessionDraftPayloadV5 {
+  version: 5;
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
   liquidation: SuccessionLiquidationContext;
   devolution: SuccessionDevolutionContext;
   patrimonial: SuccessionPatrimonialContext;
+  enfants: SuccessionEnfant[];
 }
 
 export const DEFAULT_SUCCESSION_CIVIL_CONTEXT: SuccessionCivilContext = {
@@ -58,7 +67,7 @@ export const DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT: SuccessionLiquidationContex
   actifEpoux1: 0,
   actifEpoux2: 0,
   actifCommun: 0,
-  nbEnfants: 1,
+  nbEnfants: 0,
 };
 
 export const DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT: SuccessionDevolutionContext = {
@@ -74,6 +83,8 @@ export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContex
   preciputMontant: 0,
   attributionIntegrale: false,
 };
+
+export const DEFAULT_SUCCESSION_ENFANTS_CONTEXT: SuccessionEnfant[] = [];
 
 function isObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null;
@@ -109,20 +120,26 @@ function isRegimeMatrimonial(v: unknown): v is RegimeMatrimonial {
     || v === 'communaute_meubles_acquets';
 }
 
+function isEnfantRattachement(v: unknown): v is SuccessionEnfantRattachement {
+  return v === 'commun' || v === 'epoux1' || v === 'epoux2';
+}
+
 export function buildSuccessionDraftPayload(
   form: PersistedSuccessionForm,
   civil: SuccessionCivilContext,
   liquidation: SuccessionLiquidationContext,
   devolution: SuccessionDevolutionContext,
   patrimonial: SuccessionPatrimonialContext,
-): SuccessionDraftPayloadV4 {
+  enfants: SuccessionEnfant[],
+): SuccessionDraftPayloadV5 {
   return {
-    version: 4,
+    version: 5,
     form,
     civil,
     liquidation,
     devolution,
     patrimonial,
+    enfants,
   };
 }
 
@@ -142,16 +159,51 @@ function asBoolean(v: unknown, fallback: boolean): boolean {
   return typeof v === 'boolean' ? v : fallback;
 }
 
+function normalizePrenom(v: unknown): string | undefined {
+  if (typeof v !== 'string') return undefined;
+  const trimmed = v.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
+function deriveLegacyEnfants(
+  liquidation: SuccessionLiquidationContext,
+  devolution: SuccessionDevolutionContext,
+): SuccessionEnfant[] {
+  const total = Math.max(0, Math.floor(liquidation.nbEnfants));
+  const nonCommuns = Math.min(Math.max(0, Math.floor(devolution.nbEnfantsNonCommuns)), total);
+  const communs = Math.max(0, total - nonCommuns);
+
+  const enfants: SuccessionEnfant[] = [];
+  for (let i = 0; i < communs; i += 1) {
+    enfants.push({
+      id: `E${enfants.length + 1}`,
+      rattachement: 'commun',
+    });
+  }
+  for (let i = 0; i < nonCommuns; i += 1) {
+    enfants.push({
+      id: `E${enfants.length + 1}`,
+      rattachement: i % 2 === 0 ? 'epoux1' : 'epoux2',
+    });
+  }
+
+  return enfants;
+}
+
 export function parseSuccessionDraftPayload(raw: string): {
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
   liquidation: SuccessionLiquidationContext;
   devolution: SuccessionDevolutionContext;
   patrimonial: SuccessionPatrimonialContext;
+  enfants: SuccessionEnfant[];
 } | null {
   try {
     const parsed = JSON.parse(raw) as unknown;
-    if (!isObject(parsed) || (parsed.version !== 1 && parsed.version !== 2 && parsed.version !== 3 && parsed.version !== 4)) return null;
+    if (
+      !isObject(parsed)
+      || (parsed.version !== 1 && parsed.version !== 2 && parsed.version !== 3 && parsed.version !== 4 && parsed.version !== 5)
+    ) return null;
     const payload = parsed as Record<string, unknown>;
 
     const formRaw = payload.form;
@@ -192,7 +244,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       nbEnfants: asChildrenCount(liquidationRaw.nbEnfants, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.nbEnfants),
     };
 
-    const devolutionRaw = (payload.version === 3 || payload.version === 4) && isObject(payload.devolution)
+    const devolutionRaw = (payload.version === 3 || payload.version === 4 || payload.version === 5) && isObject(payload.devolution)
       ? payload.devolution
       : {};
     const devolution: SuccessionDevolutionContext = {
@@ -203,7 +255,9 @@ export function parseSuccessionDraftPayload(raw: string): {
       testamentActif: asBoolean(devolutionRaw.testamentActif, DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentActif),
     };
 
-    const patrimonialRaw = payload.version === 4 && isObject(payload.patrimonial) ? payload.patrimonial : {};
+    const patrimonialRaw = (payload.version === 4 || payload.version === 5) && isObject(payload.patrimonial)
+      ? payload.patrimonial
+      : {};
     const patrimonial: SuccessionPatrimonialContext = {
       donationsRapportables: asAmount(
         patrimonialRaw.donationsRapportables,
@@ -231,6 +285,17 @@ export function parseSuccessionDraftPayload(raw: string): {
       ),
     };
 
+    const enfantsRaw = payload.version === 5 && Array.isArray(payload.enfants) ? payload.enfants : null;
+    const enfants = enfantsRaw
+      ? enfantsRaw
+        .filter((item): item is Record<string, unknown> => isObject(item))
+        .map((item, idx) => ({
+          id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `E${idx + 1}`,
+          prenom: normalizePrenom(item.prenom),
+          rattachement: isEnfantRattachement(item.rattachement) ? item.rattachement : 'commun',
+        }))
+      : deriveLegacyEnfants(liquidation, devolution);
+
     return {
       form: {
         actifNetSuccession,
@@ -240,6 +305,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       liquidation,
       devolution,
       patrimonial,
+      enfants,
     };
   } catch {
     return null;
