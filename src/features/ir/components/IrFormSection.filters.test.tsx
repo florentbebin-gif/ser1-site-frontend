@@ -37,6 +37,8 @@ const baseProps = {
   euro0: (v: number) => `${v} EUR`,
   children: [],
   setChildren: vi.fn(),
+  isExpert: true,
+  incomeFilters: { tns: true, pension: true, foncier: true },
   setIncomeFilters: vi.fn(),
 };
 
@@ -44,8 +46,6 @@ function renderSection(overrides: Partial<typeof baseProps> = {}) {
   return renderToStaticMarkup(
     <IrFormSection
       {...baseProps}
-      isExpert
-      incomeFilters={{ tns: true, pension: true, foncier: true }}
       {...overrides}
     />,
   );
