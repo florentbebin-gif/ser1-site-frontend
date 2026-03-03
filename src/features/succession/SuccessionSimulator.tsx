@@ -22,11 +22,13 @@ import {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
+  DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   parseSuccessionDraftPayload,
   type SituationMatrimoniale,
 } from './successionDraft';
 import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
+import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
 import '../../components/simulator/SimulatorShell.css';
 import '../../styles/premium-shared.css';
@@ -78,6 +80,7 @@ export default function SuccessionSimulator() {
   const [civilContext, setCivilContext] = useState(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
   const [liquidationContext, setLiquidationContext] = useState(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
   const [devolutionContext, setDevolutionContext] = useState(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
+  const [patrimonialContext, setPatrimonialContext] = useState(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
 
   const predecesAnalysis = useMemo(
     () => buildSuccessionPredecesAnalysis(civilContext, liquidationContext, fiscalSnapshot.dmtgSettings),
@@ -86,6 +89,10 @@ export default function SuccessionSimulator() {
   const devolutionAnalysis = useMemo(
     () => buildSuccessionDevolutionAnalysis(civilContext, liquidationContext.nbEnfants, devolutionContext),
     [civilContext, liquidationContext.nbEnfants, devolutionContext],
+  );
+  const patrimonialAnalysis = useMemo(
+    () => buildSuccessionPatrimonialAnalysis(civilContext, form.actifNetSuccession, liquidationContext.nbEnfants, patrimonialContext),
+    [civilContext, form.actifNetSuccession, liquidationContext.nbEnfants, patrimonialContext],
   );
 
   const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
@@ -105,6 +112,7 @@ export default function SuccessionSimulator() {
     setCivilContext(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
     setLiquidationContext(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
     setDevolutionContext(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
+    setPatrimonialContext(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
     setShowDetails(false);
     setHypothesesOpen(false);
     try {
@@ -138,6 +146,27 @@ export default function SuccessionSimulator() {
     [],
   );
 
+  const setPatrimonialField = useCallback(
+    (
+      field:
+        | 'donationsRapportables'
+        | 'donationsHorsPart'
+        | 'legsParticuliers'
+        | 'donationEntreEpouxActive'
+        | 'preciputMontant'
+        | 'attributionIntegrale',
+      value: number | boolean,
+    ) => {
+      setPatrimonialContext((prev) => ({
+        ...prev,
+        [field]: field === 'donationEntreEpouxActive' || field === 'attributionIntegrale'
+          ? Boolean(value)
+          : Math.max(0, Number(value) || 0),
+      }));
+    },
+    [],
+  );
+
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(STORE_KEY);
@@ -148,6 +177,7 @@ export default function SuccessionSimulator() {
           setCivilContext(parsed.civil);
           setLiquidationContext(parsed.liquidation);
           setDevolutionContext(parsed.devolution);
+          setPatrimonialContext(parsed.patrimonial);
         }
       }
     } catch {
@@ -161,12 +191,20 @@ export default function SuccessionSimulator() {
     try {
       sessionStorage.setItem(
         STORE_KEY,
-        JSON.stringify(buildSuccessionDraftPayload(persistedForm, civilContext, liquidationContext, devolutionContext)),
+        JSON.stringify(
+          buildSuccessionDraftPayload(
+            persistedForm,
+            civilContext,
+            liquidationContext,
+            devolutionContext,
+            patrimonialContext,
+          ),
+        ),
       );
     } catch {
       // ignore
     }
-  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext]);
+  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext]);
 
   useEffect(() => {
     const off = onResetEvent?.(({ simId }: { simId?: string }) => {
@@ -489,6 +527,106 @@ export default function SuccessionSimulator() {
             )}
           </div>
 
+          <div className="premium-card sc-card">
+            <header className="sc-card__header">
+              <h2 className="sc-card__title">Libéralités & avantages matrimoniaux (simplifié)</h2>
+              <p className="sc-card__subtitle">
+                Qualification patrimoniale indicative, sans recalcul DMTG automatique à ce stade.
+              </p>
+            </header>
+            <div className="sc-card__divider" />
+
+            <div className="sc-civil-grid">
+              <div className="sc-field">
+                <label>Donations rapportables (€)</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={patrimonialContext.donationsRapportables || ''}
+                  onChange={(e) => setPatrimonialField('donationsRapportables', Number(e.target.value) || 0)}
+                  placeholder="Montant"
+                />
+              </div>
+              <div className="sc-field">
+                <label>Donations hors part (€)</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={patrimonialContext.donationsHorsPart || ''}
+                  onChange={(e) => setPatrimonialField('donationsHorsPart', Number(e.target.value) || 0)}
+                  placeholder="Montant"
+                />
+              </div>
+              <div className="sc-field">
+                <label>Legs particuliers (€)</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={patrimonialContext.legsParticuliers || ''}
+                  onChange={(e) => setPatrimonialField('legsParticuliers', Number(e.target.value) || 0)}
+                  placeholder="Montant"
+                />
+              </div>
+              <div className="sc-field">
+                <label>Donation entre époux</label>
+                <select
+                  value={patrimonialContext.donationEntreEpouxActive ? 'oui' : 'non'}
+                  onChange={(e) => setPatrimonialField('donationEntreEpouxActive', e.target.value === 'oui')}
+                >
+                  <option value="non">Non</option>
+                  <option value="oui">Oui</option>
+                </select>
+              </div>
+              <div className="sc-field">
+                <label>Clause de préciput (€)</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={patrimonialContext.preciputMontant || ''}
+                  onChange={(e) => setPatrimonialField('preciputMontant', Number(e.target.value) || 0)}
+                  placeholder="Montant"
+                />
+              </div>
+              <div className="sc-field">
+                <label>Attribution intégrale</label>
+                <select
+                  value={patrimonialContext.attributionIntegrale ? 'oui' : 'non'}
+                  onChange={(e) => setPatrimonialField('attributionIntegrale', e.target.value === 'oui')}
+                >
+                  <option value="non">Non</option>
+                  <option value="oui">Oui</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="sc-summary-row sc-summary-row--reserve">
+              <span>Masse civile de référence</span>
+              <strong>{fmt(patrimonialAnalysis.masseCivileReference)}</strong>
+            </div>
+            <div className="sc-summary-row sc-summary-row--reserve">
+              <span>Quotité disponible estimée</span>
+              <strong>{fmt(patrimonialAnalysis.quotiteDisponibleMontant)}</strong>
+            </div>
+            <div className="sc-summary-row sc-summary-row--reserve">
+              <span>Libéralités à contrôler</span>
+              <strong>{fmt(patrimonialAnalysis.liberalitesImputeesMontant)}</strong>
+            </div>
+            {patrimonialAnalysis.depassementQuotiteMontant > 0 && (
+              <div className="sc-summary-row sc-summary-row--reserve">
+                <span>Dépassement estimé de quotité</span>
+                <strong>{fmt(patrimonialAnalysis.depassementQuotiteMontant)}</strong>
+              </div>
+            )}
+
+            {patrimonialAnalysis.warnings.length > 0 && (
+              <ul className="sc-warning-list">
+                {patrimonialAnalysis.warnings.map((warning, idx) => (
+                  <li key={`${warning}-${idx}`}>{warning}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <div className="premium-card sc-card sc-card--guide">
             <header className="sc-card__header">
               <h2 className="sc-card__title">Patrimoine transmis</h2>
@@ -710,7 +848,8 @@ export default function SuccessionSimulator() {
             <li>Le calcul repose sur les parts de succession saisies pour chaque héritier.</li>
             <li>Le module prédécès repose sur une liquidation matrimoniale simplifiée avec warnings sur les cas non couverts.</li>
             <li>La dévolution légale est présentée en lecture civile simplifiée, sans gestion exhaustive des ordres successoraux.</li>
-            <li>Les donations antérieures, libéralités complexes et avantages matrimoniaux ne sont pas encore intégrés dans ce module.</li>
+            <li>Les libéralités et avantages matrimoniaux sont qualifiés de façon indicative, sans recalcul automatique des droits dans ce module.</li>
+            <li>L’intégration chiffrée fine (rapport civil détaillé, réduction, liquidation notariale) n’est pas encore modélisée.</li>
             <li>Résultat indicatif, à confirmer par une analyse patrimoniale et notariale.</li>
           </ul>
         )}

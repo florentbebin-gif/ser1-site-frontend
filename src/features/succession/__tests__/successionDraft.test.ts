@@ -4,6 +4,7 @@ import {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
+  DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   parseSuccessionDraftPayload,
 } from '../successionDraft';
 
@@ -32,6 +33,14 @@ describe('successionDraft', () => {
         nbEnfantsNonCommuns: 1,
         testamentActif: true,
       },
+      {
+        donationsRapportables: 30000,
+        donationsHorsPart: 15000,
+        legsParticuliers: 10000,
+        donationEntreEpouxActive: true,
+        preciputMontant: 12000,
+        attributionIntegrale: false,
+      },
     );
 
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
@@ -43,6 +52,8 @@ describe('successionDraft', () => {
     expect(parsed?.liquidation.actifCommun).toBe(150000);
     expect(parsed?.devolution.nbEnfantsNonCommuns).toBe(1);
     expect(parsed?.devolution.testamentActif).toBe(true);
+    expect(parsed?.patrimonial.donationsRapportables).toBe(30000);
+    expect(parsed?.patrimonial.donationEntreEpouxActive).toBe(true);
   });
 
   it('retourne null sur JSON invalide', () => {
@@ -65,5 +76,6 @@ describe('successionDraft', () => {
     expect(parsed?.civil).toEqual(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
     expect(parsed?.liquidation).toEqual(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
     expect(parsed?.devolution).toEqual(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
+    expect(parsed?.patrimonial).toEqual(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
   });
 });
