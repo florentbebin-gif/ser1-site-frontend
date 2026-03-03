@@ -32,6 +32,10 @@ import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
+import {
+  buildSuccessionChainageAnalysis,
+  type SuccessionChainOrder,
+} from './successionChainage';
 import { ScSelect } from './components/ScSelect';
 import '../../components/simulator/SimulatorShell.css';
 import '../../styles/premium-shared.css';
@@ -83,6 +87,11 @@ function createEnfantId(): string {
   return `enf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+const CHAIN_ORDER_OPTIONS: { value: SuccessionChainOrder; label: string }[] = [
+  { value: 'epoux1', label: 'Époux 1 décède en premier' },
+  { value: 'epoux2', label: 'Époux 2 décède en premier' },
+];
+
 export default function SuccessionSimulator() {
   const { loading: settingsLoading, fiscalContext } = useFiscalContext({ strict: true });
   const fiscalSnapshot = useMemo(
@@ -91,7 +100,7 @@ export default function SuccessionSimulator() {
   );
   const {
     form, persistedForm, result, setActifNet, addHeritier, removeHeritier,
-    updateHeritier, hydrateForm, distributeEqually, compute, reset, hasResult,
+    updateHeritier, hydrateForm, distributeEqually, reset, hasResult,
   } = useSuccessionCalc({ dmtgSettings: fiscalSnapshot.dmtgSettings });
 
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
@@ -106,6 +115,7 @@ export default function SuccessionSimulator() {
   const [devolutionContext, setDevolutionContext] = useState(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
   const [patrimonialContext, setPatrimonialContext] = useState(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
   const [enfantsContext, setEnfantsContext] = useState<SuccessionEnfant[]>(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
+  const [chainOrder, setChainOrder] = useState<SuccessionChainOrder>('epoux1');
 
   const nbEnfants = enfantsContext.length;
   const nbEnfantsNonCommuns = useMemo(
@@ -136,6 +146,41 @@ export default function SuccessionSimulator() {
     () => buildSuccessionPatrimonialAnalysis(civilContext, form.actifNetSuccession, nbEnfants, patrimonialContext),
     [civilContext, form.actifNetSuccession, nbEnfants, patrimonialContext],
   );
+  const chainageAnalysis = useMemo(
+    () => buildSuccessionChainageAnalysis({
+      civil: civilContext,
+      liquidation: { ...liquidationContext, nbEnfants },
+      regimeUsed: predecesAnalysis.regimeUsed,
+      order: chainOrder,
+      dmtgSettings: fiscalSnapshot.dmtgSettings,
+    }),
+    [
+      civilContext,
+      liquidationContext,
+      nbEnfants,
+      predecesAnalysis.regimeUsed,
+      chainOrder,
+      fiscalSnapshot.dmtgSettings,
+    ],
+  );
+
+  const alternateChainageAnalysis = useMemo(
+    () => buildSuccessionChainageAnalysis({
+      civil: civilContext,
+      liquidation: { ...liquidationContext, nbEnfants },
+      regimeUsed: predecesAnalysis.regimeUsed,
+      order: chainOrder === 'epoux1' ? 'epoux2' : 'epoux1',
+      dmtgSettings: fiscalSnapshot.dmtgSettings,
+    }),
+    [
+      civilContext,
+      liquidationContext,
+      nbEnfants,
+      predecesAnalysis.regimeUsed,
+      chainOrder,
+      fiscalSnapshot.dmtgSettings,
+    ],
+  );
 
   const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
     setCivilContext((prev) => ({
@@ -156,6 +201,7 @@ export default function SuccessionSimulator() {
     setDevolutionContext(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
     setPatrimonialContext(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
     setEnfantsContext(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
+    setChainOrder('epoux1');
     setShowDetails(false);
     setHypothesesOpen(false);
     try {
@@ -286,7 +332,7 @@ export default function SuccessionSimulator() {
   }, [handleReset]);
 
   const handleExportPptx = useCallback(async () => {
-    if (!result || !canExport) return;
+    if (!result || !hasResult || !canExport) return;
     try {
       setExportLoading(true);
       await exportSuccessionPptx(
@@ -302,10 +348,10 @@ export default function SuccessionSimulator() {
     } finally {
       setExportLoading(false);
     }
-  }, [result, canExport, pptxColors, cabinetLogo, logoPlacement]);
+  }, [result, hasResult, canExport, pptxColors, cabinetLogo, logoPlacement]);
 
   const handleExportXlsx = useCallback(async () => {
-    if (!result || !canExport) return;
+    if (!result || !hasResult || !canExport) return;
     try {
       setExportLoading(true);
       await exportAndDownloadSuccessionXlsx(
@@ -320,20 +366,20 @@ export default function SuccessionSimulator() {
     } finally {
       setExportLoading(false);
     }
-  }, [result, canExport, form, pptxColors]);
+  }, [result, hasResult, canExport, form, pptxColors]);
 
   const exportOptions = [
     {
       label: 'PowerPoint',
       onClick: handleExportPptx,
-      disabled: !result,
-      tooltip: !result ? 'Calculez d’abord les droits pour exporter.' : undefined,
+      disabled: !hasResult,
+      tooltip: !hasResult ? 'Renseignez la saisie pour exporter.' : undefined,
     },
     {
       label: 'Excel',
       onClick: handleExportXlsx,
-      disabled: !result,
-      tooltip: !result ? 'Calculez d’abord les droits pour exporter.' : undefined,
+      disabled: !hasResult,
+      tooltip: !hasResult ? 'Renseignez la saisie pour exporter.' : undefined,
     },
   ];
 
@@ -526,29 +572,9 @@ export default function SuccessionSimulator() {
                   </p>
                 )}
 
-                {predecesAnalysis.calc && (
-                  <table className="premium-table sc-predeces-table">
-                    <thead>
-                      <tr>
-                        <th>Scénario</th>
-                        <th className="align-right">Masse transmise</th>
-                        <th className="align-right">Droits estimés</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>Décès époux 1</td>
-                        <td className="align-right">{fmt(predecesAnalysis.calc.result.scenarioMrDecede.actifTransmis)}</td>
-                        <td className="align-right value-cell">{fmt(predecesAnalysis.calc.result.scenarioMrDecede.droitsSuccession)}</td>
-                      </tr>
-                      <tr>
-                        <td>Décès époux 2</td>
-                        <td className="align-right">{fmt(predecesAnalysis.calc.result.scenarioMmeDecede.actifTransmis)}</td>
-                        <td className="align-right value-cell">{fmt(predecesAnalysis.calc.result.scenarioMmeDecede.droitsSuccession)}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                )}
+                <p className="sc-hint sc-hint--compact">
+                  Les droits des 2 étapes sont affichés dans la carte de chronologie à droite.
+                </p>
               </>
             ) : (
               <p className="sc-hint">
@@ -805,14 +831,7 @@ export default function SuccessionSimulator() {
           </div>
 
           <div className="sc-primary-actions">
-            <button
-              type="button"
-              className="premium-btn sc-btn sc-btn--primary"
-              onClick={compute}
-              disabled={form.actifNetSuccession <= 0 || form.heritiers.length === 0}
-            >
-              Calculer les droits
-            </button>
+            <p className="sc-hint sc-hint--compact">Calcul des droits en direct selon la saisie.</p>
             <button
               type="button"
               className="premium-btn sc-btn sc-btn--secondary"
@@ -824,17 +843,74 @@ export default function SuccessionSimulator() {
         </div>
 
         <div className="sc-right">
-          <div className="premium-card sc-summary-card">
-            <h2 className="sc-summary-title">Synthèse</h2>
+          <div className="premium-card sc-summary-card sc-hero-card">
+            <div className="sc-hero-header">
+              <h2 className="sc-summary-title">Chronologie des décès</h2>
+              <ScSelect
+                className="sc-hero-order-select"
+                value={chainOrder}
+                onChange={(value) => setChainOrder(value as SuccessionChainOrder)}
+                options={CHAIN_ORDER_OPTIONS}
+              />
+            </div>
+            <div className="sc-card__divider sc-card__divider--tight" />
+            {chainageAnalysis.applicable && chainageAnalysis.step1 && chainageAnalysis.step2 ? (
+              <div className="sc-chain">
+                <div className="sc-chain-step">
+                  <div className="sc-chain-step__title">Étape 1 - décès {chainageAnalysis.firstDecedeLabel}</div>
+                  <div className="sc-summary-row">
+                    <span>Masse transmise</span>
+                    <strong>{fmt(chainageAnalysis.step1.actifTransmis)}</strong>
+                  </div>
+                  <div className="sc-summary-row">
+                    <span>Part conjoint survivant</span>
+                    <strong>{fmt(chainageAnalysis.step1.partConjoint)}</strong>
+                  </div>
+                  <div className="sc-summary-row">
+                    <span>Droits descendants</span>
+                    <strong>{fmt(chainageAnalysis.step1.droitsEnfants)}</strong>
+                  </div>
+                </div>
+
+                <div className="sc-chain-step">
+                  <div className="sc-chain-step__title">Étape 2 - décès {chainageAnalysis.secondDecedeLabel}</div>
+                  <div className="sc-summary-row">
+                    <span>Masse transmise</span>
+                    <strong>{fmt(chainageAnalysis.step2.actifTransmis)}</strong>
+                  </div>
+                  <div className="sc-summary-row">
+                    <span>Part descendants</span>
+                    <strong>{fmt(chainageAnalysis.step2.partEnfants)}</strong>
+                  </div>
+                  <div className="sc-summary-row">
+                    <span>Droits descendants</span>
+                    <strong>{fmt(chainageAnalysis.step2.droitsEnfants)}</strong>
+                  </div>
+                </div>
+
+                <div className="sc-summary-row sc-summary-row--reserve">
+                  <span>Total cumulé des droits (2 décès)</span>
+                  <strong>{fmt(chainageAnalysis.totalDroits)}</strong>
+                </div>
+              </div>
+            ) : (
+              <p className="sc-summary-note">
+                Activez un contexte marié ou pacsé pour afficher la chronologie en 2 décès.
+              </p>
+            )}
+          </div>
+
+          <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
+            <h2 className="sc-summary-title">Synthèse des droits</h2>
             <div className="sc-card__divider sc-card__divider--tight" />
             {hasResult && result ? (
               <div className="sc-kpis">
                 <div className="sc-kpi">
-                  <div className="sc-kpi__label">Actif net successoral</div>
+                  <div className="sc-kpi__label">Actif net successoral (direct)</div>
                   <div className="sc-kpi__value">{fmt(result.result.actifNetSuccession)}</div>
                 </div>
                 <div className="sc-kpi">
-                  <div className="sc-kpi__label">Total droits</div>
+                  <div className="sc-kpi__label">Droits succession directe</div>
                   <div className="sc-kpi__value">{fmt(result.result.totalDroits)}</div>
                 </div>
                 <div className="sc-kpi">
@@ -852,10 +928,22 @@ export default function SuccessionSimulator() {
                   <span>Nombre d&apos;héritiers</span>
                   <strong>{form.heritiers.length}</strong>
                 </div>
-                <p className="sc-summary-note">
-                  Lancez le calcul pour afficher le détail des droits.
-                </p>
               </div>
+            )}
+
+            {chainageAnalysis.applicable && alternateChainageAnalysis.applicable && (
+              <div className="sc-summary-row sc-summary-row--reserve">
+                <span>Total droits ordre inverse</span>
+                <strong>{fmt(alternateChainageAnalysis.totalDroits)}</strong>
+              </div>
+            )}
+
+            {chainageAnalysis.warnings.length > 0 && (
+              <ul className="sc-warning-list sc-warning-list--compact">
+                {chainageAnalysis.warnings.map((warning, idx) => (
+                  <li key={`${warning}-${idx}`}>{warning}</li>
+                ))}
+              </ul>
             )}
           </div>
         </div>
@@ -940,7 +1028,7 @@ export default function SuccessionSimulator() {
               AV décès après {fiscalSnapshot.avDeces.agePivotPrimes} ans {fmt(fiscalSnapshot.avDeces.apres70ans.globalAllowance)} (global).
             </li>
             <li>Le calcul repose sur les parts de succession saisies pour chaque héritier.</li>
-            <li>Le module prédécès repose sur une liquidation matrimoniale simplifiée avec warnings sur les cas non couverts.</li>
+            <li>La chronologie 2 décès repose sur un chaînage simplifié avec warnings sur les cas non couverts.</li>
             <li>La dévolution légale est présentée en lecture civile simplifiée, sans gestion exhaustive des ordres successoraux.</li>
             <li>Les libéralités et avantages matrimoniaux sont qualifiés de façon indicative, sans recalcul automatique des droits dans ce module.</li>
             <li>L’intégration chiffrée fine (rapport civil détaillé, réduction, liquidation notariale) n’est pas encore modélisée.</li>

@@ -47,7 +47,6 @@ export interface SuccessionCalcHook {
   updateHeritier: (_id: string, _field: keyof HeritierRow, _value: string | number) => void;
   hydrateForm: (_form: PersistedSuccessionForm) => void;
   distributeEqually: () => void;
-  compute: () => void;
   reset: () => void;
   hasResult: boolean;
 }
@@ -100,7 +99,6 @@ interface UseSuccessionCalcOptions {
 
 export function useSuccessionCalc({ dmtgSettings }: UseSuccessionCalcOptions = {}): SuccessionCalcHook {
   const [form, setForm] = useState<SuccessionFormState>(() => buildFormFromPersisted(createDefaultPersistedForm()));
-  const [result, setResult] = useState<CalcResult<SuccessionResult> | null>(null);
 
   const setActifNet = useCallback((v: number) => {
     setForm((prev) => ({ ...prev, actifNetSuccession: v }));
@@ -131,7 +129,6 @@ export function useSuccessionCalc({ dmtgSettings }: UseSuccessionCalcOptions = {
 
   const hydrateForm = useCallback((persisted: PersistedSuccessionForm) => {
     setForm(buildFormFromPersisted(persisted));
-    setResult(null);
   }, []);
 
   const distributeEqually = useCallback(() => {
@@ -146,30 +143,10 @@ export function useSuccessionCalc({ dmtgSettings }: UseSuccessionCalcOptions = {
     });
   }, []);
 
-  const compute = useCallback(() => {
-    const normalizedForm = normalizePersistedForm({
-      actifNetSuccession: form.actifNetSuccession,
-      heritiers: form.heritiers.map((h) => ({ lien: h.lien, partSuccession: h.partSuccession })),
-    });
-    const engineInput: SuccessionInput = {
-      actifNetSuccession: normalizedForm.actifNetSuccession,
-      heritiers: normalizedForm.heritiers.map((h): HeritiersInput => ({
-        lien: h.lien,
-        partSuccession: h.partSuccession,
-      })),
-      ...(dmtgSettings ? { dmtgSettings } : {}),
-    };
-    const calcResult = calculateSuccession(engineInput);
-    setResult(calcResult);
-  }, [form, dmtgSettings]);
-
   const reset = useCallback(() => {
     nextId = 1;
     setForm(buildFormFromPersisted(createDefaultPersistedForm()));
-    setResult(null);
   }, []);
-
-  const hasResult = useMemo(() => result !== null, [result]);
   const persistedForm = useMemo<PersistedSuccessionForm>(
     () => ({
       actifNetSuccession: Number.isFinite(form.actifNetSuccession) ? Math.max(0, form.actifNetSuccession) : 0,
@@ -181,6 +158,26 @@ export function useSuccessionCalc({ dmtgSettings }: UseSuccessionCalcOptions = {
     [form],
   );
 
+  const canCompute = useMemo(
+    () => persistedForm.actifNetSuccession > 0 && persistedForm.heritiers.length > 0,
+    [persistedForm],
+  );
+
+  const result = useMemo<CalcResult<SuccessionResult> | null>(() => {
+    if (!canCompute) return null;
+    const engineInput: SuccessionInput = {
+      actifNetSuccession: persistedForm.actifNetSuccession,
+      heritiers: persistedForm.heritiers.map((h): HeritiersInput => ({
+        lien: h.lien,
+        partSuccession: h.partSuccession,
+      })),
+      ...(dmtgSettings ? { dmtgSettings } : {}),
+    };
+    return calculateSuccession(engineInput);
+  }, [canCompute, persistedForm, dmtgSettings]);
+
+  const hasResult = useMemo(() => result !== null, [result]);
+
   return {
     form,
     result,
@@ -191,7 +188,6 @@ export function useSuccessionCalc({ dmtgSettings }: UseSuccessionCalcOptions = {
     updateHeritier,
     hydrateForm,
     distributeEqually,
-    compute,
     reset,
     hasResult,
   };
