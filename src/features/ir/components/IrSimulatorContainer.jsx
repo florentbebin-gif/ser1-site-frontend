@@ -16,6 +16,7 @@ import {
   countPersonsACharge,
 } from '../../../engine/ir/adjustments.js';
 import { useIrExportHandlers } from '../hooks/useIrExportHandlers';
+import { applyIncomeFilters, DEFAULT_INCOME_FILTERS, normalizeIncomeFilters } from '../utils/incomeFilters';
 import { IrFormSection } from './IrFormSection';
 import { IrSidebarSection } from './IrSidebarSection';
 import { IrDetailsSection } from './IrDetailsSection';
@@ -62,6 +63,7 @@ export default function IrSimulatorContainer() {
   const [children, setChildren] = useState([]);
 
   const [incomes, setIncomes] = useState(DEFAULT_INCOMES);
+  const [incomeFilters, setIncomeFilters] = useState(() => ({ ...DEFAULT_INCOME_FILTERS }));
   const [capitalMode, setCapitalMode] = useState('pfu');
 
   const [realMode, setRealMode] = useState({ d1: 'abat10', d2: 'abat10' });
@@ -102,6 +104,7 @@ export default function IrSimulatorContainer() {
           setCredits(s.credits ?? 0);
           setCapitalMode(s.capitalMode ?? 'pfu');
           setChildren(Array.isArray(s.children) ? s.children : []);
+          setIncomeFilters(normalizeIncomeFilters(s.incomeFilters));
         }
       }
     } catch {
@@ -128,6 +131,7 @@ export default function IrSimulatorContainer() {
           credits,
           capitalMode,
           children,
+          incomeFilters,
         }),
       );
     } catch {
@@ -148,6 +152,7 @@ export default function IrSimulatorContainer() {
     credits,
     capitalMode,
     children,
+    incomeFilters,
   ]);
 
   useEffect(() => {
@@ -166,6 +171,7 @@ export default function IrSimulatorContainer() {
       setRealMode({ d1: 'abat10', d2: 'abat10' });
       setRealExpenses({ d1: 0, d2: 0 });
       setCapitalMode('pfu');
+      setIncomeFilters({ ...DEFAULT_INCOME_FILTERS });
 
       try {
         sessionStorage.removeItem(STORE_KEY);
@@ -187,6 +193,8 @@ export default function IrSimulatorContainer() {
     }));
   };
 
+  const effectiveIncomes = useMemo(() => applyIncomeFilters(incomes, incomeFilters), [incomes, incomeFilters]);
+
   const { effectiveParts } = computeEffectiveParts({
     status,
     isIsolated,
@@ -197,14 +205,14 @@ export default function IrSimulatorContainer() {
   const abat10CfgRoot = taxSettings?.incomeTax?.abat10 || {};
   const abat10SalCfg = yearKey === 'current' ? abat10CfgRoot.current : abat10CfgRoot.previous;
 
-  const baseSalD1 = (incomes.d1.salaries || 0) + (incomes.d1.associes62 || 0);
-  const baseSalD2 = (incomes.d2.salaries || 0) + (incomes.d2.associes62 || 0);
+  const baseSalD1 = (effectiveIncomes.d1.salaries || 0) + (effectiveIncomes.d1.associes62 || 0);
+  const baseSalD2 = (effectiveIncomes.d2.salaries || 0) + (effectiveIncomes.d2.associes62 || 0);
 
   const abat10SalD1 = computeAbattement10(baseSalD1, abat10SalCfg);
   const abat10SalD2 = computeAbattement10(baseSalD2, abat10SalCfg);
 
   const cfgRet = yearKey === 'current' ? abat10CfgRoot.retireesCurrent : abat10CfgRoot.retireesPrevious;
-  const baseRet = (incomes.d1.pensions || 0) + (status === 'couple' ? incomes.d2.pensions || 0 : 0);
+  const baseRet = (effectiveIncomes.d1.pensions || 0) + (status === 'couple' ? effectiveIncomes.d2.pensions || 0 : 0);
   const abat10PensionsFoyer = computeAbattement10(baseRet, cfgRet);
 
   const extraDeductions = computeExtraDeductions({
@@ -224,8 +232,8 @@ export default function IrSimulatorContainer() {
         parts: effectiveParts,
         location,
         incomes: isExpert
-          ? incomes
-          : { ...incomes, capital: { withPs: 0, withoutPs: 0 } },
+          ? effectiveIncomes
+          : { ...effectiveIncomes, capital: { withPs: 0, withoutPs: 0 } },
         deductions: (isExpert ? deductions : 0) + extraDeductions,
         credits: isExpert ? credits : 0,
         taxSettings,
@@ -239,7 +247,7 @@ export default function IrSimulatorContainer() {
       isIsolated,
       effectiveParts,
       location,
-      incomes,
+      effectiveIncomes,
       isExpert,
       deductions,
       extraDeductions,
@@ -265,7 +273,7 @@ export default function IrSimulatorContainer() {
     isIsolated,
     effectiveParts,
     location,
-    incomes,
+    incomes: effectiveIncomes,
     capitalMode,
     realMode,
     realExpenses,
@@ -357,6 +365,8 @@ export default function IrSimulatorContainer() {
           isExpert={isExpert}
           children={children}
           setChildren={setChildren}
+          incomeFilters={incomeFilters}
+          setIncomeFilters={setIncomeFilters}
         />
 
         <IrSidebarSection

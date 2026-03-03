@@ -31,7 +31,20 @@ export function IrFormSection({
   isExpert,
   children,
   setChildren,
+  incomeFilters,
+  setIncomeFilters,
 }) {
+  const showTnsRows = incomeFilters?.tns !== false;
+  const showPensionRows = incomeFilters?.pension !== false;
+  const showFoncierRow = incomeFilters?.foncier !== false;
+
+  const toggleIncomeFilter = (key) => {
+    setIncomeFilters((prev) => ({
+      ...prev,
+      [key]: prev?.[key] === false,
+    }));
+  };
+
   return (
     <div className="ir-left premium-section">
       <div className="ir-table-wrapper premium-card premium-card--guide">
@@ -131,16 +144,47 @@ export function IrFormSection({
 
       <div className="ir-table-wrapper premium-card premium-card--guide">
         <div className="ir-income-card__header">
-          <div className="ir-income-card__title">
-            <div className="ir-section-icon-wrapper ir-section-icon-wrapper--card">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <line x1="3" y1="9" x2="21" y2="9" />
-                <line x1="3" y1="15" x2="21" y2="15" />
-                <line x1="12" y1="3" x2="12" y2="21" />
-              </svg>
+          <div className="ir-income-card__header-row">
+            <div className="ir-income-card__title">
+              <div className="ir-section-icon-wrapper ir-section-icon-wrapper--card">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <line x1="3" y1="9" x2="21" y2="9" />
+                  <line x1="3" y1="15" x2="21" y2="15" />
+                  <line x1="12" y1="3" x2="12" y2="21" />
+                </svg>
+              </div>
+              Revenus imposables
             </div>
-            Revenus imposables
+            <div className="ir-income-filters" role="group" aria-label="Filtres des lignes de revenus imposables">
+              <button
+                type="button"
+                className={`ir-income-filter-btn${showTnsRows ? ' is-active' : ''}`}
+                onClick={() => toggleIncomeFilter('tns')}
+                aria-pressed={showTnsRows}
+                data-testid="ir-filter-tns"
+              >
+                TNS
+              </button>
+              <button
+                type="button"
+                className={`ir-income-filter-btn${showPensionRows ? ' is-active' : ''}`}
+                onClick={() => toggleIncomeFilter('pension')}
+                aria-pressed={showPensionRows}
+                data-testid="ir-filter-pension"
+              >
+                Pension
+              </button>
+              <button
+                type="button"
+                className={`ir-income-filter-btn${showFoncierRow ? ' is-active' : ''}`}
+                onClick={() => toggleIncomeFilter('foncier')}
+                aria-pressed={showFoncierRow}
+                data-testid="ir-filter-foncier"
+              >
+                Foncier
+              </button>
+            </div>
           </div>
           <p className="ir-income-card__subtitle">Renseignez vos sources de revenus par catégorie pour affiner le calcul</p>
         </div>
@@ -190,33 +234,35 @@ export function IrFormSection({
                 />
               </td>
             </tr>
-            <tr>
-              <td>Revenus des associés / gérants</td>
-              <td>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  value={formatMoneyInput(incomes.d1.associes62)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    updateIncome('d1', 'associes62', raw === '' ? 0 : Number(raw));
-                  }}
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  value={formatMoneyInput(incomes.d2.associes62)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    updateIncome('d2', 'associes62', raw === '' ? 0 : Number(raw));
-                  }}
-                />
-              </td>
-            </tr>
+            {showTnsRows && (
+              <tr>
+                <td>Revenus des associés / gérants</td>
+                <td>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0 €"
+                    value={formatMoneyInput(incomes.d1.associes62)}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^\d]/g, '');
+                      updateIncome('d1', 'associes62', raw === '' ? 0 : Number(raw));
+                    }}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0 €"
+                    value={formatMoneyInput(incomes.d2.associes62)}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^\d]/g, '');
+                      updateIncome('d2', 'associes62', raw === '' ? 0 : Number(raw));
+                    }}
+                  />
+                </td>
+              </tr>
+            )}
             <tr className="ir-row-title">
               <td>Frais réels ou abattement 10 %</td>
               <td>
@@ -278,33 +324,35 @@ export function IrFormSection({
             </tr>
             {/* ── Divider ── */}
             <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
-            <tr>
-              <td>BIC&#8209;BNC&#8209;BA imposables</td>
-              <td>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  value={formatMoneyInput(incomes.d1.bic)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    updateIncome('d1', 'bic', raw === '' ? 0 : Number(raw));
-                  }}
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  value={formatMoneyInput(incomes.d2.bic)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    updateIncome('d2', 'bic', raw === '' ? 0 : Number(raw));
-                  }}
-                />
-              </td>
-            </tr>
+            {showTnsRows && (
+              <tr>
+                <td>BIC&#8209;BNC&#8209;BA imposables</td>
+                <td>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0 €"
+                    value={formatMoneyInput(incomes.d1.bic)}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^\d]/g, '');
+                      updateIncome('d1', 'bic', raw === '' ? 0 : Number(raw));
+                    }}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0 €"
+                    value={formatMoneyInput(incomes.d2.bic)}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^\d]/g, '');
+                      updateIncome('d2', 'bic', raw === '' ? 0 : Number(raw));
+                    }}
+                  />
+                </td>
+              </tr>
+            )}
             <tr>
               <td>Autres revenus imposables</td>
               <td>
@@ -332,65 +380,76 @@ export function IrFormSection({
                 />
               </td>
             </tr>
-            {/* ── Divider ── */}
-            <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
-            <tr>
-              <td>Pensions, retraites et rentes</td>
-              <td>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  value={formatMoneyInput(incomes.d1.pensions)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    updateIncome('d1', 'pensions', raw === '' ? 0 : Number(raw));
-                  }}
-                />
-              </td>
-              <td>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  value={formatMoneyInput(incomes.d2.pensions)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    updateIncome('d2', 'pensions', raw === '' ? 0 : Number(raw));
-                  }}
-                />
-              </td>
-            </tr>
-            <tr className="ir-row-title">
-              <td>Abattement 10&nbsp;% pensions (foyer)</td>
-              <td colSpan={2} style={{ textAlign: 'center' }}>
-                {euro0(abat10PensionsFoyer)}
-              </td>
-            </tr>
+            {(showPensionRows || showFoncierRow || isExpert) && (
+              <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
+            )}
 
-            {/* ── Divider ── */}
-            <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
-            <tr>
-              <td>Revenus fonciers nets</td>
-              <td colSpan={2}>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  value={formatMoneyInput(incomes.fonciersFoyer || 0)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    const val = raw === '' ? 0 : Number(raw);
-                    setIncomes((prev) => ({ ...prev, fonciersFoyer: val }));
-                  }}
-                />
-              </td>
-            </tr>
+            {showPensionRows && (
+              <>
+                <tr>
+                  <td>Pensions, retraites et rentes</td>
+                  <td>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d1.pensions)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d1', 'pensions', raw === '' ? 0 : Number(raw));
+                      }}
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="0 €"
+                      value={formatMoneyInput(incomes.d2.pensions)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        updateIncome('d2', 'pensions', raw === '' ? 0 : Number(raw));
+                      }}
+                    />
+                  </td>
+                </tr>
+                <tr className="ir-row-title">
+                  <td>Abattement 10&nbsp;% pensions (foyer)</td>
+                  <td colSpan={2} style={{ textAlign: 'center' }}>
+                    {euro0(abat10PensionsFoyer)}
+                  </td>
+                </tr>
+              </>
+            )}
+
+            {showPensionRows && (showFoncierRow || isExpert) && (
+              <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
+            )}
+
+            {showFoncierRow && (
+              <tr>
+                <td>Revenus fonciers nets</td>
+                <td colSpan={2}>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="0 €"
+                    value={formatMoneyInput(incomes.fonciersFoyer || 0)}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^\d]/g, '');
+                      const val = raw === '' ? 0 : Number(raw);
+                      setIncomes((prev) => ({ ...prev, fonciersFoyer: val }));
+                    }}
+                  />
+                </td>
+              </tr>
+            )}
 
             {isExpert && (
               <>
-                {/* ── Divider ── */}
-                <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
+                {showFoncierRow && (
+                  <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
+                )}
                 <tr>
                   <td>RCM soumis aux PS à {fmtPct(psPatrimonyRate)} %</td>
                   <td colSpan={2}>
