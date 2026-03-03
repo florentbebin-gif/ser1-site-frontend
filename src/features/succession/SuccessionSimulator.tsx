@@ -20,10 +20,12 @@ import type { LienParente } from '../../engine/succession';
 import {
   buildSuccessionDraftPayload,
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
+  DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   parseSuccessionDraftPayload,
   type SituationMatrimoniale,
 } from './successionDraft';
+import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
 import '../../components/simulator/SimulatorShell.css';
@@ -75,10 +77,15 @@ export default function SuccessionSimulator() {
   const [hydrated, setHydrated] = useState(false);
   const [civilContext, setCivilContext] = useState(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
   const [liquidationContext, setLiquidationContext] = useState(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
+  const [devolutionContext, setDevolutionContext] = useState(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
 
   const predecesAnalysis = useMemo(
     () => buildSuccessionPredecesAnalysis(civilContext, liquidationContext, fiscalSnapshot.dmtgSettings),
     [civilContext, liquidationContext, fiscalSnapshot.dmtgSettings],
+  );
+  const devolutionAnalysis = useMemo(
+    () => buildSuccessionDevolutionAnalysis(civilContext, liquidationContext.nbEnfants, devolutionContext),
+    [civilContext, liquidationContext.nbEnfants, devolutionContext],
   );
 
   const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
@@ -97,6 +104,7 @@ export default function SuccessionSimulator() {
     reset();
     setCivilContext(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
     setLiquidationContext(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
+    setDevolutionContext(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
     setShowDetails(false);
     setHypothesesOpen(false);
     try {
@@ -118,6 +126,18 @@ export default function SuccessionSimulator() {
     [],
   );
 
+  const setDevolutionField = useCallback(
+    (field: 'nbEnfantsNonCommuns' | 'testamentActif', value: number | boolean) => {
+      setDevolutionContext((prev) => ({
+        ...prev,
+        [field]: field === 'nbEnfantsNonCommuns'
+          ? Math.max(0, Math.floor(Number(value) || 0))
+          : Boolean(value),
+      }));
+    },
+    [],
+  );
+
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(STORE_KEY);
@@ -127,6 +147,7 @@ export default function SuccessionSimulator() {
           hydrateForm(parsed.form);
           setCivilContext(parsed.civil);
           setLiquidationContext(parsed.liquidation);
+          setDevolutionContext(parsed.devolution);
         }
       }
     } catch {
@@ -140,12 +161,12 @@ export default function SuccessionSimulator() {
     try {
       sessionStorage.setItem(
         STORE_KEY,
-        JSON.stringify(buildSuccessionDraftPayload(persistedForm, civilContext, liquidationContext)),
+        JSON.stringify(buildSuccessionDraftPayload(persistedForm, civilContext, liquidationContext, devolutionContext)),
       );
     } catch {
       // ignore
     }
-  }, [hydrated, persistedForm, civilContext, liquidationContext]);
+  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext]);
 
   useEffect(() => {
     const off = onResetEvent?.(({ simId }: { simId?: string }) => {
@@ -401,6 +422,73 @@ export default function SuccessionSimulator() {
             )}
           </div>
 
+          <div className="premium-card sc-card">
+            <header className="sc-card__header">
+              <h2 className="sc-card__title">Dévolution légale simplifiée</h2>
+              <p className="sc-card__subtitle">
+                Lecture civile indicative des droits théoriques avant ajustements patrimoniaux.
+              </p>
+            </header>
+            <div className="sc-card__divider" />
+
+            <div className="sc-civil-grid">
+              <div className="sc-field">
+                <label>Enfants non communs</label>
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={devolutionContext.nbEnfantsNonCommuns}
+                  onChange={(e) => setDevolutionField('nbEnfantsNonCommuns', Number(e.target.value) || 0)}
+                />
+              </div>
+              <div className="sc-field">
+                <label>Testament actif</label>
+                <select
+                  value={devolutionContext.testamentActif ? 'oui' : 'non'}
+                  onChange={(e) => setDevolutionField('testamentActif', e.target.value === 'oui')}
+                >
+                  <option value="non">Non</option>
+                  <option value="oui">Oui</option>
+                </select>
+              </div>
+            </div>
+
+            {devolutionAnalysis.reserve ? (
+              <div className="sc-summary-row sc-summary-row--reserve">
+                <span>Réserve héréditaire / Quotité disponible</span>
+                <strong>{devolutionAnalysis.reserve.reserve} / {devolutionAnalysis.reserve.quotiteDisponible}</strong>
+              </div>
+            ) : (
+              <p className="sc-hint">Aucune réserve descendante calculable sans enfant déclaré.</p>
+            )}
+
+            <table className="premium-table sc-predeces-table">
+              <thead>
+                <tr>
+                  <th>Bénéficiaire</th>
+                  <th>Droits civils théoriques</th>
+                </tr>
+              </thead>
+              <tbody>
+                {devolutionAnalysis.lines.map((line, idx) => (
+                  <tr key={`${line.heritier}-${idx}`}>
+                    <td>{line.heritier}</td>
+                    <td>{line.droits}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {devolutionAnalysis.warnings.length > 0 && (
+              <ul className="sc-warning-list">
+                {devolutionAnalysis.warnings.map((warning, idx) => (
+                  <li key={`${warning}-${idx}`}>{warning}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <div className="premium-card sc-card sc-card--guide">
             <header className="sc-card__header">
               <h2 className="sc-card__title">Patrimoine transmis</h2>
@@ -621,6 +709,7 @@ export default function SuccessionSimulator() {
             </li>
             <li>Le calcul repose sur les parts de succession saisies pour chaque héritier.</li>
             <li>Le module prédécès repose sur une liquidation matrimoniale simplifiée avec warnings sur les cas non couverts.</li>
+            <li>La dévolution légale est présentée en lecture civile simplifiée, sans gestion exhaustive des ordres successoraux.</li>
             <li>Les donations antérieures, libéralités complexes et avantages matrimoniaux ne sont pas encore intégrés dans ce module.</li>
             <li>Résultat indicatif, à confirmer par une analyse patrimoniale et notariale.</li>
           </ul>
