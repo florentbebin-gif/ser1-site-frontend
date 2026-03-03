@@ -256,6 +256,21 @@
   color: var(--color-c9);
 }
 
+.sc-predeces-table {
+  margin-top: 12px;
+}
+
+.sc-warning-list {
+  margin: 12px 0 0;
+  padding-left: 18px;
+}
+
+.sc-warning-list li {
+  font-size: 12px;
+  color: var(--color-c9);
+  line-height: 1.5;
+}
+
 .sc-detail-card {
   margin-bottom: 24px;
 }

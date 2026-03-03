@@ -195,6 +195,7 @@ export interface PredecesScenariosInput {
   actifCommun: number;
   nbEnfants: number;
   regime: 'communaute_legale' | 'separation_biens' | 'communaute_universelle';
+  dmtgSettings?: DmtgSettings;
 }
 
 export interface PredecesScenariosResult {
@@ -262,11 +263,13 @@ export function calculatePredecesSenarios(
   const successionMr = calculateSuccession({
     actifNetSuccession: actifTransmisMrDecede,
     heritiers: heritiersMrDecede,
+    ...(input.dmtgSettings ? { dmtgSettings: input.dmtgSettings } : {}),
   });
 
   const successionMme = calculateSuccession({
     actifNetSuccession: actifTransmisMmeDecede,
     heritiers: heritiersMmeDecede,
+    ...(input.dmtgSettings ? { dmtgSettings: input.dmtgSettings } : {}),
   });
 
   return mkResult({
