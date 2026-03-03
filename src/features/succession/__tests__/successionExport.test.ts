@@ -67,6 +67,10 @@ describe('Succession PPTX Export', () => {
       (s) => s.type === 'content' && 'title' in s && s.title === 'Chronologie des décès',
     );
     expect(chronologySlide).toBeDefined();
+    if (chronologySlide && 'body' in chronologySlide) {
+      expect(chronologySlide.body).toContain('Total cumulé des droits');
+      expect(chronologySlide.body).toContain('Ordre inverse');
+    }
   });
 });
 
@@ -128,7 +132,7 @@ describe('Succession Excel Export', () => {
     expect(zip.file('xl/workbook.xml')).toBeTruthy();
     expect(zip.file('xl/worksheets/sheet5.xml')).toBeTruthy();
     const workbookXml = await zip.file('xl/workbook.xml')?.async('string');
-    expect(workbookXml).toContain('Prédécès');
+    expect(workbookXml).toContain('Chronologie');
   });
 
   it('generates a simplified chainage-only XLSX when no direct succession result is provided', async () => {

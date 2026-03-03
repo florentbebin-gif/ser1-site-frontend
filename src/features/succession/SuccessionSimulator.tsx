@@ -1139,6 +1139,16 @@ export default function SuccessionSimulator() {
                   <span>Total cumulé des droits (2 décès)</span>
                   <strong>{fmt(chainageAnalysis.totalDroits)}</strong>
                 </div>
+                {alternateChainageAnalysis.applicable && (
+                  <div className="sc-summary-row sc-summary-row--reserve">
+                    <span>
+                      Ordre inverse ({alternateChainageAnalysis.firstDecedeLabel}
+                      {' '}puis{' '}
+                      {alternateChainageAnalysis.secondDecedeLabel})
+                    </span>
+                    <strong>{fmt(alternateChainageAnalysis.totalDroits)}</strong>
+                  </div>
+                )}
               </div>
             ) : (
               <p className="sc-summary-note">
@@ -1148,7 +1158,7 @@ export default function SuccessionSimulator() {
           </div>
 
           <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
-            <h2 className="sc-summary-title">{isExpert ? 'Synthèse des droits' : 'Points d’attention'}</h2>
+            <h2 className="sc-summary-title">{isExpert ? 'Synthèse fiscale' : 'Points d’attention'}</h2>
             <div className="sc-card__divider sc-card__divider--tight" />
             {isExpert && hasResult && result ? (
               <div className="sc-kpis">
@@ -1157,13 +1167,20 @@ export default function SuccessionSimulator() {
                   <div className="sc-kpi__value">{fmt(result.result.actifNetSuccession)}</div>
                 </div>
                 <div className="sc-kpi">
-                  <div className="sc-kpi__label">Droits succession directe</div>
+                  <div className="sc-kpi__label">Droits totaux DMTG (direct)</div>
                   <div className="sc-kpi__value">{fmt(result.result.totalDroits)}</div>
                 </div>
                 <div className="sc-kpi">
                   <div className="sc-kpi__label">Taux moyen global</div>
                   <div className="sc-kpi__value">{fmtPct(result.result.tauxMoyenGlobal)}</div>
                 </div>
+                <button
+                  type="button"
+                  className="sc-summary-link"
+                  onClick={() => setShowDetails(true)}
+                >
+                  Voir le détail du calcul
+                </button>
               </div>
             ) : isExpert ? (
               <div className="sc-summary-placeholder">
@@ -1181,22 +1198,29 @@ export default function SuccessionSimulator() {
                 <p className="sc-summary-note">
                   Résultat indicatif: simulation simplifiée des 2 décès, hors liquidation notariale fine.
                 </p>
+                {chainageAnalysis.warnings.length > 0 ? (
+                  <ul className="sc-warning-list sc-warning-list--compact">
+                    {chainageAnalysis.warnings.map((warning, idx) => (
+                      <li key={`${warning}-${idx}`}>{warning}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="sc-summary-note sc-summary-note--muted">
+                    Aucun avertissement bloquant sur la chronologie saisie.
+                  </p>
+                )}
               </div>
-            )}
-
-            {chainageAnalysis.warnings.length > 0 && (
-              <ul className="sc-warning-list sc-warning-list--compact">
-                {chainageAnalysis.warnings.map((warning, idx) => (
-                  <li key={`${warning}-${idx}`}>{warning}</li>
-                ))}
-              </ul>
             )}
           </div>
         </div>
       </div>
 
       {isExpert && hasResult && result && (
-        <div className="premium-card sc-detail-card" data-testid="succession-detail-accordion">
+        <div
+          className="premium-card sc-detail-card"
+          data-testid="succession-detail-accordion"
+          id="succession-detail-accordion"
+        >
           <div className="sc-detail-header">
             <h3 className="sc-detail-title">Détail du calcul</h3>
             <button

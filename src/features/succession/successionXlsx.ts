@@ -1,7 +1,7 @@
 /**
  * Succession Excel Export (P1-02)
  *
- * 5 onglets normalisés : Inputs / Résultats / Détails / Prédécès / Hypothèses
+ * 5 onglets normalisés : Inputs / Résultats / Détails / Chronologie / Hypothèses
  * Utilise xlsxBuilder pour générer un fichier OOXML natif.
  */
 
@@ -140,14 +140,14 @@ function orderLabel(order: 'epoux1' | 'epoux2'): string {
 
 function buildPredecesSheet(
   chronologie?: SuccessionChronologieXlsxData,
-  sheetName = 'Prédécès',
+  sheetName = 'Chronologie',
 ): XlsxSheet {
   const rows: Array<Array<XlsxCell | string | number>> = [
     [h('Indicateur'), h('Valeur')],
   ];
 
   if (!chronologie) {
-    rows.push(['Module de chaînage', 'Donnée non transmise à l’export']);
+    rows.push(['Module de chronologie', 'Donnée non transmise à l’export']);
     return { name: sheetName, rows, columnWidths: [42, 35] };
   }
 
@@ -204,7 +204,7 @@ export async function exportSuccessionXlsx(
       buildHypothesesSheet(),
     ]
     : [
-      buildPredecesSheet(chronologie, 'Chronologie'),
+      buildPredecesSheet(chronologie),
       buildHypothesesSheet(),
     ];
 
