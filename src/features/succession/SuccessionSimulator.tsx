@@ -181,6 +181,32 @@ export default function SuccessionSimulator() {
       fiscalSnapshot.dmtgSettings,
     ],
   );
+  const chainageExportPayload = useMemo(
+    () => ({
+      applicable: chainageAnalysis.applicable,
+      order: chainageAnalysis.order,
+      firstDecedeLabel: chainageAnalysis.firstDecedeLabel,
+      secondDecedeLabel: chainageAnalysis.secondDecedeLabel,
+      step1: chainageAnalysis.step1 ? {
+        actifTransmis: chainageAnalysis.step1.actifTransmis,
+        partConjoint: chainageAnalysis.step1.partConjoint,
+        partEnfants: chainageAnalysis.step1.partEnfants,
+        droitsEnfants: chainageAnalysis.step1.droitsEnfants,
+      } : null,
+      step2: chainageAnalysis.step2 ? {
+        actifTransmis: chainageAnalysis.step2.actifTransmis,
+        partConjoint: chainageAnalysis.step2.partConjoint,
+        partEnfants: chainageAnalysis.step2.partEnfants,
+        droitsEnfants: chainageAnalysis.step2.droitsEnfants,
+      } : null,
+      totalDroits: chainageAnalysis.totalDroits,
+      totalDroitsOrdreInverse: alternateChainageAnalysis.applicable
+        ? alternateChainageAnalysis.totalDroits
+        : undefined,
+      warnings: chainageAnalysis.warnings,
+    }),
+    [chainageAnalysis, alternateChainageAnalysis],
+  );
 
   const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
     setCivilContext((prev) => ({
@@ -341,6 +367,7 @@ export default function SuccessionSimulator() {
           totalDroits: result.result.totalDroits,
           tauxMoyenGlobal: result.result.tauxMoyenGlobal,
           heritiers: result.result.detailHeritiers,
+          predecesChronologie: chainageExportPayload,
         },
         pptxColors,
         { logoUrl: cabinetLogo, logoPlacement },
@@ -348,7 +375,7 @@ export default function SuccessionSimulator() {
     } finally {
       setExportLoading(false);
     }
-  }, [result, hasResult, canExport, pptxColors, cabinetLogo, logoPlacement]);
+  }, [result, hasResult, canExport, pptxColors, cabinetLogo, logoPlacement, chainageExportPayload]);
 
   const handleExportXlsx = useCallback(async () => {
     if (!result || !hasResult || !canExport) return;
@@ -362,11 +389,13 @@ export default function SuccessionSimulator() {
         },
         result.result,
         pptxColors.c1,
+        undefined,
+        chainageExportPayload,
       );
     } finally {
       setExportLoading(false);
     }
-  }, [result, hasResult, canExport, form, pptxColors]);
+  }, [result, hasResult, canExport, form, pptxColors, chainageExportPayload]);
 
   const exportOptions = [
     {
