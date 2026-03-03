@@ -30,6 +30,10 @@ describe('Succession PPTX Export', () => {
         totalDroits: result.result.totalDroits,
         tauxMoyenGlobal: result.result.tauxMoyenGlobal,
         heritiers: result.result.detailHeritiers,
+        civilHighlights: ['Situation familiale: Marié(e)', 'Régime matrimonial: Communauté réduite aux acquêts'],
+        devolutionHighlights: ['Réserve / quotité disponible: 2/3 / 1/3'],
+        patrimonialHighlights: ['Masse civile de référence: 500 000 €'],
+        warningHighlights: ['Module simplifié: validation notariale recommandée'],
       },
       THEME_COLORS,
     );
@@ -41,6 +45,11 @@ describe('Succession PPTX Export', () => {
 
     const synthSlide = spec.slides.find((s) => s.type === 'succession-synthesis');
     expect(synthSlide).toBeDefined();
+
+    const civilSlide = spec.slides.find(
+      (s) => s.type === 'content' && 'title' in s && s.title === 'Lecture civile simplifiée',
+    );
+    expect(civilSlide).toBeDefined();
   });
 });
 
@@ -62,6 +71,26 @@ describe('Succession Excel Export', () => {
           { lien: 'enfant', partSuccession: 200000 },
           { lien: 'enfant', partSuccession: 200000 },
         ],
+        context: {
+          situationFamiliale: 'Marié(e)',
+          regimeMatrimonial: 'Communauté réduite aux acquêts',
+          pacsConvention: null,
+          nbEnfants: 2,
+          nbEnfantsNonCommuns: 0,
+          testamentActif: false,
+          liquidationRegime: 'Communauté réduite aux acquêts',
+          predecesApplicable: true,
+          predecesDroitsMrDecede: 0,
+          predecesDroitsMmeDecedee: 0,
+          devolutionReserve: '2/3',
+          devolutionQuotiteDisponible: '1/3',
+          devolutionLignes: [{ heritier: 'Conjoint survivant', droits: '1/4 en pleine propriété' }],
+          masseCivileReference: 400000,
+          quotiteDisponibleMontant: 133333.33,
+          liberalitesImputeesMontant: 0,
+          depassementQuotiteMontant: 0,
+          warnings: ['Module simplifié'],
+        },
       },
       result.result,
       THEME_COLORS.c1,

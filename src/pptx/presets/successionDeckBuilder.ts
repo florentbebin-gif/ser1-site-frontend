@@ -2,7 +2,7 @@
  * Succession Deck Builder (P1-02)
  *
  * Generates a StudyDeckSpec for succession simulation results.
- * Structure: Cover → Chapter → Synthesis → Chapter → Content (hypothèses) → End
+ * Structure: Cover → Chapter → Synthesis → Content (lecture civile) → Chapter → Content (hypothèses) → End
  */
 
 import type {
@@ -29,6 +29,10 @@ export interface SuccessionData {
     tauxMoyen: number;
   }>;
   clientName?: string;
+  civilHighlights?: string[];
+  devolutionHighlights?: string[];
+  patrimonialHighlights?: string[];
+  warningHighlights?: string[];
 }
 
 export interface AdvisorInfo {
@@ -56,6 +60,14 @@ Les informations qu'il contient sont strictement confidentielles et destinées e
 
 Toute reproduction, représentation, diffusion ou rediffusion, totale ou partielle, sur quelque support ou par quelque procédé que ce soit, ainsi que toute vente, revente, retransmission ou mise à disposition de tiers, est strictement encadrée. Le non-respect de ces dispositions est susceptible de constituer une contrefaçon engageant la responsabilité civile et pénale de son auteur, conformément aux articles L335-1 à L335-10 du Code de la propriété intellectuelle.`;
 
+function asHighlights(lines?: string[], max = 8): string[] {
+  if (!lines || lines.length === 0) return [];
+  return lines
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(0, max);
+}
+
 export function buildSuccessionStudyDeck(
   data: SuccessionData,
   _uiSettings: UiSettingsForPptx,
@@ -67,6 +79,10 @@ export function buildSuccessionStudyDeck(
   const dateStr = now.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const clientSubtitle = data.clientName || 'NOM Prénom';
   const advisorMeta = advisor?.name || 'NOM Prénom';
+  const civilHighlights = asHighlights(data.civilHighlights, 4);
+  const devolutionHighlights = asHighlights(data.devolutionHighlights, 4);
+  const patrimonialHighlights = asHighlights(data.patrimonialHighlights, 4);
+  const warningHighlights = asHighlights(data.warningHighlights, 5);
 
   if (DEBUG_PPTX) {
     // eslint-disable-next-line no-console
@@ -94,6 +110,33 @@ export function buildSuccessionStudyDeck(
       tauxMoyenGlobal: data.tauxMoyenGlobal,
       heritiers: data.heritiers,
     },
+  ];
+
+  const civilBodyLines = [
+    ...civilHighlights.map((line) => `• ${line}`),
+    ...devolutionHighlights.map((line) => `• ${line}`),
+    ...patrimonialHighlights.map((line) => `• ${line}`),
+  ];
+  if (civilBodyLines.length > 0) {
+    slides.push({
+      type: 'content',
+      title: 'Lecture civile simplifiée',
+      subtitle: 'Liquidation, dévolution et libéralités (indicatif)',
+      body: civilBodyLines.join('\n'),
+    });
+  }
+
+  const hypothesesBodyLines = [
+    '• Barème des droits de mutation à titre gratuit en vigueur (CGI Art. 777)',
+    '• Abattement en ligne directe : 100 000 € par enfant (CGI Art. 779)',
+    '• Exonération totale du conjoint survivant (CGI Art. 796-0 bis)',
+    '• Lecture civile simplifiée : liquidation, dévolution, libéralités et avantages matrimoniaux',
+    '• Assurance-vie décès et mécanismes civils complexes hors moteur détaillé',
+    '• Les montants sont arrondis à l\'euro le plus proche',
+    ...warningHighlights.map((line) => `• Vigilance module: ${line}`),
+  ];
+
+  slides.push(
     // Chapter 2: Hypothèses
     {
       type: 'chapter',
@@ -106,16 +149,10 @@ export function buildSuccessionStudyDeck(
     {
       type: 'content',
       title: 'Hypothèses retenues',
-      subtitle: 'Barème DMTG 2024',
-      body: [
-        '• Barème des droits de mutation à titre gratuit en vigueur (CGI Art. 777)',
-        '• Abattement en ligne directe : 100 000 € par enfant (CGI Art. 779)',
-        '• Exonération totale du conjoint survivant (CGI Art. 796-0 bis)',
-        '• Estimation hors donations antérieures et hors assurance-vie',
-        '• Les montants sont arrondis à l\'euro le plus proche',
-      ].join('\n'),
+      subtitle: 'Barème DMTG et limites de modélisation',
+      body: hypothesesBodyLines.join('\n'),
     },
-  ];
+  );
 
   return {
     cover: {

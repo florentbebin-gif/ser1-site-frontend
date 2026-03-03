@@ -9,7 +9,10 @@
 import React, { useContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSuccessionCalc } from './useSuccessionCalc';
 import { exportSuccessionPptx } from '../../pptx/exports/successionExport';
-import { exportAndDownloadSuccessionXlsx } from './successionXlsx';
+import {
+  exportAndDownloadSuccessionXlsx,
+  type SuccessionExportContext,
+} from './successionXlsx';
 import { useTheme } from '../../settings/ThemeProvider';
 import { SessionGuardContext } from '../../App';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
@@ -60,6 +63,21 @@ const SITUATION_OPTIONS: { value: SituationMatrimoniale; label: string }[] = [
   { value: 'veuf', label: 'Veuf / veuve' },
 ];
 
+const PACS_CONVENTION_LABELS: Record<'separation' | 'indivision', string> = {
+  separation: 'Séparation de biens',
+  indivision: 'Indivision conventionnelle',
+};
+
+function dedupeWarnings(warnings: string[]): string[] {
+  const seen = new Set<string>();
+  return warnings.filter((warning) => {
+    const key = warning.trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export default function SuccessionSimulator() {
   const { loading: settingsLoading, fiscalContext } = useFiscalContext({ strict: true });
   const fiscalSnapshot = useMemo(
@@ -94,6 +112,90 @@ export default function SuccessionSimulator() {
     () => buildSuccessionPatrimonialAnalysis(civilContext, form.actifNetSuccession, liquidationContext.nbEnfants, patrimonialContext),
     [civilContext, form.actifNetSuccession, liquidationContext.nbEnfants, patrimonialContext],
   );
+  const exportContext = useMemo<SuccessionExportContext>(() => {
+    const situationFamiliale = SITUATION_OPTIONS.find((option) => option.value === civilContext.situationMatrimoniale)?.label
+      ?? civilContext.situationMatrimoniale;
+    const regimeMatrimonial = civilContext.situationMatrimoniale === 'marie' && civilContext.regimeMatrimonial
+      ? (REGIMES_MATRIMONIAUX[civilContext.regimeMatrimonial]?.label ?? civilContext.regimeMatrimonial)
+      : null;
+    const pacsConvention = civilContext.situationMatrimoniale === 'pacse'
+      ? PACS_CONVENTION_LABELS[civilContext.pacsConvention]
+      : null;
+    const predecesCalc = predecesAnalysis.calc?.result;
+
+    return {
+      situationFamiliale,
+      regimeMatrimonial,
+      pacsConvention,
+      nbEnfants: liquidationContext.nbEnfants,
+      nbEnfantsNonCommuns: devolutionAnalysis.nbEnfantsNonCommuns,
+      testamentActif: devolutionContext.testamentActif,
+      liquidationRegime: predecesAnalysis.regimeLabel,
+      predecesApplicable: predecesAnalysis.applicable,
+      predecesDroitsMrDecede: predecesCalc?.scenarioMrDecede.droitsSuccession ?? null,
+      predecesDroitsMmeDecedee: predecesCalc?.scenarioMmeDecede.droitsSuccession ?? null,
+      devolutionReserve: devolutionAnalysis.reserve?.reserve ?? null,
+      devolutionQuotiteDisponible: devolutionAnalysis.reserve?.quotiteDisponible ?? null,
+      devolutionLignes: devolutionAnalysis.lines.map((line) => ({ heritier: line.heritier, droits: line.droits })),
+      masseCivileReference: patrimonialAnalysis.masseCivileReference,
+      quotiteDisponibleMontant: patrimonialAnalysis.quotiteDisponibleMontant,
+      liberalitesImputeesMontant: patrimonialAnalysis.liberalitesImputeesMontant,
+      depassementQuotiteMontant: patrimonialAnalysis.depassementQuotiteMontant,
+      warnings: dedupeWarnings([
+        ...predecesAnalysis.warnings,
+        ...devolutionAnalysis.warnings,
+        ...patrimonialAnalysis.warnings,
+      ]),
+    };
+  }, [
+    civilContext,
+    liquidationContext.nbEnfants,
+    devolutionAnalysis,
+    devolutionContext.testamentActif,
+    predecesAnalysis,
+    patrimonialAnalysis,
+  ]);
+  const pptxHighlights = useMemo(() => {
+    const civilHighlights = [
+      `Situation familiale: ${exportContext.situationFamiliale}`,
+      ...(exportContext.regimeMatrimonial ? [`Régime matrimonial: ${exportContext.regimeMatrimonial}`] : []),
+      ...(exportContext.pacsConvention ? [`Convention PACS: ${exportContext.pacsConvention}`] : []),
+      `Nombre d'enfants (scénarios civils): ${exportContext.nbEnfants}`,
+      `Testament actif: ${exportContext.testamentActif ? 'oui' : 'non'}`,
+      ...(exportContext.liquidationRegime ? [`Régime de liquidation retenu: ${exportContext.liquidationRegime}`] : []),
+      ...(exportContext.predecesApplicable && exportContext.predecesDroitsMrDecede !== null
+        ? [`Prédécès (M. décédé): ${fmt(exportContext.predecesDroitsMrDecede)} de droits`]
+        : []),
+      ...(exportContext.predecesApplicable && exportContext.predecesDroitsMmeDecedee !== null
+        ? [`Prédécès (Mme décédée): ${fmt(exportContext.predecesDroitsMmeDecedee)} de droits`]
+        : []),
+    ];
+
+    const devolutionHighlights = [
+      ...(exportContext.devolutionReserve && exportContext.devolutionQuotiteDisponible
+        ? [
+          `Réserve héréditaire / quotité disponible: ${exportContext.devolutionReserve} / ${exportContext.devolutionQuotiteDisponible}`,
+        ]
+        : []),
+      ...exportContext.devolutionLignes.slice(0, 4).map((line) => `${line.heritier}: ${line.droits}`),
+    ];
+
+    const patrimonialHighlights = [
+      `Masse civile de référence: ${fmt(exportContext.masseCivileReference)}`,
+      `Quotité disponible estimée: ${fmt(exportContext.quotiteDisponibleMontant)}`,
+      `Libéralités à contrôler: ${fmt(exportContext.liberalitesImputeesMontant)}`,
+      ...(exportContext.depassementQuotiteMontant > 0
+        ? [`Dépassement estimé de quotité: ${fmt(exportContext.depassementQuotiteMontant)}`]
+        : []),
+    ];
+
+    return {
+      civilHighlights: civilHighlights.slice(0, 8),
+      devolutionHighlights: devolutionHighlights.slice(0, 8),
+      patrimonialHighlights: patrimonialHighlights.slice(0, 8),
+      warningHighlights: exportContext.warnings.slice(0, 5),
+    };
+  }, [exportContext]);
 
   const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
     setCivilContext((prev) => ({
@@ -224,6 +326,10 @@ export default function SuccessionSimulator() {
           totalDroits: result.result.totalDroits,
           tauxMoyenGlobal: result.result.tauxMoyenGlobal,
           heritiers: result.result.detailHeritiers,
+          civilHighlights: pptxHighlights.civilHighlights,
+          devolutionHighlights: pptxHighlights.devolutionHighlights,
+          patrimonialHighlights: pptxHighlights.patrimonialHighlights,
+          warningHighlights: pptxHighlights.warningHighlights,
         },
         pptxColors,
         { logoUrl: cabinetLogo, logoPlacement },
@@ -231,7 +337,7 @@ export default function SuccessionSimulator() {
     } finally {
       setExportLoading(false);
     }
-  }, [result, canExport, pptxColors, cabinetLogo, logoPlacement]);
+  }, [result, canExport, pptxColors, cabinetLogo, logoPlacement, pptxHighlights]);
 
   const handleExportXlsx = useCallback(async () => {
     if (!result || !canExport) return;
@@ -242,6 +348,7 @@ export default function SuccessionSimulator() {
           actifNetSuccession: form.actifNetSuccession,
           nbHeritiers: form.heritiers.length,
           heritiers: form.heritiers.map((h) => ({ lien: h.lien, partSuccession: h.partSuccession })),
+          context: exportContext,
         },
         result.result,
         pptxColors.c1,
@@ -249,7 +356,7 @@ export default function SuccessionSimulator() {
     } finally {
       setExportLoading(false);
     }
-  }, [result, canExport, form, pptxColors]);
+  }, [result, canExport, form, pptxColors, exportContext]);
 
   const exportOptions = [
     {

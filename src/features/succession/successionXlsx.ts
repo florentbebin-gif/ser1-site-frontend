@@ -23,12 +23,45 @@ export interface SuccessionXlsxInput {
   actifNetSuccession: number;
   nbHeritiers: number;
   heritiers: Array<{ lien: LienParente; partSuccession: number }>;
+  context?: SuccessionExportContext;
+}
+
+export interface SuccessionExportContext {
+  situationFamiliale: string;
+  regimeMatrimonial: string | null;
+  pacsConvention: string | null;
+  nbEnfants: number;
+  nbEnfantsNonCommuns: number;
+  testamentActif: boolean;
+  liquidationRegime: string | null;
+  predecesApplicable: boolean;
+  predecesDroitsMrDecede: number | null;
+  predecesDroitsMmeDecedee: number | null;
+  devolutionReserve: string | null;
+  devolutionQuotiteDisponible: string | null;
+  devolutionLignes: Array<{ heritier: string; droits: string }>;
+  masseCivileReference: number;
+  quotiteDisponibleMontant: number;
+  liberalitesImputeesMontant: number;
+  depassementQuotiteMontant: number;
+  warnings: string[];
 }
 
 function h(text: string): XlsxCell { return { v: text, style: 'sHeader' }; }
 function sec(text: string): XlsxCell { return { v: text, style: 'sSection' }; }
 function money(v: number): XlsxCell { return { v, style: 'sMoney' }; }
 function pct(v: number): XlsxCell { return { v: v / 100, style: 'sPercent' }; }
+function yesNo(v: boolean): string { return v ? 'Oui' : 'Non'; }
+
+function dedupeWarnings(warnings: string[]): string[] {
+  const seen = new Set<string>();
+  return warnings.filter((warning) => {
+    const key = warning.trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 function buildInputsSheet(input: SuccessionXlsxInput): XlsxSheet {
   const rows: Array<Array<XlsxCell | string | number>> = [
@@ -44,10 +77,38 @@ function buildInputsSheet(input: SuccessionXlsxInput): XlsxSheet {
     rows.push([LIEN_LABELS[heir.lien] ?? heir.lien, money(heir.partSuccession)]);
   }
 
-  return { name: 'Inputs', rows, columnWidths: [30, 20] };
+  if (input.context) {
+    const ctx = input.context;
+    rows.push([]);
+    rows.push([sec('Contexte civil simplifie'), sec('')]);
+    rows.push(['Situation familiale', ctx.situationFamiliale]);
+    if (ctx.regimeMatrimonial) rows.push(['Regime matrimonial', ctx.regimeMatrimonial]);
+    if (ctx.pacsConvention) rows.push(['Convention PACS', ctx.pacsConvention]);
+    rows.push(['Nombre d\'enfants (scenarios civils)', ctx.nbEnfants]);
+    rows.push(['Nombre d\'enfants non communs', ctx.nbEnfantsNonCommuns]);
+    rows.push(['Testament actif', yesNo(ctx.testamentActif)]);
+    if (ctx.liquidationRegime) rows.push(['Regime de liquidation retenu', ctx.liquidationRegime]);
+    if (ctx.devolutionReserve && ctx.devolutionQuotiteDisponible) {
+      rows.push([
+        'Reserve / quotite disponible',
+        `${ctx.devolutionReserve} / ${ctx.devolutionQuotiteDisponible}`,
+      ]);
+    }
+
+    rows.push([]);
+    rows.push([sec('Liberalites et avantages (indicatif)'), sec('')]);
+    rows.push(['Masse civile de reference', money(ctx.masseCivileReference)]);
+    rows.push(['Quotite disponible estimee', money(ctx.quotiteDisponibleMontant)]);
+    rows.push(['Liberalites a controler', money(ctx.liberalitesImputeesMontant)]);
+    if (ctx.depassementQuotiteMontant > 0) {
+      rows.push(['Depassement estime de quotite', money(ctx.depassementQuotiteMontant)]);
+    }
+  }
+
+  return { name: 'Inputs', rows, columnWidths: [40, 26] };
 }
 
-function buildResultsSheet(result: SuccessionResult): XlsxSheet {
+function buildResultsSheet(result: SuccessionResult, context?: SuccessionExportContext): XlsxSheet {
   const rows: Array<Array<XlsxCell | string | number>> = [
     [h('Indicateur'), h('Valeur')],
     ['Actif net successoral', money(result.actifNetSuccession)],
@@ -55,6 +116,19 @@ function buildResultsSheet(result: SuccessionResult): XlsxSheet {
     ['Taux moyen global', pct(result.tauxMoyenGlobal)],
     ['Nombre d\'héritiers', result.detailHeritiers.length],
   ];
+
+  if (context?.predecesApplicable) {
+    if (context.predecesDroitsMrDecede !== null) {
+      rows.push(['Scenario predeces M. decede', money(context.predecesDroitsMrDecede)]);
+    }
+    if (context.predecesDroitsMmeDecedee !== null) {
+      rows.push(['Scenario predeces Mme decedee', money(context.predecesDroitsMmeDecedee)]);
+    }
+  }
+
+  if (context && context.depassementQuotiteMontant > 0) {
+    rows.push(['Depassement estime de quotite disponible', money(context.depassementQuotiteMontant)]);
+  }
 
   return { name: 'Résultats', rows, columnWidths: [30, 20] };
 }
@@ -95,20 +169,29 @@ function buildDetailsSheet(heritiers: HeritierResult[]): XlsxSheet {
   };
 }
 
-function buildHypothesesSheet(): XlsxSheet {
+function buildHypothesesSheet(context?: SuccessionExportContext): XlsxSheet {
+  const moduleWarnings = dedupeWarnings(context?.warnings ?? []).slice(0, 8);
   const rows: Array<Array<XlsxCell | string>> = [
     [h('Hypothèse'), h('Référence')],
     ['Barème DMTG en vigueur', 'CGI Art. 777'],
     ['Abattement ligne directe : 100 000 €', 'CGI Art. 779'],
     ['Exonération totale du conjoint survivant', 'CGI Art. 796-0 bis'],
-    ['Hors donations antérieures rapportables', 'Hypothèse simplificatrice'],
-    ['Hors assurance-vie', 'Hypothèse simplificatrice'],
+    ['Lecture civile (liquidation, devolution, liberalites) simplifiee', 'Hypothese de module'],
+    ['Assurance-vie deces et mecanismes civils complexes hors moteur detaille', 'Perimetre'],
     ['Montants arrondis à l\'euro', 'Convention'],
     [],
     [sec('Avertissement'), sec('')],
     ['Ce document est établi à titre strictement indicatif.', ''],
     ['Il ne constitue pas un conseil juridique ou fiscal.', ''],
   ];
+
+  if (moduleWarnings.length > 0) {
+    rows.push([]);
+    rows.push([sec('Points de vigilance du module'), sec('')]);
+    for (const warning of moduleWarnings) {
+      rows.push([`- ${warning}`, '']);
+    }
+  }
 
   return { name: 'Hypothèses', rows, columnWidths: [45, 30] };
 }
@@ -121,9 +204,9 @@ export async function exportSuccessionXlsx(
 ): Promise<Blob> {
   const sheets: XlsxSheet[] = [
     buildInputsSheet(input),
-    buildResultsSheet(result),
+    buildResultsSheet(result, input.context),
     buildDetailsSheet(result.detailHeritiers),
-    buildHypothesesSheet(),
+    buildHypothesesSheet(input.context),
   ];
 
   const blob = await buildXlsxBlob({
