@@ -1,7 +1,7 @@
 /**
  * Succession Excel Export (P1-02)
  *
- * 4 onglets normalisés : Inputs / Résultats / Détails / Hypothèses
+ * 5 onglets normalisés : Inputs / Résultats / Détails / Prédécès / Hypothèses
  * Utilise xlsxBuilder pour générer un fichier OOXML natif.
  */
 
@@ -23,6 +23,25 @@ export interface SuccessionXlsxInput {
   actifNetSuccession: number;
   nbHeritiers: number;
   heritiers: Array<{ lien: LienParente; partSuccession: number }>;
+}
+
+export interface SuccessionChronologieXlsxStep {
+  actifTransmis: number;
+  partConjoint: number;
+  partEnfants: number;
+  droitsEnfants: number;
+}
+
+export interface SuccessionChronologieXlsxData {
+  applicable: boolean;
+  order: 'epoux1' | 'epoux2';
+  firstDecedeLabel: string;
+  secondDecedeLabel: string;
+  step1: SuccessionChronologieXlsxStep | null;
+  step2: SuccessionChronologieXlsxStep | null;
+  totalDroits: number;
+  totalDroitsOrdreInverse?: number;
+  warnings?: string[];
 }
 
 function h(text: string): XlsxCell { return { v: text, style: 'sHeader' }; }
@@ -113,16 +132,71 @@ function buildHypothesesSheet(): XlsxSheet {
   return { name: 'Hypothèses', rows, columnWidths: [45, 30] };
 }
 
+function orderLabel(order: 'epoux1' | 'epoux2'): string {
+  return order === 'epoux1'
+    ? 'Époux 1 décède en premier'
+    : 'Époux 2 décède en premier';
+}
+
+function buildPredecesSheet(chronologie?: SuccessionChronologieXlsxData): XlsxSheet {
+  const rows: Array<Array<XlsxCell | string | number>> = [
+    [h('Indicateur'), h('Valeur')],
+  ];
+
+  if (!chronologie) {
+    rows.push(['Module de chaînage', 'Donnée non transmise à l’export']);
+    return { name: 'Prédécès', rows, columnWidths: [42, 35] };
+  }
+
+  rows.push(['Ordre simulé', orderLabel(chronologie.order)]);
+  rows.push(['Chronologie applicable', chronologie.applicable ? 'Oui' : 'Non']);
+  rows.push([]);
+
+  if (chronologie.applicable && chronologie.step1 && chronologie.step2) {
+    rows.push([sec(`Étape 1 - décès ${chronologie.firstDecedeLabel}`), sec('')]);
+    rows.push(['Masse transmise', money(chronologie.step1.actifTransmis)]);
+    rows.push(['Part conjoint survivant', money(chronologie.step1.partConjoint)]);
+    rows.push(['Part descendants', money(chronologie.step1.partEnfants)]);
+    rows.push(['Droits descendants', money(chronologie.step1.droitsEnfants)]);
+    rows.push([]);
+
+    rows.push([sec(`Étape 2 - décès ${chronologie.secondDecedeLabel}`), sec('')]);
+    rows.push(['Masse transmise', money(chronologie.step2.actifTransmis)]);
+    rows.push(['Part descendants', money(chronologie.step2.partEnfants)]);
+    rows.push(['Droits descendants', money(chronologie.step2.droitsEnfants)]);
+    rows.push([]);
+
+    rows.push(['Total cumulé des droits (2 décès)', money(chronologie.totalDroits)]);
+    if (typeof chronologie.totalDroitsOrdreInverse === 'number') {
+      rows.push(['Total droits ordre inverse', money(chronologie.totalDroitsOrdreInverse)]);
+    }
+  } else {
+    rows.push(['Statut', 'Chronologie non applicable à la situation saisie']);
+  }
+
+  if (chronologie.warnings && chronologie.warnings.length > 0) {
+    rows.push([]);
+    rows.push([sec('Avertissements'), sec('')]);
+    chronologie.warnings.forEach((warning) => {
+      rows.push([warning, '']);
+    });
+  }
+
+  return { name: 'Prédécès', rows, columnWidths: [42, 35] };
+}
+
 export async function exportSuccessionXlsx(
   input: SuccessionXlsxInput,
   result: SuccessionResult,
   themeColor?: string,
   _filename = 'Simulation-Succession',
+  chronologie?: SuccessionChronologieXlsxData,
 ): Promise<Blob> {
   const sheets: XlsxSheet[] = [
     buildInputsSheet(input),
     buildResultsSheet(result),
     buildDetailsSheet(result.detailHeritiers),
+    buildPredecesSheet(chronologie),
     buildHypothesesSheet(),
   ];
 
@@ -140,7 +214,8 @@ export async function exportAndDownloadSuccessionXlsx(
   result: SuccessionResult,
   themeColor?: string,
   filename = 'Simulation-Succession',
+  chronologie?: SuccessionChronologieXlsxData,
 ): Promise<void> {
-  const blob = await exportSuccessionXlsx(input, result, themeColor, filename);
+  const blob = await exportSuccessionXlsx(input, result, themeColor, filename, chronologie);
   downloadXlsx(blob, filename);
 }

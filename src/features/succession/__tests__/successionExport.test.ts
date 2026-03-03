@@ -5,6 +5,7 @@
  * and that Excel blob generates a valid ZIP (PK header).
  */
 
+import JSZip from 'jszip';
 import { describe, it, expect } from 'vitest';
 import { buildSuccessionStudyDeck } from '../../../pptx/presets/successionDeckBuilder';
 import { exportSuccessionXlsx } from '../successionXlsx';
@@ -30,6 +31,27 @@ describe('Succession PPTX Export', () => {
         totalDroits: result.result.totalDroits,
         tauxMoyenGlobal: result.result.tauxMoyenGlobal,
         heritiers: result.result.detailHeritiers,
+        predecesChronologie: {
+          applicable: true,
+          order: 'epoux1',
+          firstDecedeLabel: 'Époux 1',
+          secondDecedeLabel: 'Époux 2',
+          step1: {
+            actifTransmis: 300000,
+            partConjoint: 75000,
+            partEnfants: 225000,
+            droitsEnfants: 12500,
+          },
+          step2: {
+            actifTransmis: 500000,
+            partConjoint: 0,
+            partEnfants: 500000,
+            droitsEnfants: 42000,
+          },
+          totalDroits: 54500,
+          totalDroitsOrdreInverse: 56000,
+          warnings: ['Module simplifié'],
+        },
       },
       THEME_COLORS,
     );
@@ -41,6 +63,10 @@ describe('Succession PPTX Export', () => {
 
     const synthSlide = spec.slides.find((s) => s.type === 'succession-synthesis');
     expect(synthSlide).toBeDefined();
+    const chronologySlide = spec.slides.find(
+      (s) => s.type === 'content' && 'title' in s && s.title === 'Chronologie des décès',
+    );
+    expect(chronologySlide).toBeDefined();
   });
 });
 
@@ -65,6 +91,28 @@ describe('Succession Excel Export', () => {
       },
       result.result,
       THEME_COLORS.c1,
+      'Simulation-Succession',
+      {
+        applicable: true,
+        order: 'epoux1',
+        firstDecedeLabel: 'Époux 1',
+        secondDecedeLabel: 'Époux 2',
+        step1: {
+          actifTransmis: 250000,
+          partConjoint: 62500,
+          partEnfants: 187500,
+          droitsEnfants: 12000,
+        },
+        step2: {
+          actifTransmis: 380000,
+          partConjoint: 0,
+          partEnfants: 380000,
+          droitsEnfants: 31500,
+        },
+        totalDroits: 43500,
+        totalDroitsOrdreInverse: 45200,
+        warnings: ['Avertissement de test'],
+      },
     );
 
     expect(blob).toBeInstanceOf(Blob);
@@ -75,5 +123,11 @@ describe('Succession Excel Export', () => {
     const bytes = new Uint8Array(buffer.slice(0, 2));
     expect(bytes[0]).toBe(0x50); // P
     expect(bytes[1]).toBe(0x4b); // K
+
+    const zip = await JSZip.loadAsync(buffer);
+    expect(zip.file('xl/workbook.xml')).toBeTruthy();
+    expect(zip.file('xl/worksheets/sheet5.xml')).toBeTruthy();
+    const workbookXml = await zip.file('xl/workbook.xml')?.async('string');
+    expect(workbookXml).toContain('Prédécès');
   });
 });
