@@ -207,6 +207,16 @@ export default function SuccessionSimulator() {
     }),
     [chainageAnalysis, alternateChainageAnalysis],
   );
+  const totalActifsLiquidation = useMemo(
+    () => Math.max(
+      0,
+      liquidationContext.actifEpoux1 + liquidationContext.actifEpoux2 + liquidationContext.actifCommun,
+    ),
+    [liquidationContext],
+  );
+  const canExportExpert = isExpert && hasResult && Boolean(result);
+  const canExportSimplified = !isExpert && chainageAnalysis.applicable && totalActifsLiquidation > 0;
+  const canExportCurrentMode = canExport && (canExportExpert || canExportSimplified);
 
   const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
     setCivilContext((prev) => ({
@@ -358,57 +368,116 @@ export default function SuccessionSimulator() {
   }, [handleReset]);
 
   const handleExportPptx = useCallback(async () => {
-    if (!result || !hasResult || !canExport) return;
+    if (!canExport) return;
     try {
       setExportLoading(true);
-      await exportSuccessionPptx(
-        {
-          actifNetSuccession: result.result.actifNetSuccession,
-          totalDroits: result.result.totalDroits,
-          tauxMoyenGlobal: result.result.tauxMoyenGlobal,
-          heritiers: result.result.detailHeritiers,
-          predecesChronologie: chainageExportPayload,
-        },
-        pptxColors,
-        { logoUrl: cabinetLogo, logoPlacement },
-      );
+      if (canExportExpert && result) {
+        await exportSuccessionPptx(
+          {
+            actifNetSuccession: result.result.actifNetSuccession,
+            totalDroits: result.result.totalDroits,
+            tauxMoyenGlobal: result.result.tauxMoyenGlobal,
+            heritiers: result.result.detailHeritiers,
+            predecesChronologie: chainageExportPayload,
+          },
+          pptxColors,
+          { logoUrl: cabinetLogo, logoPlacement },
+        );
+      } else if (canExportSimplified) {
+        await exportSuccessionPptx(
+          {
+            actifNetSuccession: totalActifsLiquidation,
+            totalDroits: chainageAnalysis.totalDroits,
+            tauxMoyenGlobal: totalActifsLiquidation > 0
+              ? (chainageAnalysis.totalDroits / totalActifsLiquidation) * 100
+              : 0,
+            heritiers: [],
+            predecesChronologie: chainageExportPayload,
+          },
+          pptxColors,
+          { logoUrl: cabinetLogo, logoPlacement },
+        );
+      }
     } finally {
       setExportLoading(false);
     }
-  }, [result, hasResult, canExport, pptxColors, cabinetLogo, logoPlacement, chainageExportPayload]);
+  }, [
+    canExport,
+    canExportExpert,
+    canExportSimplified,
+    result,
+    pptxColors,
+    cabinetLogo,
+    logoPlacement,
+    chainageExportPayload,
+    totalActifsLiquidation,
+    chainageAnalysis.totalDroits,
+  ]);
 
   const handleExportXlsx = useCallback(async () => {
-    if (!result || !hasResult || !canExport) return;
+    if (!canExport) return;
     try {
       setExportLoading(true);
-      await exportAndDownloadSuccessionXlsx(
-        {
-          actifNetSuccession: form.actifNetSuccession,
-          nbHeritiers: form.heritiers.length,
-          heritiers: form.heritiers.map((h) => ({ lien: h.lien, partSuccession: h.partSuccession })),
-        },
-        result.result,
-        pptxColors.c1,
-        undefined,
-        chainageExportPayload,
-      );
+      if (canExportExpert && result) {
+        await exportAndDownloadSuccessionXlsx(
+          {
+            actifNetSuccession: form.actifNetSuccession,
+            nbHeritiers: form.heritiers.length,
+            heritiers: form.heritiers.map((h) => ({ lien: h.lien, partSuccession: h.partSuccession })),
+          },
+          result.result,
+          pptxColors.c1,
+          undefined,
+          chainageExportPayload,
+        );
+      } else if (canExportSimplified) {
+        await exportAndDownloadSuccessionXlsx(
+          {
+            actifNetSuccession: totalActifsLiquidation,
+            nbHeritiers: nbEnfants,
+            heritiers: [],
+          },
+          null,
+          pptxColors.c1,
+          undefined,
+          chainageExportPayload,
+        );
+      }
     } finally {
       setExportLoading(false);
     }
-  }, [result, hasResult, canExport, form, pptxColors, chainageExportPayload]);
+  }, [
+    canExport,
+    canExportExpert,
+    canExportSimplified,
+    result,
+    form,
+    pptxColors,
+    chainageExportPayload,
+    totalActifsLiquidation,
+    nbEnfants,
+  ]);
 
   const exportOptions = [
     {
       label: 'PowerPoint',
       onClick: handleExportPptx,
-      disabled: !hasResult,
-      tooltip: !hasResult ? 'Renseignez la saisie pour exporter.' : undefined,
+      disabled: !canExportCurrentMode,
+      tooltip: !canExportCurrentMode
+        ? (isExpert
+          ? 'Renseignez patrimoine et héritiers pour exporter.'
+          : 'Renseignez le contexte familial et les actifs pour exporter.')
+        : undefined,
     },
     {
       label: 'Excel',
       onClick: handleExportXlsx,
-      disabled: !hasResult,
-      tooltip: !hasResult ? 'Renseignez la saisie pour exporter.' : undefined,
+      disabled: !canExportCurrentMode,
+      tooltip: !canExportCurrentMode
+        ? (isExpert
+          ? 'Renseignez patrimoine et héritiers pour exporter.'
+          : 'Renseignez le contexte familial et les actifs pour exporter.')
+        : undefined,
     },
   ];
 
@@ -779,6 +848,7 @@ export default function SuccessionSimulator() {
           </div>
           )}
 
+          {isExpert && (
           <div className="premium-card sc-card sc-card--guide">
             <header className="sc-card__header">
               <h2 className="sc-card__title">Patrimoine transmis</h2>
@@ -797,7 +867,9 @@ export default function SuccessionSimulator() {
               />
             </div>
           </div>
+          )}
 
+          {isExpert && (
           <div className="premium-card sc-card">
             <header className="sc-card__header">
               <h2 className="sc-card__title">Héritiers</h2>
@@ -858,7 +930,9 @@ export default function SuccessionSimulator() {
               </button>
             </div>
           </div>
+          )}
 
+          {isExpert && (
           <div className="sc-primary-actions">
             <p className="sc-hint sc-hint--compact">Calcul des droits en direct selon la saisie.</p>
             <button
@@ -869,6 +943,7 @@ export default function SuccessionSimulator() {
               Réinitialiser
             </button>
           </div>
+          )}
         </div>
 
         <div className="sc-right">
@@ -930,9 +1005,9 @@ export default function SuccessionSimulator() {
           </div>
 
           <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
-            <h2 className="sc-summary-title">Synthèse des droits</h2>
+            <h2 className="sc-summary-title">{isExpert ? 'Synthèse des droits' : 'Points d’attention'}</h2>
             <div className="sc-card__divider sc-card__divider--tight" />
-            {hasResult && result ? (
+            {isExpert && hasResult && result ? (
               <div className="sc-kpis">
                 <div className="sc-kpi">
                   <div className="sc-kpi__label">Actif net successoral (direct)</div>
@@ -947,7 +1022,7 @@ export default function SuccessionSimulator() {
                   <div className="sc-kpi__value">{fmtPct(result.result.tauxMoyenGlobal)}</div>
                 </div>
               </div>
-            ) : (
+            ) : isExpert ? (
               <div className="sc-summary-placeholder">
                 <div className="sc-summary-row">
                   <span>Actif saisi</span>
@@ -958,12 +1033,11 @@ export default function SuccessionSimulator() {
                   <strong>{form.heritiers.length}</strong>
                 </div>
               </div>
-            )}
-
-            {chainageAnalysis.applicable && alternateChainageAnalysis.applicable && (
-              <div className="sc-summary-row sc-summary-row--reserve">
-                <span>Total droits ordre inverse</span>
-                <strong>{fmt(alternateChainageAnalysis.totalDroits)}</strong>
+            ) : (
+              <div className="sc-summary-placeholder">
+                <p className="sc-summary-note">
+                  Résultat indicatif: simulation simplifiée des 2 décès, hors liquidation notariale fine.
+                </p>
               </div>
             )}
 
@@ -978,7 +1052,7 @@ export default function SuccessionSimulator() {
         </div>
       </div>
 
-      {hasResult && result && (
+      {isExpert && hasResult && result && (
         <div className="premium-card sc-detail-card" data-testid="succession-detail-accordion">
           <div className="sc-detail-header">
             <h3 className="sc-detail-title">Détail du calcul</h3>

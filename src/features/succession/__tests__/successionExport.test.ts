@@ -130,4 +130,46 @@ describe('Succession Excel Export', () => {
     const workbookXml = await zip.file('xl/workbook.xml')?.async('string');
     expect(workbookXml).toContain('Prédécès');
   });
+
+  it('generates a simplified chainage-only XLSX when no direct succession result is provided', async () => {
+    const blob = await exportSuccessionXlsx(
+      {
+        actifNetSuccession: 600000,
+        nbHeritiers: 2,
+        heritiers: [],
+      },
+      null,
+      THEME_COLORS.c1,
+      'Simulation-Succession',
+      {
+        applicable: true,
+        order: 'epoux2',
+        firstDecedeLabel: 'Époux 2',
+        secondDecedeLabel: 'Époux 1',
+        step1: {
+          actifTransmis: 260000,
+          partConjoint: 65000,
+          partEnfants: 195000,
+          droitsEnfants: 9500,
+        },
+        step2: {
+          actifTransmis: 405000,
+          partConjoint: 0,
+          partEnfants: 405000,
+          droitsEnfants: 33200,
+        },
+        totalDroits: 42700,
+        warnings: ['Module simplifié'],
+      },
+    );
+
+    expect(blob).toBeInstanceOf(Blob);
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    expect(zip.file('xl/worksheets/sheet1.xml')).toBeTruthy();
+    expect(zip.file('xl/worksheets/sheet2.xml')).toBeTruthy();
+    expect(zip.file('xl/worksheets/sheet3.xml')).toBeFalsy();
+    const workbookXml = await zip.file('xl/workbook.xml')?.async('string');
+    expect(workbookXml).toContain('Chronologie');
+    expect(workbookXml).toContain('Hypothèses');
+  });
 });
