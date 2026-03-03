@@ -25,11 +25,17 @@ export interface SuccessionLiquidationContext {
   nbEnfants: number;
 }
 
-interface SuccessionDraftPayloadV2 {
-  version: 2;
+export interface SuccessionDevolutionContext {
+  nbEnfantsNonCommuns: number;
+  testamentActif: boolean;
+}
+
+interface SuccessionDraftPayloadV3 {
+  version: 3;
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
   liquidation: SuccessionLiquidationContext;
+  devolution: SuccessionDevolutionContext;
 }
 
 export const DEFAULT_SUCCESSION_CIVIL_CONTEXT: SuccessionCivilContext = {
@@ -43,6 +49,11 @@ export const DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT: SuccessionLiquidationContex
   actifEpoux2: 0,
   actifCommun: 0,
   nbEnfants: 1,
+};
+
+export const DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT: SuccessionDevolutionContext = {
+  nbEnfantsNonCommuns: 0,
+  testamentActif: false,
 };
 
 function isObject(v: unknown): v is Record<string, unknown> {
@@ -83,12 +94,14 @@ export function buildSuccessionDraftPayload(
   form: PersistedSuccessionForm,
   civil: SuccessionCivilContext,
   liquidation: SuccessionLiquidationContext,
-): SuccessionDraftPayloadV2 {
+  devolution: SuccessionDevolutionContext,
+): SuccessionDraftPayloadV3 {
   return {
-    version: 2,
+    version: 3,
     form,
     civil,
     liquidation,
+    devolution,
   };
 }
 
@@ -104,14 +117,19 @@ function asChildrenCount(v: unknown, fallback: number): number {
   return Math.max(0, Math.floor(count));
 }
 
+function asBoolean(v: unknown, fallback: boolean): boolean {
+  return typeof v === 'boolean' ? v : fallback;
+}
+
 export function parseSuccessionDraftPayload(raw: string): {
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
   liquidation: SuccessionLiquidationContext;
+  devolution: SuccessionDevolutionContext;
 } | null {
   try {
     const parsed = JSON.parse(raw) as unknown;
-    if (!isObject(parsed) || (parsed.version !== 1 && parsed.version !== 2)) return null;
+    if (!isObject(parsed) || (parsed.version !== 1 && parsed.version !== 2 && parsed.version !== 3)) return null;
     const payload = parsed as Record<string, unknown>;
 
     const formRaw = payload.form;
@@ -144,12 +162,21 @@ export function parseSuccessionDraftPayload(raw: string): {
         : DEFAULT_SUCCESSION_CIVIL_CONTEXT.pacsConvention,
     };
 
-    const liquidationRaw = payload.version === 2 && isObject(payload.liquidation) ? payload.liquidation : {};
+    const liquidationRaw = payload.version !== 1 && isObject(payload.liquidation) ? payload.liquidation : {};
     const liquidation: SuccessionLiquidationContext = {
       actifEpoux1: asAmount(liquidationRaw.actifEpoux1, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifEpoux1),
       actifEpoux2: asAmount(liquidationRaw.actifEpoux2, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifEpoux2),
       actifCommun: asAmount(liquidationRaw.actifCommun, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifCommun),
       nbEnfants: asChildrenCount(liquidationRaw.nbEnfants, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.nbEnfants),
+    };
+
+    const devolutionRaw = payload.version === 3 && isObject(payload.devolution) ? payload.devolution : {};
+    const devolution: SuccessionDevolutionContext = {
+      nbEnfantsNonCommuns: asChildrenCount(
+        devolutionRaw.nbEnfantsNonCommuns,
+        DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.nbEnfantsNonCommuns,
+      ),
+      testamentActif: asBoolean(devolutionRaw.testamentActif, DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentActif),
     };
 
     return {
@@ -159,6 +186,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       },
       civil,
       liquidation,
+      devolution,
     };
   } catch {
     return null;
