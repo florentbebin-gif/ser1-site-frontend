@@ -18,16 +18,31 @@ export interface SuccessionCivilContext {
   pacsConvention: PacsConvention;
 }
 
-interface SuccessionDraftPayloadV1 {
-  version: 1;
+export interface SuccessionLiquidationContext {
+  actifEpoux1: number;
+  actifEpoux2: number;
+  actifCommun: number;
+  nbEnfants: number;
+}
+
+interface SuccessionDraftPayloadV2 {
+  version: 2;
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
+  liquidation: SuccessionLiquidationContext;
 }
 
 export const DEFAULT_SUCCESSION_CIVIL_CONTEXT: SuccessionCivilContext = {
   situationMatrimoniale: 'celibataire',
   regimeMatrimonial: null,
   pacsConvention: 'separation',
+};
+
+export const DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT: SuccessionLiquidationContext = {
+  actifEpoux1: 0,
+  actifEpoux2: 0,
+  actifCommun: 0,
+  nbEnfants: 1,
 };
 
 function isObject(v: unknown): v is Record<string, unknown> {
@@ -67,23 +82,39 @@ function isRegimeMatrimonial(v: unknown): v is RegimeMatrimonial {
 export function buildSuccessionDraftPayload(
   form: PersistedSuccessionForm,
   civil: SuccessionCivilContext,
-): SuccessionDraftPayloadV1 {
+  liquidation: SuccessionLiquidationContext,
+): SuccessionDraftPayloadV2 {
   return {
-    version: 1,
+    version: 2,
     form,
     civil,
+    liquidation,
   };
+}
+
+function asAmount(v: unknown, fallback: number): number {
+  const amount = Number(v);
+  if (!Number.isFinite(amount)) return fallback;
+  return Math.max(0, amount);
+}
+
+function asChildrenCount(v: unknown, fallback: number): number {
+  const count = Number(v);
+  if (!Number.isFinite(count)) return fallback;
+  return Math.max(0, Math.floor(count));
 }
 
 export function parseSuccessionDraftPayload(raw: string): {
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
+  liquidation: SuccessionLiquidationContext;
 } | null {
   try {
     const parsed = JSON.parse(raw) as unknown;
-    if (!isObject(parsed) || parsed.version !== 1) return null;
+    if (!isObject(parsed) || (parsed.version !== 1 && parsed.version !== 2)) return null;
+    const payload = parsed as Record<string, unknown>;
 
-    const formRaw = parsed.form;
+    const formRaw = payload.form;
     if (!isObject(formRaw)) return null;
     const actifNetSuccession = Number(formRaw.actifNetSuccession);
     if (!Number.isFinite(actifNetSuccession) || actifNetSuccession < 0) return null;
@@ -100,7 +131,7 @@ export function parseSuccessionDraftPayload(raw: string): {
 
     const safeHeirs = heritiers.length > 0 ? heritiers : [{ lien: 'enfant' as const, partSuccession: 0 }];
 
-    const civilRaw = isObject(parsed.civil) ? parsed.civil : {};
+    const civilRaw = isObject(payload.civil) ? payload.civil : {};
     const civil: SuccessionCivilContext = {
       situationMatrimoniale: isSituation(civilRaw.situationMatrimoniale)
         ? civilRaw.situationMatrimoniale
@@ -113,12 +144,21 @@ export function parseSuccessionDraftPayload(raw: string): {
         : DEFAULT_SUCCESSION_CIVIL_CONTEXT.pacsConvention,
     };
 
+    const liquidationRaw = payload.version === 2 && isObject(payload.liquidation) ? payload.liquidation : {};
+    const liquidation: SuccessionLiquidationContext = {
+      actifEpoux1: asAmount(liquidationRaw.actifEpoux1, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifEpoux1),
+      actifEpoux2: asAmount(liquidationRaw.actifEpoux2, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifEpoux2),
+      actifCommun: asAmount(liquidationRaw.actifCommun, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifCommun),
+      nbEnfants: asChildrenCount(liquidationRaw.nbEnfants, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.nbEnfants),
+    };
+
     return {
       form: {
         actifNetSuccession,
         heritiers: safeHeirs,
       },
       civil,
+      liquidation,
     };
   } catch {
     return null;

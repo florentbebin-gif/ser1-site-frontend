@@ -20,10 +20,12 @@ import type { LienParente } from '../../engine/succession';
 import {
   buildSuccessionDraftPayload,
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
+  DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   parseSuccessionDraftPayload,
   type SituationMatrimoniale,
 } from './successionDraft';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
+import { buildSuccessionPredecesAnalysis } from './successionPredeces';
 import '../../components/simulator/SimulatorShell.css';
 import '../../styles/premium-shared.css';
 import './Succession.css';
@@ -72,6 +74,12 @@ export default function SuccessionSimulator() {
   const [hypothesesOpen, setHypothesesOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [civilContext, setCivilContext] = useState(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
+  const [liquidationContext, setLiquidationContext] = useState(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
+
+  const predecesAnalysis = useMemo(
+    () => buildSuccessionPredecesAnalysis(civilContext, liquidationContext, fiscalSnapshot.dmtgSettings),
+    [civilContext, liquidationContext, fiscalSnapshot.dmtgSettings],
+  );
 
   const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
     setCivilContext((prev) => ({
@@ -88,6 +96,7 @@ export default function SuccessionSimulator() {
   const handleReset = useCallback(() => {
     reset();
     setCivilContext(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
+    setLiquidationContext(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
     setShowDetails(false);
     setHypothesesOpen(false);
     try {
@@ -97,6 +106,18 @@ export default function SuccessionSimulator() {
     }
   }, [reset]);
 
+  const setLiquidationField = useCallback(
+    (field: 'actifEpoux1' | 'actifEpoux2' | 'actifCommun' | 'nbEnfants', value: number) => {
+      setLiquidationContext((prev) => ({
+        ...prev,
+        [field]: field === 'nbEnfants'
+          ? Math.max(0, Math.floor(value || 0))
+          : Math.max(0, value || 0),
+      }));
+    },
+    [],
+  );
+
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem(STORE_KEY);
@@ -105,6 +126,7 @@ export default function SuccessionSimulator() {
         if (parsed) {
           hydrateForm(parsed.form);
           setCivilContext(parsed.civil);
+          setLiquidationContext(parsed.liquidation);
         }
       }
     } catch {
@@ -118,12 +140,12 @@ export default function SuccessionSimulator() {
     try {
       sessionStorage.setItem(
         STORE_KEY,
-        JSON.stringify(buildSuccessionDraftPayload(persistedForm, civilContext)),
+        JSON.stringify(buildSuccessionDraftPayload(persistedForm, civilContext, liquidationContext)),
       );
     } catch {
       // ignore
     }
-  }, [hydrated, persistedForm, civilContext]);
+  }, [hydrated, persistedForm, civilContext, liquidationContext]);
 
   useEffect(() => {
     const off = onResetEvent?.(({ simId }: { simId?: string }) => {
@@ -276,9 +298,107 @@ export default function SuccessionSimulator() {
               )}
             </div>
             <p className="sc-hint">
-              Ces paramètres n&apos;impactent pas encore le calcul actuel.
-              Ils seront utilisés dans les étapes suivantes de la refonte.
+              Ces paramètres impactent le module de prédécès ci-dessous, sans modifier le calcul principal des droits.
             </p>
+          </div>
+
+          <div className="premium-card sc-card">
+            <header className="sc-card__header">
+              <h2 className="sc-card__title">Liquidation matrimoniale (prédécès)</h2>
+              <p className="sc-card__subtitle">
+                Estimation simplifiée de la masse transmise selon l&apos;ordre des décès.
+              </p>
+            </header>
+            <div className="sc-card__divider" />
+
+            {predecesAnalysis.applicable ? (
+              <>
+                <div className="sc-civil-grid">
+                  <div className="sc-field">
+                    <label>Actif propre époux 1 (€)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={liquidationContext.actifEpoux1 || ''}
+                      onChange={(e) => setLiquidationField('actifEpoux1', Number(e.target.value) || 0)}
+                      placeholder="Montant"
+                    />
+                  </div>
+                  <div className="sc-field">
+                    <label>Actif propre époux 2 (€)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={liquidationContext.actifEpoux2 || ''}
+                      onChange={(e) => setLiquidationField('actifEpoux2', Number(e.target.value) || 0)}
+                      placeholder="Montant"
+                    />
+                  </div>
+                  <div className="sc-field">
+                    <label>{civilContext.situationMatrimoniale === 'pacse' ? 'Actif indivis (€)' : 'Actif commun (€)'}</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={liquidationContext.actifCommun || ''}
+                      onChange={(e) => setLiquidationField('actifCommun', Number(e.target.value) || 0)}
+                      placeholder="Montant"
+                    />
+                  </div>
+                  <div className="sc-field">
+                    <label>Nombre d&apos;enfants</label>
+                    <input
+                      type="number"
+                      min={0}
+                      step={1}
+                      value={liquidationContext.nbEnfants}
+                      onChange={(e) => setLiquidationField('nbEnfants', Number(e.target.value) || 0)}
+                    />
+                  </div>
+                </div>
+
+                {predecesAnalysis.regimeLabel && (
+                  <p className="sc-hint">
+                    Régime appliqué pour le calcul: {predecesAnalysis.regimeLabel}.
+                  </p>
+                )}
+
+                {predecesAnalysis.calc && (
+                  <table className="premium-table sc-predeces-table">
+                    <thead>
+                      <tr>
+                        <th>Scénario</th>
+                        <th className="align-right">Masse transmise</th>
+                        <th className="align-right">Droits estimés</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Décès époux 1</td>
+                        <td className="align-right">{fmt(predecesAnalysis.calc.result.scenarioMrDecede.actifTransmis)}</td>
+                        <td className="align-right value-cell">{fmt(predecesAnalysis.calc.result.scenarioMrDecede.droitsSuccession)}</td>
+                      </tr>
+                      <tr>
+                        <td>Décès époux 2</td>
+                        <td className="align-right">{fmt(predecesAnalysis.calc.result.scenarioMmeDecede.actifTransmis)}</td>
+                        <td className="align-right value-cell">{fmt(predecesAnalysis.calc.result.scenarioMmeDecede.droitsSuccession)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                )}
+              </>
+            ) : (
+              <p className="sc-hint">
+                Ce module s&apos;active pour les situations marié(e) ou pacsé(e).
+              </p>
+            )}
+
+            {predecesAnalysis.warnings.length > 0 && (
+              <ul className="sc-warning-list">
+                {predecesAnalysis.warnings.map((warning, idx) => (
+                  <li key={`${warning}-${idx}`}>{warning}</li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="premium-card sc-card sc-card--guide">
@@ -500,6 +620,7 @@ export default function SuccessionSimulator() {
               AV décès après {fiscalSnapshot.avDeces.agePivotPrimes} ans {fmt(fiscalSnapshot.avDeces.apres70ans.globalAllowance)} (global).
             </li>
             <li>Le calcul repose sur les parts de succession saisies pour chaque héritier.</li>
+            <li>Le module prédécès repose sur une liquidation matrimoniale simplifiée avec warnings sur les cas non couverts.</li>
             <li>Les donations antérieures, libéralités complexes et avantages matrimoniaux ne sont pas encore intégrés dans ce module.</li>
             <li>Résultat indicatif, à confirmer par une analyse patrimoniale et notariale.</li>
           </ul>

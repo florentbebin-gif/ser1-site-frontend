@@ -139,6 +139,30 @@ describe('Succession Module', () => {
       // Sans enfant, pas de droits calculés (transmission au conjoint exonérée)
       expect(result.result.scenarioMrDecede.droitsSuccession).toBe(0);
     });
+
+    it('applique des dmtgSettings personnalisés sur les scénarios prédécès', () => {
+      const customDmtg = {
+        ...DEFAULT_DMTG,
+        ligneDirecte: {
+          abattement: 200000,
+          scale: [{ from: 0, to: null, rate: 10 }],
+        },
+      };
+
+      const result = calculatePredecesSenarios({
+        actifMr: 300000,
+        actifMme: 300000,
+        actifCommun: 200000,
+        nbEnfants: 2,
+        regime: 'communaute_legale',
+        dmtgSettings: customDmtg,
+      });
+
+      // Mr décède -> transmis = 300000 + 100000 = 400000 -> 200000/enfant
+      // Base imposable par enfant = 0 (abattement custom 200000) => 0 droits
+      expect(result.result.scenarioMrDecede.droitsSuccession).toBe(0);
+      expect(result.result.scenarioMmeDecede.droitsSuccession).toBe(0);
+    });
   });
 
   describe('Barèmes DMTG par catégorie', () => {
