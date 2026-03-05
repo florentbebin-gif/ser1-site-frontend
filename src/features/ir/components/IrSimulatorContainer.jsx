@@ -17,7 +17,12 @@ import {
   countPersonsACharge,
 } from '../../../engine/ir/adjustments.js';
 import { useIrExportHandlers } from '../hooks/useIrExportHandlers';
-import { applyIncomeFilters, DEFAULT_INCOME_FILTERS, normalizeIncomeFilters } from '../utils/incomeFilters';
+import {
+  applyIncomeFilters,
+  DEFAULT_INCOME_FILTERS,
+  hasTaxableIncomeEntries,
+  normalizeIncomeFilters,
+} from '../utils/incomeFilters';
 import { IrFormSection } from './IrFormSection';
 import { IrSidebarSection } from './IrSidebarSection';
 import { IrDetailsSection } from './IrDetailsSection';
@@ -174,7 +179,7 @@ export default function IrSimulatorContainer() {
       setRealMode({ d1: 'abat10', d2: 'abat10' });
       setRealExpenses({ d1: 0, d2: 0 });
       setCapitalMode('pfu');
-      setIncomeFilters({ tns: false, pension: false, foncier: false });
+      setIncomeFilters({ ...DEFAULT_INCOME_FILTERS });
 
       try {
         sessionStorage.removeItem(STORE_KEY);
@@ -197,6 +202,7 @@ export default function IrSimulatorContainer() {
   };
 
   const effectiveIncomes = useMemo(() => applyIncomeFilters(incomes, incomeFilters), [incomes, incomeFilters]);
+  const showSummaryCard = useMemo(() => hasTaxableIncomeEntries(incomes), [incomes]);
 
   const { effectiveParts } = computeEffectiveParts({
     status,
@@ -387,6 +393,7 @@ export default function IrSimulatorContainer() {
           fmtPct={fmtPct}
           pfuRateIR={pfuRateIR}
           isExpert={isExpert}
+          showSummaryCard={showSummaryCard}
         />
       </div>
 

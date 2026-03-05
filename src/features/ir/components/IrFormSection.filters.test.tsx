@@ -38,7 +38,7 @@ const baseProps = {
   children: [],
   setChildren: vi.fn(),
   isExpert: true,
-  incomeFilters: { tns: true, pension: true, foncier: true },
+  incomeFilters: { tns: false, pension: false, foncier: false },
   setIncomeFilters: vi.fn(),
 };
 
@@ -61,6 +61,13 @@ describe('IrFormSection income filters UI', () => {
       expect(html).toContain('data-testid="ir-filter-pension"');
       expect(html).toContain('data-testid="ir-filter-foncier"');
     }
+  });
+
+  it('defaults to inactive filter buttons', () => {
+    const html = renderSection();
+
+    expect((html.match(/aria-pressed="false"/g) || []).length).toBe(3);
+    expect(html).not.toContain('ir-income-filter-btn is-active');
   });
 
   it('reflects active/inactive states with aria-pressed and active class', () => {
@@ -87,5 +94,15 @@ describe('IrFormSection income filters UI', () => {
 
     expect(html).toMatch(/Traitements et salaires/);
     expect(html).toMatch(/Autres revenus imposables/);
+  });
+
+  it('renders euro suffixes next to amount inputs and uses a plain 0 placeholder', () => {
+    const html = renderSection({
+      incomeFilters: { tns: true, pension: true, foncier: true },
+    });
+
+    expect(html).toContain('placeholder="0"');
+    expect(html).not.toContain('placeholder="0 €"');
+    expect(html).toContain('ir-table-input__unit');
   });
 });

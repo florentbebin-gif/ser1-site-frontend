@@ -1,5 +1,40 @@
-﻿import React from 'react';
+import React from 'react';
 import { IrSelect } from './IrSelect';
+
+const ZERO_PLACEHOLDER = '0';
+
+function parseIntegerInput(event) {
+  const raw = event.target.value.replace(/[^\d]/g, '');
+  return raw === '' ? 0 : Number(raw);
+}
+
+function IrAmountInput({
+  value,
+  onChange,
+  placeholder = ZERO_PLACEHOLDER,
+  readOnly = false,
+  testId,
+  style,
+  className,
+}) {
+  return (
+    <div
+      className={`ir-table-input${className ? ` ${className}` : ''}`}
+      style={style}
+    >
+      <input
+        type="text"
+        inputMode="numeric"
+        placeholder={placeholder}
+        data-testid={testId}
+        value={value}
+        onChange={onChange}
+        readOnly={readOnly}
+      />
+      <span className="ir-table-input__unit" aria-hidden="true">€</span>
+    </div>
+  );
+}
 
 export function IrFormSection({
   status,
@@ -34,14 +69,14 @@ export function IrFormSection({
   incomeFilters,
   setIncomeFilters,
 }) {
-  const showTnsRows = incomeFilters?.tns !== false;
-  const showPensionRows = incomeFilters?.pension !== false;
-  const showFoncierRow = incomeFilters?.foncier !== false;
+  const showTnsRows = incomeFilters?.tns === true;
+  const showPensionRows = incomeFilters?.pension === true;
+  const showFoncierRow = incomeFilters?.foncier === true;
 
   const toggleIncomeFilter = (key) => {
     setIncomeFilters((prev) => ({
       ...prev,
-      [key]: prev?.[key] === false,
+      [key]: prev?.[key] !== true,
     }));
   };
 
@@ -49,7 +84,6 @@ export function IrFormSection({
     <div className="ir-left premium-section">
       <div className="ir-table-wrapper premium-card premium-card--guide">
         <div className="ir-guide-card__grid">
-          {/* Colonne gauche : Situation familiale */}
           <div className="ir-field premium-field" data-testid="ir-situation-field">
             <label>Situation familiale</label>
             <IrSelect
@@ -94,7 +128,6 @@ export function IrFormSection({
             )}
           </div>
 
-          {/* Colonne droite : Gestion des enfants */}
           <div className="ir-children-zone">
             <button
               type="button"
@@ -203,34 +236,21 @@ export function IrFormSection({
             </tr>
           </thead>
           <tbody>
-            {/* ── Divider sous Declarant 1 ── */}
             <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
             <tr data-testid="ir-salary-row">
               <td>Traitements et salaires</td>
               <td>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  data-testid="ir-salary-d1-input"
+                <IrAmountInput
+                  testId="ir-salary-d1-input"
                   value={formatMoneyInput(incomes.d1.salaries)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    updateIncome('d1', 'salaries', raw === '' ? 0 : Number(raw));
-                  }}
+                  onChange={(e) => updateIncome('d1', 'salaries', parseIntegerInput(e))}
                 />
               </td>
               <td>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
-                  data-testid="ir-salary-d2-input"
+                <IrAmountInput
+                  testId="ir-salary-d2-input"
                   value={formatMoneyInput(incomes.d2.salaries)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    updateIncome('d2', 'salaries', raw === '' ? 0 : Number(raw));
-                  }}
+                  onChange={(e) => updateIncome('d2', 'salaries', parseIntegerInput(e))}
                 />
               </td>
             </tr>
@@ -238,27 +258,15 @@ export function IrFormSection({
               <tr>
                 <td>Revenus des associés / gérants</td>
                 <td>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="0 €"
+                  <IrAmountInput
                     value={formatMoneyInput(incomes.d1.associes62)}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/[^\d]/g, '');
-                      updateIncome('d1', 'associes62', raw === '' ? 0 : Number(raw));
-                    }}
+                    onChange={(e) => updateIncome('d1', 'associes62', parseIntegerInput(e))}
                   />
                 </td>
                 <td>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="0 €"
+                  <IrAmountInput
                     value={formatMoneyInput(incomes.d2.associes62)}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/[^\d]/g, '');
-                      updateIncome('d2', 'associes62', raw === '' ? 0 : Number(raw));
-                    }}
+                    onChange={(e) => updateIncome('d2', 'associes62', parseIntegerInput(e))}
                   />
                 </td>
               </tr>
@@ -266,7 +274,7 @@ export function IrFormSection({
             <tr className="ir-row-title">
               <td>Frais réels ou abattement 10 %</td>
               <td>
-                <div style={{ display: 'flex', gap: 4 }}>
+                <div className="ir-inline-field-row">
                   <IrSelect
                     style={{ flex: 1 }}
                     value={realMode.d1}
@@ -277,24 +285,25 @@ export function IrFormSection({
                     ]}
                   />
                   {realMode.d1 === 'reels' ? (
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0 €"
+                    <IrAmountInput
                       style={{ flex: 1 }}
                       value={formatMoneyInput(realExpenses.d1)}
                       onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, '');
-                        setRealExpensesState((r) => ({ ...r, d1: raw === '' ? 0 : Number(raw) }));
+                        setRealExpensesState((r) => ({ ...r, d1: parseIntegerInput(e) }));
                       }}
                     />
                   ) : (
-                    <input type="text" style={{ flex: 1, background: '#FFFFFF' }} readOnly value={formatMoneyInput(abat10SalD1)} />
+                    <IrAmountInput
+                      style={{ flex: 1 }}
+                      className="ir-table-input--readonly"
+                      readOnly
+                      value={formatMoneyInput(abat10SalD1)}
+                    />
                   )}
                 </div>
               </td>
               <td>
-                <div style={{ display: 'flex', gap: 4 }}>
+                <div className="ir-inline-field-row">
                   <IrSelect
                     style={{ flex: 1 }}
                     value={realMode.d2}
@@ -305,50 +314,38 @@ export function IrFormSection({
                     ]}
                   />
                   {realMode.d2 === 'reels' ? (
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0 €"
+                    <IrAmountInput
                       style={{ flex: 1 }}
                       value={formatMoneyInput(realExpenses.d2)}
                       onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, '');
-                        setRealExpensesState((r) => ({ ...r, d2: raw === '' ? 0 : Number(raw) }));
+                        setRealExpensesState((r) => ({ ...r, d2: parseIntegerInput(e) }));
                       }}
                     />
                   ) : (
-                    <input type="text" style={{ flex: 1, background: '#FFFFFF' }} readOnly value={formatMoneyInput(abat10SalD2)} />
+                    <IrAmountInput
+                      style={{ flex: 1 }}
+                      className="ir-table-input--readonly"
+                      readOnly
+                      value={formatMoneyInput(abat10SalD2)}
+                    />
                   )}
                 </div>
               </td>
             </tr>
-            {/* ── Divider ── */}
             <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
             {showTnsRows && (
               <tr>
                 <td>BIC&#8209;BNC&#8209;BA imposables</td>
                 <td>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="0 €"
+                  <IrAmountInput
                     value={formatMoneyInput(incomes.d1.bic)}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/[^\d]/g, '');
-                      updateIncome('d1', 'bic', raw === '' ? 0 : Number(raw));
-                    }}
+                    onChange={(e) => updateIncome('d1', 'bic', parseIntegerInput(e))}
                   />
                 </td>
                 <td>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="0 €"
+                  <IrAmountInput
                     value={formatMoneyInput(incomes.d2.bic)}
-                    onChange={(e) => {
-                      const raw = e.target.value.replace(/[^\d]/g, '');
-                      updateIncome('d2', 'bic', raw === '' ? 0 : Number(raw));
-                    }}
+                    onChange={(e) => updateIncome('d2', 'bic', parseIntegerInput(e))}
                   />
                 </td>
               </tr>
@@ -356,27 +353,15 @@ export function IrFormSection({
             <tr>
               <td>Autres revenus imposables</td>
               <td>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
+                <IrAmountInput
                   value={formatMoneyInput(incomes.d1.autres)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    updateIncome('d1', 'autres', raw === '' ? 0 : Number(raw));
-                  }}
+                  onChange={(e) => updateIncome('d1', 'autres', parseIntegerInput(e))}
                 />
               </td>
               <td>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0 €"
+                <IrAmountInput
                   value={formatMoneyInput(incomes.d2.autres)}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/[^\d]/g, '');
-                    updateIncome('d2', 'autres', raw === '' ? 0 : Number(raw));
-                  }}
+                  onChange={(e) => updateIncome('d2', 'autres', parseIntegerInput(e))}
                 />
               </td>
             </tr>
@@ -389,27 +374,15 @@ export function IrFormSection({
                 <tr>
                   <td>Pensions, retraites et rentes</td>
                   <td>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0 €"
+                    <IrAmountInput
                       value={formatMoneyInput(incomes.d1.pensions)}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, '');
-                        updateIncome('d1', 'pensions', raw === '' ? 0 : Number(raw));
-                      }}
+                      onChange={(e) => updateIncome('d1', 'pensions', parseIntegerInput(e))}
                     />
                   </td>
                   <td>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0 €"
+                    <IrAmountInput
                       value={formatMoneyInput(incomes.d2.pensions)}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, '');
-                        updateIncome('d2', 'pensions', raw === '' ? 0 : Number(raw));
-                      }}
+                      onChange={(e) => updateIncome('d2', 'pensions', parseIntegerInput(e))}
                     />
                   </td>
                 </tr>
@@ -430,15 +403,10 @@ export function IrFormSection({
               <tr>
                 <td>Revenus fonciers nets</td>
                 <td colSpan={2}>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="0 €"
+                  <IrAmountInput
                     value={formatMoneyInput(incomes.fonciersFoyer || 0)}
                     onChange={(e) => {
-                      const raw = e.target.value.replace(/[^\d]/g, '');
-                      const val = raw === '' ? 0 : Number(raw);
-                      setIncomes((prev) => ({ ...prev, fonciersFoyer: val }));
+                      setIncomes((prev) => ({ ...prev, fonciersFoyer: parseIntegerInput(e) }));
                     }}
                   />
                 </td>
@@ -453,15 +421,9 @@ export function IrFormSection({
                 <tr>
                   <td>RCM soumis aux PS à {fmtPct(psPatrimonyRate)} %</td>
                   <td colSpan={2}>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0 €"
+                    <IrAmountInput
                       value={formatMoneyInput(incomes.capital.withPs)}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, '');
-                        updateIncome('capital', 'withPs', raw === '' ? 0 : Number(raw));
-                      }}
+                      onChange={(e) => updateIncome('capital', 'withPs', parseIntegerInput(e))}
                     />
                   </td>
                 </tr>
@@ -469,15 +431,9 @@ export function IrFormSection({
                 <tr>
                   <td>RCM non soumis aux PS à {fmtPct(psPatrimonyRate)} %</td>
                   <td colSpan={2}>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0 €"
+                    <IrAmountInput
                       value={formatMoneyInput(incomes.capital.withoutPs)}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, '');
-                        updateIncome('capital', 'withoutPs', raw === '' ? 0 : Number(raw));
-                      }}
+                      onChange={(e) => updateIncome('capital', 'withoutPs', parseIntegerInput(e))}
                     />
                   </td>
                 </tr>
@@ -495,35 +451,22 @@ export function IrFormSection({
                   </td>
                 </tr>
 
-                {/* ── Divider ── */}
                 <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
                 <tr className="ir-row-title">
                   <td>Déductions (pensions alimentaires, etc.)</td>
                   <td colSpan={2}>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0 €"
+                    <IrAmountInput
                       value={formatMoneyInput(deductions)}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, '');
-                        setDeductions(raw === '' ? 0 : Number(raw));
-                      }}
+                      onChange={(e) => setDeductions(parseIntegerInput(e))}
                     />
                   </td>
                 </tr>
                 <tr className="ir-row-title">
                   <td>Réductions / crédits d&apos;impôt</td>
                   <td colSpan={2}>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="0 €"
+                    <IrAmountInput
                       value={formatMoneyInput(credits)}
-                      onChange={(e) => {
-                        const raw = e.target.value.replace(/[^\d]/g, '');
-                        setCredits(raw === '' ? 0 : Number(raw));
-                      }}
+                      onChange={(e) => setCredits(parseIntegerInput(e))}
                     />
                   </td>
                 </tr>
