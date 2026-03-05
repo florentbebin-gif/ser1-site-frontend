@@ -200,12 +200,15 @@ Implémentation de référence :
 - Styles premium partagés : `src/styles/premium-shared.css`
 - Styles spécifiques crédit : `src/features/credit/components/CreditV2.css`
 - Inputs/select/toggle : `src/features/credit/components/CreditInputs.jsx` + `CreditInputs.css`
+- Pour toute nouvelle page `/sim/*`, appliquer la règle placeholder + unité de `docs/GOUVERNANCE.md` : placeholder numérique sans unité dans le champ, suffixe visuel hors champ, sauf si l'unité est déjà portée par un menu déroulant.
+- Les boutons optionnels de filtres/sous-sections doivent démarrer inactifs par défaut, puis activer explicitement les blocs associés.
 
 ### Mode utilisateur `/sim/*` (contrat)
 - Source de vérité globale : `ui_settings.mode` via `useUserMode` (`src/services/userModeService.ts`).
 - La page Home est le point de pilotage global (toggle persistant).
 - Chaque simulateur doit lire ce mode global au montage, puis peut appliquer un override local non persistant (pattern `/sim/credit`).
 - Le toggle local d'un simulateur ne doit pas écrire dans `ui_settings` (sinon il écrase le choix Home pour toute l'app).
+- Les boutons locaux additionnels de page (filtres, catégories masquables) ne doivent pas être initialisés comme actifs par défaut sans règle produit documentée.
 
 ### Thème V5 (3 modes)
 Source de vérité : DB (`ui_settings`).

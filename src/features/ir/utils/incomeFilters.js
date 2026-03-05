@@ -1,15 +1,36 @@
 export const DEFAULT_INCOME_FILTERS = Object.freeze({
-  tns: true,
-  pension: true,
-  foncier: true,
+  tns: false,
+  pension: false,
+  foncier: false,
 });
 
 export function normalizeIncomeFilters(filters) {
   return {
-    tns: filters?.tns !== false,
-    pension: filters?.pension !== false,
-    foncier: filters?.foncier !== false,
+    tns: filters?.tns === true,
+    pension: filters?.pension === true,
+    foncier: filters?.foncier === true,
   };
+}
+
+export function hasTaxableIncomeEntries(incomes) {
+  const safeIncomes = incomes || {};
+  const values = [
+    safeIncomes.d1?.salaries,
+    safeIncomes.d1?.associes62,
+    safeIncomes.d1?.pensions,
+    safeIncomes.d1?.bic,
+    safeIncomes.d1?.autres,
+    safeIncomes.d2?.salaries,
+    safeIncomes.d2?.associes62,
+    safeIncomes.d2?.pensions,
+    safeIncomes.d2?.bic,
+    safeIncomes.d2?.autres,
+    safeIncomes.capital?.withPs,
+    safeIncomes.capital?.withoutPs,
+    safeIncomes.fonciersFoyer,
+  ];
+
+  return values.some((value) => Number(value) > 0);
 }
 
 export function applyIncomeFilters(incomes, filters) {

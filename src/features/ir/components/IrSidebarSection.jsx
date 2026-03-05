@@ -91,6 +91,7 @@ export function IrSidebarSection({
   fmtPct,
   pfuRateIR,
   isExpert,
+  showSummaryCard,
 }) {
   return (
     <div className="ir-right">
@@ -166,8 +167,8 @@ export function IrSidebarSection({
         </div>
       </div>
 
-      {result && (
-        <div className="ir-summary-card premium-card">
+      {result && showSummaryCard && (
+        <div className="ir-summary-card premium-card" data-testid="ir-summary-card">
           {isExpert && (
             <div className="ir-summary-row">
               <span>Revenu imposable du foyer</span>

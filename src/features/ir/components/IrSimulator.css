@@ -229,6 +229,14 @@
   outline: none;
 }
 
+.ir-table input[type='number']::placeholder,
+.ir-table input[type='text']::placeholder,
+.ir-field input[type='number']::placeholder,
+.ir-field input[type='text']::placeholder {
+  color: var(--color-c9);
+  opacity: 1;
+}
+
 .ir-table input[type='number']:hover,
 .ir-table input[type='text']:hover {
   border-bottom-color: var(--color-c8);
@@ -246,6 +254,36 @@
 
 .ir-row-title td:first-child {
   color: var(--color-c9);
+}
+
+.ir-inline-field-row {
+  display: flex;
+  gap: 4px;
+}
+
+.ir-table-input {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.ir-table-input input[type='text'],
+.ir-table-input input[type='number'] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ir-table-input__unit {
+  min-width: 14px;
+  margin-left: 6px;
+  color: var(--color-c9);
+  font-size: 13px;
+  line-height: 1;
+  text-align: right;
+}
+
+.ir-table-input--readonly input[type='text'] {
+  background: #FFFFFF;
 }
 
 /* Séparateur estompé dans les cartes de synthèse (GOUVERNANCE.md §4) */

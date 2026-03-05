@@ -49,6 +49,11 @@
   outline: none;
 }
 
+.ci-input::placeholder {
+  color: var(--color-c9);
+  opacity: 1;
+}
+
 .ci-input:hover {
   border-bottom-color: var(--color-c8);
 }

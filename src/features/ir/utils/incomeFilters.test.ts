@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyIncomeFilters,
   DEFAULT_INCOME_FILTERS,
+  hasTaxableIncomeEntries,
   normalizeIncomeFilters,
 } from './incomeFilters';
 
@@ -17,12 +18,40 @@ describe('normalizeIncomeFilters', () => {
     expect(normalizeIncomeFilters(undefined)).toEqual(DEFAULT_INCOME_FILTERS);
   });
 
-  it('keeps provided false flags and defaults others to true', () => {
-    expect(normalizeIncomeFilters({ tns: false })).toEqual({
+  it('keeps other flags off when only TNS is enabled', () => {
+    expect(normalizeIncomeFilters({ tns: true })).toEqual({
+      tns: true,
+      pension: false,
+      foncier: false,
+    });
+  });
+
+  it('keeps other flags off when only Pension is enabled', () => {
+    expect(normalizeIncomeFilters({ pension: true })).toEqual({
       tns: false,
       pension: true,
-      foncier: true,
+      foncier: false,
     });
+  });
+});
+
+describe('hasTaxableIncomeEntries', () => {
+  it('returns false when all taxable income fields are empty or zero', () => {
+    expect(hasTaxableIncomeEntries({
+      d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, autres: 0 },
+      d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, autres: 0 },
+      capital: { withPs: 0, withoutPs: 0 },
+      fonciersFoyer: 0,
+    })).toBe(false);
+  });
+
+  it('returns true when any taxable income field is positive', () => {
+    expect(hasTaxableIncomeEntries({
+      d1: { salaries: 30000 },
+      d2: {},
+      capital: {},
+      fonciersFoyer: 0,
+    })).toBe(true);
   });
 });
 

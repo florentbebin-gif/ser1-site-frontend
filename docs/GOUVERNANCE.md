@@ -142,12 +142,15 @@ Principes : épuré, lisible, respirant.
   - Fond off-white : `color-mix(in srgb, C8 18%, #FFFFFF)`.
   - Base visuelle : `border-bottom: 1px solid transparent`, hover `C8`, focus `C2`.
   - Alignement texte : `text-align: right` sur **tous** les inputs et selects de `/sim/*`, y compris les selects de navigation (Barème, Situation familiale, Résidence, etc.).
+  - Placeholder numérique : afficher uniquement la valeur (`0`, `0,00`) dans le champ ; l'unité (`€`, `%`, `mois`, etc.) est rendue en suffixe visuel à côté du champ, pas dans le placeholder.
+  - Couleur des placeholders : `C9` sur tous les inputs `/sim/*`.
 - Selects natifs simulateur : même fond off-white + border-bottom + `text-align: right` (pas de select natif navigateur brut).
 - Inputs en lecture seule passifs (valeur calculée non modifiable) : fond `C7` (override inline acceptable).
 - Inputs inactifs conditionnels (ex. : champ désactivé par un select de mode) : fond `#FFFFFF` pour signaler visuellement l'inactivité — exception listée aux couleurs hardcodées.
-- États :
-  - Erreur : `border-bottom: C1` + message `11px`.
-  - Guide séquentiel : fond `color-mix(C1 8%, white)` sur le premier champ non saisi.
+ - Exception unités : ne pas dupliquer une unité déjà portée par un menu déroulant ou par ses options/libellés.
+ - États :
+    - Erreur : `border-bottom: C1` + message `11px`.
+    - Guide séquentiel : fond `color-mix(C1 8%, white)` sur le premier champ non saisi.
 - Select custom (optionnel) :
   - Trigger identique visuellement à un input,
   - dropdown `#FFFFFF`, border `C8`, shadow premium,
@@ -163,6 +166,7 @@ Principes : épuré, lisible, respirant.
 #### Recommandé
 - Conserver le format `%` avec normalisation au blur (`0,00`).
 - Utiliser les unités visuelles (`€`, `%`, `mois`) en suffixe léger (`C9`).
+- Initialiser les boutons optionnels d'affichage de sous-sections (filtres, catégories additionnelles, etc.) à l'état inactif par défaut, sauf exigence produit documentée.
 
 #### Interdit
 - Revenir aux styles natifs navigateur pour les selects dans `/sim/*`.
@@ -303,6 +307,7 @@ Principes : épuré, lisible, respirant.
 - Placer `Mode` + `Exporter` dans le header, côté droit.
 - Utiliser séparateurs dégradés pour les transitions à l'intérieur des cards.
 - Implémenter les champs numériques avec alignement à droite et unités suffixées.
+- Garder les placeholders numériques sans unité dans le champ.
 
 #### À éviter
 - Réintroduire des couleurs hex ad hoc pour les états UI.
@@ -336,6 +341,7 @@ Quand un simulateur utilise une `<table>` à l'intérieur d'une `premium-card--g
   - `background: transparent`
   - Utilisé pour : « Frais réels ou abattement 10 % », « Abattement 10 % pensions (foyer) », « Déductions », « Réductions / crédits d'impôt ».
 - **Inputs inactifs conditionnels** : quand une ligne combine un select de mode + un input conditionnel (actif/inactif selon le mode), l'input en lecture seule prend `background: #FFFFFF` pour signaler l'inactivité (voir §5).
+- **Lignes avec dropdown unitaire** : si l'unité est déjà incluse dans le select ou ses options (ex. `10%`, `PFU 12,8 %`), ne pas la répéter dans le contrôle déroulant ; seuls les champs numériques adjacents gardent leur suffixe propre si nécessaire.
 
 #### Mode simplifié / expert
 - Les champs masqués en mode simplifié (`isExpert = false`) doivent être **exclus du moteur de calcul** (pas seulement masqués visuellement).
