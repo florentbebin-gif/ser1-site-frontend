@@ -9,11 +9,12 @@ import React, { useMemo } from 'react';
 import type { SuccessionCivilContext, SuccessionEnfant, FamilyMember } from '../successionDraft';
 
 // ─── Constantes de layout ───────────────────────────────────────────────────
-const NW = 80;   // node width
-const NH = 24;   // node height
-const GH = 12;   // horizontal gap between nodes
-const GV = 40;   // vertical gap between levels
-const PAD = 12;  // canvas padding
+const NW = 80;             // node width
+const NH = 24;             // node height
+const GH = 12;             // horizontal gap between nodes
+const GV = 40;             // vertical gap between levels
+const PAD = 12;            // canvas padding
+const BASELINE_WIDTH = 380; // canvas minimum width (= 2 époux + 4 enfants communs)
 
 // ─── Types internes ─────────────────────────────────────────────────────────
 interface OrgNode {
@@ -327,16 +328,23 @@ function computeLayout(
 
   // ── Normalisation : s'assurer qu'aucun nœud ne sort à gauche ──
   const minNodeX = nodes.reduce((acc, n) => Math.min(acc, n.x), Infinity);
-  const shift = minNodeX < PAD ? PAD - minNodeX : 0;
-  if (shift > 0) {
-    nodes.forEach((n) => { n.x += shift; });
-    edges.forEach((e) => { e.x1 += shift; e.x2 += shift; });
-    groups.forEach((g) => { g.x += shift; });
+  const leftShift = minNodeX < PAD ? PAD - minNodeX : 0;
+  if (leftShift > 0) {
+    nodes.forEach((n) => { n.x += leftShift; });
+    edges.forEach((e) => { e.x1 += leftShift; e.x2 += leftShift; });
+    groups.forEach((g) => { g.x += leftShift; });
   }
 
-  // ── Calcul largeur SVG ──
+  // ── Canvas de référence + centrage horizontal ──
   const maxNodeRight = nodes.reduce((acc, n) => Math.max(acc, right(n)), 0);
-  const svgWidth = maxNodeRight + PAD;
+  const naturalWidth = maxNodeRight + PAD;
+  const svgWidth = Math.max(naturalWidth, BASELINE_WIDTH);
+  if (naturalWidth < svgWidth) {
+    const centerShift = (svgWidth - naturalWidth) / 2;
+    nodes.forEach((n) => { n.x += centerShift; });
+    edges.forEach((e) => { e.x1 += centerShift; e.x2 += centerShift; });
+    groups.forEach((g) => { g.x += centerShift; });
+  }
 
   return { nodes, edges, groups, svgWidth, svgHeight };
 }
@@ -344,15 +352,28 @@ function computeLayout(
 // ─── Styles par kind ────────────────────────────────────────────────────────
 function nodeStyle(kind: OrgNode['kind']): React.SVGProps<SVGRectElement> {
   if (kind === 'epoux') {
-    return { fill: 'var(--color-c7)', stroke: 'var(--color-c1)', strokeWidth: 2.5, rx: 8 };
+    return {
+      fill: 'var(--color-c7)',
+      stroke: 'var(--color-c1)',
+      strokeWidth: 1,
+      strokeOpacity: 0.35,
+      rx: 10,
+    };
   }
   if (kind === 'tierce') {
-    return { fill: 'var(--color-c7)', stroke: 'var(--color-c9)', strokeWidth: 1.5, rx: 8, strokeDasharray: '4 3' };
+    return {
+      fill: 'var(--color-c7)',
+      stroke: 'var(--color-c9)',
+      strokeWidth: 0.75,
+      strokeDasharray: '3 2',
+      strokeOpacity: 0.6,
+      rx: 8,
+    };
   }
-  if (kind === 'parent' || kind === 'frere_soeur' || kind === 'oncle_tante') {
-    return { fill: 'var(--color-c7)', stroke: 'var(--color-c8)', strokeWidth: 1.5, rx: 8 };
+  if (kind === 'enfant_commun') {
+    return { fill: 'var(--color-c6)', rx: 8 };
   }
-  return { fill: 'var(--color-c7)', stroke: 'var(--color-c8)', strokeWidth: 1.5, rx: 8 };
+  return { fill: 'var(--color-c7)', stroke: 'var(--color-c8)', strokeWidth: 0.75, rx: 8 };
 }
 
 // ─── Composant ──────────────────────────────────────────────────────────────
@@ -412,8 +433,8 @@ export function FiliationOrgchart({
               <line
                 key={`edge-${i}`}
                 x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
-                stroke="var(--color-c9)"
-                strokeWidth={1.5}
+                stroke="var(--color-c8)"
+                strokeWidth={1}
                 strokeDasharray={e.dashed ? '4 3' : undefined}
               />
             ))}
@@ -422,7 +443,14 @@ export function FiliationOrgchart({
             {nodes.map((node) => {
               const style = nodeStyle(node.kind);
               return (
-                <g key={node.id}>
+                <g
+                  key={node.id}
+                  style={{
+                    filter: node.kind === 'epoux'
+                      ? 'drop-shadow(0 2px 6px rgba(0,0,0,0.14))'
+                      : 'drop-shadow(0 1px 3px rgba(0,0,0,0.07))',
+                  }}
+                >
                   <rect
                     x={node.x} y={node.y}
                     width={NW} height={NH}
@@ -432,9 +460,9 @@ export function FiliationOrgchart({
                     x={cx(node)} y={cy(node)}
                     dominantBaseline="central"
                     textAnchor="middle"
-                    fontSize={10}
+                    fontSize={node.kind === 'epoux' ? 10 : 9}
                     fontWeight={node.kind === 'epoux' ? 600 : 400}
-                    fill="var(--color-c10)"
+                    fill={node.kind === 'epoux' ? 'var(--color-c1)' : 'var(--color-c9)'}
                     style={{ userSelect: 'none' }}
                   >
                     {node.label}
