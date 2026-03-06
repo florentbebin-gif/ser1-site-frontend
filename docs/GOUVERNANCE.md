@@ -470,6 +470,55 @@ Ces 3 phases correspondent dans les blocs produit aux clés `constitution`, `sor
 
 ---
 
+## Regles de creation des nouvelles pages
+
+Cette section complete la norme existante. Elle fixe le contrat minimal avant d'ajouter une nouvelle page ou un nouveau simulateur.
+
+### Nouvelles pages /sim/*
+
+#### Obligatoire
+- Reutiliser la norme `/sim/*` de ce document ; `/sim/credit` reste la baseline par defaut.
+- Toute nouvelle page `/sim/*` doit avoir :
+  - un header premium
+  - une zone actions coherente (mode, export, actions de page)
+  - une grille ou un layout explicitement documente si elle deroge a la baseline
+  - un comportement de mode compatible avec Home (`ui_settings.mode`)
+- Si le mode simplifie masque des champs qui influencent le calcul, ces champs doivent etre neutralises dans le calcul, pas seulement caches visuellement.
+
+#### Recommande
+- Partir de `SimulatorShell.css` et `premium-shared.css` avant toute surcharge locale.
+- Garder un nombre limite de variantes UI ; documenter toute exception dans cette gouvernance.
+
+#### Interdit
+- Creer une page `/sim/*` avec un style structurel autonome sans justification documentee.
+- Dupliquer des patterns existants de credit ou ir dans un nouveau CSS si la composition suffit.
+
+### Pages simulateur non finalisees
+
+#### Regle
+- Tant qu'un simulateur n'a pas de contrat UI et metier stable, preferer `UpcomingSimulatorPage` a une page incomplete exposee comme definitive.
+- Une route "upcoming" doit rester explicite dans l'UX et dans les tests smoke.
+
+### Nouvelles pages /settings/*
+
+#### Obligatoire
+- Une page settings s'inscrit dans le shell existant `SettingsShell` ; pas de navigation parallele.
+- La route doit etre declaree dans `src/constants/settingsRoutes.js`.
+- La page doit respecter les tokens, la langue francaise, les blocs premium et la discipline SVG inline.
+- Si une page est reservee aux admins, la restriction UI ne remplace jamais l'enforcement backend/RLS.
+
+#### Interdit
+- Ajouter une page settings avec son propre systeme d'onglets ou sa propre logique de navigation globale.
+- Ajouter des couleurs, espacements ou composants one-off non alignes avec le reste des settings sans justification produit.
+
+### Checklist avant ajout d'une page
+- Le besoin produit est formule.
+- Le point d'entree (route, shell, topbar, reset, mode) est defini.
+- Le lieu du calcul est clair (engine vs simple UI).
+- La doc pivot pertinente est mise a jour : `ARCHITECTURE.md` pour la structure, `GOUVERNANCE.md` pour le contrat UI.
+
+---
+
 ## Anti-patterns
 - Calcul métier fiscal dans React (doit aller dans `src/engine/`).
 - Import CSS cross-page (styles partagés → `src/styles/`).
@@ -486,4 +535,3 @@ Ces 3 phases correspondent dans les blocs produit aux clés `constitution`, `sor
 - Baseline `/sim/credit` : `src/features/credit/Credit.jsx`, `src/features/credit/components/CreditV2.css`
 - Inputs simulateur : `src/features/credit/components/CreditInputs.jsx`, `src/features/credit/components/CreditInputs.css`
 - ESLint couleurs : `tools/eslint-plugin-ser1-colors/`
-

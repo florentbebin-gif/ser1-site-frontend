@@ -515,6 +515,88 @@ Edge Function `rates-refresh` (cron hebdomadaire) : fetch URSSAF / legifrance / 
 
 ---
 
+## Conventions de creation (simulateurs, settings, features)
+
+Cette section fixe comment ajouter une page, une route ou une feature sans creer de nouveau pattern implicite.
+
+### 1) Ajouter un nouveau simulateur /sim/*
+
+#### Regle
+- Toute nouvelle route simulateur vit dans `APP_ROUTES` dans `src/routes/appRoutes.ts`.
+- Le chemin canonique est toujours `/sim/<slug>`.
+- Une route legacy courte (`/<slug>`) n'est ajoutee que si une compatibilite ou un redirect explicite est necessaire.
+
+#### Structure cible
+- Entrypoint feature : `src/features/<slug>/index.ts`
+- Page ou orchestrateur : `src/features/<slug>/<Feature>Page.tsx` ou composant equivalent exporte par l'index
+- Sous-dossiers typiques selon besoin :
+  - `components/`
+  - `hooks/`
+  - `export/`
+  - `utils/`
+  - `__tests__/`
+
+#### Contrats obligatoires
+- Le calcul metier reste dans `src/engine/` si le simulateur introduit une vraie logique de calcul.
+- La route doit declarer un `contextLabel` et une `topbar` coherents avec `APP_ROUTES`.
+- Si le simulateur supporte le reset page, declarer un `resetKey`.
+- Le mode global Home (`ui_settings.mode`) doit etre respecte par defaut ; un override local est permis seulement s'il reste non persistant.
+
+#### Si le simulateur n'est pas pret
+- Utiliser `UpcomingSimulatorPage` tant que le simulateur n'a pas un contrat UI ou metier stable.
+- Ne pas livrer une page `/sim/*` demi-finie avec architecture definitive implicite.
+
+### 2) Ajouter une nouvelle page /settings/*
+
+#### Regle
+- La source unique des sous-pages settings est `src/constants/settingsRoutes.js`.
+- Toute nouvelle page settings doit etre declaree dans `SETTINGS_ROUTES` avec :
+  - `key`
+  - `label`
+  - `path`
+  - `urlPath`
+  - `component`
+  - `adminOnly` si necessaire
+
+#### Emplacement
+- Composant de page : `src/pages/settings/<PageName>.tsx` ou `.jsx`
+- Navigation et rendu : `src/pages/SettingsShell.jsx`
+- Mapping URL actif : helpers dans `src/constants/settingsRoutes.js`
+
+#### Contrats obligatoires
+- Ne pas creer une navigation settings parallele hors `SettingsShell`.
+- Si une page sensible est `adminOnly` en front, verifier aussi l'enforcement backend/RLS.
+- Si une route settings remplace une ancienne route, documenter le redirect ou le mapping legacy.
+
+### 3) Organiser une feature de simulateur
+
+#### Regle
+- Une feature regroupe uniquement ce qui lui appartient vraiment.
+- Les composants partages vivent hors feature seulement s'ils sont reemployes par plusieurs domaines.
+
+#### Repartition recommandee
+- `src/engine/` : calcul pur, zero React
+- `src/features/<slug>/` : UI, state, orchestration, exports lies a la feature
+- `src/components/` : composants transverses reutilises
+- `src/styles/` : styles partages, tokens, patterns communs
+- `src/pages/` : shells et pages transverses, pas la logique metier d'un simulateur
+
+#### Interdits
+- Calcul fiscal dans un composant React
+- Import CSS cross-feature depuis une autre feature
+- Nouveau dossier `legacy/`, `__spike__` ou `_raw` en prod
+- Fichier "god component" si un decoupage simple composant/hook suffit
+
+### 4) Checklist minimale avant merge
+- Route ou page ajoutee a la bonne source de verite (`APP_ROUTES` ou `SETTINGS_ROUTES`)
+- Docs pivots mises a jour si le contrat change
+- Test adapte au statut du sujet :
+  - simulateur stable : smoke test ou test cible
+  - simulateur upcoming : au minimum ouverture de route / rendu attendu
+- Aucun nouveau pattern structurel implicite non documente
+
+---
+
 ## Références
 - Gouvernance UI/couleurs/thème : `docs/GOUVERNANCE.md`
 - Runbook debug + edge + migrations : `docs/RUNBOOK.md`
