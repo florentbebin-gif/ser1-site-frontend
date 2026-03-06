@@ -213,6 +213,17 @@ export default function SuccessionSimulator() {
     return BRANCH_OPTIONS;
   }, [civilContext.situationMatrimoniale]);
 
+  // Reset enfant rattachement invalide lors d'un changement de situation
+  useEffect(() => {
+    const validValues = new Set(enfantRattachementOptions.map((o) => o.value));
+    const defaultValue = (enfantRattachementOptions[0]?.value ?? 'epoux1') as 'commun' | 'epoux1' | 'epoux2';
+    setEnfantsContext((prev) =>
+      prev.map((e) =>
+        validValues.has(e.rattachement) ? e : { ...e, rattachement: defaultValue },
+      ),
+    );
+  }, [enfantRattachementOptions]);
+
   const predecesAnalysis = useMemo(
     () => buildSuccessionPredecesAnalysis(
       civilContext,
@@ -417,9 +428,9 @@ export default function SuccessionSimulator() {
   const addEnfant = useCallback(() => {
     setEnfantsContext((prev) => ([
       ...prev,
-      { id: createEnfantId(), rattachement: 'commun' },
+      { id: createEnfantId(), rattachement: enfantRattachementOptions[0].value as 'commun' | 'epoux1' | 'epoux2' },
     ]));
-  }, []);
+  }, [enfantRattachementOptions]);
 
   const updateEnfantRattachement = useCallback((id: string, rattachement: 'commun' | 'epoux1' | 'epoux2') => {
     setEnfantsContext((prev) => prev.map((enfant) => (
@@ -778,12 +789,14 @@ export default function SuccessionSimulator() {
                         {enfantsContext.map((enfant, idx) => (
                           <div key={enfant.id} className="sc-child-row">
                             <span className="sc-child-row__label">E{idx + 1}</span>
-                            <ScSelect
-                              className="sc-child-select"
-                              value={enfant.rattachement}
-                              onChange={(value) => updateEnfantRattachement(enfant.id, value as 'commun' | 'epoux1' | 'epoux2')}
-                              options={enfantRattachementOptions}
-                            />
+                            {enfantRattachementOptions.length > 1 && (
+                              <ScSelect
+                                className="sc-child-select"
+                                value={enfant.rattachement}
+                                onChange={(value) => updateEnfantRattachement(enfant.id, value as 'commun' | 'epoux1' | 'epoux2')}
+                                options={enfantRattachementOptions}
+                              />
+                            )}
                             <button
                               type="button"
                               className="sc-child-remove-btn"
