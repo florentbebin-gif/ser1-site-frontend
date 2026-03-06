@@ -11,6 +11,10 @@ Sources de verite (uniquement) :
 - `docs/ARCHITECTURE.md`
 - `docs/RUNBOOK.md`
 
+Guidance agent / repo automation :
+- `AGENTS.md`
+- `.windsurf/rules/ser1-core-rules.md`
+
 ## Quickstart
 
 Prerequis :
