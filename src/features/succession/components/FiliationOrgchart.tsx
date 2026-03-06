@@ -9,11 +9,11 @@ import React, { useMemo } from 'react';
 import type { SuccessionCivilContext, SuccessionEnfant, FamilyMember } from '../successionDraft';
 
 // ─── Constantes de layout ───────────────────────────────────────────────────
-const NW = 130;  // node width
-const NH = 36;   // node height
-const GH = 24;   // horizontal gap between nodes
-const GV = 56;   // vertical gap between levels
-const PAD = 20;  // canvas padding
+const NW = 100;  // node width
+const NH = 30;   // node height
+const GH = 16;   // horizontal gap between nodes
+const GV = 48;   // vertical gap between levels
+const PAD = 16;  // canvas padding
 
 // ─── Types internes ─────────────────────────────────────────────────────────
 interface OrgNode {
@@ -357,7 +357,6 @@ export function FiliationOrgchart({
     <div className="premium-card sc-card sc-filiation-card">
       <header className="sc-card__header">
         <h2 className="sc-card__title">Filiation</h2>
-        <p className="sc-card__subtitle">Organigramme familial — mis à jour automatiquement.</p>
       </header>
       <div className="sc-card__divider" />
 
@@ -412,7 +411,7 @@ export function FiliationOrgchart({
                     x={cx(node)} y={cy(node)}
                     dominantBaseline="central"
                     textAnchor="middle"
-                    fontSize={12}
+                    fontSize={11}
                     fontWeight={node.kind === 'epoux' ? 600 : 400}
                     fill="var(--color-c10)"
                     style={{ userSelect: 'none' }}

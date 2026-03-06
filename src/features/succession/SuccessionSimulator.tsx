@@ -671,7 +671,6 @@ export default function SuccessionSimulator() {
           <div className="premium-card sc-card">
             <header className="sc-card__header">
               <h2 className="sc-card__title">Contexte familial</h2>
-              <p className="sc-card__subtitle">Prépare les scénarios civils avancés tout en gardant un calcul simple.</p>
             </header>
             <div className="sc-card__divider" />
             <div className="sc-context-grid">
@@ -730,60 +729,15 @@ export default function SuccessionSimulator() {
                   </button>
                   <button
                     type="button"
-                    className="sc-member-add-btn"
+                    className="sc-member-add-icon-btn"
                     onClick={() => setShowAddMemberPanel((v) => !v)}
+                    aria-label="Ajouter un membre de la famille"
+                    title="Ajouter un membre"
                   >
-                    + Ajouter un membre
+                    +
                   </button>
                 </div>
 
-                {showAddMemberPanel && (
-                  <div className="sc-add-member-panel">
-                    <ScSelect
-                      value={addMemberForm.type}
-                      onChange={(value) => setAddMemberForm((prev) => ({ ...prev, type: value as FamilyMemberType, branch: '', parentEnfantId: '' }))}
-                      options={[{ value: '', label: 'Type de membre…', disabled: true }, ...MEMBER_TYPE_OPTIONS]}
-                    />
-                    {MEMBER_TYPE_NEEDS_BRANCH.includes(addMemberForm.type as FamilyMemberType) && (
-                      <ScSelect
-                        value={addMemberForm.branch}
-                        onChange={(value) => setAddMemberForm((prev) => ({ ...prev, branch: value as FamilyBranch }))}
-                        options={[{ value: '', label: 'Branche familiale…', disabled: true }, ...BRANCH_OPTIONS]}
-                      />
-                    )}
-                    {addMemberForm.type === 'petit_enfant' && (
-                      <ScSelect
-                        value={addMemberForm.parentEnfantId}
-                        onChange={(value) => setAddMemberForm((prev) => ({ ...prev, parentEnfantId: value }))}
-                        options={[
-                          { value: '', label: 'Enfant parent…', disabled: true },
-                          ...enfantsContext.map((e, i) => ({ value: e.id, label: `E${i + 1}` })),
-                        ]}
-                      />
-                    )}
-                    <div className="sc-add-member-panel__actions">
-                      <button
-                        type="button"
-                        className="sc-child-add-btn"
-                        onClick={addFamilyMember}
-                        disabled={
-                          !addMemberForm.type
-                          || (MEMBER_TYPE_NEEDS_BRANCH.includes(addMemberForm.type as FamilyMemberType) && !addMemberForm.branch)
-                          || (addMemberForm.type === 'petit_enfant' && !addMemberForm.parentEnfantId)
-                        }
-                      >
-                        Ajouter
-                      </button>
-                      <button
-                        type="button"
-                        className="sc-child-remove-btn"
-                        onClick={() => setShowAddMemberPanel(false)}
-                      >
-                        Annuler
-                      </button>
-                    </div>
-                  </div>
-                )}
 
                 {enfantsContext.length === 0 && familyMembers.length === 0 ? (
                   <p className="sc-hint sc-hint--compact">Aucun enfant ni membre déclaré pour l&apos;instant.</p>
@@ -816,7 +770,8 @@ export default function SuccessionSimulator() {
                       <div className="sc-members-list">
                         {familyMembers.map((m) => (
                           <div key={m.id} className="sc-member-chip">
-                            <span>{labelMember(m, enfantsContext)}</span>
+                            <span className="sc-member-chip__icon">⊕</span>
+                            <span className="sc-member-chip__label">{labelMember(m, enfantsContext)}</span>
                             <button
                               type="button"
                               className="sc-child-remove-btn"
@@ -1464,6 +1419,81 @@ export default function SuccessionSimulator() {
           </ul>
         )}
       </div>
+
+      {showAddMemberPanel && (
+        <div
+          className="sc-member-modal-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAddMemberPanel(false); }}
+        >
+          <div className="sc-member-modal">
+            <div className="sc-member-modal__header">
+              <h3 className="sc-member-modal__title">Ajouter un membre</h3>
+              <button
+                type="button"
+                className="sc-member-modal__close"
+                onClick={() => setShowAddMemberPanel(false)}
+                aria-label="Fermer"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="sc-member-modal__body">
+              <div className="sc-field">
+                <label>Type de membre</label>
+                <ScSelect
+                  value={addMemberForm.type}
+                  onChange={(value) => setAddMemberForm((prev) => ({ ...prev, type: value as FamilyMemberType, branch: '', parentEnfantId: '' }))}
+                  options={[{ value: '', label: 'Choisir…', disabled: true }, ...MEMBER_TYPE_OPTIONS]}
+                />
+              </div>
+              {MEMBER_TYPE_NEEDS_BRANCH.includes(addMemberForm.type as FamilyMemberType) && (
+                <div className="sc-field">
+                  <label>Branche familiale</label>
+                  <ScSelect
+                    value={addMemberForm.branch}
+                    onChange={(value) => setAddMemberForm((prev) => ({ ...prev, branch: value as FamilyBranch }))}
+                    options={[{ value: '', label: 'Choisir…', disabled: true }, ...BRANCH_OPTIONS]}
+                  />
+                </div>
+              )}
+              {addMemberForm.type === 'petit_enfant' && (
+                <div className="sc-field">
+                  <label>Enfant parent</label>
+                  <ScSelect
+                    value={addMemberForm.parentEnfantId}
+                    onChange={(value) => setAddMemberForm((prev) => ({ ...prev, parentEnfantId: value }))}
+                    options={[
+                      { value: '', label: 'Choisir…', disabled: true },
+                      ...enfantsContext.map((e, i) => ({ value: e.id, label: `E${i + 1}` })),
+                    ]}
+                  />
+                </div>
+              )}
+            </div>
+            <div className="sc-member-modal__footer">
+              <button
+                type="button"
+                className="sc-member-modal__btn sc-member-modal__btn--secondary"
+                onClick={() => setShowAddMemberPanel(false)}
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                className="sc-member-modal__btn sc-member-modal__btn--primary"
+                onClick={addFamilyMember}
+                disabled={
+                  !addMemberForm.type
+                  || (MEMBER_TYPE_NEEDS_BRANCH.includes(addMemberForm.type as FamilyMemberType) && !addMemberForm.branch)
+                  || (addMemberForm.type === 'petit_enfant' && !addMemberForm.parentEnfantId)
+                }
+              >
+                Ajouter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
