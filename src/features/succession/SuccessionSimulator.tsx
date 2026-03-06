@@ -96,12 +96,6 @@ const DONATION_ENTRE_EPOUX_OPTIONS = [
   { value: 'mixte', label: 'Option mixte' },
 ];
 
-const ENFANT_RATTACHEMENT_OPTIONS = [
-  { value: 'commun', label: 'Enfant commun' },
-  { value: 'epoux1', label: "Enfant de l'époux 1" },
-  { value: 'epoux2', label: "Enfant de l'époux 2" },
-];
-
 const MEMBER_TYPE_OPTIONS: { value: FamilyMemberType; label: string }[] = [
   { value: 'petit_enfant', label: 'Petit-enfant' },
   { value: 'parent', label: 'Parent' },
@@ -182,6 +176,42 @@ export default function SuccessionSimulator() {
     () => enfantsContext.filter((enfant) => enfant.rattachement !== 'commun').length,
     [enfantsContext],
   );
+
+  const enfantRattachementOptions = useMemo(() => {
+    const s = civilContext.situationMatrimoniale;
+    if (s === 'marie') return [
+      { value: 'commun', label: 'Enfant commun' },
+      { value: 'epoux1', label: "Enfant de l'époux 1" },
+      { value: 'epoux2', label: "Enfant de l'époux 2" },
+    ];
+    if (s === 'pacse' || s === 'concubinage') return [
+      { value: 'commun', label: 'Enfant commun' },
+      { value: 'epoux1', label: 'Enfant du partenaire 1' },
+      { value: 'epoux2', label: 'Enfant du partenaire 2' },
+    ];
+    if (s === 'divorce') return [
+      { value: 'epoux1', label: 'Enfant du/de la défunt(e)' },
+      { value: 'commun', label: 'Enfant commun (ex-couple)' },
+      { value: 'epoux2', label: "Enfant de l'ex-conjoint(e)" },
+    ];
+    return [{ value: 'epoux1', label: 'Enfant du/de la défunt(e)' }];
+  }, [civilContext.situationMatrimoniale]);
+
+  const branchOptions = useMemo((): { value: FamilyBranch; label: string }[] => {
+    const s = civilContext.situationMatrimoniale;
+    if (s === 'pacse' || s === 'concubinage') return [
+      { value: 'epoux1', label: 'Côté Partenaire 1' },
+      { value: 'epoux2', label: 'Côté Partenaire 2' },
+    ];
+    if (s === 'divorce') return [
+      { value: 'epoux1', label: 'Côté Défunt(e)' },
+      { value: 'epoux2', label: "Côté Ex-conjoint(e)" },
+    ];
+    if (s === 'celibataire' || s === 'veuf') return [
+      { value: 'epoux1', label: 'Côté Défunt(e)' },
+    ];
+    return BRANCH_OPTIONS;
+  }, [civilContext.situationMatrimoniale]);
 
   const predecesAnalysis = useMemo(
     () => buildSuccessionPredecesAnalysis(
@@ -752,7 +782,7 @@ export default function SuccessionSimulator() {
                               className="sc-child-select"
                               value={enfant.rattachement}
                               onChange={(value) => updateEnfantRattachement(enfant.id, value as 'commun' | 'epoux1' | 'epoux2')}
-                              options={ENFANT_RATTACHEMENT_OPTIONS}
+                              options={enfantRattachementOptions}
                             />
                             <button
                               type="button"
@@ -1452,7 +1482,7 @@ export default function SuccessionSimulator() {
                   <ScSelect
                     value={addMemberForm.branch}
                     onChange={(value) => setAddMemberForm((prev) => ({ ...prev, branch: value as FamilyBranch }))}
-                    options={[{ value: '', label: 'Choisir…', disabled: true }, ...BRANCH_OPTIONS]}
+                    options={[{ value: '', label: 'Choisir…', disabled: true }, ...branchOptions]}
                   />
                 </div>
               )}

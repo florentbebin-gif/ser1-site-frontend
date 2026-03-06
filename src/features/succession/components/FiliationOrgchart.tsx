@@ -51,6 +51,15 @@ function top(node: OrgNode): number { return node.y; }
 function right(node: OrgNode): number { return node.x + NW; }
 function left(node: OrgNode): number { return node.x; }
 
+// ─── Labels par situation matrimoniale ──────────────────────────────────────
+function getCoupleLabels(situation: string): { epoux1: string; epoux2: string } {
+  if (situation === 'marie')       return { epoux1: 'Époux 1',      epoux2: 'Époux 2' };
+  if (situation === 'pacse')       return { epoux1: 'Partenaire 1', epoux2: 'Partenaire 2' };
+  if (situation === 'concubinage') return { epoux1: 'Partenaire 1', epoux2: 'Partenaire 2' };
+  if (situation === 'divorce')     return { epoux1: 'Défunt(e)',     epoux2: 'Ex-conjoint(e)' };
+  return { epoux1: 'Défunt(e)', epoux2: '' };
+}
+
 // ─── Calcul du layout ───────────────────────────────────────────────────────
 function computeLayout(
   civilContext: SuccessionCivilContext,
@@ -62,7 +71,8 @@ function computeLayout(
   const groups: OrgGroup[] = [];
 
   const { situationMatrimoniale } = civilContext;
-  const hasPair = situationMatrimoniale === 'marie' || situationMatrimoniale === 'pacse';
+  const hasPair = ['marie', 'pacse', 'concubinage', 'divorce'].includes(situationMatrimoniale);
+  const isDashedCouple = situationMatrimoniale === 'concubinage' || situationMatrimoniale === 'divorce';
 
   // Membres par catégorie
   const parents1 = familyMembers.filter((m) => m.type === 'parent' && m.branch === 'epoux1');
@@ -124,29 +134,31 @@ function computeLayout(
   let epoux1Node: OrgNode | null = null;
   let epoux2Node: OrgNode | null = null;
 
+  const coupleLabels = getCoupleLabels(situationMatrimoniale);
+
   if (hasPair) {
     const gap = NW + GH * 3;
     epoux1Node = {
-      id: 'epoux1', label: 'Époux 1',
+      id: 'epoux1', label: coupleLabels.epoux1,
       x: centerX - gap / 2 - NW / 2, y: yEpoux,
       kind: 'epoux',
     };
     epoux2Node = {
-      id: 'epoux2', label: 'Époux 2',
+      id: 'epoux2', label: coupleLabels.epoux2,
       x: centerX + gap / 2 - NW / 2, y: yEpoux,
       kind: 'epoux',
     };
     nodes.push(epoux1Node, epoux2Node);
 
-    // Ligne horizontale époux1 ↔ époux2
+    // Ligne horizontale époux1 ↔ époux2 (pointillée pour union libre / divorcé)
     edges.push({
       x1: right(epoux1Node), y1: cy(epoux1Node),
       x2: left(epoux2Node),  y2: cy(epoux2Node),
+      dashed: isDashedCouple,
     });
   } else {
-    // Célibataire / divorcé / veuf / union libre
     epoux1Node = {
-      id: 'epoux1', label: 'Défunt / Défunte',
+      id: 'epoux1', label: 'Défunt(e)',
       x: centerX - NW / 2, y: yEpoux,
       kind: 'epoux',
     };
@@ -324,7 +336,7 @@ function computeLayout(
 
   // ── Calcul largeur SVG ──
   const maxNodeRight = nodes.reduce((acc, n) => Math.max(acc, right(n)), 0);
-  const svgWidth = Math.max(maxNodeRight + PAD, 2 * NW + GH * 4);
+  const svgWidth = maxNodeRight + PAD;
 
   return { nodes, edges, groups, svgWidth, svgHeight };
 }
