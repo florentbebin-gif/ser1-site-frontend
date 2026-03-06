@@ -192,7 +192,7 @@ Ajouter un filet anti-regression E2E minimal sur les surfaces stables de l'appli
 
 ## PR-P1-07-05 - Documentation metier (regles implementees) + gouvernance d'ajout de pages
 ### Statut
-ready
+done
 
 ### Objectif
 Rendre lisible ce que SER1 calcule vraiment et cadrer la creation des futures pages sans multiplier les docs.
@@ -231,9 +231,14 @@ Rendre lisible ce que SER1 calcule vraiment et cadrer la creation des futures pa
 ### Taille PR max
 1 PR moyenne, purement documentaire
 
+### Preuves
+- `docs/METIER.md` cree comme source de verite metier courte
+- gouvernance d'ajout des simulateurs / settings integree dans `docs/ARCHITECTURE.md` et `docs/GOUVERNANCE.md`
+- `README.md` pointe maintenant vers `docs/METIER.md`
+- aucun doc supplementaire ajoute hors `docs/METIER.md`
+
 ### Dependances / blocages
-- validation du format court de `docs/METIER.md`
-- accord sur le fait que la gouvernance "ajout de simulateur/settings" reste dans les docs pivots existantes
+- aucun
 
 ---
 

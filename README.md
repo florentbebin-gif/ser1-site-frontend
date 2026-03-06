@@ -7,6 +7,7 @@ Stack : React 18 + Vite 5 + TypeScript + Supabase (Auth/DB/Storage/Edge Function
 ## Documentation
 Sources de verite (uniquement) :
 - `docs/ROADMAP.md`
+- `docs/METIER.md`
 - `docs/GOUVERNANCE.md`
 - `docs/ARCHITECTURE.md`
 - `docs/RUNBOOK.md`
