@@ -50,6 +50,7 @@ describe('successionDraft', () => {
         { id: 'E1', prenom: 'Alice', rattachement: 'commun' },
         { id: 'E2', prenom: 'Bastien', rattachement: 'epoux1' },
       ],
+      [],
     );
 
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));

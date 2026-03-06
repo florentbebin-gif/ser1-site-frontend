@@ -1,0 +1,430 @@
+/**
+ * FiliationOrgchart — Organigramme SVG de la filiation familiale
+ *
+ * Construit automatiquement à partir du contexte civil, des enfants et des membres de la famille.
+ * Aucune dépendance externe — SVG pur avec tokens CSS du projet.
+ */
+
+import React, { useMemo } from 'react';
+import type { SuccessionCivilContext, SuccessionEnfant, FamilyMember } from '../successionDraft';
+
+// ─── Constantes de layout ───────────────────────────────────────────────────
+const NW = 130;  // node width
+const NH = 36;   // node height
+const GH = 24;   // horizontal gap between nodes
+const GV = 56;   // vertical gap between levels
+const PAD = 20;  // canvas padding
+
+// ─── Types internes ─────────────────────────────────────────────────────────
+interface OrgNode {
+  id: string;
+  label: string;
+  x: number;
+  y: number;
+  kind: 'epoux' | 'enfant_commun' | 'enfant_autre' | 'parent' | 'frere_soeur' | 'oncle_tante' | 'petit_enfant' | 'tierce';
+}
+
+interface OrgEdge {
+  x1: number; y1: number;
+  x2: number; y2: number;
+  dashed?: boolean;
+}
+
+interface OrgGroup {
+  x: number; y: number; w: number; h: number;
+  label: string;
+}
+
+interface OrgLayout {
+  nodes: OrgNode[];
+  edges: OrgEdge[];
+  groups: OrgGroup[];
+  svgWidth: number;
+  svgHeight: number;
+}
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+function cx(node: OrgNode): number { return node.x + NW / 2; }
+function cy(node: OrgNode): number { return node.y + NH / 2; }
+function bottom(node: OrgNode): number { return node.y + NH; }
+function top(node: OrgNode): number { return node.y; }
+function right(node: OrgNode): number { return node.x + NW; }
+function left(node: OrgNode): number { return node.x; }
+
+// ─── Calcul du layout ───────────────────────────────────────────────────────
+function computeLayout(
+  civilContext: SuccessionCivilContext,
+  enfantsContext: SuccessionEnfant[],
+  familyMembers: FamilyMember[],
+): OrgLayout {
+  const nodes: OrgNode[] = [];
+  const edges: OrgEdge[] = [];
+  const groups: OrgGroup[] = [];
+
+  const { situationMatrimoniale } = civilContext;
+  const hasPair = situationMatrimoniale === 'marie' || situationMatrimoniale === 'pacse';
+
+  // Membres par catégorie
+  const parents1 = familyMembers.filter((m) => m.type === 'parent' && m.branch === 'epoux1');
+  const parents2 = familyMembers.filter((m) => m.type === 'parent' && m.branch === 'epoux2');
+  const freres1  = familyMembers.filter((m) => m.type === 'frere_soeur' && m.branch === 'epoux1');
+  const freres2  = familyMembers.filter((m) => m.type === 'frere_soeur' && m.branch === 'epoux2');
+  const oncles1  = familyMembers.filter((m) => m.type === 'oncle_tante' && m.branch === 'epoux1');
+  const oncles2  = familyMembers.filter((m) => m.type === 'oncle_tante' && m.branch === 'epoux2');
+  const tierces  = familyMembers.filter((m) => m.type === 'tierce_personne');
+
+  // Enfants par rattachement
+  const enfCommuns  = enfantsContext.filter((e) => e.rattachement === 'commun');
+  const enfEpoux1   = enfantsContext.filter((e) => e.rattachement === 'epoux1');
+  const enfEpoux2   = enfantsContext.filter((e) => e.rattachement === 'epoux2');
+
+  // Petits-enfants par parent
+  const petitsEnfants = familyMembers.filter((m) => m.type === 'petit_enfant');
+
+  // ── Calcul des niveaux Y ──
+  const hasOncles = oncles1.length > 0 || oncles2.length > 0;
+  const hasParents = parents1.length > 0 || parents2.length > 0;
+  const hasFreres = freres1.length > 0 || freres2.length > 0;
+  const hasEnfants = enfantsContext.length > 0;
+  const hasPetitsEnfants = petitsEnfants.length > 0;
+  const hasTierces = tierces.length > 0;
+
+  let currentY = PAD;
+  const yOncle = hasOncles ? currentY : -1;
+  if (hasOncles) currentY += NH + GV;
+
+  const yParent = (hasParents || hasFreres) ? currentY : -1;
+  if (hasParents || hasFreres) currentY += NH + GV;
+
+  const yEpoux = currentY;
+  currentY += NH + GV;
+
+  const yEnfant = hasEnfants ? currentY : -1;
+  if (hasEnfants) currentY += NH + GV;
+
+  const yPetit = hasPetitsEnfants ? currentY : -1;
+  if (hasPetitsEnfants) currentY += NH + GV;
+
+  const svgHeight = currentY + PAD;
+
+  // ── Positionner les époux au centre ──
+  // On calcule d'abord la largeur totale nécessaire pour les enfants communs
+  const nCommuns = enfCommuns.length;
+  const nEpoux1  = enfEpoux1.length;
+
+  // Largeur zone enfants
+  const wCommuns  = nCommuns > 0 ? nCommuns * NW + (nCommuns - 1) * GH : 0;
+  const wEpoux1ch = nEpoux1  > 0 ? nEpoux1  * NW + (nEpoux1  - 1) * GH : 0;
+
+  // Centre X des époux = basé sur les enfants communs
+  const centerX = PAD + wEpoux1ch + (wEpoux1ch > 0 ? GH * 2 : 0)
+    + (wCommuns > 0 ? wCommuns / 2 : NW);
+
+  // Positions des époux
+  let epoux1Node: OrgNode | null = null;
+  let epoux2Node: OrgNode | null = null;
+
+  if (hasPair) {
+    const gap = NW + GH * 3;
+    epoux1Node = {
+      id: 'epoux1', label: 'Époux 1',
+      x: centerX - gap / 2 - NW / 2, y: yEpoux,
+      kind: 'epoux',
+    };
+    epoux2Node = {
+      id: 'epoux2', label: 'Époux 2',
+      x: centerX + gap / 2 - NW / 2, y: yEpoux,
+      kind: 'epoux',
+    };
+    nodes.push(epoux1Node, epoux2Node);
+
+    // Ligne horizontale époux1 ↔ époux2
+    edges.push({
+      x1: right(epoux1Node), y1: cy(epoux1Node),
+      x2: left(epoux2Node),  y2: cy(epoux2Node),
+    });
+  } else {
+    // Célibataire / divorcé / veuf / union libre
+    epoux1Node = {
+      id: 'epoux1', label: 'Défunt / Défunte',
+      x: centerX - NW / 2, y: yEpoux,
+      kind: 'epoux',
+    };
+    nodes.push(epoux1Node);
+  }
+
+  // ── Enfants communs (groupés sous les deux époux) ──
+  if (enfCommuns.length > 0) {
+    const groupX = PAD + wEpoux1ch + (wEpoux1ch > 0 ? GH * 2 : 0);
+    const groupPad = 8;
+
+    // Encadré groupe
+    groups.push({
+      x: groupX - groupPad, y: yEnfant! - groupPad,
+      w: wCommuns + groupPad * 2, h: NH + groupPad * 2,
+      label: '',
+    });
+
+    enfCommuns.forEach((e, i) => {
+      const idx = enfantsContext.findIndex((x) => x.id === e.id);
+      const nodeX = groupX + i * (NW + GH);
+      const node: OrgNode = {
+        id: e.id, label: `E${idx + 1}`,
+        x: nodeX, y: yEnfant!,
+        kind: 'enfant_commun',
+      };
+      nodes.push(node);
+
+      // Ligne depuis jonction époux → enfant commun
+      if (epoux1Node && epoux2Node) {
+        const junctionX = (right(epoux1Node) + left(epoux2Node)) / 2;
+        const junctionY = cy(epoux1Node);
+        edges.push({ x1: junctionX, y1: junctionY, x2: junctionX, y2: top(node) - groupPad });
+        edges.push({ x1: cx(node), y1: top(node) - groupPad, x2: cx(node), y2: top(node) });
+      } else if (epoux1Node) {
+        edges.push({ x1: cx(epoux1Node), y1: bottom(epoux1Node), x2: cx(node), y2: top(node) });
+      }
+
+      // Petits-enfants sous cet enfant
+      const peChildren = petitsEnfants.filter((p) => p.parentEnfantId === e.id);
+      peChildren.forEach((pe, pi) => {
+        const peX = nodeX + pi * (NW + GH) - (peChildren.length - 1) * (NW + GH) / 2;
+        const peNode: OrgNode = {
+          id: pe.id, label: `PE`,
+          x: peX, y: yPetit!,
+          kind: 'petit_enfant',
+        };
+        nodes.push(peNode);
+        edges.push({ x1: cx(node), y1: bottom(node), x2: cx(peNode), y2: top(peNode) });
+      });
+    });
+  }
+
+  // ── Enfants époux 1 (à gauche) ──
+  if (enfEpoux1.length > 0 && epoux1Node) {
+    const startX = PAD;
+    enfEpoux1.forEach((e, i) => {
+      const idx = enfantsContext.findIndex((x) => x.id === e.id);
+      const nodeX = startX + i * (NW + GH);
+      const node: OrgNode = {
+        id: e.id, label: `E${idx + 1}`,
+        x: nodeX, y: yEnfant!,
+        kind: 'enfant_autre',
+      };
+      nodes.push(node);
+      edges.push({ x1: cx(epoux1Node!), y1: bottom(epoux1Node!), x2: cx(node), y2: top(node) });
+
+      // Petits-enfants
+      const peChildren = petitsEnfants.filter((p) => p.parentEnfantId === e.id);
+      peChildren.forEach((pe, pi) => {
+        const peX = nodeX + pi * (NW + GH);
+        const peNode: OrgNode = { id: pe.id, label: 'PE', x: peX, y: yPetit!, kind: 'petit_enfant' };
+        nodes.push(peNode);
+        edges.push({ x1: cx(node), y1: bottom(node), x2: cx(peNode), y2: top(peNode) });
+      });
+    });
+  }
+
+  // ── Enfants époux 2 (à droite) ──
+  if (enfEpoux2.length > 0 && epoux2Node) {
+    const startX = PAD + wEpoux1ch + (wEpoux1ch > 0 ? GH * 2 : 0) + wCommuns + (wCommuns > 0 ? GH * 2 : 0);
+    enfEpoux2.forEach((e, i) => {
+      const idx = enfantsContext.findIndex((x) => x.id === e.id);
+      const nodeX = startX + i * (NW + GH);
+      const node: OrgNode = {
+        id: e.id, label: `E${idx + 1}`,
+        x: nodeX, y: yEnfant!,
+        kind: 'enfant_autre',
+      };
+      nodes.push(node);
+      edges.push({ x1: cx(epoux2Node!), y1: bottom(epoux2Node!), x2: cx(node), y2: top(node) });
+
+      // Petits-enfants
+      const peChildren = petitsEnfants.filter((p) => p.parentEnfantId === e.id);
+      peChildren.forEach((pe, pi) => {
+        const peX = nodeX + pi * (NW + GH);
+        const peNode: OrgNode = { id: pe.id, label: 'PE', x: peX, y: yPetit!, kind: 'petit_enfant' };
+        nodes.push(peNode);
+        edges.push({ x1: cx(node), y1: bottom(node), x2: cx(peNode), y2: top(peNode) });
+      });
+    });
+  }
+
+  // ── Parents (niveau -1, au-dessus des époux) ──
+  if (yParent >= 0) {
+    parents1.forEach((p, i) => {
+      const nodeX = epoux1Node ? left(epoux1Node) - (i + 1) * (NW + GH) : PAD + i * (NW + GH);
+      const node: OrgNode = { id: p.id, label: 'Parent', x: nodeX, y: yParent, kind: 'parent' };
+      nodes.push(node);
+      if (epoux1Node) edges.push({ x1: cx(node), y1: bottom(node), x2: cx(epoux1Node), y2: top(epoux1Node) });
+    });
+    parents2.forEach((p, i) => {
+      const nodeX = epoux2Node ? right(epoux2Node) + i * (NW + GH) : PAD + i * (NW + GH);
+      const node: OrgNode = { id: p.id, label: 'Parent', x: nodeX, y: yParent, kind: 'parent' };
+      nodes.push(node);
+      if (epoux2Node) edges.push({ x1: cx(node), y1: bottom(node), x2: cx(epoux2Node), y2: top(epoux2Node) });
+    });
+
+    // ── Frères/sœurs (niveau -1, à côté des époux) ──
+    freres1.forEach((f, i) => {
+      const nodeX = epoux1Node ? left(epoux1Node) - (parents1.length + i + 1) * (NW + GH) : PAD + i * (NW + GH);
+      const node: OrgNode = { id: f.id, label: 'Frère/Sœur', x: nodeX, y: yParent, kind: 'frere_soeur' };
+      nodes.push(node);
+      if (epoux1Node) {
+        edges.push({ x1: right(node), y1: cy(node), x2: left(epoux1Node) - (parents1.length) * (NW + GH), y2: cy(node) });
+      }
+    });
+    freres2.forEach((f, i) => {
+      const nodeX = epoux2Node ? right(epoux2Node) + (parents2.length + i) * (NW + GH) : PAD + i * (NW + GH);
+      const node: OrgNode = { id: f.id, label: 'Frère/Sœur', x: nodeX, y: yParent, kind: 'frere_soeur' };
+      nodes.push(node);
+      if (epoux2Node) {
+        edges.push({ x1: left(node), y1: cy(node), x2: right(epoux2Node) + (parents2.length) * (NW + GH), y2: cy(node) });
+      }
+    });
+  }
+
+  // ── Oncles/tantes (niveau -2) ──
+  if (yOncle >= 0) {
+    oncles1.forEach((o, i) => {
+      const refX = epoux1Node ? left(epoux1Node) - (parents1.length) * (NW + GH) : PAD;
+      const nodeX = refX - (i + 1) * (NW + GH);
+      const node: OrgNode = { id: o.id, label: 'Oncle/Tante', x: nodeX, y: yOncle, kind: 'oncle_tante' };
+      nodes.push(node);
+    });
+    oncles2.forEach((o, i) => {
+      const refX = epoux2Node ? right(epoux2Node) + (parents2.length) * (NW + GH) : PAD;
+      const nodeX = refX + i * (NW + GH);
+      const node: OrgNode = { id: o.id, label: 'Oncle/Tante', x: nodeX, y: yOncle, kind: 'oncle_tante' };
+      nodes.push(node);
+    });
+  }
+
+  // ── Tierce personne (flottant bas-droite) ──
+  if (hasTierces) {
+    const maxX = nodes.reduce((acc, n) => Math.max(acc, right(n)), 0);
+    tierces.forEach((t, i) => {
+      const node: OrgNode = {
+        id: t.id, label: 'Tierce personne',
+        x: maxX + GH * 2 + i * (NW + GH), y: yEpoux,
+        kind: 'tierce',
+      };
+      nodes.push(node);
+    });
+  }
+
+  // ── Calcul largeur SVG ──
+  const maxNodeRight = nodes.reduce((acc, n) => Math.max(acc, right(n)), 0);
+  const svgWidth = Math.max(maxNodeRight + PAD, 400);
+
+  return { nodes, edges, groups, svgWidth, svgHeight };
+}
+
+// ─── Styles par kind ────────────────────────────────────────────────────────
+function nodeStyle(kind: OrgNode['kind']): React.SVGProps<SVGRectElement> {
+  if (kind === 'epoux') {
+    return { fill: 'var(--color-c7)', stroke: 'var(--color-c1)', strokeWidth: 2.5, rx: 8 };
+  }
+  if (kind === 'tierce') {
+    return { fill: 'var(--color-c7)', stroke: 'var(--color-c9)', strokeWidth: 1.5, rx: 8, strokeDasharray: '4 3' };
+  }
+  if (kind === 'parent' || kind === 'frere_soeur' || kind === 'oncle_tante') {
+    return { fill: 'var(--color-c7)', stroke: 'var(--color-c8)', strokeWidth: 1.5, rx: 8 };
+  }
+  return { fill: 'var(--color-c7)', stroke: 'var(--color-c8)', strokeWidth: 1.5, rx: 8 };
+}
+
+// ─── Composant ──────────────────────────────────────────────────────────────
+interface FiliationOrgchartProps {
+  civilContext: SuccessionCivilContext;
+  enfantsContext: SuccessionEnfant[];
+  familyMembers: FamilyMember[];
+}
+
+export function FiliationOrgchart({
+  civilContext,
+  enfantsContext,
+  familyMembers,
+}: FiliationOrgchartProps): React.ReactElement {
+  const { nodes, edges, groups, svgWidth, svgHeight } = useMemo(
+    () => computeLayout(civilContext, enfantsContext, familyMembers),
+    [civilContext, enfantsContext, familyMembers],
+  );
+
+  const isEmpty = nodes.length === 0;
+
+  return (
+    <div className="premium-card sc-card sc-filiation-card">
+      <header className="sc-card__header">
+        <h2 className="sc-card__title">Filiation</h2>
+        <p className="sc-card__subtitle">Organigramme familial — mis à jour automatiquement.</p>
+      </header>
+      <div className="sc-card__divider" />
+
+      {isEmpty ? (
+        <p className="sc-hint">
+          Ajoutez des membres de la famille pour visualiser la filiation.
+        </p>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <svg
+            width={svgWidth}
+            height={svgHeight}
+            viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+            style={{ display: 'block', minWidth: '100%' }}
+            aria-label="Organigramme de filiation"
+          >
+            {/* Groupes (encadrés enfants communs) */}
+            {groups.map((g, i) => (
+              <rect
+                key={`group-${i}`}
+                x={g.x} y={g.y} width={g.w} height={g.h}
+                fill="none"
+                stroke="var(--color-c8)"
+                strokeWidth={1.5}
+                rx={12}
+                strokeDasharray="6 3"
+              />
+            ))}
+
+            {/* Lignes de connexion */}
+            {edges.map((e, i) => (
+              <line
+                key={`edge-${i}`}
+                x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2}
+                stroke="var(--color-c9)"
+                strokeWidth={1.5}
+                strokeDasharray={e.dashed ? '4 3' : undefined}
+              />
+            ))}
+
+            {/* Nœuds */}
+            {nodes.map((node) => {
+              const style = nodeStyle(node.kind);
+              return (
+                <g key={node.id}>
+                  <rect
+                    x={node.x} y={node.y}
+                    width={NW} height={NH}
+                    {...style}
+                  />
+                  <text
+                    x={cx(node)} y={cy(node)}
+                    dominantBaseline="central"
+                    textAnchor="middle"
+                    fontSize={12}
+                    fontWeight={node.kind === 'epoux' ? 600 : 400}
+                    fill="var(--color-c10)"
+                    style={{ userSelect: 'none' }}
+                  >
+                    {node.label}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+      )}
+    </div>
+  );
+}
