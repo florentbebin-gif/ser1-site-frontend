@@ -8,7 +8,7 @@ import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { numberOrEmpty } from '@/utils/settingsHelpers.js';
 
 import { DEFAULT_TAX_SETTINGS, DEFAULT_FISCALITY_SETTINGS } from '@/constants/settingsDefaults';
-import { REGIMES_MATRIMONIAUX } from '@/engine/civil';
+import { REGIMES_MATRIMONIAUX, REGIMES_ORDER } from '@/engine/civil';
 
 import ImpotsDmtgSection from './Impots/ImpotsDmtgSection';
 import SettingsTable from '@/components/settings/SettingsTable';
@@ -97,7 +97,7 @@ const SITUATIONS_FAMILIALES_SUCCESSION = [
   },
   {
     id: 'union_libre',
-    label: 'Union libre (concubinage)',
+    label: 'Union libre',
     cadre: 'Aucun régime matrimonial',
     incidence: 'Pas de vocation successorale légale ; transmission seulement via libéralité.',
   },
@@ -827,7 +827,7 @@ function ReserveCivilSection({ openSection, setOpenSection }) {
 // ─── Section Régimes matrimoniaux & PACS (lecture seule) ───────────
 
 function RegimesSection({ openSection, setOpenSection }) {
-  const regimes = Object.values(REGIMES_MATRIMONIAUX);
+  const regimes = REGIMES_ORDER.map((id) => REGIMES_MATRIMONIAUX[id]);
 
   return (
     <div className="fisc-acc-item">
@@ -882,17 +882,23 @@ function RegimesSection({ openSection, setOpenSection }) {
               className="income-tax-block"
               style={{ marginBottom: 12 }}
             >
-              <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
-                {r.label}
+              <div className="income-tax-block-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+                <span>{r.label}</span>
+                <span style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: '2px 8px',
+                  borderRadius: 10,
+                  backgroundColor: r.category === 'communautaire' ? 'var(--color-c4)' : 'var(--color-c6)',
+                  color: 'var(--color-c1)',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {r.category === 'communautaire' ? 'Communautaire' : 'Séparatiste'}
+                </span>
               </div>
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 8px 0' }}>
                 {r.description}
               </p>
-              {r.id === 'communaute_meubles_acquets' && (
-                <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: '0 0 8px 0' }}>
-                  Régime historique conservé pour audit d'anciens contrats.
-                </p>
-              )}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13 }}>
                 <div>
                   <strong style={{ color: 'var(--color-c1)' }}>Avantages</strong>

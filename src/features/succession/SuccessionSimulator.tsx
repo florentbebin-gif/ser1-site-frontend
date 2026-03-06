@@ -23,9 +23,13 @@ import {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_ENFANTS_CONTEXT,
+  DEFAULT_SUCCESSION_FAMILY_MEMBERS,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   parseSuccessionDraftPayload,
+  type FamilyBranch,
+  type FamilyMember,
+  type FamilyMemberType,
   type SuccessionEnfant,
   type SuccessionDispositionTestamentaire,
   type SituationMatrimoniale,
@@ -39,6 +43,7 @@ import {
   type SuccessionChainOrder,
 } from './successionChainage';
 import { ScSelect } from './components/ScSelect';
+import { FiliationOrgchart } from './components/FiliationOrgchart';
 import '../../components/simulator/SimulatorShell.css';
 import '../../styles/premium-shared.css';
 import './Succession.css';
@@ -64,7 +69,7 @@ const SITUATION_OPTIONS: { value: SituationMatrimoniale; label: string }[] = [
   { value: 'celibataire', label: 'Célibataire' },
   { value: 'marie', label: 'Marié(e)' },
   { value: 'pacse', label: 'Pacsé(e)' },
-  { value: 'concubinage', label: 'Union libre (concubinage)' },
+  { value: 'concubinage', label: 'Union libre' },
   { value: 'divorce', label: 'Divorcé(e)' },
   { value: 'veuf', label: 'Veuf / veuve' },
 ];
@@ -97,8 +102,40 @@ const ENFANT_RATTACHEMENT_OPTIONS = [
   { value: 'epoux2', label: "Enfant de l'époux 2" },
 ];
 
+const MEMBER_TYPE_OPTIONS: { value: FamilyMemberType; label: string }[] = [
+  { value: 'petit_enfant', label: 'Petit-enfant' },
+  { value: 'parent', label: 'Parent' },
+  { value: 'frere_soeur', label: 'Frère / Sœur' },
+  { value: 'oncle_tante', label: 'Oncle / Tante' },
+  { value: 'tierce_personne', label: 'Tierce personne' },
+];
+
+const BRANCH_OPTIONS: { value: FamilyBranch; label: string }[] = [
+  { value: 'epoux1', label: 'Côté Époux 1' },
+  { value: 'epoux2', label: 'Côté Époux 2' },
+];
+
+const MEMBER_TYPE_NEEDS_BRANCH: FamilyMemberType[] = ['parent', 'frere_soeur', 'oncle_tante'];
+
 function createEnfantId(): string {
   return `enf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function createMemberId(): string {
+  return `mbr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function labelMember(m: FamilyMember, enfants: SuccessionEnfant[]): string {
+  const typeLabel = MEMBER_TYPE_OPTIONS.find((o) => o.value === m.type)?.label ?? m.type;
+  if (m.type === 'petit_enfant' && m.parentEnfantId) {
+    const idx = enfants.findIndex((e) => e.id === m.parentEnfantId);
+    return idx >= 0 ? `${typeLabel} (fils/fille de E${idx + 1})` : typeLabel;
+  }
+  if (m.branch) {
+    const branchLabel = BRANCH_OPTIONS.find((o) => o.value === m.branch)?.label ?? m.branch;
+    return `${typeLabel} (${branchLabel})`;
+  }
+  return typeLabel;
 }
 
 const CHAIN_ORDER_OPTIONS: { value: SuccessionChainOrder; label: string }[] = [
@@ -131,6 +168,13 @@ export default function SuccessionSimulator() {
   const [devolutionContext, setDevolutionContext] = useState(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
   const [patrimonialContext, setPatrimonialContext] = useState(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
   const [enfantsContext, setEnfantsContext] = useState<SuccessionEnfant[]>(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
+  const [showAddMemberPanel, setShowAddMemberPanel] = useState(false);
+  const [addMemberForm, setAddMemberForm] = useState<{
+    type: FamilyMemberType | '';
+    branch: FamilyBranch | '';
+    parentEnfantId: string;
+  }>({ type: '', branch: '', parentEnfantId: '' });
   const [chainOrder, setChainOrder] = useState<SuccessionChainOrder>('epoux1');
 
   const nbEnfants = enfantsContext.length;
@@ -276,6 +320,9 @@ export default function SuccessionSimulator() {
     setDevolutionContext(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
     setPatrimonialContext(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
     setEnfantsContext(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
+    setFamilyMembers(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
+    setShowAddMemberPanel(false);
+    setAddMemberForm({ type: '', branch: '', parentEnfantId: '' });
     setChainOrder('epoux1');
     setShowDetails(false);
     setHypothesesOpen(false);
@@ -344,14 +391,6 @@ export default function SuccessionSimulator() {
     ]));
   }, []);
 
-  const updateEnfantPrenom = useCallback((id: string, prenom: string) => {
-    setEnfantsContext((prev) => prev.map((enfant) => (
-      enfant.id === id
-        ? { ...enfant, prenom: prenom.trim().length > 0 ? prenom : undefined }
-        : enfant
-    )));
-  }, []);
-
   const updateEnfantRattachement = useCallback((id: string, rattachement: 'commun' | 'epoux1' | 'epoux2') => {
     setEnfantsContext((prev) => prev.map((enfant) => (
       enfant.id === id
@@ -362,6 +401,27 @@ export default function SuccessionSimulator() {
 
   const removeEnfant = useCallback((id: string) => {
     setEnfantsContext((prev) => prev.filter((enfant) => enfant.id !== id));
+  }, []);
+
+  const addFamilyMember = useCallback(() => {
+    const { type, branch, parentEnfantId } = addMemberForm;
+    if (!type) return;
+    const needsBranch = MEMBER_TYPE_NEEDS_BRANCH.includes(type as FamilyMemberType);
+    if (needsBranch && !branch) return;
+    if (type === 'petit_enfant' && !parentEnfantId) return;
+    const member: FamilyMember = {
+      id: createMemberId(),
+      type: type as FamilyMemberType,
+      branch: branch ? (branch as FamilyBranch) : undefined,
+      parentEnfantId: type === 'petit_enfant' ? parentEnfantId : undefined,
+    };
+    setFamilyMembers((prev) => [...prev, member]);
+    setAddMemberForm({ type: '', branch: '', parentEnfantId: '' });
+    setShowAddMemberPanel(false);
+  }, [addMemberForm]);
+
+  const removeFamilyMember = useCallback((id: string) => {
+    setFamilyMembers((prev) => prev.filter((m) => m.id !== id));
   }, []);
 
   const setPatrimonialField = useCallback(
@@ -400,6 +460,7 @@ export default function SuccessionSimulator() {
           setDevolutionContext(parsed.devolution);
           setPatrimonialContext(parsed.patrimonial);
           setEnfantsContext(parsed.enfants);
+          setFamilyMembers(parsed.familyMembers);
         }
       }
     } catch {
@@ -424,13 +485,23 @@ export default function SuccessionSimulator() {
             },
             patrimonialContext,
             enfantsContext,
+            familyMembers,
           ),
         ),
       );
     } catch {
       // ignore
     }
-  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, nbEnfantsNonCommuns, enfantsContext]);
+  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, nbEnfantsNonCommuns, enfantsContext, familyMembers]);
+
+  // Auto-dériver ascendantsSurvivants si des parents sont déclarés dans familyMembers
+  useEffect(() => {
+    const hasParents = familyMembers.some((m) => m.type === 'parent');
+    setDevolutionContext((prev) => {
+      if (prev.ascendantsSurvivants === hasParents) return prev;
+      return { ...prev, ascendantsSurvivants: hasParents };
+    });
+  }, [familyMembers]);
 
   useEffect(() => {
     const off = onResetEvent?.(({ simId }: { simId?: string }) => {
@@ -649,44 +720,116 @@ export default function SuccessionSimulator() {
               </div>
 
               <div className="sc-children-zone">
-                <button
-                  type="button"
-                  className="sc-child-add-btn"
-                  onClick={addEnfant}
-                >
-                  + Ajouter un enfant
-                </button>
-                {enfantsContext.length === 0 ? (
-                  <p className="sc-hint sc-hint--compact">Aucun enfant déclaré pour l&apos;instant.</p>
-                ) : (
-                  <div className="sc-children-list">
-                    {enfantsContext.map((enfant, idx) => (
-                      <div key={enfant.id} className="sc-child-row">
-                        <span className="sc-child-row__label">E{idx + 1}</span>
-                        <input
-                          type="text"
-                          className="sc-child-name"
-                          value={enfant.prenom ?? ''}
-                          onChange={(e) => updateEnfantPrenom(enfant.id, e.target.value)}
-                          placeholder="Prénom (optionnel)"
-                        />
-                        <ScSelect
-                          className="sc-child-select"
-                          value={enfant.rattachement}
-                          onChange={(value) => updateEnfantRattachement(enfant.id, value as 'commun' | 'epoux1' | 'epoux2')}
-                          options={ENFANT_RATTACHEMENT_OPTIONS}
-                        />
-                        <button
-                          type="button"
-                          className="sc-child-remove-btn"
-                          onClick={() => removeEnfant(enfant.id)}
-                          aria-label={`Supprimer enfant ${idx + 1}`}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
+                <div className="sc-children-actions">
+                  <button
+                    type="button"
+                    className="sc-child-add-btn"
+                    onClick={addEnfant}
+                  >
+                    + Ajouter un enfant
+                  </button>
+                  <button
+                    type="button"
+                    className="sc-member-add-btn"
+                    onClick={() => setShowAddMemberPanel((v) => !v)}
+                  >
+                    + Ajouter un membre
+                  </button>
+                </div>
+
+                {showAddMemberPanel && (
+                  <div className="sc-add-member-panel">
+                    <ScSelect
+                      value={addMemberForm.type}
+                      onChange={(value) => setAddMemberForm((prev) => ({ ...prev, type: value as FamilyMemberType, branch: '', parentEnfantId: '' }))}
+                      options={[{ value: '', label: 'Type de membre…', disabled: true }, ...MEMBER_TYPE_OPTIONS]}
+                    />
+                    {MEMBER_TYPE_NEEDS_BRANCH.includes(addMemberForm.type as FamilyMemberType) && (
+                      <ScSelect
+                        value={addMemberForm.branch}
+                        onChange={(value) => setAddMemberForm((prev) => ({ ...prev, branch: value as FamilyBranch }))}
+                        options={[{ value: '', label: 'Branche familiale…', disabled: true }, ...BRANCH_OPTIONS]}
+                      />
+                    )}
+                    {addMemberForm.type === 'petit_enfant' && (
+                      <ScSelect
+                        value={addMemberForm.parentEnfantId}
+                        onChange={(value) => setAddMemberForm((prev) => ({ ...prev, parentEnfantId: value }))}
+                        options={[
+                          { value: '', label: 'Enfant parent…', disabled: true },
+                          ...enfantsContext.map((e, i) => ({ value: e.id, label: `E${i + 1}` })),
+                        ]}
+                      />
+                    )}
+                    <div className="sc-add-member-panel__actions">
+                      <button
+                        type="button"
+                        className="sc-child-add-btn"
+                        onClick={addFamilyMember}
+                        disabled={
+                          !addMemberForm.type
+                          || (MEMBER_TYPE_NEEDS_BRANCH.includes(addMemberForm.type as FamilyMemberType) && !addMemberForm.branch)
+                          || (addMemberForm.type === 'petit_enfant' && !addMemberForm.parentEnfantId)
+                        }
+                      >
+                        Ajouter
+                      </button>
+                      <button
+                        type="button"
+                        className="sc-child-remove-btn"
+                        onClick={() => setShowAddMemberPanel(false)}
+                      >
+                        Annuler
+                      </button>
+                    </div>
                   </div>
+                )}
+
+                {enfantsContext.length === 0 && familyMembers.length === 0 ? (
+                  <p className="sc-hint sc-hint--compact">Aucun enfant ni membre déclaré pour l&apos;instant.</p>
+                ) : (
+                  <>
+                    {enfantsContext.length > 0 && (
+                      <div className="sc-children-list">
+                        {enfantsContext.map((enfant, idx) => (
+                          <div key={enfant.id} className="sc-child-row">
+                            <span className="sc-child-row__label">E{idx + 1}</span>
+                            <ScSelect
+                              className="sc-child-select"
+                              value={enfant.rattachement}
+                              onChange={(value) => updateEnfantRattachement(enfant.id, value as 'commun' | 'epoux1' | 'epoux2')}
+                              options={ENFANT_RATTACHEMENT_OPTIONS}
+                            />
+                            <button
+                              type="button"
+                              className="sc-child-remove-btn"
+                              onClick={() => removeEnfant(enfant.id)}
+                              aria-label={`Supprimer enfant ${idx + 1}`}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {familyMembers.length > 0 && (
+                      <div className="sc-members-list">
+                        {familyMembers.map((m) => (
+                          <div key={m.id} className="sc-member-chip">
+                            <span>{labelMember(m, enfantsContext)}</span>
+                            <button
+                              type="button"
+                              className="sc-child-remove-btn"
+                              onClick={() => removeFamilyMember(m.id)}
+                              aria-label={`Supprimer ${labelMember(m, enfantsContext)}`}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -814,11 +957,17 @@ export default function SuccessionSimulator() {
               {nbEnfants === 0 && (
                 <div className="sc-field">
                   <label>Ascendants survivants</label>
-                  <ScSelect
-                    value={devolutionContext.ascendantsSurvivants ? 'oui' : 'non'}
-                    onChange={(value) => setDevolutionField('ascendantsSurvivants', value === 'oui')}
-                    options={OUI_NON_OPTIONS}
-                  />
+                  {familyMembers.some((m) => m.type === 'parent') ? (
+                    <span className="sc-auto-derived">
+                      Oui — déduit des membres ajoutés
+                    </span>
+                  ) : (
+                    <ScSelect
+                      value={devolutionContext.ascendantsSurvivants ? 'oui' : 'non'}
+                      onChange={(value) => setDevolutionField('ascendantsSurvivants', value === 'oui')}
+                      options={OUI_NON_OPTIONS}
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -1093,6 +1242,12 @@ export default function SuccessionSimulator() {
         </div>
 
         <div className="sc-right">
+          <FiliationOrgchart
+            civilContext={civilContext}
+            enfantsContext={enfantsContext}
+            familyMembers={familyMembers}
+          />
+
           <div className="premium-card sc-summary-card sc-hero-card">
             <div className="sc-hero-header">
               <h2 className="sc-summary-title">Chronologie des décès</h2>

@@ -10,12 +10,15 @@ import type { CalcResult } from './types';
 import { DEFAULT_TAX_SETTINGS } from '../constants/settingsDefaults';
 
 // Types pour la situation civile
-export type RegimeMatrimonial = 
+export type RegimeMatrimonial =
   | 'communaute_legale'
   | 'communaute_universelle'
   | 'separation_biens'
   | 'participation_acquets'
-  | 'communaute_meubles_acquets';
+  | 'communaute_meubles_acquets'
+  | 'separation_biens_societe_acquets';
+
+export type RegimeCategory = 'communautaire' | 'separatiste';
 
 export interface RegimeInfo {
   id: RegimeMatrimonial;
@@ -23,13 +26,15 @@ export interface RegimeInfo {
   description: string;
   avantages: string[];
   limites: string[];
+  category: RegimeCategory;
 }
 
 // Descriptions des régimes matrimoniaux
 export const REGIMES_MATRIMONIAUX: Record<RegimeMatrimonial, RegimeInfo> = {
   communaute_legale: {
     id: 'communaute_legale',
-    label: 'Communauté réduite aux acquêts',
+    label: 'Communauté réduite aux acquêts (Légal depuis 1966)',
+    category: 'communautaire',
     description: 'Régime légal par défaut depuis 1966. Les biens acquis pendant le mariage sont communs.',
     avantages: [
       'Protection du conjoint survivant',
@@ -45,6 +50,7 @@ export const REGIMES_MATRIMONIAUX: Record<RegimeMatrimonial, RegimeInfo> = {
   communaute_universelle: {
     id: 'communaute_universelle',
     label: 'Communauté universelle',
+    category: 'communautaire',
     description: 'Tous les biens sont communs, quelle que soit leur origine.',
     avantages: [
       'Protection maximale du conjoint survivant',
@@ -57,9 +63,23 @@ export const REGIMES_MATRIMONIAUX: Record<RegimeMatrimonial, RegimeInfo> = {
       'Pas de protection des biens propres',
     ],
   },
+  communaute_meubles_acquets: {
+    id: 'communaute_meubles_acquets',
+    label: 'Communauté de meubles et acquêts (Légal avant 1966)',
+    category: 'communautaire',
+    description: 'Ancien régime légal (avant 1966). Les meubles et acquêts sont communs.',
+    avantages: [
+      'Régime simple historiquement',
+    ],
+    limites: [
+      'Régime obsolète',
+      'Distinction meuble/immeuble complexe',
+    ],
+  },
   separation_biens: {
     id: 'separation_biens',
     label: 'Séparation de biens',
+    category: 'separatiste',
     description: 'Chaque époux conserve la propriété et la gestion de ses biens.',
     avantages: [
       'Indépendance patrimoniale totale',
@@ -75,6 +95,7 @@ export const REGIMES_MATRIMONIAUX: Record<RegimeMatrimonial, RegimeInfo> = {
   participation_acquets: {
     id: 'participation_acquets',
     label: 'Participation aux acquêts',
+    category: 'separatiste',
     description: 'Fonctionne comme une séparation de biens pendant le mariage, avec partage des acquêts à la dissolution.',
     avantages: [
       'Indépendance pendant le mariage',
@@ -87,19 +108,33 @@ export const REGIMES_MATRIMONIAUX: Record<RegimeMatrimonial, RegimeInfo> = {
       'Liquidation plus complexe',
     ],
   },
-  communaute_meubles_acquets: {
-    id: 'communaute_meubles_acquets',
-    label: 'Communauté de meubles et acquêts',
-    description: 'Ancien régime légal (avant 1966). Les meubles et acquêts sont communs.',
+  separation_biens_societe_acquets: {
+    id: 'separation_biens_societe_acquets',
+    label: 'Séparation de biens avec société d\'acquêts',
+    category: 'separatiste',
+    description: 'Régime hybride combinant séparation de biens et société d\'acquêts sur des biens choisis contractuellement.',
     avantages: [
-      'Régime simple historiquement',
+      'Indépendance patrimoniale préservée',
+      'Mise en commun sélective de certains biens',
+      'Flexibilité contractuelle',
     ],
     limites: [
-      'Régime obsolète',
-      'Distinction meuble/immeuble complexe',
+      'Régime rare et peu usité en pratique',
+      'Rédaction contractuelle complexe',
+      'Liquidation délicate à la dissolution',
     ],
   },
 };
+
+// Ordre canonique : communautaires en premier, séparatistes ensuite
+export const REGIMES_ORDER: RegimeMatrimonial[] = [
+  'communaute_legale',
+  'communaute_universelle',
+  'communaute_meubles_acquets',
+  'separation_biens',
+  'participation_acquets',
+  'separation_biens_societe_acquets',
+];
 
 // --- Types DMTG ---
 export interface DmtgScaleItem {
