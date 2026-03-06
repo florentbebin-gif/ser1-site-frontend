@@ -145,7 +145,7 @@ Les fichiers >400-500 lignes deviennent fragiles. On veut des blocs plus petits 
 
 ## PR-P1-07-04 - E2E "smoke tests" Playwright en CI
 ### Statut
-ready
+done
 
 ### Objectif
 Ajouter un filet anti-regression E2E minimal sur les surfaces stables de l'application, sans figer les simulateurs encore incomplets.
@@ -184,9 +184,14 @@ Ajouter un filet anti-regression E2E minimal sur les surfaces stables de l'appli
 ### Taille PR max
 1 PR courte a moyenne
 
+### Preuves
+- script dedie `npm run test:e2e:smoke`
+- spec minimale sur `tests/e2e/smoke.spec.ts`
+- CI E2E dediee branchee sur la suite smoke uniquement dans `.github/workflows/e2e.yml`
+- couverture explicite : Home, `/sim/credit`, `/sim/ir`, `/sim/succession`, `/settings`, une route `upcoming`
+
 ### Dependances / blocages
-- stabilite minimale des routes testees
-- confirmation du dossier E2E de reference (`tests/e2e/**` vs autre)
+- aucun
 
 ---
 

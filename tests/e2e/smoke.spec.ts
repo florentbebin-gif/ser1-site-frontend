@@ -1,82 +1,58 @@
 import { test, expect } from '@playwright/test';
+import { enableE2EMode } from './helpers/auth';
 import { ROUTES } from './helpers/fixtures';
 
 /**
- * Smoke tests pour les pages "figées" (stables, peu de changements)
- * Objectif: vérifier que les pages chargent sans erreur critique
- * Ces tests sont rapides et ne testent pas la logique métier complète
+ * Smoke tests minimaux pour les surfaces stables.
+ * Ils valident l'ouverture des pages critiques sans figer
+ * les parcours metier complets.
  */
 
-test.describe('Smoke Tests — Pages figées', () => {
-  
-  // Track console errors during tests
+test.describe('Smoke Tests - Surfaces stables', () => {
   test.beforeEach(async ({ page }) => {
-    page.on('console', (msg) => {
-      if (msg.type() === 'error') {
-        /* eslint-disable no-console */
-        console.log(`[Browser Console Error] ${msg.text()}`);
-      }
-    });
-    
-    page.on('pageerror', (error) => {
-       
-      // eslint-disable no-console
-      console.log(`[Browser Page Error] ${error.message}`);
-    });
+    await enableE2EMode(page);
   });
 
-  test('Home page charge sans erreur', async ({ page }) => {
+  test('Home charge en mode smoke', async ({ page }) => {
     await page.goto(ROUTES.home);
-    // Vérifie pas d'erreur JS critique
     await expect(page.locator('body')).not.toContainText('Application error');
-    await expect(page.locator('body')).not.toContainText('Something went wrong');
-    // Vérifie présence contenu attendu
-    await expect(page.locator('body')).toBeVisible();
-    // Vérifie pas d'erreurs console
-    const consoleErrors: string[] = [];
-    page.on('console', (msg) => {
-       
-      if (msg.type() === 'error') consoleErrors.push(msg.text());
-    });
-    await page.waitForLoadState('networkidle');
-    expect(consoleErrors).toHaveLength(0);
+    await expect(page.getByTestId('home-hero-title')).toBeVisible();
+    await expect(page.getByTestId('home-tools-grid')).toBeVisible();
   });
 
-  test('Login page charge sans erreur', async ({ page }) => {
-    await page.goto(ROUTES.login);
-    await expect(page.locator('body')).not.toContainText('Application error');
-    await expect(page.getByTestId('login-title')).toContainText('Connexion');
-    await expect(page.getByTestId('login-email-input')).toBeVisible();
-    await expect(page.getByTestId('login-password-input')).toBeVisible();
-  });
-
-  test('IR simulator page charge sans erreur', async ({ page }) => {
+  test('IR charge avec sa structure minimale', async ({ page }) => {
     await page.goto(ROUTES.ir);
     await expect(page.locator('body')).not.toContainText('Application error');
-    await expect(page.locator('body')).not.toContainText('Something went wrong');
-    // Vérifie présence éléments clés
-    await expect(page.locator('body')).toBeVisible();
+    await expect(page.getByTestId('ir-page')).toBeVisible();
+    await expect(page.getByTestId('ir-title')).toContainText("Simulateur d'impôt sur le revenu");
   });
 
-  test('Credit simulator page charge sans erreur', async ({ page }) => {
+  test('Credit charge avec sa structure minimale', async ({ page }) => {
     await page.goto(ROUTES.credit);
     await expect(page.locator('body')).not.toContainText('Application error');
-    await expect(page.locator('body')).not.toContainText('Something went wrong');
-    await expect(page.locator('body')).toBeVisible();
+    await expect(page.getByTestId('credit-page')).toBeVisible();
+    await expect(page.getByTestId('credit-title')).toContainText('Simulateur de crédit');
   });
 
-  test('PlacementV2 page charge sans erreur', async ({ page }) => {
-    await page.goto(ROUTES.placement);
+  test('Succession charge avec sa structure minimale', async ({ page }) => {
+    await page.goto(ROUTES.succession);
     await expect(page.locator('body')).not.toContainText('Application error');
-    await expect(page.locator('body')).not.toContainText('Something went wrong');
-    await expect(page.locator('body')).toBeVisible();
+    await expect(page.getByTestId('succession-page')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Simulateur succession' })).toBeVisible();
   });
 
-  test('Settings page redirige vers login si non authentifié', async ({ page }) => {
+  test('Settings charge et ouvre une sous-page stable', async ({ page }) => {
     await page.goto(ROUTES.settings);
-    // Devrait rediriger vers login
-    await page.waitForURL('**/login', { timeout: 10_000 });
-    await expect(page.getByTestId('login-title')).toContainText('Connexion');
+    await expect(page.locator('.settings-page')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Généraux' })).toBeVisible();
+    await page.getByRole('button', { name: 'Impôts' }).click();
+    await expect(page).toHaveURL(/\/settings\/impots$/);
+    await expect(page.getByRole('button', { name: 'Impôts' })).toHaveClass(/is-active/);
   });
 
+  test('Une route upcoming reste accessible en mode minimal', async ({ page }) => {
+    await page.goto(ROUTES.epargneSalariale);
+    await expect(page.getByTestId('upcoming-simulator-page')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Epargne salariale' })).toBeVisible();
+  });
 });

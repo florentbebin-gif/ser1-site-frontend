@@ -21,6 +21,7 @@
     "analyze": "npx vite-bundle-visualizer",
     "icons:build": "node tools/scripts/normalize-business-icons.mjs",
     "test:e2e": "npx playwright test",
+    "test:e2e:smoke": "npx playwright test tests/e2e/smoke.spec.ts",
     "test:e2e:ui": "npx playwright test --ui",
     "test:e2e:report": "npx playwright show-report",
     "prepare": "husky"

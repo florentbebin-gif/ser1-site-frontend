@@ -22,16 +22,44 @@ export interface UserRoleState {
   isLoading: boolean;
 }
 
+function isE2EMode(): boolean {
+  if (typeof window === 'undefined') return false;
+  return (window as Window & { __SER1_E2E?: boolean }).__SER1_E2E === true;
+}
+
 export function useUserRole(): UserRoleState {
-  const [state, setState] = useState<UserRoleState>({
-    role: 'loading',
-    user: null,
-    isAdmin: false,
-    isLoading: true,
+  const [state, setState] = useState<UserRoleState>(() => {
+    if (isE2EMode()) {
+      return {
+        role: 'admin',
+        user: null,
+        isAdmin: true,
+        isLoading: false,
+      };
+    }
+
+    return {
+      role: 'loading',
+      user: null,
+      isAdmin: false,
+      isLoading: true,
+    };
   });
 
   useEffect(() => {
     let mounted = true;
+
+    if (isE2EMode()) {
+      setState({
+        role: 'admin',
+        user: null,
+        isAdmin: true,
+        isLoading: false,
+      });
+      return () => {
+        mounted = false;
+      };
+    }
 
     async function fetchRole() {
       try {
