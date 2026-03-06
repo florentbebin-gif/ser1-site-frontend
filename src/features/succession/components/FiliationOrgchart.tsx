@@ -9,11 +9,11 @@ import React, { useMemo } from 'react';
 import type { SuccessionCivilContext, SuccessionEnfant, FamilyMember } from '../successionDraft';
 
 // ─── Constantes de layout ───────────────────────────────────────────────────
-const NW = 100;  // node width
-const NH = 30;   // node height
-const GH = 16;   // horizontal gap between nodes
-const GV = 48;   // vertical gap between levels
-const PAD = 16;  // canvas padding
+const NW = 80;   // node width
+const NH = 24;   // node height
+const GH = 12;   // horizontal gap between nodes
+const GV = 40;   // vertical gap between levels
+const PAD = 12;  // canvas padding
 
 // ─── Types internes ─────────────────────────────────────────────────────────
 interface OrgNode {
@@ -313,9 +313,18 @@ function computeLayout(
     });
   }
 
+  // ── Normalisation : s'assurer qu'aucun nœud ne sort à gauche ──
+  const minNodeX = nodes.reduce((acc, n) => Math.min(acc, n.x), Infinity);
+  const shift = minNodeX < PAD ? PAD - minNodeX : 0;
+  if (shift > 0) {
+    nodes.forEach((n) => { n.x += shift; });
+    edges.forEach((e) => { e.x1 += shift; e.x2 += shift; });
+    groups.forEach((g) => { g.x += shift; });
+  }
+
   // ── Calcul largeur SVG ──
   const maxNodeRight = nodes.reduce((acc, n) => Math.max(acc, right(n)), 0);
-  const svgWidth = Math.max(maxNodeRight + PAD, 400);
+  const svgWidth = Math.max(maxNodeRight + PAD, 2 * NW + GH * 4);
 
   return { nodes, edges, groups, svgWidth, svgHeight };
 }
@@ -365,12 +374,12 @@ export function FiliationOrgchart({
           Ajoutez des membres de la famille pour visualiser la filiation.
         </p>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
+        <div>
           <svg
-            width={svgWidth}
-            height={svgHeight}
+            width="100%"
             viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-            style={{ display: 'block', minWidth: '100%' }}
+            preserveAspectRatio="xMidYMin meet"
+            style={{ display: 'block' }}
             aria-label="Organigramme de filiation"
           >
             {/* Groupes (encadrés enfants communs) */}
@@ -411,7 +420,7 @@ export function FiliationOrgchart({
                     x={cx(node)} y={cy(node)}
                     dominantBaseline="central"
                     textAnchor="middle"
-                    fontSize={11}
+                    fontSize={10}
                     fontWeight={node.kind === 'epoux' ? 600 : 400}
                     fill="var(--color-c10)"
                     style={{ userSelect: 'none' }}
