@@ -195,17 +195,6 @@ function getDonationEffectiveAmount(entry: SuccessionDonationEntry): number {
   return Math.max(0, entry.valeurActuelle ?? entry.montant);
 }
 
-function buildAggregateDonationEntries(values: Record<SuccessionDonationEntryType, number>): SuccessionDonationEntry[] {
-  const order: SuccessionDonationEntryType[] = ['rapportable', 'hors_part', 'legs_particulier'];
-  return order
-    .filter((type) => values[type] > 0)
-    .map((type) => ({
-      id: createDonationId(),
-      type,
-      montant: values[type],
-    }));
-}
-
 function buildAggregateAssetEntries(values: {
   actifs: Record<SuccessionAssetOwner, number>;
   passifs: Record<SuccessionAssetOwner, number>;
@@ -445,29 +434,6 @@ export default function SuccessionSimulator() {
     ],
   );
 
-  const alternateChainageAnalysis = useMemo(
-    () => buildSuccessionChainageAnalysis({
-      civil: civilContext,
-      liquidation: { ...liquidationContext, nbEnfants: nbDescendantBranches },
-      regimeUsed: predecesAnalysis.regimeUsed,
-      order: chainOrder === 'epoux1' ? 'epoux2' : 'epoux1',
-      dmtgSettings: fiscalSnapshot.dmtgSettings,
-      attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
-      enfantsContext,
-      familyMembers,
-    }),
-    [
-      civilContext,
-      liquidationContext,
-      nbDescendantBranches,
-      predecesAnalysis.regimeUsed,
-      chainOrder,
-      fiscalSnapshot.dmtgSettings,
-      patrimonialContext.attributionBiensCommunsPct,
-      enfantsContext,
-      familyMembers,
-    ],
-  );
   const derivedActifNetSuccession = useMemo(() => {
     if (chainageAnalysis.step1) return chainageAnalysis.step1.actifTransmis;
     return liquidationContext.actifEpoux1;
@@ -671,12 +637,9 @@ export default function SuccessionSimulator() {
       } : null,
       assuranceVieTotale: assuranceVieTotals.capitaux,
       totalDroits: derivedTotalDroits,
-      totalDroitsOrdreInverse: alternateChainageAnalysis.applicable
-        ? alternateChainageAnalysis.totalDroits + avFiscalAnalysis.totalDroits
-        : undefined,
       warnings: [...chainageAnalysis.warnings, ...avFiscalAnalysis.warnings],
     }),
-    [chainageAnalysis, alternateChainageAnalysis, assuranceVieByAssure, assuranceVieTotals.capitaux, avFiscalAnalysis, derivedTotalDroits],
+    [chainageAnalysis, assuranceVieByAssure, assuranceVieTotals.capitaux, avFiscalAnalysis, derivedTotalDroits],
   );
   const totalActifsLiquidation = useMemo(
     () => Math.max(
@@ -817,17 +780,6 @@ export default function SuccessionSimulator() {
   const removeFamilyMember = useCallback((id: string) => {
     setFamilyMembers((prev) => prev.filter((m) => m.id !== id));
   }, []);
-
-  const setDonationAggregate = useCallback((
-    type: SuccessionDonationEntryType,
-    amount: number,
-  ) => {
-    setDonationsContext(buildAggregateDonationEntries({
-      rapportable: type === 'rapportable' ? Math.max(0, amount) : donationTotals.rapportable,
-      hors_part: type === 'hors_part' ? Math.max(0, amount) : donationTotals.horsPart,
-      legs_particulier: type === 'legs_particulier' ? Math.max(0, amount) : donationTotals.legsParticuliers,
-    }));
-  }, [donationTotals.horsPart, donationTotals.legsParticuliers, donationTotals.rapportable]);
 
   const addDonationEntry = useCallback(() => {
     setDonationsContext((prev) => ([

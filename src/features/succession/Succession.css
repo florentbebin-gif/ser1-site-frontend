@@ -1203,10 +1203,6 @@
     align-items: stretch;
   }
 
-  .sc-hero-order-select {
-    min-width: 0;
-  }
-
   .sc-heir-row {
     grid-template-columns: 1fr;
   }

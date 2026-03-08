@@ -75,7 +75,6 @@ describe('successionDraft', () => {
       [
         {
           id: 'av-1',
-          nomContrat: 'Contrat A',
           typeContrat: 'standard',
           souscripteur: 'epoux1',
           assure: 'epoux1',

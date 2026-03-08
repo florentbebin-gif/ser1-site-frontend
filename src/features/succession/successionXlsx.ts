@@ -45,7 +45,6 @@ export interface SuccessionChronologieXlsxData {
   step2: SuccessionChronologieXlsxStep | null;
   assuranceVieTotale?: number;
   totalDroits: number;
-  totalDroitsOrdreInverse?: number;
   warnings?: string[];
 }
 
@@ -191,9 +190,6 @@ function buildPredecesSheet(
     rows.push(['Total cumulé des droits (2 décès)', money(chronologie.totalDroits)]);
     if (typeof chronologie.assuranceVieTotale === 'number' && chronologie.assuranceVieTotale > 0) {
       rows.push(['Capitaux assurance-vie saisis', money(chronologie.assuranceVieTotale)]);
-    }
-    if (typeof chronologie.totalDroitsOrdreInverse === 'number') {
-      rows.push(['Total droits ordre inverse', money(chronologie.totalDroitsOrdreInverse)]);
     }
   } else {
     rows.push(['Statut', 'Chronologie non applicable à la situation saisie']);
