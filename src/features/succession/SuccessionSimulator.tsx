@@ -1,9 +1,10 @@
 /**
  * SuccessionSimulator — Simulateur Succession
  *
- * PR1 scope:
- * - Alignement UI sur la norme /sim/* (shell, grille, sticky, accordéons)
- * - Aucun changement de formule métier
+ * PR1-PR3 scope:
+ * - Alignement UI sur la norme /sim/*
+ * - Saisie guidée civile / patrimoniale
+ * - Actifs détaillés expert + assurance-vie informative
  */
 
 import React, { useContext, useCallback, useEffect, useMemo, useState } from 'react';
@@ -24,9 +25,16 @@ import {
   DEFAULT_SUCCESSION_DONATIONS,
   DEFAULT_SUCCESSION_ENFANTS_CONTEXT,
   DEFAULT_SUCCESSION_FAMILY_MEMBERS,
+  DEFAULT_SUCCESSION_ASSET_DETAILS,
+  DEFAULT_SUCCESSION_ASSURANCE_VIE,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   parseSuccessionDraftPayload,
+  type SuccessionAssetCategory,
+  type SuccessionAssetDetailEntry,
+  type SuccessionAssetOwner,
+  type SuccessionAssuranceVieContractType,
+  type SuccessionAssuranceVieEntry,
   type FamilyBranch,
   type FamilyMember,
   type FamilyMemberType,
@@ -94,6 +102,51 @@ const DONATION_TYPE_OPTIONS: { value: SuccessionDonationEntryType; label: string
   { value: 'legs_particulier', label: 'Legs particulier' },
 ];
 
+const ASSET_CATEGORY_OPTIONS: { value: SuccessionAssetCategory; label: string }[] = [
+  { value: 'immobilier', label: 'Biens immobiliers' },
+  { value: 'financier', label: 'Biens financiers et autres biens' },
+  { value: 'professionnel', label: 'Biens professionnels' },
+  { value: 'divers', label: 'Biens divers' },
+  { value: 'passif', label: 'Passifs' },
+];
+
+const ASSET_SUBCATEGORY_OPTIONS: Record<SuccessionAssetCategory, string[]> = {
+  immobilier: [
+    'Résidence principale',
+    'Résidence secondaire',
+    'Immobilier locatif',
+    'Autre immobilier',
+    'Droits en usufruit',
+  ],
+  financier: [
+    'Comptes bancaires',
+    'Valeurs mobilières',
+    'Épargne réglementée',
+    'Autres biens financiers',
+  ],
+  professionnel: [
+    'Parts sociales',
+    'Fonds de commerce',
+    'Autres biens professionnels',
+  ],
+  divers: [
+    'Véhicules',
+    'Mobilier',
+    'Autres biens divers',
+  ],
+  passif: [
+    'Emprunts immobiliers',
+    'Dettes diverses',
+    'Passifs professionnels',
+  ],
+};
+
+const ASSURANCE_VIE_TYPE_OPTIONS: { value: SuccessionAssuranceVieContractType; label: string }[] = [
+  { value: 'standard', label: 'Clause standard' },
+  { value: 'demembree', label: 'Clause démembrée' },
+  { value: 'personnalisee', label: 'Clause personnalisée' },
+];
+
 const MEMBER_TYPE_OPTIONS: { value: FamilyMemberType; label: string }[] = [
   { value: 'petit_enfant', label: 'Petit-enfant' },
   { value: 'parent', label: 'Parent' },
@@ -121,6 +174,14 @@ function createDonationId(): string {
   return `don-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function createAssetId(): string {
+  return `asset-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function createAssuranceVieId(): string {
+  return `av-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 function buildAggregateDonationEntries(values: Record<SuccessionDonationEntryType, number>): SuccessionDonationEntry[] {
   const order: SuccessionDonationEntryType[] = ['rapportable', 'hors_part', 'legs_particulier'];
   return order
@@ -130,6 +191,20 @@ function buildAggregateDonationEntries(values: Record<SuccessionDonationEntryTyp
       type,
       montant: values[type],
       description: 'Saisie agrégée',
+    }));
+}
+
+function buildAggregateAssetEntries(values: Record<SuccessionAssetOwner, number>): SuccessionAssetDetailEntry[] {
+  const order: SuccessionAssetOwner[] = ['epoux1', 'epoux2', 'commun'];
+  return order
+    .filter((owner) => values[owner] > 0)
+    .map((owner) => ({
+      id: createAssetId(),
+      owner,
+      category: 'divers' as const,
+      subCategory: 'Saisie agrégée',
+      amount: values[owner],
+      label: 'Saisie simplifiée',
     }));
 }
 
@@ -171,6 +246,8 @@ export default function SuccessionSimulator() {
   const [hydrated, setHydrated] = useState(false);
   const [civilContext, setCivilContext] = useState(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
   const [liquidationContext, setLiquidationContext] = useState(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
+  const [assetEntries, setAssetEntries] = useState<SuccessionAssetDetailEntry[]>(DEFAULT_SUCCESSION_ASSET_DETAILS);
+  const [assuranceVieEntries, setAssuranceVieEntries] = useState<SuccessionAssuranceVieEntry[]>(DEFAULT_SUCCESSION_ASSURANCE_VIE);
   const [devolutionContext, setDevolutionContext] = useState(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
   const [patrimonialContext, setPatrimonialContext] = useState(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
   const [donationsContext, setDonationsContext] = useState<SuccessionDonationEntry[]>(DEFAULT_SUCCESSION_DONATIONS);
@@ -178,6 +255,7 @@ export default function SuccessionSimulator() {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
   const [showAddMemberPanel, setShowAddMemberPanel] = useState(false);
   const [showDispositionsModal, setShowDispositionsModal] = useState(false);
+  const [showAssuranceVieModal, setShowAssuranceVieModal] = useState(false);
   const [dispositionsDraft, setDispositionsDraft] = useState({
     attributionBiensCommunsPct: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
     donationEntreEpouxActive: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxActive,
@@ -391,6 +469,61 @@ export default function SuccessionSimulator() {
     : isPacsed
       ? 'Convention PACS'
       : 'Situation familiale';
+  const assetOwnerOptions = useMemo((): { value: SuccessionAssetOwner; label: string }[] => {
+    if (isMarried) {
+      return [
+        { value: 'epoux1', label: 'Époux 1' },
+        { value: 'epoux2', label: 'Époux 2' },
+        { value: 'commun', label: 'Communauté' },
+      ];
+    }
+    if (isPacsed) {
+      return [
+        { value: 'epoux1', label: 'Partenaire 1' },
+        { value: 'epoux2', label: 'Partenaire 2' },
+        { value: 'commun', label: 'Indivision' },
+      ];
+    }
+    if (isConcubinage) {
+      return [
+        { value: 'epoux1', label: 'Personne 1' },
+        { value: 'epoux2', label: 'Personne 2' },
+      ];
+    }
+    return [{ value: 'epoux1', label: 'Défunt(e)' }];
+  }, [isConcubinage, isMarried, isPacsed]);
+  const assuranceViePartyOptions = useMemo(
+    () => assetOwnerOptions.filter((option) => option.value !== 'commun') as { value: 'epoux1' | 'epoux2'; label: string }[],
+    [assetOwnerOptions],
+  );
+  const assetTotals = useMemo(() => {
+    const rawTotals = assetEntries.reduce((totals, entry) => {
+      const signedAmount = entry.category === 'passif' ? -entry.amount : entry.amount;
+      totals[entry.owner] += signedAmount;
+      return totals;
+    }, {
+      epoux1: 0,
+      epoux2: 0,
+      commun: 0,
+    } as Record<SuccessionAssetOwner, number>);
+
+    return {
+      epoux1: Math.max(0, rawTotals.epoux1),
+      epoux2: Math.max(0, rawTotals.epoux2),
+      commun: Math.max(0, rawTotals.commun),
+    };
+  }, [assetEntries]);
+  const assuranceVieTotals = useMemo(() => assuranceVieEntries.reduce((totals, entry) => ({
+    capitaux: totals.capitaux + entry.capitauxDeces,
+    versementsApres70: totals.versementsApres70 + entry.versementsApres70,
+  }), {
+    capitaux: 0,
+    versementsApres70: 0,
+  }), [assuranceVieEntries]);
+  const assetEntriesByCategory = useMemo(() => ASSET_CATEGORY_OPTIONS.map((category) => ({
+    ...category,
+    entries: assetEntries.filter((entry) => entry.category === category.value),
+  })), [assetEntries]);
   const attentions = useMemo(() => {
     const seen = new Set<string>();
     return [
@@ -398,12 +531,16 @@ export default function SuccessionSimulator() {
       ...chainageAnalysis.warnings,
       ...devolutionAnalysis.warnings,
       ...patrimonialAnalysis.warnings,
+      ...(assuranceVieEntries.length > 0
+        ? ['Des contrats d’assurance-vie sont saisis à part et restent hors calcul successoral principal dans cette version.']
+        : []),
     ].filter((warning) => {
       if (seen.has(warning)) return false;
       seen.add(warning);
       return true;
     });
   }, [
+    assuranceVieEntries.length,
     predecesAnalysis.warnings,
     chainageAnalysis.warnings,
     devolutionAnalysis.warnings,
@@ -434,12 +571,15 @@ export default function SuccessionSimulator() {
     reset();
     setCivilContext(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
     setLiquidationContext(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
+    setAssetEntries(DEFAULT_SUCCESSION_ASSET_DETAILS);
+    setAssuranceVieEntries(DEFAULT_SUCCESSION_ASSURANCE_VIE);
     setDevolutionContext(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
     setPatrimonialContext(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
     setDonationsContext(DEFAULT_SUCCESSION_DONATIONS);
     setEnfantsContext(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
     setFamilyMembers(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
     setShowAddMemberPanel(false);
+    setShowAssuranceVieModal(false);
     setAddMemberForm({ type: '', branch: '', parentEnfantId: '' });
     setChainOrder('epoux1');
     setHypothesesOpen(false);
@@ -450,15 +590,16 @@ export default function SuccessionSimulator() {
     }
   }, [reset]);
 
-  const setLiquidationField = useCallback(
-    (field: 'actifEpoux1' | 'actifEpoux2' | 'actifCommun', value: number) => {
-      setLiquidationContext((prev) => ({
-        ...prev,
-        [field]: Math.max(0, value || 0),
-      }));
-    },
-    [],
-  );
+  const setLiquidationField = useCallback((
+    field: 'actifEpoux1' | 'actifEpoux2' | 'actifCommun',
+    value: number,
+  ) => {
+    setAssetEntries(buildAggregateAssetEntries({
+      epoux1: field === 'actifEpoux1' ? Math.max(0, value) : assetTotals.epoux1,
+      epoux2: field === 'actifEpoux2' ? Math.max(0, value) : assetTotals.epoux2,
+      commun: field === 'actifCommun' ? Math.max(0, value) : assetTotals.commun,
+    }));
+  }, [assetTotals.commun, assetTotals.epoux1, assetTotals.epoux2]);
 
   const addEnfant = useCallback(() => {
     setEnfantsContext((prev) => ([
@@ -553,6 +694,89 @@ export default function SuccessionSimulator() {
     setDonationsContext((prev) => prev.filter((entry) => entry.id !== id));
   }, []);
 
+  const addAssetEntry = useCallback((category: SuccessionAssetCategory) => {
+    setAssetEntries((prev) => ([
+      ...prev,
+      {
+        id: createAssetId(),
+        owner: assetOwnerOptions[0]?.value ?? 'epoux1',
+        category,
+        subCategory: ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre',
+        amount: 0,
+      },
+    ]));
+  }, [assetOwnerOptions]);
+
+  const updateAssetEntry = useCallback((
+    id: string,
+    field: keyof SuccessionAssetDetailEntry,
+    value: string | number,
+  ) => {
+    setAssetEntries((prev) => prev.map((entry) => {
+      if (entry.id !== id) return entry;
+      if (field === 'amount') {
+        return {
+          ...entry,
+          amount: Math.max(0, Number(value) || 0),
+        };
+      }
+      if (field === 'category') {
+        const category = value as SuccessionAssetCategory;
+        return {
+          ...entry,
+          category,
+          subCategory: ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre',
+        };
+      }
+      return {
+        ...entry,
+        [field]: value,
+      };
+    }));
+  }, []);
+
+  const removeAssetEntry = useCallback((id: string) => {
+    setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
+  }, []);
+
+  const addAssuranceVieEntry = useCallback(() => {
+    setAssuranceVieEntries((prev) => ([
+      ...prev,
+      {
+        id: createAssuranceVieId(),
+        typeContrat: 'standard',
+        souscripteur: assuranceViePartyOptions[0]?.value ?? 'epoux1',
+        assure: assuranceViePartyOptions[0]?.value ?? 'epoux1',
+        capitauxDeces: 0,
+        versementsApres70: 0,
+      },
+    ]));
+  }, [assuranceViePartyOptions]);
+
+  const updateAssuranceVieEntry = useCallback((
+    id: string,
+    field: keyof SuccessionAssuranceVieEntry,
+    value: string | number,
+  ) => {
+    setAssuranceVieEntries((prev) => prev.map((entry) => {
+      if (entry.id !== id) return entry;
+      if (field === 'capitauxDeces' || field === 'versementsApres70') {
+        return {
+          ...entry,
+          [field]: Math.max(0, Number(value) || 0),
+        };
+      }
+      return {
+        ...entry,
+        [field]: value,
+      };
+    }));
+  }, []);
+
+  const removeAssuranceVieEntry = useCallback((id: string) => {
+    setAssuranceVieEntries((prev) => prev.filter((entry) => entry.id !== id));
+  }, []);
+
   const openDispositionsModal = useCallback(() => {
     setDispositionsDraft({
       attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
@@ -598,6 +822,8 @@ export default function SuccessionSimulator() {
           hydrateForm(parsed.form);
           setCivilContext(parsed.civil);
           setLiquidationContext(parsed.liquidation);
+          setAssetEntries(parsed.assetEntries);
+          setAssuranceVieEntries(parsed.assuranceVieEntries);
           setDevolutionContext(parsed.devolution);
           setPatrimonialContext(parsed.patrimonial);
           setDonationsContext(parsed.donations);
@@ -629,13 +855,15 @@ export default function SuccessionSimulator() {
             enfantsContext,
             familyMembers,
             donationsContext,
+            assetEntries,
+            assuranceVieEntries,
           ),
         ),
       );
     } catch {
       // ignore
     }
-  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext]);
+  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext, assetEntries, assuranceVieEntries]);
 
   // Auto-dériver ascendantsSurvivants si des parents sont déclarés dans familyMembers
   useEffect(() => {
@@ -645,6 +873,60 @@ export default function SuccessionSimulator() {
       return { ...prev, ascendantsSurvivants: hasParents };
     });
   }, [familyMembers]);
+
+  useEffect(() => {
+    setLiquidationContext((prev) => {
+      const next = {
+        actifEpoux1: assetTotals.epoux1,
+        actifEpoux2: assetTotals.epoux2,
+        actifCommun: assetTotals.commun,
+        nbEnfants,
+      };
+      if (
+        prev.actifEpoux1 === next.actifEpoux1
+        && prev.actifEpoux2 === next.actifEpoux2
+        && prev.actifCommun === next.actifCommun
+        && prev.nbEnfants === next.nbEnfants
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  }, [assetTotals.commun, assetTotals.epoux1, assetTotals.epoux2, nbEnfants]);
+
+  useEffect(() => {
+    const validOwners = new Set(assetOwnerOptions.map((option) => option.value));
+    const fallbackOwner = assetOwnerOptions[0]?.value ?? 'epoux1';
+    setAssetEntries((prev) => {
+      let changed = false;
+      const next = prev.map((entry) => {
+        if (validOwners.has(entry.owner)) return entry;
+        changed = true;
+        return { ...entry, owner: fallbackOwner };
+      });
+      return changed ? next : prev;
+    });
+  }, [assetOwnerOptions]);
+
+  useEffect(() => {
+    const validOwners = new Set(assuranceViePartyOptions.map((option) => option.value));
+    const fallbackOwner = assuranceViePartyOptions[0]?.value ?? 'epoux1';
+    setAssuranceVieEntries((prev) => {
+      let changed = false;
+      const next = prev.map((entry) => {
+        const souscripteur = validOwners.has(entry.souscripteur) ? entry.souscripteur : fallbackOwner;
+        const assure = validOwners.has(entry.assure) ? entry.assure : fallbackOwner;
+        if (souscripteur === entry.souscripteur && assure === entry.assure) return entry;
+        changed = true;
+        return {
+          ...entry,
+          souscripteur,
+          assure,
+        };
+      });
+      return changed ? next : prev;
+    });
+  }, [assuranceViePartyOptions]);
 
   useEffect(() => {
     setPatrimonialContext((prev) => {
@@ -937,84 +1219,203 @@ export default function SuccessionSimulator() {
             <header className="sc-card__header">
               <h2 className="sc-card__title">Actifs / Passifs</h2>
               <p className="sc-card__subtitle">
-                Saisie agrégée des masses patrimoniales utilisées par les analyses civiles et la chronologie.
+                {isExpert
+                  ? 'Saisie détaillée des actifs et passifs, agrégée automatiquement pour les analyses civiles.'
+                  : 'Saisie agrégée des masses patrimoniales utilisées par les analyses civiles et la chronologie.'}
               </p>
             </header>
             <div className="sc-card__divider" />
 
-            <div className="sc-civil-grid">
-              {(isMarried || isPacsed) && (
-                <>
-                  <div className="sc-field">
-                    <label>{isPacsed ? 'Actif net partenaire 1 (€)' : 'Actif net époux 1 (€)'}</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={liquidationContext.actifEpoux1 || ''}
-                      onChange={(e) => setLiquidationField('actifEpoux1', Number(e.target.value) || 0)}
-                      placeholder="Montant"
-                    />
+            {isExpert ? (
+              <div className="sc-assets-sections">
+                {assetEntriesByCategory.map((category) => (
+                  <section key={category.value} className="sc-asset-section">
+                    <div className="sc-asset-section__header">
+                      <h3 className="sc-asset-section__title">{category.label}</h3>
+                      <button
+                        type="button"
+                        className="premium-btn sc-btn sc-btn--secondary"
+                        onClick={() => addAssetEntry(category.value)}
+                      >
+                        + Ajouter une ligne
+                      </button>
+                    </div>
+                    {category.entries.length > 0 ? (
+                      <div className="sc-assets-list">
+                        {category.entries.map((entry) => (
+                          <div key={entry.id} className="sc-asset-row">
+                            <div className="sc-field">
+                              <label>Porteur</label>
+                              <ScSelect
+                                value={entry.owner}
+                                onChange={(value) => updateAssetEntry(entry.id, 'owner', value)}
+                                options={assetOwnerOptions}
+                              />
+                            </div>
+                            <div className="sc-field">
+                              <label>Sous-catégorie</label>
+                              <ScSelect
+                                value={entry.subCategory}
+                                onChange={(value) => updateAssetEntry(entry.id, 'subCategory', value)}
+                                options={ASSET_SUBCATEGORY_OPTIONS[entry.category].map((option) => ({
+                                  value: option,
+                                  label: option,
+                                }))}
+                              />
+                            </div>
+                            <div className="sc-field">
+                              <label>Libellé</label>
+                              <input
+                                type="text"
+                                value={entry.label ?? ''}
+                                onChange={(e) => updateAssetEntry(entry.id, 'label', e.target.value)}
+                                placeholder="Précision optionnelle"
+                              />
+                            </div>
+                            <div className="sc-field">
+                              <label>Montant (€)</label>
+                              <input
+                                type="number"
+                                min={0}
+                                value={entry.amount || ''}
+                                onChange={(e) => updateAssetEntry(entry.id, 'amount', Number(e.target.value) || 0)}
+                                placeholder="Montant"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              className="sc-remove-btn"
+                              onClick={() => removeAssetEntry(entry.id)}
+                              title="Supprimer cette ligne"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="sc-hint sc-hint--compact">Aucune ligne détaillée dans cette catégorie.</p>
+                    )}
+                  </section>
+                ))}
+
+                <div className="sc-assets-summary">
+                  <div className="sc-summary-row">
+                    <span>{isPacsed ? 'Actif net partenaire 1' : isMarried ? 'Actif net époux 1' : 'Actif net personne 1'}</span>
+                    <strong>{fmt(assetTotals.epoux1)}</strong>
                   </div>
-                  <div className="sc-field">
-                    <label>{isPacsed ? 'Actif net partenaire 2 (€)' : 'Actif net époux 2 (€)'}</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={liquidationContext.actifEpoux2 || ''}
-                      onChange={(e) => setLiquidationField('actifEpoux2', Number(e.target.value) || 0)}
-                      placeholder="Montant"
-                    />
-                  </div>
-                  <div className="sc-field">
-                    <label>{isPacsed ? 'Actif indivis (€)' : 'Actif commun (€)'}</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={liquidationContext.actifCommun || ''}
-                      onChange={(e) => setLiquidationField('actifCommun', Number(e.target.value) || 0)}
-                      placeholder="Montant"
-                    />
-                  </div>
-                </>
-              )}
-              {isConcubinage && (
-                <>
-                  <div className="sc-field">
-                    <label>Patrimoine du/de la défunt(e) (€)</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={liquidationContext.actifEpoux1 || ''}
-                      onChange={(e) => setLiquidationField('actifEpoux1', Number(e.target.value) || 0)}
-                      placeholder="Montant"
-                    />
-                  </div>
-                  <div className="sc-field">
-                    <label>Patrimoine du concubin / de la concubine (€)</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={liquidationContext.actifEpoux2 || ''}
-                      onChange={(e) => setLiquidationField('actifEpoux2', Number(e.target.value) || 0)}
-                      placeholder="Montant"
-                    />
-                  </div>
-                </>
-              )}
-              {!isMarried && !isPacsed && !isConcubinage && (
-                <div className="sc-field">
-                  <label>Patrimoine net du/de la défunt(e) (€)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={liquidationContext.actifEpoux1 || ''}
-                    onChange={(e) => setLiquidationField('actifEpoux1', Number(e.target.value) || 0)}
-                    placeholder="Montant"
-                  />
+                  {assetOwnerOptions.some((option) => option.value === 'epoux2') && (
+                    <div className="sc-summary-row">
+                      <span>{isPacsed ? 'Actif net partenaire 2' : isMarried ? 'Actif net époux 2' : 'Actif net personne 2'}</span>
+                      <strong>{fmt(assetTotals.epoux2)}</strong>
+                    </div>
+                  )}
+                  {assetOwnerOptions.some((option) => option.value === 'commun') && (
+                    <div className="sc-summary-row">
+                      <span>{isPacsed ? 'Masse indivise nette' : 'Masse commune nette'}</span>
+                      <strong>{fmt(assetTotals.commun)}</strong>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="sc-civil-grid">
+                {(isMarried || isPacsed) && (
+                  <>
+                    <div className="sc-field">
+                      <label>{isPacsed ? 'Actif net partenaire 1 (€)' : 'Actif net époux 1 (€)'}</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={assetTotals.epoux1 || ''}
+                        onChange={(e) => setLiquidationField('actifEpoux1', Number(e.target.value) || 0)}
+                        placeholder="Montant"
+                      />
+                    </div>
+                    <div className="sc-field">
+                      <label>{isPacsed ? 'Actif net partenaire 2 (€)' : 'Actif net époux 2 (€)'}</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={assetTotals.epoux2 || ''}
+                        onChange={(e) => setLiquidationField('actifEpoux2', Number(e.target.value) || 0)}
+                        placeholder="Montant"
+                      />
+                    </div>
+                    <div className="sc-field">
+                      <label>{isPacsed ? 'Actif indivis (€)' : 'Actif commun (€)'}</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={assetTotals.commun || ''}
+                        onChange={(e) => setLiquidationField('actifCommun', Number(e.target.value) || 0)}
+                        placeholder="Montant"
+                      />
+                    </div>
+                  </>
+                )}
+                {isConcubinage && (
+                  <>
+                    <div className="sc-field">
+                      <label>Patrimoine du/de la défunt(e) (€)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={assetTotals.epoux1 || ''}
+                        onChange={(e) => setLiquidationField('actifEpoux1', Number(e.target.value) || 0)}
+                        placeholder="Montant"
+                      />
+                    </div>
+                    <div className="sc-field">
+                      <label>Patrimoine du concubin / de la concubine (€)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={assetTotals.epoux2 || ''}
+                        onChange={(e) => setLiquidationField('actifEpoux2', Number(e.target.value) || 0)}
+                        placeholder="Montant"
+                      />
+                    </div>
+                  </>
+                )}
+                {!isMarried && !isPacsed && !isConcubinage && (
+                  <div className="sc-field">
+                    <label>Patrimoine net du/de la défunt(e) (€)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={assetTotals.epoux1 || ''}
+                      onChange={(e) => setLiquidationField('actifEpoux1', Number(e.target.value) || 0)}
+                      placeholder="Montant"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
             <p className="sc-hint">Enfants pris en compte automatiquement: {nbEnfants}</p>
+
+            <div className="sc-assurance-vie-summary">
+              <div className="sc-assurance-vie-summary__header">
+                <div>
+                  <strong className="sc-detail-title">Assurance-vie</strong>
+                  <p className="sc-card__subtitle sc-card__subtitle--inline">
+                    {assuranceVieEntries.length > 0
+                      ? `${assuranceVieEntries.length} contrat(s) saisi(s), ${fmt(assuranceVieTotals.capitaux)} de capitaux décès.`
+                      : 'Aucun contrat saisi pour le moment.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="premium-btn sc-btn sc-btn--secondary"
+                  onClick={() => setShowAssuranceVieModal(true)}
+                >
+                  + Assurance vie
+                </button>
+              </div>
+              <p className="sc-hint sc-hint--compact">
+                Les contrats d’assurance-vie sont décrits à part et restent hors calcul successoral principal dans cette version.
+              </p>
+            </div>
 
             {predecesAnalysis.regimeLabel && (
               <p className="sc-hint">
@@ -1555,6 +1956,148 @@ export default function SuccessionSimulator() {
                 onClick={validateDispositionsModal}
               >
                 Valider
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAssuranceVieModal && (
+        <div
+          className="sc-member-modal-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAssuranceVieModal(false); }}
+        >
+          <div className="sc-member-modal sc-member-modal--wide">
+            <div className="sc-member-modal__header">
+              <h3 className="sc-member-modal__title">Assurance-vie</h3>
+              <button
+                type="button"
+                className="sc-member-modal__close"
+                onClick={() => setShowAssuranceVieModal(false)}
+                aria-label="Fermer"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="sc-member-modal__body">
+              {assuranceVieEntries.length > 0 ? (
+                <div className="sc-assurance-vie-list">
+                  {assuranceVieEntries.map((entry, idx) => (
+                    <div key={entry.id} className="sc-assurance-vie-card">
+                      <div className="sc-donation-card__header">
+                        <strong className="sc-donation-card__title">Contrat {idx + 1}</strong>
+                        <button
+                          type="button"
+                          className="sc-remove-btn"
+                          onClick={() => removeAssuranceVieEntry(entry.id)}
+                          title="Supprimer ce contrat"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <div className="sc-assurance-vie-grid">
+                        <div className="sc-field">
+                          <label>Nom du contrat</label>
+                          <input
+                            type="text"
+                            value={entry.nomContrat ?? ''}
+                            onChange={(e) => updateAssuranceVieEntry(entry.id, 'nomContrat', e.target.value)}
+                            placeholder="Nom optionnel"
+                          />
+                        </div>
+                        <div className="sc-field">
+                          <label>Type de clause</label>
+                          <ScSelect
+                            value={entry.typeContrat}
+                            onChange={(value) => updateAssuranceVieEntry(entry.id, 'typeContrat', value as SuccessionAssuranceVieContractType)}
+                            options={ASSURANCE_VIE_TYPE_OPTIONS}
+                          />
+                        </div>
+                        <div className="sc-field">
+                          <label>Souscripteur</label>
+                          <ScSelect
+                            value={entry.souscripteur}
+                            onChange={(value) => updateAssuranceVieEntry(entry.id, 'souscripteur', value)}
+                            options={assuranceViePartyOptions}
+                          />
+                        </div>
+                        <div className="sc-field">
+                          <label>Assuré</label>
+                          <ScSelect
+                            value={entry.assure}
+                            onChange={(value) => updateAssuranceVieEntry(entry.id, 'assure', value)}
+                            options={assuranceViePartyOptions}
+                          />
+                        </div>
+                        <div className="sc-field sc-field--full">
+                          <label>Clause bénéficiaire</label>
+                          <input
+                            type="text"
+                            value={entry.clauseBeneficiaire ?? ''}
+                            onChange={(e) => updateAssuranceVieEntry(entry.id, 'clauseBeneficiaire', e.target.value)}
+                            placeholder="Le conjoint survivant, à défaut les enfants..."
+                          />
+                        </div>
+                        <div className="sc-field">
+                          <label>Capitaux décès (€)</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={entry.capitauxDeces || ''}
+                            onChange={(e) => updateAssuranceVieEntry(entry.id, 'capitauxDeces', Number(e.target.value) || 0)}
+                            placeholder="Montant"
+                          />
+                        </div>
+                        <div className="sc-field">
+                          <label>Versements après 70 ans (€)</label>
+                          <input
+                            type="number"
+                            min={0}
+                            value={entry.versementsApres70 || ''}
+                            onChange={(e) => updateAssuranceVieEntry(entry.id, 'versementsApres70', Number(e.target.value) || 0)}
+                            placeholder="Montant"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="sc-hint sc-hint--compact">
+                  Aucun contrat d’assurance-vie saisi pour l’instant.
+                </p>
+              )}
+
+              <div className="sc-inline-actions">
+                <button
+                  type="button"
+                  className="premium-btn sc-btn sc-btn--secondary"
+                  onClick={addAssuranceVieEntry}
+                >
+                  + Ajouter un contrat
+                </button>
+              </div>
+
+              {assuranceVieEntries.length > 0 && (
+                <div className="sc-donations-totals">
+                  <div className="sc-summary-row">
+                    <span>Capitaux décès</span>
+                    <strong>{fmt(assuranceVieTotals.capitaux)}</strong>
+                  </div>
+                  <div className="sc-summary-row">
+                    <span>Versements après 70 ans</span>
+                    <strong>{fmt(assuranceVieTotals.versementsApres70)}</strong>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="sc-member-modal__footer">
+              <button
+                type="button"
+                className="sc-member-modal__btn sc-member-modal__btn--secondary"
+                onClick={() => setShowAssuranceVieModal(false)}
+              >
+                Fermer
               </button>
             </div>
           </div>

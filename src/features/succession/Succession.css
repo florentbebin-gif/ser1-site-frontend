@@ -72,6 +72,10 @@
   margin: 4px 0 0;
 }
 
+.sc-card__subtitle--inline {
+  margin-top: 2px;
+}
+
 .sc-card__divider {
   height: 2px;
   max-width: 200px;
@@ -579,6 +583,72 @@
   gap: 8px;
 }
 
+.sc-assets-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sc-asset-section {
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-c7) 70%, #FFFFFF);
+  padding: 12px;
+}
+
+.sc-asset-section__header,
+.sc-assurance-vie-summary__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.sc-asset-section__title {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-c1);
+}
+
+.sc-assets-list,
+.sc-assurance-vie-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sc-asset-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.sc-assets-summary,
+.sc-assurance-vie-summary {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sc-assurance-vie-card {
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-c7) 70%, #FFFFFF);
+  padding: 12px;
+}
+
+.sc-assurance-vie-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.sc-member-modal--wide {
+  max-width: 760px;
+}
+
 .sc-heir-row {
   display: grid;
   grid-template-columns: 1fr 1fr auto;
@@ -951,7 +1021,15 @@
     grid-template-columns: 1fr;
   }
 
+  .sc-assurance-vie-grid {
+    grid-template-columns: 1fr;
+  }
+
   .sc-civil-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-asset-row {
     grid-template-columns: 1fr;
   }
 
@@ -983,6 +1061,12 @@
 
   .sc-primary-actions,
   .sc-inline-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sc-asset-section__header,
+  .sc-assurance-vie-summary__header {
     flex-direction: column;
     align-items: stretch;
   }
