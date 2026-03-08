@@ -62,6 +62,7 @@ import {
   buildSuccessionChainageAnalysis,
   type SuccessionChainOrder,
 } from './successionChainage';
+import { buildSuccessionDirectDisplayAnalysis } from './successionDisplay';
 import { ScSelect } from './components/ScSelect';
 import { FiliationOrgchart } from './components/FiliationOrgchart';
 import '../../components/simulator/SimulatorShell.css';
@@ -598,27 +599,65 @@ export default function SuccessionSimulator() {
     ...category,
     entries: assetEntries.filter((entry) => entry.category === category.value),
   })), [assetEntries]);
-  const currentAssuranceVieTransmise = useMemo(() => {
-    if (chainageAnalysis.applicable) return assuranceVieByAssure[chainageAnalysis.order];
-    return assuranceVieByAssure.epoux1;
-  }, [assuranceVieByAssure, chainageAnalysis.applicable, chainageAnalysis.order]);
+  const displayUsesChainage = Boolean(isMarried
+    && chainageAnalysis.applicable
+    && chainageAnalysis.step1
+    && chainageAnalysis.step2);
+  const directDisplayAnalysis = useMemo(
+    () => buildSuccessionDirectDisplayAnalysis({
+      civil: civilContext,
+      devolution: devolutionAnalysis,
+      devolutionContext,
+      dmtgSettings: fiscalSnapshot.dmtgSettings,
+      enfantsContext,
+      familyMembers,
+      order: chainOrder,
+    }),
+    [
+      civilContext,
+      devolutionAnalysis,
+      devolutionContext,
+      fiscalSnapshot.dmtgSettings,
+      enfantsContext,
+      familyMembers,
+      chainOrder,
+    ],
+  );
+  const displayActifNetSuccession = useMemo(
+    () => (displayUsesChainage ? derivedActifNetSuccession : directDisplayAnalysis.actifNetSuccession),
+    [displayUsesChainage, derivedActifNetSuccession, directDisplayAnalysis.actifNetSuccession],
+  );
+  const displayAssuranceVieTransmise = useMemo(() => {
+    if (displayUsesChainage) return assuranceVieByAssure[chainageAnalysis.order];
+    return assuranceVieByAssure[directDisplayAnalysis.simulatedDeceased];
+  }, [
+    assuranceVieByAssure,
+    chainageAnalysis.order,
+    directDisplayAnalysis.simulatedDeceased,
+    displayUsesChainage,
+  ]);
   const derivedMasseTransmise = useMemo(
-    () => derivedActifNetSuccession + currentAssuranceVieTransmise,
-    [currentAssuranceVieTransmise, derivedActifNetSuccession],
+    () => displayActifNetSuccession + displayAssuranceVieTransmise,
+    [displayActifNetSuccession, displayAssuranceVieTransmise],
   );
   const derivedTotalDroits = useMemo(
-    () => chainageAnalysis.totalDroits + avFiscalAnalysis.totalDroits,
-    [chainageAnalysis.totalDroits, avFiscalAnalysis.totalDroits],
+    () => (displayUsesChainage
+      ? chainageAnalysis.totalDroits
+      : (directDisplayAnalysis.result?.totalDroits ?? 0)) + avFiscalAnalysis.totalDroits,
+    [displayUsesChainage, chainageAnalysis.totalDroits, directDisplayAnalysis.result?.totalDroits, avFiscalAnalysis.totalDroits],
   );
   const synthDonutTransmis = useMemo(() => {
-    if (chainageAnalysis.applicable && chainageAnalysis.step1 && chainageAnalysis.step2) {
-      return chainageAnalysis.step1.actifTransmis
-        + chainageAnalysis.step2.actifTransmis
+    if (displayUsesChainage) {
+      const step1 = chainageAnalysis.step1;
+      const step2 = chainageAnalysis.step2;
+      if (!step1 || !step2) return derivedMasseTransmise;
+      return step1.actifTransmis
+        + step2.actifTransmis
         + assuranceVieByAssure.epoux1
         + assuranceVieByAssure.epoux2;
     }
     return derivedMasseTransmise;
-  }, [chainageAnalysis, assuranceVieByAssure, derivedMasseTransmise]);
+  }, [displayUsesChainage, chainageAnalysis, assuranceVieByAssure, derivedMasseTransmise]);
   const synthHypothese = useMemo(() => {
     if (!isMarried || nbDescendantBranches === 0) return null;
     if (patrimonialContext.donationEntreEpouxActive) {
@@ -627,27 +666,61 @@ export default function SuccessionSimulator() {
     }
     return 'Hypothèse moteur : 1/4 en pleine propriété pour le conjoint survivant';
   }, [isMarried, nbDescendantBranches, patrimonialContext.donationEntreEpouxActive, patrimonialContext.donationEntreEpouxOption]);
-  const transmissionResult = useMemo(() => {
-    if (!chainageAnalysis.applicable || !chainageAnalysis.step1 || !chainageAnalysis.step2) return null;
-    const { step1, step2, order } = chainageAnalysis;
-    const otherOrder = order === 'epoux1' ? 'epoux2' : 'epoux1';
-    const avCapital = assuranceVieByAssure[order] + assuranceVieByAssure[otherOrder];
-    return {
-      descendants: {
-        brut: step1.partEnfants + step2.partEnfants,
-        droits: step1.droitsEnfants + step2.droitsEnfants,
-      },
-      conjoint: { brut: step1.partConjoint },
-      av: avCapital > 0 ? { capital: avCapital, droits: avFiscalAnalysis.totalDroits } : null,
-    };
-  }, [chainageAnalysis, assuranceVieByAssure, avFiscalAnalysis.totalDroits]);
+  const transmissionRows = useMemo(() => {
+    if (displayUsesChainage) {
+      const { step1, step2, order } = chainageAnalysis;
+      if (!step1 || !step2) return [];
+      const otherOrder = order === 'epoux1' ? 'epoux2' : 'epoux1';
+      const avCapital = assuranceVieByAssure[order] + assuranceVieByAssure[otherOrder];
+      return [
+        {
+          label: 'Descendants',
+          brut: step1.partEnfants + step2.partEnfants,
+          droits: step1.droitsEnfants + step2.droitsEnfants,
+          net: (step1.partEnfants + step2.partEnfants) - (step1.droitsEnfants + step2.droitsEnfants),
+        },
+        ...(step1.partConjoint > 0 ? [{
+          label: 'Conjoint survivant',
+          brut: step1.partConjoint,
+          droits: 0,
+          net: step1.partConjoint,
+          exonerated: true,
+        }] : []),
+        ...(avCapital > 0 ? [{
+          label: 'Assurance-vie',
+          brut: avCapital,
+          droits: avFiscalAnalysis.totalDroits,
+          net: avCapital - avFiscalAnalysis.totalDroits,
+        }] : []),
+      ];
+    }
+
+    return [
+      ...directDisplayAnalysis.transmissionRows,
+      ...(displayAssuranceVieTransmise > 0 ? [{
+        label: 'Assurance-vie',
+        brut: displayAssuranceVieTransmise,
+        droits: avFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
+        net: displayAssuranceVieTransmise - avFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
+      }] : []),
+    ];
+  }, [
+    displayUsesChainage,
+    chainageAnalysis,
+    assuranceVieByAssure,
+    avFiscalAnalysis.totalDroits,
+    avFiscalAnalysis.byAssure,
+    directDisplayAnalysis.transmissionRows,
+    directDisplayAnalysis.simulatedDeceased,
+    displayAssuranceVieTransmise,
+  ]);
   const chainageExportPayload = useMemo(
     () => ({
-      applicable: chainageAnalysis.applicable,
+      applicable: displayUsesChainage,
       order: chainageAnalysis.order,
       firstDecedeLabel: chainageAnalysis.firstDecedeLabel,
       secondDecedeLabel: chainageAnalysis.secondDecedeLabel,
-      step1: chainageAnalysis.step1 ? {
+      step1: displayUsesChainage && chainageAnalysis.step1 ? {
         actifTransmis: chainageAnalysis.step1.actifTransmis,
         assuranceVieTransmise: assuranceVieByAssure[chainageAnalysis.order],
         masseTotaleTransmise: chainageAnalysis.step1.actifTransmis + assuranceVieByAssure[chainageAnalysis.order],
@@ -656,7 +729,7 @@ export default function SuccessionSimulator() {
         partEnfants: chainageAnalysis.step1.partEnfants,
         droitsEnfants: chainageAnalysis.step1.droitsEnfants,
       } : null,
-      step2: chainageAnalysis.step2 ? {
+      step2: displayUsesChainage && chainageAnalysis.step2 ? {
         actifTransmis: chainageAnalysis.step2.actifTransmis,
         assuranceVieTransmise: assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
         masseTotaleTransmise: chainageAnalysis.step2.actifTransmis
@@ -668,9 +741,26 @@ export default function SuccessionSimulator() {
       } : null,
       assuranceVieTotale: assuranceVieTotals.capitaux,
       totalDroits: derivedTotalDroits,
-      warnings: [...chainageAnalysis.warnings, ...avFiscalAnalysis.warnings],
+      warnings: displayUsesChainage
+        ? [...chainageAnalysis.warnings, ...avFiscalAnalysis.warnings]
+        : [
+          ...(isPacsed
+            ? ['PACS: la synthèse fiscale affichée repose sur le décès simulé du partenaire sélectionné, pas sur une chronologie 2 décès.']
+            : ['Chronologie 2 décès non utilisée pour cette situation : la synthèse repose sur la succession directe du défunt simulé.']),
+          ...directDisplayAnalysis.warnings,
+          ...avFiscalAnalysis.warnings,
+        ],
     }),
-    [chainageAnalysis, assuranceVieByAssure, assuranceVieTotals.capitaux, avFiscalAnalysis, derivedTotalDroits],
+    [
+      displayUsesChainage,
+      chainageAnalysis,
+      assuranceVieByAssure,
+      assuranceVieTotals.capitaux,
+      avFiscalAnalysis,
+      derivedTotalDroits,
+      isPacsed,
+      directDisplayAnalysis.warnings,
+    ],
   );
   const totalActifsLiquidation = useMemo(
     () => Math.max(
@@ -679,7 +769,7 @@ export default function SuccessionSimulator() {
     ),
     [liquidationContext],
   );
-  const canExportSimplified = chainageAnalysis.applicable && (totalActifsLiquidation > 0 || assuranceVieTotals.capitaux > 0);
+  const canExportSimplified = (displayActifNetSuccession > 0 || totalActifsLiquidation > 0 || assuranceVieTotals.capitaux > 0);
   const canExportCurrentMode = canExport && canExportSimplified;
   const attentions = useMemo(() => {
     const seen = new Set<string>();
@@ -687,6 +777,7 @@ export default function SuccessionSimulator() {
       ...predecesAnalysis.warnings,
       ...chainageAnalysis.warnings,
       ...devolutionAnalysis.warnings,
+      ...(!displayUsesChainage ? directDisplayAnalysis.warnings : []),
       ...patrimonialAnalysis.warnings,
       ...avFiscalAnalysis.warnings,
     ].filter((warning) => {
@@ -698,6 +789,8 @@ export default function SuccessionSimulator() {
     predecesAnalysis.warnings,
     chainageAnalysis.warnings,
     devolutionAnalysis.warnings,
+    displayUsesChainage,
+    directDisplayAnalysis.warnings,
     patrimonialAnalysis.warnings,
     avFiscalAnalysis.warnings,
   ]);
@@ -1113,8 +1206,16 @@ export default function SuccessionSimulator() {
   }, [handleReset]);
 
   useEffect(() => {
-    setActifNet(derivedMasseTransmise);
-  }, [derivedMasseTransmise, setActifNet]);
+    setActifNet(displayActifNetSuccession);
+  }, [displayActifNetSuccession, setActifNet]);
+
+  const exportHeirs = useMemo(
+    () => (displayUsesChainage ? [] : directDisplayAnalysis.heirs).map((heir) => ({
+      lien: heir.lien,
+      partSuccession: heir.partSuccession,
+    })),
+    [displayUsesChainage, directDisplayAnalysis.heirs],
+  );
 
   const handleExportPptx = useCallback(async () => {
     if (!canExport) return;
@@ -1128,7 +1229,7 @@ export default function SuccessionSimulator() {
             tauxMoyenGlobal: derivedMasseTransmise > 0
               ? (derivedTotalDroits / derivedMasseTransmise) * 100
               : 0,
-            heritiers: [],
+            heritiers: displayUsesChainage ? [] : (directDisplayAnalysis.result?.detailHeritiers ?? []),
             predecesChronologie: chainageExportPayload,
           },
           pptxColors,
@@ -1145,6 +1246,8 @@ export default function SuccessionSimulator() {
     cabinetLogo,
     logoPlacement,
     chainageExportPayload,
+    displayUsesChainage,
+    directDisplayAnalysis.result,
     derivedMasseTransmise,
     derivedTotalDroits,
   ]);
@@ -1157,10 +1260,10 @@ export default function SuccessionSimulator() {
         await exportAndDownloadSuccessionXlsx(
           {
             actifNetSuccession: derivedMasseTransmise,
-            nbHeritiers: nbDescendantBranches,
-            heritiers: [],
+            nbHeritiers: exportHeirs.length,
+            heritiers: exportHeirs,
           },
-          null,
+          displayUsesChainage ? null : (directDisplayAnalysis.result ?? null),
           pptxColors.c1,
           undefined,
           chainageExportPayload,
@@ -1174,8 +1277,10 @@ export default function SuccessionSimulator() {
     canExportSimplified,
     pptxColors,
     chainageExportPayload,
+    displayUsesChainage,
+    directDisplayAnalysis.result,
     derivedMasseTransmise,
-    nbDescendantBranches,
+    exportHeirs,
   ]);
 
   const exportOptions = [
@@ -1709,7 +1814,7 @@ export default function SuccessionSimulator() {
             familyMembers={familyMembers}
           />
 
-          {transmissionResult && (
+          {transmissionRows.length > 0 && (
             <div className="premium-card sc-summary-card">
               <h2 className="sc-summary-title">Résultat pour les héritiers</h2>
               <div className="sc-card__divider sc-card__divider--tight" />
@@ -1720,33 +1825,24 @@ export default function SuccessionSimulator() {
                   <span>Droits</span>
                   <span>Net estimé</span>
                 </div>
-                {transmissionResult.descendants.brut > 0 && (
-                  <div className="sc-transmission-row">
-                    <span>Descendants</span>
-                    <span>{fmt(transmissionResult.descendants.brut)}</span>
-                    <span>{fmt(transmissionResult.descendants.droits)}</span>
-                    <span>{fmt(transmissionResult.descendants.brut - transmissionResult.descendants.droits)}</span>
+                {transmissionRows.map((row) => (
+                  <div
+                    key={row.label}
+                    className={`sc-transmission-row${row.exonerated ? ' sc-transmission-row--exo' : ''}${row.label === 'Assurance-vie' ? ' sc-transmission-row--av' : ''}`}
+                  >
+                    <span>{row.label}</span>
+                    <span>{fmt(row.brut)}</span>
+                    <span>{row.exonerated ? 'Exonéré' : fmt(row.droits)}</span>
+                    <span>{fmt(row.net)}</span>
                   </div>
-                )}
-                {transmissionResult.conjoint.brut > 0 && (
-                  <div className="sc-transmission-row sc-transmission-row--exo">
-                    <span>Conjoint survivant</span>
-                    <span>{fmt(transmissionResult.conjoint.brut)}</span>
-                    <span>Exonéré</span>
-                    <span>{fmt(transmissionResult.conjoint.brut)}</span>
-                  </div>
-                )}
-                {transmissionResult.av && (
-                  <div className="sc-transmission-row sc-transmission-row--av">
-                    <span>Assurance-vie</span>
-                    <span>{fmt(transmissionResult.av.capital)}</span>
-                    <span>{fmt(transmissionResult.av.droits)}</span>
-                    <span>{fmt(transmissionResult.av.capital - transmissionResult.av.droits)}</span>
-                  </div>
-                )}
+                ))}
               </div>
               <p className="sc-summary-note sc-summary-note--muted">
-                Cumul 2 décès — droits DMTG descendants, conjoint exonéré
+                {displayUsesChainage
+                  ? 'Cumul 2 décès — droits DMTG descendants, conjoint exonéré'
+                  : isPacsed
+                    ? "Succession directe du partenaire simulé - le PACS n'ouvre pas de droit successoral automatique sans testament."
+                    : 'Succession directe du/de la défunt(e) simulé(e).'}
               </p>
             </div>
           )}
@@ -1803,7 +1899,7 @@ export default function SuccessionSimulator() {
               </div>
             </div>
             <div className="sc-card__divider sc-card__divider--tight" />
-            {chainageAnalysis.applicable && chainageAnalysis.step1 && chainageAnalysis.step2 ? (
+            {displayUsesChainage && chainageAnalysis.step1 && chainageAnalysis.step2 ? (
               <div className="sc-chain">
                 <div className="sc-chain-step">
                   <div className="sc-chain-step__title">Étape 1 - décès {chainageAnalysis.firstDecedeLabel}</div>
@@ -1848,7 +1944,9 @@ export default function SuccessionSimulator() {
               </div>
             ) : (
               <p className="sc-summary-note">
-                Activez un contexte marié ou pacsé pour afficher la chronologie en 2 décès.
+                {isPacsed
+                  ? "PACS: la synthèse s'appuie sur le décès simulé du partenaire sélectionné ; la chronologie 2 décès n'est pas utilisée ici."
+                  : 'Activez un contexte marié pour afficher la chronologie en 2 décès.'}
               </p>
             )}
           </div>
