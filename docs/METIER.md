@@ -114,14 +114,17 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - ventilation simplifiee de l'assurance-vie deces selon les clauses beneficiaires saisies (lecture 990 I / 757 B)
 - representation successorale simplifiee des enfants decedes par leurs petits-enfants quand ils sont identifies
 - materiel de guidage sur liberalites, avantages matrimoniaux et situations familiales dans les settings succession
+- devolution civile des ascendants (art. 757-1 / 757-2 CC pour les maries sans descendants) et des collateraux privilegies (art. 736-738-1 CC pour les celibataires/veufs/pacsés sans descendants)
+- ventilation assurance-vie sur contrats demembres avec calcul art. 669 CGI (usufruitier/nu-proprietaire) selon age de l'usufruitier
 
 ### Limites connues
 - ce n'est pas une liquidation notariale exhaustive
 - toutes les subtilites civiles, donations anterieures et clauses complexes ne sont pas integralement calculees en moteur
-- la ventilation assurance-vie reste simplifiee et depend des clauses beneficiaires saisies, sans gestion exhaustive de tous les cas de demembrement ou clauses complexes
+- la ventilation assurance-vie reste simplifiee et depend des clauses beneficiaires saisies; les contrats demembres avec clause non standard ou sans age de l'usufruitier font l'objet d'un repli simplifie avec warning
 - la representation successorale des enfants decedes reste simplifiee et ne remplace pas une analyse notariale detaillee
 - l'UI succession privilegie actuellement les analyses civiles/patrimoniales guidees; le calcul DMTG detaille par heredier n'est pas expose comme parcours principal de saisie
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
+- les parents saisis dans la famille sont comptes sans distinction de branche (epoux1/epoux2) dans le moteur de devolution ; pour les couples maries, les parents du defunt et du survivant sont confondus (simplification)
 
 ## 4) Placement
 
