@@ -65,6 +65,7 @@ import {
 import {
   buildSuccessionChainTransmissionRows,
   buildSuccessionDirectDisplayAnalysis,
+  computeSuccessionDirectEstateBasis,
 } from './successionDisplay';
 import { getUsufruitValuationFromBirthDate } from './successionUsufruit';
 import { ScSelect } from './components/ScSelect';
@@ -461,11 +462,15 @@ export default function SuccessionSimulator() {
       familyMembers,
     ],
   );
+  const directEstateBasis = useMemo(
+    () => computeSuccessionDirectEstateBasis(civilContext, liquidationContext, chainOrder),
+    [civilContext, liquidationContext, chainOrder],
+  );
 
   const derivedActifNetSuccession = useMemo(() => {
     if (chainageAnalysis.step1) return chainageAnalysis.step1.actifTransmis;
-    return liquidationContext.actifEpoux1;
-  }, [chainageAnalysis.step1, liquidationContext.actifEpoux1]);
+    return directEstateBasis.actifNetSuccession;
+  }, [chainageAnalysis.step1, directEstateBasis.actifNetSuccession]);
   const devolutionAnalysis = useMemo(
     () => buildSuccessionDevolutionAnalysis(
       civilContext,
@@ -498,6 +503,7 @@ export default function SuccessionSimulator() {
       enfantsContext,
       familyMembers,
       chainOrder,
+      directEstateBasis.actifNetSuccession,
     ],
   );
   const patrimonialAnalysis = useMemo(
@@ -551,6 +557,7 @@ export default function SuccessionSimulator() {
       return [
         { value: 'epoux1', label: 'Personne 1' },
         { value: 'epoux2', label: 'Personne 2' },
+        { value: 'commun', label: 'Indivision' },
       ];
     }
     return [{ value: 'epoux1', label: 'Défunt(e)' }];
@@ -645,6 +652,10 @@ export default function SuccessionSimulator() {
     && chainageAnalysis.applicable
     && chainageAnalysis.step1
     && chainageAnalysis.step2);
+  const displayActifNetSuccession = useMemo(
+    () => (displayUsesChainage ? derivedActifNetSuccession : directEstateBasis.actifNetSuccession),
+    [displayUsesChainage, derivedActifNetSuccession, directEstateBasis.actifNetSuccession],
+  );
   const directDisplayAnalysis = useMemo(
     () => buildSuccessionDirectDisplayAnalysis({
       civil: civilContext,
@@ -654,6 +665,8 @@ export default function SuccessionSimulator() {
       enfantsContext,
       familyMembers,
       order: chainOrder,
+      actifNetSuccession: directEstateBasis.actifNetSuccession,
+      baseWarnings: directEstateBasis.warnings,
     }),
     [
       civilContext,
@@ -663,11 +676,9 @@ export default function SuccessionSimulator() {
       enfantsContext,
       familyMembers,
       chainOrder,
+      directEstateBasis.actifNetSuccession,
+      directEstateBasis.warnings,
     ],
-  );
-  const displayActifNetSuccession = useMemo(
-    () => (displayUsesChainage ? derivedActifNetSuccession : directDisplayAnalysis.actifNetSuccession),
-    [displayUsesChainage, derivedActifNetSuccession, directDisplayAnalysis.actifNetSuccession],
   );
   const displayAssuranceVieTransmise = useMemo(() => {
     if (displayUsesChainage) return assuranceVieByAssure[chainageAnalysis.order];
@@ -1693,7 +1704,7 @@ export default function SuccessionSimulator() {
                   )}
                   {assetOwnerOptions.some((option) => option.value === 'commun') && (
                     <div className="sc-summary-row">
-                      <span>{isPacsed ? 'Masse indivise nette' : 'Masse commune nette'}</span>
+                      <span>{(isPacsed || isConcubinage) ? 'Masse indivise nette' : 'Masse commune nette'}</span>
                       <strong>{fmt(assetNetTotals.commun)}</strong>
                     </div>
                   )}
@@ -1750,7 +1761,7 @@ export default function SuccessionSimulator() {
                   )}
                   {assetOwnerOptions.some((option) => option.value === 'commun') && (
                     <div className="sc-summary-row">
-                      <span>{isPacsed ? 'Masse indivise nette' : 'Masse commune nette'}</span>
+                      <span>{(isPacsed || isConcubinage) ? 'Masse indivise nette' : 'Masse commune nette'}</span>
                       <strong>{fmt(assetNetTotals.commun)}</strong>
                     </div>
                   )}

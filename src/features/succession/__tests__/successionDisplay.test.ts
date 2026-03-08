@@ -1,9 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG, type RegimeMatrimonial } from '../../../engine/civil';
 import { calculateSuccession } from '../../../engine/succession';
-import type { SuccessionCivilContext, SuccessionDevolutionContext } from '../successionDraft';
+import type {
+  SuccessionCivilContext,
+  SuccessionDevolutionContext,
+  SuccessionLiquidationContext,
+} from '../successionDraft';
 import { buildSuccessionDevolutionAnalysis } from '../successionDevolution';
-import { buildSuccessionDirectDisplayAnalysis } from '../successionDisplay';
+import {
+  buildSuccessionDirectDisplayAnalysis,
+  computeSuccessionDirectEstateBasis,
+} from '../successionDisplay';
 
 function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilContext {
   return {
@@ -25,8 +32,18 @@ function makeDevolution(overrides: Partial<SuccessionDevolutionContext>): Succes
   };
 }
 
+function makeLiquidation(overrides: Partial<SuccessionLiquidationContext>): SuccessionLiquidationContext {
+  return {
+    actifEpoux1: 0,
+    actifEpoux2: 0,
+    actifCommun: 0,
+    nbEnfants: 0,
+    ...overrides,
+  };
+}
+
 describe('buildSuccessionDirectDisplayAnalysis', () => {
-  it('calcule des droits directs non nuls pour un célibataire avec deux enfants', () => {
+  it('calcule des droits directs non nuls pour un celibataire avec deux enfants', () => {
     const civil = makeCivil({ situationMatrimoniale: 'celibataire' });
     const devolutionContext = makeDevolution({});
     const devolution = buildSuccessionDevolutionAnalysis(
@@ -62,7 +79,7 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
         { lien: 'enfant', partSuccession: 200000 },
       ],
       dmtgSettings: DEFAULT_DMTG,
-  }).result;
+    }).result;
 
     expect(analysis.result?.totalDroits).toBe(expected.totalDroits);
     expect(analysis.heirs).toHaveLength(2);
@@ -72,7 +89,7 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
     expect(analysis.transmissionRows.reduce((sum, row) => sum + row.droits, 0)).toBe(expected.totalDroits);
   });
 
-  it("ignore l'enfant propre du partenaire opposé dans le décès PACS simulé", () => {
+  it("ignore l'enfant propre du partenaire oppose dans le deces PACS simule", () => {
     const civil = makeCivil({ situationMatrimoniale: 'pacse' });
     const devolutionContext = makeDevolution({});
     const enfants = [
@@ -106,7 +123,7 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
     expect(analysis.transmissionRows[0]).toMatchObject({ id: 'E1', label: 'E1' });
   });
 
-  it('traite PACS avec testament comme une succession directe du partenaire simulé', () => {
+  it('traite PACS avec testament comme une succession directe du partenaire simule', () => {
     const civil = makeCivil({ situationMatrimoniale: 'pacse' });
     const devolutionContext = makeDevolution({
       testamentActif: true,
@@ -146,5 +163,66 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
       'E1',
       'E2',
     ]);
+  });
+
+  it('retient en union libre le patrimoine propre du defunt et sa quote-part indivise seulement', () => {
+    const civil = makeCivil({ situationMatrimoniale: 'concubinage' });
+    const liquidation = makeLiquidation({
+      actifEpoux1: 120000,
+      actifEpoux2: 80000,
+      actifCommun: 200000,
+      nbEnfants: 2,
+    });
+    const basis = computeSuccessionDirectEstateBasis(civil, liquidation, 'epoux1');
+    const devolutionContext = makeDevolution({});
+    const enfants = [
+      { id: 'E1', rattachement: 'epoux1' as const },
+      { id: 'E2', rattachement: 'epoux1' as const },
+    ];
+    const devolution = buildSuccessionDevolutionAnalysis(
+      civil,
+      2,
+      devolutionContext,
+      basis.actifNetSuccession,
+      0,
+      enfants,
+      [],
+    );
+
+    const analysis = buildSuccessionDirectDisplayAnalysis({
+      civil,
+      devolution,
+      devolutionContext,
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: enfants,
+      familyMembers: [],
+      order: 'epoux1',
+      actifNetSuccession: basis.actifNetSuccession,
+      baseWarnings: basis.warnings,
+    });
+
+    expect(basis.actifNetSuccession).toBe(220000);
+    expect(basis.warnings.some((w) => w.includes('quote-part indivise'))).toBe(true);
+    expect(analysis.actifNetSuccession).toBe(220000);
+    expect(analysis.heirs).toHaveLength(2);
+    expect(analysis.transmissionRows).toHaveLength(2);
+    expect(analysis.result?.totalDroits).toBeGreaterThan(0);
+  });
+
+  it('retient en PACS indivision la quote-part du partenaire decede simule', () => {
+    const civil = makeCivil({ situationMatrimoniale: 'pacse', pacsConvention: 'indivision' });
+    const basis = computeSuccessionDirectEstateBasis(
+      civil,
+      makeLiquidation({
+        actifEpoux1: 100000,
+        actifEpoux2: 140000,
+        actifCommun: 120000,
+      }),
+      'epoux2',
+    );
+
+    expect(basis.simulatedDeceased).toBe('epoux2');
+    expect(basis.actifNetSuccession).toBe(200000);
+    expect(basis.warnings.some((w) => w.includes('PACS indivision'))).toBe(true);
   });
 });
