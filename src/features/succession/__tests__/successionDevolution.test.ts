@@ -12,7 +12,7 @@ function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilC
 }
 
 describe('buildSuccessionDevolutionAnalysis', () => {
-  it('gère conjoint + enfants communs avec options civiles', () => {
+  it('gère conjoint + enfants communs avec hypothèse moteur 1/4 PP', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'marie' }),
       2,
@@ -22,9 +22,10 @@ describe('buildSuccessionDevolutionAnalysis', () => {
 
     expect(analysis.masseReference).toBe(800000);
     expect(analysis.reserve?.reserve).toBe('2/3');
-    expect(analysis.lines.some((line) => line.heritier.includes('Option A - Conjoint survivant'))).toBe(true);
-    expect(analysis.lines.some((line) => line.heritier.includes('Option B - Conjoint survivant'))).toBe(true);
+    expect(analysis.lines.some((line) => line.heritier === 'Conjoint survivant')).toBe(true);
+    expect(analysis.lines.some((line) => line.droits.includes('hypothèse moteur'))).toBe(true);
     expect(analysis.lines.some((line) => line.montantEstime === 200000)).toBe(true);
+    expect(analysis.lines.every((line) => !line.heritier.includes('Option A') && !line.heritier.includes('Option B'))).toBe(true);
   });
 
   it('gère conjoint + enfants non communs (1/4 PP)', () => {
