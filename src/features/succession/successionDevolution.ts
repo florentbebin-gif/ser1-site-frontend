@@ -4,11 +4,13 @@ import {
   type SuccessionCivilContext,
   type SuccessionDevolutionContext,
   type SuccessionEnfant,
+  type SuccessionPatrimonialContext,
 } from './successionDraft';
 import {
   buildSuccessionDescendantRecipients,
   countEffectiveDescendantBranches,
 } from './successionEnfants';
+import { getUsufruitValuationFromBirthDate } from './successionUsufruit';
 
 export interface SuccessionDevolutionLine {
   heritier: string;
@@ -28,6 +30,12 @@ export interface SuccessionDevolutionAnalysis {
   reserve: SuccessionReserveInfo | null;
   lines: SuccessionDevolutionLine[];
   warnings: string[];
+}
+
+interface SuccessionDevolutionBuildOptions {
+  patrimonial?: Pick<SuccessionPatrimonialContext, 'donationEntreEpouxActive' | 'donationEntreEpouxOption'>;
+  simulatedDeceased?: 'epoux1' | 'epoux2';
+  referenceDate?: Date;
 }
 
 function asChildrenCount(input: unknown, fallback = 0): number {
@@ -54,6 +62,107 @@ function getQuotiteDisponibleRatio(nbEnfants: number): number {
   if (nbEnfants === 1) return 0.5;
   if (nbEnfants === 2) return 1 / 3;
   return 0.25;
+}
+
+function getSurvivingSpouseBirthDate(
+  civil: SuccessionCivilContext,
+  simulatedDeceased: 'epoux1' | 'epoux2',
+): string | undefined {
+  return simulatedDeceased === 'epoux1'
+    ? civil.dateNaissanceEpoux2
+    : civil.dateNaissanceEpoux1;
+}
+
+function getDonationEntreEpouxValuation(
+  civil: SuccessionCivilContext,
+  nbEnfants: number,
+  masseReference: number,
+  patrimonial: Pick<SuccessionPatrimonialContext, 'donationEntreEpouxActive' | 'donationEntreEpouxOption'> | undefined,
+  simulatedDeceased: 'epoux1' | 'epoux2',
+  referenceDate: Date,
+): {
+  conjointAmount: number;
+  descendantsAmount: number;
+  conjointRights: string;
+  descendantsRights: string;
+  warnings: string[];
+} | null {
+  if (!patrimonial?.donationEntreEpouxActive) return null;
+
+  const warnings: string[] = [];
+  const birthDate = getSurvivingSpouseBirthDate(civil, simulatedDeceased);
+  const usufruitValuation = getUsufruitValuationFromBirthDate(birthDate, masseReference, referenceDate);
+
+  if (patrimonial.donationEntreEpouxOption === 'usufruit_total') {
+    if (!usufruitValuation) {
+      warnings.push('Donation entre époux en usufruit total: date de naissance du conjoint survivant manquante, repli moteur sur 1/4 en pleine propriété.');
+      return {
+        conjointAmount: masseReference * 0.25,
+        descendantsAmount: masseReference * 0.75,
+        conjointRights: 'Totalité en usufruit (repli de calcul 1/4 PP faute de date de naissance)',
+        descendantsRights: '75% en pleine propriété (repli moteur faute de valorisation art. 669 CGI)',
+        warnings,
+      };
+    }
+
+    warnings.push(`Donation entre époux: valorisation art. 669 CGI sur la base d’un usufruitier âgé de ${usufruitValuation.age} ans.`);
+    return {
+      conjointAmount: usufruitValuation.valeurUsufruit,
+      descendantsAmount: usufruitValuation.valeurNuePropriete,
+      conjointRights: `Totalité en usufruit (${Math.round(usufruitValuation.tauxUsufruit * 100)}% art. 669 CGI)`,
+      descendantsRights: `Nue-propriété de la totalité (${Math.round(usufruitValuation.tauxNuePropriete * 100)}% art. 669 CGI)`,
+      warnings,
+    };
+  }
+
+  if (patrimonial.donationEntreEpouxOption === 'mixte') {
+    if (!usufruitValuation) {
+      warnings.push('Donation entre époux mixte: date de naissance du conjoint survivant manquante, repli moteur sur 1/4 en pleine propriété.');
+      return {
+        conjointAmount: masseReference * 0.25,
+        descendantsAmount: masseReference * 0.75,
+        conjointRights: '1/4 en pleine propriété et 3/4 en usufruit (repli de calcul 1/4 PP faute de date de naissance)',
+        descendantsRights: '75% en pleine propriété (repli moteur faute de valorisation art. 669 CGI)',
+        warnings,
+      };
+    }
+
+    const demembreBase = masseReference * 0.75;
+    const demembreValuation = getUsufruitValuationFromBirthDate(birthDate, demembreBase, referenceDate);
+    if (!demembreValuation) return null;
+    warnings.push(`Donation entre époux mixte: valorisation art. 669 CGI sur 3/4 démembrés, usufruitier âgé de ${demembreValuation.age} ans.`);
+    return {
+      conjointAmount: (masseReference * 0.25) + demembreValuation.valeurUsufruit,
+      descendantsAmount: demembreValuation.valeurNuePropriete,
+      conjointRights: `1/4 en pleine propriété + usufruit des 3/4 (${Math.round(demembreValuation.tauxUsufruit * 100)}% sur la part démembrée)`,
+      descendantsRights: `Nue-propriété des 3/4 (${Math.round(demembreValuation.tauxNuePropriete * 100)}% sur la part démembrée)`,
+      warnings,
+    };
+  }
+
+  if (patrimonial.donationEntreEpouxOption === 'pleine_propriete_quotite') {
+    const quotite = getQuotiteDisponibleRatio(nbEnfants);
+    return {
+      conjointAmount: masseReference * quotite,
+      descendantsAmount: masseReference * (1 - quotite),
+      conjointRights: 'Quotité disponible en pleine propriété',
+      descendantsRights: 'Réserve héréditaire en pleine propriété',
+      warnings,
+    };
+  }
+
+  if (patrimonial.donationEntreEpouxOption === 'pleine_propriete_totale') {
+    warnings.push('Donation entre époux en pleine propriété totale: hypothèse très protectrice, à confronter à la réserve héréditaire.');
+    return {
+      conjointAmount: masseReference,
+      descendantsAmount: 0,
+      conjointRights: 'Totalité en pleine propriété',
+      descendantsRights: 'Droits des descendants potentiellement réduits à due concurrence',
+      warnings,
+    };
+  }
+
+  return null;
 }
 
 function getDescendantsLine(
@@ -183,6 +292,7 @@ export function buildSuccessionDevolutionAnalysis(
   legsParticuliersInput = 0,
   enfantsContext: SuccessionEnfant[] = [],
   familyMembers: FamilyMember[] = [],
+  options: SuccessionDevolutionBuildOptions = {},
 ): SuccessionDevolutionAnalysis {
   const masseReference = asAmount(masseReferenceInput, 0);
   const warnings: string[] = [];
@@ -226,7 +336,27 @@ export function buildSuccessionDevolutionAnalysis(
 
   if (civil.situationMatrimoniale === 'marie') {
     if (nbEnfantsTotal > 0) {
-      if (nbEnfantsNonCommuns > 0) {
+      const donationValuation = getDonationEntreEpouxValuation(
+        civil,
+        nbEnfantsTotal,
+        masseReference,
+        options.patrimonial,
+        options.simulatedDeceased ?? 'epoux1',
+        options.referenceDate ?? new Date(),
+      );
+      if (donationValuation) {
+        lines.push({
+          heritier: 'Conjoint survivant',
+          droits: donationValuation.conjointRights,
+          montantEstime: donationValuation.conjointAmount,
+        });
+        lines.push({
+          heritier: 'Descendants',
+          droits: donationValuation.descendantsRights,
+          montantEstime: donationValuation.descendantsAmount,
+        });
+        warnings.push(...donationValuation.warnings);
+      } else if (nbEnfantsNonCommuns > 0) {
         lines.push({
           heritier: 'Conjoint survivant',
           droits: '1/4 en pleine propriété',

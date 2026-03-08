@@ -127,5 +127,32 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1', 'E2']);
     expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1']);
   });
+
+  it('valorise un usufruit total au 1er décès et ne le réinjecte pas dans l’étape 2', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({
+        dateNaissanceEpoux1: '1955-06-01',
+        dateNaissanceEpoux2: '1957-05-12',
+      } as Partial<SuccessionCivilContext>),
+      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      patrimonial: {
+        donationEntreEpouxActive: true,
+        donationEntreEpouxOption: 'usufruit_total',
+      },
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+    });
+
+    expect(analysis.step1?.partConjoint).toBe(200000);
+    expect(analysis.step1?.partEnfants).toBe(300000);
+    expect(analysis.step2?.actifTransmis).toBe(200000);
+    expect(analysis.warnings.some((warning) => warning.includes('usufruit total valorisé'))).toBe(true);
+  });
 });
 

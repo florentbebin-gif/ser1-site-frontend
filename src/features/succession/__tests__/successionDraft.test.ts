@@ -23,6 +23,8 @@ describe('successionDraft', () => {
         situationMatrimoniale: 'marie',
         regimeMatrimonial: 'communaute_legale',
         pacsConvention: 'separation',
+        dateNaissanceEpoux1: '1975-03-10',
+        dateNaissanceEpoux2: '1978-09-22',
       },
       {
         actifEpoux1: 300000,
@@ -91,6 +93,8 @@ describe('successionDraft', () => {
     expect(parsed?.form.heritiers).toHaveLength(2);
     expect(parsed?.civil.situationMatrimoniale).toBe('marie');
     expect(parsed?.civil.regimeMatrimonial).toBe('communaute_legale');
+    expect(parsed?.civil.dateNaissanceEpoux1).toBe('1975-03-10');
+    expect(parsed?.civil.dateNaissanceEpoux2).toBe('1978-09-22');
     expect(parsed?.liquidation.actifCommun).toBe(150000);
     expect(parsed?.devolution.nbEnfantsNonCommuns).toBe(1);
     expect(parsed?.devolution.testamentActif).toBe(true);
@@ -112,6 +116,27 @@ describe('successionDraft', () => {
 
   it('retourne null sur JSON invalide', () => {
     expect(parseSuccessionDraftPayload('not-json')).toBeNull();
+  });
+
+  it('parse les dates de naissance en v14 et ignore un format invalide', () => {
+    const raw = JSON.stringify({
+      version: 14,
+      form: {
+        actifNetSuccession: 100000,
+        heritiers: [{ lien: 'enfant', partSuccession: 100000 }],
+      },
+      civil: {
+        situationMatrimoniale: 'pacse',
+        regimeMatrimonial: null,
+        pacsConvention: 'indivision',
+        dateNaissanceEpoux1: '1980-02-14',
+        dateNaissanceEpoux2: '14/02/1982',
+      },
+    });
+
+    const parsed = parseSuccessionDraftPayload(raw);
+    expect(parsed?.civil.dateNaissanceEpoux1).toBe('1980-02-14');
+    expect(parsed?.civil.dateNaissanceEpoux2).toBeUndefined();
   });
 
   it('fallback sur un héritier par défaut et contexte civil par défaut', () => {

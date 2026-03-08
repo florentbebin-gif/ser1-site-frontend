@@ -66,6 +66,7 @@ import {
   buildSuccessionChainTransmissionRows,
   buildSuccessionDirectDisplayAnalysis,
 } from './successionDisplay';
+import { getUsufruitValuationFromBirthDate } from './successionUsufruit';
 import { ScSelect } from './components/ScSelect';
 import { FiliationOrgchart } from './components/FiliationOrgchart';
 import '../../components/simulator/SimulatorShell.css';
@@ -174,6 +175,23 @@ const BRANCH_OPTIONS: { value: FamilyBranch; label: string }[] = [
 ];
 
 const MEMBER_TYPE_NEEDS_BRANCH: FamilyMemberType[] = ['parent', 'frere_soeur', 'oncle_tante'];
+
+function isCoupleSituation(situation: SituationMatrimoniale): boolean {
+  return situation === 'marie' || situation === 'pacse' || situation === 'concubinage';
+}
+
+function getBirthDateLabels(situation: SituationMatrimoniale): { primary: string; secondary?: string } {
+  if (situation === 'marie') {
+    return { primary: 'Date Naiss. Ep1', secondary: 'Date Naiss. Ep2' };
+  }
+  if (situation === 'pacse') {
+    return { primary: 'Date Naiss. Part. 1', secondary: 'Date Naiss. Part. 2' };
+  }
+  if (situation === 'concubinage') {
+    return { primary: 'Date Naiss. Pers. 1', secondary: 'Date Naiss. Pers. 2' };
+  }
+  return { primary: 'Date Naiss. Défunt(e)' };
+}
 
 function createEnfantId(): string {
   return `enf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -422,6 +440,10 @@ export default function SuccessionSimulator() {
       order: chainOrder,
       dmtgSettings: fiscalSnapshot.dmtgSettings,
       attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
+      patrimonial: {
+        donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
+        donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
+      },
       enfantsContext,
       familyMembers,
     }),
@@ -433,6 +455,8 @@ export default function SuccessionSimulator() {
       chainOrder,
       fiscalSnapshot.dmtgSettings,
       patrimonialContext.attributionBiensCommunsPct,
+      patrimonialContext.donationEntreEpouxActive,
+      patrimonialContext.donationEntreEpouxOption,
       enfantsContext,
       familyMembers,
     ],
@@ -454,6 +478,13 @@ export default function SuccessionSimulator() {
       patrimonialContext.legsParticuliers,
       enfantsContext,
       familyMembers,
+      {
+        patrimonial: {
+          donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
+          donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
+        },
+        simulatedDeceased: chainOrder,
+      },
     ),
     [
       civilContext,
@@ -462,8 +493,11 @@ export default function SuccessionSimulator() {
       nbEnfantsNonCommuns,
       derivedActifNetSuccession,
       patrimonialContext.legsParticuliers,
+      patrimonialContext.donationEntreEpouxActive,
+      patrimonialContext.donationEntreEpouxOption,
       enfantsContext,
       familyMembers,
+      chainOrder,
     ],
   );
   const patrimonialAnalysis = useMemo(
@@ -493,6 +527,11 @@ export default function SuccessionSimulator() {
     : isPacsed
       ? 'Convention PACS'
       : 'Situation familiale';
+  const birthDateLabels = useMemo(
+    () => getBirthDateLabels(civilContext.situationMatrimoniale),
+    [civilContext.situationMatrimoniale],
+  );
+  const showSecondBirthDate = isCoupleSituation(civilContext.situationMatrimoniale);
   const assetOwnerOptions = useMemo((): { value: SuccessionAssetOwner; label: string }[] => {
     if (isMarried) {
       return [
@@ -665,10 +704,41 @@ export default function SuccessionSimulator() {
     if (!isMarried || nbDescendantBranches === 0) return null;
     if (patrimonialContext.donationEntreEpouxActive) {
       const opt = DONATION_ENTRE_EPOUX_OPTIONS.find((o) => o.value === patrimonialContext.donationEntreEpouxOption);
-      return `Disposition : ${opt?.label ?? patrimonialContext.donationEntreEpouxOption}`;
+      const spouseBirthDate = chainOrder === 'epoux1'
+        ? civilContext.dateNaissanceEpoux2
+        : civilContext.dateNaissanceEpoux1;
+      const valuationBase = patrimonialContext.donationEntreEpouxOption === 'mixte'
+        ? derivedActifNetSuccession * 0.75
+        : derivedActifNetSuccession;
+      const valuation = (
+        patrimonialContext.donationEntreEpouxOption === 'usufruit_total'
+        || patrimonialContext.donationEntreEpouxOption === 'mixte'
+      )
+        ? getUsufruitValuationFromBirthDate(spouseBirthDate, valuationBase)
+        : null;
+      const baseLabel = `Disposition : ${opt?.label ?? patrimonialContext.donationEntreEpouxOption}`;
+      if (valuation) {
+        return `${baseLabel} — valorisation art. 669 CGI : usufruit ${Math.round(valuation.tauxUsufruit * 100)}%, nue-propriété ${Math.round(valuation.tauxNuePropriete * 100)}% (usufruitier ${valuation.age} ans)`;
+      }
+      if (
+        patrimonialContext.donationEntreEpouxOption === 'usufruit_total'
+        || patrimonialContext.donationEntreEpouxOption === 'mixte'
+      ) {
+        return `${baseLabel} — valorisation art. 669 CGI en attente de la date de naissance du conjoint survivant`;
+      }
+      return baseLabel;
     }
     return 'Hypothèse moteur : 1/4 en pleine propriété pour le conjoint survivant';
-  }, [isMarried, nbDescendantBranches, patrimonialContext.donationEntreEpouxActive, patrimonialContext.donationEntreEpouxOption]);
+  }, [
+    isMarried,
+    nbDescendantBranches,
+    patrimonialContext.donationEntreEpouxActive,
+    patrimonialContext.donationEntreEpouxOption,
+    chainOrder,
+    civilContext.dateNaissanceEpoux1,
+    civilContext.dateNaissanceEpoux2,
+    derivedActifNetSuccession,
+  ]);
   const transmissionRows = useMemo(() => {
     if (displayUsesChainage) {
       const { order, step1, step2 } = chainageAnalysis;
@@ -797,6 +867,8 @@ export default function SuccessionSimulator() {
       pacsConvention: situationMatrimoniale === 'pacse'
         ? prev.pacsConvention
         : DEFAULT_SUCCESSION_CIVIL_CONTEXT.pacsConvention,
+      dateNaissanceEpoux1: prev.dateNaissanceEpoux1,
+      dateNaissanceEpoux2: isCoupleSituation(situationMatrimoniale) ? prev.dateNaissanceEpoux2 : undefined,
     }));
     if (situationMatrimoniale !== 'marie') {
       setPatrimonialContext((prev) => ({
@@ -1345,13 +1417,41 @@ export default function SuccessionSimulator() {
             <div className="sc-card__divider" />
             <div className="sc-context-grid">
               <div className="sc-civil-grid">
-                <div className="sc-field">
-                  <label>Situation familiale</label>
-                  <ScSelect
-                    value={civilContext.situationMatrimoniale}
-                    onChange={(value) => handleSituationChange(value as SituationMatrimoniale)}
-                    options={SITUATION_OPTIONS}
-                  />
+                <div className={`sc-civil-grid__top-row${showSecondBirthDate ? ' sc-civil-grid__top-row--triple' : ''}`}>
+                  <div className="sc-field">
+                    <label>Situation familiale</label>
+                    <ScSelect
+                      value={civilContext.situationMatrimoniale}
+                      onChange={(value) => handleSituationChange(value as SituationMatrimoniale)}
+                      options={SITUATION_OPTIONS}
+                    />
+                  </div>
+                  <div className="sc-field">
+                    <label>{birthDateLabels.primary}</label>
+                    <input
+                      type="date"
+                      className="sc-input--left"
+                      value={civilContext.dateNaissanceEpoux1 ?? ''}
+                      onChange={(e) => setCivilContext((prev) => ({
+                        ...prev,
+                        dateNaissanceEpoux1: e.target.value || undefined,
+                      }))}
+                    />
+                  </div>
+                  {showSecondBirthDate && (
+                    <div className="sc-field">
+                      <label>{birthDateLabels.secondary}</label>
+                      <input
+                        type="date"
+                        className="sc-input--left"
+                        value={civilContext.dateNaissanceEpoux2 ?? ''}
+                        onChange={(e) => setCivilContext((prev) => ({
+                          ...prev,
+                          dateNaissanceEpoux2: e.target.value || undefined,
+                        }))}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {civilContext.situationMatrimoniale === 'marie' && (
