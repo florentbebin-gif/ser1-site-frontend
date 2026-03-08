@@ -7,6 +7,7 @@
 
 import React, { useMemo } from 'react';
 import type { SuccessionCivilContext, SuccessionEnfant, FamilyMember } from '../successionDraft';
+import { getEnfantNodeLabel } from '../successionEnfants';
 
 // ─── Constantes de layout ───────────────────────────────────────────────────
 const NW = 80;             // node width
@@ -23,6 +24,7 @@ interface OrgNode {
   x: number;
   y: number;
   kind: 'epoux' | 'enfant_commun' | 'enfant_autre' | 'parent' | 'frere_soeur' | 'oncle_tante' | 'petit_enfant' | 'tierce';
+  deceased?: boolean;
 }
 
 interface OrgEdge {
@@ -182,9 +184,10 @@ function computeLayout(
       const idx = enfantsContext.findIndex((x) => x.id === e.id);
       const nodeX = groupX + i * (NW + GH);
       const node: OrgNode = {
-        id: e.id, label: `E${idx + 1}`,
+        id: e.id, label: getEnfantNodeLabel(idx, e.deceased),
         x: nodeX, y: yEnfant!,
         kind: 'enfant_commun',
+        deceased: e.deceased,
       };
       nodes.push(node);
 
@@ -220,9 +223,10 @@ function computeLayout(
       const idx = enfantsContext.findIndex((x) => x.id === e.id);
       const nodeX = startX + i * (NW + GH);
       const node: OrgNode = {
-        id: e.id, label: `E${idx + 1}`,
+        id: e.id, label: getEnfantNodeLabel(idx, e.deceased),
         x: nodeX, y: yEnfant!,
         kind: 'enfant_autre',
+        deceased: e.deceased,
       };
       nodes.push(node);
       edges.push({ x1: cx(epoux1Node!), y1: bottom(epoux1Node!), x2: cx(node), y2: top(node) });
@@ -245,9 +249,10 @@ function computeLayout(
       const idx = enfantsContext.findIndex((x) => x.id === e.id);
       const nodeX = startX + i * (NW + GH);
       const node: OrgNode = {
-        id: e.id, label: `E${idx + 1}`,
+        id: e.id, label: getEnfantNodeLabel(idx, e.deceased),
         x: nodeX, y: yEnfant!,
         kind: 'enfant_autre',
+        deceased: e.deceased,
       };
       nodes.push(node);
       edges.push({ x1: cx(epoux2Node!), y1: bottom(epoux2Node!), x2: cx(node), y2: top(node) });
@@ -350,7 +355,17 @@ function computeLayout(
 }
 
 // ─── Styles par kind ────────────────────────────────────────────────────────
-function nodeStyle(kind: OrgNode['kind']): React.SVGProps<SVGRectElement> {
+function nodeStyle(kind: OrgNode['kind'], deceased?: boolean): React.SVGProps<SVGRectElement> {
+  if (deceased) {
+    return {
+      fill: 'var(--color-c8)',
+      stroke: 'var(--color-c9)',
+      strokeWidth: 0.9,
+      strokeDasharray: '4 3',
+      strokeOpacity: 0.65,
+      rx: 8,
+    };
+  }
   if (kind === 'epoux') {
     return {
       fill: 'var(--color-c7)',
@@ -394,11 +409,15 @@ export function FiliationOrgchart({
   );
 
   const isEmpty = nodes.length === 0;
+  const hasDeceasedChild = enfantsContext.some((enfant) => enfant.deceased);
 
   return (
     <div className="premium-card sc-card sc-filiation-card">
       <header className="sc-card__header">
-        <h2 className="sc-card__title">Filiation</h2>
+        <h2 className="sc-card__title">
+          Filiation
+          {hasDeceasedChild && <span className="sc-filiation-deceased-mark"> †</span>}
+        </h2>
       </header>
       <div className="sc-card__divider" />
 
@@ -441,7 +460,7 @@ export function FiliationOrgchart({
 
             {/* Nœuds */}
             {nodes.map((node) => {
-              const style = nodeStyle(node.kind);
+              const style = nodeStyle(node.kind, node.deceased);
               return (
                 <g
                   key={node.id}
@@ -462,7 +481,7 @@ export function FiliationOrgchart({
                     textAnchor="middle"
                     fontSize={node.kind === 'epoux' ? 10 : 9}
                     fontWeight={node.kind === 'epoux' ? 600 : 400}
-                    fill={node.kind === 'epoux' ? 'var(--color-c1)' : 'var(--color-c9)'}
+                    fill={node.kind === 'epoux' ? 'var(--color-c1)' : node.deceased ? 'var(--color-c1)' : 'var(--color-c9)'}
                     style={{ userSelect: 'none' }}
                   >
                     {node.label}
