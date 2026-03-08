@@ -22,9 +22,10 @@ function getQuotiteDisponibleRatio(nbEnfants: number): number {
 }
 
 function donationEntreEpouxOptionLabel(option: SuccessionPatrimonialContext['donationEntreEpouxOption']): string {
-  if (option === 'usufruit_total') return 'usufruit total';
-  if (option === 'pleine_propriete_quotite') return 'pleine propriété (quotité disponible)';
-  return 'option mixte';
+  if (option === 'usufruit_total') return 'totalité en usufruit';
+  if (option === 'pleine_propriete_quotite') return 'quotité disponible en pleine propriété';
+  if (option === 'pleine_propriete_totale') return 'totalité en pleine propriété';
+  return 'option mixte 1/4 PP + 3/4 usufruit';
 }
 
 export function buildSuccessionPatrimonialAnalysis(
@@ -55,8 +56,17 @@ export function buildSuccessionPatrimonialAnalysis(
   if (patrimonial.donationEntreEpouxActive) {
     if (civil.situationMatrimoniale === 'marie') {
       warnings.push(`Donation entre époux active (${donationEntreEpouxOptionLabel(patrimonial.donationEntreEpouxOption)}): vérifier les options du conjoint survivant et les droits réservataires.`);
+      if (patrimonial.donationEntreEpouxOption === 'pleine_propriete_totale') {
+        warnings.push('Totalité en pleine propriété: option exceptionnelle, sous réserve de réduction et accord des descendants (art. 1094-1 C. civ.).');
+      }
     } else {
       warnings.push('Donation entre époux active incohérente hors mariage (donnée conservée à titre indicatif).');
+    }
+  }
+
+  if (patrimonial.attributionBiensCommunsPct !== 50) {
+    if (civil.situationMatrimoniale === 'marie') {
+      warnings.push(`Attribution des biens communs au survivant: ${patrimonial.attributionBiensCommunsPct} % (vs 50 % en partage usuel).`);
     }
   }
 

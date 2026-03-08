@@ -17,7 +17,6 @@ import { useFiscalContext } from '../../hooks/useFiscalContext';
 import { ExportMenu } from '../../components/ExportMenu';
 import { REGIMES_MATRIMONIAUX } from '../../engine/civil';
 import { onResetEvent, storageKeyFor } from '../../utils/reset';
-import type { LienParente } from '../../engine/succession';
 import {
   buildSuccessionDraftPayload,
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
@@ -32,6 +31,7 @@ import {
   type FamilyMemberType,
   type SuccessionEnfant,
   type SuccessionDispositionTestamentaire,
+  type SuccessionDonationEntreEpouxOption,
   type SituationMatrimoniale,
 } from './successionDraft';
 import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
@@ -50,20 +50,8 @@ import './Succession.css';
 
 const STORE_KEY = storageKeyFor('succession');
 
-const LIEN_OPTIONS: { value: LienParente; label: string }[] = [
-  { value: 'conjoint', label: 'Conjoint' },
-  { value: 'enfant', label: 'Enfant' },
-  { value: 'petit_enfant', label: 'Petit-enfant' },
-  { value: 'frere_soeur', label: 'Frère / Sœur' },
-  { value: 'neveu_niece', label: 'Neveu / Nièce' },
-  { value: 'autre', label: 'Autre' },
-];
-
 const fmt = (v: number): string =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
-
-const fmtPct = (v: number): string =>
-  new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) + ' %';
 
 const SITUATION_OPTIONS: { value: SituationMatrimoniale; label: string }[] = [
   { value: 'celibataire', label: 'Célibataire' },
@@ -91,9 +79,10 @@ const DISPOSITION_TESTAMENTAIRE_OPTIONS: { value: SuccessionDispositionTestament
 ];
 
 const DONATION_ENTRE_EPOUX_OPTIONS = [
-  { value: 'usufruit_total', label: 'Usufruit total' },
-  { value: 'pleine_propriete_quotite', label: 'Pleine propriété (quotité disponible)' },
-  { value: 'mixte', label: 'Option mixte' },
+  { value: 'usufruit_total', label: 'Totalité en usufruit' },
+  { value: 'pleine_propriete_quotite', label: 'Quotité disponible en pleine propriété' },
+  { value: 'mixte', label: 'Option mixte 1/4 PP + 3/4 usufruit' },
+  { value: 'pleine_propriete_totale', label: 'Totalité en pleine propriété' },
 ];
 
 const MEMBER_TYPE_OPTIONS: { value: FamilyMemberType; label: string }[] = [
@@ -144,15 +133,13 @@ export default function SuccessionSimulator() {
     [fiscalContext],
   );
   const {
-    form, persistedForm, result, setActifNet, addHeritier, removeHeritier,
-    updateHeritier, hydrateForm, distributeEqually, reset, hasResult,
+    persistedForm, setActifNet, hydrateForm, reset,
   } = useSuccessionCalc({ dmtgSettings: fiscalSnapshot.dmtgSettings });
 
   const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
   const { mode } = useUserMode();
   const { sessionExpired, canExport } = useContext(SessionGuardContext);
   const [exportLoading, setExportLoading] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
   const [localMode, setLocalMode] = useState<null | 'expert' | 'simplifie'>(null);
   const isExpert = (localMode ?? mode) === 'expert';
   const [hypothesesOpen, setHypothesesOpen] = useState(false);
@@ -164,6 +151,18 @@ export default function SuccessionSimulator() {
   const [enfantsContext, setEnfantsContext] = useState<SuccessionEnfant[]>(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
   const [showAddMemberPanel, setShowAddMemberPanel] = useState(false);
+  const [showDispositionsModal, setShowDispositionsModal] = useState(false);
+  const [dispositionsDraft, setDispositionsDraft] = useState({
+    attributionBiensCommunsPct: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
+    donationEntreEpouxActive: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxActive,
+    donationEntreEpouxOption: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxOption,
+    preciputMontant: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,
+    attributionIntegrale: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionIntegrale,
+    testamentActif: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentActif,
+    typeDispositionTestamentaire: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.typeDispositionTestamentaire,
+    quotePartLegsTitreUniverselPct: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.quotePartLegsTitreUniverselPct,
+    ascendantsSurvivants: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivants,
+  });
   const [addMemberForm, setAddMemberForm] = useState<{
     type: FamilyMemberType | '';
     branch: FamilyBranch | '';
@@ -229,12 +228,9 @@ export default function SuccessionSimulator() {
       civilContext,
       { ...liquidationContext, nbEnfants },
       fiscalSnapshot.dmtgSettings,
+      patrimonialContext.attributionBiensCommunsPct,
     ),
-    [civilContext, liquidationContext, nbEnfants, fiscalSnapshot.dmtgSettings],
-  );
-  const patrimonialAnalysis = useMemo(
-    () => buildSuccessionPatrimonialAnalysis(civilContext, form.actifNetSuccession, nbEnfants, patrimonialContext),
-    [civilContext, form.actifNetSuccession, nbEnfants, patrimonialContext],
+    [civilContext, liquidationContext, nbEnfants, fiscalSnapshot.dmtgSettings, patrimonialContext.attributionBiensCommunsPct],
   );
   const chainageAnalysis = useMemo(
     () => buildSuccessionChainageAnalysis({
@@ -243,6 +239,7 @@ export default function SuccessionSimulator() {
       regimeUsed: predecesAnalysis.regimeUsed,
       order: chainOrder,
       dmtgSettings: fiscalSnapshot.dmtgSettings,
+      attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
     }),
     [
       civilContext,
@@ -251,6 +248,7 @@ export default function SuccessionSimulator() {
       predecesAnalysis.regimeUsed,
       chainOrder,
       fiscalSnapshot.dmtgSettings,
+      patrimonialContext.attributionBiensCommunsPct,
     ],
   );
 
@@ -261,6 +259,7 @@ export default function SuccessionSimulator() {
       regimeUsed: predecesAnalysis.regimeUsed,
       order: chainOrder === 'epoux1' ? 'epoux2' : 'epoux1',
       dmtgSettings: fiscalSnapshot.dmtgSettings,
+      attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
     }),
     [
       civilContext,
@@ -269,8 +268,13 @@ export default function SuccessionSimulator() {
       predecesAnalysis.regimeUsed,
       chainOrder,
       fiscalSnapshot.dmtgSettings,
+      patrimonialContext.attributionBiensCommunsPct,
     ],
   );
+  const derivedActifNetSuccession = useMemo(() => {
+    if (chainageAnalysis.step1) return chainageAnalysis.step1.actifTransmis;
+    return liquidationContext.actifEpoux1;
+  }, [chainageAnalysis.step1, liquidationContext.actifEpoux1]);
   const devolutionAnalysis = useMemo(
     () => buildSuccessionDevolutionAnalysis(
       civilContext,
@@ -279,7 +283,7 @@ export default function SuccessionSimulator() {
         ...devolutionContext,
         nbEnfantsNonCommuns,
       },
-      chainageAnalysis.step1?.actifTransmis ?? 0,
+      derivedActifNetSuccession,
       patrimonialContext.legsParticuliers,
     ),
     [
@@ -287,9 +291,18 @@ export default function SuccessionSimulator() {
       nbEnfants,
       devolutionContext,
       nbEnfantsNonCommuns,
-      chainageAnalysis.step1?.actifTransmis,
+      derivedActifNetSuccession,
       patrimonialContext.legsParticuliers,
     ],
+  );
+  const patrimonialAnalysis = useMemo(
+    () => buildSuccessionPatrimonialAnalysis(
+      civilContext,
+      derivedActifNetSuccession,
+      nbEnfants,
+      patrimonialContext,
+    ),
+    [civilContext, derivedActifNetSuccession, nbEnfants, patrimonialContext],
   );
   const chainageExportPayload = useMemo(
     () => ({
@@ -324,15 +337,42 @@ export default function SuccessionSimulator() {
     ),
     [liquidationContext],
   );
-  const canExportExpert = isExpert && hasResult && Boolean(result);
-  const canExportSimplified = !isExpert && chainageAnalysis.applicable && totalActifsLiquidation > 0;
-  const canExportCurrentMode = canExport && (canExportExpert || canExportSimplified);
+  const canExportSimplified = chainageAnalysis.applicable && totalActifsLiquidation > 0;
+  const canExportCurrentMode = canExport && canExportSimplified;
   const isMarried = civilContext.situationMatrimoniale === 'marie';
+  const isPacsed = civilContext.situationMatrimoniale === 'pacse';
+  const isConcubinage = civilContext.situationMatrimoniale === 'concubinage';
   const isCommunityRegime = isMarried && (
     civilContext.regimeMatrimonial === 'communaute_legale'
     || civilContext.regimeMatrimonial === 'communaute_universelle'
     || civilContext.regimeMatrimonial === 'communaute_meubles_acquets'
   );
+  const isPacsIndivision = isPacsed && civilContext.pacsConvention === 'indivision';
+  const showSharedTransmissionPct = isCommunityRegime || isPacsIndivision;
+  const showDonationEntreEpoux = isMarried;
+  const dispositionsButtonAnchorLabel = isMarried
+    ? 'Régime matrimonial'
+    : isPacsed
+      ? 'Convention PACS'
+      : 'Situation familiale';
+  const attentions = useMemo(() => {
+    const seen = new Set<string>();
+    return [
+      ...predecesAnalysis.warnings,
+      ...chainageAnalysis.warnings,
+      ...devolutionAnalysis.warnings,
+      ...patrimonialAnalysis.warnings,
+    ].filter((warning) => {
+      if (seen.has(warning)) return false;
+      seen.add(warning);
+      return true;
+    });
+  }, [
+    predecesAnalysis.warnings,
+    chainageAnalysis.warnings,
+    devolutionAnalysis.warnings,
+    patrimonialAnalysis.warnings,
+  ]);
 
   const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
     setCivilContext((prev) => ({
@@ -365,7 +405,6 @@ export default function SuccessionSimulator() {
     setShowAddMemberPanel(false);
     setAddMemberForm({ type: '', branch: '', parentEnfantId: '' });
     setChainOrder('epoux1');
-    setShowDetails(false);
     setHypothesesOpen(false);
     try {
       sessionStorage.removeItem(STORE_KEY);
@@ -380,47 +419,6 @@ export default function SuccessionSimulator() {
         ...prev,
         [field]: Math.max(0, value || 0),
       }));
-    },
-    [],
-  );
-
-  const setDevolutionField = useCallback(
-    (
-      field:
-        | 'testamentActif'
-        | 'typeDispositionTestamentaire'
-        | 'quotePartLegsTitreUniverselPct'
-        | 'ascendantsSurvivants',
-      value: boolean | number | SuccessionDispositionTestamentaire | null,
-    ) => {
-      setDevolutionContext((prev) => {
-        if (field === 'testamentActif') {
-          const testamentActif = Boolean(value);
-          return {
-            ...prev,
-            testamentActif,
-            typeDispositionTestamentaire: testamentActif
-              ? (prev.typeDispositionTestamentaire ?? 'legs_universel')
-              : null,
-          };
-        }
-        if (field === 'typeDispositionTestamentaire') {
-          return {
-            ...prev,
-            typeDispositionTestamentaire: value as SuccessionDispositionTestamentaire | null,
-          };
-        }
-        if (field === 'quotePartLegsTitreUniverselPct') {
-          return {
-            ...prev,
-            quotePartLegsTitreUniverselPct: Math.min(100, Math.max(0, Number(value) || 0)),
-          };
-        }
-        return {
-          ...prev,
-          ascendantsSurvivants: Boolean(value),
-        };
-      });
     },
     [],
   );
@@ -474,7 +472,8 @@ export default function SuccessionSimulator() {
         | 'donationEntreEpouxActive'
         | 'donationEntreEpouxOption'
         | 'preciputMontant'
-        | 'attributionIntegrale',
+        | 'attributionIntegrale'
+        | 'attributionBiensCommunsPct',
       value: number | boolean | string,
     ) => {
       setPatrimonialContext((prev) => ({
@@ -483,11 +482,49 @@ export default function SuccessionSimulator() {
           ? Boolean(value)
           : field === 'donationEntreEpouxOption'
             ? value
-            : Math.max(0, Number(value) || 0),
+            : field === 'attributionBiensCommunsPct'
+              ? Math.min(100, Math.max(0, Number(value) || 0))
+              : Math.max(0, Number(value) || 0),
       }));
     },
     [],
   );
+
+  const openDispositionsModal = useCallback(() => {
+    setDispositionsDraft({
+      attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
+      donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
+      donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
+      preciputMontant: patrimonialContext.preciputMontant,
+      attributionIntegrale: patrimonialContext.attributionIntegrale,
+      testamentActif: devolutionContext.testamentActif,
+      typeDispositionTestamentaire: devolutionContext.typeDispositionTestamentaire,
+      quotePartLegsTitreUniverselPct: devolutionContext.quotePartLegsTitreUniverselPct,
+      ascendantsSurvivants: devolutionContext.ascendantsSurvivants,
+    });
+    setShowDispositionsModal(true);
+  }, [devolutionContext, patrimonialContext]);
+
+  const validateDispositionsModal = useCallback(() => {
+    setPatrimonialContext((prev) => ({
+      ...prev,
+      attributionBiensCommunsPct: dispositionsDraft.attributionBiensCommunsPct,
+      donationEntreEpouxActive: dispositionsDraft.donationEntreEpouxActive,
+      donationEntreEpouxOption: dispositionsDraft.donationEntreEpouxOption,
+      preciputMontant: dispositionsDraft.preciputMontant,
+      attributionIntegrale: dispositionsDraft.attributionBiensCommunsPct === 100,
+    }));
+    setDevolutionContext((prev) => ({
+      ...prev,
+      testamentActif: dispositionsDraft.testamentActif,
+      typeDispositionTestamentaire: dispositionsDraft.testamentActif
+        ? (dispositionsDraft.typeDispositionTestamentaire ?? 'legs_universel')
+        : null,
+      quotePartLegsTitreUniverselPct: dispositionsDraft.quotePartLegsTitreUniverselPct,
+      ascendantsSurvivants: dispositionsDraft.ascendantsSurvivants,
+    }));
+    setShowDispositionsModal(false);
+  }, [dispositionsDraft]);
 
   useEffect(() => {
     try {
@@ -552,29 +589,21 @@ export default function SuccessionSimulator() {
     return off || (() => {});
   }, [handleReset]);
 
+  useEffect(() => {
+    setActifNet(derivedActifNetSuccession);
+  }, [derivedActifNetSuccession, setActifNet]);
+
   const handleExportPptx = useCallback(async () => {
     if (!canExport) return;
     try {
       setExportLoading(true);
-      if (canExportExpert && result) {
+      if (canExportSimplified) {
         await exportSuccessionPptx(
           {
-            actifNetSuccession: result.result.actifNetSuccession,
-            totalDroits: result.result.totalDroits,
-            tauxMoyenGlobal: result.result.tauxMoyenGlobal,
-            heritiers: result.result.detailHeritiers,
-            predecesChronologie: chainageExportPayload,
-          },
-          pptxColors,
-          { logoUrl: cabinetLogo, logoPlacement },
-        );
-      } else if (canExportSimplified) {
-        await exportSuccessionPptx(
-          {
-            actifNetSuccession: totalActifsLiquidation,
+            actifNetSuccession: derivedActifNetSuccession,
             totalDroits: chainageAnalysis.totalDroits,
-            tauxMoyenGlobal: totalActifsLiquidation > 0
-              ? (chainageAnalysis.totalDroits / totalActifsLiquidation) * 100
+            tauxMoyenGlobal: derivedActifNetSuccession > 0
+              ? (chainageAnalysis.totalDroits / derivedActifNetSuccession) * 100
               : 0,
             heritiers: [],
             predecesChronologie: chainageExportPayload,
@@ -588,14 +617,12 @@ export default function SuccessionSimulator() {
     }
   }, [
     canExport,
-    canExportExpert,
     canExportSimplified,
-    result,
     pptxColors,
     cabinetLogo,
     logoPlacement,
     chainageExportPayload,
-    totalActifsLiquidation,
+    derivedActifNetSuccession,
     chainageAnalysis.totalDroits,
   ]);
 
@@ -603,22 +630,10 @@ export default function SuccessionSimulator() {
     if (!canExport) return;
     try {
       setExportLoading(true);
-      if (canExportExpert && result) {
+      if (canExportSimplified) {
         await exportAndDownloadSuccessionXlsx(
           {
-            actifNetSuccession: form.actifNetSuccession,
-            nbHeritiers: form.heritiers.length,
-            heritiers: form.heritiers.map((h) => ({ lien: h.lien, partSuccession: h.partSuccession })),
-          },
-          result.result,
-          pptxColors.c1,
-          undefined,
-          chainageExportPayload,
-        );
-      } else if (canExportSimplified) {
-        await exportAndDownloadSuccessionXlsx(
-          {
-            actifNetSuccession: totalActifsLiquidation,
+            actifNetSuccession: derivedActifNetSuccession,
             nbHeritiers: nbEnfants,
             heritiers: [],
           },
@@ -633,13 +648,10 @@ export default function SuccessionSimulator() {
     }
   }, [
     canExport,
-    canExportExpert,
     canExportSimplified,
-    result,
-    form,
     pptxColors,
     chainageExportPayload,
-    totalActifsLiquidation,
+    derivedActifNetSuccession,
     nbEnfants,
   ]);
 
@@ -649,9 +661,7 @@ export default function SuccessionSimulator() {
       onClick: handleExportPptx,
       disabled: !canExportCurrentMode,
       tooltip: !canExportCurrentMode
-        ? (isExpert
-          ? 'Renseignez patrimoine et héritiers pour exporter.'
-          : 'Renseignez le contexte familial et les actifs pour exporter.')
+        ? 'Renseignez le contexte familial et les actifs pour exporter la chronologie.'
         : undefined,
     },
     {
@@ -659,9 +669,7 @@ export default function SuccessionSimulator() {
       onClick: handleExportXlsx,
       disabled: !canExportCurrentMode,
       tooltip: !canExportCurrentMode
-        ? (isExpert
-          ? 'Renseignez patrimoine et héritiers pour exporter.'
-          : 'Renseignez le contexte familial et les actifs pour exporter.')
+        ? 'Renseignez le contexte familial et les actifs pour exporter la chronologie.'
         : undefined,
     },
   ];
@@ -686,7 +694,7 @@ export default function SuccessionSimulator() {
         <h1 className="premium-title">Simulateur succession</h1>
         <div className="sc-header__subtitle-row">
           <p className="premium-subtitle">
-            Estimez les droits de succession à partir de l&apos;actif net et de la répartition entre héritiers.
+            Estimez les impacts civils d&apos;une succession à partir du contexte familial, du patrimoine et des dispositions saisies.
           </p>
           <div className="sim-header__actions">
             <button
@@ -742,7 +750,6 @@ export default function SuccessionSimulator() {
                     />
                   </div>
                 )}
-
                 {civilContext.situationMatrimoniale === 'pacse' && (
                   <div className="sc-field">
                     <label>Convention PACS</label>
@@ -757,6 +764,16 @@ export default function SuccessionSimulator() {
                     />
                   </div>
                 )}
+                <button
+                  type="button"
+                  className="sc-child-add-btn"
+                  onClick={openDispositionsModal}
+                >
+                  + Dispositions
+                </button>
+                <p className="sc-hint sc-hint--compact">
+                  Testament, ascendants et clauses civiles se gèrent ici, sous {dispositionsButtonAnchorLabel.toLowerCase()}.
+                </p>
               </div>
 
               <div className="sc-children-zone">
@@ -835,18 +852,18 @@ export default function SuccessionSimulator() {
 
           <div className="premium-card sc-card">
             <header className="sc-card__header">
-              <h2 className="sc-card__title">Liquidation matrimoniale (prédécès)</h2>
+              <h2 className="sc-card__title">Actifs / Passifs</h2>
               <p className="sc-card__subtitle">
-                Estimation simplifiée de la masse transmise selon l&apos;ordre des décès.
+                Saisie agrégée des masses patrimoniales utilisées par les analyses civiles et la chronologie.
               </p>
             </header>
             <div className="sc-card__divider" />
 
-            {predecesAnalysis.applicable ? (
-              <>
-                <div className="sc-civil-grid">
+            <div className="sc-civil-grid">
+              {(isMarried || isPacsed) && (
+                <>
                   <div className="sc-field">
-                    <label>Actif propre époux 1 (€)</label>
+                    <label>{isPacsed ? 'Actif net partenaire 1 (€)' : 'Actif net époux 1 (€)'}</label>
                     <input
                       type="number"
                       min={0}
@@ -856,7 +873,7 @@ export default function SuccessionSimulator() {
                     />
                   </div>
                   <div className="sc-field">
-                    <label>Actif propre époux 2 (€)</label>
+                    <label>{isPacsed ? 'Actif net partenaire 2 (€)' : 'Actif net époux 2 (€)'}</label>
                     <input
                       type="number"
                       min={0}
@@ -866,7 +883,7 @@ export default function SuccessionSimulator() {
                     />
                   </div>
                   <div className="sc-field">
-                    <label>{civilContext.situationMatrimoniale === 'pacse' ? 'Actif indivis (€)' : 'Actif commun (€)'}</label>
+                    <label>{isPacsed ? 'Actif indivis (€)' : 'Actif commun (€)'}</label>
                     <input
                       type="number"
                       min={0}
@@ -875,24 +892,58 @@ export default function SuccessionSimulator() {
                       placeholder="Montant"
                     />
                   </div>
+                </>
+              )}
+              {isConcubinage && (
+                <>
+                  <div className="sc-field">
+                    <label>Patrimoine du/de la défunt(e) (€)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={liquidationContext.actifEpoux1 || ''}
+                      onChange={(e) => setLiquidationField('actifEpoux1', Number(e.target.value) || 0)}
+                      placeholder="Montant"
+                    />
+                  </div>
+                  <div className="sc-field">
+                    <label>Patrimoine du concubin / de la concubine (€)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={liquidationContext.actifEpoux2 || ''}
+                      onChange={(e) => setLiquidationField('actifEpoux2', Number(e.target.value) || 0)}
+                      placeholder="Montant"
+                    />
+                  </div>
+                </>
+              )}
+              {!isMarried && !isPacsed && !isConcubinage && (
+                <div className="sc-field">
+                  <label>Patrimoine net du/de la défunt(e) (€)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={liquidationContext.actifEpoux1 || ''}
+                    onChange={(e) => setLiquidationField('actifEpoux1', Number(e.target.value) || 0)}
+                    placeholder="Montant"
+                  />
                 </div>
-                <p className="sc-hint">Enfants pris en compte automatiquement: {nbEnfants}</p>
+              )}
+            </div>
+            <p className="sc-hint">Enfants pris en compte automatiquement: {nbEnfants}</p>
 
-                {predecesAnalysis.regimeLabel && (
-                  <p className="sc-hint">
-                    Régime appliqué pour le calcul: {predecesAnalysis.regimeLabel}.
-                  </p>
-                )}
-
-                <p className="sc-hint sc-hint--compact">
-                  Les droits des 2 étapes sont affichés dans la carte de chronologie à droite.
-                </p>
-              </>
-            ) : (
+            {predecesAnalysis.regimeLabel && (
               <p className="sc-hint">
-                Ce module s&apos;active pour les situations marié(e) ou pacsé(e).
+                Régime appliqué pour le calcul: {predecesAnalysis.regimeLabel}.
               </p>
             )}
+
+            <p className="sc-hint sc-hint--compact">
+              {chainageAnalysis.applicable
+                ? 'Les 2 étapes sont affichées dans la carte de chronologie à droite.'
+                : 'La chronologie à 2 décès ne s&apos;applique pas à cette situation ; la masse civile reste analysée à droite.'}
+            </p>
 
             {predecesAnalysis.warnings.length > 0 && (
               <ul className="sc-warning-list">
@@ -903,125 +954,11 @@ export default function SuccessionSimulator() {
             )}
           </div>
 
-          {isExpert && (
           <div className="premium-card sc-card">
             <header className="sc-card__header">
-              <h2 className="sc-card__title">Dévolution légale simplifiée</h2>
+              <h2 className="sc-card__title">Donations</h2>
               <p className="sc-card__subtitle">
-                Qualification civile avec estimation des masses transmises à partir de la chronologie.
-              </p>
-            </header>
-            <div className="sc-card__divider" />
-
-            <div className="sc-civil-grid">
-              <div className="sc-field">
-                <label>Testament actif</label>
-                <ScSelect
-                  value={devolutionContext.testamentActif ? 'oui' : 'non'}
-                  onChange={(value) => setDevolutionField('testamentActif', value === 'oui')}
-                  options={OUI_NON_OPTIONS}
-                />
-              </div>
-              {devolutionContext.testamentActif && (
-                <div className="sc-field">
-                  <label>Type de disposition testamentaire</label>
-                  <ScSelect
-                    value={devolutionContext.typeDispositionTestamentaire ?? 'legs_universel'}
-                    onChange={(value) => setDevolutionField(
-                      'typeDispositionTestamentaire',
-                      value as SuccessionDispositionTestamentaire,
-                    )}
-                    options={DISPOSITION_TESTAMENTAIRE_OPTIONS}
-                  />
-                </div>
-              )}
-              {devolutionContext.testamentActif
-                && devolutionContext.typeDispositionTestamentaire === 'legs_titre_universel' && (
-                <div className="sc-field">
-                  <label>Quote-part du legs à titre universel (%)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={devolutionContext.quotePartLegsTitreUniverselPct}
-                    onChange={(e) => setDevolutionField(
-                      'quotePartLegsTitreUniverselPct',
-                      Number(e.target.value) || 0,
-                    )}
-                    placeholder="Ex : 50"
-                  />
-                </div>
-              )}
-              {nbEnfants === 0 && (
-                <div className="sc-field">
-                  <label>Ascendants survivants</label>
-                  {familyMembers.some((m) => m.type === 'parent') ? (
-                    <span className="sc-auto-derived">
-                      Oui — déduit des membres ajoutés
-                    </span>
-                  ) : (
-                    <ScSelect
-                      value={devolutionContext.ascendantsSurvivants ? 'oui' : 'non'}
-                      onChange={(value) => setDevolutionField('ascendantsSurvivants', value === 'oui')}
-                      options={OUI_NON_OPTIONS}
-                    />
-                  )}
-                </div>
-              )}
-            </div>
-            <div className="sc-summary-row sc-summary-row--reserve">
-              <span>Masse de calcul estimée (1er décès)</span>
-              <strong>{fmt(devolutionAnalysis.masseReference)}</strong>
-            </div>
-            <div className="sc-summary-row sc-summary-row--reserve">
-              <span>Enfants non communs (auto)</span>
-              <strong>{nbEnfantsNonCommuns}</strong>
-            </div>
-
-            {devolutionAnalysis.reserve ? (
-              <div className="sc-summary-row sc-summary-row--reserve">
-                <span>Réserve héréditaire / Quotité disponible</span>
-                <strong>{devolutionAnalysis.reserve.reserve} / {devolutionAnalysis.reserve.quotiteDisponible}</strong>
-              </div>
-            ) : (
-              <p className="sc-hint">Aucune réserve descendante calculable sans enfant déclaré.</p>
-            )}
-
-            <table className="premium-table sc-predeces-table">
-              <thead>
-                <tr>
-                  <th>Bénéficiaire</th>
-                  <th>Droits civils théoriques</th>
-                  <th className="align-right">Montant estimé</th>
-                </tr>
-              </thead>
-              <tbody>
-                {devolutionAnalysis.lines.map((line, idx) => (
-                  <tr key={`${line.heritier}-${idx}`}>
-                    <td>{line.heritier}</td>
-                    <td>{line.droits}</td>
-                    <td className="align-right">{line.montantEstime === null ? 'N/A' : fmt(line.montantEstime)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {devolutionAnalysis.warnings.length > 0 && (
-              <ul className="sc-warning-list">
-                {devolutionAnalysis.warnings.map((warning, idx) => (
-                  <li key={`${warning}-${idx}`}>{warning}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-          )}
-
-          {isExpert && (
-          <div className="premium-card sc-card">
-            <header className="sc-card__header">
-              <h2 className="sc-card__title">Libéralités & avantages matrimoniaux</h2>
-              <p className="sc-card__subtitle">
-                Renseignez les montants et clauses pour qualifier les impacts civils et fiscaux.
+                Montants agrégés utilisés pour la lecture civile des libéralités.
               </p>
             </header>
             <div className="sc-card__divider" />
@@ -1057,186 +994,11 @@ export default function SuccessionSimulator() {
                   placeholder="Montant"
                 />
               </div>
-              {isMarried && (
-                <div className="sc-field">
-                  <label>Donation entre époux active</label>
-                  <ScSelect
-                    value={patrimonialContext.donationEntreEpouxActive ? 'oui' : 'non'}
-                    onChange={(value) => setPatrimonialField('donationEntreEpouxActive', value === 'oui')}
-                    options={OUI_NON_OPTIONS}
-                  />
-                </div>
-              )}
-              {isMarried && patrimonialContext.donationEntreEpouxActive && (
-                <div className="sc-field">
-                  <label>Option donation entre époux</label>
-                  <ScSelect
-                    value={patrimonialContext.donationEntreEpouxOption}
-                    onChange={(value) => setPatrimonialField('donationEntreEpouxOption', value)}
-                    options={DONATION_ENTRE_EPOUX_OPTIONS}
-                  />
-                </div>
-              )}
-              {isCommunityRegime && (
-                <div className="sc-field">
-                  <label>Clause de préciput (€)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={patrimonialContext.preciputMontant || ''}
-                    onChange={(e) => setPatrimonialField('preciputMontant', Number(e.target.value) || 0)}
-                    placeholder="Montant"
-                  />
-                </div>
-              )}
-              {isCommunityRegime && (
-                <div className="sc-field">
-                  <label>Attribution intégrale</label>
-                  <ScSelect
-                    value={patrimonialContext.attributionIntegrale ? 'oui' : 'non'}
-                    onChange={(value) => setPatrimonialField('attributionIntegrale', value === 'oui')}
-                    options={OUI_NON_OPTIONS}
-                  />
-                </div>
-              )}
             </div>
-            {!isMarried && (
-              <p className="sc-hint">
-                Les avantages matrimoniaux (donation entre époux, préciput, attribution intégrale)
-                s&apos;appliquent uniquement aux couples mariés.
-              </p>
-            )}
-            {isMarried && !isCommunityRegime && (
-              <p className="sc-hint">
-                Préciput et attribution intégrale non affichés: ces clauses relèvent des régimes communautaires.
-              </p>
-            )}
-
-            <div className="sc-summary-row sc-summary-row--reserve">
-              <span>Masse de calcul estimée (avant rapport)</span>
-              <strong>{fmt(patrimonialAnalysis.masseCivileReference)}</strong>
-            </div>
-            <div className="sc-summary-row sc-summary-row--reserve">
-              <span>Quotité disponible estimée</span>
-              <strong>{fmt(patrimonialAnalysis.quotiteDisponibleMontant)}</strong>
-            </div>
-            <div className="sc-summary-row sc-summary-row--reserve">
-              <span>Libéralités à contrôler</span>
-              <strong>{fmt(patrimonialAnalysis.liberalitesImputeesMontant)}</strong>
-            </div>
-            {patrimonialAnalysis.depassementQuotiteMontant > 0 && (
-              <div className="sc-summary-row sc-summary-row--reserve">
-                <span>Dépassement estimé de quotité</span>
-                <strong>{fmt(patrimonialAnalysis.depassementQuotiteMontant)}</strong>
-              </div>
-            )}
-
-            {patrimonialAnalysis.warnings.length > 0 && (
-              <ul className="sc-warning-list">
-                {patrimonialAnalysis.warnings.map((warning, idx) => (
-                  <li key={`${warning}-${idx}`}>{warning}</li>
-                ))}
-              </ul>
-            )}
+            <p className="sc-hint sc-hint--compact">
+              Dispositions civiles et testamentaires : voir le bouton + Dispositions dans Contexte familial.
+            </p>
           </div>
-          )}
-
-          {isExpert && (
-          <div className="premium-card sc-card sc-card--guide">
-            <header className="sc-card__header">
-              <h2 className="sc-card__title">Patrimoine transmis</h2>
-              <p className="sc-card__subtitle">Actif net successoral pris en compte pour le calcul.</p>
-            </header>
-            <div className="sc-card__divider" />
-            <div className="sc-field">
-              <label htmlFor="actif-net">Actif net successoral (€)</label>
-              <input
-                id="actif-net"
-                type="number"
-                min={0}
-                value={form.actifNetSuccession || ''}
-                onChange={(e) => setActifNet(Number(e.target.value) || 0)}
-                placeholder="Ex : 500 000"
-              />
-            </div>
-          </div>
-          )}
-
-          {isExpert && (
-          <div className="premium-card sc-card">
-            <header className="sc-card__header">
-              <h2 className="sc-card__title">Héritiers</h2>
-              <p className="sc-card__subtitle">Renseignez le lien de parenté et la part transmise.</p>
-            </header>
-            <div className="sc-card__divider" />
-
-            <div className="sc-heirs-list">
-              {form.heritiers.map((h) => (
-                <div key={h.id} className="sc-heir-row">
-                  <div className="sc-field">
-                    <label>Lien de parenté</label>
-                    <ScSelect
-                      value={h.lien}
-                      onChange={(value) => updateHeritier(h.id, 'lien', value as LienParente)}
-                      options={LIEN_OPTIONS}
-                    />
-                  </div>
-                  <div className="sc-field">
-                    <label>Part succession (€)</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={h.partSuccession || ''}
-                      onChange={(e) => updateHeritier(h.id, 'partSuccession', Number(e.target.value) || 0)}
-                      placeholder="Montant"
-                    />
-                  </div>
-                  {form.heritiers.length > 1 && (
-                    <button
-                      type="button"
-                      className="sc-remove-btn"
-                      onClick={() => removeHeritier(h.id)}
-                      title="Supprimer cet héritier"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div className="sc-inline-actions">
-              <button
-                type="button"
-                className="premium-btn sc-btn sc-btn--secondary"
-                onClick={() => addHeritier('enfant')}
-              >
-                + Ajouter un héritier
-              </button>
-              <button
-                type="button"
-                className="premium-btn sc-btn sc-btn--secondary"
-                onClick={distributeEqually}
-                disabled={form.heritiers.length === 0 || form.actifNetSuccession <= 0}
-              >
-                Répartir également
-              </button>
-            </div>
-          </div>
-          )}
-
-          {isExpert && (
-          <div className="sc-primary-actions">
-            <p className="sc-hint sc-hint--compact">Calcul des droits en direct selon la saisie.</p>
-            <button
-              type="button"
-              className="premium-btn sc-btn sc-btn--secondary"
-              onClick={handleReset}
-            >
-              Réinitialiser
-            </button>
-          </div>
-          )}
         </div>
 
         <div className="sc-right">
@@ -1313,118 +1075,95 @@ export default function SuccessionSimulator() {
             )}
           </div>
 
-          <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
-            <h2 className="sc-summary-title">{isExpert ? 'Synthèse fiscale' : 'Points d’attention'}</h2>
-            <div className="sc-card__divider sc-card__divider--tight" />
-            {isExpert && hasResult && result ? (
-              <div className="sc-kpis">
-                <div className="sc-kpi">
-                  <div className="sc-kpi__label">Actif net successoral (direct)</div>
-                  <div className="sc-kpi__value">{fmt(result.result.actifNetSuccession)}</div>
-                </div>
-                <div className="sc-kpi">
-                  <div className="sc-kpi__label">Droits totaux DMTG (direct)</div>
-                  <div className="sc-kpi__value">{fmt(result.result.totalDroits)}</div>
-                </div>
-                <div className="sc-kpi">
-                  <div className="sc-kpi__label">Taux moyen global</div>
-                  <div className="sc-kpi__value">{fmtPct(result.result.tauxMoyenGlobal)}</div>
-                </div>
-                <button
-                  type="button"
-                  className="sc-summary-link"
-                  onClick={() => setShowDetails(true)}
-                >
-                  Voir le détail du calcul
-                </button>
+          {isExpert && (
+            <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
+              <h2 className="sc-summary-title">Analyse civile</h2>
+              <div className="sc-card__divider sc-card__divider--tight" />
+              <div className="sc-summary-row">
+                <span>Masse de calcul estimée</span>
+                <strong>{fmt(devolutionAnalysis.masseReference)}</strong>
               </div>
-            ) : isExpert ? (
-              <div className="sc-summary-placeholder">
-                <div className="sc-summary-row">
-                  <span>Actif saisi</span>
-                  <strong>{fmt(form.actifNetSuccession)}</strong>
-                </div>
-                <div className="sc-summary-row">
-                  <span>Nombre d&apos;héritiers</span>
-                  <strong>{form.heritiers.length}</strong>
-                </div>
+              <div className="sc-summary-row">
+                <span>Enfants non communs</span>
+                <strong>{nbEnfantsNonCommuns}</strong>
               </div>
-            ) : (
-              <div className="sc-summary-placeholder">
-                <p className="sc-summary-note">
-                  Résultat indicatif: simulation simplifiée des 2 décès, hors liquidation notariale fine.
+              <div className="sc-summary-row">
+                <span>Masse civile avant rapport</span>
+                <strong>{fmt(patrimonialAnalysis.masseCivileReference)}</strong>
+              </div>
+              <div className="sc-summary-row">
+                <span>Quotité disponible estimée</span>
+                <strong>{fmt(patrimonialAnalysis.quotiteDisponibleMontant)}</strong>
+              </div>
+              <div className="sc-summary-row">
+                <span>Libéralités à contrôler</span>
+                <strong>{fmt(patrimonialAnalysis.liberalitesImputeesMontant)}</strong>
+              </div>
+              {patrimonialAnalysis.depassementQuotiteMontant > 0 && (
+                <div className="sc-summary-row sc-summary-row--reserve">
+                  <span>Dépassement estimé de quotité</span>
+                  <strong>{fmt(patrimonialAnalysis.depassementQuotiteMontant)}</strong>
+                </div>
+              )}
+              {devolutionAnalysis.reserve ? (
+                <div className="sc-summary-row sc-summary-row--reserve">
+                  <span>Réserve / quotité disponible</span>
+                  <strong>{devolutionAnalysis.reserve.reserve} / {devolutionAnalysis.reserve.quotiteDisponible}</strong>
+                </div>
+              ) : (
+                <p className="sc-summary-note sc-summary-note--muted">
+                  Aucune réserve descendante calculable sans enfant déclaré.
                 </p>
-                {chainageAnalysis.warnings.length > 0 ? (
-                  <ul className="sc-warning-list sc-warning-list--compact">
-                    {chainageAnalysis.warnings.map((warning, idx) => (
-                      <li key={`${warning}-${idx}`}>{warning}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="sc-summary-note sc-summary-note--muted">
-                    Aucun avertissement bloquant sur la chronologie saisie.
-                  </p>
-                )}
+              )}
+
+              <table className="premium-table sc-predeces-table">
+                <thead>
+                  <tr>
+                    <th>Bénéficiaire</th>
+                    <th>Droits civils théoriques</th>
+                    <th className="align-right">Montant estimé</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {devolutionAnalysis.lines.map((line, idx) => (
+                    <tr key={`${line.heritier}-${idx}`}>
+                      <td>{line.heritier}</td>
+                      <td>{line.droits}</td>
+                      <td className="align-right">{line.montantEstime === null ? 'N/A' : fmt(line.montantEstime)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
+            <h2 className="sc-summary-title">Points d’attention</h2>
+            <div className="sc-card__divider sc-card__divider--tight" />
+            <div className="sc-summary-placeholder">
+              <div className="sc-summary-row">
+                <span>Actif successoral estimé</span>
+                <strong>{fmt(derivedActifNetSuccession)}</strong>
               </div>
-            )}
+              <div className="sc-summary-row">
+                <span>Enfants pris en compte</span>
+                <strong>{nbEnfants}</strong>
+              </div>
+              {attentions.length > 0 ? (
+                <ul className="sc-warning-list sc-warning-list--compact">
+                  {attentions.map((warning, idx) => (
+                    <li key={`${warning}-${idx}`}>{warning}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="sc-summary-note sc-summary-note--muted">
+                  Aucun avertissement bloquant sur la situation saisie.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>
-
-      {isExpert && hasResult && result && (
-        <div
-          className="premium-card sc-detail-card"
-          data-testid="succession-detail-accordion"
-          id="succession-detail-accordion"
-        >
-          <div className="sc-detail-header">
-            <h3 className="sc-detail-title">Détail du calcul</h3>
-            <button
-              type="button"
-              className="sc-detail-toggle"
-              aria-expanded={showDetails}
-              onClick={() => setShowDetails((v) => !v)}
-            >
-              {showDetails ? 'Masquer' : 'Afficher'}
-              <svg
-                width="12" height="12" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                className={`sc-chevron${showDetails ? ' is-open' : ''}`}
-                aria-hidden="true"
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-          </div>
-
-          {showDetails && (
-            <table className="premium-table sc-detail-table">
-              <thead>
-                <tr>
-                  <th>Héritier</th>
-                  <th className="align-right">Part brute</th>
-                  <th className="align-right">Abattement</th>
-                  <th className="align-right">Base imposable</th>
-                  <th className="align-right">Droits</th>
-                  <th className="align-right">Taux moyen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.result.detailHeritiers.map((h, i) => (
-                  <tr key={i}>
-                    <td>{LIEN_OPTIONS.find((o) => o.value === h.lien)?.label ?? h.lien}</td>
-                    <td className="align-right">{fmt(h.partBrute)}</td>
-                    <td className="align-right">{fmt(h.abattement)}</td>
-                    <td className="align-right">{fmt(h.baseImposable)}</td>
-                    <td className="align-right value-cell">{fmt(h.droits)}</td>
-                    <td className="align-right">{fmtPct(h.tauxMoyen)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
 
       <div className="sc-hypotheses">
         <button
@@ -1453,7 +1192,7 @@ export default function SuccessionSimulator() {
               AV décès 990 I {fmt(fiscalSnapshot.avDeces.primesApres1998.allowancePerBeneficiary)} / bénéficiaire,
               AV décès après {fiscalSnapshot.avDeces.agePivotPrimes} ans {fmt(fiscalSnapshot.avDeces.apres70ans.globalAllowance)} (global).
             </li>
-            <li>Le calcul repose sur les parts de succession saisies pour chaque héritier.</li>
+            <li>La lecture civile repose sur le contexte familial, les masses patrimoniales saisies et les dispositions déclarées.</li>
             <li>La chronologie 2 décès repose sur un chaînage simplifié avec warnings sur les cas non couverts.</li>
             <li>La dévolution légale est présentée en lecture civile simplifiée, sans gestion exhaustive des ordres successoraux.</li>
             <li>Les libéralités et avantages matrimoniaux sont qualifiés de façon indicative, sans recalcul automatique des droits dans ce module.</li>
@@ -1462,6 +1201,177 @@ export default function SuccessionSimulator() {
           </ul>
         )}
       </div>
+
+      {showDispositionsModal && (
+        <div
+          className="sc-member-modal-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowDispositionsModal(false); }}
+        >
+          <div className="sc-member-modal">
+            <div className="sc-member-modal__header">
+              <h3 className="sc-member-modal__title">Dispositions particulières</h3>
+              <button
+                type="button"
+                className="sc-member-modal__close"
+                onClick={() => setShowDispositionsModal(false)}
+                aria-label="Fermer"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="sc-member-modal__body">
+              {showSharedTransmissionPct && (
+                <div className="sc-field">
+                  <label>{isPacsIndivision ? 'Part indivise transmise au survivant (%)' : 'Attribution des biens communs au survivant (%)'}</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={dispositionsDraft.attributionBiensCommunsPct}
+                    onChange={(e) => setDispositionsDraft((prev) => ({
+                      ...prev,
+                      attributionBiensCommunsPct: Math.min(100, Math.max(0, Number(e.target.value) || 0)),
+                    }))}
+                  />
+                  <p className="sc-hint sc-hint--compact">
+                    50 = partage usuel ; 100 = attribution intégrale économique.
+                  </p>
+                </div>
+              )}
+
+              {showDonationEntreEpoux && (
+                <div className="sc-field">
+                  <label>Donation entre époux</label>
+                  <ScSelect
+                    value={dispositionsDraft.donationEntreEpouxActive ? 'oui' : 'non'}
+                    onChange={(value) => setDispositionsDraft((prev) => ({
+                      ...prev,
+                      donationEntreEpouxActive: value === 'oui',
+                    }))}
+                    options={OUI_NON_OPTIONS}
+                  />
+                </div>
+              )}
+
+              {showDonationEntreEpoux && dispositionsDraft.donationEntreEpouxActive && (
+                <div className="sc-field">
+                  <label>Type de donation entre époux</label>
+                  <ScSelect
+                    value={dispositionsDraft.donationEntreEpouxOption}
+                    onChange={(value) => setDispositionsDraft((prev) => ({
+                      ...prev,
+                      donationEntreEpouxOption: value as SuccessionDonationEntreEpouxOption,
+                    }))}
+                    options={DONATION_ENTRE_EPOUX_OPTIONS}
+                  />
+                  <p className="sc-hint sc-hint--compact">
+                    Le choix du type de donation entre époux se fait au moment du décès.
+                  </p>
+                </div>
+              )}
+
+              {isCommunityRegime && (
+                <div className="sc-field">
+                  <label>Clause de préciput (€)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={dispositionsDraft.preciputMontant || ''}
+                    onChange={(e) => setDispositionsDraft((prev) => ({
+                      ...prev,
+                      preciputMontant: Math.max(0, Number(e.target.value) || 0),
+                    }))}
+                    placeholder="Montant"
+                  />
+                </div>
+              )}
+
+              <div className="sc-field">
+                <label>Testament actif</label>
+                <ScSelect
+                  value={dispositionsDraft.testamentActif ? 'oui' : 'non'}
+                  onChange={(value) => setDispositionsDraft((prev) => ({
+                    ...prev,
+                    testamentActif: value === 'oui',
+                    typeDispositionTestamentaire: value === 'oui'
+                      ? (prev.typeDispositionTestamentaire ?? 'legs_universel')
+                      : null,
+                  }))}
+                  options={OUI_NON_OPTIONS}
+                />
+              </div>
+
+              {dispositionsDraft.testamentActif && (
+                <div className="sc-field">
+                  <label>Type de disposition testamentaire</label>
+                  <ScSelect
+                    value={dispositionsDraft.typeDispositionTestamentaire ?? 'legs_universel'}
+                    onChange={(value) => setDispositionsDraft((prev) => ({
+                      ...prev,
+                      typeDispositionTestamentaire: value as SuccessionDispositionTestamentaire,
+                    }))}
+                    options={DISPOSITION_TESTAMENTAIRE_OPTIONS}
+                  />
+                </div>
+              )}
+
+              {dispositionsDraft.testamentActif
+                && dispositionsDraft.typeDispositionTestamentaire === 'legs_titre_universel' && (
+                <div className="sc-field">
+                  <label>Quote-part du legs à titre universel (%)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={dispositionsDraft.quotePartLegsTitreUniverselPct}
+                    onChange={(e) => setDispositionsDraft((prev) => ({
+                      ...prev,
+                      quotePartLegsTitreUniverselPct: Math.min(100, Math.max(0, Number(e.target.value) || 0)),
+                    }))}
+                    placeholder="Ex : 50"
+                  />
+                </div>
+              )}
+
+              {nbEnfants === 0 && (
+                <div className="sc-field">
+                  <label>Ascendants survivants</label>
+                  {familyMembers.some((m) => m.type === 'parent') ? (
+                    <span className="sc-auto-derived">
+                      Oui — déduit des membres ajoutés
+                    </span>
+                  ) : (
+                    <ScSelect
+                      value={dispositionsDraft.ascendantsSurvivants ? 'oui' : 'non'}
+                      onChange={(value) => setDispositionsDraft((prev) => ({
+                        ...prev,
+                        ascendantsSurvivants: value === 'oui',
+                      }))}
+                      options={OUI_NON_OPTIONS}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="sc-member-modal__footer">
+              <button
+                type="button"
+                className="sc-member-modal__btn sc-member-modal__btn--secondary"
+                onClick={() => setShowDispositionsModal(false)}
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                className="sc-member-modal__btn sc-member-modal__btn--primary"
+                onClick={validateDispositionsModal}
+              >
+                Valider
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showAddMemberPanel && (
         <div

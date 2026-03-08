@@ -109,6 +109,7 @@ export function buildSuccessionPredecesAnalysis(
   civil: SuccessionCivilContext,
   liquidationInput: Partial<SuccessionLiquidationContext> | undefined,
   dmtgSettings: DmtgSettings,
+  attributionBiensCommunsPct = 50,
 ): SuccessionPredecesAnalysis {
   const liquidation = normalizeLiquidationContext(liquidationInput);
   const mapping = mapCivilToPredecesRegime(civil);
@@ -124,10 +125,17 @@ export function buildSuccessionPredecesAnalysis(
     };
   }
 
+  // Ajustement de l'actifCommun pour refléter l'attribution %
+  // L'engine hardcode un 50/50, on pré-ajuste pour obtenir le bon résultat économique
+  const pct = Math.min(100, Math.max(0, attributionBiensCommunsPct));
+  const adjustedActifCommun = mapping.regimeUsed === 'communaute_legale'
+    ? liquidation.actifCommun * 2 * (100 - pct) / 100
+    : liquidation.actifCommun;
+
   const calc = calculatePredecesSenarios({
     actifMr: liquidation.actifEpoux1,
     actifMme: liquidation.actifEpoux2,
-    actifCommun: liquidation.actifCommun,
+    actifCommun: adjustedActifCommun,
     nbEnfants: liquidation.nbEnfants,
     regime: mapping.regimeUsed,
     dmtgSettings,
@@ -135,6 +143,12 @@ export function buildSuccessionPredecesAnalysis(
 
   const warnings = [
     ...mapping.warnings,
+    ...(pct !== 50 && mapping.regimeUsed === 'communaute_legale'
+      ? [`Attribution des biens communs au survivant: ${pct} % (ajustement appliqué au calcul).`]
+      : []),
+    ...(pct !== 50 && mapping.regimeUsed !== 'communaute_legale'
+      ? [`Attribution des biens communs au survivant: ${pct} % (non appliqué pour ce régime).`]
+      : []),
     ...(liquidation.nbEnfants === 0 ? ['Aucun enfant déclaré: droits de succession des descendants non simulés.'] : []),
     ...calc.warnings.map((w) => w.message),
   ];

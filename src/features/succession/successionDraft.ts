@@ -18,7 +18,8 @@ export type SuccessionDispositionTestamentaire =
 export type SuccessionDonationEntreEpouxOption =
   | 'usufruit_total'
   | 'pleine_propriete_quotite'
-  | 'mixte';
+  | 'mixte'
+  | 'pleine_propriete_totale';
 
 export interface SuccessionCivilContext {
   situationMatrimoniale: SituationMatrimoniale;
@@ -49,6 +50,7 @@ export interface SuccessionPatrimonialContext {
   donationEntreEpouxOption: SuccessionDonationEntreEpouxOption;
   preciputMontant: number;
   attributionIntegrale: boolean;
+  attributionBiensCommunsPct: number;
 }
 
 export type SuccessionEnfantRattachement = 'commun' | 'epoux1' | 'epoux2';
@@ -59,8 +61,8 @@ export interface SuccessionEnfant {
   rattachement: SuccessionEnfantRattachement;
 }
 
-interface SuccessionDraftPayloadV7 {
-  version: 7;
+interface SuccessionDraftPayloadV8 {
+  version: 8;
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
   liquidation: SuccessionLiquidationContext;
@@ -99,6 +101,7 @@ export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContex
   donationEntreEpouxOption: 'usufruit_total',
   preciputMontant: 0,
   attributionIntegrale: false,
+  attributionBiensCommunsPct: 50,
 };
 
 export const DEFAULT_SUCCESSION_ENFANTS_CONTEXT: SuccessionEnfant[] = [];
@@ -156,7 +159,8 @@ function isDispositionTestamentaire(v: unknown): v is SuccessionDispositionTesta
 function isDonationEntreEpouxOption(v: unknown): v is SuccessionDonationEntreEpouxOption {
   return v === 'usufruit_total'
     || v === 'pleine_propriete_quotite'
-    || v === 'mixte';
+    || v === 'mixte'
+    || v === 'pleine_propriete_totale';
 }
 
 function isRegimeMatrimonial(v: unknown): v is RegimeMatrimonial {
@@ -192,9 +196,9 @@ export function buildSuccessionDraftPayload(
   patrimonial: SuccessionPatrimonialContext,
   enfants: SuccessionEnfant[],
   familyMembers: FamilyMember[],
-): SuccessionDraftPayloadV7 {
+): SuccessionDraftPayloadV8 {
   return {
-    version: 7,
+    version: 8,
     form,
     civil,
     liquidation,
@@ -277,7 +281,8 @@ export function parseSuccessionDraftPayload(raw: string): {
         && parsed.version !== 4
         && parsed.version !== 5
         && parsed.version !== 6
-        && parsed.version !== 7)
+        && parsed.version !== 7
+        && parsed.version !== 8)
     ) return null;
     const payload = parsed as Record<string, unknown>;
 
@@ -319,7 +324,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       nbEnfants: asChildrenCount(liquidationRaw.nbEnfants, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.nbEnfants),
     };
 
-    const devolutionRaw = (payload.version === 3 || payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7) && isObject(payload.devolution)
+    const devolutionRaw = (payload.version === 3 || payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8) && isObject(payload.devolution)
       ? payload.devolution
       : {};
     const testamentActif = asBoolean(
@@ -346,7 +351,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       ),
     };
 
-    const patrimonialRaw = (payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7) && isObject(payload.patrimonial)
+    const patrimonialRaw = (payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8) && isObject(payload.patrimonial)
       ? payload.patrimonial
       : {};
     const patrimonial: SuccessionPatrimonialContext = {
@@ -377,9 +382,14 @@ export function parseSuccessionDraftPayload(raw: string): {
         patrimonialRaw.attributionIntegrale,
         DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionIntegrale,
       ),
+      attributionBiensCommunsPct: asPercent(
+        patrimonialRaw.attributionBiensCommunsPct,
+        // Migration v7→v8: si attributionIntegrale était true, forcer 100%
+        asBoolean(patrimonialRaw.attributionIntegrale, false) ? 100 : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
+      ),
     };
 
-    const enfantsRaw = (payload.version === 5 || payload.version === 6 || payload.version === 7) && Array.isArray(payload.enfants)
+    const enfantsRaw = (payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8) && Array.isArray(payload.enfants)
       ? payload.enfants
       : null;
     const enfants = enfantsRaw
@@ -392,7 +402,7 @@ export function parseSuccessionDraftPayload(raw: string): {
         }))
       : deriveLegacyEnfants(liquidation, devolution);
 
-    const familyMembersRaw = payload.version === 7 && Array.isArray(payload.familyMembers)
+    const familyMembersRaw = (payload.version === 7 || payload.version === 8) && Array.isArray(payload.familyMembers)
       ? payload.familyMembers
       : [];
     const familyMembers: FamilyMember[] = familyMembersRaw

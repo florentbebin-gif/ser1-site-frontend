@@ -20,6 +20,7 @@ function makePatrimonial(overrides: Partial<SuccessionPatrimonialContext>): Succ
     donationEntreEpouxOption: 'usufruit_total',
     preciputMontant: 0,
     attributionIntegrale: false,
+    attributionBiensCommunsPct: 50,
     ...overrides,
   };
 }
@@ -76,6 +77,6 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
       }),
     );
 
-    expect(analysis.warnings.some((w) => w.includes('option mixte'))).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('option mixte 1/4 PP + 3/4 usufruit'))).toBe(true);
   });
 });
