@@ -134,6 +134,24 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
 - les parents saisis dans la famille sont comptes sans distinction de branche (epoux1/epoux2) dans le moteur de devolution ; pour les couples maries, les parents du defunt et du survivant sont confondus (simplification)
 
+### Matrice juridique de validation succession
+La validation de `/sim/succession` repose sur une matrice de cas cibles, reliee a la fois aux sources juridiques et aux tests de non-regression du module.
+
+| Situation | Attendu produit | Source juridique principale | Couverture repo |
+| --- | --- | --- | --- |
+| Celibataire + enfants | succession directe, droits DMTG ligne directe, affichage une ligne par enfant | Service-Public F1270 / F35794 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts` |
+| Veuf + enfants | succession directe, pas de chaînage 2 deces, droits ligne directe sur les enfants | Service-Public F1270 / F35794 | `successionValidationMatrix.test.ts` |
+| Divorce + enfants | succession directe du defunt simule, ex-conjoint hors droits successoraux legaux | Service-Public F1270 / F35794 | `successionValidationMatrix.test.ts` |
+| Marie + enfants communs | chronologie 2 deces, conjoint + descendants selon la lecture civile retenue par le module | Service-Public F1270 | `successionChainage.test.ts`, `successionDevolution.test.ts` |
+| Marie + enfant non commun | l'enfant propre n'apparait que sur la branche du parent defunt | Code civil art. 757 / 757-1 | `successionChainage.test.ts`, `successionValidationMatrix.test.ts` |
+| PACS sans testament | pas de vocation successorale legale automatique du partenaire, lecture directe du deces simule | Service-Public F1621 | `successionDevolution.test.ts`, `successionValidationMatrix.test.ts` |
+| PACS avec testament | le partenaire peut apparaitre dans la synthese directe, avec exoneration DMTG | Service-Public F1621 / F35794 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts` |
+| Union libre + indivision | seule la quote-part du defunt sur l'indivision est retenue, hypothese 50/50 par defaut | Service-Public F904 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts` |
+| Enfant decede represente par petits-enfants | representation successorale simplifiee par branche | Code civil art. 751 et s. | `successionDevolution.test.ts`, `successionChainage.test.ts` |
+| Usufruit / nue-propriete du conjoint | valorisation selon art. 669 CGI si la date de naissance est renseignee | CGI art. 669 | `successionUsufruit.test.ts`, `successionDevolution.test.ts`, `successionChainage.test.ts` |
+
+En pratique, chaque PR corrective du module succession doit ajouter ou mettre a jour au moins un test rattache a cette matrice. La PR finale de consolidation verifie que les cas ci-dessus restent coherents entre affichage, moteur et exports.
+
 ## 4) Placement
 
 ### Ce que SER1 calcule
