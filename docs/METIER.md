@@ -87,21 +87,21 @@ Il n'existe pas aujourd'hui de simulateur "prelevements sociaux" autonome. Les p
 ## 3) DMTG / succession
 
 ### Ce que SER1 calcule
-Le coeur moteur calcule des droits de succession a partir d'un actif net et d'heritiers avec leur lien de parente. La page `/sim/succession` ajoute un cadre plus riche : situation matrimoniale, devolution, predeces, lecture patrimoniale et export.
+Le coeur moteur calcule des droits de succession a partir d'un actif net et d'heritiers avec leur lien de parente. La page `/sim/succession` expose surtout un parcours guide organise en 3 blocs de saisie (`Contexte familial`, `Actifs / Passifs`, `Donations`) complete par un modal `+ Dispositions` pour le testament, les ascendants et les clauses civiles (donation entre epoux, preciput, attribution communautaire simplifiee).
 
 ### Entrees principales
-- actif net successoral
-- liste des heritiers et part de succession par heredier
-- situation matrimoniale
-- contexte enfants / famille
-- contexte de liquidation et de chainage selon l'UX succession
+- situation matrimoniale et contexte familial
+- enfants / autres membres de la famille
+- masses patrimoniales agregees (defunt, conjoint/partenaire, masse commune ou indivise selon le cas)
+- donations / legs agrégés
+- dispositions civiles et testamentaires via le modal dedie
 - parametres DMTG issus du dossier fiscal
 
 ### Sorties principales
-- droits de succession par heredier
-- total des droits
-- taux moyens
-- analyses de predeces, chainage, devolution et lecture patrimoniale dans la page succession
+- analyses de predeces et de chainage
+- lecture civile simplifiee de la devolution
+- lecture patrimoniale simplifiee (masse civile, quotite disponible, liberalites a controler)
+- points d'attention et warnings de simplification
 
 ### Ce qui est couvert
 - baremes et abattements DMTG par grandes categories de liens
@@ -113,6 +113,7 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 ### Limites connues
 - ce n'est pas une liquidation notariale exhaustive
 - toutes les subtilites civiles, donations anterieures et clauses complexes ne sont pas integralement calculees en moteur
+- l'UI succession privilegie actuellement les analyses civiles/patrimoniales guidees; le calcul DMTG detaille par heredier n'est pas expose comme parcours principal de saisie
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
 
 ## 4) Placement
