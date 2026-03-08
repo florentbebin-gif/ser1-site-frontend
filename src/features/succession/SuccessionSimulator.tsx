@@ -1674,167 +1674,6 @@ export default function SuccessionSimulator() {
             familyMembers={familyMembers}
           />
 
-          <div className="premium-card sc-summary-card sc-hero-card">
-            <div className="sc-hero-header">
-              <h2 className="sc-summary-title">Chronologie des décès</h2>
-              <div className="sc-pill-toggle" role="group" aria-label="Ordre des décès">
-                <button
-                  type="button"
-                  className={`sc-pill-toggle__btn${chainOrder === 'epoux1' ? ' is-active' : ''}`}
-                  onClick={() => setChainOrder('epoux1')}
-                >
-                  Époux 1 → Époux 2
-                </button>
-                <button
-                  type="button"
-                  className={`sc-pill-toggle__btn${chainOrder === 'epoux2' ? ' is-active' : ''}`}
-                  onClick={() => setChainOrder('epoux2')}
-                >
-                  Époux 2 → Époux 1
-                </button>
-              </div>
-            </div>
-            <div className="sc-card__divider sc-card__divider--tight" />
-            {chainageAnalysis.applicable && chainageAnalysis.step1 && chainageAnalysis.step2 ? (
-              <div className="sc-chain">
-                <div className="sc-chain-step">
-                  <div className="sc-chain-step__title">Étape 1 - décès {chainageAnalysis.firstDecedeLabel}</div>
-                  <div className="sc-summary-row">
-                    <span>Masse transmise totale</span>
-                    <strong>{fmt(chainageAnalysis.step1.actifTransmis + assuranceVieByAssure[chainageAnalysis.order])}</strong>
-                  </div>
-                  {assuranceVieByAssure[chainageAnalysis.order] > 0 && (
-                    <div className="sc-summary-row">
-                      <span>Dont assurance-vie</span>
-                      <strong>{fmt(assuranceVieByAssure[chainageAnalysis.order])}</strong>
-                    </div>
-                  )}
-                  <div className="sc-summary-row">
-                    <span>Masse successorale civile</span>
-                    <strong>{fmt(chainageAnalysis.step1.actifTransmis)}</strong>
-                  </div>
-                  <div className="sc-summary-row">
-                    <span>Part conjoint survivant</span>
-                    <strong>{fmt(chainageAnalysis.step1.partConjoint)}</strong>
-                  </div>
-                  <div className="sc-summary-row">
-                    <span>Droits descendants</span>
-                    <strong>{fmt(chainageAnalysis.step1.droitsEnfants)}</strong>
-                  </div>
-                  {avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits > 0 && (
-                    <div className="sc-summary-row">
-                      <span>Droits assurance-vie</span>
-                      <strong>{fmt(avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits)}</strong>
-                    </div>
-                  )}
-                </div>
-
-                <div className="sc-chain-step">
-                  <div className="sc-chain-step__title">Étape 2 - décès {chainageAnalysis.secondDecedeLabel}</div>
-                  <div className="sc-summary-row">
-                    <span>Masse transmise totale</span>
-                    <strong>{fmt(chainageAnalysis.step2.actifTransmis + assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'])}</strong>
-                  </div>
-                  {assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'] > 0 && (
-                    <div className="sc-summary-row">
-                      <span>Dont assurance-vie</span>
-                      <strong>{fmt(assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'])}</strong>
-                    </div>
-                  )}
-                  <div className="sc-summary-row">
-                    <span>Masse successorale civile</span>
-                    <strong>{fmt(chainageAnalysis.step2.actifTransmis)}</strong>
-                  </div>
-                  <div className="sc-summary-row">
-                    <span>Part descendants</span>
-                    <strong>{fmt(chainageAnalysis.step2.partEnfants)}</strong>
-                  </div>
-                  <div className="sc-summary-row">
-                    <span>Droits descendants</span>
-                    <strong>{fmt(chainageAnalysis.step2.droitsEnfants)}</strong>
-                  </div>
-                  {avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits > 0 && (
-                    <div className="sc-summary-row">
-                      <span>Droits assurance-vie</span>
-                      <strong>{fmt(avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits)}</strong>
-                    </div>
-                  )}
-                </div>
-
-                <div className="sc-summary-row sc-summary-row--reserve">
-                  <span>Total cumulé des droits (2 décès + assurance-vie)</span>
-                  <strong>{fmt(derivedTotalDroits)}</strong>
-                </div>
-              </div>
-            ) : (
-              <p className="sc-summary-note">
-                Activez un contexte marié ou pacsé pour afficher la chronologie en 2 décès.
-              </p>
-            )}
-          </div>
-
-          {isExpert && (
-            <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
-              <h2 className="sc-summary-title">Analyse civile</h2>
-              <div className="sc-card__divider sc-card__divider--tight" />
-              <div className="sc-summary-row">
-                <span>Masse de calcul estimée</span>
-                <strong>{fmt(devolutionAnalysis.masseReference)}</strong>
-              </div>
-              <div className="sc-summary-row">
-                <span>Enfants non communs</span>
-                <strong>{nbEnfantsNonCommuns}</strong>
-              </div>
-              <div className="sc-summary-row">
-                <span>Masse civile avant rapport</span>
-                <strong>{fmt(patrimonialAnalysis.masseCivileReference)}</strong>
-              </div>
-              <div className="sc-summary-row">
-                <span>Quotité disponible estimée</span>
-                <strong>{fmt(patrimonialAnalysis.quotiteDisponibleMontant)}</strong>
-              </div>
-              <div className="sc-summary-row">
-                <span>Libéralités à contrôler</span>
-                <strong>{fmt(patrimonialAnalysis.liberalitesImputeesMontant)}</strong>
-              </div>
-              {patrimonialAnalysis.depassementQuotiteMontant > 0 && (
-                <div className="sc-summary-row sc-summary-row--reserve">
-                  <span>Dépassement estimé de quotité</span>
-                  <strong>{fmt(patrimonialAnalysis.depassementQuotiteMontant)}</strong>
-                </div>
-              )}
-              {devolutionAnalysis.reserve ? (
-                <div className="sc-summary-row sc-summary-row--reserve">
-                  <span>Réserve / quotité disponible</span>
-                  <strong>{devolutionAnalysis.reserve.reserve} / {devolutionAnalysis.reserve.quotiteDisponible}</strong>
-                </div>
-              ) : (
-                <p className="sc-summary-note sc-summary-note--muted">
-                  Aucune réserve descendante calculable sans enfant déclaré.
-                </p>
-              )}
-
-              <table className="premium-table sc-predeces-table">
-                <thead>
-                  <tr>
-                    <th>Bénéficiaire</th>
-                    <th>Droits civils théoriques</th>
-                    <th className="align-right">Montant estimé</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {devolutionAnalysis.lines.map((line, idx) => (
-                    <tr key={`${line.heritier}-${idx}`}>
-                      <td>{line.heritier}</td>
-                      <td>{line.droits}</td>
-                      <td className="align-right">{line.montantEstime === null ? 'N/A' : fmt(line.montantEstime)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
           <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
             <h2 className="sc-summary-title">Synthèse</h2>
             <div className="sc-card__divider sc-card__divider--tight" />
@@ -1867,6 +1706,70 @@ export default function SuccessionSimulator() {
                   ))}
                 </div>
               </>
+            )}
+          </div>
+
+          <div className="premium-card sc-summary-card sc-hero-card">
+            <div className="sc-hero-header">
+              <h2 className="sc-summary-title">Chronologie des décès</h2>
+              <div className="sc-pill-toggle">
+                <button
+                  type="button"
+                  className={`sc-pill-toggle__btn${chainOrder === 'epoux2' ? ' is-active' : ''}`}
+                  onClick={() => setChainOrder(chainOrder === 'epoux2' ? 'epoux1' : 'epoux2')}
+                >
+                  Ordre inversé
+                </button>
+              </div>
+            </div>
+            <div className="sc-card__divider sc-card__divider--tight" />
+            {chainageAnalysis.applicable && chainageAnalysis.step1 && chainageAnalysis.step2 ? (
+              <div className="sc-chain">
+                <div className="sc-chain-step">
+                  <div className="sc-chain-step__title">Étape 1 - décès {chainageAnalysis.firstDecedeLabel}</div>
+                  <div className="sc-summary-row">
+                    <span>Masse transmise</span>
+                    <strong>{fmt(chainageAnalysis.step1.actifTransmis + assuranceVieByAssure[chainageAnalysis.order])}</strong>
+                  </div>
+                  <div className="sc-summary-row">
+                    <span>Droits descendants</span>
+                    <strong>{fmt(chainageAnalysis.step1.droitsEnfants)}</strong>
+                  </div>
+                  {avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits > 0 && (
+                    <div className="sc-summary-row">
+                      <span>Droits assurance-vie</span>
+                      <strong>{fmt(avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits)}</strong>
+                    </div>
+                  )}
+                </div>
+
+                <div className="sc-chain-step">
+                  <div className="sc-chain-step__title">Étape 2 - décès {chainageAnalysis.secondDecedeLabel}</div>
+                  <div className="sc-summary-row">
+                    <span>Masse transmise</span>
+                    <strong>{fmt(chainageAnalysis.step2.actifTransmis + assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'])}</strong>
+                  </div>
+                  <div className="sc-summary-row">
+                    <span>Droits descendants</span>
+                    <strong>{fmt(chainageAnalysis.step2.droitsEnfants)}</strong>
+                  </div>
+                  {avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits > 0 && (
+                    <div className="sc-summary-row">
+                      <span>Droits assurance-vie</span>
+                      <strong>{fmt(avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits)}</strong>
+                    </div>
+                  )}
+                </div>
+
+                <div className="sc-summary-row sc-summary-row--reserve">
+                  <span>Total cumulé des droits (2 décès + assurance-vie)</span>
+                  <strong>{fmt(derivedTotalDroits)}</strong>
+                </div>
+              </div>
+            ) : (
+              <p className="sc-summary-note">
+                Activez un contexte marié ou pacsé pour afficher la chronologie en 2 décès.
+              </p>
             )}
           </div>
         </div>
