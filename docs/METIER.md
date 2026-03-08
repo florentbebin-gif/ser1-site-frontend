@@ -100,6 +100,7 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 
 ### Sorties principales
 - analyses de predeces et de chainage
+- succession directe affichee quand la chronologie 2 deces n'est pas la bonne source de verite pour la situation saisie
 - lecture civile simplifiee de la devolution
 - lecture patrimoniale simplifiee (masse civile, quotite disponible, liberalites a controler)
 - synthese patrimoniale guidee sur les contrats d'assurance-vie saisis a part, avec ventilation fiscale simplifiee par beneficiaire
@@ -110,18 +111,21 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - exoneration conjoint
 - prise en compte du regime matrimonial dans certaines analyses guidees
 - scenarios de predeces et ordre des deces
+- routage explicite entre chronologie 2 deces (mariage) et succession directe affichee (celibataire, veuf, divorce, concubinage et PACS selon le cas)
 - saisie detaillee des actifs/passifs pour reconstituer des masses nettes par poche patrimoniale
 - ventilation simplifiee de l'assurance-vie deces selon les clauses beneficiaires saisies (lecture 990 I / 757 B)
 - representation successorale simplifiee des enfants decedes par leurs petits-enfants quand ils sont identifies
 - materiel de guidage sur liberalites, avantages matrimoniaux et situations familiales dans les settings succession
 - devolution civile des ascendants (art. 757-1 / 757-2 CC pour les maries sans descendants) et des collateraux privilegies (art. 736-738-1 CC pour les celibataires/veufs/pacsés sans descendants)
 - ventilation assurance-vie sur contrats demembres avec calcul art. 669 CGI (usufruitier/nu-proprietaire) selon age de l'usufruitier
+- PACS: absence de vocation successorale legale automatique du partenaire sans testament; avec testament, le partenaire peut etre integre a la synthese directe avec exoneration DMTG
 
 ### Limites connues
 - ce n'est pas une liquidation notariale exhaustive
 - toutes les subtilites civiles, donations anterieures et clauses complexes ne sont pas integralement calculees en moteur
 - la ventilation assurance-vie reste simplifiee et depend des clauses beneficiaires saisies; les contrats demembres avec clause non standard ou sans age de l'usufruitier font l'objet d'un repli simplifie avec warning
 - la representation successorale des enfants decedes reste simplifiee et ne remplace pas une analyse notariale detaillee
+- la chronologie 2 deces n'est plus la source d'affichage principale hors mariage; pour PACS et autres situations, la synthese privilegie une lecture directe du deces simule
 - l'UI succession privilegie actuellement les analyses civiles/patrimoniales guidees; le calcul DMTG detaille par heredier n'est pas expose comme parcours principal de saisie
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
 - les parents saisis dans la famille sont comptes sans distinction de branche (epoux1/epoux2) dans le moteur de devolution ; pour les couples maries, les parents du defunt et du survivant sont confondus (simplification)
