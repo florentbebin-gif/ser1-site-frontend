@@ -46,6 +46,85 @@ describe('buildSuccessionAvFiscalAnalysis', () => {
     expect(analysis.lines.every((line) => line.taxable757B >= 0)).toBe(true);
   });
 
+  it('contrat démembré: applique art. 669 CGI (ageUsufruitier=68 → 40% usufruit conjoint, 60% nu-prop enfants)', () => {
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const analysis = buildSuccessionAvFiscalAnalysis(
+      [makeEntry({
+        typeContrat: 'demembree',
+        clauseBeneficiaire: 'Conjoint survivant, à défaut enfants, à défaut héritiers',
+        capitauxDeces: 400000,
+        versementsApres70: 0,
+        ageUsufruitier: 68,
+      })],
+      makeCivil(),
+      [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      [],
+      snapshot,
+    );
+
+    expect(analysis.totalCapitauxDeces).toBe(400000);
+    // Conjoint (usufruit 40%) = 160 000, exonéré
+    const conjointLine = analysis.lines.find((l) => l.lien === 'conjoint');
+    expect(conjointLine).toBeDefined();
+    expect(conjointLine?.capitauxAvant70).toBe(160000);
+    expect(conjointLine?.totalDroits).toBe(0);
+    // Chaque enfant (nu-prop 60%/2) = 120 000
+    const childLines = analysis.lines.filter((l) => l.lien === 'enfant');
+    expect(childLines).toHaveLength(2);
+    childLines.forEach((l) => expect(l.capitauxAvant70).toBe(120000));
+    expect(analysis.warnings.some((w) => w.includes('art. 669'))).toBe(true);
+  });
+
+  it('contrat démembré: après 70 ans — art. 669 sur versements après 70, 757B pour enfants (ageUsufruitier=75 → 30% usufruit)', () => {
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const analysis = buildSuccessionAvFiscalAnalysis(
+      [makeEntry({
+        typeContrat: 'demembree',
+        clauseBeneficiaire: 'Conjoint survivant, à défaut enfants, à défaut héritiers',
+        capitauxDeces: 200000,
+        versementsApres70: 200000,
+        ageUsufruitier: 75,
+      })],
+      makeCivil(),
+      [{ id: 'E1', rattachement: 'commun' }],
+      [],
+      snapshot,
+    );
+
+    // Conjoint (usufruit 30%) = 60 000, exonéré
+    const conjointLine = analysis.lines.find((l) => l.lien === 'conjoint');
+    expect(conjointLine?.capitauxApres70).toBe(60000);
+    expect(conjointLine?.totalDroits).toBe(0);
+    // E1 (nu-prop 70%) = 140 000 après 70 → 757B
+    const enfantLine = analysis.lines.find((l) => l.lien === 'enfant');
+    expect(enfantLine?.capitauxApres70).toBe(140000);
+    expect(enfantLine?.taxable757B).toBeGreaterThan(0);
+    expect(enfantLine?.totalDroits).toBeGreaterThan(0);
+  });
+
+  it('contrat démembré sans ageUsufruitier: warning et repli sur traitement standard (conjoint clause)', () => {
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const analysis = buildSuccessionAvFiscalAnalysis(
+      [makeEntry({
+        typeContrat: 'demembree',
+        clauseBeneficiaire: 'Conjoint survivant, à défaut enfants, à défaut héritiers',
+        capitauxDeces: 200000,
+        versementsApres70: 0,
+      })],
+      makeCivil(),
+      [{ id: 'E1', rattachement: 'commun' }],
+      [],
+      snapshot,
+    );
+
+    // Repli standard: conjoint clause → conjoint reçoit tout, exonéré
+    expect(analysis.totalDroits).toBe(0);
+    expect(analysis.warnings.some((w) => w.includes('âge de l\'usufruitier'))).toBe(true);
+  });
+
   it('exonère le conjoint/partenaire sur la clause standard', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const analysis = buildSuccessionAvFiscalAnalysis(
