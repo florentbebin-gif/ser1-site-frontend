@@ -609,15 +609,16 @@
 .sc-donations-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .sc-donation-card {
-  border: 1px solid var(--color-c8);
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--color-c7) 50%, #FFFFFF);
-  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--color-c8) 88%, #FFFFFF);
+  border-radius: 10px;
+  background: #FFFFFF;
+  padding: 10px 12px;
   overflow: hidden;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-c8) 55%, transparent);
 }
 
 .sc-donation-card__header {
@@ -625,25 +626,42 @@
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+}
+
+.sc-donation-card__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .sc-donation-card__title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-c9);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-c10);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+}
+
+.sc-donation-card__subtitle {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-c9) 78%, var(--color-c10));
 }
 
 .sc-donation-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 10px;
 }
 
 .sc-field--full {
   grid-column: 1 / -1;
+}
+
+.sc-field--span-2 {
+  grid-column: span 2;
 }
 
 /* Date month input — style cohérent avec CreditInputs (PR6) */
@@ -667,11 +685,24 @@
 .sc-input-month:hover { border-bottom-color: var(--color-c8); }
 .sc-input-month:focus-visible { border-bottom-color: var(--color-c2); }
 
-/* Checkboxes donation (PR6) */
+.sc-donation-select .sc-select__trigger {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.sc-donation-select .sc-select__label,
+.sc-donation-select .sc-select__option {
+  text-align: left;
+}
+
+/* Checkboxes donation (PR23) */
 .sc-checkbox {
   accent-color: var(--color-c2);
   cursor: pointer;
   flex-shrink: 0;
+  inline-size: 14px;
+  block-size: 14px;
+  margin: 1px 0 0;
 }
 
 .sc-checkbox-label {
@@ -684,17 +715,49 @@
 }
 
 .sc-donation-flags {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+}
+
+.sc-donation-flags__title {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-c9) 72%, var(--color-c10));
+}
+
+.sc-donation-flags__items {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.sc-donation-flag {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 2px;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-c8) 68%, #FFFFFF);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c7) 32%, #FFFFFF);
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--color-c9);
+  cursor: pointer;
 }
 
 .sc-donations-totals {
-  margin-top: 10px;
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
 }
 
 .sc-assets-sections {
@@ -807,6 +870,26 @@
   line-height: 1;
   opacity: 0.6;
   flex-shrink: 0;
+}
+
+.sc-remove-btn--quiet {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  opacity: 0.5;
+  font-size: 0;
+  background: color-mix(in srgb, var(--color-c7) 46%, #FFFFFF);
+  border: 1px solid color-mix(in srgb, var(--color-c8) 70%, #FFFFFF);
+}
+
+.sc-remove-btn--quiet::before {
+  content: "+";
+  display: block;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 500;
+  color: currentColor;
+  transform: rotate(45deg);
 }
 
 .sc-remove-btn:hover {
@@ -1299,6 +1382,20 @@
   background: var(--color-c7);
   font-size: 13px;
   color: var(--color-c9);
+}
+
+@media (max-width: 1200px) {
+  .sc-donation-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sc-field--span-2 {
+    grid-column: auto;
+  }
+
+  .sc-donation-flags__items {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 900px) {
