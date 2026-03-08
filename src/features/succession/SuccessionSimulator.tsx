@@ -1918,41 +1918,8 @@ export default function SuccessionSimulator() {
             familyMembers={familyMembers}
           />
 
-          {transmissionRows.length > 0 && (
-            <div className="premium-card sc-summary-card">
-              <h2 className="sc-summary-title">Résultat pour les héritiers</h2>
-              <div className="sc-card__divider sc-card__divider--tight" />
-              <div className="sc-transmission-grid">
-                <div className="sc-transmission-grid__head">
-                  <span />
-                  <span>Reçoit (brut)</span>
-                  <span>Droits</span>
-                  <span>Net estimé</span>
-                </div>
-                {transmissionRows.map((row) => (
-                  <div
-                    key={row.id}
-                    className={`sc-transmission-row${row.exonerated ? ' sc-transmission-row--exo' : ''}${row.id === 'assurance-vie' ? ' sc-transmission-row--av' : ''}`}
-                  >
-                    <span>{row.label}</span>
-                    <span>{fmt(row.brut)}</span>
-                    <span>{row.exonerated ? 'Exonéré' : fmt(row.droits)}</span>
-                    <span>{fmt(row.net)}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="sc-summary-note sc-summary-note--muted">
-                {displayUsesChainage
-                  ? 'Cumul 2 décès — droits DMTG descendants, conjoint exonéré'
-                  : isPacsed
-                    ? "Succession directe du partenaire simulé - le PACS n'ouvre pas de droit successoral automatique sans testament."
-                    : 'Succession directe du/de la défunt(e) simulé(e).'}
-              </p>
-            </div>
-          )}
-
           <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
-            <h2 className="sc-summary-title">Synthèse</h2>
+            <h2 className="sc-summary-title">Synthèse successorale</h2>
             <div className="sc-card__divider sc-card__divider--tight" />
             <div className="sc-synth-hero">
               <div className="sc-synth-hero__left">
@@ -1969,22 +1936,82 @@ export default function SuccessionSimulator() {
                 droits={derivedTotalDroits}
               />
             </div>
-            {devolutionAnalysis.lines.length > 0 && (
+            <div className="sc-card__divider sc-card__divider--tight" />
+            <div className="sc-synth-kpis">
+              <div className="sc-synth-kpi">
+                <span className="sc-synth-kpi__label">Patrimoine transmis</span>
+                <strong className="sc-synth-kpi__value">{fmt(synthDonutTransmis)}</strong>
+              </div>
+              <div className="sc-synth-kpi">
+                <span className="sc-synth-kpi__label">Coût cumulé</span>
+                <strong className="sc-synth-kpi__value">{fmt(derivedTotalDroits)}</strong>
+              </div>
+              <div className="sc-synth-kpi">
+                <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Coût 1er décès' : 'Coût décès simulé'}</span>
+                <strong className="sc-synth-kpi__value">
+                  {fmt(displayUsesChainage
+                    ? (
+                      (chainageAnalysis.step1?.droitsEnfants ?? 0)
+                      + avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits
+                    )
+                    : (
+                      (directDisplayAnalysis.result?.totalDroits ?? 0)
+                      + avFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits
+                    ))}
+                </strong>
+              </div>
+              <div className="sc-synth-kpi">
+                <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Coût 2e décès' : 'Net transmis'}</span>
+                <strong className="sc-synth-kpi__value">
+                  {fmt(displayUsesChainage
+                    ? (
+                      (chainageAnalysis.step2?.droitsEnfants ?? 0)
+                      + avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits
+                    )
+                    : Math.max(0, derivedMasseTransmise - derivedTotalDroits))}
+                </strong>
+              </div>
+            </div>
+            {transmissionRows.length > 0 && (
               <>
                 <div className="sc-card__divider sc-card__divider--tight" />
-                <div className="sc-synth-beneficiaires">
-                  {devolutionAnalysis.lines.map((line, idx) => (
-                    line.montantEstime !== null && (
-                      <div key={idx} className="sc-summary-row">
-                        <span>{line.heritier}</span>
-                        <strong>{fmt(line.montantEstime)}</strong>
-                      </div>
-                    )
+                <div className="sc-synth-section-title">Transmission par bénéficiaire</div>
+                <div className="sc-transmission-grid">
+                  <div className="sc-transmission-grid__head">
+                    <span />
+                    <span>Reçoit (brut)</span>
+                    <span>Droits</span>
+                    <span>Net estimé</span>
+                  </div>
+                  {transmissionRows.map((row) => (
+                    <div
+                      key={row.id}
+                      className={`sc-transmission-row${row.exonerated ? ' sc-transmission-row--exo' : ''}${row.id === 'assurance-vie' ? ' sc-transmission-row--av' : ''}`}
+                    >
+                      <span>{row.label}</span>
+                      <span>{fmt(row.brut)}</span>
+                      <span>{row.exonerated ? 'Exonéré' : fmt(row.droits)}</span>
+                      <span>{fmt(row.net)}</span>
+                    </div>
                   ))}
                 </div>
-                {synthHypothese && (
-                  <p className="sc-summary-note sc-summary-note--muted">{synthHypothese}</p>
-                )}
+              </>
+            )}
+            {(synthHypothese || transmissionRows.length > 0) && (
+              <>
+                <div className="sc-card__divider sc-card__divider--tight" />
+                <div className="sc-summary-notes">
+                  {synthHypothese && (
+                    <p className="sc-summary-note sc-summary-note--muted">{synthHypothese}</p>
+                  )}
+                  <p className="sc-summary-note sc-summary-note--muted">
+                    {displayUsesChainage
+                      ? 'Cumul 2 décès — droits DMTG descendants, conjoint exonéré.'
+                      : isPacsed
+                        ? "Succession directe du partenaire simulé - le PACS n'ouvre pas de droit successoral automatique sans testament."
+                        : 'Succession directe du/de la défunt(e) simulé(e).'}
+                  </p>
+                </div>
               </>
             )}
           </div>
@@ -2004,9 +2031,12 @@ export default function SuccessionSimulator() {
             </div>
             <div className="sc-card__divider sc-card__divider--tight" />
             {displayUsesChainage && chainageAnalysis.step1 && chainageAnalysis.step2 ? (
-              <div className="sc-chain">
-                <div className="sc-chain-step">
-                  <div className="sc-chain-step__title">Étape 1 - décès {chainageAnalysis.firstDecedeLabel}</div>
+              <div className="sc-chrono-list">
+                <div className="sc-chrono-item">
+                  <div className="sc-chrono-item__header">
+                    <strong className="sc-chrono-item__title">Étape 1</strong>
+                    <span className="sc-chrono-item__meta">Décès {chainageAnalysis.firstDecedeLabel}</span>
+                  </div>
                   <div className="sc-summary-row">
                     <span>Masse transmise</span>
                     <strong>{fmt(chainageAnalysis.step1.actifTransmis + assuranceVieByAssure[chainageAnalysis.order])}</strong>
@@ -2023,8 +2053,11 @@ export default function SuccessionSimulator() {
                   )}
                 </div>
 
-                <div className="sc-chain-step">
-                  <div className="sc-chain-step__title">Étape 2 - décès {chainageAnalysis.secondDecedeLabel}</div>
+                <div className="sc-chrono-item">
+                  <div className="sc-chrono-item__header">
+                    <strong className="sc-chrono-item__title">Étape 2</strong>
+                    <span className="sc-chrono-item__meta">Décès {chainageAnalysis.secondDecedeLabel}</span>
+                  </div>
                   <div className="sc-summary-row">
                     <span>Masse transmise</span>
                     <strong>{fmt(chainageAnalysis.step2.actifTransmis + assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'])}</strong>
@@ -2041,17 +2074,36 @@ export default function SuccessionSimulator() {
                   )}
                 </div>
 
-                <div className="sc-summary-row sc-summary-row--reserve">
-                  <span>Total cumulé des droits (2 décès + assurance-vie)</span>
+                <div className="sc-chrono-total">
+                  <span>Total cumulé des droits</span>
                   <strong>{fmt(derivedTotalDroits)}</strong>
                 </div>
               </div>
             ) : (
-              <p className="sc-summary-note">
-                {isPacsed
-                  ? "PACS: la synthèse s'appuie sur le décès simulé du partenaire sélectionné ; la chronologie 2 décès n'est pas utilisée ici."
-                  : 'Activez un contexte marié pour afficher la chronologie en 2 décès.'}
-              </p>
+              <div className="sc-chrono-list">
+                <div className="sc-chrono-item">
+                  <div className="sc-chrono-item__header">
+                    <strong className="sc-chrono-item__title">Succession directe</strong>
+                    <span className="sc-chrono-item__meta">
+                      {isPacsed ? 'Décès du partenaire simulé' : 'Décès du/de la défunt(e) simulé(e)'}
+                    </span>
+                  </div>
+                  <div className="sc-summary-row">
+                    <span>Masse transmise</span>
+                    <strong>{fmt(derivedMasseTransmise)}</strong>
+                  </div>
+                  <div className="sc-summary-row">
+                    <span>Droits de succession</span>
+                    <strong>{fmt(directDisplayAnalysis.result?.totalDroits ?? 0)}</strong>
+                  </div>
+                  {avFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits > 0 && (
+                    <div className="sc-summary-row">
+                      <span>Droits assurance-vie</span>
+                      <strong>{fmt(avFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits)}</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>
