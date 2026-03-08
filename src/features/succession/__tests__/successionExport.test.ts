@@ -6,11 +6,11 @@
  */
 
 import JSZip from 'jszip';
-import { describe, it, expect } from 'vitest';
-import { buildSuccessionStudyDeck } from '../../../pptx/presets/successionDeckBuilder';
-import { exportSuccessionXlsx } from '../successionXlsx';
+import { describe, expect, it } from 'vitest';
 import { calculateSuccession } from '../../../engine/succession';
+import { buildSuccessionStudyDeck } from '../../../pptx/presets/successionDeckBuilder';
 import { DEFAULT_COLORS } from '../../../settings/theme';
+import { exportSuccessionXlsx } from '../successionXlsx';
 
 const THEME_COLORS = DEFAULT_COLORS;
 
@@ -71,6 +71,45 @@ describe('Succession PPTX Export', () => {
       expect(chronologySlide.body).not.toContain('Ordre inverse');
     }
   });
+
+  it('documents direct succession when chronology is not the primary display source', () => {
+    const result = calculateSuccession({
+      actifNetSuccession: 320000,
+      heritiers: [
+        { lien: 'enfant', partSuccession: 160000 },
+        { lien: 'enfant', partSuccession: 160000 },
+      ],
+    });
+
+    const spec = buildSuccessionStudyDeck(
+      {
+        actifNetSuccession: result.result.actifNetSuccession,
+        totalDroits: result.result.totalDroits,
+        tauxMoyenGlobal: result.result.tauxMoyenGlobal,
+        heritiers: result.result.detailHeritiers,
+        predecesChronologie: {
+          applicable: false,
+          order: 'epoux1',
+          firstDecedeLabel: 'Défunt(e)',
+          secondDecedeLabel: '—',
+          step1: null,
+          step2: null,
+          totalDroits: result.result.totalDroits,
+          warnings: ['Succession directe du défunt simulé.'],
+        },
+      },
+      THEME_COLORS,
+    );
+
+    const chronologySlide = spec.slides.find(
+      (s) => s.type === 'content' && 'title' in s && s.title === 'Chronologie des décès',
+    );
+    expect(chronologySlide).toBeDefined();
+    if (chronologySlide && 'body' in chronologySlide) {
+      expect(chronologySlide.body).toContain('Chronologie retenue comme source principale: Non');
+      expect(chronologySlide.body).toContain('Chronologie 2 décès non retenue comme source principale');
+    }
+  });
 });
 
 describe('Succession Excel Export', () => {
@@ -120,11 +159,10 @@ describe('Succession Excel Export', () => {
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.size).toBeGreaterThan(0);
 
-    // Verify PK zip header
     const buffer = await blob.arrayBuffer();
     const bytes = new Uint8Array(buffer.slice(0, 2));
-    expect(bytes[0]).toBe(0x50); // P
-    expect(bytes[1]).toBe(0x4b); // K
+    expect(bytes[0]).toBe(0x50);
+    expect(bytes[1]).toBe(0x4b);
 
     const zip = await JSZip.loadAsync(buffer);
     expect(zip.file('xl/workbook.xml')).toBeTruthy();
@@ -173,5 +211,47 @@ describe('Succession Excel Export', () => {
     const workbookXml = await zip.file('xl/workbook.xml')?.async('string');
     expect(workbookXml).toContain('Chronologie');
     expect(workbookXml).toContain('Hypothèses');
+  });
+
+  it('exports the updated direct succession chronology wording in XLSX', async () => {
+    const result = calculateSuccession({
+      actifNetSuccession: 320000,
+      heritiers: [
+        { lien: 'enfant', partSuccession: 160000 },
+        { lien: 'enfant', partSuccession: 160000 },
+      ],
+    });
+
+    const blob = await exportSuccessionXlsx(
+      {
+        actifNetSuccession: 320000,
+        nbHeritiers: 2,
+        heritiers: [
+          { lien: 'enfant', partSuccession: 160000 },
+          { lien: 'enfant', partSuccession: 160000 },
+        ],
+      },
+      result.result,
+      THEME_COLORS.c1,
+      'Simulation-Succession',
+      {
+        applicable: false,
+        order: 'epoux1',
+        firstDecedeLabel: 'Défunt(e)',
+        secondDecedeLabel: '—',
+        step1: null,
+        step2: null,
+        totalDroits: result.result.totalDroits,
+        warnings: ['Succession directe du défunt simulé.'],
+      },
+    );
+
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
+    const chronologySheet = await zip.file('xl/worksheets/sheet4.xml')?.async('string');
+    const sharedStrings = await zip.file('xl/sharedStrings.xml')?.async('string');
+    const xmlPayload = `${chronologySheet ?? ''}\n${sharedStrings ?? ''}`;
+
+    expect(xmlPayload).toContain('Chronologie retenue comme source principale');
+    expect(xmlPayload).toContain('Chronologie 2 décès non retenue comme source principale pour la situation saisie');
   });
 });

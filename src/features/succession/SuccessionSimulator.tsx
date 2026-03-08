@@ -293,11 +293,6 @@ function serializeCustomClause(parts: Record<string, number>): string {
   return 'CUSTOM:' + Object.entries(parts).map(([id, pct]) => `${id}:${pct}`).join(';');
 }
 
-const CHAIN_ORDER_OPTIONS: { value: SuccessionChainOrder; label: string }[] = [
-  { value: 'epoux1', label: 'Époux 1 décède en premier' },
-  { value: 'epoux2', label: 'Époux 2 décède en premier' },
-];
-
 const SC_DONUT_R = 27;
 const SC_DONUT_CIRC = 2 * Math.PI * SC_DONUT_R;
 
@@ -468,10 +463,7 @@ export default function SuccessionSimulator() {
     [civilContext, liquidationContext, chainOrder],
   );
 
-  const derivedActifNetSuccession = useMemo(() => {
-    if (chainageAnalysis.step1) return chainageAnalysis.step1.actifTransmis;
-    return directEstateBasis.actifNetSuccession;
-  }, [chainageAnalysis.step1, directEstateBasis.actifNetSuccession]);
+  const derivedActifNetSuccession = chainageAnalysis.step1?.actifTransmis ?? directEstateBasis.actifNetSuccession;
   const devolutionAnalysis = useMemo(
     () => buildSuccessionDevolutionAnalysis(
       civilContext,
@@ -504,7 +496,6 @@ export default function SuccessionSimulator() {
       enfantsContext,
       familyMembers,
       chainOrder,
-      directEstateBasis.actifNetSuccession,
     ],
   );
   const patrimonialAnalysis = useMemo(
@@ -529,11 +520,6 @@ export default function SuccessionSimulator() {
   const isPacsIndivision = isPacsed && civilContext.pacsConvention === 'indivision';
   const showSharedTransmissionPct = isCommunityRegime || isPacsIndivision;
   const showDonationEntreEpoux = isMarried;
-  const dispositionsButtonAnchorLabel = isMarried
-    ? 'Régime matrimonial'
-    : isPacsed
-      ? 'Convention PACS'
-      : 'Situation familiale';
   const birthDateLabels = useMemo(
     () => getBirthDateLabels(civilContext.situationMatrimoniale),
     [civilContext.situationMatrimoniale],

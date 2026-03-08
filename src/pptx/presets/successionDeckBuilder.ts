@@ -102,7 +102,7 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
 
   const lines: string[] = [
     `• Ordre simulé: ${orderLabel(data.order)}`,
-    `• Chronologie applicable: ${data.applicable ? 'Oui' : 'Non'}`,
+    `• Chronologie retenue comme source principale: ${data.applicable ? 'Oui' : 'Non'}`,
   ];
 
   if (data.applicable && data.step1 && data.step2) {
@@ -123,7 +123,7 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
       lines.push(`• Capitaux assurance-vie saisis: ${fmt(data.assuranceVieTotale)}`);
     }
   } else {
-    lines.push('• Chronologie non applicable à la situation saisie (hors couple marié/pacsé ou données incomplètes)');
+    lines.push('• Chronologie 2 décès non retenue comme source principale pour la situation saisie');
   }
 
   if (data.warnings && data.warnings.length > 0) {

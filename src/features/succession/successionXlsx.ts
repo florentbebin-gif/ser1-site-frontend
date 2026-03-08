@@ -156,7 +156,7 @@ function buildPredecesSheet(
   }
 
   rows.push(['Ordre simulé', orderLabel(chronologie.order)]);
-  rows.push(['Chronologie applicable', chronologie.applicable ? 'Oui' : 'Non']);
+  rows.push(['Chronologie retenue comme source principale', chronologie.applicable ? 'Oui' : 'Non']);
   rows.push([]);
 
   if (chronologie.applicable && chronologie.step1 && chronologie.step2) {
@@ -192,7 +192,7 @@ function buildPredecesSheet(
       rows.push(['Capitaux assurance-vie saisis', money(chronologie.assuranceVieTotale)]);
     }
   } else {
-    rows.push(['Statut', 'Chronologie non applicable à la situation saisie']);
+    rows.push(['Statut', 'Chronologie 2 décès non retenue comme source principale pour la situation saisie']);
   }
 
   if (chronologie.warnings && chronologie.warnings.length > 0) {

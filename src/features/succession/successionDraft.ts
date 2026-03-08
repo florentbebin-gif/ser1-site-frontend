@@ -109,62 +109,6 @@ export interface SuccessionEnfant {
   deceased?: boolean;
 }
 
-interface SuccessionDraftPayloadV10 {
-  version: 10;
-  form: PersistedSuccessionForm;
-  civil: SuccessionCivilContext;
-  liquidation: SuccessionLiquidationContext;
-  devolution: SuccessionDevolutionContext;
-  patrimonial: SuccessionPatrimonialContext;
-  enfants: SuccessionEnfant[];
-  familyMembers: FamilyMember[];
-  donations: SuccessionDonationEntry[];
-  assetEntries: SuccessionAssetDetailEntry[];
-  assuranceVieEntries: SuccessionAssuranceVieEntry[];
-}
-
-interface SuccessionDraftPayloadV11 {
-  version: 11;
-  form: PersistedSuccessionForm;
-  civil: SuccessionCivilContext;
-  liquidation: SuccessionLiquidationContext;
-  devolution: SuccessionDevolutionContext;
-  patrimonial: SuccessionPatrimonialContext;
-  enfants: SuccessionEnfant[];
-  familyMembers: FamilyMember[];
-  donations: SuccessionDonationEntry[];
-  assetEntries: SuccessionAssetDetailEntry[];
-  assuranceVieEntries: SuccessionAssuranceVieEntry[];
-}
-
-interface SuccessionDraftPayloadV12 {
-  version: 12;
-  form: PersistedSuccessionForm;
-  civil: SuccessionCivilContext;
-  liquidation: SuccessionLiquidationContext;
-  devolution: SuccessionDevolutionContext;
-  patrimonial: SuccessionPatrimonialContext;
-  enfants: SuccessionEnfant[];
-  familyMembers: FamilyMember[];
-  donations: SuccessionDonationEntry[];
-  assetEntries: SuccessionAssetDetailEntry[];
-  assuranceVieEntries: SuccessionAssuranceVieEntry[];
-}
-
-interface SuccessionDraftPayloadV13 {
-  version: 13;
-  form: PersistedSuccessionForm;
-  civil: SuccessionCivilContext;
-  liquidation: SuccessionLiquidationContext;
-  devolution: SuccessionDevolutionContext;
-  patrimonial: SuccessionPatrimonialContext;
-  enfants: SuccessionEnfant[];
-  familyMembers: FamilyMember[];
-  donations: SuccessionDonationEntry[];
-  assetEntries: SuccessionAssetDetailEntry[];
-  assuranceVieEntries: SuccessionAssuranceVieEntry[];
-}
-
 interface SuccessionDraftPayloadV14 {
   version: 14;
   form: PersistedSuccessionForm;
