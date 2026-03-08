@@ -1,4 +1,9 @@
-import type { SuccessionCivilContext, SuccessionPatrimonialContext } from './successionDraft';
+import type {
+  SuccessionCivilContext,
+  SuccessionDonationEntry,
+  SuccessionPatrimonialContext,
+} from './successionDraft';
+import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
 
 export interface SuccessionPatrimonialAnalysis {
   masseCivileReference: number;
@@ -28,18 +33,55 @@ function donationEntreEpouxOptionLabel(option: SuccessionPatrimonialContext['don
   return 'option mixte 1/4 PP + 3/4 usufruit';
 }
 
+function parseDonationDate(value?: string): Date | null {
+  if (!value) return null;
+  const normalized = /^\d{4}-\d{2}$/.test(value) ? `${value}-01` : value;
+  const parsed = new Date(`${normalized}T00:00:00Z`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function isWithinRappelFiscalYears(value: string | undefined, years: number): boolean {
+  const parsed = parseDonationDate(value);
+  if (!parsed) return false;
+  const limit = new Date();
+  limit.setFullYear(limit.getFullYear() - Math.max(0, Math.floor(years)));
+  return parsed >= limit;
+}
+
+function getDonationCurrentValue(entry: SuccessionDonationEntry): number {
+  return asAmount(entry.valeurActuelle ?? entry.montant);
+}
+
 export function buildSuccessionPatrimonialAnalysis(
   civil: SuccessionCivilContext,
   actifNetSuccessionInput: number,
   nbEnfantsInput: number,
   patrimonial: SuccessionPatrimonialContext,
+  donations: SuccessionDonationEntry[] = [],
+  fiscalSnapshot?: SuccessionFiscalSnapshot,
 ): SuccessionPatrimonialAnalysis {
   const actifNetSuccession = asAmount(actifNetSuccessionInput);
   const nbEnfants = Math.max(0, Math.floor(Number(nbEnfantsInput) || 0));
 
-  const donationsRapportables = asAmount(patrimonial.donationsRapportables);
-  const donationsHorsPart = asAmount(patrimonial.donationsHorsPart);
-  const legsParticuliers = asAmount(patrimonial.legsParticuliers);
+  const computedDonationsRapportables = donations
+    .filter((entry) => entry.type === 'rapportable')
+    .reduce((sum, entry) => sum + getDonationCurrentValue(entry), 0);
+  const computedDonationsHorsPart = donations
+    .filter((entry) => entry.type === 'hors_part')
+    .reduce((sum, entry) => sum + getDonationCurrentValue(entry), 0);
+  const computedLegsParticuliers = donations
+    .filter((entry) => entry.type === 'legs_particulier')
+    .reduce((sum, entry) => sum + getDonationCurrentValue(entry), 0);
+
+  const donationsRapportables = donations.length > 0
+    ? computedDonationsRapportables
+    : asAmount(patrimonial.donationsRapportables);
+  const donationsHorsPart = donations.length > 0
+    ? computedDonationsHorsPart
+    : asAmount(patrimonial.donationsHorsPart);
+  const legsParticuliers = donations.length > 0
+    ? computedLegsParticuliers
+    : asAmount(patrimonial.legsParticuliers);
   const preciputMontant = asAmount(patrimonial.preciputMontant);
 
   const masseCivileReference = actifNetSuccession + donationsRapportables + donationsHorsPart;
@@ -64,10 +106,8 @@ export function buildSuccessionPatrimonialAnalysis(
     }
   }
 
-  if (patrimonial.attributionBiensCommunsPct !== 50) {
-    if (civil.situationMatrimoniale === 'marie') {
-      warnings.push(`Attribution des biens communs au survivant: ${patrimonial.attributionBiensCommunsPct} % (vs 50 % en partage usuel).`);
-    }
+  if (patrimonial.attributionBiensCommunsPct !== 50 && civil.situationMatrimoniale === 'marie') {
+    warnings.push(`Attribution des biens communs au survivant: ${patrimonial.attributionBiensCommunsPct} % (vs 50 % en partage usuel).`);
   }
 
   if (preciputMontant > 0) {
@@ -83,6 +123,26 @@ export function buildSuccessionPatrimonialAnalysis(
       warnings.push('Attribution intégrale activée: peut retarder la transmission aux descendants au second décès.');
     } else {
       warnings.push('Attribution intégrale activée hors mariage: non applicable en l’état (vérifier le contexte).');
+    }
+  }
+
+  if (donations.length > 0) {
+    const usufruitCount = donations.filter((entry) => entry.avecReserveUsufruit).length;
+    const donSommeArgentExonereCount = donations.filter((entry) => entry.donSommeArgentExonere).length;
+
+    if (usufruitCount > 0) {
+      warnings.push(`${usufruitCount} donation(s) avec réserve d’usufruit: valorisation fiscale/civile à confirmer.`);
+    }
+    if (donSommeArgentExonereCount > 0) {
+      warnings.push(`${donSommeArgentExonereCount} don(s) de somme d’argent exonéré(s): vérifier les conditions d’âge et de délai (CGI art. 790 G).`);
+    }
+
+    if (fiscalSnapshot) {
+      const recentDonationsCount = donations.filter((entry) =>
+        isWithinRappelFiscalYears(entry.date, fiscalSnapshot.donation.rappelFiscalAnnees)).length;
+      if (recentDonationsCount > 0) {
+        warnings.push(`${recentDonationsCount} donation(s) dans le rappel fiscal de ${fiscalSnapshot.donation.rappelFiscalAnnees} ans: reprise DMTG à contrôler.`);
+      }
     }
   }
 

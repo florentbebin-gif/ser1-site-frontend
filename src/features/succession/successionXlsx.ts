@@ -14,6 +14,7 @@ const LIEN_LABELS: Record<LienParente, string> = {
   conjoint: 'Conjoint survivant',
   enfant: 'Enfant',
   petit_enfant: 'Petit-enfant',
+  parent: 'Parent',
   frere_soeur: 'Frère / Sœur',
   neveu_niece: 'Neveu / Nièce',
   autre: 'Autre',
@@ -29,6 +30,7 @@ export interface SuccessionChronologieXlsxStep {
   actifTransmis: number;
   assuranceVieTransmise?: number;
   masseTotaleTransmise?: number;
+  droitsAssuranceVie?: number;
   partConjoint: number;
   partEnfants: number;
   droitsEnfants: number;
@@ -164,6 +166,9 @@ function buildPredecesSheet(
     if ((chronologie.step1.assuranceVieTransmise ?? 0) > 0) {
       rows.push(['Dont assurance-vie', money(chronologie.step1.assuranceVieTransmise ?? 0)]);
     }
+    if ((chronologie.step1.droitsAssuranceVie ?? 0) > 0) {
+      rows.push(['Droits assurance-vie', money(chronologie.step1.droitsAssuranceVie ?? 0)]);
+    }
     rows.push(['Masse successorale civile', money(chronologie.step1.actifTransmis)]);
     rows.push(['Part conjoint survivant', money(chronologie.step1.partConjoint)]);
     rows.push(['Part descendants', money(chronologie.step1.partEnfants)]);
@@ -174,6 +179,9 @@ function buildPredecesSheet(
     rows.push(['Masse transmise totale', money(chronologie.step2.masseTotaleTransmise ?? chronologie.step2.actifTransmis)]);
     if ((chronologie.step2.assuranceVieTransmise ?? 0) > 0) {
       rows.push(['Dont assurance-vie', money(chronologie.step2.assuranceVieTransmise ?? 0)]);
+    }
+    if ((chronologie.step2.droitsAssuranceVie ?? 0) > 0) {
+      rows.push(['Droits assurance-vie', money(chronologie.step2.droitsAssuranceVie ?? 0)]);
     }
     rows.push(['Masse successorale civile', money(chronologie.step2.actifTransmis)]);
     rows.push(['Part descendants', money(chronologie.step2.partEnfants)]);

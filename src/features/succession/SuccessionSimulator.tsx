@@ -47,12 +47,14 @@ import {
 } from './successionDraft';
 import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
 import {
+  countEffectiveDescendantBranches,
   countLivingEnfants,
   countLivingNonCommuns,
   getEnfantNodeLabel,
   getEnfantParentLabel,
   getEnfantRattachementOptions,
 } from './successionEnfants';
+import { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
@@ -189,6 +191,10 @@ function createAssuranceVieId(): string {
   return `av-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function getDonationEffectiveAmount(entry: SuccessionDonationEntry): number {
+  return Math.max(0, entry.valeurActuelle ?? entry.montant);
+}
+
 function buildAggregateDonationEntries(values: Record<SuccessionDonationEntryType, number>): SuccessionDonationEntry[] {
   const order: SuccessionDonationEntryType[] = ['rapportable', 'hors_part', 'legs_particulier'];
   return order
@@ -197,7 +203,6 @@ function buildAggregateDonationEntries(values: Record<SuccessionDonationEntryTyp
       id: createDonationId(),
       type,
       montant: values[type],
-      description: 'Saisie agrégée',
     }));
 }
 
@@ -355,14 +360,19 @@ export default function SuccessionSimulator() {
   const [chainOrder, setChainOrder] = useState<SuccessionChainOrder>('epoux1');
 
   const nbEnfants = useMemo(() => countLivingEnfants(enfantsContext), [enfantsContext]);
+  const nbDescendantBranches = useMemo(
+    () => countEffectiveDescendantBranches(enfantsContext, familyMembers),
+    [enfantsContext, familyMembers],
+  );
   const nbEnfantsNonCommuns = useMemo(
     () => countLivingNonCommuns(enfantsContext),
     [enfantsContext],
   );
   const donationTotals = useMemo(() => donationsContext.reduce((totals, entry) => {
-    if (entry.type === 'rapportable') totals.rapportable += entry.montant;
-    if (entry.type === 'hors_part') totals.horsPart += entry.montant;
-    if (entry.type === 'legs_particulier') totals.legsParticuliers += entry.montant;
+    const amount = getDonationEffectiveAmount(entry);
+    if (entry.type === 'rapportable') totals.rapportable += amount;
+    if (entry.type === 'hors_part') totals.horsPart += amount;
+    if (entry.type === 'legs_particulier') totals.legsParticuliers += amount;
     return totals;
   }, {
     rapportable: 0,
@@ -405,49 +415,57 @@ export default function SuccessionSimulator() {
   const predecesAnalysis = useMemo(
     () => buildSuccessionPredecesAnalysis(
       civilContext,
-      { ...liquidationContext, nbEnfants },
+      { ...liquidationContext, nbEnfants: nbDescendantBranches },
       fiscalSnapshot.dmtgSettings,
       patrimonialContext.attributionBiensCommunsPct,
     ),
-    [civilContext, liquidationContext, nbEnfants, fiscalSnapshot.dmtgSettings, patrimonialContext.attributionBiensCommunsPct],
+    [civilContext, liquidationContext, nbDescendantBranches, fiscalSnapshot.dmtgSettings, patrimonialContext.attributionBiensCommunsPct],
   );
   const chainageAnalysis = useMemo(
     () => buildSuccessionChainageAnalysis({
       civil: civilContext,
-      liquidation: { ...liquidationContext, nbEnfants },
+      liquidation: { ...liquidationContext, nbEnfants: nbDescendantBranches },
       regimeUsed: predecesAnalysis.regimeUsed,
       order: chainOrder,
       dmtgSettings: fiscalSnapshot.dmtgSettings,
       attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
+      enfantsContext,
+      familyMembers,
     }),
     [
       civilContext,
       liquidationContext,
-      nbEnfants,
+      nbDescendantBranches,
       predecesAnalysis.regimeUsed,
       chainOrder,
       fiscalSnapshot.dmtgSettings,
       patrimonialContext.attributionBiensCommunsPct,
+      enfantsContext,
+      familyMembers,
     ],
   );
 
   const alternateChainageAnalysis = useMemo(
     () => buildSuccessionChainageAnalysis({
       civil: civilContext,
-      liquidation: { ...liquidationContext, nbEnfants },
+      liquidation: { ...liquidationContext, nbEnfants: nbDescendantBranches },
       regimeUsed: predecesAnalysis.regimeUsed,
       order: chainOrder === 'epoux1' ? 'epoux2' : 'epoux1',
       dmtgSettings: fiscalSnapshot.dmtgSettings,
       attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
+      enfantsContext,
+      familyMembers,
     }),
     [
       civilContext,
       liquidationContext,
-      nbEnfants,
+      nbDescendantBranches,
       predecesAnalysis.regimeUsed,
       chainOrder,
       fiscalSnapshot.dmtgSettings,
       patrimonialContext.attributionBiensCommunsPct,
+      enfantsContext,
+      familyMembers,
     ],
   );
   const derivedActifNetSuccession = useMemo(() => {
@@ -457,31 +475,37 @@ export default function SuccessionSimulator() {
   const devolutionAnalysis = useMemo(
     () => buildSuccessionDevolutionAnalysis(
       civilContext,
-      nbEnfants,
+      nbDescendantBranches,
       {
         ...devolutionContext,
         nbEnfantsNonCommuns,
       },
       derivedActifNetSuccession,
       patrimonialContext.legsParticuliers,
+      enfantsContext,
+      familyMembers,
     ),
     [
       civilContext,
-      nbEnfants,
+      nbDescendantBranches,
       devolutionContext,
       nbEnfantsNonCommuns,
       derivedActifNetSuccession,
       patrimonialContext.legsParticuliers,
+      enfantsContext,
+      familyMembers,
     ],
   );
   const patrimonialAnalysis = useMemo(
     () => buildSuccessionPatrimonialAnalysis(
       civilContext,
       derivedActifNetSuccession,
-      nbEnfants,
+      nbDescendantBranches,
       patrimonialContext,
+      donationsContext,
+      fiscalSnapshot,
     ),
-    [civilContext, derivedActifNetSuccession, nbEnfants, patrimonialContext],
+    [civilContext, derivedActifNetSuccession, nbDescendantBranches, patrimonialContext, donationsContext, fiscalSnapshot],
   );
   const isMarried = civilContext.situationMatrimoniale === 'marie';
   const isPacsed = civilContext.situationMatrimoniale === 'pacse';
@@ -587,6 +611,16 @@ export default function SuccessionSimulator() {
     capitaux: 0,
     versementsApres70: 0,
   }), [assuranceVieEntries]);
+  const avFiscalAnalysis = useMemo(
+    () => buildSuccessionAvFiscalAnalysis(
+      assuranceVieEntries,
+      civilContext,
+      enfantsContext,
+      familyMembers,
+      fiscalSnapshot,
+    ),
+    [assuranceVieEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot],
+  );
   const assuranceVieByAssure = useMemo(() => assuranceVieEntries.reduce((totals, entry) => {
     totals[entry.assure] += entry.capitauxDeces;
     return totals;
@@ -606,6 +640,10 @@ export default function SuccessionSimulator() {
     () => derivedActifNetSuccession + currentAssuranceVieTransmise,
     [currentAssuranceVieTransmise, derivedActifNetSuccession],
   );
+  const derivedTotalDroits = useMemo(
+    () => chainageAnalysis.totalDroits + avFiscalAnalysis.totalDroits,
+    [chainageAnalysis.totalDroits, avFiscalAnalysis.totalDroits],
+  );
   const chainageExportPayload = useMemo(
     () => ({
       applicable: chainageAnalysis.applicable,
@@ -616,6 +654,7 @@ export default function SuccessionSimulator() {
         actifTransmis: chainageAnalysis.step1.actifTransmis,
         assuranceVieTransmise: assuranceVieByAssure[chainageAnalysis.order],
         masseTotaleTransmise: chainageAnalysis.step1.actifTransmis + assuranceVieByAssure[chainageAnalysis.order],
+        droitsAssuranceVie: avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits,
         partConjoint: chainageAnalysis.step1.partConjoint,
         partEnfants: chainageAnalysis.step1.partEnfants,
         droitsEnfants: chainageAnalysis.step1.droitsEnfants,
@@ -625,18 +664,19 @@ export default function SuccessionSimulator() {
         assuranceVieTransmise: assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
         masseTotaleTransmise: chainageAnalysis.step2.actifTransmis
           + assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
+        droitsAssuranceVie: avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits,
         partConjoint: chainageAnalysis.step2.partConjoint,
         partEnfants: chainageAnalysis.step2.partEnfants,
         droitsEnfants: chainageAnalysis.step2.droitsEnfants,
       } : null,
       assuranceVieTotale: assuranceVieTotals.capitaux,
-      totalDroits: chainageAnalysis.totalDroits,
+      totalDroits: derivedTotalDroits,
       totalDroitsOrdreInverse: alternateChainageAnalysis.applicable
-        ? alternateChainageAnalysis.totalDroits
+        ? alternateChainageAnalysis.totalDroits + avFiscalAnalysis.totalDroits
         : undefined,
-      warnings: chainageAnalysis.warnings,
+      warnings: [...chainageAnalysis.warnings, ...avFiscalAnalysis.warnings],
     }),
-    [chainageAnalysis, alternateChainageAnalysis, assuranceVieByAssure, assuranceVieTotals.capitaux],
+    [chainageAnalysis, alternateChainageAnalysis, assuranceVieByAssure, assuranceVieTotals.capitaux, avFiscalAnalysis, derivedTotalDroits],
   );
   const totalActifsLiquidation = useMemo(
     () => Math.max(
@@ -654,20 +694,18 @@ export default function SuccessionSimulator() {
       ...chainageAnalysis.warnings,
       ...devolutionAnalysis.warnings,
       ...patrimonialAnalysis.warnings,
-      ...(assuranceVieEntries.length > 0
-        ? ["Les capitaux d'assurance-vie sont ajoutés à la masse transmise affichée, sans ventilation fiscale détaillée 990 I / 757 B dans ce module."]
-        : []),
+      ...avFiscalAnalysis.warnings,
     ].filter((warning) => {
       if (seen.has(warning)) return false;
       seen.add(warning);
       return true;
     });
   }, [
-    assuranceVieEntries.length,
     predecesAnalysis.warnings,
     chainageAnalysis.warnings,
     devolutionAnalysis.warnings,
     patrimonialAnalysis.warnings,
+    avFiscalAnalysis.warnings,
   ]);
 
   const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
@@ -1096,9 +1134,9 @@ export default function SuccessionSimulator() {
         await exportSuccessionPptx(
           {
             actifNetSuccession: derivedMasseTransmise,
-            totalDroits: chainageAnalysis.totalDroits,
+            totalDroits: derivedTotalDroits,
             tauxMoyenGlobal: derivedMasseTransmise > 0
-              ? (chainageAnalysis.totalDroits / derivedMasseTransmise) * 100
+              ? (derivedTotalDroits / derivedMasseTransmise) * 100
               : 0,
             heritiers: [],
             predecesChronologie: chainageExportPayload,
@@ -1118,7 +1156,7 @@ export default function SuccessionSimulator() {
     logoPlacement,
     chainageExportPayload,
     derivedMasseTransmise,
-    chainageAnalysis.totalDroits,
+    derivedTotalDroits,
   ]);
 
   const handleExportXlsx = useCallback(async () => {
@@ -1129,7 +1167,7 @@ export default function SuccessionSimulator() {
         await exportAndDownloadSuccessionXlsx(
           {
             actifNetSuccession: derivedMasseTransmise,
-            nbHeritiers: nbEnfants,
+            nbHeritiers: nbDescendantBranches,
             heritiers: [],
           },
           null,
@@ -1147,7 +1185,7 @@ export default function SuccessionSimulator() {
     pptxColors,
     chainageExportPayload,
     derivedMasseTransmise,
-    nbEnfants,
+    nbDescendantBranches,
   ]);
 
   const exportOptions = [
@@ -1731,6 +1769,12 @@ export default function SuccessionSimulator() {
                     <span>Droits descendants</span>
                     <strong>{fmt(chainageAnalysis.step1.droitsEnfants)}</strong>
                   </div>
+                  {avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits > 0 && (
+                    <div className="sc-summary-row">
+                      <span>Droits assurance-vie</span>
+                      <strong>{fmt(avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits)}</strong>
+                    </div>
+                  )}
                 </div>
 
                 <div className="sc-chain-step">
@@ -1757,11 +1801,17 @@ export default function SuccessionSimulator() {
                     <span>Droits descendants</span>
                     <strong>{fmt(chainageAnalysis.step2.droitsEnfants)}</strong>
                   </div>
+                  {avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits > 0 && (
+                    <div className="sc-summary-row">
+                      <span>Droits assurance-vie</span>
+                      <strong>{fmt(avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits)}</strong>
+                    </div>
+                  )}
                 </div>
 
                 <div className="sc-summary-row sc-summary-row--reserve">
-                  <span>Total cumulé des droits (2 décès)</span>
-                  <strong>{fmt(chainageAnalysis.totalDroits)}</strong>
+                  <span>Total cumulé des droits (2 décès + assurance-vie)</span>
+                  <strong>{fmt(derivedTotalDroits)}</strong>
                 </div>
               </div>
             ) : (
@@ -1839,7 +1889,7 @@ export default function SuccessionSimulator() {
             <div className="sc-synth-hero">
               <div className="sc-synth-hero__left">
                 <div className="sc-synth-hero__label">Droits estimés (total)</div>
-                <div className="sc-synth-hero__value">{fmt(chainageAnalysis.totalDroits)}</div>
+                <div className="sc-synth-hero__value">{fmt(derivedTotalDroits)}</div>
                 {derivedMasseTransmise > 0 && (
                   <div className="sc-synth-hero__sub">
                     sur {fmt(derivedMasseTransmise)} transmis
@@ -1847,8 +1897,8 @@ export default function SuccessionSimulator() {
                 )}
               </div>
               <ScDonut
-                transmis={Math.max(0, derivedMasseTransmise - chainageAnalysis.totalDroits)}
-                droits={chainageAnalysis.totalDroits}
+                transmis={Math.max(0, derivedMasseTransmise - derivedTotalDroits)}
+                droits={derivedTotalDroits}
               />
             </div>
             {devolutionAnalysis.lines.length > 0 && (
@@ -1901,7 +1951,7 @@ export default function SuccessionSimulator() {
               AV décès après {fiscalSnapshot.avDeces.agePivotPrimes} ans {fmt(fiscalSnapshot.avDeces.apres70ans.globalAllowance)} (global).
             </li>
             <li>La lecture civile repose sur le contexte familial, les masses patrimoniales saisies et les dispositions déclarées.</li>
-            <li>Les capitaux décès d'assurance-vie sont ajoutés à la masse transmise affichée selon l'assuré déclaré, sans ventilation fiscale détaillée dans ce module.</li>
+            <li>Les capitaux décès d'assurance-vie sont ventilés par bénéficiaire à partir des clauses saisies, avec une lecture simplifiée des régimes 990 I / 757 B.</li>
             <li>La chronologie 2 décès repose sur un chaînage simplifié avec warnings sur les cas non couverts.</li>
             <li>La dévolution légale est présentée en lecture civile simplifiée, sans gestion exhaustive des ordres successoraux.</li>
             <li>Les libéralités et avantages matrimoniaux sont qualifiés de façon indicative, sans recalcul automatique des droits dans ce module.</li>

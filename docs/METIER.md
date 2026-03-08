@@ -102,7 +102,7 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - analyses de predeces et de chainage
 - lecture civile simplifiee de la devolution
 - lecture patrimoniale simplifiee (masse civile, quotite disponible, liberalites a controler)
-- synthese patrimoniale guidee sur les contrats d'assurance-vie saisis a part et remontes dans la masse transmise
+- synthese patrimoniale guidee sur les contrats d'assurance-vie saisis a part, avec ventilation fiscale simplifiee par beneficiaire
 - points d'attention et warnings de simplification
 
 ### Ce qui est couvert
@@ -111,13 +111,15 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - prise en compte du regime matrimonial dans certaines analyses guidees
 - scenarios de predeces et ordre des deces
 - saisie detaillee des actifs/passifs pour reconstituer des masses nettes par poche patrimoniale
+- ventilation simplifiee de l'assurance-vie deces selon les clauses beneficiaires saisies (lecture 990 I / 757 B)
+- representation successorale simplifiee des enfants decedes par leurs petits-enfants quand ils sont identifies
 - materiel de guidage sur liberalites, avantages matrimoniaux et situations familiales dans les settings succession
 
 ### Limites connues
 - ce n'est pas une liquidation notariale exhaustive
 - toutes les subtilites civiles, donations anterieures et clauses complexes ne sont pas integralement calculees en moteur
-- l'assurance-vie est ajoutee a la masse transmise affichee, sans ventilation fiscale detaillee 990 I / 757 B dans ce module
-- la representation successorale des enfants decedes n'est pas encore calculee finement dans ce module guide
+- la ventilation assurance-vie reste simplifiee et depend des clauses beneficiaires saisies, sans gestion exhaustive de tous les cas de demembrement ou clauses complexes
+- la representation successorale des enfants decedes reste simplifiee et ne remplace pas une analyse notariale detaillee
 - l'UI succession privilegie actuellement les analyses civiles/patrimoniales guidees; le calcul DMTG detaille par heredier n'est pas expose comme parcours principal de saisie
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
 

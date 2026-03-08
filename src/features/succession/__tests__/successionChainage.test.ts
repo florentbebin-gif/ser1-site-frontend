@@ -70,5 +70,26 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.totalDroits).toBe(0);
     expect(analysis.warnings.some((w) => w.includes('Aucun enfant'))).toBe(true);
   });
+
+  it('répartit une branche représentée entre petits-enfants et avertit', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({}),
+      liquidation: makeLiquidation({ nbEnfants: 1 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun', deceased: true },
+      ],
+      familyMembers: [
+        { id: 'PG1', type: 'petit_enfant', parentEnfantId: 'E2' },
+        { id: 'PG2', type: 'petit_enfant', parentEnfantId: 'E2' },
+      ],
+    });
+
+    expect(analysis.totalDroits).toBeGreaterThan(0);
+    expect(analysis.warnings.some((w) => w.includes('représentation successorale simplifiée'))).toBe(true);
+  });
 });
 

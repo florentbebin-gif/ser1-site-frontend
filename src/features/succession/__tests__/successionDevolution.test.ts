@@ -70,4 +70,27 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     expect(analysis.warnings.some((warning) => warning.includes('Testament actif'))).toBe(true);
     expect(analysis.lines.some((line) => line.heritier === 'Légataire à titre universel')).toBe(true);
   });
+
+  it('prend en compte un enfant décédé représenté par des petits-enfants', () => {
+    const analysis = buildSuccessionDevolutionAnalysis(
+      makeCivil({ situationMatrimoniale: 'marie' }),
+      1,
+      { nbEnfantsNonCommuns: 0, testamentActif: false },
+      600000,
+      0,
+      [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun', deceased: true },
+      ],
+      [
+        { id: 'PG1', type: 'petit_enfant', parentEnfantId: 'E2' },
+        { id: 'PG2', type: 'petit_enfant', parentEnfantId: 'E2' },
+      ],
+    );
+
+    expect(analysis.nbEnfantsTotal).toBe(2);
+    expect(analysis.reserve?.reserve).toBe('2/3');
+    expect(analysis.lines.some((line) => line.droits.includes('représentation'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('Représentation successorale simplifiée'))).toBe(true);
+  });
 });
