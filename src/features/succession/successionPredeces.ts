@@ -98,6 +98,17 @@ function mapCivilToPredecesRegime(civil: SuccessionCivilContext): RegimeMapping 
     };
   }
 
+  if (civil.situationMatrimoniale === 'concubinage') {
+    return {
+      regimeUsed: null,
+      regimeLabel: null,
+      warnings: [
+        'Union libre: pas de liquidation matrimoniale. La synthèse retient la succession directe du défunt simulé.',
+        'Union libre: les biens en indivision ne sont retenus qu’à hauteur de la quote-part du défunt (50 % par défaut dans ce module).',
+      ],
+    };
+  }
+
   return {
     regimeUsed: null,
     regimeLabel: null,

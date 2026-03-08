@@ -13,7 +13,7 @@ function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilC
 }
 
 describe('buildSuccessionPredecesAnalysis', () => {
-  it('approxime participation aux acquêts en séparation de biens avec warning', () => {
+  it('approxime participation aux acquets en separation de biens avec warning', () => {
     const analysis = buildSuccessionPredecesAnalysis(
       makeCivil({ regimeMatrimonial: 'participation_acquets' }),
       { actifEpoux1: 300000, actifEpoux2: 100000, actifCommun: 200000, nbEnfants: 2 },
@@ -22,7 +22,7 @@ describe('buildSuccessionPredecesAnalysis', () => {
 
     expect(analysis.applicable).toBe(true);
     expect(analysis.regimeUsed).toBe('separation_biens');
-    expect(analysis.warnings.some((w) => w.includes('Participation aux acquêts'))).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('Participation aux acqu'))).toBe(true);
   });
 
   it('active une approximation PACS indivision avec warnings explicites', () => {
@@ -37,7 +37,7 @@ describe('buildSuccessionPredecesAnalysis', () => {
     expect(analysis.warnings.some((w) => w.includes('PACS indivision'))).toBe(true);
   });
 
-  it('retourne non applicable hors couple marié/pacsé', () => {
+  it('retourne non applicable en union libre et renvoie un warning de succession directe', () => {
     const analysis = buildSuccessionPredecesAnalysis(
       makeCivil({ situationMatrimoniale: 'concubinage', regimeMatrimonial: null }),
       { actifEpoux1: 100000, actifEpoux2: 100000, actifCommun: 0, nbEnfants: 1 },
@@ -46,10 +46,21 @@ describe('buildSuccessionPredecesAnalysis', () => {
 
     expect(analysis.applicable).toBe(false);
     expect(analysis.calc).toBeNull();
-    expect(analysis.warnings.some((w) => w.includes('mariés ou pacsés'))).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('succession directe'))).toBe(true);
   });
 
-  it('propage les dmtgSettings personnalisés dans le calcul prédécès', () => {
+  it('documente en union libre la quote-part indivise retenue', () => {
+    const analysis = buildSuccessionPredecesAnalysis(
+      makeCivil({ situationMatrimoniale: 'concubinage', regimeMatrimonial: null }),
+      { actifEpoux1: 100000, actifEpoux2: 100000, actifCommun: 200000, nbEnfants: 1 },
+      DEFAULT_DMTG,
+    );
+
+    expect(analysis.applicable).toBe(false);
+    expect(analysis.warnings.some((w) => w.includes('50 %'))).toBe(true);
+  });
+
+  it('propage les dmtgSettings personnalises dans le calcul predeces', () => {
     const customDmtg = {
       ...DEFAULT_DMTG,
       ligneDirecte: {

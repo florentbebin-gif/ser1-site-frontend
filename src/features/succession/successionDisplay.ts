@@ -10,6 +10,7 @@ import type {
   SuccessionCivilContext,
   SuccessionDevolutionContext,
   SuccessionEnfant,
+  SuccessionLiquidationContext,
 } from './successionDraft';
 import type { SuccessionDevolutionAnalysis } from './successionDevolution';
 import type { SuccessionChainBeneficiary, SuccessionChainageAnalysis } from './successionChainage';
@@ -48,6 +49,14 @@ interface BuildSuccessionDirectDisplayInput {
   enfantsContext: SuccessionEnfant[];
   familyMembers: FamilyMember[];
   order?: 'epoux1' | 'epoux2';
+  actifNetSuccession?: number;
+  baseWarnings?: string[];
+}
+
+export interface SuccessionDirectEstateBasis {
+  actifNetSuccession: number;
+  simulatedDeceased: 'epoux1' | 'epoux2';
+  warnings: string[];
 }
 
 interface DetailedHeirInput {
@@ -83,7 +92,56 @@ function getRelevantDeceased(
   order: 'epoux1' | 'epoux2' | undefined,
 ): 'epoux1' | 'epoux2' {
   if (civil.situationMatrimoniale === 'pacse') return order === 'epoux2' ? 'epoux2' : 'epoux1';
+  if (civil.situationMatrimoniale === 'concubinage') return order === 'epoux2' ? 'epoux2' : 'epoux1';
   return 'epoux1';
+}
+
+export function computeSuccessionDirectEstateBasis(
+  civil: SuccessionCivilContext,
+  liquidation: SuccessionLiquidationContext,
+  order?: 'epoux1' | 'epoux2',
+): SuccessionDirectEstateBasis {
+  const simulatedDeceased = getRelevantDeceased(civil, order);
+  const ownAmount = simulatedDeceased === 'epoux1'
+    ? asAmount(liquidation.actifEpoux1)
+    : asAmount(liquidation.actifEpoux2);
+  const sharedAmount = asAmount(liquidation.actifCommun);
+
+  if (civil.situationMatrimoniale === 'concubinage') {
+    return {
+      actifNetSuccession: ownAmount + (sharedAmount * 0.5),
+      simulatedDeceased,
+      warnings: sharedAmount > 0
+        ? ['Union libre: la quote-part indivise du défunt est estimée à 50 % de la masse en indivision.']
+        : [],
+    };
+  }
+
+  if (civil.situationMatrimoniale === 'pacse' && civil.pacsConvention === 'indivision') {
+    return {
+      actifNetSuccession: ownAmount + (sharedAmount * 0.5),
+      simulatedDeceased,
+      warnings: sharedAmount > 0
+        ? ['PACS indivision: la quote-part indivise du défunt est estimée à 50 % dans la succession directe.']
+        : [],
+    };
+  }
+
+  if (civil.situationMatrimoniale === 'pacse') {
+    return {
+      actifNetSuccession: ownAmount,
+      simulatedDeceased,
+      warnings: [],
+    };
+  }
+
+  return {
+    actifNetSuccession: simulatedDeceased === 'epoux1'
+      ? asAmount(liquidation.actifEpoux1)
+      : asAmount(liquidation.actifEpoux2),
+    simulatedDeceased,
+    warnings: [],
+  };
 }
 
 function buildDetailedDescendantHeirs(
@@ -336,9 +394,9 @@ export function buildSuccessionDirectDisplayAnalysis(
   input: BuildSuccessionDirectDisplayInput,
 ): SuccessionDirectDisplayAnalysis {
   const simulatedDeceased = getRelevantDeceased(input.civil, input.order);
-  const warnings = [...input.devolution.warnings];
+  const warnings = [...(input.baseWarnings ?? []), ...input.devolution.warnings];
   const detailedHeirs: DetailedHeirInput[] = [];
-  const estateAmount = Math.max(0, input.devolution.masseReference);
+  const estateAmount = Math.max(0, input.actifNetSuccession ?? input.devolution.masseReference);
 
   const partnerHeirs = buildPartnerHeirs(input.civil, input.devolution);
   detailedHeirs.push(...partnerHeirs);
