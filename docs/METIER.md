@@ -93,7 +93,7 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - situation matrimoniale et contexte familial
 - enfants / autres membres de la famille
 - masses patrimoniales agregees (defunt, conjoint/partenaire, masse commune ou indivise selon le cas)
-- donations / legs agrégés
+- donations / legs agrégés en mode simplifié ou détaillés en mode expert
 - dispositions civiles et testamentaires via le modal dedie
 - parametres DMTG issus du dossier fiscal
 

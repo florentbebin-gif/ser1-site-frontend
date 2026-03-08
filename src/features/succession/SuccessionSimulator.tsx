@@ -21,6 +21,7 @@ import {
   buildSuccessionDraftPayload,
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+  DEFAULT_SUCCESSION_DONATIONS,
   DEFAULT_SUCCESSION_ENFANTS_CONTEXT,
   DEFAULT_SUCCESSION_FAMILY_MEMBERS,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
@@ -29,6 +30,8 @@ import {
   type FamilyBranch,
   type FamilyMember,
   type FamilyMemberType,
+  type SuccessionDonationEntry,
+  type SuccessionDonationEntryType,
   type SuccessionEnfant,
   type SuccessionDispositionTestamentaire,
   type SuccessionDonationEntreEpouxOption,
@@ -85,6 +88,12 @@ const DONATION_ENTRE_EPOUX_OPTIONS = [
   { value: 'pleine_propriete_totale', label: 'Totalité en pleine propriété' },
 ];
 
+const DONATION_TYPE_OPTIONS: { value: SuccessionDonationEntryType; label: string }[] = [
+  { value: 'rapportable', label: 'Avance de part successorale' },
+  { value: 'hors_part', label: 'Hors part successorale' },
+  { value: 'legs_particulier', label: 'Legs particulier' },
+];
+
 const MEMBER_TYPE_OPTIONS: { value: FamilyMemberType; label: string }[] = [
   { value: 'petit_enfant', label: 'Petit-enfant' },
   { value: 'parent', label: 'Parent' },
@@ -106,6 +115,22 @@ function createEnfantId(): string {
 
 function createMemberId(): string {
   return `mbr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function createDonationId(): string {
+  return `don-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function buildAggregateDonationEntries(values: Record<SuccessionDonationEntryType, number>): SuccessionDonationEntry[] {
+  const order: SuccessionDonationEntryType[] = ['rapportable', 'hors_part', 'legs_particulier'];
+  return order
+    .filter((type) => values[type] > 0)
+    .map((type) => ({
+      id: createDonationId(),
+      type,
+      montant: values[type],
+      description: 'Saisie agrégée',
+    }));
 }
 
 function labelMember(m: FamilyMember, enfants: SuccessionEnfant[]): string {
@@ -148,6 +173,7 @@ export default function SuccessionSimulator() {
   const [liquidationContext, setLiquidationContext] = useState(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
   const [devolutionContext, setDevolutionContext] = useState(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
   const [patrimonialContext, setPatrimonialContext] = useState(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
+  const [donationsContext, setDonationsContext] = useState<SuccessionDonationEntry[]>(DEFAULT_SUCCESSION_DONATIONS);
   const [enfantsContext, setEnfantsContext] = useState<SuccessionEnfant[]>(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
   const [showAddMemberPanel, setShowAddMemberPanel] = useState(false);
@@ -175,6 +201,16 @@ export default function SuccessionSimulator() {
     () => enfantsContext.filter((enfant) => enfant.rattachement !== 'commun').length,
     [enfantsContext],
   );
+  const donationTotals = useMemo(() => donationsContext.reduce((totals, entry) => {
+    if (entry.type === 'rapportable') totals.rapportable += entry.montant;
+    if (entry.type === 'hors_part') totals.horsPart += entry.montant;
+    if (entry.type === 'legs_particulier') totals.legsParticuliers += entry.montant;
+    return totals;
+  }, {
+    rapportable: 0,
+    horsPart: 0,
+    legsParticuliers: 0,
+  }), [donationsContext]);
 
   const enfantRattachementOptions = useMemo(() => {
     const s = civilContext.situationMatrimoniale;
@@ -400,6 +436,7 @@ export default function SuccessionSimulator() {
     setLiquidationContext(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
     setDevolutionContext(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
     setPatrimonialContext(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
+    setDonationsContext(DEFAULT_SUCCESSION_DONATIONS);
     setEnfantsContext(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
     setFamilyMembers(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
     setShowAddMemberPanel(false);
@@ -463,32 +500,58 @@ export default function SuccessionSimulator() {
     setFamilyMembers((prev) => prev.filter((m) => m.id !== id));
   }, []);
 
-  const setPatrimonialField = useCallback(
-    (
-      field:
-        | 'donationsRapportables'
-        | 'donationsHorsPart'
-        | 'legsParticuliers'
-        | 'donationEntreEpouxActive'
-        | 'donationEntreEpouxOption'
-        | 'preciputMontant'
-        | 'attributionIntegrale'
-        | 'attributionBiensCommunsPct',
-      value: number | boolean | string,
-    ) => {
-      setPatrimonialContext((prev) => ({
-        ...prev,
-        [field]: field === 'donationEntreEpouxActive' || field === 'attributionIntegrale'
-          ? Boolean(value)
-          : field === 'donationEntreEpouxOption'
-            ? value
-            : field === 'attributionBiensCommunsPct'
-              ? Math.min(100, Math.max(0, Number(value) || 0))
-              : Math.max(0, Number(value) || 0),
-      }));
-    },
-    [],
-  );
+  const setDonationAggregate = useCallback((
+    type: SuccessionDonationEntryType,
+    amount: number,
+  ) => {
+    setDonationsContext(buildAggregateDonationEntries({
+      rapportable: type === 'rapportable' ? Math.max(0, amount) : donationTotals.rapportable,
+      hors_part: type === 'hors_part' ? Math.max(0, amount) : donationTotals.horsPart,
+      legs_particulier: type === 'legs_particulier' ? Math.max(0, amount) : donationTotals.legsParticuliers,
+    }));
+  }, [donationTotals.horsPart, donationTotals.legsParticuliers, donationTotals.rapportable]);
+
+  const addDonationEntry = useCallback(() => {
+    setDonationsContext((prev) => ([
+      ...prev,
+      {
+        id: createDonationId(),
+        type: 'rapportable',
+        montant: 0,
+      },
+    ]));
+  }, []);
+
+  const updateDonationEntry = useCallback((
+    id: string,
+    field: keyof SuccessionDonationEntry,
+    value: string | number,
+  ) => {
+    setDonationsContext((prev) => prev.map((entry) => {
+      if (entry.id !== id) return entry;
+      if (field === 'type') {
+        return {
+          ...entry,
+          type: value as SuccessionDonationEntryType,
+        };
+      }
+      if (field === 'montant') {
+        return {
+          ...entry,
+          montant: Math.max(0, Number(value) || 0),
+        };
+      }
+      const stringValue = typeof value === 'string' ? value : String(value);
+      return {
+        ...entry,
+        [field]: stringValue,
+      };
+    }));
+  }, []);
+
+  const removeDonationEntry = useCallback((id: string) => {
+    setDonationsContext((prev) => prev.filter((entry) => entry.id !== id));
+  }, []);
 
   const openDispositionsModal = useCallback(() => {
     setDispositionsDraft({
@@ -537,6 +600,7 @@ export default function SuccessionSimulator() {
           setLiquidationContext(parsed.liquidation);
           setDevolutionContext(parsed.devolution);
           setPatrimonialContext(parsed.patrimonial);
+          setDonationsContext(parsed.donations);
           setEnfantsContext(parsed.enfants);
           setFamilyMembers(parsed.familyMembers);
         }
@@ -564,13 +628,14 @@ export default function SuccessionSimulator() {
             patrimonialContext,
             enfantsContext,
             familyMembers,
+            donationsContext,
           ),
         ),
       );
     } catch {
       // ignore
     }
-  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, nbEnfantsNonCommuns, enfantsContext, familyMembers]);
+  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext]);
 
   // Auto-dériver ascendantsSurvivants si des parents sont déclarés dans familyMembers
   useEffect(() => {
@@ -580,6 +645,24 @@ export default function SuccessionSimulator() {
       return { ...prev, ascendantsSurvivants: hasParents };
     });
   }, [familyMembers]);
+
+  useEffect(() => {
+    setPatrimonialContext((prev) => {
+      if (
+        prev.donationsRapportables === donationTotals.rapportable
+        && prev.donationsHorsPart === donationTotals.horsPart
+        && prev.legsParticuliers === donationTotals.legsParticuliers
+      ) {
+        return prev;
+      }
+      return {
+        ...prev,
+        donationsRapportables: donationTotals.rapportable,
+        donationsHorsPart: donationTotals.horsPart,
+        legsParticuliers: donationTotals.legsParticuliers,
+      };
+    });
+  }, [donationTotals.horsPart, donationTotals.legsParticuliers, donationTotals.rapportable]);
 
   useEffect(() => {
     const off = onResetEvent?.(({ simId }: { simId?: string }) => {
@@ -958,43 +1041,148 @@ export default function SuccessionSimulator() {
             <header className="sc-card__header">
               <h2 className="sc-card__title">Donations</h2>
               <p className="sc-card__subtitle">
-                Montants agrégés utilisés pour la lecture civile des libéralités.
+                {isExpert
+                  ? 'Saisie détaillée des donations et legs, agrégée automatiquement pour l’analyse civile.'
+                  : 'Montants agrégés utilisés pour la lecture civile des libéralités.'}
               </p>
             </header>
             <div className="sc-card__divider" />
+            {isExpert ? (
+              <>
+                {donationsContext.length > 0 ? (
+                  <div className="sc-donations-list">
+                    {donationsContext.map((entry, idx) => (
+                      <div key={entry.id} className="sc-donation-card">
+                        <div className="sc-donation-card__header">
+                          <strong className="sc-donation-card__title">Donation {idx + 1}</strong>
+                          <button
+                            type="button"
+                            className="sc-remove-btn"
+                            onClick={() => removeDonationEntry(entry.id)}
+                            title="Supprimer cette donation"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div className="sc-donation-grid">
+                          <div className="sc-field">
+                            <label>Type</label>
+                            <ScSelect
+                              value={entry.type}
+                              onChange={(value) => updateDonationEntry(entry.id, 'type', value)}
+                              options={DONATION_TYPE_OPTIONS}
+                            />
+                          </div>
+                          <div className="sc-field">
+                            <label>Montant (€)</label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={entry.montant || ''}
+                              onChange={(e) => updateDonationEntry(entry.id, 'montant', Number(e.target.value) || 0)}
+                              placeholder="Montant"
+                            />
+                          </div>
+                          <div className="sc-field">
+                            <label>Date</label>
+                            <input
+                              type="date"
+                              value={entry.date ?? ''}
+                              onChange={(e) => updateDonationEntry(entry.id, 'date', e.target.value)}
+                            />
+                          </div>
+                          <div className="sc-field">
+                            <label>Donataire</label>
+                            <input
+                              type="text"
+                              value={entry.donataire ?? ''}
+                              onChange={(e) => updateDonationEntry(entry.id, 'donataire', e.target.value)}
+                              placeholder="Nom ou qualité"
+                            />
+                          </div>
+                          <div className="sc-field sc-field--full">
+                            <label>Description</label>
+                            <input
+                              type="text"
+                              value={entry.description ?? ''}
+                              onChange={(e) => updateDonationEntry(entry.id, 'description', e.target.value)}
+                              placeholder="Commentaire libre"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="sc-hint sc-hint--compact">Aucune donation détaillée pour l’instant.</p>
+                )}
 
-            <div className="sc-civil-grid">
-              <div className="sc-field">
-                <label>Donations rapportables (€)</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={patrimonialContext.donationsRapportables || ''}
-                  onChange={(e) => setPatrimonialField('donationsRapportables', Number(e.target.value) || 0)}
-                  placeholder="Montant"
-                />
-              </div>
-              <div className="sc-field">
-                <label>Donations hors part (€)</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={patrimonialContext.donationsHorsPart || ''}
-                  onChange={(e) => setPatrimonialField('donationsHorsPart', Number(e.target.value) || 0)}
-                  placeholder="Montant"
-                />
-              </div>
-              <div className="sc-field">
-                <label>Legs particuliers (€)</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={patrimonialContext.legsParticuliers || ''}
-                  onChange={(e) => setPatrimonialField('legsParticuliers', Number(e.target.value) || 0)}
-                  placeholder="Montant"
-                />
-              </div>
-            </div>
+                <div className="sc-inline-actions">
+                  <button
+                    type="button"
+                    className="premium-btn sc-btn sc-btn--secondary"
+                    onClick={addDonationEntry}
+                  >
+                    + Ajouter une donation
+                  </button>
+                </div>
+
+                <div className="sc-donations-totals">
+                  <div className="sc-summary-row">
+                    <span>Donations rapportables</span>
+                    <strong>{fmt(donationTotals.rapportable)}</strong>
+                  </div>
+                  <div className="sc-summary-row">
+                    <span>Donations hors part</span>
+                    <strong>{fmt(donationTotals.horsPart)}</strong>
+                  </div>
+                  <div className="sc-summary-row">
+                    <span>Legs particuliers</span>
+                    <strong>{fmt(donationTotals.legsParticuliers)}</strong>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="sc-civil-grid">
+                  <div className="sc-field">
+                    <label>Donations rapportables (€)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={donationTotals.rapportable || ''}
+                      onChange={(e) => setDonationAggregate('rapportable', Number(e.target.value) || 0)}
+                      placeholder="Montant"
+                    />
+                  </div>
+                  <div className="sc-field">
+                    <label>Donations hors part (€)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={donationTotals.horsPart || ''}
+                      onChange={(e) => setDonationAggregate('hors_part', Number(e.target.value) || 0)}
+                      placeholder="Montant"
+                    />
+                  </div>
+                  <div className="sc-field">
+                    <label>Legs particuliers (€)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={donationTotals.legsParticuliers || ''}
+                      onChange={(e) => setDonationAggregate('legs_particulier', Number(e.target.value) || 0)}
+                      placeholder="Montant"
+                    />
+                  </div>
+                </div>
+                {donationsContext.length > 3 && (
+                  <p className="sc-hint sc-hint--compact">
+                    Modifier la saisie simplifiée regroupera les donations détaillées par type.
+                  </p>
+                )}
+              </>
+            )}
             <p className="sc-hint sc-hint--compact">
               Dispositions civiles et testamentaires : voir le bouton + Dispositions dans Contexte familial.
             </p>

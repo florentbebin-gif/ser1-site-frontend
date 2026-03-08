@@ -52,6 +52,16 @@ describe('successionDraft', () => {
         { id: 'E2', prenom: 'Bastien', rattachement: 'epoux1' },
       ],
       [],
+      [
+        {
+          id: 'don-1',
+          type: 'rapportable',
+          montant: 30000,
+          date: '2020-01-10',
+          donataire: 'Alice',
+          description: 'Donation manuelle',
+        },
+      ],
     );
 
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
@@ -68,6 +78,8 @@ describe('successionDraft', () => {
     expect(parsed?.patrimonial.donationsRapportables).toBe(30000);
     expect(parsed?.patrimonial.donationEntreEpouxActive).toBe(true);
     expect(parsed?.patrimonial.donationEntreEpouxOption).toBe('mixte');
+    expect(parsed?.donations).toHaveLength(1);
+    expect(parsed?.donations[0].type).toBe('rapportable');
     expect(parsed?.enfants).toHaveLength(2);
     expect(parsed?.enfants[0]).toEqual({ id: 'E1', prenom: 'Alice', rattachement: 'commun' });
   });
@@ -94,6 +106,7 @@ describe('successionDraft', () => {
     expect(parsed?.devolution).toEqual(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
     expect(parsed?.patrimonial).toEqual(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
     expect(parsed?.enfants).toEqual(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
+    expect(parsed?.donations).toEqual([]);
   });
 
   it('migre un draft v4 en enfants typés (v5)', () => {
@@ -137,6 +150,7 @@ describe('successionDraft', () => {
     expect(parsed?.devolution.typeDispositionTestamentaire).toBeNull();
     expect(parsed?.devolution.quotePartLegsTitreUniverselPct).toBe(50);
     expect(parsed?.patrimonial.donationEntreEpouxOption).toBe('usufruit_total');
+    expect(parsed?.donations).toHaveLength(0);
   });
 
   it('définit une disposition testamentaire par défaut quand testament actif en legacy', () => {
@@ -167,5 +181,48 @@ describe('successionDraft', () => {
     expect(parsed).not.toBeNull();
     expect(parsed?.devolution.testamentActif).toBe(true);
     expect(parsed?.devolution.typeDispositionTestamentaire).toBe('legs_universel');
+  });
+
+  it('migre les agrégats legacy vers des donations détaillées en v9', () => {
+    const raw = JSON.stringify({
+      version: 8,
+      form: {
+        actifNetSuccession: 200000,
+        heritiers: [{ lien: 'enfant', partSuccession: 200000 }],
+      },
+      civil: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_legale',
+        pacsConvention: 'separation',
+      },
+      liquidation: {
+        actifEpoux1: 100000,
+        actifEpoux2: 100000,
+        actifCommun: 0,
+        nbEnfants: 1,
+      },
+      devolution: {
+        nbEnfantsNonCommuns: 0,
+        testamentActif: false,
+      },
+      patrimonial: {
+        donationsRapportables: 12000,
+        donationsHorsPart: 8000,
+        legsParticuliers: 5000,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'usufruit_total',
+        preciputMontant: 0,
+        attributionIntegrale: false,
+        attributionBiensCommunsPct: 50,
+      },
+    });
+
+    const parsed = parseSuccessionDraftPayload(raw);
+    expect(parsed).not.toBeNull();
+    expect(parsed?.donations.map((entry) => entry.type)).toEqual([
+      'rapportable',
+      'hors_part',
+      'legs_particulier',
+    ]);
   });
 });
