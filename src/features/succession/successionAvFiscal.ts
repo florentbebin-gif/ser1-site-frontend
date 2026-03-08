@@ -11,6 +11,23 @@ import {
   getPetitEnfantsRepresentants,
 } from './successionEnfants';
 
+// Art. 669 CGI — valeur de l'usufruit selon l'âge de l'usufruitier
+const BAREME_USUFRUIT_669: Array<{ maxAge: number; tauxUsufruit: number }> = [
+  { maxAge: 20, tauxUsufruit: 0.9 },
+  { maxAge: 30, tauxUsufruit: 0.8 },
+  { maxAge: 40, tauxUsufruit: 0.7 },
+  { maxAge: 50, tauxUsufruit: 0.6 },
+  { maxAge: 60, tauxUsufruit: 0.5 },
+  { maxAge: 70, tauxUsufruit: 0.4 },
+  { maxAge: 80, tauxUsufruit: 0.3 },
+  { maxAge: 90, tauxUsufruit: 0.2 },
+  { maxAge: Infinity, tauxUsufruit: 0.1 },
+];
+
+function getTauxUsufruit(age: number): number {
+  return BAREME_USUFRUIT_669.find((b) => age <= b.maxAge)?.tauxUsufruit ?? 0.1;
+}
+
 const CLAUSE_CONJOINT_LABEL = 'Conjoint survivant, à défaut enfants, à défaut héritiers';
 const CLAUSE_ENFANTS_LABEL = 'Les enfants par parts égales';
 
@@ -279,16 +296,78 @@ function buildSideAnalysis(
     const capitauxDeces = asAmount(entry.capitauxDeces);
     const versementsApres70 = Math.min(capitauxDeces, asAmount(entry.versementsApres70));
     const capitauxAvant70 = Math.max(0, capitauxDeces - versementsApres70);
-    const entryWarnings: string[] = [];
-    const shares = buildClauseShares(entry, civil, enfants, familyMembers, entryWarnings);
-    warnings.push(...entryWarnings);
 
-    if (entry.typeContrat === 'demembree') {
-      warnings.push('Clause assurance-vie démembrée: ventilation fiscale traitée de façon simplifiée.');
-    }
     if (entry.versementsApres70 > entry.capitauxDeces) {
       warnings.push('Assurance-vie: versements après 70 ans plafonnés aux capitaux décès saisis.');
     }
+
+    // Clause démembrée : ventilation art. 669 CGI
+    if (entry.typeContrat === 'demembree') {
+      if (entry.ageUsufruitier != null) {
+        const tauxUsufruit = getTauxUsufruit(entry.ageUsufruitier);
+        const tauxNuProp = 1 - tauxUsufruit;
+        const preset = getClausePreset(entry.clauseBeneficiaire);
+        const isConjointLike = civil.situationMatrimoniale === 'marie' || civil.situationMatrimoniale === 'pacse';
+
+        if (preset === 'conjoint_enfants' && isConjointLike) {
+          warnings.push(
+            `Clause démembrée: ventilation art. 669 CGI — usufruit ${Math.round(tauxUsufruit * 100)}% (conjoint exonéré), nu-propriété ${Math.round(tauxNuProp * 100)}% (enfants).`,
+          );
+
+          // Usufruit → conjoint (exonéré)
+          const conjointId = 'conjoint';
+          const conjointTarget: AvBeneficiaryTarget = {
+            id: conjointId,
+            label: civil.situationMatrimoniale === 'pacse' ? 'Partenaire' : 'Conjoint(e)',
+            lien: 'conjoint',
+            isExempt: true,
+          };
+          const conjointAvant70 = capitauxAvant70 * tauxUsufruit;
+          const conjointApres70 = versementsApres70 * tauxUsufruit;
+          const beforeConjoint = before70ByBeneficiary.get(conjointId);
+          if (beforeConjoint) beforeConjoint.amount += conjointAvant70;
+          else before70ByBeneficiary.set(conjointId, { target: conjointTarget, amount: conjointAvant70 });
+          const afterConjoint = after70ByBeneficiary.get(conjointId);
+          if (afterConjoint) afterConjoint.amount += conjointApres70;
+          else after70ByBeneficiary.set(conjointId, { target: conjointTarget, amount: conjointApres70 });
+
+          // Nu-propriété → enfants (parts égales parmi enfants vivants)
+          const livingChildren = enfants
+            .map((enfant, index) => ({ enfant, index }))
+            .filter(({ enfant }) => !enfant.deceased);
+          if (livingChildren.length === 0) {
+            warnings.push('Clause démembrée: aucun enfant vivant identifié pour la nu-propriété.');
+          } else {
+            const ratioPerChild = tauxNuProp / livingChildren.length;
+            livingChildren.forEach(({ enfant, index }) => {
+              const childTarget: AvBeneficiaryTarget = {
+                id: enfant.id,
+                label: enfant.prenom ?? getEnfantParentLabel(enfant, index),
+                lien: 'enfant',
+                isExempt: false,
+              };
+              const childAvant70 = capitauxAvant70 * ratioPerChild;
+              const childApres70 = versementsApres70 * ratioPerChild;
+              const beforeChild = before70ByBeneficiary.get(enfant.id);
+              if (beforeChild) beforeChild.amount += childAvant70;
+              else before70ByBeneficiary.set(enfant.id, { target: childTarget, amount: childAvant70 });
+              const afterChild = after70ByBeneficiary.get(enfant.id);
+              if (afterChild) afterChild.amount += childApres70;
+              else after70ByBeneficiary.set(enfant.id, { target: childTarget, amount: childApres70 });
+            });
+          }
+          return;
+        }
+        warnings.push('Clause démembrée avec clause non standard: ventilation art. 669 non appliquée, traitement simplifié.');
+      } else {
+        warnings.push('Clause démembrée: saisissez l\'âge de l\'usufruitier pour appliquer la ventilation art. 669 CGI.');
+      }
+    }
+
+    // Chemin standard
+    const entryWarnings: string[] = [];
+    const shares = buildClauseShares(entry, civil, enfants, familyMembers, entryWarnings);
+    warnings.push(...entryWarnings);
     if (shares.length === 0) return;
 
     shares.forEach((share) => {

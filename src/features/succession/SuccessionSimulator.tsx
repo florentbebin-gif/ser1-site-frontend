@@ -907,7 +907,7 @@ export default function SuccessionSimulator() {
   const updateAssuranceVieEntry = useCallback((
     id: string,
     field: keyof SuccessionAssuranceVieEntry,
-    value: string | number,
+    value: string | number | undefined,
   ) => {
     setAssuranceVieEntries((prev) => prev.map((entry) => {
       if (entry.id !== id) return entry;
@@ -915,6 +915,13 @@ export default function SuccessionSimulator() {
         return {
           ...entry,
           [field]: Math.max(0, Number(value) || 0),
+        };
+      }
+      if (field === 'ageUsufruitier') {
+        const age = Number(value);
+        return {
+          ...entry,
+          ageUsufruitier: Number.isFinite(age) && age > 0 ? age : undefined,
         };
       }
       return {
@@ -2102,6 +2109,22 @@ export default function SuccessionSimulator() {
                             options={ASSURANCE_VIE_TYPE_OPTIONS}
                           />
                         </div>
+                        {entry.typeContrat === 'demembree' && (
+                          <div className="sc-field">
+                            <label>Âge de l&apos;usufruitier</label>
+                            <input
+                              type="number"
+                              min={1}
+                              max={120}
+                              value={entry.ageUsufruitier ?? ''}
+                              onChange={(e) => updateAssuranceVieEntry(entry.id, 'ageUsufruitier', e.target.value ? Number(e.target.value) : undefined)}
+                              placeholder="ex. 68"
+                            />
+                            <p className="sc-hint sc-hint--compact">
+                              Ventilation art. 669 CGI — conjoint = usufruit, enfants = nu-propriété.
+                            </p>
+                          </div>
+                        )}
                         <div className="sc-field">
                           <label>Souscripteur</label>
                           <ScSelect
