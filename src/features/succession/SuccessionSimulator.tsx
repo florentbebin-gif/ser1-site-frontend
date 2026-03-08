@@ -194,18 +194,37 @@ function buildAggregateDonationEntries(values: Record<SuccessionDonationEntryTyp
     }));
 }
 
-function buildAggregateAssetEntries(values: Record<SuccessionAssetOwner, number>): SuccessionAssetDetailEntry[] {
+function buildAggregateAssetEntries(values: {
+  actifs: Record<SuccessionAssetOwner, number>;
+  passifs: Record<SuccessionAssetOwner, number>;
+}): SuccessionAssetDetailEntry[] {
   const order: SuccessionAssetOwner[] = ['epoux1', 'epoux2', 'commun'];
-  return order
-    .filter((owner) => values[owner] > 0)
-    .map((owner) => ({
-      id: createAssetId(),
-      owner,
-      category: 'divers' as const,
-      subCategory: 'Saisie agrégée',
-      amount: values[owner],
-      label: 'Saisie simplifiée',
-    }));
+  const entries: SuccessionAssetDetailEntry[] = [];
+
+  order.forEach((owner) => {
+    if (values.actifs[owner] > 0) {
+      entries.push({
+        id: createAssetId(),
+        owner,
+        category: 'divers',
+        subCategory: 'Saisie agrégée',
+        amount: values.actifs[owner],
+        label: 'Actifs simplifiés',
+      });
+    }
+    if (values.passifs[owner] > 0) {
+      entries.push({
+        id: createAssetId(),
+        owner,
+        category: 'passif',
+        subCategory: 'Saisie agrégée',
+        amount: values.passifs[owner],
+        label: 'Passifs simplifiés',
+      });
+    }
+  });
+
+  return entries;
 }
 
 function labelMember(m: FamilyMember, enfants: SuccessionEnfant[]): string {
@@ -418,41 +437,6 @@ export default function SuccessionSimulator() {
     ),
     [civilContext, derivedActifNetSuccession, nbEnfants, patrimonialContext],
   );
-  const chainageExportPayload = useMemo(
-    () => ({
-      applicable: chainageAnalysis.applicable,
-      order: chainageAnalysis.order,
-      firstDecedeLabel: chainageAnalysis.firstDecedeLabel,
-      secondDecedeLabel: chainageAnalysis.secondDecedeLabel,
-      step1: chainageAnalysis.step1 ? {
-        actifTransmis: chainageAnalysis.step1.actifTransmis,
-        partConjoint: chainageAnalysis.step1.partConjoint,
-        partEnfants: chainageAnalysis.step1.partEnfants,
-        droitsEnfants: chainageAnalysis.step1.droitsEnfants,
-      } : null,
-      step2: chainageAnalysis.step2 ? {
-        actifTransmis: chainageAnalysis.step2.actifTransmis,
-        partConjoint: chainageAnalysis.step2.partConjoint,
-        partEnfants: chainageAnalysis.step2.partEnfants,
-        droitsEnfants: chainageAnalysis.step2.droitsEnfants,
-      } : null,
-      totalDroits: chainageAnalysis.totalDroits,
-      totalDroitsOrdreInverse: alternateChainageAnalysis.applicable
-        ? alternateChainageAnalysis.totalDroits
-        : undefined,
-      warnings: chainageAnalysis.warnings,
-    }),
-    [chainageAnalysis, alternateChainageAnalysis],
-  );
-  const totalActifsLiquidation = useMemo(
-    () => Math.max(
-      0,
-      liquidationContext.actifEpoux1 + liquidationContext.actifEpoux2 + liquidationContext.actifCommun,
-    ),
-    [liquidationContext],
-  );
-  const canExportSimplified = chainageAnalysis.applicable && totalActifsLiquidation > 0;
-  const canExportCurrentMode = canExport && canExportSimplified;
   const isMarried = civilContext.situationMatrimoniale === 'marie';
   const isPacsed = civilContext.situationMatrimoniale === 'pacse';
   const isConcubinage = civilContext.situationMatrimoniale === 'concubinage';
@@ -496,23 +480,33 @@ export default function SuccessionSimulator() {
     () => assetOwnerOptions.filter((option) => option.value !== 'commun') as { value: 'epoux1' | 'epoux2'; label: string }[],
     [assetOwnerOptions],
   );
-  const assetTotals = useMemo(() => {
-    const rawTotals = assetEntries.reduce((totals, entry) => {
-      const signedAmount = entry.category === 'passif' ? -entry.amount : entry.amount;
-      totals[entry.owner] += signedAmount;
-      return totals;
-    }, {
+  const assetBreakdown = useMemo(() => assetEntries.reduce((totals, entry) => {
+    if (entry.category === 'passif') {
+      totals.passifs[entry.owner] += entry.amount;
+    } else {
+      totals.actifs[entry.owner] += entry.amount;
+    }
+    return totals;
+  }, {
+    actifs: {
       epoux1: 0,
       epoux2: 0,
       commun: 0,
-    } as Record<SuccessionAssetOwner, number>);
-
-    return {
-      epoux1: Math.max(0, rawTotals.epoux1),
-      epoux2: Math.max(0, rawTotals.epoux2),
-      commun: Math.max(0, rawTotals.commun),
-    };
-  }, [assetEntries]);
+    },
+    passifs: {
+      epoux1: 0,
+      epoux2: 0,
+      commun: 0,
+    },
+  } as {
+    actifs: Record<SuccessionAssetOwner, number>;
+    passifs: Record<SuccessionAssetOwner, number>;
+  }), [assetEntries]);
+  const assetNetTotals = useMemo(() => ({
+    epoux1: Math.max(0, assetBreakdown.actifs.epoux1 - assetBreakdown.passifs.epoux1),
+    epoux2: Math.max(0, assetBreakdown.actifs.epoux2 - assetBreakdown.passifs.epoux2),
+    commun: Math.max(0, assetBreakdown.actifs.commun - assetBreakdown.passifs.commun),
+  }), [assetBreakdown]);
   const assuranceVieTotals = useMemo(() => assuranceVieEntries.reduce((totals, entry) => ({
     capitaux: totals.capitaux + entry.capitauxDeces,
     versementsApres70: totals.versementsApres70 + entry.versementsApres70,
@@ -520,10 +514,66 @@ export default function SuccessionSimulator() {
     capitaux: 0,
     versementsApres70: 0,
   }), [assuranceVieEntries]);
+  const assuranceVieByAssure = useMemo(() => assuranceVieEntries.reduce((totals, entry) => {
+    totals[entry.assure] += entry.capitauxDeces;
+    return totals;
+  }, {
+    epoux1: 0,
+    epoux2: 0,
+  } as Record<'epoux1' | 'epoux2', number>), [assuranceVieEntries]);
   const assetEntriesByCategory = useMemo(() => ASSET_CATEGORY_OPTIONS.map((category) => ({
     ...category,
     entries: assetEntries.filter((entry) => entry.category === category.value),
   })), [assetEntries]);
+  const currentAssuranceVieTransmise = useMemo(() => {
+    if (chainageAnalysis.applicable) return assuranceVieByAssure[chainageAnalysis.order];
+    return assuranceVieByAssure.epoux1;
+  }, [assuranceVieByAssure, chainageAnalysis.applicable, chainageAnalysis.order]);
+  const derivedMasseTransmise = useMemo(
+    () => derivedActifNetSuccession + currentAssuranceVieTransmise,
+    [currentAssuranceVieTransmise, derivedActifNetSuccession],
+  );
+  const chainageExportPayload = useMemo(
+    () => ({
+      applicable: chainageAnalysis.applicable,
+      order: chainageAnalysis.order,
+      firstDecedeLabel: chainageAnalysis.firstDecedeLabel,
+      secondDecedeLabel: chainageAnalysis.secondDecedeLabel,
+      step1: chainageAnalysis.step1 ? {
+        actifTransmis: chainageAnalysis.step1.actifTransmis,
+        assuranceVieTransmise: assuranceVieByAssure[chainageAnalysis.order],
+        masseTotaleTransmise: chainageAnalysis.step1.actifTransmis + assuranceVieByAssure[chainageAnalysis.order],
+        partConjoint: chainageAnalysis.step1.partConjoint,
+        partEnfants: chainageAnalysis.step1.partEnfants,
+        droitsEnfants: chainageAnalysis.step1.droitsEnfants,
+      } : null,
+      step2: chainageAnalysis.step2 ? {
+        actifTransmis: chainageAnalysis.step2.actifTransmis,
+        assuranceVieTransmise: assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
+        masseTotaleTransmise: chainageAnalysis.step2.actifTransmis
+          + assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
+        partConjoint: chainageAnalysis.step2.partConjoint,
+        partEnfants: chainageAnalysis.step2.partEnfants,
+        droitsEnfants: chainageAnalysis.step2.droitsEnfants,
+      } : null,
+      assuranceVieTotale: assuranceVieTotals.capitaux,
+      totalDroits: chainageAnalysis.totalDroits,
+      totalDroitsOrdreInverse: alternateChainageAnalysis.applicable
+        ? alternateChainageAnalysis.totalDroits
+        : undefined,
+      warnings: chainageAnalysis.warnings,
+    }),
+    [chainageAnalysis, alternateChainageAnalysis, assuranceVieByAssure, assuranceVieTotals.capitaux],
+  );
+  const totalActifsLiquidation = useMemo(
+    () => Math.max(
+      0,
+      liquidationContext.actifEpoux1 + liquidationContext.actifEpoux2 + liquidationContext.actifCommun,
+    ),
+    [liquidationContext],
+  );
+  const canExportSimplified = chainageAnalysis.applicable && (totalActifsLiquidation > 0 || assuranceVieTotals.capitaux > 0);
+  const canExportCurrentMode = canExport && canExportSimplified;
   const attentions = useMemo(() => {
     const seen = new Set<string>();
     return [
@@ -532,7 +582,7 @@ export default function SuccessionSimulator() {
       ...devolutionAnalysis.warnings,
       ...patrimonialAnalysis.warnings,
       ...(assuranceVieEntries.length > 0
-        ? ['Des contrats d’assurance-vie sont saisis à part et restent hors calcul successoral principal dans cette version.']
+        ? ['Les capitaux d’assurance-vie sont ajoutés à la masse transmise affichée, sans ventilation fiscale détaillée 990 I / 757 B dans ce module.']
         : []),
     ].filter((warning) => {
       if (seen.has(warning)) return false;
@@ -590,16 +640,24 @@ export default function SuccessionSimulator() {
     }
   }, [reset]);
 
-  const setLiquidationField = useCallback((
-    field: 'actifEpoux1' | 'actifEpoux2' | 'actifCommun',
+  const setSimplifiedBalanceField = useCallback((
+    type: 'actifs' | 'passifs',
+    owner: SuccessionAssetOwner,
     value: number,
   ) => {
     setAssetEntries(buildAggregateAssetEntries({
-      epoux1: field === 'actifEpoux1' ? Math.max(0, value) : assetTotals.epoux1,
-      epoux2: field === 'actifEpoux2' ? Math.max(0, value) : assetTotals.epoux2,
-      commun: field === 'actifCommun' ? Math.max(0, value) : assetTotals.commun,
+      actifs: {
+        epoux1: owner === 'epoux1' && type === 'actifs' ? Math.max(0, value) : assetBreakdown.actifs.epoux1,
+        epoux2: owner === 'epoux2' && type === 'actifs' ? Math.max(0, value) : assetBreakdown.actifs.epoux2,
+        commun: owner === 'commun' && type === 'actifs' ? Math.max(0, value) : assetBreakdown.actifs.commun,
+      },
+      passifs: {
+        epoux1: owner === 'epoux1' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.epoux1,
+        epoux2: owner === 'epoux2' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.epoux2,
+        commun: owner === 'commun' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.commun,
+      },
     }));
-  }, [assetTotals.commun, assetTotals.epoux1, assetTotals.epoux2]);
+  }, [assetBreakdown.actifs.commun, assetBreakdown.actifs.epoux1, assetBreakdown.actifs.epoux2, assetBreakdown.passifs.commun, assetBreakdown.passifs.epoux1, assetBreakdown.passifs.epoux2]);
 
   const addEnfant = useCallback(() => {
     setEnfantsContext((prev) => ([
@@ -877,9 +935,9 @@ export default function SuccessionSimulator() {
   useEffect(() => {
     setLiquidationContext((prev) => {
       const next = {
-        actifEpoux1: assetTotals.epoux1,
-        actifEpoux2: assetTotals.epoux2,
-        actifCommun: assetTotals.commun,
+        actifEpoux1: assetNetTotals.epoux1,
+        actifEpoux2: assetNetTotals.epoux2,
+        actifCommun: assetNetTotals.commun,
         nbEnfants,
       };
       if (
@@ -892,7 +950,7 @@ export default function SuccessionSimulator() {
       }
       return next;
     });
-  }, [assetTotals.commun, assetTotals.epoux1, assetTotals.epoux2, nbEnfants]);
+  }, [assetNetTotals.commun, assetNetTotals.epoux1, assetNetTotals.epoux2, nbEnfants]);
 
   useEffect(() => {
     const validOwners = new Set(assetOwnerOptions.map((option) => option.value));
@@ -955,8 +1013,8 @@ export default function SuccessionSimulator() {
   }, [handleReset]);
 
   useEffect(() => {
-    setActifNet(derivedActifNetSuccession);
-  }, [derivedActifNetSuccession, setActifNet]);
+    setActifNet(derivedMasseTransmise);
+  }, [derivedMasseTransmise, setActifNet]);
 
   const handleExportPptx = useCallback(async () => {
     if (!canExport) return;
@@ -965,10 +1023,10 @@ export default function SuccessionSimulator() {
       if (canExportSimplified) {
         await exportSuccessionPptx(
           {
-            actifNetSuccession: derivedActifNetSuccession,
+            actifNetSuccession: derivedMasseTransmise,
             totalDroits: chainageAnalysis.totalDroits,
-            tauxMoyenGlobal: derivedActifNetSuccession > 0
-              ? (chainageAnalysis.totalDroits / derivedActifNetSuccession) * 100
+            tauxMoyenGlobal: derivedMasseTransmise > 0
+              ? (chainageAnalysis.totalDroits / derivedMasseTransmise) * 100
               : 0,
             heritiers: [],
             predecesChronologie: chainageExportPayload,
@@ -987,7 +1045,7 @@ export default function SuccessionSimulator() {
     cabinetLogo,
     logoPlacement,
     chainageExportPayload,
-    derivedActifNetSuccession,
+    derivedMasseTransmise,
     chainageAnalysis.totalDroits,
   ]);
 
@@ -998,7 +1056,7 @@ export default function SuccessionSimulator() {
       if (canExportSimplified) {
         await exportAndDownloadSuccessionXlsx(
           {
-            actifNetSuccession: derivedActifNetSuccession,
+            actifNetSuccession: derivedMasseTransmise,
             nbHeritiers: nbEnfants,
             heritiers: [],
           },
@@ -1016,7 +1074,7 @@ export default function SuccessionSimulator() {
     canExportSimplified,
     pptxColors,
     chainageExportPayload,
-    derivedActifNetSuccession,
+    derivedMasseTransmise,
     nbEnfants,
   ]);
 
@@ -1221,7 +1279,7 @@ export default function SuccessionSimulator() {
               <p className="sc-card__subtitle">
                 {isExpert
                   ? 'Saisie détaillée des actifs et passifs, agrégée automatiquement pour les analyses civiles.'
-                  : 'Saisie agrégée des masses patrimoniales utilisées par les analyses civiles et la chronologie.'}
+                  : 'Saisie simplifiée des actifs et passifs, agrégée automatiquement pour les analyses civiles et la chronologie.'}
               </p>
             </header>
             <div className="sc-card__divider" />
@@ -1302,94 +1360,78 @@ export default function SuccessionSimulator() {
                 <div className="sc-assets-summary">
                   <div className="sc-summary-row">
                     <span>{isPacsed ? 'Actif net partenaire 1' : isMarried ? 'Actif net époux 1' : 'Actif net personne 1'}</span>
-                    <strong>{fmt(assetTotals.epoux1)}</strong>
+                    <strong>{fmt(assetNetTotals.epoux1)}</strong>
                   </div>
                   {assetOwnerOptions.some((option) => option.value === 'epoux2') && (
                     <div className="sc-summary-row">
                       <span>{isPacsed ? 'Actif net partenaire 2' : isMarried ? 'Actif net époux 2' : 'Actif net personne 2'}</span>
-                      <strong>{fmt(assetTotals.epoux2)}</strong>
+                      <strong>{fmt(assetNetTotals.epoux2)}</strong>
                     </div>
                   )}
                   {assetOwnerOptions.some((option) => option.value === 'commun') && (
                     <div className="sc-summary-row">
                       <span>{isPacsed ? 'Masse indivise nette' : 'Masse commune nette'}</span>
-                      <strong>{fmt(assetTotals.commun)}</strong>
+                      <strong>{fmt(assetNetTotals.commun)}</strong>
                     </div>
                   )}
                 </div>
               </div>
             ) : (
-              <div className="sc-civil-grid">
-                {(isMarried || isPacsed) && (
-                  <>
-                    <div className="sc-field">
-                      <label>{isPacsed ? 'Actif net partenaire 1 (€)' : 'Actif net époux 1 (€)'}</label>
+              <div className="sc-balance-grid">
+                <div
+                  className="sc-balance-grid__row"
+                  style={{ gridTemplateColumns: `88px repeat(${assetOwnerOptions.length}, minmax(0, 1fr))` }}
+                >
+                  <div className="sc-balance-grid__label">Actifs</div>
+                  {assetOwnerOptions.map((option) => (
+                    <div key={`actifs-${option.value}`} className="sc-field">
+                      <label>{option.label} (€)</label>
                       <input
                         type="number"
                         min={0}
-                        value={assetTotals.epoux1 || ''}
-                        onChange={(e) => setLiquidationField('actifEpoux1', Number(e.target.value) || 0)}
+                        value={assetBreakdown.actifs[option.value] || ''}
+                        onChange={(e) => setSimplifiedBalanceField('actifs', option.value, Number(e.target.value) || 0)}
                         placeholder="Montant"
                       />
                     </div>
-                    <div className="sc-field">
-                      <label>{isPacsed ? 'Actif net partenaire 2 (€)' : 'Actif net époux 2 (€)'}</label>
+                  ))}
+                </div>
+                <div
+                  className="sc-balance-grid__row"
+                  style={{ gridTemplateColumns: `88px repeat(${assetOwnerOptions.length}, minmax(0, 1fr))` }}
+                >
+                  <div className="sc-balance-grid__label">Passifs</div>
+                  {assetOwnerOptions.map((option) => (
+                    <div key={`passifs-${option.value}`} className="sc-field">
+                      <label>{option.label} (€)</label>
                       <input
                         type="number"
                         min={0}
-                        value={assetTotals.epoux2 || ''}
-                        onChange={(e) => setLiquidationField('actifEpoux2', Number(e.target.value) || 0)}
+                        value={assetBreakdown.passifs[option.value] || ''}
+                        onChange={(e) => setSimplifiedBalanceField('passifs', option.value, Number(e.target.value) || 0)}
                         placeholder="Montant"
                       />
                     </div>
-                    <div className="sc-field">
-                      <label>{isPacsed ? 'Actif indivis (€)' : 'Actif commun (€)'}</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={assetTotals.commun || ''}
-                        onChange={(e) => setLiquidationField('actifCommun', Number(e.target.value) || 0)}
-                        placeholder="Montant"
-                      />
-                    </div>
-                  </>
-                )}
-                {isConcubinage && (
-                  <>
-                    <div className="sc-field">
-                      <label>Patrimoine du/de la défunt(e) (€)</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={assetTotals.epoux1 || ''}
-                        onChange={(e) => setLiquidationField('actifEpoux1', Number(e.target.value) || 0)}
-                        placeholder="Montant"
-                      />
-                    </div>
-                    <div className="sc-field">
-                      <label>Patrimoine du concubin / de la concubine (€)</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={assetTotals.epoux2 || ''}
-                        onChange={(e) => setLiquidationField('actifEpoux2', Number(e.target.value) || 0)}
-                        placeholder="Montant"
-                      />
-                    </div>
-                  </>
-                )}
-                {!isMarried && !isPacsed && !isConcubinage && (
-                  <div className="sc-field">
-                    <label>Patrimoine net du/de la défunt(e) (€)</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={assetTotals.epoux1 || ''}
-                      onChange={(e) => setLiquidationField('actifEpoux1', Number(e.target.value) || 0)}
-                      placeholder="Montant"
-                    />
+                  ))}
+                </div>
+                <div className="sc-assets-summary">
+                  <div className="sc-summary-row">
+                    <span>{isPacsed ? 'Actif net partenaire 1' : isMarried ? 'Actif net époux 1' : isConcubinage ? 'Actif net personne 1' : 'Actif net du/de la défunt(e)'}</span>
+                    <strong>{fmt(assetNetTotals.epoux1)}</strong>
                   </div>
-                )}
+                  {assetOwnerOptions.some((option) => option.value === 'epoux2') && (
+                    <div className="sc-summary-row">
+                      <span>{isPacsed ? 'Actif net partenaire 2' : isMarried ? 'Actif net époux 2' : 'Actif net personne 2'}</span>
+                      <strong>{fmt(assetNetTotals.epoux2)}</strong>
+                    </div>
+                  )}
+                  {assetOwnerOptions.some((option) => option.value === 'commun') && (
+                    <div className="sc-summary-row">
+                      <span>{isPacsed ? 'Masse indivise nette' : 'Masse commune nette'}</span>
+                      <strong>{fmt(assetNetTotals.commun)}</strong>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             <p className="sc-hint">Enfants pris en compte automatiquement: {nbEnfants}</p>
@@ -1413,7 +1455,7 @@ export default function SuccessionSimulator() {
                 </button>
               </div>
               <p className="sc-hint sc-hint--compact">
-                Les contrats d’assurance-vie sont décrits à part et restent hors calcul successoral principal dans cette version.
+                Les capitaux décès sont ajoutés à la masse transmise affichée, avec une lecture patrimoniale simplifiée.
               </p>
             </div>
 
@@ -1613,7 +1655,17 @@ export default function SuccessionSimulator() {
                 <div className="sc-chain-step">
                   <div className="sc-chain-step__title">Étape 1 - décès {chainageAnalysis.firstDecedeLabel}</div>
                   <div className="sc-summary-row">
-                    <span>Masse transmise</span>
+                    <span>Masse transmise totale</span>
+                    <strong>{fmt(chainageAnalysis.step1.actifTransmis + assuranceVieByAssure[chainageAnalysis.order])}</strong>
+                  </div>
+                  {assuranceVieByAssure[chainageAnalysis.order] > 0 && (
+                    <div className="sc-summary-row">
+                      <span>Dont assurance-vie</span>
+                      <strong>{fmt(assuranceVieByAssure[chainageAnalysis.order])}</strong>
+                    </div>
+                  )}
+                  <div className="sc-summary-row">
+                    <span>Masse successorale civile</span>
                     <strong>{fmt(chainageAnalysis.step1.actifTransmis)}</strong>
                   </div>
                   <div className="sc-summary-row">
@@ -1629,7 +1681,17 @@ export default function SuccessionSimulator() {
                 <div className="sc-chain-step">
                   <div className="sc-chain-step__title">Étape 2 - décès {chainageAnalysis.secondDecedeLabel}</div>
                   <div className="sc-summary-row">
-                    <span>Masse transmise</span>
+                    <span>Masse transmise totale</span>
+                    <strong>{fmt(chainageAnalysis.step2.actifTransmis + assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'])}</strong>
+                  </div>
+                  {assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'] > 0 && (
+                    <div className="sc-summary-row">
+                      <span>Dont assurance-vie</span>
+                      <strong>{fmt(assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'])}</strong>
+                    </div>
+                  )}
+                  <div className="sc-summary-row">
+                    <span>Masse successorale civile</span>
                     <strong>{fmt(chainageAnalysis.step2.actifTransmis)}</strong>
                   </div>
                   <div className="sc-summary-row">
@@ -1731,7 +1793,17 @@ export default function SuccessionSimulator() {
             <div className="sc-card__divider sc-card__divider--tight" />
             <div className="sc-summary-placeholder">
               <div className="sc-summary-row">
-                <span>Actif successoral estimé</span>
+                <span>Masse transmise estimée</span>
+                <strong>{fmt(derivedMasseTransmise)}</strong>
+              </div>
+              {currentAssuranceVieTransmise > 0 && (
+                <div className="sc-summary-row">
+                  <span>Dont assurance-vie transmise</span>
+                  <strong>{fmt(currentAssuranceVieTransmise)}</strong>
+                </div>
+              )}
+              <div className="sc-summary-row">
+                <span>Masse successorale civile</span>
                 <strong>{fmt(derivedActifNetSuccession)}</strong>
               </div>
               <div className="sc-summary-row">
@@ -1782,6 +1854,7 @@ export default function SuccessionSimulator() {
               AV décès après {fiscalSnapshot.avDeces.agePivotPrimes} ans {fmt(fiscalSnapshot.avDeces.apres70ans.globalAllowance)} (global).
             </li>
             <li>La lecture civile repose sur le contexte familial, les masses patrimoniales saisies et les dispositions déclarées.</li>
+            <li>Les capitaux décès d’assurance-vie sont ajoutés à la masse transmise affichée selon l’assuré déclaré, sans ventilation fiscale détaillée dans ce module.</li>
             <li>La chronologie 2 décès repose sur un chaînage simplifié avec warnings sur les cas non couverts.</li>
             <li>La dévolution légale est présentée en lecture civile simplifiée, sans gestion exhaustive des ordres successoraux.</li>
             <li>Les libéralités et avantages matrimoniaux sont qualifiés de façon indicative, sans recalcul automatique des droits dans ce module.</li>

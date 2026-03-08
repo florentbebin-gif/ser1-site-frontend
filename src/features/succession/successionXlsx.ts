@@ -27,6 +27,8 @@ export interface SuccessionXlsxInput {
 
 export interface SuccessionChronologieXlsxStep {
   actifTransmis: number;
+  assuranceVieTransmise?: number;
+  masseTotaleTransmise?: number;
   partConjoint: number;
   partEnfants: number;
   droitsEnfants: number;
@@ -39,6 +41,7 @@ export interface SuccessionChronologieXlsxData {
   secondDecedeLabel: string;
   step1: SuccessionChronologieXlsxStep | null;
   step2: SuccessionChronologieXlsxStep | null;
+  assuranceVieTotale?: number;
   totalDroits: number;
   totalDroitsOrdreInverse?: number;
   warnings?: string[];
@@ -52,7 +55,7 @@ function pct(v: number): XlsxCell { return { v: v / 100, style: 'sPercent' }; }
 function buildInputsSheet(input: SuccessionXlsxInput): XlsxSheet {
   const rows: Array<Array<XlsxCell | string | number>> = [
     [h('Paramètre'), h('Valeur')],
-    ['Actif net successoral', money(input.actifNetSuccession)],
+    ['Masse transmise estimée', money(input.actifNetSuccession)],
     ['Nombre d\'héritiers', input.nbHeritiers],
     [],
     [sec('Héritiers'), sec('')],
@@ -69,7 +72,7 @@ function buildInputsSheet(input: SuccessionXlsxInput): XlsxSheet {
 function buildResultsSheet(result: SuccessionResult): XlsxSheet {
   const rows: Array<Array<XlsxCell | string | number>> = [
     [h('Indicateur'), h('Valeur')],
-    ['Actif net successoral', money(result.actifNetSuccession)],
+    ['Masse transmise estimée', money(result.actifNetSuccession)],
     ['Total droits de succession', money(result.totalDroits)],
     ['Taux moyen global', pct(result.tauxMoyenGlobal)],
     ['Nombre d\'héritiers', result.detailHeritiers.length],
@@ -121,7 +124,7 @@ function buildHypothesesSheet(): XlsxSheet {
     ['Abattement ligne directe : 100 000 €', 'CGI Art. 779'],
     ['Exonération totale du conjoint survivant', 'CGI Art. 796-0 bis'],
     ['Hors donations antérieures rapportables', 'Hypothèse simplificatrice'],
-    ['Hors assurance-vie', 'Hypothèse simplificatrice'],
+    ['Assurance-vie intégrée à la masse transmise affichée', 'Sans ventilation fiscale détaillée'],
     ['Montants arrondis à l\'euro', 'Convention'],
     [],
     [sec('Avertissement'), sec('')],
@@ -157,19 +160,30 @@ function buildPredecesSheet(
 
   if (chronologie.applicable && chronologie.step1 && chronologie.step2) {
     rows.push([sec(`Étape 1 - décès ${chronologie.firstDecedeLabel}`), sec('')]);
-    rows.push(['Masse transmise', money(chronologie.step1.actifTransmis)]);
+    rows.push(['Masse transmise totale', money(chronologie.step1.masseTotaleTransmise ?? chronologie.step1.actifTransmis)]);
+    if ((chronologie.step1.assuranceVieTransmise ?? 0) > 0) {
+      rows.push(['Dont assurance-vie', money(chronologie.step1.assuranceVieTransmise ?? 0)]);
+    }
+    rows.push(['Masse successorale civile', money(chronologie.step1.actifTransmis)]);
     rows.push(['Part conjoint survivant', money(chronologie.step1.partConjoint)]);
     rows.push(['Part descendants', money(chronologie.step1.partEnfants)]);
     rows.push(['Droits descendants', money(chronologie.step1.droitsEnfants)]);
     rows.push([]);
 
     rows.push([sec(`Étape 2 - décès ${chronologie.secondDecedeLabel}`), sec('')]);
-    rows.push(['Masse transmise', money(chronologie.step2.actifTransmis)]);
+    rows.push(['Masse transmise totale', money(chronologie.step2.masseTotaleTransmise ?? chronologie.step2.actifTransmis)]);
+    if ((chronologie.step2.assuranceVieTransmise ?? 0) > 0) {
+      rows.push(['Dont assurance-vie', money(chronologie.step2.assuranceVieTransmise ?? 0)]);
+    }
+    rows.push(['Masse successorale civile', money(chronologie.step2.actifTransmis)]);
     rows.push(['Part descendants', money(chronologie.step2.partEnfants)]);
     rows.push(['Droits descendants', money(chronologie.step2.droitsEnfants)]);
     rows.push([]);
 
     rows.push(['Total cumulé des droits (2 décès)', money(chronologie.totalDroits)]);
+    if (typeof chronologie.assuranceVieTotale === 'number' && chronologie.assuranceVieTotale > 0) {
+      rows.push(['Capitaux assurance-vie saisis', money(chronologie.assuranceVieTotale)]);
+    }
     if (typeof chronologie.totalDroitsOrdreInverse === 'number') {
       rows.push(['Total droits ordre inverse', money(chronologie.totalDroitsOrdreInverse)]);
     }

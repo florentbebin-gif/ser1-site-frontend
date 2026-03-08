@@ -44,7 +44,7 @@ export function buildSuccessionSynthesis(
   const kpiY = 1.8;
   const kpiH = 0.7;
   const kpis = [
-    { label: 'Actif net successoral', value: fmt(spec.actifNetSuccession) },
+    { label: 'Masse transmise estimée', value: fmt(spec.actifNetSuccession) },
     { label: 'Total droits', value: fmt(spec.totalDroits) },
     { label: 'Taux moyen global', value: fmtPct(spec.tauxMoyenGlobal) },
   ];

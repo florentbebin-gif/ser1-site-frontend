@@ -92,8 +92,8 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 ### Entrees principales
 - situation matrimoniale et contexte familial
 - enfants / autres membres de la famille
-- masses patrimoniales agregees en mode simplifie ; actifs / passifs detailles en mode expert
-- contrats d'assurance-vie saisis a part dans le bloc patrimonial, avec lecture informative hors calcul successoral principal
+- actifs et passifs saisis distinctement en mode simplifie ; actifs / passifs detailles en mode expert
+- contrats d'assurance-vie saisis a part dans le bloc patrimonial, integres a la masse transmise affichee
 - donations / legs agrégés en mode simplifié ou détaillés en mode expert
 - dispositions civiles et testamentaires via le modal dedie
 - parametres DMTG issus du dossier fiscal
@@ -102,7 +102,7 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - analyses de predeces et de chainage
 - lecture civile simplifiee de la devolution
 - lecture patrimoniale simplifiee (masse civile, quotite disponible, liberalites a controler)
-- synthese patrimoniale guidee sur les contrats d'assurance-vie saisis a part
+- synthese patrimoniale guidee sur les contrats d'assurance-vie saisis a part et remontes dans la masse transmise
 - points d'attention et warnings de simplification
 
 ### Ce qui est couvert
@@ -116,7 +116,7 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 ### Limites connues
 - ce n'est pas une liquidation notariale exhaustive
 - toutes les subtilites civiles, donations anterieures et clauses complexes ne sont pas integralement calculees en moteur
-- l'assurance-vie est documentee dans le parcours mais reste hors calcul successoral principal dans cette version
+- l'assurance-vie est ajoutee a la masse transmise affichee, sans ventilation fiscale detaillee 990 I / 757 B dans ce module
 - l'UI succession privilegie actuellement les analyses civiles/patrimoniales guidees; le calcul DMTG detaille par heredier n'est pas expose comme parcours principal de saisie
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
 
