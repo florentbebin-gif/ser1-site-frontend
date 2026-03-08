@@ -62,11 +62,14 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
         { lien: 'enfant', partSuccession: 200000 },
       ],
       dmtgSettings: DEFAULT_DMTG,
-    }).result;
+  }).result;
 
     expect(analysis.result?.totalDroits).toBe(expected.totalDroits);
     expect(analysis.heirs).toHaveLength(2);
-    expect(analysis.transmissionRows.find((row) => row.label === 'Descendants')?.droits).toBe(expected.totalDroits);
+    expect(analysis.transmissionRows).toHaveLength(2);
+    expect(analysis.transmissionRows[0]).toMatchObject({ id: 'E1', label: 'E1' });
+    expect(analysis.transmissionRows[1]).toMatchObject({ id: 'E2', label: 'E2' });
+    expect(analysis.transmissionRows.reduce((sum, row) => sum + row.droits, 0)).toBe(expected.totalDroits);
   });
 
   it("ignore l'enfant propre du partenaire opposé dans le décès PACS simulé", () => {
@@ -99,6 +102,8 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
     expect(analysis.heirs).toHaveLength(1);
     expect(analysis.heirs[0]).toMatchObject({ lien: 'enfant', partSuccession: 300000 });
     expect(analysis.result?.detailHeritiers).toHaveLength(1);
+    expect(analysis.transmissionRows).toHaveLength(1);
+    expect(analysis.transmissionRows[0]).toMatchObject({ id: 'E1', label: 'E1' });
   });
 
   it('traite PACS avec testament comme une succession directe du partenaire simulé', () => {
@@ -136,5 +141,10 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
     expect(analysis.heirs[1]).toMatchObject({ lien: 'enfant', partSuccession: 100000 });
     expect(analysis.heirs[2]).toMatchObject({ lien: 'enfant', partSuccession: 100000 });
     expect(analysis.result?.totalDroits).toBe(0);
+    expect(analysis.transmissionRows.map((row) => row.label)).toEqual([
+      'Partenaire pacsé',
+      'E1',
+      'E2',
+    ]);
   });
 });

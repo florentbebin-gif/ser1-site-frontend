@@ -91,5 +91,41 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.totalDroits).toBeGreaterThan(0);
     expect(analysis.warnings.some((w) => w.includes('représentation successorale simplifiée'))).toBe(true);
   });
+
+  it("n'attribue au 1er décès que les descendants de la branche du défunt", () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
+      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 300000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'epoux1' },
+        { id: 'E2', rattachement: 'epoux2' },
+      ],
+      familyMembers: [],
+    });
+
+    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1']);
+    expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E2']);
+  });
+
+  it('conserve un enfant commun dans les deux étapes et limite un enfant propre à sa branche', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
+      liquidation: makeLiquidation({ actifEpoux1: 450000, actifEpoux2: 250000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'epoux1' },
+      ],
+      familyMembers: [],
+    });
+
+    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1', 'E2']);
+    expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1']);
+  });
 });
 

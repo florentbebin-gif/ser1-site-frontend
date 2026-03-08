@@ -14,6 +14,8 @@ export interface SuccessionDescendantRecipient {
   branchLabel: string;
 }
 
+export type SuccessionDeceasedSide = 'epoux1' | 'epoux2';
+
 export function countLivingEnfants(enfants: SuccessionEnfant[]): number {
   return enfants.filter((enfant) => !enfant.deceased).length;
 }
@@ -48,6 +50,38 @@ export function countEffectiveDescendantBranches(
   }, 0);
 }
 
+export function getRelevantSuccessionEnfants(
+  enfants: SuccessionEnfant[],
+  deceased: SuccessionDeceasedSide,
+): SuccessionEnfant[] {
+  return enfants.filter(
+    (enfant) => enfant.rattachement === 'commun' || enfant.rattachement === deceased,
+  );
+}
+
+export function getRelevantSuccessionFamilyMembers(
+  enfants: SuccessionEnfant[],
+  familyMembers: FamilyMember[],
+  deceased: SuccessionDeceasedSide,
+): FamilyMember[] {
+  const relevantEnfantIds = new Set(getRelevantSuccessionEnfants(enfants, deceased).map((enfant) => enfant.id));
+  return familyMembers.filter(
+    (member) => member.type !== 'petit_enfant'
+      || (member.parentEnfantId && relevantEnfantIds.has(member.parentEnfantId)),
+  );
+}
+
+export function countEffectiveDescendantBranchesForDeceased(
+  enfants: SuccessionEnfant[],
+  familyMembers: FamilyMember[],
+  deceased: SuccessionDeceasedSide,
+): number {
+  return countEffectiveDescendantBranches(
+    getRelevantSuccessionEnfants(enfants, deceased),
+    getRelevantSuccessionFamilyMembers(enfants, familyMembers, deceased),
+  );
+}
+
 export function buildSuccessionDescendantRecipients(
   enfants: SuccessionEnfant[],
   familyMembers: FamilyMember[],
@@ -73,6 +107,17 @@ export function buildSuccessionDescendantRecipients(
       branchLabel,
     }));
   });
+}
+
+export function buildSuccessionDescendantRecipientsForDeceased(
+  enfants: SuccessionEnfant[],
+  familyMembers: FamilyMember[],
+  deceased: SuccessionDeceasedSide,
+): SuccessionDescendantRecipient[] {
+  return buildSuccessionDescendantRecipients(
+    getRelevantSuccessionEnfants(enfants, deceased),
+    getRelevantSuccessionFamilyMembers(enfants, familyMembers, deceased),
+  );
 }
 
 export function getEnfantRattachementOptions(

@@ -62,7 +62,10 @@ import {
   buildSuccessionChainageAnalysis,
   type SuccessionChainOrder,
 } from './successionChainage';
-import { buildSuccessionDirectDisplayAnalysis } from './successionDisplay';
+import {
+  buildSuccessionChainTransmissionRows,
+  buildSuccessionDirectDisplayAnalysis,
+} from './successionDisplay';
 import { ScSelect } from './components/ScSelect';
 import { FiliationOrgchart } from './components/FiliationOrgchart';
 import '../../components/simulator/SimulatorShell.css';
@@ -668,25 +671,14 @@ export default function SuccessionSimulator() {
   }, [isMarried, nbDescendantBranches, patrimonialContext.donationEntreEpouxActive, patrimonialContext.donationEntreEpouxOption]);
   const transmissionRows = useMemo(() => {
     if (displayUsesChainage) {
-      const { step1, step2, order } = chainageAnalysis;
+      const { order, step1, step2 } = chainageAnalysis;
       if (!step1 || !step2) return [];
       const otherOrder = order === 'epoux1' ? 'epoux2' : 'epoux1';
       const avCapital = assuranceVieByAssure[order] + assuranceVieByAssure[otherOrder];
       return [
-        {
-          label: 'Descendants',
-          brut: step1.partEnfants + step2.partEnfants,
-          droits: step1.droitsEnfants + step2.droitsEnfants,
-          net: (step1.partEnfants + step2.partEnfants) - (step1.droitsEnfants + step2.droitsEnfants),
-        },
-        ...(step1.partConjoint > 0 ? [{
-          label: 'Conjoint survivant',
-          brut: step1.partConjoint,
-          droits: 0,
-          net: step1.partConjoint,
-          exonerated: true,
-        }] : []),
+        ...buildSuccessionChainTransmissionRows(chainageAnalysis),
         ...(avCapital > 0 ? [{
+          id: 'assurance-vie',
           label: 'Assurance-vie',
           brut: avCapital,
           droits: avFiscalAnalysis.totalDroits,
@@ -698,6 +690,7 @@ export default function SuccessionSimulator() {
     return [
       ...directDisplayAnalysis.transmissionRows,
       ...(displayAssuranceVieTransmise > 0 ? [{
+        id: 'assurance-vie',
         label: 'Assurance-vie',
         brut: displayAssuranceVieTransmise,
         droits: avFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
@@ -1827,8 +1820,8 @@ export default function SuccessionSimulator() {
                 </div>
                 {transmissionRows.map((row) => (
                   <div
-                    key={row.label}
-                    className={`sc-transmission-row${row.exonerated ? ' sc-transmission-row--exo' : ''}${row.label === 'Assurance-vie' ? ' sc-transmission-row--av' : ''}`}
+                    key={row.id}
+                    className={`sc-transmission-row${row.exonerated ? ' sc-transmission-row--exo' : ''}${row.id === 'assurance-vie' ? ' sc-transmission-row--av' : ''}`}
                   >
                     <span>{row.label}</span>
                     <span>{fmt(row.brut)}</span>

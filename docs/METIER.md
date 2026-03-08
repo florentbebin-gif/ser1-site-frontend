@@ -112,6 +112,7 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - prise en compte du regime matrimonial dans certaines analyses guidees
 - scenarios de predeces et ordre des deces
 - routage explicite entre chronologie 2 deces (mariage) et succession directe affichee (celibataire, veuf, divorce, concubinage et PACS selon le cas)
+- restitution de la transmission sur une ligne par personne reelle quand les beneficiaires sont identifies, avec filtrage des descendants selon la branche du defunt simule
 - saisie detaillee des actifs/passifs pour reconstituer des masses nettes par poche patrimoniale
 - ventilation simplifiee de l'assurance-vie deces selon les clauses beneficiaires saisies (lecture 990 I / 757 B)
 - representation successorale simplifiee des enfants decedes par leurs petits-enfants quand ils sont identifies
