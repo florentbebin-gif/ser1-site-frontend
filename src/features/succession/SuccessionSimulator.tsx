@@ -627,6 +627,20 @@ export default function SuccessionSimulator() {
     }
     return 'Hypothèse moteur : 1/4 en pleine propriété pour le conjoint survivant';
   }, [isMarried, nbDescendantBranches, patrimonialContext.donationEntreEpouxActive, patrimonialContext.donationEntreEpouxOption]);
+  const transmissionResult = useMemo(() => {
+    if (!chainageAnalysis.applicable || !chainageAnalysis.step1 || !chainageAnalysis.step2) return null;
+    const { step1, step2, order } = chainageAnalysis;
+    const otherOrder = order === 'epoux1' ? 'epoux2' : 'epoux1';
+    const avCapital = assuranceVieByAssure[order] + assuranceVieByAssure[otherOrder];
+    return {
+      descendants: {
+        brut: step1.partEnfants + step2.partEnfants,
+        droits: step1.droitsEnfants + step2.droitsEnfants,
+      },
+      conjoint: { brut: step1.partConjoint },
+      av: avCapital > 0 ? { capital: avCapital, droits: avFiscalAnalysis.totalDroits } : null,
+    };
+  }, [chainageAnalysis, assuranceVieByAssure, avFiscalAnalysis.totalDroits]);
   const chainageExportPayload = useMemo(
     () => ({
       applicable: chainageAnalysis.applicable,
@@ -1687,6 +1701,48 @@ export default function SuccessionSimulator() {
             enfantsContext={enfantsContext}
             familyMembers={familyMembers}
           />
+
+          {transmissionResult && (
+            <div className="premium-card sc-summary-card">
+              <h2 className="sc-summary-title">Résultat pour les héritiers</h2>
+              <div className="sc-card__divider sc-card__divider--tight" />
+              <div className="sc-transmission-grid">
+                <div className="sc-transmission-grid__head">
+                  <span />
+                  <span>Reçoit (brut)</span>
+                  <span>Droits</span>
+                  <span>Net estimé</span>
+                </div>
+                {transmissionResult.descendants.brut > 0 && (
+                  <div className="sc-transmission-row">
+                    <span>Descendants</span>
+                    <span>{fmt(transmissionResult.descendants.brut)}</span>
+                    <span>{fmt(transmissionResult.descendants.droits)}</span>
+                    <span>{fmt(transmissionResult.descendants.brut - transmissionResult.descendants.droits)}</span>
+                  </div>
+                )}
+                {transmissionResult.conjoint.brut > 0 && (
+                  <div className="sc-transmission-row sc-transmission-row--exo">
+                    <span>Conjoint survivant</span>
+                    <span>{fmt(transmissionResult.conjoint.brut)}</span>
+                    <span>Exonéré</span>
+                    <span>{fmt(transmissionResult.conjoint.brut)}</span>
+                  </div>
+                )}
+                {transmissionResult.av && (
+                  <div className="sc-transmission-row sc-transmission-row--av">
+                    <span>Assurance-vie</span>
+                    <span>{fmt(transmissionResult.av.capital)}</span>
+                    <span>{fmt(transmissionResult.av.droits)}</span>
+                    <span>{fmt(transmissionResult.av.capital - transmissionResult.av.droits)}</span>
+                  </div>
+                )}
+              </div>
+              <p className="sc-summary-note sc-summary-note--muted">
+                Cumul 2 décès — droits DMTG descendants, conjoint exonéré
+              </p>
+            </div>
+          )}
 
           <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
             <h2 className="sc-summary-title">Synthèse</h2>
