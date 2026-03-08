@@ -113,6 +113,17 @@
   gap: 10px;
 }
 
+.sc-civil-grid__top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.sc-civil-grid__top-row--triple {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 0.9fr);
+}
+
 .sc-balance-grid {
   display: flex;
   flex-direction: column;
@@ -481,6 +492,10 @@
   text-align: right;
   transition: border-color 0.2s;
   outline: none;
+}
+
+.sc-field input.sc-input--left {
+  text-align: left;
 }
 
 .sc-field input:hover,
@@ -1289,6 +1304,11 @@
   }
 
   .sc-civil-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-civil-grid__top-row,
+  .sc-civil-grid__top-row--triple {
     grid-template-columns: 1fr;
   }
 

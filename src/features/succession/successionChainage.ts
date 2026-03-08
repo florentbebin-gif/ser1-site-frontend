@@ -5,6 +5,7 @@ import type {
   SuccessionCivilContext,
   SuccessionEnfant,
   SuccessionLiquidationContext,
+  SuccessionPatrimonialContext,
 } from './successionDraft';
 import {
   buildSuccessionDescendantRecipients,
@@ -13,6 +14,7 @@ import {
   countEffectiveDescendantBranchesForDeceased,
   type SuccessionDeceasedSide,
 } from './successionEnfants';
+import { getUsufruitValuationFromBirthDate } from './successionUsufruit';
 
 export type SuccessionChainOrder = 'epoux1' | 'epoux2';
 export type SuccessionChainRegime = 'communaute_legale' | 'separation_biens' | 'communaute_universelle';
@@ -53,6 +55,7 @@ interface SuccessionChainageInput {
   order: SuccessionChainOrder;
   dmtgSettings: DmtgSettings;
   attributionBiensCommunsPct?: number;
+  patrimonial?: Pick<SuccessionPatrimonialContext, 'donationEntreEpouxActive' | 'donationEntreEpouxOption'>;
   enfantsContext?: SuccessionEnfant[];
   familyMembers?: FamilyMember[];
 }
@@ -91,11 +94,102 @@ function computeFirstEstate(
   return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (actifCommun * pctDefunt);
 }
 
-function computeConjointShareRatio(civil: SuccessionCivilContext, nbEnfants: number): number {
-  if (civil.situationMatrimoniale === 'marie') {
-    return nbEnfants > 0 ? 0.25 : 1;
+function getQuotiteDisponibleRatio(nbEnfants: number): number {
+  if (nbEnfants <= 0) return 1;
+  if (nbEnfants === 1) return 0.5;
+  if (nbEnfants === 2) return 1 / 3;
+  return 0.25;
+}
+
+function getSurvivingSpouseBirthDate(
+  civil: SuccessionCivilContext,
+  deceased: SuccessionDeceasedSide,
+): string | undefined {
+  return deceased === 'epoux1' ? civil.dateNaissanceEpoux2 : civil.dateNaissanceEpoux1;
+}
+
+function computeStep1Split(
+  civil: SuccessionCivilContext,
+  firstEstate: number,
+  nbEnfants: number,
+  deceased: SuccessionDeceasedSide,
+  patrimonial?: Pick<SuccessionPatrimonialContext, 'donationEntreEpouxActive' | 'donationEntreEpouxOption'>,
+): { conjointPart: number; enfantsPart: number; carryOverToStep2: number; warnings: string[] } {
+  if (civil.situationMatrimoniale !== 'marie') {
+    return { conjointPart: 0, enfantsPart: firstEstate, carryOverToStep2: 0, warnings: [] };
   }
-  return 0;
+  if (nbEnfants <= 0) {
+    return { conjointPart: firstEstate, enfantsPart: 0, carryOverToStep2: firstEstate, warnings: [] };
+  }
+
+  const warnings: string[] = [];
+  const fallback = {
+    conjointPart: firstEstate * 0.25,
+    enfantsPart: firstEstate * 0.75,
+    carryOverToStep2: firstEstate * 0.25,
+  };
+
+  if (!patrimonial?.donationEntreEpouxActive) {
+    warnings.push('Hypothèse simplifiée: part du conjoint au 1er décès fixée à 1/4 en pleine propriété.');
+    return { ...fallback, warnings };
+  }
+
+  if (patrimonial.donationEntreEpouxOption === 'pleine_propriete_quotite') {
+    const spousePart = firstEstate * getQuotiteDisponibleRatio(nbEnfants);
+    return {
+      conjointPart: spousePart,
+      enfantsPart: Math.max(0, firstEstate - spousePart),
+      carryOverToStep2: spousePart,
+      warnings: ['Donation entre époux: quotité disponible en pleine propriété retenue pour le conjoint survivant.'],
+    };
+  }
+
+  if (patrimonial.donationEntreEpouxOption === 'pleine_propriete_totale') {
+    return {
+      conjointPart: firstEstate,
+      enfantsPart: 0,
+      carryOverToStep2: firstEstate,
+      warnings: ['Donation entre époux: totalité en pleine propriété retenue dans le module simplifié, sous réserve de réduction civile.'],
+    };
+  }
+
+  const spouseBirthDate = getSurvivingSpouseBirthDate(civil, deceased);
+  if (!spouseBirthDate) {
+    warnings.push('Donation entre époux avec usufruit: date de naissance du conjoint survivant manquante, repli moteur sur 1/4 en pleine propriété.');
+    return { ...fallback, warnings };
+  }
+
+  if (patrimonial.donationEntreEpouxOption === 'usufruit_total') {
+    const valuation = getUsufruitValuationFromBirthDate(spouseBirthDate, firstEstate);
+    if (!valuation) {
+      warnings.push('Donation entre époux en usufruit total: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriété.');
+      return { ...fallback, warnings };
+    }
+    warnings.push(`Donation entre époux: usufruit total valorisé selon l’art. 669 CGI (usufruitier ${valuation.age} ans, usufruit ${Math.round(valuation.tauxUsufruit * 100)}%).`);
+    return {
+      conjointPart: valuation.valeurUsufruit,
+      enfantsPart: valuation.valeurNuePropriete,
+      carryOverToStep2: 0,
+      warnings,
+    };
+  }
+
+  if (patrimonial.donationEntreEpouxOption === 'mixte') {
+    const valuation = getUsufruitValuationFromBirthDate(spouseBirthDate, firstEstate * 0.75);
+    if (!valuation) {
+      warnings.push('Donation entre époux mixte: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriété.');
+      return { ...fallback, warnings };
+    }
+    warnings.push(`Donation entre époux mixte: 1/4 en pleine propriété + usufruit des 3/4 valorisé selon l’art. 669 CGI (usufruitier ${valuation.age} ans, usufruit ${Math.round(valuation.tauxUsufruit * 100)}% sur la part démembrée).`);
+    return {
+      conjointPart: (firstEstate * 0.25) + valuation.valeurUsufruit,
+      enfantsPart: valuation.valeurNuePropriete,
+      carryOverToStep2: firstEstate * 0.25,
+      warnings,
+    };
+  }
+
+  return { ...fallback, warnings };
 }
 
 function buildFallbackBranchBeneficiaries(
@@ -234,7 +328,6 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   const attributionPct = input.attributionBiensCommunsPct ?? 50;
   const firstEstate = computeFirstEstate(input.regimeUsed, input.order, input.liquidation, attributionPct);
   const survivorBase = Math.max(0, totalPatrimoine - firstEstate);
-  const conjointShareRatio = computeConjointShareRatio(input.civil, nbEnfants);
   const warnings: string[] = [];
 
   if (attributionPct !== 50 && input.regimeUsed === 'communaute_legale') {
@@ -246,16 +339,21 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   if (input.civil.situationMatrimoniale === 'pacse') {
     warnings.push('PACS: hypothèse simplifiée sans transmission automatique au partenaire (testament non modélisé ici).');
   }
-  if (input.civil.situationMatrimoniale === 'marie' && nbEnfants > 0) {
-    warnings.push('Hypothèse simplifiée: part du conjoint au 1er décès fixée à 1/4 en pleine propriété.');
-  }
   if (hasRepresentationOnAnySide(enfantsContext, familyMembers)) {
     warnings.push('Chaînage: représentation successorale simplifiée prise en compte pour les petits-enfants déclarés.');
   }
   warnings.push('Module de chaînage simplifié: liquidation notariale fine et options civiles avancées non modélisées.');
 
-  const step1ConjointPart = firstEstate * conjointShareRatio;
-  const step1EnfantsPart = Math.max(0, firstEstate - step1ConjointPart);
+  const step1Split = computeStep1Split(
+    input.civil,
+    firstEstate,
+    nbEnfants,
+    input.order,
+    input.patrimonial,
+  );
+  warnings.push(...step1Split.warnings);
+  const step1ConjointPart = step1Split.conjointPart;
+  const step1EnfantsPart = step1Split.enfantsPart;
   const step1Transmission = computeChildrenTransmission(
     step1EnfantsPart,
     input.order,
@@ -266,7 +364,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   );
   warnings.push(...getStepWarnings(`Étape 1 (${getLabelForSide(input.order)})`, enfantsContext, familyMembers, input.order));
 
-  const step2Estate = survivorBase + step1ConjointPart;
+  const step2Estate = survivorBase + step1Split.carryOverToStep2;
   const step2ConjointPart = 0;
   const step2EnfantsPart = step2Estate;
   const otherSide = getOtherSide(input.order);

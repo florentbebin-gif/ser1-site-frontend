@@ -10,23 +10,7 @@ import {
   getEnfantParentLabel,
   getPetitEnfantsRepresentants,
 } from './successionEnfants';
-
-// Art. 669 CGI — valeur de l'usufruit selon l'âge de l'usufruitier
-const BAREME_USUFRUIT_669: Array<{ maxAge: number; tauxUsufruit: number }> = [
-  { maxAge: 20, tauxUsufruit: 0.9 },
-  { maxAge: 30, tauxUsufruit: 0.8 },
-  { maxAge: 40, tauxUsufruit: 0.7 },
-  { maxAge: 50, tauxUsufruit: 0.6 },
-  { maxAge: 60, tauxUsufruit: 0.5 },
-  { maxAge: 70, tauxUsufruit: 0.4 },
-  { maxAge: 80, tauxUsufruit: 0.3 },
-  { maxAge: 90, tauxUsufruit: 0.2 },
-  { maxAge: Infinity, tauxUsufruit: 0.1 },
-];
-
-function getTauxUsufruit(age: number): number {
-  return BAREME_USUFRUIT_669.find((b) => age <= b.maxAge)?.tauxUsufruit ?? 0.1;
-}
+import { getUsufruitRateFromAge } from './successionUsufruit';
 
 const CLAUSE_CONJOINT_LABEL = 'Conjoint survivant, à défaut enfants, à défaut héritiers';
 const CLAUSE_ENFANTS_LABEL = 'Les enfants par parts égales';
@@ -304,7 +288,7 @@ function buildSideAnalysis(
     // Clause démembrée : ventilation art. 669 CGI
     if (entry.typeContrat === 'demembree') {
       if (entry.ageUsufruitier != null) {
-        const tauxUsufruit = getTauxUsufruit(entry.ageUsufruitier);
+        const tauxUsufruit = getUsufruitRateFromAge(entry.ageUsufruitier);
         const tauxNuProp = 1 - tauxUsufruit;
         const preset = getClausePreset(entry.clauseBeneficiaire);
         const isConjointLike = civil.situationMatrimoniale === 'marie' || civil.situationMatrimoniale === 'pacse';

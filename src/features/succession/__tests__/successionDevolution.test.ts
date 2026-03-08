@@ -41,6 +41,41 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     expect(analysis.lines.some((line) => line.montantEstime === 150000)).toBe(true);
   });
 
+  it('valorise une donation entre époux en usufruit total selon l’art. 669 CGI', () => {
+    const analysis = buildSuccessionDevolutionAnalysis(
+      makeCivil({
+        situationMatrimoniale: 'marie',
+        dateNaissanceEpoux1: '1955-06-01',
+        dateNaissanceEpoux2: '1957-05-12',
+      }),
+      2,
+      { nbEnfantsNonCommuns: 0, testamentActif: false },
+      500000,
+      0,
+      [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      [],
+      {
+        patrimonial: {
+          donationEntreEpouxActive: true,
+          donationEntreEpouxOption: 'usufruit_total',
+        },
+        simulatedDeceased: 'epoux1',
+        referenceDate: new Date('2026-03-08'),
+      },
+    );
+
+    const conjointLine = analysis.lines.find((line) => line.heritier === 'Conjoint survivant');
+    const descendantsLine = analysis.lines.find((line) => line.heritier === 'Descendants');
+    expect(conjointLine?.montantEstime).toBe(200000);
+    expect(conjointLine?.droits).toContain('usufruit');
+    expect(descendantsLine?.montantEstime).toBe(300000);
+    expect(descendantsLine?.droits).toContain('Nue-propriété');
+    expect(analysis.warnings.some((warning) => warning.includes('art. 669 CGI'))).toBe(true);
+  });
+
   it('produit les warnings PACS sans testament', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'pacse', regimeMatrimonial: null }),
