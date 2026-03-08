@@ -62,6 +62,28 @@ describe('successionDraft', () => {
           description: 'Donation manuelle',
         },
       ],
+      [
+        {
+          id: 'asset-1',
+          owner: 'epoux1',
+          category: 'immobilier',
+          subCategory: 'Résidence principale',
+          amount: 250000,
+          label: 'Maison familiale',
+        },
+      ],
+      [
+        {
+          id: 'av-1',
+          nomContrat: 'Contrat A',
+          typeContrat: 'standard',
+          souscripteur: 'epoux1',
+          assure: 'epoux1',
+          clauseBeneficiaire: 'Conjoint puis enfants',
+          capitauxDeces: 80000,
+          versementsApres70: 15000,
+        },
+      ],
     );
 
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
@@ -80,6 +102,10 @@ describe('successionDraft', () => {
     expect(parsed?.patrimonial.donationEntreEpouxOption).toBe('mixte');
     expect(parsed?.donations).toHaveLength(1);
     expect(parsed?.donations[0].type).toBe('rapportable');
+    expect(parsed?.assetEntries).toHaveLength(1);
+    expect(parsed?.assetEntries[0].category).toBe('immobilier');
+    expect(parsed?.assuranceVieEntries).toHaveLength(1);
+    expect(parsed?.assuranceVieEntries[0].capitauxDeces).toBe(80000);
     expect(parsed?.enfants).toHaveLength(2);
     expect(parsed?.enfants[0]).toEqual({ id: 'E1', prenom: 'Alice', rattachement: 'commun' });
   });
@@ -107,6 +133,8 @@ describe('successionDraft', () => {
     expect(parsed?.patrimonial).toEqual(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
     expect(parsed?.enfants).toEqual(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
     expect(parsed?.donations).toEqual([]);
+    expect(parsed?.assetEntries).toEqual([]);
+    expect(parsed?.assuranceVieEntries).toEqual([]);
   });
 
   it('migre un draft v4 en enfants typés (v5)', () => {
@@ -224,5 +252,52 @@ describe('successionDraft', () => {
       'hors_part',
       'legs_particulier',
     ]);
+  });
+
+  it('migre la liquidation v9 en lignes patrimoniales détaillées v10', () => {
+    const raw = JSON.stringify({
+      version: 9,
+      form: {
+        actifNetSuccession: 300000,
+        heritiers: [{ lien: 'enfant', partSuccession: 300000 }],
+      },
+      civil: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_legale',
+        pacsConvention: 'separation',
+      },
+      liquidation: {
+        actifEpoux1: 120000,
+        actifEpoux2: 90000,
+        actifCommun: 60000,
+        nbEnfants: 2,
+      },
+      devolution: {
+        nbEnfantsNonCommuns: 0,
+        testamentActif: false,
+      },
+      patrimonial: {
+        donationsRapportables: 0,
+        donationsHorsPart: 0,
+        legsParticuliers: 0,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'usufruit_total',
+        preciputMontant: 0,
+        attributionIntegrale: false,
+        attributionBiensCommunsPct: 50,
+      },
+      donations: [],
+      enfants: [],
+      familyMembers: [],
+    });
+
+    const parsed = parseSuccessionDraftPayload(raw);
+    expect(parsed).not.toBeNull();
+    expect(parsed?.assetEntries.map((entry) => entry.owner)).toEqual([
+      'epoux1',
+      'epoux2',
+      'commun',
+    ]);
+    expect(parsed?.assuranceVieEntries).toEqual([]);
   });
 });

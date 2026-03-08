@@ -64,6 +64,36 @@ export interface SuccessionDonationEntry {
   description?: string;
 }
 
+export type SuccessionAssetOwner = 'epoux1' | 'epoux2' | 'commun';
+export type SuccessionAssetCategory =
+  | 'immobilier'
+  | 'financier'
+  | 'professionnel'
+  | 'divers'
+  | 'passif';
+
+export interface SuccessionAssetDetailEntry {
+  id: string;
+  owner: SuccessionAssetOwner;
+  category: SuccessionAssetCategory;
+  subCategory: string;
+  amount: number;
+  label?: string;
+}
+
+export type SuccessionAssuranceVieContractType = 'standard' | 'demembree' | 'personnalisee';
+
+export interface SuccessionAssuranceVieEntry {
+  id: string;
+  nomContrat?: string;
+  typeContrat: SuccessionAssuranceVieContractType;
+  souscripteur: Exclude<SuccessionAssetOwner, 'commun'>;
+  assure: Exclude<SuccessionAssetOwner, 'commun'>;
+  clauseBeneficiaire?: string;
+  capitauxDeces: number;
+  versementsApres70: number;
+}
+
 export type SuccessionEnfantRattachement = 'commun' | 'epoux1' | 'epoux2';
 
 export interface SuccessionEnfant {
@@ -72,8 +102,8 @@ export interface SuccessionEnfant {
   rattachement: SuccessionEnfantRattachement;
 }
 
-interface SuccessionDraftPayloadV9 {
-  version: 9;
+interface SuccessionDraftPayloadV10 {
+  version: 10;
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
   liquidation: SuccessionLiquidationContext;
@@ -82,6 +112,8 @@ interface SuccessionDraftPayloadV9 {
   enfants: SuccessionEnfant[];
   familyMembers: FamilyMember[];
   donations: SuccessionDonationEntry[];
+  assetEntries: SuccessionAssetDetailEntry[];
+  assuranceVieEntries: SuccessionAssuranceVieEntry[];
 }
 
 export const DEFAULT_SUCCESSION_CIVIL_CONTEXT: SuccessionCivilContext = {
@@ -118,6 +150,8 @@ export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContex
 
 export const DEFAULT_SUCCESSION_ENFANTS_CONTEXT: SuccessionEnfant[] = [];
 export const DEFAULT_SUCCESSION_DONATIONS: SuccessionDonationEntry[] = [];
+export const DEFAULT_SUCCESSION_ASSET_DETAILS: SuccessionAssetDetailEntry[] = [];
+export const DEFAULT_SUCCESSION_ASSURANCE_VIE: SuccessionAssuranceVieEntry[] = [];
 
 export type FamilyMemberType =
   | 'petit_enfant'
@@ -205,6 +239,22 @@ function isDonationEntryType(v: unknown): v is SuccessionDonationEntryType {
   return v === 'rapportable' || v === 'hors_part' || v === 'legs_particulier';
 }
 
+function isAssetOwner(v: unknown): v is SuccessionAssetOwner {
+  return v === 'epoux1' || v === 'epoux2' || v === 'commun';
+}
+
+function isAssetCategory(v: unknown): v is SuccessionAssetCategory {
+  return v === 'immobilier'
+    || v === 'financier'
+    || v === 'professionnel'
+    || v === 'divers'
+    || v === 'passif';
+}
+
+function isAssuranceVieContractType(v: unknown): v is SuccessionAssuranceVieContractType {
+  return v === 'standard' || v === 'demembree' || v === 'personnalisee';
+}
+
 export function buildSuccessionDraftPayload(
   form: PersistedSuccessionForm,
   civil: SuccessionCivilContext,
@@ -214,9 +264,11 @@ export function buildSuccessionDraftPayload(
   enfants: SuccessionEnfant[],
   familyMembers: FamilyMember[],
   donations: SuccessionDonationEntry[],
-): SuccessionDraftPayloadV9 {
+  assetEntries: SuccessionAssetDetailEntry[],
+  assuranceVieEntries: SuccessionAssuranceVieEntry[],
+): SuccessionDraftPayloadV10 {
   return {
-    version: 9,
+    version: 10,
     form,
     civil,
     liquidation,
@@ -225,6 +277,8 @@ export function buildSuccessionDraftPayload(
     enfants,
     familyMembers,
     donations,
+    assetEntries,
+    assuranceVieEntries,
   };
 }
 
@@ -318,6 +372,43 @@ function deriveLegacyDonations(
   return donations;
 }
 
+function deriveLegacyAssetEntries(
+  liquidation: SuccessionLiquidationContext,
+): SuccessionAssetDetailEntry[] {
+  const entries: SuccessionAssetDetailEntry[] = [];
+  if (liquidation.actifEpoux1 > 0) {
+    entries.push({
+      id: 'asset-epoux1-legacy',
+      owner: 'epoux1',
+      category: 'divers',
+      subCategory: 'Saisie agrégée',
+      amount: liquidation.actifEpoux1,
+      label: 'Migration agrégée legacy',
+    });
+  }
+  if (liquidation.actifEpoux2 > 0) {
+    entries.push({
+      id: 'asset-epoux2-legacy',
+      owner: 'epoux2',
+      category: 'divers',
+      subCategory: 'Saisie agrégée',
+      amount: liquidation.actifEpoux2,
+      label: 'Migration agrégée legacy',
+    });
+  }
+  if (liquidation.actifCommun > 0) {
+    entries.push({
+      id: 'asset-commun-legacy',
+      owner: 'commun',
+      category: 'divers',
+      subCategory: 'Saisie agrégée',
+      amount: liquidation.actifCommun,
+      label: 'Migration agrégée legacy',
+    });
+  }
+  return entries;
+}
+
 export function parseSuccessionDraftPayload(raw: string): {
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
@@ -327,6 +418,8 @@ export function parseSuccessionDraftPayload(raw: string): {
   enfants: SuccessionEnfant[];
   familyMembers: FamilyMember[];
   donations: SuccessionDonationEntry[];
+  assetEntries: SuccessionAssetDetailEntry[];
+  assuranceVieEntries: SuccessionAssuranceVieEntry[];
 } | null {
   try {
     const parsed = JSON.parse(raw) as unknown;
@@ -340,7 +433,8 @@ export function parseSuccessionDraftPayload(raw: string): {
         && parsed.version !== 6
         && parsed.version !== 7
         && parsed.version !== 8
-        && parsed.version !== 9)
+        && parsed.version !== 9
+        && parsed.version !== 10)
     ) return null;
     const payload = parsed as Record<string, unknown>;
 
@@ -382,7 +476,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       nbEnfants: asChildrenCount(liquidationRaw.nbEnfants, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.nbEnfants),
     };
 
-    const devolutionRaw = (payload.version === 3 || payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9) && isObject(payload.devolution)
+    const devolutionRaw = (payload.version === 3 || payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10) && isObject(payload.devolution)
       ? payload.devolution
       : {};
     const testamentActif = asBoolean(
@@ -409,7 +503,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       ),
     };
 
-    const patrimonialRaw = (payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9) && isObject(payload.patrimonial)
+    const patrimonialRaw = (payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10) && isObject(payload.patrimonial)
       ? payload.patrimonial
       : {};
     const patrimonial: SuccessionPatrimonialContext = {
@@ -447,7 +541,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       ),
     };
 
-    const enfantsRaw = (payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9) && Array.isArray(payload.enfants)
+    const enfantsRaw = (payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10) && Array.isArray(payload.enfants)
       ? payload.enfants
       : null;
     const enfants = enfantsRaw
@@ -460,7 +554,7 @@ export function parseSuccessionDraftPayload(raw: string): {
         }))
       : deriveLegacyEnfants(liquidation, devolution);
 
-    const familyMembersRaw = (payload.version === 7 || payload.version === 8 || payload.version === 9) && Array.isArray(payload.familyMembers)
+    const familyMembersRaw = (payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10) && Array.isArray(payload.familyMembers)
       ? payload.familyMembers
       : [];
     const familyMembers: FamilyMember[] = familyMembersRaw
@@ -473,7 +567,7 @@ export function parseSuccessionDraftPayload(raw: string): {
         parentEnfantId: typeof item.parentEnfantId === 'string' ? item.parentEnfantId : undefined,
       }));
 
-    const donationsRaw = payload.version === 9 && Array.isArray(payload.donations)
+    const donationsRaw = (payload.version === 9 || payload.version === 10) && Array.isArray(payload.donations)
       ? payload.donations
       : null;
     const donations = donationsRaw
@@ -497,6 +591,61 @@ export function parseSuccessionDraftPayload(raw: string): {
         .filter((item): item is SuccessionDonationEntry => item !== null)
       : deriveLegacyDonations(patrimonial);
 
+    const assetEntriesRaw = payload.version === 10 && Array.isArray(payload.assetEntries)
+      ? payload.assetEntries
+      : null;
+    const assetEntries = assetEntriesRaw
+      ? assetEntriesRaw
+        .filter((item): item is Record<string, unknown> => isObject(item))
+        .map((item, idx) => {
+          if (!isAssetOwner(item.owner) || !isAssetCategory(item.category)) return null;
+          const asset: SuccessionAssetDetailEntry = {
+            id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `asset-${idx + 1}`,
+            owner: item.owner,
+            category: item.category,
+            subCategory: normalizeOptionalString(item.subCategory) ?? 'Saisie libre',
+            amount: asAmount(item.amount, 0),
+          };
+          const label = normalizeOptionalString(item.label);
+          if (label) asset.label = label;
+          return asset;
+        })
+        .filter((item): item is SuccessionAssetDetailEntry => item !== null)
+      : deriveLegacyAssetEntries(liquidation);
+
+    const assuranceVieRaw = payload.version === 10 && Array.isArray(payload.assuranceVieEntries)
+      ? payload.assuranceVieEntries
+      : null;
+    const assuranceVieEntries = assuranceVieRaw
+      ? assuranceVieRaw
+        .filter((item): item is Record<string, unknown> => isObject(item))
+        .map((item, idx) => {
+          const souscripteur = item.souscripteur;
+          const assure = item.assure;
+          if (
+            !isAssuranceVieContractType(item.typeContrat)
+            || (souscripteur !== 'epoux1' && souscripteur !== 'epoux2')
+            || (assure !== 'epoux1' && assure !== 'epoux2')
+          ) {
+            return null;
+          }
+          const entry: SuccessionAssuranceVieEntry = {
+            id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `av-${idx + 1}`,
+            typeContrat: item.typeContrat,
+            souscripteur,
+            assure,
+            capitauxDeces: asAmount(item.capitauxDeces, 0),
+            versementsApres70: asAmount(item.versementsApres70, 0),
+          };
+          const nomContrat = normalizeOptionalString(item.nomContrat);
+          const clauseBeneficiaire = normalizeOptionalString(item.clauseBeneficiaire);
+          if (nomContrat) entry.nomContrat = nomContrat;
+          if (clauseBeneficiaire) entry.clauseBeneficiaire = clauseBeneficiaire;
+          return entry;
+        })
+        .filter((item): item is SuccessionAssuranceVieEntry => item !== null)
+      : DEFAULT_SUCCESSION_ASSURANCE_VIE;
+
     return {
       form: {
         actifNetSuccession,
@@ -509,6 +658,8 @@ export function parseSuccessionDraftPayload(raw: string): {
       enfants,
       familyMembers,
       donations,
+      assetEntries,
+      assuranceVieEntries,
     };
   } catch {
     return null;
