@@ -594,34 +594,37 @@
 .sc-donations-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .sc-donation-card {
   border: 1px solid var(--color-c8);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c7) 70%, #FFFFFF);
-  padding: 8px 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-c7) 50%, #FFFFFF);
+  padding: 6px 8px;
+  overflow: hidden;
 }
 
 .sc-donation-card__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .sc-donation-card__title {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--color-c1);
+  color: var(--color-c9);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .sc-donation-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
 }
 
 .sc-field--full {
@@ -673,10 +676,10 @@
 }
 
 .sc-donations-totals {
-  margin-top: 14px;
+  margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .sc-assets-sections {
@@ -772,18 +775,22 @@
 }
 
 .sc-remove-btn {
-  width: 30px;
-  height: 32px;
-  border: 1px solid var(--color-c8);
-  border-radius: 6px;
-  background: var(--color-c7);
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 4px;
+  background: none;
   color: var(--color-c9);
   cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  opacity: 0.6;
+  flex-shrink: 0;
 }
 
 .sc-remove-btn:hover {
   color: var(--color-c2);
-  border-color: var(--color-c2);
+  opacity: 1;
 }
 
 .sc-remove-btn:focus-visible {
