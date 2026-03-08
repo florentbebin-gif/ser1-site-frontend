@@ -245,6 +245,31 @@ const CHAIN_ORDER_OPTIONS: { value: SuccessionChainOrder; label: string }[] = [
   { value: 'epoux2', label: 'Époux 2 décède en premier' },
 ];
 
+const SC_DONUT_R = 27;
+const SC_DONUT_CIRC = 2 * Math.PI * SC_DONUT_R;
+
+function ScDonut({ transmis, droits }: { transmis: number; droits: number }) {
+  const total = transmis + droits;
+  if (total <= 0) {
+    return (
+      <svg width="68" height="68" viewBox="0 0 68 68" className="sc-synth-donut" aria-hidden="true">
+        <circle cx={34} cy={34} r={SC_DONUT_R} fill="none" stroke="var(--color-c8)" strokeWidth="9" />
+      </svg>
+    );
+  }
+  const netLen = (transmis / total) * SC_DONUT_CIRC;
+  const droitsLen = SC_DONUT_CIRC - netLen;
+  return (
+    <svg width="68" height="68" viewBox="0 0 68 68" className="sc-synth-donut" aria-hidden="true" style={{ transform: 'rotate(-90deg)' }}>
+      <circle cx={34} cy={34} r={SC_DONUT_R} fill="none" stroke="var(--color-c8)" strokeWidth="9" />
+      <circle cx={34} cy={34} r={SC_DONUT_R} fill="none" stroke="var(--color-c5)" strokeWidth="9"
+        strokeDasharray={`${netLen} ${SC_DONUT_CIRC}`} strokeDashoffset="0" strokeLinecap="butt" />
+      <circle cx={34} cy={34} r={SC_DONUT_R} fill="none" stroke="var(--color-c6)" strokeWidth="9"
+        strokeDasharray={`${droitsLen} ${SC_DONUT_CIRC}`} strokeDashoffset={`${-netLen}`} strokeLinecap="butt" />
+    </svg>
+  );
+}
+
 export default function SuccessionSimulator() {
   const { loading: settingsLoading, fiscalContext } = useFiscalContext({ strict: true });
   const fiscalSnapshot = useMemo(
@@ -582,7 +607,7 @@ export default function SuccessionSimulator() {
       ...devolutionAnalysis.warnings,
       ...patrimonialAnalysis.warnings,
       ...(assuranceVieEntries.length > 0
-        ? ['Les capitaux d’assurance-vie sont ajoutés à la masse transmise affichée, sans ventilation fiscale détaillée 990 I / 757 B dans ce module.']
+        ? ["Les capitaux d'assurance-vie sont ajoutés à la masse transmise affichée, sans ventilation fiscale détaillée 990 I / 757 B dans ce module."]
         : []),
     ].filter((warning) => {
       if (seen.has(warning)) return false;
@@ -1194,9 +1219,6 @@ export default function SuccessionSimulator() {
                 >
                   + Dispositions
                 </button>
-                <p className="sc-hint sc-hint--compact">
-                  Testament, ascendants et clauses civiles se gèrent ici, sous {dispositionsButtonAnchorLabel.toLowerCase()}.
-                </p>
               </div>
 
               <div className="sc-children-zone">
@@ -1434,8 +1456,6 @@ export default function SuccessionSimulator() {
                 </div>
               </div>
             )}
-            <p className="sc-hint">Enfants pris en compte automatiquement: {nbEnfants}</p>
-
             <div className="sc-assurance-vie-summary">
               <div className="sc-assurance-vie-summary__header">
                 <div>
@@ -1454,182 +1474,103 @@ export default function SuccessionSimulator() {
                   + Assurance vie
                 </button>
               </div>
-              <p className="sc-hint sc-hint--compact">
-                Les capitaux décès sont ajoutés à la masse transmise affichée, avec une lecture patrimoniale simplifiée.
-              </p>
             </div>
-
-            {predecesAnalysis.regimeLabel && (
-              <p className="sc-hint">
-                Régime appliqué pour le calcul: {predecesAnalysis.regimeLabel}.
-              </p>
-            )}
-
-            <p className="sc-hint sc-hint--compact">
-              {chainageAnalysis.applicable
-                ? 'Les 2 étapes sont affichées dans la carte de chronologie à droite.'
-                : 'La chronologie à 2 décès ne s&apos;applique pas à cette situation ; la masse civile reste analysée à droite.'}
-            </p>
-
-            {predecesAnalysis.warnings.length > 0 && (
-              <ul className="sc-warning-list">
-                {predecesAnalysis.warnings.map((warning, idx) => (
-                  <li key={`${warning}-${idx}`}>{warning}</li>
-                ))}
-              </ul>
-            )}
           </div>
 
+          {isExpert && (
           <div className="premium-card sc-card">
             <header className="sc-card__header">
               <h2 className="sc-card__title">Donations</h2>
               <p className="sc-card__subtitle">
-                {isExpert
-                  ? 'Saisie détaillée des donations et legs, agrégée automatiquement pour l’analyse civile.'
-                  : 'Montants agrégés utilisés pour la lecture civile des libéralités.'}
+                Saisie détaillée des donations et legs, agrégée automatiquement pour l&apos;analyse civile.
               </p>
             </header>
             <div className="sc-card__divider" />
-            {isExpert ? (
-              <>
-                {donationsContext.length > 0 ? (
-                  <div className="sc-donations-list">
-                    {donationsContext.map((entry, idx) => (
-                      <div key={entry.id} className="sc-donation-card">
-                        <div className="sc-donation-card__header">
-                          <strong className="sc-donation-card__title">Donation {idx + 1}</strong>
-                          <button
-                            type="button"
-                            className="sc-remove-btn"
-                            onClick={() => removeDonationEntry(entry.id)}
-                            title="Supprimer cette donation"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                        <div className="sc-donation-grid">
-                          <div className="sc-field">
-                            <label>Type</label>
-                            <ScSelect
-                              value={entry.type}
-                              onChange={(value) => updateDonationEntry(entry.id, 'type', value)}
-                              options={DONATION_TYPE_OPTIONS}
-                            />
-                          </div>
-                          <div className="sc-field">
-                            <label>Montant (€)</label>
-                            <input
-                              type="number"
-                              min={0}
-                              value={entry.montant || ''}
-                              onChange={(e) => updateDonationEntry(entry.id, 'montant', Number(e.target.value) || 0)}
-                              placeholder="Montant"
-                            />
-                          </div>
-                          <div className="sc-field">
-                            <label>Date</label>
-                            <input
-                              type="date"
-                              value={entry.date ?? ''}
-                              onChange={(e) => updateDonationEntry(entry.id, 'date', e.target.value)}
-                            />
-                          </div>
-                          <div className="sc-field">
-                            <label>Donataire</label>
-                            <input
-                              type="text"
-                              value={entry.donataire ?? ''}
-                              onChange={(e) => updateDonationEntry(entry.id, 'donataire', e.target.value)}
-                              placeholder="Nom ou qualité"
-                            />
-                          </div>
-                          <div className="sc-field sc-field--full">
-                            <label>Description</label>
-                            <input
-                              type="text"
-                              value={entry.description ?? ''}
-                              onChange={(e) => updateDonationEntry(entry.id, 'description', e.target.value)}
-                              placeholder="Commentaire libre"
-                            />
-                          </div>
-                        </div>
+            {donationsContext.length > 0 ? (
+              <div className="sc-donations-list">
+                {donationsContext.map((entry, idx) => (
+                  <div key={entry.id} className="sc-donation-card">
+                    <div className="sc-donation-card__header">
+                      <strong className="sc-donation-card__title">Donation {idx + 1}</strong>
+                      <button
+                        type="button"
+                        className="sc-remove-btn"
+                        onClick={() => removeDonationEntry(entry.id)}
+                        title="Supprimer cette donation"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <div className="sc-donation-grid">
+                      <div className="sc-field">
+                        <label>Type</label>
+                        <ScSelect
+                          value={entry.type}
+                          onChange={(value) => updateDonationEntry(entry.id, 'type', value)}
+                          options={DONATION_TYPE_OPTIONS}
+                        />
                       </div>
-                    ))}
+                      <div className="sc-field">
+                        <label>Montant (€)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={entry.montant || ''}
+                          onChange={(e) => updateDonationEntry(entry.id, 'montant', Number(e.target.value) || 0)}
+                          placeholder="Montant"
+                        />
+                      </div>
+                      <div className="sc-field">
+                        <label>Date</label>
+                        <input
+                          type="date"
+                          value={entry.date ?? ''}
+                          onChange={(e) => updateDonationEntry(entry.id, 'date', e.target.value)}
+                        />
+                      </div>
+                      <div className="sc-field">
+                        <label>Donataire</label>
+                        <input
+                          type="text"
+                          value={entry.donataire ?? ''}
+                          onChange={(e) => updateDonationEntry(entry.id, 'donataire', e.target.value)}
+                          placeholder="Nom ou qualité"
+                        />
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <p className="sc-hint sc-hint--compact">Aucune donation détaillée pour l’instant.</p>
-                )}
-
-                <div className="sc-inline-actions">
-                  <button
-                    type="button"
-                    className="premium-btn sc-btn sc-btn--secondary"
-                    onClick={addDonationEntry}
-                  >
-                    + Ajouter une donation
-                  </button>
-                </div>
-
-                <div className="sc-donations-totals">
-                  <div className="sc-summary-row">
-                    <span>Donations rapportables</span>
-                    <strong>{fmt(donationTotals.rapportable)}</strong>
-                  </div>
-                  <div className="sc-summary-row">
-                    <span>Donations hors part</span>
-                    <strong>{fmt(donationTotals.horsPart)}</strong>
-                  </div>
-                  <div className="sc-summary-row">
-                    <span>Legs particuliers</span>
-                    <strong>{fmt(donationTotals.legsParticuliers)}</strong>
-                  </div>
-                </div>
-              </>
+                ))}
+              </div>
             ) : (
-              <>
-                <div className="sc-civil-grid">
-                  <div className="sc-field">
-                    <label>Donations rapportables (€)</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={donationTotals.rapportable || ''}
-                      onChange={(e) => setDonationAggregate('rapportable', Number(e.target.value) || 0)}
-                      placeholder="Montant"
-                    />
-                  </div>
-                  <div className="sc-field">
-                    <label>Donations hors part (€)</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={donationTotals.horsPart || ''}
-                      onChange={(e) => setDonationAggregate('hors_part', Number(e.target.value) || 0)}
-                      placeholder="Montant"
-                    />
-                  </div>
-                  <div className="sc-field">
-                    <label>Legs particuliers (€)</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={donationTotals.legsParticuliers || ''}
-                      onChange={(e) => setDonationAggregate('legs_particulier', Number(e.target.value) || 0)}
-                      placeholder="Montant"
-                    />
-                  </div>
-                </div>
-                {donationsContext.length > 3 && (
-                  <p className="sc-hint sc-hint--compact">
-                    Modifier la saisie simplifiée regroupera les donations détaillées par type.
-                  </p>
-                )}
-              </>
+              <p className="sc-hint sc-hint--compact">Aucune donation détaillée pour l&apos;instant.</p>
             )}
-            <p className="sc-hint sc-hint--compact">
-              Dispositions civiles et testamentaires : voir le bouton + Dispositions dans Contexte familial.
-            </p>
+
+            <div className="sc-inline-actions">
+              <button
+                type="button"
+                className="sc-child-add-btn"
+                onClick={addDonationEntry}
+              >
+                + Ajouter une donation
+              </button>
+            </div>
+
+            <div className="sc-donations-totals">
+              <div className="sc-summary-row">
+                <span>Donations rapportables</span>
+                <strong>{fmt(donationTotals.rapportable)}</strong>
+              </div>
+              <div className="sc-summary-row">
+                <span>Donations hors part</span>
+                <strong>{fmt(donationTotals.horsPart)}</strong>
+              </div>
+              <div className="sc-summary-row">
+                <span>Legs particuliers</span>
+                <strong>{fmt(donationTotals.legsParticuliers)}</strong>
+              </div>
+            </div>
           </div>
+          )}
         </div>
 
         <div className="sc-right">
@@ -1642,12 +1583,22 @@ export default function SuccessionSimulator() {
           <div className="premium-card sc-summary-card sc-hero-card">
             <div className="sc-hero-header">
               <h2 className="sc-summary-title">Chronologie des décès</h2>
-              <ScSelect
-                className="sc-hero-order-select"
-                value={chainOrder}
-                onChange={(value) => setChainOrder(value as SuccessionChainOrder)}
-                options={CHAIN_ORDER_OPTIONS}
-              />
+              <div className="sc-pill-toggle" role="group" aria-label="Ordre des décès">
+                <button
+                  type="button"
+                  className={`sc-pill-toggle__btn${chainOrder === 'epoux1' ? ' is-active' : ''}`}
+                  onClick={() => setChainOrder('epoux1')}
+                >
+                  Époux 1 → Époux 2
+                </button>
+                <button
+                  type="button"
+                  className={`sc-pill-toggle__btn${chainOrder === 'epoux2' ? ' is-active' : ''}`}
+                  onClick={() => setChainOrder('epoux2')}
+                >
+                  Époux 2 → Époux 1
+                </button>
+              </div>
             </div>
             <div className="sc-card__divider sc-card__divider--tight" />
             {chainageAnalysis.applicable && chainageAnalysis.step1 && chainageAnalysis.step2 ? (
@@ -1708,16 +1659,6 @@ export default function SuccessionSimulator() {
                   <span>Total cumulé des droits (2 décès)</span>
                   <strong>{fmt(chainageAnalysis.totalDroits)}</strong>
                 </div>
-                {alternateChainageAnalysis.applicable && (
-                  <div className="sc-summary-row sc-summary-row--reserve">
-                    <span>
-                      Ordre inverse ({alternateChainageAnalysis.firstDecedeLabel}
-                      {' '}puis{' '}
-                      {alternateChainageAnalysis.secondDecedeLabel})
-                    </span>
-                    <strong>{fmt(alternateChainageAnalysis.totalDroits)}</strong>
-                  </div>
-                )}
               </div>
             ) : (
               <p className="sc-summary-note">
@@ -1789,39 +1730,38 @@ export default function SuccessionSimulator() {
           )}
 
           <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
-            <h2 className="sc-summary-title">Points d’attention</h2>
+            <h2 className="sc-summary-title">Synthèse</h2>
             <div className="sc-card__divider sc-card__divider--tight" />
-            <div className="sc-summary-placeholder">
-              <div className="sc-summary-row">
-                <span>Masse transmise estimée</span>
-                <strong>{fmt(derivedMasseTransmise)}</strong>
+            <div className="sc-synth-hero">
+              <div className="sc-synth-hero__left">
+                <div className="sc-synth-hero__label">Droits estimés (total)</div>
+                <div className="sc-synth-hero__value">{fmt(chainageAnalysis.totalDroits)}</div>
+                {derivedMasseTransmise > 0 && (
+                  <div className="sc-synth-hero__sub">
+                    sur {fmt(derivedMasseTransmise)} transmis
+                  </div>
+                )}
               </div>
-              {currentAssuranceVieTransmise > 0 && (
-                <div className="sc-summary-row">
-                  <span>Dont assurance-vie transmise</span>
-                  <strong>{fmt(currentAssuranceVieTransmise)}</strong>
-                </div>
-              )}
-              <div className="sc-summary-row">
-                <span>Masse successorale civile</span>
-                <strong>{fmt(derivedActifNetSuccession)}</strong>
-              </div>
-              <div className="sc-summary-row">
-                <span>Enfants pris en compte</span>
-                <strong>{nbEnfants}</strong>
-              </div>
-              {attentions.length > 0 ? (
-                <ul className="sc-warning-list sc-warning-list--compact">
-                  {attentions.map((warning, idx) => (
-                    <li key={`${warning}-${idx}`}>{warning}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="sc-summary-note sc-summary-note--muted">
-                  Aucun avertissement bloquant sur la situation saisie.
-                </p>
-              )}
+              <ScDonut
+                transmis={Math.max(0, derivedMasseTransmise - chainageAnalysis.totalDroits)}
+                droits={chainageAnalysis.totalDroits}
+              />
             </div>
+            {devolutionAnalysis.lines.length > 0 && (
+              <>
+                <div className="sc-card__divider sc-card__divider--tight" />
+                <div className="sc-synth-beneficiaires">
+                  {devolutionAnalysis.lines.map((line, idx) => (
+                    line.montantEstime !== null && (
+                      <div key={idx} className="sc-summary-row">
+                        <span>{line.heritier}</span>
+                        <strong>{fmt(line.montantEstime)}</strong>
+                      </div>
+                    )
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -1846,6 +1786,9 @@ export default function SuccessionSimulator() {
         </button>
         {hypothesesOpen && (
           <ul>
+            {attentions.map((warning, idx) => (
+              <li key={`att-${idx}`}>{warning}</li>
+            ))}
             <li>Barèmes DMTG et abattements appliqués depuis les paramètres de l&apos;application.</li>
             <li>
               Paramètres transmis au module:
@@ -1854,11 +1797,11 @@ export default function SuccessionSimulator() {
               AV décès après {fiscalSnapshot.avDeces.agePivotPrimes} ans {fmt(fiscalSnapshot.avDeces.apres70ans.globalAllowance)} (global).
             </li>
             <li>La lecture civile repose sur le contexte familial, les masses patrimoniales saisies et les dispositions déclarées.</li>
-            <li>Les capitaux décès d’assurance-vie sont ajoutés à la masse transmise affichée selon l’assuré déclaré, sans ventilation fiscale détaillée dans ce module.</li>
+            <li>Les capitaux décès d'assurance-vie sont ajoutés à la masse transmise affichée selon l'assuré déclaré, sans ventilation fiscale détaillée dans ce module.</li>
             <li>La chronologie 2 décès repose sur un chaînage simplifié avec warnings sur les cas non couverts.</li>
             <li>La dévolution légale est présentée en lecture civile simplifiée, sans gestion exhaustive des ordres successoraux.</li>
             <li>Les libéralités et avantages matrimoniaux sont qualifiés de façon indicative, sans recalcul automatique des droits dans ce module.</li>
-            <li>L’intégration chiffrée fine (rapport civil détaillé, réduction, liquidation notariale) n’est pas encore modélisée.</li>
+            <li>L'intégration chiffrée fine (rapport civil détaillé, réduction, liquidation notariale) n'est pas encore modélisée.</li>
             <li>Résultat indicatif, à confirmer par une analyse patrimoniale et notariale.</li>
           </ul>
         )}
@@ -2137,7 +2080,7 @@ export default function SuccessionSimulator() {
                 </div>
               ) : (
                 <p className="sc-hint sc-hint--compact">
-                  Aucun contrat d’assurance-vie saisi pour l’instant.
+                  Aucun contrat d'assurance-vie saisi pour l'instant.
                 </p>
               )}
 
