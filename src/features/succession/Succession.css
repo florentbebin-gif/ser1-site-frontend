@@ -757,8 +757,87 @@
   gap: 10px;
 }
 
-.sc-hero-order-select {
-  min-width: 230px;
+/* Pill toggle — ordre des décès (PR5) */
+.sc-pill-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--color-c8);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sc-pill-toggle__btn {
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  background: #FFFFFF;
+  color: var(--color-c9);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sc-pill-toggle__btn:first-child {
+  border-right: 1px solid var(--color-c8);
+}
+
+.sc-pill-toggle__btn.is-active {
+  background: var(--color-c2);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.sc-pill-toggle__btn:not(.is-active):hover {
+  background: var(--color-c7);
+}
+
+/* Hero synthèse — donut + KPI (PR5) */
+.sc-synth-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0 6px;
+  gap: 8px;
+}
+
+.sc-synth-hero__left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sc-synth-hero__label {
+  font-size: 11px;
+  font-weight: 500;
+  color: color-mix(in srgb, var(--color-c9) 60%, var(--color-c10));
+  margin-bottom: 4px;
+}
+
+.sc-synth-hero__value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-c1);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.sc-synth-hero__sub {
+  font-size: 11px;
+  color: var(--color-c9);
+  margin-top: 3px;
+}
+
+.sc-synth-donut {
+  flex-shrink: 0;
+}
+
+.sc-synth-beneficiaires {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .sc-summary-title {
