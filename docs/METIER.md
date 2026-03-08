@@ -91,7 +91,7 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 
 ### Entrees principales
 - situation matrimoniale et contexte familial
-- enfants / autres membres de la famille
+- enfants / autres membres de la famille, avec distinction visuelle possible des enfants décédés
 - actifs et passifs saisis distinctement en mode simplifie ; actifs / passifs detailles en mode expert
 - contrats d'assurance-vie saisis a part dans le bloc patrimonial, integres a la masse transmise affichee
 - donations / legs agrégés en mode simplifié ou détaillés en mode expert
@@ -117,6 +117,7 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - ce n'est pas une liquidation notariale exhaustive
 - toutes les subtilites civiles, donations anterieures et clauses complexes ne sont pas integralement calculees en moteur
 - l'assurance-vie est ajoutee a la masse transmise affichee, sans ventilation fiscale detaillee 990 I / 757 B dans ce module
+- la representation successorale des enfants decedes n'est pas encore calculee finement dans ce module guide
 - l'UI succession privilegie actuellement les analyses civiles/patrimoniales guidees; le calcul DMTG detaille par heredier n'est pas expose comme parcours principal de saisie
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
 

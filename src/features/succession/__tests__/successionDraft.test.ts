@@ -49,7 +49,7 @@ describe('successionDraft', () => {
       },
       [
         { id: 'E1', prenom: 'Alice', rattachement: 'commun' },
-        { id: 'E2', prenom: 'Bastien', rattachement: 'epoux1' },
+        { id: 'E2', prenom: 'Bastien', rattachement: 'epoux1', deceased: true },
       ],
       [],
       [
@@ -108,6 +108,7 @@ describe('successionDraft', () => {
     expect(parsed?.assuranceVieEntries[0].capitauxDeces).toBe(80000);
     expect(parsed?.enfants).toHaveLength(2);
     expect(parsed?.enfants[0]).toEqual({ id: 'E1', prenom: 'Alice', rattachement: 'commun' });
+    expect(parsed?.enfants[1]).toEqual({ id: 'E2', prenom: 'Bastien', rattachement: 'epoux1', deceased: true });
   });
 
   it('retourne null sur JSON invalide', () => {

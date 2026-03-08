@@ -46,6 +46,13 @@ import {
   type SituationMatrimoniale,
 } from './successionDraft';
 import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
+import {
+  countLivingEnfants,
+  countLivingNonCommuns,
+  getEnfantNodeLabel,
+  getEnfantParentLabel,
+  getEnfantRattachementOptions,
+} from './successionEnfants';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
@@ -231,7 +238,7 @@ function labelMember(m: FamilyMember, enfants: SuccessionEnfant[]): string {
   const typeLabel = MEMBER_TYPE_OPTIONS.find((o) => o.value === m.type)?.label ?? m.type;
   if (m.type === 'petit_enfant' && m.parentEnfantId) {
     const idx = enfants.findIndex((e) => e.id === m.parentEnfantId);
-    return idx >= 0 ? `${typeLabel} (fils/fille de E${idx + 1})` : typeLabel;
+    return idx >= 0 ? `${typeLabel} (fils/fille de ${getEnfantNodeLabel(idx, enfants[idx]?.deceased)})` : typeLabel;
   }
   if (m.branch) {
     const branchLabel = BRANCH_OPTIONS.find((o) => o.value === m.branch)?.label ?? m.branch;
@@ -347,9 +354,9 @@ export default function SuccessionSimulator() {
   }>({ type: '', branch: '', parentEnfantId: '' });
   const [chainOrder, setChainOrder] = useState<SuccessionChainOrder>('epoux1');
 
-  const nbEnfants = enfantsContext.length;
+  const nbEnfants = useMemo(() => countLivingEnfants(enfantsContext), [enfantsContext]);
   const nbEnfantsNonCommuns = useMemo(
-    () => enfantsContext.filter((enfant) => enfant.rattachement !== 'commun').length,
+    () => countLivingNonCommuns(enfantsContext),
     [enfantsContext],
   );
   const donationTotals = useMemo(() => donationsContext.reduce((totals, entry) => {
@@ -363,25 +370,10 @@ export default function SuccessionSimulator() {
     legsParticuliers: 0,
   }), [donationsContext]);
 
-  const enfantRattachementOptions = useMemo(() => {
-    const s = civilContext.situationMatrimoniale;
-    if (s === 'marie') return [
-      { value: 'commun', label: 'Enfant commun' },
-      { value: 'epoux1', label: "Enfant de l'époux 1" },
-      { value: 'epoux2', label: "Enfant de l'époux 2" },
-    ];
-    if (s === 'pacse' || s === 'concubinage') return [
-      { value: 'commun', label: 'Enfant commun' },
-      { value: 'epoux1', label: 'Enfant du partenaire 1' },
-      { value: 'epoux2', label: 'Enfant du partenaire 2' },
-    ];
-    if (s === 'divorce') return [
-      { value: 'epoux1', label: 'Enfant du/de la défunt(e)' },
-      { value: 'commun', label: 'Enfant commun (ex-couple)' },
-      { value: 'epoux2', label: "Enfant de l'ex-conjoint(e)" },
-    ];
-    return [{ value: 'epoux1', label: 'Enfant du/de la défunt(e)' }];
-  }, [civilContext.situationMatrimoniale]);
+  const enfantRattachementOptions = useMemo(
+    () => getEnfantRattachementOptions(civilContext.situationMatrimoniale),
+    [civilContext.situationMatrimoniale],
+  );
 
   const branchOptions = useMemo((): { value: FamilyBranch; label: string }[] => {
     const s = civilContext.situationMatrimoniale;
@@ -751,6 +743,14 @@ export default function SuccessionSimulator() {
     setEnfantsContext((prev) => prev.map((enfant) => (
       enfant.id === id
         ? { ...enfant, rattachement }
+        : enfant
+    )));
+  }, []);
+
+  const toggleEnfantDeceased = useCallback((id: string, deceased: boolean) => {
+    setEnfantsContext((prev) => prev.map((enfant) => (
+      enfant.id === id
+        ? { ...enfant, deceased: deceased || undefined }
         : enfant
     )));
   }, []);
@@ -1296,8 +1296,8 @@ export default function SuccessionSimulator() {
                     {enfantsContext.length > 0 && (
                       <div className="sc-children-list">
                         {enfantsContext.map((enfant, idx) => (
-                          <div key={enfant.id} className="sc-child-row">
-                            <span className="sc-child-row__label">E{idx + 1}</span>
+                          <div key={enfant.id} className={`sc-child-row${enfant.deceased ? ' sc-child-row--deceased' : ''}`}>
+                            <span className="sc-child-row__label">{getEnfantNodeLabel(idx, enfant.deceased)}</span>
                             {enfantRattachementOptions.length > 1 && (
                               <ScSelect
                                 className="sc-child-select"
@@ -1306,6 +1306,15 @@ export default function SuccessionSimulator() {
                                 options={enfantRattachementOptions}
                               />
                             )}
+                            <label className="sc-checkbox-label">
+                              <input
+                                type="checkbox"
+                                className="sc-checkbox"
+                                checked={!!enfant.deceased}
+                                onChange={(e) => toggleEnfantDeceased(enfant.id, e.target.checked)}
+                              />
+                              Décédé
+                            </label>
                             <button
                               type="button"
                               className="sc-child-remove-btn"
@@ -2153,7 +2162,7 @@ export default function SuccessionSimulator() {
                             <label>Répartition (%)</label>
                             {[
                               ...(isMarried || isPacsed ? [{ id: 'conjoint', label: isPacsed ? 'Partenaire' : 'Conjoint(e)' }] : []),
-                              ...enfantsContext.map((e, i) => ({ id: e.id, label: e.prenom ?? `Enfant ${i + 1}` })),
+                              ...enfantsContext.map((e, i) => ({ id: e.id, label: getEnfantParentLabel(e, i) })),
                               ...familyMembers.map((m) => ({ id: m.id, label: labelMember(m, enfantsContext) })),
                             ].map(({ id, label }) => {
                               const parts = parseCustomClause(entry.clauseBeneficiaire ?? '');
@@ -2287,7 +2296,7 @@ export default function SuccessionSimulator() {
                     onChange={(value) => setAddMemberForm((prev) => ({ ...prev, parentEnfantId: value }))}
                     options={[
                       { value: '', label: 'Choisir…', disabled: true },
-                      ...enfantsContext.map((e, i) => ({ value: e.id, label: `E${i + 1}` })),
+                      ...enfantsContext.map((e, i) => ({ value: e.id, label: getEnfantParentLabel(e, i) })),
                     ]}
                   />
                 </div>
