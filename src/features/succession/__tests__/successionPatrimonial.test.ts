@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SuccessionCivilContext, SuccessionPatrimonialContext } from '../successionDraft';
+import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
 import { buildSuccessionPatrimonialAnalysis } from '../successionPatrimonial';
 
 function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilContext {
@@ -78,5 +79,32 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
     );
 
     expect(analysis.warnings.some((w) => w.includes('option mixte 1/4 PP + 3/4 usufruit'))).toBe(true);
+  });
+
+  it('utilise la valeur actuelle des donations détaillées et signale le rappel fiscal', () => {
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const analysis = buildSuccessionPatrimonialAnalysis(
+      makeCivil({}),
+      500000,
+      2,
+      makePatrimonial({}),
+      [
+        {
+          id: 'don-1',
+          type: 'rapportable',
+          montant: 50000,
+          valeurActuelle: 90000,
+          date: '2024-02',
+          donSommeArgentExonere: true,
+          avecReserveUsufruit: true,
+        },
+      ],
+      snapshot,
+    );
+
+    expect(analysis.masseCivileReference).toBe(590000);
+    expect(analysis.warnings.some((w) => w.includes('rappel fiscal'))).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('790 G'))).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('réserve d’usufruit'))).toBe(true);
   });
 });

@@ -26,6 +26,7 @@ export type LienParente =
   | 'conjoint'
   | 'enfant'
   | 'petit_enfant'
+  | 'parent'
   | 'frere_soeur'
   | 'neveu_niece'
   | 'autre';
@@ -67,6 +68,7 @@ export function getAbattement(lien: LienParente, dmtg: DmtgSettings = DEFAULT_DM
       return Infinity; // Exonération totale
     case 'enfant':
     case 'petit_enfant':
+    case 'parent':
       return dmtg.ligneDirecte.abattement;
     case 'frere_soeur':
       return dmtg.frereSoeur.abattement;
@@ -84,6 +86,7 @@ function getScaleForLien(lien: LienParente, dmtg: DmtgSettings): DmtgScaleItem[]
   switch (lien) {
     case 'enfant':
     case 'petit_enfant':
+    case 'parent':
       return dmtg.ligneDirecte.scale;
     case 'frere_soeur':
       return dmtg.frereSoeur.scale;

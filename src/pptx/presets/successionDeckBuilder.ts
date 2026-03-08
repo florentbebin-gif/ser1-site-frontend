@@ -37,6 +37,7 @@ export interface SuccessionData {
       actifTransmis: number;
       assuranceVieTransmise?: number;
       masseTotaleTransmise?: number;
+      droitsAssuranceVie?: number;
       partConjoint: number;
       partEnfants: number;
       droitsEnfants: number;
@@ -45,6 +46,7 @@ export interface SuccessionData {
       actifTransmis: number;
       assuranceVieTransmise?: number;
       masseTotaleTransmise?: number;
+      droitsAssuranceVie?: number;
       partConjoint: number;
       partEnfants: number;
       droitsEnfants: number;
@@ -108,12 +110,14 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
     lines.push(
       `• Étape 1 (${data.firstDecedeLabel}) - masse totale ${fmt(data.step1.masseTotaleTransmise ?? data.step1.actifTransmis)}, ` +
       `dont assurance-vie ${fmt(data.step1.assuranceVieTransmise ?? 0)}, ` +
-      `part conjoint ${fmt(data.step1.partConjoint)}, droits descendants ${fmt(data.step1.droitsEnfants)}`,
+      `part conjoint ${fmt(data.step1.partConjoint)}, droits descendants ${fmt(data.step1.droitsEnfants)}` +
+      `${(data.step1.droitsAssuranceVie ?? 0) > 0 ? `, droits assurance-vie ${fmt(data.step1.droitsAssuranceVie ?? 0)}` : ''}`,
     );
     lines.push(
       `• Étape 2 (${data.secondDecedeLabel}) - masse totale ${fmt(data.step2.masseTotaleTransmise ?? data.step2.actifTransmis)}, ` +
       `dont assurance-vie ${fmt(data.step2.assuranceVieTransmise ?? 0)}, ` +
-      `part descendants ${fmt(data.step2.partEnfants)}, droits descendants ${fmt(data.step2.droitsEnfants)}`,
+      `part descendants ${fmt(data.step2.partEnfants)}, droits descendants ${fmt(data.step2.droitsEnfants)}` +
+      `${(data.step2.droitsAssuranceVie ?? 0) > 0 ? `, droits assurance-vie ${fmt(data.step2.droitsAssuranceVie ?? 0)}` : ''}`,
     );
     lines.push(`• Total cumulé des droits (2 décès): ${fmt(data.totalDroits)}`);
     if (typeof data.assuranceVieTotale === 'number' && data.assuranceVieTotale > 0) {

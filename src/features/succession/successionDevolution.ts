@@ -1,8 +1,14 @@
 import {
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+  type FamilyMember,
   type SuccessionCivilContext,
   type SuccessionDevolutionContext,
+  type SuccessionEnfant,
 } from './successionDraft';
+import {
+  buildSuccessionDescendantRecipients,
+  countEffectiveDescendantBranches,
+} from './successionEnfants';
 
 export interface SuccessionDevolutionLine {
   heritier: string;
@@ -50,10 +56,17 @@ function getQuotiteDisponibleRatio(nbEnfants: number): number {
   return 0.25;
 }
 
-function getDescendantsLine(nbEnfantsTotal: number, availablePct: number): string {
-  if (nbEnfantsTotal <= 0) return `${availablePct.toFixed(0)}% en pleine propriété`;
-  const perChild = availablePct / nbEnfantsTotal;
-  return `${availablePct.toFixed(0)}% en pleine propriété (${perChild.toFixed(2)}% par enfant)`;
+function getDescendantsLine(
+  nbBranches: number,
+  availablePct: number,
+  representedBranchLabels: string[],
+): string {
+  if (nbBranches <= 0) return `${availablePct.toFixed(0)}% en pleine propriété`;
+  const perBranch = availablePct / nbBranches;
+  const representationHint = representedBranchLabels.length > 0
+    ? `, représentation de ${representedBranchLabels.join(', ')}`
+    : '';
+  return `${availablePct.toFixed(0)}% en pleine propriété (${perBranch.toFixed(2)}% par branche${representationHint})`;
 }
 
 function addTestamentLines(
@@ -90,7 +103,7 @@ function addTestamentLines(
   if (context.typeDispositionTestamentaire === 'legs_titre_universel') {
     const ratio = Math.min(100, Math.max(0, context.quotePartLegsTitreUniverselPct)) / 100;
     if (ratio <= 0) {
-      warnings.push('Quote-part de legs a titre universel nulle: renseignez un pourcentage pertinent.');
+      warnings.push('Quote-part de legs à titre universel nulle: renseignez un pourcentage pertinent.');
     }
     lines.push({
       heritier: 'Légataire à titre universel',
@@ -121,8 +134,9 @@ export function buildSuccessionDevolutionAnalysis(
   contextInput: Partial<SuccessionDevolutionContext> | undefined,
   masseReferenceInput: number,
   legsParticuliersInput = 0,
+  enfantsContext: SuccessionEnfant[] = [],
+  familyMembers: FamilyMember[] = [],
 ): SuccessionDevolutionAnalysis {
-  const nbEnfantsTotal = asChildrenCount(nbEnfantsTotalInput, 0);
   const masseReference = asAmount(masseReferenceInput, 0);
   const warnings: string[] = [];
 
@@ -131,18 +145,37 @@ export function buildSuccessionDevolutionAnalysis(
     ...contextInput,
   };
 
+  const derivedBranches = countEffectiveDescendantBranches(enfantsContext, familyMembers);
+  const nbEnfantsTotal = Math.max(asChildrenCount(nbEnfantsTotalInput, 0), derivedBranches);
   const nbEnfantsNonCommunsRaw = asChildrenCount(
     context.nbEnfantsNonCommuns,
     DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.nbEnfantsNonCommuns,
   );
   const nbEnfantsNonCommuns = Math.min(nbEnfantsNonCommunsRaw, nbEnfantsTotal);
+  const reserve = getReserveInfo(nbEnfantsTotal);
+  const lines: SuccessionDevolutionLine[] = [];
+
+  const descendantRecipients = buildSuccessionDescendantRecipients(enfantsContext, familyMembers);
+  const representedBranchLabels = Array.from(
+    new Set(
+      descendantRecipients
+        .filter((recipient) => recipient.lien === 'petit_enfant')
+        .map((recipient) => recipient.branchLabel),
+    ),
+  );
+  const deceasedWithoutRepresentation = enfantsContext.filter(
+    (enfant) => enfant.deceased && !descendantRecipients.some((recipient) => recipient.branchId === enfant.id),
+  );
 
   if (nbEnfantsNonCommunsRaw > nbEnfantsTotal) {
-    warnings.push('Enfants non communs plafonnés au nombre total d’enfants.');
+    warnings.push('Enfants non communs plafonnés au nombre total de branches descendantes.');
   }
-
-  const lines: SuccessionDevolutionLine[] = [];
-  const reserve = getReserveInfo(nbEnfantsTotal);
+  if (representedBranchLabels.length > 0) {
+    warnings.push(`Représentation successorale simplifiée prise en compte pour ${representedBranchLabels.join(', ')}.`);
+  }
+  if (deceasedWithoutRepresentation.length > 0) {
+    warnings.push('Enfant décédé sans descendant représentant: non compté dans la dévolution simplifiée.');
+  }
 
   if (civil.situationMatrimoniale === 'marie') {
     if (nbEnfantsTotal > 0) {
@@ -154,7 +187,7 @@ export function buildSuccessionDevolutionAnalysis(
         });
         lines.push({
           heritier: 'Descendants',
-          droits: getDescendantsLine(nbEnfantsTotal, 75),
+          droits: getDescendantsLine(nbEnfantsTotal, 75, representedBranchLabels),
           montantEstime: masseReference * 0.75,
         });
       } else {
@@ -165,7 +198,7 @@ export function buildSuccessionDevolutionAnalysis(
         });
         lines.push({
           heritier: 'Option A - Descendants',
-          droits: getDescendantsLine(nbEnfantsTotal, 75),
+          droits: getDescendantsLine(nbEnfantsTotal, 75, representedBranchLabels),
           montantEstime: masseReference * 0.75,
         });
         lines.push({
@@ -215,7 +248,7 @@ export function buildSuccessionDevolutionAnalysis(
     if (nbEnfantsTotal > 0) {
       lines.push({
         heritier: 'Descendants',
-        droits: getDescendantsLine(nbEnfantsTotal, 100),
+        droits: getDescendantsLine(nbEnfantsTotal, 100, representedBranchLabels),
         montantEstime: masseReference,
       });
     } else {
@@ -235,7 +268,7 @@ export function buildSuccessionDevolutionAnalysis(
     if (nbEnfantsTotal > 0) {
       lines.push({
         heritier: 'Descendants',
-        droits: getDescendantsLine(nbEnfantsTotal, 100),
+        droits: getDescendantsLine(nbEnfantsTotal, 100, representedBranchLabels),
         montantEstime: masseReference,
       });
     } else {
@@ -245,7 +278,7 @@ export function buildSuccessionDevolutionAnalysis(
     if (nbEnfantsTotal > 0) {
       lines.push({
         heritier: 'Descendants',
-        droits: getDescendantsLine(nbEnfantsTotal, 100),
+        droits: getDescendantsLine(nbEnfantsTotal, 100, representedBranchLabels),
         montantEstime: masseReference,
       });
     } else {

@@ -212,6 +212,7 @@ function isLienParente(v: unknown): v is LienParente {
   return v === 'conjoint'
     || v === 'enfant'
     || v === 'petit_enfant'
+    || v === 'parent'
     || v === 'frere_soeur'
     || v === 'neveu_niece'
     || v === 'autre';
