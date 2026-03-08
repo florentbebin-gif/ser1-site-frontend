@@ -1544,11 +1544,8 @@ export default function SuccessionSimulator() {
           <div className="premium-card sc-card">
             <header className="sc-card__header">
               <h2 className="sc-card__title">Donations</h2>
-              <p className="sc-card__subtitle">
-                Saisie détaillée des donations et legs, agrégée automatiquement pour l&apos;analyse civile.
-              </p>
             </header>
-            <div className="sc-card__divider" />
+            <div className="sc-card__divider sc-card__divider--tight" />
             {donationsContext.length > 0 ? (
               <div className="sc-donations-list">
                 {donationsContext.map((entry, idx) => (
