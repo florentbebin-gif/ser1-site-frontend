@@ -108,6 +108,28 @@
   gap: 10px;
 }
 
+.sc-balance-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sc-balance-grid__row {
+  display: grid;
+  grid-template-columns: 88px repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.sc-balance-grid__label {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  color: var(--color-c1);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .sc-context-grid {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
@@ -1026,6 +1048,10 @@
   }
 
   .sc-civil-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-balance-grid__row {
     grid-template-columns: 1fr;
   }
 

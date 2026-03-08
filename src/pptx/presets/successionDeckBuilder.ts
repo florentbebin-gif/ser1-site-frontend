@@ -35,16 +35,21 @@ export interface SuccessionData {
     secondDecedeLabel: string;
     step1: {
       actifTransmis: number;
+      assuranceVieTransmise?: number;
+      masseTotaleTransmise?: number;
       partConjoint: number;
       partEnfants: number;
       droitsEnfants: number;
     } | null;
     step2: {
       actifTransmis: number;
+      assuranceVieTransmise?: number;
+      masseTotaleTransmise?: number;
       partConjoint: number;
       partEnfants: number;
       droitsEnfants: number;
     } | null;
+    assuranceVieTotale?: number;
     totalDroits: number;
     totalDroitsOrdreInverse?: number;
     warnings?: string[];
@@ -101,14 +106,19 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
 
   if (data.applicable && data.step1 && data.step2) {
     lines.push(
-      `• Étape 1 (${data.firstDecedeLabel}) - masse ${fmt(data.step1.actifTransmis)}, ` +
+      `• Étape 1 (${data.firstDecedeLabel}) - masse totale ${fmt(data.step1.masseTotaleTransmise ?? data.step1.actifTransmis)}, ` +
+      `dont assurance-vie ${fmt(data.step1.assuranceVieTransmise ?? 0)}, ` +
       `part conjoint ${fmt(data.step1.partConjoint)}, droits descendants ${fmt(data.step1.droitsEnfants)}`,
     );
     lines.push(
-      `• Étape 2 (${data.secondDecedeLabel}) - masse ${fmt(data.step2.actifTransmis)}, ` +
+      `• Étape 2 (${data.secondDecedeLabel}) - masse totale ${fmt(data.step2.masseTotaleTransmise ?? data.step2.actifTransmis)}, ` +
+      `dont assurance-vie ${fmt(data.step2.assuranceVieTransmise ?? 0)}, ` +
       `part descendants ${fmt(data.step2.partEnfants)}, droits descendants ${fmt(data.step2.droitsEnfants)}`,
     );
     lines.push(`• Total cumulé des droits (2 décès): ${fmt(data.totalDroits)}`);
+    if (typeof data.assuranceVieTotale === 'number' && data.assuranceVieTotale > 0) {
+      lines.push(`• Capitaux assurance-vie saisis: ${fmt(data.assuranceVieTotale)}`);
+    }
     if (typeof data.totalDroitsOrdreInverse === 'number') {
       lines.push(`• Ordre inverse: ${fmt(data.totalDroitsOrdreInverse)}`);
     }
@@ -187,7 +197,7 @@ export function buildSuccessionStudyDeck(
         '• Barème des droits de mutation à titre gratuit en vigueur (CGI Art. 777)',
         '• Abattement en ligne directe : 100 000 € par enfant (CGI Art. 779)',
         '• Exonération totale du conjoint survivant (CGI Art. 796-0 bis)',
-        '• Estimation hors donations antérieures et hors assurance-vie',
+        '• Estimation hors donations antérieures ; assurance-vie ajoutée à la masse transmise affichée',
         '• Les montants sont arrondis à l\'euro le plus proche',
       ].join('\n'),
     },
