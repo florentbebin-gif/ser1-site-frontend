@@ -30,6 +30,7 @@ interface SuccessionChainageInput {
   regimeUsed: SuccessionChainRegime | null;
   order: SuccessionChainOrder;
   dmtgSettings: DmtgSettings;
+  attributionBiensCommunsPct?: number;
 }
 
 function asAmount(value: unknown): number {
@@ -48,6 +49,7 @@ function computeFirstEstate(
   regimeUsed: SuccessionChainRegime,
   order: SuccessionChainOrder,
   liquidation: SuccessionLiquidationContext,
+  attributionBiensCommunsPct = 50,
 ): number {
   const actifEpoux1 = asAmount(liquidation.actifEpoux1);
   const actifEpoux2 = asAmount(liquidation.actifEpoux2);
@@ -61,8 +63,9 @@ function computeFirstEstate(
     return order === 'epoux1' ? actifEpoux1 : actifEpoux2;
   }
 
-  // communaute_legale
-  return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (actifCommun / 2);
+  // communaute_legale: la part du défunt = biens propres + (100 - attribution%) de la communauté
+  const pctDefunt = (100 - Math.min(100, Math.max(0, attributionBiensCommunsPct))) / 100;
+  return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (actifCommun * pctDefunt);
 }
 
 function computeConjointShareRatio(civil: SuccessionCivilContext, nbEnfants: number): number {
@@ -112,11 +115,15 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     return buildEmptyAnalysis(input.order, 'Chaînage disponible pour couples mariés/pacsés avec régime de liquidation.');
   }
 
-  const firstEstate = computeFirstEstate(input.regimeUsed, input.order, input.liquidation);
+  const attributionPct = input.attributionBiensCommunsPct ?? 50;
+  const firstEstate = computeFirstEstate(input.regimeUsed, input.order, input.liquidation, attributionPct);
   const survivorBase = Math.max(0, totalPatrimoine - firstEstate);
   const conjointShareRatio = computeConjointShareRatio(input.civil, nbEnfants);
   const warnings: string[] = [];
 
+  if (attributionPct !== 50 && input.regimeUsed === 'communaute_legale') {
+    warnings.push(`Attribution des biens communs au survivant: ${attributionPct} % appliqué au partage communautaire.`);
+  }
   if (nbEnfants <= 0) {
     warnings.push('Aucun enfant déclaré: les droits descendants des étapes 1/2 sont nuls dans ce module.');
   }

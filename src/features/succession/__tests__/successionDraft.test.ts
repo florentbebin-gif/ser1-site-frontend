@@ -45,6 +45,7 @@ describe('successionDraft', () => {
         donationEntreEpouxOption: 'mixte',
         preciputMontant: 12000,
         attributionIntegrale: false,
+        attributionBiensCommunsPct: 50,
       },
       [
         { id: 'E1', prenom: 'Alice', rattachement: 'commun' },
