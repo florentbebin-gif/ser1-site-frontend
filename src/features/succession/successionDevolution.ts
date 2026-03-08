@@ -69,6 +69,53 @@ function getDescendantsLine(
   return `${availablePct.toFixed(0)}% en pleine propriété (${perBranch.toFixed(2)}% par branche${representationHint})`;
 }
 
+function addAscendantsCollaterauxLines(
+  lines: SuccessionDevolutionLine[],
+  warnings: string[],
+  familyMembers: FamilyMember[],
+  masseReference: number,
+): void {
+  const nbParents = familyMembers.filter((m) => m.type === 'parent').length;
+  const nbFreresSoeurs = familyMembers.filter((m) => m.type === 'frere_soeur').length;
+
+  if (nbParents === 0 && nbFreresSoeurs === 0) {
+    lines.push({
+      heritier: 'Héritiers légaux',
+      droits: 'Ordres 3 et 4 : ascendants ordinaires, collatéraux ordinaires (non modélisés)',
+      montantEstime: null,
+    });
+    warnings.push('Ordres successoraux 3 et 4 non modélisés : ajoutez les membres de la famille pour affiner.');
+  } else if (nbParents >= 2 && nbFreresSoeurs === 0) {
+    lines.push({ heritier: 'Père et mère', droits: '1/2 chacun (art. 736 CC)', montantEstime: masseReference });
+  } else if (nbParents === 1 && nbFreresSoeurs === 0) {
+    lines.push({ heritier: 'Ascendant survivant', droits: 'Totalité (art. 736 CC)', montantEstime: masseReference });
+  } else if (nbParents === 0) {
+    const label = `${nbFreresSoeurs} ${nbFreresSoeurs > 1 ? 'collatéraux privilégiés' : 'collatéral privilégié'}`;
+    lines.push({
+      heritier: 'Frères et sœurs',
+      droits: `Totalité à parts égales — ${label} (art. 737 CC)`,
+      montantEstime: masseReference,
+    });
+  } else if (nbParents >= 2) {
+    const label = `${nbFreresSoeurs} ${nbFreresSoeurs > 1 ? 'collatéraux privilégiés' : 'collatéral privilégié'}`;
+    lines.push({ heritier: 'Père et mère', droits: '1/4 chacun (art. 738 CC)', montantEstime: masseReference * 0.5 });
+    lines.push({
+      heritier: 'Frères et sœurs',
+      droits: `1/2 à parts égales — ${label} (art. 738 CC)`,
+      montantEstime: masseReference * 0.5,
+    });
+  } else {
+    // nbParents === 1, nbFreresSoeurs > 0
+    const label = `${nbFreresSoeurs} ${nbFreresSoeurs > 1 ? 'collatéraux privilégiés' : 'collatéral privilégié'}`;
+    lines.push({ heritier: 'Ascendant survivant', droits: '1/4 (art. 738-1 CC)', montantEstime: masseReference * 0.25 });
+    lines.push({
+      heritier: 'Frères et sœurs',
+      droits: `3/4 à parts égales — ${label} (art. 738-1 CC)`,
+      montantEstime: masseReference * 0.75,
+    });
+  }
+}
+
 function addTestamentLines(
   lines: SuccessionDevolutionLine[],
   warnings: string[],
@@ -203,25 +250,19 @@ export function buildSuccessionDevolutionAnalysis(
         });
       }
     } else {
-      if (context.ascendantsSurvivants) {
-        lines.push({
-          heritier: 'Conjoint survivant',
-          droits: 'Droits dépendants du nombre d’ascendants privilégiés (non modélisé finement)',
-          montantEstime: null,
-        });
-        lines.push({
-          heritier: 'Ascendants survivants',
-          droits: 'Droits à préciser selon la configuration familiale',
-          montantEstime: null,
-        });
+      // Art. 757-1 / 757-2 CC : marié sans descendants
+      const nbParents = familyMembers.filter((m) => m.type === 'parent').length;
+      const effectiveParents = nbParents > 0 ? nbParents : (context.ascendantsSurvivants ? 1 : 0);
+      if (effectiveParents >= 2) {
+        lines.push({ heritier: 'Conjoint survivant', droits: '1/2 en pleine propriété (art. 757-1 CC)', montantEstime: masseReference * 0.5 });
+        lines.push({ heritier: 'Ascendants (père et mère)', droits: '1/4 chacun en pleine propriété (art. 757-1 CC)', montantEstime: masseReference * 0.5 });
+      } else if (effectiveParents === 1) {
+        lines.push({ heritier: 'Conjoint survivant', droits: '3/4 en pleine propriété (art. 757-1 CC)', montantEstime: masseReference * 0.75 });
+        lines.push({ heritier: 'Ascendant survivant', droits: '1/4 en pleine propriété (art. 757-1 CC)', montantEstime: masseReference * 0.25 });
       } else {
-        lines.push({
-          heritier: 'Conjoint survivant',
-          droits: 'Droits à préciser selon collatéraux privilégiés (non modélisé finement)',
-          montantEstime: null,
-        });
+        // Art. 757-2 CC : pas d'ascendants → conjoint hérite de tout (frères/sœurs exclus)
+        lines.push({ heritier: 'Conjoint survivant', droits: 'Totalité de la succession (art. 757-2 CC)', montantEstime: masseReference });
       }
-      warnings.push('Dévolution sans descendants: modélisation simplifiée, analyse notariale requise.');
     }
   } else if (civil.situationMatrimoniale === 'pacse') {
     warnings.push('PACS: pas de vocation successorale légale automatique sans testament.');
@@ -240,9 +281,11 @@ export function buildSuccessionDevolutionAnalysis(
         droits: getDescendantsLine(nbEnfantsTotal, 100, representedBranchLabels),
         montantEstime: masseReference,
       });
-    } else {
-      warnings.push('Dévolution sans descendants non modélisée finement (ascendants/collatéraux exclus).');
+    } else if (!context.testamentActif) {
+      // Sans testament : héritiers légaux (parents / frères et sœurs)
+      addAscendantsCollaterauxLines(lines, warnings, familyMembers, masseReference);
     }
+    // Avec testament et sans descendants : le partenaire peut recueillir tout (pas de réserve héréditaire)
   } else if (civil.situationMatrimoniale === 'concubinage') {
     warnings.push('Concubinage: pas de vocation successorale légale du concubin.');
     if (context.testamentActif) {
@@ -260,9 +303,11 @@ export function buildSuccessionDevolutionAnalysis(
         droits: getDescendantsLine(nbEnfantsTotal, 100, representedBranchLabels),
         montantEstime: masseReference,
       });
-    } else {
-      warnings.push('Dévolution sans descendants non modélisée finement (ascendants/collatéraux exclus).');
+    } else if (!context.testamentActif) {
+      // Sans testament : héritiers légaux (parents / frères et sœurs)
+      addAscendantsCollaterauxLines(lines, warnings, familyMembers, masseReference);
     }
+    // Avec testament et sans descendants : le concubin peut recueillir tout (pas de réserve héréditaire)
   } else {
     if (nbEnfantsTotal > 0) {
       lines.push({
@@ -271,12 +316,8 @@ export function buildSuccessionDevolutionAnalysis(
         montantEstime: masseReference,
       });
     } else {
-      lines.push({
-        heritier: 'Héritiers légaux',
-        droits: 'Ordres successoraux non détaillés dans ce module',
-        montantEstime: null,
-      });
-      warnings.push('Ordres successoraux hors descendants non modélisés finement.');
+      // Art. 736-738-1 CC : sans descendants ni conjoint
+      addAscendantsCollaterauxLines(lines, warnings, familyMembers, masseReference);
     }
   }
 
