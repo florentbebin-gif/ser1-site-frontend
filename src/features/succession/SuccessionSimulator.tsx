@@ -1778,23 +1778,32 @@ export default function SuccessionSimulator() {
             <div className="sc-card__divider sc-card__divider--tight" />
             {donationsContext.length > 0 ? (
               <div className="sc-donations-list">
-                {donationsContext.map((entry, idx) => (
-                  <div key={entry.id} className="sc-donation-card">
+                {donationsContext.map((entry, idx) => {
+                  const donationTypeLabel = DONATION_TYPE_OPTIONS.find((option) => option.value === entry.type)?.label
+                    ?? 'Donation detaillee';
+
+                  return (
+                    <div key={entry.id} className="sc-donation-card">
                     <div className="sc-donation-card__header">
-                      <strong className="sc-donation-card__title">Donation {idx + 1}</strong>
+                      <div className="sc-donation-card__heading">
+                        <strong className="sc-donation-card__title">Donation {idx + 1}</strong>
+                        <span className="sc-donation-card__subtitle">{donationTypeLabel}</span>
+                      </div>
                       <button
                         type="button"
-                        className="sc-remove-btn"
+                        className="sc-remove-btn sc-remove-btn--quiet"
                         onClick={() => removeDonationEntry(entry.id)}
                         title="Supprimer cette donation"
+                        aria-label="Supprimer cette donation"
                       >
                         ✕
                       </button>
                     </div>
                     <div className="sc-donation-grid">
-                      <div className="sc-field">
+                      <div className="sc-field sc-field--span-2">
                         <label>Type</label>
                         <ScSelect
+                          className="sc-donation-select"
                           value={entry.type}
                           onChange={(value) => updateDonationEntry(entry.id, 'type', value)}
                           options={DONATION_TYPE_OPTIONS}
@@ -1822,14 +1831,16 @@ export default function SuccessionSimulator() {
                       <div className="sc-field">
                         <label>Donateur</label>
                         <ScSelect
+                          className="sc-donation-select"
                           value={entry.donateur ?? ''}
                           onChange={(value) => updateDonationEntry(entry.id, 'donateur', value)}
                           options={donateurOptions}
                         />
                       </div>
-                      <div className="sc-field sc-field--full">
+                      <div className="sc-field">
                         <label>Donataire</label>
                         <ScSelect
+                          className="sc-donation-select"
                           value={entry.donataire ?? ''}
                           onChange={(value) => updateDonationEntry(entry.id, 'donataire', value)}
                           options={donatairesOptions}
@@ -1855,8 +1866,11 @@ export default function SuccessionSimulator() {
                           placeholder="0"
                         />
                       </div>
-                      <div className="sc-field sc-field--full sc-donation-flags">
-                        <label className="sc-checkbox-label">
+                    </div>
+                    <div className="sc-donation-flags">
+                      <span className="sc-donation-flags__title">Caracteristiques</span>
+                      <div className="sc-donation-flags__items">
+                        <label className="sc-donation-flag">
                           <input
                             type="checkbox"
                             className="sc-checkbox"
@@ -1865,7 +1879,7 @@ export default function SuccessionSimulator() {
                           />
                           Don de somme d&apos;argent exonéré
                         </label>
-                        <label className="sc-checkbox-label">
+                        <label className="sc-donation-flag">
                           <input
                             type="checkbox"
                             className="sc-checkbox"
@@ -1876,8 +1890,9 @@ export default function SuccessionSimulator() {
                         </label>
                       </div>
                     </div>
-                  </div>
-                ))}
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <p className="sc-hint sc-hint--compact">Aucune donation détaillée pour l&apos;instant.</p>
