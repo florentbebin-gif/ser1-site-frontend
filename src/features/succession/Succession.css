@@ -796,7 +796,7 @@
 .sc-assurance-vie-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .sc-asset-row {
@@ -833,22 +833,100 @@
   gap: 8px;
 }
 
-.sc-assurance-vie-card {
-  border: 1px solid var(--color-c8);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c8) 22%, #FFFFFF);
-  padding: 8px 10px;
+.sc-assurance-vie-contract {
+  border: 1px solid color-mix(in srgb, var(--color-c8) 88%, #FFFFFF);
+  border-radius: 12px;
+  background: #FFFFFF;
+  padding: 10px 12px;
   overflow: hidden;
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-c8) 55%, transparent);
+}
+
+.sc-assurance-vie-contract__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+}
+
+.sc-assurance-vie-contract__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sc-assurance-vie-contract__subtitle {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-c9) 78%, var(--color-c10));
+}
+
+.sc-assurance-vie-contract__section {
+  margin-top: 10px;
+}
+
+.sc-assurance-vie-contract__section-title {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-c9) 72%, var(--color-c10));
+}
+
+.sc-assurance-vie-contract__hint {
+  margin-top: 8px;
 }
 
 .sc-assurance-vie-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 8px 10px;
+}
+
+.sc-assurance-vie-grid--stack {
+  grid-template-columns: 1fr;
 }
 
 .sc-member-modal--wide {
-  max-width: 520px;
+  max-width: 540px;
+}
+
+.sc-assurance-vie-modal__body {
+  gap: 12px;
+}
+
+.sc-assurance-vie-select .sc-select__trigger {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.sc-assurance-vie-select .sc-select__label,
+.sc-assurance-vie-select .sc-select__option {
+  text-align: left;
+}
+
+.sc-inline-actions--compact {
+  margin-top: 6px;
+}
+
+.sc-assurance-vie-modal-summary {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sc-clause-custom--modal {
+  margin-top: 2px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-c7) 30%, #FFFFFF);
 }
 
 .sc-heir-row {

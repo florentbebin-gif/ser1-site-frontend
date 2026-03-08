@@ -353,6 +353,7 @@ export default function SuccessionSimulator() {
   const [showAddMemberPanel, setShowAddMemberPanel] = useState(false);
   const [showDispositionsModal, setShowDispositionsModal] = useState(false);
   const [showAssuranceVieModal, setShowAssuranceVieModal] = useState(false);
+  const [assuranceVieDraft, setAssuranceVieDraft] = useState<SuccessionAssuranceVieEntry[]>(DEFAULT_SUCCESSION_ASSURANCE_VIE);
   const [dispositionsDraft, setDispositionsDraft] = useState({
     attributionBiensCommunsPct: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
     donationEntreEpouxActive: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxActive,
@@ -627,6 +628,13 @@ export default function SuccessionSimulator() {
     capitaux: 0,
     versementsApres70: 0,
   }), [assuranceVieEntries]);
+  const assuranceVieDraftTotals = useMemo(() => assuranceVieDraft.reduce((totals, entry) => ({
+    capitaux: totals.capitaux + entry.capitauxDeces,
+    versementsApres70: totals.versementsApres70 + entry.versementsApres70,
+  }), {
+    capitaux: 0,
+    versementsApres70: 0,
+  }), [assuranceVieDraft]);
   const avFiscalAnalysis = useMemo(
     () => buildSuccessionAvFiscalAnalysis(
       assuranceVieEntries,
@@ -897,6 +905,7 @@ export default function SuccessionSimulator() {
     setLiquidationContext(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
     setAssetEntries(DEFAULT_SUCCESSION_ASSET_DETAILS);
     setAssuranceVieEntries(DEFAULT_SUCCESSION_ASSURANCE_VIE);
+    setAssuranceVieDraft(DEFAULT_SUCCESSION_ASSURANCE_VIE);
     setDevolutionContext(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
     setPatrimonialContext(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
     setDonationsContext(DEFAULT_SUCCESSION_DONATIONS);
@@ -1059,8 +1068,22 @@ export default function SuccessionSimulator() {
     setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
   }, []);
 
+  const openAssuranceVieModal = useCallback(() => {
+    setAssuranceVieDraft(assuranceVieEntries.map((entry) => ({ ...entry })));
+    setShowAssuranceVieModal(true);
+  }, [assuranceVieEntries]);
+
+  const closeAssuranceVieModal = useCallback(() => {
+    setShowAssuranceVieModal(false);
+  }, []);
+
+  const validateAssuranceVieModal = useCallback(() => {
+    setAssuranceVieEntries(assuranceVieDraft.map((entry) => ({ ...entry })));
+    setShowAssuranceVieModal(false);
+  }, [assuranceVieDraft]);
+
   const addAssuranceVieEntry = useCallback(() => {
-    setAssuranceVieEntries((prev) => ([
+    setAssuranceVieDraft((prev) => ([
       ...prev,
       {
         id: createAssuranceVieId(),
@@ -1078,7 +1101,7 @@ export default function SuccessionSimulator() {
     field: keyof SuccessionAssuranceVieEntry,
     value: string | number | undefined,
   ) => {
-    setAssuranceVieEntries((prev) => prev.map((entry) => {
+    setAssuranceVieDraft((prev) => prev.map((entry) => {
       if (entry.id !== id) return entry;
       if (field === 'capitauxDeces' || field === 'versementsApres70') {
         return {
@@ -1101,7 +1124,7 @@ export default function SuccessionSimulator() {
   }, []);
 
   const removeAssuranceVieEntry = useCallback((id: string) => {
-    setAssuranceVieEntries((prev) => prev.filter((entry) => entry.id !== id));
+    setAssuranceVieDraft((prev) => prev.filter((entry) => entry.id !== id));
   }, []);
 
   const openDispositionsModal = useCallback(() => {
@@ -1151,6 +1174,7 @@ export default function SuccessionSimulator() {
           setLiquidationContext(parsed.liquidation);
           setAssetEntries(parsed.assetEntries);
           setAssuranceVieEntries(parsed.assuranceVieEntries);
+          setAssuranceVieDraft(parsed.assuranceVieEntries);
           setDevolutionContext(parsed.devolution);
           setPatrimonialContext(parsed.patrimonial);
           setDonationsContext(parsed.donations);
@@ -1618,7 +1642,7 @@ export default function SuccessionSimulator() {
                           <button
                             type="button"
                             className="sc-child-add-btn"
-                            onClick={() => setShowAssuranceVieModal(true)}
+                            onClick={openAssuranceVieModal}
                           >
                             + Assurance vie
                           </button>
@@ -2339,7 +2363,7 @@ export default function SuccessionSimulator() {
       {showAssuranceVieModal && (
         <div
           className="sc-member-modal-overlay"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowAssuranceVieModal(false); }}
+          onClick={(e) => { if (e.target === e.currentTarget) closeAssuranceVieModal(); }}
         >
           <div className="sc-member-modal sc-member-modal--wide">
             <div className="sc-member-modal__header">
@@ -2347,32 +2371,39 @@ export default function SuccessionSimulator() {
               <button
                 type="button"
                 className="sc-member-modal__close"
-                onClick={() => setShowAssuranceVieModal(false)}
+                onClick={closeAssuranceVieModal}
                 aria-label="Fermer"
               >
                 ✕
               </button>
             </div>
-            <div className="sc-member-modal__body">
-              {assuranceVieEntries.length > 0 ? (
+            <div className="sc-member-modal__body sc-assurance-vie-modal__body">
+              {assuranceVieDraft.length > 0 ? (
                 <div className="sc-assurance-vie-list">
-                  {assuranceVieEntries.map((entry, idx) => (
-                    <div key={entry.id} className="sc-assurance-vie-card">
-                      <div className="sc-donation-card__header">
-                        <strong className="sc-donation-card__title">Contrat {idx + 1}</strong>
+                  {assuranceVieDraft.map((entry, idx) => (
+                    <div key={entry.id} className="sc-assurance-vie-contract">
+                      <div className="sc-assurance-vie-contract__header">
+                        <div className="sc-assurance-vie-contract__heading">
+                          <strong className="sc-donation-card__title">Contrat {idx + 1}</strong>
+                          <span className="sc-assurance-vie-contract__subtitle">
+                            {entry.typeContrat === 'demembree' ? 'Clause demembree' : 'Clause standard'}
+                          </span>
+                        </div>
                         <button
                           type="button"
-                          className="sc-remove-btn"
+                          className="sc-remove-btn sc-remove-btn--quiet"
                           onClick={() => removeAssuranceVieEntry(entry.id)}
                           title="Supprimer ce contrat"
+                          aria-label="Supprimer ce contrat"
                         >
                           ✕
                         </button>
                       </div>
-                      <div className="sc-assurance-vie-grid">
+                      <div className="sc-assurance-vie-grid sc-assurance-vie-grid--premium">
                         <div className="sc-field">
                           <label>Type de clause</label>
                           <ScSelect
+                            className="sc-assurance-vie-select"
                             value={entry.typeContrat}
                             onChange={(value) => updateAssuranceVieEntry(entry.id, 'typeContrat', value as SuccessionAssuranceVieContractType)}
                             options={ASSURANCE_VIE_TYPE_OPTIONS}
@@ -2389,7 +2420,7 @@ export default function SuccessionSimulator() {
                               onChange={(e) => updateAssuranceVieEntry(entry.id, 'ageUsufruitier', e.target.value ? Number(e.target.value) : undefined)}
                               placeholder="ex. 68"
                             />
-                            <p className="sc-hint sc-hint--compact">
+                            <p className="sc-hint sc-hint--compact sc-assurance-vie-contract__hint">
                               Ventilation art. 669 CGI — conjoint = usufruit, enfants = nu-propriété.
                             </p>
                           </div>
@@ -2397,6 +2428,7 @@ export default function SuccessionSimulator() {
                         <div className="sc-field">
                           <label>Souscripteur</label>
                           <ScSelect
+                            className="sc-assurance-vie-select"
                             value={entry.souscripteur}
                             onChange={(value) => updateAssuranceVieEntry(entry.id, 'souscripteur', value)}
                             options={assuranceViePartyOptions}
@@ -2405,14 +2437,20 @@ export default function SuccessionSimulator() {
                         <div className="sc-field">
                           <label>Assuré</label>
                           <ScSelect
+                            className="sc-assurance-vie-select"
                             value={entry.assure}
                             onChange={(value) => updateAssuranceVieEntry(entry.id, 'assure', value)}
                             options={assuranceViePartyOptions}
                           />
                         </div>
-                        <div className="sc-field sc-field--full">
+                        </div>
+                      <div className="sc-assurance-vie-contract__section">
+                        <p className="sc-assurance-vie-contract__section-title">Clause beneficiaire</p>
+                        <div className="sc-assurance-vie-grid sc-assurance-vie-grid--stack">
+                          <div className="sc-field sc-field--full">
                           <label>Clause bénéficiaire</label>
                           <ScSelect
+                            className="sc-assurance-vie-select"
                             value={getClausePreset(entry.clauseBeneficiaire)}
                             onChange={(preset) => {
                               if (preset === 'conjoint_enfants') updateAssuranceVieEntry(entry.id, 'clauseBeneficiaire', CLAUSE_CONJOINT_LABEL);
@@ -2478,6 +2516,7 @@ export default function SuccessionSimulator() {
                         </div>
                       </div>
                     </div>
+                  </div>
                   ))}
                 </div>
               ) : (
@@ -2486,25 +2525,25 @@ export default function SuccessionSimulator() {
                 </p>
               )}
 
-              <div className="sc-inline-actions">
+              <div className="sc-inline-actions sc-inline-actions--compact">
                 <button
                   type="button"
-                  className="premium-btn sc-btn sc-btn--secondary"
+                  className="sc-child-add-btn"
                   onClick={addAssuranceVieEntry}
                 >
                   + Ajouter un contrat
                 </button>
               </div>
 
-              {assuranceVieEntries.length > 0 && (
-                <div className="sc-donations-totals">
+              {assuranceVieDraft.length > 0 && (
+                <div className="sc-assurance-vie-modal-summary">
                   <div className="sc-summary-row">
                     <span>Capitaux décès</span>
-                    <strong>{fmt(assuranceVieTotals.capitaux)}</strong>
+                    <strong>{fmt(assuranceVieDraftTotals.capitaux)}</strong>
                   </div>
                   <div className="sc-summary-row">
                     <span>Versements après 70 ans</span>
-                    <strong>{fmt(assuranceVieTotals.versementsApres70)}</strong>
+                    <strong>{fmt(assuranceVieDraftTotals.versementsApres70)}</strong>
                   </div>
                 </div>
               )}
@@ -2513,9 +2552,16 @@ export default function SuccessionSimulator() {
               <button
                 type="button"
                 className="sc-member-modal__btn sc-member-modal__btn--secondary"
-                onClick={() => setShowAssuranceVieModal(false)}
+                onClick={closeAssuranceVieModal}
               >
-                Fermer
+                Annuler
+              </button>
+              <button
+                type="button"
+                className="sc-member-modal__btn sc-member-modal__btn--primary"
+                onClick={validateAssuranceVieModal}
+              >
+                Valider
               </button>
             </div>
           </div>
