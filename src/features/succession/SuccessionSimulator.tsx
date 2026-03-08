@@ -240,6 +240,35 @@ function labelMember(m: FamilyMember, enfants: SuccessionEnfant[]): string {
   return typeLabel;
 }
 
+const CLAUSE_BENEFICIAIRE_PRESETS: { value: string; label: string }[] = [
+  { value: 'conjoint_enfants', label: 'Conjoint survivant, à défaut enfants, à défaut héritiers' },
+  { value: 'enfants_parts_egales', label: 'Les enfants par parts égales' },
+  { value: 'personnalisee', label: 'Personnalisée' },
+];
+
+const CLAUSE_CONJOINT_LABEL = 'Conjoint survivant, à défaut enfants, à défaut héritiers';
+const CLAUSE_ENFANTS_LABEL = 'Les enfants par parts égales';
+
+function getClausePreset(clause?: string): string {
+  if (!clause || clause === CLAUSE_CONJOINT_LABEL) return 'conjoint_enfants';
+  if (clause === CLAUSE_ENFANTS_LABEL) return 'enfants_parts_egales';
+  return 'personnalisee';
+}
+
+function parseCustomClause(clause: string): Record<string, number> {
+  if (!clause.startsWith('CUSTOM:')) return {};
+  const result: Record<string, number> = {};
+  for (const part of clause.slice(7).split(';')) {
+    const sep = part.indexOf(':');
+    if (sep > 0) result[part.slice(0, sep)] = Number(part.slice(sep + 1)) || 0;
+  }
+  return result;
+}
+
+function serializeCustomClause(parts: Record<string, number>): string {
+  return 'CUSTOM:' + Object.entries(parts).map(([id, pct]) => `${id}:${pct}`).join(';');
+}
+
 const CHAIN_ORDER_OPTIONS: { value: SuccessionChainOrder; label: string }[] = [
   { value: 'epoux1', label: 'Époux 1 décède en premier' },
   { value: 'epoux2', label: 'Époux 2 décède en premier' },
@@ -1330,70 +1359,89 @@ export default function SuccessionSimulator() {
                   <section key={category.value} className="sc-asset-section">
                     <div className="sc-asset-section__header">
                       <h3 className="sc-asset-section__title">{category.label}</h3>
-                      <button
-                        type="button"
-                        className="premium-btn sc-btn sc-btn--secondary"
-                        onClick={() => addAssetEntry(category.value)}
-                      >
-                        + Ajouter une ligne
-                      </button>
-                    </div>
-                    {category.entries.length > 0 ? (
-                      <div className="sc-assets-list">
-                        {category.entries.map((entry) => (
-                          <div key={entry.id} className="sc-asset-row">
-                            <div className="sc-field">
-                              <label>Porteur</label>
-                              <ScSelect
-                                value={entry.owner}
-                                onChange={(value) => updateAssetEntry(entry.id, 'owner', value)}
-                                options={assetOwnerOptions}
-                              />
-                            </div>
-                            <div className="sc-field">
-                              <label>Sous-catégorie</label>
-                              <ScSelect
-                                value={entry.subCategory}
-                                onChange={(value) => updateAssetEntry(entry.id, 'subCategory', value)}
-                                options={ASSET_SUBCATEGORY_OPTIONS[entry.category].map((option) => ({
-                                  value: option,
-                                  label: option,
-                                }))}
-                              />
-                            </div>
-                            <div className="sc-field">
-                              <label>Libellé</label>
-                              <input
-                                type="text"
-                                value={entry.label ?? ''}
-                                onChange={(e) => updateAssetEntry(entry.id, 'label', e.target.value)}
-                                placeholder="Précision optionnelle"
-                              />
-                            </div>
-                            <div className="sc-field">
-                              <label>Montant (€)</label>
-                              <input
-                                type="number"
-                                min={0}
-                                value={entry.amount || ''}
-                                onChange={(e) => updateAssetEntry(entry.id, 'amount', Number(e.target.value) || 0)}
-                                placeholder="Montant"
-                              />
-                            </div>
-                            <button
-                              type="button"
-                              className="sc-remove-btn"
-                              onClick={() => removeAssetEntry(entry.id)}
-                              title="Supprimer cette ligne"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))}
+                      <div className="sc-asset-section__actions">
+                        <button
+                          type="button"
+                          className="sc-member-add-icon-btn"
+                          onClick={() => addAssetEntry(category.value)}
+                          title="Ajouter une ligne"
+                        >
+                          +
+                        </button>
+                        {category.value === 'financier' && (
+                          <button
+                            type="button"
+                            className="sc-child-add-btn"
+                            onClick={() => setShowAssuranceVieModal(true)}
+                          >
+                            + Assurance vie
+                          </button>
+                        )}
                       </div>
-                    ) : (
-                      <p className="sc-hint sc-hint--compact">Aucune ligne détaillée dans cette catégorie.</p>
-                    )}
+                    </div>
+                    <div className="sc-assets-list">
+                      {category.entries.map((entry) => (
+                        <div key={entry.id} className="sc-asset-row">
+                          <div className="sc-field">
+                            <label>Porteur</label>
+                            <ScSelect
+                              value={entry.owner}
+                              onChange={(value) => updateAssetEntry(entry.id, 'owner', value)}
+                              options={assetOwnerOptions}
+                            />
+                          </div>
+                          <div className="sc-field">
+                            <label>Sous-catégorie</label>
+                            <ScSelect
+                              value={entry.subCategory}
+                              onChange={(value) => updateAssetEntry(entry.id, 'subCategory', value)}
+                              options={ASSET_SUBCATEGORY_OPTIONS[entry.category].map((option) => ({
+                                value: option,
+                                label: option,
+                              }))}
+                            />
+                          </div>
+                          <div className="sc-field">
+                            <label>Montant (€)</label>
+                            <input
+                              type="number"
+                              min={0}
+                              value={entry.amount || ''}
+                              onChange={(e) => updateAssetEntry(entry.id, 'amount', Number(e.target.value) || 0)}
+                              placeholder="Montant"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            className="sc-remove-btn"
+                            onClick={() => removeAssetEntry(entry.id)}
+                            title="Supprimer cette ligne"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                      {category.value === 'financier' && assuranceVieEntries.map((av) => (
+                        <div key={av.id} className="sc-asset-row sc-asset-row--av">
+                          <div className="sc-field">
+                            <label>Porteur</label>
+                            <span className="sc-asset-row__value">{assuranceViePartyOptions.find((o) => o.value === av.assure)?.label ?? av.assure}</span>
+                          </div>
+                          <div className="sc-field">
+                            <label>Sous-catégorie</label>
+                            <span className="sc-asset-row__value">Assurance-vie</span>
+                          </div>
+                          <div className="sc-field">
+                            <label>Capitaux décès (€)</label>
+                            <span className="sc-asset-row__value">{fmt(av.capitauxDeces)}</span>
+                          </div>
+                          <div />
+                        </div>
+                      ))}
+                      {category.entries.length === 0 && !(category.value === 'financier' && assuranceVieEntries.length > 0) && (
+                        <p className="sc-hint sc-hint--compact">Aucune ligne détaillée dans cette catégorie.</p>
+                      )}
+                    </div>
                   </section>
                 ))}
 
@@ -1474,25 +1522,6 @@ export default function SuccessionSimulator() {
                 </div>
               </div>
             )}
-            <div className="sc-assurance-vie-summary">
-              <div className="sc-assurance-vie-summary__header">
-                <div>
-                  <strong className="sc-detail-title">Assurance-vie</strong>
-                  <p className="sc-card__subtitle sc-card__subtitle--inline">
-                    {assuranceVieEntries.length > 0
-                      ? `${assuranceVieEntries.length} contrat(s) saisi(s), ${fmt(assuranceVieTotals.capitaux)} de capitaux décès.`
-                      : 'Aucun contrat saisi pour le moment.'}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="premium-btn sc-btn sc-btn--secondary"
-                  onClick={() => setShowAssuranceVieModal(true)}
-                >
-                  + Assurance vie
-                </button>
-              </div>
-            </div>
           </div>
 
           {isExpert && (
@@ -2079,15 +2108,6 @@ export default function SuccessionSimulator() {
                       </div>
                       <div className="sc-assurance-vie-grid">
                         <div className="sc-field">
-                          <label>Nom du contrat</label>
-                          <input
-                            type="text"
-                            value={entry.nomContrat ?? ''}
-                            onChange={(e) => updateAssuranceVieEntry(entry.id, 'nomContrat', e.target.value)}
-                            placeholder="Nom optionnel"
-                          />
-                        </div>
-                        <div className="sc-field">
                           <label>Type de clause</label>
                           <ScSelect
                             value={entry.typeContrat}
@@ -2113,13 +2133,50 @@ export default function SuccessionSimulator() {
                         </div>
                         <div className="sc-field sc-field--full">
                           <label>Clause bénéficiaire</label>
-                          <input
-                            type="text"
-                            value={entry.clauseBeneficiaire ?? ''}
-                            onChange={(e) => updateAssuranceVieEntry(entry.id, 'clauseBeneficiaire', e.target.value)}
-                            placeholder="Le conjoint survivant, à défaut les enfants..."
+                          <ScSelect
+                            value={getClausePreset(entry.clauseBeneficiaire)}
+                            onChange={(preset) => {
+                              if (preset === 'conjoint_enfants') updateAssuranceVieEntry(entry.id, 'clauseBeneficiaire', CLAUSE_CONJOINT_LABEL);
+                              else if (preset === 'enfants_parts_egales') updateAssuranceVieEntry(entry.id, 'clauseBeneficiaire', CLAUSE_ENFANTS_LABEL);
+                              else updateAssuranceVieEntry(entry.id, 'clauseBeneficiaire', 'CUSTOM:');
+                            }}
+                            options={CLAUSE_BENEFICIAIRE_PRESETS}
                           />
                         </div>
+                        {getClausePreset(entry.clauseBeneficiaire) === 'conjoint_enfants' && (
+                          <div className="sc-field sc-field--full">
+                            <p className="sc-hint sc-hint--compact">Le conjoint survivant est exonéré de droits de succession (art. 796-0 bis CGI).</p>
+                          </div>
+                        )}
+                        {getClausePreset(entry.clauseBeneficiaire) === 'personnalisee' && (
+                          <div className="sc-field sc-field--full sc-clause-custom">
+                            <label>Répartition (%)</label>
+                            {[
+                              ...(isMarried || isPacsed ? [{ id: 'conjoint', label: isPacsed ? 'Partenaire' : 'Conjoint(e)' }] : []),
+                              ...enfantsContext.map((e, i) => ({ id: e.id, label: e.prenom ?? `Enfant ${i + 1}` })),
+                              ...familyMembers.map((m) => ({ id: m.id, label: labelMember(m, enfantsContext) })),
+                            ].map(({ id, label }) => {
+                              const parts = parseCustomClause(entry.clauseBeneficiaire ?? '');
+                              return (
+                                <div key={id} className="sc-clause-custom-row">
+                                  <span className="sc-clause-custom-row__label">{label}</span>
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    value={parts[id] || ''}
+                                    onChange={(e) => {
+                                      const newParts = { ...parts, [id]: Number(e.target.value) || 0 };
+                                      updateAssuranceVieEntry(entry.id, 'clauseBeneficiaire', serializeCustomClause(newParts));
+                                    }}
+                                    placeholder="0"
+                                  />
+                                  <span className="sc-clause-custom-row__unit">%</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                         <div className="sc-field">
                           <label>Capitaux décès (€)</label>
                           <input
