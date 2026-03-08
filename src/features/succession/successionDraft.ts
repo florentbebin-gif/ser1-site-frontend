@@ -53,6 +53,17 @@ export interface SuccessionPatrimonialContext {
   attributionBiensCommunsPct: number;
 }
 
+export type SuccessionDonationEntryType = 'rapportable' | 'hors_part' | 'legs_particulier';
+
+export interface SuccessionDonationEntry {
+  id: string;
+  type: SuccessionDonationEntryType;
+  montant: number;
+  date?: string;
+  donataire?: string;
+  description?: string;
+}
+
 export type SuccessionEnfantRattachement = 'commun' | 'epoux1' | 'epoux2';
 
 export interface SuccessionEnfant {
@@ -61,8 +72,8 @@ export interface SuccessionEnfant {
   rattachement: SuccessionEnfantRattachement;
 }
 
-interface SuccessionDraftPayloadV8 {
-  version: 8;
+interface SuccessionDraftPayloadV9 {
+  version: 9;
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
   liquidation: SuccessionLiquidationContext;
@@ -70,6 +81,7 @@ interface SuccessionDraftPayloadV8 {
   patrimonial: SuccessionPatrimonialContext;
   enfants: SuccessionEnfant[];
   familyMembers: FamilyMember[];
+  donations: SuccessionDonationEntry[];
 }
 
 export const DEFAULT_SUCCESSION_CIVIL_CONTEXT: SuccessionCivilContext = {
@@ -105,6 +117,7 @@ export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContex
 };
 
 export const DEFAULT_SUCCESSION_ENFANTS_CONTEXT: SuccessionEnfant[] = [];
+export const DEFAULT_SUCCESSION_DONATIONS: SuccessionDonationEntry[] = [];
 
 export type FamilyMemberType =
   | 'petit_enfant'
@@ -188,6 +201,10 @@ function isEnfantRattachement(v: unknown): v is SuccessionEnfantRattachement {
   return v === 'commun' || v === 'epoux1' || v === 'epoux2';
 }
 
+function isDonationEntryType(v: unknown): v is SuccessionDonationEntryType {
+  return v === 'rapportable' || v === 'hors_part' || v === 'legs_particulier';
+}
+
 export function buildSuccessionDraftPayload(
   form: PersistedSuccessionForm,
   civil: SuccessionCivilContext,
@@ -196,9 +213,10 @@ export function buildSuccessionDraftPayload(
   patrimonial: SuccessionPatrimonialContext,
   enfants: SuccessionEnfant[],
   familyMembers: FamilyMember[],
-): SuccessionDraftPayloadV8 {
+  donations: SuccessionDonationEntry[],
+): SuccessionDraftPayloadV9 {
   return {
-    version: 8,
+    version: 9,
     form,
     civil,
     liquidation,
@@ -206,6 +224,7 @@ export function buildSuccessionDraftPayload(
     patrimonial,
     enfants,
     familyMembers,
+    donations,
   };
 }
 
@@ -237,6 +256,12 @@ function normalizePrenom(v: unknown): string | undefined {
   return trimmed.length > 0 ? trimmed : undefined;
 }
 
+function normalizeOptionalString(v: unknown): string | undefined {
+  if (typeof v !== 'string') return undefined;
+  const trimmed = v.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
 function deriveLegacyEnfants(
   liquidation: SuccessionLiquidationContext,
   devolution: SuccessionDevolutionContext,
@@ -262,6 +287,37 @@ function deriveLegacyEnfants(
   return enfants;
 }
 
+function deriveLegacyDonations(
+  patrimonial: SuccessionPatrimonialContext,
+): SuccessionDonationEntry[] {
+  const donations: SuccessionDonationEntry[] = [];
+  if (patrimonial.donationsRapportables > 0) {
+    donations.push({
+      id: 'don-rapportable-legacy',
+      type: 'rapportable',
+      montant: patrimonial.donationsRapportables,
+      description: 'Migration agrégée legacy',
+    });
+  }
+  if (patrimonial.donationsHorsPart > 0) {
+    donations.push({
+      id: 'don-hors-part-legacy',
+      type: 'hors_part',
+      montant: patrimonial.donationsHorsPart,
+      description: 'Migration agrégée legacy',
+    });
+  }
+  if (patrimonial.legsParticuliers > 0) {
+    donations.push({
+      id: 'don-legs-particulier-legacy',
+      type: 'legs_particulier',
+      montant: patrimonial.legsParticuliers,
+      description: 'Migration agrégée legacy',
+    });
+  }
+  return donations;
+}
+
 export function parseSuccessionDraftPayload(raw: string): {
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
@@ -270,6 +326,7 @@ export function parseSuccessionDraftPayload(raw: string): {
   patrimonial: SuccessionPatrimonialContext;
   enfants: SuccessionEnfant[];
   familyMembers: FamilyMember[];
+  donations: SuccessionDonationEntry[];
 } | null {
   try {
     const parsed = JSON.parse(raw) as unknown;
@@ -282,7 +339,8 @@ export function parseSuccessionDraftPayload(raw: string): {
         && parsed.version !== 5
         && parsed.version !== 6
         && parsed.version !== 7
-        && parsed.version !== 8)
+        && parsed.version !== 8
+        && parsed.version !== 9)
     ) return null;
     const payload = parsed as Record<string, unknown>;
 
@@ -324,7 +382,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       nbEnfants: asChildrenCount(liquidationRaw.nbEnfants, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.nbEnfants),
     };
 
-    const devolutionRaw = (payload.version === 3 || payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8) && isObject(payload.devolution)
+    const devolutionRaw = (payload.version === 3 || payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9) && isObject(payload.devolution)
       ? payload.devolution
       : {};
     const testamentActif = asBoolean(
@@ -351,7 +409,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       ),
     };
 
-    const patrimonialRaw = (payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8) && isObject(payload.patrimonial)
+    const patrimonialRaw = (payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9) && isObject(payload.patrimonial)
       ? payload.patrimonial
       : {};
     const patrimonial: SuccessionPatrimonialContext = {
@@ -389,7 +447,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       ),
     };
 
-    const enfantsRaw = (payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8) && Array.isArray(payload.enfants)
+    const enfantsRaw = (payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9) && Array.isArray(payload.enfants)
       ? payload.enfants
       : null;
     const enfants = enfantsRaw
@@ -402,7 +460,7 @@ export function parseSuccessionDraftPayload(raw: string): {
         }))
       : deriveLegacyEnfants(liquidation, devolution);
 
-    const familyMembersRaw = (payload.version === 7 || payload.version === 8) && Array.isArray(payload.familyMembers)
+    const familyMembersRaw = (payload.version === 7 || payload.version === 8 || payload.version === 9) && Array.isArray(payload.familyMembers)
       ? payload.familyMembers
       : [];
     const familyMembers: FamilyMember[] = familyMembersRaw
@@ -415,6 +473,30 @@ export function parseSuccessionDraftPayload(raw: string): {
         parentEnfantId: typeof item.parentEnfantId === 'string' ? item.parentEnfantId : undefined,
       }));
 
+    const donationsRaw = payload.version === 9 && Array.isArray(payload.donations)
+      ? payload.donations
+      : null;
+    const donations = donationsRaw
+      ? donationsRaw
+        .filter((item): item is Record<string, unknown> => isObject(item))
+        .map((item, idx) => {
+          if (!isDonationEntryType(item.type)) return null;
+          const donation: SuccessionDonationEntry = {
+            id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `don-${idx + 1}`,
+            type: item.type,
+            montant: asAmount(item.montant, 0),
+          };
+          const date = normalizeOptionalString(item.date);
+          const donataire = normalizeOptionalString(item.donataire);
+          const description = normalizeOptionalString(item.description);
+          if (date) donation.date = date;
+          if (donataire) donation.donataire = donataire;
+          if (description) donation.description = description;
+          return donation;
+        })
+        .filter((item): item is SuccessionDonationEntry => item !== null)
+      : deriveLegacyDonations(patrimonial);
+
     return {
       form: {
         actifNetSuccession,
@@ -426,6 +508,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       patrimonial,
       enfants,
       familyMembers,
+      donations,
     };
   } catch {
     return null;
