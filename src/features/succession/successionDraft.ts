@@ -89,7 +89,6 @@ export type SuccessionAssuranceVieContractType = 'standard' | 'demembree' | 'per
 
 export interface SuccessionAssuranceVieEntry {
   id: string;
-  nomContrat?: string;
   typeContrat: SuccessionAssuranceVieContractType;
   souscripteur: Exclude<SuccessionAssetOwner, 'commun'>;
   assure: Exclude<SuccessionAssetOwner, 'commun'>;
@@ -677,9 +676,7 @@ export function parseSuccessionDraftPayload(raw: string): {
             capitauxDeces: asAmount(item.capitauxDeces, 0),
             versementsApres70: asAmount(item.versementsApres70, 0),
           };
-          const nomContrat = normalizeOptionalString(item.nomContrat);
           const clauseBeneficiaire = normalizeOptionalString(item.clauseBeneficiaire);
-          if (nomContrat) entry.nomContrat = nomContrat;
           if (clauseBeneficiaire) entry.clauseBeneficiaire = clauseBeneficiaire;
           return entry;
         })

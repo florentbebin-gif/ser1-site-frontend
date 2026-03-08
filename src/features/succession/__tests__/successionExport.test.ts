@@ -49,7 +49,6 @@ describe('Succession PPTX Export', () => {
             droitsEnfants: 42000,
           },
           totalDroits: 54500,
-          totalDroitsOrdreInverse: 56000,
           warnings: ['Module simplifié'],
         },
       },
@@ -69,7 +68,7 @@ describe('Succession PPTX Export', () => {
     expect(chronologySlide).toBeDefined();
     if (chronologySlide && 'body' in chronologySlide) {
       expect(chronologySlide.body).toContain('Total cumulé des droits');
-      expect(chronologySlide.body).toContain('Ordre inverse');
+      expect(chronologySlide.body).not.toContain('Ordre inverse');
     }
   });
 });
@@ -114,7 +113,6 @@ describe('Succession Excel Export', () => {
           droitsEnfants: 31500,
         },
         totalDroits: 43500,
-        totalDroitsOrdreInverse: 45200,
         warnings: ['Avertissement de test'],
       },
     );

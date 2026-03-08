@@ -53,7 +53,6 @@ export interface SuccessionData {
     } | null;
     assuranceVieTotale?: number;
     totalDroits: number;
-    totalDroitsOrdreInverse?: number;
     warnings?: string[];
   };
   clientName?: string;
@@ -122,9 +121,6 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
     lines.push(`• Total cumulé des droits (2 décès): ${fmt(data.totalDroits)}`);
     if (typeof data.assuranceVieTotale === 'number' && data.assuranceVieTotale > 0) {
       lines.push(`• Capitaux assurance-vie saisis: ${fmt(data.assuranceVieTotale)}`);
-    }
-    if (typeof data.totalDroitsOrdreInverse === 'number') {
-      lines.push(`• Ordre inverse: ${fmt(data.totalDroitsOrdreInverse)}`);
     }
   } else {
     lines.push('• Chronologie non applicable à la situation saisie (hors couple marié/pacsé ou données incomplètes)');
