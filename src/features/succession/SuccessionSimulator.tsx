@@ -610,6 +610,23 @@ export default function SuccessionSimulator() {
     () => chainageAnalysis.totalDroits + avFiscalAnalysis.totalDroits,
     [chainageAnalysis.totalDroits, avFiscalAnalysis.totalDroits],
   );
+  const synthDonutTransmis = useMemo(() => {
+    if (chainageAnalysis.applicable && chainageAnalysis.step1 && chainageAnalysis.step2) {
+      return chainageAnalysis.step1.actifTransmis
+        + chainageAnalysis.step2.actifTransmis
+        + assuranceVieByAssure.epoux1
+        + assuranceVieByAssure.epoux2;
+    }
+    return derivedMasseTransmise;
+  }, [chainageAnalysis, assuranceVieByAssure, derivedMasseTransmise]);
+  const synthHypothese = useMemo(() => {
+    if (!isMarried || nbDescendantBranches === 0) return null;
+    if (patrimonialContext.donationEntreEpouxActive) {
+      const opt = DONATION_ENTRE_EPOUX_OPTIONS.find((o) => o.value === patrimonialContext.donationEntreEpouxOption);
+      return `Disposition : ${opt?.label ?? patrimonialContext.donationEntreEpouxOption}`;
+    }
+    return 'Hypothèse moteur : 1/4 en pleine propriété pour le conjoint survivant';
+  }, [isMarried, nbDescendantBranches, patrimonialContext.donationEntreEpouxActive, patrimonialContext.donationEntreEpouxOption]);
   const chainageExportPayload = useMemo(
     () => ({
       applicable: chainageAnalysis.applicable,
@@ -1679,16 +1696,16 @@ export default function SuccessionSimulator() {
             <div className="sc-card__divider sc-card__divider--tight" />
             <div className="sc-synth-hero">
               <div className="sc-synth-hero__left">
-                <div className="sc-synth-hero__label">Droits estimés (total)</div>
+                <div className="sc-synth-hero__label">Coût de transmission estimé</div>
                 <div className="sc-synth-hero__value">{fmt(derivedTotalDroits)}</div>
-                {derivedMasseTransmise > 0 && (
+                {synthDonutTransmis > 0 && (
                   <div className="sc-synth-hero__sub">
-                    sur {fmt(derivedMasseTransmise)} transmis
+                    sur {fmt(synthDonutTransmis)} transmis
                   </div>
                 )}
               </div>
               <ScDonut
-                transmis={Math.max(0, derivedMasseTransmise - derivedTotalDroits)}
+                transmis={Math.max(0, synthDonutTransmis - derivedTotalDroits)}
                 droits={derivedTotalDroits}
               />
             </div>
@@ -1705,6 +1722,9 @@ export default function SuccessionSimulator() {
                     )
                   ))}
                 </div>
+                {synthHypothese && (
+                  <p className="sc-summary-note sc-summary-note--muted">{synthHypothese}</p>
+                )}
               </>
             )}
           </div>

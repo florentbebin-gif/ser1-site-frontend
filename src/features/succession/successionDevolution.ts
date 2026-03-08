@@ -192,26 +192,15 @@ export function buildSuccessionDevolutionAnalysis(
         });
       } else {
         lines.push({
-          heritier: 'Option A - Conjoint survivant',
-          droits: '1/4 en pleine propriété',
+          heritier: 'Conjoint survivant',
+          droits: '1/4 en pleine propriété (hypothèse moteur)',
           montantEstime: masseReference * 0.25,
         });
         lines.push({
-          heritier: 'Option A - Descendants',
+          heritier: 'Descendants',
           droits: getDescendantsLine(nbEnfantsTotal, 75, representedBranchLabels),
           montantEstime: masseReference * 0.75,
         });
-        lines.push({
-          heritier: 'Option B - Conjoint survivant',
-          droits: 'Usufruit de la totalité',
-          montantEstime: masseReference,
-        });
-        lines.push({
-          heritier: 'Option B - Descendants',
-          droits: 'Nue-propriété de la totalité',
-          montantEstime: masseReference,
-        });
-        warnings.push('Option usufruit: montant indicatif affiché en équivalent pleine propriété.');
       }
     } else {
       if (context.ascendantsSurvivants) {
