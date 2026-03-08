@@ -570,9 +570,9 @@
 
 .sc-donation-card {
   border: 1px solid var(--color-c8);
-  border-radius: 10px;
+  border-radius: 8px;
   background: color-mix(in srgb, var(--color-c7) 70%, #FFFFFF);
-  padding: 12px;
+  padding: 8px 10px;
 }
 
 .sc-donation-card__header {
@@ -580,22 +580,67 @@
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .sc-donation-card__title {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--color-c1);
 }
 
 .sc-donation-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .sc-field--full {
   grid-column: 1 / -1;
+}
+
+/* Date month input — style cohérent avec CreditInputs (PR6) */
+.sc-input-month {
+  height: 32px;
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: none;
+  border-bottom: 1px solid transparent;
+  background-color: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
+  font-size: 13px;
+  color: var(--color-c10);
+  font-family: inherit;
+  text-align: left;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.sc-input-month:hover { border-bottom-color: var(--color-c8); }
+.sc-input-month:focus-visible { border-bottom-color: var(--color-c2); }
+
+/* Checkboxes donation (PR6) */
+.sc-checkbox {
+  accent-color: var(--color-c2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sc-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-c9);
+  cursor: pointer;
+}
+
+.sc-donation-flags {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 2px;
 }
 
 .sc-donations-totals {

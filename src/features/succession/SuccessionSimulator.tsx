@@ -505,6 +505,33 @@ export default function SuccessionSimulator() {
     () => assetOwnerOptions.filter((option) => option.value !== 'commun') as { value: 'epoux1' | 'epoux2'; label: string }[],
     [assetOwnerOptions],
   );
+
+  const donateurOptions = useMemo(
+    () => assetOwnerOptions.filter((o) => o.value !== 'commun'),
+    [assetOwnerOptions],
+  );
+
+  const donatairesOptions = useMemo(() => {
+    const opts: { value: string; label: string }[] = [];
+    if (isMarried) opts.push({ value: 'conjoint', label: 'Conjoint(e)' });
+    else if (isPacsed) opts.push({ value: 'conjoint', label: 'Partenaire' });
+    enfantsContext.forEach((enfant, idx) => {
+      const prenom = enfant.prenom?.trim();
+      opts.push({ value: enfant.id, label: prenom ? prenom : `Enfant ${idx + 1}` });
+    });
+    const memberTypeLabel: Record<string, string> = {
+      petit_enfant: 'Petit-enfant',
+      parent: 'Parent',
+      frere_soeur: 'Frère/Sœur',
+      oncle_tante: 'Oncle/Tante',
+      tierce_personne: 'Tierce personne',
+    };
+    familyMembers.forEach((member) => {
+      opts.push({ value: member.id, label: memberTypeLabel[member.type] ?? 'Membre' });
+    });
+    opts.push({ value: 'autre', label: 'Autre' });
+    return opts;
+  }, [isMarried, isPacsed, enfantsContext, familyMembers]);
   const assetBreakdown = useMemo(() => assetEntries.reduce((totals, entry) => {
     if (entry.category === 'passif') {
       totals.passifs[entry.owner] += entry.amount;
@@ -749,27 +776,18 @@ export default function SuccessionSimulator() {
   const updateDonationEntry = useCallback((
     id: string,
     field: keyof SuccessionDonationEntry,
-    value: string | number,
+    value: string | number | boolean,
   ) => {
     setDonationsContext((prev) => prev.map((entry) => {
       if (entry.id !== id) return entry;
-      if (field === 'type') {
-        return {
-          ...entry,
-          type: value as SuccessionDonationEntryType,
-        };
+      if (field === 'type') return { ...entry, type: value as SuccessionDonationEntryType };
+      if (field === 'montant' || field === 'valeurDonation' || field === 'valeurActuelle') {
+        return { ...entry, [field]: Math.max(0, Number(value) || 0) };
       }
-      if (field === 'montant') {
-        return {
-          ...entry,
-          montant: Math.max(0, Number(value) || 0),
-        };
+      if (field === 'donSommeArgentExonere' || field === 'avecReserveUsufruit') {
+        return { ...entry, [field]: Boolean(value) };
       }
-      const stringValue = typeof value === 'string' ? value : String(value);
-      return {
-        ...entry,
-        [field]: stringValue,
-      };
+      return { ...entry, [field]: typeof value === 'string' ? value : String(value) };
     }));
   }, []);
 
@@ -1517,25 +1535,73 @@ export default function SuccessionSimulator() {
                           min={0}
                           value={entry.montant || ''}
                           onChange={(e) => updateDonationEntry(entry.id, 'montant', Number(e.target.value) || 0)}
-                          placeholder="Montant"
+                          placeholder="0"
                         />
                       </div>
                       <div className="sc-field">
                         <label>Date</label>
                         <input
-                          type="date"
+                          type="month"
+                          className="sc-input-month"
                           value={entry.date ?? ''}
                           onChange={(e) => updateDonationEntry(entry.id, 'date', e.target.value)}
                         />
                       </div>
                       <div className="sc-field">
-                        <label>Donataire</label>
-                        <input
-                          type="text"
-                          value={entry.donataire ?? ''}
-                          onChange={(e) => updateDonationEntry(entry.id, 'donataire', e.target.value)}
-                          placeholder="Nom ou qualité"
+                        <label>Donateur</label>
+                        <ScSelect
+                          value={entry.donateur ?? ''}
+                          onChange={(value) => updateDonationEntry(entry.id, 'donateur', value)}
+                          options={donateurOptions}
                         />
+                      </div>
+                      <div className="sc-field sc-field--full">
+                        <label>Donataire</label>
+                        <ScSelect
+                          value={entry.donataire ?? ''}
+                          onChange={(value) => updateDonationEntry(entry.id, 'donataire', value)}
+                          options={donatairesOptions}
+                        />
+                      </div>
+                      <div className="sc-field">
+                        <label>Valeur à la donation (€)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={entry.valeurDonation || ''}
+                          onChange={(e) => updateDonationEntry(entry.id, 'valeurDonation', Number(e.target.value) || 0)}
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="sc-field">
+                        <label>Valeur actuelle (€)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={entry.valeurActuelle || ''}
+                          onChange={(e) => updateDonationEntry(entry.id, 'valeurActuelle', Number(e.target.value) || 0)}
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="sc-field sc-field--full sc-donation-flags">
+                        <label className="sc-checkbox-label">
+                          <input
+                            type="checkbox"
+                            className="sc-checkbox"
+                            checked={entry.donSommeArgentExonere ?? false}
+                            onChange={(e) => updateDonationEntry(entry.id, 'donSommeArgentExonere', e.target.checked)}
+                          />
+                          Don de somme d&apos;argent exonéré
+                        </label>
+                        <label className="sc-checkbox-label">
+                          <input
+                            type="checkbox"
+                            className="sc-checkbox"
+                            checked={entry.avecReserveUsufruit ?? false}
+                            onChange={(e) => updateDonationEntry(entry.id, 'avecReserveUsufruit', e.target.checked)}
+                          />
+                          Avec réserve d&apos;usufruit
+                        </label>
                       </div>
                     </div>
                   </div>

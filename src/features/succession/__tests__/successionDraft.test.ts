@@ -59,7 +59,7 @@ describe('successionDraft', () => {
           montant: 30000,
           date: '2020-01-10',
           donataire: 'Alice',
-          description: 'Donation manuelle',
+          donateur: 'epoux1',
         },
       ],
       [
