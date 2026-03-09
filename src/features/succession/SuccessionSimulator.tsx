@@ -58,6 +58,7 @@ import { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
+import { canOpenDispositions } from './successionDispositions';
 import {
   buildSuccessionChainageAnalysis,
   type SuccessionChainOrder,
@@ -559,6 +560,10 @@ export default function SuccessionSimulator() {
   const assuranceViePartyOptions = useMemo(
     () => assetOwnerOptions.filter((option) => option.value !== 'commun') as { value: 'epoux1' | 'epoux2'; label: string }[],
     [assetOwnerOptions],
+  );
+  const canOpenDispositionsModal = useMemo(
+    () => canOpenDispositions(civilContext.situationMatrimoniale, enfantsContext, familyMembers),
+    [civilContext.situationMatrimoniale, enfantsContext, familyMembers],
   );
 
   const donateurOptions = useMemo(
@@ -1139,6 +1144,7 @@ export default function SuccessionSimulator() {
   }, []);
 
   const openDispositionsModal = useCallback(() => {
+    if (!canOpenDispositionsModal) return;
     setDispositionsDraft({
       attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
       donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
@@ -1152,7 +1158,7 @@ export default function SuccessionSimulator() {
       ascendantsSurvivants: devolutionContext.ascendantsSurvivants,
     });
     setShowDispositionsModal(true);
-  }, [devolutionContext, patrimonialContext]);
+  }, [canOpenDispositionsModal, devolutionContext, patrimonialContext]);
 
   const validateDispositionsModal = useCallback(() => {
     setPatrimonialContext((prev) => ({
@@ -1543,13 +1549,22 @@ export default function SuccessionSimulator() {
                     />
                   </div>
                 )}
-                <button
-                  type="button"
-                  className="sc-child-add-btn"
-                  onClick={openDispositionsModal}
-                >
-                  + Dispositions
-                </button>
+                <div className="sc-dispositions-trigger">
+                  <button
+                    type="button"
+                    className="sc-child-add-btn"
+                    onClick={openDispositionsModal}
+                    disabled={!canOpenDispositionsModal}
+                    title={!canOpenDispositionsModal ? 'Merci de renseigner un contexte familial au préalable' : undefined}
+                  >
+                    + Dispositions
+                  </button>
+                  {!canOpenDispositionsModal && (
+                    <p className="sc-hint sc-hint--compact">
+                      Merci de renseigner un contexte familial au préalable.
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="sc-children-zone">
@@ -2252,7 +2267,7 @@ export default function SuccessionSimulator() {
           className="sc-member-modal-overlay"
           onClick={(e) => { if (e.target === e.currentTarget) setShowDispositionsModal(false); }}
         >
-          <div className="sc-member-modal">
+          <div className="sc-member-modal sc-dispositions-modal">
             <div className="sc-member-modal__header">
               <h3 className="sc-member-modal__title">Dispositions particulières</h3>
               <button
@@ -2264,7 +2279,8 @@ export default function SuccessionSimulator() {
                 ✕
               </button>
             </div>
-            <div className="sc-member-modal__body">
+            <div className="sc-member-modal__body sc-dispositions-modal__body">
+              <div className="sc-dispositions-modal__section sc-dispositions-modal__section--common">
               {showSharedTransmissionPct && (
                 <div className="sc-field">
                   <label>{isPacsIndivision ? 'Part indivise transmise au survivant (%)' : 'Attribution des biens communs au survivant (%)'}</label>
@@ -2358,7 +2374,15 @@ export default function SuccessionSimulator() {
                 </div>
               )}
 
-              <div className="sc-field">
+              </div>
+              <div className="sc-dispositions-modal__section sc-dispositions-modal__section--testament">
+                <div className="sc-dispositions-modal__section-header">
+                  <h4 className="sc-dispositions-modal__section-title">Testament</h4>
+                  <p className="sc-hint sc-hint--compact">
+                    Zone preparee pour la future presentation testamentaire par personne.
+                  </p>
+                </div>
+                <div className="sc-field">
                 <label>Testament actif</label>
                 <ScSelect
                   value={dispositionsDraft.testamentActif ? 'oui' : 'non'}
@@ -2424,6 +2448,7 @@ export default function SuccessionSimulator() {
                   )}
                 </div>
               )}
+              </div>
             </div>
             <div className="sc-member-modal__footer">
               <button
