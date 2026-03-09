@@ -20,6 +20,7 @@ export type SuccessionDonationEntreEpouxOption =
   | 'pleine_propriete_quotite'
   | 'mixte'
   | 'pleine_propriete_totale';
+export type SuccessionChoixLegalConjointSansDDV = 'usufruit' | 'quart_pp' | null;
 
 export interface SuccessionCivilContext {
   situationMatrimoniale: SituationMatrimoniale;
@@ -38,6 +39,7 @@ export interface SuccessionLiquidationContext {
 
 export interface SuccessionDevolutionContext {
   nbEnfantsNonCommuns: number;
+  choixLegalConjointSansDDV: SuccessionChoixLegalConjointSansDDV;
   testamentActif: boolean;
   typeDispositionTestamentaire: SuccessionDispositionTestamentaire | null;
   quotePartLegsTitreUniverselPct: number;
@@ -109,8 +111,8 @@ export interface SuccessionEnfant {
   deceased?: boolean;
 }
 
-interface SuccessionDraftPayloadV14 {
-  version: 14;
+interface SuccessionDraftPayloadV15 {
+  version: 15;
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
   liquidation: SuccessionLiquidationContext;
@@ -140,6 +142,7 @@ export const DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT: SuccessionLiquidationContex
 
 export const DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT: SuccessionDevolutionContext = {
   nbEnfantsNonCommuns: 0,
+  choixLegalConjointSansDDV: null,
   testamentActif: false,
   typeDispositionTestamentaire: null,
   quotePartLegsTitreUniverselPct: 50,
@@ -220,6 +223,10 @@ function isDonationEntreEpouxOption(v: unknown): v is SuccessionDonationEntreEpo
     || v === 'pleine_propriete_totale';
 }
 
+function isChoixLegalConjointSansDDV(v: unknown): v is Exclude<SuccessionChoixLegalConjointSansDDV, null> {
+  return v === 'usufruit' || v === 'quart_pp';
+}
+
 function isRegimeMatrimonial(v: unknown): v is RegimeMatrimonial {
   return v === 'communaute_legale'
     || v === 'communaute_universelle'
@@ -276,9 +283,9 @@ export function buildSuccessionDraftPayload(
   donations: SuccessionDonationEntry[],
   assetEntries: SuccessionAssetDetailEntry[],
   assuranceVieEntries: SuccessionAssuranceVieEntry[],
-): SuccessionDraftPayloadV14 {
+): SuccessionDraftPayloadV15 {
   return {
-    version: 14,
+    version: 15,
     form,
     civil,
     liquidation,
@@ -451,7 +458,8 @@ export function parseSuccessionDraftPayload(raw: string): {
         && parsed.version !== 11
         && parsed.version !== 12
         && parsed.version !== 13
-        && parsed.version !== 14)
+        && parsed.version !== 14
+        && parsed.version !== 15)
     ) return null;
     const payload = parsed as Record<string, unknown>;
 
@@ -495,7 +503,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       nbEnfants: asChildrenCount(liquidationRaw.nbEnfants, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.nbEnfants),
     };
 
-    const devolutionRaw = (payload.version === 3 || payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14) && isObject(payload.devolution)
+    const devolutionRaw = (payload.version === 3 || payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && isObject(payload.devolution)
       ? payload.devolution
       : {};
     const testamentActif = asBoolean(
@@ -510,6 +518,9 @@ export function parseSuccessionDraftPayload(raw: string): {
         devolutionRaw.nbEnfantsNonCommuns,
         DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.nbEnfantsNonCommuns,
       ),
+      choixLegalConjointSansDDV: isChoixLegalConjointSansDDV(devolutionRaw.choixLegalConjointSansDDV)
+        ? devolutionRaw.choixLegalConjointSansDDV
+        : DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.choixLegalConjointSansDDV,
       testamentActif,
       typeDispositionTestamentaire: testamentActif ? (parsedDisposition ?? 'legs_universel') : null,
       quotePartLegsTitreUniverselPct: asPercent(
@@ -522,7 +533,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       ),
     };
 
-    const patrimonialRaw = (payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14) && isObject(payload.patrimonial)
+    const patrimonialRaw = (payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && isObject(payload.patrimonial)
       ? payload.patrimonial
       : {};
     const patrimonial: SuccessionPatrimonialContext = {
@@ -560,7 +571,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       ),
     };
 
-    const enfantsRaw = (payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14) && Array.isArray(payload.enfants)
+    const enfantsRaw = (payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && Array.isArray(payload.enfants)
       ? payload.enfants
       : null;
     const enfants = enfantsRaw
@@ -574,7 +585,7 @@ export function parseSuccessionDraftPayload(raw: string): {
         }))
       : deriveLegacyEnfants(liquidation, devolution);
 
-    const familyMembersRaw = (payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14) && Array.isArray(payload.familyMembers)
+    const familyMembersRaw = (payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && Array.isArray(payload.familyMembers)
       ? payload.familyMembers
       : [];
     const familyMembers: FamilyMember[] = familyMembersRaw
@@ -587,7 +598,7 @@ export function parseSuccessionDraftPayload(raw: string): {
         parentEnfantId: typeof item.parentEnfantId === 'string' ? item.parentEnfantId : undefined,
       }));
 
-    const donationsRaw = (payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14) && Array.isArray(payload.donations)
+    const donationsRaw = (payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && Array.isArray(payload.donations)
       ? payload.donations
       : null;
     const donations = donationsRaw
@@ -617,7 +628,7 @@ export function parseSuccessionDraftPayload(raw: string): {
         .filter((item): item is SuccessionDonationEntry => item !== null)
       : deriveLegacyDonations(patrimonial);
 
-    const assetEntriesRaw = (payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14) && Array.isArray(payload.assetEntries)
+    const assetEntriesRaw = (payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && Array.isArray(payload.assetEntries)
       ? payload.assetEntries
       : null;
     const assetEntries = assetEntriesRaw
@@ -639,7 +650,7 @@ export function parseSuccessionDraftPayload(raw: string): {
         .filter((item): item is SuccessionAssetDetailEntry => item !== null)
       : deriveLegacyAssetEntries(liquidation);
 
-    const assuranceVieRaw = (payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14) && Array.isArray(payload.assuranceVieEntries)
+    const assuranceVieRaw = (payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && Array.isArray(payload.assuranceVieEntries)
       ? payload.assuranceVieEntries
       : null;
     const assuranceVieEntries = assuranceVieRaw

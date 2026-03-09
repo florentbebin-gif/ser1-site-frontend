@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import type { SuccessionCivilContext } from '../successionDraft';
 import { buildSuccessionDevolutionAnalysis } from '../successionDevolution';
 
@@ -76,6 +76,91 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     expect(analysis.warnings.some((warning) => warning.includes('art. 669 CGI'))).toBe(true);
   });
 
+  it('gère conjoint + enfants communs avec choix légal en usufruit total', () => {
+    const analysis = buildSuccessionDevolutionAnalysis(
+      makeCivil({
+        situationMatrimoniale: 'marie',
+        dateNaissanceEpoux1: '1955-06-01',
+        dateNaissanceEpoux2: '1957-05-12',
+      }),
+      2,
+      {
+        nbEnfantsNonCommuns: 0,
+        choixLegalConjointSansDDV: 'usufruit',
+        testamentActif: false,
+      },
+      500000,
+      0,
+      [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      [],
+      {
+        simulatedDeceased: 'epoux1',
+        referenceDate: new Date('2026-03-08'),
+      },
+    );
+
+    const conjointLine = analysis.lines.find((line) => line.heritier === 'Conjoint survivant');
+    const descendantsLine = analysis.lines.find((line) => line.heritier === 'Descendants');
+    expect(conjointLine?.montantEstime).toBe(200000);
+    expect(conjointLine?.droits).toContain('Usufruit');
+    expect(descendantsLine?.montantEstime).toBe(300000);
+    expect(descendantsLine?.droits).toContain('Nue-propriété');
+    expect(analysis.warnings.some((warning) => warning.includes('Choix légal du conjoint'))).toBe(true);
+  });
+
+  it('gère conjoint + enfants communs avec choix légal au quart en pleine propriété', () => {
+    const analysis = buildSuccessionDevolutionAnalysis(
+      makeCivil({ situationMatrimoniale: 'marie' }),
+      2,
+      {
+        nbEnfantsNonCommuns: 0,
+        choixLegalConjointSansDDV: 'quart_pp',
+        testamentActif: false,
+      },
+      800000,
+    );
+
+    expect(analysis.lines.some((line) => line.droits.includes('art. 757 CC, choix légal'))).toBe(true);
+    expect(analysis.lines.some((line) => line.montantEstime === 200000)).toBe(true);
+  });
+
+  it('privilégie la donation entre époux si elle est active même en présence d’enfant non commun', () => {
+    const analysis = buildSuccessionDevolutionAnalysis(
+      makeCivil({
+        situationMatrimoniale: 'marie',
+        dateNaissanceEpoux1: '1955-06-01',
+        dateNaissanceEpoux2: '1957-05-12',
+      }),
+      2,
+      {
+        nbEnfantsNonCommuns: 1,
+        choixLegalConjointSansDDV: 'usufruit',
+        testamentActif: false,
+      },
+      500000,
+      0,
+      [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'epoux1' },
+      ],
+      [],
+      {
+        patrimonial: {
+          donationEntreEpouxActive: true,
+          donationEntreEpouxOption: 'usufruit_total',
+        },
+        simulatedDeceased: 'epoux1',
+        referenceDate: new Date('2026-03-08'),
+      },
+    );
+
+    const conjointLine = analysis.lines.find((line) => line.heritier === 'Conjoint survivant');
+    expect(conjointLine?.droits).toContain('usufruit');
+    expect(analysis.lines.some((line) => line.droits === '1/4 en pleine propriété')).toBe(false);
+  });
   it('produit les warnings PACS sans testament', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'pacse', regimeMatrimonial: null }),
@@ -251,3 +336,5 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     expect(freresLine?.droits).toContain('2 collatéraux privilégiés');
   });
 });
+
+
