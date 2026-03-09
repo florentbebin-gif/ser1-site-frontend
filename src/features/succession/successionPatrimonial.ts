@@ -2,6 +2,8 @@ import type {
   SuccessionCivilContext,
   SuccessionDonationEntry,
   SuccessionPatrimonialContext,
+  SuccessionPrimarySide,
+  SuccessionTestamentConfig,
 } from './successionDraft';
 import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
 
@@ -11,6 +13,11 @@ export interface SuccessionPatrimonialAnalysis {
   liberalitesImputeesMontant: number;
   depassementQuotiteMontant: number;
   warnings: string[];
+}
+
+interface SuccessionPatrimonialAnalysisOptions {
+  simulatedDeceased: SuccessionPrimarySide;
+  testament: SuccessionTestamentConfig | null;
 }
 
 function asAmount(value: unknown): number {
@@ -59,6 +66,7 @@ export function buildSuccessionPatrimonialAnalysis(
   patrimonial: SuccessionPatrimonialContext,
   donations: SuccessionDonationEntry[] = [],
   fiscalSnapshot?: SuccessionFiscalSnapshot,
+  options?: SuccessionPatrimonialAnalysisOptions,
 ): SuccessionPatrimonialAnalysis {
   const actifNetSuccession = asAmount(actifNetSuccessionInput);
   const nbEnfants = Math.max(0, Math.floor(Number(nbEnfantsInput) || 0));
@@ -69,9 +77,12 @@ export function buildSuccessionPatrimonialAnalysis(
   const computedDonationsHorsPart = donations
     .filter((entry) => entry.type === 'hors_part')
     .reduce((sum, entry) => sum + getDonationCurrentValue(entry), 0);
-  const computedLegsParticuliers = donations
+  const computedLegacyLegsParticuliers = donations
     .filter((entry) => entry.type === 'legs_particulier')
     .reduce((sum, entry) => sum + getDonationCurrentValue(entry), 0);
+  const testamentLegsParticuliers = options?.testament
+    ? options.testament.particularLegacies.reduce((sum, entry) => sum + asAmount(entry.amount), 0)
+    : 0;
 
   const donationsRapportables = donations.length > 0
     ? computedDonationsRapportables
@@ -79,9 +90,11 @@ export function buildSuccessionPatrimonialAnalysis(
   const donationsHorsPart = donations.length > 0
     ? computedDonationsHorsPart
     : asAmount(patrimonial.donationsHorsPart);
-  const legsParticuliers = donations.length > 0
-    ? computedLegsParticuliers
-    : asAmount(patrimonial.legsParticuliers);
+  const legsParticuliers = options?.testament
+    ? testamentLegsParticuliers
+    : donations.length > 0
+      ? computedLegacyLegsParticuliers
+      : asAmount(patrimonial.legsParticuliers);
   const preciputMontant = asAmount(patrimonial.preciputMontant);
 
   const masseCivileReference = actifNetSuccession + donationsRapportables + donationsHorsPart;
@@ -144,6 +157,10 @@ export function buildSuccessionPatrimonialAnalysis(
         warnings.push(`${recentDonationsCount} donation(s) dans le rappel fiscal de ${fiscalSnapshot.donation.rappelFiscalAnnees} ans: reprise DMTG à contrôler.`);
       }
     }
+  }
+
+  if (options?.testament?.active && options.testament.dispositionType === 'legs_particulier' && legsParticuliers > 0) {
+    warnings.push(`Legs particuliers integres au titre du testament du cote ${options.simulatedDeceased}.`);
   }
 
   warnings.push('Module patrimonial simplifié: rapport civil détaillé, réduction fine et liquidation notariale non modélisés.');

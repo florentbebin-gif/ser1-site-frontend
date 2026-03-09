@@ -154,6 +154,35 @@ describe('succession validation matrix', () => {
     expect(analysis.warnings.some((warning) => warning.includes('PACS'))).toBe(true);
   });
 
+  it('PACS avec testament partenaire: le partenaire est bien restitue avec les descendants residuels', () => {
+    const analysis = buildDirectAnalysisFor(
+      makeCivil({ situationMatrimoniale: 'pacse' }),
+      makeLiquidation({ actifEpoux1: 300000, nbEnfants: 2 }),
+      [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      makeDevolution({
+        testamentsBySide: {
+          epoux1: {
+            active: true,
+            dispositionType: 'legs_universel',
+            beneficiaryRef: 'principal:epoux2',
+            quotePartPct: 50,
+            particularLegacies: [],
+          },
+        },
+      }),
+    );
+
+    expect(analysis.transmissionRows.map((row) => row.label)).toEqual([
+      'Partenaire pacsé',
+      'E1',
+      'E2',
+    ]);
+    expect(analysis.heirs[0]).toMatchObject({ lien: 'conjoint', partSuccession: 100000 });
+  });
+
   it('mariage avec enfant commun et enfant propre: la branche du defunt est respectee au 1er deces', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({

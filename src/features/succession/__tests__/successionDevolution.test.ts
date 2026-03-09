@@ -217,12 +217,17 @@ describe('buildSuccessionDevolutionAnalysis', () => {
         },
       }),
       300000,
+      0,
+      [{ id: 'E1', rattachement: 'epoux1' }],
     );
 
     expect(analysis.nbEnfantsNonCommuns).toBe(1);
     expect(analysis.warnings.some((warning) => warning.includes('plafonnés'))).toBe(true);
     expect(analysis.warnings.some((warning) => warning.includes('Testament actif'))).toBe(true);
-    expect(analysis.lines.some((line) => line.heritier === 'Légataire à titre universel')).toBe(true);
+    expect(analysis.lines.some((line) => line.heritier === 'E1 (testament)')).toBe(true);
+    expect(analysis.testamentDistribution?.beneficiaries).toMatchObject([
+      { id: 'E1', partSuccession: 150000 },
+    ]);
   });
 
   it('prend en compte un enfant décédé représenté par des petits-enfants', () => {
@@ -271,6 +276,30 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     const ascendantsLine = analysis.lines.find((l) => l.heritier === 'Ascendants (père et mère)');
     expect(ascendantsLine?.montantEstime).toBe(200000); // 1/4 + 1/4
     expect(analysis.reserve).toBeNull();
+  });
+
+  it('marié sans descendants: les ascendants de la branche opposée ne sont pas comptés', () => {
+    const analysis = buildSuccessionDevolutionAnalysis(
+      makeCivil({ situationMatrimoniale: 'marie' }),
+      0,
+      makeDevolution({
+        nbEnfantsNonCommuns: 0,
+        ascendantsSurvivantsBySide: { epoux1: false, epoux2: true },
+      }),
+      400000,
+      0,
+      [],
+      [
+        { id: 'P1', type: 'parent', branch: 'epoux2' },
+        { id: 'P2', type: 'parent', branch: 'epoux2' },
+      ],
+      { simulatedDeceased: 'epoux1' },
+    );
+
+    expect(analysis.lines).toHaveLength(1);
+    expect(analysis.lines[0].heritier).toBe('Conjoint survivant');
+    expect(analysis.lines[0].montantEstime).toBe(400000);
+    expect(analysis.lines[0].droits).toContain('art. 757-2 CC');
   });
 
   it('marié sans descendants, un seul parent — art. 757-1 CC (conjoint 3/4, parent 1/4)', () => {

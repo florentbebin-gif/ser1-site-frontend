@@ -571,6 +571,9 @@ export default function SuccessionSimulator() {
       chainOrder,
     ],
   );
+  const patrimonialSimulatedDeceased = civilContext.situationMatrimoniale === 'marie'
+    ? chainOrder
+    : directEstateBasis.simulatedDeceased;
   const patrimonialAnalysis = useMemo(
     () => buildSuccessionPatrimonialAnalysis(
       civilContext,
@@ -579,8 +582,21 @@ export default function SuccessionSimulator() {
       patrimonialContext,
       donationsContext,
       fiscalSnapshot,
+      {
+        simulatedDeceased: patrimonialSimulatedDeceased,
+        testament: devolutionContext.testamentsBySide[patrimonialSimulatedDeceased],
+      },
     ),
-    [civilContext, derivedActifNetSuccession, nbDescendantBranches, patrimonialContext, donationsContext, fiscalSnapshot],
+    [
+      civilContext,
+      derivedActifNetSuccession,
+      nbDescendantBranches,
+      patrimonialContext,
+      donationsContext,
+      fiscalSnapshot,
+      patrimonialSimulatedDeceased,
+      devolutionContext.testamentsBySide,
+    ],
   );
   const isMarried = civilContext.situationMatrimoniale === 'marie';
   const isPacsed = civilContext.situationMatrimoniale === 'pacse';

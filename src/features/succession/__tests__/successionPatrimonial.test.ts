@@ -48,7 +48,7 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
     );
 
     expect(analysis.depassementQuotiteMontant).toBeGreaterThan(0);
-    expect(analysis.warnings.some((w) => w.includes('quotité disponible'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('quotité disponible'))).toBe(true);
   });
 
   it('produit des warnings d’incohérence hors mariage', () => {
@@ -64,7 +64,7 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
       }),
     );
 
-    expect(analysis.warnings.some((w) => w.includes('hors mariage'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('hors mariage'))).toBe(true);
   });
 
   it('affiche une alerte explicite sur l’option de donation entre époux', () => {
@@ -78,7 +78,7 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
       }),
     );
 
-    expect(analysis.warnings.some((w) => w.includes('option mixte 1/4 PP + 3/4 usufruit'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('option mixte 1/4 PP + 3/4 usufruit'))).toBe(true);
   });
 
   it('utilise la valeur actuelle des donations détaillées et signale le rappel fiscal', () => {
@@ -103,8 +103,35 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
     );
 
     expect(analysis.masseCivileReference).toBe(590000);
-    expect(analysis.warnings.some((w) => w.includes('rappel fiscal'))).toBe(true);
-    expect(analysis.warnings.some((w) => w.includes('790 G'))).toBe(true);
-    expect(analysis.warnings.some((w) => w.includes('réserve d’usufruit'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('rappel fiscal'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('790 G'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('réserve d’usufruit'))).toBe(true);
+  });
+
+  it('lit uniquement les legs particuliers du testament du décès simulé', () => {
+    const analysis = buildSuccessionPatrimonialAnalysis(
+      makeCivil({}),
+      400000,
+      1,
+      makePatrimonial({ legsParticuliers: 50000 }),
+      [],
+      undefined,
+      {
+        simulatedDeceased: 'epoux2',
+        testament: {
+          active: true,
+          dispositionType: 'legs_particulier',
+          beneficiaryRef: null,
+          quotePartPct: 50,
+          particularLegacies: [
+            { id: 'leg-1', beneficiaryRef: 'family:T1', amount: 80000 },
+          ],
+        },
+      },
+    );
+
+    expect(analysis.liberalitesImputeesMontant).toBe(80000);
+    expect(analysis.depassementQuotiteMontant).toBe(0);
+    expect(analysis.warnings.some((warning) => warning.includes('cote epoux2'))).toBe(true);
   });
 });

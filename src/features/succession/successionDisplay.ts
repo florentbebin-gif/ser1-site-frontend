@@ -18,7 +18,6 @@ import {
   buildSuccessionDescendantRecipientsForDeceased,
   countEffectiveDescendantBranchesForDeceased,
 } from './successionEnfants';
-import { hasActiveTestamentForSide } from './successionTestament';
 
 export interface SuccessionTransmissionRow {
   id: string;
@@ -92,8 +91,13 @@ function getRelevantDeceased(
   civil: SuccessionCivilContext,
   order: 'epoux1' | 'epoux2' | undefined,
 ): 'epoux1' | 'epoux2' {
-  if (civil.situationMatrimoniale === 'pacse') return order === 'epoux2' ? 'epoux2' : 'epoux1';
-  if (civil.situationMatrimoniale === 'concubinage') return order === 'epoux2' ? 'epoux2' : 'epoux1';
+  if (
+    civil.situationMatrimoniale === 'marie'
+    || civil.situationMatrimoniale === 'pacse'
+    || civil.situationMatrimoniale === 'concubinage'
+  ) {
+    return order === 'epoux2' ? 'epoux2' : 'epoux1';
+  }
   return 'epoux1';
 }
 
@@ -113,7 +117,7 @@ export function computeSuccessionDirectEstateBasis(
       actifNetSuccession: ownAmount + (sharedAmount * 0.5),
       simulatedDeceased,
       warnings: sharedAmount > 0
-        ? ['Union libre: la quote-part indivise du défunt est estimée à 50 % de la masse en indivision.']
+        ? ['Union libre: la quote-part indivise du defunt est estimee a 50 % de la masse en indivision.']
         : [],
     };
   }
@@ -123,7 +127,7 @@ export function computeSuccessionDirectEstateBasis(
       actifNetSuccession: ownAmount + (sharedAmount * 0.5),
       simulatedDeceased,
       warnings: sharedAmount > 0
-        ? ['PACS indivision: la quote-part indivise du défunt est estimée à 50 % dans la succession directe.']
+        ? ['PACS indivision: la quote-part indivise du defunt est estimee a 50 % dans la succession directe.']
         : [],
     };
   }
@@ -137,9 +141,7 @@ export function computeSuccessionDirectEstateBasis(
   }
 
   return {
-    actifNetSuccession: simulatedDeceased === 'epoux1'
-      ? asAmount(liquidation.actifEpoux1)
-      : asAmount(liquidation.actifEpoux2),
+    actifNetSuccession: ownAmount,
     simulatedDeceased,
     warnings: [],
   };
@@ -168,7 +170,7 @@ function buildDetailedDescendantHeirs(
         lien: 'enfant' as const,
         partSuccession: amountByBranch,
       })),
-      warnings: ['Répartition descendants: ventilation égale par branche faute d’identifiants détaillés.'],
+      warnings: ['Repartition descendants: ventilation egale par branche faute d\'identifiants detailles.'],
     };
   }
 
@@ -227,7 +229,7 @@ function buildDetailedFamilyHeirs(
     })),
     warnings: members.length > 0
       ? []
-      : [`Répartition ${baseLabel.toLowerCase()}: ventilation égale faute d’identifiants détaillés.`],
+      : [`Repartition ${baseLabel.toLowerCase()}: ventilation egale faute d'identifiants detailles.`],
   };
 }
 
@@ -241,9 +243,9 @@ function buildParentAndSiblingHeirs(
   const parentMembers = getSideRelatives(familyMembers, deceased, 'parent');
   const siblingMembers = getSideRelatives(familyMembers, deceased, 'frere_soeur');
 
-  const parentsAmount = findLineAmount(devolution, 'Père et mère', 'Ascendants (père et mère)');
+  const parentsAmount = findLineAmount(devolution, 'Pere et mere', 'Ascendants (pere et mere)');
   const oneParentAmount = findLineAmount(devolution, 'Ascendant survivant');
-  const siblingsAmount = findLineAmount(devolution, 'Frères et sœurs');
+  const siblingsAmount = findLineAmount(devolution, 'Freres et soeurs');
 
   if (parentsAmount > 0) {
     const detailedParents = buildDetailedFamilyHeirs(parentsAmount, deceased, 'parent', parentMembers, 2, 'Parent');
@@ -262,7 +264,7 @@ function buildParentAndSiblingHeirs(
       'frere_soeur',
       siblingMembers,
       1,
-      'Frère / sœur',
+      'Frere / soeur',
     );
     heirs.push(...detailedSiblings.heirs);
     warnings.push(...detailedSiblings.warnings);
@@ -271,43 +273,63 @@ function buildParentAndSiblingHeirs(
   return { heirs, warnings };
 }
 
-function buildPartnerHeirs(
+function buildLegalPartnerHeirs(
   civil: SuccessionCivilContext,
   devolution: SuccessionDevolutionAnalysis,
 ): DetailedHeirInput[] {
-  if (civil.situationMatrimoniale === 'pacse') {
-    const amount = findLineAmount(devolution, 'Partenaire pacsé');
-    return amount > 0 ? [{
-      id: 'partenaire-pacse',
-      label: 'Partenaire pacsé',
-      lien: 'conjoint',
-      partSuccession: amount,
-      exonerated: true,
-    }] : [];
-  }
+  if (civil.situationMatrimoniale !== 'marie') return [];
+  const amount = findLineAmount(devolution, 'Conjoint survivant');
+  return amount > 0 ? [{
+    id: 'conjoint',
+    label: 'Conjoint survivant',
+    lien: 'conjoint',
+    partSuccession: amount,
+    exonerated: true,
+  }] : [];
+}
 
-  if (civil.situationMatrimoniale === 'concubinage') {
-    const amount = findLineAmount(devolution, 'Concubin');
-    return amount > 0 ? [{
-      id: 'concubin',
-      label: 'Concubin',
-      lien: 'autre',
-      partSuccession: amount,
-    }] : [];
-  }
+function buildTestamentHeirs(
+  devolution: SuccessionDevolutionAnalysis,
+): DetailedHeirInput[] {
+  return (devolution.testamentDistribution?.beneficiaries ?? []).map((beneficiary) => ({
+    id: beneficiary.id,
+    label: beneficiary.label,
+    lien: beneficiary.lien,
+    partSuccession: beneficiary.partSuccession,
+    exonerated: beneficiary.exonerated,
+  }));
+}
 
-  if (civil.situationMatrimoniale === 'marie') {
-    const amount = findLineAmount(devolution, 'Conjoint survivant');
-    return amount > 0 ? [{
-      id: 'conjoint',
-      label: 'Conjoint survivant',
-      lien: 'conjoint',
-      partSuccession: amount,
-      exonerated: true,
-    }] : [];
-  }
+function scaleDetailedHeirs(
+  heirs: DetailedHeirInput[],
+  targetTotal: number,
+): DetailedHeirInput[] {
+  const normalizedTarget = Math.max(0, targetTotal);
+  if (normalizedTarget <= 0 || heirs.length === 0) return [];
 
-  return [];
+  const currentTotal = heirs.reduce((sum, heir) => sum + heir.partSuccession, 0);
+  if (currentTotal <= 0) return [];
+  if (Math.abs(currentTotal - normalizedTarget) < 0.01) return heirs;
+
+  const ratio = normalizedTarget / currentTotal;
+  return heirs.map((heir) => ({
+    ...heir,
+    partSuccession: heir.partSuccession * ratio,
+  }));
+}
+
+function mergeDetailedHeirs(heirs: DetailedHeirInput[]): DetailedHeirInput[] {
+  const merged = new Map<string, DetailedHeirInput>();
+  heirs.forEach((heir) => {
+    const existing = merged.get(heir.id);
+    if (existing) {
+      existing.partSuccession += heir.partSuccession;
+      existing.exonerated = existing.exonerated || heir.exonerated;
+      return;
+    }
+    merged.set(heir.id, { ...heir });
+  });
+  return Array.from(merged.values()).filter((heir) => heir.partSuccession > 0.01);
 }
 
 function toHeritiersInput(heirs: DetailedHeirInput[]): HeritiersInput[] {
@@ -396,48 +418,48 @@ export function buildSuccessionDirectDisplayAnalysis(
 ): SuccessionDirectDisplayAnalysis {
   const simulatedDeceased = getRelevantDeceased(input.civil, input.order);
   const warnings = [...(input.baseWarnings ?? []), ...input.devolution.warnings];
-  const detailedHeirs: DetailedHeirInput[] = [];
   const estateAmount = Math.max(0, input.actifNetSuccession ?? input.devolution.masseReference);
 
-  const partnerHeirs = buildPartnerHeirs(input.civil, input.devolution);
-  detailedHeirs.push(...partnerHeirs);
+  const protectedHeirs = buildLegalPartnerHeirs(input.civil, input.devolution);
+  const protectedTotal = protectedHeirs.reduce((sum, heir) => sum + heir.partSuccession, 0);
 
-  const descendantsAmountFromDevolution = findLineAmount(input.devolution, 'Descendants');
-  const descendantsAmount = (
-    hasActiveTestamentForSide(input.devolutionContext, simulatedDeceased)
-    && (input.civil.situationMatrimoniale === 'pacse' || input.civil.situationMatrimoniale === 'concubinage')
-  )
-    ? Math.max(0, estateAmount - partnerHeirs.reduce((sum, heir) => sum + heir.partSuccession, 0))
-    : descendantsAmountFromDevolution;
-
-  if (descendantsAmount > 0) {
-    const descendants = buildDetailedDescendantHeirs(
-      descendantsAmount,
-      input.enfantsContext,
-      input.familyMembers,
-      simulatedDeceased,
-    );
-    detailedHeirs.push(...descendants.heirs);
-    warnings.push(...descendants.warnings);
-  }
+  const descendantsAmount = findLineAmount(input.devolution, 'Descendants');
+  const descendantHeirs = buildDetailedDescendantHeirs(
+    descendantsAmount,
+    input.enfantsContext,
+    input.familyMembers,
+    simulatedDeceased,
+  );
+  warnings.push(...descendantHeirs.warnings);
 
   const parentAndSiblingHeirs = buildParentAndSiblingHeirs(
     input.devolution,
     input.familyMembers,
     simulatedDeceased,
   );
-  detailedHeirs.push(...parentAndSiblingHeirs.heirs);
   warnings.push(...parentAndSiblingHeirs.warnings);
 
-  if (
-    hasActiveTestamentForSide(input.devolutionContext, simulatedDeceased)
-    && detailedHeirs.length === 0
-    && input.civil.situationMatrimoniale !== 'marie'
-    && input.civil.situationMatrimoniale !== 'pacse'
-    && input.civil.situationMatrimoniale !== 'concubinage'
-  ) {
-    warnings.push('Testament actif hors couple: bénéficiaire testamentaire non détaillé dans cet affichage simplifié.');
-  }
+  const redistributableLegalHeirs = [
+    ...descendantHeirs.heirs,
+    ...parentAndSiblingHeirs.heirs,
+  ];
+  const redistributableTotal = redistributableLegalHeirs.reduce((sum, heir) => sum + heir.partSuccession, 0);
+
+  const testamentHeirs = buildTestamentHeirs(input.devolution);
+  const testamentTotal = testamentHeirs.reduce((sum, heir) => sum + heir.partSuccession, 0);
+  const remainingRedistributable = Math.max(
+    0,
+    Math.min(redistributableTotal, estateAmount - protectedTotal - testamentTotal),
+  );
+  const scaledRedistributableHeirs = testamentHeirs.length > 0
+    ? scaleDetailedHeirs(redistributableLegalHeirs, remainingRedistributable)
+    : redistributableLegalHeirs;
+
+  const detailedHeirs = mergeDetailedHeirs([
+    ...protectedHeirs,
+    ...testamentHeirs,
+    ...scaledRedistributableHeirs,
+  ]);
 
   const heirs = toHeritiersInput(detailedHeirs);
   const actifNetSuccession = heirs.reduce((sum, heir) => sum + heir.partSuccession, 0) || estateAmount;
