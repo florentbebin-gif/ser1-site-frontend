@@ -313,6 +313,11 @@
 .ir-tmi-card {
   font-size: 13px;
   border-left: 3px solid var(--color-c3);
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-c4) 18%, transparent) 0%,
+    transparent 20%
+  );
 }
 
 .ir-tmi-header {
@@ -919,6 +924,28 @@
   border-radius: 10px 10px 0 0;
   margin: -20px -24px 0;
   padding: 20px 24px 0;
+}
+
+/* Dégradé header carte Situation familiale — même patron que Revenus */
+.premium-card--guide .ir-situation-card__header {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-c1) 5%, transparent) 0%,
+    transparent 65%
+  );
+  border-radius: 10px 10px 0 0;
+  margin: -20px -24px 0;
+  padding: 20px 24px 0;
+}
+
+.ir-situation-card__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-c1);
+  padding-bottom: 10px;
 }
 
 .ir-income-card__subtitle {
