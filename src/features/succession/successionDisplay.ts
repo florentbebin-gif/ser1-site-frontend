@@ -366,17 +366,18 @@ function accumulateTransmissionRow(
   step: 1 | 2,
 ): void {
   const current = rows.get(beneficiary.id) ?? {
-    id: beneficiary.id,
-    label: beneficiary.label,
-    brut: 0,
-    droits: 0,
-    net: 0,
-    exonerated: false,
-  };
+      id: beneficiary.id,
+      label: beneficiary.label,
+      brut: 0,
+      droits: 0,
+      net: 0,
+      exonerated: beneficiary.exonerated ?? false,
+    };
 
   current.brut += beneficiary.brut;
   current.droits += beneficiary.droits;
   current.net += beneficiary.net;
+  current.exonerated = current.exonerated || beneficiary.exonerated;
   if (step === 1) {
     current.step1Brut = (current.step1Brut ?? 0) + beneficiary.brut;
     current.step1Droits = (current.step1Droits ?? 0) + beneficiary.droits;
@@ -395,22 +396,11 @@ export function buildSuccessionChainTransmissionRows(
   const rows = new Map<string, SuccessionTransmissionRow>();
   analysis.step1.beneficiaries.forEach((beneficiary) => accumulateTransmissionRow(rows, beneficiary, 1));
   analysis.step2.beneficiaries.forEach((beneficiary) => accumulateTransmissionRow(rows, beneficiary, 2));
-
-  if (analysis.step1.partConjoint > 0) {
-    const spouseId = `conjoint-${analysis.order === 'epoux1' ? 'epoux2' : 'epoux1'}`;
-    rows.set(spouseId, {
-      id: spouseId,
-      label: 'Conjoint survivant',
-      brut: analysis.step1.partConjoint,
-      droits: 0,
-      net: analysis.step1.partConjoint,
-      exonerated: true,
-      step1Brut: analysis.step1.partConjoint,
-      step1Droits: 0,
-    });
-  }
-
-  return Array.from(rows.values());
+  return Array.from(rows.values()).sort((left, right) => {
+    const exoRank = Number(Boolean(left.exonerated)) - Number(Boolean(right.exonerated));
+    if (exoRank !== 0) return exoRank;
+    return left.label.localeCompare(right.label, 'fr-FR');
+  });
 }
 
 export function buildSuccessionDirectDisplayAnalysis(

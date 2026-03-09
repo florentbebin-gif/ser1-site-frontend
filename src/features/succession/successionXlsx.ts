@@ -1,8 +1,8 @@
 /**
  * Succession Excel Export (P1-02)
  *
- * 5 onglets normalisés : Inputs / Résultats / Détails / Chronologie / Hypothèses
- * Utilise xlsxBuilder pour générer un fichier OOXML natif.
+ * 5 onglets normalises : Inputs / Resultats / Details / Chronologie / Hypotheses
+ * Utilise xlsxBuilder pour generer un fichier OOXML natif.
  */
 
 import { buildXlsxBlob, downloadXlsx } from '../../utils/xlsxBuilder';
@@ -15,10 +15,18 @@ const LIEN_LABELS: Record<LienParente, string> = {
   enfant: 'Enfant',
   petit_enfant: 'Petit-enfant',
   parent: 'Parent',
-  frere_soeur: 'Frère / Sœur',
-  neveu_niece: 'Neveu / Nièce',
+  frere_soeur: 'Frere / Soeur',
+  neveu_niece: 'Neveu / Niece',
   autre: 'Autre',
 };
+
+interface SuccessionChronologieBeneficiary {
+  label: string;
+  brut: number;
+  droits: number;
+  net: number;
+  exonerated?: boolean;
+}
 
 export interface SuccessionXlsxInput {
   actifNetSuccession: number;
@@ -34,6 +42,7 @@ export interface SuccessionChronologieXlsxStep {
   partConjoint: number;
   partEnfants: number;
   droitsEnfants: number;
+  beneficiaries?: SuccessionChronologieBeneficiary[];
 }
 
 export interface SuccessionChronologieXlsxData {
@@ -53,14 +62,17 @@ function sec(text: string): XlsxCell { return { v: text, style: 'sSection' }; }
 function money(v: number): XlsxCell { return { v, style: 'sMoney' }; }
 function pct(v: number): XlsxCell { return { v: v / 100, style: 'sPercent' }; }
 
+const formatMoney = (value: number): string =>
+  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value);
+
 function buildInputsSheet(input: SuccessionXlsxInput): XlsxSheet {
   const rows: Array<Array<XlsxCell | string | number>> = [
-    [h('Paramètre'), h('Valeur')],
-    ['Masse transmise estimée', money(input.actifNetSuccession)],
-    ['Nombre d\'héritiers', input.nbHeritiers],
+    [h('Parametre'), h('Valeur')],
+    ['Masse transmise estimee', money(input.actifNetSuccession)],
+    ['Nombre d\'heritiers', input.nbHeritiers],
     [],
-    [sec('Héritiers'), sec('')],
-    [h('Lien de parenté'), h('Part succession (€)')],
+    [sec('Heritiers'), sec('')],
+    [h('Lien de parenté'), h('Part succession (EUR)')],
   ];
 
   for (const heir of input.heritiers) {
@@ -73,10 +85,10 @@ function buildInputsSheet(input: SuccessionXlsxInput): XlsxSheet {
 function buildResultsSheet(result: SuccessionResult): XlsxSheet {
   const rows: Array<Array<XlsxCell | string | number>> = [
     [h('Indicateur'), h('Valeur')],
-    ['Masse transmise estimée', money(result.actifNetSuccession)],
+    ['Masse transmise estimee', money(result.actifNetSuccession)],
     ['Total droits de succession', money(result.totalDroits)],
     ['Taux moyen global', pct(result.tauxMoyenGlobal)],
-    ['Nombre d\'héritiers', result.detailHeritiers.length],
+    ['Nombre d\'heritiers', result.detailHeritiers.length],
   ];
 
   return { name: 'Résultats', rows, columnWidths: [30, 20] };
@@ -84,7 +96,7 @@ function buildResultsSheet(result: SuccessionResult): XlsxSheet {
 
 function buildDetailsSheet(heritiers: HeritierResult[]): XlsxSheet {
   const rows: Array<Array<XlsxCell | string | number>> = [
-    [h('Héritier'), h('Part brute'), h('Abattement'), h('Base imposable'), h('Droits'), h('Taux moyen')],
+    [h('Heritier'), h('Part brute'), h('Abattement'), h('Base imposable'), h('Droits'), h('Taux moyen')],
   ];
 
   for (const heir of heritiers) {
@@ -98,9 +110,8 @@ function buildDetailsSheet(heritiers: HeritierResult[]): XlsxSheet {
     ]);
   }
 
-  // Totals
-  const totalDroits = heritiers.reduce((s, h) => s + h.droits, 0);
-  const totalParts = heritiers.reduce((s, h) => s + h.partBrute, 0);
+  const totalDroits = heritiers.reduce((sum, heir) => sum + heir.droits, 0);
+  const totalParts = heritiers.reduce((sum, heir) => sum + heir.partBrute, 0);
   rows.push([]);
   rows.push([
     sec('TOTAL'),
@@ -122,7 +133,7 @@ function buildHypothesesSheet(): XlsxSheet {
   const rows: Array<Array<XlsxCell | string>> = [
     [h('Hypothèse'), h('Référence')],
     ['Barème DMTG en vigueur', 'CGI Art. 777'],
-    ['Abattement ligne directe : 100 000 €', 'CGI Art. 779'],
+    ['Abattement ligne directe : 100 000 EUR', 'CGI Art. 779'],
     ['Exonération totale du conjoint survivant', 'CGI Art. 796-0 bis'],
     ['Hors donations antérieures rapportables', 'Hypothèse simplificatrice'],
     ['Assurance-vie intégrée à la masse transmise affichée', 'Sans ventilation fiscale détaillée'],
@@ -142,6 +153,23 @@ function orderLabel(order: 'epoux1' | 'epoux2'): string {
     : 'Époux 2 décède en premier';
 }
 
+function appendBeneficiaryRows(
+  rows: Array<Array<XlsxCell | string | number>>,
+  beneficiaries?: SuccessionChronologieBeneficiary[],
+): void {
+  if (!beneficiaries || beneficiaries.length === 0) return;
+
+  rows.push([h('Bénéficiaire réel'), h('Part brute')]);
+  beneficiaries.forEach((beneficiary) => {
+    rows.push([
+      beneficiary.exonerated
+        ? `${beneficiary.label} (exonéré)`
+        : `${beneficiary.label} - droits ${formatMoney(beneficiary.droits)}`,
+      money(beneficiary.brut),
+    ]);
+  });
+}
+
 function buildPredecesSheet(
   chronologie?: SuccessionChronologieXlsxData,
   sheetName = 'Chronologie',
@@ -151,7 +179,7 @@ function buildPredecesSheet(
   ];
 
   if (!chronologie) {
-    rows.push(['Module de chronologie', 'Donnée non transmise à l’export']);
+    rows.push(['Module de chronologie', 'Donnee non transmise a l\'export']);
     return { name: sheetName, rows, columnWidths: [42, 35] };
   }
 
@@ -169,9 +197,10 @@ function buildPredecesSheet(
       rows.push(['Droits assurance-vie', money(chronologie.step1.droitsAssuranceVie ?? 0)]);
     }
     rows.push(['Masse successorale civile', money(chronologie.step1.actifTransmis)]);
-    rows.push(['Part conjoint survivant', money(chronologie.step1.partConjoint)]);
-    rows.push(['Part descendants', money(chronologie.step1.partEnfants)]);
-    rows.push(['Droits descendants', money(chronologie.step1.droitsEnfants)]);
+    rows.push(['Part conjoint / partenaire', money(chronologie.step1.partConjoint)]);
+    rows.push(['Part autres bénéficiaires', money(chronologie.step1.partEnfants)]);
+    rows.push(['Droits succession', money(chronologie.step1.droitsEnfants)]);
+    appendBeneficiaryRows(rows, chronologie.step1.beneficiaries);
     rows.push([]);
 
     rows.push([sec(`Étape 2 - décès ${chronologie.secondDecedeLabel}`), sec('')]);
@@ -183,8 +212,10 @@ function buildPredecesSheet(
       rows.push(['Droits assurance-vie', money(chronologie.step2.droitsAssuranceVie ?? 0)]);
     }
     rows.push(['Masse successorale civile', money(chronologie.step2.actifTransmis)]);
-    rows.push(['Part descendants', money(chronologie.step2.partEnfants)]);
-    rows.push(['Droits descendants', money(chronologie.step2.droitsEnfants)]);
+    rows.push(['Part conjoint / partenaire', money(chronologie.step2.partConjoint)]);
+    rows.push(['Part autres bénéficiaires', money(chronologie.step2.partEnfants)]);
+    rows.push(['Droits succession', money(chronologie.step2.droitsEnfants)]);
+    appendBeneficiaryRows(rows, chronologie.step2.beneficiaries);
     rows.push([]);
 
     rows.push(['Total cumulé des droits (2 décès)', money(chronologie.totalDroits)]);
@@ -226,13 +257,11 @@ export async function exportSuccessionXlsx(
       buildHypothesesSheet(),
     ];
 
-  const blob = await buildXlsxBlob({
+  return buildXlsxBlob({
     sheets,
     headerFill: themeColor,
     sectionFill: DEFAULT_COLORS.c8,
   });
-
-  return blob;
 }
 
 export async function exportAndDownloadSuccessionXlsx(

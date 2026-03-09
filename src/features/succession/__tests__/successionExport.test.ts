@@ -41,12 +41,21 @@ describe('Succession PPTX Export', () => {
             partConjoint: 75000,
             partEnfants: 225000,
             droitsEnfants: 12500,
+            beneficiaries: [
+              { label: 'Conjoint survivant', brut: 75000, droits: 0, net: 75000, exonerated: true },
+              { label: 'E1', brut: 112500, droits: 6250, net: 106250 },
+              { label: 'E2', brut: 112500, droits: 6250, net: 106250 },
+            ],
           },
           step2: {
             actifTransmis: 500000,
             partConjoint: 0,
             partEnfants: 500000,
             droitsEnfants: 42000,
+            beneficiaries: [
+              { label: 'E1', brut: 250000, droits: 21000, net: 229000 },
+              { label: 'E2', brut: 250000, droits: 21000, net: 229000 },
+            ],
           },
           totalDroits: 54500,
           warnings: ['Module simplifié'],
@@ -60,14 +69,16 @@ describe('Succession PPTX Export', () => {
     expect(spec.slides.length).toBeGreaterThanOrEqual(4);
     expect(spec.end.type).toBe('end');
 
-    const synthSlide = spec.slides.find((s) => s.type === 'succession-synthesis');
+    const synthSlide = spec.slides.find((slide) => slide.type === 'succession-synthesis');
     expect(synthSlide).toBeDefined();
     const chronologySlide = spec.slides.find(
-      (s) => s.type === 'content' && 'title' in s && s.title === 'Chronologie des décès',
+      (slide) => slide.type === 'content' && 'title' in slide && slide.title === 'Chronologie des décès',
     );
     expect(chronologySlide).toBeDefined();
     if (chronologySlide && 'body' in chronologySlide) {
       expect(chronologySlide.body).toContain('Total cumulé des droits');
+      expect(chronologySlide.body).toContain('Bénéficiaires réels');
+      expect(chronologySlide.body).toContain('Conjoint survivant');
       expect(chronologySlide.body).not.toContain('Ordre inverse');
     }
   });
@@ -102,7 +113,7 @@ describe('Succession PPTX Export', () => {
     );
 
     const chronologySlide = spec.slides.find(
-      (s) => s.type === 'content' && 'title' in s && s.title === 'Chronologie des décès',
+      (slide) => slide.type === 'content' && 'title' in slide && slide.title === 'Chronologie des décès',
     );
     expect(chronologySlide).toBeDefined();
     if (chronologySlide && 'body' in chronologySlide) {
@@ -144,12 +155,21 @@ describe('Succession Excel Export', () => {
           partConjoint: 62500,
           partEnfants: 187500,
           droitsEnfants: 12000,
+          beneficiaries: [
+            { label: 'Conjoint survivant', brut: 62500, droits: 0, net: 62500, exonerated: true },
+            { label: 'E1', brut: 93750, droits: 6000, net: 87750 },
+            { label: 'E2', brut: 93750, droits: 6000, net: 87750 },
+          ],
         },
         step2: {
           actifTransmis: 380000,
           partConjoint: 0,
           partEnfants: 380000,
           droitsEnfants: 31500,
+          beneficiaries: [
+            { label: 'E1', brut: 190000, droits: 15750, net: 174250 },
+            { label: 'E2', brut: 190000, droits: 15750, net: 174250 },
+          ],
         },
         totalDroits: 43500,
         warnings: ['Avertissement de test'],
@@ -169,6 +189,11 @@ describe('Succession Excel Export', () => {
     expect(zip.file('xl/worksheets/sheet5.xml')).toBeTruthy();
     const workbookXml = await zip.file('xl/workbook.xml')?.async('string');
     expect(workbookXml).toContain('Chronologie');
+    expect(workbookXml).toContain('Hypothèses');
+
+    const chronologySheet = await zip.file('xl/worksheets/sheet4.xml')?.async('string');
+    expect(chronologySheet).toContain('Conjoint survivant');
+    expect(chronologySheet).toContain('E1');
   });
 
   it('generates a simplified chainage-only XLSX when no direct succession result is provided', async () => {
@@ -191,12 +216,21 @@ describe('Succession Excel Export', () => {
           partConjoint: 65000,
           partEnfants: 195000,
           droitsEnfants: 9500,
+          beneficiaries: [
+            { label: 'Conjoint survivant', brut: 65000, droits: 0, net: 65000, exonerated: true },
+            { label: 'E1', brut: 97500, droits: 4750, net: 92750 },
+            { label: 'E2', brut: 97500, droits: 4750, net: 92750 },
+          ],
         },
         step2: {
           actifTransmis: 405000,
           partConjoint: 0,
           partEnfants: 405000,
           droitsEnfants: 33200,
+          beneficiaries: [
+            { label: 'E1', brut: 202500, droits: 16600, net: 185900 },
+            { label: 'E2', brut: 202500, droits: 16600, net: 185900 },
+          ],
         },
         totalDroits: 42700,
         warnings: ['Module simplifié'],

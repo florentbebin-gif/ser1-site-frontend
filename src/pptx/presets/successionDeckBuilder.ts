@@ -2,7 +2,7 @@
  * Succession Deck Builder (P1-02)
  *
  * Generates a StudyDeckSpec for succession simulation results.
- * Structure: Cover → Chapter → Synthesis → Chronologie → Chapter → Content (hypothèses) → End
+ * Structure: Cover -> Chapter -> Synthesis -> Chronologie -> Chapter -> Content (hypotheses) -> End
  */
 
 import type {
@@ -15,6 +15,25 @@ import type {
 import { isDebugEnabled } from '../../utils/debugFlags';
 
 const DEBUG_PPTX = isDebugEnabled('pptx');
+
+interface SuccessionChronologieBeneficiary {
+  label: string;
+  brut: number;
+  droits: number;
+  net: number;
+  exonerated?: boolean;
+}
+
+interface SuccessionChronologieStep {
+  actifTransmis: number;
+  assuranceVieTransmise?: number;
+  masseTotaleTransmise?: number;
+  droitsAssuranceVie?: number;
+  partConjoint: number;
+  partEnfants: number;
+  droitsEnfants: number;
+  beneficiaries?: SuccessionChronologieBeneficiary[];
+}
 
 export interface SuccessionData {
   actifNetSuccession: number;
@@ -33,24 +52,8 @@ export interface SuccessionData {
     order: 'epoux1' | 'epoux2';
     firstDecedeLabel: string;
     secondDecedeLabel: string;
-    step1: {
-      actifTransmis: number;
-      assuranceVieTransmise?: number;
-      masseTotaleTransmise?: number;
-      droitsAssuranceVie?: number;
-      partConjoint: number;
-      partEnfants: number;
-      droitsEnfants: number;
-    } | null;
-    step2: {
-      actifTransmis: number;
-      assuranceVieTransmise?: number;
-      masseTotaleTransmise?: number;
-      droitsAssuranceVie?: number;
-      partConjoint: number;
-      partEnfants: number;
-      droitsEnfants: number;
-    } | null;
+    step1: SuccessionChronologieStep | null;
+    step2: SuccessionChronologieStep | null;
     assuranceVieTotale?: number;
     totalDroits: number;
     warnings?: string[];
@@ -92,44 +95,65 @@ function orderLabel(order: 'epoux1' | 'epoux2'): string {
     : 'Époux 2 puis Époux 1';
 }
 
+function buildChronologieBeneficiaryLines(
+  stepLabel: string,
+  beneficiaries?: SuccessionChronologieBeneficiary[],
+): string[] {
+  if (!beneficiaries || beneficiaries.length === 0) return [];
+
+  const lines = [`• ${stepLabel} - Bénéficiaires réels:`];
+  beneficiaries.slice(0, 6).forEach((beneficiary) => {
+    lines.push(
+      `  - ${beneficiary.label}: ${fmt(beneficiary.brut)}${beneficiary.exonerated ? ' (exonéré)' : `, droits ${fmt(beneficiary.droits)}`}`,
+    );
+  });
+  if (beneficiaries.length > 6) {
+    lines.push(`  - ${beneficiaries.length - 6} autre(s) bénéficiaire(s) non affiché(s)`);
+  }
+
+  return lines;
+}
+
 function buildChronologieBody(data?: SuccessionData['predecesChronologie']): string {
   if (!data) {
     return [
-      '• Chronologie non transmise dans cette exportation',
-      '• Utiliser la page simulateur pour consulter les droits des 2 étapes',
+      '- Chronologie non transmise dans cette exportation',
+      '- Utiliser la page simulateur pour consulter les droits des 2 etapes',
     ].join('\n');
   }
 
   const lines: string[] = [
-    `• Ordre simulé: ${orderLabel(data.order)}`,
-    `• Chronologie retenue comme source principale: ${data.applicable ? 'Oui' : 'Non'}`,
+    `- Ordre simule: ${orderLabel(data.order)}`,
+    `- Chronologie retenue comme source principale: ${data.applicable ? 'Oui' : 'Non'}`,
   ];
 
   if (data.applicable && data.step1 && data.step2) {
     lines.push(
-      `• Étape 1 (${data.firstDecedeLabel}) - masse totale ${fmt(data.step1.masseTotaleTransmise ?? data.step1.actifTransmis)}, ` +
+      `- Étape 1 (${data.firstDecedeLabel}) - masse totale ${fmt(data.step1.masseTotaleTransmise ?? data.step1.actifTransmis)}, ` +
       `dont assurance-vie ${fmt(data.step1.assuranceVieTransmise ?? 0)}, ` +
-      `part conjoint ${fmt(data.step1.partConjoint)}, droits descendants ${fmt(data.step1.droitsEnfants)}` +
+      `part conjoint/partenaire ${fmt(data.step1.partConjoint)}, autres bénéficiaires ${fmt(data.step1.partEnfants)}, droits succession ${fmt(data.step1.droitsEnfants)}` +
       `${(data.step1.droitsAssuranceVie ?? 0) > 0 ? `, droits assurance-vie ${fmt(data.step1.droitsAssuranceVie ?? 0)}` : ''}`,
     );
+    lines.push(...buildChronologieBeneficiaryLines(`Étape 1 (${data.firstDecedeLabel})`, data.step1.beneficiaries));
     lines.push(
-      `• Étape 2 (${data.secondDecedeLabel}) - masse totale ${fmt(data.step2.masseTotaleTransmise ?? data.step2.actifTransmis)}, ` +
+      `- Étape 2 (${data.secondDecedeLabel}) - masse totale ${fmt(data.step2.masseTotaleTransmise ?? data.step2.actifTransmis)}, ` +
       `dont assurance-vie ${fmt(data.step2.assuranceVieTransmise ?? 0)}, ` +
-      `part descendants ${fmt(data.step2.partEnfants)}, droits descendants ${fmt(data.step2.droitsEnfants)}` +
+      `part conjoint/partenaire ${fmt(data.step2.partConjoint)}, autres bénéficiaires ${fmt(data.step2.partEnfants)}, droits succession ${fmt(data.step2.droitsEnfants)}` +
       `${(data.step2.droitsAssuranceVie ?? 0) > 0 ? `, droits assurance-vie ${fmt(data.step2.droitsAssuranceVie ?? 0)}` : ''}`,
     );
-    lines.push(`• Total cumulé des droits (2 décès): ${fmt(data.totalDroits)}`);
+    lines.push(...buildChronologieBeneficiaryLines(`Étape 2 (${data.secondDecedeLabel})`, data.step2.beneficiaries));
+    lines.push(`- Total cumulé des droits (2 décès): ${fmt(data.totalDroits)}`);
     if (typeof data.assuranceVieTotale === 'number' && data.assuranceVieTotale > 0) {
-      lines.push(`• Capitaux assurance-vie saisis: ${fmt(data.assuranceVieTotale)}`);
+      lines.push(`- Capitaux assurance-vie saisis: ${fmt(data.assuranceVieTotale)}`);
     }
   } else {
-    lines.push('• Chronologie 2 décès non retenue comme source principale pour la situation saisie');
+    lines.push('- Chronologie 2 décès non retenue comme source principale pour la situation saisie');
   }
 
   if (data.warnings && data.warnings.length > 0) {
     lines.push('');
     lines.push('Avertissements:');
-    data.warnings.slice(0, 4).forEach((warning) => lines.push(`• ${warning}`));
+    data.warnings.slice(0, 4).forEach((warning) => lines.push(`- ${warning}`));
   }
 
   return lines.join('\n');
@@ -157,7 +181,6 @@ export function buildSuccessionStudyDeck(
   }
 
   const slides: Array<ChapterSlideSpec | SuccessionSynthesisSlideSpec | ContentSlideSpec> = [
-    // Chapter 1: Objectifs
     {
       type: 'chapter',
       title: 'Objectifs et contexte',
@@ -165,7 +188,6 @@ export function buildSuccessionStudyDeck(
       body: 'Vous souhaitez estimer les droits de mutation à titre gratuit applicables à votre situation patrimoniale.',
       chapterImageIndex: 1,
     },
-    // Slide 2: Synthèse succession (KPI + table héritiers)
     {
       type: 'succession-synthesis',
       actifNetSuccession: data.actifNetSuccession,
@@ -173,14 +195,12 @@ export function buildSuccessionStudyDeck(
       tauxMoyenGlobal: data.tauxMoyenGlobal,
       heritiers: data.heritiers,
     },
-    // Slide 3: Chronologie des décès (prédécès)
     {
       type: 'content',
       title: 'Chronologie des décès',
       subtitle: 'Simulation du 1er décès puis du 2e décès',
       body: buildChronologieBody(data.predecesChronologie),
     },
-    // Chapter 2: Hypothèses
     {
       type: 'chapter',
       title: 'Hypothèses et limites',
@@ -188,17 +208,16 @@ export function buildSuccessionStudyDeck(
       body: 'Les résultats ci-dessus reposent sur les hypothèses détaillées ci-après.',
       chapterImageIndex: 3,
     },
-    // Slide 4: Hypothèses détaillées
     {
       type: 'content',
       title: 'Hypothèses retenues',
       subtitle: 'Barème DMTG 2024',
       body: [
-        '• Barème des droits de mutation à titre gratuit en vigueur (CGI Art. 777)',
-        '• Abattement en ligne directe : 100 000 € par enfant (CGI Art. 779)',
-        '• Exonération totale du conjoint survivant (CGI Art. 796-0 bis)',
-        '• Estimation hors donations antérieures ; assurance-vie ajoutée à la masse transmise affichée',
-        '• Les montants sont arrondis à l\'euro le plus proche',
+        '- Barème des droits de mutation à titre gratuit en vigueur (CGI Art. 777)',
+        '- Abattement en ligne directe : 100 000 EUR par enfant (CGI Art. 779)',
+        '- Exonération totale du conjoint survivant (CGI Art. 796-0 bis)',
+        '- Estimation hors donations antérieures ; assurance-vie ajoutée à la masse transmise affichée',
+        '- Les montants sont arrondis à l\'euro le plus proche',
       ].join('\n'),
     },
   ];

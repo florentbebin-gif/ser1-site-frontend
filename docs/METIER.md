@@ -112,6 +112,7 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - prise en compte du regime matrimonial dans certaines analyses guidees
 - scenarios de predeces et ordre des deces
 - routage explicite entre chronologie 2 deces (mariage) et succession directe affichee (celibataire, veuf, divorce, concubinage et PACS selon le cas)
+- chronologie 2 deces mariee branchee au testament du cote du defunt a chaque etape; le bouton d'ordre inverse change aussi le testament retenu
 - restitution de la transmission sur une ligne par personne reelle quand les beneficiaires sont identifies, avec filtrage des descendants selon la branche du defunt simule
 - saisie detaillee des actifs/passifs pour reconstituer des masses nettes par poche patrimoniale
 - ventilation simplifiee de l'assurance-vie deces selon les clauses beneficiaires saisies (lecture 990 I / 757 B)
@@ -122,6 +123,7 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - ventilation assurance-vie sur contrats demembres avec calcul art. 669 CGI (usufruitier/nu-proprietaire) selon age de l'usufruitier
 - PACS: absence de vocation successorale legale automatique du partenaire sans testament; avec testament, le partenaire peut etre integre a la synthese directe avec exoneration DMTG
 - union libre: les biens en indivision peuvent etre saisis; seule la quote-part du defunt est retenue dans la succession directe, avec hypothese 50/50 par defaut dans ce module
+- exports PPTX/XLSX de la chronologie avec restitution des beneficiaires reels par etape quand ils sont identifies
 
 ### Limites connues
 - ce n'est pas une liquidation notariale exhaustive
@@ -132,7 +134,7 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - la chronologie 2 deces n'est plus la source d'affichage principale hors mariage; pour PACS et autres situations, la synthese privilegie une lecture directe du deces simule
 - l'UI succession privilegie actuellement les analyses civiles/patrimoniales guidees; le calcul DMTG detaille par heredier n'est pas expose comme parcours principal de saisie
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
-- les parents saisis dans la famille sont comptes sans distinction de branche (epoux1/epoux2) dans le moteur de devolution ; pour les couples maries, les parents du defunt et du survivant sont confondus (simplification)
+- la chronologie 2 deces reste un module simplifie: elle reemploie le testament du cote du decede et le report economique vers le 2e deces, mais ne remplace pas une liquidation notariale exhaustive
 
 ### Matrice juridique de validation succession
 La validation de `/sim/succession` repose sur une matrice de cas cibles, reliee a la fois aux sources juridiques et aux tests de non-regression du module.
@@ -144,6 +146,7 @@ La validation de `/sim/succession` repose sur une matrice de cas cibles, reliee 
 | Divorce + enfants | succession directe du defunt simule, ex-conjoint hors droits successoraux legaux | Service-Public F1270 / F35794 | `successionValidationMatrix.test.ts` |
 | Marie + enfants communs | chronologie 2 deces, conjoint + descendants selon la lecture civile retenue ; sans DDV, choix legal possible entre usufruit total et 1/4 PP ; sans choix explicite, le module peut rester sur une hypothese moteur affichee comme telle | Service-Public F1270 / Code civil art. 757 et 758-3 | `successionChainage.test.ts`, `successionDevolution.test.ts` |
 | Marie + enfant non commun | l'enfant propre n'apparait que sur la branche du parent defunt, avec libelle stable dans la synthese meme en famille recomposee | Code civil art. 757 / 757-1 | `successionChainage.test.ts`, `successionValidationMatrix.test.ts` |
+| Marie + testament (conjoint / enfant) | la chronologie 2 deces retient le testament du cote decede a chaque etape ; l'ordre inverse change le testament retenu et les beneficiaires exportes | Code civil art. 757 / 913 et s. | `successionChainage.test.ts`, `successionExport.test.ts`, `successionValidationMatrix.test.ts` |
 | PACS sans testament | pas de vocation successorale legale automatique du partenaire, lecture directe du deces simule | Service-Public F1621 | `successionDevolution.test.ts`, `successionValidationMatrix.test.ts` |
 | PACS avec testament | le partenaire peut apparaitre dans la synthese directe, avec exoneration DMTG | Service-Public F1621 / F35794 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts` |
 | Union libre + indivision | seule la quote-part du defunt sur l'indivision est retenue, hypothese 50/50 par defaut | Service-Public F904 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts` |

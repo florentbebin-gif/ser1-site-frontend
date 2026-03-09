@@ -516,6 +516,7 @@ export default function SuccessionSimulator() {
       },
       enfantsContext,
       familyMembers,
+      devolution: devolutionContext,
     }),
     [
       civilContext,
@@ -529,6 +530,7 @@ export default function SuccessionSimulator() {
       patrimonialContext.donationEntreEpouxOption,
       enfantsContext,
       familyMembers,
+      devolutionContext,
     ],
   );
   const directEstateBasis = useMemo(
@@ -932,6 +934,13 @@ export default function SuccessionSimulator() {
         partConjoint: chainageAnalysis.step1.partConjoint,
         partEnfants: chainageAnalysis.step1.partEnfants,
         droitsEnfants: chainageAnalysis.step1.droitsEnfants,
+        beneficiaries: chainageAnalysis.step1.beneficiaries.map((beneficiary) => ({
+          label: beneficiary.label,
+          brut: beneficiary.brut,
+          droits: beneficiary.droits,
+          net: beneficiary.net,
+          exonerated: beneficiary.exonerated ?? false,
+        })),
       } : null,
       step2: displayUsesChainage && chainageAnalysis.step2 ? {
         actifTransmis: chainageAnalysis.step2.actifTransmis,
@@ -942,6 +951,13 @@ export default function SuccessionSimulator() {
         partConjoint: chainageAnalysis.step2.partConjoint,
         partEnfants: chainageAnalysis.step2.partEnfants,
         droitsEnfants: chainageAnalysis.step2.droitsEnfants,
+        beneficiaries: chainageAnalysis.step2.beneficiaries.map((beneficiary) => ({
+          label: beneficiary.label,
+          brut: beneficiary.brut,
+          droits: beneficiary.droits,
+          net: beneficiary.net,
+          exonerated: beneficiary.exonerated ?? false,
+        })),
       } : null,
       assuranceVieTotale: assuranceVieTotals.capitaux,
       totalDroits: derivedTotalDroits,
@@ -2327,7 +2343,7 @@ export default function SuccessionSimulator() {
                     <strong>{fmt(chainageAnalysis.step1.actifTransmis + assuranceVieByAssure[chainageAnalysis.order])}</strong>
                   </div>
                   <div className="sc-summary-row">
-                    <span>Droits descendants</span>
+                    <span>Droits succession</span>
                     <strong>{fmt(chainageAnalysis.step1.droitsEnfants)}</strong>
                   </div>
                   {avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits > 0 && (
@@ -2348,7 +2364,7 @@ export default function SuccessionSimulator() {
                     <strong>{fmt(chainageAnalysis.step2.actifTransmis + assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'])}</strong>
                   </div>
                   <div className="sc-summary-row">
-                    <span>Droits descendants</span>
+                    <span>Droits succession</span>
                     <strong>{fmt(chainageAnalysis.step2.droitsEnfants)}</strong>
                   </div>
                   {avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits > 0 && (

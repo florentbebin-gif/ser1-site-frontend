@@ -60,9 +60,9 @@ function makeLiquidation(overrides: Partial<SuccessionLiquidationContext>): Succ
   };
 }
 
-const DEUX_ENFANTS_DEFUNT = [
-  { id: 'E1', rattachement: 'epoux1' as const },
-  { id: 'E2', rattachement: 'epoux1' as const },
+const DEUX_ENFANTS_DEFUNT: SuccessionEnfant[] = [
+  { id: 'E1', rattachement: 'epoux1' },
+  { id: 'E2', rattachement: 'epoux1' },
 ];
 
 function buildDirectAnalysisFor(
@@ -96,7 +96,7 @@ function buildDirectAnalysisFor(
 }
 
 describe('succession validation matrix', () => {
-  it('veuf avec deux enfants: succession directe avec droits ligne directe non nuls', () => {
+  it('veuf with two children: direct succession produces line-direct rights', () => {
     const analysis = buildDirectAnalysisFor(
       makeCivil({ situationMatrimoniale: 'veuf' }),
       makeLiquidation({ actifEpoux1: 400000, nbEnfants: 2 }),
@@ -107,7 +107,7 @@ describe('succession validation matrix', () => {
     expect(analysis.transmissionRows.map((row) => row.label)).toEqual(['E1', 'E2']);
   });
 
-  it('divorce avec deux enfants: ex-conjoint absent, enfants seuls heritiers directs', () => {
+  it('divorce with two children: former spouse stays outside legal heirs', () => {
     const analysis = buildDirectAnalysisFor(
       makeCivil({ situationMatrimoniale: 'divorce' }),
       makeLiquidation({ actifEpoux1: 420000, nbEnfants: 2 }),
@@ -119,7 +119,7 @@ describe('succession validation matrix', () => {
     expect(analysis.result?.totalDroits).toBeGreaterThan(0);
   });
 
-  it('PACS sans testament et sans descendant: partenaire non heritier legal dans la synthese directe', () => {
+  it('PACS without testament and without descendants: partner is not a direct legal heir', () => {
     const civil = makeCivil({ situationMatrimoniale: 'pacse' });
     const devolutionContext = makeDevolution({});
     const basis = computeSuccessionDirectEstateBasis(
@@ -154,7 +154,7 @@ describe('succession validation matrix', () => {
     expect(analysis.warnings.some((warning) => warning.includes('PACS'))).toBe(true);
   });
 
-  it('PACS avec testament partenaire: le partenaire est bien restitue avec les descendants residuels', () => {
+  it('PACS with testament to partner: partner is restored beside descendants', () => {
     const analysis = buildDirectAnalysisFor(
       makeCivil({ situationMatrimoniale: 'pacse' }),
       makeLiquidation({ actifEpoux1: 300000, nbEnfants: 2 }),
@@ -183,7 +183,7 @@ describe('succession validation matrix', () => {
     expect(analysis.heirs[0]).toMatchObject({ lien: 'conjoint', partSuccession: 100000 });
   });
 
-  it('mariage avec enfant commun et enfant propre: la branche du defunt est respectee au 1er deces', () => {
+  it('marriage with common and separate child respects the deceased branch at step 1', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({
         situationMatrimoniale: 'marie',
@@ -205,11 +205,11 @@ describe('succession validation matrix', () => {
       familyMembers: [],
     });
 
-    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1', 'E2']);
+    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['conjoint', 'E1', 'E2']);
     expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1']);
   });
 
-  it('famille recomposÃ©e symÃ©trique: E1, E2 et E3 restent distincts dans la synthÃ¨se cumulÃ©e', () => {
+  it('symmetric blended family keeps distinct cumulative rows', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({
         situationMatrimoniale: 'marie',
@@ -246,7 +246,44 @@ describe('succession validation matrix', () => {
     expect(rows.find((row) => row.label === 'E3')?.step2Brut).toBeGreaterThan(0);
   });
 
-  it('union libre avec indivision: seule la quote-part du defunt est retenue', () => {
+  it('marriage with testament to spouse carries the testament into the second estate through order', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'separation_biens',
+      }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 400000,
+        actifEpoux2: 200000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+      devolution: makeDevolution({
+        testamentsBySide: {
+          epoux1: {
+            active: true,
+            dispositionType: 'legs_titre_universel',
+            beneficiaryRef: 'principal:epoux2',
+            quotePartPct: 25,
+            particularLegacies: [],
+          },
+        },
+      }),
+    });
+
+    expect(analysis.step1?.partConjoint).toBeGreaterThan(100000);
+    expect(analysis.step2?.actifTransmis).toBeGreaterThan(analysis.step1?.partConjoint ?? 0);
+  });
+
+  it('concubinage with indivision only keeps the deceased share', () => {
     const basis = computeSuccessionDirectEstateBasis(
       makeCivil({ situationMatrimoniale: 'concubinage' }),
       makeLiquidation({
