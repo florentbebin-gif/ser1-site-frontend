@@ -77,25 +77,6 @@ export const SETTINGS_ROUTES = [
 ];
 
 /**
- * Récupère une route par sa clé
- * @param {string} key - Clé de la route
- * @returns {SettingsRoute|undefined}
- */
-export const getSettingsRouteByKey = (key) => {
-  return SETTINGS_ROUTES.find((route) => route.key === key);
-};
-
-/**
- * Récupère une route par son chemin URL
- * @param {string} path - Chemin URL (ex: '/settings/impots' ou 'impots')
- * @returns {SettingsRoute|undefined}
- */
-export const getSettingsRouteByPath = (path) => {
-  const normalizedPath = path.replace(/^\/settings\/?/, '');
-  return SETTINGS_ROUTES.find((route) => route.path === normalizedPath);
-};
-
-/**
  * Détermine la clé active à partir du pathname
  * @param {string} pathname - window.location.pathname
  * @returns {string} - Clé de la route active
