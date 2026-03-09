@@ -1883,6 +1883,26 @@ export default function SuccessionSimulator() {
                           options={donatairesOptions}
                         />
                       </div>
+                      <div className="sc-field sc-field--full">
+                        <div className="sc-donation-toggle-row" role="group" aria-label="Options de donation">
+                          <button
+                            type="button"
+                            className={`sc-donation-toggle${entry.donSommeArgentExonere ? ' is-active' : ''}`}
+                            onClick={() => updateDonationEntry(entry.id, 'donSommeArgentExonere', !(entry.donSommeArgentExonere ?? false))}
+                            aria-pressed={entry.donSommeArgentExonere ?? false}
+                          >
+                            Don de somme d&apos;argent exonéré
+                          </button>
+                          <button
+                            type="button"
+                            className={`sc-donation-toggle${entry.avecReserveUsufruit ? ' is-active' : ''}`}
+                            onClick={() => updateDonationEntry(entry.id, 'avecReserveUsufruit', !(entry.avecReserveUsufruit ?? false))}
+                            aria-pressed={entry.avecReserveUsufruit ?? false}
+                          >
+                            Avec réserve d&apos;usufruit
+                          </button>
+                        </div>
+                      </div>
                       <div className="sc-field">
                         <label>Valeur à la donation (€)</label>
                         <input
@@ -1902,29 +1922,6 @@ export default function SuccessionSimulator() {
                           onChange={(e) => updateDonationEntry(entry.id, 'valeurActuelle', Number(e.target.value) || 0)}
                           placeholder="0"
                         />
-                      </div>
-                    </div>
-                    <div className="sc-donation-flags">
-                      <span className="sc-donation-flags__title">Caracteristiques</span>
-                      <div className="sc-donation-flags__items">
-                        <label className="sc-donation-flag">
-                          <input
-                            type="checkbox"
-                            className="sc-checkbox"
-                            checked={entry.donSommeArgentExonere ?? false}
-                            onChange={(e) => updateDonationEntry(entry.id, 'donSommeArgentExonere', e.target.checked)}
-                          />
-                          Don de somme d&apos;argent exonéré
-                        </label>
-                        <label className="sc-donation-flag">
-                          <input
-                            type="checkbox"
-                            className="sc-checkbox"
-                            checked={entry.avecReserveUsufruit ?? false}
-                            onChange={(e) => updateDonationEntry(entry.id, 'avecReserveUsufruit', e.target.checked)}
-                          />
-                          Avec réserve d&apos;usufruit
-                        </label>
                       </div>
                     </div>
                     </div>

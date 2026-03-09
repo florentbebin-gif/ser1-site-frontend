@@ -695,60 +695,43 @@
   text-align: left;
 }
 
-/* Checkboxes donation (PR23) */
-.sc-checkbox {
-  accent-color: var(--color-c2);
-  cursor: pointer;
-  flex-shrink: 0;
-  inline-size: 14px;
-  block-size: 14px;
-  margin: 1px 0 0;
+.sc-donation-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.sc-checkbox-label {
-  display: flex;
+.sc-donation-toggle {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  justify-content: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-c8);
+  border-radius: 999px;
+  background: var(--color-c7);
   color: var(--color-c9);
-  cursor: pointer;
-}
-
-.sc-donation-flags {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
-}
-
-.sc-donation-flags__title {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--color-c9) 72%, var(--color-c10));
-}
-
-.sc-donation-flags__items {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.sc-donation-flag {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  min-height: 40px;
-  padding: 8px 10px;
-  border: 1px solid color-mix(in srgb, var(--color-c8) 68%, #FFFFFF);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c7) 32%, #FFFFFF);
   font-size: 12px;
-  line-height: 1.35;
-  color: var(--color-c9);
+  line-height: 1.2;
+  font-weight: 500;
   cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+}
+
+.sc-donation-toggle:hover {
+  border-color: var(--color-c3);
+  color: var(--color-c1);
+}
+
+.sc-donation-toggle.is-active {
+  background: color-mix(in srgb, var(--color-c3) 22%, #FFFFFF);
+  border-color: color-mix(in srgb, var(--color-c3) 55%, var(--color-c8));
+  color: var(--color-c1);
+}
+
+.sc-donation-toggle:focus-visible {
+  outline: 2px solid var(--color-c2);
+  outline-offset: 1px;
 }
 
 .sc-donations-totals {
@@ -1471,8 +1454,9 @@
     grid-column: auto;
   }
 
-  .sc-donation-flags__items {
-    grid-template-columns: 1fr;
+  .sc-donation-toggle-row {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
