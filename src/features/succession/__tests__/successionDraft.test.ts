@@ -34,6 +34,7 @@ describe('successionDraft', () => {
       },
       {
         nbEnfantsNonCommuns: 1,
+        choixLegalConjointSansDDV: 'usufruit',
         testamentActif: true,
         typeDispositionTestamentaire: 'legs_titre_universel',
         quotePartLegsTitreUniverselPct: 60,
@@ -97,6 +98,7 @@ describe('successionDraft', () => {
     expect(parsed?.civil.dateNaissanceEpoux2).toBe('1978-09-22');
     expect(parsed?.liquidation.actifCommun).toBe(150000);
     expect(parsed?.devolution.nbEnfantsNonCommuns).toBe(1);
+    expect(parsed?.devolution.choixLegalConjointSansDDV).toBe('usufruit');
     expect(parsed?.devolution.testamentActif).toBe(true);
     expect(parsed?.devolution.typeDispositionTestamentaire).toBe('legs_titre_universel');
     expect(parsed?.devolution.quotePartLegsTitreUniverselPct).toBe(60);
@@ -137,6 +139,7 @@ describe('successionDraft', () => {
     const parsed = parseSuccessionDraftPayload(raw);
     expect(parsed?.civil.dateNaissanceEpoux1).toBe('1980-02-14');
     expect(parsed?.civil.dateNaissanceEpoux2).toBeUndefined();
+    expect(parsed?.devolution.choixLegalConjointSansDDV).toBeNull();
   });
 
   it('fallback sur un héritier par défaut et contexte civil par défaut', () => {

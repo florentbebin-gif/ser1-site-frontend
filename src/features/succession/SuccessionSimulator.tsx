@@ -111,6 +111,12 @@ const DONATION_ENTRE_EPOUX_OPTIONS = [
   { value: 'pleine_propriete_totale', label: 'Totalité en pleine propriété' },
 ];
 
+const CHOIX_LEGAL_CONJOINT_OPTIONS = [
+  { value: '__moteur__', label: 'Hypothèse moteur (1/4 en pleine propriété)' },
+  { value: 'usufruit', label: 'Usufruit de la totalité (art. 757 CC)' },
+  { value: 'quart_pp', label: '1/4 en pleine propriété (art. 757 CC)' },
+];
+
 const DONATION_TYPE_OPTIONS: { value: SuccessionDonationEntryType; label: string }[] = [
   { value: 'rapportable', label: 'Avance de part successorale' },
   { value: 'hors_part', label: 'Hors part successorale' },
@@ -355,6 +361,7 @@ export default function SuccessionSimulator() {
     donationEntreEpouxOption: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxOption,
     preciputMontant: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,
     attributionIntegrale: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionIntegrale,
+    choixLegalConjointSansDDV: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.choixLegalConjointSansDDV,
     testamentActif: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentActif,
     typeDispositionTestamentaire: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.typeDispositionTestamentaire,
     quotePartLegsTitreUniverselPct: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.quotePartLegsTitreUniverselPct,
@@ -721,7 +728,7 @@ export default function SuccessionSimulator() {
       )
         ? getUsufruitValuationFromBirthDate(spouseBirthDate, valuationBase)
         : null;
-      const baseLabel = `Disposition : ${opt?.label ?? patrimonialContext.donationEntreEpouxOption}`;
+      const baseLabel = `Donation entre époux : ${opt?.label ?? patrimonialContext.donationEntreEpouxOption}`;
       if (valuation) {
         return `${baseLabel} — valorisation art. 669 CGI : usufruit ${Math.round(valuation.tauxUsufruit * 100)}%, nue-propriété ${Math.round(valuation.tauxNuePropriete * 100)}% (usufruitier ${valuation.age} ans)`;
       }
@@ -733,10 +740,28 @@ export default function SuccessionSimulator() {
       }
       return baseLabel;
     }
-    return 'Hypothèse moteur : 1/4 en pleine propriété pour le conjoint survivant';
+    if (nbEnfantsNonCommuns > 0) {
+      return 'Art. 757 CC : 1/4 en pleine propriété imposé au conjoint survivant en présence d’enfant(s) non commun(s).';
+    }
+    if (devolutionContext.choixLegalConjointSansDDV === 'usufruit') {
+      const spouseBirthDate = chainOrder === 'epoux1'
+        ? civilContext.dateNaissanceEpoux2
+        : civilContext.dateNaissanceEpoux1;
+      const valuation = getUsufruitValuationFromBirthDate(spouseBirthDate, derivedActifNetSuccession);
+      if (valuation) {
+        return `Art. 757 CC : usufruit de la totalité retenu — valorisation art. 669 CGI : usufruit ${Math.round(valuation.tauxUsufruit * 100)}%, nue-propriété ${Math.round(valuation.tauxNuePropriete * 100)}% (usufruitier ${valuation.age} ans)`;
+      }
+      return 'Art. 757 CC : usufruit de la totalité demandé — valorisation art. 669 CGI en attente de la date de naissance du conjoint survivant (repli moteur sur 1/4 en pleine propriété).';
+    }
+    if (devolutionContext.choixLegalConjointSansDDV === 'quart_pp') {
+      return 'Art. 757 CC : 1/4 en pleine propriété retenu au titre du choix légal du conjoint survivant.';
+    }
+    return 'Hypothèse moteur : 1/4 en pleine propriété pour le conjoint survivant (choix légal non précisé).';
   }, [
     isMarried,
     nbDescendantBranches,
+    nbEnfantsNonCommuns,
+    devolutionContext.choixLegalConjointSansDDV,
     patrimonialContext.donationEntreEpouxActive,
     patrimonialContext.donationEntreEpouxOption,
     chainOrder,
@@ -1120,6 +1145,7 @@ export default function SuccessionSimulator() {
       donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
       preciputMontant: patrimonialContext.preciputMontant,
       attributionIntegrale: patrimonialContext.attributionIntegrale,
+      choixLegalConjointSansDDV: devolutionContext.choixLegalConjointSansDDV,
       testamentActif: devolutionContext.testamentActif,
       typeDispositionTestamentaire: devolutionContext.typeDispositionTestamentaire,
       quotePartLegsTitreUniverselPct: devolutionContext.quotePartLegsTitreUniverselPct,
@@ -1139,6 +1165,7 @@ export default function SuccessionSimulator() {
     }));
     setDevolutionContext((prev) => ({
       ...prev,
+      choixLegalConjointSansDDV: dispositionsDraft.choixLegalConjointSansDDV,
       testamentActif: dispositionsDraft.testamentActif,
       typeDispositionTestamentaire: dispositionsDraft.testamentActif
         ? (dispositionsDraft.typeDispositionTestamentaire ?? 'legs_universel')
@@ -2240,6 +2267,33 @@ export default function SuccessionSimulator() {
                   <p className="sc-hint sc-hint--compact">
                     Le choix du type de donation entre époux se fait au moment du décès.
                   </p>
+                </div>
+              )}
+
+              {showDonationEntreEpoux && !dispositionsDraft.donationEntreEpouxActive && nbDescendantBranches > 0 && (
+                <div className="sc-field">
+                  <label>Choix légal du conjoint</label>
+                  {nbEnfantsNonCommuns > 0 ? (
+                    <p className="sc-hint sc-hint--compact">
+                      En présence d&apos;enfants non communs, le conjoint survivant n&apos;a droit qu&apos;au quart en pleine propriété (art. 757 CC).
+                    </p>
+                  ) : (
+                    <>
+                      <ScSelect
+                        value={dispositionsDraft.choixLegalConjointSansDDV ?? '__moteur__'}
+                        onChange={(value) => setDispositionsDraft((prev) => ({
+                          ...prev,
+                          choixLegalConjointSansDDV: value === '__moteur__'
+                            ? null
+                            : value as 'usufruit' | 'quart_pp',
+                        }))}
+                        options={CHOIX_LEGAL_CONJOINT_OPTIONS}
+                      />
+                      <p className="sc-hint sc-hint--compact">
+                        Sans précision, le simulateur conserve l&apos;hypothèse moteur actuelle ; le droit positif prévoit un choix entre usufruit total et quart en pleine propriété.
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
 

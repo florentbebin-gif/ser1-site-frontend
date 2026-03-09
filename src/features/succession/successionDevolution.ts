@@ -165,6 +165,46 @@ function getDonationEntreEpouxValuation(
   return null;
 }
 
+function getLegalSpouseValuationWithoutDonation(
+  civil: SuccessionCivilContext,
+  choixLegal: SuccessionDevolutionContext['choixLegalConjointSansDDV'],
+  masseReference: number,
+  simulatedDeceased: 'epoux1' | 'epoux2',
+  referenceDate: Date,
+): {
+  conjointAmount: number;
+  descendantsAmount: number;
+  conjointRights: string;
+  descendantsRights: string;
+  warnings: string[];
+} | null {
+  if (choixLegal !== 'usufruit') return null;
+
+  const warnings: string[] = [];
+  const birthDate = getSurvivingSpouseBirthDate(civil, simulatedDeceased);
+  const usufruitValuation = getUsufruitValuationFromBirthDate(birthDate, masseReference, referenceDate);
+
+  if (!usufruitValuation) {
+    warnings.push('Choix légal du conjoint en usufruit total: date de naissance du conjoint survivant manquante, repli moteur sur 1/4 en pleine propriété.');
+    return {
+      conjointAmount: masseReference * 0.25,
+      descendantsAmount: masseReference * 0.75,
+      conjointRights: 'Usufruit de la totalité (repli de calcul 1/4 PP faute de date de naissance)',
+      descendantsRights: '75% en pleine propriété (repli moteur faute de valorisation art. 669 CGI)',
+      warnings,
+    };
+  }
+
+  warnings.push(`Choix légal du conjoint: valorisation art. 669 CGI sur la base d’un usufruitier âgé de ${usufruitValuation.age} ans.`);
+  return {
+    conjointAmount: usufruitValuation.valeurUsufruit,
+    descendantsAmount: usufruitValuation.valeurNuePropriete,
+    conjointRights: `Usufruit de la totalité (${Math.round(usufruitValuation.tauxUsufruit * 100)}% art. 669 CGI)`,
+    descendantsRights: `Nue-propriété de la totalité (${Math.round(usufruitValuation.tauxNuePropriete * 100)}% art. 669 CGI)`,
+    warnings,
+  };
+}
+
 function getDescendantsLine(
   nbBranches: number,
   availablePct: number,
@@ -368,16 +408,40 @@ export function buildSuccessionDevolutionAnalysis(
           montantEstime: masseReference * 0.75,
         });
       } else {
-        lines.push({
-          heritier: 'Conjoint survivant',
-          droits: '1/4 en pleine propriété (hypothèse moteur)',
-          montantEstime: masseReference * 0.25,
-        });
-        lines.push({
-          heritier: 'Descendants',
-          droits: getDescendantsLine(nbEnfantsTotal, 75, representedBranchLabels),
-          montantEstime: masseReference * 0.75,
-        });
+        const legalSpouseValuation = getLegalSpouseValuationWithoutDonation(
+          civil,
+          context.choixLegalConjointSansDDV,
+          masseReference,
+          options.simulatedDeceased ?? 'epoux1',
+          options.referenceDate ?? new Date(),
+        );
+        if (legalSpouseValuation) {
+          lines.push({
+            heritier: 'Conjoint survivant',
+            droits: legalSpouseValuation.conjointRights,
+            montantEstime: legalSpouseValuation.conjointAmount,
+          });
+          lines.push({
+            heritier: 'Descendants',
+            droits: legalSpouseValuation.descendantsRights,
+            montantEstime: legalSpouseValuation.descendantsAmount,
+          });
+          warnings.push(...legalSpouseValuation.warnings);
+        } else {
+          const conjointRights = context.choixLegalConjointSansDDV === 'quart_pp'
+            ? '1/4 en pleine propriété (art. 757 CC, choix légal du conjoint)'
+            : '1/4 en pleine propriété (hypothèse moteur)';
+          lines.push({
+            heritier: 'Conjoint survivant',
+            droits: conjointRights,
+            montantEstime: masseReference * 0.25,
+          });
+          lines.push({
+            heritier: 'Descendants',
+            droits: getDescendantsLine(nbEnfantsTotal, 75, representedBranchLabels),
+            montantEstime: masseReference * 0.75,
+          });
+        }
       }
     } else {
       // Art. 757-1 / 757-2 CC : marié sans descendants

@@ -25,6 +25,7 @@ function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilC
 function makeDevolution(overrides: Partial<SuccessionDevolutionContext>): SuccessionDevolutionContext {
   return {
     nbEnfantsNonCommuns: 0,
+    choixLegalConjointSansDDV: null,
     testamentActif: false,
     typeDispositionTestamentaire: null,
     quotePartLegsTitreUniverselPct: 50,
