@@ -1,11 +1,14 @@
 import type { DmtgSettings } from '../../engine/civil';
 import { calculateSuccession, type LienParente } from '../../engine/succession';
-import type {
-  FamilyMember,
-  SuccessionCivilContext,
-  SuccessionEnfant,
-  SuccessionLiquidationContext,
-  SuccessionPatrimonialContext,
+import {
+  DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
+  type FamilyMember,
+  type SuccessionCivilContext,
+  type SuccessionDevolutionContext,
+  type SuccessionEnfant,
+  type SuccessionLiquidationContext,
+  type SuccessionPatrimonialContext,
+  type SuccessionTestamentConfig,
 } from './successionDraft';
 import {
   buildSuccessionDescendantRecipients,
@@ -14,6 +17,10 @@ import {
   countEffectiveDescendantBranchesForDeceased,
   type SuccessionDeceasedSide,
 } from './successionEnfants';
+import {
+  cloneSuccessionTestamentConfig,
+  computeTestamentDistribution,
+} from './successionTestament';
 import { getUsufruitValuationFromBirthDate } from './successionUsufruit';
 
 export type SuccessionChainOrder = 'epoux1' | 'epoux2';
@@ -31,10 +38,11 @@ export interface SuccessionChainStep {
 export interface SuccessionChainBeneficiary {
   id: string;
   label: string;
-  lien: Extract<LienParente, 'enfant' | 'petit_enfant'>;
+  lien: LienParente;
   brut: number;
   droits: number;
   net: number;
+  exonerated?: boolean;
 }
 
 export interface SuccessionChainageAnalysis {
@@ -58,6 +66,23 @@ interface SuccessionChainageInput {
   patrimonial?: Pick<SuccessionPatrimonialContext, 'donationEntreEpouxActive' | 'donationEntreEpouxOption'>;
   enfantsContext?: SuccessionEnfant[];
   familyMembers?: FamilyMember[];
+  devolution?: Pick<SuccessionDevolutionContext, 'testamentsBySide'>;
+}
+
+interface DetailedChainHeir {
+  id: string;
+  label: string;
+  lien: LienParente;
+  partSuccession: number;
+  exonerated?: boolean;
+}
+
+interface SuccessionChainStepComputation {
+  transmission: { droits: number; beneficiaries: SuccessionChainBeneficiary[] };
+  partConjoint: number;
+  partAutresBeneficiaires: number;
+  carryOverToStep2: number;
+  warnings: string[];
 }
 
 function asAmount(value: unknown): number {
@@ -130,7 +155,7 @@ function computeStep1Split(
   };
 
   if (!patrimonial?.donationEntreEpouxActive) {
-    warnings.push('Hypothèse simplifiée: part du conjoint au 1er décès fixée à 1/4 en pleine propriété.');
+    warnings.push('Hypothese simplifiee: part du conjoint au 1er deces fixee a 1/4 en pleine propriete.');
     return { ...fallback, warnings };
   }
 
@@ -140,7 +165,7 @@ function computeStep1Split(
       conjointPart: spousePart,
       enfantsPart: Math.max(0, firstEstate - spousePart),
       carryOverToStep2: spousePart,
-      warnings: ['Donation entre époux: quotité disponible en pleine propriété retenue pour le conjoint survivant.'],
+      warnings: ['Donation entre epoux: quotite disponible en pleine propriete retenue pour le conjoint survivant.'],
     };
   }
 
@@ -149,23 +174,23 @@ function computeStep1Split(
       conjointPart: firstEstate,
       enfantsPart: 0,
       carryOverToStep2: firstEstate,
-      warnings: ['Donation entre époux: totalité en pleine propriété retenue dans le module simplifié, sous réserve de réduction civile.'],
+      warnings: ['Donation entre epoux: totalite en pleine propriete retenue dans le module simplifie, sous reserve de reduction civile.'],
     };
   }
 
   const spouseBirthDate = getSurvivingSpouseBirthDate(civil, deceased);
   if (!spouseBirthDate) {
-    warnings.push('Donation entre époux avec usufruit: date de naissance du conjoint survivant manquante, repli moteur sur 1/4 en pleine propriété.');
+    warnings.push('Donation entre epoux avec usufruit: date de naissance du conjoint survivant manquante, repli moteur sur 1/4 en pleine propriete.');
     return { ...fallback, warnings };
   }
 
   if (patrimonial.donationEntreEpouxOption === 'usufruit_total') {
     const valuation = getUsufruitValuationFromBirthDate(spouseBirthDate, firstEstate);
     if (!valuation) {
-      warnings.push('Donation entre époux en usufruit total: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriété.');
+      warnings.push('Donation entre epoux en usufruit total: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriete.');
       return { ...fallback, warnings };
     }
-    warnings.push(`Donation entre époux: usufruit total valorisé selon l’art. 669 CGI (usufruitier ${valuation.age} ans, usufruit ${Math.round(valuation.tauxUsufruit * 100)}%).`);
+    warnings.push(`Donation entre epoux: usufruit total valorise selon l'art. 669 CGI (usufruitier ${valuation.age} ans, usufruit ${Math.round(valuation.tauxUsufruit * 100)}%).`);
     return {
       conjointPart: valuation.valeurUsufruit,
       enfantsPart: valuation.valeurNuePropriete,
@@ -177,10 +202,10 @@ function computeStep1Split(
   if (patrimonial.donationEntreEpouxOption === 'mixte') {
     const valuation = getUsufruitValuationFromBirthDate(spouseBirthDate, firstEstate * 0.75);
     if (!valuation) {
-      warnings.push('Donation entre époux mixte: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriété.');
+      warnings.push('Donation entre epoux mixte: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriete.');
       return { ...fallback, warnings };
     }
-    warnings.push(`Donation entre époux mixte: 1/4 en pleine propriété + usufruit des 3/4 valorisé selon l’art. 669 CGI (usufruitier ${valuation.age} ans, usufruit ${Math.round(valuation.tauxUsufruit * 100)}% sur la part démembrée).`);
+    warnings.push(`Donation entre epoux mixte: 1/4 en pleine propriete + usufruit des 3/4 valorise selon l'art. 669 CGI (usufruitier ${valuation.age} ans, usufruit ${Math.round(valuation.tauxUsufruit * 100)}% sur la part demembree).`);
     return {
       conjointPart: (firstEstate * 0.25) + valuation.valeurUsufruit,
       enfantsPart: valuation.valeurNuePropriete,
@@ -195,7 +220,7 @@ function computeStep1Split(
 function buildFallbackBranchBeneficiaries(
   actifTransmis: number,
   nbBranches: number,
-): Array<{ id: string; label: string; lien: 'enfant'; partSuccession: number }> {
+): DetailedChainHeir[] {
   if (nbBranches <= 0 || actifTransmis <= 0) return [];
   const part = actifTransmis / nbBranches;
   return Array.from({ length: nbBranches }, (_, index) => ({
@@ -206,21 +231,22 @@ function buildFallbackBranchBeneficiaries(
   }));
 }
 
-function computeChildrenTransmission(
+function buildDetailedDescendantHeirs(
   actifTransmis: number,
   deceased: SuccessionDeceasedSide,
   nbBranches: number,
-  dmtgSettings: DmtgSettings,
   enfantsContext: SuccessionEnfant[] = [],
   familyMembers: FamilyMember[] = [],
-): { droits: number; beneficiaries: SuccessionChainBeneficiary[] } {
-  if (nbBranches <= 0 || actifTransmis <= 0) {
-    return { droits: 0, beneficiaries: [] };
-  }
+): DetailedChainHeir[] {
+  if (nbBranches <= 0 || actifTransmis <= 0) return [];
 
   const recipients = buildSuccessionDescendantRecipientsForDeceased(enfantsContext, familyMembers, deceased);
-  const branchCount = Math.max(1, countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, deceased));
-  const detailedHeirs = recipients.length === 0
+  const branchCount = Math.max(
+    1,
+    countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, deceased),
+  );
+
+  return recipients.length === 0
     ? buildFallbackBranchBeneficiaries(actifTransmis, nbBranches)
     : (() => {
       const partParBranche = actifTransmis / branchCount;
@@ -241,6 +267,31 @@ function computeChildrenTransmission(
         }));
       });
     })();
+}
+
+function mergeDetailedHeirs(heirs: DetailedChainHeir[]): DetailedChainHeir[] {
+  const merged = new Map<string, DetailedChainHeir>();
+  heirs.forEach((heir) => {
+    if (heir.partSuccession <= 0) return;
+    const current = merged.get(heir.id);
+    if (current) {
+      current.partSuccession += heir.partSuccession;
+      current.exonerated = current.exonerated || heir.exonerated;
+      return;
+    }
+    merged.set(heir.id, { ...heir });
+  });
+  return Array.from(merged.values());
+}
+
+function computeTransmissionForHeirs(
+  actifTransmis: number,
+  detailedHeirs: DetailedChainHeir[],
+  dmtgSettings: DmtgSettings,
+): { droits: number; beneficiaries: SuccessionChainBeneficiary[] } {
+  if (actifTransmis <= 0 || detailedHeirs.length === 0) {
+    return { droits: 0, beneficiaries: [] };
+  }
 
   const result = calculateSuccession({
     actifNetSuccession: actifTransmis,
@@ -263,6 +314,7 @@ function computeChildrenTransmission(
         brut: heir.partSuccession,
         droits,
         net: heir.partSuccession - droits,
+        exonerated: heir.exonerated ?? heir.lien === 'conjoint',
       };
     }),
   };
@@ -280,7 +332,7 @@ function getOtherSide(order: SuccessionChainOrder): SuccessionDeceasedSide {
 }
 
 function getLabelForSide(side: SuccessionDeceasedSide): string {
-  return side === 'epoux1' ? 'Époux 1' : 'Époux 2';
+  return side === 'epoux1' ? 'Epoux 1' : 'Epoux 2';
 }
 
 function getStepWarnings(
@@ -288,24 +340,152 @@ function getStepWarnings(
   enfantsContext: SuccessionEnfant[],
   familyMembers: FamilyMember[],
   deceased: SuccessionDeceasedSide,
+  hasAllocatedBeneficiaries = false,
 ): string[] {
+  if (hasAllocatedBeneficiaries) return [];
   const branchCount = countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, deceased);
   if (branchCount > 0) return [];
   const allRecipients = buildSuccessionDescendantRecipients(enfantsContext, familyMembers);
   if (allRecipients.length === 0) return [];
-  return [`${stepLabel}: aucun descendant du défunt de cette étape n'est éligible dans la branche retenue.`];
+  return [`${stepLabel}: aucun descendant du defunt de cette etape n'est eligible dans la branche retenue.`];
 }
 
 function buildEmptyAnalysis(order: SuccessionChainOrder, warning: string): SuccessionChainageAnalysis {
   return {
     applicable: false,
     order,
-    firstDecedeLabel: order === 'epoux1' ? 'Époux 1' : 'Époux 2',
-    secondDecedeLabel: order === 'epoux1' ? 'Époux 2' : 'Époux 1',
+    firstDecedeLabel: order === 'epoux1' ? 'Epoux 1' : 'Epoux 2',
+    secondDecedeLabel: order === 'epoux1' ? 'Epoux 2' : 'Epoux 1',
     step1: null,
     step2: null,
     totalDroits: 0,
     warnings: [warning],
+  };
+}
+
+function getInactiveTestamentConfig(): SuccessionTestamentConfig {
+  return cloneSuccessionTestamentConfig(DEFAULT_SUCCESSION_TESTAMENT_CONFIG);
+}
+
+function prefixStepWarnings(stepLabel: string, stepWarnings: string[]): string[] {
+  return stepWarnings.map((warning) => `${stepLabel}: ${warning}`);
+}
+
+function getStepTestamentConfig(
+  input: SuccessionChainageInput,
+  deceased: SuccessionDeceasedSide,
+  deadCounterpart: SuccessionDeceasedSide | null,
+): { testament: SuccessionTestamentConfig; warnings: string[] } {
+  const testamentBase = input.devolution?.testamentsBySide[deceased] ?? getInactiveTestamentConfig();
+  const testament = cloneSuccessionTestamentConfig(testamentBase);
+  const warnings: string[] = [];
+
+  if (!deadCounterpart) {
+    return { testament, warnings };
+  }
+
+  const blockedPrincipalRef = `principal:${deadCounterpart}` as const;
+  if (testament.dispositionType === 'legs_particulier') {
+    const initialLength = testament.particularLegacies.length;
+    testament.particularLegacies = testament.particularLegacies.filter(
+      (entry) => entry.beneficiaryRef !== blockedPrincipalRef,
+    );
+    if (testament.particularLegacies.length < initialLength) {
+      warnings.push('Legs particulier en faveur du conjoint ou partenaire deja decede ignore au second deces.');
+    }
+    return { testament, warnings };
+  }
+
+  if (testament.beneficiaryRef === blockedPrincipalRef) {
+    testament.beneficiaryRef = null;
+    warnings.push('Beneficiaire testamentaire conjoint ou partenaire deja decede ignore au second deces.');
+  }
+
+  return { testament, warnings };
+}
+
+function buildLegalPartnerHeirs(
+  civil: SuccessionCivilContext,
+  amount: number,
+): DetailedChainHeir[] {
+  if (civil.situationMatrimoniale !== 'marie' || amount <= 0) return [];
+  return [{
+    id: 'conjoint',
+    label: 'Conjoint survivant',
+    lien: 'conjoint',
+    partSuccession: amount,
+    exonerated: true,
+  }];
+}
+
+function computeStepTransmission(
+  input: SuccessionChainageInput,
+  estateAmount: number,
+  deceased: SuccessionDeceasedSide,
+  legalPartnerAmount: number,
+  redistributableAmount: number,
+  deadCounterpart: SuccessionDeceasedSide | null,
+  stepLabel: string,
+): SuccessionChainStepComputation {
+  const legalPartnerHeirs = buildLegalPartnerHeirs(input.civil, legalPartnerAmount);
+  const { testament, warnings: configWarnings } = getStepTestamentConfig(input, deceased, deadCounterpart);
+  const testamentDistribution = computeTestamentDistribution({
+    situation: input.civil.situationMatrimoniale,
+    side: deceased,
+    testament,
+    masseReference: estateAmount,
+    enfants: input.enfantsContext ?? [],
+    familyMembers: input.familyMembers ?? [],
+    maxAvailableAmount: redistributableAmount,
+  });
+  const testamentHeirs: DetailedChainHeir[] = (testamentDistribution?.beneficiaries ?? []).map((beneficiary) => ({
+    id: beneficiary.id,
+    label: beneficiary.label,
+    lien: beneficiary.lien,
+    partSuccession: beneficiary.partSuccession,
+    exonerated: beneficiary.exonerated,
+  }));
+  const descendantsResidualAmount = Math.max(
+    0,
+    redistributableAmount - (testamentDistribution?.distributedAmount ?? 0),
+  );
+  const detailedDescendantHeirs = buildDetailedDescendantHeirs(
+    descendantsResidualAmount,
+    deceased,
+    countEffectiveDescendantBranchesForDeceased(
+      input.enfantsContext ?? [],
+      input.familyMembers ?? [],
+      deceased,
+    ),
+    input.enfantsContext ?? [],
+    input.familyMembers ?? [],
+  );
+  const detailedHeirs = mergeDetailedHeirs([
+    ...legalPartnerHeirs,
+    ...testamentHeirs,
+    ...detailedDescendantHeirs,
+  ]);
+  const transmission = computeTransmissionForHeirs(estateAmount, detailedHeirs, input.dmtgSettings);
+  const partConjoint = transmission.beneficiaries
+    .filter((beneficiary) => beneficiary.lien === 'conjoint')
+    .reduce((sum, beneficiary) => sum + beneficiary.brut, 0);
+  const partAutresBeneficiaires = transmission.beneficiaries
+    .filter((beneficiary) => beneficiary.lien !== 'conjoint')
+    .reduce((sum, beneficiary) => sum + beneficiary.brut, 0);
+  const survivingCounterpartRef = `principal:${getOtherSide(deceased)}` as const;
+  const testamentCarryOver = (testamentDistribution?.beneficiaries ?? [])
+    .filter((beneficiary) => beneficiary.beneficiaryRef === survivingCounterpartRef)
+    .reduce((sum, beneficiary) => sum + beneficiary.partSuccession, 0);
+
+  return {
+    transmission,
+    partConjoint,
+    partAutresBeneficiaires,
+    carryOverToStep2: testamentCarryOver,
+    warnings: [
+      ...prefixStepWarnings(stepLabel, configWarnings),
+      ...prefixStepWarnings(stepLabel, testamentDistribution?.warnings ?? []),
+    ],
   };
 }
 
@@ -322,7 +502,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     + asAmount(input.liquidation.actifCommun);
 
   if (!input.regimeUsed) {
-    return buildEmptyAnalysis(input.order, 'Chaînage disponible pour couples mariés/pacsés avec régime de liquidation.');
+    return buildEmptyAnalysis(input.order, 'Chainage disponible pour couples maries ou pacses avec regime de liquidation.');
   }
 
   const attributionPct = input.attributionBiensCommunsPct ?? 50;
@@ -331,18 +511,22 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   const warnings: string[] = [];
 
   if (attributionPct !== 50 && input.regimeUsed === 'communaute_legale') {
-    warnings.push(`Attribution des biens communs au survivant: ${attributionPct} % appliqué au partage communautaire.`);
+    warnings.push(`Attribution des biens communs au survivant: ${attributionPct} % applique au partage communautaire.`);
   }
   if (nbEnfants <= 0) {
-    warnings.push('Aucun enfant déclaré: les droits descendants des étapes 1/2 sont nuls dans ce module.');
+    warnings.push('Aucun enfant declare: la chronologie reste indicative hors beneficiaires testamentaires explicitement saisis.');
   }
-  if (input.civil.situationMatrimoniale === 'pacse') {
-    warnings.push('PACS: hypothèse simplifiée sans transmission automatique au partenaire (testament non modélisé ici).');
+  if (
+    input.civil.situationMatrimoniale === 'pacse'
+    && !input.devolution?.testamentsBySide.epoux1.active
+    && !input.devolution?.testamentsBySide.epoux2.active
+  ) {
+    warnings.push('PACS: absence de vocation successorale legale automatique sans testament.');
   }
   if (hasRepresentationOnAnySide(enfantsContext, familyMembers)) {
-    warnings.push('Chaînage: représentation successorale simplifiée prise en compte pour les petits-enfants déclarés.');
+    warnings.push('Chainage: representation successorale simplifiee prise en compte pour les petits-enfants declares.');
   }
-  warnings.push('Module de chaînage simplifié: liquidation notariale fine et options civiles avancées non modélisées.');
+  warnings.push('Module de chainage simplifie: liquidation notariale fine et options civiles avancees non modelisees.');
 
   const step1Split = computeStep1Split(
     input.civil,
@@ -352,54 +536,66 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     input.patrimonial,
   );
   warnings.push(...step1Split.warnings);
-  const step1ConjointPart = step1Split.conjointPart;
-  const step1EnfantsPart = step1Split.enfantsPart;
-  const step1Transmission = computeChildrenTransmission(
-    step1EnfantsPart,
+  const step1Details = computeStepTransmission(
+    input,
+    firstEstate,
     input.order,
-    nbEnfants,
-    input.dmtgSettings,
+    step1Split.conjointPart,
+    step1Split.enfantsPart,
+    null,
+    `Etape 1 (${getLabelForSide(input.order)})`,
+  );
+  warnings.push(...step1Details.warnings);
+  warnings.push(...getStepWarnings(
+    `Etape 1 (${getLabelForSide(input.order)})`,
     enfantsContext,
     familyMembers,
-  );
-  warnings.push(...getStepWarnings(`Étape 1 (${getLabelForSide(input.order)})`, enfantsContext, familyMembers, input.order));
+    input.order,
+    step1Details.transmission.beneficiaries.length > 0,
+  ));
 
-  const step2Estate = survivorBase + step1Split.carryOverToStep2;
-  const step2ConjointPart = 0;
-  const step2EnfantsPart = step2Estate;
   const otherSide = getOtherSide(input.order);
-  const step2Transmission = computeChildrenTransmission(
-    step2EnfantsPart,
+  const step2Estate = survivorBase + step1Split.carryOverToStep2 + step1Details.carryOverToStep2;
+  const step2Details = computeStepTransmission(
+    input,
+    step2Estate,
     otherSide,
-    nbEnfants,
-    input.dmtgSettings,
+    0,
+    step2Estate,
+    input.order,
+    `Etape 2 (${getLabelForSide(otherSide)})`,
+  );
+  warnings.push(...step2Details.warnings);
+  warnings.push(...getStepWarnings(
+    `Etape 2 (${getLabelForSide(otherSide)})`,
     enfantsContext,
     familyMembers,
-  );
-  warnings.push(...getStepWarnings(`Étape 2 (${getLabelForSide(otherSide)})`, enfantsContext, familyMembers, otherSide));
+    otherSide,
+    step2Details.transmission.beneficiaries.length > 0,
+  ));
 
   return {
     applicable: true,
     order: input.order,
-    firstDecedeLabel: input.order === 'epoux1' ? 'Époux 1' : 'Époux 2',
-    secondDecedeLabel: input.order === 'epoux1' ? 'Époux 2' : 'Époux 1',
+    firstDecedeLabel: input.order === 'epoux1' ? 'Epoux 1' : 'Epoux 2',
+    secondDecedeLabel: input.order === 'epoux1' ? 'Epoux 2' : 'Epoux 1',
     step1: {
       actifTransmis: firstEstate,
-      partConjoint: step1ConjointPart,
-      partEnfants: step1EnfantsPart,
+      partConjoint: step1Details.partConjoint,
+      partEnfants: step1Details.partAutresBeneficiaires,
       droitsConjoint: 0,
-      droitsEnfants: step1Transmission.droits,
-      beneficiaries: step1Transmission.beneficiaries,
+      droitsEnfants: step1Details.transmission.droits,
+      beneficiaries: step1Details.transmission.beneficiaries,
     },
     step2: {
       actifTransmis: step2Estate,
-      partConjoint: step2ConjointPart,
-      partEnfants: step2EnfantsPart,
+      partConjoint: step2Details.partConjoint,
+      partEnfants: step2Details.partAutresBeneficiaires,
       droitsConjoint: 0,
-      droitsEnfants: step2Transmission.droits,
-      beneficiaries: step2Transmission.beneficiaries,
+      droitsEnfants: step2Details.transmission.droits,
+      beneficiaries: step2Details.transmission.beneficiaries,
     },
-    totalDroits: step1Transmission.droits + step2Transmission.droits,
+    totalDroits: step1Details.transmission.droits + step2Details.transmission.droits,
     warnings,
   };
 }

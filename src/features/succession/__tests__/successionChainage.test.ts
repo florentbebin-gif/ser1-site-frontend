@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG } from '../../../engine/civil';
-import type { SuccessionCivilContext, SuccessionLiquidationContext } from '../successionDraft';
+import {
+  DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+  type SuccessionCivilContext,
+  type SuccessionDevolutionContextInput,
+  type SuccessionLiquidationContext,
+} from '../successionDraft';
 import { buildSuccessionChainageAnalysis } from '../successionChainage';
 
 function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilContext {
@@ -22,8 +27,29 @@ function makeLiquidation(overrides: Partial<SuccessionLiquidationContext>): Succ
   };
 }
 
+function makeDevolution(overrides: SuccessionDevolutionContextInput = {}) {
+  return {
+    ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+    ...overrides,
+    testamentsBySide: {
+      ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide,
+      ...overrides.testamentsBySide,
+      epoux1: {
+        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux1,
+        ...overrides.testamentsBySide?.epoux1,
+        particularLegacies: overrides.testamentsBySide?.epoux1?.particularLegacies ?? [],
+      },
+      epoux2: {
+        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux2,
+        ...overrides.testamentsBySide?.epoux2,
+        particularLegacies: overrides.testamentsBySide?.epoux2?.particularLegacies ?? [],
+      },
+    },
+  };
+}
+
 describe('buildSuccessionChainageAnalysis', () => {
-  it('retourne un chaînage applicable avec total de droits', () => {
+  it('returns an applicable chainage with total rights', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
       liquidation: makeLiquidation({}),
@@ -38,7 +64,7 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.totalDroits).toBeGreaterThanOrEqual(0);
   });
 
-  it('l’inversion de l’ordre modifie les masses en étape 1 quand actifs propres asymétriques', () => {
+  it('changes step 1 mass when death order is inverted on asymmetrical own assets', () => {
     const epoux1First = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
       liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 100000 }),
@@ -58,7 +84,7 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(epoux1First.step1?.actifTransmis).not.toBe(epoux2First.step1?.actifTransmis);
   });
 
-  it('émet un warning et des droits nuls sans enfant', () => {
+  it('emits a warning and zero rights without children', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
       liquidation: makeLiquidation({ nbEnfants: 0 }),
@@ -68,10 +94,10 @@ describe('buildSuccessionChainageAnalysis', () => {
     });
 
     expect(analysis.totalDroits).toBe(0);
-    expect(analysis.warnings.some((w) => w.includes('Aucun enfant'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('Aucun enfant'))).toBe(true);
   });
 
-  it('répartit une branche représentée entre petits-enfants et avertit', () => {
+  it('splits a represented branch across grandchildren and emits a warning', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
       liquidation: makeLiquidation({ nbEnfants: 1 }),
@@ -89,10 +115,10 @@ describe('buildSuccessionChainageAnalysis', () => {
     });
 
     expect(analysis.totalDroits).toBeGreaterThan(0);
-    expect(analysis.warnings.some((w) => w.includes('représentation successorale simplifiée'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('representation successorale simplifiee'))).toBe(true);
   });
 
-  it("n'attribue au 1er décès que les descendants de la branche du défunt", () => {
+  it('keeps only the deceased branch descendants at step 1', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
       liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 300000, actifCommun: 0, nbEnfants: 2 }),
@@ -106,11 +132,11 @@ describe('buildSuccessionChainageAnalysis', () => {
       familyMembers: [],
     });
 
-    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1']);
+    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['conjoint', 'E1']);
     expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E2']);
   });
 
-  it('conserve un enfant commun dans les deux étapes et limite un enfant propre à sa branche', () => {
+  it('keeps a common child on both steps and limits a separate child to its branch', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
       liquidation: makeLiquidation({ actifEpoux1: 450000, actifEpoux2: 250000, actifCommun: 0, nbEnfants: 2 }),
@@ -124,11 +150,11 @@ describe('buildSuccessionChainageAnalysis', () => {
       familyMembers: [],
     });
 
-    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1', 'E2']);
+    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['conjoint', 'E1', 'E2']);
     expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1']);
   });
 
-  it('conserve les labels globaux dans une famille recomposée symétrique', () => {
+  it('keeps stable labels in a symmetric blended family', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
       liquidation: makeLiquidation({ actifEpoux1: 450000, actifEpoux2: 350000, actifCommun: 0, nbEnfants: 3 }),
@@ -143,16 +169,16 @@ describe('buildSuccessionChainageAnalysis', () => {
       familyMembers: [],
     });
 
-    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.label)).toEqual(['E1', 'E2']);
+    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.label)).toEqual(['Conjoint survivant', 'E1', 'E2']);
     expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.label)).toEqual(['E2', 'E3']);
   });
 
-  it('valorise un usufruit total au 1er décès et ne le réinjecte pas dans l’étape 2', () => {
+  it('values total usufruct at step 1 and does not carry it into step 2', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({
         dateNaissanceEpoux1: '1955-06-01',
         dateNaissanceEpoux2: '1957-05-12',
-      } as Partial<SuccessionCivilContext>),
+      }),
       liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
       regimeUsed: 'separation_biens',
       order: 'epoux1',
@@ -171,7 +197,82 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.step1?.partConjoint).toBe(200000);
     expect(analysis.step1?.partEnfants).toBe(300000);
     expect(analysis.step2?.actifTransmis).toBe(200000);
-    expect(analysis.warnings.some((warning) => warning.includes('usufruit total valorisé'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('usufruit total valorise'))).toBe(true);
+  });
+
+  it('uses the testament of the side selected by death order', () => {
+    const baseInput = {
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
+      liquidation: makeLiquidation({ actifEpoux1: 300000, actifEpoux2: 280000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens' as const,
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' as const },
+        { id: 'E2', rattachement: 'commun' as const },
+      ],
+      familyMembers: [],
+      devolution: makeDevolution({
+        testamentsBySide: {
+          epoux1: {
+            active: true,
+            dispositionType: 'legs_titre_universel',
+            beneficiaryRef: 'enfant:E1',
+            quotePartPct: 25,
+            particularLegacies: [],
+          },
+          epoux2: {
+            active: true,
+            dispositionType: 'legs_titre_universel',
+            beneficiaryRef: 'enfant:E2',
+            quotePartPct: 25,
+            particularLegacies: [],
+          },
+        },
+      }),
+    };
+
+    const epoux1First = buildSuccessionChainageAnalysis({
+      ...baseInput,
+      order: 'epoux1',
+    });
+    const epoux2First = buildSuccessionChainageAnalysis({
+      ...baseInput,
+      order: 'epoux2',
+    });
+
+    expect(epoux1First.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1')?.brut).toBeGreaterThan(
+      epoux1First.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E2')?.brut ?? 0,
+    );
+    expect(epoux2First.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E2')?.brut).toBeGreaterThan(
+      epoux2First.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1')?.brut ?? 0,
+    );
+  });
+
+  it('ignores at step 2 a testament still aimed at the already deceased spouse', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
+      liquidation: makeLiquidation({ actifEpoux1: 300000, actifEpoux2: 250000, actifCommun: 0, nbEnfants: 1 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+      devolution: makeDevolution({
+        testamentsBySide: {
+          epoux2: {
+            active: true,
+            dispositionType: 'legs_universel',
+            beneficiaryRef: 'principal:epoux1',
+            quotePartPct: 100,
+            particularLegacies: [],
+          },
+        },
+      }),
+    });
+
+    expect(analysis.step2?.beneficiaries.some((beneficiary) => beneficiary.id === 'conjoint')).toBe(false);
+    expect(analysis.warnings.some((warning) => warning.includes('deja decede ignore au second deces'))).toBe(true);
   });
 });
-
