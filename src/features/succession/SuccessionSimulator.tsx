@@ -29,6 +29,7 @@ import {
   DEFAULT_SUCCESSION_ASSURANCE_VIE,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+  DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
   parseSuccessionDraftPayload,
   type SuccessionAssetCategory,
   type SuccessionAssetDetailEntry,
@@ -38,16 +39,20 @@ import {
   type FamilyBranch,
   type FamilyMember,
   type FamilyMemberType,
+  type SuccessionBeneficiaryRef,
   type SuccessionDonationEntry,
   type SuccessionDonationEntryType,
   type SuccessionEnfant,
   type SuccessionDispositionTestamentaire,
   type SuccessionDonationEntreEpouxOption,
+  type SuccessionPrimarySide,
+  type SuccessionTestamentConfig,
   type SituationMatrimoniale,
 } from './successionDraft';
 import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
 import {
   countEffectiveDescendantBranches,
+  countEffectiveDescendantBranchesForDeceased,
   countLivingEnfants,
   countLivingNonCommuns,
   getEnfantNodeLabel,
@@ -59,6 +64,15 @@ import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
 import { canOpenDispositions } from './successionDispositions';
+import {
+  buildTestamentBeneficiaryOptions,
+  cloneSuccessionTestamentsBySide,
+  createSuccessionParticularLegacyEntry,
+  getQuotiteDisponiblePctForSide,
+  getReserveHintForSide,
+  getTestamentCardTitle,
+  TESTAMENT_TYPE_DESCRIPTIONS,
+} from './successionTestament';
 import {
   buildSuccessionChainageAnalysis,
   type SuccessionChainOrder,
@@ -99,10 +113,14 @@ const OUI_NON_OPTIONS = [
   { value: 'oui', label: 'Oui' },
 ];
 
-const DISPOSITION_TESTAMENTAIRE_OPTIONS: { value: SuccessionDispositionTestamentaire; label: string }[] = [
-  { value: 'legs_universel', label: 'Legs universel' },
-  { value: 'legs_titre_universel', label: 'Legs à titre universel' },
-  { value: 'legs_particulier', label: 'Legs particulier' },
+const DISPOSITION_TESTAMENTAIRE_OPTIONS: {
+  value: SuccessionDispositionTestamentaire;
+  label: string;
+  description: string;
+}[] = [
+  { value: 'legs_universel', label: 'Legs universel', description: TESTAMENT_TYPE_DESCRIPTIONS.legs_universel },
+  { value: 'legs_titre_universel', label: 'Legs a titre universel', description: TESTAMENT_TYPE_DESCRIPTIONS.legs_titre_universel },
+  { value: 'legs_particulier', label: 'Legs particulier', description: TESTAMENT_TYPE_DESCRIPTIONS.legs_particulier },
 ];
 
 const DONATION_ENTRE_EPOUX_OPTIONS = [
@@ -121,7 +139,6 @@ const CHOIX_LEGAL_CONJOINT_OPTIONS = [
 const DONATION_TYPE_OPTIONS: { value: SuccessionDonationEntryType; label: string }[] = [
   { value: 'rapportable', label: 'Avance de part successorale' },
   { value: 'hors_part', label: 'Hors part successorale' },
-  { value: 'legs_particulier', label: 'Legs particulier' },
 ];
 
 const ASSET_CATEGORY_OPTIONS: { value: SuccessionAssetCategory; label: string }[] = [
@@ -219,6 +236,66 @@ function createAssetId(): string {
 
 function createAssuranceVieId(): string {
   return `av-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+interface DispositionsDraftState {
+  attributionBiensCommunsPct: number;
+  donationEntreEpouxActive: boolean;
+  donationEntreEpouxOption: SuccessionDonationEntreEpouxOption;
+  preciputMontant: number;
+  attributionIntegrale: boolean;
+  choixLegalConjointSansDDV: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.choixLegalConjointSansDDV;
+  testamentsBySide: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide;
+  ascendantsSurvivantsBySide: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide;
+}
+
+const TESTAMENT_SIDES: SuccessionPrimarySide[] = ['epoux1', 'epoux2'];
+
+function cloneAscendantsSurvivantsBySide(
+  ascendantsBySide: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide,
+): typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide {
+  return {
+    epoux1: ascendantsBySide.epoux1,
+    epoux2: ascendantsBySide.epoux2,
+  };
+}
+
+function buildInitialDispositionsDraft(): DispositionsDraftState {
+  return {
+    attributionBiensCommunsPct: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
+    donationEntreEpouxActive: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxActive,
+    donationEntreEpouxOption: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxOption,
+    preciputMontant: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,
+    attributionIntegrale: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionIntegrale,
+    choixLegalConjointSansDDV: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.choixLegalConjointSansDDV,
+    testamentsBySide: cloneSuccessionTestamentsBySide(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide),
+    ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(
+      DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide,
+    ),
+  };
+}
+
+function updateDraftTestament(
+  draft: DispositionsDraftState,
+  side: SuccessionPrimarySide,
+  updater: (_current: SuccessionTestamentConfig) => SuccessionTestamentConfig,
+): DispositionsDraftState {
+  return {
+    ...draft,
+    testamentsBySide: {
+      ...draft.testamentsBySide,
+      [side]: updater(draft.testamentsBySide[side]),
+    },
+  };
+}
+
+function getTestamentParticularLegaciesTotal(
+  testamentsBySide: DispositionsDraftState['testamentsBySide'],
+): number {
+  return TESTAMENT_SIDES.reduce(
+    (sum, side) => sum + testamentsBySide[side].particularLegacies.reduce((acc, entry) => acc + Math.max(0, entry.amount), 0),
+    0,
+  );
 }
 
 function getDonationEffectiveAmount(entry: SuccessionDonationEntry): number {
@@ -356,18 +433,7 @@ export default function SuccessionSimulator() {
   const [showDispositionsModal, setShowDispositionsModal] = useState(false);
   const [showAssuranceVieModal, setShowAssuranceVieModal] = useState(false);
   const [assuranceVieDraft, setAssuranceVieDraft] = useState<SuccessionAssuranceVieEntry[]>(DEFAULT_SUCCESSION_ASSURANCE_VIE);
-  const [dispositionsDraft, setDispositionsDraft] = useState({
-    attributionBiensCommunsPct: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
-    donationEntreEpouxActive: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxActive,
-    donationEntreEpouxOption: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxOption,
-    preciputMontant: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,
-    attributionIntegrale: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionIntegrale,
-    choixLegalConjointSansDDV: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.choixLegalConjointSansDDV,
-    testamentActif: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentActif,
-    typeDispositionTestamentaire: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.typeDispositionTestamentaire,
-    quotePartLegsTitreUniverselPct: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.quotePartLegsTitreUniverselPct,
-    ascendantsSurvivants: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivants,
-  });
+  const [dispositionsDraft, setDispositionsDraft] = useState<DispositionsDraftState>(buildInitialDispositionsDraft);
   const [addMemberForm, setAddMemberForm] = useState<{
     type: FamilyMemberType | '';
     branch: FamilyBranch | '';
@@ -388,13 +454,12 @@ export default function SuccessionSimulator() {
     const amount = getDonationEffectiveAmount(entry);
     if (entry.type === 'rapportable') totals.rapportable += amount;
     if (entry.type === 'hors_part') totals.horsPart += amount;
-    if (entry.type === 'legs_particulier') totals.legsParticuliers += amount;
     return totals;
   }, {
     rapportable: 0,
     horsPart: 0,
-    legsParticuliers: 0,
-  }), [donationsContext]);
+    legsParticuliers: getTestamentParticularLegaciesTotal(devolutionContext.testamentsBySide),
+  }), [donationsContext, devolutionContext.testamentsBySide]);
 
   const enfantRattachementOptions = useMemo(
     () => getEnfantRattachementOptions(civilContext.situationMatrimoniale),
@@ -563,6 +628,31 @@ export default function SuccessionSimulator() {
   );
   const canOpenDispositionsModal = useMemo(
     () => canOpenDispositions(civilContext.situationMatrimoniale, enfantsContext, familyMembers),
+    [civilContext.situationMatrimoniale, enfantsContext, familyMembers],
+  );
+  const testamentSides = useMemo(
+    () => (isCoupleSituation(civilContext.situationMatrimoniale) ? TESTAMENT_SIDES : ['epoux1']) as SuccessionPrimarySide[],
+    [civilContext.situationMatrimoniale],
+  );
+  const descendantBranchesBySide = useMemo(() => ({
+    epoux1: countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, 'epoux1'),
+    epoux2: countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, 'epoux2'),
+  }), [enfantsContext, familyMembers]);
+  const testamentBeneficiaryOptionsBySide = useMemo(
+    () => ({
+      epoux1: buildTestamentBeneficiaryOptions(
+        civilContext.situationMatrimoniale,
+        'epoux1',
+        enfantsContext,
+        familyMembers,
+      ),
+      epoux2: buildTestamentBeneficiaryOptions(
+        civilContext.situationMatrimoniale,
+        'epoux2',
+        enfantsContext,
+        familyMembers,
+      ),
+    }),
     [civilContext.situationMatrimoniale, enfantsContext, familyMembers],
   );
 
@@ -924,6 +1014,7 @@ export default function SuccessionSimulator() {
     setAssuranceVieDraft(DEFAULT_SUCCESSION_ASSURANCE_VIE);
     setDevolutionContext(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
     setPatrimonialContext(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
+    setDispositionsDraft(buildInitialDispositionsDraft());
     setDonationsContext(DEFAULT_SUCCESSION_DONATIONS);
     setEnfantsContext(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
     setFamilyMembers(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
@@ -1143,6 +1234,67 @@ export default function SuccessionSimulator() {
     setAssuranceVieDraft((prev) => prev.filter((entry) => entry.id !== id));
   }, []);
 
+  const getFirstTestamentBeneficiaryRef = useCallback(
+    (side: SuccessionPrimarySide): SuccessionBeneficiaryRef | null =>
+      testamentBeneficiaryOptionsBySide[side][0]?.value ?? null,
+    [testamentBeneficiaryOptionsBySide],
+  );
+
+  const updateDispositionsTestament = useCallback((
+    side: SuccessionPrimarySide,
+    updater: (_current: SuccessionTestamentConfig) => SuccessionTestamentConfig,
+  ) => {
+    setDispositionsDraft((prev) => updateDraftTestament(prev, side, updater));
+  }, []);
+
+  const addDispositionsParticularLegacy = useCallback((side: SuccessionPrimarySide) => {
+    const defaultBeneficiaryRef = getFirstTestamentBeneficiaryRef(side);
+    setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
+      ...current,
+      particularLegacies: [
+        ...current.particularLegacies,
+        createSuccessionParticularLegacyEntry(defaultBeneficiaryRef),
+      ],
+    })));
+  }, [getFirstTestamentBeneficiaryRef]);
+
+  const updateDispositionsParticularLegacy = useCallback((
+    side: SuccessionPrimarySide,
+    legacyId: string,
+    field: 'beneficiaryRef' | 'amount' | 'label',
+    value: string | number | SuccessionBeneficiaryRef | null,
+  ) => {
+    setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
+      ...current,
+      particularLegacies: current.particularLegacies.map((entry) => {
+        if (entry.id !== legacyId) return entry;
+        if (field === 'beneficiaryRef') {
+          return {
+            ...entry,
+            beneficiaryRef: typeof value === 'string' && value.length > 0 ? value as SuccessionBeneficiaryRef : null,
+          };
+        }
+        if (field === 'amount') {
+          return {
+            ...entry,
+            amount: Math.max(0, Number(value) || 0),
+          };
+        }
+        return {
+          ...entry,
+          label: typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined,
+        };
+      }),
+    })));
+  }, []);
+
+  const removeDispositionsParticularLegacy = useCallback((side: SuccessionPrimarySide, legacyId: string) => {
+    setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
+      ...current,
+      particularLegacies: current.particularLegacies.filter((entry) => entry.id !== legacyId),
+    })));
+  }, []);
+
   const openDispositionsModal = useCallback(() => {
     if (!canOpenDispositionsModal) return;
     setDispositionsDraft({
@@ -1152,10 +1304,8 @@ export default function SuccessionSimulator() {
       preciputMontant: patrimonialContext.preciputMontant,
       attributionIntegrale: patrimonialContext.attributionIntegrale,
       choixLegalConjointSansDDV: devolutionContext.choixLegalConjointSansDDV,
-      testamentActif: devolutionContext.testamentActif,
-      typeDispositionTestamentaire: devolutionContext.typeDispositionTestamentaire,
-      quotePartLegsTitreUniverselPct: devolutionContext.quotePartLegsTitreUniverselPct,
-      ascendantsSurvivants: devolutionContext.ascendantsSurvivants,
+      testamentsBySide: cloneSuccessionTestamentsBySide(devolutionContext.testamentsBySide),
+      ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(devolutionContext.ascendantsSurvivantsBySide),
     });
     setShowDispositionsModal(true);
   }, [canOpenDispositionsModal, devolutionContext, patrimonialContext]);
@@ -1172,12 +1322,8 @@ export default function SuccessionSimulator() {
     setDevolutionContext((prev) => ({
       ...prev,
       choixLegalConjointSansDDV: dispositionsDraft.choixLegalConjointSansDDV,
-      testamentActif: dispositionsDraft.testamentActif,
-      typeDispositionTestamentaire: dispositionsDraft.testamentActif
-        ? (dispositionsDraft.typeDispositionTestamentaire ?? 'legs_universel')
-        : null,
-      quotePartLegsTitreUniverselPct: dispositionsDraft.quotePartLegsTitreUniverselPct,
-      ascendantsSurvivants: dispositionsDraft.ascendantsSurvivants,
+      testamentsBySide: cloneSuccessionTestamentsBySide(dispositionsDraft.testamentsBySide),
+      ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(dispositionsDraft.ascendantsSurvivantsBySide),
     }));
     setShowDispositionsModal(false);
   }, [dispositionsDraft]);
@@ -1235,12 +1381,23 @@ export default function SuccessionSimulator() {
     }
   }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext, assetEntries, assuranceVieEntries]);
 
-  // Auto-dériver ascendantsSurvivants si des parents sont déclarés dans familyMembers
+  // Auto-deriver les ascendants survivants par branche si des parents sont declarés.
   useEffect(() => {
-    const hasParents = familyMembers.some((m) => m.type === 'parent');
+    const hasParentsBySide = {
+      epoux1: familyMembers.some((m) => m.type === 'parent' && (!m.branch || m.branch === 'epoux1')),
+      epoux2: familyMembers.some((m) => m.type === 'parent' && m.branch === 'epoux2'),
+    };
     setDevolutionContext((prev) => {
-      if (prev.ascendantsSurvivants === hasParents) return prev;
-      return { ...prev, ascendantsSurvivants: hasParents };
+      if (
+        prev.ascendantsSurvivantsBySide.epoux1 === hasParentsBySide.epoux1
+        && prev.ascendantsSurvivantsBySide.epoux2 === hasParentsBySide.epoux2
+      ) {
+        return prev;
+      }
+      return {
+        ...prev,
+        ascendantsSurvivantsBySide: hasParentsBySide,
+      };
     });
   }, [familyMembers]);
 
@@ -2378,77 +2535,213 @@ export default function SuccessionSimulator() {
               <div className="sc-dispositions-modal__section sc-dispositions-modal__section--testament">
                 <div className="sc-dispositions-modal__section-header">
                   <h4 className="sc-dispositions-modal__section-title">Testament</h4>
-                  <p className="sc-hint sc-hint--compact">
-                    Zone preparee pour la future presentation testamentaire par personne.
-                  </p>
                 </div>
-                <div className="sc-field">
-                <label>Testament actif</label>
-                <ScSelect
-                  value={dispositionsDraft.testamentActif ? 'oui' : 'non'}
-                  onChange={(value) => setDispositionsDraft((prev) => ({
-                    ...prev,
-                    testamentActif: value === 'oui',
-                    typeDispositionTestamentaire: value === 'oui'
-                      ? (prev.typeDispositionTestamentaire ?? 'legs_universel')
-                      : null,
-                  }))}
-                  options={OUI_NON_OPTIONS}
-                />
-              </div>
+                <div className={`sc-testament-grid${testamentSides.length === 1 ? ' sc-testament-grid--single' : ''}`}>
+                  {testamentSides.map((side) => {
+                    const testament = dispositionsDraft.testamentsBySide[side];
+                    const beneficiaryOptions = testamentBeneficiaryOptionsBySide[side];
+                    const beneficiarySelectOptions = [
+                      { value: '', label: 'Choisir...', disabled: true },
+                      ...beneficiaryOptions,
+                    ];
+                    const selectedDisposition = testament.dispositionType ?? 'legs_universel';
+                    const dispositionDescription = testament.dispositionType
+                      ? TESTAMENT_TYPE_DESCRIPTIONS[testament.dispositionType]
+                      : null;
+                    const reserveHint = getReserveHintForSide(enfantsContext, familyMembers, side);
+                    const quotiteDisponiblePct = getQuotiteDisponiblePctForSide(enfantsContext, familyMembers, side);
+                    const showAscendantsField = descendantBranchesBySide[side] === 0;
+                    const hasDerivedParents = familyMembers.some(
+                      (member) => member.type === 'parent' && (!member.branch ? side === 'epoux1' : member.branch === side),
+                    );
 
-              {dispositionsDraft.testamentActif && (
-                <div className="sc-field">
-                  <label>Type de disposition testamentaire</label>
-                  <ScSelect
-                    value={dispositionsDraft.typeDispositionTestamentaire ?? 'legs_universel'}
-                    onChange={(value) => setDispositionsDraft((prev) => ({
-                      ...prev,
-                      typeDispositionTestamentaire: value as SuccessionDispositionTestamentaire,
-                    }))}
-                    options={DISPOSITION_TESTAMENTAIRE_OPTIONS}
-                  />
-                </div>
-              )}
+                    return (
+                      <div key={side} className="sc-testament-card">
+                        <div className="sc-testament-card__header">
+                          <h5 className="sc-testament-card__title">
+                            {getTestamentCardTitle(civilContext.situationMatrimoniale, side)}
+                          </h5>
+                          <span className="sc-testament-card__eyebrow">
+                            Quotite disponible : {quotiteDisponiblePct.toFixed(2).replace(/\.00$/, '')} %
+                          </span>
+                        </div>
 
-              {dispositionsDraft.testamentActif
-                && dispositionsDraft.typeDispositionTestamentaire === 'legs_titre_universel' && (
-                <div className="sc-field">
-                  <label>Quote-part du legs à titre universel (%)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={dispositionsDraft.quotePartLegsTitreUniverselPct}
-                    onChange={(e) => setDispositionsDraft((prev) => ({
-                      ...prev,
-                      quotePartLegsTitreUniverselPct: Math.min(100, Math.max(0, Number(e.target.value) || 0)),
-                    }))}
-                    placeholder="Ex : 50"
-                  />
-                </div>
-              )}
+                        <div className="sc-field">
+                          <label>Testament actif</label>
+                          <ScSelect
+                            value={testament.active ? 'oui' : 'non'}
+                            onChange={(value) => updateDispositionsTestament(side, (current) => ({
+                              ...current,
+                              active: value === 'oui',
+                              dispositionType: value === 'oui'
+                                ? (current.dispositionType ?? 'legs_universel')
+                                : current.dispositionType,
+                              beneficiaryRef: value === 'oui'
+                                ? (current.beneficiaryRef ?? getFirstTestamentBeneficiaryRef(side))
+                                : current.beneficiaryRef,
+                              quotePartPct: current.quotePartPct || DEFAULT_SUCCESSION_TESTAMENT_CONFIG.quotePartPct,
+                            }))}
+                            options={OUI_NON_OPTIONS}
+                          />
+                        </div>
 
-              {nbEnfants === 0 && (
-                <div className="sc-field">
-                  <label>Ascendants survivants</label>
-                  {familyMembers.some((m) => m.type === 'parent') ? (
-                    <span className="sc-auto-derived">
-                      Oui — déduit des membres ajoutés
-                    </span>
-                  ) : (
-                    <ScSelect
-                      value={dispositionsDraft.ascendantsSurvivants ? 'oui' : 'non'}
-                      onChange={(value) => setDispositionsDraft((prev) => ({
-                        ...prev,
-                        ascendantsSurvivants: value === 'oui',
-                      }))}
-                      options={OUI_NON_OPTIONS}
-                    />
-                  )}
+                        {testament.active && (
+                          <>
+                            <div className="sc-field">
+                              <label>Type de disposition testamentaire</label>
+                              <ScSelect
+                                className="sc-testament-select"
+                                value={selectedDisposition}
+                                onChange={(value) => updateDispositionsTestament(side, (current) => ({
+                                  ...current,
+                                  dispositionType: value as SuccessionDispositionTestamentaire,
+                                  beneficiaryRef: value === 'legs_particulier'
+                                    ? current.beneficiaryRef
+                                    : (current.beneficiaryRef ?? getFirstTestamentBeneficiaryRef(side)),
+                                }))}
+                                options={DISPOSITION_TESTAMENTAIRE_OPTIONS}
+                              />
+                              {dispositionDescription && (
+                                <p className="sc-hint sc-hint--compact">{dispositionDescription}</p>
+                              )}
+                            </div>
+
+                            {selectedDisposition !== 'legs_particulier' && (
+                              <>
+                                <div className="sc-field">
+                                  <label>Beneficiaire</label>
+                                  <ScSelect
+                                    className="sc-testament-select"
+                                    value={testament.beneficiaryRef ?? ''}
+                                    onChange={(value) => updateDispositionsTestament(side, (current) => ({
+                                      ...current,
+                                      beneficiaryRef: value as SuccessionBeneficiaryRef,
+                                    }))}
+                                    options={beneficiarySelectOptions}
+                                  />
+                                  <p className="sc-hint sc-hint--compact">
+                                    {reserveHint
+                                      ? `Beneficiaires reservataires : ${reserveHint}.`
+                                      : 'Aucune reserve hereditaire detectee sur cette branche.'}
+                                  </p>
+                                </div>
+
+                                {selectedDisposition === 'legs_titre_universel' && (
+                                  <div className="sc-field">
+                                    <label>Quote-part du legs a titre universel (%)</label>
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      max={100}
+                                      value={testament.quotePartPct}
+                                      onChange={(e) => updateDispositionsTestament(side, (current) => ({
+                                        ...current,
+                                        quotePartPct: Math.min(100, Math.max(0, Number(e.target.value) || 0)),
+                                      }))}
+                                      placeholder="Ex : 50"
+                                    />
+                                  </div>
+                                )}
+                              </>
+                            )}
+
+                            {selectedDisposition === 'legs_particulier' && (
+                              <div className="sc-field">
+                                <label>Legs particuliers</label>
+                                <div className="sc-testament-legacy-list">
+                                  {testament.particularLegacies.length === 0 && (
+                                    <p className="sc-hint sc-hint--compact">
+                                      Aucun legs particulier saisi pour le moment.
+                                    </p>
+                                  )}
+                                  {testament.particularLegacies.map((entry) => (
+                                    <div key={entry.id} className="sc-testament-legacy-row">
+                                      <ScSelect
+                                        className="sc-testament-select"
+                                        value={entry.beneficiaryRef ?? ''}
+                                        onChange={(value) => updateDispositionsParticularLegacy(
+                                          side,
+                                          entry.id,
+                                          'beneficiaryRef',
+                                          value as SuccessionBeneficiaryRef,
+                                        )}
+                                        options={beneficiarySelectOptions}
+                                      />
+                                      <input
+                                        type="number"
+                                        min={0}
+                                        value={entry.amount || ''}
+                                        onChange={(e) => updateDispositionsParticularLegacy(
+                                          side,
+                                          entry.id,
+                                          'amount',
+                                          Number(e.target.value) || 0,
+                                        )}
+                                        placeholder="Montant"
+                                      />
+                                      <input
+                                        type="text"
+                                        className="sc-input--left"
+                                        value={entry.label ?? ''}
+                                        onChange={(e) => updateDispositionsParticularLegacy(
+                                          side,
+                                          entry.id,
+                                          'label',
+                                          e.target.value,
+                                        )}
+                                        placeholder="Libelle optionnel"
+                                      />
+                                      <button
+                                        type="button"
+                                        className="sc-remove-btn sc-remove-btn--quiet"
+                                        onClick={() => removeDispositionsParticularLegacy(side, entry.id)}
+                                        title="Supprimer ce legs"
+                                        aria-label="Supprimer ce legs"
+                                      >
+                                        Supprimer
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                                <button
+                                  type="button"
+                                  className="sc-child-add-btn"
+                                  onClick={() => addDispositionsParticularLegacy(side)}
+                                >
+                                  + Ajouter un legs
+                                </button>
+                              </div>
+                            )}
+
+                            {showAscendantsField && (
+                              <div className="sc-field">
+                                <label>Ascendants survivants</label>
+                                {hasDerivedParents ? (
+                                  <span className="sc-auto-derived">
+                                    Oui - deduit des membres ajoutes
+                                  </span>
+                                ) : (
+                                  <ScSelect
+                                    value={dispositionsDraft.ascendantsSurvivantsBySide[side] ? 'oui' : 'non'}
+                                    onChange={(value) => setDispositionsDraft((prev) => ({
+                                      ...prev,
+                                      ascendantsSurvivantsBySide: {
+                                        ...prev.ascendantsSurvivantsBySide,
+                                        [side]: value === 'oui',
+                                      },
+                                    }))}
+                                    options={OUI_NON_OPTIONS}
+                                  />
+                                )}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
-              </div>
+            </div>
             </div>
             <div className="sc-member-modal__footer">
               <button

@@ -1,5 +1,10 @@
 ﻿import { describe, expect, it } from 'vitest';
-import type { SuccessionCivilContext } from '../successionDraft';
+import type {
+  SuccessionCivilContext,
+  SuccessionDevolutionContext,
+  SuccessionDevolutionContextInput,
+} from '../successionDraft';
+import { DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT } from '../successionDraft';
 import { buildSuccessionDevolutionAnalysis } from '../successionDevolution';
 
 function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilContext {
@@ -11,12 +16,37 @@ function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilC
   };
 }
 
+function makeDevolution(overrides: SuccessionDevolutionContextInput): SuccessionDevolutionContext {
+  return {
+    ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+    ...overrides,
+    testamentsBySide: {
+      ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide,
+      ...overrides.testamentsBySide,
+      epoux1: {
+        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux1,
+        ...overrides.testamentsBySide?.epoux1,
+        particularLegacies: overrides.testamentsBySide?.epoux1?.particularLegacies ?? [],
+      },
+      epoux2: {
+        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux2,
+        ...overrides.testamentsBySide?.epoux2,
+        particularLegacies: overrides.testamentsBySide?.epoux2?.particularLegacies ?? [],
+      },
+    },
+    ascendantsSurvivantsBySide: {
+      ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide,
+      ...overrides.ascendantsSurvivantsBySide,
+    },
+  };
+}
+
 describe('buildSuccessionDevolutionAnalysis', () => {
   it('gère conjoint + enfants communs avec hypothèse moteur 1/4 PP', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'marie' }),
       2,
-      { nbEnfantsNonCommuns: 0, testamentActif: false },
+      makeDevolution({ nbEnfantsNonCommuns: 0 }),
       800000,
     );
 
@@ -32,7 +62,7 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'marie' }),
       3,
-      { nbEnfantsNonCommuns: 1, testamentActif: false },
+      makeDevolution({ nbEnfantsNonCommuns: 1 }),
       600000,
     );
 
@@ -49,7 +79,7 @@ describe('buildSuccessionDevolutionAnalysis', () => {
         dateNaissanceEpoux2: '1957-05-12',
       }),
       2,
-      { nbEnfantsNonCommuns: 0, testamentActif: false },
+      makeDevolution({ nbEnfantsNonCommuns: 0 }),
       500000,
       0,
       [
@@ -84,11 +114,10 @@ describe('buildSuccessionDevolutionAnalysis', () => {
         dateNaissanceEpoux2: '1957-05-12',
       }),
       2,
-      {
+      makeDevolution({
         nbEnfantsNonCommuns: 0,
         choixLegalConjointSansDDV: 'usufruit',
-        testamentActif: false,
-      },
+      }),
       500000,
       0,
       [
@@ -115,11 +144,10 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'marie' }),
       2,
-      {
+      makeDevolution({
         nbEnfantsNonCommuns: 0,
         choixLegalConjointSansDDV: 'quart_pp',
-        testamentActif: false,
-      },
+      }),
       800000,
     );
 
@@ -135,11 +163,10 @@ describe('buildSuccessionDevolutionAnalysis', () => {
         dateNaissanceEpoux2: '1957-05-12',
       }),
       2,
-      {
+      makeDevolution({
         nbEnfantsNonCommuns: 1,
         choixLegalConjointSansDDV: 'usufruit',
-        testamentActif: false,
-      },
+      }),
       500000,
       0,
       [
@@ -165,7 +192,7 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'pacse', regimeMatrimonial: null }),
       1,
-      { nbEnfantsNonCommuns: 0, testamentActif: false },
+      makeDevolution({ nbEnfantsNonCommuns: 0 }),
       250000,
     );
 
@@ -177,12 +204,18 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'marie' }),
       1,
-      {
+      makeDevolution({
         nbEnfantsNonCommuns: 3,
-        testamentActif: true,
-        typeDispositionTestamentaire: 'legs_titre_universel',
-        quotePartLegsTitreUniverselPct: 50,
-      },
+        testamentsBySide: {
+          epoux1: {
+            active: true,
+            dispositionType: 'legs_titre_universel',
+            beneficiaryRef: 'enfant:E1',
+            quotePartPct: 50,
+            particularLegacies: [],
+          },
+        },
+      }),
       300000,
     );
 
@@ -196,7 +229,7 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'marie' }),
       1,
-      { nbEnfantsNonCommuns: 0, testamentActif: false },
+      makeDevolution({ nbEnfantsNonCommuns: 0 }),
       600000,
       0,
       [
@@ -219,7 +252,10 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'marie' }),
       0,
-      { nbEnfantsNonCommuns: 0, testamentActif: false, ascendantsSurvivants: true },
+      makeDevolution({
+        nbEnfantsNonCommuns: 0,
+        ascendantsSurvivantsBySide: { epoux1: true },
+      }),
       400000,
       0,
       [],
@@ -241,7 +277,10 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'marie' }),
       0,
-      { nbEnfantsNonCommuns: 0, testamentActif: false, ascendantsSurvivants: true },
+      makeDevolution({
+        nbEnfantsNonCommuns: 0,
+        ascendantsSurvivantsBySide: { epoux1: true },
+      }),
       400000,
       0,
       [],
@@ -259,7 +298,10 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'marie' }),
       0,
-      { nbEnfantsNonCommuns: 0, testamentActif: false, ascendantsSurvivants: false },
+      makeDevolution({
+        nbEnfantsNonCommuns: 0,
+        ascendantsSurvivantsBySide: { epoux1: false },
+      }),
       500000,
     );
 
@@ -273,7 +315,7 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'celibataire' as never }),
       0,
-      { nbEnfantsNonCommuns: 0, testamentActif: false },
+      makeDevolution({ nbEnfantsNonCommuns: 0 }),
       600000,
       0,
       [],
@@ -296,7 +338,7 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'celibataire' as never }),
       0,
-      { nbEnfantsNonCommuns: 0, testamentActif: false },
+      makeDevolution({ nbEnfantsNonCommuns: 0 }),
       300000,
       0,
       [],
@@ -316,7 +358,7 @@ describe('buildSuccessionDevolutionAnalysis', () => {
     const analysis = buildSuccessionDevolutionAnalysis(
       makeCivil({ situationMatrimoniale: 'celibataire' as never }),
       0,
-      { nbEnfantsNonCommuns: 0, testamentActif: false },
+      makeDevolution({ nbEnfantsNonCommuns: 0 }),
       800000,
       0,
       [],

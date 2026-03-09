@@ -630,6 +630,20 @@
   color: var(--color-c10);
   cursor: pointer;
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sc-select__option-label {
+  display: block;
+}
+
+.sc-select__option-description {
+  display: block;
+  font-size: 11px;
+  color: var(--color-c9);
+  line-height: 1.35;
 }
 
 .sc-select__option:hover {
@@ -957,6 +971,69 @@
   font-size: 14px;
   font-weight: 600;
   color: var(--color-c1);
+}
+
+.sc-testament-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.sc-testament-grid--single {
+  grid-template-columns: 1fr;
+}
+
+.sc-testament-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--color-c8) 78%, #FFFFFF);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-c7) 42%, #FFFFFF);
+}
+
+.sc-testament-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sc-testament-card__title {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-c1);
+}
+
+.sc-testament-card__eyebrow {
+  font-size: 11px;
+  color: var(--color-c9);
+}
+
+.sc-testament-select .sc-select__trigger {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.sc-testament-select .sc-select__label,
+.sc-testament-select .sc-select__option,
+.sc-testament-select .sc-select__option-label,
+.sc-testament-select .sc-select__option-description {
+  text-align: left;
+}
+
+.sc-testament-legacy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sc-testament-legacy-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.7fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
 }
 
 .sc-assurance-vie-modal__body {
@@ -1568,6 +1645,14 @@
     border-left: none;
     border-top: 1px solid color-mix(in srgb, var(--color-c8) 72%, #FFFFFF);
     padding-top: 18px;
+  }
+
+  .sc-testament-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-testament-legacy-row {
+    grid-template-columns: 1fr;
   }
 }
 

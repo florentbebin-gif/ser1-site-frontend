@@ -7,7 +7,33 @@ import {
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   parseSuccessionDraftPayload,
+  type SuccessionDevolutionContextInput,
 } from '../successionDraft';
+
+function makeDevolution(overrides: SuccessionDevolutionContextInput) {
+  return {
+    ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+    ...overrides,
+    testamentsBySide: {
+      ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide,
+      ...overrides.testamentsBySide,
+      epoux1: {
+        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux1,
+        ...overrides.testamentsBySide?.epoux1,
+        particularLegacies: overrides.testamentsBySide?.epoux1?.particularLegacies ?? [],
+      },
+      epoux2: {
+        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux2,
+        ...overrides.testamentsBySide?.epoux2,
+        particularLegacies: overrides.testamentsBySide?.epoux2?.particularLegacies ?? [],
+      },
+    },
+    ascendantsSurvivantsBySide: {
+      ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide,
+      ...overrides.ascendantsSurvivantsBySide,
+    },
+  };
+}
 
 describe('successionDraft', () => {
   it('serialise et parse un draft valide', () => {
@@ -32,14 +58,20 @@ describe('successionDraft', () => {
         actifCommun: 150000,
         nbEnfants: 2,
       },
-      {
+      makeDevolution({
         nbEnfantsNonCommuns: 1,
         choixLegalConjointSansDDV: 'usufruit',
-        testamentActif: true,
-        typeDispositionTestamentaire: 'legs_titre_universel',
-        quotePartLegsTitreUniverselPct: 60,
-        ascendantsSurvivants: false,
-      },
+        testamentsBySide: {
+          epoux1: {
+            active: true,
+            dispositionType: 'legs_titre_universel',
+            beneficiaryRef: 'principal:epoux2',
+            quotePartPct: 60,
+            particularLegacies: [],
+          },
+        },
+        ascendantsSurvivantsBySide: { epoux1: false },
+      }),
       {
         donationsRapportables: 30000,
         donationsHorsPart: 15000,
@@ -99,9 +131,9 @@ describe('successionDraft', () => {
     expect(parsed?.liquidation.actifCommun).toBe(150000);
     expect(parsed?.devolution.nbEnfantsNonCommuns).toBe(1);
     expect(parsed?.devolution.choixLegalConjointSansDDV).toBe('usufruit');
-    expect(parsed?.devolution.testamentActif).toBe(true);
-    expect(parsed?.devolution.typeDispositionTestamentaire).toBe('legs_titre_universel');
-    expect(parsed?.devolution.quotePartLegsTitreUniverselPct).toBe(60);
+    expect(parsed?.devolution.testamentsBySide.epoux1.active).toBe(true);
+    expect(parsed?.devolution.testamentsBySide.epoux1.dispositionType).toBe('legs_titre_universel');
+    expect(parsed?.devolution.testamentsBySide.epoux1.quotePartPct).toBe(60);
     expect(parsed?.patrimonial.donationsRapportables).toBe(30000);
     expect(parsed?.patrimonial.donationEntreEpouxActive).toBe(true);
     expect(parsed?.patrimonial.donationEntreEpouxOption).toBe('mixte');
@@ -118,6 +150,72 @@ describe('successionDraft', () => {
 
   it('retourne null sur JSON invalide', () => {
     expect(parseSuccessionDraftPayload('not-json')).toBeNull();
+  });
+
+  it('migre un draft v15 vers le testament par personne en v16', () => {
+    const raw = JSON.stringify({
+      version: 15,
+      form: {
+        actifNetSuccession: 220000,
+        heritiers: [{ lien: 'enfant', partSuccession: 220000 }],
+      },
+      civil: {
+        situationMatrimoniale: 'pacse',
+        regimeMatrimonial: null,
+        pacsConvention: 'separation',
+      },
+      liquidation: {
+        actifEpoux1: 220000,
+        actifEpoux2: 0,
+        actifCommun: 0,
+        nbEnfants: 1,
+      },
+      devolution: {
+        nbEnfantsNonCommuns: 0,
+        testamentActif: true,
+        typeDispositionTestamentaire: 'legs_titre_universel',
+        quotePartLegsTitreUniverselPct: 40,
+        ascendantsSurvivants: true,
+      },
+      patrimonial: {
+        donationsRapportables: 0,
+        donationsHorsPart: 0,
+        legsParticuliers: 0,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'usufruit_total',
+        preciputMontant: 0,
+        attributionIntegrale: false,
+        attributionBiensCommunsPct: 50,
+      },
+      enfants: [{ id: 'E1', rattachement: 'epoux1' }],
+      familyMembers: [],
+      donations: [
+        {
+          id: 'don-legacy-legs',
+          type: 'legs_particulier',
+          montant: 15000,
+          donateur: 'epoux1',
+          donataire: 'E1',
+        },
+      ],
+      assetEntries: [],
+      assuranceVieEntries: [],
+    });
+
+    const parsed = parseSuccessionDraftPayload(raw);
+
+    expect(parsed).not.toBeNull();
+    expect(parsed?.devolution.testamentsBySide.epoux1.active).toBe(true);
+    expect(parsed?.devolution.testamentsBySide.epoux1.dispositionType).toBe('legs_titre_universel');
+    expect(parsed?.devolution.testamentsBySide.epoux1.quotePartPct).toBe(40);
+    expect(parsed?.devolution.ascendantsSurvivantsBySide.epoux1).toBe(true);
+    expect(parsed?.devolution.testamentsBySide.epoux1.particularLegacies).toEqual([
+      expect.objectContaining({
+        amount: 15000,
+        beneficiaryRef: 'enfant:E1',
+      }),
+    ]);
+    expect(parsed?.donations).toEqual([]);
   });
 
   it('parse les dates de naissance en v14 et ignore un format invalide', () => {
@@ -203,8 +301,8 @@ describe('successionDraft', () => {
     expect(parsed?.enfants).toHaveLength(3);
     expect(parsed?.enfants.filter((e) => e.rattachement === 'commun')).toHaveLength(1);
     expect(parsed?.enfants.filter((e) => e.rattachement !== 'commun')).toHaveLength(2);
-    expect(parsed?.devolution.typeDispositionTestamentaire).toBeNull();
-    expect(parsed?.devolution.quotePartLegsTitreUniverselPct).toBe(50);
+    expect(parsed?.devolution.testamentsBySide.epoux1.dispositionType).toBeNull();
+    expect(parsed?.devolution.testamentsBySide.epoux1.quotePartPct).toBe(50);
     expect(parsed?.patrimonial.donationEntreEpouxOption).toBe('usufruit_total');
     expect(parsed?.donations).toHaveLength(0);
   });
@@ -235,8 +333,8 @@ describe('successionDraft', () => {
 
     const parsed = parseSuccessionDraftPayload(raw);
     expect(parsed).not.toBeNull();
-    expect(parsed?.devolution.testamentActif).toBe(true);
-    expect(parsed?.devolution.typeDispositionTestamentaire).toBe('legs_universel');
+    expect(parsed?.devolution.testamentsBySide.epoux1.active).toBe(true);
+    expect(parsed?.devolution.testamentsBySide.epoux1.dispositionType).toBe('legs_universel');
   });
 
   it('migre les agrégats legacy vers des donations détaillées en v9', () => {
@@ -278,7 +376,9 @@ describe('successionDraft', () => {
     expect(parsed?.donations.map((entry) => entry.type)).toEqual([
       'rapportable',
       'hors_part',
-      'legs_particulier',
+    ]);
+    expect(parsed?.devolution.testamentsBySide.epoux1.particularLegacies).toEqual([
+      expect.objectContaining({ amount: 5000 }),
     ]);
   });
 

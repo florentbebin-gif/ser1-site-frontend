@@ -3,6 +3,7 @@ import {
   type FamilyMember,
   type SuccessionCivilContext,
   type SuccessionDevolutionContext,
+  type SuccessionDevolutionContextInput,
   type SuccessionEnfant,
   type SuccessionPatrimonialContext,
 } from './successionDraft';
@@ -10,6 +11,12 @@ import {
   buildSuccessionDescendantRecipients,
   countEffectiveDescendantBranches,
 } from './successionEnfants';
+import {
+  getAscendantsSurvivantsForSide,
+  getQuotiteDisponibleRatio,
+  getTestamentConfigForSide,
+  hasActiveTestamentForSide,
+} from './successionTestament';
 import { getUsufruitValuationFromBirthDate } from './successionUsufruit';
 
 export interface SuccessionDevolutionLine {
@@ -55,13 +62,6 @@ function getReserveInfo(nbEnfants: number): SuccessionReserveInfo | null {
   if (nbEnfants === 1) return { reserve: '1/2', quotiteDisponible: '1/2' };
   if (nbEnfants === 2) return { reserve: '2/3', quotiteDisponible: '1/3' };
   return { reserve: '3/4', quotiteDisponible: '1/4' };
-}
-
-function getQuotiteDisponibleRatio(nbEnfants: number): number {
-  if (nbEnfants <= 0) return 1;
-  if (nbEnfants === 1) return 0.5;
-  if (nbEnfants === 2) return 1 / 3;
-  return 0.25;
 }
 
 function getSurvivingSpouseBirthDate(
@@ -269,15 +269,17 @@ function addTestamentLines(
   lines: SuccessionDevolutionLine[],
   warnings: string[],
   context: SuccessionDevolutionContext,
+  simulatedDeceased: 'epoux1' | 'epoux2',
   nbEnfantsTotal: number,
   masseReference: number,
   legsParticuliersMontant: number,
 ): void {
-  if (!context.testamentActif) return;
+  const testament = getTestamentConfigForSide(context, simulatedDeceased);
+  if (!testament.active) return;
 
   warnings.push('Testament actif: valider les clauses exactes et leur articulation avec la réserve héréditaire.');
 
-  if (!context.typeDispositionTestamentaire) {
+  if (!testament.dispositionType) {
     warnings.push('Testament actif sans type de disposition: précisez le mécanisme testamentaire.');
     return;
   }
@@ -285,7 +287,7 @@ function addTestamentLines(
   const quotiteDisponible = masseReference * getQuotiteDisponibleRatio(nbEnfantsTotal);
   const plafondTestament = nbEnfantsTotal > 0 ? quotiteDisponible : masseReference;
 
-  if (context.typeDispositionTestamentaire === 'legs_universel') {
+  if (testament.dispositionType === 'legs_universel') {
     lines.push({
       heritier: 'Légataire universel (testament)',
       droits: nbEnfantsTotal > 0
@@ -296,8 +298,8 @@ function addTestamentLines(
     return;
   }
 
-  if (context.typeDispositionTestamentaire === 'legs_titre_universel') {
-    const ratio = Math.min(100, Math.max(0, context.quotePartLegsTitreUniverselPct)) / 100;
+  if (testament.dispositionType === 'legs_titre_universel') {
+    const ratio = Math.min(100, Math.max(0, testament.quotePartPct)) / 100;
     if (ratio <= 0) {
       warnings.push('Quote-part de legs à titre universel nulle: renseignez un pourcentage pertinent.');
     }
@@ -327,7 +329,7 @@ function addTestamentLines(
 export function buildSuccessionDevolutionAnalysis(
   civil: SuccessionCivilContext,
   nbEnfantsTotalInput: number,
-  contextInput: Partial<SuccessionDevolutionContext> | undefined,
+  contextInput: SuccessionDevolutionContextInput | undefined,
   masseReferenceInput: number,
   legsParticuliersInput = 0,
   enfantsContext: SuccessionEnfant[] = [],
@@ -336,10 +338,30 @@ export function buildSuccessionDevolutionAnalysis(
 ): SuccessionDevolutionAnalysis {
   const masseReference = asAmount(masseReferenceInput, 0);
   const warnings: string[] = [];
-
+  const simulatedDeceased = options.simulatedDeceased ?? 'epoux1';
   const context: SuccessionDevolutionContext = {
     ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
     ...contextInput,
+    testamentsBySide: {
+      epoux1: {
+        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux1,
+        ...contextInput?.testamentsBySide?.epoux1,
+        particularLegacies: contextInput?.testamentsBySide?.epoux1?.particularLegacies
+          ? [...contextInput.testamentsBySide.epoux1.particularLegacies]
+          : [...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux1.particularLegacies],
+      },
+      epoux2: {
+        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux2,
+        ...contextInput?.testamentsBySide?.epoux2,
+        particularLegacies: contextInput?.testamentsBySide?.epoux2?.particularLegacies
+          ? [...contextInput.testamentsBySide.epoux2.particularLegacies]
+          : [...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentsBySide.epoux2.particularLegacies],
+      },
+    },
+    ascendantsSurvivantsBySide: {
+      ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide,
+      ...contextInput?.ascendantsSurvivantsBySide,
+    },
   };
 
   const derivedBranches = countEffectiveDescendantBranches(enfantsContext, familyMembers);
@@ -381,7 +403,7 @@ export function buildSuccessionDevolutionAnalysis(
         nbEnfantsTotal,
         masseReference,
         options.patrimonial,
-        options.simulatedDeceased ?? 'epoux1',
+        simulatedDeceased,
         options.referenceDate ?? new Date(),
       );
       if (donationValuation) {
@@ -412,7 +434,7 @@ export function buildSuccessionDevolutionAnalysis(
           civil,
           context.choixLegalConjointSansDDV,
           masseReference,
-          options.simulatedDeceased ?? 'epoux1',
+          simulatedDeceased,
           options.referenceDate ?? new Date(),
         );
         if (legalSpouseValuation) {
@@ -446,7 +468,7 @@ export function buildSuccessionDevolutionAnalysis(
     } else {
       // Art. 757-1 / 757-2 CC : marié sans descendants
       const nbParents = familyMembers.filter((m) => m.type === 'parent').length;
-      const effectiveParents = nbParents > 0 ? nbParents : (context.ascendantsSurvivants ? 1 : 0);
+      const effectiveParents = nbParents > 0 ? nbParents : (getAscendantsSurvivantsForSide(context, simulatedDeceased) ? 1 : 0);
       if (effectiveParents >= 2) {
         lines.push({ heritier: 'Conjoint survivant', droits: '1/2 en pleine propriété (art. 757-1 CC)', montantEstime: masseReference * 0.5 });
         lines.push({ heritier: 'Ascendants (père et mère)', droits: '1/4 chacun en pleine propriété (art. 757-1 CC)', montantEstime: masseReference * 0.5 });
@@ -460,7 +482,7 @@ export function buildSuccessionDevolutionAnalysis(
     }
   } else if (civil.situationMatrimoniale === 'pacse') {
     warnings.push('PACS: pas de vocation successorale légale automatique sans testament.');
-    if (context.testamentActif) {
+    if (hasActiveTestamentForSide(context, simulatedDeceased)) {
       lines.push({
         heritier: 'Partenaire pacsé',
         droits: 'Possible selon testament, dans la limite de la quotité disponible',
@@ -475,14 +497,14 @@ export function buildSuccessionDevolutionAnalysis(
         droits: getDescendantsLine(nbEnfantsTotal, 100, representedBranchLabels),
         montantEstime: masseReference,
       });
-    } else if (!context.testamentActif) {
+    } else if (!hasActiveTestamentForSide(context, simulatedDeceased)) {
       // Sans testament : héritiers légaux (parents / frères et sœurs)
       addAscendantsCollaterauxLines(lines, warnings, familyMembers, masseReference);
     }
     // Avec testament et sans descendants : le partenaire peut recueillir tout (pas de réserve héréditaire)
   } else if (civil.situationMatrimoniale === 'concubinage') {
     warnings.push('Concubinage: pas de vocation successorale légale du concubin.');
-    if (context.testamentActif) {
+    if (hasActiveTestamentForSide(context, simulatedDeceased)) {
       lines.push({
         heritier: 'Concubin',
         droits: 'Possible selon testament, fiscalité potentiellement majorée',
@@ -497,7 +519,7 @@ export function buildSuccessionDevolutionAnalysis(
         droits: getDescendantsLine(nbEnfantsTotal, 100, representedBranchLabels),
         montantEstime: masseReference,
       });
-    } else if (!context.testamentActif) {
+    } else if (!hasActiveTestamentForSide(context, simulatedDeceased)) {
       // Sans testament : héritiers légaux (parents / frères et sœurs)
       addAscendantsCollaterauxLines(lines, warnings, familyMembers, masseReference);
     }
@@ -515,7 +537,15 @@ export function buildSuccessionDevolutionAnalysis(
     }
   }
 
-  addTestamentLines(lines, warnings, context, nbEnfantsTotal, masseReference, asAmount(legsParticuliersInput, 0));
+  addTestamentLines(
+    lines,
+    warnings,
+    context,
+    simulatedDeceased,
+    nbEnfantsTotal,
+    masseReference,
+    asAmount(legsParticuliersInput, 0),
+  );
 
   return {
     masseReference,
