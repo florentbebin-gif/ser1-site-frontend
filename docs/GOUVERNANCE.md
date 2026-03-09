@@ -237,6 +237,41 @@ Principes : épuré, lisible, respirant.
 - Ne pas utiliser de couleur saturée pour le fond (dégradé subtil uniquement).
 - Si un vrai composant hero est créé, il doit rester compatible avec : bordure C8, accent gauche C3, fond majoritairement neutre.
 
+#### Distinction cartes gauche (guide) vs cartes droite (synthèse)
+
+##### Cartes d'entrée gauche (guide)
+- Classes : `premium-card premium-card--guide` (ou `sc-card--guide` selon feature).
+- Liseré gauche : `border-left: 3px solid C3`.
+- Header dégradé diagonal : `linear-gradient(135deg, C1 5%→transparent 65%)`.
+  Marges négatives pour étendre aux bords : `margin: -20px -24px 0; padding: 20px 24px 0`.
+- Icône **obligatoire** dans le header : 26×26 px, fond C4, stroke C2, SVG inline (`aria-hidden="true"`).
+- Structure : icône + titre (flex, `gap: 8px`) + sous-titre facultatif (12px/C9) + séparateur dégradé.
+
+##### Cartes de synthèse droite (hero / summary)
+- Classes : `premium-card` + classe feature (ex. `sc-hero-card`, `ir-tmi-card`).
+- Liseré gauche : C3 (carte principale) ou C5 (secondaire / multi-blocs).
+- Gradient sur la carte entière : `linear-gradient(to bottom, C4 18%→transparent 20%)`.
+  Implémenté via `background-image` sur la classe feature (le `background: #FFFFFF` de `.premium-card` reste).
+- Icône recommandée dans la zone titre (même spec 26×26 que les cartes guide).
+
+#### Catalogue d'icônes recommandées
+
+| Contexte carte | Icône SVG préconisée |
+|---|---|
+| Situation familiale / Foyer fiscal | `users` (2 silhouettes) |
+| Revenus / saisie tabulaire | `grid` (rect + 2 lignes H + 1 ligne V) |
+| Résultat / estimation IR | `bar-chart-2` (3 barres verticales) |
+| Actifs / Passifs / Patrimoine | `layers` (3 formes empilées) |
+| Donations | `gift` |
+| Synthèse successorale | `pie-chart` |
+| Chronologie des décès | `calendar` |
+| Filiation / arbre familial | `share-2` (nœuds réseau) |
+
+Règles icônes :
+- SVG inline uniquement, `stroke="currentColor"`, `strokeWidth="1.8"`, `fill="none"`.
+- Ne pas réutiliser deux fois la même icône dans la même page.
+- Choisir une icône qui évoque le domaine métier, pas la mise en forme visuelle.
+
 ### 9) Accordéons (styles et usages)
 #### Obligatoire
 - Accordéons utilisés sur `/sim/credit` :

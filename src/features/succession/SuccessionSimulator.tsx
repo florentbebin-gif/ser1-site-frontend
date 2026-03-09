@@ -1458,9 +1458,19 @@ export default function SuccessionSimulator() {
 
       <div className="sc-grid">
         <div className="sc-left">
-          <div className="premium-card sc-card">
+          <div className="premium-card sc-card sc-card--guide">
             <header className="sc-card__header">
-              <h2 className="sc-card__title">Contexte familial</h2>
+              <div className="sc-card__title-row">
+                <div className="sc-section-icon-wrapper">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </div>
+                <h2 className="sc-card__title">Contexte familial</h2>
+              </div>
             </header>
             <div className="sc-card__divider" />
             <div className="sc-context-grid">
@@ -1625,9 +1635,18 @@ export default function SuccessionSimulator() {
             </div>
           </div>
 
-          <div className="premium-card sc-card">
+          <div className="premium-card sc-card sc-card--guide">
             <header className="sc-card__header">
-              <h2 className="sc-card__title">Actifs / Passifs</h2>
+              <div className="sc-card__title-row">
+                <div className="sc-section-icon-wrapper">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                    <polyline points="2 17 12 22 22 17" />
+                    <polyline points="2 12 12 17 22 12" />
+                  </svg>
+                </div>
+                <h2 className="sc-card__title">Actifs / Passifs</h2>
+              </div>
               <p className="sc-card__subtitle">
                 {isExpert
                   ? 'Saisie détaillée des actifs et passifs, agrégée automatiquement pour les analyses civiles.'
@@ -1808,9 +1827,20 @@ export default function SuccessionSimulator() {
           </div>
 
           {isExpert && (
-          <div className="premium-card sc-card">
+          <div className="premium-card sc-card sc-card--guide">
             <header className="sc-card__header">
-              <h2 className="sc-card__title">Donations</h2>
+              <div className="sc-card__title-row">
+                <div className="sc-section-icon-wrapper">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="20 12 20 22 4 22 4 12" />
+                    <rect x="2" y="7" width="20" height="5" />
+                    <line x1="12" y1="22" x2="12" y2="7" />
+                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
+                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
+                  </svg>
+                </div>
+                <h2 className="sc-card__title">Donations</h2>
+              </div>
             </header>
             <div className="sc-card__divider sc-card__divider--tight" />
             {donationsContext.length > 0 ? (
@@ -1968,7 +1998,15 @@ export default function SuccessionSimulator() {
           />
 
           <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
-            <h2 className="sc-summary-title">Synthèse successorale</h2>
+            <div className="sc-summary-title-row">
+              <div className="sc-section-icon-wrapper">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                  <path d="M22 12A10 10 0 0 0 12 2v10z" />
+                </svg>
+              </div>
+              <h2 className="sc-summary-title">Synthèse successorale</h2>
+            </div>
             <div className="sc-card__divider sc-card__divider--tight" />
             <div className="sc-synth-hero">
               <div className="sc-synth-hero__left">
@@ -2067,7 +2105,17 @@ export default function SuccessionSimulator() {
 
           <div className="premium-card sc-summary-card sc-hero-card">
             <div className="sc-hero-header">
-              <h2 className="sc-summary-title">Chronologie des décès</h2>
+              <div className="sc-summary-title-row">
+                <div className="sc-section-icon-wrapper">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                </div>
+                <h2 className="sc-summary-title">Chronologie des décès</h2>
+              </div>
               <div className="sc-pill-toggle">
                 <button
                   type="button"
