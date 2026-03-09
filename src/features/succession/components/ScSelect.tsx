@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 export interface ScSelectOption {
   value: string;
   label: string;
+  description?: string;
   disabled?: boolean;
 }
 
@@ -80,13 +81,17 @@ export function ScSelect({
               role="option"
               aria-selected={o.value === value}
               className={`sc-select__option${o.value === value ? ' is-selected' : ''}${o.disabled ? ' is-disabled' : ''}`}
+              title={o.description ?? o.label}
               onMouseDown={() => {
                 if (o.disabled) return;
                 onChange(o.value);
                 setOpen(false);
               }}
             >
-              {o.label}
+              <span className="sc-select__option-label">{o.label}</span>
+              {o.description && (
+                <span className="sc-select__option-description">{o.description}</span>
+              )}
             </li>
           ))}
         </ul>

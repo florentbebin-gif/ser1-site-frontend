@@ -11,6 +11,7 @@ export type SituationMatrimoniale =
   | 'veuf';
 
 export type PacsConvention = 'separation' | 'indivision';
+export type SuccessionPrimarySide = 'epoux1' | 'epoux2';
 export type SuccessionDispositionTestamentaire =
   | 'legs_universel'
   | 'legs_titre_universel'
@@ -37,13 +38,46 @@ export interface SuccessionLiquidationContext {
   nbEnfants: number;
 }
 
+export type SuccessionBeneficiaryRef =
+  | `principal:${SuccessionPrimarySide}`
+  | `enfant:${string}`
+  | `family:${string}`;
+
+export interface SuccessionParticularLegacyEntry {
+  id: string;
+  beneficiaryRef: SuccessionBeneficiaryRef | null;
+  amount: number;
+  label?: string;
+}
+
+export interface SuccessionTestamentConfig {
+  active: boolean;
+  dispositionType: SuccessionDispositionTestamentaire | null;
+  beneficiaryRef: SuccessionBeneficiaryRef | null;
+  quotePartPct: number;
+  particularLegacies: SuccessionParticularLegacyEntry[];
+}
+
 export interface SuccessionDevolutionContext {
   nbEnfantsNonCommuns: number;
   choixLegalConjointSansDDV: SuccessionChoixLegalConjointSansDDV;
-  testamentActif: boolean;
-  typeDispositionTestamentaire: SuccessionDispositionTestamentaire | null;
-  quotePartLegsTitreUniverselPct: number;
-  ascendantsSurvivants: boolean;
+  testamentsBySide: {
+    epoux1: SuccessionTestamentConfig;
+    epoux2: SuccessionTestamentConfig;
+  };
+  ascendantsSurvivantsBySide: {
+    epoux1: boolean;
+    epoux2: boolean;
+  };
+}
+
+export interface SuccessionDevolutionContextInput
+  extends Partial<Omit<SuccessionDevolutionContext, 'testamentsBySide' | 'ascendantsSurvivantsBySide'>> {
+  testamentsBySide?: {
+    epoux1?: Partial<SuccessionTestamentConfig>;
+    epoux2?: Partial<SuccessionTestamentConfig>;
+  };
+  ascendantsSurvivantsBySide?: Partial<SuccessionDevolutionContext['ascendantsSurvivantsBySide']>;
 }
 
 export interface SuccessionPatrimonialContext {
@@ -125,6 +159,20 @@ interface SuccessionDraftPayloadV15 {
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
 }
 
+interface SuccessionDraftPayloadV16 {
+  version: 16;
+  form: PersistedSuccessionForm;
+  civil: SuccessionCivilContext;
+  liquidation: SuccessionLiquidationContext;
+  devolution: SuccessionDevolutionContext;
+  patrimonial: SuccessionPatrimonialContext;
+  enfants: SuccessionEnfant[];
+  familyMembers: FamilyMember[];
+  donations: SuccessionDonationEntry[];
+  assetEntries: SuccessionAssetDetailEntry[];
+  assuranceVieEntries: SuccessionAssuranceVieEntry[];
+}
+
 export const DEFAULT_SUCCESSION_CIVIL_CONTEXT: SuccessionCivilContext = {
   situationMatrimoniale: 'celibataire',
   regimeMatrimonial: null,
@@ -140,13 +188,25 @@ export const DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT: SuccessionLiquidationContex
   nbEnfants: 0,
 };
 
+export const DEFAULT_SUCCESSION_TESTAMENT_CONFIG: SuccessionTestamentConfig = {
+  active: false,
+  dispositionType: null,
+  beneficiaryRef: null,
+  quotePartPct: 50,
+  particularLegacies: [],
+};
+
 export const DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT: SuccessionDevolutionContext = {
   nbEnfantsNonCommuns: 0,
   choixLegalConjointSansDDV: null,
-  testamentActif: false,
-  typeDispositionTestamentaire: null,
-  quotePartLegsTitreUniverselPct: 50,
-  ascendantsSurvivants: false,
+  testamentsBySide: {
+    epoux1: { ...DEFAULT_SUCCESSION_TESTAMENT_CONFIG, particularLegacies: [] },
+    epoux2: { ...DEFAULT_SUCCESSION_TESTAMENT_CONFIG, particularLegacies: [] },
+  },
+  ascendantsSurvivantsBySide: {
+    epoux1: false,
+    epoux2: false,
+  },
 };
 
 export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContext = {
@@ -172,7 +232,7 @@ export type FamilyMemberType =
   | 'oncle_tante'
   | 'tierce_personne';
 
-export type FamilyBranch = 'epoux1' | 'epoux2';
+export type FamilyBranch = SuccessionPrimarySide;
 
 export interface FamilyMember {
   id: string;
@@ -216,6 +276,20 @@ function isDispositionTestamentaire(v: unknown): v is SuccessionDispositionTesta
     || v === 'legs_particulier';
 }
 
+function isPrimarySide(v: unknown): v is SuccessionPrimarySide {
+  return v === 'epoux1' || v === 'epoux2';
+}
+
+function isSuccessionBeneficiaryRef(v: unknown): v is SuccessionBeneficiaryRef {
+  return typeof v === 'string'
+    && (
+      v === 'principal:epoux1'
+      || v === 'principal:epoux2'
+      || v.startsWith('enfant:')
+      || v.startsWith('family:')
+    );
+}
+
 function isDonationEntreEpouxOption(v: unknown): v is SuccessionDonationEntreEpouxOption {
   return v === 'usufruit_total'
     || v === 'pleine_propriete_quotite'
@@ -245,7 +319,7 @@ function isFamilyMemberType(v: unknown): v is FamilyMemberType {
 }
 
 function isFamilyBranch(v: unknown): v is FamilyBranch {
-  return v === 'epoux1' || v === 'epoux2';
+  return isPrimarySide(v);
 }
 
 function isEnfantRattachement(v: unknown): v is SuccessionEnfantRattachement {
@@ -283,9 +357,9 @@ export function buildSuccessionDraftPayload(
   donations: SuccessionDonationEntry[],
   assetEntries: SuccessionAssetDetailEntry[],
   assuranceVieEntries: SuccessionAssuranceVieEntry[],
-): SuccessionDraftPayloadV15 {
+): SuccessionDraftPayloadV16 {
   return {
-    version: 15,
+    version: 16,
     form,
     civil,
     liquidation,
@@ -429,6 +503,58 @@ function deriveLegacyAssetEntries(
   return entries;
 }
 
+function parseTestamentConfig(raw: unknown): SuccessionTestamentConfig {
+  if (!isObject(raw)) {
+    return {
+      ...DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
+      particularLegacies: [],
+    };
+  }
+
+  const active = asBoolean(raw.active, DEFAULT_SUCCESSION_TESTAMENT_CONFIG.active);
+  const dispositionType = isDispositionTestamentaire(raw.dispositionType)
+    ? raw.dispositionType
+    : DEFAULT_SUCCESSION_TESTAMENT_CONFIG.dispositionType;
+  const beneficiaryRef = isSuccessionBeneficiaryRef(raw.beneficiaryRef)
+    ? raw.beneficiaryRef
+    : DEFAULT_SUCCESSION_TESTAMENT_CONFIG.beneficiaryRef;
+  const particularLegaciesRaw = Array.isArray(raw.particularLegacies) ? raw.particularLegacies : [];
+  const particularLegacies = particularLegaciesRaw
+    .filter((item): item is Record<string, unknown> => isObject(item))
+    .map((item, idx) => ({
+      id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `leg-${idx + 1}`,
+      beneficiaryRef: isSuccessionBeneficiaryRef(item.beneficiaryRef) ? item.beneficiaryRef : null,
+      amount: asAmount(item.amount, 0),
+      label: normalizeOptionalString(item.label),
+    }));
+
+  return {
+    active,
+    dispositionType,
+    beneficiaryRef,
+    quotePartPct: asPercent(raw.quotePartPct, DEFAULT_SUCCESSION_TESTAMENT_CONFIG.quotePartPct),
+    particularLegacies,
+  };
+}
+
+function getLegacyTestamentConfig(raw: Record<string, unknown>): SuccessionTestamentConfig {
+  const active = asBoolean(raw.testamentActif, DEFAULT_SUCCESSION_TESTAMENT_CONFIG.active);
+  const parsedDisposition = isDispositionTestamentaire(raw.typeDispositionTestamentaire)
+    ? raw.typeDispositionTestamentaire
+    : DEFAULT_SUCCESSION_TESTAMENT_CONFIG.dispositionType;
+
+  return {
+    active,
+    dispositionType: active ? (parsedDisposition ?? 'legs_universel') : parsedDisposition,
+    beneficiaryRef: null,
+    quotePartPct: asPercent(
+      raw.quotePartLegsTitreUniverselPct,
+      DEFAULT_SUCCESSION_TESTAMENT_CONFIG.quotePartPct,
+    ),
+    particularLegacies: [],
+  };
+}
+
 export function parseSuccessionDraftPayload(raw: string): {
   form: PersistedSuccessionForm;
   civil: SuccessionCivilContext;
@@ -459,9 +585,11 @@ export function parseSuccessionDraftPayload(raw: string): {
         && parsed.version !== 12
         && parsed.version !== 13
         && parsed.version !== 14
-        && parsed.version !== 15)
+        && parsed.version !== 15
+        && parsed.version !== 16)
     ) return null;
     const payload = parsed as Record<string, unknown>;
+    const version = payload.version as number;
 
     const formRaw = payload.form;
     if (!isObject(formRaw)) return null;
@@ -495,7 +623,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       dateNaissanceEpoux2: normalizeOptionalDate(civilRaw.dateNaissanceEpoux2),
     };
 
-    const liquidationRaw = payload.version !== 1 && isObject(payload.liquidation) ? payload.liquidation : {};
+    const liquidationRaw = version !== 1 && isObject(payload.liquidation) ? payload.liquidation : {};
     const liquidation: SuccessionLiquidationContext = {
       actifEpoux1: asAmount(liquidationRaw.actifEpoux1, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifEpoux1),
       actifEpoux2: asAmount(liquidationRaw.actifEpoux2, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.actifEpoux2),
@@ -503,17 +631,41 @@ export function parseSuccessionDraftPayload(raw: string): {
       nbEnfants: asChildrenCount(liquidationRaw.nbEnfants, DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT.nbEnfants),
     };
 
-    const devolutionRaw = (payload.version === 3 || payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && isObject(payload.devolution)
+    const devolutionRaw = version >= 3 && isObject(payload.devolution)
       ? payload.devolution
       : {};
-    const testamentActif = asBoolean(
-      devolutionRaw.testamentActif,
-      DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.testamentActif,
-    );
-    const parsedDisposition = isDispositionTestamentaire(devolutionRaw.typeDispositionTestamentaire)
-      ? devolutionRaw.typeDispositionTestamentaire
-      : DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.typeDispositionTestamentaire;
-    const devolution: SuccessionDevolutionContext = {
+    const legacyEpoux1Testament = getLegacyTestamentConfig(devolutionRaw);
+    const parsedTestamentsBySide = version >= 16 && isObject(devolutionRaw.testamentsBySide)
+      ? {
+        epoux1: parseTestamentConfig(devolutionRaw.testamentsBySide.epoux1),
+        epoux2: parseTestamentConfig(devolutionRaw.testamentsBySide.epoux2),
+      }
+      : {
+        epoux1: legacyEpoux1Testament,
+        epoux2: {
+          ...DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
+          particularLegacies: [],
+        },
+      };
+    const parsedAscendantsBySide = version >= 16 && isObject(devolutionRaw.ascendantsSurvivantsBySide)
+      ? {
+        epoux1: asBoolean(
+          devolutionRaw.ascendantsSurvivantsBySide.epoux1,
+          DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide.epoux1,
+        ),
+        epoux2: asBoolean(
+          devolutionRaw.ascendantsSurvivantsBySide.epoux2,
+          DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide.epoux2,
+        ),
+      }
+      : {
+        epoux1: asBoolean(
+          devolutionRaw.ascendantsSurvivants,
+          DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide.epoux1,
+        ),
+        epoux2: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide.epoux2,
+      };
+    const devolutionBase: SuccessionDevolutionContext = {
       nbEnfantsNonCommuns: asChildrenCount(
         devolutionRaw.nbEnfantsNonCommuns,
         DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.nbEnfantsNonCommuns,
@@ -521,19 +673,20 @@ export function parseSuccessionDraftPayload(raw: string): {
       choixLegalConjointSansDDV: isChoixLegalConjointSansDDV(devolutionRaw.choixLegalConjointSansDDV)
         ? devolutionRaw.choixLegalConjointSansDDV
         : DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.choixLegalConjointSansDDV,
-      testamentActif,
-      typeDispositionTestamentaire: testamentActif ? (parsedDisposition ?? 'legs_universel') : null,
-      quotePartLegsTitreUniverselPct: asPercent(
-        devolutionRaw.quotePartLegsTitreUniverselPct,
-        DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.quotePartLegsTitreUniverselPct,
-      ),
-      ascendantsSurvivants: asBoolean(
-        devolutionRaw.ascendantsSurvivants,
-        DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivants,
-      ),
+      testamentsBySide: {
+        epoux1: {
+          ...parsedTestamentsBySide.epoux1,
+          particularLegacies: [...parsedTestamentsBySide.epoux1.particularLegacies],
+        },
+        epoux2: {
+          ...parsedTestamentsBySide.epoux2,
+          particularLegacies: [...parsedTestamentsBySide.epoux2.particularLegacies],
+        },
+      },
+      ascendantsSurvivantsBySide: parsedAscendantsBySide,
     };
 
-    const patrimonialRaw = (payload.version === 4 || payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && isObject(payload.patrimonial)
+    const patrimonialRaw = version >= 4 && isObject(payload.patrimonial)
       ? payload.patrimonial
       : {};
     const patrimonial: SuccessionPatrimonialContext = {
@@ -571,7 +724,7 @@ export function parseSuccessionDraftPayload(raw: string): {
       ),
     };
 
-    const enfantsRaw = (payload.version === 5 || payload.version === 6 || payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && Array.isArray(payload.enfants)
+    const enfantsRaw = version >= 5 && Array.isArray(payload.enfants)
       ? payload.enfants
       : null;
     const enfants = enfantsRaw
@@ -583,9 +736,9 @@ export function parseSuccessionDraftPayload(raw: string): {
           rattachement: isEnfantRattachement(item.rattachement) ? item.rattachement : 'commun',
           deceased: asBoolean(item.deceased, false) || undefined,
         }))
-      : deriveLegacyEnfants(liquidation, devolution);
+      : deriveLegacyEnfants(liquidation, devolutionBase);
 
-    const familyMembersRaw = (payload.version === 7 || payload.version === 8 || payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && Array.isArray(payload.familyMembers)
+    const familyMembersRaw = version >= 7 && Array.isArray(payload.familyMembers)
       ? payload.familyMembers
       : [];
     const familyMembers: FamilyMember[] = familyMembersRaw
@@ -598,9 +751,14 @@ export function parseSuccessionDraftPayload(raw: string): {
         parentEnfantId: typeof item.parentEnfantId === 'string' ? item.parentEnfantId : undefined,
       }));
 
-    const donationsRaw = (payload.version === 9 || payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && Array.isArray(payload.donations)
+    const donationsRaw = version >= 9 && Array.isArray(payload.donations)
       ? payload.donations
       : null;
+    const legacyParticularLegaciesBySide: Record<SuccessionPrimarySide, SuccessionParticularLegacyEntry[]> = {
+      epoux1: [],
+      epoux2: [],
+    };
+    const legacyDonations = deriveLegacyDonations(patrimonial);
     const donations = donationsRaw
       ? donationsRaw
         .filter((item): item is Record<string, unknown> => isObject(item))
@@ -623,12 +781,64 @@ export function parseSuccessionDraftPayload(raw: string): {
           if (valeurActuelle >= 0) donation.valeurActuelle = valeurActuelle;
           if (asBoolean(item.donSommeArgentExonere, false)) donation.donSommeArgentExonere = true;
           if (asBoolean(item.avecReserveUsufruit, false)) donation.avecReserveUsufruit = true;
+          if (donation.type === 'legs_particulier') {
+            const donorSide = isPrimarySide(donation.donateur) ? donation.donateur : 'epoux1';
+            let beneficiaryRef: SuccessionBeneficiaryRef | null = null;
+            if (donation.donataire === 'conjoint' && civil.situationMatrimoniale !== 'celibataire' && civil.situationMatrimoniale !== 'divorce' && civil.situationMatrimoniale !== 'veuf') {
+              beneficiaryRef = `principal:${donorSide === 'epoux1' ? 'epoux2' : 'epoux1'}`;
+            } else if (typeof donation.donataire === 'string' && enfants.some((enfant) => enfant.id === donation.donataire)) {
+              beneficiaryRef = `enfant:${donation.donataire}`;
+            } else if (typeof donation.donataire === 'string' && familyMembers.some((member) => member.id === donation.donataire)) {
+              beneficiaryRef = `family:${donation.donataire}`;
+            }
+
+            legacyParticularLegaciesBySide[donorSide].push({
+              id: `legacy-${donation.id}`,
+              beneficiaryRef,
+              amount: Math.max(0, donation.valeurActuelle ?? donation.montant),
+              label: donation.donataire,
+            });
+            return null;
+          }
           return donation;
         })
         .filter((item): item is SuccessionDonationEntry => item !== null)
-      : deriveLegacyDonations(patrimonial);
+      : legacyDonations.filter((entry) => entry.type !== 'legs_particulier');
 
-    const assetEntriesRaw = (payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && Array.isArray(payload.assetEntries)
+    if (!donationsRaw) {
+      const legacyLegsAmount = legacyDonations
+        .filter((entry) => entry.type === 'legs_particulier')
+        .reduce((sum, entry) => sum + Math.max(0, entry.valeurActuelle ?? entry.montant), 0);
+      if (legacyLegsAmount > 0) {
+        legacyParticularLegaciesBySide.epoux1.push({
+          id: 'legacy-don-legs-particulier',
+          beneficiaryRef: null,
+          amount: legacyLegsAmount,
+        });
+      }
+    }
+
+    const devolution: SuccessionDevolutionContext = {
+      ...devolutionBase,
+      testamentsBySide: {
+        epoux1: {
+          ...devolutionBase.testamentsBySide.epoux1,
+          particularLegacies: [
+            ...devolutionBase.testamentsBySide.epoux1.particularLegacies,
+            ...legacyParticularLegaciesBySide.epoux1,
+          ],
+        },
+        epoux2: {
+          ...devolutionBase.testamentsBySide.epoux2,
+          particularLegacies: [
+            ...devolutionBase.testamentsBySide.epoux2.particularLegacies,
+            ...legacyParticularLegaciesBySide.epoux2,
+          ],
+        },
+      },
+    };
+
+    const assetEntriesRaw = version >= 10 && Array.isArray(payload.assetEntries)
       ? payload.assetEntries
       : null;
     const assetEntries = assetEntriesRaw
@@ -650,7 +860,7 @@ export function parseSuccessionDraftPayload(raw: string): {
         .filter((item): item is SuccessionAssetDetailEntry => item !== null)
       : deriveLegacyAssetEntries(liquidation);
 
-    const assuranceVieRaw = (payload.version === 10 || payload.version === 11 || payload.version === 12 || payload.version === 13 || payload.version === 14 || payload.version === 15) && Array.isArray(payload.assuranceVieEntries)
+    const assuranceVieRaw = version >= 10 && Array.isArray(payload.assuranceVieEntries)
       ? payload.assuranceVieEntries
       : null;
     const assuranceVieEntries = assuranceVieRaw

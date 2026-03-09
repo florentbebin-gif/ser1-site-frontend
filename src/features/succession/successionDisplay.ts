@@ -18,6 +18,7 @@ import {
   buildSuccessionDescendantRecipientsForDeceased,
   countEffectiveDescendantBranchesForDeceased,
 } from './successionEnfants';
+import { hasActiveTestamentForSide } from './successionTestament';
 
 export interface SuccessionTransmissionRow {
   id: string;
@@ -403,7 +404,7 @@ export function buildSuccessionDirectDisplayAnalysis(
 
   const descendantsAmountFromDevolution = findLineAmount(input.devolution, 'Descendants');
   const descendantsAmount = (
-    input.devolutionContext.testamentActif
+    hasActiveTestamentForSide(input.devolutionContext, simulatedDeceased)
     && (input.civil.situationMatrimoniale === 'pacse' || input.civil.situationMatrimoniale === 'concubinage')
   )
     ? Math.max(0, estateAmount - partnerHeirs.reduce((sum, heir) => sum + heir.partSuccession, 0))
@@ -429,7 +430,7 @@ export function buildSuccessionDirectDisplayAnalysis(
   warnings.push(...parentAndSiblingHeirs.warnings);
 
   if (
-    input.devolutionContext.testamentActif
+    hasActiveTestamentForSide(input.devolutionContext, simulatedDeceased)
     && detailedHeirs.length === 0
     && input.civil.situationMatrimoniale !== 'marie'
     && input.civil.situationMatrimoniale !== 'pacse'
