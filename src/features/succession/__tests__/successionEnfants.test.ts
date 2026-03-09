@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildSuccessionDescendantRecipientsForDeceased,
   countEffectiveDescendantBranches,
   countLivingEnfants,
   countLivingNonCommuns,
@@ -31,5 +32,18 @@ describe('successionEnfants', () => {
       ],
       [{ id: 'PG1', type: 'petit_enfant', parentEnfantId: 'E2' }],
     )).toBe(2);
+  });
+  it('conserve les labels globaux des enfants aprÃ¨s filtrage par dÃ©funt', () => {
+    const enfants = [
+      { id: 'E1', rattachement: 'epoux1' as const },
+      { id: 'E2', rattachement: 'commun' as const },
+      { id: 'E3', rattachement: 'epoux2' as const },
+    ];
+
+    const step1Recipients = buildSuccessionDescendantRecipientsForDeceased(enfants, [], 'epoux1');
+    const step2Recipients = buildSuccessionDescendantRecipientsForDeceased(enfants, [], 'epoux2');
+
+    expect(step1Recipients.map((recipient) => recipient.label)).toEqual(['E1', 'E2']);
+    expect(step2Recipients.map((recipient) => recipient.label)).toEqual(['E2', 'E3']);
   });
 });

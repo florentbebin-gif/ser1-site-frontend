@@ -10,6 +10,7 @@ import { buildSuccessionChainageAnalysis } from '../successionChainage';
 import { buildSuccessionDevolutionAnalysis } from '../successionDevolution';
 import {
   buildSuccessionDirectDisplayAnalysis,
+  buildSuccessionChainTransmissionRows,
   computeSuccessionDirectEstateBasis,
 } from '../successionDisplay';
 
@@ -162,6 +163,43 @@ describe('succession validation matrix', () => {
 
     expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1', 'E2']);
     expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1']);
+  });
+
+  it('famille recomposÃ©e symÃ©trique: E1, E2 et E3 restent distincts dans la synthÃ¨se cumulÃ©e', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'separation_biens',
+      }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 450000,
+        actifEpoux2: 350000,
+        actifCommun: 0,
+        nbEnfants: 3,
+      }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'epoux1' },
+        { id: 'E2', rattachement: 'commun' },
+        { id: 'E3', rattachement: 'epoux2' },
+      ],
+      familyMembers: [],
+    });
+
+    const rows = buildSuccessionChainTransmissionRows(analysis);
+
+    expect(rows.map((row) => row.label)).toEqual(['E1', 'E2', 'E3', 'Conjoint survivant']);
+    expect(rows.filter((row) => row.label === 'E1')).toHaveLength(1);
+    expect(rows.filter((row) => row.label === 'E2')).toHaveLength(1);
+    expect(rows.filter((row) => row.label === 'E3')).toHaveLength(1);
+    expect(rows.find((row) => row.label === 'E1')?.step1Brut).toBeGreaterThan(0);
+    expect(rows.find((row) => row.label === 'E1')?.step2Brut ?? 0).toBe(0);
+    expect(rows.find((row) => row.label === 'E2')?.step1Brut).toBeGreaterThan(0);
+    expect(rows.find((row) => row.label === 'E2')?.step2Brut).toBeGreaterThan(0);
+    expect(rows.find((row) => row.label === 'E3')?.step1Brut ?? 0).toBe(0);
+    expect(rows.find((row) => row.label === 'E3')?.step2Brut).toBeGreaterThan(0);
   });
 
   it('union libre avec indivision: seule la quote-part du defunt est retenue', () => {
