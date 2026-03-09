@@ -248,4 +248,54 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
     expect(basis.actifNetSuccession).toBe(200000);
     expect(basis.warnings.some((w) => w.includes('PACS indivision'))).toBe(true);
   });
+
+  it('fusionne la part legale du conjoint marie et le legs testamentaire au profit du conjoint', () => {
+    const civil = makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_legale' });
+    const devolutionContext = makeDevolution({
+      testamentsBySide: {
+        epoux1: {
+          active: true,
+          dispositionType: 'legs_universel',
+          beneficiaryRef: 'principal:epoux2',
+          quotePartPct: 50,
+          particularLegacies: [],
+        },
+      },
+    });
+    const enfants = [
+      { id: 'E1', rattachement: 'commun' as const },
+      { id: 'E2', rattachement: 'commun' as const },
+    ];
+    const devolution = buildSuccessionDevolutionAnalysis(
+      civil,
+      2,
+      devolutionContext,
+      300000,
+      0,
+      enfants,
+      [],
+      { simulatedDeceased: 'epoux1' },
+    );
+
+    const analysis = buildSuccessionDirectDisplayAnalysis({
+      civil,
+      devolution,
+      devolutionContext,
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: enfants,
+      familyMembers: [],
+      order: 'epoux1',
+      actifNetSuccession: 300000,
+    });
+
+    expect(analysis.transmissionRows.map((row) => row.label)).toEqual([
+      'Conjoint survivant',
+      'E1',
+      'E2',
+    ]);
+    expect(analysis.transmissionRows[0].brut).toBe(175000);
+    expect(analysis.heirs[0]).toMatchObject({ lien: 'conjoint', partSuccession: 175000 });
+    expect(analysis.heirs[1]).toMatchObject({ lien: 'enfant', partSuccession: 62500 });
+    expect(analysis.heirs[2]).toMatchObject({ lien: 'enfant', partSuccession: 62500 });
+  });
 });
