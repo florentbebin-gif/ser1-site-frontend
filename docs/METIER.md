@@ -89,6 +89,8 @@ Il n'existe pas aujourd'hui de simulateur "prelevements sociaux" autonome. Les p
 ### Ce que SER1 calcule
 Le coeur moteur calcule des droits de succession a partir d'un actif net et d'heritiers avec leur lien de parente. La page `/sim/succession` expose surtout un parcours guide organise en 3 blocs de saisie (`Contexte familial`, `Actifs / Passifs`, `Donations`) complete par un modal `+ Dispositions` pour le testament, les ascendants et les clauses civiles (donation entre epoux, preciput, attribution communautaire simplifiee).
 
+Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'est pas saisi, puis le modal adapte ses sections a la situation retenue.
+
 ### Entrees principales
 - situation matrimoniale et contexte familial
 - enfants / autres membres de la famille, avec distinction visuelle possible des enfants décédés
@@ -96,6 +98,8 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - contrats d'assurance-vie saisis a part dans le bloc patrimonial, integres a la masse transmise affichee
 - donations / legs agrégés en mode simplifié ou détaillés en mode expert
 - dispositions civiles et testamentaires via le modal dedie
+- testament saisi par personne : une carte en situation solo, deux cartes en situation de couple, avec beneficiaires choisis dans le contexte familial declare
+- legs particuliers saisis dans le testament sous forme de lignes `beneficiaire + montant + libelle optionnel`
 - parametres DMTG issus du dossier fiscal
 
 ### Sorties principales
@@ -112,6 +116,9 @@ Le coeur moteur calcule des droits de succession a partir d'un actif net et d'he
 - prise en compte du regime matrimonial dans certaines analyses guidees
 - scenarios de predeces et ordre des deces
 - routage explicite entre chronologie 2 deces (mariage) et succession directe affichee (celibataire, veuf, divorce, concubinage et PACS selon le cas)
+- gating du modal `+ Dispositions` tant qu'aucun contexte familial exploitable n'est saisi
+- modal `Dispositions particulieres` adapte a la situation familiale ou au regime, avec options impossibles masquees plutot que laissees actives
+- saisie testamentaire par cote (`epoux1` / `epoux2`) dans le draft succession, avec beneficiaires resolus depuis le contexte familial
 - chronologie 2 deces mariee branchee au testament du cote du defunt a chaque etape; le bouton d'ordre inverse change aussi le testament retenu
 - restitution de la transmission sur une ligne par personne reelle quand les beneficiaires sont identifies, avec filtrage des descendants selon la branche du defunt simule
 - saisie detaillee des actifs/passifs pour reconstituer des masses nettes par poche patrimoniale
