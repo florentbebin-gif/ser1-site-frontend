@@ -430,7 +430,7 @@ export function FiliationOrgchart({
           </h2>
         </div>
       </header>
-      <div className="sc-card__divider" />
+      <div className="sc-card__divider sc-card__divider--tight" />
 
       {isEmpty ? (
         <p className="sc-hint">

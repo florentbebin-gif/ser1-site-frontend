@@ -87,8 +87,17 @@ export function CreditSummaryCard({
   return (
     <aside className="cv2-summary" data-testid="credit-summary-card">
 
-      {/* Titre seul — sans donut */}
-      <div className="cv2-summary__title">{loanLabel || 'Synthèse du prêt'}</div>
+      {/* Titre + icône */}
+      <div className="cv2-summary__title-row">
+        <div className="cv2-section-icon-wrapper">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <line x1="12" y1="20" x2="12" y2="10" />
+            <line x1="18" y1="20" x2="18" y2="4" />
+            <line x1="6" y1="20" x2="6" y2="16" />
+          </svg>
+        </div>
+        <div className="cv2-summary__title">{loanLabel || 'Synthèse du prêt'}</div>
+      </div>
 
       {/* Séparateur dégradé (même barre que la carte paramètres) */}
       <div className="cv2-loan-card__divider" />

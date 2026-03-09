@@ -418,6 +418,27 @@
   );
 }
 
+/* Titre avec icône — wrapper */
+.cv2-summary__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+/* Icon wrapper cartes synthèse crédit (22×22, C4 bg, C2 stroke) */
+.cv2-section-icon-wrapper {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-c4);
+  border-radius: 6px;
+  color: var(--color-c2);
+  flex-shrink: 0;
+}
+
 .cv2-summary__title {
   font-size: 11px;
   font-weight: 600;
@@ -425,6 +446,11 @@
   text-transform: uppercase;
   color: var(--color-c9);
   margin-bottom: 14px;
+}
+
+/* Quand le titre est dans un title-row, sa marge est portée par le wrapper */
+.cv2-summary__title-row .cv2-summary__title {
+  margin-bottom: 0;
 }
 
 /* Donut SVG */
@@ -566,6 +592,11 @@
   border: 1px solid var(--color-c8);
   border-left: 3px solid var(--color-c5);
   box-shadow: 0 6px 28px rgba(0, 0, 0, 0.07);
+  background-image: linear-gradient(
+    to bottom,
+    rgba(207, 222, 216, 0.18) 0%,
+    transparent 20%
+  );
 }
 
 .cv2-total-mensu__value {

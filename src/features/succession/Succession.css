@@ -96,6 +96,11 @@
   margin-bottom: 0;
 }
 
+/* Filiation : même espace titre→séparateur que les cartes hero droite */
+.sc-filiation-card .sc-card__header {
+  padding-bottom: 0;
+}
+
 .sc-card__header {
   margin-bottom: 6px;
 }

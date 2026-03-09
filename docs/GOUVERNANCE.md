@@ -260,7 +260,8 @@ Principes : épuré, lisible, respirant.
 |---|---|
 | Situation familiale / Foyer fiscal | `users` (2 silhouettes) |
 | Revenus / saisie tabulaire | `grid` (rect + 2 lignes H + 1 ligne V) |
-| Résultat / estimation IR | `bar-chart-2` (3 barres verticales) |
+| Résultat / estimation IR ou prêt | `bar-chart-2` (3 barres verticales) |
+| Synthèse multi-prêts / agrégat | `layers` (3 formes empilées) |
 | Actifs / Passifs / Patrimoine | `layers` (3 formes empilées) |
 | Donations | `gift` |
 | Synthèse successorale | `pie-chart` |

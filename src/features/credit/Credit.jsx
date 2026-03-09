@@ -488,8 +488,17 @@ export default function CreditV2() {
           {/* Bloc synthèse globale — affiché uniquement en multi-prêts */}
           {calc.hasPretsAdditionnels && (
             <div className="cv2-total-mensu">
-              {/* Titre + séparateur */}
-              <div className="cv2-summary__title">Synthèse des prêts</div>
+              {/* Titre + icône + séparateur */}
+              <div className="cv2-summary__title-row">
+                <div className="cv2-section-icon-wrapper">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                    <polyline points="2 17 12 22 22 17" />
+                    <polyline points="2 12 12 17 22 12" />
+                  </svg>
+                </div>
+                <div className="cv2-summary__title">Synthèse des prêts</div>
+              </div>
               <div className="cv2-loan-card__divider cv2-loan-card__divider--tight" />
 
               {/* KPI principal + donut côte à côte */}
