@@ -24,6 +24,13 @@ export function countLivingNonCommuns(enfants: SuccessionEnfant[]): number {
   return enfants.filter((enfant) => !enfant.deceased && enfant.rattachement !== 'commun').length;
 }
 
+function buildGlobalEnfantNodeLabelMap(enfants: SuccessionEnfant[]): Map<string, string> {
+  return enfants.reduce((map, enfant, index) => {
+    map.set(enfant.id, getEnfantNodeLabel(index, enfant.deceased));
+    return map;
+  }, new Map<string, string>());
+}
+
 export function getEnfantNodeLabel(index: number, deceased?: boolean): string {
   return `${deceased ? '†' : ''}E${index + 1}`;
 }
@@ -85,9 +92,10 @@ export function countEffectiveDescendantBranchesForDeceased(
 export function buildSuccessionDescendantRecipients(
   enfants: SuccessionEnfant[],
   familyMembers: FamilyMember[],
+  labelMap?: Map<string, string>,
 ): SuccessionDescendantRecipient[] {
   return enfants.flatMap<SuccessionDescendantRecipient>((enfant, index) => {
-    const branchLabel = getEnfantNodeLabel(index, enfant.deceased);
+    const branchLabel = labelMap?.get(enfant.id) ?? getEnfantNodeLabel(index, enfant.deceased);
 
     if (!enfant.deceased) {
       return [{
@@ -114,9 +122,11 @@ export function buildSuccessionDescendantRecipientsForDeceased(
   familyMembers: FamilyMember[],
   deceased: SuccessionDeceasedSide,
 ): SuccessionDescendantRecipient[] {
+  const labelMap = buildGlobalEnfantNodeLabelMap(enfants);
   return buildSuccessionDescendantRecipients(
     getRelevantSuccessionEnfants(enfants, deceased),
     getRelevantSuccessionFamilyMembers(enfants, familyMembers, deceased),
+    labelMap,
   );
 }
 

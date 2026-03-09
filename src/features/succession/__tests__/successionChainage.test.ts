@@ -128,6 +128,25 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.id)).toEqual(['E1']);
   });
 
+  it('conserve les labels globaux dans une famille recomposée symétrique', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
+      liquidation: makeLiquidation({ actifEpoux1: 450000, actifEpoux2: 350000, actifCommun: 0, nbEnfants: 3 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'epoux1' },
+        { id: 'E2', rattachement: 'commun' },
+        { id: 'E3', rattachement: 'epoux2' },
+      ],
+      familyMembers: [],
+    });
+
+    expect(analysis.step1?.beneficiaries.map((beneficiary) => beneficiary.label)).toEqual(['E1', 'E2']);
+    expect(analysis.step2?.beneficiaries.map((beneficiary) => beneficiary.label)).toEqual(['E2', 'E3']);
+  });
+
   it('valorise un usufruit total au 1er décès et ne le réinjecte pas dans l’étape 2', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({
