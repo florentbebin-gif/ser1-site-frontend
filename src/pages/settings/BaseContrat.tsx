@@ -19,7 +19,7 @@ import type { ProductRules, RuleBlock, Audience } from '@/domain/base-contrat/ru
 import {
   getBaseContratOverrides,
   upsertBaseContratOverride,
-} from '@/utils/baseContratOverridesCache';
+} from '@/utils/cache/baseContratOverridesCache';
 import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from '@/constants/baseContratLabels';
 
 // ─────────────────────────────────────────────────────────────

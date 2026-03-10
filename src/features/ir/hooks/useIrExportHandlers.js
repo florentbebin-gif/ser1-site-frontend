@@ -30,7 +30,7 @@ export function useIrExportHandlers({
         return;
       }
 
-      const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } = await import('../../../utils/xlsxBuilder');
+      const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } = await import('../../../utils/export/xlsxBuilder');
 
       const headerParams = [cell('Champ', 'sHeader'), cell('Valeur', 'sHeader')];
       const rowsParams = [];

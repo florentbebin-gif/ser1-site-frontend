@@ -6,7 +6,7 @@
  */
 
 import type { DossierAudit } from './types';
-import { createTrackedObjectURL } from '../../utils/createTrackedObjectURL';
+import { createTrackedObjectURL } from '../../utils/export/createTrackedObjectURL';
 
 const SESSION_STORAGE_KEY = 'ser1_audit_draft';
 

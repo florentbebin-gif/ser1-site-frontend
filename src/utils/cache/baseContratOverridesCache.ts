@@ -8,8 +8,8 @@
  * Non consommé par l'UI ni le moteur avant PR2.
  */
 
-import { supabase } from '../supabaseClient';
-import type { BaseContratOverride, OverrideMap } from '../domain/base-contrat/overrides';
+import { supabase } from '../../supabaseClient';
+import type { BaseContratOverride, OverrideMap } from '../../domain/base-contrat/overrides';
 
 const TABLE = 'base_contrat_overrides';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;

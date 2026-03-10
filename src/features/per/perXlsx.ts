@@ -5,8 +5,8 @@
  * Utilise xlsxBuilder pour générer un fichier OOXML natif.
  */
 
-import { buildXlsxBlob, downloadXlsx } from '../../utils/xlsxBuilder';
-import type { XlsxSheet, XlsxCell } from '../../utils/xlsxBuilder';
+import { buildXlsxBlob, downloadXlsx } from '../../utils/export/xlsxBuilder';
+import type { XlsxSheet, XlsxCell } from '../../utils/export/xlsxBuilder';
 import type { PerResult, PerProjectionRow } from '../../engine/per';
 import { DEFAULT_COLORS } from '../../settings/theme';
 

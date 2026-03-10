@@ -17,7 +17,7 @@ import {
 } from './snapshotSchema';
 import type { SnapshotV2, SnapshotSims, FiscalIdentity } from './snapshotSchema';
 import { migrateSnapshot } from './snapshotMigrations';
-import { createTrackedObjectURL } from '../../utils/createTrackedObjectURL';
+import { createTrackedObjectURL } from '../../utils/export/createTrackedObjectURL';
 
 // ---------------------------------------------------------------------------
 // Events & keys (backward-compatible with globalStorage.js)
