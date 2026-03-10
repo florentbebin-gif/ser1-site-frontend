@@ -1,0 +1,274 @@
+import {
+  errorResponse,
+  jsonResponse,
+  type AdminActionHandler,
+} from '../lib/http.ts'
+
+interface ReportAgg {
+  total_reports: number
+  unread_reports: number
+  latest_report_id: string | null
+  latest_report_created_at: string | null
+  latest_report_is_unread: boolean
+}
+
+interface ReportRow {
+  user_id: string
+  created_at: string
+  admin_read_at: string | null
+  id: string
+}
+
+interface ProfileRow {
+  id: string
+  cabinet_id: string | null
+}
+
+interface AuthUser {
+  id: string
+  email?: string | null
+  created_at?: string
+  last_sign_in_at?: string
+  user_metadata?: Record<string, unknown>
+  app_metadata?: Record<string, unknown>
+}
+
+const updateUserRole: AdminActionHandler = async (ctx) => {
+  const userId = (ctx.payload.userId ?? ctx.payload.user_id) as string | undefined
+  const role = ctx.payload.role as string | undefined
+
+  if (!userId || !role) {
+    return errorResponse('ID utilisateur et rôle requis', ctx.responseHeaders, 400)
+  }
+
+  const { data: existing, error: getError } = await ctx.supabase.auth.admin.getUserById(userId)
+  if (getError || !existing?.user) {
+    return errorResponse('Utilisateur non trouvé', ctx.responseHeaders, 404)
+  }
+
+  const nextUserMetadata = { ...(existing.user.user_metadata ?? {}), role }
+  const nextAppMetadata = { ...(existing.user.app_metadata ?? {}), role }
+
+  const { error } = await ctx.supabase.auth.admin.updateUserById(userId, {
+    user_metadata: nextUserMetadata,
+    app_metadata: nextAppMetadata,
+  })
+
+  if (error) throw error
+
+  return jsonResponse({ success: true }, ctx.responseHeaders)
+}
+
+const listUsers: AdminActionHandler = async (ctx) => {
+  const { data: users, error } = await ctx.supabase.auth.admin.listUsers()
+  if (error) throw error
+
+  const { data: reports, error: reportsError } = await ctx.supabase
+    .from('issue_reports')
+    .select('user_id, created_at, admin_read_at, id')
+
+  if (reportsError) {
+    console.log('[admin:list_users] Reports query error:', reportsError.message)
+  }
+
+  const reportStats = (reports ?? []).reduce<Record<string, ReportAgg>>((acc, report: ReportRow) => {
+    if (!acc[report.user_id]) {
+      acc[report.user_id] = {
+        total_reports: 0,
+        unread_reports: 0,
+        latest_report_id: report.id,
+        latest_report_created_at: report.created_at,
+        latest_report_is_unread: report.admin_read_at === null,
+      }
+    }
+
+    acc[report.user_id].total_reports++
+    if (report.admin_read_at === null) {
+      acc[report.user_id].unread_reports++
+    }
+
+    const currentLatest = acc[report.user_id].latest_report_created_at
+    if (!currentLatest || new Date(report.created_at) > new Date(currentLatest)) {
+      acc[report.user_id].latest_report_id = report.id
+      acc[report.user_id].latest_report_created_at = report.created_at
+      acc[report.user_id].latest_report_is_unread = report.admin_read_at === null
+    }
+
+    return acc
+  }, {})
+
+  const userIds = users.users.map((user: AuthUser) => user.id)
+  const { data: profiles, error: profilesError } = await ctx.supabase
+    .from('profiles')
+    .select('id, cabinet_id')
+    .in('id', userIds)
+
+  if (profilesError) {
+    console.log('[admin:list_users] profiles query error:', profilesError.message)
+  }
+
+  const cabinetByUserId = new Map((profiles ?? []).map((profile: ProfileRow) => [profile.id, profile.cabinet_id]))
+
+  const usersWithReports = users.users.map((user: AuthUser) => ({
+    id: user.id,
+    email: user.email,
+    created_at: user.created_at,
+    last_sign_in_at: user.last_sign_in_at,
+    role: user.user_metadata?.role || user.app_metadata?.role || 'user',
+    cabinet_id: cabinetByUserId.get(user.id) ?? null,
+    total_reports: reportStats[user.id]?.total_reports || 0,
+    unread_reports: reportStats[user.id]?.unread_reports || 0,
+    latest_report_id: reportStats[user.id]?.latest_report_id || null,
+    latest_report_is_unread: reportStats[user.id]?.latest_report_is_unread || false,
+  }))
+
+  return jsonResponse({ users: usersWithReports }, ctx.responseHeaders)
+}
+
+const createUserInvite: AdminActionHandler = async (ctx) => {
+  const { email, cabinet_id } = ctx.payload as { email?: string; cabinet_id?: string }
+
+  if (!email) {
+    return errorResponse('Email requis', ctx.responseHeaders, 400)
+  }
+
+  const { data: inviteData, error: inviteError } = await ctx.supabase.auth.admin.inviteUserByEmail(email)
+  if (inviteError) throw inviteError
+
+  if (inviteData?.user?.id) {
+    const profilePayload: Record<string, unknown> = {
+      id: inviteData.user.id,
+      email,
+      role: 'user',
+    }
+
+    if (cabinet_id) {
+      profilePayload.cabinet_id = cabinet_id
+    }
+
+    const { error: profileError } = await ctx.supabase
+      .from('profiles')
+      .upsert(profilePayload, { onConflict: 'id' })
+
+    if (profileError) {
+      console.error('[admin] Profile upsert error:', profileError)
+    }
+  }
+
+  return jsonResponse({ success: true, user: inviteData }, ctx.responseHeaders)
+}
+
+const deleteUser: AdminActionHandler = async (ctx) => {
+  const { userId } = ctx.payload as { userId?: string }
+
+  if (!userId) {
+    return errorResponse('ID utilisateur requis', ctx.responseHeaders, 400)
+  }
+
+  const { error } = await ctx.supabase.auth.admin.deleteUser(userId)
+  if (error) throw error
+
+  return jsonResponse({ success: true }, ctx.responseHeaders)
+}
+
+const resetPassword: AdminActionHandler = async (ctx) => {
+  let { userId, email } = ctx.payload as { userId?: string; email?: string }
+
+  if (!userId) {
+    return errorResponse('ID utilisateur et email requis', ctx.responseHeaders, 400)
+  }
+
+  if (!email) {
+    const { data: existing, error: getError } = await ctx.supabase.auth.admin.getUserById(userId)
+    if (getError || !existing?.user?.email) {
+      return errorResponse('Email utilisateur non trouvé', ctx.responseHeaders, 404)
+    }
+    email = existing.user.email
+  }
+
+  const { error } = await ctx.supabase.auth.admin.generateLink({
+    type: 'recovery',
+    email,
+    options: {
+      redirectTo: `${new URL(ctx.req.url).origin}/set-password`,
+    },
+  })
+
+  if (error) throw error
+
+  return jsonResponse({ success: true }, ctx.responseHeaders)
+}
+
+const assignUserCabinet: AdminActionHandler = async (ctx) => {
+  const { user_id, cabinet_id } = ctx.payload as {
+    user_id?: string
+    cabinet_id?: string | null
+  }
+
+  if (!user_id) {
+    return errorResponse('ID utilisateur requis', ctx.responseHeaders, 400)
+  }
+
+  if (cabinet_id) {
+    const { data: cabinetCheck, error: cabinetError } = await ctx.supabase
+      .from('cabinets')
+      .select('id')
+      .eq('id', cabinet_id)
+      .single()
+
+    if (cabinetError || !cabinetCheck) {
+      return errorResponse('Cabinet invalide', ctx.responseHeaders, 400)
+    }
+  }
+
+  const { data, error } = await ctx.supabase
+    .from('profiles')
+    .update({ cabinet_id: cabinet_id || null })
+    .eq('id', user_id)
+    .select()
+    .maybeSingle()
+
+  if (!error && data) {
+    return jsonResponse({ profile: data }, ctx.responseHeaders)
+  }
+
+  if (error?.code === 'PGRST116' || (!error && !data)) {
+    console.log(`[admin] assign_user_cabinet: profile missing for user_id=${user_id}, creating...`)
+
+    const { data: authUser, error: authError } = await ctx.supabase.auth.admin.getUserById(user_id)
+
+    if (authError || !authUser.user) {
+      return errorResponse('Utilisateur non trouvé', ctx.responseHeaders, 404)
+    }
+
+    const user = authUser.user
+    const role = user.user_metadata?.role || user.app_metadata?.role || 'user'
+
+    const { data: newProfile, error: insertError } = await ctx.supabase
+      .from('profiles')
+      .insert({
+        id: user_id,
+        email: user.email ?? null,
+        role,
+        cabinet_id: cabinet_id || null,
+      })
+      .select()
+      .single()
+
+    if (insertError) throw insertError
+
+    return jsonResponse({ profile: newProfile }, ctx.responseHeaders)
+  }
+
+  throw error
+}
+
+export const userActionHandlers: Record<string, AdminActionHandler> = {
+  update_user_role: updateUserRole,
+  users: listUsers,
+  list_users: listUsers,
+  create_user_invite: createUserInvite,
+  delete_user: deleteUser,
+  reset_password: resetPassword,
+  assign_user_cabinet: assignUserCabinet,
+}
