@@ -15,6 +15,9 @@ import {
 } from '../../engine/succession';
 import type { DmtgSettings } from '../../engine/civil';
 import type { CalcResult } from '../../engine/types';
+import type { PersistedSuccessionForm } from './successionDraft.types';
+
+export type { PersistedSuccessionForm } from './successionDraft.types';
 
 export interface HeritierRow {
   id: string;
@@ -22,19 +25,9 @@ export interface HeritierRow {
   partSuccession: number;
 }
 
-export interface PersistedHeritierRow {
-  lien: LienParente;
-  partSuccession: number;
-}
-
 export interface SuccessionFormState {
   actifNetSuccession: number;
   heritiers: HeritierRow[];
-}
-
-export interface PersistedSuccessionForm {
-  actifNetSuccession: number;
-  heritiers: PersistedHeritierRow[];
 }
 
 export interface SuccessionCalcHook {
