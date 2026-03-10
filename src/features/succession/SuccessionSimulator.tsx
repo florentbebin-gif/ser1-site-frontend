@@ -16,7 +16,6 @@ import { useUserMode } from '../../services/userModeService';
 import { SessionGuardContext } from '../../App';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
 import { ExportMenu } from '../../components/ExportMenu';
-import { REGIMES_MATRIMONIAUX } from '../../engine/civil';
 import { onResetEvent, storageKeyFor } from '../../utils/reset';
 import {
   buildSuccessionDraftPayload,
@@ -30,20 +29,14 @@ import {
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   parseSuccessionDraftPayload,
-  type SuccessionAssetCategory,
   type SuccessionAssetDetailEntry,
   type SuccessionAssetOwner,
   type SuccessionAssuranceVieEntry,
   type FamilyBranch,
   type FamilyMember,
-  type FamilyMemberType,
-  type SuccessionBeneficiaryRef,
   type SuccessionDonationEntry,
-  type SuccessionDonationEntryType,
   type SuccessionEnfant,
   type SuccessionPrimarySide,
-  type SuccessionTestamentConfig,
-  type SituationMatrimoniale,
 } from './successionDraft';
 import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
 import {
@@ -51,7 +44,6 @@ import {
   countEffectiveDescendantBranchesForDeceased,
   countLivingEnfants,
   countLivingNonCommuns,
-  getEnfantNodeLabel,
   getEnfantRattachementOptions,
 } from './successionEnfants';
 import { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
@@ -59,11 +51,7 @@ import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
 import { canOpenDispositions } from './successionDispositions';
-import {
-  buildTestamentBeneficiaryOptions,
-  cloneSuccessionTestamentsBySide,
-  createSuccessionParticularLegacyEntry,
-} from './successionTestament';
+import { buildTestamentBeneficiaryOptions } from './successionTestament';
 import {
   buildSuccessionChainageAnalysis,
   type SuccessionChainOrder,
@@ -76,41 +64,31 @@ import {
 import { getUsufruitValuationFromBirthDate } from './successionUsufruit';
 import {
   ASSET_CATEGORY_OPTIONS,
-  ASSET_SUBCATEGORY_OPTIONS,
   BRANCH_OPTIONS,
   DONATION_ENTRE_EPOUX_OPTIONS,
-  DONATION_TYPE_OPTIONS,
-  MEMBER_TYPE_NEEDS_BRANCH,
-  PACS_CONVENTION_OPTIONS,
-  SITUATION_OPTIONS,
   TESTAMENT_SIDES,
 } from './successionSimulator.constants';
 import {
-  buildAggregateAssetEntries,
   buildInitialDispositionsDraft,
-  cloneAscendantsSurvivantsBySide,
-  createAssetId,
-  createAssuranceVieId,
-  createDonationId,
-  createEnfantId,
-  createMemberId,
   EMPTY_ADD_FAMILY_MEMBER_FORM,
   fmt,
   getBirthDateLabels,
   getDonationEffectiveAmount,
   getTestamentParticularLegaciesTotal,
   isCoupleSituation,
-  labelMember,
   type AddFamilyMemberFormState,
   type DispositionsDraftState,
-  updateDraftTestament,
 } from './successionSimulator.helpers';
 import AddFamilyMemberModal from './components/AddFamilyMemberModal';
 import AssuranceVieModal from './components/AssuranceVieModal';
 import DispositionsModal from './components/DispositionsModal';
-import ScDonut from './components/ScDonut';
-import { ScSelect } from './components/ScSelect';
+import ScAssetsPassifsCard from './components/ScAssetsPassifsCard';
+import ScDeathTimelinePanel from './components/ScDeathTimelinePanel';
+import ScDonationsCard from './components/ScDonationsCard';
+import ScFamilyContextCard from './components/ScFamilyContextCard';
+import ScSuccessionSummaryPanel from './components/ScSuccessionSummaryPanel';
 import { FiliationOrgchart } from './components/FiliationOrgchart';
+import { useSuccessionSimulatorHandlers } from './useSuccessionSimulatorHandlers';
 import '../../components/simulator/SimulatorShell.css';
 import '../../styles/premium-shared.css';
 import './Succession.css';
@@ -726,350 +704,69 @@ export default function SuccessionSimulator() {
     avFiscalAnalysis.warnings,
   ]);
 
-  const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
-    setCivilContext((prev) => ({
-      situationMatrimoniale,
-      regimeMatrimonial: situationMatrimoniale === 'marie'
-        ? (prev.regimeMatrimonial ?? 'communaute_legale')
-        : null,
-      pacsConvention: situationMatrimoniale === 'pacse'
-        ? prev.pacsConvention
-        : DEFAULT_SUCCESSION_CIVIL_CONTEXT.pacsConvention,
-      dateNaissanceEpoux1: prev.dateNaissanceEpoux1,
-      dateNaissanceEpoux2: isCoupleSituation(situationMatrimoniale) ? prev.dateNaissanceEpoux2 : undefined,
-    }));
-    if (situationMatrimoniale !== 'marie') {
-      setPatrimonialContext((prev) => ({
-        ...prev,
-        donationEntreEpouxActive: false,
-        preciputMontant: 0,
-        attributionIntegrale: false,
-      }));
-    }
-  }, []);
-
-  const handleReset = useCallback(() => {
-    reset();
-    setCivilContext(DEFAULT_SUCCESSION_CIVIL_CONTEXT);
-    setLiquidationContext(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
-    setAssetEntries(DEFAULT_SUCCESSION_ASSET_DETAILS);
-    setAssuranceVieEntries(DEFAULT_SUCCESSION_ASSURANCE_VIE);
-    setAssuranceVieDraft(DEFAULT_SUCCESSION_ASSURANCE_VIE);
-    setDevolutionContext(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
-    setPatrimonialContext(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
-    setDispositionsDraft(buildInitialDispositionsDraft());
-    setDonationsContext(DEFAULT_SUCCESSION_DONATIONS);
-    setEnfantsContext(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
-    setFamilyMembers(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
-    setShowAddMemberPanel(false);
-    setShowAssuranceVieModal(false);
-    setAddMemberForm(EMPTY_ADD_FAMILY_MEMBER_FORM);
-    setChainOrder('epoux1');
-    setHypothesesOpen(false);
-    try {
-      sessionStorage.removeItem(STORE_KEY);
-    } catch {
-      // ignore
-    }
-  }, [reset]);
-
-  const setSimplifiedBalanceField = useCallback((
-    type: 'actifs' | 'passifs',
-    owner: SuccessionAssetOwner,
-    value: number,
-  ) => {
-    setAssetEntries(buildAggregateAssetEntries({
-      actifs: {
-        epoux1: owner === 'epoux1' && type === 'actifs' ? Math.max(0, value) : assetBreakdown.actifs.epoux1,
-        epoux2: owner === 'epoux2' && type === 'actifs' ? Math.max(0, value) : assetBreakdown.actifs.epoux2,
-        commun: owner === 'commun' && type === 'actifs' ? Math.max(0, value) : assetBreakdown.actifs.commun,
-      },
-      passifs: {
-        epoux1: owner === 'epoux1' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.epoux1,
-        epoux2: owner === 'epoux2' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.epoux2,
-        commun: owner === 'commun' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.commun,
-      },
-    }));
-  }, [assetBreakdown.actifs.commun, assetBreakdown.actifs.epoux1, assetBreakdown.actifs.epoux2, assetBreakdown.passifs.commun, assetBreakdown.passifs.epoux1, assetBreakdown.passifs.epoux2]);
-
-  const addEnfant = useCallback(() => {
-    setEnfantsContext((prev) => ([
-      ...prev,
-      { id: createEnfantId(), rattachement: enfantRattachementOptions[0].value as 'commun' | 'epoux1' | 'epoux2' },
-    ]));
-  }, [enfantRattachementOptions]);
-
-  const updateEnfantRattachement = useCallback((id: string, rattachement: 'commun' | 'epoux1' | 'epoux2') => {
-    setEnfantsContext((prev) => prev.map((enfant) => (
-      enfant.id === id
-        ? { ...enfant, rattachement }
-        : enfant
-    )));
-  }, []);
-
-  const toggleEnfantDeceased = useCallback((id: string, deceased: boolean) => {
-    setEnfantsContext((prev) => prev.map((enfant) => (
-      enfant.id === id
-        ? { ...enfant, deceased: deceased || undefined }
-        : enfant
-    )));
-  }, []);
-
-  const removeEnfant = useCallback((id: string) => {
-    setEnfantsContext((prev) => prev.filter((enfant) => enfant.id !== id));
-  }, []);
-
-  const addFamilyMember = useCallback(() => {
-    const { type, branch, parentEnfantId } = addMemberForm;
-    if (!type) return;
-    const needsBranch = MEMBER_TYPE_NEEDS_BRANCH.includes(type as FamilyMemberType);
-    if (needsBranch && !branch) return;
-    if (type === 'petit_enfant' && !parentEnfantId) return;
-    const member: FamilyMember = {
-      id: createMemberId(),
-      type: type as FamilyMemberType,
-      branch: branch ? (branch as FamilyBranch) : undefined,
-      parentEnfantId: type === 'petit_enfant' ? parentEnfantId : undefined,
-    };
-    setFamilyMembers((prev) => [...prev, member]);
-    setAddMemberForm(EMPTY_ADD_FAMILY_MEMBER_FORM);
-    setShowAddMemberPanel(false);
-  }, [addMemberForm]);
-
-  const removeFamilyMember = useCallback((id: string) => {
-    setFamilyMembers((prev) => prev.filter((m) => m.id !== id));
-  }, []);
-
-  const addDonationEntry = useCallback(() => {
-    setDonationsContext((prev) => ([
-      ...prev,
-      {
-        id: createDonationId(),
-        type: 'rapportable',
-        montant: 0,
-      },
-    ]));
-  }, []);
-
-  const updateDonationEntry = useCallback((
-    id: string,
-    field: keyof SuccessionDonationEntry,
-    value: string | number | boolean,
-  ) => {
-    setDonationsContext((prev) => prev.map((entry) => {
-      if (entry.id !== id) return entry;
-      if (field === 'type') return { ...entry, type: value as SuccessionDonationEntryType };
-      if (field === 'montant' || field === 'valeurDonation' || field === 'valeurActuelle') {
-        return { ...entry, [field]: Math.max(0, Number(value) || 0) };
-      }
-      if (field === 'donSommeArgentExonere' || field === 'avecReserveUsufruit') {
-        return { ...entry, [field]: Boolean(value) };
-      }
-      return { ...entry, [field]: typeof value === 'string' ? value : String(value) };
-    }));
-  }, []);
-
-  const removeDonationEntry = useCallback((id: string) => {
-    setDonationsContext((prev) => prev.filter((entry) => entry.id !== id));
-  }, []);
-
-  const addAssetEntry = useCallback((category: SuccessionAssetCategory) => {
-    setAssetEntries((prev) => ([
-      ...prev,
-      {
-        id: createAssetId(),
-        owner: assetOwnerOptions[0]?.value ?? 'epoux1',
-        category,
-        subCategory: ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre',
-        amount: 0,
-      },
-    ]));
-  }, [assetOwnerOptions]);
-
-  const updateAssetEntry = useCallback((
-    id: string,
-    field: keyof SuccessionAssetDetailEntry,
-    value: string | number,
-  ) => {
-    setAssetEntries((prev) => prev.map((entry) => {
-      if (entry.id !== id) return entry;
-      if (field === 'amount') {
-        return {
-          ...entry,
-          amount: Math.max(0, Number(value) || 0),
-        };
-      }
-      if (field === 'category') {
-        const category = value as SuccessionAssetCategory;
-        return {
-          ...entry,
-          category,
-          subCategory: ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre',
-        };
-      }
-      return {
-        ...entry,
-        [field]: value,
-      };
-    }));
-  }, []);
-
-  const removeAssetEntry = useCallback((id: string) => {
-    setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
-  }, []);
-
-  const openAssuranceVieModal = useCallback(() => {
-    setAssuranceVieDraft(assuranceVieEntries.map((entry) => ({ ...entry })));
-    setShowAssuranceVieModal(true);
-  }, [assuranceVieEntries]);
-
-  const closeAssuranceVieModal = useCallback(() => {
-    setShowAssuranceVieModal(false);
-  }, []);
-
-  const validateAssuranceVieModal = useCallback(() => {
-    setAssuranceVieEntries(assuranceVieDraft.map((entry) => ({ ...entry })));
-    setShowAssuranceVieModal(false);
-  }, [assuranceVieDraft]);
-
-  const addAssuranceVieEntry = useCallback(() => {
-    setAssuranceVieDraft((prev) => ([
-      ...prev,
-      {
-        id: createAssuranceVieId(),
-        typeContrat: 'standard',
-        souscripteur: assuranceViePartyOptions[0]?.value ?? 'epoux1',
-        assure: assuranceViePartyOptions[0]?.value ?? 'epoux1',
-        capitauxDeces: 0,
-        versementsApres70: 0,
-      },
-    ]));
-  }, [assuranceViePartyOptions]);
-
-  const updateAssuranceVieEntry = useCallback((
-    id: string,
-    field: keyof SuccessionAssuranceVieEntry,
-    value: string | number | undefined,
-  ) => {
-    setAssuranceVieDraft((prev) => prev.map((entry) => {
-      if (entry.id !== id) return entry;
-      if (field === 'capitauxDeces' || field === 'versementsApres70') {
-        return {
-          ...entry,
-          [field]: Math.max(0, Number(value) || 0),
-        };
-      }
-      if (field === 'ageUsufruitier') {
-        const age = Number(value);
-        return {
-          ...entry,
-          ageUsufruitier: Number.isFinite(age) && age > 0 ? age : undefined,
-        };
-      }
-      return {
-        ...entry,
-        [field]: value,
-      };
-    }));
-  }, []);
-
-  const removeAssuranceVieEntry = useCallback((id: string) => {
-    setAssuranceVieDraft((prev) => prev.filter((entry) => entry.id !== id));
-  }, []);
-
-  const getFirstTestamentBeneficiaryRef = useCallback(
-    (side: SuccessionPrimarySide): SuccessionBeneficiaryRef | null =>
-      testamentBeneficiaryOptionsBySide[side][0]?.value ?? null,
-    [testamentBeneficiaryOptionsBySide],
-  );
-
-  const updateDispositionsTestament = useCallback((
-    side: SuccessionPrimarySide,
-    updater: (_current: SuccessionTestamentConfig) => SuccessionTestamentConfig,
-  ) => {
-    setDispositionsDraft((prev) => updateDraftTestament(prev, side, updater));
-  }, []);
-
-  const addDispositionsParticularLegacy = useCallback((side: SuccessionPrimarySide) => {
-    const defaultBeneficiaryRef = getFirstTestamentBeneficiaryRef(side);
-    setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
-      ...current,
-      particularLegacies: [
-        ...current.particularLegacies,
-        createSuccessionParticularLegacyEntry(defaultBeneficiaryRef),
-      ],
-    })));
-  }, [getFirstTestamentBeneficiaryRef]);
-
-  const updateDispositionsParticularLegacy = useCallback((
-    side: SuccessionPrimarySide,
-    legacyId: string,
-    field: 'beneficiaryRef' | 'amount' | 'label',
-    value: string | number | SuccessionBeneficiaryRef | null,
-  ) => {
-    setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
-      ...current,
-      particularLegacies: current.particularLegacies.map((entry) => {
-        if (entry.id !== legacyId) return entry;
-        if (field === 'beneficiaryRef') {
-          return {
-            ...entry,
-            beneficiaryRef: typeof value === 'string' && value.length > 0 ? value as SuccessionBeneficiaryRef : null,
-          };
-        }
-        if (field === 'amount') {
-          return {
-            ...entry,
-            amount: Math.max(0, Number(value) || 0),
-          };
-        }
-        return {
-          ...entry,
-          label: typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined,
-        };
-      }),
-    })));
-  }, []);
-
-  const removeDispositionsParticularLegacy = useCallback((side: SuccessionPrimarySide, legacyId: string) => {
-    setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
-      ...current,
-      particularLegacies: current.particularLegacies.filter((entry) => entry.id !== legacyId),
-    })));
-  }, []);
-
-  const openDispositionsModal = useCallback(() => {
-    if (!canOpenDispositionsModal) return;
-    setDispositionsDraft({
-      attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
-      donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
-      donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
-      preciputMontant: patrimonialContext.preciputMontant,
-      attributionIntegrale: patrimonialContext.attributionIntegrale,
-      choixLegalConjointSansDDV: devolutionContext.choixLegalConjointSansDDV,
-      testamentsBySide: cloneSuccessionTestamentsBySide(devolutionContext.testamentsBySide),
-      ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(devolutionContext.ascendantsSurvivantsBySide),
-    });
-    setShowDispositionsModal(true);
-  }, [canOpenDispositionsModal, devolutionContext, patrimonialContext]);
-
-  const validateDispositionsModal = useCallback(() => {
-    setPatrimonialContext((prev) => ({
-      ...prev,
-      attributionBiensCommunsPct: dispositionsDraft.attributionBiensCommunsPct,
-      donationEntreEpouxActive: dispositionsDraft.donationEntreEpouxActive,
-      donationEntreEpouxOption: dispositionsDraft.donationEntreEpouxOption,
-      preciputMontant: dispositionsDraft.preciputMontant,
-      attributionIntegrale: dispositionsDraft.attributionBiensCommunsPct === 100,
-    }));
-    setDevolutionContext((prev) => ({
-      ...prev,
-      choixLegalConjointSansDDV: dispositionsDraft.choixLegalConjointSansDDV,
-      testamentsBySide: cloneSuccessionTestamentsBySide(dispositionsDraft.testamentsBySide),
-      ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(dispositionsDraft.ascendantsSurvivantsBySide),
-    }));
-    setShowDispositionsModal(false);
-  }, [dispositionsDraft]);
+  const {
+    handleSituationChange,
+    handleReset,
+    setSimplifiedBalanceField,
+    addEnfant,
+    updateEnfantRattachement,
+    toggleEnfantDeceased,
+    removeEnfant,
+    addFamilyMember,
+    removeFamilyMember,
+    addDonationEntry,
+    updateDonationEntry,
+    removeDonationEntry,
+    addAssetEntry,
+    updateAssetEntry,
+    removeAssetEntry,
+    openAssuranceVieModal,
+    closeAssuranceVieModal,
+    validateAssuranceVieModal,
+    addAssuranceVieEntry,
+    updateAssuranceVieEntry,
+    removeAssuranceVieEntry,
+    getFirstTestamentBeneficiaryRef,
+    updateDispositionsTestament,
+    addDispositionsParticularLegacy,
+    updateDispositionsParticularLegacy,
+    removeDispositionsParticularLegacy,
+    openDispositionsModal,
+    validateDispositionsModal,
+  } = useSuccessionSimulatorHandlers({
+    storeKey: STORE_KEY,
+    reset,
+    assetBreakdown,
+    enfantRattachementOptions,
+    addMemberForm,
+    assetOwnerOptions,
+    assuranceVieEntries,
+    assuranceVieDraft,
+    assuranceViePartyOptions,
+    testamentBeneficiaryOptionsBySide,
+    canOpenDispositionsModal,
+    civilContext,
+    devolutionContext,
+    patrimonialContext,
+    dispositionsDraft,
+    setCivilContext,
+    setLiquidationContext,
+    setAssetEntries,
+    setAssuranceVieEntries,
+    setDevolutionContext,
+    setPatrimonialContext,
+    setDonationsContext,
+    setEnfantsContext,
+    setFamilyMembers,
+    setShowAddMemberPanel,
+    setShowDispositionsModal,
+    setShowAssuranceVieModal,
+    setAssuranceVieDraft,
+    setDispositionsDraft,
+    setAddMemberForm,
+    setChainOrder,
+    setHypothesesOpen,
+  });
 
   useEffect(() => {
     try {
@@ -1364,544 +1061,53 @@ export default function SuccessionSimulator() {
 
       <div className="sc-grid">
         <div className="sc-left">
-          <div className="premium-card sc-card sc-card--guide">
-            <header className="sc-card__header">
-              <div className="sc-card__title-row">
-                <div className="sc-section-icon-wrapper">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </div>
-                <h2 className="sc-card__title">Contexte familial</h2>
-              </div>
-            </header>
-            <div className="sc-card__divider" />
-            <div className="sc-context-grid">
-              <div className="sc-civil-grid">
-                <div className={`sc-civil-grid__top-row${showSecondBirthDate ? ' sc-civil-grid__top-row--triple' : ''}`}>
-                  <div className="sc-field">
-                    <label>Situation familiale</label>
-                    <ScSelect
-                      value={civilContext.situationMatrimoniale}
-                      onChange={(value) => handleSituationChange(value as SituationMatrimoniale)}
-                      options={SITUATION_OPTIONS}
-                    />
-                  </div>
-                  <div className="sc-field">
-                    <label>{birthDateLabels.primary}</label>
-                    <input
-                      type="date"
-                      className="sc-input--left"
-                      value={civilContext.dateNaissanceEpoux1 ?? ''}
-                      onChange={(e) => setCivilContext((prev) => ({
-                        ...prev,
-                        dateNaissanceEpoux1: e.target.value || undefined,
-                      }))}
-                    />
-                  </div>
-                  {showSecondBirthDate && (
-                    <div className="sc-field">
-                      <label>{birthDateLabels.secondary}</label>
-                      <input
-                        type="date"
-                        className="sc-input--left"
-                        value={civilContext.dateNaissanceEpoux2 ?? ''}
-                        onChange={(e) => setCivilContext((prev) => ({
-                          ...prev,
-                          dateNaissanceEpoux2: e.target.value || undefined,
-                        }))}
-                      />
-                    </div>
-                  )}
-                </div>
+          <ScFamilyContextCard
+            civilContext={civilContext}
+            birthDateLabels={birthDateLabels}
+            showSecondBirthDate={showSecondBirthDate}
+            canOpenDispositionsModal={canOpenDispositionsModal}
+            enfantRattachementOptions={enfantRattachementOptions}
+            enfantsContext={enfantsContext}
+            familyMembers={familyMembers}
+            onSituationChange={handleSituationChange}
+            setCivilContext={setCivilContext}
+            onOpenDispositions={openDispositionsModal}
+            onAddEnfant={addEnfant}
+            onToggleAddMemberPanel={() => setShowAddMemberPanel((prev) => !prev)}
+            onUpdateEnfantRattachement={updateEnfantRattachement}
+            onToggleEnfantDeceased={toggleEnfantDeceased}
+            onRemoveEnfant={removeEnfant}
+            onRemoveFamilyMember={removeFamilyMember}
+          />
 
-                {civilContext.situationMatrimoniale === 'marie' && (
-                  <div className="sc-field">
-                    <label>Régime matrimonial</label>
-                    <ScSelect
-                      value={civilContext.regimeMatrimonial ?? 'communaute_legale'}
-                      onChange={(value) =>
-                        setCivilContext((prev) => ({
-                          ...prev,
-                          regimeMatrimonial: value as keyof typeof REGIMES_MATRIMONIAUX,
-                        }))}
-                      options={Object.values(REGIMES_MATRIMONIAUX).map((regime) => ({
-                        value: regime.id,
-                        label: regime.label,
-                      }))}
-                    />
-                  </div>
-                )}
-                {civilContext.situationMatrimoniale === 'pacse' && (
-                  <div className="sc-field">
-                    <label>Convention PACS</label>
-                    <ScSelect
-                      value={civilContext.pacsConvention}
-                      onChange={(value) =>
-                        setCivilContext((prev) => ({
-                          ...prev,
-                          pacsConvention: value as 'separation' | 'indivision',
-                        }))}
-                      options={PACS_CONVENTION_OPTIONS}
-                    />
-                  </div>
-                )}
-                <div className="sc-dispositions-trigger">
-                  <button
-                    type="button"
-                    className="sc-child-add-btn"
-                    onClick={openDispositionsModal}
-                    disabled={!canOpenDispositionsModal}
-                    title={!canOpenDispositionsModal ? 'Merci de renseigner un contexte familial au préalable' : undefined}
-                  >
-                    + Dispositions
-                  </button>
-                  {!canOpenDispositionsModal && (
-                    <p className="sc-hint sc-hint--compact">
-                      Merci de renseigner un contexte familial au préalable.
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="sc-children-zone">
-                <div className="sc-children-actions">
-                  <button
-                    type="button"
-                    className="sc-child-add-btn"
-                    onClick={addEnfant}
-                  >
-                    + Ajouter un enfant
-                  </button>
-                  <button
-                    type="button"
-                    className="sc-member-add-icon-btn"
-                    onClick={() => setShowAddMemberPanel((v) => !v)}
-                    aria-label="Ajouter un membre de la famille"
-                    title="Ajouter un membre"
-                  >
-                    +
-                  </button>
-                </div>
-
-
-                {enfantsContext.length === 0 && familyMembers.length === 0 ? (
-                  <p className="sc-hint sc-hint--compact">Aucun enfant ni membre déclaré pour l&apos;instant.</p>
-                ) : (
-                  <>
-                    {enfantsContext.length > 0 && (
-                      <div className="sc-children-list">
-                        {enfantsContext.map((enfant, idx) => (
-                          <div key={enfant.id} className={`sc-child-row${enfant.deceased ? ' sc-child-row--deceased' : ''}`}>
-                            <span className="sc-child-row__label">{getEnfantNodeLabel(idx, enfant.deceased)}</span>
-                            {enfantRattachementOptions.length > 1 && (
-                              <ScSelect
-                                className="sc-child-select"
-                                value={enfant.rattachement}
-                                onChange={(value) => updateEnfantRattachement(enfant.id, value as 'commun' | 'epoux1' | 'epoux2')}
-                                options={enfantRattachementOptions}
-                              />
-                            )}
-                            <label className="sc-checkbox-label">
-                              <input
-                                type="checkbox"
-                                className="sc-checkbox"
-                                checked={!!enfant.deceased}
-                                onChange={(e) => toggleEnfantDeceased(enfant.id, e.target.checked)}
-                              />
-                              Décédé
-                            </label>
-                            <button
-                              type="button"
-                              className="sc-child-remove-btn"
-                              onClick={() => removeEnfant(enfant.id)}
-                              aria-label={`Supprimer enfant ${idx + 1}`}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {familyMembers.length > 0 && (
-                      <div className="sc-members-list">
-                        {familyMembers.map((m) => (
-                          <div key={m.id} className="sc-member-chip">
-                            <span className="sc-member-chip__icon">⊕</span>
-                            <span className="sc-member-chip__label">{labelMember(m, enfantsContext)}</span>
-                            <button
-                              type="button"
-                              className="sc-child-remove-btn"
-                              onClick={() => removeFamilyMember(m.id)}
-                              aria-label={`Supprimer ${labelMember(m, enfantsContext)}`}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="premium-card sc-card sc-card--guide">
-            <header className="sc-card__header">
-              <div className="sc-card__title-row">
-                <div className="sc-section-icon-wrapper">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polygon points="12 2 2 7 12 12 22 7 12 2" />
-                    <polyline points="2 17 12 22 22 17" />
-                    <polyline points="2 12 12 17 22 12" />
-                  </svg>
-                </div>
-                <h2 className="sc-card__title">Actifs / Passifs</h2>
-              </div>
-              <p className="sc-card__subtitle">
-                {isExpert
-                  ? 'Saisie détaillée des actifs et passifs, agrégée automatiquement pour les analyses civiles.'
-                  : 'Saisie simplifiée des actifs et passifs, agrégée automatiquement pour les analyses civiles et la chronologie.'}
-              </p>
-            </header>
-            <div className="sc-card__divider" />
-
-            {isExpert ? (
-              <div className="sc-assets-sections">
-                {assetEntriesByCategory.map((category) => (
-                  <section key={category.value} className="sc-asset-section">
-                    <div className="sc-asset-section__header">
-                      <h3 className="sc-asset-section__title">{category.label}</h3>
-                      <div className="sc-asset-section__actions">
-                        <button
-                          type="button"
-                          className="sc-member-add-icon-btn"
-                          onClick={() => addAssetEntry(category.value)}
-                          title="Ajouter une ligne"
-                        >
-                          +
-                        </button>
-                        {category.value === 'financier' && (
-                          <button
-                            type="button"
-                            className="sc-child-add-btn"
-                            onClick={openAssuranceVieModal}
-                          >
-                            + Assurance vie
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <div className="sc-assets-list">
-                      {category.entries.map((entry) => (
-                        <div key={entry.id} className="sc-asset-row">
-                          <div className="sc-field">
-                            <label>Porteur</label>
-                            <ScSelect
-                              value={entry.owner}
-                              onChange={(value) => updateAssetEntry(entry.id, 'owner', value)}
-                              options={assetOwnerOptions}
-                            />
-                          </div>
-                          <div className="sc-field">
-                            <label>Sous-catégorie</label>
-                            <ScSelect
-                              value={entry.subCategory}
-                              onChange={(value) => updateAssetEntry(entry.id, 'subCategory', value)}
-                              options={ASSET_SUBCATEGORY_OPTIONS[entry.category].map((option) => ({
-                                value: option,
-                                label: option,
-                              }))}
-                            />
-                          </div>
-                          <div className="sc-field">
-                            <label>Montant (€)</label>
-                            <input
-                              type="number"
-                              min={0}
-                              value={entry.amount || ''}
-                              onChange={(e) => updateAssetEntry(entry.id, 'amount', Number(e.target.value) || 0)}
-                              placeholder="Montant"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            className="sc-remove-btn"
-                            onClick={() => removeAssetEntry(entry.id)}
-                            title="Supprimer cette ligne"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                      {category.value === 'financier' && assuranceVieEntries.map((av) => (
-                        <div key={av.id} className="sc-asset-row sc-asset-row--av">
-                          <div className="sc-field">
-                            <label>Porteur</label>
-                            <span className="sc-asset-row__value">{assuranceViePartyOptions.find((o) => o.value === av.assure)?.label ?? av.assure}</span>
-                          </div>
-                          <div className="sc-field">
-                            <label>Sous-catégorie</label>
-                            <span className="sc-asset-row__value">Assurance-vie</span>
-                          </div>
-                          <div className="sc-field">
-                            <label>Capitaux décès (€)</label>
-                            <span className="sc-asset-row__value">{fmt(av.capitauxDeces)}</span>
-                          </div>
-                          <div />
-                        </div>
-                      ))}
-                      {category.entries.length === 0 && !(category.value === 'financier' && assuranceVieEntries.length > 0) && (
-                        <p className="sc-hint sc-hint--compact">Aucune ligne détaillée dans cette catégorie.</p>
-                      )}
-                    </div>
-                  </section>
-                ))}
-
-                <div className="sc-assets-summary">
-                  <div className="sc-summary-row">
-                    <span>{isPacsed ? 'Actif net partenaire 1' : isMarried ? 'Actif net époux 1' : 'Actif net personne 1'}</span>
-                    <strong>{fmt(assetNetTotals.epoux1)}</strong>
-                  </div>
-                  {assetOwnerOptions.some((option) => option.value === 'epoux2') && (
-                    <div className="sc-summary-row">
-                      <span>{isPacsed ? 'Actif net partenaire 2' : isMarried ? 'Actif net époux 2' : 'Actif net personne 2'}</span>
-                      <strong>{fmt(assetNetTotals.epoux2)}</strong>
-                    </div>
-                  )}
-                  {assetOwnerOptions.some((option) => option.value === 'commun') && (
-                    <div className="sc-summary-row">
-                      <span>{(isPacsed || isConcubinage) ? 'Masse indivise nette' : 'Masse commune nette'}</span>
-                      <strong>{fmt(assetNetTotals.commun)}</strong>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="sc-balance-grid">
-                <div
-                  className="sc-balance-grid__row"
-                  style={{ gridTemplateColumns: `88px repeat(${assetOwnerOptions.length}, minmax(0, 1fr))` }}
-                >
-                  <div className="sc-balance-grid__label">Actifs</div>
-                  {assetOwnerOptions.map((option) => (
-                    <div key={`actifs-${option.value}`} className="sc-field">
-                      <label>{option.label} (€)</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={assetBreakdown.actifs[option.value] || ''}
-                        onChange={(e) => setSimplifiedBalanceField('actifs', option.value, Number(e.target.value) || 0)}
-                        placeholder="Montant"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div
-                  className="sc-balance-grid__row"
-                  style={{ gridTemplateColumns: `88px repeat(${assetOwnerOptions.length}, minmax(0, 1fr))` }}
-                >
-                  <div className="sc-balance-grid__label">Passifs</div>
-                  {assetOwnerOptions.map((option) => (
-                    <div key={`passifs-${option.value}`} className="sc-field">
-                      <label>{option.label} (€)</label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={assetBreakdown.passifs[option.value] || ''}
-                        onChange={(e) => setSimplifiedBalanceField('passifs', option.value, Number(e.target.value) || 0)}
-                        placeholder="Montant"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="sc-assets-summary">
-                  <div className="sc-summary-row">
-                    <span>{isPacsed ? 'Actif net partenaire 1' : isMarried ? 'Actif net époux 1' : isConcubinage ? 'Actif net personne 1' : 'Actif net du/de la défunt(e)'}</span>
-                    <strong>{fmt(assetNetTotals.epoux1)}</strong>
-                  </div>
-                  {assetOwnerOptions.some((option) => option.value === 'epoux2') && (
-                    <div className="sc-summary-row">
-                      <span>{isPacsed ? 'Actif net partenaire 2' : isMarried ? 'Actif net époux 2' : 'Actif net personne 2'}</span>
-                      <strong>{fmt(assetNetTotals.epoux2)}</strong>
-                    </div>
-                  )}
-                  {assetOwnerOptions.some((option) => option.value === 'commun') && (
-                    <div className="sc-summary-row">
-                      <span>{(isPacsed || isConcubinage) ? 'Masse indivise nette' : 'Masse commune nette'}</span>
-                      <strong>{fmt(assetNetTotals.commun)}</strong>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          <ScAssetsPassifsCard
+            isExpert={isExpert}
+            isMarried={isMarried}
+            isPacsed={isPacsed}
+            isConcubinage={isConcubinage}
+            assetEntriesByCategory={assetEntriesByCategory}
+            assetOwnerOptions={assetOwnerOptions}
+            assetBreakdown={assetBreakdown}
+            assetNetTotals={assetNetTotals}
+            assuranceVieEntries={assuranceVieEntries}
+            assuranceViePartyOptions={assuranceViePartyOptions}
+            onAddAssetEntry={addAssetEntry}
+            onUpdateAssetEntry={updateAssetEntry}
+            onRemoveAssetEntry={removeAssetEntry}
+            onOpenAssuranceVieModal={openAssuranceVieModal}
+            onSetSimplifiedBalanceField={setSimplifiedBalanceField}
+          />
 
           {isExpert && (
-          <div className="premium-card sc-card sc-card--guide">
-            <header className="sc-card__header">
-              <div className="sc-card__title-row">
-                <div className="sc-section-icon-wrapper">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polyline points="20 12 20 22 4 22 4 12" />
-                    <rect x="2" y="7" width="20" height="5" />
-                    <line x1="12" y1="22" x2="12" y2="7" />
-                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
-                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
-                  </svg>
-                </div>
-                <h2 className="sc-card__title">Donations</h2>
-              </div>
-            </header>
-            <div className="sc-card__divider sc-card__divider--tight" />
-            {donationsContext.length > 0 ? (
-              <div className="sc-donations-list">
-                {donationsContext.map((entry, idx) => {
-                  const donationTypeLabel = DONATION_TYPE_OPTIONS.find((option) => option.value === entry.type)?.label
-                    ?? 'Donation detaillee';
-
-                  return (
-                    <div key={entry.id} className="sc-donation-card">
-                    <div className="sc-donation-card__header">
-                      <div className="sc-donation-card__heading">
-                        <strong className="sc-donation-card__title">Donation {idx + 1}</strong>
-                        <span className="sc-donation-card__subtitle">{donationTypeLabel}</span>
-                      </div>
-                      <button
-                        type="button"
-                        className="sc-remove-btn sc-remove-btn--quiet"
-                        onClick={() => removeDonationEntry(entry.id)}
-                        title="Supprimer cette donation"
-                        aria-label="Supprimer cette donation"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <div className="sc-donation-grid">
-                      <div className="sc-field sc-field--span-2">
-                        <label>Type</label>
-                        <ScSelect
-                          className="sc-donation-select"
-                          value={entry.type}
-                          onChange={(value) => updateDonationEntry(entry.id, 'type', value)}
-                          options={DONATION_TYPE_OPTIONS}
-                        />
-                      </div>
-                      <div className="sc-field">
-                        <label>Montant (€)</label>
-                        <input
-                          type="number"
-                          min={0}
-                          value={entry.montant || ''}
-                          onChange={(e) => updateDonationEntry(entry.id, 'montant', Number(e.target.value) || 0)}
-                          placeholder="0"
-                        />
-                      </div>
-                      <div className="sc-field">
-                        <label>Date</label>
-                        <input
-                          type="month"
-                          className="sc-input-month"
-                          value={entry.date ?? ''}
-                          onChange={(e) => updateDonationEntry(entry.id, 'date', e.target.value)}
-                        />
-                      </div>
-                      <div className="sc-field">
-                        <label>Donateur</label>
-                        <ScSelect
-                          className="sc-donation-select"
-                          value={entry.donateur ?? ''}
-                          onChange={(value) => updateDonationEntry(entry.id, 'donateur', value)}
-                          options={donateurOptions}
-                        />
-                      </div>
-                      <div className="sc-field">
-                        <label>Donataire</label>
-                        <ScSelect
-                          className="sc-donation-select"
-                          value={entry.donataire ?? ''}
-                          onChange={(value) => updateDonationEntry(entry.id, 'donataire', value)}
-                          options={donatairesOptions}
-                        />
-                      </div>
-                      <div className="sc-field sc-field--full">
-                        <div className="sc-donation-toggle-row" role="group" aria-label="Options de donation">
-                          <button
-                            type="button"
-                            className={`sc-donation-toggle${entry.donSommeArgentExonere ? ' is-active' : ''}`}
-                            onClick={() => updateDonationEntry(entry.id, 'donSommeArgentExonere', !(entry.donSommeArgentExonere ?? false))}
-                            aria-pressed={entry.donSommeArgentExonere ?? false}
-                          >
-                            Don de somme d&apos;argent exonéré
-                          </button>
-                          <button
-                            type="button"
-                            className={`sc-donation-toggle${entry.avecReserveUsufruit ? ' is-active' : ''}`}
-                            onClick={() => updateDonationEntry(entry.id, 'avecReserveUsufruit', !(entry.avecReserveUsufruit ?? false))}
-                            aria-pressed={entry.avecReserveUsufruit ?? false}
-                          >
-                            Avec réserve d&apos;usufruit
-                          </button>
-                        </div>
-                      </div>
-                      <div className="sc-field">
-                        <label>Valeur à la donation (€)</label>
-                        <input
-                          type="number"
-                          min={0}
-                          value={entry.valeurDonation || ''}
-                          onChange={(e) => updateDonationEntry(entry.id, 'valeurDonation', Number(e.target.value) || 0)}
-                          placeholder="0"
-                        />
-                      </div>
-                      <div className="sc-field">
-                        <label>Valeur actuelle (€)</label>
-                        <input
-                          type="number"
-                          min={0}
-                          value={entry.valeurActuelle || ''}
-                          onChange={(e) => updateDonationEntry(entry.id, 'valeurActuelle', Number(e.target.value) || 0)}
-                          placeholder="0"
-                        />
-                      </div>
-                    </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="sc-hint sc-hint--compact">Aucune donation détaillée pour l&apos;instant.</p>
-            )}
-
-            <div className="sc-inline-actions">
-              <button
-                type="button"
-                className="sc-child-add-btn"
-                onClick={addDonationEntry}
-              >
-                + Ajouter une donation
-              </button>
-            </div>
-
-            <div className="sc-donations-totals">
-              <div className="sc-summary-row">
-                <span>Donations rapportables</span>
-                <strong>{fmt(donationTotals.rapportable)}</strong>
-              </div>
-              <div className="sc-summary-row">
-                <span>Donations hors part</span>
-                <strong>{fmt(donationTotals.horsPart)}</strong>
-              </div>
-              <div className="sc-summary-row">
-                <span>Legs particuliers</span>
-                <strong>{fmt(donationTotals.legsParticuliers)}</strong>
-              </div>
-            </div>
-          </div>
+            <ScDonationsCard
+              donationsContext={donationsContext}
+              donationTotals={donationTotals}
+              donateurOptions={donateurOptions}
+              donatairesOptions={donatairesOptions}
+              onAddDonationEntry={addDonationEntry}
+              onUpdateDonationEntry={updateDonationEntry}
+              onRemoveDonationEntry={removeDonationEntry}
+            />
           )}
         </div>
 
@@ -1912,212 +1118,65 @@ export default function SuccessionSimulator() {
             familyMembers={familyMembers}
           />
 
-          <div className="premium-card sc-summary-card sc-hero-card sc-hero-card--secondary">
-            <div className="sc-summary-title-row">
-              <div className="sc-section-icon-wrapper">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-                  <path d="M22 12A10 10 0 0 0 12 2v10z" />
-                </svg>
-              </div>
-              <h2 className="sc-summary-title">Synthèse successorale</h2>
-            </div>
-            <div className="sc-card__divider sc-card__divider--tight" />
-            <div className="sc-synth-hero">
-              <div className="sc-synth-hero__left">
-                <div className="sc-synth-hero__label">Coût de transmission estimé</div>
-                <div className="sc-synth-hero__value">{fmt(derivedTotalDroits)}</div>
-                {synthDonutTransmis > 0 && (
-                  <div className="sc-synth-hero__sub">
-                    sur {fmt(synthDonutTransmis)} transmis
-                  </div>
-                )}
-              </div>
-              <ScDonut
-                transmis={Math.max(0, synthDonutTransmis - derivedTotalDroits)}
-                droits={derivedTotalDroits}
-              />
-            </div>
-            <div className="sc-card__divider sc-card__divider--tight" />
-            <div className="sc-synth-kpis">
-              <div className="sc-synth-kpi">
-                <span className="sc-synth-kpi__label">Patrimoine transmis</span>
-                <strong className="sc-synth-kpi__value">{fmt(synthDonutTransmis)}</strong>
-              </div>
-              <div className="sc-synth-kpi">
-                <span className="sc-synth-kpi__label">Coût cumulé</span>
-                <strong className="sc-synth-kpi__value">{fmt(derivedTotalDroits)}</strong>
-              </div>
-              <div className="sc-synth-kpi">
-                <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Coût 1er décès' : 'Coût décès simulé'}</span>
-                <strong className="sc-synth-kpi__value">
-                  {fmt(displayUsesChainage
-                    ? (
-                      (chainageAnalysis.step1?.droitsEnfants ?? 0)
-                      + avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits
-                    )
-                    : (
-                      (directDisplayAnalysis.result?.totalDroits ?? 0)
-                      + avFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits
-                    ))}
-                </strong>
-              </div>
-              <div className="sc-synth-kpi">
-                <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Coût 2e décès' : 'Net transmis'}</span>
-                <strong className="sc-synth-kpi__value">
-                  {fmt(displayUsesChainage
-                    ? (
-                      (chainageAnalysis.step2?.droitsEnfants ?? 0)
-                      + avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits
-                    )
-                    : Math.max(0, derivedMasseTransmise - derivedTotalDroits))}
-                </strong>
-              </div>
-            </div>
-            {transmissionRows.length > 0 && (
-              <>
-                <div className="sc-card__divider sc-card__divider--tight" />
-                <div className="sc-synth-section-title">Transmission par bénéficiaire</div>
-                <div className="sc-transmission-grid">
-                  <div className="sc-transmission-grid__head">
-                    <span />
-                    <span>Reçoit (brut)</span>
-                    <span>Droits</span>
-                    <span>Net estimé</span>
-                  </div>
-                  {transmissionRows.map((row) => (
-                    <div
-                      key={row.id}
-                      className={`sc-transmission-row${row.exonerated ? ' sc-transmission-row--exo' : ''}${row.id === 'assurance-vie' ? ' sc-transmission-row--av' : ''}`}
-                    >
-                      <span>{row.label}</span>
-                      <span>{fmt(row.brut)}</span>
-                      <span>{row.exonerated ? 'Exonéré' : fmt(row.droits)}</span>
-                      <span>{fmt(row.net)}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-            {(synthHypothese || transmissionRows.length > 0) && (
-              <>
-                <div className="sc-card__divider sc-card__divider--tight" />
-                <div className="sc-summary-notes">
-                  {synthHypothese && (
-                    <p className="sc-summary-note sc-summary-note--muted">{synthHypothese}</p>
-                  )}
-                  <p className="sc-summary-note sc-summary-note--muted">
-                    {displayUsesChainage
-                      ? 'Cumul 2 décès — droits DMTG descendants, conjoint exonéré.'
-                      : isPacsed
-                        ? "Succession directe du partenaire simulé - le PACS n'ouvre pas de droit successoral automatique sans testament."
-                        : 'Succession directe du/de la défunt(e) simulé(e).'}
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
+          <ScSuccessionSummaryPanel
+            displayUsesChainage={displayUsesChainage}
+            derivedTotalDroits={derivedTotalDroits}
+            synthDonutTransmis={synthDonutTransmis}
+            derivedMasseTransmise={derivedMasseTransmise}
+            transmissionRows={transmissionRows}
+            synthHypothese={synthHypothese}
+            isPacsed={isPacsed}
+            chainageAnalysis={{
+              order: chainageAnalysis.order,
+              step1: chainageAnalysis.step1
+                ? { droitsEnfants: chainageAnalysis.step1.droitsEnfants }
+                : null,
+              step2: chainageAnalysis.step2
+                ? { droitsEnfants: chainageAnalysis.step2.droitsEnfants }
+                : null,
+            }}
+            avFiscalByAssure={avFiscalAnalysis.byAssure}
+            directDisplay={{
+              simulatedDeceased: directDisplayAnalysis.simulatedDeceased,
+              result: directDisplayAnalysis.result
+                ? { totalDroits: directDisplayAnalysis.result.totalDroits }
+                : null,
+            }}
+          />
 
-          <div className="premium-card sc-summary-card sc-hero-card">
-            <div className="sc-hero-header">
-              <div className="sc-summary-title-row">
-                <div className="sc-section-icon-wrapper">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
-                  </svg>
-                </div>
-                <h2 className="sc-summary-title">Chronologie des décès</h2>
-              </div>
-              <div className="sc-pill-toggle">
-                <button
-                  type="button"
-                  className={`sc-pill-toggle__btn${chainOrder === 'epoux2' ? ' is-active' : ''}`}
-                  onClick={() => setChainOrder(chainOrder === 'epoux2' ? 'epoux1' : 'epoux2')}
-                >
-                  Ordre inversé
-                </button>
-              </div>
-            </div>
-            <div className="sc-card__divider sc-card__divider--tight" />
-            {displayUsesChainage && chainageAnalysis.step1 && chainageAnalysis.step2 ? (
-              <div className="sc-chrono-list">
-                <div className="sc-chrono-item">
-                  <div className="sc-chrono-item__header">
-                    <strong className="sc-chrono-item__title">Étape 1</strong>
-                    <span className="sc-chrono-item__meta">Décès {chainageAnalysis.firstDecedeLabel}</span>
-                  </div>
-                  <div className="sc-summary-row">
-                    <span>Masse transmise</span>
-                    <strong>{fmt(chainageAnalysis.step1.actifTransmis + assuranceVieByAssure[chainageAnalysis.order])}</strong>
-                  </div>
-                  <div className="sc-summary-row">
-                    <span>Droits succession</span>
-                    <strong>{fmt(chainageAnalysis.step1.droitsEnfants)}</strong>
-                  </div>
-                  {avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits > 0 && (
-                    <div className="sc-summary-row">
-                      <span>Droits assurance-vie</span>
-                      <strong>{fmt(avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits)}</strong>
-                    </div>
-                  )}
-                </div>
-
-                <div className="sc-chrono-item">
-                  <div className="sc-chrono-item__header">
-                    <strong className="sc-chrono-item__title">Étape 2</strong>
-                    <span className="sc-chrono-item__meta">Décès {chainageAnalysis.secondDecedeLabel}</span>
-                  </div>
-                  <div className="sc-summary-row">
-                    <span>Masse transmise</span>
-                    <strong>{fmt(chainageAnalysis.step2.actifTransmis + assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'])}</strong>
-                  </div>
-                  <div className="sc-summary-row">
-                    <span>Droits succession</span>
-                    <strong>{fmt(chainageAnalysis.step2.droitsEnfants)}</strong>
-                  </div>
-                  {avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits > 0 && (
-                    <div className="sc-summary-row">
-                      <span>Droits assurance-vie</span>
-                      <strong>{fmt(avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits)}</strong>
-                    </div>
-                  )}
-                </div>
-
-                <div className="sc-chrono-total">
-                  <span>Total cumulé des droits</span>
-                  <strong>{fmt(derivedTotalDroits)}</strong>
-                </div>
-              </div>
-            ) : (
-              <div className="sc-chrono-list">
-                <div className="sc-chrono-item">
-                  <div className="sc-chrono-item__header">
-                    <strong className="sc-chrono-item__title">Succession directe</strong>
-                    <span className="sc-chrono-item__meta">
-                      {isPacsed ? 'Décès du partenaire simulé' : 'Décès du/de la défunt(e) simulé(e)'}
-                    </span>
-                  </div>
-                  <div className="sc-summary-row">
-                    <span>Masse transmise</span>
-                    <strong>{fmt(derivedMasseTransmise)}</strong>
-                  </div>
-                  <div className="sc-summary-row">
-                    <span>Droits de succession</span>
-                    <strong>{fmt(directDisplayAnalysis.result?.totalDroits ?? 0)}</strong>
-                  </div>
-                  {avFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits > 0 && (
-                    <div className="sc-summary-row">
-                      <span>Droits assurance-vie</span>
-                      <strong>{fmt(avFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits)}</strong>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+          <ScDeathTimelinePanel
+            chainOrder={chainOrder}
+            onToggleOrder={() => setChainOrder((prev) => (prev === 'epoux2' ? 'epoux1' : 'epoux2'))}
+            displayUsesChainage={displayUsesChainage}
+            derivedMasseTransmise={derivedMasseTransmise}
+            derivedTotalDroits={derivedTotalDroits}
+            isPacsed={isPacsed}
+            chainageAnalysis={{
+              order: chainageAnalysis.order,
+              firstDecedeLabel: chainageAnalysis.firstDecedeLabel,
+              secondDecedeLabel: chainageAnalysis.secondDecedeLabel,
+              step1: chainageAnalysis.step1
+                ? {
+                  actifTransmis: chainageAnalysis.step1.actifTransmis,
+                  droitsEnfants: chainageAnalysis.step1.droitsEnfants,
+                }
+                : null,
+              step2: chainageAnalysis.step2
+                ? {
+                  actifTransmis: chainageAnalysis.step2.actifTransmis,
+                  droitsEnfants: chainageAnalysis.step2.droitsEnfants,
+                }
+                : null,
+            }}
+            assuranceVieByAssure={assuranceVieByAssure}
+            avFiscalByAssure={avFiscalAnalysis.byAssure}
+            directDisplay={{
+              simulatedDeceased: directDisplayAnalysis.simulatedDeceased,
+              result: directDisplayAnalysis.result
+                ? { totalDroits: directDisplayAnalysis.result.totalDroits }
+                : null,
+            }}
+          />
         </div>
       </div>
 
