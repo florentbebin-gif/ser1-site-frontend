@@ -18,7 +18,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { debugLog } from '../utils/debugFlags';
-import { revokeAllTrackedObjectURLs } from '../utils/createTrackedObjectURL';
+import { revokeAllTrackedObjectURLs } from '../utils/export/createTrackedObjectURL';
 
 // ---------- Config ----------
 

@@ -75,7 +75,7 @@ export function useCreditExports({
   const exportExcel = useCallback(async () => {
     setExportLoading(true);
     try {
-      const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } = await import('../../../utils/xlsxBuilder');
+      const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } = await import('../../../utils/export/xlsxBuilder');
 
       const cell = (v, style) => ({ v, style });
 

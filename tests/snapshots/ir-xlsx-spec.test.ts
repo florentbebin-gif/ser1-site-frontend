@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildXlsxBlob, validateXlsxBlob } from '../../src/utils/xlsxBuilder';
+import { buildXlsxBlob, validateXlsxBlob } from '../../src/utils/export/xlsxBuilder';
 import { DEFAULT_COLORS } from '../../src/settings/theme';
 import { snapshotXlsxBlob } from './xlsxSnapshot';
 

@@ -3,7 +3,7 @@ import { createTrackedObjectURL } from './createTrackedObjectURL';
 import {
   fingerprintXlsxExport,
   normalizeFilenameForFingerprint,
-} from './exportFingerprint.ts';
+} from './exportFingerprint';
 
 function buildLegacyExcelFingerprintManifest(xml, filename) {
   const worksheets = Array.from(xml.matchAll(/<Worksheet ss:Name="([^"]+)">([\s\S]*?)<\/Worksheet>/g));

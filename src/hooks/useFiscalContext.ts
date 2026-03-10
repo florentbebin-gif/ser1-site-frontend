@@ -19,7 +19,7 @@ import {
   DEFAULT_TAX_SETTINGS,
   DEFAULT_PS_SETTINGS,
   DEFAULT_FISCALITY_SETTINGS,
-} from '../utils/fiscalSettingsCache';
+} from '../utils/cache/fiscalSettingsCache';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

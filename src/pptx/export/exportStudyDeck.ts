@@ -37,12 +37,12 @@ import { buildSuccessionSynthesis } from '../slides/buildSuccessionSynthesis';
 import { buildPerSynthesis } from '../slides/buildPerSynthesis';
 import { injectThemeColors } from '../theme/themeBuilder';
 import { defineSlideMasters } from '../template/loadBaseTemplate';
-import { createTrackedObjectURL } from '../../utils/createTrackedObjectURL';
+import { createTrackedObjectURL } from '../../utils/export/createTrackedObjectURL';
 import {
   fingerprintPptxExport,
   hashStringForFingerprint,
   normalizeFilenameForFingerprint,
-} from '../../utils/exportFingerprint';
+} from '../../utils/export/exportFingerprint';
 
 /**
  * Default footer disclaimer (verbatim as specified)

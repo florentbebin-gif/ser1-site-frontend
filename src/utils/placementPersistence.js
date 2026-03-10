@@ -1,4 +1,4 @@
-import { createTrackedObjectURL } from './createTrackedObjectURL';
+import { createTrackedObjectURL } from './export/createTrackedObjectURL';
 
 const FILE_VERSION = 1;
 const FILE_APP = 'SER1';

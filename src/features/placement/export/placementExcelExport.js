@@ -5,7 +5,7 @@
  */
 
 import { ENVELOPE_LABELS } from '@/engine/placementEngine.js';
-import { buildWorksheetXmlVertical, downloadExcel } from '@/utils/exportExcel.js';
+import { buildWorksheetXmlVertical, downloadExcel } from '@/utils/export/exportExcel.js';
 import {
   formatPsApplicability, formatPsNote,
   getPsAssietteNumeric, getPsTauxNumeric, getPsMontantNumeric,

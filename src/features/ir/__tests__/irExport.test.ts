@@ -9,7 +9,7 @@ import JSZip from 'jszip';
 import { describe, expect, it } from 'vitest';
 import { buildIrStudyDeck } from '../../../pptx/presets/irDeckBuilder';
 import { DEFAULT_COLORS } from '../../../settings/theme';
-import { buildXlsxBlob, validateXlsxBlob } from '../../../utils/xlsxBuilder';
+import { buildXlsxBlob, validateXlsxBlob } from '../../../utils/export/xlsxBuilder';
 
 const THEME_COLORS = DEFAULT_COLORS;
 

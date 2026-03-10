@@ -7,10 +7,10 @@ import { APP_ROUTES, getRouteMetadata } from './routes/appRoutes';
 import { triggerPageReset, triggerGlobalReset } from './utils/reset';
 import { saveGlobalState, loadGlobalStateWithDialog } from './utils/globalStorage';
 import { useFiscalContext } from './hooks/useFiscalContext';
-import { fingerprintSettingsData } from './utils/exportFingerprint';
+import { fingerprintSettingsData } from './utils/export/exportFingerprint';
 import { useSessionTTL } from './hooks/useSessionTTL';
 import { useExportGuard } from './hooks/useExportGuard';
-import { setTrackBlobUrlHandler } from './utils/createTrackedObjectURL';
+import { setTrackBlobUrlHandler } from './utils/export/createTrackedObjectURL';
 import { AppLayout } from './components/layout/AppLayout';
 
 // Fallback UI for lazy-loaded routes
