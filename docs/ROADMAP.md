@@ -121,12 +121,22 @@ C'est un singleton central : un bug ici impacte tous les simulateurs. Le typage 
 
 ## PR-P1-07-03 - Reduire les fichiers "trop longs" (IR + Placement)
 ### Pourquoi
-Les fichiers >400-500 lignes deviennent fragiles. On veut des blocs plus petits et lisibles.
+Les fichiers longs deviennent fragiles, mais ils n'ont pas tous la même priorité.
+Règle repo :
+- `500-800` lignes = dette surveillée
+- `>800` lignes = découpage obligatoire au prochain chantier
+- priorité aux vrais "god files" qui mélangent plusieurs responsabilités, pas aux fichiers simplement volumineux mais mono-rôle
 
 ### Travaux
 - Decouper en sous-composants / sous-hooks **sans modifier le comportement** :
   - `src/features/ir/components/IrSimulatorContainer.jsx` (ou equivalent)
   - 1-2 gros fichiers Placement (controller / hooks)
+- Exclure du chantier, sauf besoin produit explicite, les classes suivantes :
+  - CSS feature-scoped
+  - constantes / données pures
+  - mono-algorithmes
+  - scripts outils
+  - migrations SQL
 - Objectif : isoler :
   - "lecture des inputs"
   - "calcul"
