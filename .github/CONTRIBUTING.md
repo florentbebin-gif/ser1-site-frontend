@@ -13,12 +13,13 @@ npm run check      # Tous les checks (lint + typecheck + test + build)
 # ou individuellement :
 npm run lint       # ESLint - 0 erreur
 npm run typecheck  # TypeScript - 0 erreur
-npm test           # 83 tests passent
+npm test           # Tous les tests passent
 npm run build      # Build Vite OK
 
 # 2bis. Guardrail sécurité (avant PR / merge)
+# Scan : secrets (JWT, clés API), SQL runtime trackés, patterns interdits.
 # - Ne loggue pas de contenus sensibles (uniquement PASS/FAIL + fichiers)
-powershell -ExecutionPolicy Bypass -File .\tools\scripts\pre-merge-check.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\pre-merge-check.ps1
 
 # 3. Analyses optionnelles
 npm run check:circular  # Détection dépendances circulaires
@@ -35,7 +36,7 @@ git push origin feature/nom-clair
 ## Conventions
 
 ### Nommage fichiers
-- Nouveau code : **TSX** obligatoire (pas JSX)
+- Nouveau code : **TypeScript** (`.ts` / `.tsx`) — les fichiers `.js/.jsx` existants sont du legacy en migration progressive
 - Composants : PascalCase (`SettingsCard.tsx`)
 - Utilitaires : camelCase (`settingsHelpers.ts`)
 - Tests : `*.test.ts` à côté du fichier testé
@@ -98,7 +99,7 @@ git push origin feature/nom-clair
 - [ ] `npm run check` passe (tous les checks)
 - [ ] `npm run lint` passe
 - [ ] `npm run typecheck` passe (0 erreur)
-- [ ] `npm test` passe (83 tests)
+- [ ] `npm test` passe
 - [ ] `npm run build` passe
 - [ ] Pas de `console.log` ajouté
 - [ ] TODO/FIXME ont un identifiant

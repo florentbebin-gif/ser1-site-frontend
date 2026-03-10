@@ -99,6 +99,8 @@ Référence code : `src/utils/debugFlags.ts`.
 ## Supabase local + migrations
 Source de vérité migrations : `supabase/migrations/`.
 
+Projet : **SER1-Simulator** — réf `xnpbxrqkzgimiugqtago` — Région : West EU (Paris).
+
 Parcours safe (si Supabase CLI configurée) :
 
 > ⚠️ **Danger zone**: `supabase db reset` est destructif (purge totale) et interdit sans demande explicite.  
@@ -191,6 +193,32 @@ Symptôme : erreur CORS ou requêtes invisibles côté logs Supabase.
 ### RLS / rôle admin
 - Vérifier que l’autorisation utilise `app_metadata.role`.
 - Interdit : checks `user_metadata`.
+
+### Cache schéma PostgREST (RPC 404 / PGRST202)
+
+Après création d’une RPC, elle peut ne pas être visible immédiatement :
+
+```sql
+-- Forcer le reload du schéma
+NOTIFY pgrst, ‘reload schema’;
+```
+
+Ou redémarrer le projet via Dashboard > Settings > General > Restart project.
+
+### Bucket "logos" not found
+
+Si le bucket n’existe pas après migration :
+1. Vérifier que la migration de création du bucket a bien été exécutée.
+2. Vérifier dans Dashboard > Storage que le bucket existe.
+3. Vérifier les policies RLS dans Dashboard > Storage > Policies.
+
+### Fonction `is_admin()` non trouvée
+
+```sql
+SELECT proname FROM pg_proc WHERE proname = ‘is_admin’;
+```
+
+La fonction est créée lors des migrations d’initialisation. Si absente, rejouer les migrations depuis le début.
 
 Check rapide (régression sécurité) :
 
