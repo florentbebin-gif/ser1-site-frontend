@@ -40,7 +40,28 @@ Repères (domain-first) :
 
 Conventions clés :
 - Nouveau code : TS/TSX.
-- Fichiers >500 lignes = dette à découper (ticket).
+- Fichiers `500-800` lignes = dette surveillée. Acceptable temporairement si le fichier reste mono-rôle et lisible.
+- Fichiers `>800` lignes = découpage obligatoire au prochain chantier qui touche le fichier.
+
+### Règle "god file"
+Un fichier long n'est pas automatiquement prioritaire. Un vrai "god file" devient prioritaire s'il mélange au moins 2 responsabilités parmi :
+- orchestration UI / state / effects React
+- persistence, réseau, ou I/O
+- helpers métier ou transformations de données
+- modals inline / gros blocs JSX
+- contrats publics / compat legacy
+
+Objectif : découper d'abord les fichiers qui mélangent plusieurs responsabilités, pas les fichiers simplement volumineux mais mono-rôle.
+
+### Exceptions documentées
+
+| Classe | Décision | Notes |
+|-------|----------|-------|
+| CSS feature-scoped | Exempt par défaut | A surveiller, mais pas de découpage imposé tant que le fichier reste purement CSS et rattaché à une même surface. |
+| Constantes / données pures | Exempt | Exemple : tables de référence, defaults, catalogues. Réévaluer si le fichier mélange rendering ou helpers. |
+| Mono-algorithme | Exempt en zone `500-800` | Exemple : moteur ou calcul dense mais cohérent. Découper seulement si plusieurs sous-domaines émergent. |
+| Scripts outils | Exempt | Ne pas refactorer uniquement pour satisfaire une limite de lignes. |
+| Migrations SQL | Exempt | Ne jamais réécrire l'historique pour satisfaire une règle de taille. |
 
 ### Conventions — Legacy / Spike / Raw
 
@@ -96,6 +117,7 @@ find src -type d \( -name "__spike__" -o -name "_raw" \)
 **Règles "ne pas aggraver la dette" :**
 - Pas de nouveaux fichiers dans `__spike__` ou `_raw`
 - Tout nouveau code va dans `features/*`, `components/`, `hooks/`, etc.
+- A taille équivalente, préférer un orchestrateur fin + modules nommés par responsabilité plutôt qu'un nouveau fichier fourre-tout.
 
 ---
 
