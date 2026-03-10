@@ -3,7 +3,7 @@ import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
 import './SettingsShared.css';
 import './SettingsImpots.css';
-import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.js';
+import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 
 import { DEFAULT_TAX_SETTINGS, DEFAULT_FISCALITY_SETTINGS } from '@/constants/settingsDefaults';

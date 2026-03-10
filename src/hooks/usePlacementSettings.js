@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { extractFiscalParams } from '../engine/placementEngine';
-import { getFiscalSettings, addInvalidationListener } from '../utils/fiscalSettingsCache.js';
+import { getFiscalSettings, addInvalidationListener } from '../utils/fiscalSettingsCache';
 import {
   DEFAULT_TAX_SETTINGS,
   DEFAULT_PS_SETTINGS,
