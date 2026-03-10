@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
 import './SettingsShared.css';
-import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache.js';
+import { invalidate, broadcastInvalidation } from '@/utils/fiscalSettingsCache';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/utils/settingsHelpers.js';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
