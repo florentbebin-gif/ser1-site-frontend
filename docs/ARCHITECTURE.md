@@ -272,10 +272,10 @@ Get-ChildItem public\pptx\chapters\ch-*.png -File |
 ```
 
 ### Excel
-- Builder OOXML : `src/utils/xlsxBuilder.ts`.
+- Builder OOXML : `src/utils/export/xlsxBuilder.ts`.
 
 ### Traçabilité exports
-- Fingerprint : `src/utils/exportFingerprint.ts`.
+- Fingerprint : `src/utils/export/exportFingerprint.ts`.
 
 Objectif : hasher un manifest déterministe (pas le binaire) pour limiter les variations non métier.
 
@@ -380,7 +380,7 @@ Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
                      → invalidate(kind) + broadcastInvalidation(kind)
                                               │ CustomEvent
 ┌──────────────────────────▼───────────────────────────────┐
-│ fiscalSettingsCache.js  (src/utils/)                     │
+│ fiscalSettingsCache.ts  (src/utils/cache/)                │
 │  · Stale-while-revalidate : retour immédiat cache/défauts│
 │  · Fetch Supabase en arrière-plan (non-bloquant)         │
 │  · TTL 24 h · localStorage (anti-flash cold start)       │
@@ -457,7 +457,7 @@ L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → é
 
 | Rôle | Fichier |
 |------|---------|
-| Calcul du fingerprint | `src/utils/fiscalSettingsCache.js` (`fingerprintSettingsData`) |
+| Calcul du fingerprint | `src/utils/export/exportFingerprint.ts` (`fingerprintSettingsData`) |
 | Comparaison au chargement | `src/App.jsx` (lignes 169–183) |
 | Migration snapshot v3→v4 | `src/features/ser1/snapshotMigrations.ts` |
 
@@ -527,7 +527,7 @@ Edge Function `rates-refresh` (cron hebdomadaire) : fetch URSSAF / legifrance / 
 | Valeurs par défaut 3 tables | `src/constants/settingsDefaults.ts` |
 | Shell settings (nav + rendu) | `src/pages/SettingsShell.jsx` |
 | Pages settings | `src/pages/settings/` |
-| Cache + fetch Supabase | `src/utils/fiscalSettingsCache.js` |
+| Cache + fetch Supabase | `src/utils/cache/fiscalSettingsCache.ts` |
 | **Hook unifié dossier fiscal** | **`src/hooks/useFiscalContext.ts`** |
 | Hook simulateur placement | `src/hooks/usePlacementSettings.js` |
 | Extraction params normalisés | `src/engine/placement/fiscalParams.js` |
