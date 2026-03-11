@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-// Mock des fonctions de calcul extraites de Credit.jsx
+// Mock des fonctions de calcul issues de l'ancienne implementation du simulateur Credit
 function mensualiteAmortissable(C: number, r: number, N: number): number {
   if (N <= 0) return 0;
   if (r === 0) return C / N;

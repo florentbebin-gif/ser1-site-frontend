@@ -1,7 +1,7 @@
 /**
  * creditFormatters.ts - Formatters et utilitaires pour le simulateur de crédit
  * 
- * Extrait depuis Credit.jsx legacy et centralisé ici.
+ * Extrait depuis l'ancienne implementation monolithique du simulateur Credit et centralise ici.
  */
 
 import { toNumber } from '../../../utils/number.js';
