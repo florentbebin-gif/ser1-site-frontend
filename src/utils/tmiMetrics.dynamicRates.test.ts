@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { computeMarginalRate } from './tmiMetrics.js';
+import { computeMarginalRate } from './tmiMetrics';
 
 describe('tmiMetrics - dynamic marginal rates', () => {
   it('computeMarginalRate follows rates from params.scale (admin-editable)', () => {

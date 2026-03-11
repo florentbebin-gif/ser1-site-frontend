@@ -3,13 +3,45 @@
  * Approche basée sur la dérivée discrète de l'impôt plafonné
  */
 
+interface TmiBracket {
+  from: number | string;
+  to: number | string | null | undefined;
+  rate: number | string;
+}
+
+export interface TmiParams {
+  scale: TmiBracket[];
+  partsNb: number;
+  basePartsForQf: number;
+  extraParts: number;
+  extraHalfParts: number;
+  plafondPartSup: number;
+  plafondParentIso2: number;
+  isCouple: boolean;
+  isIsolated: boolean;
+}
+
+export interface IrPlafonneResult {
+  irSansPlafond: number;
+  irBase: number;
+  avantageBrut: number;
+  plafondAvantage: number;
+  irPlafonne: number;
+  qfCapped: boolean;
+}
+
+export interface TmiMetricsResult {
+  tmiRate: number;
+  revenusDansTmi: number;
+  margeAvantChangement: number | null;
+  seuilBasFoyer: number;
+  seuilHautFoyer: number | null;
+}
+
 /**
  * Calcule l'impôt progressif pour un revenu par part donné
- * @param {Array} scale Barème progressif
- * @param {number} revenuParPart Revenu par part
- * @returns {number} Impôt par part
  */
-function computeProgressiveTaxPerPart(scale, revenuParPart) {
+function computeProgressiveTaxPerPart(scale: TmiBracket[], revenuParPart: number): number {
   if (!Array.isArray(scale) || !scale.length || revenuParPart <= 0) {
     return 0;
   }
@@ -23,7 +55,7 @@ function computeProgressiveTaxPerPart(scale, revenuParPart) {
     if (revenuParPart > from) {
       const taxableInBracket = Math.min(revenuParPart, to) - from;
       tax += taxableInBracket * (rate / 100);
-      
+
       if (revenuParPart <= to) {
         break;
       }
@@ -32,7 +64,7 @@ function computeProgressiveTaxPerPart(scale, revenuParPart) {
   return tax;
 }
 
-function isQfCappedForTaxableIncome(taxableIncomeTest, params) {
+function isQfCappedForTaxableIncome(taxableIncomeTest: number, params: TmiParams): boolean {
   const {
     scale,
     partsNb,
@@ -75,7 +107,7 @@ function isQfCappedForTaxableIncome(taxableIncomeTest, params) {
   return avantageBrut > maxAvantageTest + 1e-9;
 }
 
-function findDeltaToQfCapActivation(taxableIncomeNow, params) {
+function findDeltaToQfCapActivation(taxableIncomeNow: number, params: TmiParams): number | null {
   if (isQfCappedForTaxableIncome(taxableIncomeNow, params)) return 0;
 
   let lo = 0;
@@ -99,11 +131,8 @@ function findDeltaToQfCapActivation(taxableIncomeNow, params) {
 
 /**
  * Fonction pure qui calcule l'IR brut plafonné QF pour un revenu imposable foyer donné
- * @param {number} revenuFoyer Revenu imposable du foyer
- * @param {Object} params Paramètres du foyer et configuration fiscale
- * @returns {Object} Détails de l'IR plafonné
  */
-export function computeIrPlafonneFoyer(revenuFoyer, params) {
+export function computeIrPlafonneFoyer(revenuFoyer: number, params: TmiParams): IrPlafonneResult {
   const {
     scale,
     partsNb,
@@ -113,7 +142,7 @@ export function computeIrPlafonneFoyer(revenuFoyer, params) {
     plafondPartSup,
     plafondParentIso2,
     isCouple,
-    isIsolated
+    isIsolated,
   } = params;
 
   if (revenuFoyer <= 0) {
@@ -123,7 +152,7 @@ export function computeIrPlafonneFoyer(revenuFoyer, params) {
       avantageBrut: 0,
       plafondAvantage: 0,
       irPlafonne: 0,
-      qfCapped: false
+      qfCapped: false,
     };
   }
 
@@ -142,10 +171,10 @@ export function computeIrPlafonneFoyer(revenuFoyer, params) {
 
   // 4. Calculer le plafond d'avantage QF
   let plafondAvantage = 0;
-  
+
   if (extraHalfParts > 0 && plafondPartSup > 0) {
     const isSingle = !isCouple;
-    
+
     if (!isIsolated || !isSingle || plafondParentIso2 <= 0) {
       // Cas général
       plafondAvantage = extraParts * 2 * plafondPartSup;
@@ -169,18 +198,14 @@ export function computeIrPlafonneFoyer(revenuFoyer, params) {
     avantageBrut,
     plafondAvantage,
     irPlafonne,
-    qfCapped: avantageBrut > plafondAvantage + 1e-9
+    qfCapped: avantageBrut > plafondAvantage + 1e-9,
   };
 }
 
 /**
  * Calcule le taux marginal effectif à un revenu donné via dérivée discrète
- * @param {number} revenu Revenu foyer de référence
- * @param {Object} params Paramètres du foyer
- * @param {number} delta Pas pour la dérivée discrète (défaut: 50€)
- * @returns {number} Taux marginal en % (0, 11, 30, 41, 45)
  */
-export function computeMarginalRate(revenu, params) {
+export function computeMarginalRate(revenu: number, params: TmiParams): number {
   const base = Math.max(0, Math.floor(Number(revenu) || 0));
 
   const ir1 = computeIrPlafonneFoyer(base, params).irPlafonne;
@@ -211,13 +236,13 @@ export function computeMarginalRate(revenu, params) {
 
 /**
  * Trouve le seuil où le taux marginal passe d'une valeur à une autre
- * @param {number} startRevenu Revenu de départ pour la recherche
- * @param {number} targetRate Taux cible à atteindre
- * @param {Object} params Paramètres du foyer
- * @param {boolean} searchUp Direction de recherche (true = vers le haut, false = vers le bas)
- * @returns {number|null} Seuil trouvé ou null si pas trouvé
  */
-export function findMarginalRateThreshold(startRevenu, targetRate, params, searchUp = true) {
+export function findMarginalRateThreshold(
+  startRevenu: number,
+  targetRate: number,
+  params: TmiParams,
+  searchUp = true,
+): number | null {
   const start = Math.max(0, Math.floor(Number(startRevenu) || 0));
   const currentRate = computeMarginalRate(start, params);
 
@@ -253,12 +278,12 @@ export function findMarginalRateThreshold(startRevenu, targetRate, params, searc
 
 /**
  * Trouve le seuil où le taux marginal change (dans n'importe quelle direction)
- * @param {number} startRevenu Revenu de départ
- * @param {Object} params Paramètres du foyer
- * @param {boolean} searchUp Direction de recherche
- * @returns {number|null} Seuil de changement ou null
  */
-function findRateChangeThreshold(startRevenu, params, searchUp) {
+function findRateChangeThreshold(
+  startRevenu: number,
+  params: TmiParams,
+  searchUp: boolean,
+): number | null {
   const start = Math.max(0, Math.floor(Number(startRevenu) || 0));
   const startRate = computeMarginalRate(start, params);
 
@@ -292,18 +317,23 @@ function findRateChangeThreshold(startRevenu, params, searchUp) {
 
 /**
  * Recherche binaire pour trouver le seuil exact de changement de taux
- * @param {number} lo Borne inférieure
- * @param {number} hi Borne supérieure  
- * @param {number} targetRate Taux cible
- * @param {Object} params Paramètres du foyer
- * @returns {number} Seuil trouvé
  */
-function binarySearchThreshold(lo, hi, targetRate, params) {
+function binarySearchThreshold(
+  lo: number,
+  hi: number,
+  targetRate: number,
+  params: TmiParams,
+): number | null {
   // Backward-compatible: first point where rate == targetRate
   return binarySearchFirstEqual(lo, hi, targetRate, params);
 }
 
-function binarySearchFirstEqual(lo, hi, targetRate, params) {
+function binarySearchFirstEqual(
+  lo: number,
+  hi: number,
+  targetRate: number,
+  params: TmiParams,
+): number | null {
   let left = Math.max(0, Math.floor(Number(lo) || 0));
   let right = Math.max(left, Math.floor(Number(hi) || 0));
 
@@ -327,7 +357,12 @@ function binarySearchFirstEqual(lo, hi, targetRate, params) {
   return right;
 }
 
-function binarySearchFirstDifferent(lo, hi, startRate, params) {
+function binarySearchFirstDifferent(
+  lo: number,
+  hi: number,
+  startRate: number,
+  params: TmiParams,
+): number | null {
   let left = Math.max(0, Math.floor(Number(lo) || 0));
   let right = Math.max(left, Math.floor(Number(hi) || 0));
 
@@ -352,28 +387,25 @@ function binarySearchFirstDifferent(lo, hi, startRate, params) {
 
 /**
  * Calcule les métriques TMI robustes pour un foyer
- * @param {number} revenuImposable Revenu imposable du foyer
- * @param {Object} params Paramètres du foyer et configuration fiscale
- * @returns {Object} Métriques TMI
  */
-export function computeTmiMetrics(revenuImposable, params) {
+export function computeTmiMetrics(revenuImposable: number, params: TmiParams): TmiMetricsResult {
   if (revenuImposable <= 0) {
     return {
       tmiRate: 0,
       revenusDansTmi: 0,
       margeAvantChangement: null,
       seuilBasFoyer: 0,
-      seuilHautFoyer: null
+      seuilHautFoyer: null,
     };
   }
 
   const revenu = Math.max(0, Math.floor(Number(revenuImposable) || 0));
 
   // --- TMI + AVANT: basé sur la dérivée discrète de l'IR plafonné (foyer)
-  const rateCache = new Map();
-  const getRate = (r) => {
+  const rateCache = new Map<number, number>();
+  const getRate = (r: number): number => {
     const key = Math.max(0, Math.floor(Number(r) || 0));
-    if (rateCache.has(key)) return rateCache.get(key);
+    if (rateCache.has(key)) return rateCache.get(key)!;
     const v = computeMarginalRate(key, params);
     rateCache.set(key, v);
     return v;
@@ -381,7 +413,7 @@ export function computeTmiMetrics(revenuImposable, params) {
 
   const tmiRate = getRate(revenu);
 
-  const findSeuilBasFoyer = () => {
+  const findSeuilBasFoyer = (): number => {
     if (tmiRate <= 0) return 0;
 
     let hi = revenu;
@@ -404,7 +436,7 @@ export function computeTmiMetrics(revenuImposable, params) {
     return right;
   };
 
-  const findSeuilHautFoyer = () => {
+  const findSeuilHautFoyer = (): number | null => {
     let lo = revenu;
     let hi = lo + 1000;
 
@@ -445,7 +477,7 @@ export function computeTmiMetrics(revenuImposable, params) {
     : (Number(params.partsNb) || 1);
   const taxablePerPartForTmi = partsForTmi > 0 ? revenu / partsForTmi : revenu;
 
-  let currentBracket = null;
+  let currentBracket: { from: number; to: number } | null = null;
   for (const br of params.scale || []) {
     const from = Number(br.from) || 0;
     const to = br.to == null ? Infinity : Number(br.to);
@@ -458,7 +490,7 @@ export function computeTmiMetrics(revenuImposable, params) {
   const toFinite =
     currentBracket && Number.isFinite(currentBracket.to) ? currentBracket.to : null;
 
-  let margeAvantChangement =
+  let margeAvantChangement: number | null =
     toFinite == null ? null : Math.max(0, toFinite - taxablePerPartForTmi) * partsForTmi;
 
   // IMPORTANT: le prochain "changement de TMI affichée" peut venir de l'activation du plafonnement QF
