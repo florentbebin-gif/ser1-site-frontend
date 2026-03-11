@@ -30,10 +30,10 @@
 |---|---|---|
 | 1.1 | `src/pages/settings/base-contrat/` et `src/pages/settings/base-contrat/components/` sont **vides** (0 fichiers, vestige PR3) | Supprimer les 2 dossiers |
 | 1.2 | `src/features/.gitkeep` (74 octets, commentaire) — le dossier contient déjà 7 sous-dossiers | Supprimer `.gitkeep` |
-| 1.3 | `public/pptx/chapters/` et `public/ui/login/` — dossiers vides sur disque | **GARDER** : `public/pptx/chapters/` est référencé dans `src/pptx/assets/resolvePublicAsset.ts` (L71) ; `public/ui/login/` est référencé dans `src/pages/Login.css` (L12). Les assets sont gitignorés (*.png), les dossiers sont intentionnels. |
+| 1.3 | `public/pptx/chapters/` et `public/ui/login/` — dossiers référencés par le code avec assets trackés (`ch-01.png`...`ch-09.png`, `login-bg.png`) | **GARDER** : `public/pptx/chapters/` est référencé dans `src/pptx/assets/resolvePublicAsset.ts` (L71) ; `public/ui/login/` est référencé dans `src/pages/Login.css` (L12). Les dossiers et assets sont intentionnels. |
 | 1.4 | `.env.local` — apparaît dans le listing root | **RÉSOLU** : `git ls-files .env.local` → vide. Non tracké. Rien à faire. |
-| 1.5 | `deno.lock` à la racine (1270 octets) | **REPORTER** : `git ls-files deno.lock` → tracké. Vérification séparée nécessaire (Supabase edge functions danger zone). |
-| 1.6 | `supabase/migrations/20260210212056_remote_schema.sql` = **0 octets** (fichier vide) | **REPORTER** : `git ls-files` → tracké. Fichier vide probable placeholder de migration Supabase remote. Danger zone — vérifier avec `supabase migration list` avant suppression. |
+| 1.5 | `deno.lock` à la racine (1270 octets) | **GARDER** : repo Supabase configuré en Deno 2 (`supabase/config.toml`) avec Edge Function `admin` (`supabase/functions/admin/index.ts`). Lockfile cohérent avec les Edge Functions, pas un artéfact frontend. |
+| 1.6 | `supabase/migrations/20260210212056_remote_schema.sql` | **RÉSOLU** : placeholder SQL explicite ajouté (plus de fichier 0 octet). Historique remote aligné et vérifié via `supabase migration list --linked` le 2026-03-12. |
 
 **Vérification** : `npm run check` vert.
 
