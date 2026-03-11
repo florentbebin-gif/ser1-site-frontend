@@ -1,16 +1,44 @@
 /**
- * Placement Table Helpers — Colonnes, filtrage et renderers de tableau
+ * Placement table helpers.
  */
 
 import React from 'react';
-import { euro } from './formatters.js';
-import { EPSILON } from './normalizers.js';
+import type { EpargneRow, LiquidationRow } from '@/engine/placement/types';
+import type { VersementConfig } from '@/utils/versementConfig';
+import { euro } from './formatters';
+import { EPSILON } from './normalizers';
 
-// ─── Constants ───────────────────────────────────────────────────────
+type ColumnName = string;
 
-export const structuralEpargneColumns = ['Âge', 'Capital début', 'Versement net', 'Gains année', 'Revenus nets appréhendés', 'Capital fin'];
+type EpargneRenderedRow = EpargneRow & {
+  cumulReinvestissement?: number;
+};
 
-export const columnResolvers = {
+type LiquidationTableRow = LiquidationRow & {
+  capital?: number | null;
+  capitalDecesTheorique?: number | null;
+};
+
+export interface PlacementTableProduct {
+  envelope?: string;
+  versementConfig?: VersementConfig | null;
+  epargne?: {
+    rows?: EpargneRow[] | null;
+  } | null;
+}
+
+type ColumnResolver = (_row: EpargneRow) => number | string | null | undefined;
+
+export const structuralEpargneColumns: ColumnName[] = [
+  'Âge',
+  'Capital début',
+  'Versement net',
+  'Gains année',
+  'Revenus nets appréhendés',
+  'Capital fin',
+];
+
+export const columnResolvers: Record<ColumnName, ColumnResolver> = {
   'Âge': (row) => row.age,
   'Capital début': (row) => row.capitalDebut,
   'Versement net': (row) => row.versementNet,
@@ -24,7 +52,7 @@ export const columnResolvers = {
   'Capital fin': (row) => row.capitalFin,
 };
 
-export const baseEpargneColumns = [
+export const baseEpargneColumns: ColumnName[] = [
   'Âge',
   'Capital début',
   'Versement net',
@@ -38,9 +66,7 @@ export const baseEpargneColumns = [
   'Capital fin',
 ];
 
-// ─── Column filtering ────────────────────────────────────────────────
-
-export function isColumnRelevant(rows, column) {
+export function isColumnRelevant(rows: EpargneRow[] = [], column: ColumnName): boolean {
   if (structuralEpargneColumns.includes(column)) return true;
   const resolver = columnResolvers[column];
   if (!resolver) return false;
@@ -48,47 +74,53 @@ export function isColumnRelevant(rows, column) {
     const raw = resolver(row);
     if (raw === undefined || raw === null) return false;
     const value = typeof raw === 'number' ? raw : Number(raw);
-    if (Number.isNaN(value)) return !!raw;
+    if (Number.isNaN(value)) return Boolean(raw);
     return Math.abs(value) > EPSILON;
   });
 }
 
-export function getRelevantColumnsEpargne(rows, baseColumns, showAllColumns) {
+export function getRelevantColumnsEpargne(
+  rows: EpargneRow[] | null | undefined,
+  baseColumns: ColumnName[],
+  showAllColumns: boolean,
+): ColumnName[] {
   if (showAllColumns || !rows || rows.length === 0) return baseColumns;
   return baseColumns.filter((col) => isColumnRelevant(rows, col));
 }
 
-export function buildColumns(produit) {
-  const baseColumns = produit.envelope === 'SCPI'
-    ? ['Âge', 'Capital', 'Loyers bruts', 'Fiscalité', 'Loyers nets', 'Capital fin']
-    : ['CTO', 'PEA'].includes(produit.envelope)
-      ? ['Âge', 'Capital', 'Cession brute', 'PV latente (début)', 'Fiscalité', 'Cession nette', 'PV latente (fin)', 'Capital fin']
-      : ['Âge', 'Capital début', 'Retrait brut', 'Part intérêts', 'Part capital', 'Fiscalité', 'Retrait net', 'Capital fin'];
-  
-  // Ajouter la colonne "Capital décès théorique" pour les PER avec garantie active
+export function buildColumns(produit: PlacementTableProduct): ColumnName[] {
+  const baseColumns =
+    produit.envelope === 'SCPI'
+      ? ['Âge', 'Capital', 'Loyers bruts', 'Fiscalité', 'Loyers nets', 'Capital fin']
+      : ['CTO', 'PEA'].includes(produit.envelope || '')
+        ? ['Âge', 'Capital', 'Cession brute', 'PV latente (début)', 'Fiscalité', 'Cession nette', 'PV latente (fin)', 'Capital fin']
+        : ['Âge', 'Capital début', 'Retrait brut', 'Part intérêts', 'Part capital', 'Fiscalité', 'Retrait net', 'Capital fin'];
+
   if (produit.envelope === 'PER' && produit?.versementConfig?.annuel?.garantieBonneFin?.active) {
     baseColumns.splice(baseColumns.length - 1, 0, 'Capital décès théorique');
   }
-  
+
   return baseColumns;
 }
 
-export const hasDegressifData = (produit) =>
-  produit?.epargne?.rows?.some((row) => Math.abs(row.capitalDecesDegressif || 0) > EPSILON);
+export const hasDegressifData = (produit?: PlacementTableProduct | null): boolean =>
+  produit?.epargne?.rows?.some((row) => Math.abs(row.capitalDecesDegressif || 0) > EPSILON) || false;
 
-export const shouldShowDegressifColumn = (produit) =>
+export const shouldShowDegressifColumn = (produit?: PlacementTableProduct | null): boolean =>
   produit?.envelope === 'PER' &&
-  produit?.versementConfig?.annuel?.garantieBonneFin?.active;
+  Boolean(produit?.versementConfig?.annuel?.garantieBonneFin?.active);
 
-export function getBaseColumnsForProduct(produit) {
+export function getBaseColumnsForProduct(produit?: PlacementTableProduct | null): ColumnName[] {
   if (!produit) return baseEpargneColumns;
   if (shouldShowDegressifColumn(produit) || hasDegressifData(produit)) return baseEpargneColumns;
   return baseEpargneColumns.filter((col) => col !== 'Capital décès dégressif');
 }
 
-// ─── Liquidation column filtering ────────────────────────────────────
-
-export function getRelevantColumns(rows, baseColumns, showAllColumns) {
+export function getRelevantColumns(
+  rows: LiquidationTableRow[] | null | undefined,
+  baseColumns: ColumnName[],
+  showAllColumns: boolean,
+): ColumnName[] {
   if (showAllColumns || !rows || rows.length === 0) return baseColumns;
 
   const guaranteedColumns = baseColumns.slice(0, Math.min(3, baseColumns.length));
@@ -98,11 +130,11 @@ export function getRelevantColumns(rows, baseColumns, showAllColumns) {
 
   baseColumns.forEach((col) => {
     const hasNonZeroValue = rows.some((row) => {
-      const valueMap = {
-        'Capital': row.capitalDebut ?? row.capital ?? 0,
+      const valueMap: Record<ColumnName, number | null | undefined> = {
+        Capital: row.capitalDebut ?? row.capital ?? 0,
         'Capital début': row.capitalDebut,
         'Capital fin': row.capitalFin,
-        'Fiscalité': row.fiscaliteTotal,
+        Fiscalité: row.fiscaliteTotal,
         'Loyers bruts': row.retraitBrut,
         'Loyers nets': row.retraitNet,
         'Cession brute': row.retraitBrut,
@@ -128,9 +160,11 @@ export function getRelevantColumns(rows, baseColumns, showAllColumns) {
   return baseColumns.filter((col) => relevantColumns.has(col));
 }
 
-// ─── Cell renderers ──────────────────────────────────────────────────
-
-export function renderEpargneCell(column, row, produit) {
+export function renderEpargneCell(
+  column: ColumnName,
+  row: EpargneRenderedRow,
+  produit: PlacementTableProduct,
+): React.ReactNode {
   switch (column) {
     case 'Âge':
       return `${row.age} ans`;
@@ -186,10 +220,12 @@ export function renderEpargneCell(column, row, produit) {
   }
 }
 
-export const renderEpargneRow = (produit, columns) => (row, index) => (
-  <tr key={index} className={row.cessionProduit ? 'pl-row-cession' : ''}>
-    {columns.map((col) => (
-      <td key={`${index}-${col}`}>{renderEpargneCell(col, row, produit)}</td>
-    ))}
-  </tr>
-);
+export const renderEpargneRow =
+  (produit: PlacementTableProduct, columns: ColumnName[]) =>
+  (row: EpargneRenderedRow, index: number): React.ReactElement => (
+    <tr key={index} className={row.cessionProduit ? 'pl-row-cession' : ''}>
+      {columns.map((col) => (
+        <td key={`${index}-${col}`}>{renderEpargneCell(col, row, produit)}</td>
+      ))}
+    </tr>
+  );

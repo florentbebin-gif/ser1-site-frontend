@@ -1,7 +1,7 @@
 /**
  * creditNormalizers.ts - State management pour CreditV2
  * 
- * Inspiré de placement/utils/normalizers.js
+ * Inspiré des normalizers historiques du simulateur Placement
  * Centralise la structure du state et les fonctions de normalisation.
  */
 
