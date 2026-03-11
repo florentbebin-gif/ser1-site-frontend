@@ -1,19 +1,72 @@
-import { normalizeVersementConfig } from '../../../utils/versementConfig.js';
+import {
+  normalizeVersementConfig,
+  type VersementConfig,
+  type VersementConfigInput,
+  type VersementOption,
+  type VersementPonctuel,
+} from '../../../utils/versementConfig';
+
+export interface RendementPondereInput {
+  pctCapitalisation?: number | null;
+  pctDistribution?: number | null;
+  rendementCapitalisation?: number | null;
+  tauxDistribution?: number | null;
+}
+
+export interface PlacementProductInput {
+  versementConfig?: VersementConfigInput | VersementConfig | null;
+  envelope: string;
+  dureeEpargne: number;
+  perBancaire: boolean;
+  optionBaremeIR: boolean;
+  fraisGestion: number;
+}
+
+export interface EnginePlacementProduct {
+  [key: string]: unknown;
+  envelope: string;
+  dureeEpargne: number;
+  perBancaire: boolean;
+  optionBaremeIR: boolean;
+  fraisGestion: number;
+  versementInitial: number;
+  versementAnnuel: number;
+  fraisEntree: number;
+  rendement: number;
+  tauxRevalorisation: number;
+  delaiJouissance: number;
+  dureeProduit: number | null;
+  strategieCompteEspece: string;
+  reinvestirVersAuTerme: string;
+  pctCapitalisation: number;
+  pctDistribution: number;
+  versementConfig?: VersementConfigInput | VersementConfig | null;
+  versementsPonctuels: VersementPonctuel[];
+  garantieBonneFin: VersementOption;
+  exonerationCotisations: VersementOption;
+}
 
 export function computeRendementPondere({
   pctCapitalisation,
   pctDistribution,
   rendementCapitalisation,
   tauxDistribution,
-}) {
+}: RendementPondereInput): number {
   const pctCapi = (pctCapitalisation || 0) / 100;
   const pctDistrib = (pctDistribution || 0) / 100;
   return pctCapi * (rendementCapitalisation || 0) + pctDistrib * (tauxDistribution || 0);
 }
 
-export function toEngineProduct(product) {
-  const { versementConfig, envelope, dureeEpargne, perBancaire, optionBaremeIR, fraisGestion } = product;
-  const normalizedConfig = normalizeVersementConfig(versementConfig);
+export function toEngineProduct(product: PlacementProductInput): EnginePlacementProduct {
+  const {
+    versementConfig,
+    envelope,
+    dureeEpargne,
+    perBancaire,
+    optionBaremeIR,
+    fraisGestion,
+  } = product;
+  const normalizedConfig = normalizeVersementConfig(versementConfig ?? {});
   const { initial, annuel, ponctuels, capitalisation, distribution } = normalizedConfig;
 
   const rendementMoyen = computeRendementPondere({
