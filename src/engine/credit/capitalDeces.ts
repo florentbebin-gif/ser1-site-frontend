@@ -2,7 +2,7 @@
  * Capital Décès Calculator
  * 
  * Source de vérité unique pour le calcul des capitaux décès (assurance décès)
- * Utilisé par UI (Credit.jsx) et exports (Excel/PPTX) pour garantir la cohérence
+ * Utilisé par UI (Credit.tsx) et exports (Excel/PPTX) pour garantir la cohérence
  */
 
 export interface LoanParams {

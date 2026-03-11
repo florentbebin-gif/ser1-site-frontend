@@ -68,11 +68,11 @@ Utiliser ce format pour tout item actif proche de l'execution :
 ---
 
 # P1-08 - Finalisation migration JS -> TypeScript sur chemins metier
-Objectif : fermer les derniers ponts JS/TS encore actifs sur Placement et Credit, sans elargir le chantier a l'UI du repo hors perimetre Credit.
+Objectif livre : fermeture des derniers ponts JS/TS actifs sur Placement et Credit, sans elargir le chantier a l'UI du repo hors perimetre Credit.
 
 ## PR-P1-08-03b - Hook metier Placement residuel
 ### Statut
-in_progress
+done
 
 ### Objectif
 Migrer `src/hooks/usePlacementSettings.js` vers TypeScript pour fermer le dernier pont metier JS/TS cote Placement.
@@ -112,7 +112,7 @@ Migrer `src/hooks/usePlacementSettings.js` vers TypeScript pour fermer le dernie
 
 ## PR-P1-08-04 - Hooks + utils Credit en TypeScript
 ### Statut
-in_progress
+done
 
 ### Objectif
 Migrer la logique metier Credit en TypeScript avant de finaliser l'UI TSX.
@@ -149,13 +149,13 @@ Migrer la logique metier Credit en TypeScript avant de finaliser l'UI TSX.
 1 PR moyenne
 
 ### Dependances / blocages
-- finalisation de `PR-P1-08-05` pour la conversion complete du feature en TSX
+- aucune
 
 ---
 
 ## PR-P1-08-05 - UI Credit en TSX
 ### Statut
-in_progress
+done
 
 ### Objectif
 Migrer `Credit.jsx` et les composants du feature Credit en TSX sans modifier l'UX ni les flux d'export/persistance.
@@ -194,7 +194,7 @@ Migrer `Credit.jsx` et les composants du feature Credit en TSX sans modifier l'U
 1 PR moyenne a haute
 
 ### Dependances / blocages
-- depend de `PR-P1-08-04` pour les types partages du feature Credit
+- aucune
 
 ---
 

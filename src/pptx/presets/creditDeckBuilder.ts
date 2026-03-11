@@ -36,7 +36,7 @@ const DEBUG_PPTX = isDebugEnabled('pptx');
 // ============================================================================
 
 /**
- * Credit Simulation Data (matches Credit.jsx state - multi-loan support)
+ * Credit Simulation Data (matches Credit.tsx state - multi-loan support)
  */
 export interface CreditData {
   // Global totals

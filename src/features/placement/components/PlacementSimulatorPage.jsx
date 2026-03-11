@@ -2,8 +2,8 @@
  * PlacementSimulatorPage.jsx — Orchestrateur du simulateur de placement
  *
  * Architecture modulaire :
- * - Moteur de calcul        → engine/placementEngine.js
- * - Settings-driven         → hooks/usePlacementSettings.js
+ * - Moteur de calcul        → engine/placementEngine.ts
+ * - Settings-driven         → hooks/usePlacementSettings.ts
  * - Formatters              → placement/utils/formatters.js
  * - Normalizers & constants → placement/utils/normalizers.js
  * - Input components        → placement/components/inputs.jsx
