@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import './VersementConfigModal.css';
-import { normalizeVersementConfig } from '@/utils/versementConfig.js';
+import { normalizeVersementConfig } from '@/utils/versementConfig';
 import { ENVELOPE_LABELS } from '@/engine/placementEngine';
 import { InputEuro, InputPct, InputNumber } from './inputs.jsx';
 import { AllocationSlider } from './tables.jsx';

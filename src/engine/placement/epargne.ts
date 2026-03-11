@@ -1,4 +1,4 @@
-import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from '../../utils/versementConfig.js';
+import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from '../../utils/versementConfig';
 import { DEFAULT_FISCAL_PARAMS, ENVELOPES, round2 } from './shared';
 import type { EpargneResult, FiscalParams } from './types';
 
@@ -30,7 +30,7 @@ interface DistributionConfig {
   tauxDistribution?: number;
   strategie?: string;
   delaiJouissance?: number;
-  dureeProduit?: number;
+  dureeProduit?: number | null;
   reinvestirVersAuTerme?: string;
 }
 
@@ -55,7 +55,7 @@ interface EpargneProduct {
   rendement?: number;
   tauxRevalorisation?: number;
   delaiJouissance?: number;
-  dureeProduit?: number;
+  dureeProduit?: number | null;
 }
 
 interface EpargneClient {

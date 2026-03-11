@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { simulateComplete, extractFiscalParams } from '../../../engine/placementEngine';
-import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from '../../../utils/versementConfig.js';
-import { toEngineProduct, computeRendementPondere } from '../adapters/toEngineProduct.js';
+import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from '../../../utils/versementConfig';
+import { toEngineProduct, computeRendementPondere } from '../adapters/toEngineProduct';
 
 const baseProduct = {
   envelope: 'AV',
