@@ -4,7 +4,7 @@
  * Fonctions pures qui transforment state + results en XML Excel.
  */
 
-import { ENVELOPE_LABELS } from '@/engine/placementEngine';
+import { ENVELOPE_LABELS } from '@/engine/placement';
 import { buildWorksheetXmlVertical, downloadExcel } from '@/utils/export/exportExcel.js';
 import {
   formatPsApplicability, formatPsNote,

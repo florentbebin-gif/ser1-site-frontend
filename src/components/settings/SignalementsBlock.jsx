@@ -10,8 +10,32 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
-import { REPORT_PAGE_OPTIONS, getPageLabel, getStatusLabel } from '../../constants/reportPages';
 import './SignalementsBlock.css';
+
+const REPORT_PAGE_OPTIONS = [
+  { value: '', label: 'Sélectionner une page...' },
+  { value: 'ir', label: 'Simulateur IR' },
+  { value: 'credit', label: 'Simulateur Crédit' },
+  { value: 'placement', label: 'Simulateur Placement' },
+  { value: 'audit', label: 'Audit Patrimonial' },
+  { value: 'strategy', label: 'Stratégie' },
+  { value: 'settings', label: 'Paramètres' },
+  { value: 'other', label: 'Autre' },
+];
+
+const REPORT_STATUS_LABELS = {
+  new: 'Nouveau',
+  in_progress: 'En cours',
+  resolved: 'Résolu',
+  closed: 'Fermé',
+};
+
+const getPageLabel = (value) => {
+  const page = REPORT_PAGE_OPTIONS.find(p => p.value === value);
+  return page?.label || value;
+};
+
+const getStatusLabel = (status) => REPORT_STATUS_LABELS[status] || status;
 
 export default function SignalementsBlock() {
   // État du formulaire

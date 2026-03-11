@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePlacementSettings } from '@/hooks/usePlacementSettings';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
-import { simulateComplete, compareProducts } from '@/engine/placementEngine';
+import { simulateComplete, compareProducts } from '@/engine/placement';
 import { normalizeVersementConfig } from '@/utils/versementConfig';
 import { onResetEvent, storageKeyFor } from '@/utils/reset.js';
-import { PLACEMENT_SAVE_EVENT, PLACEMENT_LOAD_EVENT } from '@/utils/placementEvents.js';
 import { savePlacementState, loadPlacementStateFromFile } from '@/utils/placementPersistence.js';
 import { toEngineProduct } from '../adapters/toEngineProduct';
 import {
@@ -19,6 +18,9 @@ import {
 } from '../utils/normalizers';
 import { exportPlacementExcel } from '../export/placementExcelExport.js';
 import { getRelevantColumnsEpargne, getBaseColumnsForProduct } from '../utils/tableHelpers';
+
+const PLACEMENT_SAVE_EVENT = 'ser1:placement:save';
+const PLACEMENT_LOAD_EVENT = 'ser1:placement:load';
 
 export function usePlacementSimulatorController() {
   const storeKey = storageKeyFor('placement');
