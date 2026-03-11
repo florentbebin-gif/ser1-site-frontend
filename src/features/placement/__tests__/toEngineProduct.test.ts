@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { simulateComplete, extractFiscalParams } from '../../../engine/placementEngine.js';
+import { simulateComplete, extractFiscalParams } from '../../../engine/placementEngine';
 import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from '../../../utils/versementConfig.js';
 import { toEngineProduct, computeRendementPondere } from '../adapters/toEngineProduct.js';
 

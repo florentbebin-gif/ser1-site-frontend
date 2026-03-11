@@ -7,7 +7,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { migrateV1toV2, resolveRefs, REFS } from '../../utils/fiscalitySettingsMigrator';
-import { extractFiscalParams } from '../../engine/placementEngine.js';
+import { extractFiscalParams } from '../../engine/placementEngine';
 import fiscalityV1 from './fixtures/fiscalitySettingsV1.json';
 import psV1 from './fixtures/psSettingsV1.json';
 import taxV1 from './fixtures/taxSettingsV1.json';

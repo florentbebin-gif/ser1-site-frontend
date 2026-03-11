@@ -1,7 +1,7 @@
 /**
  * useCreditExports.ts - Hook d'export Excel & PPTX pour CreditV2
  *
- * Adapté depuis Credit.jsx legacy.
+ * Adapte depuis l'ancienne implementation monolithique du simulateur Credit.
  * Reçoit le state centralisé + les calculs du hook useCreditCalculations.
  */
 
@@ -30,7 +30,7 @@ function isDefinedRow(row: CreditShiftedScheduleRow): row is CreditScheduleRow {
 }
 
 // ============================================================================
-// HELPERS (extraits de Credit.jsx legacy)
+// HELPERS herites de l'ancienne implementation du simulateur Credit
 // ============================================================================
 
 function aggregateToYearsFromRows(

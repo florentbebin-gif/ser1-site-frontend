@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculTransmission, ENVELOPES, simulateComplete } from '../placementEngine.js';
+import { calculTransmission, ENVELOPES, simulateComplete } from '../placementEngine';
 import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '../../utils/transmissionDisclaimer.js';
 
 const baseFiscalParams = {

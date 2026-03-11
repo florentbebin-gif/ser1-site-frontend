@@ -1,7 +1,7 @@
 /**
  * useCreditCalculations.ts - Hook de calculs pour le simulateur de crédit
  *
- * Extrait et centralisé depuis Credit.jsx legacy.
+ * Extrait et centralise depuis l'ancienne implementation monolithique du simulateur Credit.
  * Toute la logique de calcul des échéanciers est ici.
  */
 

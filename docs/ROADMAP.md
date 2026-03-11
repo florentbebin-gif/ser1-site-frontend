@@ -75,7 +75,7 @@ Objectif livre : fermeture des derniers ponts JS/TS actifs sur Placement et Cred
 done
 
 ### Objectif
-Migrer `src/hooks/usePlacementSettings.js` vers TypeScript pour fermer le dernier pont metier JS/TS cote Placement.
+Hook metier Placement desormais en TypeScript pour fermer le dernier pont metier JS/TS cote Placement.
 
 ### Non-objectifs
 - Ne pas migrer les composants JSX Placement hors consommations directes.
@@ -83,10 +83,10 @@ Migrer `src/hooks/usePlacementSettings.js` vers TypeScript pour fermer le dernie
 - Ne pas modifier la logique metier de `extractFiscalParams`.
 
 ### Travaux
-- Renommer `src/hooks/usePlacementSettings.js` en `.ts`.
-- Taper le retour du hook : `fiscalParams`, `fiscalitySettings`, `psSettings`, `taxSettings`, `baremIR`, `tmiOptions`, `loading`, `error`.
-- Reutiliser `src/engine/placement/types.ts` pour `FiscalParams`.
-- Mettre a jour le consommateur `src/features/placement/components/usePlacementSimulatorController.ts`.
+- Hook desormais porte par `src/hooks/usePlacementSettings.ts`.
+- Retour du hook explicitement type : `fiscalParams`, `fiscalitySettings`, `psSettings`, `taxSettings`, `baremIR`, `tmiOptions`, `loading`, `error`.
+- Reutilisation de `src/engine/placement/types.ts` pour `FiscalParams`.
+- Consommateur `src/features/placement/components/usePlacementSimulatorController.ts` aligne sur le hook TS.
 
 ### Fichiers probables
 - `src/hooks/usePlacementSettings.ts`
@@ -99,7 +99,7 @@ Migrer `src/hooks/usePlacementSettings.js` vers TypeScript pour fermer le dernie
 - smoke manuel : chargement settings, invalidation cache, options TMI coherentes
 
 ### Preuves attendues
-- plus aucun import local vers `usePlacementSettings.js`
+- plus aucun import local vers l'ancienne implementation JS du hook Placement
 - typecheck vert sur le hook et son consommateur principal
 
 ### Taille PR max
@@ -115,7 +115,7 @@ Migrer `src/hooks/usePlacementSettings.js` vers TypeScript pour fermer le dernie
 done
 
 ### Objectif
-Migrer la logique metier Credit en TypeScript avant de finaliser l'UI TSX.
+Logique metier Credit desormais en TypeScript avant la finalisation de l'UI TSX.
 
 ### Non-objectifs
 - Ne pas changer la logique de calcul ou d'export.
@@ -123,10 +123,10 @@ Migrer la logique metier Credit en TypeScript avant de finaliser l'UI TSX.
 - Ne pas toucher les styles CSS du feature.
 
 ### Travaux
-- Renommer `src/features/credit/utils/creditFormatters.js` et `creditNormalizers.js` en `.ts`.
-- Renommer `src/features/credit/hooks/useCreditCalculations.js` et `useCreditExports.js` en `.ts`.
-- Creer `src/features/credit/types.ts` avec les contrats partages : `CreditLoan`, `CreditState`, `CreditPersistedState`, `CreditRawValues`, `CreditScheduleRow`, `CreditCalcResult`, `CreditSynthesis`, `CreditPeriodSummary`.
-- Garder le bridge vers `src/engine/credit/capitalDeces.ts`.
+- Utils desormais portes par `src/features/credit/utils/creditFormatters.ts` et `src/features/credit/utils/creditNormalizers.ts`.
+- Hooks desormais portes par `src/features/credit/hooks/useCreditCalculations.ts` et `src/features/credit/hooks/useCreditExports.ts`.
+- `src/features/credit/types.ts` centralise les contrats partages : `CreditLoan`, `CreditState`, `CreditPersistedState`, `CreditRawValues`, `CreditScheduleRow`, `CreditCalcResult`, `CreditSynthesis`, `CreditPeriodSummary`.
+- Bridge conserve vers `src/engine/credit/capitalDeces.ts`.
 
 ### Fichiers probables
 - `src/features/credit/types.ts`
@@ -142,7 +142,7 @@ Migrer la logique metier Credit en TypeScript avant de finaliser l'UI TSX.
 - verification indirecte via `src/engine/credit/__tests__/capitalDeces.test.ts`
 
 ### Preuves attendues
-- plus d'import local vers les versions `.js` des hooks/utils Credit migres
+- plus d'import local vers l'ancienne implementation JS des hooks/utils Credit
 - signatures TS explicites sur les contrats partages du feature
 
 ### Taille PR max
@@ -158,7 +158,7 @@ Migrer la logique metier Credit en TypeScript avant de finaliser l'UI TSX.
 done
 
 ### Objectif
-Migrer `Credit.jsx` et les composants du feature Credit en TSX sans modifier l'UX ni les flux d'export/persistance.
+Feature Credit desormais en TSX sans modification de l'UX ni des flux d'export/persistance.
 
 ### Non-objectifs
 - Ne pas refactorer le parcours utilisateur.
@@ -166,10 +166,10 @@ Migrer `Credit.jsx` et les composants du feature Credit en TSX sans modifier l'U
 - Ne pas migrer d'autres features UI hors perimetre Credit.
 
 ### Travaux
-- Renommer `src/features/credit/Credit.jsx` en `.tsx`.
-- Renommer les composants de `src/features/credit/components` en `.tsx`.
-- Taper les props des composants via `src/features/credit/types.ts`.
-- Mettre a jour les imports locaux pour supprimer les suffixes `.js` / `.jsx` devenus invalides.
+- Feature principal desormais porte par `src/features/credit/Credit.tsx`.
+- Composants de `src/features/credit/components` desormais portes en `.tsx`.
+- Props des composants typees via `src/features/credit/types.ts`.
+- Imports locaux mis a jour pour supprimer les suffixes `.js` / `.jsx` devenus invalides.
 
 ### Fichiers probables
 - `src/features/credit/Credit.tsx`
@@ -187,7 +187,7 @@ Migrer `Credit.jsx` et les composants du feature Credit en TSX sans modifier l'U
 - smoke manuel : chargement, mode simplifie/expert, prets multiples, vues mensuelle/annuelle, exports Excel/PPTX
 
 ### Preuves attendues
-- plus aucun import local vers `Credit*.jsx` dans le feature
+- plus aucun import local vers l'ancienne implementation JSX du feature Credit
 - `src/features/credit/index.ts` continue d'exporter `./Credit` sans changement d'API publique
 
 ### Taille PR max

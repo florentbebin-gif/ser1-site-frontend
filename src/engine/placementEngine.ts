@@ -1,8 +1,8 @@
 /**
- * placementEngine.js  Fa�ade de compatibilit� publique
+ * placementEngine.ts - Facade publique du moteur Placement
  *
- * PR-4: moteur d�plac� vers src/engine/placement/*
- * Les signatures publiques restent inchang�es.
+ * PR-4: moteur deplace vers src/engine/placement/*
+ * Les signatures publiques restent inchangees.
  */
 
 export {

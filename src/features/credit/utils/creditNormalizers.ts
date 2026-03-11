@@ -59,7 +59,7 @@ function isCreditLegacyState(value: unknown): value is CreditLegacyState {
 
 /**
  * Normalise un état chargé depuis le localStorage/sessionStorage
- * Gère la migration depuis l'ancien format (Credit.jsx legacy)
+ * Gere la migration depuis l'ancien format persiste du simulateur Credit
  */
 export function normalizeLoadedState(raw: unknown): CreditState {
   if (!isCreditLegacyState(raw)) {
@@ -84,7 +84,7 @@ export function normalizeLoadedState(raw: unknown): CreditState {
 }
 
 /**
- * Migre depuis l'ancien format Credit.jsx (champs individuels)
+ * Migre depuis l'ancien format plat du simulateur Credit (champs individuels)
  * vers le nouveau format structuré
  */
 function migrateFromLegacyFormat(raw: CreditLegacyState): Partial<CreditState> {
