@@ -145,7 +145,7 @@ Source (preuves) :
 | `/audit` | privé + lazy | `AuditWizard` | `src/features/audit/AuditWizard.tsx` (exporté via `src/features/audit/index.ts`) |
 | `/strategy` | privé + lazy | `StrategyPage` | `src/pages/StrategyPage.jsx` (lazy) |
 | `/sim/placement` | privé + lazy | `Placement` | `src/features/placement/PlacementPage.tsx` (exporté via `src/features/placement/index.ts`) |
-| `/sim/credit` | privé + lazy | `Credit` | `src/features/credit/Credit.jsx` (exporté via `src/features/credit/index.ts`) |
+| `/sim/credit` | privé + lazy | `Credit` | `src/features/credit/Credit.tsx` (exporté via `src/features/credit/index.ts`) |
 | `/sim/succession` | privé + lazy | `SuccessionSimulator` | `src/features/succession/SuccessionSimulator.tsx` (exporté via `src/features/succession/index.ts`) |
 | `/sim/per` | privé + lazy | `PerSimulator` | `src/features/per/PerSimulator.tsx` (exporté via `src/features/per/index.ts`) |
 | `/sim/epargne-salariale` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.jsx` (lazy) |

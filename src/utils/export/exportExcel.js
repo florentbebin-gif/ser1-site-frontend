@@ -1,4 +1,4 @@
-// Utilitaires d'export Excel réutilisables (inspirés de Credit.jsx)
+// Utilitaires d'export Excel réutilisables (inspirés de Credit.tsx)
 import { createTrackedObjectURL } from './createTrackedObjectURL';
 import {
   fingerprintXlsxExport,
