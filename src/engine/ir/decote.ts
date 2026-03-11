@@ -1,4 +1,18 @@
-export function computeDecote({ isCouple, decoteYearCfg, irBrutFoyer }) {
+interface DecoteYearCfg {
+  triggerCouple?: number | string;
+  triggerSingle?: number | string;
+  amountCouple?: number | string;
+  amountSingle?: number | string;
+  ratePercent?: number | string;
+}
+
+interface DecoteInput {
+  isCouple: boolean;
+  decoteYearCfg?: DecoteYearCfg | null;
+  irBrutFoyer: number;
+}
+
+export function computeDecote({ isCouple, decoteYearCfg, irBrutFoyer }: DecoteInput): number {
   let decote = 0;
 
   const cfg = decoteYearCfg || {};

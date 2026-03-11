@@ -1,4 +1,26 @@
-export function computeCapitalBases({ capWithPs, capWithoutPs, modeCap }) {
+import type { CapitalBasesResult } from './types';
+
+interface CapitalBasesInput {
+  capWithPs?: number;
+  capWithoutPs?: number;
+  modeCap: 'bareme' | 'pfu';
+}
+
+interface PfuYearCfg {
+  rateIR?: number;
+}
+
+interface TaxSettingsWithPfu {
+  pfu?: Record<string, PfuYearCfg>;
+}
+
+interface PfuIrInput {
+  capitalBasePfu: number;
+  yearKey: string;
+  taxSettings?: TaxSettingsWithPfu | null;
+}
+
+export function computeCapitalBases({ capWithPs, capWithoutPs, modeCap }: CapitalBasesInput): CapitalBasesResult {
   const capWithPsNum = Number(capWithPs) || 0;
   const capWithoutPsNum = Number(capWithoutPs) || 0;
   const capTotal = capWithPsNum + capWithoutPsNum;
@@ -15,7 +37,7 @@ export function computeCapitalBases({ capWithPs, capWithoutPs, modeCap }) {
   return { capTotal, capitalBaseBareme, capitalBasePfu };
 }
 
-export function computePfuIr({ capitalBasePfu, yearKey, taxSettings }) {
+export function computePfuIr({ capitalBasePfu, yearKey, taxSettings }: PfuIrInput): number {
   const base = Number(capitalBasePfu) || 0;
   if (base <= 0) return 0;
 

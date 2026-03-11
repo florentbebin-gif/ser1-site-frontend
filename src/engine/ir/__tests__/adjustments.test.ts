@@ -4,7 +4,7 @@ import {
   computeEffectiveParts,
   computeExtraDeductions,
   countPersonsACharge,
-} from '../adjustments.js';
+} from '../adjustments';
 
 describe('engine/ir/adjustments', () => {
   describe('computeAbattement10', () => {

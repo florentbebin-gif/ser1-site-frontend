@@ -1,4 +1,31 @@
-export function computeDomAbatementAmount({ location, yearKey, domAbatementCfgRoot, irAfterQf }) {
+interface DomRegionCfg {
+  ratePercent?: number | string;
+  cap?: number | string;
+}
+
+interface DomYearCfg {
+  gmr?: DomRegionCfg;
+  guyane?: DomRegionCfg;
+}
+
+interface DomAbatementCfgRoot {
+  current?: DomYearCfg;
+  previous?: DomYearCfg;
+}
+
+interface DomAbatementInput {
+  location: string;
+  yearKey: string;
+  domAbatementCfgRoot?: DomAbatementCfgRoot;
+  irAfterQf: number;
+}
+
+export function computeDomAbatementAmount({
+  location,
+  yearKey,
+  domAbatementCfgRoot,
+  irAfterQf,
+}: DomAbatementInput): number {
   let domAbatementAmount = 0;
 
   const domCfgRoot = domAbatementCfgRoot || {};

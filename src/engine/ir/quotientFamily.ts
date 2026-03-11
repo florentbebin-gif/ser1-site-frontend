@@ -1,4 +1,20 @@
-import { computeProgressiveTax } from './progressiveTax.js';
+import { computeProgressiveTax } from './progressiveTax';
+import type { TaxScale, QfCappingResult } from './types';
+
+interface QfYearCfg {
+  plafondPartSup?: number | string;
+  plafondParentIsoléDeuxPremièresParts?: number | string;
+}
+
+interface QfCappingInput {
+  scale: TaxScale;
+  taxableIncome: number;
+  partsNb: number;
+  isCouple: boolean;
+  isIsolated: boolean;
+  qfYearCfg?: QfYearCfg | null;
+  irSansPlafond: number;
+}
 
 export function computeQuotientFamilyCapping({
   scale,
@@ -8,7 +24,7 @@ export function computeQuotientFamilyCapping({
   isIsolated,
   qfYearCfg,
   irSansPlafond,
-}) {
+}: QfCappingInput): QfCappingResult {
   const basePartsForQf = isCouple ? 2 : 1;
   const extraParts = Math.max(0, (Number(partsNb) || 0) - basePartsForQf);
   const extraHalfParts = extraParts * 2;

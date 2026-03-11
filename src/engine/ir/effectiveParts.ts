@@ -1,10 +1,16 @@
 // Fallback simplifié quand seul le nombre d'enfants est connu (Excel case).
 // Hypothèse : enfants comptés en garde exclusive; bonus parent isolé seulement si >=1 enfant.
-export function computeEffectiveParts({ status, isIsolated, childrenCount }) {
+interface EffectivePartsInput {
+  status: string;
+  isIsolated?: boolean;
+  childrenCount: number;
+}
+
+export function computeEffectiveParts({ status, isIsolated, childrenCount }: EffectivePartsInput): number {
   const baseParts = status === 'couple' ? 2 : 1;
 
   const childrenParts = Array.from({ length: Math.max(0, childrenCount) }).reduce(
-    (sum, _, idx) => sum + (idx < 2 ? 0.5 : 1),
+    (sum: number, _, idx: number) => sum + (idx < 2 ? 0.5 : 1),
     0
   );
 

@@ -1,10 +1,20 @@
+import type { IrChild } from './types';
+
 // IR quotient familial: parts computation (moved from utils/irEngine.js for PR-03 split)
 
 // Règle parent isolé (case T) :
 // - Enfants à charge comptés avant les enfants en alternée pour les 2 premiers rangs.
 // - Bonus parent isolé = 0,5 si au moins un enfant est à charge.
 // - Si uniquement alternée : bonus = 0,25 par enfant alternée (plafonné à 0,5).
-export function computeAutoPartsWithChildren({ status, isIsolated, children = [] }) {
+export function computeAutoPartsWithChildren({
+  status,
+  isIsolated,
+  children = [],
+}: {
+  status: string;
+  isIsolated?: boolean;
+  children?: IrChild[];
+}): number {
   const baseParts = status === 'couple' ? 2 : 1;
 
   const chargeCount = children.filter((child) => child && child.mode === 'charge').length;

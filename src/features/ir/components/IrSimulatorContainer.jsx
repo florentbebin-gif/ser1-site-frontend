@@ -15,7 +15,7 @@ import {
   computeEffectiveParts,
   computeExtraDeductions,
   countPersonsACharge,
-} from '../../../engine/ir/adjustments.js';
+} from '../../../engine/ir/adjustments';
 import { useIrExportHandlers } from '../hooks/useIrExportHandlers';
 import {
   applyIncomeFilters,
