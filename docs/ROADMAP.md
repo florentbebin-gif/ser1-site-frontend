@@ -67,6 +67,137 @@ Utiliser ce format pour tout item actif proche de l'execution :
 
 ---
 
+# P1-08 - Finalisation migration JS -> TypeScript sur chemins metier
+Objectif : fermer les derniers ponts JS/TS encore actifs sur Placement et Credit, sans elargir le chantier a l'UI du repo hors perimetre Credit.
+
+## PR-P1-08-03b - Hook metier Placement residuel
+### Statut
+in_progress
+
+### Objectif
+Migrer `src/hooks/usePlacementSettings.js` vers TypeScript pour fermer le dernier pont metier JS/TS cote Placement.
+
+### Non-objectifs
+- Ne pas migrer les composants JSX Placement hors consommations directes.
+- Ne pas refactorer la logique de chargement/caching des settings.
+- Ne pas modifier la logique metier de `extractFiscalParams`.
+
+### Travaux
+- Renommer `src/hooks/usePlacementSettings.js` en `.ts`.
+- Taper le retour du hook : `fiscalParams`, `fiscalitySettings`, `psSettings`, `taxSettings`, `baremIR`, `tmiOptions`, `loading`, `error`.
+- Reutiliser `src/engine/placement/types.ts` pour `FiscalParams`.
+- Mettre a jour le consommateur `src/features/placement/components/usePlacementSimulatorController.ts`.
+
+### Fichiers probables
+- `src/hooks/usePlacementSettings.ts`
+- `src/features/placement/components/usePlacementSimulatorController.ts`
+- `src/engine/placement/types.ts`
+
+### Tests attendus
+- `npm run typecheck`
+- `npm run check`
+- smoke manuel : chargement settings, invalidation cache, options TMI coherentes
+
+### Preuves attendues
+- plus aucun import local vers `usePlacementSettings.js`
+- typecheck vert sur le hook et son consommateur principal
+
+### Taille PR max
+1 petite PR
+
+### Dependances / blocages
+- aucun
+
+---
+
+## PR-P1-08-04 - Hooks + utils Credit en TypeScript
+### Statut
+in_progress
+
+### Objectif
+Migrer la logique metier Credit en TypeScript avant de finaliser l'UI TSX.
+
+### Non-objectifs
+- Ne pas changer la logique de calcul ou d'export.
+- Ne pas ajouter de nouveaux tests fonctionnels Credit dans cette PR.
+- Ne pas toucher les styles CSS du feature.
+
+### Travaux
+- Renommer `src/features/credit/utils/creditFormatters.js` et `creditNormalizers.js` en `.ts`.
+- Renommer `src/features/credit/hooks/useCreditCalculations.js` et `useCreditExports.js` en `.ts`.
+- Creer `src/features/credit/types.ts` avec les contrats partages : `CreditLoan`, `CreditState`, `CreditPersistedState`, `CreditRawValues`, `CreditScheduleRow`, `CreditCalcResult`, `CreditSynthesis`, `CreditPeriodSummary`.
+- Garder le bridge vers `src/engine/credit/capitalDeces.ts`.
+
+### Fichiers probables
+- `src/features/credit/types.ts`
+- `src/features/credit/utils/creditFormatters.ts`
+- `src/features/credit/utils/creditNormalizers.ts`
+- `src/features/credit/hooks/useCreditCalculations.ts`
+- `src/features/credit/hooks/useCreditExports.ts`
+- `src/engine/credit/capitalDeces.ts`
+
+### Tests attendus
+- `npm run typecheck`
+- `npm run check`
+- verification indirecte via `src/engine/credit/__tests__/capitalDeces.test.ts`
+
+### Preuves attendues
+- plus d'import local vers les versions `.js` des hooks/utils Credit migres
+- signatures TS explicites sur les contrats partages du feature
+
+### Taille PR max
+1 PR moyenne
+
+### Dependances / blocages
+- finalisation de `PR-P1-08-05` pour la conversion complete du feature en TSX
+
+---
+
+## PR-P1-08-05 - UI Credit en TSX
+### Statut
+in_progress
+
+### Objectif
+Migrer `Credit.jsx` et les composants du feature Credit en TSX sans modifier l'UX ni les flux d'export/persistance.
+
+### Non-objectifs
+- Ne pas refactorer le parcours utilisateur.
+- Ne pas modifier les CSS du simulateur Credit.
+- Ne pas migrer d'autres features UI hors perimetre Credit.
+
+### Travaux
+- Renommer `src/features/credit/Credit.jsx` en `.tsx`.
+- Renommer les composants de `src/features/credit/components` en `.tsx`.
+- Taper les props des composants via `src/features/credit/types.ts`.
+- Mettre a jour les imports locaux pour supprimer les suffixes `.js` / `.jsx` devenus invalides.
+
+### Fichiers probables
+- `src/features/credit/Credit.tsx`
+- `src/features/credit/components/CreditHeader.tsx`
+- `src/features/credit/components/CreditInputs.tsx`
+- `src/features/credit/components/CreditLoanForm.tsx`
+- `src/features/credit/components/CreditLoanTabs.tsx`
+- `src/features/credit/components/CreditPeriodsTable.tsx`
+- `src/features/credit/components/CreditScheduleTable.tsx`
+- `src/features/credit/components/CreditSummaryCard.tsx`
+
+### Tests attendus
+- `npm run typecheck`
+- `npm run check`
+- smoke manuel : chargement, mode simplifie/expert, prets multiples, vues mensuelle/annuelle, exports Excel/PPTX
+
+### Preuves attendues
+- plus aucun import local vers `Credit*.jsx` dans le feature
+- `src/features/credit/index.ts` continue d'exporter `./Credit` sans changement d'API publique
+
+### Taille PR max
+1 PR moyenne a haute
+
+### Dependances / blocages
+- depend de `PR-P1-08-04` pour les types partages du feature Credit
+
+---
+
 # P2 - Experience Rendez-vous : Mode simplifie / Mode expert (priorite produit)
 Objectif : rendre l'outil **utilisable en rendez-vous** sans intimider, tout en gardant une profondeur "expert" quand necessaire.
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { usePlacementSettings } from '@/hooks/usePlacementSettings.js';
+import { usePlacementSettings } from '@/hooks/usePlacementSettings';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { simulateComplete, compareProducts } from '@/engine/placementEngine';
 import { normalizeVersementConfig } from '@/utils/versementConfig.js';
@@ -19,19 +19,10 @@ import {
 } from '../utils/normalizers.js';
 import { exportPlacementExcel } from '../export/placementExcelExport.js';
 import { getRelevantColumnsEpargne, getBaseColumnsForProduct } from '../utils/tableHelpers.jsx';
-import type { FiscalParams } from '@/engine/placement/types';
-
-type PlacementSettings = {
-  fiscalParams: FiscalParams;
-  loading: boolean;
-  error: unknown;
-  tmiOptions: Array<{ label: string; value: number }>;
-  psSettings: unknown;
-};
 
 export function usePlacementSimulatorController() {
   const storeKey = storageKeyFor('placement');
-  const { fiscalParams, loading, error, tmiOptions, psSettings } = usePlacementSettings() as PlacementSettings;
+  const { fiscalParams, loading, error, tmiOptions, psSettings } = usePlacementSettings();
   const { fiscalContext } = useFiscalContext({ strict: false });
 
   const [hydrated, setHydrated] = useState(false);

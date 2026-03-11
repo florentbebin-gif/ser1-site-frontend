@@ -1,17 +1,24 @@
 /**
- * creditNormalizers.js - State management pour CreditV2
+ * creditNormalizers.ts - State management pour CreditV2
  * 
  * Inspiré de placement/utils/normalizers.js
  * Centralise la structure du state et les fonctions de normalisation.
  */
 
-import { nowYearMonth } from './creditFormatters.js';
+import { nowYearMonth } from './creditFormatters';
+import type {
+  CreditLegacyState,
+  CreditLoan,
+  CreditPersistedState,
+  CreditRawValues,
+  CreditState,
+} from '../types';
 
 // ============================================================================
 // DEFAULT STATE
 // ============================================================================
 
-export const DEFAULT_PRET = {
+export const DEFAULT_PRET: CreditLoan = {
   capital: 0,
   duree: 0,
   taux: 0,
@@ -21,7 +28,7 @@ export const DEFAULT_PRET = {
   startYM: null, // hérite de global.startYM si null
 };
 
-export const DEFAULT_STATE = {
+export const DEFAULT_STATE: CreditState = {
   // Paramètres globaux (partagés entre tous les prêts)
   startYM: nowYearMonth(),
   assurMode: 'CRD', // 'CI' | 'CRD'
@@ -42,6 +49,10 @@ export const DEFAULT_STATE = {
   touched: { capital: false, duree: false },
 };
 
+function isCreditLegacyState(value: unknown): value is CreditLegacyState {
+  return typeof value === 'object' && value !== null;
+}
+
 // ============================================================================
 // HELPERS DE NORMALISATION
 // ============================================================================
@@ -50,8 +61,8 @@ export const DEFAULT_STATE = {
  * Normalise un état chargé depuis le localStorage/sessionStorage
  * Gère la migration depuis l'ancien format (Credit.jsx legacy)
  */
-export function normalizeLoadedState(raw) {
-  if (!raw || typeof raw !== 'object') {
+export function normalizeLoadedState(raw: unknown): CreditState {
+  if (!isCreditLegacyState(raw)) {
     return { ...DEFAULT_STATE };
   }
 
@@ -76,14 +87,24 @@ export function normalizeLoadedState(raw) {
  * Migre depuis l'ancien format Credit.jsx (champs individuels)
  * vers le nouveau format structuré
  */
-function migrateFromLegacyFormat(raw) {
+function migrateFromLegacyFormat(raw: CreditLegacyState): Partial<CreditState> {
   // Si déjà au nouveau format, retourner tel quel
   if (raw.pret1 && typeof raw.pret1 === 'object') {
-    return raw;
+    return {
+      startYM: raw.startYM ?? DEFAULT_STATE.startYM,
+      assurMode: raw.assurMode ?? DEFAULT_STATE.assurMode,
+      creditType: raw.creditType ?? DEFAULT_STATE.creditType,
+      viewMode: raw.viewMode ?? DEFAULT_STATE.viewMode,
+      lisserPret1: raw.lisserPret1 ?? false,
+      lissageMode: raw.lissageMode ?? 'mensu',
+      pret1: { ...DEFAULT_PRET, ...raw.pret1, startYM: raw.pret1.startYM ?? raw.startYM ?? null },
+      pret2: raw.pret2 ? { ...DEFAULT_PRET, ...raw.pret2, startYM: raw.pret2.startYM ?? raw.startYM ?? null } : null,
+      pret3: raw.pret3 ? { ...DEFAULT_PRET, ...raw.pret3, startYM: raw.pret3.startYM ?? raw.startYM ?? null } : null,
+    };
   }
 
   // Migration depuis l'ancien format
-  const migrated = {
+  const migrated: Partial<CreditState> = {
     startYM: raw.startYM ?? DEFAULT_STATE.startYM,
     assurMode: raw.assurMode ?? DEFAULT_STATE.assurMode,
     creditType: raw.creditType ?? DEFAULT_STATE.creditType,
@@ -143,7 +164,7 @@ function migrateFromLegacyFormat(raw) {
  * Construit l'état à persister (sérialisable)
  * Exclut les états UI temporaires
  */
-export function buildPersistedState(state) {
+export function buildPersistedState(state: CreditState): CreditPersistedState {
   return {
     startYM: state.startYM,
     assurMode: state.assurMode,
@@ -160,7 +181,7 @@ export function buildPersistedState(state) {
 /**
  * Génère un ID unique pour les prêts
  */
-export function generateId() {
+export function generateId(): string {
   return Math.random().toString(36).slice(2, 9);
 }
 
@@ -171,7 +192,7 @@ export function generateId() {
 /**
  * Crée un nouveau prêt (pret2 ou pret3)
  */
-export function createNewPret(baseParams = {}) {
+export function createNewPret(baseParams: Partial<CreditLoan> = {}): CreditLoan {
   return {
     id: generateId(),
     ...DEFAULT_PRET,
@@ -182,7 +203,7 @@ export function createNewPret(baseParams = {}) {
 /**
  * Met à jour un prêt existant (patch partiel)
  */
-export function patchPret(pret, patch) {
+export function patchPret(pret: CreditLoan, patch: Partial<CreditLoan>): CreditLoan {
   return { ...pret, ...patch };
 }
 
@@ -193,8 +214,8 @@ export function patchPret(pret, patch) {
 /**
  * Initialise les valeurs raw pour les inputs de taux
  */
-export function initRawValues(state) {
-  const raw = {};
+export function initRawValues(state: Pick<CreditState, 'pret1' | 'pret2' | 'pret3'>): CreditRawValues {
+  const raw: CreditRawValues = {};
   
   // Pret1
   raw.pret1 = {
@@ -224,7 +245,7 @@ export function initRawValues(state) {
   return raw;
 }
 
-function formatTauxRaw(value) {
+function formatTauxRaw(value: number | null | undefined): string {
   const num = Number(value) || 0;
   return num.toFixed(2).replace('.', ',');
 }

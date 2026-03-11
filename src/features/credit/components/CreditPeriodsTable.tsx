@@ -1,18 +1,15 @@
 /**
- * CreditPeriodsTable.jsx - Tableau répartition par période (prêts multiples)
- * 
- * Affiché uniquement si pret2 ou pret3 existent.
- * Montre la répartition des mensualités par période de changement.
+ * CreditPeriodsTable.tsx - Tableau répartition par période (prêts multiples)
  */
 
-import React from 'react';
-import { euro0 } from '../utils/creditFormatters.js';
+import { euro0 } from '../utils/creditFormatters';
+import type { CreditPeriodsTableProps } from '../types';
 import './CreditV2.css';
 
 export function CreditPeriodsTable({
   synthesePeriodes,
   hasPret3,
-}) {
+}: CreditPeriodsTableProps) {
   if (!synthesePeriodes || synthesePeriodes.length === 0) return null;
 
   return (
@@ -29,18 +26,18 @@ export function CreditPeriodsTable({
             </tr>
           </thead>
           <tbody>
-            {synthesePeriodes.map((ln, i) => (
-              <tr key={i} className="cv2-table__row">
-                <td className="cv2-table__td">{ln.from}</td>
+            {synthesePeriodes.map((line, index) => (
+              <tr key={index} className="cv2-table__row">
+                <td className="cv2-table__td">{line.from}</td>
                 <td className="cv2-table__td cv2-table__td--right">
-                  {ln.p1 > 0 ? euro0(ln.p1) : '—'}
+                  {line.p1 > 0 ? euro0(line.p1) : '—'}
                 </td>
                 <td className="cv2-table__td cv2-table__td--right">
-                  {ln.p2 > 0 ? euro0(ln.p2) : '—'}
+                  {line.p2 > 0 ? euro0(line.p2) : '—'}
                 </td>
                 {hasPret3 && (
                   <td className="cv2-table__td cv2-table__td--right">
-                    {ln.p3 > 0 ? euro0(ln.p3) : '—'}
+                    {line.p3 > 0 ? euro0(line.p3) : '—'}
                   </td>
                 )}
               </tr>

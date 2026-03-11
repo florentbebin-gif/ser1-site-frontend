@@ -1,35 +1,46 @@
 /**
- * CreditV2.jsx — Orchestrateur du simulateur de crédit (Phase 1)
+ * Credit.tsx - Orchestrateur du simulateur de crédit
  *
  * Architecture modulaire inspirée du simulateur Placement :
- * - State centralisé        → utils/creditNormalizers.js
- * - Calculs                 → hooks/useCreditCalculations.js
- * - Composants UI           → components/Credit*.jsx
- * - Formatters              → utils/creditFormatters.js
+ * - State centralisé        -> utils/creditNormalizers
+ * - Calculs                 -> hooks/useCreditCalculations
+ * - Composants UI           -> components/Credit*
+ * - Formatters              -> utils/creditFormatters
  */
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { onResetEvent, storageKeyFor } from '../../utils/reset.js';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../services/userModeService';
-import { 
-  DEFAULT_STATE, 
+import {
+  DEFAULT_STATE,
   normalizeLoadedState, 
   buildPersistedState,
   createNewPret,
   patchPret,
   initRawValues,
-} from './utils/creditNormalizers.js';
-import { useCreditCalculations } from './hooks/useCreditCalculations.js';
-import { useCreditExports } from './hooks/useCreditExports.js';
-import { euro0 } from './utils/creditFormatters.js';
-import { CreditHeader } from './components/CreditHeader.jsx';
-import { CreditLoanTabs } from './components/CreditLoanTabs.jsx';
-import { CreditLoanForm } from './components/CreditLoanForm.jsx';
-import { CreditSummaryCard, SummaryDonut } from './components/CreditSummaryCard.jsx';
-import { CreditScheduleTable } from './components/CreditScheduleTable.jsx';
-import { CreditPeriodsTable } from './components/CreditPeriodsTable.jsx';
-import { Toggle } from './components/CreditInputs.jsx';
+} from './utils/creditNormalizers';
+import { useCreditCalculations } from './hooks/useCreditCalculations';
+import { useCreditExports } from './hooks/useCreditExports';
+import { euro0 } from './utils/creditFormatters';
+import { CreditHeader } from './components/CreditHeader';
+import { CreditLoanTabs } from './components/CreditLoanTabs';
+import { CreditLoanForm } from './components/CreditLoanForm';
+import { CreditSummaryCard, SummaryDonut } from './components/CreditSummaryCard';
+import { CreditScheduleTable } from './components/CreditScheduleTable';
+import { CreditPeriodsTable } from './components/CreditPeriodsTable';
+import { Toggle } from './components/CreditInputs';
+import type {
+  CreditExportOption,
+  CreditLoan,
+  CreditLocalMode,
+  CreditRawValues,
+  CreditScheduleRow,
+  CreditShiftedScheduleRow,
+  CreditState,
+  CreditSynthesis,
+} from './types';
 import './components/CreditV2.css';
 import '../../styles/premium-shared.css';
 import '../../components/simulator/SimulatorShell.css';
@@ -38,12 +49,33 @@ import '../../components/simulator/SimulatorShell.css';
 // HELPERS
 // ============================================================================
 
-function formatTauxRaw(value) {
+type PretKey = 'pret1' | 'pret2' | 'pret3';
+
+type ResetDetail = {
+  simId?: string;
+};
+
+type PretLookupEntry = {
+  data: CreditLoan | null;
+  raw: CreditRawValues[PretKey];
+  set: (_patch: Partial<CreditLoan>) => void;
+  mensu: number;
+};
+
+function isDefinedRow(row: CreditShiftedScheduleRow): row is CreditScheduleRow {
+  return row !== null;
+}
+
+function formatTauxRaw(value: number | null | undefined): string {
   const num = Number(value) || 0;
   return num.toFixed(2).replace('.', ',');
 }
 
-function syncRawValues(setRawValues, pretKey, patch) {
+function syncRawValues(
+  setRawValues: Dispatch<SetStateAction<CreditRawValues>>,
+  pretKey: PretKey,
+  patch: Partial<CreditLoan>,
+): void {
   if (patch.taux !== undefined) {
     setRawValues(r => ({
       ...r,
@@ -76,16 +108,16 @@ export default function CreditV2() {
   // -------------------------------------------------------------------------
   const { mode, isLoading: modeLoading } = useUserMode();
   // Override local du mode (sans modifier le mode global de l'app)
-  const [localMode, setLocalMode] = useState(null);
+  const [localMode, setLocalMode] = useState<CreditLocalMode>(null);
   const isExpert = (localMode ?? mode) === 'expert';
   const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
 
   // -------------------------------------------------------------------------
   // STATE
   // -------------------------------------------------------------------------
-  const [state, setState] = useState(DEFAULT_STATE);
+  const [state, setState] = useState<CreditState>(DEFAULT_STATE);
   const [hydrated, setHydrated] = useState(false);
-  const [rawValues, setRawValues] = useState({});
+  const [rawValues, setRawValues] = useState<CreditRawValues>({});
   const [exportLoading, setExportLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const [hypothesesOpen, setHypothesesOpen] = useState(false);
@@ -132,9 +164,9 @@ export default function CreditV2() {
   // RESET
   // -------------------------------------------------------------------------
   useEffect(() => {
-    const off = onResetEvent?.(({ simId }) => {
+    const off = onResetEvent?.(({ simId }: ResetDetail) => {
       if (simId && simId !== 'credit') return;
-      const resetState = {
+      const resetState: CreditState = {
         ...DEFAULT_STATE,
         pret1: { ...DEFAULT_STATE.pret1, capital: 0, duree: 0, taux: 0, tauxAssur: 0, quotite: 100 },
         pret2: null,
@@ -151,15 +183,15 @@ export default function CreditV2() {
   // -------------------------------------------------------------------------
   // HELPERS DE MUTATION
   // -------------------------------------------------------------------------
-  const setGlobal = useCallback((patch) => {
+  const setGlobal = useCallback((patch: Partial<CreditState>) => {
     setState(s => ({ ...s, ...patch }));
   }, []);
 
-  const setPret1 = useCallback((patch) => {
+  const setPret1 = useCallback((patch: Partial<CreditLoan>) => {
     setState(s => {
       const next = { ...s, pret1: patchPret(s.pret1, patch) };
       // Sync global startYM and assurMode when pret1 changes them
-      if (patch.startYM !== undefined) next.startYM = patch.startYM;
+      if (patch.startYM != null) next.startYM = patch.startYM;
       if (patch.assurMode !== undefined) next.assurMode = patch.assurMode;
       if (patch.type !== undefined) next.creditType = patch.type;
       return next;
@@ -167,12 +199,12 @@ export default function CreditV2() {
     syncRawValues(setRawValues, 'pret1', patch);
   }, []);
 
-  const setPret2 = useCallback((patch) => {
+  const setPret2 = useCallback((patch: Partial<CreditLoan>) => {
     setState(s => s.pret2 ? ({ ...s, pret2: patchPret(s.pret2, patch) }) : s);
     syncRawValues(setRawValues, 'pret2', patch);
   }, []);
 
-  const setPret3 = useCallback((patch) => {
+  const setPret3 = useCallback((patch: Partial<CreditLoan>) => {
     setState(s => s.pret3 ? ({ ...s, pret3: patchPret(s.pret3, patch) }) : s);
     syncRawValues(setRawValues, 'pret3', patch);
   }, []);
@@ -195,13 +227,13 @@ export default function CreditV2() {
 
   const removePret2 = useCallback(() => {
     setState(s => ({ ...s, pret2: null, pret3: null, lisserPret1: false }));
-    setRawValues(({ pret2: _a, pret3: _b, ...rest }) => rest);
+    setRawValues(({ pret2: _a, pret3: _b, ...rest }) => ({ ...rest }));
     if (activeTab >= 1) setActiveTab(0);
   }, [activeTab]);
 
   const removePret3 = useCallback(() => {
     setState(s => ({ ...s, pret3: null }));
-    setRawValues(({ pret3: _a, ...rest }) => rest);
+    setRawValues(({ pret3: _a, ...rest }) => ({ ...rest }));
     if (activeTab === 2) setActiveTab(1);
   }, [activeTab]);
 
@@ -214,7 +246,7 @@ export default function CreditV2() {
     if (!hydrated || modeLoading || isExpert) return;
     if (state.pret2 || state.pret3) {
       setState(s => ({ ...s, pret2: null, pret3: null, lisserPret1: false }));
-      setRawValues(({ pret2: _a, pret3: _b, ...rest }) => rest);
+      setRawValues(({ pret2: _a, pret3: _b, ...rest }) => ({ ...rest }));
       if (activeTab >= 1) setActiveTab(0);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -223,7 +255,7 @@ export default function CreditV2() {
   // -------------------------------------------------------------------------
   // CALCULS (state dérivé pour le mode simplifié : assurance = 0, pret2/3 ignorés)
   // -------------------------------------------------------------------------
-  const stateForCalc = isExpert ? state : {
+  const stateForCalc: CreditState = isExpert ? state : {
     ...state,
     pret1: { ...state.pret1, tauxAssur: 0 },
     pret2: null, /* point 5 — jamais de pret2/3 en simplifié */
@@ -235,9 +267,12 @@ export default function CreditV2() {
   // SYNTHÈSE PAR PRÊT (point 4 PR2 — card s'actualise par tab actif)
   // -------------------------------------------------------------------------
   const perLoanSyntheses = useMemo(() => {
-    const make = (rows, diffDureesMois = 0) => {
+    const make = (
+      rows: Array<CreditScheduleRow | null>,
+      durationDiff: number = 0,
+    ): CreditSynthesis | null => {
       if (!rows?.length) return null;
-      const validRows = rows.filter(r => r);
+      const validRows = rows.filter(isDefinedRow);
       if (!validRows.length) return null;
       const totalInterets = validRows.reduce((s, r) => s + (r.interet || 0), 0);
       const totalAssurance = validRows.reduce((s, r) => s + (r.assurance || 0), 0);
@@ -249,7 +284,7 @@ export default function CreditV2() {
         totalAssurance,
         coutTotalCredit: totalInterets + totalAssurance,
         capitalEmprunte,
-        diffDureesMois,
+        diffDureesMois: durationDiff,
       };
     };
     return [
@@ -287,7 +322,7 @@ export default function CreditV2() {
     setExportLoading,
   });
 
-  const exportOptions = [
+  const exportOptions: CreditExportOption[] = [
     { label: 'PowerPoint', onClick: exportPowerPoint },
     { label: 'Excel', onClick: exportExcel },
   ];
@@ -320,12 +355,12 @@ export default function CreditV2() {
   const mensuPret2 = calc.pret2Rows[0]?.mensu || 0;
   const mensuPret3 = calc.pret3Rows[0]?.mensu || 0;
 
-  const pretLookup = [
+  const pretLookup: PretLookupEntry[] = [
     { data: state.pret1, raw: rawValues.pret1, set: setPret1, mensu: mensuPret1 },
     { data: state.pret2, raw: rawValues.pret2, set: setPret2, mensu: mensuPret2 },
     { data: state.pret3, raw: rawValues.pret3, set: setPret3, mensu: mensuPret3 },
   ];
-  const activeLoan = pretLookup[activeTab];
+  const activeLoan = pretLookup[activeTab] || pretLookup[0];
 
   return (
     <div className="sim-page cv2-page" data-testid="credit-page">
@@ -564,7 +599,7 @@ export default function CreditV2() {
           />
           {calc.pret2Rows.length > 0 && (
             <CreditScheduleTable
-              rows={calc.pret2Rows.filter(r => r)}
+              rows={calc.pret2Rows.filter(isDefinedRow)}
               startYM={state.startYM}
               isAnnual={isAnnual}
               title="Détail — Prêt 2"
@@ -574,7 +609,7 @@ export default function CreditV2() {
           )}
           {calc.pret3Rows.length > 0 && (
             <CreditScheduleTable
-              rows={calc.pret3Rows.filter(r => r)}
+              rows={calc.pret3Rows.filter(isDefinedRow)}
               startYM={state.startYM}
               isAnnual={isAnnual}
               title="Détail — Prêt 3"

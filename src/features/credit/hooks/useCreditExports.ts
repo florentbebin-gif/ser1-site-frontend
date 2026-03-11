@@ -1,59 +1,99 @@
 /**
- * useCreditExports.js — Hook d'export Excel & PPTX pour CreditV2
+ * useCreditExports.ts - Hook d'export Excel & PPTX pour CreditV2
  *
  * Adapté depuis Credit.jsx legacy.
  * Reçoit le state centralisé + les calculs du hook useCreditCalculations.
  */
 
 import { useCallback } from 'react';
-import { labelMonthFR, addMonths } from '../utils/creditFormatters.js';
+import { labelMonthFR, addMonths } from '../utils/creditFormatters';
+import type {
+  CreditExportHookParams,
+  CreditPptxData,
+  CreditScheduleRow,
+  CreditShiftedScheduleRow,
+} from '../types';
+
+interface ExportDisplayRow {
+  periode: string;
+  interet: number;
+  assurance: number;
+  amort: number;
+  mensu: number;
+  mensuTotal: number;
+  crd: number;
+  assuranceDeces: number;
+}
+
+function isDefinedRow(row: CreditShiftedScheduleRow): row is CreditScheduleRow {
+  return row !== null;
+}
 
 // ============================================================================
 // HELPERS (extraits de Credit.jsx legacy)
 // ============================================================================
 
-function aggregateToYearsFromRows(rows, startYMBase) {
-  const map = new Map();
-  rows.forEach((r, idx) => {
-    if (!r) return;
+function aggregateToYearsFromRows(
+  rows: Array<CreditScheduleRow | null>,
+  startYMBase: string,
+): ExportDisplayRow[] {
+  const map = new Map<string, ExportDisplayRow>();
+  rows.forEach((row, idx) => {
+    if (!row) return;
     const ym = addMonths(startYMBase, idx);
     const year = ym.split('-')[0];
-    const acc = map.get(year) || { interet: 0, assurance: 0, amort: 0, mensu: 0, mensuTotal: 0, crd: 0, assuranceDeces: 0 };
-    acc.interet += r.interet || 0;
-    acc.assurance += r.assurance || 0;
-    acc.amort += r.amort || 0;
-    acc.mensu += r.mensu || 0;
-    acc.mensuTotal += r.mensuTotal || 0;
-    acc.crd = r.crd || acc.crd || 0;
-    // point 7 — max par année (capital décès décroît : premier mois = max en CI, mais on prend le max pour robustesse)
-    acc.assuranceDeces = Math.max(acc.assuranceDeces ?? 0, r.assuranceDeces ?? 0);
-    map.set(year, acc);
+    const current = map.get(year) || {
+      periode: year,
+      interet: 0,
+      assurance: 0,
+      amort: 0,
+      mensu: 0,
+      mensuTotal: 0,
+      crd: 0,
+      assuranceDeces: 0,
+    };
+    current.interet += row.interet || 0;
+    current.assurance += row.assurance || 0;
+    current.amort += row.amort || 0;
+    current.mensu += row.mensu || 0;
+    current.mensuTotal += row.mensuTotal || 0;
+    current.crd = row.crd || current.crd || 0;
+    current.assuranceDeces = Math.max(current.assuranceDeces ?? 0, row.assuranceDeces ?? 0);
+    map.set(year, current);
   });
-  return Array.from(map.entries()).map(([periode, v]) => ({ periode, ...v }));
+  return Array.from(map.values());
 }
 
-function attachMonthLabels(rows, startYM) {
-  return rows.map((r, idx) => ({ periode: labelMonthFR(addMonths(startYM, idx)), ...r }));
+function attachMonthLabels(rows: CreditScheduleRow[], startYM: string): ExportDisplayRow[] {
+  return rows.map((row, idx) => ({
+    periode: labelMonthFR(addMonths(startYM, idx)),
+    interet: row.interet,
+    assurance: row.assurance,
+    amort: row.amort,
+    mensu: row.mensu,
+    mensuTotal: row.mensuTotal,
+    crd: row.crd,
+    assuranceDeces: row.assuranceDeces,
+  }));
 }
 
-function transpose(aoa) {
+function transpose<T>(aoa: T[][]): T[][] {
   if (!aoa.length) return aoa;
   const rows = aoa.length;
-  const cols = Math.max(...aoa.map(r => r.length));
-  const out = Array.from({ length: cols }, () => Array(rows).fill(''));
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      out[c][r] = aoa[r][c] ?? '';
+  const cols = Math.max(...aoa.map((row) => row.length));
+  const out = Array.from({ length: cols }, () => Array(rows).fill('' as unknown as T));
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < cols; col += 1) {
+      out[col][row] = aoa[row][col] ?? ('' as unknown as T);
     }
   }
   return out;
 }
 
-const toNum = (v) => {
-  const n = parseFloat(v);
-  return isNaN(n) ? 0 : n;
+const toNum = (value: string | number | null | undefined): number => {
+  const num = parseFloat(String(value ?? ''));
+  return Number.isNaN(num) ? 0 : num;
 };
-
 
 // ============================================================================
 // HOOK
@@ -67,17 +107,16 @@ export function useCreditExports({
   logoPlacement,
   pptxColors,
   setExportLoading,
-}) {
+}: CreditExportHookParams) {
   const { startYM } = state;
   const isAnnual = state.viewMode === 'annuel';
 
-  // ---- Excel ----
   const exportExcel = useCallback(async () => {
     setExportLoading(true);
     try {
       const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } = await import('../../../utils/export/xlsxBuilder');
 
-      const cell = (v, style) => ({ v, style });
+      const cell = (value: string | number, style: string) => ({ v: value, style });
 
       const headerResume = [
         cell('Période', 'sHeader'),
@@ -100,7 +139,6 @@ export function useCreditExports({
         cell('Capitaux décès', 'sHeader'),
       ];
 
-      // Onglet PARAMÈTRES
       const headerParams = [cell('Champ', 'sHeader'), cell('Valeur', 'sHeader')];
       const rowsParams = [];
       const p1 = state.pret1;
@@ -108,67 +146,64 @@ export function useCreditExports({
       rowsParams.push([cell('Prêt 1', 'sSection'), cell('', 'sSection')]);
       rowsParams.push([cell('Type de crédit (Prêt 1)', 'sText'), cell(p1.type === 'amortissable' ? 'Amortissable' : 'In fine', 'sText')]);
       rowsParams.push([cell('Date de souscription (Prêt 1)', 'sText'), cell(startYM ? labelMonthFR(startYM) : '', 'sText')]);
-      rowsParams.push([cell('Durée (mois) — Prêt 1', 'sText'), cell(p1.duree, 'sCenter')]);
+      rowsParams.push([cell('Durée (mois) - Prêt 1', 'sText'), cell(p1.duree, 'sCenter')]);
       rowsParams.push([cell('Montant emprunté (Prêt 1)', 'sText'), cell(toNum(p1.capital), 'sMoney')]);
-      rowsParams.push([cell('Taux annuel (crédit) — Prêt 1', 'sText'), cell((Number(p1.taux) || 0) / 100, 'sPercent')]);
-      rowsParams.push([cell('Mensualité (hors assurance) — Prêt 1', 'sText'), cell(toNum(calc.mensuBasePret1), 'sMoney')]);
+      rowsParams.push([cell('Taux annuel (crédit) - Prêt 1', 'sText'), cell((Number(p1.taux) || 0) / 100, 'sPercent')]);
+      rowsParams.push([cell('Mensualité (hors assurance) - Prêt 1', 'sText'), cell(toNum(calc.mensuBasePret1), 'sMoney')]);
       rowsParams.push([cell('Mensualité totale estimée', 'sText'), cell(Math.round(calc.synthese.mensualiteTotaleM1 + calc.synthese.primeAssMensuelle), 'sMoney')]);
       rowsParams.push([cell("Mode de l'assurance (Prêt 1)", 'sText'), cell((p1.assurMode || state.assurMode) === 'CI' ? 'Capital initial' : 'Capital restant dû', 'sText')]);
-      rowsParams.push([cell('Taux annuel (assurance) — Prêt 1', 'sText'), cell((Number(p1.tauxAssur) || 0) / 100, 'sPercent')]);
-      rowsParams.push([cell('Quotité assurée — Prêt 1', 'sText'), cell(p1.quotite / 100, 'sPercent')]);
+      rowsParams.push([cell('Taux annuel (assurance) - Prêt 1', 'sText'), cell((Number(p1.tauxAssur) || 0) / 100, 'sPercent')]);
+      rowsParams.push([cell('Quotité assurée - Prêt 1', 'sText'), cell(p1.quotite / 100, 'sPercent')]);
       rowsParams.push([cell('Vue', 'sText'), cell(isAnnual ? 'Vue annuelle' : 'Vue mensuelle', 'sText')]);
       rowsParams.push([cell('Lissage prêt 1', 'sText'), cell(state.lisserPret1 ? (state.lissageMode === 'mensu' ? 'Mensualité constante' : 'Durée constante') : 'Aucun', 'sText')]);
 
-      // Prêts additionnels
-      [state.pret2, state.pret3].forEach((p, idx) => {
-        if (!p) return;
-        const k = idx + 2;
-        const pAssurMode = p.assurMode || state.assurMode || 'CRD';
-        rowsParams.push([cell(`Prêt ${k}`, 'sSection'), cell('', 'sSection')]);
-        rowsParams.push([cell(`Prêt ${k} - Type de crédit`, 'sText'), cell((p.type || state.creditType) === 'amortissable' ? 'Amortissable' : 'In fine', 'sText')]);
-        rowsParams.push([cell(`Prêt ${k} - Montant emprunté`, 'sText'), cell(toNum(p.capital), 'sMoney')]);
-        rowsParams.push([cell(`Prêt ${k} - Durée (mois)`, 'sText'), cell(toNum(p.duree), 'sCenter')]);
-        rowsParams.push([cell(`Prêt ${k} - Taux annuel (crédit)`, 'sText'), cell((Number(p.taux || 0) || 0) / 100, 'sPercent')]);
-        rowsParams.push([cell(`Prêt ${k} - Taux annuel (assurance)`, 'sText'), cell((Number(p.tauxAssur || 0) || 0) / 100, 'sPercent')]);
-        rowsParams.push([cell(`Prêt ${k} - Mode assurance`, 'sText'), cell(pAssurMode === 'CI' ? 'Capital initial' : 'Capital restant dû', 'sText')]);
-        rowsParams.push([cell(`Prêt ${k} - Quotité assurée`, 'sText'), cell((p.quotite ?? 100) / 100, 'sPercent')]);
-        rowsParams.push([cell(`Prêt ${k} - Date de souscription`, 'sText'), cell(p.startYM ? labelMonthFR(p.startYM) : '', 'sText')]);
+      [state.pret2, state.pret3].forEach((loan, idx) => {
+        if (!loan) return;
+        const loanIndex = idx + 2;
+        const loanAssurMode = loan.assurMode || state.assurMode || 'CRD';
+        rowsParams.push([cell(`Prêt ${loanIndex}`, 'sSection'), cell('', 'sSection')]);
+        rowsParams.push([cell(`Prêt ${loanIndex} - Type de crédit`, 'sText'), cell((loan.type || state.creditType) === 'amortissable' ? 'Amortissable' : 'In fine', 'sText')]);
+        rowsParams.push([cell(`Prêt ${loanIndex} - Montant emprunté`, 'sText'), cell(toNum(loan.capital), 'sMoney')]);
+        rowsParams.push([cell(`Prêt ${loanIndex} - Durée (mois)`, 'sText'), cell(toNum(loan.duree), 'sCenter')]);
+        rowsParams.push([cell(`Prêt ${loanIndex} - Taux annuel (crédit)`, 'sText'), cell((Number(loan.taux || 0) || 0) / 100, 'sPercent')]);
+        rowsParams.push([cell(`Prêt ${loanIndex} - Taux annuel (assurance)`, 'sText'), cell((Number(loan.tauxAssur || 0) || 0) / 100, 'sPercent')]);
+        rowsParams.push([cell(`Prêt ${loanIndex} - Mode assurance`, 'sText'), cell(loanAssurMode === 'CI' ? 'Capital initial' : 'Capital restant dû', 'sText')]);
+        rowsParams.push([cell(`Prêt ${loanIndex} - Quotité assurée`, 'sText'), cell((loan.quotite ?? 100) / 100, 'sPercent')]);
+        rowsParams.push([cell(`Prêt ${loanIndex} - Date de souscription`, 'sText'), cell(loan.startYM ? labelMonthFR(loan.startYM) : '', 'sText')]);
       });
 
-      // Résumé
       const tableDisplay = isAnnual
         ? aggregateToYearsFromRows(calc.agrRows, startYM)
         : attachMonthLabels(calc.agrRows, startYM);
 
-      const resumeRows = tableDisplay.map((l) => [
-        cell(l.periode, 'sCenter'),
-        cell(Math.round(l.interet), 'sMoney'),
-        cell(Math.round(l.assurance), 'sMoney'),
-        cell(Math.round(l.amort), 'sMoney'),
-        cell(Math.round(l.mensu), 'sMoney'),
-        cell(Math.round(l.mensuTotal), 'sMoney'),
-        cell(Math.round(l.crd), 'sMoney'),
-        cell(Math.round(l.assuranceDeces ?? 0), 'sMoney'),
+      const resumeRows = tableDisplay.map((line) => [
+        cell(line.periode, 'sCenter'),
+        cell(Math.round(line.interet), 'sMoney'),
+        cell(Math.round(line.assurance), 'sMoney'),
+        cell(Math.round(line.amort), 'sMoney'),
+        cell(Math.round(line.mensu), 'sMoney'),
+        cell(Math.round(line.mensuTotal), 'sMoney'),
+        cell(Math.round(line.crd), 'sMoney'),
+        cell(Math.round(line.assuranceDeces ?? 0), 'sMoney'),
       ]);
 
-      // Détail par prêt
-      const mapRows = (rows) => (isAnnual
+      const mapRows = (rows: CreditScheduleRow[]) => (isAnnual
         ? aggregateToYearsFromRows(rows, startYM)
         : attachMonthLabels(rows, startYM)
-      ).map((l) => [
-        cell(l.periode, 'sCenter'),
-        cell(Math.round(l?.interet ?? 0), 'sMoney'),
-        cell(Math.round(l?.assurance ?? 0), 'sMoney'),
-        cell(Math.round(l?.amort ?? 0), 'sMoney'),
-        cell(Math.round(l?.mensu ?? 0), 'sMoney'),
-        cell(Math.round(l?.mensuTotal ?? 0), 'sMoney'),
-        cell(Math.round(l?.crd ?? 0), 'sMoney'),
-        cell(Math.round(l?.assuranceDeces ?? 0), 'sMoney'),
+      ).map((line) => [
+        cell(line.periode, 'sCenter'),
+        cell(Math.round(line.interet ?? 0), 'sMoney'),
+        cell(Math.round(line.assurance ?? 0), 'sMoney'),
+        cell(Math.round(line.amort ?? 0), 'sMoney'),
+        cell(Math.round(line.mensu ?? 0), 'sMoney'),
+        cell(Math.round(line.mensuTotal ?? 0), 'sMoney'),
+        cell(Math.round(line.crd ?? 0), 'sMoney'),
+        cell(Math.round(line.assuranceDeces ?? 0), 'sMoney'),
       ]);
 
       const pret1Arr = mapRows(calc.pret1Rows);
-      const pret2Arr = calc.pret2Rows.length > 0 ? mapRows(calc.pret2Rows.filter(r => r)) : [];
-      const pret3Arr = calc.pret3Rows.length > 0 ? mapRows(calc.pret3Rows.filter(r => r)) : [];
+      const pret2Arr = calc.pret2Rows.length > 0 ? mapRows(calc.pret2Rows.filter(isDefinedRow)) : [];
+      const pret3Arr = calc.pret3Rows.length > 0 ? mapRows(calc.pret3Rows.filter(isDefinedRow)) : [];
 
       const sheets = [
         { name: 'Paramètres', rows: [headerParams, ...rowsParams], columnWidths: [36, 22] },
@@ -182,15 +217,14 @@ export function useCreditExports({
       const isValid = await validateXlsxBlob(blob);
       if (!isValid) throw new Error('XLSX invalide (signature PK manquante).');
       downloadXlsx(blob, `SER1_${isAnnual ? 'Annuel' : 'Mensuel'}.xlsx`);
-    } catch (e) {
-      console.error('Export Excel échoué', e);
+    } catch (error) {
+      console.error('Export Excel échoué', error);
       alert('Impossible de générer le fichier Excel.');
     } finally {
       setExportLoading(false);
     }
   }, [state, calc, isAnnual, startYM, themeColors, setExportLoading]);
 
-  // ---- PowerPoint ----
   const exportPowerPoint = useCallback(async () => {
     setExportLoading(true);
     try {
@@ -203,18 +237,26 @@ export function useCreditExports({
       const p1 = state.pret1;
       const p1Params = calc.pret1Params;
 
-      // Aggregated years for total
       const aggregatedYears = aggregateToYearsFromRows(calc.agrRows, startYM);
-      const amortizationRowsTotal = aggregatedYears.map(row => ({
-        periode: row.periode, interet: row.interet, assurance: row.assurance,
-        amort: row.amort, annuite: row.mensu, annuiteTotale: row.mensuTotal, crd: row.crd,
+      const amortizationRowsTotal = aggregatedYears.map((row) => ({
+        periode: row.periode,
+        interet: row.interet,
+        assurance: row.assurance,
+        amort: row.amort,
+        annuite: row.mensu,
+        annuiteTotale: row.mensuTotal,
+        crd: row.crd,
       }));
 
-      // Per-loan aggregation
       const pret1Agg = aggregateToYearsFromRows(calc.pret1Rows, startYM);
-      const amortizationRowsPret1 = pret1Agg.map(row => ({
-        periode: row.periode, interet: row.interet, assurance: row.assurance,
-        amort: row.amort, annuite: row.mensu, annuiteTotale: row.mensuTotal, crd: row.crd,
+      const amortizationRowsPret1 = pret1Agg.map((row) => ({
+        periode: row.periode,
+        interet: row.interet,
+        assurance: row.assurance,
+        amort: row.amort,
+        annuite: row.mensu,
+        annuiteTotale: row.mensuTotal,
+        crd: row.crd,
       }));
 
       const totalCapital = p1Params.capital
@@ -227,11 +269,10 @@ export function useCreditExports({
         state.pret3 ? toNum(state.pret3.duree) : 0,
       );
 
-      // Build loans array
-      const pret1Interets = calc.pret1Rows.reduce((s, l) => s + (l.interet || 0), 0);
-      const pret1Assurance = calc.pret1Rows.reduce((s, l) => s + (l.assurance || 0), 0);
+      const pret1Interets = calc.pret1Rows.reduce((sum, row) => sum + (row.interet || 0), 0);
+      const pret1Assurance = calc.pret1Rows.reduce((sum, row) => sum + (row.assurance || 0), 0);
 
-      const loans = [{
+      const loans: NonNullable<CreditPptxData['loans']> = [{
         index: 1,
         capital: p1Params.capital,
         dureeMois: p1Params.duree,
@@ -240,7 +281,6 @@ export function useCreditExports({
         quotite: p1Params.quotite,
         creditType: p1.type || state.creditType,
         assuranceMode: p1.assurMode || state.assurMode,
-        // Quand le lissage est actif, on utilise la mensualité effective (lissée) du prêt 1
         mensualiteHorsAssurance: (state.lisserPret1 && calc.hasPretsAdditionnels)
           ? (calc.pret1Rows[0]?.mensu ?? calc.mensuBasePret1)
           : calc.mensuBasePret1,
@@ -250,17 +290,19 @@ export function useCreditExports({
         coutInterets: pret1Interets,
         coutAssurance: pret1Assurance,
         amortizationRows: amortizationRowsPret1,
-        startYM: startYM, // point 6
-        dateEffet: startYM ? labelMonthFR(startYM) : undefined, // point 8
+        startYM,
+        dateEffet: startYM ? labelMonthFR(startYM) : undefined,
       }];
 
-      // Pret2 & Pret3
-      [{ pret: state.pret2, rows: calc.pret2Rows, idx: 0 }, { pret: state.pret3, rows: calc.pret3Rows, idx: 1 }].forEach(({ pret, rows, idx }) => {
+      [
+        { pret: state.pret2, rows: calc.pret2Rows, idx: 0 },
+        { pret: state.pret3, rows: calc.pret3Rows, idx: 1 },
+      ].forEach(({ pret, rows, idx }) => {
         if (!pret) return;
-        const pRows = rows.filter(r => r);
-        const pAgg = aggregateToYearsFromRows(pRows, startYM);
-        const pInterets = pRows.reduce((s, row) => s + ((row?.interet) || 0), 0);
-        const pAssurance = pRows.reduce((s, row) => s + ((row?.assurance) || 0), 0);
+        const validRows = rows.filter(isDefinedRow);
+        const aggregated = aggregateToYearsFromRows(validRows, startYM);
+        const pretInterets = validRows.reduce((sum, row) => sum + (row.interet || 0), 0);
+        const pretAssurance = validRows.reduce((sum, row) => sum + (row.assurance || 0), 0);
         const pretStartYM = pret.startYM || startYM;
         loans.push({
           index: idx + 2,
@@ -271,30 +313,39 @@ export function useCreditExports({
           quotite: (pret.quotite ?? 100) / 100,
           creditType: pret.type || state.creditType,
           assuranceMode: pret.assurMode || state.assurMode || 'CRD',
-          mensualiteHorsAssurance: rows.find(r => r)?.mensu || 0, // point 9 — rows[0] est null si prêt différé
-          mensualiteTotale: rows.find(r => r)?.mensuTotal || 0,
-          coutInterets: pInterets,
-          coutAssurance: pAssurance,
-          amortizationRows: pAgg.map(row => ({
-            periode: row.periode, interet: row.interet, assurance: row.assurance,
-            amort: row.amort, annuite: row.mensu, annuiteTotale: row.mensuTotal, crd: row.crd,
+          mensualiteHorsAssurance: rows.find(isDefinedRow)?.mensu || 0,
+          mensualiteTotale: rows.find(isDefinedRow)?.mensuTotal || 0,
+          coutInterets: pretInterets,
+          coutAssurance: pretAssurance,
+          amortizationRows: aggregated.map((row) => ({
+            periode: row.periode,
+            interet: row.interet,
+            assurance: row.assurance,
+            amort: row.amort,
+            annuite: row.mensu,
+            annuiteTotale: row.mensuTotal,
+            crd: row.crd,
           })),
-          startYM: pretStartYM, // point 6
-          dateEffet: pretStartYM ? labelMonthFR(pretStartYM) : undefined, // point 8
+          startYM: pretStartYM,
+          dateEffet: pretStartYM ? labelMonthFR(pretStartYM) : undefined,
         });
       });
 
-      const paymentPeriods = calc.synthesePeriodes.map(p => ({
-        label: p.from, mensualitePret1: p.p1, mensualitePret2: p.p2, mensualitePret3: p.p3, total: p.p1 + p.p2 + p.p3,
-        monthIndex: p.monthIndex ?? 0,
+      const paymentPeriods: NonNullable<CreditPptxData['paymentPeriods']> = calc.synthesePeriodes.map((period) => ({
+        label: period.from,
+        mensualitePret1: period.p1,
+        mensualitePret2: period.p2,
+        mensualitePret3: period.p3,
+        total: period.p1 + period.p2 + period.p3,
+        monthIndex: period.monthIndex ?? 0,
       }));
 
-      const assuranceDecesByYear = aggregatedYears.map((row) => row?.assuranceDeces ?? 0);
+      const assuranceDecesByYear = aggregatedYears.map((row) => row.assuranceDeces ?? 0);
 
-      const creditData = {
+      const creditData: CreditPptxData = {
         totalCapital,
         maxDureeMois,
-        startYM, // point 6 — pour les labels de dates dans la timeline PPTX
+        startYM,
         coutTotalInterets: calc.synthese.totalInterets,
         coutTotalAssurance: calc.synthese.totalAssurance,
         coutTotalCredit: calc.synthese.coutTotalCredit,

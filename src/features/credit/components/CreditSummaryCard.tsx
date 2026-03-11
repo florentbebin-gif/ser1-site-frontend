@@ -1,28 +1,43 @@
 /**
- * CreditSummaryCard.jsx - Carte synthèse sticky (colonne droite)
+ * CreditSummaryCard.tsx - Carte synthèse sticky (colonne droite)
  */
 
-import React from 'react';
-import { euro0 } from '../utils/creditFormatters.js';
+import { euro0 } from '../utils/creditFormatters';
+import type {
+  CreditSummaryCardProps,
+  SummaryDonutProps,
+} from '../types';
 import './CreditV2.css';
 
-// ── Donut SVG (Capital vs Intérêts, sans valeurs) ──────────────────────────
 const DONUT_R = 27;
 const DONUT_CX = 34;
 const DONUT_CY = 34;
-const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_R; // ≈ 169.6
+const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_R;
 
-export function SummaryDonut({ capital, interets, capitalColor = 'var(--color-c2)' }) {
+export function SummaryDonut({
+  capital,
+  interets,
+  capitalColor = 'var(--color-c2)',
+}: SummaryDonutProps) {
   const total = capital + interets;
 
   if (total <= 0) {
     return (
       <svg
-        width="68" height="68" viewBox="0 0 68 68"
-        className="cv2-donut" aria-hidden="true"
+        width="68"
+        height="68"
+        viewBox="0 0 68 68"
+        className="cv2-donut"
+        aria-hidden="true"
       >
-        <circle cx={DONUT_CX} cy={DONUT_CY} r={DONUT_R}
-          fill="none" stroke="var(--color-c8)" strokeWidth="9" />
+        <circle
+          cx={DONUT_CX}
+          cy={DONUT_CY}
+          r={DONUT_R}
+          fill="none"
+          stroke="var(--color-c8)"
+          strokeWidth="9"
+        />
       </svg>
     );
   }
@@ -32,15 +47,25 @@ export function SummaryDonut({ capital, interets, capitalColor = 'var(--color-c2
 
   return (
     <svg
-      width="68" height="68" viewBox="0 0 68 68"
-      className="cv2-donut" aria-hidden="true"
+      width="68"
+      height="68"
+      viewBox="0 0 68 68"
+      className="cv2-donut"
+      aria-hidden="true"
       style={{ transform: 'rotate(-90deg)' }}
     >
-      {/* Fond anneau */}
-      <circle cx={DONUT_CX} cy={DONUT_CY} r={DONUT_R}
-        fill="none" stroke="var(--color-c8)" strokeWidth="9" />
-      {/* Segment Capital */}
-      <circle cx={DONUT_CX} cy={DONUT_CY} r={DONUT_R}
+      <circle
+        cx={DONUT_CX}
+        cy={DONUT_CY}
+        r={DONUT_R}
+        fill="none"
+        stroke="var(--color-c8)"
+        strokeWidth="9"
+      />
+      <circle
+        cx={DONUT_CX}
+        cy={DONUT_CY}
+        r={DONUT_R}
         fill="none"
         stroke={capitalColor}
         strokeWidth="9"
@@ -48,8 +73,10 @@ export function SummaryDonut({ capital, interets, capitalColor = 'var(--color-c2
         strokeDashoffset="0"
         strokeLinecap="butt"
       />
-      {/* Segment Intérêts — C6 */}
-      <circle cx={DONUT_CX} cy={DONUT_CY} r={DONUT_R}
+      <circle
+        cx={DONUT_CX}
+        cy={DONUT_CY}
+        r={DONUT_R}
         fill="none"
         stroke="var(--color-c6)"
         strokeWidth="9"
@@ -61,7 +88,6 @@ export function SummaryDonut({ capital, interets, capitalColor = 'var(--color-c2
   );
 }
 
-// ── Composant principal ────────────────────────────────────────────────────
 export function CreditSummaryCard({
   synthese,
   isAnnual,
@@ -69,7 +95,7 @@ export function CreditSummaryCard({
   isExpert = true,
   loanLabel,
   lissageCoutDelta = 0,
-}) {
+}: CreditSummaryCardProps) {
   const {
     mensualiteTotaleM1,
     primeAssMensuelle,
@@ -86,8 +112,6 @@ export function CreditSummaryCard({
 
   return (
     <aside className="cv2-summary" data-testid="credit-summary-card">
-
-      {/* Titre + icône */}
       <div className="cv2-summary__title-row">
         <div className="cv2-section-icon-wrapper">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -99,10 +123,8 @@ export function CreditSummaryCard({
         <div className="cv2-summary__title">{loanLabel || 'Synthèse du prêt'}</div>
       </div>
 
-      {/* Séparateur dégradé (même barre que la carte paramètres) */}
       <div className="cv2-loan-card__divider" />
 
-      {/* KPI principal + donut côte à côte */}
       <div className="cv2-summary__kpi-zone">
         <div>
           <div className="cv2-summary__kpi-label-small">{kpiLabel}</div>
@@ -124,10 +146,8 @@ export function CreditSummaryCard({
         <SummaryDonut capital={capitalEmprunte} interets={totalInterets} />
       </div>
 
-      {/* Séparateur */}
       <div className="cv2-summary__divider" />
 
-      {/* Lignes de coût */}
       <div className="cv2-summary__rows">
         {isExpert && (
           <div className="cv2-summary__row">
@@ -152,32 +172,31 @@ export function CreditSummaryCard({
         </div>
       </div>
 
-      {/* Bloc lissage */}
       {lisserPret1 && (diffDureesMois !== 0 || lissageCoutDelta !== 0) && (
         <>
           <div className="cv2-loan-card__divider cv2-loan-card__divider--tight" />
-        <div className="cv2-summary__lissage-info">
-          {diffDureesMois !== 0 && (
-            <div className="cv2-summary__row">
-              <span className="cv2-summary__row-label">
-                {diffDureesMois > 0 ? 'Durée allongée' : 'Durée réduite'}
-              </span>
-              <span className="cv2-summary__row-value">
-                {diffDureesMois > 0 ? '+' : ''}{diffDureesMois} mois
-              </span>
-            </div>
-          )}
-          {lissageCoutDelta !== 0 && (
-            <div className="cv2-summary__row">
-              <span className="cv2-summary__row-label">
-                {lissageCoutDelta > 0 ? 'Coût supplémentaire' : 'Économie du lissage'}
-              </span>
-              <span className="cv2-summary__row-value">
-                {euro0(Math.abs(lissageCoutDelta))}
-              </span>
-            </div>
-          )}
-        </div>
+          <div className="cv2-summary__lissage-info">
+            {diffDureesMois !== 0 && (
+              <div className="cv2-summary__row">
+                <span className="cv2-summary__row-label">
+                  {diffDureesMois > 0 ? 'Durée allongée' : 'Durée réduite'}
+                </span>
+                <span className="cv2-summary__row-value">
+                  {diffDureesMois > 0 ? '+' : ''}{diffDureesMois} mois
+                </span>
+              </div>
+            )}
+            {lissageCoutDelta !== 0 && (
+              <div className="cv2-summary__row">
+                <span className="cv2-summary__row-label">
+                  {lissageCoutDelta > 0 ? 'Coût supplémentaire' : 'Économie du lissage'}
+                </span>
+                <span className="cv2-summary__row-value">
+                  {euro0(Math.abs(lissageCoutDelta))}
+                </span>
+              </div>
+            )}
+          </div>
         </>
       )}
     </aside>

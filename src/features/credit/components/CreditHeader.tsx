@@ -1,12 +1,12 @@
 /**
- * CreditHeader.jsx - Header premium du simulateur de crédit
+ * CreditHeader.tsx - Header premium du simulateur de crédit
  *
  * Affiche le titre, sous-titre et bouton Export.
- * Le chip de mode est affiché sous la bordure du header dans Credit.jsx.
+ * Le chip de mode est affiché sous la bordure du header dans Credit.tsx.
  */
 
-import React from 'react';
 import { ExportMenu } from '../../../components/ExportMenu';
+import type { CreditHeaderProps } from '../types';
 import './CreditV2.css';
 
 export function CreditHeader({
@@ -14,7 +14,7 @@ export function CreditHeader({
   exportLoading,
   isExpert,
   onToggleMode,
-}) {
+}: CreditHeaderProps) {
   return (
     <div className="premium-header cv2-header--credit" data-testid="credit-header">
       <h1 className="premium-title" data-testid="credit-title">

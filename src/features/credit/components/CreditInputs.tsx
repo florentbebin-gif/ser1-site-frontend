@@ -1,23 +1,19 @@
 /**
- * CreditInputs.jsx - Composants de saisie réutilisables pour le simulateur de crédit
- *
- * Inspiré de placement/components/inputs.jsx
- * Tous les inputs respectent la gouvernance UI :
- * - Fond BLANC (#FFFFFF) impératif
- * - Bordure C8, focus C2 + ring C4
- * - Typo héritée, 13px
- *
- * Styles extraits dans CreditInputs.css (classes .ci-*)
- * Zéro inline style, zéro Object.assign sur e.target.style
+ * CreditInputs.tsx - Composants de saisie réutilisables pour le simulateur de crédit
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { parseCapital, parseTaux, formatTauxInput } from '../utils/creditFormatters.js';
+import { useEffect, useRef, useState } from 'react';
+import type { ChangeEvent, KeyboardEvent } from 'react';
+import { parseCapital, parseTaux, formatTauxInput } from '../utils/creditFormatters';
+import type {
+  InputEuroProps,
+  InputMonthProps,
+  InputNumberProps,
+  InputPctProps,
+  SelectProps,
+  ToggleProps,
+} from '../types';
 import './CreditInputs.css';
-
-// ============================================================================
-// INPUT EURO (Montant avec unité €)
-// ============================================================================
 
 export function InputEuro({
   label,
@@ -30,12 +26,11 @@ export function InputEuro({
   dataTestId,
   onBlur,
   highlight = false,
-}) {
-  const fmt = (n) => (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
+}: InputEuroProps) {
+  const fmt = (num: number) => (Math.round(Number(num) || 0)).toLocaleString('fr-FR');
 
-  const handleChange = (e) => {
-    const parsed = parseCapital(e.target.value);
-    onChange(parsed);
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onChange(parseCapital(event.target.value));
   };
 
   return (
@@ -61,10 +56,6 @@ export function InputEuro({
   );
 }
 
-// ============================================================================
-// INPUT POURCENTAGE (Taux avec unité %)
-// ============================================================================
-
 export function InputPct({
   label,
   rawValue,
@@ -73,9 +64,9 @@ export function InputPct({
   hint,
   error,
   testId,
-  placeholder = "0,00",
+  placeholder = '0,00',
   highlight = false,
-}) {
+}: InputPctProps) {
   const [local, setLocal] = useState(rawValue || '');
   const [focused, setFocused] = useState(false);
 
@@ -83,8 +74,8 @@ export function InputPct({
     if (!focused) setLocal(rawValue || '');
   }, [rawValue, focused]);
 
-  const handleChange = (e) => {
-    setLocal(formatTauxInput(e.target.value));
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setLocal(formatTauxInput(event.target.value));
   };
 
   const handleBlur = () => {
@@ -118,10 +109,6 @@ export function InputPct({
   );
 }
 
-// ============================================================================
-// INPUT NOMBRE (Durée, Quotité, etc.)
-// ============================================================================
-
 export function InputNumber({
   label,
   value,
@@ -135,10 +122,10 @@ export function InputNumber({
   testId,
   onBlur,
   highlight = false,
-}) {
-  const handleChange = (e) => {
-    const raw = e.target.value.replace(/\D/g, '').slice(0, 3);
-    const num = Math.min(max, Math.max(min, parseInt(raw) || 0));
+}: InputNumberProps) {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const raw = event.target.value.replace(/\D/g, '').slice(0, 3);
+    const num = Math.min(max, Math.max(min, parseInt(raw, 10) || 0));
     onChange(num);
   };
 
@@ -164,10 +151,6 @@ export function InputNumber({
   );
 }
 
-// ============================================================================
-// INPUT MOIS (type="month" pour dates YYYY-MM)
-// ============================================================================
-
 export function InputMonth({
   label,
   value,
@@ -176,7 +159,7 @@ export function InputMonth({
   hint,
   error,
   testId,
-}) {
+}: InputMonthProps) {
   return (
     <div className="ci-field" data-testid={testId}>
       {label && <label className="ci-label">{label}</label>}
@@ -184,7 +167,7 @@ export function InputMonth({
         type="month"
         disabled={disabled}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(event) => onChange(event.target.value)}
         aria-invalid={!!error}
         className={`ci-input ci-input--left${error ? ' ci-input--error' : ''}`}
       />
@@ -194,11 +177,7 @@ export function InputMonth({
   );
 }
 
-// ============================================================================
-// SELECT (custom — dropdown entièrement stylisé, sans native browser UI)
-// ============================================================================
-
-export function Select({
+export function Select<TValue extends string | number>({
   label,
   value,
   onChange,
@@ -207,15 +186,14 @@ export function Select({
   hint,
   error,
   testId,
-}) {
+}: SelectProps<TValue>) {
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Fermer au clic extérieur
   useEffect(() => {
-    if (!isOpen) return;
-    const handleMouseDown = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
+    if (!isOpen) return undefined;
+    const handleMouseDown = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -223,23 +201,26 @@ export function Select({
     return () => document.removeEventListener('mousedown', handleMouseDown);
   }, [isOpen]);
 
-  const selectedOption = options.find((o) => o.value === value);
+  const selectedOption = options.find((option) => option.value === value);
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (disabled) return;
-    const idx = options.findIndex((o) => o.value === value);
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
+    const index = options.findIndex((option) => option.value === value);
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
       setIsOpen((prev) => !prev);
-    } else if (e.key === 'Escape') {
+    } else if (event.key === 'Escape') {
       setIsOpen(false);
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (!isOpen) { setIsOpen(true); return; }
-      if (idx < options.length - 1) onChange(options[idx + 1].value);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (idx > 0) onChange(options[idx - 1].value);
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (!isOpen) {
+        setIsOpen(true);
+        return;
+      }
+      if (index < options.length - 1) onChange(options[index + 1].value);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (index > 0) onChange(options[index - 1].value);
     }
   };
 
@@ -262,32 +243,36 @@ export function Select({
           </span>
           <svg
             className="ci-select-trigger__arrow"
-            width="10" height="6" viewBox="0 0 10 6"
+            width="10"
+            height="6"
+            viewBox="0 0 10 6"
             aria-hidden="true"
           >
             <path
               d="M1 1l4 4 4-4"
-              stroke="currentColor" strokeWidth="1.5"
-              fill="none" strokeLinecap="round"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              fill="none"
+              strokeLinecap="round"
             />
           </svg>
         </button>
 
         {isOpen && (
           <ul role="listbox" className="ci-select-dropdown">
-            {options.map((opt) => (
+            {options.map((option) => (
               <li
-                key={opt.value}
+                key={String(option.value)}
                 role="option"
-                aria-selected={opt.value === value}
-                className={`ci-select-option${opt.value === value ? ' is-selected' : ''}`}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  onChange(opt.value);
+                aria-selected={option.value === value}
+                className={`ci-select-option${option.value === value ? ' is-selected' : ''}`}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  onChange(option.value);
                   setIsOpen(false);
                 }}
               >
-                {opt.label}
+                {option.label}
               </li>
             ))}
           </ul>
@@ -299,17 +284,13 @@ export function Select({
   );
 }
 
-// ============================================================================
-// TOGGLE (Switch binaire)
-// ============================================================================
-
 export function Toggle({
   checked,
   onChange,
   label,
   disabled = false,
   testId,
-}) {
+}: ToggleProps) {
   return (
     <div className="ci-toggle" data-testid={testId}>
       <button

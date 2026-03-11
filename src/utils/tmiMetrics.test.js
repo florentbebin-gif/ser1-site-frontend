@@ -69,7 +69,8 @@ describe('computeTmiMetrics — Scénario C : Célibataire 2 enfants, parent iso
   const paramsOn = baseParams({ partsNb: 3, basePartsForQf: 1, extraParts: 2, extraHalfParts: 2, isIsolated: true });
   const paramsOff = baseParams({ partsNb: 3, basePartsForQf: 1, extraParts: 2, extraHalfParts: 2, isIsolated: false });
   const metricsOn = computeTmiMetrics(90000, paramsOn);
-  const metricsOff = computeTmiMetrics(90000, paramsOff);
+  const _metricsOff = computeTmiMetrics(90000, paramsOff);
+  void _metricsOff;
 
   it('TMI cohérente (0–45%)', () => {
     expect(metricsOn.tmiRate).toBeGreaterThanOrEqual(0);
