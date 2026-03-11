@@ -1,10 +1,39 @@
-export const DEFAULT_INCOME_FILTERS = Object.freeze({
+export interface IncomeFilters {
+  tns: boolean;
+  pension: boolean;
+  foncier: boolean;
+}
+
+export interface IrIncomeDeclarant {
+  salaries?: number;
+  associes62?: number;
+  pensions?: number;
+  bic?: number;
+  fonciers?: number;
+  autres?: number;
+}
+
+export interface IrIncomeCapital {
+  withPs?: number;
+  withoutPs?: number;
+}
+
+export interface IrIncomes {
+  d1: IrIncomeDeclarant;
+  d2: IrIncomeDeclarant;
+  capital?: IrIncomeCapital;
+  fonciersFoyer?: number;
+}
+
+export const DEFAULT_INCOME_FILTERS: Readonly<IncomeFilters> = Object.freeze({
   tns: false,
   pension: false,
   foncier: false,
 });
 
-export function normalizeIncomeFilters(filters) {
+export function normalizeIncomeFilters(
+  filters?: Partial<IncomeFilters> | null,
+): IncomeFilters {
   return {
     tns: filters?.tns === true,
     pension: filters?.pension === true,
@@ -12,7 +41,7 @@ export function normalizeIncomeFilters(filters) {
   };
 }
 
-export function hasTaxableIncomeEntries(incomes) {
+export function hasTaxableIncomeEntries(incomes?: Partial<IrIncomes> | null): boolean {
   const safeIncomes = incomes || {};
   const values = [
     safeIncomes.d1?.salaries,
@@ -33,7 +62,10 @@ export function hasTaxableIncomeEntries(incomes) {
   return values.some((value) => Number(value) > 0);
 }
 
-export function applyIncomeFilters(incomes, filters) {
+export function applyIncomeFilters(
+  incomes?: Partial<IrIncomes> | null,
+  filters?: Partial<IncomeFilters> | null,
+): IrIncomes {
   const safeIncomes = incomes || {};
   const normalizedFilters = normalizeIncomeFilters(filters);
 
