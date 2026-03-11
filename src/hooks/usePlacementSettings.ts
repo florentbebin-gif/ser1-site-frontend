@@ -1,5 +1,5 @@
 /**
- * usePlacementSettings.js - Hook pour charger les paramètres fiscaux du simulateur Placement
+ * usePlacementSettings.ts - Hook pour charger les paramètres fiscaux du simulateur Placement
  * 
  * Charge les settings depuis Supabase :
  * - fiscality_settings (AV, PER, barèmes)
@@ -15,7 +15,34 @@ import {
   DEFAULT_PS_SETTINGS,
   DEFAULT_FISCALITY_SETTINGS,
 } from '../constants/settingsDefaults';
+import type { FiscalParams } from '../engine/placement/types';
+import type { GetFiscalSettingsResult } from '../utils/cache/fiscalSettingsCache';
 
+type TaxSettings = typeof DEFAULT_TAX_SETTINGS;
+type PsSettings = typeof DEFAULT_PS_SETTINGS;
+type FiscalitySettings = typeof DEFAULT_FISCALITY_SETTINGS;
+type TaxBracket = TaxSettings['incomeTax']['scaleCurrent'][number];
+type TaxScale = TaxSettings['incomeTax']['scaleCurrent'];
+type LegacyDmtgConfig = TaxSettings['dmtg'] & {
+  abattementLigneDirecte?: number;
+  scale?: TaxSettings['dmtg']['ligneDirecte']['scale'];
+};
+
+export interface PlacementTmiOption {
+  value: number;
+  label: string;
+}
+
+export interface UsePlacementSettingsResult {
+  fiscalParams: FiscalParams;
+  fiscalitySettings: FiscalitySettings;
+  psSettings: PsSettings;
+  taxSettings: TaxSettings;
+  baremIR: TaxScale;
+  tmiOptions: PlacementTmiOption[];
+  loading: boolean;
+  error: string | null;
+}
 
 const DEFAULT_TMI_OPTIONS = [
   { value: 0, label: '0 %' },
@@ -24,9 +51,9 @@ const DEFAULT_TMI_OPTIONS = [
   { value: 0.41, label: '41 %' },
   { value: 0.45, label: '45 %' },
   { value: 0.50, label: '50 %' },
-];
+] as PlacementTmiOption[];
 
-function buildTmiOptionsFromBareme(bareme) {
+function buildTmiOptionsFromBareme(bareme?: TaxScale | null): PlacementTmiOption[] {
   const effectiveBareme = Array.isArray(bareme) && bareme.length
     ? bareme
     : DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent;
@@ -38,8 +65,8 @@ function buildTmiOptionsFromBareme(bareme) {
   const uniqueRates = Array.from(
     new Set(
       effectiveBareme
-        .map((tranche) => (typeof tranche.rate === 'number' ? tranche.rate / 100 : null))
-        .filter((rate) => rate !== null && !Number.isNaN(rate))
+        .map((tranche: TaxBracket) => (typeof tranche.rate === 'number' ? tranche.rate / 100 : null))
+        .filter((rate): rate is number => rate !== null && !Number.isNaN(rate))
     )
   ).sort((a, b) => a - b);
 
@@ -57,12 +84,12 @@ function buildTmiOptionsFromBareme(bareme) {
  * Hook pour charger et gérer les settings du simulateur Placement
  * @returns {Object} { fiscalParams, taxSettings, loading, error }
  */
-export function usePlacementSettings() {
-  const [fiscalitySettings, setFiscalitySettings] = useState(DEFAULT_FISCALITY_SETTINGS);
-  const [psSettings, setPsSettings] = useState(DEFAULT_PS_SETTINGS);
-  const [taxSettings, setTaxSettings] = useState(DEFAULT_TAX_SETTINGS);
+export function usePlacementSettings(): UsePlacementSettingsResult {
+  const [fiscalitySettings, setFiscalitySettings] = useState<FiscalitySettings>(DEFAULT_FISCALITY_SETTINGS);
+  const [psSettings, setPsSettings] = useState<PsSettings>(DEFAULT_PS_SETTINGS);
+  const [taxSettings, setTaxSettings] = useState<TaxSettings>(DEFAULT_TAX_SETTINGS);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -71,7 +98,7 @@ export function usePlacementSettings() {
       try {
         setLoading(true);
         setError(null);
-        const settings = await getFiscalSettings();
+        const settings: GetFiscalSettingsResult = await getFiscalSettings();
         if (!mounted) return;
         setFiscalitySettings(settings.fiscality);
         setPsSettings(settings.ps);
@@ -95,7 +122,7 @@ export function usePlacementSettings() {
   useEffect(() => {
     const remove = addInvalidationListener((kind) => {
       if (['tax', 'ps', 'fiscality'].includes(kind)) {
-        getFiscalSettings({ force: true }).then((settings) => {
+        void getFiscalSettings({ force: true }).then((settings) => {
           setFiscalitySettings(settings.fiscality);
           setPsSettings(settings.ps);
           setTaxSettings(settings.tax);
@@ -106,18 +133,20 @@ export function usePlacementSettings() {
   }, []);
 
   // Extraire les paramètres normalisés pour le moteur de calcul
-  const fiscalParams = useMemo(() => {
+  const fiscalParams = useMemo<FiscalParams>(() => {
     const params = extractFiscalParams(fiscalitySettings, psSettings);
     // Ajouter les paramètres DMTG depuis tax_settings
-    const dmtg = taxSettings?.dmtg || DEFAULT_TAX_SETTINGS.dmtg;
+    const dmtg = (taxSettings?.dmtg || DEFAULT_TAX_SETTINGS.dmtg) as LegacyDmtgConfig;
     const dmtgLD = dmtg.ligneDirecte || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte;
-    params.dmtgAbattementLigneDirecte = dmtgLD.abattement || dmtg.abattementLigneDirecte || 100000;
-    params.dmtgScale = dmtgLD.scale || dmtg.scale || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale;
-    return params;
+    return {
+      ...params,
+      dmtgAbattementLigneDirecte: dmtgLD.abattement || dmtg.abattementLigneDirecte || 100000,
+      dmtgScale: dmtgLD.scale || dmtg.scale || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
+    };
   }, [fiscalitySettings, psSettings, taxSettings]);
 
   // Extraire le barème IR pour calculer la TMI
-  const baremIR = useMemo(() => {
+  const baremIR = useMemo<TaxScale>(() => {
     return taxSettings?.incomeTax?.scaleCurrent || DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent;
   }, [taxSettings]);
 
@@ -142,7 +171,11 @@ export function usePlacementSettings() {
  * @param {Array} bareme - Barème IR
  * @returns {number} TMI en décimal (ex: 0.30 pour 30%)
  */
-export function calculTMI(revenuImposable, parts = 1, bareme) {
+export function calculTMI(
+  revenuImposable: number,
+  parts: number = 1,
+  bareme?: Array<{ to: number | null; rate: number }> | null,
+): number {
   let effectiveBareme = bareme;
   if (!effectiveBareme || !effectiveBareme.length) {
     effectiveBareme = DEFAULT_TAX_SETTINGS.incomeTax.scaleCurrent;

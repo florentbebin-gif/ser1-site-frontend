@@ -50,10 +50,10 @@ Principes : épuré, lisible, respirant.
 
 ## Norme des pages `/sim/*` (baseline `/sim/credit`)
 ### Source de vérité & périmètre
-- Baseline obligatoire : `src/features/credit/Credit.jsx` + `src/features/credit/components/CreditV2.css`.
+- Baseline obligatoire : `src/features/credit/Credit.tsx` + `src/features/credit/components/CreditV2.css`.
 - Layout partagé : `src/components/simulator/SimulatorShell.css`.
 - Styles premium partagés : `src/styles/premium-shared.css`.
-- Inputs/select/toggle : `src/features/credit/components/CreditInputs.jsx` + `CreditInputs.css`.
+- Inputs/select/toggle : `src/features/credit/components/CreditInputs.tsx` + `CreditInputs.css`.
 - Cette norme s'applique aux futures pages `/sim/*` sauf exception explicitée en PR.
 
 ### 1) Gabarit global page (largeurs, colonnes, structure)
@@ -568,6 +568,6 @@ Cette section complete la norme existante. Elle fixe le contrat minimal avant d'
 - Tokens & defaults : `src/settings/theme.ts`, `src/styles.css`
 - ThemeProvider V5 : `src/settings/ThemeProvider.tsx`, `src/settings/presets.ts`, `src/settings/theme/types.ts`
 - UI premium shared : `src/components/simulator/SimulatorShell.css`, `src/styles/premium-shared.css`
-- Baseline `/sim/credit` : `src/features/credit/Credit.jsx`, `src/features/credit/components/CreditV2.css`
-- Inputs simulateur : `src/features/credit/components/CreditInputs.jsx`, `src/features/credit/components/CreditInputs.css`
+- Baseline `/sim/credit` : `src/features/credit/Credit.tsx`, `src/features/credit/components/CreditV2.css`
+- Inputs simulateur : `src/features/credit/components/CreditInputs.tsx`, `src/features/credit/components/CreditInputs.css`
 - ESLint couleurs : `tools/eslint-plugin-ser1-colors/`

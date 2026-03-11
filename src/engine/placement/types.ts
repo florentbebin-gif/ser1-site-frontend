@@ -20,6 +20,8 @@ export interface FiscalParams {
   peaAncienneteMin?: number;
   dividendesAbattementPercent?: number;
   dmtgTauxChoisi?: number | null;
+  dmtgAbattementLigneDirecte?: number;
+  dmtgScale?: Array<{ from: number; to: number | null; rate: number }>;
 }
 
 export interface EpargneRow {

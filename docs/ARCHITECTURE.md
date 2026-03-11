@@ -217,11 +217,11 @@ Règles fonctionnelles : voir `docs/GOUVERNANCE.md`.
 Source normative : section **"Norme des pages `/sim/*` (baseline `/sim/credit`)"** dans `docs/GOUVERNANCE.md`.
 
 Implémentation de référence :
-- Orchestrateur : `src/features/credit/Credit.jsx`
+- Orchestrateur : `src/features/credit/Credit.tsx`
 - Styles de page simulateur : `src/components/simulator/SimulatorShell.css`
 - Styles premium partagés : `src/styles/premium-shared.css`
 - Styles spécifiques crédit : `src/features/credit/components/CreditV2.css`
-- Inputs/select/toggle : `src/features/credit/components/CreditInputs.jsx` + `CreditInputs.css`
+- Inputs/select/toggle : `src/features/credit/components/CreditInputs.tsx` + `CreditInputs.css`
 - Pour toute nouvelle page `/sim/*`, appliquer la règle placeholder + unité de `docs/GOUVERNANCE.md` : placeholder numérique sans unité dans le champ, suffixe visuel hors champ, sauf si l'unité est déjà portée par un menu déroulant.
 - Les boutons optionnels de filtres/sous-sections doivent démarrer inactifs par défaut, puis activer explicitement les blocs associés.
 
@@ -389,7 +389,7 @@ Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
 └──────────────────────────┬───────────────────────────────┘
                            │ getFiscalSettings({force})
 ┌──────────────────────────▼───────────────────────────────┐
-│ usePlacementSettings.js  (src/hooks/)                    │
+│ usePlacementSettings.ts  (src/hooks/)                    │
 │  · Monte les 3 tables · écoute les invalidations         │
 │  · Appelle extractFiscalParams(fiscality, ps)            │
 │  · Dérive tmiOptions depuis barème IR                    │
@@ -529,9 +529,9 @@ Edge Function `rates-refresh` (cron hebdomadaire) : fetch URSSAF / legifrance / 
 | Pages settings | `src/pages/settings/` |
 | Cache + fetch Supabase | `src/utils/cache/fiscalSettingsCache.ts` |
 | **Hook unifié dossier fiscal** | **`src/hooks/useFiscalContext.ts`** |
-| Hook simulateur placement | `src/hooks/usePlacementSettings.js` |
-| Extraction params normalisés | `src/engine/placement/fiscalParams.js` |
-| Params par défaut (34 valeurs) | `src/engine/placement/shared.js` (`DEFAULT_FISCAL_PARAMS`) |
+| Hook simulateur placement | `src/hooks/usePlacementSettings.ts` |
+| Extraction params normalisés | `src/engine/placement/fiscalParams.ts` |
+| Params par défaut (34 valeurs) | `src/engine/placement/shared.ts` (`DEFAULT_FISCAL_PARAMS`) |
 | Profil fiscal par enveloppe | `src/features/placement/hooks/useFiscalProfile.ts` |
 | Migration snapshot (v4 + identity) | `src/features/ser1/snapshotMigrations.ts` |
 

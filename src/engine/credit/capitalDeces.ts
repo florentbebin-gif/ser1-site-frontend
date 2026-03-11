@@ -23,6 +23,16 @@ export interface ScheduleRow {
   assuranceDeces: number;  // Capital décès calculé (toujours défini)
 }
 
+export interface ScheduleRowInput {
+  mois: number;
+  interet: number;
+  assurance: number;
+  amort: number;
+  mensu: number;
+  mensuTotal: number;
+  crd: number;
+}
+
 /**
  * Calcule le capital décès pour une période donnée selon la règle métier
  * 
@@ -60,7 +70,7 @@ export function computeCapitalDecesPeriod(
  */
 export function computeCapitalDecesSchedule(
   params: LoanParams,
-  schedule: ScheduleRow[]
+  schedule: ScheduleRowInput[]
 ): ScheduleRow[] {
   return schedule.map((row) => {
     // CRD début = CRD fin de la période + amortissement de la période
@@ -115,7 +125,7 @@ export function aggregateCapitalDecesGlobal(
  */
 export function computeGlobalCapitalDecesSchedule(
   allLoansParams: LoanParams[],
-  allSchedules: Array<Array<ScheduleRow | null>>
+  allSchedules: Array<Array<ScheduleRowInput | null>>
 ): ScheduleRow[] {
   const maxLength = Math.max(...allSchedules.map(s => s.length));
   const globalSchedule: ScheduleRow[] = [];
