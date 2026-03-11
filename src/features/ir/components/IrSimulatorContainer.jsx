@@ -4,7 +4,7 @@ import '../../../styles/premium-shared.css';
 import './IrSimulator.css';
 import { onResetEvent, storageKeyFor } from '../../../utils/reset';
 import { toNumber } from '../../../utils/number';
-import { computeIrResult as computeIrResultEngine } from '../../../utils/irEngine.js';
+import { computeIrResult as computeIrResultEngine } from '../../../utils/irEngine';
 import { useFiscalContext } from '../../../hooks/useFiscalContext';
 import { DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
 import { useTheme } from '../../../settings/ThemeProvider';
