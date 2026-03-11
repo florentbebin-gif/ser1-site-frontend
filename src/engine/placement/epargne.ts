@@ -1,7 +1,78 @@
 import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from '../../utils/versementConfig.js';
-import { ENVELOPES, round2 } from './shared.js';
+import { DEFAULT_FISCAL_PARAMS, ENVELOPES, round2 } from './shared';
+import type { EpargneResult, FiscalParams } from './types';
 
-export function simulateEpargne(product, client, fiscalParams, options = {}) {
+interface VersementPonctuel {
+  annee?: number;
+  montant?: number;
+  fraisEntree?: number;
+  pctCapitalisation?: number;
+  pctDistribution?: number;
+}
+
+interface VersementEntryBase {
+  montant?: number;
+  fraisEntree?: number;
+  pctCapitalisation?: number;
+  pctDistribution?: number;
+}
+
+interface VersementAnnuel extends VersementEntryBase {
+  garantieBonneFin?: { active?: boolean };
+}
+
+interface CapitalisationConfig {
+  rendementAnnuel?: number;
+}
+
+interface DistributionConfig {
+  rendementAnnuel?: number;
+  tauxDistribution?: number;
+  strategie?: string;
+  delaiJouissance?: number;
+  dureeProduit?: number;
+  reinvestirVersAuTerme?: string;
+}
+
+interface VersementConfig {
+  initial: VersementEntryBase;
+  annuel: VersementAnnuel;
+  ponctuels?: VersementPonctuel[];
+  capitalisation: CapitalisationConfig;
+  distribution: DistributionConfig;
+}
+
+interface EpargneProduct {
+  envelope: string;
+  dureeEpargne?: number;
+  perBancaire?: boolean;
+  fraisGestion?: number;
+  optionBaremeIR?: boolean;
+  versementConfig?: Partial<VersementConfig> | null;
+  versementInitial?: number;
+  versementAnnuel?: number;
+  fraisEntree?: number;
+  rendement?: number;
+  tauxRevalorisation?: number;
+  delaiJouissance?: number;
+  dureeProduit?: number;
+}
+
+interface EpargneClient {
+  tmiEpargne?: number;
+  ageActuel?: number;
+}
+
+interface EpargneOptions {
+  fondsEuro?: boolean;
+}
+
+export function simulateEpargne(
+  product: EpargneProduct,
+  client: EpargneClient,
+  fiscalParams: FiscalParams,
+  options: EpargneOptions = {},
+): EpargneResult {
   const {
     envelope,
     dureeEpargne = 20,
@@ -10,17 +81,17 @@ export function simulateEpargne(product, client, fiscalParams, options = {}) {
     optionBaremeIR = false,
   } = product;
 
-  const versementConfig = normalizeVersementConfig(product.versementConfig || DEFAULT_VERSEMENT_CONFIG);
+  const versementConfig: VersementConfig = normalizeVersementConfig(product.versementConfig || DEFAULT_VERSEMENT_CONFIG);
   const { initial, annuel, ponctuels = [], capitalisation, distribution } = versementConfig;
 
   const { tmiEpargne = 0.30, ageActuel = 45 } = client;
-  const fp = fiscalParams;
+  const fp = { ...DEFAULT_FISCAL_PARAMS, ...fiscalParams };
 
   const isSCPI = envelope === ENVELOPES.SCPI;
 
-  const pct = (value) => Math.max(0, Math.min(100, value ?? 0)) / 100;
+  const pct = (value: number | null | undefined): number => Math.max(0, Math.min(100, value ?? 0)) / 100;
 
-  const sanitizeSplit = (pctCapi, pctDistrib) => {
+  const sanitizeSplit = (pctCapi: number, pctDistrib: number): { capi: number; distrib: number } => {
     let capi = pctCapi;
     let distrib = pctDistrib;
     if (isSCPI) {
@@ -42,12 +113,12 @@ export function simulateEpargne(product, client, fiscalParams, options = {}) {
   const initialSplitRatio = sanitizeSplit(pct(initial.pctCapitalisation), pct(initial.pctDistribution));
   const annualSplitRatio = sanitizeSplit(pct(annuel.pctCapitalisation), pct(annuel.pctDistribution));
 
-  const splitAmount = (amount, splitRatio) => ({
+  const splitAmount = (amount: number, splitRatio: { capi: number; distrib: number }) => ({
     capi: amount * splitRatio.capi,
     distrib: amount * splitRatio.distrib,
   });
 
-  const ponctuelsByYear = ponctuels.reduce((acc, p) => {
+  const ponctuelsByYear = ponctuels.reduce<Record<number, VersementPonctuel[]>>((acc, p) => {
     const key = Math.max(1, Math.min(dureeEpargne, p.annee || 1));
     if (!acc[key]) acc[key] = [];
     acc[key].push(p);

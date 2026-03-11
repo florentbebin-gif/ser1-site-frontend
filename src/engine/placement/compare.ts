@@ -1,7 +1,8 @@
-import { round2 } from './shared.js';
+import { round2 } from './shared';
+import type { CompareResult, SimulateCompleteResult } from './types';
 
-export function compareProducts(result1, result2) {
-  const delta = (a, b) => round2(a - b);
+export function compareProducts(result1: SimulateCompleteResult, result2: SimulateCompleteResult): CompareResult {
+  const delta = (a: number, b: number): number => round2(a - b);
 
   return {
     produit1: result1,

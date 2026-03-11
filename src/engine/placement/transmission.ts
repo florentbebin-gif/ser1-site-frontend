@@ -1,6 +1,21 @@
-import { ENVELOPES, round2 } from './shared.js';
+import { DEFAULT_FISCAL_PARAMS, ENVELOPES, round2 } from './shared';
+import type { FiscalParams, TransmissionResult } from './types';
 
-export function calculTransmission(params, fiscalParams) {
+interface TransmissionParams {
+  envelope: string;
+  capitalTransmis: number;
+  cumulVersements?: number;
+  ageAuDeces?: number;
+  agePremierVersement?: number;
+  nbBeneficiaires?: number;
+  beneficiaryType?: string;
+  perBancaire?: boolean;
+}
+
+export function calculTransmission(
+  params: TransmissionParams,
+  fiscalParams: FiscalParams,
+): TransmissionResult {
   const {
     envelope,
     capitalTransmis,
@@ -12,7 +27,7 @@ export function calculTransmission(params, fiscalParams) {
     perBancaire = false,
   } = params;
 
-  const fp = fiscalParams;
+  const fp = { ...DEFAULT_FISCAL_PARAMS, ...fiscalParams };
   const dmtgTauxChoisi = fp.dmtgTauxChoisi || 0.20;
 
   const effectiveNbBeneficiaires = beneficiaryType === 'conjoint' ? 1 : Math.max(1, nbBeneficiaires || 1);
@@ -30,7 +45,7 @@ export function calculTransmission(params, fiscalParams) {
     note: '',
   };
 
-  const computePsDeces = (assietteGains, noteIfZero = '') => {
+  const computePsDeces = (assietteGains: number, noteIfZero = ''): number => {
     const assiette = Math.max(0, assietteGains || 0);
     if (assiette <= 0) {
       resultatPs.applicable = false;

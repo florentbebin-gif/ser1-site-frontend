@@ -1,11 +1,11 @@
 export {
   ENVELOPES,
   ENVELOPE_LABELS,
-} from './shared.js';
+} from './shared';
 
-export { extractFiscalParams } from './fiscalParams.js';
-export { simulateEpargne } from './epargne.js';
-export { calculFiscaliteRetrait, simulateLiquidation } from './liquidation.js';
-export { calculTransmission } from './transmission.js';
-export { simulateComplete } from './simulateComplete.js';
-export { compareProducts } from './compare.js';
+export { extractFiscalParams } from './fiscalParams';
+export { simulateEpargne } from './epargne';
+export { calculFiscaliteRetrait, simulateLiquidation } from './liquidation';
+export { calculTransmission } from './transmission';
+export { simulateComplete } from './simulateComplete';
+export { compareProducts } from './compare';
