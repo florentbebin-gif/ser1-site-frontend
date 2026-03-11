@@ -1,4 +1,67 @@
-import { useCallback } from 'react';
+import { useCallback, type Dispatch, type SetStateAction } from 'react';
+import type { BracketDetail } from '../../../engine/ir/types';
+import type { IrData, UiSettingsForPptx } from '../../../pptx/presets/irDeckBuilder';
+import type { LogoPlacement } from '../../../pptx/theme/types';
+import type { XlsxCell, XlsxSheet } from '../../../utils/export/xlsxBuilder';
+import type { IrIncomes } from '../utils/incomeFilters';
+
+interface RealMode {
+  d1: string;
+  d2: string;
+}
+
+interface RealExpenses {
+  d1: number;
+  d2: number;
+}
+
+interface ExportThemeColors {
+  c1?: string;
+  c7?: string;
+}
+
+interface IrExportResult {
+  partsNb?: number;
+  taxableIncome?: number;
+  taxablePerPart?: number;
+  tmiRate?: number;
+  irNet?: number;
+  pfuIr?: number;
+  cehr?: number;
+  cdhr?: number;
+  psFoncier?: number;
+  psDividends?: number;
+  psTotal?: number;
+  totalTax?: number;
+  bracketsDetails?: BracketDetail[];
+  decote?: number;
+  qfAdvantage?: number;
+  creditsTotal?: number;
+  tmiBaseGlobal?: number;
+  tmiMarginGlobal?: number | null;
+}
+
+interface UseIrExportHandlersParams {
+  result: IrExportResult | null;
+  yearLabel: string;
+  status: string;
+  isIsolated: boolean;
+  effectiveParts: number;
+  location: string;
+  incomes: IrIncomes;
+  capitalMode: string;
+  realMode: RealMode;
+  realExpenses: RealExpenses;
+  deductions: number;
+  credits: number;
+  colors?: ExportThemeColors | null;
+  cabinetLogo?: string | null;
+  logoPlacement?: LogoPlacement;
+  pptxColors: UiSettingsForPptx;
+  setExportLoading: Dispatch<SetStateAction<boolean>>;
+}
+
+const cell = (v: string | number, style?: string): XlsxCell => ({ v, style });
 
 export function useIrExportHandlers({
   result,
@@ -18,9 +81,7 @@ export function useIrExportHandlers({
   logoPlacement,
   pptxColors,
   setExportLoading,
-}) {
-  const cell = (v, style) => ({ v, style });
-
+}: UseIrExportHandlersParams) {
   const exportExcel = useCallback(async () => {
     setExportLoading(true);
     try {
@@ -33,37 +94,59 @@ export function useIrExportHandlers({
       const { buildXlsxBlob, downloadXlsx, validateXlsxBlob } = await import('../../../utils/export/xlsxBuilder');
 
       const headerParams = [cell('Champ', 'sHeader'), cell('Valeur', 'sHeader')];
-      const rowsParams = [];
+      const rowsParams: XlsxSheet['rows'] = [];
 
       rowsParams.push([cell('Paramètres fiscaux', 'sSection'), cell('', 'sSection')]);
       rowsParams.push([cell('Barème', 'sText'), cell(yearLabel, 'sText')]);
-      rowsParams.push([cell('Situation familiale', 'sText'), cell(status === 'couple' ? 'Marié / Pacsé' : 'Célibataire / Veuf / Divorcé', 'sText')]);
+      rowsParams.push([
+        cell('Situation familiale', 'sText'),
+        cell(status === 'couple' ? 'Marié / Pacsé' : 'Célibataire / Veuf / Divorcé', 'sText'),
+      ]);
       rowsParams.push([cell('Parent isolé', 'sText'), cell(isIsolated ? 'Oui' : 'Non', 'sText')]);
       rowsParams.push([cell('Nombre de parts (calculé)', 'sText'), cell(result.partsNb || effectiveParts, 'sCenter')]);
-      rowsParams.push([cell('Zone géographique', 'sText'), cell(location === 'metropole' ? 'Métropole' : location === 'gmr' ? 'Guadeloupe / Martinique / Réunion' : 'Guyane / Mayotte', 'sText')]);
+      rowsParams.push([
+        cell('Zone géographique', 'sText'),
+        cell(
+          location === 'metropole'
+            ? 'Métropole'
+            : location === 'gmr'
+              ? 'Guadeloupe / Martinique / Réunion'
+              : 'Guyane / Mayotte',
+          'sText',
+        ),
+      ]);
 
       rowsParams.push([cell('Revenus', 'sSection'), cell('', 'sSection')]);
-      rowsParams.push([cell('Salaires D1', 'sText'), cell(incomes.d1.salaries || 0, 'sMoney')]);
-      rowsParams.push([cell('Salaires D2', 'sText'), cell(incomes.d2.salaries || 0, 'sMoney')]);
-      rowsParams.push([cell('Associés/gérants D1', 'sText'), cell(incomes.d1.associes62 || 0, 'sMoney')]);
-      rowsParams.push([cell('Associés/gérants D2', 'sText'), cell(incomes.d2.associes62 || 0, 'sMoney')]);
-      rowsParams.push([cell('BIC/BNC/BA D1', 'sText'), cell(incomes.d1.bic || 0, 'sMoney')]);
-      rowsParams.push([cell('BIC/BNC/BA D2', 'sText'), cell(incomes.d2.bic || 0, 'sMoney')]);
-      rowsParams.push([cell('Pensions D1', 'sText'), cell(incomes.d1.pensions || 0, 'sMoney')]);
-      rowsParams.push([cell('Pensions D2', 'sText'), cell(incomes.d2.pensions || 0, 'sMoney')]);
+      rowsParams.push([cell('Salaires D1', 'sText'), cell(incomes.d1?.salaries || 0, 'sMoney')]);
+      rowsParams.push([cell('Salaires D2', 'sText'), cell(incomes.d2?.salaries || 0, 'sMoney')]);
+      rowsParams.push([cell('Associés/gérants D1', 'sText'), cell(incomes.d1?.associes62 || 0, 'sMoney')]);
+      rowsParams.push([cell('Associés/gérants D2', 'sText'), cell(incomes.d2?.associes62 || 0, 'sMoney')]);
+      rowsParams.push([cell('BIC/BNC/BA D1', 'sText'), cell(incomes.d1?.bic || 0, 'sMoney')]);
+      rowsParams.push([cell('BIC/BNC/BA D2', 'sText'), cell(incomes.d2?.bic || 0, 'sMoney')]);
+      rowsParams.push([cell('Pensions D1', 'sText'), cell(incomes.d1?.pensions || 0, 'sMoney')]);
+      rowsParams.push([cell('Pensions D2', 'sText'), cell(incomes.d2?.pensions || 0, 'sMoney')]);
       rowsParams.push([cell('Revenus fonciers nets', 'sText'), cell(incomes.fonciersFoyer || 0, 'sMoney')]);
-      rowsParams.push([cell('RCM soumis aux PS', 'sText'), cell(incomes.capital.withPs || 0, 'sMoney')]);
-      rowsParams.push([cell('RCM hors PS', 'sText'), cell(incomes.capital.withoutPs || 0, 'sMoney')]);
-      rowsParams.push([cell('Option RCM', 'sText'), cell(capitalMode === 'pfu' ? 'PFU (flat tax)' : 'Barème', 'sText')]);
+      rowsParams.push([cell('RCM soumis aux PS', 'sText'), cell(incomes.capital?.withPs || 0, 'sMoney')]);
+      rowsParams.push([cell('RCM hors PS', 'sText'), cell(incomes.capital?.withoutPs || 0, 'sMoney')]);
+      rowsParams.push([
+        cell('Option RCM', 'sText'),
+        cell(capitalMode === 'pfu' ? 'PFU (flat tax)' : 'Barème', 'sText'),
+      ]);
 
       rowsParams.push([cell('Déductions / crédits', 'sSection'), cell('', 'sSection')]);
-      rowsParams.push([cell('Frais réels D1', 'sText'), cell(realMode.d1 === 'reels' ? realExpenses.d1 || 0 : 0, 'sMoney')]);
-      rowsParams.push([cell('Frais réels D2', 'sText'), cell(realMode.d2 === 'reels' ? realExpenses.d2 || 0 : 0, 'sMoney')]);
+      rowsParams.push([
+        cell('Frais réels D1', 'sText'),
+        cell(realMode.d1 === 'reels' ? realExpenses.d1 || 0 : 0, 'sMoney'),
+      ]);
+      rowsParams.push([
+        cell('Frais réels D2', 'sText'),
+        cell(realMode.d2 === 'reels' ? realExpenses.d2 || 0 : 0, 'sMoney'),
+      ]);
       rowsParams.push([cell('Déductions foyer', 'sText'), cell(deductions || 0, 'sMoney')]);
       rowsParams.push([cell('Crédits d’impôt', 'sText'), cell(credits || 0, 'sMoney')]);
 
       const headerSynth = [cell('Indicateur', 'sHeader'), cell('Valeur', 'sHeader')];
-      const rowsSynth = [];
+      const rowsSynth: XlsxSheet['rows'] = [];
       rowsSynth.push([cell('Revenu imposable du foyer', 'sText'), cell(result.taxableIncome || 0, 'sMoney')]);
       rowsSynth.push([cell('Revenu imposable par part', 'sText'), cell(result.taxablePerPart || 0, 'sMoney')]);
       rowsSynth.push([cell('TMI', 'sText'), cell((result.tmiRate || 0) / 100, 'sPercent')]);
@@ -76,11 +159,21 @@ export function useIrExportHandlers({
       rowsSynth.push([cell('PS total', 'sText'), cell(result.psTotal || 0, 'sMoney')]);
       rowsSynth.push([cell('Imposition totale', 'sText'), cell(result.totalTax || 0, 'sMoney')]);
 
-      const headerDetails = [cell('Poste', 'sHeader'), cell('Base', 'sHeader'), cell('Taux', 'sHeader'), cell('Impôt', 'sHeader')];
-      const rowsDetails = [];
+      const headerDetails = [
+        cell('Poste', 'sHeader'),
+        cell('Base', 'sHeader'),
+        cell('Taux', 'sHeader'),
+        cell('Impôt', 'sHeader'),
+      ];
+      const rowsDetails: XlsxSheet['rows'] = [];
       rowsDetails.push([cell('Barème (tranches)', 'sSection'), cell('', 'sSection'), cell('', 'sSection'), cell('', 'sSection')]);
       (result.bracketsDetails || []).forEach((b) => {
-        rowsDetails.push([cell(b.label || '', 'sText'), cell(b.base || 0, 'sMoney'), cell((b.rate || 0) / 100, 'sPercent'), cell(b.tax || 0, 'sMoney')]);
+        rowsDetails.push([
+          cell(b.label || '', 'sText'),
+          cell(b.base || 0, 'sMoney'),
+          cell((b.rate || 0) / 100, 'sPercent'),
+          cell(b.tax || 0, 'sMoney'),
+        ]);
       });
       rowsDetails.push([cell('Décote', 'sText'), cell(result.decote || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
       rowsDetails.push([cell('Avantage QF', 'sText'), cell(result.qfAdvantage || 0, 'sMoney'), cell('', 'sText'), cell('', 'sText')]);
@@ -150,13 +243,14 @@ export function useIrExportHandlers({
         (incomes?.d1?.salaries || 0) +
         (incomes?.d1?.associes62 || 0) +
         (incomes?.d1?.bic || 0);
-      const activityIncomeD2 = status === 'couple'
-        ? (incomes?.d2?.salaries || 0) +
-          (incomes?.d2?.associes62 || 0) +
-          (incomes?.d2?.bic || 0)
-        : 0;
+      const activityIncomeD2 =
+        status === 'couple'
+          ? (incomes?.d2?.salaries || 0) +
+            (incomes?.d2?.associes62 || 0) +
+            (incomes?.d2?.bic || 0)
+          : 0;
 
-      const irData = {
+      const irData: IrData = {
         taxableIncome: result.taxableIncome || 0,
         partsNb: result.partsNb || effectiveParts,
         taxablePerPart: result.taxablePerPart || 0,
@@ -171,12 +265,11 @@ export function useIrExportHandlers({
         totalTax: result.totalTax || 0,
         bracketsDetails: result.bracketsDetails || [],
         tmiBaseGlobal: result.tmiBaseGlobal,
-        tmiMarginGlobal: result.tmiMarginGlobal,
+        tmiMarginGlobal: result.tmiMarginGlobal ?? undefined,
         income1: activityIncomeD1,
         income2: activityIncomeD2,
-        yearLabel,
-        status,
-        location,
+        status: status === 'couple' ? 'couple' : 'single',
+        location: location === 'gmr' || location === 'guyane' ? location : 'metropole',
       };
 
       const deck = buildIrStudyDeck(irData, pptxColors, exportLogo, logoPlacement);
@@ -194,7 +287,6 @@ export function useIrExportHandlers({
     result,
     effectiveParts,
     incomes,
-    yearLabel,
     status,
     location,
     pptxColors,
