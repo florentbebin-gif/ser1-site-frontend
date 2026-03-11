@@ -288,7 +288,7 @@ export function broadcastInvalidation(kind: CacheKind): void {
 }
 
 // Listener optionnel pour les composants qui veulent s'abonner
-export function addInvalidationListener(callback: (kind: CacheKind) => void): () => void {
+export function addInvalidationListener(callback: (_kind: CacheKind) => void): () => void {
   const handler = (e: Event) => callback((e as CustomEvent<{ kind: CacheKind }>).detail?.kind);
   window.addEventListener('ser1:fiscal-settings-updated', handler);
   return () => window.removeEventListener('ser1:fiscal-settings-updated', handler);
