@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { extractFiscalParams } from '../../engine/placementEngine';
+import { extractFiscalParams } from '../../engine/placement';
 import fiscalityV1 from './fixtures/fiscalitySettingsV1.json';
 import psV1 from './fixtures/psSettingsV1.json';
 

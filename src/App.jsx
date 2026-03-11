@@ -5,7 +5,7 @@ import { PrivateRoute } from './auth';
 import { useTheme } from './settings/ThemeProvider';
 import { APP_ROUTES, getRouteMetadata } from './routes/appRoutes';
 import { triggerPageReset, triggerGlobalReset } from './utils/reset';
-import { saveGlobalState, loadGlobalStateWithDialog } from './utils/globalStorage';
+import { saveGlobalState, loadGlobalStateWithDialog } from './reporting/json-io';
 import { useFiscalContext } from './hooks/useFiscalContext';
 import { fingerprintSettingsData } from './utils/export/exportFingerprint';
 import { useSessionTTL } from './hooks/useSessionTTL';
