@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePlacementSettings } from '@/hooks/usePlacementSettings.js';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
-import { simulateComplete, compareProducts } from '@/engine/placementEngine.js';
+import { simulateComplete, compareProducts } from '@/engine/placementEngine';
 import { normalizeVersementConfig } from '@/utils/versementConfig.js';
 import { onResetEvent, storageKeyFor } from '@/utils/reset.js';
 import { PLACEMENT_SAVE_EVENT, PLACEMENT_LOAD_EVENT } from '@/utils/placementEvents.js';
@@ -19,15 +19,24 @@ import {
 } from '../utils/normalizers.js';
 import { exportPlacementExcel } from '../export/placementExcelExport.js';
 import { getRelevantColumnsEpargne, getBaseColumnsForProduct } from '../utils/tableHelpers.jsx';
+import type { FiscalParams } from '@/engine/placement/types';
+
+type PlacementSettings = {
+  fiscalParams: FiscalParams;
+  loading: boolean;
+  error: unknown;
+  tmiOptions: Array<{ label: string; value: number }>;
+  psSettings: unknown;
+};
 
 export function usePlacementSimulatorController() {
   const storeKey = storageKeyFor('placement');
-  const { fiscalParams, loading, error, tmiOptions, psSettings } = usePlacementSettings();
+  const { fiscalParams, loading, error, tmiOptions, psSettings } = usePlacementSettings() as PlacementSettings;
   const { fiscalContext } = useFiscalContext({ strict: false });
 
   const [hydrated, setHydrated] = useState(false);
   const [state, setState] = useState(DEFAULT_STATE);
-  const [modalOpen, setModalOpen] = useState(null);
+  const [modalOpen, setModalOpen] = useState<string | null>(null);
   const [actionInProgress, setActionInProgress] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [showAllColumns, setShowAllColumns] = useState(false);
@@ -39,13 +48,13 @@ export function usePlacementSimulatorController() {
   const dmtgSelectOptions = useMemo(() => {
     const current = state.transmission.dmtgTaux;
     if (current == null) return dmtgOptions;
-    const exists = dmtgOptions.some((option) => option.value === current);
+    const exists = dmtgOptions.some((option: { value: number }) => option.value === current);
     if (exists) return dmtgOptions;
     return [...dmtgOptions, buildCustomDmtgOption(current)];
   }, [dmtgOptions, state.transmission.dmtgTaux]);
 
   const selectedDmtgOption = useMemo(
-    () => dmtgSelectOptions.find((opt) => opt.value === state.transmission.dmtgTaux),
+    () => dmtgSelectOptions.find((opt: { value: number }) => opt.value === state.transmission.dmtgTaux),
     [dmtgSelectOptions, state.transmission.dmtgTaux]
   );
 
@@ -86,7 +95,7 @@ export function usePlacementSimulatorController() {
         return {
           ...prev,
           transmission: { ...prev.transmission, dmtgTaux: dmtgDefaultRate },
-        };
+        } as unknown as typeof prev;
       }
       return prev;
     });
@@ -100,7 +109,7 @@ export function usePlacementSimulatorController() {
   }, [storeKey]);
 
   useEffect(() => {
-    const off = onResetEvent?.(({ simId }) => {
+    const off = onResetEvent?.(({ simId }: { simId?: string }) => {
       if (simId && simId !== 'placement') return;
       resetSimulation();
     });
@@ -187,17 +196,17 @@ export function usePlacementSimulatorController() {
     return compareProducts(result1, result2);
   }, [state, fiscalParams, loading, hydrated, error]);
 
-  const setClient = (patch) => setState((s) => ({ ...s, client: { ...s.client, ...patch } }));
-  const setProduct = (index, patch) =>
+  const setClient = (patch: Record<string, unknown>) => setState((s) => ({ ...s, client: { ...s.client, ...patch } }));
+  const setProduct = (index: number, patch: Record<string, unknown>) =>
     setState((s) => ({
       ...s,
       products: s.products.map((p, k) => (k === index ? { ...p, ...patch } : p)),
     }));
-  const setLiquidation = (patch) => setState((s) => ({ ...s, liquidation: { ...s.liquidation, ...patch } }));
-  const setTransmission = (patch) => setState((s) => ({ ...s, transmission: { ...s.transmission, ...patch } }));
-  const setStep = (step) => setState((s) => ({ ...s, step }));
+  const setLiquidation = (patch: Record<string, unknown>) => setState((s) => ({ ...s, liquidation: { ...s.liquidation, ...patch } }));
+  const setTransmission = (patch: Record<string, unknown>) => setState((s) => ({ ...s, transmission: { ...s.transmission, ...patch } }));
+  const setStep = (step: unknown) => setState((s) => ({ ...s, step: step as typeof s.step }));
 
-  const setVersementConfig = (productIndex, config) => {
+  const setVersementConfig = (productIndex: number, config: object | undefined) => {
     const normalized = normalizeVersementConfig(config);
     setState((s) => ({
       ...s,
@@ -205,13 +214,13 @@ export function usePlacementSimulatorController() {
     }));
   };
 
-  const updateProductOption = (productIndex, path, value) => {
+  const updateProductOption = (productIndex: number, path: string, value: unknown) => {
     setState((prev) => {
       const nextState = { ...prev };
       const pathParts = path.split('.');
-      let current = nextState.products[productIndex];
+      let current: Record<string, unknown> = nextState.products[productIndex] as unknown as Record<string, unknown>;
       for (let i = 0; i < pathParts.length - 1; i += 1) {
-        current = current[pathParts[i]];
+        current = current[pathParts[i]] as Record<string, unknown>;
       }
       current[pathParts[pathParts.length - 1]] = value;
       return nextState;
@@ -223,10 +232,11 @@ export function usePlacementSimulatorController() {
     try {
       await exportPlacementExcel(state, results);
     } catch (errorExport) {
+      const err = errorExport instanceof Error ? errorExport : new Error(String(errorExport));
       console.error('[ExcelExport] Export failed', {
         err: errorExport,
-        message: errorExport?.message,
-        stack: errorExport?.stack,
+        message: err.message,
+        stack: err.stack,
       });
       alert('Impossible de générer le fichier Excel.');
     } finally {

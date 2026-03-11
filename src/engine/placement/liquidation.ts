@@ -1,6 +1,23 @@
-import { ENVELOPES, round2 } from './shared.js';
+import { DEFAULT_FISCAL_PARAMS, ENVELOPES, round2 } from './shared';
+import type { EpargneResult, FiscalParams, FiscaliteRetraitResult, LiquidationResult } from './types';
 
-export function calculFiscaliteRetrait(params, fiscalParams) {
+interface FiscaliteRetraitParams {
+  envelope: string;
+  montantRetrait: number;
+  partGains: number;
+  partCapital: number;
+  anneeOuverture?: number;
+  tmiRetraite?: number;
+  situation?: string;
+  primesCumulees?: number;
+  abattementUtilise?: number;
+  optionBaremeIR?: boolean;
+}
+
+export function calculFiscaliteRetrait(
+  params: FiscaliteRetraitParams,
+  fiscalParams: FiscalParams,
+): FiscaliteRetraitResult {
   const {
     envelope,
     montantRetrait,
@@ -14,7 +31,7 @@ export function calculFiscaliteRetrait(params, fiscalParams) {
     optionBaremeIR = false,
   } = params;
 
-  const fp = fiscalParams;
+  const fp = { ...DEFAULT_FISCAL_PARAMS, ...fiscalParams };
   let irSurGains = 0;
   let irSurCapital = 0;
   let ps = 0;
@@ -85,7 +102,7 @@ export function calculFiscaliteRetrait(params, fiscalParams) {
   };
 }
 
-function calculVPM(capital, rendement, duree) {
+function calculVPM(capital: number, rendement: number, duree: number): number {
   if (duree <= 0) return capital;
   if (rendement === 0) return capital / duree;
   const r = rendement;
@@ -93,7 +110,32 @@ function calculVPM(capital, rendement, duree) {
   return capital * r / (1 - Math.pow(1 + r, -n));
 }
 
-export function simulateLiquidation(epargneResult, liquidationParams, client, fiscalParams, transmissionParams = {}) {
+interface LiquidationParams {
+  mode?: string;
+  duree?: number;
+  mensualiteCible?: number;
+  montantUnique?: number;
+  rendement?: number;
+  optionBaremeIR?: boolean;
+}
+
+interface LiquidationClient {
+  tmiRetraite?: number;
+  situation?: string;
+  ageActuel?: number;
+}
+
+interface TransmissionParamsForLiquidation {
+  ageAuDeces?: number;
+}
+
+export function simulateLiquidation(
+  epargneResult: EpargneResult,
+  liquidationParams: LiquidationParams,
+  client: LiquidationClient,
+  fiscalParams: FiscalParams,
+  transmissionParams: TransmissionParamsForLiquidation = {},
+): LiquidationResult {
   const {
     mode = 'epuiser',
     duree = 25,
@@ -117,7 +159,7 @@ export function simulateLiquidation(epargneResult, liquidationParams, client, fi
     tauxRevalorisation = 0.02,
     optionBaremeIR = false,
   } = epargneResult;
-  const fp = fiscalParams;
+  const fp = { ...DEFAULT_FISCAL_PARAMS, ...fiscalParams };
 
   const ageAuDeces = transmissionParams.ageAuDeces || 85;
   const ageFinEpargne = ageActuel + dureeEpargne;
@@ -139,7 +181,7 @@ export function simulateLiquidation(epargneResult, liquidationParams, client, fi
   const isSCPI = envelope === ENVELOPES.SCPI;
   const isCTOorPEA = envelope === ENVELOPES.CTO || envelope === ENVELOPES.PEA;
 
-  let anneesLiquidation;
+  let anneesLiquidation: number;
   if (isSCPI) {
     anneesLiquidation = dureeJusquAuDeces;
   } else if (mode === 'unique' || mode === 'mensualite') {
@@ -202,7 +244,7 @@ export function simulateLiquidation(epargneResult, liquidationParams, client, fi
     const partGains = isSCPI ? 0 : retraitBrut * quotiteGains;
     const partCapital = isSCPI ? 0 : retraitBrut - partGains;
 
-    let fiscalite;
+    let fiscalite: FiscaliteRetraitResult;
     if (isSCPI) {
       fiscalite = {
         irSurGains: 0,

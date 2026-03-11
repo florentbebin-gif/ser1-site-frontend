@@ -2,12 +2,57 @@ import {
   DEFAULT_FISCAL_PARAMS,
   REQUIRED_NUMERIC_FISCAL_KEYS,
   clamp,
-} from './shared.js';
+} from './shared';
+import type { FiscalParams } from './types';
+
+interface Bracket {
+  ratePercent: number;
+  upTo?: number | null;
+}
+
+interface FiscalitySettings {
+  assuranceVie?: {
+    retraitsCapital?: {
+      psRatePercent?: number;
+      depuis2017?: {
+        moins8Ans?: { irRatePercent?: number };
+        plus8Ans?: {
+          abattementAnnuel?: { single?: number; couple?: number };
+          primesNettesSeuil?: number;
+          irRateUnderThresholdPercent?: number;
+          irRateOverThresholdPercent?: number;
+        };
+      };
+    };
+    deces?: {
+      primesApres1998?: {
+        allowancePerBeneficiary?: number;
+        brackets?: Bracket[];
+      };
+      apres70ans?: { globalAllowance?: number };
+    };
+  };
+  perIndividuel?: {
+    sortieCapital?: {
+      pfu?: { irRatePercent?: number; psRatePercent?: number };
+    };
+  };
+  dividendes?: { abattementBaremePercent?: number };
+}
+
+interface PsSettingsForExtract {
+  patrimony?: {
+    current?: { totalRate?: number };
+  };
+}
 
 let hasWarnedMissingFiscalParams = false;
 
-export function extractFiscalParams(fiscalitySettings, psSettings) {
-  const params = { ...DEFAULT_FISCAL_PARAMS };
+export function extractFiscalParams(
+  fiscalitySettings: FiscalitySettings | null | undefined,
+  psSettings: PsSettingsForExtract | null | undefined,
+): FiscalParams {
+  const params: Record<string, number> = { ...DEFAULT_FISCAL_PARAMS };
 
   if (psSettings?.patrimony?.current?.totalRate) {
     params.psPatrimoine = psSettings.patrimony.current.totalRate / 100;
@@ -73,11 +118,11 @@ export function extractFiscalParams(fiscalitySettings, psSettings) {
     params.dividendesAbattementPercent = clamp(dividendes.abattementBaremePercent / 100, 0, 1);
   }
 
-  const missingKeys = [];
+  const missingKeys: string[] = [];
   for (const key of REQUIRED_NUMERIC_FISCAL_KEYS) {
     const value = params[key];
     if (typeof value !== 'number' || Number.isNaN(value)) {
-      params[key] = DEFAULT_FISCAL_PARAMS[key];
+      params[key] = (DEFAULT_FISCAL_PARAMS as Record<string, number>)[key];
       missingKeys.push(key);
     }
   }
@@ -97,5 +142,5 @@ export function extractFiscalParams(fiscalitySettings, psSettings) {
     hasWarnedMissingFiscalParams = true;
   }
 
-  return params;
+  return params as unknown as FiscalParams;
 }

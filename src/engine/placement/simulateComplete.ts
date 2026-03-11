@@ -1,10 +1,47 @@
-import { ENVELOPES, ENVELOPE_LABELS } from './shared.js';
-import { simulateEpargne } from './epargne.js';
-import { simulateLiquidation } from './liquidation.js';
-import { calculTransmission } from './transmission.js';
+import { ENVELOPES, ENVELOPE_LABELS } from './shared';
+import { simulateEpargne } from './epargne';
+import { simulateLiquidation } from './liquidation';
+import { calculTransmission } from './transmission';
+import type { FiscalParams, SimulateCompleteResult } from './types';
 
-export function simulateComplete(product, client, liquidationParams, transmissionParams, fiscalParams) {
-  const epargne = simulateEpargne(product, client, fiscalParams);
+interface SimulateCompleteProduct {
+  envelope: string;
+  perBancaire?: boolean;
+  versementConfig?: unknown;
+  [key: string]: unknown;
+}
+
+interface SimulateCompleteClient {
+  ageActuel?: number;
+  tmiEpargne?: number;
+  tmiRetraite?: number;
+  situation?: string;
+}
+
+interface SimulateCompleteLiquidationParams {
+  mode?: string;
+  duree?: number;
+  mensualiteCible?: number;
+  montantUnique?: number;
+  rendement?: number;
+  optionBaremeIR?: boolean;
+}
+
+interface SimulateCompleteTransmissionParams {
+  ageAuDeces?: number;
+  agePremierVersement?: number;
+  nbBeneficiaires?: number;
+  beneficiaryType?: string;
+}
+
+export function simulateComplete(
+  product: SimulateCompleteProduct,
+  client: SimulateCompleteClient,
+  liquidationParams: SimulateCompleteLiquidationParams,
+  transmissionParams: SimulateCompleteTransmissionParams,
+  fiscalParams: FiscalParams,
+): SimulateCompleteResult {
+  const epargne = simulateEpargne(product as Parameters<typeof simulateEpargne>[0], client, fiscalParams);
 
   const ageAuDeces = transmissionParams.ageAuDeces || 85;
   const ageActuel = client.ageActuel || 45;
@@ -22,15 +59,34 @@ export function simulateComplete(product, client, liquidationParams, transmissio
       capitalDecesTheoriqueAuDeces = ligneAuDeces.capitalDecesTheorique || 0;
       capitalDecesDegressifAuDeces = ligneAuDeces.capitalDecesDegressif || 0;
 
-      if (product.envelope === ENVELOPES.PER && product.versementConfig?.annuel?.garantieBonneFin?.active) {
-        capitalAuDeces += capitalDecesTheoriqueAuDeces + capitalDecesDegressifAuDeces;
+      if (product.envelope === ENVELOPES.PER && (product.versementConfig as Record<string, unknown>)?.annuel) {
+        const annuelCfg = (product.versementConfig as Record<string, unknown>).annuel as Record<string, unknown>;
+        if ((annuelCfg?.garantieBonneFin as Record<string, unknown>)?.active) {
+          capitalAuDeces += capitalDecesTheoriqueAuDeces + capitalDecesDegressifAuDeces;
+        }
       }
     } else {
       capitalAuDeces = 0;
     }
   }
 
-  let liquidation;
+  let liquidation: ReturnType<typeof simulateLiquidation> | {
+    duree: number;
+    ageFinEpargne: number;
+    ageAuDeces: number;
+    rows: never[];
+    capitalRestant: number;
+    capitalRestantAuDeces: number;
+    cumulRetraitsBruts: number;
+    cumulRetraitsNets: number;
+    cumulRetraitsNetsAuDeces: number;
+    cumulFiscalite: number;
+    cumulFiscaliteAuDeces: number;
+    revenuAnnuelMoyenNet: number;
+    envelope?: string;
+    mode?: string;
+  };
+
   if (decesEnPhaseEpargne) {
     liquidation = {
       duree: 0,
@@ -64,7 +120,7 @@ export function simulateComplete(product, client, liquidationParams, transmissio
 
   return {
     envelope: product.envelope,
-    envelopeLabel: ENVELOPE_LABELS[product.envelope] || product.envelope,
+    envelopeLabel: (ENVELOPE_LABELS as Record<string, string>)[product.envelope] || product.envelope,
 
     epargne: {
       duree: epargne.dureeEpargne,

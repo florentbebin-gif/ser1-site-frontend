@@ -22,7 +22,7 @@ import { renderEpargneRow } from '../utils/tableHelpers.jsx';
 import { PlacementToolbar } from './PlacementToolbar.jsx';
 import { PlacementInputsPanel } from './PlacementInputsPanel.jsx';
 import { PlacementResultsPanel } from './PlacementResultsPanel.jsx';
-import { usePlacementSimulatorController } from './usePlacementSimulatorController.js';
+import { usePlacementSimulatorController } from './usePlacementSimulatorController';
 
 // ============================================================================
 // MAIN COMPONENT

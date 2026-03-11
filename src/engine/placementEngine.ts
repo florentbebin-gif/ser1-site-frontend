@@ -1,8 +1,8 @@
 /**
- * placementEngine.js  Façade de compatibilité publique
+ * placementEngine.js  Faï¿½ade de compatibilitï¿½ publique
  *
- * PR-4: moteur déplacé vers src/engine/placement/*
- * Les signatures publiques restent inchangées.
+ * PR-4: moteur dï¿½placï¿½ vers src/engine/placement/*
+ * Les signatures publiques restent inchangï¿½es.
  */
 
 export {
@@ -15,4 +15,4 @@ export {
   calculTransmission,
   simulateComplete,
   compareProducts,
-} from './placement/index.js';
+} from './placement/index';
