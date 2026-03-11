@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   ENVELOPE_LABELS,
-} from '@/engine/placementEngine.js';
+} from '@/engine/placementEngine';
 import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
 import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '@/utils/transmissionDisclaimer.js';
 import { euro, shortEuro, formatPsMontant } from '../utils/formatters.js';
