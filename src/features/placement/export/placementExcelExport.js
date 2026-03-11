@@ -9,7 +9,7 @@ import { buildWorksheetXmlVertical, downloadExcel } from '@/utils/export/exportE
 import {
   formatPsApplicability, formatPsNote,
   getPsAssietteNumeric, getPsTauxNumeric, getPsMontantNumeric,
-} from '../utils/formatters.js';
+} from '../utils/formatters';
 
 // ─── Sheet builders ──────────────────────────────────────────────────
 

@@ -4,11 +4,11 @@ import {
 } from '@/engine/placementEngine';
 import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
 import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '@/utils/transmissionDisclaimer.js';
-import { euro, shortEuro, formatPsMontant } from '../utils/formatters.js';
-import { BENEFICIARY_OPTIONS, getRendementLiquidation } from '../utils/normalizers.js';
+import { euro, shortEuro, formatPsMontant } from '../utils/formatters';
+import { BENEFICIARY_OPTIONS, getRendementLiquidation } from '../utils/normalizers';
 import { InputEuro, InputPct, InputNumber, Select, Toggle } from './inputs.jsx';
 import { CollapsibleTable } from './tables.jsx';
-import { buildColumns, getRelevantColumns } from '../utils/tableHelpers.jsx';
+import { buildColumns, getRelevantColumns } from '../utils/tableHelpers';
 
 export function PlacementInputsPanel({
   state,

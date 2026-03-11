@@ -4,13 +4,13 @@
  * Architecture modulaire :
  * - Moteur de calcul        → engine/placementEngine.ts
  * - Settings-driven         → hooks/usePlacementSettings.ts
- * - Formatters              → placement/utils/formatters.js
- * - Normalizers & constants → placement/utils/normalizers.js
+ * - Formatters              → placement/utils/formatters.ts
+ * - Normalizers & constants → placement/utils/normalizers.ts
  * - Input components        → placement/components/inputs.jsx
  * - Table components        → placement/components/tables.jsx
  * - VersementConfigModal    → placement/components/VersementConfigModal.jsx
  * - Excel export            → placement/export/placementExcelExport.js
- * - Table helpers           → placement/utils/tableHelpers.jsx
+ * - Table helpers           → placement/utils/tableHelpers.tsx
  *
  * 3 phases : Épargne → Liquidation → Transmission
  */
@@ -18,7 +18,7 @@
 import React from 'react';
 import './PlacementSimulator.css';
 import { VersementConfigModal } from './VersementConfigModal.jsx';
-import { renderEpargneRow } from '../utils/tableHelpers.jsx';
+import { renderEpargneRow } from '../utils/tableHelpers';
 import { PlacementToolbar } from './PlacementToolbar.jsx';
 import { PlacementInputsPanel } from './PlacementInputsPanel.jsx';
 import { PlacementResultsPanel } from './PlacementResultsPanel.jsx';

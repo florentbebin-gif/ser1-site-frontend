@@ -16,9 +16,9 @@ import {
   buildDmtgOptions,
   buildCustomDmtgOption,
   withReinvestCumul,
-} from '../utils/normalizers.js';
+} from '../utils/normalizers';
 import { exportPlacementExcel } from '../export/placementExcelExport.js';
-import { getRelevantColumnsEpargne, getBaseColumnsForProduct } from '../utils/tableHelpers.jsx';
+import { getRelevantColumnsEpargne, getBaseColumnsForProduct } from '../utils/tableHelpers';
 
 export function usePlacementSimulatorController() {
   const storeKey = storageKeyFor('placement');
