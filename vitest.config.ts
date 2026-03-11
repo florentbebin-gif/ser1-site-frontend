@@ -13,6 +13,8 @@ export default defineConfig({
     include: [
       'src/**/*.test.ts',
       'src/**/*.test.tsx',
+      'src/**/*.test.js',
+      'src/**/*.spec.ts',
       'tests/snapshots/**/*.test.ts',
     ],
     coverage: {
