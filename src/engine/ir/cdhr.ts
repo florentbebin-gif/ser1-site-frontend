@@ -1,4 +1,25 @@
-export function computeCDHR(config, assiette, irRetenu, pfuIr, cehr, isCouple, personsAChargeCount) {
+import type { CdhrResult } from './types';
+
+interface CdhrConfig {
+  minEffectiveRate?: number | string;
+  thresholdCouple?: number | string;
+  thresholdSingle?: number | string;
+  decoteMaxAssietteCouple?: number | string;
+  decoteMaxAssietteSingle?: number | string;
+  decoteSlopePercent?: number | string;
+  majorationCouple?: number | string;
+  majorationPerCharge?: number | string;
+}
+
+export function computeCDHR(
+  config: CdhrConfig | null | undefined,
+  assiette: number,
+  irRetenu: number,
+  pfuIr: number,
+  cehr: number,
+  isCouple: boolean,
+  personsAChargeCount: number,
+): CdhrResult {
   if (!config || !Number.isFinite(assiette) || assiette <= 0) {
     return { cdhr: 0, cdhrDetails: null };
   }

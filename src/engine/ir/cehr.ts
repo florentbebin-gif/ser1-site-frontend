@@ -1,4 +1,6 @@
-export function computeCEHR(brackets = [], rfr) {
+import type { TaxBracket, CehrResult } from './types';
+
+export function computeCEHR(brackets: TaxBracket[] = [], rfr: number): CehrResult {
   if (!Array.isArray(brackets) || !brackets.length || rfr <= 0) {
     return { cehr: 0, cehrDetails: [] };
   }

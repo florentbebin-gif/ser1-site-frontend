@@ -1,8 +1,44 @@
 import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../constants/settingsDefaults';
-import { computeAbattement10 } from './abattement10.js';
-import { computeEffectiveParts } from './effectiveParts.js';
+import { computeAbattement10 } from './abattement10';
+import { computeEffectiveParts } from './effectiveParts';
+import type { ExcelCaseResult } from './types';
 
-export function computeIrFromExcelCase(excelCaseInput, { computeIrResult } = {}) {
+interface ExcelCaseTaxSettings {
+  incomeTax?: {
+    abat10?: {
+      current?: { plafond?: number; plancher?: number };
+      previous?: { plafond?: number; plancher?: number };
+    };
+  };
+}
+
+interface ExcelCaseInput {
+  salaireAvant10?: number | string;
+  status?: string;
+  isIsolated?: boolean;
+  childrenCount?: number | string;
+  location?: string;
+  yearKey?: 'current' | 'previous';
+  taxSettings?: ExcelCaseTaxSettings;
+  psSettings?: typeof DEFAULT_PS_SETTINGS;
+}
+
+interface IrRawResult {
+  irNet?: number;
+  tmiRate?: number;
+  tmiBaseGlobal?: number;
+  tmiMarginGlobal?: number | null;
+  taxableIncome?: number;
+  partsNb?: number;
+  qfIsCapped?: boolean;
+}
+
+type ComputeIrResultFn = (_params: Record<string, unknown>) => IrRawResult | null | undefined;
+
+export function computeIrFromExcelCase(
+  excelCaseInput: ExcelCaseInput | null | undefined,
+  { computeIrResult }: { computeIrResult?: ComputeIrResultFn } = {},
+): ExcelCaseResult | null {
   if (typeof computeIrResult !== 'function') return null;
 
   const {
@@ -16,7 +52,11 @@ export function computeIrFromExcelCase(excelCaseInput, { computeIrResult } = {})
     psSettings = DEFAULT_PS_SETTINGS,
   } = excelCaseInput || {};
 
-  const effectiveParts = computeEffectiveParts({ status, isIsolated, childrenCount });
+  const effectiveParts = computeEffectiveParts({
+    status: status || 'single',
+    isIsolated,
+    childrenCount: Math.max(0, Number(childrenCount) || 0),
+  });
 
   const incomes = {
     d1: { salaries: Number(salaireAvant10) || 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
@@ -56,7 +96,7 @@ export function computeIrFromExcelCase(excelCaseInput, { computeIrResult } = {})
     revenusDansTmi: Math.round(result.tmiBaseGlobal || 0),
     margeAvantChangement: result.tmiMarginGlobal == null ? null : Math.round(result.tmiMarginGlobal),
     taxableIncome: Math.round(result.taxableIncome || 0),
-    parts: result.partsNb,
+    parts: result.partsNb ?? 0,
     qfIsCapped: Boolean(result.qfIsCapped),
   };
 }

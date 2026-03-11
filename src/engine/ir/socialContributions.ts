@@ -1,4 +1,20 @@
-export function computeSocialContributions({ patrimonyCfg, fonciersBase, capWithPs }) {
+import type { SocialContribResult } from './types';
+
+interface PatrimonyCfg {
+  totalRate?: number | string;
+}
+
+interface SocialContribInput {
+  patrimonyCfg?: PatrimonyCfg | null;
+  fonciersBase?: number;
+  capWithPs?: number;
+}
+
+export function computeSocialContributions({
+  patrimonyCfg,
+  fonciersBase,
+  capWithPs,
+}: SocialContribInput): SocialContribResult {
   if (!patrimonyCfg) {
     return {
       psRateTotal: 0,

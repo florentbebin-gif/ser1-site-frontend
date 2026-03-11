@@ -1,16 +1,16 @@
 import { computeTmiMetrics } from './tmiMetrics.js';
 import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../constants/settingsDefaults';
-import { computeAutoPartsWithChildren } from '../engine/ir/parts.js';
-import { computeProgressiveTax } from '../engine/ir/progressiveTax.js';
-import { computeCEHR } from '../engine/ir/cehr.js';
-import { computeCDHR } from '../engine/ir/cdhr.js';
-import { computeEffectiveParts } from '../engine/ir/effectiveParts.js';
-import { computeDomAbatementAmount } from '../engine/ir/domAbatement.js';
-import { computeDecote } from '../engine/ir/decote.js';
-import { computeCapitalBases, computePfuIr } from '../engine/ir/capital.js';
-import { computeQuotientFamilyCapping } from '../engine/ir/quotientFamily.js';
-import { computeSocialContributions } from '../engine/ir/socialContributions.js';
-import { computeIrFromExcelCase as computeIrFromExcelCaseImpl } from '../engine/ir/excelCase.js';
+import { computeAutoPartsWithChildren } from '../engine/ir/parts';
+import { computeProgressiveTax } from '../engine/ir/progressiveTax';
+import { computeCEHR } from '../engine/ir/cehr';
+import { computeCDHR } from '../engine/ir/cdhr';
+import { computeEffectiveParts } from '../engine/ir/effectiveParts';
+import { computeDomAbatementAmount } from '../engine/ir/domAbatement';
+import { computeDecote } from '../engine/ir/decote';
+import { computeCapitalBases, computePfuIr } from '../engine/ir/capital';
+import { computeQuotientFamilyCapping } from '../engine/ir/quotientFamily';
+import { computeSocialContributions } from '../engine/ir/socialContributions';
+import { computeIrFromExcelCase as computeIrFromExcelCaseImpl } from '../engine/ir/excelCase';
 
 // Re-export pour les consommateurs historiques (importé depuis settingsDefaults)
 export { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS };

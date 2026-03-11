@@ -1,6 +1,12 @@
-import { computeAutoPartsWithChildren } from './parts.js';
+import { computeAutoPartsWithChildren } from './parts';
+import type { IrChild, EffectivePartsFullResult } from './types';
 
-export function computeAbattement10(base, cfg) {
+interface Abat10Cfg {
+  plafond?: number | string | null;
+  plancher?: number | string | null;
+}
+
+export function computeAbattement10(base: number, cfg: Abat10Cfg | null | undefined): number {
   if (!cfg || base <= 0) return 0;
   const plafond = Number(cfg.plafond) || 0;
   const plancher = Number(cfg.plancher) || 0;
@@ -11,7 +17,15 @@ export function computeAbattement10(base, cfg) {
   return val;
 }
 
-export function computeEffectiveParts({ status, isIsolated, children, manualParts }) {
+interface FullEffectivePartsInput {
+  status: string;
+  isIsolated?: boolean;
+  children?: IrChild[];
+  manualParts?: number;
+}
+
+export function computeEffectiveParts(input: FullEffectivePartsInput): EffectivePartsFullResult {
+  const { status, isIsolated, children, manualParts } = input;
   const baseParts = status === 'couple' ? 2 : 1;
   const computedParts = computeAutoPartsWithChildren({
     status,
@@ -27,13 +41,31 @@ export function computeEffectiveParts({ status, isIsolated, children, manualPart
   return { baseParts, computedParts, effectiveParts };
 }
 
+interface RealMode {
+  d1?: string;
+  d2?: string;
+}
+
+interface RealExpenses {
+  d1?: number;
+  d2?: number;
+}
+
+interface ExtraDeductionsInput {
+  status: string;
+  realMode?: RealMode | null;
+  realExpenses?: RealExpenses | null;
+  abat10SalD1: number;
+  abat10SalD2: number;
+}
+
 export function computeExtraDeductions({
   status,
   realMode,
   realExpenses,
   abat10SalD1,
   abat10SalD2,
-}) {
+}: ExtraDeductionsInput): number {
   return (
     (realMode?.d1 === 'reels'
       ? realExpenses?.d1 || 0
@@ -50,7 +82,9 @@ export function computeExtraDeductions({
   );
 }
 
-export function countPersonsACharge(children) {
+export function countPersonsACharge(
+  children: Array<{ mode?: string } | null | undefined> | null | undefined,
+): number {
   return Array.isArray(children)
     ? children.filter((c) => c && (c.mode === 'charge' || c.mode === 'shared')).length
     : 0;
