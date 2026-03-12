@@ -883,7 +883,7 @@ export function clampToSlide(
 export function addTextFr(
   slide: PptxGenJS.Slide,
   text: string | PptxGenJS.TextProps[],
-  options: PptxGenJS.TextPropsOptions & { [key: string]: any }
+  options: PptxGenJS.TextPropsOptions & Record<string, unknown>
 ): void {
   const normalizedText = Array.isArray(text)
     ? text.map((run) => ({

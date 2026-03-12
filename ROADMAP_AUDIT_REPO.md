@@ -16,7 +16,7 @@
 | **Extensions** | .ts (224), .tsx (117), .css (24), .json (14), .svg (13) — `.js` éliminés (PR-C), `.jsx` éliminés (PR-H) |
 | **TODO/FIXME/HACK** | 1 occurrence hors tests dans 1 fichier (`src/pptx/template/loadBaseTemplate.ts`) |
 | **console.log/debug** | 52 occurrences dans 17 fichiers (hors tests) |
-| **@ts-ignore / any** | 49 occurrences dans 22 fichiers |
+| **@ts-ignore / any** | 0 warning ESLint actif (`no-explicit-any`) — résiduel textuel seulement en commentaires/tests |
 | **Fichiers > 15 Ko** | 38 fichiers (god-files potentiels) |
 | **Fichiers < 500 octets** | 27 fichiers (micro-fichiers à fusionner) |
 
@@ -244,8 +244,8 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 |---|---|---|
 | **Catalogue métier hardcodé** | 🟠 Moyenne | `catalog.ts` ne contient plus de TODO, mais reste volumineux et sensible aux régressions de structure |
 | **Mixité JS/TS** | 🟢 Résolue | ~~19 `.js`~~ éliminés (PR-C) + ~~64 `.jsx`~~ éliminés (PR-H) |
-| **God-files** | 🟠 Moyenne | 5+ fichiers > 25 Ko (SettingsComptes, PlacementInputsPanel, Credit, SuccessionSimulator, useSuccessionDerivedValues) |
-| **`any` en TS** | 🟡 Basse | 49 occurrences — à réduire progressivement |
+| **Warnings `max-lines`** | 🟠 Moyenne | 10 warnings résiduels sur fichiers lourds de données/config ou hooks (`settingsDefaults`, `catalog`, `retraite`, `immobilier`, `valeurs-mobilieres`, `useCreditCalculations`, `successionChainage`, `successionDevolution`, `ImpotsBaremeSection`, `serenity`) |
+| **`any` en TS** | 🟢 Résolue | Warnings `@typescript-eslint/no-explicit-any` supprimés en PR-J sur code, services, hooks, tests et mocks |
 | **CSS non-modulaire** | 🟡 Basse | Pas de CSS Modules ni utility-first — risque de collisions de classes |
 | **Pas de bundle size check** | 🟡 Basse | Aucune alerte si le bundle grossit |
 | **Normalisation PM globale** | 🟠 Moyenne | `rules/index.ts` fait un post-traitement global — devrait être par produit |
@@ -265,7 +265,7 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 | **PR-G** ✅ | Phase 7A (docs refresh) | ⚪ Nul | 1-2h |
 | **PR-H** ✅ | Phase 3 P2 (JSX → TSX batch) | 🟡 Moyen | 3-5h |
 | **PR-I** ✅ | Phase 7B (preuve + purge TODO catalog.ts) | 🟢 Faible | 30-45 min |
-| **PR-J** | Résorption dette warnings : `any` → types précis (49+ occurrences) + god-files Phase 4 | 🟠 Moyen | 4-6h |
+| **PR-J** ✅ | Résorption dette warnings : `any` → types précis | 🟢 Faible | 2-3h |
 
 **Règle** : chaque PR passe `npm run check` vert + smoke test des pages touchées.
 

@@ -32,6 +32,10 @@ interface UseThemeActionsArgs {
   applyColorsToCSSWithGuardRef: MutableRefObject<ApplyColorsFn>;
 }
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}
+
 export function useThemeActions({
   setColorsState,
   setThemeMode,
@@ -126,9 +130,9 @@ export function useThemeActions({
       saveThemeToCache(colorsToApply, user.id, derivedSource);
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[ThemeProvider] applyThemeMode error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     }
   }, [
     applyColorsToCSSWithGuardRef,
@@ -185,9 +189,9 @@ export function useThemeActions({
       }
 
       return { success: true };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[ThemeProvider] saveMyPalette error:', error);
-      return { success: false, error: error.message };
+      return { success: false, error: getErrorMessage(error) };
     }
   }, [
     applyColorsToCSSWithGuardRef,

@@ -276,6 +276,8 @@ export function computeIrResult({
 export function computeIrFromExcelCase(
   excelCaseInput: Parameters<typeof computeIrFromExcelCaseImpl>[0],
 ): ExcelCaseResult | null {
-  // Cast needed: computeIrResult accepts IrResultInput, the callback type expects Record<string, unknown>
-  return computeIrFromExcelCaseImpl(excelCaseInput, { computeIrResult: computeIrResult as any });
+  const computeIrResultAdapter = (params: Record<string, unknown>) =>
+    computeIrResult(params as unknown as Parameters<typeof computeIrResult>[0]);
+
+  return computeIrFromExcelCaseImpl(excelCaseInput, { computeIrResult: computeIrResultAdapter });
 }

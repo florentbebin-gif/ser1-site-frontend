@@ -1,23 +1,55 @@
 /**
- * Placement Excel Export — Construction des feuilles Excel pour le simulateur
+ * Placement Excel Export - Construction des feuilles Excel pour le simulateur
  *
  * Fonctions pures qui transforment state + results en XML Excel.
  */
 
 import { ENVELOPE_LABELS } from '@/engine/placement';
+import type { CompareResult, EpargneRow, LiquidationRow } from '@/engine/placement/types';
 import { buildWorksheetXmlVertical, downloadExcel } from '@/utils/export/exportExcel';
 import {
-  formatPsApplicability, formatPsNote,
-  getPsAssietteNumeric, getPsTauxNumeric, getPsMontantNumeric,
+  formatPsApplicability,
+  formatPsNote,
+  getPsAssietteNumeric,
+  getPsMontantNumeric,
+  getPsTauxNumeric,
 } from '../utils/formatters';
+import type { PlacementSimulatorState } from '../utils/normalizers';
 
-// ─── Sheet builders ──────────────────────────────────────────────────
+type WorksheetCell = string | number;
+type WorksheetRows = WorksheetCell[][];
 
-function buildEpargneSheet(produit: any, suffix = '') {
+interface WorksheetData {
+  header: string[];
+  rows: WorksheetRows;
+  name: string;
+}
+
+type PlacementCompareProduct = CompareResult['produit1'] & {
+  epargne: CompareResult['produit1']['epargne'] & { capitalFin?: number };
+  liquidation: CompareResult['produit1']['liquidation'] & {
+    totalRetraits?: number;
+    totalFiscalite?: number;
+  };
+};
+
+function getNumericCell<T extends object>(row: T, key: string): number {
+  const value = (row as Record<string, unknown>)[key];
+  return typeof value === 'number' ? value : 0;
+}
+
+function getEnvelopeLabel(envelope: string): string {
+  return ENVELOPE_LABELS[envelope as keyof typeof ENVELOPE_LABELS] || envelope;
+}
+
+function buildEpargneSheet(
+  produit: PlacementCompareProduct | null | undefined,
+  suffix = '',
+): WorksheetData | null {
   if (!produit?.epargne?.rows?.length) return null;
 
   const header = ['Indicateur'];
-  produit.epargne.rows.forEach((_row: any, idx: any) => {
+  produit.epargne.rows.forEach((_row, idx) => {
     header.push(`Année ${idx}`);
   });
 
@@ -34,9 +66,9 @@ function buildEpargneSheet(produit: any, suffix = '') {
   ];
 
   const rows = series.map(({ key, label }) => {
-    const row = [label];
-    produit.epargne.rows.forEach((r: any) => {
-      row.push(r[key] ?? 0);
+    const row: WorksheetCell[] = [label];
+    produit.epargne.rows.forEach((epargneRow: EpargneRow) => {
+      row.push(getNumericCell(epargneRow, key));
     });
     return row;
   });
@@ -44,11 +76,14 @@ function buildEpargneSheet(produit: any, suffix = '') {
   return { header, rows, name: `Épargne ${suffix}`.trim() };
 }
 
-function buildLiquidationSheet(produit: any, suffix = '') {
+function buildLiquidationSheet(
+  produit: PlacementCompareProduct | null | undefined,
+  suffix = '',
+): WorksheetData | null {
   if (!produit?.liquidation?.rows?.length) return null;
 
   const header = ['Indicateur'];
-  produit.liquidation.rows.forEach((row: any, idx: any) => {
+  produit.liquidation.rows.forEach((row, idx) => {
     header.push(`Âge ${row.age ?? idx}`);
   });
 
@@ -63,9 +98,9 @@ function buildLiquidationSheet(produit: any, suffix = '') {
   ];
 
   const rows = series.map(({ key, label }) => {
-    const row = [label];
-    produit.liquidation.rows.forEach((r: any) => {
-      row.push(r[key] ?? 0);
+    const row: WorksheetCell[] = [label];
+    produit.liquidation.rows.forEach((liquidationRow: LiquidationRow) => {
+      row.push(getNumericCell(liquidationRow, key));
     });
     return row;
   });
@@ -73,51 +108,71 @@ function buildLiquidationSheet(produit: any, suffix = '') {
   return { header, rows, name: `Liquidation ${suffix}`.trim() };
 }
 
-// ─── Build params rows ───────────────────────────────────────────────
+function buildParamsRows(state: PlacementSimulatorState): WorksheetRows {
+  const rowsParams: WorksheetRows = [];
 
-function buildParamsRows(state: any) {
-  const rowsParams = [];
-
-  // Client
   rowsParams.push(['Âge actuel', `${state.client.ageActuel} ans`]);
-  rowsParams.push(['TMI épargne', `${(state.client.tmiEpargne * 100).toFixed(1).replace('.', ',')} %`]);
-  rowsParams.push(['TMI retraite', `${(state.client.tmiRetraite * 100).toFixed(1).replace('.', ',')} %`]);
-  rowsParams.push(['Situation', state.client.situation === 'single' ? 'Célibataire' : 'Couple']);
+  rowsParams.push([
+    'TMI épargne',
+    `${(state.client.tmiEpargne * 100).toFixed(1).replace('.', ',')} %`,
+  ]);
+  rowsParams.push([
+    'TMI retraite',
+    `${(state.client.tmiRetraite * 100).toFixed(1).replace('.', ',')} %`,
+  ]);
+  rowsParams.push([
+    'Situation',
+    state.client.situation === 'single' ? 'Célibataire' : 'Couple',
+  ]);
 
-  // Transmission
   rowsParams.push(['Âge au décès', `${state.transmission.ageAuDeces} ans`]);
   rowsParams.push(['Nombre de bénéficiaires', state.transmission.nbBeneficiaires]);
-  rowsParams.push(['Taux DMTG', `${(state.transmission.dmtgTaux * 100).toFixed(1).replace('.', ',')} %`]);
+  rowsParams.push([
+    'Taux DMTG',
+    `${((state.transmission.dmtgTaux ?? 0) * 100).toFixed(1).replace('.', ',')} %`,
+  ]);
 
-  // Produits
-  state.products.forEach((product: any, idx: any) => {
+  state.products.forEach((product, idx) => {
     const prefix = `Produit ${idx + 1}`;
-    rowsParams.push([`${prefix} - Enveloppe`, (ENVELOPE_LABELS as Record<string, string>)[product.envelope] || product.envelope]);
+    rowsParams.push([`${prefix} - Enveloppe`, getEnvelopeLabel(product.envelope)]);
     rowsParams.push([`${prefix} - Durée épargne`, `${product.dureeEpargne} ans`]);
-    rowsParams.push([`${prefix} - Frais de gestion`, `${(product.fraisGestion * 100).toFixed(2).replace('.', ',')} %`]);
+    rowsParams.push([
+      `${prefix} - Frais de gestion`,
+      `${(product.fraisGestion * 100).toFixed(2).replace('.', ',')} %`,
+    ]);
     rowsParams.push([`${prefix} - Option barème IR`, product.optionBaremeIR ? 'Oui' : 'Non']);
     rowsParams.push([`${prefix} - PER bancaire`, product.perBancaire ? 'Oui' : 'Non']);
-    
+
     const versementConfig = product.versementConfig;
-    if (versementConfig) {
-      rowsParams.push([`${prefix} - Versement initial`, `${versementConfig.initial?.montant || 0} €`]);
-      rowsParams.push([`${prefix} - Versements annuels`, `${versementConfig.annuel?.montant || 0} €`]);
-      rowsParams.push([`${prefix} - Allocation capitalisation`, `${versementConfig.initial?.pctCapitalisation || 0} %`]);
-      rowsParams.push([`${prefix} - Allocation distribution`, `${versementConfig.initial?.pctDistribution || 0} %`]);
-    }
+    rowsParams.push([
+      `${prefix} - Versement initial`,
+      `${versementConfig.initial?.montant || 0} €`,
+    ]);
+    rowsParams.push([
+      `${prefix} - Versements annuels`,
+      `${versementConfig.annuel?.montant || 0} €`,
+    ]);
+    rowsParams.push([
+      `${prefix} - Allocation capitalisation`,
+      `${versementConfig.initial?.pctCapitalisation || 0} %`,
+    ]);
+    rowsParams.push([
+      `${prefix} - Allocation distribution`,
+      `${versementConfig.initial?.pctDistribution || 0} %`,
+    ]);
   });
 
   return rowsParams;
 }
 
-// ─── Build full XML ──────────────────────────────────────────────────
-
-/**
- * Construit le XML Excel complet à partir du state et des résultats.
- * Fonction pure — pas de side effects.
- */
-export function buildPlacementExcelXml(state: any, results: any): string {
-  const { produit1, produit2 } = results;
+export function buildPlacementExcelXml(
+  state: PlacementSimulatorState,
+  results: CompareResult,
+): string {
+  const { produit1, produit2 } = results as {
+    produit1: PlacementCompareProduct;
+    produit2: PlacementCompareProduct;
+  };
 
   const headerParams = ['Champ', 'Valeur'];
   const rowsParams = buildParamsRows(state);
@@ -127,7 +182,6 @@ export function buildPlacementExcelXml(state: any, results: any): string {
   const sheetLiquidationProduit1 = buildLiquidationSheet(produit1, 'Produit 1');
   const sheetLiquidationProduit2 = buildLiquidationSheet(produit2, 'Produit 2');
 
-  // 3) Transmission
   const headerTransmission = ['Indicateur', 'Produit 1', 'Produit 2'];
   const psRowApplic = [
     'PS décès - applicables ?',
@@ -155,29 +209,64 @@ export function buildPlacementExcelXml(state: any, results: any): string {
     formatPsNote(produit2?.transmission?.psDeces),
   ];
 
-  const rowsTransmission = [
-    ['Capital transmis', produit1?.transmission?.capitalTransmis || 0, produit2?.transmission?.capitalTransmis || 0],
-    ['Abattement', produit1?.transmission?.abattement || 0, produit2?.transmission?.abattement || 0],
-    ['Assiette fiscale', produit1?.transmission?.assiette || 0, produit2?.transmission?.assiette || 0],
+  const rowsTransmission: WorksheetRows = [
+    [
+      'Capital transmis',
+      produit1?.transmission?.capitalTransmis || 0,
+      produit2?.transmission?.capitalTransmis || 0,
+    ],
+    [
+      'Abattement',
+      produit1?.transmission?.abattement || 0,
+      produit2?.transmission?.abattement || 0,
+    ],
+    [
+      'Assiette fiscale',
+      produit1?.transmission?.assiette || 0,
+      produit2?.transmission?.assiette || 0,
+    ],
     psRowApplic,
     psRowAssiette,
     psRowTaux,
     psRowMontant,
     psRowNote,
-    ['Fiscalité forfaitaire (990 I / 757 B)', produit1?.transmission?.taxeForfaitaire || 0, produit2?.transmission?.taxeForfaitaire || 0],
-    ['Fiscalité DMTG', produit1?.transmission?.taxeDmtg || 0, produit2?.transmission?.taxeDmtg || 0],
+    [
+      'Fiscalité forfaitaire (990 I / 757 B)',
+      produit1?.transmission?.taxeForfaitaire || 0,
+      produit2?.transmission?.taxeForfaitaire || 0,
+    ],
+    [
+      'Fiscalité DMTG',
+      produit1?.transmission?.taxeDmtg || 0,
+      produit2?.transmission?.taxeDmtg || 0,
+    ],
     ['Fiscalité totale', produit1?.transmission?.taxe || 0, produit2?.transmission?.taxe || 0],
-    ['Net transmis', produit1?.transmission?.capitalTransmisNet || 0, produit2?.transmission?.capitalTransmisNet || 0],
+    [
+      'Net transmis',
+      produit1?.transmission?.capitalTransmisNet || 0,
+      produit2?.transmission?.capitalTransmisNet || 0,
+    ],
   ];
 
-  // 4) Synthèse comparative
   const headerSynthese = ['Indicateur', 'Produit 1', 'Produit 2'];
-  const rowsSynthese = [
-    ['Enveloppe', (ENVELOPE_LABELS as Record<string, string>)[produit1?.envelope] || '', (ENVELOPE_LABELS as Record<string, string>)[produit2?.envelope] || ''],
+  const rowsSynthese: WorksheetRows = [
+    ['Enveloppe', getEnvelopeLabel(produit1?.envelope || ''), getEnvelopeLabel(produit2?.envelope || '')],
     ['Capital acquis épargne', produit1?.epargne?.capitalFin || 0, produit2?.epargne?.capitalFin || 0],
-    ['Total retraits liquidation', produit1?.liquidation?.totalRetraits || 0, produit2?.liquidation?.totalRetraits || 0],
-    ['Fiscalité totale', (produit1?.liquidation?.totalFiscalite || 0) + (produit1?.transmission?.taxe || 0), (produit2?.liquidation?.totalFiscalite || 0) + (produit2?.transmission?.taxe || 0)],
-    ['Net global', (produit1?.liquidation?.totalRetraits || 0) + (produit1?.transmission?.capitalTransmisNet || 0), (produit2?.liquidation?.totalRetraits || 0) + (produit2?.transmission?.capitalTransmisNet || 0)],
+    [
+      'Total retraits liquidation',
+      produit1?.liquidation?.totalRetraits || 0,
+      produit2?.liquidation?.totalRetraits || 0,
+    ],
+    [
+      'Fiscalité totale',
+      (produit1?.liquidation?.totalFiscalite || 0) + (produit1?.transmission?.taxe || 0),
+      (produit2?.liquidation?.totalFiscalite || 0) + (produit2?.transmission?.taxe || 0),
+    ],
+    [
+      'Net global',
+      (produit1?.liquidation?.totalRetraits || 0) + (produit1?.transmission?.capitalTransmisNet || 0),
+      (produit2?.liquidation?.totalRetraits || 0) + (produit2?.transmission?.capitalTransmisNet || 0),
+    ],
   ];
 
   return `<?xml version="1.0"?>
@@ -196,15 +285,12 @@ export function buildPlacementExcelXml(state: any, results: any): string {
     </Workbook>`;
 }
 
-// ─── Export action ───────────────────────────────────────────────────
-
-/**
- * Exporte la simulation en fichier Excel.
- * Gère le download et les erreurs.
- */
-export async function exportPlacementExcel(state: any, results: any): Promise<void> {
+export async function exportPlacementExcel(
+  state: PlacementSimulatorState,
+  results: CompareResult | null | undefined,
+): Promise<void> {
   if (!results || !results.produit1) {
-    alert('Veuillez lancer une simulation avant d\'exporter.');
+    alert("Veuillez lancer une simulation avant d'exporter.");
     return;
   }
 

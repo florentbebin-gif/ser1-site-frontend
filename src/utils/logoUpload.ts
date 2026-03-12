@@ -8,6 +8,13 @@
 import { supabase } from '../supabaseClient';
 import { invokeAdmin } from '../services/apiAdmin';
 
+interface ExistingLogoPayload {
+  exists?: boolean;
+  logo?: {
+    id?: string | null;
+  };
+}
+
 /**
  * Calculate SHA256 hash of an ArrayBuffer
  * @param {ArrayBuffer} buffer
@@ -38,9 +45,10 @@ export async function uploadLogoWithDedup(file: File, cabinetId: string): Promis
       return { logo_id: null, reused: false, error: checkError.message };
     }
     
-    if (checkData?.exists && checkData?.logo?.id) {
+    const existingLogo = (checkData as ExistingLogoPayload | null) ?? null;
+    if (existingLogo?.exists && existingLogo?.logo?.id) {
       // Logo already exists, reuse it
-      return { logo_id: checkData.logo.id, reused: true };
+      return { logo_id: existingLogo.logo.id, reused: true };
     }
     
     // 3. Upload to Storage
@@ -76,7 +84,8 @@ export async function uploadLogoWithDedup(file: File, cabinetId: string): Promis
       return { logo_id: null, reused: false, error: `DB record failed: ${createError.message}` };
     }
     
-    return { logo_id: createData?.logo?.id, reused: false };
+    const createdLogo = (createData as ExistingLogoPayload | null) ?? null;
+    return { logo_id: createdLogo?.logo?.id ?? null, reused: false };
     
   } catch (err) {
     return { logo_id: null, reused: false, error: err instanceof Error ? err.message : String(err) };

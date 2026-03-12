@@ -5,6 +5,8 @@
  * Chaque validateur retourne un message d'erreur (string) ou null si valide.
  */
 
+import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+
 interface ScaleBracket {
   from?: number | null;
   to?: number | null;
@@ -38,6 +40,14 @@ interface AvDecesConfig {
     globalAllowance?: number | null;
   };
 }
+
+type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends Array<infer U>
+    ? Array<DeepPartial<U>>
+    : T[K] extends object
+      ? DeepPartial<T[K]>
+      : T[K];
+};
 
 /**
  * Vérifie qu'un taux est entre 0 et 100.
@@ -228,12 +238,20 @@ export function isValid(...errorObjects: Record<string, string>[]): boolean {
  * @param {Object} settings - contenu de tax_settings (sans dmtg)
  * @returns {Object} errors par chemin
  */
-export function validateImpotsSettings(settings: Record<string, any> | null | undefined): Record<string, string> {
+export function validateImpotsSettings(
+  settings: DeepPartial<typeof DEFAULT_TAX_SETTINGS> | null | undefined,
+): Record<string, string> {
   const errors: Record<string, string> = {};
   const { incomeTax, pfu, cehr, cdhr, corporateTax } = settings || {};
+  const incomeTaxPeriods: Array<'scaleCurrent' | 'scalePrevious'> = ['scaleCurrent', 'scalePrevious'];
+  const yearPeriods: Array<'current' | 'previous'> = ['current', 'previous'];
+  const domZones: Array<'gmr' | 'guyane'> = ['gmr', 'guyane'];
+  const pfuKeys: Array<'rateIR' | 'rateSocial' | 'rateTotal'> = ['rateIR', 'rateSocial', 'rateTotal'];
+  const cehrGroups: Array<'single' | 'couple'> = ['single', 'couple'];
+  const corporateKeys: Array<'normalRate' | 'reducedRate'> = ['normalRate', 'reducedRate'];
 
   // Barèmes IR (scaleCurrent, scalePrevious) — tranches ordonnées + taux 0-100
-  for (const period of ['scaleCurrent', 'scalePrevious']) {
+  for (const period of incomeTaxPeriods) {
     const scaleErrors = validateScaleOrdered(incomeTax?.[period] || []);
     for (const se of scaleErrors) {
       errors[`incomeTax.${period}[${se.index}].${se.field}`] = se.message;
@@ -241,30 +259,30 @@ export function validateImpotsSettings(settings: Record<string, any> | null | un
   }
 
   // Décote ratePercent
-  for (const period of ['current', 'previous']) {
+  for (const period of yearPeriods) {
     const rateErr = validatePercent(incomeTax?.decote?.[period]?.ratePercent);
     if (rateErr) errors[`incomeTax.decote.${period}.ratePercent`] = rateErr;
   }
 
   // Abattement DOM ratePercent
-  for (const period of ['current', 'previous']) {
-    for (const zone of ['gmr', 'guyane']) {
+  for (const period of yearPeriods) {
+    for (const zone of domZones) {
       const rateErr = validatePercent(incomeTax?.domAbatement?.[period]?.[zone]?.ratePercent);
       if (rateErr) errors[`incomeTax.domAbatement.${period}.${zone}.ratePercent`] = rateErr;
     }
   }
 
   // PFU taux
-  for (const period of ['current', 'previous']) {
-    for (const key of ['rateIR', 'rateSocial', 'rateTotal']) {
+  for (const period of yearPeriods) {
+    for (const key of pfuKeys) {
       const rateErr = validatePercent(pfu?.[period]?.[key]);
       if (rateErr) errors[`pfu.${period}.${key}`] = rateErr;
     }
   }
 
   // CEHR taux (traitées comme barèmes simples — rate en %)
-  for (const period of ['current', 'previous']) {
-    for (const group of ['single', 'couple']) {
+  for (const period of yearPeriods) {
+    for (const group of cehrGroups) {
       const rows = cehr?.[period]?.[group] || [];
       for (let i = 0; i < rows.length; i++) {
         const rateErr = validatePercent(rows[i].rate);
@@ -274,14 +292,14 @@ export function validateImpotsSettings(settings: Record<string, any> | null | un
   }
 
   // CDHR taux minimal
-  for (const period of ['current', 'previous']) {
+  for (const period of yearPeriods) {
     const rateErr = validatePercent(cdhr?.[period]?.minEffectiveRate);
     if (rateErr) errors[`cdhr.${period}.minEffectiveRate`] = rateErr;
   }
 
   // Impôt sur les sociétés taux
-  for (const period of ['current', 'previous']) {
-    for (const key of ['normalRate', 'reducedRate']) {
+  for (const period of yearPeriods) {
+    for (const key of corporateKeys) {
       const rateErr = validatePercent(corporateTax?.[period]?.[key]);
       if (rateErr) errors[`corporateTax.${period}.${key}`] = rateErr;
     }
@@ -295,23 +313,30 @@ export function validateImpotsSettings(settings: Record<string, any> | null | un
  * @param {Object} settings - contenu de ps_settings
  * @returns {Object} errors par chemin
  */
-export function validatePrelevementsSettings(settings: Record<string, any> | null | undefined): Record<string, string> {
+export function validatePrelevementsSettings(
+  settings: DeepPartial<typeof DEFAULT_PS_SETTINGS> | null | undefined,
+): Record<string, string> {
   const errors: Record<string, string> = {};
   const { patrimony, retirement } = settings || {};
+  const yearPeriods: Array<'current' | 'previous'> = ['current', 'previous'];
+  const patrimonyKeys: Array<'totalRate' | 'csgDeductibleRate'> = ['totalRate', 'csgDeductibleRate'];
+  const retirementKeys: Array<
+    'csgRate' | 'crdsRate' | 'casaRate' | 'maladieRate' | 'totalRate' | 'csgDeductibleRate'
+  > = ['csgRate', 'crdsRate', 'casaRate', 'maladieRate', 'totalRate', 'csgDeductibleRate'];
 
   // PS patrimoine : taux en %
-  for (const period of ['current', 'previous']) {
-    for (const key of ['totalRate', 'csgDeductibleRate']) {
+  for (const period of yearPeriods) {
+    for (const key of patrimonyKeys) {
       const rateErr = validatePercent(patrimony?.[period]?.[key]);
       if (rateErr) errors[`patrimony.${period}.${key}`] = rateErr;
     }
   }
 
   // PS retraites : taux par tranche en %
-  for (const period of ['current', 'previous']) {
+  for (const period of yearPeriods) {
     const brackets = retirement?.[period]?.brackets || [];
     for (let i = 0; i < brackets.length; i++) {
-      for (const key of ['csgRate', 'crdsRate', 'casaRate', 'maladieRate', 'totalRate', 'csgDeductibleRate']) {
+      for (const key of retirementKeys) {
         const rateErr = validatePercent(brackets[i][key]);
         if (rateErr) errors[`retirement.${period}.brackets[${i}].${key}`] = rateErr;
       }
