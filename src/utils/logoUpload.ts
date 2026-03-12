@@ -13,7 +13,7 @@ import { invokeAdmin } from '../services/apiAdmin';
  * @param {ArrayBuffer} buffer
  * @returns {Promise<string>} hex hash
  */
-export async function sha256(buffer) {
+export async function sha256(buffer: ArrayBuffer): Promise<string> {
   const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -25,7 +25,7 @@ export async function sha256(buffer) {
  * @param {string} cabinetId - Cabinet ID for storage path
  * @returns {Promise<{logo_id: string, reused: boolean, error?: string}>}
  */
-export async function uploadLogoWithDedup(file, cabinetId) {
+export async function uploadLogoWithDedup(file: File, cabinetId: string): Promise<{ logo_id: string | null; reused: boolean; error?: string }> {
   try {
     // 1. Read file and calculate SHA256
     const arrayBuffer = await file.arrayBuffer();
@@ -79,7 +79,7 @@ export async function uploadLogoWithDedup(file, cabinetId) {
     return { logo_id: createData?.logo?.id, reused: false };
     
   } catch (err) {
-    return { logo_id: null, reused: false, error: err.message };
+    return { logo_id: null, reused: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -88,7 +88,7 @@ export async function uploadLogoWithDedup(file, cabinetId) {
  * @param {File} file
  * @returns {Promise<{width: number, height: number}>}
  */
-function loadImageDimensions(file) {
+function loadImageDimensions(file: File): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -108,7 +108,7 @@ function loadImageDimensions(file) {
  * @param {string} storagePath
  * @returns {string}
  */
-export function getLogoPublicUrl(storagePath) {
+export function getLogoPublicUrl(storagePath: string | null | undefined): string | null {
   if (!storagePath) return null;
   const { data } = supabase.storage.from('logos').getPublicUrl(storagePath);
   return data?.publicUrl || null;

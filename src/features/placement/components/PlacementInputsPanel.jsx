@@ -3,7 +3,7 @@ import {
   ENVELOPE_LABELS,
 } from '@/engine/placement';
 import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
-import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '@/utils/transmissionDisclaimer.js';
+import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '@/utils/transmissionDisclaimer';
 import { euro, shortEuro, formatPsMontant } from '../utils/formatters';
 import { BENEFICIARY_OPTIONS, getRendementLiquidation } from '../utils/normalizers';
 import { InputEuro, InputPct, InputNumber, Select, Toggle } from './inputs.jsx';

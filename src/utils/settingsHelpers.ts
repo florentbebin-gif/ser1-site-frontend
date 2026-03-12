@@ -9,7 +9,7 @@
  * Convertit une valeur numérique en chaîne pour un <input type="number">.
  * null / undefined / NaN → '' (champ vide).
  */
-export function numberOrEmpty(v) {
+export function numberOrEmpty(v: number | null | undefined): string {
   return v === null || v === undefined || Number.isNaN(v) ? '' : String(v);
 }
 
@@ -17,7 +17,7 @@ export function numberOrEmpty(v) {
  * Convertit une valeur texte pour un <input type="text">.
  * null / undefined → '' (champ vide).
  */
-export function textOrEmpty(v) {
+export function textOrEmpty(v: string | null | undefined): string {
   return v === null || v === undefined ? '' : String(v);
 }
 
@@ -31,15 +31,19 @@ export function textOrEmpty(v) {
  * @param {Function} setMessage - Le setter du message de feedback
  * @returns {(path: string[], value: any) => void}
  */
-export function createFieldUpdater(setData, setMessage) {
+type NestedRecord = Record<string, unknown>;
+export function createFieldUpdater(
+  setData: (updater: (prev: NestedRecord) => NestedRecord) => void,
+  setMessage: (msg: string) => void,
+): (path: string[], value: unknown) => void {
   return (path, value) => {
     setData((prev) => {
-      const clone = structuredClone(prev);
-      let obj = clone;
+      const clone = structuredClone(prev) as NestedRecord;
+      let obj: NestedRecord = clone;
       for (let i = 0; i < path.length - 1; i++) {
         const k = path[i];
         if (obj[k] === undefined || obj[k] === null) obj[k] = {};
-        obj = obj[k];
+        obj = obj[k] as NestedRecord;
       }
       obj[path[path.length - 1]] = value;
       return clone;

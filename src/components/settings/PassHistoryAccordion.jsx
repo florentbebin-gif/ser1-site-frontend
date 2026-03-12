@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
-import { numberOrEmpty } from '../../utils/settingsHelpers.js';
+import { numberOrEmpty } from '../../utils/settingsHelpers';
 
 /**
  * PassHistoryAccordion — Historique du PASS (8 dernières valeurs)

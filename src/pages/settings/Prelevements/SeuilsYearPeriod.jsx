@@ -1,5 +1,5 @@
 import React from 'react';
-import { numberOrEmpty } from '@/utils/settingsHelpers.js';
+import { numberOrEmpty } from '@/utils/settingsHelpers';
 
 const REGION_SECTIONS = [
   { key: 'metropole', label: 'Résidence en métropole' },

@@ -1,5 +1,12 @@
 import { createTrackedObjectURL } from './export/createTrackedObjectURL';
 
+declare global {
+  interface Window {
+    showSaveFilePicker?: (options?: Record<string, unknown>) => Promise<FileSystemFileHandle>;
+    showOpenFilePicker?: (options?: Record<string, unknown>) => Promise<FileSystemFileHandle[]>;
+  }
+}
+
 const FILE_VERSION = 1;
 const FILE_APP = 'SER1';
 const FILE_KIND = 'placement';
@@ -16,7 +23,7 @@ function hasFileSystemAccess() {
   return typeof window !== 'undefined' && typeof window.showSaveFilePicker === 'function' && typeof window.showOpenFilePicker === 'function';
 }
 
-async function fallbackDownload(json, filename) {
+async function fallbackDownload(json: string, filename: string): Promise<void> {
   const blob = new Blob([json], { type: MIME_TYPE });
   const url = createTrackedObjectURL(blob);
   const link = document.createElement('a');
@@ -28,15 +35,15 @@ async function fallbackDownload(json, filename) {
   URL.revokeObjectURL(url);
 }
 
-async function fallbackOpenFile() {
-  return new Promise((resolve) => {
+async function fallbackOpenFile(): Promise<File | null> {
+  return new Promise<File | null>((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json,.ser1';
     input.style.display = 'none';
     document.body.appendChild(input);
-    input.onchange = (event) => {
-      const file = event.target?.files?.[0] || null;
+    input.onchange = (event: Event) => {
+      const file = (event.target as HTMLInputElement)?.files?.[0] || null;
       document.body.removeChild(input);
       resolve(file);
     };
@@ -44,7 +51,7 @@ async function fallbackOpenFile() {
   });
 }
 
-function validatePayload(data) {
+function validatePayload(data: Record<string, any>): string[] {
   const errors = [];
   if (!data || typeof data !== 'object') {
     errors.push('Fichier vide ou illisible.');
@@ -67,7 +74,7 @@ function validatePayload(data) {
   return errors;
 }
 
-export async function savePlacementState(state) {
+export async function savePlacementState(state: unknown): Promise<{ success?: boolean; filename?: string; cancelled?: boolean; message?: string }> {
   try {
     const payload = {
       version: FILE_VERSION,
@@ -81,7 +88,7 @@ export async function savePlacementState(state) {
 
     if (hasFileSystemAccess()) {
       try {
-        const handle = await window.showSaveFilePicker({
+        const handle = await window.showSaveFilePicker!({
           suggestedName: filename,
           types: [
             {
@@ -96,7 +103,7 @@ export async function savePlacementState(state) {
         sessionStorage.setItem('ser1:placement:lastSaved', handle.name || filename);
         return { success: true, filename: handle.name || filename };
       } catch (err) {
-        if (err?.name === 'AbortError') {
+        if ((err as { name?: string })?.name === 'AbortError') {
           return { cancelled: true };
         }
         console.warn('[SER1] showSaveFilePicker échec, fallback téléchargement.', err);
@@ -111,14 +118,14 @@ export async function savePlacementState(state) {
     return { success: true, filename };
   } catch (error) {
     console.error('[SER1] Sauvegarde placement échouée:', error);
-    return { success: false, message: "Échec de la sauvegarde. Veuillez réessayer." };
+    return { success: false, message: error instanceof Error ? error.message : "Échec de la sauvegarde. Veuillez réessayer." };
   }
 }
 
 async function pickFileForLoad() {
   if (hasFileSystemAccess()) {
     try {
-      const [handle] = await window.showOpenFilePicker({
+      const [handle] = await window.showOpenFilePicker!({
         multiple: false,
         types: [
           {
@@ -130,7 +137,7 @@ async function pickFileForLoad() {
       const file = await handle.getFile();
       return file;
     } catch (err) {
-      if (err?.name === 'AbortError') return null;
+      if ((err as { name?: string })?.name === 'AbortError') return null;
       console.warn('[SER1] showOpenFilePicker échec, fallback input.', err);
     }
   }
@@ -163,6 +170,6 @@ export async function loadPlacementStateFromFile() {
     return { success: true, data: data.payload, filename: file.name };
   } catch (error) {
     console.error('[SER1] Chargement placement échoué:', error);
-    return { success: false, message: "Impossible de charger ce fichier." };
+    return { success: false, message: error instanceof Error ? error.message : "Impossible de charger ce fichier." };
   }
 }

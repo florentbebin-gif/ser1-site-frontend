@@ -1,6 +1,6 @@
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 
-export function migrateDmtgData(data) {
+export function migrateDmtgData(data: Record<string, any> | null | undefined): Record<string, any> | null | undefined {
   if (!data?.dmtg) return data;
 
   const hasOldStructure = data.dmtg.abattementLigneDirecte !== undefined;

@@ -3,8 +3,8 @@ import { usePlacementSettings } from '@/hooks/usePlacementSettings';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { simulateComplete, compareProducts } from '@/engine/placement';
 import { normalizeVersementConfig } from '@/utils/versementConfig';
-import { onResetEvent, storageKeyFor } from '@/utils/reset.js';
-import { savePlacementState, loadPlacementStateFromFile } from '@/utils/placementPersistence.js';
+import { onResetEvent, storageKeyFor } from '@/utils/reset';
+import { savePlacementState, loadPlacementStateFromFile } from '@/utils/placementPersistence';
 import { toEngineProduct } from '../adapters/toEngineProduct';
 import {
   DEFAULT_STATE,
@@ -16,7 +16,7 @@ import {
   buildCustomDmtgOption,
   withReinvestCumul,
 } from '../utils/normalizers';
-import { exportPlacementExcel } from '../export/placementExcelExport.js';
+import { exportPlacementExcel } from '../export/placementExcelExport';
 import { getRelevantColumnsEpargne, getBaseColumnsForProduct } from '../utils/tableHelpers';
 
 const PLACEMENT_SAVE_EVENT = 'ser1:placement:save';
