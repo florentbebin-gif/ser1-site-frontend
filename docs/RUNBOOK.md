@@ -377,15 +377,15 @@ rg -n "path:" src/routes/appRoutes.ts
 rg -n "kind: 'redirect'" src/routes/appRoutes.ts
 # Résultat attendu : routes legacy (/placement, /credit, /prevoyance)
 
-# 1c. Vérifier que App.jsx consomme APP_ROUTES (pas de duplication)
-rg -n "APP_ROUTES\\.map" src/App.jsx
+# 1c. Vérifier que App.tsx consomme APP_ROUTES (pas de duplication)
+rg -n "APP_ROUTES\\.map" src/App.tsx
 
 # 2. Détecter les imports cross features → pages (doit être vide à terme)
 rg -n "from.*@/pages/" src/features/ -l
 # Résultat attendu : (aucune sortie)
 
-# 3. Vérifier la présence d'icônes inline dans App.jsx (doit être vide à terme)
-rg -n "const Icon" src/App.jsx
+# 3. Vérifier la présence d'icônes inline dans App.tsx (doit être vide à terme)
+rg -n "const Icon" src/App.tsx
 # Résultat attendu post-T3 : (aucune sortie)
 
 # 4. Lister les dossiers spike/raw dans src/ (interdits en prod)
@@ -393,7 +393,7 @@ find src -type d \( -name "__spike__" -o -name "_raw" \)
 # Résultat attendu : (aucune sortie)
 
 # 5. Vérifier l'utilisation centralisée des routes settings
-grep -n "SETTINGS_ROUTES\|settingsRoutes" src/constants/settingsRoutes.ts src/pages/SettingsShell.jsx
+grep -n "SETTINGS_ROUTES\|settingsRoutes" src/constants/settingsRoutes.ts src/pages/SettingsShell.tsx
 # Résultat attendu : matches dans les deux fichiers (source unique utilisée)
 ```
 

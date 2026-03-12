@@ -1,0 +1,438 @@
+// @ts-nocheck
+import React, { useEffect, useMemo, useState } from 'react';
+import '../../../components/simulator/SimulatorShell.css';
+import '../../../styles/premium-shared.css';
+import './IrSimulator.css';
+import { onResetEvent, storageKeyFor } from '../../../utils/reset';
+import { toNumber } from '../../../utils/number';
+import { computeIrResult as computeIrResultEngine } from '../../../utils/irEngine';
+import { useFiscalContext } from '../../../hooks/useFiscalContext';
+import { DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
+import { useTheme } from '../../../settings/ThemeProvider';
+import { useUserMode } from '../../../services/userModeService';
+import { ExportMenu } from '../../../components/ExportMenu';
+import {
+  computeAbattement10,
+  computeEffectiveParts,
+  computeExtraDeductions,
+  countPersonsACharge,
+} from '../../../engine/ir/adjustments';
+import { useIrExportHandlers } from '../hooks/useIrExportHandlers';
+import {
+  applyIncomeFilters,
+  DEFAULT_INCOME_FILTERS,
+  hasTaxableIncomeEntries,
+  normalizeIncomeFilters,
+} from '../utils/incomeFilters';
+import { IrFormSection } from './IrFormSection';
+import { IrSidebarSection } from './IrSidebarSection';
+import { IrDetailsSection } from './IrDetailsSection';
+import { IrDisclaimer } from './IrDisclaimer';
+
+const fmt0 = (n) => (Math.round(Number(n) || 0)).toLocaleString('fr-FR');
+const euro0 = (n) => `${fmt0(n)} €`;
+const fmtPct = (n) =>
+  (Number(n) || 0).toLocaleString('fr-FR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  });
+const toNum = (v, def = 0) => toNumber(v, def);
+
+const DEFAULT_INCOMES = {
+  d1: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+  d2: { salaries: 0, associes62: 0, pensions: 0, bic: 0, fonciers: 0, autres: 0 },
+  capital: { withPs: 0, withoutPs: 0 },
+  fonciersFoyer: 0,
+};
+
+const formatMoneyInput = (n) => {
+  const v = Math.round(Number(n) || 0);
+  if (!v) return '';
+  return v.toLocaleString('fr-FR');
+};
+
+export default function IrSimulatorContainer() {
+  const { colors, cabinetLogo, logoPlacement, pptxColors } = useTheme();
+
+  const { mode } = useUserMode();
+  const [localMode, setLocalMode] = useState(null);
+  const isExpert = (localMode ?? mode) === 'expert';
+  const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
+
+  // Mode strict : n'affiche pas de résultat avant que Supabase ait répondu
+  const { fiscalContext, loading: settingsLoading } = useFiscalContext({ strict: true });
+  const taxSettings = fiscalContext._raw_tax;
+  const psSettings = fiscalContext._raw_ps;
+
+  const [yearKey, setYearKey] = useState('current');
+  const [status, setStatus] = useState('couple');
+  const [isIsolated, setIsIsolated] = useState(false);
+  const [parts, setParts] = useState(0);
+  const [location, setLocation] = useState('metropole');
+  const [children, setChildren] = useState([]);
+
+  const [incomes, setIncomes] = useState(DEFAULT_INCOMES);
+  const [incomeFilters, setIncomeFilters] = useState(() => ({ ...DEFAULT_INCOME_FILTERS }));
+  const [capitalMode, setCapitalMode] = useState('pfu');
+
+  const [realMode, setRealMode] = useState({ d1: 'abat10', d2: 'abat10' });
+  const [realExpenses, setRealExpenses] = useState({ d1: 0, d2: 0 });
+
+  const [deductions, setDeductions] = useState(0);
+  const [credits, setCredits] = useState(0);
+  const [showDetails, setShowDetails] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+
+  const STORE_KEY = storageKeyFor('ir');
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(STORE_KEY);
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (s && typeof s === 'object') {
+          setYearKey(s.yearKey ?? 'current');
+          setStatus(s.status ?? 'couple');
+          setIsIsolated(s.isIsolated ?? false);
+          setParts(s.parts ?? 0);
+          setLocation(s.location ?? 'metropole');
+          setIncomes(
+            s.incomes
+              ? {
+                  d1: { ...DEFAULT_INCOMES.d1, ...(s.incomes.d1 || {}) },
+                  d2: { ...DEFAULT_INCOMES.d2, ...(s.incomes.d2 || {}) },
+                  capital: { ...DEFAULT_INCOMES.capital, ...(s.incomes.capital || {}) },
+                  fonciersFoyer: s.incomes.fonciersFoyer ?? 0,
+                }
+              : DEFAULT_INCOMES,
+          );
+          setRealMode(s.realMode ?? { d1: 'abat10', d2: 'abat10' });
+          setRealExpenses(s.realExpenses ?? { d1: 0, d2: 0 });
+          setDeductions(s.deductions ?? 0);
+          setCredits(s.credits ?? 0);
+          setCapitalMode(s.capitalMode ?? 'pfu');
+          setChildren(Array.isArray(s.children) ? s.children : []);
+          setIncomeFilters(normalizeIncomeFilters(s.incomeFilters));
+        }
+      }
+    } catch {
+      // ignore
+    }
+    setHydrated(true);
+  }, [STORE_KEY]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      sessionStorage.setItem(
+        STORE_KEY,
+        JSON.stringify({
+          yearKey,
+          status,
+          isIsolated,
+          parts,
+          location,
+          incomes,
+          realMode,
+          realExpenses,
+          deductions,
+          credits,
+          capitalMode,
+          children,
+          incomeFilters,
+        }),
+      );
+    } catch {
+      // ignore
+    }
+  }, [
+    STORE_KEY,
+    hydrated,
+    yearKey,
+    status,
+    isIsolated,
+    parts,
+    location,
+    incomes,
+    realMode,
+    realExpenses,
+    deductions,
+    credits,
+    capitalMode,
+    children,
+    incomeFilters,
+  ]);
+
+  useEffect(() => {
+    const off = onResetEvent?.(({ simId }) => {
+      if (simId && simId !== 'ir') return;
+
+      setYearKey('current');
+      setStatus('couple');
+      setIsIsolated(false);
+      setParts(0);
+      setLocation('metropole');
+      setIncomes(DEFAULT_INCOMES);
+      setChildren([]);
+      setDeductions(0);
+      setCredits(0);
+      setRealMode({ d1: 'abat10', d2: 'abat10' });
+      setRealExpenses({ d1: 0, d2: 0 });
+      setCapitalMode('pfu');
+      setIncomeFilters({ ...DEFAULT_INCOME_FILTERS });
+
+      try {
+        sessionStorage.removeItem(STORE_KEY);
+      } catch {
+        // ignore
+      }
+    });
+
+    return off || (() => {});
+  }, [STORE_KEY]);
+
+  const updateIncome = (who, field, value) => {
+    setIncomes((prev) => ({
+      ...prev,
+      [who]: {
+        ...prev[who],
+        [field]: toNum(value, 0),
+      },
+    }));
+  };
+
+  const effectiveIncomes = useMemo(() => applyIncomeFilters(incomes, incomeFilters), [incomes, incomeFilters]);
+  const showSummaryCard = useMemo(() => hasTaxableIncomeEntries(incomes), [incomes]);
+
+  const { effectiveParts } = computeEffectiveParts({
+    status,
+    isIsolated,
+    children,
+    manualParts: parts,
+  });
+
+  const abat10CfgRoot = taxSettings?.incomeTax?.abat10 || {};
+  const abat10SalCfg = yearKey === 'current' ? abat10CfgRoot.current : abat10CfgRoot.previous;
+
+  const baseSalD1 = (effectiveIncomes.d1.salaries || 0) + (effectiveIncomes.d1.associes62 || 0);
+  const baseSalD2 = (effectiveIncomes.d2.salaries || 0) + (effectiveIncomes.d2.associes62 || 0);
+
+  const abat10SalD1 = computeAbattement10(baseSalD1, abat10SalCfg);
+  const abat10SalD2 = computeAbattement10(baseSalD2, abat10SalCfg);
+
+  const cfgRet = yearKey === 'current' ? abat10CfgRoot.retireesCurrent : abat10CfgRoot.retireesPrevious;
+  const baseRet = (effectiveIncomes.d1.pensions || 0) + (status === 'couple' ? effectiveIncomes.d2.pensions || 0 : 0);
+  const abat10PensionsFoyer = computeAbattement10(baseRet, cfgRet);
+
+  const extraDeductions = computeExtraDeductions({
+    status,
+    realMode,
+    realExpenses,
+    abat10SalD1,
+    abat10SalD2,
+  });
+
+  const result = useMemo(
+    () =>
+      computeIrResultEngine({
+        yearKey,
+        status,
+        isIsolated,
+        parts: effectiveParts,
+        location,
+        incomes: isExpert
+          ? effectiveIncomes
+          : { ...effectiveIncomes, capital: { withPs: 0, withoutPs: 0 } },
+        deductions: (isExpert ? deductions : 0) + extraDeductions,
+        credits: isExpert ? credits : 0,
+        taxSettings,
+        psSettings,
+        capitalMode,
+        personsAChargeCount: countPersonsACharge(children),
+      }),
+    [
+      yearKey,
+      status,
+      isIsolated,
+      effectiveParts,
+      location,
+      effectiveIncomes,
+      isExpert,
+      deductions,
+      extraDeductions,
+      credits,
+      taxSettings,
+      psSettings,
+      capitalMode,
+      children,
+    ],
+  );
+
+  const yearLabel = yearKey === 'current' ? taxSettings?.incomeTax?.currentYearLabel || '' : taxSettings?.incomeTax?.previousYearLabel || '';
+
+  const tmiScale = yearKey === 'current' ? taxSettings?.incomeTax?.scaleCurrent || [] : taxSettings?.incomeTax?.scalePrevious || [];
+
+  const pfuRateIR = toNum(taxSettings?.pfu?.[yearKey]?.rateIR, 12.8);
+  const psPatrimonyRate = toNum(psSettings?.patrimony?.[yearKey]?.totalRate, DEFAULT_PS_SETTINGS.patrimony.current.totalRate);
+
+  const { exportExcel, exportPowerPoint } = useIrExportHandlers({
+    result,
+    yearLabel,
+    status,
+    isIsolated,
+    effectiveParts,
+    location,
+    incomes: effectiveIncomes,
+    capitalMode,
+    realMode,
+    realExpenses,
+    deductions,
+    credits,
+    colors,
+    cabinetLogo,
+    logoPlacement,
+    pptxColors,
+    setExportLoading,
+  });
+
+  if (settingsLoading) {
+    return (
+      <div className="sim-page" data-testid="ir-page">
+        <div className="ir-header premium-header" data-testid="ir-header">
+          <h1 className="premium-title" data-testid="ir-title">
+            Simulateur d'impôt sur le revenu
+          </h1>
+          <p className="premium-subtitle">
+            Estimez votre impôt sur le revenu et vos prélèvements sociaux.
+          </p>
+        </div>
+        <div className="ir-settings-loading" data-testid="ir-settings-loading">
+          Chargement des paramètres fiscaux…
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="sim-page" data-testid="ir-page">
+      <div className="ir-header premium-header" data-testid="ir-header">
+        <h1 className="premium-title" data-testid="ir-title">
+          Simulateur d'impôt sur le revenu
+        </h1>
+        <div className="ir-header__subtitle-row">
+          <p className="premium-subtitle">
+            Estimez votre impôt sur le revenu et vos prélèvements sociaux.
+          </p>
+          <div className="sim-header__actions">
+            <button
+              className="chip premium-btn ir-mode-btn"
+              data-testid="ir-mode-btn"
+              onClick={toggleMode}
+              title={isExpert ? 'Passer en mode simplifié' : 'Passer en mode expert'}
+            >
+              {isExpert ? 'Mode expert' : 'Mode simplifié'}
+            </button>
+            <ExportMenu
+              options={[
+                { label: 'Excel', onClick: exportExcel },
+                { label: 'PowerPoint', onClick: exportPowerPoint },
+              ]}
+              loading={exportLoading}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="ir-grid" data-testid="ir-grid">
+        <IrFormSection
+          status={status}
+          setStatus={setStatus}
+          isIsolated={isIsolated}
+          setIsIsolated={setIsIsolated}
+          setIncomes={setIncomes}
+          setParts={setParts}
+          incomes={incomes}
+          updateIncome={updateIncome}
+          formatMoneyInput={formatMoneyInput}
+          realMode={realMode}
+          setRealModeState={setRealMode}
+          realExpenses={realExpenses}
+          setRealExpensesState={setRealExpenses}
+          abat10SalD1={abat10SalD1}
+          abat10SalD2={abat10SalD2}
+          psPatrimonyRate={psPatrimonyRate}
+          fmtPct={fmtPct}
+          capitalMode={capitalMode}
+          setCapitalMode={setCapitalMode}
+          pfuRateIR={pfuRateIR}
+          deductions={deductions}
+          setDeductions={setDeductions}
+          credits={credits}
+          setCredits={setCredits}
+          abat10PensionsFoyer={abat10PensionsFoyer}
+          euro0={euro0}
+          isExpert={isExpert}
+          children={children}
+          setChildren={setChildren}
+          incomeFilters={incomeFilters}
+          setIncomeFilters={setIncomeFilters}
+        />
+
+        <IrSidebarSection
+          yearKey={yearKey}
+          setYearKey={setYearKey}
+          taxSettings={taxSettings}
+          location={location}
+          setLocation={setLocation}
+          children={children}
+          setChildren={setChildren}
+          setParts={setParts}
+          tmiScale={tmiScale}
+          result={result}
+          euro0={euro0}
+          fmtPct={fmtPct}
+          pfuRateIR={pfuRateIR}
+          isExpert={isExpert}
+          showSummaryCard={showSummaryCard}
+        />
+      </div>
+
+      {result && (
+        <div className="ir-detail-card premium-card" data-testid="ir-detail-accordion">
+          <div className="ir-detail-header">
+            <h3 className="ir-detail-title">Détail du calcul</h3>
+            <button
+              type="button"
+              className="ir-detail-toggle"
+              aria-expanded={showDetails}
+              onClick={() => setShowDetails((v) => !v)}
+              data-testid="ir-detail-toggle"
+            >
+              {showDetails ? 'Masquer' : 'Afficher'}
+              <svg
+                width="12" height="12" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                className={`ir-detail-chevron${showDetails ? ' is-open' : ''}`}
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          </div>
+          {showDetails && (
+            <IrDetailsSection
+              result={result}
+              euro0={euro0}
+              fmtPct={fmtPct}
+              pfuRateIR={pfuRateIR}
+            />
+          )}
+        </div>
+      )}
+
+      <IrDisclaimer isIsolated={isIsolated} />
+    </div>
+  );
+}
+
