@@ -6,7 +6,7 @@
  * Uses useExportGuard for TTL compliance.
  */
 
-import React, { useContext, useCallback } from 'react';
+import { useContext, useCallback } from 'react';
 import { usePerCalc } from './usePerCalc';
 import { exportPerPptx } from '../../pptx/exports/perExport';
 import { exportAndDownloadPerXlsx } from './perXlsx';

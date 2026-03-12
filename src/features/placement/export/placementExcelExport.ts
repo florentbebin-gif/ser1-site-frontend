@@ -17,7 +17,7 @@ function buildEpargneSheet(produit: any, suffix = '') {
   if (!produit?.epargne?.rows?.length) return null;
 
   const header = ['Indicateur'];
-  produit.epargne.rows.forEach((row: any, idx: any) => {
+  produit.epargne.rows.forEach((_row: any, idx: any) => {
     header.push(`Année ${idx}`);
   });
 

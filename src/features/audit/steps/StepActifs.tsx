@@ -1,4 +1,3 @@
-import React from 'react';
 import type { StepProps } from './types';
 
 export default function StepActifs({ dossier, updateDossier }: StepProps) {

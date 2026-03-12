@@ -11,7 +11,7 @@
  * - Handlers export   → useSuccessionExportHandlers
  */
 
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useSuccessionCalc } from './useSuccessionCalc';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../services/userModeService';

@@ -7,7 +7,7 @@
  * UI read-only : seule action admin = clôturer / rouvrir un produit avec date.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { CATALOG } from '@/domain/base-contrat/catalog';
