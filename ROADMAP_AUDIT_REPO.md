@@ -84,7 +84,7 @@
 
 | Priorité | Action | Fichiers |
 |---|---|---|
-| **P1** | Renommer `.js` → `.ts` (pas de JSX dedans) | 19 fichiers : `number.js`, `globalStorage.js`, `settingsHelpers.js`, `apiAdmin.js`, `placementEvents.js`, `placementPersistence.js`, `reset.js`, `transmissionDisclaimer.js`, `logoUpload.js`, `colorUsageGuidelines.js`, `reportPages.js`, `settingsRoutes.js`, `placementExcelExport.js`, `dmtgReferenceData.js`, `migrateDmtgData.js`, `dmtgValidators.js`, `exportExcel.js` |
+| **P1** | Renommer `.js` → `.ts` (pas de JSX dedans) | 19 fichiers historiques de PR-C (exemples : `number`, `globalStorage`, `placementEvents`, `settingsRoutes`, `placementExcelExport`, `dmtgReferenceData`, `exportExcel`) |
 | **P2** | Renommer `.jsx` → `.tsx` (ajouter typage minimal) | 57 fichiers, par batch feature (ir/, placement/, settings/...) |
 | **P3** | Ajouter règle ESLint interdisant la création de `.js`/`.jsx` | Voir Phase 5 |
 
@@ -175,8 +175,8 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 | Constat | Exemples | Action |
 |---|---|---|
 | **kebab-case vs PascalCase** pour les dossiers | `base-contrat/` vs `DmtgSuccession/` vs `Impots/` | Harmoniser : dossiers en kebab-case, composants en PascalCase |
-| **CSS co-localisé vs centralisé** | `src/styles/` (4 fichiers globaux) + CSS co-localisé par feature | OK si intentionnel, mais `src/styles/settings.css` n'est importé que depuis `styles.css` — aucun import direct |
-| **Dossier `src/styles/`** vs `src/styles.css` à la racine | Ambigu | Déplacer `styles.css` dans `src/styles/` comme `index.css` |
+| **CSS co-localisé vs centralisé** | `src/styles/` (4 fichiers globaux) + CSS co-localisé par feature | OK si intentionnel, mais `src/styles/settings.css` n'est importé que depuis `src/styles/index.css` — aucun import direct |
+| **Dossier `src/styles/`** et feuille d'entrée globale | `src/styles/index.css` | Fait en PR-E : feuille globale déplacée dans `src/styles/` |
 | **`src/pages/Home.css`** côtoie **`src/styles/home.css`** | Deux fichiers CSS pour Home ! | Fusionner |
 | **`api/admin.js`** à la racine | Serverless Vercel uniquement | Documenter dans README ou déplacer dans `vercel/` |
 
@@ -189,7 +189,7 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 | Dossier | Problème | Suggestion |
 |---|---|---|
 | `src/utils/` (24 fichiers) | Fourre-tout — mélange engine (irEngine, tmiMetrics), export, cache, persistence, debug | Répartir : `utils/export/`, `utils/cache/` existent déjà — y déplacer le reste logiquement |
-| `src/constants/` (5 fichiers) | Mélange labels UI + config routing + guidelines couleurs | Fusionner `settingsRoutes.js` dans le routing, `colorUsageGuidelines` dans `settings/theme/` |
+| `src/constants/` (5 fichiers) | Mélange labels UI + config routing + guidelines couleurs | Fusionner `settingsRoutes.ts` dans le routing, `colorUsageGuidelines` dans `settings/theme/` |
 | `src/services/` (2 fichiers) | Seulement 2 fichiers — trop petit pour un dossier | Fusionner dans `utils/` ou `auth/` selon la nature |
 | `src/icons/` (21 fichiers) | OK, mais les SVG inline sont dans les .tsx et aussi ici — vérifier cohérence |  |
 | `src/reporting/` (5 fichiers) | Un seul sous-dossier `json-io/` | Renommer `reporting/` → déplacer dans `utils/snapshot/` ou `features/snapshot/` |
@@ -208,6 +208,12 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 ## PHASE 7 — Documentation, verbosité, et dette technique
 
 ### 7A — Docs
+
+**Statut 2026-03-12 - PR-G executee**
+
+- `README.md`, `docs/ARCHITECTURE.md`, `docs/GOUVERNANCE.md`, `docs/RUNBOOK.md` et `docs/ROADMAP.md` realignes sur les chemins reels du repo.
+- References corrigees : `src/constants/settingsRoutes.ts`, `src/styles/index.css`, `src/engine/placement/fiscalParams.ts`, `src/engine/placement/shared.ts`, `src/reporting/json-io/snapshotMigrations.ts`.
+- `index.html` pointe desormais vers `src/styles/index.css`, ce qui supprime le warning build residue sur l'ancienne feuille CSS racine.
 
 | Doc | État | Action |
 |---|---|---|
@@ -250,7 +256,7 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 | **PR-D** ✅ | Phase 5A+5B (ESLint TS + tsconfig strict) — PR #300 | 🟢 Faible | 1-2h |
 | **PR-E** ✅ | Phase 6A (nommage + CSS Home) | 🟡 Moyen | 1-2h |
 | **PR-F** ✅ | Phase 4 top 5 god-files | 🟠 Moyen-haut | 3-5h par fichier |
-| **PR-G** | Phase 7A (docs refresh) | ⚪ Nul | 1-2h |
+| **PR-G** ✅ | Phase 7A (docs refresh) | ⚪ Nul | 1-2h |
 | **PR-H** | Phase 3 P2 (JSX → TSX batch) | 🟡 Moyen | 3-5h |
 | **PR-I** | Phase 7B (TODO purge catalog.ts) | 🟠 Moyen | 2-3h |
 | **PR-J** | Résorption dette warnings : `any` → types précis (49+ occurrences) + god-files Phase 4 | 🟠 Moyen | 4-6h |
