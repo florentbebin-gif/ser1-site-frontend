@@ -237,7 +237,7 @@ Ajouter dans `eslint.config.js` ou un script CI :
 | **PR-A** | Phase 1 (squelette) | ⚪ Nul | 15 min |
 | **PR-B** | Phase 2A+2B (code mort) | Faible | 1-2h |
 | **PR-C** | Phase 3 P1 (JS → TS) — PR #299 | Faible | 2-3h |
-| **PR-D** | Phase 5A+5B (règles lint + tsconfig) | Moyen | 2-3h |
+| **PR-D** ✅ | Phase 5A (règles ESLint TS) — PR #300 — Phase 5B (tsconfig) différée post-PR-H | Faible | 1h |
 | **PR-E** | Phase 6A (nommage + CSS Home) | Moyen | 1-2h |
 | **PR-F** | Phase 4 top 5 god-files | Moyen-haut | 3-5h par fichier |
 | **PR-G** | Phase 7A (docs refresh) | Nul | 1-2h |
