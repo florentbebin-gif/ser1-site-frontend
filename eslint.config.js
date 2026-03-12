@@ -3,6 +3,7 @@ import globals from 'globals';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import tsParser from '@typescript-eslint/parser';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
 import ser1ColorsPlugin from './tools/eslint-plugin-ser1-colors/index.js';
 
 export default [
@@ -29,7 +30,7 @@ export default [
       'ser1-colors': ser1ColorsPlugin,
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-console': ['error', { allow: ['warn', 'error'] }],
       'no-empty': ['error', { allowEmptyCatch: true }],
       'react/react-in-jsx-scope': 'off',
@@ -39,6 +40,8 @@ export default [
       // Color governance rules (strict mode)
       'ser1-colors/no-hardcoded-colors': 'error',
       'ser1-colors/use-semantic-colors': 'error',
+      // God-file detection (PR-D Phase 5A)
+      'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
     },
     settings: {
       react: {
@@ -46,10 +49,28 @@ export default [
       },
     },
   },
+  // TypeScript-specific rules (PR-D Phase 5A)
+  // Replaces no-unused-vars with the TS-aware version to avoid false positives
+  // on type annotation parameter names, interface augmentations, etc.
+  {
+    files: ['**/*.{ts,tsx}'],
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+    },
+    rules: {
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
   {
     files: ['**/*.test.{js,ts,jsx,tsx}'],
     rules: {
       'no-console': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   {
