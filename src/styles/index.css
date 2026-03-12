@@ -1,8 +1,8 @@
 /* Import TopBar styles */
-@import './components/TopBar.css';
-@import './styles/home.css';
-@import './styles/settings.css';
-@import './styles/premium-components.css';
+@import '../components/TopBar.css';
+@import './home.css';
+@import './settings.css';
+@import './premium-components.css';
 
 /* Variables globales */
 :root {
