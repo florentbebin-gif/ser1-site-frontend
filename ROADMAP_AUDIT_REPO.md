@@ -13,7 +13,7 @@
 | Métrique | Valeur |
 |---|---|
 | **Fichiers src/** | 382 |
-| **Extensions** | .ts (223), .jsx (57), .tsx (47), .css (24), .json (14), .svg (13) — .js éliminés (PR-C) |
+| **Extensions** | .ts (224), .tsx (117), .css (24), .json (14), .svg (13) — `.js` éliminés (PR-C), `.jsx` éliminés (PR-H) |
 | **TODO/FIXME/HACK** | 141 occurrences dans 35 fichiers |
 | **console.log/debug** | 52 occurrences dans 17 fichiers (hors tests) |
 | **@ts-ignore / any** | 49 occurrences dans 22 fichiers |
@@ -47,7 +47,7 @@
 
 | Fichier | Constat | Action |
 |---|---|---|
-| `src/utils/globalStorage.js` | Pure re-export de `reporting/json-io/`. Seul `App.jsx` l'importe. | Repointer `App.jsx` sur `reporting/json-io/`, supprimer le wrapper |
+| `src/utils/globalStorage.js` | Pure re-export de `reporting/json-io/`. Seul `App.tsx` l'importe. | Repointer `App.tsx` sur `reporting/json-io/`, supprimer le wrapper |
 | `src/engine/placementEngine.ts` | Pure re-export de `engine/placement/index`. 10 consommateurs. | Repointer les imports, supprimer la façade |
 
 ### 2B — Fichiers à vérifier (peu de consommateurs)
@@ -76,17 +76,23 @@
 
 ### 3A — État actuel
 
-- **19 fichiers `.js`** dans `src/` (pas de JSX dedans → ok en `.js` mais devraient être `.ts`)
-- **57 fichiers `.jsx`** — certains sont de simples wrappers sans types
-- **Mixité** : `App.jsx`, `main.jsx`, `Settings.jsx` cohabitent avec `BaseContrat.tsx`, `Credit.tsx`
+- **0 fichier `.js`** dans `src/` — résolu en PR-C
+- **0 fichier `.jsx`** dans `src/` — résolu en PR-H
+- **Mixité résiduelle** : repo UI désormais unifié en `TS/TSX` dans `src/`
 
 ### 3B — Plan
+
+**Statut 2026-03-12 — PR-H exécutée**
+
+- Les **64 fichiers `.jsx` restants** de `src/` ont été renommés en `.tsx`.
+- Entrées critiques migrées : `src/App.tsx`, `src/main.tsx`, `src/pages/Settings.tsx`, `src/pages/SettingsShell.tsx`, composants `ir/`, `placement/` et `settings/`.
+- Le contrôle CI `check:no-js` bloque désormais aussi les nouveaux `.jsx` dans `src/`.
 
 | Priorité | Action | Fichiers |
 |---|---|---|
 | **P1** | Renommer `.js` → `.ts` (pas de JSX dedans) | 19 fichiers historiques de PR-C (exemples : `number`, `globalStorage`, `placementEvents`, `settingsRoutes`, `placementExcelExport`, `dmtgReferenceData`, `exportExcel`) |
-| **P2** | Renommer `.jsx` → `.tsx` (ajouter typage minimal) | 57 fichiers, par batch feature (ir/, placement/, settings/...) |
-| **P3** | Ajouter règle ESLint interdisant la création de `.js`/`.jsx` | Voir Phase 5 |
+| **P2** | Renommer `.jsx` → `.tsx` (ajouter typage minimal) | **Fait** — 64 fichiers migrés par batch feature (`ir/`, `placement/`, `settings/`, `pages/`, `components/`) |
+| **P3** | Ajouter règle ESLint interdisant la création de `.js`/`.jsx` | **Partiellement fait** — `check:no-js` bloque désormais `.js` et `.jsx` dans `src/` |
 
 ### 3C — Règle repo à ajouter
 
@@ -101,9 +107,9 @@ Ajouter dans `eslint.config.js` ou un script CI :
 
 **Statut 2026-03-12 — PR-F exécutée**
 
-- `src/pages/settings/SettingsComptes.jsx` : **742 → 372 lignes**
+- `src/pages/settings/SettingsComptes.tsx` : **742 → 372 lignes**
 - `src/features/succession/useSuccessionDerivedValues.ts` : **722 → 313 lignes**
-- `src/features/placement/components/PlacementInputsPanel.jsx` : **627 → 98 lignes**
+- `src/features/placement/components/PlacementInputsPanel.tsx` : **627 → 98 lignes**
 - `src/features/succession/SuccessionSimulator.tsx` : **607 → 458 lignes**
 - `src/features/credit/Credit.tsx` : **603 → 375 lignes**
 
@@ -114,18 +120,18 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 | Fichier | Taille | Diagnostic |
 |---|---|---|
 | `features/succession/Succession.css` | 35 Ko | Découper par composant |
-| `pages/settings/SettingsComptes.jsx` | 34 Ko | **God-file** — extraire modals, sections, handlers |
+| `pages/settings/SettingsComptes.tsx` | 34 Ko | **God-file** — extraire modals, sections, handlers |
 | `pptx/designSystem/serenity.ts` | 32 Ko | Acceptable (config design), mais modulariser en sous-fichiers |
 | `domain/base-contrat/rules/library/retraite.ts` | 30 Ko | Acceptable (données métier), documenter |
 | `features/succession/useSuccessionDerivedValues.ts` | 29 Ko | **Trop gros** — découper en hooks spécialisés |
-| `features/placement/components/PlacementInputsPanel.jsx` | 29 Ko | **God-component** — extraire sous-sections |
+| `features/placement/components/PlacementInputsPanel.tsx` | 29 Ko | **God-component** — extraire sous-sections |
 | `features/succession/SuccessionSimulator.tsx` | 28 Ko | Extraire composants enfants |
 | `features/credit/Credit.tsx` | 27 Ko | Idem |
 | `pptx/slides/buildIrSynthesis.ts` | 24 Ko | Acceptable (slide builder) |
 | `domain/base-contrat/catalog.ts` | 24 Ko | **76 TODO/FIXME** — nécessite nettoyage urgent |
 | `features/credit/components/CreditV2.css` | 23 Ko | Découper par composant |
-| `pages/settings/Impots/ImpotsBaremeSection.jsx` | 23 Ko | Extraire les tables en composants réutilisables |
-| `pages/Settings.jsx` | 21 Ko | God-file — extraire logique thème |
+| `pages/settings/Impots/ImpotsBaremeSection.tsx` | 23 Ko | Extraire les tables en composants réutilisables |
+| `pages/Settings.tsx` | 21 Ko | God-file — extraire logique thème |
 | `pages/settings/BaseContrat.tsx` | 21 Ko | God-file en devenir — monitorer |
 | `features/succession/useSuccessionSimulatorHandlers.ts` | 20 Ko | Découper par groupe d'actions |
 
@@ -226,10 +232,10 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 
 | Fichier | Problème | Action |
 |---|---|---|
-| `index.html` | 90 lignes de JS inline dupliquant la logique de `main.jsx` (theme bootstrap) | Extraire et partager la source de vérité |
+| `index.html` | 90 lignes de JS inline dupliquant la logique de `main.tsx` (theme bootstrap) | Extraire et partager la source de vérité |
 | `catalog.ts` | **76 TODO/FIXME** — dette technique majeure en un seul fichier | Traiter les TODO ou les supprimer s'ils sont obsolètes |
 | `pptx/template/loadBaseTemplate.ts` | 18 TODO — logique de chargement template complexe | Simplifier ou documenter |
-| `src/main.jsx` | Duplique la logique anti-FOUC de `index.html` | Centraliser |
+| `src/main.tsx` | Duplique la logique anti-FOUC de `index.html` | Centraliser |
 | `vite.config.ts` | `DEBUG_PROXY` flag hardcodé — ok mais devrait utiliser `debugFlags.ts` | Mineur |
 
 ### 7C — Dette technique résumée
@@ -237,7 +243,7 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 | Catégorie | Gravité | Description |
 |---|---|---|
 | **76 TODO dans catalog.ts** | 🔴 Haute | Fichier métier central avec dette non trackée |
-| **Mixité JS/TS** | � Basse | ~~19 `.js`~~ éliminés (PR-C) + 57 `.jsx` → `.tsx` (PR-H) |
+| **Mixité JS/TS** | 🟢 Résolue | ~~19 `.js`~~ éliminés (PR-C) + ~~64 `.jsx`~~ éliminés (PR-H) |
 | **God-files** | 🟠 Moyenne | 5+ fichiers > 25 Ko (SettingsComptes, PlacementInputsPanel, Credit, SuccessionSimulator, useSuccessionDerivedValues) |
 | **`any` en TS** | 🟡 Basse | 49 occurrences — à réduire progressivement |
 | **CSS non-modulaire** | 🟡 Basse | Pas de CSS Modules ni utility-first — risque de collisions de classes |
@@ -257,7 +263,7 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 | **PR-E** ✅ | Phase 6A (nommage + CSS Home) | 🟡 Moyen | 1-2h |
 | **PR-F** ✅ | Phase 4 top 5 god-files | 🟠 Moyen-haut | 3-5h par fichier |
 | **PR-G** ✅ | Phase 7A (docs refresh) | ⚪ Nul | 1-2h |
-| **PR-H** | Phase 3 P2 (JSX → TSX batch) | 🟡 Moyen | 3-5h |
+| **PR-H** ✅ | Phase 3 P2 (JSX → TSX batch) | 🟡 Moyen | 3-5h |
 | **PR-I** | Phase 7B (TODO purge catalog.ts) | 🟠 Moyen | 2-3h |
 | **PR-J** | Résorption dette warnings : `any` → types précis (49+ occurrences) + god-files Phase 4 | 🟠 Moyen | 4-6h |
 
