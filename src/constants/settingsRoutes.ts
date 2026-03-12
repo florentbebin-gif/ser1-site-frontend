@@ -81,7 +81,7 @@ export const SETTINGS_ROUTES = [
  * @param {string} pathname - window.location.pathname
  * @returns {string} - Clé de la route active
  */
-export const getActiveSettingsKey = (pathname) => {
+export const getActiveSettingsKey = (pathname: string): string => {
   if (pathname.startsWith('/settings/impots')) return 'impots';
   if (pathname.startsWith('/settings/prelevements')) return 'prelevements';
   if (pathname.startsWith('/settings/fiscalites')) return 'baseContrats'; // legacy redirect
@@ -96,6 +96,6 @@ export const getActiveSettingsKey = (pathname) => {
  * @param {boolean} isAdmin - L'utilisateur est-il admin
  * @returns {SettingsRoute[]}
  */
-export const getVisibleSettingsRoutes = (isAdmin) => {
+export const getVisibleSettingsRoutes = (isAdmin: boolean) => {
   return SETTINGS_ROUTES.filter((route) => !route.adminOnly || isAdmin);
 };

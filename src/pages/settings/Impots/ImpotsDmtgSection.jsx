@@ -1,6 +1,6 @@
 import React from 'react';
 import SettingsTable from '@/components/settings/SettingsTable';
-import { numberOrEmpty } from '@/utils/settingsHelpers.js';
+import { numberOrEmpty } from '@/utils/settingsHelpers';
 
 export default function ImpotsDmtgSection({
   dmtg,

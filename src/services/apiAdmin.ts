@@ -9,7 +9,7 @@ import { supabase } from '../supabaseClient';
  * @param {object} payload - Paramètres additionnels
  * @returns {{ data: any, error: { message: string } | null }}
  */
-export async function invokeAdmin(action, payload = {}) {
+export async function invokeAdmin(action: string, payload: Record<string, unknown> = {}): Promise<{ data: any; error: { message: string } | null }> {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     
@@ -49,6 +49,6 @@ export async function invokeAdmin(action, payload = {}) {
     return { data, error: null };
 
   } catch (err) {
-    return { data: null, error: { message: err.message || 'Erreur réseau' } };
+    return { data: null, error: { message: err instanceof Error ? err.message : 'Erreur réseau' } };
   }
 }

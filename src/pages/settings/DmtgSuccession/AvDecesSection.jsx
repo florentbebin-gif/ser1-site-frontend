@@ -1,5 +1,5 @@
 import React from 'react';
-import { numberOrEmpty } from '@/utils/settingsHelpers.js';
+import { numberOrEmpty } from '@/utils/settingsHelpers';
 import SettingsTable from '@/components/settings/SettingsTable';
 
 export default function AvDecesSection({

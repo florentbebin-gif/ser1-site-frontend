@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { onResetEvent, storageKeyFor } from '../../utils/reset.js';
+import { onResetEvent, storageKeyFor } from '../../utils/reset';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../services/userModeService';
 import {

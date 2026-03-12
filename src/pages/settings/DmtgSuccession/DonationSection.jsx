@@ -1,5 +1,5 @@
 import React from 'react';
-import { numberOrEmpty } from '@/utils/settingsHelpers.js';
+import { numberOrEmpty } from '@/utils/settingsHelpers';
 
 export default function DonationSection({
   donation,

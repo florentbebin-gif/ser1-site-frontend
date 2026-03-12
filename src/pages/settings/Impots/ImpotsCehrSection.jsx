@@ -1,7 +1,7 @@
 import React from 'react';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
-import { numberOrEmpty } from '@/utils/settingsHelpers.js';
+import { numberOrEmpty } from '@/utils/settingsHelpers';
 
 export default function ImpotsCehrSection({
   cehr,

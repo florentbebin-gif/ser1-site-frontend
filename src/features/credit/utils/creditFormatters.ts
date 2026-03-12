@@ -4,7 +4,7 @@
  * Extrait depuis l'ancienne implementation monolithique du simulateur Credit et centralise ici.
  */
 
-import { toNumber } from '../../../utils/number.js';
+import { toNumber } from '../../../utils/number';
 
 // ============================================================================
 // FORMATTERS NOMBRES

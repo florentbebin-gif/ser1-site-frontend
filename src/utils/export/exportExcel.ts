@@ -5,7 +5,7 @@ import {
   normalizeFilenameForFingerprint,
 } from './exportFingerprint';
 
-function buildLegacyExcelFingerprintManifest(xml, filename) {
+function buildLegacyExcelFingerprintManifest(xml: string, filename: string) {
   const worksheets = Array.from(xml.matchAll(/<Worksheet ss:Name="([^"]+)">([\s\S]*?)<\/Worksheet>/g));
 
   const sheets = worksheets.map(([, name, content]) => {
@@ -29,7 +29,7 @@ function buildLegacyExcelFingerprintManifest(xml, filename) {
 }
 
 // Transpose un array-of-arrays (pour les échéanciers : périodes en colonnes)
-export function transpose(aoa) {
+export function transpose(aoa: unknown[][]): unknown[][] {
   if (!aoa.length) return aoa;
   const rows = aoa.length;
   const cols = Math.max(...aoa.map(r => r.length));
@@ -43,20 +43,20 @@ export function transpose(aoa) {
 }
 
 // Feuilles "classiques" : périodes en colonnes (on transpose)
-export function buildWorksheetXml(title, header, rows) {
+export function buildWorksheetXml(title: string, header: (string | number)[], rows: (string | number)[][]): string {
   const aoa = [header, ...rows];
   const t = transpose(aoa);
-  const esc = (s) =>
+  const esc = (s: unknown) =>
     String(s)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
-  const rowXml = (cells) =>
+  const rowXml = (cells: unknown[]) =>
     `<Row>${
       cells
         .map(
-          (v) =>
+          (v: unknown) =>
             `<Cell><Data ss:Type="${
               typeof v === 'number' ? 'Number' : 'String'
             }">${esc(v)}</Data></Cell>`
@@ -73,19 +73,19 @@ export function buildWorksheetXml(title, header, rows) {
 }
 
 // Feuille "Paramètres" : on garde l'orientation verticale (Pas de transpose)
-export function buildWorksheetXmlVertical(title, header, rows) {
+export function buildWorksheetXmlVertical(title: string, header: (string | number)[], rows: (string | number)[][]): string {
   const aoa = [header, ...rows];
-  const esc = (s) =>
+  const esc = (s: unknown) =>
     String(s)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
 
-  const rowXml = (cells) =>
+  const rowXml = (cells: unknown[]) =>
     `<Row>${
       cells
         .map(
-          (v) =>
+          (v: unknown) =>
             `<Cell><Data ss:Type="${
               typeof v === 'number' ? 'Number' : 'String'
             }">${esc(v)}</Data></Cell>`
@@ -102,7 +102,7 @@ export function buildWorksheetXmlVertical(title, header, rows) {
 }
 
 // Génère et télécharge un fichier Excel
-export async function downloadExcel(xml, filename) {
+export async function downloadExcel(xml: string, filename: string): Promise<void> {
   try {
     const manifest = buildLegacyExcelFingerprintManifest(xml, filename);
     const fingerprint = fingerprintXlsxExport(manifest);
@@ -140,11 +140,11 @@ export async function downloadExcel(xml, filename) {
   } catch (error) {
     console.error('[ExcelExport] downloadExcel error', { 
       error, 
-      message: error.message, 
-      stack: error.stack,
+      message: error instanceof Error ? error.message : String(error), 
+      stack: error instanceof Error ? error.stack : undefined,
       filename,
       xmlLength: xml?.length
     });
-    throw new Error(`Erreur lors du téléchargement: ${error.message}`);
+    throw new Error(`Erreur lors du téléchargement: ${error instanceof Error ? error.message : String(error)}`);
   }
 }

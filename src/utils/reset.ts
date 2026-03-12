@@ -6,12 +6,12 @@ const RESET_EVENT = 'ser1:reset'; // CustomEvent envoyé aux pages { detail: { s
 // ----------------- API publique -----------------
 
 /** Clé de stockage par simulateur */
-export function storageKeyFor(simId) {
+export function storageKeyFor(simId: string): string {
   return `ser1:sim:${simId}`;
 }
 
 /** Demande de reset pour un simulateur spécifique (ex: 'placement', 'credit', 'audit') */
-export function triggerPageReset(simId) {
+export function triggerPageReset(simId: string): void {
   if (!simId) return;
   try {
     // Efface les données persistées du simulateur visé (sessionStorage pour données temporaires)
@@ -47,8 +47,11 @@ export function triggerPageReset(simId) {
  *     if (simId === 'placement') setState(DEFAULTS)
  *   }), [])
  */
-export function onResetEvent(handler) {
-  const fn = (e) => handler(e?.detail || {});
+export function onResetEvent(handler: (detail: { simId: string }) => void): () => void {
+  const fn = (e: Event) => {
+    const detail = (e as CustomEvent<{ simId: string }>).detail;
+    if (detail?.simId) handler(detail);
+  };
   window.addEventListener(RESET_EVENT, fn);
   return () => window.removeEventListener(RESET_EVENT, fn);
 }
@@ -56,7 +59,7 @@ export function onResetEvent(handler) {
 /**
  * Reset global de tous les simulateurs (ne touche pas aux settings)
  */
-export function triggerGlobalReset() {
+export function triggerGlobalReset(): void {
   const simulators = ['placement', 'credit', 'ir', 'audit', 'strategy'];
   
   simulators.forEach(simId => {

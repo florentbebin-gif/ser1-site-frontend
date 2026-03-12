@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculTransmission, ENVELOPES, simulateComplete } from '../placement';
-import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '../../utils/transmissionDisclaimer.js';
+import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '../../utils/transmissionDisclaimer';
 
 const baseFiscalParams = {
   dmtgTauxChoisi: 0.2,

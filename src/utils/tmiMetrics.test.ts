@@ -22,6 +22,8 @@ const baseParams = (overrides = {}) => ({
   scale: DEFAULT_SCALE,
   plafondPartSup: DEFAULT_PLAFOND_PART_SUP,
   plafondParentIso2: DEFAULT_PLAFOND_PARENT_ISO,
+  partsNb: 1,
+  basePartsForQf: 1,
   extraParts: 0,
   extraHalfParts: 0,
   isCouple: false,
@@ -41,7 +43,7 @@ describe('computeTmiMetrics — Scénario A : Marié/Pacsé 90k€', () => {
     expect(metrics.seuilBasFoyer).toBeLessThan(90000);
   });
   it('Invariant : revenus dans TMI + marge ≈ largeur tranche', () => {
-    if (metrics.seuilHautFoyer) {
+    if (metrics.seuilHautFoyer && metrics.margeAvantChangement != null) {
       const largeur = metrics.seuilHautFoyer - metrics.seuilBasFoyer;
       expect(Math.abs(metrics.revenusDansTmi + metrics.margeAvantChangement - largeur)).toBeLessThan(100);
     }

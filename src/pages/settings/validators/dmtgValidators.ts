@@ -1,16 +1,50 @@
 /**
- * dmtgValidators.js
+ * dmtgValidators.ts
  *
  * Fonctions de validation réutilisables pour les pages Settings DMTG & Succession.
  * Chaque validateur retourne un message d'erreur (string) ou null si valide.
  */
+
+interface ScaleBracket {
+  from?: number | null;
+  to?: number | null;
+  rate?: number | null;
+}
+
+interface DmtgCategory {
+  abattement?: number | null;
+  scale?: ScaleBracket[];
+}
+
+interface DmtgConfig {
+  ligneDirecte?: DmtgCategory;
+  frereSoeur?: DmtgCategory;
+  neveuNiece?: DmtgCategory;
+  autre?: DmtgCategory;
+}
+
+interface AvDecesBracket {
+  ratePercent?: number | null;
+  upTo?: number | null;
+}
+
+interface AvDecesConfig {
+  agePivotPrimes?: number | null;
+  primesApres1998?: {
+    allowancePerBeneficiary?: number | null;
+    brackets?: AvDecesBracket[];
+  };
+  apres70ans?: {
+    globalAllowance?: number | null;
+  };
+}
 
 /**
  * Vérifie qu'un taux est entre 0 et 100.
  * @param {number|null|undefined} value
  * @returns {string|null}
  */
-export function validatePercent(value) {
+export function validatePercent(value: number | string | null | undefined): string | null {
   if (value === null || value === undefined || value === '') return null;
   const n = Number(value);
   if (Number.isNaN(n)) return 'La valeur doit être un nombre.';
@@ -23,7 +57,7 @@ export function validatePercent(value) {
  * @param {number|null|undefined} value
  * @returns {string|null}
  */
-export function validatePositive(value) {
+export function validatePositive(value: number | string | null | undefined): string | null {
   if (value === null || value === undefined || value === '') return null;
   const n = Number(value);
   if (Number.isNaN(n)) return 'La valeur doit être un nombre.';
@@ -37,7 +71,7 @@ export function validatePositive(value) {
  * @param {number} max
  * @returns {string|null}
  */
-export function validateReasonable(value, max = 10000000) {
+export function validateReasonable(value: number | string | null | undefined, max: number = 10000000): string | null {
   const posErr = validatePositive(value);
   if (posErr) return posErr;
   if (value === null || value === undefined || value === '') return null;
@@ -51,9 +85,9 @@ export function validateReasonable(value, max = 10000000) {
  * @param {Array<{from: number|null, to: number|null, rate?: number}>} scale
  * @returns {Array<{index: number, field: string, message: string}>}
  */
-export function validateScaleOrdered(scale) {
+export function validateScaleOrdered(scale: ScaleBracket[]): Array<{ index: number; field: string; message: string }> {
   if (!Array.isArray(scale) || scale.length === 0) return [];
-  const errors = [];
+  const errors: Array<{ index: number; field: string; message: string }> = [];
 
   for (let i = 0; i < scale.length; i++) {
     const row = scale[i];
@@ -99,11 +133,11 @@ export function validateScaleOrdered(scale) {
  * @param {Object} dmtg - { ligneDirecte, frereSoeur, neveuNiece, autre }
  * @returns {Object} errors par chemin (ex: { 'ligneDirecte.abattement': '...', 'ligneDirecte.scale[2].rate': '...' })
  */
-export function validateDmtg(dmtg) {
-  const errors = {};
+export function validateDmtg(dmtg: DmtgConfig | null | undefined): Record<string, string> {
+  const errors: Record<string, string> = {};
   if (!dmtg) return errors;
 
-  const categories = ['ligneDirecte', 'frereSoeur', 'neveuNiece', 'autre'];
+  const categories: Array<keyof DmtgConfig> = ['ligneDirecte', 'frereSoeur', 'neveuNiece', 'autre'];
 
   for (const cat of categories) {
     const catData = dmtg[cat];
@@ -130,8 +164,8 @@ export function validateDmtg(dmtg) {
  * @param {Object} avDeces - assuranceVie.deces
  * @returns {Object} errors par chemin
  */
-export function validateAvDeces(avDeces) {
-  const errors = {};
+export function validateAvDeces(avDeces: AvDecesConfig | null | undefined): Record<string, string> {
+  const errors: Record<string, string> = {};
   if (!avDeces) return errors;
 
   // agePivotPrimes
@@ -185,7 +219,7 @@ export function validateAvDeces(avDeces) {
  * @param  {...Object} errorObjects
  * @returns {boolean}
  */
-export function isValid(...errorObjects) {
+export function isValid(...errorObjects: Record<string, string>[]): boolean {
   return errorObjects.every(e => Object.keys(e).length === 0);
 }
 
@@ -194,8 +228,8 @@ export function isValid(...errorObjects) {
  * @param {Object} settings - contenu de tax_settings (sans dmtg)
  * @returns {Object} errors par chemin
  */
-export function validateImpotsSettings(settings) {
-  const errors = {};
+export function validateImpotsSettings(settings: Record<string, any> | null | undefined): Record<string, string> {
+  const errors: Record<string, string> = {};
   const { incomeTax, pfu, cehr, cdhr, corporateTax } = settings || {};
 
   // Barèmes IR (scaleCurrent, scalePrevious) — tranches ordonnées + taux 0-100
@@ -261,8 +295,8 @@ export function validateImpotsSettings(settings) {
  * @param {Object} settings - contenu de ps_settings
  * @returns {Object} errors par chemin
  */
-export function validatePrelevementsSettings(settings) {
-  const errors = {};
+export function validatePrelevementsSettings(settings: Record<string, any> | null | undefined): Record<string, string> {
+  const errors: Record<string, string> = {};
   const { patrimony, retirement } = settings || {};
 
   // PS patrimoine : taux en %

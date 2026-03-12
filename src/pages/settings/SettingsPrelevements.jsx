@@ -4,7 +4,7 @@ import { useUserRole } from '@/auth/useUserRole';
 import './SettingsShared.css';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
-import { createFieldUpdater } from '@/utils/settingsHelpers.js';
+import { createFieldUpdater } from '@/utils/settingsHelpers';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
 
 import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
