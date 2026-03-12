@@ -1,23 +1,41 @@
-// @ts-nocheck
 import React from 'react';
 
-const ProgressIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+interface TimelineBarProps {
+  ageActuel: number;
+  ageDebutLiquidation: number;
+  ageAuDeces: number;
+}
+
+const ProgressIcon = (): React.ReactElement => (
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M3 17l6-6 4 4 7-7" />
     <path d="M14 4h7v7" />
   </svg>
 );
 
-const DaggerIcon = () => (
-  <span className="pl-timeline__dagger">†</span>
+const DaggerIcon = (): React.ReactElement => (
+  <span className="pl-timeline__dagger">&dagger;</span>
 );
 
-export function TimelineBar({ ageActuel, ageDebutLiquidation, ageAuDeces }) {
+export function TimelineBar({
+  ageActuel,
+  ageDebutLiquidation,
+  ageAuDeces,
+}: TimelineBarProps): React.ReactElement {
   const dureeVieTotal = Math.max(1, ageAuDeces - ageActuel);
   const dureeEpargne = Math.max(0, ageDebutLiquidation - ageActuel);
   const positionDebutLiquidation = Math.min(100, Math.max(0, (dureeEpargne / dureeVieTotal) * 100));
-  
-  // Masquer l'âge de liquidation si décès avant liquidation
+
+  // Masquer l'age de liquidation si deces avant liquidation.
   const showLiquidationMarker = ageAuDeces >= ageDebutLiquidation;
 
   return (
@@ -43,7 +61,7 @@ export function TimelineBar({ ageActuel, ageDebutLiquidation, ageAuDeces }) {
 
       <div className="pl-timeline__markers">
         <div className="pl-timeline__marker" style={{ left: '0%' }}>
-          <div className="pl-timeline__line"></div>
+          <div className="pl-timeline__line" />
           <div className="pl-timeline__label">
             <span className="pl-timeline__age">{ageActuel}</span>
             <span className="pl-timeline__unit">ans</span>
@@ -52,7 +70,7 @@ export function TimelineBar({ ageActuel, ageDebutLiquidation, ageAuDeces }) {
 
         {showLiquidationMarker && (
           <div className="pl-timeline__marker pl-timeline__marker--center" style={{ left: '50%' }}>
-            <div className="pl-timeline__line"></div>
+            <div className="pl-timeline__line" />
             <div className="pl-timeline__label">
               <span className="pl-timeline__age">{ageDebutLiquidation}</span>
               <span className="pl-timeline__unit">ans</span>
@@ -61,7 +79,7 @@ export function TimelineBar({ ageActuel, ageDebutLiquidation, ageAuDeces }) {
         )}
 
         <div className="pl-timeline__marker" style={{ left: '100%' }}>
-          <div className="pl-timeline__line"></div>
+          <div className="pl-timeline__line" />
           <div className="pl-timeline__label">
             <span className="pl-timeline__age">{ageAuDeces}</span>
             <span className="pl-timeline__unit">ans</span>
@@ -71,4 +89,3 @@ export function TimelineBar({ ageActuel, ageDebutLiquidation, ageAuDeces }) {
     </div>
   );
 }
-

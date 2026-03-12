@@ -1,9 +1,44 @@
-// @ts-nocheck
 import React, { useRef, useState } from 'react';
 import { invokeAdmin } from '@/services/apiAdmin';
 import { getLogoPublicUrl, uploadLogoWithDedup } from '@/utils/logoUpload';
 
-const DEFAULT_FORM = {
+interface ThemeOption {
+  id: string;
+  name: string;
+}
+
+interface CabinetRecord {
+  id?: string;
+  name?: string | null;
+  default_theme_id?: string | null;
+  logo_id?: string | null;
+  logo_placement?: string | null;
+  logos?: {
+    storage_path?: string | null;
+  } | null;
+}
+
+interface CabinetEditModalProps {
+  cabinet?: CabinetRecord | null;
+  themes: ThemeOption[];
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+interface CabinetFormState {
+  name: string;
+  default_theme_id: string;
+  logo_id: string;
+  logo_placement: string;
+}
+
+interface CreateCabinetResponse {
+  cabinet?: {
+    id?: string;
+  };
+}
+
+const DEFAULT_FORM: CabinetFormState = {
   name: '',
   default_theme_id: '',
   logo_id: '',
@@ -11,12 +46,12 @@ const DEFAULT_FORM = {
 };
 
 const LOGO_PLACEMENT_OPTIONS = [
-  { key: 'top-left', label: 'Haut Gauche' },
-  { key: 'center-top', label: 'Centre Haut' },
-  { key: 'top-right', label: 'Haut Droite' },
-  { key: 'bottom-left', label: 'Bas Gauche' },
-  { key: 'center-bottom', label: 'Centre Bas' },
-  { key: 'bottom-right', label: 'Bas Droite' },
+  { key: 'top-left', label: 'Haut gauche' },
+  { key: 'center-top', label: 'Centre haut' },
+  { key: 'top-right', label: 'Haut droite' },
+  { key: 'bottom-left', label: 'Bas gauche' },
+  { key: 'center-bottom', label: 'Centre bas' },
+  { key: 'bottom-right', label: 'Bas droite' },
 ];
 
 export default function CabinetEditModal({
@@ -24,39 +59,41 @@ export default function CabinetEditModal({
   themes,
   onClose,
   onSuccess,
-}) {
-  const inputRef = useRef(null);
-  const [form, setForm] = useState(() => (
+}: CabinetEditModalProps): React.ReactElement {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [form, setForm] = useState<CabinetFormState>(() => (
     cabinet
       ? {
-        name: cabinet.name || '',
-        default_theme_id: cabinet.default_theme_id || '',
-        logo_id: cabinet.logo_id || '',
-        logo_placement: cabinet.logo_placement || 'center-bottom',
-      }
+          name: cabinet.name || '',
+          default_theme_id: cabinet.default_theme_id || '',
+          logo_id: cabinet.logo_id || '',
+          logo_placement: cabinet.logo_placement || 'center-bottom',
+        }
       : DEFAULT_FORM
   ));
   const [saving, setSaving] = useState(false);
-  const [logoFile, setLogoFile] = useState(null);
-  const [logoPreview, setLogoPreview] = useState(
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(
     cabinet?.logos?.storage_path ? getLogoPublicUrl(cabinet.logos.storage_path) : null,
   );
   const [logoUploading, setLogoUploading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleLogoFileChange = (e) => {
+  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     if (!file.type.startsWith('image/')) {
-      setError('Veuillez sélectionner une image (jpg ou png).');
+      setError('Veuillez selectionner une image (jpg ou png).');
       return;
     }
+
     setError('');
     setLogoFile(file);
     setLogoPreview(URL.createObjectURL(file));
   };
 
-  const handleSaveCabinet = async () => {
+  const handleSaveCabinet = async (): Promise<void> => {
     if (!form.name.trim()) {
       setError('Le nom du cabinet est requis.');
       return;
@@ -78,10 +115,11 @@ export default function CabinetEditModal({
           setSaving(false);
           return;
         }
-        logoId = result.logo_id;
+
+        logoId = result.logo_id || '';
       }
 
-      if (cabinet) {
+      if (cabinet?.id) {
         const { error: invokeError } = await invokeAdmin('update_cabinet', {
           id: cabinet.id,
           name: form.name.trim(),
@@ -97,14 +135,15 @@ export default function CabinetEditModal({
         });
         if (invokeError) throw new Error(invokeError.message);
 
-        if (logoFile && data?.cabinet?.id) {
+        const createdCabinet = (data as CreateCabinetResponse | null)?.cabinet;
+        if (logoFile && createdCabinet?.id) {
           setLogoUploading(true);
-          const result = await uploadLogoWithDedup(logoFile, data.cabinet.id);
+          const result = await uploadLogoWithDedup(logoFile, createdCabinet.id);
           setLogoUploading(false);
 
           if (!result.error && result.logo_id) {
             await invokeAdmin('assign_cabinet_logo', {
-              cabinet_id: data.cabinet.id,
+              cabinet_id: createdCabinet.id,
               logo_id: result.logo_id,
             });
           }
@@ -113,8 +152,8 @@ export default function CabinetEditModal({
 
       onSuccess();
       onClose();
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Erreur lors de l'enregistrement du cabinet.");
     } finally {
       setSaving(false);
       setLogoUploading(false);
@@ -126,7 +165,7 @@ export default function CabinetEditModal({
       <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
         <div className="report-modal-header">
           <h3>{cabinet ? 'Modifier le cabinet' : 'Nouveau cabinet'}</h3>
-          <button className="report-modal-close" onClick={onClose}>✕</button>
+          <button className="report-modal-close" onClick={onClose} type="button">X</button>
         </div>
         <div className="report-modal-content">
           {error && (
@@ -145,11 +184,15 @@ export default function CabinetEditModal({
             </div>
           )}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>Nom du cabinet *</label>
+            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+              Nom du cabinet *
+            </label>
             <input
               type="text"
               value={form.name}
-              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setForm((prev) => ({ ...prev, name: e.target.value }));
+              }}
               placeholder="Ex: Cabinet Dupont"
               style={{
                 width: '100%',
@@ -161,10 +204,14 @@ export default function CabinetEditModal({
             />
           </div>
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>Thème par défaut</label>
+            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+              Theme par defaut
+            </label>
             <select
               value={form.default_theme_id}
-              onChange={(e) => setForm((prev) => ({ ...prev, default_theme_id: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                setForm((prev) => ({ ...prev, default_theme_id: e.target.value }));
+              }}
               style={{
                 width: '100%',
                 padding: '10px 12px',
@@ -173,14 +220,16 @@ export default function CabinetEditModal({
                 fontSize: 14,
               }}
             >
-              <option value="">— Aucun thème —</option>
+              <option value="">-- Aucun theme --</option>
               {themes.map((theme) => (
                 <option key={theme.id} value={theme.id}>{theme.name}</option>
               ))}
             </select>
           </div>
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>Logo du cabinet</label>
+            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+              Logo du cabinet
+            </label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <button
                 type="button"
@@ -191,7 +240,7 @@ export default function CabinetEditModal({
                 Choisir une image...
               </button>
               <span style={{ fontSize: 13, color: 'var(--color-c9)' }}>
-                {logoFile ? logoFile.name : (logoPreview ? 'Logo sélectionné' : 'Aucun fichier')}
+                {logoFile ? logoFile.name : logoPreview ? 'Logo selectionne' : 'Aucun fichier'}
               </span>
               <input
                 ref={inputRef}
@@ -205,8 +254,14 @@ export default function CabinetEditModal({
               <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
                 <img
                   src={logoPreview}
-                  alt="Aperçu logo"
-                  style={{ maxWidth: 150, maxHeight: 80, objectFit: 'contain', borderRadius: 4, border: '1px solid var(--color-c8)' }}
+                  alt="Apercu logo"
+                  style={{
+                    maxWidth: 150,
+                    maxHeight: 80,
+                    objectFit: 'contain',
+                    borderRadius: 4,
+                    border: '1px solid var(--color-c8)',
+                  }}
                 />
                 <button
                   type="button"
@@ -227,16 +282,22 @@ export default function CabinetEditModal({
                 </button>
               </div>
             )}
-            {logoUploading && <p style={{ fontSize: 13, color: 'var(--color-c9)', marginTop: 8 }}>Upload en cours...</p>}
+            {logoUploading && (
+              <p style={{ fontSize: 13, color: 'var(--color-c9)', marginTop: 8 }}>Upload en cours...</p>
+            )}
           </div>
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>Position du logo</label>
+            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+              Position du logo
+            </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
               {LOGO_PLACEMENT_OPTIONS.map((position) => (
                 <button
                   key={position.key}
                   type="button"
-                  onClick={() => setForm((prev) => ({ ...prev, logo_placement: position.key }))}
+                  onClick={() => {
+                    setForm((prev) => ({ ...prev, logo_placement: position.key }));
+                  }}
                   style={{
                     padding: '8px 12px',
                     fontSize: 12,
@@ -253,17 +314,20 @@ export default function CabinetEditModal({
               ))}
             </div>
             <p style={{ fontSize: 12, color: 'var(--color-c9)', marginTop: 8 }}>
-              Le logo ne sera jamais positionné sur la zone titre de la slide.
+              Le logo ne sera jamais positionne sur la zone titre de la slide.
             </p>
           </div>
         </div>
         <div className="report-modal-actions">
-          <button onClick={onClose}>Annuler</button>
+          <button onClick={onClose} type="button">Annuler</button>
           <button
             className="chip"
-            onClick={handleSaveCabinet}
+            onClick={() => {
+              void handleSaveCabinet();
+            }}
             disabled={saving || logoUploading}
             style={{ opacity: saving ? 0.6 : 1 }}
+            type="button"
           >
             {saving ? 'Enregistrement...' : 'Enregistrer'}
           </button>
@@ -272,4 +336,3 @@ export default function CabinetEditModal({
     </div>
   );
 }
-

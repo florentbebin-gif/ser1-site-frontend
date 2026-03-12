@@ -1,19 +1,30 @@
-// @ts-nocheck
 import React, { useState } from 'react';
 import { invokeAdmin } from '@/services/apiAdmin';
+
+interface CabinetOption {
+  value: string;
+  label: string;
+}
+
+interface UserInviteModalProps {
+  cabinetOptions: CabinetOption[];
+  cabinetsLoading: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
 
 export default function UserInviteModal({
   cabinetOptions,
   cabinetsLoading,
   onClose,
   onSuccess,
-}) {
+}: UserInviteModalProps): React.ReactElement {
   const [email, setEmail] = useState('');
   const [cabinetId, setCabinetId] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const handleInviteUser = async () => {
+  const handleInviteUser = async (): Promise<void> => {
     if (!email.trim()) {
       setError("L'email est requis.");
       return;
@@ -23,7 +34,7 @@ export default function UserInviteModal({
       setSubmitting(true);
       setError('');
 
-      const payload = { email: email.trim() };
+      const payload: { email: string; cabinet_id?: string } = { email: email.trim() };
       if (cabinetId) {
         payload.cabinet_id = cabinetId;
       }
@@ -33,8 +44,8 @@ export default function UserInviteModal({
 
       onSuccess();
       onClose();
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Erreur lors de l'invitation.");
     } finally {
       setSubmitting(false);
     }
@@ -45,7 +56,7 @@ export default function UserInviteModal({
       <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
         <div className="report-modal-header">
           <h3>Nouvel utilisateur</h3>
-          <button className="report-modal-close" onClick={onClose}>✕</button>
+          <button className="report-modal-close" onClick={onClose} type="button">X</button>
         </div>
         <div className="report-modal-content">
           {error && (
@@ -68,7 +79,7 @@ export default function UserInviteModal({
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
               placeholder="utilisateur@exemple.com"
               disabled={submitting}
               style={{
@@ -81,10 +92,12 @@ export default function UserInviteModal({
             />
           </div>
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>Cabinet (optionnel)</label>
+            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+              Cabinet (optionnel)
+            </label>
             <select
               value={cabinetId}
-              onChange={(e) => setCabinetId(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCabinetId(e.target.value)}
               disabled={submitting || cabinetsLoading}
               style={{
                 width: '100%',
@@ -105,12 +118,15 @@ export default function UserInviteModal({
           </div>
         </div>
         <div className="report-modal-actions">
-          <button onClick={onClose} disabled={submitting}>Annuler</button>
+          <button onClick={onClose} disabled={submitting} type="button">Annuler</button>
           <button
             className="chip"
-            onClick={handleInviteUser}
+            onClick={() => {
+              void handleInviteUser();
+            }}
             disabled={submitting}
             style={{ opacity: submitting ? 0.6 : 1 }}
+            type="button"
           >
             {submitting ? 'Envoi...' : 'Inviter'}
           </button>
@@ -119,4 +135,3 @@ export default function UserInviteModal({
     </div>
   );
 }
-

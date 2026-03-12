@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useUserRole } from '../auth/useUserRole';
 import {
@@ -7,10 +6,17 @@ import {
   getVisibleSettingsRoutes,
 } from '../constants/settingsRoutes';
 
-export default function SettingsShell() {
+interface SettingsRouteEntry {
+  key: string;
+  label: string;
+  path: string;
+  component: React.ComponentType;
+  adminOnly?: boolean;
+}
+
+export default function SettingsShell(): React.ReactElement {
   const { isAdmin } = useUserRole();
 
-  // Initialiser à partir de l'URL
   const initialTab = useMemo(() => {
     const path = (typeof window !== 'undefined' && window.location?.pathname) || '';
     return getActiveSettingsKey(path);
@@ -19,19 +25,17 @@ export default function SettingsShell() {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const scrollRef = useRef(null);
-  const tabRefs = useRef({});
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  // Redirect legacy /settings/fiscalites → /settings/base-contrat
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.pathname.startsWith('/settings/fiscalites')) {
       window.history.replaceState({}, '', '/settings/base-contrat');
     }
   }, []);
 
-  // Synchroniser l'onglet actif avec l'URL lors du Back/Forward
   useEffect(() => {
-    const handlePopState = () => {
+    const handlePopState = (): void => {
       const path = window.location.pathname;
       const newTab = getActiveSettingsKey(path);
       setActiveTab(newTab);
@@ -41,58 +45,61 @@ export default function SettingsShell() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Routes visibles selon permissions
-  const visibleTabs = useMemo(() => {
-    return getVisibleSettingsRoutes(isAdmin);
-  }, [isAdmin]);
+  const visibleTabs = useMemo(
+    () => getVisibleSettingsRoutes(isAdmin) as SettingsRouteEntry[],
+    [isAdmin],
+  );
 
-  // Composant actif à render
-  const ActiveComponent = useMemo(() => {
-    const found = SETTINGS_ROUTES.find((t) => t.key === activeTab);
-    return found ? found.component : SETTINGS_ROUTES[0].component;
+  const activeComponent = useMemo(() => {
+    const routes = SETTINGS_ROUTES as SettingsRouteEntry[];
+    const found = routes.find((tab) => tab.key === activeTab);
+    return found ? found.component : routes[0].component;
   }, [activeTab]);
 
-  // Détecter si le scroll est possible dans chaque direction
-  const checkScroll = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const hasScrollLeft = el.scrollLeft > 0;
-    const hasScrollRight = el.scrollLeft < el.scrollWidth - el.clientWidth - 1;
+  const checkScroll = (): void => {
+    const element = scrollRef.current;
+    if (!element) return;
+
+    const hasScrollLeft = element.scrollLeft > 0;
+    const hasScrollRight = element.scrollLeft < element.scrollWidth - element.clientWidth - 1;
     setCanScrollLeft(hasScrollLeft);
     setCanScrollRight(hasScrollRight);
   };
 
-  // Scroll programmatique
-  const scroll = (direction) => {
-    const el = scrollRef.current;
-    if (!el) return;
+  const scroll = (direction: 'left' | 'right'): void => {
+    const element = scrollRef.current;
+    if (!element) return;
+
     const scrollAmount = 200;
-    el.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    element.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
   };
 
-  // Initialiser et écouter le scroll
   useEffect(() => {
     checkScroll();
-    const el = scrollRef.current;
-    if (!el) return;
-    el.addEventListener('scroll', checkScroll);
+    const element = scrollRef.current;
+    if (!element) return;
+
+    element.addEventListener('scroll', checkScroll);
     window.addEventListener('resize', checkScroll);
+
     return () => {
-      el.removeEventListener('scroll', checkScroll);
+      element.removeEventListener('scroll', checkScroll);
       window.removeEventListener('resize', checkScroll);
     };
   }, [visibleTabs]);
 
+  const ActiveComponent = activeComponent;
+
   return (
     <div className="settings-page">
       <div className="section-card">
-        <div className="section-title">Paramètres</div>
+        <div className="section-title">Parametres</div>
 
-        <nav className="settings-tab-nav" aria-label="Paramètres">
+        <nav className="settings-tab-nav" aria-label="Parametres">
           <button
             type="button"
             className="settings-tab-scroll-btn settings-tab-scroll-btn--left"
-            aria-label="Faire défiler les onglets à gauche"
+            aria-label="Faire defiler les onglets a gauche"
             disabled={!canScrollLeft}
             onClick={() => scroll('left')}
           />
@@ -105,7 +112,9 @@ export default function SettingsShell() {
                   <button
                     key={tab.key}
                     type="button"
-                    ref={(el) => { tabRefs.current[tab.key] = el; }}
+                    ref={(element) => {
+                      tabRefs.current[tab.key] = element;
+                    }}
                     className={`settings-tab${isActive ? ' is-active' : ''}`}
                     aria-current={isActive ? 'page' : undefined}
                     onClick={() => {
@@ -113,9 +122,12 @@ export default function SettingsShell() {
                       if (typeof window !== 'undefined') {
                         window.history.replaceState({}, '', `/settings${tab.path ? `/${tab.path}` : ''}`);
                       }
-                      // Ramener l'onglet en vue s'il est partiellement caché
-                      setTimeout(() => {
-                        tabRefs.current[tab.key]?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+                      window.setTimeout(() => {
+                        tabRefs.current[tab.key]?.scrollIntoView({
+                          behavior: 'smooth',
+                          inline: 'nearest',
+                          block: 'nearest',
+                        });
                       }, 50);
                     }}
                   >
@@ -128,7 +140,7 @@ export default function SettingsShell() {
           <button
             type="button"
             className="settings-tab-scroll-btn settings-tab-scroll-btn--right"
-            aria-label="Faire défiler les onglets à droite"
+            aria-label="Faire defiler les onglets a droite"
             disabled={!canScrollRight}
             onClick={() => scroll('right')}
           />
@@ -141,4 +153,3 @@ export default function SettingsShell() {
     </div>
   );
 }
-

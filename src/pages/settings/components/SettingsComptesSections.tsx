@@ -1,8 +1,33 @@
-// @ts-nocheck
 import React from 'react';
 import SettingsSectionCard from '@/components/settings/SettingsSectionCard';
 
-function CabinetsIcon() {
+interface CabinetSummary {
+  id: string;
+  name: string;
+  themes?: {
+    name?: string | null;
+  } | null;
+}
+
+interface ThemeSummary {
+  id: string;
+  name: string;
+  palette?: Record<string, string> | null;
+  is_system?: boolean;
+}
+
+interface UserSummary {
+  id: string;
+  email: string;
+  role: string;
+  cabinet_id?: string | null;
+  created_at: string;
+  last_sign_in_at?: string | null;
+  total_reports: number;
+  unread_reports: number;
+}
+
+function CabinetsIcon(): React.ReactElement {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -11,7 +36,7 @@ function CabinetsIcon() {
   );
 }
 
-function ThemesIcon() {
+function ThemesIcon(): React.ReactElement {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="13.5" cy="6.5" r="2.5" />
@@ -23,7 +48,7 @@ function ThemesIcon() {
   );
 }
 
-function UsersIcon() {
+function UsersIcon(): React.ReactElement {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -34,7 +59,7 @@ function UsersIcon() {
   );
 }
 
-function EditIcon() {
+function EditIcon(): React.ReactElement {
   return (
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -43,7 +68,7 @@ function EditIcon() {
   );
 }
 
-function DeleteIcon() {
+function DeleteIcon(): React.ReactElement {
   return (
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <polyline points="3 6 5 6 21 6" />
@@ -52,7 +77,7 @@ function DeleteIcon() {
   );
 }
 
-function RefreshIcon() {
+function RefreshIcon(): React.ReactElement {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M23 4v6h-6" />
@@ -66,20 +91,28 @@ const actionButtonStyle = { width: 28, height: 28 };
 const chipStyle = { padding: '8px 16px', fontWeight: 600 };
 const emptyTextStyle = { color: 'var(--color-c9)', fontSize: 14 };
 
+interface SettingsCabinetsSectionProps {
+  cabinets: CabinetSummary[];
+  cabinetsLoading: boolean;
+  onCreateCabinet: () => void;
+  onEditCabinet: (cabinet: CabinetSummary) => void;
+  onDeleteCabinet: (cabinet: CabinetSummary) => void;
+}
+
 export function SettingsCabinetsSection({
   cabinets,
   cabinetsLoading,
   onCreateCabinet,
   onEditCabinet,
   onDeleteCabinet,
-}) {
+}: SettingsCabinetsSectionProps): React.ReactElement {
   return (
     <SettingsSectionCard
       title={`Cabinets (${cabinets.length})`}
       subtitle="Gestion des cabinets et de leur theme associe."
       icon={<CabinetsIcon />}
       actions={(
-        <button className="chip" onClick={onCreateCabinet} disabled={cabinetsLoading} style={chipStyle}>
+        <button className="chip" onClick={onCreateCabinet} disabled={cabinetsLoading} style={chipStyle} type="button">
           + Nouveau cabinet
         </button>
       )}
@@ -105,6 +138,7 @@ export function SettingsCabinetsSection({
                   title="Modifier"
                   aria-label="Modifier le cabinet"
                   style={actionButtonStyle}
+                  type="button"
                 >
                   <EditIcon />
                 </button>
@@ -114,6 +148,7 @@ export function SettingsCabinetsSection({
                   title="Supprimer"
                   aria-label="Supprimer le cabinet"
                   style={actionButtonStyle}
+                  type="button"
                 >
                   <DeleteIcon />
                 </button>
@@ -126,20 +161,28 @@ export function SettingsCabinetsSection({
   );
 }
 
+interface SettingsThemesSectionProps {
+  themes: ThemeSummary[];
+  themesLoading: boolean;
+  onCreateTheme: () => void;
+  onEditTheme: (theme: ThemeSummary) => void;
+  onDeleteTheme: (theme: ThemeSummary) => void;
+}
+
 export function SettingsThemesSection({
   themes,
   themesLoading,
   onCreateTheme,
   onEditTheme,
   onDeleteTheme,
-}) {
+}: SettingsThemesSectionProps): React.ReactElement {
   return (
     <SettingsSectionCard
       title={`Themes globaux (${themes.length})`}
       subtitle="Palettes de couleurs appliquees aux cabinets."
       icon={<ThemesIcon />}
       actions={(
-        <button className="chip" onClick={onCreateTheme} disabled={themesLoading} style={chipStyle}>
+        <button className="chip" onClick={onCreateTheme} disabled={themesLoading} style={chipStyle} type="button">
           + Nouveau theme
         </button>
       )}
@@ -178,6 +221,7 @@ export function SettingsThemesSection({
                   title="Modifier"
                   aria-label="Modifier le theme"
                   style={actionButtonStyle}
+                  type="button"
                 >
                   <EditIcon />
                 </button>
@@ -188,6 +232,7 @@ export function SettingsThemesSection({
                     title="Supprimer"
                     aria-label="Supprimer le theme"
                     style={actionButtonStyle}
+                    type="button"
                   >
                     <DeleteIcon />
                   </button>
@@ -201,6 +246,18 @@ export function SettingsThemesSection({
   );
 }
 
+interface SettingsUsersSectionProps {
+  users: UserSummary[];
+  cabinets: CabinetSummary[];
+  actionLoading: boolean;
+  onCreateUser: () => void;
+  onRefresh: () => void;
+  onAssignUserCabinet: (userId: string, cabinetId: string) => void;
+  onViewReports: (userId: string, email: string) => void;
+  onResetPassword: (userId: string, email: string) => void;
+  onDeleteUser: (userId: string, email: string) => void;
+}
+
 export function SettingsUsersSection({
   users,
   cabinets,
@@ -211,7 +268,7 @@ export function SettingsUsersSection({
   onViewReports,
   onResetPassword,
   onDeleteUser,
-}) {
+}: SettingsUsersSectionProps): React.ReactElement {
   return (
     <SettingsSectionCard
       title={`Utilisateurs (${users.length})`}
@@ -219,7 +276,7 @@ export function SettingsUsersSection({
       icon={<UsersIcon />}
       actions={(
         <>
-          <button className="chip" onClick={onCreateUser} disabled={actionLoading} style={chipStyle}>
+          <button className="chip" onClick={onCreateUser} disabled={actionLoading} style={chipStyle} type="button">
             + Nouvel utilisateur
           </button>
           <button
@@ -229,6 +286,7 @@ export function SettingsUsersSection({
             title="Rafraichir la liste"
             aria-label="Rafraichir"
             style={{ width: 36, height: 36 }}
+            type="button"
           >
             <RefreshIcon />
           </button>
@@ -261,7 +319,9 @@ export function SettingsUsersSection({
                 <td>
                   <select
                     value={user.cabinet_id || ''}
-                    onChange={(event) => onAssignUserCabinet(user.id, event.target.value)}
+                    onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                      onAssignUserCabinet(user.id, event.target.value);
+                    }}
                     disabled={actionLoading}
                     style={{
                       padding: '6px 10px',
@@ -302,6 +362,7 @@ export function SettingsUsersSection({
                       onClick={() => onResetPassword(user.id, user.email)}
                       title="Envoyer un email de reinitialisation"
                       aria-label="Envoyer un email de reinitialisation"
+                      type="button"
                     >
                       Reinit.
                     </button>
@@ -311,6 +372,7 @@ export function SettingsUsersSection({
                         className="danger"
                         title="Supprimer l'utilisateur"
                         aria-label="Supprimer l'utilisateur"
+                        type="button"
                       >
                         Suppr.
                       </button>
@@ -325,4 +387,3 @@ export function SettingsUsersSection({
     </SettingsSectionCard>
   );
 }
-

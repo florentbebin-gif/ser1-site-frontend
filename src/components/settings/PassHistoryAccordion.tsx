@@ -1,38 +1,38 @@
-// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import { numberOrEmpty } from '../../utils/settingsHelpers';
 
+interface PassHistoryRow {
+  year: number;
+  pass_amount: number | null;
+}
+
+interface PassHistoryAccordionProps {
+  isOpen: boolean;
+  onToggle: () => void;
+  isAdmin: boolean;
+}
+
 /**
- * PassHistoryAccordion — Historique du PASS (8 dernières valeurs)
- * 
- * Données dynamiques depuis public.pass_history.
- * Au mount : appelle ensure_pass_history_current() (rollover au 1er janvier),
- * puis charge les 8 lignes triées par année ASC.
- * Admin peut modifier les montants et enregistrer (upsert).
- *
- * @param {boolean} isOpen - Accordéon ouvert
- * @param {function} onToggle - Callback toggle
- * @param {boolean} isAdmin - Droits admin
+ * Historique du PASS charge depuis public.pass_history.
  */
-export default function PassHistoryAccordion({ isOpen, onToggle, isAdmin }) {
-  const [rows, setRows] = useState([]);
+export default function PassHistoryAccordion({
+  isOpen,
+  onToggle,
+  isAdmin,
+}: PassHistoryAccordionProps): React.ReactElement {
+  const [rows, setRows] = useState<PassHistoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
-  // --------------------------------------------------
-  // Chargement : rollover + fetch
-  // --------------------------------------------------
   useEffect(() => {
     let mounted = true;
 
-    async function init() {
+    async function init(): Promise<void> {
       try {
-        // Rollover idempotent (SECURITY DEFINER — accessible à tout authentifié)
         await supabase.rpc('ensure_pass_history_current');
 
-        // Fetch les 8 lignes
         const { data, error } = await supabase
           .from('pass_history')
           .select('year, pass_amount')
@@ -43,23 +43,32 @@ export default function PassHistoryAccordion({ isOpen, onToggle, isAdmin }) {
         if (error) {
           console.error('Erreur chargement pass_history :', error);
         } else {
-          setRows(data || []);
+          const normalizedRows = (data ?? []).map((row) => ({
+            year: Number(row.year),
+            pass_amount:
+              typeof row.pass_amount === 'number'
+                ? row.pass_amount
+                : row.pass_amount == null
+                  ? null
+                  : Number(row.pass_amount),
+          }));
+          setRows(normalizedRows);
         }
-      } catch (e) {
-        console.error('Erreur init pass_history :', e);
+      } catch (error) {
+        console.error('Erreur init pass_history :', error);
       } finally {
         if (mounted) setLoading(false);
       }
     }
 
-    init();
-    return () => { mounted = false; };
+    void init();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  // --------------------------------------------------
-  // Modification locale d'un montant
-  // --------------------------------------------------
-  const handleChange = (index, value) => {
+  const handleChange = (index: number, value: string): void => {
     setRows((prev) => {
       const copy = [...prev];
       copy[index] = { ...copy[index], pass_amount: value === '' ? null : Number(value) };
@@ -68,41 +77,34 @@ export default function PassHistoryAccordion({ isOpen, onToggle, isAdmin }) {
     setMessage('');
   };
 
-  // --------------------------------------------------
-  // Sauvegarde (upsert)
-  // --------------------------------------------------
-  const handleSave = async () => {
+  const handleSave = async (): Promise<void> => {
     if (!isAdmin) return;
+
     try {
       setSaving(true);
       setMessage('');
 
-      const payload = rows.map((r) => ({
-        year: r.year,
-        pass_amount: r.pass_amount,
+      const payload: PassHistoryRow[] = rows.map((row) => ({
+        year: row.year,
+        pass_amount: row.pass_amount,
       }));
 
-      const { error } = await supabase
-        .from('pass_history')
-        .upsert(payload, { onConflict: 'year' });
+      const { error } = await supabase.from('pass_history').upsert(payload, { onConflict: 'year' });
 
       if (error) {
         console.error(error);
         setMessage("Erreur lors de l'enregistrement du PASS.");
       } else {
-        setMessage('Historique du PASS enregistré.');
+        setMessage('Historique du PASS enregistre.');
       }
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
       setMessage("Erreur lors de l'enregistrement du PASS.");
     } finally {
       setSaving(false);
     }
   };
 
-  // --------------------------------------------------
-  // Rendu
-  // --------------------------------------------------
   return (
     <div className="fisc-acc-item">
       <button
@@ -116,7 +118,7 @@ export default function PassHistoryAccordion({ isOpen, onToggle, isAdmin }) {
         <span className="settings-premium-title" style={{ margin: 0 }}>
           Historique du PASS (8 valeurs)
         </span>
-        <span className="fisc-acc-chevron">{isOpen ? '▾' : '▸'}</span>
+        <span className="fisc-acc-chevron">{isOpen ? 'v' : '>'}</span>
       </button>
 
       {isOpen && (
@@ -127,26 +129,26 @@ export default function PassHistoryAccordion({ isOpen, onToggle, isAdmin }) {
           aria-labelledby="prelev-header-pass"
         >
           {loading ? (
-            <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>Chargement…</p>
+            <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>Chargement...</p>
           ) : (
             <>
               <table className="settings-table">
                 <thead>
                   <tr>
-                    <th>Année</th>
-                    <th className="taux-col">PASS (€)</th>
+                    <th>Annee</th>
+                    <th className="taux-col">PASS (EUR)</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r, idx) => (
-                    <tr key={r.year}>
-                      <td>{r.year}</td>
+                  {rows.map((row, idx) => (
+                    <tr key={row.year}>
+                      <td>{row.year}</td>
                       <td className="taux-col">
                         <input
                           type="number"
-                          value={numberOrEmpty(r.pass_amount)}
-                          placeholder="À renseigner"
-                          onChange={(e) => handleChange(idx, e.target.value)}
+                          value={numberOrEmpty(row.pass_amount)}
+                          placeholder="A renseigner"
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(idx, e.target.value)}
                           disabled={!isAdmin}
                         />
                       </td>
@@ -159,11 +161,13 @@ export default function PassHistoryAccordion({ isOpen, onToggle, isAdmin }) {
                 <button
                   type="button"
                   className="chip"
-                  onClick={handleSave}
+                  onClick={() => {
+                    void handleSave();
+                  }}
                   disabled={saving}
                   style={{ marginTop: 12 }}
                 >
-                  {saving ? 'Enregistrement…' : 'Enregistrer le PASS'}
+                  {saving ? 'Enregistrement...' : 'Enregistrer le PASS'}
                 </button>
               )}
 
@@ -196,4 +200,3 @@ export default function PassHistoryAccordion({ isOpen, onToggle, isAdmin }) {
     </div>
   );
 }
-
