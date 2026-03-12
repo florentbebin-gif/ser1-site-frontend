@@ -3,6 +3,7 @@
  * PR1 — Vérifie l'intégrité structurelle de CATALOG sans impact runtime.
  */
 
+import { readFileSync } from 'node:fs';
 import { describe, it, expect } from 'vitest';
 import { CATALOG, CATALOG_BY_ID, getCatalogProduct } from '../catalog';
 import { isProductClosed } from '../overrides';
@@ -54,6 +55,11 @@ describe('CATALOG — cohérence structurelle', () => {
         `templateKey invalide sur ${p.id}`,
       ).toBe(true);
     }
+  });
+
+  it('catalog.ts ne contient plus de TODO/FIXME/HACK', () => {
+    const source = readFileSync(new URL('../catalog.ts', import.meta.url), 'utf8');
+    expect(source).not.toMatch(/\b(?:TODO|FIXME|HACK)\b/);
   });
 });
 
