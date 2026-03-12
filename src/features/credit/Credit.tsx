@@ -23,18 +23,17 @@ import {
 } from './utils/creditNormalizers';
 import { useCreditCalculations } from './hooks/useCreditCalculations';
 import { useCreditExports } from './hooks/useCreditExports';
-import { euro0 } from './utils/creditFormatters';
 import { CreditHeader } from './components/CreditHeader';
-import { CreditLoanTabs } from './components/CreditLoanTabs';
-import { CreditLoanForm } from './components/CreditLoanForm';
-import { CreditSummaryCard, SummaryDonut } from './components/CreditSummaryCard';
-import { CreditScheduleTable } from './components/CreditScheduleTable';
-import { CreditPeriodsTable } from './components/CreditPeriodsTable';
-import { Toggle } from './components/CreditInputs';
+import { CreditControlsRow } from './components/CreditControlsRow';
+import { CreditHypotheses } from './components/CreditHypotheses';
+import { CreditLoanInputPanel } from './components/CreditLoanInputPanel';
+import { CreditSchedulePanels } from './components/CreditSchedulePanels';
+import { CreditSummarySidebar } from './components/CreditSummarySidebar';
 import type {
   CreditExportOption,
   CreditLoan,
   CreditLocalMode,
+  CreditRawLoanValues,
   CreditRawValues,
   CreditScheduleRow,
   CreditShiftedScheduleRow,
@@ -57,9 +56,8 @@ type ResetDetail = {
 
 type PretLookupEntry = {
   data: CreditLoan | null;
-  raw: CreditRawValues[PretKey];
+  raw?: CreditRawLoanValues;
   set: (_patch: Partial<CreditLoan>) => void;
-  mensu: number;
 };
 
 function isDefinedRow(row: CreditShiftedScheduleRow): row is CreditScheduleRow {
@@ -349,16 +347,10 @@ export default function CreditV2() {
 
   const isAnnual = state.viewMode === 'annuel';
 
-  // Lookup du formulaire actif
-  // Mensualités hors assurance par prêt
-  const mensuPret1 = calc.mensuBasePret1;
-  const mensuPret2 = calc.pret2Rows[0]?.mensu || 0;
-  const mensuPret3 = calc.pret3Rows[0]?.mensu || 0;
-
   const pretLookup: PretLookupEntry[] = [
-    { data: state.pret1, raw: rawValues.pret1, set: setPret1, mensu: mensuPret1 },
-    { data: state.pret2, raw: rawValues.pret2, set: setPret2, mensu: mensuPret2 },
-    { data: state.pret3, raw: rawValues.pret3, set: setPret3, mensu: mensuPret3 },
+    { data: state.pret1, raw: rawValues.pret1, set: setPret1 },
+    { data: state.pret2, raw: rawValues.pret2, set: setPret2 },
+    { data: state.pret3, raw: rawValues.pret3, set: setPret3 },
   ];
   const activeLoan = pretLookup[activeTab] || pretLookup[0];
 
@@ -372,282 +364,53 @@ export default function CreditV2() {
         onToggleMode={toggleMode}
       />
 
-      {/* LIGNE DE CONTRÔLES : tabs (gauche, expert) + toggle Mensuel/Annuel (droite) */}
-      <div className="cv2-controls-row">
-        <div className="cv2-controls-row__left">
-          {/* Tabs prêts : expert uniquement ou si prêts additionnels déjà créés */}
-          <CreditLoanTabs
-            activeTab={activeTab}
-            onChangeTab={setActiveTab}
-            hasPret2={!!state.pret2}
-            hasPret3={!!state.pret3}
-            onAddPret2={addPret2}
-            onAddPret3={addPret3}
-            onRemovePret2={removePret2}
-            onRemovePret3={removePret3}
-            isExpert={isExpert}
-          />
-        </div>
-        <div className="cv2-controls-row__right">
-          <div className="cv2-pill-toggle" data-testid="credit-view-toggle">
-            <button
-              className={`cv2-pill-toggle__btn ${state.viewMode === 'mensuel' ? 'is-active' : ''}`}
-              onClick={() => setGlobal({ viewMode: 'mensuel' })}
-              data-testid="credit-view-mensuel"
-            >
-              Mensuel
-            </button>
-            <button
-              className={`cv2-pill-toggle__btn ${state.viewMode === 'annuel' ? 'is-active' : ''}`}
-              onClick={() => setGlobal({ viewMode: 'annuel' })}
-              data-testid="credit-view-annuel"
-            >
-              Annuel
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* GRID : SAISIE (gauche) + SYNTHÈSE (droite) */}
-      <div className={`cv2-grid${!isExpert ? ' cv2-grid--simple' : ''}`}>
-        {/* COLONNE GAUCHE */}
-        <div>
-          <div className="premium-card premium-card--guide">
-            <div className="cv2-loan-card">
-              <header className="cv2-loan-card__header">
-                <h2 className="cv2-loan-card__title">
-                  {/* point 2 PR2 — icône avec fond coloré (style Settings) */}
-                  <span className="cv2-loan-card__icon-wrapper">
-                    <svg
-                      className="cv2-loan-card__icon"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <line x1="4" y1="6" x2="20" y2="6" />
-                      <line x1="4" y1="12" x2="20" y2="12" />
-                      <line x1="4" y1="18" x2="20" y2="18" />
-                      <circle cx="9" cy="6" r="2" fill="currentColor" stroke="none" />
-                      <circle cx="15" cy="12" r="2" fill="currentColor" stroke="none" />
-                      <circle cx="9" cy="18" r="2" fill="currentColor" stroke="none" />
-                    </svg>
-                  </span>
-                  Paramètres du prêt
-                </h2>
-                <p className="cv2-loan-card__subtitle">
-                  Renseignez les données du financement pour estimer mensualités et coût global.
-                </p>
-              </header>
-              <div className="cv2-loan-card__divider" />
-              <div className="cv2-loan-card__body">
-                <CreditLoanForm
-                  pretNum={activeTab}
-                  pretData={activeLoan.data}
-                  rawValues={activeLoan.raw}
-                  globalStartYM={state.startYM}
-                  globalAssurMode={state.assurMode}
-                  globalCreditType={state.creditType}
-
-                  onPatch={activeLoan.set}
-                  formatTauxRaw={formatTauxRaw}
-                  isExpert={isExpert}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Pas de lien discret ajout prêt en mode simplifié (item 5) */}
-
-          {/* LISSAGE (si prêts additionnels) */}
-          {calc.hasPretsAdditionnels && (
-            <div className="premium-card cv2-lissage-card">
-              <div className="sim-section-title cv2-lissage-title">Options de lissage</div>
-              <div className="cv2-loan-card__divider cv2-loan-card__divider--tight" />
-              <div className="cv2-lissage">
-                <Toggle
-                  checked={state.lisserPret1}
-                  onChange={(v) => setGlobal({ lisserPret1: v })}
-                  label="Lisser le prêt 1"
-                  disabled={calc.pret1IsInfine}
-                />
-                {state.lisserPret1 && (
-                  <div className="cv2-lissage__pills">
-                    <button
-                      className={`cv2-lissage__pill ${state.lissageMode === 'mensu' ? 'is-active' : ''}`}
-                      onClick={() => setGlobal({ lissageMode: 'mensu' })}
-                    >
-                      Mensualité constante
-                    </button>
-                    <button
-                      className={`cv2-lissage__pill ${state.lissageMode === 'duree' ? 'is-active' : ''}`}
-                      onClick={() => setGlobal({ lissageMode: 'duree' })}
-                    >
-                      Durée constante
-                    </button>
-                  </div>
-                )}
-              </div>
-              {calc.pret1IsInfine && (
-                <p className="cv2-lissage__hint">
-                  Le lissage est indisponible pour un prêt 1 en In fine.
-                </p>
-              )}
-              {state.lisserPret1 && calc.autresIsInfine.some(Boolean) && (
-                <p className="cv2-lissage__hint">
-                  Un prêt in fine comporte une échéance finale de capital&nbsp;: elle n'est pas lissable et reste visible dans l'échéancier.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* COLONNE DROITE — wrapper sticky commun (summary + total-mensu solidaires) */}
-        <div className="cv2-right-col">
-          <CreditSummaryCard
-            synthese={activeSynthese}
-            isAnnual={isAnnual}
-            lisserPret1={state.lisserPret1}
-            isExpert={isExpert}
-            loanLabel={
-              isExpert && calc.hasPretsAdditionnels
-                ? `Synthèse du prêt ${activeTab + 1}`
-                : undefined
-            }
-            lissageCoutDelta={isExpert && activeTab === 0 ? lissageCoutDelta : 0}
-          />
-
-          {/* Bloc synthèse globale — affiché uniquement en multi-prêts */}
-          {calc.hasPretsAdditionnels && (
-            <div className="cv2-total-mensu">
-              {/* Titre + icône + séparateur */}
-              <div className="cv2-summary__title-row">
-                <div className="cv2-section-icon-wrapper">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polygon points="12 2 2 7 12 12 22 7 12 2" />
-                    <polyline points="2 17 12 22 22 17" />
-                    <polyline points="2 12 12 17 22 12" />
-                  </svg>
-                </div>
-                <div className="cv2-summary__title">Synthèse des prêts</div>
-              </div>
-              <div className="cv2-loan-card__divider cv2-loan-card__divider--tight" />
-
-              {/* KPI principal + donut côte à côte */}
-              <div className="cv2-summary__kpi-zone">
-                <div>
-                  <div className="cv2-summary__kpi-label-small">
-                    {isAnnual ? 'Annuité totale hors ass.' : 'Mensualité totale hors ass.'}
-                  </div>
-                  <div className="cv2-total-mensu__value">
-                    {euro0(calc.synthese.mensualiteTotaleM1 * (isAnnual ? 12 : 1))}
-                  </div>
-                  {isExpert && calc.synthese.primeAssMensuelle > 0 && (
-                    <div className="cv2-summary__kpi-assurance">
-                      + {euro0(calc.synthese.primeAssMensuelle * (isAnnual ? 12 : 1))} {isAnnual ? '/an' : '/mois'} ass.
-                    </div>
-                  )}
-                </div>
-                <SummaryDonut
-                  capital={calc.synthese.capitalEmprunte}
-                  interets={calc.synthese.totalInterets}
-                  capitalColor="var(--color-c5)"
-                />
-              </div>
-
-              {/* Séparateur + Coût total */}
-              <div className="cv2-summary__divider" />
-              <div className="cv2-summary__row cv2-summary__row--total">
-                <span className="cv2-summary__row-label">Coût total des crédits</span>
-                <span className="cv2-summary__row-value cv2-summary__row-value--highlight">
-                  {euro0(calc.synthese.coutTotalCredit)}
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* TABLEAU PÉRIODES (si prêts multiples) */}
-      <CreditPeriodsTable
-        synthesePeriodes={calc.synthesePeriodes}
+      <CreditControlsRow
+        activeTab={activeTab}
+        onChangeTab={setActiveTab}
+        hasPret2={!!state.pret2}
         hasPret3={!!state.pret3}
+        onAddPret2={addPret2}
+        onAddPret3={addPret3}
+        onRemovePret2={removePret2}
+        onRemovePret3={removePret3}
+        isExpert={isExpert}
+        viewMode={state.viewMode}
+        onChangeViewMode={(viewMode) => setGlobal({ viewMode })}
       />
 
-      {/* ÉCHÉANCIER GLOBAL — toujours fermé par défaut (item 3) */}
-      <CreditScheduleTable
-        rows={calc.agrRows}
+      <div className={`cv2-grid${!isExpert ? ' cv2-grid--simple' : ''}`}>
+        <CreditLoanInputPanel
+          activeTab={activeTab}
+          activeLoan={activeLoan}
+          state={state}
+          isExpert={isExpert}
+          calc={calc}
+          setGlobal={setGlobal}
+          formatTauxRaw={formatTauxRaw}
+        />
+
+        <CreditSummarySidebar
+          activeSynthese={activeSynthese}
+          isAnnual={isAnnual}
+          isExpert={isExpert}
+          activeTab={activeTab}
+          lisserPret1={state.lisserPret1}
+          lissageCoutDelta={lissageCoutDelta}
+          calc={calc}
+        />
+      </div>
+
+      <CreditSchedulePanels
+        calc={calc}
         startYM={state.startYM}
         isAnnual={isAnnual}
-        defaultCollapsed={true}
-        hideInsurance={!isExpert}
+        isExpert={isExpert}
       />
 
-      {/* DÉTAIL PAR PRÊT (si prêts multiples) */}
-      {calc.hasPretsAdditionnels && (
-        <>
-          <CreditScheduleTable
-            rows={calc.pret1Rows}
-            startYM={state.startYM}
-            isAnnual={isAnnual}
-            title="Détail — Prêt 1"
-            defaultCollapsed={true}
-            hideInsurance={!isExpert}
-          />
-          {calc.pret2Rows.length > 0 && (
-            <CreditScheduleTable
-              rows={calc.pret2Rows.filter(isDefinedRow)}
-              startYM={state.startYM}
-              isAnnual={isAnnual}
-              title="Détail — Prêt 2"
-              defaultCollapsed={true}
-              hideInsurance={!isExpert}
-            />
-          )}
-          {calc.pret3Rows.length > 0 && (
-            <CreditScheduleTable
-              rows={calc.pret3Rows.filter(isDefinedRow)}
-              startYM={state.startYM}
-              isAnnual={isAnnual}
-              title="Détail — Prêt 3"
-              defaultCollapsed={true}
-              hideInsurance={!isExpert}
-            />
-          )}
-        </>
-      )}
-
-      {/* HYPOTHÈSES — accordéon (ouvert par défaut en expert, fermé en simplifié) */}
-      <div className="cv2-hypotheses">
-        <button
-          type="button"
-          className="cv2-hypotheses__toggle"
-          onClick={() => setHypothesesOpen(o => !o)}
-          aria-expanded={hypothesesOpen}
-          data-testid="credit-hypotheses-toggle"
-        >
-          <span className="cv2-hypotheses__title">Hypothèses et limites</span>
-          <svg
-            width="12" height="12" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            className={`cv2-hypotheses__chevron${hypothesesOpen ? ' is-open' : ''}`}
-            aria-hidden="true"
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-        {hypothesesOpen && (
-          <ul>
-            <li>Les résultats sont indicatifs et ne constituent pas une offre de prêt.</li>
-            <li>Le calcul suppose un taux fixe sur toute la durée du prêt.</li>
-            <li>L'assurance emprunteur est calculée selon le mode sélectionné (capital initial ou restant dû) pour chaque prêt.</li>
-            <li>Les frais de dossier, de garantie et de notaire ne sont pas inclus dans ce simulateur.</li>
-          </ul>
-        )}
-      </div>
+      <CreditHypotheses
+        hypothesesOpen={hypothesesOpen}
+        onToggle={() => setHypothesesOpen((open) => !open)}
+      />
     </div>
   );
 }
