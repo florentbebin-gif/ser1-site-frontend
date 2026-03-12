@@ -99,6 +99,16 @@ Ajouter dans `eslint.config.js` ou un script CI :
 
 **Objectif** : aucun fichier de logique > 500 lignes, aucun composant UI > 400 lignes.
 
+**Statut 2026-03-12 — PR-F exécutée**
+
+- `src/pages/settings/SettingsComptes.jsx` : **742 → 372 lignes**
+- `src/features/succession/useSuccessionDerivedValues.ts` : **722 → 313 lignes**
+- `src/features/placement/components/PlacementInputsPanel.jsx` : **627 → 98 lignes**
+- `src/features/succession/SuccessionSimulator.tsx` : **607 → 458 lignes**
+- `src/features/credit/Credit.tsx` : **603 → 375 lignes**
+
+Méthode appliquée : extraction de sections UI, modales et hooks dérivés, sans changement de comportement fonctionnel.
+
 ### Top 15 des fichiers les plus lourds
 
 | Fichier | Taille | Diagnostic |
@@ -238,8 +248,8 @@ Ajouter dans `eslint.config.js` ou un script CI :
 | **PR-B** ✅ | Phase 2A+2B (code mort) | 🟢 Faible | 1-2h |
 | **PR-C** ✅ | Phase 3 P1 (JS → TS) — PR #299 | 🟢 Faible | 2-3h |
 | **PR-D** ✅ | Phase 5A+5B (ESLint TS + tsconfig strict) — PR #300 | 🟢 Faible | 1-2h |
-| **PR-E** | Phase 6A (nommage + CSS Home) | 🟡 Moyen | 1-2h |
-| **PR-F** | Phase 4 top 5 god-files | 🟠 Moyen-haut | 3-5h par fichier |
+| **PR-E** ✅ | Phase 6A (nommage + CSS Home) | 🟡 Moyen | 1-2h |
+| **PR-F** ✅ | Phase 4 top 5 god-files | 🟠 Moyen-haut | 3-5h par fichier |
 | **PR-G** | Phase 7A (docs refresh) | ⚪ Nul | 1-2h |
 | **PR-H** | Phase 3 P2 (JSX → TSX batch) | 🟡 Moyen | 3-5h |
 | **PR-I** | Phase 7B (TODO purge catalog.ts) | 🟠 Moyen | 2-3h |

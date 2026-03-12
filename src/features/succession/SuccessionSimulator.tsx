@@ -42,22 +42,17 @@ import { type SuccessionChainOrder } from './successionChainage';
 import {
   buildInitialDispositionsDraft,
   EMPTY_ADD_FAMILY_MEMBER_FORM,
-  fmt,
   type AddFamilyMemberFormState,
   type DispositionsDraftState,
 } from './successionSimulator.helpers';
 import { useSuccessionDerivedValues } from './useSuccessionDerivedValues';
 import { useSuccessionExportHandlers } from './useSuccessionExportHandlers';
 import { useSuccessionSimulatorHandlers } from './useSuccessionSimulatorHandlers';
-import AddFamilyMemberModal from './components/AddFamilyMemberModal';
-import AssuranceVieModal from './components/AssuranceVieModal';
-import DispositionsModal from './components/DispositionsModal';
-import ScAssetsPassifsCard from './components/ScAssetsPassifsCard';
-import ScDeathTimelinePanel from './components/ScDeathTimelinePanel';
-import ScDonationsCard from './components/ScDonationsCard';
-import ScFamilyContextCard from './components/ScFamilyContextCard';
-import ScSuccessionSummaryPanel from './components/ScSuccessionSummaryPanel';
-import { FiliationOrgchart } from './components/FiliationOrgchart';
+import {
+  SuccessionHypotheses,
+  SuccessionModals,
+  SuccessionPageGrid,
+} from './components/SuccessionPageSections';
 import '../../components/simulator/SimulatorShell.css';
 import '../../styles/premium-shared.css';
 import './Succession.css';
@@ -420,221 +415,70 @@ export default function SuccessionSimulator() {
         </p>
       )}
 
-      <div className="sc-grid">
-        <div className="sc-left">
-          <ScFamilyContextCard
-            civilContext={civilContext}
-            birthDateLabels={derived.birthDateLabels}
-            showSecondBirthDate={derived.showSecondBirthDate}
-            canOpenDispositionsModal={derived.canOpenDispositionsModal}
-            enfantRattachementOptions={derived.enfantRattachementOptions}
-            enfantsContext={enfantsContext}
-            familyMembers={familyMembers}
-            onSituationChange={handleSituationChange}
-            setCivilContext={setCivilContext}
-            onOpenDispositions={openDispositionsModal}
-            onAddEnfant={addEnfant}
-            onToggleAddMemberPanel={() => setShowAddMemberPanel((prev) => !prev)}
-            onUpdateEnfantRattachement={updateEnfantRattachement}
-            onToggleEnfantDeceased={toggleEnfantDeceased}
-            onRemoveEnfant={removeEnfant}
-            onRemoveFamilyMember={removeFamilyMember}
-          />
+      <SuccessionPageGrid
+        derived={derived}
+        isExpert={isExpert}
+        civilContext={civilContext}
+        enfantsContext={enfantsContext}
+        familyMembers={familyMembers}
+        assuranceVieEntries={assuranceVieEntries}
+        donationsContext={donationsContext}
+        chainOrder={chainOrder}
+        onToggleChainOrder={() => setChainOrder((prev) => (prev === 'epoux2' ? 'epoux1' : 'epoux2'))}
+        onSituationChange={handleSituationChange}
+        setCivilContext={setCivilContext}
+        onOpenDispositions={openDispositionsModal}
+        onAddEnfant={addEnfant}
+        onToggleAddMemberPanel={() => setShowAddMemberPanel((prev) => !prev)}
+        onUpdateEnfantRattachement={updateEnfantRattachement}
+        onToggleEnfantDeceased={toggleEnfantDeceased}
+        onRemoveEnfant={removeEnfant}
+        onRemoveFamilyMember={removeFamilyMember}
+        onAddAssetEntry={addAssetEntry}
+        onUpdateAssetEntry={updateAssetEntry}
+        onRemoveAssetEntry={removeAssetEntry}
+        onOpenAssuranceVieModal={openAssuranceVieModal}
+        onSetSimplifiedBalanceField={setSimplifiedBalanceField}
+        onAddDonationEntry={addDonationEntry}
+        onUpdateDonationEntry={updateDonationEntry}
+        onRemoveDonationEntry={removeDonationEntry}
+      />
 
-          <ScAssetsPassifsCard
-            isExpert={isExpert}
-            isMarried={derived.isMarried}
-            isPacsed={derived.isPacsed}
-            isConcubinage={derived.isConcubinage}
-            assetEntriesByCategory={derived.assetEntriesByCategory}
-            assetOwnerOptions={derived.assetOwnerOptions}
-            assetBreakdown={derived.assetBreakdown}
-            assetNetTotals={derived.assetNetTotals}
-            assuranceVieEntries={assuranceVieEntries}
-            assuranceViePartyOptions={derived.assuranceViePartyOptions}
-            onAddAssetEntry={addAssetEntry}
-            onUpdateAssetEntry={updateAssetEntry}
-            onRemoveAssetEntry={removeAssetEntry}
-            onOpenAssuranceVieModal={openAssuranceVieModal}
-            onSetSimplifiedBalanceField={setSimplifiedBalanceField}
-          />
+      <SuccessionHypotheses
+        hypothesesOpen={hypothesesOpen}
+        attentions={derived.attentions}
+        fiscalSnapshot={fiscalSnapshot}
+        onToggle={() => setHypothesesOpen((value) => !value)}
+      />
 
-          {isExpert && (
-            <ScDonationsCard
-              donationsContext={donationsContext}
-              donationTotals={derived.donationTotals}
-              donateurOptions={derived.donateurOptions}
-              donatairesOptions={derived.donatairesOptions}
-              onAddDonationEntry={addDonationEntry}
-              onUpdateDonationEntry={updateDonationEntry}
-              onRemoveDonationEntry={removeDonationEntry}
-            />
-          )}
-        </div>
-
-        <div className="sc-right">
-          <FiliationOrgchart
-            civilContext={civilContext}
-            enfantsContext={enfantsContext}
-            familyMembers={familyMembers}
-          />
-
-          <ScSuccessionSummaryPanel
-            displayUsesChainage={derived.displayUsesChainage}
-            derivedTotalDroits={derived.derivedTotalDroits}
-            synthDonutTransmis={derived.synthDonutTransmis}
-            derivedMasseTransmise={derived.derivedMasseTransmise}
-            transmissionRows={derived.transmissionRows}
-            synthHypothese={derived.synthHypothese}
-            isPacsed={derived.isPacsed}
-            chainageAnalysis={{
-              order: derived.chainageAnalysis.order,
-              step1: derived.chainageAnalysis.step1
-                ? { droitsEnfants: derived.chainageAnalysis.step1.droitsEnfants }
-                : null,
-              step2: derived.chainageAnalysis.step2
-                ? { droitsEnfants: derived.chainageAnalysis.step2.droitsEnfants }
-                : null,
-            }}
-            avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
-            directDisplay={{
-              simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
-              result: derived.directDisplayAnalysis.result
-                ? { totalDroits: derived.directDisplayAnalysis.result.totalDroits }
-                : null,
-            }}
-          />
-
-          <ScDeathTimelinePanel
-            chainOrder={chainOrder}
-            onToggleOrder={() => setChainOrder((prev) => (prev === 'epoux2' ? 'epoux1' : 'epoux2'))}
-            displayUsesChainage={derived.displayUsesChainage}
-            derivedMasseTransmise={derived.derivedMasseTransmise}
-            derivedTotalDroits={derived.derivedTotalDroits}
-            isPacsed={derived.isPacsed}
-            chainageAnalysis={{
-              order: derived.chainageAnalysis.order,
-              firstDecedeLabel: derived.chainageAnalysis.firstDecedeLabel,
-              secondDecedeLabel: derived.chainageAnalysis.secondDecedeLabel,
-              step1: derived.chainageAnalysis.step1
-                ? {
-                  actifTransmis: derived.chainageAnalysis.step1.actifTransmis,
-                  droitsEnfants: derived.chainageAnalysis.step1.droitsEnfants,
-                }
-                : null,
-              step2: derived.chainageAnalysis.step2
-                ? {
-                  actifTransmis: derived.chainageAnalysis.step2.actifTransmis,
-                  droitsEnfants: derived.chainageAnalysis.step2.droitsEnfants,
-                }
-                : null,
-            }}
-            assuranceVieByAssure={derived.assuranceVieByAssure}
-            avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
-            directDisplay={{
-              simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
-              result: derived.directDisplayAnalysis.result
-                ? { totalDroits: derived.directDisplayAnalysis.result.totalDroits }
-                : null,
-            }}
-          />
-        </div>
-      </div>
-
-      <div className="sc-hypotheses">
-        <button
-          type="button"
-          className="sc-hypotheses__toggle"
-          onClick={() => setHypothesesOpen((v) => !v)}
-          aria-expanded={hypothesesOpen}
-          data-testid="succession-hypotheses-toggle"
-        >
-          <span className="sc-hypotheses__title">Hypothèses et limites</span>
-          <svg
-            width="12" height="12" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            className={`sc-hypotheses__chevron${hypothesesOpen ? ' is-open' : ''}`}
-            aria-hidden="true"
-          >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-        {hypothesesOpen && (
-          <ul>
-            {derived.attentions.map((warning, idx) => (
-              <li key={`att-${idx}`}>{warning}</li>
-            ))}
-            <li>Barèmes DMTG et abattements appliqués depuis les paramètres de l&apos;application.</li>
-            <li>
-              Paramètres transmis au module:
-              rappel fiscal donations {fiscalSnapshot.donation.rappelFiscalAnnees} ans,
-              AV décès 990 I {fmt(fiscalSnapshot.avDeces.primesApres1998.allowancePerBeneficiary)} / bénéficiaire,
-              AV décès après {fiscalSnapshot.avDeces.agePivotPrimes} ans {fmt(fiscalSnapshot.avDeces.apres70ans.globalAllowance)} (global).
-            </li>
-            <li>La lecture civile repose sur le contexte familial, les masses patrimoniales saisies et les dispositions déclarées.</li>
-            <li>Les capitaux décès d'assurance-vie sont ventilés par bénéficiaire à partir des clauses saisies, avec une lecture simplifiée des régimes 990 I / 757 B.</li>
-            <li>La chronologie 2 décès repose sur un chaînage simplifié avec warnings sur les cas non couverts.</li>
-            <li>La dévolution légale est présentée en lecture civile simplifiée, sans gestion exhaustive des ordres successoraux.</li>
-            <li>Les libéralités et avantages matrimoniaux sont qualifiés de façon indicative, sans recalcul automatique des droits dans ce module.</li>
-            <li>L'intégration chiffrée fine (rapport civil détaillé, réduction, liquidation notariale) n'est pas encore modélisée.</li>
-            <li>Résultat indicatif, à confirmer par une analyse patrimoniale et notariale.</li>
-          </ul>
-        )}
-      </div>
-
-      {showDispositionsModal && (
-        <DispositionsModal
-          dispositionsDraft={dispositionsDraft}
-          setDispositionsDraft={setDispositionsDraft}
-          testamentSides={derived.testamentSides}
-          testamentBeneficiaryOptionsBySide={derived.testamentBeneficiaryOptionsBySide}
-          descendantBranchesBySide={derived.descendantBranchesBySide}
-          enfantsContext={enfantsContext}
-          familyMembers={familyMembers}
-          civilSituation={civilContext.situationMatrimoniale}
-          showSharedTransmissionPct={derived.showSharedTransmissionPct}
-          isPacsIndivision={derived.isPacsIndivision}
-          showDonationEntreEpoux={derived.showDonationEntreEpoux}
-          nbDescendantBranches={derived.nbDescendantBranches}
-          nbEnfantsNonCommuns={derived.nbEnfantsNonCommuns}
-          isCommunityRegime={derived.isCommunityRegime}
-          updateDispositionsTestament={updateDispositionsTestament}
-          getFirstTestamentBeneficiaryRef={getFirstTestamentBeneficiaryRef}
-          onAddParticularLegacy={addDispositionsParticularLegacy}
-          onUpdateParticularLegacy={updateDispositionsParticularLegacy}
-          onRemoveParticularLegacy={removeDispositionsParticularLegacy}
-          onClose={() => setShowDispositionsModal(false)}
-          onValidate={validateDispositionsModal}
-        />
-      )}
-
-      {showAssuranceVieModal && (
-        <AssuranceVieModal
-          assuranceVieDraft={assuranceVieDraft}
-          assuranceVieDraftTotals={derived.assuranceVieDraftTotals}
-          assuranceViePartyOptions={derived.assuranceViePartyOptions}
-          enfantsContext={enfantsContext}
-          familyMembers={familyMembers}
-          isMarried={derived.isMarried}
-          isPacsed={derived.isPacsed}
-          onClose={closeAssuranceVieModal}
-          onValidate={validateAssuranceVieModal}
-          onAddContract={addAssuranceVieEntry}
-          onRemoveContract={removeAssuranceVieEntry}
-          onUpdateContract={updateAssuranceVieEntry}
-        />
-      )}
-
-      {showAddMemberPanel && (
-        <AddFamilyMemberModal
-          form={addMemberForm}
-          setForm={setAddMemberForm}
-          branchOptions={derived.branchOptions}
-          enfantsContext={enfantsContext}
-          onClose={() => setShowAddMemberPanel(false)}
-          onValidate={addFamilyMember}
-        />
-      )}
+      <SuccessionModals
+        derived={derived}
+        civilSituation={civilContext.situationMatrimoniale}
+        enfantsContext={enfantsContext}
+        familyMembers={familyMembers}
+        showDispositionsModal={showDispositionsModal}
+        dispositionsDraft={dispositionsDraft}
+        setDispositionsDraft={setDispositionsDraft}
+        showAssuranceVieModal={showAssuranceVieModal}
+        assuranceVieDraft={assuranceVieDraft}
+        showAddMemberPanel={showAddMemberPanel}
+        addMemberForm={addMemberForm}
+        setAddMemberForm={setAddMemberForm}
+        onUpdateDispositionsTestament={updateDispositionsTestament}
+        onGetFirstTestamentBeneficiaryRef={getFirstTestamentBeneficiaryRef}
+        onAddParticularLegacy={addDispositionsParticularLegacy}
+        onUpdateParticularLegacy={updateDispositionsParticularLegacy}
+        onRemoveParticularLegacy={removeDispositionsParticularLegacy}
+        onCloseDispositions={() => setShowDispositionsModal(false)}
+        onValidateDispositions={validateDispositionsModal}
+        onCloseAssuranceVie={closeAssuranceVieModal}
+        onValidateAssuranceVie={validateAssuranceVieModal}
+        onAddAssuranceVieContract={addAssuranceVieEntry}
+        onRemoveAssuranceVieContract={removeAssuranceVieEntry}
+        onUpdateAssuranceVieContract={updateAssuranceVieEntry}
+        onCloseAddMemberPanel={() => setShowAddMemberPanel(false)}
+        onValidateAddMember={addFamilyMember}
+      />
     </div>
   );
 }
