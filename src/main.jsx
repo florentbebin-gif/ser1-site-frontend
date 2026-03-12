@@ -5,7 +5,7 @@ import App from './App.jsx'
 import { waitInitialSession } from './supabaseClient.ts'
 import { ThemeProvider, DEFAULT_COLORS } from './settings/ThemeProvider'
 import { AuthProvider } from './auth'
-import './styles.css'
+import './styles/index.css'
 import './styles/premium-shared.css'
 
 const THEME_CACHE_KEY_PREFIX = 'ser1_theme_cache_'
