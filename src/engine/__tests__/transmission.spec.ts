@@ -22,7 +22,7 @@ describe('calculTransmission', () => {
       agePremierVersement: 55,
       nbBeneficiaires: 2,
       cumulVersements: 250000,
-    }, baseFiscalParams) as any;
+    }, baseFiscalParams);
 
     expect(res.regime).toBe('990 I');
     expect(res.abattement).toBe(305000); // 152500 * 2
@@ -41,7 +41,7 @@ describe('calculTransmission', () => {
       capitalTransmis: 120000,
       agePremierVersement: 72,
       nbBeneficiaires: 1,
-    }, baseFiscalParams) as any;
+    }, baseFiscalParams);
 
     expect(res.psDeces.montant).toBeCloseTo((120000 - 0) * baseFiscalParams.psPatrimoine, 2);
     const assiette = 120000 - res.psDeces.montant - baseFiscalParams.av757BAbattement;
@@ -57,7 +57,7 @@ describe('calculTransmission', () => {
       capitalTransmis: 80000,
       ageAuDeces: 75,
       perBancaire: false,
-    }, baseFiscalParams) as any;
+    }, baseFiscalParams);
 
     expect(res.regime).toContain('757 B');
     expect(res.taxeForfaitaire).toBe(0);
@@ -72,7 +72,7 @@ describe('calculTransmission', () => {
       envelope: ENVELOPES.PER,
       capitalTransmis: 50000,
       perBancaire: true,
-    }, baseFiscalParams) as any;
+    }, baseFiscalParams);
 
     expect(res.regime).toBe('DMTG (PER bancaire)');
     expect(res.taxeForfaitaire).toBe(0);
@@ -87,7 +87,7 @@ describe('calculTransmission', () => {
       envelope: ENVELOPES.PEA,
       capitalTransmis: 150000,
       cumulVersements: 90000,
-    }, baseFiscalParams) as any;
+    }, baseFiscalParams);
 
     const gains = 60000;
     expect(res.psDeces.montant).toBeCloseTo(gains * baseFiscalParams.psPatrimoine, 2);
@@ -98,7 +98,7 @@ describe('calculTransmission', () => {
     const res = calculTransmission({
       envelope: ENVELOPES.SCPI,
       capitalTransmis: 80000,
-    }, baseFiscalParams) as any;
+    }, baseFiscalParams);
 
     expect(res.psDeces.applicable).toBe(false);
     expect(res.psDeces.note).toBe('PS prélevés sur les loyers annuels');
@@ -130,7 +130,13 @@ describe('Garantie de bonne fin (simulateComplete)', () => {
   };
 
   it('ajoute la garantie si décès pendant épargne', () => {
-    const result = simulateComplete(productPer, client, { mode: 'epuiser', duree: 25 }, transmission, baseFiscalParams) as any;
+    const result = simulateComplete(
+      productPer,
+      client,
+      { mode: 'epuiser', duree: 25 },
+      transmission,
+      baseFiscalParams,
+    );
     expect(result.transmission.capitalTransmis).toBeGreaterThan(result.epargne.capitalAcquis);
   });
 
@@ -141,7 +147,7 @@ describe('Garantie de bonne fin (simulateComplete)', () => {
       { mode: 'epuiser', duree: 25 },
       { ...transmission, ageAuDeces: 90 },
       baseFiscalParams,
-    ) as any;
+    );
     expect(result.transmission.capitalTransmis).toBeCloseTo(result.liquidation.capitalRestantAuDeces, 2);
   });
 });

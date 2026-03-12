@@ -32,19 +32,20 @@ export function convertFromSettingsFormat(settingsColors: Record<string, string>
 /**
  * Convertit une palette DB (c1..c10) vers ThemeColors avec fallback DEFAULT_COLORS
  */
-export function convertDbPaletteToThemeColors(palette: any): ThemeColors | null {
-  if (!palette) return null;
+export function convertDbPaletteToThemeColors(palette: unknown): ThemeColors | null {
+  if (!palette || typeof palette !== 'object') return null;
+  const paletteRecord = palette as Partial<Record<keyof ThemeColors, string>>;
   return {
-    c1: palette.c1 || DEFAULT_COLORS.c1,
-    c2: palette.c2 || DEFAULT_COLORS.c2,
-    c3: palette.c3 || DEFAULT_COLORS.c3,
-    c4: palette.c4 || DEFAULT_COLORS.c4,
-    c5: palette.c5 || DEFAULT_COLORS.c5,
-    c6: palette.c6 || DEFAULT_COLORS.c6,
-    c7: palette.c7 || DEFAULT_COLORS.c7,
-    c8: palette.c8 || DEFAULT_COLORS.c8,
-    c9: palette.c9 || DEFAULT_COLORS.c9,
-    c10: palette.c10 || DEFAULT_COLORS.c10,
+    c1: paletteRecord.c1 || DEFAULT_COLORS.c1,
+    c2: paletteRecord.c2 || DEFAULT_COLORS.c2,
+    c3: paletteRecord.c3 || DEFAULT_COLORS.c3,
+    c4: paletteRecord.c4 || DEFAULT_COLORS.c4,
+    c5: paletteRecord.c5 || DEFAULT_COLORS.c5,
+    c6: paletteRecord.c6 || DEFAULT_COLORS.c6,
+    c7: paletteRecord.c7 || DEFAULT_COLORS.c7,
+    c8: paletteRecord.c8 || DEFAULT_COLORS.c8,
+    c9: paletteRecord.c9 || DEFAULT_COLORS.c9,
+    c10: paletteRecord.c10 || DEFAULT_COLORS.c10,
   };
 }
 
@@ -176,7 +177,7 @@ export async function loadOriginalTheme(): Promise<ThemeColors | null> {
       return null;
     }
 
-    const data = await response.json();
+    const data = await response.json() as { palette?: unknown };
     if (!data.palette) {
       return null;
     }

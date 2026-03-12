@@ -20,6 +20,7 @@ import {
   DEFAULT_PS_SETTINGS,
   DEFAULT_FISCALITY_SETTINGS,
 } from '../utils/cache/fiscalSettingsCache';
+import type { CacheMeta } from '../utils/cache/fiscalSettingsCache';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -93,19 +94,27 @@ interface UseFiscalContextResult {
   meta: FiscalContextMeta;
 }
 
+type TaxSettings = typeof DEFAULT_TAX_SETTINGS;
+type PsSettings = typeof DEFAULT_PS_SETTINGS;
+type FiscalitySettings = typeof DEFAULT_FISCALITY_SETTINGS;
+type LegacyDmtgSettings = TaxSettings['dmtg'] & {
+  abattementLigneDirecte?: number;
+  scale?: TaxSettings['dmtg']['ligneDirecte']['scale'];
+};
+
 // ─── Normalisation ────────────────────────────────────────────────────────────
 
 function buildFiscalContext(
-  tax: typeof DEFAULT_TAX_SETTINGS,
-  ps: typeof DEFAULT_PS_SETTINGS,
-  fiscality: typeof DEFAULT_FISCALITY_SETTINGS,
+  tax: TaxSettings,
+  ps: PsSettings,
+  fiscality: FiscalitySettings,
 ): FiscalContext {
-  const dmtg = tax?.dmtg ?? DEFAULT_TAX_SETTINGS.dmtg;
+  const dmtg: LegacyDmtgSettings = tax?.dmtg ?? DEFAULT_TAX_SETTINGS.dmtg;
 
   // Normalisation DMTG : supporte les deux anciennes structures (legacy + nouvelle)
   const ligneDirecte = dmtg.ligneDirecte ?? {
-    abattement: (dmtg as any).abattementLigneDirecte ?? 100000,
-    scale: (dmtg as any).scale ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
+    abattement: dmtg.abattementLigneDirecte ?? 100000,
+    scale: dmtg.scale ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
   };
 
   return {
@@ -176,7 +185,13 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
   });
 
   const applySettings = useCallback(
-    (tax: any, ps: any, fiscality: any, fromCache = false, settingsMeta?: any) => {
+    (
+      tax: TaxSettings,
+      ps: PsSettings,
+      fiscality: FiscalitySettings,
+      fromCache = false,
+      settingsMeta?: CacheMeta,
+    ) => {
       setFiscalContext(buildFiscalContext(tax, ps, fiscality));
       setMeta({
         fromCache,
@@ -208,9 +223,9 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
           if (!mounted) return;
           applySettings(result.tax, result.ps, result.fiscality, false, result.meta);
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (!mounted) return;
-        setError(e?.message ?? 'Erreur chargement paramètres fiscaux');
+        setError(e instanceof Error ? e.message : 'Erreur chargement paramètres fiscaux');
       } finally {
         if (mounted) setLoading(false);
       }
@@ -222,7 +237,7 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
 
   // Invalidation cache après mise à jour admin (broadcast événement)
   useEffect(() => {
-    const remove = addInvalidationListener((_kind: string) => {
+    const remove = addInvalidationListener(() => {
       (async () => {
         try {
           if (strict) {
@@ -232,8 +247,8 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
             const result = await getFiscalSettings({ force: true });
             applySettings(result.tax, result.ps, result.fiscality, false, result.meta);
           }
-        } catch (e: any) {
-          setError(e?.message ?? 'Erreur rechargement paramètres');
+        } catch (e: unknown) {
+          setError(e instanceof Error ? e.message : 'Erreur rechargement paramètres');
         }
       })();
     });

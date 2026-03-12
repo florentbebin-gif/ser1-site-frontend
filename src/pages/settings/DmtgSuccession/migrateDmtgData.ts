@@ -1,6 +1,18 @@
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 
-export function migrateDmtgData(data: Record<string, any> | null | undefined): Record<string, any> | null | undefined {
+type DmtgSettings = typeof DEFAULT_TAX_SETTINGS.dmtg;
+type LegacyDmtgSettings = DmtgSettings & {
+  abattementLigneDirecte?: number;
+  scale?: DmtgSettings['ligneDirecte']['scale'];
+};
+
+interface DmtgDataRecord extends Record<string, unknown> {
+  dmtg?: LegacyDmtgSettings;
+}
+
+export function migrateDmtgData(
+  data: DmtgDataRecord | null | undefined,
+): DmtgDataRecord | null | undefined {
   if (!data?.dmtg) return data;
 
   const hasOldStructure = data.dmtg.abattementLigneDirecte !== undefined;
@@ -11,8 +23,9 @@ export function migrateDmtgData(data: Record<string, any> | null | undefined): R
       ...data,
       dmtg: {
         ligneDirecte: {
-          abattement: data.dmtg.abattementLigneDirecte,
-          scale: data.dmtg.scale,
+          abattement:
+            data.dmtg.abattementLigneDirecte ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
+          scale: data.dmtg.scale ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
         },
         frereSoeur: DEFAULT_TAX_SETTINGS.dmtg.frereSoeur,
         neveuNiece: DEFAULT_TAX_SETTINGS.dmtg.neveuNiece,

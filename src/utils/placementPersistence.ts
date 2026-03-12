@@ -12,6 +12,13 @@ const FILE_APP = 'SER1';
 const FILE_KIND = 'placement';
 const MIME_TYPE = 'application/json';
 
+interface PlacementFilePayload {
+  app?: string;
+  kind?: string;
+  version?: number;
+  payload?: unknown;
+}
+
 function buildFilename() {
   const now = new Date();
   const date = now.toISOString().split('T')[0];
@@ -51,8 +58,8 @@ async function fallbackOpenFile(): Promise<File | null> {
   });
 }
 
-function validatePayload(data: Record<string, any>): string[] {
-  const errors = [];
+function validatePayload(data: PlacementFilePayload | null | undefined): string[] {
+  const errors: string[] = [];
   if (!data || typeof data !== 'object') {
     errors.push('Fichier vide ou illisible.');
     return errors;
