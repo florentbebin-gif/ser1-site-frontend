@@ -1,10 +1,10 @@
-// @ts-nocheck
 import React, { useEffect, useState, useCallback, Suspense } from 'react';
+import type { Session } from '@supabase/supabase-js';
 import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { supabase, DEBUG_AUTH } from './supabaseClient';
 import { PrivateRoute } from './auth';
 import { useTheme } from './settings/ThemeProvider';
-import { APP_ROUTES, getRouteMetadata } from './routes/appRoutes';
+import { APP_ROUTES, getRouteMetadata, type AppRouteEntry } from './routes/appRoutes';
 import { triggerPageReset, triggerGlobalReset } from './utils/reset';
 import { saveGlobalState, loadGlobalStateWithDialog } from './reporting/json-io';
 import { useFiscalContext } from './hooks/useFiscalContext';
@@ -14,8 +14,32 @@ import { useExportGuard } from './hooks/useExportGuard';
 import { setTrackBlobUrlHandler } from './utils/export/createTrackedObjectURL';
 import { AppLayout } from './components/layout/AppLayout';
 
+type NotificationType = 'info' | 'success' | 'error';
+
+interface NotificationState {
+  message: string;
+  type: NotificationType;
+}
+
+interface LazyRouteProps {
+  children: React.ReactNode;
+}
+
+interface SessionGuardContextValue {
+  sessionExpired: boolean;
+  canExport: boolean;
+  trackBlobUrl: (_url: string) => void;
+  resetInactivity: () => void;
+}
+
+interface FiscalIdentityCurrent {
+  tax: { updatedAt: string | null; hash: string };
+  ps: { updatedAt: string | null; hash: string };
+  fiscality: { updatedAt: string | null; hash: string };
+}
+
 // Fallback UI for lazy-loaded routes
-const PageLoader = () => (
+const PageLoader = (): React.ReactElement => (
   <div style={{ 
     display: 'flex', 
     alignItems: 'center', 
@@ -30,7 +54,7 @@ const PageLoader = () => (
 
 // Wrapper component that waits for theme to be ready before rendering lazy routes
 // This prevents FOUC (Flash of Unstyled Content) on route navigation
-const LazyRoute = ({ children }) => {
+const LazyRoute = ({ children }: LazyRouteProps): React.ReactElement => {
   const { themeReady } = useTheme();
   
   // Block render until CSS variables are applied
@@ -46,23 +70,23 @@ const LazyRoute = ({ children }) => {
 };
 
 // React context to expose session/export guard to child components
-export const SessionGuardContext = React.createContext({
+export const SessionGuardContext = React.createContext<SessionGuardContextValue>({
   sessionExpired: false,
   canExport: true,
-  trackBlobUrl: (_url) => {},
+  trackBlobUrl: (_url: string) => {},
   resetInactivity: () => {},
 });
 
-export default function App() {
-  const [session, setSession] = useState(null);
-  const [notification, setNotification] = useState(null);
+export default function App(): React.ReactElement {
+  const [session, setSession] = useState<Session | null>(null);
+  const [notification, setNotification] = useState<NotificationState | null>(null);
   const navigate = useNavigate();
 
   // Dossier fiscal (mode stale) — pour construire l'identité fiscale lors des sauvegardes
   const { fiscalContext, meta: fiscalMeta } = useFiscalContext();
 
   // Identité fiscale : hashes stables + updated_at pour les 3 tables
-  const fiscalIdentity = React.useMemo(() => ({
+  const fiscalIdentity = React.useMemo<FiscalIdentityCurrent>(() => ({
     tax: {
       updatedAt: fiscalMeta.taxUpdatedAt,
       hash: fingerprintSettingsData(fiscalContext._raw_tax),
@@ -138,7 +162,7 @@ export default function App() {
   };
 
   // Notification temporaire
-  const showNotification = useCallback((message, type = 'info') => {
+  const showNotification = useCallback((message: string, type: NotificationType = 'info') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 4000);
   }, []);
@@ -199,15 +223,15 @@ export default function App() {
     }
   }, [showNotification]);
 
-const isRecoveryMode = window.location.hash.includes('type=recovery');
-const path = window.location.pathname;
-const routeMeta = getRouteMetadata(path);
+  const isRecoveryMode = window.location.hash.includes('type=recovery');
+  const path = window.location.pathname;
+  const routeMeta = getRouteMetadata(path);
 
-  const sessionGuardValue = React.useMemo(() => ({
+  const sessionGuardValue = React.useMemo<SessionGuardContextValue>(() => ({
     sessionExpired, canExport, trackBlobUrl, resetInactivity,
   }), [sessionExpired, canExport, trackBlobUrl, resetInactivity]);
 
-  const renderRouteEntry = (entry) => {
+  const renderRouteEntry = (entry: AppRouteEntry): React.ReactElement => {
     if (entry.kind === 'redirect') {
       return (
         <Route
@@ -222,12 +246,14 @@ const routeMeta = getRouteMetadata(path);
 
     // Exception minimale : Login a besoin de navigate() dans son callback onLogin.
     // On garde la config déclarative dans APP_ROUTES (onLoginNavigateTo) et on injecte ici.
-    const mergedProps = {
+    const mergedProps: Record<string, unknown> = {
       ...(entry.props || {}),
-      ...(entry.onLoginNavigateTo
-        ? { onLogin: () => navigate(entry.onLoginNavigateTo) }
-        : null),
     };
+
+    if (entry.onLoginNavigateTo) {
+      const navigateTo = entry.onLoginNavigateTo;
+      mergedProps.onLogin = () => navigate(navigateTo);
+    }
 
     const element = <Component {...mergedProps} />;
     const maybeLazy = entry.lazy ? <LazyRoute>{element}</LazyRoute> : element;

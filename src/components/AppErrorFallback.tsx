@@ -1,8 +1,16 @@
-// @ts-nocheck
 import React from 'react';
 
-export default function AppErrorFallback({ error, type = 'config' }) {
+interface AppErrorFallbackProps {
+  error?: unknown;
+  type?: 'config' | 'runtime';
+}
+
+export default function AppErrorFallback({
+  error,
+  type = 'config',
+}: AppErrorFallbackProps): React.ReactElement {
   const isConfigError = type === 'config';
+  const errorMessage = error ? String(error) : null;
   
   return (
     <div style={{
@@ -50,7 +58,7 @@ export default function AppErrorFallback({ error, type = 'config' }) {
           }
         </p>
 
-        {error && (
+        {errorMessage && (
           <pre style={{
             backgroundColor: 'var(--color-c7)', // Fond code C7
             padding: '12px',
@@ -61,7 +69,7 @@ export default function AppErrorFallback({ error, type = 'config' }) {
             marginBottom: '24px',
             textAlign: 'left'
           }}>
-            {error.toString()}
+            {errorMessage}
           </pre>
         )}
 
