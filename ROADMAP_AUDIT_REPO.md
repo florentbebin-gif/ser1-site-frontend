@@ -13,7 +13,7 @@
 | Métrique | Valeur |
 |---|---|
 | **Fichiers src/** | 382 |
-| **Extensions** | .ts (207), .jsx (57), .tsx (47), .css (24), .js (19), .json (14), .svg (13) |
+| **Extensions** | .ts (223), .jsx (57), .tsx (47), .css (24), .json (14), .svg (13) — .js éliminés (PR-C) |
 | **TODO/FIXME/HACK** | 141 occurrences dans 35 fichiers |
 | **console.log/debug** | 52 occurrences dans 17 fichiers (hors tests) |
 | **@ts-ignore / any** | 49 occurrences dans 22 fichiers |
@@ -221,7 +221,7 @@ Ajouter dans `eslint.config.js` ou un script CI :
 | Catégorie | Gravité | Description |
 |---|---|---|
 | **76 TODO dans catalog.ts** | 🔴 Haute | Fichier métier central avec dette non trackée |
-| **Mixité JS/TS** | 🟠 Moyenne | 19 `.js` + 57 `.jsx` → blocage pour `noUnusedLocals: true` |
+| **Mixité JS/TS** | � Basse | ~~19 `.js`~~ éliminés (PR-C) + 57 `.jsx` → `.tsx` (PR-H) |
 | **God-files** | 🟠 Moyenne | 5+ fichiers > 25 Ko (SettingsComptes, PlacementInputsPanel, Credit, SuccessionSimulator, useSuccessionDerivedValues) |
 | **`any` en TS** | 🟡 Basse | 49 occurrences — à réduire progressivement |
 | **CSS non-modulaire** | 🟡 Basse | Pas de CSS Modules ni utility-first — risque de collisions de classes |
@@ -235,14 +235,14 @@ Ajouter dans `eslint.config.js` ou un script CI :
 | PR | Phase | Risque | Effort |
 |---|---|---|---|
 | **PR-A** | Phase 1 (squelette) | ⚪ Nul | 15 min |
-| **PR-B** | Phase 2A+2B (code mort) | 🟢 Faible | 1-2h |
-| **PR-C** | Phase 3 P1 (JS → TS) | 🟢 Faible | 2-3h |
-| **PR-D** | Phase 5A+5B (règles lint + tsconfig) | 🟡 Moyen | 2-3h |
-| **PR-E** | Phase 6A (nommage + CSS Home) | 🟡 Moyen | 1-2h |
-| **PR-F** | Phase 4 top 5 god-files | 🟠 Moyen-haut | 3-5h par fichier |
-| **PR-G** | Phase 7A (docs refresh) | ⚪ Nul | 1-2h |
-| **PR-H** | Phase 3 P2 (JSX → TSX batch) | 🟡 Moyen | 3-5h |
-| **PR-I** | Phase 7B (TODO purge catalog.ts) | 🟠 Moyen | 2-3h |
+| **PR-B** | Phase 2A+2B (code mort) | Faible | 1-2h |
+| **PR-C** | Phase 3 P1 (JS → TS) — PR #299 | Faible | 2-3h |
+| **PR-D** | Phase 5A+5B (règles lint + tsconfig) | Moyen | 2-3h |
+| **PR-E** | Phase 6A (nommage + CSS Home) | Moyen | 1-2h |
+| **PR-F** | Phase 4 top 5 god-files | Moyen-haut | 3-5h par fichier |
+| **PR-G** | Phase 7A (docs refresh) | Nul | 1-2h |
+| **PR-H** | Phase 3 P2 (JSX → TSX batch) | Moyen | 3-5h |
+| **PR-I** | Phase 7B (TODO purge catalog.ts) | Moyen | 2-3h |
 
 **Règle** : chaque PR passe `npm run check` vert + smoke test des pages touchées.
 
