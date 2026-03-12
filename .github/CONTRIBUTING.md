@@ -36,7 +36,8 @@ git push origin feature/nom-clair
 ## Conventions
 
 ### Nommage fichiers
-- Nouveau code : **TypeScript** (`.ts` / `.tsx`) — les fichiers `.js/.jsx` existants sont du legacy en migration progressive
+- Nouveau code : **TypeScript** (`.ts` / `.tsx`) dans `src/`
+- `src/` ne doit contenir aucun fichier `.js/.jsx` ; `npm run check:no-js` bloque ces extensions
 - Composants : PascalCase (`SettingsCard.tsx`)
 - Utilitaires : camelCase (`settingsHelpers.ts`)
 - Tests : `*.test.ts` à côté du fichier testé
@@ -60,6 +61,7 @@ git push origin feature/nom-clair
 - Types importés depuis les **modules sources**, pas depuis les Providers
 - Exemple : `import { ThemeColors } from './theme'` ✓  
   Pas : `import { ThemeColors } from './ThemeProvider'` ✗ (sauf si ré-exporté)
+- `allowJs: true` dans `tsconfig` ne change pas la règle repo : pas de nouveau `.js/.jsx` dans `src/`
 
 ### TODO/FIXME
 - Format obligatoire : `TODO(#123): description` avec référence issue
@@ -71,11 +73,11 @@ git push origin feature/nom-clair
 - En prod : aucun log sensible (pas de données utilisateur)
 
 ### CSS Governance
-- **Interdiction** : Un fichier CSS d'une page ne doit jamais importer un CSS d'une autre page
+- **Interdiction** : Un fichier CSS d'une page ou d'une feature ne doit jamais importer le CSS d'une autre page/feature
 - **Pattern correct** : 
-  - Styles partagés → `src/styles/` (variables CSS, utilitaires)
-  - Styles page-spécifiques → `src/pages/PageName.css` uniquement
-- **Exemple de correction** : `PlacementV2.jsx` importait `Ir.css` ; `src/pages/Placement.css` removed (PR2) — styles migrated to `src/features/placement/components/PlacementSimulator.css`
+  - Styles partagés → `src/styles/` (variables CSS, utilitaires, patterns communs)
+  - Styles spécifiques → co-localisés avec la surface concernée (`src/pages/` ou `src/features/...`)
+- **Si deux surfaces partagent des styles** : extraire la base commune vers `src/styles/` ou vers un composant partagé, jamais vers le CSS d'une autre page
 
 ### Imports (règles détaillées)
 - **Alias `@/`** : Toujours privilégié pour les imports cross-module

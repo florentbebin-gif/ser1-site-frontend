@@ -63,61 +63,28 @@ Objectif : découper d'abord les fichiers qui mélangent plusieurs responsabilit
 | Scripts outils | Exempt | Ne pas refactorer uniquement pour satisfaire une limite de lignes. |
 | Migrations SQL | Exempt | Ne jamais réécrire l'historique pour satisfaire une règle de taille. |
 
-### Conventions — Legacy / Spike / Raw
+### Conventions historiques — `legacy/`, `__spike__`, `_raw`
 
-#### `legacy/` (convention historique — ✅ résolu)
-Le dossier `legacy/` servait à isoler du code pendant la refonte `pages/` → `features/` (strangler refactor incrémental).
+Ces noms de dossiers sont des marqueurs historiques de refactor ou de prototypage, pas des patterns actifs du repo.
 
-**Statut** : le dernier dossier legacy (`src/features/placement/legacy/`) a été éliminé. Les 8 fichiers ont été promus dans `utils/`, `components/`, `export/` au sein de la feature placement.
+**Statut au 2026-03-12** :
+- aucun dossier `legacy`, `__spike__` ou `_raw` n'est présent sous `src/`
+- les mentions résiduelles dans la doc ou l'historique Git doivent être lues comme historiques
+
+**Règles** :
+- ne pas réintroduire ces dossiers dans `src/`
+- si un spike temporaire est nécessaire, le garder hors runtime prod puis le supprimer ou l'intégrer avant merge
+- avant toute suppression ou promotion de code historique, fournir une preuve d'usage (`rg`, chaîne d'import, route ou script)
 
 **Vérification** :
-```bash
-rg "legacy/" src/features/ # → doit retourner vide
-```
-
-#### `__spike__` / `_raw`
-**Pourquoi** : dossiers de travail temporaire (prototypes, assets bruts) non destinés à la prod.
-
-**Règles d'usage** :
-- **Jamais en prod** — ces dossiers vivent sous `src/` uniquement pendant la phase de prototypage.
-- Chaque dossier doit être **audité** avant suppression/déplacement.
-
-**Audit + cleanup (T6)** :
-1. Lister les imports/usages réels :
-   ```bash
-   rg -n "(/|\\\\)__spike__(/|\\\\)" src --type tsx --type ts
-   rg -n "(/|\\\\)_raw(/|\\\\)" src --type tsx --type ts
-   ```
-   Note : `_rawText` est une variable (ex: `apiAdmin.js`), sans lien avec le dossier `_raw/`.
-2. Décision par fichier : `delete` (obsolète), ou `inline` (intégrer au code prod).
-3. Après audit, supprimer de `src/` (ou intégrer au code prod si utile).
-
-**Vérification post-cleanup** :
-```bash
-find src -type d \( -name "__spike__" -o -name "_raw" \)
+```powershell
+Get-ChildItem src -Recurse -Directory |
+  Where-Object { $_.Name -in @('legacy','__spike__','_raw') }
 # → doit retourner vide
 ```
 
-### Debt registry (legacy / spike / raw) + Exit criteria
-
-**Dettes actives :**
-
-| Dette | Type | Où | Pourquoi | Règle | Exit criteria | Vérification |
-|-------|------|-----|----------|-------|---------------|--------------|
-| D | compat | `src/engine/*.ts` | `@deprecated` constants (ABATTEMENT_*, generate*Pptx) | Ne pas ajouter de nouveaux `@deprecated` | Migration vers nouveaux APIs | `rg "@deprecated" src/engine` (maintenir ou réduire) |
-
-**Resolved :**
-
-| Dette | Type | Où | Pourquoi | Décision | Vérification |
-|-------|------|-----|----------|----------|--------------|
-| A | compat | `src/features/placement/legacy/` | Strangler refactor pages→features | **PROMU** — fichiers déplacés dans utils/, components/, export/ | `rg "legacy/" src/features/` → 0 |
-| B | hygiène | `src/pptx/template/__spike__/` | Prototypes / essais PPTX | **DELETE** (0 usage) | `find src -type d -name "__spike__"` → 0 |
-| C | hygiène | `src/icons/business/_raw/` | Sources brutes SVG | **DELETE** (0 usage) | `find src -type d -name "_raw"` → 0 |
-
-**Règles "ne pas aggraver la dette" :**
-- Pas de nouveaux fichiers dans `__spike__` ou `_raw`
-- Tout nouveau code va dans `features/*`, `components/`, `hooks/`, etc.
-- A taille équivalente, préférer un orchestrateur fin + modules nommés par responsabilité plutôt qu'un nouveau fichier fourre-tout.
+**Dette active liée à cette zone** :
+- `@deprecated` dans `src/engine/*.ts` : dette de compat à maintenir ou réduire, jamais à étendre (`rg "@deprecated" src/engine`)
 
 ---
 
@@ -361,7 +328,7 @@ Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets
 | `tax_settings` | IR barème (N et N-1), PFU taux IR+PS, CEHR/CDHR, IS, DMTG barèmes+abattements | Auth | Admin |
 | `ps_settings` | PS patrimoine (17,2 %), cotisations retraite par tranche, seuils RFR (1/2/3 parts) | Auth | Admin |
 | `fiscality_settings` | Règles par enveloppe (AV, PER, PEA, CTO, dividendes…) — taux, abattements, seuils | Auth | Admin |
-| `base_contrat_settings` | Config catalogue (réservé usage futur) | Auth | Admin |
+| `base_contrat_settings` | Singleton de config catalogue présent dans le schéma, non consommé par le runtime courant | Auth | Admin |
 | `base_contrat_overrides` | Clôture/réouverture produit + note admin (uuid per product) | Admin | Admin |
 
 Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.

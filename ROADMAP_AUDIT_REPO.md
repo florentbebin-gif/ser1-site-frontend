@@ -1,283 +1,524 @@
-# ROADMAP AUDIT REPO SER1
+# ROADMAP AUDIT REPO SER1 - V3
 
-> Plan d'audit complet du repo SER1, découpé en **7 phases** exécutables en micro-PRs, basé sur l'exploration réelle du repo.
-> 
-> **Date** : 2026-03-12  
-> **Scope** : Audit complet code mort, organisation, lint, dette technique, docs  
-> **Principe** : Preuve-first, micro-PRs, `npm run check` vert à chaque étape
-
----
-
-## STATISTIQUES CLÉS DU REPO
-
-| Métrique | Valeur |
-|---|---|
-| **Fichiers src/** | 382 |
-| **Extensions** | .ts (224), .tsx (117), .css (24), .json (14), .svg (13) — `.js` éliminés (PR-C), `.jsx` éliminés (PR-H) |
-| **TODO/FIXME/HACK** | 1 occurrence hors tests dans 1 fichier (`src/pptx/template/loadBaseTemplate.ts`) |
-| **console.log/debug** | 52 occurrences dans 17 fichiers (hors tests) |
-| **@ts-ignore / any** | 0 warning ESLint actif (`no-explicit-any`) — résiduel textuel seulement en commentaires/tests |
-| **Fichiers > 15 Ko** | 38 fichiers (god-files potentiels) |
-| **Fichiers < 500 octets** | 27 fichiers (micro-fichiers à fusionner) |
+> Audit factuel du repo SER1.
+>
+> Date de verification : 2026-03-12
+> Scope : repo complet (`src`, `api`, `docs`, `.github`, `supabase`, outillage)
+> Sortie attendue : rapport factuel + backlog micro-PRs
+> Principe : proof-first, pas de suppression ni de refactor sur simple intuition
 
 ---
 
-## PHASE 1 — Nettoyage squelette (risque zéro)
+## 0. Resume executif
 
-**Objectif** : supprimer les artéfacts vides, orphelins, et fichiers fantômes.
+- Le repo est globalement sain a auditer : `npm run check` passe, `npm run check:circular` passe, le build passe, et il n'y a pas de `.js/.jsx` dans `src`.
+- Le V2 contenait de bonnes intuitions, mais melangeait des faits verifies et des decisions deja prises. Le V3 corrige surtout trois points : la vraie dette prioritaire est `@ts-nocheck`, l'heuristique "fichier < 30 lignes = a fusionner" etait trop agressive, et certaines frontieres d'architecture etaient mal formulees.
+- La priorite recommandee n'est pas de lancer tout de suite des refactors larges. Il faut d'abord figer la baseline, traiter la dette de typage, puis seulement automatiser les regles de repo et simplifier la structure.
 
-| # | Constat (preuve) | Action |
+---
+
+## PHASE 0 - Baseline factuelle
+
+### Baseline repo
+
+| Fait | Preuve | Impact |
 |---|---|---|
-| 1.1 | `src/pages/settings/base-contrat/` et `src/pages/settings/base-contrat/components/` sont **vides** (0 fichiers, vestige PR3) | Supprimer les 2 dossiers |
-| 1.2 | `src/features/.gitkeep` (74 octets, commentaire) — le dossier contient déjà 7 sous-dossiers | Supprimer `.gitkeep` |
-| 1.3 | `public/pptx/chapters/` et `public/ui/login/` — dossiers référencés par le code avec assets trackés (`ch-01.png`...`ch-09.png`, `login-bg.png`) | **GARDER** : `public/pptx/chapters/` est référencé dans `src/pptx/assets/resolvePublicAsset.ts` (L71) ; `public/ui/login/` est référencé dans `src/pages/Login.css` (L12). Les dossiers et assets sont intentionnels. |
-| 1.4 | `.env.local` — apparaît dans le listing root | **RÉSOLU** : `git ls-files .env.local` → vide. Non tracké. Rien à faire. |
-| 1.5 | `deno.lock` à la racine (1270 octets) | **GARDER** : repo Supabase configuré en Deno 2 (`supabase/config.toml`) avec Edge Function `admin` (`supabase/functions/admin/index.ts`). Lockfile cohérent avec les Edge Functions, pas un artéfact frontend. |
-| 1.6 | `supabase/migrations/20260210212056_remote_schema.sql` | **RÉSOLU** : placeholder SQL explicite ajouté (plus de fichier 0 octet). Historique remote aligné et vérifié via `supabase migration list --linked` le 2026-03-12. |
+| `npm run check` passe | lint + no-js + typecheck + tests + build OK le 2026-03-12 | baseline exploitable |
+| `npm run check:circular` passe | `madge --circular src/` -> 0 cycle | pas de dette circulaire confirmee |
+| `npm run check:unused` remonte `supabase` en devDependency | `depcheck` -> `Unused devDependencies: supabase` | review, pas suppression immediate |
+| Fichiers `src/` | 392 fichiers | repo de taille moyenne, audit manuel faisable |
+| Extensions `src/` | 224 `.ts`, 117 `.tsx`, 24 `.css`, 14 `.json`, 13 `.svg` | TypeScript majoritaire |
+| Fichiers `.js/.jsx` dans `src/` | 0 | la convention est deja appliquee par script CI |
+| Warnings ESLint | 10 warnings `max-lines`, 0 error | probleme cible et borne |
+| `eslint-disable` hors tests | 54 occurrences | dette localisee et quantifiable |
+| `console.log/debug/info/trace` hors tests | 52 occurrences dans 17 fichiers | observabilite a normaliser |
+| `@deprecated` | 10 occurrences dans 6 fichiers | audit d'usage a faire avant suppression |
+| `@ts-nocheck` | 64 fichiers | dette de typage majeure |
+| TODO/FIXME/HACK hors tests | 1 occurrence | faible dette textuelle explicite |
+| `.editorconfig` | absent | gouvernance editeur non automatisee |
 
-**Vérification** : `npm run check` vert.
+### Annexe `depcheck`
 
----
+Resultat complet observe le 2026-03-12 :
 
-## PHASE 2 — Code mort et fichiers non branchés
+- `Unused devDependencies`
+  - `supabase`
 
-**Objectif** : identifier et supprimer le code qui n'est plus consommé.
+Lecture d'audit :
 
-### 2A — Wrappers de rétro-compatibilité (façades vides)
+- aucun autre package n'est remonte par `depcheck`
+- `supabase` reste en review manuelle, car la CLI est documentee dans le runbook et utilisee dans les workflows operateurs
 
-| Fichier | Constat | Action |
-|---|---|---|
-| `src/utils/globalStorage.js` | Pure re-export de `reporting/json-io/`. Seul `App.tsx` l'importe. | Repointer `App.tsx` sur `reporting/json-io/`, supprimer le wrapper |
-| `src/engine/placementEngine.ts` | Pure re-export de `engine/placement/index`. 10 consommateurs. | Repointer les imports, supprimer la façade |
+### Commandes de preuve
 
-### 2B — Fichiers à vérifier (peu de consommateurs)
-
-| Fichier | Consommateurs | Risque |
-|---|---|---|
-| `src/utils/placementEvents.js` | 1 seul (usePlacementSimulatorController) | Fusionner dans le consommateur |
-| `src/utils/number.js` | 2 (creditFormatters + IrSimulatorContainer) | Fusionner `toNumber()` dans un utils TS unique |
-| `src/utils/transmissionDisclaimer.js` | 2 (transmission.spec + PlacementInputsPanel) | OK si utilisé, mais convertir en `.ts` |
-| `src/constants/reportPages.js` | 1 (SignalementsBlock) | Fusionner dans le composant |
-| `src/constants/colorUsageGuidelines.js` | 2 (Settings + ThemeEditModal) | Convertir en `.ts`, garder |
-
-### 2C — Audit `depcheck` + `madge`
-
-- **Exécuter** `npm run check:unused` (depcheck) et `npm run check:circular` (madge) pour détecter :
-  - Dépendances npm non utilisées
-  - Imports circulaires (dette cachée)
-
-**Livrable** : un tableau SAFE/REVIEW/KEEP pour chaque fichier candidat.
-
----
-
-## PHASE 3 — Migration JS → TS et discipline JSX/TSX
-
-**Objectif** : éradiquer le mélange JS/JSX/TS/TSX incohérent.
-
-### 3A — État actuel
-
-- **0 fichier `.js`** dans `src/` — résolu en PR-C
-- **0 fichier `.jsx`** dans `src/` — résolu en PR-H
-- **Mixité résiduelle** : repo UI désormais unifié en `TS/TSX` dans `src/`
-
-### 3B — Plan
-
-**Statut 2026-03-12 — PR-H exécutée**
-
-- Les **64 fichiers `.jsx` restants** de `src/` ont été renommés en `.tsx`.
-- Entrées critiques migrées : `src/App.tsx`, `src/main.tsx`, `src/pages/Settings.tsx`, `src/pages/SettingsShell.tsx`, composants `ir/`, `placement/` et `settings/`.
-- Le contrôle CI `check:no-js` bloque désormais aussi les nouveaux `.jsx` dans `src/`.
-
-| Priorité | Action | Fichiers |
-|---|---|---|
-| **P1** | Renommer `.js` → `.ts` (pas de JSX dedans) | 19 fichiers historiques de PR-C (exemples : `number`, `globalStorage`, `placementEvents`, `settingsRoutes`, `placementExcelExport`, `dmtgReferenceData`, `exportExcel`) |
-| **P2** | Renommer `.jsx` → `.tsx` (ajouter typage minimal) | **Fait** — 64 fichiers migrés par batch feature (`ir/`, `placement/`, `settings/`, `pages/`, `components/`) |
-| **P3** | Ajouter règle ESLint interdisant la création de `.js`/`.jsx` | **Partiellement fait** — `check:no-js` bloque désormais `.js` et `.jsx` dans `src/` |
-
-### 3C — Règle repo à ajouter
-
-Ajouter dans `eslint.config.js` ou un script CI :
-> **Interdire tout nouveau fichier `.js` ou `.jsx`** dans `src/`. Tout nouveau code doit être `.ts` ou `.tsx`.
-
----
-
-## PHASE 4 — Fichiers trop gros (god-files) et découpage
-
-**Objectif** : aucun fichier de logique > 500 lignes, aucun composant UI > 400 lignes.
-
-**Statut 2026-03-12 — PR-F exécutée**
-
-- `src/pages/settings/SettingsComptes.tsx` : **742 → 372 lignes**
-- `src/features/succession/useSuccessionDerivedValues.ts` : **722 → 313 lignes**
-- `src/features/placement/components/PlacementInputsPanel.tsx` : **627 → 98 lignes**
-- `src/features/succession/SuccessionSimulator.tsx` : **607 → 458 lignes**
-- `src/features/credit/Credit.tsx` : **603 → 375 lignes**
-
-Méthode appliquée : extraction de sections UI, modales et hooks dérivés, sans changement de comportement fonctionnel.
-
-### Top 15 des fichiers les plus lourds
-
-| Fichier | Taille | Diagnostic |
-|---|---|---|
-| `features/succession/Succession.css` | 35 Ko | Découper par composant |
-| `pages/settings/SettingsComptes.tsx` | 34 Ko | **God-file** — extraire modals, sections, handlers |
-| `pptx/designSystem/serenity.ts` | 32 Ko | Acceptable (config design), mais modulariser en sous-fichiers |
-| `domain/base-contrat/rules/library/retraite.ts` | 30 Ko | Acceptable (données métier), documenter |
-| `features/succession/useSuccessionDerivedValues.ts` | 29 Ko | **Trop gros** — découper en hooks spécialisés |
-| `features/placement/components/PlacementInputsPanel.tsx` | 29 Ko | **God-component** — extraire sous-sections |
-| `features/succession/SuccessionSimulator.tsx` | 28 Ko | Extraire composants enfants |
-| `features/credit/Credit.tsx` | 27 Ko | Idem |
-| `pptx/slides/buildIrSynthesis.ts` | 24 Ko | Acceptable (slide builder) |
-| `domain/base-contrat/catalog.ts` | 24 Ko | Gros fichier métier hardcodé — plus de TODO, mais reste à documenter/modulariser |
-| `features/credit/components/CreditV2.css` | 23 Ko | Découper par composant |
-| `pages/settings/Impots/ImpotsBaremeSection.tsx` | 23 Ko | Extraire les tables en composants réutilisables |
-| `pages/Settings.tsx` | 21 Ko | God-file — extraire logique thème |
-| `pages/settings/BaseContrat.tsx` | 21 Ko | God-file en devenir — monitorer |
-| `features/succession/useSuccessionSimulatorHandlers.ts` | 20 Ko | Découper par groupe d'actions |
-
----
-
-## PHASE 5 — Lint, règles manquantes, et qualité CI
-
-### 5A — Règles ESLint manquantes
-
-| Règle | Pourquoi |
-|---|---|
-| `no-restricted-imports` | Interdire les imports depuis les façades legacy (`globalStorage`, `placementEngine`) |
-| `@typescript-eslint/no-explicit-any` | warn → les 49 `any` actuels sont une dette |
-| `@typescript-eslint/consistent-type-imports` | Forcer `import type` pour les types (tree-shaking) |
-| `import/no-cycle` | Remplacer/compléter `madge` par un check continu |
-| `max-lines` | warn à 500 lignes par fichier |
-| `max-lines-per-function` | warn à 100 lignes |
-| **Interdiction `.js`/`.jsx` en CI** | Script ou plugin lint empêchant la création de JS dans src/ |
-
-### 5B — TSConfig trop permissif
-
-```
-@c:\Users\flore\Documents\SER1\tsconfig.json:15-16
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+```bash
+npm run check
+npm run check:circular
+npm run check:unused
+rg --files src | Measure-Object
+rg --files src -g *.js -g *.jsx
+rg -n "eslint-disable" src --glob '!**/*.test.*'
+rg -n "console\.(log|debug|info|trace)" src --glob '!**/*.test.*'
+rg -n "^// @ts-nocheck" src
+rg -n "TODO|FIXME|HACK" src --glob '!**/*.test.*'
 ```
 
-**Action** : passer à `true` (ou au moins `warn`) pour détecter les variables/paramètres morts. Faire un pass de nettoyage avant.
+### Corrections explicites du V2
 
-### 5C — CI (`ci.yml`)
-
-- Le step `Check no console.* in production` (L72-77) est un grep brut — il serait **plus fiable** comme règle ESLint (`no-console` est déjà en `error` mais avec `allow: ['warn', 'error']`, ce qui est correct). Le grep CI fait doublon et peut diverger.
-- **Manquant** : aucun check de bundle size (ex: `bundlesize` ou `size-limit`).
-- **Manquant** : aucun check de couverture minimale en CI (coverage seulement configuré sur `src/engine/`).
-
-### 5D — Hooks Git
-
-- `.husky/pre-commit` exécute `lint-staged` ✓
-- `.githooks/pre-push` = script custom PowerShell (3.9 Ko) — **doublon potentiel** avec Husky, risque de confusion. Unifier.
+- Le V2 indiquait 56 `eslint-disable` hors tests. La mesure repo actuelle donne 54 occurrences hors tests : 52 `no-console`, 1 `ser1-colors/no-hardcoded-colors`, 1 `react-hooks/exhaustive-deps`.
+- Le V2 mettait surtout l'accent sur `max-lines`. Le V3 remonte `@ts-nocheck` comme dette transverse plus prioritaire.
+- Le V2 utilisait une heuristique trop large sur les petits fichiers. Le V3 distingue entrypoints, type islands, wrappers utiles et vrais candidats a fusion.
 
 ---
 
-## PHASE 6 — Organisation du repo et nommage
+## PHASE 1 - Reachability et code mort
 
-### 6A — Incohérences de nommage
+### Conclusion
 
-| Constat | Exemples | Action |
+- Aucun fichier ne peut etre qualifie "safe to delete" uniquement avec un comptage d'import statique.
+- Aucun fichier "orphelin" n'est confirme aujourd'hui avec une preuve suffisante pour suppression immediate.
+- Le meilleur candidat a suppression reste `src/utils/irEngine.ts`, car il n'a qu'un consommateur prod et deux tests.
+
+### Preuves principales
+
+| Element | Preuve | Decision |
 |---|---|---|
-| **kebab-case vs PascalCase** pour les dossiers | `base-contrat/` vs `DmtgSuccession/` vs `Impots/` | Harmoniser : dossiers en kebab-case, composants en PascalCase |
-| **CSS co-localisé vs centralisé** | `src/styles/` (4 fichiers globaux) + CSS co-localisé par feature | OK si intentionnel, mais `src/styles/settings.css` n'est importé que depuis `src/styles/index.css` — aucun import direct |
-| **Dossier `src/styles/`** et feuille d'entrée globale | `src/styles/index.css` | Fait en PR-E : feuille globale déplacée dans `src/styles/` |
-| **`src/pages/Home.css`** côtoie **`src/styles/home.css`** | Deux fichiers CSS pour Home ! | Fusionner |
-| **`api/admin.js`** à la racine | Serverless Vercel uniquement | Documenter dans README ou déplacer dans `vercel/` |
+| `src/utils/irEngine.ts` | imports dans `src/features/ir/components/IrSimulatorContainer.tsx`, `src/utils/irEngine.parts.test.ts`, `src/features/ir/utils/incomeFilters.irEngine.test.ts` | candidat review prioritaire |
+| `src/features/ir/IrPage.tsx` | route lazy via `src/features/ir/index.ts` puis `src/routes/appRoutes.ts` | garder |
+| `src/features/placement/PlacementPage.tsx` | route lazy via `src/features/placement/index.ts` puis `src/routes/appRoutes.ts` | garder |
+| `api/admin.js` | reference dans `src/services/apiAdmin.ts`, `docs/RUNBOOK.md`, workflow Vercel implicite | garder |
+| `supabase` devDependency | utilise dans le runbook et les workflows operateurs | review, pas suppression automatique |
 
-### 6B — Structure `src/` — points positifs et améliorations
+### Points a auditer avec preuve avant action
 
-**Positif** : découpage `features/`, `engine/`, `domain/`, `hooks/`, `settings/` est propre.
+- Tracer les entrypoints runtime hors `src` :
+  - `src/routes/appRoutes.ts`
+  - `src/constants/settingsRoutes.ts`
+  - `api/admin.js`
+  - `supabase/functions/admin/index.ts`
+  - `package.json` scripts
+  - `.github/workflows/*.yml`
+- Pour tout candidat "mort", fournir :
+  - chaine d'import complete
+  - verification des imports dynamiques
+  - verification des usages operationnels et doc
 
-**Améliorations** :
+### Livrable attendu
 
-| Dossier | Problème | Suggestion |
-|---|---|---|
-| `src/utils/` (24 fichiers) | Fourre-tout — mélange engine (irEngine, tmiMetrics), export, cache, persistence, debug | Répartir : `utils/export/`, `utils/cache/` existent déjà — y déplacer le reste logiquement |
-| `src/constants/` (5 fichiers) | Mélange labels UI + config routing + guidelines couleurs | Fusionner `settingsRoutes.ts` dans le routing, `colorUsageGuidelines` dans `settings/theme/` |
-| `src/services/` (2 fichiers) | Seulement 2 fichiers — trop petit pour un dossier | Fusionner dans `utils/` ou `auth/` selon la nature |
-| `src/icons/` (21 fichiers) | OK, mais les SVG inline sont dans les .tsx et aussi ici — vérifier cohérence |  |
-| `src/reporting/` (5 fichiers) | Un seul sous-dossier `json-io/` | Renommer `reporting/` → déplacer dans `utils/snapshot/` ou `features/snapshot/` |
-
-### 6C — Fichiers trackés sur GitHub inutilement
-
-| Fichier/Dossier | Raison | Action |
-|---|---|---|
-| `deno.lock` | Artéfact Deno — pas utile au build frontend | Vérifier s'il est requis par les Edge Functions, sinon ajouter au `.gitignore` |
-| `.claude/` | Dossier vide, config machine-locale | Déjà ignoré partiellement dans `.gitignore` — vérifier |
-| `public/pptx/chapters/` et `public/ui/login/` | Dossiers vides | Supprimer ou `.gitkeep` si pipeline les attend |
-| `index.html` contient 90 lignes de JS inline | Anti-FOUC bootstrap | Extraire dans un fichier `src/theme-bootstrap.js` et l'inliner au build |
+- Une table `KEEP / REVIEW / DELETE` avec preuve associee pour chaque candidat.
 
 ---
 
-## PHASE 7 — Documentation, verbosité, et dette technique
+## PHASE 2 - Typage et discipline JSX/TSX
 
-### 7A — Docs
+### Conclusion
 
-**Statut 2026-03-12 - PR-G executee**
+- La dette de typage est aujourd'hui la dette transverse la plus importante.
+- Le repo n'a plus de `.js/.jsx` dans `src`, mais 64 fichiers contournent TypeScript avec `@ts-nocheck`.
+- Il ne faut pas durcir les regles `ban-ts-comment` ou similaires avant d'avoir classe les causes de ces 64 fichiers.
 
-- `README.md`, `docs/ARCHITECTURE.md`, `docs/GOUVERNANCE.md`, `docs/RUNBOOK.md` et `docs/ROADMAP.md` realignes sur les chemins reels du repo.
-- References corrigees : `src/constants/settingsRoutes.ts`, `src/styles/index.css`, `src/engine/placement/fiscalParams.ts`, `src/engine/placement/shared.ts`, `src/reporting/json-io/snapshotMigrations.ts`.
-- `index.html` pointe desormais vers `src/styles/index.css`, ce qui supprime le warning build residue sur l'ancienne feuille CSS racine.
+### Repartition `@ts-nocheck`
 
-| Doc | État | Action |
+| Zone | Volume |
+|---|---|
+| `src/pages/**` | 33 |
+| `src/features/**` | 18 |
+| `src/components/**` | 11 |
+| `src/App.tsx` | 1 |
+| `src/main.tsx` | 1 |
+
+### Exemples structurants
+
+- `src/App.tsx`
+- `src/main.tsx`
+- `src/pages/Settings.tsx`
+- `src/pages/SettingsShell.tsx`
+- `src/features/ir/components/IrSimulatorContainer.tsx`
+- `src/features/placement/components/PlacementSimulatorPage.tsx`
+
+### Points de gouvernance a suivre
+
+| Sujet | Preuve | Impact |
 |---|---|---|
-| `README.md` | Référence `docs/METIER.md` mais les sources de vérité dans README sont `ROADMAP, METIER, GOUVERNANCE, ARCHITECTURE, RUNBOOK` | ✓ Cohérent |
-| `docs/ARCHITECTURE.md` (31 Ko) | Très complet mais potentiellement décalé après PR3-PR6 | **Audit** : vérifier que les modules décrits existent encore |
-| `docs/GOUVERNANCE.md` (30 Ko) | Idem | Vérifier la section exceptions couleurs |
-| `docs/ROADMAP.md` (17 Ko) | Peut contenir des items DONE non marqués | Rafraîchir les statuts |
+| `allowJs: true` | `tsconfig.json` | probablement superflu vu `check:no-js`, mais a confirmer avant suppression |
+| politique `.js/.jsx` | `check:no-js` dans `package.json`, `allowJs: true` dans `tsconfig.json`, docs alignees en PR-2 | garder la regle d'interdiction dans `src`, requalifier `allowJs` plus tard |
+| entree principale en `@ts-nocheck` | `src/main.tsx`, `src/App.tsx` | dette haute, car zone critique |
 
-### 7B — Code verbeux
+### Premier tri initial des 64 fichiers
 
-| Fichier | Problème | Action |
+Ce tri est volontairement indicatif. Il sert a preparer la PR-3 sans pretendre que tous les cas sont deja qualifies.
+
+| Famille | Lecture | Exemples |
 |---|---|---|
-| `index.html` | 90 lignes de JS inline dupliquant la logique de `main.tsx` (theme bootstrap) | Extraire et partager la source de vérité |
-| `catalog.ts` | Plus de `TODO/FIXME/HACK`, mais 24 Ko de données métier hardcodées | Garder la preuve par test et documenter/modulariser si le catalogue continue de grossir |
-| `pptx/template/loadBaseTemplate.ts` | 1 TODO — logique de chargement template complexe | Simplifier ou documenter |
-| `src/main.tsx` | Duplique la logique anti-FOUC de `index.html` | Centraliser |
-| `vite.config.ts` | `DEBUG_PROXY` flag hardcodé — ok mais devrait utiliser `debugFlags.ts` | Mineur |
+| `migration facile` | wrappers, shells, pages simples, composants peu imbriques | `src/pages/UpcomingSimulatorPage.tsx`, `src/pages/StrategyPage.tsx`, `src/components/ModeToggle.tsx`, `src/components/AppErrorFallback.tsx`, `src/pages/ForgotPassword.tsx`, `src/pages/Login.tsx`, `src/components/settings/SettingsSectionCard.tsx`, `src/components/settings/SettingsYearColumn.tsx` |
+| `props/state a typer` | composants UI reutilisables avec signatures floues, tables et formulaires settings | `src/components/settings/SettingsFieldRow.tsx`, `src/components/settings/SettingsTable.tsx`, `src/components/settings/PassHistoryAccordion.tsx`, `src/components/UserInfoBanner.tsx`, `src/components/TimelineBar.tsx`, `src/pages/settings/components/UserInviteModal.tsx`, `src/pages/settings/components/ThemeEditModal.tsx`, `src/pages/settings/components/SettingsReportsModal.tsx` |
+| `legacy complexe` | orchestrateurs, gros composants metier, pages settings denses | `src/features/ir/components/IrSimulatorContainer.tsx`, `src/features/ir/components/IrFormSection.tsx`, `src/features/placement/components/PlacementSimulatorPage.tsx`, `src/features/placement/components/PlacementInputsPanel.tsx`, `src/pages/Settings.tsx`, `src/pages/settings/SettingsComptes.tsx`, `src/pages/settings/SettingsImpots.tsx`, `src/pages/settings/Impots/ImpotsBaremeSection.tsx` |
 
-### 7C — Dette technique résumée
+### Ordre recommande pour la PR-3
 
-| Catégorie | Gravité | Description |
-|---|---|---|
-| **Catalogue métier hardcodé** | 🟠 Moyenne | `catalog.ts` ne contient plus de TODO, mais reste volumineux et sensible aux régressions de structure |
-| **Mixité JS/TS** | 🟢 Résolue | ~~19 `.js`~~ éliminés (PR-C) + ~~64 `.jsx`~~ éliminés (PR-H) |
-| **Warnings `max-lines`** | 🟠 Moyenne | 10 warnings résiduels sur fichiers lourds de données/config ou hooks (`settingsDefaults`, `catalog`, `retraite`, `immobilier`, `valeurs-mobilieres`, `useCreditCalculations`, `successionChainage`, `successionDevolution`, `ImpotsBaremeSection`, `serenity`) |
-| **`any` en TS** | 🟢 Résolue | Warnings `@typescript-eslint/no-explicit-any` supprimés en PR-J sur code, services, hooks, tests et mocks |
-| **CSS non-modulaire** | 🟡 Basse | Pas de CSS Modules ni utility-first — risque de collisions de classes |
-| **Pas de bundle size check** | 🟡 Basse | Aucune alerte si le bundle grossit |
-| **Normalisation PM globale** | 🟠 Moyenne | `rules/index.ts` fait un post-traitement global — devrait être par produit |
+1. entrypoints critiques : `src/main.tsx`, `src/App.tsx`
+2. `migration facile`
+3. `props/state a typer`
+4. `legacy complexe`
+
+### Strategie recommandee
+
+1. Classer les 64 fichiers en 3 familles :
+   - `migration facile`
+   - `props/state a typer`
+   - `legacy complexe / a isoler`
+2. Commencer par les entrypoints critiques (`main`, `App`), puis les shells et wrappers simples.
+3. Ajouter ensuite seulement les regles :
+   - `@typescript-eslint/consistent-type-imports`
+   - review `@typescript-eslint/ban-ts-comment`
+   - review `no-restricted-imports`
 
 ---
 
-## PLAN D'EXÉCUTION RECOMMANDÉ
+## PHASE 3 - Petits fichiers et frontieres utiles
 
-| PR | Phase | Risque | Effort |
+### Conclusion
+
+- Le seuil brut "< 30 lignes" ne suffit pas.
+- Apres exclusion des barrels, icones, tests et `d.ts`, il reste 20 petits modules.
+- Parmi eux, plusieurs doivent explicitement rester petits.
+
+### Petits modules a garder
+
+| Fichier | Pourquoi |
+|---|---|
+| `src/features/ir/IrPage.tsx` | entrypoint de route |
+| `src/features/placement/PlacementPage.tsx` | entrypoint de route |
+| `src/pages/UpcomingSimulatorPage.tsx` | wrapper de page volontairement fin |
+| `src/pages/StrategyPage.tsx` | wrapper de page + garde metier |
+| `src/domain/base-contrat/types.ts` | type island utile |
+| `src/settings/theme/themeSourceStorage.ts` | seam de persistence theme |
+| `src/engine/ir/abattement10.ts` | helper metier isole |
+| `src/engine/ir/effectiveParts.ts` | helper metier isole |
+| `src/engine/ir/decote.ts` | helper metier isole |
+| `src/engine/placement/compare.ts` | helper metier isole |
+
+### Candidats review, pas suppression immediate
+
+| Fichier | Etat actuel | Note |
+|---|---|---|
+| `src/features/audit/steps/types.ts` | 5 lignes | peut etre inline, faible gain |
+| `src/utils/number.ts` | 2 usages prod | review seulement |
+| `src/utils/transmissionDisclaimer.ts` | 1 usage prod + 1 test | review seulement |
+| `src/constants/colorUsageGuidelines.ts` | 2 usages prod | deplacement possible, fusion non prouvee |
+| `src/constants/baseContratLabels.ts` | usage settings `BaseContrat` | review organisation |
+| `src/domain/base-contrat/overrides.ts` | types + helper utilises | ne pas fusionner sans preuve |
+| `src/components/settings/SettingsYearColumn.tsx` | petit composant UI utile | probablement a garder |
+| `src/styles/home.css` | styles partages, pas doublon de contenu avec `src/pages/Home.css` | garder, renommage a discuter |
+
+### Regle d'audit
+
+Un petit fichier n'est "fusionnable" que s'il n'est ni :
+
+- entrypoint
+- barrel
+- type island
+- seam metier utile
+- composant isole volontaire
+- fichier de style partage
+
+---
+
+## PHASE 4 - Architecture et organisation
+
+### Conclusion
+
+- La structure generale du repo est bonne.
+- Les vraies zones de review sont `src/utils/`, `src/constants/`, `src/services/`, `src/reporting/`, et l'organisation `pages/settings`.
+- Le V2 formulait mal une frontiere : `pages` importent deja `features`, et c'est normal pour des pages orchestratrices.
+
+### Constats structurants
+
+| Sujet | Preuve | Lecture |
+|---|---|---|
+| `src/constants/settingsRoutes.ts` porte de la logique de routing | lazy imports de pages settings | review move vers `src/routes/` |
+| `src/services/` ne contient que `apiAdmin.ts` et `userModeService.ts` | dossier tres fin | review organisation |
+| `src/reporting/json-io/` est isole | 4 fichiers sous un seul sous-dossier | review nommage / placement |
+| `src/pages/StrategyPage.tsx` importe `../features/strategy` et `../features/audit/storage` | page -> feature existe deja | frontiere volontaire, pas anomalie |
+| `src/engine -> src/features/pages` | 0 import detecte | bonne frontiere a automatiser |
+| `src/features -> src/pages` | 0 import detecte | bonne frontiere a automatiser |
+
+### Chantiers de review
+
+- `src/utils/`
+  - distinguer `cache`, `debug`, `export`, `theme`, `feature-specific`
+- `src/constants/`
+  - distinguer `routing`, `labels`, `theme guidance`, `defaults`
+- `src/pages/settings/`
+  - revoir coherence de nommage des sous-dossiers (`Impots`, `Prelevements`, `DmtgSuccession`)
+
+### Regles a automatiser apres audit
+
+- `engine` ne doit jamais importer `features` ni `pages`
+- `features` ne doivent pas importer `pages`
+- import ordering coherent
+
+---
+
+## PHASE 5 - Lint, CI, hooks et outillage
+
+### Conclusion
+
+- Le lint JS/TS est deja utile mais pas complet.
+- La CI est redondante sur les checks.
+- Le repo n'automatise presque rien sur CSS et Markdown.
+- Il existe deux systemes de hooks Git en parallele.
+
+### Etat actuel
+
+| Sujet | Etat |
+|---|---|
+| ESLint | 10 warnings `max-lines`, 0 error |
+| `eslint-disable` hors tests | 54 occurrences |
+| Husky | `.husky/pre-commit` avec `lint-staged` |
+| hooks custom | `.githooks/pre-push` existe encore |
+| CI | `npm run check` + steps individuels lint/typecheck/test/build |
+| lint CSS | absent |
+| lint docs/Markdown | absent |
+
+### Rappels utiles
+
+- `npm run check` relance deja lint, no-js, typecheck, tests et build.
+- `.github/workflows/ci.yml` relance ensuite plusieurs de ces etapes separement.
+- Le build actuel montre deja des chunks lourds, mais aucun budget n'est automatise.
+
+### Regles candidates a evaluer
+
+| Regle / outil | Statut recommande |
+|---|---|
+| `@typescript-eslint/consistent-type-imports` | haute priorite |
+| `no-restricted-imports` | haute priorite, mais apres cartographie des frontieres |
+| `import/no-duplicates` | moyenne priorite |
+| `react/jsx-no-leaked-render` | moyenne priorite |
+| `simple-import-sort` | moyenne priorite |
+| `stylelint` | oui, priorite moyenne a haute vu 24 CSS et 127 hex colors |
+| `markdownlint` | basse priorite, a revoir plus tard si la doc devient un point de friction |
+
+### Dette de logs
+
+- 52 `console.*` hors tests dans 17 fichiers.
+- Le sujet est reel, mais un `logger.ts` n'est pas forcement la premiere PR : il faut d'abord trier debug DEV, fingerprints d'export, logs test et logs d'erreur reelle.
+
+---
+
+## PHASE 6 - Theme, CSS et gouvernance UI
+
+### Conclusion
+
+- La duplication theme est reelle et documentee dans trois endroits.
+- Le V2 avait raison sur ce point, mais le vrai livrable d'audit doit d'abord cartographier les sources de verite et les exceptions.
+- `src/styles/home.css` n'est pas un doublon direct de `src/pages/Home.css`.
+
+### Preuves
+
+| Sujet | Preuve | Impact |
+|---|---|---|
+| duplication `DEFAULT_COLORS` | `index.html`, `src/main.tsx`, `src/styles/index.css`, `src/settings/theme.ts` | risque de drift |
+| alias CSS legacy | `--green`, `--beige`, `--bg`, `--light-green` dans `index.html` et `src/styles/index.css` | dette de compat a clarifier |
+| CSS files | 24 fichiers `.css` dans `src` | gouvernance CSS importante |
+| hex colors en CSS | 127 occurrences detectees | stylelint / gouvernance couleur a etudier |
+| faux positif Home | `src/pages/Home.css` et `src/styles/home.css` servent des roles differents | pas de fusion automatique |
+
+### Cibles d'audit
+
+1. Cartographier la source de verite des tokens C1-C10.
+2. Lister les exceptions autorisees aux couleurs hardcodees.
+3. Distinguer :
+   - fallback bootstrap
+   - theme runtime React
+   - styles globaux
+   - exceptions UX legitimes
+
+---
+
+## PHASE 7 - Docs et fichiers publies sur GitHub
+
+### Conclusion
+
+- Les docs principales sont presentes et relativement riches.
+- Les ecarts doc/regle identifies sur `.github/CONTRIBUTING.md` et `docs/ARCHITECTURE.md` ont ete corriges en PR-2.
+- Aucun artefact de build ou de test inutile n'est tracke aujourd'hui.
+
+### Verifications notables
+
+| Sujet | Resultat |
+|---|---|
+| `dist/` tracke | non |
+| `playwright-report/` tracke | non |
+| `test-results/` tracke | non |
+| `.env.local` tracke | non |
+| `.env.example` tracke | oui, normal |
+| `api/admin.js` tracke | oui, normal |
+| `ROADMAP_AUDIT_REPO.md` tracke | oui, temporaire par nature |
+
+### Decalages docs connus
+
+| Fichier | Ecart |
+|---|---|
+| `.github/CONTRIBUTING.md` | stale sur la politique `.js/.jsx` et un exemple CSS historique -> corrige en PR-2 |
+| `docs/ARCHITECTURE.md` | sections historiques `legacy`, `__spike__`, `_raw` trop verbeuses et `base_contrat_settings` mal qualifie -> corrige en PR-2 |
+| `ROADMAP_AUDIT_REPO.md` V2 | contenait des metrics et hypotheses stale -> corrige par ce V3 |
+
+### Regle d'audit
+
+Ne marquer un fichier "inutile a publier sur GitHub" que s'il est :
+
+- tracke
+- non requis au runtime
+- non requis pour l'operateur
+- non requis comme evidence ou doc de reference
+
+---
+
+## PHASE 8 - Performance, release, securite
+
+### Conclusion
+
+- Le repo a deja plusieurs signaux utiles pour la performance et la release, mais peu de garde-fous automatises.
+- Le build actuel montre des chunks qui meritent une revue budgetaire.
+- Les sujets proxy Vercel / Supabase et outillage secret scan doivent rester dans le scope audit.
+
+### Signaux build
+
+Top signaux observes sur le build du 2026-03-12 :
+
+- chunk principal `assets/index-BW_lIAv5.js` : 489.51 kB
+- `pptxgen.es-*.js` : 275.23 kB
+- chunk `BaseContrat-*.js` : 123.39 kB
+- `jszip.min-*.js` : 97.03 kB
+
+### Sujets a auditer
+
+| Sujet | Lecture |
+|---|---|
+| budgets bundle | absents |
+| lazy-loading | present, mais a requalifier par taille de chunk utile |
+| proxy Vercel | `api/admin.js` documente et actif |
+| RLS / auth | a conserver dans le scope high-risk |
+| scan secrets / scripts operateurs | deja presents, a integrer dans la lecture globale du repo |
+
+### Regle de prudence
+
+- `depcheck` ne suffit pas pour supprimer une CLI.
+- Toute decision sur `supabase` devDependency doit verifier :
+  - scripts npm
+  - runbook
+  - workflow operateur
+  - commandes locales de maintenance
+
+---
+
+## Backlog micro-PRs recommande
+
+| PR | Objet | Effort | Risque |
 |---|---|---|---|
-| **PR-A** ✅ | Phase 1 (squelette) | ⚪ Nul | 15 min |
-| **PR-B** ✅ | Phase 2A+2B (code mort) | 🟢 Faible | 1-2h |
-| **PR-C** ✅ | Phase 3 P1 (JS → TS) — PR #299 | 🟢 Faible | 2-3h |
-| **PR-D** ✅ | Phase 5A+5B (ESLint TS + tsconfig strict) — PR #300 | 🟢 Faible | 1-2h |
-| **PR-E** ✅ | Phase 6A (nommage + CSS Home) | 🟡 Moyen | 1-2h |
-| **PR-F** ✅ | Phase 4 top 5 god-files | 🟠 Moyen-haut | 3-5h par fichier |
-| **PR-G** ✅ | Phase 7A (docs refresh) | ⚪ Nul | 1-2h |
-| **PR-H** ✅ | Phase 3 P2 (JSX → TSX batch) | 🟡 Moyen | 3-5h |
-| **PR-I** ✅ | Phase 7B (preuve + purge TODO catalog.ts) | 🟢 Faible | 30-45 min |
-| **PR-J** ✅ | Résorption dette warnings : `any` → types précis | 🟢 Faible | 2-3h |
+| PR-1 | baseline et docs d'audit | faible | faible |
+| PR-2 | alignement docs vs regles reelles | faible | faible |
+| PR-3 | dette `@ts-nocheck` phase 1 | moyen | moyen |
+| PR-4 | regles repo et outillage leger | faible a moyen | moyen |
+| PR-5 | reachability et code mort (`irEngine`) | faible | faible |
+| PR-6 | CI et hooks | faible | faible a moyen |
+| PR-7 | theme bootstrap | moyen | moyen |
+| PR-8 | CSS governance spike | moyen | moyen |
+| PR-9 | gros fichiers cibles | moyen a fort | moyen |
+| PR-10 | review structurelle | moyen | moyen |
 
-**Règle** : chaque PR passe `npm run check` vert + smoke test des pages touchées.
+### PR-1 - Baseline et docs d'audit
+
+Statut le 2026-03-12 : fait
+
+- V3 finalise.
+- Chiffres stale du V2 corriges.
+- Commandes de preuve ajoutees.
+
+### PR-2 - Alignement docs vs regles reelles
+
+Statut le 2026-03-12 : fait
+
+- `.github/CONTRIBUTING.md` aligne maintenant la politique `.js/.jsx` sur `check:no-js`.
+- `.github/CONTRIBUTING.md` reformule la gouvernance CSS pour couvrir les surfaces `pages` et `features` sans exemple stale.
+- `docs/ARCHITECTURE.md` requalifie `legacy`, `__spike__`, `_raw` comme conventions historiques et non comme patterns actifs.
+- `docs/ARCHITECTURE.md` clarifie que `base_contrat_settings` est present dans le schema mais non consomme par le runtime courant.
+
+### PR-3 - Dette `@ts-nocheck` phase 1
+
+- Cibler d'abord `src/main.tsx` et `src/App.tsx`, puis les wrappers `pages/*` et composants simples.
+- Objectif de sortie : passer de 64 fichiers `@ts-nocheck` a moins de 40.
+- Objectif qualitatif : retirer les contournements des entrypoints avant les gros composants.
+
+### PR-4 - Regles repo et outillage leger
+
+- Ajouter `.editorconfig`.
+- Ajouter `consistent-type-imports`.
+- Ajouter un premier `no-restricted-imports` sur les frontieres confirmees.
+
+### PR-5 - Reachability code mort
+
+- Repointage de `src/utils/irEngine.ts`.
+- Supprimer la facade seulement apres repointage prod + tests.
+
+### PR-6 - CI et hooks
+
+- Supprimer les doublons de `.github/workflows/ci.yml`.
+- Unifier `.husky` et `.githooks`.
+
+### PR-7 - Theme bootstrap
+
+- Centraliser les defaults theme.
+- Reduire le drift entre `index.html`, `src/main.tsx`, `src/styles/index.css`, `src/settings/theme.ts`.
+
+### PR-8 - CSS governance spike
+
+- Evaluer `stylelint` ou une alternative minimale.
+- Formaliser les exceptions couleurs et le traitement des aliases legacy.
+
+### PR-9 - Gros fichiers cibles
+
+- Distinguer fichiers a exempter (`catalog`, `settingsDefaults`, regles metier pures) et fichiers a vraiment decouper (`useCreditCalculations`, `successionChainage`, `successionDevolution`, `ImpotsBaremeSection`).
+
+### PR-10 - Review structurelle
+
+- `src/utils/`, `src/constants/`, `src/services/`, `src/reporting/`
+- sans move massif tant que les frontieres ne sont pas documentees et automatisees
 
 ---
 
-## NOTES DE VALIDATION
+## Verification minimale pour chaque future PR
 
-- **README** : inchangé à ce stade (aucune modification de structure/conventions tant qu'aucun PR n'est exécuté).
-- **Preuve-first** : chaque action doit être accompagnée de `rg`/`grep` ou `find` prouvant que le fichier/dossier est bien orphelin ou inutilisé.
-- **Micro-PRs** : chaque PR doit être atomique et testable indépendamment.
-- **Rollback** : chaque PR doit être facilement réversible (suppression de fichiers = rollback par restauration).
+```bash
+npm run check
+npm run check:circular
+npm run check:unused
+```
+
+Et selon la zone touchee :
+
+- audit des imports : `rg`
+- pages et routes : verifier `src/routes/appRoutes.ts` et `src/constants/settingsRoutes.ts`
+- docs : verifier coherence `README.md`, `.github/CONTRIBUTING.md`, `docs/*`
 
 ---
 
-**Prochaine étape** : choisir une phase à exécuter ou demander des clarifications sur un item spécifique.
+## Risques et notes de rollback
+
+- Risque de faux positif sur les petits fichiers : ne pas fusionner les entrypoints et seams metiers utiles.
+- Risque de faux positif sur `depcheck` : ne jamais supprimer une CLI sans verifier l'usage operateur.
+- Risque de sur-refactor : ne pas lancer de grand menage `utils/` ou `settings/` avant d'avoir stabilise les regles repo.
+- Rollback attendu : chaque micro-PR doit rester atomique, testable, et reversible par simple revert Git.
+
+---
+
+## Statut de ce fichier
+
+Ce fichier est un livrable d'audit, pas une preuve que les actions ont deja ete executees.
+
+Tant que les micro-PRs ne sont pas mergees :
+
+- les constats restent la source de verite
+- le backlog reste un plan d'execution
+- toute suppression doit etre revalidee sur l'etat courant du repo
