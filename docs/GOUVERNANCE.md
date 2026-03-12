@@ -299,7 +299,7 @@ Règles icônes :
 
 ### 10) Code couleur complet (mapping)
 #### Obligatoire
-- Tokens uniques `--color-c1..--color-c10` (source: `src/settings/theme.ts` + `src/styles.css`).
+- Tokens uniques `--color-c1..--color-c10` (source: `src/settings/theme.ts` + `src/styles/index.css`).
 - Valeurs par défaut SER1 Classic :
   - C1 `#2B3E37`
   - C2 `#709B8B`
@@ -539,7 +539,7 @@ Cette section complete la norme existante. Elle fixe le contrat minimal avant d'
 
 #### Obligatoire
 - Une page settings s'inscrit dans le shell existant `SettingsShell` ; pas de navigation parallele.
-- La route doit etre declaree dans `src/constants/settingsRoutes.js`.
+- La route doit etre declaree dans `src/constants/settingsRoutes.ts`.
 - La page doit respecter les tokens, la langue francaise, les blocs premium et la discipline SVG inline.
 - Si une page est reservee aux admins, la restriction UI ne remplace jamais l'enforcement backend/RLS.
 
@@ -565,7 +565,7 @@ Cette section complete la norme existante. Elle fixe le contrat minimal avant d'
 ---
 
 ## Références code
-- Tokens & defaults : `src/settings/theme.ts`, `src/styles.css`
+- Tokens & defaults : `src/settings/theme.ts`, `src/styles/index.css`
 - ThemeProvider V5 : `src/settings/ThemeProvider.tsx`, `src/settings/presets.ts`, `src/settings/theme/types.ts`
 - UI premium shared : `src/components/simulator/SimulatorShell.css`, `src/styles/premium-shared.css`
 - Baseline `/sim/credit` : `src/features/credit/Credit.tsx`, `src/features/credit/components/CreditV2.css`

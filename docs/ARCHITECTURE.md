@@ -174,7 +174,7 @@ rg -n "APP_ROUTES\\.map" src/App.jsx
 - `src/main.jsx` → `AuthProvider` → `ThemeProvider` → `App`.
 
 ### Settings (admin)
-- Navigation settings : `src/constants/settingsRoutes.js` (source unique).
+- Navigation settings : `src/constants/settingsRoutes.ts` (source unique).
 - Pages : `src/pages/settings/*`.
 
 ---
@@ -209,7 +209,7 @@ Tables repères (haut niveau) :
 ## Thème & branding
 - ThemeProvider : `src/settings/ThemeProvider.tsx`.
 - Presets : `src/settings/presets.ts`.
-- Tokens UI : `src/settings/theme.ts` + `src/styles.css`.
+- Tokens UI : `src/settings/theme.ts` + `src/styles/index.css`.
 
 Règles fonctionnelles : voir `docs/GOUVERNANCE.md`.
 
@@ -349,7 +349,7 @@ rg "export const CATALOG" src/domain/base-contrat/catalog.ts
 | `/settings/comptes` | `SettingsComptes` | `profiles` | Comptes utilisateurs par cabinet (admin only) |
 | `/settings/dmtg-succession` | `SettingsDmtgSuccession` | `tax_settings`, `fiscality_settings` | Barèmes DMTG successions + abattements (livré PR #159) |
 
-Source unique des routes : `src/constants/settingsRoutes.js`.
+Source unique des routes : `src/constants/settingsRoutes.ts`.
 Shell de navigation : `src/pages/SettingsShell.jsx` (rendu dynamique des onglets, filtre `adminOnly`).
 
 ---
@@ -404,7 +404,7 @@ Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
 └──────────────────────────────────────────────────────────┘
 ```
 
-**extractFiscalParams()** (`src/engine/placement/fiscalParams.js`) : mappe le JSONB des tables → objet normalisé de 34 valeurs. Fallback sur `DEFAULT_FISCAL_PARAMS` (`src/engine/placement/shared.js`) si clé manquante ou invalide.
+**extractFiscalParams()** (`src/engine/placement/fiscalParams.ts`) : mappe le JSONB des tables → objet normalisé de 34 valeurs. Fallback sur `DEFAULT_FISCAL_PARAMS` (`src/engine/placement/shared.ts`) si clé manquante ou invalide.
 
 ---
 
@@ -459,7 +459,7 @@ L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → é
 |------|---------|
 | Calcul du fingerprint | `src/utils/export/exportFingerprint.ts` (`fingerprintSettingsData`) |
 | Comparaison au chargement | `src/App.jsx` (lignes 169–183) |
-| Migration snapshot v3→v4 | `src/features/ser1/snapshotMigrations.ts` |
+| Migration snapshot v3→v4 | `src/reporting/json-io/snapshotMigrations.ts` |
 
 ---
 
@@ -523,7 +523,7 @@ Edge Function `rates-refresh` (cron hebdomadaire) : fetch URSSAF / legifrance / 
 
 | Rôle | Fichier |
 |------|---------|
-| Source des routes settings | `src/constants/settingsRoutes.js` |
+| Source des routes settings | `src/constants/settingsRoutes.ts` |
 | Valeurs par défaut 3 tables | `src/constants/settingsDefaults.ts` |
 | Shell settings (nav + rendu) | `src/pages/SettingsShell.jsx` |
 | Pages settings | `src/pages/settings/` |
@@ -532,8 +532,8 @@ Edge Function `rates-refresh` (cron hebdomadaire) : fetch URSSAF / legifrance / 
 | Hook simulateur placement | `src/hooks/usePlacementSettings.ts` |
 | Extraction params normalisés | `src/engine/placement/fiscalParams.ts` |
 | Params par défaut (34 valeurs) | `src/engine/placement/shared.ts` (`DEFAULT_FISCAL_PARAMS`) |
-| Profil fiscal par enveloppe | `src/features/placement/hooks/useFiscalProfile.ts` |
-| Migration snapshot (v4 + identity) | `src/features/ser1/snapshotMigrations.ts` |
+| Profil fiscal par enveloppe | `src/domain/base-contrat/rules/fiscalProfile.ts` |
+| Migration snapshot (v4 + identity) | `src/reporting/json-io/snapshotMigrations.ts` |
 
 ---
 
@@ -571,7 +571,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 ### 2) Ajouter une nouvelle page /settings/*
 
 #### Regle
-- La source unique des sous-pages settings est `src/constants/settingsRoutes.js`.
+- La source unique des sous-pages settings est `src/constants/settingsRoutes.ts`.
 - Toute nouvelle page settings doit etre declaree dans `SETTINGS_ROUTES` avec :
   - `key`
   - `label`
@@ -583,7 +583,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 #### Emplacement
 - Composant de page : `src/pages/settings/<PageName>.tsx` ou `.jsx`
 - Navigation et rendu : `src/pages/SettingsShell.jsx`
-- Mapping URL actif : helpers dans `src/constants/settingsRoutes.js`
+- Mapping URL actif : helpers dans `src/constants/settingsRoutes.ts`
 
 #### Contrats obligatoires
 - Ne pas creer une navigation settings parallele hors `SettingsShell`.
