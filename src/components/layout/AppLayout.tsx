@@ -1,5 +1,6 @@
-// @ts-nocheck
 import React from 'react';
+import type { Session } from '@supabase/supabase-js';
+import type { RouteMeta } from '../../routes/appRoutes';
 
 import { SessionExpiredBanner } from '../ui/SessionExpiredBanner';
 import {
@@ -11,12 +12,43 @@ import {
   IconSettings,
 } from '../../icons/ui';
 
+interface NotificationState {
+  message: string;
+  type: string;
+}
+
+interface AppLayoutState {
+  warningVisible: boolean;
+  sessionExpired: boolean;
+  minutesRemaining: number;
+  notification: NotificationState | null;
+  session: Session | null;
+  isRecoveryMode: boolean;
+  path: string;
+}
+
+interface AppLayoutActions {
+  onNavigate: (_path: string) => void;
+  onLogout: () => void | Promise<void>;
+  onGlobalSave: () => void | Promise<void>;
+  onGlobalLoad: () => void | Promise<void>;
+  onGlobalReset: () => void;
+  onPageReset: (_simId: string) => void;
+}
+
+interface AppLayoutProps {
+  layoutState: AppLayoutState;
+  routeMeta: RouteMeta;
+  actions: AppLayoutActions;
+  children: React.ReactNode;
+}
+
 export function AppLayout({
   layoutState,
   routeMeta,
   actions,
   children,
-}) {
+}: AppLayoutProps): React.ReactElement {
   const {
     warningVisible,
     sessionExpired,

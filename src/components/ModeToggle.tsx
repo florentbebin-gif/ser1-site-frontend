@@ -1,13 +1,12 @@
-// @ts-nocheck
 import React from 'react';
 import { useUserMode } from '../services/userModeService';
 
-export function ModeToggle() {
+export function ModeToggle(): React.ReactElement {
   const { mode: userMode, setMode: setUserMode, isLoading } = useUserMode();
 
   const isExpert = userMode === 'expert';
 
-  const handleToggle = () => {
+  const handleToggle = (): void => {
     setUserMode(isExpert ? 'simplifie' : 'expert');
   };
 
@@ -35,4 +34,3 @@ export function ModeToggle() {
     </div>
   );
 }
-

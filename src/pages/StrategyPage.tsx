@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * StrategyPage - Page wrapper pour le Strategy Builder
  * Charge le dossier audit depuis la session storage
@@ -9,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { StrategyBuilder } from '../features/strategy';
 import { loadDraftFromSession } from '../features/audit/storage';
 
-export default function StrategyPage() {
+export default function StrategyPage(): React.ReactElement {
   const dossier = loadDraftFromSession();
 
   if (!dossier) {
@@ -17,10 +16,10 @@ export default function StrategyPage() {
       <div className="audit-wizard" style={{ textAlign: 'center', padding: '60px 20px' }}>
         <h1>Aucun audit en cours</h1>
         <p style={{ color: 'var(--color-c9)', marginBottom: '24px' }}>
-          Veuillez d'abord compléter un audit patrimonial avant de construire une stratégie.
+          Veuillez d'abord completer un audit patrimonial avant de construire une strategie.
         </p>
         <Link to="/audit" className="chip" style={{ display: 'inline-block', textDecoration: 'none' }}>
-          Démarrer un audit
+          Demarrer un audit
         </Link>
       </div>
     );
@@ -28,4 +27,3 @@ export default function StrategyPage() {
 
   return <StrategyBuilder dossier={dossier} />;
 }
-

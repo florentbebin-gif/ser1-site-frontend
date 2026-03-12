@@ -33,7 +33,7 @@
 | `eslint-disable` hors tests | 54 occurrences | dette localisee et quantifiable |
 | `console.log/debug/info/trace` hors tests | 52 occurrences dans 17 fichiers | observabilite a normaliser |
 | `@deprecated` | 10 occurrences dans 6 fichiers | audit d'usage a faire avant suppression |
-| `@ts-nocheck` | 64 fichiers | dette de typage majeure |
+| `@ts-nocheck` | 53 fichiers | dette de typage majeure, en baisse apres PR-3 phase 1 |
 | TODO/FIXME/HACK hors tests | 1 occurrence | faible dette textuelle explicite |
 | `.editorconfig` | absent | gouvernance editeur non automatisee |
 
@@ -114,23 +114,26 @@ rg -n "TODO|FIXME|HACK" src --glob '!**/*.test.*'
 ### Conclusion
 
 - La dette de typage est aujourd'hui la dette transverse la plus importante.
-- Le repo n'a plus de `.js/.jsx` dans `src`, mais 64 fichiers contournent TypeScript avec `@ts-nocheck`.
-- Il ne faut pas durcir les regles `ban-ts-comment` ou similaires avant d'avoir classe les causes de ces 64 fichiers.
+- Le repo n'a plus de `.js/.jsx` dans `src`, mais 53 fichiers contournent encore TypeScript avec `@ts-nocheck`.
+- Il ne faut pas durcir les regles `ban-ts-comment` ou similaires avant d'avoir classe les causes de ces 53 fichiers.
 
 ### Repartition `@ts-nocheck`
 
 | Zone | Volume |
 |---|---|
-| `src/pages/**` | 33 |
+| `src/pages/**` | 29 |
 | `src/features/**` | 18 |
-| `src/components/**` | 11 |
-| `src/App.tsx` | 1 |
-| `src/main.tsx` | 1 |
+| `src/components/**` | 6 |
+| `src/App.tsx` | 0 |
+| `src/main.tsx` | 0 |
+
+Point d'etape PR-3 phase 1 :
+
+- `@ts-nocheck` retire de `src/main.tsx`, `src/App.tsx`, `src/components/AppErrorFallback.tsx`, `src/components/layout/AppLayout.tsx`, `src/pages/UpcomingSimulatorPage.tsx`, `src/pages/StrategyPage.tsx`, `src/components/ModeToggle.tsx`, `src/components/settings/SettingsSectionCard.tsx`, `src/components/settings/SettingsYearColumn.tsx`, `src/pages/ForgotPassword.tsx`, `src/pages/Login.tsx`
+- compteur repo ramene de 64 a 53
 
 ### Exemples structurants
 
-- `src/App.tsx`
-- `src/main.tsx`
 - `src/pages/Settings.tsx`
 - `src/pages/SettingsShell.tsx`
 - `src/features/ir/components/IrSimulatorContainer.tsx`
@@ -142,32 +145,32 @@ rg -n "TODO|FIXME|HACK" src --glob '!**/*.test.*'
 |---|---|---|
 | `allowJs: true` | `tsconfig.json` | probablement superflu vu `check:no-js`, mais a confirmer avant suppression |
 | politique `.js/.jsx` | `check:no-js` dans `package.json`, `allowJs: true` dans `tsconfig.json`, docs alignees en PR-2 | garder la regle d'interdiction dans `src`, requalifier `allowJs` plus tard |
-| entree principale en `@ts-nocheck` | `src/main.tsx`, `src/App.tsx` | dette haute, car zone critique |
+| entrypoints critiques | `src/main.tsx`, `src/App.tsx` types en PR-3 phase 1 | progression confirmee, poursuivre sur les wrappers simples |
 
-### Premier tri initial des 64 fichiers
+### Premier tri initial des 53 fichiers
 
-Ce tri est volontairement indicatif. Il sert a preparer la PR-3 sans pretendre que tous les cas sont deja qualifies.
+Ce tri est volontairement indicatif. Il sert a poursuivre la PR-3 sans pretendre que tous les cas sont deja qualifies.
 
 | Famille | Lecture | Exemples |
 |---|---|---|
-| `migration facile` | wrappers, shells, pages simples, composants peu imbriques | `src/pages/UpcomingSimulatorPage.tsx`, `src/pages/StrategyPage.tsx`, `src/components/ModeToggle.tsx`, `src/components/AppErrorFallback.tsx`, `src/pages/ForgotPassword.tsx`, `src/pages/Login.tsx`, `src/components/settings/SettingsSectionCard.tsx`, `src/components/settings/SettingsYearColumn.tsx` |
+| `migration facile` | wrappers, shells, pages simples, composants peu imbriques | `src/components/UserInfoBanner.tsx`, `src/components/TimelineBar.tsx`, `src/components/settings/SignalementsBlock.tsx`, `src/components/settings/SettingsTable.tsx`, `src/components/settings/SettingsFieldRow.tsx`, `src/components/settings/PassHistoryAccordion.tsx` |
 | `props/state a typer` | composants UI reutilisables avec signatures floues, tables et formulaires settings | `src/components/settings/SettingsFieldRow.tsx`, `src/components/settings/SettingsTable.tsx`, `src/components/settings/PassHistoryAccordion.tsx`, `src/components/UserInfoBanner.tsx`, `src/components/TimelineBar.tsx`, `src/pages/settings/components/UserInviteModal.tsx`, `src/pages/settings/components/ThemeEditModal.tsx`, `src/pages/settings/components/SettingsReportsModal.tsx` |
 | `legacy complexe` | orchestrateurs, gros composants metier, pages settings denses | `src/features/ir/components/IrSimulatorContainer.tsx`, `src/features/ir/components/IrFormSection.tsx`, `src/features/placement/components/PlacementSimulatorPage.tsx`, `src/features/placement/components/PlacementInputsPanel.tsx`, `src/pages/Settings.tsx`, `src/pages/settings/SettingsComptes.tsx`, `src/pages/settings/SettingsImpots.tsx`, `src/pages/settings/Impots/ImpotsBaremeSection.tsx` |
 
 ### Ordre recommande pour la PR-3
 
-1. entrypoints critiques : `src/main.tsx`, `src/App.tsx`
+1. phase 1 livree : `src/main.tsx`, `src/App.tsx`
 2. `migration facile`
 3. `props/state a typer`
 4. `legacy complexe`
 
 ### Strategie recommandee
 
-1. Classer les 64 fichiers en 3 familles :
+1. Classer les 53 fichiers restants en 3 familles :
    - `migration facile`
    - `props/state a typer`
    - `legacy complexe / a isoler`
-2. Commencer par les entrypoints critiques (`main`, `App`), puis les shells et wrappers simples.
+2. Poursuivre avec les shells et wrappers simples.
 3. Ajouter ensuite seulement les regles :
    - `@typescript-eslint/consistent-type-imports`
    - review `@typescript-eslint/ban-ts-comment`
@@ -447,8 +450,12 @@ Statut le 2026-03-12 : fait
 
 ### PR-3 - Dette `@ts-nocheck` phase 1
 
-- Cibler d'abord `src/main.tsx` et `src/App.tsx`, puis les wrappers `pages/*` et composants simples.
-- Objectif de sortie : passer de 64 fichiers `@ts-nocheck` a moins de 40.
+Statut le 2026-03-12 : en cours
+
+- phase 1 livree sur `src/main.tsx`, `src/App.tsx`, `src/components/AppErrorFallback.tsx`, `src/components/layout/AppLayout.tsx`, `src/pages/UpcomingSimulatorPage.tsx`, `src/pages/StrategyPage.tsx`, `src/components/ModeToggle.tsx`, `src/components/settings/SettingsSectionCard.tsx`, `src/components/settings/SettingsYearColumn.tsx`, `src/pages/ForgotPassword.tsx`, `src/pages/Login.tsx`
+- compteur repo : `64` -> `53` fichiers `@ts-nocheck`
+- prochaine cible : wrappers `pages/*` et composants simples
+- Objectif de sortie : passer de 53 fichiers `@ts-nocheck` a moins de 40.
 - Objectif qualitatif : retirer les contournements des entrypoints avant les gros composants.
 
 ### PR-4 - Regles repo et outillage leger
