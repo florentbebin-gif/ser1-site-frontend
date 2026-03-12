@@ -58,7 +58,7 @@ function warnLegacySplitId(productId: string): void {
 
   WARNED_LEGACY_IDS.add(productId);
   const split = CATALOG_PP_PM_SPLIT_MAP[productId as keyof typeof CATALOG_PP_PM_SPLIT_MAP];
-  // TODO(PR7 follow-up): remove legacy IDs fallback once all callers/overrides are migrated to split IDs only.
+  // Keep the legacy root-id warning path for backward compatibility with older callers and fixtures.
   console.warn(
     `[base-contrat/rules] Legacy productId "${productId}" is deprecated. Use "${split.ppId}" or "${split.pmId}".`,
   );

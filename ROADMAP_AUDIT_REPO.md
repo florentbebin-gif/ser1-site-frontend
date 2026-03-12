@@ -14,7 +14,7 @@
 |---|---|
 | **Fichiers src/** | 382 |
 | **Extensions** | .ts (224), .tsx (117), .css (24), .json (14), .svg (13) — `.js` éliminés (PR-C), `.jsx` éliminés (PR-H) |
-| **TODO/FIXME/HACK** | 141 occurrences dans 35 fichiers |
+| **TODO/FIXME/HACK** | 1 occurrence hors tests dans 1 fichier (`src/pptx/template/loadBaseTemplate.ts`) |
 | **console.log/debug** | 52 occurrences dans 17 fichiers (hors tests) |
 | **@ts-ignore / any** | 49 occurrences dans 22 fichiers |
 | **Fichiers > 15 Ko** | 38 fichiers (god-files potentiels) |
@@ -128,7 +128,7 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 | `features/succession/SuccessionSimulator.tsx` | 28 Ko | Extraire composants enfants |
 | `features/credit/Credit.tsx` | 27 Ko | Idem |
 | `pptx/slides/buildIrSynthesis.ts` | 24 Ko | Acceptable (slide builder) |
-| `domain/base-contrat/catalog.ts` | 24 Ko | **76 TODO/FIXME** — nécessite nettoyage urgent |
+| `domain/base-contrat/catalog.ts` | 24 Ko | Gros fichier métier hardcodé — plus de TODO, mais reste à documenter/modulariser |
 | `features/credit/components/CreditV2.css` | 23 Ko | Découper par composant |
 | `pages/settings/Impots/ImpotsBaremeSection.tsx` | 23 Ko | Extraire les tables en composants réutilisables |
 | `pages/Settings.tsx` | 21 Ko | God-file — extraire logique thème |
@@ -233,8 +233,8 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 | Fichier | Problème | Action |
 |---|---|---|
 | `index.html` | 90 lignes de JS inline dupliquant la logique de `main.tsx` (theme bootstrap) | Extraire et partager la source de vérité |
-| `catalog.ts` | **76 TODO/FIXME** — dette technique majeure en un seul fichier | Traiter les TODO ou les supprimer s'ils sont obsolètes |
-| `pptx/template/loadBaseTemplate.ts` | 18 TODO — logique de chargement template complexe | Simplifier ou documenter |
+| `catalog.ts` | Plus de `TODO/FIXME/HACK`, mais 24 Ko de données métier hardcodées | Garder la preuve par test et documenter/modulariser si le catalogue continue de grossir |
+| `pptx/template/loadBaseTemplate.ts` | 1 TODO — logique de chargement template complexe | Simplifier ou documenter |
 | `src/main.tsx` | Duplique la logique anti-FOUC de `index.html` | Centraliser |
 | `vite.config.ts` | `DEBUG_PROXY` flag hardcodé — ok mais devrait utiliser `debugFlags.ts` | Mineur |
 
@@ -242,7 +242,7 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 
 | Catégorie | Gravité | Description |
 |---|---|---|
-| **76 TODO dans catalog.ts** | 🔴 Haute | Fichier métier central avec dette non trackée |
+| **Catalogue métier hardcodé** | 🟠 Moyenne | `catalog.ts` ne contient plus de TODO, mais reste volumineux et sensible aux régressions de structure |
 | **Mixité JS/TS** | 🟢 Résolue | ~~19 `.js`~~ éliminés (PR-C) + ~~64 `.jsx`~~ éliminés (PR-H) |
 | **God-files** | 🟠 Moyenne | 5+ fichiers > 25 Ko (SettingsComptes, PlacementInputsPanel, Credit, SuccessionSimulator, useSuccessionDerivedValues) |
 | **`any` en TS** | 🟡 Basse | 49 occurrences — à réduire progressivement |
@@ -264,7 +264,7 @@ Méthode appliquée : extraction de sections UI, modales et hooks dérivés, san
 | **PR-F** ✅ | Phase 4 top 5 god-files | 🟠 Moyen-haut | 3-5h par fichier |
 | **PR-G** ✅ | Phase 7A (docs refresh) | ⚪ Nul | 1-2h |
 | **PR-H** ✅ | Phase 3 P2 (JSX → TSX batch) | 🟡 Moyen | 3-5h |
-| **PR-I** | Phase 7B (TODO purge catalog.ts) | 🟠 Moyen | 2-3h |
+| **PR-I** ✅ | Phase 7B (preuve + purge TODO catalog.ts) | 🟢 Faible | 30-45 min |
 | **PR-J** | Résorption dette warnings : `any` → types précis (49+ occurrences) + god-files Phase 4 | 🟠 Moyen | 4-6h |
 
 **Règle** : chaque PR passe `npm run check` vert + smoke test des pages touchées.
