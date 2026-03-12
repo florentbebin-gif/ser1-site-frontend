@@ -1,4 +1,3 @@
-import React from 'react';
 import type { ObjectifClient } from '../types';
 import { OBJECTIFS_CLIENT_LABELS } from '../types';
 import type { StepProps } from './types';

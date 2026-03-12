@@ -151,7 +151,7 @@ function paginateByYearColumns(
  */
 export function buildCreditStudyDeck(
   creditData: CreditData,
-  uiSettings: UiSettingsForPptx,
+  _uiSettings: UiSettingsForPptx,
   logoUrl?: string,
   logoPlacement?: import('../theme/types').LogoPlacement,
   advisor?: AdvisorInfo
