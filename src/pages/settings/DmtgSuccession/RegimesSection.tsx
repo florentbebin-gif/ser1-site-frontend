@@ -1,32 +1,48 @@
-// @ts-nocheck
 import React from 'react';
-import { REGIMES_MATRIMONIAUX, REGIMES_ORDER } from '@/engine/civil';
+import { REGIMES_MATRIMONIAUX, REGIMES_ORDER, type RegimeInfo } from '@/engine/civil';
 import { SITUATIONS_FAMILIALES_SUCCESSION } from './dmtgReferenceData';
 
-export default function RegimesSection({ openSection, setOpenSection }) {
-  const regimes = REGIMES_ORDER.map((id) => REGIMES_MATRIMONIAUX[id]);
+interface SituationFamiliale {
+  id: string;
+  label: string;
+  cadre: string;
+  incidence: string;
+}
+
+interface RegimesSectionProps {
+  openSection: string | null;
+  setOpenSection: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+export default function RegimesSection({
+  openSection,
+  setOpenSection,
+}: RegimesSectionProps): React.ReactElement {
+  const isOpen = openSection === 'regimes';
+  const regimes: RegimeInfo[] = REGIMES_ORDER.map((id) => REGIMES_MATRIMONIAUX[id]);
+  const situationsFamiliales = SITUATIONS_FAMILIALES_SUCCESSION as SituationFamiliale[];
 
   return (
     <div className="fisc-acc-item">
       <button
         type="button"
         className="fisc-acc-header"
-        aria-expanded={openSection === 'regimes'}
-        onClick={() => setOpenSection(openSection === 'regimes' ? null : 'regimes')}
+        aria-expanded={isOpen}
+        onClick={() => setOpenSection(isOpen ? null : 'regimes')}
       >
         <span className="settings-premium-title" style={{ margin: 0 }}>
-          Régimes matrimoniaux & PACS
+          Regimes matrimoniaux & PACS
         </span>
         <span className="fisc-acc-chevron">
-          {openSection === 'regimes' ? '▾' : '▸'}
+          {isOpen ? 'v' : '>'}
         </span>
       </button>
 
-      {openSection === 'regimes' && (
+      {isOpen && (
         <div className="fisc-acc-body">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Référentiel civil utilisé par la simulation successorale (lecture seule).
-            Les situations familiales et les régimes matrimoniaux sont distingués.
+            Referentiel civil utilise par la simulation successorale (lecture seule).
+            Les situations familiales et les regimes matrimoniaux sont distingues.
           </p>
 
           <div className="income-tax-block" style={{ marginBottom: 12 }}>
@@ -42,7 +58,7 @@ export default function RegimesSection({ openSection, setOpenSection }) {
                 </tr>
               </thead>
               <tbody>
-                {SITUATIONS_FAMILIALES_SUCCESSION.map((situation) => (
+                {situationsFamiliales.map((situation) => (
                   <tr key={situation.id}>
                     <td style={{ textAlign: 'left' }}>{situation.label}</td>
                     <td style={{ textAlign: 'left' }}>{situation.cadre}</td>
@@ -61,16 +77,18 @@ export default function RegimesSection({ openSection, setOpenSection }) {
             >
               <div className="income-tax-block-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
                 <span>{regime.label}</span>
-                <span style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  padding: '2px 8px',
-                  borderRadius: 10,
-                  backgroundColor: regime.category === 'communautaire' ? 'var(--color-c4)' : 'var(--color-c6)',
-                  color: 'var(--color-c1)',
-                  whiteSpace: 'nowrap',
-                }}>
-                  {regime.category === 'communautaire' ? 'Communautaire' : 'Séparatiste'}
+                <span
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    padding: '2px 8px',
+                    borderRadius: 10,
+                    backgroundColor: regime.category === 'communautaire' ? 'var(--color-c4)' : 'var(--color-c6)',
+                    color: 'var(--color-c1)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {regime.category === 'communautaire' ? 'Communautaire' : 'Separatiste'}
                 </span>
               </div>
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 8px 0' }}>
@@ -98,8 +116,8 @@ export default function RegimesSection({ openSection, setOpenSection }) {
               PACS
             </div>
             <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: 0 }}>
-              Par défaut : séparation de biens. Option : indivision des acquêts.
-              Le partenaire pacsé est exonéré de droits de succession (loi TEPA 2007).
+              Par defaut : separation de biens. Option : indivision des acquets.
+              Le partenaire pacse est exonere de droits de succession (loi TEPA 2007).
             </p>
           </div>
         </div>
@@ -107,4 +125,3 @@ export default function RegimesSection({ openSection, setOpenSection }) {
     </div>
   );
 }
-

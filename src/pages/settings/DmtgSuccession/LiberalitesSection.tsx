@@ -1,32 +1,52 @@
-// @ts-nocheck
 import React from 'react';
 import { LIBERALITES_REFERENCE } from './dmtgReferenceData';
 
-export default function LiberalitesSection({ openSection, setOpenSection }) {
+interface LiberaliteReference {
+  id: string;
+  family: string;
+  label: string;
+  definition: string;
+  impact: string;
+  minimumFields: string[];
+  legalRefs: string;
+}
+
+interface LiberalitesSectionProps {
+  openSection: string | null;
+  setOpenSection: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+export default function LiberalitesSection({
+  openSection,
+  setOpenSection,
+}: LiberalitesSectionProps): React.ReactElement {
+  const isOpen = openSection === 'liberalites';
+  const liberalites = LIBERALITES_REFERENCE as LiberaliteReference[];
+
   return (
     <div className="fisc-acc-item">
       <button
         type="button"
         className="fisc-acc-header"
-        aria-expanded={openSection === 'liberalites'}
-        onClick={() => setOpenSection(openSection === 'liberalites' ? null : 'liberalites')}
+        aria-expanded={isOpen}
+        onClick={() => setOpenSection(isOpen ? null : 'liberalites')}
       >
         <span className="settings-premium-title" style={{ margin: 0 }}>
-          Libéralités
+          Liberalites
         </span>
         <span className="fisc-acc-chevron">
-          {openSection === 'liberalites' ? '▾' : '▸'}
+          {isOpen ? 'v' : '>'}
         </span>
       </button>
 
-      {openSection === 'liberalites' && (
+      {isOpen && (
         <div className="fisc-acc-body">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Référentiel patrimonial pour qualifier les libéralités utiles à la simulation.
-            Les éléments ci-dessous sont informatifs et n'ajoutent pas de calcul automatique à ce stade.
+            Referentiel patrimonial pour qualifier les liberalites utiles a la simulation.
+            Les elements ci-dessous sont informatifs et n'ajoutent pas de calcul automatique a ce stade.
           </p>
 
-          {LIBERALITES_REFERENCE.map((item) => (
+          {liberalites.map((item) => (
             <div key={item.id} className="income-tax-block" style={{ marginBottom: 12 }}>
               <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
                 {item.label}
@@ -35,7 +55,7 @@ export default function LiberalitesSection({ openSection, setOpenSection }) {
                 {item.family}
               </div>
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
-                <strong style={{ color: 'var(--color-c1)' }}>Définition :</strong> {item.definition}
+                <strong style={{ color: 'var(--color-c1)' }}>Definition :</strong> {item.definition}
               </p>
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
                 <strong style={{ color: 'var(--color-c1)' }}>Impact patrimonial :</strong> {item.impact}
@@ -47,7 +67,7 @@ export default function LiberalitesSection({ openSection, setOpenSection }) {
                 </ul>
               </div>
               <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: 0 }}>
-                Références: {item.legalRefs}
+                References : {item.legalRefs}
               </p>
             </div>
           ))}
@@ -56,4 +76,3 @@ export default function LiberalitesSection({ openSection, setOpenSection }) {
     </div>
   );
 }
-
