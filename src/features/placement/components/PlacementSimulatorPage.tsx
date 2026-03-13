@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * PlacementSimulatorPage.tsx — Orchestrateur du simulateur de placement
  *
@@ -16,7 +15,6 @@
  * 3 phases : Épargne → Liquidation → Transmission
  */
 
-import React from 'react';
 import './PlacementSimulator.css';
 import { VersementConfigModal } from './VersementConfigModal';
 import { renderEpargneRow } from '../utils/tableHelpers';
@@ -106,9 +104,9 @@ export default function PlacementSimulatorPage() {
           setLiquidation={setLiquidation}
           setTransmission={setTransmission}
           updateProductOption={updateProductOption}
-          setModalOpen={setModalOpen}
+          setModalOpen={(productIndex) => setModalOpen(productIndex)}
           showAllColumns={showAllColumns}
-          setShowAllColumns={setShowAllColumns}
+          setShowAllColumns={(value) => setShowAllColumns(value)}
           produit1={produit1}
           produit2={produit2}
           detailRows1={detailRows1}

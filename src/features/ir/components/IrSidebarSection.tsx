@@ -1,5 +1,4 @@
-// @ts-nocheck
-import React from 'react';
+import type { IrSidebarSectionProps } from './irTypes';
 import { IrSelect } from './IrSelect';
 
 const DONUT_R = 27;
@@ -7,7 +6,12 @@ const DONUT_CX = 34;
 const DONUT_CY = 34;
 const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_R;
 
-function IrTaxDonut({ revenus, imposition }) {
+interface IrTaxDonutProps {
+  revenus: number;
+  imposition: number;
+}
+
+function IrTaxDonut({ revenus, imposition }: IrTaxDonutProps) {
   const safeRevenus = Math.max(0, Number(revenus) || 0);
   const safeImposition = Math.max(0, Number(imposition) || 0);
   const total = safeRevenus + safeImposition;
@@ -93,7 +97,7 @@ export function IrSidebarSection({
   pfuRateIR,
   isExpert,
   showSummaryCard,
-}) {
+}: IrSidebarSectionProps) {
   return (
     <div className="ir-right">
       <div className="ir-controls-sticky">
@@ -101,7 +105,7 @@ export function IrSidebarSection({
           <label>Barème</label>
           <IrSelect
             value={yearKey}
-            onChange={setYearKey}
+            onChange={(value) => setYearKey(value as IrSidebarSectionProps['yearKey'])}
             options={[
               { value: 'current', label: taxSettings?.incomeTax?.currentYearLabel || 'Année N' },
               { value: 'previous', label: taxSettings?.incomeTax?.previousYearLabel || 'Année N-1' },
@@ -112,7 +116,7 @@ export function IrSidebarSection({
           <label>Résidence</label>
           <IrSelect
             value={location}
-            onChange={setLocation}
+            onChange={(value) => setLocation(value as IrSidebarSectionProps['location'])}
             options={[
               { value: 'metropole', label: 'Métropole' },
               { value: 'gmr', label: 'Guadeloupe / Martinique / Réunion' },
@@ -182,14 +186,14 @@ export function IrSidebarSection({
               <button
                 type="button"
                 className="ir-parts-btn"
-                onClick={() => setParts((p) => Math.round((p - 0.25) * 4) / 4)}
+                onClick={() => setParts((parts) => Math.round((parts - 0.25) * 4) / 4)}
                 aria-label="Diminuer les parts"
               >▼</button>
               {result.partsNb}
               <button
                 type="button"
                 className="ir-parts-btn"
-                onClick={() => setParts((p) => Math.round((p + 0.25) * 4) / 4)}
+                onClick={() => setParts((parts) => Math.round((parts + 0.25) * 4) / 4)}
                 aria-label="Augmenter les parts"
               >▲</button>
             </span>
