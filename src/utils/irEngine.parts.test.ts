@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeAutoPartsWithChildren } from './irEngine';
+import { computeAutoPartsWithChildren } from '../engine/ir/parts';
 
 // Tests oracle (10 cas) sur le calcul des parts (quotient familial)
 describe('computeAutoPartsWithChildren - oracle 10 cas', () => {

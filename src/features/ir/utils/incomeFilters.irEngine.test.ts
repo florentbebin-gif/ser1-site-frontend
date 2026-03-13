@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { computeIrResult, DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '../../../utils/irEngine';
+import { computeIrResult } from '../../../engine/ir/compute';
+import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '../../../constants/settingsDefaults';
 import { applyIncomeFilters } from './incomeFilters';
 
 const BASE_INPUT = {
