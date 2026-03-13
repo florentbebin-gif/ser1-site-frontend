@@ -120,6 +120,21 @@ export default [
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
     },
   },
+  // Source-of-truth catalogs / defaults / design-system modules can stay large
+  // without carrying the same review signal as orchestration or business-flow files.
+  {
+    files: [
+      'src/constants/settingsDefaults.ts',
+      'src/domain/base-contrat/catalog.ts',
+      'src/domain/base-contrat/rules/library/immobilier.ts',
+      'src/domain/base-contrat/rules/library/retraite.ts',
+      'src/domain/base-contrat/rules/library/valeurs-mobilieres.ts',
+      'src/pptx/designSystem/serenity.ts',
+    ],
+    rules: {
+      'max-lines': 'off',
+    },
+  },
   // Source of truth files - colors are defined here
   {
     files: [
