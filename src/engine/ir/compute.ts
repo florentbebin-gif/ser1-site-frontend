@@ -1,26 +1,14 @@
-import { computeTmiMetrics } from './tmiMetrics';
-import { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../constants/settingsDefaults';
-import { computeAutoPartsWithChildren } from '../engine/ir/parts';
-import { computeProgressiveTax } from '../engine/ir/progressiveTax';
-import { computeCEHR } from '../engine/ir/cehr';
-import { computeCDHR } from '../engine/ir/cdhr';
-import { computeEffectiveParts } from '../engine/ir/effectiveParts';
-import { computeDomAbatementAmount } from '../engine/ir/domAbatement';
-import { computeDecote } from '../engine/ir/decote';
-import { computeCapitalBases, computePfuIr } from '../engine/ir/capital';
-import { computeQuotientFamilyCapping } from '../engine/ir/quotientFamily';
-import { computeSocialContributions } from '../engine/ir/socialContributions';
-import { computeIrFromExcelCase as computeIrFromExcelCaseImpl } from '../engine/ir/excelCase';
-import type { BracketDetail, CdhrDetails, ExcelCaseResult } from '../engine/ir/types';
-
-// Re-export pour les consommateurs historiques (importé depuis settingsDefaults)
-export { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS };
-
-// Back-compat export (moved to engine/ir/parts.ts)
-export { computeAutoPartsWithChildren };
-
-// Back-compat export (moved to engine/ir/effectiveParts.ts)
-export { computeEffectiveParts };
+import { computeTmiMetrics } from '../../utils/tmiMetrics';
+import type { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../constants/settingsDefaults';
+import { computeCapitalBases, computePfuIr } from './capital';
+import { computeProgressiveTax } from './progressiveTax';
+import { computeCEHR } from './cehr';
+import { computeCDHR } from './cdhr';
+import { computeDomAbatementAmount } from './domAbatement';
+import { computeDecote } from './decote';
+import { computeQuotientFamilyCapping } from './quotientFamily';
+import { computeSocialContributions } from './socialContributions';
+import type { BracketDetail, CdhrDetails } from './types';
 
 interface IncomeDeclarant {
   salaries?: number;
@@ -271,13 +259,4 @@ export function computeIrResult({
 
     qfIsCapped,
   };
-}
-
-export function computeIrFromExcelCase(
-  excelCaseInput: Parameters<typeof computeIrFromExcelCaseImpl>[0],
-): ExcelCaseResult | null {
-  const computeIrResultAdapter = (params: Record<string, unknown>) =>
-    computeIrResult(params as unknown as Parameters<typeof computeIrResult>[0]);
-
-  return computeIrFromExcelCaseImpl(excelCaseInput, { computeIrResult: computeIrResultAdapter });
 }
