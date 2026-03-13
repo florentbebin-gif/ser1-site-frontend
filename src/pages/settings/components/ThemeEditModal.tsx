@@ -1,24 +1,45 @@
-// @ts-nocheck
 import React, { useMemo, useState } from 'react';
 import { invokeAdmin } from '@/services/apiAdmin';
 import { COLOR_USAGE_GUIDELINES } from '@/constants/colorUsageGuidelines';
 import { DEFAULT_COLORS } from '@/settings/theme';
 
+type ThemePalette = Record<string, string>;
+
+interface ThemeRecord {
+  id?: string;
+  name?: string | null;
+  palette?: ThemePalette | null;
+  is_system?: boolean;
+}
+
+interface ThemeEditModalProps {
+  theme?: ThemeRecord | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+interface ThemeFormState {
+  name: string;
+  palette: ThemePalette;
+}
+
+const defaultPalette: ThemePalette = { ...DEFAULT_COLORS };
+
 export default function ThemeEditModal({
   theme,
   onClose,
   onSuccess,
-}) {
-  const [form, setForm] = useState(() => (
+}: ThemeEditModalProps): React.ReactElement {
+  const [form, setForm] = useState<ThemeFormState>(() => (
     theme
       ? {
-        name: theme.name || '',
-        palette: theme.palette || { ...DEFAULT_COLORS },
-      }
+          name: theme.name || '',
+          palette: { ...defaultPalette, ...(theme.palette || {}) },
+        }
       : {
-        name: '',
-        palette: { ...DEFAULT_COLORS },
-      }
+          name: '',
+          palette: { ...defaultPalette },
+        }
   ));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -32,16 +53,16 @@ export default function ThemeEditModal({
     [],
   );
 
-  const handleThemePaletteChange = (colorKey, value) => {
+  const handleThemePaletteChange = (colorKey: string, value: string): void => {
     setForm((prev) => ({
       ...prev,
       palette: { ...prev.palette, [colorKey]: value },
     }));
   };
 
-  const handleSaveTheme = async () => {
+  const handleSaveTheme = async (): Promise<void> => {
     if (!form.name.trim()) {
-      setError('Le nom du thème est requis.');
+      setError('Le nom du theme est requis.');
       return;
     }
 
@@ -49,7 +70,7 @@ export default function ThemeEditModal({
       setSaving(true);
       setError('');
 
-      if (theme) {
+      if (theme?.id) {
         const { error: invokeError } = await invokeAdmin('update_theme', {
           id: theme.id,
           name: form.name.trim(),
@@ -70,8 +91,8 @@ export default function ThemeEditModal({
 
       onSuccess();
       onClose();
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Erreur lors de l'enregistrement du theme.");
     } finally {
       setSaving(false);
     }
@@ -81,8 +102,8 @@ export default function ThemeEditModal({
     <div className="report-modal-overlay" onClick={onClose}>
       <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 600 }}>
         <div className="report-modal-header">
-          <h3>{theme ? 'Modifier le thème' : 'Nouveau thème'}</h3>
-          <button className="report-modal-close" onClick={onClose}>✕</button>
+          <h3>{theme ? 'Modifier le theme' : 'Nouveau theme'}</h3>
+          <button className="report-modal-close" onClick={onClose} type="button">X</button>
         </div>
         <div className="report-modal-content">
           {error && (
@@ -110,15 +131,19 @@ export default function ThemeEditModal({
                 fontSize: 13,
               }}
             >
-              Thème système : modifiable mais ne peut pas être supprimé.
+              Theme systeme : modifiable mais non supprimable.
             </div>
           )}
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>Nom du thème *</label>
+            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+              Nom du theme *
+            </label>
             <input
               type="text"
               value={form.name}
-              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                setForm((prev) => ({ ...prev, name: e.target.value }));
+              }}
               placeholder="Ex: Bleu patrimonial"
               style={{
                 width: '100%',
@@ -130,22 +155,19 @@ export default function ThemeEditModal({
             />
           </div>
           <div style={{ marginBottom: 16 }}>
-            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>Palette (10 couleurs)</label>
-            <p className="theme-palette-help">
-              Survolez C1 a C10 pour voir la norme d usage.
-            </p>
+            <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, fontSize: 14 }}>
+              Palette (10 couleurs)
+            </label>
+            <p className="theme-palette-help">Survolez C1 a C10 pour voir la norme d'usage.</p>
             <div className="theme-palette-grid">
               {colorFields.map(({ key, token, help }) => {
                 const tooltipId = `theme-color-help-${key}`;
-                const colorValue = form.palette?.[key] || DEFAULT_COLORS[key];
+                const colorValue = form.palette[key] || defaultPalette[key];
+
                 return (
                   <div key={key} className="theme-palette-item">
                     <span className="theme-palette-token-wrap">
-                      <span
-                        className="theme-palette-token"
-                        tabIndex={0}
-                        aria-describedby={tooltipId}
-                      >
+                      <span className="theme-palette-token" tabIndex={0} aria-describedby={tooltipId}>
                         {token}
                       </span>
                       <span id={tooltipId} role="tooltip" className="theme-palette-tooltip">
@@ -155,13 +177,17 @@ export default function ThemeEditModal({
                     <input
                       type="color"
                       value={colorValue}
-                      onChange={(e) => handleThemePaletteChange(key, e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        handleThemePaletteChange(key, e.target.value);
+                      }}
                       style={{ width: 40, height: 32, border: 'none', cursor: 'pointer' }}
                     />
                     <input
                       type="text"
                       value={colorValue}
-                      onChange={(e) => handleThemePaletteChange(key, e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        handleThemePaletteChange(key, e.target.value);
+                      }}
                       style={{
                         width: '100%',
                         padding: '4px',
@@ -180,12 +206,15 @@ export default function ThemeEditModal({
           </div>
         </div>
         <div className="report-modal-actions">
-          <button onClick={onClose}>Annuler</button>
+          <button onClick={onClose} type="button">Annuler</button>
           <button
             className="chip"
-            onClick={handleSaveTheme}
+            onClick={() => {
+              void handleSaveTheme();
+            }}
             disabled={saving}
             style={{ opacity: saving ? 0.6 : 1 }}
+            type="button"
           >
             {saving ? 'Enregistrement...' : 'Enregistrer'}
           </button>
@@ -194,4 +223,3 @@ export default function ThemeEditModal({
     </div>
   );
 }
-

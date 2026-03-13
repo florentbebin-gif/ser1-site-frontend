@@ -1,27 +1,19 @@
-// @ts-nocheck
-/**
- * SettingsFieldRow.jsx
- *
- * Composant générique pour une ligne de formulaire Settings :
- * [label] [input] [unit]
- *
- * Phase 2 — factorisation UI des pages Settings.
- */
-
 import React from 'react';
 import { numberOrEmpty } from '../../utils/settingsHelpers';
 
-/**
- * @param {Object} props
- * @param {string} props.label - Texte du label
- * @param {string|string[]} props.path - Chemin dans l'objet settings (array) ou clé simple
- * @param {any} props.value - Valeur actuelle
- * @param {Function} props.onChange - (path, value) => void
- * @param {string} [props.type='number'] - Type de l'input
- * @param {string} [props.step] - Step pour type="number"
- * @param {string} [props.unit] - Unité affichée après l'input (% €)
- * @param {boolean} [props.disabled=false]
- */
+type SettingsFieldValue = string | number | null | undefined;
+
+interface SettingsFieldRowProps {
+  label: string;
+  path: string | string[];
+  value: SettingsFieldValue;
+  onChange: (path: string[], value: string | number | null) => void;
+  type?: 'number' | 'text';
+  step?: string;
+  unit?: string;
+  disabled?: boolean;
+}
+
 export default function SettingsFieldRow({
   label,
   path,
@@ -31,16 +23,16 @@ export default function SettingsFieldRow({
   step,
   unit,
   disabled = false,
-}) {
+}: SettingsFieldRowProps): React.ReactElement {
   const pathArray = Array.isArray(path) ? path : [path];
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const raw = e.target.value;
     const parsed = raw === '' ? null : type === 'number' ? Number(raw) : raw;
     onChange(pathArray, parsed);
   };
 
-  const displayValue = type === 'number' ? numberOrEmpty(value) : value ?? '';
+  const displayValue = type === 'number' ? numberOrEmpty(typeof value === 'number' ? value : null) : value ?? '';
 
   return (
     <div className={`settings-field-row${type === 'text' ? ' settings-field-row--text' : ''}`}>
@@ -56,4 +48,3 @@ export default function SettingsFieldRow({
     </div>
   );
 }
-

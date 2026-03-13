@@ -1,37 +1,37 @@
-// @ts-nocheck
-/**
- * SettingsTable.jsx
- *
- * Composant générique pour les tableaux éditables des pages Settings.
- * Piloté par un schéma de colonnes + données.
- *
- * Phase 3 — factorisation UI des pages Settings.
- */
-
 import React from 'react';
 import { numberOrEmpty } from '../../utils/settingsHelpers';
 
-/**
- * @param {Object} props
- * @param {Array<Object>} props.columns - Définition des colonnes
- *   - key: string — clé dans l'objet row
- *   - header: string — texte du <th>
- *   - type: 'number'|'text'|'display' — 'display' = lecture seule sans input
- *   - step?: string — step pour type="number"
- *   - className?: string — classe CSS sur le <th> et <td> (ex: 'taux-col')
- *   - render?: (value, row, idx) => ReactNode — rendu custom (prioritaire sur le rendu par défaut)
- * @param {Array<Object>} props.rows - Données du tableau
- * @param {Function} props.onCellChange - (rowIndex, key, parsedValue) => void
- * @param {boolean} [props.disabled=false]
- * @param {Object} [props.style] - Style inline sur le <table>
- */
+type CellValue = string | number | null;
+
+interface SettingsTableRow {
+  _key?: React.Key;
+  [key: string]: unknown;
+}
+
+interface SettingsTableColumn {
+  key: string;
+  header: string;
+  type?: React.HTMLInputTypeAttribute | 'display';
+  step?: string;
+  className?: string;
+  render?: (value: unknown, row: SettingsTableRow, index: number) => React.ReactNode;
+}
+
+interface SettingsTableProps {
+  columns: SettingsTableColumn[];
+  rows: SettingsTableRow[];
+  onCellChange: (rowIndex: number, key: string, value: CellValue) => void;
+  disabled?: boolean;
+  style?: React.CSSProperties;
+}
+
 export default function SettingsTable({
   columns,
   rows,
   onCellChange,
   disabled = false,
   style,
-}) {
+}: SettingsTableProps): React.ReactElement {
   return (
     <table className="settings-table" style={style}>
       <thead>
@@ -45,14 +45,14 @@ export default function SettingsTable({
       </thead>
       <tbody>
         {rows.map((row, rowIdx) => (
-          <tr key={row._key || rowIdx}>
+          <tr key={row._key ?? rowIdx}>
             {columns.map((col) => {
-              const val = row[col.key];
+              const value = row[col.key];
 
               if (col.render) {
                 return (
                   <td key={col.key} className={col.className}>
-                    {col.render(val, row, rowIdx)}
+                    {col.render(value, row, rowIdx)}
                   </td>
                 );
               }
@@ -60,20 +60,25 @@ export default function SettingsTable({
               if (col.type === 'display') {
                 return (
                   <td key={col.key} className={col.className} style={{ textAlign: 'left' }}>
-                    {val}
+                    {value as React.ReactNode}
                   </td>
                 );
               }
+
+              const inputValue =
+                col.type === 'text'
+                  ? String(value ?? '')
+                  : numberOrEmpty(typeof value === 'number' ? value : value == null ? null : Number(value));
 
               return (
                 <td key={col.key} className={col.className}>
                   <input
                     type={col.type || 'number'}
                     step={col.step}
-                    value={col.type === 'text' ? (val ?? '') : numberOrEmpty(val)}
-                    onChange={(e) => {
+                    value={inputValue}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       const raw = e.target.value;
-                      const parsed =
+                      const parsed: CellValue =
                         raw === ''
                           ? null
                           : col.type === 'text'
@@ -92,4 +97,3 @@ export default function SettingsTable({
     </table>
   );
 }
-

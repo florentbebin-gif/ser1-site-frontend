@@ -1,5 +1,33 @@
-// @ts-nocheck
 import React from 'react';
+
+interface ReportUser {
+  id?: string;
+  email?: string | null;
+}
+
+interface SettingsReport {
+  id: string;
+  created_at: string;
+  page?: string | null;
+  title?: string | null;
+  description?: string | null;
+  admin_read_at?: string | null;
+  meta?: Record<string, unknown> | null;
+}
+
+interface SettingsReportsModalProps {
+  show: boolean;
+  selectedReport: SettingsReport | null;
+  selectedReportUser: ReportUser | null;
+  reportLoading: boolean;
+  userReports: SettingsReport[];
+  onClose: () => void;
+  onBackToList: () => void;
+  onSelectReport: (report: SettingsReport) => void;
+  onDeleteAllReports: (userId?: string) => void;
+  onMarkAsRead: (reportId: string) => void;
+  onDeleteReport: (reportId: string) => void;
+}
 
 export default function SettingsReportsModal({
   show,
@@ -13,7 +41,7 @@ export default function SettingsReportsModal({
   onDeleteAllReports,
   onMarkAsRead,
   onDeleteReport,
-}) {
+}: SettingsReportsModalProps): React.ReactElement | null {
   if (!show) return null;
 
   return (
@@ -24,11 +52,11 @@ export default function SettingsReportsModal({
             <div className="report-modal-header">
               <div className="report-modal-title-section">
                 <h3>Signalements</h3>
-                {selectedReportUser && (
+                {selectedReportUser?.email && (
                   <span className="report-modal-subtitle">{selectedReportUser.email}</span>
                 )}
               </div>
-              <button className="report-modal-close" onClick={onClose}>X</button>
+              <button className="report-modal-close" onClick={onClose} type="button">X</button>
             </div>
 
             <div className="report-modal-content">
@@ -59,7 +87,7 @@ export default function SettingsReportsModal({
                           </span>
                         </td>
                         <td>
-                          <button className="report-view-btn" onClick={() => onSelectReport(report)}>
+                          <button className="report-view-btn" onClick={() => onSelectReport(report)} type="button">
                             Voir
                           </button>
                         </td>
@@ -72,23 +100,23 @@ export default function SettingsReportsModal({
 
             <div className="report-modal-actions">
               {userReports.length > 0 && (
-                <button className="danger" onClick={() => onDeleteAllReports(selectedReportUser?.id)}>
+                <button className="danger" onClick={() => onDeleteAllReports(selectedReportUser?.id)} type="button">
                   Supprimer tout l'historique
                 </button>
               )}
-              <button onClick={onClose}>Fermer</button>
+              <button onClick={onClose} type="button">Fermer</button>
             </div>
           </>
         ) : (
           <>
             <div className="report-modal-header">
               <div className="report-modal-title-section">
-                <button className="report-back-btn" onClick={onBackToList}>
+                <button className="report-back-btn" onClick={onBackToList} type="button">
                   {'<-'} Retour
                 </button>
                 <h3>Detail du signalement</h3>
               </div>
-              <button className="report-modal-close" onClick={onClose}>X</button>
+              <button className="report-modal-close" onClick={onClose} type="button">X</button>
             </div>
 
             <div className="report-modal-content">
@@ -128,14 +156,14 @@ export default function SettingsReportsModal({
 
             <div className="report-modal-actions">
               {!selectedReport.admin_read_at && (
-                <button onClick={() => onMarkAsRead(selectedReport.id)}>
+                <button onClick={() => onMarkAsRead(selectedReport.id)} type="button">
                   Marquer comme lu
                 </button>
               )}
-              <button className="danger" onClick={() => onDeleteReport(selectedReport.id)}>
+              <button className="danger" onClick={() => onDeleteReport(selectedReport.id)} type="button">
                 Supprimer
               </button>
-              <button onClick={onBackToList}>Retour a la liste</button>
+              <button onClick={onBackToList} type="button">Retour a la liste</button>
             </div>
           </>
         )}
@@ -143,4 +171,3 @@ export default function SettingsReportsModal({
     </div>
   );
 }
-
