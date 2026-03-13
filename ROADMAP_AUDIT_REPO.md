@@ -33,7 +33,7 @@
 | `eslint-disable` hors tests | 54 occurrences | dette localisee et quantifiable |
 | `console.log/debug/info/trace` hors tests | 52 occurrences dans 17 fichiers | observabilite a normaliser |
 | `@deprecated` | 10 occurrences dans 6 fichiers | audit d'usage a faire avant suppression |
-| `@ts-nocheck` | 24 fichiers | dette de typage majeure, en baisse apres PR-3 phase 3 |
+| `@ts-nocheck` | 18 fichiers | dette de typage majeure, en baisse apres PR-3 phase 3 |
 | TODO/FIXME/HACK hors tests | 1 occurrence | faible dette textuelle explicite |
 | `.editorconfig` | absent | gouvernance editeur non automatisee |
 
@@ -114,14 +114,14 @@ rg -n "TODO|FIXME|HACK" src --glob '!**/*.test.*'
 ### Conclusion
 
 - La dette de typage est aujourd'hui la dette transverse la plus importante.
-- Le repo n'a plus de `.js/.jsx` dans `src`, mais 24 fichiers contournent encore TypeScript avec `@ts-nocheck`.
-- Il ne faut pas durcir les regles `ban-ts-comment` ou similaires avant d'avoir classe les causes de ces 24 fichiers.
+- Le repo n'a plus de `.js/.jsx` dans `src`, mais 18 fichiers contournent encore TypeScript avec `@ts-nocheck`.
+- Il ne faut pas durcir les regles `ban-ts-comment` ou similaires avant d'avoir classe les causes de ces 18 fichiers.
 
 ### Repartition `@ts-nocheck`
 
 | Zone | Volume |
 |---|---|
-| `src/pages/**` | 12 |
+| `src/pages/**` | 0 |
 | `src/features/**` | 18 |
 | `src/components/**` | 0 |
 | `src/App.tsx` | 0 |
@@ -131,8 +131,8 @@ Point d'etape PR-3 :
 
 - phase 1 mergee : `@ts-nocheck` retire de `src/main.tsx`, `src/App.tsx`, `src/components/AppErrorFallback.tsx`, `src/components/layout/AppLayout.tsx`, `src/pages/UpcomingSimulatorPage.tsx`, `src/pages/StrategyPage.tsx`, `src/components/ModeToggle.tsx`, `src/components/settings/SettingsSectionCard.tsx`, `src/components/settings/SettingsYearColumn.tsx`, `src/pages/ForgotPassword.tsx`, `src/pages/Login.tsx`
 - phase 2 mergee : `@ts-nocheck` retire de `src/pages/SetPassword.tsx`, `src/components/UserInfoBanner.tsx`, `src/components/TimelineBar.tsx`, `src/components/settings/SettingsFieldRow.tsx`, `src/components/settings/SettingsTable.tsx`, `src/components/settings/PassHistoryAccordion.tsx`, `src/pages/Home.tsx`, `src/pages/SettingsShell.tsx`, `src/pages/settings/components/UserInviteModal.tsx`, `src/pages/settings/components/SettingsReportsModal.tsx`, `src/pages/settings/components/ThemeEditModal.tsx`, `src/pages/settings/components/CabinetEditModal.tsx`, `src/pages/settings/components/SettingsComptesSections.tsx`, `src/components/settings/SignalementsBlock.tsx`
-- phase 3 en cours : `@ts-nocheck` retire de `src/pages/settings/Prelevements/SeuilsYearPeriod.tsx`, `src/pages/settings/Prelevements/PrelevementsSeuilsSection.tsx`, `src/pages/settings/Prelevements/PrelevementsRetraitesSection.tsx`, `src/pages/settings/Prelevements/PrelevementsPatrimoineSection.tsx`, `src/pages/settings/DmtgSuccession/ReserveCivilSection.tsx`, `src/pages/settings/DmtgSuccession/RegimesSection.tsx`, `src/pages/settings/DmtgSuccession/AvantagesMatrimoniauxSection.tsx`, `src/pages/settings/DmtgSuccession/LiberalitesSection.tsx`, `src/pages/settings/Impots/ImpotsAbattementDomSection.tsx`, `src/pages/settings/Impots/ImpotsPfuSection.tsx`, `src/pages/settings/Impots/ImpotsCehrSection.tsx`, `src/pages/settings/Impots/ImpotsISSection.tsx`, `src/pages/settings/Impots/ImpotsDmtgSection.tsx`, `src/pages/settings/DmtgSuccession/DonationSection.tsx`, `src/pages/settings/DmtgSuccession/AvDecesSection.tsx`
-- compteur repo ramene de 64 a 24
+- phase 3 en cours : `@ts-nocheck` retire de `src/pages/settings/Prelevements/SeuilsYearPeriod.tsx`, `src/pages/settings/Prelevements/PrelevementsSeuilsSection.tsx`, `src/pages/settings/Prelevements/PrelevementsRetraitesSection.tsx`, `src/pages/settings/Prelevements/PrelevementsPatrimoineSection.tsx`, `src/pages/settings/DmtgSuccession/ReserveCivilSection.tsx`, `src/pages/settings/DmtgSuccession/RegimesSection.tsx`, `src/pages/settings/DmtgSuccession/AvantagesMatrimoniauxSection.tsx`, `src/pages/settings/DmtgSuccession/LiberalitesSection.tsx`, `src/pages/settings/Impots/ImpotsAbattementDomSection.tsx`, `src/pages/settings/Impots/ImpotsPfuSection.tsx`, `src/pages/settings/Impots/ImpotsCehrSection.tsx`, `src/pages/settings/Impots/ImpotsISSection.tsx`, `src/pages/settings/Impots/ImpotsDmtgSection.tsx`, `src/pages/settings/DmtgSuccession/DonationSection.tsx`, `src/pages/settings/DmtgSuccession/AvDecesSection.tsx`, `src/pages/settings/SettingsImpots.tsx`, `src/pages/settings/SettingsDmtgSuccession.tsx`, `src/pages/settings/SettingsPrelevements.tsx`, `src/pages/settings/SettingsComptes.tsx`, `src/pages/Settings.tsx`
+- compteur repo ramene de 64 a 18
 
 ### Exemples structurants
 
@@ -149,15 +149,15 @@ Point d'etape PR-3 :
 | politique `.js/.jsx` | `check:no-js` dans `package.json`, `allowJs: true` dans `tsconfig.json`, docs alignees en PR-2 | garder la regle d'interdiction dans `src`, requalifier `allowJs` plus tard |
 | entrypoints critiques | `src/main.tsx`, `src/App.tsx` types en PR-3 phase 1 | progression confirmee, poursuivre sur les wrappers simples |
 
-### Premier tri initial des 24 fichiers
+### Premier tri initial des 18 fichiers
 
 Ce tri est volontairement indicatif. Il sert a poursuivre la PR-3 sans pretendre que tous les cas sont deja qualifies.
 
 | Famille | Lecture | Exemples |
 |---|---|---|
 | `migration facile` | composants locaux a surface de props encore contenue | `src/features/ir/components/IrDisclaimer.tsx`, `src/features/ir/components/IrDetailsSection.tsx`, `src/features/ir/components/IrSidebarSection.tsx`, `src/features/ir/components/IrSelect.tsx`, `src/features/placement/components/PlacementToolbar.tsx`, `src/features/placement/components/PlacementLiquidationDetailsTable.tsx` |
-| `props/state a typer` | pages settings avec orchestration locale, validation et plusieurs sous-sections | `src/pages/settings/SettingsPrelevements.tsx`, `src/pages/settings/SettingsImpots.tsx`, `src/pages/settings/SettingsDmtgSuccession.tsx`, `src/pages/settings/SettingsComptes.tsx`, `src/pages/Settings.tsx`, `src/features/placement/components/PlacementClientProfileSection.tsx` |
-| `legacy complexe` | orchestrateurs et gros composants metier avec surface de props importante | `src/features/ir/components/IrSimulatorContainer.tsx`, `src/features/ir/components/IrFormSection.tsx`, `src/features/placement/components/PlacementSimulatorPage.tsx`, `src/features/placement/components/PlacementInputsPanel.tsx`, `src/features/placement/components/PlacementResultsPanel.tsx`, `src/pages/settings/Impots/ImpotsBaremeSection.tsx` |
+| `props/state a typer` | composants encore denses mais avec surface de props plus lisible que les gros orchestrateurs IR/placement | `src/features/placement/components/PlacementClientProfileSection.tsx`, `src/features/placement/components/PlacementEpargneSection.tsx`, `src/features/placement/components/PlacementTransmissionSection.tsx`, `src/features/placement/components/VersementConfigModal.tsx`, `src/features/ir/components/IrDetailsSection.tsx` |
+| `legacy complexe` | orchestrateurs et gros composants metier avec surface de props importante | `src/features/ir/components/IrSimulatorContainer.tsx`, `src/features/ir/components/IrFormSection.tsx`, `src/features/placement/components/PlacementSimulatorPage.tsx`, `src/features/placement/components/PlacementInputsPanel.tsx`, `src/features/placement/components/PlacementResultsPanel.tsx` |
 
 ### Ordre recommande pour la PR-3
 
@@ -168,7 +168,7 @@ Ce tri est volontairement indicatif. Il sert a poursuivre la PR-3 sans pretendre
 
 ### Strategie recommandee
 
-1. Classer les 24 fichiers restants en 3 familles :
+1. Classer les 18 fichiers restants en 3 familles :
    - `migration facile`
    - `props/state a typer`
    - `legacy complexe / a isoler`
@@ -452,13 +452,13 @@ Statut le 2026-03-12 : fait
 
 ### PR-3 - Dette `@ts-nocheck` phases 1-3
 
-Statut le 2026-03-12 : en cours
+Statut le 2026-03-13 : en cours
 
 - phase 1 mergee sur `src/main.tsx`, `src/App.tsx`, `src/components/AppErrorFallback.tsx`, `src/components/layout/AppLayout.tsx`, `src/pages/UpcomingSimulatorPage.tsx`, `src/pages/StrategyPage.tsx`, `src/components/ModeToggle.tsx`, `src/components/settings/SettingsSectionCard.tsx`, `src/components/settings/SettingsYearColumn.tsx`, `src/pages/ForgotPassword.tsx`, `src/pages/Login.tsx`
 - phase 2 mergee sur `src/pages/SetPassword.tsx`, `src/components/UserInfoBanner.tsx`, `src/components/TimelineBar.tsx`, `src/components/settings/SettingsFieldRow.tsx`, `src/components/settings/SettingsTable.tsx`, `src/components/settings/PassHistoryAccordion.tsx`, `src/pages/Home.tsx`, `src/pages/SettingsShell.tsx`, `src/pages/settings/components/UserInviteModal.tsx`, `src/pages/settings/components/SettingsReportsModal.tsx`, `src/pages/settings/components/ThemeEditModal.tsx`, `src/pages/settings/components/CabinetEditModal.tsx`, `src/pages/settings/components/SettingsComptesSections.tsx`, `src/components/settings/SignalementsBlock.tsx`
-- phase 3 en cours sur `src/pages/settings/Prelevements/SeuilsYearPeriod.tsx`, `src/pages/settings/Prelevements/PrelevementsSeuilsSection.tsx`, `src/pages/settings/Prelevements/PrelevementsRetraitesSection.tsx`, `src/pages/settings/Prelevements/PrelevementsPatrimoineSection.tsx`, `src/pages/settings/DmtgSuccession/ReserveCivilSection.tsx`, `src/pages/settings/DmtgSuccession/RegimesSection.tsx`, `src/pages/settings/DmtgSuccession/AvantagesMatrimoniauxSection.tsx`, `src/pages/settings/DmtgSuccession/LiberalitesSection.tsx`, `src/pages/settings/Impots/ImpotsAbattementDomSection.tsx`, `src/pages/settings/Impots/ImpotsPfuSection.tsx`, `src/pages/settings/Impots/ImpotsCehrSection.tsx`, `src/pages/settings/Impots/ImpotsISSection.tsx`, `src/pages/settings/Impots/ImpotsDmtgSection.tsx`, `src/pages/settings/DmtgSuccession/DonationSection.tsx`, `src/pages/settings/DmtgSuccession/AvDecesSection.tsx`
-- compteur repo : `64` -> `24` fichiers `@ts-nocheck`
-- prochaine cible : sections `ImpotsPfu/IS/Cehr/Dmtg`, `Donation`, `AvDeces`, puis les pages `Settings*` et `Placement*` denses
+- phase 3 en cours sur `src/pages/settings/Prelevements/SeuilsYearPeriod.tsx`, `src/pages/settings/Prelevements/PrelevementsSeuilsSection.tsx`, `src/pages/settings/Prelevements/PrelevementsRetraitesSection.tsx`, `src/pages/settings/Prelevements/PrelevementsPatrimoineSection.tsx`, `src/pages/settings/DmtgSuccession/ReserveCivilSection.tsx`, `src/pages/settings/DmtgSuccession/RegimesSection.tsx`, `src/pages/settings/DmtgSuccession/AvantagesMatrimoniauxSection.tsx`, `src/pages/settings/DmtgSuccession/LiberalitesSection.tsx`, `src/pages/settings/Impots/ImpotsAbattementDomSection.tsx`, `src/pages/settings/Impots/ImpotsPfuSection.tsx`, `src/pages/settings/Impots/ImpotsCehrSection.tsx`, `src/pages/settings/Impots/ImpotsISSection.tsx`, `src/pages/settings/Impots/ImpotsDmtgSection.tsx`, `src/pages/settings/DmtgSuccession/DonationSection.tsx`, `src/pages/settings/DmtgSuccession/AvDecesSection.tsx`, `src/pages/settings/SettingsImpots.tsx`, `src/pages/settings/SettingsDmtgSuccession.tsx`, `src/pages/settings/SettingsPrelevements.tsx`, `src/pages/settings/SettingsComptes.tsx`, `src/pages/Settings.tsx`, `src/pages/settings/Impots/ImpotsBaremeSection.tsx`
+- compteur repo : `64` -> `18` fichiers `@ts-nocheck`
+- prochaine cible : blocs `IR`, puis `placement`
 - Objectif de sortie initial largement atteint : passage sous `40` fichiers `@ts-nocheck`.
 - Objectif qualitatif : retirer les contournements des entrypoints avant les gros composants.
 

@@ -1,5 +1,4 @@
-// @ts-nocheck
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
 import './SettingsShared.css';
@@ -23,8 +22,47 @@ import ImpotsCehrSection from './Impots/ImpotsCehrSection';
 import ImpotsISSection from './Impots/ImpotsISSection';
 import ImpotsDmtgSection from './Impots/ImpotsDmtgSection';
 
+type DeepFormValue<T> = T extends number
+  ? number | null
+  : T extends string
+    ? string
+    : T extends boolean
+      ? boolean
+      : T extends Array<infer U>
+        ? DeepFormValue<U>[]
+        : T extends object
+          ? { [K in keyof T]: DeepFormValue<T[K]> }
+          : T;
+
+type TaxSettings = DeepFormValue<typeof DEFAULT_TAX_SETTINGS>;
+type DmtgSettings = TaxSettings['dmtg'];
+type DmtgCategoryKey = keyof DmtgSettings;
+type DmtgScaleRow = DmtgSettings['ligneDirecte']['scale'][number];
+type DmtgScaleUpdate = {
+  idx: number;
+  key: string;
+  value: string | number | null;
+};
+type IncomeScaleKey = 'scaleCurrent' | 'scalePrevious';
+type IncomeScaleRow = TaxSettings['incomeTax']['scaleCurrent'][number];
+
+type LegacyDmtgSettings = DmtgSettings & {
+  abattementLigneDirecte?: number | null;
+  scale?: DmtgSettings['ligneDirecte']['scale'];
+};
+
+interface TaxSettingsRow {
+  data: Partial<TaxSettings> | null;
+}
+
+interface DmtgDataRecord extends Partial<TaxSettings> {
+  dmtg?: LegacyDmtgSettings;
+}
+
 // Migration des anciennes données DMTG vers la nouvelle structure multi-catégories
-function migrateDmtgData(data) {
+function migrateDmtgData(
+  data: DmtgDataRecord | null | undefined,
+): DmtgDataRecord | null | undefined {
   if (!data?.dmtg) return data;
 
   const hasOldStructure = data.dmtg.abattementLigneDirecte !== undefined;
@@ -35,8 +73,9 @@ function migrateDmtgData(data) {
       ...data,
       dmtg: {
         ligneDirecte: {
-          abattement: data.dmtg.abattementLigneDirecte,
-          scale: data.dmtg.scale,
+          abattement:
+            data.dmtg.abattementLigneDirecte ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
+          scale: data.dmtg.scale ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
         },
         frereSoeur: DEFAULT_TAX_SETTINGS.dmtg.frereSoeur,
         neveuNiece: DEFAULT_TAX_SETTINGS.dmtg.neveuNiece,
@@ -61,10 +100,10 @@ export default function SettingsImpots() {
   const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(true);
 
-  const [settings, setSettings] = useState(DEFAULT_TAX_SETTINGS);
+  const [settings, setSettings] = useState<TaxSettings>(DEFAULT_TAX_SETTINGS);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-  const [openSection, setOpenSection] = useState(null);
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
   // Chargement user + paramètres depuis la table tax_settings
   useEffect(() => {
@@ -75,17 +114,19 @@ export default function SettingsImpots() {
         if (!mounted) return;
 
         // Charge la ligne id=1 si elle existe
-        const { data: rows, error: taxErr } = await supabase
+        const { data: rows, error: taxErr } = (await supabase
           .from('tax_settings')
           .select('data')
-          .eq('id', 1);
+          .eq('id', 1)) as { data: TaxSettingsRow[] | null; error: { code?: string } | null };
 
         if (!taxErr && rows && rows.length > 0 && rows[0].data) {
           const migratedData = migrateDmtgData(rows[0].data);
-          setSettings((prev) => ({
-            ...prev,
-            ...migratedData,
-          }));
+          if (migratedData) {
+            setSettings((prev) => ({
+              ...prev,
+              ...migratedData,
+            }));
+          }
         } else if (taxErr && taxErr.code !== 'PGRST116') {
           console.error('Erreur chargement tax_settings :', taxErr);
         }
@@ -104,7 +145,10 @@ export default function SettingsImpots() {
   }, []);
 
   // Validation
-  const impotsErrors = useMemo(() => validateImpotsSettings(settings), [settings]);
+  const impotsErrors = useMemo(
+    () => validateImpotsSettings(settings as Parameters<typeof validateImpotsSettings>[0]),
+    [settings],
+  );
   const dmtgErrors = useMemo(() => validateDmtg(settings.dmtg), [settings.dmtg]);
   const hasErrors = !isValid(impotsErrors, dmtgErrors);
 
@@ -139,22 +183,32 @@ export default function SettingsImpots() {
 
   // Alias pour compatibilité
   const setData = setSettings;
+  const setDataRecord = (
+    updater: (prev: Record<string, unknown>) => Record<string, unknown>,
+  ) => {
+    setData((prev) => updater(prev as Record<string, unknown>) as TaxSettings);
+  };
 
   // Helpers de MAJ
-  const updateIncomeScale = (which, index, key, value) => {
+  const updateIncomeScale = (
+    which: IncomeScaleKey,
+    index: number,
+    key: keyof IncomeScaleRow,
+    value: string | number | null,
+  ) => {
     setData((prev) => ({
       ...prev,
       incomeTax: {
         ...prev.incomeTax,
         [which]: prev.incomeTax[which].map((row, i) =>
-          i === index ? { ...row, [key]: value } : row
+          i === index ? { ...row, [key]: value as IncomeScaleRow[keyof IncomeScaleRow] } : row
         ),
       },
     }));
     setMessage('');
   };
 
-  const updateField = createFieldUpdater(setData, setMessage);
+  const updateField = createFieldUpdater(setDataRecord, setMessage);
 
   if (loading) {
     return <p>Chargement…</p>;
@@ -164,13 +218,17 @@ export default function SettingsImpots() {
 
   const { incomeTax, pfu, cehr, cdhr, corporateTax, dmtg } = settings;
 
-  const updateDmtgCategory = (categoryKey, field, value) => {
+  const updateDmtgCategory = (
+    categoryKey: DmtgCategoryKey,
+    field: 'abattement' | 'scale',
+    value: number | null | DmtgScaleUpdate,
+  ) => {
     setData((prev) => {
       const category = prev.dmtg?.[categoryKey];
       if (!category) return prev;
 
       // Mise à jour du barème (tableau)
-      if (field === 'scale' && typeof value === 'object' && 'idx' in value) {
+      if (field === 'scale' && typeof value === 'object' && value !== null && 'idx' in value) {
         const { idx, key, value: cellValue } = value;
         return {
           ...prev,
@@ -179,7 +237,7 @@ export default function SettingsImpots() {
             [categoryKey]: {
               ...category,
               scale: category.scale.map((row, i) =>
-                i === idx ? { ...row, [key]: cellValue } : row
+                i === idx ? { ...row, [key]: cellValue as DmtgScaleRow[keyof DmtgScaleRow] } : row
               ),
             },
           },
