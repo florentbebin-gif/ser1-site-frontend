@@ -1,20 +1,40 @@
-// @ts-nocheck
-import React from 'react';
+import type { LiquidationRow, SimulateCompleteResult } from '@/engine/placement/types';
 import { euro } from '../utils/formatters';
+import type { PlacementTableProduct } from '../utils/tableHelpers';
 import { CollapsibleTable } from './tables';
 import { buildColumns, getRelevantColumns } from '../utils/tableHelpers';
+
+type PlacementLiquidationDetailRow = LiquidationRow & {
+  capital?: number | null;
+  capitalDecesTheorique?: number | null;
+  cumulRevenusNetsPercus?: number | null;
+};
+
+type PlacementLiquidationProduct = Omit<SimulateCompleteResult, 'liquidation'> & {
+  liquidation: Omit<SimulateCompleteResult['liquidation'], 'rows'> & {
+    rows: PlacementLiquidationDetailRow[];
+  };
+};
+
+interface PlacementLiquidationDetailsTableProps {
+  product: PlacementLiquidationProduct;
+  showAllColumns: boolean;
+  showCapitalDecesColumn: boolean;
+}
 
 export function PlacementLiquidationDetailsTable({
   product,
   showAllColumns,
   showCapitalDecesColumn,
-}) {
+}: PlacementLiquidationDetailsTableProps) {
+  const detailRows = product.liquidation.rows.filter((row) => row.age <= product.liquidation.ageAuDeces);
+
   return (
     <CollapsibleTable
       title={`Détail ${product.envelopeLabel}`}
-      rows={product.liquidation.rows.filter((row) => row.age <= product.liquidation.ageAuDeces)}
-      columns={getRelevantColumns(product.liquidation.rows, buildColumns(product), showAllColumns)}
-      renderRow={(row, index) => (
+      rows={detailRows}
+      columns={getRelevantColumns(detailRows, buildColumns(product as PlacementTableProduct), showAllColumns)}
+      renderRow={(row: PlacementLiquidationDetailRow, index) => (
         <tr key={index} className={row.isAgeAuDeces ? 'pl-row-deces' : ''}>
           <td>{row.age} ans {row.isAgeAuDeces && '†'}</td>
           {product.envelope === 'SCPI' ? (

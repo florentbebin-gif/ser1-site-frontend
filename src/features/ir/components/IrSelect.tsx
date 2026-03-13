@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useRef, useState } from 'react';
 
 /**
@@ -11,14 +10,28 @@ import React, { useEffect, useRef, useState } from 'react';
  *   style      — style inline sur le wrapper (ex: { flex: 1 })
  *   testId     — data-testid sur le trigger
  */
-export function IrSelect({ value, onChange, options, className, style, testId }) {
+export interface IrSelectOption {
+  value: string;
+  label: string;
+}
+
+interface IrSelectProps {
+  value: string;
+  onChange: (_value: string) => void;
+  options: IrSelectOption[];
+  className?: string;
+  style?: React.CSSProperties;
+  testId?: string;
+}
+
+export function IrSelect({ value, onChange, options, className, style, testId }: IrSelectProps) {
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
-    const onDown = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    const onDown = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false);
     };
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
@@ -26,7 +39,9 @@ export function IrSelect({ value, onChange, options, className, style, testId })
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);

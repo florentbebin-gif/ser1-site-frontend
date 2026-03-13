@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Placement Table Components — CollapsibleTable et AllocationSlider
  */
@@ -7,12 +6,24 @@ import React, { useState } from 'react';
 
 // ─── CollapsibleTable ────────────────────────────────────────────────
 
-export function CollapsibleTable({ title, rows, columns, renderRow }) {
+interface CollapsibleTableProps<Row> {
+  title: string;
+  rows: Row[] | null | undefined;
+  columns: string[];
+  renderRow: (_row: Row, _index: number) => React.ReactElement;
+}
+
+export function CollapsibleTable<Row>({
+  title,
+  rows,
+  columns,
+  renderRow,
+}: CollapsibleTableProps<Row>) {
   const [open, setOpen] = useState(false);
   if (!rows || rows.length === 0) return null;
   return (
     <div className="pl-collapsible">
-      <button className="pl-collapsible__toggle" onClick={() => setOpen(!open)}>
+      <button type="button" className="pl-collapsible__toggle" onClick={() => setOpen(!open)}>
         {open ? '▼' : '▶'} {title} ({rows.length} années)
       </button>
       {open && (
@@ -33,9 +44,23 @@ export function CollapsibleTable({ title, rows, columns, renderRow }) {
 
 // ─── AllocationSlider ────────────────────────────────────────────────
 
-export function AllocationSlider({ pctCapi, pctDistrib, onChange, disabled, isSCPI }) {
-  const handleCapiChange = (pctCapi) => {
-    onChange(pctCapi, 100 - pctCapi);
+interface AllocationSliderProps {
+  pctCapi: number;
+  pctDistrib: number;
+  onChange: (_pctCapi: number, _pctDistrib: number) => void;
+  disabled?: boolean;
+  isSCPI?: boolean;
+}
+
+export function AllocationSlider({
+  pctCapi,
+  pctDistrib,
+  onChange,
+  disabled,
+  isSCPI,
+}: AllocationSliderProps) {
+  const handleCapiChange = (nextPctCapi: number) => {
+    onChange(nextPctCapi, 100 - nextPctCapi);
   };
 
   if (isSCPI) {

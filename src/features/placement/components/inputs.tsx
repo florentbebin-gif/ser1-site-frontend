@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Placement Input Components — Composants de saisie réutilisables
  */
@@ -8,13 +7,13 @@ import { fmt } from '../utils/formatters';
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
-function formatPctInput(value) {
+function formatPctInput(value: number | null | undefined): string {
   const numeric = Number(value);
   if (Number.isNaN(numeric)) return '';
   return numeric.toLocaleString('fr-FR', { maximumFractionDigits: 2 });
 }
 
-function parsePctInput(input) {
+function parsePctInput(input: string): { numeric: number | null } {
   const trimmed = input.trim();
   if (trimmed === '') return { numeric: null };
   const normalized = trimmed.replace(',', '.').replace(/[^\d.-]/g, '');
@@ -28,7 +27,17 @@ function parsePctInput(input) {
 
 // ─── InputEuro ───────────────────────────────────────────────────────
 
-export function InputEuro({ value, onChange, label, disabled }) {
+interface BaseInputProps {
+  label?: string;
+  disabled?: boolean;
+}
+
+interface InputEuroProps extends BaseInputProps {
+  value: number | null | undefined;
+  onChange: (_value: number) => void;
+}
+
+export function InputEuro({ value, onChange, label, disabled }: InputEuroProps) {
   return (
     <div className="pl-field">
       {label && <label>{label}</label>}
@@ -51,20 +60,25 @@ export function InputEuro({ value, onChange, label, disabled }) {
 
 // ─── InputPct ────────────────────────────────────────────────────────
 
-export function InputPct({ value, onChange, label, disabled }) {
-  const [local, setLocal] = useState(() => formatPctInput(value * 100));
+interface InputPctProps extends BaseInputProps {
+  value: number | null | undefined;
+  onChange: (_value: number) => void;
+}
+
+export function InputPct({ value, onChange, label, disabled }: InputPctProps) {
+  const [local, setLocal] = useState(() => formatPctInput((value ?? 0) * 100));
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     if (!isFocused) {
-      setLocal(formatPctInput(value * 100));
+      setLocal(formatPctInput((value ?? 0) * 100));
     }
   }, [value, isFocused]);
 
-  const handleChange = (e) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     // IMPORTANT: ne pas pousser dans le state parent pendant la frappe.
     // Sinon, une re-normalisation / re-render peut écraser la saisie.
-    setLocal(e.target.value);
+    setLocal(event.target.value);
   };
 
   const handleBlur = () => {
@@ -103,15 +117,33 @@ export function InputPct({ value, onChange, label, disabled }) {
 
 // ─── InputNumber ─────────────────────────────────────────────────────
 
-export function InputNumber({ value, onChange, label, unit, min = 0, max = 999, inline = false }) {
+interface InputNumberProps {
+  value: number | string;
+  onChange: (_value: number) => void;
+  label?: string;
+  unit?: string;
+  min?: number;
+  max?: number;
+  inline?: boolean;
+}
+
+export function InputNumber({
+  value,
+  onChange,
+  label,
+  unit,
+  min = 0,
+  max = 999,
+  inline = false,
+}: InputNumberProps) {
   const [localValue, setLocalValue] = useState(String(value));
 
   useEffect(() => {
     setLocalValue(String(value));
   }, [value]);
 
-  const handleChange = (e) => {
-    const raw = e.target.value;
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = event.target.value;
     // Permettre la saisie libre de chiffres
     if (/^\d*$/.test(raw)) {
       setLocalValue(raw);
@@ -158,7 +190,19 @@ export function InputNumber({ value, onChange, label, unit, min = 0, max = 999, 
 
 // ─── Select ──────────────────────────────────────────────────────────
 
-export function Select({ value, onChange, options, label }) {
+export interface PlacementSelectOption {
+  value: string | number;
+  label: string;
+}
+
+interface SelectProps {
+  value: string | number;
+  onChange: (_value: string) => void;
+  options: PlacementSelectOption[];
+  label?: string;
+}
+
+export function Select({ value, onChange, options, label }: SelectProps) {
   return (
     <div className="pl-field">
       {label && <label>{label}</label>}
@@ -173,7 +217,13 @@ export function Select({ value, onChange, options, label }) {
 
 // ─── Toggle ──────────────────────────────────────────────────────────
 
-export function Toggle({ checked, onChange, label }) {
+interface ToggleProps {
+  checked: boolean;
+  onChange: (_checked: boolean) => void;
+  label?: string;
+}
+
+export function Toggle({ checked, onChange, label }: ToggleProps) {
   return (
     <label className="pl-toggle">
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />

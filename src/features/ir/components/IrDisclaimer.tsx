@@ -1,7 +1,10 @@
-// @ts-nocheck
-import React, { useState } from 'react';
+import { useState } from 'react';
 
-export function IrDisclaimer({ isIsolated }) {
+interface IrDisclaimerProps {
+  isIsolated: boolean;
+}
+
+export function IrDisclaimer({ isIsolated }: IrDisclaimerProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (

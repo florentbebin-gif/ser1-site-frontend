@@ -1,7 +1,28 @@
-// @ts-nocheck
-import React from 'react';
+import type { BracketDetail, CdhrDetails } from '@/engine/ir/types';
 
-export function IrDetailsSection({ result, euro0, fmtPct, pfuRateIR }) {
+interface IrDetailsResult {
+  bracketsDetails?: BracketDetail[] | null;
+  taxableIncome: number;
+  irBeforeQfBase?: number;
+  qfAdvantage?: number;
+  irAfterQf?: number;
+  domAbatementAmount?: number;
+  creditsTotal?: number;
+  decote?: number;
+  irNet?: number;
+  cehrDetails?: BracketDetail[] | null;
+  cdhrDetails?: CdhrDetails | null;
+  cdhr?: number;
+}
+
+interface IrDetailsSectionProps {
+  result: IrDetailsResult | null;
+  euro0: (_value: number) => string;
+  fmtPct: (_value: number) => string;
+  pfuRateIR: number;
+}
+
+export function IrDetailsSection({ result, euro0, fmtPct, pfuRateIR }: IrDetailsSectionProps) {
   if (!result) return null;
 
   return (
@@ -50,7 +71,7 @@ export function IrDetailsSection({ result, euro0, fmtPct, pfuRateIR }) {
           {(result.domAbatementAmount || 0) > 0 && (
             <tr>
               <td>Abattement DOM</td>
-              <td style={{ textAlign: 'right' }}>- {euro0(result.domAbatementAmount)}</td>
+              <td style={{ textAlign: 'right' }}>- {euro0(result.domAbatementAmount || 0)}</td>
             </tr>
           )}
           <tr>

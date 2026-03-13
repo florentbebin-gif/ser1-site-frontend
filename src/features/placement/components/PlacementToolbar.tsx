@@ -1,6 +1,19 @@
-// @ts-nocheck
-import React from 'react';
 import { ExportMenu } from '@/components/ExportMenu';
+import type { PlacementStep } from '../utils/normalizers';
+
+interface PlacementToolbarProps {
+  exportLoading: boolean;
+  onExportExcel: () => void | Promise<void>;
+  canExportExcel: boolean;
+  step: PlacementStep;
+  onStepChange: (_step: PlacementStep) => void;
+}
+
+const PLACEMENT_PHASES: Array<Exclude<PlacementStep, 'synthese'>> = [
+  'epargne',
+  'liquidation',
+  'transmission',
+];
 
 export function PlacementToolbar({
   exportLoading,
@@ -8,7 +21,7 @@ export function PlacementToolbar({
   canExportExcel,
   step,
   onStepChange,
-}) {
+}: PlacementToolbarProps) {
   return (
     <>
       <div className="pl-ir-header pl-header premium-header">
@@ -29,9 +42,10 @@ export function PlacementToolbar({
       </div>
 
       <div className="pl-phase-nav">
-        {['epargne', 'liquidation', 'transmission'].map((phase) => (
+        {PLACEMENT_PHASES.map((phase) => (
           <button
             key={phase}
+            type="button"
             className={`pl-phase-tab ${step === phase ? 'is-active' : ''}`}
             onClick={() => onStepChange(phase)}
           >
