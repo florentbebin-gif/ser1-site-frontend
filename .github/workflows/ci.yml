@@ -17,7 +17,7 @@ jobs:
   test-and-build:
     runs-on: ubuntu-22.04
     timeout-minutes: 15
-    
+
     strategy:
       fail-fast: true
 
@@ -63,11 +63,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Run npm run check
+      - name: Run all checks
         run: npm run check
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
 
       - name: Check no console.* in production
         run: |
@@ -75,15 +75,3 @@ jobs:
             --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" \
             | grep -v "__tests__" | grep -v ".test." | grep -v "debugFlags" \
             | grep -v "eslint-disable" | grep -v "import.meta.env.DEV"
-
-      - name: TypeScript check
-        run: npm run typecheck
-
-      - name: Run tests
-        run: npm test
-
-      - name: Build
-        run: npm run build
-        env:
-          VITE_SUPABASE_URL: https://placeholder.supabase.co
-          VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
