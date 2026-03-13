@@ -1,9 +1,25 @@
-// @ts-nocheck
-import React from 'react';
 import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
+import type { CompareResult } from '@/engine/placement/types';
 import { euro, formatPsMontant } from '../utils/formatters';
+import type {
+  DmtgOption,
+  PlacementSimulatorState,
+  PlacementTransmissionState,
+} from '../utils/normalizers';
 import { BENEFICIARY_OPTIONS } from '../utils/normalizers';
 import { InputNumber } from './inputs';
+
+interface PlacementTransmissionSectionProps {
+  state: PlacementSimulatorState;
+  setTransmission: (_patch: Partial<PlacementTransmissionState>) => void;
+  produit1: CompareResult['produit1'] | null;
+  produit2: CompareResult['produit2'] | null;
+  dmtgSelectOptions: DmtgOption[];
+  showDmtgDisclaimer: boolean;
+  dmtgConsumptionPercentProduit1: number;
+  dmtgConsumptionPercentProduit2: number;
+  psSettings?: typeof DEFAULT_PS_SETTINGS | null;
+}
 
 export function PlacementTransmissionSection({
   state,
@@ -15,7 +31,7 @@ export function PlacementTransmissionSection({
   dmtgConsumptionPercentProduit1,
   dmtgConsumptionPercentProduit2,
   psSettings,
-}) {
+}: PlacementTransmissionSectionProps) {
   const psDecesProduit1 = produit1?.transmission?.psDeces;
   const psDecesProduit2 = produit2?.transmission?.psDeces;
   const hasTransmissionData = Boolean(produit1 || produit2);
@@ -86,7 +102,7 @@ export function PlacementTransmissionSection({
               <td colSpan={2}>
                 <select
                   className="pl-select"
-                  value={state.transmission.dmtgTaux}
+                  value={state.transmission.dmtgTaux ?? ''}
                   onChange={(event) => {
                     const nextValue = parseFloat(event.target.value);
                     if (Number.isNaN(nextValue)) return;

@@ -1,9 +1,35 @@
-// @ts-nocheck
 import React from 'react';
 import { ENVELOPE_LABELS } from '@/engine/placement';
+import type { CompareResult } from '@/engine/placement/types';
 import { shortEuro } from '../utils/formatters';
+import type {
+  EpargneRowWithReinvest,
+  PlacementProductDraft,
+  PlacementSimulatorState,
+} from '../utils/normalizers';
+import type { PlacementTableProduct } from '../utils/tableHelpers';
 import { InputNumber, Toggle } from './inputs';
 import { CollapsibleTable } from './tables';
+
+interface PlacementEpargneSectionProps {
+  state: PlacementSimulatorState;
+  setProduct: (_index: number, _patch: Partial<PlacementProductDraft>) => void;
+  setModalOpen: (_productIndex: number) => void;
+  showAllColumns: boolean;
+  setShowAllColumns: (_value: boolean) => void;
+  produit1: CompareResult['produit1'] | null;
+  produit2: CompareResult['produit2'] | null;
+  detailRows1: EpargneRowWithReinvest[];
+  detailRows2: EpargneRowWithReinvest[];
+  columnsProduit1: string[];
+  columnsProduit2: string[];
+  renderEpargneRow: (
+    _product: PlacementTableProduct,
+    _columns: string[],
+  ) => (_row: EpargneRowWithReinvest, _index: number) => React.ReactElement;
+}
+
+const envelopeLabels = ENVELOPE_LABELS as Record<string, string>;
 
 export function PlacementEpargneSection({
   state,
@@ -18,7 +44,7 @@ export function PlacementEpargneSection({
   columnsProduit1,
   columnsProduit2,
   renderEpargneRow,
-}) {
+}: PlacementEpargneSectionProps) {
   return (
     <div className="pl-ir-table-wrapper premium-card premium-section">
       <div className="pl-section-title premium-section-title">Phase d'épargne</div>
@@ -28,12 +54,12 @@ export function PlacementEpargneSection({
             <th />
             <th className="pl-colhead" aria-label="Produit 1">
               <div className="pl-colbadge-wrapper">
-                <div className="pl-collabel pl-collabel--product1">{ENVELOPE_LABELS[state.products[0].envelope]}</div>
+                <div className="pl-collabel pl-collabel--product1">{envelopeLabels[state.products[0].envelope]}</div>
               </div>
             </th>
             <th className="pl-colhead" aria-label="Produit 2">
               <div className="pl-colbadge-wrapper">
-                <div className="pl-collabel pl-collabel--product2">{ENVELOPE_LABELS[state.products[1].envelope]}</div>
+                <div className="pl-collabel pl-collabel--product2">{envelopeLabels[state.products[1].envelope]}</div>
               </div>
             </th>
           </tr>

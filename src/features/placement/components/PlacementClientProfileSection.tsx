@@ -1,12 +1,18 @@
-// @ts-nocheck
-import React from 'react';
+import type { PlacementTmiOption } from '@/hooks/usePlacementSettings';
+import type { PlacementClient } from '../utils/normalizers';
 import { InputNumber, Select } from './inputs';
+
+interface PlacementClientProfileSectionProps {
+  client: PlacementClient;
+  tmiOptions: PlacementTmiOption[];
+  setClient: (_patch: Partial<PlacementClient>) => void;
+}
 
 export function PlacementClientProfileSection({
   client,
   tmiOptions,
   setClient,
-}) {
+}: PlacementClientProfileSectionProps) {
   return (
     <div className="pl-ir-table-wrapper premium-card premium-section">
       <div className="pl-section-title premium-section-title">Profil client</div>
