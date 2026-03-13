@@ -1,8 +1,51 @@
-// @ts-nocheck
 import React from 'react';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
 import { numberOrEmpty } from '@/utils/settingsHelpers';
+
+type PeriodKey = 'current' | 'previous';
+
+interface IncomeTaxLabels {
+  currentYearLabel?: string;
+  previousYearLabel?: string;
+}
+
+interface CehrBracket {
+  from: number | null;
+  to: number | null;
+  rate: number | null;
+}
+
+interface CehrPeriodSettings {
+  single: CehrBracket[];
+  couple: CehrBracket[];
+}
+
+interface CehrSettings {
+  current: CehrPeriodSettings;
+  previous: CehrPeriodSettings;
+}
+
+interface CdhrPeriodSettings {
+  minEffectiveRate: number | null;
+  thresholdSingle: number | null;
+  thresholdCouple: number | null;
+}
+
+interface CdhrSettings {
+  current: CdhrPeriodSettings;
+  previous: CdhrPeriodSettings;
+}
+
+interface ImpotsCehrSectionProps {
+  cehr: CehrSettings;
+  cdhr: CdhrSettings;
+  incomeTax: IncomeTaxLabels;
+  updateField: (path: string[], value: string | number | null) => void;
+  isAdmin: boolean;
+  openSection: string | null;
+  setOpenSection: React.Dispatch<React.SetStateAction<string | null>>;
+}
 
 export default function ImpotsCehrSection({
   cehr,
@@ -12,26 +55,29 @@ export default function ImpotsCehrSection({
   isAdmin,
   openSection,
   setOpenSection,
-}) {
+}: ImpotsCehrSectionProps): React.ReactElement {
+  const isOpen = openSection === 'cehr';
+  const periods: PeriodKey[] = ['current', 'previous'];
+
   return (
     <div className="fisc-acc-item">
       <button
         type="button"
         className="fisc-acc-header"
         id="impots-header-cehr"
-        aria-expanded={openSection === 'cehr'}
+        aria-expanded={isOpen}
         aria-controls="impots-panel-cehr"
-        onClick={() => setOpenSection(openSection === 'cehr' ? null : 'cehr')}
+        onClick={() => setOpenSection(isOpen ? null : 'cehr')}
       >
         <span className="settings-premium-title" style={{ margin: 0 }}>
           CEHR / CDHR
         </span>
         <span className="fisc-acc-chevron">
-          {openSection === 'cehr' ? '▾' : '▸'}
+          {isOpen ? 'v' : '>'}
         </span>
       </button>
 
-      {openSection === 'cehr' && (
+      {isOpen && (
         <div
           className="fisc-acc-body"
           id="impots-panel-cehr"
@@ -40,32 +86,32 @@ export default function ImpotsCehrSection({
         >
           <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
             Contribution exceptionnelle sur les hauts revenus (CEHR) et
-            contribution différentielle (CDHR).
+            contribution differentielle (CDHR).
           </p>
 
           <div className="tax-two-cols">
-            {['current', 'previous'].map((period) => {
+            {periods.map((period) => {
               const yearLabel =
                 period === 'current'
-                  ? incomeTax.currentYearLabel
-                  : incomeTax.previousYearLabel;
+                  ? incomeTax.currentYearLabel || 'Annee N'
+                  : incomeTax.previousYearLabel || 'Annee N-1';
               const cehrData = cehr[period];
               const cdhrData = cdhr[period];
-              const suffix = period === 'current' ? '2025' : '2024';
+
               return (
                 <SettingsYearColumn
                   key={period}
                   yearLabel={yearLabel}
                   isRight={period === 'previous'}
                 >
-                  <strong>CEHR – personne seule</strong>
+                  <strong>CEHR - personne seule</strong>
                   {cehrData.single.map((row, idx) => (
                     <SettingsFieldRow
-                      key={`cehrS_${suffix}_${idx}`}
-                      label={`De ${numberOrEmpty(row.from)} € à ${
-                        row.to ? `${row.to} €` : 'plus'
+                      key={`cehr-single-${period}-${idx}`}
+                      label={`De ${numberOrEmpty(row.from)} EUR a ${
+                        row.to == null ? 'plus' : `${row.to} EUR`
                       }`}
-                      path={['cehr', period, 'single', idx, 'rate']}
+                      path={['cehr', period, 'single', String(idx), 'rate']}
                       value={row.rate}
                       onChange={updateField}
                       step="0.1"
@@ -74,14 +120,14 @@ export default function ImpotsCehrSection({
                     />
                   ))}
 
-                  <strong>CEHR – couple</strong>
+                  <strong>CEHR - couple</strong>
                   {cehrData.couple.map((row, idx) => (
                     <SettingsFieldRow
-                      key={`cehrC_${suffix}_${idx}`}
-                      label={`De ${numberOrEmpty(row.from)} € à ${
-                        row.to ? `${row.to} €` : 'plus'
+                      key={`cehr-couple-${period}-${idx}`}
+                      label={`De ${numberOrEmpty(row.from)} EUR a ${
+                        row.to == null ? 'plus' : `${row.to} EUR`
                       }`}
-                      path={['cehr', period, 'couple', idx, 'rate']}
+                      path={['cehr', period, 'couple', String(idx), 'rate']}
                       value={row.rate}
                       onChange={updateField}
                       step="0.1"
@@ -105,7 +151,7 @@ export default function ImpotsCehrSection({
                     path={['cdhr', period, 'thresholdSingle']}
                     value={cdhrData.thresholdSingle}
                     onChange={updateField}
-                    unit="€"
+                    unit="EUR"
                     disabled={!isAdmin}
                   />
                   <SettingsFieldRow
@@ -113,7 +159,7 @@ export default function ImpotsCehrSection({
                     path={['cdhr', period, 'thresholdCouple']}
                     value={cdhrData.thresholdCouple}
                     onChange={updateField}
-                    unit="€"
+                    unit="EUR"
                     disabled={!isAdmin}
                   />
                 </SettingsYearColumn>
@@ -125,4 +171,3 @@ export default function ImpotsCehrSection({
     </div>
   );
 }
-

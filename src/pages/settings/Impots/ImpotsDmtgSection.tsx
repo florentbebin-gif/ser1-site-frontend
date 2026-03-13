@@ -1,7 +1,51 @@
-// @ts-nocheck
 import React from 'react';
 import SettingsTable from '@/components/settings/SettingsTable';
 import { numberOrEmpty } from '@/utils/settingsHelpers';
+
+type CellValue = string | number | null;
+type DmtgCategoryKey = 'ligneDirecte' | 'frereSoeur' | 'neveuNiece' | 'autre';
+
+interface DmtgScaleRow {
+  from: number | null;
+  to: number | null;
+  rate: number | null;
+}
+
+interface DmtgScaleTableRow extends DmtgScaleRow {
+  _key: string;
+  [key: string]: React.Key | number | null;
+}
+
+interface DmtgCategory {
+  abattement: number | null;
+  scale: DmtgScaleRow[];
+}
+
+type DmtgSettings = Record<DmtgCategoryKey, DmtgCategory>;
+
+interface DmtgScaleUpdate {
+  idx: number;
+  key: string;
+  value: CellValue;
+}
+
+interface DmtgCategoryMeta {
+  key: DmtgCategoryKey;
+  title: string;
+  labelAbattement: string;
+}
+
+interface ImpotsDmtgSectionProps {
+  dmtg: DmtgSettings;
+  updateDmtgCategory: (
+    categoryKey: DmtgCategoryKey,
+    field: 'abattement' | 'scale',
+    value: number | null | DmtgScaleUpdate,
+  ) => void;
+  isAdmin: boolean;
+  openSection: string | null;
+  setOpenSection: React.Dispatch<React.SetStateAction<string | null>>;
+}
 
 export default function ImpotsDmtgSection({
   dmtg,
@@ -9,26 +53,50 @@ export default function ImpotsDmtgSection({
   isAdmin,
   openSection,
   setOpenSection,
-}) {
+}: ImpotsDmtgSectionProps): React.ReactElement {
+  const isOpen = openSection === 'dmtg';
+  const categories: DmtgCategoryMeta[] = [
+    {
+      key: 'ligneDirecte',
+      title: 'Ligne directe (enfants, petits-enfants)',
+      labelAbattement: 'Abattement par enfant',
+    },
+    {
+      key: 'frereSoeur',
+      title: 'Freres et soeurs',
+      labelAbattement: 'Abattement frere/soeur',
+    },
+    {
+      key: 'neveuNiece',
+      title: 'Neveux et nieces',
+      labelAbattement: 'Abattement neveu/niece',
+    },
+    {
+      key: 'autre',
+      title: 'Autres (non-parents)',
+      labelAbattement: 'Abattement par defaut',
+    },
+  ];
+
   return (
     <div className="fisc-acc-item">
       <button
         type="button"
         className="fisc-acc-header"
         id="impots-header-dmtg"
-        aria-expanded={openSection === 'dmtg'}
+        aria-expanded={isOpen}
         aria-controls="impots-panel-dmtg"
-        onClick={() => setOpenSection(openSection === 'dmtg' ? null : 'dmtg')}
+        onClick={() => setOpenSection(isOpen ? null : 'dmtg')}
       >
         <span className="settings-premium-title" style={{ margin: 0 }}>
-          Droits de Mutation à Titre Gratuit (DMTG)
+          Droits de Mutation a Titre Gratuit (DMTG)
         </span>
         <span className="fisc-acc-chevron">
-          {openSection === 'dmtg' ? '▾' : '▸'}
+          {isOpen ? 'v' : '>'}
         </span>
       </button>
 
-      {openSection === 'dmtg' && (
+      {isOpen && (
         <div
           className="fisc-acc-body"
           id="impots-panel-dmtg"
@@ -36,34 +104,14 @@ export default function ImpotsDmtgSection({
           aria-labelledby="impots-header-dmtg"
         >
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Barèmes applicables aux successions et donations selon le lien de parenté.
-            Utilisés par le simulateur de placement pour la phase de transmission.
+            Baremes applicables aux successions et donations selon le lien de
+            parente. Utilises par le simulateur de placement pour la phase de
+            transmission.
           </p>
 
-          {[
-            {
-              key: 'ligneDirecte',
-              title: 'Ligne directe (enfants, petits-enfants)',
-              labelAbattement: 'Abattement par enfant',
-            },
-            {
-              key: 'frereSoeur',
-              title: 'Frères et sœurs',
-              labelAbattement: 'Abattement frère/sœur',
-            },
-            {
-              key: 'neveuNiece',
-              title: 'Neveux et nièces',
-              labelAbattement: 'Abattement neveu/nièce',
-            },
-            {
-              key: 'autre',
-              title: 'Autres (non-parents)',
-              labelAbattement: 'Abattement par défaut',
-            },
-          ].map(({ key, title, labelAbattement }) => {
-            const catData = dmtg?.[key];
-            if (!catData) return null;
+          {categories.map(({ key, title, labelAbattement }) => {
+            const category = dmtg[key];
+
             return (
               <div
                 key={key}
@@ -85,22 +133,24 @@ export default function ImpotsDmtgSection({
                     <label>{labelAbattement}</label>
                     <input
                       type="number"
-                      value={numberOrEmpty(catData.abattement)}
-                      onChange={(e) =>
+                      value={numberOrEmpty(category.abattement)}
+                      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                         updateDmtgCategory(
                           key,
                           'abattement',
-                          e.target.value === '' ? null : Number(e.target.value)
+                          event.target.value === ''
+                            ? null
+                            : Number(event.target.value)
                         )
                       }
                       disabled={!isAdmin}
                     />
-                    <span>€</span>
+                    <span>EUR</span>
                   </div>
                   <SettingsTable
                     columns={[
-                      { key: 'from', header: 'De (€)' },
-                      { key: 'to', header: 'À (€)' },
+                      { key: 'from', header: 'De (EUR)' },
+                      { key: 'to', header: 'A (EUR)' },
                       {
                         key: 'rate',
                         header: 'Taux %',
@@ -108,8 +158,13 @@ export default function ImpotsDmtgSection({
                         className: 'taux-col',
                       },
                     ]}
-                    rows={catData.scale || []}
-                    onCellChange={(idx, colKey, value) =>
+                    rows={category.scale.map(
+                      (row, index): DmtgScaleTableRow => ({
+                        ...row,
+                        _key: `${key}_${index}`,
+                      })
+                    )}
+                    onCellChange={(idx, colKey, value: CellValue) =>
                       updateDmtgCategory(key, 'scale', { idx, key: colKey, value })
                     }
                     disabled={!isAdmin}
@@ -123,4 +178,3 @@ export default function ImpotsDmtgSection({
     </div>
   );
 }
-
