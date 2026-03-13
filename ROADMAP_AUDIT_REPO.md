@@ -29,7 +29,7 @@
 | Fichiers `src/` | 392 fichiers | repo de taille moyenne, audit manuel faisable |
 | Extensions `src/` | 224 `.ts`, 117 `.tsx`, 24 `.css`, 14 `.json`, 13 `.svg` | TypeScript majoritaire |
 | Fichiers `.js/.jsx` dans `src/` | 0 | la convention est deja appliquee par script CI |
-| Warnings ESLint | 3 warnings `max-lines`, 0 error | bruit lint reduit, reliquat cible sur 3 gros fichiers a decouper |
+| Warnings ESLint | 2 warnings `max-lines`, 0 error | bruit lint reduit, reliquat cible sur 2 gros fichiers a decouper |
 | `eslint-disable` hors tests | 54 occurrences | dette localisee et quantifiable |
 | `console.log/debug/info/trace` hors tests | 52 occurrences dans 17 fichiers | observabilite a normaliser |
 | `@deprecated` | 10 occurrences dans 6 fichiers | audit d'usage a faire avant suppression |
@@ -275,7 +275,7 @@ Un petit fichier n'est "fusionnable" que s'il n'est ni :
 
 | Sujet | Etat |
 |---|---|
-| ESLint | 3 warnings `max-lines`, 0 error |
+| ESLint | 2 warnings `max-lines`, 0 error |
 | `eslint-disable` hors tests | 54 occurrences |
 | Husky | `.husky/pre-commit` avec `lint-staged` |
 | hooks custom | `.githooks/pre-push` existe encore |
@@ -494,9 +494,10 @@ Statut le 2026-03-14 : terminee
 Statut le 2026-03-14 : en cours
 
 - fichiers prouves a exempter de `max-lines` : `src/constants/settingsDefaults.ts`, `src/domain/base-contrat/catalog.ts`, `src/domain/base-contrat/rules/library/immobilier.ts`, `src/domain/base-contrat/rules/library/retraite.ts`, `src/domain/base-contrat/rules/library/valeurs-mobilieres.ts`, `src/pptx/designSystem/serenity.ts`
-- warnings `max-lines` ramenes de `10` a `3`
+- warnings `max-lines` ramenes de `10` a `2`
 - `src/pages/settings/Impots/ImpotsBaremeSection.tsx` sorti du warning via extraction locale `src/pages/settings/Impots/ImpotsBaremeYearColumn.tsx`
-- vrais candidats au decoupage conserves visibles : `src/features/credit/hooks/useCreditCalculations.ts`, `src/features/succession/successionChainage.ts`, `src/features/succession/successionDevolution.ts`
+- `src/features/credit/hooks/useCreditCalculations.ts` sorti du warning via extraction locale `src/features/credit/utils/creditCalculationHelpers.ts`
+- vrais candidats au decoupage conserves visibles : `src/features/succession/successionChainage.ts`, `src/features/succession/successionDevolution.ts`
 
 ### PR-10 - Review structurelle
 
