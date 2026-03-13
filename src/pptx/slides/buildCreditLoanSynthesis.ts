@@ -8,7 +8,7 @@
  * Shows: Capital, Duration, Rate, Monthly Payment, Total Cost
  */
 
-import PptxGenJS from 'pptxgenjs';
+import type PptxGenJS from 'pptxgenjs';
 import type { CreditLoanSynthesisSlideSpec, PptxThemeRoles, ExportContext } from '../theme/types';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {

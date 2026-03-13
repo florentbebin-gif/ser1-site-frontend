@@ -5,7 +5,7 @@
  * Now with KPI-style slides matching the design specification.
  */
 
-import type { StudyDeckSpec, ChapterSlideSpec, IrSynthesisSlideSpec, IrAnnexeSlideSpec } from '../theme/types';
+import type { StudyDeckSpec, ChapterSlideSpec, IrSynthesisSlideSpec, IrAnnexeSlideSpec, LogoPlacement } from '../theme/types';
 import { isDebugEnabled } from '../../utils/debugFlags';
 
 // Debug flag for development (activable via VITE_DEBUG_PPTX=1 ou localStorage)
@@ -101,7 +101,7 @@ export function buildIrStudyDeck(
   irData: IrData,
   uiSettings: UiSettingsForPptx,
   logoUrl?: string,
-  logoPlacement?: import('../theme/types').LogoPlacement,
+  logoPlacement?: LogoPlacement,
   advisor?: AdvisorInfo
 ): StudyDeckSpec {
   // Debug logging

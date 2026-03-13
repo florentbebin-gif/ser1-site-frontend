@@ -4,7 +4,7 @@
  * Fonctions pures (pas de React state) qui encapsulent les appels RPC et Edge Function.
  */
 
-import React from 'react';
+import type React from 'react';
 import { supabase } from '../../../supabaseClient';
 import { DEFAULT_COLORS, type ThemeColors } from '../../theme';
 import type { LogoPlacement } from '../../../pptx/theme/types';

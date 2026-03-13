@@ -64,6 +64,40 @@ export default [
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
+      // Enforce import type for type-only imports (PR-4)
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
+      ],
+    },
+  },
+  // Architecture boundaries (PR-4): engine must not import from features or pages
+  {
+    files: ['src/engine/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: ['**/features/**'], message: 'src/engine must not import from src/features' },
+            { group: ['**/pages/**'], message: 'src/engine must not import from src/pages' },
+          ],
+        },
+      ],
+    },
+  },
+  // Architecture boundaries (PR-4): features must not import from pages
+  {
+    files: ['src/features/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: ['**/pages/**'], message: 'src/features must not import from src/pages' },
+          ],
+        },
+      ],
     },
   },
   {

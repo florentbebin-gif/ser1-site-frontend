@@ -10,8 +10,9 @@ import {
   type SuccessionPrimarySide,
   type SuccessionTestamentConfig,
 } from '../successionDraft';
+import type {
+  buildTestamentBeneficiaryOptions} from '../successionTestament';
 import {
-  buildTestamentBeneficiaryOptions,
   getQuotiteDisponiblePctForSide,
   getReserveHintForSide,
   getTestamentCardTitle,

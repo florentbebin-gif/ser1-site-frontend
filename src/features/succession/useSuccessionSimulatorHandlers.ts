@@ -25,8 +25,9 @@ import {
   type SuccessionTestamentConfig,
   type SituationMatrimoniale,
 } from './successionDraft';
+import type {
+  buildTestamentBeneficiaryOptions} from './successionTestament';
 import {
-  buildTestamentBeneficiaryOptions,
   cloneSuccessionTestamentsBySide,
   createSuccessionParticularLegacyEntry,
 } from './successionTestament';

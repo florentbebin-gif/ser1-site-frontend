@@ -5,7 +5,7 @@
  * Standard content slide with title, subtitle, body, and optional icons
  */
 
-import PptxGenJS from 'pptxgenjs';
+import type PptxGenJS from 'pptxgenjs';
 import type { ContentSlideSpec, ExportContext } from '../theme/types';
 import {
   COORDS_CONTENT,

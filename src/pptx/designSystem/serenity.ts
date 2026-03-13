@@ -6,7 +6,7 @@
  * Colors: From theme roles (no hardcoded except white #FFFFFF)
  */
 
-import PptxGenJS from 'pptxgenjs';
+import type PptxGenJS from 'pptxgenjs';
 import type { PptxThemeRoles, LogoPlacement } from '../theme/types';
 
 // ============================================================================

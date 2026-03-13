@@ -5,7 +5,7 @@
  * Chaque validateur retourne un message d'erreur (string) ou null si valide.
  */
 
-import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import type { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 
 interface ScaleBracket {
   from?: number | null;

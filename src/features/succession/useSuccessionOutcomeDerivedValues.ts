@@ -1,14 +1,15 @@
 import { useMemo } from 'react';
-import { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
-import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
-import { buildSuccessionPredecesAnalysis } from './successionPredeces';
-import { buildSuccessionChainageAnalysis } from './successionChainage';
+import type { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
+import type { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
+import type { buildSuccessionPredecesAnalysis } from './successionPredeces';
+import type { buildSuccessionChainageAnalysis } from './successionChainage';
+import type {
+  computeSuccessionDirectEstateBasis} from './successionDisplay';
 import {
   buildSuccessionChainTransmissionRows,
-  buildSuccessionDirectDisplayAnalysis,
-  computeSuccessionDirectEstateBasis,
+  buildSuccessionDirectDisplayAnalysis
 } from './successionDisplay';
-import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
+import type { buildSuccessionDevolutionAnalysis } from './successionDevolution';
 import { getUsufruitValuationFromBirthDate } from './successionUsufruit';
 import { DONATION_ENTRE_EPOUX_OPTIONS } from './successionSimulator.constants';
 import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
@@ -16,7 +17,7 @@ import type {
   FamilyMember,
   SuccessionEnfant,
 } from './successionDraft';
-import {
+import type {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,

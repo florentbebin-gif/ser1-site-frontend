@@ -13,7 +13,7 @@
  * All visual elements MUST stay within CONTENT_ZONE (below subtitle, above footer)
  */
 
-import PptxGenJS from 'pptxgenjs';
+import type PptxGenJS from 'pptxgenjs';
 import type { PptxThemeRoles, ExportContext } from '../theme/types';
 import {
   SLIDE_SIZE,

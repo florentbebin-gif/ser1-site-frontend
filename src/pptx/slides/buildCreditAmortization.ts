@@ -18,7 +18,7 @@
  * All visual elements MUST stay within CONTENT_ZONE (below subtitle, above footer)
  */
 
-import PptxGenJS from 'pptxgenjs';
+import type PptxGenJS from 'pptxgenjs';
 import type { PptxThemeRoles, ExportContext, CreditAmortizationRow } from '../theme/types';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {

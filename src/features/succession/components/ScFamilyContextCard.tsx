@@ -1,12 +1,14 @@
 import type { Dispatch, SetStateAction } from 'react';
 import { REGIMES_MATRIMONIAUX } from '../../../engine/civil';
+import type {
+  DEFAULT_SUCCESSION_CIVIL_CONTEXT} from '../successionDraft';
 import {
-  DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   type FamilyMember,
   type SuccessionEnfant,
   type SituationMatrimoniale,
 } from '../successionDraft';
-import { getEnfantNodeLabel, getEnfantRattachementOptions } from '../successionEnfants';
+import type { getEnfantRattachementOptions } from '../successionEnfants';
+import { getEnfantNodeLabel } from '../successionEnfants';
 import {
   PACS_CONVENTION_OPTIONS,
   SITUATION_OPTIONS,
