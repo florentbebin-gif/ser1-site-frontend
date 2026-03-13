@@ -5,7 +5,7 @@
  * Uses Serenity design system coordinates.
  */
 
-import PptxGenJS from 'pptxgenjs';
+import type PptxGenJS from 'pptxgenjs';
 import type { SuccessionSynthesisSlideSpec, ExportContext } from '../theme/types';
 import {
   TYPO,

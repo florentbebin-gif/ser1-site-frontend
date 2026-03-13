@@ -22,7 +22,7 @@ import type {
   SuccessionEnfant,
   SuccessionPrimarySide,
 } from './successionDraft';
-import {
+import type {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
 } from './successionDraft';
 

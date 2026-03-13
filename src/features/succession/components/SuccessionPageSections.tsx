@@ -23,7 +23,7 @@ import type {
   SuccessionPrimarySide,
   SuccessionTestamentConfig,
 } from '../successionDraft';
-import { DEFAULT_SUCCESSION_CIVIL_CONTEXT } from '../successionDraft';
+import type { DEFAULT_SUCCESSION_CIVIL_CONTEXT } from '../successionDraft';
 import type {
   AddFamilyMemberFormState,
   DispositionsDraftState,

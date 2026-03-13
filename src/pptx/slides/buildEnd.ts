@@ -5,7 +5,7 @@
  * White background with legal text and accent corner marks
  */
 
-import PptxGenJS from 'pptxgenjs';
+import type PptxGenJS from 'pptxgenjs';
 import type { EndSlideSpec, ExportContext } from '../theme/types';
 import {
   COORDS_END,

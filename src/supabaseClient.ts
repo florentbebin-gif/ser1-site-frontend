@@ -1,4 +1,5 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
 import { isDebugEnabled } from './utils/debugFlags'
 
 const url = import.meta.env.VITE_SUPABASE_URL

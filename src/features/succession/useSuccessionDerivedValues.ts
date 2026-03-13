@@ -34,7 +34,7 @@ import type {
   SuccessionDonationEntry,
   SuccessionEnfant,
 } from './successionDraft';
-import {
+import type {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,

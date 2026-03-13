@@ -5,7 +5,7 @@
  * Supports color role mapping for theme-consistent styling.
  */
 
-import PptxGenJS from 'pptxgenjs';
+import type PptxGenJS from 'pptxgenjs';
 import { getBusinessIconDataUri, type BusinessIconName } from '../../icons/business/businessIconLibrary';
 import type { PptxThemeRoles, IconPlacement } from '../theme/types';
 import { roleColor, addTextFr } from '../designSystem/serenity';

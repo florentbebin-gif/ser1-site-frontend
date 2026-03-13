@@ -5,7 +5,7 @@
  * White panel with shadow, chapter image on left
  */
 
-import PptxGenJS from 'pptxgenjs';
+import type PptxGenJS from 'pptxgenjs';
 import type { ChapterSlideSpec, ExportContext } from '../theme/types';
 import {
   COORDS_CHAPTER,

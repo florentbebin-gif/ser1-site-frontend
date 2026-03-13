@@ -15,9 +15,9 @@
  * N. End - Legal mentions
  */
 
-import type { 
-  StudyDeckSpec, 
-  ChapterSlideSpec, 
+import type {
+  StudyDeckSpec,
+  ChapterSlideSpec,
   CreditSynthesisSlideSpec,
   CreditGlobalSynthesisSlideSpec,
   CreditLoanSynthesisSlideSpec,
@@ -26,6 +26,7 @@ import type {
   CreditAmortizationRow,
   LoanSummary,
   PaymentPeriod,
+  LogoPlacement,
 } from '../theme/types';
 import { isDebugEnabled } from '../../utils/debugFlags';
 
@@ -153,7 +154,7 @@ export function buildCreditStudyDeck(
   creditData: CreditData,
   _uiSettings: UiSettingsForPptx,
   logoUrl?: string,
-  logoPlacement?: import('../theme/types').LogoPlacement,
+  logoPlacement?: LogoPlacement,
   advisor?: AdvisorInfo
 ): StudyDeckSpec {
   // Determine if multi-loan scenario

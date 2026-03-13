@@ -4,7 +4,7 @@
  * Extraits de ThemeProvider.tsx pour centraliser les contrats de données.
  */
 
-import React from 'react';
+import type React from 'react';
 import type { ThemeColors } from '../theme';
 import type { LogoPlacement } from '../../pptx/theme/types';
 

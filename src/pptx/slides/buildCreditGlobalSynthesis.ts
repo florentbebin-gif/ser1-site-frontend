@@ -12,7 +12,7 @@
  * IMPORTANT: Uses standard Serenity template (title, accent line, subtitle, footer)
  */
 
-import PptxGenJS from 'pptxgenjs';
+import type PptxGenJS from 'pptxgenjs';
 import type { CreditGlobalSynthesisSlideSpec, PptxThemeRoles, ExportContext } from '../theme/types';
 import { MASTER_NAMES } from '../template/loadBaseTemplate';
 import {

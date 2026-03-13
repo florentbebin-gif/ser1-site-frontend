@@ -5,7 +5,7 @@
  * Background: theme.bgMain (color1)
  */
 
-import PptxGenJS from 'pptxgenjs';
+import type PptxGenJS from 'pptxgenjs';
 import type { CoverSlideSpec, ExportContext } from '../theme/types';
 import {
   COORDS_COVER,
