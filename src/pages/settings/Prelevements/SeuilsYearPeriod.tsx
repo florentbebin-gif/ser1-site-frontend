@@ -1,23 +1,55 @@
-// @ts-nocheck
 import React from 'react';
 import { numberOrEmpty } from '@/utils/settingsHelpers';
 
-const REGION_SECTIONS = [
-  { key: 'metropole', label: 'Résidence en métropole' },
+type RegionKey = 'metropole' | 'gmr' | 'guyane';
+type ThresholdFieldKey =
+  | 'rfrMaxExemption1Part'
+  | 'rfrMaxReduced1Part'
+  | 'rfrMaxMedian1Part'
+  | 'incrementQuarterExemption'
+  | 'incrementQuarterReduced'
+  | 'incrementQuarterMedian';
+
+interface RegionSection {
+  key: RegionKey;
+  label: string;
+}
+
+interface ThresholdField {
+  key: ThresholdFieldKey;
+  label: string;
+}
+
+interface ThresholdValues {
+  [key: string]: number | null | undefined;
+}
+
+type ThresholdsByRegion = Partial<Record<RegionKey, ThresholdValues>>;
+
+interface SeuilsYearPeriodProps {
+  yearKey: string;
+  yearLabel: string;
+  thresholds?: ThresholdsByRegion;
+  updateField: (path: string[], value: number | null) => void;
+  isAdmin: boolean;
+}
+
+const REGION_SECTIONS: RegionSection[] = [
+  { key: 'metropole', label: 'Residence en metropole' },
   {
     key: 'gmr',
-    label: 'Résidence en Martinique, Guadeloupe, Réunion, Saint-Barthélemy, Saint-Martin',
+    label: 'Residence en Martinique, Guadeloupe, Reunion, Saint-Barthelemy, Saint-Martin',
   },
-  { key: 'guyane', label: 'Résidence en Guyane' },
+  { key: 'guyane', label: 'Residence en Guyane' },
 ];
 
-const THRESHOLD_FIELDS = [
-  { key: 'rfrMaxExemption1Part', label: 'Plafond exonération (1 part)' },
-  { key: 'rfrMaxReduced1Part', label: 'Plafond taux réduit (1 part)' },
-  { key: 'rfrMaxMedian1Part', label: 'Plafond taux médian (1 part)' },
-  { key: 'incrementQuarterExemption', label: 'Majoration par quart – exonération' },
-  { key: 'incrementQuarterReduced', label: 'Majoration par quart – taux réduit' },
-  { key: 'incrementQuarterMedian', label: 'Majoration par quart – taux médian' },
+const THRESHOLD_FIELDS: ThresholdField[] = [
+  { key: 'rfrMaxExemption1Part', label: 'Plafond exoneration (1 part)' },
+  { key: 'rfrMaxReduced1Part', label: 'Plafond taux reduit (1 part)' },
+  { key: 'rfrMaxMedian1Part', label: 'Plafond taux median (1 part)' },
+  { key: 'incrementQuarterExemption', label: 'Majoration par quart - exoneration' },
+  { key: 'incrementQuarterReduced', label: 'Majoration par quart - taux reduit' },
+  { key: 'incrementQuarterMedian', label: 'Majoration par quart - taux median' },
 ];
 
 export default function SeuilsYearPeriod({
@@ -26,7 +58,7 @@ export default function SeuilsYearPeriod({
   thresholds,
   updateField,
   isAdmin,
-}) {
+}: SeuilsYearPeriodProps): React.ReactElement {
   return (
     <>
       <div style={{ fontWeight: 600, marginBottom: 6 }}>
@@ -45,15 +77,15 @@ export default function SeuilsYearPeriod({
               <input
                 type="number"
                 value={numberOrEmpty(thresholds?.[region.key]?.[field.key])}
-                onChange={(e) =>
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                   updateField(
                     ['retirementThresholds', yearKey, region.key, field.key],
                     e.target.value === '' ? null : Number(e.target.value),
-                  )
-                }
+                  );
+                }}
                 disabled={!isAdmin}
               />
-              <span>€</span>
+              <span>EUR</span>
             </div>
           ))}
         </React.Fragment>
@@ -61,4 +93,3 @@ export default function SeuilsYearPeriod({
     </>
   );
 }
-

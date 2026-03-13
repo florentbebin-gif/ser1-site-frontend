@@ -1,6 +1,24 @@
-// @ts-nocheck
 import React from 'react';
 import { numberOrEmpty } from '@/utils/settingsHelpers';
+
+interface DonationSettings {
+  rappelFiscalAnnees: number | null;
+  donFamilial790G: {
+    montant: number | null;
+    conditions: string;
+  };
+  donManuel: {
+    abattementRenouvellement: number | null;
+  };
+}
+
+interface DonationSectionProps {
+  donation: DonationSettings;
+  updateDonation: (path: string[], value: string | number | null) => void;
+  isAdmin: boolean;
+  openSection: string | null;
+  setOpenSection: React.Dispatch<React.SetStateAction<string | null>>;
+}
 
 export default function DonationSection({
   donation,
@@ -8,43 +26,48 @@ export default function DonationSection({
   isAdmin,
   openSection,
   setOpenSection,
-}) {
+}: DonationSectionProps): React.ReactElement {
+  const isOpen = openSection === 'donation';
+
   return (
     <div className="fisc-acc-item">
       <button
         type="button"
         className="fisc-acc-header"
-        aria-expanded={openSection === 'donation'}
-        onClick={() => setOpenSection(openSection === 'donation' ? null : 'donation')}
+        aria-expanded={isOpen}
+        onClick={() => setOpenSection(isOpen ? null : 'donation')}
       >
         <span className="settings-premium-title" style={{ margin: 0 }}>
           Donation & rappel fiscal
         </span>
         <span className="fisc-acc-chevron">
-          {openSection === 'donation' ? '▾' : '▸'}
+          {isOpen ? 'v' : '>'}
         </span>
       </button>
 
-      {openSection === 'donation' && (
+      {isOpen && (
         <div className="fisc-acc-body">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Paramètres de donation entre vifs et rappel fiscal (CGI art. 784).
+            Parametres de donation entre vifs et rappel fiscal (CGI art. 784).
           </p>
 
           <div className="income-tax-block" style={{ marginBottom: 16 }}>
-            <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+            <div
+              className="income-tax-block-title"
+              style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
+            >
               Rappel fiscal
             </div>
             <div style={{ paddingLeft: 8 }}>
               <div className="settings-field-row">
-                <label>Durée du rappel fiscal</label>
+                <label>Duree du rappel fiscal</label>
                 <input
                   type="number"
                   value={numberOrEmpty(donation.rappelFiscalAnnees)}
-                  onChange={(e) =>
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     updateDonation(
                       ['rappelFiscalAnnees'],
-                      e.target.value === '' ? null : Number(e.target.value)
+                      event.target.value === '' ? null : Number(event.target.value)
                     )
                   }
                   disabled={!isAdmin}
@@ -55,33 +78,36 @@ export default function DonationSection({
           </div>
 
           <div className="income-tax-block" style={{ marginBottom: 16 }}>
-            <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+            <div
+              className="income-tax-block-title"
+              style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
+            >
               Don familial de sommes d'argent (art. 790 G)
             </div>
             <div style={{ paddingLeft: 8 }}>
               <div className="settings-field-row" style={{ marginBottom: 8 }}>
-                <label>Montant exonéré</label>
+                <label>Montant exonere</label>
                 <input
                   type="number"
-                  value={numberOrEmpty(donation.donFamilial790G?.montant)}
-                  onChange={(e) =>
+                  value={numberOrEmpty(donation.donFamilial790G.montant)}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     updateDonation(
                       ['donFamilial790G', 'montant'],
-                      e.target.value === '' ? null : Number(e.target.value)
+                      event.target.value === '' ? null : Number(event.target.value)
                     )
                   }
                   disabled={!isAdmin}
                 />
-                <span>€</span>
+                <span>EUR</span>
               </div>
               <div className="settings-field-row">
                 <label>Conditions</label>
                 <input
                   type="text"
                   style={{ width: 280 }}
-                  value={donation.donFamilial790G?.conditions || ''}
-                  onChange={(e) =>
-                    updateDonation(['donFamilial790G', 'conditions'], e.target.value)
+                  value={donation.donFamilial790G.conditions}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                    updateDonation(['donFamilial790G', 'conditions'], event.target.value)
                   }
                   disabled={!isAdmin}
                 />
@@ -91,7 +117,10 @@ export default function DonationSection({
           </div>
 
           <div className="income-tax-block">
-            <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
+            <div
+              className="income-tax-block-title"
+              style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}
+            >
               Don manuel
             </div>
             <div style={{ paddingLeft: 8 }}>
@@ -99,11 +128,11 @@ export default function DonationSection({
                 <label>Renouvellement abattement tous les</label>
                 <input
                   type="number"
-                  value={numberOrEmpty(donation.donManuel?.abattementRenouvellement)}
-                  onChange={(e) =>
+                  value={numberOrEmpty(donation.donManuel.abattementRenouvellement)}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     updateDonation(
                       ['donManuel', 'abattementRenouvellement'],
-                      e.target.value === '' ? null : Number(e.target.value)
+                      event.target.value === '' ? null : Number(event.target.value)
                     )
                   }
                   disabled={!isAdmin}
@@ -117,4 +146,3 @@ export default function DonationSection({
     </div>
   );
 }
-

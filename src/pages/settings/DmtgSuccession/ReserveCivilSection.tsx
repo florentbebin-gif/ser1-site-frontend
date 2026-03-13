@@ -1,44 +1,66 @@
-// @ts-nocheck
 import React from 'react';
 import { RESERVE_HEREDITAIRE, DROITS_CONJOINT } from './dmtgReferenceData';
 
-export default function ReserveCivilSection({ openSection, setOpenSection }) {
+interface ReserveHereditaireRow {
+  enfants: number | string;
+  reserve: string;
+  quotiteDisponible: string;
+}
+
+interface DroitsConjointRow {
+  situation: string;
+  droits: string;
+}
+
+interface ReserveCivilSectionProps {
+  openSection: string | null;
+  setOpenSection: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+export default function ReserveCivilSection({
+  openSection,
+  setOpenSection,
+}: ReserveCivilSectionProps): React.ReactElement {
+  const isOpen = openSection === 'reserve';
+  const reserveRows = RESERVE_HEREDITAIRE as ReserveHereditaireRow[];
+  const droitsConjointRows = DROITS_CONJOINT as DroitsConjointRow[];
+
   return (
     <div className="fisc-acc-item">
       <button
         type="button"
         className="fisc-acc-header"
-        aria-expanded={openSection === 'reserve'}
-        onClick={() => setOpenSection(openSection === 'reserve' ? null : 'reserve')}
+        aria-expanded={isOpen}
+        onClick={() => setOpenSection(isOpen ? null : 'reserve')}
       >
         <span className="settings-premium-title" style={{ margin: 0 }}>
-          Réserve héréditaire & droits du conjoint
+          Reserve hereditaire & droits du conjoint
         </span>
         <span className="fisc-acc-chevron">
-          {openSection === 'reserve' ? '▾' : '▸'}
+          {isOpen ? 'v' : '>'}
         </span>
       </button>
 
-      {openSection === 'reserve' && (
+      {isOpen && (
         <div className="fisc-acc-body">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Règles du Code civil — lecture seule (non paramétrable).
+            Regles du Code civil - lecture seule (non parametrable).
           </p>
 
           <div className="income-tax-block" style={{ marginBottom: 16 }}>
             <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
-              Réserve héréditaire (art. 913 C. civ.)
+              Reserve hereditaire (art. 913 C. civ.)
             </div>
             <table className="settings-table" style={{ marginTop: 8 }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left' }}>Enfants</th>
-                  <th>Réserve</th>
-                  <th>Quotité disponible</th>
+                  <th>Reserve</th>
+                  <th>Quotite disponible</th>
                 </tr>
               </thead>
               <tbody>
-                {RESERVE_HEREDITAIRE.map((row) => (
+                {reserveRows.map((row) => (
                   <tr key={row.enfants}>
                     <td style={{ textAlign: 'left' }}>{row.enfants}</td>
                     <td>{row.reserve}</td>
@@ -61,7 +83,7 @@ export default function ReserveCivilSection({ openSection, setOpenSection }) {
                 </tr>
               </thead>
               <tbody>
-                {DROITS_CONJOINT.map((row) => (
+                {droitsConjointRows.map((row) => (
                   <tr key={row.situation}>
                     <td style={{ textAlign: 'left' }}>{row.situation}</td>
                     <td style={{ textAlign: 'left' }}>{row.droits}</td>
@@ -70,7 +92,7 @@ export default function ReserveCivilSection({ openSection, setOpenSection }) {
               </tbody>
             </table>
             <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: '8px 0 0 0' }}>
-              Le conjoint survivant est exonéré de droits de succession (loi TEPA 2007).
+              Le conjoint survivant est exonere de droits de succession (loi TEPA 2007).
             </p>
           </div>
         </div>
@@ -78,4 +100,3 @@ export default function ReserveCivilSection({ openSection, setOpenSection }) {
     </div>
   );
 }
-

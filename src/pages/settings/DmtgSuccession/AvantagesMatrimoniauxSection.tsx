@@ -1,38 +1,57 @@
-// @ts-nocheck
 import React from 'react';
 import { AVANTAGES_MATRIMONIAUX_REFERENCE } from './dmtgReferenceData';
 
-export default function AvantagesMatrimoniauxSection({ openSection, setOpenSection }) {
+interface AvantageMatrimonialReference {
+  id: string;
+  label: string;
+  definition: string;
+  impact: string;
+  minimumFields: string[];
+  legalRefs: string;
+}
+
+interface AvantagesMatrimoniauxSectionProps {
+  openSection: string | null;
+  setOpenSection: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+export default function AvantagesMatrimoniauxSection({
+  openSection,
+  setOpenSection,
+}: AvantagesMatrimoniauxSectionProps): React.ReactElement {
+  const isOpen = openSection === 'avantagesMatrimoniaux';
+  const avantages = AVANTAGES_MATRIMONIAUX_REFERENCE as AvantageMatrimonialReference[];
+
   return (
     <div className="fisc-acc-item">
       <button
         type="button"
         className="fisc-acc-header"
-        aria-expanded={openSection === 'avantagesMatrimoniaux'}
-        onClick={() => setOpenSection(openSection === 'avantagesMatrimoniaux' ? null : 'avantagesMatrimoniaux')}
+        aria-expanded={isOpen}
+        onClick={() => setOpenSection(isOpen ? null : 'avantagesMatrimoniaux')}
       >
         <span className="settings-premium-title" style={{ margin: 0 }}>
           Avantages matrimoniaux
         </span>
         <span className="fisc-acc-chevron">
-          {openSection === 'avantagesMatrimoniaux' ? '▾' : '▸'}
+          {isOpen ? 'v' : '>'}
         </span>
       </button>
 
-      {openSection === 'avantagesMatrimoniaux' && (
+      {isOpen && (
         <div className="fisc-acc-body">
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 16 }}>
-            Clauses de contrat de mariage influençant la liquidation civile avant calcul des droits de succession.
-            Ces éléments doivent être qualifiés avant tout calcul DMTG.
+            Clauses de contrat de mariage influencant la liquidation civile avant calcul des droits de succession.
+            Ces elements doivent etre qualifies avant tout calcul DMTG.
           </p>
 
-          {AVANTAGES_MATRIMONIAUX_REFERENCE.map((item) => (
+          {avantages.map((item) => (
             <div key={item.id} className="income-tax-block" style={{ marginBottom: 12 }}>
               <div className="income-tax-block-title" style={{ color: 'var(--color-c1)', fontWeight: 600, fontSize: 15 }}>
                 {item.label}
               </div>
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
-                <strong style={{ color: 'var(--color-c1)' }}>Définition :</strong> {item.definition}
+                <strong style={{ color: 'var(--color-c1)' }}>Definition :</strong> {item.definition}
               </p>
               <p style={{ fontSize: 13, color: 'var(--color-c9)', margin: '0 0 6px 0' }}>
                 <strong style={{ color: 'var(--color-c1)' }}>Impact patrimonial :</strong> {item.impact}
@@ -44,7 +63,7 @@ export default function AvantagesMatrimoniauxSection({ openSection, setOpenSecti
                 </ul>
               </div>
               <p style={{ fontSize: 12, color: 'var(--color-c9)', margin: 0 }}>
-                Références: {item.legalRefs}
+                References : {item.legalRefs}
               </p>
             </div>
           ))}
@@ -55,16 +74,16 @@ export default function AvantagesMatrimoniauxSection({ openSection, setOpenSecti
             </div>
             <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--color-c9)', fontSize: 13 }}>
               <li style={{ marginBottom: 4 }}>
-                Les avantages matrimoniaux ne sont en principe pas qualifiés de donations.
-                Références : C. civ. art. 1516, 1525, 1527.
+                Les avantages matrimoniaux ne sont en principe pas qualifies de donations.
+                References : C. civ. art. 1516, 1525, 1527.
               </li>
               <li style={{ marginBottom: 4 }}>
-                En présence d&apos;enfants non communs, l&apos;excédent au-delà de la quotité entre époux peut être réduit.
-                Références : C. civ. art. 1527 et 1094-1.
+                En presence d'enfants non communs, l'excedent au-dela de la quotite entre epoux peut etre reduit.
+                References : C. civ. art. 1527 et 1094-1.
               </li>
               <li>
-                En cas de divorce, les avantages à effet différé sont révoqués de plein droit sauf volonté contraire.
-                Référence : C. civ. art. 265 (version en vigueur depuis le 2 juin 2024).
+                En cas de divorce, les avantages a effet differe sont revoques de plein droit sauf volonte contraire.
+                Reference : C. civ. art. 265 (version en vigueur depuis le 2 juin 2024).
               </li>
             </ul>
           </div>
@@ -73,4 +92,3 @@ export default function AvantagesMatrimoniauxSection({ openSection, setOpenSecti
     </div>
   );
 }
-
