@@ -1,10 +1,51 @@
-// @ts-nocheck
-import React from 'react';
+import type { ReactElement } from 'react';
+import type { CompareResult } from '@/engine/placement/types';
+import type { UsePlacementSettingsResult } from '@/hooks/usePlacementSettings';
 import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '@/utils/transmissionDisclaimer';
+import type {
+  DmtgOption,
+  EpargneRowWithReinvest,
+  PlacementClient,
+  PlacementLiquidationState,
+  PlacementProductDraft,
+  PlacementSimulatorState,
+  PlacementTransmissionState,
+} from '../utils/normalizers';
+import type { PlacementTableProduct } from '../utils/tableHelpers';
 import { PlacementClientProfileSection } from './PlacementClientProfileSection';
 import { PlacementEpargneSection } from './PlacementEpargneSection';
 import { PlacementLiquidationSection } from './PlacementLiquidationSection';
 import { PlacementTransmissionSection } from './PlacementTransmissionSection';
+
+interface PlacementInputsPanelProps {
+  state: PlacementSimulatorState;
+  tmiOptions: UsePlacementSettingsResult['tmiOptions'];
+  setClient: (_patch: Partial<PlacementClient>) => void;
+  setProduct: (_index: number, _patch: Partial<PlacementProductDraft>) => void;
+  setLiquidation: (_patch: Partial<PlacementLiquidationState>) => void;
+  setTransmission: (_patch: Partial<PlacementTransmissionState>) => void;
+  updateProductOption: (
+    _productIndex: number,
+    _path: 'liquidation.optionBaremeIR',
+    _value: boolean,
+  ) => void;
+  setModalOpen: (_productIndex: number) => void;
+  showAllColumns: boolean;
+  setShowAllColumns: (_value: boolean) => void;
+  produit1: CompareResult['produit1'] | null;
+  produit2: CompareResult['produit2'] | null;
+  detailRows1: EpargneRowWithReinvest[];
+  detailRows2: EpargneRowWithReinvest[];
+  columnsProduit1: string[];
+  columnsProduit2: string[];
+  renderEpargneRow: (
+    _product: PlacementTableProduct,
+    _columns: string[],
+  ) => (_row: EpargneRowWithReinvest, _index: number) => ReactElement;
+  dmtgSelectOptions: DmtgOption[];
+  selectedDmtgTrancheWidth: number | null;
+  psSettings: UsePlacementSettingsResult['psSettings'];
+}
 
 export function PlacementInputsPanel({
   state,
@@ -27,7 +68,7 @@ export function PlacementInputsPanel({
   dmtgSelectOptions,
   selectedDmtgTrancheWidth,
   psSettings,
-}) {
+}: PlacementInputsPanelProps) {
   const assietteDmtgProduit1 = (produit1?.transmission?.taxeDmtg || 0) > 0
     ? (produit1?.transmission?.assiette || 0)
     : 0;
@@ -37,16 +78,16 @@ export function PlacementInputsPanel({
 
   const dmtgConsumptionRatioProduit1 = computeDmtgConsumptionRatio(
     assietteDmtgProduit1,
-    selectedDmtgTrancheWidth,
+    selectedDmtgTrancheWidth ?? 0,
   );
   const dmtgConsumptionRatioProduit2 = computeDmtgConsumptionRatio(
     assietteDmtgProduit2,
-    selectedDmtgTrancheWidth,
+    selectedDmtgTrancheWidth ?? 0,
   );
 
   const showDmtgDisclaimer =
-    shouldShowDmtgDisclaimer(assietteDmtgProduit1, selectedDmtgTrancheWidth)
-    || shouldShowDmtgDisclaimer(assietteDmtgProduit2, selectedDmtgTrancheWidth);
+    shouldShowDmtgDisclaimer(assietteDmtgProduit1, selectedDmtgTrancheWidth ?? 0)
+    || shouldShowDmtgDisclaimer(assietteDmtgProduit2, selectedDmtgTrancheWidth ?? 0);
 
   const dmtgConsumptionPercentProduit1 = Math.min(100, Math.round(dmtgConsumptionRatioProduit1 * 100));
   const dmtgConsumptionPercentProduit2 = Math.min(100, Math.round(dmtgConsumptionRatioProduit2 * 100));

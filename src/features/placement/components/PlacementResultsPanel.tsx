@@ -1,9 +1,21 @@
-// @ts-nocheck
-import React from 'react';
 import { TimelineBar } from '@/components/TimelineBar';
+import type { CompareResult } from '@/engine/placement/types';
 import { shortEuro } from '../utils/formatters';
+import type { PlacementSimulatorState } from '../utils/normalizers';
 
-export function PlacementResultsPanel({ loading, hydrated, results, state }) {
+interface PlacementResultsPanelProps {
+  loading: boolean;
+  hydrated: boolean;
+  results: CompareResult | null;
+  state: PlacementSimulatorState;
+}
+
+export function PlacementResultsPanel({
+  loading,
+  hydrated,
+  results,
+  state,
+}: PlacementResultsPanelProps) {
   const { produit1, produit2 } = results || { produit1: null, produit2: null };
 
   return (

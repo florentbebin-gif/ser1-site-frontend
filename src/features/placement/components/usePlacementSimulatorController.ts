@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { usePlacementSettings } from '@/hooks/usePlacementSettings';
+import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { usePlacementSettings, type UsePlacementSettingsResult } from '@/hooks/usePlacementSettings';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { simulateComplete, compareProducts } from '@/engine/placement';
+import type { CompareResult } from '@/engine/placement/types';
 import { normalizeVersementConfig } from '@/utils/versementConfig';
+import type { VersementConfig, VersementConfigInput } from '@/utils/versementConfig';
 import { onResetEvent, storageKeyFor } from '@/utils/reset';
 import { savePlacementState, loadPlacementStateFromFile } from '@/utils/placementPersistence';
 import { toEngineProduct } from '../adapters/toEngineProduct';
@@ -15,6 +17,14 @@ import {
   buildDmtgOptions,
   buildCustomDmtgOption,
   withReinvestCumul,
+  type DmtgOption,
+  type EpargneRowWithReinvest,
+  type PlacementClient,
+  type PlacementLiquidationState,
+  type PlacementProductDraft,
+  type PlacementSimulatorState,
+  type PlacementStep,
+  type PlacementTransmissionState,
 } from '../utils/normalizers';
 import { exportPlacementExcel } from '../export/placementExcelExport';
 import { getRelevantColumnsEpargne, getBaseColumnsForProduct } from '../utils/tableHelpers';
@@ -22,14 +32,66 @@ import { getRelevantColumnsEpargne, getBaseColumnsForProduct } from '../utils/ta
 const PLACEMENT_SAVE_EVENT = 'ser1:placement:save';
 const PLACEMENT_LOAD_EVENT = 'ser1:placement:load';
 
+export type PlacementCompareProduct = CompareResult['produit1'];
+
+export interface PlacementSimulatorHandlers {
+  setClient: (_patch: Partial<PlacementClient>) => void;
+  setProduct: (_index: number, _patch: Partial<PlacementProductDraft>) => void;
+  setLiquidation: (_patch: Partial<PlacementLiquidationState>) => void;
+  setTransmission: (_patch: Partial<PlacementTransmissionState>) => void;
+  setStep: (_step: PlacementStep) => void;
+  setVersementConfig: (
+    _productIndex: number,
+    _config: VersementConfig | VersementConfigInput | undefined,
+  ) => void;
+  updateProductOption: (
+    _productIndex: number,
+    _path: 'liquidation.optionBaremeIR',
+    _value: boolean,
+  ) => void;
+  setModalOpen: Dispatch<SetStateAction<number | null>>;
+  setShowAllColumns: Dispatch<SetStateAction<boolean>>;
+  handleSavePlacement: () => Promise<void>;
+  handleLoadPlacement: () => Promise<void>;
+  resetSimulation: () => void;
+}
+
+export interface PlacementSimulatorResultsDerived {
+  results: CompareResult | null;
+  produit1: PlacementCompareProduct | null;
+  produit2: PlacementCompareProduct | null;
+  detailRows1: EpargneRowWithReinvest[];
+  detailRows2: EpargneRowWithReinvest[];
+  columnsProduit1: string[];
+  columnsProduit2: string[];
+  dmtgSelectOptions: DmtgOption[];
+  selectedDmtgTrancheWidth: number | null;
+  tmiOptions: UsePlacementSettingsResult['tmiOptions'];
+  psSettings: UsePlacementSettingsResult['psSettings'];
+}
+
+export interface PlacementSimulatorExportHandlers {
+  exportExcel: () => Promise<void>;
+}
+
+export interface PlacementSimulatorUiFlags {
+  loading: boolean;
+  error: string | null;
+  hydrated: boolean;
+  modalOpen: number | null;
+  showAllColumns: boolean;
+  actionInProgress: boolean;
+  exportLoading: boolean;
+}
+
 export function usePlacementSimulatorController() {
   const storeKey = storageKeyFor('placement');
   const { fiscalParams, loading, error, tmiOptions, psSettings } = usePlacementSettings();
   const { fiscalContext } = useFiscalContext({ strict: false });
 
   const [hydrated, setHydrated] = useState(false);
-  const [state, setState] = useState(DEFAULT_STATE);
-  const [modalOpen, setModalOpen] = useState<string | null>(null);
+  const [state, setState] = useState<PlacementSimulatorState>(DEFAULT_STATE);
+  const [modalOpen, setModalOpen] = useState<number | null>(null);
   const [actionInProgress, setActionInProgress] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [showAllColumns, setShowAllColumns] = useState(false);
@@ -154,7 +216,7 @@ export function usePlacementSimulatorController() {
     };
   }, [handleSavePlacement, handleLoadPlacement]);
 
-  const results = useMemo(() => {
+  const results = useMemo<CompareResult | null>(() => {
     if (!hydrated || loading || error) return null;
 
     const fpWithDmtg = { ...fiscalParams, dmtgTauxChoisi: state.transmission.dmtgTaux };
@@ -164,10 +226,12 @@ export function usePlacementSimulatorController() {
     const liquidationParams1 = {
       ...state.liquidation,
       rendement: getRendementLiquidation(state.products[0]) ?? undefined,
+      optionBaremeIR: state.products[0].liquidation?.optionBaremeIR ?? false,
     };
     const liquidationParams2 = {
       ...state.liquidation,
       rendement: getRendementLiquidation(state.products[1]) ?? undefined,
+      optionBaremeIR: state.products[1].liquidation?.optionBaremeIR ?? false,
     };
 
     const result1 = simulateComplete(
@@ -189,17 +253,23 @@ export function usePlacementSimulatorController() {
     return compareProducts(result1, result2);
   }, [state, fiscalParams, loading, hydrated, error]);
 
-  const setClient = (patch: Record<string, unknown>) => setState((s) => ({ ...s, client: { ...s.client, ...patch } }));
-  const setProduct = (index: number, patch: Record<string, unknown>) =>
+  const setClient = (patch: Partial<PlacementClient>) =>
+    setState((s) => ({ ...s, client: { ...s.client, ...patch } }));
+  const setProduct = (index: number, patch: Partial<PlacementProductDraft>) =>
     setState((s) => ({
       ...s,
       products: s.products.map((p, k) => (k === index ? { ...p, ...patch } : p)),
     }));
-  const setLiquidation = (patch: Record<string, unknown>) => setState((s) => ({ ...s, liquidation: { ...s.liquidation, ...patch } }));
-  const setTransmission = (patch: Record<string, unknown>) => setState((s) => ({ ...s, transmission: { ...s.transmission, ...patch } }));
-  const setStep = (step: unknown) => setState((s) => ({ ...s, step: step as typeof s.step }));
+  const setLiquidation = (patch: Partial<PlacementLiquidationState>) =>
+    setState((s) => ({ ...s, liquidation: { ...s.liquidation, ...patch } }));
+  const setTransmission = (patch: Partial<PlacementTransmissionState>) =>
+    setState((s) => ({ ...s, transmission: { ...s.transmission, ...patch } }));
+  const setStep = (step: PlacementStep) => setState((s) => ({ ...s, step }));
 
-  const setVersementConfig = (productIndex: number, config: object | undefined) => {
+  const setVersementConfig = (
+    productIndex: number,
+    config: VersementConfig | VersementConfigInput | undefined,
+  ) => {
     const normalized = normalizeVersementConfig(config);
     setState((s) => ({
       ...s,
@@ -207,17 +277,25 @@ export function usePlacementSimulatorController() {
     }));
   };
 
-  const updateProductOption = (productIndex: number, path: string, value: unknown) => {
-    setState((prev) => {
-      const nextState = { ...prev };
-      const pathParts = path.split('.');
-      let current: Record<string, unknown> = nextState.products[productIndex] as unknown as Record<string, unknown>;
-      for (let i = 0; i < pathParts.length - 1; i += 1) {
-        current = current[pathParts[i]] as Record<string, unknown>;
-      }
-      current[pathParts[pathParts.length - 1]] = value;
-      return nextState;
-    });
+  const updateProductOption = (
+    productIndex: number,
+    _path: 'liquidation.optionBaremeIR',
+    value: boolean,
+  ) => {
+    setState((prev) => ({
+      ...prev,
+      products: prev.products.map((product, index) => (
+        index === productIndex
+          ? {
+              ...product,
+              liquidation: {
+                ...product.liquidation,
+                optionBaremeIR: value,
+              },
+            }
+          : product
+      )),
+    }));
   };
 
   const exportExcel = useCallback(async () => {
@@ -237,17 +315,18 @@ export function usePlacementSimulatorController() {
     }
   }, [state, results]);
 
-  const exportHandlers = {
+  const exportHandlers: PlacementSimulatorExportHandlers = {
     exportExcel,
   };
 
-  const { produit1, produit2 } = results || { produit1: null, produit2: null, deltas: {} };
-  const detailRows1 = produit1 ? withReinvestCumul(produit1.epargne.rows) : [];
-  const detailRows2 = produit2 ? withReinvestCumul(produit2.epargne.rows) : [];
+  const produit1 = results?.produit1 ?? null;
+  const produit2 = results?.produit2 ?? null;
+  const detailRows1: EpargneRowWithReinvest[] = produit1 ? withReinvestCumul(produit1.epargne.rows) : [];
+  const detailRows2: EpargneRowWithReinvest[] = produit2 ? withReinvestCumul(produit2.epargne.rows) : [];
   const columnsProduit1 = getRelevantColumnsEpargne(detailRows1, getBaseColumnsForProduct(produit1), showAllColumns);
   const columnsProduit2 = getRelevantColumnsEpargne(detailRows2, getBaseColumnsForProduct(produit2), showAllColumns);
 
-  const handlers = {
+  const handlers: PlacementSimulatorHandlers = {
     setClient,
     setProduct,
     setLiquidation,
@@ -262,7 +341,7 @@ export function usePlacementSimulatorController() {
     resetSimulation,
   };
 
-  const resultsDerived = {
+  const resultsDerived: PlacementSimulatorResultsDerived = {
     results,
     produit1,
     produit2,
@@ -276,7 +355,7 @@ export function usePlacementSimulatorController() {
     psSettings,
   };
 
-  const uiFlags = {
+  const uiFlags: PlacementSimulatorUiFlags = {
     loading,
     error,
     hydrated,

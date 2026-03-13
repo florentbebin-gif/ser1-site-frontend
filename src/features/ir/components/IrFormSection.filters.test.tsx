@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { IrFormSection } from './IrFormSection';
+import type { IrFormSectionProps } from './irTypes';
 
 const baseProps = {
   status: 'couple',
@@ -16,7 +17,7 @@ const baseProps = {
     fonciersFoyer: 4200,
   },
   updateIncome: vi.fn(),
-  formatMoneyInput: (v: number) => String(v || ''),
+  formatMoneyInput: (v: number | null | undefined) => String(v || ''),
   realMode: { d1: 'abat10', d2: 'abat10' },
   setRealModeState: vi.fn(),
   realExpenses: { d1: 0, d2: 0 },
@@ -39,9 +40,9 @@ const baseProps = {
   isExpert: true,
   incomeFilters: { tns: false, pension: false, foncier: false },
   setIncomeFilters: vi.fn(),
-};
+} satisfies IrFormSectionProps;
 
-function renderSection(overrides: Partial<typeof baseProps> = {}) {
+function renderSection(overrides: Partial<IrFormSectionProps> = {}) {
   return renderToStaticMarkup(
     <IrFormSection
       {...baseProps}

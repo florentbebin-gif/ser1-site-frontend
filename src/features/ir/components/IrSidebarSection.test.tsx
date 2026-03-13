@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 import { IrSidebarSection } from './IrSidebarSection';
+import type { IrSidebarSectionProps } from './irTypes';
 
 const baseProps = {
   yearKey: 'current',
@@ -36,9 +37,9 @@ const baseProps = {
   pfuRateIR: 12.8,
   isExpert: true,
   showSummaryCard: true,
-};
+} satisfies IrSidebarSectionProps;
 
-function renderSidebar(overrides: Partial<typeof baseProps> = {}) {
+function renderSidebar(overrides: Partial<IrSidebarSectionProps> = {}) {
   return renderToStaticMarkup(<IrSidebarSection {...baseProps} {...overrides} />);
 }
 

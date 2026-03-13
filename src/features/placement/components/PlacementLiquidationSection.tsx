@@ -1,8 +1,27 @@
-// @ts-nocheck
-import React from 'react';
+import type { CompareResult } from '@/engine/placement/types';
 import { InputEuro, InputNumber, InputPct, Toggle } from './inputs';
 import { getRendementLiquidation } from '../utils/normalizers';
+import type {
+  PlacementLiquidationState,
+  PlacementProductDraft,
+  PlacementSimulatorState,
+} from '../utils/normalizers';
 import { PlacementLiquidationDetailsTable } from './PlacementLiquidationDetailsTable';
+
+interface PlacementLiquidationSectionProps {
+  state: PlacementSimulatorState;
+  setLiquidation: (_patch: Partial<PlacementLiquidationState>) => void;
+  setProduct: (_index: number, _patch: Partial<PlacementProductDraft>) => void;
+  updateProductOption: (
+    _productIndex: number,
+    _path: 'liquidation.optionBaremeIR',
+    _value: boolean,
+  ) => void;
+  showAllColumns: boolean;
+  setShowAllColumns: (_value: boolean) => void;
+  produit1: CompareResult['produit1'] | null;
+  produit2: CompareResult['produit2'] | null;
+}
 
 export function PlacementLiquidationSection({
   state,
@@ -13,11 +32,13 @@ export function PlacementLiquidationSection({
   setShowAllColumns,
   produit1,
   produit2,
-}) {
+}: PlacementLiquidationSectionProps) {
   const showOptionBareme = (
     (produit1 && ['CTO', 'AV', 'PEA'].includes(produit1.envelope))
     || (produit2 && ['CTO', 'AV', 'PEA'].includes(produit2.envelope))
   );
+  const produit1OptionBaremeIR = state.products[0].liquidation?.optionBaremeIR ?? false;
+  const produit2OptionBaremeIR = state.products[1].liquidation?.optionBaremeIR ?? false;
 
   return (
     <div className="pl-ir-table-wrapper premium-card premium-section">
@@ -101,7 +122,7 @@ export function PlacementLiquidationSection({
               <td style={{ textAlign: 'center' }}>
                 {produit1 && ['CTO', 'AV', 'PEA'].includes(produit1.envelope) ? (
                   <Toggle
-                    checked={produit1.liquidation.optionBaremeIR}
+                    checked={produit1OptionBaremeIR}
                     onChange={(value) => updateProductOption(0, 'liquidation.optionBaremeIR', value)}
                     label=""
                   />
@@ -112,7 +133,7 @@ export function PlacementLiquidationSection({
               <td style={{ textAlign: 'center' }}>
                 {produit2 && ['CTO', 'AV', 'PEA'].includes(produit2.envelope) ? (
                   <Toggle
-                    checked={produit2.liquidation.optionBaremeIR}
+                    checked={produit2OptionBaremeIR}
                     onChange={(value) => updateProductOption(1, 'liquidation.optionBaremeIR', value)}
                     label=""
                   />
@@ -142,12 +163,18 @@ export function PlacementLiquidationSection({
           <PlacementLiquidationDetailsTable
             product={produit1}
             showAllColumns={showAllColumns}
-            showCapitalDecesColumn={Boolean(produit2.envelope === 'PER' && produit2?.versementConfig?.annuel?.garantieBonneFin?.active)}
+            showCapitalDecesColumn={Boolean(
+              produit1.envelope === 'PER'
+              && state.products[0].versementConfig?.annuel?.garantieBonneFin?.active,
+            )}
           />
           <PlacementLiquidationDetailsTable
             product={produit2}
             showAllColumns={showAllColumns}
-            showCapitalDecesColumn={Boolean(produit2.envelope === 'PER' && produit2?.versementConfig?.annuel?.garantieBonneFin?.active)}
+            showCapitalDecesColumn={Boolean(
+              produit2.envelope === 'PER'
+              && state.products[1].versementConfig?.annuel?.garantieBonneFin?.active,
+            )}
           />
         </div>
       )}

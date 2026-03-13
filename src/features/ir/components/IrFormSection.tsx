@@ -1,12 +1,23 @@
-// @ts-nocheck
-import React from 'react';
+import type { ChangeEvent, ChangeEventHandler, CSSProperties } from 'react';
 import { IrSelect } from './IrSelect';
+import type { IncomeFilters } from '../utils/incomeFilters';
+import type { IrFormSectionProps } from './irTypes';
 
 const ZERO_PLACEHOLDER = '0';
 
-function parseIntegerInput(event) {
+function parseIntegerInput(event: ChangeEvent<HTMLInputElement>): number {
   const raw = event.target.value.replace(/[^\d]/g, '');
   return raw === '' ? 0 : Number(raw);
+}
+
+interface IrAmountInputProps {
+  value: string;
+  onChange?: ChangeEventHandler<HTMLInputElement>;
+  placeholder?: string;
+  readOnly?: boolean;
+  testId?: string;
+  style?: CSSProperties;
+  className?: string;
 }
 
 function IrAmountInput({
@@ -17,7 +28,7 @@ function IrAmountInput({
   testId,
   style,
   className,
-}) {
+}: IrAmountInputProps) {
   return (
     <div
       className={`ir-table-input${className ? ` ${className}` : ''}`}
@@ -69,12 +80,12 @@ export function IrFormSection({
   setChildren,
   incomeFilters,
   setIncomeFilters,
-}) {
+}: IrFormSectionProps) {
   const showTnsRows = incomeFilters?.tns === true;
   const showPensionRows = incomeFilters?.pension === true;
   const showFoncierRow = incomeFilters?.foncier === true;
 
-  const toggleIncomeFilter = (key) => {
+  const toggleIncomeFilter = (key: keyof IncomeFilters) => {
     setIncomeFilters((prev) => ({
       ...prev,
       [key]: prev?.[key] !== true,
@@ -105,7 +116,7 @@ export function IrFormSection({
               value={status}
               testId="ir-situation-select"
               onChange={(newStatus) => {
-                setStatus(newStatus);
+                setStatus(newStatus as IrFormSectionProps['status']);
                 if (newStatus === 'couple') {
                   setIsIsolated(false);
                 } else {
@@ -164,7 +175,11 @@ export function IrFormSection({
                     value={child.mode}
                     onChange={(v) =>
                       setChildren((list) =>
-                        list.map((c) => (c.id === child.id ? { ...c, mode: v } : c)),
+                        list.map((c) => (
+                          c.id === child.id
+                            ? { ...c, mode: v as typeof child.mode }
+                            : c
+                        )),
                       )
                     }
                     options={[
@@ -293,7 +308,9 @@ export function IrFormSection({
                   <IrSelect
                     style={{ flex: 1 }}
                     value={realMode.d1}
-                    onChange={(v) => setRealModeState((m) => ({ ...m, d1: v }))}
+                    onChange={(v) =>
+                      setRealModeState((m) => ({ ...m, d1: v as typeof realMode.d1 }))
+                    }
                     options={[
                       { value: 'reels', label: 'FR' },
                       { value: 'abat10', label: '10%' },
@@ -322,7 +339,9 @@ export function IrFormSection({
                   <IrSelect
                     style={{ flex: 1 }}
                     value={realMode.d2}
-                    onChange={(v) => setRealModeState((m) => ({ ...m, d2: v }))}
+                    onChange={(v) =>
+                      setRealModeState((m) => ({ ...m, d2: v as typeof realMode.d2 }))
+                    }
                     options={[
                       { value: 'reels', label: 'FR' },
                       { value: 'abat10', label: '10%' },
@@ -437,7 +456,7 @@ export function IrFormSection({
                   <td>RCM soumis aux PS à {fmtPct(psPatrimonyRate)} %</td>
                   <td colSpan={2}>
                     <IrAmountInput
-                      value={formatMoneyInput(incomes.capital.withPs)}
+                      value={formatMoneyInput(incomes.capital?.withPs || 0)}
                       onChange={(e) => updateIncome('capital', 'withPs', parseIntegerInput(e))}
                     />
                   </td>
@@ -447,7 +466,7 @@ export function IrFormSection({
                   <td>RCM non soumis aux PS à {fmtPct(psPatrimonyRate)} %</td>
                   <td colSpan={2}>
                     <IrAmountInput
-                      value={formatMoneyInput(incomes.capital.withoutPs)}
+                      value={formatMoneyInput(incomes.capital?.withoutPs || 0)}
                       onChange={(e) => updateIncome('capital', 'withoutPs', parseIntegerInput(e))}
                     />
                   </td>
@@ -457,7 +476,7 @@ export function IrFormSection({
                   <td colSpan={2}>
                     <IrSelect
                       value={capitalMode}
-                      onChange={setCapitalMode}
+                      onChange={(mode) => setCapitalMode(mode as IrFormSectionProps['capitalMode'])}
                       options={[
                         { value: 'pfu', label: `PFU ${fmtPct(pfuRateIR)} %` },
                         { value: 'bareme', label: "Barème de l'IR (abattement 40 %)" },
