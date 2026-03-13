@@ -1,5 +1,4 @@
-// @ts-nocheck
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { DEBUG_AUTH } from '@/supabaseClient';
 import { isDebugEnabled } from '@/utils/debugFlags';
@@ -17,31 +16,92 @@ import ThemeEditModal from '@/pages/settings/components/ThemeEditModal';
 import UserInviteModal from '@/pages/settings/components/UserInviteModal';
 import './SettingsComptes.css';
 
+interface CabinetRecord {
+  id: string;
+  name: string;
+  default_theme_id?: string | null;
+  logo_id?: string | null;
+  logo_placement?: string | null;
+  themes?: {
+    name?: string | null;
+  } | null;
+  logos?: {
+    storage_path?: string | null;
+  } | null;
+}
+
+interface ThemeRecord {
+  id: string;
+  name: string;
+  palette?: Record<string, string> | null;
+  is_system?: boolean;
+}
+
+interface UserRecord {
+  id: string;
+  email: string;
+  role: string;
+  cabinet_id?: string | null;
+  created_at: string;
+  last_sign_in_at?: string | null;
+  total_reports: number;
+  unread_reports: number;
+}
+
+interface ReportRecord {
+  id: string;
+  created_at: string;
+  page?: string | null;
+  title?: string | null;
+  description?: string | null;
+  admin_read_at?: string | null;
+  meta?: Record<string, unknown> | null;
+}
+
+interface ReportUser {
+  id: string;
+  email: string;
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Erreur inconnue.';
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
+}
+
+function getArrayField<T>(value: unknown, key: string): T[] {
+  const record = asRecord(value);
+  const fieldValue = record?.[key];
+  return Array.isArray(fieldValue) ? (fieldValue as T[]) : [];
+}
+
 export default function SettingsComptes() {
   const { isAdmin, isLoading: authLoading } = useUserRole();
   const location = useLocation();
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showReportModal, setShowReportModal] = useState(false);
-  const [selectedReport, setSelectedReport] = useState(null);
-  const [userReports, setUserReports] = useState([]);
-  const [selectedReportUser, setSelectedReportUser] = useState(null);
+  const [selectedReport, setSelectedReport] = useState<ReportRecord | null>(null);
+  const [userReports, setUserReports] = useState<ReportRecord[]>([]);
+  const [selectedReportUser, setSelectedReportUser] = useState<ReportUser | null>(null);
   const [reportLoading, setReportLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const fetchUsersRequestIdRef = useRef(0);
   const DEBUG_COMPTES_REFRESH = isDebugEnabled('comptes');
 
-  const [cabinets, setCabinets] = useState([]);
-  const [themes, setThemes] = useState([]);
+  const [cabinets, setCabinets] = useState<CabinetRecord[]>([]);
+  const [themes, setThemes] = useState<ThemeRecord[]>([]);
   const [cabinetsLoading, setCabinetsLoading] = useState(false);
   const [themesLoading, setThemesLoading] = useState(false);
 
   const [showCabinetModal, setShowCabinetModal] = useState(false);
-  const [editingCabinet, setEditingCabinet] = useState(null);
+  const [editingCabinet, setEditingCabinet] = useState<CabinetRecord | null>(null);
   const [showThemeModal, setShowThemeModal] = useState(false);
-  const [editingTheme, setEditingTheme] = useState(null);
+  const [editingTheme, setEditingTheme] = useState<ThemeRecord | null>(null);
   const [showUserModal, setShowUserModal] = useState(false);
 
   const triggerRefresh = (reason = '') => {
@@ -67,19 +127,20 @@ export default function SettingsComptes() {
       if (requestId !== fetchUsersRequestIdRef.current) return;
       if (invokeError) throw new Error(invokeError.message);
 
-      setUsers(data.users || []);
+      const usersList = getArrayField<UserRecord>(data, 'users');
+      setUsers(usersList);
 
       if (DEBUG_COMPTES_REFRESH) {
         // eslint-disable-next-line no-console
         console.debug('[SettingsComptes] fetchUsers:success', {
           reason,
           requestId,
-          usersCount: (data.users || []).length,
+          usersCount: usersList.length,
         });
       }
     } catch (err) {
       if (requestId === fetchUsersRequestIdRef.current) {
-        setError(err.message);
+        setError(getErrorMessage(err));
       }
     } finally {
       if (requestId === fetchUsersRequestIdRef.current) {
@@ -93,7 +154,7 @@ export default function SettingsComptes() {
       setCabinetsLoading(true);
       const { data, error: invokeError } = await invokeAdmin('list_cabinets');
       if (invokeError) throw new Error(invokeError.message);
-      setCabinets(data?.cabinets || []);
+      setCabinets(getArrayField<CabinetRecord>(data, 'cabinets'));
     } catch (err) {
       console.error('[SettingsComptes] fetchCabinets error:', err);
     } finally {
@@ -106,7 +167,7 @@ export default function SettingsComptes() {
       setThemesLoading(true);
       const { data, error: invokeError } = await invokeAdmin('list_themes');
       if (invokeError) throw new Error(invokeError.message);
-      setThemes(data?.themes || []);
+      setThemes(getArrayField<ThemeRecord>(data, 'themes'));
     } catch (err) {
       console.error('[SettingsComptes] fetchThemes error:', err);
     } finally {
@@ -136,7 +197,7 @@ export default function SettingsComptes() {
     fetchThemes();
   }, [isAdmin, authLoading, location.key, refreshKey, fetchUsers, DEBUG_COMPTES_REFRESH]);
 
-  const openCabinetModal = (cabinet = null) => {
+  const openCabinetModal = (cabinet: CabinetRecord | null = null) => {
     setEditingCabinet(cabinet);
     setShowCabinetModal(true);
   };
@@ -146,7 +207,7 @@ export default function SettingsComptes() {
     setEditingCabinet(null);
   };
 
-  const handleDeleteCabinet = async (cabinet) => {
+  const handleDeleteCabinet = async (cabinet: CabinetRecord) => {
     if (!confirm(`Supprimer le cabinet "${cabinet.name}" ?`)) return;
 
     try {
@@ -155,13 +216,13 @@ export default function SettingsComptes() {
       if (invokeError) throw new Error(invokeError.message);
       fetchCabinets();
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setActionLoading(false);
     }
   };
 
-  const openThemeModal = (theme = null) => {
+  const openThemeModal = (theme: ThemeRecord | null = null) => {
     setEditingTheme(theme);
     setShowThemeModal(true);
   };
@@ -171,7 +232,7 @@ export default function SettingsComptes() {
     setEditingTheme(null);
   };
 
-  const handleDeleteTheme = async (theme) => {
+  const handleDeleteTheme = async (theme: ThemeRecord) => {
     if (theme.is_system) {
       setError('Les themes systeme ne peuvent pas etre supprimes.');
       return;
@@ -184,13 +245,13 @@ export default function SettingsComptes() {
       if (invokeError) throw new Error(invokeError.message);
       fetchThemes();
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleAssignUserCabinet = async (userId, cabinetId) => {
+  const handleAssignUserCabinet = async (userId: string, cabinetId: string) => {
     try {
       setActionLoading(true);
       const { error: invokeError } = await invokeAdmin('assign_user_cabinet', {
@@ -200,7 +261,7 @@ export default function SettingsComptes() {
       if (invokeError) throw new Error(invokeError.message);
       triggerRefresh('assign_user_cabinet');
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setActionLoading(false);
     }
@@ -210,7 +271,7 @@ export default function SettingsComptes() {
     setShowUserModal(false);
   };
 
-  const handleDeleteUser = async (userId, email) => {
+  const handleDeleteUser = async (userId: string, email: string) => {
     if (!confirm(`Supprimer l'utilisateur ${email} ?`)) return;
 
     try {
@@ -219,13 +280,13 @@ export default function SettingsComptes() {
       if (invokeError) throw new Error(invokeError.message);
       triggerRefresh('delete_user');
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleResetPassword = async (userId, email) => {
+  const handleResetPassword = async (userId: string, email: string) => {
     try {
       setActionLoading(true);
       const { error: invokeError } = await invokeAdmin('reset_password', {
@@ -235,13 +296,13 @@ export default function SettingsComptes() {
       if (invokeError) throw new Error(invokeError.message);
       alert('Email de reinitialisation envoye');
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleViewReports = async (userId, userEmail) => {
+  const handleViewReports = async (userId: string, userEmail: string) => {
     try {
       setReportLoading(true);
       setSelectedReportUser({ id: userId, email: userEmail });
@@ -252,16 +313,22 @@ export default function SettingsComptes() {
       const { data, error: invokeError } = await invokeAdmin('list_issue_reports', { user_id: userId });
       if (invokeError) throw new Error(invokeError.message);
 
-      const reports = data?.reports || data?.data?.reports || [];
-      setUserReports(Array.isArray(reports) ? reports : []);
+      const dataRecord = asRecord(data);
+      const nestedData = asRecord(dataRecord?.data);
+      const reports = Array.isArray(dataRecord?.reports)
+        ? (dataRecord.reports as ReportRecord[])
+        : Array.isArray(nestedData?.reports)
+          ? (nestedData.reports as ReportRecord[])
+          : [];
+      setUserReports(reports);
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     } finally {
       setReportLoading(false);
     }
   };
 
-  const handleSelectReport = (report) => {
+  const handleSelectReport = (report: ReportRecord) => {
     setSelectedReport(report);
   };
 
@@ -276,7 +343,7 @@ export default function SettingsComptes() {
     setSelectedReportUser(null);
   };
 
-  const handleMarkAsRead = async (reportId) => {
+  const handleMarkAsRead = async (reportId: string) => {
     try {
       const { error: invokeError } = await invokeAdmin('mark_issue_read', { reportId });
       if (invokeError) throw new Error(invokeError.message);
@@ -286,11 +353,11 @@ export default function SettingsComptes() {
         handleViewReports(selectedReportUser.id, selectedReportUser.email);
       }
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     }
   };
 
-  const handleDeleteReport = async (reportId) => {
+  const handleDeleteReport = async (reportId: string) => {
     if (!confirm('Supprimer definitivement ce signalement ?')) return;
 
     try {
@@ -303,11 +370,11 @@ export default function SettingsComptes() {
         handleViewReports(selectedReportUser.id, selectedReportUser.email);
       }
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     }
   };
 
-  const handleDeleteAllReports = async (userId) => {
+  const handleDeleteAllReports = async (userId?: string) => {
     if (!confirm('Supprimer tout l\'historique des signalements pour cet utilisateur ?')) return;
 
     try {
@@ -316,7 +383,7 @@ export default function SettingsComptes() {
       handleCloseModal();
       triggerRefresh('delete_all_issues_for_user');
     } catch (err) {
-      setError(err.message);
+      setError(getErrorMessage(err));
     }
   };
 

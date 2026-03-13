@@ -1,5 +1,4 @@
-// @ts-nocheck
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/supabaseClient';
 import { useUserRole } from '@/auth/useUserRole';
 import './SettingsShared.css';
@@ -19,14 +18,33 @@ import PrelevementsPatrimoineSection from './Prelevements/PrelevementsPatrimoine
 import PrelevementsRetraitesSection from './Prelevements/PrelevementsRetraitesSection';
 import PrelevementsSeuilsSection from './Prelevements/PrelevementsSeuilsSection';
 
+type DeepFormValue<T> = T extends number
+  ? number | null
+  : T extends string
+    ? string
+    : T extends boolean
+      ? boolean
+      : T extends Array<infer U>
+        ? DeepFormValue<U>[]
+        : T extends object
+          ? { [K in keyof T]: DeepFormValue<T[K]> }
+          : T;
+
+type PsSettings = DeepFormValue<typeof DEFAULT_PS_SETTINGS>;
+type RetirementYearKey = keyof PsSettings['retirement'];
+
+interface PsSettingsRow {
+  data: Partial<PsSettings> | null;
+}
+
 export default function SettingsPrelevements() {
   const { isAdmin } = useUserRole();
-  const [settings, setSettings] = useState(DEFAULT_PS_SETTINGS);
+  const [settings, setSettings] = useState<PsSettings>(DEFAULT_PS_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [openSection, setOpenSection] = useState(null);
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
   // ----------------------
   // Chargement initial
@@ -43,10 +61,10 @@ export default function SettingsPrelevements() {
         if (!mounted) return;
 
         // Récupérer les paramètres PS (table ps_settings, id = 1)
-        const { data: rows, error: psErr } = await supabase
+        const { data: rows, error: psErr } = (await supabase
           .from('ps_settings')
           .select('data')
-          .eq('id', 1);
+          .eq('id', 1)) as { data: PsSettingsRow[] | null; error: { code?: string } | null };
 
         if (!psErr && rows && rows.length > 0 && rows[0].data) {
           setSettings((prev) => ({
@@ -72,16 +90,27 @@ export default function SettingsPrelevements() {
 
   // Alias pour compatibilité
   const setData = setSettings;
+  const setDataRecord = (
+    updater: (prev: Record<string, unknown>) => Record<string, unknown>,
+  ) => {
+    setData((prev) => updater(prev as Record<string, unknown>) as PsSettings);
+  };
 
   // ----------------------
   // Helpers de mise à jour
   // ----------------------
-  const updateField = createFieldUpdater(setData, setMessage);
+  const updateField = createFieldUpdater(setDataRecord, setMessage);
 
-  const updateRetirementBracket = (yearKey, index, key, value) => {
+  const updateRetirementBracket = (
+    yearKey: RetirementYearKey,
+    index: number,
+    key: string,
+    value: string | number | null,
+  ) => {
     setData((prev) => {
       const copy = structuredClone(prev);
-      copy.retirement[yearKey].brackets[index][key] = value;
+      const bracket = copy.retirement[yearKey].brackets[index] as Record<string, string | number | null>;
+      bracket[key] = value;
       return copy;
     });
     setMessage('');
@@ -91,7 +120,10 @@ export default function SettingsPrelevements() {
   // ----------------------
   // Validation
   // ----------------------
-  const psErrors = useMemo(() => validatePrelevementsSettings(settings), [settings]);
+  const psErrors = useMemo(
+    () => validatePrelevementsSettings(settings as Parameters<typeof validatePrelevementsSettings>[0]),
+    [settings],
+  );
   const hasErrors = !isValid(psErrors);
 
   // ----------------------

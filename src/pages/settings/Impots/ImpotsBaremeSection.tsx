@@ -1,7 +1,82 @@
-// @ts-nocheck
-import React from 'react';
+import type { Dispatch, ReactElement, SetStateAction } from 'react';
 import SettingsTable from '@/components/settings/SettingsTable';
 import { numberOrEmpty } from '@/utils/settingsHelpers';
+
+type ScaleFieldKey = 'from' | 'to' | 'rate';
+type IncomeScaleKey = 'scaleCurrent' | 'scalePrevious';
+
+interface ScaleRow {
+  from: number | null;
+  to: number | null;
+  rate: number | null;
+  deduction?: number | null;
+  [key: string]: number | null | undefined;
+}
+
+interface IncomeTaxSettings {
+  currentYearLabel?: string;
+  previousYearLabel?: string;
+  scaleCurrent: ScaleRow[];
+  scalePrevious: ScaleRow[];
+  quotientFamily: {
+    current: {
+      plafondPartSup: number | null;
+      plafondParentIsoléDeuxPremièresParts: number | null;
+    };
+    previous: {
+      plafondPartSup: number | null;
+      plafondParentIsoléDeuxPremièresParts: number | null;
+    };
+  };
+  decote: {
+    current: {
+      triggerSingle: number | null;
+      triggerCouple: number | null;
+      amountSingle: number | null;
+      amountCouple: number | null;
+      ratePercent: number | null;
+    };
+    previous: {
+      triggerSingle: number | null;
+      triggerCouple: number | null;
+      amountSingle: number | null;
+      amountCouple: number | null;
+      ratePercent: number | null;
+    };
+  };
+  abat10: {
+    current: {
+      plafond: number | null;
+      plancher: number | null;
+    };
+    previous: {
+      plafond: number | null;
+      plancher: number | null;
+    };
+    retireesCurrent: {
+      plafond: number | null;
+      plancher: number | null;
+    };
+    retireesPrevious: {
+      plafond: number | null;
+      plancher: number | null;
+    };
+  };
+}
+
+interface ImpotsBaremeSectionProps {
+  incomeTax: IncomeTaxSettings;
+  updateField: (path: string[], value: string | number | null) => void;
+  updateIncomeScale: (
+    which: IncomeScaleKey,
+    index: number,
+    key: ScaleFieldKey,
+    value: string | number | null,
+  ) => void;
+  isAdmin: boolean;
+  openSection: string | null;
+  setOpenSection: Dispatch<SetStateAction<string | null>>;
+}
 
 export default function ImpotsBaremeSection({
   incomeTax,
@@ -10,26 +85,28 @@ export default function ImpotsBaremeSection({
   isAdmin,
   openSection,
   setOpenSection,
-}) {
+}: ImpotsBaremeSectionProps): ReactElement {
+  const isOpen = openSection === 'bareme';
+
   return (
     <div className="fisc-acc-item">
       <button
         type="button"
         className="fisc-acc-header"
         id="impots-header-bareme"
-        aria-expanded={openSection === 'bareme'}
+        aria-expanded={isOpen}
         aria-controls="impots-panel-bareme"
-        onClick={() => setOpenSection(openSection === 'bareme' ? null : 'bareme')}
+        onClick={() => setOpenSection(isOpen ? null : 'bareme')}
       >
         <span className="settings-premium-title" style={{ margin: 0 }}>
           Barème de l’impôt sur le revenu
         </span>
         <span className="fisc-acc-chevron">
-          {openSection === 'bareme' ? '▾' : '▸'}
+          {isOpen ? '▾' : '▸'}
         </span>
       </button>
 
-      {openSection === 'bareme' && (
+      {isOpen && (
         <div
           className="fisc-acc-body"
           id="impots-panel-bareme"
@@ -67,7 +144,7 @@ export default function ImpotsBaremeSection({
                 ]}
                 rows={incomeTax.scaleCurrent}
                 onCellChange={(idx, key, value) =>
-                  updateIncomeScale('scaleCurrent', idx, key, value)
+                  updateIncomeScale('scaleCurrent', idx, key as ScaleFieldKey, value)
                 }
                 disabled={!isAdmin}
               />
@@ -315,7 +392,7 @@ export default function ImpotsBaremeSection({
                 ]}
                 rows={incomeTax.scalePrevious}
                 onCellChange={(idx, key, value) =>
-                  updateIncomeScale('scalePrevious', idx, key, value)
+                  updateIncomeScale('scalePrevious', idx, key as ScaleFieldKey, value)
                 }
                 disabled={!isAdmin}
               />

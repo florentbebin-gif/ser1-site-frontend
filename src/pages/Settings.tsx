@@ -1,12 +1,12 @@
-// @ts-nocheck
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { supabase, DEBUG_AUTH } from '../supabaseClient';
 import { useTheme } from '../settings/ThemeProvider';
 import { UserInfoBanner } from '../components/UserInfoBanner';
 import { recalculatePaletteFromC1 } from '../utils/paletteGenerator';
 import SignalementsBlock from '../components/settings/SignalementsBlock';
 import { DEFAULT_COLORS as DEFAULT_THEME_COLORS } from '../settings/theme';
-import { PRESET_THEMES } from '../settings/presets';
+import { PRESET_THEMES, type PresetTheme } from '../settings/presets';
 import { COLOR_USAGE_GUIDELINES } from '../constants/colorUsageGuidelines';
 
 // Mapper les couleurs du format theme (c1-c10) vers le format legacy (color1-color10)
@@ -23,8 +23,17 @@ const DEFAULT_COLORS = {
   color10: DEFAULT_THEME_COLORS.c10,
 };
 
+type LegacyColors = typeof DEFAULT_COLORS;
+type LegacyColorKey = keyof LegacyColors;
+type ThemeCard = {
+  id: string;
+  name: string;
+  description: string;
+  colors: LegacyColors;
+};
+
 // Dériver le format legacy (color1-color10) depuis les presets partagés
-const PREDEFINED_THEMES = PRESET_THEMES.map(t => ({
+const PREDEFINED_THEMES: ThemeCard[] = PRESET_THEMES.map((t: PresetTheme) => ({
   id: t.id,
   name: t.name,
   description: t.description,
@@ -36,18 +45,18 @@ const PREDEFINED_THEMES = PRESET_THEMES.map(t => ({
   },
 }));
 
-const COLOR_FIELDS = COLOR_USAGE_GUIDELINES.map(({ legacyKey, usage }) => ({
-  key: legacyKey,
+const COLOR_FIELDS: Array<{ key: LegacyColorKey; description: string }> = COLOR_USAGE_GUIDELINES.map(({ legacyKey, usage }) => ({
+  key: legacyKey as LegacyColorKey,
   description: usage,
 }));
 
 export default function Settings() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Format legacy (color1-color10) pour les inputs couleur
-  const [colorsLegacy, setColorsLegacy] = useState(DEFAULT_COLORS);
-  const [colorText, setColorText] = useState(DEFAULT_COLORS);
+  const [colorsLegacy, setColorsLegacy] = useState<LegacyColors>(DEFAULT_COLORS);
+  const [colorText, setColorText] = useState<LegacyColors>(DEFAULT_COLORS);
   const [savingColors, setSavingColors] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
   
@@ -87,7 +96,7 @@ export default function Settings() {
   }, [colors, themeLoading]);
 
   // Fonction pour synchroniser les couleurs avec ThemeProvider (preview live)
-  const syncThemeColors = (settingsColors) => {
+  const syncThemeColors = (settingsColors: LegacyColors) => {
     setColors({
       c1: settingsColors.color1, c2: settingsColors.color2, c3: settingsColors.color3,
       c4: settingsColors.color4, c5: settingsColors.color5, c6: settingsColors.color6,
@@ -98,7 +107,7 @@ export default function Settings() {
 
   useEffect(() => {
     let mounted = true;
-    let timeoutId;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     async function loadUser() {
       try {
@@ -156,7 +165,7 @@ export default function Settings() {
 
   /* ══════════ V5: Handlers déterministes ══════════ */
 
-  const handleColorChange = (key, value) => {
+  const handleColorChange = (key: LegacyColorKey, value: string) => {
     // Bloquer l'édition sauf en mode 'my'
     if (themeMode !== 'my') return;
     
@@ -167,12 +176,13 @@ export default function Settings() {
     
     // If changing c1, recalculate other colors automatically
     if (key === 'color1') {
-      const recalculated = recalculatePaletteFromC1(value);
+      const recalculated = recalculatePaletteFromC1(value) as LegacyColors;
       const finalColors = { ...newColors, ...recalculated };
       setColorsLegacy(finalColors);
-      setColorText(prev => ({ ...prev, ...Object.fromEntries(
+      const recalculatedText = Object.fromEntries(
         Object.entries(recalculated).map(([k, v]) => [k, v.toUpperCase()])
-      ) }));
+      ) as LegacyColors;
+      setColorText(prev => ({ ...prev, ...recalculatedText }));
       syncThemeColors(finalColors);
     } else {
       syncThemeColors(newColors);
@@ -180,7 +190,7 @@ export default function Settings() {
   };
 
   // V5: Clic sur un preset → applique + persiste theme_mode='preset'
-  const handlePresetSelect = async (presetTheme) => {
+  const handlePresetSelect = async (presetTheme: ThemeCard) => {
     setSaveMessage('');
     await applyThemeMode('preset', presetTheme.id);
   };
