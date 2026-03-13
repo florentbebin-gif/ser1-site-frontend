@@ -61,7 +61,7 @@ interface IrPersistedState {
 const fmt0 = (value: number | null | undefined): string =>
   Math.round(Number(value) || 0).toLocaleString('fr-FR');
 
-const euro0 = (value: number): string => `${fmt0(value)} â‚¬`;
+const euro0 = (value: number): string => `${fmt0(value)} \u20AC`;
 
 const fmtPct = (value: number): string =>
   (Number(value) || 0).toLocaleString('fr-FR', {
@@ -353,14 +353,14 @@ export default function IrSimulatorContainer() {
       <div className="sim-page" data-testid="ir-page">
         <div className="ir-header premium-header" data-testid="ir-header">
           <h1 className="premium-title" data-testid="ir-title">
-            Simulateur d'impÃ´t sur le revenu
+            Simulateur d&apos;imp&ocirc;t sur le revenu
           </h1>
           <p className="premium-subtitle">
-            Estimez votre impÃ´t sur le revenu et vos prÃ©lÃ¨vements sociaux.
+            Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux.
           </p>
         </div>
         <div className="ir-settings-loading" data-testid="ir-settings-loading">
-          Chargement des paramÃ¨tres fiscauxâ€¦
+          Chargement des param&egrave;tres fiscaux&hellip;
         </div>
       </div>
     );
@@ -370,11 +370,11 @@ export default function IrSimulatorContainer() {
     <div className="sim-page" data-testid="ir-page">
       <div className="ir-header premium-header" data-testid="ir-header">
         <h1 className="premium-title" data-testid="ir-title">
-          Simulateur d'impÃ´t sur le revenu
+            Simulateur d&apos;imp&ocirc;t sur le revenu
         </h1>
         <div className="ir-header__subtitle-row">
           <p className="premium-subtitle">
-            Estimez votre impÃ´t sur le revenu et vos prÃ©lÃ¨vements sociaux.
+            Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux.
           </p>
           <div className="sim-header__actions">
             <button
@@ -382,9 +382,9 @@ export default function IrSimulatorContainer() {
               className="chip premium-btn ir-mode-btn"
               data-testid="ir-mode-btn"
               onClick={toggleMode}
-              title={isExpert ? 'Passer en mode simplifiÃ©' : 'Passer en mode expert'}
+              title={isExpert ? 'Passer en mode simplifi&eacute;' : 'Passer en mode expert'}
             >
-              {isExpert ? 'Mode expert' : 'Mode simplifiÃ©'}
+              {isExpert ? 'Mode expert' : 'Mode simplifi&eacute;'}
             </button>
             <ExportMenu
               options={[
@@ -452,7 +452,7 @@ export default function IrSimulatorContainer() {
       {result && (
         <div className="ir-detail-card premium-card" data-testid="ir-detail-accordion">
           <div className="ir-detail-header">
-            <h3 className="ir-detail-title">DÃ©tail du calcul</h3>
+            <h3 className="ir-detail-title">D&eacute;tail du calcul</h3>
             <button
               type="button"
               className="ir-detail-toggle"
