@@ -7,12 +7,18 @@
 /* Variables globales */
 :root {
   /*
-   * COULEURS DE FALLBACK (anti-FOUC)
-   * Ces valeurs sont les valeurs par défaut initiales avant que ThemeProvider
-   * n'injecte les couleurs dynamiques. Elles DOIVENT rester synchronisées avec
-   * DEFAULT_COLORS dans src/settings/theme.ts (source de vérité).
-   * 
+   * TOKENS C1-C10 — FALLBACK CSS (anti-FOUC)
+   * Seul endroit où les valeurs hex des tokens peuvent apparaître en CSS.
+   * Elles DOIVENT rester synchronisées avec DEFAULT_COLORS dans src/settings/theme.ts.
+   *
    * Source de vérité : src/settings/theme.ts → DEFAULT_COLORS
+   *
+   * GOUVERNANCE COULEUR CSS :
+   * - Tokens C1-C10 : uniquement ici (définitions) + var(--color-c*) partout ailleurs
+   * - Blanc pur (#FFFFFF) : autorisé en exception explicite (fond modal/chip/card)
+   * - Couleurs de statut (rouge erreur, jaune alerte, bleu info) : autorisées dans
+   *   les fichiers concernés — elles ne font pas partie de la palette thème C1-C10
+   * - rgba() pour les ombres et overlays : autorisé
    */
   --color-c1: #2B3E37;
   --color-c2: #709B8B;
@@ -36,11 +42,6 @@
   --color-warning-border: var(--color-c8);
   --color-warning-text: var(--color-c10);
 
-  /* Alias pour compatibilité */
-  --green: var(--color-c1);
-  --beige: var(--color-c6);
-  --bg: var(--color-c7);
-  --light-green: var(--color-c3);
   --radius: 12px;
 
   /* Ombres - seuls rgba autorisés */
@@ -54,12 +55,12 @@
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
-  background: var(--bg);
+  background: var(--color-c7);
 }
 
 /* Topbar */
 .topbar {
-  background: var(--green);
+  background: var(--color-c1);
   color: var(--color-c7);
   padding: 12px 20px;
   display: flex;
