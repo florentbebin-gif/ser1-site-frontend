@@ -620,6 +620,8 @@
   margin: 0;
   display: flex;
   flex-direction: column;
+  max-height: 240px;
+  overflow-y: auto;
   gap: 2px;
 }
 
@@ -939,13 +941,19 @@
 
 .sc-dispositions-modal {
   max-width: 1080px;
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
 }
 
 .sc-dispositions-modal__body {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 18px;
   align-items: start;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .sc-dispositions-modal__section {
