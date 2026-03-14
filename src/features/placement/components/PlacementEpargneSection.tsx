@@ -140,6 +140,7 @@ export function PlacementEpargneSection({
                     <Toggle
                       checked={product.perBancaire}
                       onChange={(value) => setProduct(index, { perBancaire: value })}
+                      ariaLabel={`Activer le mode PER bancaire pour ${envelopeLabels[product.envelope]}`}
                     />
                   ) : (
                     <span className="pl-muted">-</span>
@@ -158,6 +159,7 @@ export function PlacementEpargneSection({
                     <Toggle
                       checked={product.optionBaremeIR}
                       onChange={(value) => setProduct(index, { optionBaremeIR: value })}
+                      ariaLabel={`Activer l’option dividendes au barème IR pour ${envelopeLabels[product.envelope]}`}
                     />
                   ) : (
                     <span className="pl-muted">-</span>

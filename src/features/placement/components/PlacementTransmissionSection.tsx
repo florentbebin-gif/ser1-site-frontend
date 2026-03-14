@@ -126,13 +126,13 @@ export function PlacementTransmissionSection({
               <tr>
                 <td colSpan={3}>
                   <div className="pl-alert pl-alert--warning">
-                    Consommation estimée de la tranche DMTG (sur l assiette réellement soumise aux DMTG) <sup>(1)</sup> :
+                    Consommation estimée de la tranche DMTG (sur l’assiette réellement soumise aux DMTG) <sup>(1)</sup> :
                     <div className="pl-alert__block">
                       <div>Placement 1 : {dmtgConsumptionPercentProduit1}%</div>
                       <div>Placement 2 : {dmtgConsumptionPercentProduit2}%</div>
                     </div>
                     <div className="pl-alert__block">
-                      Pensez à ajuster la tranche DMTG pour refléter l ensemble du patrimoine.
+                      Pensez à ajuster la tranche DMTG pour refléter l’ensemble du patrimoine.
                     </div>
                   </div>
                 </td>
@@ -188,9 +188,9 @@ export function PlacementTransmissionSection({
       <div className="pl-disclaimer pl-transmission-info-card">
         <strong>Régimes applicables :</strong>
         <ul>
-          <li>AV : 990 I (versements avant 70 ans) ou 757 B (apres 70 ans)</li>
-          <li>PER assurance : 990 I (décès avant 70 ans) ou 757 B (décès &gt;= 70 ans)</li>
-          <li>PER bancaire / CTO / PEA / SCPI : intégration à l actif successoral (DMTG)</li>
+          <li>AV : 990 I (versements avant 70 ans) ou 757 B (après 70 ans)</li>
+          <li>PER assurance : 990 I (décès avant 70 ans) ou 757 B (décès à partir de 70 ans)</li>
+          <li>PER bancaire / CTO / PEA / SCPI : intégration à l’actif successoral (DMTG)</li>
           <li>Conjoint / partenaire PACS : exonération du prélèvement 20 % et des DMTG</li>
         </ul>
         <p>
@@ -201,7 +201,7 @@ export function PlacementTransmissionSection({
           Assurance-vie et PER simulés à 100 % en unités de compte (pas de fonds EUR). Les PS au décès sont appliqués au taux de {psSettings?.patrimony?.current?.totalRate ?? DEFAULT_PS_SETTINGS.patrimony.current.totalRate}% (<a href="/settings/prelevements" className="pl-transmission-info-card__link">paramétrable</a>), puis les montants nets alimentent les DMTG.
         </p>
         <p className="pl-transmission-info-card__note">
-          La détermination de l assiette taxable au prélèvement 990 I s effectue après imputation des PS dus sur les produits du contrat, prélevés par l assureur au décès (BOI-TCAS-AUT-60).
+          La détermination de l’assiette taxable au prélèvement 990 I s’effectue après imputation des PS dus sur les produits du contrat, prélevés par l’assureur au décès (BOI-TCAS-AUT-60).
         </p>
         <p className="pl-transmission-info-card__footnote">
           <sup>(1)</sup> Seuls les montants réellement soumis aux PS/DMTG sont utilisés pour les pourcentages affichés.

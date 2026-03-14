@@ -203,16 +203,17 @@ interface ToggleProps {
   checked: boolean;
   onChange: (_checked: boolean) => void;
   label?: string;
+  ariaLabel?: string;
 }
 
-export function Toggle({ checked, onChange, label }: ToggleProps) {
+export function Toggle({ checked, onChange, label, ariaLabel }: ToggleProps) {
   return (
     <div className="pl-toggle">
       <button
         type="button"
         role="switch"
         aria-checked={checked}
-        aria-label={label || 'Activer l option'}
+        aria-label={ariaLabel || label || 'Activer l’option'}
         className={`pl-toggle__switch${checked ? ' is-active' : ''}`}
         onClick={() => onChange(!checked)}
       >
