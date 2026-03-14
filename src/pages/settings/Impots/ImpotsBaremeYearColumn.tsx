@@ -1,6 +1,6 @@
 import type { ChangeEvent, ReactElement } from 'react';
 import SettingsTable from '@/components/settings/SettingsTable';
-import { numberOrEmpty } from '@/utils/settingsHelpers';
+import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 
 export type ScaleFieldKey = 'from' | 'to' | 'rate';
 export type IncomeScaleKey = 'scaleCurrent' | 'scalePrevious';

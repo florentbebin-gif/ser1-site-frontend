@@ -4,19 +4,10 @@
  * - Maintains visual harmony with SER1 Classic reference palette
  */
 
+import { DEFAULT_COLORS } from '../theme';
+
 // SER1 Classic reference palette (baseline for deltas)
-const SER1_CLASSIC = {
-  c1: '#2B3E37',
-  c2: '#709B8B',
-  c3: '#9FBDB2',
-  c4: '#CFDED8',
-  c5: '#788781',
-  c6: '#CEC1B6',
-  c7: '#F5F3F0',
-  c8: '#D9D9D9',
-  c9: '#7F7F7F',
-  c10: '#000000',
-};
+const SER1_CLASSIC = DEFAULT_COLORS;
 
 /**
  * Convert hex to HSL
@@ -100,16 +91,16 @@ export function recalculatePaletteFromC1(baseC1: string): Record<string, string>
   if (!/^#[0-9A-F]{6}$/.test(normalizedHex)) {
     console.warn('[paletteGenerator] Invalid hex color, using fallback:', baseC1);
     return {
-      color1: '#2B3E37',
-      color2: '#709B8B',
-      color3: '#9FBDB2',
-      color4: '#CFDED8',
-      color5: '#788781',
-      color6: '#CEC1B6',
-      color7: '#F5F3F0',
-      color8: '#D9D9D9',
-      color9: '#7F7F7F',
-      color10: '#000000',
+      color1: DEFAULT_COLORS.c1,
+      color2: DEFAULT_COLORS.c2,
+      color3: DEFAULT_COLORS.c3,
+      color4: DEFAULT_COLORS.c4,
+      color5: DEFAULT_COLORS.c5,
+      color6: DEFAULT_COLORS.c6,
+      color7: DEFAULT_COLORS.c7,
+      color8: DEFAULT_COLORS.c8,
+      color9: DEFAULT_COLORS.c9,
+      color10: DEFAULT_COLORS.c10,
     };
   }
 

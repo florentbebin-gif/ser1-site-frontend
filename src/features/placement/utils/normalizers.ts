@@ -8,7 +8,7 @@ import {
   normalizeVersementConfig,
   type VersementConfig,
   type VersementConfigInput,
-} from '@/utils/versementConfig';
+} from '@/engine/placement/versementConfig';
 import { formatDmtgRange, formatPercent } from './formatters';
 
 export interface PlacementProductLiquidationState {

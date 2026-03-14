@@ -3,7 +3,7 @@ import type { User } from '@supabase/supabase-js';
 import { supabase, DEBUG_AUTH } from '../supabaseClient';
 import { useTheme } from '../settings/ThemeProvider';
 import { UserInfoBanner } from '../components/UserInfoBanner';
-import { recalculatePaletteFromC1 } from '../utils/paletteGenerator';
+import { recalculatePaletteFromC1 } from '../settings/theme/paletteGenerator';
 import SignalementsBlock from '../components/settings/SignalementsBlock';
 import { DEFAULT_COLORS as DEFAULT_THEME_COLORS } from '../settings/theme';
 import { PRESET_THEMES, type PresetTheme } from '../settings/presets';

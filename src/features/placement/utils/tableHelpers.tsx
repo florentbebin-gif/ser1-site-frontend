@@ -4,7 +4,7 @@
 
 import React from 'react';
 import type { EpargneRow, LiquidationRow } from '@/engine/placement/types';
-import type { VersementConfig } from '@/utils/versementConfig';
+import type { VersementConfig } from '@/engine/placement/versementConfig';
 import { euro } from './formatters';
 import { EPSILON } from './normalizers';
 

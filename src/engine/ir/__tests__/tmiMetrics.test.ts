@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { computeTmiMetrics } from './tmiMetrics';
+import { computeTmiMetrics } from '../tmiMetrics';
 
 // Barème IR simplifié pour les tests (approximatif 2024)
 const DEFAULT_SCALE = [

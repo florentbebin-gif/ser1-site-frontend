@@ -206,7 +206,7 @@ Ce tri est volontairement indicatif. Il sert a poursuivre la PR-3 sans pretendre
 |---|---|---|
 | `src/features/audit/steps/types.ts` | 5 lignes | peut etre inline, faible gain |
 | `src/utils/number.ts` | 2 usages prod | review seulement |
-| `src/utils/transmissionDisclaimer.ts` | 1 usage prod + 1 test | review seulement |
+| `src/engine/placement/transmissionDisclaimer.ts` | 1 usage prod + 1 test | move aligne ce helper pur avec le moteur placement |
 | `src/constants/colorUsageGuidelines.ts` | 2 usages prod | deplacement possible, fusion non prouvee |
 | `src/constants/baseContratLabels.ts` | usage settings `BaseContrat` | review organisation |
 | `src/domain/base-contrat/overrides.ts` | types + helper utilises | ne pas fusionner sans preuve |
@@ -231,7 +231,7 @@ Un petit fichier n'est "fusionnable" que s'il n'est ni :
 ### Conclusion
 
 - La structure generale du repo est bonne.
-- Les vraies zones de review sont `src/utils/`, `src/constants/`, `src/services/`, `src/reporting/`, et l'organisation `pages/settings`.
+- Les vraies zones de review residuelles sont maintenant `src/utils/` racine, `src/constants/` et l'organisation `pages/settings`.
 - Le V2 formulait mal une frontiere : `pages` importent deja `features`, et c'est normal pour des pages orchestratrices.
 
 ### Constats structurants
@@ -242,14 +242,20 @@ Un petit fichier n'est "fusionnable" que s'il n'est ni :
 | `src/settings/userMode.ts` porte le mode global UI | lecture/ecriture de `ui_settings.mode` + hook `useUserMode` | move aligne avec la frontiere `settings/` |
 | `src/settings/admin/` regroupe le bridge admin settings | `invokeAdmin` + `logoUpload` consommes par `SettingsComptes` et ses modales | move aligne le code avec le perimetre admin settings |
 | `src/reporting/snapshot/` regroupe l'IO `.ser1` | schema + migrations + IO + test associe | move aligne le dossier avec le vocabulaire metier |
+| `src/settings/theme/paletteGenerator.ts` porte la generation de palettes | consommateur runtime unique : `src/pages/Settings.tsx` | move aligne ce helper avec la frontiere theme |
+| `src/components/settings/settingsHelpers.ts` porte les helpers de saisie settings | consommes par les composants/settings partages et les pages settings | move aligne ce helper avec le perimetre UI settings |
+| `src/engine/placement/versementConfig.ts` porte la normalisation des versements | consomme par `engine/placement/epargne.ts` et par la feature placement | move aligne la config avec le moteur placement |
+| `src/features/placement/utils/placementPersistence.ts` porte la sauvegarde/chargement placement | consommateur runtime unique : `usePlacementSimulatorController` | move aligne ce helper avec la feature placement |
+| `src/engine/ir/tmiMetrics.ts` porte les metriques de TMI | consommateur runtime unique : `src/engine/ir/compute.ts` | move aligne ce helper avec le moteur IR |
+| `src/utils/cache/fiscalitySettingsMigrator.ts` est rattache au cache fiscal | consommateur prod unique : `src/utils/cache/fiscalSettingsCache.ts` | move reduit le reliquat en racine de `src/utils/` |
 | `src/pages/StrategyPage.tsx` importe `../features/strategy` et `../features/audit/storage` | page -> feature existe deja | frontiere volontaire, pas anomalie |
 | `src/engine -> src/features/pages` | 0 import detecte | bonne frontiere a automatiser |
 | `src/features -> src/pages` | 0 import detecte | bonne frontiere a automatiser |
 
 ### Chantiers de review
 
-- `src/utils/`
-  - distinguer `cache`, `debug`, `export`, `theme`, `feature-specific`
+- `src/utils/` racine
+  - reliquat a requalifier sans move massif : `debugFlags.ts`, `number.ts`, `reset.ts`
 - `src/constants/`
   - distinguer `routing`, `labels`, `theme guidance`, `defaults`
 - `src/pages/settings/`
@@ -510,8 +516,10 @@ Statut le 2026-03-14 : en cours
 - `src/settings/userMode.ts` aligne le mode global UI avec la frontiere `settings/`
 - `src/settings/admin/` aligne le bridge admin settings avec son perimetre fonctionnel
 - `src/reporting/snapshot/` aligne le dossier snapshots `.ser1` avec le vocabulaire metier
+- `src/settings/theme/paletteGenerator.ts`, `src/components/settings/settingsHelpers.ts`, `src/engine/placement/versementConfig.ts`, `src/features/placement/utils/placementPersistence.ts`, `src/engine/ir/tmiMetrics.ts` et `src/utils/cache/fiscalitySettingsMigrator.ts` reduisent le reliquat de `src/utils/` racine
+- `src/engine/placement/transmissionDisclaimer.ts` et `src/engine/ir/__tests__/parts.test.ts` absorbent les deux derniers helpers/tests root non transverses
 - docs pivots alignees sur ce move : `README.md`, `docs/ARCHITECTURE.md`, `docs/GOUVERNANCE.md`, `docs/RUNBOOK.md`, `docs/ROADMAP.md`
-- reliquat structurel principal a qualifier sans move massif : `src/utils/`
+- reliquat structurel principal a qualifier sans move massif : `src/utils/` racine (`debugFlags.ts`, `number.ts`, `reset.ts`)
 
 ---
 

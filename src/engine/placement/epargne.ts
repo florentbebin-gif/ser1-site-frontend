@@ -1,4 +1,4 @@
-import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from '../../utils/versementConfig';
+import { DEFAULT_VERSEMENT_CONFIG, normalizeVersementConfig } from './versementConfig';
 import { DEFAULT_FISCAL_PARAMS, ENVELOPES, round2 } from './shared';
 import type { EpargneResult, FiscalParams } from './types';
 

@@ -1,4 +1,4 @@
-import { createTrackedObjectURL } from './export/createTrackedObjectURL';
+import { createTrackedObjectURL } from '../../../utils/export/createTrackedObjectURL';
 
 declare global {
   interface Window {
