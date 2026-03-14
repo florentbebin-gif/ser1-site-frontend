@@ -16,19 +16,22 @@ import { join, relative } from 'path';
 const ROOT = process.cwd();
 const CSS_SOURCE_FILE = 'src/styles/index.css';
 
-// Valeurs hex des tokens C1-C10 (insensible à la casse)
-const TOKEN_COLORS = [
-  '#2B3E37', // c1
-  '#709B8B', // c2
-  '#9FBDB2', // c3
-  '#CFDED8', // c4
-  '#788781', // c5
-  '#CEC1B6', // c6
-  '#F5F3F0', // c7
-  '#D9D9D9', // c8
-  '#7F7F7F', // c9
-  '#000000', // c10
-];
+// Valeurs hex des tokens C1-C10, lues depuis la source de vérité
+function readTokenColorsFromTheme() {
+  const content = readFileSync(join(ROOT, 'src/settings/theme.ts'), 'utf-8');
+  const blockMatch = content.match(/export const DEFAULT_COLORS[\s\S]*?\{([\s\S]*?)\};/);
+  if (!blockMatch) throw new Error('Cannot find DEFAULT_COLORS in src/settings/theme.ts');
+  const colors = [];
+  const re = /c\d+:\s*['"]?(#[0-9A-Fa-f]{3,8})['"]?/g;
+  let m;
+  while ((m = re.exec(blockMatch[1])) !== null) {
+    colors.push(m[1]);
+  }
+  if (colors.length === 0) throw new Error('No colors found in DEFAULT_COLORS');
+  return colors;
+}
+
+const TOKEN_COLORS = readTokenColorsFromTheme();
 
 const TOKEN_PATTERN = new RegExp(TOKEN_COLORS.join('|'), 'gi');
 
