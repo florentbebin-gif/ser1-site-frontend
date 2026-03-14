@@ -38,7 +38,7 @@ export function PlacementToolbar({
         <h1 className="premium-title">Comparer deux placements</h1>
 
         <div className="pl-header__subtitle-row">
-          <p className="premium-subtitle">Épargne - Liquidation - Transmission</p>
+          <p className="premium-subtitle">Épargne → Liquidation → Transmission</p>
 
           <div className="pl-header__actions pl-header-actions">
             <button

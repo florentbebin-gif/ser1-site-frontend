@@ -138,6 +138,7 @@ export function PlacementLiquidationSection({
                   <Toggle
                     checked={produit1OptionBaremeIR}
                     onChange={(value) => updateProductOption(0, 'liquidation.optionBaremeIR', value)}
+                    ariaLabel={`Activer l’option au barème IR en liquidation pour ${produit1.envelopeLabel}`}
                   />
                 ) : (
                   <span className="pl-muted">-</span>
@@ -148,6 +149,7 @@ export function PlacementLiquidationSection({
                   <Toggle
                     checked={produit2OptionBaremeIR}
                     onChange={(value) => updateProductOption(1, 'liquidation.optionBaremeIR', value)}
+                    ariaLabel={`Activer l’option au barème IR en liquidation pour ${produit2.envelopeLabel}`}
                   />
                 ) : (
                   <span className="pl-muted">-</span>
