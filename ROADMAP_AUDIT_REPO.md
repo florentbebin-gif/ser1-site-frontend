@@ -25,7 +25,7 @@
 |---|---|---|
 | `npm run check` passe | lint + no-js + typecheck + tests + build OK le 2026-03-14 | baseline exploitable |
 | `npm run check:circular` passe | `madge --circular src/` -> 0 cycle | pas de dette circulaire confirmee |
-| `npm run check:unused` remonte `supabase` en devDependency | `depcheck` -> `Unused devDependencies: supabase` | review, pas suppression immediate |
+| `npm run check:unused` passe | `depcheck --ignores=supabase` -> 0 package remonte | faux positif CLI supabase neutralise avec preuve documentaire |
 | Fichiers `src/` | 392 fichiers | repo de taille moyenne, audit manuel faisable |
 | Extensions `src/` | 224 `.ts`, 117 `.tsx`, 24 `.css`, 14 `.json`, 13 `.svg` | TypeScript majoritaire |
 | Fichiers `.js/.jsx` dans `src/` | 0 | la convention est deja appliquee par script CI |
@@ -39,15 +39,15 @@
 
 ### Annexe `depcheck`
 
-Resultat complet observe le 2026-03-12 :
+Resultat complet observe le 2026-03-14 :
 
-- `Unused devDependencies`
-  - `supabase`
+- aucun package remonte par `depcheck --ignores=supabase`
 
 Lecture d'audit :
 
+- l'ignore porte uniquement sur `supabase`
+- cet ignore est motive par l'usage operateur documente dans `docs/RUNBOOK.md`
 - aucun autre package n'est remonte par `depcheck`
-- `supabase` reste en review manuelle, car la CLI est documentee dans le runbook et utilisee dans les workflows operateurs
 
 ### Commandes de preuve
 
@@ -87,7 +87,7 @@ rg -n "TODO|FIXME|HACK" src --glob '!**/*.test.*'
 | `src/features/ir/IrPage.tsx` | route lazy via `src/features/ir/index.ts` puis `src/routes/appRoutes.ts` | garder |
 | `src/features/placement/PlacementPage.tsx` | route lazy via `src/features/placement/index.ts` puis `src/routes/appRoutes.ts` | garder |
 | `api/admin.js` | reference dans `src/settings/admin/invokeAdmin.ts`, `docs/RUNBOOK.md`, workflow Vercel implicite | garder |
-| `supabase` devDependency | utilise dans le runbook et les workflows operateurs | review, pas suppression automatique |
+| `supabase` devDependency | utilise dans le runbook et les workflows operateurs ; ignore explicite dans `check:unused` | keep outillage, pas suppression automatique |
 
 ### Points a auditer avec preuve avant action
 
@@ -439,6 +439,7 @@ Top signaux observes sur le build du 2026-03-12 :
 | PR-8 | CSS governance spike | moyen | moyen |
 | PR-9 | gros fichiers cibles | moyen a fort | moyen |
 | PR-10 | review structurelle | moyen | moyen |
+| PR-11 | faux positif `depcheck` sur CLI supabase | faible | faible |
 
 ### PR-1 - Baseline et docs d'audit
 
@@ -523,6 +524,15 @@ Statut le 2026-03-14 : terminee
 - `src/engine/placement/transmissionDisclaimer.ts` et `src/engine/ir/__tests__/parts.test.ts` absorbent les deux derniers helpers/tests root non transverses
 - docs pivots alignees sur ce move : `README.md`, `docs/ARCHITECTURE.md`, `docs/GOUVERNANCE.md`, `docs/RUNBOOK.md`, `docs/ROADMAP.md`
 - keeps volontaires apres review : `src/utils/debugFlags.ts`, `src/utils/number.ts`, `src/utils/reset.ts`, `src/constants/settingsDefaults.ts`
+
+### PR-11 - Faux positif `depcheck` sur CLI supabase
+
+Statut le 2026-03-14 : terminee
+
+- `package.json` ignore explicitement `supabase` dans `check:unused`
+- `README.md` documente que `check:unused` exclut la CLI `supabase`
+- `npm run check:unused` ne remonte plus de faux positif
+- la preuve de keep reste documentaire : `docs/RUNBOOK.md` reference `supabase start`, `supabase migration list`, `supabase db remote commit --linked`, `supabase functions invoke admin`
 
 ---
 

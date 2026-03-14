@@ -61,7 +61,7 @@ Optionnels :
 npm run test:e2e
 npm run test:e2e:ui
 npm run check:circular
-npm run check:unused
+npm run check:unused  # depcheck avec ignore explicite de la CLI supabase
 ```
 
 ## Repere "ou changer quoi" (code)
