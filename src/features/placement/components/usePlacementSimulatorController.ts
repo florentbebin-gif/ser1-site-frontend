@@ -3,10 +3,10 @@ import { usePlacementSettings, type UsePlacementSettingsResult } from '@/hooks/u
 import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { simulateComplete, compareProducts } from '@/engine/placement';
 import type { CompareResult } from '@/engine/placement/types';
-import { normalizeVersementConfig } from '@/utils/versementConfig';
-import type { VersementConfig, VersementConfigInput } from '@/utils/versementConfig';
+import { normalizeVersementConfig } from '@/engine/placement/versementConfig';
+import type { VersementConfig, VersementConfigInput } from '@/engine/placement/versementConfig';
 import { onResetEvent, storageKeyFor } from '@/utils/reset';
-import { savePlacementState, loadPlacementStateFromFile } from '@/utils/placementPersistence';
+import { savePlacementState, loadPlacementStateFromFile } from '../utils/placementPersistence';
 import { toEngineProduct } from '../adapters/toEngineProduct';
 import {
   DEFAULT_STATE,

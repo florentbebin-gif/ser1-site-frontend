@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth, useUserRole } from '../auth';
-import { useUserMode } from '../services/userModeService';
+import { useUserMode } from '../settings/userMode';
 
 /**
  * Composant reutilisable pour le bandeau d'informations utilisateur.

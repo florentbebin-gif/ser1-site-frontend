@@ -4,15 +4,8 @@ import {
   SETTINGS_ROUTES,
   getActiveSettingsKey,
   getVisibleSettingsRoutes,
-} from '../constants/settingsRoutes';
-
-interface SettingsRouteEntry {
-  key: string;
-  label: string;
-  path: string;
-  component: React.ComponentType;
-  adminOnly?: boolean;
-}
+  type SettingsRouteEntry,
+} from '../routes/settingsRoutes';
 
 export default function SettingsShell(): React.ReactElement {
   const { isAdmin } = useUserRole();
@@ -46,12 +39,12 @@ export default function SettingsShell(): React.ReactElement {
   }, []);
 
   const visibleTabs = useMemo(
-    () => getVisibleSettingsRoutes(isAdmin) as SettingsRouteEntry[],
+    () => getVisibleSettingsRoutes(isAdmin),
     [isAdmin],
   );
 
   const activeComponent = useMemo(() => {
-    const routes = SETTINGS_ROUTES as SettingsRouteEntry[];
+    const routes: SettingsRouteEntry[] = SETTINGS_ROUTES;
     const found = routes.find((tab) => tab.key === activeTab);
     return found ? found.component : routes[0].component;
   }, [activeTab]);

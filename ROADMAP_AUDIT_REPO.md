@@ -86,14 +86,14 @@ rg -n "TODO|FIXME|HACK" src --glob '!**/*.test.*'
 | `src/utils/irEngine.ts` | imports dans `src/features/ir/components/IrSimulatorContainer.tsx`, `src/utils/irEngine.parts.test.ts`, `src/features/ir/utils/incomeFilters.irEngine.test.ts` | candidat review prioritaire |
 | `src/features/ir/IrPage.tsx` | route lazy via `src/features/ir/index.ts` puis `src/routes/appRoutes.ts` | garder |
 | `src/features/placement/PlacementPage.tsx` | route lazy via `src/features/placement/index.ts` puis `src/routes/appRoutes.ts` | garder |
-| `api/admin.js` | reference dans `src/services/apiAdmin.ts`, `docs/RUNBOOK.md`, workflow Vercel implicite | garder |
+| `api/admin.js` | reference dans `src/settings/admin/invokeAdmin.ts`, `docs/RUNBOOK.md`, workflow Vercel implicite | garder |
 | `supabase` devDependency | utilise dans le runbook et les workflows operateurs | review, pas suppression automatique |
 
 ### Points a auditer avec preuve avant action
 
 - Tracer les entrypoints runtime hors `src` :
   - `src/routes/appRoutes.ts`
-  - `src/constants/settingsRoutes.ts`
+  - `src/routes/settingsRoutes.ts`
   - `api/admin.js`
   - `supabase/functions/admin/index.ts`
   - `package.json` scripts
@@ -206,9 +206,9 @@ Ce tri est volontairement indicatif. Il sert a poursuivre la PR-3 sans pretendre
 |---|---|---|
 | `src/features/audit/steps/types.ts` | 5 lignes | peut etre inline, faible gain |
 | `src/utils/number.ts` | 2 usages prod | review seulement |
-| `src/utils/transmissionDisclaimer.ts` | 1 usage prod + 1 test | review seulement |
-| `src/constants/colorUsageGuidelines.ts` | 2 usages prod | deplacement possible, fusion non prouvee |
-| `src/constants/baseContratLabels.ts` | usage settings `BaseContrat` | review organisation |
+| `src/engine/placement/transmissionDisclaimer.ts` | 1 usage prod + 1 test | move aligne ce helper pur avec le moteur placement |
+| `src/settings/theme/colorUsageGuidelines.ts` | 2 usages prod | move aligne les guidelines de couleurs avec la frontiere theme |
+| `src/pages/settings/baseContratLabels.ts` | usage settings `BaseContrat` | move aligne ces labels avec leur page unique |
 | `src/domain/base-contrat/overrides.ts` | types + helper utilises | ne pas fusionner sans preuve |
 | `src/components/settings/SettingsYearColumn.tsx` | petit composant UI utile | probablement a garder |
 | `src/styles/home.css` | styles partages, pas doublon de contenu avec `src/pages/Home.css` | garder, renommage a discuter |
@@ -231,26 +231,36 @@ Un petit fichier n'est "fusionnable" que s'il n'est ni :
 ### Conclusion
 
 - La structure generale du repo est bonne.
-- Les vraies zones de review sont `src/utils/`, `src/constants/`, `src/services/`, `src/reporting/`, et l'organisation `pages/settings`.
+- Les vraies zones de review residuelles sont maintenant `src/utils/` racine, `src/constants/` et l'organisation `pages/settings`.
 - Le V2 formulait mal une frontiere : `pages` importent deja `features`, et c'est normal pour des pages orchestratrices.
 
 ### Constats structurants
 
 | Sujet | Preuve | Lecture |
 |---|---|---|
-| `src/constants/settingsRoutes.ts` porte de la logique de routing | lazy imports de pages settings | review move vers `src/routes/` |
-| `src/services/` ne contient que `apiAdmin.ts` et `userModeService.ts` | dossier tres fin | review organisation |
-| `src/reporting/json-io/` est isole | 4 fichiers sous un seul sous-dossier | review nommage / placement |
+| `src/routes/settingsRoutes.ts` porte la navigation settings | lazy imports de pages settings | move aligne avec la frontiere `routes/` |
+| `src/settings/userMode.ts` porte le mode global UI | lecture/ecriture de `ui_settings.mode` + hook `useUserMode` | move aligne avec la frontiere `settings/` |
+| `src/settings/admin/` regroupe le bridge admin settings | `invokeAdmin` + `logoUpload` consommes par `SettingsComptes` et ses modales | move aligne le code avec le perimetre admin settings |
+| `src/reporting/snapshot/` regroupe l'IO `.ser1` | schema + migrations + IO + test associe | move aligne le dossier avec le vocabulaire metier |
+| `src/settings/theme/paletteGenerator.ts` porte la generation de palettes | consommateur runtime unique : `src/pages/Settings.tsx` | move aligne ce helper avec la frontiere theme |
+| `src/settings/theme/colorUsageGuidelines.ts` porte les guidelines UI de palette | consomme par `src/pages/Settings.tsx` et `ThemeEditModal.tsx` | move aligne ces donnees avec la frontiere theme |
+| `src/components/settings/settingsHelpers.ts` porte les helpers de saisie settings | consommes par les composants/settings partages et les pages settings | move aligne ce helper avec le perimetre UI settings |
+| `src/engine/placement/versementConfig.ts` porte la normalisation des versements | consomme par `engine/placement/epargne.ts` et par la feature placement | move aligne la config avec le moteur placement |
+| `src/features/placement/utils/placementPersistence.ts` porte la sauvegarde/chargement placement | consommateur runtime unique : `usePlacementSimulatorController` | move aligne ce helper avec la feature placement |
+| `src/engine/ir/tmiMetrics.ts` porte les metriques de TMI | consommateur runtime unique : `src/engine/ir/compute.ts` | move aligne ce helper avec le moteur IR |
+| `src/utils/cache/fiscalitySettingsMigrator.ts` est rattache au cache fiscal | consommateur prod unique : `src/utils/cache/fiscalSettingsCache.ts` | move reduit le reliquat en racine de `src/utils/` |
+| `src/pages/settings/baseContratLabels.ts` porte les labels du referentiel contrats | consommateur runtime unique : `src/pages/settings/BaseContrat.tsx` | move aligne ces labels avec leur page unique |
+| `src/constants/settingsDefaults.ts` reste la source unique des defaults fiscaux | reference explicite dans `docs/RUNBOOK.md` + usages transverses hooks/engine/settings | keep volontaire en `constants/` |
 | `src/pages/StrategyPage.tsx` importe `../features/strategy` et `../features/audit/storage` | page -> feature existe deja | frontiere volontaire, pas anomalie |
 | `src/engine -> src/features/pages` | 0 import detecte | bonne frontiere a automatiser |
 | `src/features -> src/pages` | 0 import detecte | bonne frontiere a automatiser |
 
 ### Chantiers de review
 
-- `src/utils/`
-  - distinguer `cache`, `debug`, `export`, `theme`, `feature-specific`
+- `src/utils/` racine
+  - reliquat a requalifier sans move massif : `debugFlags.ts`, `number.ts`, `reset.ts`
 - `src/constants/`
-  - distinguer `routing`, `labels`, `theme guidance`, `defaults`
+  - reliquat volontaire : `settingsDefaults.ts` (source unique documentee des defaults fiscaux)
 - `src/pages/settings/`
   - revoir coherence de nommage des sous-dossiers (`Impots`, `Prelevements`, `DmtgSuccession`)
 
@@ -503,8 +513,16 @@ Statut le 2026-03-14 : terminee
 
 ### PR-10 - Review structurelle
 
-- `src/utils/`, `src/constants/`, `src/services/`, `src/reporting/`
-- sans move massif tant que les frontieres ne sont pas documentees et automatisees
+Statut le 2026-03-14 : terminee
+
+- `src/routes/settingsRoutes.ts` aligne la navigation settings avec la frontiere `routes/`
+- `src/settings/userMode.ts` aligne le mode global UI avec la frontiere `settings/`
+- `src/settings/admin/` aligne le bridge admin settings avec son perimetre fonctionnel
+- `src/reporting/snapshot/` aligne le dossier snapshots `.ser1` avec le vocabulaire metier
+- `src/settings/theme/paletteGenerator.ts`, `src/settings/theme/colorUsageGuidelines.ts`, `src/components/settings/settingsHelpers.ts`, `src/engine/placement/versementConfig.ts`, `src/features/placement/utils/placementPersistence.ts`, `src/engine/ir/tmiMetrics.ts` et `src/utils/cache/fiscalitySettingsMigrator.ts` reduisent le reliquat de `src/utils/` racine et vident `src/constants/` hors `settingsDefaults.ts`
+- `src/engine/placement/transmissionDisclaimer.ts` et `src/engine/ir/__tests__/parts.test.ts` absorbent les deux derniers helpers/tests root non transverses
+- docs pivots alignees sur ce move : `README.md`, `docs/ARCHITECTURE.md`, `docs/GOUVERNANCE.md`, `docs/RUNBOOK.md`, `docs/ROADMAP.md`
+- keeps volontaires apres review : `src/utils/debugFlags.ts`, `src/utils/number.ts`, `src/utils/reset.ts`, `src/constants/settingsDefaults.ts`
 
 ---
 
@@ -519,7 +537,7 @@ npm run check:unused
 Et selon la zone touchee :
 
 - audit des imports : `rg`
-- pages et routes : verifier `src/routes/appRoutes.ts` et `src/constants/settingsRoutes.ts`
+- pages et routes : verifier `src/routes/appRoutes.ts` et `src/routes/settingsRoutes.ts`
 - docs : verifier coherence `README.md`, `.github/CONTRIBUTING.md`, `docs/*`
 
 ---

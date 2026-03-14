@@ -20,7 +20,7 @@ import {
   getBaseContratOverrides,
   upsertBaseContratOverride,
 } from '@/utils/cache/baseContratOverridesCache';
-import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from '@/constants/baseContratLabels';
+import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from './baseContratLabels';
 
 // ─────────────────────────────────────────────────────────────
 // Hook: overrides

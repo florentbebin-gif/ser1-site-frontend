@@ -454,9 +454,9 @@ Objectif : eviter que `catalog.ts` devienne bloquant si le cabinet veut personna
 ## References (pour travailler vite)
 - Features (simulateurs) : `src/features/{ir,placement,succession,per,credit,strategy,audit}`
 - Engine (calculs purs) : `src/engine/**`
-- Settings : `src/pages/settings/*` + `src/constants/settingsRoutes.ts`
+- Settings : `src/pages/settings/*` + `src/routes/settingsRoutes.ts`
 - Cache parametres : `src/utils/cache/fiscalSettingsCache.ts`
 - Theme cabinet : `src/settings/ThemeProvider.tsx` + `src/settings/theme/**`
 - Exports : `src/pptx/**` + `src/utils/export/xlsxBuilder.ts`
-- Snapshots `.ser1` : `src/reporting/json-io/**`
+- Snapshots `.ser1` : `src/reporting/snapshot/**`
 - Docs : `docs/{ARCHITECTURE,RUNBOOK,GOUVERNANCE}.md`

@@ -14,7 +14,7 @@ import {
   type VersementEntry,
   type VersementOption,
   type VersementPonctuel,
-} from '@/utils/versementConfig';
+} from '@/engine/placement/versementConfig';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import { InputEuro, InputPct, InputNumber } from './inputs';
 import { AllocationSlider } from './tables';

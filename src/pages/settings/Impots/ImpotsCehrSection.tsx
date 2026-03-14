@@ -1,7 +1,7 @@
 import React from 'react';
 import SettingsYearColumn from '@/components/settings/SettingsYearColumn';
 import SettingsFieldRow from '@/components/settings/SettingsFieldRow';
-import { numberOrEmpty } from '@/utils/settingsHelpers';
+import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 
 type PeriodKey = 'current' | 'previous';
 

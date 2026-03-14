@@ -4,7 +4,7 @@ import {
   type VersementConfigInput,
   type VersementOption,
   type VersementPonctuel,
-} from '../../../utils/versementConfig';
+} from '../../../engine/placement/versementConfig';
 
 export interface RendementPondereInput {
   pctCapitalisation?: number | null;

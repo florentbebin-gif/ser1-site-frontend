@@ -1,4 +1,4 @@
-import { computeTmiMetrics } from '../../utils/tmiMetrics';
+import { computeTmiMetrics } from './tmiMetrics';
 import type { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../constants/settingsDefaults';
 import { computeCapitalBases, computePfuIr } from './capital';
 import { computeProgressiveTax } from './progressiveTax';

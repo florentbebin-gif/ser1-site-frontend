@@ -1,6 +1,6 @@
 import React from 'react';
 import SettingsTable from '@/components/settings/SettingsTable';
-import { numberOrEmpty } from '@/utils/settingsHelpers';
+import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 
 type CellValue = string | number | null;
 type DmtgCategoryKey = 'ligneDirecte' | 'frereSoeur' | 'neveuNiece' | 'autre';

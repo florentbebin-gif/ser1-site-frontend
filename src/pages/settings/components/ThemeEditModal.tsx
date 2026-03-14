@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { invokeAdmin } from '@/services/apiAdmin';
-import { COLOR_USAGE_GUIDELINES } from '@/constants/colorUsageGuidelines';
+import { invokeAdmin } from '@/settings/admin/invokeAdmin';
+import { COLOR_USAGE_GUIDELINES } from '@/settings/theme/colorUsageGuidelines';
 import { DEFAULT_COLORS } from '@/settings/theme';
 
 type ThemePalette = Record<string, string>;

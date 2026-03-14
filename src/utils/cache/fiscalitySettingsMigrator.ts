@@ -20,7 +20,7 @@ import type {
   Product,
   Ruleset,
   SettingsRef,
-} from '../types/fiscalitySettings';
+} from '../../types/fiscalitySettings';
 
 // ---------------------------------------------------------------------------
 // Default product catalogue

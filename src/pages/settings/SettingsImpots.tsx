@@ -5,7 +5,7 @@ import './SettingsShared.css';
 import './SettingsImpots.css';
 import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsCache';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
-import { createFieldUpdater } from '@/utils/settingsHelpers';
+import { createFieldUpdater } from '@/components/settings/settingsHelpers';
 
 import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import {

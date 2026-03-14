@@ -1,5 +1,5 @@
 import React from 'react';
-import { useUserMode } from '../services/userModeService';
+import { useUserMode } from '../settings/userMode';
 
 export function ModeToggle(): React.ReactElement {
   const { mode: userMode, setMode: setUserMode, isLoading } = useUserMode();

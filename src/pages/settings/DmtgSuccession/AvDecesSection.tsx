@@ -1,5 +1,5 @@
 import React from 'react';
-import { numberOrEmpty } from '@/utils/settingsHelpers';
+import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 import SettingsTable from '@/components/settings/SettingsTable';
 
 type CellValue = string | number | null;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { invokeAdmin } from '@/services/apiAdmin';
+import { invokeAdmin } from '@/settings/admin/invokeAdmin';
 
 interface CabinetOption {
   value: string;

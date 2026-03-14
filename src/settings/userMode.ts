@@ -1,12 +1,9 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../auth';
+import { supabase } from '../supabaseClient';
 
 export type UserMode = 'expert' | 'simplifie';
 
-/**
- * Charge le mode utilisateur depuis Supabase
- */
 export async function loadUserMode(userId: string): Promise<UserMode> {
   try {
     const { data, error } = await supabase
@@ -18,51 +15,48 @@ export async function loadUserMode(userId: string): Promise<UserMode> {
       .maybeSingle();
 
     if (error) throw error;
-    
-    return data?.mode || 'simplifie'; // Valeur par défaut
+
+    return data?.mode || 'simplifie';
   } catch (error) {
-    console.error('[UserModeService] Error loading user mode:', error);
-    return 'simplifie'; // Valeur par défaut en cas d'erreur
+    console.error('[UserMode] Error loading user mode:', error);
+    return 'simplifie';
   }
 }
 
-/**
- * Sauvegarde le mode utilisateur dans Supabase
- */
-export async function saveUserMode(userId: string, mode: UserMode): Promise<{ success: boolean; error?: string }> {
+export async function saveUserMode(
+  userId: string,
+  mode: UserMode,
+): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await supabase
-      .from('ui_settings')
-      .upsert({
+    const { error } = await supabase.from('ui_settings').upsert(
+      {
         user_id: userId,
-        mode: mode,
-        updated_at: new Date().toISOString()
-      }, { 
+        mode,
+        updated_at: new Date().toISOString(),
+      },
+      {
         onConflict: 'user_id',
-        ignoreDuplicates: false
-      });
+        ignoreDuplicates: false,
+      },
+    );
 
     if (error) throw error;
 
     return { success: true };
   } catch (error) {
-    console.error('[UserModeService] Error saving user mode:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Erreur inconnue' 
+    console.error('[UserMode] Error saving user mode:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur inconnue',
     };
   }
 }
 
-/**
- * Hook React pour gérer le mode utilisateur
- */
 export function useUserMode() {
   const { user } = useAuth();
   const [mode, setMode] = useState<UserMode>('simplifie');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Charger le mode au démarrage
   useEffect(() => {
     if (!user?.id) {
       setIsLoading(false);
@@ -76,7 +70,7 @@ export function useUserMode() {
         setMode(userMode);
       } catch (error) {
         console.error('[useUserMode] Error loading mode:', error);
-        setMode('simplifie'); // Valeur par défaut
+        setMode('simplifie');
       } finally {
         setIsLoading(false);
       }
@@ -85,22 +79,18 @@ export function useUserMode() {
     loadMode();
   }, [user?.id]);
 
-  // Sauvegarder le mode quand il change
   const updateMode = async (newMode: UserMode) => {
     if (!user?.id) return;
 
-    setMode(newMode); // Optimistic update
-    
+    setMode(newMode);
+
     try {
       const result = await saveUserMode(user.id, newMode);
       if (!result.success) {
-        // En cas d'erreur, on revient à l'ancien mode
         console.error('[useUserMode] Failed to save mode:', result.error);
-        // Optionnel: afficher une notification à l'utilisateur
       }
     } catch (error) {
       console.error('[useUserMode] Error updating mode:', error);
-      // Optionnel: afficher une notification à l'utilisateur
     }
   };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
-import { numberOrEmpty } from '../../utils/settingsHelpers';
+import { numberOrEmpty } from './settingsHelpers';
 
 interface PassHistoryRow {
   year: number;

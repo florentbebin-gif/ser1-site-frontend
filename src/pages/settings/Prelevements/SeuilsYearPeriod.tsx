@@ -1,5 +1,5 @@
 import React from 'react';
-import { numberOrEmpty } from '@/utils/settingsHelpers';
+import { numberOrEmpty } from '@/components/settings/settingsHelpers';
 
 type RegionKey = 'metropole' | 'gmr' | 'guyane';
 type ThresholdFieldKey =

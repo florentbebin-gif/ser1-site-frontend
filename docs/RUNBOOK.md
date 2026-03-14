@@ -393,7 +393,7 @@ find src -type d \( -name "__spike__" -o -name "_raw" \)
 # Résultat attendu : (aucune sortie)
 
 # 5. Vérifier l'utilisation centralisée des routes settings
-grep -n "SETTINGS_ROUTES\|settingsRoutes" src/constants/settingsRoutes.ts src/pages/SettingsShell.tsx
+grep -n "SETTINGS_ROUTES\|settingsRoutes" src/routes/settingsRoutes.ts src/pages/SettingsShell.tsx
 # Résultat attendu : matches dans les deux fichiers (source unique utilisée)
 ```
 

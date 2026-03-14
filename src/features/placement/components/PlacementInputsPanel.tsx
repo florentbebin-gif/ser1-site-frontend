@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { CompareResult } from '@/engine/placement/types';
 import type { UsePlacementSettingsResult } from '@/hooks/usePlacementSettings';
-import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '@/utils/transmissionDisclaimer';
+import { computeDmtgConsumptionRatio, shouldShowDmtgDisclaimer } from '@/engine/placement/transmissionDisclaimer';
 import type {
   DmtgOption,
   EpargneRowWithReinvest,
