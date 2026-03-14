@@ -1039,9 +1039,14 @@
 
 .sc-testament-legacy-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.7fr) minmax(0, 1fr) auto;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  gap: 6px 8px;
   align-items: end;
+}
+
+.sc-testament-legacy-row > .sc-select {
+  grid-column: 1 / -1;
 }
 
 .sc-assurance-vie-modal__body {
