@@ -19,6 +19,7 @@ import { PlacementTransmissionSection } from './PlacementTransmissionSection';
 
 interface PlacementInputsPanelProps {
   state: PlacementSimulatorState;
+  isExpert: boolean;
   tmiOptions: UsePlacementSettingsResult['tmiOptions'];
   setClient: (_patch: Partial<PlacementClient>) => void;
   setProduct: (_index: number, _patch: Partial<PlacementProductDraft>) => void;
@@ -49,6 +50,7 @@ interface PlacementInputsPanelProps {
 
 export function PlacementInputsPanel({
   state,
+  isExpert,
   tmiOptions,
   setClient,
   setProduct,
@@ -103,6 +105,7 @@ export function PlacementInputsPanel({
       {state.step === 'epargne' && (
         <PlacementEpargneSection
           state={state}
+          isExpert={isExpert}
           setProduct={setProduct}
           setModalOpen={setModalOpen}
           showAllColumns={showAllColumns}
@@ -120,6 +123,7 @@ export function PlacementInputsPanel({
       {state.step === 'liquidation' && (
         <PlacementLiquidationSection
           state={state}
+          isExpert={isExpert}
           setLiquidation={setLiquidation}
           setProduct={setProduct}
           updateProductOption={updateProductOption}

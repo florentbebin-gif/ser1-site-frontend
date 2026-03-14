@@ -8,14 +8,46 @@ interface PlacementClientProfileSectionProps {
   setClient: (_patch: Partial<PlacementClient>) => void;
 }
 
+function UsersIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
 export function PlacementClientProfileSection({
   client,
   tmiOptions,
   setClient,
 }: PlacementClientProfileSectionProps) {
   return (
-    <div className="pl-ir-table-wrapper premium-card premium-section">
-      <div className="pl-section-title premium-section-title">Profil client</div>
+    <div className="premium-card premium-card--guide pl-client-card">
+      <div className="pl-client-card__header">
+        <div className="pl-client-card__title">
+          <div className="pl-section-icon-wrapper">
+            <UsersIcon />
+          </div>
+          <span>Profil client</span>
+        </div>
+        <p className="pl-card-subtitle">Paramètres communs aux deux placements</p>
+      </div>
+
+      <div className="pl-card-divider" />
+
       <div className="pl-topgrid premium-grid-4">
         <InputNumber
           label="Âge actuel"
@@ -50,4 +82,3 @@ export function PlacementClientProfileSection({
     </div>
   );
 }
-

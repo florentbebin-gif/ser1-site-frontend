@@ -1,11 +1,9 @@
 /**
- * Placement Input Components — Composants de saisie réutilisables
+ * Placement Input Components - Composants de saisie reutilisables
  */
 
 import React, { useEffect, useState } from 'react';
 import { fmt } from '../utils/formatters';
-
-// ─── Helpers ─────────────────────────────────────────────────────────
 
 function formatPctInput(value: number | null | undefined): string {
   const numeric = Number(value);
@@ -24,8 +22,6 @@ function parsePctInput(input: string): { numeric: number | null } {
   if (Number.isNaN(num)) return { numeric: null };
   return { numeric: num };
 }
-
-// ─── InputEuro ───────────────────────────────────────────────────────
 
 interface BaseInputProps {
   label?: string;
@@ -46,8 +42,8 @@ export function InputEuro({ value, onChange, label, disabled }: InputEuroProps) 
           type="text"
           className="pl-input__field"
           value={fmt(value)}
-          onChange={(e) => {
-            const clean = e.target.value.replace(/\D/g, '').slice(0, 9);
+          onChange={(event) => {
+            const clean = event.target.value.replace(/\D/g, '').slice(0, 9);
             onChange(clean === '' ? 0 : Number(clean));
           }}
           disabled={disabled}
@@ -57,8 +53,6 @@ export function InputEuro({ value, onChange, label, disabled }: InputEuroProps) 
     </div>
   );
 }
-
-// ─── InputPct ────────────────────────────────────────────────────────
 
 interface InputPctProps extends BaseInputProps {
   value: number | null | undefined;
@@ -76,23 +70,16 @@ export function InputPct({ value, onChange, label, disabled }: InputPctProps) {
   }, [value, isFocused]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // IMPORTANT: ne pas pousser dans le state parent pendant la frappe.
-    // Sinon, une re-normalisation / re-render peut écraser la saisie.
     setLocal(event.target.value);
   };
 
   const handleBlur = () => {
     setIsFocused(false);
-
     const parsed = parsePctInput(local);
     const numeric = parsed.numeric;
     const clamped = numeric === null ? 0 : Math.min(100, Math.max(0, numeric));
     onChange(clamped / 100);
     setLocal(formatPctInput(clamped));
-  };
-
-  const handleFocus = () => {
-    setIsFocused(true);
   };
 
   return (
@@ -105,7 +92,7 @@ export function InputPct({ value, onChange, label, disabled }: InputPctProps) {
           className="pl-input__field"
           value={local}
           onChange={handleChange}
-          onFocus={handleFocus}
+          onFocus={() => setIsFocused(true)}
           onBlur={handleBlur}
           disabled={disabled}
         />
@@ -114,8 +101,6 @@ export function InputPct({ value, onChange, label, disabled }: InputPctProps) {
     </div>
   );
 }
-
-// ─── InputNumber ─────────────────────────────────────────────────────
 
 interface InputNumberProps {
   value: number | string;
@@ -144,7 +129,6 @@ export function InputNumber({
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const raw = event.target.value;
-    // Permettre la saisie libre de chiffres
     if (/^\d*$/.test(raw)) {
       setLocalValue(raw);
     }
@@ -161,11 +145,10 @@ export function InputNumber({
     <input
       type="text"
       inputMode="numeric"
-      className="pl-input__field"
+      className={`pl-input__field${inline ? ' pl-input__field--inline' : ''}`}
       value={localValue}
       onChange={handleChange}
       onBlur={handleBlur}
-      style={{ width: inline ? 70 : '100%' }}
     />
   );
 
@@ -177,6 +160,7 @@ export function InputNumber({
       </div>
     );
   }
+
   return (
     <div className="pl-field">
       {label && <label>{label}</label>}
@@ -187,8 +171,6 @@ export function InputNumber({
     </div>
   );
 }
-
-// ─── Select ──────────────────────────────────────────────────────────
 
 export interface PlacementSelectOption {
   value: string | number;
@@ -206,16 +188,16 @@ export function Select({ value, onChange, options, label }: SelectProps) {
   return (
     <div className="pl-field">
       {label && <label>{label}</label>}
-      <select className="pl-select" value={value} onChange={(e) => onChange(e.target.value)}>
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
+      <select className="pl-select" value={value} onChange={(event) => onChange(event.target.value)}>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
         ))}
       </select>
     </div>
   );
 }
-
-// ─── Toggle ──────────────────────────────────────────────────────────
 
 interface ToggleProps {
   checked: boolean;
@@ -225,10 +207,18 @@ interface ToggleProps {
 
 export function Toggle({ checked, onChange, label }: ToggleProps) {
   return (
-    <label className="pl-toggle">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <span className="pl-toggle__label">{label}</span>
-    </label>
+    <div className="pl-toggle">
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label || 'Activer l option'}
+        className={`pl-toggle__switch${checked ? ' is-active' : ''}`}
+        onClick={() => onChange(!checked)}
+      >
+        <span className="pl-toggle__knob" />
+      </button>
+      {label ? <span className="pl-toggle__label">{label}</span> : null}
+    </div>
   );
 }
-

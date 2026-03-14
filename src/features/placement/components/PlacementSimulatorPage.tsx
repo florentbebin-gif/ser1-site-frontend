@@ -1,20 +1,23 @@
 /**
- * PlacementSimulatorPage.tsx — Orchestrateur du simulateur de placement
+ * PlacementSimulatorPage.tsx - Orchestrateur du simulateur de placement
  *
  * Architecture modulaire :
- * - Moteur de calcul        → engine/placementEngine.ts
- * - Settings-driven         → hooks/usePlacementSettings.ts
- * - Formatters              → placement/utils/formatters.ts
- * - Normalizers & constants → placement/utils/normalizers.ts
- * - Input components        → placement/components/inputs.tsx
- * - Table components        → placement/components/tables.tsx
- * - VersementConfigModal    → placement/components/VersementConfigModal.tsx
- * - Excel export            → placement/export/placementExcelExport.js
- * - Table helpers           → placement/utils/tableHelpers.tsx
+ * - Moteur de calcul        -> engine/placementEngine.ts
+ * - Settings-driven         -> hooks/usePlacementSettings.ts
+ * - Formatters              -> placement/utils/formatters.ts
+ * - Normalizers & constants -> placement/utils/normalizers.ts
+ * - Input components        -> placement/components/inputs.tsx
+ * - Table components        -> placement/components/tables.tsx
+ * - VersementConfigModal    -> placement/components/VersementConfigModal.tsx
+ * - Excel export            -> placement/export/placementExcelExport.ts
+ * - Table helpers           -> placement/utils/tableHelpers.tsx
  *
- * 3 phases : Épargne → Liquidation → Transmission
+ * 3 phases : Epargne -> Liquidation -> Transmission
  */
 
+import { useState } from 'react';
+import { useUserMode, type UserMode } from '@/settings/userMode';
+import '@/components/simulator/SimulatorShell.css';
 import './PlacementSimulator.css';
 import { VersementConfigModal } from './VersementConfigModal';
 import { renderEpargneRow } from '../utils/tableHelpers';
@@ -23,18 +26,19 @@ import { PlacementInputsPanel } from './PlacementInputsPanel';
 import { PlacementResultsPanel } from './PlacementResultsPanel';
 import { usePlacementSimulatorController } from './usePlacementSimulatorController';
 
-// ============================================================================
-// MAIN COMPONENT
-// ============================================================================
-
 export default function PlacementSimulatorPage() {
+  const { mode } = useUserMode();
+  const [localMode, setLocalMode] = useState<UserMode | null>(null);
+  const isExpert = (localMode ?? mode) === 'expert';
+  const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
+
   const {
     state,
     handlers,
     resultsDerived,
     exportHandlers,
     uiFlags,
-  } = usePlacementSimulatorController();
+  } = usePlacementSimulatorController(isExpert);
 
   const {
     setClient,
@@ -73,31 +77,33 @@ export default function PlacementSimulatorPage() {
     exportLoading,
   } = uiFlags;
 
-  // Loading / Error (placés après les hooks pour respecter les Rules of Hooks)
   if (error) {
     return (
-      <div className="pl-panel placement-page">
+      <div className="sim-page pl-page">
         <div className="pl-ir-header">
           <div className="pl-ir-title">Erreur</div>
           <div className="pl-error">{error}</div>
         </div>
       </div>
     );
-  };
+  }
 
   return (
-    <div className="pl-panel placement-page premium-page">
+    <div className="sim-page pl-page">
       <PlacementToolbar
         exportLoading={exportLoading}
         onExportExcel={exportExcel}
         canExportExcel={Boolean(results?.produit1)}
         step={state.step}
         onStepChange={setStep}
+        isExpert={isExpert}
+        onToggleMode={toggleMode}
       />
 
       <div className="pl-ir-grid">
         <PlacementInputsPanel
           state={state}
+          isExpert={isExpert}
           tmiOptions={tmiOptions}
           setClient={setClient}
           setProduct={setProduct}
@@ -127,7 +133,6 @@ export default function PlacementSimulatorPage() {
         />
       </div>
 
-      {/* Modal de configuration des versements */}
       {modalOpen !== null && (
         <VersementConfigModal
           envelope={state.products[modalOpen].envelope}
@@ -137,8 +142,8 @@ export default function PlacementSimulatorPage() {
             try {
               setVersementConfig(modalOpen, config);
               setModalOpen(null);
-            } catch (error) {
-              console.error('[Placement] Error in onSave handler:', error);
+            } catch (modalError) {
+              console.error('[Placement] Error in onSave handler:', modalError);
             }
           }}
           onClose={() => setModalOpen(null)}
@@ -147,4 +152,3 @@ export default function PlacementSimulatorPage() {
     </div>
   );
 }
-

@@ -161,6 +161,25 @@ export function buildPersistedState(state: PlacementSimulatorState): PlacementSi
   };
 }
 
+export function buildPlacementStateForMode(
+  state: PlacementSimulatorState,
+  isExpert: boolean,
+): PlacementSimulatorState {
+  if (isExpert) return state;
+
+  return {
+    ...state,
+    products: state.products.map((product) => ({
+      ...product,
+      perBancaire: false,
+      optionBaremeIR: false,
+      liquidation: product.liquidation
+        ? { ...product.liquidation, optionBaremeIR: false }
+        : product.liquidation,
+    })),
+  };
+}
+
 export function getRendementLiquidation(
   product: Pick<
     PlacementProductDraft,

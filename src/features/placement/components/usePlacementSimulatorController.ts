@@ -13,6 +13,7 @@ import {
   DEFAULT_DMTG_RATE,
   normalizeLoadedState,
   buildPersistedState,
+  buildPlacementStateForMode,
   getRendementLiquidation,
   buildDmtgOptions,
   buildCustomDmtgOption,
@@ -84,7 +85,7 @@ export interface PlacementSimulatorUiFlags {
   exportLoading: boolean;
 }
 
-export function usePlacementSimulatorController() {
+export function usePlacementSimulatorController(isExpert: boolean) {
   const storeKey = storageKeyFor('placement');
   const { fiscalParams, loading, error, tmiOptions, psSettings } = usePlacementSettings();
   const { fiscalContext } = useFiscalContext({ strict: false });
@@ -219,39 +220,40 @@ export function usePlacementSimulatorController() {
   const results = useMemo<CompareResult | null>(() => {
     if (!hydrated || loading || error) return null;
 
-    const fpWithDmtg = { ...fiscalParams, dmtgTauxChoisi: state.transmission.dmtgTaux };
-    const engineProduct1 = toEngineProduct(state.products[0]);
-    const engineProduct2 = toEngineProduct(state.products[1]);
+    const stateForCalc = buildPlacementStateForMode(state, isExpert);
+    const fpWithDmtg = { ...fiscalParams, dmtgTauxChoisi: stateForCalc.transmission.dmtgTaux };
+    const engineProduct1 = toEngineProduct(stateForCalc.products[0]);
+    const engineProduct2 = toEngineProduct(stateForCalc.products[1]);
 
     const liquidationParams1 = {
-      ...state.liquidation,
-      rendement: getRendementLiquidation(state.products[0]) ?? undefined,
-      optionBaremeIR: state.products[0].liquidation?.optionBaremeIR ?? false,
+      ...stateForCalc.liquidation,
+      rendement: getRendementLiquidation(stateForCalc.products[0]) ?? undefined,
+      optionBaremeIR: stateForCalc.products[0].liquidation?.optionBaremeIR ?? false,
     };
     const liquidationParams2 = {
-      ...state.liquidation,
-      rendement: getRendementLiquidation(state.products[1]) ?? undefined,
-      optionBaremeIR: state.products[1].liquidation?.optionBaremeIR ?? false,
+      ...stateForCalc.liquidation,
+      rendement: getRendementLiquidation(stateForCalc.products[1]) ?? undefined,
+      optionBaremeIR: stateForCalc.products[1].liquidation?.optionBaremeIR ?? false,
     };
 
     const result1 = simulateComplete(
       engineProduct1,
-      state.client,
+      stateForCalc.client,
       liquidationParams1,
-      { ...state.transmission, agePremierVersement: state.client.ageActuel },
+      { ...stateForCalc.transmission, agePremierVersement: stateForCalc.client.ageActuel },
       fpWithDmtg
     );
 
     const result2 = simulateComplete(
       engineProduct2,
-      state.client,
+      stateForCalc.client,
       liquidationParams2,
-      { ...state.transmission, agePremierVersement: state.client.ageActuel },
+      { ...stateForCalc.transmission, agePremierVersement: stateForCalc.client.ageActuel },
       fpWithDmtg
     );
 
     return compareProducts(result1, result2);
-  }, [state, fiscalParams, loading, hydrated, error]);
+  }, [state, isExpert, fiscalParams, loading, hydrated, error]);
 
   const setClient = (patch: Partial<PlacementClient>) =>
     setState((s) => ({ ...s, client: { ...s.client, ...patch } }));
@@ -301,7 +303,7 @@ export function usePlacementSimulatorController() {
   const exportExcel = useCallback(async () => {
     setExportLoading(true);
     try {
-      await exportPlacementExcel(state, results);
+      await exportPlacementExcel(buildPlacementStateForMode(state, isExpert), results);
     } catch (errorExport) {
       const err = errorExport instanceof Error ? errorExport : new Error(String(errorExport));
       console.error('[ExcelExport] Export failed', {
@@ -313,7 +315,7 @@ export function usePlacementSimulatorController() {
     } finally {
       setExportLoading(false);
     }
-  }, [state, results]);
+  }, [state, isExpert, results]);
 
   const exportHandlers: PlacementSimulatorExportHandlers = {
     exportExcel,

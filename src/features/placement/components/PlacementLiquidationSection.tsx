@@ -10,6 +10,7 @@ import { PlacementLiquidationDetailsTable } from './PlacementLiquidationDetailsT
 
 interface PlacementLiquidationSectionProps {
   state: PlacementSimulatorState;
+  isExpert: boolean;
   setLiquidation: (_patch: Partial<PlacementLiquidationState>) => void;
   setProduct: (_index: number, _patch: Partial<PlacementProductDraft>) => void;
   updateProductOption: (
@@ -25,6 +26,7 @@ interface PlacementLiquidationSectionProps {
 
 export function PlacementLiquidationSection({
   state,
+  isExpert,
   setLiquidation,
   setProduct,
   updateProductOption,
@@ -33,16 +35,18 @@ export function PlacementLiquidationSection({
   produit1,
   produit2,
 }: PlacementLiquidationSectionProps) {
-  const showOptionBareme = (
+  const showOptionBareme = isExpert && (
     (produit1 && ['CTO', 'AV', 'PEA'].includes(produit1.envelope))
     || (produit2 && ['CTO', 'AV', 'PEA'].includes(produit2.envelope))
   );
+
   const produit1OptionBaremeIR = state.products[0].liquidation?.optionBaremeIR ?? false;
   const produit2OptionBaremeIR = state.products[1].liquidation?.optionBaremeIR ?? false;
 
   return (
-    <div className="pl-ir-table-wrapper premium-card premium-section">
-      <div className="pl-section-title premium-section-title">Phase de liquidation</div>
+    <div className="premium-card">
+      <div className="pl-card-title">Phase de liquidation</div>
+
       <table className="pl-ir-table pl-table premium-table">
         <tbody>
           <tr>
@@ -59,6 +63,7 @@ export function PlacementLiquidationSection({
               </select>
             </td>
           </tr>
+
           {state.liquidation.mode === 'epuiser' && (
             <tr>
               <td>Durée de liquidation</td>
@@ -74,16 +79,22 @@ export function PlacementLiquidationSection({
               </td>
             </tr>
           )}
+
           {(state.products[0].envelope !== 'SCPI' || state.products[1].envelope !== 'SCPI') && (
             <tr>
               <td>
                 Rendement capitalisation (liquidation)
-                <div className="pl-detail-cumul">Valeur par défaut : rendement capitalisation du modal</div>
+                <div className="pl-detail-cumul">
+                  Valeur par défaut : rendement capitalisation du modal
+                </div>
               </td>
               {state.products.map((product, index) => (
-                <td key={index} style={{ opacity: product.envelope === 'SCPI' ? 0.55 : 0.85 }}>
+                <td
+                  key={index}
+                  className={product.envelope === 'SCPI' ? 'pl-cell--muted' : 'pl-cell--soft'}
+                >
                   {product.envelope === 'SCPI' ? (
-                    '—'
+                    '-'
                   ) : (
                     <InputPct
                       value={getRendementLiquidation(product) || 0}
@@ -94,6 +105,7 @@ export function PlacementLiquidationSection({
               ))}
             </tr>
           )}
+
           {state.liquidation.mode === 'mensualite' && (
             <tr>
               <td>Mensualité cible</td>
@@ -105,6 +117,7 @@ export function PlacementLiquidationSection({
               </td>
             </tr>
           )}
+
           {state.liquidation.mode === 'unique' && (
             <tr>
               <td>Montant du retrait</td>
@@ -116,29 +129,28 @@ export function PlacementLiquidationSection({
               </td>
             </tr>
           )}
+
           {showOptionBareme ? (
             <tr>
               <td>Option au barème IR</td>
-              <td style={{ textAlign: 'center' }}>
+              <td className="pl-cell--center">
                 {produit1 && ['CTO', 'AV', 'PEA'].includes(produit1.envelope) ? (
                   <Toggle
                     checked={produit1OptionBaremeIR}
                     onChange={(value) => updateProductOption(0, 'liquidation.optionBaremeIR', value)}
-                    label=""
                   />
                 ) : (
-                  <span className="pl-muted">—</span>
+                  <span className="pl-muted">-</span>
                 )}
               </td>
-              <td style={{ textAlign: 'center' }}>
+              <td className="pl-cell--center">
                 {produit2 && ['CTO', 'AV', 'PEA'].includes(produit2.envelope) ? (
                   <Toggle
                     checked={produit2OptionBaremeIR}
                     onChange={(value) => updateProductOption(1, 'liquidation.optionBaremeIR', value)}
-                    label=""
                   />
                 ) : (
-                  <span className="pl-muted">—</span>
+                  <span className="pl-muted">-</span>
                 )}
               </td>
             </tr>
@@ -148,24 +160,32 @@ export function PlacementLiquidationSection({
 
       {produit1 && produit2 && (
         <div className="pl-details-section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--color-c1)' }}>Détail année par année</h4>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--color-c9)', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={showAllColumns}
-                onChange={(event) => setShowAllColumns(event.target.checked)}
-                style={{ margin: 0 }}
-              />
-              Afficher toutes les colonnes
-            </label>
+          <div className="pl-details-header">
+            <h4 className="pl-details-title">Détail année par année</h4>
+            <div className="pl-pill-toggle">
+              <button
+                type="button"
+                className={`pl-pill-toggle__btn${!showAllColumns ? ' is-active' : ''}`}
+                onClick={() => setShowAllColumns(false)}
+              >
+                Essentielles
+              </button>
+              <button
+                type="button"
+                className={`pl-pill-toggle__btn${showAllColumns ? ' is-active' : ''}`}
+                onClick={() => setShowAllColumns(true)}
+              >
+                Toutes les colonnes
+              </button>
+            </div>
           </div>
+
           <PlacementLiquidationDetailsTable
             product={produit1}
             showAllColumns={showAllColumns}
             showCapitalDecesColumn={Boolean(
               produit1.envelope === 'PER'
-              && state.products[0].versementConfig?.annuel?.garantieBonneFin?.active,
+              && state.products[0].versementConfig?.annuel?.garantieBonneFin?.active
             )}
           />
           <PlacementLiquidationDetailsTable
@@ -173,18 +193,15 @@ export function PlacementLiquidationSection({
             showAllColumns={showAllColumns}
             showCapitalDecesColumn={Boolean(
               produit2.envelope === 'PER'
-              && state.products[1].versementConfig?.annuel?.garantieBonneFin?.active,
+              && state.products[1].versementConfig?.annuel?.garantieBonneFin?.active
             )}
           />
         </div>
       )}
 
       <div className="pl-hint">
-        <a href="/settings/base-contrat" style={{ color: 'var(--color-c2)', fontSize: 11 }}>
-          Consulter la fiscalité des contrats →
-        </a>
+        <a href="/settings/base-contrat">Consulter la fiscalité des contrats &rarr;</a>
       </div>
     </div>
   );
 }
-

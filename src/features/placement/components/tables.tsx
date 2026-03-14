@@ -1,16 +1,33 @@
 /**
- * Placement Table Components — CollapsibleTable et AllocationSlider
+ * Placement Table Components - CollapsibleTable et AllocationSlider
  */
 
 import React, { useState } from 'react';
-
-// ─── CollapsibleTable ────────────────────────────────────────────────
 
 interface CollapsibleTableProps<Row> {
   title: string;
   rows: Row[] | null | undefined;
   columns: string[];
   renderRow: (_row: Row, _index: number) => React.ReactElement;
+}
+
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      className={`pl-collapsible__chevron${open ? ' is-open' : ''}`}
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
 }
 
 export function CollapsibleTable<Row>({
@@ -21,28 +38,32 @@ export function CollapsibleTable<Row>({
 }: CollapsibleTableProps<Row>) {
   const [open, setOpen] = useState(false);
   if (!rows || rows.length === 0) return null;
+
   return (
     <div className="pl-collapsible">
-      <button type="button" className="pl-collapsible__toggle" onClick={() => setOpen(!open)}>
-        {open ? '▼' : '▶'} {title} ({rows.length} années)
+      <button
+        type="button"
+        className="pl-collapsible__toggle"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+      >
+        <span>{title} ({rows.length} années)</span>
+        <ChevronIcon open={open} />
       </button>
+
       {open && (
         <table className="pl-ir-table pl-detail-table">
           <thead>
             <tr>
-              {columns.map((c, i) => <th key={i}>{c}</th>)}
+              {columns.map((column, index) => <th key={index}>{column}</th>)}
             </tr>
           </thead>
-          <tbody>
-            {rows.map((r, i) => renderRow(r, i))}
-          </tbody>
+          <tbody>{rows.map((row, index) => renderRow(row, index))}</tbody>
         </table>
       )}
     </div>
   );
 }
-
-// ─── AllocationSlider ────────────────────────────────────────────────
 
 interface AllocationSliderProps {
   pctCapi: number;
@@ -60,7 +81,8 @@ export function AllocationSlider({
   isSCPI,
 }: AllocationSliderProps) {
   const handleCapiChange = (nextPctCapi: number) => {
-    onChange(nextPctCapi, 100 - nextPctCapi);
+    const clamped = Math.min(100, Math.max(0, nextPctCapi));
+    onChange(clamped, 100 - clamped);
   };
 
   if (isSCPI) {
@@ -78,18 +100,20 @@ export function AllocationSlider({
         <span className="pl-alloc-label">Capitalisation</span>
         <span className="pl-alloc-label">Distribution</span>
       </div>
+
       <div className="pl-alloc-track">
         <input
           type="range"
           min="0"
           max="100"
           value={pctCapi}
-          onChange={(e) => handleCapiChange(Number(e.target.value))}
+          onChange={(event) => handleCapiChange(Number(event.target.value))}
           className="pl-alloc-range"
           disabled={disabled}
         />
         <div className="pl-alloc-fill" style={{ width: `${pctCapi}%` }} />
       </div>
+
       <div className="pl-alloc-values">
         <div className="pl-alloc-value">
           <input
@@ -97,19 +121,20 @@ export function AllocationSlider({
             min="0"
             max="100"
             value={pctCapi}
-            onChange={(e) => handleCapiChange(Number(e.target.value))}
+            onChange={(event) => handleCapiChange(Number(event.target.value))}
             className="pl-alloc-input"
             disabled={disabled}
           />
           <span>%</span>
         </div>
+
         <div className="pl-alloc-value">
           <input
             type="number"
             min="0"
             max="100"
             value={pctDistrib}
-            onChange={(e) => handleCapiChange(100 - Number(e.target.value))}
+            onChange={(event) => handleCapiChange(100 - Number(event.target.value))}
             className="pl-alloc-input"
             disabled={disabled}
           />
@@ -119,4 +144,3 @@ export function AllocationSlider({
     </div>
   );
 }
-
