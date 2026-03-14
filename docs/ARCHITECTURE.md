@@ -141,7 +141,7 @@ rg -n "APP_ROUTES\\.map" src/App.tsx
 - `src/main.tsx` → `AuthProvider` → `ThemeProvider` → `App`.
 
 ### Settings (admin)
-- Navigation settings : `src/constants/settingsRoutes.ts` (source unique).
+- Navigation settings : `src/routes/settingsRoutes.ts` (source unique).
 - Pages : `src/pages/settings/*`.
 
 ---
@@ -316,7 +316,7 @@ rg "export const CATALOG" src/domain/base-contrat/catalog.ts
 | `/settings/comptes` | `SettingsComptes` | `profiles` | Comptes utilisateurs par cabinet (admin only) |
 | `/settings/dmtg-succession` | `SettingsDmtgSuccession` | `tax_settings`, `fiscality_settings` | Barèmes DMTG successions + abattements (livré PR #159) |
 
-Source unique des routes : `src/constants/settingsRoutes.ts`.
+Source unique des routes : `src/routes/settingsRoutes.ts`.
 Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets, filtre `adminOnly`).
 
 ---
@@ -490,7 +490,7 @@ Edge Function `rates-refresh` (cron hebdomadaire) : fetch URSSAF / legifrance / 
 
 | Rôle | Fichier |
 |------|---------|
-| Source des routes settings | `src/constants/settingsRoutes.ts` |
+| Source des routes settings | `src/routes/settingsRoutes.ts` |
 | Valeurs par défaut 3 tables | `src/constants/settingsDefaults.ts` |
 | Shell settings (nav + rendu) | `src/pages/SettingsShell.tsx` |
 | Pages settings | `src/pages/settings/` |
@@ -538,7 +538,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 ### 2) Ajouter une nouvelle page /settings/*
 
 #### Regle
-- La source unique des sous-pages settings est `src/constants/settingsRoutes.ts`.
+- La source unique des sous-pages settings est `src/routes/settingsRoutes.ts`.
 - Toute nouvelle page settings doit etre declaree dans `SETTINGS_ROUTES` avec :
   - `key`
   - `label`
@@ -550,7 +550,7 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 #### Emplacement
 - Composant de page : `src/pages/settings/<PageName>.tsx`
 - Navigation et rendu : `src/pages/SettingsShell.tsx`
-- Mapping URL actif : helpers dans `src/constants/settingsRoutes.ts`
+- Mapping URL actif : helpers dans `src/routes/settingsRoutes.ts`
 
 #### Contrats obligatoires
 - Ne pas creer une navigation settings parallele hors `SettingsShell`.

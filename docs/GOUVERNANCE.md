@@ -539,7 +539,7 @@ Cette section complete la norme existante. Elle fixe le contrat minimal avant d'
 
 #### Obligatoire
 - Une page settings s'inscrit dans le shell existant `SettingsShell` ; pas de navigation parallele.
-- La route doit etre declaree dans `src/constants/settingsRoutes.ts`.
+- La route doit etre declaree dans `src/routes/settingsRoutes.ts`.
 - La page doit respecter les tokens, la langue francaise, les blocs premium et la discipline SVG inline.
 - Si une page est reservee aux admins, la restriction UI ne remplace jamais l'enforcement backend/RLS.
 

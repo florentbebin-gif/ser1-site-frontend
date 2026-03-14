@@ -93,7 +93,7 @@ rg -n "TODO|FIXME|HACK" src --glob '!**/*.test.*'
 
 - Tracer les entrypoints runtime hors `src` :
   - `src/routes/appRoutes.ts`
-  - `src/constants/settingsRoutes.ts`
+  - `src/routes/settingsRoutes.ts`
   - `api/admin.js`
   - `supabase/functions/admin/index.ts`
   - `package.json` scripts
@@ -238,7 +238,7 @@ Un petit fichier n'est "fusionnable" que s'il n'est ni :
 
 | Sujet | Preuve | Lecture |
 |---|---|---|
-| `src/constants/settingsRoutes.ts` porte de la logique de routing | lazy imports de pages settings | review move vers `src/routes/` |
+| `src/routes/settingsRoutes.ts` porte la navigation settings | lazy imports de pages settings | move aligne avec la frontiere `routes/` |
 | `src/services/` ne contient que `apiAdmin.ts` et `userModeService.ts` | dossier tres fin | review organisation |
 | `src/reporting/json-io/` est isole | 4 fichiers sous un seul sous-dossier | review nommage / placement |
 | `src/pages/StrategyPage.tsx` importe `../features/strategy` et `../features/audit/storage` | page -> feature existe deja | frontiere volontaire, pas anomalie |
@@ -503,8 +503,11 @@ Statut le 2026-03-14 : terminee
 
 ### PR-10 - Review structurelle
 
-- `src/utils/`, `src/constants/`, `src/services/`, `src/reporting/`
-- sans move massif tant que les frontieres ne sont pas documentees et automatisees
+Statut le 2026-03-14 : en cours
+
+- `src/routes/settingsRoutes.ts` aligne la navigation settings avec la frontiere `routes/`
+- docs pivots alignees sur ce move : `README.md`, `docs/ARCHITECTURE.md`, `docs/GOUVERNANCE.md`, `docs/RUNBOOK.md`, `docs/ROADMAP.md`
+- reliquat structurel a qualifier sans move massif : `src/utils/`, `src/services/`, `src/reporting/`
 
 ---
 
@@ -519,7 +522,7 @@ npm run check:unused
 Et selon la zone touchee :
 
 - audit des imports : `rg`
-- pages et routes : verifier `src/routes/appRoutes.ts` et `src/constants/settingsRoutes.ts`
+- pages et routes : verifier `src/routes/appRoutes.ts` et `src/routes/settingsRoutes.ts`
 - docs : verifier coherence `README.md`, `.github/CONTRIBUTING.md`, `docs/*`
 
 ---
