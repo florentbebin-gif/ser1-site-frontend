@@ -10,6 +10,26 @@ interface PlacementResultsPanelProps {
   state: PlacementSimulatorState;
 }
 
+function BarChartIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 20V10" />
+      <path d="M18 20V4" />
+      <path d="M6 20v-6" />
+    </svg>
+  );
+}
+
 export function PlacementResultsPanel({
   loading,
   hydrated,
@@ -20,15 +40,22 @@ export function PlacementResultsPanel({
 
   return (
     <div className="pl-ir-right">
-      <div className="pl-ir-synthesis-card premium-card">
-        <div className="pl-card-title premium-section-title">Synthèse comparative</div>
+      <div className="premium-card pl-synthesis-card">
+        <div className="pl-synthesis-title-row">
+          <div className="pl-section-icon-wrapper">
+            <BarChartIcon />
+          </div>
+          <h3 className="pl-summary-title">Synthèse comparative</h3>
+        </div>
 
         {loading ? (
-          <div className="pl-synthesis-placeholder">Chargement…</div>
+          <div className="pl-synthesis-placeholder">Chargement...</div>
         ) : !hydrated || !results ? (
-          <div className="pl-synthesis-placeholder">Aucune simulation (recharger ou compléter Produit 1/2)</div>
+          <div className="pl-synthesis-placeholder">
+            Aucune simulation (recharger ou compléter Produit 1/2)
+          </div>
         ) : !produit1 || !produit2 ? (
-          <div className="pl-synthesis-placeholder">Sélectionne Produit 1 et Produit 2…</div>
+          <div className="pl-synthesis-placeholder">Sélectionnez Produit 1 et Produit 2...</div>
         ) : (
           <>
             <TimelineBar
@@ -37,7 +64,7 @@ export function PlacementResultsPanel({
               ageAuDeces={state.transmission.ageAuDeces}
             />
 
-            <div style={{ borderTop: '1px solid var(--color-c6)', margin: '12px 0' }} />
+            <div className="pl-card-divider" />
 
             {(() => {
               const totalGains1 = produit1.totaux.revenusNetsLiquidation + produit1.totaux.capitalTransmisNet;
@@ -52,25 +79,34 @@ export function PlacementResultsPanel({
                     <div className="pl-roi-compare__title">ROI</div>
                     <div className="pl-roi-compare__grid">
                       <div className={`pl-roi-compare__card ${meilleurProduit === 1 ? 'is-winner' : ''}`}>
-                        <div className="pl-roi-compare__product-indicator" style={{ background: 'var(--color-c2)' }}></div>
-                        <div className="pl-roi-compare__product">{produit1.envelopeLabel.replace('PER individuel déductible', 'PER individuel')}</div>
-                        <div className="pl-roi-compare__ratio">× {roi1.toFixed(2)}</div>
+                        <div className="pl-roi-compare__product-indicator pl-indicator--product1" />
+                        <div className="pl-roi-compare__product">
+                          {produit1.envelopeLabel
+                            .replace('PER individuel déductible', 'PER individuel')
+                            .replace('PER individuel deductible', 'PER individuel')}
+                        </div>
+                        <div className="pl-roi-compare__ratio">x {roi1.toFixed(2)}</div>
                       </div>
+
                       <div className={`pl-roi-compare__card ${meilleurProduit === 2 ? 'is-winner' : ''}`}>
-                        <div className="pl-roi-compare__product-indicator" style={{ background: 'var(--color-c4)' }}></div>
-                        <div className="pl-roi-compare__product">{produit2.envelopeLabel.replace('PER individuel déductible', 'PER individuel')}</div>
-                        <div className="pl-roi-compare__ratio">× {roi2.toFixed(2)}</div>
+                        <div className="pl-roi-compare__product-indicator pl-indicator--product2" />
+                        <div className="pl-roi-compare__product">
+                          {produit2.envelopeLabel
+                            .replace('PER individuel déductible', 'PER individuel')
+                            .replace('PER individuel deductible', 'PER individuel')}
+                        </div>
+                        <div className="pl-roi-compare__ratio">x {roi2.toFixed(2)}</div>
                       </div>
                     </div>
                   </div>
 
                   <div className="pl-kpi-compare">
-                    <div className="pl-kpi-compare__header-empty"></div>
+                    <div className="pl-kpi-compare__header-empty" />
                     <div className="pl-kpi-compare__header">
-                      <div className="pl-kpi-compare__indicator" style={{ background: 'var(--color-c2)' }}>1</div>
+                      <div className="pl-kpi-compare__indicator pl-indicator--product1">1</div>
                     </div>
                     <div className="pl-kpi-compare__header">
-                      <div className="pl-kpi-compare__indicator" style={{ background: 'var(--color-c4)' }}>2</div>
+                      <div className="pl-kpi-compare__indicator pl-indicator--product2">2</div>
                     </div>
 
                     <div className="pl-kpi-compare__label">Effort total</div>
@@ -89,13 +125,17 @@ export function PlacementResultsPanel({
                     <div className="pl-kpi-compare__value">{shortEuro(produit1.totaux.capitalTransmisNet)}</div>
                     <div className="pl-kpi-compare__value">{shortEuro(produit2.totaux.capitalTransmisNet)}</div>
 
-                    <div className="pl-kpi-compare__separator"></div>
-                    <div className="pl-kpi-compare__separator"></div>
-                    <div className="pl-kpi-compare__separator"></div>
+                    <div className="pl-kpi-compare__separator" />
+                    <div className="pl-kpi-compare__separator" />
+                    <div className="pl-kpi-compare__separator" />
 
                     <div className="pl-kpi-compare__label pl-kpi-compare__label--total">Total récupéré</div>
-                    <div className="pl-kpi-compare__value pl-kpi-compare__value--total">{shortEuro(totalGains1)}</div>
-                    <div className="pl-kpi-compare__value pl-kpi-compare__value--total">{shortEuro(totalGains2)}</div>
+                    <div className="pl-kpi-compare__value pl-kpi-compare__value--total">
+                      {shortEuro(totalGains1)}
+                    </div>
+                    <div className="pl-kpi-compare__value pl-kpi-compare__value--total">
+                      {shortEuro(totalGains2)}
+                    </div>
                   </div>
                 </>
               );
@@ -106,4 +146,3 @@ export function PlacementResultsPanel({
     </div>
   );
 }
-

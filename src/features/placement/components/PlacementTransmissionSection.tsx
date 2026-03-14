@@ -38,14 +38,15 @@ export function PlacementTransmissionSection({
 
   return (
     <>
-      <div className="pl-ir-table-wrapper premium-card premium-section">
-        <div className="pl-section-title premium-section-title">Transmission</div>
+      <div className="premium-card">
+        <div className="pl-card-title">Transmission</div>
+
         <table className="pl-ir-table pl-table premium-table">
           <tbody>
             <tr>
               <td>Âge au décès (simulation)</td>
               <td colSpan={2}>
-                <div className="pl-field-container" style={{ alignItems: 'flex-end' }}>
+                <div className="pl-field-container pl-field-container--end">
                   <InputNumber
                     value={state.transmission.ageAuDeces}
                     onChange={(value) => setTransmission({ ageAuDeces: value })}
@@ -54,12 +55,13 @@ export function PlacementTransmissionSection({
                     max={120}
                     inline
                   />
-                  <div className="pl-field-help" style={{ textAlign: 'right', alignSelf: 'flex-end' }}>
+                  <div className="pl-field-help">
                     Minimum : {state.client.ageActuel} ans (âge actuel)
                   </div>
                 </div>
               </td>
             </tr>
+
             <tr>
               <td>Choix du bénéficiaire</td>
               <td colSpan={2}>
@@ -83,6 +85,7 @@ export function PlacementTransmissionSection({
                 </select>
               </td>
             </tr>
+
             {state.transmission.beneficiaryType !== 'conjoint' && (
               <tr>
                 <td>Nombre de bénéficiaires</td>
@@ -97,6 +100,7 @@ export function PlacementTransmissionSection({
                 </td>
               </tr>
             )}
+
             <tr>
               <td>Tranche DMTG estimée</td>
               <td colSpan={2}>
@@ -117,17 +121,18 @@ export function PlacementTransmissionSection({
                 </select>
               </td>
             </tr>
+
             {showDmtgDisclaimer && (
               <tr>
                 <td colSpan={3}>
                   <div className="pl-alert pl-alert--warning">
-                    ⚠️ Consommation estimée de la tranche DMTG (sur l’assiette réellement soumise aux DMTG) <sup>(1)</sup> :
-                    <div style={{ marginTop: 6 }}>
+                    Consommation estimée de la tranche DMTG (sur l assiette réellement soumise aux DMTG) <sup>(1)</sup> :
+                    <div className="pl-alert__block">
                       <div>Placement 1 : {dmtgConsumptionPercentProduit1}%</div>
                       <div>Placement 2 : {dmtgConsumptionPercentProduit2}%</div>
                     </div>
-                    <div style={{ marginTop: 6 }}>
-                      Pensez à ajuster la tranche DMTG pour refléter l’ensemble du patrimoine.
+                    <div className="pl-alert__block">
+                      Pensez à ajuster la tranche DMTG pour refléter l ensemble du patrimoine.
                     </div>
                   </div>
                 </td>
@@ -136,7 +141,8 @@ export function PlacementTransmissionSection({
           </tbody>
         </table>
 
-        <div className="pl-section-title premium-section-title" style={{ marginTop: 24 }}>Détail des droits de succession</div>
+        <div className="pl-card-title pl-card-title--spaced">Détail des droits de succession</div>
+
         <table className="pl-ir-table pl-detail-table">
           <thead>
             <tr>
@@ -170,8 +176,8 @@ export function PlacementTransmissionSection({
             </tr>
             {!hasTransmissionData && (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', color: 'var(--color-c8)', fontStyle: 'italic' }}>
-                  Aucune donnée à afficher - Configurez les paramètres de transmission ci-dessus
+                <td colSpan={7} className="pl-empty-row">
+                  Aucune donnée à afficher - configurez les paramètres de transmission ci-dessus
                 </td>
               </tr>
             )}
@@ -182,24 +188,25 @@ export function PlacementTransmissionSection({
       <div className="pl-disclaimer pl-transmission-info-card">
         <strong>Régimes applicables :</strong>
         <ul>
-          <li>AV : 990 I (versements avant 70 ans) ou 757 B (après 70 ans)</li>
-          <li>PER assurance : 990 I (décès avant 70 ans) ou 757 B (décès ≥ 70 ans)</li>
-          <li>PER bancaire / CTO / PEA / SCPI : intégration à l'actif successoral (DMTG)</li>
+          <li>AV : 990 I (versements avant 70 ans) ou 757 B (apres 70 ans)</li>
+          <li>PER assurance : 990 I (décès avant 70 ans) ou 757 B (décès &gt;= 70 ans)</li>
+          <li>PER bancaire / CTO / PEA / SCPI : intégration à l actif successoral (DMTG)</li>
           <li>Conjoint / partenaire PACS : exonération du prélèvement 20 % et des DMTG</li>
         </ul>
         <p>
-          <a href="/settings/impots" className="pl-transmission-info-card__link">Consulter le barème DMTG →</a>
+          <a href="/settings/impots" className="pl-transmission-info-card__link">Consulter le barème DMTG &rarr;</a>
         </p>
         <strong>Hypothèses PS décès :</strong>
         <p>
-          Assurance-vie & PER simulés à 100 % en unités de compte (pas de fonds €). Les PS au décès sont appliqués au taux de {psSettings?.patrimony?.current?.totalRate ?? DEFAULT_PS_SETTINGS.patrimony.current.totalRate}% (<a href="/settings/prelevements" className="pl-transmission-info-card__link">paramétrable</a>), puis les montants nets alimentent les DMTG.
+          Assurance-vie et PER simulés à 100 % en unités de compte (pas de fonds EUR). Les PS au décès sont appliqués au taux de {psSettings?.patrimony?.current?.totalRate ?? DEFAULT_PS_SETTINGS.patrimony.current.totalRate}% (<a href="/settings/prelevements" className="pl-transmission-info-card__link">paramétrable</a>), puis les montants nets alimentent les DMTG.
         </p>
         <p className="pl-transmission-info-card__note">
-          La détermination de l’assiette taxable au prélèvement 990&nbsp;I s’effectue après imputation des PS dus sur les produits du contrat, prélevés par l’assureur au décès (BOI-TCAS-AUT-60).
+          La détermination de l assiette taxable au prélèvement 990 I s effectue après imputation des PS dus sur les produits du contrat, prélevés par l assureur au décès (BOI-TCAS-AUT-60).
         </p>
-        <p className="pl-transmission-info-card__footnote"><sup>(1)</sup> Seuls les montants réellement soumis aux PS/DMTG sont utilisés pour les pourcentages affichés.</p>
+        <p className="pl-transmission-info-card__footnote">
+          <sup>(1)</sup> Seuls les montants réellement soumis aux PS/DMTG sont utilisés pour les pourcentages affichés.
+        </p>
       </div>
     </>
   );
 }
-
