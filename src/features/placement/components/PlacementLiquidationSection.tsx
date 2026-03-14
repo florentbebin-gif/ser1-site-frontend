@@ -131,7 +131,7 @@ export function PlacementLiquidationSection({
           )}
 
           {showOptionBareme ? (
-            <tr>
+            <tr data-testid="placement-row-liquidation-bareme-ir">
               <td>Option au barème IR</td>
               <td className="pl-cell--center">
                 {produit1 && ['CTO', 'AV', 'PEA'].includes(produit1.envelope) ? (
