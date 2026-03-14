@@ -251,6 +251,7 @@ export default function DispositionsModal({
                     <div className="sc-field">
                       <label>Testament actif</label>
                       <ScSelect
+                        className="sc-testament-select"
                         value={testament.active ? 'oui' : 'non'}
                         onChange={(value) => updateDispositionsTestament(side, (current) => ({
                           ...current,
@@ -404,6 +405,7 @@ export default function DispositionsModal({
                               </span>
                             ) : (
                               <ScSelect
+                                className="sc-testament-select"
                                 value={dispositionsDraft.ascendantsSurvivantsBySide[side] ? 'oui' : 'non'}
                                 onChange={(value) => setDispositionsDraft((prev) => ({
                                   ...prev,
