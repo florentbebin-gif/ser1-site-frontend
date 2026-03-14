@@ -158,6 +158,13 @@ export default function DispositionsModal({
                 <p className="sc-hint sc-hint--compact">
                   Le choix du type de donation entre époux se fait au moment du décès.
                 </p>
+                {dispositionsDraft.donationEntreEpouxOption === 'pleine_propriete_totale' && (
+                  <p className="sc-hint sc-hint--compact">
+                    Cette option simule une transmission de 100 % au conjoint survivant. En
+                    présence d&apos;enfants, elle n&apos;est pas automatique et peut être réduite
+                    pour respecter leur réserve héréditaire.
+                  </p>
+                )}
               </div>
             )}
 
