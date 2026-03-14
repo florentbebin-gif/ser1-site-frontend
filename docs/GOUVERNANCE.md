@@ -38,6 +38,14 @@ Principes : épuré, lisible, respirant.
 - Pattern simulateur `/sim/*` (baseline `/sim/credit`) : fond léger teinté (off-white), border-bottom uniquement, focus `var(--color-c2)`.
 - Dans les 2 cas, couleurs non hardcodées (hors exceptions globales) et lisibilité prioritaire.
 
+### Séparateur de milliers (règle critique)
+- **Tout champ de saisie affichant un montant en euros doit formater la valeur avec `toLocaleString('fr-FR')`** (ex. "100 000" et non "100000").
+- Utiliser systématiquement les composants partagés qui implémentent déjà ce formatage : `InputEuro` (Placement/Credit), `IrAmountInput` (IR). Ne pas créer de `<input type="number">` brut pour des montants €.
+- Exceptions acceptées (pas de formatage nécessaire) : âges, durées (années/mois), pourcentages (0–100 %), champs admin Settings (tableau de saisie du barème, montants de référence).
+- **Anti-pattern** : `<input type="number" value={montant} />` pour un montant € → affiche "1000000" au lieu de "1 000 000", mauvaise lisibilité utilisateur.
+- Références implémentées : `InputEuro` dans `inputs.tsx` (Placement), `CreditInputs.tsx` (Credit), `IrAmountInput` dans `IrFormSection.tsx` (IR).
+- Références **non encore migrées** (acceptable temporairement) : champs € dans modales Succession (`AssuranceVieModal`, `ScDonationsCard`, `ScAssetsPassifsCard`), champs ponctuel dans `VersementConfigModalSections.tsx`.
+
 ### Composants (guidelines)
 - Buttons : primary = C2 + texte contrasté ; secondary = fond clair + border C8.
 - Tables : zebra `C7/WHITE`, borders C8, padding confortable.
@@ -45,6 +53,12 @@ Principes : épuré, lisible, respirant.
 ### Modales
 - Overlay : `rgba(0,0,0,0.5)` (seul rgba autorisé).
 - Panel : `#FFFFFF`, centré, `shadow` subtil.
+- **Scroll obligatoire** : toute modale dont le contenu peut croître (liste dynamique, formulaire à n entrées) doit appliquer le patron suivant :
+  - `max-height: calc(100vh - 40px)` + `display: flex; flex-direction: column` sur le container `.modal`
+  - `overflow-y: auto; flex: 1 1 auto; min-height: 0` sur le `.modal__body`
+  - Header et footer restent en position statique hors du scroll (pas de `overflow` sur le container).
+  - Anti-pattern : `overflow: visible` sur le container sans `max-height` → la modale dépasse la viewport et devient inutilisable.
+  - Référence : `sc-dispositions-modal` / `sc-member-modal` (Succession.css), `.vcm` / `.vcm__body` (VersementConfigModal.css).
 
 ---
 

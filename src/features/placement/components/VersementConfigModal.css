@@ -190,6 +190,11 @@
   background: linear-gradient(135deg, color-mix(in srgb, var(--color-c4) 30%, #FFFFFF), transparent);
 }
 
+/* Limite l'input Rendement à la même largeur que Montant (50% de la card) */
+.vcm__suboption--capi .pl-field {
+  max-width: calc(50% - 7px);
+}
+
 .vcm__suboption--distrib {
   border-left: 2px solid var(--color-c5);
   background: linear-gradient(135deg, color-mix(in srgb, var(--color-c7) 90%, #FFFFFF), transparent);
@@ -342,7 +347,7 @@
 .vcm__ponctuel-headers,
 .vcm__ponctuel-row {
   display: grid;
-  grid-template-columns: 70px 1fr 80px 120px 40px;
+  grid-template-columns: 70px 100px 70px 1fr 40px;
   gap: 10px;
   align-items: center;
 }
@@ -553,6 +558,6 @@
 
   .vcm__ponctuel-headers,
   .vcm__ponctuel-row {
-    grid-template-columns: 52px 1fr 64px 96px 32px;
+    grid-template-columns: 52px 80px 56px 1fr 32px;
   }
 }

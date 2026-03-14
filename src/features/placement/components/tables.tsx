@@ -9,6 +9,7 @@ interface CollapsibleTableProps<Row> {
   rows: Row[] | null | undefined;
   columns: string[];
   renderRow: (_row: Row, _index: number) => React.ReactElement;
+  onOpenChange?: (_open: boolean) => void;
 }
 
 function ChevronIcon({ open }: { open: boolean }) {
@@ -35,16 +36,23 @@ export function CollapsibleTable<Row>({
   rows,
   columns,
   renderRow,
+  onOpenChange,
 }: CollapsibleTableProps<Row>) {
   const [open, setOpen] = useState(false);
   if (!rows || rows.length === 0) return null;
+
+  const handleToggle = () => {
+    const next = !open;
+    setOpen(next);
+    onOpenChange?.(next);
+  };
 
   return (
     <div className="pl-collapsible">
       <button
         type="button"
         className="pl-collapsible__toggle"
-        onClick={() => setOpen(!open)}
+        onClick={handleToggle}
         aria-expanded={open}
       >
         <span>{title} ({rows.length} années)</span>
