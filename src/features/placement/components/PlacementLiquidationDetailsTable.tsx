@@ -20,12 +20,14 @@ interface PlacementLiquidationDetailsTableProps {
   product: PlacementLiquidationProduct;
   showAllColumns: boolean;
   showCapitalDecesColumn: boolean;
+  onOpenChange?: (_open: boolean) => void;
 }
 
 export function PlacementLiquidationDetailsTable({
   product,
   showAllColumns,
   showCapitalDecesColumn,
+  onOpenChange,
 }: PlacementLiquidationDetailsTableProps) {
   const detailRows = product.liquidation.rows.filter((row) => row.age <= product.liquidation.ageAuDeces);
 
@@ -34,6 +36,7 @@ export function PlacementLiquidationDetailsTable({
       title={`Détail ${product.envelopeLabel}`}
       rows={detailRows}
       columns={getRelevantColumns(detailRows, buildColumns(product as PlacementTableProduct), showAllColumns)}
+      onOpenChange={onOpenChange}
       renderRow={(row: PlacementLiquidationDetailRow, index) => (
         <tr key={index} className={row.isAgeAuDeces ? 'pl-row-deces' : ''}>
           <td>{row.age} ans {row.isAgeAuDeces && '†'}</td>

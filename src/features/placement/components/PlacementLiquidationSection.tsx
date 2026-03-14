@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { CompareResult } from '@/engine/placement/types';
 import { InputEuro, InputNumber, InputPct, Toggle } from './inputs';
 import { getRendementLiquidation } from '../utils/normalizers';
@@ -39,6 +40,10 @@ export function PlacementLiquidationSection({
     (produit1 && ['CTO', 'AV', 'PEA'].includes(produit1.envelope))
     || (produit2 && ['CTO', 'AV', 'PEA'].includes(produit2.envelope))
   );
+
+  const [table1Open, setTable1Open] = useState(false);
+  const [table2Open, setTable2Open] = useState(false);
+  const anyTableOpen = table1Open || table2Open;
 
   const produit1OptionBaremeIR = state.products[0].liquidation?.optionBaremeIR ?? false;
   const produit2OptionBaremeIR = state.products[1].liquidation?.optionBaremeIR ?? false;
@@ -164,22 +169,24 @@ export function PlacementLiquidationSection({
         <div className="pl-details-section">
           <div className="pl-details-header">
             <h4 className="pl-details-title">Détail année par année</h4>
-            <div className="pl-pill-toggle">
-              <button
-                type="button"
-                className={`pl-pill-toggle__btn${!showAllColumns ? ' is-active' : ''}`}
-                onClick={() => setShowAllColumns(false)}
-              >
-                Essentielles
-              </button>
-              <button
-                type="button"
-                className={`pl-pill-toggle__btn${showAllColumns ? ' is-active' : ''}`}
-                onClick={() => setShowAllColumns(true)}
-              >
-                Toutes les colonnes
-              </button>
-            </div>
+            {anyTableOpen && (
+              <div className="pl-pill-toggle">
+                <button
+                  type="button"
+                  className={`pl-pill-toggle__btn${!showAllColumns ? ' is-active' : ''}`}
+                  onClick={() => setShowAllColumns(false)}
+                >
+                  Essentielles
+                </button>
+                <button
+                  type="button"
+                  className={`pl-pill-toggle__btn${showAllColumns ? ' is-active' : ''}`}
+                  onClick={() => setShowAllColumns(true)}
+                >
+                  Toutes les colonnes
+                </button>
+              </div>
+            )}
           </div>
 
           <PlacementLiquidationDetailsTable
@@ -189,6 +196,7 @@ export function PlacementLiquidationSection({
               produit1.envelope === 'PER'
               && state.products[0].versementConfig?.annuel?.garantieBonneFin?.active
             )}
+            onOpenChange={setTable1Open}
           />
           <PlacementLiquidationDetailsTable
             product={produit2}
@@ -197,6 +205,7 @@ export function PlacementLiquidationSection({
               produit2.envelope === 'PER'
               && state.products[1].versementConfig?.annuel?.garantieBonneFin?.active
             )}
+            onOpenChange={setTable2Open}
           />
         </div>
       )}

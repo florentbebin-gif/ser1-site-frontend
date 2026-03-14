@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import type { CompareResult } from '@/engine/placement/types';
 import { shortEuro } from '../utils/formatters';
@@ -70,6 +70,10 @@ export function PlacementEpargneSection({
     && (state.products[0].envelope === 'PER' || state.products[1].envelope === 'PER');
   const showOptionBareme = isExpert
     && (state.products[0].envelope === 'CTO' || state.products[1].envelope === 'CTO');
+
+  const [table1Open, setTable1Open] = useState(false);
+  const [table2Open, setTable2Open] = useState(false);
+  const anyTableOpen = table1Open || table2Open;
 
   return (
     <div className="premium-card">
@@ -197,24 +201,26 @@ export function PlacementEpargneSection({
 
       {produit1 && produit2 && (
         <div className="pl-details-section">
-          <div className="pl-details-toolbar">
-            <div className="pl-pill-toggle">
-              <button
-                type="button"
-                className={`pl-pill-toggle__btn${!showAllColumns ? ' is-active' : ''}`}
-                onClick={() => setShowAllColumns(false)}
-              >
-                Essentielles
-              </button>
-              <button
-                type="button"
-                className={`pl-pill-toggle__btn${showAllColumns ? ' is-active' : ''}`}
-                onClick={() => setShowAllColumns(true)}
-              >
-                Toutes les colonnes
-              </button>
+          {anyTableOpen && (
+            <div className="pl-details-toolbar">
+              <div className="pl-pill-toggle">
+                <button
+                  type="button"
+                  className={`pl-pill-toggle__btn${!showAllColumns ? ' is-active' : ''}`}
+                  onClick={() => setShowAllColumns(false)}
+                >
+                  Essentielles
+                </button>
+                <button
+                  type="button"
+                  className={`pl-pill-toggle__btn${showAllColumns ? ' is-active' : ''}`}
+                  onClick={() => setShowAllColumns(true)}
+                >
+                  Toutes les colonnes
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="pl-details-scroll">
             <CollapsibleTable
@@ -222,6 +228,7 @@ export function PlacementEpargneSection({
               rows={detailRows1}
               columns={columnsProduit1}
               renderRow={renderEpargneRow(produit1, columnsProduit1)}
+              onOpenChange={setTable1Open}
             />
           </div>
 
@@ -231,6 +238,7 @@ export function PlacementEpargneSection({
               rows={detailRows2}
               columns={columnsProduit2}
               renderRow={renderEpargneRow(produit2, columnsProduit2)}
+              onOpenChange={setTable2Open}
             />
           </div>
         </div>
