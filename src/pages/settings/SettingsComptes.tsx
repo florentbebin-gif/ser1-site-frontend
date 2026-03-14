@@ -4,7 +4,7 @@ import { DEBUG_AUTH } from '@/supabaseClient';
 import { isDebugEnabled } from '@/utils/debugFlags';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
-import { invokeAdmin } from '@/services/apiAdmin';
+import { invokeAdmin } from '@/settings/admin/invokeAdmin';
 import CabinetEditModal from '@/pages/settings/components/CabinetEditModal';
 import {
   SettingsCabinetsSection,

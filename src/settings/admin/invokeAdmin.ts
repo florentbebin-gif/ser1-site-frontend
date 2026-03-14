@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 
 interface AdminError {
   message: string;
@@ -44,7 +44,7 @@ export async function invokeAdmin(
     } = await supabase.auth.getSession();
 
     if (!session?.access_token) {
-      return { data: null, error: { message: 'Non authentifié' } };
+      return { data: null, error: { message: 'Non authentifi\u00e9' } };
     }
 
     const response = await fetch('/api/admin', {
@@ -66,7 +66,7 @@ export async function invokeAdmin(
       const text = await response.text();
       data = {
         _rawText: text,
-        error: `Réponse non-JSON (${response.status}): ${text.slice(0, 200)}${text.length > 200 ? '...' : ''}`,
+        error: `R\u00e9ponse non-JSON (${response.status}): ${text.slice(0, 200)}${text.length > 200 ? '...' : ''}`,
       } satisfies NonJsonResponsePayload;
     }
 
@@ -81,7 +81,7 @@ export async function invokeAdmin(
   } catch (err) {
     return {
       data: null,
-      error: { message: err instanceof Error ? err.message : 'Erreur réseau' },
+      error: { message: err instanceof Error ? err.message : 'Erreur r\u00e9seau' },
     };
   }
 }

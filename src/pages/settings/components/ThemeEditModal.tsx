@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { invokeAdmin } from '@/services/apiAdmin';
+import { invokeAdmin } from '@/settings/admin/invokeAdmin';
 import { COLOR_USAGE_GUIDELINES } from '@/constants/colorUsageGuidelines';
 import { DEFAULT_COLORS } from '@/settings/theme';
 

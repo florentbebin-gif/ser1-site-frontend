@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { invokeAdmin } from '@/services/apiAdmin';
-import { getLogoPublicUrl, uploadLogoWithDedup } from '@/utils/logoUpload';
+import { invokeAdmin } from '@/settings/admin/invokeAdmin';
+import { getLogoPublicUrl, uploadLogoWithDedup } from '@/settings/admin/logoUpload';
 
 interface ThemeOption {
   id: string;

@@ -86,7 +86,7 @@ rg -n "TODO|FIXME|HACK" src --glob '!**/*.test.*'
 | `src/utils/irEngine.ts` | imports dans `src/features/ir/components/IrSimulatorContainer.tsx`, `src/utils/irEngine.parts.test.ts`, `src/features/ir/utils/incomeFilters.irEngine.test.ts` | candidat review prioritaire |
 | `src/features/ir/IrPage.tsx` | route lazy via `src/features/ir/index.ts` puis `src/routes/appRoutes.ts` | garder |
 | `src/features/placement/PlacementPage.tsx` | route lazy via `src/features/placement/index.ts` puis `src/routes/appRoutes.ts` | garder |
-| `api/admin.js` | reference dans `src/services/apiAdmin.ts`, `docs/RUNBOOK.md`, workflow Vercel implicite | garder |
+| `api/admin.js` | reference dans `src/settings/admin/invokeAdmin.ts`, `docs/RUNBOOK.md`, workflow Vercel implicite | garder |
 | `supabase` devDependency | utilise dans le runbook et les workflows operateurs | review, pas suppression automatique |
 
 ### Points a auditer avec preuve avant action
@@ -240,7 +240,7 @@ Un petit fichier n'est "fusionnable" que s'il n'est ni :
 |---|---|---|
 | `src/routes/settingsRoutes.ts` porte la navigation settings | lazy imports de pages settings | move aligne avec la frontiere `routes/` |
 | `src/settings/userMode.ts` porte le mode global UI | lecture/ecriture de `ui_settings.mode` + hook `useUserMode` | move aligne avec la frontiere `settings/` |
-| `src/services/` ne contient plus que `apiAdmin.ts` | wrapper mince de bridge admin | review organisation seulement si un second point de chute clair emerge |
+| `src/settings/admin/` regroupe le bridge admin settings | `invokeAdmin` + `logoUpload` consommes par `SettingsComptes` et ses modales | move aligne le code avec le perimetre admin settings |
 | `src/reporting/snapshot/` regroupe l'IO `.ser1` | schema + migrations + IO + test associe | move aligne le dossier avec le vocabulaire metier |
 | `src/pages/StrategyPage.tsx` importe `../features/strategy` et `../features/audit/storage` | page -> feature existe deja | frontiere volontaire, pas anomalie |
 | `src/engine -> src/features/pages` | 0 import detecte | bonne frontiere a automatiser |
@@ -508,9 +508,10 @@ Statut le 2026-03-14 : en cours
 
 - `src/routes/settingsRoutes.ts` aligne la navigation settings avec la frontiere `routes/`
 - `src/settings/userMode.ts` aligne le mode global UI avec la frontiere `settings/`
+- `src/settings/admin/` aligne le bridge admin settings avec son perimetre fonctionnel
 - `src/reporting/snapshot/` aligne le dossier snapshots `.ser1` avec le vocabulaire metier
 - docs pivots alignees sur ce move : `README.md`, `docs/ARCHITECTURE.md`, `docs/GOUVERNANCE.md`, `docs/RUNBOOK.md`, `docs/ROADMAP.md`
-- reliquat structurel a qualifier sans move massif : `src/utils/`, `src/services/apiAdmin.ts`, `src/reporting/`
+- reliquat structurel principal a qualifier sans move massif : `src/utils/`
 
 ---
 

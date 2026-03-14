@@ -5,8 +5,8 @@
  * - Storage upload + DB record creation
  */
 
-import { supabase } from '../supabaseClient';
-import { invokeAdmin } from '../services/apiAdmin';
+import { supabase } from '../../supabaseClient';
+import { invokeAdmin } from './invokeAdmin';
 
 interface ExistingLogoPayload {
   exists?: boolean;
