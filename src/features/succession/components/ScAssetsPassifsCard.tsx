@@ -131,6 +131,7 @@ export default function ScAssetsPassifsCard({
                     <div className="sc-field">
                       <label>Porteur</label>
                       <ScSelect
+                        className="sc-asset-select"
                         value={entry.owner}
                         onChange={(value) => onUpdateAssetEntry(entry.id, 'owner', value)}
                         options={assetOwnerOptions}
@@ -139,6 +140,7 @@ export default function ScAssetsPassifsCard({
                     <div className="sc-field">
                       <label>Sous-catégorie</label>
                       <ScSelect
+                        className="sc-asset-select"
                         value={entry.subCategory}
                         onChange={(value) => onUpdateAssetEntry(entry.id, 'subCategory', value)}
                         options={ASSET_SUBCATEGORY_OPTIONS[entry.category].map((option) => ({
