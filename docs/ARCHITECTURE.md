@@ -426,7 +426,7 @@ L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → é
 |------|---------|
 | Calcul du fingerprint | `src/utils/export/exportFingerprint.ts` (`fingerprintSettingsData`) |
 | Comparaison au chargement | `src/App.tsx` (lignes 169–183) |
-| Migration snapshot v3→v4 | `src/reporting/json-io/snapshotMigrations.ts` |
+| Migration snapshot v3→v4 | `src/reporting/snapshot/snapshotMigrations.ts` |
 
 ---
 
@@ -500,7 +500,7 @@ Edge Function `rates-refresh` (cron hebdomadaire) : fetch URSSAF / legifrance / 
 | Extraction params normalisés | `src/engine/placement/fiscalParams.ts` |
 | Params par défaut (34 valeurs) | `src/engine/placement/shared.ts` (`DEFAULT_FISCAL_PARAMS`) |
 | Profil fiscal par enveloppe | `src/domain/base-contrat/rules/fiscalProfile.ts` |
-| Migration snapshot (v4 + identity) | `src/reporting/json-io/snapshotMigrations.ts` |
+| Migration snapshot (v4 + identity) | `src/reporting/snapshot/snapshotMigrations.ts` |
 
 ---
 

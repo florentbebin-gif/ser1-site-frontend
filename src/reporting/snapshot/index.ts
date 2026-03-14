@@ -1,7 +1,7 @@
 /**
- * json-io — Public API for .ser1 snapshot file handling (P1-01)
+ * snapshot — Public API for .ser1 snapshot file handling (P1-01)
  *
- * Re-exports everything consumers need. Import from '@/reporting/json-io'.
+ * Re-exports everything consumers need. Import from '@/reporting/snapshot'.
  */
 
 // Schema & types

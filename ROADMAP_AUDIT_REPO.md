@@ -241,7 +241,7 @@ Un petit fichier n'est "fusionnable" que s'il n'est ni :
 | `src/routes/settingsRoutes.ts` porte la navigation settings | lazy imports de pages settings | move aligne avec la frontiere `routes/` |
 | `src/settings/userMode.ts` porte le mode global UI | lecture/ecriture de `ui_settings.mode` + hook `useUserMode` | move aligne avec la frontiere `settings/` |
 | `src/services/` ne contient plus que `apiAdmin.ts` | wrapper mince de bridge admin | review organisation seulement si un second point de chute clair emerge |
-| `src/reporting/json-io/` est isole | 4 fichiers sous un seul sous-dossier | review nommage / placement |
+| `src/reporting/snapshot/` regroupe l'IO `.ser1` | schema + migrations + IO + test associe | move aligne le dossier avec le vocabulaire metier |
 | `src/pages/StrategyPage.tsx` importe `../features/strategy` et `../features/audit/storage` | page -> feature existe deja | frontiere volontaire, pas anomalie |
 | `src/engine -> src/features/pages` | 0 import detecte | bonne frontiere a automatiser |
 | `src/features -> src/pages` | 0 import detecte | bonne frontiere a automatiser |
@@ -508,6 +508,7 @@ Statut le 2026-03-14 : en cours
 
 - `src/routes/settingsRoutes.ts` aligne la navigation settings avec la frontiere `routes/`
 - `src/settings/userMode.ts` aligne le mode global UI avec la frontiere `settings/`
+- `src/reporting/snapshot/` aligne le dossier snapshots `.ser1` avec le vocabulaire metier
 - docs pivots alignees sur ce move : `README.md`, `docs/ARCHITECTURE.md`, `docs/GOUVERNANCE.md`, `docs/RUNBOOK.md`, `docs/ROADMAP.md`
 - reliquat structurel a qualifier sans move massif : `src/utils/`, `src/services/apiAdmin.ts`, `src/reporting/`
 
