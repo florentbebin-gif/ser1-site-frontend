@@ -193,7 +193,7 @@ Implémentation de référence :
 - Les boutons optionnels de filtres/sous-sections doivent démarrer inactifs par défaut, puis activer explicitement les blocs associés.
 
 ### Mode utilisateur `/sim/*` (contrat)
-- Source de vérité globale : `ui_settings.mode` via `useUserMode` (`src/services/userModeService.ts`).
+- Source de vérité globale : `ui_settings.mode` via `useUserMode` (`src/settings/userMode.ts`).
 - La page Home est le point de pilotage global (toggle persistant).
 - Chaque simulateur doit lire ce mode global au montage, puis peut appliquer un override local non persistant (pattern `/sim/credit`).
 - Le toggle local d'un simulateur ne doit pas écrire dans `ui_settings` (sinon il écrase le choix Home pour toute l'app).

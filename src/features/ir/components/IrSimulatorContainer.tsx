@@ -8,7 +8,7 @@ import { computeIrResult as computeIrResultEngine } from '../../../engine/ir/com
 import { useFiscalContext } from '../../../hooks/useFiscalContext';
 import { DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
 import { useTheme } from '../../../settings/ThemeProvider';
-import { useUserMode, type UserMode } from '../../../services/userModeService';
+import { useUserMode, type UserMode } from '../../../settings/userMode';
 import { ExportMenu } from '../../../components/ExportMenu';
 import {
   computeAbattement10,
