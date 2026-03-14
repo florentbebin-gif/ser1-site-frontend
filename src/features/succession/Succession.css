@@ -241,7 +241,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
   color: var(--color-c10);
   font-size: 13px;
   text-align: left;
@@ -390,7 +390,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
   font-size: 13px;
   color: var(--color-c10);
   overflow: hidden;
@@ -532,7 +532,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
   color: var(--color-c10);
   font-size: 13px;
   text-align: right;
@@ -816,6 +816,7 @@
   border-radius: 10px;
   background: color-mix(in srgb, var(--color-c7) 70%, #FFFFFF);
   padding: 12px;
+  --sim-input-bg: #FFFFFF;
 }
 
 .sc-asset-section__header,
@@ -1000,6 +1001,7 @@
   border: 1px solid color-mix(in srgb, var(--color-c8) 78%, #FFFFFF);
   border-radius: 12px;
   background: color-mix(in srgb, var(--color-c7) 42%, #FFFFFF);
+  --sim-input-bg: #FFFFFF;
 }
 
 .sc-testament-card__header {

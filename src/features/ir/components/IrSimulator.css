@@ -145,7 +145,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
   font-family: inherit;
   font-size: 13px;
   color: var(--color-c10);
@@ -221,7 +221,7 @@
   border-bottom: 1px solid transparent;
   border-radius: 4px;
   text-align: right;
-  background-color: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
   font-family: inherit;
   font-size: 13px;
   color: var(--color-c10);
@@ -584,7 +584,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
   font-family: inherit;
   font-size: 13px;
   color: var(--color-c10);
@@ -771,7 +771,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background-color: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
+  background-color: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
   font-family: inherit;
   font-size: 13px;
   color: var(--color-c10);
