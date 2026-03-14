@@ -3,21 +3,24 @@
  */
 
 import { useEffect, useState } from 'react';
-import './VersementConfigModal.css';
-import {
-  normalizeVersementConfig,
-  type CapitalisationConfig,
-  type DistributionConfig,
-  type VersementAnnuel,
-  type VersementConfig,
-  type VersementConfigInput,
-  type VersementEntry,
-  type VersementOption,
-  type VersementPonctuel,
-} from '@/engine/placement/versementConfig';
 import { ENVELOPE_LABELS } from '@/engine/placement';
-import { InputEuro, InputPct, InputNumber } from './inputs';
-import { AllocationSlider } from './tables';
+import { normalizeVersementConfig } from '@/engine/placement/versementConfig';
+import type {
+  CapitalisationConfig,
+  DistributionConfig,
+  VersementAnnuel,
+  VersementConfig,
+  VersementConfigInput,
+  VersementEntry,
+  VersementOption,
+  VersementPonctuel,
+} from '@/engine/placement/versementConfig';
+import {
+  VersementAnnualSection,
+  VersementInitialSection,
+  VersementPonctuelsSection,
+} from './VersementConfigModalSections';
+import './VersementConfigModal.css';
 
 interface VersementConfigModalProps {
   envelope: string;
@@ -86,18 +89,17 @@ export function VersementConfigModal({
   const isAV = envelope === 'AV';
 
   useEffect(() => {
-    if (isSCPI) {
-      setDraft((currentDraft) => ({
-        ...currentDraft,
-        initial: { ...currentDraft.initial, pctCapitalisation: 0, pctDistribution: 100 },
-        annuel: { ...currentDraft.annuel, pctCapitalisation: 0, pctDistribution: 100 },
-        ponctuels: (currentDraft.ponctuels || []).map((ponctuel) => ({
-          ...ponctuel,
-          pctCapitalisation: 0,
-          pctDistribution: 100,
-        })),
-      }));
-    }
+    if (!isSCPI) return;
+    setDraft((currentDraft) => ({
+      ...currentDraft,
+      initial: { ...currentDraft.initial, pctCapitalisation: 0, pctDistribution: 100 },
+      annuel: { ...currentDraft.annuel, pctCapitalisation: 0, pctDistribution: 100 },
+      ponctuels: (currentDraft.ponctuels || []).map((ponctuel) => ({
+        ...ponctuel,
+        pctCapitalisation: 0,
+        pctDistribution: 100,
+      })),
+    }));
   }, [isSCPI]);
 
   const updateInitial = <K extends keyof VersementEntry>(field: K, value: VersementEntry[K]) => {
@@ -256,290 +258,45 @@ export function VersementConfigModal({
         </div>
 
         <div className="vcm__body">
-          {isAV && (
+          {isAV ? (
             <div className="vcm__hint vcm__hint--spaced">
               Hypothèse : investissement 100 % unités de compte - prélèvements sociaux dus au rachat.
             </div>
-          )}
+          ) : null}
 
-          <section className="vcm__section">
-            <div className="vcm__section-header">
-              <div className="vcm__section-icon">1</div>
-              <h3 className="vcm__section-title">Versement initial</h3>
-            </div>
+          <VersementInitialSection
+            initial={draft.initial}
+            capitalisation={draft.capitalisation}
+            distribution={draft.distribution}
+            isSCPI={isSCPI}
+            isCTO={isCTO}
+            showCapiBlock={showCapiBlock}
+            showDistribBlock={showDistribBlock}
+            onUpdateInitial={updateInitial}
+            onUpdateInitialAlloc={updateInitialAlloc}
+            onUpdateCapitalisation={updateCapitalisation}
+            onUpdateDistribution={updateDistribution}
+          />
 
-            <div className="vcm__card">
-              <div className="vcm__row">
-                <InputEuro label="Montant" value={draft.initial.montant} onChange={(value) => updateInitial('montant', value)} />
-                <InputPct label="Frais d'entrée" value={draft.initial.fraisEntree} onChange={(value) => updateInitial('fraisEntree', value)} />
-              </div>
+          <VersementAnnualSection
+            annuel={draft.annuel}
+            isPER={isPER}
+            isSCPI={isSCPI}
+            onUpdateAnnuel={updateAnnuel}
+            onUpdateAnnuelAlloc={updateAnnuelAlloc}
+            onUpdateAnnuelOption={updateAnnuelOption}
+          />
 
-              <div className="vcm__field">
-                <label className="vcm__label">Allocation</label>
-                <AllocationSlider
-                  pctCapi={draft.initial.pctCapitalisation}
-                  pctDistrib={draft.initial.pctDistribution}
-                  onChange={updateInitialAlloc}
-                  isSCPI={isSCPI}
-                />
-              </div>
-
-              {showCapiBlock && (
-                <div className="vcm__suboption vcm__suboption--capi">
-                  <div className="vcm__suboption-header">
-                    <span className="vcm__badge vcm__badge--capi">Capitalisation</span>
-                  </div>
-                  <InputPct
-                    label="Rendement annuel net de FG"
-                    value={draft.capitalisation.rendementAnnuel}
-                    onChange={(value) => updateCapitalisation('rendementAnnuel', value)}
-                  />
-                </div>
-              )}
-
-              {showDistribBlock && (
-                <div className="vcm__suboption vcm__suboption--distrib">
-                  <div className="vcm__suboption-header">
-                    <span className="vcm__badge vcm__badge--distrib">Distribution</span>
-                  </div>
-
-                  <div className="vcm__row">
-                    <InputPct
-                      label="Rendement annuel net de FG"
-                      value={draft.distribution.rendementAnnuel}
-                      onChange={(value) => updateDistribution('rendementAnnuel', value)}
-                    />
-                    <InputPct
-                      label={isSCPI ? 'Taux de loyers net de FG' : 'Taux de distribution net de FG'}
-                      value={draft.distribution.tauxDistribution}
-                      onChange={(value) => updateDistribution('tauxDistribution', value)}
-                    />
-                  </div>
-
-                  <div className="vcm__row">
-                    {!isSCPI && (
-                      <InputNumber
-                        label="Durée du produit"
-                        value={draft.distribution.dureeProduit || ''}
-                        onChange={(value) => updateDistribution('dureeProduit', value || null)}
-                        unit="ans"
-                        min={1}
-                        max={100}
-                      />
-                    )}
-                    <InputNumber
-                      label="Délai de jouissance"
-                      value={draft.distribution.delaiJouissance}
-                      onChange={(value) => updateDistribution('delaiJouissance', value)}
-                      unit="mois"
-                      min={0}
-                      max={12}
-                    />
-                  </div>
-
-                  <div className="vcm__field">
-                    <label className="vcm__label">Strategie</label>
-                    
-                    <select
-                      className="vcm__select"
-                      value={draft.distribution.strategie}
-                      onChange={(event) => updateDistribution('strategie', event.target.value)}
-                    >
-                      {!isSCPI && <option value="stocker">Stocker les distributions à 0%</option>}
-                      {(isSCPI || isCTO) && (
-                        <option value="apprehender">Appréhender les distributions chaque année</option>
-                      )}
-                      <option value="reinvestir_capi">
-                        {isSCPI
-                          ? 'Réinvestir les distributions nettes de fiscalité chaque année'
-                          : 'Réinvestir les distributions chaque année vers la capitalisation'}
-                      </option>
-                    </select>
-                  </div>
-
-                  {!isSCPI && draft.distribution.dureeProduit && (
-                    <div className="vcm__field">
-                      <label className="vcm__label">Au terme du produit, réinvestir vers</label>
-                      <select
-                        className="vcm__select"
-                        value={draft.distribution.reinvestirVersAuTerme}
-                        onChange={(event) => updateDistribution('reinvestirVersAuTerme', event.target.value)}
-                      >
-                        <option value="capitalisation">Capitalisation</option>
-                        <option value="distribution">Distribution</option>
-                      </select>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section className="vcm__section">
-            <div className="vcm__section-header">
-              <div className="vcm__section-icon">2</div>
-              <h3 className="vcm__section-title">Versement annuel</h3>
-            </div>
-
-            <div className="vcm__card">
-              <div className="vcm__row">
-                <InputEuro label="Montant" value={draft.annuel.montant} onChange={(value) => updateAnnuel('montant', value)} />
-                <InputPct label="Frais d'entrée" value={draft.annuel.fraisEntree} onChange={(value) => updateAnnuel('fraisEntree', value)} />
-              </div>
-
-              <div className="vcm__field">
-                <label className="vcm__label">Allocation</label>
-                <AllocationSlider
-                  pctCapi={draft.annuel.pctCapitalisation}
-                  pctDistrib={draft.annuel.pctDistribution}
-                  onChange={updateAnnuelAlloc}
-                  isSCPI={isSCPI}
-                />
-              </div>
-
-              {isPER && (
-                <div className="vcm__per-options">
-                  <div className="vcm__per-option">
-                    <label className="vcm__checkbox">
-                      <input
-                        type="checkbox"
-                        checked={draft.annuel.garantieBonneFin.active}
-                        onChange={(event) => updateAnnuelOption('garantieBonneFin', 'active', event.target.checked)}
-                      />
-                      <span>Garantie de bonne fin</span>
-                    </label>
-                    {draft.annuel.garantieBonneFin.active && (
-                      <InputPct
-                        label="Coût annuel"
-                        value={draft.annuel.garantieBonneFin.cout}
-                        onChange={(value) => updateAnnuelOption('garantieBonneFin', 'cout', value)}
-                      />
-                    )}
-                    <p className="vcm__hint">Capital décès = durée restante x versement annuel</p>
-                  </div>
-
-                  <div className="vcm__per-option">
-                    <label className="vcm__checkbox">
-                      <input
-                        type="checkbox"
-                        checked={draft.annuel.exonerationCotisations.active}
-                        onChange={(event) => updateAnnuelOption('exonerationCotisations', 'active', event.target.checked)}
-                      />
-                      <span>Exonération des cotisations</span>
-                    </label>
-                    {draft.annuel.exonerationCotisations.active && (
-                      <InputPct
-                        label="Coût annuel"
-                        value={draft.annuel.exonerationCotisations.cout}
-                        onChange={(value) => updateAnnuelOption('exonerationCotisations', 'cout', value)}
-                      />
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section className="vcm__section">
-            <div className="vcm__section-header">
-              <div className="vcm__section-icon">3</div>
-              <h3 className="vcm__section-title">Versements ponctuels</h3>
-              <button type="button" className="vcm__add-btn" onClick={addPonctuel}>+ Ajouter</button>
-            </div>
-
-            {draft.ponctuels.length === 0 ? (
-              <div className="vcm__empty">
-                <p>Aucun versement ponctuel configuré</p>
-                <button type="button" className="vcm__add-btn vcm__add-btn--large" onClick={addPonctuel}>
-                  + Ajouter un versement
-                </button>
-              </div>
-            ) : (
-              <div className="vcm__ponctuels">
-                <div className="vcm__ponctuel-headers">
-                  <span>Année</span>
-                  <span>Montant</span>
-                  <span>Frais</span>
-                  <span>Allocation Capi/Distrib</span>
-                  <span />
-                </div>
-
-                {draft.ponctuels.map((ponctuel, index) => (
-                  <div key={index} className="vcm__ponctuel-row">
-                    <div className="vcm__ponctuel-cell">
-                      <input
-                        type="number"
-                        min={1}
-                        max={dureeEpargne}
-                        value={ponctuel.annee}
-                        onChange={(event) => updatePonctuel(index, 'annee', Number(event.target.value))}
-                        className="vcm__mini-input"
-                      />
-                    </div>
-
-                    <div className="vcm__ponctuel-cell">
-                      <input
-                        type="number"
-                        value={ponctuel.montant}
-                        onChange={(event) => updatePonctuel(index, 'montant', Number(event.target.value))}
-                        className="vcm__mini-input"
-                      />
-                      <span className="vcm__unit">EUR</span>
-                      
-                    </div>
-
-                    <div className="vcm__ponctuel-cell">
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={(ponctuel.fraisEntree * 100).toFixed(1)}
-                        onChange={(event) => updatePonctuel(index, 'fraisEntree', Number(event.target.value) / 100)}
-                        className="vcm__mini-input vcm__mini-input--small"
-                      />
-                      <span className="vcm__unit">%</span>
-                    </div>
-
-                    <div className="vcm__ponctuel-cell vcm__ponctuel-cell--alloc">
-                      {isSCPI ? (
-                        <span className="vcm__alloc-fixed">100% D</span>
-                      ) : (
-                        <div className="vcm__alloc-mini">
-                          <input
-                            type="number"
-                            min={0}
-                            max={100}
-                            value={ponctuel.pctCapitalisation}
-                            onChange={(event) => updatePonctuelAlloc(index, Number(event.target.value), 100 - Number(event.target.value))}
-                            className="vcm__mini-input vcm__mini-input--tiny"
-                          />
-                          <span>/</span>
-                          <input
-                            type="number"
-                            min={0}
-                            max={100}
-                            value={ponctuel.pctDistribution}
-                            onChange={(event) => updatePonctuelAlloc(index, 100 - Number(event.target.value), Number(event.target.value))}
-                            className="vcm__mini-input vcm__mini-input--tiny"
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="vcm__ponctuel-cell">
-                      <button
-                        type="button"
-                        className="vcm__remove-btn"
-                        onClick={() => removePonctuel(index)}
-                        aria-label={`Supprimer le versement ponctuel ${index + 1}`}
-                      >
-                        <XIcon />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
+          <VersementPonctuelsSection
+            ponctuels={draft.ponctuels}
+            dureeEpargne={dureeEpargne}
+            isSCPI={isSCPI}
+            onAddPonctuel={addPonctuel}
+            onUpdatePonctuel={updatePonctuel}
+            onUpdatePonctuelAlloc={updatePonctuelAlloc}
+            onRemovePonctuel={removePonctuel}
+            RemoveIcon={XIcon}
+          />
         </div>
 
         <div className="vcm__footer">

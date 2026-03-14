@@ -382,9 +382,9 @@ export default function IrSimulatorContainer() {
               className="chip premium-btn ir-mode-btn"
               data-testid="ir-mode-btn"
               onClick={toggleMode}
-              title={isExpert ? 'Passer en mode simplifi&eacute;' : 'Passer en mode expert'}
+              title={isExpert ? 'Passer en mode simplifi\u00e9' : 'Passer en mode expert'}
             >
-              {isExpert ? 'Mode expert' : 'Mode simplifi&eacute;'}
+              {isExpert ? 'Mode expert' : 'Mode simplifi\u00e9'}
             </button>
             <ExportMenu
               options={[

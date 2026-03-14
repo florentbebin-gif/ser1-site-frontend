@@ -147,6 +147,8 @@ Principes : épuré, lisible, respirant.
 - Selects natifs simulateur : même fond off-white + border-bottom + `text-align: right` (pas de select natif navigateur brut).
 - Inputs en lecture seule passifs (valeur calculée non modifiable) : fond `C7` (override inline acceptable).
 - Inputs inactifs conditionnels (ex. : champ désactivé par un select de mode) : fond `#FFFFFF` pour signaler visuellement l'inactivité — exception listée aux couleurs hardcodées.
+- Contraste sur surface colorée : si un input / select / champ date-month / trigger de select custom est placé sur une surface déjà teintée (premium-table, sous-card C7/C8, modal interne teintée, bloc secondaire coloré), l’intérieur du contrôle doit être blanc (#FFFFFF).
+- Implémentation recommandée : utiliser une variable CSS d’héritage de type `--sim-input-bg`, avec fond par défaut off-white et override à `#FFFFFF` porté par le conteneur coloré, pas par chaque champ individuellement.
  - Exception unités : ne pas dupliquer une unité déjà portée par un menu déroulant ou par ses options/libellés.
  - États :
     - Erreur : `border-bottom: C1` + message `11px`.
@@ -171,6 +173,20 @@ Principes : épuré, lisible, respirant.
 #### Interdit
 - Revenir aux styles natifs navigateur pour les selects dans `/sim/*`.
 - Couleurs d'erreur hardcodées hors C1.
+
+#### Audit des champs sur fond coloré (mars 2026)
+
+| Surface | Contexte coloré | Champs concernés |
+|---|---|---|
+| `/sim/ir` | Aucun cas confirmé à ce stade | Aucun champ texte/select/date identifié sur fond coloré ; les champs sont dans des cards blanches ou dans des zones sans fond teinté |
+| `/sim/credit` | Aucun cas confirmé à ce stade | Aucun champ texte/select/date identifié sur fond coloré ; les formulaires sont dans `CreditLoanForm.tsx` sous card blanche, et les blocs colorés secondaires (`cv2-lissage-card`, détails, hypothèses) ne contiennent pas de champs texte/select/date |
+| `/sim/succession` page | `.sc-asset-section` dans `src/features/succession/Succession.css` | Dans `ScAssetsPassifsCard.tsx` : `Porteur`, `Sous-catégorie`, `Montant (€)` pour chaque ligne d’actif/passif détaillée en mode expert |
+| `/sim/succession` modale | `.sc-testament-card` dans `src/features/succession/Succession.css` | Dans `DispositionsModal.tsx` : `Testament actif`, `Type de disposition testamentaire`, `Bénéficiaire`, `Quote-part du legs à titre universel (%)`, `Legs particuliers` (`bénéficiaire`, `montant`, `libellé`), `Ascendants survivants` |
+| `/sim/placement` page | `.premium-table` dans `src/styles/premium-shared.css` | Dans `PlacementEpargneSection.tsx` : `Enveloppe`, `Durée de la phase épargne` |
+| `/sim/placement` page | `.premium-table` dans `src/styles/premium-shared.css` | Dans `PlacementLiquidationSection.tsx` : `Stratégie de retraits`, `Durée de liquidation`, `Rendement capitalisation (liquidation)`, `Mensualité cible`, `Montant du retrait` |
+| `/sim/placement` page | `.premium-table` dans `src/styles/premium-shared.css` | Dans `PlacementTransmissionSection.tsx` : `Âge au décès (simulation)`, `Choix du bénéficiaire`, `Nombre de bénéficiaires`, `Tranche DMTG estimée` |
+| `/sim/placement` modale | `.vcm__card` dans `src/features/placement/components/VersementConfigModal.css` | Dans `VersementConfigModal.tsx` : `Montant`, `Frais d’entrée`, `Allocation` (inputs `%` du slider), `Rendement annuel net de FG`, `Taux de distribution / loyers`, `Durée du produit`, `Délai de jouissance`, `Stratégie`, `Au terme du produit, réinvestir vers`, `Coût annuel` des options PER |
+| `/sim/placement` modale | `.vcm__ponctuels` dans `src/features/placement/components/VersementConfigModal.css` | Dans `VersementConfigModal.tsx` : `Année`, `Montant`, `Frais`, `Allocation Capi/Distrib` |
 
 ### 6) Boutons Exporter et mode simplifié/expert
 #### Obligatoire

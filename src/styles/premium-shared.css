@@ -75,6 +75,8 @@
   border-collapse: collapse;
   font-size: 13px;
   background: var(--color-c7);
+  /* Interactive controls embedded in tinted tables must stay white. */
+  --sim-input-bg: #FFFFFF;
 }
 
 .premium-table thead {

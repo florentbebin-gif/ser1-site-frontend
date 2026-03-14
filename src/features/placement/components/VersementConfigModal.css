@@ -147,6 +147,7 @@
 .vcm__card {
   padding: 18px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --sim-input-bg: #FFFFFF;
 }
 
 .vcm__row {
@@ -227,7 +228,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
+  background: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
   color: var(--color-c10);
   font-family: inherit;
   font-size: 13px;
@@ -335,6 +336,7 @@
 
 .vcm__ponctuels {
   overflow: hidden;
+  --sim-input-bg: #FFFFFF;
 }
 
 .vcm__ponctuel-headers,
@@ -528,7 +530,7 @@
   border: none;
   border-bottom: 1px solid transparent;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
+  background: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
   color: var(--color-c10);
   font-family: inherit;
   font-size: 12px;
