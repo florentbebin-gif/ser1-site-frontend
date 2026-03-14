@@ -79,7 +79,7 @@ export default function PlacementSimulatorPage() {
 
   if (error) {
     return (
-      <div className="sim-page pl-page">
+      <div className="sim-page pl-page" data-testid="placement-page">
         <div className="pl-ir-header">
           <div className="pl-ir-title">Erreur</div>
           <div className="pl-error">{error}</div>
@@ -89,7 +89,7 @@ export default function PlacementSimulatorPage() {
   }
 
   return (
-    <div className="sim-page pl-page">
+    <div className="sim-page pl-page" data-testid="placement-page">
       <PlacementToolbar
         exportLoading={exportLoading}
         onExportExcel={exportExcel}

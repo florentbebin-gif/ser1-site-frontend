@@ -132,7 +132,7 @@ export function PlacementEpargneSection({
           </tr>
 
           {showPerBancaire && (
-            <tr>
+            <tr data-testid="placement-row-per-bancaire">
               <td>PER bancaire (CTO)</td>
               {state.products.map((product, index) => (
                 <td key={index} className="pl-cell--center">
@@ -180,6 +180,7 @@ export function PlacementEpargneSection({
                   type="button"
                   className="pl-btn pl-btn--config"
                   onClick={() => setModalOpen(index)}
+                  data-testid={`placement-config-product-${index + 1}`}
                 >
                   <span className="pl-btn__icon">
                     <SettingsIcon />

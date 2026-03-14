@@ -228,7 +228,11 @@ export function VersementConfigModal({
 
   return (
     <div className="vcm-overlay" onClick={onClose}>
-      <div className="vcm" onClick={(event) => event.stopPropagation()}>
+      <div
+        className="vcm"
+        onClick={(event) => event.stopPropagation()}
+        data-testid="placement-versements-modal"
+      >
         <div className="vcm__header">
           <div className="vcm__header-content">
             <div className="vcm__icon" aria-hidden="true">
@@ -240,7 +244,13 @@ export function VersementConfigModal({
             </div>
           </div>
 
-          <button type="button" className="vcm__close" onClick={onClose} aria-label="Fermer la modale">
+          <button
+            type="button"
+            className="vcm__close"
+            onClick={onClose}
+            aria-label="Fermer la modale"
+            data-testid="placement-versements-close"
+          >
             <XIcon />
           </button>
         </div>

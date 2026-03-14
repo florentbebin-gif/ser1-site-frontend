@@ -40,7 +40,7 @@ export function PlacementResultsPanel({
 
   return (
     <div className="pl-ir-right">
-      <div className="premium-card pl-synthesis-card">
+      <div className="premium-card pl-synthesis-card" data-testid="placement-results-card">
         <div className="pl-synthesis-title-row">
           <div className="pl-section-icon-wrapper">
             <BarChartIcon />
