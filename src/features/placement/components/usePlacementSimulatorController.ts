@@ -366,8 +366,59 @@ export function usePlacementSimulatorController(isExpert: boolean) {
         import('@/pptx/presets/placementDeckBuilder'),
         import('@/pptx/export/exportStudyDeck'),
       ]);
+      const buildProductConfig = (productIndex: number) => {
+        const p = state.products[productIndex];
+        const vc = p.versementConfig;
+        return {
+          tmi: state.client.tmiEpargne,
+          tmiRetraite: state.client.tmiRetraite,
+          rendementCapi: vc.capitalisation.rendementAnnuel,
+          rendementDistrib: vc.distribution.tauxDistribution ?? 0,
+          tauxRevalorisation: vc.distribution.rendementAnnuel,
+          repartitionCapi: vc.initial.pctCapitalisation ?? 100,
+          strategieDistribution: vc.distribution.strategie ?? 'stocker',
+          versementInitial: vc.initial.montant,
+          versementAnnuel: vc.annuel.montant,
+          ponctuels: (vc.ponctuels || []).map((pt: { annee: number; montant: number }) => ({ annee: pt.annee, montant: pt.montant })),
+          fraisEntree: vc.initial.fraisEntree,
+          optionBaremeIR: p.liquidation?.optionBaremeIR ?? false,
+        };
+      };
+
+      const mapEpargneRows = (rows: typeof results.produit1.epargne.rows) =>
+        rows.map(r => ({
+          annee: r.annee,
+          versementNet: r.versementNet,
+          capitalDebut: r.capitalDebut,
+          gainsAnnee: r.gainsAnnee,
+          capitalFin: r.capitalFin,
+          effortReel: r.effortReel,
+          economieIR: r.economieIR,
+        }));
+
+      const mapLiquidationRows = (rows: typeof results.produit1.liquidation.rows) =>
+        rows.map(r => ({
+          annee: r.annee,
+          capitalDebut: r.capitalDebut,
+          gainsAnnee: r.gainsAnnee,
+          retraitBrut: r.retraitBrut,
+          fiscaliteTotal: r.fiscaliteTotal,
+          retraitNet: r.retraitNet,
+          capitalFin: r.capitalFin,
+        }));
+
       const data = {
         clientName: undefined as string | undefined,
+        ageActuel: state.client.ageActuel,
+        dureeEpargne: state.products[0].dureeEpargne,
+        ageAuDeces: state.transmission.ageAuDeces,
+        liquidationMode: state.liquidation.mode,
+        liquidationDuree: state.liquidation.duree,
+        liquidationMensualiteCible: state.liquidation.mensualiteCible,
+        liquidationMontantUnique: state.liquidation.montantUnique,
+        beneficiaryType: state.transmission.beneficiaryType,
+        nbBeneficiaires: state.transmission.nbBeneficiaires,
+        dmtgTaux: state.transmission.dmtgTaux,
         produit1: {
           envelopeLabel: results.produit1.envelopeLabel,
           epargne: {
@@ -393,6 +444,9 @@ export function usePlacementSimulatorController(isExpert: boolean) {
             capitalTransmisNet: results.produit1.totaux.capitalTransmisNet,
             revenusNetsTotal: results.produit1.totaux.revenusNetsTotal,
           },
+          config: buildProductConfig(0),
+          epargneRows: mapEpargneRows(results.produit1.epargne.rows),
+          liquidationRows: mapLiquidationRows(results.produit1.liquidation.rows),
         },
         produit2: {
           envelopeLabel: results.produit2.envelopeLabel,
@@ -419,6 +473,9 @@ export function usePlacementSimulatorController(isExpert: boolean) {
             capitalTransmisNet: results.produit2.totaux.capitalTransmisNet,
             revenusNetsTotal: results.produit2.totaux.revenusNetsTotal,
           },
+          config: buildProductConfig(1),
+          epargneRows: mapEpargneRows(results.produit2.epargne.rows),
+          liquidationRows: mapLiquidationRows(results.produit2.liquidation.rows),
         },
       };
       const deck = buildPlacementStudyDeck(data, pptxColors, cabinetLogo, logoPlacement);
@@ -438,7 +495,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
     } finally {
       setExportLoading(false);
     }
-  }, [results, pptxColors, cabinetLogo, logoPlacement]);
+  }, [results, state, pptxColors, cabinetLogo, logoPlacement]);
 
   const exportHandlers: PlacementSimulatorExportHandlers = {
     exportExcel,

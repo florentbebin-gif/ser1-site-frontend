@@ -216,25 +216,67 @@ export type SuccessionSynthesisSlideSpec = {
 };
 
 /**
- * Placement Product KPIs for comparison slide
+ * Placement Product KPIs for synthesis slide (slide 3)
  */
 export type PlacementProductKpis = {
   envelopeLabel: string;
-  capitalAcquis: number;
-  effortReel: number;
-  revenusNetsLiquidation: number;
-  fiscaliteTotale: number;
-  capitalTransmisNet: number;
-  revenusNetsTotal: number; // "Net global" = retraits + capital transmis net
+  effortTotal: number;        // totaux.effortReel
+  capitalAcquis: number;      // epargne.capitalAcquis
+  revenusNets: number;        // totaux.revenusNetsLiquidation
+  transmissionNette: number;  // transmission.capitalTransmisNet
+  roi: number;                // (revenusNets + transmissionNette) / effortTotal
 };
 
 /**
- * Placement Synthesis Slide Specification — 2-product comparison
+ * Placement Synthesis Slide Specification — premium 2-panel comparison
  */
 export type PlacementSynthesisSlideSpec = {
   type: 'placement-synthesis';
   produit1: PlacementProductKpis;
   produit2: PlacementProductKpis;
+  timeline: {
+    ageActuel: number;
+    ageDebutLiquidation: number;
+    ageAuDeces: number;
+  };
+};
+
+/**
+ * Placement Detail Slide Specification — 2-panel phase detail (slides 4-5-6)
+ */
+export type PlacementDetailSlideSpec = {
+  type: 'placement-detail';
+  title: string;
+  subtitle: string;
+  produit1: { label: string; metrics: Array<{ icon: BusinessIconName; label: string; value: string }>; params?: string[] };
+  produit2: { label: string; metrics: Array<{ icon: BusinessIconName; label: string; value: string }>; params?: string[] };
+  optionalNote?: string;
+};
+
+/**
+ * Placement Hypotheses Slide Specification — 2×2 info grid (slide 8)
+ */
+export type PlacementHypothesesSlideSpec = {
+  type: 'placement-hypotheses';
+  title: string;
+  subtitle: string;
+  sections: Array<{ icon: BusinessIconName; title: string; body: string[] }>;
+};
+
+/**
+ * Placement Projection Slide Specification — paginated table (after slide 8)
+ */
+export type PlacementProjectionSlideSpec = {
+  type: 'placement-projection';
+  title: string;
+  subtitle: string;
+  productLabel: string;
+  productIndex: 1 | 2;
+  phase: 'epargne' | 'liquidation';
+  yearsForPage: number[];
+  rows: Array<{ label: string; values: number[] }>;
+  pageIndex: number;
+  totalPages: number;
 };
 
 /**
@@ -414,6 +456,9 @@ export type StudyDeckSpec = {
     | CreditAmortizationSlideSpec
     | SuccessionSynthesisSlideSpec
     | PlacementSynthesisSlideSpec
+    | PlacementDetailSlideSpec
+    | PlacementHypothesesSlideSpec
+    | PlacementProjectionSlideSpec
   >;
   end: EndSlideSpec;
 };
