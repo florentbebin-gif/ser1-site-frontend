@@ -216,7 +216,8 @@ export function useCreditExports({
       const blob = await buildXlsxBlob({ sheets, headerFill: themeColors?.c1, sectionFill: themeColors?.c7 });
       const isValid = await validateXlsxBlob(blob);
       if (!isValid) throw new Error('XLSX invalide (signature PK manquante).');
-      downloadXlsx(blob, `SER1_${isAnnual ? 'Annuel' : 'Mensuel'}.xlsx`);
+      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      downloadXlsx(blob, `simulation-credit-${dateStr}.xlsx`);
     } catch (error) {
       console.error('Export Excel échoué', error);
       alert('Impossible de générer le fichier Excel.');

@@ -92,6 +92,7 @@ export function useSuccessionExportHandlers({
           pptxColors.c1,
           undefined,
           chainageExportPayload,
+          pptxColors.c7,
         );
       }
     } finally {

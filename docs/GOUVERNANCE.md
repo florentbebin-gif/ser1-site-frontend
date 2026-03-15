@@ -1092,8 +1092,7 @@ downloadXlsx(blob, `simulation-${simId}-${dateStr}.xlsx`);
 | **IR** | Paramètres · Synthèse impôts · Détails calculs | `useIrExportHandlers.ts` |
 | **Credit** | Paramètres · Résumé · Prêt 1 [· Prêt 2 · Prêt 3] | `useCreditExports.ts` |
 | **Succession** | Inputs · Résultats · Détails · Chronologie · Hypothèses | `successionXlsx.ts` |
-| **PER** | Inputs · Résultats · Détails · Hypothèses | `perXlsx.ts` |
-| **Placement** | *Format legacy — non conforme* | `placementExcelExport.ts` |
+| **Placement** | Paramètres · Épargne P1/P2 · Liquidation P1/P2 · Transmission · Synthèse · Hypothèses | `placementExcelExport.ts` |
 
 ---
 
@@ -1114,12 +1113,15 @@ downloadXlsx(blob, `simulation-${simId}-${dateStr}.xlsx`);
 
 ### Dettes techniques Excel
 
-| Simulateur | Problème | Impact |
-|---|---|---|
-| **Placement** | Format XLS XML legacy (`exportExcel.ts`), pas de styles, `.xls` | Pas de formatage €/%, pas de couleurs thème |
-| **Succession** | `sectionFill: DEFAULT_COLORS.c8` en dur | Ignorer le thème courant pour les sections |
-| **PER** | `sectionFill: DEFAULT_COLORS.c8` en dur | Idem |
-| **Credit** | Nom de fichier `SER1_Annuel.xlsx` (préfixe déprécié) | Incohérence nommage |
+Toutes les dettes identifiées à la rédaction initiale ont été corrigées dans le PR
+`feat/excel-governance-alignment` :
+
+| Simulateur | Problème résolu |
+|---|---|
+| **Placement** | Migré vers xlsxBuilder (OOXML), styles €/%, couleurs thème, `.xlsx`, onglet Hypothèses, test smoke |
+| **Succession** | `sectionFill` désormais dynamique (c7 du thème), `validateXlsxBlob()` ajouté |
+| **PER** | Export Excel supprimé (dette technique — simulateur non opérationnel) |
+| **Credit** | Nom de fichier corrigé → `simulation-credit-YYYYMMDD.xlsx` |
 
 ---
 
