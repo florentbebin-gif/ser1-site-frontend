@@ -66,7 +66,7 @@ export default function PlacementSimulatorPage() {
     psSettings,
   } = resultsDerived;
 
-  const { exportExcel } = exportHandlers;
+  const { exportExcel, exportPptx } = exportHandlers;
 
   const {
     loading,
@@ -94,6 +94,8 @@ export default function PlacementSimulatorPage() {
         exportLoading={exportLoading}
         onExportExcel={exportExcel}
         canExportExcel={Boolean(results?.produit1)}
+        onExportPptx={exportPptx}
+        canExportPptx={Boolean(results?.produit1)}
         step={state.step}
         onStepChange={setStep}
         isExpert={isExpert}

@@ -74,6 +74,7 @@ export interface PlacementSimulatorResultsDerived {
 
 export interface PlacementSimulatorExportHandlers {
   exportExcel: () => Promise<void>;
+  exportPptx: () => Promise<void>;
 }
 
 export interface PlacementSimulatorUiFlags {
@@ -90,7 +91,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
   const storeKey = storageKeyFor('placement');
   const { fiscalParams, loading, error, tmiOptions, psSettings } = usePlacementSettings();
   const { fiscalContext } = useFiscalContext({ strict: false });
-  const { pptxColors } = useTheme();
+  const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
 
   const [hydrated, setHydrated] = useState(false);
   const [state, setState] = useState<PlacementSimulatorState>(DEFAULT_STATE);
@@ -357,8 +358,91 @@ export function usePlacementSimulatorController(isExpert: boolean) {
     }
   }, [state, isExpert, results, pptxColors]);
 
+  const exportPptx = useCallback(async () => {
+    if (!results) return;
+    setExportLoading(true);
+    try {
+      const [{ buildPlacementStudyDeck }, { exportAndDownloadStudyDeck }] = await Promise.all([
+        import('@/pptx/presets/placementDeckBuilder'),
+        import('@/pptx/export/exportStudyDeck'),
+      ]);
+      const data = {
+        clientName: undefined as string | undefined,
+        produit1: {
+          envelopeLabel: results.produit1.envelopeLabel,
+          epargne: {
+            capitalAcquis: results.produit1.epargne.capitalAcquis,
+            cumulVersements: results.produit1.epargne.cumulVersements,
+            cumulEffort: results.produit1.epargne.cumulEffort,
+            cumulEconomieIR: results.produit1.epargne.cumulEconomieIR,
+          },
+          liquidation: {
+            cumulRetraitsNets: results.produit1.liquidation.cumulRetraitsNets,
+            revenuAnnuelMoyenNet: results.produit1.liquidation.revenuAnnuelMoyenNet,
+            cumulFiscalite: results.produit1.liquidation.cumulFiscalite,
+          },
+          transmission: {
+            capitalTransmisNet: results.produit1.transmission.capitalTransmisNet,
+            taxe: results.produit1.transmission.taxe,
+            regime: results.produit1.transmission.regime,
+          },
+          totaux: {
+            effortReel: results.produit1.totaux.effortReel,
+            revenusNetsLiquidation: results.produit1.totaux.revenusNetsLiquidation,
+            fiscaliteTotale: results.produit1.totaux.fiscaliteTotale,
+            capitalTransmisNet: results.produit1.totaux.capitalTransmisNet,
+            revenusNetsTotal: results.produit1.totaux.revenusNetsTotal,
+          },
+        },
+        produit2: {
+          envelopeLabel: results.produit2.envelopeLabel,
+          epargne: {
+            capitalAcquis: results.produit2.epargne.capitalAcquis,
+            cumulVersements: results.produit2.epargne.cumulVersements,
+            cumulEffort: results.produit2.epargne.cumulEffort,
+            cumulEconomieIR: results.produit2.epargne.cumulEconomieIR,
+          },
+          liquidation: {
+            cumulRetraitsNets: results.produit2.liquidation.cumulRetraitsNets,
+            revenuAnnuelMoyenNet: results.produit2.liquidation.revenuAnnuelMoyenNet,
+            cumulFiscalite: results.produit2.liquidation.cumulFiscalite,
+          },
+          transmission: {
+            capitalTransmisNet: results.produit2.transmission.capitalTransmisNet,
+            taxe: results.produit2.transmission.taxe,
+            regime: results.produit2.transmission.regime,
+          },
+          totaux: {
+            effortReel: results.produit2.totaux.effortReel,
+            revenusNetsLiquidation: results.produit2.totaux.revenusNetsLiquidation,
+            fiscaliteTotale: results.produit2.totaux.fiscaliteTotale,
+            capitalTransmisNet: results.produit2.totaux.capitalTransmisNet,
+            revenusNetsTotal: results.produit2.totaux.revenusNetsTotal,
+          },
+        },
+      };
+      const deck = buildPlacementStudyDeck(data, pptxColors, cabinetLogo, logoPlacement);
+      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      await exportAndDownloadStudyDeck(deck, pptxColors, `simulation-placement-${dateStr}.pptx`, {
+        locale: 'fr-FR',
+        showSlideNumbers: true,
+      });
+    } catch (errorExport) {
+      const err = errorExport instanceof Error ? errorExport : new Error(String(errorExport));
+      console.error('[PlacementPPTX] Export failed', {
+        err: errorExport,
+        message: err.message,
+        stack: err.stack,
+      });
+      alert('Impossible de générer le fichier PowerPoint.');
+    } finally {
+      setExportLoading(false);
+    }
+  }, [results, pptxColors, cabinetLogo, logoPlacement]);
+
   const exportHandlers: PlacementSimulatorExportHandlers = {
     exportExcel,
+    exportPptx,
   };
 
   const produit1 = results?.produit1 ?? null;

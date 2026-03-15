@@ -1,0 +1,114 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`snapshots/placement: PPTX deck spec > buildPlacementStudyDeck() stays stable (sanitized) 1`] = `
+{
+  "cover": {
+    "leftMeta": "<DATE>",
+    "logoPlacement": undefined,
+    "logoUrl": undefined,
+    "subtitle": "NOM Prénom",
+    "title": "Simulation Placement",
+    "type": "cover",
+  },
+  "end": {
+    "legalText": "Document établi à titre strictement indicatif et dépourvu de valeur contractuelle. Il a été élaboré sur la base des dispositions légales et réglementaires en vigueur à la date de sa remise, lesquelles sont susceptibles d'évoluer.
+
+Les informations qu'il contient sont strictement confidentielles et destinées exclusivement aux personnes expressément autorisées.
+
+Toute reproduction, représentation, diffusion ou rediffusion, totale ou partielle, sur quelque support ou par quelque procédé que ce soit, ainsi que toute vente, revente, retransmission ou mise à disposition de tiers, est strictement encadrée. Le non-respect de ces dispositions est susceptible de constituer une contrefaçon engageant la responsabilité civile et pénale de son auteur, conformément aux articles L335-1 à L335-10 du Code de la propriété intellectuelle.",
+    "type": "end",
+  },
+  "slides": [
+    {
+      "body": "Vous souhaitez comparer deux enveloppes d'épargne sur les trois phases : constitution, liquidation et transmission.",
+      "chapterImageIndex": 9,
+      "subtitle": "Comparaison de deux stratégies de placement",
+      "title": "Objectifs et contexte",
+      "type": "chapter",
+    },
+    {
+      "produit1": {
+        "capitalAcquis": 150000,
+        "capitalTransmisNet": 90000,
+        "effortReel": 100000,
+        "envelopeLabel": "Assurance-vie",
+        "fiscaliteTotale": 8000,
+        "revenusNetsLiquidation": 80000,
+        "revenusNetsTotal": 170000,
+      },
+      "produit2": {
+        "capitalAcquis": 140000,
+        "capitalTransmisNet": 85000,
+        "effortReel": 95500,
+        "envelopeLabel": "PER",
+        "fiscaliteTotale": 11000,
+        "revenusNetsLiquidation": 75000,
+        "revenusNetsTotal": 160000,
+      },
+      "type": "placement-synthesis",
+    },
+    {
+      "body": "Assurance-vie :
+- Capital acquis : 150 000 €
+- Versements cumulés : 100 000 €
+- Effort réel : 100 000 €
+- Économie IR cumulée : 0 €
+
+PER :
+- Capital acquis : 140 000 €
+- Versements cumulés : 100 000 €
+- Effort réel : 100 000 €
+- Économie IR cumulée : 4 500 €",
+      "subtitle": "Constitution du capital",
+      "title": "Phase Épargne",
+      "type": "content",
+    },
+    {
+      "body": "Assurance-vie :
+- Retraits nets cumulés : 80 000 €
+- Revenu annuel moyen net : 8 000 €
+- Fiscalité cumulée : 5 000 €
+
+PER :
+- Retraits nets cumulés : 75 000 €
+- Revenu annuel moyen net : 8 000 €
+- Fiscalité cumulée : 7 000 €",
+      "subtitle": "Revenus et fiscalité des retraits",
+      "title": "Phase Liquidation",
+      "type": "content",
+    },
+    {
+      "body": "Assurance-vie :
+- Régime fiscal : Article 990 I
+- Droits / taxe : 3 000 €
+- Capital transmis net : 90 000 €
+
+PER :
+- Régime fiscal : DMTG
+- Droits / taxe : 4 000 €
+- Capital transmis net : 85 000 €",
+      "subtitle": "Capital transmis au décès",
+      "title": "Phase Transmission",
+      "type": "content",
+    },
+    {
+      "body": "Les résultats ci-dessus reposent sur les hypothèses détaillées ci-après.",
+      "chapterImageIndex": 2,
+      "subtitle": "Cadre de la simulation",
+      "title": "Hypothèses et limites",
+      "type": "chapter",
+    },
+    {
+      "body": "- Simulation basée sur les taux de rendement et paramètres saisis dans le simulateur
+- Fiscalité appliquée selon le régime de chaque enveloppe (PFU, barème IR, exonérations)
+- Les taux de rendement futurs sont hypothétiques et ne constituent pas une garantie
+- Prélèvements sociaux appliqués selon les taux en vigueur à la date de simulation
+- Transmission calculée selon le barème DMTG et les abattements légaux en vigueur
+- Les montants sont arrondis à l'euro le plus proche",
+      "subtitle": "Paramètres de la simulation",
+      "title": "Hypothèses retenues",
+      "type": "content",
+    },
+  ],
+}
+`;
