@@ -29,6 +29,7 @@ import type {
   LogoPlacement,
 } from '../theme/types';
 import { isDebugEnabled } from '../../utils/debugFlags';
+import { pickChapterImage } from '../designSystem/serenity';
 
 const DEBUG_PPTX = isDebugEnabled('pptx');
 
@@ -240,7 +241,7 @@ export function buildCreditStudyDeck(
       ? 'Vue d\'ensemble de votre montage multi-prêts'
       : 'Vue d\'ensemble de votre crédit immobilier',
     body: 'Vous souhaitez mesurer l\'efficacité de votre financement et comprendre l\'impact des paramètres clés sur votre mensualité et le coût total.',
-    chapterImageIndex: 1,
+    chapterImageIndex: pickChapterImage('credit', 0),
   });
   
   // Synthesis slides depend on loan count
@@ -319,7 +320,7 @@ export function buildCreditStudyDeck(
     title: 'Annexes',
     subtitle: 'Informations complémentaires',
     body: 'Retrouvez ci-après le détail des calculs et le tableau d\'amortissement de votre financement.',
-    chapterImageIndex: 3,
+    chapterImageIndex: pickChapterImage('credit', 1),
   });
   
   // Credit Annexe (prose explanation - multi-loan aware)

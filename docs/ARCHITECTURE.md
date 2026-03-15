@@ -217,11 +217,13 @@ Invariants (à ne pas casser) :
 - Orchestrateur : `src/pptx/export/exportStudyDeck.ts`.
 - Design system : `src/pptx/designSystem/serenity.ts`.
 - Slides : `src/pptx/slides/`.
+- **Règles de conception et checklist de création** : `docs/GOUVERNANCE.md` § Gouvernance PPTX.
 
 Assets statiques (images) :
 - Chapitres PPTX : `public/pptx/chapters/ch-01.png` .. `ch-09.png` (bibliothèque).
 - Conserver la nomenclature à 2 chiffres et le format PNG.
 - Objectif : préserver la qualité de rendu PPTX (ratio/coins/anti-artefacts).
+- Sélection par simulateur via `pickChapterImage(simId, ordinal)` dans `serenity.ts`.
 
 Budgets (guideline, non bloquant) :
 - Cible : <= 1.2 Mo / image ; alerte : > 1.6 Mo / image

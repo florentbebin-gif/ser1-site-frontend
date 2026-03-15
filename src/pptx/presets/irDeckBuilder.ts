@@ -7,6 +7,7 @@
 
 import type { StudyDeckSpec, ChapterSlideSpec, IrSynthesisSlideSpec, IrAnnexeSlideSpec, LogoPlacement } from '../theme/types';
 import { isDebugEnabled } from '../../utils/debugFlags';
+import { pickChapterImage } from '../designSystem/serenity';
 
 // Debug flag for development (activable via VITE_DEBUG_PPTX=1 ou localStorage)
 const DEBUG_PPTX = isDebugEnabled('pptx');
@@ -146,7 +147,7 @@ export function buildIrStudyDeck(
       title: 'Objectifs et contexte',
       subtitle: 'Estimation de votre impôt sur le revenu',
       body: 'Vous souhaitez connaître le montant de votre impôt et comprendre les mécanismes de calcul qui s\'appliquent à votre situation.',
-      chapterImageIndex: 1,
+      chapterImageIndex: pickChapterImage('ir', 0),
     },
     // Slide 3: Synthèse Premium (4 KPI + barre TMI + impôt central)
     {
@@ -170,7 +171,7 @@ export function buildIrStudyDeck(
       title: 'Annexes',
       subtitle: 'Informations complémentaires',
       body: 'Retrouvez ci-après le détail des calculs appliqués à votre situation fiscale.',
-      chapterImageIndex: 3,
+      chapterImageIndex: pickChapterImage('ir', 1),
     },
     // Slide 5: Annexe rédigée (détail calcul adapté au cas client)
     {

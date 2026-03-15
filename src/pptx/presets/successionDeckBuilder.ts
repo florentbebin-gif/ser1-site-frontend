@@ -13,6 +13,7 @@ import type {
   LogoPlacement,
 } from '../theme/types';
 import { isDebugEnabled } from '../../utils/debugFlags';
+import { pickChapterImage } from '../designSystem/serenity';
 
 const DEBUG_PPTX = isDebugEnabled('pptx');
 
@@ -186,7 +187,7 @@ export function buildSuccessionStudyDeck(
       title: 'Objectifs et contexte',
       subtitle: 'Estimation des droits de succession',
       body: 'Vous souhaitez estimer les droits de mutation à titre gratuit applicables à votre situation patrimoniale.',
-      chapterImageIndex: 1,
+      chapterImageIndex: pickChapterImage('succession', 0),
     },
     {
       type: 'succession-synthesis',
@@ -206,7 +207,7 @@ export function buildSuccessionStudyDeck(
       title: 'Hypothèses et limites',
       subtitle: 'Cadre de l\'estimation',
       body: 'Les résultats ci-dessus reposent sur les hypothèses détaillées ci-après.',
-      chapterImageIndex: 3,
+      chapterImageIndex: pickChapterImage('succession', 1),
     },
     {
       type: 'content',
