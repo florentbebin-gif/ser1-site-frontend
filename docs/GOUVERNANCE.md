@@ -810,7 +810,6 @@ Utiliser `pickChapterImage(simId, chapterOrdinal)` dans chaque deck builder.
 | `ir` | 1 | 3 |
 | `credit` | 5 | 7 |
 | `succession` | 2 | 6 |
-| `per` | 4 | 8 |
 | `placement` | 9 | 2 |
 
 Images : `public/pptx/chapters/ch-01.png` à `ch-09.png` — range strict 1–9.
