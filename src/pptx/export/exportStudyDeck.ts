@@ -6,10 +6,10 @@
  */
 
 import PptxGenJS from 'pptxgenjs';
-import type { 
-  StudyDeckSpec, 
-  ExportContext, 
-  ChapterSlideSpec, 
+import type {
+  StudyDeckSpec,
+  ExportContext,
+  ChapterSlideSpec,
   ContentSlideSpec,
   IrSynthesisSlideSpec,
   IrAnnexeSlideSpec,
@@ -19,6 +19,7 @@ import type {
   CreditAnnexeSlideSpec,
   CreditAmortizationSlideSpec,
   SuccessionSynthesisSlideSpec,
+  PlacementSynthesisSlideSpec,
 } from '../theme/types';
 import { SLIDE_SIZE } from '../designSystem/serenity';
 import { getPptxThemeFromUiSettings } from '../theme/getPptxThemeFromUiSettings';
@@ -33,6 +34,7 @@ import { buildCreditLoanSynthesis } from '../slides/buildCreditLoanSynthesis';
 import { buildCreditAnnexe } from '../slides/buildCreditAnnexe';
 import { buildCreditAmortization } from '../slides/buildCreditAmortization';
 import { buildSuccessionSynthesis } from '../slides/buildSuccessionSynthesis';
+import { buildPlacementSynthesis } from '../slides/buildPlacementSynthesis';
 import { injectThemeColors } from '../theme/themeBuilder';
 import { defineSlideMasters } from '../template/loadBaseTemplate';
 import { createTrackedObjectURL } from '../../utils/export/createTrackedObjectURL';
@@ -342,6 +344,9 @@ export async function exportStudyDeck(
     } else if (slideSpec.type === 'succession-synthesis') {
       // Succession Synthesis slide (P1-02)
       buildSuccessionSynthesis(pptx, slideSpec as SuccessionSynthesisSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'placement-synthesis') {
+      // Placement Synthesis slide — 2-product comparison table
+      buildPlacementSynthesis(pptx, slideSpec as PlacementSynthesisSlideSpec, ctx, slideIndex);
     }
     
     slideIndex++;

@@ -216,6 +216,28 @@ export type SuccessionSynthesisSlideSpec = {
 };
 
 /**
+ * Placement Product KPIs for comparison slide
+ */
+export type PlacementProductKpis = {
+  envelopeLabel: string;
+  capitalAcquis: number;
+  effortReel: number;
+  revenusNetsLiquidation: number;
+  fiscaliteTotale: number;
+  capitalTransmisNet: number;
+  revenusNetsTotal: number; // "Net global" = retraits + capital transmis net
+};
+
+/**
+ * Placement Synthesis Slide Specification — 2-product comparison
+ */
+export type PlacementSynthesisSlideSpec = {
+  type: 'placement-synthesis';
+  produit1: PlacementProductKpis;
+  produit2: PlacementProductKpis;
+};
+
+/**
  * End/Legal Slide Specification
  */
 export type EndSlideSpec = {
@@ -391,6 +413,7 @@ export type StudyDeckSpec = {
     | CreditAnnexeSlideSpec
     | CreditAmortizationSlideSpec
     | SuccessionSynthesisSlideSpec
+    | PlacementSynthesisSlideSpec
   >;
   end: EndSlideSpec;
 };

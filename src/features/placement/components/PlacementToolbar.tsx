@@ -5,6 +5,8 @@ interface PlacementToolbarProps {
   exportLoading: boolean;
   onExportExcel: () => void | Promise<void>;
   canExportExcel: boolean;
+  onExportPptx: () => void | Promise<void>;
+  canExportPptx: boolean;
   step: PlacementStep;
   onStepChange: (_step: PlacementStep) => void;
   isExpert: boolean;
@@ -27,6 +29,8 @@ export function PlacementToolbar({
   exportLoading,
   onExportExcel,
   canExportExcel,
+  onExportPptx,
+  canExportPptx,
   step,
   onStepChange,
   isExpert,
@@ -53,7 +57,7 @@ export function PlacementToolbar({
             <ExportMenu
               options={[
                 { label: 'Excel', onClick: onExportExcel, disabled: !canExportExcel },
-                { label: 'PowerPoint', onClick: () => {}, disabled: true, tooltip: 'bientôt' },
+                { label: 'PowerPoint', onClick: onExportPptx, disabled: !canExportPptx },
               ]}
               loading={exportLoading}
             />
