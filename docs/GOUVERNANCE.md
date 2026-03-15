@@ -608,6 +608,237 @@ Cette section complete la norme existante. Elle fixe le contrat minimal avant d'
 
 ---
 
+---
+
+## Gouvernance PPTX
+
+### Source de vérité
+`sim/ir` et `sim/credit` sont les seuls exports finalisés et reviewés — ils font autorité.
+- PER : branché et fonctionnel mais non reviewé — ne pas s'en inspirer.
+- Succession : non finalisé — ne pas s'en inspirer.
+
+---
+
+### Structure invariante d'un deck
+
+```
+Cover → [Chapter → Slides métier]+ → End
+```
+
+| Position | Type | Rôle |
+|---|---|---|
+| 1 | `cover` | Page de garde (titre, client, logo, date, conseiller) |
+| 2 | `chapter` | Séparateur de section (image + objectif pédagogique) |
+| 3..N-2 | métier | Slides spécifiques (synthesis, annexe, amortization…) |
+| N-1 | `chapter` | Séparateur "Annexes" |
+| N | `end` | Mentions légales |
+
+Règles :
+- `cover` et `end` ne sont jamais répétés.
+- Les slides `chapter` ne contiennent jamais de données chiffrées — leur `body` est une phrase d'introduction au client, rédigée en vouvoiement.
+
+---
+
+### Règles des slides de synthèse (schématisation client)
+
+#### Objectif pédagogique
+La slide de synthèse doit être comprise en 3 secondes par un client non expert.
+Elle ne remplace pas l'explication orale — elle en est le support visuel.
+Elle ne contient **pas** de détail de calcul (c'est le rôle de l'annexe).
+
+#### Hiérarchie visuelle obligatoire
+
+```
+1. HERO      → LE chiffre que le client retient (impossible à rater)
+2. KPIs      → Les 4 paramètres clés (scan en 5 secondes)
+3. SCHÉMA    → Un visuel proportionnel qui illustre le ratio principal
+4. SECONDAIRE → Callout contextuel sous le HERO (optionnel mais conseillé)
+```
+
+#### HERO
+- 1 seule métrique centrale, 30–32pt, bold, `textMain`, centré horizontalement.
+- Label au-dessus : 13–14pt, `textBody`, normal.
+- Accent line décorative sous la valeur : 3pt, `accent`.
+- Exemple IR : "Impôt sur le revenu : 9 700 €" (irNet, 30pt).
+- Exemple Credit : "Coût total du crédit : 45 200 €" (coutTotalCredit, 32pt).
+
+#### Zone secondaire (callout + margin)
+Deux lignes contextuelles en 10–11pt italic sous le HERO :
+- Ligne 1 (callout) : valeur d'entrée dans la zone HERO ("Revenus dans cette TMI : X €").
+- Ligne 2 (margin) : limite ou écart ("Marge avant changement de TMI : X €").
+- Exemple Credit : breakdown "(dont X € d'intérêts + Y € d'assurance)".
+- Peut être omis si le domaine n'a pas de notion de seuil ou d'écart.
+
+#### KPIs
+- 4 colonnes maximum (au-delà, illisible sur 16:9).
+- Chaque KPI = icône centrée (0.48–0.50") + label 9pt + valeur bold 14–15pt + sous-valeur optionnelle 8pt italic.
+- Icônes : `addBusinessIconToSlide` depuis `src/pptx/icons/addBusinessIcon.ts`. Catalogue : `BusinessIconName` dans `src/pptx/theme/types.ts`.
+- Couleur icônes : `color5` ou `accent` (jamais hardcodée).
+
+#### SCHÉMA visuel
+- Construit exclusivement avec des shapes PptxGenJS (`slide.addShape`, `slide.addText`).
+  Jamais de SVG, jamais de canvas, jamais d'image générée côté client.
+- Formes autorisées : `rect`, `roundRect`, triangle (curseur), line.
+- Objectif : traduire un ratio ou une répartition de façon intuitive.
+  - **IR** → barre segmentée des tranches TMI, avec curseur positionné proportionnellement.
+  - **Credit** → barre bicolore Capital vs Coût total, largeur proportionnelle aux montants.
+- Couleurs : gradient thématique `color4` (light) → `color2` (dark) pour les segments.
+  Texte sur segment coloré : `getTextColorForBackground()` (contraste auto, jamais hardcodé).
+- Un schéma = une seule idée visuelle. Ne pas superposer deux schémas.
+
+#### Anti-patterns synthesis (interdit)
+- Tableau HTML/texte dans une slide de synthèse.
+- Plus de 4 colonnes KPI.
+- Valeurs recalculées dans le slide builder (tout vient du state du sim).
+- Deux HERO sur la même slide.
+- Texte sous 9pt.
+
+---
+
+### Règles de rédaction des slides annexe (prose française)
+
+#### Objectif
+La slide annexe est un texte rédigé en français, qui détaille et justifie les mécanismes appliqués. Elle est destinée à un client qui souhaite comprendre le calcul. Elle complète la slide de synthèse sans la dupliquer.
+
+#### Registre et voix
+- **Vouvoiement systématique**.
+- Registre : ingénieur patrimonial s'adressant à un client éclairé.
+  Termes précis et définis dès leur première apparition (ex : "votre Tranche Marginale d'Imposition (TMI)").
+- Ton : affirmatif et pédagogique, pas injonctif.
+
+#### Structure invariante de la prose
+
+```
+§1 Situation personnelle    : présenter la situation du client (foyer, actif, paramètres)
+§2 Mécanisme(s) appliqué(s) : décrire le calcul dans l'ordre chronologique, en langage naturel
+§3 Résultat net             : annoncer le résultat final avec ses composantes
+§4 Disclaimer adapté        : avertissement spécifique au domaine du simulateur
+```
+
+**Règle** : on part toujours du client, jamais du mécanisme général.
+- ✓ "Votre foyer fiscal compte 2,5 parts — le calcul s'applique donc comme suit…"
+- ✗ "Le mécanisme du quotient familial consiste à…"
+
+#### Format technique
+- Prose continue, **pas de bullet points** (jamais).
+- Paragraphes séparés par `\n\n`.
+- Valeurs chiffrées du client : `{ text: euro(val), bold: true }` (bold, formaté).
+- Reste du texte : normal, 11pt, `textBody`.
+- Interligne : `lineSpacingMultiple: 1.3`.
+- Alignement : gauche, `valign: 'top'`.
+- Zone disponible : `COORDS_CONTENT.content` → `{ y: 2.3754", h: 4.3602" }`.
+  **Contrainte dure** : la prose doit tenir dans ces 4.36 pouces. Tester en export réel.
+
+#### Contenu conditionnel
+Ne montrer que les mécanismes qui s'appliquent réellement au cas du client :
+- Décote IR = 0 → omettre le paragraphe décote.
+- Lissage crédit désactivé → omettre le paragraphe lissage.
+- Assurance = 0 → omettre la ligne assurance.
+
+Préférer l'absence d'un paragraphe à un paragraphe vide ou à une valeur "0 €".
+
+#### Références légales
+Intégrées naturellement dans la prose, entre parenthèses :
+"…conformément à l'article 197 du CGI" ou "en application de l'article 779 du CGI".
+Pas de section dédiée aux références légales.
+
+#### Formatage des valeurs
+- Montants : `euro(val)` → "9 700 €" (pas de décimales pour les gros montants).
+- Taux : `pct(val)` → "30 %" (espace insécable avant %).
+- Jamais de nombre brut sans unité.
+
+#### Anti-patterns annexe (interdit)
+- Bullet points.
+- Jargon non défini (TMI sans développer au moins la première fois).
+- Valeur sans unité ("9700" au lieu de "9 700 €").
+- Commencer par le mécanisme général plutôt que la situation client.
+- Dupliquer le HERO de la slide de synthèse mot pour mot.
+
+#### Slide annexe optionnelle
+Pour un simulateur simple (peu de mécanismes à expliquer), une `ContentSlideSpec` générique
+suffit à la place d'un builder dédié — voir `successionDeckBuilder.ts` pour un exemple.
+
+---
+
+### Règles fondamentales (invariants architecturaux)
+
+| Règle | Détail |
+|---|---|
+| Couleurs | Via `PptxThemeRoles` uniquement. Seul `#FFFFFF` est hardcodé. |
+| Fonte | `Arial` uniquement (`TYPO.fontFace`). Pas d'autre fonte. |
+| Coordonnées | En pouces, depuis les constantes de `serenity.ts`. Jamais de valeur en dur. |
+| Données | Toujours issues du state du simulateur. Jamais recalculées dans un slide builder. |
+| Calculs dérivés | Autorisés uniquement dans le DeckBuilder (ex : `totalRembourse = capital + cout`). |
+| Valeurs fiscales | Interdites hardcodées (garde-fou CI : `check:fiscal-hardcode`). |
+| Type slide | Préfixe du simulateur obligatoire : `placement-synthesis`, pas `synthesis`. |
+| Header | Toujours via `addHeader()`. Pas de positionnement manuel titre/accent/subtitle. |
+| Footer | Toujours via `addFooter()`. Date + disclaimer + numéro. |
+| Images chapitres | Via `pickChapterImage(simId, ordinal)` depuis `serenity.ts`. Jamais d'index hardcodé. |
+| Export wrapper | Obligatoire dans `src/pptx/exports/`. Pas d'appel direct à `exportStudyDeck`. |
+| Fichiers legacy | `auditPptx.ts` et `strategyPptx.ts` : hors Serenity, ne pas s'en inspirer. |
+
+---
+
+### Checklist création d'un nouvel export PPTX
+
+| Étape | Action | Fichier | Obligatoire |
+|---|---|---|---|
+| 1 | Définir `XxxSynthesisSlideSpec` | `src/pptx/theme/types.ts` | ✓ |
+| 2 | Ajouter dans l'union `StudyDeckSpec.slides` | `src/pptx/theme/types.ts` | ✓ |
+| 3 | Créer `buildXxxStudyDeck()` (deck builder) | `src/pptx/presets/xxxDeckBuilder.ts` | ✓ |
+| 4 | Créer `buildXxxSynthesis()` (slide synthèse) | `src/pptx/slides/buildXxxSynthesis.ts` | ✓ |
+| 5 | Créer `buildXxxAnnexe()` (slide annexe) | `src/pptx/slides/buildXxxAnnexe.ts` | Si mécanismes à expliquer¹ |
+| 6 | Câbler le `else if` dans l'orchestrateur | `src/pptx/export/exportStudyDeck.ts` | ✓ |
+| 7 | Re-exporter depuis l'index slides | `src/pptx/slides/index.ts` | ✓ |
+| 8 | Créer le wrapper export | `src/pptx/exports/xxxExport.ts` | ✓ |
+| 9 | Créer le hook export côté feature | `src/features/xxx/hooks/useXxxExportHandlers.ts` | ✓ |
+| 10 | Brancher sur le bouton export de la page | Toolbar du simulateur | ✓ |
+| 11 | Test smoke (deck spec sans crash) | `src/features/xxx/__tests__/xxxExport.test.ts` | ✓ |
+| 12 | Ajouter le pool d'images dans `CHAPTER_IMAGE_POOLS` | `src/pptx/designSystem/serenity.ts` | ✓ |
+
+¹ Pour un simulateur simple, une `ContentSlideSpec` générique suffit (exemple : succession).
+
+---
+
+### Images chapitres — pool fixe par simulateur
+
+Pool défini dans `src/pptx/designSystem/serenity.ts` via `CHAPTER_IMAGE_POOLS`.
+Utiliser `pickChapterImage(simId, chapterOrdinal)` dans chaque deck builder.
+
+| Simulateur | ch.1 | ch.2 |
+|---|---|---|
+| `ir` | 1 | 3 |
+| `credit` | 5 | 7 |
+| `succession` | 2 | 6 |
+| `per` | 4 | 8 |
+| `placement` | 9 | 2 |
+
+Images : `public/pptx/chapters/ch-01.png` à `ch-09.png` — range strict 1–9.
+Budget : ≤ 1.2 Mo/image (alerte à 1.6 Mo), ≤ 9 Mo total.
+
+---
+
+### Carte des fichiers PPTX
+
+| Dossier/Fichier | Rôle |
+|---|---|
+| `src/pptx/designSystem/serenity.ts` | Design system (coords, typo, helpers, pools images) |
+| `src/pptx/theme/types.ts` | Types specs slides + theme roles |
+| `src/pptx/theme/getPptxThemeFromUiSettings.ts` | Mapping UI c1–c10 → PptxThemeRoles |
+| `src/pptx/presets/` | Deck builders par simulateur |
+| `src/pptx/slides/` | Slide builders (cover, chapter, content, métier) |
+| `src/pptx/exports/` | Wrappers export (API simplifiée par simulateur) |
+| `src/pptx/export/exportStudyDeck.ts` | Orchestrateur central |
+| `src/pptx/icons/addBusinessIcon.ts` | Icônes business pour PPTX |
+| `src/pptx/template/loadBaseTemplate.ts` | Slide masters (COVER, CHAPTER, CONTENT, END) |
+| `public/pptx/chapters/` | Images chapitres (ch-01..ch-09, PNG, coins arrondis) |
+
+**Fichiers legacy (hors Serenity — ne pas s'en inspirer) :**
+- `src/pptx/auditPptx.ts`
+- `src/pptx/strategyPptx.ts`
+
+---
+
 ## Références code
 - Tokens & defaults : `src/settings/theme.ts`, `src/styles/index.css`
 - ThemeProvider V5 : `src/settings/ThemeProvider.tsx`, `src/settings/presets.ts`, `src/settings/theme/types.ts`

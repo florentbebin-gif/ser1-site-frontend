@@ -13,6 +13,7 @@ import type {
   LogoPlacement,
 } from '../theme/types';
 import { isDebugEnabled } from '../../utils/debugFlags';
+import { pickChapterImage } from '../designSystem/serenity';
 
 const DEBUG_PPTX = isDebugEnabled('pptx');
 
@@ -81,7 +82,7 @@ export function buildPerStudyDeck(
       title: 'Objectifs et contexte',
       subtitle: 'Simulation Plan d\'Épargne Retraite',
       body: 'Vous souhaitez estimer le rendement et l\'avantage fiscal de versements sur un PER individuel.',
-      chapterImageIndex: 2,
+      chapterImageIndex: pickChapterImage('per', 0),
     },
     {
       type: 'per-synthesis',
@@ -100,7 +101,7 @@ export function buildPerStudyDeck(
       title: 'Hypothèses et limites',
       subtitle: 'Cadre de la simulation',
       body: 'Les résultats ci-dessus reposent sur les hypothèses détaillées ci-après.',
-      chapterImageIndex: 4,
+      chapterImageIndex: pickChapterImage('per', 1),
     },
     {
       type: 'content',
