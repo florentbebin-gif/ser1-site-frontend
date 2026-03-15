@@ -76,7 +76,7 @@ export function VersementInitialSection({
       <div className="vcm__card">
         <div className="vcm__row">
           <InputEuro label="Montant" value={initial.montant} onChange={(value) => onUpdateInitial('montant', value)} />
-          <InputPct label="Frais d'entrée" value={initial.fraisEntree} onChange={(value) => onUpdateInitial('fraisEntree', value)} />
+          {!isSCPI && <InputPct label="Frais d'entrée" value={initial.fraisEntree} onChange={(value) => onUpdateInitial('fraisEntree', value)} />}
         </div>
 
         <div className="vcm__field">
@@ -220,7 +220,7 @@ export function VersementAnnualSection({
       <div className="vcm__card">
         <div className="vcm__row">
           <InputEuro label="Montant" value={annuel.montant} onChange={(value) => onUpdateAnnuel('montant', value)} />
-          <InputPct label="Frais d'entrée" value={annuel.fraisEntree} onChange={(value) => onUpdateAnnuel('fraisEntree', value)} />
+          {!isSCPI && <InputPct label="Frais d'entrée" value={annuel.fraisEntree} onChange={(value) => onUpdateAnnuel('fraisEntree', value)} />}
         </div>
 
         <div className="vcm__field">
@@ -322,11 +322,11 @@ export function VersementPonctuelsSection({
           </button>
         </div>
       ) : (
-        <div className="vcm__ponctuels">
+        <div className={`vcm__ponctuels${isSCPI ? ' vcm__ponctuels--scpi' : ''}`}>
           <div className="vcm__ponctuel-headers">
             <span>Année</span>
-            <span>Montant €</span>
-            <span>Frais %</span>
+            <span>Montant</span>
+            {!isSCPI && <span>Frais</span>}
             <span className="vcm__ponctuel-header--center">Alloc. Capi / Distrib (%)</span>
             <span />
           </div>
@@ -345,27 +345,35 @@ export function VersementPonctuelsSection({
               </div>
 
               <div className="vcm__ponctuel-cell">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={fmt(ponctuel.montant)}
-                  onChange={(event) => {
-                    const clean = event.target.value.replace(/\D/g, '').slice(0, 9);
-                    onUpdatePonctuel(index, 'montant', clean === '' ? 0 : Number(clean));
-                  }}
-                  className="vcm__mini-input"
-                />
+                <div className="vcm__mini-input-wrap">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={fmt(ponctuel.montant)}
+                    onChange={(event) => {
+                      const clean = event.target.value.replace(/\D/g, '').slice(0, 9);
+                      onUpdatePonctuel(index, 'montant', clean === '' ? 0 : Number(clean));
+                    }}
+                    className="vcm__mini-input"
+                  />
+                  <span className="vcm__mini-unit">€</span>
+                </div>
               </div>
 
-              <div className="vcm__ponctuel-cell">
-                <input
-                  type="number"
-                  step="0.1"
-                  value={(ponctuel.fraisEntree * 100).toFixed(1)}
-                  onChange={(event) => onUpdatePonctuel(index, 'fraisEntree', Number(event.target.value) / 100)}
-                  className="vcm__mini-input"
-                />
-              </div>
+              {!isSCPI && (
+                <div className="vcm__ponctuel-cell">
+                  <div className="vcm__mini-input-wrap">
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={(ponctuel.fraisEntree * 100).toFixed(1)}
+                      onChange={(event) => onUpdatePonctuel(index, 'fraisEntree', Number(event.target.value) / 100)}
+                      className="vcm__mini-input"
+                    />
+                    <span className="vcm__mini-unit">%</span>
+                  </div>
+                </div>
+              )}
 
               <div className="vcm__ponctuel-cell vcm__ponctuel-cell--alloc">
                 {isSCPI ? (

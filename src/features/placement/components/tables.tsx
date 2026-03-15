@@ -2,7 +2,7 @@
  * Placement Table Components - CollapsibleTable et AllocationSlider
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface CollapsibleTableProps<Row> {
   title: string;
@@ -39,6 +39,26 @@ export function CollapsibleTable<Row>({
   onOpenChange,
 }: CollapsibleTableProps<Row>) {
   const [open, setOpen] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const topRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const wrap = scrollRef.current;
+    const top = topRef.current;
+    if (!wrap || !top) return;
+    const spacer = top.firstElementChild as HTMLElement;
+    if (spacer) spacer.style.width = `${wrap.scrollWidth}px`;
+    const onTop = () => { wrap.scrollLeft = top.scrollLeft; };
+    const onWrap = () => { top.scrollLeft = wrap.scrollLeft; };
+    top.addEventListener('scroll', onTop);
+    wrap.addEventListener('scroll', onWrap);
+    return () => {
+      top.removeEventListener('scroll', onTop);
+      wrap.removeEventListener('scroll', onWrap);
+    };
+  }, [open]);
+
   if (!rows || rows.length === 0) return null;
 
   const handleToggle = () => {
@@ -60,14 +80,19 @@ export function CollapsibleTable<Row>({
       </button>
 
       {open && (
-        <table className="pl-ir-table pl-detail-table">
-          <thead>
-            <tr>
-              {columns.map((column, index) => <th key={index}>{column}</th>)}
-            </tr>
-          </thead>
-          <tbody>{rows.map((row, index) => renderRow(row, index))}</tbody>
-        </table>
+        <>
+          <div ref={topRef} className="pl-table-top-scroll"><div /></div>
+          <div ref={scrollRef} className="pl-table-scroll-wrap">
+            <table className="pl-ir-table pl-detail-table">
+              <thead>
+                <tr>
+                  {columns.map((column, index) => <th key={index}>{column}</th>)}
+                </tr>
+              </thead>
+              <tbody>{rows.map((row, index) => renderRow(row, index))}</tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

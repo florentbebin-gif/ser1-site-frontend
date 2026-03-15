@@ -140,7 +140,7 @@ export function PlacementLiquidationSection({
         <div className="pl-details-section">
           <div className="pl-details-header">
             <h4 className="pl-details-title">Détail année par année</h4>
-            {anyTableOpen && (
+            {anyTableOpen && isExpert && (
               <div className="pl-pill-toggle">
                 <button
                   type="button"

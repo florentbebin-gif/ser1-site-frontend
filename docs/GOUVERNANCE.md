@@ -46,6 +46,12 @@ Principes : épuré, lisible, respirant.
 - Références implémentées : `InputEuro` dans `inputs.tsx` (Placement), `CreditInputs.tsx` (Credit), `IrAmountInput` dans `IrFormSection.tsx` (IR).
 - Références **non encore migrées** (acceptable temporairement) : champs € dans modales Succession (`AssuranceVieModal`, `ScDonationsCard`, `ScAssetsPassifsCard`), champs ponctuel dans `VersementConfigModalSections.tsx`.
 
+### Selects forcés / option unique (règle critique)
+- Un `<select>` avec une seule option atteignable (ex. : bénéficiaire quand la situation est "Célibataire") doit recevoir `disabled` + class `is-forced`.
+- Styles CSS requis : `background: var(--color-c7); color: var(--color-c9); cursor: not-allowed; pointer-events: none;`
+- **Anti-pattern** : laisser un `<select>` actif et cliquable quand une seule option est visible → fausse sensation d'interactivité.
+- Référence implémentée : `pl-select.is-forced` dans `PlacementSimulator.css`, utilisé sur le select "Choix du bénéficiaire" en situation "Célibataire".
+
 ### Composants (guidelines)
 - Buttons : primary = C2 + texte contrasté ; secondary = fond clair + border C8.
 - Tables : zebra `C7/WHITE`, borders C8, padding confortable.
@@ -323,6 +329,13 @@ Règles icônes :
 
 #### Recommandé
 - Garder un wording d'action explicite (`Afficher`/`Masquer`), pas uniquement une icône.
+
+#### Scroll horizontal dans les accordéons (règle critique)
+- Tout tableau accordéon (`CollapsibleTable`) doit utiliser `.pl-table-top-scroll` + `.pl-table-scroll-wrap` pour afficher la scrollbar horizontale premium **au-dessus** des en-têtes de colonnes.
+- La scrollbar du haut est synchronisée avec la scrollbar du bas via deux event listeners JS (`useEffect` dans `CollapsibleTable`).
+- Styles scrollbar webkit : hauteur 4px, couleur C5 (thumb) / C8 (track), radius 2px.
+- **Anti-pattern** : `overflow-x: auto` directement sur un `<table>` ou sur le wrapper sans double scrollbar → scrollbar invisible au chargement, mauvaise UX.
+- Référence : `CollapsibleTable` dans `tables.tsx`, classes `.pl-table-top-scroll` / `.pl-table-scroll-wrap` dans `PlacementSimulator.css`.
 
 #### Interdit
 - Accordéon sans attribut `aria-expanded`.
