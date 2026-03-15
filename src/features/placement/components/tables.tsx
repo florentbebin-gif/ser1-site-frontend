@@ -120,6 +120,7 @@ export function AllocationSlider({
           disabled={disabled}
         />
         <div className="pl-alloc-fill" style={{ width: `${pctCapi}%` }} />
+        <div className="pl-alloc-thumb" style={{ left: `${pctCapi}%` }} aria-hidden="true" />
       </div>
 
       <div className="pl-alloc-values">

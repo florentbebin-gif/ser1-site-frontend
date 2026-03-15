@@ -7,6 +7,7 @@ import {
   type VersementOption,
   type VersementPonctuel,
 } from '@/engine/placement/versementConfig';
+import { fmt } from '../utils/formatters';
 import { InputEuro, InputNumber, InputPct } from './inputs';
 import { AllocationSlider } from './tables';
 
@@ -41,6 +42,7 @@ interface VersementInitialSectionProps {
   distribution: DistributionConfig;
   isSCPI: boolean;
   isCTO: boolean;
+  isExpert: boolean;
   showCapiBlock: boolean;
   showDistribBlock: boolean;
   onUpdateInitial: <K extends keyof VersementEntry>(field: K, value: VersementEntry[K]) => void;
@@ -61,6 +63,7 @@ export function VersementInitialSection({
   distribution,
   isSCPI,
   isCTO,
+  isExpert,
   showCapiBlock,
   showDistribBlock,
   onUpdateInitial,
@@ -83,6 +86,7 @@ export function VersementInitialSection({
             pctDistrib={initial.pctDistribution}
             onChange={onUpdateInitialAlloc}
             isSCPI={isSCPI}
+            disabled={!isExpert && !isSCPI}
           />
         </div>
 
@@ -106,11 +110,14 @@ export function VersementInitialSection({
             </div>
 
             <div className="vcm__row">
-              <InputPct
-                label="Rendement annuel net de FG"
-                value={distribution.rendementAnnuel}
-                onChange={(value) => onUpdateDistribution('rendementAnnuel', value)}
-              />
+              {/* Rendement annuel net de FG — masqué pour SCPI en mode simplifié */}
+              {(isExpert || !isSCPI) && (
+                <InputPct
+                  label="Rendement annuel net de FG"
+                  value={distribution.rendementAnnuel}
+                  onChange={(value) => onUpdateDistribution('rendementAnnuel', value)}
+                />
+              )}
               <InputPct
                 label={isSCPI ? 'Taux de loyers net de FG' : 'Taux de distribution net de FG'}
                 value={distribution.tauxDistribution}
@@ -118,46 +125,52 @@ export function VersementInitialSection({
               />
             </div>
 
-            <div className="vcm__row">
-              {!isSCPI ? (
+            {(isExpert || !isSCPI) && (
+              <div className="vcm__row">
+                {!isSCPI ? (
+                  <InputNumber
+                    label="Durée du produit"
+                    value={distribution.dureeProduit || ''}
+                    onChange={(value) => onUpdateDistribution('dureeProduit', value || null)}
+                    unit="ans"
+                    min={1}
+                    max={100}
+                  />
+                ) : <div />}
+                {/* Délai de jouissance — masqué pour SCPI en mode simplifié */}
                 <InputNumber
-                  label="Durée du produit"
-                  value={distribution.dureeProduit || ''}
-                  onChange={(value) => onUpdateDistribution('dureeProduit', value || null)}
-                  unit="ans"
-                  min={1}
-                  max={100}
+                  label="Délai de jouissance"
+                  value={distribution.delaiJouissance}
+                  onChange={(value) => onUpdateDistribution('delaiJouissance', value)}
+                  unit="mois"
+                  min={0}
+                  max={12}
                 />
-              ) : <div />}
-              <InputNumber
-                label="Délai de jouissance"
-                value={distribution.delaiJouissance}
-                onChange={(value) => onUpdateDistribution('delaiJouissance', value)}
-                unit="mois"
-                min={0}
-                max={12}
-              />
-            </div>
+              </div>
+            )}
 
-            <div className="vcm__field">
-              <label className="vcm__label">Strategie</label>
+            {/* Stratégie — masquée pour SCPI en mode simplifié */}
+            {(isExpert || !isSCPI) && (
+              <div className="vcm__field">
+                <label className="vcm__label">Strategie</label>
 
-              <select
-                className="vcm__select"
-                value={distribution.strategie}
-                onChange={(event) => onUpdateDistribution('strategie', event.target.value)}
-              >
-                {!isSCPI ? <option value="stocker">Stocker les distributions à 0%</option> : null}
-                {(isSCPI || isCTO) ? (
-                  <option value="apprehender">Appréhender les distributions chaque année</option>
-                ) : null}
-                <option value="reinvestir_capi">
-                  {isSCPI
-                    ? 'Réinvestir les distributions nettes de fiscalité chaque année'
-                    : 'Réinvestir les distributions chaque année vers la capitalisation'}
-                </option>
-              </select>
-            </div>
+                <select
+                  className="vcm__select"
+                  value={distribution.strategie}
+                  onChange={(event) => onUpdateDistribution('strategie', event.target.value)}
+                >
+                  {!isSCPI ? <option value="stocker">Stocker les distributions à 0%</option> : null}
+                  {(isSCPI || isCTO) ? (
+                    <option value="apprehender">Appréhender les distributions chaque année</option>
+                  ) : null}
+                  <option value="reinvestir_capi">
+                    {isSCPI
+                      ? 'Réinvestir les distributions nettes de fiscalité chaque année'
+                      : 'Réinvestir les distributions chaque année vers la capitalisation'}
+                  </option>
+                </select>
+              </div>
+            )}
 
             {!isSCPI && distribution.dureeProduit ? (
               <div className="vcm__field">
@@ -183,6 +196,7 @@ interface VersementAnnualSectionProps {
   annuel: VersementAnnuel;
   isPER: boolean;
   isSCPI: boolean;
+  isExpert: boolean;
   onUpdateAnnuel: <K extends keyof VersementAnnuel>(field: K, value: VersementAnnuel[K]) => void;
   onUpdateAnnuelAlloc: (_capi: number, _distrib: number) => void;
   onUpdateAnnuelOption: <K extends keyof VersementOption>(
@@ -196,6 +210,7 @@ export function VersementAnnualSection({
   annuel,
   isPER,
   isSCPI,
+  isExpert,
   onUpdateAnnuel,
   onUpdateAnnuelAlloc,
   onUpdateAnnuelOption,
@@ -215,6 +230,7 @@ export function VersementAnnualSection({
             pctDistrib={annuel.pctDistribution}
             onChange={onUpdateAnnuelAlloc}
             isSCPI={isSCPI}
+            disabled={!isExpert && !isSCPI}
           />
         </div>
 
@@ -309,9 +325,9 @@ export function VersementPonctuelsSection({
         <div className="vcm__ponctuels">
           <div className="vcm__ponctuel-headers">
             <span>Année</span>
-            <span>Montant</span>
-            <span>Frais</span>
-            <span>Allocation Capi/Distrib</span>
+            <span>Montant €</span>
+            <span>Frais %</span>
+            <span className="vcm__ponctuel-header--center">Alloc. Capi / Distrib (%)</span>
             <span />
           </div>
 
@@ -330,12 +346,15 @@ export function VersementPonctuelsSection({
 
               <div className="vcm__ponctuel-cell">
                 <input
-                  type="number"
-                  value={ponctuel.montant}
-                  onChange={(event) => onUpdatePonctuel(index, 'montant', Number(event.target.value))}
+                  type="text"
+                  inputMode="numeric"
+                  value={fmt(ponctuel.montant)}
+                  onChange={(event) => {
+                    const clean = event.target.value.replace(/\D/g, '').slice(0, 9);
+                    onUpdatePonctuel(index, 'montant', clean === '' ? 0 : Number(clean));
+                  }}
                   className="vcm__mini-input"
                 />
-                <span className="vcm__unit">EUR</span>
               </div>
 
               <div className="vcm__ponctuel-cell">
@@ -344,9 +363,8 @@ export function VersementPonctuelsSection({
                   step="0.1"
                   value={(ponctuel.fraisEntree * 100).toFixed(1)}
                   onChange={(event) => onUpdatePonctuel(index, 'fraisEntree', Number(event.target.value) / 100)}
-                  className="vcm__mini-input vcm__mini-input--small"
+                  className="vcm__mini-input"
                 />
-                <span className="vcm__unit">%</span>
               </div>
 
               <div className="vcm__ponctuel-cell vcm__ponctuel-cell--alloc">

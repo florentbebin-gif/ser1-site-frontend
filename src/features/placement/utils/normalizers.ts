@@ -22,7 +22,6 @@ export interface PlacementProductDraft extends Record<string, unknown> {
   perBancaire: boolean;
   optionBaremeIR: boolean;
   fraisGestion: number;
-  rendementLiquidationOverride: number | null;
   liquidation?: PlacementProductLiquidationState;
 }
 
@@ -84,7 +83,6 @@ export const DEFAULT_PRODUCT: PlacementProductDraft = {
   perBancaire: false,
   optionBaremeIR: false,
   fraisGestion: 0.01,
-  rendementLiquidationOverride: null,
   versementConfig: normalizeVersementConfig(DEFAULT_VERSEMENT_CONFIG),
 };
 
@@ -106,9 +104,9 @@ export const DEFAULT_LIQUIDATION: PlacementLiquidationState = {
 export const DEFAULT_DMTG_RATE = 0.20;
 
 export const DEFAULT_TRANSMISSION: PlacementTransmissionState = {
-  ageAuDeces: 85,
+  ageAuDeces: 90,
   nbBeneficiaires: 2,
-  dmtgTaux: null,
+  dmtgTaux: DEFAULT_DMTG_RATE,
   beneficiaryType: 'enfants',
 };
 
@@ -165,30 +163,65 @@ export function buildPlacementStateForMode(
   state: PlacementSimulatorState,
   isExpert: boolean,
 ): PlacementSimulatorState {
-  if (isExpert) return state;
+  const products = state.products.map((product) => {
+    const isSCPI = product.envelope === 'SCPI';
+    if (!isSCPI && isExpert) return product;
+
+    const vc = product.versementConfig;
+    return {
+      ...product,
+      ...(!isExpert ? {
+        perBancaire: false,
+        optionBaremeIR: false,
+        liquidation: product.liquidation
+          ? { ...product.liquidation, optionBaremeIR: false }
+          : product.liquidation,
+      } : {}),
+      versementConfig: {
+        ...vc,
+        initial: {
+          ...vc.initial,
+          ...(isSCPI ? { fraisEntree: 0 } : {}),
+          ...(!isExpert ? { pctCapitalisation: isSCPI ? 0 : 100, pctDistribution: isSCPI ? 100 : 0 } : {}),
+        },
+        annuel: {
+          ...vc.annuel,
+          ...(isSCPI ? { fraisEntree: 0 } : {}),
+          ...(!isExpert ? { pctCapitalisation: isSCPI ? 0 : 100, pctDistribution: isSCPI ? 100 : 0 } : {}),
+        },
+        ponctuels: !isExpert
+          ? vc.ponctuels.map((p) => ({
+              ...p,
+              pctCapitalisation: isSCPI ? 0 : 100,
+              pctDistribution: isSCPI ? 100 : 0,
+            }))
+          : vc.ponctuels,
+        distribution: isSCPI ? {
+          ...vc.distribution,
+          rendementAnnuel: 0,
+          ...(!isExpert ? { delaiJouissance: 0, strategie: 'apprehender' } : {}),
+        } : vc.distribution,
+      },
+    };
+  });
+
+  if (isExpert) {
+    const unchanged = products.every((p, i) => p === state.products[i]);
+    return unchanged ? state : { ...state, products };
+  }
 
   return {
     ...state,
-    products: state.products.map((product) => ({
-      ...product,
-      perBancaire: false,
-      optionBaremeIR: false,
-      liquidation: product.liquidation
-        ? { ...product.liquidation, optionBaremeIR: false }
-        : product.liquidation,
-    })),
+    liquidation: { ...state.liquidation, mode: 'epuiser' },
+    transmission: { ...state.transmission, dmtgTaux: state.transmission.dmtgTaux ?? DEFAULT_DMTG_RATE },
+    products,
   };
 }
 
 export function getRendementLiquidation(
-  product: Pick<
-    PlacementProductDraft,
-    'envelope' | 'rendementLiquidationOverride' | 'versementConfig'
-  > | null | undefined,
+  product: Pick<PlacementProductDraft, 'envelope' | 'versementConfig'> | null | undefined,
 ): number | null {
   if (!product || product.envelope === 'SCPI') return null;
-  const override = product.rendementLiquidationOverride;
-  if (typeof override === 'number') return override;
   return product.versementConfig?.capitalisation?.rendementAnnuel ?? 0.03;
 }
 

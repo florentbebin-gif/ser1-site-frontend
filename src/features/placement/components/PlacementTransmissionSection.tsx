@@ -77,11 +77,13 @@ export function PlacementTransmissionSection({
                     setTransmission({ beneficiaryType: value });
                   }}
                 >
-                  {BENEFICIARY_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
+                  {BENEFICIARY_OPTIONS
+                    .filter((option) => option.value !== 'conjoint' || state.client.situation !== 'single')
+                    .map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                 </select>
               </td>
             </tr>
@@ -143,6 +145,7 @@ export function PlacementTransmissionSection({
 
         <div className="pl-card-title pl-card-title--spaced">Détail des droits de succession</div>
 
+        <div className="pl-detail-table-scroll">
         <table className="pl-ir-table pl-detail-table">
           <thead>
             <tr>
@@ -151,7 +154,7 @@ export function PlacementTransmissionSection({
               <th>Abattement</th>
               <th>Assiette</th>
               <th>PS</th>
-              <th>Taxes (Forfaitaire + DMTG)</th>
+              <th>Taxes + DMTG</th>
               <th>Net transmis</th>
             </tr>
           </thead>
@@ -183,6 +186,7 @@ export function PlacementTransmissionSection({
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       <div className="pl-disclaimer pl-transmission-info-card">
