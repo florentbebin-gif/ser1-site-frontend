@@ -29,67 +29,207 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
     {
       "produit1": {
         "capitalAcquis": 150000,
-        "capitalTransmisNet": 90000,
-        "effortReel": 100000,
+        "effortTotal": 100000,
         "envelopeLabel": "Assurance-vie",
-        "fiscaliteTotale": 8000,
-        "revenusNetsLiquidation": 80000,
-        "revenusNetsTotal": 170000,
+        "revenusNets": 80000,
+        "roi": 1.7,
+        "transmissionNette": 90000,
       },
       "produit2": {
         "capitalAcquis": 140000,
-        "capitalTransmisNet": 85000,
-        "effortReel": 95500,
+        "effortTotal": 95500,
         "envelopeLabel": "PER",
-        "fiscaliteTotale": 11000,
-        "revenusNetsLiquidation": 75000,
-        "revenusNetsTotal": 160000,
+        "revenusNets": 75000,
+        "roi": 1.675392670157068,
+        "transmissionNette": 85000,
       },
+      "timeline": "<DATE>",
       "type": "placement-synthesis",
     },
     {
-      "body": "Assurance-vie :
-- Capital acquis : 150 000 €
-- Versements cumulés : 100 000 €
-- Effort réel : 100 000 €
-- Économie IR cumulée : 0 €
-
-PER :
-- Capital acquis : 140 000 €
-- Versements cumulés : 100 000 €
-- Effort réel : 100 000 €
-- Économie IR cumulée : 4 500 €",
+      "produit1": {
+        "label": "Assurance-vie",
+        "metrics": [
+          {
+            "icon": "money",
+            "label": "Capital acquis",
+            "value": "150 000 €",
+          },
+          {
+            "icon": "cheque",
+            "label": "Versements cumulés",
+            "value": "100 000 €",
+          },
+          {
+            "icon": "calculator",
+            "label": "Effort réel",
+            "value": "100 000 €",
+          },
+          {
+            "icon": "percent",
+            "label": "Économie IR cumulée",
+            "value": "0 €",
+          },
+        ],
+        "params": [
+          "TMI : 30,00 %",
+          "Perf. capitalisation : 3,00 %",
+          "Perf. distribution : 2,00 % (revalo. 4,00 %)",
+          "Répartition : 50 % capi / 50 % distrib.",
+          "Stratégie distrib. : Stocker à 0 %",
+          "Initial : 10 000 €  |  Annuel : 5 000 €",
+          "Frais d'entrée : 2,00 %",
+        ],
+      },
+      "produit2": {
+        "label": "PER",
+        "metrics": [
+          {
+            "icon": "money",
+            "label": "Capital acquis",
+            "value": "140 000 €",
+          },
+          {
+            "icon": "cheque",
+            "label": "Versements cumulés",
+            "value": "100 000 €",
+          },
+          {
+            "icon": "calculator",
+            "label": "Effort réel",
+            "value": "100 000 €",
+          },
+          {
+            "icon": "percent",
+            "label": "Économie IR cumulée",
+            "value": "4 500 €",
+          },
+        ],
+        "params": [
+          "TMI : 11,00 %",
+          "Perf. capitalisation : 3,00 %",
+          "Perf. distribution : 2,00 % (revalo. 4,00 %)",
+          "Répartition : 50 % capi / 50 % distrib.",
+          "Stratégie distrib. : Stocker à 0 %",
+          "Initial : 10 000 €  |  Annuel : 5 000 €",
+          "Frais d'entrée : 2,00 %",
+        ],
+      },
       "subtitle": "Constitution du capital",
       "title": "Phase Épargne",
-      "type": "content",
+      "type": "placement-detail",
     },
     {
-      "body": "Assurance-vie :
-- Retraits nets cumulés : 80 000 €
-- Revenu annuel moyen net : 8 000 €
-- Fiscalité cumulée : 5 000 €
-
-PER :
-- Retraits nets cumulés : 75 000 €
-- Revenu annuel moyen net : 8 000 €
-- Fiscalité cumulée : 7 000 €",
+      "produit1": {
+        "label": "Assurance-vie",
+        "metrics": [
+          {
+            "icon": "chart-up",
+            "label": "Retraits nets cumulés",
+            "value": "80 000 €",
+          },
+          {
+            "icon": "money",
+            "label": "Revenu annuel moyen net",
+            "value": "8 000 €",
+          },
+          {
+            "icon": "balance",
+            "label": "Fiscalité cumulée",
+            "value": "5 000 €",
+          },
+        ],
+        "params": [
+          "TMI retraite : 11,00 %",
+          "Perf. capitalisation : 3,00 %",
+          "Stratégie : Épuiser en 25 ans",
+          "Option barème IR : Non",
+        ],
+      },
+      "produit2": {
+        "label": "PER",
+        "metrics": [
+          {
+            "icon": "chart-up",
+            "label": "Retraits nets cumulés",
+            "value": "75 000 €",
+          },
+          {
+            "icon": "money",
+            "label": "Revenu annuel moyen net",
+            "value": "8 000 €",
+          },
+          {
+            "icon": "balance",
+            "label": "Fiscalité cumulée",
+            "value": "7 000 €",
+          },
+        ],
+        "params": [
+          "TMI retraite : 11,00 %",
+          "Perf. capitalisation : 3,00 %",
+          "Stratégie : Épuiser en 25 ans",
+          "Option barème IR : Non",
+        ],
+      },
       "subtitle": "Revenus et fiscalité des retraits",
       "title": "Phase Liquidation",
-      "type": "content",
+      "type": "placement-detail",
     },
     {
-      "body": "Assurance-vie :
-- Régime fiscal : Article 990 I
-- Droits / taxe : 3 000 €
-- Capital transmis net : 90 000 €
-
-PER :
-- Régime fiscal : DMTG
-- Droits / taxe : 4 000 €
-- Capital transmis net : 85 000 €",
+      "produit1": {
+        "label": "Assurance-vie",
+        "metrics": [
+          {
+            "icon": "bank",
+            "label": "Régime fiscal",
+            "value": "Article 990 I",
+          },
+          {
+            "icon": "calculator",
+            "label": "Droits / taxe",
+            "value": "3 000 €",
+          },
+          {
+            "icon": "buildings",
+            "label": "Capital transmis net",
+            "value": "90 000 €",
+          },
+        ],
+        "params": [
+          "Âge de décès simulé : 85 ans",
+          "Bénéficiaire : Enfants (2)",
+          "Tranche DMTG : 20,00 %",
+        ],
+      },
+      "produit2": {
+        "label": "PER",
+        "metrics": [
+          {
+            "icon": "bank",
+            "label": "Régime fiscal",
+            "value": "DMTG",
+          },
+          {
+            "icon": "calculator",
+            "label": "Droits / taxe",
+            "value": "4 000 €",
+          },
+          {
+            "icon": "buildings",
+            "label": "Capital transmis net",
+            "value": "85 000 €",
+          },
+        ],
+        "params": [
+          "Âge de décès simulé : 85 ans",
+          "Bénéficiaire : Enfants (2)",
+          "Tranche DMTG : 20,00 %",
+        ],
+      },
       "subtitle": "Capital transmis au décès",
       "title": "Phase Transmission",
-      "type": "content",
+      "type": "placement-detail",
     },
     {
       "body": "Les résultats ci-dessus reposent sur les hypothèses détaillées ci-après.",
@@ -99,15 +239,289 @@ PER :
       "type": "chapter",
     },
     {
-      "body": "- Simulation basée sur les taux de rendement et paramètres saisis dans le simulateur
-- Fiscalité appliquée selon le régime de chaque enveloppe (PFU, barème IR, exonérations)
-- Les taux de rendement futurs sont hypothétiques et ne constituent pas une garantie
-- Prélèvements sociaux appliqués selon les taux en vigueur à la date de simulation
-- Transmission calculée selon le barème DMTG et les abattements légaux en vigueur
-- Les montants sont arrondis à l'euro le plus proche",
+      "sections": [
+        {
+          "body": [
+            "Taux de rendement et paramètres saisis dans le simulateur",
+            "Les taux futurs sont hypothétiques et ne constituent pas une garantie",
+          ],
+          "icon": "gauge",
+          "title": "Paramètres simulés",
+        },
+        {
+          "body": [
+            "Fiscalité appliquée selon le régime de chaque enveloppe (PFU, barème IR, exonérations)",
+            "Prélèvements sociaux selon les taux en vigueur à la date de simulation",
+          ],
+          "icon": "percent",
+          "title": "Fiscalité des enveloppes",
+        },
+        {
+          "body": [
+            "Transmission calculée selon le barème DMTG et les abattements légaux en vigueur",
+            "Régime applicable selon l'enveloppe (art. 990 I ou DMTG)",
+          ],
+          "icon": "balance",
+          "title": "Transmission / DMTG",
+        },
+        {
+          "body": [
+            "Les montants sont arrondis à l'euro le plus proche",
+            "Résultats donnés à titre indicatif, sans valeur contractuelle",
+          ],
+          "icon": "pen",
+          "title": "Limites et arrondis",
+        },
+      ],
       "subtitle": "Paramètres de la simulation",
       "title": "Hypothèses retenues",
-      "type": "content",
+      "type": "placement-hypotheses",
+    },
+    {
+      "pageIndex": 0,
+      "phase": "epargne",
+      "productIndex": 1,
+      "productLabel": "Assurance-vie",
+      "rows": [
+        {
+          "label": "Versement net",
+          "values": [
+            14700,
+            4900,
+            4900,
+          ],
+        },
+        {
+          "label": "Capital début",
+          "values": [
+            0,
+            14920,
+            20340,
+          ],
+        },
+        {
+          "label": "Gains annuels",
+          "values": [
+            220,
+            520,
+            750,
+          ],
+        },
+        {
+          "label": "Capital fin",
+          "values": [
+            14920,
+            20340,
+            25990,
+          ],
+        },
+        {
+          "label": "Effort réel cumulé",
+          "values": [
+            15000,
+            20000,
+            25000,
+          ],
+        },
+        {
+          "label": "Économie IR",
+          "values": [
+            0,
+            0,
+            0,
+          ],
+        },
+      ],
+      "subtitle": "Détail année par année de la phase d'épargne",
+      "title": "Projection Épargne — Assurance-vie",
+      "totalPages": 1,
+      "type": "placement-projection",
+      "yearsForPage": [
+        1,
+        2,
+        3,
+      ],
+    },
+    {
+      "pageIndex": 0,
+      "phase": "epargne",
+      "productIndex": 2,
+      "productLabel": "PER",
+      "rows": [
+        {
+          "label": "Versement net",
+          "values": [
+            14700,
+            4900,
+            4900,
+          ],
+        },
+        {
+          "label": "Capital début",
+          "values": [
+            0,
+            14920,
+            20340,
+          ],
+        },
+        {
+          "label": "Gains annuels",
+          "values": [
+            220,
+            520,
+            750,
+          ],
+        },
+        {
+          "label": "Capital fin",
+          "values": [
+            14920,
+            20340,
+            25990,
+          ],
+        },
+        {
+          "label": "Effort réel cumulé",
+          "values": [
+            15000,
+            20000,
+            25000,
+          ],
+        },
+        {
+          "label": "Économie IR",
+          "values": [
+            0,
+            0,
+            0,
+          ],
+        },
+      ],
+      "subtitle": "Détail année par année de la phase d'épargne",
+      "title": "Projection Épargne — PER",
+      "totalPages": 1,
+      "type": "placement-projection",
+      "yearsForPage": [
+        1,
+        2,
+        3,
+      ],
+    },
+    {
+      "pageIndex": 0,
+      "phase": "liquidation",
+      "productIndex": 1,
+      "productLabel": "Assurance-vie",
+      "rows": [
+        {
+          "label": "Capital début",
+          "values": [
+            150000,
+            144500,
+          ],
+        },
+        {
+          "label": "Gains annuels",
+          "values": [
+            4500,
+            4335,
+          ],
+        },
+        {
+          "label": "Retrait brut",
+          "values": [
+            10000,
+            10000,
+          ],
+        },
+        {
+          "label": "Fiscalité",
+          "values": [
+            1000,
+            900,
+          ],
+        },
+        {
+          "label": "Retrait net",
+          "values": [
+            9000,
+            9100,
+          ],
+        },
+        {
+          "label": "Capital fin",
+          "values": [
+            144500,
+            138835,
+          ],
+        },
+      ],
+      "subtitle": "Détail année par année de la phase de liquidation",
+      "title": "Projection Liquidation — Assurance-vie",
+      "totalPages": 1,
+      "type": "placement-projection",
+      "yearsForPage": [
+        1,
+        2,
+      ],
+    },
+    {
+      "pageIndex": 0,
+      "phase": "liquidation",
+      "productIndex": 2,
+      "productLabel": "PER",
+      "rows": [
+        {
+          "label": "Capital début",
+          "values": [
+            150000,
+            144500,
+          ],
+        },
+        {
+          "label": "Gains annuels",
+          "values": [
+            4500,
+            4335,
+          ],
+        },
+        {
+          "label": "Retrait brut",
+          "values": [
+            10000,
+            10000,
+          ],
+        },
+        {
+          "label": "Fiscalité",
+          "values": [
+            1000,
+            900,
+          ],
+        },
+        {
+          "label": "Retrait net",
+          "values": [
+            9000,
+            9100,
+          ],
+        },
+        {
+          "label": "Capital fin",
+          "values": [
+            144500,
+            138835,
+          ],
+        },
+      ],
+      "subtitle": "Détail année par année de la phase de liquidation",
+      "title": "Projection Liquidation — PER",
+      "totalPages": 1,
+      "type": "placement-projection",
+      "yearsForPage": [
+        1,
+        2,
+      ],
     },
   ],
 }

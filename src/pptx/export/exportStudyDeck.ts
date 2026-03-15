@@ -20,6 +20,9 @@ import type {
   CreditAmortizationSlideSpec,
   SuccessionSynthesisSlideSpec,
   PlacementSynthesisSlideSpec,
+  PlacementDetailSlideSpec,
+  PlacementHypothesesSlideSpec,
+  PlacementProjectionSlideSpec,
 } from '../theme/types';
 import { SLIDE_SIZE } from '../designSystem/serenity';
 import { getPptxThemeFromUiSettings } from '../theme/getPptxThemeFromUiSettings';
@@ -35,6 +38,9 @@ import { buildCreditAnnexe } from '../slides/buildCreditAnnexe';
 import { buildCreditAmortization } from '../slides/buildCreditAmortization';
 import { buildSuccessionSynthesis } from '../slides/buildSuccessionSynthesis';
 import { buildPlacementSynthesis } from '../slides/buildPlacementSynthesis';
+import { buildPlacementDetail } from '../slides/buildPlacementDetail';
+import { buildPlacementHypotheses } from '../slides/buildPlacementHypotheses';
+import { buildPlacementProjection } from '../slides/buildPlacementProjection';
 import { injectThemeColors } from '../theme/themeBuilder';
 import { defineSlideMasters } from '../template/loadBaseTemplate';
 import { createTrackedObjectURL } from '../../utils/export/createTrackedObjectURL';
@@ -345,8 +351,17 @@ export async function exportStudyDeck(
       // Succession Synthesis slide (P1-02)
       buildSuccessionSynthesis(pptx, slideSpec as SuccessionSynthesisSlideSpec, ctx, slideIndex);
     } else if (slideSpec.type === 'placement-synthesis') {
-      // Placement Synthesis slide — 2-product comparison table
+      // Placement Synthesis slide — premium 2-panel comparison
       buildPlacementSynthesis(pptx, slideSpec as PlacementSynthesisSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'placement-detail') {
+      // Placement Detail slide — 2 panels side-by-side for phase detail
+      buildPlacementDetail(pptx, slideSpec as PlacementDetailSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'placement-hypotheses') {
+      // Placement Hypotheses slide — 2×2 info grid
+      buildPlacementHypotheses(pptx, slideSpec as PlacementHypothesesSlideSpec, ctx, slideIndex);
+    } else if (slideSpec.type === 'placement-projection') {
+      // Placement Projection slide — paginated year-by-year table
+      buildPlacementProjection(pptx, slideSpec as PlacementProjectionSlideSpec, ctx, slideIndex);
     }
     
     slideIndex++;
