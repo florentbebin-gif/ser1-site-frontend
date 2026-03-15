@@ -81,6 +81,7 @@ export interface EpargneResult {
   cumulPSFondsEuro: number;
   cumulRevenusDistribues: number;
   cumulFiscaliteRevenus: number;
+  cumulRevenusNetsPercus: number;
 }
 
 export interface LiquidationRow {
@@ -165,6 +166,7 @@ export interface SimulateCompleteResult {
     cumulPSFondsEuro: number;
     cumulRevenusDistribues: number;
     cumulFiscaliteRevenus: number;
+    cumulRevenusNetsPercus: number;
     rows: EpargneRow[];
   };
   liquidation: {

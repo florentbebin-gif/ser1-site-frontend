@@ -34,12 +34,18 @@ interface DistributionConfig {
   reinvestirVersAuTerme?: string;
 }
 
+interface DeductionInitialeConfig {
+  mode?: 'tmi' | 'montant';
+  montant?: number;
+}
+
 interface VersementConfig {
   initial: VersementEntryBase;
   annuel: VersementAnnuel;
   ponctuels?: VersementPonctuel[];
   capitalisation: CapitalisationConfig;
   distribution: DistributionConfig;
+  deductionInitiale?: DeductionInitialeConfig;
 }
 
 interface EpargneProduct {
@@ -170,7 +176,9 @@ export function simulateEpargne(
   cumulVersementsNets += initialNet;
 
   if (envelope === ENVELOPES.PER && initialAmount > 0) {
-    const eco = initialAmount * tmiEpargne;
+    const dedMode = versementConfig.deductionInitiale?.mode ?? 'tmi';
+    const dedMontant = versementConfig.deductionInitiale?.montant ?? 0;
+    const eco = dedMode === 'montant' ? Math.min(dedMontant, initialAmount) : initialAmount * tmiEpargne;
     cumulEconomieIR += eco;
     cumulEffort += initialAmount - eco;
   } else {
@@ -437,5 +445,6 @@ export function simulateEpargne(
     cumulPSFondsEuro: round2(cumulPSFondsEuro),
     cumulRevenusDistribues: round2(cumulRevenusDistribues),
     cumulFiscaliteRevenus: round2(cumulFiscaliteRevenus),
+    cumulRevenusNetsPercus: round2(cumulRevenusNetsPercus),
   };
 }

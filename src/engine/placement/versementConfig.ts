@@ -41,6 +41,11 @@ export interface CapitalisationConfig {
   rendementAnnuel: number;
 }
 
+export interface DeductionInitiale {
+  mode: 'tmi' | 'montant';
+  montant: number;
+}
+
 export interface DistributionConfig {
   rendementAnnuel: number;
   tauxDistribution: number;
@@ -56,6 +61,7 @@ export interface VersementConfig {
   ponctuels: VersementPonctuel[];
   capitalisation: CapitalisationConfig;
   distribution: DistributionConfig;
+  deductionInitiale: DeductionInitiale;
 }
 
 export interface VersementConfigInput {
@@ -64,6 +70,7 @@ export interface VersementConfigInput {
   ponctuels?: Array<VersementPonctuelInput | null | undefined> | null;
   capitalisation?: Partial<CapitalisationConfig> | null;
   distribution?: Partial<DistributionConfig> | null;
+  deductionInitiale?: Partial<DeductionInitiale> | null;
 }
 
 export const DEFAULT_INITIAL: VersementEntry = {
@@ -86,6 +93,11 @@ export const DEFAULT_CAPITALISATION: CapitalisationConfig = {
   rendementAnnuel: 0.03,
 };
 
+export const DEFAULT_DEDUCTION_INITIALE: DeductionInitiale = {
+  mode: 'tmi',
+  montant: 0,
+};
+
 export const DEFAULT_DISTRIBUTION: DistributionConfig = {
   rendementAnnuel: 0.02,
   tauxDistribution: 0.04,
@@ -101,6 +113,7 @@ export const DEFAULT_VERSEMENT_CONFIG: VersementConfig = {
   ponctuels: [],
   capitalisation: { ...DEFAULT_CAPITALISATION },
   distribution: { ...DEFAULT_DISTRIBUTION },
+  deductionInitiale: { ...DEFAULT_DEDUCTION_INITIALE },
 };
 
 function normalizePonctuel(
@@ -166,11 +179,17 @@ export function normalizeVersementConfig(config: VersementConfigInput = {}): Ver
     ? config.ponctuels.map((ponctuel) => normalizePonctuel(ponctuel, initial))
     : [];
 
+  const deductionInitiale: DeductionInitiale = {
+    mode: (config.deductionInitiale?.mode === 'montant' ? 'montant' : 'tmi') as 'tmi' | 'montant',
+    montant: Math.max(0, config.deductionInitiale?.montant ?? 0),
+  };
+
   return {
     initial,
     annuel,
     ponctuels,
     capitalisation,
     distribution,
+    deductionInitiale,
   };
 }

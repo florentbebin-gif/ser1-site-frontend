@@ -201,6 +201,7 @@ export function buildPlacementStateForMode(
           rendementAnnuel: 0,
           ...(!isExpert ? { delaiJouissance: 0, strategie: 'apprehender' } : {}),
         } : vc.distribution,
+        ...(!isExpert ? { deductionInitiale: { mode: 'tmi' as const, montant: 0 } } : {}),
       },
     };
   });
