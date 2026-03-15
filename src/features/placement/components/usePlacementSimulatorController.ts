@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useTheme } from '@/settings/ThemeProvider';
 import { usePlacementSettings, type UsePlacementSettingsResult } from '@/hooks/usePlacementSettings';
 import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { simulateComplete, compareProducts } from '@/engine/placement';
@@ -89,6 +90,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
   const storeKey = storageKeyFor('placement');
   const { fiscalParams, loading, error, tmiOptions, psSettings } = usePlacementSettings();
   const { fiscalContext } = useFiscalContext({ strict: false });
+  const { pptxColors } = useTheme();
 
   const [hydrated, setHydrated] = useState(false);
   const [state, setState] = useState<PlacementSimulatorState>(DEFAULT_STATE);
@@ -341,7 +343,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
   const exportExcel = useCallback(async () => {
     setExportLoading(true);
     try {
-      await exportPlacementExcel(buildPlacementStateForMode(state, isExpert), results);
+      await exportPlacementExcel(buildPlacementStateForMode(state, isExpert), results, pptxColors.c1, pptxColors.c7);
     } catch (errorExport) {
       const err = errorExport instanceof Error ? errorExport : new Error(String(errorExport));
       console.error('[ExcelExport] Export failed', {
@@ -353,7 +355,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
     } finally {
       setExportLoading(false);
     }
-  }, [state, isExpert, results]);
+  }, [state, isExpert, results, pptxColors]);
 
   const exportHandlers: PlacementSimulatorExportHandlers = {
     exportExcel,

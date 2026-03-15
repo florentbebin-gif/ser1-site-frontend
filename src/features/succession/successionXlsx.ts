@@ -5,10 +5,9 @@
  * Utilise xlsxBuilder pour generer un fichier OOXML natif.
  */
 
-import { buildXlsxBlob, downloadXlsx } from '../../utils/export/xlsxBuilder';
+import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../../utils/export/xlsxBuilder';
 import type { XlsxSheet, XlsxCell } from '../../utils/export/xlsxBuilder';
 import type { SuccessionResult, HeritierResult, LienParente } from '../../engine/succession';
-import { DEFAULT_COLORS } from '../../settings/theme';
 
 const LIEN_LABELS: Record<LienParente, string> = {
   conjoint: 'Conjoint survivant',
@@ -243,6 +242,7 @@ export async function exportSuccessionXlsx(
   themeColor?: string,
   _filename = 'Simulation-Succession',
   chronologie?: SuccessionChronologieXlsxData,
+  sectionFill?: string,
 ): Promise<Blob> {
   const sheets: XlsxSheet[] = result
     ? [
@@ -257,11 +257,15 @@ export async function exportSuccessionXlsx(
       buildHypothesesSheet(),
     ];
 
-  return buildXlsxBlob({
+  const blob = await buildXlsxBlob({
     sheets,
     headerFill: themeColor,
-    sectionFill: DEFAULT_COLORS.c8,
+    sectionFill,
   });
+
+  const isValid = await validateXlsxBlob(blob);
+  if (!isValid) throw new Error('XLSX invalide (signature PK manquante).');
+  return blob;
 }
 
 export async function exportAndDownloadSuccessionXlsx(
@@ -270,7 +274,8 @@ export async function exportAndDownloadSuccessionXlsx(
   themeColor?: string,
   filename = 'Simulation-Succession',
   chronologie?: SuccessionChronologieXlsxData,
+  sectionFill?: string,
 ): Promise<void> {
-  const blob = await exportSuccessionXlsx(input, result, themeColor, filename, chronologie);
+  const blob = await exportSuccessionXlsx(input, result, themeColor, filename, chronologie, sectionFill);
   downloadXlsx(blob, filename);
 }

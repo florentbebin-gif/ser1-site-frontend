@@ -6,11 +6,7 @@
  * Uses useExportGuard for TTL compliance.
  */
 
-import { useContext, useCallback } from 'react';
 import { usePerCalc } from './usePerCalc';
-import { exportAndDownloadPerXlsx } from './perXlsx';
-import { useTheme } from '../../settings/ThemeProvider';
-import { SessionGuardContext } from '../../App';
 import './Per.css';
 
 const TMI_OPTIONS = [0, 11, 30, 41, 45];
@@ -22,24 +18,6 @@ export default function PerSimulator() {
   const {
     form, result, setField, compute, reset, hasResult,
   } = usePerCalc();
-
-  const { pptxColors } = useTheme();
-  const { sessionExpired, canExport } = useContext(SessionGuardContext);
-
-  const handleExportXlsx = useCallback(async () => {
-    if (!result || !canExport) return;
-    await exportAndDownloadPerXlsx(
-      {
-        versementAnnuel: form.versementAnnuel,
-        dureeAnnees: form.dureeAnnees,
-        tmi: form.tmi,
-        rendementAnnuel: form.rendementAnnuel,
-        fraisGestion: form.fraisGestion,
-      },
-      result.result,
-      pptxColors.c1,
-    );
-  }, [result, canExport, form, pptxColors]);
 
   return (
     <div className="per-page">
@@ -199,25 +177,6 @@ export default function PerSimulator() {
             )}
           </div>
 
-          {/* Export bar */}
-          <div className="per-card">
-            <h2>Exports</h2>
-            {sessionExpired && (
-              <p className="per-session-msg">
-                Session expirée — reconnectez-vous pour exporter.
-              </p>
-            )}
-            <div className="per-export-bar">
-              <button
-                type="button"
-                className="per-btn per-btn--accent"
-                onClick={handleExportXlsx}
-                disabled={!canExport}
-              >
-                Exporter Excel
-              </button>
-            </div>
-          </div>
         </>
       )}
     </div>

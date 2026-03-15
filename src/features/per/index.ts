@@ -4,4 +4,3 @@
 
 export { default as PerSimulator } from './PerSimulator';
 export { usePerCalc } from './usePerCalc';
-export { exportAndDownloadPerXlsx } from './perXlsx';
