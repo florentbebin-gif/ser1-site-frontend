@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import type { CompareResult } from '@/engine/placement/types';
-import { InputEuro, InputNumber, InputPct, Toggle } from './inputs';
-import { getRendementLiquidation } from '../utils/normalizers';
+import { InputEuro, InputNumber, Toggle } from './inputs';
 import type {
   PlacementLiquidationState,
-  PlacementProductDraft,
   PlacementSimulatorState,
 } from '../utils/normalizers';
 import { PlacementLiquidationDetailsTable } from './PlacementLiquidationDetailsTable';
@@ -13,7 +11,6 @@ interface PlacementLiquidationSectionProps {
   state: PlacementSimulatorState;
   isExpert: boolean;
   setLiquidation: (_patch: Partial<PlacementLiquidationState>) => void;
-  setProduct: (_index: number, _patch: Partial<PlacementProductDraft>) => void;
   updateProductOption: (
     _productIndex: number,
     _path: 'liquidation.optionBaremeIR',
@@ -29,7 +26,6 @@ export function PlacementLiquidationSection({
   state,
   isExpert,
   setLiquidation,
-  setProduct,
   updateProductOption,
   showAllColumns,
   setShowAllColumns,
@@ -58,13 +54,14 @@ export function PlacementLiquidationSection({
             <td>Stratégie de retraits</td>
             <td colSpan={2}>
               <select
-                className="pl-select"
-                value={state.liquidation.mode}
+                className={`pl-select${!isExpert ? ' is-forced' : ''}`}
+                value={isExpert ? state.liquidation.mode : 'epuiser'}
                 onChange={(event) => setLiquidation({ mode: event.target.value })}
+                disabled={!isExpert}
               >
                 <option value="epuiser">Épuiser sur N années</option>
-                <option value="mensualite">Mensualité cible</option>
-                <option value="unique">Retrait unique</option>
+                {isExpert && <option value="mensualite">Mensualité cible</option>}
+                {isExpert && <option value="unique">Retrait unique</option>}
               </select>
             </td>
           </tr>
@@ -82,32 +79,6 @@ export function PlacementLiquidationSection({
                   inline
                 />
               </td>
-            </tr>
-          )}
-
-          {(state.products[0].envelope !== 'SCPI' || state.products[1].envelope !== 'SCPI') && (
-            <tr>
-              <td>
-                Rendement capitalisation (liquidation)
-                <div className="pl-detail-cumul">
-                  Valeur par défaut : rendement capitalisation du modal
-                </div>
-              </td>
-              {state.products.map((product, index) => (
-                <td
-                  key={index}
-                  className={product.envelope === 'SCPI' ? 'pl-cell--muted' : 'pl-cell--soft'}
-                >
-                  {product.envelope === 'SCPI' ? (
-                    '-'
-                  ) : (
-                    <InputPct
-                      value={getRendementLiquidation(product) || 0}
-                      onChange={(value) => setProduct(index, { rendementLiquidationOverride: value })}
-                    />
-                  )}
-                </td>
-              ))}
             </tr>
           )}
 

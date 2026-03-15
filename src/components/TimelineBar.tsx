@@ -69,7 +69,7 @@ export function TimelineBar({
         </div>
 
         {showLiquidationMarker && (
-          <div className="pl-timeline__marker pl-timeline__marker--center" style={{ left: '50%' }}>
+          <div className="pl-timeline__marker pl-timeline__marker--center" style={{ left: `${Math.min(88, Math.max(12, positionDebutLiquidation))}%` }}>
             <div className="pl-timeline__line" />
             <div className="pl-timeline__label">
               <span className="pl-timeline__age">{ageDebutLiquidation}</span>

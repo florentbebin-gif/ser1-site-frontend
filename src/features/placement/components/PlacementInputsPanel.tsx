@@ -108,7 +108,7 @@ export function PlacementInputsPanel({
           isExpert={isExpert}
           setProduct={setProduct}
           setModalOpen={setModalOpen}
-          showAllColumns={showAllColumns}
+          showAllColumns={isExpert ? showAllColumns : false}
           setShowAllColumns={setShowAllColumns}
           produit1={produit1}
           produit2={produit2}
@@ -125,7 +125,6 @@ export function PlacementInputsPanel({
           state={state}
           isExpert={isExpert}
           setLiquidation={setLiquidation}
-          setProduct={setProduct}
           updateProductOption={updateProductOption}
           showAllColumns={showAllColumns}
           setShowAllColumns={setShowAllColumns}

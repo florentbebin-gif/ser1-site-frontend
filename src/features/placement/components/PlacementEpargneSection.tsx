@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ENVELOPE_LABELS } from '@/engine/placement';
 import type { CompareResult } from '@/engine/placement/types';
 import { shortEuro } from '../utils/formatters';
@@ -31,6 +31,74 @@ interface PlacementEpargneSectionProps {
 }
 
 const envelopeLabels = ENVELOPE_LABELS as Record<string, string>;
+
+const ALL_ENVELOPE_OPTIONS: [string, string][] = [
+  ...Object.entries(ENVELOPE_LABELS),
+  ['PER_BANCAIRE_UI', 'PER bancaire (CTO)'],
+];
+
+const ALL_ENVELOPE_LABELS: Record<string, string> = {
+  ...envelopeLabels,
+  PER_BANCAIRE_UI: 'PER bancaire (CTO)',
+};
+
+interface EnvelopePillSelectProps {
+  envelope: string;
+  colorClass: string;
+  onSelect: (_envelope: string) => void;
+}
+
+function EnvelopePillSelect({ envelope, colorClass, onSelect }: EnvelopePillSelectProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="pl-envelope-pill-wrapper">
+      <button
+        type="button"
+        className={`pl-collabel ${colorClass}`}
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        {ALL_ENVELOPE_LABELS[envelope] ?? envelope}
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div className="pl-envelope-menu" role="listbox">
+          {ALL_ENVELOPE_OPTIONS.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              role="option"
+              aria-selected={key === envelope}
+              className={`pl-envelope-menu__option${key === envelope ? ' is-selected' : ''}`}
+              onClick={() => {
+                onSelect(key);
+                setOpen(false);
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function SettingsIcon() {
   return (
@@ -66,8 +134,6 @@ export function PlacementEpargneSection({
   columnsProduit2,
   renderEpargneRow,
 }: PlacementEpargneSectionProps) {
-  const showPerBancaire = isExpert
-    && (state.products[0].envelope === 'PER' || state.products[1].envelope === 'PER');
   const showOptionBareme = isExpert
     && (state.products[0].envelope === 'CTO' || state.products[1].envelope === 'CTO');
 
@@ -85,41 +151,26 @@ export function PlacementEpargneSection({
             <th />
             <th className="pl-colhead" aria-label="Produit 1">
               <div className="pl-colbadge-wrapper">
-                <div className="pl-collabel pl-collabel--product1">
-                  {envelopeLabels[state.products[0].envelope]}
-                </div>
+                <EnvelopePillSelect
+                  envelope={state.products[0].perBancaire && state.products[0].envelope === 'PER' ? 'PER_BANCAIRE_UI' : state.products[0].envelope}
+                  colorClass="pl-collabel--product1"
+                  onSelect={(env) => setProduct(0, { envelope: env })}
+                />
               </div>
             </th>
             <th className="pl-colhead" aria-label="Produit 2">
               <div className="pl-colbadge-wrapper">
-                <div className="pl-collabel pl-collabel--product2">
-                  {envelopeLabels[state.products[1].envelope]}
-                </div>
+                <EnvelopePillSelect
+                  envelope={state.products[1].perBancaire && state.products[1].envelope === 'PER' ? 'PER_BANCAIRE_UI' : state.products[1].envelope}
+                  colorClass="pl-collabel--product2"
+                  onSelect={(env) => setProduct(1, { envelope: env })}
+                />
               </div>
             </th>
           </tr>
         </thead>
 
         <tbody>
-          <tr>
-            <td>Enveloppe</td>
-            {state.products.map((product, index) => (
-              <td key={index}>
-                <select
-                  className="pl-select"
-                  value={product.envelope}
-                  onChange={(event) => setProduct(index, { envelope: event.target.value })}
-                >
-                  {Object.entries(ENVELOPE_LABELS).map(([key, label]) => (
-                    <option key={key} value={key}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </td>
-            ))}
-          </tr>
-
           <tr>
             <td>Durée de la phase épargne</td>
             {state.products.map((product, index) => (
@@ -134,25 +185,6 @@ export function PlacementEpargneSection({
               </td>
             ))}
           </tr>
-
-          {showPerBancaire && (
-            <tr data-testid="placement-row-per-bancaire">
-              <td>PER bancaire (CTO)</td>
-              {state.products.map((product, index) => (
-                <td key={index} className="pl-cell--center">
-                  {product.envelope === 'PER' ? (
-                    <Toggle
-                      checked={product.perBancaire}
-                      onChange={(value) => setProduct(index, { perBancaire: value })}
-                      ariaLabel={`Activer le mode PER bancaire pour ${envelopeLabels[product.envelope]}`}
-                    />
-                  ) : (
-                    <span className="pl-muted">-</span>
-                  )}
-                </td>
-              ))}
-            </tr>
-          )}
 
           {showOptionBareme && (
             <tr>
@@ -201,7 +233,7 @@ export function PlacementEpargneSection({
 
       {produit1 && produit2 && (
         <div className="pl-details-section">
-          {anyTableOpen && (
+          {anyTableOpen && isExpert && (
             <div className="pl-details-toolbar">
               <div className="pl-pill-toggle">
                 <button

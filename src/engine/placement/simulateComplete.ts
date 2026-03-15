@@ -43,7 +43,7 @@ export function simulateComplete(
 ): SimulateCompleteResult {
   const epargne = simulateEpargne(product as Parameters<typeof simulateEpargne>[0], client, fiscalParams);
 
-  const ageAuDeces = transmissionParams.ageAuDeces || 85;
+  const ageAuDeces = transmissionParams.ageAuDeces || 90;
   const ageActuel = client.ageActuel || 45;
   const ageFinEpargne = ageActuel + epargne.dureeEpargne;
   const decesEnPhaseEpargne = ageAuDeces < ageFinEpargne;
@@ -115,6 +115,7 @@ export function simulateComplete(
     ageAuDeces: transmissionParams.ageAuDeces,
     agePremierVersement: transmissionParams.agePremierVersement || (client.ageActuel || 45),
     nbBeneficiaires: transmissionParams.nbBeneficiaires || 1,
+    beneficiaryType: transmissionParams.beneficiaryType,
     perBancaire: product.perBancaire || false,
   }, fiscalParams);
 

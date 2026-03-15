@@ -138,6 +138,7 @@ export default function PlacementSimulatorPage() {
           envelope={state.products[modalOpen].envelope}
           config={state.products[modalOpen].versementConfig}
           dureeEpargne={state.products[modalOpen].dureeEpargne}
+          isExpert={isExpert}
           onSave={(config) => {
             try {
               setVersementConfig(modalOpen, config);

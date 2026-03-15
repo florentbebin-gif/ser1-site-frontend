@@ -129,7 +129,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed && typeof parsed === 'object') {
-          setState({ ...DEFAULT_STATE, ...parsed });
+          setState(normalizeLoadedState(parsed));
         }
       }
     } catch {}
@@ -256,12 +256,41 @@ export function usePlacementSimulatorController(isExpert: boolean) {
   }, [state, isExpert, fiscalParams, loading, hydrated, error]);
 
   const setClient = (patch: Partial<PlacementClient>) =>
-    setState((s) => ({ ...s, client: { ...s.client, ...patch } }));
+    setState((s) => {
+      const next = { ...s, client: { ...s.client, ...patch } };
+      if ('ageActuel' in patch && typeof patch.ageActuel === 'number') {
+        const duree = Math.max(1, 64 - patch.ageActuel);
+        next.products = next.products.map((p) => ({ ...p, dureeEpargne: duree }));
+      }
+      if (patch.situation === 'single' && s.transmission.beneficiaryType === 'conjoint') {
+        next.transmission = { ...next.transmission, beneficiaryType: 'enfants' };
+      }
+      return next;
+    });
   const setProduct = (index: number, patch: Partial<PlacementProductDraft>) =>
-    setState((s) => ({
-      ...s,
-      products: s.products.map((p, k) => (k === index ? { ...p, ...patch } : p)),
-    }));
+    setState((s) => {
+      const updatedPatch = { ...patch };
+      if (patch.envelope === 'PER_BANCAIRE_UI') {
+        updatedPatch.envelope = 'PER';
+        updatedPatch.perBancaire = true;
+      } else if ('envelope' in patch && patch.envelope !== 'PER') {
+        updatedPatch.perBancaire = false;
+      }
+      if (updatedPatch.envelope === 'SCPI') {
+        const currentVc = s.products[index].versementConfig;
+        updatedPatch.versementConfig = {
+          ...currentVc,
+          initial: { ...currentVc.initial, fraisEntree: 0, pctCapitalisation: 0, pctDistribution: 100 },
+          annuel: { ...currentVc.annuel, fraisEntree: 0, pctCapitalisation: 0, pctDistribution: 100 },
+          ponctuels: (currentVc.ponctuels || []).map((p) => ({ ...p, pctCapitalisation: 0, pctDistribution: 100 })),
+          distribution: { ...currentVc.distribution, rendementAnnuel: 0 },
+        };
+      }
+      return {
+        ...s,
+        products: s.products.map((p, k) => (k === index ? { ...p, ...updatedPatch } : p)),
+      };
+    });
   const setLiquidation = (patch: Partial<PlacementLiquidationState>) =>
     setState((s) => ({ ...s, liquidation: { ...s.liquidation, ...patch } }));
   const setTransmission = (patch: Partial<PlacementTransmissionState>) =>

@@ -26,6 +26,7 @@ interface VersementConfigModalProps {
   envelope: string;
   config?: VersementConfig | VersementConfigInput | null;
   dureeEpargne: number;
+  isExpert: boolean;
   onSave: (_config: VersementConfig) => void;
   onClose: () => void;
 }
@@ -78,6 +79,7 @@ export function VersementConfigModal({
   envelope,
   config,
   dureeEpargne,
+  isExpert,
   onSave,
   onClose,
 }: VersementConfigModalProps) {
@@ -222,11 +224,14 @@ export function VersementConfigModal({
   const hasDistribution = (allocation: AllocationConfig) => (allocation.pctDistribution || 0) > 0;
   const hasCapitalisation = (allocation: AllocationConfig) => (allocation.pctCapitalisation || 0) > 0;
   const showCapiBlock = !isSCPI && (
-    hasCapitalisation(draft.initial)
-    || hasCapitalisation(draft.annuel)
-    || draft.distribution.strategie === 'reinvestir_capi'
+    isExpert
+      ? (hasCapitalisation(draft.initial) || hasCapitalisation(draft.annuel) || draft.distribution.strategie === 'reinvestir_capi')
+      : true
   );
-  const showDistribBlock = hasDistribution(draft.initial) || hasDistribution(draft.annuel);
+  // En mode simplifié, masquer la distribution pour les enveloppes non-SCPI
+  const showDistribBlock = isExpert
+    ? (hasDistribution(draft.initial) || hasDistribution(draft.annuel))
+    : (isSCPI && (hasDistribution(draft.initial) || hasDistribution(draft.annuel)));
 
   return (
     <div className="vcm-overlay" onClick={onClose}>
@@ -270,6 +275,7 @@ export function VersementConfigModal({
             distribution={draft.distribution}
             isSCPI={isSCPI}
             isCTO={isCTO}
+            isExpert={isExpert}
             showCapiBlock={showCapiBlock}
             showDistribBlock={showDistribBlock}
             onUpdateInitial={updateInitial}
@@ -282,28 +288,31 @@ export function VersementConfigModal({
             annuel={draft.annuel}
             isPER={isPER}
             isSCPI={isSCPI}
+            isExpert={isExpert}
             onUpdateAnnuel={updateAnnuel}
             onUpdateAnnuelAlloc={updateAnnuelAlloc}
             onUpdateAnnuelOption={updateAnnuelOption}
           />
 
-          <VersementPonctuelsSection
-            ponctuels={draft.ponctuels}
-            dureeEpargne={dureeEpargne}
-            isSCPI={isSCPI}
-            onAddPonctuel={addPonctuel}
-            onUpdatePonctuel={updatePonctuel}
-            onUpdatePonctuelAlloc={updatePonctuelAlloc}
-            onRemovePonctuel={removePonctuel}
-            RemoveIcon={XIcon}
-          />
+          {isExpert && (
+            <VersementPonctuelsSection
+              ponctuels={draft.ponctuels}
+              dureeEpargne={dureeEpargne}
+              isSCPI={isSCPI}
+              onAddPonctuel={addPonctuel}
+              onUpdatePonctuel={updatePonctuel}
+              onUpdatePonctuelAlloc={updatePonctuelAlloc}
+              onRemovePonctuel={removePonctuel}
+              RemoveIcon={XIcon}
+            />
+          )}
         </div>
 
         <div className="vcm__footer">
           <button type="button" className="vcm__btn vcm__btn--secondary" onClick={onClose}>
             Annuler
           </button>
-          <button type="button" className="vcm__btn vcm__btn--primary" onClick={() => onSave(draft)}>
+          <button type="button" className="vcm__btn vcm__btn--primary" onClick={() => onSave(isExpert ? draft : { ...draft, ponctuels: [] })}>
             Valider
           </button>
         </div>
