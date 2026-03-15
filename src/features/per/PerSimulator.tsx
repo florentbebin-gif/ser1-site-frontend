@@ -8,7 +8,6 @@
 
 import { useContext, useCallback } from 'react';
 import { usePerCalc } from './usePerCalc';
-import { exportPerPptx } from '../../pptx/exports/perExport';
 import { exportAndDownloadPerXlsx } from './perXlsx';
 import { useTheme } from '../../settings/ThemeProvider';
 import { SessionGuardContext } from '../../App';
@@ -24,28 +23,8 @@ export default function PerSimulator() {
     form, result, setField, compute, reset, hasResult,
   } = usePerCalc();
 
-  const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
+  const { pptxColors } = useTheme();
   const { sessionExpired, canExport } = useContext(SessionGuardContext);
-
-  const handleExportPptx = useCallback(async () => {
-    if (!result || !canExport) return;
-    const r = result.result;
-    await exportPerPptx(
-      {
-        versementAnnuel: r.versementAnnuel,
-        dureeAnnees: r.dureeAnnees,
-        tmi: r.tmi,
-        capitalTerme: r.capitalTerme,
-        economieImpotTotale: r.economieImpotTotale,
-        renteAnnuelleEstimee: r.renteAnnuelleEstimee,
-        renteMensuelleEstimee: r.renteMensuelleEstimee,
-        capitalNetSortie: r.capitalNetSortie,
-        tauxRendementInterne: r.tauxRendementInterne,
-      },
-      pptxColors,
-      { logoUrl: cabinetLogo, logoPlacement },
-    );
-  }, [result, canExport, pptxColors, cabinetLogo, logoPlacement]);
 
   const handleExportXlsx = useCallback(async () => {
     if (!result || !canExport) return;
@@ -229,14 +208,6 @@ export default function PerSimulator() {
               </p>
             )}
             <div className="per-export-bar">
-              <button
-                type="button"
-                className="per-btn per-btn--accent"
-                onClick={handleExportPptx}
-                disabled={!canExport}
-              >
-                Exporter PPTX
-              </button>
               <button
                 type="button"
                 className="per-btn per-btn--accent"

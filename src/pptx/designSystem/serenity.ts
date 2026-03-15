@@ -965,18 +965,15 @@ export function addTextBox(
  *   ch-01 → IR
  *   ch-02 → Succession, Placement
  *   ch-03 → IR
- *   ch-04 → PER
  *   ch-05 → Credit
  *   ch-06 → Succession
  *   ch-07 → Credit
- *   ch-08 → PER
  *   ch-09 → Placement
  */
 export const CHAPTER_IMAGE_POOLS: Record<string, readonly number[]> = {
   ir:         [1, 3],  // source de vérité — inchangé
   credit:     [5, 7],  // diversifié vs IR (était [1, 3])
   succession: [2, 6],  // diversifié (était [1, 3])
-  per:        [4, 8],  // diversifié (était [2, 4])
   placement:  [9, 2],  // futur simulateur
 } as const;
 
