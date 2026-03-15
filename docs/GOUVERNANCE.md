@@ -17,6 +17,8 @@ Toute personne qui touche : CSS/UI, exports, thème, Settings.
 - [Système de thème V5 (3 modes)](#système-de-thème-v5-3-modes)
 - [Sécurité & observabilité (règles)](#sécurité--observabilité-règles)
 - [Anti-patterns](#anti-patterns)
+- [Gouvernance PPTX](#gouvernance-pptx)
+- [Gouvernance Excel](#gouvernance-excel)
 - [Références code](#références-code)
 
 ---
@@ -835,6 +837,289 @@ Budget : ≤ 1.2 Mo/image (alerte à 1.6 Mo), ≤ 9 Mo total.
 **Fichiers legacy (hors Serenity — ne pas s'en inspirer) :**
 - `src/pptx/auditPptx.ts`
 - `src/pptx/strategyPptx.ts`
+
+---
+
+## Gouvernance Excel
+
+### Source de vérité
+Les exports **sim/ir** et **sim/credit** sont les deux seuls exports Excel finalisés et constituent
+la source de vérité. Tout nouvel export Excel doit s'aligner sur leurs patterns.
+
+Succession et PER sont conformes à l'infrastructure mais présentent de petites divergences
+documentées dans la section [Dettes techniques](#dettes-techniques-excel).
+
+Placement est une **dette technique majeure** : format XLS XML legacy, pas de styles OOXML.
+
+---
+
+### Infrastructure : xlsxBuilder
+
+**Fichier** : `src/utils/export/xlsxBuilder.ts`
+
+Tous les exports doivent utiliser `buildXlsxBlob()` de ce module. Il génère un fichier OOXML
+natif (ZIP) compatible Excel / LibreOffice / Numbers sans dépendance serveur.
+
+```ts
+// Import minimal requis
+import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../../../utils/export/xlsxBuilder';
+import type { XlsxCell, XlsxSheet } from '../../../utils/export/xlsxBuilder';
+
+// Helper local recommandé (copier depuis IR ou Succession)
+const cell = (v: string | number, style?: string): XlsxCell => ({ v, style });
+// ou version courte avec helpers nommés :
+function h(text: string): XlsxCell { return { v: text, style: 'sHeader' }; }
+function sec(text: string): XlsxCell { return { v: text, style: 'sSection' }; }
+function money(v: number): XlsxCell { return { v, style: 'sMoney' }; }
+function pct(v: number): XlsxCell { return { v: v / 100, style: 'sPercent' }; }
+```
+
+❌ **Interdits** :
+- Le module `src/utils/export/exportExcel.ts` (format XML MS-Office legacy, produit `.xls`)
+- Toute génération de string XML Excel à la main
+- L'extension `.xls` dans le nom de fichier de sortie
+
+---
+
+### Couleurs
+
+| Rôle | Couleur | Source | Note |
+|---|---|---|---|
+| `headerFill` | `c1` | `themeColors?.c1` | Couleur accent principale du thème courant |
+| `sectionFill` | `c7` | `themeColors?.c7` | Couleur de séparation du thème courant |
+
+Les deux couleurs doivent **toujours** provenir des props du thème courant, pas de `DEFAULT_COLORS`.
+
+```ts
+// Correct (IR et Credit — source de vérité)
+const blob = await buildXlsxBlob({
+  sheets,
+  headerFill: themeColors?.c1,
+  sectionFill: themeColors?.c7,
+});
+
+// Incorrect (Succession et PER — dette)
+const blob = await buildXlsxBlob({
+  sheets,
+  headerFill: themeColor,         // themeColor = c1 ✓
+  sectionFill: DEFAULT_COLORS.c8, // ← hardcoded, ne suit pas le thème ✗
+});
+```
+
+---
+
+### Tokens de style
+
+Six tokens disponibles dans `xlsxBuilder` :
+
+| Token | Usage | Format OOXML |
+|---|---|---|
+| `sHeader` | En-tête de colonne | Fond `c1`, texte contrasté auto, gras, centré |
+| `sSection` | Titre de section (séparateur) | Fond `c7`, gras |
+| `sText` | Texte ordinaire, labels | Pas de format particulier |
+| `sCenter` | Valeur centrée (ex. : nombre de parts) | Alignement centre |
+| `sMoney` | Montant en euros | `#,##0 "€"` — 0 décimale, séparateur milliers, € suffixé |
+| `sPercent` | Taux/pourcentage | `0.00%` — 2 décimales, % suffixé |
+
+Tout token non listé ci-dessus sera ignoré (style par défaut).
+
+---
+
+### Formatage des valeurs
+
+#### Montants € — style `sMoney`
+- Passer la **valeur numérique brute**, le format OOXML s'applique automatiquement.
+- Arrondir les calculs intermédiaires avant le passage : `Math.round(value)`.
+- Le style produit automatiquement : `100 000 €` avec séparateur milliers français.
+
+```ts
+// Correct
+cell(result.irNet || 0, 'sMoney')           // → "6 913 €"
+cell(Math.round(line.interet), 'sMoney')    // → "1 234 €"
+
+// Incorrect ❌
+cell(`${result.irNet} €`, 'sText')          // → "6913 €" (pas de séparateur, pas de style)
+cell('1 000 €', 'sText')                    // → string brute, non filtrable dans Excel
+```
+
+#### Pourcentages — style `sPercent`
+- Toujours diviser par 100 avant de passer la valeur (OOXML attend un flottant entre 0 et 1).
+- Le style produit automatiquement : `30,00%`.
+
+```ts
+// Correct — taux en % (ex. tmiRate = 30)
+cell((result.tmiRate || 0) / 100, 'sPercent')    // → "30,00%"
+
+// Correct — taux déjà en décimal (ex. tauxNominal = 0.035)
+cell(loanTaux / 100, 'sPercent')                  // → "3,50%"
+
+// Incorrect ❌
+cell('30 %', 'sText')                             // → non filtrable, pas de style
+cell(`${taux.toFixed(2)} %`, 'sText')             // → "30.00 %" (virgule anglaise)
+cell(30 / 100, 'sPercent')                        // → correct
+```
+
+#### Textes libres
+- Utiliser `sText` pour les labels, descriptions, noms.
+- Utiliser `sCenter` pour des valeurs numériques affichées sans format monétaire (ex. : nombre de parts, durée).
+- Les chaînes de type `"Oui"` / `"Non"`, `"Marié / Pacsé"`, noms de zones géographiques → `sText`.
+
+---
+
+### Structure des onglets
+
+#### Pattern 2 colonnes Clé / Valeur (onglets Paramètres, Résultats, Inputs)
+
+```
+Ligne 1  : [ sHeader "Champ"   | sHeader "Valeur"  ]
+Ligne 2  : [ sSection "Revenus"| sSection ""        ]
+Ligne 3  : [ sText "Salaires"  | sMoney 45000       ]
+...
+```
+
+- La première colonne contient toujours les labels.
+- Les cellules vides à droite d'une `sSection` reçoivent `cell('', 'sSection')`.
+- Pas de ligne de total en bas pour ces onglets (total dans l'onglet Résultats).
+
+#### Pattern tableau horizontal N colonnes (onglets Détails, chronologie)
+
+```
+Ligne 1 : [ sHeader "Héritier" | sHeader "Part brute" | sHeader "Droits" | … ]
+Ligne 2 : [ sText "Enfant"     | sMoney 150000        | sMoney 12356     | … ]
+…
+Ligne N : [ sSection "TOTAL"   | sMoney 300000        | sMoney 24712     | … ]  ← ligne total
+```
+
+- En-têtes sur la première ligne.
+- Ligne de total optionnelle avec `sSection` (utilisée dans Succession/Détails).
+- Cellules vides dans la ligne total → `{ v: '', style: 'sSection' }`.
+
+#### Pattern tableau transposé (onglets amortissement Credit)
+
+Utilisé quand les périodes sont nombreuses (mois ou années sur 20–30 ans) :
+les **séries sont en lignes**, les **périodes en colonnes**.
+
+```ts
+// Avant d'ajouter au sheet : transposer le tableau
+const rows = [headerRow, ...dataRows];
+const transposed = transpose(rows); // utilitaire interne de useCreditExports
+sheet = { name: 'Résumé', rows: transposed, columnWidths: [18, 14, 14, …] };
+```
+
+---
+
+### Largeurs de colonnes (`columnWidths`)
+
+Valeurs en unités de largeur Excel (approximativement en caractères).
+
+| Cas d'usage | Valeurs recommandées |
+|---|---|
+| 2 colonnes clé/valeur — labels courts | `[30, 20]` |
+| 2 colonnes clé/valeur — labels longs (IR) | `[36, 22]` |
+| 2 colonnes clé/valeur — très larges (hypothèses) | `[45, 30]` |
+| 2 colonnes clé/valeur — chronologie | `[42, 35]` |
+| Tableau amortissement (8 col.) | `[18, 14, 14, 14, 14, 14, 14, 14]` |
+| Tableau Détails IR (4 col.) | `[36, 18, 14, 18]` |
+| Tableau Détails Succession (6 col.) | `[20, 18, 18, 18, 18, 15]` |
+| Tableau Détails PER (7 col.) | `[10, 18, 18, 15, 15, 18, 18]` |
+
+Toujours déclarer `columnWidths` explicitement — ne pas omettre le paramètre.
+
+---
+
+### Onglet Hypothèses (obligatoire)
+
+Chaque export doit inclure un onglet `Hypothèses` en dernier.
+Structure attendue :
+
+```ts
+function buildHypothesesSheet(): XlsxSheet {
+  const rows = [
+    [h('Hypothèse'), h('Référence')],
+    ['Libellé de l\'hypothèse 1', 'CGI Art. XXX'],
+    ['Libellé de l\'hypothèse 2', 'Hypothèse simplificatrice'],
+    [],
+    [sec('Avertissement'), sec('')],
+    ['Ce document est établi à titre strictement indicatif.', ''],
+    ['Il ne constitue pas un conseil juridique ou fiscal.', ''],
+  ];
+  return { name: 'Hypothèses', rows, columnWidths: [45, 30] };
+}
+```
+
+- Toujours en dernière position dans le tableau `sheets`.
+- Contient : les hypothèses + références CGI + avertissement légal obligatoire.
+
+---
+
+### Validation post-génération (obligatoire)
+
+Toujours appeler `validateXlsxBlob()` après `buildXlsxBlob()` :
+
+```ts
+const blob = await buildXlsxBlob({ sheets, headerFill: themeColors?.c1, sectionFill: themeColors?.c7 });
+const isValid = await validateXlsxBlob(blob);
+if (!isValid) throw new Error('XLSX invalide (signature PK manquante).');
+```
+
+Cette validation vérifie la signature ZIP (octets `PK`). Elle protège contre les régressions
+silencieuses de `xlsxBuilder`.
+
+---
+
+### Nommage des fichiers
+
+| Pattern | Exemple | Statut |
+|---|---|---|
+| `simulation-{sim}-YYYYMMDD.xlsx` | `simulation-ir-20260315.xlsx` | ✅ Recommandé (IR) |
+| `Simulation-{Sim}.xlsx` | `Simulation-Succession.xlsx` | ✅ Acceptable |
+| `SER1_{Sim}_YYYY-MM-DD.xls` | `SER1_Placement_2026-03-15.xls` | ❌ Interdit (legacy) |
+
+Le préfixe `SER1_` est déprécié. L'extension `.xls` est interdite.
+
+Pour obtenir la date au format `YYYYMMDD` :
+```ts
+const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
+downloadXlsx(blob, `simulation-${simId}-${dateStr}.xlsx`);
+```
+
+---
+
+### Structure des onglets par simulateur (référence)
+
+| Simulateur | Onglets dans l'ordre | Source |
+|---|---|---|
+| **IR** | Paramètres · Synthèse impôts · Détails calculs | `useIrExportHandlers.ts` |
+| **Credit** | Paramètres · Résumé · Prêt 1 [· Prêt 2 · Prêt 3] | `useCreditExports.ts` |
+| **Succession** | Inputs · Résultats · Détails · Chronologie · Hypothèses | `successionXlsx.ts` |
+| **PER** | Inputs · Résultats · Détails · Hypothèses | `perXlsx.ts` |
+| **Placement** | *Format legacy — non conforme* | `placementExcelExport.ts` |
+
+---
+
+### Checklist — créer un nouvel export Excel
+
+| Étape | Action | Fichier |
+|---|---|---|
+| 1 | Créer `build{Sim}XlsxSheet()` pour chaque onglet (fonctions pures) | `src/features/{sim}/{sim}Xlsx.ts` |
+| 2 | Terminer par un onglet `Hypothèses` | idem |
+| 3 | Appeler `buildXlsxBlob({ sheets, headerFill: c1, sectionFill: c7 })` | idem |
+| 4 | Valider avec `validateXlsxBlob(blob)` | idem |
+| 5 | Télécharger avec `downloadXlsx(blob, filename)` | idem |
+| 6 | Nommer le fichier `simulation-{sim}-YYYYMMDD.xlsx` | idem |
+| 7 | Exporter `exportAndDownload{Sim}Xlsx()` en point d'entrée | idem |
+| 8 | Écrire un test smoke (PK header + blob non vide) | `src/features/{sim}/__tests__/{sim}Export.test.ts` |
+
+---
+
+### Dettes techniques Excel
+
+| Simulateur | Problème | Impact |
+|---|---|---|
+| **Placement** | Format XLS XML legacy (`exportExcel.ts`), pas de styles, `.xls` | Pas de formatage €/%, pas de couleurs thème |
+| **Succession** | `sectionFill: DEFAULT_COLORS.c8` en dur | Ignorer le thème courant pour les sections |
+| **PER** | `sectionFill: DEFAULT_COLORS.c8` en dur | Idem |
+| **Credit** | Nom de fichier `SER1_Annuel.xlsx` (préfixe déprécié) | Incohérence nommage |
 
 ---
 
