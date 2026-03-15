@@ -244,12 +244,19 @@ export type PlacementSynthesisSlideSpec = {
 /**
  * Placement Detail Slide Specification — 2-panel phase detail (slides 4-5-6)
  */
+export type PlacementDetailFlowBar = {
+  gross: number;
+  tax: number;
+  net: number;
+  taxLabel: string;
+};
+
 export type PlacementDetailSlideSpec = {
   type: 'placement-detail';
   title: string;
   subtitle: string;
-  produit1: { label: string; metrics: Array<{ icon: BusinessIconName; label: string; value: string }>; params?: string[] };
-  produit2: { label: string; metrics: Array<{ icon: BusinessIconName; label: string; value: string }>; params?: string[] };
+  produit1: { label: string; metrics: Array<{ icon: BusinessIconName; label: string; value: string }>; params?: string[]; flowBar?: PlacementDetailFlowBar };
+  produit2: { label: string; metrics: Array<{ icon: BusinessIconName; label: string; value: string }>; params?: string[]; flowBar?: PlacementDetailFlowBar };
   optionalNote?: string;
 };
 
