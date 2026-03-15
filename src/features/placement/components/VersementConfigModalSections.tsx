@@ -1,6 +1,7 @@
 import type { JSX } from 'react';
 import {
   type CapitalisationConfig,
+  type DeductionInitiale,
   type DistributionConfig,
   type VersementAnnuel,
   type VersementEntry,
@@ -42,6 +43,7 @@ interface VersementInitialSectionProps {
   distribution: DistributionConfig;
   isSCPI: boolean;
   isCTO: boolean;
+  isPER: boolean;
   isExpert: boolean;
   showCapiBlock: boolean;
   showDistribBlock: boolean;
@@ -55,6 +57,8 @@ interface VersementInitialSectionProps {
     field: K,
     value: DistributionConfig[K],
   ) => void;
+  deductionInitiale: DeductionInitiale;
+  onUpdateDeductionInitiale: (val: DeductionInitiale) => void;
 }
 
 export function VersementInitialSection({
@@ -63,6 +67,7 @@ export function VersementInitialSection({
   distribution,
   isSCPI,
   isCTO,
+  isPER,
   isExpert,
   showCapiBlock,
   showDistribBlock,
@@ -70,6 +75,8 @@ export function VersementInitialSection({
   onUpdateInitialAlloc,
   onUpdateCapitalisation,
   onUpdateDistribution,
+  deductionInitiale,
+  onUpdateDeductionInitiale,
 }: VersementInitialSectionProps) {
   return (
     <VersementSectionShell step="1" title="Versement initial">
@@ -77,6 +84,31 @@ export function VersementInitialSection({
         <div className="vcm__row">
           <InputEuro label="Montant" value={initial.montant} onChange={(value) => onUpdateInitial('montant', value)} />
           {!isSCPI && <InputPct label="Frais d'entrée" value={initial.fraisEntree} onChange={(value) => onUpdateInitial('fraisEntree', value)} />}
+          {isExpert && isPER && (
+            <>
+              <div className="vcm__field vcm__field--compact">
+                <label className="vcm__label">Déductibilité</label>
+                <select
+                  className="vcm__select vcm__select--small"
+                  value={deductionInitiale.mode}
+                  onChange={(e) => onUpdateDeductionInitiale({
+                    mode: e.target.value as 'tmi' | 'montant',
+                    montant: e.target.value === 'tmi' ? 0 : deductionInitiale.montant,
+                  })}
+                >
+                  <option value="tmi">Déduction TMI</option>
+                  <option value="montant">Montant fixe</option>
+                </select>
+              </div>
+              {deductionInitiale.mode === 'montant' && (
+                <InputEuro
+                  label="Économie IR"
+                  value={deductionInitiale.montant}
+                  onChange={(val) => onUpdateDeductionInitiale({ mode: 'montant', montant: val })}
+                />
+              )}
+            </>
+          )}
         </div>
 
         <div className="vcm__field">

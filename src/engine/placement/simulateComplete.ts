@@ -133,6 +133,7 @@ export function simulateComplete(
       cumulPSFondsEuro: epargne.cumulPSFondsEuro,
       cumulRevenusDistribues: epargne.cumulRevenusDistribues,
       cumulFiscaliteRevenus: epargne.cumulFiscaliteRevenus,
+      cumulRevenusNetsPercus: epargne.cumulRevenusNetsPercus,
       rows: epargne.rows,
     },
 
@@ -164,8 +165,8 @@ export function simulateComplete(
 
     totaux: {
       effortTotal: epargne.cumulEffort,
-      revenusNetsEpargne: (epargne.cumulRevenusDistribues || 0) - (epargne.cumulFiscaliteRevenus || 0),
-      effortReel: epargne.cumulEffort - ((epargne.cumulRevenusDistribues || 0) - (epargne.cumulFiscaliteRevenus || 0)),
+      revenusNetsEpargne: epargne.cumulRevenusNetsPercus,
+      effortReel: epargne.cumulEffort - epargne.cumulRevenusNetsPercus,
       economieIRTotal: epargne.cumulEconomieIR,
       revenusNetsLiquidation: liquidation.cumulRetraitsNetsAuDeces,
       revenusNetsTotal: liquidation.cumulRetraitsNets,

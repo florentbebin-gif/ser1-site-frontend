@@ -7,6 +7,7 @@ import { ENVELOPE_LABELS } from '@/engine/placement';
 import { normalizeVersementConfig } from '@/engine/placement/versementConfig';
 import type {
   CapitalisationConfig,
+  DeductionInitiale,
   DistributionConfig,
   VersementAnnuel,
   VersementConfig,
@@ -174,6 +175,13 @@ export function VersementConfigModal({
     }));
   };
 
+  const updateDeductionInitiale = (val: DeductionInitiale) => {
+    setDraft((currentDraft) => ({
+      ...currentDraft,
+      deductionInitiale: val,
+    }));
+  };
+
   const addPonctuel = () => {
     setDraft((currentDraft) => ({
       ...currentDraft,
@@ -275,6 +283,7 @@ export function VersementConfigModal({
             distribution={draft.distribution}
             isSCPI={isSCPI}
             isCTO={isCTO}
+            isPER={isPER}
             isExpert={isExpert}
             showCapiBlock={showCapiBlock}
             showDistribBlock={showDistribBlock}
@@ -282,6 +291,8 @@ export function VersementConfigModal({
             onUpdateInitialAlloc={updateInitialAlloc}
             onUpdateCapitalisation={updateCapitalisation}
             onUpdateDistribution={updateDistribution}
+            deductionInitiale={draft.deductionInitiale}
+            onUpdateDeductionInitiale={updateDeductionInitiale}
           />
 
           <VersementAnnualSection

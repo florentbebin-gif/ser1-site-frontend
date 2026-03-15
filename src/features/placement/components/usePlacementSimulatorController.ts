@@ -3,7 +3,7 @@ import { usePlacementSettings, type UsePlacementSettingsResult } from '@/hooks/u
 import { useFiscalContext } from '@/hooks/useFiscalContext';
 import { simulateComplete, compareProducts } from '@/engine/placement';
 import type { CompareResult } from '@/engine/placement/types';
-import { normalizeVersementConfig } from '@/engine/placement/versementConfig';
+import { DEFAULT_INITIAL, DEFAULT_ANNUEL, DEFAULT_DISTRIBUTION, normalizeVersementConfig } from '@/engine/placement/versementConfig';
 import type { VersementConfig, VersementConfigInput } from '@/engine/placement/versementConfig';
 import { onResetEvent, storageKeyFor } from '@/utils/reset';
 import { savePlacementState, loadPlacementStateFromFile } from '../utils/placementPersistence';
@@ -284,6 +284,15 @@ export function usePlacementSimulatorController(isExpert: boolean) {
           annuel: { ...currentVc.annuel, fraisEntree: 0, pctCapitalisation: 0, pctDistribution: 100 },
           ponctuels: (currentVc.ponctuels || []).map((p) => ({ ...p, pctCapitalisation: 0, pctDistribution: 100 })),
           distribution: { ...currentVc.distribution, rendementAnnuel: 0 },
+        };
+      } else if ('envelope' in updatedPatch && s.products[index].envelope === 'SCPI') {
+        const currentVc = s.products[index].versementConfig;
+        updatedPatch.versementConfig = {
+          ...currentVc,
+          initial: { ...currentVc.initial, fraisEntree: DEFAULT_INITIAL.fraisEntree, pctCapitalisation: 100, pctDistribution: 0 },
+          annuel: { ...currentVc.annuel, fraisEntree: DEFAULT_ANNUEL.fraisEntree, pctCapitalisation: 100, pctDistribution: 0 },
+          ponctuels: (currentVc.ponctuels || []).map((p) => ({ ...p, pctCapitalisation: 100, pctDistribution: 0 })),
+          distribution: { ...DEFAULT_DISTRIBUTION },
         };
       }
       return {
