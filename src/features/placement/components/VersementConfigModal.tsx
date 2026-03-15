@@ -181,7 +181,7 @@ export function VersementConfigModal({
         ...currentDraft.ponctuels,
         {
           annee: Math.min(5, dureeEpargne),
-          montant: 5000,
+          montant: 0,
           fraisEntree: currentDraft.initial.fraisEntree,
           pctCapitalisation: isSCPI ? 0 : currentDraft.initial.pctCapitalisation,
           pctDistribution: isSCPI ? 100 : currentDraft.initial.pctDistribution,

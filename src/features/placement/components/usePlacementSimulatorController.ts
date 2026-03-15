@@ -273,7 +273,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
       if (patch.envelope === 'PER_BANCAIRE_UI') {
         updatedPatch.envelope = 'PER';
         updatedPatch.perBancaire = true;
-      } else if ('envelope' in patch && patch.envelope !== 'PER') {
+      } else if ('envelope' in patch) {
         updatedPatch.perBancaire = false;
       }
       if (updatedPatch.envelope === 'SCPI') {

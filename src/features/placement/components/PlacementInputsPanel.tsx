@@ -78,18 +78,22 @@ export function PlacementInputsPanel({
     ? (produit2?.transmission?.assiette || 0)
     : 0;
 
+  const nbBenef = Math.max(1, state.transmission.nbBeneficiaires);
+  const assietteDmtgProduit1PerBenef = assietteDmtgProduit1 / nbBenef;
+  const assietteDmtgProduit2PerBenef = assietteDmtgProduit2 / nbBenef;
+
   const dmtgConsumptionRatioProduit1 = computeDmtgConsumptionRatio(
-    assietteDmtgProduit1,
+    assietteDmtgProduit1PerBenef,
     selectedDmtgTrancheWidth ?? 0,
   );
   const dmtgConsumptionRatioProduit2 = computeDmtgConsumptionRatio(
-    assietteDmtgProduit2,
+    assietteDmtgProduit2PerBenef,
     selectedDmtgTrancheWidth ?? 0,
   );
 
   const showDmtgDisclaimer =
-    shouldShowDmtgDisclaimer(assietteDmtgProduit1, selectedDmtgTrancheWidth ?? 0)
-    || shouldShowDmtgDisclaimer(assietteDmtgProduit2, selectedDmtgTrancheWidth ?? 0);
+    shouldShowDmtgDisclaimer(assietteDmtgProduit1PerBenef, selectedDmtgTrancheWidth ?? 0)
+    || shouldShowDmtgDisclaimer(assietteDmtgProduit2PerBenef, selectedDmtgTrancheWidth ?? 0);
 
   const dmtgConsumptionPercentProduit1 = Math.min(100, Math.round(dmtgConsumptionRatioProduit1 * 100));
   const dmtgConsumptionPercentProduit2 = Math.min(100, Math.round(dmtgConsumptionRatioProduit2 * 100));

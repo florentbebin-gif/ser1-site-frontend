@@ -67,14 +67,14 @@ export interface VersementConfigInput {
 }
 
 export const DEFAULT_INITIAL: VersementEntry = {
-  montant: 10000,
+  montant: 0,
   fraisEntree: 0.02,
   pctCapitalisation: 100,
   pctDistribution: 0,
 };
 
 export const DEFAULT_ANNUEL: VersementAnnuel = {
-  montant: 5000,
+  montant: 0,
   fraisEntree: 0.02,
   pctCapitalisation: 100,
   pctDistribution: 0,

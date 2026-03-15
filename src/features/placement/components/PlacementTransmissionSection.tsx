@@ -65,26 +65,32 @@ export function PlacementTransmissionSection({
             <tr>
               <td>Choix du bénéficiaire</td>
               <td colSpan={2}>
-                <select
-                  className="pl-select"
-                  value={state.transmission.beneficiaryType || 'enfants'}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    if (value === 'conjoint') {
-                      setTransmission({ beneficiaryType: value, nbBeneficiaires: 1 });
-                      return;
-                    }
-                    setTransmission({ beneficiaryType: value });
-                  }}
-                >
-                  {BENEFICIARY_OPTIONS
-                    .filter((option) => option.value !== 'conjoint' || state.client.situation !== 'single')
-                    .map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                </select>
+                {(() => {
+                  const isSingleOption = state.client.situation === 'single';
+                  return (
+                    <select
+                      className={`pl-select${isSingleOption ? ' is-forced' : ''}`}
+                      disabled={isSingleOption}
+                      value={state.transmission.beneficiaryType || 'enfants'}
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        if (value === 'conjoint') {
+                          setTransmission({ beneficiaryType: value, nbBeneficiaires: 1 });
+                          return;
+                        }
+                        setTransmission({ beneficiaryType: value });
+                      }}
+                    >
+                      {BENEFICIARY_OPTIONS
+                        .filter((option) => option.value !== 'conjoint' || !isSingleOption)
+                        .map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                    </select>
+                  );
+                })()}
               </td>
             </tr>
 

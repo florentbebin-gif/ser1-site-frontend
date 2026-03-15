@@ -588,6 +588,39 @@
   overflow-x: auto;
 }
 
+.pl-table-top-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 6px;
+  margin-bottom: 4px;
+}
+
+.pl-table-top-scroll > div {
+  height: 1px;
+}
+
+.pl-table-scroll-wrap {
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.pl-table-top-scroll::-webkit-scrollbar,
+.pl-table-scroll-wrap::-webkit-scrollbar {
+  height: 4px;
+}
+
+.pl-table-top-scroll::-webkit-scrollbar-track,
+.pl-table-scroll-wrap::-webkit-scrollbar-track {
+  background: var(--color-c8);
+  border-radius: 2px;
+}
+
+.pl-table-top-scroll::-webkit-scrollbar-thumb,
+.pl-table-scroll-wrap::-webkit-scrollbar-thumb {
+  background: var(--color-c5);
+  border-radius: 2px;
+}
+
 .pl-collapsible {
   margin-bottom: 12px;
 }
