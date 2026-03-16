@@ -11,7 +11,7 @@
  */
 
 import type PptxGenJS from 'pptxgenjs';
-import type { PlacementDetailSlideSpec, PlacementDetailFlowBar, ExportContext } from '../theme/types';
+import type { PlacementDetailSlideSpec, PlacementDetailFlowBar, PlacementDetailGainBar, ExportContext } from '../theme/types';
 import {
   TYPO,
   COORDS_CONTENT,
@@ -92,7 +92,7 @@ function drawFlowBar(
 
   // Couleurs thème — sans hardcode
   const bgColor = lightenHex(theme.colors.color8.replace('#', ''), 0.3);
-  const warningColor = theme.colors.color9.replace('#', '');
+  const warningColor = lightenHex(theme.colors.color9.replace('#', ''), 0.35);
 
   const barH = 0.24;
   const barY = startY + 0.22;   // 0.22" réservé pour label "Brut" au-dessus
@@ -106,7 +106,7 @@ function drawFlowBar(
     h: 0.18,
     fontSize: 7,
     italic: true,
-    color: roleColor(theme, 'panelBorder'),
+    color: theme.colors.color9.replace('#', ''),
     align: 'right',
     valign: 'middle',
   });
@@ -122,26 +122,25 @@ function drawFlowBar(
   });
 
   // Segment net (productColor)
-  const netW = Math.max(0.06, barMaxW * netRatio);
-  slide.addShape('rect', {
-    x: barX,
-    y: barY,
-    w: netW,
-    h: barH,
-    fill: { color: productColor },
-    line: { color: productColor, width: 0 },
-  });
+  const netW = Math.max(0, barMaxW * netRatio);
+  if (netW > 0) {
+    slide.addShape('rect', {
+      x: barX, y: barY, w: netW, h: barH,
+      fill: { color: productColor },
+      line: { color: productColor, width: 0 },
+    });
+  }
 
-  // Segment fiscal (color9), accolé à droite du net
-  const taxW = Math.max(0.04, barMaxW * taxRatio);
-  slide.addShape('rect', {
-    x: barX + netW,
-    y: barY,
-    w: taxW,
-    h: barH,
-    fill: { color: warningColor },
-    line: { color: warningColor, width: 0 },
-  });
+  // Segment fiscal — seulement si tax > 0, clamped pour ne pas dépasser barMaxW
+  const taxAvailable = barMaxW - netW;
+  const taxW = taxRatio > 0 ? Math.max(0, Math.min(taxAvailable, barMaxW * taxRatio)) : 0;
+  if (taxW > 0) {
+    slide.addShape('rect', {
+      x: barX + netW, y: barY, w: taxW, h: barH,
+      fill: { color: warningColor },
+      line: { color: warningColor, width: 0 },
+    });
+  }
 
   // Labels dessous — Net gauche / Fiscal droite
   addTextFr(slide, `Net : ${fmt(flowBar.net)}`, {
@@ -169,6 +168,92 @@ function drawFlowBar(
 }
 
 // ============================================================================
+// GAIN BAR (épargne — versements vs gains)
+// ============================================================================
+
+function drawGainBar(
+  slide: PptxGenJS.Slide,
+  gainBar: PlacementDetailGainBar,
+  panelX: number,
+  panelW: number,
+  startY: number,
+  productColor: string,
+  theme: ExportContext['theme'],
+): void {
+  const barMaxW = panelW - 2 * PANEL.metricPaddingX;
+  const barX = panelX + PANEL.metricPaddingX;
+  const lightColor = lightenHex(productColor, 0.45);
+  const color9 = theme.colors.color9.replace('#', '');
+
+  const versementsRatio = gainBar.capitalAcquis > 0
+    ? Math.min(1, gainBar.versements / gainBar.capitalAcquis)
+    : 1;
+  const gainsRatio = gainBar.capitalAcquis > 0 && gainBar.gains > 0
+    ? gainBar.gains / gainBar.capitalAcquis
+    : 0;
+
+  const barH = 0.24;
+  const barY = startY + 0.22;
+  const labelsY = barY + barH + 0.04;
+
+  // Label "Capital acquis" au-dessus
+  addTextFr(slide, `Capital acquis : ${fmt(gainBar.capitalAcquis)}`, {
+    x: barX, y: startY, w: barMaxW, h: 0.18,
+    fontSize: 7, italic: true, color: color9,
+    align: 'right', valign: 'middle',
+  });
+
+  // Segment Versements (productColor) — toujours présent
+  const versW = barMaxW * versementsRatio;
+  slide.addShape('rect', {
+    x: barX, y: barY, w: versW, h: barH,
+    fill: { color: productColor },
+    line: { color: productColor, width: 0 },
+  });
+
+  // Segment Gains (lighter) — seulement si gains > 0
+  if (gainBar.gains > 0) {
+    const gainsW = barMaxW * gainsRatio;
+    slide.addShape('rect', {
+      x: barX + versW, y: barY, w: gainsW, h: barH,
+      fill: { color: lightColor },
+      line: { color: lightColor, width: 0 },
+    });
+  }
+
+  // Label Versements
+  addTextFr(slide, `Versements : ${fmt(gainBar.versements)}`, {
+    x: barX, y: labelsY, w: barMaxW * 0.6, h: 0.16,
+    fontSize: TYPO.sizes.footer, bold: true, color: productColor,
+    align: 'left', valign: 'middle',
+  });
+
+  // Label Gains ou Écart
+  if (gainBar.gains > 0) {
+    addTextFr(slide, `Gains : ${fmt(gainBar.gains)}`, {
+      x: barX + barMaxW * 0.4, y: labelsY, w: barMaxW * 0.6, h: 0.16,
+      fontSize: TYPO.sizes.footer, bold: false, color: lightColor,
+      align: 'right', valign: 'middle',
+    });
+  } else if (gainBar.shortfall) {
+    addTextFr(slide, `Écart : −${fmt(gainBar.shortfall)}`, {
+      x: barX + barMaxW * 0.4, y: labelsY, w: barMaxW * 0.6, h: 0.16,
+      fontSize: TYPO.sizes.footer, bold: false, italic: true, color: color9,
+      align: 'right', valign: 'middle',
+    });
+  }
+
+  // Note revenus appréhendés (si > 0)
+  if (gainBar.revenusPercus) {
+    addTextFr(slide, `dont ${fmt(gainBar.revenusPercus)} reçus hors capital`, {
+      x: barX, y: labelsY + 0.16, w: barMaxW, h: 0.14,
+      fontSize: 6.5, italic: true, color: color9,
+      align: 'right', valign: 'middle',
+    });
+  }
+}
+
+// ============================================================================
 // PANEL RENDERER
 // ============================================================================
 
@@ -183,17 +268,16 @@ function drawDetailPanel(
   theme: ExportContext['theme'],
 ): void {
   const cleanColor = productColor.replace('#', '');
-  const lightFill = lightenHex(cleanColor, 0.78);
   const bandeauText = contrastText(cleanColor);
 
-  // Panel outline with shadow
+  // Panel — fill = productColor (élimine le gap aux coins arrondis)
   slide.addShape('roundRect', {
     x: panelX,
     y: panelY,
     w: panelW,
     h: panelH,
     rectRadius: RADIUS.panel,
-    fill: { color: lightFill },
+    fill: { color: cleanColor },
     line: { color: cleanColor, width: 1.5 },
     shadow: {
       type: SHADOW_PARAMS.type,
@@ -205,13 +289,14 @@ function drawDetailPanel(
     },
   });
 
-  // Bandeau
+  // Zone blanche sous bandeau
   slide.addShape('rect', {
-    x: panelX + 0.01,
-    y: panelY + 0.01,
-    w: panelW - 0.02,
-    h: PANEL.bandeauH,
-    fill: { color: cleanColor },
+    x: panelX + 0.015,
+    y: panelY + PANEL.bandeauH,
+    w: panelW - 0.03,
+    h: panelH - PANEL.bandeauH - 0.015,
+    fill: { color: 'FFFFFF' },
+    line: { color: 'FFFFFF', width: 0 },
   });
 
   addTextFr(slide, data.label, {
@@ -257,26 +342,27 @@ function drawDetailPanel(
     });
   }
 
-  // --- Flow bar (optional, slides 5-6) ---
+  // --- Flow bar (optional, slides 5-6) or Gain bar (slide 4 épargne) ---
   const hasFlowBar = !!data.flowBar;
+  const hasGainBar = !hasFlowBar && !!data.gainBar;
   const flowBarTopY = heroTopY + PANEL.heroH + 0.05;
   if (hasFlowBar) {
     drawFlowBar(slide, data.flowBar!, panelX, panelW, flowBarTopY, cleanColor, theme);
+  } else if (hasGainBar) {
+    drawGainBar(slide, data.gainBar!, panelX, panelW, flowBarTopY, cleanColor, theme);
   }
 
   // --- Supporting metrics (metrics[1..]) ---
   const params = data.params ?? [];
   const hasParams = params.length > 0;
-  const paramsReservedH = hasParams ? 0.30 : 0;
+  const paramsReservedH = hasParams ? 0.40 : 0;
 
   const secondaryMetrics = data.metrics.slice(1);
-  const secondaryTopY = hasFlowBar
+  const secondaryTopY = (hasFlowBar || hasGainBar)
     ? flowBarTopY + PANEL.flowBarH + 0.08
     : heroTopY + PANEL.heroH + 0.08;
   const secondaryAvailH = panelY + panelH - secondaryTopY - paramsReservedH - 0.15;
-  const rowSpacing = secondaryMetrics.length > 1
-    ? secondaryAvailH / secondaryMetrics.length
-    : secondaryAvailH;
+  const rowSpacing = Math.min(0.48, secondaryAvailH / Math.max(1, secondaryMetrics.length));
 
   secondaryMetrics.forEach((metric, idx) => {
     const rowY = secondaryTopY + idx * rowSpacing;
@@ -336,14 +422,15 @@ function drawDetailPanel(
       line: { color: lightenHex(cleanColor, 0.93), width: 0 },
     });
 
+    const paramsFontSize = params.join(' · ').length > 120 ? 6.5 : 7;
     addTextFr(slide, params.join(' · '), {
       x: panelX + PANEL.metricPaddingX,
       y: paramsY,
       w: panelW - 2 * PANEL.metricPaddingX,
       h: paramsReservedH,
-      fontSize: 7,
+      fontSize: paramsFontSize,
       italic: true,
-      color: roleColor(theme, 'panelBorder'),
+      color: theme.colors.color9.replace('#', ''),
       align: 'left',
       valign: 'top',
       lineSpacingMultiple: 1.0,

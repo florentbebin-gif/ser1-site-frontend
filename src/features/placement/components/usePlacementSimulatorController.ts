@@ -366,8 +366,10 @@ export function usePlacementSimulatorController(isExpert: boolean) {
         import('@/pptx/presets/placementDeckBuilder'),
         import('@/pptx/export/exportStudyDeck'),
       ]);
+      const stateForCalc = buildPlacementStateForMode(state, isExpert);
+
       const buildProductConfig = (productIndex: number) => {
-        const p = state.products[productIndex];
+        const p = stateForCalc.products[productIndex];
         const vc = p.versementConfig;
         return {
           tmi: state.client.tmiEpargne,
@@ -439,6 +441,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
           },
           totaux: {
             effortReel: results.produit1.totaux.effortReel,
+            revenusNetsEpargne: results.produit1.totaux.revenusNetsEpargne,
             revenusNetsLiquidation: results.produit1.totaux.revenusNetsLiquidation,
             fiscaliteTotale: results.produit1.totaux.fiscaliteTotale,
             capitalTransmisNet: results.produit1.totaux.capitalTransmisNet,
@@ -468,6 +471,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
           },
           totaux: {
             effortReel: results.produit2.totaux.effortReel,
+            revenusNetsEpargne: results.produit2.totaux.revenusNetsEpargne,
             revenusNetsLiquidation: results.produit2.totaux.revenusNetsLiquidation,
             fiscaliteTotale: results.produit2.totaux.fiscaliteTotale,
             capitalTransmisNet: results.produit2.totaux.capitalTransmisNet,
@@ -495,7 +499,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
     } finally {
       setExportLoading(false);
     }
-  }, [results, state, pptxColors, cabinetLogo, logoPlacement]);
+  }, [results, state, isExpert, pptxColors, cabinetLogo, logoPlacement]);
 
   const exportHandlers: PlacementSimulatorExportHandlers = {
     exportExcel,

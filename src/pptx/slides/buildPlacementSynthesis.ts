@@ -40,7 +40,7 @@ const GEO = {
   panelW: 5.55,
   gap: 0.5333,   // 13.3333 - 2*0.85 - 2*5.55
   panelY: 2.42,
-  panelH: 3.80,
+  panelH: 3.60,
 
   bandeauH: 0.44,
   roiHeroH: 0.90,
@@ -50,15 +50,12 @@ const GEO = {
   kpiIconSize: 0.22,
   kpiGridGapX: 0.10,  // gap between left and right KPI columns
 
-  // Timeline
+  // Timeline (segments calculés dynamiquement depuis les âges)
   timeline: {
-    y: 6.58,
-    h: 0.28,
-    dotR: 0.05,
-    seg1X: 1.00,
-    seg1W: 5.17,
-    seg2X: 6.17,
-    seg2W: 6.16,
+    y: 6.42,
+    h: 0.33,
+    startX: 1.00,
+    endX: 12.33,
   },
 } as const;
 
@@ -84,15 +81,6 @@ function contrastText(bgHex: string): string {
   return luminance > 0.55 ? '000000' : 'FFFFFF';
 }
 
-function lightenHex(hex: string, pct: number): string {
-  const clean = hex.replace('#', '');
-  const r = parseInt(clean.substring(0, 2), 16);
-  const g = parseInt(clean.substring(2, 4), 16);
-  const b = parseInt(clean.substring(4, 6), 16);
-  const toHex = (n: number) => Math.round(n).toString(16).padStart(2, '0').toUpperCase();
-  return `${toHex(r + (255 - r) * pct)}${toHex(g + (255 - g) * pct)}${toHex(b + (255 - b) * pct)}`;
-}
-
 // ============================================================================
 // PANEL RENDERER
 // ============================================================================
@@ -105,18 +93,17 @@ function drawPanel(
   theme: ExportContext['theme'],
 ): void {
   const cleanColor = productColor.replace('#', '');
-  const lightFill = lightenHex(cleanColor, 0.78);
   const bandeauTextColor = contrastText(cleanColor);
   const shadowColor = cleanColor;
 
-  // Panel outline with shadow
+  // Panel — fill = productColor (élimine le gap aux coins arrondis)
   slide.addShape('roundRect', {
     x: panelX,
     y: GEO.panelY,
     w: GEO.panelW,
     h: GEO.panelH,
     rectRadius: RADIUS.panel,
-    fill: { color: lightFill },
+    fill: { color: cleanColor },
     line: { color: cleanColor, width: 1.5 },
     shadow: {
       type: SHADOW_PARAMS.type,
@@ -128,13 +115,14 @@ function drawPanel(
     },
   });
 
-  // Bandeau
+  // Zone blanche sous bandeau (couvre le contenu, laisse le bandeau coloré apparent)
   slide.addShape('rect', {
-    x: panelX + 0.01,
-    y: GEO.panelY + 0.01,
-    w: GEO.panelW - 0.02,
-    h: GEO.bandeauH,
-    fill: { color: cleanColor },
+    x: panelX + 0.015,
+    y: GEO.panelY + GEO.bandeauH,
+    w: GEO.panelW - 0.03,
+    h: GEO.panelH - GEO.bandeauH - 0.015,
+    fill: { color: 'FFFFFF' },
+    line: { color: 'FFFFFF', width: 0 },
   });
 
   addTextFr(slide, produit.envelopeLabel, {
@@ -283,35 +271,63 @@ function drawTimeline(
   const tl = GEO.timeline;
   const bgMainColor = roleColor(theme, 'bgMain');
   const color4 = theme.colors.color4.replace('#', '');
+  const dotColor = roleColor(theme, 'textMain');
 
-  // Segment 1 — Épargne
+  // Calcul dynamique des segments selon les âges simulés
+  const totalW = tl.endX - tl.startX;
+  const durationTotal = timeline.ageAuDeces - timeline.ageActuel;
+  const durationEpargne = timeline.ageDebutLiquidation - timeline.ageActuel;
+  const hasLiquidation = timeline.ageAuDeces > timeline.ageDebutLiquidation;
+
+  const ratio = (durationTotal > 0 && hasLiquidation)
+    ? Math.min(1, Math.max(0, durationEpargne / durationTotal))
+    : 1;
+
+  const seg1X = tl.startX;
+  const seg1W = totalW * ratio;
+  const seg2X = seg1X + seg1W;
+  const seg2W = totalW - seg1W;
+
+  // Segment 1 — Épargne (toujours présent)
   slide.addShape('rect', {
-    x: tl.seg1X,
-    y: tl.y,
-    w: tl.seg1W,
-    h: tl.h,
+    x: seg1X, y: tl.y, w: seg1W, h: tl.h,
     fill: { color: bgMainColor },
   });
-
-  // Segment 2 — Liquidation / Transmission (color4)
-  slide.addShape('rect', {
-    x: tl.seg2X,
-    y: tl.y,
-    w: tl.seg2W,
-    h: tl.h,
-    fill: { color: color4 },
+  addTextFr(slide, seg1W >= 1.5 ? 'Phase Épargne' : 'Épargne', {
+    x: seg1X, y: tl.y, w: seg1W, h: tl.h,
+    fontSize: TYPO.sizes.footer,
+    italic: true,
+    color: 'FFFFFF',
+    align: 'center',
+    valign: 'middle',
   });
 
-  // Dots at age markers
-  const dotColor = roleColor(theme, 'textMain');
-  const dotPositions = [
-    { x: tl.seg1X, age: timeline.ageActuel, align: 'left' as const },
-    { x: tl.seg2X, age: timeline.ageDebutLiquidation, align: 'center' as const },
-    { x: tl.seg2X + tl.seg2W, age: timeline.ageAuDeces, align: 'right' as const },
-  ];
+  // Segment 2 — Liquidation / Transmission (seulement si hasLiquidation)
+  if (hasLiquidation) {
+    slide.addShape('rect', {
+      x: seg2X, y: tl.y, w: seg2W, h: tl.h,
+      fill: { color: color4 },
+    });
+    addTextFr(slide, seg2W >= 2.0 ? 'Liquidation / Transmission' : 'Liquidation', {
+      x: seg2X, y: tl.y, w: seg2W, h: tl.h,
+      fontSize: TYPO.sizes.footer,
+      italic: true,
+      color: contrastText(color4),
+      align: 'center',
+      valign: 'middle',
+    });
+  }
 
-  dotPositions.forEach(({ x, age, align }) => {
-    // Age label above
+  // Âges au-dessus de la barre
+  const ageMarkers: Array<{ x: number; age: number; align: 'left' | 'center' | 'right' }> = [
+    { x: seg1X, age: timeline.ageActuel, align: 'left' },
+    { x: tl.endX, age: timeline.ageAuDeces, align: 'right' },
+  ];
+  if (hasLiquidation) {
+    ageMarkers.push({ x: seg2X, age: timeline.ageDebutLiquidation, align: 'center' });
+  }
+
+  ageMarkers.forEach(({ x, age, align }) => {
     addTextFr(slide, `${age} ans`, {
       x: x - 0.60,
       y: tl.y - 0.28,
@@ -323,33 +339,6 @@ function drawTimeline(
       align,
       valign: 'bottom',
     });
-  });
-
-  // Phase labels below timeline
-  const phaseLabelY = tl.y + tl.h + 0.07;
-  const phaseColor = roleColor(theme, 'textBody');
-  const phaseFontSize = TYPO.sizes.footer + 1;
-
-  addTextFr(slide, 'Phase Épargne', {
-    x: tl.seg1X,
-    y: phaseLabelY,
-    w: tl.seg1W,
-    h: 0.20,
-    fontSize: phaseFontSize,
-    italic: true,
-    color: phaseColor,
-    align: 'center',
-  });
-
-  addTextFr(slide, 'Liquidation / Transmission', {
-    x: tl.seg2X,
-    y: phaseLabelY,
-    w: tl.seg2W,
-    h: 0.20,
-    fontSize: phaseFontSize,
-    italic: true,
-    color: phaseColor,
-    align: 'center',
   });
 }
 

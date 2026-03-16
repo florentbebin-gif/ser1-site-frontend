@@ -48,6 +48,11 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
     },
     {
       "produit1": {
+        "gainBar": {
+          "capitalAcquis": 150000,
+          "gains": 50000,
+          "versements": 100000,
+        },
         "label": "Assurance-vie",
         "metrics": [
           {
@@ -82,6 +87,11 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
         ],
       },
       "produit2": {
+        "gainBar": {
+          "capitalAcquis": 140000,
+          "gains": 40000,
+          "versements": 100000,
+        },
         "label": "PER",
         "metrics": [
           {
@@ -97,7 +107,7 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
           {
             "icon": "calculator",
             "label": "Effort réel",
-            "value": "100 000 €",
+            "value": "95 500 €",
           },
           {
             "icon": "percent",
