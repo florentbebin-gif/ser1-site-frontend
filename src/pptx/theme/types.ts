@@ -284,6 +284,8 @@ export type PlacementProjectionSlideSpec = {
   rows: Array<{ label: string; values: number[] }>;
   pageIndex: number;
   totalPages: number;
+  /** 1-based index of the death year in the liquidation phase. Only for liquidation slides. */
+  deathYearIndex?: number;
 };
 
 /**

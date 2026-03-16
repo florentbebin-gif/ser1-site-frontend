@@ -405,6 +405,7 @@ function buildLiquidationProjectionSlides(
   rows: LiquidationRowForPptx[],
   productLabel: string,
   productIndex: 1 | 2,
+  deathYearIndex: number | undefined,
 ): PlacementProjectionSlideSpec[] {
   if (rows.length === 0) return [];
   const yearPages = paginateYears(rows.length);
@@ -426,6 +427,7 @@ function buildLiquidationProjectionSlides(
     ],
     pageIndex,
     totalPages: yearPages.length,
+    deathYearIndex,
   }));
 }
 
@@ -451,12 +453,25 @@ export function buildPlacementStudyDeck(
     });
   }
 
+  // Marqueur "âge au décès" dans les tableaux liquidation (color9)
+  // deathYearIndex : 1-based index de l'année de décès dans la phase liquidation
+  // Guard : undefined si hors plage ou pas de rows
+  const liquidationStart = data.ageActuel + data.dureeEpargne;
+  const rawDeathYear = data.ageAuDeces - liquidationStart + 1;
+  const maxLiquidationYears = Math.max(
+    data.produit1.liquidationRows.length,
+    data.produit2.liquidationRows.length,
+  );
+  const deathYearIndex = (maxLiquidationYears > 0 && rawDeathYear >= 1 && rawDeathYear <= maxLiquidationYears)
+    ? rawDeathYear
+    : undefined;
+
   // Projection slides (paginated)
   const projectionSlides: PlacementProjectionSlideSpec[] = [
     ...buildEpargneProjectionSlides(data.produit1.epargneRows, data.produit1.envelopeLabel, 1),
     ...buildEpargneProjectionSlides(data.produit2.epargneRows, data.produit2.envelopeLabel, 2),
-    ...buildLiquidationProjectionSlides(data.produit1.liquidationRows, data.produit1.envelopeLabel, 1),
-    ...buildLiquidationProjectionSlides(data.produit2.liquidationRows, data.produit2.envelopeLabel, 2),
+    ...buildLiquidationProjectionSlides(data.produit1.liquidationRows, data.produit1.envelopeLabel, 1, deathYearIndex),
+    ...buildLiquidationProjectionSlides(data.produit2.liquidationRows, data.produit2.envelopeLabel, 2, deathYearIndex),
   ];
 
   const slides: Array<

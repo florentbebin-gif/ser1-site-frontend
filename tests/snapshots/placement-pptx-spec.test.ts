@@ -201,6 +201,37 @@ describe('snapshots/placement: PPTX deck spec', () => {
     expect(liqP2).toBeDefined();
     if (liqP2?.type !== 'placement-projection') return;
     expect((liqP2 as any).rows.length).toBe(6); // 6 KPI rows for liquidation
+
+    // deathYearIndex : hors plage dans MINIMAL_DATA (rawDeathYear=22 > 2 rows liquidation) → undefined
+    expect((liqP2 as any).deathYearIndex).toBeUndefined();
+
+    // Épargne slides n'ont pas de deathYearIndex
+    expect((epargneP1 as any).deathYearIndex).toBeUndefined();
+  });
+
+  it('deathYearIndex is set when death year falls within liquidation rows', () => {
+    // ageActuel=40, dureeEpargne=20, ageAuDeces=62 → liquidationStart=60 → deathYear=62-60+1=3
+    // 3 rows de liquidation → in range → deathYearIndex=3
+    const liquidationRows3 = [
+      ...MINIMAL_LIQUIDATION_ROWS,
+      { annee: 3, capitalDebut: 130000, gainsAnnee: 3900, retraitBrut: 10000, fiscaliteTotal: 800, retraitNet: 9200, capitalFin: 124100 },
+    ];
+    const data = {
+      ...MINIMAL_DATA,
+      ageActuel: 40,
+      dureeEpargne: 20,
+      ageAuDeces: 62,
+      produit1: { ...MINIMAL_DATA.produit1, liquidationRows: liquidationRows3 },
+      produit2: { ...MINIMAL_DATA.produit2, liquidationRows: liquidationRows3 },
+    };
+    const spec = buildPlacementStudyDeck(data, DEFAULT_COLORS);
+    const liqSlides = spec.slides.filter(
+      (s) => s.type === 'placement-projection' && (s as any).phase === 'liquidation',
+    );
+    expect(liqSlides.length).toBeGreaterThan(0);
+    liqSlides.forEach((s) => {
+      expect((s as any).deathYearIndex).toBe(3);
+    });
   });
 
   it('buildPlacementStudyDeck() stays stable (sanitized)', () => {

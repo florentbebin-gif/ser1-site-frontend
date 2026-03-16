@@ -432,6 +432,7 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
       ],
     },
     {
+      "deathYearIndex": undefined,
       "pageIndex": 0,
       "phase": "liquidation",
       "productIndex": 1,
@@ -490,6 +491,7 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
       ],
     },
     {
+      "deathYearIndex": undefined,
       "pageIndex": 0,
       "phase": "liquidation",
       "productIndex": 2,

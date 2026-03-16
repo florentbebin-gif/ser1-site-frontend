@@ -40,7 +40,7 @@ const GEO = {
   panelW: 5.55,
   gap: 0.5333,   // 13.3333 - 2*0.85 - 2*5.55
   panelY: 2.42,
-  panelH: 4.08,
+  panelH: 3.80,
 
   bandeauH: 0.44,
   roiHeroH: 0.90,
@@ -86,11 +86,11 @@ function contrastText(bgHex: string): string {
 
 function lightenHex(hex: string, pct: number): string {
   const clean = hex.replace('#', '');
-  const num = parseInt(clean, 16);
-  const r = Math.min(255, ((num >> 16) & 0xFF) + Math.round(255 * pct));
-  const g = Math.min(255, ((num >> 8) & 0xFF) + Math.round(255 * pct));
-  const b = Math.min(255, (num & 0xFF) + Math.round(255 * pct));
-  return ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0').toUpperCase();
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  const toHex = (n: number) => Math.round(n).toString(16).padStart(2, '0').toUpperCase();
+  return `${toHex(r + (255 - r) * pct)}${toHex(g + (255 - g) * pct)}${toHex(b + (255 - b) * pct)}`;
 }
 
 // ============================================================================
@@ -311,15 +311,6 @@ function drawTimeline(
   ];
 
   dotPositions.forEach(({ x, age, align }) => {
-    // Dot
-    slide.addShape('ellipse', {
-      x: x - tl.dotR,
-      y: tl.y + tl.h / 2 - tl.dotR,
-      w: tl.dotR * 2,
-      h: tl.dotR * 2,
-      fill: { color: dotColor },
-    });
-
     // Age label above
     addTextFr(slide, `${age} ans`, {
       x: x - 0.60,
