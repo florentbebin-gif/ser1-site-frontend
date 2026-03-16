@@ -121,6 +121,12 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
     },
     {
       "produit1": {
+        "flowBar": {
+          "gross": 85000,
+          "net": 80000,
+          "tax": 5000,
+          "taxLabel": "Fiscalité",
+        },
         "label": "Assurance-vie",
         "metrics": [
           {
@@ -147,6 +153,12 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
         ],
       },
       "produit2": {
+        "flowBar": {
+          "gross": 82000,
+          "net": 75000,
+          "tax": 7000,
+          "taxLabel": "Fiscalité",
+        },
         "label": "PER",
         "metrics": [
           {
@@ -178,8 +190,19 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
     },
     {
       "produit1": {
+        "flowBar": {
+          "gross": 93000,
+          "net": 90000,
+          "tax": 3000,
+          "taxLabel": "Droits & taxes",
+        },
         "label": "Assurance-vie",
         "metrics": [
+          {
+            "icon": "buildings",
+            "label": "Capital transmis net",
+            "value": "90 000 €",
+          },
           {
             "icon": "bank",
             "label": "Régime fiscal",
@@ -190,11 +213,6 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
             "label": "Droits / taxe",
             "value": "3 000 €",
           },
-          {
-            "icon": "buildings",
-            "label": "Capital transmis net",
-            "value": "90 000 €",
-          },
         ],
         "params": [
           "Âge de décès simulé : 85 ans",
@@ -203,8 +221,19 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
         ],
       },
       "produit2": {
+        "flowBar": {
+          "gross": 89000,
+          "net": 85000,
+          "tax": 4000,
+          "taxLabel": "Droits & taxes",
+        },
         "label": "PER",
         "metrics": [
+          {
+            "icon": "buildings",
+            "label": "Capital transmis net",
+            "value": "85 000 €",
+          },
           {
             "icon": "bank",
             "label": "Régime fiscal",
@@ -214,11 +243,6 @@ Toute reproduction, représentation, diffusion ou rediffusion, totale ou partiel
             "icon": "calculator",
             "label": "Droits / taxe",
             "value": "4 000 €",
-          },
-          {
-            "icon": "buildings",
-            "label": "Capital transmis net",
-            "value": "85 000 €",
           },
         ],
         "params": [

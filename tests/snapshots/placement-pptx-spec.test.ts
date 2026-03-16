@@ -146,17 +146,30 @@ describe('snapshots/placement: PPTX deck spec', () => {
     expect(details[0].produit1.params!.length).toBeGreaterThan(0);
     expect(details[0].produit1.params!.some(p => p.includes('TMI'))).toBe(true);
 
-    // Liquidation detail has params
+    // Liquidation detail has params and flowBar
     if (details[1]?.type !== 'placement-detail') return;
     expect(details[1].title).toBe('Phase Liquidation');
     expect(details[1].produit1.params).toBeDefined();
     expect(details[1].produit1.params!.some(p => p.includes('barème IR'))).toBe(true);
+    expect(details[1].produit1.flowBar).toBeDefined();
+    expect(details[1].produit1.flowBar!.net).toBe(80000);
+    expect(details[1].produit1.flowBar!.tax).toBe(5000);
+    expect(details[1].produit1.flowBar!.gross).toBe(85000);
+    expect(details[1].produit1.flowBar!.taxLabel).toBe('Fiscalité');
 
-    // Transmission detail has params
+    // Transmission detail has params and flowBar
     if (details[2]?.type !== 'placement-detail') return;
     expect(details[2].title).toBe('Phase Transmission');
     expect(details[2].produit1.params).toBeDefined();
     expect(details[2].produit1.params!.some(p => p.includes('décès'))).toBe(true);
+    expect(details[2].produit1.flowBar).toBeDefined();
+    expect(details[2].produit1.flowBar!.net).toBe(90000);
+    expect(details[2].produit1.flowBar!.tax).toBe(3000);
+    expect(details[2].produit1.flowBar!.gross).toBe(93000);
+    expect(details[2].produit1.flowBar!.taxLabel).toBe('Droits & taxes');
+
+    // Épargne detail has NO flowBar
+    expect(details[0].produit1.flowBar).toBeUndefined();
   });
 
   it('placement-hypotheses slide has 4 sections', () => {

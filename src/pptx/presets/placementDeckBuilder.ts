@@ -270,6 +270,12 @@ function buildLiquidationDetail(data: PlacementData): PlacementDetailSlideSpec {
     { icon: 'money' as BusinessIconName, label: 'Revenu annuel moyen net', value: fmt(p.liquidation.revenuAnnuelMoyenNet) },
     { icon: 'balance' as BusinessIconName, label: 'Fiscalité cumulée', value: fmt(p.liquidation.cumulFiscalite) },
   ];
+  const buildFlowBar = (p: PlacementProductData) => ({
+    gross: p.liquidation.cumulRetraitsNets + p.liquidation.cumulFiscalite,
+    tax: p.liquidation.cumulFiscalite,
+    net: p.liquidation.cumulRetraitsNets,
+    taxLabel: 'Fiscalité',
+  });
   return {
     type: 'placement-detail',
     title: 'Phase Liquidation',
@@ -278,21 +284,29 @@ function buildLiquidationDetail(data: PlacementData): PlacementDetailSlideSpec {
       label: data.produit1.envelopeLabel,
       metrics: buildMetrics(data.produit1),
       params: buildLiquidationParams(data.produit1.config, data),
+      flowBar: buildFlowBar(data.produit1),
     },
     produit2: {
       label: data.produit2.envelopeLabel,
       metrics: buildMetrics(data.produit2),
       params: buildLiquidationParams(data.produit2.config, data),
+      flowBar: buildFlowBar(data.produit2),
     },
   };
 }
 
 function buildTransmissionDetail(data: PlacementData): PlacementDetailSlideSpec {
   const buildMetrics = (p: PlacementProductData): PlacementDetailSlideSpec['produit1']['metrics'] => [
+    { icon: 'buildings' as BusinessIconName, label: 'Capital transmis net', value: fmt(p.transmission.capitalTransmisNet) },
     { icon: 'bank' as BusinessIconName, label: 'Régime fiscal', value: p.transmission.regime },
     { icon: 'calculator' as BusinessIconName, label: 'Droits / taxe', value: fmt(p.transmission.taxe) },
-    { icon: 'buildings' as BusinessIconName, label: 'Capital transmis net', value: fmt(p.transmission.capitalTransmisNet) },
   ];
+  const buildFlowBar = (p: PlacementProductData) => ({
+    gross: p.transmission.capitalTransmisNet + p.transmission.taxe,
+    tax: p.transmission.taxe,
+    net: p.transmission.capitalTransmisNet,
+    taxLabel: 'Droits & taxes',
+  });
   const transmissionParams = buildTransmissionParams(data);
   return {
     type: 'placement-detail',
@@ -302,11 +316,13 @@ function buildTransmissionDetail(data: PlacementData): PlacementDetailSlideSpec 
       label: data.produit1.envelopeLabel,
       metrics: buildMetrics(data.produit1),
       params: transmissionParams,
+      flowBar: buildFlowBar(data.produit1),
     },
     produit2: {
       label: data.produit2.envelopeLabel,
       metrics: buildMetrics(data.produit2),
       params: transmissionParams,
+      flowBar: buildFlowBar(data.produit2),
     },
   };
 }
