@@ -251,12 +251,20 @@ export type PlacementDetailFlowBar = {
   taxLabel: string;
 };
 
+export type PlacementDetailGainBar = {
+  capitalAcquis: number;
+  versements: number;
+  gains: number;          // max(0, capitalAcquis - versements)
+  shortfall?: number;     // présent quand capitalAcquis < versements
+  revenusPercus?: number; // revenus appréhendés SCPI si > 0
+};
+
 export type PlacementDetailSlideSpec = {
   type: 'placement-detail';
   title: string;
   subtitle: string;
-  produit1: { label: string; metrics: Array<{ icon: BusinessIconName; label: string; value: string }>; params?: string[]; flowBar?: PlacementDetailFlowBar };
-  produit2: { label: string; metrics: Array<{ icon: BusinessIconName; label: string; value: string }>; params?: string[]; flowBar?: PlacementDetailFlowBar };
+  produit1: { label: string; metrics: Array<{ icon: BusinessIconName; label: string; value: string }>; params?: string[]; flowBar?: PlacementDetailFlowBar; gainBar?: PlacementDetailGainBar };
+  produit2: { label: string; metrics: Array<{ icon: BusinessIconName; label: string; value: string }>; params?: string[]; flowBar?: PlacementDetailFlowBar; gainBar?: PlacementDetailGainBar };
   optionalNote?: string;
 };
 
@@ -284,6 +292,8 @@ export type PlacementProjectionSlideSpec = {
   rows: Array<{ label: string; values: number[] }>;
   pageIndex: number;
   totalPages: number;
+  /** 1-based index of the death year in the liquidation phase. Only for liquidation slides. */
+  deathYearIndex?: number;
 };
 
 /**

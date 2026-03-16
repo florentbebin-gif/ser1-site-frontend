@@ -81,6 +81,7 @@ export interface PlacementProductData {
   };
   totaux: {
     effortReel: number;
+    revenusNetsEpargne: number;
     revenusNetsLiquidation: number;
     fiscaliteTotale: number;
     capitalTransmisNet: number;
@@ -241,12 +242,29 @@ function buildSynthesisSpec(data: PlacementData): PlacementSynthesisSlideSpec {
 }
 
 function buildEpargneDetail(data: PlacementData): PlacementDetailSlideSpec {
-  const buildMetrics = (p: PlacementProductData): PlacementDetailSlideSpec['produit1']['metrics'] => [
-    { icon: 'money' as BusinessIconName, label: 'Capital acquis', value: fmt(p.epargne.capitalAcquis) },
-    { icon: 'cheque' as BusinessIconName, label: 'Versements cumulés', value: fmt(p.epargne.cumulVersements) },
-    { icon: 'calculator' as BusinessIconName, label: 'Effort réel', value: fmt(p.epargne.cumulEffort) },
-    { icon: 'percent' as BusinessIconName, label: 'Économie IR cumulée', value: fmt(p.epargne.cumulEconomieIR) },
-  ];
+  const buildMetrics = (p: PlacementProductData): PlacementDetailSlideSpec['produit1']['metrics'] => {
+    const metrics: PlacementDetailSlideSpec['produit1']['metrics'] = [
+      { icon: 'money' as BusinessIconName, label: 'Capital acquis', value: fmt(p.epargne.capitalAcquis) },
+      { icon: 'cheque' as BusinessIconName, label: 'Versements cumulés', value: fmt(p.epargne.cumulVersements) },
+      { icon: 'calculator' as BusinessIconName, label: 'Effort réel', value: fmt(p.totaux.effortReel) },
+      { icon: 'percent' as BusinessIconName, label: 'Économie IR cumulée', value: fmt(p.epargne.cumulEconomieIR) },
+    ];
+    if (p.totaux.revenusNetsEpargne > 0) {
+      metrics.push({ icon: 'chart-up' as BusinessIconName, label: 'Revenus appréhendés nets', value: fmt(p.totaux.revenusNetsEpargne) });
+    }
+    return metrics;
+  };
+  const buildGainBar = (p: PlacementProductData) => {
+    const diff = p.epargne.capitalAcquis - p.epargne.cumulVersements;
+    const revenusPercus = p.totaux.revenusNetsEpargne;
+    return {
+      capitalAcquis: p.epargne.capitalAcquis,
+      versements: p.epargne.cumulVersements,
+      gains: Math.max(0, diff),
+      ...(diff < 0 ? { shortfall: -diff } : {}),
+      ...(revenusPercus > 0 ? { revenusPercus } : {}),
+    };
+  };
   return {
     type: 'placement-detail',
     title: 'Phase Épargne',
@@ -255,11 +273,13 @@ function buildEpargneDetail(data: PlacementData): PlacementDetailSlideSpec {
       label: data.produit1.envelopeLabel,
       metrics: buildMetrics(data.produit1),
       params: buildEpargneParams(data.produit1.config),
+      gainBar: buildGainBar(data.produit1),
     },
     produit2: {
       label: data.produit2.envelopeLabel,
       metrics: buildMetrics(data.produit2),
       params: buildEpargneParams(data.produit2.config),
+      gainBar: buildGainBar(data.produit2),
     },
   };
 }
@@ -405,6 +425,7 @@ function buildLiquidationProjectionSlides(
   rows: LiquidationRowForPptx[],
   productLabel: string,
   productIndex: 1 | 2,
+  deathYearIndex: number | undefined,
 ): PlacementProjectionSlideSpec[] {
   if (rows.length === 0) return [];
   const yearPages = paginateYears(rows.length);
@@ -426,6 +447,7 @@ function buildLiquidationProjectionSlides(
     ],
     pageIndex,
     totalPages: yearPages.length,
+    deathYearIndex,
   }));
 }
 
@@ -451,12 +473,25 @@ export function buildPlacementStudyDeck(
     });
   }
 
+  // Marqueur "âge au décès" dans les tableaux liquidation (color9)
+  // deathYearIndex : 1-based index de l'année de décès dans la phase liquidation
+  // Guard : undefined si hors plage ou pas de rows
+  const liquidationStart = data.ageActuel + data.dureeEpargne;
+  const rawDeathYear = data.ageAuDeces - liquidationStart + 1;
+  const maxLiquidationYears = Math.max(
+    data.produit1.liquidationRows.length,
+    data.produit2.liquidationRows.length,
+  );
+  const deathYearIndex = (maxLiquidationYears > 0 && rawDeathYear >= 1 && rawDeathYear <= maxLiquidationYears)
+    ? rawDeathYear
+    : undefined;
+
   // Projection slides (paginated)
   const projectionSlides: PlacementProjectionSlideSpec[] = [
     ...buildEpargneProjectionSlides(data.produit1.epargneRows, data.produit1.envelopeLabel, 1),
     ...buildEpargneProjectionSlides(data.produit2.epargneRows, data.produit2.envelopeLabel, 2),
-    ...buildLiquidationProjectionSlides(data.produit1.liquidationRows, data.produit1.envelopeLabel, 1),
-    ...buildLiquidationProjectionSlides(data.produit2.liquidationRows, data.produit2.envelopeLabel, 2),
+    ...buildLiquidationProjectionSlides(data.produit1.liquidationRows, data.produit1.envelopeLabel, 1, deathYearIndex),
+    ...buildLiquidationProjectionSlides(data.produit2.liquidationRows, data.produit2.envelopeLabel, 2, deathYearIndex),
   ];
 
   const slides: Array<

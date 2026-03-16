@@ -43,6 +43,15 @@ function euro(n: number): string {
   return `${Math.round(n).toLocaleString('fr-FR')} €`;
 }
 
+function contrastText(bgHex: string): string {
+  const clean = bgHex.replace('#', '');
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.55 ? '000000' : 'FFFFFF';
+}
+
 function lightenColor(hex: string, factor: number): string {
   const color = hex.replace('#', '');
   const r = parseInt(color.substring(0, 2), 16);
@@ -100,6 +109,9 @@ export function buildPlacementProjection(
   // Colors
   const altRowColor = lightenColor(theme.colors.color7, 0.5);
   const headerFill = theme.colors.color1.replace('#', '');
+  const deathFill = theme.colors.color9.replace('#', '');
+  const deathLightFill = lightenColor(theme.colors.color9, 0.75);
+  const deathTextColor = contrastText(deathFill);
 
   // Build table rows
   const tableRows: PptxGenJS.TableRow[] = [];
@@ -118,18 +130,21 @@ export function buildPlacementProjection(
         valign: 'middle' as const,
       },
     },
-    ...spec.yearsForPage.map(year => ({
-      text: `An ${year}`,
-      options: {
-        fill: { color: headerFill },
-        color: 'FFFFFF',
-        bold: true,
-        fontSize: baseFontSize,
-        fontFace: TYPO.fontFace,
-        align: 'center' as const,
-        valign: 'middle' as const,
-      },
-    })),
+    ...spec.yearsForPage.map(year => {
+      const isDeath = spec.deathYearIndex !== undefined && year === spec.deathYearIndex;
+      return {
+        text: isDeath ? `An ${year} †` : `An ${year}`,
+        options: {
+          fill: { color: isDeath ? deathFill : headerFill },
+          color: isDeath ? deathTextColor : 'FFFFFF',
+          bold: true,
+          fontSize: baseFontSize,
+          fontFace: TYPO.fontFace,
+          align: 'center' as const,
+          valign: 'middle' as const,
+        },
+      };
+    }),
   ]);
 
   // Data rows
@@ -156,17 +171,21 @@ export function buildPlacementProjection(
           valign: 'middle' as const,
         },
       },
-      ...values.map(val => ({
-        text: val,
-        options: {
-          fill: { color: fill },
-          color: theme.textBody.replace('#', ''),
-          fontSize: smallFontSize,
-          fontFace: TYPO.fontFace,
-          align: 'right' as const,
-          valign: 'middle' as const,
-        },
-      })),
+      ...values.map((val, colIdx) => {
+        const year = spec.yearsForPage[colIdx];
+        const isDeath = spec.deathYearIndex !== undefined && year === spec.deathYearIndex;
+        return {
+          text: val,
+          options: {
+            fill: { color: isDeath ? deathLightFill : fill },
+            color: theme.textBody.replace('#', ''),
+            fontSize: smallFontSize,
+            fontFace: TYPO.fontFace,
+            align: 'right' as const,
+            valign: 'middle' as const,
+          },
+        };
+      }),
     ]);
   });
 
