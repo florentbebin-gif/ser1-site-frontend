@@ -22,6 +22,11 @@ function makePatrimonial(overrides: Partial<SuccessionPatrimonialContext>): Succ
     preciputMontant: 0,
     attributionIntegrale: false,
     attributionBiensCommunsPct: 50,
+    forfaitMobilierMode: 'auto',
+    forfaitMobilierPct: 5,
+    forfaitMobilierMontant: 0,
+    abattementResidencePrincipale: false,
+    decesDansXAns: 0,
     ...overrides,
   };
 }
@@ -100,6 +105,11 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
         },
       ],
       snapshot,
+      {
+        simulatedDeceased: 'epoux1',
+        testament: null,
+        referenceDate: new Date('2026-03-17'),
+      },
     );
 
     expect(analysis.masseCivileReference).toBe(590000);

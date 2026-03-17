@@ -9,6 +9,7 @@ import {
   BRANCH_OPTIONS,
   TESTAMENT_SIDES,
 } from './successionSimulator.constants';
+import { computeSuccessionAssetValuation } from './successionAssetValuation';
 import {
   getBirthDateLabels,
   isCoupleSituation,
@@ -20,10 +21,12 @@ import type {
   FamilyBranch,
   FamilyMember,
   SuccessionEnfant,
+  SuccessionPerEntry,
   SuccessionPrimarySide,
 } from './successionDraft';
 import type {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
+  DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
 } from './successionDraft';
 
 interface UseSuccessionUiDerivedValuesInput {
@@ -36,6 +39,12 @@ interface UseSuccessionUiDerivedValuesInput {
   assetEntries: SuccessionAssetDetailEntry[];
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
   assuranceVieDraft: SuccessionAssuranceVieEntry[];
+  perEntries: SuccessionPerEntry[];
+  perDraft: SuccessionPerEntry[];
+  forfaitMobilierMode: typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.forfaitMobilierMode;
+  forfaitMobilierPct: number;
+  forfaitMobilierMontant: number;
+  abattementResidencePrincipale: boolean;
 }
 
 export function useSuccessionUiDerivedValues({
@@ -48,6 +57,12 @@ export function useSuccessionUiDerivedValues({
   assetEntries,
   assuranceVieEntries,
   assuranceVieDraft,
+  perEntries,
+  perDraft,
+  forfaitMobilierMode,
+  forfaitMobilierPct,
+  forfaitMobilierMontant,
+  abattementResidencePrincipale,
 }: UseSuccessionUiDerivedValuesInput) {
   const birthDateLabels = useMemo(
     () => getBirthDateLabels(civilContext.situationMatrimoniale),
@@ -57,10 +72,11 @@ export function useSuccessionUiDerivedValues({
 
   const assetOwnerOptions = useMemo((): { value: SuccessionAssetOwner; label: string }[] => {
     if (isMarried) {
+      const sharedLabel = civilContext.regimeMatrimonial === 'separation_biens' ? 'Indivision' : 'Communauté';
       return [
         { value: 'epoux1', label: 'Époux 1' },
         { value: 'epoux2', label: 'Époux 2' },
-        { value: 'commun', label: 'Communauté' },
+        { value: 'commun', label: sharedLabel },
       ];
     }
     if (isPacsed) {
@@ -78,7 +94,7 @@ export function useSuccessionUiDerivedValues({
       ];
     }
     return [{ value: 'epoux1', label: 'Défunt(e)' }];
-  }, [isConcubinage, isMarried, isPacsed]);
+  }, [isConcubinage, isMarried, isPacsed, civilContext.regimeMatrimonial]);
 
   const assuranceViePartyOptions = useMemo(
     () => assetOwnerOptions.filter((option) => option.value !== 'commun') as { value: 'epoux1' | 'epoux2'; label: string }[],
@@ -169,34 +185,22 @@ export function useSuccessionUiDerivedValues({
     return BRANCH_OPTIONS;
   }, [civilContext.situationMatrimoniale]);
 
-  const assetBreakdown = useMemo(() => assetEntries.reduce((totals, entry) => {
-    if (entry.category === 'passif') {
-      totals.passifs[entry.owner] += entry.amount;
-    } else {
-      totals.actifs[entry.owner] += entry.amount;
-    }
-    return totals;
-  }, {
-    actifs: {
-      epoux1: 0,
-      epoux2: 0,
-      commun: 0,
-    },
-    passifs: {
-      epoux1: 0,
-      epoux2: 0,
-      commun: 0,
-    },
-  } as {
-    actifs: Record<SuccessionAssetOwner, number>;
-    passifs: Record<SuccessionAssetOwner, number>;
-  }), [assetEntries]);
-
-  const assetNetTotals = useMemo(() => ({
-    epoux1: Math.max(0, assetBreakdown.actifs.epoux1 - assetBreakdown.passifs.epoux1),
-    epoux2: Math.max(0, assetBreakdown.actifs.epoux2 - assetBreakdown.passifs.epoux2),
-    commun: Math.max(0, assetBreakdown.actifs.commun - assetBreakdown.passifs.commun),
-  }), [assetBreakdown]);
+  const assetValuation = useMemo(
+    () => computeSuccessionAssetValuation({
+      assetEntries,
+      forfaitMobilierMode,
+      forfaitMobilierPct,
+      forfaitMobilierMontant,
+      abattementResidencePrincipale,
+    }),
+    [
+      assetEntries,
+      forfaitMobilierMode,
+      forfaitMobilierPct,
+      forfaitMobilierMontant,
+      abattementResidencePrincipale,
+    ],
+  );
 
   const assuranceVieTotals = useMemo(() => assuranceVieEntries.reduce((totals, entry) => ({
     capitaux: totals.capitaux + entry.capitauxDeces,
@@ -222,6 +226,26 @@ export function useSuccessionUiDerivedValues({
     epoux2: 0,
   } as Record<'epoux1' | 'epoux2', number>), [assuranceVieEntries]);
 
+  const perTotals = useMemo(() => perEntries.reduce((totals, entry) => ({
+    capitaux: totals.capitaux + entry.capitauxDeces,
+  }), {
+    capitaux: 0,
+  }), [perEntries]);
+
+  const perDraftTotals = useMemo(() => perDraft.reduce((totals, entry) => ({
+    capitaux: totals.capitaux + entry.capitauxDeces,
+  }), {
+    capitaux: 0,
+  }), [perDraft]);
+
+  const perByAssure = useMemo(() => perEntries.reduce((totals, entry) => {
+    totals[entry.assure] += entry.capitauxDeces;
+    return totals;
+  }, {
+    epoux1: 0,
+    epoux2: 0,
+  } as Record<'epoux1' | 'epoux2', number>), [perEntries]);
+
   const assetEntriesByCategory = useMemo(() => ASSET_CATEGORY_OPTIONS.map((category) => ({
     ...category,
     entries: assetEntries.filter((entry) => entry.category === category.value),
@@ -239,11 +263,19 @@ export function useSuccessionUiDerivedValues({
     donateurOptions,
     donatairesOptions,
     branchOptions,
-    assetBreakdown,
-    assetNetTotals,
+    assetBreakdown: assetValuation.assetBreakdown,
+    actifsTaxablesParOwner: assetValuation.actifsTaxablesParOwner,
+    assetNetTotals: assetValuation.assetNetTotals,
+    forfaitMobilierComputed: assetValuation.forfaitMobilierComputed,
+    forfaitMobilierParOwner: assetValuation.forfaitMobilierParOwner,
+    hasResidencePrincipale: assetValuation.hasResidencePrincipale,
+    residencePrincipaleEntryId: assetValuation.residencePrincipaleEntryId,
     assuranceVieTotals,
     assuranceVieDraftTotals,
     assuranceVieByAssure,
+    perTotals,
+    perDraftTotals,
+    perByAssure,
     assetEntriesByCategory,
   };
 }

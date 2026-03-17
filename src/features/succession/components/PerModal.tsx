@@ -1,4 +1,9 @@
-import type { FamilyMember, SuccessionAssuranceVieContractType, SuccessionAssuranceVieEntry, SuccessionEnfant } from '../successionDraft';
+import type {
+  FamilyMember,
+  SuccessionAssuranceVieContractType,
+  SuccessionEnfant,
+  SuccessionPerEntry,
+} from '../successionDraft';
 import { getEnfantParentLabel } from '../successionEnfants';
 import {
   ASSURANCE_VIE_TYPE_OPTIONS,
@@ -16,11 +21,10 @@ import {
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
-interface AssuranceVieModalProps {
-  assuranceVieDraft: SuccessionAssuranceVieEntry[];
-  assuranceVieDraftTotals: {
+interface PerModalProps {
+  perDraft: SuccessionPerEntry[];
+  perDraftTotals: {
     capitaux: number;
-    versementsApres70: number;
   };
   assuranceViePartyOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
   enfantsContext: SuccessionEnfant[];
@@ -33,14 +37,14 @@ interface AssuranceVieModalProps {
   onRemoveContract: (_id: string) => void;
   onUpdateContract: (
     _id: string,
-    _field: keyof SuccessionAssuranceVieEntry,
+    _field: keyof SuccessionPerEntry,
     _value: string | number | undefined,
   ) => void;
 }
 
-export default function AssuranceVieModal({
-  assuranceVieDraft,
-  assuranceVieDraftTotals,
+export default function PerModal({
+  perDraft,
+  perDraftTotals,
   assuranceViePartyOptions,
   enfantsContext,
   familyMembers,
@@ -51,7 +55,7 @@ export default function AssuranceVieModal({
   onAddContract,
   onRemoveContract,
   onUpdateContract,
-}: AssuranceVieModalProps) {
+}: PerModalProps) {
   return (
     <div
       className="sc-member-modal-overlay"
@@ -59,7 +63,7 @@ export default function AssuranceVieModal({
     >
       <div className="sc-member-modal sc-member-modal--wide">
         <div className="sc-member-modal__header">
-          <h3 className="sc-member-modal__title">Assurance-vie</h3>
+          <h3 className="sc-member-modal__title">PER assurance</h3>
           <button
             type="button"
             className="sc-member-modal__close"
@@ -70,15 +74,15 @@ export default function AssuranceVieModal({
           </button>
         </div>
         <div className="sc-member-modal__body sc-assurance-vie-modal__body">
-          {assuranceVieDraft.length > 0 ? (
+          {perDraft.length > 0 ? (
             <div className="sc-assurance-vie-list">
-              {assuranceVieDraft.map((entry, idx) => (
+              {perDraft.map((entry, idx) => (
                 <div key={entry.id} className="sc-assurance-vie-contract">
                   <div className="sc-assurance-vie-contract__header">
                     <div className="sc-assurance-vie-contract__heading">
                       <strong className="sc-donation-card__title">Contrat {idx + 1}</strong>
                       <span className="sc-assurance-vie-contract__subtitle">
-                        {entry.typeContrat === 'demembree' ? 'Clause demembree' : 'Clause standard'}
+                        {entry.typeContrat === 'demembree' ? 'Clause démembrée' : entry.typeContrat === 'personnalisee' ? 'Clause personnalisée' : 'Clause standard'}
                       </span>
                     </div>
                     <button
@@ -126,15 +130,6 @@ export default function AssuranceVieModal({
                       </div>
                     )}
                     <div className="sc-field">
-                      <label>Souscripteur</label>
-                      <ScSelect
-                        className="sc-assurance-vie-select"
-                        value={entry.souscripteur}
-                        onChange={(value) => onUpdateContract(entry.id, 'souscripteur', value)}
-                        options={assuranceViePartyOptions}
-                      />
-                    </div>
-                    <div className="sc-field">
                       <label>Assuré</label>
                       <ScSelect
                         className="sc-assurance-vie-select"
@@ -145,7 +140,7 @@ export default function AssuranceVieModal({
                     </div>
                   </div>
                   <div className="sc-assurance-vie-contract__section">
-                    <p className="sc-assurance-vie-contract__section-title">Clause beneficiaire</p>
+                    <p className="sc-assurance-vie-contract__section-title">Clause bénéficiaire</p>
                     <div className="sc-assurance-vie-grid sc-assurance-vie-grid--stack">
                       <div className="sc-field sc-field--full">
                         <label>Clause bénéficiaire</label>
@@ -225,19 +220,6 @@ export default function AssuranceVieModal({
                           placeholder="Montant"
                         />
                       </div>
-                      <div className="sc-field">
-                        <label>Versements après 70 ans (€)</label>
-                        <ScNumericInput
-                          value={entry.versementsApres70 || 0}
-                          min={0}
-                          onChange={(val) => onUpdateContract(
-                            entry.id,
-                            'versementsApres70',
-                            val,
-                          )}
-                          placeholder="Montant"
-                        />
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -245,7 +227,7 @@ export default function AssuranceVieModal({
             </div>
           ) : (
             <p className="sc-hint sc-hint--compact">
-              Aucun contrat d&apos;assurance-vie saisi pour l&apos;instant.
+              Aucun contrat de PER assurance saisi pour l&apos;instant.
             </p>
           )}
 
@@ -259,15 +241,11 @@ export default function AssuranceVieModal({
             </button>
           </div>
 
-          {assuranceVieDraft.length > 0 && (
+          {perDraft.length > 0 && (
             <div className="sc-assurance-vie-modal-summary">
               <div className="sc-summary-row">
                 <span>Capitaux décès</span>
-                <strong>{fmt(assuranceVieDraftTotals.capitaux)}</strong>
-              </div>
-              <div className="sc-summary-row">
-                <span>Versements après 70 ans</span>
-                <strong>{fmt(assuranceVieDraftTotals.versementsApres70)}</strong>
+                <strong>{fmt(perDraftTotals.capitaux)}</strong>
               </div>
             </div>
           )}

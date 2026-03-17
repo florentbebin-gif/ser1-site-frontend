@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { ENVELOPE_LABELS } from '@/engine/placement';
-import { normalizeVersementConfig } from '@/engine/placement/versementConfig';
+import { DEFAULT_ANNUEL, normalizeVersementConfig } from '@/engine/placement/versementConfig';
 import type {
   CapitalisationConfig,
   DeductionInitiale,
@@ -36,6 +36,82 @@ type AnnualOptionName = 'garantieBonneFin' | 'exonerationCotisations';
 type AllocationConfig = Pick<VersementEntry, 'pctCapitalisation' | 'pctDistribution'>;
 
 const envelopeLabels = ENVELOPE_LABELS as Record<string, string>;
+
+function hasDistribution(allocation: AllocationConfig) {
+  return (allocation.pctDistribution || 0) > 0;
+}
+
+function hasCapitalisation(allocation: AllocationConfig) {
+  return (allocation.pctCapitalisation || 0) > 0;
+}
+
+export function buildNeutralAnnualState(isSCPI: boolean): VersementAnnuel {
+  return {
+    ...DEFAULT_ANNUEL,
+    montant: 0,
+    fraisEntree: isSCPI ? 0 : DEFAULT_ANNUEL.fraisEntree,
+    pctCapitalisation: isSCPI ? 0 : 100,
+    pctDistribution: isSCPI ? 100 : 0,
+    garantieBonneFin: {
+      ...DEFAULT_ANNUEL.garantieBonneFin,
+      active: false,
+    },
+    exonerationCotisations: {
+      ...DEFAULT_ANNUEL.exonerationCotisations,
+      active: false,
+    },
+  };
+}
+
+export function seedAnnualSection(annuel: VersementAnnuel, isPER: boolean): boolean {
+  return annuel.montant > 0 || (
+    isPER
+    && (
+      Boolean(annuel.garantieBonneFin.active)
+      || Boolean(annuel.exonerationCotisations.active)
+    )
+  );
+}
+
+interface VersementSectionVisibilityInput {
+  isExpert: boolean;
+  isSCPI: boolean;
+  initial: AllocationConfig;
+  annuel: AllocationConfig;
+  hasAnnualSection: boolean;
+  distributionStrategy: string;
+}
+
+export function computeVersementSectionVisibility({
+  isExpert,
+  isSCPI,
+  initial,
+  annuel,
+  hasAnnualSection,
+  distributionStrategy,
+}: VersementSectionVisibilityInput) {
+  const annualHasDistribution = hasAnnualSection && hasDistribution(annuel);
+  const annualHasCapitalisation = hasAnnualSection && hasCapitalisation(annuel);
+
+  const showCapiBlock = !isSCPI && (
+    isExpert
+      ? (
+        hasCapitalisation(initial)
+        || annualHasCapitalisation
+        || distributionStrategy === 'reinvestir_capi'
+      )
+      : true
+  );
+
+  const showDistribBlock = isExpert
+    ? (hasDistribution(initial) || annualHasDistribution)
+    : (isSCPI && (hasDistribution(initial) || annualHasDistribution));
+
+  return {
+    showCapiBlock,
+    showDistribBlock,
+  };
+}
 
 function LayersIcon() {
   return (
@@ -85,11 +161,20 @@ export function VersementConfigModal({
   onClose,
 }: VersementConfigModalProps) {
   const [draft, setDraft] = useState<VersementConfig>(() => normalizeVersementConfig(config ?? undefined));
+  const [hasAnnualSection, setHasAnnualSection] = useState<boolean>(() => (
+    seedAnnualSection(normalizeVersementConfig(config ?? undefined).annuel, envelope === 'PER')
+  ));
 
   const isSCPI = envelope === 'SCPI';
   const isPER = envelope === 'PER';
   const isCTO = envelope === 'CTO';
   const isAV = envelope === 'AV';
+
+  useEffect(() => {
+    const normalized = normalizeVersementConfig(config ?? undefined);
+    setDraft(normalized);
+    setHasAnnualSection(seedAnnualSection(normalized.annuel, envelope === 'PER'));
+  }, [config, envelope]);
 
   useEffect(() => {
     if (!isSCPI) return;
@@ -229,23 +314,40 @@ export function VersementConfigModal({
     }));
   };
 
-  const hasDistribution = (allocation: AllocationConfig) => (allocation.pctDistribution || 0) > 0;
-  const hasCapitalisation = (allocation: AllocationConfig) => (allocation.pctCapitalisation || 0) > 0;
-  const showCapiBlock = !isSCPI && (
-    isExpert
-      ? (hasCapitalisation(draft.initial) || hasCapitalisation(draft.annuel) || draft.distribution.strategie === 'reinvestir_capi')
-      : true
-  );
-  // En mode simplifié, masquer la distribution pour les enveloppes non-SCPI
-  const showDistribBlock = isExpert
-    ? (hasDistribution(draft.initial) || hasDistribution(draft.annuel))
-    : (isSCPI && (hasDistribution(draft.initial) || hasDistribution(draft.annuel)));
+  const resetAnnualState = () => {
+    setDraft((currentDraft) => ({
+      ...currentDraft,
+      annuel: buildNeutralAnnualState(isSCPI),
+    }));
+  };
+
+  const addAnnual = () => {
+    setHasAnnualSection(true);
+  };
+
+  const removeAnnual = () => {
+    setHasAnnualSection(false);
+    resetAnnualState();
+  };
+
+  const { showCapiBlock, showDistribBlock } = computeVersementSectionVisibility({
+    isExpert,
+    isSCPI,
+    initial: draft.initial,
+    annuel: draft.annuel,
+    hasAnnualSection,
+    distributionStrategy: draft.distribution.strategie,
+  });
+
+  const configToSave: VersementConfig = {
+    ...draft,
+    annuel: hasAnnualSection ? draft.annuel : buildNeutralAnnualState(isSCPI),
+  };
 
   return (
-    <div className="vcm-overlay" onClick={onClose}>
+    <div className="vcm-overlay">
       <div
         className="vcm"
-        onClick={(event) => event.stopPropagation()}
         data-testid="placement-versements-modal"
       >
         <div className="vcm__header">
@@ -273,7 +375,7 @@ export function VersementConfigModal({
         <div className="vcm__body">
           {isAV ? (
             <div className="vcm__hint vcm__hint--spaced">
-              Hypothèse : investissement 100 % unités de compte - prélèvements sociaux dus au rachat.
+              Hypothese : investissement 100 % unites de compte - prelevements sociaux dus au rachat.
             </div>
           ) : null}
 
@@ -296,10 +398,13 @@ export function VersementConfigModal({
           />
 
           <VersementAnnualSection
+            active={hasAnnualSection}
             annuel={draft.annuel}
             isPER={isPER}
             isSCPI={isSCPI}
             isExpert={isExpert}
+            onAddAnnual={addAnnual}
+            onRemoveAnnual={removeAnnual}
             onUpdateAnnuel={updateAnnuel}
             onUpdateAnnuelAlloc={updateAnnuelAlloc}
             onUpdateAnnuelOption={updateAnnuelOption}
@@ -323,7 +428,11 @@ export function VersementConfigModal({
           <button type="button" className="vcm__btn vcm__btn--secondary" onClick={onClose}>
             Annuler
           </button>
-          <button type="button" className="vcm__btn vcm__btn--primary" onClick={() => onSave(isExpert ? draft : { ...draft, ponctuels: [] })}>
+          <button
+            type="button"
+            className="vcm__btn vcm__btn--primary"
+            onClick={() => onSave(isExpert ? configToSave : { ...configToSave, ponctuels: [] })}
+          >
             Valider
           </button>
         </div>

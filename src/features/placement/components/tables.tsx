@@ -139,13 +139,13 @@ export function AllocationSlider({
           type="range"
           min="0"
           max="100"
-          value={pctCapi}
-          onChange={(event) => handleCapiChange(Number(event.target.value))}
+          value={pctDistrib}
+          onChange={(event) => handleCapiChange(100 - Number(event.target.value))}
           className="pl-alloc-range"
           disabled={disabled}
         />
-        <div className="pl-alloc-fill" style={{ width: `${pctCapi}%` }} />
-        <div className="pl-alloc-thumb" style={{ left: `${pctCapi}%` }} aria-hidden="true" />
+        <div className="pl-alloc-fill" style={{ width: `${pctDistrib}%` }} />
+        <div className="pl-alloc-thumb" style={{ left: `${pctDistrib}%` }} aria-hidden="true" />
       </div>
 
       <div className="pl-alloc-values">

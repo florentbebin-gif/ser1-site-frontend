@@ -6,9 +6,10 @@ import type {
   SuccessionCivilContext,
   SuccessionDevolutionContext,
   SuccessionDonationEntry,
-  SuccessionDraftPayloadV16,
+  SuccessionDraftPayloadV17,
   SuccessionEnfant,
   SuccessionLiquidationContext,
+  SuccessionPerEntry,
   SuccessionPatrimonialContext,
 } from './successionDraft.types';
 
@@ -23,9 +24,10 @@ export function buildSuccessionDraftPayload(
   donations: SuccessionDonationEntry[],
   assetEntries: SuccessionAssetDetailEntry[],
   assuranceVieEntries: SuccessionAssuranceVieEntry[],
-): SuccessionDraftPayloadV16 {
+  perEntries: SuccessionPerEntry[],
+): SuccessionDraftPayloadV17 {
   return {
-    version: 16,
+    version: 17,
     form,
     civil,
     liquidation,
@@ -36,5 +38,6 @@ export function buildSuccessionDraftPayload(
     donations,
     assetEntries,
     assuranceVieEntries,
+    perEntries,
   };
 }

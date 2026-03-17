@@ -200,6 +200,42 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.warnings.some((warning) => warning.includes('usufruit total valorise'))).toBe(true);
   });
 
+  it('uses referenceDate to update usufruct valuation thresholds', () => {
+    const baseInput = {
+      civil: makeCivil({
+        dateNaissanceEpoux1: '1960-01-01',
+        dateNaissanceEpoux2: '1970-06-15',
+      }),
+      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens' as const,
+      order: 'epoux1' as const,
+      dmtgSettings: DEFAULT_DMTG,
+      patrimonial: {
+        donationEntreEpouxActive: true,
+        donationEntreEpouxOption: 'usufruit_total' as const,
+      },
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' as const },
+        { id: 'E2', rattachement: 'commun' as const },
+      ],
+      familyMembers: [],
+    };
+
+    const earlyDeath = buildSuccessionChainageAnalysis({
+      ...baseInput,
+      referenceDate: new Date('2030-06-14T00:00:00Z'),
+    });
+    const laterDeath = buildSuccessionChainageAnalysis({
+      ...baseInput,
+      referenceDate: new Date('2036-06-16T00:00:00Z'),
+    });
+
+    expect(earlyDeath.step1?.partConjoint).toBe(250000);
+    expect(earlyDeath.step1?.partEnfants).toBe(250000);
+    expect(laterDeath.step1?.partConjoint).toBe(200000);
+    expect(laterDeath.step1?.partEnfants).toBe(300000);
+  });
+
   it('uses the testament of the side selected by death order', () => {
     const baseInput = {
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),

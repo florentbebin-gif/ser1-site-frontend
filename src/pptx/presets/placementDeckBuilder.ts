@@ -81,7 +81,6 @@ export interface PlacementProductData {
   };
   totaux: {
     effortReel: number;
-    revenusNetsEpargne: number;
     revenusNetsLiquidation: number;
     fiscaliteTotale: number;
     capitalTransmisNet: number;
@@ -242,29 +241,12 @@ function buildSynthesisSpec(data: PlacementData): PlacementSynthesisSlideSpec {
 }
 
 function buildEpargneDetail(data: PlacementData): PlacementDetailSlideSpec {
-  const buildMetrics = (p: PlacementProductData): PlacementDetailSlideSpec['produit1']['metrics'] => {
-    const metrics: PlacementDetailSlideSpec['produit1']['metrics'] = [
-      { icon: 'money' as BusinessIconName, label: 'Capital acquis', value: fmt(p.epargne.capitalAcquis) },
-      { icon: 'cheque' as BusinessIconName, label: 'Versements cumulés', value: fmt(p.epargne.cumulVersements) },
-      { icon: 'calculator' as BusinessIconName, label: 'Effort réel', value: fmt(p.totaux.effortReel) },
-      { icon: 'percent' as BusinessIconName, label: 'Économie IR cumulée', value: fmt(p.epargne.cumulEconomieIR) },
-    ];
-    if (p.totaux.revenusNetsEpargne > 0) {
-      metrics.push({ icon: 'chart-up' as BusinessIconName, label: 'Revenus appréhendés nets', value: fmt(p.totaux.revenusNetsEpargne) });
-    }
-    return metrics;
-  };
-  const buildGainBar = (p: PlacementProductData) => {
-    const diff = p.epargne.capitalAcquis - p.epargne.cumulVersements;
-    const revenusPercus = p.totaux.revenusNetsEpargne;
-    return {
-      capitalAcquis: p.epargne.capitalAcquis,
-      versements: p.epargne.cumulVersements,
-      gains: Math.max(0, diff),
-      ...(diff < 0 ? { shortfall: -diff } : {}),
-      ...(revenusPercus > 0 ? { revenusPercus } : {}),
-    };
-  };
+  const buildMetrics = (p: PlacementProductData): PlacementDetailSlideSpec['produit1']['metrics'] => [
+    { icon: 'money' as BusinessIconName, label: 'Capital acquis', value: fmt(p.epargne.capitalAcquis) },
+    { icon: 'cheque' as BusinessIconName, label: 'Versements cumulés', value: fmt(p.epargne.cumulVersements) },
+    { icon: 'calculator' as BusinessIconName, label: 'Effort réel', value: fmt(p.epargne.cumulEffort) },
+    { icon: 'percent' as BusinessIconName, label: 'Économie IR cumulée', value: fmt(p.epargne.cumulEconomieIR) },
+  ];
   return {
     type: 'placement-detail',
     title: 'Phase Épargne',
@@ -273,13 +255,11 @@ function buildEpargneDetail(data: PlacementData): PlacementDetailSlideSpec {
       label: data.produit1.envelopeLabel,
       metrics: buildMetrics(data.produit1),
       params: buildEpargneParams(data.produit1.config),
-      gainBar: buildGainBar(data.produit1),
     },
     produit2: {
       label: data.produit2.envelopeLabel,
       metrics: buildMetrics(data.produit2),
       params: buildEpargneParams(data.produit2.config),
-      gainBar: buildGainBar(data.produit2),
     },
   };
 }
@@ -475,7 +455,6 @@ export function buildPlacementStudyDeck(
 
   // Marqueur "âge au décès" dans les tableaux liquidation (color9)
   // deathYearIndex : 1-based index de l'année de décès dans la phase liquidation
-  // Guard : undefined si hors plage ou pas de rows
   const liquidationStart = data.ageActuel + data.dureeEpargne;
   const rawDeathYear = data.ageAuDeces - liquidationStart + 1;
   const maxLiquidationYears = Math.max(

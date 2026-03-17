@@ -52,8 +52,8 @@ export default function UserInviteModal({
   };
 
   return (
-    <div className="report-modal-overlay" onClick={onClose}>
-      <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 500 }}>
+    <div className="report-modal-overlay">
+      <div className="report-modal" style={{ maxWidth: 500 }}>
         <div className="report-modal-header">
           <h3>Nouvel utilisateur</h3>
           <button className="report-modal-close" onClick={onClose} type="button">X</button>

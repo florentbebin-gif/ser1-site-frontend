@@ -28,9 +28,9 @@ export default function AddFamilyMemberModal({
   return (
     <div
       className="sc-member-modal-overlay"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={() => {}}
     >
-      <div className="sc-member-modal">
+      <div className="sc-member-modal sc-member-modal--family">
         <div className="sc-member-modal__header">
           <h3 className="sc-member-modal__title">Ajouter un membre</h3>
           <button
