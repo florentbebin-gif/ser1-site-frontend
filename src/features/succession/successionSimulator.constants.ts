@@ -4,11 +4,12 @@ import type {
   SituationMatrimoniale,
   SuccessionAssetCategory,
   SuccessionAssuranceVieContractType,
+  SuccessionPatrimonialContext,
   SuccessionDispositionTestamentaire,
   SuccessionDonationEntreEpouxOption,
   SuccessionDonationEntryType,
   SuccessionPrimarySide,
-} from './successionDraft';
+} from './successionDraft.types';
 import { TESTAMENT_TYPE_DESCRIPTIONS } from './successionTestament';
 
 export const SITUATION_OPTIONS: { value: SituationMatrimoniale; label: string }[] = [
@@ -134,3 +135,22 @@ export const CLAUSE_BENEFICIAIRE_PRESETS: { value: string; label: string }[] = [
 
 export const CLAUSE_CONJOINT_LABEL = 'Conjoint survivant, à défaut enfants, à défaut héritiers';
 export const CLAUSE_ENFANTS_LABEL = 'Les enfants par parts égales';
+export const RESIDENCE_PRINCIPALE_SUBCATEGORY = ASSET_SUBCATEGORY_OPTIONS.immobilier[0];
+export const RESIDENCE_SECONDAIRE_SUBCATEGORY = ASSET_SUBCATEGORY_OPTIONS.immobilier[1];
+
+export const DECES_DANS_X_ANS_OPTIONS: {
+  value: SuccessionPatrimonialContext['decesDansXAns'];
+  label: string;
+}[] = [
+  { value: 0, label: 'Aujourd\'hui' },
+  { value: 5, label: 'Dans 5 ans' },
+  { value: 10, label: 'Dans 10 ans' },
+  { value: 15, label: 'Dans 15 ans' },
+  { value: 20, label: 'Dans 20 ans' },
+  { value: 25, label: 'Dans 25 ans' },
+  { value: 30, label: 'Dans 30 ans' },
+  { value: 35, label: 'Dans 35 ans' },
+  { value: 40, label: 'Dans 40 ans' },
+  { value: 45, label: 'Dans 45 ans' },
+  { value: 50, label: 'Dans 50 ans' },
+];

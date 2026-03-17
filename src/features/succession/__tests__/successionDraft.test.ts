@@ -9,6 +9,10 @@ import {
   parseSuccessionDraftPayload,
   type SuccessionDevolutionContextInput,
 } from '../successionDraft';
+import {
+  RESIDENCE_PRINCIPALE_SUBCATEGORY,
+  RESIDENCE_SECONDAIRE_SUBCATEGORY,
+} from '../successionSimulator.constants';
 
 function makeDevolution(overrides: SuccessionDevolutionContextInput) {
   return {
@@ -85,7 +89,7 @@ describe('successionDraft', () => {
         forfaitMobilierPct: 5,
         forfaitMobilierMontant: 0,
         abattementResidencePrincipale: false,
-        ageDecesManuel: null,
+        decesDansXAns: 50,
       },
       [
         { id: 'E1', prenom: 'Alice', rattachement: 'commun' },
@@ -123,6 +127,14 @@ describe('successionDraft', () => {
           versementsApres70: 15000,
         },
       ],
+      [
+        {
+          id: 'per-1',
+          typeContrat: 'standard',
+          assure: 'epoux2',
+          capitauxDeces: 60000,
+        },
+      ],
     );
 
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
@@ -148,6 +160,9 @@ describe('successionDraft', () => {
     expect(parsed?.assetEntries[0].category).toBe('immobilier');
     expect(parsed?.assuranceVieEntries).toHaveLength(1);
     expect(parsed?.assuranceVieEntries[0].capitauxDeces).toBe(80000);
+    expect(parsed?.perEntries).toHaveLength(1);
+    expect(parsed?.perEntries[0].capitauxDeces).toBe(60000);
+    expect(parsed?.patrimonial.decesDansXAns).toBe(50);
     expect(parsed?.enfants).toHaveLength(2);
     expect(parsed?.enfants[0]).toEqual({ id: 'E1', prenom: 'Alice', rattachement: 'commun' });
     expect(parsed?.enfants[1]).toEqual({ id: 'E2', prenom: 'Bastien', rattachement: 'epoux1', deceased: true });
@@ -155,6 +170,66 @@ describe('successionDraft', () => {
 
   it('retourne null sur JSON invalide', () => {
     expect(parseSuccessionDraftPayload('not-json')).toBeNull();
+  });
+
+  it('normalise les résidences principales multiples et réinitialise l’horizon simulé en v16', () => {
+    const raw = JSON.stringify({
+      version: 16,
+      form: {
+        actifNetSuccession: 250000,
+        heritiers: [{ lien: 'enfant', partSuccession: 250000 }],
+      },
+      civil: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_legale',
+        pacsConvention: 'separation',
+      },
+      liquidation: {
+        actifEpoux1: 100000,
+        actifEpoux2: 0,
+        actifCommun: 150000,
+        nbEnfants: 1,
+      },
+      devolution: {
+        nbEnfantsNonCommuns: 0,
+        testamentsBySide: {
+          epoux1: { active: false, dispositionType: null, beneficiaryRef: null, quotePartPct: 50, particularLegacies: [] },
+          epoux2: { active: false, dispositionType: null, beneficiaryRef: null, quotePartPct: 50, particularLegacies: [] },
+        },
+        ascendantsSurvivantsBySide: { epoux1: false, epoux2: false },
+      },
+      patrimonial: {
+        donationsRapportables: 0,
+        donationsHorsPart: 0,
+        legsParticuliers: 0,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'usufruit_total',
+        preciputMontant: 0,
+        attributionIntegrale: false,
+        attributionBiensCommunsPct: 50,
+        forfaitMobilierMode: 'auto',
+        forfaitMobilierPct: 5,
+        forfaitMobilierMontant: 0,
+        abattementResidencePrincipale: false,
+        ageDecesManuel: 82,
+      },
+      enfants: [{ id: 'E1', rattachement: 'commun' }],
+      familyMembers: [],
+      donations: [],
+      assetEntries: [
+        { id: 'asset-1', owner: 'epoux1', category: 'immobilier', subCategory: 'RÃ©sidence principale', amount: 200000 },
+        { id: 'asset-2', owner: 'commun', category: 'immobilier', subCategory: 'RÃ©sidence principale', amount: 150000 },
+      ],
+      assuranceVieEntries: [],
+    });
+
+    const parsed = parseSuccessionDraftPayload(raw);
+
+    expect(parsed?.patrimonial.decesDansXAns).toBe(0);
+    expect(parsed?.assetEntries.map((entry) => entry.subCategory)).toEqual([
+      RESIDENCE_PRINCIPALE_SUBCATEGORY,
+      RESIDENCE_SECONDAIRE_SUBCATEGORY,
+    ]);
   });
 
   it('migre un draft v15 vers le testament par personne en v16', () => {

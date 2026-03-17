@@ -7,6 +7,7 @@ import type {
   SuccessionDonationEntry,
   SuccessionEnfant,
   SuccessionLiquidationContext,
+  SuccessionPerEntry,
   SuccessionPatrimonialContext,
   SuccessionTestamentConfig,
 } from './successionDraft.types';
@@ -60,11 +61,12 @@ export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContex
   forfaitMobilierPct: 5,
   forfaitMobilierMontant: 0,
   abattementResidencePrincipale: false,
-  ageDecesManuel: null,
+  decesDansXAns: 0,
 };
 
 export const DEFAULT_SUCCESSION_ENFANTS_CONTEXT: SuccessionEnfant[] = [];
 export const DEFAULT_SUCCESSION_DONATIONS: SuccessionDonationEntry[] = [];
 export const DEFAULT_SUCCESSION_ASSET_DETAILS: SuccessionAssetDetailEntry[] = [];
 export const DEFAULT_SUCCESSION_ASSURANCE_VIE: SuccessionAssuranceVieEntry[] = [];
+export const DEFAULT_SUCCESSION_PER: SuccessionPerEntry[] = [];
 export const DEFAULT_SUCCESSION_FAMILY_MEMBERS: FamilyMember[] = [];

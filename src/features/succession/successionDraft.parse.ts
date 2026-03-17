@@ -3,6 +3,7 @@ import {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
+  DEFAULT_SUCCESSION_PER,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
 } from './successionDraft.defaults';
@@ -39,6 +40,7 @@ import {
   getLegacyTestamentConfig,
   isSupportedSuccessionDraftVersion,
 } from './successionDraft.legacy';
+import { normalizeResidencePrincipaleAssetEntries } from './successionAssetValuation';
 import type {
   FamilyMember,
   ParsedSuccessionDraftPayload,
@@ -47,10 +49,13 @@ import type {
   SuccessionAssuranceVieEntry,
   SuccessionDevolutionContext,
   SuccessionDonationEntry,
+  SuccessionPerEntry,
   SuccessionParticularLegacyEntry,
   SuccessionPrimarySide,
   SuccessionTestamentConfig,
 } from './successionDraft.types';
+
+const DECES_DANS_X_ANS_VALUES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50] as const;
 
 function parseTestamentConfig(raw: unknown): SuccessionTestamentConfig {
   if (!isObject(raw)) {
@@ -142,7 +147,7 @@ function parseDonations(rawDonations: unknown): SuccessionDonationEntry[] {
 }
 
 function parseAssetEntries(rawAssetEntries: unknown): SuccessionAssetDetailEntry[] {
-  return (Array.isArray(rawAssetEntries) ? rawAssetEntries : [])
+  const parsedEntries = (Array.isArray(rawAssetEntries) ? rawAssetEntries : [])
     .filter((item): item is Record<string, unknown> => isObject(item))
     .map((item, idx) => {
       if (!isAssetOwner(item.owner) || !isAssetCategory(item.category)) return null;
@@ -161,6 +166,8 @@ function parseAssetEntries(rawAssetEntries: unknown): SuccessionAssetDetailEntry
       return asset;
     })
     .filter((item): item is SuccessionAssetDetailEntry => item !== null);
+
+  return normalizeResidencePrincipaleAssetEntries(parsedEntries);
 }
 
 function parseAssuranceVieEntries(rawAssuranceVieEntries: unknown): SuccessionAssuranceVieEntry[] {
@@ -198,6 +205,44 @@ function parseAssuranceVieEntries(rawAssuranceVieEntries: unknown): SuccessionAs
       return entry;
     })
     .filter((item): item is SuccessionAssuranceVieEntry => item !== null);
+}
+
+function parsePerEntries(rawPerEntries: unknown): SuccessionPerEntry[] {
+  return (Array.isArray(rawPerEntries) ? rawPerEntries : [])
+    .filter((item): item is Record<string, unknown> => isObject(item))
+    .map((item, idx) => {
+      const assure = item.assure;
+      if (
+        !isAssuranceVieContractType(item.typeContrat)
+        || (assure !== 'epoux1' && assure !== 'epoux2')
+      ) {
+        return null;
+      }
+
+      const entry: SuccessionPerEntry = {
+        id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `per-${idx + 1}`,
+        typeContrat: item.typeContrat,
+        assure,
+        capitauxDeces: asAmount(item.capitauxDeces, 0),
+      };
+
+      const clauseBeneficiaire = normalizeOptionalString(item.clauseBeneficiaire);
+      if (clauseBeneficiaire) entry.clauseBeneficiaire = clauseBeneficiaire;
+
+      const ageUsufruitier = Number(item.ageUsufruitier);
+      if (Number.isFinite(ageUsufruitier) && ageUsufruitier > 0) {
+        entry.ageUsufruitier = ageUsufruitier;
+      }
+
+      return entry;
+    })
+    .filter((item): item is SuccessionPerEntry => item !== null);
+}
+
+function parseDecesDansXAns(raw: unknown): typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.decesDansXAns {
+  return DECES_DANS_X_ANS_VALUES.includes(raw as (typeof DECES_DANS_X_ANS_VALUES)[number])
+    ? raw as typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.decesDansXAns
+    : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.decesDansXAns;
 }
 
 export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftPayload | null {
@@ -340,9 +385,9 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
         patrimonialRaw.abattementResidencePrincipale,
         DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.abattementResidencePrincipale,
       ),
-      ageDecesManuel: typeof patrimonialRaw.ageDecesManuel === 'number' && patrimonialRaw.ageDecesManuel > 0
-        ? patrimonialRaw.ageDecesManuel
-        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.ageDecesManuel,
+      decesDansXAns: parseDecesDansXAns(
+        version >= 17 ? patrimonialRaw.decesDansXAns : 0,
+      ),
     };
 
     const enfants = version >= 5 && Array.isArray(payload.enfants)
@@ -398,6 +443,9 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
     const assuranceVieEntries = version >= 10 && Array.isArray(payload.assuranceVieEntries)
       ? parseAssuranceVieEntries(payload.assuranceVieEntries)
       : DEFAULT_SUCCESSION_ASSURANCE_VIE;
+    const perEntries = version >= 17 && Array.isArray(payload.perEntries)
+      ? parsePerEntries(payload.perEntries)
+      : DEFAULT_SUCCESSION_PER;
 
     return {
       form: {
@@ -413,6 +461,7 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       donations,
       assetEntries,
       assuranceVieEntries,
+      perEntries,
     };
   } catch {
     return null;

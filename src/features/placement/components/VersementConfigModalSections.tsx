@@ -227,10 +227,13 @@ export function VersementInitialSection({
 }
 
 interface VersementAnnualSectionProps {
+  active: boolean;
   annuel: VersementAnnuel;
   isPER: boolean;
   isSCPI: boolean;
   isExpert: boolean;
+  onAddAnnual: () => void;
+  onRemoveAnnual: () => void;
   onUpdateAnnuel: <K extends keyof VersementAnnuel>(field: K, value: VersementAnnuel[K]) => void;
   onUpdateAnnuelAlloc: (_capi: number, _distrib: number) => void;
   onUpdateAnnuelOption: <K extends keyof VersementOption>(
@@ -241,16 +244,48 @@ interface VersementAnnualSectionProps {
 }
 
 export function VersementAnnualSection({
+  active,
   annuel,
   isPER,
   isSCPI,
   isExpert,
+  onAddAnnual,
+  onRemoveAnnual,
   onUpdateAnnuel,
   onUpdateAnnuelAlloc,
   onUpdateAnnuelOption,
 }: VersementAnnualSectionProps) {
+  if (!active) {
+    return (
+      <VersementSectionShell
+        step="2"
+        title="Versement annuel"
+        action={(
+          <button type="button" className="vcm__add-btn" onClick={onAddAnnual}>
+            + Ajouter
+          </button>
+        )}
+      >
+        <div className="vcm__empty">
+          <p>Aucun versement annuel configure</p>
+          <button type="button" className="vcm__add-btn vcm__add-btn--large" onClick={onAddAnnual}>
+            + Ajouter un versement annuel
+          </button>
+        </div>
+      </VersementSectionShell>
+    );
+  }
+
   return (
-    <VersementSectionShell step="2" title="Versement annuel">
+    <VersementSectionShell
+      step="2"
+      title="Versement annuel"
+      action={(
+        <button type="button" className="vcm__add-btn vcm__add-btn--secondary" onClick={onRemoveAnnual}>
+          Supprimer
+        </button>
+      )}
+    >
       <div className="vcm__card">
         <div className="vcm__row">
           <InputEuro label="Montant" value={annuel.montant} onChange={(value) => onUpdateAnnuel('montant', value)} />

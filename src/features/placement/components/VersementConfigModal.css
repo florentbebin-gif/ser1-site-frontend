@@ -220,7 +220,7 @@
 
 .vcm__suboption--distrib {
   border-left: 2px solid var(--color-c5);
-  background: linear-gradient(135deg, color-mix(in srgb, var(--color-c7) 90%, #FFFFFF), transparent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-c5) 30%, #FFFFFF), transparent);
 }
 
 .vcm__suboption-header {
@@ -364,6 +364,18 @@
 .vcm__add-btn:hover {
   border-style: solid;
   background: color-mix(in srgb, var(--color-c4) 35%, #FFFFFF);
+}
+
+.vcm__add-btn--secondary {
+  border-style: solid;
+  border-color: var(--color-c8);
+  color: var(--color-c9);
+}
+
+.vcm__add-btn--secondary:hover {
+  border-color: var(--color-c5);
+  background: var(--color-c7);
+  color: var(--color-c1);
 }
 
 .vcm__add-btn--large {

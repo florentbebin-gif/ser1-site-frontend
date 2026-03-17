@@ -19,6 +19,7 @@ interface ScNumericInputProps {
   max?: number;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 export function ScNumericInput({
@@ -28,6 +29,7 @@ export function ScNumericInput({
   max,
   placeholder = '0',
   className,
+  disabled = false,
 }: ScNumericInputProps) {
   const numericValue = typeof value === 'string' ? Number(value) || 0 : value;
   const [display, setDisplay] = useState(() => fmtThousands(numericValue));
@@ -67,6 +69,7 @@ export function ScNumericInput({
       onBlur={handleBlur}
       placeholder={placeholder}
       className={className}
+      disabled={disabled}
     />
   );
 }

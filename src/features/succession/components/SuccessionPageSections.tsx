@@ -7,6 +7,7 @@ import ScSuccessionSummaryPanel from './ScSuccessionSummaryPanel';
 import AddFamilyMemberModal from './AddFamilyMemberModal';
 import AssuranceVieModal from './AssuranceVieModal';
 import DispositionsModal from './DispositionsModal';
+import PerModal from './PerModal';
 import { FiliationOrgchart } from './FiliationOrgchart';
 import type { useSuccessionDerivedValues } from '../useSuccessionDerivedValues';
 import type { SuccessionFiscalSnapshot } from '../successionFiscalContext';
@@ -20,6 +21,7 @@ import type {
   FamilyMember,
   SuccessionAssuranceVieEntry,
   SuccessionEnfant,
+  SuccessionPerEntry,
   SuccessionPrimarySide,
   SuccessionTestamentConfig,
 } from '../successionDraft';
@@ -38,6 +40,7 @@ interface SuccessionPageGridProps {
   enfantsContext: SuccessionEnfant[];
   familyMembers: FamilyMember[];
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
+  perEntries: SuccessionPerEntry[];
   donationsContext: SuccessionDonationEntry[];
   chainOrder: 'epoux1' | 'epoux2';
   onToggleChainOrder: () => void;
@@ -54,6 +57,7 @@ interface SuccessionPageGridProps {
   onUpdateAssetEntry: (_entryId: string, _field: keyof SuccessionAssetDetailEntry, _value: string | number) => void;
   onRemoveAssetEntry: (_entryId: string) => void;
   onOpenAssuranceVieModal: () => void;
+  onOpenPerModal: () => void;
   onSetSimplifiedBalanceField: (_type: 'actifs' | 'passifs', _owner: SuccessionAssetOwner, _value: number) => void;
   onAddDonationEntry: () => void;
   onUpdateDonationEntry: (_entryId: string, _field: keyof SuccessionDonationEntry, _value: string | number | boolean) => void;
@@ -62,7 +66,7 @@ interface SuccessionPageGridProps {
   forfaitMobilierPct: number;
   forfaitMobilierMontant: number;
   abattementResidencePrincipale: boolean;
-  ageDecesManuel: number | null;
+  decesDansXAns: 0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50;
   onUpdatePatrimonialField: <K extends string>(_field: K, _value: unknown) => void;
 }
 
@@ -83,6 +87,8 @@ interface SuccessionModalsProps {
   setDispositionsDraft: Dispatch<SetStateAction<DispositionsDraftState>>;
   showAssuranceVieModal: boolean;
   assuranceVieDraft: SuccessionAssuranceVieEntry[];
+  showPerModal: boolean;
+  perDraft: SuccessionPerEntry[];
   showAddMemberPanel: boolean;
   addMemberForm: AddFamilyMemberFormState;
   setAddMemberForm: Dispatch<SetStateAction<AddFamilyMemberFormState>>;
@@ -110,6 +116,15 @@ interface SuccessionModalsProps {
     _field: keyof SuccessionAssuranceVieEntry,
     _value: string | number | undefined,
   ) => void;
+  onClosePer: () => void;
+  onValidatePer: () => void;
+  onAddPerContract: () => void;
+  onRemovePerContract: (_contractId: string) => void;
+  onUpdatePerContract: (
+    _contractId: string,
+    _field: keyof SuccessionPerEntry,
+    _value: string | number | undefined,
+  ) => void;
   onCloseAddMemberPanel: () => void;
   onValidateAddMember: () => void;
 }
@@ -121,6 +136,7 @@ export function SuccessionPageGrid({
   enfantsContext,
   familyMembers,
   assuranceVieEntries,
+  perEntries,
   donationsContext,
   chainOrder,
   onToggleChainOrder,
@@ -137,6 +153,7 @@ export function SuccessionPageGrid({
   onUpdateAssetEntry,
   onRemoveAssetEntry,
   onOpenAssuranceVieModal,
+  onOpenPerModal,
   onSetSimplifiedBalanceField,
   onAddDonationEntry,
   onUpdateDonationEntry,
@@ -145,7 +162,7 @@ export function SuccessionPageGrid({
   forfaitMobilierPct,
   forfaitMobilierMontant,
   abattementResidencePrincipale,
-  ageDecesManuel,
+  decesDansXAns,
   onUpdatePatrimonialField,
 }: SuccessionPageGridProps) {
   return (
@@ -179,18 +196,21 @@ export function SuccessionPageGrid({
           assetOwnerOptions={derived.assetOwnerOptions}
           assetBreakdown={derived.assetBreakdown}
           assetNetTotals={derived.assetNetTotals}
+          forfaitMobilierComputed={derived.forfaitMobilierComputed}
+          residencePrincipaleEntryId={derived.residencePrincipaleEntryId}
           assuranceVieEntries={assuranceVieEntries}
+          perEntries={perEntries}
           assuranceViePartyOptions={derived.assuranceViePartyOptions}
           onAddAssetEntry={onAddAssetEntry}
           onUpdateAssetEntry={onUpdateAssetEntry}
           onRemoveAssetEntry={onRemoveAssetEntry}
           onOpenAssuranceVieModal={onOpenAssuranceVieModal}
+          onOpenPerModal={onOpenPerModal}
           onSetSimplifiedBalanceField={onSetSimplifiedBalanceField}
           forfaitMobilierMode={forfaitMobilierMode}
           forfaitMobilierPct={forfaitMobilierPct}
           forfaitMobilierMontant={forfaitMobilierMontant}
           abattementResidencePrincipale={abattementResidencePrincipale}
-          ageDecesManuel={ageDecesManuel}
           onUpdatePatrimonialField={onUpdatePatrimonialField}
         />
 
@@ -232,6 +252,7 @@ export function SuccessionPageGrid({
               : null,
           }}
           avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
+          perFiscalByAssure={derived.perFiscalAnalysis.byAssure}
           directDisplay={{
             simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
             result: derived.directDisplayAnalysis.result
@@ -247,6 +268,9 @@ export function SuccessionPageGrid({
           derivedMasseTransmise={derived.derivedMasseTransmise}
           derivedTotalDroits={derived.derivedTotalDroits}
           isPacsed={derived.isPacsed}
+          showDeathHorizonControl={isExpert}
+          decesDansXAns={decesDansXAns}
+          onChangeDecesDansXAns={(value) => onUpdatePatrimonialField('decesDansXAns', value)}
           chainageAnalysis={{
             order: derived.chainageAnalysis.order,
             firstDecedeLabel: derived.chainageAnalysis.firstDecedeLabel,
@@ -266,6 +290,8 @@ export function SuccessionPageGrid({
           }}
           assuranceVieByAssure={derived.assuranceVieByAssure}
           avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
+          perByAssure={derived.perByAssure}
+          perFiscalByAssure={derived.perFiscalAnalysis.byAssure}
           directDisplay={{
             simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
             result: derived.directDisplayAnalysis.result
@@ -322,7 +348,8 @@ export function SuccessionHypotheses({
             AV décès après {fiscalSnapshot.avDeces.agePivotPrimes} ans {fiscalSnapshot.avDeces.apres70ans.globalAllowance} (global).
           </li>
           <li>La lecture civile repose sur le contexte familial, les masses patrimoniales saisies et les dispositions déclarées.</li>
-          <li>Les capitaux décès d&apos;assurance-vie sont ventilés par bénéficiaire à partir des clauses saisies, avec une lecture simplifiée des régimes 990 I / 757 B.</li>
+          <li>Les capitaux décès d&apos;assurance-vie et de PER assurance sont ventilés par bénéficiaire à partir des clauses saisies, avec une lecture simplifiée des régimes 990 I / 757 B.</li>
+          <li>L&apos;horizon de décès simulé s&apos;applique aux valorisations dépendant de la date du décès, sans décalage calendaire distinct entre le 1er et le 2e décès.</li>
           <li>La chronologie 2 décès repose sur un chaînage simplifié avec warnings sur les cas non couverts.</li>
           <li>La dévolution légale est présentée en lecture civile simplifiée, sans gestion exhaustive des ordres successoraux.</li>
           <li>Les libéralités et avantages matrimoniaux sont qualifiés de façon indicative, sans recalcul automatique des droits dans ce module.</li>
@@ -344,6 +371,8 @@ export function SuccessionModals({
   setDispositionsDraft,
   showAssuranceVieModal,
   assuranceVieDraft,
+  showPerModal,
+  perDraft,
   showAddMemberPanel,
   addMemberForm,
   setAddMemberForm,
@@ -359,6 +388,11 @@ export function SuccessionModals({
   onAddAssuranceVieContract,
   onRemoveAssuranceVieContract,
   onUpdateAssuranceVieContract,
+  onClosePer,
+  onValidatePer,
+  onAddPerContract,
+  onRemovePerContract,
+  onUpdatePerContract,
   onCloseAddMemberPanel,
   onValidateAddMember,
 }: SuccessionModalsProps) {
@@ -404,6 +438,23 @@ export function SuccessionModals({
           onAddContract={onAddAssuranceVieContract}
           onRemoveContract={onRemoveAssuranceVieContract}
           onUpdateContract={onUpdateAssuranceVieContract}
+        />
+      )}
+
+      {showPerModal && (
+        <PerModal
+          perDraft={perDraft}
+          perDraftTotals={derived.perDraftTotals}
+          assuranceViePartyOptions={derived.assuranceViePartyOptions}
+          enfantsContext={enfantsContext}
+          familyMembers={familyMembers}
+          isMarried={derived.isMarried}
+          isPacsed={derived.isPacsed}
+          onClose={onClosePer}
+          onValidate={onValidatePer}
+          onAddContract={onAddPerContract}
+          onRemoveContract={onRemovePerContract}
+          onUpdateContract={onUpdatePerContract}
         />
       )}
 

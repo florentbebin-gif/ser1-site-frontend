@@ -26,7 +26,7 @@ function makePatrimonial(overrides: Partial<SuccessionPatrimonialContext>): Succ
     forfaitMobilierPct: 5,
     forfaitMobilierMontant: 0,
     abattementResidencePrincipale: false,
-    ageDecesManuel: null,
+    decesDansXAns: 0,
     ...overrides,
   };
 }
@@ -105,6 +105,11 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
         },
       ],
       snapshot,
+      {
+        simulatedDeceased: 'epoux1',
+        testament: null,
+        referenceDate: new Date('2026-03-17'),
+      },
     );
 
     expect(analysis.masseCivileReference).toBe(590000);

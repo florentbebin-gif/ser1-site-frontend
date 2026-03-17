@@ -1,5 +1,7 @@
 import type { SuccessionChainOrder } from '../successionChainage';
+import { DECES_DANS_X_ANS_OPTIONS } from '../successionSimulator.constants';
 import { fmt } from '../successionSimulator.helpers';
+import { ScSelect } from './ScSelect';
 
 interface ScDeathTimelinePanelProps {
   chainOrder: SuccessionChainOrder;
@@ -8,6 +10,9 @@ interface ScDeathTimelinePanelProps {
   derivedMasseTransmise: number;
   derivedTotalDroits: number;
   isPacsed: boolean;
+  showDeathHorizonControl: boolean;
+  decesDansXAns: 0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50;
+  onChangeDecesDansXAns: (_value: 0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50) => void;
   chainageAnalysis: {
     order: 'epoux1' | 'epoux2';
     firstDecedeLabel: string;
@@ -17,6 +22,8 @@ interface ScDeathTimelinePanelProps {
   };
   assuranceVieByAssure: Record<'epoux1' | 'epoux2', number>;
   avFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
+  perByAssure: Record<'epoux1' | 'epoux2', number>;
+  perFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
   directDisplay: {
     simulatedDeceased: 'epoux1' | 'epoux2';
     result: { totalDroits: number } | null;
@@ -30,11 +37,18 @@ export default function ScDeathTimelinePanel({
   derivedMasseTransmise,
   derivedTotalDroits,
   isPacsed,
+  showDeathHorizonControl,
+  decesDansXAns,
+  onChangeDecesDansXAns,
   chainageAnalysis,
   assuranceVieByAssure,
   avFiscalByAssure,
+  perByAssure,
+  perFiscalByAssure,
   directDisplay,
 }: ScDeathTimelinePanelProps) {
+  const secondAssure = chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1';
+
   return (
     <div className="premium-card sc-summary-card sc-hero-card">
       <div className="sc-hero-header">
@@ -47,7 +61,7 @@ export default function ScDeathTimelinePanel({
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </div>
-          <h2 className="sc-summary-title">Chronologie des décès</h2>
+          <h2 className="sc-summary-title">Chronologie des deces</h2>
         </div>
         <div className="sc-pill-toggle">
           <button
@@ -55,21 +69,37 @@ export default function ScDeathTimelinePanel({
             className={`sc-pill-toggle__btn${chainOrder === 'epoux2' ? ' is-active' : ''}`}
             onClick={onToggleOrder}
           >
-            Ordre inversé
+            Ordre inverse
           </button>
         </div>
       </div>
+      {showDeathHorizonControl && (
+        <>
+          <div className="sc-card__divider sc-card__divider--tight" />
+          <div className="sc-field sc-field--timeline-select">
+            <label>Horizon du deces simule</label>
+            <ScSelect
+              value={String(decesDansXAns)}
+              onChange={(value) => onChangeDecesDansXAns(Number(value) as ScDeathTimelinePanelProps['decesDansXAns'])}
+              options={DECES_DANS_X_ANS_OPTIONS.map((option) => ({
+                value: String(option.value),
+                label: option.label,
+              }))}
+            />
+          </div>
+        </>
+      )}
       <div className="sc-card__divider sc-card__divider--tight" />
       {displayUsesChainage && chainageAnalysis.step1 && chainageAnalysis.step2 ? (
         <div className="sc-chrono-list">
           <div className="sc-chrono-item">
             <div className="sc-chrono-item__header">
-              <strong className="sc-chrono-item__title">Étape 1</strong>
-              <span className="sc-chrono-item__meta">Décès {chainageAnalysis.firstDecedeLabel}</span>
+              <strong className="sc-chrono-item__title">Etape 1</strong>
+              <span className="sc-chrono-item__meta">Deces {chainageAnalysis.firstDecedeLabel}</span>
             </div>
             <div className="sc-summary-row">
               <span>Masse transmise</span>
-              <strong>{fmt(chainageAnalysis.step1.actifTransmis + assuranceVieByAssure[chainageAnalysis.order])}</strong>
+              <strong>{fmt(chainageAnalysis.step1.actifTransmis + assuranceVieByAssure[chainageAnalysis.order] + perByAssure[chainageAnalysis.order])}</strong>
             </div>
             <div className="sc-summary-row">
               <span>Droits succession</span>
@@ -81,31 +111,43 @@ export default function ScDeathTimelinePanel({
                 <strong>{fmt(avFiscalByAssure[chainageAnalysis.order].totalDroits)}</strong>
               </div>
             )}
+            {perFiscalByAssure[chainageAnalysis.order].totalDroits > 0 && (
+              <div className="sc-summary-row">
+                <span>Droits PER</span>
+                <strong>{fmt(perFiscalByAssure[chainageAnalysis.order].totalDroits)}</strong>
+              </div>
+            )}
           </div>
 
           <div className="sc-chrono-item">
             <div className="sc-chrono-item__header">
-              <strong className="sc-chrono-item__title">Étape 2</strong>
-              <span className="sc-chrono-item__meta">Décès {chainageAnalysis.secondDecedeLabel}</span>
+              <strong className="sc-chrono-item__title">Etape 2</strong>
+              <span className="sc-chrono-item__meta">Deces {chainageAnalysis.secondDecedeLabel}</span>
             </div>
             <div className="sc-summary-row">
               <span>Masse transmise</span>
-              <strong>{fmt(chainageAnalysis.step2.actifTransmis + assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'])}</strong>
+              <strong>{fmt(chainageAnalysis.step2.actifTransmis + assuranceVieByAssure[secondAssure] + perByAssure[secondAssure])}</strong>
             </div>
             <div className="sc-summary-row">
               <span>Droits succession</span>
               <strong>{fmt(chainageAnalysis.step2.droitsEnfants)}</strong>
             </div>
-            {avFiscalByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits > 0 && (
+            {avFiscalByAssure[secondAssure].totalDroits > 0 && (
               <div className="sc-summary-row">
                 <span>Droits assurance-vie</span>
-                <strong>{fmt(avFiscalByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits)}</strong>
+                <strong>{fmt(avFiscalByAssure[secondAssure].totalDroits)}</strong>
+              </div>
+            )}
+            {perFiscalByAssure[secondAssure].totalDroits > 0 && (
+              <div className="sc-summary-row">
+                <span>Droits PER</span>
+                <strong>{fmt(perFiscalByAssure[secondAssure].totalDroits)}</strong>
               </div>
             )}
           </div>
 
           <div className="sc-chrono-total">
-            <span>Total cumulé des droits</span>
+            <span>Total cumule des droits</span>
             <strong>{fmt(derivedTotalDroits)}</strong>
           </div>
         </div>
@@ -115,7 +157,7 @@ export default function ScDeathTimelinePanel({
             <div className="sc-chrono-item__header">
               <strong className="sc-chrono-item__title">Succession directe</strong>
               <span className="sc-chrono-item__meta">
-                {isPacsed ? 'Décès du partenaire simulé' : 'Décès du/de la défunt(e) simulé(e)'}
+                {isPacsed ? 'Deces du partenaire simule' : 'Deces du/de la defunt(e) simule(e)'}
               </span>
             </div>
             <div className="sc-summary-row">
@@ -130,6 +172,12 @@ export default function ScDeathTimelinePanel({
               <div className="sc-summary-row">
                 <span>Droits assurance-vie</span>
                 <strong>{fmt(avFiscalByAssure[directDisplay.simulatedDeceased].totalDroits)}</strong>
+              </div>
+            )}
+            {perFiscalByAssure[directDisplay.simulatedDeceased].totalDroits > 0 && (
+              <div className="sc-summary-row">
+                <span>Droits PER</span>
+                <strong>{fmt(perFiscalByAssure[directDisplay.simulatedDeceased].totalDroits)}</strong>
               </div>
             )}
           </div>

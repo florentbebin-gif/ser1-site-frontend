@@ -30,7 +30,7 @@ export default function AddFamilyMemberModal({
       className="sc-member-modal-overlay"
       onClick={() => {}}
     >
-      <div className="sc-member-modal">
+      <div className="sc-member-modal sc-member-modal--family">
         <div className="sc-member-modal__header">
           <h3 className="sc-member-modal__title">Ajouter un membre</h3>
           <button

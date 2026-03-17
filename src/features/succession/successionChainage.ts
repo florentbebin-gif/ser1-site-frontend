@@ -70,6 +70,7 @@ interface SuccessionChainageInput {
   enfantsContext?: SuccessionEnfant[];
   familyMembers?: FamilyMember[];
   devolution?: Pick<SuccessionDevolutionContext, 'testamentsBySide'>;
+  referenceDate?: Date;
 }
 
 interface DetailedChainHeir {
@@ -417,6 +418,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     nbEnfants,
     input.order,
     input.patrimonial,
+    input.referenceDate,
   );
   warnings.push(...step1Split.warnings);
   const step1Details = computeStepTransmission(

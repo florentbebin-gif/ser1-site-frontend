@@ -416,10 +416,16 @@
   border-radius: 14px;
   width: 100%;
   max-width: 520px;
+  min-height: 320px;
   max-height: calc(100vh - 40px);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+}
+
+.sc-member-modal--family {
+  max-width: 620px;
+  min-height: 420px;
 }
 
 .sc-member-modal__header {
@@ -721,21 +727,6 @@
   gap: 8px 10px;
 }
 
-.sc-expert-options {
-  margin-top: 16px;
-  padding: 14px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--color-c8) 18%, #FFFFFF);
-  border: 1px solid var(--color-c8);
-}
-
-.sc-expert-options__grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 14px;
-  margin-top: 10px;
-}
-
 .sc-checkbox-label {
   display: flex;
   align-items: center;
@@ -760,24 +751,23 @@
 
 .sc-field--valeur-toggles {
   grid-column: span 2;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
+  display: grid;
   gap: 8px;
 }
 
 .sc-field--valeur-toggles > label {
-  width: 100%;
+  width: auto;
 }
 
-.sc-field--valeur-toggles > input {
-  flex: 0 0 auto;
-  width: 140px;
+.sc-field--valeur-toggles__content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
 }
 
-.sc-field--valeur-toggles > .sc-donation-toggle-row {
-  flex: 1 1 auto;
-  align-items: center;
+.sc-field--valeur-toggles__input {
+  min-width: 0;
 }
 
 /* Date month input — style cohérent avec CreditInputs (PR6) */
@@ -825,8 +815,9 @@
 
 .sc-donation-toggle-row {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
 }
 
 .sc-donation-toggle {
@@ -905,6 +896,12 @@
   gap: 10px;
 }
 
+.sc-asset-row-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .sc-assurance-vie-list {
   display: flex;
   flex-direction: column;
@@ -918,9 +915,17 @@
   align-items: end;
 }
 
+.sc-asset-row--three-cols {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .sc-asset-row--av {
   opacity: 0.7;
   pointer-events: none;
+}
+
+.sc-asset-row__suboption {
+  padding-left: 2px;
 }
 
 .sc-asset-row__value {
@@ -1008,6 +1013,7 @@
 
 .sc-dispositions-modal {
   max-width: 1200px;
+  min-height: 560px;
   max-height: calc(100vh - 40px);
   display: flex;
   flex-direction: column;
@@ -1119,6 +1125,10 @@
 
 .sc-assurance-vie-modal__body {
   gap: 12px;
+}
+
+.sc-field--timeline-select {
+  gap: 6px;
 }
 
 .sc-assurance-vie-select .sc-select__trigger {

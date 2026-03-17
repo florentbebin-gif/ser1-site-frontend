@@ -42,6 +42,18 @@ const ALL_ENVELOPE_LABELS: Record<string, string> = {
   PER_BANCAIRE_UI: 'PER bancaire (CTO)',
 };
 
+export function formatVersementConfigSummary(
+  initialMontant: number,
+  annualMontant: number,
+  formatter: (value: number) => string = shortEuro,
+) {
+  const initialSummary = formatter(initialMontant);
+  if (annualMontant > 0) {
+    return `${initialSummary} + ${formatter(annualMontant)}/an`;
+  }
+  return initialSummary;
+}
+
 interface EnvelopePillSelectProps {
   envelope: string;
   colorClass: string;
@@ -222,7 +234,10 @@ export function PlacementEpargneSection({
                     <SettingsIcon />
                   </span>
                   <span className="pl-btn__summary">
-                    {shortEuro(product.versementConfig.initial.montant)} + {shortEuro(product.versementConfig.annuel.montant)}/an
+                    {formatVersementConfigSummary(
+                      product.versementConfig.initial.montant,
+                      product.versementConfig.annuel.montant,
+                    )}
                   </span>
                 </button>
               </td>

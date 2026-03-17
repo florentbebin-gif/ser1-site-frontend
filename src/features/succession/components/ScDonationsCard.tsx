@@ -126,28 +126,32 @@ export default function ScDonationsCard({
                   </div>
                   <div className="sc-field sc-field--valeur-toggles">
                     <label>Valeur actuelle (€)</label>
-                    <ScNumericInput
-                      value={entry.valeurActuelle || 0}
-                      min={0}
-                      onChange={(val) => onUpdateDonationEntry(entry.id, 'valeurActuelle', val)}
-                    />
-                    <div className="sc-donation-toggle-row" role="group" aria-label="Options de donation">
-                      <button
-                        type="button"
-                        className={`sc-donation-toggle${entry.donSommeArgentExonere ? ' is-active' : ''}`}
-                        onClick={() => onUpdateDonationEntry(entry.id, 'donSommeArgentExonere', !(entry.donSommeArgentExonere ?? false))}
-                        aria-pressed={entry.donSommeArgentExonere ?? false}
-                      >
-                        Don de somme d&apos;argent exonéré
-                      </button>
-                      <button
-                        type="button"
-                        className={`sc-donation-toggle${entry.avecReserveUsufruit ? ' is-active' : ''}`}
-                        onClick={() => onUpdateDonationEntry(entry.id, 'avecReserveUsufruit', !(entry.avecReserveUsufruit ?? false))}
-                        aria-pressed={entry.avecReserveUsufruit ?? false}
-                      >
-                        Avec réserve d&apos;usufruit
-                      </button>
+                    <div className="sc-field--valeur-toggles__content">
+                      <div className="sc-field--valeur-toggles__input">
+                        <ScNumericInput
+                          value={entry.valeurActuelle || 0}
+                          min={0}
+                          onChange={(val) => onUpdateDonationEntry(entry.id, 'valeurActuelle', val)}
+                        />
+                      </div>
+                      <div className="sc-donation-toggle-row" role="group" aria-label="Options de donation">
+                        <button
+                          type="button"
+                          className={`sc-donation-toggle${entry.donSommeArgentExonere ? ' is-active' : ''}`}
+                          onClick={() => onUpdateDonationEntry(entry.id, 'donSommeArgentExonere', !(entry.donSommeArgentExonere ?? false))}
+                          aria-pressed={entry.donSommeArgentExonere ?? false}
+                        >
+                          Don de somme d&apos;argent exonéré
+                        </button>
+                        <button
+                          type="button"
+                          className={`sc-donation-toggle${entry.avecReserveUsufruit ? ' is-active' : ''}`}
+                          onClick={() => onUpdateDonationEntry(entry.id, 'avecReserveUsufruit', !(entry.avecReserveUsufruit ?? false))}
+                          aria-pressed={entry.avecReserveUsufruit ?? false}
+                        >
+                          Avec réserve d&apos;usufruit
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -28,6 +28,7 @@ import {
   DEFAULT_SUCCESSION_FAMILY_MEMBERS,
   DEFAULT_SUCCESSION_ASSET_DETAILS,
   DEFAULT_SUCCESSION_ASSURANCE_VIE,
+  DEFAULT_SUCCESSION_PER,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   parseSuccessionDraftPayload,
@@ -36,9 +37,11 @@ import {
   type FamilyMember,
   type SuccessionDonationEntry,
   type SuccessionEnfant,
+  type SuccessionPerEntry,
 } from './successionDraft';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { type SuccessionChainOrder } from './successionChainage';
+import { normalizeResidencePrincipaleAssetEntries } from './successionAssetValuation';
 import {
   buildInitialDispositionsDraft,
   EMPTY_ADD_FAMILY_MEMBER_FORM,
@@ -83,6 +86,7 @@ export default function SuccessionSimulator() {
   const [liquidationContext, setLiquidationContext] = useState(DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT);
   const [assetEntries, setAssetEntries] = useState<SuccessionAssetDetailEntry[]>(DEFAULT_SUCCESSION_ASSET_DETAILS);
   const [assuranceVieEntries, setAssuranceVieEntries] = useState<SuccessionAssuranceVieEntry[]>(DEFAULT_SUCCESSION_ASSURANCE_VIE);
+  const [perEntries, setPerEntries] = useState<SuccessionPerEntry[]>(DEFAULT_SUCCESSION_PER);
   const [devolutionContext, setDevolutionContext] = useState(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
   const [patrimonialContext, setPatrimonialContext] = useState(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
   const [donationsContext, setDonationsContext] = useState<SuccessionDonationEntry[]>(DEFAULT_SUCCESSION_DONATIONS);
@@ -91,7 +95,9 @@ export default function SuccessionSimulator() {
   const [showAddMemberPanel, setShowAddMemberPanel] = useState(false);
   const [showDispositionsModal, setShowDispositionsModal] = useState(false);
   const [showAssuranceVieModal, setShowAssuranceVieModal] = useState(false);
+  const [showPerModal, setShowPerModal] = useState(false);
   const [assuranceVieDraft, setAssuranceVieDraft] = useState<SuccessionAssuranceVieEntry[]>(DEFAULT_SUCCESSION_ASSURANCE_VIE);
+  const [perDraft, setPerDraft] = useState<SuccessionPerEntry[]>(DEFAULT_SUCCESSION_PER);
   const [dispositionsDraft, setDispositionsDraft] = useState<DispositionsDraftState>(buildInitialDispositionsDraft);
   const [addMemberForm, setAddMemberForm] = useState<AddFamilyMemberFormState>(EMPTY_ADD_FAMILY_MEMBER_FORM);
   const [chainOrder, setChainOrder] = useState<SuccessionChainOrder>('epoux1');
@@ -103,6 +109,8 @@ export default function SuccessionSimulator() {
     assetEntries,
     assuranceVieEntries,
     assuranceVieDraft,
+    perEntries,
+    perDraft,
     devolutionContext,
     patrimonialContext,
     donationsContext,
@@ -133,9 +141,15 @@ export default function SuccessionSimulator() {
     openAssuranceVieModal,
     closeAssuranceVieModal,
     validateAssuranceVieModal,
+    openPerModal,
+    closePerModal,
+    validatePerModal,
     addAssuranceVieEntry,
     updateAssuranceVieEntry,
     removeAssuranceVieEntry,
+    addPerEntry,
+    updatePerEntry,
+    removePerEntry,
     getFirstTestamentBeneficiaryRef,
     updateDispositionsTestament,
     addDispositionsParticularLegacy,
@@ -152,6 +166,8 @@ export default function SuccessionSimulator() {
     assetOwnerOptions: derived.assetOwnerOptions,
     assuranceVieEntries,
     assuranceVieDraft,
+    perEntries,
+    perDraft,
     assuranceViePartyOptions: derived.assuranceViePartyOptions,
     testamentBeneficiaryOptionsBySide: derived.testamentBeneficiaryOptionsBySide,
     canOpenDispositionsModal: derived.canOpenDispositionsModal,
@@ -163,6 +179,7 @@ export default function SuccessionSimulator() {
     setLiquidationContext,
     setAssetEntries,
     setAssuranceVieEntries,
+    setPerEntries,
     setDevolutionContext,
     setPatrimonialContext,
     setDonationsContext,
@@ -171,7 +188,9 @@ export default function SuccessionSimulator() {
     setShowAddMemberPanel,
     setShowDispositionsModal,
     setShowAssuranceVieModal,
+    setShowPerModal,
     setAssuranceVieDraft,
+    setPerDraft,
     setDispositionsDraft,
     setAddMemberForm,
     setChainOrder,
@@ -220,6 +239,8 @@ export default function SuccessionSimulator() {
           setAssetEntries(parsed.assetEntries);
           setAssuranceVieEntries(parsed.assuranceVieEntries);
           setAssuranceVieDraft(parsed.assuranceVieEntries);
+          setPerEntries(parsed.perEntries);
+          setPerDraft(parsed.perEntries);
           setDevolutionContext(parsed.devolution);
           setPatrimonialContext(parsed.patrimonial);
           setDonationsContext(parsed.donations);
@@ -254,13 +275,14 @@ export default function SuccessionSimulator() {
             donationsContext,
             assetEntries,
             assuranceVieEntries,
+            perEntries,
           ),
         ),
       );
     } catch {
       // ignore
     }
-  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, derived.nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext, assetEntries, assuranceVieEntries]);
+  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, derived.nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext, assetEntries, assuranceVieEntries, perEntries]);
 
   // Auto-dériver les ascendants survivants par branche si des parents sont déclarés
   useEffect(() => {
@@ -309,12 +331,14 @@ export default function SuccessionSimulator() {
     const fallbackOwner = derived.assetOwnerOptions[0]?.value ?? 'epoux1';
     setAssetEntries((prev) => {
       let changed = false;
-      const next = prev.map((entry) => {
+      const mapped = prev.map((entry) => {
         if (validOwners.has(entry.owner)) return entry;
         changed = true;
         return { ...entry, owner: fallbackOwner };
       });
-      return changed ? next : prev;
+      const next = normalizeResidencePrincipaleAssetEntries(mapped);
+      const residenceChanged = next.some((entry, index) => entry.subCategory !== mapped[index]?.subCategory);
+      return changed || residenceChanged ? next : prev;
     });
   }, [derived.assetOwnerOptions]);
 
@@ -332,6 +356,24 @@ export default function SuccessionSimulator() {
         return {
           ...entry,
           souscripteur,
+          assure,
+        };
+      });
+      return changed ? next : prev;
+    });
+  }, [derived.assuranceViePartyOptions]);
+
+  useEffect(() => {
+    const validOwners = new Set(derived.assuranceViePartyOptions.map((option) => option.value));
+    const fallbackOwner = derived.assuranceViePartyOptions[0]?.value ?? 'epoux1';
+    setPerEntries((prev) => {
+      let changed = false;
+      const next = prev.map((entry) => {
+        const assure = validOwners.has(entry.assure) ? entry.assure : fallbackOwner;
+        if (assure === entry.assure) return entry;
+        changed = true;
+        return {
+          ...entry,
           assure,
         };
       });
@@ -422,6 +464,7 @@ export default function SuccessionSimulator() {
         enfantsContext={enfantsContext}
         familyMembers={familyMembers}
         assuranceVieEntries={assuranceVieEntries}
+        perEntries={perEntries}
         donationsContext={donationsContext}
         chainOrder={chainOrder}
         onToggleChainOrder={() => setChainOrder((prev) => (prev === 'epoux2' ? 'epoux1' : 'epoux2'))}
@@ -438,6 +481,7 @@ export default function SuccessionSimulator() {
         onUpdateAssetEntry={updateAssetEntry}
         onRemoveAssetEntry={removeAssetEntry}
         onOpenAssuranceVieModal={openAssuranceVieModal}
+        onOpenPerModal={openPerModal}
         onSetSimplifiedBalanceField={setSimplifiedBalanceField}
         onAddDonationEntry={addDonationEntry}
         onUpdateDonationEntry={updateDonationEntry}
@@ -446,7 +490,7 @@ export default function SuccessionSimulator() {
         forfaitMobilierPct={patrimonialContext.forfaitMobilierPct}
         forfaitMobilierMontant={patrimonialContext.forfaitMobilierMontant}
         abattementResidencePrincipale={patrimonialContext.abattementResidencePrincipale}
-        ageDecesManuel={patrimonialContext.ageDecesManuel}
+        decesDansXAns={patrimonialContext.decesDansXAns}
         onUpdatePatrimonialField={(field, value) => setPatrimonialContext((prev) => ({ ...prev, [field]: value }))}
       />
 
@@ -467,6 +511,8 @@ export default function SuccessionSimulator() {
         setDispositionsDraft={setDispositionsDraft}
         showAssuranceVieModal={showAssuranceVieModal}
         assuranceVieDraft={assuranceVieDraft}
+        showPerModal={showPerModal}
+        perDraft={perDraft}
         showAddMemberPanel={showAddMemberPanel}
         addMemberForm={addMemberForm}
         setAddMemberForm={setAddMemberForm}
@@ -482,6 +528,11 @@ export default function SuccessionSimulator() {
         onAddAssuranceVieContract={addAssuranceVieEntry}
         onRemoveAssuranceVieContract={removeAssuranceVieEntry}
         onUpdateAssuranceVieContract={updateAssuranceVieEntry}
+        onClosePer={closePerModal}
+        onValidatePer={validatePerModal}
+        onAddPerContract={addPerEntry}
+        onRemovePerContract={removePerEntry}
+        onUpdatePerContract={updatePerEntry}
         onCloseAddMemberPanel={() => setShowAddMemberPanel(false)}
         onValidateAddMember={addFamilyMember}
       />

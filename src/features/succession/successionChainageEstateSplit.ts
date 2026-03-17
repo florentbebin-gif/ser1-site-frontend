@@ -72,6 +72,7 @@ export function computeStep1Split(
   nbEnfants: number,
   deceased: SuccessionDeceasedSide,
   patrimonial?: DonationEntreEpouxSelection,
+  referenceDate = new Date(),
 ): SuccessionChainStep1Split {
   if (civil.situationMatrimoniale !== 'marie') {
     return {
@@ -136,7 +137,7 @@ export function computeStep1Split(
   }
 
   if (patrimonial.donationEntreEpouxOption === 'usufruit_total') {
-    const valuation = getUsufruitValuationFromBirthDate(spouseBirthDate, firstEstate);
+    const valuation = getUsufruitValuationFromBirthDate(spouseBirthDate, firstEstate, referenceDate);
     if (!valuation) {
       warnings.push(
         "Donation entre epoux en usufruit total: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriete.",
@@ -158,6 +159,7 @@ export function computeStep1Split(
     const valuation = getUsufruitValuationFromBirthDate(
       spouseBirthDate,
       firstEstate * 0.75,
+      referenceDate,
     );
     if (!valuation) {
       warnings.push(

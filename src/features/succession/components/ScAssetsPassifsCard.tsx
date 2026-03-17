@@ -3,8 +3,12 @@ import type {
   SuccessionAssetDetailEntry,
   SuccessionAssetOwner,
   SuccessionAssuranceVieEntry,
+  SuccessionPerEntry,
 } from '../successionDraft';
-import { ASSET_SUBCATEGORY_OPTIONS } from '../successionSimulator.constants';
+import {
+  ASSET_SUBCATEGORY_OPTIONS,
+  RESIDENCE_PRINCIPALE_SUBCATEGORY,
+} from '../successionSimulator.constants';
 import { fmt } from '../successionSimulator.helpers';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
@@ -25,7 +29,10 @@ interface ScAssetsPassifsCardProps {
     passifs: Record<SuccessionAssetOwner, number>;
   };
   assetNetTotals: Record<SuccessionAssetOwner, number>;
+  forfaitMobilierComputed: number;
+  residencePrincipaleEntryId: string | null;
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
+  perEntries: SuccessionPerEntry[];
   assuranceViePartyOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
   onAddAssetEntry: (_category: SuccessionAssetCategory) => void;
   onUpdateAssetEntry: (
@@ -35,6 +42,7 @@ interface ScAssetsPassifsCardProps {
   ) => void;
   onRemoveAssetEntry: (_id: string) => void;
   onOpenAssuranceVieModal: () => void;
+  onOpenPerModal: () => void;
   onSetSimplifiedBalanceField: (
     _type: 'actifs' | 'passifs',
     _owner: SuccessionAssetOwner,
@@ -44,7 +52,6 @@ interface ScAssetsPassifsCardProps {
   forfaitMobilierPct: number;
   forfaitMobilierMontant: number;
   abattementResidencePrincipale: boolean;
-  ageDecesManuel: number | null;
   onUpdatePatrimonialField: <K extends string>(_field: K, _value: unknown) => void;
 }
 
@@ -66,6 +73,25 @@ function getActifNetLabel(
   return flags.isPacsed || flags.isConcubinage ? 'Masse indivise nette' : 'Masse commune nette';
 }
 
+export function buildSubCategoryOptions(
+  entry: SuccessionAssetDetailEntry,
+  residencePrincipaleEntryId: string | null,
+) {
+  const hasResidencePrincipale = residencePrincipaleEntryId !== null;
+  const isCurrentResidencePrincipale = entry.id === residencePrincipaleEntryId;
+  return ASSET_SUBCATEGORY_OPTIONS[entry.category]
+    .filter((option) => (
+      entry.category !== 'immobilier'
+      || option !== RESIDENCE_PRINCIPALE_SUBCATEGORY
+      || !hasResidencePrincipale
+      || isCurrentResidencePrincipale
+    ))
+    .map((option) => ({
+      value: option,
+      label: option,
+    }));
+}
+
 export default function ScAssetsPassifsCard({
   isExpert,
   isMarried,
@@ -75,18 +101,21 @@ export default function ScAssetsPassifsCard({
   assetOwnerOptions,
   assetBreakdown,
   assetNetTotals,
+  forfaitMobilierComputed,
+  residencePrincipaleEntryId,
   assuranceVieEntries,
+  perEntries,
   assuranceViePartyOptions,
   onAddAssetEntry,
   onUpdateAssetEntry,
   onRemoveAssetEntry,
   onOpenAssuranceVieModal,
+  onOpenPerModal,
   onSetSimplifiedBalanceField,
   forfaitMobilierMode,
   forfaitMobilierPct,
   forfaitMobilierMontant,
   abattementResidencePrincipale,
-  ageDecesManuel,
   onUpdatePatrimonialField,
 }: ScAssetsPassifsCardProps) {
   const flags = { isMarried, isPacsed, isConcubinage };
@@ -119,6 +148,24 @@ export default function ScAssetsPassifsCard({
               <div className="sc-asset-section__header">
                 <h3 className="sc-asset-section__title">{category.label}</h3>
                 <div className="sc-asset-section__actions">
+                  {category.value === 'financier' && (
+                    <>
+                      <button
+                        type="button"
+                        className="sc-child-add-btn"
+                        onClick={onOpenAssuranceVieModal}
+                      >
+                        + Assurance vie
+                      </button>
+                      <button
+                        type="button"
+                        className="sc-child-add-btn"
+                        onClick={onOpenPerModal}
+                      >
+                        + PER assurance
+                      </button>
+                    </>
+                  )}
                   <button
                     type="button"
                     className="sc-member-add-icon-btn"
@@ -127,59 +174,68 @@ export default function ScAssetsPassifsCard({
                   >
                     +
                   </button>
-                  {category.value === 'financier' && (
-                    <button
-                      type="button"
-                      className="sc-child-add-btn"
-                      onClick={onOpenAssuranceVieModal}
-                    >
-                      + Assurance vie
-                    </button>
-                  )}
                 </div>
               </div>
               <div className="sc-assets-list">
-                {category.entries.map((entry) => (
-                  <div key={entry.id} className="sc-asset-row">
-                    <div className="sc-field">
-                      <label>Porteur</label>
-                      <ScSelect
-                        className="sc-asset-select"
-                        value={entry.owner}
-                        onChange={(value) => onUpdateAssetEntry(entry.id, 'owner', value)}
-                        options={assetOwnerOptions}
-                      />
+                {category.entries.map((entry) => {
+                  const showResidenceCheckbox = (
+                    category.value === 'immobilier'
+                    && entry.subCategory === RESIDENCE_PRINCIPALE_SUBCATEGORY
+                  );
+
+                  return (
+                    <div key={entry.id} className="sc-asset-row-stack">
+                      <div className="sc-asset-row">
+                        <div className="sc-field">
+                          <label>Porteur</label>
+                          <ScSelect
+                            className="sc-asset-select"
+                            value={entry.owner}
+                            onChange={(value) => onUpdateAssetEntry(entry.id, 'owner', value)}
+                            options={assetOwnerOptions}
+                          />
+                        </div>
+                        <div className="sc-field">
+                          <label>Sous-catégorie</label>
+                          <ScSelect
+                            className="sc-asset-select"
+                            value={entry.subCategory}
+                            onChange={(value) => onUpdateAssetEntry(entry.id, 'subCategory', value)}
+                            options={buildSubCategoryOptions(entry, residencePrincipaleEntryId)}
+                          />
+                        </div>
+                        <div className="sc-field">
+                          <label>Montant (€)</label>
+                          <ScNumericInput
+                            value={entry.amount || 0}
+                            min={0}
+                            onChange={(val) => onUpdateAssetEntry(entry.id, 'amount', val)}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="sc-remove-btn"
+                          onClick={() => onRemoveAssetEntry(entry.id)}
+                          title="Supprimer cette ligne"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      {showResidenceCheckbox && (
+                        <div className="sc-field sc-field--full sc-asset-row__suboption">
+                          <label className="sc-checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={abattementResidencePrincipale}
+                              onChange={(e) => onUpdatePatrimonialField('abattementResidencePrincipale', e.target.checked)}
+                            />
+                            Appliquer l&apos;abattement 20 % (occupation éligible au jour du décès)
+                          </label>
+                        </div>
+                      )}
                     </div>
-                    <div className="sc-field">
-                      <label>Sous-catégorie</label>
-                      <ScSelect
-                        className="sc-asset-select"
-                        value={entry.subCategory}
-                        onChange={(value) => onUpdateAssetEntry(entry.id, 'subCategory', value)}
-                        options={ASSET_SUBCATEGORY_OPTIONS[entry.category].map((option) => ({
-                          value: option,
-                          label: option,
-                        }))}
-                      />
-                    </div>
-                    <div className="sc-field">
-                      <label>Montant (€)</label>
-                      <ScNumericInput
-                        value={entry.amount || 0}
-                        min={0}
-                        onChange={(val) => onUpdateAssetEntry(entry.id, 'amount', val)}
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      className="sc-remove-btn"
-                      onClick={() => onRemoveAssetEntry(entry.id)}
-                      title="Supprimer cette ligne"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
                 {category.value === 'financier' && assuranceVieEntries.map((entry) => (
                   <div key={entry.id} className="sc-asset-row sc-asset-row--av">
                     <div className="sc-field">
@@ -199,12 +255,84 @@ export default function ScAssetsPassifsCard({
                     <div />
                   </div>
                 ))}
-                {category.entries.length === 0 && !(category.value === 'financier' && assuranceVieEntries.length > 0) && (
+                {category.value === 'financier' && perEntries.map((entry) => (
+                  <div key={entry.id} className="sc-asset-row sc-asset-row--av">
+                    <div className="sc-field">
+                      <label>Porteur</label>
+                      <span className="sc-asset-row__value">
+                        {assuranceViePartyOptions.find((option) => option.value === entry.assure)?.label ?? entry.assure}
+                      </span>
+                    </div>
+                    <div className="sc-field">
+                      <label>Sous-catégorie</label>
+                      <span className="sc-asset-row__value">PER assurance</span>
+                    </div>
+                    <div className="sc-field">
+                      <label>Capitaux décès (€)</label>
+                      <span className="sc-asset-row__value">{fmt(entry.capitauxDeces)}</span>
+                    </div>
+                    <div />
+                  </div>
+                ))}
+                {category.entries.length === 0 && !(category.value === 'financier' && (assuranceVieEntries.length > 0 || perEntries.length > 0)) && (
                   <p className="sc-hint sc-hint--compact">Aucune ligne détaillée dans cette catégorie.</p>
                 )}
               </div>
             </section>
           ))}
+
+          <section className="sc-asset-section">
+            <div className="sc-asset-section__header">
+              <h3 className="sc-asset-section__title">Forfait mobilier</h3>
+            </div>
+            <div className="sc-assets-list">
+              <div className="sc-asset-row sc-asset-row--three-cols">
+                <div className="sc-field">
+                  <label>Mode</label>
+                  <select
+                    value={forfaitMobilierMode}
+                    onChange={(e) => onUpdatePatrimonialField('forfaitMobilierMode', e.target.value)}
+                  >
+                    <option value="auto">Automatique (5 % légal)</option>
+                    <option value="pct">Pourcentage personnalisé</option>
+                    <option value="montant">Montant fixe</option>
+                  </select>
+                </div>
+                {forfaitMobilierMode === 'pct' ? (
+                  <div className="sc-field">
+                    <label>Pourcentage (%)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={forfaitMobilierPct}
+                      onChange={(e) => onUpdatePatrimonialField('forfaitMobilierPct', Number(e.target.value) || 0)}
+                    />
+                  </div>
+                ) : (
+                  <div className="sc-field">
+                    <label>Pourcentage (%)</label>
+                    <input type="number" value={5} disabled />
+                  </div>
+                )}
+                <div className="sc-field">
+                  <label>Montant fixe (€)</label>
+                  <ScNumericInput
+                    value={forfaitMobilierMode === 'montant' ? forfaitMobilierMontant : 0}
+                    min={0}
+                    onChange={(val) => onUpdatePatrimonialField('forfaitMobilierMontant', val)}
+                    disabled={forfaitMobilierMode !== 'montant'}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="sc-assets-summary">
+              <div className="sc-summary-row">
+                <span>Forfait mobilier retenu</span>
+                <strong>{fmt(forfaitMobilierComputed)}</strong>
+              </div>
+            </div>
+          </section>
 
           <div className="sc-assets-summary">
             {assetOwnerOptions.map((option) => (
@@ -213,66 +341,6 @@ export default function ScAssetsPassifsCard({
                 <strong>{fmt(assetNetTotals[option.value])}</strong>
               </div>
             ))}
-          </div>
-
-          <div className="sc-expert-options">
-            <h3 className="sc-asset-section__title">Options expert</h3>
-            <div className="sc-expert-options__grid">
-              <div className="sc-field">
-                <label>Forfait mobilier</label>
-                <select
-                  value={forfaitMobilierMode}
-                  onChange={(e) => onUpdatePatrimonialField('forfaitMobilierMode', e.target.value)}
-                >
-                  <option value="auto">Automatique (5% légal)</option>
-                  <option value="pct">Pourcentage personnalisé</option>
-                  <option value="montant">Montant fixe</option>
-                </select>
-              </div>
-              {forfaitMobilierMode === 'pct' && (
-                <div className="sc-field">
-                  <label>Forfait mobilier (%)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={100}
-                    value={forfaitMobilierPct}
-                    onChange={(e) => onUpdatePatrimonialField('forfaitMobilierPct', Number(e.target.value) || 0)}
-                  />
-                </div>
-              )}
-              {forfaitMobilierMode === 'montant' && (
-                <div className="sc-field">
-                  <label>Forfait mobilier (€)</label>
-                  <ScNumericInput
-                    value={forfaitMobilierMontant}
-                    min={0}
-                    onChange={(val) => onUpdatePatrimonialField('forfaitMobilierMontant', val)}
-                  />
-                </div>
-              )}
-              <div className="sc-field">
-                <label className="sc-checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={abattementResidencePrincipale}
-                    onChange={(e) => onUpdatePatrimonialField('abattementResidencePrincipale', e.target.checked)}
-                  />
-                  Abattement 20% résidence principale
-                </label>
-              </div>
-              <div className="sc-field">
-                <label>Âge de décès simulé</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={120}
-                  value={ageDecesManuel ?? ''}
-                  onChange={(e) => onUpdatePatrimonialField('ageDecesManuel', e.target.value ? Number(e.target.value) : null)}
-                  placeholder="Auto"
-                />
-              </div>
-            </div>
           </div>
         </div>
       ) : (

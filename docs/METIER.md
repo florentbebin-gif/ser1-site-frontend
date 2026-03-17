@@ -93,9 +93,12 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 
 ### Entrees principales
 - situation matrimoniale et contexte familial
+- horizon de deces simule (`Aujourd'hui`, puis paliers de 5 a 50 ans) pour reevaluer les lectures dependantes de la date
+- forfait mobilier et abattement de 20 % sur la residence principale, saisis dans le bloc patrimonial expert
 - enfants / autres membres de la famille, avec distinction visuelle possible des enfants décédés
 - actifs et passifs saisis distinctement en mode simplifie ; actifs / passifs detailles en mode expert
 - contrats d'assurance-vie saisis a part dans le bloc patrimonial, integres a la masse transmise affichee
+- contrats `PER assurance` saisis a part dans le bloc patrimonial, avec lecture fiscale avant / apres 70 ans selon la date deces simulee
 - donations / legs agrégés en mode simplifié ou détaillés en mode expert
 - dispositions civiles et testamentaires via le modal dedie
 - testament saisi par personne : une carte en situation solo, deux cartes en situation de couple, avec beneficiaires choisis dans le contexte familial declare
@@ -122,7 +125,10 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - chronologie 2 deces mariee branchee au testament du cote du defunt a chaque etape; le bouton d'ordre inverse change aussi le testament retenu
 - restitution de la transmission sur une ligne par personne reelle quand les beneficiaires sont identifies, avec filtrage des descendants selon la branche du defunt simule
 - saisie detaillee des actifs/passifs pour reconstituer des masses nettes par poche patrimoniale
+- calcul du forfait mobilier sur les actifs taxables saisis, avec ventilation proportionnelle par porteur
+- residence principale unique cote produit, avec option d'abattement 20 % visible sur la ligne immobiliere correspondante
 - ventilation simplifiee de l'assurance-vie deces selon les clauses beneficiaires saisies (lecture 990 I / 757 B)
+- ventilation simplifiee du `PER assurance` deces selon les clauses beneficiaires saisies, avec bascule avant / apres 70 ans a la date deces simulee
 - representation successorale simplifiee des enfants decedes par leurs petits-enfants quand ils sont identifies
 - dates de naissance des personnes du couple / du defunt dans le contexte familial pour valoriser l'usufruit et la nue-propriete a la date du deces simule
 - materiel de guidage sur liberalites, avantages matrimoniaux et situations familiales dans les settings succession
@@ -136,9 +142,13 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - ce n'est pas une liquidation notariale exhaustive
 - toutes les subtilites civiles, donations anterieures et clauses complexes ne sont pas integralement calculees en moteur
 - la ventilation assurance-vie reste simplifiee et depend des clauses beneficiaires saisies; les contrats demembres avec clause non standard ou sans age de l'usufruitier font l'objet d'un repli simplifie avec warning
+- la ventilation `PER assurance` reste simplifiee; la bascule avant / apres 70 ans repose sur l'age de l'assure a la date deces simulee, pas sur un historique detaille des versements
+- l'abattement de 20 % sur la residence principale reste une attestation utilisateur; l'outil ne modele pas toutes les conditions d'occupation juridiques
+- la contrainte `une seule residence principale` est une simplification produit volontaire dans cette UI
 - la valorisation usufruit / nue-propriete du conjoint survivant suit l'art. 669 CGI quand la date de naissance pertinente est renseignee; sinon le module reste en repli simplifie avec warning
 - la representation successorale des enfants decedes reste simplifiee et ne remplace pas une analyse notariale detaillee
 - la chronologie 2 deces n'est plus la source d'affichage principale hors mariage; pour PACS et autres situations, la synthese privilegie une lecture directe du deces simule
+- la chronologie 2 deces reste sur un meme horizon deces simule pour les 2 etapes et ne modele pas un decalage calendaire distinct entre premier et second deces
 - l'UI succession privilegie actuellement les analyses civiles/patrimoniales guidees; le calcul DMTG detaille par heredier n'est pas expose comme parcours principal de saisie
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
 - la chronologie 2 deces reste un module simplifie: elle reemploie le testament du cote du decede et le report economique vers le 2e deces, mais ne remplace pas une liquidation notariale exhaustive

@@ -102,7 +102,7 @@ export interface SuccessionPatrimonialContext {
   forfaitMobilierPct: number;
   forfaitMobilierMontant: number;
   abattementResidencePrincipale: boolean;
-  ageDecesManuel: number | null;
+  decesDansXAns: 0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50;
 }
 
 export type SuccessionDonationEntryType = 'rapportable' | 'hors_part' | 'legs_particulier';
@@ -150,6 +150,15 @@ export interface SuccessionAssuranceVieEntry {
   ageUsufruitier?: number;
 }
 
+export interface SuccessionPerEntry {
+  id: string;
+  typeContrat: SuccessionAssuranceVieContractType;
+  assure: Exclude<SuccessionAssetOwner, 'commun'>;
+  clauseBeneficiaire?: string;
+  capitauxDeces: number;
+  ageUsufruitier?: number;
+}
+
 export type SuccessionEnfantRattachement = 'commun' | 'epoux1' | 'epoux2';
 
 export interface SuccessionEnfant {
@@ -186,8 +195,9 @@ export interface ParsedSuccessionDraftPayload {
   donations: SuccessionDonationEntry[];
   assetEntries: SuccessionAssetDetailEntry[];
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
+  perEntries: SuccessionPerEntry[];
 }
 
-export interface SuccessionDraftPayloadV16 extends ParsedSuccessionDraftPayload {
-  version: 16;
+export interface SuccessionDraftPayloadV17 extends ParsedSuccessionDraftPayload {
+  version: 17;
 }

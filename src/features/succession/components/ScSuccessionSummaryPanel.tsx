@@ -24,6 +24,7 @@ interface ScSuccessionSummaryPanelProps {
     step2: { droitsEnfants: number } | null;
   };
   avFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
+  perFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
   directDisplay: {
     simulatedDeceased: 'epoux1' | 'epoux2';
     result: { totalDroits: number } | null;
@@ -40,14 +41,20 @@ export default function ScSuccessionSummaryPanel({
   isPacsed,
   chainageAnalysis,
   avFiscalByAssure,
+  perFiscalByAssure,
   directDisplay,
 }: ScSuccessionSummaryPanelProps) {
   const firstCost = displayUsesChainage
-    ? (chainageAnalysis.step1?.droitsEnfants ?? 0) + avFiscalByAssure[chainageAnalysis.order].totalDroits
-    : (directDisplay.result?.totalDroits ?? 0) + avFiscalByAssure[directDisplay.simulatedDeceased].totalDroits;
+    ? (chainageAnalysis.step1?.droitsEnfants ?? 0)
+      + avFiscalByAssure[chainageAnalysis.order].totalDroits
+      + perFiscalByAssure[chainageAnalysis.order].totalDroits
+    : (directDisplay.result?.totalDroits ?? 0)
+      + avFiscalByAssure[directDisplay.simulatedDeceased].totalDroits
+      + perFiscalByAssure[directDisplay.simulatedDeceased].totalDroits;
   const secondValue = displayUsesChainage
     ? (chainageAnalysis.step2?.droitsEnfants ?? 0)
       + avFiscalByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits
+      + perFiscalByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits
     : Math.max(0, derivedMasseTransmise - derivedTotalDroits);
 
   return (

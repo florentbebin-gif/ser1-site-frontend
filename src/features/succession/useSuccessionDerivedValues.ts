@@ -15,6 +15,7 @@ import {
   getEnfantRattachementOptions,
 } from './successionEnfants';
 import { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
+import { buildSuccessionPerFiscalAnalysis } from './successionPerFiscal';
 import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
 import {
@@ -33,6 +34,7 @@ import type {
   FamilyMember,
   SuccessionDonationEntry,
   SuccessionEnfant,
+  SuccessionPerEntry,
 } from './successionDraft';
 import type {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
@@ -49,6 +51,8 @@ interface UseSuccessionDerivedValuesInput {
   assetEntries: SuccessionAssetDetailEntry[];
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
   assuranceVieDraft: SuccessionAssuranceVieEntry[];
+  perEntries: SuccessionPerEntry[];
+  perDraft: SuccessionPerEntry[];
   devolutionContext: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT;
   patrimonialContext: typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT;
   donationsContext: SuccessionDonationEntry[];
@@ -65,6 +69,8 @@ export function useSuccessionDerivedValues({
   assetEntries,
   assuranceVieEntries,
   assuranceVieDraft,
+  perEntries,
+  perDraft,
   devolutionContext,
   patrimonialContext,
   donationsContext,
@@ -74,6 +80,12 @@ export function useSuccessionDerivedValues({
   chainOrder,
   canExport,
 }: UseSuccessionDerivedValuesInput) {
+  const simulatedDeathDate = useMemo(() => {
+    const nextDate = new Date();
+    nextDate.setFullYear(nextDate.getFullYear() + patrimonialContext.decesDansXAns);
+    return nextDate;
+  }, [patrimonialContext.decesDansXAns]);
+
   const nbEnfants = useMemo(() => countLivingEnfants(enfantsContext), [enfantsContext]);
   const nbDescendantBranches = useMemo(
     () => countEffectiveDescendantBranches(enfantsContext, familyMembers),
@@ -124,6 +136,7 @@ export function useSuccessionDerivedValues({
       enfantsContext,
       familyMembers,
       devolution: devolutionContext,
+      referenceDate: simulatedDeathDate,
     }),
     [
       civilContext,
@@ -138,6 +151,7 @@ export function useSuccessionDerivedValues({
       enfantsContext,
       familyMembers,
       devolutionContext,
+      simulatedDeathDate,
     ],
   );
 
@@ -166,6 +180,7 @@ export function useSuccessionDerivedValues({
           donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
         },
         simulatedDeceased: chainOrder,
+        referenceDate: simulatedDeathDate,
       },
     ),
     [
@@ -180,6 +195,7 @@ export function useSuccessionDerivedValues({
       enfantsContext,
       familyMembers,
       chainOrder,
+      simulatedDeathDate,
     ],
   );
 
@@ -210,6 +226,7 @@ export function useSuccessionDerivedValues({
       {
         simulatedDeceased: patrimonialSimulatedDeceased,
         testament: devolutionContext.testamentsBySide[patrimonialSimulatedDeceased],
+        referenceDate: simulatedDeathDate,
       },
     ),
     [
@@ -221,6 +238,7 @@ export function useSuccessionDerivedValues({
       fiscalSnapshot,
       patrimonialSimulatedDeceased,
       devolutionContext.testamentsBySide,
+      simulatedDeathDate,
     ],
   );
 
@@ -234,6 +252,12 @@ export function useSuccessionDerivedValues({
     assetEntries,
     assuranceVieEntries,
     assuranceVieDraft,
+    perEntries,
+    perDraft,
+    forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
+    forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
+    forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
+    abattementResidencePrincipale: patrimonialContext.abattementResidencePrincipale,
   });
 
   const avFiscalAnalysis = useMemo(
@@ -245,6 +269,18 @@ export function useSuccessionDerivedValues({
       fiscalSnapshot,
     ),
     [assuranceVieEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot],
+  );
+
+  const perFiscalAnalysis = useMemo(
+    () => buildSuccessionPerFiscalAnalysis(
+      perEntries,
+      civilContext,
+      enfantsContext,
+      familyMembers,
+      fiscalSnapshot,
+      simulatedDeathDate,
+    ),
+    [perEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot, simulatedDeathDate],
   );
 
   const outcomeDerived = useSuccessionOutcomeDerivedValues({
@@ -267,9 +303,13 @@ export function useSuccessionDerivedValues({
     predecesAnalysis,
     patrimonialAnalysis,
     avFiscalAnalysis,
+    perFiscalAnalysis,
     directEstateBasis,
     assuranceVieByAssure: uiDerived.assuranceVieByAssure,
     assuranceVieTotals: uiDerived.assuranceVieTotals,
+    perByAssure: uiDerived.perByAssure,
+    perTotals: uiDerived.perTotals,
+    simulatedDeathDate,
   });
 
   return {
@@ -293,6 +333,7 @@ export function useSuccessionDerivedValues({
     showSharedTransmissionPct,
     showDonationEntreEpoux,
     patrimonialSimulatedDeceased,
+    simulatedDeathDate,
     birthDateLabels: uiDerived.birthDateLabels,
     showSecondBirthDate: uiDerived.showSecondBirthDate,
     assetOwnerOptions: uiDerived.assetOwnerOptions,
@@ -304,16 +345,26 @@ export function useSuccessionDerivedValues({
     donateurOptions: uiDerived.donateurOptions,
     donatairesOptions: uiDerived.donatairesOptions,
     assetBreakdown: uiDerived.assetBreakdown,
+    actifsTaxablesParOwner: uiDerived.actifsTaxablesParOwner,
     assetNetTotals: uiDerived.assetNetTotals,
+    forfaitMobilierComputed: uiDerived.forfaitMobilierComputed,
+    forfaitMobilierParOwner: uiDerived.forfaitMobilierParOwner,
+    hasResidencePrincipale: uiDerived.hasResidencePrincipale,
+    residencePrincipaleEntryId: uiDerived.residencePrincipaleEntryId,
     assetEntriesByCategory: uiDerived.assetEntriesByCategory,
     assuranceVieTotals: uiDerived.assuranceVieTotals,
     assuranceVieDraftTotals: uiDerived.assuranceVieDraftTotals,
     avFiscalAnalysis,
     assuranceVieByAssure: uiDerived.assuranceVieByAssure,
+    perTotals: uiDerived.perTotals,
+    perDraftTotals: uiDerived.perDraftTotals,
+    perFiscalAnalysis,
+    perByAssure: uiDerived.perByAssure,
     displayUsesChainage: outcomeDerived.displayUsesChainage,
     displayActifNetSuccession: outcomeDerived.displayActifNetSuccession,
     directDisplayAnalysis: outcomeDerived.directDisplayAnalysis,
     displayAssuranceVieTransmise: outcomeDerived.displayAssuranceVieTransmise,
+    displayPerTransmis: outcomeDerived.displayPerTransmis,
     derivedMasseTransmise: outcomeDerived.derivedMasseTransmise,
     derivedTotalDroits: outcomeDerived.derivedTotalDroits,
     synthDonutTransmis: outcomeDerived.synthDonutTransmis,

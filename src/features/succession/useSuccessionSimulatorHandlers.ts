@@ -8,6 +8,7 @@ import {
   DEFAULT_SUCCESSION_FAMILY_MEMBERS,
   DEFAULT_SUCCESSION_ASSET_DETAILS,
   DEFAULT_SUCCESSION_ASSURANCE_VIE,
+  DEFAULT_SUCCESSION_PER,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   type SuccessionAssetCategory,
@@ -17,6 +18,7 @@ import {
   type FamilyBranch,
   type FamilyMember,
   type FamilyMemberType,
+  type SuccessionPerEntry,
   type SuccessionBeneficiaryRef,
   type SuccessionDonationEntry,
   type SuccessionDonationEntryType,
@@ -34,6 +36,8 @@ import {
 import {
   ASSET_SUBCATEGORY_OPTIONS,
   MEMBER_TYPE_NEEDS_BRANCH,
+  RESIDENCE_PRINCIPALE_SUBCATEGORY,
+  RESIDENCE_SECONDAIRE_SUBCATEGORY,
 } from './successionSimulator.constants';
 import {
   buildAggregateAssetEntries,
@@ -44,6 +48,7 @@ import {
   createDonationId,
   createEnfantId,
   createMemberId,
+  createPerId,
   EMPTY_ADD_FAMILY_MEMBER_FORM,
   isCoupleSituation,
   updateDraftTestament,
@@ -64,6 +69,8 @@ interface UseSuccessionSimulatorHandlersArgs {
   assetOwnerOptions: { value: SuccessionAssetOwner; label: string }[];
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
   assuranceVieDraft: SuccessionAssuranceVieEntry[];
+  perEntries: SuccessionPerEntry[];
+  perDraft: SuccessionPerEntry[];
   assuranceViePartyOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
   testamentBeneficiaryOptionsBySide: Record<
     SuccessionPrimarySide,
@@ -78,6 +85,7 @@ interface UseSuccessionSimulatorHandlersArgs {
   setLiquidationContext: Dispatch<SetStateAction<typeof DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT>>;
   setAssetEntries: Dispatch<SetStateAction<SuccessionAssetDetailEntry[]>>;
   setAssuranceVieEntries: Dispatch<SetStateAction<SuccessionAssuranceVieEntry[]>>;
+  setPerEntries: Dispatch<SetStateAction<SuccessionPerEntry[]>>;
   setDevolutionContext: Dispatch<SetStateAction<typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT>>;
   setPatrimonialContext: Dispatch<SetStateAction<typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT>>;
   setDonationsContext: Dispatch<SetStateAction<SuccessionDonationEntry[]>>;
@@ -86,7 +94,9 @@ interface UseSuccessionSimulatorHandlersArgs {
   setShowAddMemberPanel: Dispatch<SetStateAction<boolean>>;
   setShowDispositionsModal: Dispatch<SetStateAction<boolean>>;
   setShowAssuranceVieModal: Dispatch<SetStateAction<boolean>>;
+  setShowPerModal: Dispatch<SetStateAction<boolean>>;
   setAssuranceVieDraft: Dispatch<SetStateAction<SuccessionAssuranceVieEntry[]>>;
+  setPerDraft: Dispatch<SetStateAction<SuccessionPerEntry[]>>;
   setDispositionsDraft: Dispatch<SetStateAction<DispositionsDraftState>>;
   setAddMemberForm: Dispatch<SetStateAction<AddFamilyMemberFormState>>;
   setChainOrder: Dispatch<SetStateAction<SuccessionChainOrder>>;
@@ -102,6 +112,8 @@ export function useSuccessionSimulatorHandlers({
   assetOwnerOptions,
   assuranceVieEntries,
   assuranceVieDraft,
+  perEntries,
+  perDraft,
   assuranceViePartyOptions,
   testamentBeneficiaryOptionsBySide,
   canOpenDispositionsModal,
@@ -113,6 +125,7 @@ export function useSuccessionSimulatorHandlers({
   setLiquidationContext,
   setAssetEntries,
   setAssuranceVieEntries,
+  setPerEntries,
   setDevolutionContext,
   setPatrimonialContext,
   setDonationsContext,
@@ -121,12 +134,23 @@ export function useSuccessionSimulatorHandlers({
   setShowAddMemberPanel,
   setShowDispositionsModal,
   setShowAssuranceVieModal,
+  setShowPerModal,
   setAssuranceVieDraft,
+  setPerDraft,
   setDispositionsDraft,
   setAddMemberForm,
   setChainOrder,
   setHypothesesOpen,
 }: UseSuccessionSimulatorHandlersArgs) {
+  const hasResidencePrincipale = useCallback((
+    entries: SuccessionAssetDetailEntry[],
+    exceptId?: string,
+  ) => entries.some((entry) => (
+    entry.id !== exceptId
+    && entry.category === 'immobilier'
+    && entry.subCategory === RESIDENCE_PRINCIPALE_SUBCATEGORY
+  )), []);
+
   const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
     setCivilContext((prev) => ({
       situationMatrimoniale,
@@ -156,6 +180,8 @@ export function useSuccessionSimulatorHandlers({
     setAssetEntries(DEFAULT_SUCCESSION_ASSET_DETAILS);
     setAssuranceVieEntries(DEFAULT_SUCCESSION_ASSURANCE_VIE);
     setAssuranceVieDraft(DEFAULT_SUCCESSION_ASSURANCE_VIE);
+    setPerEntries(DEFAULT_SUCCESSION_PER);
+    setPerDraft(DEFAULT_SUCCESSION_PER);
     setDevolutionContext(DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT);
     setPatrimonialContext(DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT);
     setDispositionsDraft(buildInitialDispositionsDraft());
@@ -164,6 +190,7 @@ export function useSuccessionSimulatorHandlers({
     setFamilyMembers(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
     setShowAddMemberPanel(false);
     setShowAssuranceVieModal(false);
+    setShowPerModal(false);
     setAddMemberForm(EMPTY_ADD_FAMILY_MEMBER_FORM);
     setChainOrder('epoux1');
     setHypothesesOpen(false);
@@ -178,6 +205,8 @@ export function useSuccessionSimulatorHandlers({
     setAssetEntries,
     setAssuranceVieDraft,
     setAssuranceVieEntries,
+    setPerDraft,
+    setPerEntries,
     setChainOrder,
     setCivilContext,
     setDevolutionContext,
@@ -190,6 +219,7 @@ export function useSuccessionSimulatorHandlers({
     setPatrimonialContext,
     setShowAddMemberPanel,
     setShowAssuranceVieModal,
+    setShowPerModal,
     storeKey,
   ]);
 
@@ -294,17 +324,22 @@ export function useSuccessionSimulatorHandlers({
   }, [setDonationsContext]);
 
   const addAssetEntry = useCallback((category: SuccessionAssetCategory) => {
-    setAssetEntries((prev) => ([
-      ...prev,
-      {
-        id: createAssetId(),
-        owner: assetOwnerOptions[0]?.value ?? 'epoux1',
-        category,
-        subCategory: ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre',
-        amount: 0,
-      },
-    ]));
-  }, [assetOwnerOptions, setAssetEntries]);
+    setAssetEntries((prev) => {
+      const nextSubCategory = category === 'immobilier' && hasResidencePrincipale(prev)
+        ? RESIDENCE_SECONDAIRE_SUBCATEGORY
+        : ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre';
+      return [
+        ...prev,
+        {
+          id: createAssetId(),
+          owner: assetOwnerOptions[0]?.value ?? 'epoux1',
+          category,
+          subCategory: nextSubCategory,
+          amount: 0,
+        },
+      ];
+    });
+  }, [assetOwnerOptions, hasResidencePrincipale, setAssetEntries]);
 
   const updateAssetEntry = useCallback((
     id: string,
@@ -321,10 +356,22 @@ export function useSuccessionSimulatorHandlers({
       }
       if (field === 'category') {
         const category = value as SuccessionAssetCategory;
+        const nextSubCategory = category === 'immobilier' && hasResidencePrincipale(prev, id)
+          ? RESIDENCE_SECONDAIRE_SUBCATEGORY
+          : ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre';
         return {
           ...entry,
           category,
-          subCategory: ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre',
+          subCategory: nextSubCategory,
+        };
+      }
+      if (field === 'subCategory') {
+        const nextSubCategory = value === RESIDENCE_PRINCIPALE_SUBCATEGORY && hasResidencePrincipale(prev, id)
+          ? RESIDENCE_SECONDAIRE_SUBCATEGORY
+          : value;
+        return {
+          ...entry,
+          subCategory: String(nextSubCategory),
         };
       }
       return {
@@ -332,7 +379,7 @@ export function useSuccessionSimulatorHandlers({
         [field]: value,
       };
     }));
-  }, [setAssetEntries]);
+  }, [hasResidencePrincipale, setAssetEntries]);
 
   const removeAssetEntry = useCallback((id: string) => {
     setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
@@ -351,6 +398,20 @@ export function useSuccessionSimulatorHandlers({
     setAssuranceVieEntries(assuranceVieDraft.map((entry) => ({ ...entry })));
     setShowAssuranceVieModal(false);
   }, [assuranceVieDraft, setAssuranceVieEntries, setShowAssuranceVieModal]);
+
+  const openPerModal = useCallback(() => {
+    setPerDraft(perEntries.map((entry) => ({ ...entry })));
+    setShowPerModal(true);
+  }, [perEntries, setPerDraft, setShowPerModal]);
+
+  const closePerModal = useCallback(() => {
+    setShowPerModal(false);
+  }, [setShowPerModal]);
+
+  const validatePerModal = useCallback(() => {
+    setPerEntries(perDraft.map((entry) => ({ ...entry })));
+    setShowPerModal(false);
+  }, [perDraft, setPerEntries, setShowPerModal]);
 
   const addAssuranceVieEntry = useCallback(() => {
     setAssuranceVieDraft((prev) => ([
@@ -396,6 +457,49 @@ export function useSuccessionSimulatorHandlers({
   const removeAssuranceVieEntry = useCallback((id: string) => {
     setAssuranceVieDraft((prev) => prev.filter((entry) => entry.id !== id));
   }, [setAssuranceVieDraft]);
+
+  const addPerEntry = useCallback(() => {
+    setPerDraft((prev) => ([
+      ...prev,
+      {
+        id: createPerId(),
+        typeContrat: 'standard',
+        assure: assuranceViePartyOptions[0]?.value ?? 'epoux1',
+        capitauxDeces: 0,
+      },
+    ]));
+  }, [assuranceViePartyOptions, setPerDraft]);
+
+  const updatePerEntry = useCallback((
+    id: string,
+    field: keyof SuccessionPerEntry,
+    value: string | number | undefined,
+  ) => {
+    setPerDraft((prev) => prev.map((entry) => {
+      if (entry.id !== id) return entry;
+      if (field === 'capitauxDeces') {
+        return {
+          ...entry,
+          capitauxDeces: Math.max(0, Number(value) || 0),
+        };
+      }
+      if (field === 'ageUsufruitier') {
+        const age = Number(value);
+        return {
+          ...entry,
+          ageUsufruitier: Number.isFinite(age) && age > 0 ? age : undefined,
+        };
+      }
+      return {
+        ...entry,
+        [field]: value,
+      };
+    }));
+  }, [setPerDraft]);
+
+  const removePerEntry = useCallback((id: string) => {
+    setPerDraft((prev) => prev.filter((entry) => entry.id !== id));
+  }, [setPerDraft]);
 
   const getFirstTestamentBeneficiaryRef = useCallback(
     (side: SuccessionPrimarySide): SuccessionBeneficiaryRef | null =>
@@ -516,9 +620,15 @@ export function useSuccessionSimulatorHandlers({
     openAssuranceVieModal,
     closeAssuranceVieModal,
     validateAssuranceVieModal,
+    openPerModal,
+    closePerModal,
+    validatePerModal,
     addAssuranceVieEntry,
     updateAssuranceVieEntry,
     removeAssuranceVieEntry,
+    addPerEntry,
+    updatePerEntry,
+    removePerEntry,
     getFirstTestamentBeneficiaryRef,
     updateDispositionsTestament,
     addDispositionsParticularLegacy,

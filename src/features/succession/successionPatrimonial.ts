@@ -18,6 +18,7 @@ export interface SuccessionPatrimonialAnalysis {
 interface SuccessionPatrimonialAnalysisOptions {
   simulatedDeceased: SuccessionPrimarySide;
   testament: SuccessionTestamentConfig | null;
+  referenceDate?: Date;
 }
 
 function asAmount(value: unknown): number {
@@ -47,10 +48,14 @@ function parseDonationDate(value?: string): Date | null {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function isWithinRappelFiscalYears(value: string | undefined, years: number): boolean {
+function isWithinRappelFiscalYears(
+  value: string | undefined,
+  years: number,
+  referenceDate: Date,
+): boolean {
   const parsed = parseDonationDate(value);
   if (!parsed) return false;
-  const limit = new Date();
+  const limit = new Date(referenceDate);
   limit.setFullYear(limit.getFullYear() - Math.max(0, Math.floor(years)));
   return parsed >= limit;
 }
@@ -152,7 +157,11 @@ export function buildSuccessionPatrimonialAnalysis(
 
     if (fiscalSnapshot) {
       const recentDonationsCount = donations.filter((entry) =>
-        isWithinRappelFiscalYears(entry.date, fiscalSnapshot.donation.rappelFiscalAnnees)).length;
+        isWithinRappelFiscalYears(
+          entry.date,
+          fiscalSnapshot.donation.rappelFiscalAnnees,
+          options?.referenceDate ?? new Date(),
+        )).length;
       if (recentDonationsCount > 0) {
         warnings.push(`${recentDonationsCount} donation(s) dans le rappel fiscal de ${fiscalSnapshot.donation.rappelFiscalAnnees} ans: reprise DMTG à contrôler.`);
       }

@@ -36,8 +36,10 @@ export interface SuccessionXlsxInput {
 export interface SuccessionChronologieXlsxStep {
   actifTransmis: number;
   assuranceVieTransmise?: number;
+  perTransmis?: number;
   masseTotaleTransmise?: number;
   droitsAssuranceVie?: number;
+  droitsPer?: number;
   partConjoint: number;
   partEnfants: number;
   droitsEnfants: number;
@@ -52,6 +54,7 @@ export interface SuccessionChronologieXlsxData {
   step1: SuccessionChronologieXlsxStep | null;
   step2: SuccessionChronologieXlsxStep | null;
   assuranceVieTotale?: number;
+  perTotale?: number;
   totalDroits: number;
   warnings?: string[];
 }
@@ -135,7 +138,7 @@ function buildHypothesesSheet(): XlsxSheet {
     ['Abattement ligne directe : 100 000 EUR', 'CGI Art. 779'],
     ['Exonération totale du conjoint survivant', 'CGI Art. 796-0 bis'],
     ['Hors donations antérieures rapportables', 'Hypothèse simplificatrice'],
-    ['Assurance-vie intégrée à la masse transmise affichée', 'Sans ventilation fiscale détaillée'],
+    ['Assurance-vie et PER assurance intégrés à la masse transmise affichée', 'Ventilation fiscale simplifiée'],
     ['Montants arrondis à l\'euro', 'Convention'],
     [],
     [sec('Avertissement'), sec('')],
@@ -192,8 +195,14 @@ function buildPredecesSheet(
     if ((chronologie.step1.assuranceVieTransmise ?? 0) > 0) {
       rows.push(['Dont assurance-vie', money(chronologie.step1.assuranceVieTransmise ?? 0)]);
     }
+    if ((chronologie.step1.perTransmis ?? 0) > 0) {
+      rows.push(['Dont PER assurance', money(chronologie.step1.perTransmis ?? 0)]);
+    }
     if ((chronologie.step1.droitsAssuranceVie ?? 0) > 0) {
       rows.push(['Droits assurance-vie', money(chronologie.step1.droitsAssuranceVie ?? 0)]);
+    }
+    if ((chronologie.step1.droitsPer ?? 0) > 0) {
+      rows.push(['Droits PER', money(chronologie.step1.droitsPer ?? 0)]);
     }
     rows.push(['Masse successorale civile', money(chronologie.step1.actifTransmis)]);
     rows.push(['Part conjoint / partenaire', money(chronologie.step1.partConjoint)]);
@@ -207,8 +216,14 @@ function buildPredecesSheet(
     if ((chronologie.step2.assuranceVieTransmise ?? 0) > 0) {
       rows.push(['Dont assurance-vie', money(chronologie.step2.assuranceVieTransmise ?? 0)]);
     }
+    if ((chronologie.step2.perTransmis ?? 0) > 0) {
+      rows.push(['Dont PER assurance', money(chronologie.step2.perTransmis ?? 0)]);
+    }
     if ((chronologie.step2.droitsAssuranceVie ?? 0) > 0) {
       rows.push(['Droits assurance-vie', money(chronologie.step2.droitsAssuranceVie ?? 0)]);
+    }
+    if ((chronologie.step2.droitsPer ?? 0) > 0) {
+      rows.push(['Droits PER', money(chronologie.step2.droitsPer ?? 0)]);
     }
     rows.push(['Masse successorale civile', money(chronologie.step2.actifTransmis)]);
     rows.push(['Part conjoint / partenaire', money(chronologie.step2.partConjoint)]);
@@ -220,6 +235,9 @@ function buildPredecesSheet(
     rows.push(['Total cumulé des droits (2 décès)', money(chronologie.totalDroits)]);
     if (typeof chronologie.assuranceVieTotale === 'number' && chronologie.assuranceVieTotale > 0) {
       rows.push(['Capitaux assurance-vie saisis', money(chronologie.assuranceVieTotale)]);
+    }
+    if (typeof chronologie.perTotale === 'number' && chronologie.perTotale > 0) {
+      rows.push(['Capitaux PER assurance saisis', money(chronologie.perTotale)]);
     }
   } else {
     rows.push(['Statut', 'Chronologie 2 décès non retenue comme source principale pour la situation saisie']);
