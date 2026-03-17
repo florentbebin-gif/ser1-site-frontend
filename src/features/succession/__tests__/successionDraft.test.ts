@@ -81,6 +81,11 @@ describe('successionDraft', () => {
         preciputMontant: 12000,
         attributionIntegrale: false,
         attributionBiensCommunsPct: 50,
+        forfaitMobilierMode: 'auto',
+        forfaitMobilierPct: 5,
+        forfaitMobilierMontant: 0,
+        abattementResidencePrincipale: false,
+        ageDecesManuel: null,
       },
       [
         { id: 'E1', prenom: 'Alice', rattachement: 'commun' },

@@ -99,7 +99,7 @@ export const DEFAULT_DEDUCTION_INITIALE: DeductionInitiale = {
 };
 
 export const DEFAULT_DISTRIBUTION: DistributionConfig = {
-  rendementAnnuel: 0.02,
+  rendementAnnuel: 0,
   tauxDistribution: 0.04,
   dureeProduit: null,
   delaiJouissance: 0,

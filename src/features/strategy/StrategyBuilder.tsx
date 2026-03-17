@@ -291,8 +291,8 @@ export default function StrategyBuilder({ dossier }: StrategyBuilderProps): Reac
 
       {/* Modal ajout produit */}
       {showAddProduit && (
-        <div className="modal-overlay" onClick={() => setShowAddProduit(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal-content">
             <h3>Ajouter un produit</h3>
             <div className="produits-grid">
               {(Object.keys(PRODUIT_LABELS) as ProduitType[]).map(type => (

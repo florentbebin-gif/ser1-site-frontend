@@ -99,8 +99,8 @@ export default function ThemeEditModal({
   };
 
   return (
-    <div className="report-modal-overlay" onClick={onClose}>
-      <div className="report-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 600 }}>
+    <div className="report-modal-overlay">
+      <div className="report-modal" style={{ maxWidth: 600 }}>
         <div className="report-modal-header">
           <h3>{theme ? 'Modifier le theme' : 'Nouveau theme'}</h3>
           <button className="report-modal-close" onClick={onClose} type="button">X</button>

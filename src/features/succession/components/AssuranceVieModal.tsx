@@ -13,6 +13,7 @@ import {
   parseCustomClause,
   serializeCustomClause,
 } from '../successionSimulator.helpers';
+import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface AssuranceVieModalProps {
@@ -54,7 +55,7 @@ export default function AssuranceVieModal({
   return (
     <div
       className="sc-member-modal-overlay"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={() => {}}
     >
       <div className="sc-member-modal sc-member-modal--wide">
         <div className="sc-member-modal__header">
@@ -213,28 +214,26 @@ export default function AssuranceVieModal({
                       )}
                       <div className="sc-field">
                         <label>Capitaux décès (€)</label>
-                        <input
-                          type="number"
+                        <ScNumericInput
+                          value={entry.capitauxDeces || 0}
                           min={0}
-                          value={entry.capitauxDeces || ''}
-                          onChange={(e) => onUpdateContract(
+                          onChange={(val) => onUpdateContract(
                             entry.id,
                             'capitauxDeces',
-                            Number(e.target.value) || 0,
+                            val,
                           )}
                           placeholder="Montant"
                         />
                       </div>
                       <div className="sc-field">
                         <label>Versements après 70 ans (€)</label>
-                        <input
-                          type="number"
+                        <ScNumericInput
+                          value={entry.versementsApres70 || 0}
                           min={0}
-                          value={entry.versementsApres70 || ''}
-                          onChange={(e) => onUpdateContract(
+                          onChange={(val) => onUpdateContract(
                             entry.id,
                             'versementsApres70',
-                            Number(e.target.value) || 0,
+                            val,
                           )}
                           placeholder="Montant"
                         />

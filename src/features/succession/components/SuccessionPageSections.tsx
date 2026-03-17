@@ -58,6 +58,12 @@ interface SuccessionPageGridProps {
   onAddDonationEntry: () => void;
   onUpdateDonationEntry: (_entryId: string, _field: keyof SuccessionDonationEntry, _value: string | number | boolean) => void;
   onRemoveDonationEntry: (_entryId: string) => void;
+  forfaitMobilierMode: 'auto' | 'pct' | 'montant';
+  forfaitMobilierPct: number;
+  forfaitMobilierMontant: number;
+  abattementResidencePrincipale: boolean;
+  ageDecesManuel: number | null;
+  onUpdatePatrimonialField: <K extends string>(_field: K, _value: unknown) => void;
 }
 
 interface SuccessionHypothesesProps {
@@ -135,6 +141,12 @@ export function SuccessionPageGrid({
   onAddDonationEntry,
   onUpdateDonationEntry,
   onRemoveDonationEntry,
+  forfaitMobilierMode,
+  forfaitMobilierPct,
+  forfaitMobilierMontant,
+  abattementResidencePrincipale,
+  ageDecesManuel,
+  onUpdatePatrimonialField,
 }: SuccessionPageGridProps) {
   return (
     <div className="sc-grid">
@@ -174,6 +186,12 @@ export function SuccessionPageGrid({
           onRemoveAssetEntry={onRemoveAssetEntry}
           onOpenAssuranceVieModal={onOpenAssuranceVieModal}
           onSetSimplifiedBalanceField={onSetSimplifiedBalanceField}
+          forfaitMobilierMode={forfaitMobilierMode}
+          forfaitMobilierPct={forfaitMobilierPct}
+          forfaitMobilierMontant={forfaitMobilierMontant}
+          abattementResidencePrincipale={abattementResidencePrincipale}
+          ageDecesManuel={ageDecesManuel}
+          onUpdatePatrimonialField={onUpdatePatrimonialField}
         />
 
         {isExpert && (

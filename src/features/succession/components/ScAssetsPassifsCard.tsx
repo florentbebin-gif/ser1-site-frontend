@@ -6,6 +6,7 @@ import type {
 } from '../successionDraft';
 import { ASSET_SUBCATEGORY_OPTIONS } from '../successionSimulator.constants';
 import { fmt } from '../successionSimulator.helpers';
+import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface ScAssetsPassifsCardProps {
@@ -39,6 +40,12 @@ interface ScAssetsPassifsCardProps {
     _owner: SuccessionAssetOwner,
     _value: number,
   ) => void;
+  forfaitMobilierMode: 'auto' | 'pct' | 'montant';
+  forfaitMobilierPct: number;
+  forfaitMobilierMontant: number;
+  abattementResidencePrincipale: boolean;
+  ageDecesManuel: number | null;
+  onUpdatePatrimonialField: <K extends string>(_field: K, _value: unknown) => void;
 }
 
 function getActifNetLabel(
@@ -75,6 +82,12 @@ export default function ScAssetsPassifsCard({
   onRemoveAssetEntry,
   onOpenAssuranceVieModal,
   onSetSimplifiedBalanceField,
+  forfaitMobilierMode,
+  forfaitMobilierPct,
+  forfaitMobilierMontant,
+  abattementResidencePrincipale,
+  ageDecesManuel,
+  onUpdatePatrimonialField,
 }: ScAssetsPassifsCardProps) {
   const flags = { isMarried, isPacsed, isConcubinage };
 
@@ -151,12 +164,10 @@ export default function ScAssetsPassifsCard({
                     </div>
                     <div className="sc-field">
                       <label>Montant (€)</label>
-                      <input
-                        type="number"
+                      <ScNumericInput
+                        value={entry.amount || 0}
                         min={0}
-                        value={entry.amount || ''}
-                        onChange={(e) => onUpdateAssetEntry(entry.id, 'amount', Number(e.target.value) || 0)}
-                        placeholder="Montant"
+                        onChange={(val) => onUpdateAssetEntry(entry.id, 'amount', val)}
                       />
                     </div>
                     <button
@@ -203,6 +214,66 @@ export default function ScAssetsPassifsCard({
               </div>
             ))}
           </div>
+
+          <div className="sc-expert-options">
+            <h3 className="sc-asset-section__title">Options expert</h3>
+            <div className="sc-expert-options__grid">
+              <div className="sc-field">
+                <label>Forfait mobilier</label>
+                <select
+                  value={forfaitMobilierMode}
+                  onChange={(e) => onUpdatePatrimonialField('forfaitMobilierMode', e.target.value)}
+                >
+                  <option value="auto">Automatique (5% légal)</option>
+                  <option value="pct">Pourcentage personnalisé</option>
+                  <option value="montant">Montant fixe</option>
+                </select>
+              </div>
+              {forfaitMobilierMode === 'pct' && (
+                <div className="sc-field">
+                  <label>Forfait mobilier (%)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={forfaitMobilierPct}
+                    onChange={(e) => onUpdatePatrimonialField('forfaitMobilierPct', Number(e.target.value) || 0)}
+                  />
+                </div>
+              )}
+              {forfaitMobilierMode === 'montant' && (
+                <div className="sc-field">
+                  <label>Forfait mobilier (€)</label>
+                  <ScNumericInput
+                    value={forfaitMobilierMontant}
+                    min={0}
+                    onChange={(val) => onUpdatePatrimonialField('forfaitMobilierMontant', val)}
+                  />
+                </div>
+              )}
+              <div className="sc-field">
+                <label className="sc-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={abattementResidencePrincipale}
+                    onChange={(e) => onUpdatePatrimonialField('abattementResidencePrincipale', e.target.checked)}
+                  />
+                  Abattement 20% résidence principale
+                </label>
+              </div>
+              <div className="sc-field">
+                <label>Âge de décès simulé</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={120}
+                  value={ageDecesManuel ?? ''}
+                  onChange={(e) => onUpdatePatrimonialField('ageDecesManuel', e.target.value ? Number(e.target.value) : null)}
+                  placeholder="Auto"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="sc-balance-grid">
@@ -214,12 +285,10 @@ export default function ScAssetsPassifsCard({
             {assetOwnerOptions.map((option) => (
               <div key={`actifs-${option.value}`} className="sc-field">
                 <label>{option.label} (€)</label>
-                <input
-                  type="number"
+                <ScNumericInput
+                  value={assetBreakdown.actifs[option.value] || 0}
                   min={0}
-                  value={assetBreakdown.actifs[option.value] || ''}
-                  onChange={(e) => onSetSimplifiedBalanceField('actifs', option.value, Number(e.target.value) || 0)}
-                  placeholder="Montant"
+                  onChange={(val) => onSetSimplifiedBalanceField('actifs', option.value, val)}
                 />
               </div>
             ))}
@@ -232,12 +301,10 @@ export default function ScAssetsPassifsCard({
             {assetOwnerOptions.map((option) => (
               <div key={`passifs-${option.value}`} className="sc-field">
                 <label>{option.label} (€)</label>
-                <input
-                  type="number"
+                <ScNumericInput
+                  value={assetBreakdown.passifs[option.value] || 0}
                   min={0}
-                  value={assetBreakdown.passifs[option.value] || ''}
-                  onChange={(e) => onSetSimplifiedBalanceField('passifs', option.value, Number(e.target.value) || 0)}
-                  placeholder="Montant"
+                  onChange={(val) => onSetSimplifiedBalanceField('passifs', option.value, val)}
                 />
               </div>
             ))}

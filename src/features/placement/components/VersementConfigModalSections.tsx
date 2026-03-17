@@ -122,6 +122,7 @@ export function VersementInitialSection({
           />
         </div>
 
+        <div className={showCapiBlock && showDistribBlock ? 'vcm__suboptions-row' : ''}>
         {showCapiBlock ? (
           <div className="vcm__suboption vcm__suboption--capi">
             <div className="vcm__suboption-header">
@@ -219,6 +220,7 @@ export function VersementInitialSection({
             ) : null}
           </div>
         ) : null}
+        </div>
       </div>
     </VersementSectionShell>
   );

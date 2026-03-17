@@ -45,8 +45,8 @@ export default function SettingsReportsModal({
   if (!show) return null;
 
   return (
-    <div className="report-modal-overlay" onClick={onClose}>
-      <div className="report-modal" onClick={(event) => event.stopPropagation()}>
+    <div className="report-modal-overlay">
+      <div className="report-modal">
         {!selectedReport ? (
           <>
             <div className="report-modal-header">

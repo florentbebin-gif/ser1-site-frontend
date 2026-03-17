@@ -325,6 +325,24 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
           ? 100
           : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
       ),
+      forfaitMobilierMode: (['auto', 'pct', 'montant'] as const).includes(patrimonialRaw.forfaitMobilierMode as 'auto' | 'pct' | 'montant')
+        ? (patrimonialRaw.forfaitMobilierMode as 'auto' | 'pct' | 'montant')
+        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.forfaitMobilierMode,
+      forfaitMobilierPct: asAmount(
+        patrimonialRaw.forfaitMobilierPct,
+        DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.forfaitMobilierPct,
+      ),
+      forfaitMobilierMontant: asAmount(
+        patrimonialRaw.forfaitMobilierMontant,
+        DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.forfaitMobilierMontant,
+      ),
+      abattementResidencePrincipale: asBoolean(
+        patrimonialRaw.abattementResidencePrincipale,
+        DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.abattementResidencePrincipale,
+      ),
+      ageDecesManuel: typeof patrimonialRaw.ageDecesManuel === 'number' && patrimonialRaw.ageDecesManuel > 0
+        ? patrimonialRaw.ageDecesManuel
+        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.ageDecesManuel,
     };
 
     const enfants = version >= 5 && Array.isArray(payload.enfants)

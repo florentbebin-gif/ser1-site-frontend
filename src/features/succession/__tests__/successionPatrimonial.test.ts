@@ -22,6 +22,11 @@ function makePatrimonial(overrides: Partial<SuccessionPatrimonialContext>): Succ
     preciputMontant: 0,
     attributionIntegrale: false,
     attributionBiensCommunsPct: 50,
+    forfaitMobilierMode: 'auto',
+    forfaitMobilierPct: 5,
+    forfaitMobilierMontant: 0,
+    abattementResidencePrincipale: false,
+    ageDecesManuel: null,
     ...overrides,
   };
 }

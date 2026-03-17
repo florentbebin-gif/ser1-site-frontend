@@ -242,10 +242,9 @@ export function VersementConfigModal({
     : (isSCPI && (hasDistribution(draft.initial) || hasDistribution(draft.annuel)));
 
   return (
-    <div className="vcm-overlay" onClick={onClose}>
+    <div className="vcm-overlay">
       <div
         className="vcm"
-        onClick={(event) => event.stopPropagation()}
         data-testid="placement-versements-modal"
       >
         <div className="vcm__header">

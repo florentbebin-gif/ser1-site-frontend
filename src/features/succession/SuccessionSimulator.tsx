@@ -442,6 +442,12 @@ export default function SuccessionSimulator() {
         onAddDonationEntry={addDonationEntry}
         onUpdateDonationEntry={updateDonationEntry}
         onRemoveDonationEntry={removeDonationEntry}
+        forfaitMobilierMode={patrimonialContext.forfaitMobilierMode}
+        forfaitMobilierPct={patrimonialContext.forfaitMobilierPct}
+        forfaitMobilierMontant={patrimonialContext.forfaitMobilierMontant}
+        abattementResidencePrincipale={patrimonialContext.abattementResidencePrincipale}
+        ageDecesManuel={patrimonialContext.ageDecesManuel}
+        onUpdatePatrimonialField={(field, value) => setPatrimonialContext((prev) => ({ ...prev, [field]: value }))}
       />
 
       <SuccessionHypotheses

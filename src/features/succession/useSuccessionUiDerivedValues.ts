@@ -57,10 +57,11 @@ export function useSuccessionUiDerivedValues({
 
   const assetOwnerOptions = useMemo((): { value: SuccessionAssetOwner; label: string }[] => {
     if (isMarried) {
+      const sharedLabel = civilContext.regimeMatrimonial === 'separation_biens' ? 'Indivision' : 'Communauté';
       return [
         { value: 'epoux1', label: 'Époux 1' },
         { value: 'epoux2', label: 'Époux 2' },
-        { value: 'commun', label: 'Communauté' },
+        { value: 'commun', label: sharedLabel },
       ];
     }
     if (isPacsed) {
@@ -78,7 +79,7 @@ export function useSuccessionUiDerivedValues({
       ];
     }
     return [{ value: 'epoux1', label: 'Défunt(e)' }];
-  }, [isConcubinage, isMarried, isPacsed]);
+  }, [isConcubinage, isMarried, isPacsed, civilContext.regimeMatrimonial]);
 
   const assuranceViePartyOptions = useMemo(
     () => assetOwnerOptions.filter((option) => option.value !== 'commun') as { value: 'epoux1' | 'epoux2'; label: string }[],

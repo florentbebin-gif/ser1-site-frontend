@@ -25,6 +25,7 @@ import {
   OUI_NON_OPTIONS,
 } from '../successionSimulator.constants';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
+import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface DispositionsModalProps {
@@ -88,7 +89,7 @@ export default function DispositionsModal({
   return (
     <div
       className="sc-member-modal-overlay"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={() => {}}
     >
       <div className="sc-member-modal sc-dispositions-modal">
         <div className="sc-member-modal__header">
@@ -200,15 +201,13 @@ export default function DispositionsModal({
             {isCommunityRegime && (
               <div className="sc-field">
                 <label>Clause de préciput (€)</label>
-                <input
-                  type="number"
+                <ScNumericInput
+                  value={dispositionsDraft.preciputMontant || 0}
                   min={0}
-                  value={dispositionsDraft.preciputMontant || ''}
-                  onChange={(e) => setDispositionsDraft((prev) => ({
+                  onChange={(val) => setDispositionsDraft((prev) => ({
                     ...prev,
-                    preciputMontant: Math.max(0, Number(e.target.value) || 0),
+                    preciputMontant: val,
                   }))}
-                  placeholder="Montant"
                 />
               </div>
             )}
@@ -350,17 +349,15 @@ export default function DispositionsModal({
                                     )}
                                     options={beneficiarySelectOptions}
                                   />
-                                  <input
-                                    type="number"
+                                  <ScNumericInput
+                                    value={entry.amount || 0}
                                     min={0}
-                                    value={entry.amount || ''}
-                                    onChange={(e) => onUpdateParticularLegacy(
+                                    onChange={(val) => onUpdateParticularLegacy(
                                       side,
                                       entry.id,
                                       'amount',
-                                      Number(e.target.value) || 0,
+                                      val,
                                     )}
-                                    placeholder="Montant"
                                   />
                                   <input
                                     type="text"

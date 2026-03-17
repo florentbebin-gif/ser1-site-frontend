@@ -98,6 +98,11 @@ export interface SuccessionPatrimonialContext {
   preciputMontant: number;
   attributionIntegrale: boolean;
   attributionBiensCommunsPct: number;
+  forfaitMobilierMode: 'auto' | 'pct' | 'montant';
+  forfaitMobilierPct: number;
+  forfaitMobilierMontant: number;
+  abattementResidencePrincipale: boolean;
+  ageDecesManuel: number | null;
 }
 
 export type SuccessionDonationEntryType = 'rapportable' | 'hors_part' | 'legs_particulier';
