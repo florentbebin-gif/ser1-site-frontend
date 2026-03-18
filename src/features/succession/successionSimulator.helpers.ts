@@ -229,3 +229,58 @@ export function serializeCustomClause(parts: Record<string, number>): string {
     .map(([id, pct]) => `${id}:${pct}`)
     .join(';');
 }
+
+function getGenericFamilyMemberTypeLabel(type: FamilyMemberType): string {
+  switch (type) {
+    case 'petit_enfant':
+      return 'Petit-enfant';
+    case 'parent':
+      return 'Parent';
+    case 'frere_soeur':
+      return 'Frère / sœur';
+    case 'oncle_tante':
+      return 'Oncle / tante';
+    case 'tierce_personne':
+      return 'Tierce personne';
+    default:
+      return 'Membre';
+  }
+}
+
+export function isSupportedStructuredClause(clause?: string): boolean {
+  return !clause
+    || clause === CLAUSE_CONJOINT_LABEL
+    || clause === CLAUSE_ENFANTS_LABEL
+    || clause.startsWith('CUSTOM:');
+}
+
+export function buildPrevoyanceClauseOptions(
+  enfantsContext: SuccessionEnfant[],
+  familyMembers: FamilyMember[],
+): { value: string; label: string }[] {
+  const options: { value: string; label: string }[] = [
+    { value: CLAUSE_CONJOINT_LABEL, label: 'Clause standard' },
+  ];
+
+  if (enfantsContext.length > 0) {
+    options.push({ value: CLAUSE_ENFANTS_LABEL, label: 'Enfants par parts égales' });
+    enfantsContext.forEach((enfant, index) => {
+      options.push({
+        value: serializeCustomClause({ [enfant.id]: 100 }),
+        label: `${enfant.deceased ? '† ' : ''}Enfant ${index + 1}`,
+      });
+    });
+  }
+
+  const counts: Partial<Record<FamilyMemberType, number>> = {};
+  familyMembers.forEach((member) => {
+    const nextCount = (counts[member.type] ?? 0) + 1;
+    counts[member.type] = nextCount;
+    options.push({
+      value: serializeCustomClause({ [member.id]: 100 }),
+      label: `${getGenericFamilyMemberTypeLabel(member.type)} ${nextCount}`,
+    });
+  });
+
+  return options;
+}

@@ -15,6 +15,7 @@ describe('computeSuccessionAssetValuation', () => {
         { id: 'asset-1', owner: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 200000 },
         { id: 'asset-2', owner: 'commun', category: 'immobilier', subCategory: 'Residence secondaire', amount: 300000 },
       ],
+      groupementFoncierEntries: [],
       forfaitMobilierMode: 'auto',
       forfaitMobilierPct: 5,
       forfaitMobilierMontant: 0,
@@ -34,6 +35,7 @@ describe('computeSuccessionAssetValuation', () => {
         { id: 'asset-1', owner: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 100000 },
         { id: 'asset-2', owner: 'epoux2', category: 'financier', subCategory: 'Titres', amount: 200000 },
       ],
+      groupementFoncierEntries: [],
       forfaitMobilierMode: 'pct',
       forfaitMobilierPct: 12,
       forfaitMobilierMontant: 0,
@@ -52,6 +54,7 @@ describe('computeSuccessionAssetValuation', () => {
       assetEntries: [
         { id: 'asset-1', owner: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
       ],
+      groupementFoncierEntries: [],
       forfaitMobilierMode: 'montant',
       forfaitMobilierPct: 5,
       forfaitMobilierMontant: 50000,
@@ -76,6 +79,7 @@ describe('computeSuccessionAssetValuation', () => {
 
     const result = computeSuccessionAssetValuation({
       assetEntries: normalized,
+      groupementFoncierEntries: [],
       forfaitMobilierMode: 'montant',
       forfaitMobilierPct: 5,
       forfaitMobilierMontant: 0,
@@ -94,6 +98,7 @@ describe('computeSuccessionAssetValuation', () => {
         { id: 'asset-1', owner: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
         { id: 'passif-1', owner: 'epoux1', category: 'passif', subCategory: 'Dettes', amount: 103000 },
       ],
+      groupementFoncierEntries: [],
       forfaitMobilierMode: 'auto',
       forfaitMobilierPct: 5,
       forfaitMobilierMontant: 0,
@@ -102,5 +107,41 @@ describe('computeSuccessionAssetValuation', () => {
 
     expect(result.forfaitMobilierComputed).toBe(5000);
     expect(result.assetNetTotals.epoux1).toBe(2000);
+  });
+
+  it('integrates GFA taxable value into succession assets', () => {
+    const result = computeSuccessionAssetValuation({
+      assetEntries: [],
+      groupementFoncierEntries: [
+        { id: 'gf-1', owner: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
+      ],
+      forfaitMobilierMode: 'auto',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    expect(result.assetBreakdown.actifs.epoux1).toBe(10_000_000);
+    expect(result.actifsTaxablesParOwner.epoux1).toBe(4_850_000);
+    expect(result.forfaitMobilierComputed).toBe(242500);
+    expect(result.assetNetTotals.epoux1).toBe(5_092_500);
+  });
+
+  it('keeps the 75 percent forest exemption without monetary cap for GFF', () => {
+    const result = computeSuccessionAssetValuation({
+      assetEntries: [],
+      groupementFoncierEntries: [
+        { id: 'gf-1', owner: 'commun', type: 'GFF', valeurTotale: 10_000_000 },
+      ],
+      forfaitMobilierMode: 'auto',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    expect(result.assetBreakdown.actifs.commun).toBe(10_000_000);
+    expect(result.actifsTaxablesParOwner.commun).toBe(2_500_000);
+    expect(result.forfaitMobilierComputed).toBe(125000);
+    expect(result.assetNetTotals.commun).toBe(2_625_000);
   });
 });

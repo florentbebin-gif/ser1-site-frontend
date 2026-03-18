@@ -15,7 +15,9 @@ import {
   getEnfantRattachementOptions,
 } from './successionEnfants';
 import { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
+import { coordinateSuccessionInsuranceAllowances } from './successionDeathInsuranceAllowances';
 import { buildSuccessionPerFiscalAnalysis } from './successionPerFiscal';
+import { buildSuccessionPrevoyanceFiscalAnalysis } from './successionPrevoyanceFiscal';
 import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
 import {
@@ -34,7 +36,9 @@ import type {
   FamilyMember,
   SuccessionDonationEntry,
   SuccessionEnfant,
+  SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
+  SuccessionPrevoyanceDecesEntry,
 } from './successionDraft';
 import type {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
@@ -49,10 +53,12 @@ interface UseSuccessionDerivedValuesInput {
   civilContext: typeof DEFAULT_SUCCESSION_CIVIL_CONTEXT;
   liquidationContext: typeof DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT;
   assetEntries: SuccessionAssetDetailEntry[];
+  groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
   assuranceVieDraft: SuccessionAssuranceVieEntry[];
   perEntries: SuccessionPerEntry[];
   perDraft: SuccessionPerEntry[];
+  prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
   devolutionContext: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT;
   patrimonialContext: typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT;
   donationsContext: SuccessionDonationEntry[];
@@ -67,10 +73,12 @@ export function useSuccessionDerivedValues({
   civilContext,
   liquidationContext,
   assetEntries,
+  groupementFoncierEntries,
   assuranceVieEntries,
   assuranceVieDraft,
   perEntries,
   perDraft,
+  prevoyanceDecesEntries,
   devolutionContext,
   patrimonialContext,
   donationsContext,
@@ -252,17 +260,19 @@ export function useSuccessionDerivedValues({
     enfantsContext,
     familyMembers,
     assetEntries,
+    groupementFoncierEntries,
     assuranceVieEntries,
     assuranceVieDraft,
     perEntries,
     perDraft,
+    prevoyanceDecesEntries,
     forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
     forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
     forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
     abattementResidencePrincipale: patrimonialContext.abattementResidencePrincipale,
   });
 
-  const avFiscalAnalysis = useMemo(
+  const rawAvFiscalAnalysis = useMemo(
     () => buildSuccessionAvFiscalAnalysis(
       assuranceVieEntries,
       civilContext,
@@ -273,7 +283,7 @@ export function useSuccessionDerivedValues({
     [assuranceVieEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot],
   );
 
-  const perFiscalAnalysis = useMemo(
+  const rawPerFiscalAnalysis = useMemo(
     () => buildSuccessionPerFiscalAnalysis(
       perEntries,
       civilContext,
@@ -284,6 +294,46 @@ export function useSuccessionDerivedValues({
     ),
     [perEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot, simulatedDeathDate],
   );
+
+  const rawPrevoyanceFiscalAnalysis = useMemo(
+    () => buildSuccessionPrevoyanceFiscalAnalysis(
+      prevoyanceDecesEntries,
+      civilContext,
+      enfantsContext,
+      familyMembers,
+      fiscalSnapshot,
+      simulatedDeathDate,
+    ),
+    [
+      prevoyanceDecesEntries,
+      civilContext,
+      enfantsContext,
+      familyMembers,
+      fiscalSnapshot,
+      simulatedDeathDate,
+    ],
+  );
+
+  const coordinatedInsuranceFiscal = useMemo(
+    () => coordinateSuccessionInsuranceAllowances({
+      avFiscalAnalysis: rawAvFiscalAnalysis,
+      perFiscalAnalysis: rawPerFiscalAnalysis,
+      prevoyanceFiscalAnalysis: rawPrevoyanceFiscalAnalysis,
+      fiscalSnapshot,
+    }),
+    [
+      rawAvFiscalAnalysis,
+      rawPerFiscalAnalysis,
+      rawPrevoyanceFiscalAnalysis,
+      fiscalSnapshot,
+    ],
+  );
+
+  const {
+    avFiscalAnalysis,
+    perFiscalAnalysis,
+    prevoyanceFiscalAnalysis,
+  } = coordinatedInsuranceFiscal;
 
   const outcomeDerived = useSuccessionOutcomeDerivedValues({
     civilContext,
@@ -306,11 +356,14 @@ export function useSuccessionDerivedValues({
     patrimonialAnalysis,
     avFiscalAnalysis,
     perFiscalAnalysis,
+    prevoyanceFiscalAnalysis,
     directEstateBasis,
     assuranceVieByAssure: uiDerived.assuranceVieByAssure,
     assuranceVieTotals: uiDerived.assuranceVieTotals,
     perByAssure: uiDerived.perByAssure,
     perTotals: uiDerived.perTotals,
+    prevoyanceByAssure: uiDerived.prevoyanceByAssure,
+    prevoyanceTotals: uiDerived.prevoyanceTotals,
     simulatedDeathDate,
   });
 
@@ -362,11 +415,16 @@ export function useSuccessionDerivedValues({
     perDraftTotals: uiDerived.perDraftTotals,
     perFiscalAnalysis,
     perByAssure: uiDerived.perByAssure,
+    prevoyanceTotals: uiDerived.prevoyanceTotals,
+    prevoyanceByAssure: uiDerived.prevoyanceByAssure,
+    prevoyanceClauseOptions: uiDerived.prevoyanceClauseOptions,
+    prevoyanceFiscalAnalysis,
     displayUsesChainage: outcomeDerived.displayUsesChainage,
     displayActifNetSuccession: outcomeDerived.displayActifNetSuccession,
     directDisplayAnalysis: outcomeDerived.directDisplayAnalysis,
     displayAssuranceVieTransmise: outcomeDerived.displayAssuranceVieTransmise,
     displayPerTransmis: outcomeDerived.displayPerTransmis,
+    displayPrevoyanceTransmise: outcomeDerived.displayPrevoyanceTransmise,
     derivedMasseTransmise: outcomeDerived.derivedMasseTransmise,
     derivedTotalDroits: outcomeDerived.derivedTotalDroits,
     synthDonutTransmis: outcomeDerived.synthDonutTransmis,

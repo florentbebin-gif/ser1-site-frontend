@@ -398,14 +398,14 @@
 .vcm__ponctuel-headers,
 .vcm__ponctuel-row {
   display: grid;
-  grid-template-columns: 70px 130px 70px 1fr 40px;
+  grid-template-columns: 72px 132px 72px minmax(280px, 1fr) 32px;
   gap: 10px;
   align-items: center;
 }
 
 .vcm__ponctuels--scpi .vcm__ponctuel-headers,
 .vcm__ponctuels--scpi .vcm__ponctuel-row {
-  grid-template-columns: 70px 130px 1fr 40px;
+  grid-template-columns: 72px 132px minmax(280px, 1fr) 32px;
 }
 
 .vcm__ponctuel-headers {
@@ -430,7 +430,12 @@
 }
 
 .vcm__ponctuel-cell--alloc {
-  justify-content: center;
+  justify-content: stretch;
+  min-width: 0;
+}
+
+.vcm__ponctuel-cell--alloc .pl-alloc-slider {
+  width: 100%;
 }
 
 .vcm__ponctuel-header--center {
@@ -661,11 +666,11 @@
 
   .vcm__ponctuel-headers,
   .vcm__ponctuel-row {
-    grid-template-columns: 52px 80px 56px 1fr 32px;
+    grid-template-columns: 48px 84px 52px minmax(180px, 1fr) 28px;
   }
 
   .vcm__ponctuels--scpi .vcm__ponctuel-headers,
   .vcm__ponctuels--scpi .vcm__ponctuel-row {
-    grid-template-columns: 52px 80px 1fr 32px;
+    grid-template-columns: 48px 84px minmax(180px, 1fr) 28px;
   }
 }

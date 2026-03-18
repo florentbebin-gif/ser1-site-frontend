@@ -119,6 +119,7 @@ export function VersementInitialSection({
             onChange={onUpdateInitialAlloc}
             isSCPI={isSCPI}
             disabled={!isExpert && !isSCPI}
+            readOnly
           />
         </div>
 

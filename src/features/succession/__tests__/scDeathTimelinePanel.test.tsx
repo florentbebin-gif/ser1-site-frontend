@@ -31,6 +31,11 @@ function buildProps() {
       epoux1: { totalDroits: 0 },
       epoux2: { totalDroits: 0 },
     },
+    prevoyanceByAssure: { epoux1: 0, epoux2: 0 },
+    prevoyanceFiscalByAssure: {
+      epoux1: { totalDroits: 0 },
+      epoux2: { totalDroits: 0 },
+    },
     directDisplay: {
       simulatedDeceased: 'epoux1' as const,
       result: { totalDroits: 20000 },

@@ -52,6 +52,7 @@ export interface SuccessionAvFiscalLine {
 export interface SuccessionAvFiscalPerAssure {
   capitauxDeces: number;
   totalDroits: number;
+  lines: SuccessionAvFiscalLine[];
 }
 
 export interface SuccessionAvFiscalAnalysis {
@@ -491,10 +492,12 @@ export function buildSuccessionAvFiscalAnalysis(
       epoux1: {
         capitauxDeces: sideEpoux1.totalCapitauxDeces,
         totalDroits: sideEpoux1.totalDroits,
+        lines: sideEpoux1.lines,
       },
       epoux2: {
         capitauxDeces: sideEpoux2.totalCapitauxDeces,
         totalDroits: sideEpoux2.totalDroits,
+        lines: sideEpoux2.lines,
       },
     },
     warnings,

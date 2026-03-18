@@ -97,8 +97,10 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - forfait mobilier et abattement de 20 % sur la residence principale, saisis dans le bloc patrimonial expert
 - enfants / autres membres de la famille, avec distinction visuelle possible des enfants décédés
 - actifs et passifs saisis distinctement en mode simplifie ; actifs / passifs detailles en mode expert
+- groupements fonciers (`GFA`, `GFV`, `GFF`, `GF`) saisis en expert, avec reinjection de leur base taxable dans la masse successorale
 - contrats d'assurance-vie saisis a part dans le bloc patrimonial, integres a la masse transmise affichee
 - contrats `PER assurance` saisis a part dans le bloc patrimonial, avec lecture fiscale avant / apres 70 ans selon la date deces simulee
+- contrats de prevoyance deces saisis a part dans le bloc patrimonial, avec capital transmis affiche et assiette taxable limitee a la `dernierePrime`
 - donations / legs agrégés en mode simplifié ou détaillés en mode expert
 - dispositions civiles et testamentaires via le modal dedie
 - testament saisi par personne : une carte en situation solo, deux cartes en situation de couple, avec beneficiaires choisis dans le contexte familial declare
@@ -111,6 +113,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - lecture civile simplifiee de la devolution
 - lecture patrimoniale simplifiee (masse civile, quotite disponible, liberalites a controler)
 - synthese patrimoniale guidee sur les contrats d'assurance-vie saisis a part, avec ventilation fiscale simplifiee par beneficiaire
+- synthese patrimoniale guidee sur la prevoyance deces, avec ventilation par beneficiaire et droits calcules sur la seule `dernierePrime`
 - points d'attention et warnings de simplification
 
 ### Ce qui est couvert
@@ -118,6 +121,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - exoneration conjoint
 - prise en compte du regime matrimonial dans certaines analyses guidees
 - scenarios de predeces et ordre des deces
+- integration des groupements fonciers dans la base taxable successorale avec regime distinct `GFA/GFV` vs `GFF/GF`
 - routage explicite entre chronologie 2 deces (mariage) et succession directe affichee (celibataire, veuf, divorce, concubinage et PACS selon le cas)
 - gating du modal `+ Dispositions` tant qu'aucun contexte familial exploitable n'est saisi
 - modal `Dispositions particulieres` adapte a la situation familiale ou au regime, avec options impossibles masquees plutot que laissees actives
@@ -127,8 +131,9 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - saisie detaillee des actifs/passifs pour reconstituer des masses nettes par poche patrimoniale
 - calcul du forfait mobilier sur les actifs taxables saisis, avec ventilation proportionnelle par porteur
 - residence principale unique cote produit, avec option d'abattement 20 % visible sur la ligne immobiliere correspondante
-- ventilation simplifiee de l'assurance-vie deces selon les clauses beneficiaires saisies (lecture 990 I / 757 B)
-- ventilation simplifiee du `PER assurance` deces selon les clauses beneficiaires saisies, avec bascule avant / apres 70 ans a la date deces simulee
+- ventilation simplifiee de l'assurance-vie deces selon les clauses beneficiaires saisies (lecture 990 I / 757 B), avec mutualisation des abattements entre contrats d'un meme assure et d'un meme beneficiaire
+- ventilation simplifiee du `PER assurance` deces selon les clauses beneficiaires saisies, avec bascule avant / apres 70 ans a la date deces simulee et coordination des abattements avec l'assurance-vie / la prevoyance
+- ventilation simplifiee de la prevoyance deces selon une clause beneficiaire structuree, avec droits assis sur la seule `dernierePrime`, bascule avant / apres 70 ans a la date deces simulee et coordination des abattements avec l'assurance-vie / le `PER assurance`
 - representation successorale simplifiee des enfants decedes par leurs petits-enfants quand ils sont identifies
 - dates de naissance des personnes du couple / du defunt dans le contexte familial pour valoriser l'usufruit et la nue-propriete a la date du deces simule
 - materiel de guidage sur liberalites, avantages matrimoniaux et situations familiales dans les settings succession

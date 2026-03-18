@@ -29,9 +29,11 @@ interface SuccessionChronologieStep {
   actifTransmis: number;
   assuranceVieTransmise?: number;
   perTransmis?: number;
+  prevoyanceTransmise?: number;
   masseTotaleTransmise?: number;
   droitsAssuranceVie?: number;
   droitsPer?: number;
+  droitsPrevoyance?: number;
   partConjoint: number;
   partEnfants: number;
   droitsEnfants: number;
@@ -59,6 +61,7 @@ export interface SuccessionData {
     step2: SuccessionChronologieStep | null;
     assuranceVieTotale?: number;
     perTotale?: number;
+    prevoyanceTotale?: number;
     totalDroits: number;
     warnings?: string[];
   };
@@ -136,18 +139,22 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
       `- Étape 1 (${data.firstDecedeLabel}) - masse totale ${fmt(data.step1.masseTotaleTransmise ?? data.step1.actifTransmis)}, ` +
       `dont assurance-vie ${fmt(data.step1.assuranceVieTransmise ?? 0)}, ` +
       `dont PER assurance ${fmt(data.step1.perTransmis ?? 0)}, ` +
+      `dont prévoyance décès ${fmt(data.step1.prevoyanceTransmise ?? 0)}, ` +
       `part conjoint/partenaire ${fmt(data.step1.partConjoint)}, autres bénéficiaires ${fmt(data.step1.partEnfants)}, droits succession ${fmt(data.step1.droitsEnfants)}` +
       `${(data.step1.droitsAssuranceVie ?? 0) > 0 ? `, droits assurance-vie ${fmt(data.step1.droitsAssuranceVie ?? 0)}` : ''}` +
-      `${(data.step1.droitsPer ?? 0) > 0 ? `, droits PER ${fmt(data.step1.droitsPer ?? 0)}` : ''}`,
+      `${(data.step1.droitsPer ?? 0) > 0 ? `, droits PER ${fmt(data.step1.droitsPer ?? 0)}` : ''}` +
+      `${(data.step1.droitsPrevoyance ?? 0) > 0 ? `, droits prévoyance ${fmt(data.step1.droitsPrevoyance ?? 0)}` : ''}`,
     );
     lines.push(...buildChronologieBeneficiaryLines(`Étape 1 (${data.firstDecedeLabel})`, data.step1.beneficiaries));
     lines.push(
       `- Étape 2 (${data.secondDecedeLabel}) - masse totale ${fmt(data.step2.masseTotaleTransmise ?? data.step2.actifTransmis)}, ` +
       `dont assurance-vie ${fmt(data.step2.assuranceVieTransmise ?? 0)}, ` +
       `dont PER assurance ${fmt(data.step2.perTransmis ?? 0)}, ` +
+      `dont prévoyance décès ${fmt(data.step2.prevoyanceTransmise ?? 0)}, ` +
       `part conjoint/partenaire ${fmt(data.step2.partConjoint)}, autres bénéficiaires ${fmt(data.step2.partEnfants)}, droits succession ${fmt(data.step2.droitsEnfants)}` +
       `${(data.step2.droitsAssuranceVie ?? 0) > 0 ? `, droits assurance-vie ${fmt(data.step2.droitsAssuranceVie ?? 0)}` : ''}` +
-      `${(data.step2.droitsPer ?? 0) > 0 ? `, droits PER ${fmt(data.step2.droitsPer ?? 0)}` : ''}`,
+      `${(data.step2.droitsPer ?? 0) > 0 ? `, droits PER ${fmt(data.step2.droitsPer ?? 0)}` : ''}` +
+      `${(data.step2.droitsPrevoyance ?? 0) > 0 ? `, droits prévoyance ${fmt(data.step2.droitsPrevoyance ?? 0)}` : ''}`,
     );
     lines.push(...buildChronologieBeneficiaryLines(`Étape 2 (${data.secondDecedeLabel})`, data.step2.beneficiaries));
     lines.push(`- Total cumulé des droits (2 décès): ${fmt(data.totalDroits)}`);
@@ -156,6 +163,9 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
     }
     if (typeof data.perTotale === 'number' && data.perTotale > 0) {
       lines.push(`- Capitaux PER assurance saisis: ${fmt(data.perTotale)}`);
+    }
+    if (typeof data.prevoyanceTotale === 'number' && data.prevoyanceTotale > 0) {
+      lines.push(`- Capitaux prévoyance décès saisis: ${fmt(data.prevoyanceTotale)}`);
     }
   } else {
     lines.push('- Chronologie 2 décès non retenue comme source principale pour la situation saisie');
