@@ -46,7 +46,7 @@ export function PlacementToolbar({
           <p className="premium-subtitle">Épargne → Liquidation → Transmission</p>
 
           <div className="pl-header__actions pl-header-actions">
-            <ModeToggle value={isExpert} onChange={() => onToggleMode()} />
+            <ModeToggle value={isExpert} onChange={() => onToggleMode()} testId="placement-mode-btn" />
 
             <ExportMenu
               options={[

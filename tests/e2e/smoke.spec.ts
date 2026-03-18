@@ -25,7 +25,7 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.getByTestId('ir-page')).toBeVisible();
     await expect(page.getByTestId('ir-title')).toContainText("Simulateur d'imp\u00f4t sur le revenu");
-    await expect(page.getByTestId('ir-mode-btn')).toContainText('Mode simplifi\u00e9');
+    await expect(page.getByTestId('ir-mode-btn')).toContainText('Mode expert');
   });
 
   test('Credit charge avec sa structure minimale', async ({ page }) => {

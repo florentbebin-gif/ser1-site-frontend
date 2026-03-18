@@ -5,9 +5,10 @@ import './ModeToggle.css';
 interface ModeToggleProps {
   value?: boolean;
   onChange?: (_isExpert: boolean) => void;
+  testId?: string;
 }
 
-export function ModeToggle({ value, onChange }: ModeToggleProps = {}): React.ReactElement {
+export function ModeToggle({ value, onChange, testId }: ModeToggleProps = {}): React.ReactElement {
   const { mode: userMode, setMode: setUserMode, isLoading } = useUserMode();
 
   const isControlled = value !== undefined;
@@ -23,7 +24,7 @@ export function ModeToggle({ value, onChange }: ModeToggleProps = {}): React.Rea
 
   if (!isControlled && isLoading) {
     return (
-      <div className="mode-toggle-row">
+      <div className="mode-toggle-row" data-testid={testId}>
         <span className="mode-toggle-label">Mode expert</span>
         <div className="mode-toggle-pill mode-toggle-pill--loading" />
       </div>
@@ -31,7 +32,7 @@ export function ModeToggle({ value, onChange }: ModeToggleProps = {}): React.Rea
   }
 
   return (
-    <div className="mode-toggle-row">
+    <div className="mode-toggle-row" data-testid={testId}>
       <span className="mode-toggle-label">Mode expert</span>
       <button
         type="button"

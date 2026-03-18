@@ -378,7 +378,7 @@ export default function IrSimulatorContainer() {
             Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux.
           </p>
           <div className="sim-header__actions">
-            <ModeToggle value={isExpert} onChange={() => toggleMode()} />
+            <ModeToggle value={isExpert} onChange={() => toggleMode()} testId="ir-mode-btn" />
             <ExportMenu
               options={[
                 { label: 'Excel', onClick: exportExcel },
