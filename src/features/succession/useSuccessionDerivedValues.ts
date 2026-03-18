@@ -132,6 +132,7 @@ export function useSuccessionDerivedValues({
       patrimonial: {
         donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
         donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
+        preciputMontant: patrimonialContext.preciputMontant,
       },
       enfantsContext,
       familyMembers,
@@ -148,6 +149,7 @@ export function useSuccessionDerivedValues({
       patrimonialContext.attributionBiensCommunsPct,
       patrimonialContext.donationEntreEpouxActive,
       patrimonialContext.donationEntreEpouxOption,
+      patrimonialContext.preciputMontant,
       enfantsContext,
       familyMembers,
       devolutionContext,

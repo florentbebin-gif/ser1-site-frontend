@@ -118,6 +118,33 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
     expect(analysis.warnings.some((warning) => warning.includes('réserve d’usufruit'))).toBe(true);
   });
 
+  it('détecte le rappel fiscal à la frontière 15 ans avec une date au format mois', () => {
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const analysis = buildSuccessionPatrimonialAnalysis(
+      makeCivil({}),
+      500000,
+      2,
+      makePatrimonial({}),
+      [
+        {
+          id: 'don-boundary',
+          type: 'rapportable',
+          montant: 50000,
+          date: '2011-03',
+        },
+      ],
+      snapshot,
+      {
+        simulatedDeceased: 'epoux1',
+        testament: null,
+        referenceDate: new Date('2026-03-17'),
+      },
+    );
+
+    // March 2011 is exactly 15 years before March 2026 — should be within rappel fiscal
+    expect(analysis.warnings.some((warning) => warning.includes('rappel fiscal'))).toBe(true);
+  });
+
   it('lit uniquement les legs particuliers du testament du décès simulé', () => {
     const analysis = buildSuccessionPatrimonialAnalysis(
       makeCivil({}),

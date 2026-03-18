@@ -57,6 +57,11 @@ function isWithinRappelFiscalYears(
   if (!parsed) return false;
   const limit = new Date(referenceDate);
   limit.setFullYear(limit.getFullYear() - Math.max(0, Math.floor(years)));
+  // When donation date is month-only (YYYY-MM), compare at month granularity
+  // to avoid false negatives when the day-of-month differs.
+  if (value && /^\d{4}-\d{2}$/.test(value)) {
+    limit.setUTCDate(1);
+  }
   return parsed >= limit;
 }
 

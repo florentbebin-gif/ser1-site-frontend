@@ -6,6 +6,7 @@
  */
 
 import { ExportMenu } from '../../../components/ExportMenu';
+import { ModeToggle } from '../../../components/ModeToggle';
 import type { CreditHeaderProps } from '../types';
 import './CreditV2.css';
 
@@ -25,14 +26,7 @@ export function CreditHeader({
           Simulez les mensualités et le coût global du financement.
         </p>
         <div className="sim-header__actions" data-testid="credit-actions">
-          <button
-            className="chip premium-btn cv2-mode-btn"
-            data-testid="credit-mode-chip"
-            onClick={onToggleMode}
-            title={isExpert ? 'Passer en mode simplifié' : 'Passer en mode expert'}
-          >
-            {isExpert ? 'Mode expert' : 'Mode simplifié'}
-          </button>
+          <ModeToggle value={isExpert} onChange={() => onToggleMode()} />
           <ExportMenu
             options={exportOptions}
             loading={exportLoading}

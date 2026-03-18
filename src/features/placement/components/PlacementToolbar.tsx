@@ -1,4 +1,5 @@
 import { ExportMenu } from '@/components/ExportMenu';
+import { ModeToggle } from '@/components/ModeToggle';
 import type { PlacementStep } from '../utils/normalizers';
 
 interface PlacementToolbarProps {
@@ -45,14 +46,7 @@ export function PlacementToolbar({
           <p className="premium-subtitle">Épargne → Liquidation → Transmission</p>
 
           <div className="pl-header__actions pl-header-actions">
-            <button
-              type="button"
-              className="chip premium-btn pl-mode-btn"
-              onClick={onToggleMode}
-              data-testid="placement-mode-btn"
-            >
-              {isExpert ? 'Mode expert' : 'Mode simplifié'}
-            </button>
+            <ModeToggle value={isExpert} onChange={() => onToggleMode()} testId="placement-mode-btn" />
 
             <ExportMenu
               options={[

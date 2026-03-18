@@ -14,13 +14,14 @@ type SuccessionChainRegime =
 
 type DonationEntreEpouxSelection = Pick<
   SuccessionPatrimonialContext,
-  'donationEntreEpouxActive' | 'donationEntreEpouxOption'
+  'donationEntreEpouxActive' | 'donationEntreEpouxOption' | 'preciputMontant'
 >;
 
 export interface SuccessionChainStep1Split {
   conjointPart: number;
   enfantsPart: number;
   carryOverToStep2: number;
+  preciputDeducted: number;
   warnings: string[];
 }
 
@@ -74,44 +75,56 @@ export function computeStep1Split(
   patrimonial?: DonationEntreEpouxSelection,
   referenceDate = new Date(),
 ): SuccessionChainStep1Split {
+  const preciput = (civil.situationMatrimoniale === 'marie')
+    ? Math.min(asAmount(patrimonial?.preciputMontant), firstEstate)
+    : 0;
+  const estateAfterPreciput = firstEstate - preciput;
+
   if (civil.situationMatrimoniale !== 'marie') {
     return {
       conjointPart: 0,
       enfantsPart: firstEstate,
       carryOverToStep2: 0,
+      preciputDeducted: 0,
       warnings: [],
     };
   }
   if (nbEnfants <= 0) {
     return {
-      conjointPart: firstEstate,
+      conjointPart: estateAfterPreciput,
       enfantsPart: 0,
-      carryOverToStep2: firstEstate,
-      warnings: [],
+      carryOverToStep2: estateAfterPreciput,
+      preciputDeducted: preciput,
+      warnings: preciput > 0 ? [`Clause de preciput: ${preciput.toLocaleString('fr-FR')} EUR preleves avant partage successoral.`] : [],
     };
   }
 
   const warnings: string[] = [];
+  if (preciput > 0) {
+    warnings.push(`Clause de preciput: ${preciput.toLocaleString('fr-FR')} EUR preleves avant partage successoral.`);
+  }
   const fallback = {
-    conjointPart: firstEstate * 0.25,
-    enfantsPart: firstEstate * 0.75,
-    carryOverToStep2: firstEstate * 0.25,
+    conjointPart: estateAfterPreciput * 0.25,
+    enfantsPart: estateAfterPreciput * 0.75,
+    carryOverToStep2: estateAfterPreciput * 0.25,
   };
 
   if (!patrimonial?.donationEntreEpouxActive) {
     warnings.push(
       'Hypothese simplifiee: part du conjoint au 1er deces fixee a 1/4 en pleine propriete.',
     );
-    return { ...fallback, warnings };
+    return { ...fallback, preciputDeducted: preciput, warnings };
   }
 
   if (patrimonial.donationEntreEpouxOption === 'pleine_propriete_quotite') {
-    const spousePart = firstEstate * getQuotiteDisponibleRatio(nbEnfants);
+    const spousePart = estateAfterPreciput * getQuotiteDisponibleRatio(nbEnfants);
     return {
       conjointPart: spousePart,
-      enfantsPart: Math.max(0, firstEstate - spousePart),
+      enfantsPart: Math.max(0, estateAfterPreciput - spousePart),
       carryOverToStep2: spousePart,
+      preciputDeducted: preciput,
       warnings: [
+        ...warnings,
         'Donation entre epoux: quotite disponible en pleine propriete retenue pour le conjoint survivant.',
       ],
     };
@@ -119,10 +132,12 @@ export function computeStep1Split(
 
   if (patrimonial.donationEntreEpouxOption === 'pleine_propriete_totale') {
     return {
-      conjointPart: firstEstate,
+      conjointPart: estateAfterPreciput,
       enfantsPart: 0,
-      carryOverToStep2: firstEstate,
+      carryOverToStep2: estateAfterPreciput,
+      preciputDeducted: preciput,
       warnings: [
+        ...warnings,
         'Donation entre epoux: totalite en pleine propriete retenue dans le module simplifie, sous reserve de reduction civile.',
       ],
     };
@@ -133,16 +148,16 @@ export function computeStep1Split(
     warnings.push(
       'Donation entre epoux avec usufruit: date de naissance du conjoint survivant manquante, repli moteur sur 1/4 en pleine propriete.',
     );
-    return { ...fallback, warnings };
+    return { ...fallback, preciputDeducted: preciput, warnings };
   }
 
   if (patrimonial.donationEntreEpouxOption === 'usufruit_total') {
-    const valuation = getUsufruitValuationFromBirthDate(spouseBirthDate, firstEstate, referenceDate);
+    const valuation = getUsufruitValuationFromBirthDate(spouseBirthDate, estateAfterPreciput, referenceDate);
     if (!valuation) {
       warnings.push(
         "Donation entre epoux en usufruit total: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriete.",
       );
-      return { ...fallback, warnings };
+      return { ...fallback, preciputDeducted: preciput, warnings };
     }
     warnings.push(
       `Donation entre epoux: usufruit total valorise selon l'art. 669 CGI (usufruitier ${valuation.age} ans, usufruit ${Math.round(valuation.tauxUsufruit * 100)}%).`,
@@ -151,6 +166,7 @@ export function computeStep1Split(
       conjointPart: valuation.valeurUsufruit,
       enfantsPart: valuation.valeurNuePropriete,
       carryOverToStep2: 0,
+      preciputDeducted: preciput,
       warnings,
     };
   }
@@ -158,25 +174,26 @@ export function computeStep1Split(
   if (patrimonial.donationEntreEpouxOption === 'mixte') {
     const valuation = getUsufruitValuationFromBirthDate(
       spouseBirthDate,
-      firstEstate * 0.75,
+      estateAfterPreciput * 0.75,
       referenceDate,
     );
     if (!valuation) {
       warnings.push(
         "Donation entre epoux mixte: valorisation art. 669 CGI impossible, repli moteur sur 1/4 en pleine propriete.",
       );
-      return { ...fallback, warnings };
+      return { ...fallback, preciputDeducted: preciput, warnings };
     }
     warnings.push(
       `Donation entre epoux mixte: 1/4 en pleine propriete + usufruit des 3/4 valorise selon l'art. 669 CGI (usufruitier ${valuation.age} ans, usufruit ${Math.round(valuation.tauxUsufruit * 100)}% sur la part demembree).`,
     );
     return {
-      conjointPart: (firstEstate * 0.25) + valuation.valeurUsufruit,
+      conjointPart: (estateAfterPreciput * 0.25) + valuation.valeurUsufruit,
       enfantsPart: valuation.valeurNuePropriete,
-      carryOverToStep2: firstEstate * 0.25,
+      carryOverToStep2: estateAfterPreciput * 0.25,
+      preciputDeducted: preciput,
       warnings,
     };
   }
 
-  return { ...fallback, warnings };
+  return { ...fallback, preciputDeducted: preciput, warnings };
 }

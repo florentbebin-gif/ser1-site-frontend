@@ -10,6 +10,7 @@ import { DEFAULT_PS_SETTINGS } from '../../../constants/settingsDefaults';
 import { useTheme } from '../../../settings/ThemeProvider';
 import { useUserMode, type UserMode } from '../../../settings/userMode';
 import { ExportMenu } from '../../../components/ExportMenu';
+import { ModeToggle } from '../../../components/ModeToggle';
 import {
   computeAbattement10,
   computeEffectiveParts,
@@ -377,15 +378,7 @@ export default function IrSimulatorContainer() {
             Estimez votre imp&ocirc;t sur le revenu et vos pr&eacute;l&egrave;vements sociaux.
           </p>
           <div className="sim-header__actions">
-            <button
-              type="button"
-              className="chip premium-btn ir-mode-btn"
-              data-testid="ir-mode-btn"
-              onClick={toggleMode}
-              title={isExpert ? 'Passer en mode simplifi\u00e9' : 'Passer en mode expert'}
-            >
-              {isExpert ? 'Mode expert' : 'Mode simplifi\u00e9'}
-            </button>
+            <ModeToggle value={isExpert} onChange={() => toggleMode()} testId="ir-mode-btn" />
             <ExportMenu
               options={[
                 { label: 'Excel', onClick: exportExcel },

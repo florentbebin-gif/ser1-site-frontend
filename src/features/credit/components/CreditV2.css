@@ -771,16 +771,6 @@
   min-width: 0;
 }
 
-/* Bouton "Mode expert/simplifié" — même taille que Exporter */
-.cv2-mode-btn {
-  white-space: nowrap;
-  padding: 8px 16px !important;  /* align sur settings-action-btn (8px 16px) */
-  border-radius: 6px !important;
-  font-size: 13px !important;
-  line-height: 1 !important;  /* aligne la hauteur avec le bouton Exporter (<button>) */
-  cursor: pointer;
-}
-
 /* point 3 — padding-top réduit pour la page Crédit uniquement */
 .sim-page.cv2-page {
   padding-top: 20px;

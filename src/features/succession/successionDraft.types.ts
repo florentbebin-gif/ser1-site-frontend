@@ -159,6 +159,25 @@ export interface SuccessionPerEntry {
   ageUsufruitier?: number;
 }
 
+export type GroupementFoncierType = 'GFA' | 'GFV' | 'GFF' | 'GF';
+
+export interface SuccessionGroupementFoncierEntry {
+  id: string;
+  type: GroupementFoncierType;
+  label?: string;
+  valeurTotale: number;
+  owner: Exclude<SuccessionAssetOwner, 'commun'>;
+}
+
+export interface SuccessionPrevoyanceDecesEntry {
+  id: string;
+  souscripteur: Exclude<SuccessionAssetOwner, 'commun'>;
+  assure: Exclude<SuccessionAssetOwner, 'commun'>;
+  capitalDeces: number;
+  dernierePrime: number;
+  clauseBeneficiaire?: string;
+}
+
 export type SuccessionEnfantRattachement = 'commun' | 'epoux1' | 'epoux2';
 
 export interface SuccessionEnfant {
@@ -196,6 +215,8 @@ export interface ParsedSuccessionDraftPayload {
   assetEntries: SuccessionAssetDetailEntry[];
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
   perEntries: SuccessionPerEntry[];
+  groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
+  prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
 }
 
 export interface SuccessionDraftPayloadV17 extends ParsedSuccessionDraftPayload {

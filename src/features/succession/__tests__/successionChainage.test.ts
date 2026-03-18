@@ -186,6 +186,7 @@ describe('buildSuccessionChainageAnalysis', () => {
       patrimonial: {
         donationEntreEpouxActive: true,
         donationEntreEpouxOption: 'usufruit_total',
+        preciputMontant: 0,
       },
       enfantsContext: [
         { id: 'E1', rattachement: 'commun' },
@@ -213,6 +214,7 @@ describe('buildSuccessionChainageAnalysis', () => {
       patrimonial: {
         donationEntreEpouxActive: true,
         donationEntreEpouxOption: 'usufruit_total' as const,
+        preciputMontant: 0,
       },
       enfantsContext: [
         { id: 'E1', rattachement: 'commun' as const },
@@ -282,6 +284,55 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(epoux2First.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E2')?.brut).toBeGreaterThan(
       epoux2First.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1')?.brut ?? 0,
     );
+  });
+
+  it('deducts preciput from step 1 estate and carries it to step 2', () => {
+    const enfants = [
+      { id: 'E1', rattachement: 'commun' as const },
+      { id: 'E2', rattachement: 'commun' as const },
+    ];
+
+    const withoutPreciput = buildSuccessionChainageAnalysis({
+      civil: makeCivil({}),
+      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: enfants,
+      familyMembers: [],
+      patrimonial: {
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'pleine_propriete_quotite',
+        preciputMontant: 0,
+      },
+    });
+
+    const withPreciput = buildSuccessionChainageAnalysis({
+      civil: makeCivil({}),
+      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: enfants,
+      familyMembers: [],
+      patrimonial: {
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'pleine_propriete_quotite',
+        preciputMontant: 100000,
+      },
+    });
+
+    // Without preciput: firstEstate=500k, conjoint 1/4=125k, enfants 3/4=375k, step2=200k+125k=325k
+    // With preciput 100k: taxable=400k, conjoint 1/4=100k, enfants 3/4=300k, step2=200k+100k+100k=400k
+    expect(withoutPreciput.step1!.actifTransmis).toBe(500000);
+    expect(withPreciput.step1!.actifTransmis).toBe(400000);
+    expect(withPreciput.step1!.partConjoint).toBeLessThan(withoutPreciput.step1!.partConjoint);
+    expect(withPreciput.step1!.partEnfants).toBeLessThan(withoutPreciput.step1!.partEnfants);
+    // Step 2 is larger: preciput adds 100k but carryOver drops by 25k, net +75k
+    expect(withPreciput.step2!.actifTransmis).toBe(400000);
+    expect(withoutPreciput.step2!.actifTransmis).toBe(325000);
+    expect(withPreciput.step2!.actifTransmis).toBeGreaterThan(withoutPreciput.step2!.actifTransmis);
+    expect(withPreciput.warnings.some((warning) => warning.includes('preciput'))).toBe(true);
   });
 
   it('ignores at step 2 a testament still aimed at the already deceased spouse', () => {

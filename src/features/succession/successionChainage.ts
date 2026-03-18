@@ -66,7 +66,7 @@ interface SuccessionChainageInput {
   order: SuccessionChainOrder;
   dmtgSettings: DmtgSettings;
   attributionBiensCommunsPct?: number;
-  patrimonial?: Pick<SuccessionPatrimonialContext, 'donationEntreEpouxActive' | 'donationEntreEpouxOption'>;
+  patrimonial?: Pick<SuccessionPatrimonialContext, 'donationEntreEpouxActive' | 'donationEntreEpouxOption' | 'preciputMontant'>;
   enfantsContext?: SuccessionEnfant[];
   familyMembers?: FamilyMember[];
   devolution?: Pick<SuccessionDevolutionContext, 'testamentsBySide'>;
@@ -421,9 +421,10 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     input.referenceDate,
   );
   warnings.push(...step1Split.warnings);
+  const step1TaxableEstate = firstEstate - step1Split.preciputDeducted;
   const step1Details = computeStepTransmission(
     input,
-    firstEstate,
+    step1TaxableEstate,
     input.order,
     step1Split.conjointPart,
     step1Split.enfantsPart,
@@ -440,7 +441,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   ));
 
   const otherSide = getOtherSide(input.order);
-  const step2Estate = survivorBase + step1Split.carryOverToStep2 + step1Details.carryOverToStep2;
+  const step2Estate = survivorBase + step1Split.carryOverToStep2 + step1Details.carryOverToStep2 + step1Split.preciputDeducted;
   const step2Details = computeStepTransmission(
     input,
     step2Estate,
@@ -465,7 +466,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     firstDecedeLabel: input.order === 'epoux1' ? 'Epoux 1' : 'Epoux 2',
     secondDecedeLabel: input.order === 'epoux1' ? 'Epoux 2' : 'Epoux 1',
     step1: {
-      actifTransmis: firstEstate,
+      actifTransmis: step1TaxableEstate,
       partConjoint: step1Details.partConjoint,
       partEnfants: step1Details.partAutresBeneficiaires,
       droitsConjoint: 0,

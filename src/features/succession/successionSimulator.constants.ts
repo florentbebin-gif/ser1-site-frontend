@@ -79,10 +79,10 @@ export const ASSET_SUBCATEGORY_OPTIONS: Record<SuccessionAssetCategory, string[]
     'Droits en usufruit',
   ],
   financier: [
-    'Comptes bancaires',
-    'Valeurs mobilières',
-    'Épargne réglementée',
-    'Autres biens financiers',
+    'Comptes bancaires (ex : compte courant)',
+    'Valeurs mobilières (ex : FCPI, actions)',
+    'Épargne réglementée (ex : Livret A, PEL)',
+    'Autres biens financiers (ex : crypto, or)',
   ],
   professionnel: [
     'Parts sociales',

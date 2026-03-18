@@ -18,6 +18,9 @@ import { useUserMode } from '../../settings/userMode';
 import { SessionGuardContext } from '../../App';
 import { useFiscalContext } from '../../hooks/useFiscalContext';
 import { ExportMenu } from '../../components/ExportMenu';
+import { ModeToggle } from '../../components/ModeToggle';
+import { GroupementFoncierModal } from './components/GroupementFoncierModal';
+import { PrevoyanceDecesModal } from './components/PrevoyanceDecesModal';
 import { onResetEvent, storageKeyFor } from '../../utils/reset';
 import {
   buildSuccessionDraftPayload,
@@ -37,7 +40,9 @@ import {
   type FamilyMember,
   type SuccessionDonationEntry,
   type SuccessionEnfant,
+  type SuccessionGroupementFoncierEntry,
   type SuccessionPerEntry,
+  type SuccessionPrevoyanceDecesEntry,
 } from './successionDraft';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { type SuccessionChainOrder } from './successionChainage';
@@ -98,6 +103,10 @@ export default function SuccessionSimulator() {
   const [showPerModal, setShowPerModal] = useState(false);
   const [assuranceVieDraft, setAssuranceVieDraft] = useState<SuccessionAssuranceVieEntry[]>(DEFAULT_SUCCESSION_ASSURANCE_VIE);
   const [perDraft, setPerDraft] = useState<SuccessionPerEntry[]>(DEFAULT_SUCCESSION_PER);
+  const [groupementFoncierEntries, setGroupementFoncierEntries] = useState<SuccessionGroupementFoncierEntry[]>([]);
+  const [prevoyanceDecesEntries, setPrevoyanceDecesEntries] = useState<SuccessionPrevoyanceDecesEntry[]>([]);
+  const [showGroupementFoncierModal, setShowGroupementFoncierModal] = useState(false);
+  const [showPrevoyanceDecesModal, setShowPrevoyanceDecesModal] = useState(false);
   const [dispositionsDraft, setDispositionsDraft] = useState<DispositionsDraftState>(buildInitialDispositionsDraft);
   const [addMemberForm, setAddMemberForm] = useState<AddFamilyMemberFormState>(EMPTY_ADD_FAMILY_MEMBER_FORM);
   const [chainOrder, setChainOrder] = useState<SuccessionChainOrder>('epoux1');
@@ -241,6 +250,8 @@ export default function SuccessionSimulator() {
           setAssuranceVieDraft(parsed.assuranceVieEntries);
           setPerEntries(parsed.perEntries);
           setPerDraft(parsed.perEntries);
+          if (parsed.groupementFoncierEntries) setGroupementFoncierEntries(parsed.groupementFoncierEntries);
+          if (parsed.prevoyanceDecesEntries) setPrevoyanceDecesEntries(parsed.prevoyanceDecesEntries);
           setDevolutionContext(parsed.devolution);
           setPatrimonialContext(parsed.patrimonial);
           setDonationsContext(parsed.donations);
@@ -276,13 +287,15 @@ export default function SuccessionSimulator() {
             assetEntries,
             assuranceVieEntries,
             perEntries,
+            groupementFoncierEntries,
+            prevoyanceDecesEntries,
           ),
         ),
       );
     } catch {
       // ignore
     }
-  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, derived.nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext, assetEntries, assuranceVieEntries, perEntries]);
+  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, derived.nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext, assetEntries, assuranceVieEntries, perEntries, groupementFoncierEntries, prevoyanceDecesEntries]);
 
   // Auto-dériver les ascendants survivants par branche si des parents sont déclarés
   useEffect(() => {
@@ -439,13 +452,7 @@ export default function SuccessionSimulator() {
             Estimez les impacts civils d&apos;une succession à partir du contexte familial, du patrimoine et des dispositions saisies.
           </p>
           <div className="sim-header__actions">
-            <button
-              className="chip premium-btn sc-mode-btn"
-              onClick={() => setLocalMode(isExpert ? 'simplifie' : 'expert')}
-              title={isExpert ? 'Passer en mode simplifié' : 'Passer en mode expert'}
-            >
-              {isExpert ? 'Mode expert' : 'Mode simplifié'}
-            </button>
+            <ModeToggle value={isExpert} onChange={() => setLocalMode(isExpert ? 'simplifie' : 'expert')} />
             <ExportMenu options={exportOptions} loading={exportLoading} />
           </div>
         </div>
@@ -482,6 +489,10 @@ export default function SuccessionSimulator() {
         onRemoveAssetEntry={removeAssetEntry}
         onOpenAssuranceVieModal={openAssuranceVieModal}
         onOpenPerModal={openPerModal}
+        onOpenGroupementFoncierModal={() => setShowGroupementFoncierModal(true)}
+        onOpenPrevoyanceDecesModal={() => setShowPrevoyanceDecesModal(true)}
+        groupementFoncierCount={groupementFoncierEntries.length}
+        prevoyanceDecesCount={prevoyanceDecesEntries.length}
         onSetSimplifiedBalanceField={setSimplifiedBalanceField}
         onAddDonationEntry={addDonationEntry}
         onUpdateDonationEntry={updateDonationEntry}
@@ -536,6 +547,24 @@ export default function SuccessionSimulator() {
         onCloseAddMemberPanel={() => setShowAddMemberPanel(false)}
         onValidateAddMember={addFamilyMember}
       />
+
+      {showGroupementFoncierModal && (
+        <GroupementFoncierModal
+          entries={groupementFoncierEntries}
+          ownerOptions={derived.assuranceViePartyOptions}
+          onClose={() => setShowGroupementFoncierModal(false)}
+          onValidate={(entries) => { setGroupementFoncierEntries(entries); setShowGroupementFoncierModal(false); }}
+        />
+      )}
+
+      {showPrevoyanceDecesModal && (
+        <PrevoyanceDecesModal
+          entries={prevoyanceDecesEntries}
+          ownerOptions={derived.assuranceViePartyOptions}
+          onClose={() => setShowPrevoyanceDecesModal(false)}
+          onValidate={(entries) => { setPrevoyanceDecesEntries(entries); setShowPrevoyanceDecesModal(false); }}
+        />
+      )}
     </div>
   );
 }

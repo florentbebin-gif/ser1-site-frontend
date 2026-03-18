@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type {
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
@@ -43,6 +44,10 @@ interface ScAssetsPassifsCardProps {
   onRemoveAssetEntry: (_id: string) => void;
   onOpenAssuranceVieModal: () => void;
   onOpenPerModal: () => void;
+  onOpenGroupementFoncierModal: () => void;
+  onOpenPrevoyanceDecesModal: () => void;
+  groupementFoncierCount: number;
+  prevoyanceDecesCount: number;
   onSetSimplifiedBalanceField: (
     _type: 'actifs' | 'passifs',
     _owner: SuccessionAssetOwner,
@@ -101,7 +106,6 @@ export default function ScAssetsPassifsCard({
   assetOwnerOptions,
   assetBreakdown,
   assetNetTotals,
-  forfaitMobilierComputed,
   residencePrincipaleEntryId,
   assuranceVieEntries,
   perEntries,
@@ -111,6 +115,10 @@ export default function ScAssetsPassifsCard({
   onRemoveAssetEntry,
   onOpenAssuranceVieModal,
   onOpenPerModal,
+  onOpenGroupementFoncierModal,
+  onOpenPrevoyanceDecesModal,
+  groupementFoncierCount,
+  prevoyanceDecesCount,
   onSetSimplifiedBalanceField,
   forfaitMobilierMode,
   forfaitMobilierPct,
@@ -119,6 +127,7 @@ export default function ScAssetsPassifsCard({
   onUpdatePatrimonialField,
 }: ScAssetsPassifsCardProps) {
   const flags = { isMarried, isPacsed, isConcubinage };
+  const [showForfaitMobilier, setShowForfaitMobilier] = useState(forfaitMobilierMode !== 'auto');
 
   return (
     <div className="premium-card sc-card sc-card--guide">
@@ -165,6 +174,16 @@ export default function ScAssetsPassifsCard({
                         + PER assurance
                       </button>
                     </>
+                  )}
+                  {category.value === 'immobilier' && (
+                    <button type="button" className="sc-child-add-btn" onClick={onOpenGroupementFoncierModal}>
+                      + GFA/GFV{groupementFoncierCount > 0 ? ` (${groupementFoncierCount})` : ''}
+                    </button>
+                  )}
+                  {category.value === 'divers' && (
+                    <button type="button" className="sc-child-add-btn" onClick={onOpenPrevoyanceDecesModal}>
+                      + Prévoyance décès{prevoyanceDecesCount > 0 ? ` (${prevoyanceDecesCount})` : ''}
+                    </button>
                   )}
                   <button
                     type="button"
@@ -284,54 +303,58 @@ export default function ScAssetsPassifsCard({
           <section className="sc-asset-section">
             <div className="sc-asset-section__header">
               <h3 className="sc-asset-section__title">Forfait mobilier</h3>
+              <div className="sc-asset-section__actions">
+                {!showForfaitMobilier ? (
+                  <button type="button" className="sc-member-add-icon-btn" onClick={() => setShowForfaitMobilier(true)} aria-label="Configurer le forfait mobilier">+</button>
+                ) : (
+                  <button type="button" className="sc-child-remove-btn" onClick={() => { setShowForfaitMobilier(false); onUpdatePatrimonialField('forfaitMobilierMode', 'auto'); }} aria-label="Retirer le forfait mobilier personnalisé">✕</button>
+                )}
+              </div>
             </div>
-            <div className="sc-assets-list">
-              <div className="sc-asset-row sc-asset-row--three-cols">
-                <div className="sc-field">
-                  <label>Mode</label>
-                  <select
-                    value={forfaitMobilierMode}
-                    onChange={(e) => onUpdatePatrimonialField('forfaitMobilierMode', e.target.value)}
-                  >
-                    <option value="auto">Automatique (5 % légal)</option>
-                    <option value="pct">Pourcentage personnalisé</option>
-                    <option value="montant">Montant fixe</option>
-                  </select>
-                </div>
-                {forfaitMobilierMode === 'pct' ? (
+            {showForfaitMobilier && (
+              <div className="sc-assets-list">
+                <div className="sc-asset-row sc-asset-row--three-cols">
                   <div className="sc-field">
-                    <label>Pourcentage (%)</label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={forfaitMobilierPct}
-                      onChange={(e) => onUpdatePatrimonialField('forfaitMobilierPct', Number(e.target.value) || 0)}
+                    <label>Mode</label>
+                    <ScSelect
+                      value={forfaitMobilierMode}
+                      onChange={(value) => onUpdatePatrimonialField('forfaitMobilierMode', value)}
+                      options={[
+                        { value: 'auto', label: 'Automatique (5 % légal)' },
+                        { value: 'pct', label: 'Pourcentage personnalisé' },
+                        { value: 'montant', label: 'Montant fixe' },
+                      ]}
                     />
                   </div>
-                ) : (
+                  {forfaitMobilierMode === 'pct' ? (
+                    <div className="sc-field">
+                      <label>Pourcentage (%)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={forfaitMobilierPct}
+                        onChange={(e) => onUpdatePatrimonialField('forfaitMobilierPct', Number(e.target.value) || 0)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="sc-field">
+                      <label>Pourcentage (%)</label>
+                      <input type="number" value={5} disabled />
+                    </div>
+                  )}
                   <div className="sc-field">
-                    <label>Pourcentage (%)</label>
-                    <input type="number" value={5} disabled />
+                    <label>Montant fixe (€)</label>
+                    <ScNumericInput
+                      value={forfaitMobilierMode === 'montant' ? forfaitMobilierMontant : 0}
+                      min={0}
+                      onChange={(val) => onUpdatePatrimonialField('forfaitMobilierMontant', val)}
+                      disabled={forfaitMobilierMode !== 'montant'}
+                    />
                   </div>
-                )}
-                <div className="sc-field">
-                  <label>Montant fixe (€)</label>
-                  <ScNumericInput
-                    value={forfaitMobilierMode === 'montant' ? forfaitMobilierMontant : 0}
-                    min={0}
-                    onChange={(val) => onUpdatePatrimonialField('forfaitMobilierMontant', val)}
-                    disabled={forfaitMobilierMode !== 'montant'}
-                  />
                 </div>
               </div>
-            </div>
-            <div className="sc-assets-summary">
-              <div className="sc-summary-row">
-                <span>Forfait mobilier retenu</span>
-                <strong>{fmt(forfaitMobilierComputed)}</strong>
-              </div>
-            </div>
+            )}
           </section>
 
           <div className="sc-assets-summary">

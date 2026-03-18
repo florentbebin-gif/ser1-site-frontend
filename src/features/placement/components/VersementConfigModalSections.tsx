@@ -287,20 +287,20 @@ export function VersementAnnualSection({
       )}
     >
       <div className="vcm__card">
-        <div className="vcm__row">
+        <div className="vcm__row vcm__row--4cols">
           <InputEuro label="Montant" value={annuel.montant} onChange={(value) => onUpdateAnnuel('montant', value)} />
           {!isSCPI && <InputPct label="Frais d'entrée" value={annuel.fraisEntree} onChange={(value) => onUpdateAnnuel('fraisEntree', value)} />}
-        </div>
-
-        <div className="vcm__field">
-          <label className="vcm__label">Allocation</label>
-          <AllocationSlider
-            pctCapi={annuel.pctCapitalisation}
-            pctDistrib={annuel.pctDistribution}
-            onChange={onUpdateAnnuelAlloc}
-            isSCPI={isSCPI}
-            disabled={!isExpert && !isSCPI}
-          />
+          <div className={`vcm__field vcm__field--alloc${isSCPI ? '' : ''}`}>
+            <label className="vcm__label">Allocation</label>
+            <AllocationSlider
+              pctCapi={annuel.pctCapitalisation}
+              pctDistrib={annuel.pctDistribution}
+              onChange={onUpdateAnnuelAlloc}
+              isSCPI={isSCPI}
+              disabled={!isExpert && !isSCPI}
+              readOnly
+            />
+          </div>
         </div>
 
         {isPER ? (
@@ -448,25 +448,13 @@ export function VersementPonctuelsSection({
                 {isSCPI ? (
                   <span className="vcm__alloc-fixed">100% D</span>
                 ) : (
-                  <div className="vcm__alloc-mini">
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={ponctuel.pctCapitalisation}
-                      onChange={(event) => onUpdatePonctuelAlloc(index, Number(event.target.value), 100 - Number(event.target.value))}
-                      className="vcm__mini-input vcm__mini-input--tiny"
-                    />
-                    <span>/</span>
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={ponctuel.pctDistribution}
-                      onChange={(event) => onUpdatePonctuelAlloc(index, 100 - Number(event.target.value), Number(event.target.value))}
-                      className="vcm__mini-input vcm__mini-input--tiny"
-                    />
-                  </div>
+                  <AllocationSlider
+                    pctCapi={ponctuel.pctCapitalisation}
+                    pctDistrib={ponctuel.pctDistribution}
+                    onChange={(capi, distrib) => onUpdatePonctuelAlloc(index, capi, distrib)}
+                    isSCPI={false}
+                    readOnly
+                  />
                 )}
               </div>
 

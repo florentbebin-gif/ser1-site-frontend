@@ -8,9 +8,11 @@ import type {
   SuccessionDonationEntry,
   SuccessionDraftPayloadV17,
   SuccessionEnfant,
+  SuccessionGroupementFoncierEntry,
   SuccessionLiquidationContext,
   SuccessionPerEntry,
   SuccessionPatrimonialContext,
+  SuccessionPrevoyanceDecesEntry,
 } from './successionDraft.types';
 
 export function buildSuccessionDraftPayload(
@@ -25,6 +27,8 @@ export function buildSuccessionDraftPayload(
   assetEntries: SuccessionAssetDetailEntry[],
   assuranceVieEntries: SuccessionAssuranceVieEntry[],
   perEntries: SuccessionPerEntry[],
+  groupementFoncierEntries: SuccessionGroupementFoncierEntry[] = [],
+  prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[] = [],
 ): SuccessionDraftPayloadV17 {
   return {
     version: 17,
@@ -39,5 +43,7 @@ export function buildSuccessionDraftPayload(
     assetEntries,
     assuranceVieEntries,
     perEntries,
+    groupementFoncierEntries,
+    prevoyanceDecesEntries,
   };
 }

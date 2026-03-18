@@ -104,6 +104,8 @@ interface AllocationSliderProps {
   onChange: (_pctCapi: number, _pctDistrib: number) => void;
   disabled?: boolean;
   isSCPI?: boolean;
+  compact?: boolean;
+  readOnly?: boolean;
 }
 
 export function AllocationSlider({
@@ -112,6 +114,8 @@ export function AllocationSlider({
   onChange,
   disabled,
   isSCPI,
+  compact,
+  readOnly,
 }: AllocationSliderProps) {
   const handleCapiChange = (nextPctCapi: number) => {
     const clamped = Math.min(100, Math.max(0, nextPctCapi));
@@ -128,11 +132,13 @@ export function AllocationSlider({
   }
 
   return (
-    <div className="pl-alloc-slider">
-      <div className="pl-alloc-labels">
-        <span className="pl-alloc-label">Capitalisation</span>
-        <span className="pl-alloc-label">Distribution</span>
-      </div>
+    <div className={`pl-alloc-slider${compact ? ' pl-alloc-slider--compact' : ''}`}>
+      {!compact && (
+        <div className="pl-alloc-labels">
+          <span className="pl-alloc-label">Capitalisation</span>
+          <span className="pl-alloc-label">Distribution</span>
+        </div>
+      )}
 
       <div className="pl-alloc-track">
         <input
@@ -148,33 +154,49 @@ export function AllocationSlider({
         <div className="pl-alloc-thumb" style={{ left: `${pctDistrib}%` }} aria-hidden="true" />
       </div>
 
-      <div className="pl-alloc-values">
-        <div className="pl-alloc-value">
-          <input
-            type="number"
-            min="0"
-            max="100"
-            value={pctCapi}
-            onChange={(event) => handleCapiChange(Number(event.target.value))}
-            className="pl-alloc-input"
-            disabled={disabled}
-          />
-          <span>%</span>
-        </div>
+      {!compact ? (
+        <div className="pl-alloc-values">
+          {readOnly ? (
+            <>
+              <span className="pl-alloc-value-text">{pctCapi}%</span>
+              <span className="pl-alloc-value-text">{pctDistrib}%</span>
+            </>
+          ) : (
+            <>
+              <div className="pl-alloc-value">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={pctCapi}
+                  onChange={(event) => handleCapiChange(Number(event.target.value))}
+                  className="pl-alloc-input"
+                  disabled={disabled}
+                />
+                <span>%</span>
+              </div>
 
-        <div className="pl-alloc-value">
-          <input
-            type="number"
-            min="0"
-            max="100"
-            value={pctDistrib}
-            onChange={(event) => handleCapiChange(100 - Number(event.target.value))}
-            className="pl-alloc-input"
-            disabled={disabled}
-          />
-          <span>%</span>
+              <div className="pl-alloc-value">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={pctDistrib}
+                  onChange={(event) => handleCapiChange(100 - Number(event.target.value))}
+                  className="pl-alloc-input"
+                  disabled={disabled}
+                />
+                <span>%</span>
+              </div>
+            </>
+          )}
         </div>
-      </div>
+      ) : (
+        <div className="pl-alloc-values pl-alloc-values--compact">
+          <span>{pctCapi}% C</span>
+          <span>{pctDistrib}% D</span>
+        </div>
+      )}
     </div>
   );
 }
