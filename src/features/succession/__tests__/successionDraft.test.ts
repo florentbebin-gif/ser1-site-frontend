@@ -232,6 +232,59 @@ describe('successionDraft', () => {
     ]);
   });
 
+  it('désactive par défaut le forfait mobilier lors du parse des anciens drafts', () => {
+    const raw = JSON.stringify({
+      version: 17,
+      form: {
+        actifNetSuccession: 250000,
+        heritiers: [{ lien: 'enfant', partSuccession: 250000 }],
+      },
+      civil: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_legale',
+        pacsConvention: 'separation',
+      },
+      liquidation: {
+        actifEpoux1: 100000,
+        actifEpoux2: 0,
+        actifCommun: 150000,
+        nbEnfants: 1,
+      },
+      devolution: {
+        nbEnfantsNonCommuns: 0,
+        testamentsBySide: {
+          epoux1: { active: false, dispositionType: null, beneficiaryRef: null, quotePartPct: 50, particularLegacies: [] },
+          epoux2: { active: false, dispositionType: null, beneficiaryRef: null, quotePartPct: 50, particularLegacies: [] },
+        },
+        ascendantsSurvivantsBySide: { epoux1: false, epoux2: false },
+      },
+      patrimonial: {
+        donationsRapportables: 0,
+        donationsHorsPart: 0,
+        legsParticuliers: 0,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'usufruit_total',
+        preciputMontant: 0,
+        attributionIntegrale: false,
+        attributionBiensCommunsPct: 50,
+        forfaitMobilierMode: 'auto',
+        forfaitMobilierPct: 5,
+        forfaitMobilierMontant: 0,
+        abattementResidencePrincipale: false,
+        decesDansXAns: 0,
+      },
+      enfants: [{ id: 'E1', rattachement: 'commun' }],
+      familyMembers: [],
+      donations: [],
+      assetEntries: [],
+      assuranceVieEntries: [],
+    });
+
+    const parsed = parseSuccessionDraftPayload(raw);
+
+    expect(parsed?.patrimonial.forfaitMobilierMode).toBe('off');
+  });
+
   it('migre un draft v15 vers le testament par personne en v16', () => {
     const raw = JSON.stringify({
       version: 15,

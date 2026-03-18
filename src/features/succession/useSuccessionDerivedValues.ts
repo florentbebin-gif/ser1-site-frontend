@@ -430,6 +430,7 @@ export function useSuccessionDerivedValues({
     synthDonutTransmis: outcomeDerived.synthDonutTransmis,
     synthHypothese: outcomeDerived.synthHypothese,
     transmissionRows: outcomeDerived.transmissionRows,
+    insuranceBeneficiaryLines: outcomeDerived.insuranceBeneficiaryLines,
     chainageExportPayload: outcomeDerived.chainageExportPayload,
     totalActifsLiquidation: outcomeDerived.totalActifsLiquidation,
     canExportSimplified: outcomeDerived.canExportSimplified,

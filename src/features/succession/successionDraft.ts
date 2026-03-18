@@ -20,7 +20,7 @@ export type {
   SuccessionDonationEntreEpouxOption,
   SuccessionDonationEntry,
   SuccessionDonationEntryType,
-  SuccessionDraftPayloadV17,
+  SuccessionDraftPayloadV18,
   SuccessionEnfant,
   SuccessionEnfantRattachement,
   SuccessionGroupementFoncierEntry,

@@ -57,7 +57,7 @@ export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContex
   preciputMontant: 0,
   attributionIntegrale: false,
   attributionBiensCommunsPct: 50,
-  forfaitMobilierMode: 'auto',
+  forfaitMobilierMode: 'off',
   forfaitMobilierPct: 5,
   forfaitMobilierMontant: 0,
   abattementResidencePrincipale: false,

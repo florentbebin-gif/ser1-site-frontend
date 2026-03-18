@@ -112,7 +112,7 @@ export function VersementInitialSection({
         </div>
 
         <div className="vcm__field">
-          <label className="vcm__label">Allocation</label>
+          <label className="vcm__label vcm__label--sentence">Allocation</label>
           <AllocationSlider
             pctCapi={initial.pctCapitalisation}
             pctDistrib={initial.pctDistribution}
@@ -292,7 +292,7 @@ export function VersementAnnualSection({
           <InputEuro label="Montant" value={annuel.montant} onChange={(value) => onUpdateAnnuel('montant', value)} />
           {!isSCPI && <InputPct label="Frais d'entrée" value={annuel.fraisEntree} onChange={(value) => onUpdateAnnuel('fraisEntree', value)} />}
           <div className={`vcm__field vcm__field--alloc${isSCPI ? '' : ''}`}>
-            <label className="vcm__label">Allocation</label>
+            <label className="vcm__label vcm__label--sentence">Allocation</label>
             <AllocationSlider
               pctCapi={annuel.pctCapitalisation}
               pctDistrib={annuel.pctDistribution}
@@ -396,21 +396,20 @@ export function VersementPonctuelsSection({
           <div className="vcm__ponctuel-headers">
             <span>Année</span>
             <span>Montant</span>
-            {!isSCPI && <span>Frais</span>}
-            <span className="vcm__ponctuel-header--center">Alloc. Capi / Distrib (%)</span>
+            {!isSCPI && <span>Frais d'entrée</span>}
+            <span className="vcm__ponctuel-header--center">Allocation</span>
             <span />
           </div>
 
           {ponctuels.map((ponctuel, index) => (
             <div key={index} className="vcm__ponctuel-row">
               <div className="vcm__ponctuel-cell">
-                <input
-                  type="number"
+                <InputNumber
+                  value={ponctuel.annee}
+                  onChange={(value) => onUpdatePonctuel(index, 'annee', value)}
                   min={1}
                   max={dureeEpargne}
-                  value={ponctuel.annee}
-                  onChange={(event) => onUpdatePonctuel(index, 'annee', Number(event.target.value))}
-                  className="vcm__mini-input"
+                  inline
                 />
               </div>
 

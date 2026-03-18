@@ -52,7 +52,7 @@ describe('VersementAnnualSection', () => {
 });
 
 describe('VersementPonctuelsSection', () => {
-  it('keeps the standard allocation display for ponctual payments', () => {
+  it('keeps the standard allocation display and aligned labels for ponctual payments', () => {
     const markup = renderToStaticMarkup(
       <VersementPonctuelsSection
         ponctuels={[{
@@ -72,6 +72,8 @@ describe('VersementPonctuelsSection', () => {
       />,
     );
 
+    expect(markup).toContain('Frais d&#x27;entrée');
+    expect(markup).toContain('Allocation');
     expect(markup).toContain('Capitalisation');
     expect(markup).toContain('Distribution');
     expect(markup).toContain('100%');

@@ -72,7 +72,7 @@ interface SuccessionPageGridProps {
   onAddDonationEntry: () => void;
   onUpdateDonationEntry: (_entryId: string, _field: keyof SuccessionDonationEntry, _value: string | number | boolean) => void;
   onRemoveDonationEntry: (_entryId: string) => void;
-  forfaitMobilierMode: 'auto' | 'pct' | 'montant';
+  forfaitMobilierMode: 'off' | 'auto' | 'pct' | 'montant';
   forfaitMobilierPct: number;
   forfaitMobilierMontant: number;
   abattementResidencePrincipale: boolean;
@@ -281,9 +281,7 @@ export function SuccessionPageGrid({
           avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
           perFiscalByAssure={derived.perFiscalAnalysis.byAssure}
           prevoyanceFiscalByAssure={derived.prevoyanceFiscalAnalysis.byAssure}
-          prevoyanceBeneficiaryLines={derived.displayUsesChainage
-            ? derived.prevoyanceFiscalAnalysis.lines
-            : derived.prevoyanceFiscalAnalysis.byAssure[derived.directDisplayAnalysis.simulatedDeceased].lines}
+          insuranceBeneficiaryLines={derived.insuranceBeneficiaryLines}
           directDisplay={{
             simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
             result: derived.directDisplayAnalysis.result

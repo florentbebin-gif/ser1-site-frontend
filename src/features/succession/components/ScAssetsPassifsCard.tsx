@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import type {
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
@@ -61,7 +60,7 @@ interface ScAssetsPassifsCardProps {
     _owner: SuccessionAssetOwner,
     _value: number,
   ) => void;
-  forfaitMobilierMode: 'auto' | 'pct' | 'montant';
+  forfaitMobilierMode: 'off' | 'auto' | 'pct' | 'montant';
   forfaitMobilierPct: number;
   forfaitMobilierMontant: number;
   abattementResidencePrincipale: boolean;
@@ -140,7 +139,7 @@ export default function ScAssetsPassifsCard({
   onUpdatePatrimonialField,
 }: ScAssetsPassifsCardProps) {
   const flags = { isMarried, isPacsed, isConcubinage };
-  const [showForfaitMobilier, setShowForfaitMobilier] = useState(forfaitMobilierMode !== 'auto');
+  const showForfaitMobilier = forfaitMobilierMode !== 'off';
 
   return (
     <div className="premium-card sc-card sc-card--guide">
@@ -439,9 +438,9 @@ export default function ScAssetsPassifsCard({
               <h3 className="sc-asset-section__title">Forfait mobilier</h3>
               <div className="sc-asset-section__actions">
                 {!showForfaitMobilier ? (
-                  <button type="button" className="sc-member-add-icon-btn" onClick={() => setShowForfaitMobilier(true)} aria-label="Configurer le forfait mobilier">+</button>
+                  <button type="button" className="sc-member-add-icon-btn" onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'auto')} aria-label="Configurer le forfait mobilier">+</button>
                 ) : (
-                  <button type="button" className="sc-child-remove-btn" onClick={() => { setShowForfaitMobilier(false); onUpdatePatrimonialField('forfaitMobilierMode', 'auto'); }} aria-label="Retirer le forfait mobilier personnalisé">✕</button>
+                  <button type="button" className="sc-child-remove-btn" onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'off')} aria-label="Désactiver le forfait mobilier">✕</button>
                 )}
               </div>
             </div>

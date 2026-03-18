@@ -336,6 +336,11 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
     };
 
     const patrimonialRaw = version >= 4 && isObject(payload.patrimonial) ? payload.patrimonial : {};
+    const parsedForfaitMobilierMode = (['off', 'auto', 'pct', 'montant'] as const).includes(
+      patrimonialRaw.forfaitMobilierMode as 'off' | 'auto' | 'pct' | 'montant',
+    )
+      ? (patrimonialRaw.forfaitMobilierMode as 'off' | 'auto' | 'pct' | 'montant')
+      : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.forfaitMobilierMode;
     const patrimonial = {
       donationsRapportables: asAmount(
         patrimonialRaw.donationsRapportables,
@@ -370,9 +375,11 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
           ? 100
           : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
       ),
-      forfaitMobilierMode: (['auto', 'pct', 'montant'] as const).includes(patrimonialRaw.forfaitMobilierMode as 'auto' | 'pct' | 'montant')
-        ? (patrimonialRaw.forfaitMobilierMode as 'auto' | 'pct' | 'montant')
-        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.forfaitMobilierMode,
+      forfaitMobilierMode: version >= 18
+        ? parsedForfaitMobilierMode
+        : (parsedForfaitMobilierMode === 'pct' || parsedForfaitMobilierMode === 'montant'
+          ? parsedForfaitMobilierMode
+          : 'off'),
       forfaitMobilierPct: asAmount(
         patrimonialRaw.forfaitMobilierPct,
         DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.forfaitMobilierPct,
