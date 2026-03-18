@@ -10,6 +10,14 @@ interface TransmissionRow {
   exonerated?: boolean;
 }
 
+interface PrevoyanceBeneficiaryLine {
+  id: string;
+  label: string;
+  capitalTransmis: number;
+  totalDroits: number;
+  netTransmis: number;
+}
+
 interface ScSuccessionSummaryPanelProps {
   displayUsesChainage: boolean;
   derivedTotalDroits: number;
@@ -25,6 +33,8 @@ interface ScSuccessionSummaryPanelProps {
   };
   avFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
   perFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
+  prevoyanceFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
+  prevoyanceBeneficiaryLines: PrevoyanceBeneficiaryLine[];
   directDisplay: {
     simulatedDeceased: 'epoux1' | 'epoux2';
     result: { totalDroits: number } | null;
@@ -42,19 +52,24 @@ export default function ScSuccessionSummaryPanel({
   chainageAnalysis,
   avFiscalByAssure,
   perFiscalByAssure,
+  prevoyanceFiscalByAssure,
+  prevoyanceBeneficiaryLines,
   directDisplay,
 }: ScSuccessionSummaryPanelProps) {
   const firstCost = displayUsesChainage
     ? (chainageAnalysis.step1?.droitsEnfants ?? 0)
       + avFiscalByAssure[chainageAnalysis.order].totalDroits
       + perFiscalByAssure[chainageAnalysis.order].totalDroits
+      + prevoyanceFiscalByAssure[chainageAnalysis.order].totalDroits
     : (directDisplay.result?.totalDroits ?? 0)
       + avFiscalByAssure[directDisplay.simulatedDeceased].totalDroits
-      + perFiscalByAssure[directDisplay.simulatedDeceased].totalDroits;
+      + perFiscalByAssure[directDisplay.simulatedDeceased].totalDroits
+      + prevoyanceFiscalByAssure[directDisplay.simulatedDeceased].totalDroits;
   const secondValue = displayUsesChainage
     ? (chainageAnalysis.step2?.droitsEnfants ?? 0)
       + avFiscalByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits
       + perFiscalByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits
+      + prevoyanceFiscalByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits
     : Math.max(0, derivedMasseTransmise - derivedTotalDroits);
 
   return (
@@ -123,6 +138,28 @@ export default function ScSuccessionSummaryPanel({
                 <span>{fmt(row.brut)}</span>
                 <span>{row.exonerated ? 'Exonéré' : fmt(row.droits)}</span>
                 <span>{fmt(row.net)}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      {prevoyanceBeneficiaryLines.length > 0 && (
+        <>
+          <div className="sc-card__divider sc-card__divider--tight" />
+          <div className="sc-synth-section-title">Prévoyance décès par bénéficiaire</div>
+          <div className="sc-transmission-grid">
+            <div className="sc-transmission-grid__head">
+              <span />
+              <span>Reçoit (brut)</span>
+              <span>Droits</span>
+              <span>Net estimé</span>
+            </div>
+            {prevoyanceBeneficiaryLines.map((line) => (
+              <div key={line.id} className="sc-transmission-row sc-transmission-row--av">
+                <span>{line.label}</span>
+                <span>{fmt(line.capitalTransmis)}</span>
+                <span>{fmt(line.totalDroits)}</span>
+                <span>{fmt(line.netTransmis)}</span>
               </div>
             ))}
           </div>

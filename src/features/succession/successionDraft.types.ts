@@ -166,7 +166,7 @@ export interface SuccessionGroupementFoncierEntry {
   type: GroupementFoncierType;
   label?: string;
   valeurTotale: number;
-  owner: Exclude<SuccessionAssetOwner, 'commun'>;
+  owner: SuccessionAssetOwner;
 }
 
 export interface SuccessionPrevoyanceDecesEntry {

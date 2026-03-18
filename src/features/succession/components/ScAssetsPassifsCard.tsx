@@ -4,13 +4,16 @@ import type {
   SuccessionAssetDetailEntry,
   SuccessionAssetOwner,
   SuccessionAssuranceVieEntry,
+  SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
+  SuccessionPrevoyanceDecesEntry,
 } from '../successionDraft';
 import {
   ASSET_SUBCATEGORY_OPTIONS,
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
 } from '../successionSimulator.constants';
-import { fmt } from '../successionSimulator.helpers';
+import { computeGroupementFoncierExoneration, GF_TYPE_OPTIONS } from '../successionGroupementFoncier';
+import { fmt, isSupportedStructuredClause } from '../successionSimulator.helpers';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
@@ -44,10 +47,15 @@ interface ScAssetsPassifsCardProps {
   onRemoveAssetEntry: (_id: string) => void;
   onOpenAssuranceVieModal: () => void;
   onOpenPerModal: () => void;
-  onOpenGroupementFoncierModal: () => void;
-  onOpenPrevoyanceDecesModal: () => void;
-  groupementFoncierCount: number;
-  prevoyanceDecesCount: number;
+  groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
+  onAddGroupementFoncierEntry: () => void;
+  onUpdateGroupementFoncierEntry: (_id: string, _field: string, _value: string | number) => void;
+  onRemoveGroupementFoncierEntry: (_id: string) => void;
+  prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
+  prevoyanceClauseOptions: { value: string; label: string }[];
+  onAddPrevoyanceDecesEntry: () => void;
+  onUpdatePrevoyanceDecesEntry: (_id: string, _field: string, _value: string | number) => void;
+  onRemovePrevoyanceDecesEntry: (_id: string) => void;
   onSetSimplifiedBalanceField: (
     _type: 'actifs' | 'passifs',
     _owner: SuccessionAssetOwner,
@@ -115,10 +123,15 @@ export default function ScAssetsPassifsCard({
   onRemoveAssetEntry,
   onOpenAssuranceVieModal,
   onOpenPerModal,
-  onOpenGroupementFoncierModal,
-  onOpenPrevoyanceDecesModal,
-  groupementFoncierCount,
-  prevoyanceDecesCount,
+  groupementFoncierEntries,
+  onAddGroupementFoncierEntry,
+  onUpdateGroupementFoncierEntry,
+  onRemoveGroupementFoncierEntry,
+  prevoyanceDecesEntries,
+  prevoyanceClauseOptions,
+  onAddPrevoyanceDecesEntry,
+  onUpdatePrevoyanceDecesEntry,
+  onRemovePrevoyanceDecesEntry,
   onSetSimplifiedBalanceField,
   forfaitMobilierMode,
   forfaitMobilierPct,
@@ -176,13 +189,13 @@ export default function ScAssetsPassifsCard({
                     </>
                   )}
                   {category.value === 'immobilier' && (
-                    <button type="button" className="sc-child-add-btn" onClick={onOpenGroupementFoncierModal}>
-                      + GFA/GFV{groupementFoncierCount > 0 ? ` (${groupementFoncierCount})` : ''}
+                    <button type="button" className="sc-child-add-btn" onClick={onAddGroupementFoncierEntry}>
+                      + GFA/GFV
                     </button>
                   )}
                   {category.value === 'divers' && (
-                    <button type="button" className="sc-child-add-btn" onClick={onOpenPrevoyanceDecesModal}>
-                      + Prévoyance décès{prevoyanceDecesCount > 0 ? ` (${prevoyanceDecesCount})` : ''}
+                    <button type="button" className="sc-child-add-btn" onClick={onAddPrevoyanceDecesEntry}>
+                      + Prévoyance décès
                     </button>
                   )}
                   <button
@@ -255,6 +268,123 @@ export default function ScAssetsPassifsCard({
                     </div>
                   );
                 })}
+                {category.value === 'immobilier' && groupementFoncierEntries.map((gfEntry) => {
+                  const exo = computeGroupementFoncierExoneration(gfEntry.type, gfEntry.valeurTotale);
+                  return (
+                    <div key={gfEntry.id} className="sc-asset-row-stack">
+                      <div className="sc-asset-row">
+                        <div className="sc-field">
+                          <label>Porteur</label>
+                          <ScSelect
+                            className="sc-asset-select"
+                            value={gfEntry.owner}
+                            onChange={(value) => onUpdateGroupementFoncierEntry(gfEntry.id, 'owner', value)}
+                            options={assetOwnerOptions}
+                          />
+                        </div>
+                        <div className="sc-field">
+                          <label>Type GF</label>
+                          <ScSelect
+                            className="sc-asset-select"
+                            value={gfEntry.type}
+                            onChange={(value) => onUpdateGroupementFoncierEntry(gfEntry.id, 'type', value)}
+                            options={GF_TYPE_OPTIONS}
+                          />
+                        </div>
+                        <div className="sc-field">
+                          <label>Valeur totale (€)</label>
+                          <ScNumericInput
+                            value={gfEntry.valeurTotale || 0}
+                            min={0}
+                            onChange={(val) => onUpdateGroupementFoncierEntry(gfEntry.id, 'valeurTotale', val)}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="sc-remove-btn"
+                          onClick={() => onRemoveGroupementFoncierEntry(gfEntry.id)}
+                          title="Supprimer cette ligne"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      {gfEntry.valeurTotale > 0 && (
+                        <div className="sc-field sc-field--full sc-asset-row__suboption sc-asset-row__suboption--info">
+                          Exonéré : {fmt(exo.exonere)} | Taxable : {fmt(exo.taxable)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {category.value === 'divers' && prevoyanceDecesEntries.map((pvEntry) => {
+                  const selectedClause = pvEntry.clauseBeneficiaire || prevoyanceClauseOptions[0]?.value || '';
+                  const clauseOptions = isSupportedStructuredClause(selectedClause)
+                    ? prevoyanceClauseOptions
+                    : [
+                      ...prevoyanceClauseOptions,
+                      { value: selectedClause, label: 'Clause libre existante' },
+                    ];
+
+                  return (
+                    <div key={pvEntry.id} className="sc-asset-row-stack">
+                      <div className="sc-asset-row">
+                        <div className="sc-field">
+                          <label>Souscripteur</label>
+                          <ScSelect
+                            className="sc-asset-select"
+                            value={pvEntry.souscripteur}
+                            onChange={(value) => onUpdatePrevoyanceDecesEntry(pvEntry.id, 'souscripteur', value)}
+                            options={assuranceViePartyOptions}
+                          />
+                        </div>
+                        <div className="sc-field">
+                          <label>Assuré</label>
+                          <ScSelect
+                            className="sc-asset-select"
+                            value={pvEntry.assure}
+                            onChange={(value) => onUpdatePrevoyanceDecesEntry(pvEntry.id, 'assure', value)}
+                            options={assuranceViePartyOptions}
+                          />
+                        </div>
+                        <div className="sc-field">
+                          <label>Capital décès (€)</label>
+                          <ScNumericInput
+                            value={pvEntry.capitalDeces || 0}
+                            min={0}
+                            onChange={(val) => onUpdatePrevoyanceDecesEntry(pvEntry.id, 'capitalDeces', val)}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="sc-remove-btn"
+                          onClick={() => onRemovePrevoyanceDecesEntry(pvEntry.id)}
+                          title="Supprimer cette ligne"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                      <div className="sc-asset-row__suboption sc-asset-row__suboption--prevoyance">
+                        <div className="sc-field">
+                          <label>Dernière prime (€)</label>
+                          <ScNumericInput
+                            value={pvEntry.dernierePrime || 0}
+                            min={0}
+                            onChange={(val) => onUpdatePrevoyanceDecesEntry(pvEntry.id, 'dernierePrime', val)}
+                          />
+                        </div>
+                        <div className="sc-field sc-field--wide">
+                          <label>Clause bénéficiaire</label>
+                          <ScSelect
+                            className="sc-asset-select"
+                            value={selectedClause}
+                            onChange={(value) => onUpdatePrevoyanceDecesEntry(pvEntry.id, 'clauseBeneficiaire', value)}
+                            options={clauseOptions}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
                 {category.value === 'financier' && assuranceVieEntries.map((entry) => (
                   <div key={entry.id} className="sc-asset-row sc-asset-row--av">
                     <div className="sc-field">
@@ -293,7 +423,11 @@ export default function ScAssetsPassifsCard({
                     <div />
                   </div>
                 ))}
-                {category.entries.length === 0 && !(category.value === 'financier' && (assuranceVieEntries.length > 0 || perEntries.length > 0)) && (
+                {category.entries.length === 0
+                  && !(category.value === 'financier' && (assuranceVieEntries.length > 0 || perEntries.length > 0))
+                  && !(category.value === 'immobilier' && groupementFoncierEntries.length > 0)
+                  && !(category.value === 'divers' && prevoyanceDecesEntries.length > 0)
+                  && (
                   <p className="sc-hint sc-hint--compact">Aucune ligne détaillée dans cette catégorie.</p>
                 )}
               </div>

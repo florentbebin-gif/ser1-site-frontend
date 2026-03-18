@@ -1,8 +1,10 @@
 import type {
   SuccessionAssetDetailEntry,
   SuccessionAssetOwner,
+  SuccessionGroupementFoncierEntry,
   SuccessionPatrimonialContext,
 } from './successionDraft.types';
+import { computeGroupementFoncierExoneration } from './successionGroupementFoncier';
 import {
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
   RESIDENCE_SECONDAIRE_SUBCATEGORY,
@@ -24,6 +26,7 @@ export interface SuccessionAssetValuationResult {
 
 interface SuccessionAssetValuationInput {
   assetEntries: SuccessionAssetDetailEntry[];
+  groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   forfaitMobilierMode: SuccessionPatrimonialContext['forfaitMobilierMode'];
   forfaitMobilierPct: number;
   forfaitMobilierMontant: number;
@@ -111,6 +114,7 @@ export function normalizeResidencePrincipaleAssetEntries(
 
 export function computeSuccessionAssetValuation({
   assetEntries,
+  groupementFoncierEntries,
   forfaitMobilierMode,
   forfaitMobilierPct,
   forfaitMobilierMontant,
@@ -132,6 +136,9 @@ export function computeSuccessionAssetValuation({
     actifs: cloneOwnerTotals(),
     passifs: cloneOwnerTotals(),
   });
+  groupementFoncierEntries.forEach((entry) => {
+    assetBreakdown.actifs[entry.owner] += asAmount(entry.valeurTotale);
+  });
 
   const actifsTaxablesParOwner = normalizedAssetEntries.reduce((totals, entry) => {
     if (entry.category === 'passif') return totals;
@@ -147,6 +154,10 @@ export function computeSuccessionAssetValuation({
     totals[entry.owner] += taxableAmount;
     return totals;
   }, cloneOwnerTotals());
+  groupementFoncierEntries.forEach((entry) => {
+    const { taxable } = computeGroupementFoncierExoneration(entry.type, asAmount(entry.valeurTotale));
+    actifsTaxablesParOwner[entry.owner] += taxable;
+  });
 
   const passifsParOwner = {
     ...assetBreakdown.passifs,

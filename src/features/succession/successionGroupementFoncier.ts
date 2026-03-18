@@ -6,8 +6,15 @@ import type { GroupementFoncierType } from './successionDraft';
 
 export const SEUIL_EXONERATION_GF = 600_000;
 
-export function computeGroupementFoncierExoneration(valeur: number): { exonere: number; taxable: number } {
+export function computeGroupementFoncierExoneration(
+  type: GroupementFoncierType,
+  valeur: number,
+): { exonere: number; taxable: number } {
   if (valeur <= 0) return { exonere: 0, taxable: 0 };
+  if (type === 'GFF' || type === 'GF') {
+    const exonere = Math.round(valeur * 0.75);
+    return { exonere, taxable: valeur - exonere };
+  }
   if (valeur <= SEUIL_EXONERATION_GF) {
     const exonere = Math.round(valeur * 0.75);
     return { exonere, taxable: valeur - exonere };

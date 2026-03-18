@@ -24,6 +24,8 @@ interface ScDeathTimelinePanelProps {
   avFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
   perByAssure: Record<'epoux1' | 'epoux2', number>;
   perFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
+  prevoyanceByAssure: Record<'epoux1' | 'epoux2', number>;
+  prevoyanceFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
   directDisplay: {
     simulatedDeceased: 'epoux1' | 'epoux2';
     result: { totalDroits: number } | null;
@@ -45,6 +47,8 @@ export default function ScDeathTimelinePanel({
   avFiscalByAssure,
   perByAssure,
   perFiscalByAssure,
+  prevoyanceByAssure,
+  prevoyanceFiscalByAssure,
   directDisplay,
 }: ScDeathTimelinePanelProps) {
   const secondAssure = chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1';
@@ -99,8 +103,19 @@ export default function ScDeathTimelinePanel({
             </div>
             <div className="sc-summary-row">
               <span>Masse transmise</span>
-              <strong>{fmt(chainageAnalysis.step1.actifTransmis + assuranceVieByAssure[chainageAnalysis.order] + perByAssure[chainageAnalysis.order])}</strong>
+              <strong>{fmt(
+                chainageAnalysis.step1.actifTransmis
+                + assuranceVieByAssure[chainageAnalysis.order]
+                + perByAssure[chainageAnalysis.order]
+                + prevoyanceByAssure[chainageAnalysis.order],
+              )}</strong>
             </div>
+            {prevoyanceByAssure[chainageAnalysis.order] > 0 && (
+              <div className="sc-summary-row">
+                <span>Dont prévoyance décès</span>
+                <strong>{fmt(prevoyanceByAssure[chainageAnalysis.order])}</strong>
+              </div>
+            )}
             <div className="sc-summary-row">
               <span>Droits succession</span>
               <strong>{fmt(chainageAnalysis.step1.droitsEnfants)}</strong>
@@ -117,6 +132,12 @@ export default function ScDeathTimelinePanel({
                 <strong>{fmt(perFiscalByAssure[chainageAnalysis.order].totalDroits)}</strong>
               </div>
             )}
+            {prevoyanceFiscalByAssure[chainageAnalysis.order].totalDroits > 0 && (
+              <div className="sc-summary-row">
+                <span>Droits prévoyance</span>
+                <strong>{fmt(prevoyanceFiscalByAssure[chainageAnalysis.order].totalDroits)}</strong>
+              </div>
+            )}
           </div>
 
           <div className="sc-chrono-item">
@@ -126,8 +147,19 @@ export default function ScDeathTimelinePanel({
             </div>
             <div className="sc-summary-row">
               <span>Masse transmise</span>
-              <strong>{fmt(chainageAnalysis.step2.actifTransmis + assuranceVieByAssure[secondAssure] + perByAssure[secondAssure])}</strong>
+              <strong>{fmt(
+                chainageAnalysis.step2.actifTransmis
+                + assuranceVieByAssure[secondAssure]
+                + perByAssure[secondAssure]
+                + prevoyanceByAssure[secondAssure],
+              )}</strong>
             </div>
+            {prevoyanceByAssure[secondAssure] > 0 && (
+              <div className="sc-summary-row">
+                <span>Dont prévoyance décès</span>
+                <strong>{fmt(prevoyanceByAssure[secondAssure])}</strong>
+              </div>
+            )}
             <div className="sc-summary-row">
               <span>Droits succession</span>
               <strong>{fmt(chainageAnalysis.step2.droitsEnfants)}</strong>
@@ -142,6 +174,12 @@ export default function ScDeathTimelinePanel({
               <div className="sc-summary-row">
                 <span>Droits PER</span>
                 <strong>{fmt(perFiscalByAssure[secondAssure].totalDroits)}</strong>
+              </div>
+            )}
+            {prevoyanceFiscalByAssure[secondAssure].totalDroits > 0 && (
+              <div className="sc-summary-row">
+                <span>Droits prévoyance</span>
+                <strong>{fmt(prevoyanceFiscalByAssure[secondAssure].totalDroits)}</strong>
               </div>
             )}
           </div>
@@ -178,6 +216,18 @@ export default function ScDeathTimelinePanel({
               <div className="sc-summary-row">
                 <span>Droits PER</span>
                 <strong>{fmt(perFiscalByAssure[directDisplay.simulatedDeceased].totalDroits)}</strong>
+              </div>
+            )}
+            {prevoyanceByAssure[directDisplay.simulatedDeceased] > 0 && (
+              <div className="sc-summary-row">
+                <span>Dont prévoyance décès</span>
+                <strong>{fmt(prevoyanceByAssure[directDisplay.simulatedDeceased])}</strong>
+              </div>
+            )}
+            {prevoyanceFiscalByAssure[directDisplay.simulatedDeceased].totalDroits > 0 && (
+              <div className="sc-summary-row">
+                <span>Droits prévoyance</span>
+                <strong>{fmt(prevoyanceFiscalByAssure[directDisplay.simulatedDeceased].totalDroits)}</strong>
               </div>
             )}
           </div>

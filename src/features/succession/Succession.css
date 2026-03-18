@@ -315,15 +315,15 @@
 }
 
 .sc-checkbox-label--mini {
-  font-size: 8px;
-  gap: 3px;
+  font-size: 7px;
+  gap: 2px;
   color: var(--color-c9);
-  opacity: 0.55;
+  opacity: 0.45;
 }
 
 .sc-checkbox-label--mini input[type="checkbox"] {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   accent-color: var(--color-c2);
 }
 
@@ -939,6 +939,30 @@
 
 .sc-asset-row__suboption {
   padding-left: 2px;
+}
+
+.sc-asset-row__suboption--info {
+  font-size: 11px;
+  color: var(--color-c9);
+  padding: 2px 0 0 4px;
+}
+
+.sc-asset-row__suboption--prevoyance {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 8px;
+  padding: 4px 0 0 4px;
+}
+
+.sc-asset-row__suboption--prevoyance .sc-field--wide .sc-input {
+  width: 100%;
+  height: 28px;
+  padding: 4px 6px;
+  border: 1px solid var(--color-c8);
+  border-radius: 4px;
+  background: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
+  color: var(--color-c10);
+  font-size: 12px;
 }
 
 .sc-asset-row__value {

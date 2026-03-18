@@ -37,9 +37,11 @@ export interface SuccessionChronologieXlsxStep {
   actifTransmis: number;
   assuranceVieTransmise?: number;
   perTransmis?: number;
+  prevoyanceTransmise?: number;
   masseTotaleTransmise?: number;
   droitsAssuranceVie?: number;
   droitsPer?: number;
+  droitsPrevoyance?: number;
   partConjoint: number;
   partEnfants: number;
   droitsEnfants: number;
@@ -55,6 +57,7 @@ export interface SuccessionChronologieXlsxData {
   step2: SuccessionChronologieXlsxStep | null;
   assuranceVieTotale?: number;
   perTotale?: number;
+  prevoyanceTotale?: number;
   totalDroits: number;
   warnings?: string[];
 }
@@ -198,11 +201,17 @@ function buildPredecesSheet(
     if ((chronologie.step1.perTransmis ?? 0) > 0) {
       rows.push(['Dont PER assurance', money(chronologie.step1.perTransmis ?? 0)]);
     }
+    if ((chronologie.step1.prevoyanceTransmise ?? 0) > 0) {
+      rows.push(['Dont prévoyance décès', money(chronologie.step1.prevoyanceTransmise ?? 0)]);
+    }
     if ((chronologie.step1.droitsAssuranceVie ?? 0) > 0) {
       rows.push(['Droits assurance-vie', money(chronologie.step1.droitsAssuranceVie ?? 0)]);
     }
     if ((chronologie.step1.droitsPer ?? 0) > 0) {
       rows.push(['Droits PER', money(chronologie.step1.droitsPer ?? 0)]);
+    }
+    if ((chronologie.step1.droitsPrevoyance ?? 0) > 0) {
+      rows.push(['Droits prévoyance', money(chronologie.step1.droitsPrevoyance ?? 0)]);
     }
     rows.push(['Masse successorale civile', money(chronologie.step1.actifTransmis)]);
     rows.push(['Part conjoint / partenaire', money(chronologie.step1.partConjoint)]);
@@ -219,11 +228,17 @@ function buildPredecesSheet(
     if ((chronologie.step2.perTransmis ?? 0) > 0) {
       rows.push(['Dont PER assurance', money(chronologie.step2.perTransmis ?? 0)]);
     }
+    if ((chronologie.step2.prevoyanceTransmise ?? 0) > 0) {
+      rows.push(['Dont prévoyance décès', money(chronologie.step2.prevoyanceTransmise ?? 0)]);
+    }
     if ((chronologie.step2.droitsAssuranceVie ?? 0) > 0) {
       rows.push(['Droits assurance-vie', money(chronologie.step2.droitsAssuranceVie ?? 0)]);
     }
     if ((chronologie.step2.droitsPer ?? 0) > 0) {
       rows.push(['Droits PER', money(chronologie.step2.droitsPer ?? 0)]);
+    }
+    if ((chronologie.step2.droitsPrevoyance ?? 0) > 0) {
+      rows.push(['Droits prévoyance', money(chronologie.step2.droitsPrevoyance ?? 0)]);
     }
     rows.push(['Masse successorale civile', money(chronologie.step2.actifTransmis)]);
     rows.push(['Part conjoint / partenaire', money(chronologie.step2.partConjoint)]);
@@ -238,6 +253,9 @@ function buildPredecesSheet(
     }
     if (typeof chronologie.perTotale === 'number' && chronologie.perTotale > 0) {
       rows.push(['Capitaux PER assurance saisis', money(chronologie.perTotale)]);
+    }
+    if (typeof chronologie.prevoyanceTotale === 'number' && chronologie.prevoyanceTotale > 0) {
+      rows.push(['Capitaux prévoyance décès saisis', money(chronologie.prevoyanceTotale)]);
     }
   } else {
     rows.push(['Statut', 'Chronologie 2 décès non retenue comme source principale pour la situation saisie']);

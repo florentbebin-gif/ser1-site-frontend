@@ -1,6 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import type { SuccessionAssetDetailEntry } from '../successionDraft';
+import type {
+  SuccessionAssetDetailEntry,
+  SuccessionPrevoyanceDecesEntry,
+} from '../successionDraft';
 import { RESIDENCE_PRINCIPALE_SUBCATEGORY } from '../successionSimulator.constants';
 import ScAssetsPassifsCard, { buildSubCategoryOptions } from '../components/ScAssetsPassifsCard';
 
@@ -17,7 +20,7 @@ function buildBaseProps() {
     isPacsed: false,
     isConcubinage: false,
     assetEntriesByCategory: [] as Array<{
-      value: 'immobilier' | 'financier';
+      value: 'immobilier' | 'financier' | 'divers';
       label: string;
       entries: SuccessionAssetDetailEntry[];
     }>,
@@ -46,10 +49,15 @@ function buildBaseProps() {
     forfaitMobilierMontant: 0,
     abattementResidencePrincipale: false,
     onUpdatePatrimonialField: () => {},
-    onOpenGroupementFoncierModal: () => {},
-    onOpenPrevoyanceDecesModal: () => {},
-    groupementFoncierCount: 0,
-    prevoyanceDecesCount: 0,
+    groupementFoncierEntries: [],
+    onAddGroupementFoncierEntry: () => {},
+    onUpdateGroupementFoncierEntry: () => {},
+    onRemoveGroupementFoncierEntry: () => {},
+    prevoyanceDecesEntries: [] as SuccessionPrevoyanceDecesEntry[],
+    prevoyanceClauseOptions: [{ value: 'Conjoint survivant, à défaut enfants, à défaut héritiers', label: 'Clause standard' }],
+    onAddPrevoyanceDecesEntry: () => {},
+    onUpdatePrevoyanceDecesEntry: () => {},
+    onRemovePrevoyanceDecesEntry: () => {},
   };
 }
 
@@ -123,5 +131,29 @@ describe('ScAssetsPassifsCard', () => {
     expect(avIndex).toBeGreaterThanOrEqual(0);
     expect(perIndex).toBeGreaterThan(avIndex);
     expect(addIndex).toBeGreaterThan(perIndex);
+  });
+
+  it('renders a structured select for prevoyance clauses', () => {
+    const props = buildBaseProps();
+    props.assetEntriesByCategory = [
+      {
+        value: 'divers',
+        label: 'Biens divers',
+        entries: [],
+      },
+    ];
+    props.prevoyanceDecesEntries = [{
+      id: 'prev-1',
+      souscripteur: 'epoux1',
+      assure: 'epoux1',
+      capitalDeces: 250000,
+      dernierePrime: 15000,
+      clauseBeneficiaire: 'Conjoint survivant, à défaut enfants, à défaut héritiers',
+    }];
+
+    const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
+
+    expect(markup).toContain('Clause standard');
+    expect(markup).not.toContain('Clause bénéficiaire libre');
   });
 });

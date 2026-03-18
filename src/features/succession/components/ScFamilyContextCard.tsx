@@ -200,7 +200,7 @@ export default function ScFamilyContextCard({
                           checked={!!enfant.deceased}
                           onChange={(e) => onToggleEnfantDeceased(enfant.id, e.target.checked)}
                         />
-                        Décédé
+                        †
                       </label>
                       <button
                         type="button"

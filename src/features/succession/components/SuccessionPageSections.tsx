@@ -21,7 +21,9 @@ import type {
   FamilyMember,
   SuccessionAssuranceVieEntry,
   SuccessionEnfant,
+  SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
+  SuccessionPrevoyanceDecesEntry,
   SuccessionPrimarySide,
   SuccessionTestamentConfig,
 } from '../successionDraft';
@@ -58,10 +60,14 @@ interface SuccessionPageGridProps {
   onRemoveAssetEntry: (_entryId: string) => void;
   onOpenAssuranceVieModal: () => void;
   onOpenPerModal: () => void;
-  onOpenGroupementFoncierModal: () => void;
-  onOpenPrevoyanceDecesModal: () => void;
-  groupementFoncierCount: number;
-  prevoyanceDecesCount: number;
+  groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
+  onAddGroupementFoncierEntry: () => void;
+  onUpdateGroupementFoncierEntry: (_id: string, _field: string, _value: string | number) => void;
+  onRemoveGroupementFoncierEntry: (_id: string) => void;
+  prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
+  onAddPrevoyanceDecesEntry: () => void;
+  onUpdatePrevoyanceDecesEntry: (_id: string, _field: string, _value: string | number) => void;
+  onRemovePrevoyanceDecesEntry: (_id: string) => void;
   onSetSimplifiedBalanceField: (_type: 'actifs' | 'passifs', _owner: SuccessionAssetOwner, _value: number) => void;
   onAddDonationEntry: () => void;
   onUpdateDonationEntry: (_entryId: string, _field: keyof SuccessionDonationEntry, _value: string | number | boolean) => void;
@@ -158,10 +164,14 @@ export function SuccessionPageGrid({
   onRemoveAssetEntry,
   onOpenAssuranceVieModal,
   onOpenPerModal,
-  onOpenGroupementFoncierModal,
-  onOpenPrevoyanceDecesModal,
-  groupementFoncierCount,
-  prevoyanceDecesCount,
+  groupementFoncierEntries,
+  onAddGroupementFoncierEntry,
+  onUpdateGroupementFoncierEntry,
+  onRemoveGroupementFoncierEntry,
+  prevoyanceDecesEntries,
+  onAddPrevoyanceDecesEntry,
+  onUpdatePrevoyanceDecesEntry,
+  onRemovePrevoyanceDecesEntry,
   onSetSimplifiedBalanceField,
   onAddDonationEntry,
   onUpdateDonationEntry,
@@ -214,10 +224,15 @@ export function SuccessionPageGrid({
           onRemoveAssetEntry={onRemoveAssetEntry}
           onOpenAssuranceVieModal={onOpenAssuranceVieModal}
           onOpenPerModal={onOpenPerModal}
-          onOpenGroupementFoncierModal={onOpenGroupementFoncierModal}
-          onOpenPrevoyanceDecesModal={onOpenPrevoyanceDecesModal}
-          groupementFoncierCount={groupementFoncierCount}
-          prevoyanceDecesCount={prevoyanceDecesCount}
+          groupementFoncierEntries={groupementFoncierEntries}
+          onAddGroupementFoncierEntry={onAddGroupementFoncierEntry}
+          onUpdateGroupementFoncierEntry={onUpdateGroupementFoncierEntry}
+          onRemoveGroupementFoncierEntry={onRemoveGroupementFoncierEntry}
+          prevoyanceDecesEntries={prevoyanceDecesEntries}
+          prevoyanceClauseOptions={derived.prevoyanceClauseOptions}
+          onAddPrevoyanceDecesEntry={onAddPrevoyanceDecesEntry}
+          onUpdatePrevoyanceDecesEntry={onUpdatePrevoyanceDecesEntry}
+          onRemovePrevoyanceDecesEntry={onRemovePrevoyanceDecesEntry}
           onSetSimplifiedBalanceField={onSetSimplifiedBalanceField}
           forfaitMobilierMode={forfaitMobilierMode}
           forfaitMobilierPct={forfaitMobilierPct}
@@ -265,6 +280,10 @@ export function SuccessionPageGrid({
           }}
           avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
           perFiscalByAssure={derived.perFiscalAnalysis.byAssure}
+          prevoyanceFiscalByAssure={derived.prevoyanceFiscalAnalysis.byAssure}
+          prevoyanceBeneficiaryLines={derived.displayUsesChainage
+            ? derived.prevoyanceFiscalAnalysis.lines
+            : derived.prevoyanceFiscalAnalysis.byAssure[derived.directDisplayAnalysis.simulatedDeceased].lines}
           directDisplay={{
             simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
             result: derived.directDisplayAnalysis.result
@@ -304,6 +323,8 @@ export function SuccessionPageGrid({
           avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
           perByAssure={derived.perByAssure}
           perFiscalByAssure={derived.perFiscalAnalysis.byAssure}
+          prevoyanceByAssure={derived.prevoyanceByAssure}
+          prevoyanceFiscalByAssure={derived.prevoyanceFiscalAnalysis.byAssure}
           directDisplay={{
             simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
             result: derived.directDisplayAnalysis.result

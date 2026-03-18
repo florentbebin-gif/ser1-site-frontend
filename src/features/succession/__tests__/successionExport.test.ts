@@ -38,6 +38,8 @@ describe('Succession PPTX Export', () => {
           secondDecedeLabel: 'Époux 2',
           step1: {
             actifTransmis: 300000,
+            prevoyanceTransmise: 80000,
+            droitsPrevoyance: 6000,
             partConjoint: 75000,
             partEnfants: 225000,
             droitsEnfants: 12500,
@@ -49,6 +51,8 @@ describe('Succession PPTX Export', () => {
           },
           step2: {
             actifTransmis: 500000,
+            prevoyanceTransmise: 40000,
+            droitsPrevoyance: 3000,
             partConjoint: 0,
             partEnfants: 500000,
             droitsEnfants: 42000,
@@ -57,6 +61,7 @@ describe('Succession PPTX Export', () => {
               { label: 'E2', brut: 250000, droits: 21000, net: 229000 },
             ],
           },
+          prevoyanceTotale: 120000,
           totalDroits: 54500,
           warnings: ['Module simplifié'],
         },
@@ -79,6 +84,7 @@ describe('Succession PPTX Export', () => {
       expect(chronologySlide.body).toContain('Total cumulé des droits');
       expect(chronologySlide.body).toContain('Bénéficiaires réels');
       expect(chronologySlide.body).toContain('Conjoint survivant');
+      expect(chronologySlide.body).toContain('prévoyance décès');
       expect(chronologySlide.body).not.toContain('Ordre inverse');
     }
   });
@@ -152,6 +158,8 @@ describe('Succession Excel Export', () => {
         secondDecedeLabel: 'Époux 2',
         step1: {
           actifTransmis: 250000,
+          prevoyanceTransmise: 70000,
+          droitsPrevoyance: 5500,
           partConjoint: 62500,
           partEnfants: 187500,
           droitsEnfants: 12000,
@@ -163,6 +171,8 @@ describe('Succession Excel Export', () => {
         },
         step2: {
           actifTransmis: 380000,
+          prevoyanceTransmise: 30000,
+          droitsPrevoyance: 2000,
           partConjoint: 0,
           partEnfants: 380000,
           droitsEnfants: 31500,
@@ -171,6 +181,7 @@ describe('Succession Excel Export', () => {
             { label: 'E2', brut: 190000, droits: 15750, net: 174250 },
           ],
         },
+        prevoyanceTotale: 100000,
         totalDroits: 43500,
         warnings: ['Avertissement de test'],
       },
@@ -192,8 +203,11 @@ describe('Succession Excel Export', () => {
     expect(workbookXml).toContain('Hypothèses');
 
     const chronologySheet = await zip.file('xl/worksheets/sheet4.xml')?.async('string');
-    expect(chronologySheet).toContain('Conjoint survivant');
-    expect(chronologySheet).toContain('E1');
+    const sharedStrings = await zip.file('xl/sharedStrings.xml')?.async('string');
+    const xmlPayload = `${chronologySheet ?? ''}\n${sharedStrings ?? ''}`;
+    expect(xmlPayload).toContain('Conjoint survivant');
+    expect(xmlPayload).toContain('E1');
+    expect(xmlPayload).toContain('prévoyance décès');
   });
 
   it('generates a simplified chainage-only XLSX when no direct succession result is provided', async () => {

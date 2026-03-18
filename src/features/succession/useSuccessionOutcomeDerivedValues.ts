@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
 import type { buildSuccessionPerFiscalAnalysis } from './successionPerFiscal';
+import type { buildSuccessionPrevoyanceFiscalAnalysis } from './successionPrevoyanceFiscal';
 import type { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import type { buildSuccessionPredecesAnalysis } from './successionPredeces';
 import type { buildSuccessionChainageAnalysis } from './successionChainage';
@@ -47,15 +48,21 @@ interface UseSuccessionOutcomeDerivedValuesInput {
   patrimonialAnalysis: ReturnType<typeof buildSuccessionPatrimonialAnalysis>;
   avFiscalAnalysis: ReturnType<typeof buildSuccessionAvFiscalAnalysis>;
   perFiscalAnalysis: ReturnType<typeof buildSuccessionPerFiscalAnalysis>;
+  prevoyanceFiscalAnalysis: ReturnType<typeof buildSuccessionPrevoyanceFiscalAnalysis>;
   directEstateBasis: ReturnType<typeof computeSuccessionDirectEstateBasis>;
   assuranceVieByAssure: Record<'epoux1' | 'epoux2', number>;
   perByAssure: Record<'epoux1' | 'epoux2', number>;
+  prevoyanceByAssure: Record<'epoux1' | 'epoux2', number>;
   assuranceVieTotals: {
     capitaux: number;
     versementsApres70: number;
   };
   perTotals: {
     capitaux: number;
+  };
+  prevoyanceTotals: {
+    capitaux: number;
+    dernierePrime: number;
   };
   simulatedDeathDate: Date;
 }
@@ -81,11 +88,14 @@ export function useSuccessionOutcomeDerivedValues({
   patrimonialAnalysis,
   avFiscalAnalysis,
   perFiscalAnalysis,
+  prevoyanceFiscalAnalysis,
   directEstateBasis,
   assuranceVieByAssure,
   perByAssure,
+  prevoyanceByAssure,
   assuranceVieTotals,
   perTotals,
+  prevoyanceTotals,
   simulatedDeathDate,
 }: UseSuccessionOutcomeDerivedValuesInput) {
   const displayUsesChainage = Boolean(isMarried
@@ -143,9 +153,27 @@ export function useSuccessionOutcomeDerivedValues({
     displayUsesChainage,
   ]);
 
+  const displayPrevoyanceTransmise = useMemo(() => {
+    if (displayUsesChainage) return prevoyanceByAssure[chainageAnalysis.order];
+    return prevoyanceByAssure[directDisplayAnalysis.simulatedDeceased];
+  }, [
+    prevoyanceByAssure,
+    chainageAnalysis.order,
+    directDisplayAnalysis.simulatedDeceased,
+    displayUsesChainage,
+  ]);
+
   const derivedMasseTransmise = useMemo(
-    () => displayActifNetSuccession + displayAssuranceVieTransmise + displayPerTransmis,
-    [displayActifNetSuccession, displayAssuranceVieTransmise, displayPerTransmis],
+    () => displayActifNetSuccession
+      + displayAssuranceVieTransmise
+      + displayPerTransmis
+      + displayPrevoyanceTransmise,
+    [
+      displayActifNetSuccession,
+      displayAssuranceVieTransmise,
+      displayPerTransmis,
+      displayPrevoyanceTransmise,
+    ],
   );
 
   const derivedTotalDroits = useMemo(
@@ -153,13 +181,15 @@ export function useSuccessionOutcomeDerivedValues({
       ? chainageAnalysis.totalDroits
       : (directDisplayAnalysis.result?.totalDroits ?? 0))
       + avFiscalAnalysis.totalDroits
-      + perFiscalAnalysis.totalDroits,
+      + perFiscalAnalysis.totalDroits
+      + prevoyanceFiscalAnalysis.totalDroits,
     [
       displayUsesChainage,
       chainageAnalysis.totalDroits,
       directDisplayAnalysis.result?.totalDroits,
       avFiscalAnalysis.totalDroits,
       perFiscalAnalysis.totalDroits,
+      prevoyanceFiscalAnalysis.totalDroits,
     ],
   );
 
@@ -168,15 +198,24 @@ export function useSuccessionOutcomeDerivedValues({
       const step1 = chainageAnalysis.step1;
       const step2 = chainageAnalysis.step2;
       if (!step1 || !step2) return derivedMasseTransmise;
-      return step1.actifTransmis
-        + step2.actifTransmis
-        + assuranceVieByAssure.epoux1
-        + assuranceVieByAssure.epoux2
-        + perByAssure.epoux1
-        + perByAssure.epoux2;
-    }
-    return derivedMasseTransmise;
-  }, [displayUsesChainage, chainageAnalysis, assuranceVieByAssure, perByAssure, derivedMasseTransmise]);
+        return step1.actifTransmis
+          + step2.actifTransmis
+          + assuranceVieByAssure.epoux1
+          + assuranceVieByAssure.epoux2
+          + perByAssure.epoux1
+          + perByAssure.epoux2
+          + prevoyanceByAssure.epoux1
+          + prevoyanceByAssure.epoux2;
+      }
+      return derivedMasseTransmise;
+  }, [
+    displayUsesChainage,
+    chainageAnalysis,
+    assuranceVieByAssure,
+    perByAssure,
+    prevoyanceByAssure,
+    derivedMasseTransmise,
+  ]);
 
   const synthHypothese = useMemo(() => {
     if (!isMarried || nbDescendantBranches === 0) return null;
@@ -254,6 +293,7 @@ export function useSuccessionOutcomeDerivedValues({
       const otherOrder = order === 'epoux1' ? 'epoux2' : 'epoux1';
       const avCapital = assuranceVieByAssure[order] + assuranceVieByAssure[otherOrder];
       const perCapital = perByAssure[order] + perByAssure[otherOrder];
+      const prevoyanceCapital = prevoyanceByAssure[order] + prevoyanceByAssure[otherOrder];
       return [
         ...buildSuccessionChainTransmissionRows(chainageAnalysis),
         ...(avCapital > 0 ? [{
@@ -269,6 +309,13 @@ export function useSuccessionOutcomeDerivedValues({
           brut: perCapital,
           droits: perFiscalAnalysis.totalDroits,
           net: perCapital - perFiscalAnalysis.totalDroits,
+        }] : []),
+        ...(prevoyanceCapital > 0 ? [{
+          id: 'prevoyance-deces',
+          label: 'Prévoyance décès',
+          brut: prevoyanceCapital,
+          droits: prevoyanceFiscalAnalysis.totalDroits,
+          net: prevoyanceCapital - prevoyanceFiscalAnalysis.totalDroits,
         }] : []),
       ];
     }
@@ -289,20 +336,31 @@ export function useSuccessionOutcomeDerivedValues({
         droits: perFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
         net: displayPerTransmis - perFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
       }] : []),
+      ...(displayPrevoyanceTransmise > 0 ? [{
+        id: 'prevoyance-deces',
+        label: 'Prévoyance décès',
+        brut: displayPrevoyanceTransmise,
+        droits: prevoyanceFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
+        net: displayPrevoyanceTransmise - prevoyanceFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
+      }] : []),
     ];
   }, [
     displayUsesChainage,
     chainageAnalysis,
     assuranceVieByAssure,
     perByAssure,
+    prevoyanceByAssure,
     avFiscalAnalysis.totalDroits,
     avFiscalAnalysis.byAssure,
     perFiscalAnalysis.totalDroits,
     perFiscalAnalysis.byAssure,
+    prevoyanceFiscalAnalysis.totalDroits,
+    prevoyanceFiscalAnalysis.byAssure,
     directDisplayAnalysis.transmissionRows,
     directDisplayAnalysis.simulatedDeceased,
     displayAssuranceVieTransmise,
     displayPerTransmis,
+    displayPrevoyanceTransmise,
   ]);
 
   const chainageExportPayload = useMemo(
@@ -315,11 +373,14 @@ export function useSuccessionOutcomeDerivedValues({
         actifTransmis: chainageAnalysis.step1.actifTransmis,
         assuranceVieTransmise: assuranceVieByAssure[chainageAnalysis.order],
         perTransmis: perByAssure[chainageAnalysis.order],
+        prevoyanceTransmise: prevoyanceByAssure[chainageAnalysis.order],
         masseTotaleTransmise: chainageAnalysis.step1.actifTransmis
           + assuranceVieByAssure[chainageAnalysis.order]
-          + perByAssure[chainageAnalysis.order],
+          + perByAssure[chainageAnalysis.order]
+          + prevoyanceByAssure[chainageAnalysis.order],
         droitsAssuranceVie: avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits,
         droitsPer: perFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits,
+        droitsPrevoyance: prevoyanceFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits,
         partConjoint: chainageAnalysis.step1.partConjoint,
         partEnfants: chainageAnalysis.step1.partEnfants,
         droitsEnfants: chainageAnalysis.step1.droitsEnfants,
@@ -335,11 +396,14 @@ export function useSuccessionOutcomeDerivedValues({
         actifTransmis: chainageAnalysis.step2.actifTransmis,
         assuranceVieTransmise: assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
         perTransmis: perByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
+        prevoyanceTransmise: prevoyanceByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
         masseTotaleTransmise: chainageAnalysis.step2.actifTransmis
           + assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1']
-          + perByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
+          + perByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1']
+          + prevoyanceByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
         droitsAssuranceVie: avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits,
         droitsPer: perFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits,
+        droitsPrevoyance: prevoyanceFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits,
         partConjoint: chainageAnalysis.step2.partConjoint,
         partEnfants: chainageAnalysis.step2.partEnfants,
         droitsEnfants: chainageAnalysis.step2.droitsEnfants,
@@ -353,9 +417,15 @@ export function useSuccessionOutcomeDerivedValues({
       } : null,
       assuranceVieTotale: assuranceVieTotals.capitaux,
       perTotale: perTotals.capitaux,
+      prevoyanceTotale: prevoyanceTotals.capitaux,
       totalDroits: derivedTotalDroits,
       warnings: displayUsesChainage
-        ? [...chainageAnalysis.warnings, ...avFiscalAnalysis.warnings, ...perFiscalAnalysis.warnings]
+        ? [
+          ...chainageAnalysis.warnings,
+          ...avFiscalAnalysis.warnings,
+          ...perFiscalAnalysis.warnings,
+          ...prevoyanceFiscalAnalysis.warnings,
+        ]
         : [
           ...(isPacsed
             ? ['PACS: la synthèse fiscale affichée repose sur le décès simulé du partenaire sélectionné, pas sur une chronologie 2 décès.']
@@ -363,6 +433,7 @@ export function useSuccessionOutcomeDerivedValues({
           ...directDisplayAnalysis.warnings,
           ...avFiscalAnalysis.warnings,
           ...perFiscalAnalysis.warnings,
+          ...prevoyanceFiscalAnalysis.warnings,
         ],
     }),
     [
@@ -370,10 +441,13 @@ export function useSuccessionOutcomeDerivedValues({
       chainageAnalysis,
       assuranceVieByAssure,
       perByAssure,
+      prevoyanceByAssure,
       assuranceVieTotals.capitaux,
       perTotals.capitaux,
+      prevoyanceTotals.capitaux,
       avFiscalAnalysis,
       perFiscalAnalysis,
+      prevoyanceFiscalAnalysis,
       derivedTotalDroits,
       isPacsed,
       directDisplayAnalysis.warnings,
@@ -393,6 +467,7 @@ export function useSuccessionOutcomeDerivedValues({
     || totalActifsLiquidation > 0
     || assuranceVieTotals.capitaux > 0
     || perTotals.capitaux > 0
+    || prevoyanceTotals.capitaux > 0
   );
   const canExportCurrentMode = canExport && canExportSimplified;
 
@@ -406,6 +481,7 @@ export function useSuccessionOutcomeDerivedValues({
       ...patrimonialAnalysis.warnings,
       ...avFiscalAnalysis.warnings,
       ...perFiscalAnalysis.warnings,
+      ...prevoyanceFiscalAnalysis.warnings,
     ].filter((warning) => {
       if (seen.has(warning)) return false;
       seen.add(warning);
@@ -420,6 +496,7 @@ export function useSuccessionOutcomeDerivedValues({
     patrimonialAnalysis.warnings,
     avFiscalAnalysis.warnings,
     perFiscalAnalysis.warnings,
+    prevoyanceFiscalAnalysis.warnings,
   ]);
 
   const exportHeirs = useMemo(
@@ -436,6 +513,7 @@ export function useSuccessionOutcomeDerivedValues({
     directDisplayAnalysis,
     displayAssuranceVieTransmise,
     displayPerTransmis,
+    displayPrevoyanceTransmise,
     derivedMasseTransmise,
     derivedTotalDroits,
     synthDonutTransmis,

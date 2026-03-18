@@ -11,6 +11,7 @@ import {
 } from './successionSimulator.constants';
 import { computeSuccessionAssetValuation } from './successionAssetValuation';
 import {
+  buildPrevoyanceClauseOptions,
   getBirthDateLabels,
   isCoupleSituation,
 } from './successionSimulator.helpers';
@@ -21,7 +22,9 @@ import type {
   FamilyBranch,
   FamilyMember,
   SuccessionEnfant,
+  SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
+  SuccessionPrevoyanceDecesEntry,
   SuccessionPrimarySide,
 } from './successionDraft';
 import type {
@@ -37,10 +40,12 @@ interface UseSuccessionUiDerivedValuesInput {
   enfantsContext: SuccessionEnfant[];
   familyMembers: FamilyMember[];
   assetEntries: SuccessionAssetDetailEntry[];
+  groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
   assuranceVieDraft: SuccessionAssuranceVieEntry[];
   perEntries: SuccessionPerEntry[];
   perDraft: SuccessionPerEntry[];
+  prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
   forfaitMobilierMode: typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.forfaitMobilierMode;
   forfaitMobilierPct: number;
   forfaitMobilierMontant: number;
@@ -55,10 +60,12 @@ export function useSuccessionUiDerivedValues({
   enfantsContext,
   familyMembers,
   assetEntries,
+  groupementFoncierEntries,
   assuranceVieEntries,
   assuranceVieDraft,
   perEntries,
   perDraft,
+  prevoyanceDecesEntries,
   forfaitMobilierMode,
   forfaitMobilierPct,
   forfaitMobilierMontant,
@@ -188,6 +195,7 @@ export function useSuccessionUiDerivedValues({
   const assetValuation = useMemo(
     () => computeSuccessionAssetValuation({
       assetEntries,
+      groupementFoncierEntries,
       forfaitMobilierMode,
       forfaitMobilierPct,
       forfaitMobilierMontant,
@@ -195,6 +203,7 @@ export function useSuccessionUiDerivedValues({
     }),
     [
       assetEntries,
+      groupementFoncierEntries,
       forfaitMobilierMode,
       forfaitMobilierPct,
       forfaitMobilierMontant,
@@ -246,6 +255,27 @@ export function useSuccessionUiDerivedValues({
     epoux2: 0,
   } as Record<'epoux1' | 'epoux2', number>), [perEntries]);
 
+  const prevoyanceTotals = useMemo(() => prevoyanceDecesEntries.reduce((totals, entry) => ({
+    capitaux: totals.capitaux + entry.capitalDeces,
+    dernierePrime: totals.dernierePrime + entry.dernierePrime,
+  }), {
+    capitaux: 0,
+    dernierePrime: 0,
+  }), [prevoyanceDecesEntries]);
+
+  const prevoyanceByAssure = useMemo(() => prevoyanceDecesEntries.reduce((totals, entry) => {
+    totals[entry.assure] += entry.capitalDeces;
+    return totals;
+  }, {
+    epoux1: 0,
+    epoux2: 0,
+  } as Record<'epoux1' | 'epoux2', number>), [prevoyanceDecesEntries]);
+
+  const prevoyanceClauseOptions = useMemo(
+    () => buildPrevoyanceClauseOptions(enfantsContext, familyMembers),
+    [enfantsContext, familyMembers],
+  );
+
   const assetEntriesByCategory = useMemo(() => ASSET_CATEGORY_OPTIONS.map((category) => ({
     ...category,
     entries: assetEntries.filter((entry) => entry.category === category.value),
@@ -276,6 +306,9 @@ export function useSuccessionUiDerivedValues({
     perTotals,
     perDraftTotals,
     perByAssure,
+    prevoyanceTotals,
+    prevoyanceByAssure,
+    prevoyanceClauseOptions,
     assetEntriesByCategory,
   };
 }
