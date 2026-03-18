@@ -298,16 +298,6 @@
   margin: 8px 0 10px;
 }
 
-/* Bouton mode expert/simplifié — taille harmonisée avec Exporter (GOUVERNANCE.md §6) */
-.ir-mode-btn {
-  white-space: nowrap;
-  padding: 8px 16px !important;
-  border-radius: 6px !important;
-  font-size: 13px !important;
-  line-height: 1 !important;
-  cursor: pointer;
-}
-
 /* Carte TMI — fond/border/radius/padding/shadow viennent de .premium-card (JSX) */
 /* Liseré gauche C3 — carte de synthèse principale (GOUVERNANCE.md §3) */
 .ir-tmi-card {

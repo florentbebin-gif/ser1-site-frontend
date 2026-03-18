@@ -1,16 +1,27 @@
 import React from 'react';
 import { useUserMode } from '../settings/userMode';
+import './ModeToggle.css';
 
-export function ModeToggle(): React.ReactElement {
+interface ModeToggleProps {
+  value?: boolean;
+  onChange?: (_isExpert: boolean) => void;
+}
+
+export function ModeToggle({ value, onChange }: ModeToggleProps = {}): React.ReactElement {
   const { mode: userMode, setMode: setUserMode, isLoading } = useUserMode();
 
-  const isExpert = userMode === 'expert';
+  const isControlled = value !== undefined;
+  const isExpert = isControlled ? value : userMode === 'expert';
 
   const handleToggle = (): void => {
-    setUserMode(isExpert ? 'simplifie' : 'expert');
+    if (isControlled && onChange) {
+      onChange(!isExpert);
+    } else {
+      setUserMode(isExpert ? 'simplifie' : 'expert');
+    }
   };
 
-  if (isLoading) {
+  if (!isControlled && isLoading) {
     return (
       <div className="mode-toggle-row">
         <span className="mode-toggle-label">Mode expert</span>

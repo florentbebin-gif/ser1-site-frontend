@@ -194,10 +194,9 @@ export default function ScFamilyContextCard({
                           options={enfantRattachementOptions}
                         />
                       )}
-                      <label className="sc-checkbox-label">
+                      <label className="sc-checkbox-label sc-checkbox-label--mini">
                         <input
                           type="checkbox"
-                          className="sc-checkbox"
                           checked={!!enfant.deceased}
                           onChange={(e) => onToggleEnfantDeceased(enfant.id, e.target.checked)}
                         />

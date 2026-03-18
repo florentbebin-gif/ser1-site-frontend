@@ -40,12 +40,6 @@
   flex-wrap: wrap;
 }
 
-.pl-mode-btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 13px;
-}
-
 .pl-phase-nav {
   position: relative;
   display: flex;

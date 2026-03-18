@@ -46,6 +46,10 @@ function buildBaseProps() {
     forfaitMobilierMontant: 0,
     abattementResidencePrincipale: false,
     onUpdatePatrimonialField: () => {},
+    onOpenGroupementFoncierModal: () => {},
+    onOpenPrevoyanceDecesModal: () => {},
+    groupementFoncierCount: 0,
+    prevoyanceDecesCount: 0,
   };
 }
 

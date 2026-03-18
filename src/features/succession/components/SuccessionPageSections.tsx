@@ -58,6 +58,10 @@ interface SuccessionPageGridProps {
   onRemoveAssetEntry: (_entryId: string) => void;
   onOpenAssuranceVieModal: () => void;
   onOpenPerModal: () => void;
+  onOpenGroupementFoncierModal: () => void;
+  onOpenPrevoyanceDecesModal: () => void;
+  groupementFoncierCount: number;
+  prevoyanceDecesCount: number;
   onSetSimplifiedBalanceField: (_type: 'actifs' | 'passifs', _owner: SuccessionAssetOwner, _value: number) => void;
   onAddDonationEntry: () => void;
   onUpdateDonationEntry: (_entryId: string, _field: keyof SuccessionDonationEntry, _value: string | number | boolean) => void;
@@ -154,6 +158,10 @@ export function SuccessionPageGrid({
   onRemoveAssetEntry,
   onOpenAssuranceVieModal,
   onOpenPerModal,
+  onOpenGroupementFoncierModal,
+  onOpenPrevoyanceDecesModal,
+  groupementFoncierCount,
+  prevoyanceDecesCount,
   onSetSimplifiedBalanceField,
   onAddDonationEntry,
   onUpdateDonationEntry,
@@ -206,6 +214,10 @@ export function SuccessionPageGrid({
           onRemoveAssetEntry={onRemoveAssetEntry}
           onOpenAssuranceVieModal={onOpenAssuranceVieModal}
           onOpenPerModal={onOpenPerModal}
+          onOpenGroupementFoncierModal={onOpenGroupementFoncierModal}
+          onOpenPrevoyanceDecesModal={onOpenPrevoyanceDecesModal}
+          groupementFoncierCount={groupementFoncierCount}
+          prevoyanceDecesCount={prevoyanceDecesCount}
           onSetSimplifiedBalanceField={onSetSimplifiedBalanceField}
           forfaitMobilierMode={forfaitMobilierMode}
           forfaitMobilierPct={forfaitMobilierPct}

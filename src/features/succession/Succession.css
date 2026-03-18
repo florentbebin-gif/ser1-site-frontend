@@ -83,11 +83,11 @@
   margin-bottom: 0;
 }
 
-/* Dégradé header cartes gauche guide — même patron que IR Revenus */
+/* Dégradé header cartes gauche guide — aligné sur la hero card Synthèse */
 .sc-card--guide .sc-card__header {
   background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--color-c1) 5%, transparent) 0%,
+    to bottom,
+    color-mix(in srgb, var(--color-c4) 18%, transparent) 0%,
     transparent 65%
   );
   border-radius: 10px 10px 0 0;
@@ -312,6 +312,19 @@
 .sc-checkbox {
   accent-color: var(--color-c2);
   cursor: pointer;
+}
+
+.sc-checkbox-label--mini {
+  font-size: 8px;
+  gap: 3px;
+  color: var(--color-c9);
+  opacity: 0.55;
+}
+
+.sc-checkbox-label--mini input[type="checkbox"] {
+  width: 9px;
+  height: 9px;
+  accent-color: var(--color-c2);
 }
 
 .sc-checkbox-label {
@@ -1238,14 +1251,6 @@
   font-size: 13px;
 }
 
-.sc-mode-btn {
-  white-space: nowrap;
-  padding: 8px 16px !important;
-  border-radius: 6px !important;
-  font-size: 13px !important;
-  line-height: 1 !important;
-  cursor: pointer;
-}
 
 .sc-btn--primary {
   background: var(--color-c2);

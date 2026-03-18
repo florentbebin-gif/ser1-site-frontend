@@ -56,7 +56,6 @@ export function AppLayout({
     notification,
     session,
     isRecoveryMode,
-    path,
   } = layoutState;
 
   const {
@@ -116,36 +115,33 @@ export function AppLayout({
               {/* SAVE */}
               {showSaveLoad && (
                 <button
-                  className={path === '/' ? 'chip icon-btn with-label' : 'chip icon-btn'}
+                  className="chip icon-btn"
                   onClick={onGlobalSave}
                   title="Sauvegarder le dossier"
                 >
                   <IconSave className="icon icon--save" />
-                  {path === '/' && <span className="btn-label">Sauvegarder</span>}
                 </button>
               )}
 
               {/* CHARGER */}
               {showSaveLoad && (
                 <button
-                  className={path === '/' ? 'chip icon-btn with-label' : 'chip icon-btn'}
+                  className="chip icon-btn"
                   onClick={onGlobalLoad}
                   title="Charger un dossier"
                 >
                   <IconFolder className="icon" />
-                  {path === '/' && <span className="btn-label">Charger</span>}
                 </button>
               )}
 
               {/* RESET GLOBAL — uniquement sur la page d'accueil */}
               {showGlobalReset && (
                 <button
-                  className="chip icon-btn with-label"
+                  className="chip icon-btn"
                   onClick={onGlobalReset}
                   title="Réinitialiser tous les simulateurs"
                 >
                   <IconTrash className="icon" />
-                  <span className="btn-label">Réinitialiser</span>
                 </button>
               )}
 

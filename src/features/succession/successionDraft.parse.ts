@@ -462,6 +462,8 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       assetEntries,
       assuranceVieEntries,
       perEntries,
+      groupementFoncierEntries: Array.isArray(payload.groupementFoncierEntries) ? payload.groupementFoncierEntries : [],
+      prevoyanceDecesEntries: Array.isArray(payload.prevoyanceDecesEntries) ? payload.prevoyanceDecesEntries : [],
     };
   } catch {
     return null;
