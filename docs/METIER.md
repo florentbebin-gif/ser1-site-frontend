@@ -94,7 +94,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 ### Entrees principales
 - situation matrimoniale et contexte familial
 - horizon de deces simule (`Aujourd'hui`, puis paliers de 5 a 50 ans) pour reevaluer les lectures dependantes de la date
-- forfait mobilier et abattement de 20 % sur la residence principale, saisis dans le bloc patrimonial expert
+- forfait mobilier optionnel et abattement de 20 % sur la residence principale, saisis dans le bloc patrimonial expert
 - enfants / autres membres de la famille, avec distinction visuelle possible des enfants décédés
 - actifs et passifs saisis distinctement en mode simplifie ; actifs / passifs detailles en mode expert
 - groupements fonciers (`GFA`, `GFV`, `GFF`, `GF`) saisis en expert, avec reinjection de leur base taxable dans la masse successorale
@@ -129,7 +129,8 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - chronologie 2 deces mariee branchee au testament du cote du defunt a chaque etape; le bouton d'ordre inverse change aussi le testament retenu
 - restitution de la transmission sur une ligne par personne reelle quand les beneficiaires sont identifies, avec filtrage des descendants selon la branche du defunt simule
 - saisie detaillee des actifs/passifs pour reconstituer des masses nettes par poche patrimoniale
-- calcul du forfait mobilier sur les actifs taxables saisis, avec ventilation proportionnelle par porteur
+- calcul du forfait mobilier uniquement s'il est explicitement ajoute, avec ventilation proportionnelle par porteur
+- separation de la transmission successorale et des assurances hors succession dans la synthese de droite, avec restitution des capitaux par beneficiaire
 - residence principale unique cote produit, avec option d'abattement 20 % visible sur la ligne immobiliere correspondante
 - ventilation simplifiee de l'assurance-vie deces selon les clauses beneficiaires saisies (lecture 990 I / 757 B), avec mutualisation des abattements entre contrats d'un meme assure et d'un meme beneficiaire
 - ventilation simplifiee du `PER assurance` deces selon les clauses beneficiaires saisies, avec bascule avant / apres 70 ans a la date deces simulee et coordination des abattements avec l'assurance-vie / la prevoyance

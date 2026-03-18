@@ -209,7 +209,7 @@ Principes : épuré, lisible, respirant.
 | `/sim/placement` page | `.premium-table` dans `src/styles/premium-shared.css` | Dans `PlacementLiquidationSection.tsx` : `Stratégie de retraits`, `Durée de liquidation`, `Rendement capitalisation (liquidation)`, `Mensualité cible`, `Montant du retrait` |
 | `/sim/placement` page | `.premium-table` dans `src/styles/premium-shared.css` | Dans `PlacementTransmissionSection.tsx` : `Âge au décès (simulation)`, `Choix du bénéficiaire`, `Nombre de bénéficiaires`, `Tranche DMTG estimée` |
 | `/sim/placement` modale | `.vcm__card` dans `src/features/placement/components/VersementConfigModal.css` | Dans `VersementConfigModal.tsx` : `Montant`, `Frais d'entrée`, `Déductibilité` (select + `Économie IR`), `Allocation` (inputs `%` du slider), `Rendement annuel net de FG`, `Taux de distribution / loyers`, `Durée du produit`, `Délai de jouissance`, `Stratégie`, `Au terme du produit, réinvestir vers`, `Coût annuel` des options PER |
-| `/sim/placement` modale | `.vcm__ponctuels` dans `src/features/placement/components/VersementConfigModal.css` | Dans `VersementConfigModal.tsx` : `Année`, `Montant`, `Frais`, `Allocation Capi/Distrib` |
+| `/sim/placement` modale | `.vcm__ponctuels` dans `src/features/placement/components/VersementConfigModal.css` | Dans `VersementConfigModal.tsx` : `Année`, `Montant`, `Frais d'entrée`, `Allocation` |
 
 ### 6) Boutons Exporter et mode simplifié/expert
 #### Obligatoire

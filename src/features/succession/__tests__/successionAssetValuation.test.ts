@@ -66,6 +66,23 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.assetNetTotals.epoux1).toBe(150000);
   });
 
+  it('does not compute any forfait mobilier when disabled', () => {
+    const result = computeSuccessionAssetValuation({
+      assetEntries: [
+        { id: 'asset-1', owner: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
+      ],
+      groupementFoncierEntries: [],
+      forfaitMobilierMode: 'off',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 50000,
+      abattementResidencePrincipale: false,
+    });
+
+    expect(result.forfaitMobilierComputed).toBe(0);
+    expect(result.forfaitMobilierParOwner.epoux1).toBe(0);
+    expect(result.assetNetTotals.epoux1).toBe(100000);
+  });
+
   it('normalizes multiple main residences and applies the 20 percent abatement only once', () => {
     const normalized = normalizeResidencePrincipaleAssetEntries([
       { id: 'asset-1', owner: 'epoux1', category: 'immobilier', subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY, amount: 400000 },

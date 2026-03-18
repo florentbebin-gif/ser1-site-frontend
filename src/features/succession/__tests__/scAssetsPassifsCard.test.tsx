@@ -44,7 +44,7 @@ function buildBaseProps() {
     onOpenAssuranceVieModal: () => {},
     onOpenPerModal: () => {},
     onSetSimplifiedBalanceField: () => {},
-    forfaitMobilierMode: 'auto' as const,
+    forfaitMobilierMode: 'off' as const,
     forfaitMobilierPct: 5,
     forfaitMobilierMontant: 0,
     abattementResidencePrincipale: false,
@@ -131,6 +131,13 @@ describe('ScAssetsPassifsCard', () => {
     expect(avIndex).toBeGreaterThanOrEqual(0);
     expect(perIndex).toBeGreaterThan(avIndex);
     expect(addIndex).toBeGreaterThan(perIndex);
+  });
+
+  it('keeps the forfait mobilier hidden until it is explicitly added', () => {
+    const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...buildBaseProps()} />);
+
+    expect(markup).toContain('Configurer le forfait mobilier');
+    expect(markup).not.toContain('Pourcentage (%)');
   });
 
   it('renders a structured select for prevoyance clauses', () => {

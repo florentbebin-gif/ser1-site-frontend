@@ -10,7 +10,7 @@ interface TransmissionRow {
   exonerated?: boolean;
 }
 
-interface PrevoyanceBeneficiaryLine {
+interface InsuranceBeneficiaryLine {
   id: string;
   label: string;
   capitalTransmis: number;
@@ -34,7 +34,7 @@ interface ScSuccessionSummaryPanelProps {
   avFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
   perFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
   prevoyanceFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
-  prevoyanceBeneficiaryLines: PrevoyanceBeneficiaryLine[];
+  insuranceBeneficiaryLines: InsuranceBeneficiaryLine[];
   directDisplay: {
     simulatedDeceased: 'epoux1' | 'epoux2';
     result: { totalDroits: number } | null;
@@ -53,7 +53,7 @@ export default function ScSuccessionSummaryPanel({
   avFiscalByAssure,
   perFiscalByAssure,
   prevoyanceFiscalByAssure,
-  prevoyanceBeneficiaryLines,
+  insuranceBeneficiaryLines,
   directDisplay,
 }: ScSuccessionSummaryPanelProps) {
   const firstCost = displayUsesChainage
@@ -143,10 +143,10 @@ export default function ScSuccessionSummaryPanel({
           </div>
         </>
       )}
-      {prevoyanceBeneficiaryLines.length > 0 && (
+      {insuranceBeneficiaryLines.length > 0 && (
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
-          <div className="sc-synth-section-title">Prévoyance décès par bénéficiaire</div>
+          <div className="sc-synth-section-title">Assurances hors succession par bénéficiaire</div>
           <div className="sc-transmission-grid">
             <div className="sc-transmission-grid__head">
               <span />
@@ -154,7 +154,7 @@ export default function ScSuccessionSummaryPanel({
               <span>Droits</span>
               <span>Net estimé</span>
             </div>
-            {prevoyanceBeneficiaryLines.map((line) => (
+            {insuranceBeneficiaryLines.map((line) => (
               <div key={line.id} className="sc-transmission-row sc-transmission-row--av">
                 <span>{line.label}</span>
                 <span>{fmt(line.capitalTransmis)}</span>

@@ -98,7 +98,7 @@ export interface SuccessionPatrimonialContext {
   preciputMontant: number;
   attributionIntegrale: boolean;
   attributionBiensCommunsPct: number;
-  forfaitMobilierMode: 'auto' | 'pct' | 'montant';
+  forfaitMobilierMode: 'off' | 'auto' | 'pct' | 'montant';
   forfaitMobilierPct: number;
   forfaitMobilierMontant: number;
   abattementResidencePrincipale: boolean;
@@ -219,6 +219,6 @@ export interface ParsedSuccessionDraftPayload {
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
 }
 
-export interface SuccessionDraftPayloadV17 extends ParsedSuccessionDraftPayload {
-  version: 17;
+export interface SuccessionDraftPayloadV18 extends ParsedSuccessionDraftPayload {
+  version: 18;
 }

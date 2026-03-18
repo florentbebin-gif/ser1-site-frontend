@@ -1,7 +1,13 @@
 import { useMemo } from 'react';
-import type { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
+import type {
+  buildSuccessionAvFiscalAnalysis,
+  SuccessionAvFiscalLine,
+} from './successionAvFiscal';
 import type { buildSuccessionPerFiscalAnalysis } from './successionPerFiscal';
-import type { buildSuccessionPrevoyanceFiscalAnalysis } from './successionPrevoyanceFiscal';
+import type {
+  buildSuccessionPrevoyanceFiscalAnalysis,
+  SuccessionPrevoyanceFiscalLine,
+} from './successionPrevoyanceFiscal';
 import type { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import type { buildSuccessionPredecesAnalysis } from './successionPredeces';
 import type { buildSuccessionChainageAnalysis } from './successionChainage';
@@ -65,6 +71,77 @@ interface UseSuccessionOutcomeDerivedValuesInput {
     dernierePrime: number;
   };
   simulatedDeathDate: Date;
+}
+
+export interface InsuranceBeneficiaryLine {
+  id: string;
+  label: string;
+  capitalTransmis: number;
+  totalDroits: number;
+  netTransmis: number;
+}
+
+function mergeInsuranceBeneficiaryLines(
+  avLines: SuccessionAvFiscalLine[],
+  perLines: SuccessionAvFiscalLine[],
+  prevoyanceLines: SuccessionPrevoyanceFiscalLine[],
+): InsuranceBeneficiaryLine[] {
+  const merged = new Map<string, InsuranceBeneficiaryLine>();
+
+  const upsert = (
+    id: string,
+    label: string,
+    capitalTransmis: number,
+    totalDroits: number,
+    netTransmis: number,
+  ) => {
+    const current = merged.get(id) ?? {
+      id,
+      label,
+      capitalTransmis: 0,
+      totalDroits: 0,
+      netTransmis: 0,
+    };
+    current.capitalTransmis += capitalTransmis;
+    current.totalDroits += totalDroits;
+    current.netTransmis += netTransmis;
+    merged.set(id, current);
+  };
+
+  for (const line of avLines) {
+    upsert(
+      line.id,
+      line.label,
+      line.capitauxAvant70 + line.capitauxApres70,
+      line.totalDroits,
+      line.netTransmis,
+    );
+  }
+
+  for (const line of perLines) {
+    upsert(
+      line.id,
+      line.label,
+      line.capitauxAvant70 + line.capitauxApres70,
+      line.totalDroits,
+      line.netTransmis,
+    );
+  }
+
+  for (const line of prevoyanceLines) {
+    upsert(
+      line.id,
+      line.label,
+      line.capitalTransmis,
+      line.totalDroits,
+      line.netTransmis,
+    );
+  }
+
+  return Array.from(merged.values()).sort((a, b) => (
+    b.capitalTransmis - a.capitalTransmis
+    || b.netTransmis - a.netTransmis
+  ));
 }
 
 export function useSuccessionOutcomeDerivedValues({
@@ -288,10 +365,10 @@ export function useSuccessionOutcomeDerivedValues({
 
   const transmissionRows = useMemo(() => {
     if (displayUsesChainage) {
-      const { order, step1, step2 } = chainageAnalysis;
+      const { step1, step2 } = chainageAnalysis;
       if (!step1 || !step2) return [];
-      const otherOrder = order === 'epoux1' ? 'epoux2' : 'epoux1';
-      const avCapital = assuranceVieByAssure[order] + assuranceVieByAssure[otherOrder];
+      return buildSuccessionChainTransmissionRows(chainageAnalysis);
+      /* legacy insurance rows removed from Transmission par bénéficiaire
       const perCapital = perByAssure[order] + perByAssure[otherOrder];
       const prevoyanceCapital = prevoyanceByAssure[order] + prevoyanceByAssure[otherOrder];
       return [
@@ -317,12 +394,11 @@ export function useSuccessionOutcomeDerivedValues({
           droits: prevoyanceFiscalAnalysis.totalDroits,
           net: prevoyanceCapital - prevoyanceFiscalAnalysis.totalDroits,
         }] : []),
-      ];
+      ]; */
     }
 
-    return [
-      ...directDisplayAnalysis.transmissionRows,
-      ...(displayAssuranceVieTransmise > 0 ? [{
+    return directDisplayAnalysis.transmissionRows;
+      /* legacy insurance rows removed from Transmission par bénéficiaire
         id: 'assurance-vie',
         label: 'Assurance-vie',
         brut: displayAssuranceVieTransmise,
@@ -343,24 +419,37 @@ export function useSuccessionOutcomeDerivedValues({
         droits: prevoyanceFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
         net: displayPrevoyanceTransmise - prevoyanceFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
       }] : []),
-    ];
+    ]; */
   }, [
     displayUsesChainage,
     chainageAnalysis,
-    assuranceVieByAssure,
-    perByAssure,
-    prevoyanceByAssure,
-    avFiscalAnalysis.totalDroits,
-    avFiscalAnalysis.byAssure,
-    perFiscalAnalysis.totalDroits,
-    perFiscalAnalysis.byAssure,
-    prevoyanceFiscalAnalysis.totalDroits,
-    prevoyanceFiscalAnalysis.byAssure,
     directDisplayAnalysis.transmissionRows,
+  ]);
+
+  const insuranceBeneficiaryLines = useMemo(() => {
+    if (displayUsesChainage) {
+      return mergeInsuranceBeneficiaryLines(
+        avFiscalAnalysis.lines,
+        perFiscalAnalysis.lines,
+        prevoyanceFiscalAnalysis.lines,
+      );
+    }
+
+    const assured = directDisplayAnalysis.simulatedDeceased;
+    return mergeInsuranceBeneficiaryLines(
+      avFiscalAnalysis.byAssure[assured].lines,
+      perFiscalAnalysis.byAssure[assured].lines,
+      prevoyanceFiscalAnalysis.byAssure[assured].lines,
+    );
+  }, [
+    displayUsesChainage,
+    avFiscalAnalysis.lines,
+    avFiscalAnalysis.byAssure,
+    perFiscalAnalysis.lines,
+    perFiscalAnalysis.byAssure,
+    prevoyanceFiscalAnalysis.lines,
+    prevoyanceFiscalAnalysis.byAssure,
     directDisplayAnalysis.simulatedDeceased,
-    displayAssuranceVieTransmise,
-    displayPerTransmis,
-    displayPrevoyanceTransmise,
   ]);
 
   const chainageExportPayload = useMemo(
@@ -519,6 +608,7 @@ export function useSuccessionOutcomeDerivedValues({
     synthDonutTransmis,
     synthHypothese,
     transmissionRows,
+    insuranceBeneficiaryLines,
     chainageExportPayload,
     totalActifsLiquidation,
     canExportSimplified,

@@ -6,7 +6,7 @@ import type {
   SuccessionCivilContext,
   SuccessionDevolutionContext,
   SuccessionDonationEntry,
-  SuccessionDraftPayloadV17,
+  SuccessionDraftPayloadV18,
   SuccessionEnfant,
   SuccessionGroupementFoncierEntry,
   SuccessionLiquidationContext,
@@ -29,9 +29,9 @@ export function buildSuccessionDraftPayload(
   perEntries: SuccessionPerEntry[],
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[] = [],
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[] = [],
-): SuccessionDraftPayloadV17 {
+): SuccessionDraftPayloadV18 {
   return {
-    version: 17,
+    version: 18,
     form,
     civil,
     liquidation,

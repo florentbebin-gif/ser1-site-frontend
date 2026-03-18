@@ -170,6 +170,7 @@ export function computeSuccessionAssetValuation({
 
   const forfaitMobilierComputed = (() => {
     if (totalActifsTaxables <= 0) return 0;
+    if (forfaitMobilierMode === 'off') return 0;
     if (forfaitMobilierMode === 'montant') {
       return asAmount(forfaitMobilierMontant);
     }
