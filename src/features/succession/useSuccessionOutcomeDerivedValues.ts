@@ -25,6 +25,7 @@ import type {
   FamilyMember,
   SuccessionEnfant,
 } from './successionDraft';
+import type { SuccessionAssetTransmissionBasis } from './successionTransmissionBasis';
 import type {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
@@ -56,6 +57,7 @@ interface UseSuccessionOutcomeDerivedValuesInput {
   perFiscalAnalysis: ReturnType<typeof buildSuccessionPerFiscalAnalysis>;
   prevoyanceFiscalAnalysis: ReturnType<typeof buildSuccessionPrevoyanceFiscalAnalysis>;
   directEstateBasis: ReturnType<typeof computeSuccessionDirectEstateBasis>;
+  transmissionBasis: SuccessionAssetTransmissionBasis;
   assuranceVieByAssure: Record<'epoux1' | 'epoux2', number>;
   perByAssure: Record<'epoux1' | 'epoux2', number>;
   prevoyanceByAssure: Record<'epoux1' | 'epoux2', number>;
@@ -68,7 +70,6 @@ interface UseSuccessionOutcomeDerivedValuesInput {
   };
   prevoyanceTotals: {
     capitaux: number;
-    dernierePrime: number;
   };
   simulatedDeathDate: Date;
 }
@@ -167,6 +168,7 @@ export function useSuccessionOutcomeDerivedValues({
   perFiscalAnalysis,
   prevoyanceFiscalAnalysis,
   directEstateBasis,
+  transmissionBasis,
   assuranceVieByAssure,
   perByAssure,
   prevoyanceByAssure,
@@ -196,6 +198,10 @@ export function useSuccessionOutcomeDerivedValues({
       order: chainOrder,
       actifNetSuccession: directEstateBasis.actifNetSuccession,
       baseWarnings: directEstateBasis.warnings,
+      transmissionBasis,
+      forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
+      forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
+      forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
     }),
     [
       civilContext,
@@ -207,6 +213,10 @@ export function useSuccessionOutcomeDerivedValues({
       chainOrder,
       directEstateBasis.actifNetSuccession,
       directEstateBasis.warnings,
+      transmissionBasis,
+      patrimonialContext.forfaitMobilierMode,
+      patrimonialContext.forfaitMobilierPct,
+      patrimonialContext.forfaitMobilierMontant,
     ],
   );
 
@@ -297,6 +307,13 @@ export function useSuccessionOutcomeDerivedValues({
   const synthHypothese = useMemo(() => {
     if (!isMarried || nbDescendantBranches === 0) return null;
 
+    if (
+      civilContext.regimeMatrimonial === 'communaute_universelle'
+      && patrimonialContext.attributionIntegrale
+    ) {
+      return 'Communaute universelle avec attribution integrale: le 1er deces transmet integralement au conjoint survivant et reporte la taxation des descendants au 2e deces.';
+    }
+
     if (patrimonialContext.donationEntreEpouxActive) {
       const option = DONATION_ENTRE_EPOUX_OPTIONS.find((entry) => entry.value === patrimonialContext.donationEntreEpouxOption);
       const spouseBirthDate = chainOrder === 'epoux1'
@@ -354,6 +371,8 @@ export function useSuccessionOutcomeDerivedValues({
     nbDescendantBranches,
     nbEnfantsNonCommuns,
     devolutionContext.choixLegalConjointSansDDV,
+    civilContext.regimeMatrimonial,
+    patrimonialContext.attributionIntegrale,
     patrimonialContext.donationEntreEpouxActive,
     patrimonialContext.donationEntreEpouxOption,
     chainOrder,

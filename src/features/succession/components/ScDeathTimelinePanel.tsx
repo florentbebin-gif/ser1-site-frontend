@@ -6,6 +6,7 @@ import { ScSelect } from './ScSelect';
 interface ScDeathTimelinePanelProps {
   chainOrder: SuccessionChainOrder;
   onToggleOrder: () => void;
+  showOrderToggle: boolean;
   displayUsesChainage: boolean;
   derivedMasseTransmise: number;
   derivedTotalDroits: number;
@@ -35,6 +36,7 @@ interface ScDeathTimelinePanelProps {
 export default function ScDeathTimelinePanel({
   chainOrder,
   onToggleOrder,
+  showOrderToggle,
   displayUsesChainage,
   derivedMasseTransmise,
   derivedTotalDroits,
@@ -67,15 +69,17 @@ export default function ScDeathTimelinePanel({
           </div>
           <h2 className="sc-summary-title">Chronologie des deces</h2>
         </div>
-        <div className="sc-pill-toggle">
-          <button
-            type="button"
-            className={`sc-pill-toggle__btn${chainOrder === 'epoux2' ? ' is-active' : ''}`}
-            onClick={onToggleOrder}
-          >
-            Ordre inverse
-          </button>
-        </div>
+        {showOrderToggle && (
+          <div className="sc-pill-toggle">
+            <button
+              type="button"
+              className={`sc-pill-toggle__btn${chainOrder === 'epoux2' ? ' is-active' : ''}`}
+              onClick={onToggleOrder}
+            >
+              Ordre inverse
+            </button>
+          </div>
+        )}
       </div>
       {showDeathHorizonControl && (
         <>

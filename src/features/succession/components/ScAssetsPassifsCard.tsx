@@ -34,6 +34,7 @@ interface ScAssetsPassifsCardProps {
   assetNetTotals: Record<SuccessionAssetOwner, number>;
   forfaitMobilierComputed: number;
   residencePrincipaleEntryId: string | null;
+  hasBeneficiaryLevelGfAdjustment: boolean;
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
   perEntries: SuccessionPerEntry[];
   assuranceViePartyOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
@@ -114,6 +115,7 @@ export default function ScAssetsPassifsCard({
   assetBreakdown,
   assetNetTotals,
   residencePrincipaleEntryId,
+  hasBeneficiaryLevelGfAdjustment,
   assuranceVieEntries,
   perEntries,
   assuranceViePartyOptions,
@@ -363,7 +365,13 @@ export default function ScAssetsPassifsCard({
                         </button>
                       </div>
                       <div className="sc-asset-row__suboption sc-asset-row__suboption--prevoyance">
-                        <div className="sc-field">
+                        <div className="sc-field sc-field--wide">
+                          <label>Fiscalite appliquee</label>
+                          <span className="sc-asset-row__value">
+                            Conversion AV synthetique, tout le capital est traite en 990 I.
+                          </span>
+                        </div>
+                        <div className="sc-field" hidden aria-hidden="true">
                           <label>Dernière prime (€)</label>
                           <ScNumericInput
                             value={pvEntry.dernierePrime || 0}
@@ -542,6 +550,11 @@ export default function ScAssetsPassifsCard({
             ))}
           </div>
         </div>
+      )}
+      {hasBeneficiaryLevelGfAdjustment && (
+        <p className="sc-hint sc-hint--compact">
+          Les totaux GFA/GFV affiches dans cette carte restent provisoires. La base taxable definitive est recalculee par beneficiaire dans la synthese et l&apos;export.
+        </p>
       )}
     </div>
   );

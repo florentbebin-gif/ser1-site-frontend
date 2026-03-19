@@ -39,18 +39,17 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
       [{ id: 'E1', rattachement: 'commun' }],
       [],
       snapshot,
-      new Date('2035-06-01T00:00:00Z'),
     );
 
     expect(analysis.totalCapitalDeces).toBe(500000);
-    expect(analysis.totalDernierePrimeTaxable).toBe(50000);
     expect(analysis.totalDroits).toBe(0);
     expect(analysis.lines[0]?.lien).toBe('conjoint');
     expect(analysis.lines[0]?.capitalTransmis).toBe(500000);
-    expect(analysis.lines[0]?.primeTaxableAvant70).toBe(50000);
+    expect(analysis.lines[0]?.capitauxAvant70).toBe(500000);
+    expect(analysis.lines[0]?.capitauxApres70).toBe(0);
   });
 
-  it('uses the last premium only as taxable base before 70', () => {
+  it('treats all capital under 990 I and ignores dernierePrime in the tax base', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const analysis = buildSuccessionPrevoyanceFiscalAnalysis(
       [makeEntry({
@@ -65,24 +64,37 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
       [{ id: 'E1', rattachement: 'epoux1' }],
       [],
       snapshot,
-      new Date('2035-06-01T00:00:00Z'),
     );
 
     expect(analysis.lines).toHaveLength(1);
     expect(analysis.lines[0]?.capitalTransmis).toBe(1_000_000);
-    expect(analysis.lines[0]?.primeTaxableAvant70).toBe(300000);
-    expect(analysis.lines[0]?.taxable990I).toBe(147500);
-    expect(analysis.lines[0]?.totalDroits).toBeGreaterThan(0);
+    expect(analysis.lines[0]?.capitauxAvant70).toBe(1_000_000);
+    expect(analysis.lines[0]?.capitauxApres70).toBe(0);
+    expect(analysis.lines[0]?.taxable990I).toBe(847500);
+    expect(analysis.lines[0]?.taxable757B).toBe(0);
+    expect(analysis.totalDroits).toBeGreaterThan(0);
     expect(analysis.byAssure.epoux1.capitalDeces).toBe(1_000_000);
-    expect(analysis.byAssure.epoux1.dernierePrimeTaxable).toBe(300000);
   });
 
-  it('uses the 757 B path when the insured is at least 70 at simulated death', () => {
+  it('does not depend on the insured age at simulated death', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
-    const analysis = buildSuccessionPrevoyanceFiscalAnalysis(
+    const before70Analysis = buildSuccessionPrevoyanceFiscalAnalysis(
       [makeEntry({
         capitalDeces: 400000,
-        dernierePrime: 80000,
+        clauseBeneficiaire: 'CUSTOM:E1:100',
+      })],
+      makeCivil({
+        situationMatrimoniale: 'celibataire',
+        regimeMatrimonial: null,
+        dateNaissanceEpoux1: '1970-01-01',
+      }),
+      [{ id: 'E1', rattachement: 'epoux1' }],
+      [],
+      snapshot,
+    );
+    const after70Analysis = buildSuccessionPrevoyanceFiscalAnalysis(
+      [makeEntry({
+        capitalDeces: 400000,
         clauseBeneficiaire: 'CUSTOM:E1:100',
       })],
       makeCivil({
@@ -93,15 +105,13 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
       [{ id: 'E1', rattachement: 'epoux1' }],
       [],
       snapshot,
-      new Date('2026-03-18T00:00:00Z'),
     );
 
-    expect(analysis.lines).toHaveLength(1);
-    expect(analysis.lines[0]?.capitalTransmis).toBe(400000);
-    expect(analysis.lines[0]?.primeTaxableAvant70).toBe(0);
-    expect(analysis.lines[0]?.primeTaxableApres70).toBe(80000);
-    expect(analysis.lines[0]?.taxable757B).toBeGreaterThan(0);
-    expect(analysis.lines[0]?.lien).toBe('enfant');
+    expect(before70Analysis.lines[0]?.capitauxAvant70).toBe(400000);
+    expect(after70Analysis.lines[0]?.capitauxAvant70).toBe(400000);
+    expect(before70Analysis.lines[0]?.capitauxApres70).toBe(0);
+    expect(after70Analysis.lines[0]?.capitauxApres70).toBe(0);
+    expect(before70Analysis.totalDroits).toBe(after70Analysis.totalDroits);
   });
 
   it('supports a generic family-member beneficiary label', () => {
@@ -120,9 +130,8 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
       [],
       familyMembers,
       snapshot,
-      new Date('2035-06-01T00:00:00Z'),
     );
 
-    expect(analysis.lines[0]?.label).toBe('Oncle / tante 1');
+    expect(analysis.lines[0]?.label).toBe('Oncle / tante');
   });
 });

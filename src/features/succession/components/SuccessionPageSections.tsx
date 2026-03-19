@@ -216,6 +216,7 @@ export function SuccessionPageGrid({
           assetNetTotals={derived.assetNetTotals}
           forfaitMobilierComputed={derived.forfaitMobilierComputed}
           residencePrincipaleEntryId={derived.residencePrincipaleEntryId}
+          hasBeneficiaryLevelGfAdjustment={derived.hasBeneficiaryLevelGfAdjustment}
           assuranceVieEntries={assuranceVieEntries}
           perEntries={perEntries}
           assuranceViePartyOptions={derived.assuranceViePartyOptions}
@@ -293,6 +294,7 @@ export function SuccessionPageGrid({
         <ScDeathTimelinePanel
           chainOrder={chainOrder}
           onToggleOrder={onToggleChainOrder}
+          showOrderToggle={derived.isMarried || derived.isPacsed || derived.isConcubinage}
           displayUsesChainage={derived.displayUsesChainage}
           derivedMasseTransmise={derived.derivedMasseTransmise}
           derivedTotalDroits={derived.derivedTotalDroits}

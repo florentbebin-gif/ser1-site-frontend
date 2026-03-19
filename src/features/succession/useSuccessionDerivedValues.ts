@@ -119,6 +119,38 @@ export function useSuccessionDerivedValues({
     [civilContext.situationMatrimoniale],
   );
 
+  const isMarried = civilContext.situationMatrimoniale === 'marie';
+  const isPacsed = civilContext.situationMatrimoniale === 'pacse';
+  const isConcubinage = civilContext.situationMatrimoniale === 'concubinage';
+  const isCommunityRegime = isMarried && (
+    civilContext.regimeMatrimonial === 'communaute_legale'
+    || civilContext.regimeMatrimonial === 'communaute_universelle'
+    || civilContext.regimeMatrimonial === 'communaute_meubles_acquets'
+  );
+  const isPacsIndivision = isPacsed && civilContext.pacsConvention === 'indivision';
+  const showSharedTransmissionPct = isCommunityRegime || isPacsIndivision;
+  const showDonationEntreEpoux = isMarried;
+
+  const uiDerived = useSuccessionUiDerivedValues({
+    civilContext,
+    isMarried,
+    isPacsed,
+    isConcubinage,
+    enfantsContext,
+    familyMembers,
+    assetEntries,
+    groupementFoncierEntries,
+    assuranceVieEntries,
+    assuranceVieDraft,
+    perEntries,
+    perDraft,
+    prevoyanceDecesEntries,
+    forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
+    forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
+    forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
+    abattementResidencePrincipale: patrimonialContext.abattementResidencePrincipale,
+  });
+
   const predecesAnalysis = useMemo(
     () => buildSuccessionPredecesAnalysis(
       civilContext,
@@ -138,10 +170,15 @@ export function useSuccessionDerivedValues({
       dmtgSettings: fiscalSnapshot.dmtgSettings,
       attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
       patrimonial: {
+        attributionIntegrale: patrimonialContext.attributionIntegrale,
         donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
         donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
         preciputMontant: patrimonialContext.preciputMontant,
       },
+      transmissionBasis: uiDerived.transmissionBasis,
+      forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
+      forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
+      forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
       enfantsContext,
       familyMembers,
       devolution: devolutionContext,
@@ -155,9 +192,14 @@ export function useSuccessionDerivedValues({
       chainOrder,
       fiscalSnapshot.dmtgSettings,
       patrimonialContext.attributionBiensCommunsPct,
+      patrimonialContext.attributionIntegrale,
       patrimonialContext.donationEntreEpouxActive,
       patrimonialContext.donationEntreEpouxOption,
       patrimonialContext.preciputMontant,
+      patrimonialContext.forfaitMobilierMode,
+      patrimonialContext.forfaitMobilierPct,
+      patrimonialContext.forfaitMobilierMontant,
+      uiDerived.transmissionBasis,
       enfantsContext,
       familyMembers,
       devolutionContext,
@@ -181,7 +223,6 @@ export function useSuccessionDerivedValues({
         nbEnfantsNonCommuns,
       },
       derivedActifNetSuccession,
-      patrimonialContext.legsParticuliers,
       enfantsContext,
       familyMembers,
       {
@@ -199,7 +240,6 @@ export function useSuccessionDerivedValues({
       devolutionContext,
       nbEnfantsNonCommuns,
       derivedActifNetSuccession,
-      patrimonialContext.legsParticuliers,
       patrimonialContext.donationEntreEpouxActive,
       patrimonialContext.donationEntreEpouxOption,
       enfantsContext,
@@ -208,18 +248,6 @@ export function useSuccessionDerivedValues({
       simulatedDeathDate,
     ],
   );
-
-  const isMarried = civilContext.situationMatrimoniale === 'marie';
-  const isPacsed = civilContext.situationMatrimoniale === 'pacse';
-  const isConcubinage = civilContext.situationMatrimoniale === 'concubinage';
-  const isCommunityRegime = isMarried && (
-    civilContext.regimeMatrimonial === 'communaute_legale'
-    || civilContext.regimeMatrimonial === 'communaute_universelle'
-    || civilContext.regimeMatrimonial === 'communaute_meubles_acquets'
-  );
-  const isPacsIndivision = isPacsed && civilContext.pacsConvention === 'indivision';
-  const showSharedTransmissionPct = isCommunityRegime || isPacsIndivision;
-  const showDonationEntreEpoux = isMarried;
 
   const patrimonialSimulatedDeceased = civilContext.situationMatrimoniale === 'marie'
     ? chainOrder
@@ -252,26 +280,6 @@ export function useSuccessionDerivedValues({
     ],
   );
 
-  const uiDerived = useSuccessionUiDerivedValues({
-    civilContext,
-    isMarried,
-    isPacsed,
-    isConcubinage,
-    enfantsContext,
-    familyMembers,
-    assetEntries,
-    groupementFoncierEntries,
-    assuranceVieEntries,
-    assuranceVieDraft,
-    perEntries,
-    perDraft,
-    prevoyanceDecesEntries,
-    forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
-    forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
-    forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
-    abattementResidencePrincipale: patrimonialContext.abattementResidencePrincipale,
-  });
-
   const rawAvFiscalAnalysis = useMemo(
     () => buildSuccessionAvFiscalAnalysis(
       assuranceVieEntries,
@@ -302,7 +310,6 @@ export function useSuccessionDerivedValues({
       enfantsContext,
       familyMembers,
       fiscalSnapshot,
-      simulatedDeathDate,
     ),
     [
       prevoyanceDecesEntries,
@@ -310,7 +317,6 @@ export function useSuccessionDerivedValues({
       enfantsContext,
       familyMembers,
       fiscalSnapshot,
-      simulatedDeathDate,
     ],
   );
 
@@ -358,6 +364,7 @@ export function useSuccessionDerivedValues({
     perFiscalAnalysis,
     prevoyanceFiscalAnalysis,
     directEstateBasis,
+    transmissionBasis: uiDerived.transmissionBasis,
     assuranceVieByAssure: uiDerived.assuranceVieByAssure,
     assuranceVieTotals: uiDerived.assuranceVieTotals,
     perByAssure: uiDerived.perByAssure,
@@ -406,6 +413,8 @@ export function useSuccessionDerivedValues({
     forfaitMobilierParOwner: uiDerived.forfaitMobilierParOwner,
     hasResidencePrincipale: uiDerived.hasResidencePrincipale,
     residencePrincipaleEntryId: uiDerived.residencePrincipaleEntryId,
+    transmissionBasis: uiDerived.transmissionBasis,
+    hasBeneficiaryLevelGfAdjustment: uiDerived.hasBeneficiaryLevelGfAdjustment,
     assetEntriesByCategory: uiDerived.assetEntriesByCategory,
     assuranceVieTotals: uiDerived.assuranceVieTotals,
     assuranceVieDraftTotals: uiDerived.assuranceVieDraftTotals,

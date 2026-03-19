@@ -135,6 +135,9 @@ describe('successionDraft', () => {
           capitauxDeces: 60000,
         },
       ],
+      [],
+      [],
+      'epoux2',
     );
 
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
@@ -163,6 +166,7 @@ describe('successionDraft', () => {
     expect(parsed?.perEntries).toHaveLength(1);
     expect(parsed?.perEntries[0].capitauxDeces).toBe(60000);
     expect(parsed?.patrimonial.decesDansXAns).toBe(50);
+    expect(parsed?.ui.chainOrder).toBe('epoux2');
     expect(parsed?.enfants).toHaveLength(2);
     expect(parsed?.enfants[0]).toEqual({ id: 'E1', prenom: 'Alice', rattachement: 'commun' });
     expect(parsed?.enfants[1]).toEqual({ id: 'E2', prenom: 'Bastien', rattachement: 'epoux1', deceased: true });
@@ -170,6 +174,48 @@ describe('successionDraft', () => {
 
   it('retourne null sur JSON invalide', () => {
     expect(parseSuccessionDraftPayload('not-json')).toBeNull();
+  });
+
+  it('default chainOrder to epoux1 on legacy drafts', () => {
+    const parsed = parseSuccessionDraftPayload(JSON.stringify({
+      version: 18,
+      form: {
+        actifNetSuccession: 100000,
+        heritiers: [{ lien: 'enfant', partSuccession: 100000 }],
+      },
+      civil: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_legale',
+        pacsConvention: 'separation',
+      },
+      liquidation: {
+        actifEpoux1: 100000,
+        actifEpoux2: 0,
+        actifCommun: 0,
+        nbEnfants: 1,
+      },
+      devolution: {
+        nbEnfantsNonCommuns: 0,
+        testamentsBySide: {
+          epoux1: { active: false, dispositionType: null, beneficiaryRef: null, quotePartPct: 50, particularLegacies: [] },
+          epoux2: { active: false, dispositionType: null, beneficiaryRef: null, quotePartPct: 50, particularLegacies: [] },
+        },
+        ascendantsSurvivantsBySide: { epoux1: false, epoux2: false },
+      },
+      patrimonial: {
+        ...DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+      },
+      enfants: [{ id: 'E1', rattachement: 'commun' }],
+      familyMembers: [],
+      donations: [],
+      assetEntries: [],
+      assuranceVieEntries: [],
+      perEntries: [],
+      groupementFoncierEntries: [],
+      prevoyanceDecesEntries: [],
+    }));
+
+    expect(parsed?.ui.chainOrder).toBe('epoux1');
   });
 
   it('normalise les résidences principales multiples et réinitialise l’horizon simulé en v16', () => {

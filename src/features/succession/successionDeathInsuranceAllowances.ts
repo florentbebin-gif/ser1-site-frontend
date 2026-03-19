@@ -143,8 +143,8 @@ function mergePrevoyanceLines(
       return;
     }
     current.capitalTransmis += line.capitalTransmis;
-    current.primeTaxableAvant70 += line.primeTaxableAvant70;
-    current.primeTaxableApres70 += line.primeTaxableApres70;
+    current.capitauxAvant70 += line.capitauxAvant70;
+    current.capitauxApres70 += line.capitauxApres70;
     current.taxable990I += line.taxable990I;
     current.droits990I += line.droits990I;
     current.taxable757B += line.taxable757B;
@@ -232,8 +232,8 @@ function buildContributions(
     id: line.id,
     lien: line.lien,
     isExempt: line.lien === 'conjoint',
-    before70Base: line.primeTaxableAvant70,
-    after70Base: line.primeTaxableApres70,
+    before70Base: line.capitauxAvant70,
+    after70Base: 0,
     applyBefore70: (taxable: number, droits: number) => {
       line.taxable990I = taxable;
       line.droits990I = droits;

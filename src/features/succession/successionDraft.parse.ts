@@ -25,6 +25,7 @@ import {
   isLienParente,
   isObject,
   isPacsConvention,
+  isPrimarySide,
   isRegimeMatrimonial,
   isSituation,
   isSuccessionBeneficiaryRef,
@@ -471,6 +472,13 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       perEntries,
       groupementFoncierEntries: Array.isArray(payload.groupementFoncierEntries) ? payload.groupementFoncierEntries : [],
       prevoyanceDecesEntries: Array.isArray(payload.prevoyanceDecesEntries) ? payload.prevoyanceDecesEntries : [],
+      ui: isObject(payload.ui)
+        ? {
+          chainOrder: isPrimarySide(payload.ui.chainOrder) ? payload.ui.chainOrder : 'epoux1',
+        }
+        : {
+          chainOrder: 'epoux1',
+        },
     };
   } catch {
     return null;

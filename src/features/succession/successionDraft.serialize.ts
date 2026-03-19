@@ -6,12 +6,13 @@ import type {
   SuccessionCivilContext,
   SuccessionDevolutionContext,
   SuccessionDonationEntry,
-  SuccessionDraftPayloadV18,
+  SuccessionDraftPayloadV19,
   SuccessionEnfant,
   SuccessionGroupementFoncierEntry,
   SuccessionLiquidationContext,
   SuccessionPerEntry,
   SuccessionPatrimonialContext,
+  SuccessionPrimarySide,
   SuccessionPrevoyanceDecesEntry,
 } from './successionDraft.types';
 
@@ -29,9 +30,10 @@ export function buildSuccessionDraftPayload(
   perEntries: SuccessionPerEntry[],
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[] = [],
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[] = [],
-): SuccessionDraftPayloadV18 {
+  chainOrder: SuccessionPrimarySide = 'epoux1',
+): SuccessionDraftPayloadV19 {
   return {
-    version: 18,
+    version: 19,
     form,
     civil,
     liquidation,
@@ -45,5 +47,8 @@ export function buildSuccessionDraftPayload(
     perEntries,
     groupementFoncierEntries,
     prevoyanceDecesEntries,
+    ui: {
+      chainOrder,
+    },
   };
 }

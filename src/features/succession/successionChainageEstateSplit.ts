@@ -14,7 +14,7 @@ type SuccessionChainRegime =
 
 type DonationEntreEpouxSelection = Pick<
   SuccessionPatrimonialContext,
-  'donationEntreEpouxActive' | 'donationEntreEpouxOption' | 'preciputMontant'
+  'attributionIntegrale' | 'donationEntreEpouxActive' | 'donationEntreEpouxOption' | 'preciputMontant'
 >;
 
 export interface SuccessionChainStep1Split {
@@ -69,12 +69,36 @@ export function computeFirstEstate(
 
 export function computeStep1Split(
   civil: SuccessionCivilContext,
+  regimeUsed: SuccessionChainRegime,
   firstEstate: number,
   nbEnfants: number,
   deceased: SuccessionDeceasedSide,
   patrimonial?: DonationEntreEpouxSelection,
   referenceDate = new Date(),
 ): SuccessionChainStep1Split {
+  if (
+    civil.situationMatrimoniale === 'marie'
+    && regimeUsed === 'communaute_universelle'
+    && patrimonial?.attributionIntegrale
+  ) {
+    const warnings = [
+      'Communaute universelle avec attribution integrale: 100 % de la masse du 1er deces reportee au conjoint survivant, sans droits descendants au 1er deces.',
+    ];
+    if (asAmount(patrimonial.preciputMontant) > 0) {
+      warnings.push('Attribution integrale prioritaire: clause de preciput ignoree au 1er deces.');
+    }
+    if (patrimonial.donationEntreEpouxActive) {
+      warnings.push('Attribution integrale prioritaire: donation entre epoux ignoree au 1er deces.');
+    }
+    return {
+      conjointPart: firstEstate,
+      enfantsPart: 0,
+      carryOverToStep2: firstEstate,
+      preciputDeducted: 0,
+      warnings,
+    };
+  }
+
   const preciput = (civil.situationMatrimoniale === 'marie')
     ? Math.min(asAmount(patrimonial?.preciputMontant), firstEstate)
     : 0;

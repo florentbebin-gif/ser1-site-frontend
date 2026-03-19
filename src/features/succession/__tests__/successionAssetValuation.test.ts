@@ -142,6 +142,10 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.actifsTaxablesParOwner.epoux1).toBe(4_850_000);
     expect(result.forfaitMobilierComputed).toBe(242500);
     expect(result.assetNetTotals.epoux1).toBe(5_092_500);
+    expect(result.transmissionBasis.groupementFoncierEntries).toEqual([
+      expect.objectContaining({ type: 'GFA', valeurTotale: 10_000_000 }),
+    ]);
+    expect(result.transmissionBasis.hasBeneficiaryLevelGfAdjustment).toBe(true);
   });
 
   it('keeps the 75 percent forest exemption without monetary cap for GFF', () => {
@@ -160,5 +164,6 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.actifsTaxablesParOwner.commun).toBe(2_500_000);
     expect(result.forfaitMobilierComputed).toBe(125000);
     expect(result.assetNetTotals.commun).toBe(2_625_000);
+    expect(result.transmissionBasis.hasBeneficiaryLevelGfAdjustment).toBe(false);
   });
 });

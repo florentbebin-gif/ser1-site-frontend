@@ -256,6 +256,7 @@ export default function SuccessionSimulator() {
           setDonationsContext(parsed.donations);
           setEnfantsContext(parsed.enfants);
           setFamilyMembers(parsed.familyMembers);
+          setChainOrder(parsed.ui.chainOrder);
         }
       }
     } catch {
@@ -288,13 +289,14 @@ export default function SuccessionSimulator() {
             perEntries,
             groupementFoncierEntries,
             prevoyanceDecesEntries,
+            chainOrder,
           ),
         ),
       );
     } catch {
       // ignore
     }
-  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, derived.nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext, assetEntries, assuranceVieEntries, perEntries, groupementFoncierEntries, prevoyanceDecesEntries]);
+  }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, derived.nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext, assetEntries, assuranceVieEntries, perEntries, groupementFoncierEntries, prevoyanceDecesEntries, chainOrder]);
 
   // Auto-dériver les ascendants survivants par branche si des parents sont déclarés
   useEffect(() => {

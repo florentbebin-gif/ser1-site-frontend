@@ -77,10 +77,9 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
       enfants,
       [],
       snapshot,
-      new Date('2035-06-01T00:00:00Z'),
     );
 
-    expect(prevoyanceFiscalAnalysis.totalDroits).toBe(0);
+    expect(prevoyanceFiscalAnalysis.totalDroits).toBeGreaterThan(0);
 
     const coordinated = coordinateSuccessionInsuranceAllowances({
       avFiscalAnalysis,
@@ -95,10 +94,10 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
     expect(
       coordinated.avFiscalAnalysis.byAssure.epoux1.lines[0].taxable990I
       + coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable990I,
-    ).toBeCloseTo(857500, 6);
+    ).toBeCloseTo(1_047_500, 6);
   });
 
-  it('shares the 757 B global allowance across assurance-vie and prevoyance after 70', () => {
+  it('keeps prevoyance entirely in the 990 I pool after coordination', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const civil = makeCivil({ dateNaissanceEpoux1: '1940-01-01' });
     const familyMembers: FamilyMember[] = [
@@ -125,7 +124,7 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
     );
     const prevoyanceFiscalAnalysis = buildSuccessionPrevoyanceFiscalAnalysis(
       [makePrevoyanceEntry({
-        capitalDeces: 100_000,
+        capitalDeces: 300_000,
         dernierePrime: 20_000,
         clauseBeneficiaire: 'CUSTOM:fam-1:100',
       })],
@@ -133,11 +132,10 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
       [],
       familyMembers,
       snapshot,
-      new Date('2026-03-18T00:00:00Z'),
     );
 
     expect(avFiscalAnalysis.totalDroits).toBe(0);
-    expect(prevoyanceFiscalAnalysis.totalDroits).toBe(0);
+    expect(prevoyanceFiscalAnalysis.lines[0]?.taxable757B).toBe(0);
 
     const coordinated = coordinateSuccessionInsuranceAllowances({
       avFiscalAnalysis,
@@ -146,11 +144,8 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
       fiscalSnapshot: snapshot,
     });
 
-    expect(coordinated.avFiscalAnalysis.totalDroits + coordinated.prevoyanceFiscalAnalysis.totalDroits)
-      .toBeGreaterThan(0);
-    expect(
-      coordinated.avFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B
-      + coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B,
-    ).toBeCloseTo(9500, 6);
+    expect(coordinated.avFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B).toBe(0);
+    expect(coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B).toBe(0);
+    expect(coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable990I).toBeGreaterThan(0);
   });
 });
