@@ -69,8 +69,8 @@ export function PlacementResultsPanel({
             {(() => {
               const totalGains1 = produit1.totaux.revenusNetsLiquidation + produit1.totaux.capitalTransmisNet;
               const totalGains2 = produit2.totaux.revenusNetsLiquidation + produit2.totaux.capitalTransmisNet;
-              const roi1 = produit1.totaux.effortReel > 0 ? totalGains1 / produit1.totaux.effortReel : 0;
-              const roi2 = produit2.totaux.effortReel > 0 ? totalGains2 / produit2.totaux.effortReel : 0;
+              const roi1 = produit1.totaux.effortTotal > 0 ? totalGains1 / produit1.totaux.effortTotal : 0;
+              const roi2 = produit2.totaux.effortTotal > 0 ? totalGains2 / produit2.totaux.effortTotal : 0;
               const meilleurProduit = roi1 > roi2 ? 1 : 2;
 
               return (
@@ -105,9 +105,14 @@ export function PlacementResultsPanel({
                   </div>
 
                   <div className="pl-kpi-compare">
-                    <div className="pl-kpi-val pl-kpi-val--left">{shortEuro(produit1.totaux.effortReel)}</div>
-                    <div className="pl-kpi-label">Effort total</div>
-                    <div className="pl-kpi-val pl-kpi-val--right">{shortEuro(produit2.totaux.effortReel)}</div>
+                    <div className="pl-kpi-val pl-kpi-val--left">{shortEuro(produit1.totaux.effortTotal)}</div>
+                    <div
+                      className="pl-kpi-label"
+                      title="Versements sur la période - économies d'impôt + revenus nets perçus sur la période"
+                    >
+                      Effort total
+                    </div>
+                    <div className="pl-kpi-val pl-kpi-val--right">{shortEuro(produit2.totaux.effortTotal)}</div>
 
                     <div className="pl-kpi-val pl-kpi-val--left">{shortEuro(produit1.epargne.capitalAcquis)}</div>
                     <div className="pl-kpi-label">Capital acquis</div>

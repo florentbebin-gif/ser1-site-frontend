@@ -520,8 +520,8 @@ export const DEFAULT_FISCALITY_SETTINGS = {
       primesApres1998: {
         allowancePerBeneficiary: 152500,
         brackets: [
-          { upTo: 852500, ratePercent: 20 },
-          { upTo: null, ratePercent: 35 },
+          { upTo: 700000, ratePercent: 20 },
+          { upTo: null, ratePercent: 31.25 },
         ],
         note: 'Barème par bénéficiaire (990 I).',
       },

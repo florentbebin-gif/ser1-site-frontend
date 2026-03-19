@@ -75,6 +75,24 @@ export function getBirthDateLabels(
   return { primary: 'Date Naiss. Défunt(e)' };
 }
 
+export function hasRequiredBirthDatesForSituation(
+  situation: SituationMatrimoniale,
+  primaryBirthDate: string | null | undefined,
+  secondaryBirthDate?: string | null | undefined,
+): boolean {
+  const hasPrimaryBirthDate = Boolean(primaryBirthDate?.trim());
+  if (!hasPrimaryBirthDate) return false;
+  return isCoupleSituation(situation) ? Boolean(secondaryBirthDate?.trim()) : true;
+}
+
+export function hasComputableSuccessionFiliation(
+  situation: SituationMatrimoniale,
+  enfantsContext: SuccessionEnfant[],
+  familyMembers: FamilyMember[],
+): boolean {
+  return isCoupleSituation(situation) || enfantsContext.length > 0 || familyMembers.length > 0;
+}
+
 export function createEnfantId(): string {
   return `enf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }

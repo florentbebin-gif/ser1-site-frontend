@@ -1,4 +1,4 @@
-import { ENVELOPES, ENVELOPE_LABELS } from './shared';
+import { ENVELOPES, ENVELOPE_LABELS, round2 } from './shared';
 import { simulateEpargne } from './epargne';
 import { simulateLiquidation } from './liquidation';
 import { calculTransmission } from './transmission';
@@ -119,6 +119,12 @@ export function simulateComplete(
     perBancaire: product.perBancaire || false,
   }, fiscalParams);
 
+  const effortTotal = round2(
+    epargne.cumulVersements
+    - epargne.cumulEconomieIR
+    + epargne.cumulRevenusNetsPercus,
+  );
+
   return {
     envelope: product.envelope,
     envelopeLabel: (ENVELOPE_LABELS as Record<string, string>)[product.envelope] || product.envelope,
@@ -164,7 +170,7 @@ export function simulateComplete(
     },
 
     totaux: {
-      effortTotal: epargne.cumulEffort,
+      effortTotal,
       revenusNetsEpargne: epargne.cumulRevenusNetsPercus,
       effortReel: epargne.cumulEffort - epargne.cumulRevenusNetsPercus,
       economieIRTotal: epargne.cumulEconomieIR,

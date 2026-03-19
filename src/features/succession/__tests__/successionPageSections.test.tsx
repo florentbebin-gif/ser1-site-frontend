@@ -1,0 +1,132 @@
+import type { ComponentProps } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it } from 'vitest';
+import { SuccessionPageGrid } from '../components/SuccessionPageSections';
+
+function buildProps(
+  shouldRenderSuccessionComputationSections: boolean,
+): ComponentProps<typeof SuccessionPageGrid> {
+  return {
+    derived: {
+      shouldRenderSuccessionComputationSections,
+      birthDateLabels: { primary: 'Date Naiss. Defunt(e)' },
+      showSecondBirthDate: false,
+      canOpenDispositionsModal: false,
+      enfantRattachementOptions: [{ value: 'epoux1', label: 'Defunt(e)' }],
+      isMarried: false,
+      isPacsed: false,
+      isConcubinage: false,
+      assetEntriesByCategory: [],
+      assetOwnerOptions: [{ value: 'epoux1', label: 'Defunt(e)' }],
+      assetBreakdown: {
+        actifs: { epoux1: 0, epoux2: 0, commun: 0 },
+        passifs: { epoux1: 0, epoux2: 0, commun: 0 },
+      },
+      assetNetTotals: { epoux1: 0, epoux2: 0, commun: 0 },
+      forfaitMobilierComputed: 0,
+      residencePrincipaleEntryId: null,
+      hasBeneficiaryLevelGfAdjustment: false,
+      assuranceViePartyOptions: [],
+      prevoyanceClauseOptions: [],
+      donationTotals: { rapportable: 0, horsPart: 0, legsParticuliers: 0 },
+      donateurOptions: [],
+      donatairesOptions: [],
+      displayUsesChainage: false,
+      derivedTotalDroits: 0,
+      synthDonutTransmis: 0,
+      derivedMasseTransmise: 0,
+      transmissionRows: [],
+      synthHypothese: null,
+      chainageAnalysis: {
+        order: 'epoux1',
+        firstDecedeLabel: 'Epoux 1',
+        secondDecedeLabel: 'Epoux 2',
+        step1: null,
+        step2: null,
+      },
+      avFiscalAnalysis: {
+        byAssure: { epoux1: { totalDroits: 0, lines: [] }, epoux2: { totalDroits: 0, lines: [] } },
+      },
+      perFiscalAnalysis: {
+        byAssure: { epoux1: { totalDroits: 0, lines: [] }, epoux2: { totalDroits: 0, lines: [] } },
+      },
+      prevoyanceFiscalAnalysis: {
+        byAssure: { epoux1: { totalDroits: 0, lines: [] }, epoux2: { totalDroits: 0, lines: [] } },
+      },
+      insuranceBeneficiaryLines: [],
+      directDisplayAnalysis: {
+        simulatedDeceased: 'epoux1',
+        result: null,
+      },
+      assuranceVieByAssure: { epoux1: 0, epoux2: 0 },
+      perByAssure: { epoux1: 0, epoux2: 0 },
+      prevoyanceByAssure: { epoux1: 0, epoux2: 0 },
+    } as unknown as ComponentProps<typeof SuccessionPageGrid>['derived'],
+    isExpert: true,
+    civilContext: {
+      situationMatrimoniale: 'celibataire',
+      regimeMatrimonial: null,
+      pacsConvention: 'separation',
+      dateNaissanceEpoux1: '1970-01-01',
+    },
+    enfantsContext: [],
+    familyMembers: [],
+    assuranceVieEntries: [],
+    perEntries: [],
+    donationsContext: [],
+    chainOrder: 'epoux1',
+    onToggleChainOrder: () => {},
+    onSituationChange: () => {},
+    setCivilContext: (() => undefined) as never,
+    onOpenDispositions: () => {},
+    onAddEnfant: () => {},
+    onToggleAddMemberPanel: () => {},
+    onUpdateEnfantRattachement: () => {},
+    onToggleEnfantDeceased: () => {},
+    onRemoveEnfant: () => {},
+    onRemoveFamilyMember: () => {},
+    onAddAssetEntry: () => {},
+    onUpdateAssetEntry: () => {},
+    onRemoveAssetEntry: () => {},
+    onOpenAssuranceVieModal: () => {},
+    onOpenPerModal: () => {},
+    groupementFoncierEntries: [],
+    onAddGroupementFoncierEntry: () => {},
+    onUpdateGroupementFoncierEntry: () => {},
+    onRemoveGroupementFoncierEntry: () => {},
+    prevoyanceDecesEntries: [],
+    onAddPrevoyanceDecesEntry: () => {},
+    onUpdatePrevoyanceDecesEntry: () => {},
+    onRemovePrevoyanceDecesEntry: () => {},
+    onSetSimplifiedBalanceField: () => {},
+    onAddDonationEntry: () => {},
+    onUpdateDonationEntry: () => {},
+    onRemoveDonationEntry: () => {},
+    forfaitMobilierMode: 'off',
+    forfaitMobilierPct: 5,
+    forfaitMobilierMontant: 0,
+    abattementResidencePrincipale: false,
+    decesDansXAns: 0,
+    onUpdatePatrimonialField: () => {},
+  };
+}
+
+describe('SuccessionPageGrid', () => {
+  it('masks computation sections when the scenario is not calculable', () => {
+    const markup = renderToStaticMarkup(<SuccessionPageGrid {...buildProps(false)} />);
+
+    expect(markup).not.toContain('Actifs / Passifs');
+    expect(markup).not.toContain('Donations');
+    expect(markup).not.toContain('Synthèse successorale');
+    expect(markup).not.toContain('Chronologie des deces');
+  });
+
+  it('renders computation sections when the scenario is calculable', () => {
+    const markup = renderToStaticMarkup(<SuccessionPageGrid {...buildProps(true)} />);
+
+    expect(markup).toContain('Actifs / Passifs');
+    expect(markup).toContain('Donations');
+    expect(markup).toContain('Synthèse successorale');
+    expect(markup).toContain('Chronologie des deces');
+  });
+});

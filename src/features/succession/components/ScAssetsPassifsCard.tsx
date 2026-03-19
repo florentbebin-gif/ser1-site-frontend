@@ -53,6 +53,7 @@ interface ScAssetsPassifsCardProps {
   onRemoveGroupementFoncierEntry: (_id: string) => void;
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
   prevoyanceClauseOptions: { value: string; label: string }[];
+  prevoyanceRegimeByEntry: Record<string, { regimeLabel: string; warning?: string }>;
   onAddPrevoyanceDecesEntry: () => void;
   onUpdatePrevoyanceDecesEntry: (_id: string, _field: string, _value: string | number) => void;
   onRemovePrevoyanceDecesEntry: (_id: string) => void;
@@ -92,6 +93,7 @@ export function buildSubCategoryOptions(
 ) {
   const hasResidencePrincipale = residencePrincipaleEntryId !== null;
   const isCurrentResidencePrincipale = entry.id === residencePrincipaleEntryId;
+
   return ASSET_SUBCATEGORY_OPTIONS[entry.category]
     .filter((option) => (
       entry.category !== 'immobilier'
@@ -130,6 +132,7 @@ export default function ScAssetsPassifsCard({
   onRemoveGroupementFoncierEntry,
   prevoyanceDecesEntries,
   prevoyanceClauseOptions,
+  prevoyanceRegimeByEntry,
   onAddPrevoyanceDecesEntry,
   onUpdatePrevoyanceDecesEntry,
   onRemovePrevoyanceDecesEntry,
@@ -141,6 +144,9 @@ export default function ScAssetsPassifsCard({
   onUpdatePatrimonialField,
 }: ScAssetsPassifsCardProps) {
   const flags = { isMarried, isPacsed, isConcubinage };
+  const showCivilVsFiscalHint = abattementResidencePrincipale
+    || hasBeneficiaryLevelGfAdjustment
+    || forfaitMobilierMode !== 'off';
   const showForfaitMobilier = forfaitMobilierMode !== 'off';
 
   return (
@@ -209,6 +215,7 @@ export default function ScAssetsPassifsCard({
                   </button>
                 </div>
               </div>
+
               <div className="sc-assets-list">
                 {category.entries.map((entry) => {
                   const showResidenceCheckbox = (
@@ -251,7 +258,7 @@ export default function ScAssetsPassifsCard({
                           onClick={() => onRemoveAssetEntry(entry.id)}
                           title="Supprimer cette ligne"
                         >
-                          ✕
+                          &#10005;
                         </button>
                       </div>
                       {showResidenceCheckbox && (
@@ -269,8 +276,10 @@ export default function ScAssetsPassifsCard({
                     </div>
                   );
                 })}
+
                 {category.value === 'immobilier' && groupementFoncierEntries.map((gfEntry) => {
-                  const exo = computeGroupementFoncierExoneration(gfEntry.type, gfEntry.valeurTotale);
+                  const exoneration = computeGroupementFoncierExoneration(gfEntry.type, gfEntry.valeurTotale);
+
                   return (
                     <div key={gfEntry.id} className="sc-asset-row-stack">
                       <div className="sc-asset-row">
@@ -306,17 +315,18 @@ export default function ScAssetsPassifsCard({
                           onClick={() => onRemoveGroupementFoncierEntry(gfEntry.id)}
                           title="Supprimer cette ligne"
                         >
-                          ✕
+                          &#10005;
                         </button>
                       </div>
                       {gfEntry.valeurTotale > 0 && (
                         <div className="sc-field sc-field--full sc-asset-row__suboption sc-asset-row__suboption--info">
-                          Exonéré : {fmt(exo.exonere)} | Taxable : {fmt(exo.taxable)}
+                          Exonéré : {fmt(exoneration.exonere)} | Taxable : {fmt(exoneration.taxable)}
                         </div>
                       )}
                     </div>
                   );
                 })}
+
                 {category.value === 'divers' && prevoyanceDecesEntries.map((pvEntry) => {
                   const selectedClause = pvEntry.clauseBeneficiaire || prevoyanceClauseOptions[0]?.value || '';
                   const clauseOptions = isSupportedStructuredClause(selectedClause)
@@ -325,6 +335,7 @@ export default function ScAssetsPassifsCard({
                       ...prevoyanceClauseOptions,
                       { value: selectedClause, label: 'Clause libre existante' },
                     ];
+                  const regimeInfo = prevoyanceRegimeByEntry[pvEntry.id];
 
                   return (
                     <div key={pvEntry.id} className="sc-asset-row-stack">
@@ -361,24 +372,29 @@ export default function ScAssetsPassifsCard({
                           onClick={() => onRemovePrevoyanceDecesEntry(pvEntry.id)}
                           title="Supprimer cette ligne"
                         >
-                          ✕
+                          &#10005;
                         </button>
                       </div>
                       <div className="sc-asset-row__suboption sc-asset-row__suboption--prevoyance">
                         <div className="sc-field sc-field--wide">
-                          <label>Fiscalite appliquee</label>
-                          <span className="sc-asset-row__value">
-                            Conversion AV synthetique, tout le capital est traite en 990 I.
-                          </span>
-                        </div>
-                        <div className="sc-field" hidden aria-hidden="true">
-                          <label>Dernière prime (€)</label>
+                          <label>Dernière prime versée (€)</label>
                           <ScNumericInput
                             value={pvEntry.dernierePrime || 0}
                             min={0}
                             onChange={(val) => onUpdatePrevoyanceDecesEntry(pvEntry.id, 'dernierePrime', val)}
                           />
                         </div>
+                        <div className="sc-field sc-field--wide">
+                          <label>Régime applicable</label>
+                          <span className="sc-asset-row__value">
+                            {`Régime applicable : ${regimeInfo?.regimeLabel ?? '990 I'}`}
+                          </span>
+                        </div>
+                        {regimeInfo?.warning && (
+                          <div className="sc-field sc-field--wide">
+                            <span className="sc-hint sc-hint--compact">{regimeInfo.warning}</span>
+                          </div>
+                        )}
                         <div className="sc-field sc-field--wide">
                           <label>Clause bénéficiaire</label>
                           <ScSelect
@@ -392,6 +408,7 @@ export default function ScAssetsPassifsCard({
                     </div>
                   );
                 })}
+
                 {category.value === 'financier' && assuranceVieEntries.map((entry) => (
                   <div key={entry.id} className="sc-asset-row sc-asset-row--av">
                     <div className="sc-field">
@@ -411,6 +428,7 @@ export default function ScAssetsPassifsCard({
                     <div />
                   </div>
                 ))}
+
                 {category.value === 'financier' && perEntries.map((entry) => (
                   <div key={entry.id} className="sc-asset-row sc-asset-row--av">
                     <div className="sc-field">
@@ -430,13 +448,14 @@ export default function ScAssetsPassifsCard({
                     <div />
                   </div>
                 ))}
+
                 {category.entries.length === 0
                   && !(category.value === 'financier' && (assuranceVieEntries.length > 0 || perEntries.length > 0))
                   && !(category.value === 'immobilier' && groupementFoncierEntries.length > 0)
                   && !(category.value === 'divers' && prevoyanceDecesEntries.length > 0)
                   && (
-                  <p className="sc-hint sc-hint--compact">Aucune ligne détaillée dans cette catégorie.</p>
-                )}
+                    <p className="sc-hint sc-hint--compact">Aucune ligne détaillée dans cette catégorie.</p>
+                  )}
               </div>
             </section>
           ))}
@@ -448,7 +467,7 @@ export default function ScAssetsPassifsCard({
                 {!showForfaitMobilier ? (
                   <button type="button" className="sc-member-add-icon-btn" onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'auto')} aria-label="Configurer le forfait mobilier">+</button>
                 ) : (
-                  <button type="button" className="sc-child-remove-btn" onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'off')} aria-label="Désactiver le forfait mobilier">✕</button>
+                  <button type="button" className="sc-child-remove-btn" onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'off')} aria-label="Désactiver le forfait mobilier">&#10005;</button>
                 )}
               </div>
             </div>
@@ -551,9 +570,15 @@ export default function ScAssetsPassifsCard({
           </div>
         </div>
       )}
+
       {hasBeneficiaryLevelGfAdjustment && (
         <p className="sc-hint sc-hint--compact">
-          Les totaux GFA/GFV affiches dans cette carte restent provisoires. La base taxable definitive est recalculee par beneficiaire dans la synthese et l&apos;export.
+          Les totaux GFA/GFV affichés dans cette carte restent provisoires. La base taxable définitive est recalculée par bénéficiaire dans la synthèse et l&apos;export.
+        </p>
+      )}
+      {showCivilVsFiscalHint && (
+        <p className="sc-hint sc-hint--compact">
+          Les totaux affichés dans cette carte correspondent à la masse civile nette. L&apos;assiette fiscale est recalculée séparément pour les droits.
         </p>
       )}
     </div>

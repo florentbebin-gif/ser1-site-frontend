@@ -90,7 +90,7 @@ export default function ScSuccessionSummaryPanel({
           <div className="sc-synth-hero__value">{fmt(derivedTotalDroits)}</div>
           {synthDonutTransmis > 0 && (
             <div className="sc-synth-hero__sub">
-              sur {fmt(synthDonutTransmis)} transmis
+              sur {fmt(synthDonutTransmis)} {displayUsesChainage ? 'cumules' : 'transmis'}
             </div>
           )}
         </div>
@@ -102,7 +102,7 @@ export default function ScSuccessionSummaryPanel({
       <div className="sc-card__divider sc-card__divider--tight" />
       <div className="sc-synth-kpis">
         <div className="sc-synth-kpi">
-          <span className="sc-synth-kpi__label">Patrimoine transmis</span>
+          <span className="sc-synth-kpi__label">{displayUsesChainage ? 'Cumul transmis sur 2 deces' : 'Patrimoine transmis'}</span>
           <strong className="sc-synth-kpi__value">{fmt(synthDonutTransmis)}</strong>
         </div>
         <div className="sc-synth-kpi">

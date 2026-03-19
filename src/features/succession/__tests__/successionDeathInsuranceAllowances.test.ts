@@ -52,7 +52,7 @@ function makePrevoyanceEntry(
 }
 
 describe('coordinateSuccessionInsuranceAllowances', () => {
-  it('shares the 990 I allowance between assurance-vie and prevoyance for the same beneficiary', () => {
+  it('shares the 990 I allowance between assurance-vie and prevoyance before 70 for the same beneficiary', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const civil = makeCivil();
     const enfants = [{ id: 'E1', rattachement: 'epoux1' as const }];
@@ -77,9 +77,10 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
       enfants,
       [],
       snapshot,
+      new Date('2026-03-19T00:00:00Z'),
     );
 
-    expect(prevoyanceFiscalAnalysis.totalDroits).toBeGreaterThan(0);
+    expect(prevoyanceFiscalAnalysis.totalDroits).toBe(0);
 
     const coordinated = coordinateSuccessionInsuranceAllowances({
       avFiscalAnalysis,
@@ -89,15 +90,13 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
     });
 
     expect(coordinated.prevoyanceFiscalAnalysis.totalDroits).toBeGreaterThan(0);
-    expect(coordinated.avFiscalAnalysis.totalDroits + coordinated.prevoyanceFiscalAnalysis.totalDroits)
-      .toBeGreaterThan(avFiscalAnalysis.totalDroits + prevoyanceFiscalAnalysis.totalDroits);
     expect(
       coordinated.avFiscalAnalysis.byAssure.epoux1.lines[0].taxable990I
       + coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable990I,
-    ).toBeCloseTo(1_047_500, 6);
+    ).toBeCloseTo(857500, 6);
   });
 
-  it('keeps prevoyance entirely in the 990 I pool after coordination', () => {
+  it('shares the 757 B allowance between assurance-vie and prevoyance after 70 for the same beneficiary', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const civil = makeCivil({ dateNaissanceEpoux1: '1940-01-01' });
     const familyMembers: FamilyMember[] = [
@@ -120,7 +119,7 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
       [],
       familyMembers,
       snapshot,
-      new Date('2026-03-18T00:00:00Z'),
+      new Date('2026-03-19T00:00:00Z'),
     );
     const prevoyanceFiscalAnalysis = buildSuccessionPrevoyanceFiscalAnalysis(
       [makePrevoyanceEntry({
@@ -132,6 +131,7 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
       [],
       familyMembers,
       snapshot,
+      new Date('2026-03-19T00:00:00Z'),
     );
 
     expect(avFiscalAnalysis.totalDroits).toBe(0);
@@ -144,8 +144,11 @@ describe('coordinateSuccessionInsuranceAllowances', () => {
       fiscalSnapshot: snapshot,
     });
 
-    expect(coordinated.avFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B).toBe(0);
-    expect(coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B).toBe(0);
-    expect(coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable990I).toBeGreaterThan(0);
+    expect(coordinated.avFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B).toBeGreaterThan(0);
+    expect(coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B).toBeGreaterThan(0);
+    expect(
+      coordinated.avFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B
+      + coordinated.prevoyanceFiscalAnalysis.byAssure.epoux1.lines[0].taxable757B,
+    ).toBeCloseTo(9500, 6);
   });
 });

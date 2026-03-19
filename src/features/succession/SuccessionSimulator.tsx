@@ -217,6 +217,7 @@ export default function SuccessionSimulator() {
     displayUsesChainage: derived.displayUsesChainage,
     directDisplayResult: derived.directDisplayAnalysis.result,
     derivedMasseTransmise: derived.derivedMasseTransmise,
+    synthDonutTransmis: derived.synthDonutTransmis,
     derivedTotalDroits: derived.derivedTotalDroits,
     exportHeirs: derived.exportHeirs,
   });

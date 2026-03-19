@@ -233,7 +233,7 @@ function buildContributions(
     lien: line.lien,
     isExempt: line.lien === 'conjoint',
     before70Base: line.capitauxAvant70,
-    after70Base: 0,
+    after70Base: line.capitauxApres70,
     applyBefore70: (taxable: number, droits: number) => {
       line.taxable990I = taxable;
       line.droits990I = droits;

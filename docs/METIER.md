@@ -100,7 +100,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - groupements fonciers (`GFA`, `GFV`, `GFF`, `GF`) saisis en expert, avec reinjection de leur base taxable dans la masse successorale
 - contrats d'assurance-vie saisis a part dans le bloc patrimonial, integres a la masse transmise affichee
 - contrats `PER assurance` saisis a part dans le bloc patrimonial, avec lecture fiscale avant / apres 70 ans selon la date deces simulee
-- contrats de prevoyance deces saisis a part dans le bloc patrimonial, convertis en assurance-vie synthetique pour la fiscalite de deces
+- contrats de prevoyance deces pure saisis a part dans le bloc patrimonial, avec fiscalite calculee sur la derniere prime annuelle et regime 990 I / 757 B selon l'age du souscripteur au deces simule
 - donations / legs agrégés en mode simplifié ou détaillés en mode expert
 - dispositions civiles et testamentaires via le modal dedie
 - testament saisi par personne : une carte en situation solo, deux cartes en situation de couple, avec beneficiaires choisis dans le contexte familial declare
@@ -113,7 +113,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - lecture civile simplifiee de la devolution
 - lecture patrimoniale simplifiee (masse civile, quotite disponible, liberalites a controler)
 - synthese patrimoniale guidee sur les contrats d'assurance-vie saisis a part, avec ventilation fiscale simplifiee par beneficiaire
-- synthese patrimoniale guidee sur la prevoyance deces, avec ventilation par beneficiaire alignee sur l'assurance-vie synthetique
+- synthese patrimoniale guidee sur la prevoyance deces, avec ventilation du capital par beneficiaire et fiscalite assise sur la derniere prime annuelle saisie
 - points d'attention et warnings de simplification
 
 ### Ce qui est couvert
@@ -133,9 +133,11 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - calcul du forfait mobilier uniquement s'il est explicitement ajoute, avec ventilation proportionnelle par porteur
 - separation de la transmission successorale et des assurances hors succession dans la synthese de droite, avec restitution des capitaux par beneficiaire
 - residence principale unique cote produit, avec option d'abattement 20 % visible sur la ligne immobiliere correspondante
+- masquage des blocs `Actifs / Passifs`, `Donations`, `Synthese successorale` et `Chronologie des deces` tant que la filiation utile n'est pas constituee ou que les dates de naissance principales requises sont absentes
+- separation explicite entre masse civile nette transmise et assiette fiscale des droits : l'abattement RP 20 %, le forfait mobilier et les ajustements GFA/GFV n'abaissent pas le brut transmis affiche
 - ventilation simplifiee de l'assurance-vie deces selon les clauses beneficiaires saisies (lecture 990 I / 757 B), avec mutualisation des abattements entre contrats d'un meme assure et d'un meme beneficiaire
 - ventilation simplifiee du `PER assurance` deces selon les clauses beneficiaires saisies, avec bascule avant / apres 70 ans a la date deces simulee et coordination des abattements avec l'assurance-vie / la prevoyance
-- ventilation simplifiee de la prevoyance deces selon une clause beneficiaire structuree, avec conversion en assurance-vie synthetique et application du seul regime 990 I dans ce module, coordonnee avec l'assurance-vie / le `PER assurance`
+- ventilation de la prevoyance deces pure non rachetable selon une clause beneficiaire structuree, avec assiette fiscale limitee a la derniere prime annuelle saisie et bascule 990 I / 757 B selon l'age du souscripteur au deces simule
 - communaute universelle avec attribution integrale: le 1er deces reporte integralement la transmission economique au conjoint survivant et la taxation des descendants au 2e deces
 - representation successorale simplifiee des enfants decedes par leurs petits-enfants quand ils sont identifies
 - dates de naissance des personnes du couple / du defunt dans le contexte familial pour valoriser l'usufruit et la nue-propriete a la date du deces simule
@@ -151,6 +153,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - toutes les subtilites civiles, donations anterieures et clauses complexes ne sont pas integralement calculees en moteur
 - la ventilation assurance-vie reste simplifiee et depend des clauses beneficiaires saisies; les contrats demembres avec clause non standard ou sans age de l'usufruitier font l'objet d'un repli simplifie avec warning
 - la ventilation `PER assurance` reste simplifiee; la bascule avant / apres 70 ans repose sur l'age de l'assure a la date deces simulee, pas sur un historique detaille des versements
+- la prevoyance deces pure reste simplifiee sur la ventilation par clause beneficiaire, mais la fiscalite appliquee suit desormais la derniere prime annuelle saisie; si cette donnee manque, le module bascule par defaut en 990 I avec warning
 - la ventilation `GFA/GFV` par beneficiaire repose sur une allocation prorata des parts successorales brutes quand aucune affectation d'actif par beneficiaire n'est disponible
 - l'abattement de 20 % sur la residence principale reste une attestation utilisateur; l'outil ne modele pas toutes les conditions d'occupation juridiques
 - la contrainte `une seule residence principale` est une simplification produit volontaire dans cette UI
@@ -162,15 +165,27 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
 - la chronologie 2 deces reste un module simplifie: elle reemploie le testament du cote du decede et le report economique vers le 2e deces, mais ne remplace pas une liquidation notariale exhaustive
 
+### Matrice age / horizon deces simule
+L'horizon `decesDansXAns` est converti en `simulatedDeathDate` dans `useSuccessionDerivedValues.ts`, sur la base de la date du jour.
+
+| Regle | Date de reference utilisee | Fallback actuel | Statut repo |
+| --- | --- | --- | --- |
+| Chaînage 2 décès | `simulatedDeathDate` | date du jour si horizon = 0 | OK |
+| Dévolution avec valorisation usufruit / nue-propriété | `simulatedDeathDate` | repli moteur si date de naissance manquante | OK |
+| Donation entre époux / option usufruit | `simulatedDeathDate` | warning si date de naissance manquante | OK |
+| PER assurance | âge de l'assuré à `simulatedDeathDate` | hypothèse avant 70 ans si date de naissance manquante | OK |
+| Donations et rappel fiscal | `simulatedDeathDate` | date du jour si référence absente | OK |
+| Prévoyance décès pure | âge du souscripteur à `simulatedDeathDate` | 990 I par défaut si la dernière prime n'est pas saisie | OK sous réserve de la donnée `dernierePrime` |
+
 ### Matrice juridique de validation succession
 La validation de `/sim/succession` repose sur une matrice de cas cibles, reliee a la fois aux sources juridiques et aux tests de non-regression du module.
 
 | Situation | Attendu produit | Source juridique principale | Couverture repo |
 | --- | --- | --- | --- |
-| Celibataire + enfants | succession directe, droits DMTG ligne directe, affichage une ligne par enfant | Service-Public F1270 / F35794 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts` |
-| Veuf + enfants | succession directe, pas de chaînage 2 deces, droits ligne directe sur les enfants | Service-Public F1270 / F35794 | `successionValidationMatrix.test.ts` |
-| Divorce + enfants | succession directe du defunt simule, ex-conjoint hors droits successoraux legaux | Service-Public F1270 / F35794 | `successionValidationMatrix.test.ts` |
-| Marie + enfants communs | chronologie 2 deces, conjoint + descendants selon la lecture civile retenue ; sans DDV, choix legal possible entre usufruit total et 1/4 PP ; sans choix explicite, le module peut rester sur une hypothese moteur affichee comme telle | Service-Public F1270 / Code civil art. 757 et 758-3 | `successionChainage.test.ts`, `successionDevolution.test.ts` |
+| Celibataire + enfants | succession directe, droits DMTG ligne directe, affichage une ligne par enfant | Service-Public F35794 | `successionDisplay.test.ts`, `successionValidationMatrix.test.ts` |
+| Veuf + enfants | succession directe, pas de chaînage 2 deces, droits ligne directe sur les enfants | Service-Public F35794 | `successionValidationMatrix.test.ts` |
+| Divorce + enfants | succession directe du defunt simule, ex-conjoint hors droits successoraux legaux | Service-Public F35794 | `successionValidationMatrix.test.ts` |
+| Marie + enfants communs | chronologie 2 deces, conjoint + descendants selon la lecture civile retenue ; sans DDV, choix legal possible entre usufruit total et 1/4 PP ; sans choix explicite, le module peut rester sur une hypothese moteur affichee comme telle | Service-Public F35794 / Code civil art. 757 et 758-3 | `successionChainage.test.ts`, `successionDevolution.test.ts` |
 | Marie + enfant non commun | l'enfant propre n'apparait que sur la branche du parent defunt, avec libelle stable dans la synthese meme en famille recomposee | Code civil art. 757 / 757-1 | `successionChainage.test.ts`, `successionValidationMatrix.test.ts` |
 | Marie + testament (conjoint / enfant) | la chronologie 2 deces retient le testament du cote decede a chaque etape ; l'ordre inverse change le testament retenu et les beneficiaires exportes | Code civil art. 757 / 913 et s. | `successionChainage.test.ts`, `successionExport.test.ts`, `successionValidationMatrix.test.ts` |
 | Marie + communaute universelle + attribution integrale | le 1er deces transmet economiquement 100 % au conjoint survivant, sans droits descendants au 1er deces ; la taxation des descendants est reportee au 2e deces | Code civil / avantage matrimonial ; CGI art. 796-0 bis pour l'exoneration du conjoint | `successionChainage.test.ts` |
@@ -181,7 +196,7 @@ La validation de `/sim/succession` repose sur une matrice de cas cibles, reliee 
 | Enfant decede represente par petits-enfants | representation successorale simplifiee par branche | Code civil art. 751 et s. | `successionDevolution.test.ts`, `successionChainage.test.ts` |
 | Usufruit / nue-propriete du conjoint | valorisation selon art. 669 CGI si la date de naissance est renseignee | CGI art. 669 | `successionUsufruit.test.ts`, `successionDevolution.test.ts`, `successionChainage.test.ts` |
 | GFA/GFV > 600 kEUR par beneficiaire | l'exoneration 75 % / 50 % est appliquee sur la quote-part de chaque beneficiaire, pas sur l'entry globale | CGI art. 793 bis | `successionAssetValuation.test.ts`, `successionValidationMatrix.test.ts` |
-| Prevoyance deces | conversion en assurance-vie synthetique, capital traite en 990 I et mutualisation des abattements avec AV / PER | Regle produit SER1 alignee sur le module succession | `successionPrevoyanceFiscal.test.ts`, `successionDeathInsuranceAllowances.test.ts` |
+| Prevoyance deces pure non rachetable | taxation de la derniere prime annuelle uniquement, avec 990 I avant 70 ans et 757 B apres 70 ans a la date du deces simule ; exoneration conjoint/PACS | BOI-TCAS-AUT-60 §180 / CGI art. 990 I / CGI art. 757 B | `successionPrevoyanceFiscal.test.ts`, `successionDeathInsuranceAllowances.test.ts` |
 
 En pratique, chaque PR corrective du module succession doit ajouter ou mettre a jour au moins un test rattache a cette matrice. La PR finale de consolidation verifie que les cas ci-dessus restent coherents entre affichage, moteur et exports.
 

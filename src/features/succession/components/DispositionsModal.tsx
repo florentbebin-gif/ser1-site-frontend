@@ -209,6 +209,9 @@ export default function DispositionsModal({
                     preciputMontant: val,
                   }))}
                 />
+                <p className="sc-hint sc-hint--compact">
+                  Le préciput permet au conjoint survivant de prélever certains biens ou une somme sur la communauté avant le partage successoral.
+                </p>
               </div>
             )}
           </div>

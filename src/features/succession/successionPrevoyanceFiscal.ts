@@ -11,6 +11,15 @@ import type {
   SuccessionPrevoyanceDecesEntry,
 } from './successionDraft.types';
 import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
+import { getAgeAtReferenceDate } from './successionUsufruit';
+
+export interface SuccessionPrevoyanceRegimeInfo {
+  regimeKey: '990I' | '757B';
+  regimeLabel: '990 I' | '757 B';
+  taxBase: number;
+  ageAtDeath: number | null;
+  warning?: string;
+}
 
 export interface SuccessionPrevoyanceFiscalLine {
   id: string;
@@ -42,66 +51,217 @@ export interface SuccessionPrevoyanceFiscalAnalysis {
   warnings: string[];
 }
 
-function toSyntheticAssuranceVieEntries(
+function asAmount(value: unknown): number {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return 0;
+  return Math.max(0, amount);
+}
+
+function getBirthDateForSouscripteur(
+  civil: SuccessionCivilContext,
+  souscripteur: 'epoux1' | 'epoux2',
+): string | undefined {
+  return souscripteur === 'epoux1'
+    ? civil.dateNaissanceEpoux1
+    : civil.dateNaissanceEpoux2;
+}
+
+export function getSuccessionPrevoyanceRegimeInfo(
+  entry: SuccessionPrevoyanceDecesEntry,
+  civil: SuccessionCivilContext,
+  referenceDate: Date,
+  agePivotPrimes = 70,
+): SuccessionPrevoyanceRegimeInfo {
+  const capitalDeces = asAmount(entry.capitalDeces);
+  const dernierePrime = asAmount(entry.dernierePrime);
+  const birthDate = getBirthDateForSouscripteur(civil, entry.souscripteur);
+  const ageAtDeath = getAgeAtReferenceDate(birthDate, referenceDate);
+
+  if (dernierePrime <= 0) {
+    return {
+      regimeKey: '990I',
+      regimeLabel: '990 I',
+      taxBase: capitalDeces,
+      ageAtDeath,
+      warning: 'Dernière prime non renseignée : calcul par défaut en 990 I sur le capital décès. Renseignez la dernière prime pour un calcul exact.',
+    };
+  }
+
+  if (ageAtDeath == null) {
+    return {
+      regimeKey: '990I',
+      regimeLabel: '990 I',
+      taxBase: dernierePrime,
+      ageAtDeath: null,
+      warning: `Date de naissance manquante pour ${entry.souscripteur} : hypothèse par défaut d'un régime 990 I.`,
+    };
+  }
+
+  if (ageAtDeath < agePivotPrimes) {
+    return {
+      regimeKey: '990I',
+      regimeLabel: '990 I',
+      taxBase: dernierePrime,
+      ageAtDeath,
+    };
+  }
+
+  return {
+    regimeKey: '757B',
+    regimeLabel: '757 B',
+    taxBase: dernierePrime,
+    ageAtDeath,
+  };
+}
+
+function buildSyntheticEntries(
   entries: SuccessionPrevoyanceDecesEntry[],
-): SuccessionAssuranceVieEntry[] {
-  return entries.map((entry) => ({
-    id: `prev-${entry.id}`,
+  civil: SuccessionCivilContext,
+  referenceDate: Date,
+  snapshot: SuccessionFiscalSnapshot,
+): {
+  capitalEntries: SuccessionAssuranceVieEntry[];
+  fiscalEntries: SuccessionAssuranceVieEntry[];
+  regimeByEntry: Record<string, SuccessionPrevoyanceRegimeInfo>;
+  warnings: string[];
+} {
+  const warnings: string[] = [];
+  const regimeByEntry: Record<string, SuccessionPrevoyanceRegimeInfo> = {};
+
+  const capitalEntries = entries.map((entry) => ({
+    id: `prev-cap-${entry.id}`,
     typeContrat: 'standard',
     souscripteur: entry.souscripteur,
     assure: entry.assure,
     clauseBeneficiaire: entry.clauseBeneficiaire,
-    capitauxDeces: entry.capitalDeces,
+    capitauxDeces: asAmount(entry.capitalDeces),
     versementsApres70: 0,
-  }));
-}
+  } satisfies SuccessionAssuranceVieEntry));
 
-function mapLine(line: SuccessionAvFiscalLine): SuccessionPrevoyanceFiscalLine {
+  const fiscalEntries = entries.map((entry) => {
+    const regimeInfo = getSuccessionPrevoyanceRegimeInfo(
+      entry,
+      civil,
+      referenceDate,
+      snapshot.avDeces.agePivotPrimes,
+    );
+
+    regimeByEntry[entry.id] = regimeInfo;
+    if (regimeInfo.warning) {
+      warnings.push(`Prévoyance décès (${entry.id}) : ${regimeInfo.warning}`);
+    }
+
+    return {
+      id: `prev-tax-${entry.id}`,
+      typeContrat: 'standard',
+      souscripteur: entry.souscripteur,
+      assure: entry.assure,
+      clauseBeneficiaire: entry.clauseBeneficiaire,
+      capitauxDeces: regimeInfo.taxBase,
+      versementsApres70: regimeInfo.regimeKey === '757B' ? regimeInfo.taxBase : 0,
+    } satisfies SuccessionAssuranceVieEntry;
+  });
+
   return {
-    id: line.id,
-    label: line.label,
-    lien: line.lien,
-    capitalTransmis: line.capitauxAvant70 + line.capitauxApres70,
-    capitauxAvant70: line.capitauxAvant70,
-    capitauxApres70: line.capitauxApres70,
-    taxable990I: line.taxable990I,
-    droits990I: line.droits990I,
-    taxable757B: line.taxable757B,
-    droits757B: line.droits757B,
-    totalDroits: line.totalDroits,
-    netTransmis: line.netTransmis,
+    capitalEntries,
+    fiscalEntries,
+    regimeByEntry,
+    warnings,
   };
 }
 
-function mapAnalysis(
-  analysis: SuccessionAvFiscalAnalysis,
-  entryCount: number,
-): SuccessionPrevoyanceFiscalAnalysis {
+function filterPrevoyanceWarnings(warnings: string[]): string[] {
+  return warnings
+    .filter((warning) => !warning.includes('ventilation fiscale simplifiée à partir de la clause bénéficiaire'))
+    .map((warning) => warning.replace(/Assurance-vie/g, 'Prévoyance décès'));
+}
+
+function mergeSideLines(
+  capitalLines: SuccessionAvFiscalLine[],
+  fiscalLines: SuccessionAvFiscalLine[],
+): SuccessionPrevoyanceFiscalLine[] {
+  const capitalById = new Map(capitalLines.map((line) => [line.id, line] as const));
+  const fiscalById = new Map(fiscalLines.map((line) => [line.id, line] as const));
+  const ids = new Set<string>([
+    ...capitalById.keys(),
+    ...fiscalById.keys(),
+  ]);
+
+  return Array.from(ids).map((id) => {
+    const capitalLine = capitalById.get(id);
+    const fiscalLine = fiscalById.get(id);
+    const label = capitalLine?.label ?? fiscalLine?.label ?? 'Bénéficiaire';
+    const lien = capitalLine?.lien ?? fiscalLine?.lien ?? 'autre';
+    const capitalTransmis = (capitalLine?.capitauxAvant70 ?? 0) + (capitalLine?.capitauxApres70 ?? 0);
+    const totalDroits = fiscalLine?.totalDroits ?? 0;
+
+    return {
+      id,
+      label,
+      lien,
+      capitalTransmis,
+      capitauxAvant70: fiscalLine?.capitauxAvant70 ?? 0,
+      capitauxApres70: fiscalLine?.capitauxApres70 ?? 0,
+      taxable990I: fiscalLine?.taxable990I ?? 0,
+      droits990I: fiscalLine?.droits990I ?? 0,
+      taxable757B: fiscalLine?.taxable757B ?? 0,
+      droits757B: fiscalLine?.droits757B ?? 0,
+      totalDroits,
+      netTransmis: Math.max(0, capitalTransmis - totalDroits),
+    };
+  }).sort((a, b) => b.capitalTransmis - a.capitalTransmis);
+}
+
+function mergePrevoyanceLines(
+  firstLines: SuccessionPrevoyanceFiscalLine[],
+  secondLines: SuccessionPrevoyanceFiscalLine[],
+): SuccessionPrevoyanceFiscalLine[] {
+  const merged = new Map<string, SuccessionPrevoyanceFiscalLine>();
+
+  [...firstLines, ...secondLines].forEach((line) => {
+    const current = merged.get(line.id);
+    if (!current) {
+      merged.set(line.id, { ...line });
+      return;
+    }
+    current.capitalTransmis += line.capitalTransmis;
+    current.capitauxAvant70 += line.capitauxAvant70;
+    current.capitauxApres70 += line.capitauxApres70;
+    current.taxable990I += line.taxable990I;
+    current.droits990I += line.droits990I;
+    current.taxable757B += line.taxable757B;
+    current.droits757B += line.droits757B;
+    current.totalDroits += line.totalDroits;
+    current.netTransmis += line.netTransmis;
+  });
+
+  return Array.from(merged.values()).sort((a, b) => b.capitalTransmis - a.capitalTransmis);
+}
+
+function buildPerAssureLines(
+  capitalAnalysis: SuccessionAvFiscalAnalysis,
+  fiscalAnalysis: SuccessionAvFiscalAnalysis,
+): Record<'epoux1' | 'epoux2', SuccessionPrevoyanceFiscalPerAssure> {
+  const epoux1Lines = mergeSideLines(
+    capitalAnalysis.byAssure.epoux1.lines,
+    fiscalAnalysis.byAssure.epoux1.lines,
+  );
+  const epoux2Lines = mergeSideLines(
+    capitalAnalysis.byAssure.epoux2.lines,
+    fiscalAnalysis.byAssure.epoux2.lines,
+  );
+
   return {
-    totalCapitalDeces: analysis.totalCapitauxDeces,
-    totalDroits: analysis.totalDroits,
-    totalNetTransmis: analysis.totalNetTransmis,
-    lines: analysis.lines.map(mapLine),
-    byAssure: {
-      epoux1: {
-        capitalDeces: analysis.byAssure.epoux1.capitauxDeces,
-        totalDroits: analysis.byAssure.epoux1.totalDroits,
-        lines: analysis.byAssure.epoux1.lines.map(mapLine),
-      },
-      epoux2: {
-        capitalDeces: analysis.byAssure.epoux2.capitauxDeces,
-        totalDroits: analysis.byAssure.epoux2.totalDroits,
-        lines: analysis.byAssure.epoux2.lines.map(mapLine),
-      },
+    epoux1: {
+      capitalDeces: capitalAnalysis.byAssure.epoux1.capitauxDeces,
+      totalDroits: epoux1Lines.reduce((sum, line) => sum + line.totalDroits, 0),
+      lines: epoux1Lines,
     },
-    warnings: Array.from(new Set([
-      ...analysis.warnings.map((warning) => warning.replace(/Assurance-vie/g, 'Prevoyance deces')),
-      ...(entryCount > 0
-        ? [
-          'Prevoyance deces: conversion en assurance-vie synthetique, avec capital integralement traite sous le regime 990 I dans ce module.',
-        ]
-        : []),
-    ])),
+    epoux2: {
+      capitalDeces: capitalAnalysis.byAssure.epoux2.capitauxDeces,
+      totalDroits: epoux2Lines.reduce((sum, line) => sum + line.totalDroits, 0),
+      lines: epoux2Lines,
+    },
   };
 }
 
@@ -111,15 +271,50 @@ export function buildSuccessionPrevoyanceFiscalAnalysis(
   enfants: SuccessionEnfant[],
   familyMembers: FamilyMember[],
   snapshot: SuccessionFiscalSnapshot,
+  referenceDate: Date,
 ): SuccessionPrevoyanceFiscalAnalysis {
-  return mapAnalysis(
-    buildSuccessionAvFiscalAnalysis(
-      toSyntheticAssuranceVieEntries(entries),
-      civil,
-      enfants,
-      familyMembers,
-      snapshot,
-    ),
-    entries.length,
+  const {
+    capitalEntries,
+    fiscalEntries,
+    warnings: regimeWarnings,
+  } = buildSyntheticEntries(entries, civil, referenceDate, snapshot);
+
+  const capitalAnalysis = buildSuccessionAvFiscalAnalysis(
+    capitalEntries,
+    civil,
+    enfants,
+    familyMembers,
+    snapshot,
   );
+  const fiscalAnalysis = buildSuccessionAvFiscalAnalysis(
+    fiscalEntries,
+    civil,
+    enfants,
+    familyMembers,
+    snapshot,
+  );
+
+  const byAssure = buildPerAssureLines(capitalAnalysis, fiscalAnalysis);
+  const lines = mergePrevoyanceLines(byAssure.epoux1.lines, byAssure.epoux2.lines);
+  const totalCapitalDeces = entries.reduce((sum, entry) => sum + asAmount(entry.capitalDeces), 0);
+  const totalDroits = byAssure.epoux1.totalDroits + byAssure.epoux2.totalDroits;
+
+  return {
+    totalCapitalDeces,
+    totalDroits,
+    totalNetTransmis: Math.max(0, totalCapitalDeces - totalDroits),
+    lines,
+    byAssure,
+    warnings: Array.from(new Set([
+      ...regimeWarnings,
+      ...filterPrevoyanceWarnings(capitalAnalysis.warnings),
+      ...filterPrevoyanceWarnings(fiscalAnalysis.warnings),
+      ...(entries.length > 0
+        ? [
+          'Prévoyance décès pure non rachetable : le capital décès est ventilé selon la clause bénéficiaire, tandis que l’assiette fiscale repose sur la dernière prime annuelle saisie.',
+          'Prévoyance décès pure non rachetable : le régime 990 I / 757 B est déterminé selon l’âge du souscripteur à la date du décès simulé.',
+        ]
+        : []),
+    ])),
+  };
 }

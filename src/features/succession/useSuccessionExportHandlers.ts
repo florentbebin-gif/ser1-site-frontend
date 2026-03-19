@@ -22,6 +22,7 @@ interface UseSuccessionExportHandlersInput {
   displayUsesChainage: boolean;
   directDisplayResult: { detailHeritiers?: unknown[]; totalDroits: number } | null | undefined;
   derivedMasseTransmise: number;
+  synthDonutTransmis: number;
   derivedTotalDroits: number;
   exportHeirs: Array<{ lien: LienParente; partSuccession: number }>;
 }
@@ -37,10 +38,12 @@ export function useSuccessionExportHandlers({
   displayUsesChainage,
   directDisplayResult,
   derivedMasseTransmise,
+  synthDonutTransmis,
   derivedTotalDroits,
   exportHeirs,
 }: UseSuccessionExportHandlersInput) {
   const [exportLoading, setExportLoading] = useState(false);
+  const exportMasseTransmise = displayUsesChainage ? synthDonutTransmis : derivedMasseTransmise;
 
   const handleExportPptx = useCallback(async () => {
     if (!canExport) return;
@@ -49,10 +52,10 @@ export function useSuccessionExportHandlers({
       if (canExportSimplified) {
         await exportSuccessionPptx(
           {
-            actifNetSuccession: derivedMasseTransmise,
+            actifNetSuccession: exportMasseTransmise,
             totalDroits: derivedTotalDroits,
-            tauxMoyenGlobal: derivedMasseTransmise > 0
-              ? (derivedTotalDroits / derivedMasseTransmise) * 100
+            tauxMoyenGlobal: exportMasseTransmise > 0
+              ? (derivedTotalDroits / exportMasseTransmise) * 100
               : 0,
             heritiers: displayUsesChainage ? [] : (directDisplayResult?.detailHeritiers ?? []) as Parameters<typeof exportSuccessionPptx>[0]['heritiers'],
             predecesChronologie: chainageExportPayload,
@@ -73,7 +76,7 @@ export function useSuccessionExportHandlers({
     chainageExportPayload,
     displayUsesChainage,
     directDisplayResult,
-    derivedMasseTransmise,
+    exportMasseTransmise,
     derivedTotalDroits,
   ]);
 
@@ -84,7 +87,7 @@ export function useSuccessionExportHandlers({
       if (canExportSimplified) {
         await exportAndDownloadSuccessionXlsx(
           {
-            actifNetSuccession: derivedMasseTransmise,
+            actifNetSuccession: exportMasseTransmise,
             nbHeritiers: exportHeirs.length,
             heritiers: exportHeirs,
           },
@@ -105,7 +108,7 @@ export function useSuccessionExportHandlers({
     chainageExportPayload,
     displayUsesChainage,
     directDisplayResult,
-    derivedMasseTransmise,
+    exportMasseTransmise,
     exportHeirs,
   ]);
 

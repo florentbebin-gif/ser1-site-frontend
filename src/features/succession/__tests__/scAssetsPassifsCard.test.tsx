@@ -60,6 +60,7 @@ function buildBaseProps() {
     onRemoveGroupementFoncierEntry: () => {},
     prevoyanceDecesEntries: [] as SuccessionPrevoyanceDecesEntry[],
     prevoyanceClauseOptions: [{ value: CLAUSE_CONJOINT_LABEL, label: 'Clause standard' }],
+    prevoyanceRegimeByEntry: {},
     onAddPrevoyanceDecesEntry: () => {},
     onUpdatePrevoyanceDecesEntry: () => {},
     onRemovePrevoyanceDecesEntry: () => {},
@@ -145,7 +146,7 @@ describe('ScAssetsPassifsCard', () => {
     expect(markup).not.toContain('Pourcentage (%)');
   });
 
-  it('renders a structured select for prevoyance clauses and the new fiscal note', () => {
+  it('renders the prevoyance premium field, regime label and clause select', () => {
     const props = buildBaseProps();
     props.assetEntriesByCategory = [
       {
@@ -162,12 +163,20 @@ describe('ScAssetsPassifsCard', () => {
       dernierePrime: 15000,
       clauseBeneficiaire: CLAUSE_CONJOINT_LABEL,
     }];
+    props.prevoyanceRegimeByEntry = {
+      'prev-1': {
+        regimeLabel: '757 B',
+        warning: 'Dernière prime non renseignée : exemple.',
+      },
+    };
 
     const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
 
     expect(markup).toContain('Clause standard');
-    expect(markup).toContain('Fiscalite appliquee');
-    expect(markup).toContain('Conversion AV synthetique');
+    expect(markup).toContain('Dernière prime versée');
+    expect(markup).toContain('Régime applicable');
+    expect(markup).toContain('757 B');
+    expect(markup).toContain('Dernière prime non renseignée');
   });
 
   it('marks GFA totals as provisional when beneficiary-level adjustment applies', () => {
@@ -189,6 +198,7 @@ describe('ScAssetsPassifsCard', () => {
 
     const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
 
-    expect(markup).toContain('base taxable definitive est recalculee par beneficiaire');
+    expect(markup).toContain('base taxable définitive est recalculée par bénéficiaire');
+    expect(markup).toContain('masse civile nette');
   });
 });

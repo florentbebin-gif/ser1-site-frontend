@@ -21,6 +21,7 @@ export interface SuccessionAssetValuationResult {
   forfaitMobilierComputed: number;
   forfaitMobilierParOwner: Record<SuccessionAssetOwner, number>;
   assetNetTotals: Record<SuccessionAssetOwner, number>;
+  taxableNetTotals: Record<SuccessionAssetOwner, number>;
   hasResidencePrincipale: boolean;
   residencePrincipaleEntryId: string | null;
   transmissionBasis: SuccessionAssetTransmissionBasis;
@@ -195,12 +196,19 @@ export function computeSuccessionAssetValuation({
     cloneOwnerTotals(),
   );
 
-  const assetNetTotals = (Object.keys(EMPTY_OWNER_TOTALS) as SuccessionAssetOwner[]).reduce(
+  const taxableNetTotals = (Object.keys(EMPTY_OWNER_TOTALS) as SuccessionAssetOwner[]).reduce(
     (totals, owner) => {
       totals[owner] = Math.max(
         0,
         actifsTaxablesParOwner[owner] + forfaitMobilierParOwner[owner] - passifsParOwner[owner],
       );
+      return totals;
+    },
+    cloneOwnerTotals(),
+  );
+  const assetNetTotals = (Object.keys(EMPTY_OWNER_TOTALS) as SuccessionAssetOwner[]).reduce(
+    (totals, owner) => {
+      totals[owner] = Math.max(0, assetBreakdown.actifs[owner] - passifsParOwner[owner]);
       return totals;
     },
     cloneOwnerTotals(),
@@ -213,6 +221,7 @@ export function computeSuccessionAssetValuation({
     forfaitMobilierComputed,
     forfaitMobilierParOwner,
     assetNetTotals,
+    taxableNetTotals,
     hasResidencePrincipale: residencePrincipaleEntryId !== null,
     residencePrincipaleEntryId,
     transmissionBasis: {
