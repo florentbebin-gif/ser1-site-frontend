@@ -11,6 +11,7 @@ import type {
   SuccessionDevolutionContext,
   SuccessionEnfant,
   SuccessionLiquidationContext,
+  SuccessionPatrimonialContext,
 } from './successionDraft';
 import type { SuccessionDevolutionAnalysis } from './successionDevolution';
 import type { SuccessionChainBeneficiary, SuccessionChainageAnalysis } from './successionChainage';
@@ -18,6 +19,12 @@ import {
   buildSuccessionDescendantRecipientsForDeceased,
   countEffectiveDescendantBranchesForDeceased,
 } from './successionEnfants';
+import {
+  assignBeneficiaryTaxableBasis,
+  buildSuccessionEstateTaxableBasis,
+  createEmptyOwnerScales,
+  type SuccessionAssetTransmissionBasis,
+} from './successionTransmissionBasis';
 
 export interface SuccessionTransmissionRow {
   id: string;
@@ -51,6 +58,10 @@ interface BuildSuccessionDirectDisplayInput {
   order?: 'epoux1' | 'epoux2';
   actifNetSuccession?: number;
   baseWarnings?: string[];
+  transmissionBasis?: SuccessionAssetTransmissionBasis;
+  forfaitMobilierMode?: SuccessionPatrimonialContext['forfaitMobilierMode'];
+  forfaitMobilierPct?: number;
+  forfaitMobilierMontant?: number;
 }
 
 export interface SuccessionDirectEstateBasis {
@@ -64,6 +75,7 @@ interface DetailedHeirInput {
   label: string;
   lien: LienParente;
   partSuccession: number;
+  taxablePartSuccession?: number;
   exonerated?: boolean;
 }
 
@@ -323,7 +335,10 @@ function mergeDetailedHeirs(heirs: DetailedHeirInput[]): DetailedHeirInput[] {
   heirs.forEach((heir) => {
     const existing = merged.get(heir.id);
     if (existing) {
+      const existingTaxable = existing.taxablePartSuccession ?? existing.partSuccession;
+      const nextTaxable = heir.taxablePartSuccession ?? heir.partSuccession;
       existing.partSuccession += heir.partSuccession;
+      existing.taxablePartSuccession = existingTaxable + nextTaxable;
       existing.exonerated = existing.exonerated || heir.exonerated;
       return;
     }
@@ -339,6 +354,29 @@ function toHeritiersInput(heirs: DetailedHeirInput[]): HeritiersInput[] {
   }));
 }
 
+function toTaxableHeritiersInput(heirs: DetailedHeirInput[]): HeritiersInput[] {
+  return heirs.map((heir) => ({
+    lien: heir.lien,
+    partSuccession: Math.max(0, heir.taxablePartSuccession ?? heir.partSuccession),
+  }));
+}
+
+function buildDirectEstateOwnerScales(
+  civil: SuccessionCivilContext,
+  simulatedDeceased: 'epoux1' | 'epoux2',
+): ReturnType<typeof createEmptyOwnerScales> {
+  const scales = createEmptyOwnerScales();
+  scales[simulatedDeceased] = 1;
+
+  if (civil.situationMatrimoniale === 'concubinage') {
+    scales.commun = 0.5;
+  } else if (civil.situationMatrimoniale === 'pacse' && civil.pacsConvention === 'indivision') {
+    scales.commun = 0.5;
+  }
+
+  return scales;
+}
+
 function buildTransmissionRows(
   detailedHeirs: DetailedHeirInput[],
   result: SuccessionResult | null,
@@ -347,7 +385,7 @@ function buildTransmissionRows(
 
   return detailedHeirs.map((heir, index) => {
     const detail = result.detailHeritiers[index];
-    const brut = detail?.partBrute ?? heir.partSuccession;
+    const brut = heir.partSuccession;
     const droits = detail?.droits ?? 0;
     return {
       id: heir.id,
@@ -450,23 +488,53 @@ export function buildSuccessionDirectDisplayAnalysis(
     ...testamentHeirs,
     ...scaledRedistributableHeirs,
   ]);
+  const detailedHeirsWithTaxableBasis = input.transmissionBasis
+    ? assignBeneficiaryTaxableBasis(
+      detailedHeirs,
+      buildSuccessionEstateTaxableBasis(
+        input.transmissionBasis,
+        buildDirectEstateOwnerScales(input.civil, simulatedDeceased),
+      ),
+      {
+        forfaitMobilierMode: input.forfaitMobilierMode ?? 'off',
+        forfaitMobilierPct: input.forfaitMobilierPct ?? 0,
+        forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
+      },
+    )
+    : detailedHeirs;
 
-  const heirs = toHeritiersInput(detailedHeirs);
+  const heirs = toHeritiersInput(detailedHeirsWithTaxableBasis);
   const actifNetSuccession = heirs.reduce((sum, heir) => sum + heir.partSuccession, 0) || estateAmount;
-  const result = heirs.length > 0
+  const taxableHeirs = toTaxableHeritiersInput(detailedHeirsWithTaxableBasis);
+  const rawResult = taxableHeirs.length > 0
     ? calculateSuccession({
       actifNetSuccession,
-      heritiers: heirs,
+      heritiers: taxableHeirs,
       dmtgSettings: input.dmtgSettings,
     }).result
     : null;
+  const result = rawResult ? {
+    ...rawResult,
+    actifNetSuccession,
+    detailHeritiers: rawResult.detailHeritiers.map((detail, index) => {
+      const brut = detailedHeirsWithTaxableBasis[index]?.partSuccession ?? detail.partBrute;
+      return {
+        ...detail,
+        partBrute: brut,
+        tauxMoyen: brut > 0 ? Math.round(((detail.droits / brut) * 100) * 100) / 100 : 0,
+      };
+    }),
+    tauxMoyenGlobal: actifNetSuccession > 0
+      ? Math.round(((rawResult.totalDroits / actifNetSuccession) * 100) * 100) / 100
+      : 0,
+  } : null;
 
   return {
     actifNetSuccession,
     simulatedDeceased,
     heirs,
     result,
-    transmissionRows: buildTransmissionRows(detailedHeirs, result),
+    transmissionRows: buildTransmissionRows(detailedHeirsWithTaxableBasis, result),
     warnings,
   };
 }

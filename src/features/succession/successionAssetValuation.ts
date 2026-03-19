@@ -5,6 +5,7 @@ import type {
   SuccessionPatrimonialContext,
 } from './successionDraft.types';
 import { computeGroupementFoncierExoneration } from './successionGroupementFoncier';
+import type { SuccessionAssetTransmissionBasis } from './successionTransmissionBasis';
 import {
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
   RESIDENCE_SECONDAIRE_SUBCATEGORY,
@@ -22,6 +23,7 @@ export interface SuccessionAssetValuationResult {
   assetNetTotals: Record<SuccessionAssetOwner, number>;
   hasResidencePrincipale: boolean;
   residencePrincipaleEntryId: string | null;
+  transmissionBasis: SuccessionAssetTransmissionBasis;
 }
 
 interface SuccessionAssetValuationInput {
@@ -154,6 +156,9 @@ export function computeSuccessionAssetValuation({
     totals[entry.owner] += taxableAmount;
     return totals;
   }, cloneOwnerTotals());
+  const ordinaryTaxableAssetsParOwner = {
+    ...actifsTaxablesParOwner,
+  };
   groupementFoncierEntries.forEach((entry) => {
     const { taxable } = computeGroupementFoncierExoneration(entry.type, asAmount(entry.valeurTotale));
     actifsTaxablesParOwner[entry.owner] += taxable;
@@ -210,5 +215,13 @@ export function computeSuccessionAssetValuation({
     assetNetTotals,
     hasResidencePrincipale: residencePrincipaleEntryId !== null,
     residencePrincipaleEntryId,
+    transmissionBasis: {
+      ordinaryTaxableAssetsParOwner,
+      passifsParOwner,
+      groupementFoncierEntries: groupementFoncierEntries.map((entry) => ({ ...entry })),
+      hasBeneficiaryLevelGfAdjustment: groupementFoncierEntries.some(
+        (entry) => entry.type === 'GFA' || entry.type === 'GFV',
+      ),
+    },
   };
 }

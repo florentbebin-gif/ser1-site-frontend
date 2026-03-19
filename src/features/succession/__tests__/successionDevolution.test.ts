@@ -81,7 +81,6 @@ describe('buildSuccessionDevolutionAnalysis', () => {
       2,
       makeDevolution({ nbEnfantsNonCommuns: 0 }),
       500000,
-      0,
       [
         { id: 'E1', rattachement: 'commun' },
         { id: 'E2', rattachement: 'commun' },
@@ -119,7 +118,6 @@ describe('buildSuccessionDevolutionAnalysis', () => {
         choixLegalConjointSansDDV: 'usufruit',
       }),
       500000,
-      0,
       [
         { id: 'E1', rattachement: 'commun' },
         { id: 'E2', rattachement: 'commun' },
@@ -168,7 +166,6 @@ describe('buildSuccessionDevolutionAnalysis', () => {
         choixLegalConjointSansDDV: 'usufruit',
       }),
       500000,
-      0,
       [
         { id: 'E1', rattachement: 'commun' },
         { id: 'E2', rattachement: 'epoux1' },
@@ -217,7 +214,6 @@ describe('buildSuccessionDevolutionAnalysis', () => {
         },
       }),
       300000,
-      0,
       [{ id: 'E1', rattachement: 'epoux1' }],
     );
 
@@ -236,7 +232,6 @@ describe('buildSuccessionDevolutionAnalysis', () => {
       1,
       makeDevolution({ nbEnfantsNonCommuns: 0 }),
       600000,
-      0,
       [
         { id: 'E1', rattachement: 'commun' },
         { id: 'E2', rattachement: 'commun', deceased: true },
@@ -262,7 +257,6 @@ describe('buildSuccessionDevolutionAnalysis', () => {
         ascendantsSurvivantsBySide: { epoux1: true },
       }),
       400000,
-      0,
       [],
       [
         { id: 'P1', type: 'parent', branch: 'epoux1' },
@@ -287,7 +281,6 @@ describe('buildSuccessionDevolutionAnalysis', () => {
         ascendantsSurvivantsBySide: { epoux1: false, epoux2: true },
       }),
       400000,
-      0,
       [],
       [
         { id: 'P1', type: 'parent', branch: 'epoux2' },
@@ -311,7 +304,6 @@ describe('buildSuccessionDevolutionAnalysis', () => {
         ascendantsSurvivantsBySide: { epoux1: true },
       }),
       400000,
-      0,
       [],
       [{ id: 'P1', type: 'parent', branch: 'epoux1' }],
     );
@@ -346,7 +338,6 @@ describe('buildSuccessionDevolutionAnalysis', () => {
       0,
       makeDevolution({ nbEnfantsNonCommuns: 0 }),
       600000,
-      0,
       [],
       [
         { id: 'P1', type: 'parent', branch: 'epoux1' },
@@ -369,7 +360,6 @@ describe('buildSuccessionDevolutionAnalysis', () => {
       0,
       makeDevolution({ nbEnfantsNonCommuns: 0 }),
       300000,
-      0,
       [],
       [
         { id: 'F1', type: 'frere_soeur', branch: 'epoux1' },
@@ -389,7 +379,6 @@ describe('buildSuccessionDevolutionAnalysis', () => {
       0,
       makeDevolution({ nbEnfantsNonCommuns: 0 }),
       800000,
-      0,
       [],
       [
         { id: 'P1', type: 'parent', branch: 'epoux1' },

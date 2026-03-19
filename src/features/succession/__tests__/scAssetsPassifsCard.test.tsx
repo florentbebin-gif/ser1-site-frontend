@@ -2,9 +2,13 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type {
   SuccessionAssetDetailEntry,
+  SuccessionGroupementFoncierEntry,
   SuccessionPrevoyanceDecesEntry,
 } from '../successionDraft';
-import { RESIDENCE_PRINCIPALE_SUBCATEGORY } from '../successionSimulator.constants';
+import {
+  CLAUSE_CONJOINT_LABEL,
+  RESIDENCE_PRINCIPALE_SUBCATEGORY,
+} from '../successionSimulator.constants';
 import ScAssetsPassifsCard, { buildSubCategoryOptions } from '../components/ScAssetsPassifsCard';
 
 const ownerOptions = [
@@ -32,6 +36,7 @@ function buildBaseProps() {
     assetNetTotals: { epoux1: 0, epoux2: 0, commun: 0 },
     forfaitMobilierComputed: 0,
     residencePrincipaleEntryId: null as string | null,
+    hasBeneficiaryLevelGfAdjustment: false,
     assuranceVieEntries: [],
     perEntries: [],
     assuranceViePartyOptions: [
@@ -49,12 +54,12 @@ function buildBaseProps() {
     forfaitMobilierMontant: 0,
     abattementResidencePrincipale: false,
     onUpdatePatrimonialField: () => {},
-    groupementFoncierEntries: [],
+    groupementFoncierEntries: [] as SuccessionGroupementFoncierEntry[],
     onAddGroupementFoncierEntry: () => {},
     onUpdateGroupementFoncierEntry: () => {},
     onRemoveGroupementFoncierEntry: () => {},
     prevoyanceDecesEntries: [] as SuccessionPrevoyanceDecesEntry[],
-    prevoyanceClauseOptions: [{ value: 'Conjoint survivant, à défaut enfants, à défaut héritiers', label: 'Clause standard' }],
+    prevoyanceClauseOptions: [{ value: CLAUSE_CONJOINT_LABEL, label: 'Clause standard' }],
     onAddPrevoyanceDecesEntry: () => {},
     onUpdatePrevoyanceDecesEntry: () => {},
     onRemovePrevoyanceDecesEntry: () => {},
@@ -140,7 +145,7 @@ describe('ScAssetsPassifsCard', () => {
     expect(markup).not.toContain('Pourcentage (%)');
   });
 
-  it('renders a structured select for prevoyance clauses', () => {
+  it('renders a structured select for prevoyance clauses and the new fiscal note', () => {
     const props = buildBaseProps();
     props.assetEntriesByCategory = [
       {
@@ -155,12 +160,35 @@ describe('ScAssetsPassifsCard', () => {
       assure: 'epoux1',
       capitalDeces: 250000,
       dernierePrime: 15000,
-      clauseBeneficiaire: 'Conjoint survivant, à défaut enfants, à défaut héritiers',
+      clauseBeneficiaire: CLAUSE_CONJOINT_LABEL,
     }];
 
     const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
 
     expect(markup).toContain('Clause standard');
-    expect(markup).not.toContain('Clause bénéficiaire libre');
+    expect(markup).toContain('Fiscalite appliquee');
+    expect(markup).toContain('Conversion AV synthetique');
+  });
+
+  it('marks GFA totals as provisional when beneficiary-level adjustment applies', () => {
+    const props = buildBaseProps();
+    props.assetEntriesByCategory = [
+      {
+        value: 'immobilier',
+        label: 'Biens immobiliers',
+        entries: [],
+      },
+    ];
+    props.hasBeneficiaryLevelGfAdjustment = true;
+    props.groupementFoncierEntries = [{
+      id: 'gf-1',
+      owner: 'epoux1',
+      type: 'GFA',
+      valeurTotale: 1_000_000,
+    }];
+
+    const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
+
+    expect(markup).toContain('base taxable definitive est recalculee par beneficiaire');
   });
 });

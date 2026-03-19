@@ -171,7 +171,10 @@ export function useSuccessionSimulatorHandlers({
         attributionIntegrale: false,
       }));
     }
-  }, [setCivilContext, setPatrimonialContext]);
+    if (!isCoupleSituation(situationMatrimoniale)) {
+      setChainOrder('epoux1');
+    }
+  }, [setChainOrder, setCivilContext, setPatrimonialContext]);
 
   const handleReset = useCallback(() => {
     reset();

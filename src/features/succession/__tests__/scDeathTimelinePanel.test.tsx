@@ -7,6 +7,7 @@ function buildProps() {
   return {
     chainOrder: 'epoux1' as const,
     onToggleOrder: () => {},
+    showOrderToggle: true,
     displayUsesChainage: false,
     derivedMasseTransmise: 300000,
     derivedTotalDroits: 20000,
@@ -63,5 +64,16 @@ describe('ScDeathTimelinePanel', () => {
 
     expect(markup).toContain('Chronologie des deces');
     expect(markup).not.toContain('Horizon du deces simule');
+  });
+
+  it('hides the order toggle outside couple scenarios', () => {
+    const markup = renderToStaticMarkup(
+      <ScDeathTimelinePanel
+        {...buildProps()}
+        showOrderToggle={false}
+      />,
+    );
+
+    expect(markup).not.toContain('Ordre inverse');
   });
 });

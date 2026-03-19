@@ -21,6 +21,7 @@ export type {
   SuccessionDonationEntry,
   SuccessionDonationEntryType,
   SuccessionDraftPayloadV18,
+  SuccessionDraftPayloadV19,
   SuccessionEnfant,
   SuccessionEnfantRattachement,
   SuccessionGroupementFoncierEntry,

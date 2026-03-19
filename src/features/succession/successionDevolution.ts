@@ -214,7 +214,6 @@ export function buildSuccessionDevolutionAnalysis(
   nbEnfantsTotalInput: number,
   contextInput: SuccessionDevolutionContextInput | undefined,
   masseReferenceInput: number,
-  _legsParticuliersInput = 0,
   enfantsContext: SuccessionEnfant[] = [],
   familyMembers: FamilyMember[] = [],
   options: SuccessionDevolutionBuildOptions = {},

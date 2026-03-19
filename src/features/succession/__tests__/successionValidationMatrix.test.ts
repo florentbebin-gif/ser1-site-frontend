@@ -15,6 +15,7 @@ import {
   buildSuccessionChainTransmissionRows,
   computeSuccessionDirectEstateBasis,
 } from '../successionDisplay';
+import type { SuccessionAssetTransmissionBasis } from '../successionTransmissionBasis';
 
 function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilContext {
   return {
@@ -70,6 +71,7 @@ function buildDirectAnalysisFor(
   liquidation: SuccessionLiquidationContext,
   enfants: SuccessionEnfant[],
   devolutionContext = makeDevolution({}),
+  transmissionBasis?: SuccessionAssetTransmissionBasis,
 ) {
   const basis = computeSuccessionDirectEstateBasis(civil, liquidation, 'epoux1');
   const devolution = buildSuccessionDevolutionAnalysis(
@@ -77,7 +79,6 @@ function buildDirectAnalysisFor(
     enfants.length,
     devolutionContext,
     basis.actifNetSuccession,
-    devolutionContext.nbEnfantsNonCommuns,
     enfants,
     [],
   );
@@ -92,6 +93,10 @@ function buildDirectAnalysisFor(
     order: 'epoux1',
     actifNetSuccession: basis.actifNetSuccession,
     baseWarnings: basis.warnings,
+    transmissionBasis,
+    forfaitMobilierMode: 'auto',
+    forfaitMobilierPct: 5,
+    forfaitMobilierMontant: 0,
   });
 }
 
@@ -132,7 +137,6 @@ describe('succession validation matrix', () => {
       0,
       devolutionContext,
       basis.actifNetSuccession,
-      0,
       [],
       [],
     );
@@ -297,5 +301,43 @@ describe('succession validation matrix', () => {
 
     expect(basis.actifNetSuccession).toBe(220000);
     expect(basis.warnings.some((warning) => warning.includes('quote-part indivise'))).toBe(true);
+  });
+
+  it('direct succession applies GFA allowance per beneficiary instead of globally', () => {
+    const analysis = buildDirectAnalysisFor(
+      makeCivil({ situationMatrimoniale: 'celibataire' }),
+      makeLiquidation({ actifEpoux1: 5_092_500, nbEnfants: 3 }),
+      [
+        { id: 'E1', rattachement: 'epoux1' },
+        { id: 'E2', rattachement: 'epoux1' },
+        { id: 'E3', rattachement: 'epoux1' },
+      ],
+      makeDevolution({}),
+      {
+        ordinaryTaxableAssetsParOwner: {
+          epoux1: 200_000,
+          epoux2: 0,
+          commun: 0,
+        },
+        passifsParOwner: {
+          epoux1: 0,
+          epoux2: 0,
+          commun: 0,
+        },
+        groupementFoncierEntries: [
+          { id: 'gf-1', owner: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
+        ],
+        hasBeneficiaryLevelGfAdjustment: true,
+      },
+    );
+
+    const correctedTaxableEstate = (analysis.result?.detailHeritiers ?? []).reduce(
+      (sum, detail) => sum + detail.baseImposable + detail.abattement,
+      0,
+    );
+
+    expect(analysis.transmissionRows).toHaveLength(3);
+    expect(Math.round(correctedTaxableEstate)).toBe(4_987_499);
+    expect(correctedTaxableEstate).toBeLessThan(5_092_500);
   });
 });

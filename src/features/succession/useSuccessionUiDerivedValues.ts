@@ -257,10 +257,8 @@ export function useSuccessionUiDerivedValues({
 
   const prevoyanceTotals = useMemo(() => prevoyanceDecesEntries.reduce((totals, entry) => ({
     capitaux: totals.capitaux + entry.capitalDeces,
-    dernierePrime: totals.dernierePrime + entry.dernierePrime,
   }), {
     capitaux: 0,
-    dernierePrime: 0,
   }), [prevoyanceDecesEntries]);
 
   const prevoyanceByAssure = useMemo(() => prevoyanceDecesEntries.reduce((totals, entry) => {
@@ -300,6 +298,7 @@ export function useSuccessionUiDerivedValues({
     forfaitMobilierParOwner: assetValuation.forfaitMobilierParOwner,
     hasResidencePrincipale: assetValuation.hasResidencePrincipale,
     residencePrincipaleEntryId: assetValuation.residencePrincipaleEntryId,
+    transmissionBasis: assetValuation.transmissionBasis,
     assuranceVieTotals,
     assuranceVieDraftTotals,
     assuranceVieByAssure,
@@ -309,6 +308,7 @@ export function useSuccessionUiDerivedValues({
     prevoyanceTotals,
     prevoyanceByAssure,
     prevoyanceClauseOptions,
+    hasBeneficiaryLevelGfAdjustment: assetValuation.transmissionBasis.hasBeneficiaryLevelGfAdjustment,
     assetEntriesByCategory,
   };
 }

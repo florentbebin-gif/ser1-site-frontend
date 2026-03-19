@@ -67,7 +67,6 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
       2,
       devolutionContext,
       400000,
-      0,
       [
         { id: 'E1', rattachement: 'epoux1' },
         { id: 'E2', rattachement: 'epoux1' },
@@ -117,7 +116,6 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
       1,
       devolutionContext,
       300000,
-      0,
       enfants,
       [],
     );
@@ -161,7 +159,6 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
       2,
       devolutionContext,
       300000,
-      0,
       enfants,
       [],
     );
@@ -207,7 +204,6 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
       2,
       devolutionContext,
       basis.actifNetSuccession,
-      0,
       enfants,
       [],
     );
@@ -271,7 +267,6 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
       2,
       devolutionContext,
       300000,
-      0,
       enfants,
       [],
       { simulatedDeceased: 'epoux1' },

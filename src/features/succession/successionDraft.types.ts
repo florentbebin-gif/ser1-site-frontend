@@ -217,8 +217,15 @@ export interface ParsedSuccessionDraftPayload {
   perEntries: SuccessionPerEntry[];
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
+  ui: {
+    chainOrder: SuccessionPrimarySide;
+  };
 }
 
 export interface SuccessionDraftPayloadV18 extends ParsedSuccessionDraftPayload {
   version: 18;
+}
+
+export interface SuccessionDraftPayloadV19 extends ParsedSuccessionDraftPayload {
+  version: 19;
 }

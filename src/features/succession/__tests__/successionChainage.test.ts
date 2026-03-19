@@ -184,6 +184,7 @@ describe('buildSuccessionChainageAnalysis', () => {
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
       patrimonial: {
+        attributionIntegrale: false,
         donationEntreEpouxActive: true,
         donationEntreEpouxOption: 'usufruit_total',
         preciputMontant: 0,
@@ -212,6 +213,7 @@ describe('buildSuccessionChainageAnalysis', () => {
       order: 'epoux1' as const,
       dmtgSettings: DEFAULT_DMTG,
       patrimonial: {
+        attributionIntegrale: false,
         donationEntreEpouxActive: true,
         donationEntreEpouxOption: 'usufruit_total' as const,
         preciputMontant: 0,
@@ -301,6 +303,7 @@ describe('buildSuccessionChainageAnalysis', () => {
       enfantsContext: enfants,
       familyMembers: [],
       patrimonial: {
+        attributionIntegrale: false,
         donationEntreEpouxActive: false,
         donationEntreEpouxOption: 'pleine_propriete_quotite',
         preciputMontant: 0,
@@ -316,6 +319,7 @@ describe('buildSuccessionChainageAnalysis', () => {
       enfantsContext: enfants,
       familyMembers: [],
       patrimonial: {
+        attributionIntegrale: false,
         donationEntreEpouxActive: false,
         donationEntreEpouxOption: 'pleine_propriete_quotite',
         preciputMontant: 100000,
@@ -361,5 +365,36 @@ describe('buildSuccessionChainageAnalysis', () => {
 
     expect(analysis.step2?.beneficiaries.some((beneficiary) => beneficiary.id === 'conjoint')).toBe(false);
     expect(analysis.warnings.some((warning) => warning.includes('deja decede ignore au second deces'))).toBe(true);
+  });
+
+  it('reports the full first estate to step 2 in communaute universelle with attribution integrale', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'communaute_universelle' }),
+      liquidation: makeLiquidation({ actifEpoux1: 200000, actifEpoux2: 300000, actifCommun: 1_500_000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_universelle',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+      patrimonial: {
+        attributionIntegrale: true,
+        donationEntreEpouxActive: true,
+        donationEntreEpouxOption: 'pleine_propriete_totale',
+        preciputMontant: 100000,
+      },
+    });
+
+    expect(analysis.step1?.actifTransmis).toBe(2_000_000);
+    expect(analysis.step1?.partConjoint).toBe(2_000_000);
+    expect(analysis.step1?.partEnfants).toBe(0);
+    expect(analysis.step1?.droitsEnfants).toBe(0);
+    expect(analysis.step2?.actifTransmis).toBe(2_000_000);
+    expect(analysis.totalDroits).toBe(analysis.step2?.droitsEnfants ?? 0);
+    expect(analysis.warnings.some((warning) => warning.includes('attribution integrale'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('preciput ignoree'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('donation entre epoux ignoree'))).toBe(true);
   });
 });

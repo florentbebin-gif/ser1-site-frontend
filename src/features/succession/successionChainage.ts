@@ -25,6 +25,16 @@ import {
   computeFirstEstate,
   computeStep1Split,
 } from './successionChainageEstateSplit';
+import {
+  addSuccessionEstateTaxableBases,
+  assignBeneficiaryTaxableBasis,
+  buildSuccessionEstateTaxableBasis,
+  createEmptyOwnerScales,
+  scaleSuccessionEstateTaxableBasis,
+  type SuccessionAssetTransmissionBasis,
+  type SuccessionEstateOwnerScales,
+  type SuccessionEstateTaxableBasis,
+} from './successionTransmissionBasis';
 
 export type SuccessionChainOrder = 'epoux1' | 'epoux2';
 export type SuccessionChainRegime = 'communaute_legale' | 'separation_biens' | 'communaute_universelle';
@@ -66,7 +76,14 @@ interface SuccessionChainageInput {
   order: SuccessionChainOrder;
   dmtgSettings: DmtgSettings;
   attributionBiensCommunsPct?: number;
-  patrimonial?: Pick<SuccessionPatrimonialContext, 'donationEntreEpouxActive' | 'donationEntreEpouxOption' | 'preciputMontant'>;
+  patrimonial?: Pick<
+    SuccessionPatrimonialContext,
+    'attributionIntegrale' | 'donationEntreEpouxActive' | 'donationEntreEpouxOption' | 'preciputMontant'
+  >;
+  transmissionBasis?: SuccessionAssetTransmissionBasis;
+  forfaitMobilierMode?: SuccessionPatrimonialContext['forfaitMobilierMode'];
+  forfaitMobilierPct?: number;
+  forfaitMobilierMontant?: number;
   enfantsContext?: SuccessionEnfant[];
   familyMembers?: FamilyMember[];
   devolution?: Pick<SuccessionDevolutionContext, 'testamentsBySide'>;
@@ -78,6 +95,7 @@ interface DetailedChainHeir {
   label: string;
   lien: LienParente;
   partSuccession: number;
+  taxablePartSuccession?: number;
   exonerated?: boolean;
 }
 
@@ -159,7 +177,10 @@ function mergeDetailedHeirs(heirs: DetailedChainHeir[]): DetailedChainHeir[] {
     if (heir.partSuccession <= 0) return;
     const current = merged.get(heir.id);
     if (current) {
+      const currentTaxable = current.taxablePartSuccession ?? current.partSuccession;
+      const nextTaxable = heir.taxablePartSuccession ?? heir.partSuccession;
       current.partSuccession += heir.partSuccession;
+      current.taxablePartSuccession = currentTaxable + nextTaxable;
       current.exonerated = current.exonerated || heir.exonerated;
       return;
     }
@@ -177,12 +198,13 @@ function computeTransmissionForHeirs(
     return { droits: 0, beneficiaries: [] };
   }
 
+  const taxableHeirs = detailedHeirs.map((heir) => ({
+    lien: heir.lien,
+    partSuccession: Math.max(0, heir.taxablePartSuccession ?? heir.partSuccession),
+  }));
   const result = calculateSuccession({
     actifNetSuccession: actifTransmis,
-    heritiers: detailedHeirs.map((heir) => ({
-      lien: heir.lien,
-      partSuccession: heir.partSuccession,
-    })),
+    heritiers: taxableHeirs,
     dmtgSettings,
   }).result;
 
@@ -217,6 +239,54 @@ function getOtherSide(order: SuccessionChainOrder): SuccessionDeceasedSide {
 
 function getLabelForSide(side: SuccessionDeceasedSide): string {
   return side === 'epoux1' ? 'Epoux 1' : 'Epoux 2';
+}
+
+function buildFirstEstateOwnerScales(
+  regimeUsed: SuccessionChainRegime,
+  order: SuccessionChainOrder,
+  attributionBiensCommunsPct: number,
+): SuccessionEstateOwnerScales {
+  const scales = createEmptyOwnerScales();
+
+  if (regimeUsed === 'communaute_universelle') {
+    scales.epoux1 = 1;
+    scales.epoux2 = 1;
+    scales.commun = 1;
+    return scales;
+  }
+
+  if (regimeUsed === 'separation_biens') {
+    scales[order] = 1;
+    return scales;
+  }
+
+  const pctDefunt = (100 - Math.min(100, Math.max(0, attributionBiensCommunsPct))) / 100;
+  scales[order] = 1;
+  scales.commun = pctDefunt;
+  return scales;
+}
+
+function buildSurvivorOwnerScales(
+  regimeUsed: SuccessionChainRegime,
+  order: SuccessionChainOrder,
+  attributionBiensCommunsPct: number,
+): SuccessionEstateOwnerScales {
+  const scales = createEmptyOwnerScales();
+  const survivor = getOtherSide(order);
+
+  if (regimeUsed === 'communaute_universelle') {
+    return scales;
+  }
+
+  if (regimeUsed === 'separation_biens') {
+    scales[survivor] = 1;
+    return scales;
+  }
+
+  const pctSurvivant = Math.min(100, Math.max(0, attributionBiensCommunsPct)) / 100;
+  scales[survivor] = 1;
+  scales.commun = pctSurvivant;
+  return scales;
 }
 
 function getStepWarnings(
@@ -305,6 +375,7 @@ function buildLegalPartnerHeirs(
 function computeStepTransmission(
   input: SuccessionChainageInput,
   estateAmount: number,
+  estateTaxableBasis: SuccessionEstateTaxableBasis,
   deceased: SuccessionDeceasedSide,
   legalPartnerAmount: number,
   redistributableAmount: number,
@@ -349,7 +420,18 @@ function computeStepTransmission(
     ...testamentHeirs,
     ...detailedDescendantHeirs,
   ]);
-  const transmission = computeTransmissionForHeirs(estateAmount, detailedHeirs, input.dmtgSettings);
+  const detailedHeirsWithTaxableBasis = input.transmissionBasis
+    ? assignBeneficiaryTaxableBasis(detailedHeirs, estateTaxableBasis, {
+      forfaitMobilierMode: input.forfaitMobilierMode ?? 'off',
+      forfaitMobilierPct: input.forfaitMobilierPct ?? 0,
+      forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
+    })
+    : detailedHeirs;
+  const transmission = computeTransmissionForHeirs(
+    estateAmount,
+    detailedHeirsWithTaxableBasis,
+    input.dmtgSettings,
+  );
   const partConjoint = transmission.beneficiaries
     .filter((beneficiary) => beneficiary.lien === 'conjoint')
     .reduce((sum, beneficiary) => sum + beneficiary.brut, 0);
@@ -393,6 +475,12 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   const firstEstate = computeFirstEstate(input.regimeUsed, input.order, input.liquidation, attributionPct);
   const survivorBase = Math.max(0, totalPatrimoine - firstEstate);
   const warnings: string[] = [];
+  const firstEstateOwnerScales = buildFirstEstateOwnerScales(input.regimeUsed, input.order, attributionPct);
+  const survivorOwnerScales = buildSurvivorOwnerScales(input.regimeUsed, input.order, attributionPct);
+  const firstEstateTaxableBasis = buildSuccessionEstateTaxableBasis(
+    input.transmissionBasis,
+    firstEstateOwnerScales,
+  );
 
   if (attributionPct !== 50 && input.regimeUsed === 'communaute_legale') {
     warnings.push(`Attribution des biens communs au survivant: ${attributionPct} % applique au partage communautaire.`);
@@ -414,6 +502,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
 
   const step1Split = computeStep1Split(
     input.civil,
+    input.regimeUsed,
     firstEstate,
     nbEnfants,
     input.order,
@@ -422,9 +511,16 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   );
   warnings.push(...step1Split.warnings);
   const step1TaxableEstate = firstEstate - step1Split.preciputDeducted;
+  const step1TransmissionTaxableBasis = firstEstate > 0
+    ? scaleSuccessionEstateTaxableBasis(firstEstateTaxableBasis, step1TaxableEstate / firstEstate)
+    : {
+      ordinaryNetBeforeForfait: 0,
+      groupementEntries: [],
+    };
   const step1Details = computeStepTransmission(
     input,
     step1TaxableEstate,
+    step1TransmissionTaxableBasis,
     input.order,
     step1Split.conjointPart,
     step1Split.enfantsPart,
@@ -441,10 +537,26 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   ));
 
   const otherSide = getOtherSide(input.order);
-  const step2Estate = survivorBase + step1Split.carryOverToStep2 + step1Details.carryOverToStep2 + step1Split.preciputDeducted;
+  const step2CarryOverAmount = step1Split.carryOverToStep2 + step1Details.carryOverToStep2 + step1Split.preciputDeducted;
+  const step2Estate = survivorBase + step2CarryOverAmount;
+  const survivorTaxableBasis = buildSuccessionEstateTaxableBasis(
+    input.transmissionBasis,
+    survivorOwnerScales,
+  );
+  const carryOverTaxableBasis = firstEstate > 0
+    ? scaleSuccessionEstateTaxableBasis(firstEstateTaxableBasis, step2CarryOverAmount / firstEstate)
+    : {
+      ordinaryNetBeforeForfait: 0,
+      groupementEntries: [],
+    };
+  const step2TaxableBasis = addSuccessionEstateTaxableBases(
+    survivorTaxableBasis,
+    carryOverTaxableBasis,
+  );
   const step2Details = computeStepTransmission(
     input,
     step2Estate,
+    step2TaxableBasis,
     otherSide,
     0,
     step2Estate,
