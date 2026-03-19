@@ -340,4 +340,38 @@ describe('succession validation matrix', () => {
     expect(Math.round(correctedTaxableEstate)).toBe(4_987_499);
     expect(correctedTaxableEstate).toBeLessThan(5_092_500);
   });
+
+  it('direct succession keeps the single-beneficiary GFA taxable basis above the three-beneficiary case', () => {
+    const analysis = buildDirectAnalysisFor(
+      makeCivil({ situationMatrimoniale: 'celibataire' }),
+      makeLiquidation({ actifEpoux1: 5_092_500, nbEnfants: 1 }),
+      [{ id: 'E1', rattachement: 'epoux1' }],
+      makeDevolution({}),
+      {
+        ordinaryTaxableAssetsParOwner: {
+          epoux1: 200_000,
+          epoux2: 0,
+          commun: 0,
+        },
+        passifsParOwner: {
+          epoux1: 0,
+          epoux2: 0,
+          commun: 0,
+        },
+        groupementFoncierEntries: [
+          { id: 'gf-1', owner: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
+        ],
+        hasBeneficiaryLevelGfAdjustment: true,
+      },
+    );
+
+    const correctedTaxableEstate = (analysis.result?.detailHeritiers ?? []).reduce(
+      (sum, detail) => sum + detail.baseImposable + detail.abattement,
+      0,
+    );
+
+    expect(analysis.transmissionRows).toHaveLength(1);
+    expect(Math.round(correctedTaxableEstate)).toBe(5_302_500);
+    expect(correctedTaxableEstate).toBeGreaterThan(4_987_499);
+  });
 });

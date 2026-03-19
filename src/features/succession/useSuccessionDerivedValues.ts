@@ -17,7 +17,10 @@ import {
 import { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
 import { coordinateSuccessionInsuranceAllowances } from './successionDeathInsuranceAllowances';
 import { buildSuccessionPerFiscalAnalysis } from './successionPerFiscal';
-import { buildSuccessionPrevoyanceFiscalAnalysis } from './successionPrevoyanceFiscal';
+import {
+  buildSuccessionPrevoyanceFiscalAnalysis,
+  getSuccessionPrevoyanceRegimeInfo,
+} from './successionPrevoyanceFiscal';
 import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
 import {
@@ -29,6 +32,9 @@ import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
 import {
   getDonationEffectiveAmount,
   getTestamentParticularLegaciesTotal,
+  hasComputableSuccessionFiliation,
+  hasRequiredBirthDatesForSituation,
+  isCoupleSituation,
 } from './successionSimulator.helpers';
 import type {
   SuccessionAssetDetailEntry,
@@ -122,6 +128,29 @@ export function useSuccessionDerivedValues({
   const isMarried = civilContext.situationMatrimoniale === 'marie';
   const isPacsed = civilContext.situationMatrimoniale === 'pacse';
   const isConcubinage = civilContext.situationMatrimoniale === 'concubinage';
+  const isCouple = isCoupleSituation(civilContext.situationMatrimoniale);
+  const hasComputableFiliation = useMemo(
+    () => hasComputableSuccessionFiliation(
+      civilContext.situationMatrimoniale,
+      enfantsContext,
+      familyMembers,
+    ),
+    [civilContext.situationMatrimoniale, enfantsContext, familyMembers],
+  );
+  const hasRequiredBirthDatesForCurrentSituation = useMemo(
+    () => hasRequiredBirthDatesForSituation(
+      civilContext.situationMatrimoniale,
+      civilContext.dateNaissanceEpoux1,
+      civilContext.dateNaissanceEpoux2,
+    ),
+    [
+      civilContext.situationMatrimoniale,
+      civilContext.dateNaissanceEpoux1,
+      civilContext.dateNaissanceEpoux2,
+    ],
+  );
+  const shouldRenderSuccessionComputationSections = hasComputableFiliation
+    && hasRequiredBirthDatesForCurrentSituation;
   const isCommunityRegime = isMarried && (
     civilContext.regimeMatrimonial === 'communaute_legale'
     || civilContext.regimeMatrimonial === 'communaute_universelle'
@@ -310,6 +339,7 @@ export function useSuccessionDerivedValues({
       enfantsContext,
       familyMembers,
       fiscalSnapshot,
+      simulatedDeathDate,
     ),
     [
       prevoyanceDecesEntries,
@@ -317,8 +347,30 @@ export function useSuccessionDerivedValues({
       enfantsContext,
       familyMembers,
       fiscalSnapshot,
+      simulatedDeathDate,
     ],
   );
+
+  const prevoyanceRegimeByEntry = useMemo(() => Object.fromEntries(
+    prevoyanceDecesEntries.map((entry) => {
+      const regimeInfo = getSuccessionPrevoyanceRegimeInfo(
+        entry,
+        civilContext,
+        simulatedDeathDate,
+        fiscalSnapshot.avDeces.agePivotPrimes,
+      );
+
+      return [entry.id, {
+        regimeLabel: regimeInfo.regimeLabel,
+        warning: regimeInfo.warning,
+      }];
+    }),
+  ), [
+    prevoyanceDecesEntries,
+    civilContext,
+    simulatedDeathDate,
+    fiscalSnapshot.avDeces.agePivotPrimes,
+  ]);
 
   const coordinatedInsuranceFiscal = useMemo(
     () => coordinateSuccessionInsuranceAllowances({
@@ -372,6 +424,7 @@ export function useSuccessionDerivedValues({
     prevoyanceByAssure: uiDerived.prevoyanceByAssure,
     prevoyanceTotals: uiDerived.prevoyanceTotals,
     simulatedDeathDate,
+    shouldRenderSuccessionComputationSections,
   });
 
   return {
@@ -390,8 +443,12 @@ export function useSuccessionDerivedValues({
     isMarried,
     isPacsed,
     isConcubinage,
+    isCouple,
     isCommunityRegime,
     isPacsIndivision,
+    hasComputableFiliation,
+    hasRequiredBirthDatesForCurrentSituation,
+    shouldRenderSuccessionComputationSections,
     showSharedTransmissionPct,
     showDonationEntreEpoux,
     patrimonialSimulatedDeceased,
@@ -427,6 +484,7 @@ export function useSuccessionDerivedValues({
     prevoyanceTotals: uiDerived.prevoyanceTotals,
     prevoyanceByAssure: uiDerived.prevoyanceByAssure,
     prevoyanceClauseOptions: uiDerived.prevoyanceClauseOptions,
+    prevoyanceRegimeByEntry,
     prevoyanceFiscalAnalysis,
     displayUsesChainage: outcomeDerived.displayUsesChainage,
     displayActifNetSuccession: outcomeDerived.displayActifNetSuccession,

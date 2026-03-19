@@ -141,4 +141,23 @@ describe('buildSuccessionAvFiscalAnalysis', () => {
     expect(analysis.totalDroits).toBe(0);
     expect(analysis.lines[0]?.lien).toBe('conjoint');
   });
+
+  it('applique la tranche haute 990 I a 31,25 % au-dela de 700 000 EUR taxables', () => {
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const analysis = buildSuccessionAvFiscalAnalysis(
+      [makeEntry({
+        clauseBeneficiaire: 'CUSTOM:E1:100',
+        capitauxDeces: 1_000_000,
+        versementsApres70: 0,
+      })],
+      makeCivil({ situationMatrimoniale: 'celibataire', regimeMatrimonial: null }),
+      [{ id: 'E1', rattachement: 'epoux1' }],
+      [],
+      snapshot,
+    );
+
+    expect(analysis.lines[0]?.taxable990I).toBe(847500);
+    expect(analysis.lines[0]?.droits990I).toBe(186094);
+    expect(analysis.totalDroits).toBe(186094);
+  });
 });

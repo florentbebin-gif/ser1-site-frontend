@@ -25,8 +25,10 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.forfaitMobilierComputed).toBe(25000);
     expect(result.forfaitMobilierParOwner.epoux1).toBe(10000);
     expect(result.forfaitMobilierParOwner.commun).toBe(15000);
-    expect(result.assetNetTotals.epoux1).toBe(210000);
-    expect(result.assetNetTotals.commun).toBe(315000);
+    expect(result.assetNetTotals.epoux1).toBe(200000);
+    expect(result.assetNetTotals.commun).toBe(300000);
+    expect(result.taxableNetTotals.epoux1).toBe(210000);
+    expect(result.taxableNetTotals.commun).toBe(315000);
   });
 
   it('supports a custom forfait mobilier percentage', () => {
@@ -45,8 +47,10 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.forfaitMobilierComputed).toBe(36000);
     expect(result.forfaitMobilierParOwner.epoux1).toBe(12000);
     expect(result.forfaitMobilierParOwner.epoux2).toBe(24000);
-    expect(result.assetNetTotals.epoux1).toBe(112000);
-    expect(result.assetNetTotals.epoux2).toBe(224000);
+    expect(result.assetNetTotals.epoux1).toBe(100000);
+    expect(result.assetNetTotals.epoux2).toBe(200000);
+    expect(result.taxableNetTotals.epoux1).toBe(112000);
+    expect(result.taxableNetTotals.epoux2).toBe(224000);
   });
 
   it('supports a fixed forfait mobilier amount', () => {
@@ -63,7 +67,8 @@ describe('computeSuccessionAssetValuation', () => {
 
     expect(result.forfaitMobilierComputed).toBe(50000);
     expect(result.forfaitMobilierParOwner.epoux1).toBe(50000);
-    expect(result.assetNetTotals.epoux1).toBe(150000);
+    expect(result.assetNetTotals.epoux1).toBe(100000);
+    expect(result.taxableNetTotals.epoux1).toBe(150000);
   });
 
   it('does not compute any forfait mobilier when disabled', () => {
@@ -81,6 +86,7 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.forfaitMobilierComputed).toBe(0);
     expect(result.forfaitMobilierParOwner.epoux1).toBe(0);
     expect(result.assetNetTotals.epoux1).toBe(100000);
+    expect(result.taxableNetTotals.epoux1).toBe(100000);
   });
 
   it('normalizes multiple main residences and applies the 20 percent abatement only once', () => {
@@ -105,11 +111,13 @@ describe('computeSuccessionAssetValuation', () => {
 
     expect(result.hasResidencePrincipale).toBe(true);
     expect(result.residencePrincipaleEntryId).toBe('asset-1');
+    expect(result.assetNetTotals.epoux1).toBe(400000);
+    expect(result.assetNetTotals.commun).toBe(200000);
     expect(result.actifsTaxablesParOwner.epoux1).toBe(320000);
     expect(result.actifsTaxablesParOwner.commun).toBe(200000);
   });
 
-  it('adds the forfait before clamping net assets to zero', () => {
+  it('adds the forfait before clamping taxable net assets to zero', () => {
     const result = computeSuccessionAssetValuation({
       assetEntries: [
         { id: 'asset-1', owner: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
@@ -123,7 +131,8 @@ describe('computeSuccessionAssetValuation', () => {
     });
 
     expect(result.forfaitMobilierComputed).toBe(5000);
-    expect(result.assetNetTotals.epoux1).toBe(2000);
+    expect(result.assetNetTotals.epoux1).toBe(0);
+    expect(result.taxableNetTotals.epoux1).toBe(2000);
   });
 
   it('integrates GFA taxable value into succession assets', () => {
@@ -141,7 +150,8 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.assetBreakdown.actifs.epoux1).toBe(10_000_000);
     expect(result.actifsTaxablesParOwner.epoux1).toBe(4_850_000);
     expect(result.forfaitMobilierComputed).toBe(242500);
-    expect(result.assetNetTotals.epoux1).toBe(5_092_500);
+    expect(result.assetNetTotals.epoux1).toBe(10_000_000);
+    expect(result.taxableNetTotals.epoux1).toBe(5_092_500);
     expect(result.transmissionBasis.groupementFoncierEntries).toEqual([
       expect.objectContaining({ type: 'GFA', valeurTotale: 10_000_000 }),
     ]);
@@ -163,7 +173,8 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.assetBreakdown.actifs.commun).toBe(10_000_000);
     expect(result.actifsTaxablesParOwner.commun).toBe(2_500_000);
     expect(result.forfaitMobilierComputed).toBe(125000);
-    expect(result.assetNetTotals.commun).toBe(2_625_000);
+    expect(result.assetNetTotals.commun).toBe(10_000_000);
+    expect(result.taxableNetTotals.commun).toBe(2_625_000);
     expect(result.transmissionBasis.hasBeneficiaryLevelGfAdjustment).toBe(false);
   });
 });

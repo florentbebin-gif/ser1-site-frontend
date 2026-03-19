@@ -24,10 +24,14 @@ function makeFiscalContext(overrides: Partial<FiscalContext>): FiscalContext {
 describe('buildSuccessionFiscalSnapshot', () => {
   it('retourne un snapshot par défaut quand fiscalContext est absent', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
-    expect(snapshot.dmtgSettings.ligneDirecte.abattement).toBe(
-      DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
-    );
+    expect(snapshot.dmtgSettings.ligneDirecte.abattement).toBe(100000);
     expect(snapshot.avDeces.agePivotPrimes).toBe(DEFAULT_FISCALITY_SETTINGS.assuranceVie.deces.agePivotPrimes);
+    expect(snapshot.avDeces.primesApres1998.allowancePerBeneficiary).toBe(152500);
+    expect(snapshot.avDeces.apres70ans.globalAllowance).toBe(30500);
+    expect(snapshot.avDeces.primesApres1998.brackets).toEqual([
+      { upTo: 700000, ratePercent: 20 },
+      { upTo: null, ratePercent: 31.25 },
+    ]);
     expect(snapshot.donation.rappelFiscalAnnees).toBe(15);
   });
 

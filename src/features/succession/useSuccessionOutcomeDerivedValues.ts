@@ -72,6 +72,7 @@ interface UseSuccessionOutcomeDerivedValuesInput {
     capitaux: number;
   };
   simulatedDeathDate: Date;
+  shouldRenderSuccessionComputationSections: boolean;
 }
 
 export interface InsuranceBeneficiaryLine {
@@ -176,15 +177,24 @@ export function useSuccessionOutcomeDerivedValues({
   perTotals,
   prevoyanceTotals,
   simulatedDeathDate,
+  shouldRenderSuccessionComputationSections,
 }: UseSuccessionOutcomeDerivedValuesInput) {
-  const displayUsesChainage = Boolean(isMarried
+  const displayUsesChainage = Boolean(shouldRenderSuccessionComputationSections
+    && isMarried
     && chainageAnalysis.applicable
     && chainageAnalysis.step1
     && chainageAnalysis.step2);
 
   const displayActifNetSuccession = useMemo(
-    () => (displayUsesChainage ? derivedActifNetSuccession : directEstateBasis.actifNetSuccession),
-    [displayUsesChainage, derivedActifNetSuccession, directEstateBasis.actifNetSuccession],
+    () => (shouldRenderSuccessionComputationSections
+      ? (displayUsesChainage ? derivedActifNetSuccession : directEstateBasis.actifNetSuccession)
+      : 0),
+    [
+      shouldRenderSuccessionComputationSections,
+      displayUsesChainage,
+      derivedActifNetSuccession,
+      directEstateBasis.actifNetSuccession,
+    ],
   );
 
   const directDisplayAnalysis = useMemo(
@@ -251,11 +261,14 @@ export function useSuccessionOutcomeDerivedValues({
   ]);
 
   const derivedMasseTransmise = useMemo(
-    () => displayActifNetSuccession
-      + displayAssuranceVieTransmise
-      + displayPerTransmis
-      + displayPrevoyanceTransmise,
+    () => (shouldRenderSuccessionComputationSections
+      ? displayActifNetSuccession
+        + displayAssuranceVieTransmise
+        + displayPerTransmis
+        + displayPrevoyanceTransmise
+      : 0),
     [
+      shouldRenderSuccessionComputationSections,
       displayActifNetSuccession,
       displayAssuranceVieTransmise,
       displayPerTransmis,
@@ -264,13 +277,16 @@ export function useSuccessionOutcomeDerivedValues({
   );
 
   const derivedTotalDroits = useMemo(
-    () => (displayUsesChainage
-      ? chainageAnalysis.totalDroits
-      : (directDisplayAnalysis.result?.totalDroits ?? 0))
-      + avFiscalAnalysis.totalDroits
-      + perFiscalAnalysis.totalDroits
-      + prevoyanceFiscalAnalysis.totalDroits,
+    () => (shouldRenderSuccessionComputationSections
+      ? ((displayUsesChainage
+        ? chainageAnalysis.totalDroits
+        : (directDisplayAnalysis.result?.totalDroits ?? 0))
+        + avFiscalAnalysis.totalDroits
+        + perFiscalAnalysis.totalDroits
+        + prevoyanceFiscalAnalysis.totalDroits)
+      : 0),
     [
+      shouldRenderSuccessionComputationSections,
       displayUsesChainage,
       chainageAnalysis.totalDroits,
       directDisplayAnalysis.result?.totalDroits,
@@ -281,6 +297,7 @@ export function useSuccessionOutcomeDerivedValues({
   );
 
   const synthDonutTransmis = useMemo(() => {
+    if (!shouldRenderSuccessionComputationSections) return 0;
     if (displayUsesChainage) {
       const step1 = chainageAnalysis.step1;
       const step2 = chainageAnalysis.step2;
@@ -296,6 +313,7 @@ export function useSuccessionOutcomeDerivedValues({
       }
       return derivedMasseTransmise;
   }, [
+    shouldRenderSuccessionComputationSections,
     displayUsesChainage,
     chainageAnalysis,
     assuranceVieByAssure,
@@ -383,6 +401,7 @@ export function useSuccessionOutcomeDerivedValues({
   ]);
 
   const transmissionRows = useMemo(() => {
+    if (!shouldRenderSuccessionComputationSections) return [];
     if (displayUsesChainage) {
       const { step1, step2 } = chainageAnalysis;
       if (!step1 || !step2) return [];
@@ -440,12 +459,14 @@ export function useSuccessionOutcomeDerivedValues({
       }] : []),
     ]; */
   }, [
+    shouldRenderSuccessionComputationSections,
     displayUsesChainage,
     chainageAnalysis,
     directDisplayAnalysis.transmissionRows,
   ]);
 
   const insuranceBeneficiaryLines = useMemo(() => {
+    if (!shouldRenderSuccessionComputationSections) return [];
     if (displayUsesChainage) {
       return mergeInsuranceBeneficiaryLines(
         avFiscalAnalysis.lines,
@@ -461,6 +482,7 @@ export function useSuccessionOutcomeDerivedValues({
       prevoyanceFiscalAnalysis.byAssure[assured].lines,
     );
   }, [
+    shouldRenderSuccessionComputationSections,
     displayUsesChainage,
     avFiscalAnalysis.lines,
     avFiscalAnalysis.byAssure,
@@ -570,7 +592,7 @@ export function useSuccessionOutcomeDerivedValues({
     [liquidationContext],
   );
 
-  const canExportSimplified = (
+  const canExportSimplified = shouldRenderSuccessionComputationSections && (
     displayActifNetSuccession > 0
     || totalActifsLiquidation > 0
     || assuranceVieTotals.capitaux > 0
@@ -580,6 +602,7 @@ export function useSuccessionOutcomeDerivedValues({
   const canExportCurrentMode = canExport && canExportSimplified;
 
   const attentions = useMemo(() => {
+    if (!shouldRenderSuccessionComputationSections) return [];
     const seen = new Set<string>();
     return [
       ...predecesAnalysis.warnings,
@@ -596,6 +619,7 @@ export function useSuccessionOutcomeDerivedValues({
       return true;
     });
   }, [
+    shouldRenderSuccessionComputationSections,
     predecesAnalysis.warnings,
     chainageAnalysis.warnings,
     devolutionAnalysis.warnings,

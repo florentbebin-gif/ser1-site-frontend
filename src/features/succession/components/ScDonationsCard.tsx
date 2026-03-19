@@ -80,6 +80,9 @@ export default function ScDonationsCard({
                       onChange={(value) => onUpdateDonationEntry(entry.id, 'type', value)}
                       options={DONATION_TYPE_OPTIONS}
                     />
+                    <p className="sc-hint sc-hint--compact">
+                      Avance de part successorale : sera rapportée au partage entre héritiers. Hors part successorale : s&apos;ajoute aux libéralités et peut entamer la réserve.
+                    </p>
                   </div>
                   <div className="sc-field">
                     <label>Montant (€)</label>

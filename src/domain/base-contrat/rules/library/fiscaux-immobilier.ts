@@ -46,7 +46,7 @@ const PINEL_PINEL_PLUS: ProductRules = {
       ],
       tags: ['dmtg_classique', 'transmission_engagement'],
       confidence: 'elevee',
-      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F14198' }],
+      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F35794' }],
     },
   ],
 };
@@ -88,7 +88,7 @@ const DENORMANDIE: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F14198' }],
+      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F35794' }],
     },
   ],
 };
@@ -128,7 +128,7 @@ const MALRAUX: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F14198' }],
+      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F35794' }],
     },
   ],
 };
@@ -207,7 +207,7 @@ const DISPOSITIF_GENERIQUE: ProductRules = {
       ],
       tags: ['dmtg_classique'],
       confidence: 'elevee',
-      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F14198' }],
+      sources: [{ label: 'Service-public.fr — Droits de succession', url: 'https://www.service-public.fr/particuliers/vosdroits/F35794' }],
     },
   ],
 };
