@@ -61,9 +61,7 @@ interface UseSuccessionDerivedValuesInput {
   assetEntries: SuccessionAssetDetailEntry[];
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
-  assuranceVieDraft: SuccessionAssuranceVieEntry[];
   perEntries: SuccessionPerEntry[];
-  perDraft: SuccessionPerEntry[];
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
   devolutionContext: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT;
   patrimonialContext: typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT;
@@ -81,9 +79,7 @@ export function useSuccessionDerivedValues({
   assetEntries,
   groupementFoncierEntries,
   assuranceVieEntries,
-  assuranceVieDraft,
   perEntries,
-  perDraft,
   prevoyanceDecesEntries,
   devolutionContext,
   patrimonialContext,
@@ -170,9 +166,7 @@ export function useSuccessionDerivedValues({
     assetEntries,
     groupementFoncierEntries,
     assuranceVieEntries,
-    assuranceVieDraft,
     perEntries,
-    perDraft,
     prevoyanceDecesEntries,
     forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
     forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
@@ -474,11 +468,9 @@ export function useSuccessionDerivedValues({
     hasBeneficiaryLevelGfAdjustment: uiDerived.hasBeneficiaryLevelGfAdjustment,
     assetEntriesByCategory: uiDerived.assetEntriesByCategory,
     assuranceVieTotals: uiDerived.assuranceVieTotals,
-    assuranceVieDraftTotals: uiDerived.assuranceVieDraftTotals,
     avFiscalAnalysis,
     assuranceVieByAssure: uiDerived.assuranceVieByAssure,
     perTotals: uiDerived.perTotals,
-    perDraftTotals: uiDerived.perDraftTotals,
     perFiscalAnalysis,
     perByAssure: uiDerived.perByAssure,
     prevoyanceTotals: uiDerived.prevoyanceTotals,

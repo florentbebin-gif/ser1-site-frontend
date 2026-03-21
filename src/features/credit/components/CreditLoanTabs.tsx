@@ -8,10 +8,8 @@ import './CreditV2.css';
 export function CreditLoanTabs({
   activeTab,
   onChangeTab,
-  hasPret1,
   hasPret2,
   hasPret3,
-  onAddPret1,
   onAddPret2,
   onAddPret3,
   onRemovePret2,
@@ -19,8 +17,8 @@ export function CreditLoanTabs({
   isExpert = true,
 }: CreditLoanTabsProps) {
   const tabs = [
-    { idx: 0, label: 'Prêt 1', available: hasPret1, addable: !hasPret1 },
-    { idx: 1, label: 'Prêt 2', available: hasPret2, addable: isExpert && hasPret1 && !hasPret2 },
+    { idx: 0, label: 'Prêt 1', available: true, addable: false },
+    { idx: 1, label: 'Prêt 2', available: hasPret2, addable: isExpert && !hasPret2 },
     { idx: 2, label: 'Prêt 3', available: hasPret3, addable: isExpert && hasPret2 && !hasPret3 },
   ];
 
@@ -30,7 +28,7 @@ export function CreditLoanTabs({
         {tabs.map((tab) => {
           if (tab.idx === 2 && !hasPret2) return null;
           if (!isExpert && tab.idx === 2) return null;
-          if (tab.idx === 1 && !hasPret1) return null;
+          if (!isExpert && tab.idx === 1 && !hasPret2) return null;
 
           const isActive = activeTab === tab.idx;
           const showRemove = tab.available && tab.idx > 0 && isExpert;
@@ -50,8 +48,7 @@ export function CreditLoanTabs({
                   if (tab.available) {
                     onChangeTab(tab.idx);
                   } else if (tab.addable) {
-                    if (tab.idx === 0) onAddPret1();
-                    else if (tab.idx === 1) onAddPret2();
+                    if (tab.idx === 1) onAddPret2();
                     else onAddPret3();
                   }
                 }}

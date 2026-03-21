@@ -45,7 +45,6 @@ import {
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { type SuccessionChainOrder } from './successionChainage';
 import { normalizeResidencePrincipaleAssetEntries } from './successionAssetValuation';
-import { CLAUSE_CONJOINT_LABEL } from './successionSimulator.constants';
 import {
   buildInitialDispositionsDraft,
   EMPTY_ADD_FAMILY_MEMBER_FORM,
@@ -100,8 +99,10 @@ export default function SuccessionSimulator() {
   const [showDispositionsModal, setShowDispositionsModal] = useState(false);
   const [showAssuranceVieModal, setShowAssuranceVieModal] = useState(false);
   const [showPerModal, setShowPerModal] = useState(false);
-  const [assuranceVieDraft, setAssuranceVieDraft] = useState<SuccessionAssuranceVieEntry[]>(DEFAULT_SUCCESSION_ASSURANCE_VIE);
-  const [perDraft, setPerDraft] = useState<SuccessionPerEntry[]>(DEFAULT_SUCCESSION_PER);
+  const [showPrevoyanceModal, setShowPrevoyanceModal] = useState(false);
+  const [assuranceVieDraft, setAssuranceVieDraft] = useState<SuccessionAssuranceVieEntry | null>(null);
+  const [perDraft, setPerDraft] = useState<SuccessionPerEntry | null>(null);
+  const [prevoyanceDraft, setPrevoyanceDraft] = useState<SuccessionPrevoyanceDecesEntry | null>(null);
   const [groupementFoncierEntries, setGroupementFoncierEntries] = useState<SuccessionGroupementFoncierEntry[]>([]);
   const [prevoyanceDecesEntries, setPrevoyanceDecesEntries] = useState<SuccessionPrevoyanceDecesEntry[]>([]);
   const [dispositionsDraft, setDispositionsDraft] = useState<DispositionsDraftState>(buildInitialDispositionsDraft);
@@ -115,9 +116,7 @@ export default function SuccessionSimulator() {
     assetEntries,
     groupementFoncierEntries,
     assuranceVieEntries,
-    assuranceVieDraft,
     perEntries,
-    perDraft,
     prevoyanceDecesEntries,
     devolutionContext,
     patrimonialContext,
@@ -149,15 +148,18 @@ export default function SuccessionSimulator() {
     openAssuranceVieModal,
     closeAssuranceVieModal,
     validateAssuranceVieModal,
+    updateAssuranceVieDraft,
+    removeAssuranceVieEntry,
     openPerModal,
     closePerModal,
     validatePerModal,
-    addAssuranceVieEntry,
-    updateAssuranceVieEntry,
-    removeAssuranceVieEntry,
-    addPerEntry,
-    updatePerEntry,
+    updatePerDraft,
     removePerEntry,
+    openPrevoyanceModal,
+    closePrevoyanceModal,
+    validatePrevoyanceModal,
+    updatePrevoyanceDraft,
+    removePrevoyanceDecesEntry,
     getFirstTestamentBeneficiaryRef,
     updateDispositionsTestament,
     addDispositionsParticularLegacy,
@@ -172,10 +174,13 @@ export default function SuccessionSimulator() {
     enfantRattachementOptions: derived.enfantRattachementOptions,
     addMemberForm,
     assetOwnerOptions: derived.assetOwnerOptions,
+    assetEntries,
     assuranceVieEntries,
     assuranceVieDraft,
     perEntries,
     perDraft,
+    prevoyanceDecesEntries,
+    prevoyanceDraft,
     assuranceViePartyOptions: derived.assuranceViePartyOptions,
     testamentBeneficiaryOptionsBySide: derived.testamentBeneficiaryOptionsBySide,
     canOpenDispositionsModal: derived.canOpenDispositionsModal,
@@ -188,6 +193,8 @@ export default function SuccessionSimulator() {
     setAssetEntries,
     setAssuranceVieEntries,
     setPerEntries,
+    setGroupementFoncierEntries,
+    setPrevoyanceDecesEntries,
     setDevolutionContext,
     setPatrimonialContext,
     setDonationsContext,
@@ -197,8 +204,10 @@ export default function SuccessionSimulator() {
     setShowDispositionsModal,
     setShowAssuranceVieModal,
     setShowPerModal,
+    setShowPrevoyanceModal,
     setAssuranceVieDraft,
     setPerDraft,
+    setPrevoyanceDraft,
     setDispositionsDraft,
     setAddMemberForm,
     setChainOrder,
@@ -247,9 +256,7 @@ export default function SuccessionSimulator() {
           setLiquidationContext(parsed.liquidation);
           setAssetEntries(parsed.assetEntries);
           setAssuranceVieEntries(parsed.assuranceVieEntries);
-          setAssuranceVieDraft(parsed.assuranceVieEntries);
           setPerEntries(parsed.perEntries);
-          setPerDraft(parsed.perEntries);
           if (parsed.groupementFoncierEntries) setGroupementFoncierEntries(parsed.groupementFoncierEntries);
           if (parsed.prevoyanceDecesEntries) setPrevoyanceDecesEntries(parsed.prevoyanceDecesEntries);
           setDevolutionContext(parsed.devolution);
@@ -521,15 +528,15 @@ export default function SuccessionSimulator() {
         onUpdateAssetEntry={updateAssetEntry}
         onRemoveAssetEntry={removeAssetEntry}
         onOpenAssuranceVieModal={openAssuranceVieModal}
+        onRemoveAssuranceVieEntry={removeAssuranceVieEntry}
         onOpenPerModal={openPerModal}
+        onRemovePerEntry={removePerEntry}
+        onOpenPrevoyanceModal={openPrevoyanceModal}
+        onRemovePrevoyanceDecesEntry={removePrevoyanceDecesEntry}
         groupementFoncierEntries={groupementFoncierEntries}
-        onAddGroupementFoncierEntry={() => setGroupementFoncierEntries((prev) => [...prev, { id: crypto.randomUUID(), type: 'GFA', valeurTotale: 0, owner: 'epoux1' }])}
         onUpdateGroupementFoncierEntry={(id, field, value) => setGroupementFoncierEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)))}
         onRemoveGroupementFoncierEntry={(id) => setGroupementFoncierEntries((prev) => prev.filter((e) => e.id !== id))}
         prevoyanceDecesEntries={prevoyanceDecesEntries}
-        onAddPrevoyanceDecesEntry={() => setPrevoyanceDecesEntries((prev) => [...prev, { id: crypto.randomUUID(), souscripteur: 'epoux1', assure: 'epoux1', capitalDeces: 0, dernierePrime: 0, clauseBeneficiaire: CLAUSE_CONJOINT_LABEL }])}
-        onUpdatePrevoyanceDecesEntry={(id, field, value) => setPrevoyanceDecesEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)))}
-        onRemovePrevoyanceDecesEntry={(id) => setPrevoyanceDecesEntries((prev) => prev.filter((e) => e.id !== id))}
         onSetSimplifiedBalanceField={setSimplifiedBalanceField}
         onAddDonationEntry={addDonationEntry}
         onUpdateDonationEntry={updateDonationEntry}
@@ -561,6 +568,8 @@ export default function SuccessionSimulator() {
         assuranceVieDraft={assuranceVieDraft}
         showPerModal={showPerModal}
         perDraft={perDraft}
+        showPrevoyanceModal={showPrevoyanceModal}
+        prevoyanceDraft={prevoyanceDraft}
         showAddMemberPanel={showAddMemberPanel}
         addMemberForm={addMemberForm}
         setAddMemberForm={setAddMemberForm}
@@ -573,14 +582,13 @@ export default function SuccessionSimulator() {
         onValidateDispositions={validateDispositionsModal}
         onCloseAssuranceVie={closeAssuranceVieModal}
         onValidateAssuranceVie={validateAssuranceVieModal}
-        onAddAssuranceVieContract={addAssuranceVieEntry}
-        onRemoveAssuranceVieContract={removeAssuranceVieEntry}
-        onUpdateAssuranceVieContract={updateAssuranceVieEntry}
+        onUpdateAssuranceVieContract={updateAssuranceVieDraft}
         onClosePer={closePerModal}
         onValidatePer={validatePerModal}
-        onAddPerContract={addPerEntry}
-        onRemovePerContract={removePerEntry}
-        onUpdatePerContract={updatePerEntry}
+        onUpdatePerContract={updatePerDraft}
+        onClosePrevoyance={closePrevoyanceModal}
+        onValidatePrevoyance={validatePrevoyanceModal}
+        onUpdatePrevoyanceContract={updatePrevoyanceDraft}
         onCloseAddMemberPanel={() => setShowAddMemberPanel(false)}
         onValidateAddMember={addFamilyMember}
       />

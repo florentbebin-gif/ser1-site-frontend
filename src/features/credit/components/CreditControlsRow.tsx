@@ -9,10 +9,8 @@ interface CreditControlsRowProps extends CreditLoanTabsProps {
 export function CreditControlsRow({
   activeTab,
   onChangeTab,
-  hasPret1,
   hasPret2,
   hasPret3,
-  onAddPret1,
   onAddPret2,
   onAddPret3,
   onRemovePret2,
@@ -27,10 +25,8 @@ export function CreditControlsRow({
         <CreditLoanTabs
           activeTab={activeTab}
           onChangeTab={onChangeTab}
-          hasPret1={hasPret1}
           hasPret2={hasPret2}
           hasPret3={hasPret3}
-          onAddPret1={onAddPret1}
           onAddPret2={onAddPret2}
           onAddPret3={onAddPret3}
           onRemovePret2={onRemovePret2}

@@ -77,12 +77,18 @@ export const ASSET_SUBCATEGORY_OPTIONS: Record<SuccessionAssetCategory, string[]
     'Immobilier locatif',
     'Autre immobilier',
     'Droits en usufruit',
+    // Sous-catégories spéciales — ajoutées en fin de liste pour ne pas devenir le défaut
+    'GFA/GFV',
+    'GFF/GF',
   ],
   financier: [
     'Comptes bancaires (ex : compte courant)',
     'Valeurs mobilières (ex : FCPI, actions)',
     'Épargne réglementée (ex : Livret A, PEL)',
     'Autres biens financiers (ex : crypto, or)',
+    // Sous-catégories spéciales
+    'Assurance vie',
+    'PER assurance',
   ],
   professionnel: [
     'Parts sociales',
@@ -93,6 +99,8 @@ export const ASSET_SUBCATEGORY_OPTIONS: Record<SuccessionAssetCategory, string[]
     'Véhicules',
     'Mobilier',
     'Autres biens divers',
+    // Sous-catégorie spéciale
+    'Prévoyance décès',
   ],
   passif: [
     'Emprunts immobiliers',
@@ -100,6 +108,17 @@ export const ASSET_SUBCATEGORY_OPTIONS: Record<SuccessionAssetCategory, string[]
     'Passifs professionnels',
   ],
 };
+
+// Valeurs sentinelles identifiant les sous-catégories spéciales (transformation de ligne)
+export const SPECIAL_ASSET_SUBCATEGORIES = [
+  'GFA/GFV',
+  'GFF/GF',
+  'Assurance vie',
+  'PER assurance',
+  'Prévoyance décès',
+] as const;
+
+export type SpecialAssetSubcategory = (typeof SPECIAL_ASSET_SUBCATEGORIES)[number];
 
 export const ASSURANCE_VIE_TYPE_OPTIONS: {
   value: SuccessionAssuranceVieContractType;

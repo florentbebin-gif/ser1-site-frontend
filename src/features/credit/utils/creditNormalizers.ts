@@ -34,20 +34,41 @@ export const DEFAULT_STATE: CreditState = {
   assurMode: 'CRD', // 'CI' | 'CRD'
   creditType: 'amortissable',
   viewMode: 'mensuel', // 'mensuel' | 'annuel'
-  
+
   // Prêts (null = non créé/inactif)
   pret1: null,
   pret2: null,
   pret3: null,
-  
+
   // Options de lissage
   lisserPret1: false,
   lissageMode: 'mensu', // 'mensu' | 'duree'
-  
+
   // UI state (non persisté)
   activeTab: 0, // 0 = pret1, 1 = pret2, 2 = pret3
   touched: { capital: false, duree: false },
 };
+
+/**
+ * Factory : crée un état initial frais à chaque montage/reset.
+ * Utiliser à la place de DEFAULT_STATE pour éviter le problème de singleton
+ * (createNewPret() génère un id unique à chaque appel).
+ */
+export function createInitialCreditState(): CreditState {
+  return {
+    startYM: nowYearMonth(),
+    assurMode: 'CRD',
+    creditType: 'amortissable',
+    viewMode: 'mensuel',
+    pret1: createNewPret({ startYM: nowYearMonth(), type: 'amortissable', assurMode: 'CRD' }),
+    pret2: null,
+    pret3: null,
+    lisserPret1: false,
+    lissageMode: 'mensu',
+    activeTab: 0,
+    touched: { capital: false, duree: false },
+  };
+}
 
 function isCreditLegacyState(value: unknown): value is CreditLegacyState {
   return typeof value === 'object' && value !== null;
@@ -63,17 +84,23 @@ function isCreditLegacyState(value: unknown): value is CreditLegacyState {
  */
 export function normalizeLoadedState(raw: unknown): CreditState {
   if (!isCreditLegacyState(raw)) {
-    return { ...DEFAULT_STATE };
+    return createInitialCreditState();
   }
 
   // Migration depuis l'ancien format (champs plats → structure pret1/pret2/pret3)
   const migrated = migrateFromLegacyFormat(raw);
 
+  const startYM = (migrated.startYM ?? DEFAULT_STATE.startYM) as string;
+  const creditType = migrated.creditType ?? 'amortissable';
+  const assurMode = migrated.assurMode ?? 'CRD';
+
   return {
     ...DEFAULT_STATE,
     ...migrated,
-    // Normaliser les prêts (null si absent)
-    pret1: migrated.pret1 ? { ...DEFAULT_PRET, ...migrated.pret1 } : null,
+    // pret1 toujours initialisé — on crée un prêt frais si absent/null dans l'ancien state
+    pret1: migrated.pret1
+      ? { ...DEFAULT_PRET, ...migrated.pret1 }
+      : createNewPret({ startYM, type: creditType, assurMode }),
     pret2: migrated.pret2 ? { ...DEFAULT_PRET, ...migrated.pret2 } : null,
     pret3: migrated.pret3 ? { ...DEFAULT_PRET, ...migrated.pret3 } : null,
     // Reset UI state

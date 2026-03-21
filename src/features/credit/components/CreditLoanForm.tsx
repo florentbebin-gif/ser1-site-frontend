@@ -33,27 +33,8 @@ export function CreditLoanForm({
 
   return (
     <div className="cv2-loan-form" data-testid={`credit-form-pret${pretNum}`}>
+      {/* Montant + Durée — toujours visibles */}
       <div className="cv2-loan-form__grid">
-        {isExpert && (
-          <Select<CreditType>
-            label="Type de crédit"
-            value={pretData.type || globalCreditType}
-            onChange={(value) => onPatch({ type: value })}
-            options={[
-              { value: 'amortissable', label: 'Amortissable' },
-              { value: 'infine', label: 'In fine' },
-            ]}
-            testId={`credit-pret${pretNum}-type`}
-          />
-        )}
-        {isExpert && (
-          <InputMonth
-            label="Date de souscription"
-            value={pretData.startYM || globalStartYM}
-            onChange={(value) => onPatch({ startYM: value })}
-            testId={`credit-pret${pretNum}-start`}
-          />
-        )}
         <InputEuro
           label="Montant emprunté"
           value={pretData.capital}
@@ -70,20 +51,49 @@ export function CreditLoanForm({
           max={600}
           testId={`credit-pret${pretNum}-duree`}
         />
+      </div>
+
+      {/* Taux + Type + Date — 3 colonnes en expert, taux seul en simplifié */}
+      {isExpert ? (
+        <div className="cv2-loan-form__grid--3">
+          <InputPct
+            label="Taux annuel (crédit)"
+            rawValue={raw?.taux || formatTauxRaw(pretData.taux)}
+            onBlur={(value) => onPatch({ taux: value })}
+            testId={`credit-pret${pretNum}-taux`}
+          />
+          <Select<CreditType>
+            label="Type de crédit"
+            value={pretData.type || globalCreditType}
+            onChange={(value) => onPatch({ type: value })}
+            options={[
+              { value: 'amortissable', label: 'Amortissable' },
+              { value: 'infine', label: 'In fine' },
+            ]}
+            testId={`credit-pret${pretNum}-type`}
+          />
+          <InputMonth
+            label="Date de souscription"
+            value={pretData.startYM || globalStartYM}
+            onChange={(value) => onPatch({ startYM: value })}
+            testId={`credit-pret${pretNum}-start`}
+          />
+        </div>
+      ) : (
         <InputPct
           label="Taux annuel (crédit)"
           rawValue={raw?.taux || formatTauxRaw(pretData.taux)}
           onBlur={(value) => onPatch({ taux: value })}
           testId={`credit-pret${pretNum}-taux`}
         />
-      </div>
+      )}
 
       {isExpert && (
         <>
           <div className="cv2-loan-card__divider" />
           <div className="cv2-loan-form__section cv2-loan-form__section--no-border" data-testid={pretNum === 0 ? 'credit-assurance-section' : undefined}>
             <div className="cv2-loan-form__section-title">Assurance emprunteur</div>
-            <div className="cv2-loan-form__grid">
+            <div className="cv2-loan-form__grid--3">
               <Select<CreditAssurMode>
                 label="Mode de calcul"
                 value={pretData.assurMode || globalAssurMode}

@@ -117,6 +117,14 @@ export function createPerId(): string {
   return `per-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+export function createGfId(): string {
+  return `gf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export function createPrevoyanceId(): string {
+  return `pv-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export function cloneAscendantsSurvivantsBySide(
   ascendantsBySide: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide,
 ): typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.ascendantsSurvivantsBySide {
