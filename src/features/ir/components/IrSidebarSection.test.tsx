@@ -37,6 +37,7 @@ const baseProps = {
   pfuRateIR: 12.8,
   isExpert: true,
   showSummaryCard: true,
+  hasSituation: true,
 } satisfies IrSidebarSectionProps;
 
 function renderSidebar(overrides: Partial<IrSidebarSectionProps> = {}) {

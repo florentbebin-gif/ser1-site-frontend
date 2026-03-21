@@ -52,7 +52,7 @@ export function PlacementClientProfileSection({
         <InputNumber
           label="Âge actuel"
           value={client.ageActuel}
-          onChange={(value) => setClient({ ageActuel: value })}
+          onChange={(value) => setClient({ ageActuel: value ?? null })}
           unit="ans"
           min={18}
           max={90}

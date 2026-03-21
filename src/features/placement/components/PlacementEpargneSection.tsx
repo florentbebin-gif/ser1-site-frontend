@@ -189,7 +189,7 @@ export function PlacementEpargneSection({
               <td key={index}>
                 <InputNumber
                   value={product.dureeEpargne}
-                  onChange={(value) => setProduct(index, { dureeEpargne: value })}
+                  onChange={(value) => setProduct(index, { dureeEpargne: value ?? 1 })}
                   unit="ans"
                   min={1}
                   max={50}

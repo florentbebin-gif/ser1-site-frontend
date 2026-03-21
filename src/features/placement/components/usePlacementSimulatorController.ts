@@ -222,8 +222,10 @@ export function usePlacementSimulatorController(isExpert: boolean) {
 
   const results = useMemo<CompareResult | null>(() => {
     if (!hydrated || loading || error) return null;
+    if (state.client.ageActuel === null) return null;
 
     const stateForCalc = buildPlacementStateForMode(state, isExpert);
+    const clientForCalc = { ...stateForCalc.client, ageActuel: stateForCalc.client.ageActuel ?? undefined };
     const fpWithDmtg = { ...fiscalParams, dmtgTauxChoisi: stateForCalc.transmission.dmtgTaux };
     const engineProduct1 = toEngineProduct(stateForCalc.products[0]);
     const engineProduct2 = toEngineProduct(stateForCalc.products[1]);
@@ -241,17 +243,17 @@ export function usePlacementSimulatorController(isExpert: boolean) {
 
     const result1 = simulateComplete(
       engineProduct1,
-      stateForCalc.client,
+      clientForCalc,
       liquidationParams1,
-      { ...stateForCalc.transmission, agePremierVersement: stateForCalc.client.ageActuel },
+      { ...stateForCalc.transmission, agePremierVersement: clientForCalc.ageActuel },
       fpWithDmtg
     );
 
     const result2 = simulateComplete(
       engineProduct2,
-      stateForCalc.client,
+      clientForCalc,
       liquidationParams2,
-      { ...stateForCalc.transmission, agePremierVersement: stateForCalc.client.ageActuel },
+      { ...stateForCalc.transmission, agePremierVersement: clientForCalc.ageActuel },
       fpWithDmtg
     );
 
@@ -411,7 +413,7 @@ export function usePlacementSimulatorController(isExpert: boolean) {
 
       const data = {
         clientName: undefined as string | undefined,
-        ageActuel: state.client.ageActuel,
+        ageActuel: state.client.ageActuel ?? 0,
         dureeEpargne: state.products[0].dureeEpargne,
         ageAuDeces: state.transmission.ageAuDeces,
         liquidationMode: state.liquidation.mode,

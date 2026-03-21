@@ -49,9 +49,9 @@ export function PlacementTransmissionSection({
                 <div className="pl-field-container pl-field-container--end">
                   <InputNumber
                     value={state.transmission.ageAuDeces}
-                    onChange={(value) => setTransmission({ ageAuDeces: value })}
+                    onChange={(value) => setTransmission({ ageAuDeces: value ?? 0 })}
                     unit="ans"
-                    min={state.client.ageActuel}
+                    min={state.client.ageActuel ?? undefined}
                     max={120}
                     inline
                   />
@@ -100,7 +100,7 @@ export function PlacementTransmissionSection({
                 <td colSpan={2}>
                   <InputNumber
                     value={state.transmission.nbBeneficiaires}
-                    onChange={(value) => setTransmission({ nbBeneficiaires: value })}
+                    onChange={(value) => setTransmission({ nbBeneficiaires: value ?? 1 })}
                     min={1}
                     max={10}
                     inline

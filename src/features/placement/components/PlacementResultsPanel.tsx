@@ -59,8 +59,8 @@ export function PlacementResultsPanel({
         ) : (
           <>
             <TimelineBar
-              ageActuel={state.client.ageActuel}
-              ageDebutLiquidation={state.client.ageActuel + state.products[0].dureeEpargne}
+              ageActuel={state.client.ageActuel ?? 0}
+              ageDebutLiquidation={(state.client.ageActuel ?? 0) + state.products[0].dureeEpargne}
               ageAuDeces={state.transmission.ageAuDeces}
             />
 

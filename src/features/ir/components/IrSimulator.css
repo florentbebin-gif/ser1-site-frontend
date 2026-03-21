@@ -793,6 +793,11 @@
   text-align: right;
 }
 
+.ir-select__label--placeholder {
+  color: var(--color-text-muted, #9ca3af);
+  font-style: italic;
+}
+
 .ir-select__chevron {
   transition: transform 0.2s;
   flex-shrink: 0;

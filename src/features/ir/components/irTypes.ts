@@ -67,8 +67,8 @@ export type IrPercentFormatter = (_value: number) => string;
 export type IrInputMoneyFormatter = (_value: number | null | undefined) => string;
 
 export interface IrFormSectionProps {
-  status: IrStatus;
-  setStatus: (_status: IrStatus) => void;
+  status: IrStatus | null;
+  setStatus: (_status: IrStatus | null) => void;
   isIsolated: boolean;
   setIsIsolated: (_value: boolean) => void;
   setIncomes: IrStateSetter<IrIncomes>;
@@ -114,4 +114,5 @@ export interface IrSidebarSectionProps {
   pfuRateIR: number;
   isExpert: boolean;
   showSummaryCard: boolean;
+  hasSituation: boolean;
 }

@@ -175,7 +175,7 @@ export function VersementInitialSection({
                 <InputNumber
                   label="Délai de jouissance"
                   value={distribution.delaiJouissance}
-                  onChange={(value) => onUpdateDistribution('delaiJouissance', value)}
+                  onChange={(value) => onUpdateDistribution('delaiJouissance', value ?? 0)}
                   unit="mois"
                   min={0}
                   max={12}
@@ -406,7 +406,7 @@ export function VersementPonctuelsSection({
               <div className="vcm__ponctuel-cell">
                 <InputNumber
                   value={ponctuel.annee}
-                  onChange={(value) => onUpdatePonctuel(index, 'annee', value)}
+                  onChange={(value) => onUpdatePonctuel(index, 'annee', value ?? 1)}
                   min={1}
                   max={dureeEpargne}
                   inline

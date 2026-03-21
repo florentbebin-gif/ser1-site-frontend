@@ -19,12 +19,13 @@ interface IrSelectProps {
   value: string;
   onChange: (_value: string) => void;
   options: IrSelectOption[];
+  placeholder?: string;
   className?: string;
   style?: React.CSSProperties;
   testId?: string;
 }
 
-export function IrSelect({ value, onChange, options, className, style, testId }: IrSelectProps) {
+export function IrSelect({ value, onChange, options, placeholder, className, style, testId }: IrSelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -58,7 +59,7 @@ export function IrSelect({ value, onChange, options, className, style, testId }:
         aria-expanded={open}
         data-testid={testId}
       >
-        <span className="ir-select__label">{selected?.label || ''}</span>
+        <span className={`ir-select__label${!selected && placeholder ? ' ir-select__label--placeholder' : ''}`}>{selected?.label || placeholder || ''}</span>
         <svg
           width="10" height="10" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"

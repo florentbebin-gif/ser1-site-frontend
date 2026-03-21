@@ -106,7 +106,7 @@ export function PlacementInputsPanel({
         setClient={setClient}
       />
 
-      {state.step === 'epargne' && (
+      {state.client.ageActuel !== null && state.step === 'epargne' && (
         <PlacementEpargneSection
           state={state}
           isExpert={isExpert}
@@ -124,7 +124,7 @@ export function PlacementInputsPanel({
         />
       )}
 
-      {state.step === 'liquidation' && (
+      {state.client.ageActuel !== null && state.step === 'liquidation' && (
         <PlacementLiquidationSection
           state={state}
           isExpert={isExpert}
@@ -137,7 +137,7 @@ export function PlacementInputsPanel({
         />
       )}
 
-      {state.step === 'transmission' && (
+      {state.client.ageActuel !== null && state.step === 'transmission' && (
         <PlacementTransmissionSection
           state={state}
           setTransmission={setTransmission}

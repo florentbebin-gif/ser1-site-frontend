@@ -23,6 +23,7 @@ import { VersementConfigModal } from './VersementConfigModal';
 import { renderEpargneRow } from '../utils/tableHelpers';
 import { PlacementToolbar } from './PlacementToolbar';
 import { PlacementInputsPanel } from './PlacementInputsPanel';
+import { PlacementHypotheses } from './PlacementHypotheses';
 import { PlacementResultsPanel } from './PlacementResultsPanel';
 import { usePlacementSimulatorController } from './usePlacementSimulatorController';
 
@@ -127,13 +128,17 @@ export default function PlacementSimulatorPage() {
           psSettings={psSettings}
         />
 
-        <PlacementResultsPanel
-          loading={loading}
-          hydrated={hydrated}
-          results={results}
-          state={state}
-        />
+        {state.client.ageActuel !== null && (
+          <PlacementResultsPanel
+            loading={loading}
+            hydrated={hydrated}
+            results={results}
+            state={state}
+          />
+        )}
       </div>
+
+      <PlacementHypotheses />
 
       {modalOpen !== null && (
         <VersementConfigModal

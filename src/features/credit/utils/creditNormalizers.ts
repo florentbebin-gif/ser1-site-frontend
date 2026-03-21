@@ -36,7 +36,7 @@ export const DEFAULT_STATE: CreditState = {
   viewMode: 'mensuel', // 'mensuel' | 'annuel'
   
   // Prêts (null = non créé/inactif)
-  pret1: { ...DEFAULT_PRET },
+  pret1: null,
   pret2: null,
   pret3: null,
   
@@ -72,9 +72,8 @@ export function normalizeLoadedState(raw: unknown): CreditState {
   return {
     ...DEFAULT_STATE,
     ...migrated,
-    // Assurer que pret1 existe toujours
-    pret1: { ...DEFAULT_PRET, ...migrated.pret1 },
-    // Normaliser les prêts optionnels
+    // Normaliser les prêts (null si absent)
+    pret1: migrated.pret1 ? { ...DEFAULT_PRET, ...migrated.pret1 } : null,
     pret2: migrated.pret2 ? { ...DEFAULT_PRET, ...migrated.pret2 } : null,
     pret3: migrated.pret3 ? { ...DEFAULT_PRET, ...migrated.pret3 } : null,
     // Reset UI state
@@ -88,8 +87,8 @@ export function normalizeLoadedState(raw: unknown): CreditState {
  * vers le nouveau format structuré
  */
 function migrateFromLegacyFormat(raw: CreditLegacyState): Partial<CreditState> {
-  // Si déjà au nouveau format, retourner tel quel
-  if (raw.pret1 && typeof raw.pret1 === 'object') {
+  // Si déjà au nouveau format (clé 'pret1' présente, quelle que soit sa valeur — null compris)
+  if ('pret1' in raw) {
     return {
       startYM: raw.startYM ?? DEFAULT_STATE.startYM,
       assurMode: raw.assurMode ?? DEFAULT_STATE.assurMode,
@@ -97,7 +96,7 @@ function migrateFromLegacyFormat(raw: CreditLegacyState): Partial<CreditState> {
       viewMode: raw.viewMode ?? DEFAULT_STATE.viewMode,
       lisserPret1: raw.lisserPret1 ?? false,
       lissageMode: raw.lissageMode ?? 'mensu',
-      pret1: { ...DEFAULT_PRET, ...raw.pret1, startYM: raw.pret1.startYM ?? raw.startYM ?? null },
+      pret1: raw.pret1 ? { ...DEFAULT_PRET, ...raw.pret1, startYM: raw.pret1.startYM ?? raw.startYM ?? null } : null,
       pret2: raw.pret2 ? { ...DEFAULT_PRET, ...raw.pret2, startYM: raw.pret2.startYM ?? raw.startYM ?? null } : null,
       pret3: raw.pret3 ? { ...DEFAULT_PRET, ...raw.pret3, startYM: raw.pret3.startYM ?? raw.startYM ?? null } : null,
     };
@@ -216,13 +215,15 @@ export function patchPret(pret: CreditLoan, patch: Partial<CreditLoan>): CreditL
  */
 export function initRawValues(state: Pick<CreditState, 'pret1' | 'pret2' | 'pret3'>): CreditRawValues {
   const raw: CreditRawValues = {};
-  
+
   // Pret1
-  raw.pret1 = {
-    taux: formatTauxRaw(state.pret1?.taux),
-    tauxAssur: formatTauxRaw(state.pret1?.tauxAssur),
-    quotite: String(state.pret1?.quotite ?? 100),
-  };
+  if (state.pret1) {
+    raw.pret1 = {
+      taux: formatTauxRaw(state.pret1.taux),
+      tauxAssur: formatTauxRaw(state.pret1.tauxAssur),
+      quotite: String(state.pret1.quotite ?? 100),
+    };
+  }
   
   // Pret2
   if (state.pret2) {

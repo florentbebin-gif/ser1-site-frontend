@@ -8,7 +8,7 @@
  * - Formatters              -> utils/creditFormatters
  */
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { onResetEvent, storageKeyFor } from '../../utils/reset';
 import { useTheme } from '../../settings/ThemeProvider';
@@ -120,15 +120,6 @@ export default function CreditV2() {
   const [activeTab, setActiveTab] = useState(0);
   const [hypothesesOpen, setHypothesesOpen] = useState(false);
 
-  // Synchronise l'accordéon hypothèses avec le mode (une seule fois à la résolution du mode)
-  const modeResolvedRef = useRef(false);
-  useEffect(() => {
-    if (!modeLoading && !modeResolvedRef.current) {
-      modeResolvedRef.current = true;
-      setHypothesesOpen(isExpert);
-    }
-  }, [modeLoading, isExpert]);
-
   const STORE_KEY = storageKeyFor('credit');
 
   // -------------------------------------------------------------------------
@@ -166,7 +157,7 @@ export default function CreditV2() {
       if (simId && simId !== 'credit') return;
       const resetState: CreditState = {
         ...DEFAULT_STATE,
-        pret1: { ...DEFAULT_STATE.pret1, capital: 0, duree: 0, taux: 0, tauxAssur: 0, quotite: 100 },
+        pret1: null,
         pret2: null,
         pret3: null,
       };
@@ -187,6 +178,7 @@ export default function CreditV2() {
 
   const setPret1 = useCallback((patch: Partial<CreditLoan>) => {
     setState(s => {
+      if (!s.pret1) return s;
       const next = { ...s, pret1: patchPret(s.pret1, patch) };
       // Sync global startYM and assurMode when pret1 changes them
       if (patch.startYM != null) next.startYM = patch.startYM;
@@ -206,6 +198,14 @@ export default function CreditV2() {
     setState(s => s.pret3 ? ({ ...s, pret3: patchPret(s.pret3, patch) }) : s);
     syncRawValues(setRawValues, 'pret3', patch);
   }, []);
+
+  const addPret1 = useCallback(() => {
+    if (state.pret1) return;
+    const p = createNewPret({ startYM: state.startYM, type: state.creditType, assurMode: state.assurMode });
+    setState(s => ({ ...s, pret1: p }));
+    setRawValues(r => ({ ...r, pret1: { taux: formatTauxRaw(p.taux), tauxAssur: formatTauxRaw(p.tauxAssur), quotite: String(p.quotite) } }));
+    setActiveTab(0);
+  }, [state.startYM, state.creditType, state.assurMode, state.pret1]);
 
   const addPret2 = useCallback(() => {
     if (state.pret2) return;
@@ -255,7 +255,7 @@ export default function CreditV2() {
   // -------------------------------------------------------------------------
   const stateForCalc: CreditState = isExpert ? state : {
     ...state,
-    pret1: { ...state.pret1, tauxAssur: 0 },
+    pret1: state.pret1 ? { ...state.pret1, tauxAssur: 0 } : null,
     pret2: null, /* point 5 — jamais de pret2/3 en simplifié */
     pret3: null,
   };
@@ -367,8 +367,10 @@ export default function CreditV2() {
       <CreditControlsRow
         activeTab={activeTab}
         onChangeTab={setActiveTab}
+        hasPret1={!!state.pret1}
         hasPret2={!!state.pret2}
         hasPret3={!!state.pret3}
+        onAddPret1={addPret1}
         onAddPret2={addPret2}
         onAddPret3={addPret3}
         onRemovePret2={removePret2}
@@ -378,6 +380,7 @@ export default function CreditV2() {
         onChangeViewMode={(viewMode) => setGlobal({ viewMode })}
       />
 
+      {state.pret1 && (
       <div className={`cv2-grid${!isExpert ? ' cv2-grid--simple' : ''}`}>
         <CreditLoanInputPanel
           activeTab={activeTab}
@@ -399,13 +402,16 @@ export default function CreditV2() {
           calc={calc}
         />
       </div>
+      )}
 
+      {state.pret1 && (
       <CreditSchedulePanels
         calc={calc}
         startYM={state.startYM}
         isAnnual={isAnnual}
         isExpert={isExpert}
       />
+      )}
 
       <CreditHypotheses
         hypothesesOpen={hypothesesOpen}
