@@ -31,3 +31,17 @@ export const GF_TYPE_OPTIONS: { value: GroupementFoncierType; label: string }[] 
   { value: 'GFF', label: 'GFF' },
   { value: 'GF', label: 'GF' },
 ];
+
+// Options UI regroupées (2 groupes correspondant aux 2 sous-catégories spéciales)
+export const GF_UI_OPTIONS: { value: 'GFA' | 'GFF'; label: string }[] = [
+  { value: 'GFA', label: 'GFA/GFV' },
+  { value: 'GFF', label: 'GFF/GF' },
+];
+
+/**
+ * Normalise un type GF legacy (4 valeurs) vers les 2 valeurs UI.
+ * GFA ou GFV → 'GFA'  |  GFF ou GF → 'GFF'
+ */
+export function normalizeGfTypeForUi(type: GroupementFoncierType): 'GFA' | 'GFF' {
+  return type === 'GFA' || type === 'GFV' ? 'GFA' : 'GFF';
+}

@@ -165,6 +165,26 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
 - la chronologie 2 deces reste un module simplifie: elle reemploie le testament du cote du decede et le report economique vers le 2e deces, mais ne remplace pas une liquidation notariale exhaustive
 
+### UX — Saisie des actifs spécialisés via la sous-catégorie
+
+Les types d'actifs suivants ne sont pas saisis via un bouton dédié mais via le menu **Sous-catégorie** d'une ligne générique :
+
+| Sous-catégorie sélectionnée | Action déclenchée |
+|---|---|
+| `GFA/GFV` (immobilier) | Transforme la ligne en entrée GF de type GFA, ouvre le champ d'édition en ligne |
+| `GFF/GF` (immobilier) | Transforme la ligne en entrée GF de type GFF, ouvre le champ d'édition en ligne |
+| `Assurance vie` (financier) | Transforme la ligne en entrée AV, ouvre la modal mono-contrat pour compléter |
+| `PER assurance` (financier) | Transforme la ligne en entrée PER, ouvre la modal mono-contrat |
+| `Prévoyance décès` (divers) | Transforme la ligne en entrée Prévoyance, ouvre la modal mono-contrat |
+
+La ligne générique est supprimée de `assetEntries` et l'entrée spécialisée est créée dans son tableau dédié (`groupementFoncierEntries`, `assuranceVieEntries`, etc.) avec le porteur et le montant récupérés de la ligne source. Les sous-catégories spéciales sont positionnées en fin de liste pour ne jamais être le choix par défaut à la création.
+
+Les entrées spécialisées affichées dans la liste `Actifs / Passifs` montrent un libellé en lecture seule et un bouton **Modifier** qui ouvre la modal mono-contrat correspondante, et un bouton **Supprimer**. Le changement de nature d'une entrée spécialisée n'est pas possible via le dropdown : il faut supprimer et recréer.
+
+### UX — Modales mono-contrat AV / PER / Prévoyance
+
+Chaque contrat `Assurance vie`, `PER assurance` ou `Prévoyance décès` est édité dans une modal dédiée à ce seul contrat (pattern mono-contrat). Le draft dans le simulateur est `entry | null` (non un tableau). La validation (`Valider`) met à jour l'entrée dans le tableau correspondant ; `Annuler` abandonne sans effet. Un clic sur **Modifier** depuis la liste Actifs / Passifs charge l'entrée dans la modal.
+
 ### Matrice age / horizon deces simule
 L'horizon `decesDansXAns` est converti en `simulatedDeathDate` dans `useSuccessionDerivedValues.ts`, sur la base de la date du jour.
 
@@ -307,6 +327,24 @@ Le simulateur credit calcule des echeanciers de prets et des agregats de cout / 
 - agregations globales pour l'echeancier
 - calcul centralise du capital deces pour coherence UI / exports
 - exports PPTX / Excel
+
+### UX — Onboarding et mode effectif
+
+Au chargement ou après un reset, le formulaire de saisie est toujours visible. La synthèse et l'échéancier n'apparaissent que dès qu'au moins un capital est saisi sur l'un des prêts (`calc.synthese.capitalEmprunte > 0`).
+
+Le **mode effectif** (simplifié / expert) suit la règle suivante :
+- Si l'utilisateur n'a pas choisi de mode localement (`localMode = null`) et que le mode global est expert mais qu'aucun capital n'est encore saisi, le mode est forcé en **simplifié** (affichage minimal : Montant + Durée + Taux seulement).
+- Dès qu'un capital est saisi sur n'importe quel prêt, le mode expert s'active automatiquement (les champs Type de crédit, Date de souscription et la section Assurance emprunteur apparaissent).
+- Un toggle mode local peut être utilisé par l'utilisateur pour forcer le mode sans dépendre du capital saisi. Ce choix local est réinitialisé au reset.
+
+### UX — Disposition des inputs (mode expert)
+
+En mode expert, les inputs crédit sont organisés en deux grilles :
+- Grille 2 colonnes : Montant emprunté | Durée (toujours visible)
+- Grille 3 colonnes : Taux annuel (crédit) | Type de crédit | Date de souscription
+- Section Assurance emprunteur (grille 3 colonnes) : Mode de calcul | Taux annuel (assurance) | Quotité assurée
+
+En mode simplifié, seuls Montant, Durée et Taux annuel sont affichés.
 
 ### Limites connues
 - pas de scoring bancaire ni d'accord de financement

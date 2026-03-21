@@ -46,8 +46,10 @@ function buildBaseProps() {
     onAddAssetEntry: () => {},
     onUpdateAssetEntry: () => {},
     onRemoveAssetEntry: () => {},
-    onOpenAssuranceVieModal: () => {},
-    onOpenPerModal: () => {},
+    onOpenAssuranceVieModal: (_id: string) => {},
+    onRemoveAssuranceVieEntry: () => {},
+    onOpenPerModal: (_id: string) => {},
+    onRemovePerEntry: () => {},
     onSetSimplifiedBalanceField: () => {},
     forfaitMobilierMode: 'off' as const,
     forfaitMobilierPct: 5,
@@ -55,14 +57,10 @@ function buildBaseProps() {
     abattementResidencePrincipale: false,
     onUpdatePatrimonialField: () => {},
     groupementFoncierEntries: [] as SuccessionGroupementFoncierEntry[],
-    onAddGroupementFoncierEntry: () => {},
     onUpdateGroupementFoncierEntry: () => {},
     onRemoveGroupementFoncierEntry: () => {},
     prevoyanceDecesEntries: [] as SuccessionPrevoyanceDecesEntry[],
-    prevoyanceClauseOptions: [{ value: CLAUSE_CONJOINT_LABEL, label: 'Clause standard' }],
-    prevoyanceRegimeByEntry: {},
-    onAddPrevoyanceDecesEntry: () => {},
-    onUpdatePrevoyanceDecesEntry: () => {},
+    onOpenPrevoyanceModal: (_id: string) => {},
     onRemovePrevoyanceDecesEntry: () => {},
   };
 }
@@ -119,7 +117,7 @@ describe('ScAssetsPassifsCard', () => {
     expect(markup).toContain('abattement 20 %');
   });
 
-  it('renders finance actions in the order assurance vie, PER, add row', () => {
+  it('renders only the add icon for the financier section (no dedicated AV/PER buttons)', () => {
     const props = buildBaseProps();
     props.assetEntriesByCategory = [
       {
@@ -130,13 +128,10 @@ describe('ScAssetsPassifsCard', () => {
     ];
 
     const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
-    const avIndex = markup.indexOf('+ Assurance vie');
-    const perIndex = markup.indexOf('+ PER assurance');
-    const addIndex = markup.indexOf('title="Ajouter une ligne"');
 
-    expect(avIndex).toBeGreaterThanOrEqual(0);
-    expect(perIndex).toBeGreaterThan(avIndex);
-    expect(addIndex).toBeGreaterThan(perIndex);
+    expect(markup).not.toContain('+ Assurance vie');
+    expect(markup).not.toContain('+ PER assurance');
+    expect(markup).toContain('title="Ajouter une ligne"');
   });
 
   it('keeps the forfait mobilier hidden until it is explicitly added', () => {
@@ -146,7 +141,7 @@ describe('ScAssetsPassifsCard', () => {
     expect(markup).not.toContain('Pourcentage (%)');
   });
 
-  it('renders the prevoyance premium field, regime label and clause select', () => {
+  it('renders prevoyance rows with Modifier button and capital display', () => {
     const props = buildBaseProps();
     props.assetEntriesByCategory = [
       {
@@ -163,20 +158,12 @@ describe('ScAssetsPassifsCard', () => {
       dernierePrime: 15000,
       clauseBeneficiaire: CLAUSE_CONJOINT_LABEL,
     }];
-    props.prevoyanceRegimeByEntry = {
-      'prev-1': {
-        regimeLabel: '757 B',
-        warning: 'Dernière prime non renseignée : exemple.',
-      },
-    };
 
     const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
 
-    expect(markup).toContain('Clause standard');
-    expect(markup).toContain('Dernière prime versée');
-    expect(markup).toContain('Régime applicable');
-    expect(markup).toContain('757 B');
-    expect(markup).toContain('Dernière prime non renseignée');
+    expect(markup).toContain('Prévoyance décès');
+    expect(markup).toContain('Modifier');
+    expect(markup).toContain('250');
   });
 
   it('marks GFA totals as provisional when beneficiary-level adjustment applies', () => {

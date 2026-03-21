@@ -42,9 +42,7 @@ interface UseSuccessionUiDerivedValuesInput {
   assetEntries: SuccessionAssetDetailEntry[];
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
-  assuranceVieDraft: SuccessionAssuranceVieEntry[];
   perEntries: SuccessionPerEntry[];
-  perDraft: SuccessionPerEntry[];
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
   forfaitMobilierMode: typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.forfaitMobilierMode;
   forfaitMobilierPct: number;
@@ -62,9 +60,7 @@ export function useSuccessionUiDerivedValues({
   assetEntries,
   groupementFoncierEntries,
   assuranceVieEntries,
-  assuranceVieDraft,
   perEntries,
-  perDraft,
   prevoyanceDecesEntries,
   forfaitMobilierMode,
   forfaitMobilierPct,
@@ -219,14 +215,6 @@ export function useSuccessionUiDerivedValues({
     versementsApres70: 0,
   }), [assuranceVieEntries]);
 
-  const assuranceVieDraftTotals = useMemo(() => assuranceVieDraft.reduce((totals, entry) => ({
-    capitaux: totals.capitaux + entry.capitauxDeces,
-    versementsApres70: totals.versementsApres70 + entry.versementsApres70,
-  }), {
-    capitaux: 0,
-    versementsApres70: 0,
-  }), [assuranceVieDraft]);
-
   const assuranceVieByAssure = useMemo(() => assuranceVieEntries.reduce((totals, entry) => {
     totals[entry.assure] += entry.capitauxDeces;
     return totals;
@@ -240,12 +228,6 @@ export function useSuccessionUiDerivedValues({
   }), {
     capitaux: 0,
   }), [perEntries]);
-
-  const perDraftTotals = useMemo(() => perDraft.reduce((totals, entry) => ({
-    capitaux: totals.capitaux + entry.capitauxDeces,
-  }), {
-    capitaux: 0,
-  }), [perDraft]);
 
   const perByAssure = useMemo(() => perEntries.reduce((totals, entry) => {
     totals[entry.assure] += entry.capitauxDeces;
@@ -300,10 +282,8 @@ export function useSuccessionUiDerivedValues({
     residencePrincipaleEntryId: assetValuation.residencePrincipaleEntryId,
     transmissionBasis: assetValuation.transmissionBasis,
     assuranceVieTotals,
-    assuranceVieDraftTotals,
     assuranceVieByAssure,
     perTotals,
-    perDraftTotals,
     perByAssure,
     prevoyanceTotals,
     prevoyanceByAssure,

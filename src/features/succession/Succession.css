@@ -940,9 +940,31 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.sc-asset-row--av {
-  opacity: 0.7;
-  pointer-events: none;
+.sc-row-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.sc-open-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--color-c8);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--color-c6);
+  flex-shrink: 0;
+}
+
+.sc-open-btn:hover {
+  background: var(--color-c8);
+  color: var(--color-c1);
 }
 
 .sc-asset-row__suboption {
@@ -955,23 +977,6 @@
   padding: 2px 0 0 4px;
 }
 
-.sc-asset-row__suboption--prevoyance {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 8px;
-  padding: 4px 0 0 4px;
-}
-
-.sc-asset-row__suboption--prevoyance .sc-field--wide .sc-input {
-  width: 100%;
-  height: 28px;
-  padding: 4px 6px;
-  border: 1px solid var(--color-c8);
-  border-radius: 4px;
-  background: var(--sim-input-bg, color-mix(in srgb, var(--color-c8) 18%, #FFFFFF));
-  color: var(--color-c10);
-  font-size: 12px;
-}
 
 .sc-asset-row__value {
   display: block;

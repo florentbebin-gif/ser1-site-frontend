@@ -163,10 +163,8 @@ export interface CreditHeaderProps {
 export interface CreditLoanTabsProps {
   activeTab: number;
   onChangeTab: (_tabIndex: number) => void;
-  hasPret1: boolean;
   hasPret2: boolean;
   hasPret3: boolean;
-  onAddPret1: () => void;
   onAddPret2: () => void;
   onAddPret3: () => void;
   onRemovePret2: () => void;

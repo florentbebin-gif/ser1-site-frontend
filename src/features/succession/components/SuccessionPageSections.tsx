@@ -8,6 +8,7 @@ import AddFamilyMemberModal from './AddFamilyMemberModal';
 import AssuranceVieModal from './AssuranceVieModal';
 import DispositionsModal from './DispositionsModal';
 import PerModal from './PerModal';
+import PrevoyanceModal from './PrevoyanceModal';
 import { FiliationOrgchart } from './FiliationOrgchart';
 import type { useSuccessionDerivedValues } from '../useSuccessionDerivedValues';
 import type { SuccessionFiscalSnapshot } from '../successionFiscalContext';
@@ -58,16 +59,16 @@ interface SuccessionPageGridProps {
   onAddAssetEntry: (_category: SuccessionAssetCategory) => void;
   onUpdateAssetEntry: (_entryId: string, _field: keyof SuccessionAssetDetailEntry, _value: string | number) => void;
   onRemoveAssetEntry: (_entryId: string) => void;
-  onOpenAssuranceVieModal: () => void;
-  onOpenPerModal: () => void;
+  onOpenAssuranceVieModal: (_id: string) => void;
+  onRemoveAssuranceVieEntry: (_id: string) => void;
+  onOpenPerModal: (_id: string) => void;
+  onRemovePerEntry: (_id: string) => void;
+  onOpenPrevoyanceModal: (_id: string) => void;
+  onRemovePrevoyanceDecesEntry: (_id: string) => void;
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
-  onAddGroupementFoncierEntry: () => void;
   onUpdateGroupementFoncierEntry: (_id: string, _field: string, _value: string | number) => void;
   onRemoveGroupementFoncierEntry: (_id: string) => void;
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
-  onAddPrevoyanceDecesEntry: () => void;
-  onUpdatePrevoyanceDecesEntry: (_id: string, _field: string, _value: string | number) => void;
-  onRemovePrevoyanceDecesEntry: (_id: string) => void;
   onSetSimplifiedBalanceField: (_type: 'actifs' | 'passifs', _owner: SuccessionAssetOwner, _value: number) => void;
   onAddDonationEntry: () => void;
   onUpdateDonationEntry: (_entryId: string, _field: keyof SuccessionDonationEntry, _value: string | number | boolean) => void;
@@ -96,9 +97,11 @@ interface SuccessionModalsProps {
   dispositionsDraft: DispositionsDraftState;
   setDispositionsDraft: Dispatch<SetStateAction<DispositionsDraftState>>;
   showAssuranceVieModal: boolean;
-  assuranceVieDraft: SuccessionAssuranceVieEntry[];
+  assuranceVieDraft: SuccessionAssuranceVieEntry | null;
   showPerModal: boolean;
-  perDraft: SuccessionPerEntry[];
+  perDraft: SuccessionPerEntry | null;
+  showPrevoyanceModal: boolean;
+  prevoyanceDraft: SuccessionPrevoyanceDecesEntry | null;
   showAddMemberPanel: boolean;
   addMemberForm: AddFamilyMemberFormState;
   setAddMemberForm: Dispatch<SetStateAction<AddFamilyMemberFormState>>;
@@ -119,22 +122,19 @@ interface SuccessionModalsProps {
   onValidateDispositions: () => void;
   onCloseAssuranceVie: () => void;
   onValidateAssuranceVie: () => void;
-  onAddAssuranceVieContract: () => void;
-  onRemoveAssuranceVieContract: (_contractId: string) => void;
   onUpdateAssuranceVieContract: (
-    _contractId: string,
     _field: keyof SuccessionAssuranceVieEntry,
     _value: string | number | undefined,
   ) => void;
   onClosePer: () => void;
   onValidatePer: () => void;
-  onAddPerContract: () => void;
-  onRemovePerContract: (_contractId: string) => void;
   onUpdatePerContract: (
-    _contractId: string,
     _field: keyof SuccessionPerEntry,
     _value: string | number | undefined,
   ) => void;
+  onClosePrevoyance: () => void;
+  onValidatePrevoyance: () => void;
+  onUpdatePrevoyanceContract: (_field: keyof SuccessionPrevoyanceDecesEntry, _value: string | number) => void;
   onCloseAddMemberPanel: () => void;
   onValidateAddMember: () => void;
 }
@@ -163,15 +163,15 @@ export function SuccessionPageGrid({
   onUpdateAssetEntry,
   onRemoveAssetEntry,
   onOpenAssuranceVieModal,
+  onRemoveAssuranceVieEntry,
   onOpenPerModal,
+  onRemovePerEntry,
+  onOpenPrevoyanceModal,
+  onRemovePrevoyanceDecesEntry,
   groupementFoncierEntries,
-  onAddGroupementFoncierEntry,
   onUpdateGroupementFoncierEntry,
   onRemoveGroupementFoncierEntry,
   prevoyanceDecesEntries,
-  onAddPrevoyanceDecesEntry,
-  onUpdatePrevoyanceDecesEntry,
-  onRemovePrevoyanceDecesEntry,
   onSetSimplifiedBalanceField,
   onAddDonationEntry,
   onUpdateDonationEntry,
@@ -236,16 +236,14 @@ export function SuccessionPageGrid({
               onUpdateAssetEntry={onUpdateAssetEntry}
               onRemoveAssetEntry={onRemoveAssetEntry}
               onOpenAssuranceVieModal={onOpenAssuranceVieModal}
+              onRemoveAssuranceVieEntry={onRemoveAssuranceVieEntry}
               onOpenPerModal={onOpenPerModal}
+              onRemovePerEntry={onRemovePerEntry}
               groupementFoncierEntries={groupementFoncierEntries}
-              onAddGroupementFoncierEntry={onAddGroupementFoncierEntry}
               onUpdateGroupementFoncierEntry={onUpdateGroupementFoncierEntry}
               onRemoveGroupementFoncierEntry={onRemoveGroupementFoncierEntry}
               prevoyanceDecesEntries={prevoyanceDecesEntries}
-              prevoyanceClauseOptions={derived.prevoyanceClauseOptions}
-              prevoyanceRegimeByEntry={derived.prevoyanceRegimeByEntry}
-              onAddPrevoyanceDecesEntry={onAddPrevoyanceDecesEntry}
-              onUpdatePrevoyanceDecesEntry={onUpdatePrevoyanceDecesEntry}
+              onOpenPrevoyanceModal={onOpenPrevoyanceModal}
               onRemovePrevoyanceDecesEntry={onRemovePrevoyanceDecesEntry}
               onSetSimplifiedBalanceField={onSetSimplifiedBalanceField}
               forfaitMobilierMode={forfaitMobilierMode}
@@ -415,6 +413,8 @@ export function SuccessionModals({
   assuranceVieDraft,
   showPerModal,
   perDraft,
+  showPrevoyanceModal,
+  prevoyanceDraft,
   showAddMemberPanel,
   addMemberForm,
   setAddMemberForm,
@@ -427,14 +427,13 @@ export function SuccessionModals({
   onValidateDispositions,
   onCloseAssuranceVie,
   onValidateAssuranceVie,
-  onAddAssuranceVieContract,
-  onRemoveAssuranceVieContract,
   onUpdateAssuranceVieContract,
   onClosePer,
   onValidatePer,
-  onAddPerContract,
-  onRemovePerContract,
   onUpdatePerContract,
+  onClosePrevoyance,
+  onValidatePrevoyance,
+  onUpdatePrevoyanceContract,
   onCloseAddMemberPanel,
   onValidateAddMember,
 }: SuccessionModalsProps) {
@@ -466,10 +465,9 @@ export function SuccessionModals({
         />
       )}
 
-      {showAssuranceVieModal && (
+      {showAssuranceVieModal && assuranceVieDraft && (
         <AssuranceVieModal
-          assuranceVieDraft={assuranceVieDraft}
-          assuranceVieDraftTotals={derived.assuranceVieDraftTotals}
+          entry={assuranceVieDraft}
           assuranceViePartyOptions={derived.assuranceViePartyOptions}
           enfantsContext={enfantsContext}
           familyMembers={familyMembers}
@@ -477,16 +475,13 @@ export function SuccessionModals({
           isPacsed={derived.isPacsed}
           onClose={onCloseAssuranceVie}
           onValidate={onValidateAssuranceVie}
-          onAddContract={onAddAssuranceVieContract}
-          onRemoveContract={onRemoveAssuranceVieContract}
-          onUpdateContract={onUpdateAssuranceVieContract}
+          onUpdate={onUpdateAssuranceVieContract}
         />
       )}
 
-      {showPerModal && (
+      {showPerModal && perDraft && (
         <PerModal
-          perDraft={perDraft}
-          perDraftTotals={derived.perDraftTotals}
+          entry={perDraft}
           assuranceViePartyOptions={derived.assuranceViePartyOptions}
           enfantsContext={enfantsContext}
           familyMembers={familyMembers}
@@ -494,9 +489,20 @@ export function SuccessionModals({
           isPacsed={derived.isPacsed}
           onClose={onClosePer}
           onValidate={onValidatePer}
-          onAddContract={onAddPerContract}
-          onRemoveContract={onRemovePerContract}
-          onUpdateContract={onUpdatePerContract}
+          onUpdate={onUpdatePerContract}
+        />
+      )}
+
+      {showPrevoyanceModal && prevoyanceDraft && (
+        <PrevoyanceModal
+          entry={prevoyanceDraft}
+          partyOptions={derived.assuranceViePartyOptions}
+          clauseOptions={derived.prevoyanceClauseOptions}
+          regimeLabel={derived.prevoyanceRegimeByEntry[prevoyanceDraft.id]?.regimeLabel ?? '—'}
+          regimeWarning={derived.prevoyanceRegimeByEntry[prevoyanceDraft.id]?.warning}
+          onClose={onClosePrevoyance}
+          onValidate={onValidatePrevoyance}
+          onUpdate={onUpdatePrevoyanceContract}
         />
       )}
 

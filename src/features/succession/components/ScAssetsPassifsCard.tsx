@@ -11,8 +11,8 @@ import {
   ASSET_SUBCATEGORY_OPTIONS,
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
 } from '../successionSimulator.constants';
-import { computeGroupementFoncierExoneration, GF_TYPE_OPTIONS } from '../successionGroupementFoncier';
-import { fmt, isSupportedStructuredClause } from '../successionSimulator.helpers';
+import { computeGroupementFoncierExoneration, GF_UI_OPTIONS, normalizeGfTypeForUi } from '../successionGroupementFoncier';
+import { fmt } from '../successionSimulator.helpers';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
@@ -45,17 +45,15 @@ interface ScAssetsPassifsCardProps {
     _value: string | number,
   ) => void;
   onRemoveAssetEntry: (_id: string) => void;
-  onOpenAssuranceVieModal: () => void;
-  onOpenPerModal: () => void;
+  onOpenAssuranceVieModal: (_id: string) => void;
+  onRemoveAssuranceVieEntry: (_id: string) => void;
+  onOpenPerModal: (_id: string) => void;
+  onRemovePerEntry: (_id: string) => void;
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
-  onAddGroupementFoncierEntry: () => void;
   onUpdateGroupementFoncierEntry: (_id: string, _field: string, _value: string | number) => void;
   onRemoveGroupementFoncierEntry: (_id: string) => void;
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
-  prevoyanceClauseOptions: { value: string; label: string }[];
-  prevoyanceRegimeByEntry: Record<string, { regimeLabel: string; warning?: string }>;
-  onAddPrevoyanceDecesEntry: () => void;
-  onUpdatePrevoyanceDecesEntry: (_id: string, _field: string, _value: string | number) => void;
+  onOpenPrevoyanceModal: (_id: string) => void;
   onRemovePrevoyanceDecesEntry: (_id: string) => void;
   onSetSimplifiedBalanceField: (
     _type: 'actifs' | 'passifs',
@@ -125,16 +123,14 @@ export default function ScAssetsPassifsCard({
   onUpdateAssetEntry,
   onRemoveAssetEntry,
   onOpenAssuranceVieModal,
+  onRemoveAssuranceVieEntry,
   onOpenPerModal,
+  onRemovePerEntry,
   groupementFoncierEntries,
-  onAddGroupementFoncierEntry,
   onUpdateGroupementFoncierEntry,
   onRemoveGroupementFoncierEntry,
   prevoyanceDecesEntries,
-  prevoyanceClauseOptions,
-  prevoyanceRegimeByEntry,
-  onAddPrevoyanceDecesEntry,
-  onUpdatePrevoyanceDecesEntry,
+  onOpenPrevoyanceModal,
   onRemovePrevoyanceDecesEntry,
   onSetSimplifiedBalanceField,
   forfaitMobilierMode,
@@ -177,34 +173,6 @@ export default function ScAssetsPassifsCard({
               <div className="sc-asset-section__header">
                 <h3 className="sc-asset-section__title">{category.label}</h3>
                 <div className="sc-asset-section__actions">
-                  {category.value === 'financier' && (
-                    <>
-                      <button
-                        type="button"
-                        className="sc-child-add-btn"
-                        onClick={onOpenAssuranceVieModal}
-                      >
-                        + Assurance vie
-                      </button>
-                      <button
-                        type="button"
-                        className="sc-child-add-btn"
-                        onClick={onOpenPerModal}
-                      >
-                        + PER assurance
-                      </button>
-                    </>
-                  )}
-                  {category.value === 'immobilier' && (
-                    <button type="button" className="sc-child-add-btn" onClick={onAddGroupementFoncierEntry}>
-                      + GFA/GFV
-                    </button>
-                  )}
-                  {category.value === 'divers' && (
-                    <button type="button" className="sc-child-add-btn" onClick={onAddPrevoyanceDecesEntry}>
-                      + Prévoyance décès
-                    </button>
-                  )}
                   <button
                     type="button"
                     className="sc-member-add-icon-btn"
@@ -278,6 +246,7 @@ export default function ScAssetsPassifsCard({
                 })}
 
                 {category.value === 'immobilier' && groupementFoncierEntries.map((gfEntry) => {
+                  const uiType = normalizeGfTypeForUi(gfEntry.type);
                   const exoneration = computeGroupementFoncierExoneration(gfEntry.type, gfEntry.valeurTotale);
 
                   return (
@@ -296,9 +265,9 @@ export default function ScAssetsPassifsCard({
                           <label>Type GF</label>
                           <ScSelect
                             className="sc-asset-select"
-                            value={gfEntry.type}
+                            value={uiType}
                             onChange={(value) => onUpdateGroupementFoncierEntry(gfEntry.id, 'type', value)}
-                            options={GF_TYPE_OPTIONS}
+                            options={GF_UI_OPTIONS}
                           />
                         </div>
                         <div className="sc-field">
@@ -327,90 +296,49 @@ export default function ScAssetsPassifsCard({
                   );
                 })}
 
-                {category.value === 'divers' && prevoyanceDecesEntries.map((pvEntry) => {
-                  const selectedClause = pvEntry.clauseBeneficiaire || prevoyanceClauseOptions[0]?.value || '';
-                  const clauseOptions = isSupportedStructuredClause(selectedClause)
-                    ? prevoyanceClauseOptions
-                    : [
-                      ...prevoyanceClauseOptions,
-                      { value: selectedClause, label: 'Clause libre existante' },
-                    ];
-                  const regimeInfo = prevoyanceRegimeByEntry[pvEntry.id];
-
-                  return (
-                    <div key={pvEntry.id} className="sc-asset-row-stack">
-                      <div className="sc-asset-row">
-                        <div className="sc-field">
-                          <label>Souscripteur</label>
-                          <ScSelect
-                            className="sc-asset-select"
-                            value={pvEntry.souscripteur}
-                            onChange={(value) => onUpdatePrevoyanceDecesEntry(pvEntry.id, 'souscripteur', value)}
-                            options={assuranceViePartyOptions}
-                          />
-                        </div>
-                        <div className="sc-field">
-                          <label>Assuré</label>
-                          <ScSelect
-                            className="sc-asset-select"
-                            value={pvEntry.assure}
-                            onChange={(value) => onUpdatePrevoyanceDecesEntry(pvEntry.id, 'assure', value)}
-                            options={assuranceViePartyOptions}
-                          />
-                        </div>
-                        <div className="sc-field">
-                          <label>Capital décès (€)</label>
-                          <ScNumericInput
-                            value={pvEntry.capitalDeces || 0}
-                            min={0}
-                            onChange={(val) => onUpdatePrevoyanceDecesEntry(pvEntry.id, 'capitalDeces', val)}
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          className="sc-remove-btn"
-                          onClick={() => onRemovePrevoyanceDecesEntry(pvEntry.id)}
-                          title="Supprimer cette ligne"
-                        >
-                          &#10005;
-                        </button>
-                      </div>
-                      <div className="sc-asset-row__suboption sc-asset-row__suboption--prevoyance">
-                        <div className="sc-field sc-field--wide">
-                          <label>Dernière prime versée (€)</label>
-                          <ScNumericInput
-                            value={pvEntry.dernierePrime || 0}
-                            min={0}
-                            onChange={(val) => onUpdatePrevoyanceDecesEntry(pvEntry.id, 'dernierePrime', val)}
-                          />
-                        </div>
-                        <div className="sc-field sc-field--wide">
-                          <label>Régime applicable</label>
-                          <span className="sc-asset-row__value">
-                            {`Régime applicable : ${regimeInfo?.regimeLabel ?? '990 I'}`}
-                          </span>
-                        </div>
-                        {regimeInfo?.warning && (
-                          <div className="sc-field sc-field--wide">
-                            <span className="sc-hint sc-hint--compact">{regimeInfo.warning}</span>
-                          </div>
-                        )}
-                        <div className="sc-field sc-field--wide">
-                          <label>Clause bénéficiaire</label>
-                          <ScSelect
-                            className="sc-asset-select"
-                            value={selectedClause}
-                            onChange={(value) => onUpdatePrevoyanceDecesEntry(pvEntry.id, 'clauseBeneficiaire', value)}
-                            options={clauseOptions}
-                          />
-                        </div>
-                      </div>
+                {category.value === 'divers' && prevoyanceDecesEntries.map((pvEntry) => (
+                  <div key={pvEntry.id} className="sc-asset-row">
+                    <div className="sc-field">
+                      <label>Souscripteur</label>
+                      <span className="sc-asset-row__value">
+                        {assuranceViePartyOptions.find((o) => o.value === pvEntry.souscripteur)?.label ?? pvEntry.souscripteur}
+                      </span>
                     </div>
-                  );
-                })}
+                    <div className="sc-field">
+                      <label>Sous-catégorie</label>
+                      <span className="sc-asset-row__value">Prévoyance décès</span>
+                    </div>
+                    <div className="sc-field">
+                      <label>Capital décès (€)</label>
+                      <span className="sc-asset-row__value">{fmt(pvEntry.capitalDeces)}</span>
+                    </div>
+                    <div className="sc-row-actions">
+                      <button
+                        type="button"
+                        className="sc-open-btn"
+                        onClick={() => onOpenPrevoyanceModal(pvEntry.id)}
+                        title="Modifier ce contrat"
+                        aria-label="Modifier ce contrat"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="sc-remove-btn"
+                        onClick={() => onRemovePrevoyanceDecesEntry(pvEntry.id)}
+                        title="Supprimer cette ligne"
+                      >
+                        &#10005;
+                      </button>
+                    </div>
+                  </div>
+                ))}
 
                 {category.value === 'financier' && assuranceVieEntries.map((entry) => (
-                  <div key={entry.id} className="sc-asset-row sc-asset-row--av">
+                  <div key={entry.id} className="sc-asset-row">
                     <div className="sc-field">
                       <label>Porteur</label>
                       <span className="sc-asset-row__value">
@@ -425,12 +353,33 @@ export default function ScAssetsPassifsCard({
                       <label>Capitaux décès (€)</label>
                       <span className="sc-asset-row__value">{fmt(entry.capitauxDeces)}</span>
                     </div>
-                    <div />
+                    <div className="sc-row-actions">
+                      <button
+                        type="button"
+                        className="sc-open-btn"
+                        onClick={() => onOpenAssuranceVieModal(entry.id)}
+                        title="Modifier ce contrat"
+                        aria-label="Modifier ce contrat"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="sc-remove-btn"
+                        onClick={() => onRemoveAssuranceVieEntry(entry.id)}
+                        title="Supprimer cette ligne"
+                      >
+                        &#10005;
+                      </button>
+                    </div>
                   </div>
                 ))}
 
                 {category.value === 'financier' && perEntries.map((entry) => (
-                  <div key={entry.id} className="sc-asset-row sc-asset-row--av">
+                  <div key={entry.id} className="sc-asset-row">
                     <div className="sc-field">
                       <label>Porteur</label>
                       <span className="sc-asset-row__value">
@@ -445,7 +394,28 @@ export default function ScAssetsPassifsCard({
                       <label>Capitaux décès (€)</label>
                       <span className="sc-asset-row__value">{fmt(entry.capitauxDeces)}</span>
                     </div>
-                    <div />
+                    <div className="sc-row-actions">
+                      <button
+                        type="button"
+                        className="sc-open-btn"
+                        onClick={() => onOpenPerModal(entry.id)}
+                        title="Modifier ce contrat"
+                        aria-label="Modifier ce contrat"
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="sc-remove-btn"
+                        onClick={() => onRemovePerEntry(entry.id)}
+                        title="Supprimer cette ligne"
+                      >
+                        &#10005;
+                      </button>
+                    </div>
                   </div>
                 ))}
 

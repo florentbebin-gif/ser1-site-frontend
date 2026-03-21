@@ -14,8 +14,8 @@ import { onResetEvent, storageKeyFor } from '../../utils/reset';
 import { useTheme } from '../../settings/ThemeProvider';
 import { useUserMode } from '../../settings/userMode';
 import {
-  DEFAULT_STATE,
-  normalizeLoadedState, 
+  createInitialCreditState,
+  normalizeLoadedState,
   buildPersistedState,
   createNewPret,
   patchPret,
@@ -107,13 +107,11 @@ export default function CreditV2() {
   const { mode, isLoading: modeLoading } = useUserMode();
   // Override local du mode (sans modifier le mode global de l'app)
   const [localMode, setLocalMode] = useState<CreditLocalMode>(null);
-  const isExpert = (localMode ?? mode) === 'expert';
-  const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
 
   // -------------------------------------------------------------------------
   // STATE
   // -------------------------------------------------------------------------
-  const [state, setState] = useState<CreditState>(DEFAULT_STATE);
+  const [state, setState] = useState<CreditState>(() => createInitialCreditState());
   const [hydrated, setHydrated] = useState(false);
   const [rawValues, setRawValues] = useState<CreditRawValues>({});
   const [exportLoading, setExportLoading] = useState(false);
@@ -133,12 +131,10 @@ export default function CreditV2() {
         const normalized = normalizeLoadedState(parsed);
         setState(normalized);
         setRawValues(initRawValues(normalized));
-      } else {
-        setRawValues(initRawValues(DEFAULT_STATE));
       }
-    } catch {
-      setRawValues(initRawValues(DEFAULT_STATE));
-    }
+      // Sans sessionStorage : state déjà initialisé via createInitialCreditState(),
+      // rawValues reste {} — les inputs taux utilisent leur fallback formatTauxRaw
+    } catch { /* noop */ }
     setHydrated(true);
   }, [STORE_KEY]);
 
@@ -155,14 +151,10 @@ export default function CreditV2() {
   useEffect(() => {
     const off = onResetEvent?.(({ simId }: ResetDetail) => {
       if (simId && simId !== 'credit') return;
-      const resetState: CreditState = {
-        ...DEFAULT_STATE,
-        pret1: null,
-        pret2: null,
-        pret3: null,
-      };
-      setState(resetState);
-      setRawValues(initRawValues(resetState));
+      const fresh = createInitialCreditState();
+      setState(fresh);
+      setRawValues(initRawValues(fresh));
+      setLocalMode(null); // réactive l'auto-mode (effectiveMode recalculé)
       setActiveTab(0);
       try { sessionStorage.removeItem(STORE_KEY); } catch { /* noop */ }
     });
@@ -199,14 +191,6 @@ export default function CreditV2() {
     syncRawValues(setRawValues, 'pret3', patch);
   }, []);
 
-  const addPret1 = useCallback(() => {
-    if (state.pret1) return;
-    const p = createNewPret({ startYM: state.startYM, type: state.creditType, assurMode: state.assurMode });
-    setState(s => ({ ...s, pret1: p }));
-    setRawValues(r => ({ ...r, pret1: { taux: formatTauxRaw(p.taux), tauxAssur: formatTauxRaw(p.tauxAssur), quotite: String(p.quotite) } }));
-    setActiveTab(0);
-  }, [state.startYM, state.creditType, state.assurMode, state.pret1]);
-
   const addPret2 = useCallback(() => {
     if (state.pret2) return;
     const p = createNewPret({ startYM: state.startYM, type: state.creditType, assurMode: state.assurMode });
@@ -234,6 +218,14 @@ export default function CreditV2() {
     setRawValues(({ pret3: _a, ...rest }) => ({ ...rest }));
     if (activeTab === 2) setActiveTab(1);
   }, [activeTab]);
+
+  // -------------------------------------------------------------------------
+  // MODE EFFECTIF — simplifié tant qu'aucun capital saisi, expert sinon
+  // -------------------------------------------------------------------------
+  const hasCapital = ((state.pret1?.capital ?? 0) + (state.pret2?.capital ?? 0) + (state.pret3?.capital ?? 0)) > 0;
+  const effectiveMode = localMode ?? (mode === 'expert' && !hasCapital ? 'simplifie' : mode);
+  const isExpert = effectiveMode === 'expert';
+  const toggleMode = () => setLocalMode(isExpert ? 'simplifie' : 'expert');
 
   // -------------------------------------------------------------------------
   // POINT 5 — simplifié : supprimer pret2/pret3 résiduels (switch expert→simplifié)
@@ -367,10 +359,8 @@ export default function CreditV2() {
       <CreditControlsRow
         activeTab={activeTab}
         onChangeTab={setActiveTab}
-        hasPret1={!!state.pret1}
         hasPret2={!!state.pret2}
         hasPret3={!!state.pret3}
-        onAddPret1={addPret1}
         onAddPret2={addPret2}
         onAddPret3={addPret3}
         onRemovePret2={removePret2}
@@ -380,7 +370,6 @@ export default function CreditV2() {
         onChangeViewMode={(viewMode) => setGlobal({ viewMode })}
       />
 
-      {state.pret1 && (
       <div className={`cv2-grid${!isExpert ? ' cv2-grid--simple' : ''}`}>
         <CreditLoanInputPanel
           activeTab={activeTab}
@@ -392,19 +381,20 @@ export default function CreditV2() {
           formatTauxRaw={formatTauxRaw}
         />
 
-        <CreditSummarySidebar
-          activeSynthese={activeSynthese}
-          isAnnual={isAnnual}
-          isExpert={isExpert}
-          activeTab={activeTab}
-          lisserPret1={state.lisserPret1}
-          lissageCoutDelta={lissageCoutDelta}
-          calc={calc}
-        />
+        {calc.synthese.capitalEmprunte > 0 && (
+          <CreditSummarySidebar
+            activeSynthese={activeSynthese}
+            isAnnual={isAnnual}
+            isExpert={isExpert}
+            activeTab={activeTab}
+            lisserPret1={state.lisserPret1}
+            lissageCoutDelta={lissageCoutDelta}
+            calc={calc}
+          />
+        )}
       </div>
-      )}
 
-      {state.pret1 && (
+      {calc.synthese.capitalEmprunte > 0 && (
       <CreditSchedulePanels
         calc={calc}
         startYM={state.startYM}

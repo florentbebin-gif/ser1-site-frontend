@@ -235,6 +235,12 @@
   gap: 16px 20px;
 }
 
+.cv2-loan-form__grid--3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 20px;
+}
+
 .cv2-loan-card__header {
   display: flex;
   flex-direction: column;
@@ -998,6 +1004,10 @@
   }
 
   .cv2-loan-form__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cv2-loan-form__grid--3 {
     grid-template-columns: 1fr;
   }
 
