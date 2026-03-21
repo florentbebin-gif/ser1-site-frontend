@@ -26,7 +26,7 @@ export interface PlacementProductDraft extends Record<string, unknown> {
 }
 
 export interface PlacementClient {
-  ageActuel: number;
+  ageActuel: number | null;
   tmiEpargne: number;
   tmiRetraite: number;
   situation: string;
@@ -87,7 +87,7 @@ export const DEFAULT_PRODUCT: PlacementProductDraft = {
 };
 
 export const DEFAULT_CLIENT: PlacementClient = {
-  ageActuel: 45,
+  ageActuel: null,
   tmiEpargne: 0.30,
   tmiRetraite: 0.11,
   situation: 'single',

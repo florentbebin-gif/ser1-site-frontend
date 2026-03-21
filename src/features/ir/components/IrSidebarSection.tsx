@@ -97,6 +97,7 @@ export function IrSidebarSection({
   pfuRateIR,
   isExpert,
   showSummaryCard,
+  hasSituation,
 }: IrSidebarSectionProps) {
   return (
     <div className="ir-right">
@@ -126,6 +127,7 @@ export function IrSidebarSection({
         </div>
       </div>
 
+      {hasSituation && (
       <div className="ir-results-sticky">
       <div className="ir-tmi-card premium-card" data-testid="ir-results-card">
         <div className="ir-tmi-header" data-testid="ir-results-header">
@@ -249,6 +251,7 @@ export function IrSidebarSection({
         </div>
       )}
       </div>
+      )}
 
     </div>
   );

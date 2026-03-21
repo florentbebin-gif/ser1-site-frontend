@@ -113,7 +113,8 @@ export function IrFormSection({
           <div className="ir-field premium-field" data-testid="ir-situation-field">
             <label>Situation familiale</label>
             <IrSelect
-              value={status}
+              value={status ?? ''}
+              placeholder="Sélectionner une situation…"
               testId="ir-situation-select"
               onChange={(newStatus) => {
                 setStatus(newStatus as IrFormSectionProps['status']);
@@ -205,6 +206,7 @@ export function IrFormSection({
         </div>
       </div>
 
+      {status !== null && (
       <div className="ir-table-wrapper premium-card premium-card--guide">
         <div className="ir-income-card__header">
           <div className="ir-income-card__header-row">
@@ -509,6 +511,7 @@ export function IrFormSection({
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }

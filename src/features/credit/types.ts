@@ -44,7 +44,7 @@ export interface CreditState {
   assurMode: CreditAssurMode;
   creditType: CreditType;
   viewMode: CreditViewMode;
-  pret1: CreditLoan;
+  pret1: CreditLoan | null;
   pret2: CreditLoan | null;
   pret3: CreditLoan | null;
   lisserPret1: boolean;
@@ -58,7 +58,7 @@ export interface CreditPersistedState {
   assurMode: CreditAssurMode;
   creditType: CreditType;
   viewMode: CreditViewMode;
-  pret1: CreditLoan;
+  pret1: CreditLoan | null;
   pret2: CreditLoan | null;
   pret3: CreditLoan | null;
   lisserPret1: boolean;
@@ -163,8 +163,10 @@ export interface CreditHeaderProps {
 export interface CreditLoanTabsProps {
   activeTab: number;
   onChangeTab: (_tabIndex: number) => void;
+  hasPret1: boolean;
   hasPret2: boolean;
   hasPret3: boolean;
+  onAddPret1: () => void;
   onAddPret2: () => void;
   onAddPret3: () => void;
   onRemovePret2: () => void;

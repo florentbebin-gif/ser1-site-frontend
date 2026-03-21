@@ -142,6 +142,7 @@ export function useCreditExports({
       const headerParams = [cell('Champ', 'sHeader'), cell('Valeur', 'sHeader')];
       const rowsParams = [];
       const p1 = state.pret1;
+      if (!p1) return;
 
       rowsParams.push([cell('Prêt 1', 'sSection'), cell('', 'sSection')]);
       rowsParams.push([cell('Type de crédit (Prêt 1)', 'sText'), cell(p1.type === 'amortissable' ? 'Amortissable' : 'In fine', 'sText')]);
@@ -236,6 +237,7 @@ export function useCreditExports({
 
       const exportLogo = cabinetLogo || undefined;
       const p1 = state.pret1;
+      if (!p1) return;
       const p1Params = calc.pret1Params;
 
       const aggregatedYears = aggregateToYearsFromRows(calc.agrRows, startYM);

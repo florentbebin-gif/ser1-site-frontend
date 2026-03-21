@@ -72,7 +72,7 @@ export function PlacementLiquidationSection({
               <td colSpan={2}>
                 <InputNumber
                   value={state.liquidation.duree}
-                  onChange={(value) => setLiquidation({ duree: value })}
+                  onChange={(value) => setLiquidation({ duree: value ?? 1 })}
                   unit="ans"
                   min={1}
                   max={50}

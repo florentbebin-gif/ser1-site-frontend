@@ -29,6 +29,14 @@
   font-weight: 500;
 }
 
+.sc-top-row {
+  display: grid;
+  grid-template-columns: 1.85fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+  margin-bottom: 24px;
+}
+
 .sc-grid {
   display: grid;
   grid-template-columns: 1.85fr 1fr;
@@ -1777,6 +1785,10 @@
 }
 
 @media (max-width: 900px) {
+  .sc-top-row {
+    grid-template-columns: 1fr;
+  }
+
   .sc-grid {
     grid-template-columns: 1fr;
   }

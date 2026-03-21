@@ -103,8 +103,8 @@ export function InputPct({ value, onChange, label, disabled }: InputPctProps) {
 }
 
 interface InputNumberProps {
-  value: number | string;
-  onChange: (_value: number) => void;
+  value: number | null | string;
+  onChange: (_value: number | null) => void;
   label?: string;
   unit?: string;
   min?: number;
@@ -121,10 +121,10 @@ export function InputNumber({
   max = 999,
   inline = false,
 }: InputNumberProps) {
-  const [localValue, setLocalValue] = useState(String(value));
+  const [localValue, setLocalValue] = useState(value === null ? '' : String(value));
 
   useEffect(() => {
-    setLocalValue(String(value));
+    setLocalValue(value === null ? '' : String(value));
   }, [value]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,7 +135,11 @@ export function InputNumber({
   };
 
   const handleBlur = () => {
-    const num = localValue === '' ? min : Number(localValue);
+    if (localValue === '') {
+      onChange(null);
+      return;
+    }
+    const num = Number(localValue);
     const clamped = Math.min(max, Math.max(min, num));
     setLocalValue(String(clamped));
     onChange(clamped);

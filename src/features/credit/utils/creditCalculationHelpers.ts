@@ -47,12 +47,26 @@ export function buildLoanParams(
   };
 }
 
+const EMPTY_LOAN_PARAMS: CreditLoanParams = {
+  capital: 0,
+  duree: 1,
+  tauxAssur: 0,
+  quotite: 1,
+  type: 'amortissable',
+  assurMode: 'CRD',
+  rAn: 0,
+  rAss: 0,
+  r: 0,
+  rA: 0,
+  startYM: '',
+};
+
 export function buildRequiredLoanParams(
-  loan: CreditLoan,
+  loan: CreditLoan | null,
   state: CreditState,
   fallbackStartYM: string,
 ): CreditLoanParams {
-  return buildLoanParams(loan, state, fallbackStartYM)!;
+  return buildLoanParams(loan, state, fallbackStartYM) ?? { ...EMPTY_LOAN_PARAMS, startYM: fallbackStartYM };
 }
 
 export function buildCapitalDecesParams(loan: CreditLoanParams): LoanParams {

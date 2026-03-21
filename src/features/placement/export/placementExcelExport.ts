@@ -64,7 +64,7 @@ function buildParamsSheet(state: PlacementSimulatorState): XlsxSheet {
   const rows: Array<XlsxCell[]> = [
     [h('Champ'), h('Valeur')],
     [sec('Client'), sec('')],
-    [txt('Âge actuel'), ctr(state.client.ageActuel)],
+    [txt('Âge actuel'), ctr(state.client.ageActuel ?? '')],
     [txt('TMI épargne'), pct(state.client.tmiEpargne)],
     [txt('TMI retraite'), pct(state.client.tmiRetraite)],
     [txt('Situation'), txt(state.client.situation === 'single' ? 'Célibataire' : 'Couple')],

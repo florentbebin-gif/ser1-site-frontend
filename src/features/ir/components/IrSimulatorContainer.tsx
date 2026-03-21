@@ -45,7 +45,7 @@ import type {
 
 interface IrPersistedState {
   yearKey?: IrYearKey;
-  status?: IrStatus;
+  status?: IrStatus | null;
   isIsolated?: boolean;
   parts?: number;
   location?: IrLocation;
@@ -98,7 +98,7 @@ export default function IrSimulatorContainer() {
   const psSettings = fiscalContext._raw_ps;
 
   const [yearKey, setYearKey] = useState<IrYearKey>('current');
-  const [status, setStatus] = useState<IrStatus>('couple');
+  const [status, setStatus] = useState<IrStatus | null>(null);
   const [isIsolated, setIsIsolated] = useState(false);
   const [parts, setParts] = useState(0);
   const [location, setLocation] = useState<IrLocation>('metropole');
@@ -126,7 +126,7 @@ export default function IrSimulatorContainer() {
         const persistedState = JSON.parse(raw) as IrPersistedState;
         if (persistedState && typeof persistedState === 'object') {
           setYearKey(persistedState.yearKey ?? 'current');
-          setStatus(persistedState.status ?? 'couple');
+          setStatus(persistedState.status ?? null);
           setIsIsolated(persistedState.isIsolated ?? false);
           setParts(persistedState.parts ?? 0);
           setLocation(persistedState.location ?? 'metropole');
@@ -208,7 +208,7 @@ export default function IrSimulatorContainer() {
       if (simId && simId !== 'ir') return;
 
       setYearKey('current');
-      setStatus('couple');
+      setStatus(null);
       setIsIsolated(false);
       setParts(0);
       setLocation('metropole');
@@ -248,7 +248,7 @@ export default function IrSimulatorContainer() {
   const showSummaryCard = useMemo(() => hasTaxableIncomeEntries(incomes), [incomes]);
 
   const { effectiveParts } = computeEffectiveParts({
-    status,
+    status: status ?? 'single',
     isIsolated,
     children,
     manualParts: parts,
@@ -270,7 +270,7 @@ export default function IrSimulatorContainer() {
   const abat10PensionsFoyer = computeAbattement10(baseRet, cfgRet);
 
   const extraDeductions = computeExtraDeductions({
-    status,
+    status: status ?? 'single',
     realMode,
     realExpenses,
     abat10SalD1,
@@ -278,8 +278,9 @@ export default function IrSimulatorContainer() {
   });
 
   const result = useMemo<IrComputedResult | null>(
-    () =>
-      computeIrResultEngine({
+    () => {
+      if (!status) return null;
+      return computeIrResultEngine({
         yearKey,
         status,
         isIsolated,
@@ -294,7 +295,8 @@ export default function IrSimulatorContainer() {
         psSettings,
         capitalMode,
         personsAChargeCount: countPersonsACharge(children),
-      }),
+      });
+    },
     [
       yearKey,
       status,
@@ -332,7 +334,7 @@ export default function IrSimulatorContainer() {
   const { exportExcel, exportPowerPoint } = useIrExportHandlers({
     result,
     yearLabel,
-    status,
+    status: status ?? 'single',
     isIsolated,
     effectiveParts,
     location,
@@ -439,6 +441,7 @@ export default function IrSimulatorContainer() {
           pfuRateIR={pfuRateIR}
           isExpert={isExpert}
           showSummaryCard={showSummaryCard}
+          hasSituation={status !== null}
         />
       </div>
 
