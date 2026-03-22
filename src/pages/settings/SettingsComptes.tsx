@@ -4,7 +4,7 @@ import { DEBUG_AUTH } from '@/supabaseClient';
 import { isDebugEnabled } from '@/utils/debugFlags';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
-import { invokeAdmin } from '@/settings/admin/invokeAdmin';
+import { adminClient } from '@/settings/admin/adminClient';
 import CabinetEditModal from '@/pages/settings/components/CabinetEditModal';
 import {
   SettingsCabinetsSection,
@@ -67,16 +67,6 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Erreur inconnue.';
 }
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : null;
-}
-
-function getArrayField<T>(value: unknown, key: string): T[] {
-  const record = asRecord(value);
-  const fieldValue = record?.[key];
-  return Array.isArray(fieldValue) ? (fieldValue as T[]) : [];
-}
-
 export default function SettingsComptes() {
   const { isAdmin, isLoading: authLoading } = useUserRole();
   const location = useLocation();
@@ -123,11 +113,8 @@ export default function SettingsComptes() {
         console.debug('[SettingsComptes] fetchUsers:start', { reason, requestId });
       }
 
-      const { data, error: invokeError } = await invokeAdmin('list_users');
+      const usersList = await adminClient.listUsers();
       if (requestId !== fetchUsersRequestIdRef.current) return;
-      if (invokeError) throw new Error(invokeError.message);
-
-      const usersList = getArrayField<UserRecord>(data, 'users');
       setUsers(usersList);
 
       if (DEBUG_COMPTES_REFRESH) {
@@ -152,9 +139,7 @@ export default function SettingsComptes() {
   const fetchCabinets = async () => {
     try {
       setCabinetsLoading(true);
-      const { data, error: invokeError } = await invokeAdmin('list_cabinets');
-      if (invokeError) throw new Error(invokeError.message);
-      setCabinets(getArrayField<CabinetRecord>(data, 'cabinets'));
+      setCabinets(await adminClient.listCabinets());
     } catch (err) {
       console.error('[SettingsComptes] fetchCabinets error:', err);
     } finally {
@@ -165,9 +150,7 @@ export default function SettingsComptes() {
   const fetchThemes = async () => {
     try {
       setThemesLoading(true);
-      const { data, error: invokeError } = await invokeAdmin('list_themes');
-      if (invokeError) throw new Error(invokeError.message);
-      setThemes(getArrayField<ThemeRecord>(data, 'themes'));
+      setThemes(await adminClient.listThemes());
     } catch (err) {
       console.error('[SettingsComptes] fetchThemes error:', err);
     } finally {
@@ -212,8 +195,7 @@ export default function SettingsComptes() {
 
     try {
       setActionLoading(true);
-      const { error: invokeError } = await invokeAdmin('delete_cabinet', { id: cabinet.id });
-      if (invokeError) throw new Error(invokeError.message);
+      await adminClient.deleteCabinet(cabinet.id);
       fetchCabinets();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -241,8 +223,7 @@ export default function SettingsComptes() {
 
     try {
       setActionLoading(true);
-      const { error: invokeError } = await invokeAdmin('delete_theme', { id: theme.id });
-      if (invokeError) throw new Error(invokeError.message);
+      await adminClient.deleteTheme(theme.id);
       fetchThemes();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -254,11 +235,7 @@ export default function SettingsComptes() {
   const handleAssignUserCabinet = async (userId: string, cabinetId: string) => {
     try {
       setActionLoading(true);
-      const { error: invokeError } = await invokeAdmin('assign_user_cabinet', {
-        user_id: userId,
-        cabinet_id: cabinetId || null,
-      });
-      if (invokeError) throw new Error(invokeError.message);
+      await adminClient.assignUserCabinet({ userId, cabinetId: cabinetId || null });
       triggerRefresh('assign_user_cabinet');
     } catch (err) {
       setError(getErrorMessage(err));
@@ -276,8 +253,7 @@ export default function SettingsComptes() {
 
     try {
       setActionLoading(true);
-      const { error: invokeError } = await invokeAdmin('delete_user', { userId });
-      if (invokeError) throw new Error(invokeError.message);
+      await adminClient.deleteUser(userId);
       triggerRefresh('delete_user');
     } catch (err) {
       setError(getErrorMessage(err));
@@ -289,11 +265,7 @@ export default function SettingsComptes() {
   const handleResetPassword = async (userId: string, email: string) => {
     try {
       setActionLoading(true);
-      const { error: invokeError } = await invokeAdmin('reset_password', {
-        userId,
-        email,
-      });
-      if (invokeError) throw new Error(invokeError.message);
+      await adminClient.resetPassword({ userId, email });
       alert('Email de reinitialisation envoye');
     } catch (err) {
       setError(getErrorMessage(err));
@@ -310,16 +282,7 @@ export default function SettingsComptes() {
       setUserReports([]);
       setShowReportModal(true);
 
-      const { data, error: invokeError } = await invokeAdmin('list_issue_reports', { user_id: userId });
-      if (invokeError) throw new Error(invokeError.message);
-
-      const dataRecord = asRecord(data);
-      const nestedData = asRecord(dataRecord?.data);
-      const reports = Array.isArray(dataRecord?.reports)
-        ? (dataRecord.reports as ReportRecord[])
-        : Array.isArray(nestedData?.reports)
-          ? (nestedData.reports as ReportRecord[])
-          : [];
+      const reports = await adminClient.listIssueReports({ userId });
       setUserReports(reports);
     } catch (err) {
       setError(getErrorMessage(err));
@@ -345,8 +308,7 @@ export default function SettingsComptes() {
 
   const handleMarkAsRead = async (reportId: string) => {
     try {
-      const { error: invokeError } = await invokeAdmin('mark_issue_read', { reportId });
-      if (invokeError) throw new Error(invokeError.message);
+      await adminClient.markIssueRead(reportId);
 
       triggerRefresh('mark_issue_read');
       if (selectedReportUser) {
@@ -361,8 +323,7 @@ export default function SettingsComptes() {
     if (!confirm('Supprimer definitivement ce signalement ?')) return;
 
     try {
-      const { error: invokeError } = await invokeAdmin('delete_issue', { reportId });
-      if (invokeError) throw new Error(invokeError.message);
+      await adminClient.deleteIssue(reportId);
 
       setSelectedReport(null);
       triggerRefresh('delete_issue');
@@ -375,11 +336,11 @@ export default function SettingsComptes() {
   };
 
   const handleDeleteAllReports = async (userId?: string) => {
+    if (!userId) return;
     if (!confirm('Supprimer tout l\'historique des signalements pour cet utilisateur ?')) return;
 
     try {
-      const { error: invokeError } = await invokeAdmin('delete_all_issues_for_user', { userId });
-      if (invokeError) throw new Error(invokeError.message);
+      await adminClient.deleteAllIssuesForUser(userId);
       handleCloseModal();
       triggerRefresh('delete_all_issues_for_user');
     } catch (err) {

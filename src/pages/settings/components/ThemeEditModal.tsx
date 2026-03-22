@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { invokeAdmin } from '@/settings/admin/invokeAdmin';
+import { adminClient } from '@/settings/admin/adminClient';
 import { COLOR_USAGE_GUIDELINES } from '@/settings/theme/colorUsageGuidelines';
 import { DEFAULT_COLORS } from '@/settings/theme';
 
@@ -71,22 +71,20 @@ export default function ThemeEditModal({
       setError('');
 
       if (theme?.id) {
-        const { error: invokeError } = await invokeAdmin('update_theme', {
+        await adminClient.updateTheme({
           id: theme.id,
           name: form.name.trim(),
           palette: form.palette,
         });
-        if (invokeError) throw new Error(invokeError.message);
 
         if (theme.is_system) {
           window.dispatchEvent(new CustomEvent('ser1-original-theme-updated'));
         }
       } else {
-        const { error: invokeError } = await invokeAdmin('create_theme', {
+        await adminClient.createTheme({
           name: form.name.trim(),
           palette: form.palette,
         });
-        if (invokeError) throw new Error(invokeError.message);
       }
 
       onSuccess();

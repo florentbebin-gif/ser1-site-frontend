@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { invokeAdmin } from '@/settings/admin/invokeAdmin';
+import { adminClient } from '@/settings/admin/adminClient';
 
 interface CabinetOption {
   value: string;
@@ -34,13 +34,10 @@ export default function UserInviteModal({
       setSubmitting(true);
       setError('');
 
-      const payload: { email: string; cabinet_id?: string } = { email: email.trim() };
-      if (cabinetId) {
-        payload.cabinet_id = cabinetId;
-      }
-
-      const { error: invokeError } = await invokeAdmin('create_user_invite', payload);
-      if (invokeError) throw new Error(invokeError.message);
+      await adminClient.createUserInvite({
+        email: email.trim(),
+        cabinetId: cabinetId || undefined,
+      });
 
       onSuccess();
       onClose();
