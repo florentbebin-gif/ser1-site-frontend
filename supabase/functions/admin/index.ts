@@ -4,6 +4,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { getCorsHeaders } from './cors.ts'
 import {
+  buildAdminPrincipal,
   getAuthenticatedUser,
   getJwtRole,
   getSupabaseServiceClient,
@@ -102,11 +103,18 @@ serve(async (req: Request) => {
       return errorResponse('Accès administrateur requis', responseHeaders, 403)
     }
 
+    // Vérification admin_accounts : seuls les comptes explicitement allowlistés passent
+    const principal = await buildAdminPrincipal(supabase, user, requestId)
+    if (!principal) {
+      console.log(`[admin] GUARD_FAIL rid=${requestId} user=${user.id} reason=not_in_admin_accounts`)
+      return errorResponse('Compte admin non autorisé', responseHeaders, 403)
+    }
+
     const payload = await parseAdminPayload(req, requestId)
     const action = resolveAdminAction(payload, urlCheck)
     const payloadKeys = Object.keys(payload).join(',') || '(none)'
 
-    console.log(`[EDGE_REQ] rid=${requestId} method=${method} origin=${origin} hasAuth=${hasAuthHeader} action=${action} payloadKeys=${payloadKeys}`)
+    console.log(`[EDGE_REQ] rid=${requestId} method=${method} origin=${origin} hasAuth=${hasAuthHeader} action=${action} payloadKeys=${payloadKeys} kind=${principal.accountKind}`)
 
     if (!action) {
       return errorResponse('Action manquante', responseHeaders, 400)
@@ -119,6 +127,7 @@ serve(async (req: Request) => {
         supabase,
         payload,
         adminUserId: user.id,
+        principal,
       })
     }
 

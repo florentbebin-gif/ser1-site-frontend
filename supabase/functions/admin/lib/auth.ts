@@ -1,3 +1,4 @@
+/* global Deno */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import type { SupabaseClient, User } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -48,4 +49,52 @@ export async function getAuthenticatedUser(
 
 export function getUserAppRole(user: Pick<User, 'app_metadata'> | null): string {
   return (user?.app_metadata?.role as string | undefined) ?? 'user'
+}
+
+export type AdminAccountKind = 'owner' | 'dev_admin' | 'e2e'
+
+interface AdminAccountRow {
+  account_kind: string
+  status: string
+  expires_at: string | null
+}
+
+type ValidateResult =
+  | { valid: true; accountKind: AdminAccountKind }
+  | { valid: false; reason: 'not_found' | 'disabled' | 'expired' }
+
+export interface AdminPrincipal {
+  userId: string
+  role: string
+  accountKind: AdminAccountKind
+  requestId: string
+}
+
+export function validateAdminAccount(data: AdminAccountRow | null): ValidateResult {
+  if (!data) return { valid: false, reason: 'not_found' }
+  if (data.status !== 'active') return { valid: false, reason: 'disabled' }
+  if (data.expires_at !== null && new Date(data.expires_at) < new Date()) {
+    return { valid: false, reason: 'expired' }
+  }
+  return { valid: true, accountKind: data.account_kind as AdminAccountKind }
+}
+
+export async function buildAdminPrincipal(
+  supabase: SupabaseClient,
+  user: User,
+  requestId: string,
+): Promise<AdminPrincipal | null> {
+  const { data } = await supabase
+    .from('admin_accounts')
+    .select('account_kind, status, expires_at')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  const result = validateAdminAccount(data)
+  if (!result.valid) return null
+  return {
+    userId: user.id,
+    role: getUserAppRole(user),
+    accountKind: result.accountKind,
+    requestId,
+  }
 }
