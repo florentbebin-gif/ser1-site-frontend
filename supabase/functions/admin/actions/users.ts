@@ -46,15 +46,25 @@ const updateUserRole: AdminActionHandler = async (ctx) => {
     return errorResponse('Utilisateur non trouvé', ctx.responseHeaders, 404)
   }
 
-  const nextUserMetadata = { ...(existing.user.user_metadata ?? {}), role }
+  // SÉCURITÉ : écrire uniquement app_metadata.role (source de vérité auth)
+  // user_metadata est modifiable par l'utilisateur — ne jamais y stocker le rôle
   const nextAppMetadata = { ...(existing.user.app_metadata ?? {}), role }
 
   const { error } = await ctx.supabase.auth.admin.updateUserById(userId, {
-    user_metadata: nextUserMetadata,
     app_metadata: nextAppMetadata,
   })
 
   if (error) throw error
+
+  // Synchroniser profiles.role (miroir SQL pour is_admin(uid) et RLS)
+  // Upsert car le profil peut ne pas exister (prouvé par assignUserCabinet#L235)
+  const { error: syncError } = await ctx.supabase
+    .from('profiles')
+    .upsert({ id: userId, role }, { onConflict: 'id', ignoreDuplicates: false })
+
+  if (syncError) {
+    console.warn(`[admin:update_user_role] profiles.role sync failed for ${userId}:`, syncError.message)
+  }
 
   return jsonResponse({ success: true }, ctx.responseHeaders)
 }
@@ -68,7 +78,7 @@ const listUsers: AdminActionHandler = async (ctx) => {
     .select('user_id, created_at, admin_read_at, id')
 
   if (reportsError) {
-    console.log('[admin:list_users] Reports query error:', reportsError.message)
+    console.warn('[admin:list_users] Reports query error:', reportsError.message)
   }
 
   const reportStats = (reports ?? []).reduce<Record<string, ReportAgg>>((acc, report: ReportRow) => {
@@ -104,7 +114,7 @@ const listUsers: AdminActionHandler = async (ctx) => {
     .in('id', userIds)
 
   if (profilesError) {
-    console.log('[admin:list_users] profiles query error:', profilesError.message)
+    console.warn('[admin:list_users] profiles query error:', profilesError.message)
   }
 
   const cabinetByUserId = new Map((profiles ?? []).map((profile: ProfileRow) => [profile.id, profile.cabinet_id]))
@@ -114,7 +124,7 @@ const listUsers: AdminActionHandler = async (ctx) => {
     email: user.email,
     created_at: user.created_at,
     last_sign_in_at: user.last_sign_in_at,
-    role: user.user_metadata?.role || user.app_metadata?.role || 'user',
+    role: (user.app_metadata?.role as string | undefined) || 'user',
     cabinet_id: cabinetByUserId.get(user.id) ?? null,
     total_reports: reportStats[user.id]?.total_reports || 0,
     unread_reports: reportStats[user.id]?.unread_reports || 0,
@@ -233,7 +243,7 @@ const assignUserCabinet: AdminActionHandler = async (ctx) => {
   }
 
   if (error?.code === 'PGRST116' || (!error && !data)) {
-    console.log(`[admin] assign_user_cabinet: profile missing for user_id=${user_id}, creating...`)
+    console.warn(`[admin] assign_user_cabinet: profile missing for user_id=${user_id}, creating...`)
 
     const { data: authUser, error: authError } = await ctx.supabase.auth.admin.getUserById(user_id)
 
@@ -242,7 +252,8 @@ const assignUserCabinet: AdminActionHandler = async (ctx) => {
     }
 
     const user = authUser.user
-    const role = user.user_metadata?.role || user.app_metadata?.role || 'user'
+    // SÉCURITÉ : lire uniquement app_metadata.role (source de vérité auth)
+    const role = (user.app_metadata?.role as string | undefined) || 'user'
 
     const { data: newProfile, error: insertError } = await ctx.supabase
       .from('profiles')

@@ -1,4 +1,4 @@
-import type { SupabaseClient } from './auth.ts'
+import type { AdminPrincipal, SupabaseClient } from './auth.ts'
 
 export type AdminPayload = Record<string, unknown>
 
@@ -17,7 +17,8 @@ export interface AuthenticatedContext extends RequestMetaContext {
 
 export interface AdminActionContext extends AuthenticatedContext {
   payload: AdminPayload
-  adminUserId: string
+  adminUserId: string  // conservé temporairement — remplacé par principal.userId en PR-4
+  principal: AdminPrincipal
 }
 
 export type AdminActionHandler = (ctx: AdminActionContext) => Promise<Response>
@@ -59,7 +60,7 @@ export async function parseAdminPayload(
       payload = JSON.parse(rawBody) as AdminPayload
     }
   } catch (_error) {
-    console.log(`[admin] Body parse error | rid=${requestId}, raw preview: ${rawBodyPreview}`)
+    console.warn(`[admin] Body parse error | rid=${requestId}, raw preview: ${rawBodyPreview}`)
   }
 
   return payload

@@ -60,6 +60,11 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
       - name: Install dependencies
         run: npm ci
 
@@ -68,6 +73,9 @@ jobs:
         env:
           VITE_SUPABASE_URL: https://placeholder.supabase.co
           VITE_SUPABASE_ANON_KEY: placeholder-key-for-build
+
+      - name: Run admin function tests (Deno)
+        run: deno test supabase/functions/admin/lib/auth_test.ts supabase/functions/admin/cors_test.ts --allow-net --allow-env
 
       - name: Check no console.* in production
         run: |

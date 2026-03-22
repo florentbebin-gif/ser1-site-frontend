@@ -16,6 +16,7 @@ Dev qui doit dépanner vite, ou exécuter un parcours local/CI.
 - [Env vars](#env-vars)
 - [Debug flags & console policy](#debug-flags--console-policy)
 - [Supabase local + migrations](#supabase-local--migrations)
+- [Gouvernance admin — admin_accounts](#gouvernance-admin--admin_accounts)
 - [Edge Function admin](#edge-function-admin)
 - [Troubleshooting rapide](#troubleshooting-rapide)
 - [Catalogue : principes](#catalogue--principes)
@@ -117,6 +118,68 @@ Synchroniser le schéma distant (si besoin) :
 ```bash
 supabase db remote commit --linked
 ```
+
+---
+
+## Gouvernance admin — `admin_accounts`
+
+### Contexte
+La table `admin_accounts` est la liste exhaustive des comptes autorisés à utiliser la fonction admin. Elle s'ajoute au check `app_metadata.role='admin'` dans Supabase Auth : les deux doivent être vrais pour qu'un compte soit accepté.
+
+> **Règle** : ne jamais déployer la garde stricte (PR-3) avant que le seed owner soit validé sur l'environnement cible.
+
+### Comptes actuels (PR-0 — 2026-03-22)
+
+| UUID | Email | account_kind | Notes |
+|---|---|---|---|
+| `a3fa99e2-12ea-4c42-855a-7b743e83f875` | compte owner | `owner` | Seul admin humain permanent |
+
+Comptes techniques à vérifier / purger :
+- `b4-admin-b-1771145192@test.local` — non référencé dans le code, suspect
+- `b4-admin-a-1771145192@test.local` — non référencé dans le code, suspect
+- `e2e@test.local` — non référencé dans le code, suspect
+
+**Action** : si ces trois comptes ont `app_metadata.role='admin'` dans Supabase Auth, les désactiver ou supprimer avant de déployer PR-3.
+
+### Bootstrap owner (à faire avant PR-3)
+
+Après déploiement de la migration `admin_accounts` (PR-2), insérer le compte owner :
+
+```sql
+INSERT INTO public.admin_accounts (user_id, account_kind, notes)
+VALUES ('a3fa99e2-12ea-4c42-855a-7b743e83f875', 'owner', 'Compte owner initial — 2026-03-22');
+```
+
+Vérifier :
+```sql
+SELECT * FROM public.admin_accounts;
+-- Doit retourner exactement 1 ligne owner active
+```
+
+### Ajouter un dev_admin
+
+```sql
+INSERT INTO public.admin_accounts (user_id, account_kind, notes, created_by)
+VALUES ('<uuid>', 'dev_admin', 'Dev X — 2026-xx-xx', 'a3fa99e2-12ea-4c42-855a-7b743e83f875');
+```
+
+### Désactiver un compte
+
+```sql
+UPDATE public.admin_accounts SET status = 'disabled', updated_at = now() WHERE user_id = '<uuid>';
+```
+
+### Ajouter un compte E2E temporaire
+
+```sql
+INSERT INTO public.admin_accounts (user_id, account_kind, expires_at, notes)
+VALUES ('<uuid>', 'e2e', now() + interval '7 days', 'Compte E2E run CI — expire auto');
+```
+
+### Cycle de vie des comptes E2E
+
+- Toujours définir `expires_at` (jamais null pour `account_kind='e2e'`)
+- Nettoyer périodiquement : `DELETE FROM public.admin_accounts WHERE account_kind='e2e' AND expires_at < now();`
 
 ---
 
