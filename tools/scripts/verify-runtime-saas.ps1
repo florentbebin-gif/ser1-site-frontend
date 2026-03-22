@@ -44,6 +44,7 @@ function Invoke-SupabaseSqlApi([string]$Ref, [string]$Token, [string]$Sql) {
 $summary = [ordered]@{
   P0_01 = 'UNKNOWN'
   P0_02 = 'UNKNOWN'
+  P0_03 = 'UNKNOWN'
 }
 
 function New-RandomProbePassword() {
@@ -227,6 +228,51 @@ if (-not [string]::IsNullOrWhiteSpace($SupabaseDbUrl)) {
   }
 } else {
   Write-Result "P0_02" "UNKNOWN (missing SUPABASE_DB_URL and API fallback inputs)"
+}
+
+Write-Section "SQL checks (P0-03 — admin_accounts)"
+if (-not [string]::IsNullOrWhiteSpace($SupabaseDbUrl)) {
+  try {
+    $tableExists = psql "$SupabaseDbUrl" -t -A -c "select count(*) from pg_tables where tablename='admin_accounts' and schemaname='public';"
+    $ownerCount  = psql "$SupabaseDbUrl" -t -A -c "select count(*) from public.admin_accounts where account_kind='owner' and status='active';"
+
+    $tableExistsInt = [int]($tableExists.Trim())
+    $ownerCountInt  = [int]($ownerCount.Trim())
+
+    Write-Result "ADMIN_ACCOUNTS_TABLE_EXISTS" "$tableExistsInt"
+    Write-Result "ADMIN_ACCOUNTS_ACTIVE_OWNERS" "$ownerCountInt"
+
+    if ($tableExistsInt -gt 0 -and $ownerCountInt -gt 0) {
+      $summary.P0_03 = 'PASS'
+    } else {
+      $summary.P0_03 = 'FAIL'
+    }
+  } catch {
+    $summary.P0_03 = 'FAIL'
+    Write-Result "P0_03_ERROR" $_.Exception.Message
+  }
+} elseif (-not [string]::IsNullOrWhiteSpace($SupabaseAccessToken) -and -not [string]::IsNullOrWhiteSpace($ProjectRef)) {
+  try {
+    $tableResp = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select count(*) as c from pg_tables where tablename='admin_accounts' and schemaname='public';"
+    $ownerResp  = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select count(*) as c from public.admin_accounts where account_kind='owner' and status='active';"
+
+    $tableExistsInt = [int]$tableResp.c
+    $ownerCountInt  = [int]$ownerResp.c
+
+    Write-Result "ADMIN_ACCOUNTS_TABLE_EXISTS" "$tableExistsInt"
+    Write-Result "ADMIN_ACCOUNTS_ACTIVE_OWNERS" "$ownerCountInt"
+
+    if ($tableExistsInt -gt 0 -and $ownerCountInt -gt 0) {
+      $summary.P0_03 = 'PASS'
+    } else {
+      $summary.P0_03 = 'FAIL'
+    }
+  } catch {
+    $summary.P0_03 = 'FAIL'
+    Write-Result "P0_03_ERROR" $_.Exception.Message
+  }
+} else {
+  Write-Result "P0_03" "UNKNOWN (missing SUPABASE_DB_URL and API fallback inputs)"
 }
 
 Write-Section "Summary"

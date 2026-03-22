@@ -4,6 +4,7 @@ import {
   type AdminActionHandler,
 } from '../lib/http.ts'
 import { loadLogoOrThrow, loadThemeOrThrow } from '../lib/loaders.ts'
+import { recordAdminAction } from '../lib/audit.ts'
 
 const VALID_LOGO_PLACEMENTS = [
   'center-bottom',
@@ -60,6 +61,13 @@ const createCabinet: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'create_cabinet',
+    targetType: 'cabinet',
+    targetId: data?.id,
+  })
   return jsonResponse({ cabinet: data }, ctx.responseHeaders)
 }
 
@@ -114,6 +122,13 @@ const updateCabinet: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'update_cabinet',
+    targetType: 'cabinet',
+    targetId: id,
+  })
   return jsonResponse({ cabinet: data }, ctx.responseHeaders)
 }
 
@@ -145,6 +160,13 @@ const deleteCabinet: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'delete_cabinet',
+    targetType: 'cabinet',
+    targetId: id,
+  })
   return jsonResponse({ success: true }, ctx.responseHeaders)
 }
 
@@ -171,6 +193,13 @@ const assignCabinetTheme: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'assign_cabinet_theme',
+    targetType: 'cabinet',
+    targetId: cabinet_id,
+  })
   return jsonResponse({ cabinet: data }, ctx.responseHeaders)
 }
 
