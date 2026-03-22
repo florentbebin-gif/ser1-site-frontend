@@ -9,9 +9,10 @@ git pull
 git checkout -b feature/nom-clair
 
 # 2. Quality Gates (obligatoires avant commit)
-npm run check      # Tous les checks (lint + typecheck + test + build)
+npm run check      # Tous les checks (lint + check:fiscal-hardcode + check:arch + typecheck + test + build)
 # ou individuellement :
 npm run lint       # ESLint - 0 erreur
+npm run check:arch # Garde-fous d'architecture dependency-cruiser - 0 violation
 npm run typecheck  # TypeScript - 0 erreur
 npm test           # Tous les tests passent
 npm run build      # Build Vite OK
@@ -53,6 +54,9 @@ git push origin feature/nom-clair
 ### Sécurité
 - **Auth** : Ne JAMAIS utiliser `user_metadata` pour les décisions d'autorisation (rôles, permissions). Utiliser `app_metadata` uniquement.
   - Voir [docs/GOUVERNANCE.md](docs/GOUVERNANCE.md)
+- **Admin** : Toujours consommer les actions admin via `adminClient` (`src/settings/admin/adminClient.ts`), **jamais via `invokeAdmin` directement** depuis une page ou un composant.
+  - `invokeAdmin` est un détail d'implémentation interne — les consommateurs doivent utiliser `adminClient`.
+- **`update_user_role`** : Action réservée au `owner` uniquement (`principal.accountKind === 'owner'`). Ne pas exposer de bouton de changement de rôle à un `dev_admin`.
 - **Logging** : Aucun log de données sensibles en production.
 - **Runbooks / Evidence** : Interdit de committer des outputs runtime bruts (SQL, logs, dumps HTTP).
   - Utiliser uniquement des templates `*.example` + redactions.
@@ -100,6 +104,7 @@ git push origin feature/nom-clair
 
 - [ ] `npm run check` passe (tous les checks)
 - [ ] `npm run lint` passe
+- [ ] `npm run check:arch` passe (0 violation d'architecture)
 - [ ] `npm run typecheck` passe (0 erreur)
 - [ ] `npm test` passe
 - [ ] `npm run build` passe
@@ -107,3 +112,4 @@ git push origin feature/nom-clair
 - [ ] TODO/FIXME ont un identifiant
 - [ ] Imports `@/` utilisés pour cross-module
 - [ ] Pas d'import CSS croisé entre pages
+- [ ] Appels admin via `adminClient`, pas `invokeAdmin` directement

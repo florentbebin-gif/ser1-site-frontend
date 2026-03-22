@@ -5,6 +5,7 @@ import {
   type AdminActionHandler,
 } from '../lib/http.ts'
 import { loadThemeOrThrow } from '../lib/loaders.ts'
+import { recordAdminAction } from '../lib/audit.ts'
 
 const REQUIRED_THEME_COLORS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10']
 
@@ -59,6 +60,13 @@ const createTheme: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'create_theme',
+    targetType: 'theme',
+    targetId: data?.id,
+  })
   return jsonResponse({ theme: data }, ctx.responseHeaders)
 }
 
@@ -111,6 +119,13 @@ const updateTheme: AdminActionHandler = async (ctx) => {
 
   console.log(`[admin] update_theme success | rid=${ctx.requestId} | themeId=${id} | name=${data?.name}`)
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'update_theme',
+    targetType: 'theme',
+    targetId: id,
+  })
   return jsonResponse({ theme: data }, ctx.responseHeaders)
 }
 
@@ -152,6 +167,13 @@ const deleteTheme: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'delete_theme',
+    targetType: 'theme',
+    targetId: id,
+  })
   return jsonResponse({
     success: true,
     unassigned_cabinets: unassignedCount,

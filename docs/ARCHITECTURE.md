@@ -42,6 +42,7 @@ Conventions clés :
 - Nouveau code : TS/TSX.
 - Fichiers `500-800` lignes = dette surveillée. Acceptable temporairement si le fichier reste mono-rôle et lisible.
 - Fichiers `>800` lignes = découpage obligatoire au prochain chantier qui touche le fichier.
+- Garde-fous d'architecture : `npm run check:arch` (dependency-cruiser, config `.dependency-cruiser.cjs`) — bloquant en CI. Règles : engine/domain sans React ni features, features sans pages, imports cross-features via `index.ts` uniquement.
 
 ### Règle "god file"
 Un fichier long n'est pas automatiquement prioritaire. Un vrai "god file" devient prioritaire s'il mélange au moins 2 responsabilités parmi :
@@ -163,10 +164,35 @@ Tables repères (haut niveau) :
 - `ui_settings` : préférences user (`theme_mode`, `preset_id`, `my_palette`).
 - Settings GLOBAUX : `tax_settings`, `ps_settings`, `fiscality_settings`.
 - Référentiel contrats (Base-Contrat) : `base_contrat_overrides`.
+- Admin (service_role uniquement) : `admin_accounts`, `admin_action_audit`.
 
 ### Edge Function `admin`
 - Source : `supabase/functions/admin/index.ts`.
 - Contrat action : query `?action=...` ou body `{ action: "..." }`.
+
+### Admin : sécurité multicouche
+
+L'admin est **global** (pas de multi-tenant sur cette surface). Deux prérequis cumulatifs pour accéder à un handler :
+
+1. `app_metadata.role = 'admin'` dans Supabase Auth
+2. Ligne active dans `public.admin_accounts` (`status='active'`, pas expiré)
+
+**`is_admin()` vs `is_admin(uid)`** :
+- `is_admin()` sans param : lit le JWT courant (`app_metadata`) — safe en RLS, pas de round-trip DB.
+- `is_admin(uid)` avec param : lit `profiles.role` (miroir SQL) — utilisé en RLS pour les tables nécessitant une vérification par uuid d'un tiers.
+
+**`AdminPrincipal`** : objet enrichi créé après validation des deux prérequis (`lib/auth.ts`), transporté dans chaque `AdminActionContext`. Contient `userId`, `accountKind` (`owner`/`dev_admin`/`e2e`), `isActive`, `isExpired`, `requestId`.
+
+**Tables admin** (accessibles service_role uniquement, RLS activé sans policy) :
+
+| Table | Rôle |
+|-------|------|
+| `admin_accounts` | Allowlist des comptes admin (owner, dev_admin, e2e) avec expiration |
+| `admin_action_audit` | Journal des mutations admin (request_id, action, cible, statut) |
+
+**Audit** : chaque mutation admin (create/update/delete cabinet, theme, user, issue) insère une ligne dans `admin_action_audit` via `recordAdminAction()` (`lib/audit.ts`). Fire-and-forget : un échec d'audit ne bloque jamais la réponse principale.
+
+Voir `docs/RUNBOOK.md` § "Gouvernance admin — admin_accounts" pour le cycle de vie opérationnel.
 
 ### Migrations
 - Source de vérité : `supabase/migrations/`.

@@ -490,6 +490,16 @@ Le theming doit rester **déterministe** et persistant en DB.
 ### Autorisation
 - Interdit : utiliser `user_metadata` pour des décisions d'autorisation.
 - Autorisé : `app_metadata.role` uniquement (frontend + edge + RLS).
+- **Source unique** : `app_metadata.role` est la seule source de vérité pour le rôle auth. `user_metadata.role` ne doit jamais être écrit ni lu pour une décision d'autorisation. `profiles.role` est un miroir SQL maintenu par le backend (nécessaire pour `is_admin(uid)` en RLS), pas une source à consommer directement côté frontend.
+
+### Bypass E2E (`__SER1_E2E`) — limites et conditions d'activation
+
+Le flag `window.__SER1_E2E = true` permet aux tests Playwright de contourner l'auth Supabase (mock d'un rôle admin fictif). Ce mécanisme est **strictement borné** :
+
+- **Inactif en prod par défaut** : le bypass ne s'active que si `import.meta.env.DEV === true` **OU** `import.meta.env.VITE_E2E === 'true'`.
+- **`VITE_E2E=true`** doit être explicitement défini dans le workflow CI E2E (`.github/workflows/e2e.yml`). Il n'est jamais présent dans le build prod.
+- **Jamais côté backend** : `__SER1_E2E` est purement frontend. Il ne bypass aucune garde Edge Function ni aucune RLS.
+- **Usage autorisé** : smoke tests Playwright uniquement (test de rendu, navigation). Interdit pour simuler des droits admin réels ou tester des flows qui font des appels `/api/admin`.
 
 ### Logs
 - Zéro PII (email, nom, montants, RFR, patrimoine, etc.).

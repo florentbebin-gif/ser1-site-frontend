@@ -25,9 +25,18 @@ Dev qui doit dépanner vite, ou exécuter un parcours local/CI.
 
 ## Checks du repo
 - Check complet :
-  - `npm run check` (lint + **check:fiscal-hardcode** + typecheck + tests + build)
+  - `npm run check` (lint + **check:fiscal-hardcode** + **check:arch** + typecheck + tests + build)
 
 En CI, c'est le gate principal.
+
+- Garde d'architecture uniquement :
+  - `npm run check:arch` (dependency-cruiser, bloquant sur violation de frontière)
+
+Règles enforced :
+- `engine/` et `domain/` : zéro React, zéro imports features/pages
+- `features/` : pas d'import de pages
+- `pages/` : imports features via `index.ts` uniquement
+- Cross-feature : internals d'une feature ne sont pas importables depuis une autre feature
 
 ### Sous-step : `check:fiscal-hardcode`
 
@@ -179,7 +188,49 @@ VALUES ('<uuid>', 'e2e', now() + interval '7 days', 'Compte E2E run CI — expir
 ### Cycle de vie des comptes E2E
 
 - Toujours définir `expires_at` (jamais null pour `account_kind='e2e'`)
-- Nettoyer périodiquement : `DELETE FROM public.admin_accounts WHERE account_kind='e2e' AND expires_at < now();`
+- Nettoyer périodiquement :
+  ```sql
+  DELETE FROM public.admin_accounts WHERE account_kind='e2e' AND expires_at < now();
+  ```
+- Vérifier les comptes expirés non purgés :
+  ```sql
+  SELECT user_id, account_kind, expires_at FROM public.admin_accounts
+  WHERE expires_at IS NOT NULL AND expires_at < now();
+  ```
+
+### Rollout sans lock-out
+
+Ordre obligatoire avant de déployer la garde stricte :
+1. Déployer la migration `admin_accounts` (table créée, pas encore enforced)
+2. Insérer le seed owner + tout compte `dev_admin` légitime
+3. Vérifier : `SELECT * FROM public.admin_accounts WHERE status='active';` → au moins 1 owner
+4. Déployer l'Edge Function avec la garde stricte
+5. Tester l'accès avec le compte owner seedé
+
+Si lock-out accidentel : désactiver temporairement la garde dans l'Edge Function (retirer le check `admin_accounts`), re-seeder, re-déployer.
+
+### Consulter l'audit admin
+
+Requêtes utiles sur `admin_action_audit` :
+
+```sql
+-- 10 dernières mutations
+SELECT created_at, action, target_type, target_id, account_kind, status
+FROM public.admin_action_audit
+ORDER BY created_at DESC
+LIMIT 10;
+
+-- Mutations par admin
+SELECT admin_user_id, account_kind, action, count(*)
+FROM public.admin_action_audit
+GROUP BY admin_user_id, account_kind, action
+ORDER BY count(*) DESC;
+
+-- Corrélation par request_id
+SELECT * FROM public.admin_action_audit WHERE request_id = '<rid>';
+```
+
+Note : la table est accessible service_role uniquement (RLS activé, aucune policy). Consulter via Dashboard Supabase > SQL Editor ou psql avec la connexion service_role.
 
 ---
 

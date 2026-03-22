@@ -4,6 +4,7 @@ import {
   type AdminActionHandler,
 } from '../lib/http.ts'
 import { loadIssueReportOrThrow } from '../lib/loaders.ts'
+import { recordAdminAction } from '../lib/audit.ts'
 
 const listIssueCounts: AdminActionHandler = async (ctx) => {
   const { data: reports, error } = await ctx.supabase
@@ -95,6 +96,13 @@ const markIssueRead: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'mark_issue_read',
+    targetType: 'issue',
+    targetId: reportId,
+  })
   return jsonResponse({ success: true }, ctx.responseHeaders)
 }
 
@@ -114,6 +122,13 @@ const markIssueUnread: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'mark_issue_unread',
+    targetType: 'issue',
+    targetId: reportId,
+  })
   return jsonResponse({ success: true }, ctx.responseHeaders)
 }
 
@@ -133,6 +148,13 @@ const deleteIssue: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'delete_issue',
+    targetType: 'issue',
+    targetId: reportId,
+  })
   return jsonResponse({ success: true }, ctx.responseHeaders)
 }
 
@@ -155,6 +177,13 @@ const deleteAllIssuesForUser: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'delete_all_issues_for_user',
+    targetType: 'user',
+    targetId: userId,
+  })
   return jsonResponse({
     success: true,
     deleted: reportsToDelete?.length || 0,

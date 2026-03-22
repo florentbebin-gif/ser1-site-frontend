@@ -4,6 +4,7 @@ import {
   type AdminActionHandler,
 } from '../lib/http.ts'
 import { loadUserOrThrow } from '../lib/loaders.ts'
+import { recordAdminAction } from '../lib/audit.ts'
 
 interface ReportAgg {
   total_reports: number
@@ -74,6 +75,13 @@ const updateUserRole: AdminActionHandler = async (ctx) => {
     console.warn(`[admin:update_user_role] profiles.role sync failed for ${userId}:`, syncError.message)
   }
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'update_user_role',
+    targetType: 'user',
+    targetId: userId,
+  })
   return jsonResponse({ success: true }, ctx.responseHeaders)
 }
 
@@ -190,6 +198,13 @@ const createUserInvite: AdminActionHandler = async (ctx) => {
     }
   }
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'create_user_invite',
+    targetType: 'user',
+    targetId: inviteData?.user?.id,
+  })
   return jsonResponse({ success: true, user: inviteData }, ctx.responseHeaders)
 }
 
@@ -203,6 +218,13 @@ const deleteUser: AdminActionHandler = async (ctx) => {
   const { error } = await ctx.supabase.auth.admin.deleteUser(userId)
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'delete_user',
+    targetType: 'user',
+    targetId: userId,
+  })
   return jsonResponse({ success: true }, ctx.responseHeaders)
 }
 
@@ -231,6 +253,13 @@ const resetPassword: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'reset_password',
+    targetType: 'user',
+    targetId: userId,
+  })
   return jsonResponse({ success: true }, ctx.responseHeaders)
 }
 
@@ -264,6 +293,13 @@ const assignUserCabinet: AdminActionHandler = async (ctx) => {
     .maybeSingle()
 
   if (!error && data) {
+    await recordAdminAction(ctx.supabase, {
+      requestId: ctx.requestId,
+      principal: ctx.principal,
+      action: 'assign_user_cabinet',
+      targetType: 'user',
+      targetId: user_id,
+    })
     return jsonResponse({ profile: data }, ctx.responseHeaders)
   }
 
@@ -288,6 +324,13 @@ const assignUserCabinet: AdminActionHandler = async (ctx) => {
 
     if (insertError) throw insertError
 
+    await recordAdminAction(ctx.supabase, {
+      requestId: ctx.requestId,
+      principal: ctx.principal,
+      action: 'assign_user_cabinet',
+      targetType: 'user',
+      targetId: user_id,
+    })
     return jsonResponse({ profile: newProfile }, ctx.responseHeaders)
   }
 
