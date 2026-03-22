@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { DEBUG_AUTH } from '@/supabaseClient';
 import { isDebugEnabled } from '@/utils/debugFlags';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
-import { adminClient } from '@/settings/admin/adminClient';
 import CabinetEditModal from '@/pages/settings/components/CabinetEditModal';
 import {
   SettingsCabinetsSection,
@@ -14,149 +13,23 @@ import {
 import SettingsReportsModal from '@/pages/settings/components/SettingsReportsModal';
 import ThemeEditModal from '@/pages/settings/components/ThemeEditModal';
 import UserInviteModal from '@/pages/settings/components/UserInviteModal';
+import { useAdminCabinets } from './hooks/useAdminCabinets';
+import { useAdminReports } from './hooks/useAdminReports';
+import { useAdminThemes } from './hooks/useAdminThemes';
+import { useAdminUsers } from './hooks/useAdminUsers';
 import './SettingsComptes.css';
-
-interface CabinetRecord {
-  id: string;
-  name: string;
-  default_theme_id?: string | null;
-  logo_id?: string | null;
-  logo_placement?: string | null;
-  themes?: {
-    name?: string | null;
-  } | null;
-  logos?: {
-    storage_path?: string | null;
-  } | null;
-}
-
-interface ThemeRecord {
-  id: string;
-  name: string;
-  palette?: Record<string, string> | null;
-  is_system?: boolean;
-}
-
-interface UserRecord {
-  id: string;
-  email: string;
-  role: string;
-  cabinet_id?: string | null;
-  created_at: string;
-  last_sign_in_at?: string | null;
-  total_reports: number;
-  unread_reports: number;
-}
-
-interface ReportRecord {
-  id: string;
-  created_at: string;
-  page?: string | null;
-  title?: string | null;
-  description?: string | null;
-  admin_read_at?: string | null;
-  meta?: Record<string, unknown> | null;
-}
-
-interface ReportUser {
-  id: string;
-  email: string;
-}
-
-function getErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : 'Erreur inconnue.';
-}
 
 export default function SettingsComptes() {
   const { isAdmin, isLoading: authLoading } = useUserRole();
   const location = useLocation();
-  const [users, setUsers] = useState<UserRecord[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<ReportRecord | null>(null);
-  const [userReports, setUserReports] = useState<ReportRecord[]>([]);
-  const [selectedReportUser, setSelectedReportUser] = useState<ReportUser | null>(null);
-  const [reportLoading, setReportLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const fetchUsersRequestIdRef = useRef(0);
+  const [showUserModal, setShowUserModal] = useState(false);
   const DEBUG_COMPTES_REFRESH = isDebugEnabled('comptes');
 
-  const [cabinets, setCabinets] = useState<CabinetRecord[]>([]);
-  const [themes, setThemes] = useState<ThemeRecord[]>([]);
-  const [cabinetsLoading, setCabinetsLoading] = useState(false);
-  const [themesLoading, setThemesLoading] = useState(false);
-
-  const [showCabinetModal, setShowCabinetModal] = useState(false);
-  const [editingCabinet, setEditingCabinet] = useState<CabinetRecord | null>(null);
-  const [showThemeModal, setShowThemeModal] = useState(false);
-  const [editingTheme, setEditingTheme] = useState<ThemeRecord | null>(null);
-  const [showUserModal, setShowUserModal] = useState(false);
-
-  const triggerRefresh = (reason = '') => {
-    if (DEBUG_COMPTES_REFRESH) {
-      // eslint-disable-next-line no-console
-      console.debug('[SettingsComptes] triggerRefresh', reason);
-    }
-    setRefreshKey((key) => key + 1);
-  };
-
-  const fetchUsers = useCallback(async (reason = '') => {
-    const requestId = ++fetchUsersRequestIdRef.current;
-    try {
-      setLoading(true);
-      setError('');
-
-      if (DEBUG_COMPTES_REFRESH) {
-        // eslint-disable-next-line no-console
-        console.debug('[SettingsComptes] fetchUsers:start', { reason, requestId });
-      }
-
-      const usersList = await adminClient.listUsers();
-      if (requestId !== fetchUsersRequestIdRef.current) return;
-      setUsers(usersList);
-
-      if (DEBUG_COMPTES_REFRESH) {
-        // eslint-disable-next-line no-console
-        console.debug('[SettingsComptes] fetchUsers:success', {
-          reason,
-          requestId,
-          usersCount: usersList.length,
-        });
-      }
-    } catch (err) {
-      if (requestId === fetchUsersRequestIdRef.current) {
-        setError(getErrorMessage(err));
-      }
-    } finally {
-      if (requestId === fetchUsersRequestIdRef.current) {
-        setLoading(false);
-      }
-    }
-  }, [DEBUG_COMPTES_REFRESH]);
-
-  const fetchCabinets = async () => {
-    try {
-      setCabinetsLoading(true);
-      setCabinets(await adminClient.listCabinets());
-    } catch (err) {
-      console.error('[SettingsComptes] fetchCabinets error:', err);
-    } finally {
-      setCabinetsLoading(false);
-    }
-  };
-
-  const fetchThemes = async () => {
-    try {
-      setThemesLoading(true);
-      setThemes(await adminClient.listThemes());
-    } catch (err) {
-      console.error('[SettingsComptes] fetchThemes error:', err);
-    } finally {
-      setThemesLoading(false);
-    }
-  };
+  const usersHook = useAdminUsers(setError);
+  const cabinetsHook = useAdminCabinets(setError);
+  const themesHook = useAdminThemes(setError);
+  const reportsHook = useAdminReports(setError, usersHook.fetchUsers);
 
   useEffect(() => {
     if (authLoading) {
@@ -175,178 +48,12 @@ export default function SettingsComptes() {
       return;
     }
 
-    fetchUsers('effect');
-    fetchCabinets();
-    fetchThemes();
-  }, [isAdmin, authLoading, location.key, refreshKey, fetchUsers, DEBUG_COMPTES_REFRESH]);
-
-  const openCabinetModal = (cabinet: CabinetRecord | null = null) => {
-    setEditingCabinet(cabinet);
-    setShowCabinetModal(true);
-  };
-
-  const closeCabinetModal = () => {
-    setShowCabinetModal(false);
-    setEditingCabinet(null);
-  };
-
-  const handleDeleteCabinet = async (cabinet: CabinetRecord) => {
-    if (!confirm(`Supprimer le cabinet "${cabinet.name}" ?`)) return;
-
-    try {
-      setActionLoading(true);
-      await adminClient.deleteCabinet(cabinet.id);
-      fetchCabinets();
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const openThemeModal = (theme: ThemeRecord | null = null) => {
-    setEditingTheme(theme);
-    setShowThemeModal(true);
-  };
-
-  const closeThemeModal = () => {
-    setShowThemeModal(false);
-    setEditingTheme(null);
-  };
-
-  const handleDeleteTheme = async (theme: ThemeRecord) => {
-    if (theme.is_system) {
-      setError('Les themes systeme ne peuvent pas etre supprimes.');
-      return;
-    }
-    if (!confirm(`Supprimer le theme "${theme.name}" ?`)) return;
-
-    try {
-      setActionLoading(true);
-      await adminClient.deleteTheme(theme.id);
-      fetchThemes();
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleAssignUserCabinet = async (userId: string, cabinetId: string) => {
-    try {
-      setActionLoading(true);
-      await adminClient.assignUserCabinet({ userId, cabinetId: cabinetId || null });
-      triggerRefresh('assign_user_cabinet');
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const closeUserModal = () => {
-    setShowUserModal(false);
-  };
-
-  const handleDeleteUser = async (userId: string, email: string) => {
-    if (!confirm(`Supprimer l'utilisateur ${email} ?`)) return;
-
-    try {
-      setActionLoading(true);
-      await adminClient.deleteUser(userId);
-      triggerRefresh('delete_user');
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleResetPassword = async (userId: string, email: string) => {
-    try {
-      setActionLoading(true);
-      await adminClient.resetPassword({ userId, email });
-      alert('Email de reinitialisation envoye');
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleViewReports = async (userId: string, userEmail: string) => {
-    try {
-      setReportLoading(true);
-      setSelectedReportUser({ id: userId, email: userEmail });
-      setSelectedReport(null);
-      setUserReports([]);
-      setShowReportModal(true);
-
-      const reports = await adminClient.listIssueReports({ userId });
-      setUserReports(reports);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setReportLoading(false);
-    }
-  };
-
-  const handleSelectReport = (report: ReportRecord) => {
-    setSelectedReport(report);
-  };
-
-  const handleBackToList = () => {
-    setSelectedReport(null);
-  };
-
-  const handleCloseModal = () => {
-    setShowReportModal(false);
-    setSelectedReport(null);
-    setUserReports([]);
-    setSelectedReportUser(null);
-  };
-
-  const handleMarkAsRead = async (reportId: string) => {
-    try {
-      await adminClient.markIssueRead(reportId);
-
-      triggerRefresh('mark_issue_read');
-      if (selectedReportUser) {
-        handleViewReports(selectedReportUser.id, selectedReportUser.email);
-      }
-    } catch (err) {
-      setError(getErrorMessage(err));
-    }
-  };
-
-  const handleDeleteReport = async (reportId: string) => {
-    if (!confirm('Supprimer definitivement ce signalement ?')) return;
-
-    try {
-      await adminClient.deleteIssue(reportId);
-
-      setSelectedReport(null);
-      triggerRefresh('delete_issue');
-      if (selectedReportUser) {
-        handleViewReports(selectedReportUser.id, selectedReportUser.email);
-      }
-    } catch (err) {
-      setError(getErrorMessage(err));
-    }
-  };
-
-  const handleDeleteAllReports = async (userId?: string) => {
-    if (!userId) return;
-    if (!confirm('Supprimer tout l\'historique des signalements pour cet utilisateur ?')) return;
-
-    try {
-      await adminClient.deleteAllIssuesForUser(userId);
-      handleCloseModal();
-      triggerRefresh('delete_all_issues_for_user');
-    } catch (err) {
-      setError(getErrorMessage(err));
-    }
-  };
+    void usersHook.fetchUsers('effect');
+    void cabinetsHook.fetchCabinets();
+    void themesHook.fetchThemes();
+  // fetchUsers/fetchCabinets/fetchThemes are stable (useCallback with empty or stable deps)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, authLoading, location.key, DEBUG_COMPTES_REFRESH]);
 
   if (!isAdmin) {
     return (
@@ -364,7 +71,7 @@ export default function SettingsComptes() {
     );
   }
 
-  const cabinetOptions = cabinets.map((cabinet) => ({
+  const cabinetOptions = cabinetsHook.cabinets.map((cabinet) => ({
     value: cabinet.id,
     label: cabinet.name,
   }));
@@ -375,80 +82,79 @@ export default function SettingsComptes() {
 
       {error && <div className="alert error">{error}</div>}
 
-      {loading ? (
+      {usersHook.loading ? (
         <p>Chargement...</p>
       ) : (
         <div className="admin-content">
           <SettingsCabinetsSection
-            cabinets={cabinets}
-            cabinetsLoading={cabinetsLoading}
-            onCreateCabinet={() => openCabinetModal()}
-            onEditCabinet={openCabinetModal}
-            onDeleteCabinet={handleDeleteCabinet}
+            cabinets={cabinetsHook.cabinets}
+            cabinetsLoading={cabinetsHook.cabinetsLoading}
+            onCreateCabinet={() => cabinetsHook.openCabinetModal()}
+            onEditCabinet={cabinetsHook.openCabinetModal}
+            onDeleteCabinet={cabinetsHook.handleDeleteCabinet}
           />
 
           <SettingsThemesSection
-            themes={themes}
-            themesLoading={themesLoading}
-            onCreateTheme={() => openThemeModal()}
-            onEditTheme={openThemeModal}
-            onDeleteTheme={handleDeleteTheme}
+            themes={themesHook.themes}
+            themesLoading={themesHook.themesLoading}
+            onCreateTheme={() => themesHook.openThemeModal()}
+            onEditTheme={themesHook.openThemeModal}
+            onDeleteTheme={themesHook.handleDeleteTheme}
           />
 
           <SettingsUsersSection
-            users={users}
-            cabinets={cabinets}
-            actionLoading={actionLoading}
+            users={usersHook.users}
+            cabinets={cabinetsHook.cabinets}
+            actionLoading={usersHook.actionLoading}
             onCreateUser={() => setShowUserModal(true)}
-            onRefresh={() => triggerRefresh('manual')}
-            onAssignUserCabinet={handleAssignUserCabinet}
-            onViewReports={handleViewReports}
-            onResetPassword={handleResetPassword}
-            onDeleteUser={handleDeleteUser}
+            onRefresh={() => void usersHook.fetchUsers('manual')}
+            onAssignUserCabinet={usersHook.handleAssignUserCabinet}
+            onViewReports={reportsHook.handleViewReports}
+            onResetPassword={usersHook.handleResetPassword}
+            onDeleteUser={usersHook.handleDeleteUser}
           />
         </div>
       )}
 
-      {showCabinetModal && (
+      {cabinetsHook.showCabinetModal && (
         <CabinetEditModal
-          cabinet={editingCabinet}
-          themes={themes}
-          onClose={closeCabinetModal}
-          onSuccess={fetchCabinets}
+          cabinet={cabinetsHook.editingCabinet}
+          themes={themesHook.themes}
+          onClose={cabinetsHook.closeCabinetModal}
+          onSuccess={cabinetsHook.fetchCabinets}
         />
       )}
 
-      {showThemeModal && (
+      {themesHook.showThemeModal && (
         <ThemeEditModal
-          theme={editingTheme}
-          onClose={closeThemeModal}
-          onSuccess={fetchThemes}
+          theme={themesHook.editingTheme}
+          onClose={themesHook.closeThemeModal}
+          onSuccess={themesHook.fetchThemes}
         />
       )}
 
       {showUserModal && (
         <UserInviteModal
           cabinetOptions={cabinetOptions}
-          cabinetsLoading={cabinetsLoading}
-          onClose={closeUserModal}
-          onSuccess={() => triggerRefresh('create_user_invite')}
+          cabinetsLoading={cabinetsHook.cabinetsLoading}
+          onClose={() => setShowUserModal(false)}
+          onSuccess={() => void usersHook.fetchUsers('create_user_invite')}
         />
       )}
 
       <SettingsReportsModal
-        show={showReportModal}
-        selectedReport={selectedReport}
-        selectedReportUser={selectedReportUser}
-        reportLoading={reportLoading}
-        userReports={userReports}
-        onClose={handleCloseModal}
-        onBackToList={handleBackToList}
-        onSelectReport={handleSelectReport}
-        onDeleteAllReports={handleDeleteAllReports}
-        onMarkAsRead={handleMarkAsRead}
-        onDeleteReport={handleDeleteReport}
+        show={reportsHook.showReportModal}
+        selectedReport={reportsHook.selectedReport}
+        selectedReportUser={reportsHook.selectedReportUser}
+        reportLoading={reportsHook.reportLoading}
+        userReports={reportsHook.userReports}
+        onClose={reportsHook.handleCloseModal}
+        onBackToList={reportsHook.handleBackToList}
+        onSelectReport={reportsHook.handleSelectReport}
+        onDeleteAllReports={reportsHook.handleDeleteAllReports}
+        onMarkAsRead={reportsHook.handleMarkAsRead}
+        onDeleteReport={reportsHook.handleDeleteReport}
       />
     </div>
   );
 }
-
