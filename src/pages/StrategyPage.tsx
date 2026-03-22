@@ -6,7 +6,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { StrategyBuilder } from '../features/strategy';
-import { loadDraftFromSession } from '../features/audit/storage';
+import { loadDraftFromSession } from '../features/audit';
 
 export default function StrategyPage(): React.ReactElement {
   const dossier = loadDraftFromSession();
