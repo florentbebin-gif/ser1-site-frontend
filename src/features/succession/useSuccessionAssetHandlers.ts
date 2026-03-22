@@ -1,0 +1,222 @@
+import { useCallback } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
+import type {
+  SuccessionAssetCategory,
+  SuccessionAssetDetailEntry,
+  SuccessionAssetOwner,
+  SuccessionAssuranceVieEntry,
+  SuccessionGroupementFoncierEntry,
+  SuccessionPerEntry,
+  SuccessionPrevoyanceDecesEntry,
+} from './successionDraft';
+import {
+  ASSET_SUBCATEGORY_OPTIONS,
+  RESIDENCE_PRINCIPALE_SUBCATEGORY,
+  RESIDENCE_SECONDAIRE_SUBCATEGORY,
+} from './successionSimulator.constants';
+import {
+  buildAggregateAssetEntries,
+  buildAssuranceVieFromAsset,
+  buildGroupementFoncierFromAsset,
+  buildPerFromAsset,
+  buildPrevoyanceFromAsset,
+  createAssetId,
+} from './successionSimulator.helpers';
+
+interface UseSuccessionAssetHandlersArgs {
+  assetBreakdown: {
+    actifs: Record<SuccessionAssetOwner, number>;
+    passifs: Record<SuccessionAssetOwner, number>;
+  };
+  assetOwnerOptions: { value: SuccessionAssetOwner; label: string }[];
+  assuranceViePartyOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
+  assetEntries: SuccessionAssetDetailEntry[];
+  setAssetEntries: Dispatch<SetStateAction<SuccessionAssetDetailEntry[]>>;
+  setGroupementFoncierEntries: Dispatch<SetStateAction<SuccessionGroupementFoncierEntry[]>>;
+  setAssuranceVieEntries: Dispatch<SetStateAction<SuccessionAssuranceVieEntry[]>>;
+  setAssuranceVieDraft: Dispatch<SetStateAction<SuccessionAssuranceVieEntry | null>>;
+  setShowAssuranceVieModal: Dispatch<SetStateAction<boolean>>;
+  setPerEntries: Dispatch<SetStateAction<SuccessionPerEntry[]>>;
+  setPerDraft: Dispatch<SetStateAction<SuccessionPerEntry | null>>;
+  setShowPerModal: Dispatch<SetStateAction<boolean>>;
+  setPrevoyanceDecesEntries: Dispatch<SetStateAction<SuccessionPrevoyanceDecesEntry[]>>;
+  setPrevoyanceDraft: Dispatch<SetStateAction<SuccessionPrevoyanceDecesEntry | null>>;
+  setShowPrevoyanceModal: Dispatch<SetStateAction<boolean>>;
+}
+
+export function useSuccessionAssetHandlers({
+  assetBreakdown,
+  assetOwnerOptions,
+  assuranceViePartyOptions,
+  assetEntries,
+  setAssetEntries,
+  setGroupementFoncierEntries,
+  setAssuranceVieEntries,
+  setAssuranceVieDraft,
+  setShowAssuranceVieModal,
+  setPerEntries,
+  setPerDraft,
+  setShowPerModal,
+  setPrevoyanceDecesEntries,
+  setPrevoyanceDraft,
+  setShowPrevoyanceModal,
+}: UseSuccessionAssetHandlersArgs) {
+  const resolveIndividualOwner = useCallback((owner: SuccessionAssetOwner): 'epoux1' | 'epoux2' => {
+    if (owner !== 'commun') return owner as 'epoux1' | 'epoux2';
+    return (assuranceViePartyOptions[0]?.value ?? 'epoux1') as 'epoux1' | 'epoux2';
+  }, [assuranceViePartyOptions]);
+
+  const hasResidencePrincipale = useCallback((
+    entries: SuccessionAssetDetailEntry[],
+    exceptId?: string,
+  ) => entries.some((entry) => (
+    entry.id !== exceptId
+    && entry.category === 'immobilier'
+    && entry.subCategory === RESIDENCE_PRINCIPALE_SUBCATEGORY
+  )), []);
+
+  const setSimplifiedBalanceField = useCallback((
+    type: 'actifs' | 'passifs',
+    owner: SuccessionAssetOwner,
+    value: number,
+  ) => {
+    setAssetEntries(buildAggregateAssetEntries({
+      actifs: {
+        epoux1: owner === 'epoux1' && type === 'actifs' ? Math.max(0, value) : assetBreakdown.actifs.epoux1,
+        epoux2: owner === 'epoux2' && type === 'actifs' ? Math.max(0, value) : assetBreakdown.actifs.epoux2,
+        commun: owner === 'commun' && type === 'actifs' ? Math.max(0, value) : assetBreakdown.actifs.commun,
+      },
+      passifs: {
+        epoux1: owner === 'epoux1' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.epoux1,
+        epoux2: owner === 'epoux2' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.epoux2,
+        commun: owner === 'commun' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.commun,
+      },
+    }));
+  }, [assetBreakdown, setAssetEntries]);
+
+  const addAssetEntry = useCallback((category: SuccessionAssetCategory) => {
+    setAssetEntries((prev) => {
+      const nextSubCategory = category === 'immobilier' && hasResidencePrincipale(prev)
+        ? RESIDENCE_SECONDAIRE_SUBCATEGORY
+        : ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre';
+      return [
+        ...prev,
+        {
+          id: createAssetId(),
+          owner: assetOwnerOptions[0]?.value ?? 'epoux1',
+          category,
+          subCategory: nextSubCategory,
+          amount: 0,
+        },
+      ];
+    });
+  }, [assetOwnerOptions, hasResidencePrincipale, setAssetEntries]);
+
+  const updateAssetEntry = useCallback((
+    id: string,
+    field: keyof SuccessionAssetDetailEntry,
+    value: string | number,
+  ) => {
+    if (field === 'subCategory') {
+      const sourceEntry = assetEntries.find((entry) => entry.id === id);
+      if (value === 'GFA/GFV' || value === 'GFF/GF') {
+        setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
+        setGroupementFoncierEntries((prev) => [...prev, buildGroupementFoncierFromAsset(sourceEntry, value)]);
+        return;
+      }
+      if (value === 'Assurance vie') {
+        const draft = buildAssuranceVieFromAsset(
+          sourceEntry,
+          resolveIndividualOwner(sourceEntry?.owner ?? 'commun'),
+        );
+        setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
+        setAssuranceVieEntries((prev) => [...prev, draft]);
+        setAssuranceVieDraft({ ...draft });
+        setShowAssuranceVieModal(true);
+        return;
+      }
+      if (value === 'PER assurance') {
+        const draft = buildPerFromAsset(
+          sourceEntry,
+          resolveIndividualOwner(sourceEntry?.owner ?? 'commun'),
+        );
+        setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
+        setPerEntries((prev) => [...prev, draft]);
+        setPerDraft({ ...draft });
+        setShowPerModal(true);
+        return;
+      }
+      if (value === 'Prévoyance décès') {
+        const draft = buildPrevoyanceFromAsset(
+          sourceEntry,
+          resolveIndividualOwner(sourceEntry?.owner ?? 'commun'),
+        );
+        setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
+        setPrevoyanceDecesEntries((prev) => [...prev, draft]);
+        setPrevoyanceDraft({ ...draft });
+        setShowPrevoyanceModal(true);
+        return;
+      }
+    }
+
+    setAssetEntries((prev) => prev.map((entry) => {
+      if (entry.id !== id) return entry;
+      if (field === 'amount') {
+        return {
+          ...entry,
+          amount: Math.max(0, Number(value) || 0),
+        };
+      }
+      if (field === 'category') {
+        const category = value as SuccessionAssetCategory;
+        const nextSubCategory = category === 'immobilier' && hasResidencePrincipale(prev, id)
+          ? RESIDENCE_SECONDAIRE_SUBCATEGORY
+          : ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre';
+        return {
+          ...entry,
+          category,
+          subCategory: nextSubCategory,
+        };
+      }
+      if (field === 'subCategory') {
+        const nextSubCategory = value === RESIDENCE_PRINCIPALE_SUBCATEGORY && hasResidencePrincipale(prev, id)
+          ? RESIDENCE_SECONDAIRE_SUBCATEGORY
+          : value;
+        return {
+          ...entry,
+          subCategory: String(nextSubCategory),
+        };
+      }
+      return {
+        ...entry,
+        [field]: value,
+      };
+    }));
+  }, [
+    assetEntries,
+    hasResidencePrincipale,
+    resolveIndividualOwner,
+    setAssetEntries,
+    setAssuranceVieDraft,
+    setAssuranceVieEntries,
+    setGroupementFoncierEntries,
+    setPerDraft,
+    setPerEntries,
+    setPrevoyanceDraft,
+    setPrevoyanceDecesEntries,
+    setShowAssuranceVieModal,
+    setShowPerModal,
+    setShowPrevoyanceModal,
+  ]);
+
+  const removeAssetEntry = useCallback((id: string) => {
+    setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
+  }, [setAssetEntries]);
+
+  return {
+    setSimplifiedBalanceField,
+    addAssetEntry,
+    updateAssetEntry,
+    removeAssetEntry,
+  };
+}

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applySuccessionDonationFieldUpdate,
+  buildAssuranceVieFromAsset,
+  buildGroupementFoncierFromAsset,
+  buildPerFromAsset,
+  buildPrevoyanceFromAsset,
   hasComputableSuccessionFiliation,
   hasRequiredBirthDatesForSituation,
 } from '../successionSimulator.helpers';
@@ -19,5 +24,43 @@ describe('successionSimulator.helpers', () => {
     expect(hasComputableSuccessionFiliation('celibataire', [], [])).toBe(false);
     expect(hasComputableSuccessionFiliation('celibataire', [{ id: 'E1', rattachement: 'epoux1' }], [])).toBe(true);
     expect(hasComputableSuccessionFiliation('concubinage', [], [])).toBe(true);
+  });
+
+  it('builds specialized entries from a generic asset entry', () => {
+    const sourceEntry = { owner: 'commun' as const, amount: 125000 };
+
+    const assuranceVie = buildAssuranceVieFromAsset(sourceEntry, 'epoux2');
+    expect(assuranceVie.id.startsWith('av-')).toBe(true);
+    expect(assuranceVie.assure).toBe('epoux2');
+    expect(assuranceVie.capitauxDeces).toBe(125000);
+
+    const per = buildPerFromAsset(sourceEntry, 'epoux1');
+    expect(per.id.startsWith('per-')).toBe(true);
+    expect(per.assure).toBe('epoux1');
+    expect(per.capitauxDeces).toBe(125000);
+
+    const prevoyance = buildPrevoyanceFromAsset(sourceEntry, 'epoux1');
+    expect(prevoyance.id.startsWith('pv-')).toBe(true);
+    expect(prevoyance.assure).toBe('epoux1');
+    expect(prevoyance.capitalDeces).toBe(125000);
+
+    const gf = buildGroupementFoncierFromAsset(sourceEntry, 'GFA/GFV');
+    expect(gf.id.startsWith('gf-')).toBe(true);
+    expect(gf.type).toBe('GFA');
+    expect(gf.owner).toBe('commun');
+    expect(gf.valeurTotale).toBe(125000);
+  });
+
+  it('updates donation fields with the expected coercions', () => {
+    const initialEntry = {
+      id: 'don-1',
+      type: 'rapportable' as const,
+      montant: 1000,
+    };
+
+    expect(applySuccessionDonationFieldUpdate(initialEntry, 'type', 'hors_part').type).toBe('hors_part');
+    expect(applySuccessionDonationFieldUpdate(initialEntry, 'montant', -10).montant).toBe(0);
+    expect(applySuccessionDonationFieldUpdate(initialEntry, 'donSommeArgentExonere', 1).donSommeArgentExonere).toBe(true);
+    expect(applySuccessionDonationFieldUpdate(initialEntry, 'donataire', 42).donataire).toBe('42');
   });
 });

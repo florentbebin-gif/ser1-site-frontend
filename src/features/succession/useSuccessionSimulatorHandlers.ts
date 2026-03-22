@@ -1,67 +1,38 @@
-/* eslint-disable max-lines */
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import {
+  DEFAULT_SUCCESSION_ASSET_DETAILS,
+  DEFAULT_SUCCESSION_ASSURANCE_VIE,
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_DONATIONS,
   DEFAULT_SUCCESSION_ENFANTS_CONTEXT,
   DEFAULT_SUCCESSION_FAMILY_MEMBERS,
-  DEFAULT_SUCCESSION_ASSET_DETAILS,
-  DEFAULT_SUCCESSION_ASSURANCE_VIE,
-  DEFAULT_SUCCESSION_PER,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
-  type SuccessionAssetCategory,
+  DEFAULT_SUCCESSION_PER,
+  type FamilyMember,
   type SuccessionAssetDetailEntry,
   type SuccessionAssetOwner,
   type SuccessionAssuranceVieEntry,
-  type FamilyBranch,
-  type FamilyMember,
-  type FamilyMemberType,
-  type SuccessionPerEntry,
-  type SuccessionGroupementFoncierEntry,
-  type SuccessionPrevoyanceDecesEntry,
-  type SuccessionBeneficiaryRef,
   type SuccessionDonationEntry,
-  type SuccessionDonationEntryType,
   type SuccessionEnfant,
-  type SuccessionPrimarySide,
-  type SuccessionTestamentConfig,
-  type SituationMatrimoniale,
+  type SuccessionGroupementFoncierEntry,
+  type SuccessionPerEntry,
+  type SuccessionPrevoyanceDecesEntry,
 } from './successionDraft';
-import type {
-  buildTestamentBeneficiaryOptions} from './successionTestament';
+import type { buildTestamentBeneficiaryOptions } from './successionTestament';
 import {
-  cloneSuccessionTestamentsBySide,
-  createSuccessionParticularLegacyEntry,
-} from './successionTestament';
-import {
-  ASSET_SUBCATEGORY_OPTIONS,
-  CLAUSE_CONJOINT_LABEL,
-  MEMBER_TYPE_NEEDS_BRANCH,
-  RESIDENCE_PRINCIPALE_SUBCATEGORY,
-  RESIDENCE_SECONDAIRE_SUBCATEGORY,
-} from './successionSimulator.constants';
-import {
-  buildAggregateAssetEntries,
-  buildInitialDispositionsDraft,
-  cloneAscendantsSurvivantsBySide,
-  createAssetId,
-  createAssuranceVieId,
-  createDonationId,
-  createEnfantId,
-  createGfId,
-  createMemberId,
-  createPerId,
-  createPrevoyanceId,
   EMPTY_ADD_FAMILY_MEMBER_FORM,
-  isCoupleSituation,
-  updateDraftTestament,
+  buildInitialDispositionsDraft,
   type AddFamilyMemberFormState,
   type DispositionsDraftState,
 } from './successionSimulator.helpers';
 import type { SuccessionChainOrder } from './successionChainage';
+import { useSuccessionAssetHandlers } from './useSuccessionAssetHandlers';
+import { useSuccessionContractModalHandlers } from './useSuccessionContractModalHandlers';
+import { useSuccessionDispositionsHandlers } from './useSuccessionDispositionsHandlers';
+import { useSuccessionFamilyHandlers } from './useSuccessionFamilyHandlers';
 
 interface UseSuccessionSimulatorHandlersArgs {
   storeKey: string;
@@ -82,7 +53,7 @@ interface UseSuccessionSimulatorHandlersArgs {
   prevoyanceDraft: SuccessionPrevoyanceDecesEntry | null;
   assuranceViePartyOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
   testamentBeneficiaryOptionsBySide: Record<
-    SuccessionPrimarySide,
+    'epoux1' | 'epoux2',
     ReturnType<typeof buildTestamentBeneficiaryOptions>
   >;
   canOpenDispositionsModal: boolean;
@@ -162,45 +133,66 @@ export function useSuccessionSimulatorHandlers({
   setChainOrder,
   setHypothesesOpen,
 }: UseSuccessionSimulatorHandlersArgs) {
-  // Résout owner 'commun' → individuel (fallback sur le premier parti disponible)
-  const resolveIndividualOwner = useCallback((owner: SuccessionAssetOwner): 'epoux1' | 'epoux2' => {
-    if (owner !== 'commun') return owner as 'epoux1' | 'epoux2';
-    return (assuranceViePartyOptions[0]?.value ?? 'epoux1') as 'epoux1' | 'epoux2';
-  }, [assuranceViePartyOptions]);
+  const familyHandlers = useSuccessionFamilyHandlers({
+    enfantRattachementOptions,
+    addMemberForm,
+    setCivilContext,
+    setPatrimonialContext,
+    setChainOrder,
+    setEnfantsContext,
+    setFamilyMembers,
+    setDonationsContext,
+    setAddMemberForm,
+    setShowAddMemberPanel,
+  });
 
-  const hasResidencePrincipale = useCallback((
-    entries: SuccessionAssetDetailEntry[],
-    exceptId?: string,
-  ) => entries.some((entry) => (
-    entry.id !== exceptId
-    && entry.category === 'immobilier'
-    && entry.subCategory === RESIDENCE_PRINCIPALE_SUBCATEGORY
-  )), []);
+  const assetHandlers = useSuccessionAssetHandlers({
+    assetBreakdown,
+    assetOwnerOptions,
+    assuranceViePartyOptions,
+    assetEntries,
+    setAssetEntries,
+    setGroupementFoncierEntries,
+    setAssuranceVieEntries,
+    setAssuranceVieDraft,
+    setShowAssuranceVieModal,
+    setPerEntries,
+    setPerDraft,
+    setShowPerModal,
+    setPrevoyanceDecesEntries,
+    setPrevoyanceDraft,
+    setShowPrevoyanceModal,
+  });
 
-  const handleSituationChange = useCallback((situationMatrimoniale: SituationMatrimoniale) => {
-    setCivilContext((prev) => ({
-      situationMatrimoniale,
-      regimeMatrimonial: situationMatrimoniale === 'marie'
-        ? (prev.regimeMatrimonial ?? 'communaute_legale')
-        : null,
-      pacsConvention: situationMatrimoniale === 'pacse'
-        ? prev.pacsConvention
-        : DEFAULT_SUCCESSION_CIVIL_CONTEXT.pacsConvention,
-      dateNaissanceEpoux1: prev.dateNaissanceEpoux1,
-      dateNaissanceEpoux2: isCoupleSituation(situationMatrimoniale) ? prev.dateNaissanceEpoux2 : undefined,
-    }));
-    if (situationMatrimoniale !== 'marie') {
-      setPatrimonialContext((prev) => ({
-        ...prev,
-        donationEntreEpouxActive: false,
-        preciputMontant: 0,
-        attributionIntegrale: false,
-      }));
-    }
-    if (!isCoupleSituation(situationMatrimoniale)) {
-      setChainOrder('epoux1');
-    }
-  }, [setChainOrder, setCivilContext, setPatrimonialContext]);
+  const contractModalHandlers = useSuccessionContractModalHandlers({
+    assuranceVieEntries,
+    assuranceVieDraft,
+    setAssuranceVieEntries,
+    setAssuranceVieDraft,
+    setShowAssuranceVieModal,
+    perEntries,
+    perDraft,
+    setPerEntries,
+    setPerDraft,
+    setShowPerModal,
+    prevoyanceDecesEntries,
+    prevoyanceDraft,
+    setPrevoyanceDecesEntries,
+    setPrevoyanceDraft,
+    setShowPrevoyanceModal,
+  });
+
+  const dispositionsHandlers = useSuccessionDispositionsHandlers({
+    testamentBeneficiaryOptionsBySide,
+    canOpenDispositionsModal,
+    devolutionContext,
+    patrimonialContext,
+    dispositionsDraft,
+    setDispositionsDraft,
+    setShowDispositionsModal,
+    setPatrimonialContext,
+    setDevolutionContext,
+  });
 
   const handleReset = useCallback(() => {
     reset();
@@ -222,6 +214,7 @@ export function useSuccessionSimulatorHandlers({
     setEnfantsContext(DEFAULT_SUCCESSION_ENFANTS_CONTEXT);
     setFamilyMembers(DEFAULT_SUCCESSION_FAMILY_MEMBERS);
     setShowAddMemberPanel(false);
+    setShowDispositionsModal(false);
     setShowAssuranceVieModal(false);
     setShowPerModal(false);
     setAddMemberForm(EMPTY_ADD_FAMILY_MEMBER_FORM);
@@ -255,509 +248,17 @@ export function useSuccessionSimulatorHandlers({
     setPatrimonialContext,
     setShowAddMemberPanel,
     setShowAssuranceVieModal,
+    setShowDispositionsModal,
     setShowPerModal,
     setShowPrevoyanceModal,
     storeKey,
   ]);
 
-  const setSimplifiedBalanceField = useCallback((
-    type: 'actifs' | 'passifs',
-    owner: SuccessionAssetOwner,
-    value: number,
-  ) => {
-    setAssetEntries(buildAggregateAssetEntries({
-      actifs: {
-        epoux1: owner === 'epoux1' && type === 'actifs' ? Math.max(0, value) : assetBreakdown.actifs.epoux1,
-        epoux2: owner === 'epoux2' && type === 'actifs' ? Math.max(0, value) : assetBreakdown.actifs.epoux2,
-        commun: owner === 'commun' && type === 'actifs' ? Math.max(0, value) : assetBreakdown.actifs.commun,
-      },
-      passifs: {
-        epoux1: owner === 'epoux1' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.epoux1,
-        epoux2: owner === 'epoux2' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.epoux2,
-        commun: owner === 'commun' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.commun,
-      },
-    }));
-  }, [assetBreakdown, setAssetEntries]);
-
-  const addEnfant = useCallback(() => {
-    setEnfantsContext((prev) => ([
-      ...prev,
-      { id: createEnfantId(), rattachement: enfantRattachementOptions[0].value as 'commun' | 'epoux1' | 'epoux2' },
-    ]));
-  }, [enfantRattachementOptions, setEnfantsContext]);
-
-  const updateEnfantRattachement = useCallback((id: string, rattachement: 'commun' | 'epoux1' | 'epoux2') => {
-    setEnfantsContext((prev) => prev.map((enfant) => (
-      enfant.id === id
-        ? { ...enfant, rattachement }
-        : enfant
-    )));
-  }, [setEnfantsContext]);
-
-  const toggleEnfantDeceased = useCallback((id: string, deceased: boolean) => {
-    setEnfantsContext((prev) => prev.map((enfant) => (
-      enfant.id === id
-        ? { ...enfant, deceased: deceased || undefined }
-        : enfant
-    )));
-  }, [setEnfantsContext]);
-
-  const removeEnfant = useCallback((id: string) => {
-    setEnfantsContext((prev) => prev.filter((enfant) => enfant.id !== id));
-  }, [setEnfantsContext]);
-
-  const addFamilyMember = useCallback(() => {
-    const { type, branch, parentEnfantId } = addMemberForm;
-    if (!type) return;
-    const needsBranch = MEMBER_TYPE_NEEDS_BRANCH.includes(type as FamilyMemberType);
-    if (needsBranch && !branch) return;
-    if (type === 'petit_enfant' && !parentEnfantId) return;
-    const member: FamilyMember = {
-      id: createMemberId(),
-      type: type as FamilyMemberType,
-      branch: branch ? (branch as FamilyBranch) : undefined,
-      parentEnfantId: type === 'petit_enfant' ? parentEnfantId : undefined,
-    };
-    setFamilyMembers((prev) => [...prev, member]);
-    setAddMemberForm(EMPTY_ADD_FAMILY_MEMBER_FORM);
-    setShowAddMemberPanel(false);
-  }, [addMemberForm, setAddMemberForm, setFamilyMembers, setShowAddMemberPanel]);
-
-  const removeFamilyMember = useCallback((id: string) => {
-    setFamilyMembers((prev) => prev.filter((member) => member.id !== id));
-  }, [setFamilyMembers]);
-
-  const addDonationEntry = useCallback(() => {
-    setDonationsContext((prev) => ([
-      ...prev,
-      {
-        id: createDonationId(),
-        type: 'rapportable',
-        montant: 0,
-      },
-    ]));
-  }, [setDonationsContext]);
-
-  const updateDonationEntry = useCallback((
-    id: string,
-    field: keyof SuccessionDonationEntry,
-    value: string | number | boolean,
-  ) => {
-    setDonationsContext((prev) => prev.map((entry) => {
-      if (entry.id !== id) return entry;
-      if (field === 'type') return { ...entry, type: value as SuccessionDonationEntryType };
-      if (field === 'montant' || field === 'valeurDonation' || field === 'valeurActuelle') {
-        return { ...entry, [field]: Math.max(0, Number(value) || 0) };
-      }
-      if (field === 'donSommeArgentExonere' || field === 'avecReserveUsufruit') {
-        return { ...entry, [field]: Boolean(value) };
-      }
-      return { ...entry, [field]: typeof value === 'string' ? value : String(value) };
-    }));
-  }, [setDonationsContext]);
-
-  const removeDonationEntry = useCallback((id: string) => {
-    setDonationsContext((prev) => prev.filter((entry) => entry.id !== id));
-  }, [setDonationsContext]);
-
-  const addAssetEntry = useCallback((category: SuccessionAssetCategory) => {
-    setAssetEntries((prev) => {
-      const nextSubCategory = category === 'immobilier' && hasResidencePrincipale(prev)
-        ? RESIDENCE_SECONDAIRE_SUBCATEGORY
-        : ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre';
-      return [
-        ...prev,
-        {
-          id: createAssetId(),
-          owner: assetOwnerOptions[0]?.value ?? 'epoux1',
-          category,
-          subCategory: nextSubCategory,
-          amount: 0,
-        },
-      ];
-    });
-  }, [assetOwnerOptions, hasResidencePrincipale, setAssetEntries]);
-
-  const updateAssetEntry = useCallback((
-    id: string,
-    field: keyof SuccessionAssetDetailEntry,
-    value: string | number,
-  ) => {
-    // Transformation spéciale : sous-catégorie → entrée spécialisée + suppression de la ligne générique
-    if (field === 'subCategory') {
-      const sourceEntry = assetEntries.find((e) => e.id === id);
-      if (value === 'GFA/GFV' || value === 'GFF/GF') {
-        setAssetEntries((prev) => prev.filter((e) => e.id !== id));
-        setGroupementFoncierEntries((prev) => [...prev, {
-          id: createGfId(),
-          type: value === 'GFA/GFV' ? 'GFA' : 'GFF',
-          owner: sourceEntry?.owner ?? 'commun',
-          valeurTotale: sourceEntry?.amount ?? 0,
-        }]);
-        return;
-      }
-      if (value === 'Assurance vie') {
-        const indivOwner = resolveIndividualOwner(sourceEntry?.owner ?? 'commun');
-        const avEntry: SuccessionAssuranceVieEntry = {
-          id: createAssuranceVieId(),
-          typeContrat: 'standard',
-          souscripteur: indivOwner,
-          assure: indivOwner,
-          capitauxDeces: sourceEntry?.amount ?? 0,
-          versementsApres70: 0,
-        };
-        setAssetEntries((prev) => prev.filter((e) => e.id !== id));
-        setAssuranceVieEntries((prev) => [...prev, avEntry]);
-        setAssuranceVieDraft({ ...avEntry });
-        setShowAssuranceVieModal(true);
-        return;
-      }
-      if (value === 'PER assurance') {
-        const indivOwner = resolveIndividualOwner(sourceEntry?.owner ?? 'commun');
-        const perEntry: SuccessionPerEntry = {
-          id: createPerId(),
-          typeContrat: 'standard',
-          assure: indivOwner,
-          capitauxDeces: sourceEntry?.amount ?? 0,
-        };
-        setAssetEntries((prev) => prev.filter((e) => e.id !== id));
-        setPerEntries((prev) => [...prev, perEntry]);
-        setPerDraft({ ...perEntry });
-        setShowPerModal(true);
-        return;
-      }
-      if (value === 'Prévoyance décès') {
-        const indivOwner = resolveIndividualOwner(sourceEntry?.owner ?? 'commun');
-        const pvEntry: SuccessionPrevoyanceDecesEntry = {
-          id: createPrevoyanceId(),
-          souscripteur: indivOwner,
-          assure: indivOwner,
-          capitalDeces: sourceEntry?.amount ?? 0,
-          dernierePrime: 0,
-          clauseBeneficiaire: CLAUSE_CONJOINT_LABEL,
-        };
-        setAssetEntries((prev) => prev.filter((e) => e.id !== id));
-        setPrevoyanceDecesEntries((prev) => [...prev, pvEntry]);
-        setPrevoyanceDraft({ ...pvEntry });
-        setShowPrevoyanceModal(true);
-        return;
-      }
-    }
-
-    // Mise à jour normale de la ligne
-    setAssetEntries((prev) => prev.map((entry) => {
-      if (entry.id !== id) return entry;
-      if (field === 'amount') {
-        return {
-          ...entry,
-          amount: Math.max(0, Number(value) || 0),
-        };
-      }
-      if (field === 'category') {
-        const category = value as SuccessionAssetCategory;
-        const nextSubCategory = category === 'immobilier' && hasResidencePrincipale(prev, id)
-          ? RESIDENCE_SECONDAIRE_SUBCATEGORY
-          : ASSET_SUBCATEGORY_OPTIONS[category][0] ?? 'Saisie libre';
-        return {
-          ...entry,
-          category,
-          subCategory: nextSubCategory,
-        };
-      }
-      if (field === 'subCategory') {
-        const nextSubCategory = value === RESIDENCE_PRINCIPALE_SUBCATEGORY && hasResidencePrincipale(prev, id)
-          ? RESIDENCE_SECONDAIRE_SUBCATEGORY
-          : value;
-        return {
-          ...entry,
-          subCategory: String(nextSubCategory),
-        };
-      }
-      return {
-        ...entry,
-        [field]: value,
-      };
-    }));
-  }, [
-    assetEntries,
-    resolveIndividualOwner,
-    hasResidencePrincipale,
-    setAssetEntries,
-    setAssuranceVieDraft,
-    setAssuranceVieEntries,
-    setGroupementFoncierEntries,
-    setPerDraft,
-    setPerEntries,
-    setPrevoyanceDraft,
-    setPrevoyanceDecesEntries,
-    setShowAssuranceVieModal,
-    setShowPerModal,
-    setShowPrevoyanceModal,
-  ]);
-
-  const removeAssetEntry = useCallback((id: string) => {
-    setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
-  }, [setAssetEntries]);
-
-  // ── Assurance vie — mono-contrat ───────────────────────────────────────────
-
-  const openAssuranceVieModal = useCallback((id: string) => {
-    const entry = assuranceVieEntries.find((e) => e.id === id);
-    if (!entry) return;
-    setAssuranceVieDraft({ ...entry });
-    setShowAssuranceVieModal(true);
-  }, [assuranceVieEntries, setAssuranceVieDraft, setShowAssuranceVieModal]);
-
-  const closeAssuranceVieModal = useCallback(() => {
-    setShowAssuranceVieModal(false);
-    setAssuranceVieDraft(null);
-  }, [setAssuranceVieDraft, setShowAssuranceVieModal]);
-
-  const validateAssuranceVieModal = useCallback(() => {
-    if (!assuranceVieDraft) return;
-    setAssuranceVieEntries((prev) => prev.map((e) => (e.id === assuranceVieDraft.id ? { ...assuranceVieDraft } : e)));
-    setShowAssuranceVieModal(false);
-    setAssuranceVieDraft(null);
-  }, [assuranceVieDraft, setAssuranceVieDraft, setAssuranceVieEntries, setShowAssuranceVieModal]);
-
-  const updateAssuranceVieDraft = useCallback((
-    field: keyof SuccessionAssuranceVieEntry,
-    value: string | number | undefined,
-  ) => {
-    setAssuranceVieDraft((prev) => {
-      if (!prev) return null;
-      if (field === 'capitauxDeces' || field === 'versementsApres70') {
-        return { ...prev, [field]: Math.max(0, Number(value) || 0) };
-      }
-      if (field === 'ageUsufruitier') {
-        const age = Number(value);
-        return { ...prev, ageUsufruitier: Number.isFinite(age) && age > 0 ? age : undefined };
-      }
-      return { ...prev, [field]: value };
-    });
-  }, [setAssuranceVieDraft]);
-
-  const removeAssuranceVieEntry = useCallback((id: string) => {
-    setAssuranceVieEntries((prev) => prev.filter((e) => e.id !== id));
-  }, [setAssuranceVieEntries]);
-
-  // ── PER assurance — mono-contrat ───────────────────────────────────────────
-
-  const openPerModal = useCallback((id: string) => {
-    const entry = perEntries.find((e) => e.id === id);
-    if (!entry) return;
-    setPerDraft({ ...entry });
-    setShowPerModal(true);
-  }, [perEntries, setPerDraft, setShowPerModal]);
-
-  const closePerModal = useCallback(() => {
-    setShowPerModal(false);
-    setPerDraft(null);
-  }, [setPerDraft, setShowPerModal]);
-
-  const validatePerModal = useCallback(() => {
-    if (!perDraft) return;
-    setPerEntries((prev) => prev.map((e) => (e.id === perDraft.id ? { ...perDraft } : e)));
-    setShowPerModal(false);
-    setPerDraft(null);
-  }, [perDraft, setPerDraft, setPerEntries, setShowPerModal]);
-
-  const updatePerDraft = useCallback((
-    field: keyof SuccessionPerEntry,
-    value: string | number | undefined,
-  ) => {
-    setPerDraft((prev) => {
-      if (!prev) return null;
-      if (field === 'capitauxDeces') {
-        return { ...prev, capitauxDeces: Math.max(0, Number(value) || 0) };
-      }
-      if (field === 'ageUsufruitier') {
-        const age = Number(value);
-        return { ...prev, ageUsufruitier: Number.isFinite(age) && age > 0 ? age : undefined };
-      }
-      return { ...prev, [field]: value };
-    });
-  }, [setPerDraft]);
-
-  const removePerEntry = useCallback((id: string) => {
-    setPerEntries((prev) => prev.filter((e) => e.id !== id));
-  }, [setPerEntries]);
-
-  // ── Prévoyance décès — mono-contrat ───────────────────────────────────────
-
-  const openPrevoyanceModal = useCallback((id: string) => {
-    const entry = prevoyanceDecesEntries.find((e) => e.id === id);
-    if (!entry) return;
-    setPrevoyanceDraft({ ...entry });
-    setShowPrevoyanceModal(true);
-  }, [prevoyanceDecesEntries, setPrevoyanceDraft, setShowPrevoyanceModal]);
-
-  const closePrevoyanceModal = useCallback(() => {
-    setShowPrevoyanceModal(false);
-    setPrevoyanceDraft(null);
-  }, [setPrevoyanceDraft, setShowPrevoyanceModal]);
-
-  const validatePrevoyanceModal = useCallback(() => {
-    if (!prevoyanceDraft) return;
-    setPrevoyanceDecesEntries((prev) => prev.map((e) => (e.id === prevoyanceDraft.id ? { ...prevoyanceDraft } : e)));
-    setShowPrevoyanceModal(false);
-    setPrevoyanceDraft(null);
-  }, [prevoyanceDraft, setPrevoyanceDraft, setPrevoyanceDecesEntries, setShowPrevoyanceModal]);
-
-  const updatePrevoyanceDraft = useCallback((
-    field: keyof SuccessionPrevoyanceDecesEntry,
-    value: string | number,
-  ) => {
-    setPrevoyanceDraft((prev) => {
-      if (!prev) return null;
-      if (field === 'capitalDeces' || field === 'dernierePrime') {
-        return { ...prev, [field]: Math.max(0, Number(value) || 0) };
-      }
-      return { ...prev, [field]: value };
-    });
-  }, [setPrevoyanceDraft]);
-
-  const removePrevoyanceDecesEntry = useCallback((id: string) => {
-    setPrevoyanceDecesEntries((prev) => prev.filter((e) => e.id !== id));
-  }, [setPrevoyanceDecesEntries]);
-
-  const getFirstTestamentBeneficiaryRef = useCallback(
-    (side: SuccessionPrimarySide): SuccessionBeneficiaryRef | null =>
-      testamentBeneficiaryOptionsBySide[side][0]?.value ?? null,
-    [testamentBeneficiaryOptionsBySide],
-  );
-
-  const updateDispositionsTestament = useCallback((
-    side: SuccessionPrimarySide,
-    updater: (_current: SuccessionTestamentConfig) => SuccessionTestamentConfig,
-  ) => {
-    setDispositionsDraft((prev) => updateDraftTestament(prev, side, updater));
-  }, [setDispositionsDraft]);
-
-  const addDispositionsParticularLegacy = useCallback((side: SuccessionPrimarySide) => {
-    const defaultBeneficiaryRef = getFirstTestamentBeneficiaryRef(side);
-    setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
-      ...current,
-      particularLegacies: [
-        ...current.particularLegacies,
-        createSuccessionParticularLegacyEntry(defaultBeneficiaryRef),
-      ],
-    })));
-  }, [getFirstTestamentBeneficiaryRef, setDispositionsDraft]);
-
-  const updateDispositionsParticularLegacy = useCallback((
-    side: SuccessionPrimarySide,
-    legacyId: string,
-    field: 'beneficiaryRef' | 'amount' | 'label',
-    value: string | number | SuccessionBeneficiaryRef | null,
-  ) => {
-    setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
-      ...current,
-      particularLegacies: current.particularLegacies.map((entry) => {
-        if (entry.id !== legacyId) return entry;
-        if (field === 'beneficiaryRef') {
-          return {
-            ...entry,
-            beneficiaryRef: typeof value === 'string' && value.length > 0 ? value as SuccessionBeneficiaryRef : null,
-          };
-        }
-        if (field === 'amount') {
-          return {
-            ...entry,
-            amount: Math.max(0, Number(value) || 0),
-          };
-        }
-        return {
-          ...entry,
-          label: typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined,
-        };
-      }),
-    })));
-  }, [setDispositionsDraft]);
-
-  const removeDispositionsParticularLegacy = useCallback((side: SuccessionPrimarySide, legacyId: string) => {
-    setDispositionsDraft((prev) => updateDraftTestament(prev, side, (current) => ({
-      ...current,
-      particularLegacies: current.particularLegacies.filter((entry) => entry.id !== legacyId),
-    })));
-  }, [setDispositionsDraft]);
-
-  const openDispositionsModal = useCallback(() => {
-    if (!canOpenDispositionsModal) return;
-    setDispositionsDraft({
-      attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
-      donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
-      donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
-      preciputMontant: patrimonialContext.preciputMontant,
-      attributionIntegrale: patrimonialContext.attributionIntegrale,
-      choixLegalConjointSansDDV: devolutionContext.choixLegalConjointSansDDV,
-      testamentsBySide: cloneSuccessionTestamentsBySide(devolutionContext.testamentsBySide),
-      ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(devolutionContext.ascendantsSurvivantsBySide),
-    });
-    setShowDispositionsModal(true);
-  }, [
-    canOpenDispositionsModal,
-    devolutionContext,
-    patrimonialContext,
-    setDispositionsDraft,
-    setShowDispositionsModal,
-  ]);
-
-  const validateDispositionsModal = useCallback(() => {
-    setPatrimonialContext((prev) => ({
-      ...prev,
-      attributionBiensCommunsPct: dispositionsDraft.attributionBiensCommunsPct,
-      donationEntreEpouxActive: dispositionsDraft.donationEntreEpouxActive,
-      donationEntreEpouxOption: dispositionsDraft.donationEntreEpouxOption,
-      preciputMontant: dispositionsDraft.preciputMontant,
-      attributionIntegrale: dispositionsDraft.attributionBiensCommunsPct === 100,
-    }));
-    setDevolutionContext((prev) => ({
-      ...prev,
-      choixLegalConjointSansDDV: dispositionsDraft.choixLegalConjointSansDDV,
-      testamentsBySide: cloneSuccessionTestamentsBySide(dispositionsDraft.testamentsBySide),
-      ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(dispositionsDraft.ascendantsSurvivantsBySide),
-    }));
-    setShowDispositionsModal(false);
-  }, [dispositionsDraft, setDevolutionContext, setPatrimonialContext, setShowDispositionsModal]);
-
   return {
-    handleSituationChange,
+    ...familyHandlers,
     handleReset,
-    setSimplifiedBalanceField,
-    addEnfant,
-    updateEnfantRattachement,
-    toggleEnfantDeceased,
-    removeEnfant,
-    addFamilyMember,
-    removeFamilyMember,
-    addDonationEntry,
-    updateDonationEntry,
-    removeDonationEntry,
-    addAssetEntry,
-    updateAssetEntry,
-    removeAssetEntry,
-    openAssuranceVieModal,
-    closeAssuranceVieModal,
-    validateAssuranceVieModal,
-    updateAssuranceVieDraft,
-    removeAssuranceVieEntry,
-    openPerModal,
-    closePerModal,
-    validatePerModal,
-    updatePerDraft,
-    removePerEntry,
-    openPrevoyanceModal,
-    closePrevoyanceModal,
-    validatePrevoyanceModal,
-    updatePrevoyanceDraft,
-    removePrevoyanceDecesEntry,
-    getFirstTestamentBeneficiaryRef,
-    updateDispositionsTestament,
-    addDispositionsParticularLegacy,
-    updateDispositionsParticularLegacy,
-    removeDispositionsParticularLegacy,
-    openDispositionsModal,
-    validateDispositionsModal,
+    ...assetHandlers,
+    ...contractModalHandlers,
+    ...dispositionsHandlers,
   };
 }

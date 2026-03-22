@@ -9,9 +9,13 @@ import type {
   SituationMatrimoniale,
   SuccessionAssetDetailEntry,
   SuccessionAssetOwner,
+  SuccessionAssuranceVieEntry,
   SuccessionDonationEntry,
   SuccessionDonationEntreEpouxOption,
   SuccessionEnfant,
+  SuccessionGroupementFoncierEntry,
+  SuccessionPerEntry,
+  SuccessionPrevoyanceDecesEntry,
   SuccessionPrimarySide,
   SuccessionTestamentConfig,
 } from './successionDraft';
@@ -210,6 +214,73 @@ export function buildAggregateAssetEntries(values: {
   });
 
   return entries;
+}
+
+export function buildAssuranceVieFromAsset(
+  sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'amount'> | undefined,
+  owner: Exclude<SuccessionAssetOwner, 'commun'>,
+): SuccessionAssuranceVieEntry {
+  return {
+    id: createAssuranceVieId(),
+    typeContrat: 'standard',
+    souscripteur: owner,
+    assure: owner,
+    capitauxDeces: sourceEntry?.amount ?? 0,
+    versementsApres70: 0,
+  };
+}
+
+export function buildPerFromAsset(
+  sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'amount'> | undefined,
+  owner: Exclude<SuccessionAssetOwner, 'commun'>,
+): SuccessionPerEntry {
+  return {
+    id: createPerId(),
+    typeContrat: 'standard',
+    assure: owner,
+    capitauxDeces: sourceEntry?.amount ?? 0,
+  };
+}
+
+export function buildPrevoyanceFromAsset(
+  sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'amount'> | undefined,
+  owner: Exclude<SuccessionAssetOwner, 'commun'>,
+): SuccessionPrevoyanceDecesEntry {
+  return {
+    id: createPrevoyanceId(),
+    souscripteur: owner,
+    assure: owner,
+    capitalDeces: sourceEntry?.amount ?? 0,
+    dernierePrime: 0,
+    clauseBeneficiaire: CLAUSE_CONJOINT_LABEL,
+  };
+}
+
+export function buildGroupementFoncierFromAsset(
+  sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'amount'> | undefined,
+  type: 'GFA/GFV' | 'GFF/GF',
+): SuccessionGroupementFoncierEntry {
+  return {
+    id: createGfId(),
+    type: type === 'GFA/GFV' ? 'GFA' : 'GFF',
+    owner: sourceEntry?.owner ?? 'commun',
+    valeurTotale: sourceEntry?.amount ?? 0,
+  };
+}
+
+export function applySuccessionDonationFieldUpdate(
+  entry: SuccessionDonationEntry,
+  field: keyof SuccessionDonationEntry,
+  value: string | number | boolean,
+): SuccessionDonationEntry {
+  if (field === 'type') return { ...entry, type: value as SuccessionDonationEntry['type'] };
+  if (field === 'montant' || field === 'valeurDonation' || field === 'valeurActuelle') {
+    return { ...entry, [field]: Math.max(0, Number(value) || 0) };
+  }
+  if (field === 'donSommeArgentExonere' || field === 'avecReserveUsufruit') {
+    return { ...entry, [field]: Boolean(value) };
+  }
+  return { ...entry, [field]: typeof value === 'string' ? value : String(value) };
 }
 
 export function labelMember(member: FamilyMember, enfants: SuccessionEnfant[]): string {
