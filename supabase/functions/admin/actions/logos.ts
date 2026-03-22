@@ -4,6 +4,7 @@ import {
   type AdminActionHandler,
 } from '../lib/http.ts'
 import { loadLogoOrThrow } from '../lib/loaders.ts'
+import { recordAdminAction } from '../lib/audit.ts'
 
 const checkLogoExists: AdminActionHandler = async (ctx) => {
   const { sha256 } = ctx.payload as { sha256?: string }
@@ -62,6 +63,13 @@ const createLogo: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'create_logo',
+    targetType: 'logo',
+    targetId: data?.id,
+  })
   return jsonResponse({ logo: data }, ctx.responseHeaders)
 }
 
@@ -88,6 +96,13 @@ const assignCabinetLogo: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
+  await recordAdminAction(ctx.supabase, {
+    requestId: ctx.requestId,
+    principal: ctx.principal,
+    action: 'assign_cabinet_logo',
+    targetType: 'cabinet',
+    targetId: cabinet_id,
+  })
   return jsonResponse({ cabinet: data }, ctx.responseHeaders)
 }
 
