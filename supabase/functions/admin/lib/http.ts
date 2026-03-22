@@ -17,7 +17,6 @@ export interface AuthenticatedContext extends RequestMetaContext {
 
 export interface AdminActionContext extends AuthenticatedContext {
   payload: AdminPayload
-  adminUserId: string  // conservé temporairement — remplacé par principal.userId en PR-4
   principal: AdminPrincipal
 }
 

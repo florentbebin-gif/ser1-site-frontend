@@ -3,6 +3,7 @@ import {
   jsonResponse,
   type AdminActionHandler,
 } from '../lib/http.ts'
+import { loadIssueReportOrThrow } from '../lib/loaders.ts'
 
 const listIssueCounts: AdminActionHandler = async (ctx) => {
   const { data: reports, error } = await ctx.supabase
@@ -17,10 +18,8 @@ const listIssueCounts: AdminActionHandler = async (ctx) => {
 
 const listIssueReports: AdminActionHandler = async (ctx) => {
   const userId = (ctx.payload.userId ?? ctx.payload.user_id) as string | undefined
-  console.log(`[admin:list_issue_reports] Received request for user_id: ${userId}`, { payload: ctx.payload })
 
   if (!userId) {
-    console.log('[admin:list_issue_reports] Error: User ID required')
     return errorResponse('ID utilisateur requis', ctx.responseHeaders, 400)
   }
 
@@ -87,6 +86,8 @@ const markIssueRead: AdminActionHandler = async (ctx) => {
     return errorResponse('ID signalement requis', ctx.responseHeaders, 400)
   }
 
+  await loadIssueReportOrThrow(ctx.supabase, reportId)
+
   const { error } = await ctx.supabase
     .from('issue_reports')
     .update({ admin_read_at: new Date().toISOString() })
@@ -104,6 +105,8 @@ const markIssueUnread: AdminActionHandler = async (ctx) => {
     return errorResponse('ID signalement requis', ctx.responseHeaders, 400)
   }
 
+  await loadIssueReportOrThrow(ctx.supabase, reportId)
+
   const { error } = await ctx.supabase
     .from('issue_reports')
     .update({ admin_read_at: null })
@@ -120,6 +123,8 @@ const deleteIssue: AdminActionHandler = async (ctx) => {
   if (!reportId) {
     return errorResponse('ID signalement requis', ctx.responseHeaders, 400)
   }
+
+  await loadIssueReportOrThrow(ctx.supabase, reportId)
 
   const { error } = await ctx.supabase
     .from('issue_reports')

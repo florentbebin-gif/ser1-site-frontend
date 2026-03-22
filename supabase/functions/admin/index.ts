@@ -17,6 +17,7 @@ import {
   resolveAdminAction,
   type AdminActionHandler,
 } from './lib/http.ts'
+import { HttpError } from './lib/loaders.ts'
 import { userActionHandlers } from './actions/users.ts'
 import { issueActionHandlers } from './actions/issues.ts'
 import { cabinetActionHandlers } from './actions/cabinets.ts'
@@ -126,7 +127,6 @@ serve(async (req: Request) => {
         ...requestMeta,
         supabase,
         payload,
-        adminUserId: user.id,
         principal,
       })
     }
@@ -136,6 +136,10 @@ serve(async (req: Request) => {
     return errorResponse('Action invalide', responseHeaders, 400, { requestId })
   } catch (error) {
     const duration = Date.now() - reqStart
+    if (error instanceof HttpError) {
+      console.log(`[admin] HTTP_ERR rid=${requestId} | ${duration}ms | ${error.status} ${error.message}`)
+      return errorResponse(error.message, responseHeaders, error.status, { requestId })
+    }
     console.error(`[admin] ERROR | rid=${requestId} | ${duration}ms | 500`, error)
     const message = error instanceof Error ? error.message : 'Erreur interne du serveur'
     return errorResponse(message, responseHeaders, 500, { requestId })

@@ -3,6 +3,7 @@ import {
   jsonResponse,
   type AdminActionHandler,
 } from '../lib/http.ts'
+import { loadLogoOrThrow, loadThemeOrThrow } from '../lib/loaders.ts'
 
 const VALID_LOGO_PLACEMENTS = [
   'center-bottom',
@@ -45,15 +46,7 @@ const createCabinet: AdminActionHandler = async (ctx) => {
   }
 
   if (default_theme_id) {
-    const { data: themeCheck, error: themeError } = await ctx.supabase
-      .from('themes')
-      .select('id')
-      .eq('id', default_theme_id)
-      .single()
-
-    if (themeError || !themeCheck) {
-      return errorResponse('Thème invalide', ctx.responseHeaders, 400)
-    }
+    await loadThemeOrThrow(ctx.supabase, default_theme_id)
   }
 
   const { data, error } = await ctx.supabase
@@ -94,30 +87,14 @@ const updateCabinet: AdminActionHandler = async (ctx) => {
 
   if (default_theme_id !== undefined) {
     if (default_theme_id) {
-      const { data: themeCheck, error: themeError } = await ctx.supabase
-        .from('themes')
-        .select('id')
-        .eq('id', default_theme_id)
-        .single()
-
-      if (themeError || !themeCheck) {
-        return errorResponse('Thème invalide', ctx.responseHeaders, 400)
-      }
+      await loadThemeOrThrow(ctx.supabase, default_theme_id)
     }
     updateData.default_theme_id = default_theme_id
   }
 
   if (logo_id !== undefined) {
     if (logo_id) {
-      const { data: logoCheck, error: logoError } = await ctx.supabase
-        .from('logos')
-        .select('id')
-        .eq('id', logo_id)
-        .single()
-
-      if (logoError || !logoCheck) {
-        return errorResponse('Logo invalide', ctx.responseHeaders, 400)
-      }
+      await loadLogoOrThrow(ctx.supabase, logo_id)
     }
     updateData.logo_id = logo_id
   }
@@ -182,15 +159,7 @@ const assignCabinetTheme: AdminActionHandler = async (ctx) => {
   }
 
   if (theme_id) {
-    const { data: themeCheck, error: themeError } = await ctx.supabase
-      .from('themes')
-      .select('id')
-      .eq('id', theme_id)
-      .single()
-
-    if (themeError || !themeCheck) {
-      return errorResponse('Thème invalide', ctx.responseHeaders, 400)
-    }
+    await loadThemeOrThrow(ctx.supabase, theme_id)
   }
 
   const { data, error } = await ctx.supabase
