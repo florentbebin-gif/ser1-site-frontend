@@ -1,4 +1,3 @@
-/* global Deno */
 /* eslint-disable no-console */
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
@@ -20,7 +19,7 @@ import {
 import { userActionHandlers } from './actions/users.ts'
 import { issueActionHandlers } from './actions/issues.ts'
 import { cabinetActionHandlers } from './actions/cabinets.ts'
-import { themeActionHandlers, handleGetOriginalTheme } from './actions/themes.ts'
+import { themeActionHandlers } from './actions/themes.ts'
 import { logoActionHandlers } from './actions/logos.ts'
 import {
   ADMIN_VERSION,
@@ -93,10 +92,6 @@ serve(async (req: Request) => {
     const { user, error: authError } = await getAuthenticatedUser(supabase, token)
     if (authError || !user) {
       return errorResponse('Token invalide', responseHeaders, 401)
-    }
-
-    if (actionFromQuery === 'get_original_theme') {
-      return await handleGetOriginalTheme({ ...requestMeta, supabase })
     }
 
     if (getUserAppRole(user) !== 'admin') {

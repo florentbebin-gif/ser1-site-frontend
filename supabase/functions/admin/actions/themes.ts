@@ -1,8 +1,8 @@
+/* eslint-disable no-console */
 import {
   errorResponse,
   jsonResponse,
   type AdminActionHandler,
-  type AuthenticatedContext,
 } from '../lib/http.ts'
 
 const REQUIRED_THEME_COLORS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10']
@@ -13,32 +13,6 @@ function isPaletteObject(value: unknown): value is Record<string, unknown> {
 
 function getMissingPaletteColors(palette: Record<string, unknown>): string[] {
   return REQUIRED_THEME_COLORS.filter((color) => !(color in palette))
-}
-
-export async function handleGetOriginalTheme(ctx: AuthenticatedContext): Promise<Response> {
-  try {
-    const { data: theme, error } = await ctx.supabase
-      .from('themes')
-      .select('name, palette')
-      .eq('is_system', true)
-      .limit(1)
-      .single()
-
-    if (error || !theme) {
-      console.warn(`[admin] get_original_theme: not found | rid=${ctx.requestId} | error=${error?.message ?? 'no data'}`)
-      return errorResponse('Original theme not found', ctx.responseHeaders, 404)
-    }
-
-    const duration = Date.now() - ctx.reqStart
-    console.log(`[admin] get_original_theme: found "${theme.name}" | rid=${ctx.requestId} | ${duration}ms`)
-    return jsonResponse({
-      name: theme.name,
-      palette: theme.palette,
-    }, ctx.responseHeaders)
-  } catch (error) {
-    console.error(`[admin] get_original_theme: exception | rid=${ctx.requestId}`, error)
-    return errorResponse('Failed to fetch original theme', ctx.responseHeaders, 500)
-  }
 }
 
 const listThemes: AdminActionHandler = async (ctx) => {
