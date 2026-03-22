@@ -3,7 +3,7 @@ import {
   jsonResponse,
   type AdminActionHandler,
 } from '../lib/http.ts'
-import { loadLogoOrThrow, loadThemeOrThrow } from '../lib/loaders.ts'
+import { loadCabinetOrThrow, loadLogoOrThrow, loadThemeOrThrow } from '../lib/loaders.ts'
 import { recordAdminAction } from '../lib/audit.ts'
 
 const VALID_LOGO_PLACEMENTS = [
@@ -84,6 +84,8 @@ const updateCabinet: AdminActionHandler = async (ctx) => {
     return errorResponse('ID cabinet requis', ctx.responseHeaders, 400)
   }
 
+  await loadCabinetOrThrow(ctx.supabase, id)
+
   const updateData: Record<string, unknown> = {}
 
   if (name !== undefined) {
@@ -139,6 +141,8 @@ const deleteCabinet: AdminActionHandler = async (ctx) => {
     return errorResponse('ID cabinet requis', ctx.responseHeaders, 400)
   }
 
+  await loadCabinetOrThrow(ctx.supabase, id)
+
   const { count: assignedUsersCount, error: countError } = await ctx.supabase
     .from('profiles')
     .select('id', { count: 'exact', head: true })
@@ -179,6 +183,8 @@ const assignCabinetTheme: AdminActionHandler = async (ctx) => {
   if (!cabinet_id) {
     return errorResponse('ID cabinet requis', ctx.responseHeaders, 400)
   }
+
+  await loadCabinetOrThrow(ctx.supabase, cabinet_id)
 
   if (theme_id) {
     await loadThemeOrThrow(ctx.supabase, theme_id)

@@ -45,6 +45,7 @@ $summary = [ordered]@{
   P0_01 = 'UNKNOWN'
   P0_02 = 'UNKNOWN'
   P0_03 = 'UNKNOWN'
+  P0_04 = 'UNKNOWN'
 }
 
 function New-RandomProbePassword() {
@@ -273,6 +274,52 @@ if (-not [string]::IsNullOrWhiteSpace($SupabaseDbUrl)) {
   }
 } else {
   Write-Result "P0_03" "UNKNOWN (missing SUPABASE_DB_URL and API fallback inputs)"
+}
+
+Write-Section "SQL checks (P0-04 — admin_action_audit)"
+if (-not [string]::IsNullOrWhiteSpace($SupabaseDbUrl)) {
+  try {
+    $auditTableExists = psql "$SupabaseDbUrl" -t -A -c "select count(*) from pg_tables where tablename='admin_action_audit' and schemaname='public';"
+    $auditRls = psql "$SupabaseDbUrl" -t -A -c "select relrowsecurity::text from pg_class where relname='admin_action_audit';"
+
+    $auditTableExistsInt = [int]($auditTableExists.Trim())
+    $auditRlsEnabled = ($auditRls.Trim() -eq 'true' -or $auditRls.Trim() -eq 't')
+
+    Write-Result "AUDIT_TABLE_EXISTS" "$auditTableExistsInt"
+    Write-Result "AUDIT_RLS_ENABLED" ([string]$auditRlsEnabled)
+
+    if ($auditTableExistsInt -gt 0 -and $auditRlsEnabled) {
+      $summary.P0_04 = 'PASS'
+    } else {
+      $summary.P0_04 = 'FAIL'
+    }
+  } catch {
+    $summary.P0_04 = 'FAIL'
+    Write-Result "P0_04_ERROR" $_.Exception.Message
+  }
+} elseif (-not [string]::IsNullOrWhiteSpace($SupabaseAccessToken) -and -not [string]::IsNullOrWhiteSpace($ProjectRef)) {
+  try {
+    $auditTableResp = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select count(*) as c from pg_tables where tablename='admin_action_audit' and schemaname='public';"
+    $auditRlsResp = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select relrowsecurity::text as rls from pg_class where relname='admin_action_audit';"
+
+    $auditTableExistsInt = [int]$auditTableResp.c
+    $auditRlsValue = [string]$auditRlsResp.rls
+    $auditRlsEnabled = ($auditRlsValue -eq 'true' -or $auditRlsValue -eq 't')
+
+    Write-Result "AUDIT_TABLE_EXISTS" "$auditTableExistsInt"
+    Write-Result "AUDIT_RLS_ENABLED" ([string]$auditRlsEnabled)
+
+    if ($auditTableExistsInt -gt 0 -and $auditRlsEnabled) {
+      $summary.P0_04 = 'PASS'
+    } else {
+      $summary.P0_04 = 'FAIL'
+    }
+  } catch {
+    $summary.P0_04 = 'FAIL'
+    Write-Result "P0_04_ERROR" $_.Exception.Message
+  }
+} else {
+  Write-Result "P0_04" "UNKNOWN (missing SUPABASE_DB_URL and API fallback inputs)"
 }
 
 Write-Section "Summary"
