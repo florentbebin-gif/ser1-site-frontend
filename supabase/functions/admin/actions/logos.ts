@@ -3,6 +3,7 @@ import {
   jsonResponse,
   type AdminActionHandler,
 } from '../lib/http.ts'
+import { loadLogoOrThrow } from '../lib/loaders.ts'
 
 const checkLogoExists: AdminActionHandler = async (ctx) => {
   const { sha256 } = ctx.payload as { sha256?: string }
@@ -54,7 +55,7 @@ const createLogo: AdminActionHandler = async (ctx) => {
       width,
       height,
       bytes,
-      created_by: ctx.adminUserId,
+      created_by: ctx.principal.userId,
     })
     .select()
     .single()
@@ -75,15 +76,7 @@ const assignCabinetLogo: AdminActionHandler = async (ctx) => {
   }
 
   if (logo_id) {
-    const { data: logoCheck, error: logoError } = await ctx.supabase
-      .from('logos')
-      .select('id')
-      .eq('id', logo_id)
-      .single()
-
-    if (logoError || !logoCheck) {
-      return errorResponse('Logo invalide', ctx.responseHeaders, 400)
-    }
+    await loadLogoOrThrow(ctx.supabase, logo_id)
   }
 
   const { data, error } = await ctx.supabase

@@ -3,6 +3,7 @@ import {
   jsonResponse,
   type AdminActionHandler,
 } from '../lib/http.ts'
+import { loadUserOrThrow } from '../lib/loaders.ts'
 
 interface ReportAgg {
   total_reports: number
@@ -33,7 +34,17 @@ interface AuthUser {
   app_metadata?: Record<string, unknown>
 }
 
+interface AdminAccountRow {
+  user_id: string
+  account_kind: string
+}
+
 const updateUserRole: AdminActionHandler = async (ctx) => {
+  // SÉCURITÉ : action réservée au propriétaire (owner) uniquement
+  if (ctx.principal.accountKind !== 'owner') {
+    return errorResponse('Action réservée au propriétaire', ctx.responseHeaders, 403)
+  }
+
   const userId = (ctx.payload.userId ?? ctx.payload.user_id) as string | undefined
   const role = ctx.payload.role as string | undefined
 
@@ -41,14 +52,11 @@ const updateUserRole: AdminActionHandler = async (ctx) => {
     return errorResponse('ID utilisateur et rôle requis', ctx.responseHeaders, 400)
   }
 
-  const { data: existing, error: getError } = await ctx.supabase.auth.admin.getUserById(userId)
-  if (getError || !existing?.user) {
-    return errorResponse('Utilisateur non trouvé', ctx.responseHeaders, 404)
-  }
+  const existing = await loadUserOrThrow(ctx.supabase, userId)
 
   // SÉCURITÉ : écrire uniquement app_metadata.role (source de vérité auth)
   // user_metadata est modifiable par l'utilisateur — ne jamais y stocker le rôle
-  const nextAppMetadata = { ...(existing.user.app_metadata ?? {}), role }
+  const nextAppMetadata = { ...(existing.app_metadata ?? {}), role }
 
   const { error } = await ctx.supabase.auth.admin.updateUserById(userId, {
     app_metadata: nextAppMetadata,
@@ -57,7 +65,7 @@ const updateUserRole: AdminActionHandler = async (ctx) => {
   if (error) throw error
 
   // Synchroniser profiles.role (miroir SQL pour is_admin(uid) et RLS)
-  // Upsert car le profil peut ne pas exister (prouvé par assignUserCabinet#L235)
+  // Upsert car le profil peut ne pas exister (prouvé par assignUserCabinet)
   const { error: syncError } = await ctx.supabase
     .from('profiles')
     .upsert({ id: userId, role }, { onConflict: 'id', ignoreDuplicates: false })
@@ -119,18 +127,35 @@ const listUsers: AdminActionHandler = async (ctx) => {
 
   const cabinetByUserId = new Map((profiles ?? []).map((profile: ProfileRow) => [profile.id, profile.cabinet_id]))
 
-  const usersWithReports = users.users.map((user: AuthUser) => ({
-    id: user.id,
-    email: user.email,
-    created_at: user.created_at,
-    last_sign_in_at: user.last_sign_in_at,
-    role: (user.app_metadata?.role as string | undefined) || 'user',
-    cabinet_id: cabinetByUserId.get(user.id) ?? null,
-    total_reports: reportStats[user.id]?.total_reports || 0,
-    unread_reports: reportStats[user.id]?.unread_reports || 0,
-    latest_report_id: reportStats[user.id]?.latest_report_id || null,
-    latest_report_is_unread: reportStats[user.id]?.latest_report_is_unread || false,
-  }))
+  // Joindre admin_accounts pour exposer account_kind et filtrer les comptes e2e
+  const { data: adminRows } = await ctx.supabase
+    .from('admin_accounts')
+    .select('user_id, account_kind')
+
+  const adminMap = new Map((adminRows ?? []).map((r: AdminAccountRow) => [r.user_id, r.account_kind]))
+
+  const includeTest = (ctx.payload.include_test_accounts as boolean | undefined) ?? false
+
+  const usersWithReports = users.users
+    .filter((user: AuthUser) => {
+      const kind = adminMap.get(user.id) ?? null
+      if (!includeTest && kind === 'e2e') return false
+      return true
+    })
+    .map((user: AuthUser) => ({
+      id: user.id,
+      email: user.email,
+      created_at: user.created_at,
+      last_sign_in_at: user.last_sign_in_at,
+      role: (user.app_metadata?.role as string | undefined) || 'user',
+      cabinet_id: cabinetByUserId.get(user.id) ?? null,
+      account_kind: adminMap.get(user.id) ?? null,
+      is_test_account: adminMap.get(user.id) === 'e2e',
+      total_reports: reportStats[user.id]?.total_reports || 0,
+      unread_reports: reportStats[user.id]?.unread_reports || 0,
+      latest_report_id: reportStats[user.id]?.latest_report_id || null,
+      latest_report_is_unread: reportStats[user.id]?.latest_report_is_unread || false,
+    }))
 
   return jsonResponse({ users: usersWithReports }, ctx.responseHeaders)
 }
@@ -189,11 +214,11 @@ const resetPassword: AdminActionHandler = async (ctx) => {
   }
 
   if (!email) {
-    const { data: existing, error: getError } = await ctx.supabase.auth.admin.getUserById(userId)
-    if (getError || !existing?.user?.email) {
+    const existing = await loadUserOrThrow(ctx.supabase, userId)
+    if (!existing.email) {
       return errorResponse('Email utilisateur non trouvé', ctx.responseHeaders, 404)
     }
-    email = existing.user.email
+    email = existing.email
   }
 
   const { error } = await ctx.supabase.auth.admin.generateLink({
@@ -245,13 +270,8 @@ const assignUserCabinet: AdminActionHandler = async (ctx) => {
   if (error?.code === 'PGRST116' || (!error && !data)) {
     console.warn(`[admin] assign_user_cabinet: profile missing for user_id=${user_id}, creating...`)
 
-    const { data: authUser, error: authError } = await ctx.supabase.auth.admin.getUserById(user_id)
+    const user = await loadUserOrThrow(ctx.supabase, user_id)
 
-    if (authError || !authUser.user) {
-      return errorResponse('Utilisateur non trouvé', ctx.responseHeaders, 404)
-    }
-
-    const user = authUser.user
     // SÉCURITÉ : lire uniquement app_metadata.role (source de vérité auth)
     const role = (user.app_metadata?.role as string | undefined) || 'user'
 

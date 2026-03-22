@@ -1,9 +1,11 @@
+/* eslint-disable no-console */
 import {
   errorResponse,
   jsonResponse,
   type AdminActionHandler,
   type AuthenticatedContext,
 } from '../lib/http.ts'
+import { loadThemeOrThrow } from '../lib/loaders.ts'
 
 const REQUIRED_THEME_COLORS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10']
 
@@ -98,13 +100,7 @@ const updateTheme: AdminActionHandler = async (ctx) => {
     return errorResponse('ID thème requis', ctx.responseHeaders, 400)
   }
 
-  const { error: fetchError } = await ctx.supabase
-    .from('themes')
-    .select('is_system, name')
-    .eq('id', id)
-    .single()
-
-  if (fetchError) throw fetchError
+  await loadThemeOrThrow(ctx.supabase, id)
 
   const updateData: Record<string, unknown> = {}
 
@@ -140,7 +136,7 @@ const updateTheme: AdminActionHandler = async (ctx) => {
 
   if (error) throw error
 
-  console.log(`[admin] update_theme success | rid=${ctx.requestId} | themeId=${id} | name=${data?.name} | rowsReturned=${data ? 1 : 0}`)
+  console.log(`[admin] update_theme success | rid=${ctx.requestId} | themeId=${id} | name=${data?.name}`)
 
   return jsonResponse({ theme: data }, ctx.responseHeaders)
 }
@@ -152,15 +148,9 @@ const deleteTheme: AdminActionHandler = async (ctx) => {
     return errorResponse('ID thème requis', ctx.responseHeaders, 400)
   }
 
-  const { data: existingTheme, error: fetchError } = await ctx.supabase
-    .from('themes')
-    .select('is_system')
-    .eq('id', id)
-    .single()
+  const existingTheme = await loadThemeOrThrow(ctx.supabase, id)
 
-  if (fetchError) throw fetchError
-
-  if (existingTheme?.is_system) {
+  if (existingTheme.is_system) {
     return errorResponse('Impossible de supprimer un thème système', ctx.responseHeaders, 400)
   }
 
