@@ -21,11 +21,13 @@ Dev qui doit dépanner vite, ou exécuter un parcours local/CI.
 - [Troubleshooting rapide](#troubleshooting-rapide)
 - [Catalogue : principes](#catalogue--principes)
 
+Note securite : `admin_accounts` et `admin_action_audit` doivent rester `service_role only` avec des policies explicites `TO service_role`. Si Security Advisor remonte `RLS enabled no policy`, verifier que la migration de hardening est bien deployee.
+
 ---
 
 ## Checks du repo
 - Check complet :
-  - `npm run check` (lint + **check:fiscal-hardcode** + **check:arch** + typecheck + tests + build)
+  - `npm run check` (lint + **check:fiscal-hardcode** + **check:arch** + **check:circular** + typecheck + tests + build)
 
 En CI, c'est le gate principal.
 
@@ -230,7 +232,7 @@ ORDER BY count(*) DESC;
 SELECT * FROM public.admin_action_audit WHERE request_id = '<rid>';
 ```
 
-Note : la table est accessible service_role uniquement (RLS activé, aucune policy). Consulter via Dashboard Supabase > SQL Editor ou psql avec la connexion service_role.
+Note : la table est accessible service_role uniquement (RLS activee, policies explicites `TO service_role`). Consulter via Dashboard Supabase > SQL Editor ou psql avec la connexion service_role.
 
 ---
 

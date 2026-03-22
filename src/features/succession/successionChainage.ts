@@ -1,5 +1,5 @@
 import type { DmtgSettings } from '../../engine/civil';
-import { calculateSuccession, type LienParente } from '../../engine/succession';
+import type { LienParente } from '../../engine/succession';
 import {
   DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
   type FamilyMember,
@@ -12,7 +12,6 @@ import {
 } from './successionDraft';
 import {
   buildSuccessionDescendantRecipients,
-  buildSuccessionDescendantRecipientsForDeceased,
   countEffectiveDescendantBranches,
   countEffectiveDescendantBranchesForDeceased,
   type SuccessionDeceasedSide,
@@ -25,6 +24,12 @@ import {
   computeFirstEstate,
   computeStep1Split,
 } from './successionChainageEstateSplit';
+import {
+  buildDetailedDescendantHeirs,
+  computeTransmissionForHeirs,
+  mergeDetailedHeirs,
+  type DetailedChainHeir,
+} from './successionChainage.heirs';
 import {
   addSuccessionEstateTaxableBases,
   assignBeneficiaryTaxableBasis,
@@ -90,15 +95,6 @@ interface SuccessionChainageInput {
   referenceDate?: Date;
 }
 
-interface DetailedChainHeir {
-  id: string;
-  label: string;
-  lien: LienParente;
-  partSuccession: number;
-  taxablePartSuccession?: number;
-  exonerated?: boolean;
-}
-
 interface SuccessionChainStepComputation {
   transmission: { droits: number; beneficiaries: SuccessionChainBeneficiary[] };
   partConjoint: number;
@@ -117,113 +113,6 @@ function asChildrenCount(value: unknown): number {
   const num = Number(value);
   if (!Number.isFinite(num)) return 0;
   return Math.max(0, Math.floor(num));
-}
-
-function buildFallbackBranchBeneficiaries(
-  actifTransmis: number,
-  nbBranches: number,
-): DetailedChainHeir[] {
-  if (nbBranches <= 0 || actifTransmis <= 0) return [];
-  const part = actifTransmis / nbBranches;
-  return Array.from({ length: nbBranches }, (_, index) => ({
-    id: `desc-${index + 1}`,
-    label: `Enfant ${index + 1}`,
-    lien: 'enfant' as const,
-    partSuccession: part,
-  }));
-}
-
-function buildDetailedDescendantHeirs(
-  actifTransmis: number,
-  deceased: SuccessionDeceasedSide,
-  nbBranches: number,
-  enfantsContext: SuccessionEnfant[] = [],
-  familyMembers: FamilyMember[] = [],
-): DetailedChainHeir[] {
-  if (nbBranches <= 0 || actifTransmis <= 0) return [];
-
-  const recipients = buildSuccessionDescendantRecipientsForDeceased(enfantsContext, familyMembers, deceased);
-  const branchCount = Math.max(
-    1,
-    countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, deceased),
-  );
-
-  return recipients.length === 0
-    ? buildFallbackBranchBeneficiaries(actifTransmis, nbBranches)
-    : (() => {
-      const partParBranche = actifTransmis / branchCount;
-      const recipientsByBranch = recipients.reduce((map, recipient) => {
-        const branchRecipients = map.get(recipient.branchId) ?? [];
-        branchRecipients.push(recipient);
-        map.set(recipient.branchId, branchRecipients);
-        return map;
-      }, new Map<string, typeof recipients>());
-
-      return Array.from(recipientsByBranch.values()).flatMap((branchRecipients) => {
-        const partParRecipient = partParBranche / branchRecipients.length;
-        return branchRecipients.map((recipient) => ({
-          id: recipient.id,
-          label: recipient.label,
-          lien: recipient.lien,
-          partSuccession: partParRecipient,
-        }));
-      });
-    })();
-}
-
-function mergeDetailedHeirs(heirs: DetailedChainHeir[]): DetailedChainHeir[] {
-  const merged = new Map<string, DetailedChainHeir>();
-  heirs.forEach((heir) => {
-    if (heir.partSuccession <= 0) return;
-    const current = merged.get(heir.id);
-    if (current) {
-      const currentTaxable = current.taxablePartSuccession ?? current.partSuccession;
-      const nextTaxable = heir.taxablePartSuccession ?? heir.partSuccession;
-      current.partSuccession += heir.partSuccession;
-      current.taxablePartSuccession = currentTaxable + nextTaxable;
-      current.exonerated = current.exonerated || heir.exonerated;
-      return;
-    }
-    merged.set(heir.id, { ...heir });
-  });
-  return Array.from(merged.values());
-}
-
-function computeTransmissionForHeirs(
-  actifTransmis: number,
-  detailedHeirs: DetailedChainHeir[],
-  dmtgSettings: DmtgSettings,
-): { droits: number; beneficiaries: SuccessionChainBeneficiary[] } {
-  if (actifTransmis <= 0 || detailedHeirs.length === 0) {
-    return { droits: 0, beneficiaries: [] };
-  }
-
-  const taxableHeirs = detailedHeirs.map((heir) => ({
-    lien: heir.lien,
-    partSuccession: Math.max(0, heir.taxablePartSuccession ?? heir.partSuccession),
-  }));
-  const result = calculateSuccession({
-    actifNetSuccession: actifTransmis,
-    heritiers: taxableHeirs,
-    dmtgSettings,
-  }).result;
-
-  return {
-    droits: result.totalDroits,
-    beneficiaries: detailedHeirs.map((heir, index) => {
-      const detail = result.detailHeritiers[index];
-      const droits = detail?.droits ?? 0;
-      return {
-        id: heir.id,
-        label: heir.label,
-        lien: heir.lien,
-        brut: heir.partSuccession,
-        droits,
-        net: heir.partSuccession - droits,
-        exonerated: heir.exonerated ?? heir.lien === 'conjoint',
-      };
-    }),
-  };
 }
 
 function hasRepresentationOnAnySide(

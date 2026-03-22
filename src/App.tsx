@@ -13,6 +13,10 @@ import { useSessionTTL } from './hooks/useSessionTTL';
 import { useExportGuard } from './hooks/useExportGuard';
 import { setTrackBlobUrlHandler } from './utils/export/createTrackedObjectURL';
 import { AppLayout } from './components/layout/AppLayout';
+import {
+  SessionGuardContext,
+  type SessionGuardContextValue,
+} from './session/sessionGuardContext';
 
 type NotificationType = 'info' | 'success' | 'error';
 
@@ -23,13 +27,6 @@ interface NotificationState {
 
 interface LazyRouteProps {
   children: React.ReactNode;
-}
-
-interface SessionGuardContextValue {
-  sessionExpired: boolean;
-  canExport: boolean;
-  trackBlobUrl: (_url: string) => void;
-  resetInactivity: () => void;
 }
 
 interface FiscalIdentityCurrent {
@@ -68,14 +65,6 @@ const LazyRoute = ({ children }: LazyRouteProps): React.ReactElement => {
     </Suspense>
   );
 };
-
-// React context to expose session/export guard to child components
-export const SessionGuardContext = React.createContext<SessionGuardContextValue>({
-  sessionExpired: false,
-  canExport: true,
-  trackBlobUrl: (_url: string) => {},
-  resetInactivity: () => {},
-});
 
 export default function App(): React.ReactElement {
   const [session, setSession] = useState<Session | null>(null);

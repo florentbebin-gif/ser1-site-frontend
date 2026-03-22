@@ -16,8 +16,8 @@ import {
   getQuotiteDisponiblePctForSide,
   getReserveHintForSide,
   getTestamentCardTitle,
-  TESTAMENT_TYPE_DESCRIPTIONS,
 } from '../successionTestament';
+import { TESTAMENT_TYPE_DESCRIPTIONS } from '../successionTestament.constants';
 import {
   CHOIX_LEGAL_CONJOINT_OPTIONS,
   DISPOSITION_TESTAMENTAIRE_OPTIONS,

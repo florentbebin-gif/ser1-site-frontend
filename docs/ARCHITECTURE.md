@@ -183,12 +183,12 @@ L'admin est **global** (pas de multi-tenant sur cette surface). Deux prérequis 
 
 **`AdminPrincipal`** : objet enrichi créé après validation des deux prérequis (`lib/auth.ts`), transporté dans chaque `AdminActionContext`. Contient `userId`, `accountKind` (`owner`/`dev_admin`/`e2e`), `isActive`, `isExpired`, `requestId`.
 
-**Tables admin** (accessibles service_role uniquement, RLS activé sans policy) :
+**Tables admin** (accessibles service_role uniquement, RLS activee avec policies explicites `TO service_role`) :
 
 | Table | Rôle |
 |-------|------|
-| `admin_accounts` | Allowlist des comptes admin (owner, dev_admin, e2e) avec expiration |
-| `admin_action_audit` | Journal des mutations admin (request_id, action, cible, statut) |
+| `admin_accounts` | Allowlist des comptes admin (owner, dev_admin, e2e) avec expiration. RLS activee, policy `admin_accounts_service_role_only`. |
+| `admin_action_audit` | Journal des mutations admin (request_id, action, cible, statut). RLS activee, policies `admin_action_audit_service_role_*`. |
 
 **Audit** : chaque mutation admin (create/update/delete cabinet, theme, user, issue) insère une ligne dans `admin_action_audit` via `recordAdminAction()` (`lib/audit.ts`). Fire-and-forget : un échec d'audit ne bloque jamais la réponse principale.
 

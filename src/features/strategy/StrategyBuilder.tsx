@@ -12,7 +12,7 @@ import { useFiscalContext } from '../../hooks/useFiscalContext';
 import type { ComparaisonScenarios } from './types';
 import { generateStrategyPptx } from '../../pptx/strategyPptx';
 import { onResetEvent } from '../../utils/reset';
-import { SessionGuardContext } from '../../App';
+import { SessionGuardContext } from '../../session/sessionGuardContext';
 import './StrategyBuilder.css';
 
 interface StrategyBuilderProps {

@@ -4,20 +4,13 @@ import ScDeathTimelinePanel from './ScDeathTimelinePanel';
 import ScDonationsCard from './ScDonationsCard';
 import ScFamilyContextCard from './ScFamilyContextCard';
 import ScSuccessionSummaryPanel from './ScSuccessionSummaryPanel';
-import AddFamilyMemberModal from './AddFamilyMemberModal';
-import AssuranceVieModal from './AssuranceVieModal';
-import DispositionsModal from './DispositionsModal';
-import PerModal from './PerModal';
-import PrevoyanceModal from './PrevoyanceModal';
 import { FiliationOrgchart } from './FiliationOrgchart';
 import type { useSuccessionDerivedValues } from '../useSuccessionDerivedValues';
-import type { SuccessionFiscalSnapshot } from '../successionFiscalContext';
 import type {
   SituationMatrimoniale,
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
   SuccessionAssetOwner,
-  SuccessionBeneficiaryRef,
   SuccessionDonationEntry,
   FamilyMember,
   SuccessionAssuranceVieEntry,
@@ -25,14 +18,8 @@ import type {
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
-  SuccessionPrimarySide,
-  SuccessionTestamentConfig,
 } from '../successionDraft';
 import type { DEFAULT_SUCCESSION_CIVIL_CONTEXT } from '../successionDraft';
-import type {
-  AddFamilyMemberFormState,
-  DispositionsDraftState,
-} from '../successionSimulator.helpers';
 
 type SuccessionDerivedValues = ReturnType<typeof useSuccessionDerivedValues>;
 
@@ -79,64 +66,6 @@ interface SuccessionPageGridProps {
   abattementResidencePrincipale: boolean;
   decesDansXAns: 0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50;
   onUpdatePatrimonialField: <K extends string>(_field: K, _value: unknown) => void;
-}
-
-interface SuccessionHypothesesProps {
-  hypothesesOpen: boolean;
-  attentions: string[];
-  fiscalSnapshot: SuccessionFiscalSnapshot;
-  onToggle: () => void;
-}
-
-interface SuccessionModalsProps {
-  derived: SuccessionDerivedValues;
-  civilSituation: SituationMatrimoniale;
-  enfantsContext: SuccessionEnfant[];
-  familyMembers: FamilyMember[];
-  showDispositionsModal: boolean;
-  dispositionsDraft: DispositionsDraftState;
-  setDispositionsDraft: Dispatch<SetStateAction<DispositionsDraftState>>;
-  showAssuranceVieModal: boolean;
-  assuranceVieDraft: SuccessionAssuranceVieEntry | null;
-  showPerModal: boolean;
-  perDraft: SuccessionPerEntry | null;
-  showPrevoyanceModal: boolean;
-  prevoyanceDraft: SuccessionPrevoyanceDecesEntry | null;
-  showAddMemberPanel: boolean;
-  addMemberForm: AddFamilyMemberFormState;
-  setAddMemberForm: Dispatch<SetStateAction<AddFamilyMemberFormState>>;
-  onUpdateDispositionsTestament: (
-    _side: SuccessionPrimarySide,
-    _updater: (_current: SuccessionTestamentConfig) => SuccessionTestamentConfig,
-  ) => void;
-  onGetFirstTestamentBeneficiaryRef: (_side: SuccessionPrimarySide) => SuccessionBeneficiaryRef | null;
-  onAddParticularLegacy: (_side: SuccessionPrimarySide) => void;
-  onUpdateParticularLegacy: (
-    _side: SuccessionPrimarySide,
-    _legacyId: string,
-    _field: 'beneficiaryRef' | 'amount' | 'label',
-    _value: string | number | SuccessionBeneficiaryRef | null,
-  ) => void;
-  onRemoveParticularLegacy: (_side: SuccessionPrimarySide, _legacyId: string) => void;
-  onCloseDispositions: () => void;
-  onValidateDispositions: () => void;
-  onCloseAssuranceVie: () => void;
-  onValidateAssuranceVie: () => void;
-  onUpdateAssuranceVieContract: (
-    _field: keyof SuccessionAssuranceVieEntry,
-    _value: string | number | undefined,
-  ) => void;
-  onClosePer: () => void;
-  onValidatePer: () => void;
-  onUpdatePerContract: (
-    _field: keyof SuccessionPerEntry,
-    _value: string | number | undefined,
-  ) => void;
-  onClosePrevoyance: () => void;
-  onValidatePrevoyance: () => void;
-  onUpdatePrevoyanceContract: (_field: keyof SuccessionPrevoyanceDecesEntry, _value: string | number) => void;
-  onCloseAddMemberPanel: () => void;
-  onValidateAddMember: () => void;
 }
 
 export function SuccessionPageGrid({
@@ -344,178 +273,5 @@ export function SuccessionPageGrid({
   );
 }
 
-export function SuccessionHypotheses({
-  hypothesesOpen,
-  attentions,
-  fiscalSnapshot,
-  onToggle,
-}: SuccessionHypothesesProps) {
-  return (
-    <div className="sc-hypotheses">
-      <button
-        type="button"
-        className="sc-hypotheses__toggle"
-        onClick={onToggle}
-        aria-expanded={hypothesesOpen}
-        data-testid="succession-hypotheses-toggle"
-      >
-        <span className="sc-hypotheses__title">Hypothèses et limites</span>
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`sc-hypotheses__chevron${hypothesesOpen ? ' is-open' : ''}`}
-          aria-hidden="true"
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
-      {hypothesesOpen && (
-        <ul>
-          {attentions.map((warning, index) => (
-            <li key={`att-${index}`}>{warning}</li>
-          ))}
-          <li>Barèmes DMTG et abattements appliqués depuis les paramètres de l&apos;application.</li>
-          <li>
-            Paramètres transmis au module:
-            rappel fiscal donations {fiscalSnapshot.donation.rappelFiscalAnnees} ans,
-            AV décès 990 I {fiscalSnapshot.avDeces.primesApres1998.allowancePerBeneficiary} / bénéficiaire,
-            AV décès après {fiscalSnapshot.avDeces.agePivotPrimes} ans {fiscalSnapshot.avDeces.apres70ans.globalAllowance} (global).
-          </li>
-          <li>La lecture civile repose sur le contexte familial, les masses patrimoniales saisies et les dispositions déclarées.</li>
-          <li>Les capitaux décès d&apos;assurance-vie et de PER assurance sont ventilés par bénéficiaire à partir des clauses saisies, avec une lecture simplifiée des régimes 990 I / 757 B.</li>
-          <li>L&apos;horizon de décès simulé s&apos;applique aux valorisations dépendant de la date du décès, sans décalage calendaire distinct entre le 1er et le 2e décès.</li>
-          <li>La chronologie 2 décès repose sur un chaînage simplifié avec warnings sur les cas non couverts.</li>
-          <li>La dévolution légale est présentée en lecture civile simplifiée, sans gestion exhaustive des ordres successoraux.</li>
-          <li>Les libéralités et avantages matrimoniaux sont qualifiés de façon indicative, sans recalcul automatique des droits dans ce module.</li>
-          <li>L&apos;intégration chiffrée fine (rapport civil détaillé, réduction, liquidation notariale) n&apos;est pas encore modélisée.</li>
-          <li>Résultat indicatif, à confirmer par une analyse patrimoniale et notariale.</li>
-        </ul>
-      )}
-    </div>
-  );
-}
-
-export function SuccessionModals({
-  derived,
-  civilSituation,
-  enfantsContext,
-  familyMembers,
-  showDispositionsModal,
-  dispositionsDraft,
-  setDispositionsDraft,
-  showAssuranceVieModal,
-  assuranceVieDraft,
-  showPerModal,
-  perDraft,
-  showPrevoyanceModal,
-  prevoyanceDraft,
-  showAddMemberPanel,
-  addMemberForm,
-  setAddMemberForm,
-  onUpdateDispositionsTestament,
-  onGetFirstTestamentBeneficiaryRef,
-  onAddParticularLegacy,
-  onUpdateParticularLegacy,
-  onRemoveParticularLegacy,
-  onCloseDispositions,
-  onValidateDispositions,
-  onCloseAssuranceVie,
-  onValidateAssuranceVie,
-  onUpdateAssuranceVieContract,
-  onClosePer,
-  onValidatePer,
-  onUpdatePerContract,
-  onClosePrevoyance,
-  onValidatePrevoyance,
-  onUpdatePrevoyanceContract,
-  onCloseAddMemberPanel,
-  onValidateAddMember,
-}: SuccessionModalsProps) {
-  return (
-    <>
-      {showDispositionsModal && (
-        <DispositionsModal
-          dispositionsDraft={dispositionsDraft}
-          setDispositionsDraft={setDispositionsDraft}
-          testamentSides={derived.testamentSides}
-          testamentBeneficiaryOptionsBySide={derived.testamentBeneficiaryOptionsBySide}
-          descendantBranchesBySide={derived.descendantBranchesBySide}
-          enfantsContext={enfantsContext}
-          familyMembers={familyMembers}
-          civilSituation={civilSituation}
-          showSharedTransmissionPct={derived.showSharedTransmissionPct}
-          isPacsIndivision={derived.isPacsIndivision}
-          showDonationEntreEpoux={derived.showDonationEntreEpoux}
-          nbDescendantBranches={derived.nbDescendantBranches}
-          nbEnfantsNonCommuns={derived.nbEnfantsNonCommuns}
-          isCommunityRegime={derived.isCommunityRegime}
-          updateDispositionsTestament={onUpdateDispositionsTestament}
-          getFirstTestamentBeneficiaryRef={onGetFirstTestamentBeneficiaryRef}
-          onAddParticularLegacy={onAddParticularLegacy}
-          onUpdateParticularLegacy={onUpdateParticularLegacy}
-          onRemoveParticularLegacy={onRemoveParticularLegacy}
-          onClose={onCloseDispositions}
-          onValidate={onValidateDispositions}
-        />
-      )}
-
-      {showAssuranceVieModal && assuranceVieDraft && (
-        <AssuranceVieModal
-          entry={assuranceVieDraft}
-          assuranceViePartyOptions={derived.assuranceViePartyOptions}
-          enfantsContext={enfantsContext}
-          familyMembers={familyMembers}
-          isMarried={derived.isMarried}
-          isPacsed={derived.isPacsed}
-          onClose={onCloseAssuranceVie}
-          onValidate={onValidateAssuranceVie}
-          onUpdate={onUpdateAssuranceVieContract}
-        />
-      )}
-
-      {showPerModal && perDraft && (
-        <PerModal
-          entry={perDraft}
-          assuranceViePartyOptions={derived.assuranceViePartyOptions}
-          enfantsContext={enfantsContext}
-          familyMembers={familyMembers}
-          isMarried={derived.isMarried}
-          isPacsed={derived.isPacsed}
-          onClose={onClosePer}
-          onValidate={onValidatePer}
-          onUpdate={onUpdatePerContract}
-        />
-      )}
-
-      {showPrevoyanceModal && prevoyanceDraft && (
-        <PrevoyanceModal
-          entry={prevoyanceDraft}
-          partyOptions={derived.assuranceViePartyOptions}
-          clauseOptions={derived.prevoyanceClauseOptions}
-          regimeLabel={derived.prevoyanceRegimeByEntry[prevoyanceDraft.id]?.regimeLabel ?? '—'}
-          regimeWarning={derived.prevoyanceRegimeByEntry[prevoyanceDraft.id]?.warning}
-          onClose={onClosePrevoyance}
-          onValidate={onValidatePrevoyance}
-          onUpdate={onUpdatePrevoyanceContract}
-        />
-      )}
-
-      {showAddMemberPanel && (
-        <AddFamilyMemberModal
-          form={addMemberForm}
-          setForm={setAddMemberForm}
-          branchOptions={derived.branchOptions}
-          enfantsContext={enfantsContext}
-          onClose={onCloseAddMemberPanel}
-          onValidate={onValidateAddMember}
-        />
-      )}
-    </>
-  );
-}
+export { SuccessionHypotheses } from './SuccessionHypotheses';
+export { SuccessionModals } from './SuccessionModals';

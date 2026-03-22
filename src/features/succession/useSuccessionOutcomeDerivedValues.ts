@@ -1,38 +1,33 @@
 import { useMemo } from 'react';
-import type {
-  buildSuccessionAvFiscalAnalysis,
-  SuccessionAvFiscalLine,
-} from './successionAvFiscal';
+import type { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
+import type { buildSuccessionChainageAnalysis } from './successionChainage';
+import type { buildSuccessionDevolutionAnalysis } from './successionDevolution';
+import {
+  buildSuccessionChainTransmissionRows,
+  buildSuccessionDirectDisplayAnalysis,
+  type computeSuccessionDirectEstateBasis,
+} from './successionDisplay';
+import type { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import type { buildSuccessionPerFiscalAnalysis } from './successionPerFiscal';
 import type {
   buildSuccessionPrevoyanceFiscalAnalysis,
-  SuccessionPrevoyanceFiscalLine,
 } from './successionPrevoyanceFiscal';
-import type { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import type { buildSuccessionPredecesAnalysis } from './successionPredeces';
-import type { buildSuccessionChainageAnalysis } from './successionChainage';
-import type {
-  computeSuccessionDirectEstateBasis} from './successionDisplay';
-import {
-  buildSuccessionChainTransmissionRows,
-  buildSuccessionDirectDisplayAnalysis
-} from './successionDisplay';
-import type { buildSuccessionDevolutionAnalysis } from './successionDevolution';
-import { getUsufruitValuationFromBirthDate } from './successionUsufruit';
-import { DONATION_ENTRE_EPOUX_OPTIONS } from './successionSimulator.constants';
+import type { SuccessionChainOrder } from './successionChainage';
 import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
-import type {
-  FamilyMember,
-  SuccessionEnfant,
-} from './successionDraft';
-import type { SuccessionAssetTransmissionBasis } from './successionTransmissionBasis';
 import type {
   DEFAULT_SUCCESSION_CIVIL_CONTEXT,
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+  FamilyMember,
+  SuccessionEnfant,
 } from './successionDraft';
-import type { SuccessionChainOrder } from './successionChainage';
+import type { SuccessionAssetTransmissionBasis } from './successionTransmissionBasis';
+import {
+  buildSuccessionSynthHypothese,
+  mergeInsuranceBeneficiaryLines,
+} from './useSuccessionOutcomeDerivedValues.helpers';
 
 interface UseSuccessionOutcomeDerivedValuesInput {
   civilContext: typeof DEFAULT_SUCCESSION_CIVIL_CONTEXT;
@@ -75,77 +70,6 @@ interface UseSuccessionOutcomeDerivedValuesInput {
   shouldRenderSuccessionComputationSections: boolean;
 }
 
-export interface InsuranceBeneficiaryLine {
-  id: string;
-  label: string;
-  capitalTransmis: number;
-  totalDroits: number;
-  netTransmis: number;
-}
-
-function mergeInsuranceBeneficiaryLines(
-  avLines: SuccessionAvFiscalLine[],
-  perLines: SuccessionAvFiscalLine[],
-  prevoyanceLines: SuccessionPrevoyanceFiscalLine[],
-): InsuranceBeneficiaryLine[] {
-  const merged = new Map<string, InsuranceBeneficiaryLine>();
-
-  const upsert = (
-    id: string,
-    label: string,
-    capitalTransmis: number,
-    totalDroits: number,
-    netTransmis: number,
-  ) => {
-    const current = merged.get(id) ?? {
-      id,
-      label,
-      capitalTransmis: 0,
-      totalDroits: 0,
-      netTransmis: 0,
-    };
-    current.capitalTransmis += capitalTransmis;
-    current.totalDroits += totalDroits;
-    current.netTransmis += netTransmis;
-    merged.set(id, current);
-  };
-
-  for (const line of avLines) {
-    upsert(
-      line.id,
-      line.label,
-      line.capitauxAvant70 + line.capitauxApres70,
-      line.totalDroits,
-      line.netTransmis,
-    );
-  }
-
-  for (const line of perLines) {
-    upsert(
-      line.id,
-      line.label,
-      line.capitauxAvant70 + line.capitauxApres70,
-      line.totalDroits,
-      line.netTransmis,
-    );
-  }
-
-  for (const line of prevoyanceLines) {
-    upsert(
-      line.id,
-      line.label,
-      line.capitalTransmis,
-      line.totalDroits,
-      line.netTransmis,
-    );
-  }
-
-  return Array.from(merged.values()).sort((a, b) => (
-    b.capitalTransmis - a.capitalTransmis
-    || b.netTransmis - a.netTransmis
-  ));
-}
-
 export function useSuccessionOutcomeDerivedValues({
   civilContext,
   liquidationContext,
@@ -179,11 +103,13 @@ export function useSuccessionOutcomeDerivedValues({
   simulatedDeathDate,
   shouldRenderSuccessionComputationSections,
 }: UseSuccessionOutcomeDerivedValuesInput) {
-  const displayUsesChainage = Boolean(shouldRenderSuccessionComputationSections
+  const displayUsesChainage = Boolean(
+    shouldRenderSuccessionComputationSections
     && isMarried
     && chainageAnalysis.applicable
     && chainageAnalysis.step1
-    && chainageAnalysis.step2);
+    && chainageAnalysis.step2,
+  );
 
   const displayActifNetSuccession = useMemo(
     () => (shouldRenderSuccessionComputationSections
@@ -302,16 +228,16 @@ export function useSuccessionOutcomeDerivedValues({
       const step1 = chainageAnalysis.step1;
       const step2 = chainageAnalysis.step2;
       if (!step1 || !step2) return derivedMasseTransmise;
-        return step1.actifTransmis
-          + step2.actifTransmis
-          + assuranceVieByAssure.epoux1
-          + assuranceVieByAssure.epoux2
-          + perByAssure.epoux1
-          + perByAssure.epoux2
-          + prevoyanceByAssure.epoux1
-          + prevoyanceByAssure.epoux2;
-      }
-      return derivedMasseTransmise;
+      return step1.actifTransmis
+        + step2.actifTransmis
+        + assuranceVieByAssure.epoux1
+        + assuranceVieByAssure.epoux2
+        + perByAssure.epoux1
+        + perByAssure.epoux2
+        + prevoyanceByAssure.epoux1
+        + prevoyanceByAssure.epoux2;
+    }
+    return derivedMasseTransmise;
   }, [
     shouldRenderSuccessionComputationSections,
     displayUsesChainage,
@@ -322,73 +248,24 @@ export function useSuccessionOutcomeDerivedValues({
     derivedMasseTransmise,
   ]);
 
-  const synthHypothese = useMemo(() => {
-    if (!isMarried || nbDescendantBranches === 0) return null;
-
-    if (
-      civilContext.regimeMatrimonial === 'communaute_universelle'
-      && patrimonialContext.attributionIntegrale
-    ) {
-      return 'Communaute universelle avec attribution integrale: le 1er deces transmet integralement au conjoint survivant et reporte la taxation des descendants au 2e deces.';
-    }
-
-    if (patrimonialContext.donationEntreEpouxActive) {
-      const option = DONATION_ENTRE_EPOUX_OPTIONS.find((entry) => entry.value === patrimonialContext.donationEntreEpouxOption);
-      const spouseBirthDate = chainOrder === 'epoux1'
-        ? civilContext.dateNaissanceEpoux2
-        : civilContext.dateNaissanceEpoux1;
-      const valuationBase = patrimonialContext.donationEntreEpouxOption === 'mixte'
-        ? derivedActifNetSuccession * 0.75
-        : derivedActifNetSuccession;
-      const valuation = (
-        patrimonialContext.donationEntreEpouxOption === 'usufruit_total'
-        || patrimonialContext.donationEntreEpouxOption === 'mixte'
-      )
-        ? getUsufruitValuationFromBirthDate(spouseBirthDate, valuationBase, simulatedDeathDate)
-        : null;
-      const baseLabel = `Donation entre époux : ${option?.label ?? patrimonialContext.donationEntreEpouxOption}`;
-
-      if (valuation) {
-        return `${baseLabel} — valorisation art. 669 CGI : usufruit ${Math.round(valuation.tauxUsufruit * 100)}%, nue-propriété ${Math.round(valuation.tauxNuePropriete * 100)}% (usufruitier ${valuation.age} ans)`;
-      }
-      if (
-        patrimonialContext.donationEntreEpouxOption === 'usufruit_total'
-        || patrimonialContext.donationEntreEpouxOption === 'mixte'
-      ) {
-        return `${baseLabel} — valorisation art. 669 CGI en attente de la date de naissance du conjoint survivant`;
-      }
-      return baseLabel;
-    }
-
-    if (nbEnfantsNonCommuns > 0) {
-      return 'Art. 757 CC : 1/4 en pleine propriété imposé au conjoint survivant en présence d\'enfant(s) non commun(s).';
-    }
-
-    if (devolutionContext.choixLegalConjointSansDDV === 'usufruit') {
-      const spouseBirthDate = chainOrder === 'epoux1'
-        ? civilContext.dateNaissanceEpoux2
-        : civilContext.dateNaissanceEpoux1;
-      const valuation = getUsufruitValuationFromBirthDate(
-        spouseBirthDate,
-        derivedActifNetSuccession,
-        simulatedDeathDate,
-      );
-      if (valuation) {
-        return `Art. 757 CC : usufruit de la totalité retenu — valorisation art. 669 CGI : usufruit ${Math.round(valuation.tauxUsufruit * 100)}%, nue-propriété ${Math.round(valuation.tauxNuePropriete * 100)}% (usufruitier ${valuation.age} ans)`;
-      }
-      return 'Art. 757 CC : usufruit de la totalité demandé — valorisation art. 669 CGI en attente de la date de naissance du conjoint survivant (repli moteur sur 1/4 en pleine propriété).';
-    }
-
-    if (devolutionContext.choixLegalConjointSansDDV === 'quart_pp') {
-      return 'Art. 757 CC : 1/4 en pleine propriété retenu au titre du choix légal du conjoint survivant.';
-    }
-
-    return 'Hypothèse moteur : 1/4 en pleine propriété pour le conjoint survivant (choix légal non précisé).';
-  }, [
+  const synthHypothese = useMemo(() => buildSuccessionSynthHypothese({
     isMarried,
     nbDescendantBranches,
     nbEnfantsNonCommuns,
-    devolutionContext.choixLegalConjointSansDDV,
+    regimeMatrimonial: civilContext.regimeMatrimonial,
+    attributionIntegrale: patrimonialContext.attributionIntegrale,
+    donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
+    donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
+    chainOrder,
+    dateNaissanceEpoux1: civilContext.dateNaissanceEpoux1,
+    dateNaissanceEpoux2: civilContext.dateNaissanceEpoux2,
+    derivedActifNetSuccession,
+    simulatedDeathDate,
+    choixLegalConjointSansDDV: devolutionContext.choixLegalConjointSansDDV,
+  }), [
+    isMarried,
+    nbDescendantBranches,
+    nbEnfantsNonCommuns,
     civilContext.regimeMatrimonial,
     patrimonialContext.attributionIntegrale,
     patrimonialContext.donationEntreEpouxActive,
@@ -398,6 +275,7 @@ export function useSuccessionOutcomeDerivedValues({
     civilContext.dateNaissanceEpoux2,
     derivedActifNetSuccession,
     simulatedDeathDate,
+    devolutionContext.choixLegalConjointSansDDV,
   ]);
 
   const transmissionRows = useMemo(() => {
@@ -406,58 +284,8 @@ export function useSuccessionOutcomeDerivedValues({
       const { step1, step2 } = chainageAnalysis;
       if (!step1 || !step2) return [];
       return buildSuccessionChainTransmissionRows(chainageAnalysis);
-      /* legacy insurance rows removed from Transmission par bénéficiaire
-      const perCapital = perByAssure[order] + perByAssure[otherOrder];
-      const prevoyanceCapital = prevoyanceByAssure[order] + prevoyanceByAssure[otherOrder];
-      return [
-        ...buildSuccessionChainTransmissionRows(chainageAnalysis),
-        ...(avCapital > 0 ? [{
-          id: 'assurance-vie',
-          label: 'Assurance-vie',
-          brut: avCapital,
-          droits: avFiscalAnalysis.totalDroits,
-          net: avCapital - avFiscalAnalysis.totalDroits,
-        }] : []),
-        ...(perCapital > 0 ? [{
-          id: 'per-assurance',
-          label: 'PER assurance',
-          brut: perCapital,
-          droits: perFiscalAnalysis.totalDroits,
-          net: perCapital - perFiscalAnalysis.totalDroits,
-        }] : []),
-        ...(prevoyanceCapital > 0 ? [{
-          id: 'prevoyance-deces',
-          label: 'Prévoyance décès',
-          brut: prevoyanceCapital,
-          droits: prevoyanceFiscalAnalysis.totalDroits,
-          net: prevoyanceCapital - prevoyanceFiscalAnalysis.totalDroits,
-        }] : []),
-      ]; */
     }
-
     return directDisplayAnalysis.transmissionRows;
-      /* legacy insurance rows removed from Transmission par bénéficiaire
-        id: 'assurance-vie',
-        label: 'Assurance-vie',
-        brut: displayAssuranceVieTransmise,
-        droits: avFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
-        net: displayAssuranceVieTransmise - avFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
-      }] : []),
-      ...(displayPerTransmis > 0 ? [{
-        id: 'per-assurance',
-        label: 'PER assurance',
-        brut: displayPerTransmis,
-        droits: perFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
-        net: displayPerTransmis - perFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
-      }] : []),
-      ...(displayPrevoyanceTransmise > 0 ? [{
-        id: 'prevoyance-deces',
-        label: 'Prévoyance décès',
-        brut: displayPrevoyanceTransmise,
-        droits: prevoyanceFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
-        net: displayPrevoyanceTransmise - prevoyanceFiscalAnalysis.byAssure[directDisplayAnalysis.simulatedDeceased].totalDroits,
-      }] : []),
-    ]; */
   }, [
     shouldRenderSuccessionComputationSections,
     displayUsesChainage,
@@ -558,8 +386,8 @@ export function useSuccessionOutcomeDerivedValues({
         ]
         : [
           ...(isPacsed
-            ? ['PACS: la synthèse fiscale affichée repose sur le décès simulé du partenaire sélectionné, pas sur une chronologie 2 décès.']
-            : ['Chronologie 2 décès non utilisée pour cette situation : la synthèse repose sur la succession directe du défunt simulé.']),
+            ? ["PACS: la synthese fiscale affichee repose sur le deces simule du partenaire selectionne, pas sur une chronologie 2 deces."]
+            : ["Chronologie 2 deces non utilisee pour cette situation : la synthese repose sur la succession directe du defunt simule."]),
           ...directDisplayAnalysis.warnings,
           ...avFiscalAnalysis.warnings,
           ...perFiscalAnalysis.warnings,

@@ -4,7 +4,7 @@ import type {
   SuccessionEnfant,
   SuccessionEnfantRattachement,
   SituationMatrimoniale,
-} from './successionDraft';
+} from './successionDraft.types';
 
 export interface SuccessionDescendantRecipient {
   id: string;

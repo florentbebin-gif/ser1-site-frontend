@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { ExportOption } from '../../components/ExportMenu';
+import type { ExportOption } from '../../components/export/exportTypes';
 import type { LoanParams, ScheduleRow } from '../../engine/credit/capitalDeces';
 import type { CreditData, UiSettingsForPptx } from '../../pptx/presets/creditDeckBuilder';
 import type { LogoPlacement } from '../../pptx/theme/types';

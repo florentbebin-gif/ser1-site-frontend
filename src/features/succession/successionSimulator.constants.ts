@@ -10,7 +10,7 @@ import type {
   SuccessionDonationEntryType,
   SuccessionPrimarySide,
 } from './successionDraft.types';
-import { TESTAMENT_TYPE_DESCRIPTIONS } from './successionTestament';
+import { TESTAMENT_TYPE_DESCRIPTIONS } from './successionTestament.constants';
 
 export const SITUATION_OPTIONS: { value: SituationMatrimoniale; label: string }[] = [
   { value: 'celibataire', label: 'Célibataire' },
