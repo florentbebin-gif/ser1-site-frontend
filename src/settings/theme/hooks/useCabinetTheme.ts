@@ -150,39 +150,26 @@ export async function loadCabinetTheme(_userId: string): Promise<ThemeColors | n
   }
 }
 
-// ─── Edge Function: Original Theme ──────────────────────────────────
+// ─── DB: Original Theme ──────────────────────────────────────────────
 
 /**
  * Load original theme from DB (for users without cabinet)
+ * La table themes a une policy RLS SELECT publique (using(true)), pas besoin de la fonction admin.
  */
 export async function loadOriginalTheme(): Promise<ThemeColors | null> {
   try {
-    // Appel Edge Function authentifié pour récupérer le thème original
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
+    const { data: theme, error } = await supabase
+      .from('themes')
+      .select('name, palette')
+      .eq('is_system', true)
+      .limit(1)
+      .single();
+
+    if (error || !theme) {
       return null;
     }
 
-    const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin?action=get_original_theme`,
-      {
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json() as { palette?: unknown };
-    if (!data.palette) {
-      return null;
-    }
-
-    return convertDbPaletteToThemeColors(data.palette);
+    return convertDbPaletteToThemeColors(theme.palette);
   } catch (error) {
     console.error('[ThemeProvider] Error loading original theme:', error);
     return null;
