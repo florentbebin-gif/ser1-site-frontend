@@ -65,12 +65,12 @@ export type AppRouteEntry =
 // ── Lazy-loaded modules ───────────────────────────────────────────────────────
 
 const LoginRoute = Login as unknown as RouteComponent;
-const Placement = lazy(() => import('../features/placement').then(m => ({ default: m.PlacementPage })));
-const Credit = lazy(() => import('../features/credit').then(m => ({ default: m.CreditPage })));
-const Ir = lazy(() => import('../features/ir').then(m => ({ default: m.IrPage })));
-const AuditWizard = lazy(() => import('../features/audit').then(m => ({ default: m.AuditWizard })));
-const SuccessionSimulator = lazy(() => import('../features/succession').then(m => ({ default: m.SuccessionSimulator })));
-const PerSimulator = lazy(() => import('../features/per').then(m => ({ default: m.PerSimulator })));
+const Placement = lazy(() => import('../features/placement/PlacementPage'));
+const Credit = lazy(() => import('../features/credit/Credit'));
+const Ir = lazy(() => import('../features/ir/IrPage'));
+const AuditWizard = lazy(() => import('../features/audit/AuditWizard'));
+const SuccessionSimulator = lazy(() => import('../features/succession/SuccessionSimulator'));
+const PerSimulator = lazy(() => import('../features/per/PerSimulator'));
 const UpcomingSimulatorPage = lazy(() => import('../pages/UpcomingSimulatorPage')) as unknown as LazyExoticComponent<ComponentType<RouteProps>>;
 const StrategyPage = lazy(() => import('../pages/StrategyPage'));
 const SettingsShell = lazy(() => import('../pages/SettingsShell'));

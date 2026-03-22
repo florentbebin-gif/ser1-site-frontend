@@ -6,13 +6,14 @@ import type {
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
-} from '../successionDraft';
+} from '../successionDraft.types';
 import {
   ASSET_SUBCATEGORY_OPTIONS,
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
 } from '../successionSimulator.constants';
 import { computeGroupementFoncierExoneration, GF_UI_OPTIONS, normalizeGfTypeForUi } from '../successionGroupementFoncier';
 import { fmt } from '../successionSimulator.helpers';
+import { ScAssetsSummary, ScForfaitMobilierSection } from './ScAssetsPassifsExtras';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
@@ -73,13 +74,13 @@ function getActifNetLabel(
 ): string {
   if (owner === 'epoux1') {
     if (flags.isPacsed) return 'Actif net partenaire 1';
-    if (flags.isMarried) return 'Actif net époux 1';
+    if (flags.isMarried) return 'Actif net epoux 1';
     if (flags.isConcubinage) return 'Actif net personne 1';
-    return 'Actif net du/de la défunt(e)';
+    return 'Actif net du/de la defunt(e)';
   }
   if (owner === 'epoux2') {
     if (flags.isPacsed) return 'Actif net partenaire 2';
-    if (flags.isMarried) return 'Actif net époux 2';
+    if (flags.isMarried) return 'Actif net epoux 2';
     return 'Actif net personne 2';
   }
   return flags.isPacsed || flags.isConcubinage ? 'Masse indivise nette' : 'Masse commune nette';
@@ -144,6 +145,7 @@ export default function ScAssetsPassifsCard({
     || hasBeneficiaryLevelGfAdjustment
     || forfaitMobilierMode !== 'off';
   const showForfaitMobilier = forfaitMobilierMode !== 'off';
+  const getNetLabel = (owner: SuccessionAssetOwner) => getActifNetLabel(owner, flags);
 
   return (
     <div className="premium-card sc-card sc-card--guide">
@@ -430,71 +432,19 @@ export default function ScAssetsPassifsCard({
             </section>
           ))}
 
-          <section className="sc-asset-section">
-            <div className="sc-asset-section__header">
-              <h3 className="sc-asset-section__title">Forfait mobilier</h3>
-              <div className="sc-asset-section__actions">
-                {!showForfaitMobilier ? (
-                  <button type="button" className="sc-member-add-icon-btn" onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'auto')} aria-label="Configurer le forfait mobilier">+</button>
-                ) : (
-                  <button type="button" className="sc-child-remove-btn" onClick={() => onUpdatePatrimonialField('forfaitMobilierMode', 'off')} aria-label="Désactiver le forfait mobilier">&#10005;</button>
-                )}
-              </div>
-            </div>
-            {showForfaitMobilier && (
-              <div className="sc-assets-list">
-                <div className="sc-asset-row sc-asset-row--three-cols">
-                  <div className="sc-field">
-                    <label>Mode</label>
-                    <ScSelect
-                      value={forfaitMobilierMode}
-                      onChange={(value) => onUpdatePatrimonialField('forfaitMobilierMode', value)}
-                      options={[
-                        { value: 'auto', label: 'Automatique (5 % légal)' },
-                        { value: 'pct', label: 'Pourcentage personnalisé' },
-                        { value: 'montant', label: 'Montant fixe' },
-                      ]}
-                    />
-                  </div>
-                  {forfaitMobilierMode === 'pct' ? (
-                    <div className="sc-field">
-                      <label>Pourcentage (%)</label>
-                      <input
-                        type="number"
-                        min={0}
-                        max={100}
-                        value={forfaitMobilierPct}
-                        onChange={(e) => onUpdatePatrimonialField('forfaitMobilierPct', Number(e.target.value) || 0)}
-                      />
-                    </div>
-                  ) : (
-                    <div className="sc-field">
-                      <label>Pourcentage (%)</label>
-                      <input type="number" value={5} disabled />
-                    </div>
-                  )}
-                  <div className="sc-field">
-                    <label>Montant fixe (€)</label>
-                    <ScNumericInput
-                      value={forfaitMobilierMode === 'montant' ? forfaitMobilierMontant : 0}
-                      min={0}
-                      onChange={(val) => onUpdatePatrimonialField('forfaitMobilierMontant', val)}
-                      disabled={forfaitMobilierMode !== 'montant'}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </section>
+          <ScForfaitMobilierSection
+            showForfaitMobilier={showForfaitMobilier}
+            forfaitMobilierMode={forfaitMobilierMode}
+            forfaitMobilierPct={forfaitMobilierPct}
+            forfaitMobilierMontant={forfaitMobilierMontant}
+            onUpdatePatrimonialField={onUpdatePatrimonialField}
+          />
 
-          <div className="sc-assets-summary">
-            {assetOwnerOptions.map((option) => (
-              <div key={`summary-${option.value}`} className="sc-summary-row">
-                <span>{getActifNetLabel(option.value, flags)}</span>
-                <strong>{fmt(assetNetTotals[option.value])}</strong>
-              </div>
-            ))}
-          </div>
+          <ScAssetsSummary
+            assetOwnerOptions={assetOwnerOptions}
+            assetNetTotals={assetNetTotals}
+            getActifNetLabel={getNetLabel}
+          />
         </div>
       ) : (
         <div className="sc-balance-grid">
@@ -530,14 +480,11 @@ export default function ScAssetsPassifsCard({
               </div>
             ))}
           </div>
-          <div className="sc-assets-summary">
-            {assetOwnerOptions.map((option) => (
-              <div key={`net-${option.value}`} className="sc-summary-row">
-                <span>{getActifNetLabel(option.value, flags)}</span>
-                <strong>{fmt(assetNetTotals[option.value])}</strong>
-              </div>
-            ))}
-          </div>
+          <ScAssetsSummary
+            assetOwnerOptions={assetOwnerOptions}
+            assetNetTotals={assetNetTotals}
+            getActifNetLabel={getNetLabel}
+          />
         </div>
       )}
 

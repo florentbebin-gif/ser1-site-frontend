@@ -6,15 +6,9 @@
  */
 
 import React, { useState, useRef, useEffect, useContext } from 'react';
-import { SessionGuardContext } from '../App';
+import { SessionGuardContext } from '../session/sessionGuardContext';
+import type { ExportOption } from './export/exportTypes';
 import './ExportMenu.css';
-
-export interface ExportOption {
-  label: string;
-  onClick: () => void;
-  disabled?: boolean;
-  tooltip?: string;
-}
 
 interface ExportMenuProps {
   options: ExportOption[];

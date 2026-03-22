@@ -2,7 +2,7 @@
  * Groupement foncier exoneration utility — Art. 793 bis CGI
  * 75% DMTG ≤ 600 000 € / bénéficiaire (LF 2025 art. 70), 50% au-delà.
  */
-import type { GroupementFoncierType } from './successionDraft';
+import type { GroupementFoncierType } from './successionDraft.types';
 
 export const SEUIL_EXONERATION_GF = 600_000;
 

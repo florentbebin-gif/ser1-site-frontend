@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import {
@@ -162,10 +163,10 @@ export function useSuccessionSimulatorHandlers({
   setHypothesesOpen,
 }: UseSuccessionSimulatorHandlersArgs) {
   // Résout owner 'commun' → individuel (fallback sur le premier parti disponible)
-  const resolveIndividualOwner = (owner: SuccessionAssetOwner): 'epoux1' | 'epoux2' => {
+  const resolveIndividualOwner = useCallback((owner: SuccessionAssetOwner): 'epoux1' | 'epoux2' => {
     if (owner !== 'commun') return owner as 'epoux1' | 'epoux2';
     return (assuranceViePartyOptions[0]?.value ?? 'epoux1') as 'epoux1' | 'epoux2';
-  };
+  }, [assuranceViePartyOptions]);
 
   const hasResidencePrincipale = useCallback((
     entries: SuccessionAssetDetailEntry[],
@@ -479,7 +480,7 @@ export function useSuccessionSimulatorHandlers({
     }));
   }, [
     assetEntries,
-    assuranceViePartyOptions,
+    resolveIndividualOwner,
     hasResidencePrincipale,
     setAssetEntries,
     setAssuranceVieDraft,

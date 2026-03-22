@@ -16,7 +16,7 @@ import {
 import { generateAuditPptx } from '../../pptx/auditPptx';
 import { useTheme } from '../../settings/ThemeProvider';
 import { onResetEvent } from '../../utils/reset';
-import { SessionGuardContext } from '../../App';
+import { SessionGuardContext } from '../../session/sessionGuardContext';
 import StepActifs from './steps/StepActifs';
 import StepCivil from './steps/StepCivil';
 import StepFamille from './steps/StepFamille';

@@ -236,14 +236,17 @@ if (-not [string]::IsNullOrWhiteSpace($SupabaseDbUrl)) {
   try {
     $tableExists = psql "$SupabaseDbUrl" -t -A -c "select count(*) from pg_tables where tablename='admin_accounts' and schemaname='public';"
     $ownerCount  = psql "$SupabaseDbUrl" -t -A -c "select count(*) from public.admin_accounts where account_kind='owner' and status='active';"
+    $policyCount = psql "$SupabaseDbUrl" -t -A -c "select count(*) from pg_policies where schemaname='public' and tablename='admin_accounts';"
 
     $tableExistsInt = [int]($tableExists.Trim())
     $ownerCountInt  = [int]($ownerCount.Trim())
+    $policyCountInt = [int]($policyCount.Trim())
 
     Write-Result "ADMIN_ACCOUNTS_TABLE_EXISTS" "$tableExistsInt"
     Write-Result "ADMIN_ACCOUNTS_ACTIVE_OWNERS" "$ownerCountInt"
+    Write-Result "ADMIN_ACCOUNTS_POLICIES" "$policyCountInt"
 
-    if ($tableExistsInt -gt 0 -and $ownerCountInt -gt 0) {
+    if ($tableExistsInt -gt 0 -and $ownerCountInt -gt 0 -and $policyCountInt -gt 0) {
       $summary.P0_03 = 'PASS'
     } else {
       $summary.P0_03 = 'FAIL'
@@ -256,14 +259,17 @@ if (-not [string]::IsNullOrWhiteSpace($SupabaseDbUrl)) {
   try {
     $tableResp = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select count(*) as c from pg_tables where tablename='admin_accounts' and schemaname='public';"
     $ownerResp  = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select count(*) as c from public.admin_accounts where account_kind='owner' and status='active';"
+    $policyResp = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select count(*) as c from pg_policies where schemaname='public' and tablename='admin_accounts';"
 
     $tableExistsInt = [int]$tableResp.c
     $ownerCountInt  = [int]$ownerResp.c
+    $policyCountInt = [int]$policyResp.c
 
     Write-Result "ADMIN_ACCOUNTS_TABLE_EXISTS" "$tableExistsInt"
     Write-Result "ADMIN_ACCOUNTS_ACTIVE_OWNERS" "$ownerCountInt"
+    Write-Result "ADMIN_ACCOUNTS_POLICIES" "$policyCountInt"
 
-    if ($tableExistsInt -gt 0 -and $ownerCountInt -gt 0) {
+    if ($tableExistsInt -gt 0 -and $ownerCountInt -gt 0 -and $policyCountInt -gt 0) {
       $summary.P0_03 = 'PASS'
     } else {
       $summary.P0_03 = 'FAIL'
@@ -281,14 +287,17 @@ if (-not [string]::IsNullOrWhiteSpace($SupabaseDbUrl)) {
   try {
     $auditTableExists = psql "$SupabaseDbUrl" -t -A -c "select count(*) from pg_tables where tablename='admin_action_audit' and schemaname='public';"
     $auditRls = psql "$SupabaseDbUrl" -t -A -c "select relrowsecurity::text from pg_class where relname='admin_action_audit';"
+    $auditPolicies = psql "$SupabaseDbUrl" -t -A -c "select count(*) from pg_policies where schemaname='public' and tablename='admin_action_audit';"
 
     $auditTableExistsInt = [int]($auditTableExists.Trim())
     $auditRlsEnabled = ($auditRls.Trim() -eq 'true' -or $auditRls.Trim() -eq 't')
+    $auditPolicyCount = [int]($auditPolicies.Trim())
 
     Write-Result "AUDIT_TABLE_EXISTS" "$auditTableExistsInt"
     Write-Result "AUDIT_RLS_ENABLED" ([string]$auditRlsEnabled)
+    Write-Result "AUDIT_POLICIES" "$auditPolicyCount"
 
-    if ($auditTableExistsInt -gt 0 -and $auditRlsEnabled) {
+    if ($auditTableExistsInt -gt 0 -and $auditRlsEnabled -and $auditPolicyCount -gt 0) {
       $summary.P0_04 = 'PASS'
     } else {
       $summary.P0_04 = 'FAIL'
@@ -301,15 +310,18 @@ if (-not [string]::IsNullOrWhiteSpace($SupabaseDbUrl)) {
   try {
     $auditTableResp = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select count(*) as c from pg_tables where tablename='admin_action_audit' and schemaname='public';"
     $auditRlsResp = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select relrowsecurity::text as rls from pg_class where relname='admin_action_audit';"
+    $auditPolicyResp = Invoke-SupabaseSqlApi -Ref $ProjectRef -Token $SupabaseAccessToken -Sql "select count(*) as c from pg_policies where schemaname='public' and tablename='admin_action_audit';"
 
     $auditTableExistsInt = [int]$auditTableResp.c
     $auditRlsValue = [string]$auditRlsResp.rls
     $auditRlsEnabled = ($auditRlsValue -eq 'true' -or $auditRlsValue -eq 't')
+    $auditPolicyCount = [int]$auditPolicyResp.c
 
     Write-Result "AUDIT_TABLE_EXISTS" "$auditTableExistsInt"
     Write-Result "AUDIT_RLS_ENABLED" ([string]$auditRlsEnabled)
+    Write-Result "AUDIT_POLICIES" "$auditPolicyCount"
 
-    if ($auditTableExistsInt -gt 0 -and $auditRlsEnabled) {
+    if ($auditTableExistsInt -gt 0 -and $auditRlsEnabled -and $auditPolicyCount -gt 0) {
       $summary.P0_04 = 'PASS'
     } else {
       $summary.P0_04 = 'FAIL'
