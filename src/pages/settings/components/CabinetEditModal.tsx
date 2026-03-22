@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { invokeAdmin } from '@/settings/admin/invokeAdmin';
+import { adminClient } from '@/settings/admin/adminClient';
 import { getLogoPublicUrl, uploadLogoWithDedup } from '@/settings/admin/logoUpload';
 
 interface ThemeOption {
@@ -32,11 +32,6 @@ interface CabinetFormState {
   logo_placement: string;
 }
 
-interface CreateCabinetResponse {
-  cabinet?: {
-    id?: string;
-  };
-}
 
 const DEFAULT_FORM: CabinetFormState = {
   name: '',
@@ -120,31 +115,27 @@ export default function CabinetEditModal({
       }
 
       if (cabinet?.id) {
-        const { error: invokeError } = await invokeAdmin('update_cabinet', {
+        await adminClient.updateCabinet({
           id: cabinet.id,
           name: form.name.trim(),
-          default_theme_id: form.default_theme_id || null,
-          logo_id: logoId || null,
-          logo_placement: form.logo_placement || 'center-bottom',
+          defaultThemeId: form.default_theme_id || null,
+          logoId: logoId || null,
+          logoPlacement: form.logo_placement || 'center-bottom',
         });
-        if (invokeError) throw new Error(invokeError.message);
       } else {
-        const { data, error: invokeError } = await invokeAdmin('create_cabinet', {
+        const createdCabinet = await adminClient.createCabinet({
           name: form.name.trim(),
-          default_theme_id: form.default_theme_id || null,
+          defaultThemeId: form.default_theme_id || null,
         });
-        if (invokeError) throw new Error(invokeError.message);
-
-        const createdCabinet = (data as CreateCabinetResponse | null)?.cabinet;
         if (logoFile && createdCabinet?.id) {
           setLogoUploading(true);
           const result = await uploadLogoWithDedup(logoFile, createdCabinet.id);
           setLogoUploading(false);
 
           if (!result.error && result.logo_id) {
-            await invokeAdmin('assign_cabinet_logo', {
-              cabinet_id: createdCabinet.id,
-              logo_id: result.logo_id,
+            await adminClient.assignCabinetLogo({
+              cabinetId: createdCabinet.id,
+              logoId: result.logo_id,
             });
           }
         }

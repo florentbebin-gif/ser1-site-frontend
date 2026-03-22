@@ -6,14 +6,7 @@
  */
 
 import { supabase } from '../../supabaseClient';
-import { invokeAdmin } from './invokeAdmin';
-
-interface ExistingLogoPayload {
-  exists?: boolean;
-  logo?: {
-    id?: string | null;
-  };
-}
+import { adminClient } from './adminClient';
 
 /**
  * Calculate SHA256 hash of an ArrayBuffer
@@ -39,16 +32,9 @@ export async function uploadLogoWithDedup(file: File, cabinetId: string): Promis
     const hash = await sha256(arrayBuffer);
     
     // 2. Check if logo already exists
-    const { data: checkData, error: checkError } = await invokeAdmin('check_logo_exists', { sha256: hash });
-    
-    if (checkError) {
-      return { logo_id: null, reused: false, error: checkError.message };
-    }
-    
-    const existingLogo = (checkData as ExistingLogoPayload | null) ?? null;
-    if (existingLogo?.exists && existingLogo?.logo?.id) {
-      // Logo already exists, reuse it
-      return { logo_id: existingLogo.logo.id, reused: true };
+    const { exists, logo: existingLogo } = await adminClient.checkLogoExists(hash);
+    if (exists && existingLogo?.id) {
+      return { logo_id: existingLogo.id, reused: true };
     }
     
     // 3. Upload to Storage
@@ -71,21 +57,15 @@ export async function uploadLogoWithDedup(file: File, cabinetId: string): Promis
     const img = await loadImageDimensions(file);
     
     // 5. Create logo record in DB
-    const { data: createData, error: createError } = await invokeAdmin('create_logo', {
+    const created = await adminClient.createLogo({
       sha256: hash,
-      storage_path: storagePath,
+      storagePath,
       mime: file.type,
       width: img.width,
       height: img.height,
-      bytes: file.size
+      bytes: file.size,
     });
-    
-    if (createError) {
-      return { logo_id: null, reused: false, error: `DB record failed: ${createError.message}` };
-    }
-    
-    const createdLogo = (createData as ExistingLogoPayload | null) ?? null;
-    return { logo_id: createdLogo?.logo?.id ?? null, reused: false };
+    return { logo_id: created.id, reused: false };
     
   } catch (err) {
     return { logo_id: null, reused: false, error: err instanceof Error ? err.message : String(err) };
