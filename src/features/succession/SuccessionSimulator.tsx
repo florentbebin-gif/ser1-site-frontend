@@ -44,7 +44,7 @@ import {
 } from './successionDraft';
 import { buildSuccessionFiscalSnapshot } from './successionFiscalContext';
 import { type SuccessionChainOrder } from './successionChainage';
-import { normalizeResidencePrincipaleAssetEntries } from './successionAssetValuation';
+import { useSuccessionSyncEffects } from './useSuccessionSyncEffects';
 import {
   buildInitialDispositionsDraft,
   EMPTY_ADD_FAMILY_MEMBER_FORM,
@@ -231,18 +231,25 @@ export default function SuccessionSimulator() {
     exportHeirs: derived.exportHeirs,
   });
 
-  // ── Effets de synchronisation état ────────────────────────────────────────
-
-  // Reset enfant rattachement invalide lors d'un changement de situation matrimoniale
-  useEffect(() => {
-    const validValues = new Set(derived.enfantRattachementOptions.map((o) => o.value));
-    const defaultValue = (derived.enfantRattachementOptions[0]?.value ?? 'epoux1') as 'commun' | 'epoux1' | 'epoux2';
-    setEnfantsContext((prev) =>
-      prev.map((e) =>
-        validValues.has(e.rattachement) ? e : { ...e, rattachement: defaultValue },
-      ),
-    );
-  }, [derived.enfantRattachementOptions]);
+  // ── Effets de synchronisation (normalization quand le contexte civil change) ─
+  useSuccessionSyncEffects({
+    enfantRattachementOptions: derived.enfantRattachementOptions,
+    assetOwnerOptions: derived.assetOwnerOptions,
+    assuranceViePartyOptions: derived.assuranceViePartyOptions,
+    assetNetTotals: derived.assetNetTotals,
+    nbEnfants: derived.nbEnfants,
+    donationTotals: derived.donationTotals,
+    familyMembers,
+    setEnfantsContext,
+    setDevolutionContext,
+    setLiquidationContext,
+    setAssetEntries,
+    setAssuranceVieEntries,
+    setPerEntries,
+    setGroupementFoncierEntries,
+    setPrevoyanceDecesEntries,
+    setPatrimonialContext,
+  });
 
   // Hydratation sessionStorage au montage
   useEffect(() => {
@@ -305,153 +312,6 @@ export default function SuccessionSimulator() {
       // ignore
     }
   }, [hydrated, persistedForm, civilContext, liquidationContext, devolutionContext, patrimonialContext, derived.nbEnfantsNonCommuns, enfantsContext, familyMembers, donationsContext, assetEntries, assuranceVieEntries, perEntries, groupementFoncierEntries, prevoyanceDecesEntries, chainOrder]);
-
-  // Auto-dériver les ascendants survivants par branche si des parents sont déclarés
-  useEffect(() => {
-    const hasParentsBySide = {
-      epoux1: familyMembers.some((m) => m.type === 'parent' && (!m.branch || m.branch === 'epoux1')),
-      epoux2: familyMembers.some((m) => m.type === 'parent' && m.branch === 'epoux2'),
-    };
-    setDevolutionContext((prev) => {
-      if (
-        prev.ascendantsSurvivantsBySide.epoux1 === hasParentsBySide.epoux1
-        && prev.ascendantsSurvivantsBySide.epoux2 === hasParentsBySide.epoux2
-      ) {
-        return prev;
-      }
-      return {
-        ...prev,
-        ascendantsSurvivantsBySide: hasParentsBySide,
-      };
-    });
-  }, [familyMembers]);
-
-  // Synchroniser liquidationContext depuis les actifs nets calculés
-  useEffect(() => {
-    setLiquidationContext((prev) => {
-      const next = {
-        actifEpoux1: derived.assetNetTotals.epoux1,
-        actifEpoux2: derived.assetNetTotals.epoux2,
-        actifCommun: derived.assetNetTotals.commun,
-        nbEnfants: derived.nbEnfants,
-      };
-      if (
-        prev.actifEpoux1 === next.actifEpoux1
-        && prev.actifEpoux2 === next.actifEpoux2
-        && prev.actifCommun === next.actifCommun
-        && prev.nbEnfants === next.nbEnfants
-      ) {
-        return prev;
-      }
-      return next;
-    });
-  }, [derived.assetNetTotals.commun, derived.assetNetTotals.epoux1, derived.assetNetTotals.epoux2, derived.nbEnfants]);
-
-  // Reset propriétaires d'actifs invalides lors d'un changement de situation
-  useEffect(() => {
-    const validOwners = new Set(derived.assetOwnerOptions.map((option) => option.value));
-    const fallbackOwner = derived.assetOwnerOptions[0]?.value ?? 'epoux1';
-    setAssetEntries((prev) => {
-      let changed = false;
-      const mapped = prev.map((entry) => {
-        if (validOwners.has(entry.owner)) return entry;
-        changed = true;
-        return { ...entry, owner: fallbackOwner };
-      });
-      const next = normalizeResidencePrincipaleAssetEntries(mapped);
-      const residenceChanged = next.some((entry, index) => entry.subCategory !== mapped[index]?.subCategory);
-      return changed || residenceChanged ? next : prev;
-    });
-  }, [derived.assetOwnerOptions]);
-
-  // Reset assurés/souscripteurs d'AV invalides lors d'un changement de situation
-  useEffect(() => {
-    const validOwners = new Set(derived.assuranceViePartyOptions.map((option) => option.value));
-    const fallbackOwner = derived.assuranceViePartyOptions[0]?.value ?? 'epoux1';
-    setAssuranceVieEntries((prev) => {
-      let changed = false;
-      const next = prev.map((entry) => {
-        const souscripteur = validOwners.has(entry.souscripteur) ? entry.souscripteur : fallbackOwner;
-        const assure = validOwners.has(entry.assure) ? entry.assure : fallbackOwner;
-        if (souscripteur === entry.souscripteur && assure === entry.assure) return entry;
-        changed = true;
-        return {
-          ...entry,
-          souscripteur,
-          assure,
-        };
-      });
-      return changed ? next : prev;
-    });
-  }, [derived.assuranceViePartyOptions]);
-
-  useEffect(() => {
-    const validOwners = new Set(derived.assuranceViePartyOptions.map((option) => option.value));
-    const fallbackOwner = derived.assuranceViePartyOptions[0]?.value ?? 'epoux1';
-    setPerEntries((prev) => {
-      let changed = false;
-      const next = prev.map((entry) => {
-        const assure = validOwners.has(entry.assure) ? entry.assure : fallbackOwner;
-        if (assure === entry.assure) return entry;
-        changed = true;
-        return {
-          ...entry,
-          assure,
-        };
-      });
-      return changed ? next : prev;
-    });
-  }, [derived.assuranceViePartyOptions]);
-
-  useEffect(() => {
-    const validOwners = new Set(derived.assetOwnerOptions.map((option) => option.value));
-    const fallbackOwner = derived.assetOwnerOptions[0]?.value ?? 'epoux1';
-    setGroupementFoncierEntries((prev) => {
-      let changed = false;
-      const next = prev.map((entry) => {
-        const owner = validOwners.has(entry.owner) ? entry.owner : fallbackOwner;
-        if (owner === entry.owner) return entry;
-        changed = true;
-        return { ...entry, owner };
-      });
-      return changed ? next : prev;
-    });
-  }, [derived.assetOwnerOptions]);
-
-  useEffect(() => {
-    const validOwners = new Set(derived.assuranceViePartyOptions.map((option) => option.value));
-    const fallbackOwner = derived.assuranceViePartyOptions[0]?.value ?? 'epoux1';
-    setPrevoyanceDecesEntries((prev) => {
-      let changed = false;
-      const next = prev.map((entry) => {
-        const souscripteur = validOwners.has(entry.souscripteur) ? entry.souscripteur : fallbackOwner;
-        const assure = validOwners.has(entry.assure) ? entry.assure : fallbackOwner;
-        if (souscripteur === entry.souscripteur && assure === entry.assure) return entry;
-        changed = true;
-        return { ...entry, souscripteur, assure };
-      });
-      return changed ? next : prev;
-    });
-  }, [derived.assuranceViePartyOptions]);
-
-  // Synchroniser patrimonialContext depuis les totaux donations
-  useEffect(() => {
-    setPatrimonialContext((prev) => {
-      if (
-        prev.donationsRapportables === derived.donationTotals.rapportable
-        && prev.donationsHorsPart === derived.donationTotals.horsPart
-        && prev.legsParticuliers === derived.donationTotals.legsParticuliers
-      ) {
-        return prev;
-      }
-      return {
-        ...prev,
-        donationsRapportables: derived.donationTotals.rapportable,
-        donationsHorsPart: derived.donationTotals.horsPart,
-        legsParticuliers: derived.donationTotals.legsParticuliers,
-      };
-    });
-  }, [derived.donationTotals.horsPart, derived.donationTotals.legsParticuliers, derived.donationTotals.rapportable]);
 
   // Écoute l'événement reset global
   useEffect(() => {

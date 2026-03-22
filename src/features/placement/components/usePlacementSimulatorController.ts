@@ -28,8 +28,8 @@ import {
   type PlacementStep,
   type PlacementTransmissionState,
 } from '../utils/normalizers';
-import { exportPlacementExcel } from '../export/placementExcelExport';
 import { getRelevantColumnsEpargne, getBaseColumnsForProduct } from '../utils/tableHelpers';
+import { usePlacementExportHandlers } from './usePlacementExportHandlers';
 
 const PLACEMENT_SAVE_EVENT = 'ser1:placement:save';
 const PLACEMENT_LOAD_EVENT = 'ser1:placement:load';
@@ -97,7 +97,6 @@ export function usePlacementSimulatorController(isExpert: boolean) {
   const [state, setState] = useState<PlacementSimulatorState>(DEFAULT_STATE);
   const [modalOpen, setModalOpen] = useState<number | null>(null);
   const [actionInProgress, setActionInProgress] = useState(false);
-  const [exportLoading, setExportLoading] = useState(false);
   const [showAllColumns, setShowAllColumns] = useState(false);
 
   const dmtgScale = fiscalContext?.dmtgScaleLigneDirecte;
@@ -343,165 +342,9 @@ export function usePlacementSimulatorController(isExpert: boolean) {
     }));
   };
 
-  const exportExcel = useCallback(async () => {
-    setExportLoading(true);
-    try {
-      await exportPlacementExcel(buildPlacementStateForMode(state, isExpert), results, pptxColors.c1, pptxColors.c7);
-    } catch (errorExport) {
-      const err = errorExport instanceof Error ? errorExport : new Error(String(errorExport));
-      console.error('[ExcelExport] Export failed', {
-        err: errorExport,
-        message: err.message,
-        stack: err.stack,
-      });
-      alert('Impossible de générer le fichier Excel.');
-    } finally {
-      setExportLoading(false);
-    }
-  }, [state, isExpert, results, pptxColors]);
-
-  const exportPptx = useCallback(async () => {
-    if (!results) return;
-    setExportLoading(true);
-    try {
-      const [{ buildPlacementStudyDeck }, { exportAndDownloadStudyDeck }] = await Promise.all([
-        import('@/pptx/presets/placementDeckBuilder'),
-        import('@/pptx/export/exportStudyDeck'),
-      ]);
-      const stateForCalc = buildPlacementStateForMode(state, isExpert);
-
-      const buildProductConfig = (productIndex: number) => {
-        const p = stateForCalc.products[productIndex];
-        const vc = p.versementConfig;
-        return {
-          tmi: state.client.tmiEpargne,
-          tmiRetraite: state.client.tmiRetraite,
-          rendementCapi: vc.capitalisation.rendementAnnuel,
-          rendementDistrib: vc.distribution.tauxDistribution ?? 0,
-          tauxRevalorisation: vc.distribution.rendementAnnuel,
-          repartitionCapi: vc.initial.pctCapitalisation ?? 100,
-          strategieDistribution: vc.distribution.strategie ?? 'stocker',
-          versementInitial: vc.initial.montant,
-          versementAnnuel: vc.annuel.montant,
-          ponctuels: (vc.ponctuels || []).map((pt: { annee: number; montant: number }) => ({ annee: pt.annee, montant: pt.montant })),
-          fraisEntree: vc.initial.fraisEntree,
-          optionBaremeIR: p.liquidation?.optionBaremeIR ?? false,
-        };
-      };
-
-      const mapEpargneRows = (rows: typeof results.produit1.epargne.rows) =>
-        rows.map(r => ({
-          annee: r.annee,
-          versementNet: r.versementNet,
-          capitalDebut: r.capitalDebut,
-          gainsAnnee: r.gainsAnnee,
-          capitalFin: r.capitalFin,
-          effortReel: r.effortReel,
-          economieIR: r.economieIR,
-        }));
-
-      const mapLiquidationRows = (rows: typeof results.produit1.liquidation.rows) =>
-        rows.map(r => ({
-          annee: r.annee,
-          capitalDebut: r.capitalDebut,
-          gainsAnnee: r.gainsAnnee,
-          retraitBrut: r.retraitBrut,
-          fiscaliteTotal: r.fiscaliteTotal,
-          retraitNet: r.retraitNet,
-          capitalFin: r.capitalFin,
-        }));
-
-      const data = {
-        clientName: undefined as string | undefined,
-        ageActuel: state.client.ageActuel ?? 0,
-        dureeEpargne: state.products[0].dureeEpargne,
-        ageAuDeces: state.transmission.ageAuDeces,
-        liquidationMode: state.liquidation.mode,
-        liquidationDuree: state.liquidation.duree,
-        liquidationMensualiteCible: state.liquidation.mensualiteCible,
-        liquidationMontantUnique: state.liquidation.montantUnique,
-        beneficiaryType: state.transmission.beneficiaryType,
-        nbBeneficiaires: state.transmission.nbBeneficiaires,
-        dmtgTaux: state.transmission.dmtgTaux,
-        produit1: {
-          envelopeLabel: results.produit1.envelopeLabel,
-          epargne: {
-            capitalAcquis: results.produit1.epargne.capitalAcquis,
-            cumulVersements: results.produit1.epargne.cumulVersements,
-            cumulEffort: results.produit1.epargne.cumulEffort,
-            cumulEconomieIR: results.produit1.epargne.cumulEconomieIR,
-          },
-          liquidation: {
-            cumulRetraitsNets: results.produit1.liquidation.cumulRetraitsNets,
-            revenuAnnuelMoyenNet: results.produit1.liquidation.revenuAnnuelMoyenNet,
-            cumulFiscalite: results.produit1.liquidation.cumulFiscalite,
-          },
-          transmission: {
-            capitalTransmisNet: results.produit1.transmission.capitalTransmisNet,
-            taxe: results.produit1.transmission.taxe,
-            regime: results.produit1.transmission.regime,
-          },
-          totaux: {
-            effortReel: results.produit1.totaux.effortReel,
-            revenusNetsEpargne: results.produit1.totaux.revenusNetsEpargne,
-            revenusNetsLiquidation: results.produit1.totaux.revenusNetsLiquidation,
-            fiscaliteTotale: results.produit1.totaux.fiscaliteTotale,
-            capitalTransmisNet: results.produit1.totaux.capitalTransmisNet,
-            revenusNetsTotal: results.produit1.totaux.revenusNetsTotal,
-          },
-          config: buildProductConfig(0),
-          epargneRows: mapEpargneRows(results.produit1.epargne.rows),
-          liquidationRows: mapLiquidationRows(results.produit1.liquidation.rows),
-        },
-        produit2: {
-          envelopeLabel: results.produit2.envelopeLabel,
-          epargne: {
-            capitalAcquis: results.produit2.epargne.capitalAcquis,
-            cumulVersements: results.produit2.epargne.cumulVersements,
-            cumulEffort: results.produit2.epargne.cumulEffort,
-            cumulEconomieIR: results.produit2.epargne.cumulEconomieIR,
-          },
-          liquidation: {
-            cumulRetraitsNets: results.produit2.liquidation.cumulRetraitsNets,
-            revenuAnnuelMoyenNet: results.produit2.liquidation.revenuAnnuelMoyenNet,
-            cumulFiscalite: results.produit2.liquidation.cumulFiscalite,
-          },
-          transmission: {
-            capitalTransmisNet: results.produit2.transmission.capitalTransmisNet,
-            taxe: results.produit2.transmission.taxe,
-            regime: results.produit2.transmission.regime,
-          },
-          totaux: {
-            effortReel: results.produit2.totaux.effortReel,
-            revenusNetsEpargne: results.produit2.totaux.revenusNetsEpargne,
-            revenusNetsLiquidation: results.produit2.totaux.revenusNetsLiquidation,
-            fiscaliteTotale: results.produit2.totaux.fiscaliteTotale,
-            capitalTransmisNet: results.produit2.totaux.capitalTransmisNet,
-            revenusNetsTotal: results.produit2.totaux.revenusNetsTotal,
-          },
-          config: buildProductConfig(1),
-          epargneRows: mapEpargneRows(results.produit2.epargne.rows),
-          liquidationRows: mapLiquidationRows(results.produit2.liquidation.rows),
-        },
-      };
-      const deck = buildPlacementStudyDeck(data, pptxColors, cabinetLogo, logoPlacement);
-      const dateStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
-      await exportAndDownloadStudyDeck(deck, pptxColors, `simulation-placement-${dateStr}.pptx`, {
-        locale: 'fr-FR',
-        showSlideNumbers: true,
-      });
-    } catch (errorExport) {
-      const err = errorExport instanceof Error ? errorExport : new Error(String(errorExport));
-      console.error('[PlacementPPTX] Export failed', {
-        err: errorExport,
-        message: err.message,
-        stack: err.stack,
-      });
-      alert('Impossible de générer le fichier PowerPoint.');
-    } finally {
-      setExportLoading(false);
-    }
-  }, [results, state, isExpert, pptxColors, cabinetLogo, logoPlacement]);
+  const { exportExcel, exportPptx, exportLoading } = usePlacementExportHandlers({
+    state, isExpert, results, pptxColors, cabinetLogo, logoPlacement,
+  });
 
   const exportHandlers: PlacementSimulatorExportHandlers = {
     exportExcel,
