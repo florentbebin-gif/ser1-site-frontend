@@ -11,10 +11,14 @@ Sources de verite (uniquement) :
 - `docs/GOUVERNANCE.md`
 - `docs/ARCHITECTURE.md`
 - `docs/RUNBOOK.md`
+- `.github/CONTRIBUTING.md` — conventions code, workflow git, PR checklist
 
 Guidance agent / repo automation :
-- `AGENTS.md`
-- `.windsurf/rules/ser1-core-rules.md`
+- `AGENTS.md` — regles comportementales agent (source unique, lu par tous les outils)
+- `CLAUDE.md` — workflows automatiques Claude Code (reference AGENTS.md, pas de duplication)
+- `.claude/rules/` — regles path-scoped (fiscal-engine, component-structure, supabase-patterns)
+- `.claude/commands/` — commandes reutilisables (check, pr, fiscal-audit)
+- `.claude/skills/` — skills specialises (clean-code, fix-errors)
 
 ## Quickstart
 

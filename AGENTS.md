@@ -1,6 +1,31 @@
-## SER1 Agent Rules
+## SER1 — Agent Rules & Project Context
 
-These rules are always-on for work in this repository. Do not rely on optional skills for them.
+### Project context
+SER1 : simulateurs fiscaux pour CGP (IR, Succession, Placement, Crédit, Stratégie).
+Stack : React 18 + Vite 5 + TypeScript strict + Supabase (Auth/DB/Edge Functions).
+CI gate : `npm run check` — doit passer avant tout commit.
+
+#### Chaîne fiscale — ne jamais bypasser
+```
+Supabase (tax_settings, ps_settings, fiscality_settings)
+  → src/utils/cache/fiscalSettingsCache.ts
+    → src/hooks/useFiscalContext.ts
+      → src/constants/settingsDefaults.ts (fallbacks)
+```
+Jamais hardcoder de valeurs fiscales (17.2, 100000, 15932, 12.8, 30).
+Jamais lire Supabase directement depuis un composant React.
+
+#### Pour aller plus loin
+- Conventions code & workflow : `.github/CONTRIBUTING.md`
+- Architecture détaillée : `docs/ARCHITECTURE.md`
+- Règles métier fiscales : `docs/METIER.md`
+- UI / thème / couleurs : `docs/GOUVERNANCE.md`
+
+---
+
+### Agent rules — always-on
+
+These rules apply for every LLM and agent working in this repository.
 
 ### 1. Proof first
 - Never claim `unused`, `dead code`, `safe to delete`, `not referenced`, `RLS OK`, or `theme OK` without concrete proof.
