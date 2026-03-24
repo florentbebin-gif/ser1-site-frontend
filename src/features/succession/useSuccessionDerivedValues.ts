@@ -16,6 +16,7 @@ import {
 } from './successionEnfants';
 import { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
 import { coordinateSuccessionInsuranceAllowances } from './successionDeathInsuranceAllowances';
+import { buildSuccessionSurvivorEconomicInflows } from './successionInsuranceInflows';
 import { buildSuccessionPerFiscalAnalysis } from './successionPerFiscal';
 import {
   buildSuccessionPrevoyanceFiscalAnalysis,
@@ -184,6 +185,99 @@ export function useSuccessionDerivedValues({
     [civilContext, liquidationContext, nbDescendantBranches, fiscalSnapshot.dmtgSettings, patrimonialContext.attributionBiensCommunsPct],
   );
 
+  const rawAvFiscalAnalysis = useMemo(
+    () => buildSuccessionAvFiscalAnalysis(
+      assuranceVieEntries,
+      civilContext,
+      enfantsContext,
+      familyMembers,
+      fiscalSnapshot,
+    ),
+    [assuranceVieEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot],
+  );
+
+  const rawPerFiscalAnalysis = useMemo(
+    () => buildSuccessionPerFiscalAnalysis(
+      perEntries,
+      civilContext,
+      enfantsContext,
+      familyMembers,
+      fiscalSnapshot,
+      simulatedDeathDate,
+    ),
+    [perEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot, simulatedDeathDate],
+  );
+
+  const rawPrevoyanceFiscalAnalysis = useMemo(
+    () => buildSuccessionPrevoyanceFiscalAnalysis(
+      prevoyanceDecesEntries,
+      civilContext,
+      enfantsContext,
+      familyMembers,
+      fiscalSnapshot,
+      simulatedDeathDate,
+    ),
+    [
+      prevoyanceDecesEntries,
+      civilContext,
+      enfantsContext,
+      familyMembers,
+      fiscalSnapshot,
+      simulatedDeathDate,
+    ],
+  );
+
+  const prevoyanceRegimeByEntry = useMemo(() => Object.fromEntries(
+    prevoyanceDecesEntries.map((entry) => {
+      const regimeInfo = getSuccessionPrevoyanceRegimeInfo(
+        entry,
+        civilContext,
+        simulatedDeathDate,
+        fiscalSnapshot.avDeces.agePivotPrimes,
+      );
+
+      return [entry.id, {
+        regimeLabel: regimeInfo.regimeLabel,
+        warning: regimeInfo.warning,
+      }];
+    }),
+  ), [
+    prevoyanceDecesEntries,
+    civilContext,
+    simulatedDeathDate,
+    fiscalSnapshot.avDeces.agePivotPrimes,
+  ]);
+
+  const coordinatedInsuranceFiscal = useMemo(
+    () => coordinateSuccessionInsuranceAllowances({
+      avFiscalAnalysis: rawAvFiscalAnalysis,
+      perFiscalAnalysis: rawPerFiscalAnalysis,
+      prevoyanceFiscalAnalysis: rawPrevoyanceFiscalAnalysis,
+      fiscalSnapshot,
+    }),
+    [
+      rawAvFiscalAnalysis,
+      rawPerFiscalAnalysis,
+      rawPrevoyanceFiscalAnalysis,
+      fiscalSnapshot,
+    ],
+  );
+
+  const {
+    avFiscalAnalysis,
+    perFiscalAnalysis,
+    prevoyanceFiscalAnalysis,
+  } = coordinatedInsuranceFiscal;
+
+  const survivorEconomicInflows = useMemo(
+    () => buildSuccessionSurvivorEconomicInflows({
+      avFiscalAnalysis,
+      perFiscalAnalysis,
+      prevoyanceFiscalAnalysis,
+    }),
+    [avFiscalAnalysis, perFiscalAnalysis, prevoyanceFiscalAnalysis],
+  );
+
   const chainageAnalysis = useMemo(
     () => buildSuccessionChainageAnalysis({
       civil: civilContext,
@@ -191,6 +285,7 @@ export function useSuccessionDerivedValues({
       regimeUsed: predecesAnalysis.regimeUsed,
       order: chainOrder,
       dmtgSettings: fiscalSnapshot.dmtgSettings,
+      survivorEconomicInflows,
       attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
       patrimonial: {
         attributionIntegrale: patrimonialContext.attributionIntegrale,
@@ -214,6 +309,7 @@ export function useSuccessionDerivedValues({
       predecesAnalysis.regimeUsed,
       chainOrder,
       fiscalSnapshot.dmtgSettings,
+      survivorEconomicInflows,
       patrimonialContext.attributionBiensCommunsPct,
       patrimonialContext.attributionIntegrale,
       patrimonialContext.donationEntreEpouxActive,
@@ -302,90 +398,6 @@ export function useSuccessionDerivedValues({
       simulatedDeathDate,
     ],
   );
-
-  const rawAvFiscalAnalysis = useMemo(
-    () => buildSuccessionAvFiscalAnalysis(
-      assuranceVieEntries,
-      civilContext,
-      enfantsContext,
-      familyMembers,
-      fiscalSnapshot,
-    ),
-    [assuranceVieEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot],
-  );
-
-  const rawPerFiscalAnalysis = useMemo(
-    () => buildSuccessionPerFiscalAnalysis(
-      perEntries,
-      civilContext,
-      enfantsContext,
-      familyMembers,
-      fiscalSnapshot,
-      simulatedDeathDate,
-    ),
-    [perEntries, civilContext, enfantsContext, familyMembers, fiscalSnapshot, simulatedDeathDate],
-  );
-
-  const rawPrevoyanceFiscalAnalysis = useMemo(
-    () => buildSuccessionPrevoyanceFiscalAnalysis(
-      prevoyanceDecesEntries,
-      civilContext,
-      enfantsContext,
-      familyMembers,
-      fiscalSnapshot,
-      simulatedDeathDate,
-    ),
-    [
-      prevoyanceDecesEntries,
-      civilContext,
-      enfantsContext,
-      familyMembers,
-      fiscalSnapshot,
-      simulatedDeathDate,
-    ],
-  );
-
-  const prevoyanceRegimeByEntry = useMemo(() => Object.fromEntries(
-    prevoyanceDecesEntries.map((entry) => {
-      const regimeInfo = getSuccessionPrevoyanceRegimeInfo(
-        entry,
-        civilContext,
-        simulatedDeathDate,
-        fiscalSnapshot.avDeces.agePivotPrimes,
-      );
-
-      return [entry.id, {
-        regimeLabel: regimeInfo.regimeLabel,
-        warning: regimeInfo.warning,
-      }];
-    }),
-  ), [
-    prevoyanceDecesEntries,
-    civilContext,
-    simulatedDeathDate,
-    fiscalSnapshot.avDeces.agePivotPrimes,
-  ]);
-
-  const coordinatedInsuranceFiscal = useMemo(
-    () => coordinateSuccessionInsuranceAllowances({
-      avFiscalAnalysis: rawAvFiscalAnalysis,
-      perFiscalAnalysis: rawPerFiscalAnalysis,
-      prevoyanceFiscalAnalysis: rawPrevoyanceFiscalAnalysis,
-      fiscalSnapshot,
-    }),
-    [
-      rawAvFiscalAnalysis,
-      rawPerFiscalAnalysis,
-      rawPrevoyanceFiscalAnalysis,
-      fiscalSnapshot,
-    ],
-  );
-
-  const {
-    avFiscalAnalysis,
-    perFiscalAnalysis,
-    prevoyanceFiscalAnalysis,
-  } = coordinatedInsuranceFiscal;
 
   const outcomeDerived = useSuccessionOutcomeDerivedValues({
     civilContext,

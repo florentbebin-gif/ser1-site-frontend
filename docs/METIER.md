@@ -161,6 +161,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - la representation successorale des enfants decedes reste simplifiee et ne remplace pas une analyse notariale detaillee
 - la chronologie 2 deces n'est plus la source d'affichage principale hors mariage; pour PACS et autres situations, la synthese privilegie une lecture directe du deces simule
 - la chronologie 2 deces reste sur un meme horizon deces simule pour les 2 etapes et ne modele pas un decalage calendaire distinct entre premier et second deces
+- en chronologie 2 deces mariee, les capitaux assurances nets effectivement recus par le conjoint survivant au 1er deces (assurance-vie, PER assurance, prevoyance deces) sont reintegres economiquement dans la masse du 2e deces; le module ne reconstitue pas pour autant une remployabilite notariale fine par actif
 - l'UI succession privilegie actuellement les analyses civiles/patrimoniales guidees; le calcul DMTG detaille par heredier n'est pas expose comme parcours principal de saisie
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
 - la chronologie 2 deces reste un module simplifie: elle reemploie le testament du cote du decede et le report economique vers le 2e deces, mais ne remplace pas une liquidation notariale exhaustive
