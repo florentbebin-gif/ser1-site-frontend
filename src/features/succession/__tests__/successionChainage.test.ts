@@ -339,6 +339,34 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(withPreciput.warnings.some((warning) => warning.includes('preciput'))).toBe(true);
   });
 
+  it('reinjects survivor insurance inflows into step 2 estate', () => {
+    const baseInput = {
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
+      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens' as const,
+      order: 'epoux1' as const,
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' as const },
+        { id: 'E2', rattachement: 'commun' as const },
+      ],
+      familyMembers: [],
+    };
+
+    const withoutInflows = buildSuccessionChainageAnalysis(baseInput);
+    const withInflows = buildSuccessionChainageAnalysis({
+      ...baseInput,
+      survivorEconomicInflows: {
+        epoux1: 80000,
+        epoux2: 0,
+      },
+    });
+
+    expect(withoutInflows.step2?.actifTransmis).toBe(325000);
+    expect(withInflows.step2?.actifTransmis).toBe(405000);
+    expect(withInflows.warnings.some((warning) => warning.includes('capitaux assurances nets recycles'))).toBe(true);
+  });
+
   it('ignores at step 2 a testament still aimed at the already deceased spouse', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),

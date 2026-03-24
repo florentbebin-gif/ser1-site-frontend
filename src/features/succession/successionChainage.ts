@@ -80,6 +80,7 @@ interface SuccessionChainageInput {
   regimeUsed: SuccessionChainRegime | null;
   order: SuccessionChainOrder;
   dmtgSettings: DmtgSettings;
+  survivorEconomicInflows?: Record<'epoux1' | 'epoux2', number>;
   attributionBiensCommunsPct?: number;
   patrimonial?: Pick<
     SuccessionPatrimonialContext,
@@ -363,6 +364,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   const attributionPct = input.attributionBiensCommunsPct ?? 50;
   const firstEstate = computeFirstEstate(input.regimeUsed, input.order, input.liquidation, attributionPct);
   const survivorBase = Math.max(0, totalPatrimoine - firstEstate);
+  const survivorEconomicInflows = Math.max(0, input.survivorEconomicInflows?.[input.order] ?? 0);
   const warnings: string[] = [];
   const firstEstateOwnerScales = buildFirstEstateOwnerScales(input.regimeUsed, input.order, attributionPct);
   const survivorOwnerScales = buildSurvivorOwnerScales(input.regimeUsed, input.order, attributionPct);
@@ -427,7 +429,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
 
   const otherSide = getOtherSide(input.order);
   const step2CarryOverAmount = step1Split.carryOverToStep2 + step1Details.carryOverToStep2 + step1Split.preciputDeducted;
-  const step2Estate = survivorBase + step2CarryOverAmount;
+  const step2Estate = survivorBase + step2CarryOverAmount + survivorEconomicInflows;
   const survivorTaxableBasis = buildSuccessionEstateTaxableBasis(
     input.transmissionBasis,
     survivorOwnerScales,
@@ -438,9 +440,14 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
       ordinaryNetBeforeForfait: 0,
       groupementEntries: [],
     };
+  const survivorEconomicInflowsTaxableBasis = {
+    ordinaryNetBeforeForfait: survivorEconomicInflows,
+    groupementEntries: [],
+  };
   const step2TaxableBasis = addSuccessionEstateTaxableBases(
     survivorTaxableBasis,
     carryOverTaxableBasis,
+    survivorEconomicInflowsTaxableBasis,
   );
   const step2Details = computeStepTransmission(
     input,
@@ -460,6 +467,9 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     otherSide,
     step2Details.transmission.beneficiaries.length > 0,
   ));
+  if (survivorEconomicInflows > 0) {
+    warnings.push(`Etape 2 (${getLabelForSide(otherSide)}): capitaux assurances nets recycles depuis l'etape 1 = ${Math.round(survivorEconomicInflows).toLocaleString('fr-FR')} EUR.`);
+  }
 
   return {
     applicable: true,
