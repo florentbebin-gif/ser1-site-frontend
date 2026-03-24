@@ -35,6 +35,8 @@ export interface HeritiersInput {
   lien: LienParente;
   partSuccession: number; // Montant en €
   abattementOverride?: number;
+  baseHistoriqueTaxee?: number;
+  droitsDejaAcquittes?: number;
 }
 
 export interface SuccessionInput {
@@ -132,8 +134,11 @@ export function calculateSuccession(input: SuccessionInput): CalcResult<Successi
     const abattement = Number.isFinite(heritier.abattementOverride)
       ? Math.max(0, Number(heritier.abattementOverride))
       : getAbattement(heritier.lien, dmtg);
-    const baseImposable = Math.max(0, heritier.partSuccession - abattement);
-    const droits = calculateDMTG(baseImposable, heritier.lien, dmtg);
+    const baseHistoriqueTaxee = Math.max(0, Number(heritier.baseHistoriqueTaxee) || 0);
+    const baseImposable = Math.max(0, heritier.partSuccession + baseHistoriqueTaxee - abattement);
+    const droitsBruts = calculateDMTG(baseImposable, heritier.lien, dmtg);
+    const droitsDejaAcquittes = Math.max(0, Number(heritier.droitsDejaAcquittes) || 0);
+    const droits = Math.max(0, droitsBruts - droitsDejaAcquittes);
     const tauxMoyen = heritier.partSuccession > 0 
       ? (droits / heritier.partSuccession) * 100 
       : 0;

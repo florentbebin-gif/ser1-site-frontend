@@ -9,17 +9,20 @@ import type {
   FamilyMember,
   SuccessionCivilContext,
   SuccessionDevolutionContext,
+  SuccessionDonationEntry,
   SuccessionEnfant,
   SuccessionLiquidationContext,
   SuccessionPatrimonialContext,
 } from './successionDraft';
 import type { SuccessionDevolutionAnalysis } from './successionDevolution';
 import type { SuccessionChainBeneficiary, SuccessionChainageAnalysis } from './successionChainage';
+import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
 import {
   buildRepresentationAbattementOverrides,
   buildSuccessionDescendantRecipientsForDeceased,
   countEffectiveDescendantBranchesForDeceased,
 } from './successionEnfants';
+import { applySuccessionDonationRecallToHeirs } from './successionDonationRecall';
 import {
   assignBeneficiaryTaxableBasis,
   buildSuccessionEstateTaxableBasis,
@@ -63,6 +66,9 @@ interface BuildSuccessionDirectDisplayInput {
   forfaitMobilierMode?: SuccessionPatrimonialContext['forfaitMobilierMode'];
   forfaitMobilierPct?: number;
   forfaitMobilierMontant?: number;
+  donationsContext?: SuccessionDonationEntry[];
+  donationSettings?: SuccessionFiscalSnapshot['donation'];
+  referenceDate?: Date;
 }
 
 export interface SuccessionDirectEstateBasis {
@@ -78,6 +84,8 @@ interface DetailedHeirInput {
   partSuccession: number;
   taxablePartSuccession?: number;
   abattementOverride?: number;
+  baseHistoriqueTaxee?: number;
+  droitsDejaAcquittes?: number;
   exonerated?: boolean;
 }
 
@@ -362,6 +370,8 @@ function toHeritiersInput(heirs: DetailedHeirInput[]): HeritiersInput[] {
     lien: heir.lien,
     partSuccession: heir.partSuccession,
     abattementOverride: heir.abattementOverride,
+    baseHistoriqueTaxee: heir.baseHistoriqueTaxee,
+    droitsDejaAcquittes: heir.droitsDejaAcquittes,
   }));
 }
 
@@ -370,6 +380,8 @@ function toTaxableHeritiersInput(heirs: DetailedHeirInput[]): HeritiersInput[] {
     lien: heir.lien,
     partSuccession: Math.max(0, heir.taxablePartSuccession ?? heir.partSuccession),
     abattementOverride: heir.abattementOverride,
+    baseHistoriqueTaxee: heir.baseHistoriqueTaxee,
+    droitsDejaAcquittes: heir.droitsDejaAcquittes,
   }));
 }
 
@@ -515,10 +527,18 @@ export function buildSuccessionDirectDisplayAnalysis(
       },
     )
     : detailedHeirs;
+  const detailedHeirsWithDonationRecall = applySuccessionDonationRecallToHeirs({
+    heirs: detailedHeirsWithTaxableBasis,
+    donations: input.donationsContext,
+    simulatedDeceased,
+    donationSettings: input.donationSettings,
+    dmtgSettings: input.dmtgSettings,
+    referenceDate: input.referenceDate,
+  });
 
-  const heirs = toHeritiersInput(detailedHeirsWithTaxableBasis);
+  const heirs = toHeritiersInput(detailedHeirsWithDonationRecall);
   const actifNetSuccession = heirs.reduce((sum, heir) => sum + heir.partSuccession, 0) || estateAmount;
-  const taxableHeirs = toTaxableHeritiersInput(detailedHeirsWithTaxableBasis);
+  const taxableHeirs = toTaxableHeritiersInput(detailedHeirsWithDonationRecall);
   const rawResult = taxableHeirs.length > 0
     ? calculateSuccession({
       actifNetSuccession,
@@ -547,7 +567,7 @@ export function buildSuccessionDirectDisplayAnalysis(
     simulatedDeceased,
     heirs,
     result,
-    transmissionRows: buildTransmissionRows(detailedHeirsWithTaxableBasis, result),
+    transmissionRows: buildTransmissionRows(detailedHeirsWithDonationRecall, result),
     warnings,
   };
 }

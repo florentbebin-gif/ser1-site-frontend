@@ -93,6 +93,30 @@ describe('Succession Module', () => {
     expect(result.result.totalDroits).toBe(18194);
   });
 
+  it('integre la base historique taxee et deduit les droits deja acquittes', () => {
+    const combinedGross = calculateSuccession({
+      actifNetSuccession: 350000,
+      heritiers: [{ lien: 'enfant', partSuccession: 350000 }],
+    }).result.totalDroits;
+    const alreadyPaid = calculateSuccession({
+      actifNetSuccession: 150000,
+      heritiers: [{ lien: 'enfant', partSuccession: 150000 }],
+    }).result.totalDroits;
+
+    const result = calculateSuccession({
+      actifNetSuccession: 200000,
+      heritiers: [{
+        lien: 'enfant',
+        partSuccession: 200000,
+        baseHistoriqueTaxee: 150000,
+        droitsDejaAcquittes: alreadyPaid,
+      }],
+    });
+
+    expect(result.result.detailHeritiers[0].baseImposable).toBe(250000);
+    expect(result.result.totalDroits).toBe(combinedGross - alreadyPaid);
+  });
+
   describe('calculatePredecesSenarios', () => {
     it('calcule les scénarios pour un couple en communauté légale', () => {
       const result = calculatePredecesSenarios({

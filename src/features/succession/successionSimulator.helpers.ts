@@ -274,8 +274,16 @@ export function applySuccessionDonationFieldUpdate(
   value: string | number | boolean,
 ): SuccessionDonationEntry {
   if (field === 'type') return { ...entry, type: value as SuccessionDonationEntry['type'] };
-  if (field === 'montant' || field === 'valeurDonation' || field === 'valeurActuelle') {
-    return { ...entry, [field]: Math.max(0, Number(value) || 0) };
+  if (field === 'montant') {
+    const amount = Math.max(0, Number(value) || 0);
+    return { ...entry, montant: amount, valeurDonation: entry.valeurDonation ?? amount };
+  }
+  if (field === 'valeurDonation') {
+    const amount = Math.max(0, Number(value) || 0);
+    return { ...entry, valeurDonation: amount, montant: amount };
+  }
+  if (field === 'valeurActuelle') {
+    return { ...entry, valeurActuelle: Math.max(0, Number(value) || 0) };
   }
   if (field === 'donSommeArgentExonere' || field === 'avecReserveUsufruit') {
     return { ...entry, [field]: Boolean(value) };

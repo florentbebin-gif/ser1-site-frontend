@@ -5,11 +5,13 @@ import {
   type FamilyMember,
   type SuccessionCivilContext,
   type SuccessionDevolutionContext,
+  type SuccessionDonationEntry,
   type SuccessionEnfant,
   type SuccessionLiquidationContext,
   type SuccessionPatrimonialContext,
   type SuccessionTestamentConfig,
 } from './successionDraft';
+import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
 import {
   buildSuccessionDescendantRecipients,
   countEffectiveDescendantBranches,
@@ -30,6 +32,7 @@ import {
   mergeDetailedHeirs,
   type DetailedChainHeir,
 } from './successionChainage.heirs';
+import { applySuccessionDonationRecallToHeirs } from './successionDonationRecall';
 import {
   addSuccessionEstateTaxableBases,
   assignBeneficiaryTaxableBasis,
@@ -94,6 +97,8 @@ interface SuccessionChainageInput {
   familyMembers?: FamilyMember[];
   devolution?: Pick<SuccessionDevolutionContext, 'testamentsBySide'>;
   referenceDate?: Date;
+  donations?: SuccessionDonationEntry[];
+  donationSettings?: SuccessionFiscalSnapshot['donation'];
 }
 
 interface SuccessionChainStepComputation {
@@ -318,9 +323,17 @@ function computeStepTransmission(
       forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
     })
     : detailedHeirs;
+  const detailedHeirsWithDonationRecall = applySuccessionDonationRecallToHeirs({
+    heirs: detailedHeirsWithTaxableBasis,
+    donations: input.donations,
+    simulatedDeceased: deceased,
+    donationSettings: input.donationSettings,
+    dmtgSettings: input.dmtgSettings,
+    referenceDate: input.referenceDate,
+  });
   const transmission = computeTransmissionForHeirs(
     estateAmount,
-    detailedHeirsWithTaxableBasis,
+    detailedHeirsWithDonationRecall,
     input.dmtgSettings,
   );
   const partConjoint = transmission.beneficiaries

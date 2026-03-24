@@ -301,6 +301,8 @@ export function useSuccessionDerivedValues({
       familyMembers,
       devolution: devolutionContext,
       referenceDate: simulatedDeathDate,
+      donations: donationsContext,
+      donationSettings: fiscalSnapshot.donation,
     }),
     [
       civilContext,
@@ -323,6 +325,8 @@ export function useSuccessionDerivedValues({
       familyMembers,
       devolutionContext,
       simulatedDeathDate,
+      donationsContext,
+      fiscalSnapshot.donation,
     ],
   );
 
@@ -423,6 +427,7 @@ export function useSuccessionDerivedValues({
     prevoyanceFiscalAnalysis,
     directEstateBasis,
     transmissionBasis: uiDerived.transmissionBasis,
+    donationsContext,
     assuranceVieByAssure: uiDerived.assuranceVieByAssure,
     assuranceVieTotals: uiDerived.assuranceVieTotals,
     perByAssure: uiDerived.perByAssure,
