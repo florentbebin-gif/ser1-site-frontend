@@ -492,6 +492,18 @@ L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → é
 
 ---
 
+### Maturite du modele succession
+
+Le runtime succession actuel distingue encore imparfaitement :
+- la personne physique (`epoux1` / `epoux2`)
+- la masse patrimoniale (`commun` aujourd'hui)
+- la qualification juridique d'un bien (`propre`, `propre_par_nature`, `communaute`, etc.)
+
+La matrice de maturite et la trajectoire de refonte sont suivies dans [SUCCESSION_MODEL_MATURITY.md](SUCCESSION_MODEL_MATURITY.md).
+Toute PR qui etend les regimes matrimoniaux, la liquidation civile ou les masses patrimoniales doit mettre a jour cette matrice en meme temps que le code.
+
+---
+
 ### Architecture cible — `reference_rates`
 
 > Voir détail dans `docs/ROADMAP.md` (§ Item transversal — Taux vivants).
