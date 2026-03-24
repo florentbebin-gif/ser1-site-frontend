@@ -15,6 +15,8 @@ export interface DetailedChainHeir {
   partSuccession: number;
   taxablePartSuccession?: number;
   abattementOverride?: number;
+  baseHistoriqueTaxee?: number;
+  droitsDejaAcquittes?: number;
   exonerated?: boolean;
 }
 
@@ -113,6 +115,8 @@ export function computeTransmissionForHeirs(
     lien: heir.lien,
     partSuccession: Math.max(0, heir.taxablePartSuccession ?? heir.partSuccession),
     abattementOverride: heir.abattementOverride,
+    baseHistoriqueTaxee: heir.baseHistoriqueTaxee,
+    droitsDejaAcquittes: heir.droitsDejaAcquittes,
   }));
   const result = calculateSuccession({
     actifNetSuccession: actifTransmis,

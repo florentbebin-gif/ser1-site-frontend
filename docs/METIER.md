@@ -140,6 +140,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - ventilation de la prevoyance deces pure non rachetable selon une clause beneficiaire structuree, avec assiette fiscale limitee a la derniere prime annuelle saisie et bascule 990 I / 757 B selon l'age du souscripteur au deces simule
 - communaute universelle avec attribution integrale: le 1er deces reporte integralement la transmission economique au conjoint survivant et la taxation des descendants au 2e deces
 - representation successorale simplifiee des enfants decedes par leurs petits-enfants quand ils sont identifies
+- donations detaillees dans le rappel fiscal: reprise DMTG beneficiary-by-beneficiary en succession directe et en chainage, a partir de la valeur a la donation quand elle est saisie
 - dates de naissance des personnes du couple / du defunt dans le contexte familial pour valoriser l'usufruit et la nue-propriete a la date du deces simule
 - materiel de guidage sur liberalites, avantages matrimoniaux et situations familiales dans les settings succession
 - devolution civile des ascendants (art. 757-1 / 757-2 CC pour les maries sans descendants) et des collateraux privilegies (art. 736-738-1 CC pour les celibataires/veufs/pacsés sans descendants)
@@ -160,6 +161,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - la valorisation usufruit / nue-propriete du conjoint survivant suit l'art. 669 CGI quand la date de naissance pertinente est renseignee; sinon le module reste en repli simplifie avec warning
 - la representation successorale des enfants decedes reste simplifiee et ne remplace pas une analyse notariale detaillee
 - en representation successorale, les petits-enfants se partagent desormais l'abattement de ligne directe de la branche representee dans les calculs successoraux directs et en chainage
+- le rappel fiscal des donations detaillees est reintegre dans les droits DMTG par beneficiaire, mais les droits deja acquittes restent une approximation robuste tant qu'ils ne sont pas saisis historiquement
 - la chronologie 2 deces n'est plus la source d'affichage principale hors mariage; pour PACS et autres situations, la synthese privilegie une lecture directe du deces simule
 - la chronologie 2 deces reste sur un meme horizon deces simule pour les 2 etapes et ne modele pas un decalage calendaire distinct entre premier et second deces
 - en chronologie 2 deces mariee, les capitaux assurances nets effectivement recus par le conjoint survivant au 1er deces (assurance-vie, PER assurance, prevoyance deces) sont reintegres economiquement dans la masse du 2e deces; le module ne reconstitue pas pour autant une remployabilite notariale fine par actif

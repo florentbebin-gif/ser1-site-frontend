@@ -59,7 +59,14 @@ describe('successionSimulator.helpers', () => {
     };
 
     expect(applySuccessionDonationFieldUpdate(initialEntry, 'type', 'hors_part').type).toBe('hors_part');
-    expect(applySuccessionDonationFieldUpdate(initialEntry, 'montant', -10).montant).toBe(0);
+    expect(applySuccessionDonationFieldUpdate(initialEntry, 'montant', -10)).toMatchObject({
+      montant: 0,
+      valeurDonation: 0,
+    });
+    expect(applySuccessionDonationFieldUpdate(initialEntry, 'valeurDonation', 2500)).toMatchObject({
+      montant: 2500,
+      valeurDonation: 2500,
+    });
     expect(applySuccessionDonationFieldUpdate(initialEntry, 'donSommeArgentExonere', 1).donSommeArgentExonere).toBe(true);
     expect(applySuccessionDonationFieldUpdate(initialEntry, 'donataire', 42).donataire).toBe('42');
   });

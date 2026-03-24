@@ -21,6 +21,7 @@ import type {
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   FamilyMember,
+  SuccessionDonationEntry,
   SuccessionEnfant,
 } from './successionDraft';
 import type { SuccessionAssetTransmissionBasis } from './successionTransmissionBasis';
@@ -53,6 +54,7 @@ interface UseSuccessionOutcomeDerivedValuesInput {
   prevoyanceFiscalAnalysis: ReturnType<typeof buildSuccessionPrevoyanceFiscalAnalysis>;
   directEstateBasis: ReturnType<typeof computeSuccessionDirectEstateBasis>;
   transmissionBasis: SuccessionAssetTransmissionBasis;
+  donationsContext: SuccessionDonationEntry[];
   assuranceVieByAssure: Record<'epoux1' | 'epoux2', number>;
   perByAssure: Record<'epoux1' | 'epoux2', number>;
   prevoyanceByAssure: Record<'epoux1' | 'epoux2', number>;
@@ -94,6 +96,7 @@ export function useSuccessionOutcomeDerivedValues({
   prevoyanceFiscalAnalysis,
   directEstateBasis,
   transmissionBasis,
+  donationsContext,
   assuranceVieByAssure,
   perByAssure,
   prevoyanceByAssure,
@@ -138,6 +141,9 @@ export function useSuccessionOutcomeDerivedValues({
       forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
       forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
       forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
+      donationsContext,
+      donationSettings: fiscalSnapshot.donation,
+      referenceDate: simulatedDeathDate,
     }),
     [
       civilContext,
@@ -153,6 +159,9 @@ export function useSuccessionOutcomeDerivedValues({
       patrimonialContext.forfaitMobilierMode,
       patrimonialContext.forfaitMobilierPct,
       patrimonialContext.forfaitMobilierMontant,
+      donationsContext,
+      fiscalSnapshot.donation,
+      simulatedDeathDate,
     ],
   );
 

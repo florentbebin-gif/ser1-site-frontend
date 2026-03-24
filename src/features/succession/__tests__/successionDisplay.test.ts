@@ -14,6 +14,17 @@ import {
   computeSuccessionDirectEstateBasis,
 } from '../successionDisplay';
 
+const DONATION_SETTINGS = {
+  rappelFiscalAnnees: 15,
+  donFamilial790G: {
+    montant: 31865,
+    conditions: 'Donateur < 80 ans, donataire majeur',
+  },
+  donManuel: {
+    abattementRenouvellement: 15,
+  },
+} as const;
+
 function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilContext {
   return {
     situationMatrimoniale: 'celibataire',
@@ -368,5 +379,57 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
     expect(analysis.transmissionRows).toHaveLength(2);
     expect(analysis.transmissionRows.map((row) => row.label)).toEqual(['Frere / soeur 1', 'Frere / soeur 2']);
     expect(analysis.result?.totalDroits).toBeGreaterThan(0);
+  });
+
+  it('integre le rappel fiscal des donations detaillees dans les droits affiches', () => {
+    const civil = makeCivil({ situationMatrimoniale: 'celibataire' });
+    const devolutionContext = makeDevolution({});
+    const enfants = [{ id: 'E1', rattachement: 'epoux1' as const }];
+    const devolution = buildSuccessionDevolutionAnalysis(
+      civil,
+      1,
+      devolutionContext,
+      200000,
+      enfants,
+      [],
+    );
+
+    const withoutRecall = buildSuccessionDirectDisplayAnalysis({
+      civil,
+      devolution,
+      devolutionContext,
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: enfants,
+      familyMembers: [],
+      order: 'epoux1',
+      actifNetSuccession: 200000,
+    });
+    const withRecall = buildSuccessionDirectDisplayAnalysis({
+      civil,
+      devolution,
+      devolutionContext,
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: enfants,
+      familyMembers: [],
+      order: 'epoux1',
+      actifNetSuccession: 200000,
+      donationsContext: [{
+        id: 'don-1',
+        type: 'rapportable',
+        montant: 100000,
+        valeurDonation: 150000,
+        date: '2020-06',
+        donateur: 'epoux1',
+        donataire: 'E1',
+      }],
+      donationSettings: DONATION_SETTINGS,
+      referenceDate: new Date('2026-01-01T00:00:00Z'),
+    });
+
+    expect(withoutRecall.result?.totalDroits).toBe(18194);
+    expect(withRecall.result?.totalDroits).toBeGreaterThan(withoutRecall.result?.totalDroits ?? 0);
+    expect(withRecall.heirs[0]).toMatchObject({
+      baseHistoriqueTaxee: 150000,
+    });
   });
 });

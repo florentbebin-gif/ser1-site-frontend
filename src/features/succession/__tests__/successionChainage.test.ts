@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_DMTG } from '../../../engine/civil';
 import {
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+  type SuccessionDonationEntry,
   type SuccessionCivilContext,
   type SuccessionDevolutionContextInput,
   type SuccessionLiquidationContext,
@@ -47,6 +48,17 @@ function makeDevolution(overrides: SuccessionDevolutionContextInput = {}) {
     },
   };
 }
+
+const DONATION_SETTINGS = {
+  rappelFiscalAnnees: 15,
+  donFamilial790G: {
+    montant: 31865,
+    conditions: 'Donateur < 80 ans, donataire majeur',
+  },
+  donManuel: {
+    abattementRenouvellement: 15,
+  },
+} as const;
 
 describe('buildSuccessionChainageAnalysis', () => {
   it('returns an applicable chainage with total rights', () => {
@@ -387,6 +399,47 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(withoutInflows.step2?.actifTransmis).toBe(325000);
     expect(withInflows.step2?.actifTransmis).toBe(405000);
     expect(withInflows.warnings.some((warning) => warning.includes('capitaux assurances nets recycles'))).toBe(true);
+  });
+
+  it('integrates donation recall into step 1 heir rights for the matching donor and donee', () => {
+    const donations: SuccessionDonationEntry[] = [{
+      id: 'don-1',
+      type: 'rapportable',
+      montant: 100000,
+      valeurDonation: 150000,
+      date: '2020-06',
+      donateur: 'epoux1',
+      donataire: 'E1',
+    }];
+
+    const withoutRecall = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
+      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 1 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [{ id: 'E1', rattachement: 'commun' }],
+      familyMembers: [],
+      referenceDate: new Date('2026-01-01T00:00:00Z'),
+    });
+    const withRecall = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
+      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 1 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [{ id: 'E1', rattachement: 'commun' }],
+      familyMembers: [],
+      referenceDate: new Date('2026-01-01T00:00:00Z'),
+      donations,
+      donationSettings: DONATION_SETTINGS,
+    });
+
+    const childWithoutRecall = withoutRecall.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1');
+    const childWithRecall = withRecall.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1');
+
+    expect(childWithoutRecall?.droits).toBeGreaterThan(0);
+    expect((childWithRecall?.droits ?? 0)).toBeGreaterThan(childWithoutRecall?.droits ?? 0);
   });
 
   it('ignores at step 2 a testament still aimed at the already deceased spouse', () => {
