@@ -1,6 +1,6 @@
 # Succession — Triage des bugs à reproduire avant correction
 
-Ce document gèle l'état du repo après `PR-04`.
+Ce document gèle l'état du repo après `PR-05`.
 
 Objectif :
 - distinguer les régressions réellement reproduites dans le moteur
@@ -18,7 +18,7 @@ Sources de preuve :
 | `3.2` | DDV usufruit total | `spec mismatch / scénario à rapprocher` | Le moteur applique bien l'art. 669 à 70 ans et produit `400k/600k`, pas un fallback `1/4 PP`. |
 | `3.4` | DDV option mixte = `0€` | `non reproduit en moteur` | Avec dates valides, le moteur retourne une masse et des droits non nuls. Sans date, il replie sur `1/4 PP`, toujours non nul. |
 | `5.3` / `5.4` / `5.6` | AV `757B = 0€` | `non reproduit en parseur / moteur AV` | Le parseur conserve `versementsApres70` lorsqu'ils sont saisis, et le moteur calcule une base `757B` strictement positive. |
-| `8.3` | Frères / sœurs absents du résultat | `confirmed regression` | La dévolution produit bien la ligne `Frères et sœurs`, mais `buildSuccessionDirectDisplayAnalysis` renvoie `0` héritier, `0` transmission row et `result = null`. |
+| `8.3` | Frères / sœurs absents du résultat | `corrigé` | Le bug venait du matching de libellé dans `successionDisplay.ts` (`œ` non normalisé). Le display direct restitue désormais bien la fratrie. |
 | `8.5` / `8.6` | Parents ignorés | `non reproduit dans le display direct` | Avec conjoint marié et ascendant survivant déclaré, le display garde bien `Conjoint survivant` + `Parent 1`. |
 | `14.1` | Horizon du décès sans effet | `non reproduit au niveau moteur` | Deux `referenceDate` différentes changent bien la valorisation DDV et le total de droits. |
 

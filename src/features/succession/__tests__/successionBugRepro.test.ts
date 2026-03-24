@@ -283,7 +283,7 @@ describe('PR-04 — reproduction et triage des bugs succession non prouvés', ()
     expect(analysis.lines[0].droits757B).toBeGreaterThan(0);
   });
 
-  it('BUG-11/8.3: reproduction — la devolution fratrie existe mais le display direct la perd', () => {
+  it('BUG-11/8.3: la devolution fratrie est maintenant correctement restituée par le display direct', () => {
     const civil = makeCivil({ situationMatrimoniale: 'celibataire' });
     const familyMembers = [
       { id: 'F1', type: 'frere_soeur' as const, branch: 'epoux1' as const },
@@ -312,9 +312,9 @@ describe('PR-04 — reproduction et triage des bugs succession non prouvés', ()
     });
 
     expect(devolution.lines.some((line) => line.heritier === 'Frères et sœurs')).toBe(true);
-    expect(analysis.heirs).toHaveLength(0);
-    expect(analysis.transmissionRows).toHaveLength(0);
-    expect(analysis.result).toBeNull();
+    expect(analysis.heirs).toHaveLength(2);
+    expect(analysis.transmissionRows).toHaveLength(2);
+    expect(analysis.result?.totalDroits).toBeGreaterThan(0);
   });
 
   it('BUG-12/8.5-8.6: les ascendants survivent bien dans le display direct avec conjoint marie', () => {
