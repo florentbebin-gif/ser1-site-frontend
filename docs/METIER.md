@@ -159,6 +159,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - la contrainte `une seule residence principale` est une simplification produit volontaire dans cette UI
 - la valorisation usufruit / nue-propriete du conjoint survivant suit l'art. 669 CGI quand la date de naissance pertinente est renseignee; sinon le module reste en repli simplifie avec warning
 - la representation successorale des enfants decedes reste simplifiee et ne remplace pas une analyse notariale detaillee
+- en representation successorale, les petits-enfants se partagent desormais l'abattement de ligne directe de la branche representee dans les calculs successoraux directs et en chainage
 - la chronologie 2 deces n'est plus la source d'affichage principale hors mariage; pour PACS et autres situations, la synthese privilegie une lecture directe du deces simule
 - la chronologie 2 deces reste sur un meme horizon deces simule pour les 2 etapes et ne modele pas un decalage calendaire distinct entre premier et second deces
 - en chronologie 2 deces mariee, les capitaux assurances nets effectivement recus par le conjoint survivant au 1er deces (assurance-vie, PER assurance, prevoyance deces) sont reintegres economiquement dans la masse du 2e deces; le module ne reconstitue pas pour autant une remployabilite notariale fine par actif

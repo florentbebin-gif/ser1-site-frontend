@@ -245,6 +245,47 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
     expect(basis.warnings.some((w) => w.includes('PACS indivision'))).toBe(true);
   });
 
+  it('partage l abattement de branche entre petits-enfants representants en succession directe', () => {
+    const civil = makeCivil({ situationMatrimoniale: 'celibataire' });
+    const devolutionContext = makeDevolution({});
+    const enfants = [
+      { id: 'E1', rattachement: 'epoux1' as const },
+      { id: 'E2', rattachement: 'epoux1' as const, deceased: true },
+    ];
+    const familyMembers = [
+      { id: 'PG1', type: 'petit_enfant' as const, parentEnfantId: 'E2' },
+      { id: 'PG2', type: 'petit_enfant' as const, parentEnfantId: 'E2' },
+    ];
+    const devolution = buildSuccessionDevolutionAnalysis(
+      civil,
+      2,
+      devolutionContext,
+      600000,
+      enfants,
+      familyMembers,
+    );
+
+    const analysis = buildSuccessionDirectDisplayAnalysis({
+      civil,
+      devolution,
+      devolutionContext,
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: enfants,
+      familyMembers,
+      order: 'epoux1',
+      actifNetSuccession: 600000,
+    });
+
+    expect(analysis.heirs).toMatchObject([
+      { lien: 'enfant', partSuccession: 300000 },
+      { lien: 'petit_enfant', partSuccession: 150000, abattementOverride: 50000 },
+      { lien: 'petit_enfant', partSuccession: 150000, abattementOverride: 50000 },
+    ]);
+    expect(analysis.result?.detailHeritiers.map((detail) => detail.abattement)).toEqual([100000, 50000, 50000]);
+    expect(analysis.result?.detailHeritiers.map((detail) => detail.droits)).toEqual([38194, 18194, 18194]);
+    expect(analysis.result?.totalDroits).toBe(74582);
+  });
+
   it('fusionne la part legale du conjoint marie et le legs testamentaire au profit du conjoint', () => {
     const civil = makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_legale' });
     const devolutionContext = makeDevolution({
