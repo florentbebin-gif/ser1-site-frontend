@@ -27,6 +27,8 @@ export default function StepCivil({ dossier, updateDossier }: StepProps) {
               <option value="communaute_universelle">Communauté universelle</option>
               <option value="separation_biens">Séparation de biens</option>
               <option value="participation_acquets">Participation aux acquêts</option>
+              <option value="communaute_meubles_acquets">Communauté de meubles et acquêts</option>
+              <option value="separation_biens_societe_acquets">Séparation de biens avec société d'acquêts</option>
             </select>
           </div>
           <div className="form-row">

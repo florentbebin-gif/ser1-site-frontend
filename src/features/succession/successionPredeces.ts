@@ -65,6 +65,15 @@ function mapMarriedRegime(regime: RegimeMatrimonial | null): RegimeMapping {
       ],
     };
   }
+  if (selectedRegime === 'separation_biens_societe_acquets') {
+    return {
+      regimeUsed: 'separation_biens',
+      regimeLabel: REGIMES_MATRIMONIAUX[selectedRegime].label,
+      warnings: [
+        "Société d'acquêts: approximation en séparation de biens (société d'acquêts non modélisée — évolution prévue).",
+      ],
+    };
+  }
   return {
     regimeUsed: selectedRegime as SupportedRegime,
     regimeLabel: REGIMES_MATRIMONIAUX[selectedRegime].label,
