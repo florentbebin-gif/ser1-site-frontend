@@ -293,4 +293,39 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
     expect(analysis.heirs[1]).toMatchObject({ lien: 'enfant', partSuccession: 62500 });
     expect(analysis.heirs[2]).toMatchObject({ lien: 'enfant', partSuccession: 62500 });
   });
+
+  it('restitue les freres et soeurs dans le display direct quand la devolution les expose', () => {
+    const civil = makeCivil({ situationMatrimoniale: 'celibataire' });
+    const devolutionContext = makeDevolution({});
+    const familyMembers = [
+      { id: 'F1', type: 'frere_soeur' as const, branch: 'epoux1' as const },
+      { id: 'F2', type: 'frere_soeur' as const, branch: 'epoux1' as const },
+    ];
+    const devolution = buildSuccessionDevolutionAnalysis(
+      civil,
+      0,
+      devolutionContext,
+      800000,
+      [],
+      familyMembers,
+      { simulatedDeceased: 'epoux1' },
+    );
+
+    const analysis = buildSuccessionDirectDisplayAnalysis({
+      civil,
+      devolution,
+      devolutionContext,
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [],
+      familyMembers,
+      order: 'epoux1',
+      actifNetSuccession: 800000,
+    });
+
+    expect(devolution.lines.some((line) => line.heritier === 'Frères et sœurs')).toBe(true);
+    expect(analysis.heirs).toHaveLength(2);
+    expect(analysis.transmissionRows).toHaveLength(2);
+    expect(analysis.transmissionRows.map((row) => row.label)).toEqual(['Frere / soeur 1', 'Frere / soeur 2']);
+    expect(analysis.result?.totalDroits).toBeGreaterThan(0);
+  });
 });

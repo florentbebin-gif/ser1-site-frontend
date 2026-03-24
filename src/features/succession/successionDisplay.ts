@@ -85,6 +85,10 @@ function asAmount(value: number | null | undefined): number {
 
 function normalizeLabel(value: string): string {
   return value
+    .replace(/œ/g, 'oe')
+    .replace(/Œ/g, 'oe')
+    .replace(/æ/g, 'ae')
+    .replace(/Æ/g, 'ae')
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
     .toLowerCase();
