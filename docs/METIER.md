@@ -145,6 +145,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - materiel de guidage sur liberalites, avantages matrimoniaux et situations familiales dans les settings succession
 - devolution civile des ascendants (art. 757-1 / 757-2 CC pour les maries sans descendants) et des collateraux privilegies (art. 736-738-1 CC pour les celibataires/veufs/pacsés sans descendants)
 - ventilation assurance-vie sur contrats demembres avec calcul art. 669 CGI (usufruitier/nu-proprietaire) selon age de l'usufruitier
+- en clause assurance-vie demembree standard conjoint/enfants, l'abattement 990 I est prorate selon la quote-part economique usufruit / nue-propriete retenue par l'art. 669 CGI
 - PACS: absence de vocation successorale legale automatique du partenaire sans testament; avec testament, le partenaire peut etre integre a la synthese directe avec exoneration DMTG
 - union libre: les biens en indivision peuvent etre saisis; seule la quote-part du defunt est retenue dans la succession directe, avec hypothese 50/50 par defaut dans ce module
 - exports PPTX/XLSX de la chronologie avec restitution des beneficiaires reels par etape quand ils sont identifies

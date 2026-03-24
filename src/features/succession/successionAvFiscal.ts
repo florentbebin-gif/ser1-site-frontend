@@ -22,6 +22,7 @@ interface AvBeneficiaryTarget {
   label: string;
   lien: LienParente;
   isExempt: boolean;
+  allowance990IRatio?: number;
 }
 
 interface AvBeneficiaryShare extends AvBeneficiaryTarget {
@@ -306,6 +307,7 @@ function buildSideAnalysis(
             label: civil.situationMatrimoniale === 'pacse' ? 'Partenaire' : 'Conjoint(e)',
             lien: 'conjoint',
             isExempt: true,
+            allowance990IRatio: tauxUsufruit,
           };
           const conjointAvant70 = capitauxAvant70 * tauxUsufruit;
           const conjointApres70 = versementsApres70 * tauxUsufruit;
@@ -330,6 +332,7 @@ function buildSideAnalysis(
                 label: enfant.prenom ?? getEnfantParentLabel(enfant, index),
                 lien: 'enfant',
                 isExempt: false,
+                allowance990IRatio: tauxNuProp,
               };
               const childAvant70 = capitauxAvant70 * ratioPerChild;
               const childApres70 = versementsApres70 * ratioPerChild;
@@ -389,9 +392,11 @@ function buildSideAnalysis(
 
     const capitauxAvant70 = before70Row?.amount ?? 0;
     const capitauxApres70 = after70Row?.amount ?? 0;
+    const allowance990I = snapshot.avDeces.primesApres1998.allowancePerBeneficiary
+      * Math.max(0, Math.min(1, target.allowance990IRatio ?? 1));
     const taxable990I = target.isExempt
       ? 0
-      : Math.max(0, capitauxAvant70 - snapshot.avDeces.primesApres1998.allowancePerBeneficiary);
+      : Math.max(0, capitauxAvant70 - allowance990I);
     const droits990I = target.isExempt ? 0 : compute990ITax(taxable990I, snapshot);
 
     const allowanceShare = !target.isExempt && totalAfter70TaxableGross > 0

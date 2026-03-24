@@ -74,7 +74,12 @@ describe('buildSuccessionAvFiscalAnalysis', () => {
     // Chaque enfant (nu-prop 60%/2) = 120 000
     const childLines = analysis.lines.filter((l) => l.lien === 'enfant');
     expect(childLines).toHaveLength(2);
-    childLines.forEach((l) => expect(l.capitauxAvant70).toBe(120000));
+    childLines.forEach((l) => {
+      expect(l.capitauxAvant70).toBe(120000);
+      expect(l.taxable990I).toBe(28500);
+      expect(l.droits990I).toBe(5700);
+    });
+    expect(analysis.totalDroits).toBe(11400);
     expect(analysis.warnings.some((w) => w.includes('art. 669'))).toBe(true);
   });
 
