@@ -165,6 +165,15 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - une partie de la valeur actuelle de la page succession est analytique et pedagogique, pas uniquement calculatoire
 - la chronologie 2 deces reste un module simplifie: elle reemploie le testament du cote du decede et le report economique vers le 2e deces, mais ne remplace pas une liquidation notariale exhaustive
 
+### Maturite du modele matrimonial et successoral
+La trajectoire de montee en gamme du simulateur succession est suivie dans [SUCCESSION_MODEL_MATURITY.md](SUCCESSION_MODEL_MATURITY.md).
+
+Regle de lecture :
+- `communaute_legale` et `separation_biens` sont des supports robustes du perimetre actuel
+- `communaute_universelle` reste une simplification documentee tant que les propres par nature ne sont pas qualifies
+- `participation_acquets` et `communaute_meubles_acquets` restent des approximations assumees
+- `separation_biens_societe_acquets` n'est pas encore modelisee comme masse patrimoniale autonome dans le repo actuel
+
 ### UX — Saisie des actifs spécialisés via la sous-catégorie
 
 Les types d'actifs suivants ne sont pas saisis via un bouton dédié mais via le menu **Sous-catégorie** d'une ligne générique :
