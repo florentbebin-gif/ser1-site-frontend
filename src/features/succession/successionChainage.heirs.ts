@@ -2,6 +2,7 @@ import type { DmtgSettings } from '../../engine/civil';
 import { calculateSuccession, type LienParente } from '../../engine/succession';
 import type { FamilyMember, SuccessionEnfant } from './successionDraft';
 import {
+  buildRepresentationAbattementOverrides,
   buildSuccessionDescendantRecipientsForDeceased,
   countEffectiveDescendantBranchesForDeceased,
   type SuccessionDeceasedSide,
@@ -13,6 +14,7 @@ export interface DetailedChainHeir {
   lien: LienParente;
   partSuccession: number;
   taxablePartSuccession?: number;
+  abattementOverride?: number;
   exonerated?: boolean;
 }
 
@@ -34,12 +36,14 @@ export function buildDetailedDescendantHeirs(
   actifTransmis: number,
   deceased: SuccessionDeceasedSide,
   nbBranches: number,
+  dmtgSettings: DmtgSettings,
   enfantsContext: SuccessionEnfant[] = [],
   familyMembers: FamilyMember[] = [],
 ): DetailedChainHeir[] {
   if (nbBranches <= 0 || actifTransmis <= 0) return [];
 
   const recipients = buildSuccessionDescendantRecipientsForDeceased(enfantsContext, familyMembers, deceased);
+  const abattementOverrides = buildRepresentationAbattementOverrides(recipients, dmtgSettings.ligneDirecte.abattement);
   const branchCount = Math.max(
     1,
     countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, deceased),
@@ -63,6 +67,7 @@ export function buildDetailedDescendantHeirs(
           label: recipient.label,
           lien: recipient.lien,
           partSuccession: partParRecipient,
+          abattementOverride: abattementOverrides.get(recipient.id),
         }));
       });
     })();
@@ -78,6 +83,7 @@ export function mergeDetailedHeirs(heirs: DetailedChainHeir[]): DetailedChainHei
       const nextTaxable = heir.taxablePartSuccession ?? heir.partSuccession;
       current.partSuccession += heir.partSuccession;
       current.taxablePartSuccession = currentTaxable + nextTaxable;
+      current.abattementOverride ??= heir.abattementOverride;
       current.exonerated = current.exonerated || heir.exonerated;
       return;
     }
@@ -106,6 +112,7 @@ export function computeTransmissionForHeirs(
   const taxableHeirs = detailedHeirs.map((heir) => ({
     lien: heir.lien,
     partSuccession: Math.max(0, heir.taxablePartSuccession ?? heir.partSuccession),
+    abattementOverride: heir.abattementOverride,
   }));
   const result = calculateSuccession({
     actifNetSuccession: actifTransmis,

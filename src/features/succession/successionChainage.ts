@@ -302,6 +302,7 @@ function computeStepTransmission(
       input.familyMembers ?? [],
       deceased,
     ),
+    input.dmtgSettings,
     input.enfantsContext ?? [],
     input.familyMembers ?? [],
   );

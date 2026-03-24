@@ -14,6 +14,31 @@ export interface SuccessionDescendantRecipient {
   branchLabel: string;
 }
 
+export function buildRepresentationAbattementOverrides(
+  recipients: SuccessionDescendantRecipient[],
+  branchAllowance: number,
+): Map<string, number> {
+  const overrides = new Map<string, number>();
+  const recipientsByBranch = recipients.reduce((map, recipient) => {
+    const branchRecipients = map.get(recipient.branchId) ?? [];
+    branchRecipients.push(recipient);
+    map.set(recipient.branchId, branchRecipients);
+    return map;
+  }, new Map<string, SuccessionDescendantRecipient[]>());
+
+  recipientsByBranch.forEach((branchRecipients) => {
+    const representedRecipients = branchRecipients.filter((recipient) => recipient.lien === 'petit_enfant');
+    if (representedRecipients.length === 0) return;
+
+    const allowanceByRecipient = branchAllowance / representedRecipients.length;
+    representedRecipients.forEach((recipient) => {
+      overrides.set(recipient.id, allowanceByRecipient);
+    });
+  });
+
+  return overrides;
+}
+
 export type SuccessionDeceasedSide = 'epoux1' | 'epoux2';
 
 export function countLivingEnfants(enfants: SuccessionEnfant[]): number {

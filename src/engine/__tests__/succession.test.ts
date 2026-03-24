@@ -82,6 +82,17 @@ describe('Succession Module', () => {
     });
   });
 
+  it('applique un abattementOverride contextuel quand il est fourni', () => {
+    const result = calculateSuccession({
+      actifNetSuccession: 150000,
+      heritiers: [{ lien: 'petit_enfant', partSuccession: 150000, abattementOverride: 50000 }],
+    });
+
+    expect(result.result.detailHeritiers[0].abattement).toBe(50000);
+    expect(result.result.detailHeritiers[0].baseImposable).toBe(100000);
+    expect(result.result.totalDroits).toBe(18194);
+  });
+
   describe('calculatePredecesSenarios', () => {
     it('calcule les scénarios pour un couple en communauté légale', () => {
       const result = calculatePredecesSenarios({

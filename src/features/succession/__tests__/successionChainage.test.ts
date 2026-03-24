@@ -118,6 +118,28 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.warnings.some((warning) => warning.includes('representation successorale simplifiee'))).toBe(true);
   });
 
+  it('shares the represented branch allowance across grandchildren at step 1', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),
+      liquidation: makeLiquidation({ actifEpoux1: 800000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun', deceased: true },
+      ],
+      familyMembers: [
+        { id: 'PG1', type: 'petit_enfant', parentEnfantId: 'E2' },
+        { id: 'PG2', type: 'petit_enfant', parentEnfantId: 'E2' },
+      ],
+    });
+
+    expect(analysis.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'E1')?.droits).toBe(38194);
+    expect(analysis.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'PG1')?.droits).toBe(18194);
+    expect(analysis.step1?.beneficiaries.find((beneficiary) => beneficiary.id === 'PG2')?.droits).toBe(18194);
+  });
+
   it('keeps only the deceased branch descendants at step 1', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),

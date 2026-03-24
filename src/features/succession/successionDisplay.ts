@@ -16,6 +16,7 @@ import type {
 import type { SuccessionDevolutionAnalysis } from './successionDevolution';
 import type { SuccessionChainBeneficiary, SuccessionChainageAnalysis } from './successionChainage';
 import {
+  buildRepresentationAbattementOverrides,
   buildSuccessionDescendantRecipientsForDeceased,
   countEffectiveDescendantBranchesForDeceased,
 } from './successionEnfants';
@@ -76,6 +77,7 @@ interface DetailedHeirInput {
   lien: LienParente;
   partSuccession: number;
   taxablePartSuccession?: number;
+  abattementOverride?: number;
   exonerated?: boolean;
 }
 
@@ -168,10 +170,12 @@ function buildDetailedDescendantHeirs(
   enfantsContext: SuccessionEnfant[],
   familyMembers: FamilyMember[],
   deceased: 'epoux1' | 'epoux2',
+  dmtgSettings: DmtgSettings,
 ): { heirs: DetailedHeirInput[]; warnings: string[] } {
   if (amount <= 0) return { heirs: [], warnings: [] };
 
   const recipients = buildSuccessionDescendantRecipientsForDeceased(enfantsContext, familyMembers, deceased);
+  const abattementOverrides = buildRepresentationAbattementOverrides(recipients, dmtgSettings.ligneDirecte.abattement);
   const branchCount = Math.max(
     1,
     countEffectiveDescendantBranchesForDeceased(enfantsContext, familyMembers, deceased),
@@ -206,6 +210,7 @@ function buildDetailedDescendantHeirs(
         label: recipient.label,
         lien: recipient.lien,
         partSuccession: amountByRecipient,
+        abattementOverride: abattementOverrides.get(recipient.id),
       }));
     }),
     warnings: [],
@@ -343,6 +348,7 @@ function mergeDetailedHeirs(heirs: DetailedHeirInput[]): DetailedHeirInput[] {
       const nextTaxable = heir.taxablePartSuccession ?? heir.partSuccession;
       existing.partSuccession += heir.partSuccession;
       existing.taxablePartSuccession = existingTaxable + nextTaxable;
+      existing.abattementOverride ??= heir.abattementOverride;
       existing.exonerated = existing.exonerated || heir.exonerated;
       return;
     }
@@ -355,6 +361,7 @@ function toHeritiersInput(heirs: DetailedHeirInput[]): HeritiersInput[] {
   return heirs.map((heir) => ({
     lien: heir.lien,
     partSuccession: heir.partSuccession,
+    abattementOverride: heir.abattementOverride,
   }));
 }
 
@@ -362,6 +369,7 @@ function toTaxableHeritiersInput(heirs: DetailedHeirInput[]): HeritiersInput[] {
   return heirs.map((heir) => ({
     lien: heir.lien,
     partSuccession: Math.max(0, heir.taxablePartSuccession ?? heir.partSuccession),
+    abattementOverride: heir.abattementOverride,
   }));
 }
 
@@ -461,6 +469,7 @@ export function buildSuccessionDirectDisplayAnalysis(
     input.enfantsContext,
     input.familyMembers,
     simulatedDeceased,
+    input.dmtgSettings,
   );
   warnings.push(...descendantHeirs.warnings);
 

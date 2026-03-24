@@ -34,6 +34,7 @@ export type LienParente =
 export interface HeritiersInput {
   lien: LienParente;
   partSuccession: number; // Montant en €
+  abattementOverride?: number;
 }
 
 export interface SuccessionInput {
@@ -128,7 +129,9 @@ export function calculateSuccession(input: SuccessionInput): CalcResult<Successi
   let totalDroits = 0;
 
   for (const heritier of input.heritiers) {
-    const abattement = getAbattement(heritier.lien, dmtg);
+    const abattement = Number.isFinite(heritier.abattementOverride)
+      ? Math.max(0, Number(heritier.abattementOverride))
+      : getAbattement(heritier.lien, dmtg);
     const baseImposable = Math.max(0, heritier.partSuccession - abattement);
     const droits = calculateDMTG(baseImposable, heritier.lien, dmtg);
     const tauxMoyen = heritier.partSuccession > 0 
