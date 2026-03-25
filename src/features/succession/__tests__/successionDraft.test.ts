@@ -137,6 +137,8 @@ describe('successionDraft', () => {
       'epoux2',
     );
 
+    expect(payload.version).toBe(20);
+    expect(payload.assetEntries[0].pocket).toBe('epoux1');
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
     expect(parsed).not.toBeNull();
     expect(parsed?.form.actifNetSuccession).toBe(420000);
@@ -158,6 +160,7 @@ describe('successionDraft', () => {
     expect(parsed?.donations[0].type).toBe('rapportable');
     expect(parsed?.assetEntries).toHaveLength(1);
     expect(parsed?.assetEntries[0].category).toBe('immobilier');
+    expect(parsed?.assetEntries[0].pocket).toBe('epoux1');
     expect(parsed?.assuranceVieEntries).toHaveLength(1);
     expect(parsed?.assuranceVieEntries[0].capitauxDeces).toBe(80000);
     expect(parsed?.perEntries).toHaveLength(1);
@@ -317,6 +320,68 @@ describe('successionDraft', () => {
         assure: 'epoux1',
       }),
     ]);
+  });
+
+  it('parse un draft v20 avec pocket et restaure l alias legacy owner', () => {
+    const parsed = parseSuccessionDraftPayload(JSON.stringify({
+      version: 20,
+      form: {
+        actifNetSuccession: 100000,
+        heritiers: [{ lien: 'enfant', partSuccession: 100000 }],
+      },
+      civil: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_legale',
+        pacsConvention: 'separation',
+      },
+      liquidation: {
+        actifEpoux1: 100000,
+        actifEpoux2: 0,
+        actifCommun: 0,
+        nbEnfants: 1,
+      },
+      devolution: {
+        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+      },
+      patrimonial: {
+        ...DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+      },
+      enfants: [{ id: 'E1', rattachement: 'commun' }],
+      familyMembers: [],
+      donations: [],
+      assetEntries: [
+        {
+          id: 'asset-1',
+          pocket: 'communaute',
+          category: 'immobilier',
+          subCategory: 'Résidence secondaire',
+          amount: 90000,
+        },
+      ],
+      assuranceVieEntries: [],
+      perEntries: [],
+      groupementFoncierEntries: [
+        {
+          id: 'gf-1',
+          pocket: 'communaute',
+          type: 'GFA',
+          valeurTotale: 120000,
+        },
+      ],
+      prevoyanceDecesEntries: [],
+      ui: {
+        chainOrder: 'epoux1',
+      },
+    }));
+
+    expect(parsed?.assetEntries[0]).toMatchObject({
+      owner: 'commun',
+      pocket: 'communaute',
+    });
+    expect(parsed?.groupementFoncierEntries[0]).toMatchObject({
+      owner: 'commun',
+      pocket: 'communaute',
+    });
   });
 
   it('normalise les residences principales multiples et reinitialise lhorizon simule en v16', () => {

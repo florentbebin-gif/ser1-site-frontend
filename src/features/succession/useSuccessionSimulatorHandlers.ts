@@ -105,7 +105,7 @@ export function useSuccessionSimulatorHandlers({
   assuranceViePartyOptions,
   testamentBeneficiaryOptionsBySide,
   canOpenDispositionsModal,
-  civilContext: _civilContext,
+  civilContext,
   devolutionContext,
   patrimonialContext,
   dispositionsDraft,
@@ -148,6 +148,7 @@ export function useSuccessionSimulatorHandlers({
   });
 
   const assetHandlers = useSuccessionAssetHandlers({
+    civilSituation: civilContext.situationMatrimoniale,
     assetBreakdown,
     assetOwnerOptions,
     assuranceViePartyOptions,

@@ -27,7 +27,7 @@ describe('successionSimulator.helpers', () => {
   });
 
   it('builds specialized entries from a generic asset entry', () => {
-    const sourceEntry = { owner: 'commun' as const, amount: 125000 };
+    const sourceEntry = { owner: 'commun' as const, pocket: 'communaute' as const, amount: 125000 };
 
     const assuranceVie = buildAssuranceVieFromAsset(sourceEntry, 'epoux2');
     expect(assuranceVie.id.startsWith('av-')).toBe(true);
@@ -48,6 +48,7 @@ describe('successionSimulator.helpers', () => {
     expect(gf.id.startsWith('gf-')).toBe(true);
     expect(gf.type).toBe('GFA');
     expect(gf.owner).toBe('commun');
+    expect(gf.pocket).toBe('communaute');
     expect(gf.valeurTotale).toBe(125000);
   });
 

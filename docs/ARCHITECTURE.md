@@ -501,6 +501,7 @@ Le runtime succession actuel distingue encore imparfaitement :
 
 Les types de transition `SuccessionPersonParty` et `SuccessionAssetPocket` sont introduits dans `src/features/succession/successionPatrimonialModel.ts`, sans migration runtime immediate du draft a ce stade.
 Les produits specialises AV / PER / prevoyance sont maintenant types via `SuccessionPersonParty`, afin de preparer la future migration `owner -> pocket/personParty` sans etendre prematurement `SuccessionAssetOwner`.
+Le draft succession persiste desormais `pocket` sur `assetEntries` et `groupementFoncierEntries`, tout en gardant l'alias legacy `owner` synchronise le temps des migrations moteur restantes.
 
 La matrice de maturite et la trajectoire de refonte sont suivies dans [SUCCESSION_MODEL_MATURITY.md](SUCCESSION_MODEL_MATURITY.md).
 Toute PR qui etend les regimes matrimoniaux, la liquidation civile ou les masses patrimoniales doit mettre a jour cette matrice en meme temps que le code.

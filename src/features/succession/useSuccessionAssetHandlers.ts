@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type {
+  SituationMatrimoniale,
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
   SuccessionAssetOwner,
@@ -23,8 +24,10 @@ import {
   buildPrevoyanceFromAsset,
   createAssetId,
 } from './successionSimulator.helpers';
+import { resolveSuccessionAssetLocation } from './successionPatrimonialModel';
 
 interface UseSuccessionAssetHandlersArgs {
+  civilSituation: SituationMatrimoniale;
   assetBreakdown: {
     actifs: Record<SuccessionAssetOwner, number>;
     passifs: Record<SuccessionAssetOwner, number>;
@@ -46,6 +49,7 @@ interface UseSuccessionAssetHandlersArgs {
 }
 
 export function useSuccessionAssetHandlers({
+  civilSituation,
   assetBreakdown,
   assetOwnerOptions,
   assuranceViePartyOptions,
@@ -92,8 +96,8 @@ export function useSuccessionAssetHandlers({
         epoux2: owner === 'epoux2' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.epoux2,
         commun: owner === 'commun' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.commun,
       },
-    }));
-  }, [assetBreakdown, setAssetEntries]);
+    }, civilSituation));
+  }, [assetBreakdown, civilSituation, setAssetEntries]);
 
   const addAssetEntry = useCallback((category: SuccessionAssetCategory) => {
     setAssetEntries((prev) => {
@@ -104,14 +108,20 @@ export function useSuccessionAssetHandlers({
         ...prev,
         {
           id: createAssetId(),
-          owner: assetOwnerOptions[0]?.value ?? 'epoux1',
+          ...(resolveSuccessionAssetLocation({
+            owner: assetOwnerOptions[0]?.value ?? 'epoux1',
+            situationMatrimoniale: civilSituation,
+          }) ?? {
+            owner: 'epoux1' as const,
+            pocket: 'epoux1' as const,
+          }),
           category,
           subCategory: nextSubCategory,
           amount: 0,
         },
       ];
     });
-  }, [assetOwnerOptions, hasResidencePrincipale, setAssetEntries]);
+  }, [assetOwnerOptions, civilSituation, hasResidencePrincipale, setAssetEntries]);
 
   const updateAssetEntry = useCallback((
     id: string,
@@ -188,6 +198,13 @@ export function useSuccessionAssetHandlers({
           subCategory: String(nextSubCategory),
         };
       }
+      if (field === 'owner') {
+        const location = resolveSuccessionAssetLocation({
+          owner: value,
+          situationMatrimoniale: civilSituation,
+        });
+        return location ? { ...entry, ...location } : entry;
+      }
       return {
         ...entry,
         [field]: value,
@@ -195,6 +212,7 @@ export function useSuccessionAssetHandlers({
     }));
   }, [
     assetEntries,
+    civilSituation,
     hasResidencePrincipale,
     resolvePersonParty,
     setAssetEntries,

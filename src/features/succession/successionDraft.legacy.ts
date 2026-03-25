@@ -1,4 +1,5 @@
 import { DEFAULT_SUCCESSION_TESTAMENT_CONFIG } from './successionDraft.defaults';
+import { getSuccessionAssetPocketFromOwner } from './successionPatrimonialModel';
 import {
   asBoolean,
   asPercent,
@@ -40,6 +41,7 @@ export const SUPPORTED_SUCCESSION_DRAFT_VERSIONS = [
   17,
   18,
   19,
+  20,
 ] as const;
 
 export function isSupportedSuccessionDraftVersion(
@@ -108,6 +110,7 @@ export function deriveLegacyDonations(
 
 export function deriveLegacyAssetEntries(
   liquidation: SuccessionLiquidationContext,
+  situationMatrimoniale: SuccessionCivilContext['situationMatrimoniale'],
 ): ParsedSuccessionDraftPayload['assetEntries'] {
   const entries: ParsedSuccessionDraftPayload['assetEntries'] = [];
 
@@ -115,6 +118,7 @@ export function deriveLegacyAssetEntries(
     entries.push({
       id: 'asset-epoux1-legacy',
       owner: 'epoux1',
+      pocket: getSuccessionAssetPocketFromOwner('epoux1', situationMatrimoniale),
       category: 'divers',
       subCategory: 'Saisie agrégée',
       amount: liquidation.actifEpoux1,
@@ -125,6 +129,7 @@ export function deriveLegacyAssetEntries(
     entries.push({
       id: 'asset-epoux2-legacy',
       owner: 'epoux2',
+      pocket: getSuccessionAssetPocketFromOwner('epoux2', situationMatrimoniale),
       category: 'divers',
       subCategory: 'Saisie agrégée',
       amount: liquidation.actifEpoux2,
@@ -135,6 +140,7 @@ export function deriveLegacyAssetEntries(
     entries.push({
       id: 'asset-commun-legacy',
       owner: 'commun',
+      pocket: getSuccessionAssetPocketFromOwner('commun', situationMatrimoniale),
       category: 'divers',
       subCategory: 'Saisie agrégée',
       amount: liquidation.actifCommun,

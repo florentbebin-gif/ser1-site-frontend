@@ -6,7 +6,7 @@ import type {
   SuccessionCivilContext,
   SuccessionDevolutionContext,
   SuccessionDonationEntry,
-  SuccessionDraftPayloadV19,
+  SuccessionDraftPayloadV20,
   SuccessionEnfant,
   SuccessionGroupementFoncierEntry,
   SuccessionLiquidationContext,
@@ -15,6 +15,7 @@ import type {
   SuccessionPrimarySide,
   SuccessionPrevoyanceDecesEntry,
 } from './successionDraft.types';
+import { resolveSuccessionAssetLocation } from './successionPatrimonialModel';
 
 export function buildSuccessionDraftPayload(
   form: PersistedSuccessionForm,
@@ -31,9 +32,41 @@ export function buildSuccessionDraftPayload(
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[] = [],
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[] = [],
   chainOrder: SuccessionPrimarySide = 'epoux1',
-): SuccessionDraftPayloadV19 {
+): SuccessionDraftPayloadV20 {
+  const normalizedAssetEntries = assetEntries.map((entry) => {
+    const location = resolveSuccessionAssetLocation({
+      owner: entry.owner,
+      pocket: entry.pocket,
+      situationMatrimoniale: civil.situationMatrimoniale,
+    }) ?? {
+      owner: 'epoux1' as const,
+      pocket: 'epoux1' as const,
+    };
+
+    return {
+      ...entry,
+      ...location,
+    };
+  });
+
+  const normalizedGroupementFoncierEntries = groupementFoncierEntries.map((entry) => {
+    const location = resolveSuccessionAssetLocation({
+      owner: entry.owner,
+      pocket: entry.pocket,
+      situationMatrimoniale: civil.situationMatrimoniale,
+    }) ?? {
+      owner: 'epoux1' as const,
+      pocket: 'epoux1' as const,
+    };
+
+    return {
+      ...entry,
+      ...location,
+    };
+  });
+
   return {
-    version: 19,
+    version: 20,
     form,
     civil,
     liquidation,
@@ -42,10 +75,10 @@ export function buildSuccessionDraftPayload(
     enfants,
     familyMembers,
     donations,
-    assetEntries,
+    assetEntries: normalizedAssetEntries,
     assuranceVieEntries,
     perEntries,
-    groupementFoncierEntries,
+    groupementFoncierEntries: normalizedGroupementFoncierEntries,
     prevoyanceDecesEntries,
     ui: {
       chainOrder,
