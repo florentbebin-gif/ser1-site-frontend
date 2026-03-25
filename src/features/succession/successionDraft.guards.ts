@@ -20,6 +20,7 @@ import type {
   SuccessionDonationEntryType,
   SuccessionEnfantRattachement,
   SuccessionPrimarySide,
+  SuccessionSocieteAcquetsLiquidationMode,
 } from './successionDraft.types';
 
 export function isObject(v: unknown): v is Record<string, unknown> {
@@ -78,6 +79,10 @@ export function isDonationEntreEpouxOption(v: unknown): v is SuccessionDonationE
     || v === 'pleine_propriete_quotite'
     || v === 'mixte'
     || v === 'pleine_propriete_totale';
+}
+
+export function isSocieteAcquetsLiquidationMode(v: unknown): v is SuccessionSocieteAcquetsLiquidationMode {
+  return v === 'quotes' || v === 'attribution_survivant';
 }
 
 export function isChoixLegalConjointSansDDV(v: unknown): v is Exclude<SuccessionChoixLegalConjointSansDDV, null> {

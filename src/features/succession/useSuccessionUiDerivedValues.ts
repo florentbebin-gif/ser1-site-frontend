@@ -278,6 +278,7 @@ export function useSuccessionUiDerivedValues({
     assetBreakdown: assetValuation.assetBreakdown,
     actifsTaxablesParOwner: assetValuation.actifsTaxablesParOwner,
     assetNetTotals: assetValuation.assetNetTotals,
+    assetNetTotalsByPocket: assetValuation.assetNetTotalsByPocket,
     forfaitMobilierComputed: assetValuation.forfaitMobilierComputed,
     forfaitMobilierParOwner: assetValuation.forfaitMobilierParOwner,
     hasResidencePrincipale: assetValuation.hasResidencePrincipale,

@@ -24,6 +24,7 @@ import {
 } from './successionTestament';
 import {
   computeFirstEstate,
+  computeSocieteAcquetsDistribution,
   computeStep1Split,
 } from './successionChainageEstateSplit';
 import {
@@ -87,10 +88,15 @@ interface SuccessionChainageInput {
   dmtgSettings: DmtgSettings;
   survivorEconomicInflows?: Record<'epoux1' | 'epoux2', number>;
   attributionBiensCommunsPct?: number;
-  patrimonial?: Pick<
+  patrimonial?: Partial<Pick<
     SuccessionPatrimonialContext,
-    'attributionIntegrale' | 'donationEntreEpouxActive' | 'donationEntreEpouxOption' | 'preciputMontant'
-  >;
+    | 'attributionIntegrale'
+    | 'donationEntreEpouxActive'
+    | 'donationEntreEpouxOption'
+    | 'preciputMontant'
+    | 'societeAcquets'
+  >>;
+  societeAcquetsNetValue?: number;
   transmissionBasis?: SuccessionAssetTransmissionBasis;
   abattementResidencePrincipale?: boolean;
   forfaitMobilierMode?: SuccessionPatrimonialContext['forfaitMobilierMode'];
@@ -144,6 +150,7 @@ function buildFirstEstatePocketScales(
   regimeUsed: SuccessionChainRegime,
   order: SuccessionChainOrder,
   attributionBiensCommunsPct: number,
+  societeAcquetsScale = 0,
 ): SuccessionEstatePocketScales {
   const scales = createEmptyPocketScales();
   const sharedPocket = getSuccessionSharedPocketForContext({
@@ -161,6 +168,9 @@ function buildFirstEstatePocketScales(
 
   if (regimeUsed === 'separation_biens') {
     scales[order] = 1;
+    if (sharedPocket === 'societe_acquets' && societeAcquetsScale > 0) {
+      scales.societe_acquets = Math.min(1, Math.max(0, societeAcquetsScale));
+    }
     return scales;
   }
 
@@ -175,6 +185,7 @@ function buildSurvivorPocketScales(
   regimeUsed: SuccessionChainRegime,
   order: SuccessionChainOrder,
   attributionBiensCommunsPct: number,
+  societeAcquetsScale = 0,
 ): SuccessionEstatePocketScales {
   const scales = createEmptyPocketScales();
   const survivor = getOtherSide(order);
@@ -190,6 +201,9 @@ function buildSurvivorPocketScales(
 
   if (regimeUsed === 'separation_biens') {
     scales[survivor] = 1;
+    if (sharedPocket === 'societe_acquets' && societeAcquetsScale > 0) {
+      scales.societe_acquets = Math.min(1, Math.max(0, 1 - societeAcquetsScale));
+    }
     return scales;
   }
 
@@ -391,7 +405,29 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   }
 
   const attributionPct = input.attributionBiensCommunsPct ?? 50;
-  const firstEstate = computeFirstEstate(input.regimeUsed, input.order, input.liquidation, attributionPct);
+  const societeAcquetsDistribution = (
+    input.civil.situationMatrimoniale === 'marie'
+    && input.civil.regimeMatrimonial === 'separation_biens_societe_acquets'
+    && input.regimeUsed === 'separation_biens'
+  )
+    ? computeSocieteAcquetsDistribution(
+      input.order,
+      input.societeAcquetsNetValue ?? 0,
+      input.patrimonial,
+    )
+    : null;
+  const societeAcquetsEstateRatio = (
+    societeAcquetsDistribution
+    && (input.societeAcquetsNetValue ?? 0) > 0
+  )
+    ? societeAcquetsDistribution.firstEstateContribution / Math.max(1, input.societeAcquetsNetValue ?? 0)
+    : 0;
+  const firstEstate = computeFirstEstate(
+    input.regimeUsed,
+    input.order,
+    input.liquidation,
+    attributionPct,
+  ) + (societeAcquetsDistribution?.firstEstateContribution ?? 0);
   const survivorBase = Math.max(0, totalPatrimoine - firstEstate);
   const survivorEconomicInflows = Math.max(0, input.survivorEconomicInflows?.[input.order] ?? 0);
   const warnings: string[] = [];
@@ -400,12 +436,14 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     input.regimeUsed,
     input.order,
     attributionPct,
+    societeAcquetsEstateRatio,
   );
   const survivorPocketScales = buildSurvivorPocketScales(
     input.civil,
     input.regimeUsed,
     input.order,
     attributionPct,
+    societeAcquetsEstateRatio,
   );
   const firstEstateTaxableBasis = buildSuccessionEstateTaxableBasis(
     input.transmissionBasis,
@@ -428,6 +466,9 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   if (hasRepresentationOnAnySide(enfantsContext, familyMembers)) {
     warnings.push('Chainage: representation successorale simplifiee prise en compte pour les petits-enfants declares.');
   }
+  if (societeAcquetsDistribution) {
+    warnings.push(...societeAcquetsDistribution.warnings);
+  }
   warnings.push('Module de chainage simplifie: liquidation notariale fine et options civiles avancees non modelisees.');
 
   const step1Split = computeStep1Split(
@@ -436,7 +477,12 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     firstEstate,
     nbEnfants,
     input.order,
-    input.patrimonial,
+    societeAcquetsDistribution
+      ? {
+        ...input.patrimonial,
+        preciputMontant: 0,
+      }
+      : input.patrimonial,
     input.referenceDate,
   );
   warnings.push(...step1Split.warnings);

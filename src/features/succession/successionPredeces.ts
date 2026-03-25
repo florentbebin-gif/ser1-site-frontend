@@ -52,7 +52,7 @@ function mapMarriedRegime(regime: RegimeMatrimonial | null): RegimeMapping {
       regimeUsed: 'separation_biens',
       regimeLabel: REGIMES_MATRIMONIAUX[selectedRegime].label,
       warnings: [
-        'Participation aux acquêts: approximation en séparation de biens (créance de participation non modélisée).',
+        "Participation aux acquets: approximation en separation de biens (creance de participation non modelisee).",
       ],
     };
   }
@@ -61,7 +61,7 @@ function mapMarriedRegime(regime: RegimeMatrimonial | null): RegimeMapping {
       regimeUsed: 'communaute_legale',
       regimeLabel: REGIMES_MATRIMONIAUX[selectedRegime].label,
       warnings: [
-        'Communauté de meubles et acquêts: approximation en communauté légale (régime historique simplifié).',
+        'Communaute de meubles et acquets: approximation en communaute legale (regime historique simplifie).',
       ],
     };
   }
@@ -70,7 +70,7 @@ function mapMarriedRegime(regime: RegimeMatrimonial | null): RegimeMapping {
       regimeUsed: 'separation_biens',
       regimeLabel: REGIMES_MATRIMONIAUX[selectedRegime].label,
       warnings: [
-        "Société d'acquêts: approximation en séparation de biens (société d'acquêts non modélisée — évolution prévue).",
+        "Société d'acquêts: l'audit predeces reste approxime en separation de biens ; le chainage succession applique desormais une liquidation dediee simplifiee.",
       ],
     };
   }
@@ -92,17 +92,17 @@ function mapCivilToPredecesRegime(civil: SuccessionCivilContext): RegimeMapping 
         regimeUsed: 'communaute_legale',
         regimeLabel: 'PACS - indivision conventionnelle',
         warnings: [
-          'PACS indivision: approximation en communauté légale (indivision conventionnelle non liquidée finement).',
-          'PACS: absence de vocation successorale légale sans testament (dévolution non modélisée à ce stade).',
+          'PACS indivision: approximation en communaute legale (indivision conventionnelle non liquidee finement).',
+          "PACS: absence de vocation successorale legale sans testament (devolution non modelisee a ce stade).",
         ],
       };
     }
     return {
       regimeUsed: 'separation_biens',
-      regimeLabel: 'PACS - séparation de biens',
+      regimeLabel: 'PACS - separation de biens',
       warnings: [
-        'PACS séparation: approximation en séparation de biens.',
-        'PACS: absence de vocation successorale légale sans testament (dévolution non modélisée à ce stade).',
+        'PACS separation: approximation en separation de biens.',
+        "PACS: absence de vocation successorale legale sans testament (devolution non modelisee a ce stade).",
       ],
     };
   }
@@ -112,8 +112,8 @@ function mapCivilToPredecesRegime(civil: SuccessionCivilContext): RegimeMapping 
       regimeUsed: null,
       regimeLabel: null,
       warnings: [
-        'Union libre: pas de liquidation matrimoniale. La synthèse retient la succession directe du défunt simulé.',
-        'Union libre: les biens en indivision ne sont retenus qu’à hauteur de la quote-part du défunt (50 % par défaut dans ce module).',
+        "Union libre: pas de liquidation matrimoniale. La synthese retient la succession directe du defunt simule.",
+        "Union libre: les biens en indivision ne sont retenus qu'a hauteur de la quote-part du defunt (50 % par defaut dans ce module).",
       ],
     };
   }
@@ -121,7 +121,7 @@ function mapCivilToPredecesRegime(civil: SuccessionCivilContext): RegimeMapping 
   return {
     regimeUsed: null,
     regimeLabel: null,
-    warnings: ['Ce module de liquidation matrimoniale est applicable aux couples mariés ou pacsés.'],
+    warnings: ['Ce module de liquidation matrimoniale est applicable aux couples maries ou pacses.'],
   };
 }
 
@@ -145,8 +145,8 @@ export function buildSuccessionPredecesAnalysis(
     };
   }
 
-  // Ajustement de l'actifCommun pour refléter l'attribution %
-  // L'engine hardcode un 50/50, on pré-ajuste pour obtenir le bon résultat économique
+  // L'engine de predeces suppose un partage communautaire 50/50.
+  // On ajuste donc en entree pour refleter l'attribution economique retenue.
   const pct = Math.min(100, Math.max(0, attributionBiensCommunsPct));
   const adjustedActifCommun = mapping.regimeUsed === 'communaute_legale'
     ? liquidation.actifCommun * 2 * (100 - pct) / 100
@@ -164,13 +164,15 @@ export function buildSuccessionPredecesAnalysis(
   const warnings = [
     ...mapping.warnings,
     ...(pct !== 50 && mapping.regimeUsed === 'communaute_legale'
-      ? [`Attribution des biens communs au survivant: ${pct} % (ajustement appliqué au calcul).`]
+      ? [`Attribution des biens communs au survivant: ${pct} % (ajustement applique au calcul).`]
       : []),
     ...(pct !== 50 && mapping.regimeUsed !== 'communaute_legale'
-      ? [`Attribution des biens communs au survivant: ${pct} % (non appliqué pour ce régime).`]
+      ? [`Attribution des biens communs au survivant: ${pct} % (non applique pour ce regime).`]
       : []),
-    ...(liquidation.nbEnfants === 0 ? ['Aucun enfant déclaré: droits de succession des descendants non simulés.'] : []),
-    ...calc.warnings.map((w) => w.message),
+    ...(liquidation.nbEnfants === 0
+      ? ['Aucun enfant declare: droits de succession des descendants non simules.']
+      : []),
+    ...calc.warnings.map((warning) => warning.message),
   ];
 
   return {

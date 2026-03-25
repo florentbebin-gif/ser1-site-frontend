@@ -53,7 +53,7 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 | `separation_biens` | Gere nativement | Support robuste | Pas d'indivisions fines ni de passif juridiquement affecte | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionChainageEstateSplit.ts` |
 | `participation_acquets` | Approxime en separation de biens | Approximation assumee | Creance de participation non modelisee | `src/features/succession/successionPredeces.ts`, `src/features/succession/__tests__/successionPredeces.test.ts` |
 | `communaute_meubles_acquets` | Approxime en communaute legale | Approximation assumee | Distinction meuble / immeuble absente | `src/features/succession/successionPredeces.ts` |
-| `separation_biens_societe_acquets` | Approxime en separation de biens avec warning explicite, mais la poche `societe_acquets` est maintenant saisissable en UI et persistee au draft | Approximation assumee | Liquidation dediee encore absente | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionPatrimonialModel.ts`, `src/features/succession/__tests__/successionRegimes.test.ts` |
+| `separation_biens_societe_acquets` | Audit predeces encore approxime en separation de biens, mais le chainage succession liquide maintenant la poche `societe_acquets` via un moteur dedie simplifie et une configuration contractuelle en UI | Simplification documentee | Pas encore de liquidation notariale exhaustive ni de restitution/export dedies | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionChainage.ts`, `src/features/succession/components/DispositionsModal.tsx` |
 
 ## Couverture UI actuelle
 
@@ -109,7 +109,8 @@ Les `PR-13/14` migrent ensuite le draft et les entrees detaillees vers `pocket`,
 Les `PR-15/16` alignent les helpers specialises et la sync d'etat sur `pocket`.
 Les `PR-17/18` font ensuite basculer la base taxable / chainage vers `pocket` et remplacent en UI le select `Porteur` par `Masse de rattachement` avec options dependantes du regime.
 La `PR-19` supprime ensuite `SuccessionAssetOwner` du runtime detaille: actifs et groupements fonciers sont desormais `pocket` only, et la serialisation passe en `v21`.
-La `PR-20` ouvre enfin explicitement la poche `societe_acquets` quand le regime `separation_biens_societe_acquets` est selectionne, tout en conservant le warning d'approximation jusqu'au futur moteur dedie.
+La `PR-20` ouvre explicitement la poche `societe_acquets` quand le regime `separation_biens_societe_acquets` est selectionne.
+Les `PR-21/22` ajoutent ensuite le bloc UI de configuration et la liquidation simplifiee de cette poche dans le chainage succession, tout en laissant l'audit predeces sur une approximation de separation de biens.
 
 ## Sources juridiques de cadrage
 

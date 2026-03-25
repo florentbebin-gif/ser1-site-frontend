@@ -23,6 +23,7 @@ export type {
   SuccessionDraftPayloadV19,
   SuccessionDraftPayloadV20,
   SuccessionDraftPayloadV21,
+  SuccessionDraftPayloadV22,
   SuccessionEnfant,
   SuccessionEnfantRattachement,
   SuccessionGroupementFoncierEntry,
@@ -33,6 +34,8 @@ export type {
   SuccessionParticularLegacyEntry,
   SuccessionPatrimonialContext,
   SuccessionPrimarySide,
+  SuccessionSocieteAcquetsConfig,
+  SuccessionSocieteAcquetsLiquidationMode,
   SuccessionTestamentConfig,
 } from './successionDraft.types';
 
@@ -49,6 +52,7 @@ export {
   getSuccessionLegacyOwnerFromPocket,
   getSuccessionSharedPocketForContext,
   getSuccessionSharedPocketLabel,
+  isSuccessionSocieteAcquetsRegime,
   isSuccessionAssetPocket,
   isSuccessionLegacyAssetOwner,
   resolveSuccessionAssetLocation,
@@ -65,6 +69,7 @@ export {
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PER,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+  DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG,
   DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
 } from './successionDraft.defaults';
 

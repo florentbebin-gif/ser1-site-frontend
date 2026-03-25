@@ -35,6 +35,7 @@ export type SuccessionDonationEntreEpouxOption =
   | 'mixte'
   | 'pleine_propriete_totale';
 export type SuccessionChoixLegalConjointSansDDV = 'usufruit' | 'quart_pp' | null;
+export type SuccessionSocieteAcquetsLiquidationMode = 'quotes' | 'attribution_survivant';
 
 export interface SuccessionCivilContext {
   situationMatrimoniale: SituationMatrimoniale;
@@ -93,12 +94,21 @@ export interface SuccessionDevolutionContextInput
   ascendantsSurvivantsBySide?: Partial<SuccessionDevolutionContext['ascendantsSurvivantsBySide']>;
 }
 
+export interface SuccessionSocieteAcquetsConfig {
+  active: boolean;
+  liquidationMode: SuccessionSocieteAcquetsLiquidationMode;
+  quoteEpoux1Pct: number;
+  quoteEpoux2Pct: number;
+  attributionSurvivantPct: number;
+}
+
 export interface SuccessionPatrimonialContext {
   donationsRapportables: number;
   donationsHorsPart: number;
   legsParticuliers: number;
   donationEntreEpouxActive: boolean;
   donationEntreEpouxOption: SuccessionDonationEntreEpouxOption;
+  societeAcquets: SuccessionSocieteAcquetsConfig;
   preciputMontant: number;
   attributionIntegrale: boolean;
   attributionBiensCommunsPct: number;
@@ -239,4 +249,8 @@ export interface SuccessionDraftPayloadV20 extends ParsedSuccessionDraftPayload 
 
 export interface SuccessionDraftPayloadV21 extends ParsedSuccessionDraftPayload {
   version: 21;
+}
+
+export interface SuccessionDraftPayloadV22 extends ParsedSuccessionDraftPayload {
+  version: 22;
 }

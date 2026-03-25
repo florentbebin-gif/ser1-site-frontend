@@ -37,6 +37,7 @@ import {
   hasRequiredBirthDatesForSituation,
   isCoupleSituation,
 } from './successionSimulator.helpers';
+import { isSuccessionSocieteAcquetsRegime } from './successionDraft';
 import type {
   SuccessionAssetDetailEntry,
   SuccessionAssuranceVieEntry,
@@ -156,6 +157,11 @@ export function useSuccessionDerivedValues({
   const isPacsIndivision = isPacsed && civilContext.pacsConvention === 'indivision';
   const showSharedTransmissionPct = isCommunityRegime || isPacsIndivision;
   const showDonationEntreEpoux = isMarried;
+  const isSocieteAcquetsRegime = isSuccessionSocieteAcquetsRegime({
+    situationMatrimoniale: civilContext.situationMatrimoniale,
+    regimeMatrimonial: civilContext.regimeMatrimonial,
+    pacsConvention: civilContext.pacsConvention,
+  });
 
   const uiDerived = useSuccessionUiDerivedValues({
     civilContext,
@@ -291,8 +297,10 @@ export function useSuccessionDerivedValues({
         attributionIntegrale: patrimonialContext.attributionIntegrale,
         donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
         donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
+        societeAcquets: patrimonialContext.societeAcquets,
         preciputMontant: patrimonialContext.preciputMontant,
       },
+      societeAcquetsNetValue: uiDerived.assetNetTotalsByPocket.societe_acquets,
       transmissionBasis: uiDerived.transmissionBasis,
       abattementResidencePrincipale: patrimonialContext.abattementResidencePrincipale,
       forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
@@ -318,11 +326,13 @@ export function useSuccessionDerivedValues({
       patrimonialContext.attributionIntegrale,
       patrimonialContext.donationEntreEpouxActive,
       patrimonialContext.donationEntreEpouxOption,
+      patrimonialContext.societeAcquets,
       patrimonialContext.preciputMontant,
       patrimonialContext.forfaitMobilierMode,
       patrimonialContext.forfaitMobilierPct,
       patrimonialContext.forfaitMobilierMontant,
       uiDerived.transmissionBasis,
+      uiDerived.assetNetTotalsByPocket.societe_acquets,
       enfantsContext,
       familyMembers,
       devolutionContext,
@@ -459,6 +469,7 @@ export function useSuccessionDerivedValues({
     isConcubinage,
     isCouple,
     isCommunityRegime,
+    isSocieteAcquetsRegime,
     isPacsIndivision,
     hasComputableFiliation,
     hasRequiredBirthDatesForCurrentSituation,

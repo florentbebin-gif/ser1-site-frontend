@@ -79,6 +79,13 @@ describe('successionDraft', () => {
         legsParticuliers: 10000,
         donationEntreEpouxActive: true,
         donationEntreEpouxOption: 'mixte',
+        societeAcquets: {
+          active: true,
+          liquidationMode: 'quotes',
+          quoteEpoux1Pct: 50,
+          quoteEpoux2Pct: 50,
+          attributionSurvivantPct: 0,
+        },
         preciputMontant: 12000,
         attributionIntegrale: false,
         attributionBiensCommunsPct: 50,
@@ -137,7 +144,7 @@ describe('successionDraft', () => {
       'epoux2',
     );
 
-    expect(payload.version).toBe(21);
+    expect(payload.version).toBe(22);
     expect(payload.assetEntries[0].pocket).toBe('epoux1');
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
     expect(parsed).not.toBeNull();
@@ -156,6 +163,10 @@ describe('successionDraft', () => {
     expect(parsed?.patrimonial.donationsRapportables).toBe(30000);
     expect(parsed?.patrimonial.donationEntreEpouxActive).toBe(true);
     expect(parsed?.patrimonial.donationEntreEpouxOption).toBe('mixte');
+    expect(parsed?.patrimonial.societeAcquets).toMatchObject({
+      active: true,
+      liquidationMode: 'quotes',
+    });
     expect(parsed?.donations).toHaveLength(1);
     expect(parsed?.donations[0].type).toBe('rapportable');
     expect(parsed?.assetEntries).toHaveLength(1);

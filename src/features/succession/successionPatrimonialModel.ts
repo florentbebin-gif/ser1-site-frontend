@@ -28,6 +28,13 @@ interface SuccessionAssetLocationContext {
   pacsConvention?: string | null;
 }
 
+export function isSuccessionSocieteAcquetsRegime(
+  context: SuccessionAssetLocationContext,
+): boolean {
+  return context.situationMatrimoniale === 'marie'
+    && context.regimeMatrimonial === 'separation_biens_societe_acquets';
+}
+
 export function isSuccessionLegacyAssetOwner(value: unknown): value is SuccessionLegacyAssetOwner {
   return value === 'epoux1' || value === 'epoux2' || value === 'commun';
 }
@@ -67,7 +74,11 @@ export function getSuccessionSharedPocketForContext({
   ) {
     return null;
   }
-  if (regimeMatrimonial === 'separation_biens_societe_acquets') {
+  if (isSuccessionSocieteAcquetsRegime({
+    situationMatrimoniale,
+    regimeMatrimonial,
+    pacsConvention,
+  })) {
     return 'societe_acquets';
   }
   return 'communaute';

@@ -28,6 +28,11 @@ import type { DispositionsDraftState } from '../successionSimulator.helpers';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
+const SOCIETE_ACQUETS_LIQUIDATION_OPTIONS = [
+  { value: 'quotes', label: 'Quotes contractuelles' },
+  { value: 'attribution_survivant', label: 'Attribution au survivant' },
+] as const;
+
 interface DispositionsModalProps {
   dispositionsDraft: DispositionsDraftState;
   setDispositionsDraft: Dispatch<SetStateAction<DispositionsDraftState>>;
@@ -46,6 +51,7 @@ interface DispositionsModalProps {
   nbDescendantBranches: number;
   nbEnfantsNonCommuns: number;
   isCommunityRegime: boolean;
+  isSocieteAcquetsRegime: boolean;
   updateDispositionsTestament: (
     _side: SuccessionPrimarySide,
     _updater: (_current: SuccessionTestamentConfig) => SuccessionTestamentConfig,
@@ -78,6 +84,7 @@ export default function DispositionsModal({
   nbDescendantBranches,
   nbEnfantsNonCommuns,
   isCommunityRegime,
+  isSocieteAcquetsRegime,
   updateDispositionsTestament,
   getFirstTestamentBeneficiaryRef,
   onAddParticularLegacy,
@@ -213,6 +220,150 @@ export default function DispositionsModal({
                   Le préciput permet au conjoint survivant de prélever certains biens ou une somme sur la communauté avant le partage successoral.
                 </p>
               </div>
+            )}
+
+            {isSocieteAcquetsRegime && (
+              <>
+                <div className="sc-field">
+                  <label>Bloc societe d&apos;acquets</label>
+                  <ScSelect
+                    value={dispositionsDraft.societeAcquets.active ? 'oui' : 'non'}
+                    onChange={(value) => setDispositionsDraft((prev) => ({
+                      ...prev,
+                      societeAcquets: {
+                        ...prev.societeAcquets,
+                        active: value === 'oui',
+                      },
+                    }))}
+                    options={OUI_NON_OPTIONS}
+                  />
+                  <p className="sc-hint sc-hint--compact">
+                    Active la liquidation contractuelle de la poche societe d&apos;acquets.
+                  </p>
+                </div>
+
+                {dispositionsDraft.societeAcquets.active && (
+                  <>
+                    <div className="sc-field">
+                      <label>Mode de liquidation de la societe d&apos;acquets</label>
+                      <ScSelect
+                        value={dispositionsDraft.societeAcquets.liquidationMode}
+                        onChange={(value) => setDispositionsDraft((prev) => ({
+                          ...prev,
+                          societeAcquets: {
+                            ...prev.societeAcquets,
+                            liquidationMode: value as 'quotes' | 'attribution_survivant',
+                          },
+                        }))}
+                        options={SOCIETE_ACQUETS_LIQUIDATION_OPTIONS.map((option) => ({
+                          value: option.value,
+                          label: option.label,
+                        }))}
+                      />
+                      <p className="sc-hint sc-hint--compact">
+                        Le mode quotes repartit la poche selon les quotes contractuelles ; le mode attribution ajoute une part prealable au survivant avant de partager le reliquat.
+                      </p>
+                    </div>
+
+                    <div className="sc-field">
+                      <label>Quote Epoux 1 dans la societe d&apos;acquets (%)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={dispositionsDraft.societeAcquets.quoteEpoux1Pct}
+                        onChange={(e) => {
+                          const quoteEpoux1Pct = Math.min(100, Math.max(0, Number(e.target.value) || 0));
+                          setDispositionsDraft((prev) => ({
+                            ...prev,
+                            societeAcquets: {
+                              ...prev.societeAcquets,
+                              quoteEpoux1Pct,
+                              quoteEpoux2Pct: 100 - quoteEpoux1Pct,
+                            },
+                          }));
+                        }}
+                      />
+                    </div>
+
+                    <div className="sc-field">
+                      <label>Quote Epoux 2 dans la societe d&apos;acquets (%)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={dispositionsDraft.societeAcquets.quoteEpoux2Pct}
+                        onChange={(e) => {
+                          const quoteEpoux2Pct = Math.min(100, Math.max(0, Number(e.target.value) || 0));
+                          setDispositionsDraft((prev) => ({
+                            ...prev,
+                            societeAcquets: {
+                              ...prev.societeAcquets,
+                              quoteEpoux1Pct: 100 - quoteEpoux2Pct,
+                              quoteEpoux2Pct,
+                            },
+                          }));
+                        }}
+                      />
+                      <p className="sc-hint sc-hint--compact">
+                        Les quotes contractuelles sont maintenues a 100 % au total.
+                      </p>
+                    </div>
+
+                    {dispositionsDraft.societeAcquets.liquidationMode === 'attribution_survivant' && (
+                      <div className="sc-field">
+                        <label>Attribution prealable au survivant (%)</label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={dispositionsDraft.societeAcquets.attributionSurvivantPct}
+                          onChange={(e) => setDispositionsDraft((prev) => ({
+                            ...prev,
+                            societeAcquets: {
+                              ...prev.societeAcquets,
+                              attributionSurvivantPct: Math.min(100, Math.max(0, Number(e.target.value) || 0)),
+                            },
+                          }))}
+                        />
+                        <p className="sc-hint sc-hint--compact">
+                          Cette part est attribuee au survivant avant d&apos;appliquer les quotes sur le reliquat.
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="sc-field">
+                      <label>Attribution integrale de la societe d&apos;acquets</label>
+                      <ScSelect
+                        value={dispositionsDraft.attributionIntegrale ? 'oui' : 'non'}
+                        onChange={(value) => setDispositionsDraft((prev) => ({
+                          ...prev,
+                          attributionIntegrale: value === 'oui',
+                        }))}
+                        options={OUI_NON_OPTIONS}
+                      />
+                      <p className="sc-hint sc-hint--compact">
+                        Si oui, la poche societe d&apos;acquets est reportee en totalite au survivant au 1er deces.
+                      </p>
+                    </div>
+
+                    <div className="sc-field">
+                      <label>Preciput sur la societe d&apos;acquets (EUR)</label>
+                      <ScNumericInput
+                        value={dispositionsDraft.preciputMontant || 0}
+                        min={0}
+                        onChange={(val) => setDispositionsDraft((prev) => ({
+                          ...prev,
+                          preciputMontant: val,
+                        }))}
+                      />
+                      <p className="sc-hint sc-hint--compact">
+                        Le preciput est preleve sur la societe d&apos;acquets avant la liquidation du reliquat.
+                      </p>
+                    </div>
+                  </>
+                )}
+              </>
             )}
           </div>
 

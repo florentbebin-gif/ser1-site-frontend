@@ -14,6 +14,7 @@ import {
 } from './successionTestament';
 import {
   cloneAscendantsSurvivantsBySide,
+  cloneSuccessionSocieteAcquetsConfig,
   updateDraftTestament,
   type DispositionsDraftState,
 } from './successionSimulator.helpers';
@@ -23,6 +24,7 @@ interface UseSuccessionDispositionsHandlersArgs {
     SuccessionPrimarySide,
     ReturnType<typeof buildTestamentBeneficiaryOptions>
   >;
+  isSocieteAcquetsRegime: boolean;
   canOpenDispositionsModal: boolean;
   devolutionContext: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT;
   patrimonialContext: typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT;
@@ -35,6 +37,7 @@ interface UseSuccessionDispositionsHandlersArgs {
 
 export function useSuccessionDispositionsHandlers({
   testamentBeneficiaryOptionsBySide,
+  isSocieteAcquetsRegime,
   canOpenDispositionsModal,
   devolutionContext,
   patrimonialContext,
@@ -111,6 +114,7 @@ export function useSuccessionDispositionsHandlers({
       attributionBiensCommunsPct: patrimonialContext.attributionBiensCommunsPct,
       donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
       donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
+      societeAcquets: cloneSuccessionSocieteAcquetsConfig(patrimonialContext.societeAcquets),
       preciputMontant: patrimonialContext.preciputMontant,
       attributionIntegrale: patrimonialContext.attributionIntegrale,
       choixLegalConjointSansDDV: devolutionContext.choixLegalConjointSansDDV,
@@ -132,8 +136,11 @@ export function useSuccessionDispositionsHandlers({
       attributionBiensCommunsPct: dispositionsDraft.attributionBiensCommunsPct,
       donationEntreEpouxActive: dispositionsDraft.donationEntreEpouxActive,
       donationEntreEpouxOption: dispositionsDraft.donationEntreEpouxOption,
+      societeAcquets: cloneSuccessionSocieteAcquetsConfig(dispositionsDraft.societeAcquets),
       preciputMontant: dispositionsDraft.preciputMontant,
-      attributionIntegrale: dispositionsDraft.attributionBiensCommunsPct === 100,
+      attributionIntegrale: isSocieteAcquetsRegime
+        ? dispositionsDraft.attributionIntegrale
+        : dispositionsDraft.attributionBiensCommunsPct === 100,
     }));
     setDevolutionContext((prev) => ({
       ...prev,
@@ -142,7 +149,13 @@ export function useSuccessionDispositionsHandlers({
       ascendantsSurvivantsBySide: cloneAscendantsSurvivantsBySide(dispositionsDraft.ascendantsSurvivantsBySide),
     }));
     setShowDispositionsModal(false);
-  }, [dispositionsDraft, setDevolutionContext, setPatrimonialContext, setShowDispositionsModal]);
+  }, [
+    dispositionsDraft,
+    isSocieteAcquetsRegime,
+    setDevolutionContext,
+    setPatrimonialContext,
+    setShowDispositionsModal,
+  ]);
 
   return {
     getFirstTestamentBeneficiaryRef,

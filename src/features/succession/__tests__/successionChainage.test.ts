@@ -501,6 +501,109 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.warnings.some((warning) => warning.includes('donation entre epoux ignoree'))).toBe(true);
   });
 
+  it("liquidates the societe d'acquets pocket with contractual quotes", () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens_societe_acquets' }),
+      liquidation: makeLiquidation({ actifEpoux1: 300000, actifEpoux2: 200000, actifCommun: 400000, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+      patrimonial: {
+        attributionIntegrale: false,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'usufruit_total',
+        preciputMontant: 0,
+        societeAcquets: {
+          active: true,
+          liquidationMode: 'quotes',
+          quoteEpoux1Pct: 40,
+          quoteEpoux2Pct: 60,
+          attributionSurvivantPct: 0,
+        },
+      },
+      societeAcquetsNetValue: 400000,
+    });
+
+    expect(analysis.step1?.actifTransmis).toBe(460000);
+    expect(analysis.step1?.partConjoint).toBe(115000);
+    expect(analysis.step1?.partEnfants).toBe(345000);
+    expect(analysis.step2?.actifTransmis).toBe(555000);
+    expect(analysis.warnings.some((warning) => warning.includes("Societe d'acquets"))).toBe(true);
+  });
+
+  it("applies a preliminary survivor attribution before splitting the societe d'acquets pocket", () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens_societe_acquets' }),
+      liquidation: makeLiquidation({ actifEpoux1: 300000, actifEpoux2: 200000, actifCommun: 400000, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+      patrimonial: {
+        attributionIntegrale: false,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'usufruit_total',
+        preciputMontant: 0,
+        societeAcquets: {
+          active: true,
+          liquidationMode: 'attribution_survivant',
+          quoteEpoux1Pct: 50,
+          quoteEpoux2Pct: 50,
+          attributionSurvivantPct: 25,
+        },
+      },
+      societeAcquetsNetValue: 400000,
+    });
+
+    expect(analysis.step1?.actifTransmis).toBe(450000);
+    expect(analysis.step1?.partConjoint).toBe(112500);
+    expect(analysis.step2?.actifTransmis).toBe(562500);
+    expect(analysis.warnings.some((warning) => warning.includes('attribution prealable'))).toBe(true);
+  });
+
+  it("can report the whole societe d'acquets pocket to the survivor while keeping the deceased own assets in step 1", () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'separation_biens_societe_acquets' }),
+      liquidation: makeLiquidation({ actifEpoux1: 300000, actifEpoux2: 200000, actifCommun: 400000, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+      patrimonial: {
+        attributionIntegrale: true,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'usufruit_total',
+        preciputMontant: 50000,
+        societeAcquets: {
+          active: true,
+          liquidationMode: 'quotes',
+          quoteEpoux1Pct: 50,
+          quoteEpoux2Pct: 50,
+          attributionSurvivantPct: 0,
+        },
+      },
+      societeAcquetsNetValue: 400000,
+    });
+
+    expect(analysis.step1?.actifTransmis).toBe(300000);
+    expect(analysis.step1?.partConjoint).toBe(75000);
+    expect(analysis.step2?.actifTransmis).toBe(675000);
+    expect(analysis.warnings.some((warning) => warning.includes('attribution integrale du reliquat'))).toBe(true);
+  });
+
   it('applies the residence principale abatement on step 1 only in chainage', () => {
     const transmissionBasis = {
       ordinaryTaxableAssetsParPocket: {

@@ -287,4 +287,53 @@ describe('successionDraft legacy migrations', () => {
     ]);
     expect(parsed?.assuranceVieEntries).toEqual([]);
   });
+
+  it("initialise la configuration societe d'acquets a son mode par defaut lors du parse d'un draft v21 sans bloc dedie", () => {
+    const raw = JSON.stringify({
+      version: 21,
+      form: {
+        actifNetSuccession: 300000,
+        heritiers: [{ lien: 'enfant', partSuccession: 300000 }],
+      },
+      civil: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'separation_biens_societe_acquets',
+        pacsConvention: 'separation',
+      },
+      liquidation: {
+        actifEpoux1: 120000,
+        actifEpoux2: 90000,
+        actifCommun: 60000,
+        nbEnfants: 2,
+      },
+      devolution: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+      patrimonial: {
+        ...DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+      },
+      enfants: [],
+      familyMembers: [],
+      donations: [],
+      assetEntries: [
+        {
+          id: 'asset-sa',
+          pocket: 'societe_acquets',
+          category: 'divers',
+          subCategory: 'Saisie libre',
+          amount: 60000,
+        },
+      ],
+      assuranceVieEntries: [],
+      perEntries: [],
+      groupementFoncierEntries: [],
+      prevoyanceDecesEntries: [],
+      ui: {
+        chainOrder: 'epoux1',
+      },
+    });
+
+    const parsed = parseSuccessionDraftPayload(raw);
+
+    expect(parsed?.patrimonial.societeAcquets.active).toBe(false);
+    expect(parsed?.patrimonial.societeAcquets.liquidationMode).toBe('quotes');
+  });
 });

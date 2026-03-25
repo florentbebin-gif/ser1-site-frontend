@@ -3,6 +3,7 @@ import type {
   SuccessionLiquidationContext,
   SuccessionPatrimonialContext,
 } from './successionDraft';
+import { DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG } from './successionDraft';
 import type { SuccessionDeceasedSide } from './successionEnfants';
 import { getUsufruitValuationFromBirthDate } from './successionUsufruit';
 
@@ -12,10 +13,20 @@ type SuccessionChainRegime =
   | 'separation_biens'
   | 'communaute_universelle';
 
-type DonationEntreEpouxSelection = Pick<
+type DonationEntreEpouxSelection = Partial<Pick<
   SuccessionPatrimonialContext,
-  'attributionIntegrale' | 'donationEntreEpouxActive' | 'donationEntreEpouxOption' | 'preciputMontant'
->;
+  | 'attributionIntegrale'
+  | 'donationEntreEpouxActive'
+  | 'donationEntreEpouxOption'
+  | 'preciputMontant'
+  | 'societeAcquets'
+>>;
+
+export interface SuccessionSocieteAcquetsDistribution {
+  firstEstateContribution: number;
+  survivorShare: number;
+  warnings: string[];
+}
 
 export interface SuccessionChainStep1Split {
   conjointPart: number;
@@ -43,6 +54,89 @@ function getSurvivingSpouseBirthDate(
   deceased: SuccessionDeceasedSide,
 ): string | undefined {
   return deceased === 'epoux1' ? civil.dateNaissanceEpoux2 : civil.dateNaissanceEpoux1;
+}
+
+function getSocieteAcquetsQuotes(
+  deceased: SuccessionDeceasedSide,
+  patrimonial?: DonationEntreEpouxSelection,
+): { deceasedPct: number; survivorPct: number } {
+  const config = patrimonial?.societeAcquets?.active
+    ? patrimonial.societeAcquets
+    : DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG;
+  return deceased === 'epoux1'
+    ? {
+      deceasedPct: config.quoteEpoux1Pct,
+      survivorPct: config.quoteEpoux2Pct,
+    }
+    : {
+      deceasedPct: config.quoteEpoux2Pct,
+      survivorPct: config.quoteEpoux1Pct,
+    };
+}
+
+export function computeSocieteAcquetsDistribution(
+  deceased: SuccessionDeceasedSide,
+  societeAcquetsValue: number,
+  patrimonial?: DonationEntreEpouxSelection,
+): SuccessionSocieteAcquetsDistribution {
+  const total = asAmount(societeAcquetsValue);
+  if (total <= 0) {
+    return {
+      firstEstateContribution: 0,
+      survivorShare: 0,
+      warnings: [],
+    };
+  }
+
+  const activeConfig = patrimonial?.societeAcquets?.active
+    ? patrimonial.societeAcquets
+    : DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG;
+  const { deceasedPct, survivorPct } = getSocieteAcquetsQuotes(deceased, patrimonial);
+
+  if (patrimonial?.societeAcquets?.active && patrimonial.attributionIntegrale) {
+    return {
+      firstEstateContribution: 0,
+      survivorShare: total,
+      warnings: [
+        "Societe d'acquets: attribution integrale du reliquat au survivant au 1er deces.",
+      ],
+    };
+  }
+
+  const preciput = patrimonial?.societeAcquets?.active
+    ? Math.min(asAmount(patrimonial.preciputMontant), total)
+    : 0;
+  const remainingAfterPreciput = Math.max(0, total - preciput);
+  const survivorAttribution = patrimonial?.societeAcquets?.active
+    && activeConfig.liquidationMode === 'attribution_survivant'
+    ? remainingAfterPreciput * (activeConfig.attributionSurvivantPct / 100)
+    : 0;
+  const remainingAfterAttribution = Math.max(0, remainingAfterPreciput - survivorAttribution);
+  const firstEstateContribution = remainingAfterAttribution * (deceasedPct / 100);
+  const survivorShare = total - firstEstateContribution;
+  const warnings: string[] = [];
+
+  if (patrimonial?.societeAcquets?.active) {
+    warnings.push(
+      `Societe d'acquets: liquidation dediee simplifiee appliquee (quotes ${Math.round(deceasedPct)}% / ${Math.round(survivorPct)}%).`,
+    );
+    if (preciput > 0) {
+      warnings.push(
+        `Societe d'acquets: preciput de ${Math.round(preciput).toLocaleString('fr-FR')} EUR preleve avant liquidation du reliquat.`,
+      );
+    }
+    if (activeConfig.liquidationMode === 'attribution_survivant' && survivorAttribution > 0) {
+      warnings.push(
+        `Societe d'acquets: attribution prealable au survivant de ${Math.round(activeConfig.attributionSurvivantPct)}% du reliquat.`,
+      );
+    }
+  }
+
+  return {
+    firstEstateContribution,
+    survivorShare,
+    warnings,
+  };
 }
 
 export function computeFirstEstate(
