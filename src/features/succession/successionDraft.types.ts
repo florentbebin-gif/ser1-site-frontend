@@ -1,5 +1,6 @@
 import type { RegimeMatrimonial } from '../../engine/civil';
 import type { LienParente } from '../../engine/succession';
+import type { SuccessionPersonParty } from './successionPatrimonialModel';
 
 export interface PersistedHeritierRow {
   lien: LienParente;
@@ -142,8 +143,8 @@ export type SuccessionAssuranceVieContractType = 'standard' | 'demembree' | 'per
 export interface SuccessionAssuranceVieEntry {
   id: string;
   typeContrat: SuccessionAssuranceVieContractType;
-  souscripteur: Exclude<SuccessionAssetOwner, 'commun'>;
-  assure: Exclude<SuccessionAssetOwner, 'commun'>;
+  souscripteur: SuccessionPersonParty;
+  assure: SuccessionPersonParty;
   clauseBeneficiaire?: string;
   capitauxDeces: number;
   versementsApres70: number;
@@ -153,7 +154,7 @@ export interface SuccessionAssuranceVieEntry {
 export interface SuccessionPerEntry {
   id: string;
   typeContrat: SuccessionAssuranceVieContractType;
-  assure: Exclude<SuccessionAssetOwner, 'commun'>;
+  assure: SuccessionPersonParty;
   clauseBeneficiaire?: string;
   capitauxDeces: number;
   ageUsufruitier?: number;
@@ -171,8 +172,8 @@ export interface SuccessionGroupementFoncierEntry {
 
 export interface SuccessionPrevoyanceDecesEntry {
   id: string;
-  souscripteur: Exclude<SuccessionAssetOwner, 'commun'>;
-  assure: Exclude<SuccessionAssetOwner, 'commun'>;
+  souscripteur: SuccessionPersonParty;
+  assure: SuccessionPersonParty;
   capitalDeces: number;
   dernierePrime: number;
   clauseBeneficiaire?: string;

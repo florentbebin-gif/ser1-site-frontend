@@ -3,6 +3,7 @@ import type {
   SuccessionAssuranceVieContractType,
   SuccessionEnfant,
   SuccessionPerEntry,
+  SuccessionPersonParty,
 } from '../successionDraft';
 import { getEnfantParentLabel } from '../successionEnfants';
 import {
@@ -22,7 +23,7 @@ import { ScSelect } from './ScSelect';
 
 interface PerModalProps {
   entry: SuccessionPerEntry;
-  assuranceViePartyOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
+  assuranceViePartyOptions: { value: SuccessionPersonParty; label: string }[];
   enfantsContext: SuccessionEnfant[];
   familyMembers: FamilyMember[];
   isMarried: boolean;

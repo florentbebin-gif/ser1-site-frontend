@@ -15,6 +15,7 @@ import { useEffect, type Dispatch, type SetStateAction } from 'react';
 import type {
   SuccessionAssetDetailEntry,
   SuccessionAssetOwner,
+  SuccessionPersonParty,
   SuccessionAssuranceVieEntry,
   SuccessionDevolutionContext,
   SuccessionEnfant,
@@ -27,8 +28,8 @@ import type {
 } from './successionDraft';
 import { normalizeResidencePrincipaleAssetEntries } from './successionAssetValuation';
 
-interface SelectOption {
-  value: string;
+interface SelectOption<TValue extends string = string> {
+  value: TValue;
 }
 
 interface DonationTotals {
@@ -47,7 +48,7 @@ interface UseSuccessionSyncEffectsParams {
   // Derived values (read-only)
   enfantRattachementOptions: SelectOption[];
   assetOwnerOptions: SelectOption[];
-  assuranceViePartyOptions: SelectOption[];
+  assuranceViePartyOptions: SelectOption<SuccessionPersonParty>[];
   assetNetTotals: AssetNetTotals;
   nbEnfants: number;
   donationTotals: DonationTotals;
@@ -158,7 +159,7 @@ export function useSuccessionSyncEffects({
   // Reset assurés/souscripteurs d'AV invalides lors d'un changement de situation
   useEffect(() => {
     const validOwners = new Set(assuranceViePartyOptions.map((option) => option.value));
-    const fallbackOwner = (assuranceViePartyOptions[0]?.value ?? 'epoux1') as Exclude<SuccessionAssetOwner, 'commun'>;
+    const fallbackOwner = assuranceViePartyOptions[0]?.value ?? 'epoux1';
     setAssuranceVieEntries((prev) => {
       let changed = false;
       const next = prev.map((entry) => {
@@ -179,7 +180,7 @@ export function useSuccessionSyncEffects({
   // Reset PER assurés invalides
   useEffect(() => {
     const validOwners = new Set(assuranceViePartyOptions.map((option) => option.value));
-    const fallbackOwner = (assuranceViePartyOptions[0]?.value ?? 'epoux1') as Exclude<SuccessionAssetOwner, 'commun'>;
+    const fallbackOwner = assuranceViePartyOptions[0]?.value ?? 'epoux1';
     setPerEntries((prev) => {
       let changed = false;
       const next = prev.map((entry) => {
@@ -214,7 +215,7 @@ export function useSuccessionSyncEffects({
   // Reset prévoyance parties invalides
   useEffect(() => {
     const validOwners = new Set(assuranceViePartyOptions.map((option) => option.value));
-    const fallbackOwner = (assuranceViePartyOptions[0]?.value ?? 'epoux1') as Exclude<SuccessionAssetOwner, 'commun'>;
+    const fallbackOwner = assuranceViePartyOptions[0]?.value ?? 'epoux1';
     setPrevoyanceDecesEntries((prev) => {
       let changed = false;
       const next = prev.map((entry) => {

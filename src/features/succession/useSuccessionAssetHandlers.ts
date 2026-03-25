@@ -4,6 +4,7 @@ import type {
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
   SuccessionAssetOwner,
+  SuccessionPersonParty,
   SuccessionAssuranceVieEntry,
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
@@ -29,7 +30,7 @@ interface UseSuccessionAssetHandlersArgs {
     passifs: Record<SuccessionAssetOwner, number>;
   };
   assetOwnerOptions: { value: SuccessionAssetOwner; label: string }[];
-  assuranceViePartyOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
+  assuranceViePartyOptions: { value: SuccessionPersonParty; label: string }[];
   assetEntries: SuccessionAssetDetailEntry[];
   setAssetEntries: Dispatch<SetStateAction<SuccessionAssetDetailEntry[]>>;
   setGroupementFoncierEntries: Dispatch<SetStateAction<SuccessionGroupementFoncierEntry[]>>;
@@ -61,9 +62,9 @@ export function useSuccessionAssetHandlers({
   setPrevoyanceDraft,
   setShowPrevoyanceModal,
 }: UseSuccessionAssetHandlersArgs) {
-  const resolveIndividualOwner = useCallback((owner: SuccessionAssetOwner): 'epoux1' | 'epoux2' => {
-    if (owner !== 'commun') return owner as 'epoux1' | 'epoux2';
-    return (assuranceViePartyOptions[0]?.value ?? 'epoux1') as 'epoux1' | 'epoux2';
+  const resolvePersonParty = useCallback((owner: SuccessionAssetOwner): SuccessionPersonParty => {
+    if (owner !== 'commun') return owner;
+    return assuranceViePartyOptions[0]?.value ?? 'epoux1';
   }, [assuranceViePartyOptions]);
 
   const hasResidencePrincipale = useCallback((
@@ -127,7 +128,7 @@ export function useSuccessionAssetHandlers({
       if (value === 'Assurance vie') {
         const draft = buildAssuranceVieFromAsset(
           sourceEntry,
-          resolveIndividualOwner(sourceEntry?.owner ?? 'commun'),
+          resolvePersonParty(sourceEntry?.owner ?? 'commun'),
         );
         setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
         setAssuranceVieEntries((prev) => [...prev, draft]);
@@ -138,7 +139,7 @@ export function useSuccessionAssetHandlers({
       if (value === 'PER assurance') {
         const draft = buildPerFromAsset(
           sourceEntry,
-          resolveIndividualOwner(sourceEntry?.owner ?? 'commun'),
+          resolvePersonParty(sourceEntry?.owner ?? 'commun'),
         );
         setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
         setPerEntries((prev) => [...prev, draft]);
@@ -149,7 +150,7 @@ export function useSuccessionAssetHandlers({
       if (value === 'Prévoyance décès') {
         const draft = buildPrevoyanceFromAsset(
           sourceEntry,
-          resolveIndividualOwner(sourceEntry?.owner ?? 'commun'),
+          resolvePersonParty(sourceEntry?.owner ?? 'commun'),
         );
         setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
         setPrevoyanceDecesEntries((prev) => [...prev, draft]);
@@ -195,7 +196,7 @@ export function useSuccessionAssetHandlers({
   }, [
     assetEntries,
     hasResidencePrincipale,
-    resolveIndividualOwner,
+    resolvePersonParty,
     setAssetEntries,
     setAssuranceVieDraft,
     setAssuranceVieEntries,

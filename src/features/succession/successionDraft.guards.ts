@@ -1,5 +1,6 @@
 import type { RegimeMatrimonial } from '../../engine/civil';
 import type { LienParente } from '../../engine/succession';
+import type { SuccessionPersonParty } from './successionPatrimonialModel';
 import type {
   FamilyBranch,
   FamilyMemberType,
@@ -52,6 +53,10 @@ export function isDispositionTestamentaire(v: unknown): v is SuccessionDispositi
 
 export function isPrimarySide(v: unknown): v is SuccessionPrimarySide {
   return v === 'epoux1' || v === 'epoux2';
+}
+
+export function isPersonParty(v: unknown): v is SuccessionPersonParty {
+  return isPrimarySide(v);
 }
 
 export function isSuccessionBeneficiaryRef(v: unknown): v is SuccessionBeneficiaryRef {

@@ -28,9 +28,9 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 
 | Sujet | Etat repo actuel | Preuves |
 |---|---|---|
-| Personne physique | Implicite via `epoux1` / `epoux2` | `src/features/succession/successionDraft.types.ts` |
-| Masse patrimoniale | `SuccessionAssetOwner = 'epoux1' | 'epoux2' | 'commun'` | `src/features/succession/successionDraft.types.ts` |
-| Distinction personne / masse | Non, les deux notions sont melees | `src/features/succession/successionDraft.types.ts`, `src/features/succession/useSuccessionUiDerivedValues.ts` |
+| Personne physique | Type de transition explicite introduit (`SuccessionPersonParty`), runtime encore branche sur `epoux1` / `epoux2` | `src/features/succession/successionPatrimonialModel.ts`, `src/features/succession/successionDraft.types.ts` |
+| Masse patrimoniale | Runtime courant `SuccessionAssetOwner = 'epoux1' | 'epoux2' | 'commun'`; type cible de transition introduit `SuccessionAssetPocket` | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionPatrimonialModel.ts` |
+| Distinction personne / masse | En transition seulement: les types cibles sont introduces, mais le draft et l'UI utilisent encore le modele `owner` | `src/features/succession/successionPatrimonialModel.ts`, `src/features/succession/successionDraft.types.ts`, `src/features/succession/useSuccessionUiDerivedValues.ts` |
 | Qualification juridique des biens | Absente (`propre`, `propre_par_nature`, `origin`, etc.) | absence de champs dans `src/features/succession/successionDraft.types.ts` |
 | Passif affecte par masse | Partiel seulement via `owner` | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionAssetValuation.ts` |
 | Creances entre masses | Non modelise | absence de types et de moteur dedie |
@@ -39,9 +39,9 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 
 | Sujet | Etat repo actuel | Preuves |
 |---|---|---|
-| Assurance-vie | Rattachee a `epoux1` / `epoux2` uniquement | `src/features/succession/successionDraft.parse.ts` |
-| PER assurance | Rattache au seul assure `epoux1` / `epoux2` | `src/features/succession/successionDraft.parse.ts` |
-| Prevoyance deces | Rattachee a `epoux1` / `epoux2` uniquement | `src/features/succession/successionDraft.types.ts` |
+| Assurance-vie | Typee via `SuccessionPersonParty`, sans dependance au futur enum de masse | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionDraft.parse.ts` |
+| PER assurance | Type au seul assure via `SuccessionPersonParty` | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionDraft.parse.ts` |
+| Prevoyance deces | Typee via `SuccessionPersonParty` cote draft, parse, UI et sync | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionDraft.parse.ts`, `src/features/succession/useSuccessionSyncEffects.ts` |
 | Conversion depuis une ligne actif | Oui, via les handlers d'actifs | `src/features/succession/useSuccessionAssetHandlers.ts` |
 
 ## Maturite par regime matrimonial
@@ -53,14 +53,14 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 | `separation_biens` | Gere nativement | Support robuste | Pas d'indivisions fines ni de passif juridiquement affecte | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionChainageEstateSplit.ts` |
 | `participation_acquets` | Approxime en separation de biens | Approximation assumee | Creance de participation non modelisee | `src/features/succession/successionPredeces.ts`, `src/features/succession/__tests__/successionPredeces.test.ts` |
 | `communaute_meubles_acquets` | Approxime en communaute legale | Approximation assumee | Distinction meuble / immeuble absente | `src/features/succession/successionPredeces.ts` |
-| `separation_biens_societe_acquets` | Cast invalide vers un regime supporte | Non modelise + bug silencieux | Absence de poche patrimoniale dediee | `src/features/succession/successionPredeces.ts`, `src/engine/civil.ts` |
+| `separation_biens_societe_acquets` | Approxime en separation de biens avec warning explicite | Approximation assumee | Absence de poche patrimoniale dediee | `src/features/succession/successionPredeces.ts`, `src/features/succession/__tests__/successionRegimes.test.ts` |
 
 ## Couverture UI actuelle
 
 | Surface | Etat repo actuel | Preuves |
 |---|---|---|
 | UI succession (`/sim/succession`) | Les 6 regimes sont selectionnables | `src/features/succession/components/ScFamilyContextCard.tsx` |
-| UI audit | 4 regimes seulement | `src/features/audit/steps/StepCivil.tsx` |
+| UI audit | Les 6 regimes sont selectionnables | `src/features/audit/steps/StepCivil.tsx` |
 | Champ "Porteur" actifs/passifs | Confusion entre masse commune et indivision sous separation de biens | `src/features/succession/useSuccessionUiDerivedValues.ts` |
 
 ## Matrice des grands sujets de liquidation
@@ -77,7 +77,7 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 | Assurance-vie 990 I / 757 B | Present mais encore a fiabiliser sur certains cas | Support robuste avec regressions identifiees |
 | Representation petits-enfants | Presente mais incomplete fiscalement | Simplification documentee |
 | Rappel fiscal donations | Partiellement analytique | Approximation assumee |
-| GFA / GFV / GFF / GF | Present, partiellement obsolete sur les seuils 2025 | Support robuste avec mise a jour reglementaire necessaire |
+| GFA / GFV / GFF / GF | Present avec seuils LF 2025 integres | Support robuste du perimetre actuel |
 | Recompenses / creances entre masses | Absent | Non modelise |
 | Participation aux acquets (creance) | Absente | Non modelise |
 | Propres par nature | Absent | Non modelise |
@@ -102,6 +102,9 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 - `SuccessionParticipationClaim`
 - `SuccessionSocieteAcquetsConfig`
 - `SuccessionPreciputSelection`
+
+Les deux premiers types cibles sont introduits des `PR-11` dans `src/features/succession/successionPatrimonialModel.ts`, sans branchement runtime a ce stade.
+La `PR-12` decouple ensuite AV / PER / prevoyance du futur modele de masse en les branchant sur `SuccessionPersonParty`.
 
 ## Sources juridiques de cadrage
 

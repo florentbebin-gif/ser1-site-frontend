@@ -1,4 +1,10 @@
-import type { FamilyMember, SuccessionAssuranceVieContractType, SuccessionAssuranceVieEntry, SuccessionEnfant } from '../successionDraft';
+import type {
+  FamilyMember,
+  SuccessionAssuranceVieContractType,
+  SuccessionAssuranceVieEntry,
+  SuccessionEnfant,
+  SuccessionPersonParty,
+} from '../successionDraft';
 import { getEnfantParentLabel } from '../successionEnfants';
 import {
   ASSURANCE_VIE_TYPE_OPTIONS,
@@ -17,7 +23,7 @@ import { ScSelect } from './ScSelect';
 
 interface AssuranceVieModalProps {
   entry: SuccessionAssuranceVieEntry;
-  assuranceViePartyOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
+  assuranceViePartyOptions: { value: SuccessionPersonParty; label: string }[];
   enfantsContext: SuccessionEnfant[];
   familyMembers: FamilyMember[];
   isMarried: boolean;

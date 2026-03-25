@@ -25,6 +25,7 @@ import {
   isLienParente,
   isObject,
   isPacsConvention,
+  isPersonParty,
   isPrimarySide,
   isRegimeMatrimonial,
   isSituation,
@@ -52,6 +53,7 @@ import type {
   SuccessionDonationEntry,
   SuccessionPerEntry,
   SuccessionParticularLegacyEntry,
+  SuccessionPrevoyanceDecesEntry,
   SuccessionPrimarySide,
   SuccessionTestamentConfig,
 } from './successionDraft.types';
@@ -180,8 +182,8 @@ function parseAssuranceVieEntries(rawAssuranceVieEntries: unknown): SuccessionAs
 
       if (
         !isAssuranceVieContractType(item.typeContrat)
-        || (souscripteur !== 'epoux1' && souscripteur !== 'epoux2')
-        || (assure !== 'epoux1' && assure !== 'epoux2')
+        || !isPersonParty(souscripteur)
+        || !isPersonParty(assure)
       ) {
         return null;
       }
@@ -215,7 +217,7 @@ function parsePerEntries(rawPerEntries: unknown): SuccessionPerEntry[] {
       const assure = item.assure;
       if (
         !isAssuranceVieContractType(item.typeContrat)
-        || (assure !== 'epoux1' && assure !== 'epoux2')
+        || !isPersonParty(assure)
       ) {
         return null;
       }
@@ -238,6 +240,30 @@ function parsePerEntries(rawPerEntries: unknown): SuccessionPerEntry[] {
       return entry;
     })
     .filter((item): item is SuccessionPerEntry => item !== null);
+}
+
+function parsePrevoyanceDecesEntries(rawPrevoyanceDecesEntries: unknown): SuccessionPrevoyanceDecesEntry[] {
+  return (Array.isArray(rawPrevoyanceDecesEntries) ? rawPrevoyanceDecesEntries : [])
+    .filter((item): item is Record<string, unknown> => isObject(item))
+    .map((item, idx) => {
+      const souscripteur = item.souscripteur;
+      const assure = item.assure;
+      if (!isPersonParty(souscripteur) || !isPersonParty(assure)) {
+        return null;
+      }
+
+      const entry: SuccessionPrevoyanceDecesEntry = {
+        id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `pv-${idx + 1}`,
+        souscripteur,
+        assure,
+        capitalDeces: asAmount(item.capitalDeces, 0),
+        dernierePrime: asAmount(item.dernierePrime, 0),
+      };
+
+      const clauseBeneficiaire = normalizeOptionalString(item.clauseBeneficiaire);
+      return clauseBeneficiaire ? { ...entry, clauseBeneficiaire } : entry;
+    })
+    .filter((item): item is SuccessionPrevoyanceDecesEntry => item !== null);
 }
 
 function parseDecesDansXAns(raw: unknown): typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.decesDansXAns {
@@ -471,7 +497,9 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       assuranceVieEntries,
       perEntries,
       groupementFoncierEntries: Array.isArray(payload.groupementFoncierEntries) ? payload.groupementFoncierEntries : [],
-      prevoyanceDecesEntries: Array.isArray(payload.prevoyanceDecesEntries) ? payload.prevoyanceDecesEntries : [],
+      prevoyanceDecesEntries: version >= 18 && Array.isArray(payload.prevoyanceDecesEntries)
+        ? parsePrevoyanceDecesEntries(payload.prevoyanceDecesEntries)
+        : [],
       ui: isObject(payload.ui)
         ? {
           chainOrder: isPrimarySide(payload.ui.chainOrder) ? payload.ui.chainOrder : 'epoux1',

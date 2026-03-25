@@ -11,6 +11,7 @@ import type {
   SuccessionPrevoyanceDecesEntry,
 } from './successionDraft.types';
 import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
+import type { SuccessionPersonParty } from './successionPatrimonialModel';
 import { getAgeAtReferenceDate } from './successionUsufruit';
 
 export interface SuccessionPrevoyanceRegimeInfo {
@@ -47,7 +48,7 @@ export interface SuccessionPrevoyanceFiscalAnalysis {
   totalDroits: number;
   totalNetTransmis: number;
   lines: SuccessionPrevoyanceFiscalLine[];
-  byAssure: Record<'epoux1' | 'epoux2', SuccessionPrevoyanceFiscalPerAssure>;
+  byAssure: Record<SuccessionPersonParty, SuccessionPrevoyanceFiscalPerAssure>;
   warnings: string[];
 }
 
@@ -59,7 +60,7 @@ function asAmount(value: unknown): number {
 
 function getBirthDateForSouscripteur(
   civil: SuccessionCivilContext,
-  souscripteur: 'epoux1' | 'epoux2',
+  souscripteur: SuccessionPersonParty,
 ): string | undefined {
   return souscripteur === 'epoux1'
     ? civil.dateNaissanceEpoux1
@@ -246,7 +247,7 @@ function mergePrevoyanceLines(
 function buildPerAssureLines(
   capitalAnalysis: SuccessionAvFiscalAnalysis,
   fiscalAnalysis: SuccessionAvFiscalAnalysis,
-): Record<'epoux1' | 'epoux2', SuccessionPrevoyanceFiscalPerAssure> {
+): Record<SuccessionPersonParty, SuccessionPrevoyanceFiscalPerAssure> {
   const epoux1Lines = mergeSideLines(
     capitalAnalysis.byAssure.epoux1.lines,
     fiscalAnalysis.byAssure.epoux1.lines,

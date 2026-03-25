@@ -499,6 +499,9 @@ Le runtime succession actuel distingue encore imparfaitement :
 - la masse patrimoniale (`commun` aujourd'hui)
 - la qualification juridique d'un bien (`propre`, `propre_par_nature`, `communaute`, etc.)
 
+Les types de transition `SuccessionPersonParty` et `SuccessionAssetPocket` sont introduits dans `src/features/succession/successionPatrimonialModel.ts`, sans migration runtime immediate du draft a ce stade.
+Les produits specialises AV / PER / prevoyance sont maintenant types via `SuccessionPersonParty`, afin de preparer la future migration `owner -> pocket/personParty` sans etendre prematurement `SuccessionAssetOwner`.
+
 La matrice de maturite et la trajectoire de refonte sont suivies dans [SUCCESSION_MODEL_MATURITY.md](SUCCESSION_MODEL_MATURITY.md).
 Toute PR qui etend les regimes matrimoniaux, la liquidation civile ou les masses patrimoniales doit mettre a jour cette matrice en meme temps que le code.
 

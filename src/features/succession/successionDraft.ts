@@ -35,6 +35,11 @@ export type {
   SuccessionTestamentConfig,
 } from './successionDraft.types';
 
+export type {
+  SuccessionAssetPocket,
+  SuccessionPersonParty,
+} from './successionPatrimonialModel';
+
 export {
   DEFAULT_SUCCESSION_ASSET_DETAILS,
   DEFAULT_SUCCESSION_ASSURANCE_VIE,
