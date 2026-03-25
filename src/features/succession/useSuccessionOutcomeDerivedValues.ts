@@ -306,8 +306,9 @@ export function useSuccessionOutcomeDerivedValues({
     directDisplayAnalysis.transmissionRows,
   ]);
 
-  const insuranceBeneficiaryLines = useMemo(() => {
-    if (!shouldRenderSuccessionComputationSections) return [];
+  const insuranceMerged = useMemo(() => {
+    const empty = { lines990I: [] as ReturnType<typeof mergeInsuranceBeneficiaryLines>['lines990I'], lines757B: [] as ReturnType<typeof mergeInsuranceBeneficiaryLines>['lines757B'] };
+    if (!shouldRenderSuccessionComputationSections) return empty;
     if (displayUsesChainage) {
       return mergeInsuranceBeneficiaryLines(
         avFiscalAnalysis.lines,
@@ -315,7 +316,6 @@ export function useSuccessionOutcomeDerivedValues({
         prevoyanceFiscalAnalysis.lines,
       );
     }
-
     const assured = directDisplayAnalysis.simulatedDeceased;
     return mergeInsuranceBeneficiaryLines(
       avFiscalAnalysis.byAssure[assured].lines,
@@ -333,6 +333,8 @@ export function useSuccessionOutcomeDerivedValues({
     prevoyanceFiscalAnalysis.byAssure,
     directDisplayAnalysis.simulatedDeceased,
   ]);
+  const insurance990ILines = insuranceMerged.lines990I;
+  const insurance757BLines = insuranceMerged.lines757B;
 
   const chainageExportPayload = useMemo(
     () => ({
@@ -492,7 +494,8 @@ export function useSuccessionOutcomeDerivedValues({
     synthDonutTransmis,
     synthHypothese,
     transmissionRows,
-    insuranceBeneficiaryLines,
+    insurance990ILines,
+    insurance757BLines,
     chainageExportPayload,
     totalActifsLiquidation,
     canExportSimplified,

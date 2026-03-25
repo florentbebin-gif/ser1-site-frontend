@@ -399,7 +399,7 @@ const GROUPEMENT_FONCIER_AGRI_VITI: ProductRules = {
       title: 'Transmission — régime art. 793 bis CGI',
       bullets: [
         'Exonération de 75 % des DMTG (art. 793 bis CGI) si les biens sont donnés à bail long terme (≥ 18 ans) et les parts détenues depuis plus de 2 ans.',
-        'Au-delà de 600 000 € par bénéficiaire (seuil relevé par LF 2025 art. 70) : exonération réduite à 50 %.',
+        'Au-delà de 600 000 € par bénéficiaire (seuil relevé par LF 2025 art. 70) : exonération réduite à 50 %. Plafond de valeur exonérable : 20 M€.',
         'DMTG classiques si aucun bail long terme ou engagement de conservation non respecté.',
         'À confirmer selon l\'existence du bail long terme et le respect des conditions de conservation (5 ans).',
       ],

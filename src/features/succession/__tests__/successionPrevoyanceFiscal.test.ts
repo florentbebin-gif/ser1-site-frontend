@@ -151,6 +151,23 @@ describe('buildSuccessionPrevoyanceFiscalAnalysis', () => {
     expect(analysis.warnings.some((warning) => warning.includes('Dernière prime non renseignée'))).toBe(true);
   });
 
+  it('includes legal references in warnings (990 I / 757 B / art. 306-0 F)', () => {
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const analysis = buildSuccessionPrevoyanceFiscalAnalysis(
+      [makeEntry()],
+      makeCivil(),
+      [{ id: 'E1', rattachement: 'commun' }],
+      [],
+      snapshot,
+      new Date('2026-03-19T00:00:00Z'),
+    );
+
+    expect(analysis.warnings.some((w) => w.includes('art. 990 I'))).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('art. 757 B'))).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('art. 306-0 F'))).toBe(true);
+    expect(analysis.warnings.some((w) => w.includes('L132-23'))).toBe(true);
+  });
+
   it('supports a generic family-member beneficiary label', () => {
     const snapshot = buildSuccessionFiscalSnapshot(null);
     const familyMembers: FamilyMember[] = [

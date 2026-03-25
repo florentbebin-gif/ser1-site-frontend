@@ -53,7 +53,8 @@ function buildProps(
       prevoyanceFiscalAnalysis: {
         byAssure: { epoux1: { totalDroits: 0, lines: [] }, epoux2: { totalDroits: 0, lines: [] } },
       },
-      insuranceBeneficiaryLines: [],
+      insurance990ILines: [],
+      insurance757BLines: [],
       directDisplayAnalysis: {
         simulatedDeceased: 'epoux1',
         result: null,

@@ -10,87 +10,54 @@ export interface InsuranceBeneficiaryLine {
   netTransmis: number;
 }
 
+type FiscalLine = {
+  id: string;
+  label: string;
+  capitauxAvant70: number;
+  capitauxApres70: number;
+  droits990I: number;
+  droits757B: number;
+};
+
+function aggregateByBeneficiary(lines: Array<{ id: string; label: string; capitalTransmis: number; totalDroits: number }>): InsuranceBeneficiaryLine[] {
+  const map = new Map<string, InsuranceBeneficiaryLine>();
+  for (const line of lines) {
+    const current = map.get(line.id) ?? { id: line.id, label: line.label, capitalTransmis: 0, totalDroits: 0, netTransmis: 0 };
+    current.capitalTransmis += line.capitalTransmis;
+    current.totalDroits += line.totalDroits;
+    current.netTransmis = Math.max(0, current.capitalTransmis - current.totalDroits);
+    map.set(line.id, current);
+  }
+  return Array.from(map.values())
+    .filter((l) => l.capitalTransmis > 0 || l.totalDroits > 0)
+    .sort((a, b) => b.capitalTransmis - a.capitalTransmis || b.netTransmis - a.netTransmis);
+}
+
 export function mergeInsuranceBeneficiaryLines(
-  avLines: Array<{
-    id: string;
-    label: string;
-    capitauxAvant70: number;
-    capitauxApres70: number;
-    totalDroits: number;
-    netTransmis: number;
-  }>,
-  perLines: Array<{
-    id: string;
-    label: string;
-    capitauxAvant70: number;
-    capitauxApres70: number;
-    totalDroits: number;
-    netTransmis: number;
-  }>,
-  prevoyanceLines: Array<{
-    id: string;
-    label: string;
-    capitalTransmis: number;
-    totalDroits: number;
-    netTransmis: number;
-  }>,
-): InsuranceBeneficiaryLine[] {
-  const merged = new Map<string, InsuranceBeneficiaryLine>();
+  avLines: FiscalLine[],
+  perLines: FiscalLine[],
+  prevoyanceLines: FiscalLine[],
+): { lines990I: InsuranceBeneficiaryLine[]; lines757B: InsuranceBeneficiaryLine[] } {
+  const allLines: FiscalLine[] = [...avLines, ...perLines, ...prevoyanceLines];
 
-  const upsert = (
-    id: string,
-    label: string,
-    capitalTransmis: number,
-    totalDroits: number,
-    netTransmis: number,
-  ) => {
-    const current = merged.get(id) ?? {
-      id,
-      label,
-      capitalTransmis: 0,
-      totalDroits: 0,
-      netTransmis: 0,
-    };
-    current.capitalTransmis += capitalTransmis;
-    current.totalDroits += totalDroits;
-    current.netTransmis += netTransmis;
-    merged.set(id, current);
+  const input990I = allLines.map((line) => ({
+    id: line.id,
+    label: line.label,
+    capitalTransmis: line.capitauxAvant70,
+    totalDroits: line.droits990I,
+  }));
+
+  const input757B = allLines.map((line) => ({
+    id: line.id,
+    label: line.label,
+    capitalTransmis: line.capitauxApres70,
+    totalDroits: line.droits757B,
+  }));
+
+  return {
+    lines990I: aggregateByBeneficiary(input990I),
+    lines757B: aggregateByBeneficiary(input757B),
   };
-
-  for (const line of avLines) {
-    upsert(
-      line.id,
-      line.label,
-      line.capitauxAvant70 + line.capitauxApres70,
-      line.totalDroits,
-      line.netTransmis,
-    );
-  }
-
-  for (const line of perLines) {
-    upsert(
-      line.id,
-      line.label,
-      line.capitauxAvant70 + line.capitauxApres70,
-      line.totalDroits,
-      line.netTransmis,
-    );
-  }
-
-  for (const line of prevoyanceLines) {
-    upsert(
-      line.id,
-      line.label,
-      line.capitalTransmis,
-      line.totalDroits,
-      line.netTransmis,
-    );
-  }
-
-  return Array.from(merged.values()).sort((a, b) => (
-    b.capitalTransmis - a.capitalTransmis
-    || b.netTransmis - a.netTransmis
-  ));
 }
 
 interface BuildSuccessionSynthHypotheseInput {

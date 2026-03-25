@@ -59,8 +59,8 @@ function getCoupleLabels(situation: string): { epoux1: string; epoux2: string } 
   if (situation === 'marie')       return { epoux1: 'Époux 1',      epoux2: 'Époux 2' };
   if (situation === 'pacse')       return { epoux1: 'Partenaire 1', epoux2: 'Partenaire 2' };
   if (situation === 'concubinage') return { epoux1: 'Partenaire 1', epoux2: 'Partenaire 2' };
-  if (situation === 'divorce')     return { epoux1: 'Défunt(e)',     epoux2: 'Ex-conjoint(e)' };
-  return { epoux1: 'Défunt(e)', epoux2: '' };
+  if (situation === 'divorce')     return { epoux1: 'Vous',          epoux2: 'Ex-conjoint(e)' };
+  return { epoux1: 'Vous', epoux2: '' };
 }
 
 // ─── Calcul du layout ───────────────────────────────────────────────────────
@@ -161,7 +161,7 @@ function computeLayout(
     });
   } else {
     epoux1Node = {
-      id: 'epoux1', label: 'Défunt(e)',
+      id: 'epoux1', label: 'Vous',
       x: centerX - NW / 2, y: yEpoux,
       kind: 'epoux',
     };

@@ -96,7 +96,7 @@ export function useSuccessionUiDerivedValues({
         { value: 'commun', label: 'Indivision' },
       ];
     }
-    return [{ value: 'epoux1', label: 'Défunt(e)' }];
+    return [{ value: 'epoux1', label: 'Vous' }];
   }, [isConcubinage, isMarried, isPacsed, civilContext.regimeMatrimonial]);
 
   const assuranceViePartyOptions = useMemo(

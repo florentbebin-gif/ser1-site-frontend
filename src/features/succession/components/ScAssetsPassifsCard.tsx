@@ -76,7 +76,7 @@ function getActifNetLabel(
     if (flags.isPacsed) return 'Actif net partenaire 1';
     if (flags.isMarried) return 'Actif net epoux 1';
     if (flags.isConcubinage) return 'Actif net personne 1';
-    return 'Actif net du/de la defunt(e)';
+    return 'Actif net (vous)';
   }
   if (owner === 'epoux2') {
     if (flags.isPacsed) return 'Actif net partenaire 2';
