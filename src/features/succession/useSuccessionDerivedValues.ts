@@ -470,6 +470,7 @@ export function useSuccessionDerivedValues({
     birthDateLabels: uiDerived.birthDateLabels,
     showSecondBirthDate: uiDerived.showSecondBirthDate,
     assetOwnerOptions: uiDerived.assetOwnerOptions,
+    assetPocketOptions: uiDerived.assetPocketOptions,
     assuranceViePartyOptions: uiDerived.assuranceViePartyOptions,
     canOpenDispositionsModal: uiDerived.canOpenDispositionsModal,
     testamentSides: uiDerived.testamentSides,

@@ -38,12 +38,13 @@ import {
   applyResidencePrincipaleAbatementToEstateBasis,
   assignBeneficiaryTaxableBasis,
   buildSuccessionEstateTaxableBasis,
-  createEmptyOwnerScales,
   scaleSuccessionEstateTaxableBasis,
   type SuccessionAssetTransmissionBasis,
-  type SuccessionEstateOwnerScales,
+  createEmptyPocketScales,
+  type SuccessionEstatePocketScales,
   type SuccessionEstateTaxableBasis,
 } from './successionTransmissionBasis';
+import { getSuccessionSharedPocketForContext } from './successionPatrimonialModel';
 
 export type SuccessionChainOrder = 'epoux1' | 'epoux2';
 export type SuccessionChainRegime = 'communaute_legale' | 'separation_biens' | 'communaute_universelle';
@@ -138,17 +139,23 @@ function getLabelForSide(side: SuccessionDeceasedSide): string {
   return side === 'epoux1' ? 'Epoux 1' : 'Epoux 2';
 }
 
-function buildFirstEstateOwnerScales(
+function buildFirstEstatePocketScales(
+  civil: SuccessionCivilContext,
   regimeUsed: SuccessionChainRegime,
   order: SuccessionChainOrder,
   attributionBiensCommunsPct: number,
-): SuccessionEstateOwnerScales {
-  const scales = createEmptyOwnerScales();
+): SuccessionEstatePocketScales {
+  const scales = createEmptyPocketScales();
+  const sharedPocket = getSuccessionSharedPocketForContext({
+    situationMatrimoniale: civil.situationMatrimoniale,
+    regimeMatrimonial: civil.regimeMatrimonial,
+    pacsConvention: civil.pacsConvention,
+  });
 
   if (regimeUsed === 'communaute_universelle') {
     scales.epoux1 = 1;
     scales.epoux2 = 1;
-    scales.commun = 1;
+    if (sharedPocket) scales[sharedPocket] = 1;
     return scales;
   }
 
@@ -159,17 +166,23 @@ function buildFirstEstateOwnerScales(
 
   const pctDefunt = (100 - Math.min(100, Math.max(0, attributionBiensCommunsPct))) / 100;
   scales[order] = 1;
-  scales.commun = pctDefunt;
+  if (sharedPocket) scales[sharedPocket] = pctDefunt;
   return scales;
 }
 
-function buildSurvivorOwnerScales(
+function buildSurvivorPocketScales(
+  civil: SuccessionCivilContext,
   regimeUsed: SuccessionChainRegime,
   order: SuccessionChainOrder,
   attributionBiensCommunsPct: number,
-): SuccessionEstateOwnerScales {
-  const scales = createEmptyOwnerScales();
+): SuccessionEstatePocketScales {
+  const scales = createEmptyPocketScales();
   const survivor = getOtherSide(order);
+  const sharedPocket = getSuccessionSharedPocketForContext({
+    situationMatrimoniale: civil.situationMatrimoniale,
+    regimeMatrimonial: civil.regimeMatrimonial,
+    pacsConvention: civil.pacsConvention,
+  });
 
   if (regimeUsed === 'communaute_universelle') {
     return scales;
@@ -182,7 +195,7 @@ function buildSurvivorOwnerScales(
 
   const pctSurvivant = Math.min(100, Math.max(0, attributionBiensCommunsPct)) / 100;
   scales[survivor] = 1;
-  scales.commun = pctSurvivant;
+  if (sharedPocket) scales[sharedPocket] = pctSurvivant;
   return scales;
 }
 
@@ -382,11 +395,21 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   const survivorBase = Math.max(0, totalPatrimoine - firstEstate);
   const survivorEconomicInflows = Math.max(0, input.survivorEconomicInflows?.[input.order] ?? 0);
   const warnings: string[] = [];
-  const firstEstateOwnerScales = buildFirstEstateOwnerScales(input.regimeUsed, input.order, attributionPct);
-  const survivorOwnerScales = buildSurvivorOwnerScales(input.regimeUsed, input.order, attributionPct);
+  const firstEstatePocketScales = buildFirstEstatePocketScales(
+    input.civil,
+    input.regimeUsed,
+    input.order,
+    attributionPct,
+  );
+  const survivorPocketScales = buildSurvivorPocketScales(
+    input.civil,
+    input.regimeUsed,
+    input.order,
+    attributionPct,
+  );
   const firstEstateTaxableBasis = buildSuccessionEstateTaxableBasis(
     input.transmissionBasis,
-    firstEstateOwnerScales,
+    firstEstatePocketScales,
   );
 
   if (attributionPct !== 50 && input.regimeUsed === 'communaute_legale') {
@@ -452,7 +475,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   const step2Estate = survivorBase + step2CarryOverAmount + survivorEconomicInflows;
   const survivorTaxableBasis = buildSuccessionEstateTaxableBasis(
     input.transmissionBasis,
-    survivorOwnerScales,
+    survivorPocketScales,
   );
   const carryOverTaxableBasis = firstEstate > 0
     ? scaleSuccessionEstateTaxableBasis(firstEstateTaxableBasis, step2CarryOverAmount / firstEstate)

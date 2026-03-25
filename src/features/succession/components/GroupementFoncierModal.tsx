@@ -120,7 +120,7 @@ export function GroupementFoncierModal({
                         />
                       </div>
                       <div className="sc-field">
-                        <label>Porteur</label>
+                        <label>Masse de rattachement</label>
                         <ScSelect
                           value={entry.owner}
                           onChange={(v) => updateEntry(entry.id, 'owner', v)}

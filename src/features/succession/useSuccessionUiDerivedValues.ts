@@ -11,6 +11,11 @@ import {
 } from './successionSimulator.constants';
 import { computeSuccessionAssetValuation } from './successionAssetValuation';
 import {
+  buildSuccessionAssetOwnerOptions,
+  buildSuccessionAssetPocketOptions,
+  type SuccessionAssetPocket,
+} from './successionDraft';
+import {
   buildPrevoyanceClauseOptions,
   getBirthDateLabels,
   isCoupleSituation,
@@ -55,7 +60,7 @@ export function useSuccessionUiDerivedValues({
   civilContext,
   isMarried,
   isPacsed,
-  isConcubinage,
+  isConcubinage: _isConcubinage,
   enfantsContext,
   familyMembers,
   assetEntries,
@@ -74,31 +79,23 @@ export function useSuccessionUiDerivedValues({
   );
   const showSecondBirthDate = isCoupleSituation(civilContext.situationMatrimoniale);
 
-  const assetOwnerOptions = useMemo((): { value: SuccessionAssetOwner; label: string }[] => {
-    if (isMarried) {
-      const sharedLabel = civilContext.regimeMatrimonial === 'separation_biens' ? 'Indivision' : 'Communauté';
-      return [
-        { value: 'epoux1', label: 'Époux 1' },
-        { value: 'epoux2', label: 'Époux 2' },
-        { value: 'commun', label: sharedLabel },
-      ];
-    }
-    if (isPacsed) {
-      return [
-        { value: 'epoux1', label: 'Partenaire 1' },
-        { value: 'epoux2', label: 'Partenaire 2' },
-        { value: 'commun', label: 'Indivision' },
-      ];
-    }
-    if (isConcubinage) {
-      return [
-        { value: 'epoux1', label: 'Personne 1' },
-        { value: 'epoux2', label: 'Personne 2' },
-        { value: 'commun', label: 'Indivision' },
-      ];
-    }
-    return [{ value: 'epoux1', label: 'Vous' }];
-  }, [isConcubinage, isMarried, isPacsed, civilContext.regimeMatrimonial]);
+  const assetOwnerOptions = useMemo(
+    (): { value: SuccessionAssetOwner; label: string }[] => buildSuccessionAssetOwnerOptions({
+      situationMatrimoniale: civilContext.situationMatrimoniale,
+      regimeMatrimonial: civilContext.regimeMatrimonial,
+      pacsConvention: civilContext.pacsConvention,
+    }),
+    [civilContext.pacsConvention, civilContext.regimeMatrimonial, civilContext.situationMatrimoniale],
+  );
+
+  const assetPocketOptions = useMemo(
+    (): { value: SuccessionAssetPocket; label: string }[] => buildSuccessionAssetPocketOptions({
+      situationMatrimoniale: civilContext.situationMatrimoniale,
+      regimeMatrimonial: civilContext.regimeMatrimonial,
+      pacsConvention: civilContext.pacsConvention,
+    }),
+    [civilContext.pacsConvention, civilContext.regimeMatrimonial, civilContext.situationMatrimoniale],
+  );
 
   const assuranceViePartyOptions = useMemo(
     (): { value: SuccessionPersonParty; label: string }[] => assetOwnerOptions
@@ -157,7 +154,7 @@ export function useSuccessionUiDerivedValues({
     const memberTypeLabel: Record<string, string> = {
       petit_enfant: 'Petit-enfant',
       parent: 'Parent',
-      frere_soeur: 'Frère/Sœur',
+      frere_soeur: 'Frere/Soeur',
       oncle_tante: 'Oncle/Tante',
       tierce_personne: 'Tierce personne',
     };
@@ -172,19 +169,19 @@ export function useSuccessionUiDerivedValues({
     const situation = civilContext.situationMatrimoniale;
     if (situation === 'pacse' || situation === 'concubinage') {
       return [
-        { value: 'epoux1', label: 'Côté Partenaire 1' },
-        { value: 'epoux2', label: 'Côté Partenaire 2' },
+        { value: 'epoux1', label: 'Cote Partenaire 1' },
+        { value: 'epoux2', label: 'Cote Partenaire 2' },
       ];
     }
     if (situation === 'divorce') {
       return [
-        { value: 'epoux1', label: 'Côté Défunt(e)' },
-        { value: 'epoux2', label: 'Côté Ex-conjoint(e)' },
+        { value: 'epoux1', label: 'Cote Defunt(e)' },
+        { value: 'epoux2', label: 'Cote Ex-conjoint(e)' },
       ];
     }
     if (situation === 'celibataire' || situation === 'veuf') {
       return [
-        { value: 'epoux1', label: 'Côté Défunt(e)' },
+        { value: 'epoux1', label: 'Cote Defunt(e)' },
       ];
     }
     return BRANCH_OPTIONS;
@@ -192,6 +189,7 @@ export function useSuccessionUiDerivedValues({
 
   const assetValuation = useMemo(
     () => computeSuccessionAssetValuation({
+      civilContext,
       assetEntries,
       groupementFoncierEntries,
       forfaitMobilierMode,
@@ -200,6 +198,7 @@ export function useSuccessionUiDerivedValues({
       abattementResidencePrincipale,
     }),
     [
+      civilContext,
       assetEntries,
       groupementFoncierEntries,
       forfaitMobilierMode,
@@ -267,6 +266,7 @@ export function useSuccessionUiDerivedValues({
     birthDateLabels,
     showSecondBirthDate,
     assetOwnerOptions,
+    assetPocketOptions,
     assuranceViePartyOptions,
     canOpenDispositionsModal,
     testamentSides,

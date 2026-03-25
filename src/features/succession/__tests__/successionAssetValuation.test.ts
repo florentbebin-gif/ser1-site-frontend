@@ -8,9 +8,16 @@ import {
   RESIDENCE_SECONDAIRE_SUBCATEGORY,
 } from '../successionSimulator.constants';
 
+const marriedCivilContext = {
+  situationMatrimoniale: 'marie' as const,
+  regimeMatrimonial: 'communaute_legale' as const,
+  pacsConvention: 'separation' as const,
+};
+
 describe('computeSuccessionAssetValuation', () => {
   it('applies the legal 5 percent forfait mobilier on taxable assets', () => {
     const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
       assetEntries: [
         { id: 'asset-1', owner: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 200000 },
         { id: 'asset-2', owner: 'commun', category: 'immobilier', subCategory: 'Residence secondaire', amount: 300000 },
@@ -33,6 +40,7 @@ describe('computeSuccessionAssetValuation', () => {
 
   it('supports a custom forfait mobilier percentage', () => {
     const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
       assetEntries: [
         { id: 'asset-1', owner: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 100000 },
         { id: 'asset-2', owner: 'epoux2', category: 'financier', subCategory: 'Titres', amount: 200000 },
@@ -55,6 +63,7 @@ describe('computeSuccessionAssetValuation', () => {
 
   it('supports a fixed forfait mobilier amount', () => {
     const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
       assetEntries: [
         { id: 'asset-1', owner: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
       ],
@@ -73,6 +82,7 @@ describe('computeSuccessionAssetValuation', () => {
 
   it('does not compute any forfait mobilier when disabled', () => {
     const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
       assetEntries: [
         { id: 'asset-1', owner: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
       ],
@@ -101,6 +111,7 @@ describe('computeSuccessionAssetValuation', () => {
     ]);
 
     const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
       assetEntries: normalized,
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'montant',
@@ -117,12 +128,14 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.actifsTaxablesParOwner.commun).toBe(200000);
     expect(result.transmissionBasis.residencePrincipaleEntry).toEqual({
       owner: 'epoux1',
+      pocket: 'epoux1',
       valeurTotale: 400000,
     });
   });
 
   it('adds the forfait before clamping taxable net assets to zero', () => {
     const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
       assetEntries: [
         { id: 'asset-1', owner: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
         { id: 'passif-1', owner: 'epoux1', category: 'passif', subCategory: 'Dettes', amount: 103000 },
@@ -141,6 +154,7 @@ describe('computeSuccessionAssetValuation', () => {
 
   it('integrates GFA taxable value into succession assets', () => {
     const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
       assetEntries: [],
       groupementFoncierEntries: [
         { id: 'gf-1', owner: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
@@ -164,6 +178,7 @@ describe('computeSuccessionAssetValuation', () => {
 
   it('keeps the 75 percent forest exemption without monetary cap for GFF', () => {
     const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
       assetEntries: [],
       groupementFoncierEntries: [
         { id: 'gf-1', owner: 'commun', type: 'GFF', valeurTotale: 10_000_000 },
@@ -180,5 +195,36 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.assetNetTotals.commun).toBe(10_000_000);
     expect(result.taxableNetTotals.commun).toBe(2_625_000);
     expect(result.transmissionBasis.hasBeneficiaryLevelGfAdjustment).toBe(false);
+  });
+
+  it('persists the indivision pocket in the transmission basis when the shared mass is not a communaute', () => {
+    const result = computeSuccessionAssetValuation({
+      civilContext: {
+        situationMatrimoniale: 'pacse',
+        regimeMatrimonial: null,
+        pacsConvention: 'indivision',
+      },
+      assetEntries: [
+        {
+          id: 'asset-1',
+          owner: 'commun',
+          pocket: 'indivision_pacse',
+          category: 'immobilier',
+          subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY,
+          amount: 300000,
+        },
+      ],
+      groupementFoncierEntries: [],
+      forfaitMobilierMode: 'off',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    expect(result.transmissionBasis.residencePrincipaleEntry).toEqual({
+      owner: 'commun',
+      pocket: 'indivision_pacse',
+      valeurTotale: 300000,
+    });
   });
 });

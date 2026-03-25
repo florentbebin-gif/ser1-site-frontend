@@ -1,9 +1,12 @@
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
+import type { RegimeMatrimonial } from '../../engine/civil';
 import type {
+  PacsConvention,
   SituationMatrimoniale,
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
+  SuccessionAssetPocket,
   SuccessionAssetOwner,
   SuccessionPersonParty,
   SuccessionAssuranceVieEntry,
@@ -28,11 +31,13 @@ import { resolveSuccessionAssetLocation } from './successionPatrimonialModel';
 
 interface UseSuccessionAssetHandlersArgs {
   civilSituation: SituationMatrimoniale;
+  regimeMatrimonial: RegimeMatrimonial | null;
+  pacsConvention: PacsConvention;
   assetBreakdown: {
-    actifs: Record<SuccessionAssetOwner, number>;
-    passifs: Record<SuccessionAssetOwner, number>;
+    actifs: Record<'epoux1' | 'epoux2' | 'commun', number>;
+    passifs: Record<'epoux1' | 'epoux2' | 'commun', number>;
   };
-  assetOwnerOptions: { value: SuccessionAssetOwner; label: string }[];
+  assetPocketOptions: { value: SuccessionAssetPocket; label: string }[];
   assuranceViePartyOptions: { value: SuccessionPersonParty; label: string }[];
   assetEntries: SuccessionAssetDetailEntry[];
   setAssetEntries: Dispatch<SetStateAction<SuccessionAssetDetailEntry[]>>;
@@ -50,8 +55,10 @@ interface UseSuccessionAssetHandlersArgs {
 
 export function useSuccessionAssetHandlers({
   civilSituation,
+  regimeMatrimonial,
+  pacsConvention,
   assetBreakdown,
-  assetOwnerOptions,
+  assetPocketOptions,
   assuranceViePartyOptions,
   assetEntries,
   setAssetEntries,
@@ -96,8 +103,12 @@ export function useSuccessionAssetHandlers({
         epoux2: owner === 'epoux2' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.epoux2,
         commun: owner === 'commun' && type === 'passifs' ? Math.max(0, value) : assetBreakdown.passifs.commun,
       },
-    }, civilSituation));
-  }, [assetBreakdown, civilSituation, setAssetEntries]);
+    }, {
+      situationMatrimoniale: civilSituation,
+      regimeMatrimonial,
+      pacsConvention,
+    }));
+  }, [assetBreakdown, civilSituation, pacsConvention, regimeMatrimonial, setAssetEntries]);
 
   const addAssetEntry = useCallback((category: SuccessionAssetCategory) => {
     setAssetEntries((prev) => {
@@ -109,8 +120,10 @@ export function useSuccessionAssetHandlers({
         {
           id: createAssetId(),
           ...(resolveSuccessionAssetLocation({
-            owner: assetOwnerOptions[0]?.value ?? 'epoux1',
+            pocket: assetPocketOptions[0]?.value ?? 'epoux1',
             situationMatrimoniale: civilSituation,
+            regimeMatrimonial,
+            pacsConvention,
           }) ?? {
             owner: 'epoux1' as const,
             pocket: 'epoux1' as const,
@@ -121,7 +134,7 @@ export function useSuccessionAssetHandlers({
         },
       ];
     });
-  }, [assetOwnerOptions, civilSituation, hasResidencePrincipale, setAssetEntries]);
+  }, [assetPocketOptions, civilSituation, hasResidencePrincipale, pacsConvention, regimeMatrimonial, setAssetEntries]);
 
   const updateAssetEntry = useCallback((
     id: string,
@@ -202,6 +215,17 @@ export function useSuccessionAssetHandlers({
         const location = resolveSuccessionAssetLocation({
           owner: value,
           situationMatrimoniale: civilSituation,
+          regimeMatrimonial,
+          pacsConvention,
+        });
+        return location ? { ...entry, ...location } : entry;
+      }
+      if (field === 'pocket') {
+        const location = resolveSuccessionAssetLocation({
+          pocket: value,
+          situationMatrimoniale: civilSituation,
+          regimeMatrimonial,
+          pacsConvention,
         });
         return location ? { ...entry, ...location } : entry;
       }
@@ -214,6 +238,8 @@ export function useSuccessionAssetHandlers({
     assetEntries,
     civilSituation,
     hasResidencePrincipale,
+    pacsConvention,
+    regimeMatrimonial,
     resolvePersonParty,
     setAssetEntries,
     setAssuranceVieDraft,

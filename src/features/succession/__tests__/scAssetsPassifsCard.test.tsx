@@ -17,6 +17,12 @@ const ownerOptions = [
   { value: 'commun', label: 'Commun' },
 ] as const;
 
+const pocketOptions = [
+  { value: 'epoux1', label: 'Epoux 1' },
+  { value: 'epoux2', label: 'Epoux 2' },
+  { value: 'communaute', label: 'Communaute' },
+] as const;
+
 function buildBaseProps() {
   return {
     isExpert: true,
@@ -29,6 +35,7 @@ function buildBaseProps() {
       entries: SuccessionAssetDetailEntry[];
     }>,
     assetOwnerOptions: [...ownerOptions],
+    assetPocketOptions: [...pocketOptions],
     assetBreakdown: {
       actifs: { epoux1: 0, epoux2: 0, commun: 0 },
       passifs: { epoux1: 0, epoux2: 0, commun: 0 },
@@ -115,6 +122,31 @@ describe('ScAssetsPassifsCard', () => {
     const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
 
     expect(markup).toContain('abattement 20 %');
+  });
+
+  it('uses Masse de rattachement instead of Porteur for detailed patrimonial rows', () => {
+    const props = buildBaseProps();
+    props.assetEntriesByCategory = [
+      {
+        value: 'immobilier',
+        label: 'Biens immobiliers',
+        entries: [
+          {
+            id: 'asset-1',
+            owner: 'epoux1',
+            pocket: 'epoux1',
+            category: 'immobilier',
+            subCategory: 'Residence secondaire',
+            amount: 250000,
+          },
+        ],
+      },
+    ];
+
+    const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
+
+    expect(markup).toContain('Masse de rattachement');
+    expect(markup).not.toContain('Porteur');
   });
 
   it('renders only the add icon for the financier section (no dedicated AV/PER buttons)', () => {

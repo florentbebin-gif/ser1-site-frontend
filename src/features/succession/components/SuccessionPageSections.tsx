@@ -153,6 +153,7 @@ export function SuccessionPageGrid({
               isConcubinage={derived.isConcubinage}
               assetEntriesByCategory={derived.assetEntriesByCategory}
               assetOwnerOptions={derived.assetOwnerOptions}
+              assetPocketOptions={derived.assetPocketOptions}
               assetBreakdown={derived.assetBreakdown}
               assetNetTotals={derived.assetNetTotals}
               forfaitMobilierComputed={derived.forfaitMobilierComputed}

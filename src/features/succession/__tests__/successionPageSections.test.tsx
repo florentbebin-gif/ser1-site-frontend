@@ -18,6 +18,7 @@ function buildProps(
       isConcubinage: false,
       assetEntriesByCategory: [],
       assetOwnerOptions: [{ value: 'epoux1', label: 'Defunt(e)' }],
+      assetPocketOptions: [{ value: 'epoux1', label: 'Defunt(e)' }],
       assetBreakdown: {
         actifs: { epoux1: 0, epoux2: 0, commun: 0 },
         passifs: { epoux1: 0, epoux2: 0, commun: 0 },

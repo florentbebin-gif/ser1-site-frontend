@@ -1,22 +1,17 @@
 /**
- * useSuccessionSyncEffects — Effets de synchronisation état du SuccessionSimulator
+ * useSuccessionSyncEffects - Effets de synchronisation et normalisation.
  *
- * Regroupe les useEffect qui normalisent l'état lorsque le contexte civil/familial change :
- * - Reset des rattachements enfant invalides
- * - Dérivation automatique ascendants survivants
- * - Synchronisation liquidation depuis actifs nets
- * - Reset propriétaires d'actifs invalides
- * - Reset parties AV/PER/prévoyance invalides
- * - Reset GFV owners invalides
- * - Synchronisation patrimonial depuis donations
+ * Les entrees detaillees sont maintenant valideses prioritairement via
+ * `pocket`, puis l'alias legacy `owner` est resynchronise automatiquement.
  */
 
 import { useEffect, type Dispatch, type SetStateAction } from 'react';
 import type {
   SuccessionAssetDetailEntry,
-  SuccessionAssetOwner,
+  SuccessionAssetPocket,
   SuccessionPersonParty,
   SituationMatrimoniale,
+  PacsConvention,
   SuccessionAssuranceVieEntry,
   SuccessionDevolutionContext,
   SuccessionEnfant,
@@ -27,6 +22,7 @@ import type {
   SuccessionPrevoyanceDecesEntry,
   FamilyMember,
 } from './successionDraft';
+import type { RegimeMatrimonial } from '../../engine/civil';
 import { normalizeResidencePrincipaleAssetEntries } from './successionAssetValuation';
 import { resolveSuccessionAssetLocation } from './successionPatrimonialModel';
 
@@ -47,19 +43,16 @@ interface AssetNetTotals {
 }
 
 interface UseSuccessionSyncEffectsParams {
-  // Derived values (read-only)
   enfantRattachementOptions: SelectOption[];
-  assetOwnerOptions: SelectOption[];
+  assetPocketOptions: SelectOption<SuccessionAssetPocket>[];
   assuranceViePartyOptions: SelectOption<SuccessionPersonParty>[];
   situationMatrimoniale: SituationMatrimoniale;
+  regimeMatrimonial: RegimeMatrimonial | null;
+  pacsConvention: PacsConvention;
   assetNetTotals: AssetNetTotals;
   nbEnfants: number;
   donationTotals: DonationTotals;
-
-  // States (read)
   familyMembers: FamilyMember[];
-
-  // Setters (write)
   setEnfantsContext: Dispatch<SetStateAction<SuccessionEnfant[]>>;
   setDevolutionContext: Dispatch<SetStateAction<SuccessionDevolutionContext>>;
   setLiquidationContext: Dispatch<SetStateAction<SuccessionLiquidationContext>>;
@@ -71,11 +64,27 @@ interface UseSuccessionSyncEffectsParams {
   setPatrimonialContext: Dispatch<SetStateAction<SuccessionPatrimonialContext>>;
 }
 
+function getFallbackLocation(
+  fallbackPocket: SuccessionAssetPocket,
+  situationMatrimoniale: SituationMatrimoniale,
+  regimeMatrimonial: RegimeMatrimonial | null,
+  pacsConvention: PacsConvention,
+) {
+  return resolveSuccessionAssetLocation({
+    pocket: fallbackPocket,
+    situationMatrimoniale,
+    regimeMatrimonial,
+    pacsConvention,
+  }) ?? { owner: 'epoux1' as const, pocket: 'epoux1' as const };
+}
+
 export function useSuccessionSyncEffects({
   enfantRattachementOptions,
-  assetOwnerOptions,
+  assetPocketOptions,
   assuranceViePartyOptions,
   situationMatrimoniale,
+  regimeMatrimonial,
+  pacsConvention,
   assetNetTotals,
   nbEnfants,
   donationTotals,
@@ -90,23 +99,18 @@ export function useSuccessionSyncEffects({
   setPrevoyanceDecesEntries,
   setPatrimonialContext,
 }: UseSuccessionSyncEffectsParams): void {
-
-  // Reset enfant rattachement invalide lors d'un changement de situation matrimoniale
   useEffect(() => {
-    const validValues = new Set(enfantRattachementOptions.map((o) => o.value));
+    const validValues = new Set(enfantRattachementOptions.map((option) => option.value));
     const defaultValue = (enfantRattachementOptions[0]?.value ?? 'epoux1') as 'commun' | 'epoux1' | 'epoux2';
-    setEnfantsContext((prev) =>
-      prev.map((e) =>
-        validValues.has(e.rattachement) ? e : { ...e, rattachement: defaultValue },
-      ),
-    );
+    setEnfantsContext((prev) => prev.map((entry) => (
+      validValues.has(entry.rattachement) ? entry : { ...entry, rattachement: defaultValue }
+    )));
   }, [enfantRattachementOptions, setEnfantsContext]);
 
-  // Auto-dériver les ascendants survivants par branche si des parents sont déclarés
   useEffect(() => {
     const hasParentsBySide = {
-      epoux1: familyMembers.some((m) => m.type === 'parent' && (!m.branch || m.branch === 'epoux1')),
-      epoux2: familyMembers.some((m) => m.type === 'parent' && m.branch === 'epoux2'),
+      epoux1: familyMembers.some((member) => member.type === 'parent' && (!member.branch || member.branch === 'epoux1')),
+      epoux2: familyMembers.some((member) => member.type === 'parent' && member.branch === 'epoux2'),
     };
     setDevolutionContext((prev) => {
       if (
@@ -122,7 +126,6 @@ export function useSuccessionSyncEffects({
     });
   }, [familyMembers, setDevolutionContext]);
 
-  // Synchroniser liquidationContext depuis les actifs nets calculés
   useEffect(() => {
     setLiquidationContext((prev) => {
       const next = {
@@ -143,36 +146,45 @@ export function useSuccessionSyncEffects({
     });
   }, [assetNetTotals.commun, assetNetTotals.epoux1, assetNetTotals.epoux2, nbEnfants, setLiquidationContext]);
 
-  // Reset propriétaires d'actifs invalides lors d'un changement de situation
   useEffect(() => {
-    const validOwners = new Set(assetOwnerOptions.map((option) => option.value));
-    const fallbackOwner = (assetOwnerOptions[0]?.value ?? 'epoux1') as SuccessionAssetOwner;
+    const validPockets = new Set(assetPocketOptions.map((option) => option.value));
+    const fallbackPocket = assetPocketOptions[0]?.value ?? 'epoux1';
+    const fallbackLocation = getFallbackLocation(
+      fallbackPocket,
+      situationMatrimoniale,
+      regimeMatrimonial,
+      pacsConvention,
+    );
+
     setAssetEntries((prev) => {
       let changed = false;
       const mapped = prev.map((entry) => {
-        const owner = validOwners.has(entry.owner) ? entry.owner : fallbackOwner;
-        const location = resolveSuccessionAssetLocation({
-          owner,
+        const resolved = resolveSuccessionAssetLocation({
+          owner: entry.owner,
           pocket: entry.pocket,
           situationMatrimoniale,
-        }) ?? {
-          owner: fallbackOwner,
-          pocket: resolveSuccessionAssetLocation({
-            owner: fallbackOwner,
-            situationMatrimoniale,
-          })?.pocket ?? 'epoux1',
-        };
+          regimeMatrimonial,
+          pacsConvention,
+        });
+        const location = resolved && validPockets.has(resolved.pocket)
+          ? resolved
+          : fallbackLocation;
         if (entry.owner === location.owner && entry.pocket === location.pocket) return entry;
         changed = true;
         return { ...entry, ...location };
       });
-      const next = normalizeResidencePrincipaleAssetEntries(mapped);
-      const residenceChanged = next.some((entry, index) => entry.subCategory !== mapped[index]?.subCategory);
-      return changed || residenceChanged ? next : prev;
+      const normalized = normalizeResidencePrincipaleAssetEntries(mapped);
+      const residenceChanged = normalized.some((entry, index) => entry.subCategory !== mapped[index]?.subCategory);
+      return changed || residenceChanged ? normalized : prev;
     });
-  }, [assetOwnerOptions, setAssetEntries, situationMatrimoniale]);
+  }, [
+    assetPocketOptions,
+    pacsConvention,
+    regimeMatrimonial,
+    setAssetEntries,
+    situationMatrimoniale,
+  ]);
 
-  // Reset assurés/souscripteurs d'AV invalides lors d'un changement de situation
   useEffect(() => {
     const validOwners = new Set(assuranceViePartyOptions.map((option) => option.value));
     const fallbackOwner = assuranceViePartyOptions[0]?.value ?? 'epoux1';
@@ -193,7 +205,6 @@ export function useSuccessionSyncEffects({
     });
   }, [assuranceViePartyOptions, setAssuranceVieEntries]);
 
-  // Reset PER assurés invalides
   useEffect(() => {
     const validOwners = new Set(assuranceViePartyOptions.map((option) => option.value));
     const fallbackOwner = assuranceViePartyOptions[0]?.value ?? 'epoux1';
@@ -212,34 +223,43 @@ export function useSuccessionSyncEffects({
     });
   }, [assuranceViePartyOptions, setPerEntries]);
 
-  // Reset GFV owners invalides
   useEffect(() => {
-    const validOwners = new Set(assetOwnerOptions.map((option) => option.value));
-    const fallbackOwner = (assetOwnerOptions[0]?.value ?? 'epoux1') as SuccessionAssetOwner;
+    const validPockets = new Set(assetPocketOptions.map((option) => option.value));
+    const fallbackPocket = assetPocketOptions[0]?.value ?? 'epoux1';
+    const fallbackLocation = getFallbackLocation(
+      fallbackPocket,
+      situationMatrimoniale,
+      regimeMatrimonial,
+      pacsConvention,
+    );
+
     setGroupementFoncierEntries((prev) => {
       let changed = false;
       const next = prev.map((entry) => {
-        const owner = validOwners.has(entry.owner) ? entry.owner : fallbackOwner;
-        const location = resolveSuccessionAssetLocation({
-          owner,
+        const resolved = resolveSuccessionAssetLocation({
+          owner: entry.owner,
           pocket: entry.pocket,
           situationMatrimoniale,
-        }) ?? {
-          owner: fallbackOwner,
-          pocket: resolveSuccessionAssetLocation({
-            owner: fallbackOwner,
-            situationMatrimoniale,
-          })?.pocket ?? 'epoux1',
-        };
-        if (owner === entry.owner && location.pocket === entry.pocket) return entry;
+          regimeMatrimonial,
+          pacsConvention,
+        });
+        const location = resolved && validPockets.has(resolved.pocket)
+          ? resolved
+          : fallbackLocation;
+        if (entry.owner === location.owner && entry.pocket === location.pocket) return entry;
         changed = true;
         return { ...entry, ...location };
       });
       return changed ? next : prev;
     });
-  }, [assetOwnerOptions, setGroupementFoncierEntries, situationMatrimoniale]);
+  }, [
+    assetPocketOptions,
+    pacsConvention,
+    regimeMatrimonial,
+    setGroupementFoncierEntries,
+    situationMatrimoniale,
+  ]);
 
-  // Reset prévoyance parties invalides
   useEffect(() => {
     const validOwners = new Set(assuranceViePartyOptions.map((option) => option.value));
     const fallbackOwner = assuranceViePartyOptions[0]?.value ?? 'epoux1';
@@ -256,7 +276,6 @@ export function useSuccessionSyncEffects({
     });
   }, [assuranceViePartyOptions, setPrevoyanceDecesEntries]);
 
-  // Synchroniser patrimonialContext depuis les totaux donations
   useEffect(() => {
     setPatrimonialContext((prev) => {
       if (
