@@ -178,7 +178,7 @@ export default function AssuranceVieModal({
                 />
               </div>
               <div className="sc-field">
-                <label>Versements après 70 ans (€)</label>
+                <label>Dont versements après 70 ans — art. 757B (€)</label>
                 <ScNumericInput
                   value={entry.versementsApres70 || 0}
                   min={0}

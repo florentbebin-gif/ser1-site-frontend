@@ -83,7 +83,7 @@ export function getSuccessionPrevoyanceRegimeInfo(
       regimeLabel: '990 I',
       taxBase: capitalDeces,
       ageAtDeath,
-      warning: 'Dernière prime non renseignée : calcul par défaut en 990 I sur le capital décès. Renseignez la dernière prime pour un calcul exact.',
+      warning: `Dernière prime non renseignée : calcul par défaut en art. 990 I CGI sur le capital décès (surestimation probable). L'assiette réelle est la dernière prime annuelle ou la prime unique (CGI annexe II, art. 306-0 F).`,
     };
   }
 
@@ -93,10 +93,12 @@ export function getSuccessionPrevoyanceRegimeInfo(
       regimeLabel: '990 I',
       taxBase: dernierePrime,
       ageAtDeath: null,
-      warning: `Date de naissance manquante pour ${entry.souscripteur} : hypothèse par défaut d'un régime 990 I.`,
+      warning: `Date de naissance manquante pour ${entry.souscripteur} : hypothèse par défaut d'un régime art. 990 I CGI.`,
     };
   }
 
+  // Art. 990 I CGI : décès avant 70 ans — assiette = dernière prime annuelle
+  // ou prime unique (CGI annexe II, art. 306-0 F)
   if (ageAtDeath < agePivotPrimes) {
     return {
       regimeKey: '990I',
@@ -106,6 +108,9 @@ export function getSuccessionPrevoyanceRegimeInfo(
     };
   }
 
+  // Art. 757 B CGI : décès après 70 ans — assiette = primes versées après 70 ans
+  // Simplification moteur : on utilise la dernière prime annuelle saisie comme proxy
+  // (BOFiP BOI-TCAS-AUT-60 §80, §170)
   return {
     regimeKey: '757B',
     regimeLabel: '757 B',
@@ -311,8 +316,8 @@ export function buildSuccessionPrevoyanceFiscalAnalysis(
       ...filterPrevoyanceWarnings(fiscalAnalysis.warnings),
       ...(entries.length > 0
         ? [
-          'Prévoyance décès pure non rachetable : le capital décès est ventilé selon la clause bénéficiaire, tandis que l’assiette fiscale repose sur la dernière prime annuelle saisie.',
-          'Prévoyance décès pure non rachetable : le régime 990 I / 757 B est déterminé selon l’âge du souscripteur à la date du décès simulé.',
+          `Prévoyance décès pure non rachetable (art. L132-23 C. assurances) : le capital décès est ventilé selon la clause bénéficiaire ; l’assiette fiscale est la dernière prime annuelle ou prime unique (art. 990 I CGI, CGI annexe II art. 306-0 F), et non le capital décès.`,
+          `Prévoyance décès : si le décès survient avant 70 ans, l’art. 990 I s’applique (abattement 152 500 € par bénéficiaire, taxe forfaitaire 20 %/31,25 %). Après 70 ans, l’art. 757 B s’applique : l’assiette est la fraction des primes versées après 70 ans, soumise au barème DMTG après abattement global de 30 500 € (BOFiP TCAS-AUT-60).`,
         ]
         : []),
     ])),

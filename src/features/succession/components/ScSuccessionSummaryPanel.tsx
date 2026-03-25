@@ -34,7 +34,8 @@ interface ScSuccessionSummaryPanelProps {
   avFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
   perFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
   prevoyanceFiscalByAssure: Record<'epoux1' | 'epoux2', { totalDroits: number }>;
-  insuranceBeneficiaryLines: InsuranceBeneficiaryLine[];
+  insurance990ILines: InsuranceBeneficiaryLine[];
+  insurance757BLines: InsuranceBeneficiaryLine[];
   directDisplay: {
     simulatedDeceased: 'epoux1' | 'epoux2';
     result: { totalDroits: number } | null;
@@ -53,7 +54,8 @@ export default function ScSuccessionSummaryPanel({
   avFiscalByAssure,
   perFiscalByAssure,
   prevoyanceFiscalByAssure,
-  insuranceBeneficiaryLines,
+  insurance990ILines,
+  insurance757BLines,
   directDisplay,
 }: ScSuccessionSummaryPanelProps) {
   const firstCost = displayUsesChainage
@@ -118,7 +120,7 @@ export default function ScSuccessionSummaryPanel({
           <strong className="sc-synth-kpi__value">{fmt(secondValue)}</strong>
         </div>
       </div>
-      {transmissionRows.length > 0 && (
+      {(transmissionRows.length > 0 || insurance757BLines.length > 0) && (
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
           <div className="sc-synth-section-title">Transmission par bénéficiaire</div>
@@ -140,13 +142,21 @@ export default function ScSuccessionSummaryPanel({
                 <span>{fmt(row.net)}</span>
               </div>
             ))}
+            {insurance757BLines.map((line) => (
+              <div key={`757b-${line.id}`} className="sc-transmission-row sc-transmission-row--av">
+                <span>{line.label} (art. 757 B)</span>
+                <span>{fmt(line.capitalTransmis)}</span>
+                <span>{fmt(line.totalDroits)}</span>
+                <span>{fmt(line.netTransmis)}</span>
+              </div>
+            ))}
           </div>
         </>
       )}
-      {insuranceBeneficiaryLines.length > 0 && (
+      {insurance990ILines.length > 0 && (
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
-          <div className="sc-synth-section-title">Assurances hors succession par bénéficiaire</div>
+          <div className="sc-synth-section-title">Assurances hors succession — art. 990 I</div>
           <div className="sc-transmission-grid">
             <div className="sc-transmission-grid__head">
               <span />
@@ -154,7 +164,7 @@ export default function ScSuccessionSummaryPanel({
               <span>Droits</span>
               <span>Net estimé</span>
             </div>
-            {insuranceBeneficiaryLines.map((line) => (
+            {insurance990ILines.map((line) => (
               <div key={line.id} className="sc-transmission-row sc-transmission-row--av">
                 <span>{line.label}</span>
                 <span>{fmt(line.capitalTransmis)}</span>
@@ -165,7 +175,7 @@ export default function ScSuccessionSummaryPanel({
           </div>
         </>
       )}
-      {(synthHypothese || transmissionRows.length > 0) && (
+      {(synthHypothese || transmissionRows.length > 0 || insurance757BLines.length > 0) && (
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
           <div className="sc-summary-notes">
@@ -177,7 +187,7 @@ export default function ScSuccessionSummaryPanel({
                 ? 'Cumul 2 décès - droits DMTG descendants, conjoint exonéré.'
                 : isPacsed
                   ? "Succession directe du partenaire simulé - le PACS n'ouvre pas de droit successoral automatique sans testament."
-                  : 'Succession directe du/de la défunt(e) simulé(e).'}
+                  : 'Succession directe simulée.'}
             </p>
           </div>
         </>

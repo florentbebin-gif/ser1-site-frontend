@@ -216,7 +216,8 @@ export function SuccessionPageGrid({
               avFiscalByAssure={derived.avFiscalAnalysis.byAssure}
               perFiscalByAssure={derived.perFiscalAnalysis.byAssure}
               prevoyanceFiscalByAssure={derived.prevoyanceFiscalAnalysis.byAssure}
-              insuranceBeneficiaryLines={derived.insuranceBeneficiaryLines}
+              insurance990ILines={derived.insurance990ILines}
+              insurance757BLines={derived.insurance757BLines}
               directDisplay={{
                 simulatedDeceased: derived.directDisplayAnalysis.simulatedDeceased,
                 result: derived.directDisplayAnalysis.result
