@@ -20,6 +20,7 @@ import type {
   SuccessionPrimarySide,
   SuccessionTestamentConfig,
 } from './successionDraft';
+import { resolveSuccessionAssetLocation } from './successionPatrimonialModel';
 import { getEnfantNodeLabel } from './successionEnfants';
 import { cloneSuccessionTestamentsBySide } from './successionTestament';
 import {
@@ -187,15 +188,17 @@ export function getDonationEffectiveAmount(entry: SuccessionDonationEntry): numb
 export function buildAggregateAssetEntries(values: {
   actifs: Record<SuccessionAssetOwner, number>;
   passifs: Record<SuccessionAssetOwner, number>;
-}): SuccessionAssetDetailEntry[] {
+}, situationMatrimoniale: SituationMatrimoniale): SuccessionAssetDetailEntry[] {
   const order: SuccessionAssetOwner[] = ['epoux1', 'epoux2', 'commun'];
   const entries: SuccessionAssetDetailEntry[] = [];
 
   order.forEach((owner) => {
+    const location = resolveSuccessionAssetLocation({ owner, situationMatrimoniale });
+    if (!location) return;
     if (values.actifs[owner] > 0) {
       entries.push({
         id: createAssetId(),
-        owner,
+        ...location,
         category: 'divers',
         subCategory: 'Saisie agrégée',
         amount: values.actifs[owner],
@@ -205,7 +208,7 @@ export function buildAggregateAssetEntries(values: {
     if (values.passifs[owner] > 0) {
       entries.push({
         id: createAssetId(),
-        owner,
+        ...location,
         category: 'passif',
         subCategory: 'Saisie agrégée',
         amount: values.passifs[owner],
@@ -258,13 +261,22 @@ export function buildPrevoyanceFromAsset(
 }
 
 export function buildGroupementFoncierFromAsset(
-  sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'amount'> | undefined,
+  sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'pocket' | 'amount'> | undefined,
   type: 'GFA/GFV' | 'GFF/GF',
 ): SuccessionGroupementFoncierEntry {
+  const location = resolveSuccessionAssetLocation({
+    owner: sourceEntry?.owner,
+    pocket: sourceEntry?.pocket,
+    situationMatrimoniale: 'marie',
+  }) ?? {
+    owner: 'commun' as const,
+    pocket: 'communaute' as const,
+  };
+
   return {
     id: createGfId(),
     type: type === 'GFA/GFV' ? 'GFA' : 'GFF',
-    owner: sourceEntry?.owner ?? 'commun',
+    ...location,
     valeurTotale: sourceEntry?.amount ?? 0,
   };
 }

@@ -33,6 +33,7 @@ import {
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   parseSuccessionDraftPayload,
+  resolveSuccessionAssetLocation,
   type SuccessionAssetDetailEntry,
   type SuccessionAssuranceVieEntry,
   type FamilyMember,
@@ -236,6 +237,7 @@ export default function SuccessionSimulator() {
     enfantRattachementOptions: derived.enfantRattachementOptions,
     assetOwnerOptions: derived.assetOwnerOptions,
     assuranceViePartyOptions: derived.assuranceViePartyOptions,
+    situationMatrimoniale: civilContext.situationMatrimoniale,
     assetNetTotals: derived.assetNetTotals,
     nbEnfants: derived.nbEnfants,
     donationTotals: derived.donationTotals,
@@ -394,7 +396,17 @@ export default function SuccessionSimulator() {
         onOpenPrevoyanceModal={openPrevoyanceModal}
         onRemovePrevoyanceDecesEntry={removePrevoyanceDecesEntry}
         groupementFoncierEntries={groupementFoncierEntries}
-        onUpdateGroupementFoncierEntry={(id, field, value) => setGroupementFoncierEntries((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)))}
+        onUpdateGroupementFoncierEntry={(id, field, value) => setGroupementFoncierEntries((prev) => prev.map((entry) => {
+          if (entry.id !== id) return entry;
+          if (field === 'owner') {
+            const location = resolveSuccessionAssetLocation({
+              owner: value,
+              situationMatrimoniale: civilContext.situationMatrimoniale,
+            });
+            return location ? { ...entry, ...location } : entry;
+          }
+          return { ...entry, [field]: value };
+        }))}
         onRemoveGroupementFoncierEntry={(id) => setGroupementFoncierEntries((prev) => prev.filter((e) => e.id !== id))}
         prevoyanceDecesEntries={prevoyanceDecesEntries}
         onSetSimplifiedBalanceField={setSimplifiedBalanceField}

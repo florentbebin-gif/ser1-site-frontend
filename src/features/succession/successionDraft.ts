@@ -22,6 +22,7 @@ export type {
   SuccessionDonationEntryType,
   SuccessionDraftPayloadV18,
   SuccessionDraftPayloadV19,
+  SuccessionDraftPayloadV20,
   SuccessionEnfant,
   SuccessionEnfantRattachement,
   SuccessionGroupementFoncierEntry,
@@ -37,7 +38,16 @@ export type {
 
 export type {
   SuccessionAssetPocket,
+  SuccessionLegacyAssetOwner,
   SuccessionPersonParty,
+} from './successionPatrimonialModel';
+
+export {
+  getSuccessionAssetPocketFromOwner,
+  getSuccessionLegacyOwnerFromPocket,
+  isSuccessionAssetPocket,
+  isSuccessionLegacyAssetOwner,
+  resolveSuccessionAssetLocation,
 } from './successionPatrimonialModel';
 
 export {

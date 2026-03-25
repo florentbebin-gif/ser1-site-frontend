@@ -1,9 +1,13 @@
 import type { RegimeMatrimonial } from '../../engine/civil';
 import type { LienParente } from '../../engine/succession';
-import type { SuccessionPersonParty } from './successionPatrimonialModel';
+import type {
+  SuccessionAssetPocket,
+  SuccessionPersonParty,
+} from './successionPatrimonialModel';
 import type {
   FamilyBranch,
   FamilyMemberType,
+  GroupementFoncierType,
   PacsConvention,
   SituationMatrimoniale,
   SuccessionAssetCategory,
@@ -113,12 +117,25 @@ export function isAssetOwner(v: unknown): v is SuccessionAssetOwner {
   return v === 'epoux1' || v === 'epoux2' || v === 'commun';
 }
 
+export function isAssetPocket(v: unknown): v is SuccessionAssetPocket {
+  return v === 'epoux1'
+    || v === 'epoux2'
+    || v === 'communaute'
+    || v === 'societe_acquets'
+    || v === 'indivision_pacse'
+    || v === 'indivision_concubinage';
+}
+
 export function isAssetCategory(v: unknown): v is SuccessionAssetCategory {
   return v === 'immobilier'
     || v === 'financier'
     || v === 'professionnel'
     || v === 'divers'
     || v === 'passif';
+}
+
+export function isGroupementFoncierType(v: unknown): v is GroupementFoncierType {
+  return v === 'GFA' || v === 'GFV' || v === 'GFF' || v === 'GF';
 }
 
 export function isAssuranceVieContractType(v: unknown): v is SuccessionAssuranceVieContractType {

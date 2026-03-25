@@ -16,6 +16,7 @@ import type {
   SuccessionAssetDetailEntry,
   SuccessionAssetOwner,
   SuccessionPersonParty,
+  SituationMatrimoniale,
   SuccessionAssuranceVieEntry,
   SuccessionDevolutionContext,
   SuccessionEnfant,
@@ -27,6 +28,7 @@ import type {
   FamilyMember,
 } from './successionDraft';
 import { normalizeResidencePrincipaleAssetEntries } from './successionAssetValuation';
+import { resolveSuccessionAssetLocation } from './successionPatrimonialModel';
 
 interface SelectOption<TValue extends string = string> {
   value: TValue;
@@ -49,6 +51,7 @@ interface UseSuccessionSyncEffectsParams {
   enfantRattachementOptions: SelectOption[];
   assetOwnerOptions: SelectOption[];
   assuranceViePartyOptions: SelectOption<SuccessionPersonParty>[];
+  situationMatrimoniale: SituationMatrimoniale;
   assetNetTotals: AssetNetTotals;
   nbEnfants: number;
   donationTotals: DonationTotals;
@@ -72,6 +75,7 @@ export function useSuccessionSyncEffects({
   enfantRattachementOptions,
   assetOwnerOptions,
   assuranceViePartyOptions,
+  situationMatrimoniale,
   assetNetTotals,
   nbEnfants,
   donationTotals,
@@ -146,15 +150,27 @@ export function useSuccessionSyncEffects({
     setAssetEntries((prev) => {
       let changed = false;
       const mapped = prev.map((entry) => {
-        if (validOwners.has(entry.owner)) return entry;
+        const owner = validOwners.has(entry.owner) ? entry.owner : fallbackOwner;
+        const location = resolveSuccessionAssetLocation({
+          owner,
+          pocket: entry.pocket,
+          situationMatrimoniale,
+        }) ?? {
+          owner: fallbackOwner,
+          pocket: resolveSuccessionAssetLocation({
+            owner: fallbackOwner,
+            situationMatrimoniale,
+          })?.pocket ?? 'epoux1',
+        };
+        if (entry.owner === location.owner && entry.pocket === location.pocket) return entry;
         changed = true;
-        return { ...entry, owner: fallbackOwner };
+        return { ...entry, ...location };
       });
       const next = normalizeResidencePrincipaleAssetEntries(mapped);
       const residenceChanged = next.some((entry, index) => entry.subCategory !== mapped[index]?.subCategory);
       return changed || residenceChanged ? next : prev;
     });
-  }, [assetOwnerOptions, setAssetEntries]);
+  }, [assetOwnerOptions, setAssetEntries, situationMatrimoniale]);
 
   // Reset assurés/souscripteurs d'AV invalides lors d'un changement de situation
   useEffect(() => {
@@ -204,13 +220,24 @@ export function useSuccessionSyncEffects({
       let changed = false;
       const next = prev.map((entry) => {
         const owner = validOwners.has(entry.owner) ? entry.owner : fallbackOwner;
-        if (owner === entry.owner) return entry;
+        const location = resolveSuccessionAssetLocation({
+          owner,
+          pocket: entry.pocket,
+          situationMatrimoniale,
+        }) ?? {
+          owner: fallbackOwner,
+          pocket: resolveSuccessionAssetLocation({
+            owner: fallbackOwner,
+            situationMatrimoniale,
+          })?.pocket ?? 'epoux1',
+        };
+        if (owner === entry.owner && location.pocket === entry.pocket) return entry;
         changed = true;
-        return { ...entry, owner };
+        return { ...entry, ...location };
       });
       return changed ? next : prev;
     });
-  }, [assetOwnerOptions, setGroupementFoncierEntries]);
+  }, [assetOwnerOptions, setGroupementFoncierEntries, situationMatrimoniale]);
 
   // Reset prévoyance parties invalides
   useEffect(() => {
