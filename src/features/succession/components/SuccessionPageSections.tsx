@@ -10,7 +10,6 @@ import type {
   SituationMatrimoniale,
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
-  SuccessionAssetOwner,
   SuccessionDonationEntry,
   FamilyMember,
   SuccessionAssuranceVieEntry,
@@ -18,6 +17,7 @@ import type {
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
+  SuccessionLegacyAssetOwner,
 } from '../successionDraft';
 import type { DEFAULT_SUCCESSION_CIVIL_CONTEXT } from '../successionDraft';
 
@@ -56,7 +56,7 @@ interface SuccessionPageGridProps {
   onUpdateGroupementFoncierEntry: (_id: string, _field: string, _value: string | number) => void;
   onRemoveGroupementFoncierEntry: (_id: string) => void;
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
-  onSetSimplifiedBalanceField: (_type: 'actifs' | 'passifs', _owner: SuccessionAssetOwner, _value: number) => void;
+  onSetSimplifiedBalanceField: (_type: 'actifs' | 'passifs', _owner: SuccessionLegacyAssetOwner, _value: number) => void;
   onAddDonationEntry: () => void;
   onUpdateDonationEntry: (_entryId: string, _field: keyof SuccessionDonationEntry, _value: string | number | boolean) => void;
   onRemoveDonationEntry: (_entryId: string) => void;

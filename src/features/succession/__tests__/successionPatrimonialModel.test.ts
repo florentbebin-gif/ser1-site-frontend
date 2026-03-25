@@ -30,6 +30,11 @@ describe('successionPatrimonialModel', () => {
     expect(getSuccessionAssetPocketFromOwner('commun', 'pacse')).toBe('indivision_pacse');
     expect(getSuccessionAssetPocketFromOwner('commun', 'concubinage')).toBe('indivision_concubinage');
     expect(getSuccessionLegacyOwnerFromPocket('societe_acquets')).toBe('commun');
+    expect(getSuccessionAssetPocketFromOwner('commun', {
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'separation_biens_societe_acquets',
+      pacsConvention: 'separation',
+    })).toBe('societe_acquets');
   });
 
   it('resolves a compatible owner and pocket pair from either side of the bridge', () => {
@@ -65,6 +70,16 @@ describe('successionPatrimonialModel', () => {
       { value: 'epoux2', label: 'Partenaire 2' },
       { value: 'indivision_pacse', label: 'Indivision' },
     ]);
+
+    expect(buildSuccessionAssetPocketOptions({
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'separation_biens_societe_acquets',
+      pacsConvention: 'separation',
+    })).toEqual([
+      { value: 'epoux1', label: 'Epoux 1' },
+      { value: 'epoux2', label: 'Epoux 2' },
+      { value: 'societe_acquets', label: "Societe d'acquets" },
+    ]);
   });
 
   it('detects the current shared pocket from the civil context', () => {
@@ -83,5 +98,10 @@ describe('successionPatrimonialModel', () => {
       regimeMatrimonial: 'separation_biens',
       pacsConvention: 'separation',
     })).toBeNull();
+    expect(getSuccessionSharedPocketForContext({
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'separation_biens_societe_acquets',
+      pacsConvention: 'separation',
+    })).toBe('societe_acquets');
   });
 });

@@ -314,18 +314,24 @@ describe('succession validation matrix', () => {
       ],
       makeDevolution({}),
       {
-        ordinaryTaxableAssetsParOwner: {
+        ordinaryTaxableAssetsParPocket: {
           epoux1: 200_000,
           epoux2: 0,
-          commun: 0,
+          communaute: 0,
+          societe_acquets: 0,
+          indivision_pacse: 0,
+          indivision_concubinage: 0,
         },
-        passifsParOwner: {
+        passifsParPocket: {
           epoux1: 0,
           epoux2: 0,
-          commun: 0,
+          communaute: 0,
+          societe_acquets: 0,
+          indivision_pacse: 0,
+          indivision_concubinage: 0,
         },
         groupementFoncierEntries: [
-          { id: 'gf-1', owner: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
+          { id: 'gf-1', pocket: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
         ],
         hasBeneficiaryLevelGfAdjustment: true,
         residencePrincipaleEntry: null,
@@ -349,18 +355,24 @@ describe('succession validation matrix', () => {
       [{ id: 'E1', rattachement: 'epoux1' }],
       makeDevolution({}),
       {
-        ordinaryTaxableAssetsParOwner: {
+        ordinaryTaxableAssetsParPocket: {
           epoux1: 200_000,
           epoux2: 0,
-          commun: 0,
+          communaute: 0,
+          societe_acquets: 0,
+          indivision_pacse: 0,
+          indivision_concubinage: 0,
         },
-        passifsParOwner: {
+        passifsParPocket: {
           epoux1: 0,
           epoux2: 0,
-          commun: 0,
+          communaute: 0,
+          societe_acquets: 0,
+          indivision_pacse: 0,
+          indivision_concubinage: 0,
         },
         groupementFoncierEntries: [
-          { id: 'gf-1', owner: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
+          { id: 'gf-1', pocket: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
         ],
         hasBeneficiaryLevelGfAdjustment: true,
         residencePrincipaleEntry: null,

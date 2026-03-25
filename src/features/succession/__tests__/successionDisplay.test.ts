@@ -446,20 +446,26 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
       [],
     );
     const transmissionBasis = {
-      ordinaryTaxableAssetsParOwner: {
+      ordinaryTaxableAssetsParPocket: {
         epoux1: 400000,
         epoux2: 0,
-        commun: 0,
+        communaute: 0,
+        societe_acquets: 0,
+        indivision_pacse: 0,
+        indivision_concubinage: 0,
       },
-      passifsParOwner: {
+      passifsParPocket: {
         epoux1: 0,
         epoux2: 0,
-        commun: 0,
+        communaute: 0,
+        societe_acquets: 0,
+        indivision_pacse: 0,
+        indivision_concubinage: 0,
       },
       groupementFoncierEntries: [],
       hasBeneficiaryLevelGfAdjustment: false,
       residencePrincipaleEntry: {
-        owner: 'epoux1' as const,
+        pocket: 'epoux1' as const,
         valeurTotale: 400000,
       },
     };

@@ -400,15 +400,6 @@ export default function SuccessionSimulator() {
         groupementFoncierEntries={groupementFoncierEntries}
         onUpdateGroupementFoncierEntry={(id, field, value) => setGroupementFoncierEntries((prev) => prev.map((entry) => {
           if (entry.id !== id) return entry;
-          if (field === 'owner') {
-            const location = resolveSuccessionAssetLocation({
-              owner: value,
-              situationMatrimoniale: civilContext.situationMatrimoniale,
-              regimeMatrimonial: civilContext.regimeMatrimonial,
-              pacsConvention: civilContext.pacsConvention,
-            });
-            return location ? { ...entry, ...location } : entry;
-          }
           if (field === 'pocket') {
             const location = resolveSuccessionAssetLocation({
               pocket: value,
@@ -416,7 +407,7 @@ export default function SuccessionSimulator() {
               regimeMatrimonial: civilContext.regimeMatrimonial,
               pacsConvention: civilContext.pacsConvention,
             });
-            return location ? { ...entry, ...location } : entry;
+            return location ? { ...entry, pocket: location.pocket } : entry;
           }
           return { ...entry, [field]: value };
         }))}

@@ -42,6 +42,7 @@ export const SUPPORTED_SUCCESSION_DRAFT_VERSIONS = [
   18,
   19,
   20,
+  21,
 ] as const;
 
 export function isSupportedSuccessionDraftVersion(
@@ -117,7 +118,6 @@ export function deriveLegacyAssetEntries(
   if (liquidation.actifEpoux1 > 0) {
     entries.push({
       id: 'asset-epoux1-legacy',
-      owner: 'epoux1',
       pocket: getSuccessionAssetPocketFromOwner('epoux1', situationMatrimoniale),
       category: 'divers',
       subCategory: 'Saisie agrégée',
@@ -128,7 +128,6 @@ export function deriveLegacyAssetEntries(
   if (liquidation.actifEpoux2 > 0) {
     entries.push({
       id: 'asset-epoux2-legacy',
-      owner: 'epoux2',
       pocket: getSuccessionAssetPocketFromOwner('epoux2', situationMatrimoniale),
       category: 'divers',
       subCategory: 'Saisie agrégée',
@@ -139,7 +138,6 @@ export function deriveLegacyAssetEntries(
   if (liquidation.actifCommun > 0) {
     entries.push({
       id: 'asset-commun-legacy',
-      owner: 'commun',
       pocket: getSuccessionAssetPocketFromOwner('commun', situationMatrimoniale),
       category: 'divers',
       subCategory: 'Saisie agrégée',

@@ -11,7 +11,6 @@ import type {
   SituationMatrimoniale,
   SuccessionPersonParty,
   SuccessionAssetDetailEntry,
-  SuccessionAssetOwner,
   SuccessionAssuranceVieEntry,
   SuccessionDonationEntry,
   SuccessionDonationEntreEpouxOption,
@@ -22,7 +21,11 @@ import type {
   SuccessionPrimarySide,
   SuccessionTestamentConfig,
 } from './successionDraft';
-import { resolveSuccessionAssetLocation } from './successionPatrimonialModel';
+import {
+  getSuccessionAssetPocketFromOwner,
+  resolveSuccessionAssetLocation,
+  type SuccessionLegacyAssetOwner,
+} from './successionPatrimonialModel';
 import { getEnfantNodeLabel } from './successionEnfants';
 import { cloneSuccessionTestamentsBySide } from './successionTestament';
 import {
@@ -188,28 +191,22 @@ export function getDonationEffectiveAmount(entry: SuccessionDonationEntry): numb
 }
 
 export function buildAggregateAssetEntries(values: {
-  actifs: Record<SuccessionAssetOwner, number>;
-  passifs: Record<SuccessionAssetOwner, number>;
+  actifs: Record<SuccessionLegacyAssetOwner, number>;
+  passifs: Record<SuccessionLegacyAssetOwner, number>;
 }, civilContext: {
   situationMatrimoniale: SituationMatrimoniale;
   regimeMatrimonial?: RegimeMatrimonial | null;
   pacsConvention?: PacsConvention;
 }): SuccessionAssetDetailEntry[] {
-  const order: SuccessionAssetOwner[] = ['epoux1', 'epoux2', 'commun'];
+  const order: SuccessionLegacyAssetOwner[] = ['epoux1', 'epoux2', 'commun'];
   const entries: SuccessionAssetDetailEntry[] = [];
 
   order.forEach((owner) => {
-    const location = resolveSuccessionAssetLocation({
-      owner,
-      situationMatrimoniale: civilContext.situationMatrimoniale,
-      regimeMatrimonial: civilContext.regimeMatrimonial,
-      pacsConvention: civilContext.pacsConvention,
-    });
-    if (!location) return;
+    const pocket = getSuccessionAssetPocketFromOwner(owner, civilContext);
     if (values.actifs[owner] > 0) {
       entries.push({
         id: createAssetId(),
-        ...location,
+        pocket,
         category: 'divers',
         subCategory: 'Saisie agrégée',
         amount: values.actifs[owner],
@@ -219,7 +216,7 @@ export function buildAggregateAssetEntries(values: {
     if (values.passifs[owner] > 0) {
       entries.push({
         id: createAssetId(),
-        ...location,
+        pocket,
         category: 'passif',
         subCategory: 'Saisie agrégée',
         amount: values.passifs[owner],
@@ -232,39 +229,39 @@ export function buildAggregateAssetEntries(values: {
 }
 
 export function buildAssuranceVieFromAsset(
-  sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'amount'> | undefined,
-  owner: SuccessionPersonParty,
+  sourceEntry: Pick<SuccessionAssetDetailEntry, 'pocket' | 'amount'> | undefined,
+  personParty: SuccessionPersonParty,
 ): SuccessionAssuranceVieEntry {
   return {
     id: createAssuranceVieId(),
     typeContrat: 'standard',
-    souscripteur: owner,
-    assure: owner,
+    souscripteur: personParty,
+    assure: personParty,
     capitauxDeces: sourceEntry?.amount ?? 0,
     versementsApres70: 0,
   };
 }
 
 export function buildPerFromAsset(
-  sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'amount'> | undefined,
-  owner: SuccessionPersonParty,
+  sourceEntry: Pick<SuccessionAssetDetailEntry, 'pocket' | 'amount'> | undefined,
+  personParty: SuccessionPersonParty,
 ): SuccessionPerEntry {
   return {
     id: createPerId(),
     typeContrat: 'standard',
-    assure: owner,
+    assure: personParty,
     capitauxDeces: sourceEntry?.amount ?? 0,
   };
 }
 
 export function buildPrevoyanceFromAsset(
-  sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'amount'> | undefined,
-  owner: SuccessionPersonParty,
+  sourceEntry: Pick<SuccessionAssetDetailEntry, 'pocket' | 'amount'> | undefined,
+  personParty: SuccessionPersonParty,
 ): SuccessionPrevoyanceDecesEntry {
   return {
     id: createPrevoyanceId(),
-    souscripteur: owner,
-    assure: owner,
+    souscripteur: personParty,
+    assure: personParty,
     capitalDeces: sourceEntry?.amount ?? 0,
     dernierePrime: 0,
     clauseBeneficiaire: CLAUSE_CONJOINT_LABEL,
@@ -272,22 +269,20 @@ export function buildPrevoyanceFromAsset(
 }
 
 export function buildGroupementFoncierFromAsset(
-  sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'pocket' | 'amount'> | undefined,
+  sourceEntry: Pick<SuccessionAssetDetailEntry, 'pocket' | 'amount'> | undefined,
   type: 'GFA/GFV' | 'GFF/GF',
 ): SuccessionGroupementFoncierEntry {
   const location = resolveSuccessionAssetLocation({
-    owner: sourceEntry?.owner,
     pocket: sourceEntry?.pocket,
     situationMatrimoniale: 'marie',
   }) ?? {
-    owner: 'commun' as const,
     pocket: 'communaute' as const,
   };
 
   return {
     id: createGfId(),
     type: type === 'GFA/GFV' ? 'GFA' : 'GFF',
-    ...location,
+    pocket: location.pocket,
     valeurTotale: sourceEntry?.amount ?? 0,
   };
 }

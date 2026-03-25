@@ -76,7 +76,7 @@ describe('ScAssetsPassifsCard', () => {
   it('removes the main residence option from other immobilier rows once one exists', () => {
     const currentResidence: SuccessionAssetDetailEntry = {
       id: 'asset-rp',
-      owner: 'epoux1',
+      pocket: 'epoux1',
       category: 'immobilier',
       subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY,
       amount: 250000,
@@ -84,7 +84,7 @@ describe('ScAssetsPassifsCard', () => {
     };
     const secondaryResidence: SuccessionAssetDetailEntry = {
       id: 'asset-rs',
-      owner: 'commun',
+      pocket: 'communaute',
       category: 'immobilier',
       subCategory: 'Residence secondaire',
       amount: 180000,
@@ -108,7 +108,7 @@ describe('ScAssetsPassifsCard', () => {
         entries: [
           {
             id: 'asset-rp',
-            owner: 'epoux1',
+            pocket: 'epoux1',
             category: 'immobilier',
             subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY,
             amount: 250000,
@@ -133,7 +133,6 @@ describe('ScAssetsPassifsCard', () => {
         entries: [
           {
             id: 'asset-1',
-            owner: 'epoux1',
             pocket: 'epoux1',
             category: 'immobilier',
             subCategory: 'Residence secondaire',
@@ -210,7 +209,7 @@ describe('ScAssetsPassifsCard', () => {
     props.hasBeneficiaryLevelGfAdjustment = true;
     props.groupementFoncierEntries = [{
       id: 'gf-1',
-      owner: 'epoux1',
+      pocket: 'epoux1',
       type: 'GFA',
       valeurTotale: 1_000_000,
     }];

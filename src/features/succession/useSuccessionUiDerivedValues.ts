@@ -13,6 +13,7 @@ import { computeSuccessionAssetValuation } from './successionAssetValuation';
 import {
   buildSuccessionAssetOwnerOptions,
   buildSuccessionAssetPocketOptions,
+  type SuccessionLegacyAssetOwner,
   type SuccessionAssetPocket,
 } from './successionDraft';
 import {
@@ -22,7 +23,6 @@ import {
 } from './successionSimulator.helpers';
 import type {
   SuccessionAssetDetailEntry,
-  SuccessionAssetOwner,
   SuccessionPersonParty,
   SuccessionAssuranceVieEntry,
   FamilyBranch,
@@ -80,7 +80,7 @@ export function useSuccessionUiDerivedValues({
   const showSecondBirthDate = isCoupleSituation(civilContext.situationMatrimoniale);
 
   const assetOwnerOptions = useMemo(
-    (): { value: SuccessionAssetOwner; label: string }[] => buildSuccessionAssetOwnerOptions({
+    (): { value: SuccessionLegacyAssetOwner; label: string }[] => buildSuccessionAssetOwnerOptions({
       situationMatrimoniale: civilContext.situationMatrimoniale,
       regimeMatrimonial: civilContext.regimeMatrimonial,
       pacsConvention: civilContext.pacsConvention,

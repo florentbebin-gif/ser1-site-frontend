@@ -6,7 +6,7 @@ import type {
   SuccessionCivilContext,
   SuccessionDevolutionContext,
   SuccessionDonationEntry,
-  SuccessionDraftPayloadV20,
+  SuccessionDraftPayloadV21,
   SuccessionEnfant,
   SuccessionGroupementFoncierEntry,
   SuccessionLiquidationContext,
@@ -32,41 +32,41 @@ export function buildSuccessionDraftPayload(
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[] = [],
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[] = [],
   chainOrder: SuccessionPrimarySide = 'epoux1',
-): SuccessionDraftPayloadV20 {
+): SuccessionDraftPayloadV21 {
   const normalizedAssetEntries = assetEntries.map((entry) => {
     const location = resolveSuccessionAssetLocation({
-      owner: entry.owner,
       pocket: entry.pocket,
       situationMatrimoniale: civil.situationMatrimoniale,
+      regimeMatrimonial: civil.regimeMatrimonial,
+      pacsConvention: civil.pacsConvention,
     }) ?? {
-      owner: 'epoux1' as const,
       pocket: 'epoux1' as const,
     };
 
     return {
       ...entry,
-      ...location,
+      pocket: location.pocket,
     };
   });
 
   const normalizedGroupementFoncierEntries = groupementFoncierEntries.map((entry) => {
     const location = resolveSuccessionAssetLocation({
-      owner: entry.owner,
       pocket: entry.pocket,
       situationMatrimoniale: civil.situationMatrimoniale,
+      regimeMatrimonial: civil.regimeMatrimonial,
+      pacsConvention: civil.pacsConvention,
     }) ?? {
-      owner: 'epoux1' as const,
       pocket: 'epoux1' as const,
     };
 
     return {
       ...entry,
-      ...location,
+      pocket: location.pocket,
     };
   });
 
   return {
-    version: 20,
+    version: 21,
     form,
     civil,
     liquidation,

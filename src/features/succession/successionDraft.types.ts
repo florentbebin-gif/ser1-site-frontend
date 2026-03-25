@@ -2,7 +2,6 @@ import type { RegimeMatrimonial } from '../../engine/civil';
 import type { LienParente } from '../../engine/succession';
 import type {
   SuccessionAssetPocket,
-  SuccessionLegacyAssetOwner,
   SuccessionPersonParty,
 } from './successionPatrimonialModel';
 
@@ -125,7 +124,6 @@ export interface SuccessionDonationEntry {
   avecReserveUsufruit?: boolean;
 }
 
-export type SuccessionAssetOwner = SuccessionLegacyAssetOwner;
 export type SuccessionAssetCategory =
   | 'immobilier'
   | 'financier'
@@ -135,8 +133,7 @@ export type SuccessionAssetCategory =
 
 export interface SuccessionAssetDetailEntry {
   id: string;
-  owner: SuccessionAssetOwner;
-  pocket?: SuccessionAssetPocket;
+  pocket: SuccessionAssetPocket;
   category: SuccessionAssetCategory;
   subCategory: string;
   amount: number;
@@ -172,8 +169,7 @@ export interface SuccessionGroupementFoncierEntry {
   type: GroupementFoncierType;
   label?: string;
   valeurTotale: number;
-  owner: SuccessionAssetOwner;
-  pocket?: SuccessionAssetPocket;
+  pocket: SuccessionAssetPocket;
 }
 
 export interface SuccessionPrevoyanceDecesEntry {
@@ -239,4 +235,8 @@ export interface SuccessionDraftPayloadV19 extends ParsedSuccessionDraftPayload 
 
 export interface SuccessionDraftPayloadV20 extends ParsedSuccessionDraftPayload {
   version: 20;
+}
+
+export interface SuccessionDraftPayloadV21 extends ParsedSuccessionDraftPayload {
+  version: 21;
 }

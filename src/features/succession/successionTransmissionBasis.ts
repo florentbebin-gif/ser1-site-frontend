@@ -1,6 +1,5 @@
 import type {
   GroupementFoncierType,
-  SuccessionAssetOwner,
   SuccessionGroupementFoncierEntry,
   SuccessionPatrimonialContext,
 } from './successionDraft.types';
@@ -8,23 +7,14 @@ import { computeGroupementFoncierExoneration } from './successionGroupementFonci
 import type { SuccessionAssetPocket } from './successionPatrimonialModel';
 
 export interface SuccessionAssetTransmissionBasis {
-  ordinaryTaxableAssetsParOwner: Record<SuccessionAssetOwner, number>;
-  passifsParOwner: Record<SuccessionAssetOwner, number>;
-  ordinaryTaxableAssetsParPocket?: Record<SuccessionAssetPocket, number>;
-  passifsParPocket?: Record<SuccessionAssetPocket, number>;
+  ordinaryTaxableAssetsParPocket: Record<SuccessionAssetPocket, number>;
+  passifsParPocket: Record<SuccessionAssetPocket, number>;
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   hasBeneficiaryLevelGfAdjustment: boolean;
   residencePrincipaleEntry: {
-    owner: SuccessionAssetOwner;
-    pocket?: SuccessionAssetPocket;
+    pocket: SuccessionAssetPocket;
     valeurTotale: number;
   } | null;
-}
-
-export interface SuccessionEstateOwnerScales {
-  epoux1: number;
-  epoux2: number;
-  commun: number;
 }
 
 export interface SuccessionEstatePocketScales {
@@ -49,12 +39,6 @@ export interface BeneficiaryTaxableAllocationInput {
   partSuccession: number;
 }
 
-const EMPTY_OWNER_SCALES: SuccessionEstateOwnerScales = {
-  epoux1: 0,
-  epoux2: 0,
-  commun: 0,
-};
-
 const EMPTY_POCKET_SCALES: SuccessionEstatePocketScales = {
   epoux1: 0,
   epoux2: 0,
@@ -70,35 +54,15 @@ function asAmount(value: unknown): number {
   return Math.max(0, amount);
 }
 
-export function createEmptyOwnerScales(): SuccessionEstateOwnerScales {
-  return { ...EMPTY_OWNER_SCALES };
-}
-
 export function createEmptyPocketScales(): SuccessionEstatePocketScales {
   return { ...EMPTY_POCKET_SCALES };
 }
 
-function getSharedPocketScale(pocketScales: SuccessionEstatePocketScales): number {
-  return pocketScales.communaute
-    + pocketScales.societe_acquets
-    + pocketScales.indivision_pacse
-    + pocketScales.indivision_concubinage;
-}
-
-function getLegacyOwnerScale(
-  owner: SuccessionAssetOwner,
-  pocketScales: SuccessionEstatePocketScales,
-): number {
-  if (owner === 'epoux1') return pocketScales.epoux1;
-  if (owner === 'epoux2') return pocketScales.epoux2;
-  return getSharedPocketScale(pocketScales);
-}
-
 function getEntryScale(
-  entry: Pick<SuccessionGroupementFoncierEntry, 'owner' | 'pocket'>,
+  entry: Pick<SuccessionGroupementFoncierEntry, 'pocket'>,
   pocketScales: SuccessionEstatePocketScales,
 ): number {
-  return entry.pocket ? pocketScales[entry.pocket] : getLegacyOwnerScale(entry.owner, pocketScales);
+  return pocketScales[entry.pocket];
 }
 
 export function buildSuccessionEstateTaxableBasis(
@@ -113,26 +77,14 @@ export function buildSuccessionEstateTaxableBasis(
     };
   }
 
-  const ordinaryAssets = transmissionBasis.ordinaryTaxableAssetsParPocket
-    ? (Object.keys(EMPTY_POCKET_SCALES) as SuccessionAssetPocket[]).reduce(
-      (sum, pocket) => sum + (asAmount(transmissionBasis.ordinaryTaxableAssetsParPocket?.[pocket]) * pocketScales[pocket]),
-      0,
-    )
-    : (
-      (transmissionBasis.ordinaryTaxableAssetsParOwner.epoux1 * pocketScales.epoux1)
-      + (transmissionBasis.ordinaryTaxableAssetsParOwner.epoux2 * pocketScales.epoux2)
-      + (transmissionBasis.ordinaryTaxableAssetsParOwner.commun * getSharedPocketScale(pocketScales))
-    );
-  const passifs = transmissionBasis.passifsParPocket
-    ? (Object.keys(EMPTY_POCKET_SCALES) as SuccessionAssetPocket[]).reduce(
-      (sum, pocket) => sum + (asAmount(transmissionBasis.passifsParPocket?.[pocket]) * pocketScales[pocket]),
-      0,
-    )
-    : (
-      (transmissionBasis.passifsParOwner.epoux1 * pocketScales.epoux1)
-      + (transmissionBasis.passifsParOwner.epoux2 * pocketScales.epoux2)
-      + (transmissionBasis.passifsParOwner.commun * getSharedPocketScale(pocketScales))
-    );
+  const ordinaryAssets = (Object.keys(EMPTY_POCKET_SCALES) as SuccessionAssetPocket[]).reduce(
+    (sum, pocket) => sum + (asAmount(transmissionBasis.ordinaryTaxableAssetsParPocket[pocket]) * pocketScales[pocket]),
+    0,
+  );
+  const passifs = (Object.keys(EMPTY_POCKET_SCALES) as SuccessionAssetPocket[]).reduce(
+    (sum, pocket) => sum + (asAmount(transmissionBasis.passifsParPocket[pocket]) * pocketScales[pocket]),
+    0,
+  );
 
   return {
     ordinaryNetBeforeForfait: Math.max(0, ordinaryAssets - passifs),
@@ -148,11 +100,7 @@ export function buildSuccessionEstateTaxableBasis(
       .filter((entry): entry is NonNullable<typeof entry> => entry !== null),
     residencePrincipaleValeur: transmissionBasis.residencePrincipaleEntry
       ? asAmount(transmissionBasis.residencePrincipaleEntry.valeurTotale)
-        * (
-          transmissionBasis.residencePrincipaleEntry.pocket
-            ? pocketScales[transmissionBasis.residencePrincipaleEntry.pocket]
-            : getLegacyOwnerScale(transmissionBasis.residencePrincipaleEntry.owner, pocketScales)
-        )
+        * pocketScales[transmissionBasis.residencePrincipaleEntry.pocket]
       : 0,
   };
 }

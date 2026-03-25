@@ -19,8 +19,8 @@ describe('computeSuccessionAssetValuation', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
       assetEntries: [
-        { id: 'asset-1', owner: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 200000 },
-        { id: 'asset-2', owner: 'commun', category: 'immobilier', subCategory: 'Residence secondaire', amount: 300000 },
+        { id: 'asset-1', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 200000 },
+        { id: 'asset-2', pocket: 'communaute', category: 'immobilier', subCategory: 'Residence secondaire', amount: 300000 },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'auto',
@@ -42,8 +42,8 @@ describe('computeSuccessionAssetValuation', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
       assetEntries: [
-        { id: 'asset-1', owner: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 100000 },
-        { id: 'asset-2', owner: 'epoux2', category: 'financier', subCategory: 'Titres', amount: 200000 },
+        { id: 'asset-1', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 100000 },
+        { id: 'asset-2', pocket: 'epoux2', category: 'financier', subCategory: 'Titres', amount: 200000 },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'pct',
@@ -65,7 +65,7 @@ describe('computeSuccessionAssetValuation', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
       assetEntries: [
-        { id: 'asset-1', owner: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
+        { id: 'asset-1', pocket: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'montant',
@@ -84,7 +84,7 @@ describe('computeSuccessionAssetValuation', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
       assetEntries: [
-        { id: 'asset-1', owner: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
+        { id: 'asset-1', pocket: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'off',
@@ -101,8 +101,8 @@ describe('computeSuccessionAssetValuation', () => {
 
   it('normalizes multiple main residences and applies the 20 percent abatement only once', () => {
     const normalized = normalizeResidencePrincipaleAssetEntries([
-      { id: 'asset-1', owner: 'epoux1', category: 'immobilier', subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY, amount: 400000 },
-      { id: 'asset-2', owner: 'commun', category: 'immobilier', subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY, amount: 200000 },
+      { id: 'asset-1', pocket: 'epoux1', category: 'immobilier', subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY, amount: 400000 },
+      { id: 'asset-2', pocket: 'communaute', category: 'immobilier', subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY, amount: 200000 },
     ]);
 
     expect(normalized.map((entry) => entry.subCategory)).toEqual([
@@ -127,7 +127,6 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.actifsTaxablesParOwner.epoux1).toBe(400000);
     expect(result.actifsTaxablesParOwner.commun).toBe(200000);
     expect(result.transmissionBasis.residencePrincipaleEntry).toEqual({
-      owner: 'epoux1',
       pocket: 'epoux1',
       valeurTotale: 400000,
     });
@@ -137,8 +136,8 @@ describe('computeSuccessionAssetValuation', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
       assetEntries: [
-        { id: 'asset-1', owner: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
-        { id: 'passif-1', owner: 'epoux1', category: 'passif', subCategory: 'Dettes', amount: 103000 },
+        { id: 'asset-1', pocket: 'epoux1', category: 'divers', subCategory: 'Meubles', amount: 100000 },
+        { id: 'passif-1', pocket: 'epoux1', category: 'passif', subCategory: 'Dettes', amount: 103000 },
       ],
       groupementFoncierEntries: [],
       forfaitMobilierMode: 'auto',
@@ -157,7 +156,7 @@ describe('computeSuccessionAssetValuation', () => {
       civilContext: marriedCivilContext,
       assetEntries: [],
       groupementFoncierEntries: [
-        { id: 'gf-1', owner: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
+        { id: 'gf-1', pocket: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
       ],
       forfaitMobilierMode: 'auto',
       forfaitMobilierPct: 5,
@@ -181,7 +180,7 @@ describe('computeSuccessionAssetValuation', () => {
       civilContext: marriedCivilContext,
       assetEntries: [],
       groupementFoncierEntries: [
-        { id: 'gf-1', owner: 'commun', type: 'GFF', valeurTotale: 10_000_000 },
+        { id: 'gf-1', pocket: 'communaute', type: 'GFF', valeurTotale: 10_000_000 },
       ],
       forfaitMobilierMode: 'auto',
       forfaitMobilierPct: 5,
@@ -207,7 +206,6 @@ describe('computeSuccessionAssetValuation', () => {
       assetEntries: [
         {
           id: 'asset-1',
-          owner: 'commun',
           pocket: 'indivision_pacse',
           category: 'immobilier',
           subCategory: RESIDENCE_PRINCIPALE_SUBCATEGORY,
@@ -222,7 +220,6 @@ describe('computeSuccessionAssetValuation', () => {
     });
 
     expect(result.transmissionBasis.residencePrincipaleEntry).toEqual({
-      owner: 'commun',
       pocket: 'indivision_pacse',
       valeurTotale: 300000,
     });

@@ -1,4 +1,4 @@
-import type { SuccessionAssetOwner } from '../successionDraft.types';
+import type { SuccessionLegacyAssetOwner } from '../successionDraft';
 import { fmt } from '../successionSimulator.helpers';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
@@ -8,9 +8,9 @@ export function ScAssetsSummary({
   assetNetTotals,
   getActifNetLabel,
 }: {
-  assetOwnerOptions: { value: SuccessionAssetOwner; label: string }[];
-  assetNetTotals: Record<SuccessionAssetOwner, number>;
-  getActifNetLabel: (_owner: SuccessionAssetOwner) => string;
+  assetOwnerOptions: { value: SuccessionLegacyAssetOwner; label: string }[];
+  assetNetTotals: Record<SuccessionLegacyAssetOwner, number>;
+  getActifNetLabel: (_owner: SuccessionLegacyAssetOwner) => string;
 }) {
   return (
     <div className="sc-assets-summary">
