@@ -24,6 +24,7 @@ import {
 } from './successionEnfants';
 import { applySuccessionDonationRecallToHeirs } from './successionDonationRecall';
 import {
+  applyResidencePrincipaleAbatementToEstateBasis,
   assignBeneficiaryTaxableBasis,
   buildSuccessionEstateTaxableBasis,
   createEmptyOwnerScales,
@@ -66,6 +67,7 @@ interface BuildSuccessionDirectDisplayInput {
   forfaitMobilierMode?: SuccessionPatrimonialContext['forfaitMobilierMode'];
   forfaitMobilierPct?: number;
   forfaitMobilierMontant?: number;
+  abattementResidencePrincipale?: boolean;
   donationsContext?: SuccessionDonationEntry[];
   donationSettings?: SuccessionFiscalSnapshot['donation'];
   referenceDate?: Date;
@@ -516,9 +518,12 @@ export function buildSuccessionDirectDisplayAnalysis(
   const detailedHeirsWithTaxableBasis = input.transmissionBasis
     ? assignBeneficiaryTaxableBasis(
       detailedHeirs,
-      buildSuccessionEstateTaxableBasis(
-        input.transmissionBasis,
-        buildDirectEstateOwnerScales(input.civil, simulatedDeceased),
+      applyResidencePrincipaleAbatementToEstateBasis(
+        buildSuccessionEstateTaxableBasis(
+          input.transmissionBasis,
+          buildDirectEstateOwnerScales(input.civil, simulatedDeceased),
+        ),
+        Boolean(input.abattementResidencePrincipale),
       ),
       {
         forfaitMobilierMode: input.forfaitMobilierMode ?? 'off',

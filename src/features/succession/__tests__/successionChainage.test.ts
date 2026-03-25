@@ -500,4 +500,60 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.warnings.some((warning) => warning.includes('preciput ignoree'))).toBe(true);
     expect(analysis.warnings.some((warning) => warning.includes('donation entre epoux ignoree'))).toBe(true);
   });
+
+  it('applies the residence principale abatement on step 1 only in chainage', () => {
+    const transmissionBasis = {
+      ordinaryTaxableAssetsParOwner: {
+        epoux1: 0,
+        epoux2: 0,
+        commun: 1_000_000,
+      },
+      passifsParOwner: {
+        epoux1: 0,
+        epoux2: 0,
+        commun: 0,
+      },
+      groupementFoncierEntries: [],
+      hasBeneficiaryLevelGfAdjustment: false,
+      residencePrincipaleEntry: {
+        owner: 'commun' as const,
+        valeurTotale: 1_000_000,
+      },
+    };
+
+    const withoutAbatement = buildSuccessionChainageAnalysis({
+      civil: makeCivil({}),
+      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 0, actifCommun: 1_000_000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+      transmissionBasis,
+      abattementResidencePrincipale: false,
+    });
+    const withAbatement = buildSuccessionChainageAnalysis({
+      civil: makeCivil({}),
+      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 0, actifCommun: 1_000_000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+      transmissionBasis,
+      abattementResidencePrincipale: true,
+    });
+
+    expect(withAbatement.step1?.droitsEnfants).toBeLessThan(withoutAbatement.step1?.droitsEnfants ?? 0);
+    expect(withAbatement.step2?.droitsEnfants).toBe(withoutAbatement.step2?.droitsEnfants);
+    expect(
+      withAbatement.warnings.some((warning) => warning.includes('abattement residence principale 20 % applique')),
+    ).toBe(true);
+  });
 });

@@ -11,6 +11,10 @@ export interface SuccessionAssetTransmissionBasis {
   passifsParOwner: Record<SuccessionAssetOwner, number>;
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   hasBeneficiaryLevelGfAdjustment: boolean;
+  residencePrincipaleEntry: {
+    owner: SuccessionAssetOwner;
+    valeurTotale: number;
+  } | null;
 }
 
 export interface SuccessionEstateOwnerScales {
@@ -25,6 +29,7 @@ export interface SuccessionEstateTaxableBasis {
     type: GroupementFoncierType;
     valeurTotale: number;
   }>;
+  residencePrincipaleValeur: number;
 }
 
 export interface BeneficiaryTaxableAllocationInput {
@@ -55,6 +60,7 @@ export function buildSuccessionEstateTaxableBasis(
     return {
       ordinaryNetBeforeForfait: 0,
       groupementEntries: [],
+      residencePrincipaleValeur: 0,
     };
   }
 
@@ -80,6 +86,10 @@ export function buildSuccessionEstateTaxableBasis(
         };
       })
       .filter((entry): entry is NonNullable<typeof entry> => entry !== null),
+    residencePrincipaleValeur: transmissionBasis.residencePrincipaleEntry
+      ? asAmount(transmissionBasis.residencePrincipaleEntry.valeurTotale)
+        * ownerScales[transmissionBasis.residencePrincipaleEntry.owner]
+      : 0,
   };
 }
 
@@ -92,6 +102,7 @@ export function scaleSuccessionEstateTaxableBasis(
     return {
       ordinaryNetBeforeForfait: 0,
       groupementEntries: [],
+      residencePrincipaleValeur: 0,
     };
   }
 
@@ -101,6 +112,7 @@ export function scaleSuccessionEstateTaxableBasis(
       ...entry,
       valeurTotale: entry.valeurTotale * normalizedRatio,
     })),
+    residencePrincipaleValeur: basis.residencePrincipaleValeur * normalizedRatio,
   };
 }
 
@@ -110,10 +122,24 @@ export function addSuccessionEstateTaxableBases(
   return bases.reduce<SuccessionEstateTaxableBasis>((acc, basis) => ({
     ordinaryNetBeforeForfait: acc.ordinaryNetBeforeForfait + basis.ordinaryNetBeforeForfait,
     groupementEntries: [...acc.groupementEntries, ...basis.groupementEntries],
+    residencePrincipaleValeur: acc.residencePrincipaleValeur + basis.residencePrincipaleValeur,
   }), {
     ordinaryNetBeforeForfait: 0,
     groupementEntries: [],
+    residencePrincipaleValeur: 0,
   });
+}
+
+export function applyResidencePrincipaleAbatementToEstateBasis(
+  basis: SuccessionEstateTaxableBasis,
+  shouldApply: boolean,
+): SuccessionEstateTaxableBasis {
+  if (!shouldApply || basis.residencePrincipaleValeur <= 0) return basis;
+
+  return {
+    ...basis,
+    ordinaryNetBeforeForfait: Math.max(0, basis.ordinaryNetBeforeForfait - (basis.residencePrincipaleValeur * 0.2)),
+  };
 }
 
 function computeForfaitMobilier(

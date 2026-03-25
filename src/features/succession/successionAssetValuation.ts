@@ -121,7 +121,7 @@ export function computeSuccessionAssetValuation({
   forfaitMobilierMode,
   forfaitMobilierPct,
   forfaitMobilierMontant,
-  abattementResidencePrincipale,
+  abattementResidencePrincipale: _abattementResidencePrincipale,
 }: SuccessionAssetValuationInput): SuccessionAssetValuationResult {
   const normalizedAssetEntries = normalizeResidencePrincipaleAssetEntries(assetEntries);
   const residencePrincipaleEntryId = normalizedAssetEntries.find((entry) =>
@@ -145,16 +145,7 @@ export function computeSuccessionAssetValuation({
 
   const actifsTaxablesParOwner = normalizedAssetEntries.reduce((totals, entry) => {
     if (entry.category === 'passif') return totals;
-
-    let taxableAmount = asAmount(entry.amount);
-    if (
-      abattementResidencePrincipale
-      && entry.id === residencePrincipaleEntryId
-    ) {
-      taxableAmount *= 0.8;
-    }
-
-    totals[entry.owner] += taxableAmount;
+    totals[entry.owner] += asAmount(entry.amount);
     return totals;
   }, cloneOwnerTotals());
   const ordinaryTaxableAssetsParOwner = {
@@ -231,6 +222,14 @@ export function computeSuccessionAssetValuation({
       hasBeneficiaryLevelGfAdjustment: groupementFoncierEntries.some(
         (entry) => entry.type === 'GFA' || entry.type === 'GFV',
       ),
+      residencePrincipaleEntry: residencePrincipaleEntryId
+        ? (() => {
+          const residencePrincipaleEntry = normalizedAssetEntries.find((entry) => entry.id === residencePrincipaleEntryId);
+          return residencePrincipaleEntry
+            ? { owner: residencePrincipaleEntry.owner, valeurTotale: asAmount(residencePrincipaleEntry.amount) }
+            : null;
+        })()
+        : null,
     },
   };
 }

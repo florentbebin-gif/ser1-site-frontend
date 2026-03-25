@@ -54,6 +54,7 @@ interface UseSuccessionOutcomeDerivedValuesInput {
   prevoyanceFiscalAnalysis: ReturnType<typeof buildSuccessionPrevoyanceFiscalAnalysis>;
   directEstateBasis: ReturnType<typeof computeSuccessionDirectEstateBasis>;
   transmissionBasis: SuccessionAssetTransmissionBasis;
+  abattementResidencePrincipale: boolean;
   donationsContext: SuccessionDonationEntry[];
   assuranceVieByAssure: Record<'epoux1' | 'epoux2', number>;
   perByAssure: Record<'epoux1' | 'epoux2', number>;
@@ -96,6 +97,7 @@ export function useSuccessionOutcomeDerivedValues({
   prevoyanceFiscalAnalysis,
   directEstateBasis,
   transmissionBasis,
+  abattementResidencePrincipale,
   donationsContext,
   assuranceVieByAssure,
   perByAssure,
@@ -138,6 +140,7 @@ export function useSuccessionOutcomeDerivedValues({
       actifNetSuccession: directEstateBasis.actifNetSuccession,
       baseWarnings: directEstateBasis.warnings,
       transmissionBasis,
+      abattementResidencePrincipale,
       forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
       forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
       forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
@@ -156,6 +159,7 @@ export function useSuccessionOutcomeDerivedValues({
       directEstateBasis.actifNetSuccession,
       directEstateBasis.warnings,
       transmissionBasis,
+      abattementResidencePrincipale,
       patrimonialContext.forfaitMobilierMode,
       patrimonialContext.forfaitMobilierPct,
       patrimonialContext.forfaitMobilierMontant,

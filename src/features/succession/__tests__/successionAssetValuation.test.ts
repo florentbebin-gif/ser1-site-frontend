@@ -113,8 +113,12 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.residencePrincipaleEntryId).toBe('asset-1');
     expect(result.assetNetTotals.epoux1).toBe(400000);
     expect(result.assetNetTotals.commun).toBe(200000);
-    expect(result.actifsTaxablesParOwner.epoux1).toBe(320000);
+    expect(result.actifsTaxablesParOwner.epoux1).toBe(400000);
     expect(result.actifsTaxablesParOwner.commun).toBe(200000);
+    expect(result.transmissionBasis.residencePrincipaleEntry).toEqual({
+      owner: 'epoux1',
+      valeurTotale: 400000,
+    });
   });
 
   it('adds the forfait before clamping taxable net assets to zero', () => {
