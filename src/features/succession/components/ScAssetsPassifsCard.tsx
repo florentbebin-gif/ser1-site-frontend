@@ -7,7 +7,7 @@ import type {
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
 } from '../successionDraft.types';
-import type { SuccessionPersonParty } from '../successionDraft';
+import type { SuccessionAssetPocket, SuccessionPersonParty } from '../successionDraft';
 import {
   ASSET_SUBCATEGORY_OPTIONS,
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
@@ -29,6 +29,7 @@ interface ScAssetsPassifsCardProps {
     entries: SuccessionAssetDetailEntry[];
   }[];
   assetOwnerOptions: { value: SuccessionAssetOwner; label: string }[];
+  assetPocketOptions: { value: SuccessionAssetPocket; label: string }[];
   assetBreakdown: {
     actifs: Record<SuccessionAssetOwner, number>;
     passifs: Record<SuccessionAssetOwner, number>;
@@ -114,6 +115,7 @@ export default function ScAssetsPassifsCard({
   isConcubinage,
   assetEntriesByCategory,
   assetOwnerOptions,
+  assetPocketOptions,
   assetBreakdown,
   assetNetTotals,
   residencePrincipaleEntryId,
@@ -198,12 +200,12 @@ export default function ScAssetsPassifsCard({
                     <div key={entry.id} className="sc-asset-row-stack">
                       <div className="sc-asset-row">
                         <div className="sc-field">
-                          <label>Porteur</label>
+                          <label>Masse de rattachement</label>
                           <ScSelect
                             className="sc-asset-select"
-                            value={entry.owner}
-                            onChange={(value) => onUpdateAssetEntry(entry.id, 'owner', value)}
-                            options={assetOwnerOptions}
+                            value={entry.pocket ?? assetPocketOptions[0]?.value ?? 'epoux1'}
+                            onChange={(value) => onUpdateAssetEntry(entry.id, 'pocket', value)}
+                            options={assetPocketOptions}
                           />
                         </div>
                         <div className="sc-field">
@@ -256,12 +258,12 @@ export default function ScAssetsPassifsCard({
                     <div key={gfEntry.id} className="sc-asset-row-stack">
                       <div className="sc-asset-row">
                         <div className="sc-field">
-                          <label>Porteur</label>
+                          <label>Masse de rattachement</label>
                           <ScSelect
                             className="sc-asset-select"
-                            value={gfEntry.owner}
-                            onChange={(value) => onUpdateGroupementFoncierEntry(gfEntry.id, 'owner', value)}
-                            options={assetOwnerOptions}
+                            value={gfEntry.pocket ?? assetPocketOptions[0]?.value ?? 'epoux1'}
+                            onChange={(value) => onUpdateGroupementFoncierEntry(gfEntry.id, 'pocket', value)}
+                            options={assetPocketOptions}
                           />
                         </div>
                         <div className="sc-field">
@@ -343,7 +345,7 @@ export default function ScAssetsPassifsCard({
                 {category.value === 'financier' && assuranceVieEntries.map((entry) => (
                   <div key={entry.id} className="sc-asset-row">
                     <div className="sc-field">
-                      <label>Porteur</label>
+                      <label>Personne assuree</label>
                       <span className="sc-asset-row__value">
                         {assuranceViePartyOptions.find((option) => option.value === entry.assure)?.label ?? entry.assure}
                       </span>
@@ -384,7 +386,7 @@ export default function ScAssetsPassifsCard({
                 {category.value === 'financier' && perEntries.map((entry) => (
                   <div key={entry.id} className="sc-asset-row">
                     <div className="sc-field">
-                      <label>Porteur</label>
+                      <label>Personne assuree</label>
                       <span className="sc-asset-row__value">
                         {assuranceViePartyOptions.find((option) => option.value === entry.assure)?.label ?? entry.assure}
                       </span>

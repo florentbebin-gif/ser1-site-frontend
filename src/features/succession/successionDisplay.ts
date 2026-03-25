@@ -27,9 +27,10 @@ import {
   applyResidencePrincipaleAbatementToEstateBasis,
   assignBeneficiaryTaxableBasis,
   buildSuccessionEstateTaxableBasis,
-  createEmptyOwnerScales,
+  createEmptyPocketScales,
   type SuccessionAssetTransmissionBasis,
 } from './successionTransmissionBasis';
+import { getSuccessionSharedPocketForContext } from './successionPatrimonialModel';
 
 export interface SuccessionTransmissionRow {
   id: string;
@@ -387,17 +388,26 @@ function toTaxableHeritiersInput(heirs: DetailedHeirInput[]): HeritiersInput[] {
   }));
 }
 
-function buildDirectEstateOwnerScales(
+function buildDirectEstatePocketScales(
   civil: SuccessionCivilContext,
   simulatedDeceased: 'epoux1' | 'epoux2',
-): ReturnType<typeof createEmptyOwnerScales> {
-  const scales = createEmptyOwnerScales();
+): ReturnType<typeof createEmptyPocketScales> {
+  const scales = createEmptyPocketScales();
   scales[simulatedDeceased] = 1;
+  const sharedPocket = getSuccessionSharedPocketForContext({
+    situationMatrimoniale: civil.situationMatrimoniale,
+    regimeMatrimonial: civil.regimeMatrimonial,
+    pacsConvention: civil.pacsConvention,
+  });
 
-  if (civil.situationMatrimoniale === 'concubinage') {
-    scales.commun = 0.5;
-  } else if (civil.situationMatrimoniale === 'pacse' && civil.pacsConvention === 'indivision') {
-    scales.commun = 0.5;
+  if (
+    sharedPocket
+    && (
+      civil.situationMatrimoniale === 'concubinage'
+      || (civil.situationMatrimoniale === 'pacse' && civil.pacsConvention === 'indivision')
+    )
+  ) {
+    scales[sharedPocket] = 0.5;
   }
 
   return scales;
@@ -521,7 +531,7 @@ export function buildSuccessionDirectDisplayAnalysis(
       applyResidencePrincipaleAbatementToEstateBasis(
         buildSuccessionEstateTaxableBasis(
           input.transmissionBasis,
-          buildDirectEstateOwnerScales(input.civil, simulatedDeceased),
+          buildDirectEstatePocketScales(input.civil, simulatedDeceased),
         ),
         Boolean(input.abattementResidencePrincipale),
       ),

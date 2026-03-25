@@ -30,9 +30,9 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 |---|---|---|
 | Personne physique | Type de transition explicite introduit (`SuccessionPersonParty`), runtime encore branche sur `epoux1` / `epoux2` | `src/features/succession/successionPatrimonialModel.ts`, `src/features/succession/successionDraft.types.ts` |
 | Masse patrimoniale | Le draft persiste maintenant `SuccessionAssetPocket`; l'alias legacy `owner` reste synchronise tant que le moteur n'est pas migre | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionDraft.serialize.ts`, `src/features/succession/successionDraft.parse.ts` |
-| Distinction personne / masse | En transition: le draft et les handlers d'actifs utilisent `pocket`, mais l'UI de selection et les calculs agreges restent encore branches sur `owner` | `src/features/succession/successionPatrimonialModel.ts`, `src/features/succession/useSuccessionAssetHandlers.ts`, `src/features/succession/useSuccessionUiDerivedValues.ts`, `src/features/succession/successionAssetValuation.ts` |
+| Distinction personne / masse | En transition avancee: le draft, les handlers, l'UI de selection et la base taxable utilisent `pocket`; l'agregation simplifiee et `liquidationContext` restent encore branches sur l'alias `owner` | `src/features/succession/successionPatrimonialModel.ts`, `src/features/succession/useSuccessionAssetHandlers.ts`, `src/features/succession/useSuccessionUiDerivedValues.ts`, `src/features/succession/successionAssetValuation.ts`, `src/features/succession/successionTransmissionBasis.ts` |
 | Qualification juridique des biens | Absente (`propre`, `propre_par_nature`, `origin`, etc.) | absence de champs dans `src/features/succession/successionDraft.types.ts` |
-| Passif affecte par masse | Partiel seulement: le draft porte `pocket`, mais la liquidation agregee reste lue via l'alias `owner` | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionAssetValuation.ts` |
+| Passif affecte par masse | Partiel seulement: le draft et la base de transmission portent `pocket`, mais la liquidation agregee reste lue via l'alias `owner` | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionAssetValuation.ts`, `src/features/succession/successionTransmissionBasis.ts` |
 | Creances entre masses | Non modelise | absence de types et de moteur dedie |
 
 ### Produits specialises
@@ -61,7 +61,7 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 |---|---|---|
 | UI succession (`/sim/succession`) | Les 6 regimes sont selectionnables | `src/features/succession/components/ScFamilyContextCard.tsx` |
 | UI audit | Les 6 regimes sont selectionnables | `src/features/audit/steps/StepCivil.tsx` |
-| Champ "Porteur" actifs/passifs | Confusion entre masse commune et indivision sous separation de biens | `src/features/succession/useSuccessionUiDerivedValues.ts` |
+| Champ "Masse de rattachement" actifs/passifs | Options alignees sur le regime courant; l'option partagee n'est plus proposee en separation de biens pure | `src/features/succession/useSuccessionUiDerivedValues.ts`, `src/features/succession/components/ScAssetsPassifsCard.tsx` |
 
 ## Matrice des grands sujets de liquidation
 
@@ -106,6 +106,8 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 Les deux premiers types cibles sont introduits des `PR-11` dans `src/features/succession/successionPatrimonialModel.ts`, sans branchement runtime a ce stade.
 La `PR-12` decouple ensuite AV / PER / prevoyance du futur modele de masse en les branchant sur `SuccessionPersonParty`.
 Les `PR-13/14` migrent ensuite le draft et les entrees detaillees vers `pocket`, avec maintien transitoire de l'alias `owner` pour le moteur existant.
+Les `PR-15/16` alignent les helpers specialises et la sync d'etat sur `pocket`.
+Les `PR-17/18` font ensuite basculer la base taxable / chainage vers `pocket` et remplacent en UI le select `Porteur` par `Masse de rattachement` avec options dependantes du regime.
 
 ## Sources juridiques de cadrage
 

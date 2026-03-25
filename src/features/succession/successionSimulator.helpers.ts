@@ -2,10 +2,12 @@ import {
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
 } from './successionDraft';
+import type { RegimeMatrimonial } from '../../engine/civil';
 import type {
   FamilyBranch,
   FamilyMember,
   FamilyMemberType,
+  PacsConvention,
   SituationMatrimoniale,
   SuccessionPersonParty,
   SuccessionAssetDetailEntry,
@@ -188,12 +190,21 @@ export function getDonationEffectiveAmount(entry: SuccessionDonationEntry): numb
 export function buildAggregateAssetEntries(values: {
   actifs: Record<SuccessionAssetOwner, number>;
   passifs: Record<SuccessionAssetOwner, number>;
-}, situationMatrimoniale: SituationMatrimoniale): SuccessionAssetDetailEntry[] {
+}, civilContext: {
+  situationMatrimoniale: SituationMatrimoniale;
+  regimeMatrimonial?: RegimeMatrimonial | null;
+  pacsConvention?: PacsConvention;
+}): SuccessionAssetDetailEntry[] {
   const order: SuccessionAssetOwner[] = ['epoux1', 'epoux2', 'commun'];
   const entries: SuccessionAssetDetailEntry[] = [];
 
   order.forEach((owner) => {
-    const location = resolveSuccessionAssetLocation({ owner, situationMatrimoniale });
+    const location = resolveSuccessionAssetLocation({
+      owner,
+      situationMatrimoniale: civilContext.situationMatrimoniale,
+      regimeMatrimonial: civilContext.regimeMatrimonial,
+      pacsConvention: civilContext.pacsConvention,
+    });
     if (!location) return;
     if (values.actifs[owner] > 0) {
       entries.push({

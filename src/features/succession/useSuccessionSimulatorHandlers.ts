@@ -13,6 +13,7 @@ import {
   DEFAULT_SUCCESSION_PER,
   type FamilyMember,
   type SuccessionAssetDetailEntry,
+  type SuccessionAssetPocket,
   type SuccessionAssetOwner,
   type SuccessionPersonParty,
   type SuccessionAssuranceVieEntry,
@@ -44,7 +45,7 @@ interface UseSuccessionSimulatorHandlersArgs {
   };
   enfantRattachementOptions: { value: 'commun' | 'epoux1' | 'epoux2'; label: string }[];
   addMemberForm: AddFamilyMemberFormState;
-  assetOwnerOptions: { value: SuccessionAssetOwner; label: string }[];
+  assetPocketOptions: { value: SuccessionAssetPocket; label: string }[];
   assetEntries: SuccessionAssetDetailEntry[];
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
   assuranceVieDraft: SuccessionAssuranceVieEntry | null;
@@ -94,7 +95,7 @@ export function useSuccessionSimulatorHandlers({
   assetBreakdown,
   enfantRattachementOptions,
   addMemberForm,
-  assetOwnerOptions,
+  assetPocketOptions,
   assetEntries,
   assuranceVieEntries,
   assuranceVieDraft,
@@ -149,8 +150,10 @@ export function useSuccessionSimulatorHandlers({
 
   const assetHandlers = useSuccessionAssetHandlers({
     civilSituation: civilContext.situationMatrimoniale,
+    regimeMatrimonial: civilContext.regimeMatrimonial,
+    pacsConvention: civilContext.pacsConvention,
     assetBreakdown,
-    assetOwnerOptions,
+    assetPocketOptions,
     assuranceViePartyOptions,
     assetEntries,
     setAssetEntries,

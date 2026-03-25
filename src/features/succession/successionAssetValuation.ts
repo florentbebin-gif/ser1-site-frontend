@@ -1,11 +1,16 @@
 import type {
   SuccessionAssetDetailEntry,
+  SuccessionCivilContext,
   SuccessionAssetOwner,
   SuccessionGroupementFoncierEntry,
   SuccessionPatrimonialContext,
 } from './successionDraft.types';
 import { computeGroupementFoncierExoneration } from './successionGroupementFoncier';
 import type { SuccessionAssetTransmissionBasis } from './successionTransmissionBasis';
+import {
+  resolveSuccessionAssetLocation,
+  type SuccessionAssetPocket,
+} from './successionPatrimonialModel';
 import {
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
   RESIDENCE_SECONDAIRE_SUBCATEGORY,
@@ -28,6 +33,7 @@ export interface SuccessionAssetValuationResult {
 }
 
 interface SuccessionAssetValuationInput {
+  civilContext: Pick<SuccessionCivilContext, 'situationMatrimoniale' | 'regimeMatrimonial' | 'pacsConvention'>;
   assetEntries: SuccessionAssetDetailEntry[];
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   forfaitMobilierMode: SuccessionPatrimonialContext['forfaitMobilierMode'];
@@ -40,6 +46,15 @@ const EMPTY_OWNER_TOTALS: Record<SuccessionAssetOwner, number> = {
   epoux1: 0,
   epoux2: 0,
   commun: 0,
+};
+
+const EMPTY_POCKET_TOTALS: Record<SuccessionAssetPocket, number> = {
+  epoux1: 0,
+  epoux2: 0,
+  communaute: 0,
+  societe_acquets: 0,
+  indivision_pacse: 0,
+  indivision_concubinage: 0,
 };
 
 const MAIN_RESIDENCE_LABELS = new Set([
@@ -56,6 +71,10 @@ const SECONDARY_RESIDENCE_LABELS = new Set([
 
 function cloneOwnerTotals(): Record<SuccessionAssetOwner, number> {
   return { ...EMPTY_OWNER_TOTALS };
+}
+
+function clonePocketTotals(): Record<SuccessionAssetPocket, number> {
+  return { ...EMPTY_POCKET_TOTALS };
 }
 
 function asAmount(value: unknown): number {
@@ -116,6 +135,7 @@ export function normalizeResidencePrincipaleAssetEntries(
 }
 
 export function computeSuccessionAssetValuation({
+  civilContext,
   assetEntries,
   groupementFoncierEntries,
   forfaitMobilierMode,
@@ -123,7 +143,26 @@ export function computeSuccessionAssetValuation({
   forfaitMobilierMontant,
   abattementResidencePrincipale: _abattementResidencePrincipale,
 }: SuccessionAssetValuationInput): SuccessionAssetValuationResult {
-  const normalizedAssetEntries = normalizeResidencePrincipaleAssetEntries(assetEntries);
+  const normalizedAssetEntries = normalizeResidencePrincipaleAssetEntries(assetEntries.map((entry) => {
+    const location = resolveSuccessionAssetLocation({
+      owner: entry.owner,
+      pocket: entry.pocket,
+      situationMatrimoniale: civilContext.situationMatrimoniale,
+      regimeMatrimonial: civilContext.regimeMatrimonial,
+      pacsConvention: civilContext.pacsConvention,
+    });
+    return location ? { ...entry, ...location } : entry;
+  }));
+  const normalizedGroupementFoncierEntries = groupementFoncierEntries.map((entry) => {
+    const location = resolveSuccessionAssetLocation({
+      owner: entry.owner,
+      pocket: entry.pocket,
+      situationMatrimoniale: civilContext.situationMatrimoniale,
+      regimeMatrimonial: civilContext.regimeMatrimonial,
+      pacsConvention: civilContext.pacsConvention,
+    });
+    return location ? { ...entry, ...location } : entry;
+  });
   const residencePrincipaleEntryId = normalizedAssetEntries.find((entry) =>
     entry.category === 'immobilier' && entry.subCategory === RESIDENCE_PRINCIPALE_SUBCATEGORY,
   )?.id ?? null;
@@ -139,7 +178,7 @@ export function computeSuccessionAssetValuation({
     actifs: cloneOwnerTotals(),
     passifs: cloneOwnerTotals(),
   });
-  groupementFoncierEntries.forEach((entry) => {
+  normalizedGroupementFoncierEntries.forEach((entry) => {
     assetBreakdown.actifs[entry.owner] += asAmount(entry.valeurTotale);
   });
 
@@ -151,7 +190,12 @@ export function computeSuccessionAssetValuation({
   const ordinaryTaxableAssetsParOwner = {
     ...actifsTaxablesParOwner,
   };
-  groupementFoncierEntries.forEach((entry) => {
+  const ordinaryTaxableAssetsParPocket = normalizedAssetEntries.reduce((totals, entry) => {
+    if (entry.category === 'passif' || !entry.pocket) return totals;
+    totals[entry.pocket] += asAmount(entry.amount);
+    return totals;
+  }, clonePocketTotals());
+  normalizedGroupementFoncierEntries.forEach((entry) => {
     const { taxable } = computeGroupementFoncierExoneration(entry.type, asAmount(entry.valeurTotale));
     actifsTaxablesParOwner[entry.owner] += taxable;
   });
@@ -159,6 +203,11 @@ export function computeSuccessionAssetValuation({
   const passifsParOwner = {
     ...assetBreakdown.passifs,
   };
+  const passifsParPocket = normalizedAssetEntries.reduce((totals, entry) => {
+    if (entry.category !== 'passif' || !entry.pocket) return totals;
+    totals[entry.pocket] += asAmount(entry.amount);
+    return totals;
+  }, clonePocketTotals());
 
   const totalActifsTaxables =
     actifsTaxablesParOwner.epoux1
@@ -218,15 +267,21 @@ export function computeSuccessionAssetValuation({
     transmissionBasis: {
       ordinaryTaxableAssetsParOwner,
       passifsParOwner,
-      groupementFoncierEntries: groupementFoncierEntries.map((entry) => ({ ...entry })),
-      hasBeneficiaryLevelGfAdjustment: groupementFoncierEntries.some(
+      ordinaryTaxableAssetsParPocket,
+      passifsParPocket,
+      groupementFoncierEntries: normalizedGroupementFoncierEntries.map((entry) => ({ ...entry })),
+      hasBeneficiaryLevelGfAdjustment: normalizedGroupementFoncierEntries.some(
         (entry) => entry.type === 'GFA' || entry.type === 'GFV',
       ),
       residencePrincipaleEntry: residencePrincipaleEntryId
         ? (() => {
           const residencePrincipaleEntry = normalizedAssetEntries.find((entry) => entry.id === residencePrincipaleEntryId);
           return residencePrincipaleEntry
-            ? { owner: residencePrincipaleEntry.owner, valeurTotale: asAmount(residencePrincipaleEntry.amount) }
+            ? {
+              owner: residencePrincipaleEntry.owner,
+              pocket: residencePrincipaleEntry.pocket,
+              valeurTotale: asAmount(residencePrincipaleEntry.amount),
+            }
             : null;
         })()
         : null,

@@ -1,7 +1,10 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import {
+  buildSuccessionAssetOwnerOptions,
+  buildSuccessionAssetPocketOptions,
   getSuccessionAssetPocketFromOwner,
   getSuccessionLegacyOwnerFromPocket,
+  getSuccessionSharedPocketForContext,
   resolveSuccessionAssetLocation,
 } from '../successionDraft';
 import type {
@@ -44,5 +47,41 @@ describe('successionPatrimonialModel', () => {
       owner: 'commun',
       pocket: 'communaute',
     });
+  });
+
+  it('builds regime-aware owner and pocket options for the UI', () => {
+    expect(buildSuccessionAssetOwnerOptions({
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'separation_biens',
+      pacsConvention: 'separation',
+    }).map((option) => option.value)).toEqual(['epoux1', 'epoux2']);
+
+    expect(buildSuccessionAssetPocketOptions({
+      situationMatrimoniale: 'pacse',
+      regimeMatrimonial: null,
+      pacsConvention: 'indivision',
+    })).toEqual([
+      { value: 'epoux1', label: 'Partenaire 1' },
+      { value: 'epoux2', label: 'Partenaire 2' },
+      { value: 'indivision_pacse', label: 'Indivision' },
+    ]);
+  });
+
+  it('detects the current shared pocket from the civil context', () => {
+    expect(getSuccessionSharedPocketForContext({
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'communaute_legale',
+      pacsConvention: 'separation',
+    })).toBe('communaute');
+    expect(getSuccessionSharedPocketForContext({
+      situationMatrimoniale: 'pacse',
+      regimeMatrimonial: null,
+      pacsConvention: 'indivision',
+    })).toBe('indivision_pacse');
+    expect(getSuccessionSharedPocketForContext({
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'separation_biens',
+      pacsConvention: 'separation',
+    })).toBeNull();
   });
 });

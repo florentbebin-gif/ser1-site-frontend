@@ -43,8 +43,11 @@ export type {
 } from './successionPatrimonialModel';
 
 export {
+  buildSuccessionAssetOwnerOptions,
+  buildSuccessionAssetPocketOptions,
   getSuccessionAssetPocketFromOwner,
   getSuccessionLegacyOwnerFromPocket,
+  getSuccessionSharedPocketForContext,
   isSuccessionAssetPocket,
   isSuccessionLegacyAssetOwner,
   resolveSuccessionAssetLocation,

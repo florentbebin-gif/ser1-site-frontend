@@ -174,7 +174,7 @@ export default function SuccessionSimulator() {
     assetBreakdown: derived.assetBreakdown,
     enfantRattachementOptions: derived.enfantRattachementOptions,
     addMemberForm,
-    assetOwnerOptions: derived.assetOwnerOptions,
+    assetPocketOptions: derived.assetPocketOptions,
     assetEntries,
     assuranceVieEntries,
     assuranceVieDraft,
@@ -235,9 +235,11 @@ export default function SuccessionSimulator() {
   // ── Effets de synchronisation (normalization quand le contexte civil change) ─
   useSuccessionSyncEffects({
     enfantRattachementOptions: derived.enfantRattachementOptions,
-    assetOwnerOptions: derived.assetOwnerOptions,
+    assetPocketOptions: derived.assetPocketOptions,
     assuranceViePartyOptions: derived.assuranceViePartyOptions,
     situationMatrimoniale: civilContext.situationMatrimoniale,
+    regimeMatrimonial: civilContext.regimeMatrimonial,
+    pacsConvention: civilContext.pacsConvention,
     assetNetTotals: derived.assetNetTotals,
     nbEnfants: derived.nbEnfants,
     donationTotals: derived.donationTotals,
@@ -402,6 +404,17 @@ export default function SuccessionSimulator() {
             const location = resolveSuccessionAssetLocation({
               owner: value,
               situationMatrimoniale: civilContext.situationMatrimoniale,
+              regimeMatrimonial: civilContext.regimeMatrimonial,
+              pacsConvention: civilContext.pacsConvention,
+            });
+            return location ? { ...entry, ...location } : entry;
+          }
+          if (field === 'pocket') {
+            const location = resolveSuccessionAssetLocation({
+              pocket: value,
+              situationMatrimoniale: civilContext.situationMatrimoniale,
+              regimeMatrimonial: civilContext.regimeMatrimonial,
+              pacsConvention: civilContext.pacsConvention,
             });
             return location ? { ...entry, ...location } : entry;
           }
