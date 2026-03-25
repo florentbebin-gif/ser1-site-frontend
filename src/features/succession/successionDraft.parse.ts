@@ -5,6 +5,7 @@ import {
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PER,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+  DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG,
   DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
 } from './successionDraft.defaults';
 import {
@@ -28,6 +29,7 @@ import {
   isPersonParty,
   isPrimarySide,
   isRegimeMatrimonial,
+  isSocieteAcquetsLiquidationMode,
   isSituation,
   isSuccessionBeneficiaryRef,
   normalizeOptionalDate,
@@ -58,10 +60,64 @@ import type {
   SuccessionParticularLegacyEntry,
   SuccessionPrevoyanceDecesEntry,
   SuccessionPrimarySide,
+  SuccessionSocieteAcquetsConfig,
   SuccessionTestamentConfig,
 } from './successionDraft.types';
 
 const DECES_DANS_X_ANS_VALUES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50] as const;
+
+function normalizeQuotePair(
+  quoteEpoux1Pct: number,
+  quoteEpoux2Pct: number,
+): Pick<SuccessionSocieteAcquetsConfig, 'quoteEpoux1Pct' | 'quoteEpoux2Pct'> {
+  const total = quoteEpoux1Pct + quoteEpoux2Pct;
+  if (total <= 0) {
+    return {
+      quoteEpoux1Pct: DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG.quoteEpoux1Pct,
+      quoteEpoux2Pct: DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG.quoteEpoux2Pct,
+    };
+  }
+
+  const normalizedEpoux1Pct = (quoteEpoux1Pct / total) * 100;
+  const normalizedEpoux2Pct = Math.max(0, 100 - normalizedEpoux1Pct);
+  return {
+    quoteEpoux1Pct: normalizedEpoux1Pct,
+    quoteEpoux2Pct: normalizedEpoux2Pct,
+  };
+}
+
+function parseSocieteAcquetsConfig(
+  raw: unknown,
+  _version: number,
+  _regimeMatrimonial: ParsedSuccessionDraftPayload['civil']['regimeMatrimonial'],
+): SuccessionSocieteAcquetsConfig {
+  const rawConfig = isObject(raw) ? raw : {};
+  const rawQuoteEpoux1Pct = asPercent(
+    rawConfig.quoteEpoux1Pct,
+    DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG.quoteEpoux1Pct,
+  );
+  const rawQuoteEpoux2Pct = asPercent(
+    rawConfig.quoteEpoux2Pct,
+    DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG.quoteEpoux2Pct,
+  );
+  const normalizedQuotes = normalizeQuotePair(rawQuoteEpoux1Pct, rawQuoteEpoux2Pct);
+
+  return {
+    active: asBoolean(
+      rawConfig.active,
+      DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG.active,
+    ),
+    liquidationMode: isSocieteAcquetsLiquidationMode(rawConfig.liquidationMode)
+      ? rawConfig.liquidationMode
+      : DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG.liquidationMode,
+    quoteEpoux1Pct: normalizedQuotes.quoteEpoux1Pct,
+    quoteEpoux2Pct: normalizedQuotes.quoteEpoux2Pct,
+    attributionSurvivantPct: asPercent(
+      rawConfig.attributionSurvivantPct,
+      DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG.attributionSurvivantPct,
+    ),
+  };
+}
 
 function parseTestamentConfig(raw: unknown): SuccessionTestamentConfig {
   if (!isObject(raw)) {
@@ -432,6 +488,11 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       donationEntreEpouxOption: isDonationEntreEpouxOption(patrimonialRaw.donationEntreEpouxOption)
         ? patrimonialRaw.donationEntreEpouxOption
         : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxOption,
+      societeAcquets: parseSocieteAcquetsConfig(
+        patrimonialRaw.societeAcquets,
+        version,
+        civil.regimeMatrimonial,
+      ),
       preciputMontant: asAmount(
         patrimonialRaw.preciputMontant,
         DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,

@@ -27,6 +27,7 @@ export interface SuccessionAssetValuationResult {
   forfaitMobilierComputed: number;
   forfaitMobilierParOwner: Record<SuccessionLegacyAssetOwner, number>;
   assetNetTotals: Record<SuccessionLegacyAssetOwner, number>;
+  assetNetTotalsByPocket: Record<SuccessionAssetPocket, number>;
   taxableNetTotals: Record<SuccessionLegacyAssetOwner, number>;
   hasResidencePrincipale: boolean;
   residencePrincipaleEntryId: string | null;
@@ -188,6 +189,15 @@ export function computeSuccessionAssetValuation({
     assetBreakdown.actifs[toLegacyOwner(entry.pocket)] += asAmount(entry.valeurTotale);
   });
 
+  const grossAssetsParPocket = normalizedAssetEntries.reduce((totals, entry) => {
+    if (entry.category === 'passif') return totals;
+    totals[entry.pocket] += asAmount(entry.amount);
+    return totals;
+  }, clonePocketTotals());
+  normalizedGroupementFoncierEntries.forEach((entry) => {
+    grossAssetsParPocket[entry.pocket] += asAmount(entry.valeurTotale);
+  });
+
   const ordinaryTaxableAssetsParPocket = normalizedAssetEntries.reduce((totals, entry) => {
     if (entry.category === 'passif') return totals;
     totals[entry.pocket] += asAmount(entry.amount);
@@ -263,6 +273,13 @@ export function computeSuccessionAssetValuation({
     },
     cloneLegacyOwnerTotals(),
   );
+  const assetNetTotalsByPocket = (Object.keys(EMPTY_POCKET_TOTALS) as SuccessionAssetPocket[]).reduce(
+    (totals, pocket) => {
+      totals[pocket] = Math.max(0, grossAssetsParPocket[pocket] - passifsParPocket[pocket]);
+      return totals;
+    },
+    clonePocketTotals(),
+  );
 
   return {
     assetBreakdown,
@@ -271,6 +288,7 @@ export function computeSuccessionAssetValuation({
     forfaitMobilierComputed,
     forfaitMobilierParOwner,
     assetNetTotals,
+    assetNetTotalsByPocket,
     taxableNetTotals,
     hasResidencePrincipale: residencePrincipaleEntryId !== null,
     residencePrincipaleEntryId,

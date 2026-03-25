@@ -1,6 +1,7 @@
 import {
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+  DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG,
 } from './successionDraft';
 import type { RegimeMatrimonial } from '../../engine/civil';
 import type {
@@ -19,6 +20,7 @@ import type {
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
   SuccessionPrimarySide,
+  SuccessionSocieteAcquetsConfig,
   SuccessionTestamentConfig,
 } from './successionDraft';
 import {
@@ -40,6 +42,7 @@ export interface DispositionsDraftState {
   attributionBiensCommunsPct: number;
   donationEntreEpouxActive: boolean;
   donationEntreEpouxOption: SuccessionDonationEntreEpouxOption;
+  societeAcquets: SuccessionSocieteAcquetsConfig;
   preciputMontant: number;
   attributionIntegrale: boolean;
   choixLegalConjointSansDDV: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.choixLegalConjointSansDDV;
@@ -145,11 +148,26 @@ export function cloneAscendantsSurvivantsBySide(
   };
 }
 
+export function cloneSuccessionSocieteAcquetsConfig(
+  config: SuccessionSocieteAcquetsConfig = DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG,
+): SuccessionSocieteAcquetsConfig {
+  return {
+    active: config.active,
+    liquidationMode: config.liquidationMode,
+    quoteEpoux1Pct: config.quoteEpoux1Pct,
+    quoteEpoux2Pct: config.quoteEpoux2Pct,
+    attributionSurvivantPct: config.attributionSurvivantPct,
+  };
+}
+
 export function buildInitialDispositionsDraft(): DispositionsDraftState {
   return {
     attributionBiensCommunsPct: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
     donationEntreEpouxActive: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxActive,
     donationEntreEpouxOption: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxOption,
+    societeAcquets: cloneSuccessionSocieteAcquetsConfig(
+      DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.societeAcquets,
+    ),
     preciputMontant: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,
     attributionIntegrale: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionIntegrale,
     choixLegalConjointSansDDV: DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.choixLegalConjointSansDDV,

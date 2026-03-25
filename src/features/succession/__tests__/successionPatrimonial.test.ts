@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { SuccessionCivilContext, SuccessionPatrimonialContext } from '../successionDraft';
+import {
+  DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+  type SuccessionCivilContext,
+  type SuccessionPatrimonialContext,
+} from '../successionDraft';
 import { buildSuccessionFiscalSnapshot } from '../successionFiscalContext';
 import { buildSuccessionPatrimonialAnalysis } from '../successionPatrimonial';
 
@@ -14,19 +18,9 @@ function makeCivil(overrides: Partial<SuccessionCivilContext>): SuccessionCivilC
 
 function makePatrimonial(overrides: Partial<SuccessionPatrimonialContext>): SuccessionPatrimonialContext {
   return {
-    donationsRapportables: 0,
-    donationsHorsPart: 0,
-    legsParticuliers: 0,
-    donationEntreEpouxActive: false,
-    donationEntreEpouxOption: 'usufruit_total',
-    preciputMontant: 0,
-    attributionIntegrale: false,
-    attributionBiensCommunsPct: 50,
+    ...DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+    societeAcquets: { ...DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.societeAcquets },
     forfaitMobilierMode: 'auto',
-    forfaitMobilierPct: 5,
-    forfaitMobilierMontant: 0,
-    abattementResidencePrincipale: false,
-    decesDansXAns: 0,
     ...overrides,
   };
 }

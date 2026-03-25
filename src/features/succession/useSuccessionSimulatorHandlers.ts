@@ -189,6 +189,8 @@ export function useSuccessionSimulatorHandlers({
 
   const dispositionsHandlers = useSuccessionDispositionsHandlers({
     testamentBeneficiaryOptionsBySide,
+    isSocieteAcquetsRegime: civilContext.situationMatrimoniale === 'marie'
+      && civilContext.regimeMatrimonial === 'separation_biens_societe_acquets',
     canOpenDispositionsModal,
     devolutionContext,
     patrimonialContext,

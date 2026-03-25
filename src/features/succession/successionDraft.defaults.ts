@@ -9,6 +9,7 @@ import type {
   SuccessionLiquidationContext,
   SuccessionPerEntry,
   SuccessionPatrimonialContext,
+  SuccessionSocieteAcquetsConfig,
   SuccessionTestamentConfig,
 } from './successionDraft.types';
 
@@ -48,12 +49,21 @@ export const DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT: SuccessionDevolutionContext 
   },
 };
 
+export const DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG: SuccessionSocieteAcquetsConfig = {
+  active: false,
+  liquidationMode: 'quotes',
+  quoteEpoux1Pct: 50,
+  quoteEpoux2Pct: 50,
+  attributionSurvivantPct: 0,
+};
+
 export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContext = {
   donationsRapportables: 0,
   donationsHorsPart: 0,
   legsParticuliers: 0,
   donationEntreEpouxActive: false,
   donationEntreEpouxOption: 'usufruit_total',
+  societeAcquets: { ...DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG },
   preciputMontant: 0,
   attributionIntegrale: false,
   attributionBiensCommunsPct: 50,
