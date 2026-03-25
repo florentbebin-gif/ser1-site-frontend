@@ -35,6 +35,7 @@ import {
 import { applySuccessionDonationRecallToHeirs } from './successionDonationRecall';
 import {
   addSuccessionEstateTaxableBases,
+  applyResidencePrincipaleAbatementToEstateBasis,
   assignBeneficiaryTaxableBasis,
   buildSuccessionEstateTaxableBasis,
   createEmptyOwnerScales,
@@ -90,6 +91,7 @@ interface SuccessionChainageInput {
     'attributionIntegrale' | 'donationEntreEpouxActive' | 'donationEntreEpouxOption' | 'preciputMontant'
   >;
   transmissionBasis?: SuccessionAssetTransmissionBasis;
+  abattementResidencePrincipale?: boolean;
   forfaitMobilierMode?: SuccessionPatrimonialContext['forfaitMobilierMode'];
   forfaitMobilierPct?: number;
   forfaitMobilierMontant?: number;
@@ -417,10 +419,14 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   warnings.push(...step1Split.warnings);
   const step1TaxableEstate = firstEstate - step1Split.preciputDeducted;
   const step1TransmissionTaxableBasis = firstEstate > 0
-    ? scaleSuccessionEstateTaxableBasis(firstEstateTaxableBasis, step1TaxableEstate / firstEstate)
+    ? applyResidencePrincipaleAbatementToEstateBasis(
+      scaleSuccessionEstateTaxableBasis(firstEstateTaxableBasis, step1TaxableEstate / firstEstate),
+      Boolean(input.abattementResidencePrincipale),
+    )
     : {
       ordinaryNetBeforeForfait: 0,
       groupementEntries: [],
+      residencePrincipaleValeur: 0,
     };
   const step1Details = computeStepTransmission(
     input,
@@ -453,10 +459,12 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     : {
       ordinaryNetBeforeForfait: 0,
       groupementEntries: [],
+      residencePrincipaleValeur: 0,
     };
   const survivorEconomicInflowsTaxableBasis = {
     ordinaryNetBeforeForfait: survivorEconomicInflows,
     groupementEntries: [],
+    residencePrincipaleValeur: 0,
   };
   const step2TaxableBasis = addSuccessionEstateTaxableBases(
     survivorTaxableBasis,
@@ -483,6 +491,9 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   ));
   if (survivorEconomicInflows > 0) {
     warnings.push(`Etape 2 (${getLabelForSide(otherSide)}): capitaux assurances nets recycles depuis l'etape 1 = ${Math.round(survivorEconomicInflows).toLocaleString('fr-FR')} EUR.`);
+  }
+  if (input.abattementResidencePrincipale && input.transmissionBasis?.residencePrincipaleEntry) {
+    warnings.push(`Etape 1 (${getLabelForSide(input.order)}): abattement residence principale 20 % applique a l'assiette fiscale de cette etape uniquement.`);
   }
 
   return {

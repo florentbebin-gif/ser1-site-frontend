@@ -328,6 +328,7 @@ describe('succession validation matrix', () => {
           { id: 'gf-1', owner: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
         ],
         hasBeneficiaryLevelGfAdjustment: true,
+        residencePrincipaleEntry: null,
       },
     );
 
@@ -362,6 +363,7 @@ describe('succession validation matrix', () => {
           { id: 'gf-1', owner: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
         ],
         hasBeneficiaryLevelGfAdjustment: true,
+        residencePrincipaleEntry: null,
       },
     );
 

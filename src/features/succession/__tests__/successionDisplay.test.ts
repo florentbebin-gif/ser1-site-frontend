@@ -432,4 +432,67 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
       baseHistoriqueTaxee: 150000,
     });
   });
+
+  it('applique l abattement residence principale a l assiette fiscale directe sans reduire le brut transmis', () => {
+    const civil = makeCivil({ situationMatrimoniale: 'celibataire' });
+    const devolutionContext = makeDevolution({});
+    const enfants = [{ id: 'E1', rattachement: 'epoux1' as const }];
+    const devolution = buildSuccessionDevolutionAnalysis(
+      civil,
+      1,
+      devolutionContext,
+      400000,
+      enfants,
+      [],
+    );
+    const transmissionBasis = {
+      ordinaryTaxableAssetsParOwner: {
+        epoux1: 400000,
+        epoux2: 0,
+        commun: 0,
+      },
+      passifsParOwner: {
+        epoux1: 0,
+        epoux2: 0,
+        commun: 0,
+      },
+      groupementFoncierEntries: [],
+      hasBeneficiaryLevelGfAdjustment: false,
+      residencePrincipaleEntry: {
+        owner: 'epoux1' as const,
+        valeurTotale: 400000,
+      },
+    };
+
+    const withoutAbatement = buildSuccessionDirectDisplayAnalysis({
+      civil,
+      devolution,
+      devolutionContext,
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: enfants,
+      familyMembers: [],
+      order: 'epoux1',
+      actifNetSuccession: 400000,
+      transmissionBasis,
+      abattementResidencePrincipale: false,
+    });
+    const withAbatement = buildSuccessionDirectDisplayAnalysis({
+      civil,
+      devolution,
+      devolutionContext,
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: enfants,
+      familyMembers: [],
+      order: 'epoux1',
+      actifNetSuccession: 400000,
+      transmissionBasis,
+      abattementResidencePrincipale: true,
+    });
+
+    expect(withoutAbatement.transmissionRows[0]?.brut).toBe(400000);
+    expect(withAbatement.transmissionRows[0]?.brut).toBe(400000);
+    expect(withoutAbatement.result?.totalDroits).toBe(58194);
+    expect(withAbatement.result?.totalDroits).toBe(42194);
+    expect(withAbatement.result?.totalDroits).toBeLessThan(withoutAbatement.result?.totalDroits ?? 0);
+  });
 });

@@ -135,6 +135,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - residence principale unique cote produit, avec option d'abattement 20 % visible sur la ligne immobiliere correspondante
 - masquage des blocs `Actifs / Passifs`, `Donations`, `Synthese successorale` et `Chronologie des deces` tant que la filiation utile n'est pas constituee ou que les dates de naissance principales requises sont absentes
 - separation explicite entre masse civile nette transmise et assiette fiscale des droits : l'abattement RP 20 %, le forfait mobilier et les ajustements GFA/GFV n'abaissent pas le brut transmis affiche
+- en chronologie 2 deces mariee, l'abattement de 20 % sur la residence principale est applique a l'assiette fiscale de l'etape 1 uniquement par defaut, sans reduire la base remployee au 2e deces
 - ventilation simplifiee de l'assurance-vie deces selon les clauses beneficiaires saisies (lecture 990 I / 757 B), avec mutualisation des abattements entre contrats d'un meme assure et d'un meme beneficiaire
 - ventilation simplifiee du `PER assurance` deces selon les clauses beneficiaires saisies, avec bascule avant / apres 70 ans a la date deces simulee et coordination des abattements avec l'assurance-vie / la prevoyance
 - ventilation de la prevoyance deces pure non rachetable selon une clause beneficiaire structuree, avec assiette fiscale limitee a la derniere prime annuelle saisie et bascule 990 I / 757 B selon l'age du souscripteur au deces simule
