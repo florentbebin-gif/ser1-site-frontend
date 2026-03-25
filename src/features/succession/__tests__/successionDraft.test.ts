@@ -215,6 +215,110 @@ describe('successionDraft', () => {
     expect(parsed?.ui.chainOrder).toBe('epoux1');
   });
 
+  it('parse les produits specialises uniquement via SuccessionPersonParty', () => {
+    const parsed = parseSuccessionDraftPayload(JSON.stringify({
+      version: 19,
+      form: {
+        actifNetSuccession: 100000,
+        heritiers: [{ lien: 'enfant', partSuccession: 100000 }],
+      },
+      civil: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_legale',
+        pacsConvention: 'separation',
+      },
+      liquidation: {
+        actifEpoux1: 100000,
+        actifEpoux2: 0,
+        actifCommun: 0,
+        nbEnfants: 1,
+      },
+      devolution: {
+        ...DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+      },
+      patrimonial: {
+        ...DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
+      },
+      enfants: [{ id: 'E1', rattachement: 'commun' }],
+      familyMembers: [],
+      donations: [],
+      assetEntries: [],
+      assuranceVieEntries: [
+        {
+          id: 'av-1',
+          typeContrat: 'standard',
+          souscripteur: 'epoux1',
+          assure: 'epoux2',
+          capitauxDeces: 120000,
+          versementsApres70: 10000,
+        },
+        {
+          id: 'av-invalid',
+          typeContrat: 'standard',
+          souscripteur: 'commun',
+          assure: 'epoux1',
+          capitauxDeces: 50000,
+          versementsApres70: 0,
+        },
+      ],
+      perEntries: [
+        {
+          id: 'per-1',
+          typeContrat: 'standard',
+          assure: 'epoux2',
+          capitauxDeces: 80000,
+        },
+        {
+          id: 'per-invalid',
+          typeContrat: 'standard',
+          assure: 'commun',
+          capitauxDeces: 10000,
+        },
+      ],
+      groupementFoncierEntries: [],
+      prevoyanceDecesEntries: [
+        {
+          id: 'pv-1',
+          souscripteur: 'epoux2',
+          assure: 'epoux1',
+          capitalDeces: 90000,
+          dernierePrime: 2400,
+        },
+        {
+          id: 'pv-invalid',
+          souscripteur: 'commun',
+          assure: 'epoux1',
+          capitalDeces: 10000,
+          dernierePrime: 500,
+        },
+      ],
+      ui: {
+        chainOrder: 'epoux1',
+      },
+    }));
+
+    expect(parsed?.assuranceVieEntries).toEqual([
+      expect.objectContaining({
+        id: 'av-1',
+        souscripteur: 'epoux1',
+        assure: 'epoux2',
+      }),
+    ]);
+    expect(parsed?.perEntries).toEqual([
+      expect.objectContaining({
+        id: 'per-1',
+        assure: 'epoux2',
+      }),
+    ]);
+    expect(parsed?.prevoyanceDecesEntries).toEqual([
+      expect.objectContaining({
+        id: 'pv-1',
+        souscripteur: 'epoux2',
+        assure: 'epoux1',
+      }),
+    ]);
+  });
+
   it('normalise les residences principales multiples et reinitialise lhorizon simule en v16', () => {
     const raw = JSON.stringify({
       version: 16,

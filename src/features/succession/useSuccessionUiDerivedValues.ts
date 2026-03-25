@@ -18,6 +18,7 @@ import {
 import type {
   SuccessionAssetDetailEntry,
   SuccessionAssetOwner,
+  SuccessionPersonParty,
   SuccessionAssuranceVieEntry,
   FamilyBranch,
   FamilyMember,
@@ -100,7 +101,8 @@ export function useSuccessionUiDerivedValues({
   }, [isConcubinage, isMarried, isPacsed, civilContext.regimeMatrimonial]);
 
   const assuranceViePartyOptions = useMemo(
-    () => assetOwnerOptions.filter((option) => option.value !== 'commun') as { value: 'epoux1' | 'epoux2'; label: string }[],
+    (): { value: SuccessionPersonParty; label: string }[] => assetOwnerOptions
+      .filter((option): option is { value: SuccessionPersonParty; label: string } => option.value !== 'commun'),
     [assetOwnerOptions],
   );
 

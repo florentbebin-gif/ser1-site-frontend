@@ -7,6 +7,7 @@ import type {
   FamilyMember,
   FamilyMemberType,
   SituationMatrimoniale,
+  SuccessionPersonParty,
   SuccessionAssetDetailEntry,
   SuccessionAssetOwner,
   SuccessionAssuranceVieEntry,
@@ -218,7 +219,7 @@ export function buildAggregateAssetEntries(values: {
 
 export function buildAssuranceVieFromAsset(
   sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'amount'> | undefined,
-  owner: Exclude<SuccessionAssetOwner, 'commun'>,
+  owner: SuccessionPersonParty,
 ): SuccessionAssuranceVieEntry {
   return {
     id: createAssuranceVieId(),
@@ -232,7 +233,7 @@ export function buildAssuranceVieFromAsset(
 
 export function buildPerFromAsset(
   sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'amount'> | undefined,
-  owner: Exclude<SuccessionAssetOwner, 'commun'>,
+  owner: SuccessionPersonParty,
 ): SuccessionPerEntry {
   return {
     id: createPerId(),
@@ -244,7 +245,7 @@ export function buildPerFromAsset(
 
 export function buildPrevoyanceFromAsset(
   sourceEntry: Pick<SuccessionAssetDetailEntry, 'owner' | 'amount'> | undefined,
-  owner: Exclude<SuccessionAssetOwner, 'commun'>,
+  owner: SuccessionPersonParty,
 ): SuccessionPrevoyanceDecesEntry {
   return {
     id: createPrevoyanceId(),

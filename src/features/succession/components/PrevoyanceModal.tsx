@@ -1,10 +1,13 @@
-import type { SuccessionPrevoyanceDecesEntry } from '../successionDraft';
+import type {
+  SuccessionPersonParty,
+  SuccessionPrevoyanceDecesEntry,
+} from '../successionDraft';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
 interface PrevoyanceModalProps {
   entry: SuccessionPrevoyanceDecesEntry;
-  partyOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
+  partyOptions: { value: SuccessionPersonParty; label: string }[];
   clauseOptions: { value: string; label: string }[];
   regimeLabel: string;
   regimeWarning?: string;

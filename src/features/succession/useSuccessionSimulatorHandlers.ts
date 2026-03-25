@@ -14,6 +14,7 @@ import {
   type FamilyMember,
   type SuccessionAssetDetailEntry,
   type SuccessionAssetOwner,
+  type SuccessionPersonParty,
   type SuccessionAssuranceVieEntry,
   type SuccessionDonationEntry,
   type SuccessionEnfant,
@@ -51,7 +52,7 @@ interface UseSuccessionSimulatorHandlersArgs {
   perDraft: SuccessionPerEntry | null;
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
   prevoyanceDraft: SuccessionPrevoyanceDecesEntry | null;
-  assuranceViePartyOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
+  assuranceViePartyOptions: { value: SuccessionPersonParty; label: string }[];
   testamentBeneficiaryOptionsBySide: Record<
     'epoux1' | 'epoux2',
     ReturnType<typeof buildTestamentBeneficiaryOptions>

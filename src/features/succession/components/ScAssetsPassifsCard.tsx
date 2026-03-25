@@ -7,6 +7,7 @@ import type {
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
 } from '../successionDraft.types';
+import type { SuccessionPersonParty } from '../successionDraft';
 import {
   ASSET_SUBCATEGORY_OPTIONS,
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
@@ -38,7 +39,7 @@ interface ScAssetsPassifsCardProps {
   hasBeneficiaryLevelGfAdjustment: boolean;
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
   perEntries: SuccessionPerEntry[];
-  assuranceViePartyOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
+  assuranceViePartyOptions: { value: SuccessionPersonParty; label: string }[];
   onAddAssetEntry: (_category: SuccessionAssetCategory) => void;
   onUpdateAssetEntry: (
     _id: string,
