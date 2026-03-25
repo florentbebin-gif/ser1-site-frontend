@@ -1,8 +1,8 @@
 /**
  * useSuccessionSyncEffects - Effets de synchronisation et normalisation.
  *
- * Les entrees detaillees sont maintenant valideses prioritairement via
- * `pocket`, puis l'alias legacy `owner` est resynchronise automatiquement.
+ * Les entrees detaillees sont maintenant normalisees directement via
+ * `pocket`; l'alias legacy `owner` n'est plus requis dans le runtime detaille.
  */
 
 import { useEffect, type Dispatch, type SetStateAction } from 'react';
@@ -64,7 +64,7 @@ interface UseSuccessionSyncEffectsParams {
   setPatrimonialContext: Dispatch<SetStateAction<SuccessionPatrimonialContext>>;
 }
 
-function getFallbackLocation(
+function getFallbackPocket(
   fallbackPocket: SuccessionAssetPocket,
   situationMatrimoniale: SituationMatrimoniale,
   regimeMatrimonial: RegimeMatrimonial | null,
@@ -75,7 +75,7 @@ function getFallbackLocation(
     situationMatrimoniale,
     regimeMatrimonial,
     pacsConvention,
-  }) ?? { owner: 'epoux1' as const, pocket: 'epoux1' as const };
+  })?.pocket ?? 'epoux1';
 }
 
 export function useSuccessionSyncEffects({
@@ -148,9 +148,9 @@ export function useSuccessionSyncEffects({
 
   useEffect(() => {
     const validPockets = new Set(assetPocketOptions.map((option) => option.value));
-    const fallbackPocket = assetPocketOptions[0]?.value ?? 'epoux1';
-    const fallbackLocation = getFallbackLocation(
-      fallbackPocket,
+    const rawFallbackPocket = assetPocketOptions[0]?.value ?? 'epoux1';
+    const fallbackPocket = getFallbackPocket(
+      rawFallbackPocket,
       situationMatrimoniale,
       regimeMatrimonial,
       pacsConvention,
@@ -160,18 +160,17 @@ export function useSuccessionSyncEffects({
       let changed = false;
       const mapped = prev.map((entry) => {
         const resolved = resolveSuccessionAssetLocation({
-          owner: entry.owner,
           pocket: entry.pocket,
           situationMatrimoniale,
           regimeMatrimonial,
           pacsConvention,
         });
-        const location = resolved && validPockets.has(resolved.pocket)
-          ? resolved
-          : fallbackLocation;
-        if (entry.owner === location.owner && entry.pocket === location.pocket) return entry;
+        const pocket = resolved && validPockets.has(resolved.pocket)
+          ? resolved.pocket
+          : fallbackPocket;
+        if (entry.pocket === pocket) return entry;
         changed = true;
-        return { ...entry, ...location };
+        return { ...entry, pocket };
       });
       const normalized = normalizeResidencePrincipaleAssetEntries(mapped);
       const residenceChanged = normalized.some((entry, index) => entry.subCategory !== mapped[index]?.subCategory);
@@ -225,9 +224,9 @@ export function useSuccessionSyncEffects({
 
   useEffect(() => {
     const validPockets = new Set(assetPocketOptions.map((option) => option.value));
-    const fallbackPocket = assetPocketOptions[0]?.value ?? 'epoux1';
-    const fallbackLocation = getFallbackLocation(
-      fallbackPocket,
+    const rawFallbackPocket = assetPocketOptions[0]?.value ?? 'epoux1';
+    const fallbackPocket = getFallbackPocket(
+      rawFallbackPocket,
       situationMatrimoniale,
       regimeMatrimonial,
       pacsConvention,
@@ -237,18 +236,17 @@ export function useSuccessionSyncEffects({
       let changed = false;
       const next = prev.map((entry) => {
         const resolved = resolveSuccessionAssetLocation({
-          owner: entry.owner,
           pocket: entry.pocket,
           situationMatrimoniale,
           regimeMatrimonial,
           pacsConvention,
         });
-        const location = resolved && validPockets.has(resolved.pocket)
-          ? resolved
-          : fallbackLocation;
-        if (entry.owner === location.owner && entry.pocket === location.pocket) return entry;
+        const pocket = resolved && validPockets.has(resolved.pocket)
+          ? resolved.pocket
+          : fallbackPocket;
+        if (entry.pocket === pocket) return entry;
         changed = true;
-        return { ...entry, ...location };
+        return { ...entry, pocket };
       });
       return changed ? next : prev;
     });

@@ -29,8 +29,8 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 | Sujet | Etat repo actuel | Preuves |
 |---|---|---|
 | Personne physique | Type de transition explicite introduit (`SuccessionPersonParty`), runtime encore branche sur `epoux1` / `epoux2` | `src/features/succession/successionPatrimonialModel.ts`, `src/features/succession/successionDraft.types.ts` |
-| Masse patrimoniale | Le draft persiste maintenant `SuccessionAssetPocket`; l'alias legacy `owner` reste synchronise tant que le moteur n'est pas migre | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionDraft.serialize.ts`, `src/features/succession/successionDraft.parse.ts` |
-| Distinction personne / masse | En transition avancee: le draft, les handlers, l'UI de selection et la base taxable utilisent `pocket`; l'agregation simplifiee et `liquidationContext` restent encore branches sur l'alias `owner` | `src/features/succession/successionPatrimonialModel.ts`, `src/features/succession/useSuccessionAssetHandlers.ts`, `src/features/succession/useSuccessionUiDerivedValues.ts`, `src/features/succession/successionAssetValuation.ts`, `src/features/succession/successionTransmissionBasis.ts` |
+| Masse patrimoniale | Le draft persiste maintenant `SuccessionAssetPocket`; le runtime detaille et la serialisation `v21` n'embarquent plus `owner` sur les actifs/GF | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionDraft.serialize.ts`, `src/features/succession/successionDraft.parse.ts` |
+| Distinction personne / masse | Transition tres avancee: le draft detaille, les handlers, l'UI de selection et la base taxable utilisent `pocket`; seuls les agregats simplifies `epoux1/epoux2/commun` subsistent comme vue legacy | `src/features/succession/successionPatrimonialModel.ts`, `src/features/succession/useSuccessionAssetHandlers.ts`, `src/features/succession/useSuccessionUiDerivedValues.ts`, `src/features/succession/successionAssetValuation.ts`, `src/features/succession/successionTransmissionBasis.ts` |
 | Qualification juridique des biens | Absente (`propre`, `propre_par_nature`, `origin`, etc.) | absence de champs dans `src/features/succession/successionDraft.types.ts` |
 | Passif affecte par masse | Partiel seulement: le draft et la base de transmission portent `pocket`, mais la liquidation agregee reste lue via l'alias `owner` | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionAssetValuation.ts`, `src/features/succession/successionTransmissionBasis.ts` |
 | Creances entre masses | Non modelise | absence de types et de moteur dedie |
@@ -53,7 +53,7 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 | `separation_biens` | Gere nativement | Support robuste | Pas d'indivisions fines ni de passif juridiquement affecte | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionChainageEstateSplit.ts` |
 | `participation_acquets` | Approxime en separation de biens | Approximation assumee | Creance de participation non modelisee | `src/features/succession/successionPredeces.ts`, `src/features/succession/__tests__/successionPredeces.test.ts` |
 | `communaute_meubles_acquets` | Approxime en communaute legale | Approximation assumee | Distinction meuble / immeuble absente | `src/features/succession/successionPredeces.ts` |
-| `separation_biens_societe_acquets` | Approxime en separation de biens avec warning explicite | Approximation assumee | Absence de poche patrimoniale dediee | `src/features/succession/successionPredeces.ts`, `src/features/succession/__tests__/successionRegimes.test.ts` |
+| `separation_biens_societe_acquets` | Approxime en separation de biens avec warning explicite, mais la poche `societe_acquets` est maintenant saisissable en UI et persistee au draft | Approximation assumee | Liquidation dediee encore absente | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionPatrimonialModel.ts`, `src/features/succession/__tests__/successionRegimes.test.ts` |
 
 ## Couverture UI actuelle
 
@@ -108,6 +108,8 @@ La `PR-12` decouple ensuite AV / PER / prevoyance du futur modele de masse en le
 Les `PR-13/14` migrent ensuite le draft et les entrees detaillees vers `pocket`, avec maintien transitoire de l'alias `owner` pour le moteur existant.
 Les `PR-15/16` alignent les helpers specialises et la sync d'etat sur `pocket`.
 Les `PR-17/18` font ensuite basculer la base taxable / chainage vers `pocket` et remplacent en UI le select `Porteur` par `Masse de rattachement` avec options dependantes du regime.
+La `PR-19` supprime ensuite `SuccessionAssetOwner` du runtime detaille: actifs et groupements fonciers sont desormais `pocket` only, et la serialisation passe en `v21`.
+La `PR-20` ouvre enfin explicitement la poche `societe_acquets` quand le regime `separation_biens_societe_acquets` est selectionne, tout en conservant le warning d'approximation jusqu'au futur moteur dedie.
 
 ## Sources juridiques de cadrage
 

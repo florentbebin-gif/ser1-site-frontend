@@ -1,12 +1,16 @@
 /**
- * GroupementFoncierModal — Saisie des groupements fonciers (GFA/GFV/GFF/GF)
+ * GroupementFoncierModal - Saisie des groupements fonciers (GFA/GFV/GFF/GF)
  *
- * Art. 793 bis CGI : exonération 75% DMTG ≤ 600 000 € / bénéficiaire (LF 2025),
- * puis 50% au-delà.
+ * Art. 793 bis CGI : exoneration 75% DMTG <= 600 000 EUR / beneficiaire (LF 2025),
+ * puis 50% au-dela.
  */
 
 import { useState } from 'react';
-import type { SuccessionGroupementFoncierEntry, GroupementFoncierType } from '../successionDraft';
+import type {
+  GroupementFoncierType,
+  SuccessionAssetPocket,
+  SuccessionGroupementFoncierEntry,
+} from '../successionDraft';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 import '../Succession.css';
@@ -20,9 +24,10 @@ const TYPE_OPTIONS: { value: GroupementFoncierType; label: string }[] = [
   { value: 'GF', label: 'GF (Groupement Forestier)' },
 ];
 
-const OWNER_OPTIONS: { value: 'epoux1' | 'epoux2'; label: string }[] = [
-  { value: 'epoux1', label: 'Époux 1' },
-  { value: 'epoux2', label: 'Époux 2' },
+const DEFAULT_POCKET_OPTIONS: { value: SuccessionAssetPocket; label: string }[] = [
+  { value: 'epoux1', label: 'Epoux 1' },
+  { value: 'epoux2', label: 'Epoux 2' },
+  { value: 'communaute', label: 'Communaute' },
 ];
 
 function computeExoneration(valeur: number): { exonere: number; taxable: number } {
@@ -39,7 +44,7 @@ function computeExoneration(valeur: number): { exonere: number; taxable: number 
 
 interface GroupementFoncierModalProps {
   entries: SuccessionGroupementFoncierEntry[];
-  ownerOptions: { value: 'epoux1' | 'epoux2'; label: string }[];
+  ownerOptions: { value: SuccessionAssetPocket; label: string }[];
   onClose: () => void;
   onValidate: (_entries: SuccessionGroupementFoncierEntry[]) => void;
 }
@@ -51,26 +56,28 @@ export function GroupementFoncierModal({
   onValidate,
 }: GroupementFoncierModalProps) {
   const [draft, setDraft] = useState<SuccessionGroupementFoncierEntry[]>(
-    initialEntries.length > 0 ? initialEntries.map((e) => ({ ...e })) : [],
+    initialEntries.length > 0 ? initialEntries.map((entry) => ({ ...entry })) : [],
   );
 
-  const partyOptions = ownerOptions.length > 0 ? ownerOptions : OWNER_OPTIONS;
+  const pocketOptions = ownerOptions.length > 0 ? ownerOptions : DEFAULT_POCKET_OPTIONS;
 
   const addEntry = () => {
     setDraft((prev) => [...prev, {
       id: `gf-${Date.now()}`,
       type: 'GFA' as GroupementFoncierType,
       valeurTotale: 0,
-      owner: partyOptions[0].value,
+      pocket: pocketOptions[0].value,
     }]);
   };
 
   const updateEntry = (id: string, field: keyof SuccessionGroupementFoncierEntry, value: string | number) => {
-    setDraft((prev) => prev.map((e) => e.id === id ? { ...e, [field]: value } : e));
+    setDraft((prev) => prev.map((entry) => (
+      entry.id === id ? { ...entry, [field]: value } : entry
+    )));
   };
 
   const removeEntry = (id: string) => {
-    setDraft((prev) => prev.filter((e) => e.id !== id));
+    setDraft((prev) => prev.filter((entry) => entry.id !== id));
   };
 
   const fmt = (n: number) => n.toLocaleString('fr-FR');
@@ -80,18 +87,18 @@ export function GroupementFoncierModal({
       <div className="sc-modal sc-modal--wide" onClick={(e) => e.stopPropagation()}>
         <div className="sc-modal__header">
           <h3 className="sc-modal__title">Groupements fonciers (art. 793 bis CGI)</h3>
-          <button type="button" className="sc-member-modal__close" onClick={onClose}>✕</button>
+          <button type="button" className="sc-member-modal__close" onClick={onClose}>x</button>
         </div>
 
         <div className="sc-modal__body">
           <p className="sc-hint" style={{ marginBottom: 16 }}>
-            Les parts de GFA/GFV/GFF/GF bénéficient d&apos;une exonération de 75% des DMTG
-            jusqu&apos;à 600 000 € par bénéficiaire (LF 2025 art. 70), puis 50% au-delà.
+            Les parts de GFA/GFV/GFF/GF beneficient d&apos;une exoneration de 75% des DMTG
+            jusqu&apos;a 600 000 EUR par beneficiaire (LF 2025 art. 70), puis 50% au-dela.
           </p>
 
           {draft.length === 0 ? (
             <div className="vcm__empty">
-              <p>Aucun groupement foncier déclaré.</p>
+              <p>Aucun groupement foncier declare.</p>
               <button type="button" className="sc-child-add-btn" onClick={addEntry}>
                 + Ajouter un groupement
               </button>
@@ -107,31 +114,31 @@ export function GroupementFoncierModal({
                         <label>Type</label>
                         <ScSelect
                           value={entry.type}
-                          onChange={(v) => updateEntry(entry.id, 'type', v)}
+                          onChange={(value) => updateEntry(entry.id, 'type', value)}
                           options={TYPE_OPTIONS}
                         />
                       </div>
                       <div className="sc-field">
-                        <label>Valeur totale (€)</label>
+                        <label>Valeur totale (EUR)</label>
                         <ScNumericInput
                           value={entry.valeurTotale}
                           min={0}
-                          onChange={(v) => updateEntry(entry.id, 'valeurTotale', v)}
+                          onChange={(value) => updateEntry(entry.id, 'valeurTotale', value)}
                         />
                       </div>
                       <div className="sc-field">
                         <label>Masse de rattachement</label>
                         <ScSelect
-                          value={entry.owner}
-                          onChange={(v) => updateEntry(entry.id, 'owner', v)}
-                          options={partyOptions}
+                          value={entry.pocket}
+                          onChange={(value) => updateEntry(entry.id, 'pocket', value)}
+                          options={pocketOptions}
                         />
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--color-c9)', marginTop: 6 }}>
-                      <span>Exonéré : {fmt(exonere)} €</span>
-                      <span>Taxable : {fmt(taxable)} €</span>
-                      <button type="button" className="sc-child-remove-btn" onClick={() => removeEntry(entry.id)} aria-label="Supprimer">✕</button>
+                      <span>Exonere : {fmt(exonere)} EUR</span>
+                      <span>Taxable : {fmt(taxable)} EUR</span>
+                      <button type="button" className="sc-child-remove-btn" onClick={() => removeEntry(entry.id)} aria-label="Supprimer">x</button>
                     </div>
                   </div>
                 );

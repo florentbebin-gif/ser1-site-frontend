@@ -7,7 +7,6 @@ import type {
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
   SuccessionAssetPocket,
-  SuccessionAssetOwner,
   SuccessionPersonParty,
   SuccessionAssuranceVieEntry,
   SuccessionGroupementFoncierEntry,
@@ -27,7 +26,11 @@ import {
   buildPrevoyanceFromAsset,
   createAssetId,
 } from './successionSimulator.helpers';
-import { resolveSuccessionAssetLocation } from './successionPatrimonialModel';
+import {
+  getSuccessionLegacyOwnerFromPocket,
+  resolveSuccessionAssetLocation,
+  type SuccessionLegacyAssetOwner,
+} from './successionPatrimonialModel';
 
 interface UseSuccessionAssetHandlersArgs {
   civilSituation: SituationMatrimoniale;
@@ -73,7 +76,8 @@ export function useSuccessionAssetHandlers({
   setPrevoyanceDraft,
   setShowPrevoyanceModal,
 }: UseSuccessionAssetHandlersArgs) {
-  const resolvePersonParty = useCallback((owner: SuccessionAssetOwner): SuccessionPersonParty => {
+  const resolvePersonParty = useCallback((pocket: SuccessionAssetPocket): SuccessionPersonParty => {
+    const owner = getSuccessionLegacyOwnerFromPocket(pocket);
     if (owner !== 'commun') return owner;
     return assuranceViePartyOptions[0]?.value ?? 'epoux1';
   }, [assuranceViePartyOptions]);
@@ -89,7 +93,7 @@ export function useSuccessionAssetHandlers({
 
   const setSimplifiedBalanceField = useCallback((
     type: 'actifs' | 'passifs',
-    owner: SuccessionAssetOwner,
+    owner: SuccessionLegacyAssetOwner,
     value: number,
   ) => {
     setAssetEntries(buildAggregateAssetEntries({
@@ -119,15 +123,14 @@ export function useSuccessionAssetHandlers({
         ...prev,
         {
           id: createAssetId(),
-          ...(resolveSuccessionAssetLocation({
+          pocket: (resolveSuccessionAssetLocation({
             pocket: assetPocketOptions[0]?.value ?? 'epoux1',
             situationMatrimoniale: civilSituation,
             regimeMatrimonial,
             pacsConvention,
           }) ?? {
-            owner: 'epoux1' as const,
             pocket: 'epoux1' as const,
-          }),
+          }).pocket,
           category,
           subCategory: nextSubCategory,
           amount: 0,
@@ -151,7 +154,7 @@ export function useSuccessionAssetHandlers({
       if (value === 'Assurance vie') {
         const draft = buildAssuranceVieFromAsset(
           sourceEntry,
-          resolvePersonParty(sourceEntry?.owner ?? 'commun'),
+          resolvePersonParty(sourceEntry?.pocket ?? 'epoux1'),
         );
         setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
         setAssuranceVieEntries((prev) => [...prev, draft]);
@@ -162,7 +165,7 @@ export function useSuccessionAssetHandlers({
       if (value === 'PER assurance') {
         const draft = buildPerFromAsset(
           sourceEntry,
-          resolvePersonParty(sourceEntry?.owner ?? 'commun'),
+          resolvePersonParty(sourceEntry?.pocket ?? 'epoux1'),
         );
         setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
         setPerEntries((prev) => [...prev, draft]);
@@ -173,7 +176,7 @@ export function useSuccessionAssetHandlers({
       if (value === 'Prévoyance décès') {
         const draft = buildPrevoyanceFromAsset(
           sourceEntry,
-          resolvePersonParty(sourceEntry?.owner ?? 'commun'),
+          resolvePersonParty(sourceEntry?.pocket ?? 'epoux1'),
         );
         setAssetEntries((prev) => prev.filter((entry) => entry.id !== id));
         setPrevoyanceDecesEntries((prev) => [...prev, draft]);
@@ -211,15 +214,6 @@ export function useSuccessionAssetHandlers({
           subCategory: String(nextSubCategory),
         };
       }
-      if (field === 'owner') {
-        const location = resolveSuccessionAssetLocation({
-          owner: value,
-          situationMatrimoniale: civilSituation,
-          regimeMatrimonial,
-          pacsConvention,
-        });
-        return location ? { ...entry, ...location } : entry;
-      }
       if (field === 'pocket') {
         const location = resolveSuccessionAssetLocation({
           pocket: value,
@@ -227,7 +221,7 @@ export function useSuccessionAssetHandlers({
           regimeMatrimonial,
           pacsConvention,
         });
-        return location ? { ...entry, ...location } : entry;
+        return location ? { ...entry, pocket: location.pocket } : entry;
       }
       return {
         ...entry,

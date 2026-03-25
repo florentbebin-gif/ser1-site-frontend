@@ -279,12 +279,11 @@ describe('successionDraft legacy migrations', () => {
     const parsed = parseSuccessionDraftPayload(raw);
     expect(parsed).not.toBeNull();
     expect(parsed?.assetEntries.map((entry) => ({
-      owner: entry.owner,
       pocket: entry.pocket,
     }))).toEqual([
-      { owner: 'epoux1', pocket: 'epoux1' },
-      { owner: 'epoux2', pocket: 'epoux2' },
-      { owner: 'commun', pocket: 'communaute' },
+      { pocket: 'epoux1' },
+      { pocket: 'epoux2' },
+      { pocket: 'communaute' },
     ]);
     expect(parsed?.assuranceVieEntries).toEqual([]);
   });

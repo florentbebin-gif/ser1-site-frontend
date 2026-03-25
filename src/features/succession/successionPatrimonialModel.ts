@@ -2,8 +2,10 @@
  * Transitional patrimonial target types introduced in PR-11.
  *
  * PR-13/14 move the persisted draft to `pocket` while keeping the legacy
- * `owner` alias synchronized so the current runtime can remain stable until
- * the later engine migrations.
+ * `owner` alias synchronized.
+ *
+ * PR-19 removes the detailed-runtime dependency on `owner`; the legacy bridge
+ * remains only for simplified balances and legacy draft migration.
  */
 
 import type { RegimeMatrimonial } from '../../engine/civil';
@@ -62,11 +64,19 @@ export function getSuccessionSharedPocketForContext({
   if (
     regimeMatrimonial === 'separation_biens'
     || regimeMatrimonial === 'participation_acquets'
-    || regimeMatrimonial === 'separation_biens_societe_acquets'
   ) {
     return null;
   }
+  if (regimeMatrimonial === 'separation_biens_societe_acquets') {
+    return 'societe_acquets';
+  }
   return 'communaute';
+}
+
+export function getSuccessionSharedPocketLabel(pocket: SuccessionSharedAssetPocket): string {
+  if (pocket === 'communaute') return 'Communaute';
+  if (pocket === 'societe_acquets') return "Societe d'acquets";
+  return 'Indivision';
 }
 
 export function getSuccessionAssetPocketFromOwner(
@@ -123,8 +133,8 @@ function getSuccessionPartyOptionLabels({
 }: SuccessionAssetLocationContext): Record<SuccessionPersonParty, string> {
   if (situationMatrimoniale === 'marie') {
     return {
-      epoux1: 'Époux 1',
-      epoux2: 'Époux 2',
+      epoux1: 'Epoux 1',
+      epoux2: 'Epoux 2',
     };
   }
   if (situationMatrimoniale === 'pacse') {
@@ -164,7 +174,7 @@ export function buildSuccessionAssetOwnerOptions(
   if (sharedPocket) {
     options.push({
       value: 'commun',
-      label: sharedPocket === 'communaute' ? 'Communauté' : 'Indivision',
+      label: getSuccessionSharedPocketLabel(sharedPocket),
     });
   }
 
@@ -190,7 +200,7 @@ export function buildSuccessionAssetPocketOptions(
   if (sharedPocket) {
     options.push({
       value: sharedPocket,
-      label: sharedPocket === 'communaute' ? 'Communauté' : 'Indivision',
+      label: getSuccessionSharedPocketLabel(sharedPocket),
     });
   }
 

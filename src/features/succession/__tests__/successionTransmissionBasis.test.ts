@@ -11,16 +11,6 @@ describe('buildSuccessionEstateTaxableBasis', () => {
     pocketScales.indivision_pacse = 0.5;
 
     const basis = buildSuccessionEstateTaxableBasis({
-      ordinaryTaxableAssetsParOwner: {
-        epoux1: 0,
-        epoux2: 0,
-        commun: 999999,
-      },
-      passifsParOwner: {
-        epoux1: 0,
-        epoux2: 0,
-        commun: 0,
-      },
       ordinaryTaxableAssetsParPocket: {
         epoux1: 0,
         epoux2: 0,
@@ -39,14 +29,12 @@ describe('buildSuccessionEstateTaxableBasis', () => {
       },
       groupementFoncierEntries: [{
         id: 'gf-1',
-        owner: 'commun',
         pocket: 'indivision_pacse',
         type: 'GFA',
         valeurTotale: 200,
       }],
       hasBeneficiaryLevelGfAdjustment: true,
       residencePrincipaleEntry: {
-        owner: 'commun',
         pocket: 'indivision_pacse',
         valeurTotale: 300,
       },

@@ -503,20 +503,26 @@ describe('buildSuccessionChainageAnalysis', () => {
 
   it('applies the residence principale abatement on step 1 only in chainage', () => {
     const transmissionBasis = {
-      ordinaryTaxableAssetsParOwner: {
+      ordinaryTaxableAssetsParPocket: {
         epoux1: 0,
         epoux2: 0,
-        commun: 1_000_000,
+        communaute: 1_000_000,
+        societe_acquets: 0,
+        indivision_pacse: 0,
+        indivision_concubinage: 0,
       },
-      passifsParOwner: {
+      passifsParPocket: {
         epoux1: 0,
         epoux2: 0,
-        commun: 0,
+        communaute: 0,
+        societe_acquets: 0,
+        indivision_pacse: 0,
+        indivision_concubinage: 0,
       },
       groupementFoncierEntries: [],
       hasBeneficiaryLevelGfAdjustment: false,
       residencePrincipaleEntry: {
-        owner: 'commun' as const,
+        pocket: 'communaute' as const,
         valeurTotale: 1_000_000,
       },
     };

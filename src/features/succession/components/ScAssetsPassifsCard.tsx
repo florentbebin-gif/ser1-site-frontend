@@ -1,13 +1,16 @@
 import type {
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
-  SuccessionAssetOwner,
   SuccessionAssuranceVieEntry,
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
 } from '../successionDraft.types';
-import type { SuccessionAssetPocket, SuccessionPersonParty } from '../successionDraft';
+import type {
+  SuccessionAssetPocket,
+  SuccessionLegacyAssetOwner,
+  SuccessionPersonParty,
+} from '../successionDraft';
 import {
   ASSET_SUBCATEGORY_OPTIONS,
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
@@ -28,13 +31,13 @@ interface ScAssetsPassifsCardProps {
     label: string;
     entries: SuccessionAssetDetailEntry[];
   }[];
-  assetOwnerOptions: { value: SuccessionAssetOwner; label: string }[];
+  assetOwnerOptions: { value: SuccessionLegacyAssetOwner; label: string }[];
   assetPocketOptions: { value: SuccessionAssetPocket; label: string }[];
   assetBreakdown: {
-    actifs: Record<SuccessionAssetOwner, number>;
-    passifs: Record<SuccessionAssetOwner, number>;
+    actifs: Record<SuccessionLegacyAssetOwner, number>;
+    passifs: Record<SuccessionLegacyAssetOwner, number>;
   };
-  assetNetTotals: Record<SuccessionAssetOwner, number>;
+  assetNetTotals: Record<SuccessionLegacyAssetOwner, number>;
   forfaitMobilierComputed: number;
   residencePrincipaleEntryId: string | null;
   hasBeneficiaryLevelGfAdjustment: boolean;
@@ -60,7 +63,7 @@ interface ScAssetsPassifsCardProps {
   onRemovePrevoyanceDecesEntry: (_id: string) => void;
   onSetSimplifiedBalanceField: (
     _type: 'actifs' | 'passifs',
-    _owner: SuccessionAssetOwner,
+    _owner: SuccessionLegacyAssetOwner,
     _value: number,
   ) => void;
   forfaitMobilierMode: 'off' | 'auto' | 'pct' | 'montant';
@@ -71,7 +74,7 @@ interface ScAssetsPassifsCardProps {
 }
 
 function getActifNetLabel(
-  owner: SuccessionAssetOwner,
+  owner: SuccessionLegacyAssetOwner,
   flags: { isMarried: boolean; isPacsed: boolean; isConcubinage: boolean },
 ): string {
   if (owner === 'epoux1') {
@@ -148,7 +151,7 @@ export default function ScAssetsPassifsCard({
     || hasBeneficiaryLevelGfAdjustment
     || forfaitMobilierMode !== 'off';
   const showForfaitMobilier = forfaitMobilierMode !== 'off';
-  const getNetLabel = (owner: SuccessionAssetOwner) => getActifNetLabel(owner, flags);
+  const getNetLabel = (owner: SuccessionLegacyAssetOwner) => getActifNetLabel(owner, flags);
 
   return (
     <div className="premium-card sc-card sc-card--guide">

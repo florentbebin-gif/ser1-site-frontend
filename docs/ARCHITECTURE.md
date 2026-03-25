@@ -499,11 +499,11 @@ Le runtime succession actuel distingue encore imparfaitement :
 - la masse patrimoniale (`commun` aujourd'hui)
 - la qualification juridique d'un bien (`propre`, `propre_par_nature`, `communaute`, etc.)
 
-Les types de transition `SuccessionPersonParty` et `SuccessionAssetPocket` sont introduits dans `src/features/succession/successionPatrimonialModel.ts`, sans migration runtime immediate du draft a ce stade.
-Les produits specialises AV / PER / prevoyance sont maintenant types via `SuccessionPersonParty`, afin de preparer la future migration `owner -> pocket/personParty` sans etendre prematurement `SuccessionAssetOwner`.
-Le draft succession persiste desormais `pocket` sur `assetEntries` et `groupementFoncierEntries`, tout en gardant l'alias legacy `owner` synchronise le temps des migrations moteur restantes.
-La base taxable succession (`successionAssetValuation.ts`, `successionTransmissionBasis.ts`, `successionChainage.ts`, `successionDisplay.ts`) consomme maintenant prioritairement `pocket`, avec repli de compat sur `owner` pour les jeux de donnees legacy.
-L'UI actifs/passifs expose desormais une `Masse de rattachement` dependante du regime au lieu du select legacy `Porteur` pour les entrees detaillees.
+Les types de transition `SuccessionPersonParty` et `SuccessionAssetPocket` sont introduits dans `src/features/succession/successionPatrimonialModel.ts`.
+Les produits specialises AV / PER / prevoyance sont maintenant types via `SuccessionPersonParty`, sans dependance au modele legacy `owner`.
+Le draft succession detaille persiste desormais `pocket` only sur `assetEntries` et `groupementFoncierEntries`; les anciens drafts `owner` restent relus via le parse legacy, et la serialisation courante sort en `v21`.
+La base taxable succession (`successionAssetValuation.ts`, `successionTransmissionBasis.ts`, `successionChainage.ts`, `successionDisplay.ts`) consomme maintenant `pocket` comme source unique pour les lignes detaillees; les agregats simplifies `epoux1/epoux2/commun` ne subsistent que comme vue derivee pour le mode simplifie et `liquidationContext`.
+L'UI actifs/passifs expose une `Masse de rattachement` dependante du regime, y compris la poche `societe_acquets` quand `separation_biens_societe_acquets` est selectionne.
 
 La matrice de maturite et la trajectoire de refonte sont suivies dans [SUCCESSION_MODEL_MATURITY.md](SUCCESSION_MODEL_MATURITY.md).
 Toute PR qui etend les regimes matrimoniaux, la liquidation civile ou les masses patrimoniales doit mettre a jour cette matrice en meme temps que le code.

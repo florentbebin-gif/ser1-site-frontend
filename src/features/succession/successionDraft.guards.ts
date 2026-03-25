@@ -2,6 +2,7 @@ import type { RegimeMatrimonial } from '../../engine/civil';
 import type { LienParente } from '../../engine/succession';
 import type {
   SuccessionAssetPocket,
+  SuccessionLegacyAssetOwner,
   SuccessionPersonParty,
 } from './successionPatrimonialModel';
 import type {
@@ -11,7 +12,6 @@ import type {
   PacsConvention,
   SituationMatrimoniale,
   SuccessionAssetCategory,
-  SuccessionAssetOwner,
   SuccessionAssuranceVieContractType,
   SuccessionBeneficiaryRef,
   SuccessionChoixLegalConjointSansDDV,
@@ -113,7 +113,7 @@ export function isDonationEntryType(v: unknown): v is SuccessionDonationEntryTyp
   return v === 'rapportable' || v === 'hors_part' || v === 'legs_particulier';
 }
 
-export function isAssetOwner(v: unknown): v is SuccessionAssetOwner {
+export function isAssetOwner(v: unknown): v is SuccessionLegacyAssetOwner {
   return v === 'epoux1' || v === 'epoux2' || v === 'commun';
 }
 

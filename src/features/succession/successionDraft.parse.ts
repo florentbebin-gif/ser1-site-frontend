@@ -154,7 +154,7 @@ function parseDonations(rawDonations: unknown): SuccessionDonationEntry[] {
 
 function parseAssetEntries(
   rawAssetEntries: unknown,
-  situationMatrimoniale: ParsedSuccessionDraftPayload['civil']['situationMatrimoniale'],
+  civil: ParsedSuccessionDraftPayload['civil'],
 ): SuccessionAssetDetailEntry[] {
   const parsedEntries = (Array.isArray(rawAssetEntries) ? rawAssetEntries : [])
     .filter((item): item is Record<string, unknown> => isObject(item))
@@ -162,13 +162,15 @@ function parseAssetEntries(
       const location = resolveSuccessionAssetLocation({
         owner: item.owner,
         pocket: item.pocket,
-        situationMatrimoniale,
+        situationMatrimoniale: civil.situationMatrimoniale,
+        regimeMatrimonial: civil.regimeMatrimonial,
+        pacsConvention: civil.pacsConvention,
       });
       if (!location || !isAssetCategory(item.category)) return null;
 
       const asset: SuccessionAssetDetailEntry = {
         id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `asset-${idx + 1}`,
-        ...location,
+        pocket: location.pocket,
         category: item.category,
         subCategory: normalizeOptionalString(item.subCategory) ?? 'Saisie libre',
         amount: asAmount(item.amount, 0),
@@ -186,7 +188,7 @@ function parseAssetEntries(
 
 function parseGroupementFoncierEntries(
   rawGroupementFoncierEntries: unknown,
-  situationMatrimoniale: ParsedSuccessionDraftPayload['civil']['situationMatrimoniale'],
+  civil: ParsedSuccessionDraftPayload['civil'],
 ): SuccessionGroupementFoncierEntry[] {
   return (Array.isArray(rawGroupementFoncierEntries) ? rawGroupementFoncierEntries : [])
     .filter((item): item is Record<string, unknown> => isObject(item))
@@ -194,14 +196,16 @@ function parseGroupementFoncierEntries(
       const location = resolveSuccessionAssetLocation({
         owner: item.owner,
         pocket: item.pocket,
-        situationMatrimoniale,
+        situationMatrimoniale: civil.situationMatrimoniale,
+        regimeMatrimonial: civil.regimeMatrimonial,
+        pacsConvention: civil.pacsConvention,
       });
       if (!location || !isGroupementFoncierType(item.type)) return null;
 
       const entry: SuccessionGroupementFoncierEntry = {
         id: typeof item.id === 'string' && item.id.trim().length > 0 ? item.id.trim() : `gf-${idx + 1}`,
         type: item.type as GroupementFoncierType,
-        ...location,
+        pocket: location.pocket,
         valeurTotale: asAmount(item.valeurTotale, 0),
       };
 
@@ -511,7 +515,7 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
     };
 
     const assetEntries = version >= 10 && Array.isArray(payload.assetEntries)
-      ? parseAssetEntries(payload.assetEntries, civil.situationMatrimoniale)
+      ? parseAssetEntries(payload.assetEntries, civil)
       : deriveLegacyAssetEntries(liquidation, civil.situationMatrimoniale);
 
     const assuranceVieEntries = version >= 10 && Array.isArray(payload.assuranceVieEntries)
@@ -538,7 +542,7 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       perEntries,
       groupementFoncierEntries: parseGroupementFoncierEntries(
         payload.groupementFoncierEntries,
-        civil.situationMatrimoniale,
+        civil,
       ),
       prevoyanceDecesEntries: version >= 18 && Array.isArray(payload.prevoyanceDecesEntries)
         ? parsePrevoyanceDecesEntries(payload.prevoyanceDecesEntries)

@@ -14,7 +14,7 @@ import {
   type FamilyMember,
   type SuccessionAssetDetailEntry,
   type SuccessionAssetPocket,
-  type SuccessionAssetOwner,
+  type SuccessionLegacyAssetOwner,
   type SuccessionPersonParty,
   type SuccessionAssuranceVieEntry,
   type SuccessionDonationEntry,
@@ -40,8 +40,8 @@ interface UseSuccessionSimulatorHandlersArgs {
   storeKey: string;
   reset: () => void;
   assetBreakdown: {
-    actifs: Record<SuccessionAssetOwner, number>;
-    passifs: Record<SuccessionAssetOwner, number>;
+    actifs: Record<SuccessionLegacyAssetOwner, number>;
+    passifs: Record<SuccessionLegacyAssetOwner, number>;
   };
   enfantRattachementOptions: { value: 'commun' | 'epoux1' | 'epoux2'; label: string }[];
   addMemberForm: AddFamilyMemberFormState;

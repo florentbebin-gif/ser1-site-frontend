@@ -106,7 +106,7 @@ describe('successionDraft', () => {
       [
         {
           id: 'asset-1',
-          owner: 'epoux1',
+          pocket: 'epoux1',
           category: 'immobilier',
           subCategory: 'Résidence principale',
           amount: 250000,
@@ -137,7 +137,7 @@ describe('successionDraft', () => {
       'epoux2',
     );
 
-    expect(payload.version).toBe(20);
+    expect(payload.version).toBe(21);
     expect(payload.assetEntries[0].pocket).toBe('epoux1');
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
     expect(parsed).not.toBeNull();
@@ -322,7 +322,7 @@ describe('successionDraft', () => {
     ]);
   });
 
-  it('parse un draft v20 avec pocket et restaure l alias legacy owner', () => {
+  it('parse un draft v20 avec pocket et conserve le runtime detaille en pocket only', () => {
     const parsed = parseSuccessionDraftPayload(JSON.stringify({
       version: 20,
       form: {
@@ -375,11 +375,9 @@ describe('successionDraft', () => {
     }));
 
     expect(parsed?.assetEntries[0]).toMatchObject({
-      owner: 'commun',
       pocket: 'communaute',
     });
     expect(parsed?.groupementFoncierEntries[0]).toMatchObject({
-      owner: 'commun',
       pocket: 'communaute',
     });
   });

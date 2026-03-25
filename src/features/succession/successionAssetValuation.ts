@@ -1,15 +1,16 @@
 import type {
   SuccessionAssetDetailEntry,
   SuccessionCivilContext,
-  SuccessionAssetOwner,
   SuccessionGroupementFoncierEntry,
   SuccessionPatrimonialContext,
 } from './successionDraft.types';
 import { computeGroupementFoncierExoneration } from './successionGroupementFoncier';
 import type { SuccessionAssetTransmissionBasis } from './successionTransmissionBasis';
 import {
+  getSuccessionLegacyOwnerFromPocket,
   resolveSuccessionAssetLocation,
   type SuccessionAssetPocket,
+  type SuccessionLegacyAssetOwner,
 } from './successionPatrimonialModel';
 import {
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
@@ -18,15 +19,15 @@ import {
 
 export interface SuccessionAssetValuationResult {
   assetBreakdown: {
-    actifs: Record<SuccessionAssetOwner, number>;
-    passifs: Record<SuccessionAssetOwner, number>;
+    actifs: Record<SuccessionLegacyAssetOwner, number>;
+    passifs: Record<SuccessionLegacyAssetOwner, number>;
   };
-  actifsTaxablesParOwner: Record<SuccessionAssetOwner, number>;
-  passifsParOwner: Record<SuccessionAssetOwner, number>;
+  actifsTaxablesParOwner: Record<SuccessionLegacyAssetOwner, number>;
+  passifsParOwner: Record<SuccessionLegacyAssetOwner, number>;
   forfaitMobilierComputed: number;
-  forfaitMobilierParOwner: Record<SuccessionAssetOwner, number>;
-  assetNetTotals: Record<SuccessionAssetOwner, number>;
-  taxableNetTotals: Record<SuccessionAssetOwner, number>;
+  forfaitMobilierParOwner: Record<SuccessionLegacyAssetOwner, number>;
+  assetNetTotals: Record<SuccessionLegacyAssetOwner, number>;
+  taxableNetTotals: Record<SuccessionLegacyAssetOwner, number>;
   hasResidencePrincipale: boolean;
   residencePrincipaleEntryId: string | null;
   transmissionBasis: SuccessionAssetTransmissionBasis;
@@ -42,7 +43,7 @@ interface SuccessionAssetValuationInput {
   abattementResidencePrincipale: boolean;
 }
 
-const EMPTY_OWNER_TOTALS: Record<SuccessionAssetOwner, number> = {
+const EMPTY_LEGACY_OWNER_TOTALS: Record<SuccessionLegacyAssetOwner, number> = {
   epoux1: 0,
   epoux2: 0,
   commun: 0,
@@ -58,19 +59,19 @@ const EMPTY_POCKET_TOTALS: Record<SuccessionAssetPocket, number> = {
 };
 
 const MAIN_RESIDENCE_LABELS = new Set([
-  'Résidence principale',
   'RÃ©sidence principale',
   'RÃƒÂ©sidence principale',
+  'RÃƒÆ’Ã‚Â©sidence principale',
 ]);
 
 const SECONDARY_RESIDENCE_LABELS = new Set([
-  'Résidence secondaire',
   'RÃ©sidence secondaire',
   'RÃƒÂ©sidence secondaire',
+  'RÃƒÆ’Ã‚Â©sidence secondaire',
 ]);
 
-function cloneOwnerTotals(): Record<SuccessionAssetOwner, number> {
-  return { ...EMPTY_OWNER_TOTALS };
+function cloneLegacyOwnerTotals(): Record<SuccessionLegacyAssetOwner, number> {
+  return { ...EMPTY_LEGACY_OWNER_TOTALS };
 }
 
 function clonePocketTotals(): Record<SuccessionAssetPocket, number> {
@@ -134,6 +135,22 @@ export function normalizeResidencePrincipaleAssetEntries(
   return changed ? normalized : assetEntries;
 }
 
+function normalizeAssetPocket(
+  pocket: SuccessionAssetPocket,
+  civilContext: SuccessionAssetValuationInput['civilContext'],
+): SuccessionAssetPocket {
+  return resolveSuccessionAssetLocation({
+    pocket,
+    situationMatrimoniale: civilContext.situationMatrimoniale,
+    regimeMatrimonial: civilContext.regimeMatrimonial,
+    pacsConvention: civilContext.pacsConvention,
+  })?.pocket ?? 'epoux1';
+}
+
+function toLegacyOwner(pocket: SuccessionAssetPocket): SuccessionLegacyAssetOwner {
+  return getSuccessionLegacyOwnerFromPocket(pocket);
+}
+
 export function computeSuccessionAssetValuation({
   civilContext,
   assetEntries,
@@ -143,71 +160,64 @@ export function computeSuccessionAssetValuation({
   forfaitMobilierMontant,
   abattementResidencePrincipale: _abattementResidencePrincipale,
 }: SuccessionAssetValuationInput): SuccessionAssetValuationResult {
-  const normalizedAssetEntries = normalizeResidencePrincipaleAssetEntries(assetEntries.map((entry) => {
-    const location = resolveSuccessionAssetLocation({
-      owner: entry.owner,
-      pocket: entry.pocket,
-      situationMatrimoniale: civilContext.situationMatrimoniale,
-      regimeMatrimonial: civilContext.regimeMatrimonial,
-      pacsConvention: civilContext.pacsConvention,
-    });
-    return location ? { ...entry, ...location } : entry;
+  const normalizedAssetEntries = normalizeResidencePrincipaleAssetEntries(assetEntries.map((entry) => ({
+    ...entry,
+    pocket: normalizeAssetPocket(entry.pocket, civilContext),
+  })));
+  const normalizedGroupementFoncierEntries = groupementFoncierEntries.map((entry) => ({
+    ...entry,
+    pocket: normalizeAssetPocket(entry.pocket, civilContext),
   }));
-  const normalizedGroupementFoncierEntries = groupementFoncierEntries.map((entry) => {
-    const location = resolveSuccessionAssetLocation({
-      owner: entry.owner,
-      pocket: entry.pocket,
-      situationMatrimoniale: civilContext.situationMatrimoniale,
-      regimeMatrimonial: civilContext.regimeMatrimonial,
-      pacsConvention: civilContext.pacsConvention,
-    });
-    return location ? { ...entry, ...location } : entry;
-  });
   const residencePrincipaleEntryId = normalizedAssetEntries.find((entry) =>
     entry.category === 'immobilier' && entry.subCategory === RESIDENCE_PRINCIPALE_SUBCATEGORY,
   )?.id ?? null;
 
   const assetBreakdown = normalizedAssetEntries.reduce((totals, entry) => {
+    const owner = toLegacyOwner(entry.pocket);
     if (entry.category === 'passif') {
-      totals.passifs[entry.owner] += asAmount(entry.amount);
+      totals.passifs[owner] += asAmount(entry.amount);
     } else {
-      totals.actifs[entry.owner] += asAmount(entry.amount);
+      totals.actifs[owner] += asAmount(entry.amount);
     }
     return totals;
   }, {
-    actifs: cloneOwnerTotals(),
-    passifs: cloneOwnerTotals(),
+    actifs: cloneLegacyOwnerTotals(),
+    passifs: cloneLegacyOwnerTotals(),
   });
   normalizedGroupementFoncierEntries.forEach((entry) => {
-    assetBreakdown.actifs[entry.owner] += asAmount(entry.valeurTotale);
+    assetBreakdown.actifs[toLegacyOwner(entry.pocket)] += asAmount(entry.valeurTotale);
   });
 
-  const actifsTaxablesParOwner = normalizedAssetEntries.reduce((totals, entry) => {
-    if (entry.category === 'passif') return totals;
-    totals[entry.owner] += asAmount(entry.amount);
-    return totals;
-  }, cloneOwnerTotals());
-  const ordinaryTaxableAssetsParOwner = {
-    ...actifsTaxablesParOwner,
-  };
   const ordinaryTaxableAssetsParPocket = normalizedAssetEntries.reduce((totals, entry) => {
-    if (entry.category === 'passif' || !entry.pocket) return totals;
+    if (entry.category === 'passif') return totals;
     totals[entry.pocket] += asAmount(entry.amount);
     return totals;
   }, clonePocketTotals());
+  const passifsParPocket = normalizedAssetEntries.reduce((totals, entry) => {
+    if (entry.category !== 'passif') return totals;
+    totals[entry.pocket] += asAmount(entry.amount);
+    return totals;
+  }, clonePocketTotals());
+
+  const actifsTaxablesParOwner = (Object.keys(EMPTY_POCKET_TOTALS) as SuccessionAssetPocket[]).reduce(
+    (totals, pocket) => {
+      totals[toLegacyOwner(pocket)] += ordinaryTaxableAssetsParPocket[pocket];
+      return totals;
+    },
+    cloneLegacyOwnerTotals(),
+  );
   normalizedGroupementFoncierEntries.forEach((entry) => {
     const { taxable } = computeGroupementFoncierExoneration(entry.type, asAmount(entry.valeurTotale));
-    actifsTaxablesParOwner[entry.owner] += taxable;
+    actifsTaxablesParOwner[toLegacyOwner(entry.pocket)] += taxable;
   });
 
-  const passifsParOwner = {
-    ...assetBreakdown.passifs,
-  };
-  const passifsParPocket = normalizedAssetEntries.reduce((totals, entry) => {
-    if (entry.category !== 'passif' || !entry.pocket) return totals;
-    totals[entry.pocket] += asAmount(entry.amount);
-    return totals;
-  }, clonePocketTotals());
+  const passifsParOwner = (Object.keys(EMPTY_POCKET_TOTALS) as SuccessionAssetPocket[]).reduce(
+    (totals, pocket) => {
+      totals[toLegacyOwner(pocket)] += passifsParPocket[pocket];
+      return totals;
+    },
+    cloneLegacyOwnerTotals(),
+  );
 
   const totalActifsTaxables =
     actifsTaxablesParOwner.epoux1
@@ -226,17 +236,17 @@ export function computeSuccessionAssetValuation({
     return totalActifsTaxables * rate;
   })();
 
-  const forfaitMobilierParOwner = (Object.keys(EMPTY_OWNER_TOTALS) as SuccessionAssetOwner[]).reduce(
+  const forfaitMobilierParOwner = (Object.keys(EMPTY_LEGACY_OWNER_TOTALS) as SuccessionLegacyAssetOwner[]).reduce(
     (totals, owner) => {
       totals[owner] = totalActifsTaxables > 0
         ? forfaitMobilierComputed * (actifsTaxablesParOwner[owner] / totalActifsTaxables)
         : 0;
       return totals;
     },
-    cloneOwnerTotals(),
+    cloneLegacyOwnerTotals(),
   );
 
-  const taxableNetTotals = (Object.keys(EMPTY_OWNER_TOTALS) as SuccessionAssetOwner[]).reduce(
+  const taxableNetTotals = (Object.keys(EMPTY_LEGACY_OWNER_TOTALS) as SuccessionLegacyAssetOwner[]).reduce(
     (totals, owner) => {
       totals[owner] = Math.max(
         0,
@@ -244,14 +254,14 @@ export function computeSuccessionAssetValuation({
       );
       return totals;
     },
-    cloneOwnerTotals(),
+    cloneLegacyOwnerTotals(),
   );
-  const assetNetTotals = (Object.keys(EMPTY_OWNER_TOTALS) as SuccessionAssetOwner[]).reduce(
+  const assetNetTotals = (Object.keys(EMPTY_LEGACY_OWNER_TOTALS) as SuccessionLegacyAssetOwner[]).reduce(
     (totals, owner) => {
       totals[owner] = Math.max(0, assetBreakdown.actifs[owner] - passifsParOwner[owner]);
       return totals;
     },
-    cloneOwnerTotals(),
+    cloneLegacyOwnerTotals(),
   );
 
   return {
@@ -265,8 +275,6 @@ export function computeSuccessionAssetValuation({
     hasResidencePrincipale: residencePrincipaleEntryId !== null,
     residencePrincipaleEntryId,
     transmissionBasis: {
-      ordinaryTaxableAssetsParOwner,
-      passifsParOwner,
       ordinaryTaxableAssetsParPocket,
       passifsParPocket,
       groupementFoncierEntries: normalizedGroupementFoncierEntries.map((entry) => ({ ...entry })),
@@ -278,7 +286,6 @@ export function computeSuccessionAssetValuation({
           const residencePrincipaleEntry = normalizedAssetEntries.find((entry) => entry.id === residencePrincipaleEntryId);
           return residencePrincipaleEntry
             ? {
-              owner: residencePrincipaleEntry.owner,
               pocket: residencePrincipaleEntry.pocket,
               valeurTotale: asAmount(residencePrincipaleEntry.amount),
             }
