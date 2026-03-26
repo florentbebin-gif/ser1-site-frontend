@@ -83,6 +83,7 @@ interface DispositionsModalProps {
   nbEnfantsNonCommuns: number;
   isCommunityRegime: boolean;
   isSocieteAcquetsRegime: boolean;
+  isParticipationAcquetsRegime: boolean;
   updateDispositionsTestament: (
     _side: SuccessionPrimarySide,
     _updater: (_current: SuccessionTestamentConfig) => SuccessionTestamentConfig,
@@ -118,6 +119,7 @@ export default function DispositionsModal({
   nbEnfantsNonCommuns,
   isCommunityRegime,
   isSocieteAcquetsRegime,
+  isParticipationAcquetsRegime,
   updateDispositionsTestament,
   getFirstTestamentBeneficiaryRef,
   onAddParticularLegacy,
@@ -435,6 +437,159 @@ export default function DispositionsModal({
                   </>
                 )}
               </div>
+            )}
+
+            {isParticipationAcquetsRegime && (
+              <>
+                <div className="sc-field">
+                  <label>Bloc participation aux acquets</label>
+                  <ScSelect
+                    value={dispositionsDraft.participationAcquets.active ? 'oui' : 'non'}
+                    onChange={(value) => setDispositionsDraft((prev) => ({
+                      ...prev,
+                      participationAcquets: {
+                        ...prev.participationAcquets,
+                        active: value === 'oui',
+                      },
+                    }))}
+                    options={OUI_NON_OPTIONS}
+                  />
+                  <p className="sc-hint sc-hint--compact">
+                    Active un calcul simplifie de creance de participation au 1er deces.
+                  </p>
+                </div>
+
+                {dispositionsDraft.participationAcquets.active && (
+                  <>
+                    <div className="sc-field">
+                      <label>Patrimoine final derive des actifs saisis</label>
+                      <ScSelect
+                        value={dispositionsDraft.participationAcquets.useCurrentAssetsAsFinalPatrimony ? 'oui' : 'non'}
+                        onChange={(value) => setDispositionsDraft((prev) => ({
+                          ...prev,
+                          participationAcquets: {
+                            ...prev.participationAcquets,
+                            useCurrentAssetsAsFinalPatrimony: value === 'oui',
+                          },
+                        }))}
+                        options={OUI_NON_OPTIONS}
+                      />
+                      <p className="sc-hint sc-hint--compact">
+                        Oui = le simulateur reprend les actifs propres actuellement saisis pour chaque epoux.
+                      </p>
+                    </div>
+
+                    <div className="sc-field">
+                      <label>Patrimoine originaire Epoux 1 (EUR)</label>
+                      <ScNumericInput
+                        value={dispositionsDraft.participationAcquets.patrimoineOriginaireEpoux1 || 0}
+                        min={0}
+                        onChange={(value) => setDispositionsDraft((prev) => ({
+                          ...prev,
+                          participationAcquets: {
+                            ...prev.participationAcquets,
+                            patrimoineOriginaireEpoux1: value,
+                          },
+                        }))}
+                      />
+                    </div>
+
+                    <div className="sc-field">
+                      <label>Patrimoine originaire Epoux 2 (EUR)</label>
+                      <ScNumericInput
+                        value={dispositionsDraft.participationAcquets.patrimoineOriginaireEpoux2 || 0}
+                        min={0}
+                        onChange={(value) => setDispositionsDraft((prev) => ({
+                          ...prev,
+                          participationAcquets: {
+                            ...prev.participationAcquets,
+                            patrimoineOriginaireEpoux2: value,
+                          },
+                        }))}
+                      />
+                    </div>
+
+                    {!dispositionsDraft.participationAcquets.useCurrentAssetsAsFinalPatrimony && (
+                      <>
+                        <div className="sc-field">
+                          <label>Patrimoine final Epoux 1 (EUR)</label>
+                          <ScNumericInput
+                            value={dispositionsDraft.participationAcquets.patrimoineFinalEpoux1 || 0}
+                            min={0}
+                            onChange={(value) => setDispositionsDraft((prev) => ({
+                              ...prev,
+                              participationAcquets: {
+                                ...prev.participationAcquets,
+                                patrimoineFinalEpoux1: value,
+                              },
+                            }))}
+                          />
+                        </div>
+
+                        <div className="sc-field">
+                          <label>Patrimoine final Epoux 2 (EUR)</label>
+                          <ScNumericInput
+                            value={dispositionsDraft.participationAcquets.patrimoineFinalEpoux2 || 0}
+                            min={0}
+                            onChange={(value) => setDispositionsDraft((prev) => ({
+                              ...prev,
+                              participationAcquets: {
+                                ...prev.participationAcquets,
+                                patrimoineFinalEpoux2: value,
+                              },
+                            }))}
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    <div className="sc-field">
+                      <label>Quote de creance Epoux 1 (%)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={dispositionsDraft.participationAcquets.quoteEpoux1Pct}
+                        onChange={(e) => {
+                          const quoteEpoux1Pct = Math.min(100, Math.max(0, Number(e.target.value) || 0));
+                          setDispositionsDraft((prev) => ({
+                            ...prev,
+                            participationAcquets: {
+                              ...prev.participationAcquets,
+                              quoteEpoux1Pct,
+                              quoteEpoux2Pct: 100 - quoteEpoux1Pct,
+                            },
+                          }));
+                        }}
+                      />
+                    </div>
+
+                    <div className="sc-field">
+                      <label>Quote de creance Epoux 2 (%)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={dispositionsDraft.participationAcquets.quoteEpoux2Pct}
+                        onChange={(e) => {
+                          const quoteEpoux2Pct = Math.min(100, Math.max(0, Number(e.target.value) || 0));
+                          setDispositionsDraft((prev) => ({
+                            ...prev,
+                            participationAcquets: {
+                              ...prev.participationAcquets,
+                              quoteEpoux1Pct: 100 - quoteEpoux2Pct,
+                              quoteEpoux2Pct,
+                            },
+                          }));
+                        }}
+                      />
+                      <p className="sc-hint sc-hint--compact">
+                        La quote du conjoint creancier s&apos;applique a l&apos;ecart d&apos;acquets net calcule.
+                      </p>
+                    </div>
+                  </>
+                )}
+              </>
             )}
 
             {isCommunityRegime && renderPreciputConfigurator({

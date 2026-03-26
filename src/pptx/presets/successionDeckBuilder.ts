@@ -71,6 +71,34 @@ export interface SuccessionData {
       survivorQuotePct: number;
       attributionIntegrale: boolean;
     } | null;
+    participationAcquets?: {
+      configured: boolean;
+      active: boolean;
+      useCurrentAssetsAsFinalPatrimony: boolean;
+      patrimoineOriginaireEpoux1: number;
+      patrimoineOriginaireEpoux2: number;
+      patrimoineFinalEpoux1: number;
+      patrimoineFinalEpoux2: number;
+      acquetsEpoux1: number;
+      acquetsEpoux2: number;
+      creditor: 'epoux1' | 'epoux2' | null;
+      debtor: 'epoux1' | 'epoux2' | null;
+      quoteAppliedPct: number;
+      creanceAmount: number;
+      firstEstateAdjustment: number;
+    } | null;
+    preciput?: {
+      mode: 'global' | 'cible' | 'none';
+      requestedAmount: number;
+      appliedAmount: number;
+      usesGlobalFallback: boolean;
+      selections: Array<{
+        id: string;
+        label: string;
+        requestedAmount: number;
+        appliedAmount: number;
+      }>;
+    } | null;
     assuranceVieTotale?: number;
     perTotale?: number;
     prevoyanceTotale?: number;
@@ -168,6 +196,36 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
     }
     if (data.societeAcquets.attributionIntegrale) {
       lines.push("- Societe d'acquets: attribution integrale du reliquat au survivant.");
+    }
+  }
+
+  if (data.preciput && (data.preciput.appliedAmount > 0 || data.preciput.selections.length > 0)) {
+    lines.push(
+      `- Preciput ${data.preciput.mode === 'cible' ? 'cible' : 'global'}: montant preleve ${fmt(data.preciput.appliedAmount)}`,
+    );
+    if (data.preciput.usesGlobalFallback) {
+      lines.push("- Preciput: fallback global active faute de selection ciblee compatible.");
+    }
+    data.preciput.selections.forEach((selection) => {
+      lines.push(`- Preciput: ${selection.label} preleve pour ${fmt(selection.appliedAmount)}`);
+    });
+  }
+
+  if (data.participationAcquets) {
+    if (!data.participationAcquets.active) {
+      lines.push("- Participation aux acquets: configuration inactive, calcul conserve en separation de biens.");
+    } else {
+      lines.push(
+        `- Participation aux acquets: patrimoines originaires ${fmt(data.participationAcquets.patrimoineOriginaireEpoux1)} / ${fmt(data.participationAcquets.patrimoineOriginaireEpoux2)}, ` +
+        `patrimoines finals ${fmt(data.participationAcquets.patrimoineFinalEpoux1)} / ${fmt(data.participationAcquets.patrimoineFinalEpoux2)}, ` +
+        `acquets nets ${fmt(data.participationAcquets.acquetsEpoux1)} / ${fmt(data.participationAcquets.acquetsEpoux2)}, ` +
+        `creance ${fmt(data.participationAcquets.creanceAmount)}`,
+      );
+      if (data.participationAcquets.creditor && data.participationAcquets.debtor) {
+        lines.push(
+          `- Participation aux acquets: ${data.participationAcquets.debtor} doit ${fmt(data.participationAcquets.creanceAmount)} a ${data.participationAcquets.creditor} (quote ${Math.round(data.participationAcquets.quoteAppliedPct)}%).`,
+        );
+      }
     }
   }
 

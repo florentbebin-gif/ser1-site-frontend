@@ -14,6 +14,7 @@ import {
 } from './successionTestament';
 import {
   cloneAscendantsSurvivantsBySide,
+  cloneSuccessionParticipationAcquetsConfig,
   cloneSuccessionPreciputSelections,
   cloneSuccessionSocieteAcquetsConfig,
   updateDraftTestament,
@@ -116,6 +117,7 @@ export function useSuccessionDispositionsHandlers({
       donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
       donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
       societeAcquets: cloneSuccessionSocieteAcquetsConfig(patrimonialContext.societeAcquets),
+      participationAcquets: cloneSuccessionParticipationAcquetsConfig(patrimonialContext.participationAcquets),
       preciputMode: patrimonialContext.preciputMode,
       preciputSelections: cloneSuccessionPreciputSelections(patrimonialContext.preciputSelections),
       preciputMontant: patrimonialContext.preciputMontant,
@@ -140,6 +142,7 @@ export function useSuccessionDispositionsHandlers({
       donationEntreEpouxActive: dispositionsDraft.donationEntreEpouxActive,
       donationEntreEpouxOption: dispositionsDraft.donationEntreEpouxOption,
       societeAcquets: cloneSuccessionSocieteAcquetsConfig(dispositionsDraft.societeAcquets),
+      participationAcquets: cloneSuccessionParticipationAcquetsConfig(dispositionsDraft.participationAcquets),
       preciputMode: dispositionsDraft.preciputMode,
       preciputSelections: cloneSuccessionPreciputSelections(dispositionsDraft.preciputSelections),
       preciputMontant: dispositionsDraft.preciputMontant,

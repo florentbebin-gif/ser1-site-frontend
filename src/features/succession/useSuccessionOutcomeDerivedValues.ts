@@ -402,6 +402,42 @@ export function useSuccessionOutcomeDerivedValues({
           attributionIntegrale: chainageAnalysis.societeAcquets.attributionIntegrale,
         }
         : null,
+      participationAcquets: displayUsesChainage && chainageAnalysis.participationAcquets
+        ? {
+          configured: chainageAnalysis.participationAcquets.configured,
+          active: chainageAnalysis.participationAcquets.active,
+          useCurrentAssetsAsFinalPatrimony: chainageAnalysis.participationAcquets.useCurrentAssetsAsFinalPatrimony,
+          patrimoineOriginaireEpoux1: chainageAnalysis.participationAcquets.patrimoineOriginaireEpoux1,
+          patrimoineOriginaireEpoux2: chainageAnalysis.participationAcquets.patrimoineOriginaireEpoux2,
+          patrimoineFinalEpoux1: chainageAnalysis.participationAcquets.patrimoineFinalEpoux1,
+          patrimoineFinalEpoux2: chainageAnalysis.participationAcquets.patrimoineFinalEpoux2,
+          acquetsEpoux1: chainageAnalysis.participationAcquets.acquetsEpoux1,
+          acquetsEpoux2: chainageAnalysis.participationAcquets.acquetsEpoux2,
+          creditor: chainageAnalysis.participationAcquets.creditor,
+          debtor: chainageAnalysis.participationAcquets.debtor,
+          quoteAppliedPct: chainageAnalysis.participationAcquets.quoteAppliedPct,
+          creanceAmount: chainageAnalysis.participationAcquets.creanceAmount,
+          firstEstateAdjustment: chainageAnalysis.participationAcquets.firstEstateAdjustment,
+        }
+        : null,
+      preciput: displayUsesChainage && chainageAnalysis.preciput
+        ? {
+          mode: chainageAnalysis.preciput.mode,
+          pocket: chainageAnalysis.preciput.pocket,
+          requestedAmount: chainageAnalysis.preciput.requestedAmount,
+          appliedAmount: chainageAnalysis.preciput.appliedAmount,
+          usesGlobalFallback: chainageAnalysis.preciput.usesGlobalFallback,
+          selections: chainageAnalysis.preciput.selections.map((selection) => ({
+            id: selection.id,
+            sourceType: selection.sourceType,
+            sourceId: selection.sourceId,
+            label: selection.label,
+            pocket: selection.pocket,
+            requestedAmount: selection.requestedAmount,
+            appliedAmount: selection.appliedAmount,
+          })),
+        }
+        : null,
       assuranceVieTotale: assuranceVieTotals.capitaux,
       perTotale: perTotals.capitaux,
       prevoyanceTotale: prevoyanceTotals.capitaux,

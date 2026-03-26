@@ -177,9 +177,10 @@ La trajectoire de montee en gamme du simulateur succession est suivie dans [SUCC
 Regle de lecture :
 - `communaute_legale` et `separation_biens` sont des supports robustes du perimetre actuel
 - `communaute_universelle` reste une simplification documentee tant que les propres par nature ne sont pas qualifies
-- `participation_acquets` et `communaute_meubles_acquets` restent des approximations assumees
+- `communaute_meubles_acquets` reste une approximation assumee
+- `participation_acquets` garde un audit predeces approxime, mais la succession peut maintenant calculer une creance simplifiee si le bloc dedie est active dans les dispositions
 - `separation_biens_societe_acquets` reste une lecture simplifiee dans l'audit predeces, mais la succession liquide maintenant la poche `societe_acquets` via un bloc dedie, un chainage simplifie et une restitution/export explicites
-- le preciput cible par bien est maintenant selectionnable dans la modal dispositions sur les biens `communaute` / `societe_acquets`, et le chainage le deduit avant partage avec fallback sur le montant global
+- le preciput cible par bien est maintenant selectionnable dans la modal dispositions sur les biens `communaute` / `societe_acquets`, le chainage le deduit avant partage avec fallback sur le montant global, et la synthese / chronologie / exports mentionnent explicitement les biens preleves
 
 ### UX — Saisie des actifs spécialisés via la sous-catégorie
 

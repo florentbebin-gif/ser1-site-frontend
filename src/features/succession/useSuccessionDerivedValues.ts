@@ -162,6 +162,7 @@ export function useSuccessionDerivedValues({
     regimeMatrimonial: civilContext.regimeMatrimonial,
     pacsConvention: civilContext.pacsConvention,
   });
+  const isParticipationAcquetsRegime = isMarried && civilContext.regimeMatrimonial === 'participation_acquets';
 
   const uiDerived = useSuccessionUiDerivedValues({
     civilContext,
@@ -298,6 +299,7 @@ export function useSuccessionDerivedValues({
         donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
         donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
         societeAcquets: patrimonialContext.societeAcquets,
+        participationAcquets: patrimonialContext.participationAcquets,
         preciputMode: patrimonialContext.preciputMode,
         preciputSelections: patrimonialContext.preciputSelections,
         preciputMontant: patrimonialContext.preciputMontant,
@@ -331,6 +333,7 @@ export function useSuccessionDerivedValues({
       patrimonialContext.donationEntreEpouxActive,
       patrimonialContext.donationEntreEpouxOption,
       patrimonialContext.societeAcquets,
+      patrimonialContext.participationAcquets,
       patrimonialContext.preciputMode,
       patrimonialContext.preciputSelections,
       patrimonialContext.preciputMontant,
@@ -478,6 +481,7 @@ export function useSuccessionDerivedValues({
     isCouple,
     isCommunityRegime,
     isSocieteAcquetsRegime,
+    isParticipationAcquetsRegime,
     isPacsIndivision,
     hasComputableFiliation,
     hasRequiredBirthDatesForCurrentSituation,

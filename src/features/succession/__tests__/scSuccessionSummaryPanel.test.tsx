@@ -19,7 +19,7 @@ describe('ScSuccessionSummaryPanel', () => {
         }]}
         synthHypothese={null}
         isPacsed={false}
-        chainageAnalysis={{ order: 'epoux1', societeAcquets: null, step1: null, step2: null }}
+        chainageAnalysis={{ order: 'epoux1', societeAcquets: null, participationAcquets: null, preciput: null, step1: null, step2: null }}
         avFiscalByAssure={{ epoux1: { totalDroits: 4000 }, epoux2: { totalDroits: 0 } }}
         perFiscalByAssure={{ epoux1: { totalDroits: 2000 }, epoux2: { totalDroits: 0 } }}
         prevoyanceFiscalByAssure={{ epoux1: { totalDroits: 1000 }, epoux2: { totalDroits: 0 } }}
@@ -59,7 +59,7 @@ describe('ScSuccessionSummaryPanel', () => {
         }]}
         synthHypothese={null}
         isPacsed={false}
-        chainageAnalysis={{ order: 'epoux1', societeAcquets: null, step1: null, step2: null }}
+        chainageAnalysis={{ order: 'epoux1', societeAcquets: null, participationAcquets: null, preciput: null, step1: null, step2: null }}
         avFiscalByAssure={{ epoux1: { totalDroits: 3000 }, epoux2: { totalDroits: 0 } }}
         perFiscalByAssure={{ epoux1: { totalDroits: 2000 }, epoux2: { totalDroits: 0 } }}
         prevoyanceFiscalByAssure={{ epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } }}
@@ -106,6 +106,16 @@ describe('ScSuccessionSummaryPanel', () => {
             survivorQuotePct: 60,
             attributionIntegrale: false,
           },
+          participationAcquets: null,
+          preciput: {
+            mode: 'cible',
+            appliedAmount: 50000,
+            usesGlobalFallback: false,
+            selections: [
+              { id: 'prec-1', label: 'Portefeuille titres', appliedAmount: 30000 },
+              { id: 'prec-2', label: 'GFV familial', appliedAmount: 20000 },
+            ],
+          },
           step1: { droitsEnfants: 10000 },
           step2: { droitsEnfants: 10000 },
         }}
@@ -124,5 +134,53 @@ describe('ScSuccessionSummaryPanel', () => {
     expect(markup).toContain('Liquidation societe');
     expect(markup).toContain('Valeur nette de la poche');
     expect(markup).toContain('Preciput preleve');
+  });
+
+  it('renders the participation aux acquets section when a claim is configured', () => {
+    const markup = renderToStaticMarkup(
+      <ScSuccessionSummaryPanel
+        displayUsesChainage
+        derivedTotalDroits={22000}
+        synthDonutTransmis={650000}
+        derivedMasseTransmise={0}
+        transmissionRows={[]}
+        synthHypothese={null}
+        isPacsed={false}
+        chainageAnalysis={{
+          order: 'epoux1',
+          societeAcquets: null,
+          participationAcquets: {
+            active: true,
+            patrimoineOriginaireEpoux1: 100000,
+            patrimoineOriginaireEpoux2: 120000,
+            patrimoineFinalEpoux1: 300000,
+            patrimoineFinalEpoux2: 180000,
+            acquetsEpoux1: 200000,
+            acquetsEpoux2: 60000,
+            creditor: 'epoux2',
+            debtor: 'epoux1',
+            quoteAppliedPct: 50,
+            creanceAmount: 70000,
+            firstEstateAdjustment: -70000,
+          },
+          preciput: null,
+          step1: { droitsEnfants: 12000 },
+          step2: { droitsEnfants: 10000 },
+        }}
+        avFiscalByAssure={{ epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } }}
+        perFiscalByAssure={{ epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } }}
+        prevoyanceFiscalByAssure={{ epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } }}
+        insurance990ILines={[]}
+        insurance757BLines={[]}
+        directDisplay={{
+          simulatedDeceased: 'epoux1',
+          result: null,
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Participation aux acquets');
+    expect(markup).toContain('Creance de participation');
+    expect(markup).toContain('Epoux 2 / Epoux 1');
   });
 });

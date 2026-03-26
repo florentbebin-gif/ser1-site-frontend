@@ -67,6 +67,38 @@ export interface SuccessionChronologieXlsxData {
     survivorQuotePct: number;
     attributionIntegrale: boolean;
   } | null;
+  participationAcquets?: {
+    configured: boolean;
+    active: boolean;
+    useCurrentAssetsAsFinalPatrimony: boolean;
+    patrimoineOriginaireEpoux1: number;
+    patrimoineOriginaireEpoux2: number;
+    patrimoineFinalEpoux1: number;
+    patrimoineFinalEpoux2: number;
+    acquetsEpoux1: number;
+    acquetsEpoux2: number;
+    creditor: 'epoux1' | 'epoux2' | null;
+    debtor: 'epoux1' | 'epoux2' | null;
+    quoteAppliedPct: number;
+    creanceAmount: number;
+    firstEstateAdjustment: number;
+  } | null;
+  preciput?: {
+    mode: 'global' | 'cible' | 'none';
+    pocket?: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage' | null;
+    requestedAmount: number;
+    appliedAmount: number;
+    usesGlobalFallback: boolean;
+    selections: Array<{
+      id: string;
+      sourceType?: 'asset' | 'groupement_foncier';
+      sourceId?: string;
+      label: string;
+      pocket?: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+      requestedAmount: number;
+      appliedAmount: number;
+    }>;
+  } | null;
   assuranceVieTotale?: number;
   perTotale?: number;
   prevoyanceTotale?: number;
@@ -231,6 +263,53 @@ function buildPredecesSheet(
     }
     if (chronologie.societeAcquets.attributionIntegrale) {
       rows.push(['Attribution integrale du reliquat', 'Oui']);
+    }
+    rows.push([]);
+  }
+
+  if (chronologie.preciput && (chronologie.preciput.appliedAmount > 0 || chronologie.preciput.selections.length > 0)) {
+    rows.push([sec('Preciput'), sec('')]);
+    rows.push(['Mode retenu', chronologie.preciput.mode === 'cible' ? 'Cible' : 'Global']);
+    rows.push(['Montant preleve', money(chronologie.preciput.appliedAmount)]);
+    if (chronologie.preciput.usesGlobalFallback) {
+      rows.push(['Fallback global active', 'Oui']);
+    }
+    chronologie.preciput.selections.forEach((selection) => {
+      rows.push([
+        `Bien preleve - ${selection.label}`,
+        money(selection.appliedAmount),
+      ]);
+    });
+    rows.push([]);
+  }
+
+  if (chronologie.participationAcquets) {
+    rows.push([sec('Participation aux acquets'), sec('')]);
+    rows.push(['Configuration active', chronologie.participationAcquets.active ? 'Oui' : 'Non']);
+    if (chronologie.participationAcquets.active) {
+      rows.push([
+        'Patrimoine originaire Epoux 1 / Epoux 2',
+        `${formatMoney(chronologie.participationAcquets.patrimoineOriginaireEpoux1)} / ${formatMoney(chronologie.participationAcquets.patrimoineOriginaireEpoux2)}`,
+      ]);
+      rows.push([
+        'Patrimoine final Epoux 1 / Epoux 2',
+        `${formatMoney(chronologie.participationAcquets.patrimoineFinalEpoux1)} / ${formatMoney(chronologie.participationAcquets.patrimoineFinalEpoux2)}`,
+      ]);
+      rows.push([
+        'Acquets nets Epoux 1 / Epoux 2',
+        `${formatMoney(chronologie.participationAcquets.acquetsEpoux1)} / ${formatMoney(chronologie.participationAcquets.acquetsEpoux2)}`,
+      ]);
+      rows.push(['Creance de participation', money(chronologie.participationAcquets.creanceAmount)]);
+      if (chronologie.participationAcquets.creditor && chronologie.participationAcquets.debtor) {
+        rows.push([
+          'Creancier / debiteur',
+          `${chronologie.participationAcquets.creditor} / ${chronologie.participationAcquets.debtor}`,
+        ]);
+        rows.push([
+          'Quote appliquee',
+          `${Math.round(chronologie.participationAcquets.quoteAppliedPct)} %`,
+        ]);
+      }
     }
     rows.push([]);
   }

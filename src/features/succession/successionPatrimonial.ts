@@ -135,6 +135,14 @@ export function buildSuccessionPatrimonialAnalysis(
     warnings.push(`Attribution des biens communs au survivant: ${patrimonial.attributionBiensCommunsPct} % (vs 50 % en partage usuel).`);
   }
 
+  if (civil.regimeMatrimonial === 'participation_acquets') {
+    warnings.push(
+      patrimonial.participationAcquets.active
+        ? 'Participation aux acquets activee: creance de participation simplifiee calculee sur les patrimoines declares.'
+        : 'Participation aux acquets sans configuration dediee: approximation conservee en separation de biens.',
+    );
+  }
+
   if (preciputMontant > 0 || hasTargetedPreciput) {
     if (civil.situationMatrimoniale === 'marie') {
       warnings.push(

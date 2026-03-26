@@ -137,6 +137,7 @@ export function SuccessionModals({
           nbEnfantsNonCommuns={derived.nbEnfantsNonCommuns}
           isCommunityRegime={derived.isCommunityRegime}
           isSocieteAcquetsRegime={derived.isSocieteAcquetsRegime}
+          isParticipationAcquetsRegime={derived.isParticipationAcquetsRegime}
           updateDispositionsTestament={onUpdateDispositionsTestament}
           getFirstTestamentBeneficiaryRef={onGetFirstTestamentBeneficiaryRef}
           onAddParticularLegacy={onAddParticularLegacy}

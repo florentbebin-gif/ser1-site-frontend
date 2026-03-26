@@ -29,7 +29,7 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 | Sujet | Etat repo actuel | Preuves |
 |---|---|---|
 | Personne physique | Type de transition explicite introduit (`SuccessionPersonParty`), runtime encore branche sur `epoux1` / `epoux2` | `src/features/succession/successionPatrimonialModel.ts`, `src/features/succession/successionDraft.types.ts` |
-| Masse patrimoniale | Le draft persiste maintenant `SuccessionAssetPocket`; le runtime detaille et la serialisation `v21` n'embarquent plus `owner` sur les actifs/GF | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionDraft.serialize.ts`, `src/features/succession/successionDraft.parse.ts` |
+| Masse patrimoniale | Le draft persiste maintenant `SuccessionAssetPocket`; le runtime detaille et la serialisation `v24` n'embarquent plus `owner` sur les actifs/GF | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionDraft.serialize.ts`, `src/features/succession/successionDraft.parse.ts` |
 | Distinction personne / masse | Transition tres avancee: le draft detaille, les handlers, l'UI de selection et la base taxable utilisent `pocket`; seuls les agregats simplifies `epoux1/epoux2/commun` subsistent comme vue legacy | `src/features/succession/successionPatrimonialModel.ts`, `src/features/succession/useSuccessionAssetHandlers.ts`, `src/features/succession/useSuccessionUiDerivedValues.ts`, `src/features/succession/successionAssetValuation.ts`, `src/features/succession/successionTransmissionBasis.ts` |
 | Qualification juridique des biens | Absente (`propre`, `propre_par_nature`, `origin`, etc.) | absence de champs dans `src/features/succession/successionDraft.types.ts` |
 | Passif affecte par masse | Partiel seulement: le draft et la base de transmission portent `pocket`, mais la liquidation agregee reste lue via l'alias `owner` | `src/features/succession/successionDraft.types.ts`, `src/features/succession/successionAssetValuation.ts`, `src/features/succession/successionTransmissionBasis.ts` |
@@ -51,7 +51,7 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 | `communaute_legale` | Gere nativement | Support robuste | Pas de recompenses, pas d'origine juridique des biens | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionChainageEstateSplit.ts` |
 | `communaute_universelle` | Gere nativement | Simplification documentee | Les propres par nature ne sont pas distingues | `src/features/succession/successionChainageEstateSplit.ts`, `docs/METIER.md` |
 | `separation_biens` | Gere nativement | Support robuste | Pas d'indivisions fines ni de passif juridiquement affecte | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionChainageEstateSplit.ts` |
-| `participation_acquets` | Approxime en separation de biens | Approximation assumee | Creance de participation non modelisee | `src/features/succession/successionPredeces.ts`, `src/features/succession/__tests__/successionPredeces.test.ts` |
+| `participation_acquets` | Audit predeces encore approxime en separation de biens, mais le chainage succession sait maintenant calculer une creance simplifiee via un bloc dedie | Simplification documentee | Pas encore de liquidation notariale exhaustive ni de creance juridiquement fine | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionParticipationAcquets.ts`, `src/features/succession/components/DispositionsModal.tsx`, `src/features/succession/__tests__/successionChainage.test.ts` |
 | `communaute_meubles_acquets` | Approxime en communaute legale | Approximation assumee | Distinction meuble / immeuble absente | `src/features/succession/successionPredeces.ts` |
 | `separation_biens_societe_acquets` | Audit predeces encore approxime en separation de biens, mais le chainage succession liquide maintenant la poche `societe_acquets` via un moteur dedie simplifie, une configuration contractuelle en UI et une restitution/export dedies | Simplification documentee | Pas encore de liquidation notariale exhaustive | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionChainage.ts`, `src/features/succession/components/DispositionsModal.tsx`, `src/features/succession/components/ScDeathTimelinePanel.tsx`, `src/features/succession/successionXlsx.ts` |
 
@@ -73,13 +73,13 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 | Testament simple | Present | Support robuste du perimetre actuel |
 | Donation entre epoux | Present avec replis | Simplification documentee |
 | Preciput global en montant | Present | Support robuste du perimetre actuel |
-| Preciput cible par bien | Selection UI et deduction moteur de chainage presentes sur `communaute` / `societe_acquets`; restitution/export dedies encore a completer | Simplification documentee |
+| Preciput cible par bien | Selection UI, deduction moteur et restitution/export dedies presents sur `communaute` / `societe_acquets` | Simplification documentee |
 | Assurance-vie 990 I / 757 B | Present mais encore a fiabiliser sur certains cas | Support robuste avec regressions identifiees |
 | Representation petits-enfants | Presente mais incomplete fiscalement | Simplification documentee |
 | Rappel fiscal donations | Partiellement analytique | Approximation assumee |
 | GFA / GFV / GFF / GF | Present avec seuils LF 2025 integres | Support robuste du perimetre actuel |
 | Recompenses / creances entre masses | Absent | Non modelise |
-| Participation aux acquets (creance) | Absente | Non modelise |
+| Participation aux acquets (creance) | Bloc de configuration et creance simplifiee presents dans le chainage succession | Simplification documentee |
 | Propres par nature | Absent | Non modelise |
 | Qualif. meuble / immeuble pour CMA | Absente | Non modelise |
 | Passif juridiquement affecte | Absent | Non modelise |
@@ -108,12 +108,14 @@ La `PR-12` decouple ensuite AV / PER / prevoyance du futur modele de masse en le
 Les `PR-13/14` migrent ensuite le draft et les entrees detaillees vers `pocket`, avec maintien transitoire de l'alias `owner` pour le moteur existant.
 Les `PR-15/16` alignent les helpers specialises et la sync d'etat sur `pocket`.
 Les `PR-17/18` font ensuite basculer la base taxable / chainage vers `pocket` et remplacent en UI le select `Porteur` par `Masse de rattachement` avec options dependantes du regime.
-La `PR-19` supprime ensuite `SuccessionAssetOwner` du runtime detaille: actifs et groupements fonciers sont desormais `pocket` only, et la serialisation passe en `v21`.
+La `PR-19` supprime ensuite `SuccessionAssetOwner` du runtime detaille: actifs et groupements fonciers sont desormais `pocket` only, et la serialisation passe ensuite par les versions courantes du draft, jusqu'a `v24` aujourd'hui.
 La `PR-20` ouvre explicitement la poche `societe_acquets` quand le regime `separation_biens_societe_acquets` est selectionne.
 Les `PR-21/22` ajoutent ensuite le bloc UI de configuration et la liquidation simplifiee de cette poche dans le chainage succession, tout en laissant l'audit predeces sur une approximation de separation de biens.
 La `PR-23` etend ensuite cette liquidation aux warnings, a la synthese, a la chronologie et aux exports XLSX/PPTX.
 La `PR-24` pose enfin le modele de draft du preciput cible (`preciputMode`, `preciputSelections`) sans encore activer sa selection UI ni son moteur dedie.
 Les `PR-25/26` activent ensuite la selection UI par bien compatible dans la modal dispositions et la deduction ciblee dans le chainage, avec fallback sur `preciputMontant` si aucune selection valide n'est retenue.
+La `PR-27` ajoute ensuite la restitution du preciput applique dans la synthese, la chronologie et les exports succession, avec mention explicite des biens preleves.
+La `PR-28` introduit enfin le bloc `participationAcquets` dans le draft et la modal dispositions, puis applique une creance simplifiee de participation dans le chainage succession. L'audit predeces reste toutefois approxime en `separation_biens`.
 
 ## Sources juridiques de cadrage
 
