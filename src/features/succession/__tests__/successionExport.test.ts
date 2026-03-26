@@ -61,6 +61,18 @@ describe('Succession PPTX Export', () => {
               { label: 'E2', brut: 250000, droits: 21000, net: 229000 },
             ],
           },
+          societeAcquets: {
+            configured: true,
+            totalValue: 400000,
+            firstEstateContribution: 160000,
+            survivorShare: 240000,
+            preciputAmount: 50000,
+            survivorAttributionAmount: 0,
+            liquidationMode: 'quotes',
+            deceasedQuotePct: 40,
+            survivorQuotePct: 60,
+            attributionIntegrale: false,
+          },
           prevoyanceTotale: 120000,
           totalDroits: 54500,
           warnings: ['Module simplifié'],
@@ -85,6 +97,7 @@ describe('Succession PPTX Export', () => {
       expect(chronologySlide.body).toContain('Bénéficiaires réels');
       expect(chronologySlide.body).toContain('Conjoint survivant');
       expect(chronologySlide.body).toContain('prévoyance décès');
+      expect(chronologySlide.body).toContain("Societe d'acquets");
       expect(chronologySlide.body).not.toContain('Ordre inverse');
     }
   });
@@ -181,6 +194,18 @@ describe('Succession Excel Export', () => {
             { label: 'E2', brut: 190000, droits: 15750, net: 174250 },
           ],
         },
+        societeAcquets: {
+          configured: true,
+          totalValue: 400000,
+          firstEstateContribution: 160000,
+          survivorShare: 240000,
+          preciputAmount: 50000,
+          survivorAttributionAmount: 0,
+          liquidationMode: 'quotes',
+          deceasedQuotePct: 40,
+          survivorQuotePct: 60,
+          attributionIntegrale: false,
+        },
         prevoyanceTotale: 100000,
         totalDroits: 43500,
         warnings: ['Avertissement de test'],
@@ -208,6 +233,7 @@ describe('Succession Excel Export', () => {
     expect(xmlPayload).toContain('Conjoint survivant');
     expect(xmlPayload).toContain('E1');
     expect(xmlPayload).toContain('prévoyance décès');
+    expect(xmlPayload).toContain('Societe d&apos;acquets');
   });
 
   it('generates a simplified chainage-only XLSX when no direct succession result is provided', async () => {

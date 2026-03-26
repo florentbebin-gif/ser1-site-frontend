@@ -20,6 +20,7 @@ function makePatrimonial(overrides: Partial<SuccessionPatrimonialContext>): Succ
   return {
     ...DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
     societeAcquets: { ...DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.societeAcquets },
+    preciputSelections: [...DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputSelections],
     forfaitMobilierMode: 'auto',
     ...overrides,
   };

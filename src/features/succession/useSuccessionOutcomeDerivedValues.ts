@@ -388,6 +388,20 @@ export function useSuccessionOutcomeDerivedValues({
           exonerated: beneficiary.exonerated ?? false,
         })),
       } : null,
+      societeAcquets: displayUsesChainage && chainageAnalysis.societeAcquets
+        ? {
+          configured: chainageAnalysis.societeAcquets.configured,
+          totalValue: chainageAnalysis.societeAcquets.totalValue,
+          firstEstateContribution: chainageAnalysis.societeAcquets.firstEstateContribution,
+          survivorShare: chainageAnalysis.societeAcquets.survivorShare,
+          preciputAmount: chainageAnalysis.societeAcquets.preciputAmount,
+          survivorAttributionAmount: chainageAnalysis.societeAcquets.survivorAttributionAmount,
+          liquidationMode: chainageAnalysis.societeAcquets.liquidationMode,
+          deceasedQuotePct: chainageAnalysis.societeAcquets.deceasedQuotePct,
+          survivorQuotePct: chainageAnalysis.societeAcquets.survivorQuotePct,
+          attributionIntegrale: chainageAnalysis.societeAcquets.attributionIntegrale,
+        }
+        : null,
       assuranceVieTotale: assuranceVieTotals.capitaux,
       perTotale: perTotals.capitaux,
       prevoyanceTotale: prevoyanceTotals.capitaux,

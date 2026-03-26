@@ -335,5 +335,7 @@ describe('successionDraft legacy migrations', () => {
 
     expect(parsed?.patrimonial.societeAcquets.active).toBe(false);
     expect(parsed?.patrimonial.societeAcquets.liquidationMode).toBe('quotes');
+    expect(parsed?.patrimonial.preciputMode).toBe('global');
+    expect(parsed?.patrimonial.preciputSelections).toEqual([]);
   });
 });

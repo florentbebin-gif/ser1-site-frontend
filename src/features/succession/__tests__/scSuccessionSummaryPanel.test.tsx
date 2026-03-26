@@ -19,7 +19,7 @@ describe('ScSuccessionSummaryPanel', () => {
         }]}
         synthHypothese={null}
         isPacsed={false}
-        chainageAnalysis={{ order: 'epoux1', step1: null, step2: null }}
+        chainageAnalysis={{ order: 'epoux1', societeAcquets: null, step1: null, step2: null }}
         avFiscalByAssure={{ epoux1: { totalDroits: 4000 }, epoux2: { totalDroits: 0 } }}
         perFiscalByAssure={{ epoux1: { totalDroits: 2000 }, epoux2: { totalDroits: 0 } }}
         prevoyanceFiscalByAssure={{ epoux1: { totalDroits: 1000 }, epoux2: { totalDroits: 0 } }}
@@ -38,8 +38,8 @@ describe('ScSuccessionSummaryPanel', () => {
       />,
     );
 
-    expect(markup).toContain('Transmission par bénéficiaire');
-    expect(markup).toContain('Assurances hors succession — art. 990 I');
+    expect(markup).toContain('Transmission par bénéf');
+    expect(markup).toContain('Assurances hors succession');
     expect(markup).toContain('Enfant 1');
   });
 
@@ -59,7 +59,7 @@ describe('ScSuccessionSummaryPanel', () => {
         }]}
         synthHypothese={null}
         isPacsed={false}
-        chainageAnalysis={{ order: 'epoux1', step1: null, step2: null }}
+        chainageAnalysis={{ order: 'epoux1', societeAcquets: null, step1: null, step2: null }}
         avFiscalByAssure={{ epoux1: { totalDroits: 3000 }, epoux2: { totalDroits: 0 } }}
         perFiscalByAssure={{ epoux1: { totalDroits: 2000 }, epoux2: { totalDroits: 0 } }}
         prevoyanceFiscalByAssure={{ epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } }}
@@ -78,8 +78,51 @@ describe('ScSuccessionSummaryPanel', () => {
       />,
     );
 
-    expect(markup).toContain('Transmission par bénéficiaire');
+    expect(markup).toContain('Transmission par bénéf');
     expect(markup).toContain('Enfant 1 (art. 757 B)');
-    expect(markup).not.toContain('Assurances hors succession — art. 757 B');
+    expect(markup).not.toContain('art. 757 B</div>');
+  });
+
+  it("renders a dedicated liquidation section for societe d'acquets in chainage mode", () => {
+    const markup = renderToStaticMarkup(
+      <ScSuccessionSummaryPanel
+        displayUsesChainage
+        derivedTotalDroits={20000}
+        synthDonutTransmis={700000}
+        derivedMasseTransmise={0}
+        transmissionRows={[]}
+        synthHypothese={null}
+        isPacsed={false}
+        chainageAnalysis={{
+          order: 'epoux1',
+          societeAcquets: {
+            totalValue: 400000,
+            firstEstateContribution: 160000,
+            survivorShare: 240000,
+            preciputAmount: 50000,
+            survivorAttributionAmount: 0,
+            liquidationMode: 'quotes',
+            deceasedQuotePct: 40,
+            survivorQuotePct: 60,
+            attributionIntegrale: false,
+          },
+          step1: { droitsEnfants: 10000 },
+          step2: { droitsEnfants: 10000 },
+        }}
+        avFiscalByAssure={{ epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } }}
+        perFiscalByAssure={{ epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } }}
+        prevoyanceFiscalByAssure={{ epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } }}
+        insurance990ILines={[]}
+        insurance757BLines={[]}
+        directDisplay={{
+          simulatedDeceased: 'epoux1',
+          result: null,
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Liquidation societe');
+    expect(markup).toContain('Valeur nette de la poche');
+    expect(markup).toContain('Preciput preleve');
   });
 });

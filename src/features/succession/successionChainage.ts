@@ -59,6 +59,19 @@ export interface SuccessionChainStep {
   beneficiaries: SuccessionChainBeneficiary[];
 }
 
+export interface SuccessionChainSocieteAcquetsSummary {
+  configured: boolean;
+  totalValue: number;
+  firstEstateContribution: number;
+  survivorShare: number;
+  preciputAmount: number;
+  survivorAttributionAmount: number;
+  liquidationMode: SuccessionPatrimonialContext['societeAcquets']['liquidationMode'];
+  deceasedQuotePct: number;
+  survivorQuotePct: number;
+  attributionIntegrale: boolean;
+}
+
 export interface SuccessionChainBeneficiary {
   id: string;
   label: string;
@@ -76,6 +89,7 @@ export interface SuccessionChainageAnalysis {
   secondDecedeLabel: string;
   step1: SuccessionChainStep | null;
   step2: SuccessionChainStep | null;
+  societeAcquets: SuccessionChainSocieteAcquetsSummary | null;
   totalDroits: number;
   warnings: string[];
 }
@@ -236,6 +250,7 @@ function buildEmptyAnalysis(order: SuccessionChainOrder, warning: string): Succe
     secondDecedeLabel: order === 'epoux1' ? 'Epoux 2' : 'Epoux 1',
     step1: null,
     step2: null,
+    societeAcquets: null,
     totalDroits: 0,
     warnings: [warning],
   };
@@ -586,6 +601,20 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
       droitsEnfants: step2Details.transmission.droits,
       beneficiaries: step2Details.transmission.beneficiaries,
     },
+    societeAcquets: societeAcquetsDistribution
+      ? {
+        configured: societeAcquetsDistribution.configured,
+        totalValue: societeAcquetsDistribution.totalValue,
+        firstEstateContribution: societeAcquetsDistribution.firstEstateContribution,
+        survivorShare: societeAcquetsDistribution.survivorShare,
+        preciputAmount: societeAcquetsDistribution.preciputAmount,
+        survivorAttributionAmount: societeAcquetsDistribution.survivorAttributionAmount,
+        liquidationMode: societeAcquetsDistribution.liquidationMode,
+        deceasedQuotePct: societeAcquetsDistribution.deceasedQuotePct,
+        survivorQuotePct: societeAcquetsDistribution.survivorQuotePct,
+        attributionIntegrale: societeAcquetsDistribution.attributionIntegrale,
+      }
+      : null,
     totalDroits: step1Details.transmission.droits + step2Details.transmission.droits,
     warnings,
   };

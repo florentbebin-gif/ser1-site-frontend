@@ -505,6 +505,8 @@ Le draft succession detaille persiste desormais `pocket` only sur `assetEntries`
 La base taxable succession (`successionAssetValuation.ts`, `successionTransmissionBasis.ts`, `successionChainage.ts`, `successionDisplay.ts`) consomme maintenant `pocket` comme source unique pour les lignes detaillees; les agregats simplifies `epoux1/epoux2/commun` ne subsistent que comme vue derivee pour le mode simplifie et `liquidationContext`.
 L'UI actifs/passifs expose une `Masse de rattachement` dependante du regime, y compris la poche `societe_acquets` quand `separation_biens_societe_acquets` est selectionne.
 La modal dispositions porte maintenant un bloc `societe d'acquets` dedie (activation, mode de liquidation, quotes, attribution survivant, attribution integrale, preciput), et le chainage succession consomme cette configuration pour liquider la poche `societe_acquets` avant le partage successoral du 1er deces.
+La chronologie UI et les exports succession (`successionXlsx.ts`, deck PPTX succession) restituent desormais explicitement la liquidation de cette poche.
+Le draft succession embarque aussi desormais le futur modele de preciput cible (`preciputMode`, `preciputSelections`) pour preparer la PR de selection par bien sans casser la compatibilite descendante.
 
 La matrice de maturite et la trajectoire de refonte sont suivies dans [SUCCESSION_MODEL_MATURITY.md](SUCCESSION_MODEL_MATURITY.md).
 Toute PR qui etend les regimes matrimoniaux, la liquidation civile ou les masses patrimoniales doit mettre a jour cette matrice en meme temps que le code.

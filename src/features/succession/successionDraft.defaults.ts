@@ -64,6 +64,8 @@ export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContex
   donationEntreEpouxActive: false,
   donationEntreEpouxOption: 'usufruit_total',
   societeAcquets: { ...DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG },
+  preciputMode: 'global',
+  preciputSelections: [],
   preciputMontant: 0,
   attributionIntegrale: false,
   attributionBiensCommunsPct: 50,

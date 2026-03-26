@@ -63,6 +63,16 @@ export function useSuccessionFamilyHandlers({
       setPatrimonialContext((prev) => ({
         ...prev,
         donationEntreEpouxActive: false,
+        societeAcquets: {
+          ...prev.societeAcquets,
+          active: false,
+          liquidationMode: 'quotes',
+          quoteEpoux1Pct: 50,
+          quoteEpoux2Pct: 50,
+          attributionSurvivantPct: 0,
+        },
+        preciputMode: 'global',
+        preciputSelections: [],
         preciputMontant: 0,
         attributionIntegrale: false,
       }));

@@ -86,6 +86,18 @@ describe('successionDraft', () => {
           quoteEpoux2Pct: 50,
           attributionSurvivantPct: 0,
         },
+        preciputMode: 'cible',
+        preciputSelections: [
+          {
+            id: 'prec-1',
+            sourceType: 'asset',
+            sourceId: 'asset-1',
+            labelSnapshot: 'Maison familiale',
+            pocket: 'communaute',
+            amount: 12000,
+            enabled: true,
+          },
+        ],
         preciputMontant: 12000,
         attributionIntegrale: false,
         attributionBiensCommunsPct: 50,
@@ -144,7 +156,7 @@ describe('successionDraft', () => {
       'epoux2',
     );
 
-    expect(payload.version).toBe(22);
+    expect(payload.version).toBe(23);
     expect(payload.assetEntries[0].pocket).toBe('epoux1');
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
     expect(parsed).not.toBeNull();
@@ -167,6 +179,17 @@ describe('successionDraft', () => {
       active: true,
       liquidationMode: 'quotes',
     });
+    expect(parsed?.patrimonial.preciputMode).toBe('cible');
+    expect(parsed?.patrimonial.preciputSelections).toEqual([
+      expect.objectContaining({
+        id: 'prec-1',
+        sourceType: 'asset',
+        sourceId: 'asset-1',
+        pocket: 'communaute',
+        amount: 12000,
+        enabled: true,
+      }),
+    ]);
     expect(parsed?.donations).toHaveLength(1);
     expect(parsed?.donations[0].type).toBe('rapportable');
     expect(parsed?.assetEntries).toHaveLength(1);

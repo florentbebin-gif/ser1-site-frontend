@@ -23,8 +23,16 @@ type DonationEntreEpouxSelection = Partial<Pick<
 >>;
 
 export interface SuccessionSocieteAcquetsDistribution {
+  configured: boolean;
+  totalValue: number;
   firstEstateContribution: number;
   survivorShare: number;
+  preciputAmount: number;
+  survivorAttributionAmount: number;
+  liquidationMode: SuccessionPatrimonialContext['societeAcquets']['liquidationMode'];
+  deceasedQuotePct: number;
+  survivorQuotePct: number;
+  attributionIntegrale: boolean;
   warnings: string[];
 }
 
@@ -80,23 +88,39 @@ export function computeSocieteAcquetsDistribution(
   patrimonial?: DonationEntreEpouxSelection,
 ): SuccessionSocieteAcquetsDistribution {
   const total = asAmount(societeAcquetsValue);
-  if (total <= 0) {
-    return {
-      firstEstateContribution: 0,
-      survivorShare: 0,
-      warnings: [],
-    };
-  }
-
   const activeConfig = patrimonial?.societeAcquets?.active
     ? patrimonial.societeAcquets
     : DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG;
   const { deceasedPct, survivorPct } = getSocieteAcquetsQuotes(deceased, patrimonial);
 
+  if (total <= 0) {
+    return {
+      configured: Boolean(patrimonial?.societeAcquets?.active),
+      totalValue: 0,
+      firstEstateContribution: 0,
+      survivorShare: 0,
+      preciputAmount: 0,
+      survivorAttributionAmount: 0,
+      liquidationMode: activeConfig.liquidationMode,
+      deceasedQuotePct: deceasedPct,
+      survivorQuotePct: survivorPct,
+      attributionIntegrale: Boolean(patrimonial?.societeAcquets?.active && patrimonial.attributionIntegrale),
+      warnings: [],
+    };
+  }
+
   if (patrimonial?.societeAcquets?.active && patrimonial.attributionIntegrale) {
     return {
+      configured: true,
+      totalValue: total,
       firstEstateContribution: 0,
       survivorShare: total,
+      preciputAmount: 0,
+      survivorAttributionAmount: 0,
+      liquidationMode: activeConfig.liquidationMode,
+      deceasedQuotePct: deceasedPct,
+      survivorQuotePct: survivorPct,
+      attributionIntegrale: true,
       warnings: [
         "Societe d'acquets: attribution integrale du reliquat au survivant au 1er deces.",
       ],
@@ -133,8 +157,16 @@ export function computeSocieteAcquetsDistribution(
   }
 
   return {
+    configured: Boolean(patrimonial?.societeAcquets?.active),
+    totalValue: total,
     firstEstateContribution,
     survivorShare,
+    preciputAmount: preciput,
+    survivorAttributionAmount: survivorAttribution,
+    liquidationMode: activeConfig.liquidationMode,
+    deceasedQuotePct: deceasedPct,
+    survivorQuotePct: survivorPct,
+    attributionIntegrale: false,
     warnings,
   };
 }

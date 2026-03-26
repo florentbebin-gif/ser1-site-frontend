@@ -207,6 +207,19 @@ export function SuccessionPageGrid({
               isPacsed={derived.isPacsed}
               chainageAnalysis={{
                 order: derived.chainageAnalysis.order,
+                societeAcquets: derived.chainageAnalysis.societeAcquets
+                  ? {
+                    totalValue: derived.chainageAnalysis.societeAcquets.totalValue,
+                    firstEstateContribution: derived.chainageAnalysis.societeAcquets.firstEstateContribution,
+                    survivorShare: derived.chainageAnalysis.societeAcquets.survivorShare,
+                    preciputAmount: derived.chainageAnalysis.societeAcquets.preciputAmount,
+                    survivorAttributionAmount: derived.chainageAnalysis.societeAcquets.survivorAttributionAmount,
+                    liquidationMode: derived.chainageAnalysis.societeAcquets.liquidationMode,
+                    deceasedQuotePct: derived.chainageAnalysis.societeAcquets.deceasedQuotePct,
+                    survivorQuotePct: derived.chainageAnalysis.societeAcquets.survivorQuotePct,
+                    attributionIntegrale: derived.chainageAnalysis.societeAcquets.attributionIntegrale,
+                  }
+                  : null,
                 step1: derived.chainageAnalysis.step1
                   ? { droitsEnfants: derived.chainageAnalysis.step1.droitsEnfants }
                   : null,
@@ -242,6 +255,19 @@ export function SuccessionPageGrid({
                 order: derived.chainageAnalysis.order,
                 firstDecedeLabel: derived.chainageAnalysis.firstDecedeLabel,
                 secondDecedeLabel: derived.chainageAnalysis.secondDecedeLabel,
+                societeAcquets: derived.chainageAnalysis.societeAcquets
+                  ? {
+                    totalValue: derived.chainageAnalysis.societeAcquets.totalValue,
+                    firstEstateContribution: derived.chainageAnalysis.societeAcquets.firstEstateContribution,
+                    survivorShare: derived.chainageAnalysis.societeAcquets.survivorShare,
+                    preciputAmount: derived.chainageAnalysis.societeAcquets.preciputAmount,
+                    survivorAttributionAmount: derived.chainageAnalysis.societeAcquets.survivorAttributionAmount,
+                    liquidationMode: derived.chainageAnalysis.societeAcquets.liquidationMode,
+                    deceasedQuotePct: derived.chainageAnalysis.societeAcquets.deceasedQuotePct,
+                    survivorQuotePct: derived.chainageAnalysis.societeAcquets.survivorQuotePct,
+                    attributionIntegrale: derived.chainageAnalysis.societeAcquets.attributionIntegrale,
+                  }
+                  : null,
                 step1: derived.chainageAnalysis.step1
                   ? {
                     actifTransmis: derived.chainageAnalysis.step1.actifTransmis,

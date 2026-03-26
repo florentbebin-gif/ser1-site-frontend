@@ -53,7 +53,7 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 | `separation_biens` | Gere nativement | Support robuste | Pas d'indivisions fines ni de passif juridiquement affecte | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionChainageEstateSplit.ts` |
 | `participation_acquets` | Approxime en separation de biens | Approximation assumee | Creance de participation non modelisee | `src/features/succession/successionPredeces.ts`, `src/features/succession/__tests__/successionPredeces.test.ts` |
 | `communaute_meubles_acquets` | Approxime en communaute legale | Approximation assumee | Distinction meuble / immeuble absente | `src/features/succession/successionPredeces.ts` |
-| `separation_biens_societe_acquets` | Audit predeces encore approxime en separation de biens, mais le chainage succession liquide maintenant la poche `societe_acquets` via un moteur dedie simplifie et une configuration contractuelle en UI | Simplification documentee | Pas encore de liquidation notariale exhaustive ni de restitution/export dedies | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionChainage.ts`, `src/features/succession/components/DispositionsModal.tsx` |
+| `separation_biens_societe_acquets` | Audit predeces encore approxime en separation de biens, mais le chainage succession liquide maintenant la poche `societe_acquets` via un moteur dedie simplifie, une configuration contractuelle en UI et une restitution/export dedies | Simplification documentee | Pas encore de liquidation notariale exhaustive | `src/features/succession/successionPredeces.ts`, `src/features/succession/successionChainage.ts`, `src/features/succession/components/DispositionsModal.tsx`, `src/features/succession/components/ScDeathTimelinePanel.tsx`, `src/features/succession/successionXlsx.ts` |
 
 ## Couverture UI actuelle
 
@@ -73,7 +73,7 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 | Testament simple | Present | Support robuste du perimetre actuel |
 | Donation entre epoux | Present avec replis | Simplification documentee |
 | Preciput global en montant | Present | Support robuste du perimetre actuel |
-| Preciput cible par bien | Absent | Non modelise |
+| Preciput cible par bien | Modele de draft present (`preciputMode`, `preciputSelections`), moteur/UI ciblee encore absents | Modelisation partielle |
 | Assurance-vie 990 I / 757 B | Present mais encore a fiabiliser sur certains cas | Support robuste avec regressions identifiees |
 | Representation petits-enfants | Presente mais incomplete fiscalement | Simplification documentee |
 | Rappel fiscal donations | Partiellement analytique | Approximation assumee |
@@ -111,6 +111,8 @@ Les `PR-17/18` font ensuite basculer la base taxable / chainage vers `pocket` et
 La `PR-19` supprime ensuite `SuccessionAssetOwner` du runtime detaille: actifs et groupements fonciers sont desormais `pocket` only, et la serialisation passe en `v21`.
 La `PR-20` ouvre explicitement la poche `societe_acquets` quand le regime `separation_biens_societe_acquets` est selectionne.
 Les `PR-21/22` ajoutent ensuite le bloc UI de configuration et la liquidation simplifiee de cette poche dans le chainage succession, tout en laissant l'audit predeces sur une approximation de separation de biens.
+La `PR-23` etend ensuite cette liquidation aux warnings, a la synthese, a la chronologie et aux exports XLSX/PPTX.
+La `PR-24` pose enfin le modele de draft du preciput cible (`preciputMode`, `preciputSelections`) sans encore activer sa selection UI ni son moteur dedie.
 
 ## Sources juridiques de cadrage
 

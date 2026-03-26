@@ -14,6 +14,7 @@ import {
 } from './successionTestament';
 import {
   cloneAscendantsSurvivantsBySide,
+  cloneSuccessionPreciputSelections,
   cloneSuccessionSocieteAcquetsConfig,
   updateDraftTestament,
   type DispositionsDraftState,
@@ -115,6 +116,8 @@ export function useSuccessionDispositionsHandlers({
       donationEntreEpouxActive: patrimonialContext.donationEntreEpouxActive,
       donationEntreEpouxOption: patrimonialContext.donationEntreEpouxOption,
       societeAcquets: cloneSuccessionSocieteAcquetsConfig(patrimonialContext.societeAcquets),
+      preciputMode: patrimonialContext.preciputMode,
+      preciputSelections: cloneSuccessionPreciputSelections(patrimonialContext.preciputSelections),
       preciputMontant: patrimonialContext.preciputMontant,
       attributionIntegrale: patrimonialContext.attributionIntegrale,
       choixLegalConjointSansDDV: devolutionContext.choixLegalConjointSansDDV,
@@ -137,6 +140,8 @@ export function useSuccessionDispositionsHandlers({
       donationEntreEpouxActive: dispositionsDraft.donationEntreEpouxActive,
       donationEntreEpouxOption: dispositionsDraft.donationEntreEpouxOption,
       societeAcquets: cloneSuccessionSocieteAcquetsConfig(dispositionsDraft.societeAcquets),
+      preciputMode: dispositionsDraft.preciputMode,
+      preciputSelections: cloneSuccessionPreciputSelections(dispositionsDraft.preciputSelections),
       preciputMontant: dispositionsDraft.preciputMontant,
       attributionIntegrale: isSocieteAcquetsRegime
         ? dispositionsDraft.attributionIntegrale
