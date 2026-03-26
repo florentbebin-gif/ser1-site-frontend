@@ -37,6 +37,7 @@ export type SuccessionDonationEntreEpouxOption =
 export type SuccessionChoixLegalConjointSansDDV = 'usufruit' | 'quart_pp' | null;
 export type SuccessionSocieteAcquetsLiquidationMode = 'quotes' | 'attribution_survivant';
 export type SuccessionPreciputMode = 'global' | 'cible';
+export type SuccessionInterMassClaimKind = 'recompense' | 'creance';
 export type SuccessionAssetLegalNature =
   | 'non_qualifie'
   | 'propre'
@@ -137,6 +138,16 @@ export interface SuccessionPreciputSelection {
   enabled: boolean;
 }
 
+export interface SuccessionInterMassClaim {
+  id: string;
+  kind: SuccessionInterMassClaimKind;
+  fromPocket: SuccessionAssetPocket;
+  toPocket: SuccessionAssetPocket;
+  amount: number;
+  enabled: boolean;
+  label?: string;
+}
+
 export interface SuccessionPatrimonialContext {
   donationsRapportables: number;
   donationsHorsPart: number;
@@ -148,6 +159,7 @@ export interface SuccessionPatrimonialContext {
   participationAcquets: SuccessionParticipationAcquetsConfig;
   preciputMode: SuccessionPreciputMode;
   preciputSelections: SuccessionPreciputSelection[];
+  interMassClaims: SuccessionInterMassClaim[];
   preciputMontant: number;
   attributionIntegrale: boolean;
   attributionBiensCommunsPct: number;
@@ -307,4 +319,8 @@ export interface SuccessionDraftPayloadV24 extends ParsedSuccessionDraftPayload 
 
 export interface SuccessionDraftPayloadV25 extends ParsedSuccessionDraftPayload {
   version: 25;
+}
+
+export interface SuccessionDraftPayloadV26 extends ParsedSuccessionDraftPayload {
+  version: 26;
 }

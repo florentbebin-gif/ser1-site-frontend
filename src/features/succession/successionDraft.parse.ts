@@ -33,6 +33,7 @@ import {
   isPersonParty,
   isPrimarySide,
   isRegimeMatrimonial,
+  isSuccessionInterMassClaimKind,
   isSuccessionMeubleImmeubleLegal,
   isSuccessionPreciputMode,
   isSuccessionPreciputSelectionSourceType,
@@ -63,6 +64,7 @@ import type {
   SuccessionDevolutionContext,
   SuccessionDonationEntry,
   SuccessionGroupementFoncierEntry,
+  SuccessionInterMassClaim,
   SuccessionPerEntry,
   SuccessionParticipationAcquetsConfig,
   SuccessionPreciputSelection,
@@ -199,6 +201,39 @@ function parsePreciputSelections(raw: unknown): SuccessionPreciputSelection[] {
       };
     })
     .filter((item): item is SuccessionPreciputSelection => item !== null);
+}
+
+function parseInterMassClaims(raw: unknown): SuccessionInterMassClaim[] {
+  return (Array.isArray(raw) ? raw : [])
+    .filter((item): item is Record<string, unknown> => isObject(item))
+    .map<SuccessionInterMassClaim | null>((item, idx) => {
+      if (
+        !isSuccessionInterMassClaimKind(item.kind)
+        || !isAssetPocket(item.fromPocket)
+        || !isAssetPocket(item.toPocket)
+      ) {
+        return null;
+      }
+
+      const claim: SuccessionInterMassClaim = {
+        id: typeof item.id === 'string' && item.id.trim().length > 0
+          ? item.id.trim()
+          : `claim-${idx + 1}`,
+        kind: item.kind,
+        fromPocket: item.fromPocket,
+        toPocket: item.toPocket,
+        amount: asAmount(item.amount, 0),
+        enabled: asBoolean(item.enabled, true),
+      };
+
+      const label = normalizeOptionalString(item.label);
+      if (label) {
+        claim.label = label;
+      }
+
+      return claim;
+    })
+    .filter((item): item is SuccessionInterMassClaim => item !== null);
 }
 
 function parseTestamentConfig(raw: unknown): SuccessionTestamentConfig {
@@ -599,6 +634,9 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       preciputSelections: version >= 23
         ? parsePreciputSelections(patrimonialRaw.preciputSelections)
         : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputSelections,
+      interMassClaims: version >= 26
+        ? parseInterMassClaims(patrimonialRaw.interMassClaims)
+        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.interMassClaims,
       preciputMontant: asAmount(
         patrimonialRaw.preciputMontant,
         DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,

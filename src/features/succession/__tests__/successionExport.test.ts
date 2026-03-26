@@ -31,6 +31,10 @@ describe('Succession PPTX Export', () => {
         totalDroits: result.result.totalDroits,
         tauxMoyenGlobal: result.result.tauxMoyenGlobal,
         heritiers: result.result.detailHeritiers,
+        assumptions: [
+          'Les recompenses entre masses sont restituees comme transferts simplifies.',
+          'Le passif affecte minore uniquement la masse rattachee.',
+        ],
         predecesChronologie: {
           applicable: true,
           order: 'epoux1',
@@ -89,6 +93,28 @@ describe('Succession PPTX Export', () => {
             creanceAmount: 70000,
             firstEstateAdjustment: -70000,
           },
+          interMassClaims: {
+            configured: true,
+            totalRequestedAmount: 80000,
+            totalAppliedAmount: 60000,
+            claims: [
+              {
+                id: 'claim-1',
+                kind: 'recompense',
+                fromPocket: 'communaute',
+                toPocket: 'epoux1',
+                requestedAmount: 80000,
+                appliedAmount: 60000,
+              },
+            ],
+          },
+          affectedLiabilities: {
+            totalAmount: 30000,
+            byPocket: [
+              { pocket: 'epoux1', amount: 20000 },
+              { pocket: 'communaute', amount: 10000 },
+            ],
+          },
           preciput: {
             mode: 'cible',
             requestedAmount: 50000,
@@ -130,7 +156,18 @@ describe('Succession PPTX Export', () => {
       expect(chronologySlide.body).toContain("Societe d'acquets");
       expect(chronologySlide.body).toContain('Preciput');
       expect(chronologySlide.body).toContain('Participation aux acquets');
+      expect(chronologySlide.body).toContain('Recompenses / creances entre masses');
+      expect(chronologySlide.body).toContain('Passif affecte');
       expect(chronologySlide.body).not.toContain('Ordre inverse');
+    }
+    const assumptionsSlide = spec.slides.find(
+      (slide) => slide.type === 'content' && 'title' in slide && slide.title === 'HypothÃ¨ses retenues',
+    );
+    const resolvedAssumptionsSlide = assumptionsSlide ?? [...spec.slides].reverse().find((slide) => slide.type === 'content');
+    expect(resolvedAssumptionsSlide).toBeDefined();
+    if (resolvedAssumptionsSlide && 'body' in resolvedAssumptionsSlide) {
+      expect(resolvedAssumptionsSlide.body).toContain('recompenses entre masses');
+      expect(resolvedAssumptionsSlide.body).toContain('passif affecte');
     }
   });
 
@@ -254,6 +291,28 @@ describe('Succession Excel Export', () => {
           creanceAmount: 50000,
           firstEstateAdjustment: -50000,
         },
+        interMassClaims: {
+          configured: true,
+          totalRequestedAmount: 80000,
+          totalAppliedAmount: 60000,
+          claims: [
+            {
+              id: 'claim-1',
+              kind: 'recompense',
+              fromPocket: 'communaute',
+              toPocket: 'epoux1',
+              requestedAmount: 80000,
+              appliedAmount: 60000,
+            },
+          ],
+        },
+        affectedLiabilities: {
+          totalAmount: 30000,
+          byPocket: [
+            { pocket: 'epoux1', amount: 20000 },
+            { pocket: 'communaute', amount: 10000 },
+          ],
+        },
         preciput: {
           mode: 'cible',
           pocket: 'communaute',
@@ -276,6 +335,11 @@ describe('Succession Excel Export', () => {
         totalDroits: 43500,
         warnings: ['Avertissement de test'],
       },
+      undefined,
+      [
+        'Les recompenses entre masses sont appliquees comme transferts simplifies.',
+        'Les passifs detailles rattaches a une poche sont traites comme passifs affectes.',
+      ],
     );
 
     expect(blob).toBeInstanceOf(Blob);
@@ -294,15 +358,21 @@ describe('Succession Excel Export', () => {
     expect(workbookXml).toContain('Hypothèses');
 
     const chronologySheet = await zip.file('xl/worksheets/sheet4.xml')?.async('string');
+    const hypothesesSheet = await zip.file('xl/worksheets/sheet5.xml')?.async('string');
     const sharedStrings = await zip.file('xl/sharedStrings.xml')?.async('string');
-    const xmlPayload = `${chronologySheet ?? ''}\n${sharedStrings ?? ''}`;
+    const xmlPayload = `${chronologySheet ?? ''}\n${hypothesesSheet ?? ''}\n${sharedStrings ?? ''}`;
     expect(xmlPayload).toContain('Conjoint survivant');
     expect(xmlPayload).toContain('E1');
     expect(xmlPayload).toContain('prévoyance décès');
     expect(xmlPayload).toContain('Societe d&apos;acquets');
     expect(xmlPayload).toContain('Preciput');
     expect(xmlPayload).toContain('Participation aux acquets');
+    expect(xmlPayload).toContain('Recompenses / creances entre masses');
+    expect(xmlPayload).toContain('Passif affecte');
     expect(xmlPayload).toContain('Portefeuille titres');
+    expect(xmlPayload).toContain('Hypotheses calculees');
+    expect(xmlPayload).toContain('transferts simplifies');
+    expect(xmlPayload).toContain('passifs affectes');
   });
 
   it('generates a simplified chainage-only XLSX when no direct succession result is provided', async () => {

@@ -61,6 +61,10 @@ import {
   computeSuccessionParticipationAcquetsSummary,
   type SuccessionParticipationAcquetsSummary,
 } from './successionParticipationAcquets';
+import type {
+  SuccessionAffectedLiabilitySummary,
+  SuccessionInterMassClaimsSummary,
+} from './successionInterMassClaims';
 
 export type SuccessionChainOrder = 'epoux1' | 'epoux2';
 export type SuccessionChainRegime = 'communaute_legale' | 'separation_biens' | 'communaute_universelle';
@@ -106,6 +110,29 @@ export interface SuccessionChainPreciputSummary {
   selections: SuccessionChainPreciputSelectionSummary[];
 }
 
+export interface SuccessionChainInterMassClaimSummary {
+  configured: boolean;
+  totalRequestedAmount: number;
+  totalAppliedAmount: number;
+  claims: Array<{
+    id: string;
+    kind: 'recompense' | 'creance';
+    label?: string;
+    fromPocket: SuccessionAssetPocket;
+    toPocket: SuccessionAssetPocket;
+    requestedAmount: number;
+    appliedAmount: number;
+  }>;
+}
+
+export interface SuccessionChainAffectedLiabilitySummary {
+  totalAmount: number;
+  byPocket: Array<{
+    pocket: SuccessionAssetPocket;
+    amount: number;
+  }>;
+}
+
 export interface SuccessionChainBeneficiary {
   id: string;
   label: string;
@@ -126,6 +153,8 @@ export interface SuccessionChainageAnalysis {
   societeAcquets: SuccessionChainSocieteAcquetsSummary | null;
   participationAcquets: SuccessionParticipationAcquetsSummary | null;
   preciput: SuccessionChainPreciputSummary | null;
+  interMassClaims: SuccessionChainInterMassClaimSummary | null;
+  affectedLiabilities: SuccessionChainAffectedLiabilitySummary | null;
   totalDroits: number;
   warnings: string[];
 }
@@ -149,11 +178,14 @@ interface SuccessionChainageInput {
     | 'preciputMontant'
     | 'participationAcquets'
     | 'societeAcquets'
+    | 'interMassClaims'
   >>;
   societeAcquetsNetValue?: number;
   assetEntries?: SuccessionAssetDetailEntry[];
   groupementFoncierEntries?: SuccessionGroupementFoncierEntry[];
   transmissionBasis?: SuccessionAssetTransmissionBasis;
+  interMassClaimsSummary?: SuccessionInterMassClaimsSummary | null;
+  affectedLiabilitySummary?: SuccessionAffectedLiabilitySummary | null;
   abattementResidencePrincipale?: boolean;
   forfaitMobilierMode?: SuccessionPatrimonialContext['forfaitMobilierMode'];
   forfaitMobilierPct?: number;
@@ -333,6 +365,8 @@ function buildEmptyAnalysis(order: SuccessionChainOrder, warning: string): Succe
     societeAcquets: null,
     participationAcquets: null,
     preciput: null,
+    interMassClaims: null,
+    affectedLiabilities: null,
     totalDroits: 0,
     warnings: [warning],
   };
@@ -637,6 +671,17 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   if (participationAcquetsSummary) {
     warnings.push(...participationAcquetsSummary.warnings);
   }
+  if (input.interMassClaimsSummary?.configured) {
+    warnings.push(
+      `Creances entre masses: ${Math.round(input.interMassClaimsSummary.totalAppliedAmount).toLocaleString('fr-FR')} EUR appliques sur ${input.interMassClaimsSummary.claims.filter((claim) => claim.appliedAmount > 0).length} ecriture(s).`,
+    );
+    warnings.push(...input.interMassClaimsSummary.warnings);
+  }
+  if ((input.affectedLiabilitySummary?.totalAmount ?? 0) > 0) {
+    warnings.push(
+      `Passif affecte: ${Math.round(input.affectedLiabilitySummary?.totalAmount ?? 0).toLocaleString('fr-FR')} EUR rattaches a des masses patrimoniales dediees.`,
+    );
+  }
   if (preserveQualifiedSeparatePocketsInUniversalCommunity) {
     warnings.push("Communaute universelle: les biens qualifies 'propre par nature' et rattaches a un epoux sont exclus de la masse commune simplifiee.");
   }
@@ -824,6 +869,31 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
       : null,
     participationAcquets: participationAcquetsSummary,
     preciput: preciputSummary,
+    interMassClaims: input.interMassClaimsSummary
+      ? {
+        configured: input.interMassClaimsSummary.configured,
+        totalRequestedAmount: input.interMassClaimsSummary.totalRequestedAmount,
+        totalAppliedAmount: input.interMassClaimsSummary.totalAppliedAmount,
+        claims: input.interMassClaimsSummary.claims.map((claim) => ({
+          id: claim.id,
+          kind: claim.kind,
+          label: claim.label,
+          fromPocket: claim.fromPocket,
+          toPocket: claim.toPocket,
+          requestedAmount: claim.requestedAmount,
+          appliedAmount: claim.appliedAmount,
+        })),
+      }
+      : null,
+    affectedLiabilities: input.affectedLiabilitySummary
+      ? {
+        totalAmount: input.affectedLiabilitySummary.totalAmount,
+        byPocket: input.affectedLiabilitySummary.byPocket.map((entry) => ({
+          pocket: entry.pocket,
+          amount: entry.amount,
+        })),
+      }
+      : null,
     totalDroits: step1Details.transmission.droits + step2Details.transmission.droits,
     warnings,
   };

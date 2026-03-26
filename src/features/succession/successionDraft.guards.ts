@@ -20,6 +20,7 @@ import type {
   SuccessionDispositionTestamentaire,
   SuccessionDonationEntreEpouxOption,
   SuccessionDonationEntryType,
+  SuccessionInterMassClaimKind,
   SuccessionMeubleImmeubleLegal,
   SuccessionEnfantRattachement,
   SuccessionPreciputMode,
@@ -91,6 +92,10 @@ export function isSocieteAcquetsLiquidationMode(v: unknown): v is SuccessionSoci
 
 export function isSuccessionPreciputMode(v: unknown): v is SuccessionPreciputMode {
   return v === 'global' || v === 'cible';
+}
+
+export function isSuccessionInterMassClaimKind(v: unknown): v is SuccessionInterMassClaimKind {
+  return v === 'recompense' || v === 'creance';
 }
 
 export function isSuccessionPreciputSelectionSourceType(v: unknown): v is 'asset' | 'groupement_foncier' {

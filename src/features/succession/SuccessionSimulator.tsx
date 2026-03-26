@@ -230,6 +230,7 @@ export default function SuccessionSimulator() {
     synthDonutTransmis: derived.synthDonutTransmis,
     derivedTotalDroits: derived.derivedTotalDroits,
     exportHeirs: derived.exportHeirs,
+    assumptions: derived.assumptions,
   });
 
   // ── Effets de synchronisation (normalization quand le contexte civil change) ─
@@ -427,8 +428,7 @@ export default function SuccessionSimulator() {
 
       <SuccessionHypotheses
         hypothesesOpen={hypothesesOpen}
-        attentions={derived.attentions}
-        fiscalSnapshot={fiscalSnapshot}
+        assumptions={derived.assumptions}
         onToggle={() => setHypothesesOpen((value) => !value)}
       />
 

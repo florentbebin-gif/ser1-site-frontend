@@ -299,4 +299,61 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.assetNetTotals.commun).toBe(120000);
     expect(result.assetNetTotals.epoux1).toBe(250000);
   });
+
+  it('applies inter-mass claims before computing net pocket totals and taxable basis', () => {
+    const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
+      patrimonialContext: {
+        stipulationContraireCU: false,
+        interMassClaims: [
+          {
+            id: 'claim-1',
+            kind: 'recompense',
+            fromPocket: 'communaute',
+            toPocket: 'epoux1',
+            amount: 50000,
+            enabled: true,
+            label: 'Recompense communaute / epoux 1',
+          },
+        ],
+      },
+      assetEntries: [
+        { id: 'asset-1', pocket: 'communaute', category: 'financier', subCategory: 'Titres', amount: 200000 },
+        { id: 'asset-2', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 100000 },
+      ],
+      groupementFoncierEntries: [],
+      forfaitMobilierMode: 'off',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    expect(result.interMassClaimsSummary.totalAppliedAmount).toBe(50000);
+    expect(result.assetNetTotals.commun).toBe(150000);
+    expect(result.assetNetTotals.epoux1).toBe(150000);
+    expect(result.transmissionBasis.ordinaryTaxableAssetsParPocket.communaute).toBe(150000);
+    expect(result.transmissionBasis.ordinaryTaxableAssetsParPocket.epoux1).toBe(150000);
+  });
+
+  it('summarizes affected liabilities by pocket', () => {
+    const result = computeSuccessionAssetValuation({
+      civilContext: marriedCivilContext,
+      assetEntries: [
+        { id: 'asset-1', pocket: 'epoux1', category: 'financier', subCategory: 'Comptes', amount: 120000 },
+        { id: 'passif-1', pocket: 'epoux1', category: 'passif', subCategory: 'Emprunt', amount: 30000 },
+        { id: 'passif-2', pocket: 'communaute', category: 'passif', subCategory: 'Dette fiscale', amount: 15000 },
+      ],
+      groupementFoncierEntries: [],
+      forfaitMobilierMode: 'off',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    expect(result.affectedLiabilitySummary.totalAmount).toBe(45000);
+    expect(result.affectedLiabilitySummary.byPocket).toEqual([
+      { pocket: 'epoux1', amount: 30000 },
+      { pocket: 'communaute', amount: 15000 },
+    ]);
+  });
 });

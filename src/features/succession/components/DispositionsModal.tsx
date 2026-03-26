@@ -3,6 +3,7 @@ import {
   DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
   type FamilyMember,
   type SituationMatrimoniale,
+  type SuccessionAssetPocket,
   type SuccessionAssetDetailEntry,
   type SuccessionBeneficiaryRef,
   type SuccessionDispositionTestamentaire,
@@ -26,13 +27,20 @@ import {
   DONATION_ENTRE_EPOUX_OPTIONS,
   OUI_NON_OPTIONS,
 } from '../successionSimulator.constants';
-import type { DispositionsDraftState } from '../successionSimulator.helpers';
+import {
+  createInterMassClaimId,
+  type DispositionsDraftState,
+} from '../successionSimulator.helpers';
 import {
   buildSuccessionPreciputCandidates,
   createSuccessionPreciputSelection,
   getSuccessionPreciputEligiblePocket,
   syncSuccessionPreciputSelections,
 } from '../successionPreciput';
+import {
+  getSuccessionInterMassClaimKindLabel,
+  getSuccessionPocketLabel,
+} from '../successionInterMassClaims';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
@@ -52,6 +60,11 @@ const PRECIPUT_MODE_OPTIONS = [
     label: 'Bien(s) cible(s)',
     description: 'Preleve une liste de biens compatibles avant partage.',
   },
+] as const;
+
+const INTER_MASS_CLAIM_KIND_OPTIONS = [
+  { value: 'recompense', label: 'Recompense' },
+  { value: 'creance', label: 'Creance entre masses' },
 ] as const;
 
 function formatPreciputAmount(value: number): string {
@@ -75,6 +88,7 @@ interface DispositionsModalProps {
   familyMembers: FamilyMember[];
   assetEntries: SuccessionAssetDetailEntry[];
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
+  assetPocketOptions: { value: SuccessionAssetPocket; label: string }[];
   civilSituation: SituationMatrimoniale;
   showSharedTransmissionPct: boolean;
   isPacsIndivision: boolean;
@@ -113,6 +127,7 @@ export default function DispositionsModal({
   familyMembers,
   assetEntries,
   groupementFoncierEntries,
+  assetPocketOptions,
   civilSituation,
   showSharedTransmissionPct,
   isPacsIndivision,
@@ -167,6 +182,13 @@ export default function DispositionsModal({
   const preciputScopeLabel = preciputEligiblePocket === 'societe_acquets'
     ? "la societe d'acquets"
     : 'la communaute';
+  const interMassClaimPocketOptions = useMemo(
+    () => assetPocketOptions.map((option) => ({
+      value: option.value,
+      label: option.label,
+    })),
+    [assetPocketOptions],
+  );
 
   const updatePreciputSelections = (
     updater: (_current: DispositionsDraftState['preciputSelections']) => DispositionsDraftState['preciputSelections'],
@@ -211,6 +233,68 @@ export default function DispositionsModal({
 
   const removePreciputSelection = (selectionId: string) => {
     updatePreciputSelections((current) => current.filter((selection) => selection.id !== selectionId));
+  };
+
+  const addInterMassClaim = () => {
+    const fromPocket = interMassClaimPocketOptions[0]?.value ?? 'epoux1';
+    const toPocket = interMassClaimPocketOptions[1]?.value ?? interMassClaimPocketOptions[0]?.value ?? 'epoux2';
+    setDispositionsDraft((prev) => ({
+      ...prev,
+      interMassClaims: [
+        ...prev.interMassClaims,
+        {
+          id: createInterMassClaimId(),
+          kind: 'recompense',
+          fromPocket,
+          toPocket,
+          amount: 0,
+          enabled: true,
+          label: undefined,
+        },
+      ],
+    }));
+  };
+
+  const updateInterMassClaim = (
+    claimId: string,
+    field: 'kind' | 'fromPocket' | 'toPocket' | 'amount' | 'enabled' | 'label',
+    value: string | number | boolean,
+  ) => {
+    setDispositionsDraft((prev) => ({
+      ...prev,
+      interMassClaims: prev.interMassClaims.map((claim) => {
+        if (claim.id !== claimId) return claim;
+        if (field === 'amount') {
+          return {
+            ...claim,
+            amount: Math.max(0, Number(value) || 0),
+          };
+        }
+        if (field === 'enabled') {
+          return {
+            ...claim,
+            enabled: Boolean(value),
+          };
+        }
+        if (field === 'label') {
+          return {
+            ...claim,
+            label: typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined,
+          };
+        }
+        return {
+          ...claim,
+          [field]: value,
+        };
+      }),
+    }));
+  };
+
+  const removeInterMassClaim = (claimId: string) => {
+    setDispositionsDraft((prev) => ({
+      ...prev,
+      interMassClaims: prev.interMassClaims.filter((claim) => claim.id !== claimId),
+    }));
   };
 
   const renderPreciputConfigurator = ({
@@ -621,6 +705,102 @@ export default function DispositionsModal({
                 )}
               </>
             )}
+
+            <div className="sc-field">
+              <label>Recompenses / creances entre masses</label>
+              <p className="sc-hint sc-hint--compact">
+                Ces ecritures deplacent une valeur simplifiee d&apos;une masse debitrice vers une masse creanciere avant liquidation. Les passifs detailles rattaches a une masse restent traites a part comme passifs affectes.
+              </p>
+            </div>
+            {dispositionsDraft.interMassClaims.length > 0 && (
+              <div className="sc-preciput-list">
+                {dispositionsDraft.interMassClaims.map((claim) => (
+                  <div key={claim.id} className="sc-preciput-item">
+                    <div className="sc-preciput-item__header">
+                      <div>
+                        <div className="sc-preciput-item__title">
+                          {claim.label ?? getSuccessionInterMassClaimKindLabel(claim.kind)}
+                        </div>
+                        <p className="sc-hint sc-hint--compact">
+                          {getSuccessionPocketLabel(claim.fromPocket)} vers {getSuccessionPocketLabel(claim.toPocket)}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="sc-remove-btn sc-remove-btn--quiet"
+                        onClick={() => removeInterMassClaim(claim.id)}
+                        aria-label="Supprimer l'ecriture entre masses"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+
+                    <div className="sc-preciput-item__grid">
+                      <div className="sc-field">
+                        <label>Active</label>
+                        <ScSelect
+                          value={claim.enabled ? 'oui' : 'non'}
+                          onChange={(value) => updateInterMassClaim(claim.id, 'enabled', value === 'oui')}
+                          options={OUI_NON_OPTIONS}
+                        />
+                      </div>
+                      <div className="sc-field">
+                        <label>Nature</label>
+                        <ScSelect
+                          value={claim.kind}
+                          onChange={(value) => updateInterMassClaim(claim.id, 'kind', value)}
+                          options={INTER_MASS_CLAIM_KIND_OPTIONS.map((option) => ({
+                            value: option.value,
+                            label: option.label,
+                          }))}
+                        />
+                      </div>
+                      <div className="sc-field">
+                        <label>Masse debitrice</label>
+                        <ScSelect
+                          value={claim.fromPocket}
+                          onChange={(value) => updateInterMassClaim(claim.id, 'fromPocket', value)}
+                          options={interMassClaimPocketOptions}
+                        />
+                      </div>
+                      <div className="sc-field">
+                        <label>Masse creanciere</label>
+                        <ScSelect
+                          value={claim.toPocket}
+                          onChange={(value) => updateInterMassClaim(claim.id, 'toPocket', value)}
+                          options={interMassClaimPocketOptions}
+                        />
+                      </div>
+                      <div className="sc-field">
+                        <label>Montant (EUR)</label>
+                        <ScNumericInput
+                          value={claim.amount}
+                          min={0}
+                          onChange={(value) => updateInterMassClaim(claim.id, 'amount', value)}
+                        />
+                      </div>
+                      <div className="sc-field">
+                        <label>Libelle</label>
+                        <input
+                          type="text"
+                          className="sc-input--left"
+                          value={claim.label ?? ''}
+                          onChange={(e) => updateInterMassClaim(claim.id, 'label', e.target.value)}
+                          placeholder="Ex : recompense communaute / epoux 1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button
+              type="button"
+              className="sc-child-add-btn"
+              onClick={addInterMassClaim}
+            >
+              + Ajouter une ecriture entre masses
+            </button>
 
             {isCommunityRegime && renderPreciputConfigurator({
               title: 'Clause de preciput (EUR)',

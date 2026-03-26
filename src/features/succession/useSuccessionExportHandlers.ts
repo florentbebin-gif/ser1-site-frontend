@@ -25,6 +25,7 @@ interface UseSuccessionExportHandlersInput {
   synthDonutTransmis: number;
   derivedTotalDroits: number;
   exportHeirs: Array<{ lien: LienParente; partSuccession: number }>;
+  assumptions: string[];
 }
 
 export function useSuccessionExportHandlers({
@@ -41,6 +42,7 @@ export function useSuccessionExportHandlers({
   synthDonutTransmis,
   derivedTotalDroits,
   exportHeirs,
+  assumptions,
 }: UseSuccessionExportHandlersInput) {
   const [exportLoading, setExportLoading] = useState(false);
   const exportMasseTransmise = displayUsesChainage ? synthDonutTransmis : derivedMasseTransmise;
@@ -59,6 +61,7 @@ export function useSuccessionExportHandlers({
               : 0,
             heritiers: displayUsesChainage ? [] : (directDisplayResult?.detailHeritiers ?? []) as Parameters<typeof exportSuccessionPptx>[0]['heritiers'],
             predecesChronologie: chainageExportPayload,
+            assumptions,
           },
           pptxColors,
           { logoUrl: cabinetLogo, logoPlacement },
@@ -78,6 +81,7 @@ export function useSuccessionExportHandlers({
     directDisplayResult,
     exportMasseTransmise,
     derivedTotalDroits,
+    assumptions,
   ]);
 
   const handleExportXlsx = useCallback(async () => {
@@ -96,6 +100,7 @@ export function useSuccessionExportHandlers({
           undefined,
           chainageExportPayload,
           pptxColors.c7,
+          assumptions,
         );
       }
     } finally {
@@ -110,6 +115,7 @@ export function useSuccessionExportHandlers({
     directDisplayResult,
     exportMasseTransmise,
     exportHeirs,
+    assumptions,
   ]);
 
   const exportOptions = [

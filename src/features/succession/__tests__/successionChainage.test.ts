@@ -76,6 +76,52 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.totalDroits).toBeGreaterThanOrEqual(0);
   });
 
+  it('exposes inter-mass claims and affected liabilities in the chainage summary and warnings', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({}),
+      liquidation: makeLiquidation({ actifEpoux1: 450000, actifEpoux2: 200000, actifCommun: 250000 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      interMassClaimsSummary: {
+        configured: true,
+        totalRequestedAmount: 80000,
+        totalAppliedAmount: 60000,
+        adjustmentsByPocket: {
+          epoux1: 60000,
+          epoux2: 0,
+          communaute: -60000,
+          societe_acquets: 0,
+          indivision_pacse: 0,
+          indivision_concubinage: 0,
+        },
+        claims: [
+          {
+            id: 'claim-1',
+            kind: 'recompense',
+            fromPocket: 'communaute',
+            toPocket: 'epoux1',
+            requestedAmount: 80000,
+            appliedAmount: 60000,
+          },
+        ],
+        warnings: [],
+      },
+      affectedLiabilitySummary: {
+        totalAmount: 35000,
+        byPocket: [
+          { pocket: 'epoux1', amount: 20000 },
+          { pocket: 'communaute', amount: 15000 },
+        ],
+      },
+    });
+
+    expect(analysis.interMassClaims?.totalAppliedAmount).toBe(60000);
+    expect(analysis.affectedLiabilities?.totalAmount).toBe(35000);
+    expect(analysis.warnings.some((warning) => warning.includes('Creances entre masses'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('Passif affecte'))).toBe(true);
+  });
+
   it('changes step 1 mass when death order is inverted on asymmetrical own assets', () => {
     const epoux1First = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),

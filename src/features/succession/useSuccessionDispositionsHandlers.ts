@@ -14,6 +14,7 @@ import {
 } from './successionTestament';
 import {
   cloneAscendantsSurvivantsBySide,
+  cloneSuccessionInterMassClaims,
   cloneSuccessionParticipationAcquetsConfig,
   cloneSuccessionPreciputSelections,
   cloneSuccessionSocieteAcquetsConfig,
@@ -121,6 +122,7 @@ export function useSuccessionDispositionsHandlers({
       participationAcquets: cloneSuccessionParticipationAcquetsConfig(patrimonialContext.participationAcquets),
       preciputMode: patrimonialContext.preciputMode,
       preciputSelections: cloneSuccessionPreciputSelections(patrimonialContext.preciputSelections),
+      interMassClaims: cloneSuccessionInterMassClaims(patrimonialContext.interMassClaims),
       preciputMontant: patrimonialContext.preciputMontant,
       attributionIntegrale: patrimonialContext.attributionIntegrale,
       choixLegalConjointSansDDV: devolutionContext.choixLegalConjointSansDDV,
@@ -147,6 +149,7 @@ export function useSuccessionDispositionsHandlers({
       participationAcquets: cloneSuccessionParticipationAcquetsConfig(dispositionsDraft.participationAcquets),
       preciputMode: dispositionsDraft.preciputMode,
       preciputSelections: cloneSuccessionPreciputSelections(dispositionsDraft.preciputSelections),
+      interMassClaims: cloneSuccessionInterMassClaims(dispositionsDraft.interMassClaims),
       preciputMontant: dispositionsDraft.preciputMontant,
       attributionIntegrale: isSocieteAcquetsRegime
         ? dispositionsDraft.attributionIntegrale

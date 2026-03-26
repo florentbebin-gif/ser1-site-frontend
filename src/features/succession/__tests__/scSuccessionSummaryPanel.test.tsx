@@ -19,7 +19,7 @@ describe('ScSuccessionSummaryPanel', () => {
         }]}
         synthHypothese={null}
         isPacsed={false}
-        chainageAnalysis={{ order: 'epoux1', societeAcquets: null, participationAcquets: null, preciput: null, step1: null, step2: null }}
+        chainageAnalysis={{ order: 'epoux1', societeAcquets: null, participationAcquets: null, interMassClaims: null, affectedLiabilities: null, preciput: null, step1: null, step2: null }}
         avFiscalByAssure={{ epoux1: { totalDroits: 4000 }, epoux2: { totalDroits: 0 } }}
         perFiscalByAssure={{ epoux1: { totalDroits: 2000 }, epoux2: { totalDroits: 0 } }}
         prevoyanceFiscalByAssure={{ epoux1: { totalDroits: 1000 }, epoux2: { totalDroits: 0 } }}
@@ -59,7 +59,7 @@ describe('ScSuccessionSummaryPanel', () => {
         }]}
         synthHypothese={null}
         isPacsed={false}
-        chainageAnalysis={{ order: 'epoux1', societeAcquets: null, participationAcquets: null, preciput: null, step1: null, step2: null }}
+        chainageAnalysis={{ order: 'epoux1', societeAcquets: null, participationAcquets: null, interMassClaims: null, affectedLiabilities: null, preciput: null, step1: null, step2: null }}
         avFiscalByAssure={{ epoux1: { totalDroits: 3000 }, epoux2: { totalDroits: 0 } }}
         perFiscalByAssure={{ epoux1: { totalDroits: 2000 }, epoux2: { totalDroits: 0 } }}
         prevoyanceFiscalByAssure={{ epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } }}
@@ -107,6 +107,8 @@ describe('ScSuccessionSummaryPanel', () => {
             attributionIntegrale: false,
           },
           participationAcquets: null,
+          interMassClaims: null,
+          affectedLiabilities: null,
           preciput: {
             mode: 'cible',
             appliedAmount: 50000,
@@ -163,6 +165,8 @@ describe('ScSuccessionSummaryPanel', () => {
             creanceAmount: 70000,
             firstEstateAdjustment: -70000,
           },
+          interMassClaims: null,
+          affectedLiabilities: null,
           preciput: null,
           step1: { droitsEnfants: 12000 },
           step2: { droitsEnfants: 10000 },
@@ -182,5 +186,57 @@ describe('ScSuccessionSummaryPanel', () => {
     expect(markup).toContain('Participation aux acquets');
     expect(markup).toContain('Creance de participation');
     expect(markup).toContain('Epoux 2 / Epoux 1');
+  });
+
+  it('renders inter-mass claims and affected liabilities when configured', () => {
+    const markup = renderToStaticMarkup(
+      <ScSuccessionSummaryPanel
+        displayUsesChainage
+        derivedTotalDroits={15000}
+        synthDonutTransmis={500000}
+        derivedMasseTransmise={0}
+        transmissionRows={[]}
+        synthHypothese={null}
+        isPacsed={false}
+        chainageAnalysis={{
+          order: 'epoux1',
+          societeAcquets: null,
+          participationAcquets: null,
+          interMassClaims: {
+            totalRequestedAmount: 80000,
+            totalAppliedAmount: 60000,
+            claims: [
+              {
+                id: 'claim-1',
+                kind: 'recompense',
+                fromPocket: 'communaute',
+                toPocket: 'epoux1',
+                appliedAmount: 60000,
+              },
+            ],
+          },
+          affectedLiabilities: {
+            totalAmount: 30000,
+            byPocket: [{ pocket: 'epoux1', amount: 30000 }],
+          },
+          preciput: null,
+          step1: { droitsEnfants: 7000 },
+          step2: { droitsEnfants: 8000 },
+        }}
+        avFiscalByAssure={{ epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } }}
+        perFiscalByAssure={{ epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } }}
+        prevoyanceFiscalByAssure={{ epoux1: { totalDroits: 0 }, epoux2: { totalDroits: 0 } }}
+        insurance990ILines={[]}
+        insurance757BLines={[]}
+        directDisplay={{
+          simulatedDeceased: 'epoux1',
+          result: null,
+        }}
+      />,
+    );
+
+    expect(markup).toContain('Recompenses / creances entre masses');
+    expect(markup).toContain('Passif affecte');
+    expect(markup).toContain('Communaute vers Epoux 1');
   });
 });

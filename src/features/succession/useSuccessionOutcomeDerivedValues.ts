@@ -25,6 +25,7 @@ import type {
   SuccessionEnfant,
 } from './successionDraft';
 import type { SuccessionAssetTransmissionBasis } from './successionTransmissionBasis';
+import { buildSuccessionAssumptions } from './successionAssumptions';
 import {
   buildSuccessionSynthHypothese,
   mergeInsuranceBeneficiaryLines,
@@ -420,6 +421,31 @@ export function useSuccessionOutcomeDerivedValues({
           firstEstateAdjustment: chainageAnalysis.participationAcquets.firstEstateAdjustment,
         }
         : null,
+      interMassClaims: displayUsesChainage && chainageAnalysis.interMassClaims
+        ? {
+          configured: chainageAnalysis.interMassClaims.configured,
+          totalRequestedAmount: chainageAnalysis.interMassClaims.totalRequestedAmount,
+          totalAppliedAmount: chainageAnalysis.interMassClaims.totalAppliedAmount,
+          claims: chainageAnalysis.interMassClaims.claims.map((claim) => ({
+            id: claim.id,
+            kind: claim.kind,
+            label: claim.label,
+            fromPocket: claim.fromPocket,
+            toPocket: claim.toPocket,
+            requestedAmount: claim.requestedAmount,
+            appliedAmount: claim.appliedAmount,
+          })),
+        }
+        : null,
+      affectedLiabilities: displayUsesChainage && chainageAnalysis.affectedLiabilities
+        ? {
+          totalAmount: chainageAnalysis.affectedLiabilities.totalAmount,
+          byPocket: chainageAnalysis.affectedLiabilities.byPocket.map((entry) => ({
+            pocket: entry.pocket,
+            amount: entry.amount,
+          })),
+        }
+        : null,
       preciput: displayUsesChainage && chainageAnalysis.preciput
         ? {
           mode: chainageAnalysis.preciput.mode,
@@ -522,6 +548,17 @@ export function useSuccessionOutcomeDerivedValues({
     avFiscalAnalysis.warnings,
     perFiscalAnalysis.warnings,
     prevoyanceFiscalAnalysis.warnings,
+    ]);
+  const assumptions = useMemo(() => buildSuccessionAssumptions({
+    fiscalSnapshot,
+    attentions,
+    hasInterMassClaims: (chainageAnalysis.interMassClaims?.totalAppliedAmount ?? 0) > 0,
+    hasAffectedLiabilities: (chainageAnalysis.affectedLiabilities?.totalAmount ?? 0) > 0,
+  }), [
+    fiscalSnapshot,
+    attentions,
+    chainageAnalysis.interMassClaims?.totalAppliedAmount,
+    chainageAnalysis.affectedLiabilities?.totalAmount,
   ]);
 
   const exportHeirs = useMemo(
@@ -551,6 +588,7 @@ export function useSuccessionOutcomeDerivedValues({
     canExportSimplified,
     canExportCurrentMode,
     attentions,
+    assumptions,
     exportHeirs,
   };
 }

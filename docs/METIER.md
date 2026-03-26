@@ -150,6 +150,8 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 - PACS: absence de vocation successorale legale automatique du partenaire sans testament; avec testament, le partenaire peut etre integre a la synthese directe avec exoneration DMTG
 - union libre: les biens en indivision peuvent etre saisis; seule la quote-part du defunt est retenue dans la succession directe, avec hypothese 50/50 par defaut dans ce module
 - exports PPTX/XLSX de la chronologie avec restitution des beneficiaires reels par etape quand ils sont identifies
+- exports PPTX/XLSX des hypotheses et simplifications retenues par le simulateur succession
+- restitution simplifiee des recompenses / creances entre masses et du passif affecte dans la synthese et la chronologie
 
 ### Limites connues
 - ce n'est pas une liquidation notariale exhaustive
@@ -182,6 +184,9 @@ Regle de lecture :
 - `separation_biens_societe_acquets` reste une lecture simplifiee dans l'audit predeces, mais la succession liquide maintenant la poche `societe_acquets` via un bloc dedie, un chainage simplifie et une restitution/export explicites
 - le preciput cible par bien est maintenant selectionnable dans la modal dispositions sur les biens `communaute` / `societe_acquets`, le chainage le deduit avant partage avec fallback sur le montant global, et la synthese / chronologie / exports mentionnent explicitement les biens preleves
 - la saisie detaillee des actifs expose maintenant une qualification juridique (`legalNature`, `origin`, `meubleImmeubleLegal`) conservee dans le draft succession
+- la modal dispositions expose maintenant des `recompenses / creances entre masses`; le moteur les applique comme transferts simplifies entre `pocket`, avec warnings si l'actif disponible est insuffisant
+- les passifs detailles rattaches a une masse sont restitues comme `passif affecte` dans la liquidation simplifiee et minorent uniquement la masse concernee
+- la liste finale des hypotheses et simplifications retenues est derivee depuis le snapshot fiscal et les warnings, puis exportee dans l'UI, le PPTX et le XLSX succession
 
 ### UX — Saisie des actifs spécialisés via la sous-catégorie
 

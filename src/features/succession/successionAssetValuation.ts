@@ -5,6 +5,12 @@ import type {
   SuccessionPatrimonialContext,
 } from './successionDraft.types';
 import { computeGroupementFoncierExoneration } from './successionGroupementFoncier';
+import {
+  buildSuccessionAffectedLiabilitySummary,
+  resolveSuccessionInterMassClaims,
+  type SuccessionAffectedLiabilitySummary,
+  type SuccessionInterMassClaimsSummary,
+} from './successionInterMassClaims';
 import { resolveSuccessionQualifiedAssetPocket } from './successionLegalQualification';
 import type { SuccessionAssetTransmissionBasis } from './successionTransmissionBasis';
 import {
@@ -30,6 +36,8 @@ export interface SuccessionAssetValuationResult {
   assetNetTotals: Record<SuccessionLegacyAssetOwner, number>;
   assetNetTotalsByPocket: Record<SuccessionAssetPocket, number>;
   taxableNetTotals: Record<SuccessionLegacyAssetOwner, number>;
+  interMassClaimsSummary: SuccessionInterMassClaimsSummary;
+  affectedLiabilitySummary: SuccessionAffectedLiabilitySummary;
   hasResidencePrincipale: boolean;
   residencePrincipaleEntryId: string | null;
   transmissionBasis: SuccessionAssetTransmissionBasis;
@@ -37,7 +45,7 @@ export interface SuccessionAssetValuationResult {
 
 interface SuccessionAssetValuationInput {
   civilContext: Pick<SuccessionCivilContext, 'situationMatrimoniale' | 'regimeMatrimonial' | 'pacsConvention'>;
-  patrimonialContext?: Pick<SuccessionPatrimonialContext, 'stipulationContraireCU'>;
+  patrimonialContext?: Partial<Pick<SuccessionPatrimonialContext, 'stipulationContraireCU' | 'interMassClaims'>>;
   assetEntries: SuccessionAssetDetailEntry[];
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   forfaitMobilierMode: SuccessionPatrimonialContext['forfaitMobilierMode'];
@@ -164,11 +172,14 @@ export function computeSuccessionAssetValuation({
   forfaitMobilierMontant,
   abattementResidencePrincipale: _abattementResidencePrincipale,
 }: SuccessionAssetValuationInput): SuccessionAssetValuationResult {
+  const qualificationPatrimonialContext = {
+    stipulationContraireCU: Boolean(patrimonialContext?.stipulationContraireCU),
+  };
   const normalizedAssetEntries = normalizeResidencePrincipaleAssetEntries(assetEntries.map((entry) => ({
     ...entry,
     pocket: resolveSuccessionQualifiedAssetPocket({
       civilContext,
-      patrimonialContext,
+      patrimonialContext: qualificationPatrimonialContext,
       entry,
       pocket: normalizeAssetPocket(entry.pocket, civilContext),
     }),
@@ -216,10 +227,35 @@ export function computeSuccessionAssetValuation({
     totals[entry.pocket] += asAmount(entry.amount);
     return totals;
   }, clonePocketTotals());
+  const interMassClaimsSummary = resolveSuccessionInterMassClaims({
+    claims: patrimonialContext?.interMassClaims ?? [],
+    availableByPocket: grossAssetsParPocket,
+  });
+  const adjustedGrossAssetsParPocket = (Object.keys(EMPTY_POCKET_TOTALS) as SuccessionAssetPocket[]).reduce(
+    (totals, pocket) => {
+      totals[pocket] = Math.max(
+        0,
+        grossAssetsParPocket[pocket] + interMassClaimsSummary.adjustmentsByPocket[pocket],
+      );
+      return totals;
+    },
+    clonePocketTotals(),
+  );
+  const adjustedOrdinaryTaxableAssetsParPocket = (Object.keys(EMPTY_POCKET_TOTALS) as SuccessionAssetPocket[]).reduce(
+    (totals, pocket) => {
+      totals[pocket] = Math.max(
+        0,
+        ordinaryTaxableAssetsParPocket[pocket] + interMassClaimsSummary.adjustmentsByPocket[pocket],
+      );
+      return totals;
+    },
+    clonePocketTotals(),
+  );
+  const affectedLiabilitySummary = buildSuccessionAffectedLiabilitySummary(passifsParPocket);
 
   const actifsTaxablesParOwner = (Object.keys(EMPTY_POCKET_TOTALS) as SuccessionAssetPocket[]).reduce(
     (totals, pocket) => {
-      totals[toLegacyOwner(pocket)] += ordinaryTaxableAssetsParPocket[pocket];
+      totals[toLegacyOwner(pocket)] += adjustedOrdinaryTaxableAssetsParPocket[pocket];
       return totals;
     },
     cloneLegacyOwnerTotals(),
@@ -276,14 +312,20 @@ export function computeSuccessionAssetValuation({
   );
   const assetNetTotals = (Object.keys(EMPTY_LEGACY_OWNER_TOTALS) as SuccessionLegacyAssetOwner[]).reduce(
     (totals, owner) => {
-      totals[owner] = Math.max(0, assetBreakdown.actifs[owner] - passifsParOwner[owner]);
+      totals[owner] = Math.max(
+        0,
+        (Object.keys(EMPTY_POCKET_TOTALS) as SuccessionAssetPocket[])
+          .filter((pocket) => toLegacyOwner(pocket) === owner)
+          .reduce((sum, pocket) => sum + adjustedGrossAssetsParPocket[pocket], 0)
+          - passifsParOwner[owner],
+      );
       return totals;
     },
     cloneLegacyOwnerTotals(),
   );
   const assetNetTotalsByPocket = (Object.keys(EMPTY_POCKET_TOTALS) as SuccessionAssetPocket[]).reduce(
     (totals, pocket) => {
-      totals[pocket] = Math.max(0, grossAssetsParPocket[pocket] - passifsParPocket[pocket]);
+      totals[pocket] = Math.max(0, adjustedGrossAssetsParPocket[pocket] - passifsParPocket[pocket]);
       return totals;
     },
     clonePocketTotals(),
@@ -298,10 +340,12 @@ export function computeSuccessionAssetValuation({
     assetNetTotals,
     assetNetTotalsByPocket,
     taxableNetTotals,
+    interMassClaimsSummary,
+    affectedLiabilitySummary,
     hasResidencePrincipale: residencePrincipaleEntryId !== null,
     residencePrincipaleEntryId,
     transmissionBasis: {
-      ordinaryTaxableAssetsParPocket,
+      ordinaryTaxableAssetsParPocket: adjustedOrdinaryTaxableAssetsParPocket,
       passifsParPocket,
       groupementFoncierEntries: normalizedGroupementFoncierEntries.map((entry) => ({ ...entry })),
       hasBeneficiaryLevelGfAdjustment: normalizedGroupementFoncierEntries.some(

@@ -110,6 +110,17 @@ describe('successionDraft', () => {
             enabled: true,
           },
         ],
+        interMassClaims: [
+          {
+            id: 'claim-1',
+            kind: 'recompense',
+            fromPocket: 'communaute',
+            toPocket: 'epoux1',
+            amount: 15000,
+            enabled: true,
+            label: 'Recompense communaute / epoux 1',
+          },
+        ],
         preciputMontant: 12000,
         forfaitMobilierMode: 'auto',
         decesDansXAns: 50,
@@ -166,7 +177,7 @@ describe('successionDraft', () => {
       'epoux2',
     );
 
-    expect(payload.version).toBe(25);
+    expect(payload.version).toBe(26);
     expect(payload.assetEntries[0].pocket).toBe('epoux1');
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
     expect(parsed).not.toBeNull();
@@ -208,6 +219,16 @@ describe('successionDraft', () => {
         sourceId: 'asset-1',
         pocket: 'communaute',
         amount: 12000,
+        enabled: true,
+      }),
+    ]);
+    expect(parsed?.patrimonial.interMassClaims).toEqual([
+      expect.objectContaining({
+        id: 'claim-1',
+        kind: 'recompense',
+        fromPocket: 'communaute',
+        toPocket: 'epoux1',
+        amount: 15000,
         enabled: true,
       }),
     ]);
