@@ -239,6 +239,29 @@ export function SuccessionPageGrid({
                     firstEstateAdjustment: derived.chainageAnalysis.participationAcquets.firstEstateAdjustment,
                   }
                   : null,
+                interMassClaims: derived.chainageAnalysis.interMassClaims
+                  ? {
+                    totalRequestedAmount: derived.chainageAnalysis.interMassClaims.totalRequestedAmount,
+                    totalAppliedAmount: derived.chainageAnalysis.interMassClaims.totalAppliedAmount,
+                    claims: derived.chainageAnalysis.interMassClaims.claims.map((claim) => ({
+                      id: claim.id,
+                      kind: claim.kind,
+                      label: claim.label,
+                      fromPocket: claim.fromPocket,
+                      toPocket: claim.toPocket,
+                      appliedAmount: claim.appliedAmount,
+                    })),
+                  }
+                  : null,
+                affectedLiabilities: derived.chainageAnalysis.affectedLiabilities
+                  ? {
+                    totalAmount: derived.chainageAnalysis.affectedLiabilities.totalAmount,
+                    byPocket: derived.chainageAnalysis.affectedLiabilities.byPocket.map((entry) => ({
+                      pocket: entry.pocket,
+                      amount: entry.amount,
+                    })),
+                  }
+                  : null,
                 preciput: derived.chainageAnalysis.preciput
                   ? {
                     mode: derived.chainageAnalysis.preciput.mode,
@@ -307,6 +330,28 @@ export function SuccessionPageGrid({
                     quoteAppliedPct: derived.chainageAnalysis.participationAcquets.quoteAppliedPct,
                     creanceAmount: derived.chainageAnalysis.participationAcquets.creanceAmount,
                     firstEstateAdjustment: derived.chainageAnalysis.participationAcquets.firstEstateAdjustment,
+                  }
+                  : null,
+                interMassClaims: derived.chainageAnalysis.interMassClaims
+                  ? {
+                    totalAppliedAmount: derived.chainageAnalysis.interMassClaims.totalAppliedAmount,
+                    claims: derived.chainageAnalysis.interMassClaims.claims.map((claim) => ({
+                      id: claim.id,
+                      kind: claim.kind,
+                      label: claim.label,
+                      fromPocket: claim.fromPocket,
+                      toPocket: claim.toPocket,
+                      appliedAmount: claim.appliedAmount,
+                    })),
+                  }
+                  : null,
+                affectedLiabilities: derived.chainageAnalysis.affectedLiabilities
+                  ? {
+                    totalAmount: derived.chainageAnalysis.affectedLiabilities.totalAmount,
+                    byPocket: derived.chainageAnalysis.affectedLiabilities.byPocket.map((entry) => ({
+                      pocket: entry.pocket,
+                      amount: entry.amount,
+                    })),
                   }
                   : null,
                 preciput: derived.chainageAnalysis.preciput

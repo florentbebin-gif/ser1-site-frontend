@@ -8,6 +8,10 @@
 import { buildXlsxBlob, downloadXlsx, validateXlsxBlob } from '../../utils/export/xlsxBuilder';
 import type { XlsxSheet, XlsxCell } from '../../utils/export/xlsxBuilder';
 import type { SuccessionResult, HeritierResult, LienParente } from '../../engine/succession';
+import {
+  getSuccessionInterMassClaimKindLabel,
+  getSuccessionPocketLabel,
+} from './successionInterMassClaims';
 
 const LIEN_LABELS: Record<LienParente, string> = {
   conjoint: 'Conjoint survivant',
@@ -82,6 +86,27 @@ export interface SuccessionChronologieXlsxData {
     quoteAppliedPct: number;
     creanceAmount: number;
     firstEstateAdjustment: number;
+  } | null;
+  interMassClaims?: {
+    configured: boolean;
+    totalRequestedAmount: number;
+    totalAppliedAmount: number;
+    claims: Array<{
+      id: string;
+      kind: 'recompense' | 'creance';
+      label?: string;
+      fromPocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+      toPocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+      requestedAmount: number;
+      appliedAmount: number;
+    }>;
+  } | null;
+  affectedLiabilities?: {
+    totalAmount: number;
+    byPocket: Array<{
+      pocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+      amount: number;
+    }>;
   } | null;
   preciput?: {
     mode: 'global' | 'cible' | 'none';
@@ -178,7 +203,7 @@ function buildDetailsSheet(heritiers: HeritierResult[]): XlsxSheet {
   };
 }
 
-function buildHypothesesSheet(): XlsxSheet {
+function buildHypothesesSheet(_assumptions: string[] = []): XlsxSheet {
   const rows: Array<Array<XlsxCell | string>> = [
     [h('Hypothèse'), h('Référence')],
     ['Barème DMTG en vigueur', 'CGI Art. 777'],
@@ -194,6 +219,23 @@ function buildHypothesesSheet(): XlsxSheet {
   ];
 
   return { name: 'Hypothèses', rows, columnWidths: [45, 30] };
+}
+
+function buildSuccessionHypothesesSheet(assumptions: string[] = []): XlsxSheet {
+  const sheet = buildHypothesesSheet();
+  if (assumptions.length === 0) {
+    return sheet;
+  }
+
+  return {
+    ...sheet,
+    rows: [
+      ...sheet.rows,
+      [],
+      [sec('Hypotheses calculees'), sec('')],
+      ...assumptions.map((assumption) => [assumption, 'Module succession'] as Array<XlsxCell | string>),
+    ],
+  };
 }
 
 function orderLabel(order: 'epoux1' | 'epoux2'): string {
@@ -314,6 +356,29 @@ function buildPredecesSheet(
     rows.push([]);
   }
 
+  if (chronologie.interMassClaims && chronologie.interMassClaims.totalAppliedAmount > 0) {
+    rows.push([sec('Recompenses / creances entre masses'), sec('')]);
+    rows.push(['Montant applique', money(chronologie.interMassClaims.totalAppliedAmount)]);
+    chronologie.interMassClaims.claims
+      .filter((claim) => claim.appliedAmount > 0)
+      .forEach((claim) => {
+        rows.push([
+          `${claim.label ?? getSuccessionInterMassClaimKindLabel(claim.kind)} - ${getSuccessionPocketLabel(claim.fromPocket)} vers ${getSuccessionPocketLabel(claim.toPocket)}`,
+          money(claim.appliedAmount),
+        ]);
+      });
+    rows.push([]);
+  }
+
+  if (chronologie.affectedLiabilities && chronologie.affectedLiabilities.totalAmount > 0) {
+    rows.push([sec('Passif affecte'), sec('')]);
+    rows.push(['Total des passifs rattaches', money(chronologie.affectedLiabilities.totalAmount)]);
+    chronologie.affectedLiabilities.byPocket.forEach((entry) => {
+      rows.push([getSuccessionPocketLabel(entry.pocket), money(entry.amount)]);
+    });
+    rows.push([]);
+  }
+
   if (chronologie.applicable && chronologie.step1 && chronologie.step2) {
     rows.push([sec(`Étape 1 - décès ${chronologie.firstDecedeLabel}`), sec('')]);
     rows.push(['Masse transmise totale', money(chronologie.step1.masseTotaleTransmise ?? chronologie.step1.actifTransmis)]);
@@ -401,6 +466,7 @@ export async function exportSuccessionXlsx(
   _filename = 'Simulation-Succession',
   chronologie?: SuccessionChronologieXlsxData,
   sectionFill?: string,
+  assumptions?: string[],
 ): Promise<Blob> {
   const sheets: XlsxSheet[] = result
     ? [
@@ -408,11 +474,11 @@ export async function exportSuccessionXlsx(
       buildResultsSheet(result),
       buildDetailsSheet(result.detailHeritiers),
       buildPredecesSheet(chronologie),
-      buildHypothesesSheet(),
+      buildSuccessionHypothesesSheet(assumptions ?? []),
     ]
     : [
       buildPredecesSheet(chronologie),
-      buildHypothesesSheet(),
+      buildSuccessionHypothesesSheet(assumptions ?? []),
     ];
 
   const blob = await buildXlsxBlob({
@@ -433,7 +499,8 @@ export async function exportAndDownloadSuccessionXlsx(
   filename = 'Simulation-Succession',
   chronologie?: SuccessionChronologieXlsxData,
   sectionFill?: string,
+  assumptions?: string[],
 ): Promise<void> {
-  const blob = await exportSuccessionXlsx(input, result, themeColor, filename, chronologie, sectionFill);
+  const blob = await exportSuccessionXlsx(input, result, themeColor, filename, chronologie, sectionFill, assumptions);
   downloadXlsx(blob, filename);
 }

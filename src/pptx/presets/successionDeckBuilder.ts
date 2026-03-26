@@ -87,6 +87,27 @@ export interface SuccessionData {
       creanceAmount: number;
       firstEstateAdjustment: number;
     } | null;
+    interMassClaims?: {
+      configured: boolean;
+      totalRequestedAmount: number;
+      totalAppliedAmount: number;
+      claims: Array<{
+        id: string;
+        kind: 'recompense' | 'creance';
+        label?: string;
+        fromPocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+        toPocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+        requestedAmount: number;
+        appliedAmount: number;
+      }>;
+    } | null;
+    affectedLiabilities?: {
+      totalAmount: number;
+      byPocket: Array<{
+        pocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+        amount: number;
+      }>;
+    } | null;
     preciput?: {
       mode: 'global' | 'cible' | 'none';
       requestedAmount: number;
@@ -105,6 +126,7 @@ export interface SuccessionData {
     totalDroits: number;
     warnings?: string[];
   };
+  assumptions?: string[];
   clientName?: string;
 }
 
@@ -229,6 +251,24 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
     }
   }
 
+  if (data.interMassClaims && data.interMassClaims.totalAppliedAmount > 0) {
+    lines.push(
+      `- Recompenses / creances entre masses: ${fmt(data.interMassClaims.totalAppliedAmount)} appliques sur ${data.interMassClaims.claims.filter((claim) => claim.appliedAmount > 0).length} ecriture(s).`,
+    );
+    data.interMassClaims.claims
+      .filter((claim) => claim.appliedAmount > 0)
+      .slice(0, 4)
+      .forEach((claim) => {
+        lines.push(
+          `- ${claim.label ?? claim.kind}: ${fmt(claim.appliedAmount)} de ${claim.fromPocket} vers ${claim.toPocket}.`,
+        );
+      });
+  }
+
+  if (data.affectedLiabilities && data.affectedLiabilities.totalAmount > 0) {
+    lines.push(`- Passif affecte: ${fmt(data.affectedLiabilities.totalAmount)} rattaches a une ou plusieurs masses.`);
+  }
+
   if (data.applicable && data.step1 && data.step2) {
     lines.push(
       `- Étape 1 (${data.firstDecedeLabel}) - masse totale ${fmt(data.step1.masseTotaleTransmise ?? data.step1.actifTransmis)}, ` +
@@ -271,6 +311,22 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
     lines.push('Avertissements:');
     data.warnings.slice(0, 4).forEach((warning) => lines.push(`- ${warning}`));
   }
+
+  return lines.join('\n');
+}
+
+function buildAssumptionsBody(assumptions?: string[]): string {
+  const fallback = [
+    '- Bareme des droits de mutation a titre gratuit en vigueur (CGI Art. 777)',
+    '- Abattement en ligne directe: 100 000 EUR par enfant (CGI Art. 779)',
+    '- Exoneration totale du conjoint survivant (CGI Art. 796-0 bis)',
+    '- Estimation hors donations anterieures; assurance-vie et PER assurance ajoutes a la masse transmise affichee',
+    "- Les montants sont arrondis a l'euro le plus proche",
+  ];
+
+  const lines = assumptions && assumptions.length > 0
+    ? assumptions.map((assumption) => `- ${assumption}`)
+    : fallback;
 
   return lines.join('\n');
 }
@@ -337,6 +393,11 @@ export function buildSuccessionStudyDeck(
       ].join('\n'),
     },
   ];
+
+  const lastSlide = slides[slides.length - 1];
+  if (lastSlide?.type === 'content') {
+    lastSlide.body = buildAssumptionsBody(data.assumptions);
+  }
 
   return {
     cover: {

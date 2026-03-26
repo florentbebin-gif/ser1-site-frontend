@@ -502,7 +502,7 @@ Le runtime succession actuel distingue encore imparfaitement :
 Les types de transition `SuccessionPersonParty` et `SuccessionAssetPocket` sont introduits dans `src/features/succession/successionPatrimonialModel.ts`.
 La saisie detaillee des actifs porte maintenant aussi une qualification juridique minimale (`legalNature`, `origin`, `meubleImmeubleLegal`) exposee en UI et serialisee dans le draft.
 Les produits specialises AV / PER / prevoyance sont maintenant types via `SuccessionPersonParty`, sans dependance au modele legacy `owner`.
-Le draft succession detaille persiste desormais `pocket` only sur `assetEntries` et `groupementFoncierEntries`; les anciens drafts `owner` restent relus via le parse legacy, et la serialisation courante sort en `v25`.
+Le draft succession detaille persiste desormais `pocket` only sur `assetEntries` et `groupementFoncierEntries`; les anciens drafts `owner` restent relus via le parse legacy, et la serialisation courante sort en `v26`.
 La base taxable succession (`successionAssetValuation.ts`, `successionTransmissionBasis.ts`, `successionChainage.ts`, `successionDisplay.ts`) consomme maintenant `pocket` comme source unique pour les lignes detaillees; les agregats simplifies `epoux1/epoux2/commun` ne subsistent que comme vue derivee pour le mode simplifie et `liquidationContext`.
 L'UI actifs/passifs expose une `Masse de rattachement` dependante du regime, y compris la poche `societe_acquets` quand `separation_biens_societe_acquets` est selectionne.
 La modal dispositions porte maintenant un bloc `societe d'acquets` dedie (activation, mode de liquidation, quotes, attribution survivant, attribution integrale, preciput), et le chainage succession consomme cette configuration pour liquider la poche `societe_acquets` avant le partage successoral du 1er deces.
@@ -511,9 +511,13 @@ Le draft succession embarque desormais le modele de preciput cible (`preciputMod
 La synthese, la chronologie et les exports succession restituent maintenant explicitement le `preciput` applique, avec le montant preleve, le mode retenu et la liste des biens cibles quand le mode cible est actif.
 Le regime `participation_acquets` dispose maintenant d'un bloc dedie dans la modal dispositions (`participationAcquets`) pour saisir les patrimoines originaires, piloter l'usage des patrimoines finals derives ou manuels et appliquer une creance simplifiee dans le chainage succession. L'audit predeces reste toutefois approxime en `separation_biens`.
 La modal dispositions expose aussi `stipulationContraireCU` pour `communaute_universelle`, tandis que `successionAssetValuation.ts` requalifie maintenant les actifs detailles en `communaute_universelle` et `communaute_meubles_acquets` a partir de cette qualification juridique minimale.
+La modal dispositions expose maintenant aussi `interMassClaims`; `successionInterMassClaims.ts` les resout comme transferts simplifies entre poches, puis `successionAssetValuation.ts` et `successionChainage.ts` les reinjectent dans la base taxable, la synthese, la chronologie et les exports.
+Les passifs detailles rattaches a une masse sont resumes comme `affectedLiabilities`, restitues dans `ScSuccessionSummaryPanel.tsx`, `ScDeathTimelinePanel.tsx`, `successionXlsx.ts` et le deck PPTX succession.
+Les hypotheses finales sont centralisees dans `buildSuccessionAssumptions()` puis consommees par `SuccessionHypotheses.tsx`, `useSuccessionExportHandlers.ts`, `successionXlsx.ts` et `successionDeckBuilder.ts`.
 
 La matrice de maturite et la trajectoire de refonte sont suivies dans [SUCCESSION_MODEL_MATURITY.md](SUCCESSION_MODEL_MATURITY.md).
 Toute PR qui etend les regimes matrimoniaux, la liquidation civile ou les masses patrimoniales doit mettre a jour cette matrice en meme temps que le code.
+La note de validation finale et la liste des hypotheses exportees sont suivies dans [SUCCESSION_FINAL_VALIDATION.md](SUCCESSION_FINAL_VALIDATION.md).
 
 ---
 

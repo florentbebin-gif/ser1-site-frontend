@@ -47,6 +47,7 @@ export const SUPPORTED_SUCCESSION_DRAFT_VERSIONS = [
   23,
   24,
   25,
+  26,
 ] as const;
 
 export function isSupportedSuccessionDraftVersion(

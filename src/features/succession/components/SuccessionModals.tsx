@@ -129,6 +129,7 @@ export function SuccessionModals({
           familyMembers={familyMembers}
           assetEntries={assetEntries}
           groupementFoncierEntries={groupementFoncierEntries}
+          assetPocketOptions={derived.assetPocketOptions}
           civilSituation={civilSituation}
           showSharedTransmissionPct={derived.showSharedTransmissionPct}
           isPacsIndivision={derived.isPacsIndivision}

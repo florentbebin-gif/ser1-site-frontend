@@ -21,6 +21,8 @@ function buildProps() {
       secondDecedeLabel: 'epoux 2',
       societeAcquets: null,
       participationAcquets: null,
+      interMassClaims: null,
+      affectedLiabilities: null,
       preciput: null,
       step1: { actifTransmis: 100000, droitsEnfants: 5000 },
       step2: { actifTransmis: 200000, droitsEnfants: 15000 },
@@ -107,6 +109,22 @@ describe('ScDeathTimelinePanel', () => {
             creanceAmount: 70000,
             firstEstateAdjustment: -70000,
           },
+          interMassClaims: {
+            totalAppliedAmount: 25000,
+            claims: [
+              {
+                id: 'claim-1',
+                kind: 'recompense',
+                fromPocket: 'communaute',
+                toPocket: 'epoux1',
+                appliedAmount: 25000,
+              },
+            ],
+          },
+          affectedLiabilities: {
+            totalAmount: 15000,
+            byPocket: [{ pocket: 'epoux1', amount: 15000 }],
+          },
           preciput: {
             mode: 'cible',
             appliedAmount: 50000,
@@ -121,5 +139,7 @@ describe('ScDeathTimelinePanel', () => {
     expect(markup).toContain('part survivant');
     expect(markup).toContain('Preciput applique');
     expect(markup).toContain('Creance de participation');
+    expect(markup).toContain('Creances entre masses appliquees');
+    expect(markup).toContain('Passif affecte rattache');
   });
 });

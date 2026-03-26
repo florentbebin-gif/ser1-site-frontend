@@ -1,4 +1,8 @@
 import type { SuccessionChainOrder } from '../successionChainage';
+import {
+  getSuccessionInterMassClaimKindLabel,
+  getSuccessionPocketLabel,
+} from '../successionInterMassClaims';
 import { DECES_DANS_X_ANS_OPTIONS } from '../successionSimulator.constants';
 import { fmt } from '../successionSimulator.helpers';
 import { ScSelect } from './ScSelect';
@@ -36,6 +40,24 @@ interface ScDeathTimelinePanelProps {
       quoteAppliedPct: number;
       creanceAmount: number;
       firstEstateAdjustment: number;
+    } | null;
+    interMassClaims: {
+      totalAppliedAmount: number;
+      claims: Array<{
+        id: string;
+        kind: 'recompense' | 'creance';
+        label?: string;
+        fromPocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+        toPocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+        appliedAmount: number;
+      }>;
+    } | null;
+    affectedLiabilities: {
+      totalAmount: number;
+      byPocket: Array<{
+        pocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+        amount: number;
+      }>;
     } | null;
     preciput: {
       mode: 'global' | 'cible' | 'none';
@@ -85,6 +107,8 @@ export default function ScDeathTimelinePanel({
   const secondAssure = chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1';
   const societeAcquets = chainageAnalysis.societeAcquets;
   const participationAcquets = chainageAnalysis.participationAcquets;
+  const interMassClaims = chainageAnalysis.interMassClaims;
+  const affectedLiabilities = chainageAnalysis.affectedLiabilities;
   const preciput = chainageAnalysis.preciput;
 
   return (
@@ -184,6 +208,34 @@ export default function ScDeathTimelinePanel({
               <div className="sc-summary-row">
                 <span>Creance de participation</span>
                 <strong>{fmt(participationAcquets.creanceAmount)}</strong>
+              </div>
+            )}
+            {interMassClaims && interMassClaims.totalAppliedAmount > 0 && (
+              <>
+                <div className="sc-summary-row">
+                  <span>Creances entre masses appliquees</span>
+                  <strong>{fmt(interMassClaims.totalAppliedAmount)}</strong>
+                </div>
+                {interMassClaims.claims
+                  .filter((claim) => claim.appliedAmount > 0)
+                  .map((claim) => (
+                    <div key={claim.id} className="sc-summary-row">
+                      <span>
+                        {claim.label ?? getSuccessionInterMassClaimKindLabel(claim.kind)}
+                        {' - '}
+                        {getSuccessionPocketLabel(claim.fromPocket)}
+                        {' vers '}
+                        {getSuccessionPocketLabel(claim.toPocket)}
+                      </span>
+                      <strong>{fmt(claim.appliedAmount)}</strong>
+                    </div>
+                  ))}
+              </>
+            )}
+            {affectedLiabilities && affectedLiabilities.totalAmount > 0 && (
+              <div className="sc-summary-row">
+                <span>Passif affecte rattache</span>
+                <strong>{fmt(affectedLiabilities.totalAmount)}</strong>
               </div>
             )}
             {prevoyanceByAssure[chainageAnalysis.order] > 0 && (
@@ -288,6 +340,18 @@ export default function ScDeathTimelinePanel({
                   ? fmt(participationAcquets.creanceAmount)
                   : 'Inactive'}
               </strong>
+            </div>
+          )}
+          {interMassClaims && interMassClaims.totalAppliedAmount > 0 && (
+            <div className="sc-chrono-total">
+              <span>Creances entre masses</span>
+              <strong>{fmt(interMassClaims.totalAppliedAmount)}</strong>
+            </div>
+          )}
+          {affectedLiabilities && affectedLiabilities.totalAmount > 0 && (
+            <div className="sc-chrono-total">
+              <span>Passif affecte</span>
+              <strong>{fmt(affectedLiabilities.totalAmount)}</strong>
             </div>
           )}
         </div>

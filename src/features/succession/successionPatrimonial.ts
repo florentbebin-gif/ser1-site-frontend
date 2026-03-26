@@ -170,6 +170,24 @@ export function buildSuccessionPatrimonialAnalysis(
     );
   }
 
+  const activeInterMassClaims = patrimonial.interMassClaims.filter(
+    (claim) => claim.enabled && asAmount(claim.amount) > 0,
+  );
+  if (activeInterMassClaims.length > 0) {
+    warnings.push(
+      `${activeInterMassClaims.length} recompense(s) / creance(s) entre masses declaree(s): integration simplifiee par transferts entre poches, sans liquidation notariale exhaustive.`,
+    );
+  }
+
+  const affectedLiabilitiesCount = qualifiedAssets.filter(
+    (entry) => entry.category === 'passif' && asAmount(entry.amount) > 0,
+  ).length;
+  if (affectedLiabilitiesCount > 0) {
+    warnings.push(
+      `${affectedLiabilitiesCount} passif(s) detaille(s) rattache(s) a une masse: traites comme passif affecte dans la liquidation simplifiee.`,
+    );
+  }
+
   if (preciputMontant > 0 || hasTargetedPreciput) {
     if (civil.situationMatrimoniale === 'marie') {
       warnings.push(

@@ -18,6 +18,7 @@ import type {
   SuccessionDonationEntreEpouxOption,
   SuccessionEnfant,
   SuccessionGroupementFoncierEntry,
+  SuccessionInterMassClaim,
   SuccessionPerEntry,
   SuccessionParticipationAcquetsConfig,
   SuccessionPreciputSelection,
@@ -50,6 +51,7 @@ export interface DispositionsDraftState {
   participationAcquets: SuccessionParticipationAcquetsConfig;
   preciputMode: 'global' | 'cible';
   preciputSelections: SuccessionPreciputSelection[];
+  interMassClaims: SuccessionInterMassClaim[];
   preciputMontant: number;
   attributionIntegrale: boolean;
   choixLegalConjointSansDDV: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.choixLegalConjointSansDDV;
@@ -190,6 +192,18 @@ export function cloneSuccessionPreciputSelections(
   }));
 }
 
+export function cloneSuccessionInterMassClaims(
+  claims: SuccessionInterMassClaim[] = [],
+): SuccessionInterMassClaim[] {
+  return claims.map((claim) => ({
+    ...claim,
+  }));
+}
+
+export function createInterMassClaimId(): string {
+  return `claim-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export function buildInitialDispositionsDraft(): DispositionsDraftState {
   return {
     attributionBiensCommunsPct: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
@@ -205,6 +219,9 @@ export function buildInitialDispositionsDraft(): DispositionsDraftState {
     preciputMode: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMode,
     preciputSelections: cloneSuccessionPreciputSelections(
       DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputSelections,
+    ),
+    interMassClaims: cloneSuccessionInterMassClaims(
+      DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.interMassClaims,
     ),
     preciputMontant: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,
     attributionIntegrale: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionIntegrale,

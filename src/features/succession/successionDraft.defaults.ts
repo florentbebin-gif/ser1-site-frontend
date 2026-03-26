@@ -80,6 +80,7 @@ export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContex
   participationAcquets: { ...DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG },
   preciputMode: 'global',
   preciputSelections: [],
+  interMassClaims: [],
   preciputMontant: 0,
   attributionIntegrale: false,
   attributionBiensCommunsPct: 50,

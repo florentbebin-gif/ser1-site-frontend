@@ -1,4 +1,8 @@
 import { fmt } from '../successionSimulator.helpers';
+import {
+  getSuccessionInterMassClaimKindLabel,
+  getSuccessionPocketLabel,
+} from '../successionInterMassClaims';
 import ScDonut from './ScDonut';
 
 interface TransmissionRow {
@@ -57,6 +61,25 @@ interface ScSuccessionSummaryPanelProps {
       creanceAmount: number;
       firstEstateAdjustment: number;
     } | null;
+    interMassClaims: {
+      totalRequestedAmount: number;
+      totalAppliedAmount: number;
+      claims: Array<{
+        id: string;
+        kind: 'recompense' | 'creance';
+        label?: string;
+        fromPocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+        toPocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+        appliedAmount: number;
+      }>;
+    } | null;
+    affectedLiabilities: {
+      totalAmount: number;
+      byPocket: Array<{
+        pocket: 'epoux1' | 'epoux2' | 'communaute' | 'societe_acquets' | 'indivision_pacse' | 'indivision_concubinage';
+        amount: number;
+      }>;
+    } | null;
     preciput: {
       mode: 'global' | 'cible' | 'none';
       appliedAmount: number;
@@ -99,6 +122,8 @@ export default function ScSuccessionSummaryPanel({
 }: ScSuccessionSummaryPanelProps) {
   const societeAcquets = chainageAnalysis.societeAcquets;
   const participationAcquets = chainageAnalysis.participationAcquets;
+  const interMassClaims = chainageAnalysis.interMassClaims;
+  const affectedLiabilities = chainageAnalysis.affectedLiabilities;
   const preciput = chainageAnalysis.preciput;
   const firstCost = displayUsesChainage
     ? (chainageAnalysis.step1?.droitsEnfants ?? 0)
@@ -269,6 +294,46 @@ export default function ScSuccessionSummaryPanel({
               )}
             </>
           )}
+        </>
+      )}
+      {displayUsesChainage && interMassClaims && interMassClaims.totalAppliedAmount > 0 && (
+        <>
+          <div className="sc-card__divider sc-card__divider--tight" />
+          <div className="sc-synth-section-title">Recompenses / creances entre masses</div>
+          <div className="sc-summary-row">
+            <span>Montant applique</span>
+            <strong>{fmt(interMassClaims.totalAppliedAmount)}</strong>
+          </div>
+          {interMassClaims.claims
+            .filter((claim) => claim.appliedAmount > 0)
+            .map((claim) => (
+              <div key={claim.id} className="sc-summary-row">
+                <span>
+                  {(claim.label ?? getSuccessionInterMassClaimKindLabel(claim.kind))}
+                  {' - '}
+                  {getSuccessionPocketLabel(claim.fromPocket)}
+                  {' vers '}
+                  {getSuccessionPocketLabel(claim.toPocket)}
+                </span>
+                <strong>{fmt(claim.appliedAmount)}</strong>
+              </div>
+            ))}
+        </>
+      )}
+      {displayUsesChainage && affectedLiabilities && affectedLiabilities.totalAmount > 0 && (
+        <>
+          <div className="sc-card__divider sc-card__divider--tight" />
+          <div className="sc-synth-section-title">Passif affecte</div>
+          <div className="sc-summary-row">
+            <span>Total des passifs rattaches</span>
+            <strong>{fmt(affectedLiabilities.totalAmount)}</strong>
+          </div>
+          {affectedLiabilities.byPocket.map((entry) => (
+            <div key={entry.pocket} className="sc-summary-row">
+              <span>{getSuccessionPocketLabel(entry.pocket)}</span>
+              <strong>{fmt(entry.amount)}</strong>
+            </div>
+          ))}
         </>
       )}
       {(transmissionRows.length > 0 || insurance757BLines.length > 0) && (
