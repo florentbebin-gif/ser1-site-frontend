@@ -176,12 +176,16 @@ export function computeFirstEstate(
   order: SuccessionChainOrder,
   liquidation: SuccessionLiquidationContext,
   attributionBiensCommunsPct = 50,
+  preserveQualifiedSeparatePocketsInUniversalCommunity = false,
 ): number {
   const actifEpoux1 = asAmount(liquidation.actifEpoux1);
   const actifEpoux2 = asAmount(liquidation.actifEpoux2);
   const actifCommun = asAmount(liquidation.actifCommun);
 
   if (regimeUsed === 'communaute_universelle') {
+    if (preserveQualifiedSeparatePocketsInUniversalCommunity) {
+      return actifCommun + (order === 'epoux1' ? actifEpoux1 : actifEpoux2);
+    }
     return actifEpoux1 + actifEpoux2 + actifCommun;
   }
 

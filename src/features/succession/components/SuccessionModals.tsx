@@ -138,6 +138,8 @@ export function SuccessionModals({
           isCommunityRegime={derived.isCommunityRegime}
           isSocieteAcquetsRegime={derived.isSocieteAcquetsRegime}
           isParticipationAcquetsRegime={derived.isParticipationAcquetsRegime}
+          isCommunauteUniverselleRegime={derived.isCommunauteUniverselleRegime}
+          isCommunauteMeublesAcquetsRegime={derived.isCommunauteMeublesAcquetsRegime}
           updateDispositionsTestament={onUpdateDispositionsTestament}
           getFirstTestamentBeneficiaryRef={onGetFirstTestamentBeneficiaryRef}
           onAddParticularLegacy={onAddParticularLegacy}

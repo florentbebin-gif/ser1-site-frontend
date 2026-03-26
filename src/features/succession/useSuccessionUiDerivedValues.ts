@@ -50,6 +50,7 @@ interface UseSuccessionUiDerivedValuesInput {
   assuranceVieEntries: SuccessionAssuranceVieEntry[];
   perEntries: SuccessionPerEntry[];
   prevoyanceDecesEntries: SuccessionPrevoyanceDecesEntry[];
+  patrimonialContext: typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT;
   forfaitMobilierMode: typeof DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.forfaitMobilierMode;
   forfaitMobilierPct: number;
   forfaitMobilierMontant: number;
@@ -68,6 +69,7 @@ export function useSuccessionUiDerivedValues({
   assuranceVieEntries,
   perEntries,
   prevoyanceDecesEntries,
+  patrimonialContext,
   forfaitMobilierMode,
   forfaitMobilierPct,
   forfaitMobilierMontant,
@@ -190,6 +192,7 @@ export function useSuccessionUiDerivedValues({
   const assetValuation = useMemo(
     () => computeSuccessionAssetValuation({
       civilContext,
+      patrimonialContext,
       assetEntries,
       groupementFoncierEntries,
       forfaitMobilierMode,
@@ -199,6 +202,7 @@ export function useSuccessionUiDerivedValues({
     }),
     [
       civilContext,
+      patrimonialContext,
       assetEntries,
       groupementFoncierEntries,
       forfaitMobilierMode,
@@ -293,5 +297,9 @@ export function useSuccessionUiDerivedValues({
     prevoyanceClauseOptions,
     hasBeneficiaryLevelGfAdjustment: assetValuation.transmissionBasis.hasBeneficiaryLevelGfAdjustment,
     assetEntriesByCategory,
+    isCommunauteUniverselleRegime: civilContext.situationMatrimoniale === 'marie'
+      && civilContext.regimeMatrimonial === 'communaute_universelle',
+    isCommunauteMeublesAcquetsRegime: civilContext.situationMatrimoniale === 'marie'
+      && civilContext.regimeMatrimonial === 'communaute_meubles_acquets',
   };
 }

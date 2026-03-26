@@ -224,4 +224,79 @@ describe('computeSuccessionAssetValuation', () => {
       valeurTotale: 300000,
     });
   });
+
+  it('keeps explicit propres par nature outside the simplified common mass in communaute universelle when the stipulation is active', () => {
+    const result = computeSuccessionAssetValuation({
+      civilContext: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_universelle',
+        pacsConvention: 'separation',
+      },
+      patrimonialContext: {
+        stipulationContraireCU: true,
+      },
+      assetEntries: [
+        {
+          id: 'asset-1',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Titres',
+          amount: 150000,
+        },
+        {
+          id: 'asset-2',
+          pocket: 'epoux2',
+          category: 'immobilier',
+          subCategory: RESIDENCE_SECONDAIRE_SUBCATEGORY,
+          amount: 80000,
+          legalNature: 'propre_par_nature',
+        },
+      ],
+      groupementFoncierEntries: [],
+      forfaitMobilierMode: 'off',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    expect(result.assetNetTotals.commun).toBe(150000);
+    expect(result.assetNetTotals.epoux2).toBe(80000);
+    expect(result.assetNetTotals.epoux1).toBe(0);
+  });
+
+  it('routes qualified meubles to the simplified common mass in communaute de meubles et acquets', () => {
+    const result = computeSuccessionAssetValuation({
+      civilContext: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_meubles_acquets',
+        pacsConvention: 'separation',
+      },
+      assetEntries: [
+        {
+          id: 'asset-1',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Titres',
+          amount: 120000,
+          meubleImmeubleLegal: 'meuble',
+        },
+        {
+          id: 'asset-2',
+          pocket: 'epoux1',
+          category: 'immobilier',
+          subCategory: RESIDENCE_SECONDAIRE_SUBCATEGORY,
+          amount: 250000,
+          meubleImmeubleLegal: 'immeuble',
+        },
+      ],
+      groupementFoncierEntries: [],
+      forfaitMobilierMode: 'off',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    expect(result.assetNetTotals.commun).toBe(120000);
+    expect(result.assetNetTotals.epoux1).toBe(250000);
+  });
 });

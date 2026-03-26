@@ -75,6 +75,7 @@ export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContex
   legsParticuliers: 0,
   donationEntreEpouxActive: false,
   donationEntreEpouxOption: 'usufruit_total',
+  stipulationContraireCU: false,
   societeAcquets: { ...DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG },
   participationAcquets: { ...DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG },
   preciputMode: 'global',

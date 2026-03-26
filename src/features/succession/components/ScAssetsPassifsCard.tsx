@@ -16,6 +16,11 @@ import {
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
 } from '../successionSimulator.constants';
 import { computeGroupementFoncierExoneration, GF_UI_OPTIONS, normalizeGfTypeForUi } from '../successionGroupementFoncier';
+import {
+  SUCCESSION_ASSET_LEGAL_NATURE_OPTIONS,
+  SUCCESSION_ASSET_ORIGIN_OPTIONS,
+  SUCCESSION_MEUBLE_IMMEUBLE_LEGAL_OPTIONS,
+} from '../successionLegalQualification';
 import { fmt } from '../successionSimulator.helpers';
 import { ScAssetsSummary, ScForfaitMobilierSection } from './ScAssetsPassifsExtras';
 import { ScNumericInput } from './ScNumericInput';
@@ -26,6 +31,8 @@ interface ScAssetsPassifsCardProps {
   isMarried: boolean;
   isPacsed: boolean;
   isConcubinage: boolean;
+  isCommunauteUniverselleRegime: boolean;
+  isCommunauteMeublesAcquetsRegime: boolean;
   assetEntriesByCategory: {
     value: SuccessionAssetCategory;
     label: string;
@@ -70,6 +77,7 @@ interface ScAssetsPassifsCardProps {
   forfaitMobilierPct: number;
   forfaitMobilierMontant: number;
   abattementResidencePrincipale: boolean;
+  stipulationContraireCU: boolean;
   onUpdatePatrimonialField: <K extends string>(_field: K, _value: unknown) => void;
 }
 
@@ -116,6 +124,8 @@ export default function ScAssetsPassifsCard({
   isMarried,
   isPacsed,
   isConcubinage,
+  isCommunauteUniverselleRegime,
+  isCommunauteMeublesAcquetsRegime,
   assetEntriesByCategory,
   assetOwnerOptions,
   assetPocketOptions,
@@ -144,6 +154,7 @@ export default function ScAssetsPassifsCard({
   forfaitMobilierPct,
   forfaitMobilierMontant,
   abattementResidencePrincipale,
+  stipulationContraireCU,
   onUpdatePatrimonialField,
 }: ScAssetsPassifsCardProps) {
   const flags = { isMarried, isPacsed, isConcubinage };
@@ -171,6 +182,18 @@ export default function ScAssetsPassifsCard({
             ? 'Saisie détaillée des actifs et passifs, agrégée automatiquement pour les analyses civiles.'
             : 'Saisie simplifiée des actifs et passifs, agrégée automatiquement pour les analyses civiles et la chronologie.'}
         </p>
+        {isExpert && isCommunauteUniverselleRegime && (
+          <p className="sc-hint sc-hint--compact">
+            {stipulationContraireCU
+              ? "Les biens qualifies 'propre par nature' et rattaches a un epoux restent hors de la masse commune simplifiee."
+              : 'Sans stipulation contraire active, la communaute universelle integre tous les biens detailles dans la masse commune simplifiee.'}
+          </p>
+        )}
+        {isExpert && isCommunauteMeublesAcquetsRegime && (
+          <p className="sc-hint sc-hint--compact">
+            En communaute de meubles et acquets, les biens qualifies meubles rejoignent la communaute simplifiee ; les immeubles restent sur leur masse declaree.
+          </p>
+        )}
       </header>
       <div className="sc-card__divider" />
 
@@ -247,6 +270,37 @@ export default function ScAssetsPassifsCard({
                             />
                             Appliquer l&apos;abattement 20 % (occupation éligible au jour du décès)
                           </label>
+                        </div>
+                      )}
+                      {entry.category !== 'passif' && (
+                        <div className="sc-asset-row sc-asset-row__suboption">
+                          <div className="sc-field">
+                            <label>Qualification juridique</label>
+                            <ScSelect
+                              className="sc-asset-select"
+                              value={entry.legalNature ?? 'non_qualifie'}
+                              onChange={(value) => onUpdateAssetEntry(entry.id, 'legalNature', value)}
+                              options={SUCCESSION_ASSET_LEGAL_NATURE_OPTIONS}
+                            />
+                          </div>
+                          <div className="sc-field">
+                            <label>Origine</label>
+                            <ScSelect
+                              className="sc-asset-select"
+                              value={entry.origin ?? 'non_precise'}
+                              onChange={(value) => onUpdateAssetEntry(entry.id, 'origin', value)}
+                              options={SUCCESSION_ASSET_ORIGIN_OPTIONS}
+                            />
+                          </div>
+                          <div className="sc-field">
+                            <label>Meuble / immeuble</label>
+                            <ScSelect
+                              className="sc-asset-select"
+                              value={entry.meubleImmeubleLegal ?? 'non_qualifie'}
+                              onChange={(value) => onUpdateAssetEntry(entry.id, 'meubleImmeubleLegal', value)}
+                              options={SUCCESSION_MEUBLE_IMMEUBLE_LEGAL_OPTIONS}
+                            />
+                          </div>
                         </div>
                       )}
                     </div>

@@ -15,6 +15,8 @@ import {
   asChildrenCount,
   asPercent,
   isAssetCategory,
+  isSuccessionAssetLegalNature,
+  isSuccessionAssetOrigin,
   isAssetPocket,
   isAssuranceVieContractType,
   isChoixLegalConjointSansDDV,
@@ -31,6 +33,7 @@ import {
   isPersonParty,
   isPrimarySide,
   isRegimeMatrimonial,
+  isSuccessionMeubleImmeubleLegal,
   isSuccessionPreciputMode,
   isSuccessionPreciputSelectionSourceType,
   isSocieteAcquetsLiquidationMode,
@@ -313,6 +316,15 @@ function parseAssetEntries(
 
       const label = normalizeOptionalString(item.label);
       if (label) asset.label = label;
+      asset.legalNature = isSuccessionAssetLegalNature(item.legalNature)
+        ? item.legalNature
+        : 'non_qualifie';
+      asset.origin = isSuccessionAssetOrigin(item.origin)
+        ? item.origin
+        : 'non_precise';
+      asset.meubleImmeubleLegal = isSuccessionMeubleImmeubleLegal(item.meubleImmeubleLegal)
+        ? item.meubleImmeubleLegal
+        : 'non_qualifie';
 
       return asset;
     })
@@ -567,6 +579,12 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
       donationEntreEpouxOption: isDonationEntreEpouxOption(patrimonialRaw.donationEntreEpouxOption)
         ? patrimonialRaw.donationEntreEpouxOption
         : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxOption,
+      stipulationContraireCU: version >= 25
+        ? asBoolean(
+          patrimonialRaw.stipulationContraireCU,
+          DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.stipulationContraireCU,
+        )
+        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.stipulationContraireCU,
       societeAcquets: parseSocieteAcquetsConfig(
         patrimonialRaw.societeAcquets,
         version,

@@ -96,6 +96,22 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(epoux1First.step1?.actifTransmis).not.toBe(epoux2First.step1?.actifTransmis);
   });
 
+  it('preserves survivor propres par nature outside the first estate in communaute universelle when the stipulation is active', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'communaute_universelle' }),
+      liquidation: makeLiquidation({ actifEpoux1: 70000, actifEpoux2: 50000, actifCommun: 300000 }),
+      regimeUsed: 'communaute_universelle',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      patrimonial: {
+        stipulationContraireCU: true,
+      },
+    });
+
+    expect(analysis.step1?.actifTransmis).toBe(370000);
+    expect(analysis.warnings.some((warning) => warning.includes('propre par nature'))).toBe(true);
+  });
+
   it('emits a warning and zero rights without children', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),

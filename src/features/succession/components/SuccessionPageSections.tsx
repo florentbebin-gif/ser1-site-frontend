@@ -151,6 +151,8 @@ export function SuccessionPageGrid({
               isMarried={derived.isMarried}
               isPacsed={derived.isPacsed}
               isConcubinage={derived.isConcubinage}
+              isCommunauteUniverselleRegime={derived.isCommunauteUniverselleRegime}
+              isCommunauteMeublesAcquetsRegime={derived.isCommunauteMeublesAcquetsRegime}
               assetEntriesByCategory={derived.assetEntriesByCategory}
               assetOwnerOptions={derived.assetOwnerOptions}
               assetPocketOptions={derived.assetPocketOptions}
@@ -180,6 +182,7 @@ export function SuccessionPageGrid({
               forfaitMobilierPct={forfaitMobilierPct}
               forfaitMobilierMontant={forfaitMobilierMontant}
               abattementResidencePrincipale={abattementResidencePrincipale}
+              stipulationContraireCU={derived.stipulationContraireCU}
               onUpdatePatrimonialField={onUpdatePatrimonialField}
             />
 

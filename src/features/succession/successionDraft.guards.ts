@@ -12,12 +12,15 @@ import type {
   PacsConvention,
   SituationMatrimoniale,
   SuccessionAssetCategory,
+  SuccessionAssetLegalNature,
+  SuccessionAssetOrigin,
   SuccessionAssuranceVieContractType,
   SuccessionBeneficiaryRef,
   SuccessionChoixLegalConjointSansDDV,
   SuccessionDispositionTestamentaire,
   SuccessionDonationEntreEpouxOption,
   SuccessionDonationEntryType,
+  SuccessionMeubleImmeubleLegal,
   SuccessionEnfantRattachement,
   SuccessionPreciputMode,
   SuccessionPrimarySide,
@@ -146,6 +149,26 @@ export function isAssetCategory(v: unknown): v is SuccessionAssetCategory {
     || v === 'professionnel'
     || v === 'divers'
     || v === 'passif';
+}
+
+export function isSuccessionAssetLegalNature(v: unknown): v is SuccessionAssetLegalNature {
+  return v === 'non_qualifie'
+    || v === 'propre'
+    || v === 'propre_par_nature'
+    || v === 'commun';
+}
+
+export function isSuccessionAssetOrigin(v: unknown): v is SuccessionAssetOrigin {
+  return v === 'non_precise'
+    || v === 'avant_union'
+    || v === 'acquisition_onereuse'
+    || v === 'donation_succession'
+    || v === 'emploi_remploi'
+    || v === 'clause_matrimoniale';
+}
+
+export function isSuccessionMeubleImmeubleLegal(v: unknown): v is SuccessionMeubleImmeubleLegal {
+  return v === 'non_qualifie' || v === 'meuble' || v === 'immeuble';
 }
 
 export function isGroupementFoncierType(v: unknown): v is GroupementFoncierType {
