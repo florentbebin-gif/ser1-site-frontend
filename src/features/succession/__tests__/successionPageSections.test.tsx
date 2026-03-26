@@ -42,6 +42,7 @@ function buildProps(
         order: 'epoux1',
         firstDecedeLabel: 'Epoux 1',
         secondDecedeLabel: 'Epoux 2',
+        societeAcquets: null,
         step1: null,
         step2: null,
       },

@@ -19,6 +19,7 @@ function buildProps() {
       order: 'epoux1' as const,
       firstDecedeLabel: 'epoux 1',
       secondDecedeLabel: 'epoux 2',
+      societeAcquets: null,
       step1: { actifTransmis: 100000, droitsEnfants: 5000 },
       step2: { actifTransmis: 200000, droitsEnfants: 15000 },
     },
@@ -75,5 +76,33 @@ describe('ScDeathTimelinePanel', () => {
     );
 
     expect(markup).not.toContain('Ordre inverse');
+  });
+
+  it("shows societe d'acquets details inside the chronology when chainage uses that pocket", () => {
+    const baseProps = buildProps();
+    const markup = renderToStaticMarkup(
+      <ScDeathTimelinePanel
+        {...baseProps}
+        displayUsesChainage
+        chainageAnalysis={{
+          ...baseProps.chainageAnalysis,
+          societeAcquets: {
+            totalValue: 400000,
+            firstEstateContribution: 160000,
+            survivorShare: 240000,
+            preciputAmount: 50000,
+            survivorAttributionAmount: 0,
+            liquidationMode: 'quotes',
+            deceasedQuotePct: 40,
+            survivorQuotePct: 60,
+            attributionIntegrale: false,
+          },
+        }}
+      />,
+    );
+
+    expect(markup).toContain('part 1er deces');
+    expect(markup).toContain('part survivant');
+    expect(markup).toContain('Preciput sur societe');
   });
 });

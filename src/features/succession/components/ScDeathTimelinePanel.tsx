@@ -18,6 +18,17 @@ interface ScDeathTimelinePanelProps {
     order: 'epoux1' | 'epoux2';
     firstDecedeLabel: string;
     secondDecedeLabel: string;
+    societeAcquets: {
+      totalValue: number;
+      firstEstateContribution: number;
+      survivorShare: number;
+      preciputAmount: number;
+      survivorAttributionAmount: number;
+      liquidationMode: 'quotes' | 'attribution_survivant';
+      deceasedQuotePct: number;
+      survivorQuotePct: number;
+      attributionIntegrale: boolean;
+    } | null;
     step1: { actifTransmis: number; droitsEnfants: number } | null;
     step2: { actifTransmis: number; droitsEnfants: number } | null;
   };
@@ -54,6 +65,7 @@ export default function ScDeathTimelinePanel({
   directDisplay,
 }: ScDeathTimelinePanelProps) {
   const secondAssure = chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1';
+  const societeAcquets = chainageAnalysis.societeAcquets;
 
   return (
     <div className="premium-card sc-summary-card sc-hero-card">
@@ -114,6 +126,26 @@ export default function ScDeathTimelinePanel({
                 + prevoyanceByAssure[chainageAnalysis.order],
               )}</strong>
             </div>
+            {societeAcquets && societeAcquets.totalValue > 0 && (
+              <>
+                <div className="sc-summary-row">
+                  <span>Societe d'acquets - part 1er deces</span>
+                  <strong>{fmt(societeAcquets.firstEstateContribution)}</strong>
+                </div>
+                {societeAcquets.preciputAmount > 0 && (
+                  <div className="sc-summary-row">
+                    <span>Preciput sur societe d'acquets</span>
+                    <strong>{fmt(societeAcquets.preciputAmount)}</strong>
+                  </div>
+                )}
+                {societeAcquets.survivorAttributionAmount > 0 && (
+                  <div className="sc-summary-row">
+                    <span>Attribution prealable au survivant</span>
+                    <strong>{fmt(societeAcquets.survivorAttributionAmount)}</strong>
+                  </div>
+                )}
+              </>
+            )}
             {prevoyanceByAssure[chainageAnalysis.order] > 0 && (
               <div className="sc-summary-row">
                 <span>Dont prévoyance décès</span>
@@ -158,6 +190,12 @@ export default function ScDeathTimelinePanel({
                 + prevoyanceByAssure[secondAssure],
               )}</strong>
             </div>
+            {societeAcquets && societeAcquets.totalValue > 0 && (
+              <div className="sc-summary-row">
+                <span>Societe d'acquets - part survivant</span>
+                <strong>{fmt(societeAcquets.survivorShare)}</strong>
+              </div>
+            )}
             {prevoyanceByAssure[secondAssure] > 0 && (
               <div className="sc-summary-row">
                 <span>Dont prévoyance décès</span>
@@ -192,6 +230,16 @@ export default function ScDeathTimelinePanel({
             <span>Total cumule des droits</span>
             <strong>{fmt(derivedTotalDroits)}</strong>
           </div>
+          {societeAcquets && societeAcquets.totalValue > 0 && (
+            <div className="sc-chrono-total">
+              <span>
+                Societe d'acquets
+                {' '}
+                {societeAcquets.liquidationMode === 'attribution_survivant' ? '(attribution)' : '(quotes)'}
+              </span>
+              <strong>{`${Math.round(societeAcquets.deceasedQuotePct)}% / ${Math.round(societeAcquets.survivorQuotePct)}%`}</strong>
+            </div>
+          )}
         </div>
       ) : (
         <div className="sc-chrono-list">

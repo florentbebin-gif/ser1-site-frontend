@@ -14,6 +14,7 @@ import {
   asChildrenCount,
   asPercent,
   isAssetCategory,
+  isAssetPocket,
   isAssuranceVieContractType,
   isChoixLegalConjointSansDDV,
   isDispositionTestamentaire,
@@ -29,6 +30,8 @@ import {
   isPersonParty,
   isPrimarySide,
   isRegimeMatrimonial,
+  isSuccessionPreciputMode,
+  isSuccessionPreciputSelectionSourceType,
   isSocieteAcquetsLiquidationMode,
   isSituation,
   isSuccessionBeneficiaryRef,
@@ -57,6 +60,7 @@ import type {
   SuccessionDonationEntry,
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
+  SuccessionPreciputSelection,
   SuccessionParticularLegacyEntry,
   SuccessionPrevoyanceDecesEntry,
   SuccessionPrimarySide,
@@ -117,6 +121,34 @@ function parseSocieteAcquetsConfig(
       DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG.attributionSurvivantPct,
     ),
   };
+}
+
+function parsePreciputSelections(raw: unknown): SuccessionPreciputSelection[] {
+  return (Array.isArray(raw) ? raw : [])
+    .filter((item): item is Record<string, unknown> => isObject(item))
+    .map((item, idx) => {
+      if (
+        !isSuccessionPreciputSelectionSourceType(item.sourceType)
+        || typeof item.sourceId !== 'string'
+        || item.sourceId.trim().length === 0
+        || !isAssetPocket(item.pocket)
+      ) {
+        return null;
+      }
+
+      return {
+        id: typeof item.id === 'string' && item.id.trim().length > 0
+          ? item.id.trim()
+          : `prec-${idx + 1}`,
+        sourceType: item.sourceType,
+        sourceId: item.sourceId.trim(),
+        labelSnapshot: normalizeOptionalString(item.labelSnapshot) ?? `Selection ${idx + 1}`,
+        pocket: item.pocket,
+        amount: asAmount(item.amount, 0),
+        enabled: asBoolean(item.enabled, true),
+      };
+    })
+    .filter((item): item is SuccessionPreciputSelection => item !== null);
 }
 
 function parseTestamentConfig(raw: unknown): SuccessionTestamentConfig {
@@ -493,6 +525,12 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
         version,
         civil.regimeMatrimonial,
       ),
+      preciputMode: isSuccessionPreciputMode(patrimonialRaw.preciputMode)
+        ? patrimonialRaw.preciputMode
+        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMode,
+      preciputSelections: version >= 23
+        ? parsePreciputSelections(patrimonialRaw.preciputSelections)
+        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputSelections,
       preciputMontant: asAmount(
         patrimonialRaw.preciputMontant,
         DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,

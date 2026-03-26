@@ -18,6 +18,7 @@ import type {
   SuccessionEnfant,
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
+  SuccessionPreciputSelection,
   SuccessionPrevoyanceDecesEntry,
   SuccessionPrimarySide,
   SuccessionSocieteAcquetsConfig,
@@ -43,6 +44,8 @@ export interface DispositionsDraftState {
   donationEntreEpouxActive: boolean;
   donationEntreEpouxOption: SuccessionDonationEntreEpouxOption;
   societeAcquets: SuccessionSocieteAcquetsConfig;
+  preciputMode: 'global' | 'cible';
+  preciputSelections: SuccessionPreciputSelection[];
   preciputMontant: number;
   attributionIntegrale: boolean;
   choixLegalConjointSansDDV: typeof DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT.choixLegalConjointSansDDV;
@@ -160,6 +163,14 @@ export function cloneSuccessionSocieteAcquetsConfig(
   };
 }
 
+export function cloneSuccessionPreciputSelections(
+  selections: SuccessionPreciputSelection[] = [],
+): SuccessionPreciputSelection[] {
+  return selections.map((selection) => ({
+    ...selection,
+  }));
+}
+
 export function buildInitialDispositionsDraft(): DispositionsDraftState {
   return {
     attributionBiensCommunsPct: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
@@ -167,6 +178,10 @@ export function buildInitialDispositionsDraft(): DispositionsDraftState {
     donationEntreEpouxOption: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxOption,
     societeAcquets: cloneSuccessionSocieteAcquetsConfig(
       DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.societeAcquets,
+    ),
+    preciputMode: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMode,
+    preciputSelections: cloneSuccessionPreciputSelections(
+      DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputSelections,
     ),
     preciputMontant: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMontant,
     attributionIntegrale: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionIntegrale,

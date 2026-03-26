@@ -533,6 +533,14 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.step1?.partConjoint).toBe(115000);
     expect(analysis.step1?.partEnfants).toBe(345000);
     expect(analysis.step2?.actifTransmis).toBe(555000);
+    expect(analysis.societeAcquets).toMatchObject({
+      totalValue: 400000,
+      firstEstateContribution: 160000,
+      survivorShare: 240000,
+      deceasedQuotePct: 40,
+      survivorQuotePct: 60,
+      liquidationMode: 'quotes',
+    });
     expect(analysis.warnings.some((warning) => warning.includes("Societe d'acquets"))).toBe(true);
   });
 
@@ -567,6 +575,7 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.step1?.actifTransmis).toBe(450000);
     expect(analysis.step1?.partConjoint).toBe(112500);
     expect(analysis.step2?.actifTransmis).toBe(562500);
+    expect(analysis.societeAcquets?.survivorAttributionAmount).toBe(100000);
     expect(analysis.warnings.some((warning) => warning.includes('attribution prealable'))).toBe(true);
   });
 
@@ -601,6 +610,7 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.step1?.actifTransmis).toBe(300000);
     expect(analysis.step1?.partConjoint).toBe(75000);
     expect(analysis.step2?.actifTransmis).toBe(675000);
+    expect(analysis.societeAcquets?.attributionIntegrale).toBe(true);
     expect(analysis.warnings.some((warning) => warning.includes('attribution integrale du reliquat'))).toBe(true);
   });
 

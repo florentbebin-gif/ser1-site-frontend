@@ -55,6 +55,18 @@ export interface SuccessionChronologieXlsxData {
   secondDecedeLabel: string;
   step1: SuccessionChronologieXlsxStep | null;
   step2: SuccessionChronologieXlsxStep | null;
+  societeAcquets?: {
+    configured: boolean;
+    totalValue: number;
+    firstEstateContribution: number;
+    survivorShare: number;
+    preciputAmount: number;
+    survivorAttributionAmount: number;
+    liquidationMode: 'quotes' | 'attribution_survivant';
+    deceasedQuotePct: number;
+    survivorQuotePct: number;
+    attributionIntegrale: boolean;
+  } | null;
   assuranceVieTotale?: number;
   perTotale?: number;
   prevoyanceTotale?: number;
@@ -158,6 +170,12 @@ function orderLabel(order: 'epoux1' | 'epoux2'): string {
     : 'Époux 2 décède en premier';
 }
 
+function liquidationModeLabel(mode: 'quotes' | 'attribution_survivant'): string {
+  return mode === 'attribution_survivant'
+    ? 'Attribution prealable au survivant'
+    : 'Quotes contractuelles';
+}
+
 function appendBeneficiaryRows(
   rows: Array<Array<XlsxCell | string | number>>,
   beneficiaries?: SuccessionChronologieBeneficiary[],
@@ -191,6 +209,31 @@ function buildPredecesSheet(
   rows.push(['Ordre simulé', orderLabel(chronologie.order)]);
   rows.push(['Chronologie retenue comme source principale', chronologie.applicable ? 'Oui' : 'Non']);
   rows.push([]);
+
+  if (chronologie.societeAcquets && chronologie.societeAcquets.totalValue > 0) {
+    rows.push([sec('Societe d\'acquets'), sec('')]);
+    rows.push(['Valeur nette de la poche', money(chronologie.societeAcquets.totalValue)]);
+    rows.push(['Part integree au 1er deces', money(chronologie.societeAcquets.firstEstateContribution)]);
+    rows.push(['Part conservee par le survivant', money(chronologie.societeAcquets.survivorShare)]);
+    rows.push(['Mode de liquidation', liquidationModeLabel(chronologie.societeAcquets.liquidationMode)]);
+    rows.push([
+      'Quotes retenues',
+      `${Math.round(chronologie.societeAcquets.deceasedQuotePct)} % / ${Math.round(chronologie.societeAcquets.survivorQuotePct)} %`,
+    ]);
+    if (chronologie.societeAcquets.preciputAmount > 0) {
+      rows.push(['Preciput preleve', money(chronologie.societeAcquets.preciputAmount)]);
+    }
+    if (chronologie.societeAcquets.survivorAttributionAmount > 0) {
+      rows.push([
+        'Attribution prealable au survivant',
+        money(chronologie.societeAcquets.survivorAttributionAmount),
+      ]);
+    }
+    if (chronologie.societeAcquets.attributionIntegrale) {
+      rows.push(['Attribution integrale du reliquat', 'Oui']);
+    }
+    rows.push([]);
+  }
 
   if (chronologie.applicable && chronologie.step1 && chronologie.step2) {
     rows.push([sec(`Étape 1 - décès ${chronologie.firstDecedeLabel}`), sec('')]);

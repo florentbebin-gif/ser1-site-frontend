@@ -59,6 +59,18 @@ export interface SuccessionData {
     secondDecedeLabel: string;
     step1: SuccessionChronologieStep | null;
     step2: SuccessionChronologieStep | null;
+    societeAcquets?: {
+      configured: boolean;
+      totalValue: number;
+      firstEstateContribution: number;
+      survivorShare: number;
+      preciputAmount: number;
+      survivorAttributionAmount: number;
+      liquidationMode: 'quotes' | 'attribution_survivant';
+      deceasedQuotePct: number;
+      survivorQuotePct: number;
+      attributionIntegrale: boolean;
+    } | null;
     assuranceVieTotale?: number;
     perTotale?: number;
     prevoyanceTotale?: number;
@@ -102,6 +114,12 @@ function orderLabel(order: 'epoux1' | 'epoux2'): string {
     : 'Époux 2 puis Époux 1';
 }
 
+function liquidationModeLabel(mode: 'quotes' | 'attribution_survivant'): string {
+  return mode === 'attribution_survivant'
+    ? 'attribution prealable au survivant'
+    : 'quotes contractuelles';
+}
+
 function buildChronologieBeneficiaryLines(
   stepLabel: string,
   beneficiaries?: SuccessionChronologieBeneficiary[],
@@ -133,6 +151,25 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
     `- Ordre simule: ${orderLabel(data.order)}`,
     `- Chronologie retenue comme source principale: ${data.applicable ? 'Oui' : 'Non'}`,
   ];
+
+  if (data.societeAcquets && data.societeAcquets.totalValue > 0) {
+    lines.push(
+      `- Societe d'acquets: valeur nette ${fmt(data.societeAcquets.totalValue)}, ` +
+      `part 1er deces ${fmt(data.societeAcquets.firstEstateContribution)}, ` +
+      `part survivant ${fmt(data.societeAcquets.survivorShare)}, ` +
+      `mode ${liquidationModeLabel(data.societeAcquets.liquidationMode)}, ` +
+      `quotes ${Math.round(data.societeAcquets.deceasedQuotePct)}% / ${Math.round(data.societeAcquets.survivorQuotePct)}%`,
+    );
+    if (data.societeAcquets.preciputAmount > 0) {
+      lines.push(`- Societe d'acquets: preciput preleve ${fmt(data.societeAcquets.preciputAmount)}`);
+    }
+    if (data.societeAcquets.survivorAttributionAmount > 0) {
+      lines.push(`- Societe d'acquets: attribution prealable ${fmt(data.societeAcquets.survivorAttributionAmount)}`);
+    }
+    if (data.societeAcquets.attributionIntegrale) {
+      lines.push("- Societe d'acquets: attribution integrale du reliquat au survivant.");
+    }
+  }
 
   if (data.applicable && data.step1 && data.step2) {
     lines.push(

@@ -19,6 +19,7 @@ import type {
   SuccessionDonationEntreEpouxOption,
   SuccessionDonationEntryType,
   SuccessionEnfantRattachement,
+  SuccessionPreciputMode,
   SuccessionPrimarySide,
   SuccessionSocieteAcquetsLiquidationMode,
 } from './successionDraft.types';
@@ -83,6 +84,14 @@ export function isDonationEntreEpouxOption(v: unknown): v is SuccessionDonationE
 
 export function isSocieteAcquetsLiquidationMode(v: unknown): v is SuccessionSocieteAcquetsLiquidationMode {
   return v === 'quotes' || v === 'attribution_survivant';
+}
+
+export function isSuccessionPreciputMode(v: unknown): v is SuccessionPreciputMode {
+  return v === 'global' || v === 'cible';
+}
+
+export function isSuccessionPreciputSelectionSourceType(v: unknown): v is 'asset' | 'groupement_foncier' {
+  return v === 'asset' || v === 'groupement_foncier';
 }
 
 export function isChoixLegalConjointSansDDV(v: unknown): v is Exclude<SuccessionChoixLegalConjointSansDDV, null> {

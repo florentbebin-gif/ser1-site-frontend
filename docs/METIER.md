@@ -178,7 +178,8 @@ Regle de lecture :
 - `communaute_legale` et `separation_biens` sont des supports robustes du perimetre actuel
 - `communaute_universelle` reste une simplification documentee tant que les propres par nature ne sont pas qualifies
 - `participation_acquets` et `communaute_meubles_acquets` restent des approximations assumees
-- `separation_biens_societe_acquets` reste une lecture simplifiee dans l'audit predeces, mais la succession liquide maintenant la poche `societe_acquets` via un bloc dedie et un chainage simplifie
+- `separation_biens_societe_acquets` reste une lecture simplifiee dans l'audit predeces, mais la succession liquide maintenant la poche `societe_acquets` via un bloc dedie, un chainage simplifie et une restitution/export explicites
+- le preciput cible par bien n'est pas encore selectionnable dans l'UI, mais son modele de draft est desormais pose pour la migration future
 
 ### UX — Saisie des actifs spécialisés via la sous-catégorie
 

@@ -28,6 +28,17 @@ interface ScSuccessionSummaryPanelProps {
   isPacsed: boolean;
   chainageAnalysis: {
     order: 'epoux1' | 'epoux2';
+    societeAcquets: {
+      totalValue: number;
+      firstEstateContribution: number;
+      survivorShare: number;
+      preciputAmount: number;
+      survivorAttributionAmount: number;
+      liquidationMode: 'quotes' | 'attribution_survivant';
+      deceasedQuotePct: number;
+      survivorQuotePct: number;
+      attributionIntegrale: boolean;
+    } | null;
     step1: { droitsEnfants: number } | null;
     step2: { droitsEnfants: number } | null;
   };
@@ -58,6 +69,7 @@ export default function ScSuccessionSummaryPanel({
   insurance757BLines,
   directDisplay,
 }: ScSuccessionSummaryPanelProps) {
+  const societeAcquets = chainageAnalysis.societeAcquets;
   const firstCost = displayUsesChainage
     ? (chainageAnalysis.step1?.droitsEnfants ?? 0)
       + avFiscalByAssure[chainageAnalysis.order].totalDroits
@@ -120,6 +132,46 @@ export default function ScSuccessionSummaryPanel({
           <strong className="sc-synth-kpi__value">{fmt(secondValue)}</strong>
         </div>
       </div>
+      {displayUsesChainage && societeAcquets && societeAcquets.totalValue > 0 && (
+        <>
+          <div className="sc-card__divider sc-card__divider--tight" />
+          <div className="sc-synth-section-title">Liquidation societe d'acquets</div>
+          <div className="sc-summary-row">
+            <span>Valeur nette de la poche</span>
+            <strong>{fmt(societeAcquets.totalValue)}</strong>
+          </div>
+          <div className="sc-summary-row">
+            <span>Part integree au 1er deces</span>
+            <strong>{fmt(societeAcquets.firstEstateContribution)}</strong>
+          </div>
+          <div className="sc-summary-row">
+            <span>Part conservee par le survivant</span>
+            <strong>{fmt(societeAcquets.survivorShare)}</strong>
+          </div>
+          <div className="sc-summary-row">
+            <span>Quotes retenues</span>
+            <strong>{`${Math.round(societeAcquets.deceasedQuotePct)}% / ${Math.round(societeAcquets.survivorQuotePct)}%`}</strong>
+          </div>
+          {societeAcquets.preciputAmount > 0 && (
+            <div className="sc-summary-row">
+              <span>Preciput preleve</span>
+              <strong>{fmt(societeAcquets.preciputAmount)}</strong>
+            </div>
+          )}
+          {societeAcquets.survivorAttributionAmount > 0 && (
+            <div className="sc-summary-row">
+              <span>Attribution prealable au survivant</span>
+              <strong>{fmt(societeAcquets.survivorAttributionAmount)}</strong>
+            </div>
+          )}
+          {societeAcquets.attributionIntegrale && (
+            <div className="sc-summary-row">
+              <span>Attribution integrale du reliquat</span>
+              <strong>Oui</strong>
+            </div>
+          )}
+        </>
+      )}
       {(transmissionRows.length > 0 || insurance757BLines.length > 0) && (
         <>
           <div className="sc-card__divider sc-card__divider--tight" />
