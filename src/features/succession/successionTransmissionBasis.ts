@@ -29,6 +29,7 @@ export interface SuccessionEstatePocketScales {
 export interface SuccessionEstateTaxableBasis {
   ordinaryNetBeforeForfait: number;
   groupementEntries: Array<{
+    sourceId: string;
     type: GroupementFoncierType;
     valeurTotale: number;
   }>;
@@ -93,6 +94,7 @@ export function buildSuccessionEstateTaxableBasis(
         const valeurTotale = asAmount(entry.valeurTotale) * getEntryScale(entry, pocketScales);
         if (valeurTotale <= 0) return null;
         return {
+          sourceId: entry.id,
           type: entry.type,
           valeurTotale,
         };
@@ -140,6 +142,36 @@ export function addSuccessionEstateTaxableBases(
     groupementEntries: [],
     residencePrincipaleValeur: 0,
   });
+}
+
+export function subtractSuccessionEstateTaxableBases(
+  base: SuccessionEstateTaxableBasis,
+  deduction: SuccessionEstateTaxableBasis,
+): SuccessionEstateTaxableBasis {
+  const deductionBySourceId = deduction.groupementEntries.reduce((map, entry) => {
+    map.set(entry.sourceId, (map.get(entry.sourceId) ?? 0) + asAmount(entry.valeurTotale));
+    return map;
+  }, new Map<string, number>());
+
+  return {
+    ordinaryNetBeforeForfait: Math.max(
+      0,
+      base.ordinaryNetBeforeForfait - asAmount(deduction.ordinaryNetBeforeForfait),
+    ),
+    groupementEntries: base.groupementEntries
+      .map((entry) => ({
+        ...entry,
+        valeurTotale: Math.max(
+          0,
+          entry.valeurTotale - (deductionBySourceId.get(entry.sourceId) ?? 0),
+        ),
+      }))
+      .filter((entry) => entry.valeurTotale > 0),
+    residencePrincipaleValeur: Math.max(
+      0,
+      base.residencePrincipaleValeur - asAmount(deduction.residencePrincipaleValeur),
+    ),
+  };
 }
 
 export function applyResidencePrincipaleAbatementToEstateBasis(

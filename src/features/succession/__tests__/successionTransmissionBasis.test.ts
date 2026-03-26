@@ -41,7 +41,7 @@ describe('buildSuccessionEstateTaxableBasis', () => {
     }, pocketScales);
 
     expect(basis.ordinaryNetBeforeForfait).toBe(220);
-    expect(basis.groupementEntries).toEqual([{ type: 'GFA', valeurTotale: 100 }]);
+    expect(basis.groupementEntries).toEqual([{ sourceId: 'gf-1', type: 'GFA', valeurTotale: 100 }]);
     expect(basis.residencePrincipaleValeur).toBe(150);
   });
 });

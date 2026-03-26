@@ -437,6 +437,8 @@ export default function SuccessionSimulator() {
         civilSituation={civilContext.situationMatrimoniale}
         enfantsContext={enfantsContext}
         familyMembers={familyMembers}
+        assetEntries={assetEntries}
+        groupementFoncierEntries={groupementFoncierEntries}
         showDispositionsModal={showDispositionsModal}
         dispositionsDraft={dispositionsDraft}
         setDispositionsDraft={setDispositionsDraft}

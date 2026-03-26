@@ -373,6 +373,102 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(withPreciput.warnings.some((warning) => warning.includes('preciput'))).toBe(true);
   });
 
+  it('prioritizes targeted preciput selections over the global fallback amount', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({}),
+      liquidation: makeLiquidation({ actifEpoux1: 100000, actifEpoux2: 200000, actifCommun: 200000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+      patrimonial: {
+        attributionIntegrale: false,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'pleine_propriete_quotite',
+        preciputMode: 'cible',
+        preciputMontant: 10000,
+        preciputSelections: [{
+          id: 'prec-1',
+          sourceType: 'asset',
+          sourceId: 'asset-comm-1',
+          labelSnapshot: 'Portefeuille titres',
+          pocket: 'communaute',
+          amount: 80000,
+          enabled: true,
+        }],
+      },
+      assetEntries: [
+        {
+          id: 'asset-comm-1',
+          pocket: 'communaute',
+          category: 'financier',
+          subCategory: 'Titres',
+          amount: 80000,
+          label: 'Portefeuille titres',
+        },
+        {
+          id: 'asset-comm-2',
+          pocket: 'communaute',
+          category: 'financier',
+          subCategory: 'Tresorerie',
+          amount: 120000,
+        },
+      ],
+      groupementFoncierEntries: [],
+    });
+
+    expect(analysis.step1?.actifTransmis).toBe(120000);
+    expect(analysis.step2?.actifTransmis).toBe(410000);
+    expect(analysis.warnings.some((warning) => warning.includes('Preciput cible'))).toBe(true);
+  });
+
+  it('falls back to the global preciput amount when targeted selections are no longer compatible', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({}),
+      liquidation: makeLiquidation({ actifEpoux1: 100000, actifEpoux2: 200000, actifCommun: 200000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+      patrimonial: {
+        attributionIntegrale: false,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'pleine_propriete_quotite',
+        preciputMode: 'cible',
+        preciputMontant: 30000,
+        preciputSelections: [{
+          id: 'prec-1',
+          sourceType: 'asset',
+          sourceId: 'asset-introuvable',
+          labelSnapshot: 'Bien supprime',
+          pocket: 'communaute',
+          amount: 80000,
+          enabled: true,
+        }],
+      },
+      assetEntries: [{
+        id: 'asset-comm-2',
+        pocket: 'communaute',
+        category: 'financier',
+        subCategory: 'Tresorerie',
+        amount: 120000,
+      }],
+      groupementFoncierEntries: [],
+    });
+
+    expect(analysis.step1?.actifTransmis).toBe(170000);
+    expect(analysis.step2?.actifTransmis).toBe(372500);
+    expect(analysis.warnings.some((warning) => warning.includes('fallback sur le montant global'))).toBe(true);
+  });
+
   it('reinjects survivor insurance inflows into step 2 estate', () => {
     const baseInput = {
       civil: makeCivil({ regimeMatrimonial: 'separation_biens' }),

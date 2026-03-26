@@ -73,7 +73,7 @@ Ce document sert de source de verite pour la trajectoire de montee en gamme du m
 | Testament simple | Present | Support robuste du perimetre actuel |
 | Donation entre epoux | Present avec replis | Simplification documentee |
 | Preciput global en montant | Present | Support robuste du perimetre actuel |
-| Preciput cible par bien | Modele de draft present (`preciputMode`, `preciputSelections`), moteur/UI ciblee encore absents | Modelisation partielle |
+| Preciput cible par bien | Selection UI et deduction moteur de chainage presentes sur `communaute` / `societe_acquets`; restitution/export dedies encore a completer | Simplification documentee |
 | Assurance-vie 990 I / 757 B | Present mais encore a fiabiliser sur certains cas | Support robuste avec regressions identifiees |
 | Representation petits-enfants | Presente mais incomplete fiscalement | Simplification documentee |
 | Rappel fiscal donations | Partiellement analytique | Approximation assumee |
@@ -113,6 +113,7 @@ La `PR-20` ouvre explicitement la poche `societe_acquets` quand le regime `separ
 Les `PR-21/22` ajoutent ensuite le bloc UI de configuration et la liquidation simplifiee de cette poche dans le chainage succession, tout en laissant l'audit predeces sur une approximation de separation de biens.
 La `PR-23` etend ensuite cette liquidation aux warnings, a la synthese, a la chronologie et aux exports XLSX/PPTX.
 La `PR-24` pose enfin le modele de draft du preciput cible (`preciputMode`, `preciputSelections`) sans encore activer sa selection UI ni son moteur dedie.
+Les `PR-25/26` activent ensuite la selection UI par bien compatible dans la modal dispositions et la deduction ciblee dans le chainage, avec fallback sur `preciputMontant` si aucune selection valide n'est retenue.
 
 ## Sources juridiques de cadrage
 

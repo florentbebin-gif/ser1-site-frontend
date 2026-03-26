@@ -1,12 +1,14 @@
-import type { Dispatch, SetStateAction } from 'react';
+import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import {
   DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
   type FamilyMember,
   type SituationMatrimoniale,
+  type SuccessionAssetDetailEntry,
   type SuccessionBeneficiaryRef,
   type SuccessionDispositionTestamentaire,
   type SuccessionDonationEntreEpouxOption,
   type SuccessionEnfant,
+  type SuccessionGroupementFoncierEntry,
   type SuccessionPrimarySide,
   type SuccessionTestamentConfig,
 } from '../successionDraft';
@@ -25,6 +27,12 @@ import {
   OUI_NON_OPTIONS,
 } from '../successionSimulator.constants';
 import type { DispositionsDraftState } from '../successionSimulator.helpers';
+import {
+  buildSuccessionPreciputCandidates,
+  createSuccessionPreciputSelection,
+  getSuccessionPreciputEligiblePocket,
+  syncSuccessionPreciputSelections,
+} from '../successionPreciput';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
 
@@ -32,6 +40,27 @@ const SOCIETE_ACQUETS_LIQUIDATION_OPTIONS = [
   { value: 'quotes', label: 'Quotes contractuelles' },
   { value: 'attribution_survivant', label: 'Attribution au survivant' },
 ] as const;
+
+const PRECIPUT_MODE_OPTIONS = [
+  {
+    value: 'global',
+    label: 'Montant global',
+    description: 'Conserve la saisie simple par montant.',
+  },
+  {
+    value: 'cible',
+    label: 'Bien(s) cible(s)',
+    description: 'Preleve une liste de biens compatibles avant partage.',
+  },
+] as const;
+
+function formatPreciputAmount(value: number): string {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(value);
+}
 
 interface DispositionsModalProps {
   dispositionsDraft: DispositionsDraftState;
@@ -44,6 +73,8 @@ interface DispositionsModalProps {
   descendantBranchesBySide: Record<SuccessionPrimarySide, number>;
   enfantsContext: SuccessionEnfant[];
   familyMembers: FamilyMember[];
+  assetEntries: SuccessionAssetDetailEntry[];
+  groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   civilSituation: SituationMatrimoniale;
   showSharedTransmissionPct: boolean;
   isPacsIndivision: boolean;
@@ -77,6 +108,8 @@ export default function DispositionsModal({
   descendantBranchesBySide,
   enfantsContext,
   familyMembers,
+  assetEntries,
+  groupementFoncierEntries,
   civilSituation,
   showSharedTransmissionPct,
   isPacsIndivision,
@@ -93,6 +126,205 @@ export default function DispositionsModal({
   onClose,
   onValidate,
 }: DispositionsModalProps) {
+  const [pendingPreciputCandidateKey, setPendingPreciputCandidateKey] = useState('');
+  const preciputEligiblePocket = useMemo(() => getSuccessionPreciputEligiblePocket({
+    isCommunityRegime,
+    isSocieteAcquetsRegime: isSocieteAcquetsRegime && dispositionsDraft.societeAcquets.active,
+  }), [dispositionsDraft.societeAcquets.active, isCommunityRegime, isSocieteAcquetsRegime]);
+  const preciputCandidates = useMemo(() => buildSuccessionPreciputCandidates({
+    assetEntries,
+    groupementFoncierEntries,
+    allowedPocket: preciputEligiblePocket,
+  }), [assetEntries, groupementFoncierEntries, preciputEligiblePocket]);
+  const syncedPreciputSelections = useMemo(
+    () => syncSuccessionPreciputSelections(dispositionsDraft.preciputSelections, preciputCandidates),
+    [dispositionsDraft.preciputSelections, preciputCandidates],
+  );
+  const preciputCandidatesByKey = useMemo(
+    () => new Map(preciputCandidates.map((candidate) => [candidate.key, candidate])),
+    [preciputCandidates],
+  );
+  const selectedPreciputCandidateKeys = useMemo(
+    () => new Set(syncedPreciputSelections.map((selection) => `${selection.sourceType}:${selection.sourceId}`)),
+    [syncedPreciputSelections],
+  );
+  const preciputCandidateOptions = useMemo(() => [
+    { value: '', label: 'Choisir un bien...', disabled: true },
+    ...preciputCandidates
+      .filter((candidate) => !selectedPreciputCandidateKeys.has(candidate.key))
+      .map((candidate) => ({
+        value: candidate.key,
+        label: candidate.label,
+        description: `Disponible jusqu'a ${formatPreciputAmount(candidate.maxAmount)}`,
+      })),
+  ], [preciputCandidates, selectedPreciputCandidateKeys]);
+  const preciputScopeLabel = preciputEligiblePocket === 'societe_acquets'
+    ? "la societe d'acquets"
+    : 'la communaute';
+
+  const updatePreciputSelections = (
+    updater: (_current: DispositionsDraftState['preciputSelections']) => DispositionsDraftState['preciputSelections'],
+  ) => {
+    setDispositionsDraft((prev) => ({
+      ...prev,
+      preciputSelections: updater(syncSuccessionPreciputSelections(prev.preciputSelections, preciputCandidates)),
+    }));
+  };
+
+  const addPreciputSelection = (candidateKey: string) => {
+    const candidate = preciputCandidatesByKey.get(candidateKey);
+    if (!candidate) return;
+    updatePreciputSelections((current) => [
+      ...current,
+      createSuccessionPreciputSelection(candidate),
+    ]);
+    setPendingPreciputCandidateKey('');
+  };
+
+  const updatePreciputSelection = (
+    selectionId: string,
+    field: 'enabled' | 'amount',
+    value: boolean | number,
+  ) => {
+    updatePreciputSelections((current) => current.map((selection) => {
+      if (selection.id !== selectionId) return selection;
+      if (field === 'enabled') {
+        return {
+          ...selection,
+          enabled: Boolean(value),
+        };
+      }
+      const candidate = preciputCandidatesByKey.get(`${selection.sourceType}:${selection.sourceId}`);
+      const maxAmount = candidate?.maxAmount ?? 0;
+      return {
+        ...selection,
+        amount: Math.min(maxAmount, Math.max(0, Number(value) || 0)),
+      };
+    }));
+  };
+
+  const removePreciputSelection = (selectionId: string) => {
+    updatePreciputSelections((current) => current.filter((selection) => selection.id !== selectionId));
+  };
+
+  const renderPreciputConfigurator = ({
+    title,
+    globalHint,
+  }: {
+    title: string;
+    globalHint: string;
+  }) => (
+    <>
+      <div className="sc-field">
+        <label>Mode de preciput</label>
+        <ScSelect
+          value={dispositionsDraft.preciputMode}
+          onChange={(value) => setDispositionsDraft((prev) => ({
+            ...prev,
+            preciputMode: value as 'global' | 'cible',
+          }))}
+          options={PRECIPUT_MODE_OPTIONS.map((option) => ({
+            value: option.value,
+            label: option.label,
+            description: option.value === 'cible' && preciputCandidates.length === 0
+              ? `Aucun bien compatible dans ${preciputScopeLabel}.`
+              : option.description,
+            disabled: option.value === 'cible' && preciputCandidates.length === 0,
+          }))}
+        />
+        <p className="sc-hint sc-hint--compact">
+          Le mode cible est reserve aux biens actuellement rattaches a {preciputScopeLabel}.
+        </p>
+      </div>
+
+      <div className="sc-field">
+        <label>{dispositionsDraft.preciputMode === 'cible' ? `${title} de fallback (EUR)` : title}</label>
+        <ScNumericInput
+          value={dispositionsDraft.preciputMontant || 0}
+          min={0}
+          onChange={(val) => setDispositionsDraft((prev) => ({
+            ...prev,
+            preciputMontant: val,
+          }))}
+        />
+        <p className="sc-hint sc-hint--compact">
+          {dispositionsDraft.preciputMode === 'cible'
+            ? "Ce montant reste disponible comme fallback si aucune selection ciblee valide n'est retenue."
+            : globalHint}
+        </p>
+      </div>
+
+      {dispositionsDraft.preciputMode === 'cible' && (
+        <>
+          <div className="sc-field">
+            <label>Ajouter un bien au preciput cible</label>
+            <ScSelect
+              value={pendingPreciputCandidateKey}
+              onChange={(value) => addPreciputSelection(value)}
+              options={preciputCandidateOptions}
+            />
+            <p className="sc-hint sc-hint--compact">
+              Seuls les actifs detailles et groupements fonciers compatibles sont selectionnables.
+            </p>
+          </div>
+
+          {syncedPreciputSelections.length > 0 ? (
+            <div className="sc-preciput-list">
+              {syncedPreciputSelections.map((selection) => {
+                const candidate = preciputCandidatesByKey.get(`${selection.sourceType}:${selection.sourceId}`);
+                const maxAmount = candidate?.maxAmount ?? 0;
+                return (
+                  <div key={selection.id} className="sc-preciput-item">
+                    <div className="sc-preciput-item__header">
+                      <div>
+                        <div className="sc-preciput-item__title">{selection.labelSnapshot}</div>
+                        <p className="sc-hint sc-hint--compact">
+                          Disponible jusqu&apos;a {formatPreciputAmount(maxAmount)} dans {preciputScopeLabel}.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="sc-remove-btn sc-remove-btn--quiet"
+                        onClick={() => removePreciputSelection(selection.id)}
+                        aria-label="Supprimer la selection de preciput"
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+
+                    <div className="sc-preciput-item__grid">
+                      <div className="sc-field">
+                        <label>Selection active</label>
+                        <ScSelect
+                          value={selection.enabled ? 'oui' : 'non'}
+                          onChange={(value) => updatePreciputSelection(selection.id, 'enabled', value === 'oui')}
+                          options={OUI_NON_OPTIONS}
+                        />
+                      </div>
+
+                      <div className="sc-field">
+                        <label>Montant cible (EUR)</label>
+                        <ScNumericInput
+                          value={selection.amount}
+                          min={0}
+                          onChange={(value) => updatePreciputSelection(selection.id, 'amount', value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="sc-hint sc-hint--compact">
+              Aucun bien cible pour l&apos;instant. Ajoutez au moins une ligne compatible pour activer le preciput cible.
+            </p>
+          )}
+        </>
+      )}
+    </>
+  );
+
   return (
     <div
       className="sc-member-modal-overlay"
@@ -205,22 +437,10 @@ export default function DispositionsModal({
               </div>
             )}
 
-            {isCommunityRegime && (
-              <div className="sc-field">
-                <label>Clause de préciput (€)</label>
-                <ScNumericInput
-                  value={dispositionsDraft.preciputMontant || 0}
-                  min={0}
-                  onChange={(val) => setDispositionsDraft((prev) => ({
-                    ...prev,
-                    preciputMontant: val,
-                  }))}
-                />
-                <p className="sc-hint sc-hint--compact">
-                  Le préciput permet au conjoint survivant de prélever certains biens ou une somme sur la communauté avant le partage successoral.
-                </p>
-              </div>
-            )}
+            {isCommunityRegime && renderPreciputConfigurator({
+              title: 'Clause de preciput (EUR)',
+              globalHint: 'Le preciput permet au conjoint survivant de prelever certains biens ou une somme sur la communaute avant le partage successoral.',
+            })}
 
             {isSocieteAcquetsRegime && (
               <>
@@ -347,20 +567,10 @@ export default function DispositionsModal({
                       </p>
                     </div>
 
-                    <div className="sc-field">
-                      <label>Preciput sur la societe d&apos;acquets (EUR)</label>
-                      <ScNumericInput
-                        value={dispositionsDraft.preciputMontant || 0}
-                        min={0}
-                        onChange={(val) => setDispositionsDraft((prev) => ({
-                          ...prev,
-                          preciputMontant: val,
-                        }))}
-                      />
-                      <p className="sc-hint sc-hint--compact">
-                        Le preciput est preleve sur la societe d&apos;acquets avant la liquidation du reliquat.
-                      </p>
-                    </div>
+                    {renderPreciputConfigurator({
+                      title: "Preciput sur la societe d'acquets (EUR)",
+                      globalHint: "Le preciput est preleve sur la societe d'acquets avant la liquidation du reliquat.",
+                    })}
                   </>
                 )}
               </>
