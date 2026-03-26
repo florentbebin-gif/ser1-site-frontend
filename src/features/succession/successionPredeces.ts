@@ -52,7 +52,7 @@ function mapMarriedRegime(regime: RegimeMatrimonial | null): RegimeMapping {
       regimeUsed: 'separation_biens',
       regimeLabel: REGIMES_MATRIMONIAUX[selectedRegime].label,
       warnings: [
-        "Participation aux acquets: approximation en separation de biens (creance de participation non modelisee).",
+        "Participation aux acquets: approximation d'audit predeces en separation de biens ; le chainage succession peut desormais appliquer une creance simplifiee si la configuration dediee est activee.",
       ],
     };
   }

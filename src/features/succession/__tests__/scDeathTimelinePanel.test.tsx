@@ -20,6 +20,8 @@ function buildProps() {
       firstDecedeLabel: 'epoux 1',
       secondDecedeLabel: 'epoux 2',
       societeAcquets: null,
+      participationAcquets: null,
+      preciput: null,
       step1: { actifTransmis: 100000, droitsEnfants: 5000 },
       step2: { actifTransmis: 200000, droitsEnfants: 15000 },
     },
@@ -97,12 +99,27 @@ describe('ScDeathTimelinePanel', () => {
             survivorQuotePct: 60,
             attributionIntegrale: false,
           },
+          participationAcquets: {
+            active: true,
+            creditor: 'epoux2',
+            debtor: 'epoux1',
+            quoteAppliedPct: 50,
+            creanceAmount: 70000,
+            firstEstateAdjustment: -70000,
+          },
+          preciput: {
+            mode: 'cible',
+            appliedAmount: 50000,
+            usesGlobalFallback: false,
+            selections: [{ id: 'prec-1', label: 'Portefeuille titres', appliedAmount: 50000 }],
+          },
         }}
       />,
     );
 
     expect(markup).toContain('part 1er deces');
     expect(markup).toContain('part survivant');
-    expect(markup).toContain('Preciput sur societe');
+    expect(markup).toContain('Preciput applique');
+    expect(markup).toContain('Creance de participation');
   });
 });

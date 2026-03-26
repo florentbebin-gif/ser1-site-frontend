@@ -73,6 +73,36 @@ describe('Succession PPTX Export', () => {
             survivorQuotePct: 60,
             attributionIntegrale: false,
           },
+          participationAcquets: {
+            configured: true,
+            active: true,
+            useCurrentAssetsAsFinalPatrimony: true,
+            patrimoineOriginaireEpoux1: 100000,
+            patrimoineOriginaireEpoux2: 120000,
+            patrimoineFinalEpoux1: 300000,
+            patrimoineFinalEpoux2: 180000,
+            acquetsEpoux1: 200000,
+            acquetsEpoux2: 60000,
+            creditor: 'epoux2',
+            debtor: 'epoux1',
+            quoteAppliedPct: 50,
+            creanceAmount: 70000,
+            firstEstateAdjustment: -70000,
+          },
+          preciput: {
+            mode: 'cible',
+            requestedAmount: 50000,
+            appliedAmount: 50000,
+            usesGlobalFallback: false,
+            selections: [
+              {
+                id: 'prec-1',
+                label: 'Portefeuille titres',
+                requestedAmount: 50000,
+                appliedAmount: 50000,
+              },
+            ],
+          },
           prevoyanceTotale: 120000,
           totalDroits: 54500,
           warnings: ['Module simplifié'],
@@ -98,6 +128,8 @@ describe('Succession PPTX Export', () => {
       expect(chronologySlide.body).toContain('Conjoint survivant');
       expect(chronologySlide.body).toContain('prévoyance décès');
       expect(chronologySlide.body).toContain("Societe d'acquets");
+      expect(chronologySlide.body).toContain('Preciput');
+      expect(chronologySlide.body).toContain('Participation aux acquets');
       expect(chronologySlide.body).not.toContain('Ordre inverse');
     }
   });
@@ -206,6 +238,40 @@ describe('Succession Excel Export', () => {
           survivorQuotePct: 60,
           attributionIntegrale: false,
         },
+        participationAcquets: {
+          configured: true,
+          active: true,
+          useCurrentAssetsAsFinalPatrimony: true,
+          patrimoineOriginaireEpoux1: 100000,
+          patrimoineOriginaireEpoux2: 120000,
+          patrimoineFinalEpoux1: 250000,
+          patrimoineFinalEpoux2: 170000,
+          acquetsEpoux1: 150000,
+          acquetsEpoux2: 50000,
+          creditor: 'epoux2',
+          debtor: 'epoux1',
+          quoteAppliedPct: 50,
+          creanceAmount: 50000,
+          firstEstateAdjustment: -50000,
+        },
+        preciput: {
+          mode: 'cible',
+          pocket: 'communaute',
+          requestedAmount: 50000,
+          appliedAmount: 50000,
+          usesGlobalFallback: false,
+          selections: [
+            {
+              id: 'prec-1',
+              sourceType: 'asset',
+              sourceId: 'asset-1',
+              label: 'Portefeuille titres',
+              pocket: 'communaute',
+              requestedAmount: 50000,
+              appliedAmount: 50000,
+            },
+          ],
+        },
         prevoyanceTotale: 100000,
         totalDroits: 43500,
         warnings: ['Avertissement de test'],
@@ -234,6 +300,9 @@ describe('Succession Excel Export', () => {
     expect(xmlPayload).toContain('E1');
     expect(xmlPayload).toContain('prévoyance décès');
     expect(xmlPayload).toContain('Societe d&apos;acquets');
+    expect(xmlPayload).toContain('Preciput');
+    expect(xmlPayload).toContain('Participation aux acquets');
+    expect(xmlPayload).toContain('Portefeuille titres');
   });
 
   it('generates a simplified chainage-only XLSX when no direct succession result is provided', async () => {

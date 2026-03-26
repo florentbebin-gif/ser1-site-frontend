@@ -74,6 +74,7 @@ describe('successionDraft', () => {
         ascendantsSurvivantsBySide: { epoux1: false },
       }),
       {
+        ...DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
         donationsRapportables: 30000,
         donationsHorsPart: 15000,
         legsParticuliers: 10000,
@@ -85,6 +86,16 @@ describe('successionDraft', () => {
           quoteEpoux1Pct: 50,
           quoteEpoux2Pct: 50,
           attributionSurvivantPct: 0,
+        },
+        participationAcquets: {
+          active: true,
+          useCurrentAssetsAsFinalPatrimony: false,
+          patrimoineOriginaireEpoux1: 90000,
+          patrimoineOriginaireEpoux2: 50000,
+          patrimoineFinalEpoux1: 250000,
+          patrimoineFinalEpoux2: 160000,
+          quoteEpoux1Pct: 40,
+          quoteEpoux2Pct: 60,
         },
         preciputMode: 'cible',
         preciputSelections: [
@@ -99,12 +110,7 @@ describe('successionDraft', () => {
           },
         ],
         preciputMontant: 12000,
-        attributionIntegrale: false,
-        attributionBiensCommunsPct: 50,
         forfaitMobilierMode: 'auto',
-        forfaitMobilierPct: 5,
-        forfaitMobilierMontant: 0,
-        abattementResidencePrincipale: false,
         decesDansXAns: 50,
       },
       [
@@ -156,7 +162,7 @@ describe('successionDraft', () => {
       'epoux2',
     );
 
-    expect(payload.version).toBe(23);
+    expect(payload.version).toBe(24);
     expect(payload.assetEntries[0].pocket).toBe('epoux1');
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
     expect(parsed).not.toBeNull();
@@ -178,6 +184,16 @@ describe('successionDraft', () => {
     expect(parsed?.patrimonial.societeAcquets).toMatchObject({
       active: true,
       liquidationMode: 'quotes',
+    });
+    expect(parsed?.patrimonial.participationAcquets).toMatchObject({
+      active: true,
+      useCurrentAssetsAsFinalPatrimony: false,
+      patrimoineOriginaireEpoux1: 90000,
+      patrimoineOriginaireEpoux2: 50000,
+      patrimoineFinalEpoux1: 250000,
+      patrimoineFinalEpoux2: 160000,
+      quoteEpoux1Pct: 40,
+      quoteEpoux2Pct: 60,
     });
     expect(parsed?.patrimonial.preciputMode).toBe('cible');
     expect(parsed?.patrimonial.preciputSelections).toEqual([

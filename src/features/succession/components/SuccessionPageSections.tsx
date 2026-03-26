@@ -220,6 +220,34 @@ export function SuccessionPageGrid({
                     attributionIntegrale: derived.chainageAnalysis.societeAcquets.attributionIntegrale,
                   }
                   : null,
+                participationAcquets: derived.chainageAnalysis.participationAcquets
+                  ? {
+                    active: derived.chainageAnalysis.participationAcquets.active,
+                    patrimoineOriginaireEpoux1: derived.chainageAnalysis.participationAcquets.patrimoineOriginaireEpoux1,
+                    patrimoineOriginaireEpoux2: derived.chainageAnalysis.participationAcquets.patrimoineOriginaireEpoux2,
+                    patrimoineFinalEpoux1: derived.chainageAnalysis.participationAcquets.patrimoineFinalEpoux1,
+                    patrimoineFinalEpoux2: derived.chainageAnalysis.participationAcquets.patrimoineFinalEpoux2,
+                    acquetsEpoux1: derived.chainageAnalysis.participationAcquets.acquetsEpoux1,
+                    acquetsEpoux2: derived.chainageAnalysis.participationAcquets.acquetsEpoux2,
+                    creditor: derived.chainageAnalysis.participationAcquets.creditor,
+                    debtor: derived.chainageAnalysis.participationAcquets.debtor,
+                    quoteAppliedPct: derived.chainageAnalysis.participationAcquets.quoteAppliedPct,
+                    creanceAmount: derived.chainageAnalysis.participationAcquets.creanceAmount,
+                    firstEstateAdjustment: derived.chainageAnalysis.participationAcquets.firstEstateAdjustment,
+                  }
+                  : null,
+                preciput: derived.chainageAnalysis.preciput
+                  ? {
+                    mode: derived.chainageAnalysis.preciput.mode,
+                    appliedAmount: derived.chainageAnalysis.preciput.appliedAmount,
+                    usesGlobalFallback: derived.chainageAnalysis.preciput.usesGlobalFallback,
+                    selections: derived.chainageAnalysis.preciput.selections.map((selection) => ({
+                      id: selection.id,
+                      label: selection.label,
+                      appliedAmount: selection.appliedAmount,
+                    })),
+                  }
+                  : null,
                 step1: derived.chainageAnalysis.step1
                   ? { droitsEnfants: derived.chainageAnalysis.step1.droitsEnfants }
                   : null,
@@ -266,6 +294,28 @@ export function SuccessionPageGrid({
                     deceasedQuotePct: derived.chainageAnalysis.societeAcquets.deceasedQuotePct,
                     survivorQuotePct: derived.chainageAnalysis.societeAcquets.survivorQuotePct,
                     attributionIntegrale: derived.chainageAnalysis.societeAcquets.attributionIntegrale,
+                  }
+                  : null,
+                participationAcquets: derived.chainageAnalysis.participationAcquets
+                  ? {
+                    active: derived.chainageAnalysis.participationAcquets.active,
+                    creditor: derived.chainageAnalysis.participationAcquets.creditor,
+                    debtor: derived.chainageAnalysis.participationAcquets.debtor,
+                    quoteAppliedPct: derived.chainageAnalysis.participationAcquets.quoteAppliedPct,
+                    creanceAmount: derived.chainageAnalysis.participationAcquets.creanceAmount,
+                    firstEstateAdjustment: derived.chainageAnalysis.participationAcquets.firstEstateAdjustment,
+                  }
+                  : null,
+                preciput: derived.chainageAnalysis.preciput
+                  ? {
+                    mode: derived.chainageAnalysis.preciput.mode,
+                    appliedAmount: derived.chainageAnalysis.preciput.appliedAmount,
+                    usesGlobalFallback: derived.chainageAnalysis.preciput.usesGlobalFallback,
+                    selections: derived.chainageAnalysis.preciput.selections.map((selection) => ({
+                      id: selection.id,
+                      label: selection.label,
+                      appliedAmount: selection.appliedAmount,
+                    })),
                   }
                   : null,
                 step1: derived.chainageAnalysis.step1

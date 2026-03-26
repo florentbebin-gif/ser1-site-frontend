@@ -103,6 +103,17 @@ export interface SuccessionSocieteAcquetsConfig {
   attributionSurvivantPct: number;
 }
 
+export interface SuccessionParticipationAcquetsConfig {
+  active: boolean;
+  useCurrentAssetsAsFinalPatrimony: boolean;
+  patrimoineOriginaireEpoux1: number;
+  patrimoineOriginaireEpoux2: number;
+  patrimoineFinalEpoux1: number;
+  patrimoineFinalEpoux2: number;
+  quoteEpoux1Pct: number;
+  quoteEpoux2Pct: number;
+}
+
 export interface SuccessionPreciputSelection {
   id: string;
   sourceType: 'asset' | 'groupement_foncier';
@@ -120,6 +131,7 @@ export interface SuccessionPatrimonialContext {
   donationEntreEpouxActive: boolean;
   donationEntreEpouxOption: SuccessionDonationEntreEpouxOption;
   societeAcquets: SuccessionSocieteAcquetsConfig;
+  participationAcquets: SuccessionParticipationAcquetsConfig;
   preciputMode: SuccessionPreciputMode;
   preciputSelections: SuccessionPreciputSelection[];
   preciputMontant: number;
@@ -270,4 +282,8 @@ export interface SuccessionDraftPayloadV22 extends ParsedSuccessionDraftPayload 
 
 export interface SuccessionDraftPayloadV23 extends ParsedSuccessionDraftPayload {
   version: 23;
+}
+
+export interface SuccessionDraftPayloadV24 extends ParsedSuccessionDraftPayload {
+  version: 24;
 }

@@ -4,6 +4,7 @@ import {
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
   DEFAULT_SUCCESSION_LIQUIDATION_CONTEXT,
   DEFAULT_SUCCESSION_PER,
+  DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG,
   DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
@@ -60,6 +61,7 @@ import type {
   SuccessionDonationEntry,
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
+  SuccessionParticipationAcquetsConfig,
   SuccessionPreciputSelection,
   SuccessionParticularLegacyEntry,
   SuccessionPrevoyanceDecesEntry,
@@ -73,12 +75,13 @@ const DECES_DANS_X_ANS_VALUES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50] as co
 function normalizeQuotePair(
   quoteEpoux1Pct: number,
   quoteEpoux2Pct: number,
+  fallback: Pick<SuccessionSocieteAcquetsConfig, 'quoteEpoux1Pct' | 'quoteEpoux2Pct'> = DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG,
 ): Pick<SuccessionSocieteAcquetsConfig, 'quoteEpoux1Pct' | 'quoteEpoux2Pct'> {
   const total = quoteEpoux1Pct + quoteEpoux2Pct;
   if (total <= 0) {
     return {
-      quoteEpoux1Pct: DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG.quoteEpoux1Pct,
-      quoteEpoux2Pct: DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG.quoteEpoux2Pct,
+      quoteEpoux1Pct: fallback.quoteEpoux1Pct,
+      quoteEpoux2Pct: fallback.quoteEpoux2Pct,
     };
   }
 
@@ -87,6 +90,50 @@ function normalizeQuotePair(
   return {
     quoteEpoux1Pct: normalizedEpoux1Pct,
     quoteEpoux2Pct: normalizedEpoux2Pct,
+  };
+}
+
+function parseParticipationAcquetsConfig(raw: unknown): SuccessionParticipationAcquetsConfig {
+  const rawConfig = isObject(raw) ? raw : {};
+  const normalizedQuotes = normalizeQuotePair(
+    asPercent(
+      rawConfig.quoteEpoux1Pct,
+      DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG.quoteEpoux1Pct,
+    ),
+    asPercent(
+      rawConfig.quoteEpoux2Pct,
+      DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG.quoteEpoux2Pct,
+    ),
+    DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG,
+  );
+
+  return {
+    active: asBoolean(
+      rawConfig.active,
+      DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG.active,
+    ),
+    useCurrentAssetsAsFinalPatrimony: asBoolean(
+      rawConfig.useCurrentAssetsAsFinalPatrimony,
+      DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG.useCurrentAssetsAsFinalPatrimony,
+    ),
+    patrimoineOriginaireEpoux1: asAmount(
+      rawConfig.patrimoineOriginaireEpoux1,
+      DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG.patrimoineOriginaireEpoux1,
+    ),
+    patrimoineOriginaireEpoux2: asAmount(
+      rawConfig.patrimoineOriginaireEpoux2,
+      DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG.patrimoineOriginaireEpoux2,
+    ),
+    patrimoineFinalEpoux1: asAmount(
+      rawConfig.patrimoineFinalEpoux1,
+      DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG.patrimoineFinalEpoux1,
+    ),
+    patrimoineFinalEpoux2: asAmount(
+      rawConfig.patrimoineFinalEpoux2,
+      DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG.patrimoineFinalEpoux2,
+    ),
+    quoteEpoux1Pct: normalizedQuotes.quoteEpoux1Pct,
+    quoteEpoux2Pct: normalizedQuotes.quoteEpoux2Pct,
   };
 }
 
@@ -525,6 +572,9 @@ export function parseSuccessionDraftPayload(raw: string): ParsedSuccessionDraftP
         version,
         civil.regimeMatrimonial,
       ),
+      participationAcquets: version >= 24
+        ? parseParticipationAcquetsConfig(patrimonialRaw.participationAcquets)
+        : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.participationAcquets,
       preciputMode: isSuccessionPreciputMode(patrimonialRaw.preciputMode)
         ? patrimonialRaw.preciputMode
         : DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMode,

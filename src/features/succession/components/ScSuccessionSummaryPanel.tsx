@@ -18,6 +18,10 @@ interface InsuranceBeneficiaryLine {
   netTransmis: number;
 }
 
+function formatPartyLabel(value: 'epoux1' | 'epoux2'): string {
+  return value === 'epoux1' ? 'Epoux 1' : 'Epoux 2';
+}
+
 interface ScSuccessionSummaryPanelProps {
   displayUsesChainage: boolean;
   derivedTotalDroits: number;
@@ -38,6 +42,30 @@ interface ScSuccessionSummaryPanelProps {
       deceasedQuotePct: number;
       survivorQuotePct: number;
       attributionIntegrale: boolean;
+    } | null;
+    participationAcquets: {
+      active: boolean;
+      patrimoineOriginaireEpoux1: number;
+      patrimoineOriginaireEpoux2: number;
+      patrimoineFinalEpoux1: number;
+      patrimoineFinalEpoux2: number;
+      acquetsEpoux1: number;
+      acquetsEpoux2: number;
+      creditor: 'epoux1' | 'epoux2' | null;
+      debtor: 'epoux1' | 'epoux2' | null;
+      quoteAppliedPct: number;
+      creanceAmount: number;
+      firstEstateAdjustment: number;
+    } | null;
+    preciput: {
+      mode: 'global' | 'cible' | 'none';
+      appliedAmount: number;
+      usesGlobalFallback: boolean;
+      selections: Array<{
+        id: string;
+        label: string;
+        appliedAmount: number;
+      }>;
     } | null;
     step1: { droitsEnfants: number } | null;
     step2: { droitsEnfants: number } | null;
@@ -70,6 +98,8 @@ export default function ScSuccessionSummaryPanel({
   directDisplay,
 }: ScSuccessionSummaryPanelProps) {
   const societeAcquets = chainageAnalysis.societeAcquets;
+  const participationAcquets = chainageAnalysis.participationAcquets;
+  const preciput = chainageAnalysis.preciput;
   const firstCost = displayUsesChainage
     ? (chainageAnalysis.step1?.droitsEnfants ?? 0)
       + avFiscalByAssure[chainageAnalysis.order].totalDroits
@@ -169,6 +199,75 @@ export default function ScSuccessionSummaryPanel({
               <span>Attribution integrale du reliquat</span>
               <strong>Oui</strong>
             </div>
+          )}
+        </>
+      )}
+      {displayUsesChainage && preciput && (preciput.appliedAmount > 0 || preciput.selections.length > 0) && (
+        <>
+          <div className="sc-card__divider sc-card__divider--tight" />
+          <div className="sc-synth-section-title">Preciput applique</div>
+          <div className="sc-summary-row">
+            <span>Mode retenu</span>
+            <strong>{preciput.mode === 'cible' ? 'Cible' : 'Global'}</strong>
+          </div>
+          <div className="sc-summary-row">
+            <span>Montant preleve</span>
+            <strong>{fmt(preciput.appliedAmount)}</strong>
+          </div>
+          {preciput.usesGlobalFallback && (
+            <div className="sc-summary-row">
+              <span>Fallback global active</span>
+              <strong>Oui</strong>
+            </div>
+          )}
+          {preciput.selections.map((selection) => (
+            <div key={selection.id} className="sc-summary-row">
+              <span>{selection.label}</span>
+              <strong>{fmt(selection.appliedAmount)}</strong>
+            </div>
+          ))}
+        </>
+      )}
+      {displayUsesChainage && participationAcquets && (
+        <>
+          <div className="sc-card__divider sc-card__divider--tight" />
+          <div className="sc-synth-section-title">Participation aux acquets</div>
+          {!participationAcquets.active ? (
+            <div className="sc-summary-row">
+              <span>Configuration</span>
+              <strong>Inactive</strong>
+            </div>
+          ) : (
+            <>
+              <div className="sc-summary-row">
+                <span>Patrimoine originaire Epoux 1 / Epoux 2</span>
+                <strong>{`${fmt(participationAcquets.patrimoineOriginaireEpoux1)} / ${fmt(participationAcquets.patrimoineOriginaireEpoux2)}`}</strong>
+              </div>
+              <div className="sc-summary-row">
+                <span>Patrimoine final Epoux 1 / Epoux 2</span>
+                <strong>{`${fmt(participationAcquets.patrimoineFinalEpoux1)} / ${fmt(participationAcquets.patrimoineFinalEpoux2)}`}</strong>
+              </div>
+              <div className="sc-summary-row">
+                <span>Acquets nets Epoux 1 / Epoux 2</span>
+                <strong>{`${fmt(participationAcquets.acquetsEpoux1)} / ${fmt(participationAcquets.acquetsEpoux2)}`}</strong>
+              </div>
+              <div className="sc-summary-row">
+                <span>Creance de participation</span>
+                <strong>{fmt(participationAcquets.creanceAmount)}</strong>
+              </div>
+              {participationAcquets.creditor && participationAcquets.debtor && (
+                <>
+                  <div className="sc-summary-row">
+                    <span>Creancier / debiteur</span>
+                    <strong>{`${formatPartyLabel(participationAcquets.creditor)} / ${formatPartyLabel(participationAcquets.debtor)}`}</strong>
+                  </div>
+                  <div className="sc-summary-row">
+                    <span>Quote appliquee</span>
+                    <strong>{`${Math.round(participationAcquets.quoteAppliedPct)} %`}</strong>
+                  </div>
+                </>
+              )}
+            </>
           )}
         </>
       )}

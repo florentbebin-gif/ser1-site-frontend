@@ -1,5 +1,6 @@
 import {
   DEFAULT_SUCCESSION_DEVOLUTION_CONTEXT,
+  DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG,
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
   DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG,
 } from './successionDraft';
@@ -18,6 +19,7 @@ import type {
   SuccessionEnfant,
   SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
+  SuccessionParticipationAcquetsConfig,
   SuccessionPreciputSelection,
   SuccessionPrevoyanceDecesEntry,
   SuccessionPrimarySide,
@@ -44,6 +46,7 @@ export interface DispositionsDraftState {
   donationEntreEpouxActive: boolean;
   donationEntreEpouxOption: SuccessionDonationEntreEpouxOption;
   societeAcquets: SuccessionSocieteAcquetsConfig;
+  participationAcquets: SuccessionParticipationAcquetsConfig;
   preciputMode: 'global' | 'cible';
   preciputSelections: SuccessionPreciputSelection[];
   preciputMontant: number;
@@ -163,6 +166,21 @@ export function cloneSuccessionSocieteAcquetsConfig(
   };
 }
 
+export function cloneSuccessionParticipationAcquetsConfig(
+  config: SuccessionParticipationAcquetsConfig = DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG,
+): SuccessionParticipationAcquetsConfig {
+  return {
+    active: config.active,
+    useCurrentAssetsAsFinalPatrimony: config.useCurrentAssetsAsFinalPatrimony,
+    patrimoineOriginaireEpoux1: config.patrimoineOriginaireEpoux1,
+    patrimoineOriginaireEpoux2: config.patrimoineOriginaireEpoux2,
+    patrimoineFinalEpoux1: config.patrimoineFinalEpoux1,
+    patrimoineFinalEpoux2: config.patrimoineFinalEpoux2,
+    quoteEpoux1Pct: config.quoteEpoux1Pct,
+    quoteEpoux2Pct: config.quoteEpoux2Pct,
+  };
+}
+
 export function cloneSuccessionPreciputSelections(
   selections: SuccessionPreciputSelection[] = [],
 ): SuccessionPreciputSelection[] {
@@ -178,6 +196,9 @@ export function buildInitialDispositionsDraft(): DispositionsDraftState {
     donationEntreEpouxOption: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxOption,
     societeAcquets: cloneSuccessionSocieteAcquetsConfig(
       DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.societeAcquets,
+    ),
+    participationAcquets: cloneSuccessionParticipationAcquetsConfig(
+      DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.participationAcquets,
     ),
     preciputMode: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.preciputMode,
     preciputSelections: cloneSuccessionPreciputSelections(

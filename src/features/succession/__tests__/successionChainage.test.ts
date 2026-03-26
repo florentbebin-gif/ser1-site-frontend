@@ -424,6 +424,17 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.step1?.actifTransmis).toBe(120000);
     expect(analysis.step2?.actifTransmis).toBe(410000);
     expect(analysis.warnings.some((warning) => warning.includes('Preciput cible'))).toBe(true);
+    expect(analysis.preciput).toMatchObject({
+      mode: 'cible',
+      appliedAmount: 80000,
+      usesGlobalFallback: false,
+    });
+    expect(analysis.preciput?.selections).toEqual([
+      expect.objectContaining({
+        label: 'Portefeuille titres (Titres)',
+        appliedAmount: 80000,
+      }),
+    ]);
   });
 
   it('falls back to the global preciput amount when targeted selections are no longer compatible', () => {
@@ -708,6 +719,49 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.step2?.actifTransmis).toBe(675000);
     expect(analysis.societeAcquets?.attributionIntegrale).toBe(true);
     expect(analysis.warnings.some((warning) => warning.includes('attribution integrale du reliquat'))).toBe(true);
+  });
+
+  it('applies a simplified participation claim when the dedicated config is active', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({ regimeMatrimonial: 'participation_acquets' }),
+      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+      patrimonial: {
+        attributionIntegrale: false,
+        donationEntreEpouxActive: false,
+        donationEntreEpouxOption: 'usufruit_total',
+        preciputMontant: 0,
+        participationAcquets: {
+          active: true,
+          useCurrentAssetsAsFinalPatrimony: true,
+          patrimoineOriginaireEpoux1: 100000,
+          patrimoineOriginaireEpoux2: 100000,
+          patrimoineFinalEpoux1: 0,
+          patrimoineFinalEpoux2: 0,
+          quoteEpoux1Pct: 50,
+          quoteEpoux2Pct: 50,
+        },
+      },
+    });
+
+    expect(analysis.participationAcquets).toMatchObject({
+      active: true,
+      creditor: 'epoux2',
+      debtor: 'epoux1',
+      quoteAppliedPct: 50,
+      creanceAmount: 150000,
+      firstEstateAdjustment: -150000,
+    });
+    expect(analysis.step1?.actifTransmis).toBe(350000);
+    expect(analysis.step2?.actifTransmis).toBe(437500);
+    expect(analysis.warnings.some((warning) => warning.includes('Participation aux acquets'))).toBe(true);
   });
 
   it('applies the residence principale abatement on step 1 only in chainage', () => {

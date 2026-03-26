@@ -3,6 +3,7 @@ import type { LienParente } from '../../engine/succession';
 import {
   DEFAULT_SUCCESSION_TESTAMENT_CONFIG,
   type FamilyMember,
+  type SuccessionAssetPocket,
   type SuccessionAssetDetailEntry,
   type SuccessionCivilContext,
   type SuccessionDevolutionContext,
@@ -54,7 +55,12 @@ import {
   buildSuccessionTargetedPreciputTaxableBasis,
   getSuccessionPreciputEligiblePocket,
   resolveSuccessionPreciputApplication,
+  type SuccessionResolvedPreciputSelection,
 } from './successionPreciput';
+import {
+  computeSuccessionParticipationAcquetsSummary,
+  type SuccessionParticipationAcquetsSummary,
+} from './successionParticipationAcquets';
 
 export type SuccessionChainOrder = 'epoux1' | 'epoux2';
 export type SuccessionChainRegime = 'communaute_legale' | 'separation_biens' | 'communaute_universelle';
@@ -81,6 +87,25 @@ export interface SuccessionChainSocieteAcquetsSummary {
   attributionIntegrale: boolean;
 }
 
+export interface SuccessionChainPreciputSelectionSummary {
+  id: string;
+  sourceType: 'asset' | 'groupement_foncier';
+  sourceId: string;
+  label: string;
+  pocket: SuccessionAssetPocket;
+  requestedAmount: number;
+  appliedAmount: number;
+}
+
+export interface SuccessionChainPreciputSummary {
+  mode: 'global' | 'cible' | 'none';
+  pocket: SuccessionAssetPocket | null;
+  requestedAmount: number;
+  appliedAmount: number;
+  usesGlobalFallback: boolean;
+  selections: SuccessionChainPreciputSelectionSummary[];
+}
+
 export interface SuccessionChainBeneficiary {
   id: string;
   label: string;
@@ -99,6 +124,8 @@ export interface SuccessionChainageAnalysis {
   step1: SuccessionChainStep | null;
   step2: SuccessionChainStep | null;
   societeAcquets: SuccessionChainSocieteAcquetsSummary | null;
+  participationAcquets: SuccessionParticipationAcquetsSummary | null;
+  preciput: SuccessionChainPreciputSummary | null;
   totalDroits: number;
   warnings: string[];
 }
@@ -119,6 +146,7 @@ interface SuccessionChainageInput {
     | 'preciputMode'
     | 'preciputSelections'
     | 'preciputMontant'
+    | 'participationAcquets'
     | 'societeAcquets'
   >>;
   societeAcquetsNetValue?: number;
@@ -170,6 +198,35 @@ function getOtherSide(order: SuccessionChainOrder): SuccessionDeceasedSide {
 
 function getLabelForSide(side: SuccessionDeceasedSide): string {
   return side === 'epoux1' ? 'Epoux 1' : 'Epoux 2';
+}
+
+function buildTargetedPreciputSelectionsSummary(
+  targetedSelections: SuccessionResolvedPreciputSelection[],
+  requestedAmount: number,
+  appliedAmount: number,
+): SuccessionChainPreciputSelectionSummary[] {
+  if (requestedAmount <= 0 || appliedAmount <= 0) {
+    return targetedSelections.map((selection) => ({
+      id: selection.selection.id,
+      sourceType: selection.selection.sourceType,
+      sourceId: selection.selection.sourceId,
+      label: selection.candidate.label,
+      pocket: selection.candidate.pocket,
+      requestedAmount: selection.amount,
+      appliedAmount: 0,
+    }));
+  }
+
+  const ratio = Math.min(1, Math.max(0, appliedAmount / requestedAmount));
+  return targetedSelections.map((selection) => ({
+    id: selection.selection.id,
+    sourceType: selection.selection.sourceType,
+    sourceId: selection.selection.sourceId,
+    label: selection.candidate.label,
+    pocket: selection.candidate.pocket,
+    requestedAmount: selection.amount,
+    appliedAmount: selection.amount * ratio,
+  }));
 }
 
 function buildFirstEstatePocketScales(
@@ -264,6 +321,8 @@ function buildEmptyAnalysis(order: SuccessionChainOrder, warning: string): Succe
     step1: null,
     step2: null,
     societeAcquets: null,
+    participationAcquets: null,
+    preciput: null,
     totalDroits: 0,
     warnings: [warning],
   };
@@ -459,6 +518,13 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     patrimonial: input.patrimonial,
     candidates: preciputCandidates,
   });
+  const participationAcquetsSummary = computeSuccessionParticipationAcquetsSummary({
+    civil: input.civil,
+    regimeUsed: input.regimeUsed,
+    order: input.order,
+    liquidation: input.liquidation,
+    patrimonial: input.patrimonial,
+  });
   const requestedTargetedPreciputBasis = resolvedPreciput.mode === 'cible'
     ? buildSuccessionTargetedPreciputTaxableBasis(resolvedPreciput.targetedSelections)
     : createEmptyEstateTaxableBasis();
@@ -483,12 +549,16 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   )
     ? societeAcquetsDistribution.firstEstateContribution / Math.max(1, input.societeAcquetsNetValue ?? 0)
     : 0;
-  const firstEstate = computeFirstEstate(
+  const firstEstateBase = computeFirstEstate(
     input.regimeUsed,
     input.order,
     input.liquidation,
     attributionPct,
   ) + (societeAcquetsDistribution?.firstEstateContribution ?? 0);
+  const firstEstate = Math.min(
+    totalPatrimoine,
+    Math.max(0, firstEstateBase + (participationAcquetsSummary?.firstEstateAdjustment ?? 0)),
+  );
   const survivorBase = Math.max(0, totalPatrimoine - firstEstate);
   const survivorEconomicInflows = Math.max(0, input.survivorEconomicInflows?.[input.order] ?? 0);
   const warnings: string[] = [];
@@ -535,8 +605,19 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   if (resolvedPreciput.usesGlobalFallback) {
     warnings.push('Preciput cible: aucune selection compatible active, fallback sur le montant global.');
   }
+  if (
+    resolvedPreciput.mode === 'cible'
+    && resolvedPreciput.targetedSelections.length > 0
+  ) {
+    warnings.push(
+      `Preciput cible: biens retenus ${resolvedPreciput.targetedSelections.map((selection) => selection.candidate.label).join(', ')}.`,
+    );
+  }
   if (societeAcquetsDistribution) {
     warnings.push(...societeAcquetsDistribution.warnings);
+  }
+  if (participationAcquetsSummary) {
+    warnings.push(...participationAcquetsSummary.warnings);
   }
   warnings.push('Module de chainage simplifie: liquidation notariale fine et options civiles avancees non modelisees.');
 
@@ -559,6 +640,26 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   const targetedPreciputAppliedAmount = resolvedPreciput.mode === 'cible'
     ? (societeAcquetsDistribution?.preciputAmount ?? step1Split.preciputDeducted)
     : 0;
+  const preciputSummary: SuccessionChainPreciputSummary | null = (
+    resolvedPreciput.mode === 'none'
+    && step1Split.preciputDeducted <= 0
+    && (societeAcquetsDistribution?.preciputAmount ?? 0) <= 0
+  )
+    ? null
+    : {
+      mode: resolvedPreciput.mode,
+      pocket: preciputEligiblePocket,
+      requestedAmount: resolvedPreciput.requestedAmount,
+      appliedAmount: resolvedPreciput.mode === 'cible'
+        ? targetedPreciputAppliedAmount
+        : (societeAcquetsDistribution?.preciputAmount ?? step1Split.preciputDeducted),
+      usesGlobalFallback: resolvedPreciput.usesGlobalFallback,
+      selections: buildTargetedPreciputSelectionsSummary(
+        resolvedPreciput.targetedSelections,
+        resolvedPreciput.requestedAmount,
+        targetedPreciputAppliedAmount,
+      ),
+    };
   const targetedPreciputAppliedBasis = (
     resolvedPreciput.mode === 'cible'
     && resolvedPreciput.requestedAmount > 0
@@ -697,6 +798,8 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
         attributionIntegrale: societeAcquetsDistribution.attributionIntegrale,
       }
       : null,
+    participationAcquets: participationAcquetsSummary,
+    preciput: preciputSummary,
     totalDroits: step1Details.transmission.droits + step2Details.transmission.droits,
     warnings,
   };

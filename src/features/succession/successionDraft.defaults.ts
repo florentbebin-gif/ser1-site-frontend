@@ -8,6 +8,7 @@ import type {
   SuccessionEnfant,
   SuccessionLiquidationContext,
   SuccessionPerEntry,
+  SuccessionParticipationAcquetsConfig,
   SuccessionPatrimonialContext,
   SuccessionSocieteAcquetsConfig,
   SuccessionTestamentConfig,
@@ -57,6 +58,17 @@ export const DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG: SuccessionSocieteAcquets
   attributionSurvivantPct: 0,
 };
 
+export const DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG: SuccessionParticipationAcquetsConfig = {
+  active: false,
+  useCurrentAssetsAsFinalPatrimony: true,
+  patrimoineOriginaireEpoux1: 0,
+  patrimoineOriginaireEpoux2: 0,
+  patrimoineFinalEpoux1: 0,
+  patrimoineFinalEpoux2: 0,
+  quoteEpoux1Pct: 50,
+  quoteEpoux2Pct: 50,
+};
+
 export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContext = {
   donationsRapportables: 0,
   donationsHorsPart: 0,
@@ -64,6 +76,7 @@ export const DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT: SuccessionPatrimonialContex
   donationEntreEpouxActive: false,
   donationEntreEpouxOption: 'usufruit_total',
   societeAcquets: { ...DEFAULT_SUCCESSION_SOCIETE_ACQUETS_CONFIG },
+  participationAcquets: { ...DEFAULT_SUCCESSION_PARTICIPATION_ACQUETS_CONFIG },
   preciputMode: 'global',
   preciputSelections: [],
   preciputMontant: 0,
