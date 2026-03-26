@@ -166,4 +166,58 @@ describe('buildSuccessionPatrimonialAnalysis', () => {
     expect(analysis.depassementQuotiteMontant).toBe(0);
     expect(analysis.warnings.some((warning) => warning.includes('cote epoux2'))).toBe(true);
   });
+
+  it('signale la prise en compte des propres par nature en communaute universelle si la stipulation contraire est activee', () => {
+    const analysis = buildSuccessionPatrimonialAnalysis(
+      makeCivil({ regimeMatrimonial: 'communaute_universelle' }),
+      400000,
+      1,
+      makePatrimonial({ stipulationContraireCU: true }),
+      [],
+      undefined,
+      {
+        simulatedDeceased: 'epoux1',
+        testament: null,
+        assetEntries: [
+          {
+            id: 'asset-1',
+            pocket: 'epoux1',
+            category: 'immobilier',
+            subCategory: 'Residence secondaire',
+            amount: 250000,
+            legalNature: 'propre_par_nature',
+          },
+        ],
+      },
+    );
+
+    expect(analysis.warnings.some((warning) => warning.includes('propre par nature'))).toBe(true);
+  });
+
+  it('documente la regle meuble / immeuble en communaute de meubles et acquets', () => {
+    const analysis = buildSuccessionPatrimonialAnalysis(
+      makeCivil({ regimeMatrimonial: 'communaute_meubles_acquets' }),
+      400000,
+      1,
+      makePatrimonial({}),
+      [],
+      undefined,
+      {
+        simulatedDeceased: 'epoux1',
+        testament: null,
+        assetEntries: [
+          {
+            id: 'asset-1',
+            pocket: 'epoux1',
+            category: 'financier',
+            subCategory: 'Titres',
+            amount: 125000,
+            meubleImmeubleLegal: 'meuble',
+          },
+        ],
+      },
+    );
+
+    expect(analysis.warnings.some((warning) => warning.includes('meubles'))).toBe(true);
+  });
 });

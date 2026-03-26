@@ -29,6 +29,8 @@ function buildBaseProps() {
     isMarried: true,
     isPacsed: false,
     isConcubinage: false,
+    isCommunauteUniverselleRegime: false,
+    isCommunauteMeublesAcquetsRegime: false,
     assetEntriesByCategory: [] as Array<{
       value: 'immobilier' | 'financier' | 'divers';
       label: string;
@@ -62,6 +64,7 @@ function buildBaseProps() {
     forfaitMobilierPct: 5,
     forfaitMobilierMontant: 0,
     abattementResidencePrincipale: false,
+    stipulationContraireCU: false,
     onUpdatePatrimonialField: () => {},
     groupementFoncierEntries: [] as SuccessionGroupementFoncierEntry[],
     onUpdateGroupementFoncierEntry: () => {},
@@ -146,6 +149,31 @@ describe('ScAssetsPassifsCard', () => {
 
     expect(markup).toContain('Masse de rattachement');
     expect(markup).not.toContain('Porteur');
+  });
+
+  it('renders legal qualification selectors for detailed assets', () => {
+    const props = buildBaseProps();
+    props.assetEntriesByCategory = [
+      {
+        value: 'financier',
+        label: 'Biens financiers et autres biens',
+        entries: [
+          {
+            id: 'asset-1',
+            pocket: 'epoux1',
+            category: 'financier',
+            subCategory: 'Titres',
+            amount: 125000,
+          },
+        ],
+      },
+    ];
+
+    const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
+
+    expect(markup).toContain('Qualification juridique');
+    expect(markup).toContain('Origine');
+    expect(markup).toContain('Meuble / immeuble');
   });
 
   it('renders only the add icon for the financier section (no dedicated AV/PER buttons)', () => {

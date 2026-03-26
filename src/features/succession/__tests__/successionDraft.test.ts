@@ -80,6 +80,7 @@ describe('successionDraft', () => {
         legsParticuliers: 10000,
         donationEntreEpouxActive: true,
         donationEntreEpouxOption: 'mixte',
+        stipulationContraireCU: true,
         societeAcquets: {
           active: true,
           liquidationMode: 'quotes',
@@ -136,6 +137,9 @@ describe('successionDraft', () => {
           subCategory: 'Résidence principale',
           amount: 250000,
           label: 'Maison familiale',
+          legalNature: 'propre_par_nature',
+          origin: 'donation_succession',
+          meubleImmeubleLegal: 'immeuble',
         },
       ],
       [
@@ -162,7 +166,7 @@ describe('successionDraft', () => {
       'epoux2',
     );
 
-    expect(payload.version).toBe(24);
+    expect(payload.version).toBe(25);
     expect(payload.assetEntries[0].pocket).toBe('epoux1');
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
     expect(parsed).not.toBeNull();
@@ -181,6 +185,7 @@ describe('successionDraft', () => {
     expect(parsed?.patrimonial.donationsRapportables).toBe(30000);
     expect(parsed?.patrimonial.donationEntreEpouxActive).toBe(true);
     expect(parsed?.patrimonial.donationEntreEpouxOption).toBe('mixte');
+    expect(parsed?.patrimonial.stipulationContraireCU).toBe(true);
     expect(parsed?.patrimonial.societeAcquets).toMatchObject({
       active: true,
       liquidationMode: 'quotes',
@@ -211,6 +216,9 @@ describe('successionDraft', () => {
     expect(parsed?.assetEntries).toHaveLength(1);
     expect(parsed?.assetEntries[0].category).toBe('immobilier');
     expect(parsed?.assetEntries[0].pocket).toBe('epoux1');
+    expect(parsed?.assetEntries[0].legalNature).toBe('propre_par_nature');
+    expect(parsed?.assetEntries[0].origin).toBe('donation_succession');
+    expect(parsed?.assetEntries[0].meubleImmeubleLegal).toBe('immeuble');
     expect(parsed?.assuranceVieEntries).toHaveLength(1);
     expect(parsed?.assuranceVieEntries[0].capitauxDeces).toBe(80000);
     expect(parsed?.perEntries).toHaveLength(1);

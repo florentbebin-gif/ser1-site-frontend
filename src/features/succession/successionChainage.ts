@@ -143,6 +143,7 @@ interface SuccessionChainageInput {
     | 'attributionIntegrale'
     | 'donationEntreEpouxActive'
     | 'donationEntreEpouxOption'
+    | 'stipulationContraireCU'
     | 'preciputMode'
     | 'preciputSelections'
     | 'preciputMontant'
@@ -235,6 +236,7 @@ function buildFirstEstatePocketScales(
   order: SuccessionChainOrder,
   attributionBiensCommunsPct: number,
   societeAcquetsScale = 0,
+  preserveQualifiedSeparatePocketsInUniversalCommunity = false,
 ): SuccessionEstatePocketScales {
   const scales = createEmptyPocketScales();
   const sharedPocket = getSuccessionSharedPocketForContext({
@@ -244,8 +246,12 @@ function buildFirstEstatePocketScales(
   });
 
   if (regimeUsed === 'communaute_universelle') {
-    scales.epoux1 = 1;
-    scales.epoux2 = 1;
+    if (preserveQualifiedSeparatePocketsInUniversalCommunity) {
+      scales[order] = 1;
+    } else {
+      scales.epoux1 = 1;
+      scales.epoux2 = 1;
+    }
     if (sharedPocket) scales[sharedPocket] = 1;
     return scales;
   }
@@ -270,6 +276,7 @@ function buildSurvivorPocketScales(
   order: SuccessionChainOrder,
   attributionBiensCommunsPct: number,
   societeAcquetsScale = 0,
+  preserveQualifiedSeparatePocketsInUniversalCommunity = false,
 ): SuccessionEstatePocketScales {
   const scales = createEmptyPocketScales();
   const survivor = getOtherSide(order);
@@ -280,6 +287,9 @@ function buildSurvivorPocketScales(
   });
 
   if (regimeUsed === 'communaute_universelle') {
+    if (preserveQualifiedSeparatePocketsInUniversalCommunity) {
+      scales[survivor] = 1;
+    }
     return scales;
   }
 
@@ -528,6 +538,11 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   const requestedTargetedPreciputBasis = resolvedPreciput.mode === 'cible'
     ? buildSuccessionTargetedPreciputTaxableBasis(resolvedPreciput.targetedSelections)
     : createEmptyEstateTaxableBasis();
+  const preserveQualifiedSeparatePocketsInUniversalCommunity = (
+    input.civil.situationMatrimoniale === 'marie'
+    && input.civil.regimeMatrimonial === 'communaute_universelle'
+    && Boolean(input.patrimonial?.stipulationContraireCU)
+  );
   const preciputPatrimonial = resolvedPreciput.mode === 'none'
     ? input.patrimonial
     : {
@@ -554,6 +569,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     input.order,
     input.liquidation,
     attributionPct,
+    preserveQualifiedSeparatePocketsInUniversalCommunity,
   ) + (societeAcquetsDistribution?.firstEstateContribution ?? 0);
   const firstEstate = Math.min(
     totalPatrimoine,
@@ -568,6 +584,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     input.order,
     attributionPct,
     societeAcquetsEstateRatio,
+    preserveQualifiedSeparatePocketsInUniversalCommunity,
   );
   const survivorPocketScales = buildSurvivorPocketScales(
     input.civil,
@@ -575,6 +592,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     input.order,
     attributionPct,
     societeAcquetsEstateRatio,
+    preserveQualifiedSeparatePocketsInUniversalCommunity,
   );
   const firstEstateTaxableBasis = buildSuccessionEstateTaxableBasis(
     input.transmissionBasis,
@@ -618,6 +636,12 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   }
   if (participationAcquetsSummary) {
     warnings.push(...participationAcquetsSummary.warnings);
+  }
+  if (preserveQualifiedSeparatePocketsInUniversalCommunity) {
+    warnings.push("Communaute universelle: les biens qualifies 'propre par nature' et rattaches a un epoux sont exclus de la masse commune simplifiee.");
+  }
+  if (input.civil.regimeMatrimonial === 'communaute_meubles_acquets') {
+    warnings.push('Communaute de meubles et acquets: la qualification meuble / immeuble des actifs detailles ajuste la masse simplifiee avant chainage.');
   }
   warnings.push('Module de chainage simplifie: liquidation notariale fine et options civiles avancees non modelisees.');
 

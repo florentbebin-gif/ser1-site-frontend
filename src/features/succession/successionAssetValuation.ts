@@ -5,6 +5,7 @@ import type {
   SuccessionPatrimonialContext,
 } from './successionDraft.types';
 import { computeGroupementFoncierExoneration } from './successionGroupementFoncier';
+import { resolveSuccessionQualifiedAssetPocket } from './successionLegalQualification';
 import type { SuccessionAssetTransmissionBasis } from './successionTransmissionBasis';
 import {
   getSuccessionLegacyOwnerFromPocket,
@@ -36,6 +37,7 @@ export interface SuccessionAssetValuationResult {
 
 interface SuccessionAssetValuationInput {
   civilContext: Pick<SuccessionCivilContext, 'situationMatrimoniale' | 'regimeMatrimonial' | 'pacsConvention'>;
+  patrimonialContext?: Pick<SuccessionPatrimonialContext, 'stipulationContraireCU'>;
   assetEntries: SuccessionAssetDetailEntry[];
   groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   forfaitMobilierMode: SuccessionPatrimonialContext['forfaitMobilierMode'];
@@ -154,6 +156,7 @@ function toLegacyOwner(pocket: SuccessionAssetPocket): SuccessionLegacyAssetOwne
 
 export function computeSuccessionAssetValuation({
   civilContext,
+  patrimonialContext,
   assetEntries,
   groupementFoncierEntries,
   forfaitMobilierMode,
@@ -163,7 +166,12 @@ export function computeSuccessionAssetValuation({
 }: SuccessionAssetValuationInput): SuccessionAssetValuationResult {
   const normalizedAssetEntries = normalizeResidencePrincipaleAssetEntries(assetEntries.map((entry) => ({
     ...entry,
-    pocket: normalizeAssetPocket(entry.pocket, civilContext),
+    pocket: resolveSuccessionQualifiedAssetPocket({
+      civilContext,
+      patrimonialContext,
+      entry,
+      pocket: normalizeAssetPocket(entry.pocket, civilContext),
+    }),
   })));
   const normalizedGroupementFoncierEntries = groupementFoncierEntries.map((entry) => ({
     ...entry,

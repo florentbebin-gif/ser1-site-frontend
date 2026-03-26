@@ -45,6 +45,7 @@ export interface DispositionsDraftState {
   attributionBiensCommunsPct: number;
   donationEntreEpouxActive: boolean;
   donationEntreEpouxOption: SuccessionDonationEntreEpouxOption;
+  stipulationContraireCU: boolean;
   societeAcquets: SuccessionSocieteAcquetsConfig;
   participationAcquets: SuccessionParticipationAcquetsConfig;
   preciputMode: 'global' | 'cible';
@@ -194,6 +195,7 @@ export function buildInitialDispositionsDraft(): DispositionsDraftState {
     attributionBiensCommunsPct: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.attributionBiensCommunsPct,
     donationEntreEpouxActive: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxActive,
     donationEntreEpouxOption: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.donationEntreEpouxOption,
+    stipulationContraireCU: DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.stipulationContraireCU,
     societeAcquets: cloneSuccessionSocieteAcquetsConfig(
       DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT.societeAcquets,
     ),

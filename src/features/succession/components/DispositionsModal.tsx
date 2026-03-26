@@ -84,6 +84,8 @@ interface DispositionsModalProps {
   isCommunityRegime: boolean;
   isSocieteAcquetsRegime: boolean;
   isParticipationAcquetsRegime: boolean;
+  isCommunauteUniverselleRegime: boolean;
+  isCommunauteMeublesAcquetsRegime: boolean;
   updateDispositionsTestament: (
     _side: SuccessionPrimarySide,
     _updater: (_current: SuccessionTestamentConfig) => SuccessionTestamentConfig,
@@ -120,6 +122,8 @@ export default function DispositionsModal({
   isCommunityRegime,
   isSocieteAcquetsRegime,
   isParticipationAcquetsRegime,
+  isCommunauteUniverselleRegime,
+  isCommunauteMeublesAcquetsRegime,
   updateDispositionsTestament,
   getFirstTestamentBeneficiaryRef,
   onAddParticularLegacy,
@@ -436,6 +440,32 @@ export default function DispositionsModal({
                     </p>
                   </>
                 )}
+              </div>
+            )}
+
+            {isCommunauteUniverselleRegime && (
+              <div className="sc-field">
+                <label>Stipulation contraire en communaute universelle</label>
+                <ScSelect
+                  value={dispositionsDraft.stipulationContraireCU ? 'oui' : 'non'}
+                  onChange={(value) => setDispositionsDraft((prev) => ({
+                    ...prev,
+                    stipulationContraireCU: value === 'oui',
+                  }))}
+                  options={OUI_NON_OPTIONS}
+                />
+                <p className="sc-hint sc-hint--compact">
+                  Si oui, les biens detailles qualifies &quot;propre par nature&quot; et rattaches a un epoux restent hors de la masse commune simplifiee.
+                </p>
+              </div>
+            )}
+
+            {isCommunauteMeublesAcquetsRegime && (
+              <div className="sc-field">
+                <label>Qualification meuble / immeuble pour CMA</label>
+                <p className="sc-hint sc-hint--compact">
+                  Les actifs detailles qualifies meubles sont rapproches de la communaute simplifiee. Les immeubles restent sur leur masse declaree. A defaut de saisie explicite, la categorie detaillee sert de proxy.
+                </p>
               </div>
             )}
 

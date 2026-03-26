@@ -1,4 +1,5 @@
 import type {
+  SuccessionAssetDetailEntry,
   SuccessionCivilContext,
   SuccessionDonationEntry,
   SuccessionPatrimonialContext,
@@ -6,6 +7,7 @@ import type {
   SuccessionTestamentConfig,
 } from './successionDraft';
 import type { SuccessionFiscalSnapshot } from './successionFiscalContext';
+import { getEffectiveSuccessionMeubleImmeubleLegal } from './successionLegalQualification';
 
 export interface SuccessionPatrimonialAnalysis {
   masseCivileReference: number;
@@ -19,6 +21,7 @@ interface SuccessionPatrimonialAnalysisOptions {
   simulatedDeceased: SuccessionPrimarySide;
   testament: SuccessionTestamentConfig | null;
   referenceDate?: Date;
+  assetEntries?: SuccessionAssetDetailEntry[];
 }
 
 function asAmount(value: unknown): number {
@@ -115,6 +118,14 @@ export function buildSuccessionPatrimonialAnalysis(
   const depassementQuotiteMontant = Math.max(0, liberalitesImputeesMontant - quotiteDisponibleMontant);
 
   const warnings: string[] = [];
+  const qualifiedAssets = options?.assetEntries ?? [];
+  const propresParNatureCount = qualifiedAssets.filter((entry) => entry.legalNature === 'propre_par_nature').length;
+  const cmaQualifiedMovables = qualifiedAssets.filter((entry) => (
+    entry.category !== 'passif'
+    && getEffectiveSuccessionMeubleImmeubleLegal(entry) === 'meuble'
+    && entry.legalNature !== 'propre'
+    && entry.legalNature !== 'propre_par_nature'
+  )).length;
 
   if (depassementQuotiteMontant > 0 && nbEnfants > 0) {
     warnings.push('Libéralités hors part + legs au-delà de la quotité disponible: risque de réduction civile.');
@@ -140,6 +151,22 @@ export function buildSuccessionPatrimonialAnalysis(
       patrimonial.participationAcquets.active
         ? 'Participation aux acquets activee: creance de participation simplifiee calculee sur les patrimoines declares.'
         : 'Participation aux acquets sans configuration dediee: approximation conservee en separation de biens.',
+    );
+  }
+
+  if (civil.regimeMatrimonial === 'communaute_universelle') {
+    if (patrimonial.stipulationContraireCU && propresParNatureCount > 0) {
+      warnings.push("Communaute universelle: les biens qualifies 'propre par nature' et rattaches a un epoux sont exclus de la masse commune simplifiee.");
+    } else if (!patrimonial.stipulationContraireCU && propresParNatureCount > 0) {
+      warnings.push("Communaute universelle: des biens sont qualifies 'propre par nature' mais restent integres a la masse commune simplifiee tant que la stipulation contraire n'est pas activee.");
+    }
+  }
+
+  if (civil.regimeMatrimonial === 'communaute_meubles_acquets') {
+    warnings.push(
+      cmaQualifiedMovables > 0
+        ? "Communaute de meubles et acquets: les biens qualifies meubles sont rapproches de la communaute simplifiee, les immeubles restant sur leur poche declaree."
+        : "Communaute de meubles et acquets: la qualification meuble / immeuble reste simplifiee ; a defaut de saisie explicite, la categorie detaillee sert de proxy.",
     );
   }
 

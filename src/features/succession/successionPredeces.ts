@@ -61,7 +61,7 @@ function mapMarriedRegime(regime: RegimeMatrimonial | null): RegimeMapping {
       regimeUsed: 'communaute_legale',
       regimeLabel: REGIMES_MATRIMONIAUX[selectedRegime].label,
       warnings: [
-        'Communaute de meubles et acquets: approximation en communaute legale (regime historique simplifie).',
+        'Communaute de meubles et acquets: approximation en communaute legale pour l\'audit predeces ; le detail succession peut toutefois requalifier les actifs meubles / immeubles de facon simplifiee.',
       ],
     };
   }

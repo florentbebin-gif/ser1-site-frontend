@@ -176,6 +176,7 @@ export function useSuccessionDerivedValues({
     assuranceVieEntries,
     perEntries,
     prevoyanceDecesEntries,
+    patrimonialContext,
     forfaitMobilierMode: patrimonialContext.forfaitMobilierMode,
     forfaitMobilierPct: patrimonialContext.forfaitMobilierPct,
     forfaitMobilierMontant: patrimonialContext.forfaitMobilierMontant,
@@ -411,6 +412,7 @@ export function useSuccessionDerivedValues({
         simulatedDeceased: patrimonialSimulatedDeceased,
         testament: devolutionContext.testamentsBySide[patrimonialSimulatedDeceased],
         referenceDate: simulatedDeathDate,
+        assetEntries,
       },
     ),
     [
@@ -423,6 +425,7 @@ export function useSuccessionDerivedValues({
       patrimonialSimulatedDeceased,
       devolutionContext.testamentsBySide,
       simulatedDeathDate,
+      assetEntries,
     ],
   );
 
@@ -482,6 +485,8 @@ export function useSuccessionDerivedValues({
     isCommunityRegime,
     isSocieteAcquetsRegime,
     isParticipationAcquetsRegime,
+    isCommunauteUniverselleRegime: uiDerived.isCommunauteUniverselleRegime,
+    isCommunauteMeublesAcquetsRegime: uiDerived.isCommunauteMeublesAcquetsRegime,
     isPacsIndivision,
     hasComputableFiliation,
     hasRequiredBirthDatesForCurrentSituation,
@@ -504,6 +509,7 @@ export function useSuccessionDerivedValues({
     assetBreakdown: uiDerived.assetBreakdown,
     actifsTaxablesParOwner: uiDerived.actifsTaxablesParOwner,
     assetNetTotals: uiDerived.assetNetTotals,
+    stipulationContraireCU: patrimonialContext.stipulationContraireCU,
     forfaitMobilierComputed: uiDerived.forfaitMobilierComputed,
     forfaitMobilierParOwner: uiDerived.forfaitMobilierParOwner,
     hasResidencePrincipale: uiDerived.hasResidencePrincipale,

@@ -37,6 +37,19 @@ export type SuccessionDonationEntreEpouxOption =
 export type SuccessionChoixLegalConjointSansDDV = 'usufruit' | 'quart_pp' | null;
 export type SuccessionSocieteAcquetsLiquidationMode = 'quotes' | 'attribution_survivant';
 export type SuccessionPreciputMode = 'global' | 'cible';
+export type SuccessionAssetLegalNature =
+  | 'non_qualifie'
+  | 'propre'
+  | 'propre_par_nature'
+  | 'commun';
+export type SuccessionAssetOrigin =
+  | 'non_precise'
+  | 'avant_union'
+  | 'acquisition_onereuse'
+  | 'donation_succession'
+  | 'emploi_remploi'
+  | 'clause_matrimoniale';
+export type SuccessionMeubleImmeubleLegal = 'non_qualifie' | 'meuble' | 'immeuble';
 
 export interface SuccessionCivilContext {
   situationMatrimoniale: SituationMatrimoniale;
@@ -130,6 +143,7 @@ export interface SuccessionPatrimonialContext {
   legsParticuliers: number;
   donationEntreEpouxActive: boolean;
   donationEntreEpouxOption: SuccessionDonationEntreEpouxOption;
+  stipulationContraireCU: boolean;
   societeAcquets: SuccessionSocieteAcquetsConfig;
   participationAcquets: SuccessionParticipationAcquetsConfig;
   preciputMode: SuccessionPreciputMode;
@@ -173,6 +187,9 @@ export interface SuccessionAssetDetailEntry {
   subCategory: string;
   amount: number;
   label?: string;
+  legalNature?: SuccessionAssetLegalNature;
+  origin?: SuccessionAssetOrigin;
+  meubleImmeubleLegal?: SuccessionMeubleImmeubleLegal;
 }
 
 export type SuccessionAssuranceVieContractType = 'standard' | 'demembree' | 'personnalisee';
@@ -286,4 +303,8 @@ export interface SuccessionDraftPayloadV23 extends ParsedSuccessionDraftPayload 
 
 export interface SuccessionDraftPayloadV24 extends ParsedSuccessionDraftPayload {
   version: 24;
+}
+
+export interface SuccessionDraftPayloadV25 extends ParsedSuccessionDraftPayload {
+  version: 25;
 }
