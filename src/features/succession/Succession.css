@@ -1623,6 +1623,40 @@
   margin-top: 4px;
 }
 
+.sc-preciput-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.sc-preciput-item {
+  padding: 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  background: var(--color-c7);
+}
+
+.sc-preciput-item__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sc-preciput-item__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.sc-preciput-item__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
 .sc-predeces-table {
   margin-top: 12px;
 }
@@ -1864,6 +1898,12 @@
 
   .sc-remove-btn {
     width: 100%;
+  }
+
+  .sc-preciput-item__header,
+  .sc-preciput-item__grid {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 
   .sc-header__subtitle-row {

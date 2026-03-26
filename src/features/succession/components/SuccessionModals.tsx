@@ -8,9 +8,11 @@ import type { useSuccessionDerivedValues } from '../useSuccessionDerivedValues';
 import type {
   FamilyMember,
   SituationMatrimoniale,
+  SuccessionAssetDetailEntry,
   SuccessionAssuranceVieEntry,
   SuccessionBeneficiaryRef,
   SuccessionEnfant,
+  SuccessionGroupementFoncierEntry,
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
   SuccessionPrimarySide,
@@ -28,6 +30,8 @@ interface SuccessionModalsProps {
   civilSituation: SituationMatrimoniale;
   enfantsContext: SuccessionEnfant[];
   familyMembers: FamilyMember[];
+  assetEntries: SuccessionAssetDetailEntry[];
+  groupementFoncierEntries: SuccessionGroupementFoncierEntry[];
   showDispositionsModal: boolean;
   dispositionsDraft: DispositionsDraftState;
   setDispositionsDraft: Dispatch<SetStateAction<DispositionsDraftState>>;
@@ -79,6 +83,8 @@ export function SuccessionModals({
   civilSituation,
   enfantsContext,
   familyMembers,
+  assetEntries,
+  groupementFoncierEntries,
   showDispositionsModal,
   dispositionsDraft,
   setDispositionsDraft,
@@ -121,6 +127,8 @@ export function SuccessionModals({
           descendantBranchesBySide={derived.descendantBranchesBySide}
           enfantsContext={enfantsContext}
           familyMembers={familyMembers}
+          assetEntries={assetEntries}
+          groupementFoncierEntries={groupementFoncierEntries}
           civilSituation={civilSituation}
           showSharedTransmissionPct={derived.showSharedTransmissionPct}
           isPacsIndivision={derived.isPacsIndivision}

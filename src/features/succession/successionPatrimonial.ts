@@ -106,6 +106,8 @@ export function buildSuccessionPatrimonialAnalysis(
       ? computedLegacyLegsParticuliers
       : asAmount(patrimonial.legsParticuliers);
   const preciputMontant = asAmount(patrimonial.preciputMontant);
+  const hasTargetedPreciput = patrimonial.preciputMode === 'cible'
+    && patrimonial.preciputSelections.some((selection) => selection.enabled && asAmount(selection.amount) > 0);
 
   const masseCivileReference = actifNetSuccession + donationsRapportables + donationsHorsPart;
   const quotiteDisponibleMontant = masseCivileReference * getQuotiteDisponibleRatio(nbEnfants);
@@ -133,9 +135,13 @@ export function buildSuccessionPatrimonialAnalysis(
     warnings.push(`Attribution des biens communs au survivant: ${patrimonial.attributionBiensCommunsPct} % (vs 50 % en partage usuel).`);
   }
 
-  if (preciputMontant > 0) {
+  if (preciputMontant > 0 || hasTargetedPreciput) {
     if (civil.situationMatrimoniale === 'marie') {
-      warnings.push('Clause de préciput renseignée: impact civil à vérifier avant calcul DMTG définitif.');
+      warnings.push(
+        hasTargetedPreciput
+          ? 'Clause de préciput ciblée renseignée: impact civil à vérifier avant calcul DMTG définitif.'
+          : 'Clause de préciput renseignée: impact civil à vérifier avant calcul DMTG définitif.',
+      );
     } else {
       warnings.push('Préciput saisi hors mariage: non applicable en l’état (vérifier le contexte).');
     }
