@@ -42,12 +42,12 @@ export function getAgeAtReferenceDate(
   referenceDate = new Date(),
 ): number | null {
   if (!dateNaissance) return null;
-  const birthDate = new Date(dateNaissance);
+  const birthDate = new Date(`${dateNaissance}T00:00:00Z`);
   if (Number.isNaN(birthDate.getTime())) return null;
 
-  let age = referenceDate.getFullYear() - birthDate.getFullYear();
-  const monthDelta = referenceDate.getMonth() - birthDate.getMonth();
-  const dayDelta = referenceDate.getDate() - birthDate.getDate();
+  let age = referenceDate.getUTCFullYear() - birthDate.getUTCFullYear();
+  const monthDelta = referenceDate.getUTCMonth() - birthDate.getUTCMonth();
+  const dayDelta = referenceDate.getUTCDate() - birthDate.getUTCDate();
   if (monthDelta < 0 || (monthDelta === 0 && dayDelta < 0)) {
     age -= 1;
   }
