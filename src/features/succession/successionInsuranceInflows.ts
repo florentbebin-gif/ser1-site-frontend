@@ -6,6 +6,7 @@ import type { SuccessionChainOrder } from './successionChainage';
 interface BeneficiaryLineLike {
   id: string;
   netTransmis: number;
+  isUsufruitDemembre?: boolean;
 }
 
 interface AssureAnalysisLike {
@@ -17,7 +18,7 @@ function sumSurvivingSpouseInflows(
   order: SuccessionChainOrder,
 ): number {
   return analysis.byAssure[order].lines
-    .filter((line) => line.id === 'conjoint')
+    .filter((line) => line.id === 'conjoint' && !line.isUsufruitDemembre)
     .reduce((sum, line) => sum + line.netTransmis, 0);
 }
 

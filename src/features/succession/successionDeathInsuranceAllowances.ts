@@ -1,4 +1,4 @@
-import { calculateSuccession, type LienParente } from '../../engine/succession';
+import { calculateSuccession, getAbattement, type LienParente } from '../../engine/succession';
 import type {
   SuccessionAvFiscalAnalysis,
   SuccessionAvFiscalLine,
@@ -11,11 +11,21 @@ import type {
 } from './successionPrevoyanceFiscal';
 
 type AssureSide = 'epoux1' | 'epoux2';
+
+export interface EstateAllowanceUsageEntry {
+  lien: LienParente;
+  partSuccessorale: number;
+  abattementResiduel: number;
+}
+
+export type EstateAllowanceUsage = Record<string, EstateAllowanceUsageEntry>;
+
 interface InsuranceCoordinationInput {
   avFiscalAnalysis: SuccessionAvFiscalAnalysis;
   perFiscalAnalysis: SuccessionPerFiscalAnalysis;
   prevoyanceFiscalAnalysis: SuccessionPrevoyanceFiscalAnalysis;
   fiscalSnapshot: SuccessionFiscalSnapshot;
+  estateAllowanceUsageBySide?: Partial<Record<AssureSide, EstateAllowanceUsage>>;
 }
 
 interface LineContribution {
@@ -24,8 +34,33 @@ interface LineContribution {
   isExempt: boolean;
   before70Base: number;
   after70Base: number;
+  allowance990IRatio: number;
   applyBefore70: (taxable: number, droits: number) => void;
   applyAfter70: (taxable: number, droits: number) => void;
+}
+
+export function extractEstateAllowanceUsage(
+  beneficiaries: Array<{ id: string; lien: LienParente; brut: number }>,
+  dmtgSettings: SuccessionFiscalSnapshot['dmtgSettings'],
+): EstateAllowanceUsage {
+  const usage: EstateAllowanceUsage = {};
+  for (const b of beneficiaries) {
+    const abattement = getAbattement(b.lien, dmtgSettings);
+    const effectiveAbattement = abattement === Infinity ? b.brut : abattement;
+    const residual = Math.max(0, effectiveAbattement - b.brut);
+    const existing = usage[b.id];
+    if (existing) {
+      existing.partSuccessorale += b.brut;
+      existing.abattementResiduel = Math.max(0, existing.abattementResiduel - b.brut);
+    } else {
+      usage[b.id] = {
+        lien: b.lien,
+        partSuccessorale: b.brut,
+        abattementResiduel: residual,
+      };
+    }
+  }
+  return usage;
 }
 
 const ASSURE_SIDES: AssureSide[] = ['epoux1', 'epoux2'];
@@ -53,12 +88,17 @@ function compute757BTax(
   taxableBase: number,
   lien: LienParente,
   snapshot: SuccessionFiscalSnapshot,
+  abattementResiduel?: number,
 ): number {
   if (taxableBase <= 0) return 0;
 
   return calculateSuccession({
     actifNetSuccession: taxableBase,
-    heritiers: [{ lien, partSuccession: taxableBase }],
+    heritiers: [{
+      lien,
+      partSuccession: taxableBase,
+      ...(abattementResiduel != null ? { abattementOverride: abattementResiduel } : {}),
+    }],
     dmtgSettings: snapshot.dmtgSettings,
   }).result.totalDroits;
 }
@@ -204,6 +244,7 @@ function buildContributions(
     isExempt: line.lien === 'conjoint',
     before70Base: line.capitauxAvant70,
     after70Base: line.capitauxApres70,
+    allowance990IRatio: line.allowance990IRatio ?? 1,
     applyBefore70: (taxable: number, droits: number) => {
       line.taxable990I = taxable;
       line.droits990I = droits;
@@ -219,6 +260,7 @@ function buildContributions(
     isExempt: line.lien === 'conjoint',
     before70Base: line.capitauxAvant70,
     after70Base: line.capitauxApres70,
+    allowance990IRatio: line.allowance990IRatio ?? 1,
     applyBefore70: (taxable: number, droits: number) => {
       line.taxable990I = taxable;
       line.droits990I = droits;
@@ -234,6 +276,7 @@ function buildContributions(
     isExempt: line.lien === 'conjoint',
     before70Base: line.capitauxAvant70,
     after70Base: line.capitauxApres70,
+    allowance990IRatio: 1,
     applyBefore70: (taxable: number, droits: number) => {
       line.taxable990I = taxable;
       line.droits990I = droits;
@@ -269,7 +312,12 @@ function applyCombined990I(
       return;
     }
 
-    const totalTaxable = Math.max(0, totalBase - snapshot.avDeces.primesApres1998.allowancePerBeneficiary);
+    const weightedRatio = totalBase > 0
+      ? entries.reduce((sum, entry) => sum + entry.before70Base * entry.allowance990IRatio, 0) / totalBase
+      : 1;
+    const effectiveAllowance = snapshot.avDeces.primesApres1998.allowancePerBeneficiary
+      * Math.max(0, Math.min(1, weightedRatio));
+    const totalTaxable = Math.max(0, totalBase - effectiveAllowance);
     const taxableAllocations = allocateExact(totalTaxable, entries.map((entry) => entry.before70Base));
     const droitsAllocations = allocateRounded(
       compute990ITax(totalTaxable, snapshot),
@@ -285,6 +333,7 @@ function applyCombined990I(
 function applyCombined757B(
   contributions: LineContribution[],
   snapshot: SuccessionFiscalSnapshot,
+  estateAllowanceUsage?: EstateAllowanceUsage,
 ): void {
   const byBeneficiary = new Map<string, LineContribution[]>();
 
@@ -318,9 +367,11 @@ function applyCombined757B(
       ? snapshot.avDeces.apres70ans.globalAllowance * (row.totalBase / totalTaxableGross)
       : 0;
     const totalTaxable = Math.max(0, row.totalBase - allowanceShare);
+    const estateUsage = estateAllowanceUsage?.[row.id];
+    const abattementResiduel = estateUsage != null ? estateUsage.abattementResiduel : undefined;
     const taxableAllocations = allocateExact(totalTaxable, row.entries.map((entry) => entry.after70Base));
     const droitsAllocations = allocateRounded(
-      compute757BTax(totalTaxable, row.lien, snapshot),
+      compute757BTax(totalTaxable, row.lien, snapshot, abattementResiduel),
       taxableAllocations,
     );
 
@@ -408,6 +459,7 @@ export function coordinateSuccessionInsuranceAllowances({
   perFiscalAnalysis,
   prevoyanceFiscalAnalysis,
   fiscalSnapshot,
+  estateAllowanceUsageBySide,
 }: InsuranceCoordinationInput) {
   const adjustedAvAnalysis = cloneAvAnalysis(avFiscalAnalysis);
   const adjustedPerAnalysis = cloneAvAnalysis(perFiscalAnalysis);
@@ -421,7 +473,7 @@ export function coordinateSuccessionInsuranceAllowances({
       side,
     );
     applyCombined990I(contributions, fiscalSnapshot);
-    applyCombined757B(contributions, fiscalSnapshot);
+    applyCombined757B(contributions, fiscalSnapshot, estateAllowanceUsageBySide?.[side]);
   });
 
   return {

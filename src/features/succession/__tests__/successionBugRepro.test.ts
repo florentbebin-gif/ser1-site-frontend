@@ -605,4 +605,27 @@ describe('PR-04 — reproduction et triage des bugs succession non prouvés', ()
     expect(laterDeath.step1?.partConjoint).toBe(200_000);
     expect(earlyDeath.totalDroits).not.toBe(laterDeath.totalDroits);
   });
+
+  it('BUG-8: AV 2M / 1 enfant / tout avant 70 — droits 990I = 498594', () => {
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const analysis = buildSuccessionAvFiscalAnalysis(
+      [{
+        id: 'av-1',
+        typeContrat: 'standard',
+        souscripteur: 'epoux1',
+        assure: 'epoux1',
+        clauseBeneficiaire: 'CUSTOM:E1:100',
+        capitauxDeces: 2_000_000,
+        versementsApres70: 0,
+      }],
+      makeCivil({ situationMatrimoniale: 'celibataire' }),
+      [{ id: 'E1', rattachement: 'epoux1' as const }],
+      [],
+      snapshot,
+    );
+
+    // 2M - 152500 = 1847500 taxable
+    // 700000 * 20% = 140000, 1147500 * 31.25% = 358594 → total 498594
+    expect(analysis.lines[0].droits990I).toBe(498_594);
+  });
 });

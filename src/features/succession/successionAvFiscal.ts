@@ -48,6 +48,8 @@ export interface SuccessionAvFiscalLine {
   droits757B: number;
   totalDroits: number;
   netTransmis: number;
+  allowance990IRatio?: number;
+  isUsufruitDemembre?: boolean;
 }
 
 export interface SuccessionAvFiscalPerAssure {
@@ -420,6 +422,8 @@ function buildSideAnalysis(
       droits757B,
       totalDroits,
       netTransmis: Math.max(0, capitauxAvant70 + capitauxApres70 - totalDroits),
+      ...(target.allowance990IRatio != null ? { allowance990IRatio: target.allowance990IRatio } : {}),
+      ...(target.isExempt && target.allowance990IRatio != null ? { isUsufruitDemembre: true } : {}),
     };
   });
 

@@ -15,7 +15,11 @@ import {
   getEnfantRattachementOptions,
 } from './successionEnfants';
 import { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
-import { coordinateSuccessionInsuranceAllowances } from './successionDeathInsuranceAllowances';
+import {
+  coordinateSuccessionInsuranceAllowances,
+  extractEstateAllowanceUsage,
+  type EstateAllowanceUsage,
+} from './successionDeathInsuranceAllowances';
 import { buildSuccessionSurvivorEconomicInflows } from './successionInsuranceInflows';
 import { buildSuccessionPerFiscalAnalysis } from './successionPerFiscal';
 import {
@@ -256,36 +260,17 @@ export function useSuccessionDerivedValues({
     fiscalSnapshot.avDeces.agePivotPrimes,
   ]);
 
-  const coordinatedInsuranceFiscal = useMemo(
-    () => coordinateSuccessionInsuranceAllowances({
+  // Phase 1: Raw survivor inflows (conjoint is exempt → identical with/without coordination)
+  const survivorEconomicInflows = useMemo(
+    () => buildSuccessionSurvivorEconomicInflows({
       avFiscalAnalysis: rawAvFiscalAnalysis,
       perFiscalAnalysis: rawPerFiscalAnalysis,
       prevoyanceFiscalAnalysis: rawPrevoyanceFiscalAnalysis,
-      fiscalSnapshot,
     }),
-    [
-      rawAvFiscalAnalysis,
-      rawPerFiscalAnalysis,
-      rawPrevoyanceFiscalAnalysis,
-      fiscalSnapshot,
-    ],
+    [rawAvFiscalAnalysis, rawPerFiscalAnalysis, rawPrevoyanceFiscalAnalysis],
   );
 
-  const {
-    avFiscalAnalysis,
-    perFiscalAnalysis,
-    prevoyanceFiscalAnalysis,
-  } = coordinatedInsuranceFiscal;
-
-  const survivorEconomicInflows = useMemo(
-    () => buildSuccessionSurvivorEconomicInflows({
-      avFiscalAnalysis,
-      perFiscalAnalysis,
-      prevoyanceFiscalAnalysis,
-    }),
-    [avFiscalAnalysis, perFiscalAnalysis, prevoyanceFiscalAnalysis],
-  );
-
+  // Phase 2: Chainage analysis (produces per-beneficiary abattement usage)
   const chainageAnalysis = useMemo(
     () => buildSuccessionChainageAnalysis({
       civil: civilContext,
@@ -361,6 +346,46 @@ export function useSuccessionDerivedValues({
       fiscalSnapshot.donation,
     ],
   );
+
+  // Phase 3: Extract estate abattement usage → coordinate insurance with residual abattements
+  const estateAllowanceUsageBySide = useMemo(() => {
+    if (!chainageAnalysis.applicable) return undefined;
+    const step1Side = chainageAnalysis.order;
+    const step2Side = step1Side === 'epoux1' ? 'epoux2' : 'epoux1';
+    return {
+      [step1Side]: extractEstateAllowanceUsage(
+        chainageAnalysis.step1?.beneficiaries ?? [],
+        fiscalSnapshot.dmtgSettings,
+      ),
+      [step2Side]: extractEstateAllowanceUsage(
+        chainageAnalysis.step2?.beneficiaries ?? [],
+        fiscalSnapshot.dmtgSettings,
+      ),
+    } as Partial<Record<'epoux1' | 'epoux2', EstateAllowanceUsage>>;
+  }, [chainageAnalysis, fiscalSnapshot.dmtgSettings]);
+
+  const coordinatedInsuranceFiscal = useMemo(
+    () => coordinateSuccessionInsuranceAllowances({
+      avFiscalAnalysis: rawAvFiscalAnalysis,
+      perFiscalAnalysis: rawPerFiscalAnalysis,
+      prevoyanceFiscalAnalysis: rawPrevoyanceFiscalAnalysis,
+      fiscalSnapshot,
+      estateAllowanceUsageBySide,
+    }),
+    [
+      rawAvFiscalAnalysis,
+      rawPerFiscalAnalysis,
+      rawPrevoyanceFiscalAnalysis,
+      fiscalSnapshot,
+      estateAllowanceUsageBySide,
+    ],
+  );
+
+  const {
+    avFiscalAnalysis,
+    perFiscalAnalysis,
+    prevoyanceFiscalAnalysis,
+  } = coordinatedInsuranceFiscal;
 
   const directEstateBasis = useMemo(
     () => computeSuccessionDirectEstateBasis(civilContext, liquidationContext, chainOrder),
