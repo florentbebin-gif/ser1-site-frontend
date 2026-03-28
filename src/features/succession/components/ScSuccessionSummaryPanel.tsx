@@ -12,6 +12,10 @@ interface TransmissionRow {
   droits: number;
   net: number;
   exonerated?: boolean;
+  step1Brut?: number;
+  step1Droits?: number;
+  step2Brut?: number;
+  step2Droits?: number;
 }
 
 interface InsuranceBeneficiaryLine {
@@ -343,7 +347,9 @@ export default function ScSuccessionSummaryPanel({
           <div className="sc-transmission-grid">
             <div className="sc-transmission-grid__head">
               <span />
-              <span>Reçoit (brut)</span>
+              {displayUsesChainage && <span>1er décès</span>}
+              {displayUsesChainage && <span>2e décès</span>}
+              <span>{displayUsesChainage ? 'Total 2 décès' : 'Reçoit (brut)'}</span>
               <span>Droits</span>
               <span>Net estimé</span>
             </div>
@@ -353,6 +359,8 @@ export default function ScSuccessionSummaryPanel({
                 className={`sc-transmission-row${row.exonerated ? ' sc-transmission-row--exo' : ''}${row.id === 'assurance-vie' ? ' sc-transmission-row--av' : ''}`}
               >
                 <span>{row.label}</span>
+                {displayUsesChainage && <span>{fmt(row.step1Brut ?? 0)}</span>}
+                {displayUsesChainage && <span>{fmt(row.step2Brut ?? 0)}</span>}
                 <span>{fmt(row.brut)}</span>
                 <span>{row.exonerated ? 'Exonéré' : fmt(row.droits)}</span>
                 <span>{fmt(row.net)}</span>

@@ -681,13 +681,30 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   )
     ? societeAcquetsDistribution.firstEstateContribution / Math.max(1, input.societeAcquetsNetValue ?? 0)
     : 0;
+  const isCommunityRegime = input.regimeUsed !== 'separation_biens';
+  const sharedMassPreciputAmount = (
+    resolvedPreciput.mode !== 'none'
+    && !societeAcquetsDistribution
+    && isCommunityRegime
+  ) ? resolvedPreciput.requestedAmount : 0;
   const firstEstateBase = computeFirstEstate(
     input.regimeUsed,
     input.order,
     input.liquidation,
     attributionPct,
     preserveQualifiedSeparatePocketsInUniversalCommunity,
+    sharedMassPreciputAmount,
   ) + (societeAcquetsDistribution?.firstEstateContribution ?? 0);
+  const firstEstateWithoutPreciput = sharedMassPreciputAmount > 0
+    ? computeFirstEstate(
+      input.regimeUsed,
+      input.order,
+      input.liquidation,
+      attributionPct,
+      preserveQualifiedSeparatePocketsInUniversalCommunity,
+      0,
+    ) + (societeAcquetsDistribution?.firstEstateContribution ?? 0)
+    : 0;
   const firstEstate = Math.min(
     totalPatrimoine,
     Math.max(0, firstEstateBase + (participationAcquetsSummary?.firstEstateAdjustment ?? 0)),
@@ -779,23 +796,21 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     firstEstate,
     nbEnfants,
     input.order,
-    societeAcquetsDistribution
-      ? {
-        ...(input.patrimonial ?? {}),
-        preciputMontant: 0,
-      }
+    (sharedMassPreciputAmount > 0 || societeAcquetsDistribution)
+      ? { ...(input.patrimonial ?? {}), preciputMontant: 0 }
       : preciputPatrimonial,
     input.referenceDate,
   );
   warnings.push(...step1Split.warnings);
   const step1TaxableEstate = firstEstate - step1Split.preciputDeducted;
+  const effectivePreciputApplied = societeAcquetsDistribution?.preciputAmount
+    ?? (sharedMassPreciputAmount > 0 ? sharedMassPreciputAmount : step1Split.preciputDeducted);
   const targetedPreciputAppliedAmount = resolvedPreciput.mode === 'cible'
-    ? (societeAcquetsDistribution?.preciputAmount ?? step1Split.preciputDeducted)
+    ? effectivePreciputApplied
     : 0;
   const preciputSummary: SuccessionChainPreciputSummary | null = (
     resolvedPreciput.mode === 'none'
-    && step1Split.preciputDeducted <= 0
-    && (societeAcquetsDistribution?.preciputAmount ?? 0) <= 0
+    && effectivePreciputApplied <= 0
   )
     ? null
     : {
@@ -804,7 +819,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
       requestedAmount: resolvedPreciput.requestedAmount,
       appliedAmount: resolvedPreciput.mode === 'cible'
         ? targetedPreciputAppliedAmount
-        : (societeAcquetsDistribution?.preciputAmount ?? step1Split.preciputDeducted),
+        : effectivePreciputApplied,
       usesGlobalFallback: resolvedPreciput.usesGlobalFallback,
       selections: buildTargetedPreciputSelectionsSummary(
         resolvedPreciput.targetedSelections,
@@ -822,7 +837,10 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
       targetedPreciputAppliedAmount / resolvedPreciput.requestedAmount,
     )
     : createEmptyEstateTaxableBasis();
-  const step1TransmissionTaxableBasisBase = firstEstate > 0
+  const firstEstateBasisDenominator = sharedMassPreciputAmount > 0
+    ? Math.max(firstEstate, firstEstateWithoutPreciput)
+    : firstEstate;
+  const step1TransmissionTaxableBasisBase = firstEstateBasisDenominator > 0
     ? (
       resolvedPreciput.mode === 'cible'
         ? (
@@ -833,7 +851,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
               targetedPreciputAppliedBasis,
             )
         )
-        : scaleSuccessionEstateTaxableBasis(firstEstateTaxableBasis, step1TaxableEstate / firstEstate)
+        : scaleSuccessionEstateTaxableBasis(firstEstateTaxableBasis, step1TaxableEstate / firstEstateBasisDenominator)
     )
     : createEmptyEstateTaxableBasis();
   const step1TransmissionTaxableBasis = applyResidencePrincipaleAbatementToEstateBasis(
@@ -877,8 +895,8 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
         : createEmptyEstateTaxableBasis(),
       targetedPreciputAppliedBasis,
     )
-    : firstEstate > 0
-      ? scaleSuccessionEstateTaxableBasis(firstEstateTaxableBasis, step2CarryOverAmount / firstEstate)
+    : firstEstateBasisDenominator > 0
+      ? scaleSuccessionEstateTaxableBasis(firstEstateTaxableBasis, step2CarryOverAmount / firstEstateBasisDenominator)
       : createEmptyEstateTaxableBasis();
   const survivorEconomicInflowsTaxableBasis = {
     ordinaryNetBeforeForfait: survivorEconomicInflows,

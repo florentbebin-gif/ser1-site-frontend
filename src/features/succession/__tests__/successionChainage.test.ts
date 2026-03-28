@@ -484,8 +484,8 @@ describe('buildSuccessionChainageAnalysis', () => {
       groupementFoncierEntries: [],
     });
 
-    expect(analysis.step1?.actifTransmis).toBe(120000);
-    expect(analysis.step2?.actifTransmis).toBe(410000);
+    expect(analysis.step1?.actifTransmis).toBe(160000);
+    expect(analysis.step2?.actifTransmis).toBe(380000);
     expect(analysis.warnings.some((warning) => warning.includes('Preciput cible'))).toBe(true);
     expect(analysis.preciput).toMatchObject({
       mode: 'cible',
@@ -538,8 +538,8 @@ describe('buildSuccessionChainageAnalysis', () => {
       groupementFoncierEntries: [],
     });
 
-    expect(analysis.step1?.actifTransmis).toBe(170000);
-    expect(analysis.step2?.actifTransmis).toBe(372500);
+    expect(analysis.step1?.actifTransmis).toBe(185000);
+    expect(analysis.step2?.actifTransmis).toBe(361250);
     expect(analysis.warnings.some((warning) => warning.includes('repli sur le montant global'))).toBe(true);
   });
 

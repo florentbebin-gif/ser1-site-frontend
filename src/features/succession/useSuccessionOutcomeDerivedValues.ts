@@ -200,20 +200,21 @@ export function useSuccessionOutcomeDerivedValues({
     displayUsesChainage,
   ]);
 
-  const derivedMasseTransmise = useMemo(
+  const derivedMasseSuccessorale = useMemo(
+    () => (shouldRenderSuccessionComputationSections ? displayActifNetSuccession : 0),
+    [shouldRenderSuccessionComputationSections, displayActifNetSuccession],
+  );
+
+  const derivedCapitauxHorsSuccession = useMemo(
     () => (shouldRenderSuccessionComputationSections
-      ? displayActifNetSuccession
-        + displayAssuranceVieTransmise
-        + displayPerTransmis
-        + displayPrevoyanceTransmise
+      ? displayAssuranceVieTransmise + displayPerTransmis + displayPrevoyanceTransmise
       : 0),
-    [
-      shouldRenderSuccessionComputationSections,
-      displayActifNetSuccession,
-      displayAssuranceVieTransmise,
-      displayPerTransmis,
-      displayPrevoyanceTransmise,
-    ],
+    [shouldRenderSuccessionComputationSections, displayAssuranceVieTransmise, displayPerTransmis, displayPrevoyanceTransmise],
+  );
+
+  const derivedMasseTransmise = useMemo(
+    () => derivedMasseSuccessorale + derivedCapitauxHorsSuccession,
+    [derivedMasseSuccessorale, derivedCapitauxHorsSuccession],
   );
 
   const derivedTotalDroits = useMemo(
@@ -576,6 +577,8 @@ export function useSuccessionOutcomeDerivedValues({
     displayAssuranceVieTransmise,
     displayPerTransmis,
     displayPrevoyanceTransmise,
+    derivedMasseSuccessorale,
+    derivedCapitauxHorsSuccession,
     derivedMasseTransmise,
     derivedTotalDroits,
     synthDonutTransmis,

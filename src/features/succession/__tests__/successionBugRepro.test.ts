@@ -206,7 +206,7 @@ describe('V3 — red tests (Lot 0) — will be converted to it() when fixed', ()
   // ── BUG 9: Préciput global — ideally should be applied at mass split level ──
   // Current behavior: preciput applied after 50/50 split → actifTransmis = 300k
   // Ideal behavior: preciput before split → actifTransmis = 400k (deeper refactor needed)
-  it.fails('BUG-9: preciput global in communauté — should reduce shared mass before split', () => {
+  it('BUG-9: preciput global in communauté — should reduce shared mass before split', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({
         situationMatrimoniale: 'marie',

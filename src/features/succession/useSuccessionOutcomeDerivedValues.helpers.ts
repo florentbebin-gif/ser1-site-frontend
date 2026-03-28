@@ -17,6 +17,7 @@ type FiscalLine = {
   capitauxApres70: number;
   droits990I: number;
   droits757B: number;
+  capitalTransmis?: number;
 };
 
 function aggregateByBeneficiary(lines: Array<{ id: string; label: string; capitalTransmis: number; totalDroits: number }>): InsuranceBeneficiaryLine[] {
@@ -43,7 +44,7 @@ export function mergeInsuranceBeneficiaryLines(
   const input990I = allLines.map((line) => ({
     id: line.id,
     label: line.label,
-    capitalTransmis: line.capitauxAvant70,
+    capitalTransmis: line.capitalTransmis ?? line.capitauxAvant70,
     totalDroits: line.droits990I,
   }));
 

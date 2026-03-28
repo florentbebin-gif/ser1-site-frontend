@@ -177,6 +177,7 @@ export function computeFirstEstate(
   liquidation: SuccessionLiquidationContext,
   attributionBiensCommunsPct = 50,
   preserveQualifiedSeparatePocketsInUniversalCommunity = false,
+  preciputFromSharedMass = 0,
 ): number {
   const actifEpoux1 = asAmount(liquidation.actifEpoux1);
   const actifEpoux2 = asAmount(liquidation.actifEpoux2);
@@ -185,9 +186,11 @@ export function computeFirstEstate(
   if (regimeUsed === 'communaute_universelle') {
     const pctDefunt = (100 - Math.min(100, Math.max(0, attributionBiensCommunsPct))) / 100;
     if (preserveQualifiedSeparatePocketsInUniversalCommunity) {
-      return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (actifCommun * pctDefunt);
+      const adjustedCommun = Math.max(0, actifCommun - preciputFromSharedMass);
+      return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (adjustedCommun * pctDefunt);
     }
-    return (actifEpoux1 + actifEpoux2 + actifCommun) * pctDefunt;
+    const totalShared = actifEpoux1 + actifEpoux2 + actifCommun;
+    return Math.max(0, totalShared - preciputFromSharedMass) * pctDefunt;
   }
 
   if (regimeUsed === 'separation_biens') {
@@ -195,7 +198,8 @@ export function computeFirstEstate(
   }
 
   const pctDefunt = (100 - Math.min(100, Math.max(0, attributionBiensCommunsPct))) / 100;
-  return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (actifCommun * pctDefunt);
+  const adjustedCommun = Math.max(0, actifCommun - preciputFromSharedMass);
+  return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (adjustedCommun * pctDefunt);
 }
 
 export function computeStep1Split(
