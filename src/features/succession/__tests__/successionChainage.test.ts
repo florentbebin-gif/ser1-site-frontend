@@ -540,7 +540,7 @@ describe('buildSuccessionChainageAnalysis', () => {
 
     expect(analysis.step1?.actifTransmis).toBe(170000);
     expect(analysis.step2?.actifTransmis).toBe(372500);
-    expect(analysis.warnings.some((warning) => warning.includes('fallback sur le montant global'))).toBe(true);
+    expect(analysis.warnings.some((warning) => warning.includes('repli sur le montant global'))).toBe(true);
   });
 
   it('reinjects survivor insurance inflows into step 2 estate', () => {

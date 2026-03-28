@@ -238,7 +238,7 @@ describe('V3 — red tests (Lot 0) — will be converted to it() when fixed', ()
   });
 
   // ── BUG 11: Testament legs_universel conjoint — max not cumul ──
-  it.fails('BUG-11: legs_universel au conjoint — part = max(legale, testamentaire), not sum', () => {
+  it('BUG-11: legs_universel au conjoint — part = max(legale, testamentaire), not sum', () => {
     const civil = makeCivil({
       situationMatrimoniale: 'marie',
       regimeMatrimonial: 'communaute_legale',

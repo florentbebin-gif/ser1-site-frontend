@@ -111,7 +111,7 @@ export function useSuccessionOutcomeDerivedValues({
 }: UseSuccessionOutcomeDerivedValuesInput) {
   const displayUsesChainage = Boolean(
     shouldRenderSuccessionComputationSections
-    && isMarried
+    && (isMarried || isPacsed)
     && chainageAnalysis.applicable
     && chainageAnalysis.step1
     && chainageAnalysis.step2,

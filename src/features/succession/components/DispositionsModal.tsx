@@ -328,7 +328,7 @@ export default function DispositionsModal({
       </div>
 
       <div className="sc-field">
-        <label>{dispositionsDraft.preciputMode === 'cible' ? `${title} de fallback (EUR)` : title}</label>
+        <label>{dispositionsDraft.preciputMode === 'cible' ? `${title} de repli (EUR)` : title}</label>
         <ScNumericInput
           value={dispositionsDraft.preciputMontant || 0}
           min={0}
@@ -339,7 +339,7 @@ export default function DispositionsModal({
         />
         <p className="sc-hint sc-hint--compact">
           {dispositionsDraft.preciputMode === 'cible'
-            ? "Ce montant reste disponible comme fallback si aucune selection ciblee valide n'est retenue."
+            ? "Ce montant reste disponible comme montant de repli si aucune selection ciblee valide n'est retenue."
             : globalHint}
         </p>
       </div>

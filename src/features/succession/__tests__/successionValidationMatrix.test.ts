@@ -283,7 +283,8 @@ describe('succession validation matrix', () => {
       }),
     });
 
-    expect(analysis.step1?.partConjoint).toBeGreaterThan(100000);
+    // max(legal 1/4 = 100k, testament 25% = 100k) = 100k
+    expect(analysis.step1?.partConjoint).toBeGreaterThanOrEqual(100000);
     expect(analysis.step2?.actifTransmis).toBeGreaterThan(analysis.step1?.partConjoint ?? 0);
   });
 

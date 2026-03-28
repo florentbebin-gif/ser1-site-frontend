@@ -241,7 +241,7 @@ export default function ScSuccessionSummaryPanel({
           </div>
           {preciput.usesGlobalFallback && (
             <div className="sc-summary-row">
-              <span>Fallback global active</span>
+              <span>Mode de repli global</span>
               <strong>Oui</strong>
             </div>
           )}

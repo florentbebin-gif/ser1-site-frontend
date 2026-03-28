@@ -463,6 +463,84 @@ function computeStepTransmission(
     partSuccession: beneficiary.partSuccession,
     exonerated: beneficiary.exonerated,
   }));
+
+  // BUG 11 fix: for legs_universel / legs_titre_universel targeting the conjoint,
+  // apply max(legal, testament) instead of cumulating both.
+  // legs_particulier remains cumulative (specific assets on top of legal share).
+  const isUniversalDisposition = testamentDistribution?.dispositionType === 'legs_universel'
+    || testamentDistribution?.dispositionType === 'legs_titre_universel';
+  const testamentConjointAmount = isUniversalDisposition
+    ? testamentHeirs.filter((h) => h.id === 'conjoint').reduce((sum, h) => sum + h.partSuccession, 0)
+    : 0;
+  let effectiveRedistributableAmount = redistributableAmount;
+  if (isUniversalDisposition && testamentConjointAmount > 0 && legalPartnerAmount > 0) {
+    const effectiveConjointPart = Math.max(legalPartnerAmount, testamentConjointAmount);
+    const legalPartnerHeirsAdjusted = legalPartnerHeirs.map((h) =>
+      h.id === 'conjoint' ? { ...h, partSuccession: effectiveConjointPart } : h,
+    );
+    const filteredTestamentHeirs = testamentHeirs.filter((h) => h.id !== 'conjoint');
+    const testamentDistributedNonConjoint = filteredTestamentHeirs.reduce((sum, h) => sum + h.partSuccession, 0);
+    effectiveRedistributableAmount = Math.max(0, estateAmount - effectiveConjointPart - testamentDistributedNonConjoint);
+    const descendantsResidualAmountAdj = Math.max(0, effectiveRedistributableAmount);
+    const detailedDescendantHeirsAdj = buildDetailedDescendantHeirs(
+      descendantsResidualAmountAdj,
+      deceased,
+      countEffectiveDescendantBranchesForDeceased(
+        input.enfantsContext ?? [],
+        input.familyMembers ?? [],
+        deceased,
+      ),
+      input.dmtgSettings,
+      input.enfantsContext ?? [],
+      input.familyMembers ?? [],
+    );
+    const detailedHeirs = mergeDetailedHeirs([
+      ...legalPartnerHeirsAdjusted,
+      ...filteredTestamentHeirs,
+      ...detailedDescendantHeirsAdj,
+    ]);
+    const detailedHeirsWithTaxableBasis = input.transmissionBasis
+      ? assignBeneficiaryTaxableBasis(detailedHeirs, estateTaxableBasis, {
+        forfaitMobilierMode: input.forfaitMobilierMode ?? 'off',
+        forfaitMobilierPct: input.forfaitMobilierPct ?? 0,
+        forfaitMobilierMontant: input.forfaitMobilierMontant ?? 0,
+      })
+      : detailedHeirs;
+    const detailedHeirsWithDonationRecall = applySuccessionDonationRecallToHeirs({
+      heirs: detailedHeirsWithTaxableBasis,
+      donations: input.donations,
+      simulatedDeceased: deceased,
+      donationSettings: input.donationSettings,
+      dmtgSettings: input.dmtgSettings,
+      referenceDate: input.referenceDate,
+    });
+    const { droits, beneficiaries } = computeTransmissionForHeirs(
+      estateAmount,
+      detailedHeirsWithDonationRecall,
+      input.dmtgSettings,
+    );
+    const partAutresBeneficiaires = beneficiaries
+      .filter((b) => b.lien !== 'conjoint')
+      .reduce((sum, b) => sum + b.brut, 0);
+    const survivingCounterpartRef = `principal:${getOtherSide(deceased)}` as const;
+    const testamentCarryOver = (testamentDistribution?.beneficiaries ?? [])
+      .filter((b) => b.beneficiaryRef === survivingCounterpartRef)
+      .reduce((sum, b) => sum + b.partSuccession, 0);
+    const effectiveCarryOver = isUniversalDisposition
+      ? Math.max(legalPartnerAmount, testamentCarryOver)
+      : testamentCarryOver;
+    return {
+      transmission: { droits, beneficiaries },
+      partConjoint: effectiveConjointPart,
+      partAutresBeneficiaires,
+      carryOverToStep2: effectiveCarryOver,
+      warnings: [
+        ...prefixStepWarnings(stepLabel, configWarnings),
+        ...prefixStepWarnings(stepLabel, testamentDistribution?.warnings ?? []),
+      ],
+    };
+  }
+
   const descendantsResidualAmount = Math.max(
     0,
     redistributableAmount - (testamentDistribution?.distributedAmount ?? 0),
@@ -660,7 +738,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     );
   }
   if (resolvedPreciput.usesGlobalFallback) {
-    warnings.push('Preciput cible: aucune selection compatible active, fallback sur le montant global.');
+    warnings.push('Preciput cible: aucune selection compatible active, repli sur le montant global.');
   }
   if (
     resolvedPreciput.mode === 'cible'
