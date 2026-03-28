@@ -543,7 +543,12 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     return buildEmptyAnalysis(input.order, 'Chainage disponible pour couples maries ou pacses avec regime de liquidation.');
   }
 
-  const attributionPct = input.attributionBiensCommunsPct ?? 50;
+  const attributionPctBase = input.attributionBiensCommunsPct ?? 50;
+  const attributionPct = (
+    input.civil.situationMatrimoniale === 'marie'
+    && input.civil.regimeMatrimonial === 'communaute_universelle'
+    && input.patrimonial?.attributionIntegrale
+  ) ? 100 : attributionPctBase;
   const isSocieteAcquetsRegime = input.civil.situationMatrimoniale === 'marie'
     && input.civil.regimeMatrimonial === 'separation_biens_societe_acquets'
     && input.regimeUsed === 'separation_biens';

@@ -106,7 +106,7 @@ function buildDirectAnalysis(options: {
 
 describe('V3 — red tests (Lot 0) — will be converted to it() when fixed', () => {
   // ── BUG 2: CU attribution 50% should not return 100% of patrimoine ──
-  it.fails('BUG-2: CU attribution 50% — firstEstate should be ownDeceased + 50% communs, not all patrimoine', () => {
+  it('BUG-2: CU attribution 50% — firstEstate should be ownDeceased + 50% communs, not all patrimoine', () => {
     // Without stipulation: everything is communauté, 50% goes to survivor
     // firstEstate should be totalPatrimoine * 50% = 1M, not 2M
     const analysis = buildSuccessionChainageAnalysis({
@@ -136,7 +136,7 @@ describe('V3 — red tests (Lot 0) — will be converted to it() when fixed', ()
     expect(analysis.step1!.actifTransmis).toBe(1000000);
   });
 
-  it.fails('BUG-2: CU attribution 50% with stipulation — firstEstate = propresDefunt + 50% communs = 950k', () => {
+  it('BUG-2: CU attribution 50% with stipulation — firstEstate = propresDefunt + 50% communs = 950k', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({
         situationMatrimoniale: 'marie',
@@ -168,7 +168,7 @@ describe('V3 — red tests (Lot 0) — will be converted to it() when fixed', ()
   });
 
   // ── BUG 1: CU attribution intégrale — step2 should not double-count ──
-  it.fails('BUG-1: CU attribution integrale with stipulation — step1 = propres defunt only, step2 = 1.85M', () => {
+  it('BUG-1: CU attribution integrale with stipulation — step1 = propres defunt only, step2 = 1.85M', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({
         situationMatrimoniale: 'marie',
@@ -203,7 +203,9 @@ describe('V3 — red tests (Lot 0) — will be converted to it() when fixed', ()
     expect(analysis.step2!.actifTransmis).toBe(1850000);
   });
 
-  // ── BUG 9: Préciput global — should be applied at mass split level ──
+  // ── BUG 9: Préciput global — ideally should be applied at mass split level ──
+  // Current behavior: preciput applied after 50/50 split → actifTransmis = 300k
+  // Ideal behavior: preciput before split → actifTransmis = 400k (deeper refactor needed)
   it.fails('BUG-9: preciput global in communauté — should reduce shared mass before split', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({

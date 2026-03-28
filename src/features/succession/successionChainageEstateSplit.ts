@@ -183,10 +183,11 @@ export function computeFirstEstate(
   const actifCommun = asAmount(liquidation.actifCommun);
 
   if (regimeUsed === 'communaute_universelle') {
+    const pctDefunt = (100 - Math.min(100, Math.max(0, attributionBiensCommunsPct))) / 100;
     if (preserveQualifiedSeparatePocketsInUniversalCommunity) {
-      return actifCommun + (order === 'epoux1' ? actifEpoux1 : actifEpoux2);
+      return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (actifCommun * pctDefunt);
     }
-    return actifEpoux1 + actifEpoux2 + actifCommun;
+    return (actifEpoux1 + actifEpoux2 + actifCommun) * pctDefunt;
   }
 
   if (regimeUsed === 'separation_biens') {
@@ -212,7 +213,7 @@ export function computeStep1Split(
     && patrimonial?.attributionIntegrale
   ) {
     const warnings = [
-      'Communaute universelle avec attribution integrale: 100 % de la masse du 1er deces reportee au conjoint survivant, sans droits descendants au 1er deces.',
+      'Communaute universelle avec attribution integrale: la masse commune est integralement attribuee au conjoint survivant par clause contractuelle.',
     ];
     if (asAmount(patrimonial.preciputMontant) > 0) {
       warnings.push('Attribution integrale prioritaire: clause de preciput ignoree au 1er deces.');
@@ -220,13 +221,16 @@ export function computeStep1Split(
     if (patrimonial.donationEntreEpouxActive) {
       warnings.push('Attribution integrale prioritaire: donation entre epoux ignoree au 1er deces.');
     }
-    return {
-      conjointPart: firstEstate,
-      enfantsPart: 0,
-      carryOverToStep2: firstEstate,
-      preciputDeducted: 0,
-      warnings,
-    };
+    if (firstEstate <= 0) {
+      return {
+        conjointPart: 0,
+        enfantsPart: 0,
+        carryOverToStep2: 0,
+        preciputDeducted: 0,
+        warnings: [...warnings, 'Aucun propre du defunt: la totalite du patrimoine est attribuee au survivant.'],
+      };
+    }
+    warnings.push(`Propres du defunt: ${Math.round(firstEstate).toLocaleString('fr-FR')} EUR soumis a la devolution legale.`);
   }
 
   const preciput = (civil.situationMatrimoniale === 'marie')

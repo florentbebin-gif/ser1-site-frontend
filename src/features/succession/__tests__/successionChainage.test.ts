@@ -154,7 +154,8 @@ describe('buildSuccessionChainageAnalysis', () => {
       },
     });
 
-    expect(analysis.step1?.actifTransmis).toBe(370000);
+    // With stipulation + default 50% attribution: propresDefunt(70k) + 50% communs(150k) = 220k
+    expect(analysis.step1?.actifTransmis).toBe(220000);
     expect(analysis.warnings.some((warning) => warning.includes('propre par nature'))).toBe(true);
   });
 
@@ -639,7 +640,7 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.warnings.some((warning) => warning.includes('deja decede ignore au second deces'))).toBe(true);
   });
 
-  it('reports the full first estate to step 2 in communaute universelle with attribution integrale', () => {
+  it('reports zero at step 1 and full patrimoine at step 2 in communaute universelle with attribution integrale', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'communaute_universelle' }),
       liquidation: makeLiquidation({ actifEpoux1: 200000, actifEpoux2: 300000, actifCommun: 1_500_000, nbEnfants: 2 }),
@@ -659,15 +660,15 @@ describe('buildSuccessionChainageAnalysis', () => {
       },
     });
 
-    expect(analysis.step1?.actifTransmis).toBe(2_000_000);
-    expect(analysis.step1?.partConjoint).toBe(2_000_000);
+    // Attribution intégrale without stipulation: all is communauté → all to survivor
+    // step1 = 0, step2 = 2M
+    expect(analysis.step1?.actifTransmis).toBe(0);
+    expect(analysis.step1?.partConjoint).toBe(0);
     expect(analysis.step1?.partEnfants).toBe(0);
     expect(analysis.step1?.droitsEnfants).toBe(0);
     expect(analysis.step2?.actifTransmis).toBe(2_000_000);
     expect(analysis.totalDroits).toBe(analysis.step2?.droitsEnfants ?? 0);
     expect(analysis.warnings.some((warning) => warning.includes('attribution integrale'))).toBe(true);
-    expect(analysis.warnings.some((warning) => warning.includes('preciput ignoree'))).toBe(true);
-    expect(analysis.warnings.some((warning) => warning.includes('donation entre epoux ignoree'))).toBe(true);
   });
 
   it("liquidates the societe d'acquets pocket with contractual quotes", () => {
