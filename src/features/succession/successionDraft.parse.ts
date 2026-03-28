@@ -360,6 +360,8 @@ function parseAssetEntries(
       asset.meubleImmeubleLegal = isSuccessionMeubleImmeubleLegal(item.meubleImmeubleLegal)
         ? item.meubleImmeubleLegal
         : 'non_qualifie';
+      const quotePartEpoux1Pct = asAmount(item.quotePartEpoux1Pct, -1);
+      if (quotePartEpoux1Pct >= 0) asset.quotePartEpoux1Pct = quotePartEpoux1Pct;
 
       return asset;
     })
@@ -393,6 +395,8 @@ function parseGroupementFoncierEntries(
 
       const label = normalizeOptionalString(item.label);
       if (label) entry.label = label;
+      const quotePartEpoux1Pct = asAmount(item.quotePartEpoux1Pct, -1);
+      if (quotePartEpoux1Pct >= 0) entry.quotePartEpoux1Pct = quotePartEpoux1Pct;
 
       return entry;
     })

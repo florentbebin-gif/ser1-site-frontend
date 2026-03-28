@@ -94,6 +94,7 @@ describe('buildSuccessionChainageAnalysis', () => {
           societe_acquets: 0,
           indivision_pacse: 0,
           indivision_concubinage: 0,
+          indivision_separatiste: 0,
         },
         claims: [
           {
@@ -836,6 +837,7 @@ describe('buildSuccessionChainageAnalysis', () => {
         societe_acquets: 0,
         indivision_pacse: 0,
         indivision_concubinage: 0,
+        indivision_separatiste: 0,
       },
       passifsParPocket: {
         epoux1: 0,
@@ -844,6 +846,7 @@ describe('buildSuccessionChainageAnalysis', () => {
         societe_acquets: 0,
         indivision_pacse: 0,
         indivision_concubinage: 0,
+        indivision_separatiste: 0,
       },
       groupementFoncierEntries: [],
       hasBeneficiaryLevelGfAdjustment: false,

@@ -67,6 +67,7 @@ const EMPTY_POCKET_TOTALS: Record<SuccessionAssetPocket, number> = {
   societe_acquets: 0,
   indivision_pacse: 0,
   indivision_concubinage: 0,
+  indivision_separatiste: 0,
 };
 
 const MAIN_RESIDENCE_LABELS = new Set([
@@ -162,6 +163,32 @@ function toLegacyOwner(pocket: SuccessionAssetPocket): SuccessionLegacyAssetOwne
   return getSuccessionLegacyOwnerFromPocket(pocket);
 }
 
+function splitIndivisionAssetEntries(
+  entries: SuccessionAssetDetailEntry[],
+): SuccessionAssetDetailEntry[] {
+  return entries.flatMap((entry) => {
+    if (entry.pocket !== 'indivision_separatiste') return [entry];
+    const pct1 = Math.max(0, Math.min(100, entry.quotePartEpoux1Pct ?? 50)) / 100;
+    return [
+      { ...entry, id: `${entry.id}__ep1`, pocket: 'epoux1' as const, amount: entry.amount * pct1 },
+      { ...entry, id: `${entry.id}__ep2`, pocket: 'epoux2' as const, amount: entry.amount * (1 - pct1) },
+    ];
+  });
+}
+
+function splitIndivisionGfEntries(
+  entries: SuccessionGroupementFoncierEntry[],
+): SuccessionGroupementFoncierEntry[] {
+  return entries.flatMap((entry) => {
+    if (entry.pocket !== 'indivision_separatiste') return [entry];
+    const pct1 = Math.max(0, Math.min(100, entry.quotePartEpoux1Pct ?? 50)) / 100;
+    return [
+      { ...entry, id: `${entry.id}__ep1`, pocket: 'epoux1' as const, valeurTotale: entry.valeurTotale * pct1 },
+      { ...entry, id: `${entry.id}__ep2`, pocket: 'epoux2' as const, valeurTotale: entry.valeurTotale * (1 - pct1) },
+    ];
+  });
+}
+
 export function computeSuccessionAssetValuation({
   civilContext,
   patrimonialContext,
@@ -175,19 +202,23 @@ export function computeSuccessionAssetValuation({
   const qualificationPatrimonialContext = {
     stipulationContraireCU: Boolean(patrimonialContext?.stipulationContraireCU),
   };
-  const normalizedAssetEntries = normalizeResidencePrincipaleAssetEntries(assetEntries.map((entry) => ({
-    ...entry,
-    pocket: resolveSuccessionQualifiedAssetPocket({
-      civilContext,
-      patrimonialContext: qualificationPatrimonialContext,
-      entry,
+  const normalizedAssetEntries = splitIndivisionAssetEntries(
+    normalizeResidencePrincipaleAssetEntries(assetEntries.map((entry) => ({
+      ...entry,
+      pocket: resolveSuccessionQualifiedAssetPocket({
+        civilContext,
+        patrimonialContext: qualificationPatrimonialContext,
+        entry,
+        pocket: normalizeAssetPocket(entry.pocket, civilContext),
+      }),
+    }))),
+  );
+  const normalizedGroupementFoncierEntries = splitIndivisionGfEntries(
+    groupementFoncierEntries.map((entry) => ({
+      ...entry,
       pocket: normalizeAssetPocket(entry.pocket, civilContext),
-    }),
-  })));
-  const normalizedGroupementFoncierEntries = groupementFoncierEntries.map((entry) => ({
-    ...entry,
-    pocket: normalizeAssetPocket(entry.pocket, civilContext),
-  }));
+    })),
+  );
   const residencePrincipaleEntryId = normalizedAssetEntries.find((entry) =>
     entry.category === 'immobilier' && entry.subCategory === RESIDENCE_PRINCIPALE_SUBCATEGORY,
   )?.id ?? null;

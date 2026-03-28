@@ -322,6 +322,7 @@ describe('succession validation matrix', () => {
           societe_acquets: 0,
           indivision_pacse: 0,
           indivision_concubinage: 0,
+          indivision_separatiste: 0,
         },
         passifsParPocket: {
           epoux1: 0,
@@ -330,6 +331,7 @@ describe('succession validation matrix', () => {
           societe_acquets: 0,
           indivision_pacse: 0,
           indivision_concubinage: 0,
+          indivision_separatiste: 0,
         },
         groupementFoncierEntries: [
           { id: 'gf-1', pocket: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
@@ -363,6 +365,7 @@ describe('succession validation matrix', () => {
           societe_acquets: 0,
           indivision_pacse: 0,
           indivision_concubinage: 0,
+          indivision_separatiste: 0,
         },
         passifsParPocket: {
           epoux1: 0,
@@ -371,6 +374,7 @@ describe('succession validation matrix', () => {
           societe_acquets: 0,
           indivision_pacse: 0,
           indivision_concubinage: 0,
+          indivision_separatiste: 0,
         },
         groupementFoncierEntries: [
           { id: 'gf-1', pocket: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },

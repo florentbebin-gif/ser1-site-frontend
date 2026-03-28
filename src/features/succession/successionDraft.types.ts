@@ -202,6 +202,7 @@ export interface SuccessionAssetDetailEntry {
   legalNature?: SuccessionAssetLegalNature;
   origin?: SuccessionAssetOrigin;
   meubleImmeubleLegal?: SuccessionMeubleImmeubleLegal;
+  quotePartEpoux1Pct?: number;
 }
 
 export type SuccessionAssuranceVieContractType = 'standard' | 'demembree' | 'personnalisee';
@@ -234,6 +235,7 @@ export interface SuccessionGroupementFoncierEntry {
   label?: string;
   valeurTotale: number;
   pocket: SuccessionAssetPocket;
+  quotePartEpoux1Pct?: number;
 }
 
 export interface SuccessionPrevoyanceDecesEntry {
