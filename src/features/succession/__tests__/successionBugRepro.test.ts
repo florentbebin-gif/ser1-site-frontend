@@ -104,6 +104,229 @@ function buildDirectAnalysis(options: {
   });
 }
 
+describe('V3 — red tests (Lot 0) — will be converted to it() when fixed', () => {
+  // ── BUG 2: CU attribution 50% should not return 100% of patrimoine ──
+  it('BUG-2: CU attribution 50% — firstEstate should be ownDeceased + 50% communs, not all patrimoine', () => {
+    // Without stipulation: everything is communauté, 50% goes to survivor
+    // firstEstate should be totalPatrimoine * 50% = 1M, not 2M
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_universelle',
+      }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 200000,
+        actifEpoux2: 300000,
+        actifCommun: 1500000,
+        nbEnfants: 2,
+      }),
+      regimeUsed: 'communaute_universelle',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      attributionBiensCommunsPct: 50,
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+    });
+
+    // Without stipulation in CU, all pockets are communauté
+    // 50% attribution → firstEstate = totalPatrimoine * (1 - 50/100) = 1M
+    expect(analysis.step1!.actifTransmis).toBe(1000000);
+  });
+
+  it('BUG-2: CU attribution 50% with stipulation — firstEstate = propresDefunt + 50% communs = 950k', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_universelle',
+      }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 200000,
+        actifEpoux2: 300000,
+        actifCommun: 1500000,
+        nbEnfants: 2,
+      }),
+      regimeUsed: 'communaute_universelle',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      attributionBiensCommunsPct: 50,
+      patrimonial: {
+        stipulationContraireCU: true,
+      },
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+    });
+
+    // With stipulation: propresDefunt = 200k, 50% of communs = 750k
+    // firstEstate = 200k + 750k = 950k
+    expect(analysis.step1!.actifTransmis).toBe(950000);
+  });
+
+  // ── BUG 1: CU attribution intégrale — step2 should not double-count ──
+  it('BUG-1: CU attribution integrale with stipulation — step1 = propres defunt only, step2 = 1.85M', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_universelle',
+      }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 200000,
+        actifEpoux2: 300000,
+        actifCommun: 1500000,
+        nbEnfants: 2,
+      }),
+      regimeUsed: 'communaute_universelle',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      patrimonial: {
+        attributionIntegrale: true,
+        stipulationContraireCU: true,
+      },
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+    });
+
+    // With attribution intégrale + stipulation:
+    // - Communs 1.5M → all to survivor (attribution)
+    // - Propres défunt 200k → succession step1
+    //   conjoint 1/4 = 50k, enfants 3/4 = 150k
+    // - Step2: 300k (own) + 1.5M (attributed) + 50k (carry-over) = 1.85M
+    expect(analysis.step1!.actifTransmis).toBe(200000);
+    expect(analysis.step2!.actifTransmis).toBe(1850000);
+  });
+
+  // ── BUG 9: Préciput global — ideally should be applied at mass split level ──
+  // Current behavior: preciput applied after 50/50 split → actifTransmis = 300k
+  // Ideal behavior: preciput before split → actifTransmis = 400k (deeper refactor needed)
+  it('BUG-9: preciput global in communauté — should reduce shared mass before split', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'communaute_legale',
+      }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 0,
+        actifEpoux2: 0,
+        actifCommun: 1000000,
+        nbEnfants: 2,
+      }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      patrimonial: {
+        preciputMontant: 200000,
+      },
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+    });
+
+    // Communauté 1M, preciput 200k → shared after preciput = 800k
+    // Part défunt = 800k / 2 = 400k (the estate for step1)
+    // Survivor keeps: 400k (own half of shared) + 200k (preciput) = 600k base
+    expect(analysis.step1!.actifTransmis).toBe(400000);
+  });
+
+  // ── BUG 11: Testament legs_universel conjoint — max not cumul ──
+  it('BUG-11: legs_universel au conjoint — part = max(legale, testamentaire), not sum', () => {
+    const civil = makeCivil({
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'communaute_legale',
+    });
+    const analysis = buildSuccessionChainageAnalysis({
+      civil,
+      liquidation: makeLiquidation({
+        actifEpoux1: 150000,
+        actifEpoux2: 0,
+        actifCommun: 150000,
+        nbEnfants: 2,
+      }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      devolution: makeDevolution({
+        testamentsBySide: {
+          epoux1: {
+            active: true,
+            dispositionType: 'legs_universel',
+            beneficiaryRef: 'principal:epoux2',
+            quotePartPct: 100,
+            particularLegacies: [],
+          },
+        },
+      }),
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+    });
+
+    // masse = 150k (half commun) + 150k (propres) = 300k... actually for communaute_legale:
+    // firstEstate = propresDefunt + 50% commun = 150k + 75k = 225k
+    // legal: conjoint 1/4 PP = 56250
+    // testament legs_universel: QD = 1/3 with 2 children = 75k
+    // Expected: conjoint part = max(56250, 75000) = 75000
+    // Remaining: 225000 - 75000 = 150000, each child gets 75000
+    const conjointBenef = analysis.step1?.beneficiaries.find((b) => b.id === 'conjoint');
+    expect(conjointBenef?.brut).toBe(75000);
+  });
+
+  // ── BUG 3: PACS chainage engine works — bug is only in UI display filter ──
+  it('BUG-3: PACS chainage — engine produces applicable analysis with testament (bug is UI-only)', () => {
+    const analysis = buildSuccessionChainageAnalysis({
+      civil: makeCivil({
+        situationMatrimoniale: 'pacse',
+        regimeMatrimonial: null,
+        pacsConvention: 'separation',
+      }),
+      liquidation: makeLiquidation({
+        actifEpoux1: 400000,
+        actifEpoux2: 200000,
+        actifCommun: 0,
+        nbEnfants: 2,
+      }),
+      regimeUsed: 'separation_biens',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      devolution: makeDevolution({
+        testamentsBySide: {
+          epoux1: {
+            active: true,
+            dispositionType: 'legs_universel',
+            beneficiaryRef: 'principal:epoux2',
+            quotePartPct: 100,
+            particularLegacies: [],
+          },
+        },
+      }),
+      enfantsContext: [
+        { id: 'E1', rattachement: 'commun' },
+        { id: 'E2', rattachement: 'commun' },
+      ],
+      familyMembers: [],
+    });
+
+    expect(analysis.applicable).toBe(true);
+    // Partenaire pacsé gets share via testament only (no legal heir)
+    // With legs_universel, QD = 1/3 (2 enfants) = 133333
+    // The testament carry-over should propagate to step 2
+    expect(analysis.step1).not.toBeNull();
+    expect(analysis.step2).not.toBeNull();
+    expect(analysis.step2!.actifTransmis).toBeGreaterThan(0);
+  });
+});
+
 describe('PR-04 — reproduction et triage des bugs succession non prouvés', () => {
   it('BUG-8/3.2: DDV usufruit total applique bien l’art. 669 a 70 ans au niveau moteur', () => {
     const analysis = buildSuccessionChainageAnalysis({
@@ -381,5 +604,28 @@ describe('PR-04 — reproduction et triage des bugs succession non prouvés', ()
     expect(earlyDeath.step1?.partConjoint).toBe(250_000);
     expect(laterDeath.step1?.partConjoint).toBe(200_000);
     expect(earlyDeath.totalDroits).not.toBe(laterDeath.totalDroits);
+  });
+
+  it('BUG-8: AV 2M / 1 enfant / tout avant 70 — droits 990I = 498594', () => {
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const analysis = buildSuccessionAvFiscalAnalysis(
+      [{
+        id: 'av-1',
+        typeContrat: 'standard',
+        souscripteur: 'epoux1',
+        assure: 'epoux1',
+        clauseBeneficiaire: 'CUSTOM:E1:100',
+        capitauxDeces: 2_000_000,
+        versementsApres70: 0,
+      }],
+      makeCivil({ situationMatrimoniale: 'celibataire' }),
+      [{ id: 'E1', rattachement: 'epoux1' as const }],
+      [],
+      snapshot,
+    );
+
+    // 2M - 152500 = 1847500 taxable
+    // 700000 * 20% = 140000, 1147500 * 31.25% = 358594 → total 498594
+    expect(analysis.lines[0].droits990I).toBe(498_594);
   });
 });

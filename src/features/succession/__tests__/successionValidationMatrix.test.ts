@@ -283,7 +283,8 @@ describe('succession validation matrix', () => {
       }),
     });
 
-    expect(analysis.step1?.partConjoint).toBeGreaterThan(100000);
+    // max(legal 1/4 = 100k, testament 25% = 100k) = 100k
+    expect(analysis.step1?.partConjoint).toBeGreaterThanOrEqual(100000);
     expect(analysis.step2?.actifTransmis).toBeGreaterThan(analysis.step1?.partConjoint ?? 0);
   });
 
@@ -321,6 +322,7 @@ describe('succession validation matrix', () => {
           societe_acquets: 0,
           indivision_pacse: 0,
           indivision_concubinage: 0,
+          indivision_separatiste: 0,
         },
         passifsParPocket: {
           epoux1: 0,
@@ -329,6 +331,7 @@ describe('succession validation matrix', () => {
           societe_acquets: 0,
           indivision_pacse: 0,
           indivision_concubinage: 0,
+          indivision_separatiste: 0,
         },
         groupementFoncierEntries: [
           { id: 'gf-1', pocket: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },
@@ -362,6 +365,7 @@ describe('succession validation matrix', () => {
           societe_acquets: 0,
           indivision_pacse: 0,
           indivision_concubinage: 0,
+          indivision_separatiste: 0,
         },
         passifsParPocket: {
           epoux1: 0,
@@ -370,6 +374,7 @@ describe('succession validation matrix', () => {
           societe_acquets: 0,
           indivision_pacse: 0,
           indivision_concubinage: 0,
+          indivision_separatiste: 0,
         },
         groupementFoncierEntries: [
           { id: 'gf-1', pocket: 'epoux1', type: 'GFA', valeurTotale: 10_000_000 },

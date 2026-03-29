@@ -164,9 +164,9 @@ describe('Infrastructure régimes matrimoniaux', () => {
     });
 
     // Communauté universelle — art. 1526 CC
-    it('communaute_universelle : totalité des actifs agrégés (ep1+ep2+commun)', () => {
+    it('communaute_universelle : 50 % par défaut (attribution au survivant)', () => {
       expect(computeFirstEstate('communaute_universelle', 'epoux1', liq)).toBe(
-        300_000 + 200_000 + 400_000, // 900_000
+        (300_000 + 200_000 + 400_000) * 0.5, // 450_000
       );
     });
 
@@ -176,10 +176,11 @@ describe('Infrastructure régimes matrimoniaux', () => {
       expect(ep1).toBe(ep2);
     });
 
-    it("communaute_universelle : attributionBiensCommunsPct ignore (masse toujours totale)", () => {
+    it("communaute_universelle : attributionBiensCommunsPct=80 → 20 % au décédé", () => {
       const defaut = computeFirstEstate('communaute_universelle', 'epoux1', liq);
       const custom = computeFirstEstate('communaute_universelle', 'epoux1', liq, 80);
-      expect(custom).toBe(defaut);
+      expect(custom).toBe((300_000 + 200_000 + 400_000) * 0.2); // 180_000
+      expect(custom).not.toBe(defaut);
     });
 
     // Séparation de biens — art. 1536 CC
@@ -242,7 +243,7 @@ describe('Infrastructure régimes matrimoniaux', () => {
     });
 
     // T-2 : Communauté universelle + attribution intégrale
-    it('communaute_universelle + attribution intégrale : tout reporté au 2e décès, 0 droits step 1', () => {
+    it('communaute_universelle + attribution intégrale : tout au survivant, 0 au step 1', () => {
       const analysis = buildSuccessionChainageAnalysis({
         civil: makeCivil({ regimeMatrimonial: 'communaute_universelle' }),
         liquidation: makeLiquidation(),
@@ -258,15 +259,16 @@ describe('Infrastructure régimes matrimoniaux', () => {
           preciputMontant: 0,
         },
       });
-      // firstEstate CU = 300k + 200k + 400k = 900k — tout au conjoint
-      expect(analysis.step1?.actifTransmis).toBe(900_000);
+      // attribution intégrale : toute la communauté va au survivant
+      // sans stipulation contraire, pas de propres → step1 = 0
+      expect(analysis.step1?.actifTransmis).toBe(0);
       expect(analysis.step1?.partEnfants).toBe(0);
       expect(analysis.step1?.droitsEnfants).toBe(0);
       expect(analysis.step2?.actifTransmis).toBe(900_000);
       expect(analysis.warnings.some((w) => w.includes('attribution integrale'))).toBe(true);
     });
 
-    it('communaute_universelle sans attribution intégrale : droits calculés au step 1', () => {
+    it('communaute_universelle sans attribution intégrale : droits calculés au step 1 (50 % par défaut)', () => {
       const analysis = buildSuccessionChainageAnalysis({
         civil: makeCivil({ regimeMatrimonial: 'communaute_universelle' }),
         liquidation: makeLiquidation(),
@@ -282,8 +284,8 @@ describe('Infrastructure régimes matrimoniaux', () => {
           preciputMontant: 0,
         },
       });
-      expect(analysis.step1?.actifTransmis).toBe(900_000);
-      // Sans attribution intégrale, les enfants reçoivent une part au step 1
+      // CU default 50% attribution: firstEstate = 900k * 50% = 450k
+      expect(analysis.step1?.actifTransmis).toBe(450_000);
       expect(analysis.step1?.partEnfants).toBeGreaterThan(0);
     });
 

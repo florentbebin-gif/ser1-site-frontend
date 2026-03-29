@@ -42,12 +42,16 @@ export interface SuccessionAvFiscalLine {
   lien: LienParente;
   capitauxAvant70: number;
   capitauxApres70: number;
+  baseFiscale990I?: number;
+  baseFiscale757B?: number;
   taxable990I: number;
   droits990I: number;
   taxable757B: number;
   droits757B: number;
   totalDroits: number;
   netTransmis: number;
+  allowance990IRatio?: number;
+  isUsufruitDemembre?: boolean;
 }
 
 export interface SuccessionAvFiscalPerAssure {
@@ -276,15 +280,28 @@ function buildSideAnalysis(
 ): SideAnalysis {
   const warnings: string[] = [];
   const before70ByBeneficiary = new Map<string, { target: AvBeneficiaryTarget; amount: number }>();
+  const before70TaxableByBeneficiary = new Map<string, { target: AvBeneficiaryTarget; amount: number }>();
   const after70ByBeneficiary = new Map<string, { target: AvBeneficiaryTarget; amount: number }>();
+  const after70TaxableByBeneficiary = new Map<string, { target: AvBeneficiaryTarget; amount: number }>();
 
   entries.forEach((entry) => {
     const capitauxDeces = asAmount(entry.capitauxDeces);
-    const versementsApres70 = Math.min(capitauxDeces, asAmount(entry.versementsApres70));
-    const capitauxAvant70 = Math.max(0, capitauxDeces - versementsApres70);
+    const versementsAvant13101998 = Math.min(capitauxDeces, asAmount(entry.versementsAvant13101998));
+    const versementsApres70Gross = Math.min(capitauxDeces, asAmount(entry.versementsApres70));
+    const baseImposableGlobale = Math.max(0, capitauxDeces - versementsAvant13101998);
+    const versementsApres70Taxables = Math.min(versementsApres70Gross, baseImposableGlobale);
+    const capitauxAvant70 = Math.max(0, capitauxDeces - versementsApres70Gross);
+    const capitauxAvant70Taxables = Math.max(0, baseImposableGlobale - versementsApres70Taxables);
 
     if (entry.versementsApres70 > entry.capitauxDeces) {
       warnings.push('Assurance-vie: versements après 70 ans plafonnés aux capitaux décès saisis.');
+    }
+
+    if ((entry.versementsAvant13101998 ?? 0) > entry.capitauxDeces) {
+      warnings.push("Assurance-vie: versements avant le 13/10/1998 plafonnes aux capitaux deces saisis.");
+    }
+    if (versementsAvant13101998 + versementsApres70Gross > capitauxDeces) {
+      warnings.push("Assurance-vie: cumul versements avant le 13/10/1998 + apres 70 ans incoherent, base taxable apres 70 ans capee automatiquement.");
     }
 
     // Clause démembrée : ventilation art. 669 CGI
@@ -310,13 +327,21 @@ function buildSideAnalysis(
             allowance990IRatio: tauxUsufruit,
           };
           const conjointAvant70 = capitauxAvant70 * tauxUsufruit;
-          const conjointApres70 = versementsApres70 * tauxUsufruit;
+          const conjointApres70 = versementsApres70Gross * tauxUsufruit;
+          const conjointAvant70Taxable = capitauxAvant70Taxables * tauxUsufruit;
+          const conjointApres70Taxable = versementsApres70Taxables * tauxUsufruit;
           const beforeConjoint = before70ByBeneficiary.get(conjointId);
           if (beforeConjoint) beforeConjoint.amount += conjointAvant70;
           else before70ByBeneficiary.set(conjointId, { target: conjointTarget, amount: conjointAvant70 });
+          const beforeConjointTaxable = before70TaxableByBeneficiary.get(conjointId);
+          if (beforeConjointTaxable) beforeConjointTaxable.amount += conjointAvant70Taxable;
+          else before70TaxableByBeneficiary.set(conjointId, { target: conjointTarget, amount: conjointAvant70Taxable });
           const afterConjoint = after70ByBeneficiary.get(conjointId);
           if (afterConjoint) afterConjoint.amount += conjointApres70;
           else after70ByBeneficiary.set(conjointId, { target: conjointTarget, amount: conjointApres70 });
+          const afterConjointTaxable = after70TaxableByBeneficiary.get(conjointId);
+          if (afterConjointTaxable) afterConjointTaxable.amount += conjointApres70Taxable;
+          else after70TaxableByBeneficiary.set(conjointId, { target: conjointTarget, amount: conjointApres70Taxable });
 
           // Nu-propriété → enfants (parts égales parmi enfants vivants)
           const livingChildren = enfants
@@ -335,13 +360,21 @@ function buildSideAnalysis(
                 allowance990IRatio: tauxNuProp,
               };
               const childAvant70 = capitauxAvant70 * ratioPerChild;
-              const childApres70 = versementsApres70 * ratioPerChild;
+              const childApres70 = versementsApres70Gross * ratioPerChild;
+              const childAvant70Taxable = capitauxAvant70Taxables * ratioPerChild;
+              const childApres70Taxable = versementsApres70Taxables * ratioPerChild;
               const beforeChild = before70ByBeneficiary.get(enfant.id);
               if (beforeChild) beforeChild.amount += childAvant70;
               else before70ByBeneficiary.set(enfant.id, { target: childTarget, amount: childAvant70 });
+              const beforeChildTaxable = before70TaxableByBeneficiary.get(enfant.id);
+              if (beforeChildTaxable) beforeChildTaxable.amount += childAvant70Taxable;
+              else before70TaxableByBeneficiary.set(enfant.id, { target: childTarget, amount: childAvant70Taxable });
               const afterChild = after70ByBeneficiary.get(enfant.id);
               if (afterChild) afterChild.amount += childApres70;
               else after70ByBeneficiary.set(enfant.id, { target: childTarget, amount: childApres70 });
+              const afterChildTaxable = after70TaxableByBeneficiary.get(enfant.id);
+              if (afterChildTaxable) afterChildTaxable.amount += childApres70Taxable;
+              else after70TaxableByBeneficiary.set(enfant.id, { target: childTarget, amount: childApres70Taxable });
             });
           }
           return;
@@ -360,19 +393,27 @@ function buildSideAnalysis(
 
     shares.forEach((share) => {
       const before70Amount = capitauxAvant70 * share.ratio;
-      const after70Amount = versementsApres70 * share.ratio;
+      const after70Amount = versementsApres70Gross * share.ratio;
+      const before70TaxableAmount = capitauxAvant70Taxables * share.ratio;
+      const after70TaxableAmount = versementsApres70Taxables * share.ratio;
 
       const beforeRow = before70ByBeneficiary.get(share.id);
       if (beforeRow) beforeRow.amount += before70Amount;
       else before70ByBeneficiary.set(share.id, { target: share, amount: before70Amount });
+      const beforeTaxableRow = before70TaxableByBeneficiary.get(share.id);
+      if (beforeTaxableRow) beforeTaxableRow.amount += before70TaxableAmount;
+      else before70TaxableByBeneficiary.set(share.id, { target: share, amount: before70TaxableAmount });
 
       const afterRow = after70ByBeneficiary.get(share.id);
       if (afterRow) afterRow.amount += after70Amount;
       else after70ByBeneficiary.set(share.id, { target: share, amount: after70Amount });
+      const afterTaxableRow = after70TaxableByBeneficiary.get(share.id);
+      if (afterTaxableRow) afterTaxableRow.amount += after70TaxableAmount;
+      else after70TaxableByBeneficiary.set(share.id, { target: share, amount: after70TaxableAmount });
     });
   });
 
-  const totalAfter70TaxableGross = Array.from(after70ByBeneficiary.values()).reduce(
+  const totalAfter70TaxableGross = Array.from(after70TaxableByBeneficiary.values()).reduce(
     (sum, row) => sum + (row.target.isExempt ? 0 : row.amount),
     0,
   );
@@ -384,27 +425,31 @@ function buildSideAnalysis(
 
   const lines = Array.from(lineIds).map((id) => {
     const before70Row = before70ByBeneficiary.get(id);
+    const before70TaxableRow = before70TaxableByBeneficiary.get(id);
     const after70Row = after70ByBeneficiary.get(id);
+    const after70TaxableRow = after70TaxableByBeneficiary.get(id);
     const target = before70Row?.target ?? after70Row?.target;
     if (!target) {
       throw new Error(`Beneficiary target missing for insurance analysis (${id})`);
     }
 
     const capitauxAvant70 = before70Row?.amount ?? 0;
+    const base990IGross = before70TaxableRow?.amount ?? 0;
     const capitauxApres70 = after70Row?.amount ?? 0;
+    const base757BGross = after70TaxableRow?.amount ?? 0;
     const allowance990I = snapshot.avDeces.primesApres1998.allowancePerBeneficiary
       * Math.max(0, Math.min(1, target.allowance990IRatio ?? 1));
     const taxable990I = target.isExempt
       ? 0
-      : Math.max(0, capitauxAvant70 - allowance990I);
+      : Math.max(0, base990IGross - allowance990I);
     const droits990I = target.isExempt ? 0 : compute990ITax(taxable990I, snapshot);
 
     const allowanceShare = !target.isExempt && totalAfter70TaxableGross > 0
-      ? globalAllowance * (capitauxApres70 / totalAfter70TaxableGross)
+      ? globalAllowance * (base757BGross / totalAfter70TaxableGross)
       : 0;
     const taxable757B = target.isExempt
       ? 0
-      : Math.max(0, capitauxApres70 - allowanceShare);
+      : Math.max(0, base757BGross - allowanceShare);
     const droits757B = target.isExempt ? 0 : compute757BTax(taxable757B, target.lien, snapshot);
     const totalDroits = droits990I + droits757B;
 
@@ -414,12 +459,16 @@ function buildSideAnalysis(
       lien: target.lien,
       capitauxAvant70,
       capitauxApres70,
+      baseFiscale990I: base990IGross,
+      baseFiscale757B: base757BGross,
       taxable990I,
       droits990I,
       taxable757B,
       droits757B,
       totalDroits,
       netTransmis: Math.max(0, capitauxAvant70 + capitauxApres70 - totalDroits),
+      ...(target.allowance990IRatio != null ? { allowance990IRatio: target.allowance990IRatio } : {}),
+      ...(target.isExempt && target.allowance990IRatio != null ? { isUsufruitDemembre: true } : {}),
     };
   });
 
@@ -445,6 +494,8 @@ function mergeLines(
     }
     current.capitauxAvant70 += line.capitauxAvant70;
     current.capitauxApres70 += line.capitauxApres70;
+    current.baseFiscale990I = (current.baseFiscale990I ?? 0) + (line.baseFiscale990I ?? 0);
+    current.baseFiscale757B = (current.baseFiscale757B ?? 0) + (line.baseFiscale757B ?? 0);
     current.taxable990I += line.taxable990I;
     current.droits990I += line.droits990I;
     current.taxable757B += line.taxable757B;

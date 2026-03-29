@@ -162,6 +162,7 @@ describe('successionDraft', () => {
           clauseBeneficiaire: 'Conjoint puis enfants',
           capitauxDeces: 80000,
           versementsApres70: 15000,
+          versementsAvant13101998: 12000,
         },
       ],
       [
@@ -177,7 +178,7 @@ describe('successionDraft', () => {
       'epoux2',
     );
 
-    expect(payload.version).toBe(26);
+    expect(payload.version).toBe(27);
     expect(payload.assetEntries[0].pocket).toBe('epoux1');
     const parsed = parseSuccessionDraftPayload(JSON.stringify(payload));
     expect(parsed).not.toBeNull();
@@ -242,6 +243,7 @@ describe('successionDraft', () => {
     expect(parsed?.assetEntries[0].meubleImmeubleLegal).toBe('immeuble');
     expect(parsed?.assuranceVieEntries).toHaveLength(1);
     expect(parsed?.assuranceVieEntries[0].capitauxDeces).toBe(80000);
+    expect(parsed?.assuranceVieEntries[0].versementsAvant13101998).toBe(12000);
     expect(parsed?.perEntries).toHaveLength(1);
     expect(parsed?.perEntries[0].capitauxDeces).toBe(60000);
     expect(parsed?.patrimonial.decesDansXAns).toBe(50);

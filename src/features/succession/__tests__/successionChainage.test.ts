@@ -94,6 +94,7 @@ describe('buildSuccessionChainageAnalysis', () => {
           societe_acquets: 0,
           indivision_pacse: 0,
           indivision_concubinage: 0,
+          indivision_separatiste: 0,
         },
         claims: [
           {
@@ -154,7 +155,8 @@ describe('buildSuccessionChainageAnalysis', () => {
       },
     });
 
-    expect(analysis.step1?.actifTransmis).toBe(370000);
+    // With stipulation + default 50% attribution: propresDefunt(70k) + 50% communs(150k) = 220k
+    expect(analysis.step1?.actifTransmis).toBe(220000);
     expect(analysis.warnings.some((warning) => warning.includes('propre par nature'))).toBe(true);
   });
 
@@ -169,6 +171,46 @@ describe('buildSuccessionChainageAnalysis', () => {
 
     expect(analysis.totalDroits).toBe(0);
     expect(analysis.warnings.some((warning) => warning.includes('Aucun enfant'))).toBe(true);
+  });
+
+  it('allocates parents under art. 757-1 when married with no children', () => {
+    // Communaute legale: commun 400k, step1 estate = 50% = 200k
+    // 2 parents: each gets 1/4 = 50k, conjoint gets 1/2 = 100k (exonere)
+    const with2Parents = buildSuccessionChainageAnalysis({
+      civil: makeCivil({}),
+      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 0, actifCommun: 400000, nbEnfants: 0 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      familyMembers: [
+        { id: 'P1', type: 'parent', branch: 'epoux1' },
+        { id: 'P2', type: 'parent', branch: 'epoux1' },
+      ],
+    });
+
+    const parentBenefs = with2Parents.step1!.beneficiaries.filter((b) => b.lien === 'parent');
+    expect(parentBenefs).toHaveLength(2);
+    expect(parentBenefs[0].brut).toBe(50000);
+    expect(parentBenefs[1].brut).toBe(50000);
+    expect(with2Parents.step1!.partConjoint).toBe(100000);
+    expect(with2Parents.warnings.some((w) => w.includes('757-1'))).toBe(true);
+
+    // 1 parent: parent gets 1/4 = 50k, conjoint gets 3/4 = 150k
+    const with1Parent = buildSuccessionChainageAnalysis({
+      civil: makeCivil({}),
+      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 0, actifCommun: 400000, nbEnfants: 0 }),
+      regimeUsed: 'communaute_legale',
+      order: 'epoux1',
+      dmtgSettings: DEFAULT_DMTG,
+      familyMembers: [
+        { id: 'P1', type: 'parent', branch: 'epoux1' },
+      ],
+    });
+
+    const parent1Benefs = with1Parent.step1!.beneficiaries.filter((b) => b.lien === 'parent');
+    expect(parent1Benefs).toHaveLength(1);
+    expect(parent1Benefs[0].brut).toBe(50000);
+    expect(with1Parent.step1!.partConjoint).toBe(150000);
   });
 
   it('splits a represented branch across grandchildren and emits a warning', () => {
@@ -392,8 +434,8 @@ describe('buildSuccessionChainageAnalysis', () => {
 
     const withoutPreciput = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
-      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
-      regimeUsed: 'separation_biens',
+      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 200000, actifCommun: 500000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
       enfantsContext: enfants,
@@ -408,8 +450,8 @@ describe('buildSuccessionChainageAnalysis', () => {
 
     const withPreciput = buildSuccessionChainageAnalysis({
       civil: makeCivil({}),
-      liquidation: makeLiquidation({ actifEpoux1: 500000, actifEpoux2: 200000, actifCommun: 0, nbEnfants: 2 }),
-      regimeUsed: 'separation_biens',
+      liquidation: makeLiquidation({ actifEpoux1: 0, actifEpoux2: 200000, actifCommun: 500000, nbEnfants: 2 }),
+      regimeUsed: 'communaute_legale',
       order: 'epoux1',
       dmtgSettings: DEFAULT_DMTG,
       enfantsContext: enfants,
@@ -422,17 +464,19 @@ describe('buildSuccessionChainageAnalysis', () => {
       },
     });
 
-    // Without preciput: firstEstate=500k, conjoint 1/4=125k, enfants 3/4=375k, step2=200k+125k=325k
-    // With preciput 100k: taxable=400k, conjoint 1/4=100k, enfants 3/4=300k, step2=200k+100k+100k=400k
-    expect(withoutPreciput.step1!.actifTransmis).toBe(500000);
-    expect(withPreciput.step1!.actifTransmis).toBe(400000);
+    // Without preciput: firstEstate=50%*500k=250k, conjoint 1/4=62.5k, enfants 3/4=187.5k, survivorBase=450k, step2=450k+62.5k=512.5k
+    // With preciput 100k at shared mass: shared after preciput=400k, firstEstate=50%*400k=200k, survivorBase=500k (includes preciput)
+    //   conjoint 1/4=50k, enfants 3/4=150k, step2=500k+50k=550k
+    expect(withoutPreciput.step1!.actifTransmis).toBe(250000);
+    expect(withPreciput.step1!.actifTransmis).toBe(200000);
     expect(withPreciput.step1!.partConjoint).toBeLessThan(withoutPreciput.step1!.partConjoint);
     expect(withPreciput.step1!.partEnfants).toBeLessThan(withoutPreciput.step1!.partEnfants);
-    // Step 2 is larger: preciput adds 100k but carryOver drops by 25k, net +75k
-    expect(withPreciput.step2!.actifTransmis).toBe(400000);
-    expect(withoutPreciput.step2!.actifTransmis).toBe(325000);
+    // Step 2 is larger: preciput goes to survivor via mass split, plus reduced carryOver
+    expect(withPreciput.step2!.actifTransmis).toBe(550000);
+    expect(withoutPreciput.step2!.actifTransmis).toBe(512500);
     expect(withPreciput.step2!.actifTransmis).toBeGreaterThan(withoutPreciput.step2!.actifTransmis);
-    expect(withPreciput.warnings.some((warning) => warning.includes('preciput'))).toBe(true);
+    expect(withPreciput.preciput).not.toBeNull();
+    expect(withPreciput.preciput!.appliedAmount).toBe(100000);
   });
 
   it('prioritizes targeted preciput selections over the global fallback amount', () => {
@@ -483,8 +527,8 @@ describe('buildSuccessionChainageAnalysis', () => {
       groupementFoncierEntries: [],
     });
 
-    expect(analysis.step1?.actifTransmis).toBe(120000);
-    expect(analysis.step2?.actifTransmis).toBe(410000);
+    expect(analysis.step1?.actifTransmis).toBe(160000);
+    expect(analysis.step2?.actifTransmis).toBe(380000);
     expect(analysis.warnings.some((warning) => warning.includes('Preciput cible'))).toBe(true);
     expect(analysis.preciput).toMatchObject({
       mode: 'cible',
@@ -537,9 +581,9 @@ describe('buildSuccessionChainageAnalysis', () => {
       groupementFoncierEntries: [],
     });
 
-    expect(analysis.step1?.actifTransmis).toBe(170000);
-    expect(analysis.step2?.actifTransmis).toBe(372500);
-    expect(analysis.warnings.some((warning) => warning.includes('fallback sur le montant global'))).toBe(true);
+    expect(analysis.step1?.actifTransmis).toBe(185000);
+    expect(analysis.step2?.actifTransmis).toBe(361250);
+    expect(analysis.warnings.some((warning) => warning.includes('repli sur le montant global'))).toBe(true);
   });
 
   it('reinjects survivor insurance inflows into step 2 estate', () => {
@@ -639,7 +683,7 @@ describe('buildSuccessionChainageAnalysis', () => {
     expect(analysis.warnings.some((warning) => warning.includes('deja decede ignore au second deces'))).toBe(true);
   });
 
-  it('reports the full first estate to step 2 in communaute universelle with attribution integrale', () => {
+  it('reports zero at step 1 and full patrimoine at step 2 in communaute universelle with attribution integrale', () => {
     const analysis = buildSuccessionChainageAnalysis({
       civil: makeCivil({ regimeMatrimonial: 'communaute_universelle' }),
       liquidation: makeLiquidation({ actifEpoux1: 200000, actifEpoux2: 300000, actifCommun: 1_500_000, nbEnfants: 2 }),
@@ -659,15 +703,15 @@ describe('buildSuccessionChainageAnalysis', () => {
       },
     });
 
-    expect(analysis.step1?.actifTransmis).toBe(2_000_000);
-    expect(analysis.step1?.partConjoint).toBe(2_000_000);
+    // Attribution intégrale without stipulation: all is communauté → all to survivor
+    // step1 = 0, step2 = 2M
+    expect(analysis.step1?.actifTransmis).toBe(0);
+    expect(analysis.step1?.partConjoint).toBe(0);
     expect(analysis.step1?.partEnfants).toBe(0);
     expect(analysis.step1?.droitsEnfants).toBe(0);
     expect(analysis.step2?.actifTransmis).toBe(2_000_000);
     expect(analysis.totalDroits).toBe(analysis.step2?.droitsEnfants ?? 0);
     expect(analysis.warnings.some((warning) => warning.includes('attribution integrale'))).toBe(true);
-    expect(analysis.warnings.some((warning) => warning.includes('preciput ignoree'))).toBe(true);
-    expect(analysis.warnings.some((warning) => warning.includes('donation entre epoux ignoree'))).toBe(true);
   });
 
   it("liquidates the societe d'acquets pocket with contractual quotes", () => {
@@ -835,6 +879,7 @@ describe('buildSuccessionChainageAnalysis', () => {
         societe_acquets: 0,
         indivision_pacse: 0,
         indivision_concubinage: 0,
+        indivision_separatiste: 0,
       },
       passifsParPocket: {
         epoux1: 0,
@@ -843,6 +888,7 @@ describe('buildSuccessionChainageAnalysis', () => {
         societe_acquets: 0,
         indivision_pacse: 0,
         indivision_concubinage: 0,
+        indivision_separatiste: 0,
       },
       groupementFoncierEntries: [],
       hasBeneficiaryLevelGfAdjustment: false,

@@ -35,6 +35,7 @@ const EMPTY_POCKET_ADJUSTMENTS: Record<SuccessionAssetPocket, number> = {
   societe_acquets: 0,
   indivision_pacse: 0,
   indivision_concubinage: 0,
+  indivision_separatiste: 0,
 };
 
 function asAmount(value: unknown): number {
@@ -55,6 +56,7 @@ export function getSuccessionPocketLabel(pocket: SuccessionAssetPocket): string 
   if (pocket === 'communaute') return 'Communaute';
   if (pocket === 'societe_acquets') return "Societe d'acquets";
   if (pocket === 'indivision_pacse') return 'Indivision PACS';
+  if (pocket === 'indivision_separatiste') return 'Indivision';
   return 'Indivision concubinage';
 }
 

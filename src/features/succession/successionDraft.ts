@@ -30,6 +30,7 @@ export type {
   SuccessionDraftPayloadV24,
   SuccessionDraftPayloadV25,
   SuccessionDraftPayloadV26,
+  SuccessionDraftPayloadV27,
   SuccessionEnfant,
   SuccessionEnfantRattachement,
   SuccessionGroupementFoncierEntry,

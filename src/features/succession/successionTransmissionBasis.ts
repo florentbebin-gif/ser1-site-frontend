@@ -24,6 +24,7 @@ export interface SuccessionEstatePocketScales {
   societe_acquets: number;
   indivision_pacse: number;
   indivision_concubinage: number;
+  indivision_separatiste: number;
 }
 
 export interface SuccessionEstateTaxableBasis {
@@ -47,6 +48,7 @@ const EMPTY_POCKET_SCALES: SuccessionEstatePocketScales = {
   societe_acquets: 0,
   indivision_pacse: 0,
   indivision_concubinage: 0,
+  indivision_separatiste: 0,
 };
 
 function asAmount(value: unknown): number {

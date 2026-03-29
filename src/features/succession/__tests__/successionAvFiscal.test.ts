@@ -165,4 +165,46 @@ describe('buildSuccessionAvFiscalAnalysis', () => {
     expect(analysis.lines[0]?.droits990I).toBe(186094);
     expect(analysis.totalDroits).toBe(186094);
   });
+
+  it('exclut les versements avant le 13/10/1998 de la base taxable globale', () => {
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const analysis = buildSuccessionAvFiscalAnalysis(
+      [makeEntry({
+        clauseBeneficiaire: 'CUSTOM:E1:100',
+        capitauxDeces: 200000,
+        versementsApres70: 100000,
+        versementsAvant13101998: 50000,
+      })],
+      makeCivil({ situationMatrimoniale: 'celibataire', regimeMatrimonial: null }),
+      [{ id: 'E1', rattachement: 'epoux1' }],
+      [],
+      snapshot,
+    );
+
+    expect(analysis.totalCapitauxDeces).toBe(200000);
+    expect(analysis.lines[0]?.capitauxAvant70).toBe(100000);
+    expect(analysis.lines[0]?.capitauxApres70).toBe(100000);
+    expect(analysis.lines[0]?.taxable990I).toBe(0);
+    expect(analysis.lines[0]?.taxable757B).toBe(69500);
+  });
+
+  it('cappe la base taxable apres 70 ans quand elle chevauche les versements exoneres avant 1998', () => {
+    const snapshot = buildSuccessionFiscalSnapshot(null);
+    const analysis = buildSuccessionAvFiscalAnalysis(
+      [makeEntry({
+        clauseBeneficiaire: 'CUSTOM:E1:100',
+        capitauxDeces: 300000,
+        versementsApres70: 250000,
+        versementsAvant13101998: 100000,
+      })],
+      makeCivil({ situationMatrimoniale: 'celibataire', regimeMatrimonial: null }),
+      [{ id: 'E1', rattachement: 'epoux1' }],
+      [],
+      snapshot,
+    );
+
+    expect(analysis.lines[0]?.capitauxApres70).toBe(250000);
+    expect(analysis.lines[0]?.taxable757B).toBe(169500);
+    expect(analysis.warnings.some((warning) => warning.includes('13/10/1998'))).toBe(true);
+  });
 });

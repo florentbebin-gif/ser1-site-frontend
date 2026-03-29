@@ -297,7 +297,7 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
     expect(analysis.result?.totalDroits).toBe(74582);
   });
 
-  it('fusionne la part legale du conjoint marie et le legs testamentaire au profit du conjoint', () => {
+  it('retient le max entre la part legale et le legs universel au conjoint marie (max, pas cumul)', () => {
     const civil = makeCivil({ situationMatrimoniale: 'marie', regimeMatrimonial: 'communaute_legale' });
     const devolutionContext = makeDevolution({
       testamentsBySide: {
@@ -340,10 +340,12 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
       'E1',
       'E2',
     ]);
-    expect(analysis.transmissionRows[0].brut).toBe(175000);
-    expect(analysis.heirs[0]).toMatchObject({ lien: 'conjoint', partSuccession: 175000 });
-    expect(analysis.heirs[1]).toMatchObject({ lien: 'enfant', partSuccession: 62500 });
-    expect(analysis.heirs[2]).toMatchObject({ lien: 'enfant', partSuccession: 62500 });
+    // max(legal 1/4 = 75k, testament QD 1/3 = 100k) = 100k for conjoint
+    // children: (300k - 100k) / 2 = 100k each
+    expect(analysis.transmissionRows[0].brut).toBe(100000);
+    expect(analysis.heirs[0]).toMatchObject({ lien: 'conjoint', partSuccession: 100000 });
+    expect(analysis.heirs[1]).toMatchObject({ lien: 'enfant', partSuccession: 100000 });
+    expect(analysis.heirs[2]).toMatchObject({ lien: 'enfant', partSuccession: 100000 });
   });
 
   it('restitue les freres et soeurs dans le display direct quand la devolution les expose', () => {
@@ -453,6 +455,7 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
         societe_acquets: 0,
         indivision_pacse: 0,
         indivision_concubinage: 0,
+        indivision_separatiste: 0,
       },
       passifsParPocket: {
         epoux1: 0,
@@ -461,6 +464,7 @@ describe('buildSuccessionDirectDisplayAnalysis', () => {
         societe_acquets: 0,
         indivision_pacse: 0,
         indivision_concubinage: 0,
+        indivision_separatiste: 0,
       },
       groupementFoncierEntries: [],
       hasBeneficiaryLevelGfAdjustment: false,

@@ -39,6 +39,7 @@ export interface SuccessionSocieteAcquetsDistribution {
 export interface SuccessionChainStep1Split {
   conjointPart: number;
   enfantsPart: number;
+  parentsPart: number;
   carryOverToStep2: number;
   preciputDeducted: number;
   warnings: string[];
@@ -177,16 +178,20 @@ export function computeFirstEstate(
   liquidation: SuccessionLiquidationContext,
   attributionBiensCommunsPct = 50,
   preserveQualifiedSeparatePocketsInUniversalCommunity = false,
+  preciputFromSharedMass = 0,
 ): number {
   const actifEpoux1 = asAmount(liquidation.actifEpoux1);
   const actifEpoux2 = asAmount(liquidation.actifEpoux2);
   const actifCommun = asAmount(liquidation.actifCommun);
 
   if (regimeUsed === 'communaute_universelle') {
+    const pctDefunt = (100 - Math.min(100, Math.max(0, attributionBiensCommunsPct))) / 100;
     if (preserveQualifiedSeparatePocketsInUniversalCommunity) {
-      return actifCommun + (order === 'epoux1' ? actifEpoux1 : actifEpoux2);
+      const adjustedCommun = Math.max(0, actifCommun - preciputFromSharedMass);
+      return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (adjustedCommun * pctDefunt);
     }
-    return actifEpoux1 + actifEpoux2 + actifCommun;
+    const totalShared = actifEpoux1 + actifEpoux2 + actifCommun;
+    return Math.max(0, totalShared - preciputFromSharedMass) * pctDefunt;
   }
 
   if (regimeUsed === 'separation_biens') {
@@ -194,7 +199,8 @@ export function computeFirstEstate(
   }
 
   const pctDefunt = (100 - Math.min(100, Math.max(0, attributionBiensCommunsPct))) / 100;
-  return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (actifCommun * pctDefunt);
+  const adjustedCommun = Math.max(0, actifCommun - preciputFromSharedMass);
+  return (order === 'epoux1' ? actifEpoux1 : actifEpoux2) + (adjustedCommun * pctDefunt);
 }
 
 export function computeStep1Split(
@@ -205,6 +211,7 @@ export function computeStep1Split(
   deceased: SuccessionDeceasedSide,
   patrimonial?: DonationEntreEpouxSelection,
   referenceDate = new Date(),
+  nbParentsSurvivants = 0,
 ): SuccessionChainStep1Split {
   if (
     civil.situationMatrimoniale === 'marie'
@@ -212,7 +219,7 @@ export function computeStep1Split(
     && patrimonial?.attributionIntegrale
   ) {
     const warnings = [
-      'Communaute universelle avec attribution integrale: 100 % de la masse du 1er deces reportee au conjoint survivant, sans droits descendants au 1er deces.',
+      'Communaute universelle avec attribution integrale: la masse commune est integralement attribuee au conjoint survivant par clause contractuelle.',
     ];
     if (asAmount(patrimonial.preciputMontant) > 0) {
       warnings.push('Attribution integrale prioritaire: clause de preciput ignoree au 1er deces.');
@@ -220,13 +227,17 @@ export function computeStep1Split(
     if (patrimonial.donationEntreEpouxActive) {
       warnings.push('Attribution integrale prioritaire: donation entre epoux ignoree au 1er deces.');
     }
-    return {
-      conjointPart: firstEstate,
-      enfantsPart: 0,
-      carryOverToStep2: firstEstate,
-      preciputDeducted: 0,
-      warnings,
-    };
+    if (firstEstate <= 0) {
+      return {
+        conjointPart: 0,
+        enfantsPart: 0,
+        parentsPart: 0,
+        carryOverToStep2: 0,
+        preciputDeducted: 0,
+        warnings: [...warnings, 'Aucun propre du defunt: la totalite du patrimoine est attribuee au survivant.'],
+      };
+    }
+    warnings.push(`Propres du defunt: ${Math.round(firstEstate).toLocaleString('fr-FR')} EUR soumis a la devolution legale.`);
   }
 
   const preciput = (civil.situationMatrimoniale === 'marie')
@@ -238,18 +249,27 @@ export function computeStep1Split(
     return {
       conjointPart: 0,
       enfantsPart: firstEstate,
+      parentsPart: 0,
       carryOverToStep2: 0,
       preciputDeducted: 0,
       warnings: [],
     };
   }
   if (nbEnfants <= 0) {
+    const preciputWarnings = preciput > 0 ? [`Clause de preciput: ${preciput.toLocaleString('fr-FR')} EUR preleves avant partage successoral.`] : [];
+    // Art. 757-1 CC: en présence de parents survivants, chaque parent reçoit 1/4
+    const clampedParents = Math.min(2, Math.max(0, nbParentsSurvivants));
+    const parentsPart = estateAfterPreciput * clampedParents * 0.25;
+    const conjointPart = estateAfterPreciput - parentsPart;
     return {
-      conjointPart: estateAfterPreciput,
+      conjointPart,
       enfantsPart: 0,
-      carryOverToStep2: estateAfterPreciput,
+      parentsPart,
+      carryOverToStep2: conjointPart,
       preciputDeducted: preciput,
-      warnings: preciput > 0 ? [`Clause de preciput: ${preciput.toLocaleString('fr-FR')} EUR preleves avant partage successoral.`] : [],
+      warnings: clampedParents > 0
+        ? [...preciputWarnings, `Art. 757-1 CC: ${clampedParents} parent(s) survivant(s), part du conjoint ${Math.round(conjointPart).toLocaleString('fr-FR')} EUR.`]
+        : preciputWarnings,
     };
   }
 
@@ -260,6 +280,7 @@ export function computeStep1Split(
   const fallback = {
     conjointPart: estateAfterPreciput * 0.25,
     enfantsPart: estateAfterPreciput * 0.75,
+    parentsPart: 0,
     carryOverToStep2: estateAfterPreciput * 0.25,
   };
 
@@ -275,6 +296,7 @@ export function computeStep1Split(
     return {
       conjointPart: spousePart,
       enfantsPart: Math.max(0, estateAfterPreciput - spousePart),
+      parentsPart: 0,
       carryOverToStep2: spousePart,
       preciputDeducted: preciput,
       warnings: [
@@ -288,6 +310,7 @@ export function computeStep1Split(
     return {
       conjointPart: estateAfterPreciput,
       enfantsPart: 0,
+      parentsPart: 0,
       carryOverToStep2: estateAfterPreciput,
       preciputDeducted: preciput,
       warnings: [
@@ -319,6 +342,7 @@ export function computeStep1Split(
     return {
       conjointPart: valuation.valeurUsufruit,
       enfantsPart: valuation.valeurNuePropriete,
+      parentsPart: 0,
       carryOverToStep2: 0,
       preciputDeducted: preciput,
       warnings,
@@ -343,6 +367,7 @@ export function computeStep1Split(
     return {
       conjointPart: (estateAfterPreciput * 0.25) + valuation.valeurUsufruit,
       enfantsPart: valuation.valeurNuePropriete,
+      parentsPart: 0,
       carryOverToStep2: estateAfterPreciput * 0.25,
       preciputDeducted: preciput,
       warnings,

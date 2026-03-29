@@ -28,4 +28,35 @@ describe('successionUsufruit', () => {
     expect(valuation?.valeurUsufruit).toBe(200000);
     expect(valuation?.valeurNuePropriete).toBe(300000);
   });
+
+  it('BUG-4: boundary age 70→71 — veille, jour, lendemain des 71 ans', () => {
+    // Born 1955-06-15, reference date around 71st birthday
+    const birth = '1955-06-15';
+
+    // Veille des 71 ans (2026-06-14): age = 70 → taux = 40%
+    const veille = getUsufruitValuationFromBirthDate(birth, 1_000_000, new Date('2026-06-14T00:00:00Z'));
+    expect(veille?.age).toBe(70);
+    expect(veille?.tauxUsufruit).toBe(0.4);
+
+    // Jour des 71 ans (2026-06-15): age = 71 → taux = 30%
+    const jour = getUsufruitValuationFromBirthDate(birth, 1_000_000, new Date('2026-06-15T00:00:00Z'));
+    expect(jour?.age).toBe(71);
+    expect(jour?.tauxUsufruit).toBe(0.3);
+
+    // Lendemain (2026-06-16): age = 71 → taux = 30%
+    const lendemain = getUsufruitValuationFromBirthDate(birth, 1_000_000, new Date('2026-06-16T00:00:00Z'));
+    expect(lendemain?.age).toBe(71);
+    expect(lendemain?.tauxUsufruit).toBe(0.3);
+  });
+
+  it('BUG-4: UTC consistency — age computation independent of timezone', () => {
+    // Without UTC fix, passing a date-only string could produce wrong age
+    // depending on timezone offset. With UTC, it's always consistent.
+    const age = getAgeAtReferenceDate('1955-06-15', new Date('2026-06-15T00:00:00Z'));
+    expect(age).toBe(71);
+
+    // One day before birthday → still 70
+    const ageBefore = getAgeAtReferenceDate('1955-06-15', new Date('2026-06-14T23:59:59Z'));
+    expect(ageBefore).toBe(70);
+  });
 });

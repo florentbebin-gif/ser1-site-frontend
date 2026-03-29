@@ -18,7 +18,8 @@ export type SuccessionAssetPocket =
   | 'communaute'
   | 'societe_acquets'
   | 'indivision_pacse'
-  | 'indivision_concubinage';
+  | 'indivision_concubinage'
+  | 'indivision_separatiste';
 
 export type SuccessionSharedAssetPocket = Exclude<SuccessionAssetPocket, SuccessionPersonParty>;
 
@@ -45,7 +46,8 @@ export function isSuccessionAssetPocket(value: unknown): value is SuccessionAsse
     || value === 'communaute'
     || value === 'societe_acquets'
     || value === 'indivision_pacse'
-    || value === 'indivision_concubinage';
+    || value === 'indivision_concubinage'
+    || value === 'indivision_separatiste';
 }
 
 export function getSuccessionLegacyOwnerFromPocket(
@@ -213,6 +215,17 @@ export function buildSuccessionAssetPocketOptions(
       value: sharedPocket,
       label: getSuccessionSharedPocketLabel(sharedPocket),
     });
+  }
+
+  if (
+    context.situationMatrimoniale === 'marie'
+    && (
+      context.regimeMatrimonial === 'separation_biens'
+      || context.regimeMatrimonial === 'participation_acquets'
+      || context.regimeMatrimonial === 'separation_biens_societe_acquets'
+    )
+  ) {
+    options.push({ value: 'indivision_separatiste', label: 'Indivision' });
   }
 
   return options;

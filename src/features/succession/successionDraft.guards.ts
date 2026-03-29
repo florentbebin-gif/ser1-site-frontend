@@ -145,7 +145,8 @@ export function isAssetPocket(v: unknown): v is SuccessionAssetPocket {
     || v === 'communaute'
     || v === 'societe_acquets'
     || v === 'indivision_pacse'
-    || v === 'indivision_concubinage';
+    || v === 'indivision_concubinage'
+    || v === 'indivision_separatiste';
 }
 
 export function isAssetCategory(v: unknown): v is SuccessionAssetCategory {

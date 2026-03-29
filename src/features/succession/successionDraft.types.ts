@@ -202,6 +202,7 @@ export interface SuccessionAssetDetailEntry {
   legalNature?: SuccessionAssetLegalNature;
   origin?: SuccessionAssetOrigin;
   meubleImmeubleLegal?: SuccessionMeubleImmeubleLegal;
+  quotePartEpoux1Pct?: number;
 }
 
 export type SuccessionAssuranceVieContractType = 'standard' | 'demembree' | 'personnalisee';
@@ -214,6 +215,7 @@ export interface SuccessionAssuranceVieEntry {
   clauseBeneficiaire?: string;
   capitauxDeces: number;
   versementsApres70: number;
+  versementsAvant13101998?: number;
   ageUsufruitier?: number;
 }
 
@@ -234,6 +236,7 @@ export interface SuccessionGroupementFoncierEntry {
   label?: string;
   valeurTotale: number;
   pocket: SuccessionAssetPocket;
+  quotePartEpoux1Pct?: number;
 }
 
 export interface SuccessionPrevoyanceDecesEntry {
@@ -323,4 +326,8 @@ export interface SuccessionDraftPayloadV25 extends ParsedSuccessionDraftPayload 
 
 export interface SuccessionDraftPayloadV26 extends ParsedSuccessionDraftPayload {
   version: 26;
+}
+
+export interface SuccessionDraftPayloadV27 extends ParsedSuccessionDraftPayload {
+  version: 27;
 }

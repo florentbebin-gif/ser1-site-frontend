@@ -360,6 +360,8 @@ function parseAssetEntries(
       asset.meubleImmeubleLegal = isSuccessionMeubleImmeubleLegal(item.meubleImmeubleLegal)
         ? item.meubleImmeubleLegal
         : 'non_qualifie';
+      const quotePartEpoux1Pct = asAmount(item.quotePartEpoux1Pct, -1);
+      if (quotePartEpoux1Pct >= 0) asset.quotePartEpoux1Pct = quotePartEpoux1Pct;
 
       return asset;
     })
@@ -393,6 +395,8 @@ function parseGroupementFoncierEntries(
 
       const label = normalizeOptionalString(item.label);
       if (label) entry.label = label;
+      const quotePartEpoux1Pct = asAmount(item.quotePartEpoux1Pct, -1);
+      if (quotePartEpoux1Pct >= 0) entry.quotePartEpoux1Pct = quotePartEpoux1Pct;
 
       return entry;
     })
@@ -421,6 +425,7 @@ function parseAssuranceVieEntries(rawAssuranceVieEntries: unknown): SuccessionAs
         assure,
         capitauxDeces: asAmount(item.capitauxDeces, 0),
         versementsApres70: asAmount(item.versementsApres70, 0),
+        versementsAvant13101998: asAmount(item.versementsAvant13101998, 0),
       };
 
       const clauseBeneficiaire = normalizeOptionalString(item.clauseBeneficiaire);

@@ -22,6 +22,7 @@ describe('successionPatrimonialModel', () => {
       | 'societe_acquets'
       | 'indivision_pacse'
       | 'indivision_concubinage'
+      | 'indivision_separatiste'
     >();
   });
 
@@ -79,6 +80,17 @@ describe('successionPatrimonialModel', () => {
       { value: 'epoux1', label: 'Epoux 1' },
       { value: 'epoux2', label: 'Epoux 2' },
       { value: 'societe_acquets', label: "Societe d'acquets" },
+      { value: 'indivision_separatiste', label: 'Indivision' },
+    ]);
+
+    expect(buildSuccessionAssetPocketOptions({
+      situationMatrimoniale: 'marie',
+      regimeMatrimonial: 'separation_biens',
+      pacsConvention: 'separation',
+    })).toEqual([
+      { value: 'epoux1', label: 'Epoux 1' },
+      { value: 'epoux2', label: 'Epoux 2' },
+      { value: 'indivision_separatiste', label: 'Indivision' },
     ]);
   });
 

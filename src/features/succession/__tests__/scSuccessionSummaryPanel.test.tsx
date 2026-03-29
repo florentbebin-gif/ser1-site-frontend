@@ -27,6 +27,8 @@ describe('ScSuccessionSummaryPanel', () => {
           id: 'benef-1',
           label: 'Enfant 1',
           capitalTransmis: 150000,
+          baseFiscale: 150000,
+          sourceKind: 'av' as const,
           totalDroits: 6000,
           netTransmis: 144000,
         }]}
@@ -40,6 +42,7 @@ describe('ScSuccessionSummaryPanel', () => {
 
     expect(markup).toContain('Transmission par bénéf');
     expect(markup).toContain('Assurances hors succession');
+    expect(markup).toContain('Base fiscale');
     expect(markup).toContain('Enfant 1');
   });
 
@@ -68,6 +71,8 @@ describe('ScSuccessionSummaryPanel', () => {
           id: 'benef-757b',
           label: 'Enfant 1',
           capitalTransmis: 200000,
+          baseFiscale: 200000,
+          sourceKind: 'av' as const,
           totalDroits: 5000,
           netTransmis: 195000,
         }]}
@@ -80,6 +85,7 @@ describe('ScSuccessionSummaryPanel', () => {
 
     expect(markup).toContain('Transmission par bénéf');
     expect(markup).toContain('Enfant 1 (art. 757 B)');
+    expect(markup).toContain('Base fiscale');
     expect(markup).not.toContain('art. 757 B</div>');
   });
 

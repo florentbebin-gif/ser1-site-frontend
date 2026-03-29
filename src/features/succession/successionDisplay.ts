@@ -512,17 +512,39 @@ export function buildSuccessionDirectDisplayAnalysis(
 
   const testamentHeirs = buildTestamentHeirs(input.devolution);
   const testamentTotal = testamentHeirs.reduce((sum, heir) => sum + heir.partSuccession, 0);
+
+  // BUG 11 fix: for legs_universel / legs_titre_universel targeting the conjoint,
+  // apply max(legal, testament) instead of cumulating both.
+  const isUniversalDisposition = input.devolution.testamentDistribution?.dispositionType === 'legs_universel'
+    || input.devolution.testamentDistribution?.dispositionType === 'legs_titre_universel';
+  const testamentConjointAmount = isUniversalDisposition
+    ? testamentHeirs.filter((h) => h.lien === 'conjoint').reduce((sum, h) => sum + h.partSuccession, 0)
+    : 0;
+  let effectiveProtectedHeirs = protectedHeirs;
+  let effectiveTestamentHeirs = testamentHeirs;
+  let effectiveProtectedTotal = protectedTotal;
+  let effectiveTestamentTotal = testamentTotal;
+  if (isUniversalDisposition && testamentConjointAmount > 0 && protectedTotal > 0) {
+    const effectiveConjointPart = Math.max(protectedTotal, testamentConjointAmount);
+    effectiveProtectedHeirs = protectedHeirs.map((h) =>
+      h.lien === 'conjoint' ? { ...h, partSuccession: effectiveConjointPart } : h,
+    );
+    effectiveTestamentHeirs = testamentHeirs.filter((h) => h.lien !== 'conjoint');
+    effectiveProtectedTotal = effectiveProtectedHeirs.reduce((sum, h) => sum + h.partSuccession, 0);
+    effectiveTestamentTotal = effectiveTestamentHeirs.reduce((sum, h) => sum + h.partSuccession, 0);
+  }
+
   const remainingRedistributable = Math.max(
     0,
-    Math.min(redistributableTotal, estateAmount - protectedTotal - testamentTotal),
+    Math.min(redistributableTotal, estateAmount - effectiveProtectedTotal - effectiveTestamentTotal),
   );
-  const scaledRedistributableHeirs = testamentHeirs.length > 0
+  const scaledRedistributableHeirs = effectiveTestamentHeirs.length > 0 || (isUniversalDisposition && testamentConjointAmount > 0)
     ? scaleDetailedHeirs(redistributableLegalHeirs, remainingRedistributable)
     : redistributableLegalHeirs;
 
   const detailedHeirs = mergeDetailedHeirs([
-    ...protectedHeirs,
-    ...testamentHeirs,
+    ...effectiveProtectedHeirs,
+    ...effectiveTestamentHeirs,
     ...scaledRedistributableHeirs,
   ]);
   const detailedHeirsWithTaxableBasis = input.transmissionBasis

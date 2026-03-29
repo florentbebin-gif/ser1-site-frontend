@@ -335,6 +335,89 @@ describe('computeSuccessionAssetValuation', () => {
     expect(result.transmissionBasis.ordinaryTaxableAssetsParPocket.epoux1).toBe(150000);
   });
 
+  it('splits indivision_separatiste entries into epoux1/epoux2 based on quotePartEpoux1Pct', () => {
+    const result = computeSuccessionAssetValuation({
+      civilContext: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'separation_biens',
+        pacsConvention: 'separation',
+      },
+      assetEntries: [
+        {
+          id: 'asset-1',
+          pocket: 'indivision_separatiste',
+          category: 'immobilier',
+          subCategory: RESIDENCE_SECONDAIRE_SUBCATEGORY,
+          amount: 500000,
+          quotePartEpoux1Pct: 60,
+        },
+        {
+          id: 'asset-2',
+          pocket: 'epoux1',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 100000,
+        },
+      ],
+      groupementFoncierEntries: [
+        {
+          id: 'gf-1',
+          pocket: 'indivision_separatiste',
+          type: 'GFF',
+          valeurTotale: 200000,
+          quotePartEpoux1Pct: 40,
+        },
+      ],
+      forfaitMobilierMode: 'off',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    // Asset 500k split: ep1 gets 300k, ep2 gets 200k
+    // Plus ep1 own asset 100k → ep1 total = 400k, ep2 = 200k
+    expect(result.assetNetTotals.epoux1).toBe(400000 + 80000);
+    expect(result.assetNetTotals.epoux2).toBe(200000 + 120000);
+    expect(result.assetNetTotals.commun).toBe(0);
+
+    // GF 200k split: ep1 gets 80k, ep2 gets 120k
+    // assetBreakdown includes both ordinary + GF
+    expect(result.assetBreakdown.actifs.epoux1).toBe(480000);
+    expect(result.assetBreakdown.actifs.epoux2).toBe(320000);
+
+    // Transmission basis should have zero in indivision_separatiste
+    expect(result.transmissionBasis.ordinaryTaxableAssetsParPocket.indivision_separatiste).toBe(0);
+    expect(result.transmissionBasis.ordinaryTaxableAssetsParPocket.epoux1).toBe(400000);
+    expect(result.transmissionBasis.ordinaryTaxableAssetsParPocket.epoux2).toBe(200000);
+  });
+
+  it('defaults quotePartEpoux1Pct to 50% when not specified for indivision_separatiste', () => {
+    const result = computeSuccessionAssetValuation({
+      civilContext: {
+        situationMatrimoniale: 'marie',
+        regimeMatrimonial: 'separation_biens',
+        pacsConvention: 'separation',
+      },
+      assetEntries: [
+        {
+          id: 'asset-1',
+          pocket: 'indivision_separatiste',
+          category: 'financier',
+          subCategory: 'Comptes',
+          amount: 200000,
+        },
+      ],
+      groupementFoncierEntries: [],
+      forfaitMobilierMode: 'off',
+      forfaitMobilierPct: 5,
+      forfaitMobilierMontant: 0,
+      abattementResidencePrincipale: false,
+    });
+
+    expect(result.assetNetTotals.epoux1).toBe(100000);
+    expect(result.assetNetTotals.epoux2).toBe(100000);
+  });
+
   it('summarizes affected liabilities by pocket', () => {
     const result = computeSuccessionAssetValuation({
       civilContext: marriedCivilContext,
