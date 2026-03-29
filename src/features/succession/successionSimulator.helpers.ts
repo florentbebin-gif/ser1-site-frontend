@@ -312,6 +312,7 @@ export function buildAssuranceVieFromAsset(
     assure: personParty,
     capitauxDeces: sourceEntry?.amount ?? 0,
     versementsApres70: 0,
+    versementsAvant13101998: 0,
   };
 }
 

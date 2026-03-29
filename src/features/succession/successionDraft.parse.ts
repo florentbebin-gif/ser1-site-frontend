@@ -425,6 +425,7 @@ function parseAssuranceVieEntries(rawAssuranceVieEntries: unknown): SuccessionAs
         assure,
         capitauxDeces: asAmount(item.capitauxDeces, 0),
         versementsApres70: asAmount(item.versementsApres70, 0),
+        versementsAvant13101998: asAmount(item.versementsAvant13101998, 0),
       };
 
       const clauseBeneficiaire = normalizeOptionalString(item.clauseBeneficiaire);

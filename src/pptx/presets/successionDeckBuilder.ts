@@ -226,7 +226,7 @@ function buildChronologieBody(data?: SuccessionData['predecesChronologie']): str
       `- Preciput ${data.preciput.mode === 'cible' ? 'cible' : 'global'}: montant preleve ${fmt(data.preciput.appliedAmount)}`,
     );
     if (data.preciput.usesGlobalFallback) {
-      lines.push("- Preciput: fallback global active faute de selection ciblee compatible.");
+      lines.push("- Preciput: mode de repli global actif faute de selection ciblee compatible.");
     }
     data.preciput.selections.forEach((selection) => {
       lines.push(`- Preciput: ${selection.label} preleve pour ${fmt(selection.appliedAmount)}`);

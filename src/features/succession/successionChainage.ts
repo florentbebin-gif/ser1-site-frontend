@@ -435,6 +435,26 @@ function buildLegalPartnerHeirs(
   }];
 }
 
+function buildParentHeirs(
+  familyMembers: FamilyMember[],
+  deceased: SuccessionDeceasedSide,
+  amount: number,
+): DetailedChainHeir[] {
+  if (amount <= 0) return [];
+  const parents = familyMembers.filter(
+    (m) => m.type === 'parent' && (!m.branch || m.branch === deceased),
+  );
+  const count = Math.max(1, parents.length);
+  const amountEach = amount / count;
+  return Array.from({ length: count }, (_, i) => ({
+    id: parents[i]?.id ?? `parent-${deceased}-${i + 1}`,
+    label: `Parent ${i + 1}`,
+    lien: 'parent' as const,
+    partSuccession: amountEach,
+    exonerated: false,
+  }));
+}
+
 function computeStepTransmission(
   input: SuccessionChainageInput,
   estateAmount: number,
@@ -444,8 +464,10 @@ function computeStepTransmission(
   redistributableAmount: number,
   deadCounterpart: SuccessionDeceasedSide | null,
   stepLabel: string,
+  parentsAmount = 0,
 ): SuccessionChainStepComputation {
   const legalPartnerHeirs = buildLegalPartnerHeirs(input.civil, legalPartnerAmount);
+  const parentHeirs = buildParentHeirs(input.familyMembers ?? [], deceased, parentsAmount);
   const { testament, warnings: configWarnings } = getStepTestamentConfig(input, deceased, deadCounterpart);
   const testamentDistribution = computeTestamentDistribution({
     situation: input.civil.situationMatrimoniale,
@@ -496,6 +518,7 @@ function computeStepTransmission(
     );
     const detailedHeirs = mergeDetailedHeirs([
       ...legalPartnerHeirsAdjusted,
+      ...parentHeirs,
       ...filteredTestamentHeirs,
       ...detailedDescendantHeirsAdj,
     ]);
@@ -559,6 +582,7 @@ function computeStepTransmission(
   );
   const detailedHeirs = mergeDetailedHeirs([
     ...legalPartnerHeirs,
+    ...parentHeirs,
     ...testamentHeirs,
     ...detailedDescendantHeirs,
   ]);
@@ -603,6 +627,12 @@ function computeStepTransmission(
       ...prefixStepWarnings(stepLabel, testamentDistribution?.warnings ?? []),
     ],
   };
+}
+
+function countSideParents(familyMembers: FamilyMember[], deceased: SuccessionDeceasedSide): number {
+  return familyMembers.filter(
+    (m) => m.type === 'parent' && (!m.branch || m.branch === deceased),
+  ).length;
 }
 
 export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput): SuccessionChainageAnalysis {
@@ -790,16 +820,18 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
   }
   warnings.push('Module de chainage simplifie: liquidation notariale fine et options civiles avancees non modelisees.');
 
+  const nbParentsStep1 = countSideParents(familyMembers, input.order);
   const step1Split = computeStep1Split(
     input.civil,
     input.regimeUsed,
     firstEstate,
     nbEnfants,
     input.order,
-    (sharedMassPreciputAmount > 0 || societeAcquetsDistribution)
+    (sharedMassPreciputAmount > 0 || societeAcquetsDistribution || !isCommunityRegime)
       ? { ...(input.patrimonial ?? {}), preciputMontant: 0 }
       : preciputPatrimonial,
     input.referenceDate,
+    nbParentsStep1,
   );
   warnings.push(...step1Split.warnings);
   const step1TaxableEstate = firstEstate - step1Split.preciputDeducted;
@@ -867,6 +899,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     step1Split.enfantsPart,
     null,
     `Etape 1 (${getLabelForSide(input.order)})`,
+    step1Split.parentsPart,
   );
   warnings.push(...step1Details.warnings);
   warnings.push(...getStepWarnings(
@@ -879,7 +912,7 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
 
   const otherSide = getOtherSide(input.order);
   const step2InheritedCarryOverAmount = step1Split.carryOverToStep2 + step1Details.carryOverToStep2;
-  const step2CarryOverAmount = step2InheritedCarryOverAmount + step1Split.preciputDeducted;
+  const step2CarryOverAmount = step2InheritedCarryOverAmount;
   const step2Estate = survivorBase + step2CarryOverAmount + survivorEconomicInflows;
   const survivorTaxableBasis = buildSuccessionEstateTaxableBasis(
     input.transmissionBasis,
@@ -908,15 +941,18 @@ export function buildSuccessionChainageAnalysis(input: SuccessionChainageInput):
     carryOverTaxableBasis,
     survivorEconomicInflowsTaxableBasis,
   );
+  const nbParentsStep2 = nbEnfants <= 0 ? countSideParents(familyMembers, otherSide) : 0;
+  const step2ParentsPart = nbParentsStep2 > 0 ? step2Estate * Math.min(2, nbParentsStep2) * 0.25 : 0;
   const step2Details = computeStepTransmission(
     input,
     step2Estate,
     step2TaxableBasis,
     otherSide,
     0,
-    step2Estate,
+    step2Estate - step2ParentsPart,
     input.order,
     `Etape 2 (${getLabelForSide(otherSide)})`,
+    step2ParentsPart,
   );
   warnings.push(...step2Details.warnings);
   warnings.push(...getStepWarnings(

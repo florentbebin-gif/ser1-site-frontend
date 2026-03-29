@@ -212,10 +212,7 @@ export function useSuccessionOutcomeDerivedValues({
     [shouldRenderSuccessionComputationSections, displayAssuranceVieTransmise, displayPerTransmis, displayPrevoyanceTransmise],
   );
 
-  const derivedMasseTransmise = useMemo(
-    () => derivedMasseSuccessorale + derivedCapitauxHorsSuccession,
-    [derivedMasseSuccessorale, derivedCapitauxHorsSuccession],
-  );
+  const derivedMasseTransmise = derivedMasseSuccessorale;
 
   const derivedTotalDroits = useMemo(
     () => (shouldRenderSuccessionComputationSections
@@ -242,7 +239,7 @@ export function useSuccessionOutcomeDerivedValues({
     if (displayUsesChainage) {
       const step1 = chainageAnalysis.step1;
       const step2 = chainageAnalysis.step2;
-      if (!step1 || !step2) return derivedMasseTransmise;
+      if (!step1 || !step2) return derivedMasseSuccessorale + derivedCapitauxHorsSuccession;
       return step1.actifTransmis
         + step2.actifTransmis
         + assuranceVieByAssure.epoux1
@@ -252,7 +249,7 @@ export function useSuccessionOutcomeDerivedValues({
         + prevoyanceByAssure.epoux1
         + prevoyanceByAssure.epoux2;
     }
-    return derivedMasseTransmise;
+    return derivedMasseSuccessorale + derivedCapitauxHorsSuccession;
   }, [
     shouldRenderSuccessionComputationSections,
     displayUsesChainage,
@@ -260,7 +257,8 @@ export function useSuccessionOutcomeDerivedValues({
     assuranceVieByAssure,
     perByAssure,
     prevoyanceByAssure,
-    derivedMasseTransmise,
+    derivedMasseSuccessorale,
+    derivedCapitauxHorsSuccession,
   ]);
 
   const synthHypothese = useMemo(() => buildSuccessionSynthHypothese({

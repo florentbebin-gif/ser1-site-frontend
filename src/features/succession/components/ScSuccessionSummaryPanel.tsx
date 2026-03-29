@@ -22,6 +22,8 @@ interface InsuranceBeneficiaryLine {
   id: string;
   label: string;
   capitalTransmis: number;
+  baseFiscale: number;
+  sourceKind: 'av' | 'per' | 'prevoyance';
   totalDroits: number;
   netTransmis: number;
 }
@@ -129,6 +131,7 @@ export default function ScSuccessionSummaryPanel({
   const interMassClaims = chainageAnalysis.interMassClaims;
   const affectedLiabilities = chainageAnalysis.affectedLiabilities;
   const preciput = chainageAnalysis.preciput;
+  const showInsuranceBaseColumn = insurance757BLines.length > 0;
   const firstCost = displayUsesChainage
     ? (chainageAnalysis.step1?.droitsEnfants ?? 0)
       + avFiscalByAssure[chainageAnalysis.order].totalDroits
@@ -350,6 +353,7 @@ export default function ScSuccessionSummaryPanel({
               {displayUsesChainage && <span>1er décès</span>}
               {displayUsesChainage && <span>2e décès</span>}
               <span>{displayUsesChainage ? 'Total 2 décès' : 'Reçoit (brut)'}</span>
+              {showInsuranceBaseColumn && <span>Base fiscale</span>}
               <span>Droits</span>
               <span>Net estimé</span>
             </div>
@@ -362,6 +366,7 @@ export default function ScSuccessionSummaryPanel({
                 {displayUsesChainage && <span>{fmt(row.step1Brut ?? 0)}</span>}
                 {displayUsesChainage && <span>{fmt(row.step2Brut ?? 0)}</span>}
                 <span>{fmt(row.brut)}</span>
+                {showInsuranceBaseColumn && <span />}
                 <span>{row.exonerated ? 'Exonéré' : fmt(row.droits)}</span>
                 <span>{fmt(row.net)}</span>
               </div>
@@ -369,7 +374,10 @@ export default function ScSuccessionSummaryPanel({
             {insurance757BLines.map((line) => (
               <div key={`757b-${line.id}`} className="sc-transmission-row sc-transmission-row--av">
                 <span>{line.label} (art. 757 B)</span>
+                {displayUsesChainage && <span />}
+                {displayUsesChainage && <span />}
                 <span>{fmt(line.capitalTransmis)}</span>
+                {showInsuranceBaseColumn && <span>{fmt(line.baseFiscale)}</span>}
                 <span>{fmt(line.totalDroits)}</span>
                 <span>{fmt(line.netTransmis)}</span>
               </div>
@@ -385,6 +393,7 @@ export default function ScSuccessionSummaryPanel({
             <div className="sc-transmission-grid__head">
               <span />
               <span>Reçoit (brut)</span>
+              <span>Base fiscale</span>
               <span>Droits</span>
               <span>Net estimé</span>
             </div>
@@ -392,6 +401,7 @@ export default function ScSuccessionSummaryPanel({
               <div key={line.id} className="sc-transmission-row sc-transmission-row--av">
                 <span>{line.label}</span>
                 <span>{fmt(line.capitalTransmis)}</span>
+                <span>{fmt(line.baseFiscale)}</span>
                 <span>{fmt(line.totalDroits)}</span>
                 <span>{fmt(line.netTransmis)}</span>
               </div>

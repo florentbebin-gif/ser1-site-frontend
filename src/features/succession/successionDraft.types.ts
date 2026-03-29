@@ -215,6 +215,7 @@ export interface SuccessionAssuranceVieEntry {
   clauseBeneficiaire?: string;
   capitauxDeces: number;
   versementsApres70: number;
+  versementsAvant13101998?: number;
   ageUsufruitier?: number;
 }
 
@@ -325,4 +326,8 @@ export interface SuccessionDraftPayloadV25 extends ParsedSuccessionDraftPayload 
 
 export interface SuccessionDraftPayloadV26 extends ParsedSuccessionDraftPayload {
   version: 26;
+}
+
+export interface SuccessionDraftPayloadV27 extends ParsedSuccessionDraftPayload {
+  version: 27;
 }

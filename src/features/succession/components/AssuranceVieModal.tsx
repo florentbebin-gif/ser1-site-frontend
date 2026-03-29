@@ -192,6 +192,18 @@ export default function AssuranceVieModal({
                   placeholder="Montant"
                 />
               </div>
+              <div className="sc-field">
+                <label>Dont versements avant le 13/10/1998 (EUR)</label>
+                <ScNumericInput
+                  value={entry.versementsAvant13101998 || 0}
+                  min={0}
+                  onChange={(val) => onUpdate('versementsAvant13101998', val)}
+                  placeholder="Montant"
+                />
+                <p className="sc-hint sc-hint--compact sc-assurance-vie-contract__hint">
+                  Cette part est exclue des bases 990 I et 757 B. Si le cumul avec les versements apres 70 ans depasse le capital, le moteur applique un cap avec warning.
+                </p>
+              </div>
             </div>
           </div>
         </div>

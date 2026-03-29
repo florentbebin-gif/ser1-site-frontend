@@ -260,6 +260,20 @@ export default function ScAssetsPassifsCard({
                           &#10005;
                         </button>
                       </div>
+                      {entry.pocket === 'indivision_separatiste' && (
+                        <div className="sc-field sc-field--full sc-asset-row__suboption">
+                          <label>Quote-part Epoux 1 (%)</label>
+                          <ScNumericInput
+                            value={entry.quotePartEpoux1Pct ?? 50}
+                            min={0}
+                            max={100}
+                            onChange={(val) => onUpdateAssetEntry(entry.id, 'quotePartEpoux1Pct', val)}
+                          />
+                          <p className="sc-hint sc-hint--compact">
+                            100 = entierement Epoux 1, 0 = entierement Epoux 2. La quote-part du defunt est deduite selon l'ordre de deces simule.
+                          </p>
+                        </div>
+                      )}
                       {showResidenceCheckbox && (
                         <div className="sc-field sc-field--full sc-asset-row__suboption">
                           <label className="sc-checkbox-label">
@@ -349,6 +363,20 @@ export default function ScAssetsPassifsCard({
                           &#10005;
                         </button>
                       </div>
+                      {gfEntry.pocket === 'indivision_separatiste' && (
+                        <div className="sc-field sc-field--full sc-asset-row__suboption">
+                          <label>Quote-part Epoux 1 (%)</label>
+                          <ScNumericInput
+                            value={gfEntry.quotePartEpoux1Pct ?? 50}
+                            min={0}
+                            max={100}
+                            onChange={(val) => onUpdateGroupementFoncierEntry(gfEntry.id, 'quotePartEpoux1Pct', val)}
+                          />
+                          <p className="sc-hint sc-hint--compact">
+                            100 = entierement Epoux 1, 0 = entierement Epoux 2. La quote-part du defunt est deduite selon l'ordre de deces simule.
+                          </p>
+                        </div>
+                      )}
                       {gfEntry.valeurTotale > 0 && (
                         <div className="sc-field sc-field--full sc-asset-row__suboption sc-asset-row__suboption--info">
                           Exonéré : {fmt(exoneration.exonere)} | Taxable : {fmt(exoneration.taxable)}

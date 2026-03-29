@@ -159,6 +159,8 @@ function mergeAvLines(
     }
     current.capitauxAvant70 += line.capitauxAvant70;
     current.capitauxApres70 += line.capitauxApres70;
+    current.baseFiscale990I = (current.baseFiscale990I ?? 0) + (line.baseFiscale990I ?? 0);
+    current.baseFiscale757B = (current.baseFiscale757B ?? 0) + (line.baseFiscale757B ?? 0);
     current.taxable990I += line.taxable990I;
     current.droits990I += line.droits990I;
     current.taxable757B += line.taxable757B;

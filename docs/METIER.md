@@ -182,7 +182,7 @@ Regle de lecture :
 - `communaute_meubles_acquets` reste simplifiee, mais les actifs detailles peuvent maintenant etre requalifies meuble / immeuble avant chainage
 - `participation_acquets` garde un audit predeces approxime, mais la succession peut maintenant calculer une creance simplifiee si le bloc dedie est active dans les dispositions
 - `separation_biens_societe_acquets` reste une lecture simplifiee dans l'audit predeces, mais la succession liquide maintenant la poche `societe_acquets` via un bloc dedie, un chainage simplifie et une restitution/export explicites
-- le preciput cible par bien est maintenant selectionnable dans la modal dispositions sur les biens `communaute` / `societe_acquets`, le chainage le deduit avant partage avec fallback sur le montant global, et la synthese / chronologie / exports mentionnent explicitement les biens preleves
+- le preciput cible par bien est maintenant selectionnable dans la modal dispositions sur les biens `communaute` / `societe_acquets`, le chainage le deduit avant partage avec repli sur le montant global, et la synthese / chronologie / exports mentionnent explicitement les biens preleves
 - la saisie detaillee des actifs expose maintenant une qualification juridique (`legalNature`, `origin`, `meubleImmeubleLegal`) conservee dans le draft succession
 - la modal dispositions expose maintenant des `recompenses / creances entre masses`; le moteur les applique comme transferts simplifies entre `pocket`, avec warnings si l'actif disponible est insuffisant
 - les passifs detailles rattaches a une masse sont restitues comme `passif affecte` dans la liquidation simplifiee et minorent uniquement la masse concernee
