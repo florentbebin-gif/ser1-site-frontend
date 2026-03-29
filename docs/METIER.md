@@ -177,7 +177,7 @@ Le bouton `+ Dispositions` reste bloque tant qu'un contexte familial minimum n'e
 La trajectoire de montee en gamme du simulateur succession est suivie dans [SUCCESSION_MODEL_MATURITY.md](SUCCESSION_MODEL_MATURITY.md).
 
 Regle de lecture :
-- `communaute_legale` et `separation_biens` sont des supports robustes du perimetre actuel
+- `communaute_legale` est un support robuste du perimetre actuel; `separation_biens` l'est aussi, avec une poche manuelle `indivision_separatiste` disponible en saisie detaillee et ventilee via `quotePartEpoux1Pct`
 - `communaute_universelle` reste une simplification documentee, mais les biens detailles qualifies `propre_par_nature` peuvent maintenant rester hors masse commune si la `stipulationContraireCU` est activee
 - `communaute_meubles_acquets` reste simplifiee, mais les actifs detailles peuvent maintenant etre requalifies meuble / immeuble avant chainage
 - `participation_acquets` garde un audit predeces approxime, mais la succession peut maintenant calculer une creance simplifiee si le bloc dedie est active dans les dispositions

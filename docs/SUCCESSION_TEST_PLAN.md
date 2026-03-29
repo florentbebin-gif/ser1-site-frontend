@@ -1,1723 +1,1944 @@
-# Plan de test Succession — SER1 vs BIG
+# Plan de test Succession — SER1
 
-> Résultats SER1 à compléter manuellement. Résultats BIG conservés comme référence.
-> Dernière mise à jour : 2026-03-27
+> Tests manuels à réaliser sur `/sim/succession`
+> Dernière mise à jour : 2026-03-29
 
 ---
 
-## BLOC 1 — Cas de base (DMTG ligne directe)
+## Méthodologie
 
-### 1.1 Couple marié, communauté légale, 2 enfants communs
+### Inventaire des inputs (96 champs actifs)
+
+| Section | Champs | Valeurs clés |
+|---|---|---|
+| Contexte civil | 5 | situation (6), régime (6), convention PACS (2), dates naissance |
+| Famille | 5 | rattachement enfant (3), décédé, type membre (5) |
+| Actifs/Passifs expert | 9 | masse (5), catégorie (5), sous-catégorie, montant, qualification juridique (4), RP |
+| Actifs/Passifs simplifié | 6 | Ep1/Ep2/Commun × actif/passif |
+| Forfait mobilier | 3 | mode (4), %, montant fixe |
+| Groupements fonciers | 5 | type GF (4), valeur, masse, quote-part, label |
+| Assurance-vie | 8 | clause (3), souscripteur/assuré (2), bénéficiaires preset (3), capitaux, après 70, avant 1998 |
+| PER assurance | 5 | clause (3), assuré (2), bénéficiaires, capitaux |
+| Prévoyance décès | 4 | assuré (2), capital, dernière prime |
+| Donations | 7 | type (2), date, donateur, donataire, valeur, 790G, réserve usufruit |
+| Dispositions | 37 | testament (3 types), DDV (3), donation époux (4), attribution, préciput (2 modes), SA, PA, créances, ascendants |
+| Temporel & chainage | 2 | décès dans X ans (11 valeurs), ordre décès (2) |
+
+### Calcul combinatoire
+
+Produit cartésien brut : `6 situations × 6 régimes × 4 configs famille × 16 dispositions × 20 produits × 11 horizons` = **> 500 000 cas**.
+
+**Méthode retenue : couverture orthogonale** — 1 variable clé modifiée à la fois autour d'un cas de référence, complétée de croisements critiques. Résultat : **81 tests manuels pertinents**.
+
+### Récapitulatif par bloc
+
+| Bloc | Sujet | Tests |
+|---|---|---|
+| 1 | Situations familiales de base | 15 |
+| 2 | Régimes matrimoniaux | 8 |
+| 3 | Dispositions testamentaires | 12 |
+| 4 | Produits d'assurance (AV / PER / Prévoyance) | 12 |
+| 5 | Actifs mode expert | 8 |
+| 6 | Donations | 6 |
+| 7 | Chainage & horizons temporels | 6 |
+| 8 | Croisements critiques | 7 |
+| 9 | Cas limites | 7 |
+| **Total** | | **81** |
+
+### Colonnes de résultat
+
+Chaque test comporte une section **"Résultats SER1 : À compléter"** à remplir manuellement après saisie dans le simulateur. Les colonnes BIG sont conservées quand une référence existe.
+
+---
+
+## BLOC 1 — Situations familiales de base
+
+> Régime CRA, dispositions par défaut. Varie uniquement la situation/composition familiale.
+
+---
+
+### 1.1 — Marié CRA · 2 enfants communs · 600 k€ commun
 
 | Paramètre | Valeur |
 |---|---|
 | Situation | Marié(e) |
-| Régime | Communauté réduite aux acquêts |
+| Régime | Communauté légale (CRA) |
 | Naissance Ep1 | 01/01/1980 |
 | Naissance Ep2 | 01/01/1982 |
-| Enfants | 2 enfants communs |
-| Actifs (simplifié) | Commun : 600 000 € |
-| Passifs | 0 |
-| Dispositions | Par défaut (1/4 PP, attribution 50 %) |
+| Enfants | 2 communs |
+| Actifs | Commun : 600 000 € |
+| Dispositions | Par défaut (moteur) |
+| Décès | Ep1 en premier |
 
-**Résultats SER1 : À compléter**
+**Résultats SER1 — Étape 1 (décès Ep1) : À compléter**
 
-| | Reçoit (brut) | Droits | Net estimé |
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+**Résultats SER1 — Étape 2 (décès Ep2) : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
 |---|---|---|---|
 | E1 | | | |
 | E2 | | | |
-| Conjoint survivant | | | |
 
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
+**Résultats BIG — Référence :**
 
-**Résultats BIG :**
+| | Héritage | Droits | Net |
+|---|---|---|---|
+| 1er décès — Conjoint | 75 000 | 0 | 75 000 |
+| 1er décès — E1 | 112 500 | 866 | 111 634 |
+| 1er décès — E2 | 112 500 | 866 | 111 634 |
+| 2e décès — E1 | 187 500 | 15 694 | 171 806 |
+| 2e décès — E2 | 187 500 | 15 694 | 171 806 |
 
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 300 000 | 0 | 0 | 1 732 | 298 268 |
-| Conjoint | 75 000 | 0 | 0 | 0 | 75 000 |
-| Enfant commun 1 | 112 500 | 0 | 0 | 866 | 111 634 |
-| Enfant commun 2 | 112 500 | 0 | 0 | 866 | 111 634 |
-| **2e décès** | | | | | |
-| Total | 375 000 | 0 | 0 | 31 389 | 343 611 |
-| Enfant commun 1 | 187 500 | 0 | 0 | 15 694 | 171 806 |
-| Enfant commun 2 | 187 500 | 0 | 0 | 15 694 | 171 806 |
-
-**Résultat attendu :** Cohérent (référence validée)
+**Vérifier :** Abattement 100 k€/enfant, exonération conjoint, droits totaux cumulés.
 
 ---
 
-### 1.2 Couple marié, communauté légale, 1 enfant commun
+### 1.2 — Marié CRA · 1 enfant commun · 1 000 k€ commun
 
 | Paramètre | Valeur |
 |---|---|
 | Situation | Marié(e) |
-| Régime | Communauté réduite aux acquêts |
+| Régime | Communauté légale |
 | Naissance Ep1 | 01/01/1970 |
 | Naissance Ep2 | 01/06/1972 |
-| Enfants | 1 enfant commun |
-| Actifs (simplifié) | Commun : 1 000 000 € |
-| Dispositions | Par défaut (1/4 PP, attribution 50 %) |
+| Enfants | 1 commun |
+| Actifs | Commun : 1 000 000 € |
+| Dispositions | Par défaut |
+| Décès | Ep1 en premier |
 
 **Résultats SER1 : À compléter**
 
-| | Reçoit (brut) | Droits | Net estimé |
+| | Étape 1 — Conjoint | Étape 1 — E1 | Étape 2 — E1 |
 |---|---|---|---|
-| E1 | | | |
-| Conjoint survivant | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
+| Reçoit brut | | | |
+| Droits | | | |
+| Net | | | |
 
 **Résultats BIG :**
 
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 500 000 | 0 | 0 | 53 194 | 446 806 |
-| Conjoint | 125 000 | 0 | 0 | 0 | 125 000 |
-| Enfant commun 1 | 375 000 | 0 | 0 | 53 194 | 321 806 |
-| **2e décès** | | | | | |
-| Total | 625 000 | 0 | 0 | 103 194 | 521 806 |
-| Enfant commun 1 | 625 000 | 0 | 0 | 103 194 | 521 806 |
-
-**Résultat attendu :** Cohérent (référence validée)
+| | Héritage | Droits | Net |
+|---|---|---|---|
+| 1er décès — Conjoint | 125 000 | 0 | 125 000 |
+| 1er décès — E1 | 375 000 | 53 194 | 321 806 |
+| 2e décès — E1 | 625 000 | 103 194 | 521 806 |
 
 ---
 
-### 1.3 Couple marié, communauté légale, 3 enfants communs
+### 1.3 — Marié CRA · 3 enfants communs · 2 000 k€ commun
 
 | Paramètre | Valeur |
 |---|---|
 | Situation | Marié(e) |
-| Régime | Communauté réduite aux acquêts |
+| Régime | Communauté légale |
 | Naissance Ep1 | 15/03/1965 |
 | Naissance Ep2 | 20/09/1967 |
-| Enfants | 3 enfants communs |
-| Actifs (simplifié) | Commun : 2 000 000 € |
-| Dispositions | Par défaut (1/4 PP, attribution 50 %) |
+| Enfants | 3 communs |
+| Actifs | Commun : 2 000 000 € |
+| Dispositions | Par défaut |
+| Décès | Ep1 en premier |
 
-**Résultats SER1 : À compléter**
+**Résultats SER1 — Étape 1 : À compléter**
 
-| | Reçoit (brut) | Droits | Net estimé |
+| Héritier | Reçoit brut | Droits | Net |
 |---|---|---|---|
+| Conjoint | | | |
 | E1 | | | |
 | E2 | | | |
 | E3 | | | |
-| Conjoint survivant | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
 
 **Résultats BIG :**
 
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 1 000 000 | 0 | 0 | 84 583 | 915 417 |
-| Conjoint | 250 000 | 0 | 0 | 0 | 250 000 |
-| Enfant commun 1 | 250 000 | 0 | 0 | 28 194 | 221 806 |
-| Enfant commun 2 | 250 000 | 0 | 0 | 28 194 | 221 806 |
-| Enfant commun 3 | 250 000 | 0 | 0 | 28 194 | 221 806 |
-| **2e décès** | | | | | |
-| Total | 1 250 000 | 0 | 0 | 184 583 | 1 065 417 |
-| Enfant commun 1 | 416 667 | 0 | 0 | 61 528 | 355 139 |
-| Enfant commun 2 | 416 667 | 0 | 0 | 61 528 | 355 139 |
-| Enfant commun 3 | 416 667 | 0 | 0 | 61 528 | 355 139 |
-
-**Résultat attendu :** Cohérent (référence validée)
+| | Héritage | Droits | Net |
+|---|---|---|---|
+| 1er décès — Conjoint | 250 000 | 0 | 250 000 |
+| 1er décès — E1 | 250 000 | 28 194 | 221 806 |
+| 2e décès — E1 | 416 667 | 61 528 | 355 139 |
 
 ---
 
-### 1.4 Célibataire, 2 enfants
+### 1.4 — Célibataire · 2 enfants · 400 k€
 
 | Paramètre | Valeur |
 |---|---|
 | Situation | Célibataire |
-| Naissance | 01/01/1975 |
-| Enfants | 2 enfants (rattachés epoux1) |
-| Actifs (simplifié) | Ep1 : 400 000 € |
+| Naissance Ep1 | 01/01/1975 |
+| Enfants | 2 (rattachés Ep1) |
+| Actifs | Ep1 : 400 000 € |
 
 **Résultats SER1 : À compléter**
 
-| | Reçoit (brut) | Droits | Net estimé |
+| Héritier | Reçoit brut | Droits | Net |
 |---|---|---|---|
 | E1 | | | |
 | E2 | | | |
 
-| Masse transmise | Droits |
-|---|---|
-| | |
-
 **Résultats BIG :**
 
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| Total | 400 000 | 0 | 0 | 36 389 | 363 611 |
-| Enfant commun 1 | 200 000 | 0 | 0 | 18 194 | 181 806 |
-| Enfant commun 2 | 200 000 | 0 | 0 | 18 194 | 181 806 |
-
-**Résultat attendu :** Cohérent (référence validée)
+| | Héritage | Droits | Net |
+|---|---|---|---|
+| E1 | 200 000 | 18 194 | 181 806 |
+| E2 | 200 000 | 18 194 | 181 806 |
 
 ---
 
-### 1.5 Veuf(ve), 1 enfant
+### 1.5 — Veuf/ve · 1 enfant · 800 k€
 
 | Paramètre | Valeur |
 |---|---|
 | Situation | Veuf/veuve |
-| Naissance | 10/05/1960 |
-| Enfants | 1 enfant |
-| Actifs (simplifié) | Ep1 : 800 000 € |
+| Naissance Ep1 | 10/05/1960 |
+| Enfants | 1 (rattaché Ep1) |
+| Actifs | Ep1 : 800 000 € |
 
 **Résultats SER1 : À compléter**
 
-| | Reçoit (brut) | Droits | Net estimé |
+| Héritier | Reçoit brut | Droits | Net |
 |---|---|---|---|
 | E1 | | | |
 
-| Masse transmise | Droits |
-|---|---|
-| | |
-
 **Résultats BIG :**
 
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| Total | 800 000 | 0 | 0 | 152 962 | 647 038 |
-| Enfant commun 1 | 800 000 | 0 | 0 | 152 962 | 647 038 |
+| | Héritage | Droits | Net |
+|---|---|---|---|
+| E1 | 800 000 | 152 962 | 647 038 |
 
-**Résultat attendu :** Cohérent (référence validée)
+---
+
+### 1.6 — Pacsé (séparation) · 2 enfants communs · 600 k€
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Pacsé(e) |
+| Convention PACS | Séparation de biens |
+| Naissance Ep1 | 01/01/1978 |
+| Naissance Ep2 | 01/01/1980 |
+| Enfants | 2 communs |
+| Actifs | Ep1 : 300 000 €, Ep2 : 300 000 € |
+| Décès | Ep1 en premier |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Partenaire | | | |
+| E1 | | | |
+| E2 | | | |
+
+**Vérifier :** Partenaire pacsé NON héritier légal sans testament — sa part doit être 0 sauf disposition.
+
+---
+
+### 1.7 — Pacsé (indivision) · 2 enfants communs · 600 k€
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Pacsé(e) |
+| Convention PACS | Indivision conventionnelle |
+| Naissance Ep1 | 01/01/1978 |
+| Naissance Ep2 | 01/01/1980 |
+| Enfants | 2 communs |
+| Actifs | Commun (indivision) : 600 000 € |
+| Décès | Ep1 en premier |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Partenaire | | | |
+| E1 | | | |
+| E2 | | | |
+
+**Vérifier :** Liquidation indivision PACS 50/50 ; partenaire reçoit la moitié de l'indivision hors succession.
+
+---
+
+### 1.8 — Concubinage · 1 enfant commun · 400 k€
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Union libre |
+| Naissance Ep1 | 01/01/1982 |
+| Naissance Ep2 | 01/01/1984 |
+| Enfants | 1 commun |
+| Actifs | Ep1 : 400 000 € |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| E1 | | | |
+
+**Vérifier :** Concubin non héritier légal (hors legs) ; E1 reçoit 100 % de la succession Ep1.
+
+---
+
+### 1.9 — Divorcé(e) · 2 enfants · 500 k€
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Divorcé(e) |
+| Naissance Ep1 | 01/01/1975 |
+| Enfants | 2 (rattachés Ep1) |
+| Actifs | Ep1 : 500 000 € |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 1.10 — Marié CRA · 0 enfant · conjoint seul · sans ascendants
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e) |
+| Régime | Communauté légale |
+| Naissance Ep1 | 01/01/1970 |
+| Naissance Ep2 | 01/01/1972 |
+| Enfants | 0 |
+| Ascendants Ep1 | Non |
+| Ascendants Ep2 | Non |
+| Actifs | Commun : 800 000 € |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint | | 0 | |
+
+**Vérifier :** Conjoint seul héritier universel, exonéré DMTG.
+
+---
+
+### 1.11 — Marié CRA · 0 enfant · avec ascendants des deux côtés
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e) |
+| Régime | Communauté légale |
+| Naissance Ep1 | 01/01/1970 |
+| Naissance Ep2 | 01/01/1972 |
+| Enfants | 0 |
+| Ascendants Ep1 | Oui |
+| Ascendants Ep2 | Oui |
+| Actifs | Commun : 600 000 € |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| Parents Ep1 (retour) | | | |
+| Parents Ep2 (retour) | | | |
+
+**Vérifier :** Retour successoral 1/4 par branche parentale, exonération conjoint sur sa part.
+
+---
+
+### 1.12 — Marié CRA · enfants non-communs (Ep1 seulement) · 600 k€
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e) |
+| Régime | Communauté légale |
+| Naissance Ep1 | 01/01/1975 |
+| Naissance Ep2 | 01/01/1977 |
+| Enfants | 2 rattachés Ep1 uniquement |
+| Actifs | Commun : 600 000 € |
+| Décès | Ep1 en premier |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 (Ep1) | | | |
+| E2 (Ep1) | | | |
+
+**Vérifier :** Conjoint limité à 1/4 PP (présence d'enfants non-communs).
+
+---
+
+### 1.13 — Marié CRA · enfants non-communs des deux côtés · 800 k€
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e) |
+| Régime | Communauté légale |
+| Naissance Ep1 | 01/01/1970 |
+| Naissance Ep2 | 01/01/1972 |
+| Enfants | 1 rattaché Ep1 + 1 rattaché Ep2 |
+| Actifs | Commun : 800 000 € |
+| Décès | Ep1 en premier |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E (Ep1) | | | |
+
+**Vérifier :** E(Ep2) n'hérite pas de Ep1. Conjoint 1/4 PP.
+
+---
+
+### 1.14 — Marié CRA · enfant décédé + 1 petit-enfant représentant
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e) |
+| Régime | Communauté légale |
+| Naissance Ep1 | 01/01/1955 |
+| Naissance Ep2 | 01/01/1957 |
+| Enfants | 2 communs dont 1 décédé (cocher "décédé") |
+| Membres familiaux | 1 petit-enfant (enfant du décédé) |
+| Actifs | Commun : 1 000 000 € |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 (vivant) | | | |
+| Petit-enfant (représentation) | | | |
+
+**Vérifier :** Abattement réduit petit-enfant représentant (CGI art. 779).
+
+---
+
+### 1.15 — Marié CRA · sans enfants · frère/sœur héritier
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e) |
+| Régime | Communauté légale |
+| Naissance Ep1 | 01/01/1965 |
+| Naissance Ep2 | 01/01/1967 |
+| Enfants | 0 |
+| Ascendants | Non |
+| Membres | 1 frère/sœur (côté Ep1) |
+| Actifs | Commun : 500 000 € |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Abattement | Droits | Net |
+|---|---|---|---|---|
+| Conjoint | | — | 0 | |
+| Frère/sœur | | 15 932 € | | |
+
+**Vérifier :** Frère/sœur hérite uniquement si parent décédé + 0 enfant ; barème 35/45 %.
 
 ---
 
 ## BLOC 2 — Régimes matrimoniaux
 
-### 2.1 Séparation de biens — actifs asymétriques
+> 2 enfants communs, actifs identiques à chaque test. Varie uniquement le régime.
+
+---
+
+### 2.1 — Séparation de biens · actifs déséquilibrés
 
 | Paramètre | Valeur |
 |---|---|
 | Situation | Marié(e) |
 | Régime | Séparation de biens |
-| Naissance Ep1/Ep2 | 01/01/1975 / 01/01/1977 |
+| Naissance Ep1 | 01/01/1970 |
+| Naissance Ep2 | 01/01/1972 |
 | Enfants | 2 communs |
-| Actifs (expert) | Ep1 : 800 000 € (immo locatif) / Ep2 : 200 000 € (comptes) |
-| Dispositions | Par défaut |
+| Actifs | Ep1 : 200 000 €, Ep2 : 400 000 € |
+| Décès | Ep1 en premier |
 
-**Résultats SER1 : À compléter**
+**Résultats SER1 — Étape 1 : À compléter**
 
-| | Reçoit (brut) | Droits | Net estimé |
+| Héritier | Reçoit brut | Droits | Net |
 |---|---|---|---|
+| Conjoint | | | |
 | E1 | | | |
 | E2 | | | |
-| Conjoint survivant | | | |
 
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 800 000 | 0 | 0 | 76 389 | 723 611 |
-| Conjoint | 200 000 | 0 | 0 | 0 | 200 000 |
-| Enfant commun 1 | 300 000 | 0 | 0 | 38 194 | 261 806 |
-| Enfant commun 2 | 300 000 | 0 | 0 | 38 194 | 261 806 |
-| **2e décès** | | | | | |
-| Total | 400 000 | 0 | 0 | 36 389 | 363 611 |
-| Enfant commun 1 | 200 000 | 0 | 0 | 18 194 | 181 806 |
-| Enfant commun 2 | 200 000 | 0 | 0 | 18 194 | 181 806 |
-
-**Résultat attendu :** Cohérent (référence validée)
+**Vérifier :** Seuls les 200 k€ propres Ep1 entrent dans la succession ; pas de masse commune.
 
 ---
 
-### 2.2 Communauté universelle avec attribution intégrale (100 %)
+### 2.2 — Séparation de biens + indivision séparatiste 70/30
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e) |
+| Régime | Séparation de biens |
+| Naissance Ep1 | 01/01/1972 |
+| Naissance Ep2 | 01/01/1974 |
+| Enfants | 2 communs |
+| Actifs expert | Ep1 propre : 300 000 €, Indivision (70 % Ep1 / 30 % Ep2) : 200 000 € |
+| Décès | Ep1 en premier |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| | Valeur |
+|---|---|
+| Propres Ep1 | 300 000 |
+| Quote-part Ep1 indivision (70 %) | 140 000 |
+| Total succession Ep1 | |
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 2.3 — Communauté universelle · sans stipulation contraire
 
 | Paramètre | Valeur |
 |---|---|
 | Situation | Marié(e) |
 | Régime | Communauté universelle |
-| Naissance Ep1/Ep2 | 01/01/1960 / 01/01/1962 |
+| Naissance Ep1 | 01/01/1960 |
+| Naissance Ep2 | 01/01/1962 |
 | Enfants | 2 communs |
-| Actifs | Commun : 1 500 000 € / Ep1 : 200 000 € / Ep2 : 300 000 € |
-| Attribution biens communs | 100 % (clause d'attribution intégrale) |
-
-> BIG passe automatiquement à 100 % d'attribution en communauté universelle.
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-| Conjoint survivant | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 200 000 | 0 | 0 | 0 | 200 000 |
-| Conjoint | 50 000 | 0 | 0 | 0 | 50 000 |
-| Enfant commun 1 | 75 000 | 0 | 0 | 0 | 75 000 |
-| Enfant commun 2 | 75 000 | 0 | 0 | 0 | 75 000 |
-| **2e décès** | | | | | |
-| Total | 1 850 000 | 0 | 0 | 380 924 | 1 469 076 |
-| Enfant commun 1 | 925 000 | 0 | 0 | 190 462 | 734 538 |
-| Enfant commun 2 | 925 000 | 0 | 0 | 190 462 | 734 538 |
-
-**Résultat attendu :** 2e décès : droits = 380 924 €. Écart précédent : SER1 calculait 425 924 € (erreur sur la masse au 2e décès en CU avec attribution intégrale).
-
----
-
-### 2.3 Communauté universelle SANS attribution intégrale (50 %)
-
-| Paramètre | Valeur |
-|---|---|
-| Même que 2.2 mais | Attribution biens communs = 50 % |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-| Conjoint survivant | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 950 000 | 0 | 0 | 98 889 | 851 111 |
-| Conjoint | 237 500 | 0 | 0 | 0 | 237 500 |
-| Enfant commun 1 | 356 250 | 0 | 0 | 49 444 | 306 806 |
-| Enfant commun 2 | 356 250 | 0 | 0 | 49 444 | 306 806 |
-| **2e décès** | | | | | |
-| Total | 1 287 500 | 0 | 0 | 213 889 | 1 073 611 |
-| Enfant commun 1 | 643 750 | 0 | 0 | 106 944 | 536 806 |
-| Enfant commun 2 | 643 750 | 0 | 0 | 106 944 | 536 806 |
-
-**Résultat attendu :** 1er décès droits = 98 889 €, 2e décès droits = 213 889 €. Écart précédent : SER1 calculait des masses erronées aux deux étapes.
-
----
-
-### 2.4 PACS séparation de biens + testament
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Pacsé(e) |
-| Convention | Séparation de biens |
-| Naissance | 01/01/1980 / 01/01/1983 |
-| Enfants | 1 enfant commun |
-| Actifs | Ep1 : 500 000 € |
-| Testament Ep1 | Legs universel au partenaire |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| Partenaire pacsé | | | |
-| E1 | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Décès Ep1 | | |
-| Décès Ep2 (2e décès) | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 500 000 | 0 | 0 | 28 194 | 471 806 |
-| Partenaire | 250 000 | 0 | 0 | 0 | 250 000 |
-| Enfant commun 1 | 250 000 | 0 | 0 | 28 194 | 221 806 |
-| **2e décès** | | | | | |
-| Total | 250 000 | 0 | 0 | 28 194 | 221 806 |
-| Enfant commun 1 | 250 000 | 0 | 0 | 28 194 | 221 806 |
-
-**Résultat attendu :** SER1 doit calculer le 2e décès (le partenaire hérite du patrimoine transmis et le retransmet à son tour). Écart précédent : SER1 ne calculait pas le 2e décès.
-
----
-
-### 2.5 PACS sans testament
-
-| Paramètre | Valeur |
-|---|---|
-| Même que 2.4 mais | Pas de testament |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-
-| Masse transmise | Droits |
-|---|---|
-| | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 500 000 | 0 | 0 | 78 194 | 421 806 |
-| Enfant commun 1 | 500 000 | 0 | 0 | 78 194 | 421 806 |
-| **2e décès** | | | | | |
-| Total | 0 | 0 | 0 | 0 | 0 |
-
-**Résultat attendu :** Cohérent (référence validée)
-
----
-
-## BLOC 3 — Donation entre époux (DDV)
-
-### 3.1 DDV Usufruit total — conjoint jeune (50 ans, usufruit 60 %)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, communauté légale |
-| Naissance Ep1/Ep2 | 01/01/1970 / 01/06/1976 |
-| Enfants | 2 communs |
-| Actifs | Commun : 1 000 000 € |
-| DDV | Active — Usufruit total |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-| Conjoint survivant | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 500 000 | 0 | 0 | 0 | 500 000 |
-| Conjoint | 300 000 | 0 | 0 | 0 | 300 000 |
-| Enfant commun 1 | 100 000 | 0 | 0 | 0 | 100 000 |
-| Enfant commun 2 | 100 000 | 0 | 0 | 0 | 100 000 |
-| **2e décès** | | | | | |
-| Total | 500 000 | 0 | 0 | 56 389 | 743 611 |
-| Enfant commun 1 | 250 000 | 0 | 0 | 28 194 | 371 806 |
-| Enfant commun 2 | 250 000 | 0 | 0 | 28 194 | 371 806 |
-
-**Résultat attendu :** Cohérent (référence validée)
-
----
-
-### 3.2 DDV Usufruit total — conjoint âgé (70 ans, usufruit 30 %)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, communauté légale |
-| Naissance Ep1/Ep2 | 01/01/1950 / 01/07/1955 (Ep2 ≥ 70 ans → usufruit 30 %) |
-| Enfants | 2 communs |
-| Actifs | Commun : 2 000 000 € |
-| DDV | Active — Usufruit total |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-| Conjoint survivant | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 1 000 000 | 0 | 0 | 96 389 | 903 611 |
-| Conjoint | 300 000 | 0 | 0 | 0 | 300 000 |
-| Enfant commun 1 | 350 000 | 0 | 0 | 48 194 | 301 806 |
-| Enfant commun 2 | 350 000 | 0 | 0 | 48 194 | 301 806 |
-| **2e décès** | | | | | |
-| Total | 1 000 000 | 0 | 0 | 156 389 | 1 143 611 |
-| Enfant commun 1 | 500 000 | 0 | 0 | 78 194 | 571 806 |
-| Enfant commun 2 | 500 000 | 0 | 0 | 78 194 | 571 806 |
-
-**Résultat attendu :** 1er décès : droits = 96 389 €. Écart précédent : SER1 calculait 76 388 € (erreur sur NP enfants avec usufruit âgé).
-
----
-
-### 3.3 DDV Quotité disponible en PP
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, communauté légale |
-| Naissance Ep1/Ep2 | 01/01/1975 / 01/01/1977 |
-| Enfants | 2 communs |
-| Actifs | Commun : 1 200 000 € |
-| DDV | Active — Quotité disponible en PP |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-| Conjoint survivant | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 600 000 | 0 | 0 | 36 389 | 563 611 |
-| Conjoint | 200 000 | 0 | 0 | 0 | 200 000 |
-| Enfant commun 1 | 200 000 | 0 | 0 | 18 194 | 181 806 |
-| Enfant commun 2 | 200 000 | 0 | 0 | 18 194 | 181 806 |
-| **2e décès** | | | | | |
-| Total | 800 000 | 0 | 0 | 116 389 | 683 611 |
-| Enfant commun 1 | 400 000 | 0 | 0 | 58 194 | 341 806 |
-| Enfant commun 2 | 400 000 | 0 | 0 | 58 194 | 341 806 |
-
-**Résultat attendu :** Cohérent (référence validée)
-
----
-
-### 3.4 DDV Option mixte (1/4 PP + 3/4 usufruit)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, séparation de biens |
-| Naissance Ep1/Ep2 | 01/01/1965 / 01/01/1968 (Ep2 = 58 ans → usufruit 50 %) |
-| Enfants | 3 communs |
-| Actifs | Ep1 : 1 000 000 € |
-| DDV | Active — Option mixte |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-| E3 | | | |
-| Conjoint survivant | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 500 000 | 0 | 0 | 0 | 500 000 |
-| Conjoint | 312 500 | 0 | 0 | 0 | 312 500 |
-| Enfant commun 1 | 62 500 | 0 | 0 | 0 | 62 500 |
-| Enfant commun 2 | 62 500 | 0 | 0 | 0 | 62 500 |
-| Enfant commun 3 | 62 500 | 0 | 0 | 0 | 62 500 |
-| **2e décès** | | | | | |
-| Total | 625 000 | 0 | 0 | 59 583 | 752 917 |
-| Enfant commun 1 | 208 333 | 0 | 0 | 19 861 | 250 972 |
-| Enfant commun 2 | 208 333 | 0 | 0 | 19 861 | 250 972 |
-| Enfant commun 3 | 208 333 | 0 | 0 | 19 861 | 250 972 |
-
-**Résultat attendu :** 2e décès droits = 59 583 €. Écart précédent : SER1 calculait 0 € de droits au 2e décès (la NP non revalorisée à l'extinction de l'usufruit n'était pas taxée).
-
----
-
-## BLOC 4 — Résidence principale + Forfait mobilier
-
-### 4.1 RP avec abattement 20 %
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, communauté légale |
-| Naissance Ep1/Ep2 | 01/01/1975 / 01/01/1977 |
-| Enfants | 2 communs |
-| Mode | Expert |
-| Actifs | RP commune : 1 000 000 € (abattement 20 % coché) + Comptes bancaires communs : 200 000 € |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-| Conjoint survivant | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 600 000 | 0 | 0 | 31 389 | 568 611 |
-| Conjoint | 150 000 | 0 | 0 | 0 | 150 000 |
-| Enfant commun 1 | 225 000 | 0 | 0 | 15 194 | 209 806 |
-| Enfant commun 2 | 225 000 | 0 | 0 | 15 194 | 209 806 |
-| **2e décès** | | | | | |
-| Total | 750 000 | 0 | 0 | 106 389 | 643 611 |
-| Enfant commun 1 | 375 000 | 0 | 0 | 53 194 | 321 806 |
-| Enfant commun 2 | 375 000 | 0 | 0 | 53 194 | 321 806 |
-
-**Résultat attendu :** 2e décès droits = 106 389 €. Écart précédent : SER1 calculait 81 388 € au 2e décès (abattement RP appliqué à tort au 2e décès).
-
----
-
-### 4.2 RP sans abattement (non occupée)
-
-| Paramètre | Valeur |
-|---|---|
-| Même que 4.1 mais | Abattement 20 % décoché |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-| Conjoint survivant | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 600 000 | 0 | 0 | 46 389 | 553 611 |
-| Conjoint | 150 000 | 0 | 0 | 0 | 150 000 |
-| Enfant commun 1 | 225 000 | 0 | 0 | 23 194 | 201 806 |
-| Enfant commun 2 | 225 000 | 0 | 0 | 23 194 | 201 806 |
-| **2e décès** | | | | | |
-| Total | 750 000 | 0 | 0 | 106 389 | 643 611 |
-| Enfant commun 1 | 375 000 | 0 | 0 | 53 194 | 321 806 |
-| Enfant commun 2 | 375 000 | 0 | 0 | 53 194 | 321 806 |
-
-**Résultat attendu :** Cohérent (référence validée)
-
----
-
-### 4.3 Forfait mobilier automatique (5 %)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Célibataire |
-| Enfants | 1 enfant |
-| Mode | Expert |
-| Actifs | Ep1 : Immobilier locatif 500 000 € |
-| Forfait mobilier | Automatique (5 %) |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-
-| Masse transmise | Droits |
-|---|---|
-| | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| Total | 500 000 | 0 | 0 | 83 194 | 416 806 |
-| Enfant commun 1 | 500 000 | 0 | 0 | 83 194 | 416 806 |
-
-**Résultat attendu :** Cohérent (référence validée)
-
----
-
-## BLOC 5 — Assurance-vie
-
-### 5.1 AV standard — clause conjoint puis enfants — tout avant 70 ans
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, communauté légale |
-| Naissance Ep1/Ep2 | 01/01/1975 / 01/01/1977 |
-| Enfants | 2 communs |
-| Actifs hors AV | Commun : 400 000 € |
-| AV | Souscripteur : Ep1 / Clause : conjoint puis enfants / Capitaux : 500 000 € / Versements après 70 : 0 |
-
-> Vérifier également que le capital reçu par le conjoint survivant est réintégré dans sa masse au 2e décès.
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-| Conjoint survivant | | | |
-
-*Section "Assurances hors succession" :*
-
-| | Capital transmis | Droits 990 I | Net |
-|---|---|---|---|
-| Conjoint | | | |
-
-| Étape | Masse transmise | Droits succession | Droits AV |
-|---|---|---|---|
-| Étape 1 — Décès Ep1 | | | |
-| Étape 2 — Décès Ep2 | | | |
-| Total cumulé | | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 200 000 | 400 000 | 0 | 0 | 600 000 |
-| Conjoint | 50 000 | 400 000 | 0 | 0 | 450 000 |
-| Enfant commun 1 | 75 000 | 0 | 0 | 0 | 75 000 |
-| Enfant commun 2 | 75 000 | 0 | 0 | 0 | 75 000 |
-| **2e décès** | | | | | |
-| Total | 650 000 | 0 | 0 | 86 389 | 563 611 |
-| Enfant commun 1 | 325 000 | 0 | 0 | 43 194 | 281 806 |
-| Enfant commun 2 | 325 000 | 0 | 0 | 43 194 | 281 806 |
-
-**Résultat attendu :** Au 2e décès le conjoint retransmet 650 000 € (succession propre + AV encaissée). Écart précédent : SER1 n'intégrait pas les capitaux AV dans la masse du 2e décès.
-
----
-
-### 5.2 AV clause enfants parts égales — avant 70 ans
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Célibataire |
-| Enfants | 2 enfants |
-| Actifs hors AV | Ep1 : 100 000 € |
-| AV | Clause : enfants parts égales / Capitaux : 800 000 € / Versements après 70 : 0 |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-
-*Section "Assurances hors succession" :*
-
-| | Capital 990 I | Droits 990 I | Net |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès nets | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| Total | 100 000 | 701 000 | 99 000 | 0 | 801 000 |
-| Enfant commun 1 | 50 000 | 350 500 | 49 500 | 0 | 400 500 |
-| Enfant commun 2 | 50 000 | 350 500 | 49 500 | 0 | 400 500 |
-
-**Résultat attendu :** Cohérent (référence validée)
-
----
-
-### 5.3 AV après 70 ans (757 B) — tout en versements après 70
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Veuf(ve) |
-| Naissance | 01/01/1950 (76 ans) |
-| Enfants | 2 enfants |
-| Actifs hors AV | Ep1 : 200 000 € |
-| AV | Clause : enfants parts égales / Capitaux : 300 000 € / Versements après 70 ans : 300 000 € |
-
-> Correction PR-10 bis : 757 B doit apparaître dans **"Transmission par bénéficiaire"** (barème DMTG) et non dans "Assurances hors succession".
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits DMTG | Net estimé |
-|---|---|---|---|
-| E1 (succession) | | | |
-| E2 (succession) | | | |
-
-*Section "Transmission par bénéficiaire" (art. 757 B) :*
-
-| | Capital transmis | Droits 757 B | Net |
-|---|---|---|---|
-| E1 (art. 757 B) | | | |
-| E2 (art. 757 B) | | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| Total | 200 000 | 300 000 | 0 | 50 289 | 449 711 |
-| Enfant commun 1 | 100 000 | 150 000 | 0 | 25 144 | 224 856 |
-| Enfant commun 2 | 100 000 | 150 000 | 0 | 25 144 | 224 856 |
-
-**Résultat attendu :** Droits 757 B = 50 289 € (abattement global 30 500 € puis barème DMTG ligne directe). Les capitaux 757 B doivent apparaître dans "Transmission par bénéficiaire" avec label "(art. 757 B)".
-
----
-
-### 5.4 AV mixte (avant + après 70 ans)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Veuf(ve) |
-| Naissance | 01/01/1950 (76 ans) |
-| Enfants | 1 enfant |
-| AV | Clause : enfants / Capitaux : 500 000 € / Versements après 70 ans : 200 000 € |
-
-> Correction PR-10 bis : la partie avant 70 (990 I) doit rester en "Assurances hors succession". La partie après 70 (757 B) doit apparaître dans "Transmission par bénéficiaire".
-
-**Résultats SER1 : À compléter**
-
-*Section "Transmission par bénéficiaire" (art. 757 B) :*
-
-| | Capital 757 B | Droits 757 B | Net |
-|---|---|---|---|
-| E1 | | | |
-
-*Section "Assurances hors succession — art. 990 I" :*
-
-| | Capital 990 I | Droits 990 I | Net |
-|---|---|---|---|
-| E1 | | | |
-
-| Total droits | |
-|---|---|
-| Droits 990 I | |
-| Droits 757 B (DMTG) | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès nets | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| Total | 0 | 470 500 | 29 500 | 12 094 | 458 406 |
-| Enfant commun 1 | 0 | 470 500 | 29 500 | 12 094 | 458 406 |
-
-> BIG : 990 I = 29 500 € (300k − 152 500 k × 20 %). 757 B = 12 094 € (200k − 30 500 k au barème DMTG).
-
-**Résultat attendu :** Droits 990 I = 29 500 €, droits 757 B = 12 094 €. Affichage dans deux sections distinctes. Label « dont versements après 70 ans (€) — soumis aux droits de succession (art. 757 B) » recommandé dans la modal AV.
-
----
-
-### 5.5 AV clause bénéficiaire démembrée
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, communauté légale |
-| Naissance Ep1/Ep2 | 01/01/1960 / 01/01/1962 (Ep2 = 64 ans au décès simulé → usufruit 40 %) |
-| Enfants | 2 communs |
-| AV | Type clause : Démembrée / Assuré : Ep1 / Capitaux : 600 000 € / Versements après 70 : 0 |
-
-> Règle CGI art. 669 : à 64 ans, usufruit = 40 %, NP = 60 %. Abattement 990 I proratisé : 152 500 € × 60 % = 91 500 € par enfant. Base taxable enfant = 180 000 − 91 500 = 88 500 €. Droits 990 I = 88 500 × 20 % = 17 700 € par enfant.
-
-**Résultats SER1 : À compléter**
-
-*Section "Assurances hors succession — art. 990 I" :*
-
-| | Capital NP reçu | Droits 990 I | Net |
-|---|---|---|---|
-| Conjoint (usufruit) | | | |
-| E1 (NP) | | | |
-| E2 (NP) | | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 0 | 564 600 | 35 400 | 0 | 564 600 |
-| Conjoint | 0 | 564 600 | 35 400 | 0 | 564 600 |
-| Enfant commun 1 | 0 | 0 | 0 | 0 | 0 |
-| Enfant commun 2 | 0 | 0 | 0 | 0 | 0 |
-| **2e décès** | | | | | |
-| Total | 0 | 564 600 | 0 | 0 | 564 600 |
-| Enfant commun 1 | 0 | 282 300 | 0 | 0 | 282 300 |
-| Enfant commun 2 | 0 | 282 300 | 0 | 0 | 282 300 |
-
-> BIG regroupe tout sur le conjoint au 1er décès (usufruit = bénéficiaire de l'ensemble selon son calcul). Le calcul attendu juridiquement : chaque enfant reçoit la NP, avec droits 990 I proratisés.
-
-**Résultat attendu (calcul juridique) :**
-- Conjoint : 600 000 × 40 % = 240 000 € (usufruit, exonéré)
-- Chaque enfant NP : 600 000 × 60 % / 2 = 180 000 €, abattement proratisé 91 500 €, droits = 88 500 × 20 % = **17 700 €**
-
----
-
-### 5.6 AV grosse — tranche haute 990 I (> 700 000 €)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Célibataire |
-| Enfants | 1 enfant |
-| AV | Clause : enfants / Capitaux : 2 000 000 € / Versements après 70 : 0 |
-
-**Résultats SER1 : À compléter**
-
-| | Capital 990 I | Droits 990 I | Net |
-|---|---|---|---|
-| E1 | | | |
-
-**Calcul attendu :**
-- Abattement 152 500 € → base 1 847 500 €
-- Tranche 20 % sur 700 000 € = 140 000 €
-- Tranche 31,25 % sur 1 147 500 € = 358 594 €
-- **Total droits = 498 594 €**
-
-> BIG ne fournit pas de résultat de référence pour ce cas.
-
----
-
-## BLOC 6 — PER Assurance
-
-### 6.1 PER — assuré décède avant 70 ans (990 I)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, communauté légale |
-| Naissance Ep1 | 01/01/1970 (56 ans < 70) |
-| Enfants | 1 enfant commun |
-| PER | Assuré : Ep1 / Clause : enfants / Capitaux décès : 400 000 € |
-
-**Résultats SER1 : À compléter**
-
-*Section "Assurances hors succession — art. 990 I" :*
-
-| | Capital 990 I | Droits 990 I | Net |
-|---|---|---|---|
-| E1 | | | |
-
-| Étape | Droits PER |
-|---|---|
-| Étape 1 — Décès Ep1 | |
-
-**Calcul attendu :** 400 000 − 152 500 = 247 500 € × 20 % = **49 500 €**
-
-**Résultat attendu :** Cohérent (référence validée)
-
----
-
-### 6.2 PER — assuré décède après 70 ans (757 B)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Veuf(ve) |
-| Naissance | 01/01/1950 (76 ans ≥ 70) |
-| Enfants | 2 enfants |
-| PER | Assuré : Ep1 / Clause : enfants parts égales / Capitaux : 200 000 € |
-
-> Correction PR-10 bis : 757 B après 70 ans doit apparaître dans **"Transmission par bénéficiaire"** (barème DMTG), **pas** dans "Assurances hors succession".
-
-**Résultats SER1 : À compléter**
-
-*Section "Transmission par bénéficiaire" (art. 757 B) :*
-
-| | Capital transmis | Droits DMTG | Net |
-|---|---|---|---|
-| E1 (art. 757 B) | | | |
-| E2 (art. 757 B) | | | |
-
-**Calcul attendu :** Abattement global 30 500 € réparti entre 2 enfants → chaque enfant : (200 000 − 30 500) / 2 = 84 750 € au barème DMTG ligne directe.
-
-> BIG : résultats cohérents sur le montant. Problème SER1 précédent : les capitaux PER 757 B s'affichaient dans "Assurances hors succession" (section 990 I) au lieu de "Transmission par bénéficiaire".
-
----
-
-## BLOC 7 — Groupements fonciers
-
-### 7.1 GFA ≤ 600 000 € (exonération 75 %)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Veuf(ve) |
-| Enfants | 2 enfants |
-| Actifs (expert) | GFA : 500 000 € |
-
-> Vérifier également le label "Vous" au lieu de "Défunt(e)" dans les menus déroulants porteur et la carte filiation (correction PR-10 bis).
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-
-**Calcul attendu :** Exonération 75 % → taxable = 125 000 €. Chaque enfant 62 500 € < abattement 100 000 € → droits = 0.
-
-**Résultat attendu :** Cohérent (référence validée)
-
----
-
-### 7.2 GFA > 600 000 € (75 % puis 50 %, plafond 20 M€)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Veuf(ve) |
-| Enfants | 1 enfant |
-| Actifs (expert) | GFA : 1 000 000 € |
-
-> LF 2025 art. 70 : exonération 75 % jusqu'à 600 000 € par bénéficiaire, puis 50 % jusqu'au plafond de 20 M€ (CGI art. 793 bis modifié). Vérifier que la page `/settings/base-contrat` mentionne ce plafond.
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-
-**Calcul attendu :** 75 % sur 600 000 = 450 000 € exonéré. 50 % sur 400 000 = 200 000 € exonéré. Taxable = 350 000 €. Base = 250 000 €.
-
-**Résultat attendu :** Cohérent (référence validée)
-
----
-
-### 7.3 GFF (exonération 75 % sans plafond)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Célibataire |
-| Enfants | 1 enfant |
-| Actifs (expert) | GFF : 2 000 000 € |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-
-**Calcul attendu :** 75 % exonéré → taxable = 500 000 €. Base = 400 000 €.
-
-**Résultat attendu :** Cohérent (référence validée)
-
----
-
-## BLOC 8 — Situations familiales complexes
-
-### 8.1 Famille recomposée — enfants de lits différents
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, séparation de biens |
-| Naissance Ep1/Ep2 | 01/01/1970 / 01/01/1972 |
-| Enfants | E1 = enfant Ep1 seul / E2 = enfant commun / E3 = enfant Ep2 seul |
-| Actifs | Ep1 : 600 000 € / Ep2 : 400 000 € |
-| DDV | Non active (1/4 PP forcé : enfants non communs présents) |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-| E3 | | | |
-| Conjoint | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 600 000 | 0 | 0 | 46 389 | 553 611 |
-| Conjoint | 150 000 | 0 | 0 | 0 | 150 000 |
-| Enfant 1 | 225 000 | 0 | 0 | 23 194 | 201 806 |
-| Enfant commun 1 | 225 000 | 0 | 0 | 23 194 | 201 806 |
-| **2e décès** | | | | | |
-| Total | 550 000 | 0 | 0 | 66 389 | 483 611 |
-| Enfant commun 1 | 275 000 | 0 | 0 | 33 194 | 241 806 |
-| Enfant 2 | 275 000 | 0 | 0 | 33 194 | 241 806 |
-
-**Résultat attendu :** Cohérent (référence validée)
-
----
-
-### 8.2 Enfant prédécédé — représentation par petits-enfants
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Veuf(ve) |
-| Naissance | 01/01/1950 |
-| Enfants | E1 vivant / E2 décédé (†) |
-| Membres famille | 2 petits-enfants rattachés à E2 |
-| Actifs | Ep1 : 600 000 € |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| Petit-enfant 1 (repr. †E2) | | | |
-| Petit-enfant 2 (repr. †E2) | | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| Total | 600 000 | 0 | 0 | 74 583 | 525 417 |
-| Enfant 1 | 300 000 | 0 | 0 | 38 194 | 261 806 |
-| Petit Enfant 1 | 150 000 | 0 | 0 | 18 194 | 131 806 |
-| Petit Enfant 2 | 150 000 | 0 | 0 | 18 194 | 131 806 |
-
-**Résultat attendu :** Droits par petit-enfant = 18 194 € (abattement ligne directe 100 000 € plein). Écart précédent : SER1 calculait 8 194 € (abattement incorrectement partagé entre petits-enfants).
-
----
-
-### 8.3 Transmission à frère/sœur
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Célibataire |
-| Naissance | 01/01/1970 |
-| Enfants | 0 |
-| Membres famille | 2 frères/sœurs |
-| Actifs | Ep1 : 300 000 € |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| Frère/Sœur 1 | | | |
-| Frère/Sœur 2 | | | |
-
-**Calcul attendu (BIG = 115 775 €) :** Chaque F/S = 150 000 €. Abattement 15 932 €. Base = 134 068 €. Droits = 35 % sur 24 430 + 45 % sur 109 638 = 8 551 + 49 337 = **57 888 € chacun**.
-
-**Résultat attendu :** Vérifier que SER1 affiche les bénéficiaires dans la synthèse et calcule les droits au barème frère/sœur (35 %/45 %).
-
----
-
-### 8.4 Transmission à une tierce personne (legs universel)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Célibataire |
-| Enfants | 0 |
-| Testament | Legs universel à une tierce personne |
-| Actifs | Ep1 : 200 000 € |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| Tierce personne | | | |
-
-**Calcul attendu :** Abattement 1 594 €. Base = 198 406 €. Taux 60 %. Droits = **119 044 €**.
-
-> BIG ne gère pas ce cas — vérification manuelle uniquement.
-
----
-
-### 8.5 Sans descendant — conjoint + 2 parents vivants (art. 757-1)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, communauté légale |
-| Naissance Ep1/Ep2 | 01/01/1980 / 01/01/1982 |
-| Enfants | 0 |
-| Membres famille | 2 parents (père + mère, côté Ep1) |
 | Actifs | Commun : 800 000 € |
+| Stipulation contraire CU | Non |
+| Décès | Ep1 en premier |
 
-**Résultats SER1 : À compléter**
+**Résultats SER1 — Étape 1 : À compléter**
 
-| | Reçoit (brut) | Droits | Net estimé |
+| Héritier | Reçoit brut | Droits | Net |
 |---|---|---|---|
 | Conjoint | | | |
-| Parent 1 Ep1 | | | |
-| Parent 2 Ep1 | | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 400 000 | 0 | 0 | 0 | 400 000 |
-| Conjoint | 200 000 | 0 | 0 | 0 | 200 000 |
-| Parent 1 Ep1 | 100 000 | 0 | 0 | 0 | 100 000 |
-| Parent 2 Ep1 | 100 000 | 0 | 0 | 0 | 100 000 |
-| **2e décès** | 0 | 0 | 0 | 0 | 0 |
-
-**Résultat attendu :** Chaque parent reçoit 100 000 € (abattement 100 000 € → droits = 0). Écart précédent : SER1 n'affichait que le conjoint.
+| E1 | | | |
+| E2 | | | |
 
 ---
 
-### 8.6 Sans descendant — conjoint + 1 parent vivant (art. 757-1)
+### 2.4 — Communauté universelle + stipulation contraire + bien propre par nature
 
 | Paramètre | Valeur |
 |---|---|
-| Même que 8.5 mais | 1 seul parent |
+| Situation | Marié(e) |
+| Régime | Communauté universelle |
+| Naissance Ep1 | 01/01/1960 |
+| Naissance Ep2 | 01/01/1962 |
+| Enfants | 2 communs |
+| Actifs expert | Bien CU (commun) : 600 000 €, Bien propre-par-nature Ep1 : 200 000 € |
+| Stipulation contraire CU | Oui |
+| Décès | Ep1 en premier |
 
-**Résultats SER1 : À compléter**
+**Résultats SER1 — Étape 1 : À compléter**
 
-| | Reçoit (brut) | Droits | Net estimé |
+| Actif | Entre dans succession ? | Valeur |
+|---|---|---|
+| Bien CU 600 k€ | Non (revient conjoint) | — |
+| Propre-par-nature Ep1 200 k€ | Oui | 200 000 |
+
+| Héritier | Reçoit brut | Droits | Net |
 |---|---|---|---|
 | Conjoint | | | |
-| Parent 1 Ep1 | | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 400 000 | 0 | 0 | 0 | 400 000 |
-| Conjoint | 300 000 | 0 | 0 | 0 | 300 000 |
-| Parent 1 Ep1 | 100 000 | 0 | 0 | 0 | 100 000 |
-| **2e décès** | 0 | 0 | 0 | 0 | 0 |
-
-**Résultat attendu :** Conjoint ¾, parent ¼. Écart précédent : SER1 n'affichait que le conjoint.
+| E1 | | | |
+| E2 | | | |
 
 ---
 
-## BLOC 9 — Clause de préciput
-
-### 9.1 Préciput global en montant
+### 2.5 — Communauté meubles et acquêts · biens de natures mixtes
 
 | Paramètre | Valeur |
 |---|---|
-| Situation | Marié, communauté légale |
-| Naissance Ep1/Ep2 | 01/01/1975 / 01/01/1977 |
+| Situation | Marié(e) |
+| Régime | Communauté meubles et acquêts |
+| Naissance Ep1 | 01/01/1968 |
+| Naissance Ep2 | 01/01/1970 |
 | Enfants | 2 communs |
-| Actifs | Commun : 1 000 000 € |
-| Dispositions | Préciput : 200 000 € |
+| Actifs expert | Immobilier propre Ep1 (immeuble, avant union) : 300 000 €, Meuble commun : 200 000 € |
+| Décès | Ep1 en premier |
 
-**Résultats SER1 : À compléter**
+**Résultats SER1 — Étape 1 : À compléter**
 
-| | Reçoit (brut) | Droits | Net estimé |
+| Héritier | Reçoit brut | Droits | Net |
 |---|---|---|---|
-| E1 | | | |
-| E2 | | | |
 | Conjoint | | | |
-
-| Étape | Masse transmise | Droits | Préciput appliqué |
-|---|---|---|---|
-| Étape 1 — Décès Ep1 | | | |
-| Étape 2 — Décès Ep2 | | | |
-| Total cumulé | | | |
-
-> BIG ne gère pas le préciput — vérification interne uniquement.
-
-**Calcul attendu :** Préciput 200 000 € déduit en Étape 1 → masse successorale = 300 000 €.
-
----
-
-### 9.2 Préciput ciblé — sélection d'un bien (NOUVEAU — PR-25/26/27)
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, communauté légale |
-| Enfants | 2 communs |
-| Actifs (expert) | RP commune : 600 000 € / Comptes communs : 200 000 € |
-| Dispositions | Préciput ciblé — RP sélectionnée (montant : 600 000 €) |
-
-**Résultats SER1 : À compléter**
-
-| Synthèse préciput | Valeur |
-|---|---|
-| Mode retenu | |
-| Montant prélevé | |
-| Bien prélevé | |
-| Fallback global | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-
-> Vérifier : la RP doit apparaître dans les sélections de la modal Dispositions, dans la synthèse successorale, dans la chronologie et dans les exports XLSX/PPTX.
-
----
-
-## BLOC 10 — Testaments
-
-### 10.1 Legs universel au conjoint
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, séparation de biens |
-| Enfants | 2 communs |
-| Actifs | Ep1 : 600 000 € |
-| Testament Ep1 | Legs universel au conjoint |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
 | E1 | | | |
 | E2 | | | |
-| Conjoint survivant | | | |
 
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-> BIG ne gère pas les testaments — vérification interne uniquement.
-
-**Calcul attendu Ep1 décède :** QD avec 2 enfants = 1/3 → conjoint 200 000 € (exo). Réserve enfants 2/3 = 400 000 € (200 000 € chacun).
+**Vérifier :** Immeuble propre (300 k€) reste propre Ep1 ; meuble (200 k€) intègre masse commune.
 
 ---
 
-### 10.2 Legs à titre universel — 25 % au conjoint
+### 2.6 — Participation aux acquêts · patrimoines déséquilibrés
 
 | Paramètre | Valeur |
 |---|---|
-| Situation | Marié, séparation de biens |
+| Situation | Marié(e) |
+| Régime | Participation aux acquêts |
+| Naissance Ep1 | 01/01/1965 |
+| Naissance Ep2 | 01/01/1967 |
 | Enfants | 2 communs |
-| Actifs | Ep1 : 800 000 € |
-| Testament Ep1 | Legs à titre universel au conjoint, 25 % |
+| Actifs | Ep1 : 800 000 €, Ep2 : 200 000 € |
+| Participation acquêts | Actif, patrimoine originaire Ep1 : 100 k€, Ep2 : 50 k€ |
+| Décès | Ep1 en premier |
 
-**Résultats SER1 : À compléter**
+**Résultats SER1 — Étape 1 : À compléter**
 
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
-| Conjoint survivant | | | |
-
-> BIG ne gère pas les testaments — vérification interne uniquement.
-
-**Calcul attendu :** Conjoint 200 000 € (exo). Enfants 300 000 € chacun → base 200 000 € → droits = 36 194 €.
-
----
-
-### 10.3 Legs particulier à une tierce personne
-
-| Paramètre | Valeur |
+| | Valeur |
 |---|---|
-| Situation | Veuf(ve) |
-| Enfants | 1 enfant |
-| Membres famille | 1 tierce personne |
-| Actifs | Ep1 : 500 000 € |
-| Testament Ep1 | Legs particulier : 100 000 € à la tierce personne |
+| Actif Ep1 avant créance | 800 000 |
+| Créance participation Ep2 sur Ep1 | |
+| Actif net succession Ep1 | |
 
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
+| Héritier | Reçoit brut | Droits | Net |
 |---|---|---|---|
-| E1 | | | |
-| Tierce personne | | | |
-
-**Calcul attendu :** Tierce personne : 100 000 − 1 594 = 98 406 € × 60 % = **59 044 €**. Enfant : 400 000 − 100 000 = 300 000 € → base 200 000 €.
-
----
-
-## BLOC 11 — Chaînage (2 décès successifs)
-
-### 11.1 Chaînage standard — ordre direct puis inverse
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, communauté légale |
-| Naissance Ep1/Ep2 | 01/01/1975 / 01/01/1977 |
-| Enfants | 2 communs |
-| Actifs | Commun : 1 000 000 € |
-| DDV | Usufruit total |
-
-**Résultats SER1 : À compléter**
-
-| Ordre | Coût 1er décès | Coût 2e décès | Total cumulé |
-|---|---|---|---|
-| Ep1 décède en premier | | | |
-| Ep2 décède en premier | | | |
-
-**Résultat attendu :** Cohérent avec BIG (référence validée)
-
----
-
-### 11.2 Chaînage avec AV — réintégration des capitaux décès
-
-| Paramètre | Valeur |
-|---|---|
-| Même que 11.1 + | AV souscrite par Ep1 / 300 000 € / clause conjoint puis enfants |
-
-> Correction PR-10 bis attendue : les capitaux AV encaissés par le conjoint au 1er décès doivent être réintégrés dans sa masse au 2e décès.
-
-**Résultats SER1 : À compléter**
-
-| Étape | Masse successorale | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 (inclut AV de Ep1 ?) | | |
-| Total cumulé | | |
-
-**Résultat attendu :** Au 2e décès, la masse doit inclure les 300 000 € d'AV encaissés par le conjoint. Écart précédent : l'AV était oubliée au 2e décès.
-
----
-
-## BLOC 12 — Donations antérieures (mode expert)
-
-### 12.1 Donation rapportable dans le rappel fiscal
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Marié, communauté légale |
-| Enfants | 2 communs |
-| Actifs | Commun : 600 000 € |
-| Donation | Avance de part successorale / Donateur : Ep1 / Donataire : E1 / Montant : 100 000 € / Date : 01/2020 |
-
-> Dans la modal Donation, supprimer le doublon entre « Montant (€) » et « Valeur à la donation (€) ».
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
-| E1 | | | |
-| E2 | | | |
 | Conjoint | | | |
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| **1er décès** | | | | | |
-| Total | 300 000 | 0 | 0 | 15 389 | 284 611 |
-| Conjoint | 105 000 | 0 | 0 | 0 | 105 000 |
-| Enfant 1 | 37 500 | 0 | 0 | 5 694 | 31 806 |
-| Enfant commun 1 | 157 500 | 0 | 0 | 9 694 | 147 806 |
-| **2e décès** | | | | | |
-| Total | 405 000 | 0 | 0 | 37 389 | 367 611 |
-| Enfant commun 1 | 202 500 | 0 | 0 | 18 694 | 183 806 |
-| Enfant 2 | 202 500 | 0 | 0 | 18 694 | 183 806 |
-
-**Résultat attendu :** 1er décès droits = 15 389 €. Écart précédent : SER1 ignorait l'impact du rappel fiscal sur la base taxable.
-
----
-
-### 12.2 Donation hors part — dépassement quotité disponible
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Veuf(ve) |
-| Enfants | 1 enfant |
-| Actifs | Ep1 : 400 000 € |
-| Donation | Hors part / 250 000 € / 01/2022 / Donataire : tierce personne |
-
-**Résultats SER1 : À compléter**
-
-| | Reçoit (brut) | Droits | Net estimé |
-|---|---|---|---|
 | E1 | | | |
-
-**Résultats BIG :**
-
-| | Héritage | Capitaux décès | Prélèvements | Droits succession | Transmission nette |
-|---|---|---|---|---|---|
-| Total | 520 000 | 0 | 0 | 115 768 | 404 232 |
-| Enfant 1 | 520 000 | 0 | 0 | 115 768 | 404 232 |
-
-**Résultat attendu :** Droits = 115 768 € (réintégration de la donation dans la masse + droits sur le surplus QD). Écart précédent : SER1 calculait 58 194 € (donation hors part ignorée dans le rappel fiscal).
+| E2 | | | |
 
 ---
 
-## BLOC 13 — Prévoyance décès
-
-### 13.1 Prévoyance — assuré < 70 ans (art. 990 I)
+### 2.7 — Séparation de biens + société d'acquêts · attribution survivant 100 %
 
 | Paramètre | Valeur |
 |---|---|
-| Situation | Marié, communauté légale |
-| Naissance Ep1 | 01/01/1970 (56 ans) |
-| Enfants | 1 commun |
-| Prévoyance | Assuré : Ep1 / Capital décès : 500 000 € / Dernière prime : 20 000 € / Clause : conjoint |
+| Situation | Marié(e) |
+| Régime | Séparation biens + société d'acquêts |
+| Naissance Ep1 | 01/01/1968 |
+| Naissance Ep2 | 01/01/1970 |
+| Enfants | 2 communs |
+| Actifs expert | Ep1 propre : 200 000 €, Société d'acquêts : 400 000 € |
+| SA — liquidation | Attribution au survivant : 100 % |
+| Décès | Ep1 en premier |
 
-> Vérifier également : warnings avec références légales (art. 990 I CGI, CGI annexe II art. 306-0 F, art. L132-23 C. assurances).
+**Résultats SER1 — Étape 1 : À compléter**
 
-**Résultats SER1 : À compléter**
+| Masse | Valeur | Vers succession |
+|---|---|---|
+| SA (400 k€) | 400 000 | Non (attribuée conjoint) |
+| Propre Ep1 (200 k€) | 200 000 | Oui |
 
-| | Capital transmis | Base fiscale (prime) | Droits 990 I | Net |
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint (SA + succession) | | | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 2.8 — Marié CRA · passifs partiels · 2 enfants
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e) |
+| Régime | Communauté légale |
+| Naissance Ep1 | 01/01/1975 |
+| Naissance Ep2 | 01/01/1977 |
+| Enfants | 2 communs |
+| Actifs | Commun : 500 000 € |
+| Passifs | Commun : 150 000 € |
+| Décès | Ep1 en premier |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| | Valeur |
+|---|---|
+| Actif brut | 500 000 |
+| Passif | 150 000 |
+| Actif net | 350 000 |
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+## BLOC 3 — Dispositions testamentaires
+
+> Base : Marié CRA, 2 enfants communs, 800 k€ commun, Ep1 né 01/01/1963, Ep2 né 01/01/1965. Varie uniquement la disposition.
+
+---
+
+### 3.1 — Choix légal conjoint · usufruit total
+
+| Paramètre | Valeur |
+|---|---|
+| Base | Voir intro Bloc 3 |
+| Choix légal conjoint | Usufruit de la totalité (art. 757 CC) |
+| Décès dans | 0 an (Ep2 : 60 ans) |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Valeur fiscale UF/NP | Droits | Net |
+|---|---|---|---|
+| Conjoint (usufruit — 60 ans = 50 %) | | 0 | |
+| E1 (nue-propriété) | | | |
+| E2 (nue-propriété) | | | |
+
+**Vérifier :** Barème CGI 669 : 60 ans → usufruit 50 % ; abattement 100 k€ sur valeur NP de chaque enfant.
+
+---
+
+### 3.2 — Choix légal conjoint · 1/4 pleine propriété
+
+| Paramètre | Valeur |
+|---|---|
+| Base | Voir intro Bloc 3 |
+| Choix légal conjoint | 1/4 en pleine propriété (art. 757 CC) |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint | | 0 | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 3.3 — Donation entre époux · usufruit total
+
+| Paramètre | Valeur |
+|---|---|
+| Base | Voir intro Bloc 3 |
+| Donation entre époux | Oui — Totalité en usufruit |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Valeur fiscale | Droits | Net |
+|---|---|---|---|
+| Conjoint (usufruit DDV — 60 ans) | | 0 | |
+| E1 (nue-propriété) | | | |
+| E2 (nue-propriété) | | | |
+
+---
+
+### 3.4 — Donation entre époux · pleine propriété (quotité disponible)
+
+| Paramètre | Valeur |
+|---|---|
+| Base | Voir intro Bloc 3 |
+| Donation entre époux | Oui — Quotité disponible en pleine propriété |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint (1/3 PP — 2 enfants) | | 0 | |
+| E1 | | | |
+| E2 | | | |
+
+**Vérifier :** Quotité disponible spéciale époux avec 2 enfants = 1/3 PP.
+
+---
+
+### 3.5 — Donation entre époux · option mixte (1/4 PP + 3/4 UF)
+
+| Paramètre | Valeur |
+|---|---|
+| Base | Voir intro Bloc 3 |
+| Donation entre époux | Oui — Option mixte 1/4 PP + 3/4 usufruit |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Part PP | Part UF/NP | Droits | Net |
 |---|---|---|---|---|
-| Conjoint (exo) | | | | |
-
-**Résultat attendu :** Capital transmis 500 000 €, assiette fiscale = 20 000 € (dernière prime), conjoint exonéré → droits = 0.
+| Conjoint | | | 0 | |
+| E1 | | | | |
+| E2 | | | | |
 
 ---
 
-### 13.2 Prévoyance — assuré > 70 ans (art. 757 B) — NOUVEAU
+### 3.6 — Attribution intégrale · 100 % biens communs
 
 | Paramètre | Valeur |
 |---|---|
-| Situation | Veuf(ve) |
-| Naissance | 01/01/1950 (76 ans) |
-| Enfants | 2 enfants |
-| Prévoyance | Capital décès : 400 000 € / Dernière prime : 15 000 € / Clause : enfants parts égales |
+| Base | Voir intro Bloc 3 |
+| Attribution intégrale | Oui — 100 % biens communs |
 
-> Correction PR-10 bis : après 70 ans, la prime annuelle (15 000 €) doit passer sous art. 757 B et apparaître dans **"Transmission par bénéficiaire"** (pas dans "Assurances hors succession").
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+**Vérifier :** La totalité des biens communs revient au conjoint survivant via clause d'attribution intégrale.
+
+---
+
+### 3.7 — Attribution intégrale · 75 % biens communs
+
+| Paramètre | Valeur |
+|---|---|
+| Base | Voir intro Bloc 3 |
+| Attribution intégrale | Oui — 75 % biens communs |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 3.8 — Préciput global · 100 k€
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e) |
+| Régime | Séparation biens + société d'acquêts |
+| Enfants | 2 communs |
+| Actifs expert | SA : 400 000 € |
+| Mode préciput | Global — 100 000 € |
+| Décès | Ep1 en premier |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| | Valeur |
+|---|---|
+| SA avant préciput | 400 000 |
+| Préciput (hors succession) | 100 000 |
+| SA à partager | 300 000 |
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint (préciput + part SA) | | | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 3.9 — Préciput cible · résidence principale
+
+| Paramètre | Valeur |
+|---|---|
+| Base | Voir intro Bloc 3 |
+| Actifs expert | RP commune : 400 000 €, Autres commun : 400 000 € |
+| Mode préciput | Cible — résidence principale |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Masse | Valeur | Succession |
+|---|---|---|
+| RP (préciput cible) | 400 000 | Non (conjoint) |
+| Autres commun | 400 000 | Oui (partagé) |
+
+| Héritier | RP préciput | Part succession | Droits | Net |
+|---|---|---|---|---|
+| Conjoint | 400 000 | | 0 | |
+| E1 | — | | | |
+| E2 | — | | | |
+
+---
+
+### 3.10 — Testament · legs universel à E1 uniquement
+
+| Paramètre | Valeur |
+|---|---|
+| Base | Voir intro Bloc 3 |
+| Testament Ep1 | Legs universel → E1 |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Base | Droits | Net |
+|---|---|---|---|---|
+| E1 (legs universel) | | Réserve + quotité | | |
+| E2 (réservataire) | | Réserve seule | | |
+| Conjoint | | | 0 | |
+
+**Vérifier :** Réserve héréditaire E2 protégée ; E1 reçoit sa réserve + quotité disponible.
+
+---
+
+### 3.11 — Testament · legs particulier à un tiers
+
+| Paramètre | Valeur |
+|---|---|
+| Base | Voir intro Bloc 3 |
+| Membres | 1 tierce personne |
+| Testament Ep1 | Legs particulier : 50 000 € → tiers |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Tiers (legs particulier) | 50 000 | | |
+| Conjoint | | 0 | |
+| E1 | | | |
+| E2 | | | |
+
+**Vérifier :** Legs particulier déduit avant calcul des parts réservataires ; tiers barème 60 %.
+
+---
+
+### 3.12 — Créances entre masses · récompense Ep1 → communauté
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e) |
+| Régime | Communauté légale |
+| Enfants | 2 communs |
+| Actifs expert | Commun : 500 000 €, Ep1 propre : 100 000 € |
+| Créance | Ep1 → Communauté : 80 000 € (récompense, active) |
+| Décès | Ep1 en premier |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| | Valeur |
+|---|---|
+| Propres Ep1 | 100 000 |
+| Quote-part Ep1 (50 % commun) | 250 000 |
+| Récompense récupérée | 80 000 |
+| Total succession Ep1 | |
+
+| Héritier | Reçoit brut | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+## BLOC 4 — Produits d'assurance (AV · PER · Prévoyance)
+
+> Base sauf précision : Marié CRA, 2 enfants communs, actifs commun 400 k€.
+
+---
+
+### 4.1 — AV clause standard · avant 70 ans · capitaux 150 k€
+
+| Paramètre | Valeur |
+|---|---|
+| Naissance Ep1 | 01/01/1970 |
+| AV (Ep1 souscripteur/assuré) | Capitaux : 150 000 €, Après 70 ans : 0, Avant 1998 : 0 |
+| Clause bénéficiaire | Standard (conjoint puis enfants) |
 
 **Résultats SER1 : À compléter**
 
-| | Capital décès reçu | Base fiscale (prime) | Droits 757 B | Net |
+| Héritier | Héritage | AV reçue | Droits AV | Droits succ. | Net |
+|---|---|---|---|---|---|
+| Conjoint | | 150 000 | 0 (exonéré) | 0 | |
+| E1 | | | | | |
+| E2 | | | | | |
+
+**Vérifier :** AV < abattement 990I (152 500 €/bénéf.) → 0 droits si conjoint seul bénéficiaire.
+
+---
+
+### 4.2 — AV clause standard · versements après 70 ans · art. 757B
+
+| Paramètre | Valeur |
+|---|---|
+| Naissance Ep1 | 01/01/1950 |
+| AV (Ep1) | Capitaux : 200 000 €, Dont après 70 ans : 120 000 € |
+| Clause bénéficiaire | Standard (conjoint puis enfants) |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | AV avant 70 | AV après 70 | Droits 757B | Net AV |
+|---|---|---|---|---|
+| Conjoint | | | 0 (exonéré) | |
+| E1 | | | | |
+| E2 | | | | |
+
+**Vérifier :** 757B — abattement global 30 500 € partagé ; excédent soumis DMTG selon lien.
+
+---
+
+### 4.3 — AV clause démembrée · conjoint 60 ans
+
+| Paramètre | Valeur |
+|---|---|
+| Naissance Ep1 | 01/01/1963 |
+| Naissance Ep2 | 01/01/1965 (survivant, 60 ans) |
+| AV (Ep1) | Capitaux : 200 000 €, Clause démembrée, âge usufruitier : 60 |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Valeur fiscale | Base imposable | Droits | Net |
+|---|---|---|---|---|
+| Conjoint (UF 50 %) | 100 000 | — (exonéré) | 0 | |
+| E1 (NP 25 %) | 50 000 | 50 000 − 152 500 | | |
+| E2 (NP 25 %) | 50 000 | 50 000 − 152 500 | | |
+
+**Vérifier :** CGI 669 : 60 ans → UF 50 % ; abattement 990I s'applique sur valeur UF et NP séparément.
+
+---
+
+### 4.4 — AV clause personnalisée · conjoint 60 % + enfants 40 %
+
+| Paramètre | Valeur |
+|---|---|
+| Naissance Ep1 | 01/01/1965 |
+| AV (Ep1) | Capitaux : 300 000 €, Clause personnalisée : Conjoint 60 %, E1 20 %, E2 20 % |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | AV reçue | Abattement 990I | Base imposable | Droits | Net |
+|---|---|---|---|---|---|
+| Conjoint | 180 000 | — (exonéré) | 0 | 0 | |
+| E1 | 60 000 | 152 500 | 0 | 0 | |
+| E2 | 60 000 | 152 500 | 0 | 0 | |
+
+---
+
+### 4.5 — AV dépassant abattement 990I · imposable
+
+| Paramètre | Valeur |
+|---|---|
+| Naissance Ep1 | 01/01/1965 |
+| AV (Ep1) | Capitaux : 500 000 €, Clause : E1 50 %, E2 50 % |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | AV reçue | Abattement 990I | Base imposable | Droits 990I | Net |
+|---|---|---|---|---|---|
+| E1 | 250 000 | 152 500 | 97 500 | | |
+| E2 | 250 000 | 152 500 | 97 500 | | |
+
+**Vérifier :** Prélèvement 20 % jusqu'à 700 k€/bénéficiaire, 31,25 % au-delà.
+
+---
+
+### 4.6 — AV versements avant 13/10/1998 · exonération totale
+
+| Paramètre | Valeur |
+|---|---|
+| Naissance Ep1 | 01/01/1948 |
+| AV (Ep1) | Capitaux : 200 000 €, Dont avant 13/10/1998 : 200 000 € |
+| Clause | E1 50 %, E2 50 % |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | AV reçue | Droits | Net |
+|---|---|---|---|
+| E1 | 100 000 | 0 (exonéré) | |
+| E2 | 100 000 | 0 (exonéré) | |
+
+**Vérifier :** Ancien régime 990I : 100 % exonéré si versements avant le 13/10/1998.
+
+---
+
+### 4.7 — AV versements mixtes · 3 tranches
+
+| Paramètre | Valeur |
+|---|---|
+| Naissance Ep1 | 01/01/1948 |
+| AV (Ep1) | Capitaux : 300 000 €, Avant 1998 : 50 000 €, Après 70 ans : 80 000 € |
+| Clause | E1 50 %, E2 50 % |
+
+**Résultats SER1 : À compléter**
+
+| Tranche | Montant | Régime | Droits |
+|---|---|---|---|
+| Avant 13/10/1998 | 50 000 | Exonéré | 0 |
+| Avant 70 ans (hors 1998) | 170 000 | 990I | |
+| Après 70 ans | 80 000 | 757B | |
+
+**Vérifier :** Segmentation correcte des 3 tranches dans l'affichage.
+
+---
+
+### 4.8 — PER non liquidé · assuré < 70 ans
+
+| Paramètre | Valeur |
+|---|---|
+| Naissance Ep1 | 01/01/1972 |
+| PER (Ep1 assuré) | Capitaux : 80 000 €, Clause standard |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | PER reçu | Régime fiscal | Droits | Net |
+|---|---|---|---|---|
+| Conjoint | | | | |
+| E1 | | | | |
+| E2 | | | | |
+
+**Vérifier :** PER < 70 ans → art. 990I (même régime AV avant 70 ans).
+
+---
+
+### 4.9 — PER non liquidé · assuré > 70 ans
+
+| Paramètre | Valeur |
+|---|---|
+| Naissance Ep1 | 01/01/1950 |
+| PER (Ep1 assuré) | Capitaux : 100 000 €, Clause standard |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | PER reçu | Régime fiscal | Abattement 757B | Droits | Net |
+|---|---|---|---|---|---|
+| Conjoint | | | 0 (exonéré) | 0 | |
+| E1 | | | | | |
+| E2 | | | | | |
+
+**Vérifier :** PER > 70 ans → art. 757B ; abattement global 30 500 € partagé entre bénéficiaires.
+
+---
+
+### 4.10 — Prévoyance décès · prime non excessive
+
+| Paramètre | Valeur |
+|---|---|
+| Naissance Ep1 | 01/01/1975 |
+| Prévoyance (Ep1) | Capital décès : 150 000 €, Dernière prime : 2 000 € |
+| Clause | Conjoint |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | Capital reçu | Droits | Net |
+|---|---|---|---|
+| Conjoint | 150 000 | | |
+
+**Vérifier :** Prévoyance hors succession (prime non manifestement exagérée) ; droits nuls ou réduits.
+
+---
+
+### 4.11 — AV + PER + Prévoyance combinées
+
+| Paramètre | Valeur |
+|---|---|
+| Naissance Ep1 | 01/01/1968 |
+| Actifs | Commun : 200 000 € |
+| AV (Ep1) | 100 000 €, clause conjoint 100 % |
+| PER (Ep1) | 80 000 €, clause standard |
+| Prévoyance (Ep1) | Capital 50 000 €, prime 1 500 € |
+
+**Résultats SER1 : À compléter**
+
+| Produit | Bénéficiaire | Reçu | Régime | Droits | Net |
+|---|---|---|---|---|---|
+| AV | Conjoint | 100 000 | 990I | 0 | |
+| PER | (clause) | 80 000 | 990I | | |
+| Prévoyance | (clause) | 50 000 | Hors succ. | | |
+| Succession | | | DMTG | | |
+
+**Vérifier :** Abattements 990I distincts AV vs PER ou partagés ? (point de conformité moteur).
+
+---
+
+### 4.12 — AV clause démembrée + PER clause démembrée · conjoint 65 ans
+
+| Paramètre | Valeur |
+|---|---|
+| Naissance Ep1 | 01/01/1960 |
+| Naissance Ep2 | 01/01/1962 (survivant, 63 ans) |
+| AV (Ep1) | Capitaux : 200 000 €, Clause démembrée, âge UF : 63 |
+| PER (Ep1) | Capitaux : 150 000 €, Clause démembrée, âge UF : 63 |
+
+**Résultats SER1 : À compléter**
+
+| Produit | Héritier | Valeur fiscale | Droits | Net |
+|---|---|---|---|---|
+| AV | Conjoint UF (40 %) | 80 000 | 0 | |
+| AV | E1 NP (30 %) | 60 000 | | |
+| AV | E2 NP (30 %) | 60 000 | | |
+| PER | Conjoint UF (40 %) | 60 000 | 0 | |
+| PER | E1 NP (30 %) | 45 000 | | |
+| PER | E2 NP (30 %) | 45 000 | | |
+
+**Vérifier :** CGI 669 : 63 ans → UF 40 % ; abattements 990I appliqués séparément par produit.
+
+---
+
+## BLOC 5 — Actifs mode expert
+
+---
+
+### 5.1 — Résidence principale · abattement 20 %
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs expert | RP commune 500 000 € (cocher abattement RP), Autres commun : 100 000 € |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Actif | Brut | Après abattement 20 % |
+|---|---|---|
+| RP | 500 000 | |
+| Autres | 100 000 | — |
+| Total actif net | | |
+
+| Héritier | Part | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 5.2 — Qualification juridique · propre Ep1 + commun
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs expert | Bien Ep1 (propre, avant union) : 400 000 €, Bien commun : 200 000 € |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Masse | Valeur | Entre dans succession |
+|---|---|---|
+| Propre Ep1 | 400 000 | Oui (100 %) |
+| Commun (moitié Ep1) | 100 000 | Oui |
+| Total | 500 000 | |
+
+| Héritier | Part | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 5.3 — GFA · abattement 75 %
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs expert | GFA commun : 400 000 €, Autres commun : 100 000 € |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Actif | Brut | Abattement 75 % | Net taxable |
+|---|---|---|---|
+| GFA | 400 000 | | |
+| Autres | 100 000 | — | 100 000 |
+
+| Héritier | Part | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 5.4 — GFV · abattement 75 %
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs expert | GFV commun : 300 000 €, Autres : 200 000 € |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Part | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+**Vérifier :** Abattement 75 % GFV = même règle que GFA.
+
+---
+
+### 5.5 — Indivision séparatiste · 50/50
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), séparation de biens, 2 enfants |
+| Actifs expert | Bien indivision (50 % Ep1 / 50 % Ep2) : 400 000 € |
+| Décès | Ep1 en premier |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| | Valeur |
+|---|---|
+| Quote-part Ep1 (50 %) | 200 000 |
+| Quote-part Ep2 (50 %) — hors succession | 200 000 |
+
+| Héritier | Part | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 5.6 — Passif affecté par masse · Ep1 uniquement
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs expert | Ep1 propre : 500 000 €, Passif Ep1 : 80 000 € |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| | Valeur |
+|---|---|
+| Actif brut Ep1 | 500 000 |
+| Passif affecté Ep1 | 80 000 |
+| Actif net transmis | |
+
+| Héritier | Part | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 5.7 — Forfait mobilier · mode pourcentage 5 %
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Célibataire, 2 enfants |
+| Actifs expert | Immobilier Ep1 : 400 000 €, Autres Ep1 : 200 000 € |
+| Forfait mobilier | Mode % — 5 % |
+
+**Résultats SER1 : À compléter**
+
+| | Valeur |
+|---|---|
+| Base avant forfait | 600 000 |
+| Forfait mobilier 5 % | 30 000 |
+| Total actif avec forfait | 630 000 |
+
+| Héritier | Part | Droits | Net |
+|---|---|---|---|
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 5.8 — Forfait mobilier · mode montant fixe
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Célibataire, 2 enfants |
+| Actifs expert | Ep1 : 500 000 € |
+| Forfait mobilier | Mode montant fixe : 20 000 € |
+
+**Résultats SER1 : À compléter**
+
+| | Valeur |
+|---|---|
+| Actif déclaré | 500 000 |
+| Forfait fixe | 20 000 |
+| Total | 520 000 |
+
+| Héritier | Part | Droits | Net |
+|---|---|---|---|
+| E1 | | | |
+| E2 | | | |
+
+---
+
+## BLOC 6 — Donations
+
+---
+
+### 6.1 — Donation rapportable · dans les 15 ans · E1
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs | Commun : 600 000 € |
+| Donation | Type : avance de part, Donateur Ep1 → Donataire E1, Valeur : 50 000 €, Date : il y a 5 ans |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Part légale | Donation rappelée | Part finale | Droits | Net |
+|---|---|---|---|---|---|
+| Conjoint | | — | | | |
+| E1 | | 50 000 | | | |
+| E2 | | — | | | |
+
+**Vérifier :** Masse fictive reconstituée ; abattement 100 k€ réduit de 50 k€ pour E1.
+
+---
+
+### 6.2 — Donation hors part · dans les 15 ans · E1
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs | Commun : 600 000 € |
+| Donation | Type : hors part, Donateur Ep1 → E1, Valeur : 80 000 €, Date : il y a 3 ans |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Part | Donation rappelée fiscalement | Droits | Net |
+|---|---|---|---|---|
+| Conjoint | | | | |
+| E1 | | 80 000 | | |
+| E2 | | — | | |
+
+**Vérifier :** Hors part = pas de rapport civil ; rappel fiscal CGI 784 (15 ans) réduit l'abattement disponible.
+
+---
+
+### 6.3 — Donation ancienne · hors rappel fiscal (> 15 ans)
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs | Commun : 800 000 € |
+| Donation | Type : rapportable, Ep1 → E1, 100 000 €, Date : il y a 20 ans |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Part | Droits (abattement 100 k€ reconstitué) | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E1 | | | |
+| E2 | | | |
+
+**Vérifier :** Donation > 15 ans = hors rappel fiscal ; abattement 100 k€ entier disponible pour E1.
+
+---
+
+### 6.4 — Don familial exonéré 790G · 31 865 €
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs | Commun : 500 000 € |
+| Donation | Type : avance part, Ep1 (< 80 ans) → E1 (majeur), 31 865 €, Cocher "Don familial 790G" |
+
+**Résultats SER1 : À compléter**
+
+| | Valeur |
+|---|---|
+| Droits donation | 0 (exonéré 790G) |
+| Rappel fiscal succession | |
+
+| Héritier | Part succession | Abattement restant | Droits | Net |
 |---|---|---|---|---|
 | E1 | | | | |
 | E2 | | | | |
 
-*Vérifier la section d'affichage : "Transmission par bénéficiaire" avec suffix "(art. 757 B)".*
-
-**Calcul attendu :** Base fiscale = 15 000 € (dernière prime). Abattement global 30 500 € réparti → base nulle si prime < abattement.
-
 ---
 
-### 13.3 Prévoyance — warnings légaux (NOUVEAU — PR-10 bis)
+### 6.5 — Donation avec réserve d'usufruit
 
 | Paramètre | Valeur |
 |---|---|
-| Même config que 13.1 | — |
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs | Commun : 600 000 € |
+| Donation | Rapportable, Ep1 → E1, Valeur donation : 150 000 €, Cocher "Avec réserve d'usufruit" |
 
-**Vérifier que les warnings affichés dans SER1 contiennent :**
+**Résultats SER1 — Étape 1 : À compléter**
 
-| Référence légale | Présente ? |
+| | Valeur |
 |---|---|
-| `art. 990 I CGI` | |
-| `art. 757 B CGI` | |
-| `CGI annexe II art. 306-0 F` | |
-| `art. L132-23 C. assurances` | |
-| `BOFiP TCAS-AUT-60` | |
+| Valeur NP rappelée | |
+| Abattement 100 k€ − NP rappelée | |
+
+| Héritier | Part | Droits | Net |
+|---|---|---|---|
+| E1 | | | |
+| E2 | | | |
 
 ---
 
-## BLOC 14 — Horizon du décès
-
-### 14.1 Impact de l'horizon sur l'usufruit (DDV usufruit total)
+### 6.6 — Multi-donations · rapportable + hors part + 790G
 
 | Paramètre | Valeur |
 |---|---|
-| Situation | Marié, communauté légale |
-| Naissance Ep1/Ep2 | 01/01/1970 / 01/01/1975 |
+| Situation | Marié(e), CRA, 3 enfants |
+| Actifs | Commun : 1 500 000 € |
+| Donation 1 | Rapportable Ep1 → E1 : 80 000 €, il y a 5 ans |
+| Donation 2 | Hors part Ep1 → E2 : 60 000 €, il y a 8 ans |
+| Donation 3 | Avance part Ep1 → E3 : 31 865 €, 790G coché |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Part légale | Rappel fiscal | Abattement restant | Droits | Net |
+|---|---|---|---|---|---|
+| Conjoint | | — | — | 0 | |
+| E1 | | 80 000 | | | |
+| E2 | | 60 000 | | | |
+| E3 | | 31 865 | | | |
+
+---
+
+## BLOC 7 — Chainage & horizons temporels
+
+---
+
+### 7.1 — Ep2 décède en premier · inversion chainage
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs | Ep1 : 200 000 €, Ep2 : 400 000 €, Commun : 400 000 € |
+| Décès | Ep2 en premier (toggle inversé) |
+
+**Résultats SER1 — Étape 1 (décès Ep2) : À compléter**
+
+| Masse Ep2 | Valeur |
+|---|---|
+| Propres Ep2 | 400 000 |
+| Moitié commun | 200 000 |
+| Total | 600 000 |
+
+| Héritier | Part | Droits | Net |
+|---|---|---|---|
+| Conjoint (Ep1) | | 0 | |
+| E1 | | | |
+| E2 | | | |
+
+---
+
+### 7.2 — Décès dans 10 ans · usufruit conjoint réduit
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Naissance Ep1 | 01/01/1965 (mourra à 71 ans) |
+| Naissance Ep2 | 01/01/1967 (survivant, 79 ans au décès) |
+| Actifs | Commun : 800 000 € |
+| Décès dans | 10 ans |
+| Choix légal conjoint | Usufruit total |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | Âge au décès | Valeur UF/NP | Droits | Net |
+|---|---|---|---|---|
+| Conjoint UF (79 ans → 20 %) | 79 | | 0 | |
+| E1 NP (80 %) | — | | | |
+| E2 NP (80 %) | — | | | |
+
+---
+
+### 7.3 — Décès dans 20 ans · NP quasi pleine propriété
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Naissance Ep1 | 01/01/1965 |
+| Naissance Ep2 | 01/01/1967 (survivant, 89 ans au décès) |
+| Actifs | Commun : 800 000 € |
+| Décès dans | 20 ans |
+| Choix légal conjoint | Usufruit total |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | Âge au décès | Valeur UF/NP | Droits | Net |
+|---|---|---|---|---|
+| Conjoint UF (89 ans → 10 %) | 89 | | 0 | |
+| E1 NP (90 %) | — | | | |
+| E2 NP (90 %) | — | | | |
+
+**Vérifier :** NP ≈ PP → droits enfants très proches d'une transmission PP.
+
+---
+
+### 7.4 — Comparaison 0 an vs 10 ans · même cas de base
+
+Réaliser les deux variantes avec les mêmes paramètres, uniquement le curseur "Décès dans" change.
+
+| Paramètre | 7.4A — Décès immédiat | 7.4B — Décès dans 10 ans |
+|---|---|---|
+| Naissance Ep1 | 01/01/1972 | 01/01/1972 |
+| Naissance Ep2 | 01/01/1974 | 01/01/1974 |
+| Actifs | Commun : 600 000 € | Commun : 600 000 € |
+| Décès dans | 0 | 10 |
+| Choix légal conjoint | Usufruit total | Usufruit total |
+
+**Résultats SER1 : À compléter**
+
+| Scénario | Âge conjoint | % UF | Droits E1 | Droits E2 |
+|---|---|---|---|---|
+| 7.4A — 0 an | 50 | | | |
+| 7.4B — 10 ans | 60 | | | |
+
+---
+
+### 7.5 — Ep1 très âgé · Ep2 jeune · écart usufruit maximal
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Naissance Ep1 | 01/01/1940 (décédant à 85 ans) |
+| Naissance Ep2 | 01/01/1972 (survivant à 53 ans) |
+| Actifs | Commun : 800 000 € |
+| Choix légal conjoint | Usufruit total |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | Âge | % UF | Valeur fiscale | Droits | Net |
+|---|---|---|---|---|---|
+| Conjoint UF (53 ans → 60 %) | 53 | 60 % | | 0 | |
+| E1 NP (40 %) | — | — | | | |
+| E2 NP (40 %) | — | — | | | |
+
+---
+
+### 7.6 — Décès dans 30 ans · usufruit résiduel
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Naissance Ep1 | 01/01/1965 |
+| Naissance Ep2 | 01/01/1967 (survivant, 99 ans) |
+| Actifs | Commun : 800 000 € |
+| Décès dans | 30 ans |
+| Choix légal conjoint | Usufruit total |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | Âge au décès | % UF (CGI 669) | Valeur fiscale | Droits | Net |
+|---|---|---|---|---|---|
+| Conjoint UF (99 ans → 10 %) | 99 | 10 % | | 0 | |
+| E1 NP | — | 90 % | | | |
+| E2 NP | — | 90 % | | | |
+
+---
+
+## BLOC 8 — Croisements critiques
+
+---
+
+### 8.1 — Communauté universelle + donation entre époux + AV
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e) |
+| Régime | Communauté universelle |
+| Naissance Ep1 | 01/01/1960 |
+| Naissance Ep2 | 01/01/1962 (65 ans) |
 | Enfants | 2 communs |
 | Actifs | Commun : 1 000 000 € |
-| DDV | Usufruit total |
+| Donation entre époux | Oui — Totalité en usufruit |
+| AV (Ep1) | Capitaux : 200 000 €, Clause conjoint 100 % |
 
-**Test A — Horizon = Aujourd'hui (Ep2 = 51 ans → usufruit 60 %)**
+**Résultats SER1 — Étape 1 : À compléter**
 
-**Résultats SER1 : À compléter**
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-**Résultats BIG (Aujourd'hui) :**
-
-| | Héritage | Droits succession | Transmission nette |
-|---|---|---|---|
-| **1er décès** | | | |
-| Total | 500 000 | 6 389 | 493 611 |
-| Conjoint | 250 000 | 0 | 250 000 |
-| Enfant 1 | 125 000 | 3 194 | 121 806 |
-| Enfant 2 | 125 000 | 3 194 | 121 806 |
-| **2e décès** | | | |
-| Total | 500 000 | 56 389 | 693 611 |
-| Enfant commun 1 | 250 000 | 28 194 | 346 806 |
-| Enfant 2 | 250 000 | 28 194 | 346 806 |
-
-**Résultat attendu :** Total cumulé = 62 778 €. Écart précédent : SER1 calculait 112 776 € (erreur sur la valeur de l'usufruit au 1er décès).
-
-**Test B — Horizon = Dans 20 ans (Ep2 = 71 ans → usufruit 30 %)**
-
-**Résultats SER1 : À compléter**
-
-| Étape | Masse transmise | Droits |
-|---|---|---|
-| Étape 1 — Décès Ep1 | | |
-| Étape 2 — Décès Ep2 | | |
-| Total cumulé | | |
-
-**Résultat attendu :** Les droits doivent être significativement plus élevés qu'en Test A (usufruit réduit à 30 % → NP des enfants plus élevée → base taxable plus importante). Écart précédent : aucun changement avec l'horizon dans SER1.
+| Héritier | Héritage | AV | Droits total | Net |
+|---|---|---|---|---|
+| Conjoint | | 200 000 | 0 | |
+| E1 | | — | | |
+| E2 | | — | | |
 
 ---
 
-## BLOC 15 — Tests des corrections récentes (PR-10 bis)
+### 8.2 — Séparation de biens + enfants non-communs + préciput global
 
-### 15.1 Label "Vous" dans la carte Filiation — célibataire
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e) |
+| Régime | Séparation biens + société d'acquêts |
+| Enfants | 1 rattaché Ep1 + 1 rattaché Ep2 |
+| Actifs expert | Ep1 propre : 300 000 €, SA : 200 000 € |
+| Mode préciput | Global — 100 000 € |
+| Décès | Ep1 en premier |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Masse | Valeur | Sort |
+|---|---|---|
+| SA (préciput) | 100 000 | Conjoint hors succession |
+| SA (reste) | 100 000 | Partagé |
+| Propre Ep1 | 300 000 | Succession |
+
+| Héritier | Part | Droits | Net |
+|---|---|---|---|
+| Conjoint | | | |
+| E (Ep1) | | | |
+
+**Vérifier :** E(Ep2) n'hérite pas de Ep1 ; préciput prélevé avant partage SA.
+
+---
+
+### 8.3 — PACS séparation + enfant non-commun + AV conjoint
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Pacsé(e) |
+| Convention PACS | Séparation |
+| Naissance Ep1 | 01/01/1975 |
+| Enfants | 1 rattaché Ep1 uniquement |
+| Actifs | Ep1 : 400 000 € |
+| AV (Ep1) | Capitaux : 150 000 €, Clause partenaire 100 % |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Héritage | AV | Droits AV | Net |
+|---|---|---|---|---|
+| E1 (seul héritier légal) | | — | — | |
+| Partenaire (AV seulement) | — | 150 000 | 0 (990I) | |
+
+---
+
+### 8.4 — CRA + enfant décédé représenté + AV + donation rapportable
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA |
+| Naissance Ep1 | 01/01/1948 |
+| Enfants | 2 dont 1 décédé + 1 petit-enfant représentant |
+| Actifs | Commun : 1 000 000 € |
+| AV (Ep1) | Capitaux : 200 000 €, Clause enfants parts égales |
+| Donation | Rapportable Ep1 → E1 (vivant) : 100 000 €, il y a 10 ans |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Héritier | Héritage | Rappel fiscal | AV | Droits | Net |
+|---|---|---|---|---|---|
+| Conjoint | | — | — | 0 | |
+| E1 (vivant) | | 100 000 | 100 000 | | |
+| PE (représentation) | | — | 100 000 | | |
+
+---
+
+### 8.5 — Participation aux acquêts + patrimoine très déséquilibré + AV
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), participation aux acquêts |
+| Enfants | 2 communs |
+| Actifs | Ep1 : 1 200 000 €, Ep2 : 200 000 € |
+| Participation | Originaire Ep1 : 50 k€, Ep2 : 50 k€ |
+| AV (Ep1) | Capitaux : 300 000 €, Clause conjoint 100 % |
+| Décès | Ep1 en premier |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| | Valeur |
+|---|---|
+| Actif Ep1 avant créance | 1 200 000 |
+| Créance participation Ep2 | |
+| Actif net succession | |
+
+| Héritier | Héritage | AV | Droits | Net |
+|---|---|---|---|---|
+| Conjoint | | 300 000 | 0 | |
+| E1 | | — | | |
+| E2 | | — | | |
+
+---
+
+### 8.6 — CRA + DDV usufruit + préciput cible RP + AV démembrée
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Naissance Ep1 | 01/01/1963 |
+| Naissance Ep2 | 01/01/1965 (60 ans) |
+| Actifs expert | RP commune : 600 000 €, Autres commun : 400 000 € |
+| Donation entre époux | Oui — usufruit total |
+| Mode préciput | Cible — RP |
+| AV (Ep1) | 200 000 €, clause démembrée, âge UF : 60 |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Flux | Héritier | Valeur | Droits | Net |
+|---|---|---|---|---|
+| Préciput cible RP | Conjoint | 600 000 | 0 | |
+| DDV usufruit (Autres) | Conjoint UF | | 0 | |
+| DDV nue-propriété | E1 | | | |
+| DDV nue-propriété | E2 | | | |
+| AV usufruit | Conjoint UF | | 0 | |
+| AV nue-propriété | E1 | | | |
+| AV nue-propriété | E2 | | | |
+
+---
+
+### 8.7 — CMA + GFA + qualification juridique + donation rapportable
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), communauté meubles et acquêts, 3 enfants |
+| Actifs expert | GFA commun : 600 000 €, Immeuble propre Ep1 (immeuble, avant union) : 300 000 €, Meuble commun : 100 000 € |
+| Donation | Rapportable Ep1 → E1 : 100 000 €, date récente |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| Actif | Brut | Abattement | Net taxable |
+|---|---|---|---|
+| GFA (75 %) | 600 000 | | |
+| Propre Ep1 immeuble | 300 000 | — | |
+| Meuble commun (50 %) | 50 000 | — | |
+| Total succession | | | |
+
+| Héritier | Part | Rappel | Droits | Net |
+|---|---|---|---|---|
+| Conjoint | | — | 0 | |
+| E1 | | 100 000 | | |
+| E2 | | — | | |
+| E3 | | — | | |
+
+---
+
+## BLOC 9 — Cas limites
+
+---
+
+### 9.1 — Actif net nul · passif = actif
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs | Commun : 300 000 € |
+| Passifs | Commun : 300 000 € |
+
+**Résultats SER1 — Étape 1 : À compléter**
+
+| | Valeur |
+|---|---|
+| Actif brut | 300 000 |
+| Passif | 300 000 |
+| Actif net | 0 |
+
+| Héritier | Reçoit | Droits | Net |
+|---|---|---|---|
+| Conjoint | 0 | 0 | 0 |
+| E1 | 0 | 0 | 0 |
+| E2 | 0 | 0 | 0 |
+
+**Vérifier :** Succession déficitaire correctement affichée ; aucun droit.
+
+---
+
+### 9.2 — Masse successorale nulle · tout en AV
+
+| Paramètre | Valeur |
+|---|---|
+| Situation | Marié(e), CRA, 2 enfants |
+| Actifs | Commun : 0 € |
+| AV (Ep1) | Capitaux : 600 000 €, Clause E1 50 % / E2 50 % |
+
+**Résultats SER1 : À compléter**
+
+| Héritier | Héritage | AV | Droits AV | Net |
+|---|---|---|---|---|
+| Conjoint | 0 | — | — | 0 |
+| E1 | 0 | 300 000 | | |
+| E2 | 0 | 300 000 | | |
+
+**Vérifier :** Succession vide sans erreur moteur ; droits uniquement sur AV.
+
+---
+
+### 9.3 — Succession collatérale · frères/sœurs sans enfants ni ascendants
 
 | Paramètre | Valeur |
 |---|---|
 | Situation | Célibataire |
+| Naissance Ep1 | 01/01/1965 |
+| Enfants | 0 |
+| Ascendants | Non |
+| Membres | 2 frères/sœurs (côté Ep1) |
+| Actifs | Ep1 : 200 000 € |
 
-**Vérifier en UI :**
+**Résultats SER1 : À compléter**
 
-| Emplacement | Label attendu | Conforme ? |
-|---|---|---|
-| Nœud central de l'orgchart Filiation | "Vous" | |
-| Menu déroulant "Masse de rattachement" | "Vous" (pas "Défunt(e)") | |
-| Note de bas de la synthèse successorale | "Succession directe simulée." (pas "défunt(e)") | |
+| Héritier | Part brute | Abattement | Base imposable | Droits (35/45 %) | Net |
+|---|---|---|---|---|---|
+| F/S 1 | 100 000 | 15 932 | | | |
+| F/S 2 | 100 000 | 15 932 | | | |
 
 ---
 
-### 15.2 Label "Vous" dans la carte Filiation — veuf(ve)
+### 9.4 — Succession neveux/nièces · représentation d'un frère décédé
 
 | Paramètre | Valeur |
 |---|---|
-| Situation | Veuf/veuve |
+| Situation | Célibataire |
+| Naissance Ep1 | 01/01/1960 |
+| Enfants | 0 |
+| Ascendants | Non |
+| Membres | 1 frère (coché décédé) + 2 neveux/nièces (membres familiaux) |
+| Actifs | Ep1 : 300 000 € |
 
-**Vérifier en UI :**
+**Résultats SER1 : À compléter**
 
-| Emplacement | Label attendu | Conforme ? |
-|---|---|---|
-| Nœud central de l'orgchart Filiation | "Vous" | |
-| Menu déroulant porteur/masse | Pas de mention "Défunt(e)" | |
+| Héritier | Part brute | Abattement | Droits (55 %) | Net |
+|---|---|---|---|---|
+| Neveu/nièce 1 | 150 000 | 7 967 | | |
+| Neveu/nièce 2 | 150 000 | 7 967 | | |
 
 ---
 
-### 15.3 Label "Vous" dans la carte Filiation — divorcé(e)
+### 9.5 — Masse très élevée · tranche haute barème DMTG
 
 | Paramètre | Valeur |
 |---|---|
-| Situation | Divorcé(e) |
+| Situation | Marié(e), CRA, 3 enfants |
+| Naissance Ep1 | 01/01/1955 |
+| Actifs | Commun : 5 000 000 € |
+| Décès | Ep1 en premier |
 
-**Vérifier en UI :**
+**Résultats SER1 — Étape 1 : À compléter**
 
-| Emplacement | Label attendu | Conforme ? |
-|---|---|---|
-| Nœud "Ep1" dans l'orgchart | "Vous" | |
-| Nœud "Ep2" dans l'orgchart | "Ex-conjoint(e)" | |
+| Héritier | Part brute | Abattement | Base imposable | Droits | Net |
+|---|---|---|---|---|---|
+| Conjoint | | | — (exonéré) | 0 | |
+| E1 | | | | | |
+| E2 | | | | | |
+| E3 | | | | | |
+
+**Vérifier :** Tranche 45 % correctement calculée au-dessus de 1 805 677 €.
 
 ---
 
-### 15.4 AV 990 I — affichage dans la bonne section
+### 9.6 — Conjoint seul survivant · pas d'enfants ni d'ascendants
 
 | Paramètre | Valeur |
 |---|---|
-| Situation | Célibataire / Naissance : 01/01/1970 (56 ans) |
-| Enfants | 1 enfant |
-| AV | Capitaux : 300 000 € / Versements après 70 : 0 |
+| Situation | Marié(e), CRA |
+| Enfants | 0 |
+| Ascendants | Non |
+| Actifs | Commun : 800 000 € |
 
-**Vérifier :**
+**Résultats SER1 — Étape 1 : À compléter**
 
-| Critère | Attendu | Conforme ? |
-|---|---|---|
-| Section affichage | "Assurances hors succession — art. 990 I" | |
-| Pas d'affichage dans "Transmission par bénéficiaire" | — | |
-| Droits 990 I = (300 000 − 152 500) × 20 % = 29 500 € | 29 500 € | |
+| Héritier | Reçoit | Droits | Net |
+|---|---|---|---|
+| Conjoint | 400 000 (50 % commun) | 0 | 400 000 |
 
 ---
 
-### 15.5 AV 757 B — affichage dans "Transmission par bénéficiaire"
+### 9.7 — Legs universel à un tiers · célibataire sans héritiers
 
 | Paramètre | Valeur |
 |---|---|
-| Situation | Célibataire / Naissance : 01/01/1950 (76 ans) |
-| Enfants | 1 enfant |
-| AV | Capitaux : 200 000 € / Versements après 70 : 200 000 € |
+| Situation | Célibataire |
+| Naissance Ep1 | 01/01/1960 |
+| Enfants | 0 |
+| Ascendants | Non |
+| Membres | 1 tierce personne |
+| Actifs | Ep1 : 400 000 € |
+| Testament | Legs universel → tierce personne |
 
-**Vérifier :**
+**Résultats SER1 : À compléter**
 
-| Critère | Attendu | Conforme ? |
-|---|---|---|
-| Section affichage | "Transmission par bénéficiaire" avec "(art. 757 B)" | |
-| Pas d'affichage dans "Assurances hors succession" | — | |
-| Label suffixé "(art. 757 B)" | présent | |
-| Droits calculés selon barème DMTG | > 0 | |
+| Héritier | Part brute | Abattement | Base imposable | Droits (60 %) | Net |
+|---|---|---|---|---|---|
+| Tiers | 400 000 | 1 594 | | | |
 
----
-
-### 15.6 PER 757 B — affichage dans "Transmission par bénéficiaire"
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Célibataire / Naissance : 01/01/1950 (76 ans) |
-| Enfants | 1 enfant |
-| PER | Capitaux décès : 150 000 € |
-
-**Vérifier :**
-
-| Critère | Attendu | Conforme ? |
-|---|---|---|
-| Section affichage | "Transmission par bénéficiaire" avec "(art. 757 B)" | |
-| Pas d'affichage dans "Assurances hors succession" | — | |
-| Droits selon barème DMTG (après abattement 30 500 €) | > 0 | |
+**Vérifier :** Barème 60 % tiers non parent, abattement 1 594 €.
 
 ---
 
-### 15.7 Page /settings/base-contrat — GFA/GFV décès/transmission
+## Annexe — Récapitulatif des inputs couverts
 
-**Vérifier en UI (/settings/base-contrat) :**
-
-| Critère | Attendu | Conforme ? |
+| Section | Champs | Couverture |
 |---|---|---|
-| Bloc "Décès/transmission" du GFA/GFV renseigné | non vide | |
-| Mention du plafond 20 M€ LF 2025 | présente | |
-| Mention de l'exonération 75 % jusqu'à 600 000 € par bénéficiaire | présente | |
-| Mention de la réduction à 50 % au-delà | présente | |
-
----
-
-### 15.8 AV mixte 990 I + 757 B — affichage dans deux sections distinctes
-
-| Paramètre | Valeur |
-|---|---|
-| Situation | Célibataire / Naissance : 01/01/1950 (76 ans) |
-| Enfants | 2 enfants |
-| AV | Capitaux : 500 000 € / Versements après 70 : 200 000 € |
-
-**Vérifier :**
-
-| Critère | Attendu | Conforme ? |
-|---|---|---|
-| Partie avant 70 (990 I) dans "Assurances hors succession" | 300 000 € | |
-| Partie après 70 (757 B) dans "Transmission par bénéficiaire" | 200 000 € avec "(art. 757 B)" | |
-| Les deux sections présentes simultanément | — | |
-| Total droits = droits 990 I + droits 757 B | — | |
-
----
-
-*Fin du plan de test — version 2026-03-27*
+| Situation familiale (6 valeurs) | `celibataire`, `marie`, `pacse`, `concubinage`, `divorce`, `veuf` | Blocs 1, 8, 9 |
+| Régime matrimonial (6 valeurs) | CRA, CU, sep. biens, participation, CMA, SA | Blocs 1–3, 8 |
+| Convention PACS (2) | Séparation, indivision | Bloc 1 |
+| Composition famille | 0/1/2/3 enfants, non-communs, décédé+représentation, ascendants, membres | Bloc 1 |
+| Actifs simplifié | 6 cases Ep1/Ep2/Commun × actif/passif | Blocs 1–2, 7, 9 |
+| Actifs expert | qualification juridique, passif affecté, indivision, RP, GFA/GFV | Bloc 5 |
+| Forfait mobilier (4 modes) | off, auto, %, montant | Bloc 5 |
+| Groupements fonciers (4 types) | GFA, GFV, GFF, GF | Blocs 5, 8 |
+| Assurance-vie (3 clauses) | standard, démembrée, personnalisée + tranches | Bloc 4 |
+| PER (< 70 ans / > 70 ans) | standard + âge | Bloc 4 |
+| Prévoyance | capital + prime | Blocs 4, 8 |
+| Donations (2 types) | rapportable, hors part, 790G, réserve usufruit | Bloc 6 |
+| Dispositions (tous types) | DDV, DEE (4), attribution, préciput (global/cible), legs, créances | Blocs 3, 8 |
+| Horizons temporels (6 valeurs) | 0, 10, 20, 30 ans, comparaison | Bloc 7 |
+| Ordre chainage | Ep1 en premier / Ep2 en premier | Blocs 1, 7, 8 |
