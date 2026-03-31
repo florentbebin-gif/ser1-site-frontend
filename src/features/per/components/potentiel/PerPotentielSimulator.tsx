@@ -236,6 +236,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
                   mutualisationConjoints={state.mutualisationConjoints}
                   declarant1={state.declarant1}
                   declarant2={state.declarant2}
+                  result={result}
                   onUpdateSituation={updateSituation}
                   onUpdateDeclarant={updateDeclarant}
                 />
