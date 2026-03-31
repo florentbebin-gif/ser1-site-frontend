@@ -1,122 +1,254 @@
-/* PER — Local styles */
+/* PER - Local styles */
 
-/* ── PerHome (landing hub) ─────────────────────────────────────────────────── */
+/* -- Landing hub ---------------------------------------------------------- */
 
 .per-home {
-  max-width: 1000px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 48px 24px 64px;
 }
 
-.per-home-header {
+.per-home-hero {
   text-align: center;
-  margin-bottom: 2rem;
 }
 
-.per-home-header h1 {
-  font-size: 1.5rem;
+.per-home-kicker {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-home-title {
+  margin: 0 0 12px;
+  font-size: 18px;
   font-weight: 600;
-  color: var(--color-c10);
-  margin-bottom: 0.5rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--color-c3);
 }
 
 .per-home-subtitle {
-  font-size: 0.95rem;
+  max-width: 620px;
+  margin: 0 auto 28px;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--color-c9);
 }
 
-.per-home-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.25rem;
-}
-
-.per-home-card {
-  background: #FFFFFF;
+.per-home-focus-card {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 18px;
+  padding: 24px 28px;
   border: 1px solid var(--color-c8);
   border-radius: 12px;
-  padding: 1.5rem;
+  background: #FFFFFF;
+  color: var(--color-c1);
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.per-home-focus-card:hover {
+  border-color: var(--color-c3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.per-home-focus-icon {
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.per-home-card:hover {
-  border-color: var(--color-c5);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.per-home-card--active {
-  border-color: var(--color-c2);
-}
-
-.per-home-card--active:hover {
-  border-color: var(--color-c1);
-}
-
-.per-home-card--upcoming {
-  opacity: 0.7;
-}
-
-.per-home-card-badge {
-  display: inline-block;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 0.2rem 0.6rem;
-  border-radius: 4px;
-  width: fit-content;
-}
-
-.per-home-card--active .per-home-card-badge {
-  background: var(--color-c4);
-  color: var(--color-c1);
-}
-
-.per-home-card--upcoming .per-home-card-badge {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
   background: var(--color-c7);
-  color: var(--color-c9);
-}
-
-.per-home-card-title {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--color-c10);
-}
-
-.per-home-card-desc {
-  font-size: 0.85rem;
-  color: var(--color-c9);
-  line-height: 1.45;
-  flex: 1;
-}
-
-.per-home-card-cta {
-  font-size: 0.85rem;
-  font-weight: 500;
   color: var(--color-c2);
 }
 
-.per-home-card--upcoming .per-home-card-cta {
+.per-home-focus-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.per-home-focus-badge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--color-c4);
+  color: var(--color-c1);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.per-home-focus-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.per-home-focus-desc {
+  font-size: 13px;
+  line-height: 1.55;
   color: var(--color-c9);
 }
 
-/* ── PerPotentiel Wizard ───────────────────────────────────────────────────── */
+.per-home-focus-chevron {
+  color: var(--color-c9);
+  opacity: 0.6;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.per-home-focus-card:hover .per-home-focus-chevron {
+  opacity: 1;
+  transform: translateX(3px);
+}
+
+.per-home-divider {
+  width: 100%;
+  max-width: 200px;
+  height: 2px;
+  margin: 40px auto;
+  background: linear-gradient(90deg, transparent, var(--color-c8), transparent);
+}
+
+.per-home-secondary {
+  text-align: center;
+}
+
+.per-home-secondary-title {
+  margin: 0 0 12px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  color: var(--color-c9);
+  text-transform: uppercase;
+}
+
+.per-home-secondary-card {
+  background: #FFFFFF;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.per-home-secondary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.per-home-tile {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  background: var(--color-c7);
+  color: var(--color-c1);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.per-home-tile:hover {
+  border-color: var(--color-c3);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.per-home-tile-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.per-home-tile-icon {
+  display: flex;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: var(--color-c2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.per-home-tile-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.per-home-tile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.per-home-tile-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.per-home-tile-badge {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-c9);
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+.per-home-tile-desc {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-c9);
+}
+
+.per-home-tile-chevron {
+  color: var(--color-c9);
+  opacity: 0.5;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.per-home-tile:hover .per-home-tile-chevron {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* -- PerPotentiel Wizard -------------------------------------------------- */
 
 .per-potentiel-header {
   margin-bottom: 1.5rem;
 }
 
 .per-back-link {
+  display: inline-block;
+  margin-bottom: 0.75rem;
   font-size: 0.85rem;
   color: var(--color-c2);
   text-decoration: none;
-  display: inline-block;
-  margin-bottom: 0.75rem;
 }
 
 .per-back-link:hover {
@@ -125,9 +257,9 @@
 
 .per-stepper {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 2rem;
-  flex-wrap: wrap;
 }
 
 .per-stepper-item {
@@ -154,18 +286,14 @@
 
 .per-stepper-num {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 20px;
   height: 20px;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.3);
   font-size: 0.7rem;
   font-weight: 600;
-}
-
-.per-stepper-item--active .per-stepper-num {
-  background: rgba(255, 255, 255, 0.3);
 }
 
 .per-step {
@@ -173,17 +301,17 @@
 }
 
 .per-step-title {
+  margin-bottom: 1rem;
   font-size: 1.15rem;
   font-weight: 600;
   color: var(--color-c10);
-  margin-bottom: 1rem;
 }
 
 .per-step-hint {
-  font-size: 0.85rem;
-  color: var(--color-c9);
   margin-bottom: 1.25rem;
+  font-size: 0.85rem;
   line-height: 1.5;
+  color: var(--color-c9);
 }
 
 .per-mode-grid {
@@ -194,10 +322,10 @@
 }
 
 .per-mode-card {
-  background: #FFFFFF;
+  padding: 1.25rem;
   border: 2px solid var(--color-c8);
   border-radius: 10px;
-  padding: 1.25rem;
+  background: #FFFFFF;
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s;
@@ -213,16 +341,16 @@
 }
 
 .per-mode-card-title {
+  margin-bottom: 0.4rem;
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-c10);
-  margin-bottom: 0.4rem;
 }
 
 .per-mode-card-desc {
   font-size: 0.82rem;
-  color: var(--color-c9);
   line-height: 1.4;
+  color: var(--color-c9);
 }
 
 .per-avis-toggle {
@@ -240,10 +368,10 @@
 }
 
 .per-toggle-hint {
-  font-size: 0.8rem;
-  color: var(--color-c9);
   margin-top: 0.3rem;
   margin-left: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--color-c9);
 }
 
 .per-avis-block {
@@ -251,56 +379,56 @@
 }
 
 .per-avis-block-title {
+  margin-bottom: 0.75rem;
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-c10);
-  margin-bottom: 0.75rem;
 }
 
 .per-declarant-block {
-  background: #FFFFFF;
-  border: 1px solid var(--color-c8);
-  border-radius: 10px;
   padding: 1.25rem;
   margin-bottom: 1rem;
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  background: #FFFFFF;
 }
 
 .per-declarant-title {
+  margin-bottom: 0.75rem;
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-c10);
-  margin-bottom: 0.75rem;
 }
 
 .per-section-label {
+  margin: 1rem 0 0.5rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--color-c9);
-  text-transform: uppercase;
   letter-spacing: 0.03em;
-  margin: 1rem 0 0.5rem;
+  text-transform: uppercase;
+  color: var(--color-c9);
 }
 
 .per-card-subtitle {
+  margin-bottom: 0.75rem;
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-c10);
-  margin-bottom: 0.75rem;
 }
 
 .per-frais-reels {
-  margin-top: 0.5rem;
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   align-items: center;
-  flex-wrap: wrap;
+  margin-top: 0.5rem;
 }
 
 .per-plafond-block {
   margin-bottom: 1rem;
 }
 
-/* ── PerSimulator (legacy CSS kept for shared classes) ─────────────────────── */
+/* Legacy shared rules still used by the PER wizard */
 
 .per-page {
   max-width: 900px;
@@ -309,25 +437,25 @@
 }
 
 .per-page h1 {
+  margin-bottom: 1.5rem;
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--color-c10);
-  margin-bottom: 1.5rem;
 }
 
 .per-card {
-  background: #FFFFFF;
-  border: 1px solid var(--color-c8);
-  border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
+  border: 1px solid var(--color-c8);
+  border-radius: 12px;
+  background: #FFFFFF;
 }
 
 .per-card h2 {
+  margin-bottom: 1rem;
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-c10);
-  margin-bottom: 1rem;
 }
 
 .per-fields {
@@ -350,25 +478,25 @@
 
 .per-field input,
 .per-field select {
-  background: #FFFFFF;
+  padding: 0.5rem 0.75rem;
   border: 1px solid var(--color-c8);
   border-radius: 6px;
-  padding: 0.5rem 0.75rem;
+  background: #FFFFFF;
   font-size: 0.9rem;
   color: var(--color-c10);
 }
 
 .per-actions {
   display: flex;
-  gap: 0.75rem;
   flex-wrap: wrap;
+  gap: 0.75rem;
   margin-top: 0.5rem;
 }
 
 .per-btn {
   padding: 0.55rem 1.2rem;
-  border-radius: 8px;
   border: none;
+  border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -386,9 +514,9 @@
 }
 
 .per-btn--secondary {
+  border: 1px solid var(--color-c8);
   background: var(--color-c7);
   color: var(--color-c10);
-  border: 1px solid var(--color-c8);
 }
 
 .per-btn--accent {
@@ -396,7 +524,6 @@
   color: #FFFFFF;
 }
 
-/* Results */
 .per-kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -405,17 +532,17 @@
 }
 
 .per-kpi {
-  background: var(--color-c7);
-  border-radius: 10px;
   padding: 1rem;
+  border-radius: 10px;
+  background: var(--color-c7);
   text-align: center;
 }
 
 .per-kpi-label {
+  margin-bottom: 0.35rem;
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--color-c9);
-  margin-bottom: 0.35rem;
 }
 
 .per-kpi-value {
@@ -424,18 +551,17 @@
   color: var(--color-c10);
 }
 
-/* Sortie comparée */
 .per-sortie-table {
   width: 100%;
+  margin-bottom: 1rem;
   border-collapse: collapse;
   font-size: 0.85rem;
-  margin-bottom: 1rem;
 }
 
 .per-sortie-table th {
+  padding: 0.5rem 0.75rem;
   background: var(--color-c1);
   color: #FFFFFF;
-  padding: 0.5rem 0.75rem;
   text-align: left;
   font-weight: 500;
 }
@@ -451,16 +577,15 @@
   text-align: right;
 }
 
-/* Warnings */
 .per-warnings {
   margin-top: 0.75rem;
 }
 
 .per-warning {
-  font-size: 0.8rem;
   padding: 0.35rem 0.5rem;
-  border-radius: 4px;
   margin-bottom: 0.35rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
 }
 
 .per-warning--info {
@@ -478,7 +603,6 @@
   color: #C62828;
 }
 
-/* Export buttons */
 .per-export-bar {
   display: flex;
   gap: 0.75rem;
@@ -486,8 +610,27 @@
 }
 
 .per-session-msg {
-  color: var(--color-c6);
+  margin-top: 0.5rem;
   font-size: 0.8rem;
   font-weight: 500;
-  margin-top: 0.5rem;
+  color: var(--color-c6);
+}
+
+@media (max-width: 600px) {
+  .per-home {
+    padding: 32px 16px 48px;
+  }
+
+  .per-home-focus-card {
+    padding: 20px 22px;
+  }
+
+  .per-home-focus-title {
+    font-size: 18px;
+  }
+
+  .per-home-tile-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
