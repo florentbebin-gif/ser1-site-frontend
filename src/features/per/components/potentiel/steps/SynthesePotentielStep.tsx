@@ -1,203 +1,362 @@
 /**
- * SynthesePotentielStep — Step 4: results display with plafonds, IR, and simulation.
+ * SynthesePotentielStep - Step 4: declarative restitution and live projection.
  */
 
 import React from 'react';
-import type { PerPotentielResult } from '../../../../../engine/per';
+import type { PerPotentielResult, PlafondDetail, PlafondMadelinDetail } from '../../../../../engine/per';
 
 interface SynthesePotentielStepProps {
   result: PerPotentielResult | null;
   isCouple: boolean;
   modeVersement: boolean;
   versementEnvisage: number;
-  onSetVersement: (_v: number) => void;
+  onSetVersement: (_value: number) => void;
 }
 
-const fmt = (v: number): string =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+const fmtCurrency = (value: number): string =>
+  new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(value);
 
-const fmtPct = (v: number): string =>
-  `${(v <= 1 ? v * 100 : v).toFixed(1)} %`;
+const fmtPercent = (value: number): string =>
+  `${(value <= 1 ? value * 100 : value).toFixed(1)} %`;
 
-function PlafondTable({ label, p }: {
+function PlafondBreakdownCard({
+  label,
+  detail,
+}: {
   label: string;
-  p: { plafondCalculeN: number; nonUtiliseN1: number; nonUtiliseN2: number; nonUtiliseN3: number; totalDisponible: number; cotisationsDejaVersees: number; disponibleRestant: number; depassement: boolean };
+  detail: PlafondDetail;
+}): React.ReactElement {
+  const rows = [
+    { label: 'Plafond calcule annee N', value: detail.plafondCalculeN },
+    { label: 'Report N-3', value: detail.nonUtiliseN3 },
+    { label: 'Report N-2', value: detail.nonUtiliseN2 },
+    { label: 'Report N-1', value: detail.nonUtiliseN1 },
+    { label: 'Cotisations deja versees', value: detail.cotisationsDejaVersees },
+  ];
+
+  return (
+    <div className="premium-card-compact per-summary-breakdown-card">
+      <div className="per-summary-card-head">
+        <p className="premium-section-title">Plafond personnel</p>
+        <h4 className="per-summary-card-title">{label}</h4>
+      </div>
+
+      <div className="per-summary-breakdown-list">
+        {rows.map((row) => (
+          <div key={row.label} className="per-summary-breakdown-row">
+            <span>{row.label}</span>
+            <strong>{fmtCurrency(row.value)}</strong>
+          </div>
+        ))}
+        <div className="per-summary-breakdown-row per-summary-breakdown-row--total">
+          <span>Total disponible</span>
+          <strong>{fmtCurrency(detail.totalDisponible)}</strong>
+        </div>
+        <div className={`per-summary-breakdown-row per-summary-breakdown-row--highlight ${detail.depassement ? 'is-alert' : ''}`}>
+          <span>Disponible restant</span>
+          <strong>{fmtCurrency(detail.disponibleRestant)}</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MadelinCard({
+  label,
+  detail,
+}: {
+  label: string;
+  detail: PlafondMadelinDetail;
 }): React.ReactElement {
   return (
-    <div className="per-plafond-block">
-      <h4 className="per-section-label">{label}</h4>
-      <table className="per-sortie-table">
-        <tbody>
-          <tr><td>Plafond calculé année N</td><td className="text-right">{fmt(p.plafondCalculeN)}</td></tr>
-          {p.nonUtiliseN3 > 0 && <tr><td>Report N-3 (plus ancien)</td><td className="text-right">{fmt(p.nonUtiliseN3)}</td></tr>}
-          {p.nonUtiliseN2 > 0 && <tr><td>Report N-2</td><td className="text-right">{fmt(p.nonUtiliseN2)}</td></tr>}
-          {p.nonUtiliseN1 > 0 && <tr><td>Report N-1</td><td className="text-right">{fmt(p.nonUtiliseN1)}</td></tr>}
-          <tr style={{ fontWeight: 600 }}><td>Total disponible</td><td className="text-right">{fmt(p.totalDisponible)}</td></tr>
-          <tr><td>Cotisations déjà versées</td><td className="text-right">{fmt(p.cotisationsDejaVersees)}</td></tr>
-          <tr style={{ fontWeight: 600, color: p.depassement ? 'var(--color-c1)' : undefined }}>
-            <td>Disponible restant</td>
-            <td className="text-right">{fmt(p.disponibleRestant)}{p.depassement ? ' ⚠' : ''}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div className="premium-card-compact per-summary-breakdown-card">
+      <div className="per-summary-card-head">
+        <p className="premium-section-title">Potentiel 154 bis</p>
+        <h4 className="per-summary-card-title">{label}</h4>
+      </div>
+
+      <div className="per-summary-breakdown-list">
+        <div className="per-summary-breakdown-row">
+          <span>Assiette Madelin</span>
+          <strong>{fmtCurrency(detail.assiette)}</strong>
+        </div>
+        <div className="per-summary-breakdown-row">
+          <span>Enveloppe 15 %</span>
+          <strong>{fmtCurrency(detail.enveloppe15)}</strong>
+        </div>
+        <div className="per-summary-breakdown-row">
+          <span>Enveloppe 10 %</span>
+          <strong>{fmtCurrency(detail.enveloppe10)}</strong>
+        </div>
+        <div className="per-summary-breakdown-row per-summary-breakdown-row--total">
+          <span>Potentiel total</span>
+          <strong>{fmtCurrency(detail.potentielTotal)}</strong>
+        </div>
+        <div className={`per-summary-breakdown-row per-summary-breakdown-row--highlight ${detail.depassement ? 'is-alert' : ''}`}>
+          <span>Disponible restant</span>
+          <strong>{fmtCurrency(detail.disponibleRestant)}</strong>
+        </div>
+      </div>
     </div>
   );
 }
 
 export default function SynthesePotentielStep({
-  result, isCouple, modeVersement, versementEnvisage, onSetVersement,
+  result,
+  isCouple,
+  modeVersement,
+  versementEnvisage,
+  onSetVersement,
 }: SynthesePotentielStepProps): React.ReactElement {
   if (!result) {
     return (
       <div className="per-step">
-        <p style={{ color: 'var(--color-c9)' }}>Complétez les étapes précédentes pour voir les résultats.</p>
+        <p style={{ color: 'var(--color-c9)' }}>
+          Completez les etapes precedentes pour afficher la restitution fiscale.
+        </p>
       </div>
     );
   }
 
-  const { situationFiscale: sf, plafond163Q, plafondMadelin, estTNS, declaration2042, simulation, warnings } = result;
+  const {
+    situationFiscale,
+    plafond163Q,
+    plafondMadelin,
+    estTNS,
+    declaration2042,
+    simulation,
+    warnings,
+  } = result;
+
+  const totalDisponible = plafond163Q.declarant1.disponibleRestant + (plafond163Q.declarant2?.disponibleRestant ?? 0);
+  const totalDisponibleAvantVersement = plafond163Q.declarant1.totalDisponible + (plafond163Q.declarant2?.totalDisponible ?? 0);
+  const declarationRows = [
+    {
+      label: 'PER 163 quatervicies',
+      d1Case: '6NS',
+      d1Value: declaration2042.case6NS,
+      d2Case: '6NT',
+      d2Value: declaration2042.case6NT ?? 0,
+    },
+    {
+      label: 'PERP et assimiles',
+      d1Case: '6RS',
+      d1Value: declaration2042.case6RS,
+      d2Case: '6RT',
+      d2Value: declaration2042.case6RT ?? 0,
+    },
+    {
+      label: 'Art. 83',
+      d1Case: '6QS',
+      d1Value: declaration2042.case6QS,
+      d2Case: '6QT',
+      d2Value: declaration2042.case6QT ?? 0,
+    },
+    {
+      label: 'PER 154 bis',
+      d1Case: '6OS',
+      d1Value: declaration2042.case6OS,
+      d2Case: '6OT',
+      d2Value: declaration2042.case6OT ?? 0,
+    },
+  ];
 
   return (
-    <div className="per-step">
-      <h2 className="per-step-title">Synthèse du potentiel épargne retraite</h2>
+    <div className="per-step per-step--summary">
+      <div className="per-step-copy">
+        <p className="per-step-eyebrow">Restitution</p>
+        <h3 className="per-step-title">Synthese declarative et potentiel disponible</h3>
+        <p className="per-step-hint">
+          La synthese remet les calculs dans l ordre utile pour un conseiller : resultat principal,
+          cases 2042, detail des plafonds et, le cas echeant, projection du versement.
+        </p>
+      </div>
 
-      {/* Situation fiscale */}
-      <div className="per-card">
-        <h3 className="per-card-subtitle">Situation fiscale estimée</h3>
-        <div className="per-kpis">
-          <div className="per-kpi">
-            <div className="per-kpi-label">TMI</div>
-            <div className="per-kpi-value">{fmtPct(sf.tmi)}</div>
+      <div className="per-summary-top">
+        <div className="premium-card premium-card--guide per-summary-hero">
+          <div className="per-summary-hero-head">
+            <div>
+              <p className="premium-section-title">Resultat principal</p>
+              <h4 className="per-summary-hero-title">
+                {modeVersement ? 'Montant encore deductible aujourd hui' : 'Plafond restant apres declaration'}
+              </h4>
+            </div>
+            <span className="per-summary-hero-chip">
+              {modeVersement ? 'Versement N' : 'Declaration N-1'}
+            </span>
           </div>
-          <div className="per-kpi">
-            <div className="per-kpi-label">IR estimé</div>
-            <div className="per-kpi-value">{fmt(sf.irEstime)}</div>
+
+          <div className="per-summary-hero-grid">
+            <div className="per-summary-primary-metric">
+              <span className="per-summary-primary-label">Disponible total</span>
+              <strong className="per-summary-primary-value">{fmtCurrency(totalDisponible)}</strong>
+              <p className="per-summary-primary-note">
+                Base avant simulation : {fmtCurrency(totalDisponibleAvantVersement)}
+                {isCouple && declaration2042.case6QR ? ' - mutualisation active (6QR)' : ''}
+              </p>
+            </div>
+
+            <div className="per-summary-stat-grid">
+              <div className="per-summary-stat">
+                <span className="per-summary-stat-label">TMI</span>
+                <strong className="per-summary-stat-value">{fmtPercent(situationFiscale.tmi)}</strong>
+              </div>
+              <div className="per-summary-stat">
+                <span className="per-summary-stat-label">IR estime</span>
+                <strong className="per-summary-stat-value">{fmtCurrency(situationFiscale.irEstime)}</strong>
+              </div>
+              <div className="per-summary-stat">
+                <span className="per-summary-stat-label">Marge dans la TMI</span>
+                <strong className="per-summary-stat-value">{fmtCurrency(situationFiscale.montantDansLaTMI)}</strong>
+              </div>
+              <div className="per-summary-stat">
+                <span className="per-summary-stat-label">CEHR</span>
+                <strong className="per-summary-stat-value">{fmtCurrency(situationFiscale.cehr)}</strong>
+              </div>
+            </div>
           </div>
-          {sf.cehr > 0 && (
-            <div className="per-kpi">
-              <div className="per-kpi-label">CEHR</div>
-              <div className="per-kpi-value">{fmt(sf.cehr)}</div>
+
+          {modeVersement && (
+            <div className="per-summary-simulation">
+              <div className="per-summary-simulation-head">
+                <div>
+                  <p className="premium-section-title">Simulation de versement</p>
+                  <h5 className="per-summary-simulation-title">Projection immediate du gain fiscal</h5>
+                </div>
+                <label className="per-summary-simulation-input">
+                  <span>Versement envisage</span>
+                  <input
+                    type="number"
+                    min={0}
+                    className="premium-input"
+                    value={versementEnvisage || ''}
+                    placeholder="5000"
+                    onChange={(event) => onSetVersement(Number(event.target.value) || 0)}
+                  />
+                </label>
+              </div>
+
+              {simulation ? (
+                <div className="per-summary-simulation-grid">
+                  <div className="per-summary-stat">
+                    <span className="per-summary-stat-label">Versement deductible</span>
+                    <strong className="per-summary-stat-value">{fmtCurrency(simulation.versementDeductible)}</strong>
+                  </div>
+                  <div className="per-summary-stat">
+                    <span className="per-summary-stat-label">Economie IR</span>
+                    <strong className="per-summary-stat-value">{fmtCurrency(simulation.economieIRAnnuelle)}</strong>
+                  </div>
+                  <div className="per-summary-stat">
+                    <span className="per-summary-stat-label">Cout net</span>
+                    <strong className="per-summary-stat-value">{fmtCurrency(simulation.coutNetApresFiscalite)}</strong>
+                  </div>
+                  <div className="per-summary-stat">
+                    <span className="per-summary-stat-label">Plafond restant apres</span>
+                    <strong className="per-summary-stat-value">{fmtCurrency(simulation.plafondRestantApres)}</strong>
+                  </div>
+                </div>
+              ) : (
+                <p className="per-summary-primary-note">
+                  Saisissez un versement pour obtenir l economie d impot correspondante.
+                </p>
+              )}
             </div>
           )}
-          {sf.montantDansLaTMI > 0 && (
-            <div className="per-kpi">
-              <div className="per-kpi-label">Marge dans la TMI</div>
-              <div className="per-kpi-value">{fmt(sf.montantDansLaTMI)}</div>
-            </div>
+        </div>
+
+        <div className="per-summary-side-stack">
+          <PlafondBreakdownCard label="Declarant 1" detail={plafond163Q.declarant1} />
+          {isCouple && plafond163Q.declarant2 && (
+            <PlafondBreakdownCard label="Declarant 2" detail={plafond163Q.declarant2} />
           )}
         </div>
       </div>
 
-      {/* Plafonds 163Q */}
-      <div className="per-card">
-        <h3 className="per-card-subtitle">Plafonds 163 quatervicies (personnel)</h3>
-        <PlafondTable label="Déclarant 1" p={plafond163Q.declarant1} />
-        {isCouple && plafond163Q.declarant2 && (
-          <PlafondTable label="Déclarant 2" p={plafond163Q.declarant2} />
-        )}
+      <div className="per-summary-columns">
+        <div className="premium-card per-summary-section-card">
+          <div className="per-summary-card-head">
+            <p className="premium-section-title">Restitution 2042</p>
+            <h4 className="per-summary-card-title">Cases a reporter</h4>
+          </div>
+
+          <table className="premium-table per-summary-table">
+            <thead>
+              <tr>
+                <th>Rubrique</th>
+                <th>Declarant 1</th>
+                {isCouple && <th>Declarant 2</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {declarationRows.map((row) => (
+                <tr key={row.label}>
+                  <td>
+                    <div className="per-summary-case-label">{row.label}</div>
+                  </td>
+                  <td className="value-cell">
+                    {row.d1Case} - {fmtCurrency(row.d1Value)}
+                  </td>
+                  {isCouple && (
+                    <td className="value-cell">
+                      {row.d2Case} - {fmtCurrency(row.d2Value)}
+                    </td>
+                  )}
+                </tr>
+              ))}
+              {isCouple && (
+                <tr>
+                  <td>Mutualisation des plafonds</td>
+                  <td colSpan={2} className="value-cell">
+                    6QR - {declaration2042.case6QR ? 'Oui' : 'Non'}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="premium-card per-summary-section-card">
+          <div className="per-summary-card-head">
+            <p className="premium-section-title">Lecture des plafonds</p>
+            <h4 className="per-summary-card-title">Reconstitution du disponible</h4>
+          </div>
+
+          <div className={`per-summary-breakdown-grid ${isCouple ? 'is-couple' : ''}`}>
+            <PlafondBreakdownCard label="Declarant 1" detail={plafond163Q.declarant1} />
+            {isCouple && plafond163Q.declarant2 && (
+              <PlafondBreakdownCard label="Declarant 2" detail={plafond163Q.declarant2} />
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Plafonds Madelin */}
       {estTNS && plafondMadelin && (
-        <div className="per-card">
-          <h3 className="per-card-subtitle">Plafonds Madelin 154 bis (TNS)</h3>
-          {plafondMadelin.declarant1 && (
-            <div className="per-plafond-block">
-              <h4 className="per-section-label">Déclarant 1</h4>
-              <table className="per-sortie-table">
-                <tbody>
-                  <tr><td>Assiette Madelin</td><td className="text-right">{fmt(plafondMadelin.declarant1.assiette)}</td></tr>
-                  <tr><td>Enveloppe 15%</td><td className="text-right">{fmt(plafondMadelin.declarant1.enveloppe15)}</td></tr>
-                  <tr><td>Enveloppe 10%</td><td className="text-right">{fmt(plafondMadelin.declarant1.enveloppe10)}</td></tr>
-                  <tr style={{ fontWeight: 600 }}><td>Potentiel total</td><td className="text-right">{fmt(plafondMadelin.declarant1.potentielTotal)}</td></tr>
-                  <tr><td>Cotisations versées</td><td className="text-right">{fmt(plafondMadelin.declarant1.cotisationsVersees)}</td></tr>
-                  <tr style={{ fontWeight: 600 }}><td>Disponible restant</td><td className="text-right">{fmt(plafondMadelin.declarant1.disponibleRestant)}</td></tr>
-                </tbody>
-              </table>
-            </div>
-          )}
-          {isCouple && plafondMadelin.declarant2 && (
-            <div className="per-plafond-block">
-              <h4 className="per-section-label">Déclarant 2</h4>
-              <table className="per-sortie-table">
-                <tbody>
-                  <tr><td>Assiette Madelin</td><td className="text-right">{fmt(plafondMadelin.declarant2.assiette)}</td></tr>
-                  <tr><td>Enveloppe 15%</td><td className="text-right">{fmt(plafondMadelin.declarant2.enveloppe15)}</td></tr>
-                  <tr><td>Enveloppe 10%</td><td className="text-right">{fmt(plafondMadelin.declarant2.enveloppe10)}</td></tr>
-                  <tr style={{ fontWeight: 600 }}><td>Potentiel total</td><td className="text-right">{fmt(plafondMadelin.declarant2.potentielTotal)}</td></tr>
-                  <tr><td>Cotisations versées</td><td className="text-right">{fmt(plafondMadelin.declarant2.cotisationsVersees)}</td></tr>
-                  <tr style={{ fontWeight: 600 }}><td>Disponible restant</td><td className="text-right">{fmt(plafondMadelin.declarant2.disponibleRestant)}</td></tr>
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="per-card">
-        <h3 className="per-card-subtitle">Cases 2042 simulées</h3>
-        <table className="per-sortie-table">
-          <thead>
-            <tr>
-              <th>Case</th>
-              <th>Libellé</th>
-              <th className="text-right">Montant</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>6NS</td><td>PER 163 quatervicies — Déclarant 1</td><td className="text-right">{fmt(declaration2042.case6NS)}</td></tr>
-            {isCouple && <tr><td>6NT</td><td>PER 163 quatervicies — Déclarant 2</td><td className="text-right">{fmt(declaration2042.case6NT || 0)}</td></tr>}
-            <tr><td>6RS</td><td>PERP et assimilés — Déclarant 1</td><td className="text-right">{fmt(declaration2042.case6RS)}</td></tr>
-            {isCouple && <tr><td>6RT</td><td>PERP et assimilés — Déclarant 2</td><td className="text-right">{fmt(declaration2042.case6RT || 0)}</td></tr>}
-            <tr><td>6QS</td><td>Art. 83 — Déclarant 1</td><td className="text-right">{fmt(declaration2042.case6QS)}</td></tr>
-            {isCouple && <tr><td>6QT</td><td>Art. 83 — Déclarant 2</td><td className="text-right">{fmt(declaration2042.case6QT || 0)}</td></tr>}
-            <tr><td>6OS</td><td>PER 154 bis — Déclarant 1</td><td className="text-right">{fmt(declaration2042.case6OS)}</td></tr>
-            {isCouple && <tr><td>6OT</td><td>PER 154 bis — Déclarant 2</td><td className="text-right">{fmt(declaration2042.case6OT || 0)}</td></tr>}
-            {isCouple && <tr><td>6QR</td><td>Mutualisation des plafonds</td><td className="text-right">{declaration2042.case6QR ? 'Oui' : 'Non'}</td></tr>}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Simulation versement */}
-      {modeVersement && (
-        <div className="per-card">
-          <h3 className="per-card-subtitle">Simulation d'un versement</h3>
-          <div className="per-fields" style={{ maxWidth: 300, marginBottom: '1rem' }}>
-            <div className="per-field">
-              <label>Versement envisagé (€)</label>
-              <input type="number" min={0} value={versementEnvisage || ''} placeholder="Ex : 5 000"
-                onChange={(e) => onSetVersement(Number(e.target.value) || 0)} />
-            </div>
+        <div className="premium-card per-summary-section-card">
+          <div className="per-summary-card-head">
+            <p className="premium-section-title">Madelin</p>
+            <h4 className="per-summary-card-title">Potentiel 154 bis pour travailleurs non salaries</h4>
           </div>
-          {simulation && (
-            <div className="per-kpis">
-              <div className="per-kpi">
-                <div className="per-kpi-label">Versement déductible</div>
-                <div className="per-kpi-value">{fmt(simulation.versementDeductible)}</div>
-              </div>
-              <div className="per-kpi">
-                <div className="per-kpi-label">Économie IR</div>
-                <div className="per-kpi-value">{fmt(simulation.economieIRAnnuelle)}</div>
-              </div>
-              <div className="per-kpi">
-                <div className="per-kpi-label">Coût net</div>
-                <div className="per-kpi-value">{fmt(simulation.coutNetApresFiscalite)}</div>
-              </div>
-              <div className="per-kpi">
-                <div className="per-kpi-label">Plafond restant après</div>
-                <div className="per-kpi-value">{fmt(simulation.plafondRestantApres)}</div>
-              </div>
-            </div>
-          )}
+
+          <div className={`per-summary-breakdown-grid ${isCouple ? 'is-couple' : ''}`}>
+            {plafondMadelin.declarant1 && (
+              <MadelinCard label="Declarant 1" detail={plafondMadelin.declarant1} />
+            )}
+            {isCouple && plafondMadelin.declarant2 && (
+              <MadelinCard label="Declarant 2" detail={plafondMadelin.declarant2} />
+            )}
+          </div>
         </div>
       )}
 
-      {/* Warnings */}
       {warnings.length > 0 && (
-        <div className="per-warnings">
-          {warnings.map((w, i) => (
-            <div key={i} className={`per-warning per-warning--${w.severity}`}>
-              {w.message}
+        <div className="per-warnings per-warnings--stack">
+          {warnings.map((warning) => (
+            <div key={warning.code} className={`per-warning per-warning--${warning.severity}`}>
+              {warning.message}
             </div>
           ))}
         </div>
