@@ -836,8 +836,9 @@
 
 .sc-donation-toggle-row {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 6px;
 }
 

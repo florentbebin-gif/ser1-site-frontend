@@ -1,8 +1,12 @@
+import { useState, useMemo, useCallback } from 'react';
 import type {
   SuccessionAssetCategory,
   SuccessionAssetDetailEntry,
+  SuccessionAssetLegalNature,
+  SuccessionAssetOrigin,
   SuccessionAssuranceVieEntry,
   SuccessionGroupementFoncierEntry,
+  SuccessionMeubleImmeubleLegal,
   SuccessionPerEntry,
   SuccessionPrevoyanceDecesEntry,
 } from '../successionDraft.types';
@@ -16,12 +20,8 @@ import {
   RESIDENCE_PRINCIPALE_SUBCATEGORY,
 } from '../successionSimulator.constants';
 import { computeGroupementFoncierExoneration, GF_UI_OPTIONS, normalizeGfTypeForUi } from '../successionGroupementFoncier';
-import {
-  SUCCESSION_ASSET_LEGAL_NATURE_OPTIONS,
-  SUCCESSION_ASSET_ORIGIN_OPTIONS,
-  SUCCESSION_MEUBLE_IMMEUBLE_LEGAL_OPTIONS,
-} from '../successionLegalQualification';
 import { fmt } from '../successionSimulator.helpers';
+import AssetLegalQualificationModal from './AssetLegalQualificationModal';
 import { ScAssetsSummary, ScForfaitMobilierSection } from './ScAssetsPassifsExtras';
 import { ScNumericInput } from './ScNumericInput';
 import { ScSelect } from './ScSelect';
@@ -164,6 +164,29 @@ export default function ScAssetsPassifsCard({
   const showForfaitMobilier = forfaitMobilierMode !== 'off';
   const getNetLabel = (owner: SuccessionLegacyAssetOwner) => getActifNetLabel(owner, flags);
 
+  const [legalModalEntryId, setLegalModalEntryId] = useState<string | null>(null);
+  const allAssetEntries = useMemo(
+    () => assetEntriesByCategory.flatMap((c) => c.entries),
+    [assetEntriesByCategory],
+  );
+  const legalModalEntry = legalModalEntryId
+    ? allAssetEntries.find((e) => e.id === legalModalEntryId) ?? null
+    : null;
+
+  const handleLegalSave = useCallback((
+    id: string,
+    fields: {
+      legalNature: SuccessionAssetLegalNature;
+      origin: SuccessionAssetOrigin;
+      meubleImmeubleLegal: SuccessionMeubleImmeubleLegal;
+    },
+  ) => {
+    onUpdateAssetEntry(id, 'legalNature', fields.legalNature);
+    onUpdateAssetEntry(id, 'origin', fields.origin);
+    onUpdateAssetEntry(id, 'meubleImmeubleLegal', fields.meubleImmeubleLegal);
+    setLegalModalEntryId(null);
+  }, [onUpdateAssetEntry]);
+
   return (
     <div className="premium-card sc-card sc-card--guide">
       <header className="sc-card__header">
@@ -251,14 +274,30 @@ export default function ScAssetsPassifsCard({
                             onChange={(val) => onUpdateAssetEntry(entry.id, 'amount', val)}
                           />
                         </div>
-                        <button
-                          type="button"
-                          className="sc-remove-btn"
-                          onClick={() => onRemoveAssetEntry(entry.id)}
-                          title="Supprimer cette ligne"
-                        >
-                          &#10005;
-                        </button>
+                        <div className="sc-row-actions">
+                          {entry.category !== 'passif' && (
+                            <button
+                              type="button"
+                              className="sc-open-btn"
+                              onClick={() => setLegalModalEntryId(entry.id)}
+                              title="Modifier la qualification juridique"
+                              aria-label="Modifier la qualification juridique"
+                            >
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                              </svg>
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className="sc-remove-btn"
+                            onClick={() => onRemoveAssetEntry(entry.id)}
+                            title="Supprimer cette ligne"
+                          >
+                            &#10005;
+                          </button>
+                        </div>
                       </div>
                       {entry.pocket === 'indivision_separatiste' && (
                         <div className="sc-field sc-field--full sc-asset-row__suboption">
@@ -284,37 +323,6 @@ export default function ScAssetsPassifsCard({
                             />
                             Appliquer l&apos;abattement 20 % (occupation éligible au jour du décès)
                           </label>
-                        </div>
-                      )}
-                      {entry.category !== 'passif' && (
-                        <div className="sc-asset-row sc-asset-row__suboption">
-                          <div className="sc-field">
-                            <label>Qualification juridique</label>
-                            <ScSelect
-                              className="sc-asset-select"
-                              value={entry.legalNature ?? 'non_qualifie'}
-                              onChange={(value) => onUpdateAssetEntry(entry.id, 'legalNature', value)}
-                              options={SUCCESSION_ASSET_LEGAL_NATURE_OPTIONS}
-                            />
-                          </div>
-                          <div className="sc-field">
-                            <label>Origine</label>
-                            <ScSelect
-                              className="sc-asset-select"
-                              value={entry.origin ?? 'non_precise'}
-                              onChange={(value) => onUpdateAssetEntry(entry.id, 'origin', value)}
-                              options={SUCCESSION_ASSET_ORIGIN_OPTIONS}
-                            />
-                          </div>
-                          <div className="sc-field">
-                            <label>Meuble / immeuble</label>
-                            <ScSelect
-                              className="sc-asset-select"
-                              value={entry.meubleImmeubleLegal ?? 'non_qualifie'}
-                              onChange={(value) => onUpdateAssetEntry(entry.id, 'meubleImmeubleLegal', value)}
-                              options={SUCCESSION_MEUBLE_IMMEUBLE_LEGAL_OPTIONS}
-                            />
-                          </div>
                         </div>
                       )}
                     </div>
@@ -585,6 +593,14 @@ export default function ScAssetsPassifsCard({
         <p className="sc-hint sc-hint--compact">
           Les totaux affichés dans cette carte correspondent à la masse civile nette. L&apos;assiette fiscale est recalculée séparément pour les droits.
         </p>
+      )}
+
+      {legalModalEntry && (
+        <AssetLegalQualificationModal
+          entry={legalModalEntry}
+          onClose={() => setLegalModalEntryId(null)}
+          onSave={handleLegalSave}
+        />
       )}
     </div>
   );

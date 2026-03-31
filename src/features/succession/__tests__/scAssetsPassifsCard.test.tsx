@@ -151,7 +151,7 @@ describe('ScAssetsPassifsCard', () => {
     expect(markup).not.toContain('Porteur');
   });
 
-  it('renders legal qualification selectors for detailed assets', () => {
+  it('renders legal qualification pencil button for detailed assets', () => {
     const props = buildBaseProps();
     props.assetEntriesByCategory = [
       {
@@ -171,9 +171,7 @@ describe('ScAssetsPassifsCard', () => {
 
     const markup = renderToStaticMarkup(<ScAssetsPassifsCard {...props} />);
 
-    expect(markup).toContain('Qualification juridique');
-    expect(markup).toContain('Origine');
-    expect(markup).toContain('Meuble / immeuble');
+    expect(markup).toContain('Modifier la qualification juridique');
   });
 
   it('renders only the add icon for the financier section (no dedicated AV/PER buttons)', () => {
