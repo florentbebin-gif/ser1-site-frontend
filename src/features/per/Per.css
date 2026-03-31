@@ -239,61 +239,326 @@
 
 /* -- PerPotentiel Wizard -------------------------------------------------- */
 
+.per-potentiel-page {
+  padding-top: 24px;
+}
+
 .per-potentiel-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom-color: var(--color-c6);
+  border-bottom-width: 3px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
 }
 
-.per-back-link {
-  display: inline-block;
-  margin-bottom: 0.75rem;
-  font-size: 0.85rem;
-  color: var(--color-c2);
-  text-decoration: none;
+.per-potentiel-header-copy {
+  max-width: 720px;
 }
 
-.per-back-link:hover {
-  text-decoration: underline;
-}
-
-.per-stepper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-}
-
-.per-stepper-item {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  background: var(--color-c7);
+.per-potentiel-kicker {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
   color: var(--color-c9);
 }
 
-.per-stepper-item--active {
+.per-back-link {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-bottom: 12px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-c8);
+  border-radius: 999px;
+  background: var(--color-c7);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-c1);
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+}
+
+.per-back-link:hover {
+  border-color: var(--color-c3);
+  color: var(--color-c2);
+  background: #FFFFFF;
+}
+
+.per-potentiel-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1.7fr) minmax(260px, 0.95fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.per-potentiel-rail,
+.per-potentiel-context {
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.per-potentiel-rail-card,
+.per-potentiel-context-card {
+  box-sizing: border-box;
+}
+
+.per-potentiel-rail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.per-potentiel-rail-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-c8);
+  border-radius: 10px;
+  background: #FFFFFF;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s, transform 0.2s;
+}
+
+.per-potentiel-rail-item:hover:not(:disabled) {
+  border-color: var(--color-c3);
+  background: var(--color-c7);
+  transform: translateX(2px);
+}
+
+.per-potentiel-rail-item:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.per-potentiel-rail-item.is-active {
+  border-color: var(--color-c2);
+  background: color-mix(in srgb, var(--color-c4) 50%, #FFFFFF);
+}
+
+.per-potentiel-rail-item.is-done {
+  border-color: color-mix(in srgb, var(--color-c5) 45%, var(--color-c8));
+}
+
+.per-potentiel-rail-index {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-c7);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-c9);
+}
+
+.per-potentiel-rail-item.is-active .per-potentiel-rail-index {
   background: var(--color-c2);
   color: #FFFFFF;
 }
 
-.per-stepper-item--done {
-  background: var(--color-c4);
+.per-potentiel-rail-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.per-potentiel-rail-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-potentiel-rail-desc {
+  font-size: 13px;
+  font-weight: 600;
   color: var(--color-c1);
 }
 
-.per-stepper-num {
-  display: inline-flex;
-  width: 20px;
-  height: 20px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  font-size: 0.7rem;
+.per-potentiel-rail-note {
+  border-left: 3px solid var(--color-c6);
+}
+
+.per-potentiel-note-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-c9);
+}
+
+.per-potentiel-stage {
+  min-height: 640px;
+}
+
+.per-potentiel-stage-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+.per-potentiel-stage-title {
+  margin: 0 0 8px;
+  font-size: 24px;
   font-weight: 600;
+  color: var(--color-c1);
+}
+
+.per-potentiel-stage-desc {
+  max-width: 640px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-c9);
+}
+
+.per-potentiel-stage-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--color-c7);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-potentiel-stage-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-c8);
+}
+
+.per-potentiel-stage-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.per-potentiel-context-card--accent {
+  border-left: 3px solid var(--color-c3);
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-c4) 55%, transparent) 0%,
+    transparent 28%
+  );
+}
+
+.per-potentiel-context-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.per-potentiel-pass-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-c4) 70%, #FFFFFF);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: var(--color-c1);
+}
+
+.per-potentiel-pass-value {
+  margin-bottom: 8px;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-c1);
+}
+
+.per-potentiel-context-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-c9);
+}
+
+.per-potentiel-context-list {
+  display: grid;
+  gap: 12px;
+}
+
+.per-potentiel-context-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.per-potentiel-context-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-potentiel-context-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.per-potentiel-mini-kpis {
+  display: grid;
+  gap: 12px;
+}
+
+.per-potentiel-mini-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-c8);
+}
+
+.per-potentiel-mini-kpi:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.per-potentiel-mini-kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-c9);
+}
+
+.per-potentiel-mini-kpi-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-c1);
 }
 
 .per-step {
@@ -616,6 +881,40 @@
   color: var(--color-c6);
 }
 
+@media (max-width: 1120px) {
+  .per-potentiel-layout {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+
+  .per-potentiel-context {
+    position: static;
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 900px) {
+  .per-potentiel-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .per-potentiel-rail,
+  .per-potentiel-context {
+    position: static;
+  }
+
+  .per-potentiel-context {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .per-potentiel-stage {
+    min-height: 0;
+  }
+}
+
 @media (max-width: 600px) {
   .per-home {
     padding: 32px 16px 48px;
@@ -632,5 +931,33 @@
   .per-home-tile-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .per-potentiel-header {
+    margin-bottom: 18px;
+  }
+
+  .per-potentiel-stage-header,
+  .per-potentiel-stage-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .per-potentiel-stage-title {
+    font-size: 20px;
+  }
+
+  .per-potentiel-stage-badge {
+    width: fit-content;
+  }
+
+  .per-potentiel-stage-actions {
+    width: 100%;
+  }
+
+  .per-potentiel-stage-actions .premium-btn,
+  .per-potentiel-stage-footer > .premium-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
