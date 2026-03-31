@@ -625,8 +625,8 @@ Cette section complete la norme existante. Elle fixe le contrat minimal avant d'
 ## Gouvernance PPTX
 
 ### Source de vérité
-`sim/ir` et `sim/credit` sont les seuls exports finalisés et reviewés — ils font autorité.
-- PER : branché et fonctionnel mais non reviewé — ne pas s'en inspirer.
+`sim/ir` et `sim/credit` restent les références historiques les plus stabilisées.
+- `sim/per/potentiel` suit désormais la même infrastructure d'exports et de thème ; l'ancien simulateur PER retiré des routes ne doit pas servir de référence.
 - Succession : non finalisé — ne pas s'en inspirer.
 
 ---
@@ -821,6 +821,7 @@ Utiliser `pickChapterImage(simId, chapterOrdinal)` dans chaque deck builder.
 |---|---|---|
 | `ir` | 1 | 3 |
 | `credit` | 5 | 7 |
+| `per` | 4 | 8 |
 | `succession` | 2 | 6 |
 | `placement` | 9 | 2 |
 
@@ -1130,7 +1131,7 @@ Toutes les dettes identifiées à la rédaction initiale ont été corrigées da
 |---|---|
 | **Placement** | Migré vers xlsxBuilder (OOXML), styles €/%, couleurs thème, `.xlsx`, onglet Hypothèses, test smoke |
 | **Succession** | `sectionFill` désormais dynamique (c7 du thème), `validateXlsxBlob()` ajouté |
-| **PER** | Export Excel supprimé (dette technique — simulateur non opérationnel) |
+| **PER** | Export XLSX OOXML réintroduit sur `/sim/per/potentiel` via `xlsxBuilder`, avec onglets `Synthèse`, `Cases 2042`, `Hypothèses` et test smoke |
 | **Credit** | Nom de fichier corrigé → `simulation-credit-YYYYMMDD.xlsx` |
 
 ---

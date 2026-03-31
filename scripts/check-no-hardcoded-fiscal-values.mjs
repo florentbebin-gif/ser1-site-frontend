@@ -33,6 +33,30 @@ const FORBIDDEN_VALUES = [
     label: 'abattement frère/sœur DMTG',
     pattern: /\b15932\b/,
   },
+  {
+    label: 'plafond déduction PER (10% PASS 2024)',
+    pattern: /\b35194\b/,
+  },
+  {
+    label: 'PASS 2019',
+    pattern: /\b40524\b/,
+  },
+  {
+    label: 'PASS 2020-2022',
+    pattern: /\b41136\b/,
+  },
+  {
+    label: 'PASS 2023',
+    pattern: /\b43992\b/,
+  },
+  {
+    label: 'PASS 2024',
+    pattern: /\b46368\b/,
+  },
+  {
+    label: 'PASS 2025',
+    pattern: /\b47100\b/,
+  },
 ];
 
 // ─── Répertoires à scanner (relatifs à ROOT) ──────────────────────────────────

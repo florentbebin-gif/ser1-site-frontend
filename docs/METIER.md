@@ -22,7 +22,7 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 | `/sim/placement` | disponible | Comparer 2 enveloppes / produits sur epargne, liquidation et transmission |
 | `/sim/credit` | disponible | Simuler echeanciers, assurance et lissage de 1 a 3 prets |
 | `/sim/succession` | disponible | Estimer droits de succession et fournir des analyses civiles/patrimoniales guidees |
-| `/sim/per` | disponible | Simuler un PER individuel deductible en phase d'epargne et de sortie |
+| `/sim/per` | disponible | Hub PER avec controle du potentiel epargne retraite (potentiel actif, transfert et ouverture upcoming) |
 | `/sim/epargne-salariale` | upcoming | non documente metier ici tant que non stabilise |
 | `/sim/tresorerie-societe` | upcoming | non documente metier ici tant que non stabilise |
 | `/sim/prevoyance` | upcoming | non documente metier ici tant que non stabilise |
@@ -289,36 +289,39 @@ Le simulateur placement compare 2 produits / enveloppes sur 3 temps :
 ## 5) PER
 
 ### Ce que SER1 calcule
-Le simulateur PER traite aujourd'hui un PER individuel deductible simple.
+La surface `/sim/per` est maintenant un hub. Le parcours actif est `Controle du potentiel epargne retraite`, qui reprend la logique pedagogique du classeur PER 2025 pour verifier les plafonds de deduction, accompagner la declaration 2042 et simuler l'impact fiscal d'un versement.
 
 ### Entrees principales
-- versement annuel
-- duree d'epargne
-- TMI
-- rendement brut
-- frais de gestion
-- age de souscription
+- choix du mode : controle du potentiel ou declaration 2042 N-1
+- avis IR N-2 facultatif pour reconstituer les reports
+- situation familiale, nombre de parts et parent isole
+- revenus par declarant : salaires, art. 62, BIC, retraites, fonciers, autres
+- cotisations epargne retraite par case 2042 (6NS/6NT/6RS/6RT/6QS/6QT/6OS/6OT)
+- mutualisation des plafonds entre conjoints
+- versement envisage pour la simulation d'impact fiscal
 
 ### Sorties principales
-- total des versements
-- capital a terme
-- economie d'impot annuelle et totale
-- sortie en capital estimee
-- sortie en rente estimee
-- projection annee par annee
+- situation fiscale estimee (TMI, IR, CEHR, marge dans la TMI)
+- plafond 163 quatervicies par declarant, avec reports N-1 a N-3
+- plafond Madelin 154 bis pour les TNS
+- cases 2042 simulees et indicateur de mutualisation 6QR
+- simulation d'un versement deductible et de l'economie d'IR associee
+- exports PPTX et XLSX de synthese
 
 ### Ce qui est couvert
-- versements volontaires deductibles
-- economie d'IR selon TMI
-- capitalisation avec frais
-- estimation de rente via taux de conversion simplifie
-- comparaison capital / rente a la sortie
+- parcours pedagogique issu de l'Excel 2025
+- plafond personnel PER (163 quatervicies)
+- report en avant sur 3 ans
+- enveloppe Madelin 154 bis pour les TNS
+- mutualisation des plafonds entre conjoints
+- arbitrage IR delegue au moteur fiscal du repo
+- PASS lu via la chaine fiscale standard (`public.pass_history` -> cache -> `useFiscalContext` -> fallback defaults)
 
 ### Limites connues
-- pas de transferts PERP / Madelin / Article 83 / PERCO
-- pas de cas de deblocage anticipe
-- pas de modelisation avancee des plafonds reportables
-- fiscalite de sortie volontairement simplifiee pour rester lisible
+- les simulateurs `Transfert epargne retraite` et `Ouverture PER` restent upcoming
+- le parcours n'est pas une declaration 2042 exhaustive case par case
+- les cas de deblocage anticipe et les scenarios de sortie restent hors perimetre de ce module
+- la parite workbook doit rester surveillee sur les cas limites, surtout si le classeur source evolue
 
 ## 6) Credit
 

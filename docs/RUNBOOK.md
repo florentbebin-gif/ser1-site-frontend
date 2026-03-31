@@ -44,13 +44,14 @@ Règles enforced :
 
 Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 
-**Ce que ça vérifie** : absence de valeurs fiscales révisables en dur dans `src/engine/` et `src/features/` (hors tests). Les valeurs surveillées sont celles de `FORBIDDEN_VALUES` dans `scripts/check-no-hardcoded-fiscal-values.mjs` :
+**Ce que ça vérifie** : absence de valeurs fiscales révisables en dur dans `src/engine/` et `src/features/` (hors tests). La liste exacte surveillée vit dans `FORBIDDEN_VALUES` dans `scripts/check-no-hardcoded-fiscal-values.mjs` et couvre notamment :
 
-| Valeur | Label |
+| Exemple | Label |
 |--------|-------|
 | `17.2` | Taux PS patrimoine |
 | `100000` | Abattement enfant DMTG (ligne directe) |
 | `15932` | Abattement frère/sœur DMTG |
+| PASS historiques | valeurs annuelles PASS à maintenir uniquement dans les settings et fallbacks documentés |
 
 **Seul fichier autorisé** à contenir ces valeurs : `src/constants/settingsDefaults.ts`.
 
@@ -358,7 +359,7 @@ Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence tec
 ### Étape 2 — Mettre à jour les Prélèvements sociaux
 
 1. Aller sur `/settings/prelevements`.
-2. Vérifier et corriger : taux PS patrimoine (17,2 %), tranches retraite.
+2. Vérifier et corriger : taux PS patrimoine, tranches retraite et historique PASS (`pass_history`).
 3. Enregistrer.
 
 ### Étape 3 — Vérifier les produits "À vérifier"

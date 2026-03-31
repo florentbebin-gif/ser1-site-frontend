@@ -67,6 +67,7 @@ docs/*.xlsx
 **/render_*/**
 **/*.pptx
 **/*.xlsx
+**/*.xlsm
 
 
 

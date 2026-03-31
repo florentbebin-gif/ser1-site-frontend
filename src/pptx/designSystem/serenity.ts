@@ -973,6 +973,7 @@ export function addTextBox(
 export const CHAPTER_IMAGE_POOLS: Record<string, readonly number[]> = {
   ir:         [1, 3],  // source de vérité — inchangé
   credit:     [5, 7],  // diversifié vs IR (était [1, 3])
+  per:        [4, 8],  // potentiel PER
   succession: [2, 6],  // diversifié (était [1, 3])
   placement:  [9, 2],  // futur simulateur
 } as const;
