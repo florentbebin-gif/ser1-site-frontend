@@ -70,7 +70,7 @@ const Credit = lazy(() => import('../features/credit/Credit'));
 const Ir = lazy(() => import('../features/ir/IrPage'));
 const AuditWizard = lazy(() => import('../features/audit/AuditWizard'));
 const SuccessionSimulator = lazy(() => import('../features/succession/SuccessionSimulator'));
-const PerSimulator = lazy(() => import('../features/per/PerSimulator'));
+const PerHome = lazy(() => import('../features/per/PerHome'));
 const UpcomingSimulatorPage = lazy(() => import('../pages/UpcomingSimulatorPage')) as unknown as LazyExoticComponent<ComponentType<RouteProps>>;
 const StrategyPage = lazy(() => import('../pages/StrategyPage'));
 const SettingsShell = lazy(() => import('../pages/SettingsShell'));
@@ -156,10 +156,49 @@ export const APP_ROUTES: AppRouteEntry[] = [
     kind: 'route',
     access: 'private',
     path: '/sim/per',
-    component: PerSimulator,
+    component: PerHome,
     lazy: true,
     contextLabel: 'PER',
     topbar: SIM_TOPBAR,
+  },
+  {
+    kind: 'route',
+    access: 'private',
+    path: '/sim/per/potentiel',
+    component: UpcomingSimulatorPage,
+    lazy: true,
+    contextLabel: 'PER — Potentiel',
+    topbar: SIM_TOPBAR,
+    props: {
+      title: 'Contrôle du potentiel épargne retraite',
+      subtitle: 'Ce simulateur sera disponible très prochainement.',
+    },
+  },
+  {
+    kind: 'route',
+    access: 'private',
+    path: '/sim/per/transfert',
+    component: UpcomingSimulatorPage,
+    lazy: true,
+    contextLabel: 'PER — Transfert',
+    topbar: SIM_TOPBAR,
+    props: {
+      title: 'Transfert épargne retraite',
+      subtitle: 'Ce simulateur premium sera bientôt disponible.',
+    },
+  },
+  {
+    kind: 'route',
+    access: 'private',
+    path: '/sim/per/ouverture',
+    component: UpcomingSimulatorPage,
+    lazy: true,
+    contextLabel: 'PER — Ouverture',
+    topbar: SIM_TOPBAR,
+    props: {
+      title: 'Ouverture PER',
+      subtitle: 'Ce simulateur premium sera bientôt disponible.',
+    },
   },
   {
     kind: 'route',

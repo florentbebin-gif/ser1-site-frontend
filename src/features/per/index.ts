@@ -1,6 +1,6 @@
 /**
- * PER feature barrel export (P1-03)
+ * PER feature barrel export
  */
 
-export { default as PerSimulator } from './PerSimulator';
-export { usePerCalc } from './usePerCalc';
+export { default } from './PerHome';
+export { default as PerHome } from './PerHome';
