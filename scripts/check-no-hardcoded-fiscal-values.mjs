@@ -69,7 +69,6 @@ const SCAN_DIRS = [
 // 1. Source unique des valeurs fiscales par défaut
 const ALLOWED_EXACT = [
   'src/constants/settingsDefaults.ts',
-  'src/engine/per.ts', // Legacy PER engine — will be removed in PR-3 (feat/per-potentiel)
 ];
 
 // 2. Répertoires de tests (toujours exclus)

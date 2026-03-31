@@ -17,7 +17,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { calculateIR, calculateCEHR, calculateIFI } from '../tax';
 import { calculateSuccession } from '../succession';
-import { calculatePER } from '../per';
+// Legacy calculatePER removed — new engine in src/engine/per/
 
 // ---------- helpers ----------
 
@@ -28,7 +28,6 @@ const FUNCTION_MAP: Record<string, EngineFn> = {
   calculateCEHR: calculateCEHR as unknown as EngineFn,
   calculateIFI: calculateIFI as unknown as EngineFn,
   calculateSuccession: calculateSuccession as unknown as EngineFn,
-  calculatePER: calculatePER as unknown as EngineFn,
 };
 
 interface GoldenCase {
