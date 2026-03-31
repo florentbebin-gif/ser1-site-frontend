@@ -7,8 +7,13 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ExportMenu } from '../../../../components/ExportMenu';
 import { useFiscalContext } from '../../../../hooks/useFiscalContext';
+import { useTheme } from '../../../../settings/ThemeProvider';
+import '../../../../components/simulator/SimulatorShell.css';
+import '../../../../styles/premium-shared.css';
 import { usePerPotentiel } from '../../hooks/usePerPotentiel';
+import { usePerPotentielExportHandlers } from '../../hooks/usePerPotentielExportHandlers';
 import ModeStep from './steps/ModeStep';
 import AvisIrStep from './steps/AvisIrStep';
 import SituationFiscaleStep from './steps/SituationFiscaleStep';
@@ -19,6 +24,7 @@ const STEP_LABELS = ['Mode', 'Avis IR', 'Revenus', 'Synthèse'] as const;
 
 export default function PerPotentielSimulator(): React.ReactElement {
   const { fiscalContext, loading, error } = useFiscalContext({ strict: true });
+  const { pptxColors, cabinetLogo, logoPlacement } = useTheme();
 
   const {
     state, result,
@@ -28,6 +34,13 @@ export default function PerPotentielSimulator(): React.ReactElement {
     nextStep, prevStep, reset,
     canGoNext, showAvisStep, isCouple,
   } = usePerPotentiel(fiscalContext);
+  const { exportExcel, exportPowerPoint, exportLoading } = usePerPotentielExportHandlers({
+    state,
+    result,
+    pptxColors,
+    cabinetLogo,
+    logoPlacement,
+  });
 
   if (loading) {
     return (
@@ -54,12 +67,24 @@ export default function PerPotentielSimulator(): React.ReactElement {
     : [1, 3, 4];
 
   const stepIndex = visibleSteps.indexOf(state.step);
+  const exportOptions = [
+    { label: 'Excel', onClick: exportExcel, disabled: !result || state.step !== 4 },
+    { label: 'PowerPoint', onClick: exportPowerPoint, disabled: !result || state.step !== 4 },
+  ];
 
   return (
     <div className="per-page">
-      <div className="per-potentiel-header">
-        <Link to="/sim/per" className="per-back-link">← Retour aux simulateurs PER</Link>
-        <h1>Contrôle du potentiel épargne retraite</h1>
+      <div className="premium-header per-potentiel-header">
+        <div>
+          <Link to="/sim/per" className="per-back-link">← Retour aux simulateurs PER</Link>
+          <h1 className="premium-title">Contrôle du potentiel épargne retraite</h1>
+          <p className="premium-subtitle">
+            Analysez les plafonds PER, les cases 2042 et l'impact fiscal d'un versement.
+          </p>
+        </div>
+        <div className="sim-header__actions">
+          <ExportMenu options={exportOptions} loading={exportLoading} />
+        </div>
       </div>
 
       {/* Stepper */}

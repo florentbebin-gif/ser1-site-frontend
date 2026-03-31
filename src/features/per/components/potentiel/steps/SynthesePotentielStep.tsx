@@ -17,7 +17,7 @@ const fmt = (v: number): string =>
   new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
 
 const fmtPct = (v: number): string =>
-  `${(v * 100).toFixed(1)} %`;
+  `${(v <= 1 ? v * 100 : v).toFixed(1)} %`;
 
 function PlafondTable({ label, p }: {
   label: string;
@@ -55,7 +55,7 @@ export default function SynthesePotentielStep({
     );
   }
 
-  const { situationFiscale: sf, plafond163Q, plafondMadelin, estTNS, simulation, warnings } = result;
+  const { situationFiscale: sf, plafond163Q, plafondMadelin, estTNS, declaration2042, simulation, warnings } = result;
 
   return (
     <div className="per-step">
@@ -133,6 +133,30 @@ export default function SynthesePotentielStep({
           )}
         </div>
       )}
+
+      <div className="per-card">
+        <h3 className="per-card-subtitle">Cases 2042 simulées</h3>
+        <table className="per-sortie-table">
+          <thead>
+            <tr>
+              <th>Case</th>
+              <th>Libellé</th>
+              <th className="text-right">Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>6NS</td><td>PER 163 quatervicies — Déclarant 1</td><td className="text-right">{fmt(declaration2042.case6NS)}</td></tr>
+            {isCouple && <tr><td>6NT</td><td>PER 163 quatervicies — Déclarant 2</td><td className="text-right">{fmt(declaration2042.case6NT || 0)}</td></tr>}
+            <tr><td>6RS</td><td>PERP et assimilés — Déclarant 1</td><td className="text-right">{fmt(declaration2042.case6RS)}</td></tr>
+            {isCouple && <tr><td>6RT</td><td>PERP et assimilés — Déclarant 2</td><td className="text-right">{fmt(declaration2042.case6RT || 0)}</td></tr>}
+            <tr><td>6QS</td><td>Art. 83 — Déclarant 1</td><td className="text-right">{fmt(declaration2042.case6QS)}</td></tr>
+            {isCouple && <tr><td>6QT</td><td>Art. 83 — Déclarant 2</td><td className="text-right">{fmt(declaration2042.case6QT || 0)}</td></tr>}
+            <tr><td>6OS</td><td>PER 154 bis — Déclarant 1</td><td className="text-right">{fmt(declaration2042.case6OS)}</td></tr>
+            {isCouple && <tr><td>6OT</td><td>PER 154 bis — Déclarant 2</td><td className="text-right">{fmt(declaration2042.case6OT || 0)}</td></tr>}
+            {isCouple && <tr><td>6QR</td><td>Mutualisation des plafonds</td><td className="text-right">{declaration2042.case6QR ? 'Oui' : 'Non'}</td></tr>}
+          </tbody>
+        </table>
+      </div>
 
       {/* Simulation versement */}
       {modeVersement && (

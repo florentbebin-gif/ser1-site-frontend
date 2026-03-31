@@ -6,6 +6,7 @@
  */
 
 import { computeIrResult } from '../ir/compute';
+import { computeAbattement10 } from '../ir/adjustments';
 import type { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../constants/settingsDefaults';
 import type { SituationFiscaleInput, SituationFiscaleResult } from './types';
 
@@ -28,6 +29,32 @@ export function estimerSituationFiscale(params: IrEstimationParams): SituationFi
   const d1 = declarant1;
   const d2 = declarant2;
 
+  const abat10CfgRoot = taxSettings?.incomeTax?.abat10 || {};
+  const abat10SalCfg = yearKey === 'current' ? abat10CfgRoot.current : abat10CfgRoot.previous;
+  const abat10RetCfg = yearKey === 'current' ? abat10CfgRoot.retireesCurrent : abat10CfgRoot.retireesPrevious;
+
+  const grossSalD1 = (d1.salaires || 0) + (d1.art62 || 0);
+  const grossSalD2 = (d2?.salaires || 0) + (d2?.art62 || 0);
+
+  const salDeductionD1 = d1.fraisReels
+    ? Math.max(0, d1.fraisReelsMontant || 0)
+    : computeAbattement10(grossSalD1, abat10SalCfg);
+  const salDeductionD2 = d2
+    ? d2.fraisReels
+      ? Math.max(0, d2.fraisReelsMontant || 0)
+      : computeAbattement10(grossSalD2, abat10SalCfg)
+    : 0;
+
+  const grossPensions = (d1.retraites || 0) + (d2?.retraites || 0);
+  const pensionsDeductionFoyer = computeAbattement10(grossPensions, abat10RetCfg);
+  const pensionShareD1 = grossPensions > 0 ? (d1.retraites || 0) / grossPensions : 0;
+  const pensionShareD2 = grossPensions > 0 ? (d2?.retraites || 0) / grossPensions : 0;
+  const pensionsDeductionD1 = pensionsDeductionFoyer * pensionShareD1;
+  const pensionsDeductionD2 = pensionsDeductionFoyer * pensionShareD2;
+
+  const fonciersFoyer = (d1.fonciersNets || 0) + (d2?.fonciersNets || 0);
+  const extraDeductions = salDeductionD1 + salDeductionD2 + pensionsDeductionFoyer;
+
   const irResult = computeIrResult({
     yearKey,
     status: situationFamiliale === 'marie' ? 'couple' : 'single',
@@ -39,7 +66,6 @@ export function estimerSituationFiscale(params: IrEstimationParams): SituationFi
         associes62: d1.art62,
         pensions: d1.retraites,
         bic: d1.bic,
-        fonciers: d1.fonciersNets,
         autres: d1.autresRevenus,
       },
       d2: d2 ? {
@@ -47,11 +73,11 @@ export function estimerSituationFiscale(params: IrEstimationParams): SituationFi
         associes62: d2.art62,
         pensions: d2.retraites,
         bic: d2.bic,
-        fonciers: d2.fonciersNets,
         autres: d2.autresRevenus,
       } : undefined,
+      fonciersFoyer,
     },
-    deductions: deductionsPer,
+    deductions: deductionsPer + extraDeductions,
     credits: 0,
     taxSettings,
     psSettings,
@@ -70,11 +96,31 @@ export function estimerSituationFiscale(params: IrEstimationParams): SituationFi
     };
   }
 
+  const revenuImposableD1 = Math.max(
+    0,
+    grossSalD1 - salDeductionD1 +
+      Math.max(0, (d1.retraites || 0) - pensionsDeductionD1) +
+      (d1.bic || 0) +
+      (d1.fonciersNets || 0) +
+      (d1.autresRevenus || 0),
+  );
+
+  const revenuImposableD2 = d2
+    ? Math.max(
+        0,
+        grossSalD2 - salDeductionD2 +
+          Math.max(0, (d2.retraites || 0) - pensionsDeductionD2) +
+          (d2.bic || 0) +
+          (d2.fonciersNets || 0) +
+          (d2.autresRevenus || 0),
+      )
+    : 0;
+
   return {
-    revenuImposableD1: irResult.taxableIncome,
-    revenuImposableD2: d2 ? irResult.taxableIncome : 0,
+    revenuImposableD1: Math.round(revenuImposableD1),
+    revenuImposableD2: Math.round(revenuImposableD2),
     revenuFiscalRef: irResult.totalIncome,
-    tmi: irResult.tmiRate,
+    tmi: (irResult.tmiRate || 0) / 100,
     irEstime: irResult.irNet,
     decote: irResult.decote,
     cehr: irResult.cehr,

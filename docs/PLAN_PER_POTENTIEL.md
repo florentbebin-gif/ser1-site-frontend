@@ -1,6 +1,6 @@
 # Plan — Contrôle du Potentiel Épargne Retraite — /sim/per
 
-> Fusion des deux plans : analyse Excel + architecture repo. 4 PRs.
+> Fusion des deux plans : analyse Excel + architecture repo. 5 PRs.
 
 ---
 
@@ -81,7 +81,7 @@ Pattern à suivre : `src/engine/placement/fiscalParams.ts` → `extractFiscalPar
 
 - Valeurs fiscales → `settingsDefaults.ts` uniquement (jamais hardcoded)
 - Barème IR live → `useFiscalContext({ strict: true })`
-- PASS history → `settingsDefaults.ts` (mise à jour annuelle)
+- PASS history → `public.pass_history` via la chaîne fiscale standard, avec fallback `settingsDefaults.ts`
 - Engine = fonctions pures, zéro React, zéro Supabase
 - Fichiers < 500 lignes idéal, < 800 obligatoire
 - TypeScript strict, `npm run check` avant chaque commit
@@ -96,7 +96,7 @@ Pattern à suivre : `src/engine/placement/fiscalParams.ts` → `extractFiscalPar
 ```
 /sim/per            → PerHome.tsx (hub 3 cartes)
 /sim/per/potentiel  → PerPotentielSimulator.tsx (wizard 4 étapes)
-/sim/per/ouverture  → PerSimulator.tsx (existant, déplacé)
+/sim/per/ouverture  → UpcomingSimulatorPage (stub)
 /sim/per/transfert  → PerTransfertPlaceholder.tsx (stub)
 ```
 
@@ -232,7 +232,7 @@ interface PerPotentielResult {
 ### Flux de données
 
 ```
-Settings (tax_settings, ps_settings, fiscality_settings)
+Settings (tax_settings, ps_settings, fiscality_settings, pass_history)
   → useFiscalContext({ strict: true })
     → Engine perPotentiel.ts
       - calculatePlafond163Q()    # plafond personnel
@@ -448,7 +448,7 @@ npm run check:fiscal-hardcode    # aucune valeur dans engine/features
 
 # Vérifier manuellement :
 # 1. /sim/per → 3 cartes visibles
-# 2. /sim/per/ouverture → simulateur existant intact
+# 2. /sim/per/ouverture → page upcoming cohérente avec le hub PER
 # 3. /sim/per/potentiel → wizard 4 étapes
 # 4. Salarié TMI30, 80k : plafond = 10% * 80k = 8k (si pas de réductions)
 # 5. TNS BIC 120k : Madelin = 15%*(120k-47100) + 10%*47100 = 10935 + 4710 = 15645

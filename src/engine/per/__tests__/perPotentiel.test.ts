@@ -67,6 +67,43 @@ describe('computePlafond163QBrut', () => {
   it('returns minimum for zero income', () => {
     expect(computePlafond163QBrut(0, PASS_2025)).toBe(4710);
   });
+
+  it('uses spouse plafond for simulation only when mutualisation is enabled', () => {
+    const baseInput = {
+      mode: 'versement-n' as const,
+      anneeRef: 2025,
+      situationFiscale: {
+        situationFamiliale: 'marie' as const,
+        nombreParts: 2,
+        isole: false,
+        declarant1: makeDeclarant({ salaires: 80000 }),
+        declarant2: makeDeclarant({ salaires: 30000 }),
+      },
+      versementEnvisage: 12000,
+      passHistory: DEFAULT_PASS_HISTORY,
+      taxSettings: DEFAULT_TAX_SETTINGS,
+      psSettings: DEFAULT_PS_SETTINGS,
+    };
+
+    const sansMutualisation = calculatePerPotentiel({
+      ...baseInput,
+      mutualisationConjoints: false,
+    });
+
+    const avecMutualisation = calculatePerPotentiel({
+      ...baseInput,
+      mutualisationConjoints: true,
+    });
+
+    expect(sansMutualisation.declaration2042.case6QR).toBe(false);
+    expect(avecMutualisation.declaration2042.case6QR).toBe(true);
+    expect(sansMutualisation.simulation).toBeDefined();
+    expect(avecMutualisation.simulation).toBeDefined();
+    expect(sansMutualisation.simulation!.versementDeductible).toBe(7200);
+    expect(avecMutualisation.simulation!.versementDeductible).toBe(11910);
+    expect(sansMutualisation.simulation!.economieIRAnnuelle).toBe(2160);
+    expect(avecMutualisation.simulation!.economieIRAnnuelle).toBe(3573);
+  });
 });
 
 // ── Plafond Madelin unit tests ───────────────────────────────────────────────
@@ -157,6 +194,7 @@ describe('calculatePerPotentiel', () => {
     expect(result.plafond163Q.declarant1.plafondCalculeN).toBeGreaterThan(0);
     expect(result.plafond163Q.declarant2!.plafondCalculeN).toBeGreaterThan(0);
     expect(result.situationFiscale.irEstime).toBeGreaterThan(0);
+    expect(result.declaration2042.case6QR).toBe(true);
   });
 
   it('parent isolé', () => {
@@ -255,9 +293,11 @@ describe('calculatePerPotentiel', () => {
 
     expect(result.simulation).toBeDefined();
     expect(result.simulation!.versementEnvisage).toBe(5000);
-    expect(result.simulation!.economieIRAnnuelle).toBeGreaterThan(0);
-    expect(result.simulation!.coutNetApresFiscalite).toBeLessThan(5000);
-    expect(result.simulation!.plafondRestantApres).toBeGreaterThan(0);
+    expect(result.situationFiscale.tmi).toBe(0.3);
+    expect(result.simulation!.versementDeductible).toBe(5000);
+    expect(result.simulation!.economieIRAnnuelle).toBe(1500);
+    expect(result.simulation!.coutNetApresFiscalite).toBe(3500);
+    expect(result.simulation!.plafondRestantApres).toBe(2200);
   });
 
   it('estimation sans avis — works with defaults (0 carry-forward)', () => {

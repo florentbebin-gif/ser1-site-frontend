@@ -96,11 +96,24 @@ export interface SimulationVersement {
   plafondRestantApres: number;
 }
 
+export interface Declaration2042Boxes {
+  case6NS: number;
+  case6NT?: number;
+  case6RS: number;
+  case6RT?: number;
+  case6QS: number;
+  case6QT?: number;
+  case6OS: number;
+  case6OT?: number;
+  case6QR: boolean;
+}
+
 export interface PerPotentielResult {
   situationFiscale: SituationFiscaleResult;
   plafond163Q: { declarant1: PlafondDetail; declarant2?: PlafondDetail };
   plafondMadelin?: { declarant1: PlafondMadelinDetail; declarant2?: PlafondMadelinDetail };
   estTNS: boolean;
+  declaration2042: Declaration2042Boxes;
   simulation?: SimulationVersement;
   warnings: PerWarning[];
 }

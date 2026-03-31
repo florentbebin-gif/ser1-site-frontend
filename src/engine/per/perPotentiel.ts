@@ -22,11 +22,13 @@ import type { DEFAULT_TAX_SETTINGS, DEFAULT_PS_SETTINGS } from '../../constants/
 export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielResult {
   const warnings: PerWarning[] = [];
   const {
+    mode,
     anneeRef,
     situationFiscale,
     avisIr,
     avisIr2,
     versementEnvisage,
+    mutualisationConjoints,
     passHistory,
     taxSettings,
     psSettings,
@@ -98,10 +100,25 @@ export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielRes
     psSettings: ps,
   });
 
+  const declaration2042 = {
+    case6NS: declarant1.cotisationsPer163Q,
+    case6NT: declarant2 ? declarant2.cotisationsPer163Q : undefined,
+    case6RS: declarant1.cotisationsPerp,
+    case6RT: declarant2 ? declarant2.cotisationsPerp : undefined,
+    case6QS: declarant1.cotisationsArt83,
+    case6QT: declarant2 ? declarant2.cotisationsArt83 : undefined,
+    case6OS: declarant1.cotisationsMadelin154bis,
+    case6OT: declarant2 ? declarant2.cotisationsMadelin154bis : undefined,
+    case6QR: Boolean(declarant2 && mutualisationConjoints),
+  };
+
   let simulation: SimulationVersement | undefined;
-  if (versementEnvisage != null && versementEnvisage > 0) {
+  if (mode === 'versement-n' && versementEnvisage != null && versementEnvisage > 0) {
     const plafondDispoD1 = plafond163QD1.disponibleRestant;
-    const plafondDispoD2 = plafond163QD2?.disponibleRestant ?? 0;
+    const plafondDispoD2 =
+      declarant2 && mutualisationConjoints
+        ? plafond163QD2?.disponibleRestant ?? 0
+        : 0;
     const totalDispo = plafondDispoD1 + plafondDispoD2;
     const versementDeductible = Math.min(versementEnvisage, totalDispo);
     const economie = Math.round(versementDeductible * situationFiscaleResult.tmi);
@@ -120,6 +137,7 @@ export function calculatePerPotentiel(input: PerPotentielInput): PerPotentielRes
     plafond163Q: { declarant1: plafond163QD1, declarant2: plafond163QD2 },
     plafondMadelin,
     estTNS,
+    declaration2042,
     simulation,
     warnings,
   };

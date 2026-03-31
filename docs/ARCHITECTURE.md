@@ -115,7 +115,10 @@ Source (preuves) :
 | `/sim/placement` | privé + lazy | `Placement` | `src/features/placement/PlacementPage.tsx` (exporté via `src/features/placement/index.ts`) |
 | `/sim/credit` | privé + lazy | `Credit` | `src/features/credit/Credit.tsx` (exporté via `src/features/credit/index.ts`) |
 | `/sim/succession` | privé + lazy | `SuccessionSimulator` | `src/features/succession/SuccessionSimulator.tsx` (exporté via `src/features/succession/index.ts`) |
-| `/sim/per` | privé + lazy | `PerSimulator` | `src/features/per/PerSimulator.tsx` (exporté via `src/features/per/index.ts`) |
+| `/sim/per` | privé + lazy | `PerHome` | `src/features/per/PerHome.tsx` |
+| `/sim/per/potentiel` | privé + lazy | `PerPotentielSimulator` | `src/features/per/components/potentiel/PerPotentielSimulator.tsx` |
+| `/sim/per/transfert` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy, stub) |
+| `/sim/per/ouverture` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy, stub) |
 | `/sim/epargne-salariale` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |
 | `/sim/tresorerie-societe` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |
 | `/sim/prevoyance` | privé + lazy | `UpcomingSimulatorPage` | `src/pages/UpcomingSimulatorPage.tsx` (lazy) |
@@ -356,6 +359,7 @@ Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets
 | `tax_settings` | IR barème (N et N-1), PFU taux IR+PS, CEHR/CDHR, IS, DMTG barèmes+abattements | Auth | Admin |
 | `ps_settings` | PS patrimoine (17,2 %), cotisations retraite par tranche, seuils RFR (1/2/3 parts) | Auth | Admin |
 | `fiscality_settings` | Règles par enveloppe (AV, PER, PEA, CTO, dividendes…) — taux, abattements, seuils | Auth | Admin |
+| `pass_history` | Historique PASS annuel administré dans Settings > Prelevements (multi-lignes, clé `year`) | Auth | Admin |
 | `base_contrat_settings` | Singleton de config catalogue présent dans le schéma, non consommé par le runtime courant | Auth | Admin |
 | `base_contrat_overrides` | Clôture/réouverture produit + note admin (uuid per product) | Admin | Admin |
 
@@ -367,8 +371,9 @@ Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ SUPABASE (3 singletons id=1)                             │
+│ SUPABASE (3 singletons id=1 + pass_history)              │
 │  tax_settings · ps_settings · fiscality_settings         │
+│  + pass_history                                          │
 └──────────────────────────┬───────────────────────────────┘
           RLS: auth READ / admin WRITE
           Admin save → supabase.upsert({id:1, data})
@@ -426,6 +431,7 @@ fiscalContext.psRateGlobal            // taux PS patrimoine (ex: 17.2)
 fiscalContext.dmtgScaleLigneDirecte   // barème DMTG ligne directe
 fiscalContext.dmtgAbattementEnfant    // abattement ligne directe (ex: 100 000)
 fiscalContext.dmtgSettings            // objet DMTG complet { ligneDirecte, frereSoeur, neveuNiece, autre }
+fiscalContext.passHistoryByYear       // historique PASS runtime (source: public.pass_history)
 fiscalContext._raw_tax                // brut tax_settings (usage exceptionnel)
 fiscalContext._raw_ps                 // brut ps_settings
 fiscalContext._raw_fiscality          // brut fiscality_settings
@@ -473,7 +479,7 @@ L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → é
 | **Assurance-vie** | Abattement 990I (152 500 €), taux 20 %/31,25 %, abattement 757B (30 500 €) | `fiscality_settings` | Art. 990 I & 757 B CGI |
 | **PS patrimoine** | 17,2 % (CSG 9,2 % + CRDS 0,5 % + PS 7,5 %) | `ps_settings` | Art. L136-6 CSS |
 | **Seuils RFR** | Par nombre de parts (CSG taux réduit, CRDS exo) | `ps_settings` | Art. L136-8 CSS |
-| **PASS** | Non encore dans settings — valeur annuelle URSSAF | *(reference_rates — futur)* | Art. D612-5 CSS |
+| **PASS** | Historique PASS annuel administre dans Settings et charge via `public.pass_history` | `pass_history` | Art. D612-5 CSS |
 
 #### Règles structurelles (logique moteur, Code civil ou loi ordinaire)
 
