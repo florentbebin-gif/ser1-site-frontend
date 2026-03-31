@@ -14,6 +14,7 @@ function makeFiscalContext(overrides: Partial<FiscalContext>): FiscalContext {
     dmtgScaleLigneDirecte: DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
     dmtgAbattementEnfant: DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
     dmtgSettings: DEFAULT_TAX_SETTINGS.dmtg,
+    passHistoryByYear: { 2024: 46368, 2025: 47100 },
     _raw_tax: DEFAULT_TAX_SETTINGS,
     _raw_ps: {} as FiscalContext['_raw_ps'],
     _raw_fiscality: DEFAULT_FISCALITY_SETTINGS,

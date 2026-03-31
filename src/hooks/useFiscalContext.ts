@@ -19,6 +19,7 @@ import {
   DEFAULT_TAX_SETTINGS,
   DEFAULT_PS_SETTINGS,
   DEFAULT_FISCALITY_SETTINGS,
+  DEFAULT_PASS_HISTORY,
 } from '../utils/cache/fiscalSettingsCache';
 import type { CacheMeta } from '../utils/cache/fiscalSettingsCache';
 
@@ -73,6 +74,10 @@ export interface FiscalContext {
    */
   dmtgSettings: typeof DEFAULT_TAX_SETTINGS.dmtg;
 
+  // ── PASS (historique plafond sécurité sociale) ──────────────────────────────
+  /** Historique PASS par année (ex: { 2024: 46368, 2025: 47100 }) */
+  passHistoryByYear: Record<number, number>;
+
   // ── Bruts (pour les simulateurs qui en ont besoin) ────────────────────────
   /** Données brutes tax_settings (accès exceptionnel — préférer les clés normalisées) */
   _raw_tax: typeof DEFAULT_TAX_SETTINGS;
@@ -108,6 +113,7 @@ function buildFiscalContext(
   tax: TaxSettings,
   ps: PsSettings,
   fiscality: FiscalitySettings,
+  passHistory?: Record<number, number>,
 ): FiscalContext {
   const dmtg: LegacyDmtgSettings = tax?.dmtg ?? DEFAULT_TAX_SETTINGS.dmtg;
 
@@ -144,6 +150,9 @@ function buildFiscalContext(
       neveuNiece: dmtg.neveuNiece ?? DEFAULT_TAX_SETTINGS.dmtg.neveuNiece,
       autre: dmtg.autre ?? DEFAULT_TAX_SETTINGS.dmtg.autre,
     },
+
+    // PASS
+    passHistoryByYear: passHistory ?? DEFAULT_PASS_HISTORY,
 
     // Bruts
     _raw_tax: tax ?? DEFAULT_TAX_SETTINGS,
@@ -191,8 +200,9 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
       fiscality: FiscalitySettings,
       fromCache = false,
       settingsMeta?: CacheMeta,
+      passHistory?: Record<number, number>,
     ) => {
-      setFiscalContext(buildFiscalContext(tax, ps, fiscality));
+      setFiscalContext(buildFiscalContext(tax, ps, fiscality, passHistory));
       setMeta({
         fromCache,
         updatedAt: Date.now(),
@@ -215,13 +225,13 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
           setError(null);
           const result = await loadFiscalSettingsStrict();
           if (!mounted) return;
-          applySettings(result.tax, result.ps, result.fiscality, result.fromCache, result.meta);
+          applySettings(result.tax, result.ps, result.fiscality, result.fromCache, result.meta, result.passHistory);
           if (result.error) setError(result.error);
         } else {
           // Mode stale : retourne immédiatement cache/defaults
           const result = await getFiscalSettings();
           if (!mounted) return;
-          applySettings(result.tax, result.ps, result.fiscality, false, result.meta);
+          applySettings(result.tax, result.ps, result.fiscality, false, result.meta, result.passHistory);
         }
       } catch (e: unknown) {
         if (!mounted) return;
@@ -242,10 +252,10 @@ export function useFiscalContext({ strict = false }: UseFiscalContextOptions = {
         try {
           if (strict) {
             const result = await loadFiscalSettingsStrict();
-            applySettings(result.tax, result.ps, result.fiscality, result.fromCache, result.meta);
+            applySettings(result.tax, result.ps, result.fiscality, result.fromCache, result.meta, result.passHistory);
           } else {
             const result = await getFiscalSettings({ force: true });
-            applySettings(result.tax, result.ps, result.fiscality, false, result.meta);
+            applySettings(result.tax, result.ps, result.fiscality, false, result.meta, result.passHistory);
           }
         } catch (e: unknown) {
           setError(e instanceof Error ? e.message : 'Erreur rechargement paramètres');

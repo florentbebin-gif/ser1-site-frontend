@@ -340,6 +340,24 @@ export const DEFAULT_PS_SETTINGS = {
 // Source : tableau Excel PJ / BOFiP
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────────────
+// DEFAULT_PASS_HISTORY
+// Source : valeurs officielles du Plafond Annuel de la Sécurité Sociale.
+// Source de vérité runtime : table Supabase `public.pass_history`
+// (administrée via Settings > Prélèvements sociaux > PassHistoryAccordion).
+// Ce fallback est utilisé quand Supabase ne répond pas.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const DEFAULT_PASS_HISTORY: Record<number, number> = {
+  2019: 40524,
+  2020: 41136,
+  2021: 41136,
+  2022: 41136,
+  2023: 43992,
+  2024: 46368,
+  2025: 47100,
+};
+
 export const DEFAULT_FISCALITY_SETTINGS = {
   perIndividuel: {
     epargne: {
