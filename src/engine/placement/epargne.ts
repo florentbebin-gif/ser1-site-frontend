@@ -286,13 +286,13 @@ export function simulateEpargne(
     if (couponBrut > 0) {
       if (envelope === ENVELOPES.SCPI) {
         const ir = couponBrut * tmiEpargne;
-        const ps = couponBrut * fp.psPatrimoine;
+        const ps = couponBrut * fp.psException;
         fiscaliteCoupon = ir + ps;
       } else if (envelope === ENVELOPES.CTO) {
         if (optionBaremeIR) {
           const base = couponBrut * (1 - fp.dividendesAbattementPercent);
           const ir = base * tmiEpargne;
-          const ps = couponBrut * fp.psPatrimoine;
+          const ps = couponBrut * fp.psGeneral;
           fiscaliteCoupon = ir + ps;
         } else {
           fiscaliteCoupon = couponBrut * fp.pfuTotal;
@@ -330,7 +330,7 @@ export function simulateEpargne(
 
     let psFondsEuro = 0;
     if (envelope === ENVELOPES.AV && options.fondsEuro) {
-      psFondsEuro = gainsCapi * fp.psPatrimoine;
+      psFondsEuro = gainsCapi * fp.psException;
       capitalCapi -= psFondsEuro;
       cumulPSFondsEuro += psFondsEuro;
     }
@@ -357,7 +357,7 @@ export function simulateEpargne(
         if (reinvestirVersAuTerme === 'capitalisation') {
           if (envelope === ENVELOPES.CTO && plusValueLatenteCTO > 0) {
             if (optionBaremeIR) {
-              fiscalitePV = plusValueLatenteCTO * tmiEpargne + plusValueLatenteCTO * fp.psPatrimoine;
+              fiscalitePV = plusValueLatenteCTO * tmiEpargne + plusValueLatenteCTO * fp.psGeneral;
             } else {
               fiscalitePV = plusValueLatenteCTO * fp.pfuTotal;
             }

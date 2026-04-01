@@ -60,14 +60,14 @@ export function calculFiscaliteRetrait(
       } else {
         irSurGains = partGains * fp.pfuIR;
       }
-      ps = partGains * fp.psPatrimoine;
+      ps = partGains * fp.psException;
       break;
     }
 
     case ENVELOPES.PER: {
       irSurCapital = partCapital * tmiRetraite;
       irSurGains = partGains * fp.pfuIR;
-      ps = partGains * fp.psPatrimoine;
+      ps = partGains * fp.psGeneral;
       break;
     }
 
@@ -77,15 +77,20 @@ export function calculFiscaliteRetrait(
       } else {
         irSurGains = partGains * fp.pfuIR;
       }
-      ps = partGains * fp.psPatrimoine;
+      ps = partGains * fp.psGeneral;
       break;
     }
 
-    case ENVELOPES.CTO:
+    case ENVELOPES.CTO: {
+      irSurGains = partGains * fp.pfuIR;
+      ps = partGains * fp.psGeneral;
+      break;
+    }
+
     case ENVELOPES.SCPI:
     default: {
       irSurGains = partGains * fp.pfuIR;
-      ps = partGains * fp.psPatrimoine;
+      ps = partGains * fp.psException;
       break;
     }
   }
@@ -213,7 +218,7 @@ export function simulateLiquidation(
       capitalRestant += revalorisation;
       gainsAnnee = revalorisation;
       const irLoyers = loyersOuDividendes * tmiRetraite;
-      const psLoyers = loyersOuDividendes * fp.psPatrimoine;
+      const psLoyers = loyersOuDividendes * fp.psException;
       fiscaliteRevenus = irLoyers + psLoyers;
     } else {
       gainsAnnee = capitalRestant * rendement;
@@ -263,10 +268,10 @@ export function simulateLiquidation(
         } else {
           irPV = partGains * fp.pfuIR;
         }
-        psPV = partGains * fp.psPatrimoine;
+        psPV = partGains * fp.psGeneral;
       } else {
         irPV = anneeOuverture >= fp.peaAncienneteMin ? 0 : partGains * fp.pfuIR;
-        psPV = partGains * fp.psPatrimoine;
+        psPV = partGains * fp.psGeneral;
       }
       fiscalite = {
         irSurGains: irPV,

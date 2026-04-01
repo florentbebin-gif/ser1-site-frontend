@@ -1,6 +1,6 @@
 {
   "patrimony": {
-    "current": { "totalRate": 17.2, "csgDeductibleRate": 6.8 },
-    "previous": { "totalRate": 17.2, "csgDeductibleRate": 6.8 }
+    "current": { "generalRate": 18.6, "exceptionRate": 17.2, "csgDeductibleRate": 6.8 },
+    "previous": { "generalRate": 17.2, "exceptionRate": 17.2, "csgDeductibleRate": 6.8 }
   }
 }

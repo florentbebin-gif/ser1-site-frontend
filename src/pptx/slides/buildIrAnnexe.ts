@@ -209,7 +209,7 @@ function buildAnnexeProse(data: IrAnnexeData): Array<{ text: string; bold?: bool
       { text: 'PFU 12,8%', bold: true },
       { text: ' de ' },
       { text: euro(data.pfuIr!), bold: true },
-      { text: ' (+ PS 17,2% = flat tax 30%).' },
+      { text: ' (+ prélèvements sociaux sur le capital selon les paramètres en vigueur).' },
     ]);
   }
   

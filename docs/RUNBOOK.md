@@ -48,7 +48,7 @@ Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 
 | Exemple | Label |
 |--------|-------|
-| `17.2` | Taux PS patrimoine |
+| `18.6` / `17.2` | Taux PS patrimoine (cas general / regime d'exception) |
 | `100000` | Abattement enfant DMTG (ligne directe) |
 | `15932` | Abattement frère/sœur DMTG |
 | PASS historiques | valeurs annuelles PASS à maintenir uniquement dans les settings et fallbacks documentés |
@@ -58,7 +58,7 @@ Commande : `npm run check:fiscal-hardcode` (ou inclus dans `npm run check`).
 **Si la garde échoue** (violation détectée) : déplacer la valeur en dur vers `settingsDefaults.ts` et la consommer via `DEFAULT_TAX_SETTINGS` ou `useFiscalContext`.
 
 **Si une valeur légale change au PLF** (ex: abattement 100 000 € → 120 000 €) :
-1. Mettre à jour la valeur dans `settingsDefaults.ts` (défaut code) ET dans Supabase via `/settings/impots`.
+1. Mettre à jour la valeur dans `settingsDefaults.ts` (défaut code) ET dans Supabase via la page settings concernée (`/settings/impots`, `/settings/prelevements` ou `/settings/dmtg-succession`).
 2. Si le pattern `FORBIDDEN_VALUES` dans `check-no-hardcoded-fiscal-values.mjs` référence l'ancienne valeur, mettre à jour le pattern pour correspondre à la nouvelle valeur légale.
 
 ---
@@ -282,7 +282,7 @@ Au chargement d'un fichier `.ser1` sauvegardé avec le schéma v4, l'app compare
 ### Que faire
 
 1. **Warning seul (notification)** → les résultats affichés sont calculés avec les paramètres fiscaux courants (post-update). Recalculer et re-sauvegarder le dossier pour remettre en cohérence l'identité fiscale stockée.
-2. **Vérifier les paramètres courants** : `/settings/impots` et `/settings/prelevements`.
+2. **Vérifier les paramètres courants** : `/settings/impots`, `/settings/prelevements` et `/settings/dmtg-succession`.
 3. **Si recalcul impossible** (dossier archivé) : noter la date de sauvegarde et les paramètres fiscaux en vigueur à cette date pour toute comparaison.
 
 ### Debug
@@ -353,16 +353,22 @@ Procédure à suivre chaque année (PLF, BOFiP, BOSS…). Aucune compétence tec
 ### Étape 1 — Mettre à jour les paramètres Impôts
 
 1. Aller sur `/settings/impots`.
-2. Vérifier et corriger : barème IR, PFU, CEHR, droits de succession (DMTG).
+2. Vérifier et corriger : barème IR, PFU part IR, CEHR, IS.
 3. Enregistrer.
 
 ### Étape 2 — Mettre à jour les Prélèvements sociaux
 
 1. Aller sur `/settings/prelevements`.
-2. Vérifier et corriger : taux PS patrimoine, tranches retraite et historique PASS (`pass_history`).
+2. Vérifier et corriger : taux PS patrimoine (cas général et régime d'exception), tranches retraite et historique PASS (`pass_history`).
 3. Enregistrer.
 
-### Étape 3 — Vérifier les produits "À vérifier"
+### Étape 3 — Mettre à jour les DMTG / succession
+
+1. Aller sur `/settings/dmtg-succession`.
+2. Vérifier et corriger : barèmes DMTG, abattements, donations et paramètres AV décès.
+3. Enregistrer.
+
+### Étape 4 — Vérifier les produits "À vérifier"
 
 1. Aller sur `/settings/base-contrat`.
 2. (Admin) Rechercher un produit et ajuster son état **Clôturé / Ouvert** si nécessaire.

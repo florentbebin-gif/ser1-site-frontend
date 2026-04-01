@@ -7,20 +7,17 @@ import { invalidate, broadcastInvalidation } from '@/utils/cache/fiscalSettingsC
 import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
 
-import { DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
+import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import {
   validateImpotsSettings,
-  validateDmtg,
   isValid,
 } from './validators/dmtgValidators';
 
-// Import des sous-composants
 import ImpotsBaremeSection from './Impots/ImpotsBaremeSection';
 import ImpotsAbattementDomSection from './Impots/ImpotsAbattementDomSection';
 import ImpotsPfuSection from './Impots/ImpotsPfuSection';
 import ImpotsCehrSection from './Impots/ImpotsCehrSection';
 import ImpotsISSection from './Impots/ImpotsISSection';
-import ImpotsDmtgSection from './Impots/ImpotsDmtgSection';
 
 type DeepFormValue<T> = T extends number
   ? number | null
@@ -35,105 +32,135 @@ type DeepFormValue<T> = T extends number
           : T;
 
 type TaxSettings = DeepFormValue<typeof DEFAULT_TAX_SETTINGS>;
-type DmtgSettings = TaxSettings['dmtg'];
-type DmtgCategoryKey = keyof DmtgSettings;
-type DmtgScaleRow = DmtgSettings['ligneDirecte']['scale'][number];
-type DmtgScaleUpdate = {
-  idx: number;
-  key: string;
-  value: string | number | null;
-};
+type PsSettings = DeepFormValue<typeof DEFAULT_PS_SETTINGS>;
 type IncomeScaleKey = 'scaleCurrent' | 'scalePrevious';
 type IncomeScaleRow = TaxSettings['incomeTax']['scaleCurrent'][number];
-
-type LegacyDmtgSettings = DmtgSettings & {
-  abattementLigneDirecte?: number | null;
-  scale?: DmtgSettings['ligneDirecte']['scale'];
-};
 
 interface TaxSettingsRow {
   data: Partial<TaxSettings> | null;
 }
 
-interface DmtgDataRecord extends Partial<TaxSettings> {
-  dmtg?: LegacyDmtgSettings;
+interface PsSettingsRow {
+  data: Partial<PsSettings> | null;
 }
 
-// Migration des anciennes données DMTG vers la nouvelle structure multi-catégories
-function migrateDmtgData(
-  data: DmtgDataRecord | null | undefined,
-): DmtgDataRecord | null | undefined {
-  if (!data?.dmtg) return data;
-
-  const hasOldStructure = data.dmtg.abattementLigneDirecte !== undefined;
-  const hasNewStructure = data.dmtg.ligneDirecte !== undefined;
-
-  if (hasOldStructure && !hasNewStructure) {
-    return {
-      ...data,
-      dmtg: {
-        ligneDirecte: {
-          abattement:
-            data.dmtg.abattementLigneDirecte ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.abattement,
-          scale: data.dmtg.scale ?? DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte.scale,
-        },
-        frereSoeur: DEFAULT_TAX_SETTINGS.dmtg.frereSoeur,
-        neveuNiece: DEFAULT_TAX_SETTINGS.dmtg.neveuNiece,
-        autre: DEFAULT_TAX_SETTINGS.dmtg.autre,
-      },
-    };
-  }
-
-  // Fusion avec défauts pour les catégories manquantes
+function mergeTaxSettings(
+  base: TaxSettings,
+  nextData: Partial<TaxSettings>,
+): TaxSettings {
   return {
-    ...data,
-    dmtg: {
-      ligneDirecte: data.dmtg.ligneDirecte || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte,
-      frereSoeur: data.dmtg.frereSoeur || DEFAULT_TAX_SETTINGS.dmtg.frereSoeur,
-      neveuNiece: data.dmtg.neveuNiece || DEFAULT_TAX_SETTINGS.dmtg.neveuNiece,
-      autre: data.dmtg.autre || DEFAULT_TAX_SETTINGS.dmtg.autre,
+    ...base,
+    ...nextData,
+    incomeTax: {
+      ...base.incomeTax,
+      ...nextData.incomeTax,
     },
+    pfu: {
+      current: {
+        ...base.pfu.current,
+        ...nextData.pfu?.current,
+      },
+      previous: {
+        ...base.pfu.previous,
+        ...nextData.pfu?.previous,
+      },
+    },
+    cehr: {
+      current: {
+        ...base.cehr.current,
+        ...nextData.cehr?.current,
+      },
+      previous: {
+        ...base.cehr.previous,
+        ...nextData.cehr?.previous,
+      },
+    },
+    cdhr: {
+      current: {
+        ...base.cdhr.current,
+        ...nextData.cdhr?.current,
+      },
+      previous: {
+        ...base.cdhr.previous,
+        ...nextData.cdhr?.previous,
+      },
+    },
+    corporateTax: {
+      current: {
+        ...base.corporateTax.current,
+        ...nextData.corporateTax?.current,
+      },
+      previous: {
+        ...base.corporateTax.previous,
+        ...nextData.corporateTax?.previous,
+      },
+    },
+    dmtg: nextData.dmtg ?? base.dmtg,
   };
 }
 
 export default function SettingsImpots() {
   const { isAdmin } = useUserRole();
   const [loading, setLoading] = useState(true);
-
   const [settings, setSettings] = useState<TaxSettings>(DEFAULT_TAX_SETTINGS);
+  const [psSettings, setPsSettings] = useState<PsSettings>(DEFAULT_PS_SETTINGS);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [openSection, setOpenSection] = useState<string | null>(null);
 
-  // Chargement user + paramètres depuis la table tax_settings
   useEffect(() => {
     let mounted = true;
 
     async function load() {
       try {
-        if (!mounted) return;
+        const [taxRes, psRes] = await Promise.all([
+          supabase.from('tax_settings').select('data').eq('id', 1),
+          supabase.from('ps_settings').select('data').eq('id', 1),
+        ]);
 
-        // Charge la ligne id=1 si elle existe
-        const { data: rows, error: taxErr } = (await supabase
-          .from('tax_settings')
-          .select('data')
-          .eq('id', 1)) as { data: TaxSettingsRow[] | null; error: { code?: string } | null };
+        const typedTaxRes = taxRes as {
+          data: TaxSettingsRow[] | null;
+          error: { code?: string } | null;
+        };
+        const typedPsRes = psRes as {
+          data: PsSettingsRow[] | null;
+          error: { code?: string } | null;
+        };
 
-        if (!taxErr && rows && rows.length > 0 && rows[0].data) {
-          const migratedData = migrateDmtgData(rows[0].data);
-          if (migratedData) {
-            setSettings((prev) => ({
-              ...prev,
-              ...migratedData,
-            }));
+        const taxData = typedTaxRes.data?.[0]?.data;
+        if (!typedTaxRes.error && taxData) {
+          if (mounted) {
+            setSettings((prev) => mergeTaxSettings(prev, taxData as Partial<TaxSettings>));
           }
-        } else if (taxErr && taxErr.code !== 'PGRST116') {
-          console.error('Erreur chargement tax_settings :', taxErr);
+        } else if (typedTaxRes.error && typedTaxRes.error.code !== 'PGRST116') {
+          console.error('Erreur chargement tax_settings :', typedTaxRes.error);
         }
 
-        if (mounted) setLoading(false);
-      } catch (e) {
-        console.error(e);
+        const psData = typedPsRes.data?.[0]?.data;
+        if (!typedPsRes.error && psData) {
+          const nextPs = psData;
+          if (mounted) {
+            setPsSettings((prev) => ({
+              ...prev,
+              ...nextPs,
+              patrimony: {
+                current: {
+                  ...prev.patrimony.current,
+                  ...nextPs.patrimony?.current,
+                },
+                previous: {
+                  ...prev.patrimony.previous,
+                  ...nextPs.patrimony?.previous,
+                },
+              },
+            }));
+          }
+        } else if (typedPsRes.error && typedPsRes.error.code !== 'PGRST116') {
+          console.error('Erreur chargement ps_settings :', typedPsRes.error);
+        }
+      } catch (loadError) {
+        console.error(loadError);
+      } finally {
         if (mounted) setLoading(false);
       }
     }
@@ -144,15 +171,12 @@ export default function SettingsImpots() {
     };
   }, []);
 
-  // Validation
   const impotsErrors = useMemo(
     () => validateImpotsSettings(settings as Parameters<typeof validateImpotsSettings>[0]),
     [settings],
   );
-  const dmtgErrors = useMemo(() => validateDmtg(settings.dmtg), [settings.dmtg]);
-  const hasErrors = !isValid(impotsErrors, dmtgErrors);
+  const hasErrors = !isValid(impotsErrors);
 
-  // Sauvegarde
   const handleSave = async () => {
     if (!isAdmin || hasErrors) return;
 
@@ -160,28 +184,52 @@ export default function SettingsImpots() {
       setSaving(true);
       setMessage('');
 
+      const { data: existingRow, error: existingError } = await supabase
+        .from('tax_settings')
+        .select('data')
+        .eq('id', 1)
+        .maybeSingle();
+
+      if (existingError && existingError.code !== 'PGRST116') {
+        console.error(existingError);
+        setMessage("Erreur lors du chargement des parametres existants.");
+        return;
+      }
+
+      const existingData = (existingRow?.data as Partial<TaxSettings> | null) ?? {};
+      const payload: Partial<TaxSettings> = {
+        ...existingData,
+        incomeTax: settings.incomeTax,
+        pfu: {
+          current: { rateIR: settings.pfu.current.rateIR },
+          previous: { rateIR: settings.pfu.previous.rateIR },
+        },
+        cehr: settings.cehr,
+        cdhr: settings.cdhr,
+        corporateTax: settings.corporateTax,
+      };
+
       const { error } = await supabase
         .from('tax_settings')
-        .upsert({ id: 1, data: settings });
+        .upsert({ id: 1, data: payload });
 
       if (error) {
         console.error(error);
         setMessage("Erreur lors de l'enregistrement.");
       } else {
-        setMessage('Paramètres impôts enregistrés.');
-        // Invalider le cache pour que /ir et autres pages rafraîchissent
+        setSettings((prev) => mergeTaxSettings(prev, payload));
+        setMessage('Parametres impots enregistres.');
         invalidate('tax');
         broadcastInvalidation('tax');
       }
-    } catch (e) {
-      console.error(e);
+    } catch (saveError) {
+      console.error(saveError);
       setMessage("Erreur lors de l'enregistrement.");
     } finally {
       setSaving(false);
     }
   };
 
-  // Alias pour compatibilité
   const setData = setSettings;
   const setDataRecord = (
     updater: (prev: Record<string, unknown>) => Record<string, unknown>,
@@ -189,7 +237,6 @@ export default function SettingsImpots() {
     setData((prev) => updater(prev as Record<string, unknown>) as TaxSettings);
   };
 
-  // Helpers de MAJ
   const updateIncomeScale = (
     which: IncomeScaleKey,
     index: number,
@@ -211,53 +258,10 @@ export default function SettingsImpots() {
   const updateField = createFieldUpdater(setDataRecord, setMessage);
 
   if (loading) {
-    return <p>Chargement…</p>;
+    return <p>Chargement...</p>;
   }
 
-  // Auth check handled by PrivateRoute / SettingsShell
-
-  const { incomeTax, pfu, cehr, cdhr, corporateTax, dmtg } = settings;
-
-  const updateDmtgCategory = (
-    categoryKey: DmtgCategoryKey,
-    field: 'abattement' | 'scale',
-    value: number | null | DmtgScaleUpdate,
-  ) => {
-    setData((prev) => {
-      const category = prev.dmtg?.[categoryKey];
-      if (!category) return prev;
-
-      // Mise à jour du barème (tableau)
-      if (field === 'scale' && typeof value === 'object' && value !== null && 'idx' in value) {
-        const { idx, key, value: cellValue } = value;
-        return {
-          ...prev,
-          dmtg: {
-            ...prev.dmtg,
-            [categoryKey]: {
-              ...category,
-              scale: category.scale.map((row, i) =>
-                i === idx ? { ...row, [key]: cellValue as DmtgScaleRow[keyof DmtgScaleRow] } : row
-              ),
-            },
-          },
-        };
-      }
-
-      // Mise à jour simple (abattement)
-      return {
-        ...prev,
-        dmtg: {
-          ...prev.dmtg,
-          [categoryKey]: {
-            ...category,
-            [field]: value,
-          },
-        },
-      };
-    });
-    setMessage('');
-  };
+  const { incomeTax, pfu, cehr, cdhr, corporateTax } = settings;
 
   return (
     <div
@@ -269,11 +273,9 @@ export default function SettingsImpots() {
         gap: 24,
       }}
     >
-      {/* Bandeau info */}
       <UserInfoBanner />
 
       <div className="fisc-accordion">
-        {/* 1. Barème impôt sur le revenu */}
         <ImpotsBaremeSection
           incomeTax={incomeTax}
           updateField={updateField}
@@ -283,7 +285,6 @@ export default function SettingsImpots() {
           setOpenSection={setOpenSection}
         />
 
-        {/* Abattement DOM sur l'IR (barème) */}
         <ImpotsAbattementDomSection
           incomeTax={incomeTax}
           updateField={updateField}
@@ -292,17 +293,16 @@ export default function SettingsImpots() {
           setOpenSection={setOpenSection}
         />
 
-        {/* 2. PFU */}
         <ImpotsPfuSection
           pfu={pfu}
           incomeTax={incomeTax}
+          patrimony={psSettings.patrimony}
           updateField={updateField}
           isAdmin={isAdmin}
           openSection={openSection}
           setOpenSection={setOpenSection}
         />
 
-        {/* 3. CEHR / CDHR */}
         <ImpotsCehrSection
           cehr={cehr}
           cdhr={cdhr}
@@ -313,7 +313,6 @@ export default function SettingsImpots() {
           setOpenSection={setOpenSection}
         />
 
-        {/* 4. Impôt sur les sociétés */}
         <ImpotsISSection
           corporateTax={corporateTax}
           incomeTax={incomeTax}
@@ -322,30 +321,19 @@ export default function SettingsImpots() {
           openSection={openSection}
           setOpenSection={setOpenSection}
         />
+      </div>
 
-        {/* Section DMTG - Droits de Mutation à Titre Gratuit */}
-        <ImpotsDmtgSection
-          dmtg={dmtg}
-          updateDmtgCategory={updateDmtgCategory}
-          isAdmin={isAdmin}
-          openSection={openSection}
-          setOpenSection={setOpenSection}
-        />
-      </div>{/* fin fisc-accordion */}
-
-      {/* Résumé des erreurs de validation */}
       {hasErrors && (
         <div className="settings-feedback-message settings-feedback-message--error">
-          <strong>Erreurs de validation ({Object.keys(impotsErrors).length + Object.keys(dmtgErrors).length}) — corrigez avant de sauvegarder :</strong>
+          <strong>Erreurs de validation ({Object.keys(impotsErrors).length}) - corrigez avant de sauvegarder :</strong>
           <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 13 }}>
-            {Object.entries({ ...impotsErrors, ...dmtgErrors }).map(([key, msg]) => (
+            {Object.entries(impotsErrors).map(([key, msg]) => (
               <li key={key}>{key} : {msg}</li>
             ))}
           </ul>
         </div>
       )}
 
-      {/* Bouton Enregistrer */}
       {isAdmin && (
         <button
           type="button"
@@ -355,10 +343,10 @@ export default function SettingsImpots() {
           title={hasErrors ? 'Corrigez les erreurs avant de sauvegarder' : ''}
         >
           {saving
-            ? 'Enregistrement…'
+            ? 'Enregistrement...'
             : hasErrors
               ? 'Erreurs de validation'
-              : 'Enregistrer les paramètres impôts'}
+              : 'Enregistrer les parametres impots'}
         </button>
       )}
 
@@ -370,4 +358,3 @@ export default function SettingsImpots() {
     </div>
   );
 }
-

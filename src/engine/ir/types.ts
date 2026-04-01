@@ -28,7 +28,8 @@ export interface IrChild {
 }
 
 export interface SocialContribResult {
-  psRateTotal: number;
+  psRateGeneral: number;
+  psRateException: number;
   psFoncier: number;
   psDividends: number;
   psTotal: number;

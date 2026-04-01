@@ -204,11 +204,11 @@ export function PlacementTransmissionSection({
           <li>Conjoint / partenaire PACS : exonération du prélèvement 20 % et des DMTG</li>
         </ul>
         <p>
-          <a href="/settings/impots" className="pl-transmission-info-card__link">Consulter le barème DMTG &rarr;</a>
+          <a href="/settings/dmtg-succession" className="pl-transmission-info-card__link">Consulter le barème DMTG &rarr;</a>
         </p>
         <strong>Hypothèses PS décès :</strong>
         <p>
-          Assurance-vie et PER simulés à 100 % en unités de compte (pas de fonds EUR). Les PS au décès sont appliqués au taux de {psSettings?.patrimony?.current?.totalRate ?? DEFAULT_PS_SETTINGS.patrimony.current.totalRate}% (<a href="/settings/prelevements" className="pl-transmission-info-card__link">paramétrable</a>), puis les montants nets alimentent les DMTG.
+          Assurance-vie et PEA simules a 100 % en unites de compte. Les PS au deces sont appliques a {psSettings?.patrimony?.current?.exceptionRate ?? DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate}% pour l'assurance-vie et a {psSettings?.patrimony?.current?.generalRate ?? DEFAULT_PS_SETTINGS.patrimony.current.generalRate}% pour le PEA (<a href="/settings/prelevements" className="pl-transmission-info-card__link">parametrable</a>). PER : pas de PS au deces dans ce simulateur ; les PS sont acquittes a la sortie en vie.
         </p>
         <p className="pl-transmission-info-card__note">
           La détermination de l’assiette taxable au prélèvement 990 I s’effectue après imputation des PS dus sur les produits du contrat, prélevés par l’assureur au décès (BOI-TCAS-AUT-60).

@@ -86,7 +86,7 @@ interface PersistedPayload {
 }
 
 // --- Cache singleton ---
-const CACHE_KEY = 'ser1:fiscalSettingsCache';
+const CACHE_KEY = 'ser1:fiscalSettingsCache:v2-ps-2026';
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24h (les paramètres changent très rarement)
 const SUPABASE_TIMEOUT = 8000; // 8s
 

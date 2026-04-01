@@ -246,7 +246,7 @@ export function validateImpotsSettings(
   const incomeTaxPeriods: Array<'scaleCurrent' | 'scalePrevious'> = ['scaleCurrent', 'scalePrevious'];
   const yearPeriods: Array<'current' | 'previous'> = ['current', 'previous'];
   const domZones: Array<'gmr' | 'guyane'> = ['gmr', 'guyane'];
-  const pfuKeys: Array<'rateIR' | 'rateSocial' | 'rateTotal'> = ['rateIR', 'rateSocial', 'rateTotal'];
+  const pfuKeys: Array<'rateIR'> = ['rateIR'];
   const cehrGroups: Array<'single' | 'couple'> = ['single', 'couple'];
   const corporateKeys: Array<'normalRate' | 'reducedRate'> = ['normalRate', 'reducedRate'];
 
@@ -319,7 +319,11 @@ export function validatePrelevementsSettings(
   const errors: Record<string, string> = {};
   const { patrimony, retirement } = settings || {};
   const yearPeriods: Array<'current' | 'previous'> = ['current', 'previous'];
-  const patrimonyKeys: Array<'totalRate' | 'csgDeductibleRate'> = ['totalRate', 'csgDeductibleRate'];
+  const patrimonyKeys: Array<'generalRate' | 'exceptionRate' | 'csgDeductibleRate'> = [
+    'generalRate',
+    'exceptionRate',
+    'csgDeductibleRate',
+  ];
   const retirementKeys: Array<
     'csgRate' | 'crdsRate' | 'casaRate' | 'maladieRate' | 'totalRate' | 'csgDeductibleRate'
   > = ['csgRate', 'crdsRate', 'casaRate', 'maladieRate', 'totalRate', 'csgDeductibleRate'];

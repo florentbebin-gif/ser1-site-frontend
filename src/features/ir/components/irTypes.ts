@@ -82,7 +82,8 @@ export interface IrFormSectionProps {
   setRealExpensesState: IrStateSetter<IrRealExpenses>;
   abat10SalD1: number;
   abat10SalD2: number;
-  psPatrimonyRate: number;
+  psGeneralRate: number;
+  psExceptionRate: number;
   fmtPct: IrPercentFormatter;
   capitalMode: IrCapitalMode;
   setCapitalMode: (_mode: IrCapitalMode) => void;

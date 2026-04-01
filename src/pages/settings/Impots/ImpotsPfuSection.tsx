@@ -9,8 +9,6 @@ interface IncomeTaxLabels {
 
 interface PfuPeriodSettings {
   rateIR: number | null;
-  rateSocial: number | null;
-  rateTotal: number | null;
 }
 
 interface PfuSettings {
@@ -18,9 +16,19 @@ interface PfuSettings {
   previous: PfuPeriodSettings;
 }
 
+interface PatrimonyPeriodSettings {
+  generalRate: number | null;
+}
+
+interface PatrimonySettings {
+  current: PatrimonyPeriodSettings;
+  previous: PatrimonyPeriodSettings;
+}
+
 interface ImpotsPfuSectionProps {
   pfu: PfuSettings;
   incomeTax: IncomeTaxLabels;
+  patrimony: PatrimonySettings;
   updateField: (path: string[], value: string | number | null) => void;
   isAdmin: boolean;
   openSection: string | null;
@@ -30,12 +38,18 @@ interface ImpotsPfuSectionProps {
 export default function ImpotsPfuSection({
   pfu,
   incomeTax,
+  patrimony,
   updateField,
   isAdmin,
   openSection,
   setOpenSection,
 }: ImpotsPfuSectionProps): React.ReactElement {
   const isOpen = openSection === 'pfu';
+
+  const currentPs = Number(patrimony.current.generalRate) || 0;
+  const previousPs = Number(patrimony.previous.generalRate) || 0;
+  const currentTotal = (Number(pfu.current.rateIR) || 0) + currentPs;
+  const previousTotal = (Number(pfu.previous.rateIR) || 0) + previousPs;
 
   return (
     <div className="fisc-acc-item">
@@ -48,7 +62,7 @@ export default function ImpotsPfuSection({
         onClick={() => setOpenSection(isOpen ? null : 'pfu')}
       >
         <span className="settings-premium-title" style={{ margin: 0 }}>
-          PFU (flat tax)
+          PFU
         </span>
         <span className="fisc-acc-chevron">
           {isOpen ? 'v' : '>'}
@@ -62,6 +76,11 @@ export default function ImpotsPfuSection({
           role="region"
           aria-labelledby="impots-header-pfu"
         >
+          <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
+            La part prelevements sociaux du PFU est calculee automatiquement depuis
+            /settings/prelevements. Seule la part IR reste editable ici.
+          </p>
+
           <div className="tax-two-cols">
             <SettingsYearColumn yearLabel={incomeTax.currentYearLabel || 'Annee N'}>
               <SettingsFieldRow
@@ -74,22 +93,22 @@ export default function ImpotsPfuSection({
                 disabled={!isAdmin}
               />
               <SettingsFieldRow
-                label="Prelevements sociaux"
+                label="Prelevements sociaux calcules"
                 path={['pfu', 'current', 'rateSocial']}
-                value={pfu.current.rateSocial}
+                value={currentPs}
                 onChange={updateField}
                 step="0.1"
                 unit="%"
-                disabled={!isAdmin}
+                disabled
               />
               <SettingsFieldRow
-                label="Taux global PFU"
+                label="Taux global PFU calcule"
                 path={['pfu', 'current', 'rateTotal']}
-                value={pfu.current.rateTotal}
+                value={currentTotal}
                 onChange={updateField}
                 step="0.1"
                 unit="%"
-                disabled={!isAdmin}
+                disabled
               />
             </SettingsYearColumn>
 
@@ -107,22 +126,22 @@ export default function ImpotsPfuSection({
                 disabled={!isAdmin}
               />
               <SettingsFieldRow
-                label="Prelevements sociaux"
+                label="Prelevements sociaux calcules"
                 path={['pfu', 'previous', 'rateSocial']}
-                value={pfu.previous.rateSocial}
+                value={previousPs}
                 onChange={updateField}
                 step="0.1"
                 unit="%"
-                disabled={!isAdmin}
+                disabled
               />
               <SettingsFieldRow
-                label="Taux global PFU"
+                label="Taux global PFU calcule"
                 path={['pfu', 'previous', 'rateTotal']}
-                value={pfu.previous.rateTotal}
+                value={previousTotal}
                 onChange={updateField}
                 step="0.1"
                 unit="%"
-                disabled={!isAdmin}
+                disabled
               />
             </SettingsYearColumn>
           </div>

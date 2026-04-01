@@ -1,30 +1,28 @@
 /**
- * BaseContrat  Référentiel contrats (pivot hybride — PR5)
+ * BaseContrat - Referentiel contrats.
  *
  * Page /settings/base-contrat.
- * Catalogue hardcodé (domain/base-contrat/catalog.ts) + overrides Supabase.
- * Règles fiscales hardcodées (domain/base-contrat/rules/).
- * UI read-only : seule action admin = clôturer / rouvrir un produit avec date.
+ * Catalogue hardcode (domain/base-contrat/catalog.ts) + overrides Supabase.
+ * Regles fiscales lues via domain/base-contrat/rules/.
+ * UI read-only : seule action admin = cloturer / rouvrir un produit avec date.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useUserRole } from '@/auth/useUserRole';
 import { UserInfoBanner } from '@/components/UserInfoBanner';
+import './SettingsShared.css';
+import './BaseContrat.css';
 import { CATALOG } from '@/domain/base-contrat/catalog';
 import type { CatalogProduct } from '@/domain/base-contrat/catalog';
 import { isProductClosed } from '@/domain/base-contrat/overrides';
 import type { BaseContratOverride, OverrideMap } from '@/domain/base-contrat/overrides';
 import { getRules } from '@/domain/base-contrat/rules/index';
-import type { ProductRules, RuleBlock, Audience } from '@/domain/base-contrat/rules/index';
+import type { Audience, ProductRules, RuleBlock } from '@/domain/base-contrat/rules/index';
 import {
   getBaseContratOverrides,
   upsertBaseContratOverride,
 } from '@/utils/cache/baseContratOverridesCache';
 import { GRANDE_FAMILLE_OPTIONS, PHASE_LABELS } from './baseContratLabels';
-
-// ─────────────────────────────────────────────────────────────
-// Hook: overrides
-// ─────────────────────────────────────────────────────────────
 
 function useOverrides() {
   const [overrides, setOverrides] = useState<OverrideMap>({});
@@ -32,44 +30,42 @@ function useOverrides() {
 
   const reload = () => {
     setLoading(true);
-    getBaseContratOverrides().then((data) => {
-      setOverrides(data);
-      setLoading(false);
-    }).catch(() => setLoading(false));
+    getBaseContratOverrides()
+      .then((data) => {
+        setOverrides(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   };
 
   useEffect(() => {
     let mounted = true;
-    getBaseContratOverrides().then((data) => {
-      if (mounted) { setOverrides(data); setLoading(false); }
-    }).catch(() => { if (mounted) setLoading(false); });
-    return () => { mounted = false; };
+
+    getBaseContratOverrides()
+      .then((data) => {
+        if (!mounted) return;
+        setOverrides(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return { overrides, loading, reload };
 }
 
-// ─────────────────────────────────────────────────────────────
-// Sub-components
-// ─────────────────────────────────────────────────────────────
-
 function RuleBlockCard({ block }: { block: RuleBlock }) {
   return (
-    <div style={{
-      background: 'var(--color-c7)',
-      border: '1px solid var(--color-c8)',
-      borderRadius: 8,
-      padding: '12px 14px',
-      marginBottom: 8,
-    }}>
-      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-c10)', marginBottom: 6 }}>
-        {block.title}
-      </div>
-      <ul style={{ margin: 0, paddingLeft: 16 }}>
-        {block.bullets.map((bullet, i) => (
-          <li key={i} style={{ fontSize: 12, color: 'var(--color-c9)', marginBottom: 3, lineHeight: 1.5 }}>
-            {bullet}
-          </li>
+    <div className="base-contrat-rule-card">
+      <div className="base-contrat-rule-card__title">{block.title}</div>
+      <ul className="base-contrat-rule-card__list">
+        {block.bullets.map((bullet, index) => (
+          <li key={index}>{bullet}</li>
         ))}
       </ul>
     </div>
@@ -78,18 +74,10 @@ function RuleBlockCard({ block }: { block: RuleBlock }) {
 
 function EmptyRuleCard() {
   return (
-    <div style={{
-      background: 'var(--color-c7)',
-      border: '1px dashed var(--color-c8)',
-      borderRadius: 8,
-      padding: '12px 14px',
-      marginBottom: 8,
-    }}>
-      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-c9)', fontStyle: 'italic' }}>
-        Aucune règle renseignée
-      </div>
-      <div style={{ fontSize: 11, color: 'var(--color-c9)', marginTop: 4 }}>
-        Ce produit ne possède pas de règles fiscales spécifiques pour cette phase.
+    <div className="base-contrat-empty-card">
+      <div className="base-contrat-empty-card__title">Aucune regle renseignee</div>
+      <div className="base-contrat-empty-card__body">
+        Ce produit ne possede pas de regles fiscales specifiques pour cette phase.
       </div>
     </div>
   );
@@ -102,62 +90,29 @@ function PhaseColumn({
   phaseKey: 'constitution' | 'sortie' | 'deces';
   blocks: RuleBlock[];
 }) {
-  const colorMap: Record<typeof phaseKey, string> = {
-    constitution: 'var(--color-c3)',
-    sortie: 'var(--color-c2)',
-    deces: 'var(--color-c1)',
-  };
-
   return (
-    <div style={{ flex: '1 1 0', minWidth: 180 }}>
-      <div style={{
-        fontSize: 11,
-        fontWeight: 700,
-        color: colorMap[phaseKey],
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-        marginBottom: 10,
-        paddingBottom: 6,
-        borderBottom: `2px solid ${colorMap[phaseKey]}`,
-      }}>
+    <div className="base-contrat-phase">
+      <div className={`base-contrat-phase__title base-contrat-phase__title--${phaseKey}`}>
         {PHASE_LABELS[phaseKey]}
       </div>
       {blocks.length === 0
         ? <EmptyRuleCard />
-        : blocks.map((block, i) => <RuleBlockCard key={i} block={block} />)
-      }
+        : blocks.map((block, index) => <RuleBlockCard key={index} block={block} />)}
     </div>
   );
 }
 
 function RulesPanel({ rules, closed }: { rules: ProductRules; closed: boolean }) {
   return (
-    <div style={{
-      padding: '14px 20px 16px',
-      borderTop: '1px solid var(--color-c8)',
-      opacity: closed ? 0.55 : 1,
-    }}>
-      <div style={{
-        display: 'flex',
-        gap: 16,
-        alignItems: 'flex-start',
-        flexWrap: 'wrap',
-      }}>
-        {(['constitution', 'sortie', 'deces'] as const).map((pk) => (
-          <PhaseColumn
-            key={pk}
-            phaseKey={pk}
-            blocks={rules[pk]}
-          />
+    <div className={`base-contrat-rules${closed ? ' base-contrat-rules--closed' : ''}`}>
+      <div className="base-contrat-rules__grid">
+        {(['constitution', 'sortie', 'deces'] as const).map((phaseKey) => (
+          <PhaseColumn key={phaseKey} phaseKey={phaseKey} blocks={rules[phaseKey]} />
         ))}
       </div>
     </div>
   );
 }
-
-// ─────────────────────────────────────────────────────────────
-// Modal: Clôturer / Rouvrir
-// ─────────────────────────────────────────────────────────────
 
 function OverrideModal({
   product,
@@ -187,28 +142,30 @@ function OverrideModal({
 
   return (
     <div className="report-modal-overlay">
-      <div className="report-modal" style={{ maxWidth: 440 }}>
+      <div className="report-modal base-contrat-modal">
         <div className="report-modal-header">
-          <h3>{isClosed ? 'Rouvrir' : 'Clôturer'} — {product.label}</h3>
+          <h3>{isClosed ? 'Rouvrir' : 'Cloturer'} - {product.label}</h3>
           <button className="report-modal-close" onClick={onClose}>&#x2715;</button>
         </div>
-        <div className="report-modal-content" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <label style={{ fontSize: 13, fontWeight: 600 }}>
-            Date de clôture <span style={{ fontWeight: 400, color: 'var(--color-c9)' }}>(laisser vide = produit ouvert)</span>
+        <div className="report-modal-content base-contrat-modal__content">
+          <label className="base-contrat-modal__label">
+            Date de cloture <span>(laisser vide = produit ouvert)</span>
           </label>
           <input
+            className="base-contrat-modal__field"
             type="date"
             value={closedDate}
-            onChange={(e) => setClosedDate(e.target.value)}
-            style={{ fontFamily: 'inherit', fontSize: 13, padding: '3px 4px', border: '1px solid var(--color-c8)', borderRadius: 4, backgroundColor: '#fff' }}
+            onChange={(event) => setClosedDate(event.target.value)}
           />
-          <label style={{ fontSize: 13, fontWeight: 600 }}>Note admin <span style={{ fontWeight: 400, color: 'var(--color-c9)' }}>(optionnel)</span></label>
+          <label className="base-contrat-modal__label">
+            Note admin <span>(optionnel)</span>
+          </label>
           <textarea
+            className="base-contrat-modal__field base-contrat-modal__field--textarea"
             value={note}
-            onChange={(e) => setNote(e.target.value)}
+            onChange={(event) => setNote(event.target.value)}
             rows={2}
-            placeholder="Ex : Dispositif supprimé par la loi de finances 2025"
-            style={{ fontFamily: 'inherit', fontSize: 13, padding: '3px 4px', border: '1px solid var(--color-c8)', borderRadius: 4, backgroundColor: '#fff', resize: 'vertical' }}
+            placeholder="Ex : dispositif supprime par la loi de finances 2025"
           />
         </div>
         <div className="report-modal-actions">
@@ -217,9 +174,8 @@ function OverrideModal({
             className="chip"
             onClick={handleSave}
             disabled={saving}
-            style={{ padding: '8px 20px', fontWeight: 600 }}
           >
-            {saving ? 'Enregistrement…' : 'Enregistrer'}
+            {saving ? 'Enregistrement...' : 'Enregistrer'}
           </button>
         </div>
       </div>
@@ -227,9 +183,13 @@ function OverrideModal({
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// Main component
-// ─────────────────────────────────────────────────────────────
+function formatOpenCount(count: number): string {
+  return `${count} ouvert${count > 1 ? 's' : ''}`;
+}
+
+function formatClosedCount(count: number): string {
+  return `${count} cloture${count > 1 ? 's' : ''}`;
+}
 
 export default function BaseContrat() {
   const { isAdmin } = useUserRole();
@@ -246,33 +206,42 @@ export default function BaseContrat() {
   const today = new Date().toISOString().slice(0, 10);
 
   const filteredCatalog = useMemo(() => {
-    return CATALOG.filter((p) => {
-      if (togglePPPM === 'pp' && !p.ppEligible) return false;
-      if (togglePPPM === 'pm' && !p.pmEligible) return false;
-      if (filterFamille && p.grandeFamille !== filterFamille) return false;
+    return CATALOG.filter((product) => {
+      if (togglePPPM === 'pp' && !product.ppEligible) return false;
+      if (togglePPPM === 'pm' && !product.pmEligible) return false;
+      if (filterFamille && product.grandeFamille !== filterFamille) return false;
+
       if (searchQuery) {
-        const q = searchQuery.toLowerCase();
-        if (!p.label.toLowerCase().includes(q)) return false;
+        const query = searchQuery.toLowerCase();
+        if (!product.label.toLowerCase().includes(query)) return false;
       }
+
       return true;
     });
-  }, [togglePPPM, filterFamille, searchQuery]);
+  }, [filterFamille, searchQuery, togglePPPM]);
 
   const groupedByFamily = useMemo(() => {
     const map = new Map<string, CatalogProduct[]>();
-    for (const gf of GRANDE_FAMILLE_OPTIONS) {
-      const inGroup = filteredCatalog.filter((p) => p.grandeFamille === gf);
-      if (inGroup.length > 0) map.set(gf, inGroup);
+
+    for (const grandeFamille of GRANDE_FAMILLE_OPTIONS) {
+      const products = filteredCatalog.filter((product) => product.grandeFamille === grandeFamille);
+      if (products.length > 0) {
+        map.set(grandeFamille, products);
+      }
     }
+
     const unclassified = filteredCatalog.filter(
-      (p) => !(GRANDE_FAMILLE_OPTIONS as readonly string[]).includes(p.grandeFamille),
+      (product) => !(GRANDE_FAMILLE_OPTIONS as readonly string[]).includes(product.grandeFamille),
     );
-    if (unclassified.length > 0) map.set('Autres', unclassified);
+    if (unclassified.length > 0) {
+      map.set('Autres', unclassified);
+    }
+
     return map;
   }, [filteredCatalog]);
 
   const activeCount = useMemo(
-    () => CATALOG.filter((p) => !isProductClosed(p.id, overrides, today)).length,
+    () => CATALOG.filter((product) => !isProductClosed(product.id, overrides, today)).length,
     [overrides, today],
   );
   const closedCount = CATALOG.length - activeCount;
@@ -284,187 +253,191 @@ export default function BaseContrat() {
       await upsertBaseContratOverride(data);
       reload();
       setOverrideTarget(null);
-    } catch (e) {
-      setErrorMsg((e as Error).message ?? 'Erreur lors de la sauvegarde.');
+    } catch (error) {
+      setErrorMsg((error as Error).message ?? 'Erreur lors de la sauvegarde.');
     }
   }
 
-  if (loading) return <p style={{ padding: 24, color: 'var(--color-c9)' }}>Chargement…</p>;
+  if (loading) {
+    return <p className="base-contrat-loading">Chargement...</p>;
+  }
 
   return (
-    <div style={{ marginTop: 16 }}>
+    <div className="base-contrat-page">
       <UserInfoBanner />
 
-      <div style={{ fontSize: 15, marginTop: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-        {/* ── Header ── */}
-        <div className="settings-premium-card" style={{ padding: '20px 24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1 }}>
-              <h2 className="settings-premium-title" style={{ margin: 0, fontSize: 18, fontWeight: 500, color: 'var(--color-c10)' }}>
-                Référentiel contrats
-              </h2>
-              <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--color-c9)' }}>
-                {CATALOG.length} produits · {activeCount} ouverts · {closedCount} clôturés
+      <div className="base-contrat-stack">
+        <section className="settings-premium-card base-contrat-header-card">
+          <div className="base-contrat-header">
+            <div className="base-contrat-header__copy">
+              <h2 className="settings-premium-title">Referentiel contrats</h2>
+              <p className="settings-premium-subtitle">
+                {CATALOG.length} produits - {activeCount} ouverts - {closedCount} clotures
               </p>
             </div>
-            {/* Toggle PP / Entreprise */}
-            <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--color-c8)' }}>
-              {(['pp', 'pm'] as const).map((v) => (
+
+            <div className="base-contrat-toggle" role="tablist" aria-label="Audience">
+              {(['pp', 'pm'] as const).map((audience) => (
                 <button
-                  key={v}
+                  key={audience}
                   type="button"
-                  onClick={() => setTogglePPPM(v)}
-                  style={{
-                    padding: '7px 18px',
-                    fontSize: 13,
-                    fontWeight: togglePPPM === v ? 600 : 400,
-                    background: togglePPPM === v ? 'var(--color-c3)' : 'transparent',
-                    color: togglePPPM === v ? '#fff' : 'var(--color-c9)',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
+                  className={`base-contrat-toggle__button${togglePPPM === audience ? ' is-active' : ''}`}
+                  onClick={() => setTogglePPPM(audience)}
                 >
-                  {v === 'pp' ? 'Particulier' : 'Entreprise'}
+                  {audience === 'pp' ? 'Particulier' : 'Entreprise'}
                 </button>
               ))}
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* ── Filtres ── */}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="base-contrat-filters">
           <input
+            className="base-contrat-filters__field"
             type="search"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Rechercher un produit"
-            style={{ fontFamily: 'inherit', flex: '1 1 200px', fontSize: 13, padding: '7px 12px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#fff' }}
           />
           <select
+            className="base-contrat-filters__field"
             value={filterFamille}
-            onChange={(e) => setFilterFamille(e.target.value)}
-            style={{ fontFamily: 'inherit', fontSize: 12, padding: '7px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', backgroundColor: '#fff' }}
+            onChange={(event) => setFilterFamille(event.target.value)}
           >
             <option value="">Toutes les familles</option>
-            {GRANDE_FAMILLE_OPTIONS.map((gf) => <option key={gf} value={gf}>{gf}</option>)}
+            {GRANDE_FAMILLE_OPTIONS.map((grandeFamille) => (
+              <option key={grandeFamille} value={grandeFamille}>
+                {grandeFamille}
+              </option>
+            ))}
           </select>
           {(searchQuery || filterFamille) && (
             <button
               type="button"
-              onClick={() => { setSearchQuery(''); setFilterFamille(''); }}
-              style={{ fontSize: 12, padding: '7px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', background: 'none', color: 'var(--color-c9)', cursor: 'pointer' }}
+              className="base-contrat-filters__reset"
+              onClick={() => {
+                setSearchQuery('');
+                setFilterFamille('');
+              }}
             >
-              Réinitialiser
+              Reinitialiser
             </button>
           )}
         </div>
 
-        {/* ── Empty state ── */}
         {groupedByFamily.size === 0 && (
-          <div className="settings-premium-card" style={{ padding: '32px 24px', textAlign: 'center' }}>
-            <p style={{ color: 'var(--color-c9)', fontSize: 14, margin: 0 }}>Aucun produit ne correspond aux filtres.</p>
+          <div className="settings-premium-card base-contrat-empty-state">
+            Aucun produit ne correspond aux filtres.
           </div>
         )}
 
-        {/* ── Groupes par famille ── */}
-        {Array.from(groupedByFamily.entries()).map(([famille, familyProducts]) => {
-          const isFamilyOpen = openFamilyId === famille;
-          const closedInFamily = familyProducts.filter((p) => isProductClosed(p.id, overrides, today)).length;
-          return (
-            <div key={famille} className="settings-premium-card" style={{ padding: 0, overflow: 'hidden' }}>
-              {/* Family header */}
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={() => setOpenFamilyId(isFamilyOpen ? null : famille)}
-                onKeyDown={(e) => e.key === 'Enter' && setOpenFamilyId(isFamilyOpen ? null : famille)}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 20px', cursor: 'pointer', background: 'var(--color-c7)', borderBottom: isFamilyOpen ? '1px solid var(--color-c8)' : 'none' }}
-              >
-                <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--color-c10)' }}>{famille}</span>
-                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c8)', color: 'var(--color-c9)', fontWeight: 600 }}>
-                  {familyProducts.length - closedInFamily} ouvert{familyProducts.length - closedInFamily !== 1 ? 's' : ''}
-                </span>
-                {closedInFamily > 0 && (
-                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c6)', color: 'var(--color-c10)', fontWeight: 600 }}>
-                    {closedInFamily} clôturé{closedInFamily > 1 ? 's' : ''}
+        <div className="fisc-accordion">
+          {Array.from(groupedByFamily.entries()).map(([famille, familyProducts]) => {
+            const isFamilyOpen = openFamilyId === famille;
+            const closedInFamily = familyProducts.filter((product) => isProductClosed(product.id, overrides, today)).length;
+            const openInFamily = familyProducts.length - closedInFamily;
+
+            return (
+              <div key={famille} className="fisc-acc-item base-contrat-family">
+                <button
+                  type="button"
+                  className="fisc-acc-header base-contrat-family__header"
+                  onClick={() => setOpenFamilyId(isFamilyOpen ? null : famille)}
+                >
+                  <span className="base-contrat-family__title">{famille}</span>
+                  <span className="base-contrat-family__badges">
+                    <span className="base-contrat-badge">{formatOpenCount(openInFamily)}</span>
+                    {closedInFamily > 0 && (
+                      <span className="base-contrat-badge base-contrat-badge--muted">
+                        {formatClosedCount(closedInFamily)}
+                      </span>
+                    )}
                   </span>
-                )}
-                <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--color-c9)' }}>{isFamilyOpen ? '▴' : '▾'}</span>
-              </div>
+                  <span className="fisc-acc-chevron">{isFamilyOpen ? 'v' : '>'}</span>
+                </button>
 
-              {isFamilyOpen && (
-                <div style={{ padding: '4px 0' }}>
-                  {familyProducts.map((product) => {
-                    const isOpen = openProductId === product.id;
-                    const closed = isProductClosed(product.id, overrides, today);
-                    const override = overrides[product.id];
-                    const rules = getRules(product.id, togglePPPM);
+                {isFamilyOpen && (
+                  <div className="base-contrat-family__body">
+                    {familyProducts.map((product) => {
+                      const isProductOpen = openProductId === product.id;
+                      const closed = isProductClosed(product.id, overrides, today);
+                      const override = overrides[product.id];
+                      const rules = getRules(product.id, togglePPPM);
+                      const hasNoRules =
+                        rules.constitution.length === 0
+                        && rules.sortie.length === 0
+                        && rules.deces.length === 0;
 
-                    return (
-                      <div key={product.id} style={{ borderTop: '1px solid var(--color-c8)' }}>
-                        {/* Product header */}
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => setOpenProductId(isOpen ? null : product.id)}
-                          onKeyDown={(e) => e.key === 'Enter' && setOpenProductId(isOpen ? null : product.id)}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: 8, padding: '11px 20px',
-                            cursor: 'pointer', flexWrap: 'wrap',
-                            opacity: closed ? 0.6 : 1,
-                          }}
-                        >
-                          <span style={{ fontWeight: 600, color: 'var(--color-c10)', fontSize: 14 }}>{product.label}</span>
-                          {rules.constitution.length === 0 && rules.sortie.length === 0 && rules.deces.length === 0 && (
-                            <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c6)', color: 'var(--color-c10)', fontStyle: 'italic' }}>
-                              Aucune règle
+                      return (
+                        <div key={product.id} className="base-contrat-product">
+                          <div
+                            role="button"
+                            tabIndex={0}
+                            className={`base-contrat-product__header${closed ? ' is-closed' : ''}`}
+                            onClick={() => setOpenProductId(isProductOpen ? null : product.id)}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                setOpenProductId(isProductOpen ? null : product.id);
+                              }
+                            }}
+                          >
+                            <span className="base-contrat-product__header-main">
+                              <span className="base-contrat-product__label">{product.label}</span>
+                              {hasNoRules && (
+                                <span className="base-contrat-badge base-contrat-badge--muted">
+                                  Aucune regle
+                                </span>
+                              )}
+                              {closed && (
+                                <span className="base-contrat-badge base-contrat-badge--warning">
+                                  Cloture {override?.closed_date ? `le ${override.closed_date}` : ''}
+                                </span>
+                              )}
                             </span>
-                          )}
-                          {closed && (
-                            <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'var(--color-c6)', color: 'var(--color-c10)', fontWeight: 600 }}>
-                              Clôturé {override?.closed_date ? `le ${override.closed_date}` : ''}
+
+                            <span className="base-contrat-product__header-actions">
+                              {isAdmin && (
+                                <button
+                                  type="button"
+                                  className="base-contrat-admin-action"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    setOverrideTarget(product);
+                                  }}
+                                >
+                                  {closed ? 'Rouvrir' : 'Cloturer'}
+                                </button>
+                              )}
+                              <span className="fisc-acc-chevron">{isProductOpen ? 'v' : '>'}</span>
                             </span>
+                          </div>
+
+                          {isProductOpen && (
+                            <div className="base-contrat-product__body">
+                              {override?.note_admin && (
+                                <p className="base-contrat-note">Note : {override.note_admin}</p>
+                              )}
+                              <RulesPanel rules={rules} closed={closed} />
+                            </div>
                           )}
-                          {isAdmin && (
-                            <button
-                              type="button"
-                              onClick={(e) => { e.stopPropagation(); setOverrideTarget(product); }}
-                              style={{ marginLeft: 'auto', fontSize: 11, padding: '3px 10px', borderRadius: 6, border: '1px solid var(--color-c8)', background: 'none', color: 'var(--color-c9)', cursor: 'pointer' }}
-                            >
-                              {closed ? 'Rouvrir' : 'Clôturer'}
-                            </button>
-                          )}
-                          {!isAdmin && <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--color-c9)' }}>{isOpen ? '▴' : '▾'}</span>}
                         </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
 
-                        {/* Product body — 3 colonnes règles fiscales */}
-                        {isOpen && (
-                          <>
-                            {override?.note_admin && (
-                              <p style={{ fontSize: 12, color: 'var(--color-c9)', fontStyle: 'italic', margin: '0 20px 0', padding: '8px 0 0' }}>
-                                Note : {override.note_admin}
-                              </p>
-                            )}
-                            <RulesPanel rules={rules} closed={closed} />
-                          </>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {/* Error */}
         {errorMsg && (
-          <p style={{ fontSize: 13, color: 'var(--color-c1)', fontStyle: 'italic' }}>{errorMsg}</p>
+          <div className="settings-feedback-message settings-feedback-message--error">
+            {errorMsg}
+          </div>
         )}
       </div>
 
-      {/* Modal: Clôturer / Rouvrir */}
       {overrideTarget && (
         <OverrideModal
           product={overrideTarget}

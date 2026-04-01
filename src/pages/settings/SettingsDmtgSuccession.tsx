@@ -205,9 +205,38 @@ export default function SettingsDmtgSuccession() {
       setSaving(true);
       setMessage('');
 
+      const [existingTaxRes, existingFiscRes] = await Promise.all([
+        supabase.from('tax_settings').select('data').eq('id', 1).maybeSingle(),
+        supabase.from('fiscality_settings').select('data').eq('id', 1).maybeSingle(),
+      ]);
+
+      if ((existingTaxRes.error && existingTaxRes.error.code !== 'PGRST116')
+        || (existingFiscRes.error && existingFiscRes.error.code !== 'PGRST116')) {
+        console.error(existingTaxRes.error, existingFiscRes.error);
+        setMessage("Erreur lors du chargement des parametres existants.");
+        return;
+      }
+
+      const existingTaxData = (existingTaxRes.data?.data as Partial<TaxSettings> | null) ?? {};
+      const existingFiscData = (existingFiscRes.data?.data as Partial<FiscalitySettings> | null) ?? {};
+
+      const taxPayload: Partial<TaxSettings> = {
+        ...existingTaxData,
+        dmtg: taxSettings.dmtg,
+        donation: taxSettings.donation,
+      };
+      const fiscalityPayload: Partial<FiscalitySettings> = {
+        ...existingFiscData,
+        assuranceVie: {
+          ...existingFiscData.assuranceVie,
+          ...fiscalitySettings.assuranceVie,
+          deces: fiscalitySettings.assuranceVie.deces,
+        },
+      };
+
       const [taxRes, fiscRes] = await Promise.all([
-        supabase.from('tax_settings').upsert({ id: 1, data: taxSettings }),
-        supabase.from('fiscality_settings').upsert({ id: 1, data: fiscalitySettings }),
+        supabase.from('tax_settings').upsert({ id: 1, data: taxPayload }),
+        supabase.from('fiscality_settings').upsert({ id: 1, data: fiscalityPayload }),
       ]);
 
       if (taxRes.error || fiscRes.error) {

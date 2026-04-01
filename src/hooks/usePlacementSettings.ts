@@ -134,7 +134,7 @@ export function usePlacementSettings(): UsePlacementSettingsResult {
 
   // Extraire les paramètres normalisés pour le moteur de calcul
   const fiscalParams = useMemo<FiscalParams>(() => {
-    const params = extractFiscalParams(fiscalitySettings, psSettings);
+    const params = extractFiscalParams(fiscalitySettings, psSettings, taxSettings);
     // Ajouter les paramètres DMTG depuis tax_settings
     const dmtg = (taxSettings?.dmtg || DEFAULT_TAX_SETTINGS.dmtg) as LegacyDmtgConfig;
     const dmtgLD = dmtg.ligneDirecte || DEFAULT_TAX_SETTINGS.dmtg.ligneDirecte;

@@ -11,12 +11,14 @@ import { describe, it, expect } from 'vitest';
 import { extractFiscalParams } from '../../engine/placement';
 import fiscalityV1 from './fixtures/fiscalitySettingsV1.json';
 import psV1 from './fixtures/psSettingsV1.json';
+import taxV1 from './fixtures/taxSettingsV1.json';
 
 const EXPECTED_SNAPSHOT = {
   pfuIR: 0.128,
-  pfuPS: 0.172,
-  pfuTotal: 0.3,
-  psPatrimoine: 0.172,
+  pfuPS: 0.186,
+  pfuTotal: 0.314,
+  psGeneral: 0.186,
+  psException: 0.172,
   avAbattement8ansSingle: 4600,
   avAbattement8ansCouple: 9200,
   avSeuilPrimes150k: 150000,
@@ -33,7 +35,7 @@ const EXPECTED_SNAPSHOT = {
 
 describe('extractFiscalParams â€” golden snapshot', () => {
   it('returns the expected params from V1 fixtures', () => {
-    const result = extractFiscalParams(fiscalityV1, psV1);
+    const result = extractFiscalParams(fiscalityV1, psV1, taxV1);
     expect(result).toEqual(EXPECTED_SNAPSHOT);
   });
 

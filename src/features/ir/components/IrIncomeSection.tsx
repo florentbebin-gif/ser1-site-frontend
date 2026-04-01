@@ -15,7 +15,8 @@ type IrIncomeSectionProps = Pick<
   | 'setRealExpensesState'
   | 'abat10SalD1'
   | 'abat10SalD2'
-  | 'psPatrimonyRate'
+  | 'psGeneralRate'
+  | 'psExceptionRate'
   | 'fmtPct'
   | 'capitalMode'
   | 'setCapitalMode'
@@ -43,7 +44,8 @@ export function IrIncomeSection({
   setRealExpensesState,
   abat10SalD1,
   abat10SalD2,
-  psPatrimonyRate,
+  psGeneralRate,
+  psExceptionRate,
   fmtPct,
   capitalMode,
   setCapitalMode,
@@ -304,7 +306,7 @@ export function IrIncomeSection({
 
           {showFoncierRow && (
             <tr>
-              <td>Revenus fonciers nets</td>
+              <td>Revenus fonciers nets (PS a {fmtPct(psExceptionRate)} %)</td>
               <td colSpan={2}>
                 <IrAmountInput
                   value={formatMoneyInput(incomes.fonciersFoyer || 0)}
@@ -322,7 +324,7 @@ export function IrIncomeSection({
                 <tr className="ir-divider-row"><td colSpan={3}><div className="ir-divider-row__inner" /></td></tr>
               )}
               <tr>
-                <td>RCM soumis aux PS à {fmtPct(psPatrimonyRate)} %</td>
+                <td>RCM soumis aux PS a {fmtPct(psGeneralRate)} %</td>
                 <td colSpan={2}>
                   <IrAmountInput
                     value={formatMoneyInput(incomes.capital?.withPs || 0)}
@@ -331,7 +333,7 @@ export function IrIncomeSection({
                 </td>
               </tr>
               <tr>
-                <td>RCM non soumis aux PS à {fmtPct(psPatrimonyRate)} %</td>
+                <td>RCM non soumis aux PS</td>
                 <td colSpan={2}>
                   <IrAmountInput
                     value={formatMoneyInput(incomes.capital?.withoutPs || 0)}

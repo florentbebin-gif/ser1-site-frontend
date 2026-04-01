@@ -8,7 +8,8 @@ interface LabelsProps {
 }
 
 interface PatrimonyYearSettings {
-  totalRate: number | null;
+  generalRate: number | null;
+  exceptionRate: number | null;
   csgDeductibleRate: number | null;
 }
 
@@ -35,6 +36,10 @@ export default function PrelevementsPatrimoineSection({
   setOpenSection,
 }: PrelevementsPatrimoineSectionProps): React.ReactElement {
   const isOpen = openSection === 'patrimoine';
+  const currentGeneralRateLabel =
+    patrimony.current.generalRate != null ? ` (${String(patrimony.current.generalRate).replace('.', ',')} %)` : '';
+  const currentExceptionRateLabel =
+    patrimony.current.exceptionRate != null ? ` (${String(patrimony.current.exceptionRate).replace('.', ',')} %)` : '';
 
   return (
     <div className="fisc-acc-item">
@@ -62,16 +67,25 @@ export default function PrelevementsPatrimoineSection({
           aria-labelledby="prelev-header-patrimoine"
         >
           <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
-            Taux globaux applicables aux revenus du patrimoine et de
-            placement (interets, dividendes, etc.).
+            Cas general pour les revenus du capital au taux en vigueur ; taux d'exception pour les
+            revenus fonciers, plus-values immobilieres, assurance-vie, PEP et epargne logement selon les cas.
           </p>
 
           <div className="tax-two-cols">
             <SettingsYearColumn yearLabel={labels.currentYearLabel}>
               <SettingsFieldRow
-                label="Taux global des prelevements sociaux"
-                path={['patrimony', 'current', 'totalRate']}
-                value={patrimony.current.totalRate}
+                label={`Taux global des prelevements sociaux - cas general${currentGeneralRateLabel}`}
+                path={['patrimony', 'current', 'generalRate']}
+                value={patrimony.current.generalRate}
+                onChange={updateField}
+                step="0.1"
+                unit="%"
+                disabled={!isAdmin}
+              />
+              <SettingsFieldRow
+                label={`Taux global des prelevements sociaux - regime d'exception${currentExceptionRateLabel}`}
+                path={['patrimony', 'current', 'exceptionRate']}
+                value={patrimony.current.exceptionRate}
                 onChange={updateField}
                 step="0.1"
                 unit="%"
@@ -90,9 +104,18 @@ export default function PrelevementsPatrimoineSection({
 
             <SettingsYearColumn yearLabel={labels.previousYearLabel} isRight>
               <SettingsFieldRow
-                label="Taux global des prelevements sociaux"
-                path={['patrimony', 'previous', 'totalRate']}
-                value={patrimony.previous.totalRate}
+                label="Taux global des prelevements sociaux - cas general"
+                path={['patrimony', 'previous', 'generalRate']}
+                value={patrimony.previous.generalRate}
+                onChange={updateField}
+                step="0.1"
+                unit="%"
+                disabled={!isAdmin}
+              />
+              <SettingsFieldRow
+                label="Taux global des prelevements sociaux - regime d'exception"
+                path={['patrimony', 'previous', 'exceptionRate']}
+                value={patrimony.previous.exceptionRate}
                 onChange={updateField}
                 step="0.1"
                 unit="%"

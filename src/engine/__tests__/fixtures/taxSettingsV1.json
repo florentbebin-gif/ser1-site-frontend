@@ -34,8 +34,8 @@
     }
   },
   "pfu": {
-    "current": { "rateIR": 12.8, "rateSocial": 17.2, "rateTotal": 30.0 },
-    "previous": { "rateIR": 12.8, "rateSocial": 17.2, "rateTotal": 30.0 }
+    "current": { "rateIR": 12.8 },
+    "previous": { "rateIR": 12.8 }
   },
   "cehr": {
     "current": {
