@@ -77,14 +77,14 @@ export default function ImpotsPfuSection({
           aria-labelledby="impots-header-pfu"
         >
           <p style={{ fontSize: 13, color: 'var(--color-c9)' }}>
-            La part prelevements sociaux du PFU est calculee automatiquement depuis
-            /settings/prelevements. Seule la part IR reste editable ici.
+            La part prélèvements sociaux du PFU est calculée automatiquement depuis
+            /settings/prelevements. Seule la part IR reste éditable ici.
           </p>
 
           <div className="tax-two-cols">
-            <SettingsYearColumn yearLabel={incomeTax.currentYearLabel || 'Annee N'}>
+            <SettingsYearColumn yearLabel={incomeTax.currentYearLabel || 'Année N'}>
               <SettingsFieldRow
-                label="Part impot sur le revenu"
+                label="Part impôt sur le revenu"
                 path={['pfu', 'current', 'rateIR']}
                 value={pfu.current.rateIR}
                 onChange={updateField}
@@ -93,7 +93,7 @@ export default function ImpotsPfuSection({
                 disabled={!isAdmin}
               />
               <SettingsFieldRow
-                label="Prelevements sociaux calcules"
+                label="Prélèvements sociaux calculés"
                 path={['pfu', 'current', 'rateSocial']}
                 value={currentPs}
                 onChange={updateField}
@@ -102,7 +102,7 @@ export default function ImpotsPfuSection({
                 disabled
               />
               <SettingsFieldRow
-                label="Taux global PFU calcule"
+                label="Taux global PFU calculé"
                 path={['pfu', 'current', 'rateTotal']}
                 value={currentTotal}
                 onChange={updateField}
@@ -113,11 +113,11 @@ export default function ImpotsPfuSection({
             </SettingsYearColumn>
 
             <SettingsYearColumn
-              yearLabel={incomeTax.previousYearLabel || 'Annee N-1'}
+              yearLabel={incomeTax.previousYearLabel || 'Année N-1'}
               isRight
             >
               <SettingsFieldRow
-                label="Part impot sur le revenu"
+                label="Part impôt sur le revenu"
                 path={['pfu', 'previous', 'rateIR']}
                 value={pfu.previous.rateIR}
                 onChange={updateField}
@@ -126,7 +126,7 @@ export default function ImpotsPfuSection({
                 disabled={!isAdmin}
               />
               <SettingsFieldRow
-                label="Prelevements sociaux calcules"
+                label="Prélèvements sociaux calculés"
                 path={['pfu', 'previous', 'rateSocial']}
                 value={previousPs}
                 onChange={updateField}
@@ -135,7 +135,7 @@ export default function ImpotsPfuSection({
                 disabled
               />
               <SettingsFieldRow
-                label="Taux global PFU calcule"
+                label="Taux global PFU calculé"
                 path={['pfu', 'previous', 'rateTotal']}
                 value={previousTotal}
                 onChange={updateField}

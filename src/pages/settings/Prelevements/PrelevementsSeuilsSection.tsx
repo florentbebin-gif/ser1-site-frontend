@@ -60,12 +60,12 @@ export default function PrelevementsSeuilsSection({
           aria-labelledby="prelev-header-seuils"
         >
           <p style={{ fontSize: 13, color: 'var(--color-c9)', marginBottom: 12 }}>
-            Seuils de revenu fiscal de reference (RFR) utilises pour determiner
-            l'exoneration ou l'assujettissement aux taux reduit, median
+            Seuils de revenu fiscal de référence (RFR) utilisés pour déterminer
+            l'exonération ou l'assujettissement aux taux réduit, médian
             ou normal de CSG sur les pensions de retraite. Ces seuils s'appliquent
-            aussi pour la CRDS et la CASA. Les montants sont indiques pour{' '}
+            aussi pour la CRDS et la CASA. Les montants sont indiqués pour{' '}
             <strong>1 part</strong>, avec une majoration par{' '}
-            <strong>quart de part supplementaire</strong>.
+            <strong>quart de part supplémentaire</strong>.
           </p>
 
           <div className="tax-two-cols">

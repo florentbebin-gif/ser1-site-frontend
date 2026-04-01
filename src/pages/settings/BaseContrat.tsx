@@ -75,9 +75,9 @@ function RuleBlockCard({ block }: { block: RuleBlock }) {
 function EmptyRuleCard() {
   return (
     <div className="base-contrat-empty-card">
-      <div className="base-contrat-empty-card__title">Aucune regle renseignee</div>
+      <div className="base-contrat-empty-card__title">Aucune règle renseignée</div>
       <div className="base-contrat-empty-card__body">
-        Ce produit ne possede pas de regles fiscales specifiques pour cette phase.
+        Ce produit ne possède pas de règles fiscales spécifiques pour cette phase.
       </div>
     </div>
   );
@@ -144,12 +144,12 @@ function OverrideModal({
     <div className="report-modal-overlay">
       <div className="report-modal base-contrat-modal">
         <div className="report-modal-header">
-          <h3>{isClosed ? 'Rouvrir' : 'Cloturer'} - {product.label}</h3>
+          <h3>{isClosed ? 'Rouvrir' : 'Clôturer'} - {product.label}</h3>
           <button className="report-modal-close" onClick={onClose}>&#x2715;</button>
         </div>
         <div className="report-modal-content base-contrat-modal__content">
           <label className="base-contrat-modal__label">
-            Date de cloture <span>(laisser vide = produit ouvert)</span>
+            Date de clôture <span>(laisser vide = produit ouvert)</span>
           </label>
           <input
             className="base-contrat-modal__field"
@@ -165,7 +165,7 @@ function OverrideModal({
             value={note}
             onChange={(event) => setNote(event.target.value)}
             rows={2}
-            placeholder="Ex : dispositif supprime par la loi de finances 2025"
+            placeholder="Ex : dispositif supprimé par la loi de finances 2025"
           />
         </div>
         <div className="report-modal-actions">
@@ -175,7 +175,7 @@ function OverrideModal({
             onClick={handleSave}
             disabled={saving}
           >
-            {saving ? 'Enregistrement...' : 'Enregistrer'}
+            {saving ? 'Enregistrement…' : 'Enregistrer'}
           </button>
         </div>
       </div>
@@ -188,7 +188,7 @@ function formatOpenCount(count: number): string {
 }
 
 function formatClosedCount(count: number): string {
-  return `${count} cloture${count > 1 ? 's' : ''}`;
+  return `${count} clôturé${count > 1 ? 's' : ''}`;
 }
 
 export default function BaseContrat() {
@@ -259,7 +259,7 @@ export default function BaseContrat() {
   }
 
   if (loading) {
-    return <p className="base-contrat-loading">Chargement...</p>;
+    return <p className="base-contrat-loading">Chargement…</p>;
   }
 
   return (
@@ -270,9 +270,9 @@ export default function BaseContrat() {
         <section className="settings-premium-card base-contrat-header-card">
           <div className="base-contrat-header">
             <div className="base-contrat-header__copy">
-              <h2 className="settings-premium-title">Referentiel contrats</h2>
+              <h2 className="settings-premium-title">Référentiel contrats</h2>
               <p className="settings-premium-subtitle">
-                {CATALOG.length} produits - {activeCount} ouverts - {closedCount} clotures
+                {CATALOG.length} produits - {activeCount} ouverts - {closedCount} clôturés
               </p>
             </div>
 
@@ -320,7 +320,7 @@ export default function BaseContrat() {
                 setFilterFamille('');
               }}
             >
-              Reinitialiser
+              Réinitialiser
             </button>
           )}
         </div>
@@ -386,12 +386,12 @@ export default function BaseContrat() {
                               <span className="base-contrat-product__label">{product.label}</span>
                               {hasNoRules && (
                                 <span className="base-contrat-badge base-contrat-badge--muted">
-                                  Aucune regle
+                                  Aucune règle
                                 </span>
                               )}
                               {closed && (
                                 <span className="base-contrat-badge base-contrat-badge--warning">
-                                  Cloture {override?.closed_date ? `le ${override.closed_date}` : ''}
+                                  Clôturé {override?.closed_date ? `le ${override.closed_date}` : ''}
                                 </span>
                               )}
                             </span>
@@ -406,7 +406,7 @@ export default function BaseContrat() {
                                     setOverrideTarget(product);
                                   }}
                                 >
-                                  {closed ? 'Rouvrir' : 'Cloturer'}
+                                  {closed ? 'Rouvrir' : 'Clôturer'}
                                 </button>
                               )}
                               <span className="fisc-acc-chevron">{isProductOpen ? 'v' : '>'}</span>

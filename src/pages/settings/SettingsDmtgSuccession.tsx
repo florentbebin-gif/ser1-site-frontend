@@ -213,7 +213,7 @@ export default function SettingsDmtgSuccession() {
       if ((existingTaxRes.error && existingTaxRes.error.code !== 'PGRST116')
         || (existingFiscRes.error && existingFiscRes.error.code !== 'PGRST116')) {
         console.error(existingTaxRes.error, existingFiscRes.error);
-        setMessage("Erreur lors du chargement des parametres existants.");
+        setMessage("Erreur lors du chargement des paramètres existants.");
         return;
       }
 
