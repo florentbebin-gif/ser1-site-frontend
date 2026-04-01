@@ -16,9 +16,10 @@ export const ENVELOPE_LABELS = {
 
 export const DEFAULT_FISCAL_PARAMS = {
   pfuIR: 0.128,
-  pfuPS: 0.172,
-  pfuTotal: 0.30,
-  psPatrimoine: 0.172,
+  pfuPS: 0.186,
+  pfuTotal: 0.314,
+  psGeneral: 0.186,
+  psException: 0.172,
   avAbattement8ansSingle: 4600,
   avAbattement8ansCouple: 9200,
   avSeuilPrimes150k: 150000,
@@ -37,7 +38,8 @@ export const REQUIRED_NUMERIC_FISCAL_KEYS = [
   'pfuIR',
   'pfuPS',
   'pfuTotal',
-  'psPatrimoine',
+  'psGeneral',
+  'psException',
   'avAbattement8ansSingle',
   'avAbattement8ansCouple',
   'avSeuilPrimes150k',

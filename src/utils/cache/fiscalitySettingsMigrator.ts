@@ -37,8 +37,9 @@ const DEFAULT_PRODUCTS: Product[] = [
 // ---------------------------------------------------------------------------
 export const REFS = {
   pfuIR: '$ref:tax_settings.pfu.current.rateIR' as SettingsRef,
-  pfuPS: '$ref:tax_settings.pfu.current.rateSocial' as SettingsRef,
-  psPatrimoine: '$ref:ps_settings.patrimony.current.totalRate' as SettingsRef,
+  pfuPS: '$ref:ps_settings.patrimony.current.generalRate' as SettingsRef,
+  psGeneral: '$ref:ps_settings.patrimony.current.generalRate' as SettingsRef,
+  psException: '$ref:ps_settings.patrimony.current.exceptionRate' as SettingsRef,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -175,7 +176,7 @@ function buildAvRules(av: Record<string, unknown> | undefined): Record<string, u
   if (!av) return {};
   const rules = deepClone(av);
   // Replace PFU/PS rate values with refs
-  setByPath(rules, 'retraitsCapital.psRatePercent', REFS.psPatrimoine);
+  setByPath(rules, 'retraitsCapital.psRatePercent', REFS.psException);
   setByPath(rules, 'retraitsCapital.depuis2017.moins8Ans.irRatePercent', REFS.pfuIR);
   setByPath(rules, 'retraitsCapital.depuis2017.plus8Ans.irRateOverThresholdPercent', REFS.pfuIR);
   return rules;
@@ -203,7 +204,7 @@ function buildPeaRules(): Record<string, unknown> {
   return {
     ancienneteMinAns: 5,
     exonerationIRApresAnciennete: true,
-    psRatePercent: REFS.psPatrimoine,
+    psRatePercent: REFS.psGeneral,
   };
 }
 

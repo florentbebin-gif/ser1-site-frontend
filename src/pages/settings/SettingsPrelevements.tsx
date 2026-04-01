@@ -7,13 +7,12 @@ import { UserInfoBanner } from '@/components/UserInfoBanner';
 import { createFieldUpdater } from '@/components/settings/settingsHelpers';
 import PassHistoryAccordion from '@/components/settings/PassHistoryAccordion';
 
-import { DEFAULT_PS_SETTINGS } from '@/constants/settingsDefaults';
+import { DEFAULT_PS_SETTINGS, DEFAULT_TAX_SETTINGS } from '@/constants/settingsDefaults';
 import {
   validatePrelevementsSettings,
   isValid,
 } from './validators/dmtgValidators';
 
-// Import des sous-composants
 import PrelevementsPatrimoineSection from './Prelevements/PrelevementsPatrimoineSection';
 import PrelevementsRetraitesSection from './Prelevements/PrelevementsRetraitesSection';
 import PrelevementsSeuilsSection from './Prelevements/PrelevementsSeuilsSection';
@@ -32,23 +31,38 @@ type DeepFormValue<T> = T extends number
 
 type PsSettings = DeepFormValue<typeof DEFAULT_PS_SETTINGS>;
 type RetirementYearKey = keyof PsSettings['retirement'];
+type TaxSettings = DeepFormValue<typeof DEFAULT_TAX_SETTINGS>;
 
 interface PsSettingsRow {
   data: Partial<PsSettings> | null;
 }
 
+interface TaxSettingsRow {
+  data: Partial<TaxSettings> | null;
+}
+
+function derivePsYearLabel(irLabel: string | undefined, fallbackLabel: string): string {
+  if (!irLabel) return fallbackLabel;
+  const match = irLabel.match(/(\d{4}).*revenus\s+(\d{4})/i);
+  if (!match) return fallbackLabel;
+
+  const taxYear = Number(match[1]);
+  const incomeYear = Number(match[2]);
+  if (Number.isNaN(taxYear) || Number.isNaN(incomeYear)) return fallbackLabel;
+
+  return `${taxYear} (RFR ${incomeYear - 1} & Avis IR ${incomeYear})`;
+}
+
 export default function SettingsPrelevements() {
   const { isAdmin } = useUserRole();
   const [settings, setSettings] = useState<PsSettings>(DEFAULT_PS_SETTINGS);
+  const [taxSettings, setTaxSettings] = useState<TaxSettings>(DEFAULT_TAX_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [openSection, setOpenSection] = useState<string | null>(null);
 
-  // ----------------------
-  // Chargement initial
-  // ----------------------
   useEffect(() => {
     let mounted = true;
 
@@ -60,24 +74,75 @@ export default function SettingsPrelevements() {
 
         if (!mounted) return;
 
-        // Récupérer les paramètres PS (table ps_settings, id = 1)
-        const { data: rows, error: psErr } = (await supabase
-          .from('ps_settings')
-          .select('data')
-          .eq('id', 1)) as { data: PsSettingsRow[] | null; error: { code?: string } | null };
+        const [psRes, taxRes] = await Promise.all([
+          supabase.from('ps_settings').select('data').eq('id', 1),
+          supabase.from('tax_settings').select('data').eq('id', 1),
+        ]);
 
-        if (!psErr && rows && rows.length > 0 && rows[0].data) {
+        const { data: psRows, error: psErr } = psRes as {
+          data: PsSettingsRow[] | null;
+          error: { code?: string } | null;
+        };
+        const { data: taxRows, error: taxErr } = taxRes as {
+          data: TaxSettingsRow[] | null;
+          error: { code?: string } | null;
+        };
+
+        if (!psErr && psRows && psRows.length > 0 && psRows[0].data) {
+          const nextData = psRows[0].data;
           setSettings((prev) => ({
             ...prev,
-            ...rows[0].data,
+            ...nextData,
+            labels: {
+              ...prev.labels,
+              ...nextData.labels,
+            },
+            patrimony: {
+              current: {
+                ...prev.patrimony.current,
+                ...nextData.patrimony?.current,
+              },
+              previous: {
+                ...prev.patrimony.previous,
+                ...nextData.patrimony?.previous,
+              },
+            },
+            retirement: {
+              current: {
+                ...prev.retirement.current,
+                ...nextData.retirement?.current,
+              },
+              previous: {
+                ...prev.retirement.previous,
+                ...nextData.retirement?.previous,
+              },
+            },
+            retirementThresholds: {
+              ...prev.retirementThresholds,
+              ...nextData.retirementThresholds,
+            },
           }));
         } else if (psErr && psErr.code !== 'PGRST116') {
           console.error('Erreur chargement ps_settings :', psErr);
         }
 
+        const taxData = taxRows?.[0]?.data;
+        if (!taxErr && taxData) {
+          setTaxSettings((prev) => ({
+            ...prev,
+            ...taxData,
+            incomeTax: {
+              ...prev.incomeTax,
+              ...taxData.incomeTax,
+            },
+          }));
+        } else if (taxErr && taxErr.code !== 'PGRST116') {
+          console.error('Erreur chargement tax_settings :', taxErr);
+        }
+
         if (mounted) setLoading(false);
-      } catch (e) {
-        console.error(e);
+      } catch (loadError) {
+        console.error(loadError);
         if (mounted) setLoading(false);
       }
     }
@@ -88,7 +153,6 @@ export default function SettingsPrelevements() {
     };
   }, []);
 
-  // Alias pour compatibilité
   const setData = setSettings;
   const setDataRecord = (
     updater: (prev: Record<string, unknown>) => Record<string, unknown>,
@@ -96,9 +160,6 @@ export default function SettingsPrelevements() {
     setData((prev) => updater(prev as Record<string, unknown>) as PsSettings);
   };
 
-  // ----------------------
-  // Helpers de mise à jour
-  // ----------------------
   const updateField = createFieldUpdater(setDataRecord, setMessage);
 
   const updateRetirementBracket = (
@@ -117,18 +178,28 @@ export default function SettingsPrelevements() {
     setError('');
   };
 
-  // ----------------------
-  // Validation
-  // ----------------------
   const psErrors = useMemo(
     () => validatePrelevementsSettings(settings as Parameters<typeof validatePrelevementsSettings>[0]),
     [settings],
   );
   const hasErrors = !isValid(psErrors);
 
-  // ----------------------
-  // Sauvegarde
-  // ----------------------
+  const effectiveLabels = useMemo(() => ({
+    currentYearLabel: derivePsYearLabel(
+      taxSettings.incomeTax.currentYearLabel,
+      settings.labels.currentYearLabel,
+    ),
+    previousYearLabel: derivePsYearLabel(
+      taxSettings.incomeTax.previousYearLabel,
+      settings.labels.previousYearLabel,
+    ),
+  }), [
+    settings.labels.currentYearLabel,
+    settings.labels.previousYearLabel,
+    taxSettings.incomeTax.currentYearLabel,
+    taxSettings.incomeTax.previousYearLabel,
+  ]);
+
   const handleSave = async () => {
     if (!isAdmin || hasErrors) return;
 
@@ -137,42 +208,42 @@ export default function SettingsPrelevements() {
       setError('');
       setMessage('');
 
+      const payload: PsSettings = {
+        ...settings,
+        labels: effectiveLabels,
+      };
+
       const { error: saveError } = await supabase
         .from('ps_settings')
         .upsert({
           id: 1,
-          data: settings,
+          data: payload,
         });
 
       if (saveError) {
         console.error(saveError);
-        setError("Erreur lors de l'enregistrement des paramètres.");
+        setError("Erreur lors de l'enregistrement des parametres.");
         return;
       }
 
-      setMessage('Paramètres de prélèvements sociaux enregistrés.');
-      // Invalider le cache pour que /ir et autres pages rafraîchissent
+      setSettings(payload);
+      setMessage('Parametres de prelevements sociaux enregistres.');
       invalidate('ps');
       broadcastInvalidation('ps');
-    } catch (e) {
-      console.error(e);
-      setError("Erreur lors de l'enregistrement des paramètres.");
+    } catch (saveError) {
+      console.error(saveError);
+      setError("Erreur lors de l'enregistrement des parametres.");
     } finally {
       setSaving(false);
     }
   };
 
-  const { labels, patrimony, retirement, retirementThresholds } = settings;
+  const { patrimony, retirement, retirementThresholds } = settings;
 
-  // ----------------------
-  // Rendu
-  // ----------------------
   return (
     <div style={{ marginTop: 16 }}>
-      {/* Bandeau utilisateur */}
       <UserInfoBanner />
 
-      {/* Messages */}
       {error && (
         <div className="settings-feedback-message settings-feedback-message--error" style={{ marginTop: 12 }}>
           {error}
@@ -180,7 +251,7 @@ export default function SettingsPrelevements() {
       )}
 
       {loading ? (
-        <div style={{ marginTop: 24 }}>Chargement des paramètres…</div>
+        <div style={{ marginTop: 24 }}>Chargement des parametres...</div>
       ) : (
         <div
           style={{
@@ -192,16 +263,14 @@ export default function SettingsPrelevements() {
           }}
         >
           <div className="fisc-accordion">
-            {/* 0. Historique du PASS */}
             <PassHistoryAccordion
               isOpen={openSection === 'pass'}
               onToggle={() => setOpenSection(openSection === 'pass' ? null : 'pass')}
               isAdmin={isAdmin}
             />
 
-            {/* 1. PS patrimoine / capital */}
             <PrelevementsPatrimoineSection
-              labels={labels}
+              labels={effectiveLabels}
               patrimony={patrimony}
               updateField={updateField}
               isAdmin={isAdmin}
@@ -209,9 +278,8 @@ export default function SettingsPrelevements() {
               setOpenSection={setOpenSection}
             />
 
-            {/* 2. PS retraites */}
             <PrelevementsRetraitesSection
-              labels={labels}
+              labels={effectiveLabels}
               retirement={retirement}
               updateRetirementBracket={updateRetirementBracket}
               isAdmin={isAdmin}
@@ -219,21 +287,19 @@ export default function SettingsPrelevements() {
               setOpenSection={setOpenSection}
             />
 
-            {/* 3. Seuils RFR pour CSG / CRDS / CASA */}
             <PrelevementsSeuilsSection
-              labels={labels}
+              labels={effectiveLabels}
               retirementThresholds={retirementThresholds}
               updateField={updateField}
               isAdmin={isAdmin}
               openSection={openSection}
               setOpenSection={setOpenSection}
             />
-          </div>{/* fin fisc-accordion */}
+          </div>
 
-          {/* Résumé des erreurs de validation */}
           {hasErrors && (
             <div className="settings-feedback-message settings-feedback-message--error">
-              <strong>Erreurs de validation ({Object.keys(psErrors).length}) — corrigez avant de sauvegarder :</strong>
+              <strong>Erreurs de validation ({Object.keys(psErrors).length}) - corrigez avant de sauvegarder :</strong>
               <ul style={{ margin: '4px 0 0', paddingLeft: 20, fontSize: 13 }}>
                 {Object.entries(psErrors).map(([key, msg]) => (
                   <li key={key}>{key} : {msg}</li>
@@ -242,7 +308,6 @@ export default function SettingsPrelevements() {
             </div>
           )}
 
-          {/* Bouton de sauvegarde */}
           {isAdmin && (
             <button
               type="button"
@@ -252,10 +317,10 @@ export default function SettingsPrelevements() {
               title={hasErrors ? 'Corrigez les erreurs avant de sauvegarder' : ''}
             >
               {saving
-                ? 'Enregistrement…'
+                ? 'Enregistrement...'
                 : hasErrors
                   ? 'Erreurs de validation'
-                  : 'Enregistrer les paramètres'}
+                  : 'Enregistrer les parametres'}
             </button>
           )}
 
@@ -269,4 +334,3 @@ export default function SettingsPrelevements() {
     </div>
   );
 }
-

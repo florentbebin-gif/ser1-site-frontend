@@ -57,8 +57,10 @@ export interface FiscalContext {
   // ── PFU / PS ──────────────────────────────────────────────────────────────
   /** Taux IR du PFU pour l'année courante (ex: 12.8) */
   pfuRateIR: number;
-  /** Taux PS patrimoine année courante (ex: 17.2) */
-  psRateGlobal: number;
+  /** Taux PS patrimoine année courante - cas general */
+  psRateGeneral: number;
+  /** Taux PS patrimoine année courante - regime d'exception */
+  psRateException: number;
 
   // ── DMTG ─────────────────────────────────────────────────────────────────
   /**
@@ -136,8 +138,10 @@ function buildFiscalContext(
 
     // PFU / PS
     pfuRateIR: tax?.pfu?.current?.rateIR ?? DEFAULT_TAX_SETTINGS.pfu.current.rateIR,
-    psRateGlobal:
-      ps?.patrimony?.current?.totalRate ?? DEFAULT_PS_SETTINGS.patrimony.current.totalRate,
+    psRateGeneral:
+      ps?.patrimony?.current?.generalRate ?? DEFAULT_PS_SETTINGS.patrimony.current.generalRate,
+    psRateException:
+      ps?.patrimony?.current?.exceptionRate ?? DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate,
 
     // DMTG normalisé
     dmtgScaleLigneDirecte:

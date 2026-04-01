@@ -326,9 +326,13 @@ export default function IrSimulatorContainer() {
       : taxSettings?.incomeTax?.scalePrevious || [];
 
   const pfuRateIR = toNum(taxSettings?.pfu?.[yearKey]?.rateIR, 12.8);
-  const psPatrimonyRate = toNum(
-    psSettings?.patrimony?.[yearKey]?.totalRate,
-    DEFAULT_PS_SETTINGS.patrimony.current.totalRate,
+  const psGeneralRate = toNum(
+    psSettings?.patrimony?.[yearKey]?.generalRate,
+    DEFAULT_PS_SETTINGS.patrimony.current.generalRate,
+  );
+  const psExceptionRate = toNum(
+    psSettings?.patrimony?.[yearKey]?.exceptionRate,
+    DEFAULT_PS_SETTINGS.patrimony.current.exceptionRate,
   );
 
   const { exportExcel, exportPowerPoint } = useIrExportHandlers({
@@ -409,7 +413,8 @@ export default function IrSimulatorContainer() {
           setRealExpensesState={setRealExpenses}
           abat10SalD1={abat10SalD1}
           abat10SalD2={abat10SalD2}
-          psPatrimonyRate={psPatrimonyRate}
+          psGeneralRate={psGeneralRate}
+          psExceptionRate={psExceptionRate}
           fmtPct={fmtPct}
           capitalMode={capitalMode}
           setCapitalMode={setCapitalMode}

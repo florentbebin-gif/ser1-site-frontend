@@ -341,11 +341,11 @@ rg "export const CATALOG" src/domain/base-contrat/catalog.ts
 | Route | Composant | Table Supabase | Périmètre |
 |-------|-----------|----------------|-----------|
 | `/settings` | `Settings` | — | Généraux (placeholder) |
-| `/settings/impots` | `SettingsImpots` | `tax_settings` | Barème IR (2 ans), PFU, CEHR/CDHR, IS, DMTG successions |
-| `/settings/prelevements` | `SettingsPrelevements` | `ps_settings` | PS patrimoine, cotisations retraite, seuils RFR (CSG/CRDS/CASA) |
+| `/settings/impots` | `SettingsImpots` | `tax_settings` | Barème IR (2 ans), PFU part IR, CEHR/CDHR, IS |
+| `/settings/prelevements` | `SettingsPrelevements` | `ps_settings` | PS patrimoine (cas général + régime d'exception), cotisations retraite, seuils RFR (CSG/CRDS/CASA) |
 | `/settings/base-contrat` | `BaseContrat` | `base_contrat_overrides` | Référentiel produits (read-only 3 colonnes + toggles admin) |
 | `/settings/comptes` | `SettingsComptes` | `profiles` | Comptes utilisateurs par cabinet (admin only) |
-| `/settings/dmtg-succession` | `SettingsDmtgSuccession` | `tax_settings`, `fiscality_settings` | Barèmes DMTG successions + abattements (livré PR #159) |
+| `/settings/dmtg-succession` | `SettingsDmtgSuccession` | `tax_settings`, `fiscality_settings` | Éditeur unique DMTG successions + donations + AV décès |
 
 Source unique des routes : `src/routes/settingsRoutes.ts`.
 Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets, filtre `adminOnly`).
@@ -356,8 +356,8 @@ Shell de navigation : `src/pages/SettingsShell.tsx` (rendu dynamique des onglets
 
 | Table | Périmètre | RLS lecture | RLS écriture |
 |-------|-----------|-------------|--------------|
-| `tax_settings` | IR barème (N et N-1), PFU taux IR+PS, CEHR/CDHR, IS, DMTG barèmes+abattements | Auth | Admin |
-| `ps_settings` | PS patrimoine (17,2 %), cotisations retraite par tranche, seuils RFR (1/2/3 parts) | Auth | Admin |
+| `tax_settings` | IR barème (N et N-1), PFU part IR, CEHR/CDHR, IS, DMTG barèmes+abattements | Auth | Admin |
+| `ps_settings` | PS patrimoine (cas général + régime d'exception), cotisations retraite par tranche, seuils RFR (1/2/3 parts) | Auth | Admin |
 | `fiscality_settings` | Règles par enveloppe (AV, PER, PEA, CTO, dividendes…) — taux, abattements, seuils | Auth | Admin |
 | `pass_history` | Historique PASS annuel administré dans Settings > Prelevements (multi-lignes, clé `year`) | Auth | Admin |
 | `base_contrat_settings` | Singleton de config catalogue présent dans le schéma, non consommé par le runtime courant | Auth | Admin |
@@ -391,7 +391,7 @@ Schéma complet : `supabase/migrations/20260210214352_remote_commit.sql`.
 ┌──────────────────────────▼───────────────────────────────┐
 │ usePlacementSettings.ts  (src/hooks/)                    │
 │  · Monte les 3 tables · écoute les invalidations         │
-│  · Appelle extractFiscalParams(fiscality, ps)            │
+│  · Appelle extractFiscalParams(fiscality, ps, tax)       │
 │  · Dérive tmiOptions depuis barème IR                    │
 │  → fiscalParams (34 valeurs numériques normalisées)      │
 └──────────────────────────┬───────────────────────────────┘
@@ -427,7 +427,8 @@ Tous les simulateurs consomment les paramètres fiscaux via ce hook. Il expose u
 fiscalContext.irScaleCurrent          // barème IR année courante
 fiscalContext.irScalePrevious         // barème IR année précédente
 fiscalContext.pfuRateIR               // taux IR PFU (ex: 12.8)
-fiscalContext.psRateGlobal            // taux PS patrimoine (ex: 17.2)
+fiscalContext.psRateGeneral           // taux PS patrimoine cas général
+fiscalContext.psRateException         // taux PS patrimoine régime d'exception
 fiscalContext.dmtgScaleLigneDirecte   // barème DMTG ligne directe
 fiscalContext.dmtgAbattementEnfant    // abattement ligne directe (ex: 100 000)
 fiscalContext.dmtgSettings            // objet DMTG complet { ligneDirecte, frereSoeur, neveuNiece, autre }
@@ -471,13 +472,13 @@ L'admin sauvegarde → `invalidate(kind)` + `broadcastInvalidation(kind)` → é
 | Catégorie | Paramètres | Table | Référence légale |
 |-----------|-----------|-------|-----------------|
 | **IR** | Barème 5 tranches (seuils + taux), abattement DOM | `tax_settings` | Art. 197 CGI |
-| **PFU** | Taux IR 12,8 % + Taux PS 17,2 % = 30 % | `tax_settings` | Art. 200 A CGI |
+| **PFU** | Taux IR du PFU. La part PS est dérivée depuis `ps_settings` | `tax_settings` | Art. 200 A CGI |
 | **CEHR/CDHR** | Seuils (500 k€, 1 M€) + taux (3 %, 4 %) | `tax_settings` | Art. 223 sexies CGI |
 | **IS** | Taux réduit 15 % (seuil 42 500 €), taux normal 25 % | `tax_settings` | Art. 219 CGI |
 | **DMTG successions** | Barèmes par lien de parenté + abattements (100 k€, 15 932 €…) | `tax_settings` | Art. 777 & 779 CGI |
 | **DMTG donations** | Abattements spécifiques donation (31 865 €, 80 724 €…) | *(non implémenté — futur PLF)* | Art. 779, 790 E/F/G CGI |
 | **Assurance-vie** | Abattement 990I (152 500 €), taux 20 %/31,25 %, abattement 757B (30 500 €) | `fiscality_settings` | Art. 990 I & 757 B CGI |
-| **PS patrimoine** | 17,2 % (CSG 9,2 % + CRDS 0,5 % + PS 7,5 %) | `ps_settings` | Art. L136-6 CSS |
+| **PS patrimoine** | Taux cas général + taux régime d'exception + CSG déductible | `ps_settings` | Art. L136-6 CSS |
 | **Seuils RFR** | Par nombre de parts (CSG taux réduit, CRDS exo) | `ps_settings` | Art. L136-8 CSS |
 | **PASS** | Historique PASS annuel administre dans Settings et charge via `public.pass_history` | `pass_history` | Art. D612-5 CSS |
 

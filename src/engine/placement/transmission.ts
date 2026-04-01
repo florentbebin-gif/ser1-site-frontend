@@ -29,6 +29,8 @@ export function calculTransmission(
 
   const fp = { ...DEFAULT_FISCAL_PARAMS, ...fiscalParams };
   const dmtgTauxChoisi = fp.dmtgTauxChoisi || 0.20;
+  const psGeneral = typeof fp.psGeneral === 'number' ? fp.psGeneral : DEFAULT_FISCAL_PARAMS.psGeneral;
+  const psException = typeof fp.psException === 'number' ? fp.psException : DEFAULT_FISCAL_PARAMS.psException;
 
   const effectiveNbBeneficiaires = beneficiaryType === 'conjoint' ? 1 : Math.max(1, nbBeneficiaires || 1);
 
@@ -36,17 +38,17 @@ export function calculTransmission(
   let taxeForfaitaire = 0;
   let abattement = 0;
   let regime = '';
-  const psTaux = typeof fp.psPatrimoine === 'number' ? fp.psPatrimoine : 0.172;
   const resultatPs = {
     applicable: false,
     assiette: 0,
-    taux: psTaux,
+    taux: 0,
     montant: 0,
     note: '',
   };
 
-  const computePsDeces = (assietteGains: number, noteIfZero = ''): number => {
+  const computePsDeces = (assietteGains: number, taux: number, noteIfZero = ''): number => {
     const assiette = Math.max(0, assietteGains || 0);
+    resultatPs.taux = taux;
     if (assiette <= 0) {
       resultatPs.applicable = false;
       resultatPs.note = noteIfZero || 'Aucun gain latent soumis aux PS';
@@ -54,7 +56,7 @@ export function calculTransmission(
     }
     resultatPs.applicable = true;
     resultatPs.assiette = round2(assiette);
-    resultatPs.montant = round2(assiette * psTaux);
+    resultatPs.montant = round2(assiette * taux);
     resultatPs.note = '';
     return resultatPs.montant;
   };
@@ -63,13 +65,16 @@ export function calculTransmission(
   const isPea = envelope === ENVELOPES.PEA;
   const gainsLatents = Math.max(0, capitalTransmis - (cumulVersements || 0));
   const psMontant = (() => {
-    if (isAssuranceVieLike || isPea) {
-      return computePsDeces(gainsLatents);
+    if (isAssuranceVieLike) {
+      return computePsDeces(gainsLatents, psException);
+    }
+    if (isPea) {
+      return computePsDeces(gainsLatents, psGeneral);
     }
     if (perBancaire || envelope === ENVELOPES.CTO || envelope === ENVELOPES.PER) {
-      resultatPs.note = 'PS déjà acquittés pendant la vie du contrat';
+      resultatPs.note = 'PS deja acquittes pendant la vie du contrat';
     } else if (envelope === ENVELOPES.SCPI) {
-      resultatPs.note = 'PS prélevés sur les loyers annuels';
+      resultatPs.note = 'PS preleves sur les loyers annuels';
     }
     return 0;
   })();
@@ -81,7 +86,7 @@ export function calculTransmission(
     return {
       envelope,
       capitalTransmis: round2(capitalTransmis),
-      regime: 'Exonération conjoint/PACS',
+      regime: 'Exoneration conjoint/PACS',
       abattement: round2(capitalApresPs),
       assiette,
       taxeForfaitaire: 0,

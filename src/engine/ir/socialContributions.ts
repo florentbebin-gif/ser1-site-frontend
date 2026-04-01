@@ -1,7 +1,8 @@
 import type { SocialContribResult } from './types';
 
 interface PatrimonyCfg {
-  totalRate?: number | string;
+  generalRate?: number | string;
+  exceptionRate?: number | string;
 }
 
 interface SocialContribInput {
@@ -17,28 +18,31 @@ export function computeSocialContributions({
 }: SocialContribInput): SocialContribResult {
   if (!patrimonyCfg) {
     return {
-      psRateTotal: 0,
+      psRateGeneral: 0,
+      psRateException: 0,
       psFoncier: 0,
       psDividends: 0,
       psTotal: 0,
     };
   }
 
-  const psRateTotal = Number(patrimonyCfg.totalRate) || 0;
+  const psRateGeneral = Number(patrimonyCfg.generalRate) || 0;
+  const psRateException = Number(patrimonyCfg.exceptionRate) || 0;
 
   const baseFoncier = Number(fonciersBase) || 0;
-  const psFoncier = baseFoncier * (psRateTotal / 100);
+  const psFoncier = baseFoncier * (psRateException / 100);
 
   let psDividends = 0;
   const capWithPsNum = Number(capWithPs) || 0;
   if (capWithPsNum > 0) {
-    psDividends = capWithPsNum * (psRateTotal / 100);
+    psDividends = capWithPsNum * (psRateGeneral / 100);
   }
 
   const psTotal = psFoncier + psDividends;
 
   return {
-    psRateTotal,
+    psRateGeneral,
+    psRateException,
     psFoncier,
     psDividends,
     psTotal,

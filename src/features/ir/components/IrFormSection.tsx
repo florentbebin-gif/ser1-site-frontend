@@ -18,7 +18,8 @@ export function IrFormSection({
   setRealExpensesState,
   abat10SalD1,
   abat10SalD2,
-  psPatrimonyRate,
+  psGeneralRate,
+  psExceptionRate,
   fmtPct,
   capitalMode,
   setCapitalMode,
@@ -161,7 +162,8 @@ export function IrFormSection({
         setRealExpensesState={setRealExpensesState}
         abat10SalD1={abat10SalD1}
         abat10SalD2={abat10SalD2}
-        psPatrimonyRate={psPatrimonyRate}
+        psGeneralRate={psGeneralRate}
+        psExceptionRate={psExceptionRate}
         fmtPct={fmtPct}
         capitalMode={capitalMode}
         setCapitalMode={setCapitalMode}

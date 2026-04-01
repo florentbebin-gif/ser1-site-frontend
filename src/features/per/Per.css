@@ -148,7 +148,7 @@
 
 .per-home-secondary-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 
@@ -156,6 +156,7 @@
   display: block;
   width: 100%;
   padding: 12px 14px;
+  font: inherit;
   border: 1px solid var(--color-c8);
   border-radius: 10px;
   background: var(--color-c7);
@@ -205,8 +206,8 @@
 }
 
 .per-home-tile-title {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12.5px;
+  font-weight: 500;
   color: var(--color-c1);
 }
 
@@ -244,53 +245,66 @@
 }
 
 .per-potentiel-header {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom-color: var(--color-c6);
   border-bottom-width: 3px;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
 }
 
 .per-potentiel-header-copy {
   max-width: 720px;
 }
 
-.per-potentiel-kicker {
-  margin: 0 0 8px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-  color: var(--color-c9);
+.per-potentiel-tabs {
+  display: flex;
+  gap: 4px;
+  position: relative;
+  margin-bottom: 20px;
 }
 
-.per-back-link {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  margin-bottom: 12px;
-  padding: 5px 10px;
-  border: 1px solid var(--color-c8);
-  border-radius: 999px;
-  background: var(--color-c7);
-  font-size: 12px;
+.per-potentiel-tabs::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-c8);
+}
+
+.per-potentiel-tab {
+  padding: 10px 20px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--color-c1);
-  text-decoration: none;
-  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+  color: var(--color-c9);
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  transition: color 0.2s, border-bottom-color 0.2s, background-color 0.2s;
 }
 
-.per-back-link:hover {
-  border-color: var(--color-c3);
+.per-potentiel-tab:hover {
   color: var(--color-c2);
-  background: #FFFFFF;
+  background: var(--color-c7);
+}
+
+.per-potentiel-tab.is-active {
+  color: var(--color-c1);
+  font-weight: 600;
+  border-bottom-color: var(--color-c3);
+}
+
+.per-potentiel-tab.is-done {
+  color: var(--color-c5);
 }
 
 .per-potentiel-layout {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1.7fr) minmax(260px, 0.95fr);
+  grid-template-columns: minmax(0, 1.7fr) minmax(260px, 0.95fr);
   gap: 24px;
   align-items: start;
 }
@@ -1486,10 +1500,6 @@
 }
 
 @media (max-width: 1120px) {
-  .per-potentiel-layout {
-    grid-template-columns: 200px minmax(0, 1fr);
-  }
-
   .per-potentiel-context {
     position: static;
     grid-column: 1 / -1;
@@ -1504,12 +1514,8 @@
     grid-template-columns: 1fr;
   }
 
-  .per-potentiel-rail,
   .per-potentiel-context {
     position: static;
-  }
-
-  .per-potentiel-context {
     display: grid;
     grid-template-columns: 1fr;
   }
@@ -1553,6 +1559,10 @@
 
   .per-home-focus-title {
     font-size: 18px;
+  }
+
+  .per-home-secondary-grid {
+    grid-template-columns: 1fr;
   }
 
   .per-home-tile-header {

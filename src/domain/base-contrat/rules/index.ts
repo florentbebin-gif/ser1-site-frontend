@@ -44,6 +44,54 @@ const RESOLVERS: Array<(_id: string, _audience: Audience) => ProductRules | unde
 const LEGACY_SPLIT_IDS = new Set<string>(Object.keys(CATALOG_PP_PM_SPLIT_MAP));
 const WARNED_LEGACY_IDS = new Set<string>();
 
+function sanitizeRuleText(text: string): string {
+  let next = text;
+
+  const replacements: Array<[RegExp, string]> = [
+    [/PFU\s*\d+(?:[,.]\d+)?\s*%(?:\s*\([^)]*\))?/gi, 'PFU'],
+    [/flat tax\s*\d+(?:[,.]\d+)?\s*%/gi, 'PFU'],
+    [/prélèvements sociaux\s*:?\s*\d+(?:[,.]\d+)?\s*%/gi, 'prélèvements sociaux'],
+    [/PS\s*\d+(?:[,.]\d+)?\s*%/gi, 'prélèvements sociaux'],
+    [/abattement de\s*\d+(?:[,.]\d+)?\s*%/gi, 'abattement legal'],
+    [/abattement forfaitaire de\s*\d+(?:[,.]\d+)?\s*%/gi, 'abattement forfaitaire'],
+    [/réduction d'IR de\s*\d+(?:[,.]\d+)?\s*%/gi, "reduction d'IR"],
+    [/exonération de\s*\d+(?:[,.]\d+)?\s*%/gi, 'exoneration partielle'],
+    [/taxe de\s*\d+(?:[,.]\d+)?\s*%/gi, 'taxe forfaitaire'],
+    [/taux IR réduit à\s*\d+(?:[,.]\d+)?\s*%/gi, 'taux IR reduit'],
+    [/taux IR de\s*\d+(?:[,.]\d+)?\s*%/gi, 'taux IR'],
+    [/IR\s*\d+(?:[,.]\d+)?\s*%\s*\+\s*prélèvements sociaux\s*\d+(?:[,.]\d+)?\s*%/gi, 'IR + prelevements sociaux'],
+    [/\d+(?:[,.]\d+)?\s*%/g, ''],
+  ];
+
+  for (const [pattern, replacement] of replacements) {
+    next = next.replace(pattern, replacement);
+  }
+
+  return next
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\(\s+/g, '(')
+    .replace(/\s+\)/g, ')')
+    .replace(/\s+,/g, ',')
+    .replace(/\s+\./g, '.')
+    .replace(/\s+:/g, ':')
+    .replace(/ :/g, ':')
+    .trim();
+}
+
+function sanitizeRules(rules: ProductRules): ProductRules {
+  const sanitizeBlock = (block: ProductRules['constitution'][number]) => ({
+    ...block,
+    title: sanitizeRuleText(block.title),
+    bullets: block.bullets.map(sanitizeRuleText),
+  });
+
+  return {
+    constitution: rules.constitution.map(sanitizeBlock),
+    sortie: rules.sortie.map(sanitizeBlock),
+    deces: rules.deces.map(sanitizeBlock),
+  };
+}
+
 function isDevRuntime(): boolean {
   const nodeEnv = (
     globalThis as { process?: { env?: { NODE_ENV?: string } } }
@@ -74,7 +122,7 @@ export function getRules(productId: string, audience: Audience): ProductRules {
   for (const resolver of RESOLVERS) {
     const rules = resolver(productId, audience);
     if (rules) {
-      return rules;
+      return sanitizeRules(rules);
     }
   }
   return {

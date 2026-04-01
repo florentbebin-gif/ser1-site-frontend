@@ -118,6 +118,24 @@ describe('hasSocleRules — coverage report', () => {
   });
 });
 
+describe('getRules â€” aucun pourcentage visible dans title/bullets', () => {
+  for (const product of CATALOG) {
+    const audience = product.ppEligible ? 'pp' : 'pm';
+    it(`${product.id} â€” texte sans taux affiches`, () => {
+      const rules = getRules(product.id, audience);
+      const texts = [
+        ...rules.constitution.flatMap((b) => [b.title, ...b.bullets]),
+        ...rules.sortie.flatMap((b) => [b.title, ...b.bullets]),
+        ...rules.deces.flatMap((b) => [b.title, ...b.bullets]),
+      ];
+
+      for (const text of texts) {
+        expect(text).not.toMatch(/\d+(?:[.,]\d+)?\s*%/);
+      }
+    });
+  }
+});
+
 // ─────────────────────────────────────────────────────────────
 // 4. Produits clés — règles réelles attendues
 // ─────────────────────────────────────────────────────────────

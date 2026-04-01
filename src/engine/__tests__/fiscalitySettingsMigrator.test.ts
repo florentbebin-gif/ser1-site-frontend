@@ -15,9 +15,10 @@ import taxV1 from './fixtures/taxSettingsV1.json';
 // The golden snapshot from the baseline test
 const EXPECTED_PARAMS = {
   pfuIR: 0.128,
-  pfuPS: 0.172,
-  pfuTotal: 0.3,
-  psPatrimoine: 0.172,
+  pfuPS: 0.186,
+  pfuTotal: 0.314,
+  psGeneral: 0.186,
+  psException: 0.172,
   avAbattement8ansSingle: 4600,
   avAbattement8ansCouple: 9200,
   avSeuilPrimes150k: 150000,
@@ -56,7 +57,7 @@ describe('migrateV1toV2', () => {
   it('replaces PFU/PS values with $ref markers in rulesets', () => {
     const v2 = migrateV1toV2(fiscalityV1);
     const avRules = v2.rulesetsByKey.assuranceVie.rules as Record<string, any>;
-    expect(avRules.retraitsCapital.psRatePercent).toBe(REFS.psPatrimoine);
+    expect(avRules.retraitsCapital.psRatePercent).toBe(REFS.psException);
     expect(avRules.retraitsCapital.depuis2017.moins8Ans.irRatePercent).toBe(REFS.pfuIR);
 
     const perRules = v2.rulesetsByKey.perIndividuel.rules as Record<string, any>;
@@ -85,16 +86,16 @@ describe('resolveRefs', () => {
   });
 
   it('resolves $ref:ps_settings paths', () => {
-    const obj = { rate: REFS.psPatrimoine };
+    const obj = { rate: REFS.psGeneral };
     const resolved = resolveRefs(obj, taxV1, psV1) as Record<string, unknown>;
-    expect(resolved.rate).toBe(17.2);
+    expect(resolved.rate).toBe(18.6);
   });
 
   it('resolves nested refs in arrays', () => {
     const obj = { items: [{ r: REFS.pfuIR }, { r: REFS.pfuPS }] };
     const resolved = resolveRefs(obj, taxV1, psV1) as any;
     expect(resolved.items[0].r).toBe(12.8);
-    expect(resolved.items[1].r).toBe(17.2);
+    expect(resolved.items[1].r).toBe(18.6);
   });
 
   it('leaves non-ref values untouched', () => {
@@ -114,7 +115,7 @@ describe('V2 round-trip: migrate → resolve → extractFiscalParams === V1 base
   it('snapshot diff = 0 via legacy fields (primary path)', () => {
     const v2 = migrateV1toV2(fiscalityV1);
     // extractFiscalParams reads the legacy toplevel keys, not rulesetsByKey
-    const result = extractFiscalParams(v2, psV1);
+    const result = extractFiscalParams(v2, psV1, taxV1);
     expect(result).toEqual(EXPECTED_PARAMS);
   });
 
@@ -127,7 +128,7 @@ describe('V2 round-trip: migrate → resolve → extractFiscalParams === V1 base
       perIndividuel: resolvedRulesets.perIndividuel?.rules,
       dividendes: fiscalityV1.dividendes, // dividendes has no refs
     };
-    const result = extractFiscalParams(flatForEngine, psV1);
+    const result = extractFiscalParams(flatForEngine, psV1, taxV1);
     expect(result).toEqual(EXPECTED_PARAMS);
   });
 });

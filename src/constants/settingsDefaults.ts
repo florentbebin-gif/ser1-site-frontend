@@ -79,8 +79,8 @@ export const DEFAULT_TAX_SETTINGS = {
     },
   },
   pfu: {
-    current: { rateIR: 12.8, rateSocial: 17.2, rateTotal: 30.0 },
-    previous: { rateIR: 12.8, rateSocial: 17.2, rateTotal: 30.0 },
+    current: { rateIR: 12.8 },
+    previous: { rateIR: 12.8 },
   },
   cehr: {
     current: {
@@ -162,18 +162,20 @@ export const DEFAULT_TAX_SETTINGS = {
 
 export const DEFAULT_PS_SETTINGS = {
   labels: {
-    currentYearLabel: '2025 (RFR 2023 & Avis IR 2024)',
-    previousYearLabel: '2024 (RFR 2022 & Avis IR 2023)',
+    currentYearLabel: '2026 (RFR 2024 & Avis IR 2025)',
+    previousYearLabel: '2025 (RFR 2023 & Avis IR 2024)',
   },
 
   // PS sur patrimoine / capital
   patrimony: {
     current: {
-      totalRate: 17.2,
+      generalRate: 18.6,
+      exceptionRate: 17.2,
       csgDeductibleRate: 6.8,
     },
     previous: {
-      totalRate: 17.2,
+      generalRate: 17.2,
+      exceptionRate: 17.2,
       csgDeductibleRate: 6.8,
     },
   },
@@ -356,6 +358,7 @@ export const DEFAULT_PASS_HISTORY: Record<number, number> = {
   2023: 43992,
   2024: 46368,
   2025: 47100,
+  2026: 48060,
 };
 
 export const DEFAULT_FISCALITY_SETTINGS = {

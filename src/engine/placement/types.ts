@@ -6,7 +6,8 @@ export interface FiscalParams {
   pfuIR?: number;
   pfuPS?: number;
   pfuTotal?: number;
-  psPatrimoine?: number;
+  psGeneral?: number;
+  psException?: number;
   avAbattement8ansSingle?: number;
   avAbattement8ansCouple?: number;
   avSeuilPrimes150k?: number;
