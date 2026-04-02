@@ -17,14 +17,11 @@ import {
 import { buildSuccessionAvFiscalAnalysis } from './successionAvFiscal';
 import {
   coordinateSuccessionInsuranceAllowances,
-  extractEstateAllowanceUsage,
-  type EstateAllowanceUsage,
 } from './successionDeathInsuranceAllowances';
 import { buildSuccessionSurvivorEconomicInflows } from './successionInsuranceInflows';
 import { buildSuccessionPerFiscalAnalysis } from './successionPerFiscal';
 import {
   buildSuccessionPrevoyanceFiscalAnalysis,
-  getSuccessionPrevoyanceRegimeInfo,
 } from './successionPrevoyanceFiscal';
 import { buildSuccessionPatrimonialAnalysis } from './successionPatrimonial';
 import { buildSuccessionPredecesAnalysis } from './successionPredeces';
@@ -37,11 +34,7 @@ import { buildSuccessionDevolutionAnalysis } from './successionDevolution';
 import {
   getDonationEffectiveAmount,
   getTestamentParticularLegaciesTotal,
-  hasComputableSuccessionFiliation,
-  hasRequiredBirthDatesForSituation,
-  isCoupleSituation,
 } from './successionSimulator.helpers';
-import { isSuccessionSocieteAcquetsRegime } from './successionDraft';
 import type {
   SuccessionAssetDetailEntry,
   SuccessionAssuranceVieEntry,
@@ -59,6 +52,11 @@ import type {
   DEFAULT_SUCCESSION_PATRIMONIAL_CONTEXT,
 } from './successionDraft';
 import { useSuccessionOutcomeDerivedValues } from './useSuccessionOutcomeDerivedValues';
+import {
+  buildEstateAllowanceUsageBySide,
+  buildSuccessionPrevoyanceRegimeByEntry,
+  buildSuccessionSituationFlags,
+} from './useSuccessionDerivedValues.helpers';
 import { useSuccessionUiDerivedValues } from './useSuccessionUiDerivedValues';
 
 interface UseSuccessionDerivedValuesInput {
@@ -127,46 +125,24 @@ export function useSuccessionDerivedValues({
     [civilContext.situationMatrimoniale],
   );
 
-  const isMarried = civilContext.situationMatrimoniale === 'marie';
-  const isPacsed = civilContext.situationMatrimoniale === 'pacse';
-  const isConcubinage = civilContext.situationMatrimoniale === 'concubinage';
-  const isCouple = isCoupleSituation(civilContext.situationMatrimoniale);
-  const hasComputableFiliation = useMemo(
-    () => hasComputableSuccessionFiliation(
-      civilContext.situationMatrimoniale,
-      enfantsContext,
-      familyMembers,
-    ),
-    [civilContext.situationMatrimoniale, enfantsContext, familyMembers],
+  const {
+    isMarried,
+    isPacsed,
+    isConcubinage,
+    isCouple,
+    hasComputableFiliation,
+    hasRequiredBirthDatesForCurrentSituation,
+    shouldRenderSuccessionComputationSections,
+    isCommunityRegime,
+    isPacsIndivision,
+    showSharedTransmissionPct,
+    showDonationEntreEpoux,
+    isSocieteAcquetsRegime,
+    isParticipationAcquetsRegime,
+  } = useMemo(
+    () => buildSuccessionSituationFlags(civilContext, enfantsContext, familyMembers),
+    [civilContext, enfantsContext, familyMembers],
   );
-  const hasRequiredBirthDatesForCurrentSituation = useMemo(
-    () => hasRequiredBirthDatesForSituation(
-      civilContext.situationMatrimoniale,
-      civilContext.dateNaissanceEpoux1,
-      civilContext.dateNaissanceEpoux2,
-    ),
-    [
-      civilContext.situationMatrimoniale,
-      civilContext.dateNaissanceEpoux1,
-      civilContext.dateNaissanceEpoux2,
-    ],
-  );
-  const shouldRenderSuccessionComputationSections = hasComputableFiliation
-    && hasRequiredBirthDatesForCurrentSituation;
-  const isCommunityRegime = isMarried && (
-    civilContext.regimeMatrimonial === 'communaute_legale'
-    || civilContext.regimeMatrimonial === 'communaute_universelle'
-    || civilContext.regimeMatrimonial === 'communaute_meubles_acquets'
-  );
-  const isPacsIndivision = isPacsed && civilContext.pacsConvention === 'indivision';
-  const showSharedTransmissionPct = isCommunityRegime || isPacsIndivision;
-  const showDonationEntreEpoux = isMarried;
-  const isSocieteAcquetsRegime = isSuccessionSocieteAcquetsRegime({
-    situationMatrimoniale: civilContext.situationMatrimoniale,
-    regimeMatrimonial: civilContext.regimeMatrimonial,
-    pacsConvention: civilContext.pacsConvention,
-  });
-  const isParticipationAcquetsRegime = isMarried && civilContext.regimeMatrimonial === 'participation_acquets';
 
   const uiDerived = useSuccessionUiDerivedValues({
     civilContext,
@@ -239,26 +215,20 @@ export function useSuccessionDerivedValues({
     ],
   );
 
-  const prevoyanceRegimeByEntry = useMemo(() => Object.fromEntries(
-    prevoyanceDecesEntries.map((entry) => {
-      const regimeInfo = getSuccessionPrevoyanceRegimeInfo(
-        entry,
-        civilContext,
-        simulatedDeathDate,
-        fiscalSnapshot.avDeces.agePivotPrimes,
-      );
-
-      return [entry.id, {
-        regimeLabel: regimeInfo.regimeLabel,
-        warning: regimeInfo.warning,
-      }];
-    }),
-  ), [
-    prevoyanceDecesEntries,
-    civilContext,
-    simulatedDeathDate,
-    fiscalSnapshot.avDeces.agePivotPrimes,
-  ]);
+  const prevoyanceRegimeByEntry = useMemo(
+    () => buildSuccessionPrevoyanceRegimeByEntry(
+      prevoyanceDecesEntries,
+      civilContext,
+      simulatedDeathDate,
+      fiscalSnapshot.avDeces.agePivotPrimes,
+    ),
+    [
+      prevoyanceDecesEntries,
+      civilContext,
+      simulatedDeathDate,
+      fiscalSnapshot.avDeces.agePivotPrimes,
+    ],
+  );
 
   // Phase 1: Raw survivor inflows (conjoint is exempt → identical with/without coordination)
   const survivorEconomicInflows = useMemo(
@@ -348,21 +318,10 @@ export function useSuccessionDerivedValues({
   );
 
   // Phase 3: Extract estate abattement usage → coordinate insurance with residual abattements
-  const estateAllowanceUsageBySide = useMemo(() => {
-    if (!chainageAnalysis.applicable) return undefined;
-    const step1Side = chainageAnalysis.order;
-    const step2Side = step1Side === 'epoux1' ? 'epoux2' : 'epoux1';
-    return {
-      [step1Side]: extractEstateAllowanceUsage(
-        chainageAnalysis.step1?.beneficiaries ?? [],
-        fiscalSnapshot.dmtgSettings,
-      ),
-      [step2Side]: extractEstateAllowanceUsage(
-        chainageAnalysis.step2?.beneficiaries ?? [],
-        fiscalSnapshot.dmtgSettings,
-      ),
-    } as Partial<Record<'epoux1' | 'epoux2', EstateAllowanceUsage>>;
-  }, [chainageAnalysis, fiscalSnapshot.dmtgSettings]);
+  const estateAllowanceUsageBySide = useMemo(
+    () => buildEstateAllowanceUsageBySide(chainageAnalysis, fiscalSnapshot.dmtgSettings),
+    [chainageAnalysis, fiscalSnapshot.dmtgSettings],
+  );
 
   const coordinatedInsuranceFiscal = useMemo(
     () => coordinateSuccessionInsuranceAllowances({
@@ -497,6 +456,11 @@ export function useSuccessionDerivedValues({
     simulatedDeathDate,
     shouldRenderSuccessionComputationSections,
   });
+  const {
+    derivedMasseSuccessorale: _derivedMasseSuccessorale,
+    derivedCapitauxHorsSuccession: _derivedCapitauxHorsSuccession,
+    ...publicOutcomeDerived
+  } = outcomeDerived;
 
   return {
     nbEnfants,
@@ -563,25 +527,6 @@ export function useSuccessionDerivedValues({
     prevoyanceClauseOptions: uiDerived.prevoyanceClauseOptions,
     prevoyanceRegimeByEntry,
     prevoyanceFiscalAnalysis,
-    displayUsesChainage: outcomeDerived.displayUsesChainage,
-    displayActifNetSuccession: outcomeDerived.displayActifNetSuccession,
-    directDisplayAnalysis: outcomeDerived.directDisplayAnalysis,
-    displayAssuranceVieTransmise: outcomeDerived.displayAssuranceVieTransmise,
-    displayPerTransmis: outcomeDerived.displayPerTransmis,
-    displayPrevoyanceTransmise: outcomeDerived.displayPrevoyanceTransmise,
-    derivedMasseTransmise: outcomeDerived.derivedMasseTransmise,
-    derivedTotalDroits: outcomeDerived.derivedTotalDroits,
-    synthDonutTransmis: outcomeDerived.synthDonutTransmis,
-    synthHypothese: outcomeDerived.synthHypothese,
-    transmissionRows: outcomeDerived.transmissionRows,
-    insurance990ILines: outcomeDerived.insurance990ILines,
-    insurance757BLines: outcomeDerived.insurance757BLines,
-    chainageExportPayload: outcomeDerived.chainageExportPayload,
-    totalActifsLiquidation: outcomeDerived.totalActifsLiquidation,
-    canExportSimplified: outcomeDerived.canExportSimplified,
-    canExportCurrentMode: outcomeDerived.canExportCurrentMode,
-    attentions: outcomeDerived.attentions,
-    assumptions: outcomeDerived.assumptions,
-    exportHeirs: outcomeDerived.exportHeirs,
+    ...publicOutcomeDerived,
   };
 }
