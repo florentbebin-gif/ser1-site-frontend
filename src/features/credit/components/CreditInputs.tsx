@@ -4,6 +4,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
+import { SimFieldShell } from '@/components/ui/sim';
 import { parseCapital, parseTaux, formatTauxInput } from '../utils/creditFormatters';
 import type {
   InputEuroProps,
@@ -34,25 +35,20 @@ export function InputEuro({
   };
 
   return (
-    <div className="ci-field">
-      {label && <label className="ci-label">{label}</label>}
-      <div className="ci-field-row">
-        <input
-          type="text"
-          inputMode="numeric"
-          disabled={disabled}
-          value={fmt(value)}
-          onChange={handleChange}
-          data-testid={dataTestId || testId}
-          aria-invalid={!!error}
-          className={`ci-input${error ? ' ci-input--error' : ''}${highlight ? ' ci-input--guide' : ''}`}
-          onBlur={onBlur}
-        />
-        <span className="ci-unit">€</span>
-      </div>
-      {error && <span className="ci-error" role="alert">{error}</span>}
-      {!error && hint && <span className="ci-hint">{hint}</span>}
-    </div>
+    <SimFieldShell label={label} hint={hint} error={error} className="ci-field" rowClassName="ci-field-row">
+      <input
+        type="text"
+        inputMode="numeric"
+        disabled={disabled}
+        value={fmt(value)}
+        onChange={handleChange}
+        data-testid={dataTestId || testId}
+        aria-invalid={!!error}
+        className={`ci-input sim-field__control${error ? ' ci-input--error sim-field__control--error' : ''}${highlight ? ' ci-input--guide sim-field__control--guide' : ''}`}
+        onBlur={onBlur}
+      />
+      <span className="ci-unit sim-field__unit">€</span>
+    </SimFieldShell>
   );
 }
 
@@ -86,26 +82,21 @@ export function InputPct({
   };
 
   return (
-    <div className="ci-field" data-testid={testId}>
-      {label && <label className="ci-label">{label}</label>}
-      <div className="ci-field-row">
-        <input
-          type="text"
-          inputMode="decimal"
-          disabled={disabled}
-          value={local}
-          placeholder={placeholder}
-          onChange={handleChange}
-          onFocus={() => setFocused(true)}
-          onBlur={handleBlur}
-          aria-invalid={!!error}
-          className={`ci-input${error ? ' ci-input--error' : ''}${highlight ? ' ci-input--guide' : ''}`}
-        />
-        <span className="ci-unit">%</span>
-      </div>
-      {error && <span className="ci-error" role="alert">{error}</span>}
-      {!error && hint && <span className="ci-hint">{hint}</span>}
-    </div>
+    <SimFieldShell label={label} hint={hint} error={error} testId={testId} className="ci-field" rowClassName="ci-field-row">
+      <input
+        type="text"
+        inputMode="decimal"
+        disabled={disabled}
+        value={local}
+        placeholder={placeholder}
+        onChange={handleChange}
+        onFocus={() => setFocused(true)}
+        onBlur={handleBlur}
+        aria-invalid={!!error}
+        className={`ci-input sim-field__control${error ? ' ci-input--error sim-field__control--error' : ''}${highlight ? ' ci-input--guide sim-field__control--guide' : ''}`}
+      />
+      <span className="ci-unit sim-field__unit">%</span>
+    </SimFieldShell>
   );
 }
 
@@ -130,24 +121,19 @@ export function InputNumber({
   };
 
   return (
-    <div className="ci-field" data-testid={testId}>
-      {label && <label className="ci-label">{label}</label>}
-      <div className="ci-field-row">
-        <input
-          type="text"
-          inputMode="numeric"
-          disabled={disabled}
-          value={String(value || 0)}
-          onChange={handleChange}
-          aria-invalid={!!error}
-          className={`ci-input${error ? ' ci-input--error' : ''}${highlight ? ' ci-input--guide' : ''}`}
-          onBlur={onBlur}
-        />
-        {unit && <span className="ci-unit">{unit}</span>}
-      </div>
-      {error && <span className="ci-error" role="alert">{error}</span>}
-      {!error && hint && <span className="ci-hint">{hint}</span>}
-    </div>
+    <SimFieldShell label={label} hint={hint} error={error} testId={testId} className="ci-field" rowClassName="ci-field-row">
+      <input
+        type="text"
+        inputMode="numeric"
+        disabled={disabled}
+        value={String(value || 0)}
+        onChange={handleChange}
+        aria-invalid={!!error}
+        className={`ci-input sim-field__control${error ? ' ci-input--error sim-field__control--error' : ''}${highlight ? ' ci-input--guide sim-field__control--guide' : ''}`}
+        onBlur={onBlur}
+      />
+      {unit && <span className="ci-unit sim-field__unit">{unit}</span>}
+    </SimFieldShell>
   );
 }
 
@@ -161,19 +147,16 @@ export function InputMonth({
   testId,
 }: InputMonthProps) {
   return (
-    <div className="ci-field" data-testid={testId}>
-      {label && <label className="ci-label">{label}</label>}
+    <SimFieldShell label={label} hint={hint} error={error} testId={testId} className="ci-field">
       <input
         type="month"
         disabled={disabled}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={!!error}
-        className={`ci-input ci-input--left${error ? ' ci-input--error' : ''}`}
+        className={`ci-input ci-input--left sim-field__control sim-field__control--left${error ? ' ci-input--error sim-field__control--error' : ''}`}
       />
-      {error && <span className="ci-error" role="alert">{error}</span>}
-      {!error && hint && <span className="ci-hint">{hint}</span>}
-    </div>
+    </SimFieldShell>
   );
 }
 
@@ -225,9 +208,8 @@ export function Select<TValue extends string | number>({
   };
 
   return (
-    <div className="ci-field" data-testid={testId}>
-      {label && <label className="ci-label">{label}</label>}
-      <div ref={containerRef} className={`ci-select-wrapper${isOpen ? ' is-open' : ''}`}>
+    <SimFieldShell label={label} hint={hint} error={error} testId={testId} className="ci-field">
+      <div ref={containerRef} className={`ci-select-wrapper sim-select-wrapper${isOpen ? ' is-open' : ''}`}>
         <button
           type="button"
           disabled={disabled}
@@ -236,13 +218,13 @@ export function Select<TValue extends string | number>({
           aria-haspopup="listbox"
           aria-expanded={isOpen}
           aria-invalid={!!error}
-          className={`ci-select-trigger${error ? ' ci-select-trigger--error' : ''}`}
+          className={`ci-select-trigger sim-field__select-trigger${error ? ' ci-select-trigger--error sim-field__control--error' : ''}`}
         >
-          <span className="ci-select-trigger__value">
+          <span className="ci-select-trigger__value sim-field__select-value">
             {selectedOption?.label ?? ''}
           </span>
           <svg
-            className="ci-select-trigger__arrow"
+            className="ci-select-trigger__arrow sim-field__select-arrow"
             width="10"
             height="6"
             viewBox="0 0 10 6"
@@ -259,13 +241,13 @@ export function Select<TValue extends string | number>({
         </button>
 
         {isOpen && (
-          <ul role="listbox" className="ci-select-dropdown">
+          <ul role="listbox" className="ci-select-dropdown sim-field__dropdown">
             {options.map((option) => (
               <li
                 key={String(option.value)}
                 role="option"
                 aria-selected={option.value === value}
-                className={`ci-select-option${option.value === value ? ' is-selected' : ''}`}
+                className={`ci-select-option sim-field__option${option.value === value ? ' is-selected' : ''}`}
                 onMouseDown={(event) => {
                   event.preventDefault();
                   onChange(option.value);
@@ -278,9 +260,7 @@ export function Select<TValue extends string | number>({
           </ul>
         )}
       </div>
-      {error && <span className="ci-error" role="alert">{error}</span>}
-      {!error && hint && <span className="ci-hint">{hint}</span>}
-    </div>
+    </SimFieldShell>
   );
 }
 

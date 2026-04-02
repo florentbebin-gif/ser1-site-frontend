@@ -260,6 +260,11 @@
 .ir-table-input {
   display: flex;
   align-items: center;
+  gap: 0;
+  width: 100%;
+}
+
+.ir-table-input__row {
   width: 100%;
 }
 
