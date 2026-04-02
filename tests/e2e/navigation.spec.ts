@@ -25,6 +25,7 @@ test.describe('Navigation — Routes publiques', () => {
       ROUTES.credit,
       ROUTES.placement,
       ROUTES.audit,
+      ROUTES.strategy,
       ROUTES.settings,
     ];
 
