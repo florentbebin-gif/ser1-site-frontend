@@ -345,25 +345,25 @@ export function VersementConfigModal({
   };
 
   return (
-    <div className="vcm-overlay">
+    <div className="vcm-overlay sim-modal-overlay">
       <div
-        className="vcm"
+        className="vcm sim-modal"
         data-testid="placement-versements-modal"
       >
-        <div className="vcm__header">
-          <div className="vcm__header-content">
-            <div className="vcm__icon" aria-hidden="true">
+        <div className="vcm__header sim-modal__header">
+          <div className="vcm__header-content sim-modal__header-content">
+            <div className="vcm__icon sim-modal__icon" aria-hidden="true">
               <LayersIcon />
             </div>
             <div>
-              <h2 className="vcm__title">Parametrage des versements</h2>
-              <p className="vcm__subtitle">{envelopeLabels[envelope]}</p>
+              <h2 className="vcm__title sim-modal__title">Parametrage des versements</h2>
+              <p className="vcm__subtitle sim-modal__subtitle">{envelopeLabels[envelope]}</p>
             </div>
           </div>
 
           <button
             type="button"
-            className="vcm__close"
+            className="vcm__close sim-modal__close"
             onClick={onClose}
             aria-label="Fermer la modale"
             data-testid="placement-versements-close"
@@ -372,7 +372,7 @@ export function VersementConfigModal({
           </button>
         </div>
 
-        <div className="vcm__body">
+        <div className="vcm__body sim-modal__body">
           {isAV ? (
             <div className="vcm__hint vcm__hint--spaced">
               Hypothese : investissement 100 % unites de compte - prelevements sociaux dus au rachat.
@@ -424,7 +424,7 @@ export function VersementConfigModal({
           )}
         </div>
 
-        <div className="vcm__footer">
+        <div className="vcm__footer sim-modal__footer">
           <button type="button" className="vcm__btn vcm__btn--secondary" onClick={onClose}>
             Annuler
           </button>
