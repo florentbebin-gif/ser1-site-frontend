@@ -192,7 +192,7 @@ export default function SettingsImpots() {
 
       if (existingError && existingError.code !== 'PGRST116') {
         console.error(existingError);
-        setMessage("Erreur lors du chargement des parametres existants.");
+        setMessage("Erreur lors du chargement des paramètres existants.");
         return;
       }
 
@@ -218,7 +218,7 @@ export default function SettingsImpots() {
         setMessage("Erreur lors de l'enregistrement.");
       } else {
         setSettings((prev) => mergeTaxSettings(prev, payload));
-        setMessage('Parametres impots enregistres.');
+        setMessage('Paramètres impôts enregistrés.');
         invalidate('tax');
         broadcastInvalidation('tax');
       }
@@ -343,10 +343,10 @@ export default function SettingsImpots() {
           title={hasErrors ? 'Corrigez les erreurs avant de sauvegarder' : ''}
         >
           {saving
-            ? 'Enregistrement...'
+            ? 'Enregistrement…'
             : hasErrors
               ? 'Erreurs de validation'
-              : 'Enregistrer les parametres impots'}
+              : 'Enregistrer les paramètres impôts'}
         </button>
       )}
 

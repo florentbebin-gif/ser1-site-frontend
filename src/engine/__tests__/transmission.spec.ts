@@ -65,7 +65,7 @@ describe('calculTransmission', () => {
     expect(res.taxeDmtg).toBeCloseTo((80000 - baseFiscalParams.av757BAbattement) * baseFiscalParams.dmtgTauxChoisi, 2);
     expect(res.taxe).toBeCloseTo(res.taxeDmtg, 2);
     expect(res.psDeces.applicable).toBe(false);
-    expect(res.psDeces.note).toBe('PS deja acquittes pendant la vie du contrat');
+    expect(res.psDeces.note).toBe('PS déjà acquittés pendant la vie du contrat');
   });
 
   it('PER bancaire applique uniquement la taxe DMTG simplifiee', () => {
@@ -80,7 +80,7 @@ describe('calculTransmission', () => {
     expect(res.taxeDmtg).toBeCloseTo(50000 * baseFiscalParams.dmtgTauxChoisi, 2);
     expect(res.taxe).toBeCloseTo(res.taxeDmtg, 2);
     expect(res.psDeces.applicable).toBe(false);
-    expect(res.psDeces.note).toBe('PS deja acquittes pendant la vie du contrat');
+    expect(res.psDeces.note).toBe('PS déjà acquittés pendant la vie du contrat');
   });
 
   it('PEA applique PS deces sur gains puis DMTG', () => {
@@ -102,7 +102,7 @@ describe('calculTransmission', () => {
     }, baseFiscalParams);
 
     expect(res.psDeces.applicable).toBe(false);
-    expect(res.psDeces.note).toBe('PS preleves sur les loyers annuels');
+    expect(res.psDeces.note).toBe('PS prélevés sur les loyers annuels');
   });
 });
 

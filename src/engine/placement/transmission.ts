@@ -72,9 +72,9 @@ export function calculTransmission(
       return computePsDeces(gainsLatents, psGeneral);
     }
     if (perBancaire || envelope === ENVELOPES.CTO || envelope === ENVELOPES.PER) {
-      resultatPs.note = 'PS deja acquittes pendant la vie du contrat';
+      resultatPs.note = 'PS déjà acquittés pendant la vie du contrat';
     } else if (envelope === ENVELOPES.SCPI) {
-      resultatPs.note = 'PS preleves sur les loyers annuels';
+      resultatPs.note = 'PS prélevés sur les loyers annuels';
     }
     return 0;
   })();

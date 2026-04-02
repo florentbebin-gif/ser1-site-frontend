@@ -222,17 +222,17 @@ export default function SettingsPrelevements() {
 
       if (saveError) {
         console.error(saveError);
-        setError("Erreur lors de l'enregistrement des parametres.");
+        setError("Erreur lors de l'enregistrement des paramètres.");
         return;
       }
 
       setSettings(payload);
-      setMessage('Parametres de prelevements sociaux enregistres.');
+      setMessage('Paramètres de prélèvements sociaux enregistrés.');
       invalidate('ps');
       broadcastInvalidation('ps');
     } catch (saveError) {
       console.error(saveError);
-      setError("Erreur lors de l'enregistrement des parametres.");
+      setError("Erreur lors de l'enregistrement des paramètres.");
     } finally {
       setSaving(false);
     }
@@ -251,7 +251,7 @@ export default function SettingsPrelevements() {
       )}
 
       {loading ? (
-        <div style={{ marginTop: 24 }}>Chargement des parametres...</div>
+        <div style={{ marginTop: 24 }}>Chargement des paramètres…</div>
       ) : (
         <div
           style={{
@@ -317,10 +317,10 @@ export default function SettingsPrelevements() {
               title={hasErrors ? 'Corrigez les erreurs avant de sauvegarder' : ''}
             >
               {saving
-                ? 'Enregistrement...'
+                ? 'Enregistrement…'
                 : hasErrors
                   ? 'Erreurs de validation'
-                  : 'Enregistrer les parametres'}
+                  : 'Enregistrer les paramètres'}
             </button>
           )}
 
