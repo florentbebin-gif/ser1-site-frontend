@@ -30,6 +30,7 @@ import {
   buildSuccessionSynthHypothese,
   mergeInsuranceBeneficiaryLines,
 } from './useSuccessionOutcomeDerivedValues.helpers';
+import { buildSuccessionChainageExportPayload } from './useSuccessionOutcomeExportPayload';
 
 interface UseSuccessionOutcomeDerivedValuesInput {
   civilContext: typeof DEFAULT_SUCCESSION_CIVIL_CONTEXT;
@@ -337,152 +338,21 @@ export function useSuccessionOutcomeDerivedValues({
   const insurance757BLines = insuranceMerged.lines757B;
 
   const chainageExportPayload = useMemo(
-    () => ({
-      applicable: displayUsesChainage,
-      order: chainageAnalysis.order,
-      firstDecedeLabel: chainageAnalysis.firstDecedeLabel,
-      secondDecedeLabel: chainageAnalysis.secondDecedeLabel,
-      step1: displayUsesChainage && chainageAnalysis.step1 ? {
-        actifTransmis: chainageAnalysis.step1.actifTransmis,
-        assuranceVieTransmise: assuranceVieByAssure[chainageAnalysis.order],
-        perTransmis: perByAssure[chainageAnalysis.order],
-        prevoyanceTransmise: prevoyanceByAssure[chainageAnalysis.order],
-        masseTotaleTransmise: chainageAnalysis.step1.actifTransmis
-          + assuranceVieByAssure[chainageAnalysis.order]
-          + perByAssure[chainageAnalysis.order]
-          + prevoyanceByAssure[chainageAnalysis.order],
-        droitsAssuranceVie: avFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits,
-        droitsPer: perFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits,
-        droitsPrevoyance: prevoyanceFiscalAnalysis.byAssure[chainageAnalysis.order].totalDroits,
-        partConjoint: chainageAnalysis.step1.partConjoint,
-        partEnfants: chainageAnalysis.step1.partEnfants,
-        droitsEnfants: chainageAnalysis.step1.droitsEnfants,
-        beneficiaries: chainageAnalysis.step1.beneficiaries.map((beneficiary) => ({
-          label: beneficiary.label,
-          brut: beneficiary.brut,
-          droits: beneficiary.droits,
-          net: beneficiary.net,
-          exonerated: beneficiary.exonerated ?? false,
-        })),
-      } : null,
-      step2: displayUsesChainage && chainageAnalysis.step2 ? {
-        actifTransmis: chainageAnalysis.step2.actifTransmis,
-        assuranceVieTransmise: assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
-        perTransmis: perByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
-        prevoyanceTransmise: prevoyanceByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
-        masseTotaleTransmise: chainageAnalysis.step2.actifTransmis
-          + assuranceVieByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1']
-          + perByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1']
-          + prevoyanceByAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'],
-        droitsAssuranceVie: avFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits,
-        droitsPer: perFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits,
-        droitsPrevoyance: prevoyanceFiscalAnalysis.byAssure[chainageAnalysis.order === 'epoux1' ? 'epoux2' : 'epoux1'].totalDroits,
-        partConjoint: chainageAnalysis.step2.partConjoint,
-        partEnfants: chainageAnalysis.step2.partEnfants,
-        droitsEnfants: chainageAnalysis.step2.droitsEnfants,
-        beneficiaries: chainageAnalysis.step2.beneficiaries.map((beneficiary) => ({
-          label: beneficiary.label,
-          brut: beneficiary.brut,
-          droits: beneficiary.droits,
-          net: beneficiary.net,
-          exonerated: beneficiary.exonerated ?? false,
-        })),
-      } : null,
-      societeAcquets: displayUsesChainage && chainageAnalysis.societeAcquets
-        ? {
-          configured: chainageAnalysis.societeAcquets.configured,
-          totalValue: chainageAnalysis.societeAcquets.totalValue,
-          firstEstateContribution: chainageAnalysis.societeAcquets.firstEstateContribution,
-          survivorShare: chainageAnalysis.societeAcquets.survivorShare,
-          preciputAmount: chainageAnalysis.societeAcquets.preciputAmount,
-          survivorAttributionAmount: chainageAnalysis.societeAcquets.survivorAttributionAmount,
-          liquidationMode: chainageAnalysis.societeAcquets.liquidationMode,
-          deceasedQuotePct: chainageAnalysis.societeAcquets.deceasedQuotePct,
-          survivorQuotePct: chainageAnalysis.societeAcquets.survivorQuotePct,
-          attributionIntegrale: chainageAnalysis.societeAcquets.attributionIntegrale,
-        }
-        : null,
-      participationAcquets: displayUsesChainage && chainageAnalysis.participationAcquets
-        ? {
-          configured: chainageAnalysis.participationAcquets.configured,
-          active: chainageAnalysis.participationAcquets.active,
-          useCurrentAssetsAsFinalPatrimony: chainageAnalysis.participationAcquets.useCurrentAssetsAsFinalPatrimony,
-          patrimoineOriginaireEpoux1: chainageAnalysis.participationAcquets.patrimoineOriginaireEpoux1,
-          patrimoineOriginaireEpoux2: chainageAnalysis.participationAcquets.patrimoineOriginaireEpoux2,
-          patrimoineFinalEpoux1: chainageAnalysis.participationAcquets.patrimoineFinalEpoux1,
-          patrimoineFinalEpoux2: chainageAnalysis.participationAcquets.patrimoineFinalEpoux2,
-          acquetsEpoux1: chainageAnalysis.participationAcquets.acquetsEpoux1,
-          acquetsEpoux2: chainageAnalysis.participationAcquets.acquetsEpoux2,
-          creditor: chainageAnalysis.participationAcquets.creditor,
-          debtor: chainageAnalysis.participationAcquets.debtor,
-          quoteAppliedPct: chainageAnalysis.participationAcquets.quoteAppliedPct,
-          creanceAmount: chainageAnalysis.participationAcquets.creanceAmount,
-          firstEstateAdjustment: chainageAnalysis.participationAcquets.firstEstateAdjustment,
-        }
-        : null,
-      interMassClaims: displayUsesChainage && chainageAnalysis.interMassClaims
-        ? {
-          configured: chainageAnalysis.interMassClaims.configured,
-          totalRequestedAmount: chainageAnalysis.interMassClaims.totalRequestedAmount,
-          totalAppliedAmount: chainageAnalysis.interMassClaims.totalAppliedAmount,
-          claims: chainageAnalysis.interMassClaims.claims.map((claim) => ({
-            id: claim.id,
-            kind: claim.kind,
-            label: claim.label,
-            fromPocket: claim.fromPocket,
-            toPocket: claim.toPocket,
-            requestedAmount: claim.requestedAmount,
-            appliedAmount: claim.appliedAmount,
-          })),
-        }
-        : null,
-      affectedLiabilities: displayUsesChainage && chainageAnalysis.affectedLiabilities
-        ? {
-          totalAmount: chainageAnalysis.affectedLiabilities.totalAmount,
-          byPocket: chainageAnalysis.affectedLiabilities.byPocket.map((entry) => ({
-            pocket: entry.pocket,
-            amount: entry.amount,
-          })),
-        }
-        : null,
-      preciput: displayUsesChainage && chainageAnalysis.preciput
-        ? {
-          mode: chainageAnalysis.preciput.mode,
-          pocket: chainageAnalysis.preciput.pocket,
-          requestedAmount: chainageAnalysis.preciput.requestedAmount,
-          appliedAmount: chainageAnalysis.preciput.appliedAmount,
-          usesGlobalFallback: chainageAnalysis.preciput.usesGlobalFallback,
-          selections: chainageAnalysis.preciput.selections.map((selection) => ({
-            id: selection.id,
-            sourceType: selection.sourceType,
-            sourceId: selection.sourceId,
-            label: selection.label,
-            pocket: selection.pocket,
-            requestedAmount: selection.requestedAmount,
-            appliedAmount: selection.appliedAmount,
-          })),
-        }
-        : null,
+    () => buildSuccessionChainageExportPayload({
+      displayUsesChainage,
+      chainageAnalysis,
+      assuranceVieByAssure,
+      perByAssure,
+      prevoyanceByAssure,
       assuranceVieTotale: assuranceVieTotals.capitaux,
       perTotale: perTotals.capitaux,
       prevoyanceTotale: prevoyanceTotals.capitaux,
-      totalDroits: derivedTotalDroits,
-      warnings: displayUsesChainage
-        ? [
-          ...chainageAnalysis.warnings,
-          ...avFiscalAnalysis.warnings,
-          ...perFiscalAnalysis.warnings,
-          ...prevoyanceFiscalAnalysis.warnings,
-        ]
-        : [
-          ...(isPacsed
-            ? ["PACS: la synthese fiscale affichee repose sur le deces simule du partenaire selectionne, pas sur une chronologie 2 deces."]
-            : ["Chronologie 2 deces non utilisee pour cette situation : la synthese repose sur la succession directe du defunt simule."]),
-          ...directDisplayAnalysis.warnings,
-          ...avFiscalAnalysis.warnings,
-          ...perFiscalAnalysis.warnings,
-          ...prevoyanceFiscalAnalysis.warnings,
-        ],
+      avFiscalAnalysis,
+      perFiscalAnalysis,
+      prevoyanceFiscalAnalysis,
+      derivedTotalDroits,
+      isPacsed,
+      directDisplayWarnings: directDisplayAnalysis.warnings,
     }),
     [
       displayUsesChainage,
