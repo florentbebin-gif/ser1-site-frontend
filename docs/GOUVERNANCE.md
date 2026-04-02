@@ -13,6 +13,8 @@ Toute personne qui touche : CSS/UI, exports, thème, Settings.
 ## Sommaire
 - [Règles UI premium](#règles-ui-premium)
 - [Norme des pages `/sim/*` (baseline `/sim/credit`)](#norme-des-pages-sim-baseline-simcredit)
+  - [§16 Anatomie complète et patterns prouvés](#16-anatomie-complète-dune-page-sim--patterns-prouvés)
+  - [§17 Diagnostic /sim/per/potentiel](#17-diagnostic-simper-potentiel--écarts-et-cibles)
 - [Gouvernance couleurs (C1–C10)](#gouvernance-couleurs-c1c10)
 - [Système de thème V5 (3 modes)](#système-de-thème-v5-3-modes)
 - [Sécurité & observabilité (règles)](#sécurité--observabilité-règles)
@@ -432,6 +434,175 @@ Quand un simulateur utilise une `<table>` à l'intérieur d'une `premium-card--g
 #### Recommandé
 - Garder 3 colonnes max (label / Déclarant 1 / Déclarant 2).
 - Utiliser `colSpan` pour les champs foyer (partagés entre déclarants).
+
+---
+
+### 16) Anatomie complète d'une page /sim/* — Patterns prouvés
+
+Cette section comble les trous des §1-§15. Elle ne les duplique pas. Chaque règle porte un statut :
+- **baseline partagée** — prouvée sur ≥2 simulateurs parmi IR, Crédit, Placement, Succession.
+- **recette feature** — pattern d'un seul simulateur, réutilisable mais pas encore généralisé.
+- **exception documentée** — divergence connue, à corriger ou justifier explicitement en PR.
+
+#### 16a) Schéma d'anatomie de page
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ HEADER (§2) — .premium-header + variante feature               │
+│ h1.premium-title (22px/600/C1)                                 │
+│ p.premium-subtitle (12px/400/C9)                               │
+│ actions à droite : [mode toggle] [ExportMenu]                  │
+│ border-bottom: 3px solid C6                                     │
+├─────────────────────────────────────────────────────────────────┤
+│ CONTRÔLES (§7) — onglets/phases + toggle vue                   │
+│ tabs underline : border-bottom 2px, actif C3, hover C2/C7      │
+│ baseline sous les tabs : gradient 2px C8→transparent           │
+├─────────────────────────┬───────────────────────────────────────┤
+│ GAUCHE 1.85fr           │ DROITE 1fr (sticky top: 80px)        │
+│ .premium-card--guide    │ carte hero : border-left 3px C3      │
+│ border-left: 3px C3     │ gradient fond C4 18%→transparent     │
+│ Saisie / formulaires    │ KPI principal 26-30px/700/C1         │
+│ Inputs off-white (§5)   │ KPI secondaires 2×2, 15px/600        │
+│                         │ Graphiques (donut, barre)            │
+│                         │ carte secondaire border-left 3px C5  │
+├─────────────────────────┴───────────────────────────────────────┤
+│ PLEINE LARGEUR — accordéon détail (§9), hypothèses (§9)        │
+│ margin-top: 8-32px                                             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Statut** : baseline partagée.
+**Preuves** : `SimulatorShell.css:7`, `CreditV2.css:12`, `IrSimulator.css:45`, `PlacementSimulator.css:91`, `Succession.css:40`.
+
+#### 16b) Grilles intra-carte
+
+| Pattern | CSS | Usage | Statut | Preuves |
+|---------|-----|-------|--------|---------|
+| 2 col. symétrique | `grid-template-columns: repeat(2, 1fr)` | Foyer fiscal, couple D1/D2, KPI 2×2 | baseline partagée | `IrSimulator.css` `.ir-guide-card__grid`, `Succession.css` `.sc-civil-grid`, `Per.css` `.per-declarants-grid` |
+| 3 col. tableau | `label minmax(220px,1.5fr) + 2×input minmax(140px,1fr)` | Revenus couple, contributions | baseline partagée | `IrSimulator.css` `.ir-table`, `PlacementSimulator.css` `.pl-ir-table`, `Per.css` `.per-contribution-table.is-couple` |
+| KPI 2×2 | `repeat(2, minmax(0,1fr)), gap: 8px 14px` | Synthèse droite | baseline partagée | `IrSimulator.css` `.ir-tmi-bar`, `Succession.css` `.sc-synth-kpis`, `CreditV2.css` `.cv2-summary__details` |
+| Stack vertical | `flex-direction: column; gap: 6-12px` | Breakdown, listes d'éléments | baseline partagée | tous simulateurs |
+| 2 col. asymétrique | `minmax(0, 0.85fr) minmax(0, 1.15fr)` | Guide (docs/avis) + preview | recette feature | `Per.css` `.per-avis-layout` uniquement |
+
+#### 16c) Placement des graphiques et KPI visuels
+
+| Règle | Détail | Statut | Preuves |
+|-------|--------|--------|---------|
+| Graphiques uniquement dans la colonne droite | Donut, pie, barre segmentée → carte hero de synthèse | baseline partagée | `IrSimulator.css` `.ir-summary-donut`, `Succession.css` `.sc-synth-donut`, `CreditV2.css` `.cv2-summary__donut-wrap` |
+| Jamais de graphique dans la zone de saisie gauche | — | baseline partagée | aucun contre-exemple sur les 4 simulateurs baseline |
+| KPI principal | label 11px/500/C9 · valeur 26-30px/700/C1 · `font-variant-numeric: tabular-nums` | baseline partagée | `IrSimulator.css` `.ir-summary-total-hero__value`, `CreditV2.css` `.cv2-summary__kpi-main-value`, `Succession.css` `.sc-synth-hero__value` |
+| KPI secondaires 2×2 | label 10-11px/uppercase/C9 · valeur 15px/600/C1 | baseline partagée | `IrSimulator.css` `.ir-tmi-row`, `Succession.css` `.sc-synth-kpi` |
+| Taille donut | 56-64px desktop / 48px mobile | baseline partagée | `IrSimulator.css` `.ir-summary-donut`, `CreditV2.css` `.cv2-summary__donut-wrap` |
+| Barre segmentée TMI | `grid: repeat(5,1fr)`, radius 6px, inactif C8 / actif C4+C1 | recette feature | `IrSimulator.css` `.ir-tmi-bar` uniquement |
+
+#### 16d) Critères d'usage des modales
+
+| Critère | Modale | Inline |
+|---------|--------|--------|
+| Saisie détaillée d'un élément (contrat AV, versement, disposition, testament) | Oui | Non |
+| Formulaire principal de la page | Non | Oui |
+| Consultation de résultat / breakdown plafonds | Non | Oui (accordéon §9) |
+| Configuration ponctuelle > 3 champs | Oui | — |
+| Configuration ponctuelle ≤ 3 champs | — | Oui |
+
+Largeurs standardisées :
+- Standard : `max-width: 520px`
+- Famille/élargi : `max-width: 620px`
+- Large : `max-width: 720px`
+- Dispositions : `max-width: 1200px`
+
+Structure modale (pattern canonique) :
+```css
+/* overlay */
+position: fixed; inset: 0;
+background: rgba(0, 0, 0, 0.45);   /* seul rgba autorisé */
+backdrop-filter: blur(3px);
+z-index: 1000;
+
+/* panel */
+background: #FFFFFF;
+border-radius: 14px;
+max-height: calc(100vh - 40px);
+display: flex; flex-direction: column;   /* scroll obligatoire (§Modales) */
+
+/* header */
+padding: 18px 20px;
+border-bottom: 1px solid var(--color-c8);
+
+/* body */
+padding: 20px;
+overflow-y: auto; flex: 1 1 auto; min-height: 0;   /* scroll obligatoire */
+
+/* footer */
+padding: 16px 20px;
+border-top: 1px solid var(--color-c8);
+/* boutons à droite, gap: 10px */
+```
+
+Bouton primaire modale : `background: linear-gradient(135deg, C2 0%, C1 100%)`, hover `translateY(-1px)`.
+
+**Statut** : baseline partagée.
+**Preuves** : `PlacementSimulator.css` / `VersementConfigModal.css` · `Succession.css` `.sc-member-modal`, `.sc-dispositions-modal`.
+
+#### 16e) Responsive « synthèse d'abord »
+
+À `max-width: 900px`, la colonne de synthèse droite remonte **au-dessus** du formulaire via `order: -1` :
+
+```css
+@media (max-width: 900px) {
+  .{feature}-grid { grid-template-columns: 1fr; }
+  .{feature}-right { position: static; order: -1; }
+}
+```
+
+**Statut** : baseline partagée.
+**Preuves** : `IrSimulator.css:945`, `CreditV2.css:992`, `PlacementSimulator.css:1106`, `Succession.css:1900`.
+
+#### 16f) Boutons — Catalogue consolidé
+
+| Variante | Fond | Bordure | Texte | Padding | Radius | Usage |
+|----------|------|---------|-------|---------|--------|-------|
+| Primary | `C2` | aucune | `#FFFFFF`, 13-14px/600 | `10px 18px` | `8px` | Action principale de page |
+| Primary modale | `linear-gradient(135deg, C2→C1)` | aucune | `#FFFFFF`, 14px/600 | `10px 22px` | `8px` | Valider/Confirmer dans une modale |
+| Secondary | `#FFFFFF` ou `C7` | `1px solid C8` | C9, 13-14px/500 | `10px 18px` | `6-8px` | Action secondaire / Annuler |
+| Chip filtre inactif | `C7` | `1px solid C8` | C9, 12px/500 | `4px 10px` | `999px` | Filtres de catégories |
+| Chip filtre actif | `color-mix(in srgb, C3 22%, #FFFFFF)` | `color-mix(in srgb, C3 55%, C8)` | C1, 12px/500 | `4px 10px` | `999px` | Filtre sélectionné |
+| Action texte (ajout) | transparent | aucune | C2, 12px/400 | `4px 0` | — | « + Ajouter un enfant » |
+| Toggle accordéon | `C7` | `1px solid C8` | C9, 12px/400 | `6px 12px` | `6px` | Afficher/Masquer détail |
+
+Règles communes : `font-family: inherit`, hover → C2 texte ou fond C7 selon variante, disabled → `opacity: 0.4; cursor: not-allowed`.
+
+**Statut** : baseline partagée pour toutes les variantes sauf mention contraire.
+
+---
+
+### 17) Diagnostic /sim/per/potentiel — Écarts et cibles
+
+Cette section documente les divergences de `/sim/per/potentiel` par rapport à la baseline commune. Tout patch doit les corriger ; une PR conservant ces divergences doit les justifier explicitement.
+
+#### Anti-patterns observés
+
+| # | Anti-pattern | Preuve code | Baseline attendue (§) |
+|---|-------------|-------------|----------------------|
+| 1 | Grille `1.7fr / 0.95fr` | `Per.css:307` | `1.85fr / 1fr` (§1) |
+| 2 | `sticky top: 88px` | `Per.css:315` | `top: 80px` (§1) |
+| 3 | Inputs `className="premium-input"` (fond blanc, border pleine) | `SituationFiscaleStep.tsx:76`, `SynthesePotentielStep.tsx:236` | fond `color-mix(C8 18%, #FFFFFF)`, border-bottom only (§5) |
+| 4 | Tabs : baseline pleine `background: var(--color-c8)` | `Per.css:272` | `linear-gradient(90deg, C8, transparent 85%)` (§7, §16a) |
+| 5 | Simulation de versement dans la carte hero **gauche** | `SynthesePotentielStep.tsx:224-269` | Les calculs vivants vont dans la colonne droite (§16a, §16c) |
+| 6 | Breakdown plafonds dupliqué (sidebar + section basse) | `SynthesePotentielStep.tsx:272` + `SynthesePotentielStep.tsx:329` | Un seul emplacement, colonne droite (§16c) |
+| 7 | Texte introductif long dans chaque étape (`per-step-copy` avec titre + hint paragraphe) | `SynthesePotentielStep.tsx:172-177`, `ModeStep.tsx` | Sous-titre 12px/C9 court, pas de paragraphe explicatif (§2) |
+| 8 | 3 cartes dans la sidebar context | `PerPotentielSimulator.tsx:369-439` | Max 2 cartes synthèse sticky : hero + secondaire (§8, §16a) |
+| 9 | `max-width: 720px` sur l'en-tête limitant la respiration | `Per.css:255` | Pas de max-width sur le header (§2) |
+
+#### Cibles de refonte (lot UI)
+
+1. **Inputs** : remplacer `className="premium-input"` par des classes préfixées `per-*` avec fond off-white + border-bottom (aligner avec IR, Crédit, Placement, Succession).
+2. **Grille** : passer à `1.85fr / 1fr` et `sticky top: 80px`.
+3. **Simulation de versement** : déplacer hors de la carte hero gauche vers une carte de synthèse dans la colonne droite.
+4. **Breakdown plafonds** : supprimer la duplication, conserver uniquement la sidebar droite.
+5. **Texte introductif** : réduire chaque `per-step-copy` à un sous-titre court ou le supprimer.
+6. **Sidebar context** : fusionner en 2 cartes max (synthèse principale + aperçu live).
+7. **Tabs** : aligner la baseline sur le gradient estompé des autres simulateurs.
 
 ---
 

@@ -57,7 +57,7 @@ function AvisFieldsCard({
             <input
               type="number"
               min={0}
-              className="premium-input per-avis-row-input"
+              className="per-input per-avis-row-input"
               value={values[row.key] || ''}
               placeholder="0"
               onChange={(event) => onChange({ [row.key]: Number(event.target.value) || 0, anneeRef: incomeYear })}
@@ -81,17 +81,9 @@ export default function AvisIrStep({
 
   return (
     <div className="per-step per-step--avis">
-      <div className="per-step-copy">
-        <h3 className="per-step-title">Lecture de l’avis IR {avisContext.taxYear}</h3>
-        <p className="per-step-hint">
-          Reprenez uniquement la rubrique « Plafond épargne retraite ». L’objectif est de récupérer
-          les reports utilisables et le plafond calculé sur les revenus {avisContext.incomeYear}.
-        </p>
-      </div>
-
       <div className="per-avis-layout">
         <div className="premium-card-compact per-avis-guide-card">
-          <p className="premium-section-title">Ce qu’il faut relever</p>
+          <p className="premium-section-title">Ce qu'il faut relever</p>
           <ol className="per-avis-checklist">
             <li>Les trois années de plafond non utilisé.</li>
             <li>Le plafond calculé sur les revenus {avisContext.incomeYear}.</li>
@@ -104,7 +96,7 @@ export default function AvisIrStep({
             <div className="per-avis-preview-header">
               <div>
                 <p className="premium-section-title">Repérage visuel</p>
-                <h4 className="per-avis-preview-title">Avis d’impôt {avisContext.taxYear}</h4>
+                <h4 className="per-avis-preview-title">Avis d'impôt {avisContext.taxYear}</h4>
               </div>
               <span className="per-avis-preview-chip">Revenus {avisContext.incomeYear}</span>
             </div>
