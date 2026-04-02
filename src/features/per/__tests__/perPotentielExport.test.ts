@@ -31,7 +31,8 @@ function makeDeclarant(overrides: Record<string, number | boolean> = {}) {
 
 const state = {
   mode: 'versement-n' as const,
-  avisIrConnu: true,
+  historicalBasis: 'previous-avis-plus-n1' as const,
+  needsCurrentYearEstimate: false,
   situationFamiliale: 'marie' as const,
   nombreParts: 2,
   isole: false,
@@ -41,6 +42,7 @@ const state = {
 
 const result = calculatePerPotentiel({
   mode: state.mode,
+  historicalBasis: state.historicalBasis,
   anneeRef: 2025,
   situationFiscale: {
     situationFamiliale: state.situationFamiliale,

@@ -9,7 +9,8 @@ import type { PerPotentielResult } from '../../engine/per';
 
 export interface PerDeckData {
   mode: 'versement-n' | 'declaration-n1';
-  avisIrConnu: boolean;
+  historicalBasis: 'previous-avis-plus-n1' | 'current-avis' | null;
+  needsCurrentYearEstimate: boolean;
   situationFamiliale: 'celibataire' | 'marie';
   nombreParts: number;
   isole: boolean;
@@ -58,6 +59,12 @@ function yesNo(value: boolean): string {
   return value ? 'Oui' : 'Non';
 }
 
+function basisLabel(basis: PerDeckData['historicalBasis']): string {
+  if (basis === 'current-avis') return 'Avis IR courant déjà disponible';
+  if (basis === 'previous-avis-plus-n1') return 'Avis IR précédent + reconstitution N-1';
+  return 'Base documentaire à confirmer';
+}
+
 function modeTitle(mode: PerDeckData['mode']): string {
   return mode === 'declaration-n1'
     ? 'Declaration 2042 epargne retraite'
@@ -67,7 +74,8 @@ function modeTitle(mode: PerDeckData['mode']): string {
 function buildObjectifsBody(data: PerDeckData): string {
   return [
     `- Parcours retenu : ${modeTitle(data.mode)}.`,
-    `- Avis IR disponible : ${yesNo(data.avisIrConnu)}.`,
+    `- Base documentaire : ${basisLabel(data.historicalBasis)}.`,
+    `- Projection N active : ${yesNo(data.needsCurrentYearEstimate)}.`,
     '- Le parcours reprend la logique pedagogique du classeur Excel 2025.',
     '- Les calculs d IR sont arbitres par le moteur fiscal du repo, pas par une simplification locale.',
     '- L export ci-dessous synthetise les plafonds personnels, la mutualisation et les cases 2042 utiles.',

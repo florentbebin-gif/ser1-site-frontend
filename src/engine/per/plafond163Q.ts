@@ -11,7 +11,8 @@
 import type { DeclarantRevenus, PlafondDetail, AvisIrPlafonds, PerWarning } from './types';
 
 export interface Plafond163QParams {
-  declarant: DeclarantRevenus;
+  revenuSource: DeclarantRevenus;
+  cotisationSource?: DeclarantRevenus;
   pass: number;
   avisIr?: AvisIrPlafonds;
 }
@@ -70,11 +71,12 @@ export function computePlafond163Q(
   plancherAbat10: number,
   warnings: PerWarning[],
 ): PlafondDetail {
-  const { declarant, pass, avisIr } = params;
+  const { revenuSource, cotisationSource, pass, avisIr } = params;
+  const declarantCotisations = cotisationSource ?? revenuSource;
 
-  const revenuImposable = computeRevenuImposable(declarant, plafondAbat10, plancherAbat10);
+  const revenuImposable = computeRevenuImposable(revenuSource, plafondAbat10, plancherAbat10);
   const plafondBrut = computePlafond163QBrut(revenuImposable, pass);
-  const reductions = computeReductions163Q(declarant, pass);
+  const reductions = computeReductions163Q(declarantCotisations, pass);
   const plafondNet = Math.max(0, plafondBrut - reductions);
 
   const nonUtiliseN1 = avisIr?.nonUtiliseAnnee3 ?? 0;
@@ -84,8 +86,8 @@ export function computePlafond163Q(
   const totalDisponible = plafondNet + nonUtiliseN1 + nonUtiliseN2 + nonUtiliseN3;
 
   const cotisationsVersees =
-    declarant.cotisationsPer163Q +
-    declarant.cotisationsPerp;
+    declarantCotisations.cotisationsPer163Q +
+    declarantCotisations.cotisationsPerp;
 
   const disponibleRestant = totalDisponible - cotisationsVersees;
   const depassement = disponibleRestant < 0;
@@ -98,7 +100,7 @@ export function computePlafond163Q(
     });
   }
 
-  if (declarant.cotisationsPrevo > 0) {
+  if (declarantCotisations.cotisationsPrevo > 0) {
     warnings.push({
       code: 'PER_PREVOYANCE_WARNING',
       message: 'Les cotisations prévoyance Madelin entrent dans le calcul du plafond Madelin. Vérifiez l\'impact sur votre enveloppe.',

@@ -680,6 +680,30 @@
   border-left: 3px solid var(--color-c3);
 }
 
+.per-mode-panel-stack {
+  display: grid;
+  gap: 20px;
+}
+
+.per-mode-panel-block {
+  display: grid;
+  gap: 12px;
+}
+
+.per-mode-panel-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-c1);
+}
+
+.per-mode-panel-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-c9);
+}
+
 .per-mode-journey-list {
   margin: 0;
   padding-left: 20px;
@@ -915,6 +939,10 @@
   gap: 16px;
 }
 
+.per-situation-top--single {
+  grid-template-columns: 1fr;
+}
+
 .per-situation-card {
   box-sizing: border-box;
 }
@@ -976,6 +1004,25 @@
   font-size: 13px;
   line-height: 1.6;
   color: var(--color-c9);
+}
+
+.per-situation-context-chip {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 14px;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-c4) 55%, #FFFFFF);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  color: var(--color-c1);
+}
+
+.per-situation-income-copy {
+  display: grid;
+  gap: 6px;
 }
 
 .per-contribution-card {

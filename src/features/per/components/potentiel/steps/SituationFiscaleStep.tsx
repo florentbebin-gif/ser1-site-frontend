@@ -1,11 +1,20 @@
 /**
- * SituationFiscaleStep - Step 3: income, deductions and retirement contributions.
+ * SituationFiscaleStep - Generic fiscal input screen for N-1 reconstruction or N projection.
  */
 
 import React from 'react';
 import type { DeclarantRevenus, PerPotentielResult } from '../../../../../engine/per';
 
+export type FiscalStepVariant = 'revenus-n1' | 'projection-n' | 'versements-n';
+
 interface SituationFiscaleStepProps {
+  variant: FiscalStepVariant;
+  title: string;
+  hint: string;
+  badge: string;
+  yearLabel: string;
+  showFoyerCard: boolean;
+  incomeCardsOptional?: boolean;
   situationFamiliale: 'celibataire' | 'marie';
   nombreParts: number;
   isole: boolean;
@@ -94,7 +103,7 @@ function IncomeCard({
   return (
     <div className="premium-card per-income-card">
       <div className="per-income-card-header">
-        <p className="premium-section-title">Declarant</p>
+        <p className="premium-section-title">Déclarant</p>
         <h4 className="per-income-card-title">{label}</h4>
       </div>
 
@@ -116,13 +125,13 @@ function IncomeCard({
             checked={declarant.fraisReels}
             onChange={(event) => onChange({ fraisReels: event.target.checked })}
           />
-          <span>Frais reels</span>
+          <span>Frais réels</span>
         </label>
 
         {declarant.fraisReels && (
           <div className="per-income-toggle-field">
             <NumberField
-              label="Montant des frais reels"
+              label="Montant des frais réels"
               value={declarant.fraisReelsMontant}
               onChange={(value) => onChange({ fraisReelsMontant: value })}
             />
@@ -134,6 +143,13 @@ function IncomeCard({
 }
 
 export default function SituationFiscaleStep({
+  variant,
+  title,
+  hint,
+  badge,
+  yearLabel,
+  showFoyerCard,
+  incomeCardsOptional = false,
   situationFamiliale,
   nombreParts,
   isole,
@@ -150,85 +166,84 @@ export default function SituationFiscaleStep({
     note: string;
     key: ContributionFieldKey;
   }[] = [
-    { label: 'PER 163 quatervicies', note: '6NS / 6NT', key: 'cotisationsPer163Q' },
-    { label: 'PERP et assimiles', note: '6RS / 6RT', key: 'cotisationsPerp' },
-    { label: 'Art. 83 employeur + salarie', note: '6QS / 6QT', key: 'cotisationsArt83' },
-    { label: 'PER 154 bis', note: '6OS / 6OT', key: 'cotisationsMadelin154bis' },
+    { label: 'PER 163 quatervicies', note: variant === 'revenus-n1' ? '2042 : 6NS / 6NT' : 'année en cours', key: 'cotisationsPer163Q' },
+    { label: 'PERP et assimilés', note: variant === 'revenus-n1' ? '2042 : 6RS / 6RT' : 'année en cours', key: 'cotisationsPerp' },
+    { label: 'Art. 83 employeur + salarié', note: variant === 'revenus-n1' ? '2042 : 6QS / 6QT' : 'année en cours', key: 'cotisationsArt83' },
+    { label: 'PER 154 bis', note: variant === 'revenus-n1' ? '2042 : 6OS / 6OT' : 'année en cours', key: 'cotisationsMadelin154bis' },
     { label: 'Madelin retraite', note: 'hors 154 bis', key: 'cotisationsMadelinRetraite' },
     { label: 'Abondement PERCO', note: 'employeur', key: 'abondementPerco' },
-    { label: 'Prevoyance Madelin', note: 'part non retraite', key: 'cotisationsPrevo' },
+    { label: 'Prévoyance Madelin', note: 'part non retraite', key: 'cotisationsPrevo' },
   ];
 
   return (
     <div className="per-step per-step--situation">
       <div className="per-step-copy">
-        <p className="per-step-eyebrow">Reconstitution fiscale</p>
-        <h3 className="per-step-title">Foyer, estimation IR et versements retraite</h3>
-        <p className="per-step-hint">
-          Cette page reprend la structure pedagogique du tableur : contexte du foyer,
-          estimation fiscale instantanee, puis comparaison declarant 1 / declarant 2.
-        </p>
+        <h3 className="per-step-title">{title}</h3>
+        <p className="per-step-hint">{hint}</p>
+        <div className="per-situation-context-chip">{badge}</div>
       </div>
 
-      <div className="per-situation-top">
-        <div className="premium-card per-situation-card">
-          <div className="per-situation-card-header">
-            <p className="premium-section-title">Foyer</p>
-            <h4 className="per-situation-card-title">Situation familiale</h4>
-          </div>
+      <div className={`per-situation-top ${showFoyerCard ? '' : 'per-situation-top--single'}`}>
+        {showFoyerCard && (
+          <div className="premium-card per-situation-card">
+            <div className="per-situation-card-header">
+              <p className="premium-section-title">Foyer</p>
+              <h4 className="per-situation-card-title">Situation familiale</h4>
+            </div>
 
-          <div className="per-situation-foyer-grid">
-            <label className="per-field">
-              <span>Situation familiale</span>
-              <select
-                className="premium-select"
-                value={situationFamiliale}
-                onChange={(event) => {
-                  onUpdateSituation({
-                    situationFamiliale: event.target.value as 'celibataire' | 'marie',
-                  });
-                }}
-              >
-                <option value="marie">Marie / Pacse</option>
-                <option value="celibataire">Celibataire / Veuf / Divorce</option>
-              </select>
-            </label>
-
-            <NumberField
-              label="Nombre de parts"
-              value={nombreParts}
-              min={1}
-              onChange={(value) => onUpdateSituation({ nombreParts: Math.max(1, value) })}
-            />
-
-            {situationFamiliale === 'celibataire' && (
-              <label className="per-toggle-label per-toggle-label--panel">
-                <input
-                  type="checkbox"
-                  checked={isole}
-                  onChange={(event) => onUpdateSituation({ isole: event.target.checked })}
-                />
-                <span>Parent isole</span>
+            <div className="per-situation-foyer-grid">
+              <label className="per-field">
+                <span>Situation familiale</span>
+                <select
+                  className="premium-select"
+                  value={situationFamiliale}
+                  onChange={(event) => {
+                    onUpdateSituation({
+                      situationFamiliale: event.target.value as 'celibataire' | 'marie',
+                    });
+                  }}
+                >
+                  <option value="marie">Marié / Pacsé</option>
+                  <option value="celibataire">Célibataire / Veuf / Divorcé</option>
+                </select>
               </label>
-            )}
 
-            {isCouple && (
-              <label className="per-toggle-label per-toggle-label--panel">
-                <input
-                  type="checkbox"
-                  checked={mutualisationConjoints}
-                  onChange={(event) => onUpdateSituation({ mutualisationConjoints: event.target.checked })}
-                />
-                <span>Mutualisation des plafonds (case 6QR)</span>
-              </label>
-            )}
+              <NumberField
+                label="Nombre de parts"
+                value={nombreParts}
+                min={1}
+                onChange={(value) => onUpdateSituation({ nombreParts: Math.max(1, value) })}
+              />
+
+              {situationFamiliale === 'celibataire' && (
+                <label className="per-toggle-label per-toggle-label--panel">
+                  <input
+                    type="checkbox"
+                    checked={isole}
+                    onChange={(event) => onUpdateSituation({ isole: event.target.checked })}
+                  />
+                  <span>Parent isolé</span>
+                </label>
+              )}
+
+              {isCouple && (
+                <label className="per-toggle-label per-toggle-label--panel">
+                  <input
+                    type="checkbox"
+                    checked={mutualisationConjoints}
+                    onChange={(event) => onUpdateSituation({ mutualisationConjoints: event.target.checked })}
+                  />
+                  <span>Mutualisation des plafonds (case 6QR)</span>
+                </label>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="premium-card per-situation-card per-situation-card--accent">
           <div className="per-situation-card-header">
-            <p className="premium-section-title">Estimation IR</p>
-            <h4 className="per-situation-card-title">Apercu mis a jour en direct</h4>
+            <p className="premium-section-title">Aperçu fiscal</p>
+            <h4 className="per-situation-card-title">Estimation mise à jour en direct</h4>
           </div>
 
           {result ? (
@@ -242,7 +257,7 @@ export default function SituationFiscaleStep({
                 </strong>
               </div>
               <div className="per-situation-kpi">
-                <span className="per-situation-kpi-label">IR estime</span>
+                <span className="per-situation-kpi-label">IR estimé</span>
                 <strong className="per-situation-kpi-value">
                   {fmtCurrency(result.situationFiscale.irEstime)}
                 </strong>
@@ -264,7 +279,7 @@ export default function SituationFiscaleStep({
             </div>
           ) : (
             <p className="per-situation-note">
-              Le moteur fiscal se met a jour des que les revenus et versements sont saisis.
+              Le moteur fiscal se met à jour dès que les revenus et versements sont saisis.
             </p>
           )}
         </div>
@@ -273,13 +288,13 @@ export default function SituationFiscaleStep({
       <div className="premium-card per-contribution-card">
         <div className="per-situation-card-header">
           <p className="premium-section-title">Versements retraite</p>
-          <h4 className="per-situation-card-title">Comparaison declarant 1 / declarant 2</h4>
+          <h4 className="per-situation-card-title">Montants {yearLabel} par déclarant</h4>
         </div>
 
         <div className={`per-contribution-table ${isCouple ? 'is-couple' : ''}`}>
-          <div className="per-contribution-table-head per-contribution-table-head--label">Categorie</div>
-          <div className="per-contribution-table-head">Declarant 1</div>
-          {isCouple && <div className="per-contribution-table-head">Declarant 2</div>}
+          <div className="per-contribution-table-head per-contribution-table-head--label">Catégorie</div>
+          <div className="per-contribution-table-head">Déclarant 1</div>
+          {isCouple && <div className="per-contribution-table-head">Déclarant 2</div>}
 
           {contributionRows.map((row) => (
             <React.Fragment key={row.key}>
@@ -288,7 +303,7 @@ export default function SituationFiscaleStep({
                 <small>{row.note}</small>
               </div>
               <div className="per-contribution-table-cell">
-                <span className="per-contribution-mobile-label">Declarant 1</span>
+                <span className="per-contribution-mobile-label">Déclarant 1</span>
                 <input
                   type="number"
                   min={0}
@@ -300,7 +315,7 @@ export default function SituationFiscaleStep({
               </div>
               {isCouple && (
                 <div className="per-contribution-table-cell">
-                  <span className="per-contribution-mobile-label">Declarant 2</span>
+                  <span className="per-contribution-mobile-label">Déclarant 2</span>
                   <input
                     type="number"
                     min={0}
@@ -316,16 +331,25 @@ export default function SituationFiscaleStep({
         </div>
       </div>
 
+      <div className="per-situation-income-copy">
+        <p className="premium-section-title">Revenus</p>
+        <p className="per-situation-note">
+          {incomeCardsOptional
+            ? `Les revenus ${yearLabel} sont facultatifs sur cet écran. Renseignez-les si vous souhaitez affiner la fiscalité liée au versement.`
+            : `Renseignez les revenus ${yearLabel} pour reconstruire le calcul fiscal et les plafonds associés.`}
+        </p>
+      </div>
+
       <div className={`per-declarants-grid ${isCouple ? 'is-couple' : ''}`}>
         <IncomeCard
-          label="Declarant 1"
+          label="Déclarant 1"
           declarant={declarant1}
           onChange={(patch) => onUpdateDeclarant(1, patch)}
         />
 
         {isCouple && (
           <IncomeCard
-            label="Declarant 2"
+            label="Déclarant 2"
             declarant={declarant2}
             onChange={(patch) => onUpdateDeclarant(2, patch)}
           />

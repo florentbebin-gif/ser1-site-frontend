@@ -1,5 +1,5 @@
 /**
- * SynthesePotentielStep - Step 4: declarative restitution and live projection.
+ * SynthesePotentielStep - Step 5: declarative restitution and live projection.
  */
 
 import React from 'react';
@@ -31,11 +31,11 @@ function PlafondBreakdownCard({
   detail: PlafondDetail;
 }): React.ReactElement {
   const rows = [
-    { label: 'Plafond calcule annee N', value: detail.plafondCalculeN },
+    { label: 'Plafond calculé année N', value: detail.plafondCalculeN },
     { label: 'Report N-3', value: detail.nonUtiliseN3 },
     { label: 'Report N-2', value: detail.nonUtiliseN2 },
     { label: 'Report N-1', value: detail.nonUtiliseN1 },
-    { label: 'Cotisations deja versees', value: detail.cotisationsDejaVersees },
+    { label: 'Cotisations déjà versées', value: detail.cotisationsDejaVersees },
   ];
 
   return (
@@ -116,7 +116,7 @@ export default function SynthesePotentielStep({
     return (
       <div className="per-step">
         <p style={{ color: 'var(--color-c9)' }}>
-          Completez les etapes precedentes pour afficher la restitution fiscale.
+          Complétez les étapes précédentes pour afficher la restitution fiscale.
         </p>
       </div>
     );
@@ -132,8 +132,10 @@ export default function SynthesePotentielStep({
     warnings,
   } = result;
 
-  const totalDisponible = plafond163Q.declarant1.disponibleRestant + (plafond163Q.declarant2?.disponibleRestant ?? 0);
-  const totalDisponibleAvantVersement = plafond163Q.declarant1.totalDisponible + (plafond163Q.declarant2?.totalDisponible ?? 0);
+  const totalDisponible =
+    plafond163Q.declarant1.disponibleRestant + (plafond163Q.declarant2?.disponibleRestant ?? 0);
+  const totalDisponibleAvantVersement =
+    plafond163Q.declarant1.totalDisponible + (plafond163Q.declarant2?.totalDisponible ?? 0);
   const declarationRows = [
     {
       label: 'PER 163 quatervicies',
@@ -143,7 +145,7 @@ export default function SynthesePotentielStep({
       d2Value: declaration2042.case6NT ?? 0,
     },
     {
-      label: 'PERP et assimiles',
+      label: 'PERP et assimilés',
       d1Case: '6RS',
       d1Value: declaration2042.case6RS,
       d2Case: '6RT',
@@ -168,11 +170,10 @@ export default function SynthesePotentielStep({
   return (
     <div className="per-step per-step--summary">
       <div className="per-step-copy">
-        <p className="per-step-eyebrow">Restitution</p>
-        <h3 className="per-step-title">Synthese declarative et potentiel disponible</h3>
+        <h3 className="per-step-title">Synthèse déclarative et potentiel disponible</h3>
         <p className="per-step-hint">
-          La synthese remet les calculs dans l ordre utile pour un conseiller : resultat principal,
-          cases 2042, detail des plafonds et, le cas echeant, projection du versement.
+          La synthèse remet les calculs dans l’ordre utile pour un conseiller : résultat principal,
+          cases 2042, détail des plafonds et, le cas échéant, projection du versement.
         </p>
       </div>
 
@@ -180,13 +181,13 @@ export default function SynthesePotentielStep({
         <div className="premium-card premium-card--guide per-summary-hero">
           <div className="per-summary-hero-head">
             <div>
-              <p className="premium-section-title">Resultat principal</p>
+              <p className="premium-section-title">Résultat principal</p>
               <h4 className="per-summary-hero-title">
-                {modeVersement ? 'Montant encore deductible aujourd hui' : 'Plafond restant apres declaration'}
+                {modeVersement ? 'Montant encore déductible aujourd’hui' : 'Plafond restant après déclaration'}
               </h4>
             </div>
             <span className="per-summary-hero-chip">
-              {modeVersement ? 'Versement N' : 'Declaration N-1'}
+              {modeVersement ? 'Versement N' : 'Déclaration N-1'}
             </span>
           </div>
 
@@ -206,7 +207,7 @@ export default function SynthesePotentielStep({
                 <strong className="per-summary-stat-value">{fmtPercent(situationFiscale.tmi)}</strong>
               </div>
               <div className="per-summary-stat">
-                <span className="per-summary-stat-label">IR estime</span>
+                <span className="per-summary-stat-label">IR estimé</span>
                 <strong className="per-summary-stat-value">{fmtCurrency(situationFiscale.irEstime)}</strong>
               </div>
               <div className="per-summary-stat">
@@ -225,10 +226,10 @@ export default function SynthesePotentielStep({
               <div className="per-summary-simulation-head">
                 <div>
                   <p className="premium-section-title">Simulation de versement</p>
-                  <h5 className="per-summary-simulation-title">Projection immediate du gain fiscal</h5>
+                  <h5 className="per-summary-simulation-title">Projection immédiate du gain fiscal</h5>
                 </div>
                 <label className="per-summary-simulation-input">
-                  <span>Versement envisage</span>
+                  <span>Versement envisagé</span>
                   <input
                     type="number"
                     min={0}
@@ -243,25 +244,25 @@ export default function SynthesePotentielStep({
               {simulation ? (
                 <div className="per-summary-simulation-grid">
                   <div className="per-summary-stat">
-                    <span className="per-summary-stat-label">Versement deductible</span>
+                    <span className="per-summary-stat-label">Versement déductible</span>
                     <strong className="per-summary-stat-value">{fmtCurrency(simulation.versementDeductible)}</strong>
                   </div>
                   <div className="per-summary-stat">
-                    <span className="per-summary-stat-label">Economie IR</span>
+                    <span className="per-summary-stat-label">Économie IR</span>
                     <strong className="per-summary-stat-value">{fmtCurrency(simulation.economieIRAnnuelle)}</strong>
                   </div>
                   <div className="per-summary-stat">
-                    <span className="per-summary-stat-label">Cout net</span>
+                    <span className="per-summary-stat-label">Coût net</span>
                     <strong className="per-summary-stat-value">{fmtCurrency(simulation.coutNetApresFiscalite)}</strong>
                   </div>
                   <div className="per-summary-stat">
-                    <span className="per-summary-stat-label">Plafond restant apres</span>
+                    <span className="per-summary-stat-label">Plafond restant après</span>
                     <strong className="per-summary-stat-value">{fmtCurrency(simulation.plafondRestantApres)}</strong>
                   </div>
                 </div>
               ) : (
                 <p className="per-summary-primary-note">
-                  Saisissez un versement pour obtenir l economie d impot correspondante.
+                  Saisissez un versement pour obtenir l’économie d’impôt correspondante.
                 </p>
               )}
             </div>
@@ -269,9 +270,9 @@ export default function SynthesePotentielStep({
         </div>
 
         <div className="per-summary-side-stack">
-          <PlafondBreakdownCard label="Declarant 1" detail={plafond163Q.declarant1} />
+          <PlafondBreakdownCard label="Déclarant 1" detail={plafond163Q.declarant1} />
           {isCouple && plafond163Q.declarant2 && (
-            <PlafondBreakdownCard label="Declarant 2" detail={plafond163Q.declarant2} />
+            <PlafondBreakdownCard label="Déclarant 2" detail={plafond163Q.declarant2} />
           )}
         </div>
       </div>
@@ -280,15 +281,15 @@ export default function SynthesePotentielStep({
         <div className="premium-card per-summary-section-card">
           <div className="per-summary-card-head">
             <p className="premium-section-title">Restitution 2042</p>
-            <h4 className="per-summary-card-title">Cases a reporter</h4>
+            <h4 className="per-summary-card-title">Cases à reporter</h4>
           </div>
 
           <table className="premium-table per-summary-table">
             <thead>
               <tr>
                 <th>Rubrique</th>
-                <th>Declarant 1</th>
-                {isCouple && <th>Declarant 2</th>}
+                <th>Déclarant 1</th>
+                {isCouple && <th>Déclarant 2</th>}
               </tr>
             </thead>
             <tbody>
@@ -326,9 +327,9 @@ export default function SynthesePotentielStep({
           </div>
 
           <div className={`per-summary-breakdown-grid ${isCouple ? 'is-couple' : ''}`}>
-            <PlafondBreakdownCard label="Declarant 1" detail={plafond163Q.declarant1} />
+            <PlafondBreakdownCard label="Déclarant 1" detail={plafond163Q.declarant1} />
             {isCouple && plafond163Q.declarant2 && (
-              <PlafondBreakdownCard label="Declarant 2" detail={plafond163Q.declarant2} />
+              <PlafondBreakdownCard label="Déclarant 2" detail={plafond163Q.declarant2} />
             )}
           </div>
         </div>
@@ -338,15 +339,15 @@ export default function SynthesePotentielStep({
         <div className="premium-card per-summary-section-card">
           <div className="per-summary-card-head">
             <p className="premium-section-title">Madelin</p>
-            <h4 className="per-summary-card-title">Potentiel 154 bis pour travailleurs non salaries</h4>
+            <h4 className="per-summary-card-title">Potentiel 154 bis pour travailleurs non salariés</h4>
           </div>
 
           <div className={`per-summary-breakdown-grid ${isCouple ? 'is-couple' : ''}`}>
             {plafondMadelin.declarant1 && (
-              <MadelinCard label="Declarant 1" detail={plafondMadelin.declarant1} />
+              <MadelinCard label="Déclarant 1" detail={plafondMadelin.declarant1} />
             )}
             {isCouple && plafondMadelin.declarant2 && (
-              <MadelinCard label="Declarant 2" detail={plafondMadelin.declarant2} />
+              <MadelinCard label="Déclarant 2" detail={plafondMadelin.declarant2} />
             )}
           </div>
         </div>

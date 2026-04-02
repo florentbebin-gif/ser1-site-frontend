@@ -51,7 +51,8 @@ export function usePerPotentielExportHandlers({
       await exportPerPotentielPptx(
         {
           mode: state.mode,
-          avisIrConnu: state.avisIrConnu,
+          historicalBasis: state.historicalBasis,
+          needsCurrentYearEstimate: state.needsCurrentYearEstimate,
           situationFamiliale: state.situationFamiliale,
           nombreParts: state.nombreParts,
           isole: state.isole,

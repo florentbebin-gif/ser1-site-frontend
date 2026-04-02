@@ -1,62 +1,55 @@
 /**
- * ModeStep - Step 1: choose the user goal and the document source.
+ * ModeStep - Step 1: choose the user goal and the document strategy.
  */
 
 import React from 'react';
+import type { PerHistoricalBasis } from '../../../../../engine/per';
 import type { PerMode } from '../../../hooks/usePerPotentiel';
+import type { PerWorkflowYears } from '../../../utils/perWorkflowYears';
 
 interface ModeStepProps {
   mode: PerMode | null;
-  avisIrConnu: boolean;
+  historicalBasis: PerHistoricalBasis | null;
+  needsCurrentYearEstimate: boolean;
+  years: PerWorkflowYears;
   onSelectMode: (_mode: PerMode) => void;
-  onSetAvisIrConnu: (_value: boolean) => void;
+  onSelectHistoricalBasis: (_basis: PerHistoricalBasis) => void;
+  onSetNeedsCurrentYearEstimate: (_value: boolean) => void;
 }
 
 const MODES: { id: PerMode; title: string; desc: string; marker: string }[] = [
   {
     id: 'versement-n',
-    title: 'Controle du potentiel avant versement',
-    desc: 'Je veux verifier si un versement PER cette annee reste deductible et quel gain fiscal il genere.',
+    title: 'Contrôle du potentiel avant versement',
+    desc: 'Je veux vérifier si un versement PER cette année reste déductible et quel gain fiscal il peut générer.',
     marker: 'Versement N',
   },
   {
     id: 'declaration-n1',
-    title: 'Controle de la declaration 2042',
-    desc: 'J ai deja verse et je veux fiabiliser les cases de declaration et la lecture du potentiel restant.',
-    marker: 'Declaration N-1',
+    title: 'Contrôle de la déclaration 2042',
+    desc: 'J’ai déjà versé et je veux fiabiliser les cases de déclaration et la lecture du potentiel restant.',
+    marker: 'Déclaration N-1',
   },
 ];
 
-const JOURNEY_BY_MODE: Record<PerMode, string[]> = {
-  'versement-n': [
-    'Choix du document de depart',
-    'Reconstitution du foyer et des revenus',
-    'Controle du plafond disponible et simulation du versement',
-  ],
-  'declaration-n1': [
-    'Reprise de la declaration et des versements deja effectues',
-    'Controle des cases 2042 et des reports',
-    'Restitution du plafond restant pour l annee suivante',
-  ],
-};
-
 export default function ModeStep({
   mode,
-  avisIrConnu,
+  historicalBasis,
+  needsCurrentYearEstimate,
+  years,
   onSelectMode,
-  onSetAvisIrConnu,
+  onSelectHistoricalBasis,
+  onSetNeedsCurrentYearEstimate,
 }: ModeStepProps): React.ReactElement {
-  const selectedMode = mode ?? 'versement-n';
-  const showDocumentChoice = mode === 'versement-n';
+  const showVersementChoices = mode === 'versement-n';
 
   return (
     <div className="per-step per-step--mode">
       <div className="per-step-copy">
-        <p className="per-step-eyebrow">Point de depart</p>
         <h3 className="per-step-title">Quelle mission voulez-vous traiter ?</h3>
         <p className="per-step-hint">
-          Le simulateur doit d abord savoir si vous cherchez un potentiel futur ou une verification
-          declarative. Cette decision determine le parcours visible et les ecrans affiches.
+          Le simulateur doit d&apos;abord savoir si vous cherchez un potentiel futur ou une vérification
+          déclarative. Cette décision détermine le parcours visible et les écrans affichés.
         </p>
       </div>
 
@@ -75,49 +68,89 @@ export default function ModeStep({
         ))}
       </div>
 
-      <div className="per-mode-support-grid">
-        <div className="premium-card-compact per-mode-support-card">
-          <p className="premium-section-title">Parcours genere</p>
-          <ol className="per-mode-journey-list">
-            {JOURNEY_BY_MODE[selectedMode].map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ol>
-        </div>
+      <div className="premium-card per-mode-support-card per-mode-support-card--accent">
+        <p className="premium-section-title">Documents disponibles</p>
 
-        <div className="premium-card per-mode-support-card per-mode-support-card--accent">
-          <p className="premium-section-title">Documents disponibles</p>
-          {showDocumentChoice ? (
-            <div className="per-mode-doc-grid">
-              <button
-                type="button"
-                className={`per-mode-doc-card ${avisIrConnu ? 'is-selected' : ''}`}
-                onClick={() => onSetAvisIrConnu(true)}
-              >
-                <span className="per-mode-doc-title">Avis IR disponible</span>
-                <span className="per-mode-doc-desc">
-                  Vous reportez les plafonds deja calcules depuis la rubrique "Plafond epargne retraite".
-                </span>
-              </button>
+        {showVersementChoices ? (
+          <div className="per-mode-panel-stack">
+            <div className="per-mode-panel-block">
+              <h4 className="per-mode-panel-title">Base documentaire de départ</h4>
+              <p className="per-mode-panel-text">
+                Choisissez l&apos;avis d&apos;impôt disponible. Le parcours ajoutera ensuite les écrans
+                nécessaires pour reconstituer les revenus utiles au calcul.
+              </p>
+              <div className="per-mode-doc-grid">
+                <button
+                  type="button"
+                  className={`per-mode-doc-card ${historicalBasis === 'previous-avis-plus-n1' ? 'is-selected' : ''}`}
+                  onClick={() => onSelectHistoricalBasis('previous-avis-plus-n1')}
+                >
+                  <span className="per-mode-doc-title">
+                    Avis IR {years.previousTaxYear} disponible
+                  </span>
+                  <span className="per-mode-doc-desc">
+                    Avis sur les revenus {years.previousIncomeYear}. Le simulateur reconstituera
+                    ensuite les revenus {years.currentIncomeYear} pour recalculer le plafond 163
+                    quatervicies.
+                  </span>
+                </button>
 
-              <button
-                type="button"
-                className={`per-mode-doc-card ${!avisIrConnu ? 'is-selected' : ''}`}
-                onClick={() => onSetAvisIrConnu(false)}
-              >
-                <span className="per-mode-doc-title">Sans avis IR</span>
-                <span className="per-mode-doc-desc">
-                  Le potentiel sera reconstitue depuis les revenus saisis. Le resultat reste moins precis.
-                </span>
-              </button>
+                <button
+                  type="button"
+                  className={`per-mode-doc-card ${historicalBasis === 'current-avis' ? 'is-selected' : ''}`}
+                  onClick={() => onSelectHistoricalBasis('current-avis')}
+                >
+                  <span className="per-mode-doc-title">
+                    Avis IR {years.currentTaxYear} disponible
+                  </span>
+                  <span className="per-mode-doc-desc">
+                    Avis sur les revenus {years.currentIncomeYear}. Le plafond épargne retraite est
+                    déjà visible sur l&apos;avis ; vous pouvez passer directement aux versements de l&apos;année.
+                  </span>
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="per-mode-declaration-note">
-              <strong>Point de depart retenu :</strong> la declaration et les versements deja saisis.
-              L avis IR n est pas obligatoire pour entrer dans le parcours de declaration.
+
+            <div className="per-mode-panel-block">
+              <h4 className="per-mode-panel-title">Faut-il projeter l’année en cours ?</h4>
+              <p className="per-mode-panel-text">
+                Activez l&apos;estimation {years.currentTaxYear} si vous devez intégrer des revenus ou
+                versements de l&apos;année en cours pour Madelin, PERCO, PEROB ou art. 83.
+              </p>
+              <div className="per-mode-doc-grid">
+                <button
+                  type="button"
+                  className={`per-mode-doc-card ${!needsCurrentYearEstimate ? 'is-selected' : ''}`}
+                  onClick={() => onSetNeedsCurrentYearEstimate(false)}
+                >
+                  <span className="per-mode-doc-title">Pas d’estimation {years.currentTaxYear}</span>
+                  <span className="per-mode-doc-desc">
+                    Je m’appuie sur les données déjà arrêtées et je ne projette pas de revenus
+                    complémentaires pour l’année en cours.
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`per-mode-doc-card ${needsCurrentYearEstimate ? 'is-selected' : ''}`}
+                  onClick={() => onSetNeedsCurrentYearEstimate(true)}
+                >
+                  <span className="per-mode-doc-title">Estimation {years.currentTaxYear} nécessaire</span>
+                  <span className="per-mode-doc-desc">
+                    Je dois projeter les revenus et versements {years.currentTaxYear} pour affiner les
+                    plafonds Madelin, PERCO, PEROB ou art. 83.
+                  </span>
+                </button>
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="per-mode-declaration-note">
+            <strong>Point de départ retenu :</strong> avis IR {years.previousTaxYear} sur les revenus{' '}
+            {years.previousIncomeYear}, puis collecte des revenus {years.currentIncomeYear} exacts et
+            des versements réalisés en {years.currentIncomeYear}. L’étape Avis IR reste incluse.
+          </div>
+        )}
       </div>
     </div>
   );
