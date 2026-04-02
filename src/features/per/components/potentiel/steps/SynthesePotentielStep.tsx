@@ -169,21 +169,13 @@ export default function SynthesePotentielStep({
 
   return (
     <div className="per-step per-step--summary">
-      <div className="per-step-copy">
-        <h3 className="per-step-title">Synthèse déclarative et potentiel disponible</h3>
-        <p className="per-step-hint">
-          La synthèse remet les calculs dans l’ordre utile pour un conseiller : résultat principal,
-          cases 2042, détail des plafonds et, le cas échéant, projection du versement.
-        </p>
-      </div>
-
       <div className="per-summary-top">
         <div className="premium-card premium-card--guide per-summary-hero">
           <div className="per-summary-hero-head">
             <div>
               <p className="premium-section-title">Résultat principal</p>
               <h4 className="per-summary-hero-title">
-                {modeVersement ? 'Montant encore déductible aujourd’hui' : 'Plafond restant après déclaration'}
+                {modeVersement ? "Montant encore déductible aujourd'hui" : 'Plafond restant après déclaration'}
               </h4>
             </div>
             <span className="per-summary-hero-chip">
@@ -197,7 +189,7 @@ export default function SynthesePotentielStep({
               <strong className="per-summary-primary-value">{fmtCurrency(totalDisponible)}</strong>
               <p className="per-summary-primary-note">
                 Base avant simulation : {fmtCurrency(totalDisponibleAvantVersement)}
-                {isCouple && declaration2042.case6QR ? ' - mutualisation active (6QR)' : ''}
+                {isCouple && declaration2042.case6QR ? ' — mutualisation active (6QR)' : ''}
               </p>
             </div>
 
@@ -211,7 +203,7 @@ export default function SynthesePotentielStep({
                 <strong className="per-summary-stat-value">{fmtCurrency(situationFiscale.irEstime)}</strong>
               </div>
               <div className="per-summary-stat">
-                <span className="per-summary-stat-label">Marge dans la TMI</span>
+                <span className="per-summary-stat-label">Marge TMI</span>
                 <strong className="per-summary-stat-value">{fmtCurrency(situationFiscale.montantDansLaTMI)}</strong>
               </div>
               <div className="per-summary-stat">
@@ -220,26 +212,33 @@ export default function SynthesePotentielStep({
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="per-summary-side-stack">
+          <PlafondBreakdownCard label="Déclarant 1" detail={plafond163Q.declarant1} />
+          {isCouple && plafond163Q.declarant2 && (
+            <PlafondBreakdownCard label="Déclarant 2" detail={plafond163Q.declarant2} />
+          )}
 
           {modeVersement && (
-            <div className="per-summary-simulation">
+            <div className="premium-card per-summary-simulation">
               <div className="per-summary-simulation-head">
                 <div>
                   <p className="premium-section-title">Simulation de versement</p>
-                  <h5 className="per-summary-simulation-title">Projection immédiate du gain fiscal</h5>
+                  <h5 className="per-summary-simulation-title">Gain fiscal projeté</h5>
                 </div>
-                <label className="per-summary-simulation-input">
-                  <span>Versement envisagé</span>
-                  <input
-                    type="number"
-                    min={0}
-                    className="premium-input"
-                    value={versementEnvisage || ''}
-                    placeholder="5000"
-                    onChange={(event) => onSetVersement(Number(event.target.value) || 0)}
-                  />
-                </label>
               </div>
+              <label className="per-summary-simulation-input">
+                <span className="per-summary-simulation-label">Versement envisagé</span>
+                <input
+                  type="number"
+                  min={0}
+                  className="per-input"
+                  value={versementEnvisage || ''}
+                  placeholder="0"
+                  onChange={(event) => onSetVersement(Number(event.target.value) || 0)}
+                />
+              </label>
 
               {simulation ? (
                 <div className="per-summary-simulation-grid">
@@ -256,83 +255,60 @@ export default function SynthesePotentielStep({
                     <strong className="per-summary-stat-value">{fmtCurrency(simulation.coutNetApresFiscalite)}</strong>
                   </div>
                   <div className="per-summary-stat">
-                    <span className="per-summary-stat-label">Plafond restant après</span>
+                    <span className="per-summary-stat-label">Plafond restant</span>
                     <strong className="per-summary-stat-value">{fmtCurrency(simulation.plafondRestantApres)}</strong>
                   </div>
                 </div>
               ) : (
-                <p className="per-summary-primary-note">
-                  Saisissez un versement pour obtenir l’économie d’impôt correspondante.
+                <p className="per-summary-simulation-hint">
+                  Saisissez un versement pour voir l&apos;économie d&apos;impôt.
                 </p>
               )}
             </div>
           )}
         </div>
-
-        <div className="per-summary-side-stack">
-          <PlafondBreakdownCard label="Déclarant 1" detail={plafond163Q.declarant1} />
-          {isCouple && plafond163Q.declarant2 && (
-            <PlafondBreakdownCard label="Déclarant 2" detail={plafond163Q.declarant2} />
-          )}
-        </div>
       </div>
 
-      <div className="per-summary-columns">
-        <div className="premium-card per-summary-section-card">
-          <div className="per-summary-card-head">
-            <p className="premium-section-title">Restitution 2042</p>
-            <h4 className="per-summary-card-title">Cases à reporter</h4>
-          </div>
+      <div className="premium-card per-summary-section-card">
+        <div className="per-summary-card-head">
+          <p className="premium-section-title">Restitution 2042</p>
+          <h4 className="per-summary-card-title">Cases à reporter</h4>
+        </div>
 
-          <table className="premium-table per-summary-table">
-            <thead>
-              <tr>
-                <th>Rubrique</th>
-                <th>Déclarant 1</th>
-                {isCouple && <th>Déclarant 2</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {declarationRows.map((row) => (
-                <tr key={row.label}>
-                  <td>
-                    <div className="per-summary-case-label">{row.label}</div>
-                  </td>
+        <table className="premium-table per-summary-table">
+          <thead>
+            <tr>
+              <th>Rubrique</th>
+              <th>Déclarant 1</th>
+              {isCouple && <th>Déclarant 2</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {declarationRows.map((row) => (
+              <tr key={row.label}>
+                <td>
+                  <div className="per-summary-case-label">{row.label}</div>
+                </td>
+                <td className="value-cell">
+                  {row.d1Case} — {fmtCurrency(row.d1Value)}
+                </td>
+                {isCouple && (
                   <td className="value-cell">
-                    {row.d1Case} - {fmtCurrency(row.d1Value)}
+                    {row.d2Case} — {fmtCurrency(row.d2Value)}
                   </td>
-                  {isCouple && (
-                    <td className="value-cell">
-                      {row.d2Case} - {fmtCurrency(row.d2Value)}
-                    </td>
-                  )}
-                </tr>
-              ))}
-              {isCouple && (
-                <tr>
-                  <td>Mutualisation des plafonds</td>
-                  <td colSpan={2} className="value-cell">
-                    6QR - {declaration2042.case6QR ? 'Oui' : 'Non'}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="premium-card per-summary-section-card">
-          <div className="per-summary-card-head">
-            <p className="premium-section-title">Lecture des plafonds</p>
-            <h4 className="per-summary-card-title">Reconstitution du disponible</h4>
-          </div>
-
-          <div className={`per-summary-breakdown-grid ${isCouple ? 'is-couple' : ''}`}>
-            <PlafondBreakdownCard label="Déclarant 1" detail={plafond163Q.declarant1} />
-            {isCouple && plafond163Q.declarant2 && (
-              <PlafondBreakdownCard label="Déclarant 2" detail={plafond163Q.declarant2} />
+                )}
+              </tr>
+            ))}
+            {isCouple && (
+              <tr>
+                <td>Mutualisation des plafonds</td>
+                <td colSpan={2} className="value-cell">
+                  6QR — {declaration2042.case6QR ? 'Oui' : 'Non'}
+                </td>
+              </tr>
             )}
-          </div>
-        </div>
+          </tbody>
+        </table>
       </div>
 
       {estTNS && plafondMadelin && (

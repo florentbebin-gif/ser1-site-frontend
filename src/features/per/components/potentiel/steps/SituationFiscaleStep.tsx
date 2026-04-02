@@ -9,9 +9,6 @@ export type FiscalStepVariant = 'revenus-n1' | 'projection-n' | 'versements-n';
 
 interface SituationFiscaleStepProps {
   variant: FiscalStepVariant;
-  title: string;
-  hint: string;
-  badge: string;
   yearLabel: string;
   showFoyerCard: boolean;
   incomeCardsOptional?: boolean;
@@ -73,7 +70,7 @@ function NumberField({
       <input
         type="number"
         min={min}
-        className="premium-input"
+        className="per-input"
         value={value || ''}
         placeholder="0"
         onChange={(event) => onChange(Number(event.target.value) || 0)}
@@ -144,9 +141,6 @@ function IncomeCard({
 
 export default function SituationFiscaleStep({
   variant,
-  title,
-  hint,
-  badge,
   yearLabel,
   showFoyerCard,
   incomeCardsOptional = false,
@@ -177,12 +171,6 @@ export default function SituationFiscaleStep({
 
   return (
     <div className="per-step per-step--situation">
-      <div className="per-step-copy">
-        <h3 className="per-step-title">{title}</h3>
-        <p className="per-step-hint">{hint}</p>
-        <div className="per-situation-context-chip">{badge}</div>
-      </div>
-
       <div className={`per-situation-top ${showFoyerCard ? '' : 'per-situation-top--single'}`}>
         {showFoyerCard && (
           <div className="premium-card per-situation-card">
@@ -195,7 +183,7 @@ export default function SituationFiscaleStep({
               <label className="per-field">
                 <span>Situation familiale</span>
                 <select
-                  className="premium-select"
+                  className="per-select"
                   value={situationFamiliale}
                   onChange={(event) => {
                     onUpdateSituation({
@@ -307,7 +295,7 @@ export default function SituationFiscaleStep({
                 <input
                   type="number"
                   min={0}
-                  className="premium-input"
+                  className="per-input"
                   value={declarant1[row.key] || ''}
                   placeholder="0"
                   onChange={(event) => onUpdateDeclarant(1, { [row.key]: Number(event.target.value) || 0 })}
@@ -319,7 +307,7 @@ export default function SituationFiscaleStep({
                   <input
                     type="number"
                     min={0}
-                    className="premium-input"
+                    className="per-input"
                     value={declarant2[row.key] || ''}
                     placeholder="0"
                     onChange={(event) => onUpdateDeclarant(2, { [row.key]: Number(event.target.value) || 0 })}

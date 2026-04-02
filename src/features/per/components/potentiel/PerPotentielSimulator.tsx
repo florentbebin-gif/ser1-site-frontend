@@ -65,7 +65,7 @@ function getStepMeta(
     case 2:
       return {
         shortLabel: 'Avis IR',
-        title: `Lecture de l’avis IR ${mode === 'declaration-n1' || basis === 'previous-avis-plus-n1'
+        title: `Lecture de l'avis IR ${mode === 'declaration-n1' || basis === 'previous-avis-plus-n1'
           ? years.previousTaxYear
           : years.currentTaxYear}`,
       };
@@ -253,9 +253,6 @@ export default function PerPotentielSimulator(): React.ReactElement {
               {state.step === 3 && state.mode === 'declaration-n1' && (
                 <SituationFiscaleStep
                   variant="revenus-n1"
-                  title={`Déclaration des revenus ${years.currentIncomeYear}`}
-                  hint={`Renseignez les revenus et versements exacts de ${years.currentIncomeYear}. Cette étape sert à fiabiliser la déclaration 2042 et le plafond restant après déclaration.`}
-                  badge={`Revenus ${years.currentIncomeYear} exacts — montants définitifs pour la déclaration 2042`}
                   yearLabel={`${years.currentIncomeYear}`}
                   showFoyerCard
                   situationFamiliale={state.situationFamiliale}
@@ -274,9 +271,6 @@ export default function PerPotentielSimulator(): React.ReactElement {
               {state.step === 3 && state.mode === 'versement-n' && state.historicalBasis === 'previous-avis-plus-n1' && (
                 <SituationFiscaleStep
                   variant="revenus-n1"
-                  title={`Reconstitution des revenus ${years.currentIncomeYear}`}
-                  hint={`L’avis IR ${years.previousTaxYear} donne le point de départ. Cette étape reconstitue les revenus ${years.currentIncomeYear} nécessaires au recalcul du plafond 163 quatervicies.`}
-                  badge={`Revenus ${years.currentIncomeYear} — utilisés pour recalculer le plafond 163 quatervicies`}
                   yearLabel={`${years.currentIncomeYear}`}
                   showFoyerCard
                   situationFamiliale={state.situationFamiliale}
@@ -295,9 +289,6 @@ export default function PerPotentielSimulator(): React.ReactElement {
               {state.step === 3 && state.mode === 'versement-n' && state.historicalBasis === 'current-avis' && (
                 <SituationFiscaleStep
                   variant="versements-n"
-                  title={`Versements ${years.currentTaxYear} et estimation optionnelle`}
-                  hint={`L’avis IR ${years.currentTaxYear} donne déjà le plafond 163 quatervicies. Renseignez ici les versements ${years.currentTaxYear} et, si besoin, les revenus pour affiner le gain fiscal.`}
-                  badge={`Année ${years.currentTaxYear} — versements connus, revenus facultatifs pour affiner la fiscalité`}
                   yearLabel={`${years.currentTaxYear}`}
                   showFoyerCard
                   incomeCardsOptional
@@ -317,9 +308,6 @@ export default function PerPotentielSimulator(): React.ReactElement {
               {state.step === 4 && (
                 <SituationFiscaleStep
                   variant="projection-n"
-                  title={`Estimation des revenus ${years.currentTaxYear}`}
-                  hint={`Projetez les revenus et versements ${years.currentTaxYear} si vous devez intégrer Madelin, abondement PERCO, PEROB ou art. 83 dans le contrôle du potentiel.`}
-                  badge={`Revenus ${years.currentTaxYear} estimés — plafonds Madelin, PERCO et art. 83 calculés sur l’année en cours`}
                   yearLabel={`${years.currentTaxYear}`}
                   showFoyerCard={false}
                   situationFamiliale={state.situationFamiliale}
@@ -368,7 +356,7 @@ export default function PerPotentielSimulator(): React.ReactElement {
 
         <aside className="per-potentiel-context">
           <div className="premium-card-compact per-potentiel-context-card">
-            <p className="premium-section-title">Lecture du dossier</p>
+            <p className="premium-section-title">Dossier</p>
             <div className="per-potentiel-context-list">
               <div className="per-potentiel-context-item">
                 <span className="per-potentiel-context-label">Parcours</span>
@@ -390,24 +378,17 @@ export default function PerPotentielSimulator(): React.ReactElement {
                 <span className="per-potentiel-context-label">Parts</span>
                 <span className="per-potentiel-context-value">{state.nombreParts}</span>
               </div>
+              <div className="per-potentiel-context-item">
+                <span className="per-potentiel-context-label">PASS {years.currentTaxYear}</span>
+                <span className="per-potentiel-context-value">
+                  {currentPass ? fmtCurrency(currentPass) : '—'}
+                </span>
+              </div>
             </div>
-          </div>
-
-          <div className="premium-card per-potentiel-context-card per-potentiel-context-card--accent">
-            <div className="per-potentiel-context-title-row">
-              <p className="premium-section-title">Repère fiscal</p>
-              <span className="per-potentiel-pass-chip">PASS {years.currentTaxYear}</span>
-            </div>
-            <div className="per-potentiel-pass-value">
-              {currentPass ? fmtCurrency(currentPass) : 'Non disponible'}
-            </div>
-            <p className="per-potentiel-context-note">
-              Source de vérité : public.pass_history, puis cache fiscal, puis fallback settingsDefaults.
-            </p>
           </div>
 
           {result && (
-            <div className="premium-card-compact per-potentiel-context-card">
+            <div className="premium-card-compact per-potentiel-context-card per-potentiel-context-card--accent">
               <p className="premium-section-title">Aperçu en direct</p>
               <div className="per-potentiel-mini-kpis">
                 <div className="per-potentiel-mini-kpi">

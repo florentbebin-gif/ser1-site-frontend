@@ -27,7 +27,7 @@ const MODES: { id: PerMode; title: string; desc: string; marker: string }[] = [
   {
     id: 'declaration-n1',
     title: 'Contrôle de la déclaration 2042',
-    desc: 'J’ai déjà versé et je veux fiabiliser les cases de déclaration et la lecture du potentiel restant.',
+    desc: "J'ai déjà versé et je veux fiabiliser les cases de déclaration et la lecture du potentiel restant.",
     marker: 'Déclaration N-1',
   },
 ];
@@ -45,14 +45,6 @@ export default function ModeStep({
 
   return (
     <div className="per-step per-step--mode">
-      <div className="per-step-copy">
-        <h3 className="per-step-title">Quelle mission voulez-vous traiter ?</h3>
-        <p className="per-step-hint">
-          Le simulateur doit d&apos;abord savoir si vous cherchez un potentiel futur ou une vérification
-          déclarative. Cette décision détermine le parcours visible et les écrans affichés.
-        </p>
-      </div>
-
       <div className="per-mode-grid">
         {MODES.map((item) => (
           <button
@@ -112,7 +104,7 @@ export default function ModeStep({
             </div>
 
             <div className="per-mode-panel-block">
-              <h4 className="per-mode-panel-title">Faut-il projeter l’année en cours ?</h4>
+              <h4 className="per-mode-panel-title">Faut-il projeter l'année en cours ?</h4>
               <p className="per-mode-panel-text">
                 Activez l&apos;estimation {years.currentTaxYear} si vous devez intégrer des revenus ou
                 versements de l&apos;année en cours pour Madelin, PERCO, PEROB ou art. 83.
@@ -123,10 +115,10 @@ export default function ModeStep({
                   className={`per-mode-doc-card ${!needsCurrentYearEstimate ? 'is-selected' : ''}`}
                   onClick={() => onSetNeedsCurrentYearEstimate(false)}
                 >
-                  <span className="per-mode-doc-title">Pas d’estimation {years.currentTaxYear}</span>
+                  <span className="per-mode-doc-title">Pas d'estimation {years.currentTaxYear}</span>
                   <span className="per-mode-doc-desc">
-                    Je m’appuie sur les données déjà arrêtées et je ne projette pas de revenus
-                    complémentaires pour l’année en cours.
+                    Je m'appuie sur les données déjà arrêtées et je ne projette pas de revenus
+                    complémentaires pour l'année en cours.
                   </span>
                 </button>
 
@@ -148,7 +140,7 @@ export default function ModeStep({
           <div className="per-mode-declaration-note">
             <strong>Point de départ retenu :</strong> avis IR {years.previousTaxYear} sur les revenus{' '}
             {years.previousIncomeYear}, puis collecte des revenus {years.currentIncomeYear} exacts et
-            des versements réalisés en {years.currentIncomeYear}. L’étape Avis IR reste incluse.
+            des versements réalisés en {years.currentIncomeYear}. L'étape Avis IR reste incluse.
           </div>
         )}
       </div>
