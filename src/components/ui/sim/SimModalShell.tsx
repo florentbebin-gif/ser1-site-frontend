@@ -17,6 +17,7 @@ interface SimModalShellProps {
   subtitleClassName?: string;
   bodyClassName?: string;
   footerClassName?: string;
+  closeClassName?: string;
 }
 
 function joinClasses(...classes: Array<string | false | null | undefined>) {
@@ -53,6 +54,7 @@ export function SimModalShell({
   subtitleClassName,
   bodyClassName,
   footerClassName,
+  closeClassName,
 }: SimModalShellProps) {
   return (
     <div className={joinClasses('sim-modal-overlay', overlayClassName)}>
@@ -67,7 +69,12 @@ export function SimModalShell({
           </div>
 
           {onClose ? (
-            <button type="button" className="sim-modal__close" onClick={onClose} aria-label={closeLabel}>
+            <button
+              type="button"
+              className={joinClasses('sim-modal__close', closeClassName)}
+              onClick={onClose}
+              aria-label={closeLabel}
+            >
               <CloseIcon />
             </button>
           ) : null}

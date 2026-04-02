@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SimModalShell } from '@/components/ui/sim';
 import type {
   SuccessionAssetDetailEntry,
   SuccessionAssetLegalNature,
@@ -34,53 +35,19 @@ export default function AssetLegalQualificationModal({
   );
 
   return (
-    <div className="sc-member-modal-overlay">
-      <div className="sc-member-modal sc-member-modal--wide">
-        <div className="sc-member-modal__header">
-          <h3 className="sc-member-modal__title">
-            Qualification juridique{entry.subCategory ? ` \u2014 ${entry.subCategory}` : ''}
-          </h3>
-          <button
-            type="button"
-            className="sc-member-modal__close"
-            onClick={onClose}
-            aria-label="Fermer"
-          >
-            &#10005;
-          </button>
-        </div>
-        <div className="sc-member-modal__body sc-assurance-vie-modal__body">
-          <div className="sc-assurance-vie-grid sc-assurance-vie-grid--premium">
-            <div className="sc-field">
-              <label>Qualification juridique</label>
-              <ScSelect
-                className="sc-assurance-vie-select"
-                value={legalNature}
-                onChange={(v) => setLegalNature(v as SuccessionAssetLegalNature)}
-                options={SUCCESSION_ASSET_LEGAL_NATURE_OPTIONS}
-              />
-            </div>
-            <div className="sc-field">
-              <label>Origine</label>
-              <ScSelect
-                className="sc-assurance-vie-select"
-                value={origin}
-                onChange={(v) => setOrigin(v as SuccessionAssetOrigin)}
-                options={SUCCESSION_ASSET_ORIGIN_OPTIONS}
-              />
-            </div>
-            <div className="sc-field">
-              <label>Meuble / immeuble</label>
-              <ScSelect
-                className="sc-assurance-vie-select"
-                value={meubleImmeubleLegal}
-                onChange={(v) => setMeubleImmeubleLegal(v as SuccessionMeubleImmeubleLegal)}
-                options={SUCCESSION_MEUBLE_IMMEUBLE_LEGAL_OPTIONS}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="sc-member-modal__footer">
+    <SimModalShell
+      title={`Qualification juridique${entry.subCategory ? ` — ${entry.subCategory}` : ''}`}
+      onClose={onClose}
+      closeLabel="Fermer"
+      overlayClassName="sc-member-modal-overlay"
+      modalClassName="sc-member-modal sc-member-modal--wide"
+      headerClassName="sc-member-modal__header"
+      titleClassName="sc-member-modal__title"
+      bodyClassName="sc-member-modal__body sc-assurance-vie-modal__body"
+      footerClassName="sc-member-modal__footer"
+      closeClassName="sc-member-modal__close"
+      footer={(
+        <>
           <button
             type="button"
             className="sc-member-modal__btn sc-member-modal__btn--secondary"
@@ -95,8 +62,38 @@ export default function AssetLegalQualificationModal({
           >
             Valider
           </button>
+        </>
+      )}
+    >
+      <div className="sc-assurance-vie-grid sc-assurance-vie-grid--premium">
+        <div className="sc-field">
+          <label>Qualification juridique</label>
+          <ScSelect
+            className="sc-assurance-vie-select"
+            value={legalNature}
+            onChange={(v) => setLegalNature(v as SuccessionAssetLegalNature)}
+            options={SUCCESSION_ASSET_LEGAL_NATURE_OPTIONS}
+          />
+        </div>
+        <div className="sc-field">
+          <label>Origine</label>
+          <ScSelect
+            className="sc-assurance-vie-select"
+            value={origin}
+            onChange={(v) => setOrigin(v as SuccessionAssetOrigin)}
+            options={SUCCESSION_ASSET_ORIGIN_OPTIONS}
+          />
+        </div>
+        <div className="sc-field">
+          <label>Meuble / immeuble</label>
+          <ScSelect
+            className="sc-assurance-vie-select"
+            value={meubleImmeubleLegal}
+            onChange={(v) => setMeubleImmeubleLegal(v as SuccessionMeubleImmeubleLegal)}
+            options={SUCCESSION_MEUBLE_IMMEUBLE_LEGAL_OPTIONS}
+          />
         </div>
       </div>
-    </div>
+    </SimModalShell>
   );
 }

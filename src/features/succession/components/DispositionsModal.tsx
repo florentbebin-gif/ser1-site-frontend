@@ -1,4 +1,5 @@
 import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { SimModalShell } from '@/components/ui/sim';
 import type {
   FamilyMember,
   SituationMatrimoniale,
@@ -263,72 +264,19 @@ export default function DispositionsModal({
   };
 
   return (
-    <div
-      className="sc-member-modal-overlay"
-      onClick={() => {}}
-    >
-      <div className="sc-member-modal sc-dispositions-modal">
-        <div className="sc-member-modal__header">
-          <h3 className="sc-member-modal__title">Dispositions particulières</h3>
-          <button
-            type="button"
-            className="sc-member-modal__close"
-            onClick={onClose}
-            aria-label="Fermer"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="sc-member-modal__body sc-dispositions-modal__body">
-          <DispositionsCommonSection
-            dispositionsDraft={dispositionsDraft}
-            setDispositionsDraft={setDispositionsDraft}
-            showSharedTransmissionPct={showSharedTransmissionPct}
-            isPacsIndivision={isPacsIndivision}
-            showDonationEntreEpoux={showDonationEntreEpoux}
-            nbDescendantBranches={nbDescendantBranches}
-            nbEnfantsNonCommuns={nbEnfantsNonCommuns}
-            isCommunityRegime={isCommunityRegime}
-            isSocieteAcquetsRegime={isSocieteAcquetsRegime}
-            isParticipationAcquetsRegime={isParticipationAcquetsRegime}
-            isCommunauteUniverselleRegime={isCommunauteUniverselleRegime}
-            isCommunauteMeublesAcquetsRegime={isCommunauteMeublesAcquetsRegime}
-            interMassClaimPocketOptions={assetPocketOptions}
-            onAddInterMassClaim={addInterMassClaim}
-            onUpdateInterMassClaim={updateInterMassClaim}
-            onRemoveInterMassClaim={removeInterMassClaim}
-            preciputConfiguratorProps={{
-              dispositionsDraft,
-              setDispositionsDraft,
-              pendingPreciputCandidateKey,
-              setPendingPreciputCandidateKey,
-              preciputCandidateOptions,
-              preciputCandidatesByKey,
-              preciputScopeLabel,
-              syncedPreciputSelections,
-              onAddPreciputSelection: addPreciputSelection,
-              onUpdatePreciputSelection: updatePreciputSelection,
-              onRemovePreciputSelection: removePreciputSelection,
-            }}
-          />
-
-          <DispositionsTestamentSection
-            dispositionsDraft={dispositionsDraft}
-            setDispositionsDraft={setDispositionsDraft}
-            testamentSides={testamentSides}
-            testamentBeneficiaryOptionsBySide={testamentBeneficiaryOptionsBySide}
-            descendantBranchesBySide={descendantBranchesBySide}
-            enfantsContext={enfantsContext}
-            familyMembers={familyMembers}
-            civilSituation={civilSituation}
-            updateDispositionsTestament={updateDispositionsTestament}
-            getFirstTestamentBeneficiaryRef={getFirstTestamentBeneficiaryRef}
-            onAddParticularLegacy={onAddParticularLegacy}
-            onUpdateParticularLegacy={onUpdateParticularLegacy}
-            onRemoveParticularLegacy={onRemoveParticularLegacy}
-          />
-        </div>
-        <div className="sc-member-modal__footer">
+    <SimModalShell
+      title="Dispositions particulières"
+      onClose={onClose}
+      closeLabel="Fermer"
+      overlayClassName="sc-member-modal-overlay"
+      modalClassName="sc-member-modal sc-dispositions-modal"
+      headerClassName="sc-member-modal__header"
+      titleClassName="sc-member-modal__title"
+      bodyClassName="sc-member-modal__body sc-dispositions-modal__body"
+      footerClassName="sc-member-modal__footer"
+      closeClassName="sc-member-modal__close"
+      footer={(
+        <>
           <button
             type="button"
             className="sc-member-modal__btn sc-member-modal__btn--secondary"
@@ -343,8 +291,56 @@ export default function DispositionsModal({
           >
             Valider
           </button>
-        </div>
-      </div>
-    </div>
+        </>
+      )}
+    >
+      <DispositionsCommonSection
+        dispositionsDraft={dispositionsDraft}
+        setDispositionsDraft={setDispositionsDraft}
+        showSharedTransmissionPct={showSharedTransmissionPct}
+        isPacsIndivision={isPacsIndivision}
+        showDonationEntreEpoux={showDonationEntreEpoux}
+        nbDescendantBranches={nbDescendantBranches}
+        nbEnfantsNonCommuns={nbEnfantsNonCommuns}
+        isCommunityRegime={isCommunityRegime}
+        isSocieteAcquetsRegime={isSocieteAcquetsRegime}
+        isParticipationAcquetsRegime={isParticipationAcquetsRegime}
+        isCommunauteUniverselleRegime={isCommunauteUniverselleRegime}
+        isCommunauteMeublesAcquetsRegime={isCommunauteMeublesAcquetsRegime}
+        interMassClaimPocketOptions={assetPocketOptions}
+        onAddInterMassClaim={addInterMassClaim}
+        onUpdateInterMassClaim={updateInterMassClaim}
+        onRemoveInterMassClaim={removeInterMassClaim}
+        preciputConfiguratorProps={{
+          dispositionsDraft,
+          setDispositionsDraft,
+          pendingPreciputCandidateKey,
+          setPendingPreciputCandidateKey,
+          preciputCandidateOptions,
+          preciputCandidatesByKey,
+          preciputScopeLabel,
+          syncedPreciputSelections,
+          onAddPreciputSelection: addPreciputSelection,
+          onUpdatePreciputSelection: updatePreciputSelection,
+          onRemovePreciputSelection: removePreciputSelection,
+        }}
+      />
+
+      <DispositionsTestamentSection
+        dispositionsDraft={dispositionsDraft}
+        setDispositionsDraft={setDispositionsDraft}
+        testamentSides={testamentSides}
+        testamentBeneficiaryOptionsBySide={testamentBeneficiaryOptionsBySide}
+        descendantBranchesBySide={descendantBranchesBySide}
+        enfantsContext={enfantsContext}
+        familyMembers={familyMembers}
+        civilSituation={civilSituation}
+        updateDispositionsTestament={updateDispositionsTestament}
+        getFirstTestamentBeneficiaryRef={getFirstTestamentBeneficiaryRef}
+        onAddParticularLegacy={onAddParticularLegacy}
+        onUpdateParticularLegacy={onUpdateParticularLegacy}
+        onRemoveParticularLegacy={onRemoveParticularLegacy}
+      />
+    </SimModalShell>
   );
 }

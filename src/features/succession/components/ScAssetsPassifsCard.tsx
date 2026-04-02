@@ -121,10 +121,10 @@ export default function ScAssetsPassifsCard({
   const getNetLabel = (owner: SuccessionLegacyAssetOwner) => getActifNetLabel(owner, flags);
 
   return (
-    <div className="premium-card sc-card sc-card--guide">
-      <header className="sc-card__header">
-        <div className="sc-card__title-row">
-          <div className="sc-section-icon-wrapper">
+    <div className="premium-card sc-card sc-card--guide sim-card--guide">
+      <header className="sc-card__header sim-card__header sim-card__header--bleed">
+        <div className="sc-card__title-row sim-card__title sim-card__title-row">
+          <div className="sc-section-icon-wrapper sim-card__icon">
             <svg
               width="14"
               height="14"
@@ -143,7 +143,7 @@ export default function ScAssetsPassifsCard({
           </div>
           <h2 className="sc-card__title">Actifs / Passifs</h2>
         </div>
-        <p className="sc-card__subtitle">
+        <p className="sc-card__subtitle sim-card__subtitle">
           {isExpert
             ? 'Saisie détaillée des actifs et passifs, agrégée automatiquement pour les analyses civiles.'
             : 'Saisie simplifiée des actifs et passifs, agrégée automatiquement pour les analyses civiles et la chronologie.'}
@@ -162,7 +162,7 @@ export default function ScAssetsPassifsCard({
           </p>
         )}
       </header>
-      <div className="sc-card__divider" />
+      <div className="sc-card__divider sim-divider" />
 
       {isExpert ? (
         <ScAssetsPassifsExpertSection

@@ -412,10 +412,10 @@ export function FiliationOrgchart({
   const hasDeceasedChild = enfantsContext.some((enfant) => enfant.deceased);
 
   return (
-    <div className="premium-card sc-card sc-card--guide sc-filiation-card">
-      <header className="sc-card__header">
-        <div className="sc-card__title-row">
-          <div className="sc-section-icon-wrapper">
+    <div className="premium-card sc-card sc-card--guide sim-card--guide sc-filiation-card">
+      <header className="sc-card__header sim-card__header sim-card__header--bleed">
+        <div className="sc-card__title-row sim-card__title sim-card__title-row">
+          <div className="sc-section-icon-wrapper sim-card__icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <circle cx="18" cy="5" r="3" />
               <circle cx="6" cy="12" r="3" />
@@ -430,7 +430,7 @@ export function FiliationOrgchart({
           </h2>
         </div>
       </header>
-      <div className="sc-card__divider sc-card__divider--tight" />
+      <div className="sc-card__divider sc-card__divider--tight sim-divider sim-divider--tight" />
 
       {isEmpty ? (
         <p className="sc-hint">
