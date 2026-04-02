@@ -7,7 +7,7 @@ Ce document enregistre la parite visee entre le classeur source PER 2025 et le m
 
 Source d'analyse :
 - workbook racine `SER1 - LAPLACE 2025.xlsm`
-- plan de retro-analyse [`docs/PLAN_PER_POTENTIEL.md`](./PLAN_PER_POTENTIEL.md)
+- retro-analyse historique désormais absorbée dans ce document
 - cas automatises [`src/engine/per/__tests__/perPotentiel.test.ts`](../src/engine/per/__tests__/perPotentiel.test.ts)
 
 Le classeur reste une source d'analyse et de verification. Il n'est jamais une dependance runtime.

@@ -119,7 +119,7 @@ La `PR-28` introduit enfin le bloc `participationAcquets` dans le draft et la mo
 Les `PR-29/30` introduisent ensuite la qualification juridique des actifs detailles (`legalNature`, `origin`, `meubleImmeubleLegal`), ajoutent `stipulationContraireCU` dans la modal dispositions et exploitent ces champs pour enrichir `communaute_universelle` et `communaute_meubles_acquets` en mode succession detaillee.
 La `PR-31` ajoute ensuite le modele simplifie de `recompenses / creances entre masses`, ainsi que la restitution du `passif affecte` a partir des passifs detailles rattaches a une masse.
 La `PR-32` aligne enfin la documentation metier et d'architecture sur cet etat final de la trajectoire, avec distinction explicite entre support robuste, simplification documentee et approximation assumee.
-La `PR-33` boucle la validation finale avec export des hypotheses retenues par le simulateur dans l'UI, le PPTX et le XLSX, et une note de synthese dans `docs/SUCCESSION_FINAL_VALIDATION.md`.
+La `PR-33` boucle la validation finale avec export des hypotheses retenues par le simulateur dans l'UI, le PPTX et le XLSX, plus alignement documentaire de fin de trajectoire.
 
 ## Sources juridiques de cadrage
 
@@ -145,6 +145,17 @@ La `PR-33` boucle la validation finale avec export des hypotheses retenues par l
 - les docs `METIER.md` et `ARCHITECTURE.md` doivent rester alignees avec cette matrice
 
 ## Validation finale
-- note de synthese: `docs/SUCCESSION_FINAL_VALIDATION.md`
 - gate repo: `npm run check`
-- exports a verifier a chaque extension succession: UI hypotheses, PPTX succession, XLSX succession
+- tests succession critiques :
+  - `src/features/succession/__tests__/successionAssetValuation.test.ts`
+  - `src/features/succession/__tests__/successionChainage.test.ts`
+  - `src/features/succession/__tests__/scSuccessionSummaryPanel.test.tsx`
+  - `src/features/succession/__tests__/scDeathTimelinePanel.test.tsx`
+  - `src/features/succession/__tests__/successionExport.test.ts`
+- surfaces a verifier manuellement :
+  - UI succession : `+ Dispositions`, ajout d'une recompense ou creance entre masses, verification de la synthese et de la chronologie
+  - exports : slide/onglet `Hypotheses` dans le PPTX et le XLSX succession
+- limites conservees :
+  - les recompenses et creances entre masses restent une modelisation simplifiee par transferts entre poches
+  - le passif affecte reste derive du rattachement `pocket` des passifs detailles
+  - les hypotheses exportees explicitent ces simplifications sans transformer l'outil en liquidation notariale exhaustive

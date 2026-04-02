@@ -27,10 +27,17 @@ Expliquer ce que SER1 couvre aujourd'hui, ce qui est deja exploitable, et les li
 | `/sim/tresorerie-societe` | upcoming | non documente metier ici tant que non stabilise |
 | `/sim/prevoyance` | upcoming | non documente metier ici tant que non stabilise |
 
+### Workflows actifs hors simulateurs
+| Surface | Statut | Role metier principal |
+|---|---|---|
+| `/audit` | actif, non finalise | Constituer un dossier patrimonial guide, persiste en session, exportable, et servant d'entree a `strategy` |
+| `/strategy` | actif, incomplet cote produit | Produire des recommandations et projections a partir du draft audit courant, sans etre encore traite comme un simulateur `/sim/*` stabilise |
+
 ### Regle de lecture
 - Ce doc decrit uniquement le perimetre implemente.
 - Si un sujet est encore en page "upcoming", il n'est pas traite comme une feature metier stable.
 - Les taux, baremes et abattements modifiables vivent dans les settings et sont consommes par les simulateurs via le dossier fiscal unifie.
+- Les workflows `/audit` et `/strategy` sont actifs en runtime, mais ils restent des surfaces de travail guidees distinctes des simulateurs metier stabilises.
 
 ## 1) IR
 

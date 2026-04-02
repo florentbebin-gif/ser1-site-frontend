@@ -886,7 +886,7 @@ function pct(v: number): XlsxCell { return { v: v / 100, style: 'sPercent' }; }
 ```
 
 ❌ **Interdits** :
-- Le module `src/utils/export/exportExcel.ts` (format XML MS-Office legacy, produit `.xls`)
+- L'ancien export XLS XML legacy (supprime du repo, anciennement `src/utils/export/exportExcel.ts`)
 - Toute génération de string XML Excel à la main
 - L'extension `.xls` dans le nom de fichier de sortie
 
