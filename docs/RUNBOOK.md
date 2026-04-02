@@ -8,7 +8,7 @@ Dev qui doit dépanner vite, ou exécuter un parcours local/CI.
 
 ## Ce que ce doc couvre / ne couvre pas
 - ✅ Couvre : commandes, symptômes→cause→fix, flags debug, Edge Functions, migrations.
-- ❌ Ne couvre pas : les conventions UI/couleurs (voir `docs/GOUVERNANCE.md`).
+- ❌ Ne couvre pas : les conventions UI/couleurs (voir `docs/GOUVERNANCE.md`) ni les contrats d’exports PPTX/Excel (voir `docs/GOUVERNANCE_EXPORTS.md`).
 
 ## Sommaire
 - [Checks du repo](#checks-du-repo)
@@ -545,3 +545,4 @@ grep -n "SETTINGS_ROUTES\|settingsRoutes" src/routes/settingsRoutes.ts src/pages
 Voir aussi :
 - `docs/ARCHITECTURE.md` (cartographie)
 - `docs/GOUVERNANCE.md` (règles UI/couleurs/thème)
+- `docs/GOUVERNANCE_EXPORTS.md` (règles PPTX/Excel)

@@ -246,7 +246,7 @@ Invariants (à ne pas casser) :
 - Orchestrateur : `src/pptx/export/exportStudyDeck.ts`.
 - Design system : `src/pptx/designSystem/serenity.ts`.
 - Slides : `src/pptx/slides/`.
-- **Règles de conception et checklist de création** : `docs/GOUVERNANCE.md` § Gouvernance PPTX.
+- **Règles de conception et checklist de création** : `docs/GOUVERNANCE_EXPORTS.md`.
 - Cas legacy encore actifs : `src/features/audit/exportAudit.ts` adapte `src/pptx/auditPptx.ts` et `src/features/strategy/exportStrategy.ts` adapte `src/pptx/strategyPptx.ts` derrière les features ; les composants UI n'importent plus directement ces générateurs legacy.
 
 Assets statiques (images) :
@@ -653,5 +653,6 @@ Cette section fixe comment ajouter une page, une route ou une feature sans creer
 
 ## Références
 - Gouvernance UI/couleurs/thème : `docs/GOUVERNANCE.md`
+- Gouvernance exports PPTX/XLSX : `docs/GOUVERNANCE_EXPORTS.md`
 - Runbook debug + edge + migrations : `docs/RUNBOOK.md`
 - Trajectoire produit : `docs/ROADMAP.md`

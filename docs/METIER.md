@@ -397,5 +397,6 @@ En mode simplifié, seuls Montant, Durée et Taux annuel sont affichés.
 | Ce que le produit calcule et ses limites | `docs/METIER.md` |
 | Structure des routes, features et pages | `docs/ARCHITECTURE.md` |
 | Contrat UI, baseline `/sim/*`, theming | `docs/GOUVERNANCE.md` |
+| Contrat PPTX/XLSX et wrappers d’export | `docs/GOUVERNANCE_EXPORTS.md` |
 | Exploitation, Supabase, debug, procedures | `docs/RUNBOOK.md` |
 | Priorites et reste a faire | `docs/ROADMAP.md` |
