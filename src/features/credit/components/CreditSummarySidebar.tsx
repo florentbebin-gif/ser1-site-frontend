@@ -37,7 +37,7 @@ export function CreditSummarySidebar({
       />
 
       {calc.hasPretsAdditionnels && (
-        <div className="cv2-total-mensu">
+        <div className="cv2-total-mensu sim-summary-card sim-summary-card--secondary">
           <div className="cv2-summary__title-row">
             <div className="cv2-section-icon-wrapper">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -48,7 +48,7 @@ export function CreditSummarySidebar({
             </div>
             <div className="cv2-summary__title">Synthèse des prêts</div>
           </div>
-          <div className="cv2-loan-card__divider cv2-loan-card__divider--tight" />
+          <div className="cv2-loan-card__divider cv2-loan-card__divider--tight sim-divider sim-divider--tight" />
 
           <div className="cv2-summary__kpi-zone">
             <div>
@@ -71,7 +71,7 @@ export function CreditSummarySidebar({
             />
           </div>
 
-          <div className="cv2-summary__divider" />
+          <div className="cv2-summary__divider sim-divider sim-divider--tight" />
           <div className="cv2-summary__row cv2-summary__row--total">
             <span className="cv2-summary__row-label">Coût total des crédits</span>
             <span className="cv2-summary__row-value cv2-summary__row-value--highlight">

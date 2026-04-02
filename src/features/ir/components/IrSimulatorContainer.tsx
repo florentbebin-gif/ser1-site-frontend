@@ -358,7 +358,7 @@ export default function IrSimulatorContainer() {
   if (settingsLoading) {
     return (
       <div className="sim-page" data-testid="ir-page">
-        <div className="ir-header premium-header" data-testid="ir-header">
+        <div className="ir-header premium-header sim-header" data-testid="ir-header">
           <h1 className="premium-title" data-testid="ir-title">
             Simulateur d&apos;imp&ocirc;t sur le revenu
           </h1>
@@ -375,7 +375,7 @@ export default function IrSimulatorContainer() {
 
   return (
     <div className="sim-page" data-testid="ir-page">
-      <div className="ir-header premium-header" data-testid="ir-header">
+      <div className="ir-header premium-header sim-header" data-testid="ir-header">
         <h1 className="premium-title" data-testid="ir-title">
             Simulateur d&apos;imp&ocirc;t sur le revenu
         </h1>
@@ -396,7 +396,7 @@ export default function IrSimulatorContainer() {
         </div>
       </div>
 
-      <div className="ir-grid" data-testid="ir-grid">
+      <div className="ir-grid sim-grid" data-testid="ir-grid">
         <IrFormSection
           status={status}
           setStatus={setStatus}

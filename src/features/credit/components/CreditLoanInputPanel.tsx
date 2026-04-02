@@ -34,11 +34,11 @@ export function CreditLoanInputPanel({
 }: CreditLoanInputPanelProps) {
   return (
     <div>
-      <div className="premium-card premium-card--guide">
+      <div className="premium-card premium-card--guide sim-card--guide">
         <div className="cv2-loan-card">
-          <header className="cv2-loan-card__header">
-            <h2 className="cv2-loan-card__title">
-              <span className="cv2-loan-card__icon-wrapper">
+          <header className="cv2-loan-card__header sim-card__header sim-card__header--bleed">
+            <h2 className="cv2-loan-card__title sim-card__title sim-card__title-row">
+              <span className="cv2-loan-card__icon-wrapper sim-card__icon">
                 <svg
                   className="cv2-loan-card__icon"
                   viewBox="0 0 24 24"
@@ -59,11 +59,11 @@ export function CreditLoanInputPanel({
               </span>
               Paramètres du prêt
             </h2>
-            <p className="cv2-loan-card__subtitle">
+            <p className="cv2-loan-card__subtitle sim-card__subtitle">
               Renseignez les données du financement pour estimer mensualités et coût global.
             </p>
           </header>
-          <div className="cv2-loan-card__divider" />
+          <div className="cv2-loan-card__divider sim-divider" />
           <div className="cv2-loan-card__body">
             <CreditLoanForm
               pretNum={activeTab}
@@ -83,7 +83,7 @@ export function CreditLoanInputPanel({
       {calc.hasPretsAdditionnels && (
         <div className="premium-card cv2-lissage-card">
           <div className="sim-section-title cv2-lissage-title">Options de lissage</div>
-          <div className="cv2-loan-card__divider cv2-loan-card__divider--tight" />
+          <div className="cv2-loan-card__divider cv2-loan-card__divider--tight sim-divider sim-divider--tight" />
           <div className="cv2-lissage">
             <Toggle
               checked={state.lisserPret1}

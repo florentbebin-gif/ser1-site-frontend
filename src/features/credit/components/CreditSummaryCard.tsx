@@ -111,7 +111,7 @@ export function CreditSummaryCard({
   const assLabel = isAnnual ? '/an' : '/mois';
 
   return (
-    <aside className="cv2-summary" data-testid="credit-summary-card">
+    <aside className="cv2-summary sim-summary-card" data-testid="credit-summary-card">
       <div className="cv2-summary__title-row">
         <div className="cv2-section-icon-wrapper">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -123,7 +123,7 @@ export function CreditSummaryCard({
         <div className="cv2-summary__title">{loanLabel || 'Synthèse du prêt'}</div>
       </div>
 
-      <div className="cv2-loan-card__divider" />
+      <div className="cv2-loan-card__divider sim-divider" />
 
       <div className="cv2-summary__kpi-zone">
         <div>
@@ -146,7 +146,7 @@ export function CreditSummaryCard({
         <SummaryDonut capital={capitalEmprunte} interets={totalInterets} />
       </div>
 
-      <div className="cv2-summary__divider" />
+      <div className="cv2-summary__divider sim-divider sim-divider--tight" />
 
       <div className="cv2-summary__rows">
         {isExpert && (
@@ -174,7 +174,7 @@ export function CreditSummaryCard({
 
       {lisserPret1 && (diffDureesMois !== 0 || lissageCoutDelta !== 0) && (
         <>
-          <div className="cv2-loan-card__divider cv2-loan-card__divider--tight" />
+          <div className="cv2-loan-card__divider cv2-loan-card__divider--tight sim-divider sim-divider--tight" />
           <div className="cv2-summary__lissage-info">
             {diffDureesMois !== 0 && (
               <div className="cv2-summary__row">
