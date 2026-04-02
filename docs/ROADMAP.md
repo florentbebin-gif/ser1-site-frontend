@@ -427,6 +427,7 @@ Etat runtime actuel : `/audit` reste actif et alimente `strategy`; l'export PPTX
 
 # P7 - Strategie avancee + societe fine (si confirme)
 Objectif : recommandations structurees, y compris cas avec societes/holding.
+Etat runtime actuel : `/strategy` depend du draft `/audit` et l'export PPTX transite desormais par `src/features/strategy/exportStrategy.ts` pour isoler le legacy.
 
 ## PR-P7-01 - Moteur de scenarios (baseline vs recommandations)
 - Recommandations expliquees + hypotheses

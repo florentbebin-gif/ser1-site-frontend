@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { enableE2EMode } from './helpers/auth';
 import { ROUTES } from './helpers/fixtures';
+import { createEmptyDossier } from '../../src/features/audit/types';
 
 /**
  * Smoke tests minimaux pour les surfaces stables.
@@ -55,7 +56,23 @@ test.describe('Smoke Tests - Surfaces stables', () => {
     await page.goto(ROUTES.strategy);
     await expect(page.locator('body')).not.toContainText('Application error');
     await expect(page.getByRole('heading', { name: 'Aucun audit en cours' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Demarrer un audit' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Démarrer un audit' })).toBeVisible();
+  });
+
+  test('Strategy charge avec un draft audit minimal', async ({ page }) => {
+    const dossier = createEmptyDossier();
+    dossier.situationFamiliale.mr.prenom = 'Jean';
+    dossier.situationFamiliale.mr.nom = 'Martin';
+
+    await page.addInitScript((draft) => {
+      window.sessionStorage.setItem('ser1_audit_draft', JSON.stringify(draft));
+    }, dossier);
+
+    await page.goto(ROUTES.strategy);
+    await expect(page.locator('body')).not.toContainText('Application error');
+    await expect(page.getByTestId('strategy-page')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Stratégie patrimoniale' })).toBeVisible();
+    await expect(page.getByText('Client : Jean Martin')).toBeVisible();
   });
 
   test('Une route upcoming reste accessible en mode minimal', async ({ page }) => {
